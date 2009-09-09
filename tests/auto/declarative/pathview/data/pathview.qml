@@ -1,14 +1,15 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     width: 240
     height: 320
     color: "#ffffff"
     resources: [
         Component {
             id: Delegate
-            Rect {
+            Rectangle {
                 id: wrapper
+                objectName: "wrapper"
                 height: 20
                 width: 60
                 color: "white"
@@ -19,11 +20,13 @@ Rect {
                 Text {
                     x: 20
                     id: textName
+                    objectName: "textName"
                     text: name
                 }
                 Text {
                     x: 40
                     id: textNumber
+                    objectName: "textNumber"
                     text: number
                 }
             }
@@ -31,11 +34,12 @@ Rect {
     ]
     PathView {
         id: view
+        objectName: "view"
         width: 240
         height: 320
         model: testModel
         delegate: Delegate
-        snapPos: 0.01
+        snapPosition: 0.01
         path: Path {
             startY: 120
             startX: 160

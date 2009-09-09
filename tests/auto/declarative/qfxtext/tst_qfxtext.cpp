@@ -19,8 +19,8 @@ private slots:
     void elide();
 
     // ### these tests may be trivial    
-    void hAlign();
-    void vAlign();
+    void horizontalAlignment();
+    void verticalAlignment();
     void font();
     void style();
     void color();
@@ -29,11 +29,11 @@ private:
     QStringList standard;
     QStringList richText;
 
-    QStringList hAlignmentStrings;
-    QStringList vAlignmentStrings;
+    QStringList horizontalAlignmentmentStrings;
+    QStringList verticalAlignmentmentStrings;
 
-    QList<Qt::Alignment> vAlignments;
-    QList<Qt::Alignment> hAlignments;
+    QList<Qt::Alignment> verticalAlignmentments;
+    QList<Qt::Alignment> horizontalAlignmentments;
 
     QStringList styleStrings;
     QList<QFxText::TextStyle> styles;
@@ -51,19 +51,19 @@ tst_qfxtext::tst_qfxtext()
     richText << "<i>the <b>quick</b> brown <a href=\\\"http://www.google.com\\\">fox</a> jumped over the <b>lazy</b> dog</i>"
              << "<i>the <b>quick</b> brown <a href=\\\"http://www.google.com\\\">fox</a><br>jumped over the <b>lazy</b> dog</i>";
 
-    hAlignmentStrings << "AlignLeft"
+    horizontalAlignmentmentStrings << "AlignLeft"
                       << "AlignRight"
                       << "AlignHCenter";
 
-    vAlignmentStrings << "AlignTop"
+    verticalAlignmentmentStrings << "AlignTop"
                       << "AlignBottom"
                       << "AlignVCenter";
 
-    hAlignments << Qt::AlignLeft
+    horizontalAlignmentments << Qt::AlignLeft
                 << Qt::AlignRight
                 << Qt::AlignHCenter;
 
-    vAlignments << Qt::AlignTop
+    verticalAlignmentments << Qt::AlignTop
                 << Qt::AlignBottom
                 << Qt::AlignVCenter;
 
@@ -99,7 +99,7 @@ tst_qfxtext::tst_qfxtext()
 void tst_qfxtext::text()
 {
     {
-        QmlComponent textComponent(&engine, "Text { text: \"\" }");
+        QmlComponent textComponent(&engine, "import Qt 4.6\nText { text: \"\" }", QUrl("file://"));
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
         QVERIFY(textObject != 0);
@@ -108,8 +108,8 @@ void tst_qfxtext::text()
 
     for (int i = 0; i < standard.size(); i++)
     {
-        QString componentStr = "Text { text: \"" + standard.at(i) + "\" }";
-        QmlComponent textComponent(&engine, componentStr.toLatin1());
+        QString componentStr = "import Qt 4.6\nText { text: \"" + standard.at(i) + "\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
         QVERIFY(textObject != 0);
@@ -118,8 +118,8 @@ void tst_qfxtext::text()
 
     for (int i = 0; i < richText.size(); i++)
     {
-        QString componentStr = "Text { text: \"" + richText.at(i) + "\" }";
-        QmlComponent textComponent(&engine, componentStr.toLatin1());
+        QString componentStr = "import Qt 4.6\nText { text: \"" + richText.at(i) + "\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
         QVERIFY(textObject != 0);
@@ -132,7 +132,7 @@ void tst_qfxtext::width()
 {
     // uses Font metrics to find the width for standard and document to find the width for rich
     {
-        QmlComponent textComponent(&engine, "Text { text: \"\" }");
+        QmlComponent textComponent(&engine, "import Qt 4.6\nText { text: \"\" }", QUrl("file://"));
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
         QCOMPARE(textObject->width(), 0.);
@@ -144,8 +144,8 @@ void tst_qfxtext::width()
         QFontMetrics fm(f);
         int metricWidth = fm.size(Qt::TextExpandTabs && Qt::TextShowMnemonic, standard.at(i)).width();
 
-        QString componentStr = "Text { text: \"" + standard.at(i) + "\" }";
-        QmlComponent textComponent(&engine, componentStr.toLatin1());
+        QString componentStr = "import Qt 4.6\nText { text: \"" + standard.at(i) + "\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
         QCOMPARE(textObject->width(), qreal(metricWidth));
@@ -159,8 +159,8 @@ void tst_qfxtext::width()
 
         int documentWidth = document.idealWidth();
 
-        QString componentStr = "Text { text: \"" + richText.at(i) + "\" }";
-        QmlComponent textComponent(&engine, componentStr.toLatin1());
+        QString componentStr = "import Qt 4.6\nText { text: \"" + richText.at(i) + "\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
         QCOMPARE(textObject->width(), qreal(documentWidth));
@@ -173,7 +173,7 @@ void tst_qfxtext::wrap()
 
     // for specified width and wrap set true
     {
-        QmlComponent textComponent(&engine, "Text { text: \"\"; wrap: true; width: 300 }");
+        QmlComponent textComponent(&engine, "import Qt 4.6\nText { text: \"\"; wrap: true; width: 300 }", QUrl("file://"));
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
         QCOMPARE(textObject->width(), 300.);
@@ -181,8 +181,8 @@ void tst_qfxtext::wrap()
 
     for (int i = 0; i < standard.size(); i++)
     {
-        QString componentStr = "Text { wrap: true; width: 300; text: \"" + standard.at(i) + "\" }";
-        QmlComponent textComponent(&engine, componentStr.toLatin1());
+        QString componentStr = "import Qt 4.6\nText { wrap: true; width: 300; text: \"" + standard.at(i) + "\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
         QCOMPARE(textObject->width(), 300.);
@@ -190,8 +190,8 @@ void tst_qfxtext::wrap()
 
     for (int i = 0; i < richText.size(); i++)
     {
-        QString componentStr = "Text { wrap: true; width: 300; text: \"" + richText.at(i) + "\" }";
-        QmlComponent textComponent(&engine, componentStr.toLatin1());
+        QString componentStr = "import Qt 4.6\nText { wrap: true; width: 300; text: \"" + richText.at(i) + "\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
         QCOMPARE(textObject->width(), 300.);
@@ -208,7 +208,7 @@ void tst_qfxtext::elide()
         // XXX Poor coverage.
 
         {
-            QmlComponent textComponent(&engine, ("Text { text: \"\"; "+elide+" width: 300 }").toLatin1());
+            QmlComponent textComponent(&engine, ("import Qt 4.6\nText { text: \"\"; "+elide+" width: 300 }").toLatin1(), QUrl("file://"));
             QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
             QCOMPARE(textObject->width(), 300.);
@@ -216,8 +216,8 @@ void tst_qfxtext::elide()
 
         for (int i = 0; i < standard.size(); i++)
         {
-            QString componentStr = "Text { "+elide+" width: 300; text: \"" + standard.at(i) + "\" }";
-            QmlComponent textComponent(&engine, componentStr.toLatin1());
+            QString componentStr = "import Qt 4.6\nText { "+elide+" width: 300; text: \"" + standard.at(i) + "\" }";
+            QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
             QCOMPARE(textObject->width(), 300.);
@@ -226,8 +226,8 @@ void tst_qfxtext::elide()
         // richtext - does nothing
         for (int i = 0; i < richText.size(); i++)
         {
-            QString componentStr = "Text { "+elide+" width: 300; text: \"" + richText.at(i) + "\" }";
-            QmlComponent textComponent(&engine, componentStr.toLatin1());
+            QString componentStr = "import Qt 4.6\nText { "+elide+" width: 300; text: \"" + richText.at(i) + "\" }";
+            QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
             QCOMPARE(textObject->width(), 300.);
@@ -236,61 +236,61 @@ void tst_qfxtext::elide()
 }
 
 //the alignment tests may be trivial o.oa
-void tst_qfxtext::hAlign()
+void tst_qfxtext::horizontalAlignment()
 {
     //test one align each, and then test if two align fails.
 
     for (int i = 0; i < standard.size(); i++)
     {
-        for (int j=0; j < hAlignmentStrings.size(); j++)
+        for (int j=0; j < horizontalAlignmentmentStrings.size(); j++)
         {
-            QString componentStr = "Text { hAlign: \"" + hAlignmentStrings.at(j) + "\"; text: \"" + standard.at(i) + "\" }";
-            QmlComponent textComponent(&engine, componentStr.toLatin1());
+            QString componentStr = "import Qt 4.6\nText { horizontalAlignment: \"" + horizontalAlignmentmentStrings.at(j) + "\"; text: \"" + standard.at(i) + "\" }";
+            QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
-            QCOMPARE((int)textObject->hAlign(), (int)hAlignments.at(j));
+            QCOMPARE((int)textObject->hAlign(), (int)horizontalAlignmentments.at(j));
         }
     }
 
     for (int i = 0; i < richText.size(); i++)
     {
-        for (int j=0; j < hAlignmentStrings.size(); j++)
+        for (int j=0; j < horizontalAlignmentmentStrings.size(); j++)
         {
-            QString componentStr = "Text { hAlign: \"" + hAlignmentStrings.at(j) + "\"; text: \"" + richText.at(i) + "\" }";
-            QmlComponent textComponent(&engine, componentStr.toLatin1());
+            QString componentStr = "import Qt 4.6\nText { horizontalAlignment: \"" + horizontalAlignmentmentStrings.at(j) + "\"; text: \"" + richText.at(i) + "\" }";
+            QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
-            QCOMPARE((int)textObject->hAlign(), (int)hAlignments.at(j));
+            QCOMPARE((int)textObject->hAlign(), (int)horizontalAlignmentments.at(j));
         }
     }
 
 }
 
-void tst_qfxtext::vAlign()
+void tst_qfxtext::verticalAlignment()
 {
     //test one align each, and then test if two align fails.
 
     for (int i = 0; i < standard.size(); i++)
     {
-        for (int j=0; j < vAlignmentStrings.size(); j++)
+        for (int j=0; j < verticalAlignmentmentStrings.size(); j++)
         {
-            QString componentStr = "Text { vAlign: \"" + vAlignmentStrings.at(j) + "\"; text: \"" + standard.at(i) + "\" }";
-            QmlComponent textComponent(&engine, componentStr.toLatin1());
+            QString componentStr = "import Qt 4.6\nText { verticalAlignment: \"" + verticalAlignmentmentStrings.at(j) + "\"; text: \"" + standard.at(i) + "\" }";
+            QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
-            QCOMPARE((int)textObject->vAlign(), (int)vAlignments.at(j));
+            QCOMPARE((int)textObject->vAlign(), (int)verticalAlignmentments.at(j));
         }
     }
 
     for (int i = 0; i < richText.size(); i++)
     {
-        for (int j=0; j < vAlignmentStrings.size(); j++)
+        for (int j=0; j < verticalAlignmentmentStrings.size(); j++)
         {
-            QString componentStr = "Text { vAlign: \"" + vAlignmentStrings.at(j) + "\"; text: \"" + richText.at(i) + "\" }";
-            QmlComponent textComponent(&engine, componentStr.toLatin1());
+            QString componentStr = "import Qt 4.6\nText { verticalAlignment: \"" + verticalAlignmentmentStrings.at(j) + "\"; text: \"" + richText.at(i) + "\" }";
+            QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
-            QCOMPARE((int)textObject->vAlign(), (int)vAlignments.at(j));
+            QCOMPARE((int)textObject->vAlign(), (int)verticalAlignmentments.at(j));
         }
     }
 
@@ -300,49 +300,49 @@ void tst_qfxtext::font()
 {
     //test size, then bold, then italic, then family
     { 
-        QString componentStr = "Text { font.size: 40; text: \"Hello World\" }";
-        QmlComponent textComponent(&engine, componentStr.toLatin1());
+        QString componentStr = "import Qt 4.6\nText { font.pointSize: 40; text: \"Hello World\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
-        QCOMPARE(textObject->font()->size(), qreal(40));
-        QCOMPARE(textObject->font()->bold(), false);
-        QCOMPARE(textObject->font()->italic(), false);
+        QCOMPARE(textObject->font().pointSize(), 40);
+        QCOMPARE(textObject->font().bold(), false);
+        QCOMPARE(textObject->font().italic(), false);
     }
 
     { 
-        QString componentStr = "Text { font.bold: true; text: \"Hello World\" }";
-        QmlComponent textComponent(&engine, componentStr.toLatin1());
+        QString componentStr = "import Qt 4.6\nText { font.bold: true; text: \"Hello World\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
-        QCOMPARE(textObject->font()->bold(), true);
-        QCOMPARE(textObject->font()->italic(), false);
+        QCOMPARE(textObject->font().bold(), true);
+        QCOMPARE(textObject->font().italic(), false);
     }
 
     { 
-        QString componentStr = "Text { font.italic: true; text: \"Hello World\" }";
-        QmlComponent textComponent(&engine, componentStr.toLatin1());
+        QString componentStr = "import Qt 4.6\nText { font.italic: true; text: \"Hello World\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
-        QCOMPARE(textObject->font()->italic(), true);
-        QCOMPARE(textObject->font()->bold(), false);
-    }
- 
-    { 
-        QString componentStr = "Text { font.family: \"Helvetica\"; text: \"Hello World\" }";
-        QmlComponent textComponent(&engine, componentStr.toLatin1());
-        QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
-
-        QCOMPARE(textObject->font()->family(), QString("Helvetica"));
-        QCOMPARE(textObject->font()->bold(), false);
-        QCOMPARE(textObject->font()->italic(), false);
+        QCOMPARE(textObject->font().italic(), true);
+        QCOMPARE(textObject->font().bold(), false);
     }
 
     { 
-        QString componentStr = "Text { font.family: \"\"; text: \"Hello World\" }";
-        QmlComponent textComponent(&engine, componentStr.toLatin1());
+        QString componentStr = "import Qt 4.6\nText { font.family: \"Helvetica\"; text: \"Hello World\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
-        QCOMPARE(textObject->font()->family(), QString(""));
+        QCOMPARE(textObject->font().family(), QString("Helvetica"));
+        QCOMPARE(textObject->font().bold(), false);
+        QCOMPARE(textObject->font().italic(), false);
+    }
+
+    { 
+        QString componentStr = "import Qt 4.6\nText { font.family: \"\"; text: \"Hello World\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
+        QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
+
+        QCOMPARE(textObject->font().family(), QString(""));
     }
 }
 
@@ -351,8 +351,8 @@ void tst_qfxtext::style()
     //test style
     for (int i = 0; i < styles.size(); i++)
     { 
-        QString componentStr = "Text { style: \"" + styleStrings.at(i) + "\"; text: \"Hello World\" }";
-        QmlComponent textComponent(&engine, componentStr.toLatin1());
+        QString componentStr = "import Qt 4.6\nText { style: \"" + styleStrings.at(i) + "\"; text: \"Hello World\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
         QCOMPARE((int)textObject->style(), (int)styles.at(i));
@@ -365,8 +365,8 @@ void tst_qfxtext::color()
     //test style
     for (int i = 0; i < colorStrings.size(); i++)
     { 
-        QString componentStr = "Text { color: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
-        QmlComponent textComponent(&engine, componentStr.toLatin1());
+        QString componentStr = "import Qt 4.6\nText { color: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
         QCOMPARE(textObject->color(), QColor(colorStrings.at(i)));
@@ -375,8 +375,8 @@ void tst_qfxtext::color()
 
     for (int i = 0; i < colorStrings.size(); i++)
     { 
-        QString componentStr = "Text { styleColor: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
-        QmlComponent textComponent(&engine, componentStr.toLatin1());
+        QString componentStr = "import Qt 4.6\nText { styleColor: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
         QCOMPARE(textObject->styleColor(), QColor(colorStrings.at(i)));
@@ -388,8 +388,8 @@ void tst_qfxtext::color()
     { 
         for (int j = 0; j < colorStrings.size(); j++)
         {
-            QString componentStr = "Text { color: \"" + colorStrings.at(i) + "\"; styleColor: \"" + colorStrings.at(j) + "\"; text: \"Hello World\" }";
-            QmlComponent textComponent(&engine, componentStr.toLatin1());
+            QString componentStr = "import Qt 4.6\nText { color: \"" + colorStrings.at(i) + "\"; styleColor: \"" + colorStrings.at(j) + "\"; text: \"Hello World\" }";
+            QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
             QCOMPARE(textObject->color(), QColor(colorStrings.at(i)));
@@ -401,8 +401,8 @@ void tst_qfxtext::color()
         QColor testColor("#001234");
         testColor.setAlpha(170);
 
-        QString componentStr = "Text { color: \"" + colorStr + "\"; text: \"Hello World\" }";
-        QmlComponent textComponent(&engine, componentStr.toLatin1());
+        QString componentStr = "import Qt 4.6\nText { color: \"" + colorStr + "\"; text: \"Hello World\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
         QFxText *textObject = qobject_cast<QFxText*>(textComponent.create());
 
         QCOMPARE(textObject->color(), testColor);

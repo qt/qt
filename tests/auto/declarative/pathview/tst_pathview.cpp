@@ -117,7 +117,7 @@ void tst_QFxPathView::items()
     QFxPathView *pathview = findItem<QFxPathView>(canvas->root(), "view");
     QVERIFY(pathview != 0);
 
-    QCOMPARE(pathview->children()->count(), model.count()); // assumes all are visible
+    QCOMPARE(pathview->childItems().count(), model.count()); // assumes all are visible
 
     for (int i = 0; i < model.count(); ++i) {
         QFxText *name = findItem<QFxText>(pathview, "textName", i);
@@ -234,8 +234,10 @@ template<typename T>
 T *tst_QFxPathView::findItem(QFxItem *parent, const QString &objectName, int index)
 {
     const QMetaObject &mo = T::staticMetaObject;
-    for (int i = 0; i < parent->children()->count(); ++i) {
-        QFxItem *item = parent->children()->at(i);
+    for (int i = 0; i < parent->children().count(); ++i) {
+        QFxItem *item = qobject_cast<QFxItem*>(parent->children().at(i));
+        if(!item)
+            continue;
         if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
             if (index != -1) {
                 QmlExpression e(qmlContext(item), "index", item);
