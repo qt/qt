@@ -652,7 +652,7 @@ QGLFramebufferObject::QGLFramebufferObject(const QSize &size, QMacCompatGLenum t
     : d_ptr(new QGLFramebufferObjectPrivate)
 {
     Q_D(QGLFramebufferObject);
-    d->init(size, NoAttachment, target, DEFAULT_FORMAT);
+    d->init(this, size, NoAttachment, target, DEFAULT_FORMAT);
 }
 #endif
 
