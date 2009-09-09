@@ -130,7 +130,8 @@ protected:
 private:
     Q_DISABLE_COPY(QGLFramebufferObject)
     QScopedPointer<QGLFramebufferObjectPrivate> d_ptr;
-    friend class QGLDrawable;
+    friend class QGLPaintDevice;
+    friend class QGLFBOGLPaintDevice;
 };
 
 class QGLFramebufferObjectFormatPrivate;
@@ -158,6 +159,9 @@ public:
     void setTextureTarget(QMacCompatGLenum target);
     void setInternalTextureFormat(QMacCompatGLenum internalTextureFormat);
 #endif
+
+    bool operator==(const QGLFramebufferObjectFormat& other) const;
+    bool operator!=(const QGLFramebufferObjectFormat& other) const;
 
 private:
     QGLFramebufferObjectFormatPrivate *d;

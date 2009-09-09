@@ -1130,10 +1130,10 @@ void QRenderRule::drawBorderImage(QPainter *p, const QRect& rect)
     const QStyleSheetBorderImageData *borderImageData = border()->borderImage();
     const int *targetBorders = border()->borders;
     const int *sourceBorders = borderImageData->cuts;
-    QMargins sourceMargins(sourceBorders[TopEdge], sourceBorders[LeftEdge],
-                           sourceBorders[BottomEdge], sourceBorders[RightEdge]);
-    QMargins targetMargins(targetBorders[TopEdge], targetBorders[LeftEdge],
-                           targetBorders[BottomEdge], targetBorders[RightEdge]);
+    QMargins sourceMargins(sourceBorders[LeftEdge], sourceBorders[TopEdge],
+                           sourceBorders[RightEdge], sourceBorders[BottomEdge]);
+    QMargins targetMargins(targetBorders[LeftEdge], targetBorders[TopEdge],
+                           targetBorders[RightEdge], targetBorders[BottomEdge]);
 
     bool wasSmoothPixmapTransform = p->renderHints() & QPainter::SmoothPixmapTransform;
     p->setRenderHint(QPainter::SmoothPixmapTransform);

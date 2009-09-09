@@ -121,6 +121,7 @@ class Q_CORE_EXPORT QWindowsPipeWriter : public QThread
 
 Q_SIGNALS:
     void canWrite();
+    void bytesWritten(qint64 bytes);
 
 public:
     QWindowsPipeWriter(HANDLE writePipe, QObject * parent = 0);

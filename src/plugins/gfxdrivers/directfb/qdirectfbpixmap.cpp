@@ -330,17 +330,17 @@ bool QDirectFBPixmapData::fromDataBufferDescription(const DFBDataBufferDescripti
 
 #endif
 
-void QDirectFBPixmapData::fromImage(const QImage &image,
+void QDirectFBPixmapData::fromImage(const QImage &img,
                                     Qt::ImageConversionFlags flags)
 {
-    if (image.depth() == 1) {
-        fromImage(image.convertToFormat(screen->alphaPixmapFormat()), flags);
+    if (img.depth() == 1) {
+        fromImage(img.convertToFormat(screen->alphaPixmapFormat()), flags);
         return;
     }
 
-    if (image.hasAlphaChannel()
+    if (img.hasAlphaChannel()
 #ifndef QT_NO_DIRECTFB_OPAQUE_DETECTION
-        && (flags & Qt::NoOpaqueDetection || QDirectFBPixmapData::hasAlphaChannel(image))
+        && (flags & Qt::NoOpaqueDetection || QDirectFBPixmapData::hasAlphaChannel(img))
 #endif
         ) {
         alpha = true;
@@ -349,13 +349,37 @@ void QDirectFBPixmapData::fromImage(const QImage &image,
         alpha = false;
         imageFormat = screen->pixelFormat();
     }
+    QImage image;
+    if (flags != Qt::AutoColor) {
+        image = img.convertToFormat(imageFormat, flags);
+        flags = Qt::AutoColor;
+    } else {
+        image = img;
+    }
 
-    dfbSurface = screen->createDFBSurface(image, imageFormat, QDirectFBScreen::TrackSurface|QDirectFBScreen::NoPreallocated);
+    IDirectFBSurface *imageSurface = screen->createDFBSurface(image, image.format(), QDirectFBScreen::DontTrackSurface);
+    if (!imageSurface) {
+        qWarning("QDirectFBPixmapData::fromImage()");
+        invalidate();
+        return;
+    }
+
+    dfbSurface = screen->createDFBSurface(image.size(), imageFormat, QDirectFBScreen::TrackSurface);
     if (!dfbSurface) {
         qWarning("QDirectFBPixmapData::fromImage()");
         invalidate();
         return;
     }
+
+    if (image.hasAlphaChannel()) {
+        dfbSurface->Clear(dfbSurface, 0, 0, 0, 0);
+        dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_BLEND_ALPHACHANNEL);
+    } else {
+        dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_NOFX);
+    }
+    dfbSurface->Blit(dfbSurface, imageSurface, 0, 0, 0);
+    imageSurface->Release(imageSurface);
+
     w = image.width();
     h = image.height();
     is_null = (w <= 0 || h <= 0);

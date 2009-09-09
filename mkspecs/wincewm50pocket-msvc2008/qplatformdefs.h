@@ -39,5 +39,5 @@
 **
 ****************************************************************************/
 
-#include "../wincewm50pocket-msvc2005/qplatformdefs.h"
+#include "../common/wince/qplatformdefs.h"
 
