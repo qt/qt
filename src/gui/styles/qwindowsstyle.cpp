@@ -1770,8 +1770,6 @@ case PE_FrameDockWidget:
 #endif // QT_NO_PROGRESSBAR
 
     case PE_FrameTabWidget: {
-        QRect rect = opt->rect;
-        QPalette pal = opt->palette;
         qDrawWinButton(p, opt->rect, opt->palette, false, 0);
         break;
     }

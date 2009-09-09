@@ -117,7 +117,7 @@ private:
     static void checkAndUnCompressBitmap(CFbsBitmap*& aOriginalBitmap);
     static void unCompressBitmapL(const TRect& aTrgRect, CFbsBitmap* aTrgBitmap, CFbsBitmap* aSrcBitmap);
     static void colorGroupAndIndex(QS60StyleEnums::SkinParts skinID,
-        TAknsItemID &colorGroup, int colorIndex);
+        TAknsItemID &colorGroup, int &colorIndex);
     static void fallbackInfo(const QS60StyleEnums::SkinParts &stylepart, TDes& fallbackFileName, TInt& fallbackIndex);
     static bool checkSupport(const int supportedRelease);
     static TAknsItemID checkAndUpdateReleaseSpecificGraphics(int part);
@@ -1016,7 +1016,7 @@ QS60StylePrivate::QS60StylePrivate()
 
 void QS60StylePrivate::setStyleProperty_specific(const char *name, const QVariant &value)
 {
-    if (name == QLatin1String("foo")) {
+    if (QLatin1String(name) == QLatin1String("foo")) {
         // BaR
     } else {
         setStyleProperty(name, value);
@@ -1025,7 +1025,7 @@ void QS60StylePrivate::setStyleProperty_specific(const char *name, const QVarian
 
 QVariant QS60StylePrivate::styleProperty_specific(const char *name) const
 {
-    if (name == QLatin1String("foo"))
+    if (QLatin1String(name) == QLatin1String("foo"))
         return QLatin1String("Bar");
     else
         return styleProperty(name);
@@ -1331,7 +1331,7 @@ QSize QS60StylePrivate::screenSize()
 }
 
 void QS60StyleModeSpecifics::colorGroupAndIndex(
-    QS60StyleEnums::SkinParts skinID, TAknsItemID &colorGroup, int colorIndex)
+    QS60StyleEnums::SkinParts skinID, TAknsItemID &colorGroup, int &colorIndex)
 {
     switch(skinID) {
         case QS60StyleEnums::SP_QgnIndiSubMenu:

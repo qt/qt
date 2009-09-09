@@ -51,7 +51,6 @@
 #include <private/qt_x11_p.h>
 #endif
 
-
 static void sendMouseMove(QWidget *widget, const QPoint &point, Qt::MouseButton button = Qt::NoButton)
 {
     QMouseEvent event(QEvent::MouseMove, point, widget->mapToGlobal(point), button, button, 0);
@@ -953,6 +952,8 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
 
     QGraphicsScene scene;
     QGraphicsView view(&scene);
+    //do not let the window manager move the window while we are moving the mouse on it
+    view.setWindowFlags(Qt::X11BypassWindowManagerHint);
     view.show();
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
@@ -975,7 +976,7 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
     // in
     QTest::mouseMove(&view, QPoint(50, 50));
     QTest::qWait(250);
-    // QTRY_COMPARE(widget->testAttribute(Qt::WA_UnderMouse), hasWidget ? true : false);
+    QTRY_COMPARE(widget->testAttribute(Qt::WA_UnderMouse), hasWidget ? true : false);
     // ### this attribute isn't supported
     QCOMPARE(widget->enterCount, hasWidget ? 1 : 0);
     QCOMPARE(widget->hoverEnter, (hasWidget && hoverEnabled) ? 1 : 0);
@@ -1288,7 +1289,7 @@ void tst_QGraphicsProxyWidget::paintEvent()
 
     w->update();
     QTest::qWait(100);
-    QCOMPARE(proxy.paintCount, 1); //the widget should have been painted now
+    QTRY_COMPARE(proxy.paintCount, 1); //the widget should have been painted now
 }
 
 
@@ -1481,8 +1482,8 @@ void tst_QGraphicsProxyWidget::scrollUpdate()
     view.paintEventRegion = QRegion();
     view.npaints = 0;
     QTimer::singleShot(0, widget, SLOT(updateScroll()));
-    QTest::qWait(500);
-    QCOMPARE(view.npaints, 2);
+    QTest::qWait(50);
+    QTRY_COMPARE(view.npaints, 2);
     // QRect(0, 0, 200, 12) is the first update, expanded (-2, -2, 2, 2)
     // QRect(0, 12, 102, 10) is the scroll update, expanded (-2, -2, 2, 2),
     // intersected with the above update.

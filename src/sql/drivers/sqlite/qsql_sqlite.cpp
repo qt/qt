@@ -707,6 +707,7 @@ QVariant QSQLiteDriver::handle() const
 
 QString QSQLiteDriver::escapeIdentifier(const QString &identifier, IdentifierType type) const
 {
+    Q_UNUSED(type);
     return _q_escapeIdentifier(identifier);
 }
 

@@ -66,6 +66,8 @@
 #include <QtGui/QInputContext>
 #include <private/qgraphicsview_p.h>
 
+#include "../../shared/util.h"
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -1383,7 +1385,7 @@ void tst_QGraphicsView::itemsInRect_cosmeticAdjust()
     else
         view.viewport()->update(updateRect);
     qApp->processEvents();
-    QCOMPARE(rect->numPaints, numPaints);
+    QTRY_COMPARE(rect->numPaints, numPaints);
 }
 
 void tst_QGraphicsView::itemsInPoly()
@@ -2171,18 +2173,16 @@ void tst_QGraphicsView::viewportUpdateMode()
     qt_x11_wait_for_window_manager(&view);
 #endif
     QTest::qWait(50);
+    QTRY_VERIFY(!view.lastUpdateRegions.isEmpty());
     view.lastUpdateRegions.clear();
 
     // Issue two scene updates.
     scene.update(QRectF(0, 0, 10, 10));
     scene.update(QRectF(20, 0, 10, 10));
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
     QTest::qWait(50);
 
     // The view gets two updates for the update scene updates.
-    QVERIFY(!view.lastUpdateRegions.isEmpty());
+    QTRY_VERIFY(!view.lastUpdateRegions.isEmpty());
     QCOMPARE(view.lastUpdateRegions.last().rects().size(), 2);
     QCOMPARE(view.lastUpdateRegions.last().rects().at(0).size(), QSize(15, 15));
     QCOMPARE(view.lastUpdateRegions.last().rects().at(1).size(), QSize(15, 15));
@@ -2433,7 +2433,7 @@ void tst_QGraphicsView::optimizationFlags_dontSavePainterState()
 class LodItem : public QGraphicsRectItem
 {
 public:
-    LodItem(const QRectF &rect) : QGraphicsRectItem(rect), lastLod(1)
+    LodItem(const QRectF &rect) : QGraphicsRectItem(rect), lastLod(-42)
     { }
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *viewport)
@@ -2485,7 +2485,7 @@ void tst_QGraphicsView::levelOfDetail()
 #endif
     QTest::qWait(50);
 
-    QCOMPARE(item->lastLod, qreal(1));
+    QTRY_COMPARE(item->lastLod, qreal(1));
 
     view.setTransform(transform);
 
@@ -2494,7 +2494,7 @@ void tst_QGraphicsView::levelOfDetail()
 #endif
     QTest::qWait(50);
 
-    QCOMPARE(item->lastLod, lod);
+    QTRY_COMPARE(item->lastLod, lod);
 }
 
 // Moved to tst_qgraphicsview_2.cpp
@@ -2695,10 +2695,13 @@ void tst_QGraphicsView::task172231_untransformableItems()
 
     view.scale(2, 1);
     view.show();
-#ifdef Q_WS_X11
+    QApplication::setActiveWindow(&view);
+#if defined(Q_WS_X11)
     qt_x11_wait_for_window_manager(&view);
 #endif
     QTest::qWait(50);
+    QTRY_COMPARE(QApplication::activeWindow(), &view);
+
     QRectF origExposedRect = text->exposedRect;
 
     view.resize(int(0.75 * view.width()), view.height());
@@ -2840,14 +2843,14 @@ void tst_QGraphicsView::task207546_focusCrash()
     widget.layout()->addWidget(gr1);
     widget.layout()->addWidget(gr2);
     widget.show();
-#if defined(Q_OS_IRIX)
-    QTest::qWait(200);
+    QTest::qWait(20);
     widget.activateWindow();
-    QTest::qWait(200);
-#elif defined(Q_WS_X11)
+    QApplication::setActiveWindow(&widget);
+#if defined(Q_WS_X11)
     qt_x11_wait_for_window_manager(&widget);
 #endif
     QTest::qWait(50);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&widget));
     widget.focusNextPrevChild(true);
     QCOMPARE(static_cast<QWidget *>(gr2), widget.focusWidget());
 }
@@ -3187,7 +3190,8 @@ void tst_QGraphicsView::centerOnDirtyItem()
 #endif
     QTest::qWait(50);
 
-    QPixmap before = QPixmap::grabWindow(view.viewport()->winId());
+    QImage before(view.viewport()->size(), QImage::Format_ARGB32);
+    view.viewport()->render(&before);
 
     item->setPos(20, 0);
     view.centerOn(item);
@@ -3197,7 +3201,8 @@ void tst_QGraphicsView::centerOnDirtyItem()
 #endif
     QTest::qWait(50);
 
-    QPixmap after = QPixmap::grabWindow(view.viewport()->winId());
+    QImage after(view.viewport()->size(), QImage::Format_ARGB32);
+    view.viewport()->render(&after);
 
     QCOMPARE(before, after);
 }
@@ -3470,6 +3475,10 @@ void tst_QGraphicsView::update()
     QCOMPARE(viewportRect, QRect(0, 0, 200, 200));
 
 #if defined QT_BUILD_INTERNAL
+    QApplication::setActiveWindow(&view);
+    QTest::qWait(50);
+    QTRY_COMPARE(QApplication::activeWindow(), &view);
+
     const bool intersects = updateRect.intersects(viewportRect);
     QGraphicsViewPrivate *viewPrivate = static_cast<QGraphicsViewPrivate *>(qt_widget_private(&view));
     QCOMPARE(viewPrivate->updateRect(updateRect), intersects);

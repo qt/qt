@@ -797,7 +797,7 @@ QLocale QSystemLocale::fallbackLocale() const
     }
 
     TLanguage lang = User::Language();
-    QString locale = qt_symbianLocaleName(lang);
+    QString locale = QLatin1String(qt_symbianLocaleName(lang));
     return QLocale(locale);
 }
 
@@ -853,7 +853,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         case LanguageId:
         case CountryId: {
                 TLanguage language = User::Language();
-                QString locale = qt_symbianLocaleName(language);
+                QString locale = QLatin1String(qt_symbianLocaleName(language));
                 QLocale::Language lang;
                 QLocale::Country cntry;
                 getLangAndCountry(locale, lang, cntry);

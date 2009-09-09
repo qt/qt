@@ -1360,6 +1360,9 @@ bool operator!=(const QGLFormat& a, const QGLFormat& b)
  *****************************************************************************/
 QGLContextPrivate::~QGLContextPrivate()
 {
+    if (!reference->deref())
+        delete reference;
+
     if (!group->m_refs.deref()) {
         Q_ASSERT(group->context() == q_ptr);
         delete group;
@@ -5005,6 +5008,32 @@ void QGLContextResource::removeOne(const QGLContext *key)
             oldContext->makeCurrent();
     }
     m_resources.erase(it);
+}
+
+QGLContextReference::QGLContextReference(const QGLContext *ctx)
+    : m_ref(1), m_ctx(ctx)
+{
+    connect(QGLSignalProxy::instance(),
+            SIGNAL(aboutToDestroyContext(const QGLContext *)),
+            this, SLOT(aboutToDestroyContext(const QGLContext *)));
+}
+
+void QGLContextReference::aboutToDestroyContext(const QGLContext *ctx)
+{
+    // Bail out if our context is not being destroyed.
+    if (ctx != m_ctx || !m_ctx)
+        return;
+
+    // Find some other context that this one is shared with to take over.
+    QList<const QGLContext *> shares = qgl_share_reg()->shares(m_ctx);
+    shares.removeAll(m_ctx);
+    if (!shares.isEmpty()) {
+        m_ctx = shares[0];
+        return;
+    }
+
+    // No more contexts sharing with this one, so the reference is now invalid.
+    m_ctx = 0;
 }
 
 QT_END_NAMESPACE

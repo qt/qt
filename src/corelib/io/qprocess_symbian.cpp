@@ -62,6 +62,7 @@
 #include <stdio.h>
 #include "qplatformdefs.h"
 
+#include "qdir.h"
 #include "qstring.h"
 #include "qprocess.h"
 #include "qprocess_p.h"
@@ -261,8 +262,8 @@ static TInt qt_create_symbian_process(RProcess **proc, const QString &programNam
 
     if (err == KErrNotFound) {
         // Strip path from program name and try again (i.e. try from default location "\sys\bin")
-        int index = programName.lastIndexOf(QChar('\\'));
-        int index2 = programName.lastIndexOf(QChar('/'));
+        int index = programName.lastIndexOf(QDir::separator());
+        int index2 = programName.lastIndexOf(QChar(QLatin1Char('/')));
         index = qMax(index, index2);
 
         if (index != -1 && programName.length() >= index) {
