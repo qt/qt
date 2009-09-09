@@ -74,9 +74,9 @@ public:
 class QSpontaneKeyEvent
 {
 public:
-    void setSpontaneous() { spont = 1; };
-    bool spontaneous() { return spont; };
-    virtual void dummyFunc() {  };
+    void setSpontaneous() { spont = 1; }
+    bool spontaneous() { return spont; }
+    virtual void dummyFunc() {}
     virtual ~QSpontaneKeyEvent() {}
 
 #ifndef QTEST_NO_SIZEOF_CHECK

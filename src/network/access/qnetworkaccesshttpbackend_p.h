@@ -95,7 +95,7 @@ public:
     qint64 deviceReadData(char *buffer, qint64 maxlen);
 
     // we return true since HTTP needs to send PUT/POST data again after having authenticated
-    bool needsResetableUploadData() {return true;};
+    bool needsResetableUploadData() { return true; }
 
 private slots:
     void replyReadyRead();

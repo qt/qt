@@ -116,7 +116,7 @@ public:
     static QByteArray encodeName(const QString &fileName);
     static QString decodeName(const QByteArray &localFileName);
     inline static QString decodeName(const char *localFileName)
-        { return decodeName(QByteArray(localFileName)); };
+        { return decodeName(QByteArray(localFileName)); }
     static void setEncodingFunction(EncoderFn);
     static void setDecodingFunction(DecoderFn);
 
