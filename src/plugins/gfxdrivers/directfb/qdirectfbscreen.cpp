@@ -1202,7 +1202,7 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
                       "Unable to get screen!", result);
         return false;
     }
-    const QString qws_size = qgetenv("QWS_SIZE");
+    const QString qws_size = QString::fromLatin1(qgetenv("QWS_SIZE"));
     if (!qws_size.isEmpty()) {
         QRegExp rx(QLatin1String("(\\d+)x(\\d+)"));
         if (!rx.exactMatch(qws_size)) {
