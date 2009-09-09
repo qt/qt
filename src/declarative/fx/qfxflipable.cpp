@@ -146,7 +146,7 @@ void QFxFlipable::setFront(QFxItem *front)
         return;
     }
     d->front = front;
-    children()->append(d->front);
+    fxChildren()->append(d->front);
     if (Back == d->current)
         d->front->setOpacity(0.);
 }
@@ -165,7 +165,7 @@ void QFxFlipable::setBack(QFxItem *back)
         return;
     }
     d->back = back;
-    children()->append(d->back);
+    fxChildren()->append(d->back);
     if (Front == d->current)
         d->back->setOpacity(0.);
 }
