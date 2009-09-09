@@ -1537,8 +1537,7 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
     QPoint offset = d->offset();
     if ((command & QItemSelectionModel::Current) == 0)
         d->pressedPosition = pos + offset;
-
-    if (d->pressedPosition == QPoint(-1, -1))
+    else if (!indexAt(d->pressedPosition).isValid())
         d->pressedPosition = visualRect(currentIndex()).center() + offset;
 
     if (edit(index, NoEditTriggers, event))
@@ -1661,6 +1660,10 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
     bool selectedClicked = click && (event->button() & Qt::LeftButton) && d->pressedAlreadySelected;
     EditTrigger trigger = (selectedClicked ? SelectedClicked : NoEditTriggers);
     bool edited = edit(index, trigger, event);
+
+    //in the case the user presses on no item we might decide to clear the selection
+    if (d->selectionModel && !index.isValid())
+        d->selectionModel->select(QModelIndex(), selectionCommand(index, event));
 
     setState(NoState);
 
@@ -2089,8 +2092,8 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
             // note that we don't check if the new current index is enabled because moveCursor() makes sure it is
             if (command & QItemSelectionModel::Current) {
                 d->selectionModel->setCurrentIndex(newCurrent, QItemSelectionModel::NoUpdate);
-                if (d->pressedPosition == QPoint(-1, -1))
-                    d->pressedPosition = visualRect(oldCurrent).center();
+                if (!indexAt(d->pressedPosition).isValid())
+                    d->pressedPosition = visualRect(oldCurrent).center() + d->offset();
                 QRect rect(d->pressedPosition - d->offset(), visualRect(newCurrent).center());
                 setSelection(rect, command);
             } else {

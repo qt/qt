@@ -1372,7 +1372,7 @@ inline void qt_noop() {}
 #ifdef QT_BOOTSTRAPPED
 #  define QT_NO_EXCEPTIONS
 #endif
-#if defined(Q_CC_GNU) && !defined (__EXCEPTIONS)
+#if !defined(QT_NO_EXCEPTIONS) && defined(Q_CC_GNU) && !defined (__EXCEPTIONS) && !defined(Q_MOC_RUN)
 #  define QT_NO_EXCEPTIONS
 #endif
 
@@ -2172,7 +2172,7 @@ public:
 
     inline bool operator!() const { return !i; }
 
-    inline bool testFlag(Enum f) const { return (i & f) == f && (f != 0 || i == f ); }
+    inline bool testFlag(Enum f) const { return (i & f) == f && (f != 0 || i == int(f) ); }
 };
 
 #define Q_DECLARE_FLAGS(Flags, Enum)\

@@ -174,6 +174,12 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
                     VME_EXCEPTION("Unable to create object of type" << types.at(instr.create.type).className);
                 }
 
+                QmlDeclarativeData *ddata = QmlDeclarativeData::get(o);
+                Q_ASSERT(ddata);
+                ddata->outerContext = ctxt;
+                ddata->lineNumber = instr.line;
+                ddata->columnNumber = instr.create.column;
+
                 if (instr.create.data != -1) {
                     QmlCustomParser *customParser =
                         types.at(instr.create.type).type->customParser();
@@ -216,6 +222,14 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
         case QmlInstruction::CreateComponent:
             {
                 QObject *qcomp = new QmlComponent(ctxt->engine(), comp, ii + 1, instr.createComponent.count, stack.isEmpty() ? 0 : stack.top());
+
+                QmlEngine::setContextForObject(qcomp, ctxt);
+                QmlDeclarativeData *ddata = QmlDeclarativeData::get(qcomp);
+                Q_ASSERT(ddata);
+                ddata->outerContext = ctxt;
+                ddata->lineNumber = instr.line;
+                ddata->columnNumber = instr.create.column;
+
                 stack.push(qcomp);
                 ii += instr.createComponent.count;
             }

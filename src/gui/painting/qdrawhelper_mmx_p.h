@@ -65,7 +65,7 @@
 #define C_80 const m64 mmx_0x0080 = _mm_set1_pi16(0x80)
 #define C_00 const m64 mmx_0x0000 = _mm_setzero_si64()
 
-#if defined(Q_OS_WIN)
+#ifdef Q_CC_MSVC
 #  pragma warning(disable: 4799) // No EMMS at end of function
 #endif
 

@@ -72,10 +72,10 @@
 #define MMP_TARGETTYPE "TARGETTYPE"
 #define MMP_SECUREID "SECUREID"
 
-#define SISX_TARGET "sisx"
-#define OK_SISX_TARGET "ok_sisx"
-#define FAIL_SISX_NOPKG_TARGET "fail_sisx_nopkg"
-#define FAIL_SISX_NOCACHE_TARGET "fail_sisx_nocache"
+#define SIS_TARGET "sis"
+#define OK_SIS_TARGET "ok_sis"
+#define FAIL_SIS_NOPKG_TARGET "fail_sis_nopkg"
+#define FAIL_SIS_NOCACHE_TARGET "fail_sis_nocache"
 #define RESTORE_BUILD_TARGET "restore_build"
 
 #define PRINT_FILE_CREATE_ERROR(filename) fprintf(stderr, "Error: Could not create '%s'\n", qPrintable(filename));
@@ -329,7 +329,7 @@ void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile)
         t << ":\"Vendor\"" << endl << endl;
     }
 
-    // PKG pre-rules - these are added before actual file installations i.e. SISX package body
+    // PKG pre-rules - these are added before actual file installations i.e. SIS package body
     if (rawPkgPreRules.size()) {
         t << "; Manual PKG pre-rules from PRO files" << endl;
         foreach(QString item, rawPkgPreRules) {
@@ -1632,36 +1632,36 @@ void SymbianMakefileGenerator::removeSpecialCharacters(QString& str)
     str.replace(QString(" "), QString("_"));
 }
 
-void SymbianMakefileGenerator::writeSisxTargets(QTextStream &t)
+void SymbianMakefileGenerator::writeSisTargets(QTextStream &t)
 {
-    t << SISX_TARGET ": " RESTORE_BUILD_TARGET << endl;
-    QString sisxcommand = QString("\t$(if $(wildcard %1_template.%2),$(if $(wildcard %3)," \
+    t << SIS_TARGET ": " RESTORE_BUILD_TARGET << endl;
+    QString siscommand = QString("\t$(if $(wildcard %1_template.%2),$(if $(wildcard %3)," \
                                   "$(MAKE) -s -f $(MAKEFILE) %4,$(MAKE) -s -f $(MAKEFILE) %5)," \
                                   "$(MAKE) -s -f $(MAKEFILE) %6)")
                           .arg(fixedTarget)
                           .arg("pkg")
                           .arg(MAKE_CACHE_NAME)
-                          .arg(OK_SISX_TARGET)
-                          .arg(FAIL_SISX_NOCACHE_TARGET)
-                          .arg(FAIL_SISX_NOPKG_TARGET);    
-    t << sisxcommand << endl;         
+                          .arg(OK_SIS_TARGET)
+                          .arg(FAIL_SIS_NOCACHE_TARGET)
+                          .arg(FAIL_SIS_NOPKG_TARGET);    
+    t << siscommand << endl;         
     t << endl;
 
-    t << OK_SISX_TARGET ":" << endl;
+    t << OK_SIS_TARGET ":" << endl;
 
-    QString pkgcommand = QString("\tcreatepackage.bat $(QT_SISX_OPTIONS) %1_template.%2 $(QT_SISX_TARGET) " \
-                                 "$(QT_SISX_CERTIFICATE) $(QT_SISX_KEY) $(QT_SISX_PASSPHRASE)")
+    QString pkgcommand = QString("\tcreatepackage.bat $(QT_SIS_OPTIONS) %1_template.%2 $(QT_SIS_TARGET) " \
+                                 "$(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)")
                           .arg(fixedTarget)
                           .arg("pkg");
     t << pkgcommand << endl;
     t << endl;
     
-    t << FAIL_SISX_NOPKG_TARGET ":" << endl;  
-    t << "\t$(error PKG file does not exist, 'SISX' target is only supported for executables or projects with DEPLOYMENT statement)" << endl;  
+    t << FAIL_SIS_NOPKG_TARGET ":" << endl;  
+    t << "\t$(error PKG file does not exist, 'SIS' target is only supported for executables or projects with DEPLOYMENT statement)" << endl;  
     t << endl;
     
-    t << FAIL_SISX_NOCACHE_TARGET ":" << endl;  
-    t << "\t$(error Project has to be build before calling 'SISX' target)" << endl;  
+    t << FAIL_SIS_NOCACHE_TARGET ":" << endl;  
+    t << "\t$(error Project has to be build before calling 'SIS' target)" << endl;  
     t << endl;
     
 

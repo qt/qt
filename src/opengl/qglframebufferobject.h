@@ -93,7 +93,7 @@ public:
 
     virtual ~QGLFramebufferObject();
 
-    const QGLFramebufferObjectFormat &format() const;
+    QGLFramebufferObjectFormat format() const;
 
     bool isValid() const;
     bool isBound() const;
@@ -130,25 +130,15 @@ protected:
 private:
     Q_DISABLE_COPY(QGLFramebufferObject)
     QScopedPointer<QGLFramebufferObjectPrivate> d_ptr;
-    friend class QGLDrawable;
+    friend class QGLPaintDevice;
+    friend class QGLFBOGLPaintDevice;
 };
 
 class QGLFramebufferObjectFormatPrivate;
 class Q_OPENGL_EXPORT QGLFramebufferObjectFormat
 {
 public:
-#if !defined(QT_OPENGL_ES) || defined(Q_QDOC)
-    QGLFramebufferObjectFormat(int samples = 0,
-                               QGLFramebufferObject::Attachment attachment = QGLFramebufferObject::NoAttachment,
-                               GLenum target = GL_TEXTURE_2D,
-                               GLenum internalFormat = GL_RGBA8);
-#else
-    QGLFramebufferObjectFormat(int samples = 0,
-                               QGLFramebufferObject::Attachment attachment = QGLFramebufferObject::NoAttachment,
-                               GLenum target = GL_TEXTURE_2D,
-                               GLenum internalFormat = GL_RGBA);
-#endif
-
+    QGLFramebufferObjectFormat();
     QGLFramebufferObjectFormat(const QGLFramebufferObjectFormat &other);
     QGLFramebufferObjectFormat &operator=(const QGLFramebufferObjectFormat &other);
     ~QGLFramebufferObjectFormat();
@@ -162,11 +152,21 @@ public:
     void setTextureTarget(GLenum target);
     GLenum textureTarget() const;
 
-    void setInternalFormat(GLenum internalFormat);
-    GLenum internalFormat() const;
+    void setInternalTextureFormat(GLenum internalTextureFormat);
+    GLenum internalTextureFormat() const;
+
+#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
+    void setTextureTarget(QMacCompatGLenum target);
+    void setInternalTextureFormat(QMacCompatGLenum internalTextureFormat);
+#endif
+
+    bool operator==(const QGLFramebufferObjectFormat& other) const;
+    bool operator!=(const QGLFramebufferObjectFormat& other) const;
 
 private:
     QGLFramebufferObjectFormatPrivate *d;
+
+    void detach();
 };
 
 QT_END_NAMESPACE

@@ -72,6 +72,7 @@ public:
 
     ~QFxTextInputPrivate()
     {
+        delete control;
     }
 
     void init();

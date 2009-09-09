@@ -44,7 +44,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'translatedialog.ui'
 **
-** Created: Tue Aug 18 19:03:32 2009
+** Created: Fri Sep 4 10:17:15 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -248,7 +248,6 @@ public:
         cancel->setWhatsThis(QApplication::translate("TranslateDialog", "Click here to close this window.", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_WHATSTHIS
         cancel->setText(QApplication::translate("TranslateDialog", "Cancel", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(TranslateDialog);
     } // retranslateUi
 
 };

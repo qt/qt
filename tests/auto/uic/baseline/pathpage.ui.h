@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'pathpage.ui'
 **
-** Created: Tue Aug 18 19:03:31 2009
+** Created: Fri Sep 4 10:17:14 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -113,7 +113,6 @@ public:
         label->setText(QApplication::translate("PathPage", "Documentation source file paths:", 0, QApplication::UnicodeUTF8));
         addButton->setText(QApplication::translate("PathPage", "Add", 0, QApplication::UnicodeUTF8));
         removeButton->setText(QApplication::translate("PathPage", "Remove", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(PathPage);
     } // retranslateUi
 
 };

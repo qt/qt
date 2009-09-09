@@ -193,12 +193,12 @@ public:
           description(desc),
           selected(-1),
           selDescription(0),
-          parentItem(pi) {};
+          parentItem(pi) {}
 
     ~QOptionTreeItem() {
         while (!childItems.isEmpty())
             delete childItems.takeFirst();
-    };
+    }
 
     ItemType type;
     int index;
@@ -238,8 +238,8 @@ class QPPDOptionsEditor : public QStyledItemDelegate
 {
     Q_OBJECT
 public:
-    QPPDOptionsEditor(QObject* parent = 0) : QStyledItemDelegate(parent) {};
-    ~QPPDOptionsEditor() {};
+    QPPDOptionsEditor(QObject* parent = 0) : QStyledItemDelegate(parent) {}
+    ~QPPDOptionsEditor() {}
 
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const;
     void setEditorData(QWidget* editor, const QModelIndex& index) const;

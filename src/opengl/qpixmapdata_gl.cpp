@@ -80,12 +80,7 @@ QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize
     for (int i = 0; !chosen && i < m_fbos.size(); ++i) {
         QGLFramebufferObject *fbo = m_fbos.at(i);
 
-        QGLFramebufferObjectFormat format = fbo->format();
-        if (format.samples() == requestFormat.samples()
-            && format.attachment() == requestFormat.attachment()
-            && format.textureTarget() == requestFormat.textureTarget()
-            && format.internalFormat() == requestFormat.internalFormat())
-        {
+        if (fbo->format() == requestFormat) {
             // choose the fbo with a matching format and the closest size
             if (!candidate || areaDiff(requestSize, candidate) > areaDiff(requestSize, fbo))
                 candidate = fbo;
@@ -132,6 +127,76 @@ void QGLFramebufferObjectPool::release(QGLFramebufferObject *fbo)
     m_fbos << fbo;
 }
 
+
+QPaintEngine* QGLPixmapGLPaintDevice::paintEngine() const
+{
+    return data->paintEngine();
+}
+
+void QGLPixmapGLPaintDevice::beginPaint()
+{
+    if (!data->isValid())
+        return;
+
+    // QGLPaintDevice::beginPaint will store the current binding and replace
+    // it with m_thisFBO:
+    m_thisFBO = data->m_renderFbo->handle();
+    QGLPaintDevice::beginPaint();
+
+    Q_ASSERT(data->paintEngine()->type() == QPaintEngine::OpenGL2);
+
+    // QPixmap::fill() is deferred until now, where we actually need to do the fill:
+    if (data->needsFill()) {
+        const QColor &c = data->fillColor();
+        float alpha = c.alphaF();
+        glClearColor(c.redF() * alpha, c.greenF() * alpha, c.blueF() * alpha, alpha);
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+    else if (!data->isUninitialized()) {
+        // If the pixmap (GL Texture) has valid content (it has been
+        // uploaded from an image or rendered into before), we need to
+        // copy it from the texture to the render FBO.
+
+        // Pass false to tell bind to _not_ copy the FBO into the texture!
+        GLuint texId = data->bind(false);
+
+        QGL2PaintEngineEx* pe = static_cast<QGL2PaintEngineEx*>(data->paintEngine());
+        QRect rect(0, 0, data->width(), data->height());
+        pe->drawTexture(QRectF(rect), texId, rect.size(), QRectF(rect));
+    }
+}
+
+void QGLPixmapGLPaintDevice::endPaint()
+{
+    if (!data->isValid())
+        return;
+
+    data->copyBackFromRenderFbo(false);
+
+    data->m_renderFbo->release();
+    qgl_fbo_pool()->release(data->m_renderFbo);
+    data->m_renderFbo = 0;
+
+    // Base's endPaint will restore the previous FBO binding
+    QGLPaintDevice::endPaint();
+}
+
+QGLContext* QGLPixmapGLPaintDevice::context() const
+{
+    data->ensureCreated();
+    return data->m_ctx;
+}
+
+QSize QGLPixmapGLPaintDevice::size() const
+{
+    return data->size();
+}
+
+void QGLPixmapGLPaintDevice::setPixmapData(QGLPixmapData* d)
+{
+    data = d;
+}
+
 static int qt_gl_pixmap_serial = 0;
 
 QGLPixmapData::QGLPixmapData(PixelType type)
@@ -144,6 +209,7 @@ QGLPixmapData::QGLPixmapData(PixelType type)
     , m_hasAlpha(false)
 {
     setSerialNumber(++qt_gl_pixmap_serial);
+    m_glDevice.setPixmapData(this);
 }
 
 QGLPixmapData::~QGLPixmapData()
@@ -235,11 +301,6 @@ void QGLPixmapData::ensureCreated() const
     }
 
     m_texture.options &= ~QGLContext::MemoryManagedBindOption;
-}
-
-QGLFramebufferObject *QGLPixmapData::fbo() const
-{
-    return m_renderFbo;
 }
 
 void QGLPixmapData::fromImage(const QImage &image,
@@ -417,31 +478,6 @@ void QGLPixmapData::copyBackFromRenderFbo(bool keepCurrentFboBound) const
         glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->current_fbo);
 }
 
-void QGLPixmapData::swapBuffers()
-{
-    if (!isValid())
-        return;
-
-    copyBackFromRenderFbo(false);
-    m_renderFbo->release();
-
-    qgl_fbo_pool()->release(m_renderFbo);
-
-    m_renderFbo = 0;
-}
-
-void QGLPixmapData::makeCurrent()
-{
-    if (isValid() && m_renderFbo)
-        m_renderFbo->bind();
-}
-
-void QGLPixmapData::doneCurrent()
-{
-    if (isValid() && m_renderFbo)
-        m_renderFbo->release();
-}
-
 bool QGLPixmapData::useFramebufferObjects()
 {
     return QGLFramebufferObject::hasOpenGLFramebufferObjects()
@@ -467,7 +503,7 @@ QPaintEngine* QGLPixmapData::paintEngine() const
         QGLFramebufferObjectFormat format;
         format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
         format.setSamples(4);
-        format.setInternalFormat(m_hasAlpha ? GL_RGBA : GL_RGB);
+        format.setInternalTextureFormat(GLenum(m_hasAlpha ? GL_RGBA : GL_RGB));
 
         m_renderFbo = qgl_fbo_pool()->acquire(size(), format);
 
@@ -490,6 +526,10 @@ QPaintEngine* QGLPixmapData::paintEngine() const
     return m_source.paintEngine();
 }
 
+
+// If copyBack is true, bind will copy the contents of the render
+// FBO to the texture (which is not bound to the texture, as it's
+// a multisample FBO).
 GLuint QGLPixmapData::bind(bool copyBack) const
 {
     if (m_renderFbo && copyBack) {
@@ -507,12 +547,6 @@ GLuint QGLPixmapData::bind(bool copyBack) const
     GLuint id = m_texture.id;
     glBindTexture(GL_TEXTURE_2D, id);
     return id;
-}
-
-GLuint QGLPixmapData::textureId() const
-{
-    ensureCreated();
-    return m_texture.id;
 }
 
 QGLTexture* QGLPixmapData::texture() const
@@ -551,6 +585,11 @@ int QGLPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
         qWarning("QGLPixmapData::metric(): Invalid metric");
         return 0;
     }
+}
+
+QGLPaintDevice *QGLPixmapData::glDevice() const
+{
+    return &m_glDevice;
 }
 
 QT_END_NAMESPACE

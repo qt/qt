@@ -162,6 +162,9 @@ static bool qt_painter_thread_test(int devType, const char *what, bool extraCond
 void QPainterPrivate::checkEmulation()
 {
     Q_ASSERT(extended);
+    if (extended->flags() & QPaintEngineEx::DoNotEmulate)
+        return;
+
     bool doEmulation = false;
     if (state->bgMode == Qt::OpaqueMode)
         doEmulation = true;
@@ -1835,11 +1838,6 @@ bool QPainter::end()
         return true;
     }
 
-    if (d->states.size() > 1) {
-        qWarning("QPainter::end: Painter ended with %d saved states",
-                 d->states.size());
-    }
-
     bool ended = true;
 
     if (d->engine->isActive()) {
@@ -1851,6 +1849,11 @@ bool QPainter::end()
             d->engine->setPaintDevice(0);
             d->engine->setActive(false);
         }
+    }
+
+    if (d->states.size() > 1) {
+        qWarning("QPainter::end: Painter ended with %d saved states",
+                 d->states.size());
     }
 
     if (d->engine->autoDestruct()) {
@@ -7560,7 +7563,7 @@ start_lengthVariant:
         if (chr == QLatin1Char('\r') || (singleline && chr == QLatin1Char('\n'))) {
             text[offset] = QLatin1Char(' ');
         } else if (chr == QLatin1Char('\n')) {
-            chr = QChar::LineSeparator;
+            text[offset] = QChar::LineSeparator;
         } else if (chr == QLatin1Char('&')) {
             ++maxUnderlines;
         } else if (chr == QLatin1Char('\t')) {
@@ -7592,7 +7595,7 @@ start_lengthVariant:
                 if (!l)
                     break;
                 if (*cin != QLatin1Char('&') && !hidemnmemonic)
-                    underlinePositions[numUnderlines++] =  cout - text.data() - old_offset;
+                    underlinePositions[numUnderlines++] = cout - text.data() - old_offset;
             }
             *cout = *cin;
             ++cout;

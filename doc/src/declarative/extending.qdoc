@@ -369,7 +369,7 @@ The QML snippet shown above associates the evaluation of a ECMAScript expression
 with the emission of a Qt signal.
 
 All Qt signals on a registered class become available as special "signal 
-propeties" within QML to which the user can assign a single ECMAScript 
+properties" within QML to which the user can assign a single ECMAScript 
 expression.  The signal property's name is a transformed version of the Qt
 signal name: "on" is prepended, and the first letter of the signal name upper
 cased.  For example, the signal used in the example above has the following

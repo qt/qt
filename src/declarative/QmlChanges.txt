@@ -31,6 +31,7 @@ ParentChangeAction -> ParentAction
 VisualModel        -> VisualDataModel
 
 Renamed properties:
+Item: contents         -> childrenRect
 MouseRegion: xmin      -> minimumX
 MouseRegion: xmax      -> maximumX
 MouseRegion: ymin      -> minimumY
@@ -48,12 +49,18 @@ Flickable: xVelocity   -> horizontalVelocity
 Flickable: yVelocity   -> verticalVelocity
 Flickable: velocityDecay -> reportedVelocitySmoothing
 Flickable: locked      -> interactive (note reversal of meaning)
+Flickable: pageXPosition -> visibleArea.xPosition
+Flickable: pageYPosition -> visibleArea.yPosition
+Flickable: pageWidth    -> visibleArea.widthRatio
+Flickable: pageHeight   -> visibleArea.heightRatio
 WebView: idealWidth    -> preferredWidth
 WebView: idealHeight   -> preferredHeight
 WebView: status        -> statusText
 WebView: mouseX        -> clickX (parameter to onDoubleClick)
 WebView: mouseY        -> clickY (parameter to onDoubleClick)
 WebView: cacheSize     -> pixelCacheSize
+Repeater: component    -> delegate
+Repeater: dataSource   -> model
 
 Additions:
 MouseRegion: add "acceptedButtons" property
@@ -61,17 +68,20 @@ MouseRegion: add "hoverEnabled" property
 MouseRegion: add "pressedButtons" property
 Timer: add start() and stop() slots
 WebView: add newWindowComponent and newWindowParent properties
+Loader: add status() and progress() properties
 
 Deletions:
 Column/VerticalPositioner: lost "margins" property
 Row/HorizontalPositioner: lost "margins" property
 Grid/Positioner/Layout: lost "margins" property
 WebView: lost "interactive" property (always true now)
+Flickable: removed "dragMode" property
 
 Other Changes:
 Drag: axis becomes an enum with values "XAxis", "YAxis", "XandYAxis"
 Image: scaleGrid property removed. New item called BorderImage instead.
 KeyActions: changed to a Keys attached property on any item.
+KeyProxy: changed to a Keys.forwardTo property on any item.
 
 Pending Changes
 ===============

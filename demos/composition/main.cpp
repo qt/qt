@@ -42,11 +42,17 @@
 #include "composition.h"
 
 #include <QApplication>
+#ifdef QT_OPENGL_SUPPORT
+#include <QtOpenGL>
+#endif
 
 int main(int argc, char **argv)
 {
  //   Q_INIT_RESOURCE(deform);
 
+#ifdef QT_OPENGL_SUPPORT
+    QGL::setPreferredPaintEngine(QPaintEngine::OpenGL);
+#endif
     QApplication app(argc, argv);
 
     CompositionWidget compWidget(0);

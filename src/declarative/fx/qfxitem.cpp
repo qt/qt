@@ -235,10 +235,10 @@ QFxContents::QFxContents() : m_x(0), m_y(0), m_width(0), m_height(0)
 }
 
 /*!
-    \qmlproperty qreal Item::childrenRect.x
-    \qmlproperty qreal Item::childrenRect.y
-    \qmlproperty qreal Item::childrenRect.width
-    \qmlproperty qreal Item::childrenRect.height
+    \qmlproperty real Item::childrenRect.x
+    \qmlproperty real Item::childrenRect.y
+    \qmlproperty real Item::childrenRect.width
+    \qmlproperty real Item::childrenRect.height
 
     The childrenRect properties allow an item access to the geometry of its
     children. This property is useful if you have an item that needs to be
@@ -334,6 +334,9 @@ public:
 
     virtual void keyPressed(QKeyEvent *event);
     virtual void keyReleased(QKeyEvent *event);
+    virtual void inputMethodEvent(QInputMethodEvent *event);
+    virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
+    virtual void componentComplete();
 
 private:
     QFxItemKeyFilter *m_next;
@@ -362,6 +365,22 @@ void QFxItemKeyFilter::keyPressed(QKeyEvent *event)
 void QFxItemKeyFilter::keyReleased(QKeyEvent *event)
 {
     if (m_next) m_next->keyReleased(event);
+}
+
+void QFxItemKeyFilter::inputMethodEvent(QInputMethodEvent *event)
+{
+    if (m_next) m_next->inputMethodEvent(event);
+}
+
+QVariant QFxItemKeyFilter::inputMethodQuery(Qt::InputMethodQuery query) const
+{
+    if (m_next) return m_next->inputMethodQuery(query);
+    return QVariant();
+}
+
+void QFxItemKeyFilter::componentComplete()
+{
+    if (m_next) m_next->componentComplete();
 }
 
 class QFxKeyNavigationAttachedPrivate : public QObjectPrivate
@@ -589,6 +608,25 @@ void QFxKeyNavigationAttached::keyReleased(QKeyEvent *event)
 
     This flags enables key handling if true (default); otherwise
     no key handlers will be called.
+*/
+
+/*!
+    \qmlproperty List<Object> Keys::forwardTo
+
+    This property provides a way to forward key presses, key releases, and keyboard input
+    coming from input methods to other items. This can be useful when you want
+    one item to handle some keys (e.g. the up and down arrow keys), and another item to
+    handle other keys (e.g. the left and right arrow keys).  Once an item that has been
+    forwarded keys accepts the event it is no longer forwarded to items later in the
+    list.
+
+    This example forwards key events to two lists:
+    \qml
+    ListView { id: List1 ... }
+    ListView { id: List2 ... }
+    Keys.forwardTo: [List1, List2]
+    focus: true
+    \endqml
 */
 
 /*!
@@ -853,19 +891,41 @@ void QFxKeyNavigationAttached::keyReleased(QKeyEvent *event)
 class QFxKeysAttachedPrivate : public QObjectPrivate
 {
 public:
-    QFxKeysAttachedPrivate() : QObjectPrivate(), enabled(true) {}
+    QFxKeysAttachedPrivate()
+        : QObjectPrivate(), inPress(false), inRelease(false)
+        , inIM(false), enabled(true), imeItem(0), item(0)
+    {}
 
     bool isConnected(const char *signalName);
 
-    bool enabled;
+    QGraphicsItem *finalFocusProxy(QGraphicsItem *item) const
+    {
+        QGraphicsItem *fp;
+        while ((fp = item->focusProxy()))
+            item = fp;
+        return item;
+    }
+
+    //loop detection
+    bool inPress:1;
+    bool inRelease:1;
+    bool inIM:1;
+
+    bool enabled : 1;
+
+    QGraphicsItem *imeItem;
+    QList<QFxItem *> targets;
+    QFxItem *item;
 };
 
 class QFxKeysAttached : public QObject, public QFxItemKeyFilter
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QFxKeysAttached);
+    Q_DECLARE_PRIVATE(QFxKeysAttached)
 
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
+    Q_PROPERTY(QList<QFxItem *> *forwardTo READ forwardTo)
+
 public:
     QFxKeysAttached(QObject *parent=0);
     ~QFxKeysAttached();
@@ -878,6 +938,13 @@ public:
             emit enabledChanged();
         }
     }
+
+    QList<QFxItem *> *forwardTo() {
+        Q_D(QFxKeysAttached);
+        return &d->targets;
+    }
+
+    virtual void componentComplete();
 
     static QFxKeysAttached *qmlAttachedProperties(QObject *);
 
@@ -927,8 +994,10 @@ Q_SIGNALS:
 private:
     virtual void keyPressed(QKeyEvent *event);
     virtual void keyReleased(QKeyEvent *event);
+    virtual void inputMethodEvent(QInputMethodEvent *);
+    virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
 
-    const char *keyToSignal(int key) {
+    const QByteArray keyToSignal(int key) {
         QByteArray keySignal;
         if (key >= Qt::Key_0 && key <= Qt::Key_9) {
             keySignal = "digit0Pressed";
@@ -989,18 +1058,50 @@ QFxKeysAttached::QFxKeysAttached(QObject *parent)
 : QObject(*(new QFxKeysAttachedPrivate), parent),
   QFxItemKeyFilter(qobject_cast<QFxItem*>(parent))
 {
+    Q_D(QFxKeysAttached);
+    d->item = qobject_cast<QFxItem*>(parent);
 }
 
 QFxKeysAttached::~QFxKeysAttached()
 {
 }
 
+void QFxKeysAttached::componentComplete()
+{
+    Q_D(QFxKeysAttached);
+    if (d->item) {
+        for (int ii = 0; ii < d->targets.count(); ++ii) {
+            QGraphicsItem *targetItem = d->finalFocusProxy(d->targets.at(ii));
+            if (targetItem && (targetItem->flags() & QGraphicsItem::ItemAcceptsInputMethod)) {
+                d->item->setFlag(QGraphicsItem::ItemAcceptsInputMethod);
+                break;
+            }
+        }
+    }
+}
+
 void QFxKeysAttached::keyPressed(QKeyEvent *event)
 {
     Q_D(QFxKeysAttached);
-    if (!d->enabled) {
+    if (!d->enabled || d->inPress) {
         event->ignore();
         return;
+    }
+
+    // first process forwards
+    if (d->item && d->item->scene()) {
+        d->inPress = true;
+        for (int ii = 0; ii < d->targets.count(); ++ii) {
+            QGraphicsItem *i = d->finalFocusProxy(d->targets.at(ii));
+            if (i) {
+                d->item->scene()->sendEvent(i, event);
+                if (event->isAccepted()) {
+                    d->inPress = false;
+                    return;
+                }
+            }
+        }
+        d->inPress = false;
     }
 
     QFxKeyEvent ke(*event);
@@ -1024,15 +1125,77 @@ void QFxKeysAttached::keyPressed(QKeyEvent *event)
 void QFxKeysAttached::keyReleased(QKeyEvent *event)
 {
     Q_D(QFxKeysAttached);
-    if (!d->enabled) {
+    if (!d->enabled || d->inRelease) {
         event->ignore();
         return;
     }
+
+    if (d->item && d->item->scene()) {
+        d->inRelease = true;
+        for (int ii = 0; ii < d->targets.count(); ++ii) {
+            QGraphicsItem *i = d->finalFocusProxy(d->targets.at(ii));
+            if (i) {
+                d->item->scene()->sendEvent(i, event);
+                if (event->isAccepted()) {
+                    d->inRelease = false;
+                    return;
+                }
+            }
+        }
+        d->inRelease = false;
+    }
+
     QFxKeyEvent ke(*event);
     emit released(&ke);
     event->setAccepted(ke.isAccepted());
 
     if (!event->isAccepted()) QFxItemKeyFilter::keyReleased(event);
+}
+
+void QFxKeysAttached::inputMethodEvent(QInputMethodEvent *event)
+{
+    Q_D(QFxKeysAttached);
+    if (d->item && !d->inIM && d->item->scene()) {
+        d->inIM = true;
+        for (int ii = 0; ii < d->targets.count(); ++ii) {
+            QGraphicsItem *i = d->finalFocusProxy(d->targets.at(ii));
+            if (i && (i->flags() & QGraphicsItem::ItemAcceptsInputMethod)) {
+                d->item->scene()->sendEvent(i, event);
+                if (event->isAccepted()) {
+                    d->imeItem = i;
+                    d->inIM = false;
+                    return;
+                }
+            }
+        }
+        d->inIM = false;
+    }
+    if (!event->isAccepted()) QFxItemKeyFilter::inputMethodEvent(event);
+}
+
+class QFxItemAccessor : public QGraphicsItem
+{
+public:
+    QVariant doInputMethodQuery(Qt::InputMethodQuery query) const {
+        return QGraphicsItem::inputMethodQuery(query);
+    }
+};
+
+QVariant QFxKeysAttached::inputMethodQuery(Qt::InputMethodQuery query) const
+{
+    Q_D(const QFxKeysAttached);
+    if (d->item) {
+        for (int ii = 0; ii < d->targets.count(); ++ii) {
+                QGraphicsItem *i = d->finalFocusProxy(d->targets.at(ii));
+            if (i && (i->flags() & QGraphicsItem::ItemAcceptsInputMethod) && i == d->imeItem) { //### how robust is i == d->imeItem check?
+                QVariant v = static_cast<QFxItemAccessor *>(i)->doInputMethodQuery(query);
+                if (v.type() == QVariant::RectF)
+                    v = d->item->mapRectFromItem(i, v.toRectF());  //### cost?
+                return v;
+            }
+        }
+    }
+    return QFxItemKeyFilter::inputMethodQuery(query);
 }
 
 QFxKeysAttached *QFxKeysAttached::qmlAttachedProperties(QObject *obj)
@@ -1670,6 +1833,28 @@ void QFxItem::keyReleaseEvent(QKeyEvent *event)
         d->keyHandler->keyReleased(event);
     else
         event->ignore();
+}
+
+void QFxItem::inputMethodEvent(QInputMethodEvent *event)
+{
+    Q_D(QFxItem);
+    if (d->keyHandler)
+        d->keyHandler->inputMethodEvent(event);
+    else
+        event->ignore();
+}
+
+QVariant QFxItem::inputMethodQuery(Qt::InputMethodQuery query) const
+{
+    Q_D(const QFxItem);
+    QVariant v;
+    if (d->keyHandler)
+        v = d->keyHandler->inputMethodQuery(query);
+
+    if (!v.isValid())
+        v = QGraphicsObject::inputMethodQuery(query);
+
+    return v;
 }
 
 /*!
@@ -2316,6 +2501,8 @@ void QFxItem::componentComplete()
         d->_anchors->componentComplete();
         d->_anchors->d_func()->updateOnComplete();
     }
+    if (d->keyHandler)
+        d->keyHandler->componentComplete();
 }
 
 QmlStateGroup *QFxItemPrivate::states()

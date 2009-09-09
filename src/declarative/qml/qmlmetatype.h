@@ -151,6 +151,7 @@ public:
 private:
     friend class QmlMetaType;
     friend class QmlTypePrivate;
+    friend class QmlMetaTypeData;
     QmlType(int, int, int, QmlPrivate::Func, const char *, int);
     QmlType(int, int, int, QmlPrivate::Func, const char *, int, int, int, const QMetaObject *, QmlAttachedPropertiesFunc, const QMetaObject *, int, int, QmlPrivate::CreateFunc, const QMetaObject *, int, QmlCustomParser *);
     ~QmlType();

@@ -59,8 +59,10 @@
 #include "QtCore/qthread.h"
 #include "QtCore/qthreadstorage.h"
 #include "QtCore/qhash.h"
+#include "QtCore/qatomic.h"
 #include "private/qwidget_p.h"
 #include "qcache.h"
+#include "qglpaintdevice_p.h"
 
 #ifndef QT_OPENGL_ES_1_CL
 #define q_vertexType float
@@ -127,7 +129,9 @@ QT_END_INCLUDE_NAMESPACE
 class QGLFormatPrivate
 {
 public:
-    QGLFormatPrivate() {
+    QGLFormatPrivate()
+        : ref(1)
+    {
         opts = QGL::DoubleBuffer | QGL::DepthBuffer | QGL::Rgba | QGL::DirectRendering | QGL::StencilBuffer;
 #if defined(QT_OPENGL_ES_2)
         opts |= QGL::SampleBuffers;
@@ -137,6 +141,22 @@ public:
         numSamples = -1;
         swapInterval = -1;
     }
+    QGLFormatPrivate(const QGLFormatPrivate *other)
+        : ref(1),
+          opts(other->opts),
+          pln(other->pln),
+          depthSize(other->depthSize),
+          accumSize(other->accumSize),
+          stencilSize(other->stencilSize),
+          redSize(other->redSize),
+          greenSize(other->greenSize),
+          blueSize(other->blueSize),
+          alphaSize(other->alphaSize),
+          numSamples(other->numSamples),
+          swapInterval(other->swapInterval)
+    {
+    }
+    QAtomicInt ref;
     QGL::FormatOptions opts;
     int pln;
     int depthSize;
@@ -155,6 +175,7 @@ class QGLWidgetPrivate : public QWidgetPrivate
     Q_DECLARE_PUBLIC(QGLWidget)
 public:
     QGLWidgetPrivate() : QWidgetPrivate()
+                       , disable_clear_on_painter_begin(false)
 #ifdef Q_WS_QWS
                        , wsurf(0)
 #endif
@@ -171,10 +192,13 @@ public:
     void cleanupColormaps();
 
     QGLContext *glcx;
+    QGLWidgetGLPaintDevice glDevice;
     bool autoSwap;
 
     QGLColormap cmap;
     QMap<QString, int> displayListCache;
+
+    bool disable_clear_on_painter_begin;
 
 #if defined(Q_WS_WIN)
     void updateColormap();
@@ -274,7 +298,6 @@ public:
     uint sharing : 1;
     uint initDone : 1;
     uint crWin : 1;
-    uint clear_on_painter_begin : 1;
     uint internal_context : 1;
     uint version_flags_cached : 1;
     QPaintDevice *paintDevice;
@@ -316,57 +339,6 @@ public:
     static QGLSignalProxy *instance();
 Q_SIGNALS:
     void aboutToDestroyContext(const QGLContext *context);
-};
-
-class QGLPixelBuffer;
-class QGLFramebufferObject;
-class QWSGLWindowSurface;
-class QGLWindowSurface;
-class QGLPixmapData;
-class QGLDrawable {
-public:
-    QGLDrawable() : widget(0), buffer(0), fbo(0)
-#if defined(Q_WS_QWS) || (!defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL))
-                  , wsurf(0)
-#endif
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-                  , pixmapData(0)
-#endif
-        {}
-    void setDevice(QPaintDevice *pdev);
-    void swapBuffers();
-    void makeCurrent();
-    void doneCurrent();
-    QSize size() const;
-    QGLFormat format() const;
-    GLuint bindTexture(const QImage &image, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA,
-                       QGLContext::BindOptions = QGLContext::InternalBindOption);
-    GLuint bindTexture(const QPixmap &pixmap, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA,
-                       QGLContext::BindOptions = QGLContext::InternalBindOption);
-    QColor backgroundColor() const;
-    QGLContext *context() const;
-    bool autoFillBackground() const;
-    bool hasTransparentBackground() const;
-
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    QGLPixmapData *copyOnBegin() const;
-#endif
-
-private:
-    bool wasBound;
-    QGLWidget *widget;
-    QGLPixelBuffer *buffer;
-    QGLFramebufferObject *fbo;
-#ifdef Q_WS_QWS
-    QWSGLWindowSurface *wsurf;
-#elif !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    QGLWindowSurface *wsurf;
-#endif
-
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    QGLPixmapData *pixmapData;
-#endif
-    int previous_fbo;
 };
 
 // GL extension definitions
@@ -500,15 +472,7 @@ extern QPaintEngine* qt_qgl_paint_engine();
 extern EGLDisplay qt_qgl_egl_display();
 #endif
 
-inline bool qt_gl_preferGL2Engine()
-{
-#if defined(QT_OPENGL_ES_2)
-    return true;
-#else
-    return (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0)
-           && qgetenv("QT_GL_USE_OPENGL1ENGINE").isEmpty();
-#endif
-}
+bool qt_gl_preferGL2Engine();
 
 inline GLenum qt_gl_preferredTextureFormat()
 {
@@ -540,10 +504,10 @@ public:
     // Return resource for 'key' or a shared context.
     void *value(const QGLContext *key);
     // Free resource for 'key' and all its shared contexts.
-    void remove(const QGLContext *key);
+    void removeGroup(const QGLContext *key);
 private slots:
     // Remove entry 'key' from cache and delete resource if there are no shared contexts.
-    void aboutToDestroyContext(const QGLContext *key);
+    void removeOne(const QGLContext *key);
 private:
     typedef QHash<const QGLContext *, void *> ResourceHash;
     ResourceHash m_resources;

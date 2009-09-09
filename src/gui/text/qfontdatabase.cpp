@@ -595,7 +595,7 @@ static QList<QFontDatabase::WritingSystem> determineWritingSystemsFromTrueTypeBi
 class QFontDatabaseS60Store
 {
 public:
-    virtual ~QFontDatabaseS60Store() {};
+    virtual ~QFontDatabaseS60Store() {}
 };
 #endif
 

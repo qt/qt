@@ -48,57 +48,108 @@
 
 QT_BEGIN_NAMESPACE
 
-ElasticValue::ElasticValue(QmlTimeLineValue &val)
-    : _value(val)
+class QFxFlickableVisibleArea : public QObject
 {
-    _to = _value.value();
-    _myValue = _to;
-    _velocity = 0;
+    Q_OBJECT
+
+    Q_PROPERTY(qreal xPosition READ xPosition NOTIFY pageChanged)
+    Q_PROPERTY(qreal yPosition READ yPosition NOTIFY pageChanged)
+    Q_PROPERTY(qreal widthRatio READ widthRatio NOTIFY pageChanged)
+    Q_PROPERTY(qreal heightRatio READ heightRatio NOTIFY pageChanged)
+
+public:
+    QFxFlickableVisibleArea(QFxFlickable *parent=0);
+
+    qreal xPosition() const;
+    qreal widthRatio() const;
+    qreal yPosition() const;
+    qreal heightRatio() const;
+
+    void updateVisible();
+
+signals:
+    void pageChanged();
+
+private:
+    QFxFlickable *flickable;
+    qreal m_xPosition;
+    qreal m_widthRatio;
+    qreal m_yPosition;
+    qreal m_heightRatio;
+};
+
+QFxFlickableVisibleArea::QFxFlickableVisibleArea(QFxFlickable *parent)
+    : QObject(parent), flickable(parent), m_xPosition(0.), m_widthRatio(0.)
+    , m_yPosition(0.), m_heightRatio(0.)
+{
 }
 
-void ElasticValue::setValue(qreal to)
+qreal QFxFlickableVisibleArea::widthRatio() const
 {
-    if (_to != to) {
-        _to = to;
-        _startTime.start();
-        if (state() != Running)
-            start();
+    return m_widthRatio;
+}
+
+qreal QFxFlickableVisibleArea::xPosition() const
+{
+    return m_xPosition;
+}
+
+qreal QFxFlickableVisibleArea::heightRatio() const
+{
+    return m_heightRatio;
+}
+
+qreal QFxFlickableVisibleArea::yPosition() const
+{
+    return m_yPosition;
+}
+
+void QFxFlickableVisibleArea::updateVisible()
+{
+    QFxFlickablePrivate *p = static_cast<QFxFlickablePrivate *>(QGraphicsItemPrivate::get(flickable));
+    bool pageChange = false;
+
+    // Vertical
+    const qreal viewheight = flickable->height();
+    const qreal maxyextent = -flickable->maxYExtent();
+    qreal pagePos = -p->_moveY.value() / (maxyextent + viewheight);
+    qreal pageSize = viewheight / (maxyextent + viewheight);
+
+    if (pageSize != m_heightRatio) {
+        m_heightRatio = pageSize;
+        pageChange = true;
     }
+    if (pagePos != m_yPosition) {
+        m_yPosition = pagePos;
+        pageChange = true;
+    }
+
+    // Horizontal
+    const qreal viewwidth = flickable->width();
+    const qreal maxxextent = -flickable->maxXExtent();
+    pagePos = -p->_moveX.value() / (maxxextent + viewwidth);
+    pageSize = viewwidth / (maxxextent + viewwidth);
+
+    if (pageSize != m_widthRatio) {
+        m_widthRatio = pageSize;
+        pageChange = true;
+    }
+    if (pagePos != m_xPosition) {
+        m_xPosition = pagePos;
+        pageChange = true;
+    }
+    if (pageChange)
+        emit pageChanged();
 }
 
-void ElasticValue::clear()
-{
-    stop();
-    _velocity = 0.0;
-    _myValue = _value.value();
-}
-
-void ElasticValue::updateCurrentTime(int)
-{
-    const qreal Tension = 0.1;
-    int elapsed = _startTime.restart();
-    if (!elapsed)
-        return;
-    qreal dist = _to - _value.value();
-    qreal move = Tension * dist * qAbs(dist);
-    if (elapsed < 100 && _velocity != 0.0)
-        move = (elapsed * move + (100 - elapsed) * _velocity) / 100;
-    _myValue += move * elapsed / 1000;
-    _value.setValue(qRound(_myValue)); // moving sub-pixel can be ugly.
-//    _value.setValue(_myValue);
-    _velocity = move;
-    if (qAbs(_velocity) < 5.0)
-        clear();
-    emit updated();
-}
 
 QFxFlickablePrivate::QFxFlickablePrivate()
-  : _flick(new QFxItem), _moveX(_flick, &QFxItem::setX), _moveY(_flick, &QFxItem::setY)
+  : viewport(new QFxItem), _moveX(viewport, &QFxItem::setX), _moveY(viewport, &QFxItem::setY)
     , vWidth(-1), vHeight(-1), overShoot(true), flicked(false), moving(false), stealMouse(false)
-    , pressed(false), maxVelocity(-1), interactive(true), dragMode(QFxFlickable::Hard)
-    , elasticY(_moveY), elasticX(_moveX), reportedVelocitySmoothing(100), horizontalVelocity(this), verticalVelocity(this)
-    , vTime(0), atXEnd(false), atXBeginning(true), pageXPosition(0.), pageWidth(0.)
-    , atYEnd(false), atYBeginning(true), pageYPosition(0.), pageHeight(0.)
+    , pressed(false), atXEnd(false), atXBeginning(true), atYEnd(false), atYBeginning(true)
+    , interactive(true), maxVelocity(-1), reportedVelocitySmoothing(100)
+    , delayedPressEvent(0), delayedPressTarget(0), pressDelay(0)
+    , horizontalVelocity(this), verticalVelocity(this), vTime(0), visibleArea(0)
 {
     fixupXEvent = QmlTimeLineEvent::timeLineEvent<QFxFlickablePrivate, &QFxFlickablePrivate::fixupX>(&_moveX, this);
     fixupYEvent = QmlTimeLineEvent::timeLineEvent<QFxFlickablePrivate, &QFxFlickablePrivate::fixupY>(&_moveY, this);
@@ -107,15 +158,13 @@ QFxFlickablePrivate::QFxFlickablePrivate()
 void QFxFlickablePrivate::init()
 {
     Q_Q(QFxFlickable);
-    _flick->setParent(q);
-    QObject::connect(&_tl, SIGNAL(updated()), q, SLOT(ticked()));
-    QObject::connect(&_tl, SIGNAL(completed()), q, SLOT(movementEnding()));
+    viewport->setParent(q);
+    QObject::connect(&timeline, SIGNAL(updated()), q, SLOT(ticked()));
+    QObject::connect(&timeline, SIGNAL(completed()), q, SLOT(movementEnding()));
     q->setAcceptedMouseButtons(Qt::LeftButton);
     q->setFiltersChildEvents(true);
-    QObject::connect(_flick, SIGNAL(xChanged()), q, SIGNAL(positionXChanged()));
-    QObject::connect(_flick, SIGNAL(yChanged()), q, SIGNAL(positionYChanged()));
-    QObject::connect(&elasticX, SIGNAL(updated()), q, SLOT(ticked()));
-    QObject::connect(&elasticY, SIGNAL(updated()), q, SLOT(ticked()));
+    QObject::connect(viewport, SIGNAL(xChanged()), q, SIGNAL(positionXChanged()));
+    QObject::connect(viewport, SIGNAL(yChanged()), q, SIGNAL(positionYChanged()));
     QObject::connect(q, SIGNAL(heightChanged()), q, SLOT(heightChange()));
     QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(widthChange()));
 }
@@ -142,16 +191,16 @@ void QFxFlickablePrivate::flickX(qreal velocity)
             else
                 v = maxVelocity;
         }
-        _tl.reset(_moveX);
-        _tl.accel(_moveX, v, 500, maxDistance);
-        _tl.execute(fixupXEvent);
+        timeline.reset(_moveX);
+        timeline.accel(_moveX, v, 500, maxDistance);
+        timeline.execute(fixupXEvent);
         if (!flicked) {
             flicked = true;
             emit q->flickingChanged();
             emit q->flickStarted();
         }
     } else {
-        _tl.reset(_moveX);
+        timeline.reset(_moveX);
         fixupX();
     }
 }
@@ -178,16 +227,16 @@ void QFxFlickablePrivate::flickY(qreal velocity)
             else
                 v = maxVelocity;
         }
-        _tl.reset(_moveY);
-        _tl.accel(_moveY, v, 500, maxDistance);
-        _tl.execute(fixupYEvent);
+        timeline.reset(_moveY);
+        timeline.accel(_moveY, v, 500, maxDistance);
+        timeline.execute(fixupYEvent);
         if (!flicked) {
             flicked = true;
             emit q->flickingChanged();
             emit q->flickStarted();
         }
     } else {
-        _tl.reset(_moveY);
+        timeline.reset(_moveY);
         fixupY();
     }
 }
@@ -198,16 +247,16 @@ void QFxFlickablePrivate::fixupX()
     if (!q->xflick() || _moveX.timeLine())
         return;
 
-    vTime = _tl.time();
+    vTime = timeline.time();
 
-    if (_moveX.value() > q->minXExtent() || (q->maxXExtent() > q->maxXExtent())) {
-        _tl.reset(_moveY);
+    if (_moveX.value() > q->minXExtent() || (q->maxXExtent() > q->minXExtent())) {
+        timeline.reset(_moveX);
         if (_moveX.value() != q->minXExtent())
-            _tl.move(_moveX, q->minXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
+            timeline.move(_moveX, q->minXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         //emit flickingChanged();
     } else if (_moveX.value() < q->maxXExtent()) {
-        _tl.reset(_moveY);
-        _tl.move(_moveX,  q->maxXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
+        timeline.reset(_moveX);
+        timeline.move(_moveX,  q->maxXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         //emit flickingChanged();
     } else {
         flicked = false;
@@ -220,16 +269,16 @@ void QFxFlickablePrivate::fixupY()
     if (!q->yflick() || _moveY.timeLine())
         return;
 
-    vTime = _tl.time();
+    vTime = timeline.time();
 
     if (_moveY.value() > q->minYExtent() || (q->maxYExtent() > q->minYExtent())) {
-        _tl.reset(_moveY);
+        timeline.reset(_moveY);
         if (_moveY.value() != q->minYExtent())
-            _tl.move(_moveY, q->minYExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
+            timeline.move(_moveY, q->minYExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         //emit flickingChanged();
     } else if (_moveY.value() < q->maxYExtent()) {
-        _tl.reset(_moveY);
-        _tl.move(_moveY,  q->maxYExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
+        timeline.reset(_moveY);
+        timeline.move(_moveY,  q->maxYExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         //emit flickingChanged();
     } else {
         flicked = false;
@@ -239,26 +288,14 @@ void QFxFlickablePrivate::fixupY()
 void QFxFlickablePrivate::updateBeginningEnd()
 {
     Q_Q(QFxFlickable);
-    bool pageChange = false;
     bool atBoundaryChange = false;
 
     // Vertical
-    const int viewheight = q->height();
     const int maxyextent = int(-q->maxYExtent());
     const qreal ypos = -_moveY.value();
-    qreal pagePos = ((ypos * 100.0) / (maxyextent + viewheight)) / 100.0;
-    qreal pageSize = ((viewheight * 100.0) / (maxyextent + viewheight)) / 100.0;
     bool atBeginning = (ypos <= 0.0);
     bool atEnd = (maxyextent <= ypos);
 
-    if (pageSize != pageHeight) {
-        pageHeight = pageSize;
-        pageChange = true;
-    }
-    if (pagePos != pageYPosition) {
-        pageYPosition = pagePos;
-        pageChange = true;
-    }
     if (atBeginning != atYBeginning) {
         atYBeginning = atBeginning;
         atBoundaryChange = true;
@@ -269,22 +306,11 @@ void QFxFlickablePrivate::updateBeginningEnd()
     }
 
     // Horizontal
-    const int viewwidth = q->width();
     const int maxxextent = int(-q->maxXExtent());
     const qreal xpos = -_moveX.value();
-    pagePos = ((xpos * 100.0) / (maxxextent + viewwidth)) / 100.0;
-    pageSize = ((viewwidth * 100.0) / (maxxextent + viewwidth)) / 100.0;
     atBeginning = (xpos <= 0.0);
     atEnd = (maxxextent <= xpos);
 
-    if (pageSize != pageWidth) {
-        pageWidth = pageSize;
-        pageChange = true;
-    }
-    if (pagePos != pageXPosition) {
-        pageXPosition = pagePos;
-        pageChange = true;
-    }
     if (atBeginning != atXBeginning) {
         atXBeginning = atBeginning;
         atBoundaryChange = true;
@@ -294,10 +320,11 @@ void QFxFlickablePrivate::updateBeginningEnd()
         atBoundaryChange = true;
     }
 
-    if (pageChange)
-        emit q->pageChanged();
     if (atBoundaryChange)
         emit q->isAtBoundaryChanged();
+
+    if (visibleArea)
+        visibleArea->updateVisible();
 }
 
 static const int FlickThreshold = 5;
@@ -350,6 +377,27 @@ Flickable {
 
 */
 
+/*!
+    \qmlproperty real Flickable::visibleArea.xPosition
+    \qmlproperty real Flickable::visibleArea.widthRatio
+    \qmlproperty real Flickable::visibleArea.yPosition
+    \qmlproperty real Flickable::visibleArea.heightRatio
+
+    These properties describe the position and size of the currently viewed area.
+    The size is defined as the percentage of the full view currently visible,
+    scaled to 0.0 - 1.0.  The page position is in the range 0.0 (beginning) to
+    size ratio (end), i.e. yPosition is in the range 0.0 - heightRatio.
+
+    These properties are typically used to draw a scrollbar, for example:
+    \code
+    Rectangle {
+        opacity: 0.5; anchors.right: MyListView.right-2; width: 6
+        y: MyListView.visibleArea.yPosition * MyListView.height
+        height: MyListView.visibleArea.heightRatio * MyListView.height
+    }
+    \endcode
+*/
+
 QFxFlickable::QFxFlickable(QFxItem *parent)
   : QFxItem(*(new QFxFlickablePrivate), parent)
 {
@@ -386,8 +434,8 @@ void QFxFlickable::setViewportX(qreal pos)
 {
     Q_D(QFxFlickable);
     pos = qRound(pos);
+    d->timeline.reset(d->_moveX);
     if (-pos != d->_moveX.value()) {
-        d->_tl.reset(d->_moveX);
         d->_moveX.setValue(-pos);
         viewportMoved();
     }
@@ -403,8 +451,8 @@ void QFxFlickable::setViewportY(qreal pos)
 {
     Q_D(QFxFlickable);
     pos = qRound(pos);
+    d->timeline.reset(d->_moveY);
     if (-pos != d->_moveY.value()) {
-        d->_tl.reset(d->_moveY);
         d->_moveY.setValue(-pos);
         viewportMoved();
     }
@@ -430,33 +478,11 @@ void QFxFlickable::setInteractive(bool interactive)
     Q_D(QFxFlickable);
     d->interactive = interactive;
     if (!interactive && d->flicked) {
-        d->_tl.clear();
+        d->timeline.clear();
         d->flicked = false;
         emit flickingChanged();
         emit flickEnded();
     }
-}
-
-/*!
-    \qmlproperty enumeration Flickable::dragMode
-    This property contains the kind of 'physics' applied when dragging the surface.
-
-    Two modes are supported:
-    \list
-    \i Hard - the view follows the user's input exactly.
-    \i Elastic - the view moves elastically in response to the user's input.
-    \endlist
-*/
-QFxFlickable::DragMode QFxFlickable::dragMode() const
-{
-    Q_D(const QFxFlickable);
-    return d->dragMode;
-}
-
-void QFxFlickable::setDragMode(DragMode mode)
-{
-    Q_D(QFxFlickable);
-    d->dragMode = mode;
 }
 
 /*!
@@ -514,50 +540,6 @@ bool QFxFlickable::isAtYBeginning() const
     return d->atYBeginning;
 }
 
-/*!
-    \qmlproperty real Flickable::pageXPosition
-    \qmlproperty real Flickable::pageWidth
-    \qmlproperty real Flickable::pageYPosition
-    \qmlproperty real Flickable::pageHeight
-
-    These properties describe the position and size of the currently viewed page.
-    The page size is defined as the percentage of the full view currently visible,
-    scaled to 0.0 - 1.0.  The page position is also in the range 0.0 (beginning) to
-    1.0 (end).
-
-    These properties are typically used to draw a scrollbar, for example:
-    \code
-    Rectangle {
-        opacity: 0.5; anchors.right: MyListView.right-2; width: 6
-        y: MyListView.pageYPosition * MyListView.height
-        height: MyListView.pageHeight * MyListView.height
-    }
-    \endcode
-*/
-qreal QFxFlickable::pageWidth() const
-{
-    Q_D(const QFxFlickable);
-    return d->pageWidth;
-}
-
-qreal QFxFlickable::pageXPosition() const
-{
-    Q_D(const QFxFlickable);
-    return d->pageXPosition;
-}
-
-qreal QFxFlickable::pageHeight() const
-{
-    Q_D(const QFxFlickable);
-    return d->pageHeight;
-}
-
-qreal QFxFlickable::pageYPosition() const
-{
-    Q_D(const QFxFlickable);
-    return d->pageYPosition;
-}
-
 void QFxFlickable::ticked()
 {
     viewportMoved();
@@ -566,7 +548,7 @@ void QFxFlickable::ticked()
 QFxItem *QFxFlickable::viewport()
 {
     Q_D(QFxFlickable);
-    return d->_flick;
+    return d->viewport;
 }
 
 qreal QFxFlickable::visibleX() const
@@ -581,14 +563,22 @@ qreal QFxFlickable::visibleY() const
     return -d->_moveY.value();
 }
 
+QFxFlickableVisibleArea *QFxFlickable::visibleArea()
+{
+    Q_D(QFxFlickable);
+    if (!d->visibleArea)
+        d->visibleArea = new QFxFlickableVisibleArea(this);
+    return d->visibleArea;
+}
+
 void QFxFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (interactive && _tl.isActive() && (qAbs(velocityX) > 10 || qAbs(velocityY) > 10))
+    if (interactive && timeline.isActive() && (qAbs(velocityX) > 10 || qAbs(velocityY) > 10))
         stealMouse = true; // If we've been flicked then steal the click.
     else
         stealMouse = false;
     pressed = true;
-    _tl.clear();
+    timeline.clear();
     velocityX = -1;
     velocityY = -1;
     lastPos = QPoint();
@@ -598,10 +588,6 @@ void QFxFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
     pressY = _moveY.value();
     flicked = false;
     pressTime.start();
-    if (dragMode == QFxFlickable::Elastic) {
-        elasticX.clear();
-        elasticY.clear();
-    }
     velocityTime.start();
 }
 
@@ -625,10 +611,7 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
             if (newY < maxY && maxY - minY < 0)
                 newY = maxY + (newY - maxY) / 2;
             if (q->overShoot() || (newY <= minY && newY >= maxY)) {
-                if (dragMode == QFxFlickable::Hard)
-                    _moveY.setValue(newY);
-                else
-                    elasticY.setValue(newY);
+                _moveY.setValue(newY);
                 moved = true;
             } else if (!q->overShoot())
                 rejectY = true;
@@ -648,10 +631,7 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
             if (newX < maxX && maxX - minX < 0)
                 newX = maxX + (newX - maxX) / 2;
             if (q->overShoot() || (newX <= minX && newX >= maxX)) {
-                if (dragMode == QFxFlickable::Hard)
-                    _moveX.setValue(newX);
-                else
-                    elasticX.setValue(newX);
+                _moveX.setValue(newX);
                 moved = true;
             } else if (!q->overShoot())
                 rejectX = true;
@@ -693,12 +673,7 @@ void QFxFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEvent *)
     if (lastPosTime.isNull())
         return;
 
-    if (dragMode == QFxFlickable::Elastic) {
-        elasticY.clear();
-        elasticX.clear();
-    }
-
-    vTime = _tl.time();
+    vTime = timeline.time();
     if (qAbs(velocityY) > 10)
         flickY(velocityY);
     else
@@ -712,7 +687,7 @@ void QFxFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEvent *)
     stealMouse = false;
     lastPosTime = QTime();
 
-    if (!_tl.isActive())
+    if (!timeline.isActive())
         q->movementEnding();
 }
 
@@ -733,9 +708,55 @@ void QFxFlickable::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 void QFxFlickable::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxFlickable);
+    d->clearDelayedPress();
     d->handleMouseReleaseEvent(event);
     event->accept();
     ungrabMouse();
+}
+
+void QFxFlickablePrivate::captureDelayedPress(QGraphicsSceneMouseEvent *event)
+{
+    Q_Q(QFxFlickable);
+    if (!q->scene() || pressDelay <= 0)
+        return;
+    delayedPressTarget = q->scene()->mouseGrabberItem();
+    delayedPressEvent = new QGraphicsSceneMouseEvent(event->type());
+    delayedPressEvent->setAccepted(false);
+    for (int i = 0x1; i <= 0x10; i <<= 1) {
+        if (event->buttons() & i) {
+            Qt::MouseButton button = Qt::MouseButton(i);
+            delayedPressEvent->setButtonDownPos(button, event->buttonDownPos(button));
+        }
+    }
+    delayedPressEvent->setScenePos(event->scenePos());
+    delayedPressEvent->setLastScenePos(event->lastScenePos());
+    delayedPressEvent->setPos(event->pos());
+    delayedPressEvent->setLastPos(event->lastPos());
+    delayedPressTimer.start(pressDelay, q);
+}
+
+void QFxFlickablePrivate::clearDelayedPress()
+{
+    if (delayedPressEvent) {
+        delayedPressTimer.stop();
+        delete delayedPressEvent;
+        delayedPressEvent = 0;
+    }
+}
+
+void QFxFlickable::timerEvent(QTimerEvent *event)
+{
+    Q_D(QFxFlickable);
+    if (event->timerId() == d->delayedPressTimer.timerId()) {
+        d->delayedPressTimer.stop();
+        if (d->delayedPressEvent) {
+            QFxItem *grabber = scene() ? qobject_cast<QFxItem*>(scene()->mouseGrabberItem()) : 0;
+            if (!grabber || grabber != this)
+                scene()->sendEvent(d->delayedPressTarget, d->delayedPressEvent);
+            delete d->delayedPressEvent;
+            d->delayedPressEvent = 0;
+        }
+    }
 }
 
 qreal QFxFlickable::minYExtent() const
@@ -777,13 +798,13 @@ void QFxFlickable::viewportMoved()
             d->velocityTimeline.move(d->verticalVelocity, verticalVelocity, d->reportedVelocitySmoothing);
             d->velocityTimeline.move(d->verticalVelocity, 0, d->reportedVelocitySmoothing);
         } else {
-            if (d->_tl.time() != d->vTime) {
-                qreal horizontalVelocity = (prevX - d->_moveX.value()) * 1000 / (d->_tl.time() - d->vTime);
-                qreal verticalVelocity = (prevY - d->_moveY.value()) * 1000 / (d->_tl.time() - d->vTime);
+            if (d->timeline.time() != d->vTime) {
+                qreal horizontalVelocity = (prevX - d->_moveX.value()) * 1000 / (d->timeline.time() - d->vTime);
+                qreal verticalVelocity = (prevY - d->_moveY.value()) * 1000 / (d->timeline.time() - d->vTime);
                 d->horizontalVelocity.setValue(horizontalVelocity);
                 d->verticalVelocity.setValue(verticalVelocity);
             }
-            d->vTime = d->_tl.time();
+            d->vTime = d->timeline.time();
         }
     }
 
@@ -832,7 +853,7 @@ void QFxFlickablePrivate::data_append(QObject *o)
     Q_Q(QFxFlickable);
     QFxItem *i = qobject_cast<QFxItem *>(o);
     if (i)
-        _flick->children()->append(i);
+        viewport->children()->append(i);
     else
         o->setParent(q);
 }
@@ -863,7 +884,7 @@ QmlList<QObject *> *QFxFlickable::flickableData()
 QmlList<QFxItem *> *QFxFlickable::flickableChildren()
 {
     Q_D(QFxFlickable);
-    return d->_flick->children();
+    return d->viewport->children();
 }
 
 /*!
@@ -915,9 +936,9 @@ void QFxFlickable::setViewportWidth(qreal w)
         return;
     d->vWidth = w;
     if (w < 0)
-        d->_flick->setWidth(width());
+        d->viewport->setWidth(width());
     else
-        d->_flick->setWidth(w);
+        d->viewport->setWidth(w);
     // Make sure that we're entirely in view.
     if (!d->pressed)
         d->fixupX();
@@ -929,20 +950,20 @@ void QFxFlickable::widthChange()
 {
     Q_D(QFxFlickable);
     if (d->vWidth < 0) {
-        d->_flick->setWidth(width());
+        d->viewport->setWidth(width());
         emit viewportWidthChanged();
-        d->updateBeginningEnd();
     }
+    d->updateBeginningEnd();
 }
 
 void QFxFlickable::heightChange()
 {
     Q_D(QFxFlickable);
     if (d->vHeight < 0) {
-        d->_flick->setHeight(height());
+        d->viewport->setHeight(height());
         emit viewportHeightChanged();
-        d->updateBeginningEnd();
     }
+    d->updateBeginningEnd();
 }
 
 qreal QFxFlickable::viewportHeight() const
@@ -958,9 +979,9 @@ void QFxFlickable::setViewportHeight(qreal h)
         return;
     d->vHeight = h;
     if (h < 0)
-        d->_flick->setHeight(height());
+        d->viewport->setHeight(height());
     else
-        d->_flick->setHeight(h);
+        d->viewport->setHeight(h);
     // Make sure that we're entirely in view.
     if (!d->pressed)
         d->fixupY();
@@ -1022,22 +1043,34 @@ bool QFxFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
             d->handleMouseMoveEvent(&mouseEvent);
             break;
         case QEvent::GraphicsSceneMousePress:
+            if (d->delayedPressEvent)
+                return false;
+
             d->handleMousePressEvent(&mouseEvent);
+            d->captureDelayedPress(event);
             break;
         case QEvent::GraphicsSceneMouseRelease:
+            if (d->delayedPressEvent) {
+                scene()->sendEvent(d->delayedPressTarget, d->delayedPressEvent);
+                d->clearDelayedPress();
+            }
             d->handleMouseReleaseEvent(&mouseEvent);
             break;
         default:
             break;
         }
         grabber = qobject_cast<QFxItem*>(s->mouseGrabberItem());
-        if (grabber && d->stealMouse && !grabber->keepMouseGrab() && grabber != this)
+        if (grabber && d->stealMouse && !grabber->keepMouseGrab() && grabber != this) {
+            d->clearDelayedPress();
             grabMouse();
+        }
 
-        return d->stealMouse;
+        return d->stealMouse || d->delayedPressEvent;
     } else if (!d->lastPosTime.isNull()) {
         d->lastPosTime = QTime();
     }
+    if (mouseEvent.type() == QEvent::GraphicsSceneMouseRelease)
+        d->clearDelayedPress();
     return false;
 }
 
@@ -1079,6 +1112,31 @@ bool QFxFlickable::isFlicking() const
 {
     Q_D(const QFxFlickable);
     return d->flicked;
+}
+
+/*!
+    \qmlproperty int Flickable::pressDelay
+
+    This property holds the time to delay (ms) delivering a press to
+    children of the Flickable.  This can be useful where reacting
+    to a press before a flicking action has undesireable effects.
+
+    If the flickable is dragged/flicked before the delay times out
+    the press event will not be delivered.  If the button is released
+    within the timeout, both the press and release will be delivered.
+*/
+int QFxFlickable::pressDelay() const
+{
+    Q_D(const QFxFlickable);
+    return d->pressDelay;
+}
+
+void QFxFlickable::setPressDelay(int delay)
+{
+    Q_D(QFxFlickable);
+    if (d->pressDelay == delay)
+        return;
+    d->pressDelay = delay;
 }
 
 qreal QFxFlickable::reportedVelocitySmoothing() const
@@ -1136,3 +1194,8 @@ void QFxFlickablePrivate::updateVelocity()
 }
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxFlickableVisibleArea)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VisibleArea,QFxFlickableVisibleArea)
+
+#include "qfxflickable.moc"

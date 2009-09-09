@@ -121,6 +121,14 @@ void QmlComponentPrivate::typeDataReady()
     emit q->statusChanged(q->status());
 }
 
+void QmlComponentPrivate::updateProgress(qreal p)
+{
+    Q_Q(QmlComponent);
+
+    progress = p;
+    emit q->progressChanged(p);
+}
+
 void QmlComponentPrivate::fromTypeData(QmlCompositeTypeData *data)
 {
     url = data->imports.baseUrl();
@@ -238,6 +246,12 @@ bool QmlComponent::isLoading() const
     return status() == Loading;
 }
 
+qreal QmlComponent::progress() const
+{
+    Q_D(const QmlComponent);
+    return d->progress;
+}
+
 /*!
     \fn void QmlComponent::statusChanged(QmlComponent::Status status)
 
@@ -343,7 +357,9 @@ void QmlComponent::setData(const QByteArray &data, const QUrl &url)
 
     }
 
+    d->progress = 1.0;
     emit statusChanged(status());
+    emit progressChanged(d->progress);
 }
 
 /*!
@@ -364,17 +380,16 @@ void QmlComponent::loadUrl(const QUrl &url)
         QmlEnginePrivate::get(d->engine)->typeManager.get(d->url);
 
     if (data->status == QmlCompositeTypeData::Waiting) {
-
         d->typeData = data;
         d->typeData->addWaiter(d);
-
+        d->progress = data->progress;
     } else {
-
         d->fromTypeData(data);
-
+        d->progress = 1.0;
     }
 
     emit statusChanged(status());
+    emit progressChanged(d->progress);
 }
 
 /*!
@@ -488,6 +503,7 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
         static_cast<QmlContextPrivate *>(QObjectPrivate::get(context));
     QmlContext *ctxt = new QmlContext(context, 0, true);
     static_cast<QmlContextPrivate*>(ctxt->d_func())->url = d->cc->url;
+    static_cast<QmlContextPrivate*>(ctxt->d_func())->imports = d->cc->imports;
 
     QmlVME vme;
     QObject *rv = vme.run(ctxt, d->cc, d->start, d->count);

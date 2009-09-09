@@ -66,7 +66,7 @@ QT_MODULE(Gui)
 #if !defined QT_DIRECTFB_IMAGECACHE && !defined QT_NO_DIRECTFB_IMAGECACHE
 #define QT_NO_DIRECTFB_IMAGECACHE
 #endif
-#if !defined QT_DIRECTFB_NO_IMAGEPROVIDER && !defined QT_DIRECTFB_IMAGEPROVIDER
+#if !defined QT_NO_DIRECTFB_IMAGEPROVIDER && !defined QT_DIRECTFB_IMAGEPROVIDER
 #define QT_DIRECTFB_IMAGEPROVIDER
 #endif
 #if !defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE && !defined QT_NO_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
@@ -215,7 +215,6 @@ public:
     void flipSurface(IDirectFBSurface *surface, DFBSurfaceFlipFlags flipFlags,
                      const QRegion &region, const QPoint &offset);
     void releaseDFBSurface(IDirectFBSurface *surface);
-    void erase(const QRegion &region);
 
     using QScreen::depth;
     static int depth(DFBSurfacePixelFormat format);

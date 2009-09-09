@@ -70,7 +70,7 @@
 %token T_REMAINDER_EQ "%="      T_RETURN "return"           T_RPAREN ")"
 %token T_SEMICOLON ";"          T_AUTOMATIC_SEMICOLON       T_STAR "*"
 %token T_STAR_EQ "*="           T_STRING_LITERAL "string literal"
-%token T_PROPERTY "property"    T_SIGNAL "signal"
+%token T_PROPERTY "property"    T_SIGNAL "signal"           T_READONLY "readonly"
 %token T_SWITCH "switch"        T_THIS "this"               T_THROW "throw"
 %token T_TILDE "~"              T_TRY "try"                 T_TYPEOF "typeof"
 %token T_VAR "var"              T_VOID "void"               T_WHILE "while"
@@ -80,6 +80,7 @@
 %token T_DEBUGGER "debugger"
 %token T_RESERVED_WORD "reserved word"
 %token T_MULTILINE_STRING_LITERAL "multiline string literal"
+%token T_COMMENT "comment"
 
 --- context keywords.
 %token T_PUBLIC "public"
@@ -92,7 +93,7 @@
 %token T_FEED_JS_EXPRESSION
 
 %nonassoc SHIFT_THERE
-%nonassoc T_IDENTIFIER T_COLON T_SIGNAL T_PROPERTY
+%nonassoc T_IDENTIFIER T_COLON T_SIGNAL T_PROPERTY T_READONLY
 %nonassoc REDUCE_HERE
 
 %start TopLevel
@@ -892,6 +893,23 @@ case $rule_number: {
 }   break;
 ./
 
+UiObjectMember: T_READONLY T_PROPERTY UiPropertyType T_IDENTIFIER T_COLON Expression T_AUTOMATIC_SEMICOLON ;
+UiObjectMember: T_READONLY T_PROPERTY UiPropertyType T_IDENTIFIER T_COLON Expression T_SEMICOLON ;
+/.
+case $rule_number: {
+    AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), sym(3).sval, sym(4).sval,
+        sym(6).Expression);
+    node->isReadonlyMember = true;
+    node->readonlyToken = loc(1);
+    node->propertyToken = loc(2);
+    node->typeToken = loc(3);
+    node->identifierToken = loc(4);
+    node->colonToken = loc(5);
+    node->semicolonToken = loc(7);
+    sym(1).Node = node;
+}   break;
+./
+
 UiObjectMember: T_DEFAULT T_PROPERTY UiPropertyType T_IDENTIFIER T_COLON Expression T_AUTOMATIC_SEMICOLON ;
 UiObjectMember: T_DEFAULT T_PROPERTY UiPropertyType T_IDENTIFIER T_COLON Expression T_SEMICOLON ;
 /.
@@ -938,6 +956,15 @@ JsIdentifier: T_SIGNAL ;
 /.
 case $rule_number: {
     QString s = QLatin1String(QmlJSGrammar::spell[T_SIGNAL]);
+    sym(1).sval = driver->intern(s.constData(), s.length());
+    break;
+}
+./
+
+JsIdentifier: T_READONLY ;
+/.
+case $rule_number: {
+    QString s = QLatin1String(QmlJSGrammar::spell[T_READONLY]);
     sym(1).sval = driver->intern(s.constData(), s.length());
     break;
 }

@@ -73,6 +73,7 @@ class QmlCompositeTypeManager : public QObject
     Q_OBJECT
 public:
     QmlCompositeTypeManager(QmlEngine *);
+    ~QmlCompositeTypeManager();
 
     // Return a QmlCompositeTypeData for url.  The QmlCompositeTypeData may be 
     // cached.
@@ -87,6 +88,7 @@ public:
 
 private Q_SLOTS:
     void replyFinished();
+    void requestProgress(qint64 received, qint64 total);
 
 private:
     void loadSource(QmlCompositeTypeData *);

@@ -54,6 +54,8 @@
 #include <QStyleFactory>
 #include <QTabWidget>
 
+#include "../../shared/util.h"
+
 Q_DECLARE_METATYPE(QPushButton*)
 
 //TESTED_CLASS=
@@ -413,6 +415,7 @@ void tst_QPushButton::setAccel()
 
     // The shortcut will not be activated unless the button is in a active
     // window and has focus
+    QApplication::setActiveWindow(testWidget);
     testWidget->setFocus();
     for (int i = 0; !testWidget->isActiveWindow() && i < 1000; ++i) {
         testWidget->activateWindow();
@@ -421,8 +424,8 @@ void tst_QPushButton::setAccel()
     }
     QVERIFY(testWidget->isActiveWindow());
     QTest::keyClick( testWidget, 'A', Qt::AltModifier );
-    QTest::qWait( 500 );
-    QVERIFY( click_count == 1 );
+    QTest::qWait( 50 );
+    QTRY_VERIFY( click_count == 1 );
     QVERIFY( press_count == 1 );
     QVERIFY( release_count == 1 );
     QVERIFY( toggle_count == 0 );
@@ -430,6 +433,7 @@ void tst_QPushButton::setAccel()
     // wait 200 ms because setAccel uses animateClick.
     // if we don't wait this may screw up a next test.
     QTest::qWait(200);
+    QTRY_VERIFY( !testWidget->isDown() );
 }
 
 void tst_QPushButton::animateClick()

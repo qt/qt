@@ -170,6 +170,7 @@ public:
         struct {
             int type;
             int data;
+            ushort column;
         } create;
         struct {
             int data;
@@ -283,6 +284,7 @@ public:
         } assignSignalObject;
         struct {
             int count;
+            ushort column;
             int endLine;
             int metaObject;
         } createComponent;

@@ -229,6 +229,7 @@ QGLWidget* qt_gl_share_widget()
     return _qt_gl_share_widget()->shareWidget();
 }
 
+
 struct QGLWindowSurfacePrivate
 {
     QGLFramebufferObject *fbo;
@@ -248,9 +249,48 @@ struct QGLWindowSurfacePrivate
     QSize size;
 
     QList<QImage> buffers;
+    QGLWindowSurfaceGLPaintDevice glDevice;
+    QGLWindowSurface* q_ptr;
 };
 
 QGLFormat QGLWindowSurface::surfaceFormat;
+
+void QGLWindowSurfaceGLPaintDevice::endPaint()
+{
+    glFlush();
+    QGLPaintDevice::endPaint();
+}
+
+QSize QGLWindowSurfaceGLPaintDevice::size() const
+{
+    return d->size;
+}
+
+QGLContext* QGLWindowSurfaceGLPaintDevice::context() const
+{
+    return d->ctx;
+}
+
+
+int QGLWindowSurfaceGLPaintDevice::metric(PaintDeviceMetric m) const
+{
+    return d->q_ptr->window()->metric(m);
+}
+
+Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_window_surface_2_engine)
+
+#if !defined (QT_OPENGL_ES_2)
+Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_window_surface_engine)
+#endif
+
+QPaintEngine *QGLWindowSurfaceGLPaintDevice::paintEngine() const
+{
+#if !defined(QT_OPENGL_ES_2)
+    if (!qt_gl_preferGL2Engine())
+        return qt_gl_window_surface_engine();
+#endif
+    return qt_gl_window_surface_2_engine();
+}
 
 QGLWindowSurface::QGLWindowSurface(QWidget *window)
     : QWindowSurface(window), d_ptr(new QGLWindowSurfacePrivate)
@@ -263,6 +303,8 @@ QGLWindowSurface::QGLWindowSurface(QWidget *window)
     d_ptr->tried_fbo = false;
     d_ptr->tried_pb = false;
     d_ptr->destructive_swap_buffers = qgetenv("QT_GL_SWAPBUFFER_PRESERVE").isNull();
+    d_ptr->glDevice.d = d_ptr;
+    d_ptr->q_ptr = this;
 }
 
 QGLWindowSurface::~QGLWindowSurface()
@@ -320,27 +362,6 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
     qDebug() << "hijackWindow() context created for" << widget << d_ptr->contexts.size();
 }
 
-Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_window_surface_2_engine)
-
-#if !defined (QT_OPENGL_ES_2)
-Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_window_surface_engine)
-#endif
-
-/*! \reimp */
-QPaintEngine *QGLWindowSurface::paintEngine() const
-{
-#if !defined(QT_OPENGL_ES_2)
-    if (!qt_gl_preferGL2Engine())
-        return qt_gl_window_surface_engine();
-#endif
-    return qt_gl_window_surface_2_engine();
-}
-
-int QGLWindowSurface::metric(PaintDeviceMetric m) const
-{
-    return window()->metric(m);
-}
-
 QGLContext *QGLWindowSurface::context() const
 {
     return d_ptr->ctx;
@@ -354,7 +375,7 @@ QPaintDevice *QGLWindowSurface::paintDevice()
         return d_ptr->pb;
 
     if (d_ptr->ctx)
-        return this;
+        return &d_ptr->glDevice;
 
     QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
     ctx->makeCurrent();
@@ -569,7 +590,7 @@ void QGLWindowSurface::updateGeometry()
 
         QGLFramebufferObjectFormat format;
         format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
-        format.setInternalFormat(GL_RGBA);
+        format.setInternalTextureFormat(GLenum(GL_RGBA));
         format.setTextureTarget(target);
 
         if (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit)

@@ -809,19 +809,19 @@ void QmlScriptAction::setScript(const QString &script)
 }
 
 /*!
-    \qmlproperty QString ScriptAction::runScriptName
+    \qmlproperty QString ScriptAction::stateChangeScriptName
     This property holds the the name of the StateChangeScript to run.
 
     This property is only valid when ScriptAction is used as part of a transition.
-    If both script and runScriptName are set, runScriptName will be used.
+    If both script and stateChangeScriptName are set, stateChangeScriptName will be used.
 */
-QString QmlScriptAction::runScriptName() const
+QString QmlScriptAction::stateChangeScriptName() const
 {
     Q_D(const QmlScriptAction);
     return d->script;
 }
 
-void QmlScriptAction::setRunScriptName(const QString &name)
+void QmlScriptAction::setStateChangeScriptName(const QString &name)
 {
     Q_D(QmlScriptAction);
     d->name = name;
@@ -1442,8 +1442,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParallelAnimation,QmlParallelAni
 void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, int type)
 {
     if (variant.type() != QVariant::String) {
-        if ((uint)type < QVariant::UserType)
-            variant.convert((QVariant::Type)type);
+        variant.convert((QVariant::Type)type);
         return;
     }
 

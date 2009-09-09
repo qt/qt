@@ -1171,7 +1171,7 @@ static void parseShorthandFontProperty(const QVector<Value> &values, QFont *font
 {
     font->setStyle(QFont::StyleNormal);
     font->setWeight(QFont::Normal);
-    *fontSizeAdjustment = 0;
+    *fontSizeAdjustment = -255;
 
     int i = 0;
     while (i < values.count()) {
@@ -2126,6 +2126,7 @@ void Parser::init(const QString &css, bool isFile)
 
     hasEscapeSequences = false;
     symbols.resize(0);
+    symbols.reserve(8);
     Scanner::scan(Scanner::preprocess(styleSheet, &hasEscapeSequences), &symbols);
     index = 0;
     errorIndex = -1;

@@ -7,7 +7,7 @@ Item {
     property string text
 
     width: Math.max(94,Label.width + Editor.width + 20)
-    height: Image.height
+    height: ButtonImage.height
 
     states: [
         State {
@@ -26,7 +26,7 @@ Item {
                 width: 100
             }
             PropertyChanges {
-                target: Proxy
+                target: Container
                 focus: true
             }
             StateChangeScript {
@@ -48,7 +48,7 @@ Item {
 
 
     BorderImage {
-        id: Image
+        id: ButtonImage
         source: "pics/button.sci"
         anchors.left: Container.left
         anchors.right: Container.right
@@ -63,12 +63,12 @@ Item {
     }
 
     MouseRegion {
-        id: MouseRegion
-        anchors.fill: Image
+        id: MyMouseRegion
+        anchors.fill: ButtonImage
         onClicked: { Container.state = Container.state=="Edit" ? "" : "Edit" }
         states: [
             State {
-                when: MouseRegion.pressed == true
+                when: MyMouseRegion.pressed == true
                 PropertyChanges {
                     target: Pressed
                     opacity: 1
@@ -96,12 +96,7 @@ Item {
         anchors.left: Label.right
         anchors.verticalCenter: Container.verticalCenter
     }
-    KeyProxy {
-        id: Proxy
-        anchors.left: Container.left
-        anchors.fill: Container
-        targets: [(ReturnKey), (Editor)]
-    }
+    Keys.forwardTo: [(ReturnKey), (Editor)]
     Item {
         id: ReturnKey
         Keys.onReturnPressed: "Container.state = ''"

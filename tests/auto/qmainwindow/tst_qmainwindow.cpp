@@ -107,6 +107,7 @@ private slots:
     void setCursor();
     void addToolbarAfterShow();
     void centralWidgetSize();
+    void dockWidgetSize();
 };
 
 // Testing get/set functions
@@ -1675,6 +1676,24 @@ void tst_QMainWindow::centralWidgetSize()
     mainWindow.show();
     QTest::qWait(100);
     QCOMPARE(widget.size(), widget.sizeHint());
+}
+
+void tst_QMainWindow::dockWidgetSize()
+{
+    QMainWindow mainWindow;
+    mainWindow.menuBar()->addMenu("menu");
+
+    MyWidget widget;
+    mainWindow.setCentralWidget(&widget);
+
+    QDockWidget dock;
+    dock.setWidget(new MyWidget);
+    mainWindow.addDockWidget(Qt::TopDockWidgetArea, &dock);
+
+    mainWindow.show();
+    QTest::qWait(100);
+    QCOMPARE(widget.size(), widget.sizeHint());
+    QCOMPARE(dock.widget()->size(), dock.widget()->sizeHint());
 }
 
 

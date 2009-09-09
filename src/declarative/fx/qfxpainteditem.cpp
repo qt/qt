@@ -175,6 +175,7 @@ QFxPaintedItem::QFxPaintedItem(QFxPaintedItemPrivate &dd, QFxItem *parent)
 */
 QFxPaintedItem::~QFxPaintedItem()
 {
+    clearCache();
 }
 
 /*!
@@ -208,12 +209,6 @@ void QFxPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidge
 
     ++inpaint;
 
-    bool oldAntiAliasing = p->testRenderHint(QPainter::Antialiasing);
-    bool oldSmoothPixmap = p->testRenderHint(QPainter::SmoothPixmapTransform);
-    if (oldAntiAliasing)
-        p->setRenderHints(QPainter::Antialiasing, false); // cannot stitch properly otherwise
-    if (d->smooth)
-        p->setRenderHints(QPainter::SmoothPixmapTransform, true);
     QRectF clipf = p->clipRegion().boundingRect();
     if (clipf.isEmpty())
         clipf = mapToScene(content).boundingRect(); // ### Inefficient: Maps toScene and then fromScene
@@ -234,6 +229,7 @@ void QFxPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidge
             if (!d->cachefrozen) {
                 if (!d->imagecache[i]->dirty.isNull() && topaint.contains(d->imagecache[i]->dirty)) {
                     QPainter qp(&d->imagecache[i]->image);
+                    qp.setRenderHints(QPainter::HighQualityAntialiasing | QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform, d->smooth);
                     qp.translate(-area.x(), -area.y());
                     if (d->fillColor.isValid())
                         qp.fillRect(d->imagecache[i]->dirty,d->fillColor);
@@ -280,6 +276,8 @@ void QFxPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidge
                     img.fill(d->fillColor);
                 {
                     QPainter qp(&img);
+                    qp.setRenderHints(QPainter::HighQualityAntialiasing | QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform, d->smooth);
+
                     qp.translate(-r.x(),-r.y());
                     drawContents(&qp, r);
                 }
@@ -295,11 +293,6 @@ void QFxPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidge
                 p->fillRect(rects.at(i), Qt::lightGray);
         }
     }
-
-    if (oldAntiAliasing)
-        p->setRenderHints(QPainter::Antialiasing, oldAntiAliasing);
-    if (d->smooth)
-        p->setRenderHints(QPainter::SmoothPixmapTransform, oldSmoothPixmap);
 
     if (inpaint_clearcache) {
         clearCache();

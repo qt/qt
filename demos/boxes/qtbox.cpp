@@ -319,6 +319,8 @@ void QtBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWi
         0.5f * (right + left), 0.5f * (bottom + top), 0.0f, 1.0f
     };
 
+    painter->beginNativePainting();
+
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glLoadMatrixf(moveToRectMatrix);
@@ -391,6 +393,8 @@ void QtBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWi
 
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
+
+    painter->endNativePainting();
 
     ItemBase::paint(painter, option, widget);
 }

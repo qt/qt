@@ -157,6 +157,7 @@ private slots:
     void shortcutsDeletion();
     void painterStateProtectionOnWindowFrame();
     void ensureClipping();
+    void respectHFW();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
@@ -2529,6 +2530,7 @@ void tst_QGraphicsWidget::ensureClipping()
     RectItem *childitem = new RectItem(Qt::blue, clipWidget);
 
     QGraphicsView view(&scene);
+    view.setOptimizationFlag(QGraphicsView::IndirectPainting);
     view.show();
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
@@ -2540,6 +2542,84 @@ void tst_QGraphicsWidget::ensureClipping()
     QVERIFY(scene.drawnItems.contains(clipWidget));
     QVERIFY(scene.drawnItems.contains(childWidget));
     QVERIFY(scene.drawnItems.contains(childitem));
+}
+
+class HFWWidget : public QGraphicsWidget
+{
+public:
+    HFWWidget() : QGraphicsWidget(0, Qt::Window)
+    {
+        QSizePolicy sp;
+        sp.setHeightForWidth(true);
+        setSizePolicy(sp);
+    }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    {
+        Q_UNUSED(option);
+        Q_UNUSED(widget);
+        qreal w = rect().width();
+        QRectF box(0, 0, w, 2400/w);
+        painter->drawRoundRect(box);
+        painter->drawLine(box.topLeft(), box.bottomRight());
+        painter->drawLine(box.bottomLeft(), box.topRight());
+    }
+
+protected:
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const
+    {
+        qreal w = constraint.width();
+        switch (which) {
+        case Qt::MinimumSize:
+            if (w >= 0 && constraint.height() < 0) {
+                // keep the same area of 60x40 = 2400
+                return QSizeF(w, 2400.0/w);
+            } else {
+                return QSizeF(10, 10);
+            }
+            break;
+        case Qt::PreferredSize:
+            return QSizeF(48.989794, 48.989794);
+            default:
+            break;
+        }
+        return QGraphicsWidget::sizeHint(which, constraint);
+    }
+};
+
+void tst_QGraphicsWidget::respectHFW()
+{
+    QGraphicsScene scene;
+    HFWWidget *window = new HFWWidget;
+    scene.addItem(window);
+    QGraphicsView *view = new QGraphicsView(&scene);
+    view->resize(400, 400);
+    view->setSceneRect(-100, -100, 300,300);
+
+    view->show();
+    window->setGeometry(0, 0, 70, 70);
+
+    {   // here we go - simulate a interactive resize of the window
+        QTest::qWait(200);
+        QTest::mouseMove(view, view->mapFromScene(71, 71)); // bottom right corner
+        QTest::qWait(200);
+
+        QTest::mousePress(view->viewport(), Qt::LeftButton, 0, view->mapFromScene(71, 71), 200);
+        view->grabMouse();
+        // move both mouse cursor and set correct event in order to emulate resize
+        QTest::mouseMove(view->viewport(), view->mapFromScene(60, 30), 200);
+        QMouseEvent e = QMouseEvent(QEvent::MouseMove,
+                      view->mapFromScene(60, 20),
+                      Qt::NoButton,
+                      Qt::LeftButton,
+                      Qt::NoModifier);
+        QApplication::sendEvent(view->viewport(), &e);
+        view->releaseMouse();
+    }
+    QTest::qWait(200);
+    const QSizeF winSize = window->size();
+    qreal minHFW = window->effectiveSizeHint(Qt::MinimumSize, QSizeF(winSize.width(), -1)).height();
+    QVERIFY(qAbs(minHFW - winSize.height()) < 1);
 }
 
 QTEST_MAIN(tst_QGraphicsWidget)

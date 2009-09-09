@@ -181,9 +181,16 @@ void QmlEngineDebugServer::buildObjectList(QDataStream &message,
 QmlEngineDebugServer::QmlObjectData 
 QmlEngineDebugServer::objectData(QObject *object)
 {
+    QmlDeclarativeData *ddata = QmlDeclarativeData::get(object);
     QmlObjectData rv;
-    rv.lineNumber = -1;
-    rv.columnNumber = -1;
+    if (ddata) {
+        rv.url = ddata->outerContext->baseUrl();
+        rv.lineNumber = ddata->lineNumber;
+        rv.columnNumber = ddata->columnNumber;
+    } else {
+        rv.lineNumber = -1;
+        rv.columnNumber = -1;
+    }
 
     rv.objectName = object->objectName();
     rv.objectType = object->metaObject()->className();

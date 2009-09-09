@@ -592,7 +592,7 @@ void tst_QSslSocket::connectToHostEncrypted()
 
     QSslSocketPtr socket = newSocket();
     this->socket = socket;
-    QVERIFY(socket->addCaCertificates(QLatin1String("certs/qt-test-server-cacert.pem")));
+    QVERIFY(socket->addCaCertificates(QLatin1String(SRCDIR "certs/qt-test-server-cacert.pem")));
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
     connect(socket, SIGNAL(sslErrors(QList<QSslError>)),
             this, SLOT(untrustedWorkaroundSlot(QList<QSslError>)));

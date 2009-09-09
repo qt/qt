@@ -47,9 +47,10 @@
 #include <QGraphicsSceneMouseEvent>
 
 Node::Node(const QPointF &pos, QGraphicsItem *parent)
-  : QGraphicsItem(parent), m_dragging(false)
+  : QGraphicsObject(parent), m_dragging(false)
 {
     setPos(pos);
+    setFlag(QGraphicsItem::ItemSendsGeometryChanges);
 }
 
 Node::~Node()
@@ -72,7 +73,7 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value)
     if (change == QGraphicsItem::ItemPositionChange)
         emit positionChanged();
 
-    return QGraphicsItem::itemChange(change, value);
+    return QGraphicsObject::itemChange(change, value);
 }
 
 void Node::mousePressEvent(QGraphicsSceneMouseEvent *)

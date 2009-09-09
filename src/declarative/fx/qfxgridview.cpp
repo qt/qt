@@ -59,7 +59,7 @@ public:
         attachedProperties.remove(parent());
     }
 
-    Q_PROPERTY(QFxGridView *view READ view)
+    Q_PROPERTY(QFxGridView *view READ view CONSTANT)
     QFxGridView *view() { return m_view; }
 
     Q_PROPERTY(bool isCurrentItem READ isCurrentItem NOTIFY currentItemChanged)
@@ -699,6 +699,7 @@ QFxGridView::QFxGridView(QFxItem *parent)
 QFxGridView::~QFxGridView()
 {
     Q_D(QFxGridView);
+    d->clear();
     if (d->ownModel)
         delete d->model;
 }

@@ -3625,6 +3625,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
     case QEvent::MouseButtonRelease:
     case QEvent::MouseButtonDblClick:
         d->toolTipFallAsleep.stop();
+        // fall-through
     case QEvent::Leave:
         d->toolTipWakeUp.stop();
     default:
@@ -4771,7 +4772,12 @@ void QApplicationPrivate::emitLastWindowClosed()
 
     If \a enable is true, Qt::Key_Up and Qt::Key_Down are used to change focus.
 
-    This feature is available in Qt for Embedded Linux and Symbian only.
+    This feature is available in Qt for Embedded Linux, Symbian and Windows CE
+    only.
+
+    \note On Windows CE this feature is disabled by default for touch device
+          mkspecs. To enable keypad navigation, build Qt with
+          QT_KEYPAD_NAVIGATION defined.
 
     \sa keypadNavigationEnabled()
 */
@@ -4784,7 +4790,12 @@ void QApplication::setKeypadNavigationEnabled(bool enable)
     Returns true if Qt is set to use keypad navigation; otherwise returns
     false.  The default value is true on Symbian, but false on other platforms.
 
-    This feature is available in Qt for Embedded Linux and Symbian only.
+    This feature is available in Qt for Embedded Linux, Symbian and Windows CE
+    only.
+
+    \note On Windows CE this feature is disabled by default for touch device
+          mkspecs. To enable keypad navigation, build Qt with
+          QT_KEYPAD_NAVIGATION defined.
 
     \sa setKeypadNavigationEnabled()
 */

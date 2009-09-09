@@ -67,7 +67,6 @@
     \o QGraphicsOpacityEffect - renders the item with an opacity
     \o QGraphicsPixelizeEffect - pixelizes the item with any pixel size
     \o QGraphicsGrayscaleEffect - renders the item in shades of gray
-    \o QGraphicsShaderEffect - renders the item with a pixel shader fragment
     \endlist
 
     \img graphicseffect-effects.png
@@ -256,7 +255,8 @@ QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offse
 }
 
 /*!
-    Constructs a new QGraphicsEffect instance.
+    Constructs a new QGraphicsEffect instance having the
+    specified \a parent.
 */
 QGraphicsEffect::QGraphicsEffect(QObject *parent)
     : QObject(*new QGraphicsEffectPrivate, parent)

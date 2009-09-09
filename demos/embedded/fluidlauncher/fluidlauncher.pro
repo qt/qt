@@ -61,7 +61,6 @@ symbian {
     TARGET.UID3 = 0xA000A641
 
     executables.sources = \
-        embeddedsvgviewer.exe \
         styledemo.exe \
         deform.exe \
         pathstroke.exe \
@@ -71,47 +70,77 @@ symbian {
         desktopservices.exe \
         fridgemagnets.exe \
         drilldown.exe \
-        softkeys.exe
-
-    contains(QT_CONFIG, webkit): executables.sources += anomaly.exe
-    contains(QT_CONFIG, script): executables.sources += context2d.exe
+        softkeys.exe \
+        raycasting.exe \
+        flickable.exe \
+        digiflip.exe \
+        lightmaps.exe \
+        flightinfo.exe
 
     executables.path = /sys/bin
 
     reg_resource.sources = \
-         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/embeddedsvgviewer_reg.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/styledemo_reg.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/deform_reg.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/pathstroke_reg.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/wiggly_reg.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/ftp_reg.rsc\
-         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/saxbookmarks_reg.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/desktopservices_reg.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/fridgemagnets_reg.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/drilldown_reg.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/softkeys_reg.rsc
-
-    contains(QT_CONFIG, webkit): reg_resource.sources += $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/anomaly_reg.rsc
-    contains(QT_CONFIG, script): reg_resource.sources += $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/context2d_reg.rsc
+        $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/styledemo_reg.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/deform_reg.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/pathstroke_reg.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/wiggly_reg.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/ftp_reg.rsc\
+        $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/saxbookmarks_reg.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/desktopservices_reg.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/fridgemagnets_reg.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/drilldown_reg.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/softkeys_reg.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/raycasting_reg.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/flickable_reg.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/digiflip_reg.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/lightmaps_reg.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/flightinfo_reg.rsc
 
     reg_resource.path = $$REG_RESOURCE_IMPORT_DIR
 
     resource.sources = \
-         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/embeddedsvgviewer.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/styledemo.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/deform.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/pathstroke.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/wiggly.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/ftp.rsc\
-         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/saxbookmarks.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/desktopservices.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/fridgemagnets.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/drilldown.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/softkeys.rsc
-    contains(QT_CONFIG, webkit): resource.sources += $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/anomaly.rsc
-    contains(QT_CONFIG, script): resource.sources += $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/context2d.rsc
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/styledemo.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/deform.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/pathstroke.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/wiggly.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/ftp.rsc\
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/saxbookmarks.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/desktopservices.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/fridgemagnets.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/drilldown.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/softkeys.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/raycasting.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/flickable.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/digiflip.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/lightmaps.rsc \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/flightinfo.rsc
+
     
     resource.path = $$APP_RESOURCE_DIR
+
+    contains(QT_CONFIG, svg) { 
+        executables.sources += \ 
+            embeddedsvgviewer.exe \
+            weatherinfo.exe
+            
+        reg_resource.sources += \
+            $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/embeddedsvgviewer_reg.rsc \
+            $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/weatherinfo_reg.rsc
+            
+        resource.sources += \
+            $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/embeddedsvgviewer.rsc \
+            $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/weatherinfo.rsc
+    }
+    contains(QT_CONFIG, webkit) {
+        executables.sources += anomaly.exe
+        reg_resource.sources += $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/anomaly_reg.rsc
+        resource.sources += $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/anomaly.rsc
+    }
+    contains(QT_CONFIG, script) {
+        executables.sources += context2d.exe    
+        reg_resource.sources += $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/context2d_reg.rsc
+        resource.sources += $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/context2d.rsc
+    }
 
     mifs.sources = \
         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/0xA000C611.mif

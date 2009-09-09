@@ -74,15 +74,17 @@ class QmlComponentPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QmlComponent)
         
 public:
-    QmlComponentPrivate() : typeData(0), start(-1), count(-1), cc(0), completePending(false), engine(0) {}
+    QmlComponentPrivate() : typeData(0), progress(0.), start(-1), count(-1), cc(0), completePending(false), engine(0) {}
 
     QmlCompositeTypeData *typeData;
     void typeDataReady();
+    void updateProgress(qreal);
     
     void fromTypeData(QmlCompositeTypeData *data);
 
     QList<QmlError> errors;
     QUrl url;
+    qreal progress;
 
     int start;
     int count;

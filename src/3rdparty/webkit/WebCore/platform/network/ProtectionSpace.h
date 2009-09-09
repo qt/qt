@@ -46,7 +46,7 @@ enum ProtectionSpaceAuthenticationScheme {
   ProtectionSpaceAuthenticationSchemeHTTPDigest = 3,
   ProtectionSpaceAuthenticationSchemeHTMLForm = 4,
   ProtectionSpaceAuthenticationSchemeNTLM = 5,
-  ProtectionSpaceAuthenticationSchemeNegotiate = 6,
+  ProtectionSpaceAuthenticationSchemeNegotiate = 6
 };
 
 class ProtectionSpace {

@@ -34,6 +34,20 @@ Rectangle {
     }
 
     Dialog { id: dialog; anchors.centerIn: parent; z: 21 }
+    Dialog { 
+        id: scoreName; anchors.centerIn: parent; z: 22; 
+        TextInput {
+            id: Editor
+            onAccepted: { 
+                if(scoreName.opacity==1&&Editor.text!="")
+                    sendHighScore(Editor.text);
+                scoreName.forceClose(); 
+            }
+            anchors.verticalCenter: parent.verticalCenter
+            width: 72; focus: true
+            anchors.right: scoreName.right
+        }
+    }
 
     Rectangle {
         id: ToolBar

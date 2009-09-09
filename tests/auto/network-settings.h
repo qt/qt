@@ -1,4 +1,6 @@
 /****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -36,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #include <QString>
 #ifdef QT_NETWORK_LIB
 #include <QtNetwork/QHostInfo>
@@ -140,8 +143,8 @@ public:
             }
             return QHostAddress(serverIp.data());
         }
-#endif
-        return QHostInfo::fromName(serverName()).addresses().first();
+#endif // Q_OS_SYMBIAN
+    return QHostInfo::fromName(serverName()).addresses().first();
     }
 #endif
 
@@ -158,12 +161,11 @@ public:
             }
             return imapExpectedReply.data();
         }
-#else
-		QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] " );
+#endif
+        QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] " );
         expected = expected.append(QtNetworkSettings::serverName().toAscii());
         expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
         return expected;
-#endif
     }
 
     static QByteArray expectedReplySSL()
@@ -181,7 +183,7 @@ public:
         }
 #endif
         QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID AUTH=PLAIN SASL-IR] " );
-        expected = expected.append(QtNetworkSettings::serverLocalName().toAscii());
+        expected = expected.append(QtNetworkSettings::serverName().toAscii());
         expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
         return expected;
     }
@@ -325,4 +327,20 @@ QByteArray QtNetworkSettings::imapExpectedReplySsl;
 #define Q_SET_DEFAULT_IAP QtNetworkSettings::setDefaultIap();
 #else
 #define Q_SET_DEFAULT_IAP
+#endif
+
+#ifdef QT_NETWORK_LIB
+class QtNetworkSettingsInitializerCode {
+public:
+    QtNetworkSettingsInitializerCode() {
+        QHostInfo testServerResult = QHostInfo::fromName(QtNetworkSettings::serverName());
+        if (testServerResult.error() != QHostInfo::NoError) {
+            qWarning() << "Could not lookup" << QtNetworkSettings::serverName();
+            qWarning() << "Please configure the test environment!";
+            qWarning() << "See /etc/hosts or network-settings.h";
+            qFatal("Exiting");
+        }
+    }
+};
+QtNetworkSettingsInitializerCode qtNetworkSettingsInitializer;
 #endif

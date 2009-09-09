@@ -38,6 +38,7 @@ private slots:
     void objectPropertiesTriggerReeval();
     void deferredProperties();
     void extensionObjects();
+    void enums();
 
 private:
     QmlEngine engine;
@@ -364,6 +365,24 @@ void tst_qmlbindengine::extensionObjects()
     object->setProperty("baseExtendedProperty", QVariant(92));
     QCOMPARE(object->coreProperty(), 11);
     QCOMPARE(object->baseProperty(), 92);
+}
+
+void tst_qmlbindengine::enums()
+{
+    QmlComponent component(&engine, TEST_FILE("enums.1.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("a").toInt(), 0);
+    QCOMPARE(object->property("b").toInt(), 1);
+    QCOMPARE(object->property("c").toInt(), 2);
+    QCOMPARE(object->property("d").toInt(), 3);
+    QCOMPARE(object->property("e").toInt(), 0);
+    QCOMPARE(object->property("f").toInt(), 1);
+    QCOMPARE(object->property("g").toInt(), 2);
+    QCOMPARE(object->property("h").toInt(), 3);
+    QCOMPARE(object->property("i").toInt(), 19);
+    QCOMPARE(object->property("j").toInt(), 19);
 }
 
 QTEST_MAIN(tst_qmlbindengine)

@@ -123,8 +123,8 @@ QT_BEGIN_NAMESPACE
     emitted.
 
     There are XEmbed widgets available for KDE and GTK+. The GTK+
-    equivalent of QX11EmbedWidget is GtkPlug. The KDE widget is called
-    QXEmbed.
+    equivalent of QX11EmbedWidget is GtkPlug. The corresponding KDE 3
+    widget is called QXEmbed.
 
     \sa QX11EmbedContainer, {XEmbed Specification}
 */
@@ -177,8 +177,8 @@ QT_BEGIN_NAMESPACE
     features such as window activation and focus handling are then
     lost.
 
-    The GTK+ equivalent of QX11EmbedContainer is GtkSocket. The KDE
-    widget is called QXEmbed.
+    The GTK+ equivalent of QX11EmbedContainer is GtkSocket. The
+    corresponding KDE 3 widget is called QXEmbed.
 
     \sa QX11EmbedWidget, {XEmbed Specification}
 */

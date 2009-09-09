@@ -222,7 +222,7 @@ void QFxView::execute()
     if (d->qml.isEmpty()) {
         d->component = new QmlComponent(&d->engine, d->source, this);
     } else {
-        d->component = new QmlComponent(&d->engine, d->qml.toUtf8(), d->source);
+        d->component = new QmlComponent(&d->engine, d->qml.toUtf8(), d->source, this);
     }
 
     if (!d->component->isLoading()) {

@@ -65,7 +65,6 @@ class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable
 
     Q_ENUMS(CurrentItemPositioning)
     Q_PROPERTY(QVariant model READ model WRITE setModel)
-    Q_CLASSINFO("DefaultProperty", "delegate")
     Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate) //### what happens if delegate is not a QFxItem?
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
     Q_PROPERTY(QFxItem *current READ currentItem NOTIFY currentIndexChanged) //### currentItem
@@ -80,6 +79,7 @@ class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable
     Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer)
     Q_PROPERTY(QString sectionExpression READ sectionExpression WRITE setSectionExpression NOTIFY sectionExpressionChanged)
     Q_PROPERTY(QString currentSection READ currentSection NOTIFY currentSectionChanged)
+    Q_CLASSINFO("DefaultProperty", "data")
 
 public:
     QFxListView(QFxItem *parent=0);

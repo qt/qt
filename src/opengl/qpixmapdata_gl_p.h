@@ -57,12 +57,14 @@
 #include "qgl.h"
 
 #include "private/qpixmapdata_p.h"
+#include "private/qglpaintdevice_p.h"
 
 QT_BEGIN_NAMESPACE
 
 class QPaintEngine;
 class QGLFramebufferObject;
 class QGLFramebufferObjectFormat;
+class QGLPixmapData;
 
 class QGLFramebufferObjectPool
 {
@@ -76,31 +78,50 @@ private:
 
 QGLFramebufferObjectPool* qgl_fbo_pool();
 
+
+class QGLPixmapGLPaintDevice : public QGLPaintDevice
+{
+public:
+    QPaintEngine* paintEngine() const;
+
+    void beginPaint();
+    void endPaint();
+    QGLContext* context() const;
+    QSize size() const;
+
+    void setPixmapData(QGLPixmapData*);
+private:
+    QGLPixmapData *data;
+};
+
+
 class QGLPixmapData : public QPixmapData
 {
 public:
     QGLPixmapData(PixelType type);
     ~QGLPixmapData();
 
-    bool isValid() const;
-
+    // Re-implemented from QPixmapData:
     void resize(int width, int height);
-    void fromImage(const QImage &image,
-                   Qt::ImageConversionFlags flags);
+    void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
     void copy(const QPixmapData *data, const QRect &rect);
-
     bool scroll(int dx, int dy, const QRect &rect);
-
     void fill(const QColor &color);
     bool hasAlphaChannel() const;
     QImage toImage() const;
     QPaintEngine *paintEngine() const;
+    int metric(QPaintDevice::PaintDeviceMetric metric) const;
 
+    // For accessing as a target:
+    QGLPaintDevice *glDevice() const;
+
+    // For accessing as a source:
+    bool isValidContext(const QGLContext *ctx) const;
     GLuint bind(bool copyBack = true) const;
-    GLuint textureId() const;
     QGLTexture *texture() const;
 
-    bool isValidContext(const QGLContext *ctx) const;
+private:
+    bool isValid() const;
 
     void ensureCreated() const;
 
@@ -109,22 +130,13 @@ public:
     bool needsFill() const { return m_hasFillColor; }
     QColor fillColor() const { return m_fillColor; }
 
-    QSize size() const { return QSize(w, h); }
 
-    QGLFramebufferObject *fbo() const;
 
-    void makeCurrent();
-    void doneCurrent();
-    void swapBuffers();
-
-protected:
-    int metric(QPaintDevice::PaintDeviceMetric metric) const;
-
-private:
     QGLPixmapData(const QGLPixmapData &other);
     QGLPixmapData &operator=(const QGLPixmapData &other);
 
     void copyBackFromRenderFbo(bool keepCurrentFboBound) const;
+    QSize size() const { return QSize(w, h); }
 
     static bool useFramebufferObjects();
 
@@ -145,6 +157,10 @@ private:
     mutable bool m_hasFillColor;
 
     mutable bool m_hasAlpha;
+
+    mutable QGLPixmapGLPaintDevice m_glDevice;
+
+    friend class QGLPixmapGLPaintDevice;
 };
 
 QT_END_NAMESPACE

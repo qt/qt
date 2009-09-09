@@ -303,13 +303,17 @@
     drop shadow effects and for decoration objects that follow the parent
     item's geometry without drawing on top of it.
 
-    \value ItemUsesExtendedStyleOption The item makes use of either the
-    exposedRect or matrix member of the QStyleOptionGraphicsItem. Implementers
-    of QGraphicsItem subclasses should set that flag if this data is required.
-    By default, the exposedRect is initialized to the item's boundingRect and
-    the matrix is untransformed. Enable this flag for more fine-grained values.
-    Use QStyleOptionGraphicsItem::levelOfDetailFromTransform() for a more
-    fine-grained value.
+    \value ItemUsesExtendedStyleOption The item makes use of either
+    \l{QStyleOptionGraphicsItem::}{exposedRect} or
+    \l{QStyleOptionGraphicsItem::}{matrix} in QStyleOptionGraphicsItem. By default,
+    the \l{QStyleOptionGraphicsItem::}{exposedRect} is initialized to the item's
+    boundingRect() and the \l{QStyleOptionGraphicsItem::}{matrix} is untransformed.
+    You can enable this flag for the style options to be set up with more
+    fine-grained values.
+    Note that QStyleOptionGraphicsItem::levelOfDetail is unaffected by this flag
+    and always initialized to 1. Use
+    QStyleOptionGraphicsItem::levelOfDetailFromTransform() if you need a higher
+    value.
 
     \value ItemHasNoContents The item does not paint anything (i.e., calling
     paint() on the item has no effect). You should set this flag on items that
@@ -1199,6 +1203,8 @@ QGraphicsItem::~QGraphicsItem()
         qDeleteAll(oldChildren);
         Q_ASSERT(d_ptr->children.isEmpty());
     }
+
+    d_ptr->subFocusItem = 0;
 
     if (d_ptr->scene) {
         d_ptr->scene->d_func()->removeItemHelper(this);
@@ -4779,7 +4785,7 @@ void QGraphicsItemPrivate::updateCachedClipPathFromSetPosHelper(const QPointF &n
 {
     Q_ASSERT(inSetPosHelper);
 
-    if (!(ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren))
+    if (inDestructor || !(ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren))
         return; // Not clipped by any ancestor.
 
     // Find closest clip ancestor and transform.
@@ -4789,15 +4795,21 @@ void QGraphicsItemPrivate::updateCachedClipPathFromSetPosHelper(const QPointF &n
     if (transformData)
         thisToParentTransform = transformData->computedFullTransform(&thisToParentTransform);
     QGraphicsItem *clipParent = parent;
-    while (clipParent && !(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape)) {
+    while (clipParent && !clipParent->d_ptr->inDestructor && !(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape)) {
         thisToParentTransform *= clipParent->d_ptr->transformToParent();
         clipParent = clipParent->d_ptr->parent;
     }
+    if (clipParent && clipParent->d_ptr->inDestructor)
+        return;
 
-    // thisToParentTransform is now the same as q->itemTransform(clipParent), except
-    // that the new position (which is not yet set on the item) is taken into account.
-    Q_ASSERT(clipParent);
-    Q_ASSERT(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
+    // Ensure no parents are currently being deleted. This can only
+    // happen if the item is moved by a dying ancestor.
+    QGraphicsItem *p = clipParent;
+    while (p) {
+        if (p->d_ptr->inDestructor)
+            return;
+        p = p->d_ptr->parent;
+    }
 
     // From here everything is calculated in clip parent's coordinates.
     const QRectF parentBoundingRect(clipParent->boundingRect());
@@ -6859,6 +6871,8 @@ void QGraphicsItem::removeFromIndex()
 */
 void QGraphicsItem::prepareGeometryChange()
 {
+    if (d_ptr->inDestructor)
+        return;
     if (d_ptr->scene) {
         d_ptr->scene->d_func()->dirtyGrowingItemsBoundingRect = true;
         d_ptr->geometryChanged = 1;
@@ -10370,10 +10384,14 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
             effectRect.setY(0);
         }
         // NB! We use +-1 for historical reasons (see QRect documentation).
-        if (right + 1 > info->widget->width())
-            effectRect.setRight(info->widget->width() - 1);
-        if (bottom + 1 > info->widget->height())
-            effectRect.setBottom(info->widget->height() -1);
+        QPaintDevice *device = info->painter->device();
+        const int deviceWidth = device->width();
+        const int deviceHeight = device->height();
+        if (right + 1 > deviceWidth)
+            effectRect.setRight(deviceWidth - 1);
+        if (bottom + 1 > deviceHeight)
+            effectRect.setBottom(deviceHeight -1);
+        
     }
 
     if (effectRect.isEmpty())

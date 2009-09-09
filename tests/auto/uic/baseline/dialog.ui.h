@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'dialog.ui'
 **
-** Created: Tue Aug 18 19:03:31 2009
+** Created: Fri Sep 4 10:17:13 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -66,7 +66,6 @@ public:
         loadFromFileButton->setText(QApplication::translate("Dialog", "Load Image From File...", 0, QApplication::UnicodeUTF8));
         label->setText(QApplication::translate("Dialog", "Launch two of these dialogs.  In the first, press the top button and load an image from a file.  In the second, press the bottom button and display the loaded image from shared memory.", 0, QApplication::UnicodeUTF8));
         loadFromSharedMemoryButton->setText(QApplication::translate("Dialog", "Display Image From Shared Memory", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(Dialog);
     } // retranslateUi
 
 };

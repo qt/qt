@@ -43,6 +43,7 @@
 #define QGL_H
 
 #include <QtGui/qwidget.h>
+#include <QtGui/qpaintengine.h>
 #include <QtOpenGL/qglcolormap.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qscopedpointer.h>
@@ -130,6 +131,8 @@ class QGLContextPrivate;
 // Namespace class:
 namespace QGL
 {
+    Q_OPENGL_EXPORT void setPreferredPaintEngine(QPaintEngine::Type engineType);
+
     enum FormatOption {
         DoubleBuffer            = 0x0001,
         DepthBuffer             = 0x0002,
@@ -255,6 +258,8 @@ public:
 private:
     QGLFormatPrivate *d;
 
+    void detach();
+
     friend Q_OPENGL_EXPORT bool operator==(const QGLFormat&, const QGLFormat&);
     friend Q_OPENGL_EXPORT bool operator!=(const QGLFormat&, const QGLFormat&);
 };
@@ -277,7 +282,6 @@ public:
     bool isSharing() const;
     void reset();
 
-    // ### Qt 5: make format() return a const ref instead
     QGLFormat format() const;
     QGLFormat requestedFormat() const;
     void setFormat(const QGLFormat& format);
@@ -381,7 +385,6 @@ private:
     friend class QGLPixelBuffer;
     friend class QGLPixelBufferPrivate;
     friend class QGLWidget;
-    friend class QGLDrawable;
     friend class QGLWidgetPrivate;
     friend class QGLGlyphCache;
     friend class QOpenGLPaintEngine;
@@ -403,15 +406,13 @@ private:
 #endif
     friend class QGLFramebufferObject;
     friend class QGLFramebufferObjectPrivate;
-#ifdef Q_WS_WIN
-    friend bool qt_resolve_GLSL_functions(QGLContext *ctx);
-    friend bool qt_createGLSLProgram(QGLContext *ctx, GLuint &program, const char *shader_src, GLuint &shader);
-#endif
+    friend class QGLFBOGLPaintDevice;
+    friend class QGLPaintDevice;
 private:
     Q_DISABLE_COPY(QGLContext)
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QGLContext::BindOptions);
+Q_DECLARE_OPERATORS_FOR_FLAGS(QGLContext::BindOptions)
 
 class Q_OPENGL_EXPORT QGLWidget : public QWidget
 {
@@ -447,7 +448,6 @@ public:
     bool doubleBuffer() const;
     void swapBuffers();
 
-    // ### Qt 5: make format() return a const ref instead
     QGLFormat format() const;
     void setFormat(const QGLFormat& format);
 
@@ -543,6 +543,8 @@ private:
     friend class QGLContext;
     friend class QGLOverlayWidget;
     friend class QOpenGLPaintEngine;
+    friend class QGLPaintDevice;
+    friend class QGLWidgetGLPaintDevice;
 };
 
 

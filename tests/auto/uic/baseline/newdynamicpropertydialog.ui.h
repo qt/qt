@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'newdynamicpropertydialog.ui'
 **
-** Created: Tue Aug 18 19:03:31 2009
+** Created: Fri Sep 4 10:17:14 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -115,7 +115,6 @@ public:
         qdesigner_internal__NewDynamicPropertyDialog->setWindowTitle(QApplication::translate("qdesigner_internal::NewDynamicPropertyDialog", "Create Dynamic Property", 0, QApplication::UnicodeUTF8));
         label->setText(QApplication::translate("qdesigner_internal::NewDynamicPropertyDialog", "Property Name", 0, QApplication::UnicodeUTF8));
         label_2->setText(QApplication::translate("qdesigner_internal::NewDynamicPropertyDialog", "Property Type", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(qdesigner_internal__NewDynamicPropertyDialog);
     } // retranslateUi
 
 };

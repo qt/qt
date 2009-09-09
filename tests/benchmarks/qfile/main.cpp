@@ -3,11 +3,6 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-****************************************************************************/
-
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Nokia Corporation (qt-info@nokia.com)
-**
 ** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
@@ -43,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #include <QDebug>
 #include <QTemporaryFile>
 #include <QFSFileEngine>

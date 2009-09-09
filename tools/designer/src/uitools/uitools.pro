@@ -39,3 +39,4 @@ unix {
    QMAKE_PKGCONFIG_REQUIRES += QtXml
 }
 
+symbian: TARGET.UID3 = 0x2001E628

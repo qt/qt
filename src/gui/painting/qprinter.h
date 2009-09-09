@@ -197,6 +197,8 @@ public:
     void setNumCopies(int);
     int numCopies() const;
 
+    int actualNumCopies() const;
+
     void setPaperSource(PaperSource);
     PaperSource paperSource() const;
 

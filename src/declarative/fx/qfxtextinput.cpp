@@ -480,6 +480,13 @@ void QFxTextInput::focusChanged(bool hasFocus)
 void QFxTextInput::keyPressEvent(QKeyEvent* ev)
 {
     Q_D(QFxTextInput);
+    if((d->control->cursor() == 0 && ev->key() == Qt::Key_Left)
+            || (d->control->cursor() == d->control->text().length()
+                && ev->key() == Qt::Key_Right)){
+        //ignore moving off the end
+        ev->ignore();
+        return;
+    }
     d->control->processKeyEvent(ev);
     if (!ev->isAccepted())
         QFxPaintedItem::keyPressEvent(ev);
@@ -500,6 +507,7 @@ bool QFxTextInput::event(QEvent* ev)
     Q_D(QFxTextInput);
     //Anything we don't deal with ourselves, pass to the control
     switch(ev->type()){
+        case QEvent::KeyPress:
         case QEvent::GraphicsSceneMousePress:
             break;
         default:
@@ -555,33 +563,33 @@ void QFxTextInput::selectAll()
 
 void QFxTextInputPrivate::init()
 {
-        Q_Q(QFxTextInput);
-        control->setCursorWidth(1);
-        control->setPasswordCharacter(QLatin1Char('*'));
-        control->setLayoutDirection(Qt::LeftToRight);
-        q->setSmoothTransform(smooth);
-        q->setAcceptedMouseButtons(Qt::LeftButton);
-        q->setFlag(QGraphicsItem::ItemHasNoContents, false);
-        q->setFlag(QGraphicsItem::ItemAcceptsInputMethod);
-        q->connect(control, SIGNAL(cursorPositionChanged(int,int)),
-                q, SLOT(cursorPosChanged()));
-        q->connect(control, SIGNAL(selectionChanged()),
-                q, SLOT(selectionChanged()));
-        q->connect(control, SIGNAL(textChanged(const QString &)),
-                q, SLOT(q_textChanged()));
-        q->connect(control, SIGNAL(accepted()),
-                q, SIGNAL(accepted()));
-        q->connect(control, SIGNAL(updateNeeded(const QRect &)),
-        //        q, SLOT(dirtyCache(const QRect &)));
-                q, SLOT(updateAll()));
-        q->connect(control, SIGNAL(cursorPositionChanged(int,int)),
-                q, SLOT(updateAll()));
-        q->connect(control, SIGNAL(selectionChanged()),
-                q, SLOT(updateAll()));
-        q->updateSize();
-        oldValidity = control->hasAcceptableInput();
-        lastSelectionStart = 0;
-        lastSelectionEnd = 0;
+    Q_Q(QFxTextInput);
+    control->setCursorWidth(1);
+    control->setPasswordCharacter(QLatin1Char('*'));
+    control->setLayoutDirection(Qt::LeftToRight);
+    q->setSmoothTransform(smooth);
+    q->setAcceptedMouseButtons(Qt::LeftButton);
+    q->setFlag(QGraphicsItem::ItemHasNoContents, false);
+    q->setFlag(QGraphicsItem::ItemAcceptsInputMethod);
+    q->connect(control, SIGNAL(cursorPositionChanged(int,int)),
+               q, SLOT(cursorPosChanged()));
+    q->connect(control, SIGNAL(selectionChanged()),
+               q, SLOT(selectionChanged()));
+    q->connect(control, SIGNAL(textChanged(const QString &)),
+               q, SLOT(q_textChanged()));
+    q->connect(control, SIGNAL(accepted()),
+               q, SIGNAL(accepted()));
+    q->connect(control, SIGNAL(updateNeeded(const QRect &)),
+               //        q, SLOT(dirtyCache(const QRect &)));
+               q, SLOT(updateAll()));
+    q->connect(control, SIGNAL(cursorPositionChanged(int,int)),
+               q, SLOT(updateAll()));
+    q->connect(control, SIGNAL(selectionChanged()),
+               q, SLOT(updateAll()));
+    q->updateSize();
+    oldValidity = control->hasAcceptableInput();
+    lastSelectionStart = 0;
+    lastSelectionEnd = 0;
 }
 
 void QFxTextInput::cursorPosChanged()
@@ -645,7 +653,8 @@ void QFxTextInput::updateSize()
     setImplicitHeight(d->control->height());
     //d->control->width() is max width, not current width
     QFontMetrics fm = QFontMetrics(d->font);
-    setImplicitWidth(fm.boundingRect(d->control->text()).width()+1);
+    setImplicitWidth(fm.width(d->control->text())+1);
+    //setImplicitWidth(d->control->naturalWidth());//### This fn should be coming into 4.6 shortly, and might be faster
     setContentsSize(QSize(width(), height()));
 }
 

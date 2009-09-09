@@ -22,13 +22,18 @@ HEADERS += qgl.h \
 	   qglpixelbuffer.h \
            qglpixelbuffer_p.h \
 	   qglframebufferobject.h  \
-        qglextensions_p.h
+           qglframebufferobject_p.h  \
+           qglextensions_p.h \
+           qglpaintdevice_p.h \
+
 
 SOURCES	+= qgl.cpp \
 	   qglcolormap.cpp \
 	   qglpixelbuffer.cpp \
 	   qglframebufferobject.cpp \
            qglextensions.cpp \
+           qglpaintdevice.cpp \
+
 
 !contains(QT_CONFIG, opengles2) {
     HEADERS += qpaintengine_opengl_p.h
@@ -38,7 +43,7 @@ SOURCES	+= qgl.cpp \
 !contains(QT_CONFIG, opengles1):!contains(QT_CONFIG, opengles1cl) {
     HEADERS +=  qglshaderprogram.h \
                 qglpixmapfilter_p.h  \
-                qgraphicsshadereffect.h \
+                qgraphicsshadereffect_p.h \
                 qgraphicssystem_gl_p.h \
                 qwindowsurface_gl_p.h \
                 qpixmapdata_gl_p.h \

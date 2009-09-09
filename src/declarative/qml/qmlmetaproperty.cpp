@@ -219,6 +219,7 @@ void QmlMetaPropertyPrivate::initProperty(QObject *obj, const QString &name)
 
     if (enginePrivate && name.at(0).isUpper()) {
         // Attached property
+        //### needs to be done in a better way
         QmlCompositeTypeData *typeData =
             enginePrivate->typeManager.get(context->baseUrl());
 
@@ -230,6 +231,7 @@ void QmlMetaPropertyPrivate::initProperty(QObject *obj, const QString &name)
                 if (attachedFunc != -1)
                     type  = QmlMetaProperty::Property | QmlMetaProperty::Attached;
             }
+            typeData->release();
         }
         return;
 
@@ -532,7 +534,7 @@ QmlAbstractBinding *QmlMetaProperty::binding() const
     QmlAbstractBinding *binding = data->bindings;
     while (binding) {
         // ### This wont work for value types
-        if (binding->propertyIndex() == d->coreIdx) //### should we check for enabled?
+        if (binding->propertyIndex() == d->coreIdx)
             return binding; 
         binding = binding->m_nextBinding;
     }

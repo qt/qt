@@ -8,7 +8,7 @@ Item {
     property string text
 
     Image {
-        id: Image
+        id: ButtonImage
         source: "pics/button.png"
     }
     Image {
@@ -17,21 +17,21 @@ Item {
         opacity: 0
     }
     MouseRegion {
-        id: MouseRegion
-        anchors.fill: Image
+        id: MyMouseRegion
+        anchors.fill: ButtonImage
         onClicked: { Container.clicked(); }
     }
     Text {
         font.bold: true
         color: "white"
-        anchors.centerIn: Image
+        anchors.centerIn: ButtonImage
         text: Container.text
     }
-    width: Image.width
+    width: ButtonImage.width
     states: [
         State {
             name: "Pressed"
-            when: MouseRegion.pressed == true
+            when: MyMouseRegion.pressed == true
             PropertyChanges {
                 target: Pressed
                 opacity: 1

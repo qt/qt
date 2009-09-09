@@ -190,7 +190,7 @@ Item {
                 }
 
                 url: fixUrl(WebBrowser.urlString)
-                smooth: false
+                smooth: true
                 fillColor: "white"
                 focus: true
 
@@ -215,14 +215,14 @@ Item {
                             property: "scale"
                             from: 1
                             to: 0 // set before calling
-                            easing: "easeInOutQuad"
+                            easing: "easeLinear"
                             duration: 200
                         }
                         NumberAnimation {
                             id: FlickVX
                             target: Flick
                             property: "viewportX"
-                            easing: "easeInOutQuad"
+                            easing: "easeLinear"
                             duration: 200
                             from: 0 // set before calling
                             to: 0 // set before calling
@@ -231,21 +231,36 @@ Item {
                             id: FlickVY
                             target: Flick
                             property: "viewportY"
-                            easing: "easeInOutQuad"
+                            easing: "easeLinear"
                             duration: 200
                             from: 0 // set before calling
                             to: 0 // set before calling
                         }
                     }
                     PropertyAction {
+                        id: FinalZoom
+                        target: MyWebView
+                        property: "zoomFactor"
+                    }
+                    PropertyAction {
                         target: MyWebView
                         property: "scale"
                         value: 1.0
                     }
+                    // Have to set the viewportXY, since the above 2
+                    // size changes may have started a correction if
+                    // zoomFactor < 1.0.
                     PropertyAction {
-                        id: FinalZoom
-                        target: MyWebView
-                        property: "zoomFactor"
+                        id: FinalX
+                        target: Flick
+                        property: "viewportX"
+                        value: 0 // set before calling
+                    }
+                    PropertyAction {
+                        id: FinalY
+                        target: Flick
+                        property: "viewportY"
+                        value: 0 // set before calling
                     }
                     PropertyAction {
                         target: MyWebView
@@ -259,8 +274,10 @@ Item {
                         ScaleAnim.to = sc;
                         FlickVX.from = Flick.viewportX
                         FlickVX.to = Math.min(Math.max(0,centerX-Flick.width/2),MyWebView.width*sc-Flick.width)
+                        FinalX.value = Math.min(Math.max(0,centerX-Flick.width/2),MyWebView.width*sc-Flick.width)
                         FlickVY.from = Flick.viewportY
                         FlickVY.to = Math.min(Math.max(0,centerY-Flick.height/2),MyWebView.height*sc-Flick.height)
+                        FinalY.value = Math.min(Math.max(0,centerY-Flick.height/2),MyWebView.height*sc-Flick.height)
                         FinalZoom.value = zoom
                         QuickZoom.start()
                     }

@@ -507,14 +507,6 @@ void Main::about()
 	"<p>Version 2.0</p>"
 	"<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</p>"
 	"<p></p>"
-	"<p>This program is licensed to you under the terms of the GNU General "
-	"Public License Version 2 as published by the Free Software Foundation. This "
-	"gives you legal permission to copy, distribute and/or modify this software "
-	"under certain conditions. For details, see the file 'LICENSE.GPL' that came with "
-	"this software distribution. If you did not get the file, send email to "
-	"qt-info@nokia.com.</p>\n\n<p>The program is provided AS IS with NO WARRANTY "
-	"OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS "
-	"FOR A PARTICULAR PURPOSE.</p>"
     );
 }
 

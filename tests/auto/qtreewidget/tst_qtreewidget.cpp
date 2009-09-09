@@ -126,6 +126,8 @@ private slots:
     void insertExpandedItemsWithSorting();
     void changeDataWithSorting_data();
     void changeDataWithSorting();
+    void changeDataWithStableSorting_data();
+    void changeDataWithStableSorting();
 
     void sortedIndexOfChild_data();
     void sortedIndexOfChild();
@@ -2404,6 +2406,184 @@ void tst_QTreeWidget::changeDataWithSorting()
 
     QTreeWidgetItem *item = w.topLevelItem(itemIndex);
     item->setText(0, newValue);
+    for (int i = 0; i < expectedItems.count(); ++i) {
+        QCOMPARE(w.topLevelItem(i)->text(0), expectedItems.at(i));
+        for (int j = 0; j < persistent.count(); ++j) {
+            if (persistent.at(j).row() == i) // the same toplevel row
+                QCOMPARE(persistent.at(j).internalPointer(), (void *)w.topLevelItem(i));
+        }
+    }
+
+    for (int k = 0; k < persistent.count(); ++k)
+        QCOMPARE(persistent.at(k).row(), expectedRows.at(k));
+
+    QCOMPARE(dataChangedSpy.count(), 1);
+    QCOMPARE(layoutChangedSpy.count(), reorderingExpected ? 1 : 0);
+}
+
+void tst_QTreeWidget::changeDataWithStableSorting_data()
+{
+    QTest::addColumn<int>("sortOrder");
+    QTest::addColumn<QStringList>("initialItems");
+    QTest::addColumn<int>("itemIndex");
+    QTest::addColumn<QString>("newValue");
+    QTest::addColumn<QStringList>("expectedItems");
+    QTest::addColumn<IntList>("expectedRows");
+    QTest::addColumn<bool>("reorderingExpected");
+    QTest::addColumn<bool>("forceChange");
+
+    QTest::newRow("change a to c in (a, c, c, c, e)")
+        << static_cast<int>(Qt::AscendingOrder)
+        << (QStringList() << "a" << "c" << "c" << "c" << "e")
+        << 0 << "c"
+        << (QStringList() << "c" << "c" << "c" << "c" << "e")
+        << (IntList() << 0 << 1 << 2 << 3 << 4)
+        << false
+        << false;
+    QTest::newRow("change e to c in (a, c, c, c, e)")
+        << static_cast<int>(Qt::AscendingOrder)
+        << (QStringList() << "a" << "c" << "c" << "c" << "e")
+        << 4 << "c"
+        << (QStringList() << "a" << "c" << "c" << "c" << "c")
+        << (IntList() << 0 << 1 << 2 << 3 << 4)
+        << false
+        << false;
+    QTest::newRow("change 1st c to c in (a, c, c, c, e)")
+        << static_cast<int>(Qt::AscendingOrder)
+        << (QStringList() << "a" << "c" << "c" << "c" << "e")
+        << 1 << "c"
+        << (QStringList() << "a" << "c" << "c" << "c" << "e")
+        << (IntList() << 0 << 1 << 2 << 3 << 4)
+        << false
+        << true;
+    QTest::newRow("change 2nd c to c in (a, c, c, c, e)")
+        << static_cast<int>(Qt::AscendingOrder)
+        << (QStringList() << "a" << "c" << "c" << "c" << "e")
+        << 2 << "c"
+        << (QStringList() << "a" << "c" << "c" << "c" << "e")
+        << (IntList() << 0 << 1 << 2 << 3 << 4)
+        << false
+        << true;
+    QTest::newRow("change 3rd c to c in (a, c, c, c, e)")
+        << static_cast<int>(Qt::AscendingOrder)
+        << (QStringList() << "a" << "c" << "c" << "c" << "e")
+        << 3 << "c"
+        << (QStringList() << "a" << "c" << "c" << "c" << "e")
+        << (IntList() << 0 << 1 << 2 << 3 << 4)
+        << false
+        << true;
+    QTest::newRow("change 1st c to c in (e, c, c, c, a)")
+        << static_cast<int>(Qt::DescendingOrder)
+        << (QStringList() << "e" << "c" << "c" << "c" << "a")
+        << 1 << "c"
+        << (QStringList() << "e" << "c" << "c" << "c" << "a")
+        << (IntList() << 0 << 1 << 2 << 3 << 4)
+        << false
+        << true;
+    QTest::newRow("change 2nd c to c in (e, c, c, c, a)")
+        << static_cast<int>(Qt::DescendingOrder)
+        << (QStringList() << "e" << "c" << "c" << "c" << "a")
+        << 2 << "c"
+        << (QStringList() << "e" << "c" << "c" << "c" << "a")
+        << (IntList() << 0 << 1 << 2 << 3 << 4)
+        << false
+        << true;
+    QTest::newRow("change 3rd c to c in (e, c, c, c, a)")
+        << static_cast<int>(Qt::DescendingOrder)
+        << (QStringList() << "e" << "c" << "c" << "c" << "a")
+        << 3 << "c"
+        << (QStringList() << "e" << "c" << "c" << "c" << "a")
+        << (IntList() << 0 << 1 << 2 << 3 << 4)
+        << false
+        << true;
+    QTest::newRow("change 1st c to b in (a, c, c, c, e)")
+        << static_cast<int>(Qt::AscendingOrder)
+        << (QStringList() << "a" << "c" << "c" << "c" << "e")
+        << 1 << "b"
+        << (QStringList() << "a" << "b" << "c" << "c" << "e")
+        << (IntList() << 0 << 1 << 2 << 3 << 4)
+        << false
+        << false;
+    QTest::newRow("change 2nd c to b in (a, c, c, c, e)")
+        << static_cast<int>(Qt::AscendingOrder)
+        << (QStringList() << "a" << "c" << "c" << "c" << "e")
+        << 2 << "b"
+        << (QStringList() << "a" << "b" << "c" << "c" << "e")
+        << (IntList() << 0 << 2 << 1 << 3 << 4)
+        << true
+        << false;
+    QTest::newRow("change 3rd c to b in (a, c, c, c, e)")
+        << static_cast<int>(Qt::AscendingOrder)
+        << (QStringList() << "a" << "c" << "c" << "c" << "e")
+        << 3 << "b"
+        << (QStringList() << "a" << "b" << "c" << "c" << "e")
+        << (IntList() << 0 << 2 << 3 << 1 << 4)
+        << true
+        << false;
+    QTest::newRow("change 1st c to d in (a, c, c, c, e)")
+        << static_cast<int>(Qt::AscendingOrder)
+        << (QStringList() << "a" << "c" << "c" << "c" << "e")
+        << 1 << "d"
+        << (QStringList() << "a" << "c" << "c" << "d" << "e")
+        << (IntList() << 0 << 3 << 1 << 2 << 4)
+        << true
+        << false;
+    QTest::newRow("change 2nd c to d in (a, c, c, c, e)")
+        << static_cast<int>(Qt::AscendingOrder)
+        << (QStringList() << "a" << "c" << "c" << "c" << "e")
+        << 2 << "d"
+        << (QStringList() << "a" << "c" << "c" << "d" << "e")
+        << (IntList() << 0 << 1 << 3 << 2 << 4)
+        << true
+        << false;
+    QTest::newRow("change 3rd c to d in (a, c, c, c, e)")
+        << static_cast<int>(Qt::AscendingOrder)
+        << (QStringList() << "a" << "c" << "c" << "c" << "e")
+        << 3 << "d"
+        << (QStringList() << "a" << "c" << "c" << "d" << "e")
+        << (IntList() << 0 << 1 << 2 << 3 << 4)
+        << false
+        << false;
+}
+
+void tst_QTreeWidget::changeDataWithStableSorting()
+{
+    QFETCH(int, sortOrder);
+    QFETCH(QStringList, initialItems);
+    QFETCH(int, itemIndex);
+    QFETCH(QString, newValue);
+    QFETCH(QStringList, expectedItems);
+    QFETCH(IntList, expectedRows);
+    QFETCH(bool, reorderingExpected);
+    QFETCH(bool, forceChange);
+
+    class StableItem : public QTreeWidgetItem
+    {
+    public:
+        StableItem(const QStringList &strings) : QTreeWidgetItem(strings, QTreeWidgetItem::UserType) {}
+        void forceChangeData() {
+            emitDataChanged();
+        }
+    };
+
+    QTreeWidget w;
+    w.setSortingEnabled(true);
+    w.sortItems(0, static_cast<Qt::SortOrder>(sortOrder));
+    for (int i = 0; i < initialItems.count(); ++i)
+        w.addTopLevelItem(new StableItem(QStringList() << initialItems.at(i)));
+
+    QAbstractItemModel *model = w.model();
+    QList<QPersistentModelIndex> persistent;
+    for (int j = 0; j < model->rowCount(QModelIndex()); ++j)
+        persistent << model->index(j, 0, QModelIndex());
+
+    QSignalSpy dataChangedSpy(model, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)));
+    QSignalSpy layoutChangedSpy(model, SIGNAL(layoutChanged()));
+
+    StableItem *item = static_cast<StableItem *>(w.topLevelItem(itemIndex));
+    item->setText(0, newValue);
+    if (forceChange)
+        item->forceChangeData();
     for (int i = 0; i < expectedItems.count(); ++i) {
         QCOMPARE(w.topLevelItem(i)->text(0), expectedItems.at(i));
         for (int j = 0; j < persistent.count(); ++j) {

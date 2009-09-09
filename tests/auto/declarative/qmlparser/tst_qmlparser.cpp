@@ -47,6 +47,7 @@ private slots:
     void dynamicObjects();
     void customVariantTypes();
     void valueTypes();
+    void cppnamespace();
 
     void importsBuiltin_data();
     void importsBuiltin();
@@ -143,6 +144,7 @@ void tst_qmlparser::errors_data()
     QTest::newRow("invalidID.3") << "invalidID.3.qml" << "invalidID.3.errors.txt" << false;
     QTest::newRow("invalidID.4") << "invalidID.4.qml" << "invalidID.4.errors.txt" << false;
     QTest::newRow("invalidID.5") << "invalidID.5.qml" << "invalidID.5.errors.txt" << false;
+    QTest::newRow("invalidID.6") << "invalidID.6.qml" << "invalidID.6.errors.txt" << false;
 
 
     QTest::newRow("unsupportedProperty") << "unsupportedProperty.qml" << "unsupportedProperty.errors.txt" << false;
@@ -504,6 +506,15 @@ void tst_qmlparser::valueTypes()
     QmlMetaProperty p2;
     p2.restore(r, object);
     QCOMPARE(p2.read(), QVariant(13));
+}
+
+void tst_qmlparser::cppnamespace()
+{
+    QmlComponent component(&engine, TEST_FILE("cppnamespace.qml"));
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    delete object;
 }
 
 class TestType : public QObject {

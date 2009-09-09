@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QFxFlickablePrivate;
+class QFxFlickableVisibleArea;
 class Q_DECLARATIVE_EXPORT QFxFlickable : public QFxItem
 {
     Q_OBJECT
@@ -70,17 +71,14 @@ class Q_DECLARATIVE_EXPORT QFxFlickable : public QFxItem
     Q_PROPERTY(bool flicking READ isFlicking NOTIFY flickingChanged)
 
     Q_PROPERTY(bool interactive READ isInteractive WRITE setInteractive)
-    Q_PROPERTY(DragMode dragMode READ dragMode WRITE setDragMode) //### remove.  Consider a better way to implement different drag behavior
+    Q_PROPERTY(int pressDelay READ pressDelay WRITE setPressDelay)
 
     Q_PROPERTY(bool atXEnd READ isAtXEnd NOTIFY isAtBoundaryChanged)
     Q_PROPERTY(bool atYEnd READ isAtYEnd NOTIFY isAtBoundaryChanged)
     Q_PROPERTY(bool atXBeginning READ isAtXBeginning NOTIFY isAtBoundaryChanged)
     Q_PROPERTY(bool atYBeginning READ isAtYBeginning NOTIFY isAtBoundaryChanged)
 
-    Q_PROPERTY(qreal pageXPosition READ pageXPosition NOTIFY pageChanged) //### visibleArea.xPosition
-    Q_PROPERTY(qreal pageYPosition READ pageYPosition NOTIFY pageChanged) //### visibleArea.yPosition
-    Q_PROPERTY(qreal pageWidth READ pageWidth NOTIFY pageChanged) //### visibleArea.widthRatio
-    Q_PROPERTY(qreal pageHeight READ pageHeight NOTIFY pageChanged) //### visibleArea.heightRatio
+    Q_PROPERTY(QFxFlickableVisibleArea *visibleArea READ visibleArea CONSTANT)
 
     Q_PROPERTY(QmlList<QObject *>* flickableData READ flickableData)
     Q_PROPERTY(QmlList<QFxItem *>* flickableChildren READ flickableChildren)
@@ -111,6 +109,9 @@ public:
     bool isMoving() const;
     bool isFlicking() const;
 
+    int pressDelay() const;
+    void setPressDelay(int delay);
+
     qreal reportedVelocitySmoothing() const;
     void setReportedVelocitySmoothing(qreal);
 
@@ -120,23 +121,13 @@ public:
     bool isInteractive() const;
     void setInteractive(bool);
 
-    Q_ENUMS(DragMode)
-    enum DragMode { Hard, Elastic };
-    DragMode dragMode() const;
-    void setDragMode(DragMode mode);
-
     qreal horizontalVelocity() const;
     qreal verticalVelocity() const;
 
     bool isAtXEnd() const;
     bool isAtXBeginning() const;
-    qreal pageXPosition() const;
-    qreal pageWidth() const;
-
     bool isAtYEnd() const;
     bool isAtYBeginning() const;
-    qreal pageYPosition() const;
-    qreal pageHeight() const;
 
     QFxItem *viewport();
 
@@ -161,9 +152,12 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    void timerEvent(QTimerEvent *event);
 
     qreal visibleX() const;
     qreal visibleY() const;
+
+    QFxFlickableVisibleArea *visibleArea();
 
 protected Q_SLOTS:
     virtual void ticked();
@@ -191,6 +185,7 @@ protected:
 private:
     Q_DISABLE_COPY(QFxFlickable)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxFlickable)
+    friend class QFxFlickableVisibleArea;
 };
 
 QT_END_NAMESPACE

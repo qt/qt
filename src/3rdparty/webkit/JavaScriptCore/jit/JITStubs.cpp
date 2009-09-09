@@ -73,6 +73,19 @@ namespace JSC {
 #define SYMBOL_STRING(name) #name
 #endif
 
+#if PLATFORM(DARWIN)
+    // Mach-O platform
+#define HIDE_SYMBOL(name) ".private_extern _" #name
+#elif PLATFORM(AIX)
+    // IBM's own file format
+#define HIDE_SYMBOL(name) ".lglobl " #name
+#elif PLATFORM(LINUX) || PLATFORM(FREEBSD) || PLATFORM(OPENBSD) || PLATFORM(SOLARIS) || (PLATFORM(HPUX) && PLATFORM(IA64)) || PLATFORM(SYMBIAN) || PLATFORM(NETBSD)
+    // ELF platform
+#define HIDE_SYMBOL(name) ".hidden " #name
+#else
+#define HIDE_SYMBOL(name)
+#endif
+
 #if COMPILER(GCC) && PLATFORM(X86)
 
 // These ASSERTs remind you that, if you change the layout of JITStackFrame, you
@@ -83,6 +96,7 @@ COMPILE_ASSERT(offsetof(struct JITStackFrame, savedEBX) == 0x1c, JITStackFrame_s
 
 asm volatile (
 ".globl " SYMBOL_STRING(ctiTrampoline) "\n"
+HIDE_SYMBOL(ctiTrampoline) "\n"
 SYMBOL_STRING(ctiTrampoline) ":" "\n"
     "pushl %ebp" "\n"
     "movl %esp, %ebp" "\n"
@@ -103,6 +117,7 @@ SYMBOL_STRING(ctiTrampoline) ":" "\n"
 
 asm volatile (
 ".globl " SYMBOL_STRING(ctiVMThrowTrampoline) "\n"
+HIDE_SYMBOL(ctiVMThrowTrampoline) "\n"
 SYMBOL_STRING(ctiVMThrowTrampoline) ":" "\n"
 #if !USE(JIT_STUB_ARGUMENT_VA_LIST)
     "movl %esp, %ecx" "\n"
@@ -118,6 +133,7 @@ SYMBOL_STRING(ctiVMThrowTrampoline) ":" "\n"
     
 asm volatile (
 ".globl " SYMBOL_STRING(ctiOpThrowNotCaught) "\n"
+HIDE_SYMBOL(ctiOpThrowNotCaught) "\n"
 SYMBOL_STRING(ctiOpThrowNotCaught) ":" "\n"
     "addl $0x1c, %esp" "\n"
     "popl %ebx" "\n"
@@ -141,6 +157,7 @@ COMPILE_ASSERT(offsetof(struct JITStackFrame, savedRBX) == 0x48, JITStackFrame_s
 
 asm volatile (
 ".globl " SYMBOL_STRING(ctiTrampoline) "\n"
+HIDE_SYMBOL(ctiTrampoline) "\n"
 SYMBOL_STRING(ctiTrampoline) ":" "\n"
     "pushq %rbp" "\n"
     "movq %rsp, %rbp" "\n"
@@ -167,6 +184,7 @@ SYMBOL_STRING(ctiTrampoline) ":" "\n"
 
 asm volatile (
 ".globl " SYMBOL_STRING(ctiVMThrowTrampoline) "\n"
+HIDE_SYMBOL(ctiVMThrowTrampoline) "\n"
 SYMBOL_STRING(ctiVMThrowTrampoline) ":" "\n"
     "movq %rsp, %rdi" "\n"
     "call " SYMBOL_STRING(cti_vm_throw) "\n"
@@ -182,6 +200,7 @@ SYMBOL_STRING(ctiVMThrowTrampoline) ":" "\n"
 
 asm volatile (
 ".globl " SYMBOL_STRING(ctiOpThrowNotCaught) "\n"
+HIDE_SYMBOL(ctiOpThrowNotCaught) "\n"
 SYMBOL_STRING(ctiOpThrowNotCaught) ":" "\n"
     "addq $0x48, %rsp" "\n"
     "popq %rbx" "\n"
@@ -203,6 +222,7 @@ asm volatile (
 ".text" "\n"
 ".align 2" "\n"
 ".globl " SYMBOL_STRING(ctiTrampoline) "\n"
+HIDE_SYMBOL(ctiTrampoline) "\n"
 ".thumb" "\n"
 ".thumb_func " SYMBOL_STRING(ctiTrampoline) "\n"
 SYMBOL_STRING(ctiTrampoline) ":" "\n"
@@ -229,6 +249,7 @@ asm volatile (
 ".text" "\n"
 ".align 2" "\n"
 ".globl " SYMBOL_STRING(ctiVMThrowTrampoline) "\n"
+HIDE_SYMBOL(ctiVMThrowTrampoline) "\n"
 ".thumb" "\n"
 ".thumb_func " SYMBOL_STRING(ctiVMThrowTrampoline) "\n"
 SYMBOL_STRING(ctiVMThrowTrampoline) ":" "\n"
@@ -246,6 +267,7 @@ asm volatile (
 ".text" "\n"
 ".align 2" "\n"
 ".globl " SYMBOL_STRING(ctiOpThrowNotCaught) "\n"
+HIDE_SYMBOL(ctiOpThrowNotCaught) "\n"
 ".thumb" "\n"
 ".thumb_func " SYMBOL_STRING(ctiOpThrowNotCaught) "\n"
 SYMBOL_STRING(ctiOpThrowNotCaught) ":" "\n"
@@ -591,6 +613,7 @@ namespace JITStubs {
         ".text" "\n" \
         ".align 2" "\n" \
         ".globl " SYMBOL_STRING(cti_##op) "\n" \
+        HIDE_SYMBOL(cti_##op) "\n"             \
         ".thumb" "\n" \
         ".thumb_func " SYMBOL_STRING(cti_##op) "\n" \
         SYMBOL_STRING(cti_##op) ":" "\n" \
@@ -2724,9 +2747,23 @@ DEFINE_STUB_FUNCTION(void, op_debug_catch)
     STUB_INIT_STACK_FRAME(stackFrame);
     CallFrame* callFrame = stackFrame.callFrame;
     if (JSC::Debugger* debugger = callFrame->lexicalGlobalObject()->debugger() ) {
-        debugger->exceptionCatch(DebuggerCallFrame(callFrame), callFrame->codeBlock()->ownerNode()->sourceID());
+        JSValue exceptionValue = callFrame->r(stackFrame.args[0].int32()).jsValue();
+        DebuggerCallFrame debuggerCallFrame(callFrame, exceptionValue);
+        debugger->exceptionCatch(debuggerCallFrame, callFrame->codeBlock()->ownerNode()->sourceID());
     }
 }
+
+DEFINE_STUB_FUNCTION(void, op_debug_return)
+{
+    STUB_INIT_STACK_FRAME(stackFrame);
+    CallFrame* callFrame = stackFrame.callFrame;
+    if (JSC::Debugger* debugger = callFrame->lexicalGlobalObject()->debugger() ) {
+        JSValue returnValue = callFrame->r(stackFrame.args[0].int32()).jsValue();
+        intptr_t sourceID = callFrame->codeBlock()->ownerNode()->sourceID();
+        debugger->functionExit(returnValue, sourceID);
+    }
+}
+
 #endif
 
 DEFINE_STUB_FUNCTION(EncodedJSValue, vm_throw)
