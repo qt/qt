@@ -60,6 +60,9 @@
 #include <QVBoxLayout>
 #include <QGraphicsEffect>
 
+#include "../../shared/util.h"
+
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -1933,7 +1936,7 @@ void tst_QGraphicsItem::zValue()
     QApplication::sendPostedEvents(); //glib workaround
 #endif
 
-    QVERIFY(!_paintedItems.isEmpty());
+    QTRY_VERIFY(!_paintedItems.isEmpty());
     QVERIFY((_paintedItems.size() % 4) == 0);
     for (int i = 0; i < 3; ++i)
         QVERIFY(_paintedItems.at(i)->zValue() < _paintedItems.at(i + 1)->zValue());
@@ -2917,6 +2920,7 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     qApp->processEvents();
     qApp->processEvents();
 
+    QTRY_COMPARE(tester->repaints, 1);
 
     // Send a hover enter event
     QGraphicsSceneHoverEvent hoverEnterEvent(QEvent::GraphicsSceneHoverEnter);
@@ -7823,7 +7827,7 @@ void tst_QGraphicsItem::panel()
 
     QEvent activate(QEvent::WindowActivate);
     QEvent deactivate(QEvent::WindowDeactivate);
-    
+
     QApplication::sendEvent(&scene, &activate);
 
     // No previous activation, so the scene is active.

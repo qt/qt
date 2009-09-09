@@ -1627,7 +1627,7 @@ void tst_QGraphicsScene::hoverEvents_siblings()
     QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseMove);
     mouseEvent.setScenePos(QPointF(-1000, -1000));
     QApplication::sendEvent(&scene, &mouseEvent);
-    
+
     QTest::qWait(50);
 
     for (int j = 1; j >= 0; --j) {
@@ -2465,7 +2465,7 @@ void tst_QGraphicsScene::dragAndDrop_propagate()
         QCOMPARE(item1->eventList.at(0), QEvent::GraphicsSceneDragEnter);
         QCOMPARE(item1->eventList.at(1), QEvent::GraphicsSceneDragMove);
     }
-    
+
     {
         // Move into the intersection item1-item2
         QDragMoveEvent dragMove(view.mapFromScene(5, 5), Qt::CopyAction, &mimeData, Qt::LeftButton, 0);
@@ -2875,7 +2875,7 @@ public:
 
     QList<QEvent::Type> receivedSceneEvents;
     QList<QEvent::Type> receivedSceneEventFilters;
-    
+
 protected:
     bool sceneEventFilter(QGraphicsItem *watched, QEvent *event)
     {
@@ -2961,10 +2961,10 @@ void tst_QGraphicsScene::exposedRect()
     scene.addItem(item);
 
     QCOMPARE(item->exposed, QRectF());
- 
+
     QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
     QPainter painter(&image);
-    
+
     scene.render(&painter);
     QCOMPARE(item->exposed, item->boundingRect());
 
@@ -3269,7 +3269,7 @@ void tst_QGraphicsScene::tabFocus_sceneWithNestedFocusWidgets()
     EventSpy focusOutSpy_1_2(widget1_2, QEvent::FocusOut);
     EventSpy focusInSpy_2(widget2, QEvent::FocusIn);
     EventSpy focusOutSpy_2(widget2, QEvent::FocusOut);
-    
+
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
     QTest::qWait(125);
     QVERIFY(widget1->hasFocus());
