@@ -343,6 +343,7 @@ void tst_QLineEdit::initTestCase()
     // to be safe and avoid failing setFocus with window managers
     qt_x11_wait_for_window_manager(testWidget);
 #endif
+    QTRY_VERIFY(testWidget->hasFocus());
 
     changed_count = 0;
     edited_count = 0;
@@ -1601,8 +1602,7 @@ void tst_QLineEdit::passwordEchoOnEdit()
     testWidget->setEchoMode(QLineEdit::PasswordEchoOnEdit);
     testWidget->setFocus();
     testWidget->raise();
-    QTest::qWait(250);
-    QVERIFY(testWidget->hasFocus());
+    QTRY_VERIFY(testWidget->hasFocus());
 
     QTest::keyPress(testWidget, '0');
     QTest::keyPress(testWidget, '1');
@@ -1614,6 +1614,7 @@ void tst_QLineEdit::passwordEchoOnEdit()
     QVERIFY(!testWidget->hasFocus());
     QCOMPARE(testWidget->displayText(), QString(5, fillChar));
     testWidget->setFocus();
+    QTRY_VERIFY(testWidget->hasFocus());
 
     QCOMPARE(testWidget->displayText(), QString(5, fillChar));
     QTest::keyPress(testWidget, '0');
@@ -3397,7 +3398,7 @@ void tst_QLineEdit::task210502_caseInsensitiveInlineCompletion()
     qt_x11_wait_for_window_manager(&lineEdit);
 #endif
     lineEdit.setFocus();
-    QTest::qWait(200);
+    QTRY_VERIFY(lineEdit.hasFocus());
     QTest::keyPress(&lineEdit, 'a');
     QTest::keyPress(&lineEdit, Qt::Key_Return);
     QCOMPARE(lineEdit.text(), completion);
@@ -3491,7 +3492,7 @@ void tst_QLineEdit::task241436_passwordEchoOnEditRestoreEchoMode()
 
     testWidget->setEchoMode(QLineEdit::PasswordEchoOnEdit);
     testWidget->setFocus();
-    QTest::qWait(250);
+    QTRY_VERIFY(testWidget->hasFocus());
 
     QTest::keyPress(testWidget, '0');
     QCOMPARE(testWidget->displayText(), QString("0"));

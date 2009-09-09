@@ -44,6 +44,8 @@
 
 #include <QGLWidget>
 
+class CubeObject;
+
 class GLWidget : public QGLWidget
 {
     Q_OBJECT
@@ -69,16 +71,14 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event);
 
 private:
-    GLuint makeObject();
+    void makeObject();
 
     QColor clearColor;
     QPoint lastPos;
     int xRot;
     int yRot;
     int zRot;
-
-    static GLuint sharedObject;
-    static int refCount;
+    CubeObject *cube;
 };
 
 #endif

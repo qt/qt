@@ -47,6 +47,8 @@
 #include <qwidget.h>
 #include <QPushButton>
 
+#include "../../shared/util.h"
+
 //TESTED_CLASS=
 //TESTED_FILES=gui/kernel/qlayout.cpp gui/kernel/qlayout.h
 
@@ -149,7 +151,7 @@ void tst_QStackedLayout::testCase()
     QStackedLayout onStack(testWidget);
     QStackedLayout *testLayout = &onStack;
     testWidget->setLayout(testLayout);
-    
+
     QSignalSpy spy(testLayout,SIGNAL(currentChanged(int)));
 
     // Nothing in layout
@@ -350,12 +352,15 @@ void tst_QStackedLayout::keepFocusAfterSetCurrent()
 
     stackLayout->setCurrentIndex(0);
 
-    edit1->setFocus();
-    QTest::qWait(250);
-    edit1->activateWindow();
-    QTest::qWait(100);
+    testWidget->show();
+    QTest::qWait(25);
+    QApplication::setActiveWindow(testWidget);
 
-    QVERIFY(edit1->hasFocus());
+    edit1->setFocus();
+    edit1->activateWindow();
+    QTest::qWait(25);
+
+    QTRY_VERIFY(edit1->hasFocus());
 
     stackLayout->setCurrentIndex(1);
     QVERIFY(!edit1->hasFocus());

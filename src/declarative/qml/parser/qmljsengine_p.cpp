@@ -178,6 +178,12 @@ Engine::~Engine()
 QSet<NameId> Engine::literals() const
 { return _literals; }
 
+void Engine::addComment(int pos, int len, int line, int col)
+{ if (len > 0) _comments.append(QmlJS::AST::SourceLocation(pos, len, line, col)); }
+
+QList<QmlJS::AST::SourceLocation> Engine::comments() const
+{ return _comments; }
+
 NameId *Engine::intern(const QChar *u, int s)
 { return const_cast<NameId *>(&*_literals.insert(NameId(u, s))); }
 

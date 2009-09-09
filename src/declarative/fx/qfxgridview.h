@@ -60,14 +60,14 @@ class Q_DECLARATIVE_EXPORT QFxGridView : public QFxFlickable
     Q_PROPERTY(QVariant model READ model WRITE setModel)
     Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate)
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
-    Q_PROPERTY(QFxItem *current READ currentItem NOTIFY currentIndexChanged)
+    Q_PROPERTY(QFxItem *current READ currentItem NOTIFY currentIndexChanged) //### currentItem
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(QmlComponent *highlight READ highlight WRITE setHighlight)
     Q_PROPERTY(bool autoHighlight READ autoHighlight WRITE setAutoHighlight)
     Q_PROPERTY(Flow flow READ flow WRITE setFlow)
     Q_PROPERTY(bool wrap READ isWrapEnabled WRITE setWrapEnabled)
     Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer)
-    Q_PROPERTY(int cellWidth READ cellWidth WRITE setCellWidth NOTIFY cellSizeChanged)
+    Q_PROPERTY(int cellWidth READ cellWidth WRITE setCellWidth NOTIFY cellSizeChanged) //### columnCount, rowCount
     Q_PROPERTY(int cellHeight READ cellHeight WRITE setCellHeight NOTIFY cellSizeChanged)
     Q_CLASSINFO("DefaultProperty", "data")
 

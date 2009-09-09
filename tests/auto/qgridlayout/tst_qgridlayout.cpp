@@ -51,6 +51,8 @@
 #include <QtGui/QWindowsStyle>
 #include <QStyleFactory>
 
+#include "../../shared/util.h"
+
 //TESTED_CLASS=
 //TESTED_FILES=gui/kernel/qlayout.cpp gui/kernel/qlayout.h
 
@@ -788,8 +790,8 @@ void tst_QGridLayout::minMaxSize_data()
     QTest::addColumn<QSize>("fixedSize");
     //input and expected output
     QTest::addColumn<SizeInfoList>("sizeinfos");
-    
-    QTest::newRow("3x1 grid, extend to minimumSize") << QString() << 3 << 1 
+
+    QTest::newRow("3x1 grid, extend to minimumSize") << QString() << 3 << 1
                 << int(QSizePolicy::Minimum) << QSize(152, 50) << (SizeInfoList()
                 << SizeInfo(QRect(10, 10, 43, 30), QSize( 75, 75), QSize(0,0))
                 << SizeInfo(QRect(10 + 45, 10, 43, 30), QSize(75, 75), QSize( 0, 0))
@@ -917,13 +919,14 @@ void tst_QGridLayout::minMaxSize()
 #if defined(Q_WS_X11)
         qt_x11_wait_for_window_manager(m_toplevel);     // wait for the show
 #endif
+        QTest::qWait(20);
         m_toplevel->adjustSize();
-        QTest::qWait(200);                              // wait for the implicit adjustSize
+        QTest::qWait(20);                              // wait for the implicit adjustSize
         // If the following fails we might have to wait longer.
         // If that does not help there is likely a problem with the implicit adjustSize in show()
         if (!fixedSize.isValid()) {
             // Note that this can fail if the desktop has large fonts on windows.
-            QCOMPARE(m_toplevel->size(), m_toplevel->sizeHint());
+            QTRY_COMPARE(m_toplevel->size(), m_toplevel->sizeHint());
         }
         // We are relying on the order here...
         for (int pi = 0; pi < sizehinters.count(); ++pi) {

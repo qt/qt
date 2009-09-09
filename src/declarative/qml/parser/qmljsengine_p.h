@@ -143,12 +143,16 @@ class Engine
     Lexer *_lexer;
     NodePool *_nodePool;
     QSet<NameId> _literals;
+    QList<QmlJS::AST::SourceLocation> _comments;
 
 public:
     Engine();
     ~Engine();
 
     QSet<NameId> literals() const;
+
+    void addComment(int pos, int len, int line, int col);
+    QList<QmlJS::AST::SourceLocation> comments() const;
 
     NameId *intern(const QChar *u, int s);
 

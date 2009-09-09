@@ -1432,6 +1432,55 @@ void tst_QGL::fboFormat()
     QVERIFY(format1.attachment() == QGLFramebufferObject::CombinedDepthStencil);
     QCOMPARE(int(format1.textureTarget()), int(GL_TEXTURE_3D));
     QCOMPARE(int(format1.internalTextureFormat()), int(GL_RGB16));
+
+    // operator== and operator!= for QGLFramebufferObjectFormat.
+    QGLFramebufferObjectFormat format1c;
+    QGLFramebufferObjectFormat format2c;
+
+    QVERIFY(format1c == format2c);
+    QVERIFY(!(format1c != format2c));
+    format1c.setSamples(8);
+    QVERIFY(!(format1c == format2c));
+    QVERIFY(format1c != format2c);
+    format2c.setSamples(8);
+    QVERIFY(format1c == format2c);
+    QVERIFY(!(format1c != format2c));
+
+    format1c.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+    QVERIFY(!(format1c == format2c));
+    QVERIFY(format1c != format2c);
+    format2c.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+    QVERIFY(format1c == format2c);
+    QVERIFY(!(format1c != format2c));
+
+    format1c.setTextureTarget(GL_TEXTURE_3D);
+    QVERIFY(!(format1c == format2c));
+    QVERIFY(format1c != format2c);
+    format2c.setTextureTarget(GL_TEXTURE_3D);
+    QVERIFY(format1c == format2c);
+    QVERIFY(!(format1c != format2c));
+
+    format1c.setInternalTextureFormat(GL_RGB16);
+    QVERIFY(!(format1c == format2c));
+    QVERIFY(format1c != format2c);
+    format2c.setInternalTextureFormat(GL_RGB16);
+    QVERIFY(format1c == format2c);
+    QVERIFY(!(format1c != format2c));
+
+    QGLFramebufferObjectFormat format3c(format1c);
+    QGLFramebufferObjectFormat format4c;
+    QVERIFY(format1c == format3c);
+    QVERIFY(!(format1c != format3c));
+    format3c.setInternalTextureFormat(DEFAULT_FORMAT);
+    QVERIFY(!(format1c == format3c));
+    QVERIFY(format1c != format3c);
+
+    format4c = format1c;
+    QVERIFY(format1c == format4c);
+    QVERIFY(!(format1c != format4c));
+    format4c.setInternalTextureFormat(DEFAULT_FORMAT);
+    QVERIFY(!(format1c == format4c));
+    QVERIFY(format1c != format4c);
 }
 
 QTEST_MAIN(tst_QGL)

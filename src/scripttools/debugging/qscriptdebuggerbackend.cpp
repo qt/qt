@@ -805,13 +805,7 @@ int QScriptDebuggerBackend::contextCount() const
 {
     if (!engine())
         return 0;
-    int count = 0;
-    QScriptContext *ctx = engine()->currentContext();
-    while (ctx) {
-        ++count;
-        ctx = ctx->parentContext();
-    }
-    return count;
+    return contextIds().count();
 }
 
 /*!
