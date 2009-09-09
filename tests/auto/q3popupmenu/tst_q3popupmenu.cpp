@@ -117,6 +117,8 @@ void tst_Q3PopupMenu::task177490_highlighted()
     QApplication::processEvents();
 #endif
     Q3PopupMenu menu1;
+    //don't let the window manager move the popup while we are testing
+    menu1.setWindowFlags(Qt::X11BypassWindowManagerHint);
     menu1.insertItem("Item 1");
 
     Q3PopupMenu menu2;
@@ -133,16 +135,12 @@ void tst_Q3PopupMenu::task177490_highlighted()
 
     QTest::mouseMove(&menu1, QPoint(x, y1));
     QTest::mouseMove(&menu1, QPoint(x, y1 + 1));
-    QTest::qWait(1000);
+    QTest::qWait(100);
 
     QTest::mouseMove(&menu1, QPoint(x, y2));
     QTest::mouseMove(&menu1, QPoint(x, y2 + 1));
-    QTest::qWait(1000);
+    QTest::qWait(100);
 
-    if (!menu2.isVisible())
-        QEXPECT_FAIL(
-            "", "expected failure due to visibilty/focus problem; to be investigated later",
-            Abort);
     QCOMPARE(spy.count(), 2); // one per menu item
 }
 

@@ -2173,14 +2173,12 @@ void tst_QGraphicsView::viewportUpdateMode()
     qt_x11_wait_for_window_manager(&view);
 #endif
     QTest::qWait(50);
+    QTRY_VERIFY(!view.lastUpdateRegions.isEmpty());
     view.lastUpdateRegions.clear();
 
     // Issue two scene updates.
     scene.update(QRectF(0, 0, 10, 10));
     scene.update(QRectF(20, 0, 10, 10));
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
     QTest::qWait(50);
 
     // The view gets two updates for the update scene updates.
