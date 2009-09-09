@@ -44,7 +44,10 @@
 #include <private/qglpixelbuffer_p.h>
 #include <private/qglframebufferobject_p.h>
 #include <private/qwindowsurface_gl_p.h>
+
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
 #include <private/qpixmapdata_gl_p.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -172,8 +175,12 @@ QGLPaintDevice* QGLPaintDevice::getDevice(QPaintDevice* pd)
             break;
         case QInternal::Pixmap: {
             QPixmapData* pmd = static_cast<QPixmap*>(pd)->pixmapData();
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
             Q_ASSERT(pmd->classId() == QPixmapData::OpenGLClass);
             glpd = static_cast<QGLPixmapData*>(pmd)->glDevice();
+#else
+            qWarning("Pixmap render targets not supported on OpenGL ES 1.x");
+#endif
             break;
         }
         default:
