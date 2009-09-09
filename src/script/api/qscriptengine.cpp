@@ -985,6 +985,11 @@ void QScriptEnginePrivate::setDefaultPrototype(int metaTypeId, JSC::JSValue prot
 
 QScriptContext *QScriptEnginePrivate::contextForFrame(JSC::ExecState *frame)
 {
+    if (frame && frame->callerFrame()->hasHostCallFrameFlag()
+        && frame->callerFrame()->removeHostCallFrameFlag() == QScript::scriptEngineFromExec(frame)->globalExec()) {
+        //skip the "fake" context created in Interpreter::execute.
+        frame = frame->callerFrame()->removeHostCallFrameFlag();
+    }
     return reinterpret_cast<QScriptContext *>(frame);
 }
 

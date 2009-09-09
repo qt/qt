@@ -565,7 +565,7 @@ QString QFSFileEngine::currentPath(const QString &)
         // try to create it (can happen with application private dirs)
         // Ignore mkdir failures; we want to be consistent with Open C
         // current path regardless.
-        QT_MKDIR(QFile::encodeName(nativeCurrentName), 0777);
+        QT_MKDIR(QFile::encodeName(QLatin1String(nativeCurrentName)), 0777);
 #else
 # if defined(QT_DEBUG)
         qWarning("QFSFileEngine::currentPath: stat(\".\") failed");

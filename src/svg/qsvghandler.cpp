@@ -1203,10 +1203,9 @@ static void parsePen(QSvgNode *node,
         }
 
         //stroke-width handling
-        qreal w = 0;
         if (!attributes.strokeWidth.isEmpty() && attributes.strokeWidth != QT_INHERIT) {
             QSvgHandler::LengthType lt;
-            prop->setWidth(w = parseLength(attributes.strokeWidth.toString(), lt, handler));
+            prop->setWidth(parseLength(attributes.strokeWidth.toString(), lt, handler));
         }
 
         //stroke-dasharray

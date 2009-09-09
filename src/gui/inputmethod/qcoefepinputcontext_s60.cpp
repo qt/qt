@@ -213,7 +213,7 @@ void QCoeFepInputContext::mouseHandler( int x, QMouseEvent *event)
 
         QList<QInputMethodEvent::Attribute> attributes;
         attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, pos + x, 0, QVariant());
-        QInputMethodEvent event("", attributes);
+        QInputMethodEvent event(QLatin1String(""), attributes);
         sendEvent(event);
     }
 }
@@ -500,8 +500,8 @@ void QCoeFepInputContext::SetInlineEditingCursorVisibilityL(TBool aCursorVisibil
 void QCoeFepInputContext::CancelFepInlineEdit()
 {
     QList<QInputMethodEvent::Attribute> attributes;
-    QInputMethodEvent event("", attributes);
-    event.setCommitString("", 0, 0);
+    QInputMethodEvent event(QLatin1String(""), attributes);
+    event.setCommitString(QLatin1String(""), 0, 0);
     m_preeditString.clear();
     sendEvent(event);
 
@@ -618,7 +618,7 @@ void QCoeFepInputContext::commitCurrentString(bool triggeredBySymbian)
     }
 
     QList<QInputMethodEvent::Attribute> attributes;
-    QInputMethodEvent event("", attributes);
+    QInputMethodEvent event(QLatin1String(""), attributes);
     event.setCommitString(m_preeditString, 0, 0);//m_preeditString.size());
     m_preeditString.clear();
     sendEvent(event);

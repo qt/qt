@@ -101,17 +101,17 @@ static void handleMailtoSchemeLX(const QUrl &url)
     // this function has many intermingled leaves and throws. Qt and Symbian objects do not have
     // destructor dependencies, and cleanup object is used to prevent cleanup stack dependency on stack.
     QString recipient = url.path();
-    QString subject = url.queryItemValue("subject");
-    QString body = url.queryItemValue("body");
-    QString to = url.queryItemValue("to");
-    QString cc = url.queryItemValue("cc");
-    QString bcc = url.queryItemValue("bcc");
+    QString subject = url.queryItemValue(QLatin1String("subject"));
+    QString body = url.queryItemValue(QLatin1String("body"));
+    QString to = url.queryItemValue(QLatin1String("to"));
+    QString cc = url.queryItemValue(QLatin1String("cc"));
+    QString bcc = url.queryItemValue(QLatin1String("bcc"));
 
     // these fields might have comma separated addresses
-    QStringList recipients = recipient.split(",", QString::SkipEmptyParts);
-    QStringList tos = to.split(",", QString::SkipEmptyParts);
-    QStringList ccs = cc.split(",", QString::SkipEmptyParts);
-    QStringList bccs = bcc.split(",", QString::SkipEmptyParts);
+    QStringList recipients = recipient.split(QLatin1String(","), QString::SkipEmptyParts);
+    QStringList tos = to.split(QLatin1String(","), QString::SkipEmptyParts);
+    QStringList ccs = cc.split(QLatin1String(","), QString::SkipEmptyParts);
+    QStringList bccs = bcc.split(QLatin1String(","), QString::SkipEmptyParts);
 
 
     RSendAs sendAs;
@@ -200,7 +200,7 @@ static void handleOtherSchemesL(const TDesC& aUrl)
 
 static bool handleOtherSchemes(const QUrl &url)
 {
-    QString encUrl(url.toEncoded());
+    QString encUrl(QString::fromUtf8(url.toEncoded()));
     TPtrC urlPtr(qt_QString2TPtrC(encUrl));
     TRAPD( err, handleOtherSchemesL(urlPtr));
     return err ? false : true;
