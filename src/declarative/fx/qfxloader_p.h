@@ -69,10 +69,12 @@ public:
 
     QUrl source;
     QFxItem *item;
-    QmlComponent *qmlcomp;
-    QHash<QString, QFxItem *> cachedChildren;
+    QmlComponent *component;
+    bool ownComponent;
+    QFxLoader::ResizeMode resizeMode;
 
     void _q_sourceLoaded();
+    void _q_updateSize();
 };
 
 QT_END_NAMESPACE

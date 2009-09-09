@@ -45,7 +45,7 @@
 QT_BEGIN_NAMESPACE
 
 QFxLoaderPrivate::QFxLoaderPrivate()
-: item(0), qmlcomp(0)
+: item(0), component(0), ownComponent(false), resizeMode(QFxLoader::SizeLoaderToItem)
 {
 }
 
@@ -59,9 +59,22 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Loader,QFxLoader)
     \qmlclass Loader
     \inherits Item
 
-    \brief The Loader item allows you to dynamically load an Item-based
-    subtree from a QML URL.
- */
+    \brief The Loader item allows dynamically loading an Item-based
+    subtree from a QML URL or Component.
+
+    Loader instantiates an item from a component. The component to
+    instantiate may be specified directly by the \c sourceComponent
+    property, or loaded from a URL via the \c source property.
+
+    It is also an effective means of delaying the creation of a component
+    until it is required:
+    \code
+    Loader { id: PageLoader }
+    Rectangle {
+        MouseRegion { anchors.fill: parent; onClicked: PageLoader.source = "Page1.qml" }
+    }
+    \endcode
+*/
 
 /*!
     \internal
@@ -86,10 +99,10 @@ QFxLoader::~QFxLoader()
 
 /*!
     \qmlproperty url Loader::source
-    This property holds the dynamic URL of the QML for the item.
+    This property holds the URL of the QML component to
+    instantiate.
 
-    This property is used for dynamically loading QML into the
-    item.
+    \sa status, progress
 */
 QUrl QFxLoader::source() const
 {
@@ -103,44 +116,98 @@ void QFxLoader::setSource(const QUrl &url)
     if (d->source == url)
         return;
 
-    if (!d->source.isEmpty()) {
-        QHash<QString, QFxItem *>::Iterator iter = d->cachedChildren.find(d->source.toString());
-        if (iter != d->cachedChildren.end())
-            (*iter)->setOpacity(0.);
+    if (d->ownComponent) {
+        delete d->component;
+        d->component = 0;
     }
+    d->item = 0;
+    delete d->item;
 
     d->source = url;
-    d->item = 0;
-    emit itemChanged();
-
     if (d->source.isEmpty()) {
         emit sourceChanged();
         emit statusChanged();
         emit progressChanged();
+        emit itemChanged();
         return;
     }
 
-    QHash<QString, QFxItem *>::Iterator iter = d->cachedChildren.find(d->source.toString());
-    if (iter != d->cachedChildren.end()) {
-        (*iter)->setOpacity(1.);
-        d->item = (*iter);
+    d->component = new QmlComponent(qmlEngine(this), d->source, this);
+    d->ownComponent = true;
+    if (!d->component->isLoading()) {
+        d->_q_sourceLoaded();
+    } else {
+        connect(d->component, SIGNAL(statusChanged(QmlComponent::Status)),
+                this, SLOT(_q_sourceLoaded()));
+        connect(d->component, SIGNAL(progressChanged(qreal)),
+                this, SIGNAL(progressChanged()));
+        emit statusChanged();
+        emit progressChanged();
+        emit sourceChanged();
+        emit itemChanged();
+    }
+}
+
+/*!
+    \qmlproperty Component Loader::sourceComponent
+    The sourceComponent property holds the \l{Component} to instantiate.
+
+    \qml
+    Item {
+        Component {
+            id: RedSquare
+            Rectangle { color: "red"; width: 10; height: 10 }
+        }
+
+        Loader { sourceComponent: RedSquare }
+        Loader { sourceComponent: RedSquare; x: 10 }
+    }
+    \endqml
+
+    \sa source
+*/
+
+QmlComponent *QFxLoader::sourceComponent() const
+{
+    Q_D(const QFxLoader);
+    return d->component;
+}
+
+void QFxLoader::setSourceComponent(QmlComponent *comp)
+{
+    Q_D(QFxLoader);
+    if (comp == d->component)
+        return;
+
+    d->source = QUrl();
+    if (d->ownComponent) {
+        delete d->component;
+        d->component = 0;
+    }
+    delete d->item;
+    d->item = 0;
+
+    d->component = comp;
+    d->ownComponent = false;
+    if (!d->component) {
         emit sourceChanged();
         emit statusChanged();
         emit progressChanged();
         emit itemChanged();
+        return;
+    }
+
+    if (!d->component->isLoading()) {
+        d->_q_sourceLoaded();
     } else {
-        d->qmlcomp =
-            new QmlComponent(qmlEngine(this), d->source, this);
-        if (!d->qmlcomp->isLoading()) {
-            d->_q_sourceLoaded();
-        } else {
-            connect(d->qmlcomp, SIGNAL(statusChanged(QmlComponent::Status)),
-                    this, SLOT(_q_sourceLoaded()));
-            connect(d->qmlcomp, SIGNAL(progressChanged(qreal)),
-                    this, SIGNAL(progressChanged()));
-            emit statusChanged();
-            emit progressChanged();
-        }
+        connect(d->component, SIGNAL(statusChanged(QmlComponent::Status)),
+                this, SLOT(_q_sourceLoaded()));
+        connect(d->component, SIGNAL(progressChanged(qreal)),
+                this, SIGNAL(progressChanged()));
+        emit progressChanged();
+        emit sourceChanged();
+        emit statusChanged();
+        emit itemChanged();
     }
 }
 
@@ -148,33 +215,39 @@ void QFxLoaderPrivate::_q_sourceLoaded()
 {
     Q_Q(QFxLoader);
 
-    if (qmlcomp) {
+    if (component) {
         QmlContext *ctxt = new QmlContext(qmlContext(q));
         ctxt->addDefaultObject(q);
 
-        if (!qmlcomp->errors().isEmpty()) {
-            qWarning() << qmlcomp->errors();
-            delete qmlcomp;
-            qmlcomp = 0;
+        if (!component->errors().isEmpty()) {
+            qWarning() << component->errors();
             emit q->sourceChanged();
             emit q->statusChanged();
             emit q->progressChanged();
             return;
         }
-        QObject *obj = qmlcomp->create(ctxt);
-        if (!qmlcomp->errors().isEmpty())
-            qWarning() << qmlcomp->errors();
-        QFxItem *qmlChild = qobject_cast<QFxItem *>(obj);
-        if (qmlChild) {
-            qmlChild->setParentItem(q);
-            cachedChildren.insert(source.toString(), qmlChild);
-            item = qmlChild;
+
+        QObject *obj = component->create(ctxt);
+        if (obj) {
+            item = qobject_cast<QFxItem *>(obj);
+            if (item) {
+                item->setParentItem(q);
+//                item->setFocus(true);
+                QFxItem *resizeItem = 0;
+                if (resizeMode == QFxLoader::SizeLoaderToItem)
+                    resizeItem = item;
+                else if (resizeMode == QFxLoader::SizeItemToLoader)
+                    resizeItem = q;
+                if (resizeItem) {
+                    QObject::connect(resizeItem, SIGNAL(widthChanged()), q, SLOT(_q_updateSize()));
+                    QObject::connect(resizeItem, SIGNAL(heightChanged()), q, SLOT(_q_updateSize()));
+                }
+                _q_updateSize();
+            }
         } else {
-            delete qmlChild;
+            delete obj;
             source = QUrl();
         }
-        delete qmlcomp;
-        qmlcomp = 0;
         emit q->sourceChanged();
         emit q->statusChanged();
         emit q->progressChanged();
@@ -196,6 +269,19 @@ void QFxLoaderPrivate::_q_sourceLoaded()
     \sa progress
 */
 
+QFxLoader::Status QFxLoader::status() const
+{
+    Q_D(const QFxLoader);
+
+    if (d->component)
+        return static_cast<QFxLoader::Status>(d->component->status());
+
+    if (d->item)
+        return Ready;
+
+    return d->source.isEmpty() ? Null : Error;
+}
+
 /*!
     \qmlproperty real Loader::progress
 
@@ -204,27 +290,89 @@ void QFxLoaderPrivate::_q_sourceLoaded()
 
     \sa status
 */
-QFxLoader::Status QFxLoader::status() const
-{
-    Q_D(const QFxLoader);
-
-    if (d->qmlcomp)
-        return static_cast<QFxLoader::Status>(d->qmlcomp->status());
-
-    if (d->item)
-        return Ready;
-
-    return d->source.isEmpty() ? Null : Error;
-}
-
 qreal QFxLoader::progress() const
 {
     Q_D(const QFxLoader);
 
-    if (d->qmlcomp)
-        return d->qmlcomp->progress();
+    if (d->item)
+        return 1.0;
 
-    return d->item ? 1.0 : 0.0;
+    if (d->component)
+        return d->component->progress();
+
+    return 0.0;
+}
+
+/*!
+    \qmlproperty enum Loader::resizeMode
+
+    This property determines how the Loader or item are resized:
+    \list
+    \o NoResize - no item will be resized
+    \o SizeLoaderToItem - the Loader will be sized to the size of the item, unless the size of the Loader has been otherwise specified.
+    \o SizeItemToLoader - the item will be sized to the size of the Loader.
+    \endlist
+
+    The default resizeMode is SizeLoaderToItem.
+*/
+QFxLoader::ResizeMode QFxLoader::resizeMode() const
+{
+    Q_D(const QFxLoader);
+    return d->resizeMode;
+}
+
+void QFxLoader::setResizeMode(ResizeMode mode)
+{
+    Q_D(QFxLoader);
+    if (mode == d->resizeMode)
+        return;
+
+    if (d->item) {
+        QFxItem *resizeItem = 0;
+        if (d->resizeMode == SizeLoaderToItem)
+            resizeItem = d->item;
+        else if (d->resizeMode == SizeItemToLoader)
+            resizeItem = this;
+        if (resizeItem) {
+            disconnect(resizeItem, SIGNAL(widthChanged()), this, SLOT(_q_updateSize()));
+            disconnect(resizeItem, SIGNAL(heightChanged()), this, SLOT(_q_updateSize()));
+        }
+    }
+
+    d->resizeMode = mode;
+
+    if (d->item) {
+        QFxItem *resizeItem = 0;
+        if (d->resizeMode == SizeLoaderToItem)
+            resizeItem = d->item;
+        else if (d->resizeMode == SizeItemToLoader)
+            resizeItem = this;
+        if (resizeItem) {
+            connect(resizeItem, SIGNAL(widthChanged()), this, SLOT(_q_updateSize()));
+            connect(resizeItem, SIGNAL(heightChanged()), this, SLOT(_q_updateSize()));
+        }
+    }
+}
+
+void QFxLoaderPrivate::_q_updateSize()
+{
+    Q_Q(QFxLoader);
+    if (!item)
+        return;
+    switch (resizeMode) {
+    case QFxLoader::SizeLoaderToItem:
+        if (!q->widthValid())
+            q->setImplicitWidth(item->width());
+        if (!q->heightValid())
+            q->setImplicitHeight(item->height());
+        break;
+    case QFxLoader::SizeItemToLoader:
+        item->setWidth(q->width());
+        item->setHeight(q->height());
+        break;
+    default:
+        break;
+    }
 }
 
 /*!

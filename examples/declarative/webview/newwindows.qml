@@ -24,5 +24,5 @@ Row {
         }
     ]
     width: 500
-    ComponentInstance { component: WebViewPage }
+    Loader { sourceComponent: WebViewPage }
 }

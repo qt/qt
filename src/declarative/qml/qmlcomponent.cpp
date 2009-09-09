@@ -91,8 +91,8 @@ Item {
             height: 10
         }
     }
-    ComponentInstance { component: RedSquare }
-    ComponentInstance { component: RedSquare; x: 20 }
+    Loader { sourceComponent: RedSquare }
+    Loader { sourceComponent: RedSquare; x: 20 }
 }
     \endqml
 */
@@ -328,6 +328,7 @@ QmlComponent::QmlComponent(QmlEngine *engine, QmlCompiledData *cc, int start, in
     d->start = start;
     d->count = count;
     d->url = cc->url;
+    d->progress = 1.0;
 }
 
 /*!

@@ -69,6 +69,8 @@ MouseRegion: add "pressedButtons" property
 Timer: add start() and stop() slots
 WebView: add newWindowComponent and newWindowParent properties
 Loader: add status() and progress() properties
+Loader: add sourceComponent property
+Loader: add resizeMode property
 
 Deletions:
 Column/VerticalPositioner: lost "margins" property
@@ -76,6 +78,7 @@ Row/HorizontalPositioner: lost "margins" property
 Grid/Positioner/Layout: lost "margins" property
 WebView: lost "interactive" property (always true now)
 Flickable: removed "dragMode" property
+ComponentInstance: removed.  Replaced by Loader.sourceComponent
 
 Other Changes:
 Drag: axis becomes an enum with values "XAxis", "YAxis", "XandYAxis"
