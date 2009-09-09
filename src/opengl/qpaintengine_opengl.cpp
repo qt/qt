@@ -4300,8 +4300,10 @@ void QOpenGLPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QR
     else {
         GLenum target = qt_gl_preferredTextureTarget();
         d->flushDrawQueue();
-        d->device->context()->bindTexture(pm, target);
-        drawTextureRect(pm.width(), pm.height(), r, sr, target);
+        QGLTexture *tex =
+            d->device->context()->d_func()->bindTexture(pm, target, GL_RGBA,
+                                                        QGLContext::InternalBindOption);
+        drawTextureRect(pm.width(), pm.height(), r, sr, target, tex);
     }
 }
 
@@ -4416,13 +4418,15 @@ void QOpenGLPaintEngine::drawImage(const QRectF &r, const QImage &image, const Q
     else {
         GLenum target = qt_gl_preferredTextureTarget();
         d->flushDrawQueue();
-        d->device->context()->bindTexture(image, target);
-        drawTextureRect(image.width(), image.height(), r, sr, target);
+        QGLTexture *tex =
+            d->device->context()->d_func()->bindTexture(image, target, GL_RGBA,
+                                                        QGLContext::InternalBindOption);
+        drawTextureRect(image.width(), image.height(), r, sr, target, tex);
     }
 }
 
 void QOpenGLPaintEngine::drawTextureRect(int tx_width, int tx_height, const QRectF &r,
-                                         const QRectF &sr, GLenum target)
+                                         const QRectF &sr, GLenum target, QGLTexture *tex)
 {
     Q_D(QOpenGLPaintEngine);
 #ifndef QT_OPENGL_ES
@@ -4437,8 +4441,13 @@ void QOpenGLPaintEngine::drawTextureRect(int tx_width, int tx_height, const QRec
     if (target == GL_TEXTURE_2D) {
         x1 = sr.x() / tx_width;
         x2 = x1 + sr.width() / tx_width;
-        y1 = 1 - (sr.bottom() / tx_height);
-        y2 = 1 - (sr.y() / tx_height);
+        if (tex->options & QGLContext::InvertedYBindOption) {
+            y1 = 1 - (sr.bottom() / tx_height);
+            y2 = 1 - (sr.y() / tx_height);
+        } else {
+            y1 = sr.bottom() / tx_height;
+            y2 = sr.y() / tx_height;
+        }
     } else {
         x1 = sr.x();
         x2 = sr.right();
@@ -5193,9 +5202,12 @@ void QOpenGLPaintEnginePrivate::composite(GLuint primitive, const q_vertexType *
         glActiveTexture(GL_TEXTURE0 + brush_texture_location);
 
         if (current_style == Qt::TexturePattern)
-            device->context()->bindTexture(cbrush.textureImage());
+            device->context()->d_func()->bindTexture(cbrush.textureImage(), GL_TEXTURE_2D, GL_RGBA,
+                                                     QGLContext::InternalBindOption);
         else
-            device->context()->bindTexture(qt_imageForBrush(current_style, true));
+            device->context()->d_func()->bindTexture(qt_imageForBrush(current_style, true),
+                                                     GL_TEXTURE_2D, GL_RGBA,
+                                                     QGLContext::InternalBindOption);
 
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, use_smooth_pixmap_transform);
     }

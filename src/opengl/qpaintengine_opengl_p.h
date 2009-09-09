@@ -146,7 +146,8 @@ public:
 
 private:
     void drawPolyInternal(const QPolygonF &pa, bool close = true);
-    void drawTextureRect(int tx_width, int tx_height, const QRectF &r, const QRectF &sr, GLenum target);
+    void drawTextureRect(int tx_width, int tx_height, const QRectF &r, const QRectF &sr,
+                         GLenum target, QGLTexture *tex);
     Q_DISABLE_COPY(QOpenGLPaintEngine)
 };
 
