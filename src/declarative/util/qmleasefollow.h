@@ -39,11 +39,12 @@
 **
 ****************************************************************************/
 
-#ifndef QMLFOLLOW_H
-#define QMLFOLLOW_H
+#ifndef QMLEASEFOLLOW_H
+#define QMLEASEFOLLOW_H
 
-#include <QtDeclarative/qmlpropertyvaluesource.h>
+#include <QtCore/qobject.h>
 #include <QtDeclarative/qml.h>
+#include <QtDeclarative/qmlpropertyvaluesource.h>
 
 QT_BEGIN_HEADER
 
@@ -51,63 +52,46 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QmlFollowPrivate;
-class Q_DECLARATIVE_EXPORT QmlFollow : public QObject, 
-                                       public QmlPropertyValueSource
+class QmlMetaProperty;
+class QmlEaseFollowPrivate;
+class Q_DECLARATIVE_EXPORT QmlEaseFollow : public QObject, 
+                                           public QmlPropertyValueSource
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlFollow)
+    Q_DECLARE_PRIVATE(QmlEaseFollow)
     Q_INTERFACES(QmlPropertyValueSource)
+    Q_ENUMS(ReversingMode)
 
     Q_PROPERTY(qreal source READ sourceValue WRITE setSourceValue)
     Q_PROPERTY(qreal velocity READ velocity WRITE setVelocity)
-    Q_PROPERTY(qreal spring READ spring WRITE setSpring)
-    Q_PROPERTY(qreal damping READ damping WRITE setDamping)
-    Q_PROPERTY(qreal epsilon READ epsilon WRITE setEpsilon)
-    Q_PROPERTY(qreal modulus READ modulus WRITE setModulus)
-    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
-    Q_PROPERTY(qreal value READ value NOTIFY valueChanged)
-    Q_PROPERTY(qreal modulus READ modulus WRITE setModulus NOTIFY modulusChanged)
-    Q_PROPERTY(qreal mass READ mass WRITE setMass NOTIFY massChanged)
-    Q_PROPERTY(bool inSync READ inSync NOTIFY syncChanged)
+    Q_PROPERTY(qreal duration READ duration WRITE setDuration)
+    Q_PROPERTY(ReversingMode reversingMode READ reversingMode WRITE setReversingMode)
 
 public:
-    QmlFollow(QObject *parent=0);
-    ~QmlFollow();
+    enum ReversingMode { Eased, Immediate, Sync };
 
-    virtual void setTarget(const QmlMetaProperty &);
+    QmlEaseFollow(QObject *parent = 0);
+    ~QmlEaseFollow();
+
+    ReversingMode reversingMode() const;
+    void setReversingMode(ReversingMode);
 
     qreal sourceValue() const;
-    void setSourceValue(qreal value);
+    void setSourceValue(qreal);
+
     qreal velocity() const;
-    void setVelocity(qreal velocity);
-    qreal spring() const;
-    void setSpring(qreal spring);
-    qreal damping() const;
-    void setDamping(qreal damping);
-    qreal epsilon() const;
-    void setEpsilon(qreal epsilon);
-    qreal mass() const;
-    void setMass(qreal modulus);
-    qreal modulus() const;
-    void setModulus(qreal modulus);
-    bool enabled() const;
-    void setEnabled(bool enabled);
-    bool inSync() const;
+    void setVelocity(qreal);
 
-    qreal value() const;
+    qreal duration() const;
+    void setDuration(qreal);
 
-Q_SIGNALS:
-    void valueChanged(qreal);
-    void modulusChanged();
-    void massChanged();
-    void syncChanged();
+    virtual void setTarget(const QmlMetaProperty &);
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QmlFollow)
+QML_DECLARE_TYPE(QmlEaseFollow);
 
 QT_END_HEADER
 
-#endif // QFXFOLLOW_H
+#endif // QMLEASEFOLLOW_H
