@@ -188,7 +188,7 @@ void tst_QFxListView::items()
     QFxItem *viewport = listview->viewport();
     QVERIFY(viewport != 0);
 
-    QCOMPARE(viewport->children()->count(), model.count()); // assumes all are visible
+    QCOMPARE(viewport->childItems().count(), model.count()); // assumes all are visible
 
     for (int i = 0; i < model.count(); ++i) {
         QFxText *name = findItem<QFxText>(viewport, "textName", i);
@@ -262,7 +262,7 @@ void tst_QFxListView::inserted()
     // let transitions settle.
     QTest::qWait(1000);
 
-    QCOMPARE(viewport->children()->count(), model.count()); // assumes all are visible
+    QCOMPARE(viewport->childItems().count(), model.count()); // assumes all are visible
 
     QFxText *name = findItem<QFxText>(viewport, "textName", 1);
     QVERIFY(name != 0);
@@ -282,7 +282,7 @@ void tst_QFxListView::inserted()
     // let transitions settle.
     QTest::qWait(1000);
 
-    QCOMPARE(viewport->children()->count(), model.count()); // assumes all are visible
+    QCOMPARE(viewport->childItems().count(), model.count()); // assumes all are visible
 
     name = findItem<QFxText>(viewport, "textName", 0);
     QVERIFY(name != 0);
@@ -336,7 +336,7 @@ void tst_QFxListView::removed()
     QCOMPARE(number->text(), model.number(1));
 
     // Confirm items positioned correctly
-    for (int i = 0; i < model.count() && i < viewport->children()->count(); ++i) {
+    for (int i = 0; i < model.count() && i < viewport->childItems().count(); ++i) {
         QFxItem *item = findItem<QFxItem>(viewport, "wrapper", i);
         QVERIFY(item->y() == i*20);
     }
@@ -355,7 +355,7 @@ void tst_QFxListView::removed()
     QCOMPARE(number->text(), model.number(0));
 
     // Confirm items positioned correctly
-    for (int i = 0; i < model.count() && i < viewport->children()->count(); ++i) {
+    for (int i = 0; i < model.count() && i < viewport->childItems().count(); ++i) {
         QFxItem *item = findItem<QFxItem>(viewport, "wrapper", i);
         QCOMPARE(item->y(),i*20.0 + 20.0);
     }
@@ -366,13 +366,13 @@ void tst_QFxListView::removed()
     QTest::qWait(1000);
 
     // Confirm items positioned correctly
-    for (int i = 0; i < model.count() && i < viewport->children()->count(); ++i) {
+    for (int i = 0; i < model.count() && i < viewport->childItems().count(); ++i) {
         QFxItem *item = findItem<QFxItem>(viewport, "wrapper", i);
         QCOMPARE(item->y(),i*20.0+20.0);
     }
 
     // Remove items before visible
-    listview->setYPosition(80);
+    listview->setViewportY(80);
     listview->setCurrentIndex(10);
 
     model.removeItem(1); // post: top item will be at 40
@@ -385,12 +385,12 @@ void tst_QFxListView::removed()
         QCOMPARE(item->y(),40+i*20.0);
     }
 
-    listview->setYPosition(40); // That's the top now
+    listview->setViewportY(40); // That's the top now
     // let transitions settle.
     QTest::qWait(1000);
 
     // Confirm items positioned correctly
-    for (int i = 0; i < model.count() && i < viewport->children()->count(); ++i) {
+    for (int i = 0; i < model.count() && i < viewport->childItems().count(); ++i) {
         QFxItem *item = findItem<QFxItem>(viewport, "wrapper", i);
         QCOMPARE(item->y(),40+i*20.0);
     }
@@ -459,10 +459,12 @@ template<typename T>
 T *tst_QFxListView::findItem(QFxItem *parent, const QString &objectName, int index)
 {
     const QMetaObject &mo = T::staticMetaObject;
-    qDebug() << parent->children()->count() << "children";
-    for (int i = 0; i < parent->children()->count(); ++i) {
-        QFxItem *item = parent->children()->at(i);
-        qDebug() << "try" << item;
+    //qDebug() << parent->QGraphicsObject::children().count() << "children";
+    for (int i = 0; i < parent->QGraphicsObject::children().count(); ++i) {
+        QFxItem *item = qobject_cast<QFxItem*>(parent->QGraphicsObject::children().at(i));
+        if(!item)
+            continue;
+        //qDebug() << "try" << item;
         if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
             if (index != -1) {
                 QmlExpression e(qmlContext(item), "index", item);

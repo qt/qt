@@ -1,8 +1,8 @@
 import Qt 4.6
 
-Rect { width: 300; height: 300; color: "white"
-    TextEdit {  text: "Hello world!"; focusable: true; id: textEditObject
-        resources: [ Component { id:cursor; Item { id:cursorInstance } } ] 
+Rectangle { width: 300; height: 300; color: "white"
+    TextEdit {  text: "Hello world!"; id: textEditObject; objectName: "textEditObject"
+        resources: [ Component { id:cursor; Item { id:cursorInstance; objectName: "cursorInstance" } } ] 
         cursorDelegate: cursor
     }
 }

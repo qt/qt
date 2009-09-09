@@ -17,7 +17,7 @@ private slots:
 private:
     QFxView *createView(const QString &filename);
     template<typename T>
-    T *findItem(QFxItem *parent, const QString &id);
+    T *findItem(QObject *parent, const QString &id);
 };
 
 tst_QFxRepeater::tst_QFxRepeater()
@@ -26,7 +26,7 @@ tst_QFxRepeater::tst_QFxRepeater()
 
 void tst_QFxRepeater::stringList()
 {
-    QFxView *canvas = createView(SRCDIR "/data/repeater.xml");
+    QFxView *canvas = createView(SRCDIR "/data/repeater.qml");
 
     QStringList data;
     data << "One";
@@ -35,7 +35,7 @@ void tst_QFxRepeater::stringList()
     data << "Four";
 
     QmlContext *ctxt = canvas->rootContext();
-    ctxt->setProperty("testData", data);
+    ctxt->setContextProperty("testData", data);
 
     canvas->execute();
     qApp->processEvents();
@@ -46,10 +46,10 @@ void tst_QFxRepeater::stringList()
     QFxItem *container = findItem<QFxItem>(canvas->root(), "container");
     QVERIFY(container != 0);
 
-    QCOMPARE(container->children()->count(), data.count() + 1);
+    QCOMPARE(container->childItems().count(), data.count() + 1);
 
-    for (int i = 1; i < container->children()->count(); ++i) {
-        QFxText *name = qobject_cast<QFxText*>(container->children()->at(i));
+    for (int i = 1; i < container->childItems().count(); ++i) {
+        QFxText *name = qobject_cast<QFxText*>(container->childItems().at(i));
         QVERIFY(name != 0);
         QCOMPARE(name->text(), data.at(i-1));
     }
@@ -65,20 +65,20 @@ QFxView *tst_QFxRepeater::createView(const QString &filename)
 
     QFile file(filename);
     file.open(QFile::ReadOnly);
-    QString xml = file.readAll();
-    canvas->setQml(xml, filename);
+    QString qml = file.readAll();
+    canvas->setQml(qml, filename);
 
     return canvas;
 }
 
 template<typename T>
-T *tst_QFxRepeater::findItem(QFxItem *parent, const QString &objectName)
+T *tst_QFxRepeater::findItem(QObject *parent, const QString &objectName)
 {
     const QMetaObject &mo = T::staticMetaObject;
     if (mo.cast(parent) && (objectName.isEmpty() || parent->objectName() == objectName))
         return static_cast<T*>(parent);
-    for (int i = 0; i < parent->children()->count(); ++i) {
-        QFxItem *item = findItem<T>(parent->children()->at(i), objectName);
+    for (int i = 0; i < parent->children().count(); ++i) {
+        QFxItem *item = findItem<T>(parent->children().at(i), objectName);
         if (item)
             return static_cast<T*>(item);
     }

@@ -853,7 +853,7 @@ void QFxFlickablePrivate::data_append(QObject *o)
     Q_Q(QFxFlickable);
     QFxItem *i = qobject_cast<QFxItem *>(o);
     if (i)
-        viewport->children()->append(i);
+        viewport->fxChildren()->append(i);
     else
         o->setParent(q);
 }
@@ -884,7 +884,7 @@ QmlList<QObject *> *QFxFlickable::flickableData()
 QmlList<QFxItem *> *QFxFlickable::flickableChildren()
 {
     Q_D(QFxFlickable);
-    return d->viewport->children();
+    return d->viewport->fxChildren();
 }
 
 /*!

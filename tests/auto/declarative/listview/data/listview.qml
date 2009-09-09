@@ -9,6 +9,7 @@ Rectangle {
             id: Delegate
             Item {
                 id: wrapper
+                objectName: "wrapper"
                 height: 20
                 width: 240
                 Text {
@@ -17,11 +18,13 @@ Rectangle {
                 Text {
                     x: 30
                     id: textName
+                    objectName: "textName"
                     text: name
                 }
                 Text {
                     x: 120
                     id: textNumber
+                    objectName: "textNumber"
                     text: number
                 }
                 Text {
@@ -33,6 +36,7 @@ Rectangle {
     ]
     ListView {
         id: list
+        objectName: "list"
         width: 240
         height: 320
         model: testModel

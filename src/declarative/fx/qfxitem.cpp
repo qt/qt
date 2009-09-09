@@ -1473,7 +1473,7 @@ void QFxItemPrivate::data_append(QObject *o)
     Q_Q(QFxItem);
     QFxItem *i = qobject_cast<QFxItem *>(o);
     if (i)
-        q->children()->append(i);
+        q->fxChildren()->append(i);
     else
         resources_append(o);
 }
@@ -2271,7 +2271,7 @@ void QFxItem::focusChanged(bool flag)
     emit focusChanged();
 }
 
-QmlList<QFxItem *> *QFxItem::children()
+QmlList<QFxItem *> *QFxItem::fxChildren()
 {
     Q_D(QFxItem);
     return &(d->children);

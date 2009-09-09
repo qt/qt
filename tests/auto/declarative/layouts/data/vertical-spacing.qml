@@ -5,20 +5,20 @@ Item {
     height: 480
     Column {
         spacing: 10
-        Rect {
-            id: one
+        Rectangle {
+            objectName: "one"
             color: "red"
             width: 50
             height: 50
         }
-        Rect {
-            id: two
+        Rectangle {
+            objectName: "two"
             color: "red"
             width: 20
             height: 10
         }
-        Rect {
-            id: three
+        Rectangle {
+            objectName: "three"
             color: "red"
             width: 40
             height: 20
