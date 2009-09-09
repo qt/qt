@@ -80,6 +80,7 @@
 %token T_DEBUGGER "debugger"
 %token T_RESERVED_WORD "reserved word"
 %token T_MULTILINE_STRING_LITERAL "multiline string literal"
+%token T_COMMENT "comment"
 
 --- context keywords.
 %token T_PUBLIC "public"

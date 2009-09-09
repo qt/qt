@@ -3354,7 +3354,7 @@ void tst_QTreeView::task246536_scrollbarsNotWorking()
     o.count = 0;
     tree.verticalScrollBar()->setValue(50);
     QTest::qWait(100);
-    QVERIFY(o.count > 0);
+    QTRY_VERIFY(o.count > 0);
 }
 
 void tst_QTreeView::task250683_wrongSectionSize()
@@ -3404,8 +3404,9 @@ void tst_QTreeView::task239271_addRowsWithFirstColumnHidden()
     QStandardItem sub1("sub1"), sub11("sub11");
     root0.appendRow(QList<QStandardItem*>() << &sub1 << &sub11);
 
-    QTest::qWait(200);
+    QTest::qWait(20);
     //items in the 2nd column should have been painted
+    QTRY_VERIFY(!delegate.paintedIndexes.isEmpty());
     QVERIFY(delegate.paintedIndexes.contains(sub00.index()));
     QVERIFY(delegate.paintedIndexes.contains(sub11.index()));
 }

@@ -772,7 +772,9 @@ void tst_QTextPieceTable::blockRemoval1()
     QVERIFY(table->blocksFind(6).position() == 5);
     QVERIFY(table->blocksFind(11).position() == 10);
 
+    table->beginEditBlock();
     table->remove(5, 5);
+    table->endEditBlock();
     QVERIFY(table->blocksFind(4).blockFormat() == QTextBlockFormat());
     QVERIFY(table->blocksFind(5).blockFormat() == fmt2);
     QVERIFY(table->blocksFind(4).position() == 0);
@@ -864,7 +866,10 @@ void tst_QTextPieceTable::blockRemoval3()
     QVERIFY(table->blocksFind(6).position() == 5);
     QVERIFY(table->blocksFind(11).position() == 10);
 
+    table->beginEditBlock();
     table->remove(3, 4);
+    table->endEditBlock();
+
     QVERIFY(table->blocksFind(1).blockFormat() == QTextBlockFormat());
     QVERIFY(table->blocksFind(5).blockFormat() == QTextBlockFormat());
     QVERIFY(table->blocksFind(1).position() == 0);
@@ -958,7 +963,10 @@ void tst_QTextPieceTable::blockRemoval5()
     QVERIFY(table->blocksFind(6).position() == 5);
     QVERIFY(table->blocksFind(11).position() == 10);
 
+    table->beginEditBlock();
     table->remove(3, 8);
+    table->endEditBlock();
+
     QVERIFY(table->blocksFind(0).blockFormat() == QTextBlockFormat());
     QVERIFY(table->blocksFind(5).blockFormat() == QTextBlockFormat());
     QVERIFY(table->blocksFind(1).position() == 0);

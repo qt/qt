@@ -110,6 +110,8 @@ private:
     QScopedPointer<QGLPixelBufferPrivate> d_ptr;
     friend class QGLDrawable;
     friend class QGLWindowSurface;
+    friend class QGLPaintDevice;
+    friend class QGLPBufferGLPaintDevice;
 };
 
 QT_END_NAMESPACE

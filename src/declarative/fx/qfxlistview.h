@@ -50,6 +50,11 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
+//### get rid of z = index and set known z-value (1 for items, 0 for highlight)
+//### incrementCurrentIndex(), decrementCurrentIndex() slots
+//### default Keys.OnUp/DownPressed handler
+
+
 class QFxVisualModel;
 class QFxListViewAttached;
 class QFxListViewPrivate;
@@ -60,17 +65,17 @@ class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable
 
     Q_ENUMS(CurrentItemPositioning)
     Q_PROPERTY(QVariant model READ model WRITE setModel)
-    Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate)
+    Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate) //### what happens if delegate is not a QFxItem?
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
-    Q_PROPERTY(QFxItem *current READ currentItem NOTIFY currentIndexChanged)
+    Q_PROPERTY(QFxItem *current READ currentItem NOTIFY currentIndexChanged) //### currentItem
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(QmlComponent *highlight READ highlight WRITE setHighlight)
-    Q_PROPERTY(bool autoHighlight READ autoHighlight WRITE setAutoHighlight)
-    Q_PROPERTY(CurrentItemPositioning currentItemPositioning READ currentItemPositioning WRITE setCurrentItemPositioning)
+    Q_PROPERTY(bool autoHighlight READ autoHighlight WRITE setAutoHighlight) //### highlightFollowsCurrentItem
+    Q_PROPERTY(CurrentItemPositioning currentItemPositioning READ currentItemPositioning WRITE setCurrentItemPositioning) //### mode
     Q_PROPERTY(int snapPosition READ snapPosition WRITE setSnapPosition)
-    Q_PROPERTY(int spacing READ spacing WRITE setSpacing NOTIFY spacingChanged)
+    Q_PROPERTY(int spacing READ spacing WRITE setSpacing NOTIFY spacingChanged) //### qreal
     Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation)
-    Q_PROPERTY(bool wrap READ isWrapEnabled WRITE setWrapEnabled)
+    Q_PROPERTY(bool wrap READ isWrapEnabled WRITE setWrapEnabled) //### keyNavigationWraps, stops at end when held
     Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer)
     Q_PROPERTY(QString sectionExpression READ sectionExpression WRITE setSectionExpression NOTIFY sectionExpressionChanged)
     Q_PROPERTY(QString currentSection READ currentSection NOTIFY currentSectionChanged)
@@ -98,6 +103,11 @@ public:
     bool autoHighlight() const;
     void setAutoHighlight(bool);
 
+    //### QSpan preferredHighlightRange
+    //### bool strictlyEnforceHighlightRange
+
+    //### don't jump around unnecessarily
+    //### fix highlight for snapAuto
     enum CurrentItemPositioning { Free, Snap, SnapAuto };
     CurrentItemPositioning currentItemPositioning() const;
     void setCurrentItemPositioning(CurrentItemPositioning mode);

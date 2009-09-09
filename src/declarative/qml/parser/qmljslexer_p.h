@@ -67,7 +67,7 @@ class NameId;
 class Lexer
 {
 public:
-    Lexer(Engine *eng);
+    Lexer(Engine *eng, bool tokenizeComments = false);
     ~Lexer();
 
     void setCode(const QString &c, int lineno);
@@ -239,6 +239,7 @@ private:
     ParenthesesState parenthesesState;
     int parenthesesCount;
     bool prohibitAutomaticSemicolon;
+    bool tokenizeComments;
 };
 
 } // namespace QmlJS

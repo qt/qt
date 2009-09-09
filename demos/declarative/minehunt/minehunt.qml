@@ -135,8 +135,8 @@ Item {
         x: 1
         y: 1
         Component {
-            ComponentInstance {
-                component: tile
+            Loader {
+                sourceComponent: tile
                 x: (index - (Math.floor(index/9) * 9)) * 41
                 y: Math.floor(index/9) * 41
             }

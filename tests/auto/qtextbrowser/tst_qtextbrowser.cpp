@@ -49,6 +49,8 @@
 #include <qtextbrowser.h>
 #include <qtextobject.h>
 
+#include "../../shared/util.h"
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -64,9 +66,11 @@ public:
 #ifdef Q_WS_X11
         qt_x11_wait_for_window_manager(this);
 #endif
+        QApplication::setActiveWindow(this);
         activateWindow();
         setFocus();
-        QTest::qWait(100);
+        QTest::qWait(50);
+        QTRY_VERIFY(hasFocus());
     }
 
     virtual QVariant loadResource(int type, const QUrl &name);

@@ -16,18 +16,18 @@ Rectangle {
             }
         }
     ]
-    ComponentInstance {
-        component: redRectangle
+    Loader {
+        sourceComponent: redRectangle
         anchors.right: parent.right
         anchors.top: parent.top
     }
-    ComponentInstance {
-        component: redRectangle
+    Loader {
+        sourceComponent: redRectangle
         anchors.left: parent.left
         anchors.top: parent.top
     }
-    ComponentInstance {
-        component: redRectangle
+    Loader {
+        sourceComponent: redRectangle
         anchors.left: parent.left
         anchors.bottom: parent.bottom
     }
