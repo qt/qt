@@ -160,6 +160,7 @@ void QWindowsPipeWriter::run()
             hasWritten = true;
             lock.unlock();
         }
+        emit bytesWritten(totalWritten);
         emit canWrite();
     }
     CloseHandle(overl.hEvent);
