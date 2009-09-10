@@ -38,9 +38,9 @@ namespace MMF
  * <a href="http://wiki.forum.nokia.com/index.php/How_to_play_a_video_file_using_CVideoPlayerUtility">How to
  * play a video file using CVideoPlayerUtility</a>
  */
-class VideoPlayer       :   public AbstractMediaPlayer
-        ,   public MVideoPlayerUtilityObserver
-        ,   public VideoOutputObserver
+class VideoPlayer : public AbstractMediaPlayer
+                  , public MVideoPlayerUtilityObserver
+                  , public VideoOutputObserver
 {
     Q_OBJECT
 
