@@ -49,28 +49,28 @@
     of desktop platforms. The features provided for each platform depend on the
     capabilities and architecture of the operating system.
 
-    Currently, two embedded platforms are supported by Qt:
+    \image qt-embedded-architecture.png
+
+    Currently, three embedded platforms are supported by Qt:
 
     \table 90%
-    \header
-    \raw HTML
-      <td style="width: 40%">Embedded Linux</td>
-      <td style="background: white; width: 5%"></td>
-      <td style="width: 40%">Windows CE</td>
-    \endraw
-    \row    \o \l{Qt for Embedded Linux} is designed to be used on Linux devices
-               without X11 or existing graphical environments. This flavor of
-               Qt includes a framework for creating both applications and an
-               environment for them. As a result, it includes features for
-               window management, inter-process communication and facilities
-               for handling input and display devices.
-    \raw HTML
-      <td style="background: white; width: 5%"></td>
-    \endraw
+    \header \o Embedded Linux \o Windows CE \o S60
+    \row
+    \o \l{Qt for Embedded Linux} is designed to be used on Linux devices
+    without X11 or existing graphical environments. This flavor of
+    Qt includes a framework for creating both applications and an
+    environment for them. As a result, it includes features for
+    window management, inter-process communication and facilities
+    for handling input and display devices.
     \o \l{Qt for Windows CE} is used to create applications running in
-               existing Windows CE and Windows Mobile environments.
-               Applications use the appropriate style for the embedded
-               environment and use native features, such as menus, to conform
-               to the native style guidelines.
+    existing Windows CE and Windows Mobile environments.
+    Applications use the appropriate style for the embedded
+    environment and use native features, such as menus, to conform
+    to the native style guidelines.
+    \o \l{S60 - Introduction to using Qt}{Qt for S60} is used to create
+    applications running in existing S60 environments.
+    Applications use the appropriate style for the embedded
+    environment and use native features, such as menus, to conform
+    to the native style guidelines.
     \endtable
 */

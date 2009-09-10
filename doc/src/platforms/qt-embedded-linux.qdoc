@@ -63,7 +63,7 @@
     with Embedded Linux.  Qt for Embedded Linux provides the standard Qt API for
     embedded devices with a lightweight window system.
 
-    \image qt-embedded-architecture.png
+    \image qt-embedded-linux-architecture.png
 
     Qt for Embedded Linux applications write directly to the framebuffer,
     eliminating the need for the X Window System and saving memory.
