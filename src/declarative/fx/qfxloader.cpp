@@ -120,8 +120,8 @@ void QFxLoader::setSource(const QUrl &url)
         delete d->component;
         d->component = 0;
     }
-    d->item = 0;
     delete d->item;
+    d->item = 0;
 
     d->source = url;
     if (d->source.isEmpty()) {
