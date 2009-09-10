@@ -761,7 +761,7 @@ void tst_QSslCertificate::nulInSan()
     QVERIFY(!dnssan.isEmpty());
     QVERIFY(dnssan != "www.bank.com");
 
-    static const char realSAN[] = "www.bank.com\0.badguy.com";
+    static const char realSAN[] = "www.bank.com\0www.badguy.com";
     QCOMPARE(dnssan, QString::fromLatin1(realSAN, sizeof realSAN - 1));
 }
 
