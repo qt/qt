@@ -1278,14 +1278,14 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
         textureCoordinateArray.addRect(QRectF(c.x*dx, c.y*dy, c.w * dx, c.h * dy));
     }
 
-    glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
-    glBindTexture(GL_TEXTURE_2D, cache->texture());
-    updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
-
     QBrush pensBrush = q->state()->pen.brush();
     setBrush(&pensBrush);
 
     prepareForDraw(false); // Text always causes src pixels to be transparent
+
+    glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
+    glBindTexture(GL_TEXTURE_2D, cache->texture());
+    updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
 
 #ifndef QT_OPENGL_ES_2
     if (inRenderText)
@@ -1318,21 +1318,13 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
         return false;
 
     d->ctx = d->device->context();
-
     d->ctx->d_ptr->active_engine = this;
-    d->last_created_state = 0;
 
-    QSize sz = d->device->size();
+    const QSize sz = d->device->size();
     d->width = sz.width();
     d->height = sz.height();
+    d->last_created_state = 0;
     d->mode = BrushDrawingMode;
-
-#if !defined(QT_OPENGL_ES_2)
-    qt_resolve_version_2_0_functions(d->ctx);
-#endif
-
-    d->shaderManager = new QGLEngineShaderManager(d->ctx);
-
     d->brushTextureDirty = true;
     d->brushUniformsDirty = true;
     d->matrixDirty = true;
@@ -1344,8 +1336,17 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->needsSync = true;
     d->use_system_clip = !systemClip().isEmpty();
 
-
+    // Calling begin paint should make the correct context current. So, any
+    // code which calls into GL or otherwise needs a current context *must*
+    // go after beginPaint:
     d->device->beginPaint();
+
+#if !defined(QT_OPENGL_ES_2)
+    bool success = qt_resolve_version_2_0_functions(d->ctx);
+    Q_ASSERT(success);
+#endif
+
+    d->shaderManager = new QGLEngineShaderManager(d->ctx);
 
     if (!d->inRenderText) {
         glDisable(GL_DEPTH_TEST);

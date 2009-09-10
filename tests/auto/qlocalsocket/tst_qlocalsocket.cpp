@@ -893,7 +893,7 @@ void tst_QLocalSocket::writeToClientAndDisconnect()
     char buffer[100];
     memset(buffer, 0, sizeof(buffer));
     QCOMPARE(clientSocket->write(buffer, sizeof(buffer)), (qint64)sizeof(buffer));
-    clientSocket->flush();
+    clientSocket->waitForBytesWritten();
     clientSocket->disconnectFromServer();
     qApp->processEvents();  // give the socket the chance to receive data
     QCOMPARE(client.read(buffer, sizeof(buffer)), (qint64)sizeof(buffer));

@@ -3711,7 +3711,7 @@ void QObject::dumpObjectInfo()
                     offsetToNextMetaObject = signalOffset;
                     computeOffsets(mo, &signalOffset, &methodOffset);
                 }
-                offset = offset - signalOffset + methodOffset;
+                offset = methodOffset - signalOffset;
             }
             const QMetaMethod signal = metaObject()->method(signal_index + offset);
             qDebug("        signal: %s", signal.signature());

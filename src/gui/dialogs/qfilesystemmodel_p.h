@@ -84,7 +84,7 @@ public:
     {
     public:
         QFileSystemNode(const QString &filename = QString(), QFileSystemNode *p = 0)
-            : fileName(filename), populatedChildren(false), isVisible(false), parent(p), info(0) {}
+            : fileName(filename), populatedChildren(false), isVisible(false), dirtyChildrenIndex(-1), parent(p), info(0) {}
         ~QFileSystemNode() {
             QHash<QString, QFileSystemNode*>::const_iterator i = children.constBegin();
             while (i != children.constEnd()) {
@@ -194,6 +194,7 @@ public:
         bool isVisible;
         QHash<QString,QFileSystemNode *> children;
         QList<QString> visibleChildren;
+        int dirtyChildrenIndex;
         QFileSystemNode *parent;
 
 
@@ -237,7 +238,15 @@ public:
     void sortChildren(int column, const QModelIndex &parent);
 
     inline int translateVisibleLocation(QFileSystemNode *parent, int row) const {
-        return (sortOrder == Qt::AscendingOrder) ? row : parent->visibleChildren.count() - row - 1;
+        if (sortOrder == Qt::AscendingOrder)
+                return row;
+        if (parent->dirtyChildrenIndex == -1 || row < parent->dirtyChildrenIndex)
+            if (parent->dirtyChildrenIndex != -1)
+                return parent->dirtyChildrenIndex - row - 1;
+            else
+                return parent->visibleChildren.count() - row - 1;
+        else
+            return row;
     }
 
     inline static QString myComputer() {

@@ -200,7 +200,10 @@ qint64 QLocalSocket::readData(char *data, qint64 maxSize)
     }
 
     if (d->pipeClosed) {
-        QTimer::singleShot(0, this, SLOT(_q_pipeClosed()));
+        if (readSoFar == 0) {
+            QTimer::singleShot(0, this, SLOT(_q_pipeClosed()));
+            return -1;  // signal EOF
+        }
     } else {
         if (!d->readSequenceStarted)
             d->startAsyncRead();
@@ -265,6 +268,8 @@ void QLocalSocketPrivate::startAsyncRead()
                         // It may happen, that the other side closes the connection directly
                         // after writing data. Then we must set the appropriate socket state.
                         pipeClosed = true;
+                        Q_Q(QLocalSocket);
+                        emit q->readChannelFinished();
                         return;
                     }
                 default:
@@ -326,6 +331,7 @@ DWORD QLocalSocketPrivate::bytesAvailable()
     } else {
         if (!pipeClosed) {
             pipeClosed = true;
+            emit q->readChannelFinished();
             QTimer::singleShot(0, q, SLOT(_q_pipeClosed()));
         }
     }
@@ -448,6 +454,7 @@ void QLocalSocketPrivate::_q_notified()
     Q_Q(QLocalSocket);
     if (!completeAsyncRead()) {
         pipeClosed = true;
+        emit q->readChannelFinished();
         return;
     }
     startAsyncRead();

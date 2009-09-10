@@ -60,6 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_MAC_USE_COCOA
+
 /*****************************************************************************
   Externals
  *****************************************************************************/
@@ -563,6 +565,8 @@ QString Q3FileDialog::macGetSaveFileName(const QString &start, const QString &fi
         delete filts.takeFirst();
     return retstr;
 }
+
+#endif // QT_MAC_USE_COCOA
 
 QT_END_NAMESPACE
 

@@ -221,12 +221,14 @@ static void initializeDb()
     const int numTypeFaces = QS60Data::screenDevice()->NumTypefaces();
     const QFontDatabaseS60StoreImplementation *store = dynamic_cast<const QFontDatabaseS60StoreImplementation*>(db->s60Store);
     Q_ASSERT(store);
+    bool fontAdded = false;
     for (int i = 0; i < numTypeFaces; i++) {
         TTypefaceSupport typefaceSupport;
         QS60Data::screenDevice()->TypefaceSupport(typefaceSupport, i);
         CFont *font; // We have to get a font instance in order to know all the details
         TFontSpec fontSpec(typefaceSupport.iTypeface.iName, 11);
-        qt_symbian_throwIfError(QS60Data::screenDevice()->GetNearestFontInPixels(font, fontSpec));
+        if (QS60Data::screenDevice()->GetNearestFontInPixels(font, fontSpec) != KErrNone)
+            continue;
         if (font->TypeUid() == KCFbsFontUid) {
             TOpenFontFaceAttrib faceAttrib;
             const CFbsFont *cfbsFont = dynamic_cast<const CFbsFont *>(font);
@@ -264,9 +266,12 @@ static void initializeDb()
                 determineWritingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
             foreach (const QFontDatabase::WritingSystem system, writingSystems)
                 family->writingSystems[system] = QtFontFamily::Supported;
+
+            fontAdded = true;
         }
         QS60Data::screenDevice()->ReleaseFont(font);
     }
+    Q_ASSERT(fontAdded);
     QS60WindowSurface::lockBitmapHeap();
 #else // defined(QT_NO_FREETYPE)
     QDir dir(QDesktopServices::storageLocation(QDesktopServices::FontsLocation));
