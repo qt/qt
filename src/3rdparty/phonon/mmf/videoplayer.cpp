@@ -217,12 +217,10 @@ void MMF::VideoPlayer::MvpuoOpenComplete(TInt aError)
 
     __ASSERT_ALWAYS(LoadingState == state(), Utils::panic(InvalidStatePanic));
 
-    if (KErrNone == aError) {
+    if (KErrNone == aError)
         m_player->Prepare();
-    } else {
-        // TODO: set different error states according to value of aError?
+    else
         setError(NormalError);
-    }
 
     TRACE_EXIT_0();
 }
