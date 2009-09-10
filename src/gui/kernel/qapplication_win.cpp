@@ -2084,8 +2084,12 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                 // where it got it from; it would simply get a 0 value as the old focus widget.
 #ifdef Q_OS_WINCE
                 {
-                    if (widget->windowState() & Qt::WindowMinimized)
-                        widget->dataPtr()->window_state &= ~Qt::WindowMinimized;
+                    if (widget->windowState() & Qt::WindowMinimized) {
+                        if (widget->windowState() & Qt::WindowMaximized)
+                            widget->showMaximized();
+                        else
+                            widget->show();
+                    }
 #else
                 if (!(widget->windowState() & Qt::WindowMinimized)) {
 #endif
