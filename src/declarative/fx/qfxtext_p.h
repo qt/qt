@@ -71,7 +71,7 @@ public:
     QFxTextPrivate()
       : color((QRgb)0), style(QFxText::Normal), imgDirty(true),
         hAlign(QFxText::AlignLeft), vAlign(QFxText::AlignTop), elideMode(Qt::ElideNone),
-        dirty(false), wrap(false), richText(false), singleline(false), control(0), doc(0),
+        dirty(true), wrap(false), richText(false), singleline(false), control(0), doc(0),
         format(QFxText::AutoText)
     {
     }

@@ -466,12 +466,13 @@ void QFxTextPrivate::updateSize()
 {
     Q_Q(QFxText);
     if (q->isComponentComplete()) {
+        QFontMetrics fm(font);
         if (text.isEmpty()) {
+            q->setImplicitHeight(fm.height());
             return;
         }
-        QFontMetrics fm(font);
-        int dy = q->height();
 
+        int dy = q->height();
         QString tmp;
         QSize size(0, 0);
 
