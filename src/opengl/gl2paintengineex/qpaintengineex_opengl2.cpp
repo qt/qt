@@ -1278,14 +1278,14 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
         textureCoordinateArray.addRect(QRectF(c.x*dx, c.y*dy, c.w * dx, c.h * dy));
     }
 
-    glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
-    glBindTexture(GL_TEXTURE_2D, cache->texture());
-    updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
-
     QBrush pensBrush = q->state()->pen.brush();
     setBrush(&pensBrush);
 
     prepareForDraw(false); // Text always causes src pixels to be transparent
+
+    glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
+    glBindTexture(GL_TEXTURE_2D, cache->texture());
+    updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
 
 #ifndef QT_OPENGL_ES_2
     if (inRenderText)
@@ -1345,7 +1345,6 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->opacityUniformDirty = true;
     d->needsSync = true;
     d->use_system_clip = !systemClip().isEmpty();
-
 
     d->device->beginPaint();
 
