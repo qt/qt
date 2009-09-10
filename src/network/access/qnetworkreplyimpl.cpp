@@ -540,10 +540,6 @@ void QNetworkReplyImpl::abort()
         return;
 
     // stop both upload and download
-    if (d->backend) {
-        d->backend->deleteLater();
-        d->backend = 0;
-    }
     if (d->outgoingData)
         disconnect(d->outgoingData, 0, this, 0);
     if (d->copyDevice)
@@ -557,6 +553,12 @@ void QNetworkReplyImpl::abort()
         d->finished();
     }
     d->state = QNetworkReplyImplPrivate::Aborted;
+
+    // finished may access the backend
+    if (d->backend) {
+        d->backend->deleteLater();
+        d->backend = 0;
+    }
 }
 
 void QNetworkReplyImpl::close()
