@@ -968,6 +968,7 @@ static void parseColor(QSvgNode *,
 {
     QColor color;
     if (constructColor(attributes.color, attributes.colorOpacity, color, handler)) {
+        handler->popColor();
         handler->pushColor(color);
     }
 }
@@ -2728,6 +2729,14 @@ static void parseBaseGradient(QSvgNode *node,
     QStringRef trans  = attributes.value(QLatin1String("gradientTransform"));
     QString spread = attributes.value(QLatin1String("spreadMethod")).toString();
     QString units = attributes.value(QLatin1String("gradientUnits")).toString();
+    QStringRef colorStr = attributes.value(QLatin1String("color"));
+    QStringRef colorOpacityStr = attributes.value(QLatin1String("color-opacity"));
+
+    QColor color;
+    if (constructColor(colorStr, colorOpacityStr, color, handler)) {
+        handler->popColor();
+        handler->pushColor(color);
+    }
 
     QMatrix matrix;
     QGradient *grad = gradProp->qgradient();
@@ -3558,11 +3567,7 @@ bool QSvgHandler::startElement(const QString &localName,
 {
     QSvgNode *node = 0;
 
-    if (m_colorTagCount.count()) {
-        int top = m_colorTagCount.pop();
-        ++top;
-        m_colorTagCount.push(top);
-    }
+    pushColorCopy();
 
     /* The xml:space attribute may appear on any element. We do
      * a lookup by the qualified name here, but this is namespace aware, since
@@ -3696,15 +3701,7 @@ bool QSvgHandler::endElement(const QStringRef &localName)
     m_skipNodes.pop();
     m_whitespaceMode.pop();
 
-    if (m_colorTagCount.count()) {
-        int top = m_colorTagCount.pop();
-        --top;
-        if (!top) {
-            m_colorStack.pop();
-        } else {
-            m_colorTagCount.push(top);
-        }
-    }
+    popColor();
 
     if (node == Unknown) {
         return true;
@@ -3799,6 +3796,24 @@ void QSvgHandler::pushColor(const QColor &color)
 {
     m_colorStack.push(color);
     m_colorTagCount.push(1);
+}
+
+void QSvgHandler::pushColorCopy()
+{
+    if (m_colorTagCount.count())
+        ++m_colorTagCount.top();
+    else
+        pushColor(Qt::black);
+}
+
+void QSvgHandler::popColor()
+{
+    if (m_colorTagCount.count()) {
+        if (!--m_colorTagCount.top()) {
+            m_colorStack.pop();
+            m_colorTagCount.pop();
+        }
+    }
 }
 
 QColor QSvgHandler::currentColor() const
