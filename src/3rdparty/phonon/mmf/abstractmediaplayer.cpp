@@ -173,15 +173,29 @@ void MMF::AbstractMediaPlayer::seek(qint64 ms)
     TRACE_CONTEXT(AbstractMediaPlayer::seek, EAudioApi);
     TRACE_ENTRY("state %d pos %Ld", state(), ms);
 
-    // TODO: put a state guard in here
+    switch (m_state) {
+    // Fallthrough all these
+    case GroundState:
+    case StoppedState:
+    case PausedState:
+    case PlayingState:
+    case LoadingState:
+    {
+        const bool tickTimerWasRunning = m_tickTimer->isActive();
+        stopTickTimer();
 
-    const bool tickTimerWasRunning = m_tickTimer->isActive();
-    stopTickTimer();
+        doSeek(ms);
 
-    doSeek(ms);
-
-    if (tickTimerWasRunning) {
-        startTickTimer();
+        if (tickTimerWasRunning) {
+            startTickTimer();
+        }
+        break;
+    }
+    case BufferingState:
+    // Fallthrough
+    case ErrorState:
+        // Do nothing
+        break;
     }
 
     TRACE_EXIT_0();
