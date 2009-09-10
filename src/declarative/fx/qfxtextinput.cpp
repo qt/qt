@@ -195,6 +195,21 @@ void QFxTextInput::setSelectedTextColor(const QColor &color)
     //TODO: implement
 }
 
+/*!
+    \qmlproperty enumeration TextInput::horizontalAlignment
+
+    Sets the horizontal alignment of the text within the TextInput item's
+    width and height.  By default, the text is left aligned.
+
+    TextInput does not have vertical alignment, as the natural height is
+    exactly the height of the single line of text. If you set the height
+    manually to something larger, TextInput will always be top aligned
+    vertically. You can use anchors to align it however you want within
+    another item.
+
+    The valid values for \c horizontalAlignment are \c AlignLeft, \c AlignRight and
+    \c AlignHCenter.
+*/
 QFxTextInput::HAlignment QFxTextInput::hAlign() const
 {
     Q_D(const QFxTextInput);
@@ -346,6 +361,12 @@ QString QFxTextInput::selectedText() const
     return d->control->selectedText();
 }
 
+/*!
+    \qmlproperty bool TextInput::focusOnPress
+
+    Whether the TextInput should gain focus on a mouse press. By default this is
+    set to true.
+*/
 bool QFxTextInput::focusOnPress() const
 {
     Q_D(const QFxTextInput);
@@ -358,6 +379,16 @@ void QFxTextInput::setFocusOnPress(bool b)
     d->focusOnPress = b;
 }
 
+/*!
+    \qmlproperty QValidator* TextInput::validator
+
+    Allows you to set a QValidator on the TextInput. When a validator is set
+    the TextInput will only accept input which leaves the text property in
+    an acceptable or intermediate state. The accepted signal will only be sent
+    if the text is in an acceptable state when enter is pressed.
+
+    \sa acceptableInput, inputMask
+*/
 QValidator* QFxTextInput::validator() const
 {
     Q_D(const QFxTextInput);
@@ -375,6 +406,15 @@ void QFxTextInput::setValidator(QValidator* v)
     }
 }
 
+/*!
+    \qmlproperty string TextInput::inputMask
+
+    Allows you to set an input mask on the TextInput, restricting the allowable
+    text inputs. See QLineEdit::inputMask for further details, as the exact
+    same mask strings are used by TextInput.
+
+    \sa acceptableInput, validator
+*/
 QString QFxTextInput::inputMask() const
 {
     Q_D(const QFxTextInput);
@@ -387,12 +427,30 @@ void QFxTextInput::setInputMask(const QString &im)
     d->control->setInputMask(im);
 }
 
+/*!
+    \qmlproperty bool TextInput::acceptableInput
+
+    This property is always true unless a validator or input mask has been set.
+    If a validator or input mask has been set, this property will only be true
+    if the current text is acceptable to the validator or input mask as a final
+    string (not as an intermediate string).
+*/
 bool QFxTextInput::hasAcceptableInput() const
 {
     Q_D(const QFxTextInput);
     return d->control->hasAcceptableInput();
 }
 
+/*!
+    \qmlproperty TextInput.EchoMode TextInput::echoMode
+
+    Specifies how the text should be displayed in the TextInput.
+    The default is Normal, which displays the text as it is. Other values
+    are Password, which displays asterixes instead of characters, NoEcho,
+    which displays nothing, and PasswordEchoOnEdit, which displays all but the
+    current character as asterixes.
+
+*/
 QFxTextInput::EchoMode QFxTextInput::echoMode() const
 {
     Q_D(const QFxTextInput);
