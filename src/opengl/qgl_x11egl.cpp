@@ -624,9 +624,6 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
         return 0;
     }
 
-    // Always inverted because the opposite is not supported...
-    options |= QGLContext::InvertedYBindOption;
-
     QGLTexture *texture = new QGLTexture(q, textureId, GL_TEXTURE_2D, options);
     pixmapData->flags |= QX11PixmapData::InvertedWhenBoundToTexture;
 
