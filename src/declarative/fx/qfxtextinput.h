@@ -59,6 +59,7 @@ class Q_DECLARATIVE_EXPORT QFxTextInput : public QFxPaintedItem
 {
     Q_OBJECT
     Q_ENUMS(HAlignment)
+    Q_ENUMS(EchoMode)
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor)

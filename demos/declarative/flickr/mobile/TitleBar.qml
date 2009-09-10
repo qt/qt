@@ -50,7 +50,7 @@ Item {
                     verticalCenter: parent.verticalCenter
                 }
                 cursorVisible: true; font.bold: true
-                color: "#151515"; highlightColor: "Green"
+                color: "#151515"; selectionColor: "Green"
             }
 
             Keys.forwardTo: [ (ReturnKey), (Editor)]
