@@ -55,6 +55,12 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,QIntValidator,QIntValidator);
 /*!
     \qmlclass TextInput
     The TextInput item allows you to add an editable line of text to a scene.
+
+    TextInput can only display a single line of text, and can only display
+    plain text. However it can provide addition input constraints on the text.
+
+    Input constraints include setting a QValidator, an input mask, or a
+    maximum input length.
 */
 QFxTextInput::QFxTextInput(QFxItem* parent)
     : QFxPaintedItem(*(new QFxTextInputPrivate), parent)
@@ -148,44 +154,44 @@ void QFxTextInput::setColor(const QColor &c)
 
 
 /*!
-    \qmlproperty color TextInput::highlightColor
+    \qmlproperty color TextInput::selectionColor
 
     The text highlight color, used behind selections.
 */
-QColor QFxTextInput::highlightColor() const
+QColor QFxTextInput::selectionColor() const
 {
     Q_D(const QFxTextInput);
-    return d->highlightColor;
+    return d->selectionColor;
 }
 
-void QFxTextInput::setHighlightColor(const QColor &color)
+void QFxTextInput::setSelectionColor(const QColor &color)
 {
     Q_D(QFxTextInput);
-    if (d->highlightColor == color)
+    if (d->selectionColor == color)
         return;
 
-    d->highlightColor = color;
+    d->selectionColor = color;
     //TODO: implement
 }
 
 /*!
-    \qmlproperty color TextInput::highlightedTextColor
+    \qmlproperty color TextInput::selectedTextColor
 
     The highlighted text color, used in selections.
 */
-QColor QFxTextInput::highlightedTextColor() const
+QColor QFxTextInput::selectedTextColor() const
 {
     Q_D(const QFxTextInput);
-    return d->highlightedTextColor;
+    return d->selectedTextColor;
 }
 
-void QFxTextInput::setHighlightedTextColor(const QColor &color)
+void QFxTextInput::setSelectedTextColor(const QColor &color)
 {
     Q_D(QFxTextInput);
-    if (d->highlightedTextColor == color)
+    if (d->selectedTextColor == color)
         return;
 
-    d->highlightedTextColor = color;
+    d->selectedTextColor = color;
     //TODO: implement
 }
 
@@ -340,6 +346,18 @@ QString QFxTextInput::selectedText() const
     return d->control->selectedText();
 }
 
+bool QFxTextInput::focusOnPress() const
+{
+    Q_D(const QFxTextInput);
+    return d->focusOnPress;
+}
+
+void QFxTextInput::setFocusOnPress(bool b)
+{
+    Q_D(QFxTextInput);
+    d->focusOnPress = b;
+}
+
 QValidator* QFxTextInput::validator() const
 {
     Q_D(const QFxTextInput);
@@ -375,16 +393,16 @@ bool QFxTextInput::hasAcceptableInput() const
     return d->control->hasAcceptableInput();
 }
 
-uint QFxTextInput::echoMode() const
+QFxTextInput::EchoMode QFxTextInput::echoMode() const
 {
     Q_D(const QFxTextInput);
-    return d->control->echoMode();
+    return (QFxTextInput::EchoMode)d->control->echoMode();
 }
 
-void QFxTextInput::setEchoMode(uint echo)
+void QFxTextInput::setEchoMode(QFxTextInput::EchoMode echo)
 {
     Q_D(QFxTextInput);
-    d->control->setEchoMode(echo);
+    d->control->setEchoMode((uint)echo);
 }
 
 /*!
@@ -431,7 +449,7 @@ void QFxTextInputPrivate::startCreatingCursor()
         q->connect(cursorComponent, SIGNAL(statusChanged(int)),
                 q, SLOT(createCursor()));
     }else{//isError
-        qWarning() << "You could really use the error checking for QFxTextInput. We'll implement it soon.";
+        qWarning() << "You could really use the error checking for QFxTextInput. We'll implement it soon.";//TODO:better error handling
     }
 }
 
@@ -446,7 +464,7 @@ void QFxTextInput::createCursor()
         delete d->cursorItem;
     d->cursorItem = qobject_cast<QFxItem*>(d->cursorComponent->create());
     if(!d->cursorItem){
-        qWarning() << "You could really use the error reporting for QFxTextInput. We'll implement it soon.";
+        qWarning() << "You could really use the error reporting for QFxTextInput. We'll implement it soon.";//TODO:better error handling
         return;
     }
 
@@ -495,11 +513,12 @@ void QFxTextInput::keyPressEvent(QKeyEvent* ev)
 void QFxTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxTextInput);
-    setFocus(true);//###Should we make 'focusOnPress' be optional like TextEdit?
-    setCursorVisible(true);
-    d->focused = true;
+    if(d->focusOnPress){
+        setFocus(true);
+        setCursorVisible(true);
+        d->focused = true;
+    }
     d->control->processEvent(event);
-    //event->accept();
 }
 
 bool QFxTextInput::event(QEvent* ev)

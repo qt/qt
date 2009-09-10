@@ -38,6 +38,8 @@ MouseRegion: ymin      -> minimumY
 MouseRegion: ymin      -> maximumY
 Text elements: hAlign  -> horizontalAlignment
 Text elements: vAlign  -> verticalAlignment
+Text elements: highlightColor -> selectionColor
+Text elements: highlightedTextColor -> selectedTextColor
 State: operations      -> changes
 Transition: operations -> animations
 Transition: fromState  -> from

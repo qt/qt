@@ -66,7 +66,8 @@ public:
     QFxTextInputPrivate() : control(new QLineControl(QString())),
                  color((QRgb)0), style(QFxText::Normal),
                  styleColor((QRgb)0), hAlign(QFxTextInput::AlignLeft),
-                 hscroll(0), oldScroll(0), focused(false), cursorVisible(false)
+                 hscroll(0), oldScroll(0), focused(false), focusOnPress(true),
+                 cursorVisible(false)
     {
     }
 
@@ -82,8 +83,8 @@ public:
 
     QFont font;
     QColor  color;
-    QColor  highlightColor;
-    QColor  highlightedTextColor;
+    QColor  selectionColor;
+    QColor  selectedTextColor;
     QFxText::TextStyle style;
     QColor  styleColor;
     QFxTextInput::HAlignment hAlign;
@@ -98,6 +99,7 @@ public:
     int hscroll;
     int oldScroll;
     bool focused;
+    bool focusOnPress;
     bool cursorVisible;
 };
 
