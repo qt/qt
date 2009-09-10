@@ -38,8 +38,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef FRAGMENTPROGRAMS_H
-#define FRAGMENTPROGRAMS_H
+#ifndef FRAGMENTPROGRAMS_P_H
+#define FRAGMENTPROGRAMS_P_H
 
 //
 //  W A R N I N G
