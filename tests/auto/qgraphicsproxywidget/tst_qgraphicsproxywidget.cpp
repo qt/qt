@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -50,7 +50,6 @@
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
 #endif
-
 
 static void sendMouseMove(QWidget *widget, const QPoint &point, Qt::MouseButton button = Qt::NoButton)
 {
@@ -555,6 +554,9 @@ void tst_QGraphicsProxyWidget::eventFilter()
     QFETCH(bool, fromObject);
 
     QGraphicsScene scene;
+    QEvent windowActivate(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &windowActivate);
+
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     scene.addItem(proxy);
 
@@ -683,18 +685,18 @@ void tst_QGraphicsProxyWidget::focusInEvent_data()
 // protected void focusInEvent(QFocusEvent* event)
 void tst_QGraphicsProxyWidget::focusInEvent()
 {
+    // ### This test is just plain old broken
     QFETCH(bool, widgetHasFocus);
     QFETCH(bool, widgetCanHaveFocus);
 
-    QGraphicsView view;
-    QGraphicsScene scene(&view);
+    QGraphicsScene scene;
+    QEvent windowActivate(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &windowActivate);
+
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     proxy->setEnabled(true);
     scene.addItem(proxy);
     proxy->setVisible(true);
-    view.show();
-    QApplication::setActiveWindow(&view);
-    view.activateWindow();
 
     QWidget *widget = new QWidget;
     widget->resize(100, 100);
@@ -707,7 +709,11 @@ void tst_QGraphicsProxyWidget::focusInEvent()
 
     proxy->setWidget(widget);
     proxy->setFlag(QGraphicsItem::ItemIsFocusable, true); // <- shouldn't need to do this
-    QTRY_VERIFY(widget->isVisible() && view.isVisible());
+
+    // ### This test is just plain old broken - sending a focus in event
+    // does not cause items to gain input focus. The widget has focus
+    // because the proxy has focus, not because it got this event.
+
     QFocusEvent event(QEvent::FocusIn, Qt::TabFocusReason);
     event.ignore();
     proxy->call_focusInEvent(&event);
@@ -777,6 +783,10 @@ void tst_QGraphicsProxyWidget::focusNextPrevChild()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(250);
     if (hasScene) {
         scene.addItem(proxy);
         proxy->show();
@@ -820,6 +830,9 @@ void tst_QGraphicsProxyWidget::focusOutEvent()
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     scene.addItem(proxy);
     view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
     QApplication::setActiveWindow(&view);
     view.activateWindow();
     view.setFocus();
@@ -953,6 +966,8 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
 
     QGraphicsScene scene;
     QGraphicsView view(&scene);
+    //do not let the window manager move the window while we are moving the mouse on it
+    view.setWindowFlags(Qt::X11BypassWindowManagerHint);
     view.show();
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
@@ -975,7 +990,7 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
     // in
     QTest::mouseMove(&view, QPoint(50, 50));
     QTest::qWait(250);
-    // QTRY_COMPARE(widget->testAttribute(Qt::WA_UnderMouse), hasWidget ? true : false);
+    QTRY_COMPARE(widget->testAttribute(Qt::WA_UnderMouse), hasWidget ? true : false);
     // ### this attribute isn't supported
     QCOMPARE(widget->enterCount, hasWidget ? 1 : 0);
     QCOMPARE(widget->hoverEnter, (hasWidget && hoverEnabled) ? 1 : 0);
@@ -1083,6 +1098,7 @@ void tst_QGraphicsProxyWidget::keyPressEvent()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
+    QTest::qWait(250);
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     proxy->setFlag(QGraphicsItem::ItemIsFocusable, true); // ### remove me!!!
@@ -1121,6 +1137,10 @@ void tst_QGraphicsProxyWidget::keyReleaseEvent()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(250);
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     proxy->setFlag(QGraphicsItem::ItemIsFocusable, true); // ### remove me!!!
@@ -1288,7 +1308,7 @@ void tst_QGraphicsProxyWidget::paintEvent()
 
     w->update();
     QTest::qWait(100);
-    QCOMPARE(proxy.paintCount, 1); //the widget should have been painted now
+    QTRY_COMPARE(proxy.paintCount, 1); //the widget should have been painted now
 }
 
 
@@ -1481,8 +1501,8 @@ void tst_QGraphicsProxyWidget::scrollUpdate()
     view.paintEventRegion = QRegion();
     view.npaints = 0;
     QTimer::singleShot(0, widget, SLOT(updateScroll()));
-    QTest::qWait(500);
-    QCOMPARE(view.npaints, 2);
+    QTest::qWait(50);
+    QTRY_COMPARE(view.npaints, 2);
     // QRect(0, 0, 200, 12) is the first update, expanded (-2, -2, 2, 2)
     // QRect(0, 12, 102, 10) is the scroll update, expanded (-2, -2, 2, 2),
     // intersected with the above update.

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -62,6 +62,7 @@
 #include "QtCore/qatomic.h"
 #include "private/qwidget_p.h"
 #include "qcache.h"
+#include "qglpaintdevice_p.h"
 
 #ifndef QT_OPENGL_ES_1_CL
 #define q_vertexType float
@@ -174,6 +175,7 @@ class QGLWidgetPrivate : public QWidgetPrivate
     Q_DECLARE_PUBLIC(QGLWidget)
 public:
     QGLWidgetPrivate() : QWidgetPrivate()
+                       , disable_clear_on_painter_begin(false)
 #ifdef Q_WS_QWS
                        , wsurf(0)
 #endif
@@ -190,10 +192,13 @@ public:
     void cleanupColormaps();
 
     QGLContext *glcx;
+    QGLWidgetGLPaintDevice glDevice;
     bool autoSwap;
 
     QGLColormap cmap;
     QMap<QString, int> displayListCache;
+
+    bool disable_clear_on_painter_begin;
 
 #if defined(Q_WS_WIN)
     void updateColormap();
@@ -232,13 +237,37 @@ private:
     friend class QGLContextPrivate;
 };
 
+// Reference to a QGLContext which automatically switches to another
+// shared context when the main one is destroyed.  If there is no
+// shared context to switch to, the context pointer is set to null.
+// Note: should be merged into QGLContextGroup at some point.
+class QGLContextReference : public QObject
+{
+    Q_OBJECT
+public:
+    QGLContextReference(const QGLContext *ctx);
+    ~QGLContextReference() {}
+
+    const QGLContext *context() const { return m_ctx; }
+
+    void ref() { m_ref.ref(); }
+    bool deref() { return m_ref.deref(); }
+
+private slots:
+    void aboutToDestroyContext(const QGLContext *ctx);
+
+private:
+    QAtomicInt m_ref;
+    const QGLContext *m_ctx;
+};
+
 class QGLTexture;
 
 class QGLContextPrivate
 {
     Q_DECLARE_PUBLIC(QGLContext)
 public:
-    explicit QGLContextPrivate(QGLContext *context) : internal_context(false), q_ptr(context) {group = new QGLContextGroup(context);}
+    explicit QGLContextPrivate(QGLContext *context) : internal_context(false), q_ptr(context) {reference = new QGLContextReference(context); group = new QGLContextGroup(context);}
     ~QGLContextPrivate();
     QGLTexture *bindTexture(const QImage &image, GLenum target, GLint format,
                             QGLContext::BindOptions options);
@@ -293,7 +322,6 @@ public:
     uint sharing : 1;
     uint initDone : 1;
     uint crWin : 1;
-    uint clear_on_painter_begin : 1;
     uint internal_context : 1;
     uint version_flags_cached : 1;
     QPaintDevice *paintDevice;
@@ -301,6 +329,7 @@ public:
     QGLContext *q_ptr;
     QGLFormat::OpenGLVersionFlags version_flags;
 
+    QGLContextReference *reference;
     QGLContextGroup *group;
     GLint max_texture_size;
 
@@ -335,57 +364,6 @@ public:
     static QGLSignalProxy *instance();
 Q_SIGNALS:
     void aboutToDestroyContext(const QGLContext *context);
-};
-
-class QGLPixelBuffer;
-class QGLFramebufferObject;
-class QWSGLWindowSurface;
-class QGLWindowSurface;
-class QGLPixmapData;
-class QGLDrawable {
-public:
-    QGLDrawable() : widget(0), buffer(0), fbo(0)
-#if defined(Q_WS_QWS) || (!defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL))
-                  , wsurf(0)
-#endif
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-                  , pixmapData(0)
-#endif
-        {}
-    void setDevice(QPaintDevice *pdev);
-    void swapBuffers();
-    void makeCurrent();
-    void doneCurrent();
-    QSize size() const;
-    QGLFormat format() const;
-    GLuint bindTexture(const QImage &image, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA,
-                       QGLContext::BindOptions = QGLContext::InternalBindOption);
-    GLuint bindTexture(const QPixmap &pixmap, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA,
-                       QGLContext::BindOptions = QGLContext::InternalBindOption);
-    QColor backgroundColor() const;
-    QGLContext *context() const;
-    bool autoFillBackground() const;
-    bool hasTransparentBackground() const;
-
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    QGLPixmapData *copyOnBegin() const;
-#endif
-
-private:
-    bool wasBound;
-    QGLWidget *widget;
-    QGLPixelBuffer *buffer;
-    QGLFramebufferObject *fbo;
-#ifdef Q_WS_QWS
-    QWSGLWindowSurface *wsurf;
-#elif !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    QGLWindowSurface *wsurf;
-#endif
-
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    QGLPixmapData *pixmapData;
-#endif
-    int previous_fbo;
 };
 
 // GL extension definitions
@@ -599,6 +577,65 @@ public:
 private:
     QGLContext *m_oldContext;
     QGLContext *m_ctx;
+};
+
+// Put a guard around a GL object identifier and its context.
+// When the context goes away, a shared context will be used
+// in its place.  If there are no more shared contexts, then
+// the identifier is returned as zero - it is assumed that the
+// context destruction cleaned up the identifier in this case.
+class Q_OPENGL_EXPORT QGLSharedResourceGuard
+{
+public:
+    QGLSharedResourceGuard(const QGLContext *context)
+        : m_ctxref(0), m_id(0)
+    {
+        setContext(context);
+    }
+    QGLSharedResourceGuard(const QGLContext *context, GLuint id)
+        : m_ctxref(0), m_id(id)
+    {
+        setContext(context);
+    }
+    ~QGLSharedResourceGuard()
+    {
+        if (m_ctxref && !m_ctxref->deref())
+            delete m_ctxref;
+    }
+
+    const QGLContext *context() const
+    {
+        return m_ctxref ? m_ctxref->context() : 0;
+    }
+
+    void setContext(const QGLContext *context)
+    {
+        if (m_ctxref && !m_ctxref->deref())
+            delete m_ctxref;
+        if (context) {
+            m_ctxref = context->d_ptr->reference;
+            m_ctxref->ref();
+        } else {
+            m_ctxref = 0;
+        }
+    }
+
+    GLuint id() const
+    {
+        if (m_ctxref && m_ctxref->context())
+            return m_id;
+        else
+            return 0;
+    }
+
+    void setId(GLuint id)
+    {
+        m_id = id;
+    }
+
+private:
+    QGLContextReference *m_ctxref;
+    GLuint m_id;
 };
 
 QT_END_NAMESPACE

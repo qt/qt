@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -46,6 +46,7 @@
 
 
 #ifdef Q_OS_SYMBIAN
+#include <e32base.h>
 #include <sys/socket.h>
 #include <net/if.h>
 #include <QSharedPointer>
@@ -329,17 +330,36 @@ QByteArray QtNetworkSettings::imapExpectedReplySsl;
 #define Q_SET_DEFAULT_IAP
 #endif
 
-
+#ifdef QT_NETWORK_LIB
 class QtNetworkSettingsInitializerCode {
 public:
     QtNetworkSettingsInitializerCode() {
+#ifdef Q_OS_SYMBIAN    
+        // We have a non-trivial constructor in global static. 
+        // The QtNetworkSettings::serverName() uses native API which assumes
+        // Cleanup-stack to exist. That's why we create it here and install
+        // top level TRAP harness.
+        CTrapCleanup *cleanupStack = q_check_ptr(CTrapCleanup::New());
+        TRAPD(err, 
+            QHostInfo testServerResult = QHostInfo::fromName(QtNetworkSettings::serverName());
+            if (testServerResult.error() != QHostInfo::NoError) {
+                qWarning() << "Could not lookup" << QtNetworkSettings::serverName();
+                qWarning() << "Please configure the test environment!";
+                qWarning() << "See /etc/hosts or network-settings.h";
+                qFatal("Exiting");
+            }                
+        )        
+        delete cleanupStack;
+#else        
         QHostInfo testServerResult = QHostInfo::fromName(QtNetworkSettings::serverName());
         if (testServerResult.error() != QHostInfo::NoError) {
             qWarning() << "Could not lookup" << QtNetworkSettings::serverName();
             qWarning() << "Please configure the test environment!";
             qWarning() << "See /etc/hosts or network-settings.h";
             qFatal("Exiting");
-        }
+        }   
+#endif           
     }
 };
 QtNetworkSettingsInitializerCode qtNetworkSettingsInitializer;
+#endif

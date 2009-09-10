@@ -1033,7 +1033,7 @@ mng_retcode MNG_DECL mng_set_jpeg_dctmethod (mng_handle        hHandle,
 
   return MNG_NOERROR;
 }
-#endif MNG_SUPPORT_WRITE
+#endif /* MNG_SUPPORT_WRITE */
 #endif /* MNG_ACCESS_JPEG */
 #endif /* MNG_INCLUDE_JNG */
 

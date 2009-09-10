@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -117,7 +117,7 @@ private:
     static void checkAndUnCompressBitmap(CFbsBitmap*& aOriginalBitmap);
     static void unCompressBitmapL(const TRect& aTrgRect, CFbsBitmap* aTrgBitmap, CFbsBitmap* aSrcBitmap);
     static void colorGroupAndIndex(QS60StyleEnums::SkinParts skinID,
-        TAknsItemID &colorGroup, int colorIndex);
+        TAknsItemID &colorGroup, int &colorIndex);
     static void fallbackInfo(const QS60StyleEnums::SkinParts &stylepart, TDes& fallbackFileName, TInt& fallbackIndex);
     static bool checkSupport(const int supportedRelease);
     static TAknsItemID checkAndUpdateReleaseSpecificGraphics(int part);
@@ -1016,7 +1016,7 @@ QS60StylePrivate::QS60StylePrivate()
 
 void QS60StylePrivate::setStyleProperty_specific(const char *name, const QVariant &value)
 {
-    if (name == QLatin1String("foo")) {
+    if (QLatin1String(name) == QLatin1String("foo")) {
         // BaR
     } else {
         setStyleProperty(name, value);
@@ -1025,7 +1025,7 @@ void QS60StylePrivate::setStyleProperty_specific(const char *name, const QVarian
 
 QVariant QS60StylePrivate::styleProperty_specific(const char *name) const
 {
-    if (name == QLatin1String("foo"))
+    if (QLatin1String(name) == QLatin1String("foo"))
         return QLatin1String("Bar");
     else
         return styleProperty(name);
@@ -1331,7 +1331,7 @@ QSize QS60StylePrivate::screenSize()
 }
 
 void QS60StyleModeSpecifics::colorGroupAndIndex(
-    QS60StyleEnums::SkinParts skinID, TAknsItemID &colorGroup, int colorIndex)
+    QS60StyleEnums::SkinParts skinID, TAknsItemID &colorGroup, int &colorIndex)
 {
     switch(skinID) {
         case QS60StyleEnums::SP_QgnIndiSubMenu:
