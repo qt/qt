@@ -2351,7 +2351,7 @@ void tst_QTableView::scrollTo()
     for (int c = 0; c < columnCount; ++c)
         view.setColumnWidth(c, columnWidth);
 
-    QTest::qWait(50); // ### needed to pass the test
+    QTest::qWait(100); // ### needed to pass the test
     view.horizontalScrollBar()->setValue(horizontalScroll);
     view.verticalScrollBar()->setValue(verticalScroll);
 

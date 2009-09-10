@@ -1910,8 +1910,8 @@ static void convertToGLFormatHelper(QImage &dst, const QImage &img, GLenum textu
         int sbpl = img.bytesPerLine();
         int dbpl = dst.bytesPerLine();
 
-        int ix = 0x00010000 / sx;
-        int iy = 0x00010000 / sy;
+        int ix = int(0x00010000 / sx);
+        int iy = int(0x00010000 / sy);
 
         quint32 basex = int(0.5 * ix);
         quint32 srcy = int(0.5 * iy);
@@ -2217,6 +2217,9 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
             return data->texture();
         }
     }
+#else
+    Q_UNUSED(pd);
+    Q_UNUSED(q);
 #endif
 
     const qint64 key = pixmap.cacheKey();
@@ -4913,8 +4916,13 @@ QGLContextResource::QGLContextResource(FreeFunc f, QObject *parent)
 
 QGLContextResource::~QGLContextResource()
 {
-    while (!m_resources.empty())
-        removeGroup(m_resources.begin().key());
+#ifndef QT_NO_DEBUG
+    if (m_resources.size()) {
+        qWarning("QtOpenGL: Resources are still available at program shutdown.\n"
+                 "          This is possibly caused by a leaked QGLWidget, \n"
+                 "          QGLFrameBufferObject or QGLPixelBuffer.");
+    }
+#endif
 }
 
 void QGLContextResource::insert(const QGLContext *key, void *value)

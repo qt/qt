@@ -434,7 +434,7 @@ void QSvgText::draw(QPainter *p, QSvgExtraStates &states)
             text.append(QLatin1Char('\n'));
             text.append(paragraphs[i]);
         }
-        states.svgFont->draw(p, m_coord, text, p->font().pointSizeF() * scale, states.textAnchor);
+        states.svgFont->draw(p, m_coord * scale, text, p->font().pointSizeF() * scale, states.textAnchor);
     } else {
         for (int i = 0; i < paragraphs.size(); ++i) {
             QTextLayout tl(paragraphs[i]);

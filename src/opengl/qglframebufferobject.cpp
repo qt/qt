@@ -299,10 +299,21 @@ bool QGLFramebufferObjectFormat::operator!=(const QGLFramebufferObjectFormat& ot
     return !(*this == other);
 }
 
-void QGLFBOGLPaintDevice::setFBO(QGLFramebufferObject* f)
+void QGLFBOGLPaintDevice::setFBO(QGLFramebufferObject* f,
+                                 QGLFramebufferObject::Attachment attachment)
 {
     fbo = f;
     m_thisFBO = fbo->d_func()->fbo; // This shouldn't be needed
+
+    // The context that the fbo was created in may not have depth
+    // and stencil buffers, but the fbo itself might.
+    fboFormat = QGLContext::currentContext()->format();
+    if (attachment == QGLFramebufferObject::CombinedDepthStencil) {
+        fboFormat.setDepth(true);
+        fboFormat.setStencil(true);
+    } else if (attachment == QGLFramebufferObject::Depth) {
+        fboFormat.setDepth(true);
+    }
 }
 
 void QGLFBOGLPaintDevice::ensureActiveTarget()
@@ -395,7 +406,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER_EXT, fbo);
 
-    glDevice.setFBO(q);
+    glDevice.setFBO(q, attachment);
 
     QT_CHECK_GLERROR();
     // init texture

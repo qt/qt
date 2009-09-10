@@ -84,7 +84,7 @@ FlickCharm::~FlickCharm()
 
 void FlickCharm::activateOn(QWidget *widget)
 {
-    QAbstractScrollArea *scrollArea = dynamic_cast<QAbstractScrollArea*>(widget);
+    QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea*>(widget);
     if (scrollArea) {
         scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -102,7 +102,7 @@ void FlickCharm::activateOn(QWidget *widget)
         return;
     }
 
-    QWebView *webView = dynamic_cast<QWebView*>(widget);
+    QWebView *webView = qobject_cast<QWebView*>(widget);
     if (webView) {
         QWebFrame *frame = webView->page()->mainFrame();
         frame->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAlwaysOff);
@@ -124,7 +124,7 @@ void FlickCharm::activateOn(QWidget *widget)
 
 void FlickCharm::deactivateFrom(QWidget *widget)
 {
-    QAbstractScrollArea *scrollArea = dynamic_cast<QAbstractScrollArea*>(widget);
+    QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea*>(widget);
     if (scrollArea) {
         QWidget *viewport = scrollArea->viewport();
 
@@ -137,7 +137,7 @@ void FlickCharm::deactivateFrom(QWidget *widget)
         return;
     }
 
-    QWebView *webView = dynamic_cast<QWebView*>(widget);
+    QWebView *webView = qobject_cast<QWebView*>(widget);
     if (webView) {
         webView->removeEventFilter(this);
 
@@ -152,13 +152,13 @@ static QPoint scrollOffset(QWidget *widget)
 {
     int x = 0, y = 0;
 
-    QAbstractScrollArea *scrollArea = dynamic_cast<QAbstractScrollArea*>(widget);
+    QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea*>(widget);
     if (scrollArea) {
         x = scrollArea->horizontalScrollBar()->value();
         y = scrollArea->verticalScrollBar()->value();
     }
 
-    QWebView *webView = dynamic_cast<QWebView*>(widget);
+    QWebView *webView = qobject_cast<QWebView*>(widget);
     if (webView) {
         QWebFrame *frame = webView->page()->mainFrame();
         x = frame->evaluateJavaScript("window.scrollX").toInt();
@@ -170,13 +170,13 @@ static QPoint scrollOffset(QWidget *widget)
 
 static void setScrollOffset(QWidget *widget, const QPoint &p)
 {
-    QAbstractScrollArea *scrollArea = dynamic_cast<QAbstractScrollArea*>(widget);
+    QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea*>(widget);
     if (scrollArea) {
         scrollArea->horizontalScrollBar()->setValue(p.x());
         scrollArea->verticalScrollBar()->setValue(p.y());
     }
 
-    QWebView *webView = dynamic_cast<QWebView*>(widget);
+    QWebView *webView = qobject_cast<QWebView*>(widget);
     QWebFrame *frame = webView ? webView->page()->mainFrame() : 0;
     if (frame)
         frame->evaluateJavaScript(QString("window.scrollTo(%1,%2);").arg(p.x()).arg(p.y()));
@@ -202,11 +202,19 @@ bool FlickCharm::eventFilter(QObject *object, QEvent *event)
             type != QEvent::MouseMove)
         return false;
 
-    QMouseEvent *mouseEvent = dynamic_cast<QMouseEvent*>(event);
+    QMouseEvent *mouseEvent = 0;
+    switch (event->type()) {
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonRelease:
+        case QEvent::MouseMove:
+            mouseEvent = static_cast<QMouseEvent*>(event);
+            break;
+    }
+
     if (!mouseEvent || mouseEvent->modifiers() != Qt::NoModifier)
         return false;
 
-    QWidget *viewport = dynamic_cast<QWidget*>(object);
+    QWidget *viewport = qobject_cast<QWidget*>(object);
     FlickData *data = d->flickData.value(viewport);
     if (!viewport || !data || data->ignored.removeAll(event))
         return false;

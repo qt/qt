@@ -335,10 +335,6 @@
     it's parent if it's z-value is negative. This flag enables setZValue() to
     toggle ItemStacksBehindParent.
 
-    \value ItemAutoDetectsFocusProxy The item will assign any child that
-    gains input focus as its focus proxy. See also focusProxy().
-    This flag was introduced in Qt 4.6.
-
     \value ItemIsPanel. The item is a panel. A panel provides activation and
     contained focus handling. Only one panel can be active at a time (see
     QGraphicsItem::isActive()). When no panel is active, QGraphicsScene
@@ -954,17 +950,6 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
         parent->itemChange(QGraphicsItem::ItemChildRemovedChange, thisPointerVariant);
     }
 
-    // Auto-update focus proxy. Any ancestor that has this as focus proxy 
-    //needs to be nulled.
-    QGraphicsItem *p = parent;
-    while (p) {
-        if ((p->d_ptr->flags & QGraphicsItem::ItemAutoDetectsFocusProxy) &&
-            (p->focusProxy() == q)) {
-            p->setFocusProxy(0);
-        }
-        p = p->d_ptr->parent;
-    }
-
     // Update toplevelitem list. If this item is being deleted, its parent
     // will be 0 but we don't want to register/unregister it in the TLI list.
     if (scene && !inDestructor) {
@@ -1041,18 +1026,11 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
     dirtySceneTransform = 1;
 
     // Restore the sub focus chain.
-    if (lastSubFocusItem)
-        lastSubFocusItem->d_ptr->setSubFocus();
-
-    // Auto-update focus proxy. The closest parent that detects
-    // focus proxies is updated as the proxy gains or loses focus.
-    p = newParent;
-    while (p) {
-        if (p->d_ptr->flags & QGraphicsItem::ItemAutoDetectsFocusProxy) {
-            p->setFocusProxy(q);
-            break;
-        }
-        p = p->d_ptr->parent;
+    if (lastSubFocusItem) {
+        if (parent && parent->isActive())
+            lastSubFocusItem->setFocus();
+        else
+            lastSubFocusItem->d_ptr->setSubFocus();
     }
 
     // Deliver post-change notification
@@ -1220,6 +1198,7 @@ QGraphicsItem::~QGraphicsItem()
     d_ptr->removeExtraItemCache();
 
     clearFocus();
+
     if (!d_ptr->children.isEmpty()) {
         QList<QGraphicsItem *> oldChildren = d_ptr->children;
         qDeleteAll(oldChildren);
@@ -2772,7 +2751,7 @@ void QGraphicsItem::setFocus(Qt::FocusReason focusReason)
     // Update the scene's focus item.
     if (d_ptr->scene) {
         QGraphicsItem *p = panel();
-        if (!p || p->isActive()) {
+        if ((!p && d_ptr->scene->isActive()) || (p && p->isActive())) {
             // Visible items immediately gain focus from scene.
             d_ptr->scene->d_func()->setFocusItemHelper(f, focusReason);
         }
@@ -2792,10 +2771,9 @@ void QGraphicsItem::setFocus(Qt::FocusReason focusReason)
 */
 void QGraphicsItem::clearFocus()
 {
-    if (!d_ptr->scene)
-        return;
     // Invisible items with focus must explicitly clear subfocus.
     d_ptr->clearSubFocus();
+
     if (hasFocus()) {
         // If this item has the scene's input focus, clear it.
         d_ptr->scene->setFocusItem(0);
@@ -2808,7 +2786,7 @@ void QGraphicsItem::clearFocus()
     Returns this item's focus proxy, or 0 if this item has no
     focus proxy.
 
-    \sa setFocusProxy(), ItemAutoDetectsFocusProxy, setFocus(), hasFocus()
+    \sa setFocusProxy(), setFocus(), hasFocus()
 */
 QGraphicsItem *QGraphicsItem::focusProxy() const
 {
@@ -2832,7 +2810,7 @@ QGraphicsItem *QGraphicsItem::focusProxy() const
     The focus proxy \a item must belong to the same scene as
     this item.
 
-    \sa focusProxy(), ItemAutoDetectsFocusProxy, setFocus(), hasFocus()
+    \sa focusProxy(), setFocus(), hasFocus()
 */
 void QGraphicsItem::setFocusProxy(QGraphicsItem *item)
 {
@@ -4876,13 +4854,21 @@ void QGraphicsItemPrivate::ensureSceneTransform()
 */
 void QGraphicsItemPrivate::setSubFocus()
 {
-    // Update focus child chain.
-    QGraphicsItem *item = q_ptr;
-    QGraphicsItem *parent = item;
-    bool hidden = !visible;
+    // Update focus child chain. Stop at panels, or if this item
+    // is hidden, stop at the first item with a visible parent.
+    QGraphicsItem *parent = q_ptr;
     do {
-        parent->d_func()->subFocusItem = item;
-    } while (!parent->isPanel() && (parent = parent->d_ptr->parent) && (!hidden || !parent->d_func()->visible));
+        // Clear any existing ancestor's subFocusItem.
+        if (parent != q_ptr && parent->d_ptr->subFocusItem) {
+            if (parent->d_ptr->subFocusItem == q_ptr)
+                break;
+            parent->d_ptr->subFocusItem->d_ptr->clearSubFocus();
+        }
+        parent->d_ptr->subFocusItem = q_ptr;
+    } while (!parent->isPanel() && (parent = parent->d_ptr->parent) && (visible || !parent->d_ptr->visible));
+
+    if (!parent && scene && !scene->isActive())
+        scene->d_func()->lastFocusItem = q_ptr;
 }
 
 /*!
@@ -4890,7 +4876,7 @@ void QGraphicsItemPrivate::setSubFocus()
 */
 void QGraphicsItemPrivate::clearSubFocus()
 {
-    // Reset focus child chain.
+    // Reset sub focus chain.
     QGraphicsItem *parent = q_ptr;
     do {
         if (parent->d_ptr->subFocusItem != q_ptr)
@@ -10567,9 +10553,6 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
         break;
     case QGraphicsItem::ItemNegativeZStacksBehindParent:
         str = "ItemNegativeZStacksBehindParent";
-        break;
-    case QGraphicsItem::ItemAutoDetectsFocusProxy:
-        str = "ItemAutoDetectsFocusProxy";
         break;
     case QGraphicsItem::ItemIsPanel:
         str = "ItemIsPanel";

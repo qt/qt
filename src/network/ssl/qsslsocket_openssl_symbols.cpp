@@ -143,12 +143,14 @@ DEFINEFUNC2(int, PEM_write_bio_RSA_PUBKEY, BIO *a, a, RSA *b, b, return 0, retur
 DEFINEFUNC2(void, RAND_seed, const void *a, a, int b, b, return, DUMMYARG)
 DEFINEFUNC(int, RAND_status, void, DUMMYARG, return -1, return)
 DEFINEFUNC(void, RSA_free, RSA *a, a, return, DUMMYARG)
-DEFINEFUNC(void, sk_free, STACK *a, a, return, DUMMYARG)
 DEFINEFUNC(int, sk_num, STACK *a, a, return -1, return)
-DEFINEFUNC2(void, sk_pop_free, STACK *a, a, void (*b)(STACK*), b, return, DUMMYARG)
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
+DEFINEFUNC(void, sk_free, _STACK *a, a, return, DUMMYARG)
+DEFINEFUNC2(void, sk_pop_free, STACK *a, a, void (*b)(void*), b, return, DUMMYARG)
 DEFINEFUNC2(void *, sk_value, STACK *a, a, int b, b, return 0, return)
 #else
+DEFINEFUNC(void, sk_free, STACK *a, a, return, DUMMYARG)
+DEFINEFUNC2(void, sk_pop_free, STACK *a, a, void (*b)(STACK*), b, return, DUMMYARG)
 DEFINEFUNC2(char *, sk_value, STACK *a, a, int b, b, return 0, return)
 #endif
 DEFINEFUNC(int, SSL_accept, SSL *a, a, return -1, return)
@@ -489,6 +491,7 @@ bool q_resolveOpenSslSymbols()
 #ifdef SSLEAY_MACROS
     RESOLVEFUNC(ASN1_dup, 125, libs.second )
 #endif
+    RESOLVEFUNC(ASN1_INTEGER_get, 48, libs.second )
     RESOLVEFUNC(ASN1_STRING_data, 71, libs.second )
     RESOLVEFUNC(ASN1_STRING_length, 76, libs.second )
     RESOLVEFUNC(BIO_ctrl, 184, libs.second )
@@ -532,6 +535,7 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(RSA_free, 1450, libs.second )
     RESOLVEFUNC(sk_free, 2571, libs.second )
     RESOLVEFUNC(sk_num, 2576, libs.second )
+    RESOLVEFUNC(sk_pop_free, 2578, libs.second )    
     RESOLVEFUNC(sk_value, 2585, libs.second )
     RESOLVEFUNC(SSL_CIPHER_description, 11, libs.first )
     RESOLVEFUNC(SSL_CTX_check_private_key, 21, libs.first )

@@ -262,6 +262,8 @@ public:
 
     bool needsSync;
     bool inRenderText;
+
+    float textureInvertedY;
 };
 
 QT_END_NAMESPACE

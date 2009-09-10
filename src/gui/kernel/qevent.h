@@ -685,7 +685,7 @@ public:
     QClipboardEvent(QEventPrivate *data);
     ~QClipboardEvent();
 
-    QEventPrivate *data() { return d; };
+    QEventPrivate *data() { return d; }
 };
 #endif
 

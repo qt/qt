@@ -114,8 +114,8 @@ public:
     inline QT3_SUPPORT void setTickmarks(TickPosition position) { setTickPosition(position); }
     inline QT3_SUPPORT TickPosition tickmarks() const { return tickPosition(); }
 public Q_SLOTS:
-    inline QT_MOC_COMPAT void addStep() { triggerAction(SliderSingleStepAdd); };
-    inline QT_MOC_COMPAT void subtractStep() { triggerAction(SliderSingleStepSub); };
+    inline QT_MOC_COMPAT void addStep() { triggerAction(SliderSingleStepAdd); }
+    inline QT_MOC_COMPAT void subtractStep() { triggerAction(SliderSingleStepSub); }
 #endif
 
 private:

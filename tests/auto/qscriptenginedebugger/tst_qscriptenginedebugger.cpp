@@ -109,6 +109,9 @@ tst_QScriptEngineDebugger::~tst_QScriptEngineDebugger()
 
 void tst_QScriptEngineDebugger::attachAndDetach()
 {
+#if defined(Q_OS_WINCE) && _WIN32_WCE < 0x600
+    QSKIP("skipped due to high mem usage until task 261062 is fixed", SkipAll);
+#endif
     {
         QScriptEngineDebugger debugger;
         QCOMPARE(debugger.state(), QScriptEngineDebugger::SuspendedState);
@@ -173,6 +176,10 @@ void tst_QScriptEngineDebugger::attachAndDetach()
 
 void tst_QScriptEngineDebugger::action()
 {
+#if defined(Q_OS_WINCE) && _WIN32_WCE < 0x600
+    QSKIP("skipped due to high mem usage until task 261062 is fixed", SkipAll);
+#endif
+
     QScriptEngine engine;
     QScriptEngineDebugger debugger;
     debugger.attachTo(&engine);
@@ -207,6 +214,10 @@ void tst_QScriptEngineDebugger::action()
 
 void tst_QScriptEngineDebugger::widget()
 {
+#if defined(Q_OS_WINCE) && _WIN32_WCE < 0x600
+    QSKIP("skipped due to high mem usage until task 261062 is fixed", SkipAll);
+#endif
+
     QScriptEngine engine;
     QScriptEngineDebugger debugger;
     debugger.attachTo(&engine);
@@ -235,6 +246,10 @@ void tst_QScriptEngineDebugger::widget()
 
 void tst_QScriptEngineDebugger::standardObjects()
 {
+#if defined(Q_OS_WINCE) && _WIN32_WCE < 0x600
+    QSKIP("skipped due to high mem usage until task 261062 is fixed", SkipAll);
+#endif
+
     QScriptEngine engine;
     QScriptEngineDebugger debugger;
     debugger.attachTo(&engine);
@@ -260,6 +275,10 @@ void tst_QScriptEngineDebugger::standardObjects()
 
 void tst_QScriptEngineDebugger::debuggerSignals()
 {
+#if defined(Q_OS_WINCE) && _WIN32_WCE < 0x600
+    QSKIP("skipped due to high mem usage until task 261062 is fixed", SkipAll);
+#endif
+
     QScriptEngine engine;
     QScriptEngineDebugger debugger;
     debugger.attachTo(&engine);

@@ -117,6 +117,7 @@ private:
     HWAVEIN hWaveIn;
     MMRESULT result;
     WAVEHDR* waveBlocks;
+    volatile bool finished;
     volatile int waveFreeBlockCount;
     int waveCurrentBlock;
 

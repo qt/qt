@@ -74,7 +74,7 @@ public:
                  + QString::number((((((size.width()<<11)|size.height())<<11)|mode)<<4)|state, 16); }
 
     void stepSerialNum()
-        { serialNum = lastSerialNum.fetchAndAddRelaxed(1); };
+        { serialNum = lastSerialNum.fetchAndAddRelaxed(1); }
 
     void loadDataForModeAndState(QSvgRenderer *renderer, QIcon::Mode mode, QIcon::State state);
 

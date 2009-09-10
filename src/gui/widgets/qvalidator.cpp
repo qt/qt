@@ -636,7 +636,7 @@ QValidator::State QDoubleValidator::validate(QString & input, int &) const
         case ScientificNotation:
             numMode = QLocalePrivate::DoubleScientificMode;
             break;
-    };
+    }
 
     QByteArray buff;
     if (!locale().d()->validateChars(input, numMode, &buff, dec)) {

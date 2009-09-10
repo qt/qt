@@ -84,7 +84,7 @@ public Q_SLOTS:
     void stop();
 
 #ifdef QT3_SUPPORT
-    inline QT_MOC_COMPAT void changeInterval(int msec) { start(msec); };
+    inline QT_MOC_COMPAT void changeInterval(int msec) { start(msec); }
     QT_MOC_COMPAT int start(int msec, bool sshot);
 #endif
 

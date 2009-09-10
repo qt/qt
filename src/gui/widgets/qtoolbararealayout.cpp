@@ -776,7 +776,8 @@ void QToolBarAreaLayout::deleteAllLayoutItems()
 
             for (int k = 0; k < line.toolBarItems.count(); ++k) {
                 QToolBarAreaLayoutItem &item = line.toolBarItems[k];
-                delete item.widgetItem;
+                if (!item.gap)
+                    delete item.widgetItem;
                 item.widgetItem = 0;
             }
         }

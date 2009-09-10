@@ -514,8 +514,8 @@ public:
     bool setContent(QXmlInputSource *source, QXmlReader *reader, QString *errorMsg, int *errorLine, int *errorColumn);
 
     // Attributes
-    QDomDocumentTypePrivate* doctype() { return type.data(); };
-    QDomImplementationPrivate* implementation() { return impl.data(); };
+    QDomDocumentTypePrivate* doctype() { return type.data(); }
+    QDomImplementationPrivate* implementation() { return impl.data(); }
     QDomElementPrivate* documentElement();
 
     // Factories

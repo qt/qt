@@ -157,7 +157,7 @@ public:
     // return true if the QNonContiguousByteDevice of the upload
     // data needs to support reset(). Currently needed for HTTP.
     // This will possibly enable buffering of the upload data.
-    virtual bool needsResetableUploadData() {return false;};
+    virtual bool needsResetableUploadData() { return false; }
 
 protected:
     // Create the device used for reading the upload data

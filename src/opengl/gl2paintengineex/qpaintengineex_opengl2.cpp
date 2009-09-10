@@ -423,8 +423,9 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         const QPixmap& texPixmap = currentBrush->texture();
 
         glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
-        ctx->d_func()->bindTexture(texPixmap, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
+        QGLTexture *tex = ctx->d_func()->bindTexture(texPixmap, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
+        textureInvertedY = tex->options & QGLContext::InvertedYBindOption ? -1 : 1;
     }
     brushTextureDirty = false;
 }
@@ -517,7 +518,7 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
                 shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::PatternColor), col);
             }
 
-            QSizeF invertedTextureSize( 1.0 / texPixmap.width(), 1.0 / texPixmap.height() );
+            QSizeF invertedTextureSize(1.0 / texPixmap.width(), 1.0 * textureInvertedY / texPixmap.height());
             shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::InvertedTextureSize), invertedTextureSize);
 
             QVector2D halfViewportSize(width*0.5, height*0.5);

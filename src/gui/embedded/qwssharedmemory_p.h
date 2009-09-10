@@ -68,7 +68,7 @@ public:
 
     void setPermissions(mode_t mode);
     int size() const;
-    void *address() { return shmBase; };
+    void *address() { return shmBase; }
 
     int id() const { return shmId; }
 
@@ -82,7 +82,7 @@ public:
 // old API
 
     QWSSharedMemory(int, const QString &, char c = 'Q');
-    void * base() { return address(); };
+    void * base() { return address(); }
 
     bool create();
     void destroy();

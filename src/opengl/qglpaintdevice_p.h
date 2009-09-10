@@ -73,7 +73,7 @@ public:
     virtual void endPaint();
 
     virtual QGLContext* context() const = 0;
-    QGLFormat format() const;
+    virtual QGLFormat format() const;
     virtual QSize size() const = 0;
 
     // returns the QGLPaintDevice for the given QPaintDevice

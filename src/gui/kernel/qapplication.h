@@ -337,7 +337,7 @@ public:
     static inline QT3_SUPPORT const QColor &winStyleHighlightColor()
         { return palette().color(QPalette::Active, QPalette::Highlight); }
     static inline QT3_SUPPORT void setPalette(const QPalette &pal, bool, const char* className = 0)
-        { setPalette(pal, className); };
+        { setPalette(pal, className); }
     static inline QT3_SUPPORT void setFont(const QFont &font, bool, const char* className = 0)
         { setFont(font, className); }
 

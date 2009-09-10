@@ -581,8 +581,10 @@
     \legalese
     This file is part of the KDE project
 
-    Copyright (C) 2005-2007 Matthias Kretz <kretz@kde.org> \BR
-    Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+    Copyright (C) 2004-2009 Matthias Kretz <kretz@kde.org> \BR
+    Copyright (C) 2008 Ian Monroe <ian@monroe.nu> \BR
+    Copyright (C) 2007-2008 Trolltech ASA \BR
+    Copyright (C) 2008-2009 Nokia Corporation and/or its subsidiary(-ies). \BR
     Contact: Nokia Corporation (qt-info@nokia.com)
 
     This library is free software; you can redistribute it and/or
