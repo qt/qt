@@ -248,7 +248,6 @@ void MMF::VideoPlayer::MvpuoPrepareComplete(TInt aError)
         emit totalTimeChanged(totalTime());
         changeState(StoppedState);
     } else {
-        // TODO: set different error states according to value of aError?
         setError(NormalError);
     }
 
