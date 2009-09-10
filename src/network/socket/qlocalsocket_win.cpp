@@ -200,7 +200,10 @@ qint64 QLocalSocket::readData(char *data, qint64 maxSize)
     }
 
     if (d->pipeClosed) {
-        QTimer::singleShot(0, this, SLOT(_q_pipeClosed()));
+        if (readSoFar == 0) {
+            QTimer::singleShot(0, this, SLOT(_q_pipeClosed()));
+            return -1;  // signal EOF
+        }
     } else {
         if (!d->readSequenceStarted)
             d->startAsyncRead();
