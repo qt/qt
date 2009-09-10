@@ -591,12 +591,15 @@ bool QDirectFBScreenCursor::createWindow()
     Q_ASSERT(!cursor.isNull());
     DFBWindowDescription description;
     memset(&description, 0, sizeof(DFBWindowDescription));
-    description.flags = DWDESC_POSX|DWDESC_POSY|DWDESC_WIDTH|DWDESC_HEIGHT|DWDESC_CAPS|DWDESC_OPTIONS|DWDESC_PIXELFORMAT|DWDESC_SURFACE_CAPS;
+    description.flags = DWDESC_POSX|DWDESC_POSY|DWDESC_WIDTH|DWDESC_HEIGHT|DWDESC_CAPS|DWDESC_PIXELFORMAT|DWDESC_SURFACE_CAPS;
     description.width = cursor.width();
     description.height = cursor.height();
     description.posx = pos.x() - hotspot.x();
     description.posy = pos.y() - hotspot.y();
+#if (Q_DIRECTFB_VERSION >= 0x010100)
+    description.flags |= DWDESC_OPTIONS;
     description.options = DWOP_GHOST|DWOP_ALPHACHANNEL;
+#endif
     description.caps = DWCAPS_NODECORATION|DWCAPS_DOUBLEBUFFER;
     const QImage::Format format = QDirectFBScreen::instance()->alphaPixmapFormat();
     description.pixelformat = QDirectFBScreen::getSurfacePixelFormat(format);
