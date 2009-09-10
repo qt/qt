@@ -44,7 +44,7 @@ Rectangle {
         id: PetHighlight
         Rectangle {
             width: 200; height: 50; color: "#FFFF88"
-            y: Follow { source: List1.current.y; spring: 3; damping: 0.1 }
+            y: SpringFollow { source: List1.current.y; spring: 3; damping: 0.1 }
         }
     }
     ListView {

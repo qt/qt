@@ -43,18 +43,18 @@
 #include <math.h>
 #include <QtCore/qdebug.h>
 #include "private/qobject_p.h"
-#include "qmlfollow.h"
+#include "qmlspringfollow.h"
 #include "private/qmlanimation_p.h"
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Follow,QmlFollow)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,SpringFollow,QmlSpringFollow)
 
-class QmlFollowPrivate : public QObjectPrivate
+class QmlSpringFollowPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QmlFollow)
+    Q_DECLARE_PUBLIC(QmlSpringFollow)
 public:
-    QmlFollowPrivate()
+    QmlSpringFollowPrivate()
         : sourceValue(0), maxVelocity(0), lastTime(0)
         , mass(1.0), useMass(false), spring(0.), damping(0.), velocity(0), epsilon(0.01)
         , modulus(0.0), haveModulus(false), enabled(true), mode(Track), clock(this) {}
@@ -87,12 +87,12 @@ public:
     void start();
     void stop();
 
-    QTickAnimationProxy<QmlFollowPrivate, &QmlFollowPrivate::tick> clock;
+    QTickAnimationProxy<QmlSpringFollowPrivate, &QmlSpringFollowPrivate::tick> clock;
 };
 
-void QmlFollowPrivate::tick(int time)
+void QmlSpringFollowPrivate::tick(int time)
 {
-    Q_Q(QmlFollow);
+    Q_Q(QmlSpringFollow);
 
     int elapsed = time - lastTime;
     if (!elapsed)
@@ -174,7 +174,7 @@ void QmlFollowPrivate::tick(int time)
         emit q->syncChanged();
 }
 
-void QmlFollowPrivate::updateMode()
+void QmlSpringFollowPrivate::updateMode()
 {
     if (spring == 0. && maxVelocity == 0.)
         mode = Track;
@@ -184,13 +184,13 @@ void QmlFollowPrivate::updateMode()
         mode = Velocity;
 }
 
-void QmlFollowPrivate::start()
+void QmlSpringFollowPrivate::start()
 {
     if (!enabled)
         return;
 
-    Q_Q(QmlFollow);
-    if (mode == QmlFollowPrivate::Track) {
+    Q_Q(QmlSpringFollow);
+    if (mode == QmlSpringFollowPrivate::Track) {
         currentValue = sourceValue;
         property.write(currentValue);
     } else if (sourceValue != currentValue && clock.state() != QAbstractAnimation::Running) {
@@ -201,14 +201,14 @@ void QmlFollowPrivate::start()
     }
 }
 
-void QmlFollowPrivate::stop()
+void QmlSpringFollowPrivate::stop()
 {
     clock.stop();
 }
 
 /*!
-    \qmlclass Follow QmlFollow
-    \brief The Follow element allows a property to track a value.
+    \qmlclass SpringFollow QmlSpringFollow
+    \brief The SpringFollow element allows a property to track a value.
 
     In example below, Rect2 will follow Rect1 moving with a velocity of up to 200:
     \code
@@ -233,43 +233,43 @@ void QmlFollowPrivate::stop()
         x: Rect1.width
         width: 20; height: 20
         color: "#ff0000"
-        y: Follow { source: Rect1.y; velocity: 200 }
+        y: SpringFollow { source: Rect1.y; velocity: 200 }
     }
     \endcode
 */
 
-QmlFollow::QmlFollow(QObject *parent)
-: QObject(*(new QmlFollowPrivate),parent)
+QmlSpringFollow::QmlSpringFollow(QObject *parent)
+: QObject(*(new QmlSpringFollowPrivate),parent)
 {
 }
 
-QmlFollow::~QmlFollow()
+QmlSpringFollow::~QmlSpringFollow()
 {
 }
 
-void QmlFollow::setTarget(const QmlMetaProperty &property)
+void QmlSpringFollow::setTarget(const QmlMetaProperty &property)
 {
-    Q_D(QmlFollow);
+    Q_D(QmlSpringFollow);
     d->property = property;
     d->currentValue = property.read().toDouble();
 }
 
-qreal QmlFollow::sourceValue() const
+qreal QmlSpringFollow::sourceValue() const
 {
-    Q_D(const QmlFollow);
+    Q_D(const QmlSpringFollow);
     return d->sourceValue;
 }
 
 /*!
-    \qmlproperty qreal Follow::source
+    \qmlproperty qreal SpringFollow::source
     This property holds the source value which will be tracked.
 
     Bind to a property in order to track its changes.
 */
 
-void QmlFollow::setSourceValue(qreal value)
+void QmlSpringFollow::setSourceValue(qreal value)
 {
-    Q_D(QmlFollow);
+    Q_D(QmlSpringFollow);
     if (d->sourceValue != value) {
         d->sourceValue = value;
         d->start();
@@ -277,26 +277,26 @@ void QmlFollow::setSourceValue(qreal value)
 }
 
 /*!
-    \qmlproperty qreal Follow::velocity
+    \qmlproperty qreal SpringFollow::velocity
     This property holds the maximum velocity allowed when tracking the source.
 */
 
-qreal QmlFollow::velocity() const
+qreal QmlSpringFollow::velocity() const
 {
-    Q_D(const QmlFollow);
+    Q_D(const QmlSpringFollow);
     return d->maxVelocity;
 }
 
-void QmlFollow::setVelocity(qreal velocity)
+void QmlSpringFollow::setVelocity(qreal velocity)
 {
-    Q_D(QmlFollow);
+    Q_D(QmlSpringFollow);
     d->maxVelocity = velocity;
     d->velocityms = velocity / 1000.0;
     d->updateMode();
 }
 
 /*!
-    \qmlproperty qreal Follow::spring
+    \qmlproperty qreal SpringFollow::spring
     This property holds the spring constant
 
     The spring constant describes how strongly the target is pulled towards the
@@ -305,35 +305,35 @@ void QmlFollow::setVelocity(qreal velocity)
     When a spring constant is set and the velocity property is greater than 0,
     velocity limits the maximum speed.
 */
-qreal QmlFollow::spring() const
+qreal QmlSpringFollow::spring() const
 {
-    Q_D(const QmlFollow);
+    Q_D(const QmlSpringFollow);
     return d->spring;
 }
 
-void QmlFollow::setSpring(qreal spring)
+void QmlSpringFollow::setSpring(qreal spring)
 {
-    Q_D(QmlFollow);
+    Q_D(QmlSpringFollow);
     d->spring = spring;
     d->updateMode();
 }
 
 /*!
-    \qmlproperty qreal Follow::damping
+    \qmlproperty qreal SpringFollow::damping
     This property holds the spring damping constant
 
     The damping constant describes how quickly a sprung follower comes to rest.
     Useful range is 0 - 1.0
 */
-qreal QmlFollow::damping() const
+qreal QmlSpringFollow::damping() const
 {
-    Q_D(const QmlFollow);
+    Q_D(const QmlSpringFollow);
     return d->damping;
 }
 
-void QmlFollow::setDamping(qreal damping)
+void QmlSpringFollow::setDamping(qreal damping)
 {
-    Q_D(QmlFollow);
+    Q_D(QmlSpringFollow);
     if (damping > 1.)
         damping = 1.;
 
@@ -342,7 +342,7 @@ void QmlFollow::setDamping(qreal damping)
 
 
 /*!
-    \qmlproperty qreal Follow::epsilon
+    \qmlproperty qreal SpringFollow::epsilon
     This property holds the spring epsilon
 
     The epsilon is the rate and amount of change in the value which is close enough
@@ -351,34 +351,34 @@ void QmlFollow::setDamping(qreal damping)
 
     The default is 0.01. Tuning this value can provide small performance improvements.
 */
-qreal QmlFollow::epsilon() const
+qreal QmlSpringFollow::epsilon() const
 {
-    Q_D(const QmlFollow);
+    Q_D(const QmlSpringFollow);
     return d->epsilon;
 }
 
-void QmlFollow::setEpsilon(qreal epsilon)
+void QmlSpringFollow::setEpsilon(qreal epsilon)
 {
-    Q_D(QmlFollow);
+    Q_D(QmlSpringFollow);
     d->epsilon = epsilon;
 }
 
 /*!
-    \qmlproperty qreal Follow::modulus
+    \qmlproperty qreal SpringFollow::modulus
     This property holds the modulus value.
 
     Setting a \a modulus forces the target value to "wrap around" at the modulus.
     For example, setting the modulus to 360 will cause a value of 370 to wrap around to 10.
 */
-qreal QmlFollow::modulus() const
+qreal QmlSpringFollow::modulus() const
 {
-    Q_D(const QmlFollow);
+    Q_D(const QmlSpringFollow);
     return d->modulus;
 }
 
-void QmlFollow::setModulus(qreal modulus)
+void QmlSpringFollow::setModulus(qreal modulus)
 {
-    Q_D(QmlFollow);
+    Q_D(QmlSpringFollow);
     if (d->modulus != modulus) {
         d->haveModulus = modulus != 0.0;
         d->modulus = modulus;
@@ -387,21 +387,21 @@ void QmlFollow::setModulus(qreal modulus)
 }
 
 /*!
-    \qmlproperty qreal Follow::mass
+    \qmlproperty qreal SpringFollow::mass
     This property holds the "mass" of the property being moved.
 
     mass is 1.0 by default.  Setting a different mass changes the dynamics of
     a \l spring follow.
 */
-qreal QmlFollow::mass() const
+qreal QmlSpringFollow::mass() const
 {
-    Q_D(const QmlFollow);
+    Q_D(const QmlSpringFollow);
     return d->mass;
 }
 
-void QmlFollow::setMass(qreal mass)
+void QmlSpringFollow::setMass(qreal mass)
 {
-    Q_D(QmlFollow);
+    Q_D(QmlSpringFollow);
     if (d->mass != mass && mass > 0.0) {
         d->useMass = mass != 1.0;
         d->mass = mass;
@@ -410,23 +410,23 @@ void QmlFollow::setMass(qreal mass)
 }
 
 /*!
-    \qmlproperty qreal Follow::value
+    \qmlproperty qreal SpringFollow::value
     The current value.
 */
 
 /*!
-    \qmlproperty bool Follow::enabled
+    \qmlproperty bool SpringFollow::enabled
     This property holds whether the target will track the source.
 */
-bool QmlFollow::enabled() const
+bool QmlSpringFollow::enabled() const
 {
-    Q_D(const QmlFollow);
+    Q_D(const QmlSpringFollow);
     return d->enabled;
 }
 
-void QmlFollow::setEnabled(bool enabled)
+void QmlSpringFollow::setEnabled(bool enabled)
 {
-    Q_D(QmlFollow);
+    Q_D(QmlSpringFollow);
     d->enabled = enabled;
     if (enabled)
         d->start();
@@ -435,21 +435,21 @@ void QmlFollow::setEnabled(bool enabled)
 }
 
 /*!
-    \qmlproperty bool Follow::inSync
+    \qmlproperty bool SpringFollow::inSync
     This property is true when target is equal to the source; otherwise
     false.  If inSync is true the target is not being animated.
 
     If \l enabled is false then inSync will also be false.
 */
-bool QmlFollow::inSync() const
+bool QmlSpringFollow::inSync() const
 {
-    Q_D(const QmlFollow);
+    Q_D(const QmlSpringFollow);
     return d->enabled && d->clock.state() != QAbstractAnimation::Running;
 }
 
-qreal QmlFollow::value() const
+qreal QmlSpringFollow::value() const
 {
-    Q_D(const QmlFollow);
+    Q_D(const QmlSpringFollow);
     return d->currentValue;
 }
 

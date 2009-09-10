@@ -167,6 +167,7 @@ Item {
             anchors.bottom: Footer.top
             anchors.left: parent.left
             anchors.right: parent.right
+            pressDelay: 200
 
             WebView {
                 id: MyWebView

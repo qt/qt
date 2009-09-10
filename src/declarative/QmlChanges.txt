@@ -29,6 +29,7 @@ SetPropertyAction  -> PropertyAction
 RunScriptAction    -> ScriptAction
 ParentChangeAction -> ParentAction
 VisualModel        -> VisualDataModel
+Follow             -> SpringFollow
 
 Renamed properties:
 Item: contents         -> childrenRect

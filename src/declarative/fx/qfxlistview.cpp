@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "private/qfxflickable_p.h"
-#include "qmlfollow.h"
+#include "qmleasefollow.h"
 #include "qlistmodelinterface.h"
 #include "qfxvisualitemmodel.h"
 #include "qfxlistview.h"
@@ -381,8 +381,8 @@ public:
     enum MovementReason { Other, Key, Mouse };
     MovementReason moveReason;
     int buffer;
-    QmlFollow *highlightPosAnimator;
-    QmlFollow *highlightSizeAnimator;
+    QmlEaseFollow *highlightPosAnimator;
+    QmlEaseFollow *highlightSizeAnimator;
     QString sectionExpression;
     QString currentSection;
     int spacing;
@@ -660,15 +660,18 @@ void QFxListViewPrivate::createHighlight()
         }
         if (item) {
             highlight = new FxListItem(item, q);
+            if (orient == Qt::Vertical)
+                highlight->item->setHeight(currentItem->item->height());
+            else
+                highlight->item->setWidth(currentItem->item->width());
             const QLatin1String posProp(orient == Qt::Vertical ? "y" : "x");
-            highlightPosAnimator = new QmlFollow(q);
+            highlightPosAnimator = new QmlEaseFollow(q);
             highlightPosAnimator->setTarget(QmlMetaProperty(highlight->item, posProp));
-            highlightPosAnimator->setEpsilon(0.25);
-            highlightPosAnimator->setSpring(2.5);
-            highlightPosAnimator->setDamping(0.35);
+            highlightPosAnimator->setVelocity(400);
             highlightPosAnimator->setEnabled(autoHighlight);
             const QLatin1String sizeProp(orient == Qt::Vertical ? "height" : "width");
-            highlightSizeAnimator = new QmlFollow(q);
+            highlightSizeAnimator = new QmlEaseFollow(q);
+            highlightSizeAnimator->setVelocity(400);
             highlightSizeAnimator->setTarget(QmlMetaProperty(highlight->item, sizeProp));
             highlightSizeAnimator->setEnabled(autoHighlight);
         }
@@ -909,6 +912,7 @@ void QFxListView::setModel(const QVariant &model)
     if (d->model) {
         disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
+        disconnect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
         disconnect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
         disconnect(d->model, SIGNAL(destroyingItem(QFxItem*)), this, SLOT(destroyingItem(QFxItem*)));
     }
@@ -937,6 +941,7 @@ void QFxListView::setModel(const QVariant &model)
             d->updateCurrent(d->currentIndex);
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
+        connect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
         connect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
         connect(d->model, SIGNAL(destroyingItem(QFxItem*)), this, SLOT(destroyingItem(QFxItem*)));
         refill();
@@ -1633,6 +1638,37 @@ void QFxListView::destroyRemoved()
 
     // Correct the positioning of the items
     d->layout();
+}
+
+void QFxListView::itemsMoved(int from, int to, int count)
+{
+    qWarning() << "ListView does not support moving in models";
+
+    Q_D(QFxListView);
+    int fromCount = count;
+    int toCount = count;
+    bool fromVisible = d->mapRangeFromModel(from, fromCount);
+    bool toVisible = d->mapRangeFromModel(to, toCount);
+
+    if (!fromVisible && !toVisible) {
+        // The items are outside the visible range.
+        if (d->visibleItems.count())
+            d->visibleIndex = -1;
+        for (int i = 0; i < d->visibleItems.count(); ++i) {
+            FxListItem *listItem = d->visibleItems.at(i);
+            if (listItem->index != -1) {
+                listItem->index = d->model->indexOf(listItem->item, this);
+                if (d->visibleIndex < 0)
+                    d->visibleIndex = listItem->index;
+            }
+        }
+        if (d->currentItem) {
+            d->currentItem->index = d->model->indexOf(d->currentItem->item, this);
+            d->currentIndex = d->currentItem->index;
+        }
+        return;
+    }
+
 }
 
 void QFxListView::createdItem(int index, QFxItem *item)

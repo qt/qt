@@ -41,7 +41,7 @@
 
 #include "qfxvisualitemmodel.h"
 #include "qlistmodelinterface.h"
-#include "qmlfollow.h"
+#include "qmleasefollow.h"
 #include "private/qfxflickable_p.h"
 #include "qfxgridview.h"
 
@@ -313,8 +313,8 @@ public:
     enum MovementReason { Other, Key, Mouse };
     MovementReason moveReason;
     int buffer;
-    QmlFollow *highlightXAnimator;
-    QmlFollow *highlightYAnimator;
+    QmlEaseFollow *highlightXAnimator;
+    QmlEaseFollow *highlightYAnimator;
 
     int ownModel : 1;
     int wrap : 1;
@@ -591,15 +591,13 @@ void QFxGridViewPrivate::createHighlight()
             if (item) {
                 item->setParent(q->viewport());
                 highlight = new FxGridItem(item, q);
-                highlightXAnimator = new QmlFollow(q);
+                highlightXAnimator = new QmlEaseFollow(q);
                 highlightXAnimator->setTarget(QmlMetaProperty(highlight->item, QLatin1String("x")));
-                highlightXAnimator->setSpring(3);
-                highlightXAnimator->setDamping(0.3);
+                highlightXAnimator->setVelocity(400);
                 highlightXAnimator->setEnabled(autoHighlight);
-                highlightYAnimator = new QmlFollow(q);
+                highlightYAnimator = new QmlEaseFollow(q);
                 highlightYAnimator->setTarget(QmlMetaProperty(highlight->item, QLatin1String("y")));
-                highlightYAnimator->setSpring(3);
-                highlightYAnimator->setDamping(0.3);
+                highlightYAnimator->setVelocity(400);
                 highlightYAnimator->setEnabled(autoHighlight);
             } else {
                 delete highlightContext;
