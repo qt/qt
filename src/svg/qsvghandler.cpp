@@ -670,7 +670,7 @@ static QVector<qreal> parseNumbersList(const QChar *&str)
         return points;
     points.reserve(32);
 
-    while (*str == QLatin1Char(' '))
+    while (str->isSpace())
         ++str;
     while (isDigit(str->unicode()) ||
            *str == QLatin1Char('-') || *str == QLatin1Char('+') ||
@@ -678,13 +678,13 @@ static QVector<qreal> parseNumbersList(const QChar *&str)
 
         points.append(toDouble(str));
 
-        while (*str == QLatin1Char(' '))
+        while (str->isSpace())
             ++str;
         if (*str == QLatin1Char(','))
             ++str;
 
         //eat the rest of space
-        while (*str == QLatin1Char(' '))
+        while (str->isSpace())
             ++str;
     }
 
@@ -693,7 +693,7 @@ static QVector<qreal> parseNumbersList(const QChar *&str)
 
 static inline void parseNumbersArray(const QChar *&str, QVarLengthArray<qreal, 8> &points)
 {
-    while (*str == QLatin1Char(' '))
+    while (str->isSpace())
         ++str;
     while (isDigit(str->unicode()) ||
            *str == QLatin1Char('-') || *str == QLatin1Char('+') ||
@@ -701,13 +701,13 @@ static inline void parseNumbersArray(const QChar *&str, QVarLengthArray<qreal, 8
 
         points.append(toDouble(str));
 
-        while (*str == QLatin1Char(' '))
+        while (str->isSpace())
             ++str;
         if (*str == QLatin1Char(','))
             ++str;
 
         //eat the rest of space
-        while (*str == QLatin1Char(' '))
+        while (str->isSpace())
             ++str;
     }
 }
@@ -726,17 +726,17 @@ static QVector<qreal> parsePercentageList(const QChar *&str)
 
         points.append(toDouble(str));
 
-        while (*str == QLatin1Char(' '))
+        while (str->isSpace())
             ++str;
         if (*str == QLatin1Char('%'))
             ++str;
-        while (*str == QLatin1Char(' '))
+        while (str->isSpace())
             ++str;
         if (*str == QLatin1Char(','))
             ++str;
 
         //eat the rest of space
-        while (*str == QLatin1Char(' '))
+        while (str->isSpace())
             ++str;
     }
 
@@ -1518,7 +1518,7 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
     const QChar *end = str + dataStr.size();
 
     while (str != end) {
-        while (*str == QLatin1Char(' '))
+        while (str->isSpace())
             ++str;
         QChar pathElem = *str;
         ++str;
@@ -3167,6 +3167,9 @@ static QSvgNode *createSvgNode(QSvgNode *parent,
     QStringList viewBoxValues;
     if (!viewBoxStr.isEmpty()) {
         viewBoxStr = viewBoxStr.replace(QLatin1Char(' '), QLatin1Char(','));
+        viewBoxStr = viewBoxStr.replace(QLatin1Char('\r'), QLatin1Char(','));
+        viewBoxStr = viewBoxStr.replace(QLatin1Char('\n'), QLatin1Char(','));
+        viewBoxStr = viewBoxStr.replace(QLatin1Char('\t'), QLatin1Char(','));
         viewBoxValues = viewBoxStr.split(QLatin1Char(','), QString::SkipEmptyParts);
     }
     if (viewBoxValues.count() == 4) {
