@@ -6,11 +6,11 @@ Rectangle {
     width: 800; height: 600; color: "blue"
 
     Item { 
-        id: FirstItem 
+        id: FirstItem;
         KeyNavigation.right: Input
     }
 
-    TextInput { id: Input; focus: true; 
+    TextInput { id: Input; focus: true
         KeyNavigation.left: FirstItem
         KeyNavigation.right: LastItem
         KeyNavigation.up: FirstItem
