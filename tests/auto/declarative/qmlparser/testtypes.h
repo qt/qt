@@ -59,9 +59,11 @@ class MyQmlObject : public QObject, public MyInterface, public QmlParserStatus
     Q_PROPERTY(MyInterface *interfaceProperty READ interface WRITE setInterface)
     Q_PROPERTY(int onLiteralSignal READ onLiteralSignal WRITE setOnLiteralSignal);
     Q_PROPERTY(MyCustomVariantType customType READ customType WRITE setCustomType);
+    Q_PROPERTY(MyQmlObject *qmlobjectProperty READ qmlobject WRITE setQmlobject)
+
     Q_INTERFACES(MyInterface QmlParserStatus)
 public:
-    MyQmlObject() : m_value(-1), m_interface(0) { qRegisterMetaType<MyCustomVariantType>("MyCustomVariantType"); }
+    MyQmlObject() : m_value(-1), m_interface(0), m_qmlobject(0) { qRegisterMetaType<MyCustomVariantType>("MyCustomVariantType"); }
 
     int value() const { return m_value; }
     void setValue(int v) { m_value = v; }
@@ -88,6 +90,9 @@ public:
     int onLiteralSignal() const { return m_value; }
     void setOnLiteralSignal(int v) { m_value = v; }
 
+    MyQmlObject *qmlobject() const { return m_qmlobject; }
+    void setQmlobject(MyQmlObject *o) { m_qmlobject = o; }
+
     MyCustomVariantType customType() const { return m_custom; }
     void setCustomType(const MyCustomVariantType &v)  { m_custom = v; }
 public slots:
@@ -100,6 +105,7 @@ private:
     friend class tst_qmlparser;
     int m_value;
     MyInterface *m_interface;
+    MyQmlObject *m_qmlobject;
     MyCustomVariantType m_custom;
 };
 QML_DECLARE_TYPE(MyQmlObject);
