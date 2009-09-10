@@ -4815,6 +4815,15 @@ void QGLExtensions::init_extensions()
     glExtensions |= FramebufferObject;
     glExtensions |= GenerateMipmap;
 #endif
+#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
+    if (extensions.contains(QLatin1String("OES_framebuffer_object")))
+        glExtensions |= FramebufferObject;
+#endif
+    if (extensions.contains(QLatin1String("ARB_framebuffer_object"))) {
+        // ARB_framebuffer_object also includes EXT_framebuffer_blit.
+        glExtensions |= FramebufferObject;
+        glExtensions |= FramebufferBlit;
+    }
     if (extensions.contains(QLatin1String("EXT_framebuffer_blit")))
         glExtensions |= FramebufferBlit;
 
