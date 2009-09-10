@@ -19,9 +19,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_BASSBOOST_H
 #define PHONON_MMF_BASSBOOST_H
 
+#include <BassBoostBase.h>
 #include "abstractaudioeffect.h"
-
-class CBassBoost;
 
 QT_BEGIN_NAMESPACE
 

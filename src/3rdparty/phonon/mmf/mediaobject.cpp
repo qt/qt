@@ -369,12 +369,12 @@ void MMF::MediaObject::setVideoOutput(VideoOutput* videoOutput)
 }
 
 
-AbstractPlayer *MediaObject::abstractPlayer() const
+AbstractPlayer *MMF::MediaObject::abstractPlayer() const
 {
     return m_player.data();
 }
 
-bool MediaObject::activateOnMediaObject(MediaObject *)
+bool MMF::MediaObject::activateOnMediaObject(MediaObject *)
 {
     // Guess what, we do nothing.
     return true;

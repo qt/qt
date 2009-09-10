@@ -16,7 +16,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include <AudioEffectBase.h>
 #include "mediaobject.h"
 
 #include "abstractaudioeffect.h"

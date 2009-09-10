@@ -19,9 +19,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_AUDIOEQUALIZER_H
 #define PHONON_MMF_AUDIOEQUALIZER_H
 
+#include <AudioEqualizerBase.h>
 #include "abstractaudioeffect.h"
-
-class CAudioEqualizer;
 
 QT_BEGIN_NAMESPACE
 

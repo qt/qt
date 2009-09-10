@@ -65,7 +65,7 @@ private:
      * the default constructor.
      */
     inline EffectFactory();
-    Q_DISABLE_COPY(EffectFactory);
+    Q_DISABLE_COPY(EffectFactory)
 };
 }
 }

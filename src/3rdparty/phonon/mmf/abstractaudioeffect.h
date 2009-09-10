@@ -23,11 +23,11 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QScopedPointer>
 
+#include <AudioEffectBase.h>
+
 #include <Phonon/EffectInterface>
 #include <Phonon/EffectParameter>
 #include "audioplayer.h"
-
-class CAudioEffect;
 
 QT_BEGIN_NAMESPACE
 

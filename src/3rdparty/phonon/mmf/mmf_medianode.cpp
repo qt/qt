@@ -63,14 +63,14 @@ MMF::MediaNode *MMF::MediaNode::target() const
     return m_target;
 }
 
-bool MediaNode::applyNodesOnMediaObject(MediaNode *)
+bool MMF::MediaNode::applyNodesOnMediaObject(MediaNode *)
 {
     // Algorithmically, this can be expressed in a more efficient way by
     // exercising available assumptions, but it complicates code for input
     // data(length of the graph) which typically is very small.
 
     // First, we go to the very beginning of the graph.
-    MediaNode *current = this;
+	MMF::MediaNode *current = this;
     do {
         MediaNode *const candidate = current->source();
         if (candidate)
