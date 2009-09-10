@@ -84,6 +84,7 @@
 #include "qdrawutil.h"
 
 #include <limits.h>
+#include <QtGui/qtoolbar.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -2013,7 +2014,10 @@ QRenderRule QStyleSheetStyle::renderRule(const QWidget *w, const QStyleOption *o
             }
         } else
 #endif
-        { } // required for the above ifdef'ery
+        if (const QFrame *frm = qobject_cast<const QFrame *>(w)) {
+            if (frm->lineWidth() == 0)
+                extraClass |= PseudoClass_Frameless;
+        }
     }
 
     return renderRule(w, pseudoElement, pseudoClass(state) | extraClass);
