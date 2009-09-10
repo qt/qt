@@ -4916,8 +4916,13 @@ QGLContextResource::QGLContextResource(FreeFunc f, QObject *parent)
 
 QGLContextResource::~QGLContextResource()
 {
-    while (!m_resources.empty())
-        removeGroup(m_resources.begin().key());
+#ifndef QT_NO_DEBUG
+    if (m_resources.size()) {
+        qWarning("QtOpenGL: Resources are still available at program shutdown.\n"
+                 "          This is possibly caused by a leaked QGLWidget, \n"
+                 "          QGLFrameBufferObject or QGLPixelBuffer.");
+    }
+#endif
 }
 
 void QGLContextResource::insert(const QGLContext *key, void *value)
