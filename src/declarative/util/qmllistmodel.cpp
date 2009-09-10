@@ -634,7 +634,7 @@ void QmlListModel::set(int index, const QString& property, const QVariant& value
 class QmlListModelParser : public QmlCustomParser
 {
 public:
-    QByteArray compile(const QList<QmlCustomParserProperty> &, bool *ok);
+    QByteArray compile(const QList<QmlCustomParserProperty> &);
     bool compileProperty(const QmlCustomParserProperty &prop, QList<ListInstruction> &instr, QByteArray &data);
     void setCustomData(QObject *, const QByteArray &);
 };
@@ -659,8 +659,14 @@ bool QmlListModelParser::compileProperty(const QmlCustomParserProperty &prop, QL
             QList<QmlCustomParserProperty> props = node.properties();
             for(int jj = 0; jj < props.count(); ++jj) {
                 const QmlCustomParserProperty &nodeProp = props.at(jj);
-                if(nodeProp.name() == "")
+                if (nodeProp.name() == "") {
+                    error(nodeProp, QLatin1String("Cannot use default property in ListModel"));
                     return false;
+                }
+                if (nodeProp.name() == "id") {
+                    error(nodeProp, QLatin1String("Cannot use reserved \"id\" property in ListModel"));
+                    return false;
+                }
 
                 ListInstruction li;
                 int ref = data.count();
@@ -706,21 +712,19 @@ bool QmlListModelParser::compileProperty(const QmlCustomParserProperty &prop, QL
     return true;
 }
 
-QByteArray QmlListModelParser::compile(const QList<QmlCustomParserProperty> &customProps, bool *ok)
+QByteArray QmlListModelParser::compile(const QList<QmlCustomParserProperty> &customProps)
 {
-    *ok = true;
     QList<ListInstruction> instr;
     QByteArray data;
 
     for(int ii = 0; ii < customProps.count(); ++ii) {
         const QmlCustomParserProperty &prop = customProps.at(ii);
         if(prop.name() != "") { // isn't default property
-            *ok = false;
+            error(prop, QLatin1String("Cannot use default property"));
             return QByteArray();
         }
 
         if(!compileProperty(prop, instr, data)) {
-            *ok = false;
             return QByteArray();
         }
     }

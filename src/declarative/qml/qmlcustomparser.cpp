@@ -70,7 +70,7 @@ using namespace QmlParser;
 */
 
 /*
-    \fn QByteArray QmlCustomParser::compile(QXmlStreamReader& reader, bool *ok)
+    \fn QByteArray QmlCustomParser::compile(QXmlStreamReader& reader)
 
     Upon entry to this function, \a reader is positioned on a
     QXmlStreamReader::StartElement with the name specified when the
@@ -80,7 +80,7 @@ using namespace QmlParser;
     EndElement matching the initial start element is reached, or until
     error.
 
-    On return, \c *ok indicates success.
+    Errors must be reported via the error() functions.
 
     The returned QByteArray contains data meaningful only to the
     custom parser; the type engine will pass this same data to
@@ -109,6 +109,7 @@ QmlCustomParserNodePrivate::fromObject(QmlParser::Object *root)
 {
     QmlCustomParserNode rootNode;
     rootNode.d->name = root->typeName;
+    rootNode.d->location = root->location.start;
 
     for(QHash<QByteArray, Property *>::Iterator iter = root->properties.begin();
         iter != root->properties.end();
@@ -128,6 +129,7 @@ QmlCustomParserNodePrivate::fromProperty(QmlParser::Property *p)
     QmlCustomParserProperty prop;
     prop.d->name = p->name;
     prop.d->isList = (p->values.count() > 1);
+    prop.d->location = p->location.start;
 
     if (p->value) {
         QmlCustomParserNode node = fromObject(p->value);
@@ -167,6 +169,7 @@ QmlCustomParserNode &QmlCustomParserNode::operator=(const QmlCustomParserNode &o
 {
     d->name = other.d->name;
     d->properties = other.d->properties;
+    d->location = other.d->location;
     return *this;
 }
 
@@ -185,6 +188,11 @@ QList<QmlCustomParserProperty> QmlCustomParserNode::properties() const
     return d->properties;
 }
 
+QmlParser::Location QmlCustomParserNode::location() const
+{
+    return d->location;
+}
+
 QmlCustomParserProperty::QmlCustomParserProperty()
 : d(new QmlCustomParserPropertyPrivate)
 {
@@ -201,6 +209,7 @@ QmlCustomParserProperty &QmlCustomParserProperty::operator=(const QmlCustomParse
     d->name = other.d->name;
     d->isList = other.d->isList;
     d->values = other.d->values;
+    d->location = other.d->location;
     return *this;
 }
 
@@ -219,19 +228,49 @@ bool QmlCustomParserProperty::isList() const
     return d->isList;
 }
 
+QmlParser::Location QmlCustomParserProperty::location() const
+{
+    return d->location;
+}
+
 QList<QVariant> QmlCustomParserProperty::assignedValues() const
 {
     return d->values;
 }
 
-QByteArray QmlCustomParser::compile(const QList<QmlCustomParserProperty> &, bool *ok)
+void QmlCustomParser::clearErrors()
 {
-    Q_UNUSED(ok);
-    return QByteArray();
+    exceptions.clear();
 }
 
-void QmlCustomParser::setCustomData(QObject *, const QByteArray &)
+/*!
+    Reports an error in parsing \a prop, with the given \a description.
+
+    An error is generated referring to the position of \a node in the source file.
+*/
+void QmlCustomParser::error(const QmlCustomParserProperty& prop, const QString& description)
 {
+    QmlError error;
+    QString exceptionDescription;
+    error.setLine(prop.location().line);
+    error.setColumn(prop.location().column);
+    error.setDescription(description);
+    exceptions << error;
+}
+
+/*!
+    Reports an error in parsing \a node, with the given \a description.
+
+    An error is generated referring to the position of \a node in the source file.
+*/
+void QmlCustomParser::error(const QmlCustomParserNode& node, const QString& description)
+{
+    QmlError error;
+    QString exceptionDescription;
+    error.setLine(node.location().line);
+    error.setColumn(node.location().column);
+    error.setDescription(description);
+    exceptions << error;
 }
 
 QT_END_NAMESPACE

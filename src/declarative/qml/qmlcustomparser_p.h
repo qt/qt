@@ -57,6 +57,8 @@
 #include <QtCore/qxmlstream.h>
 #include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qmlmetatype.h>
+#include <QtDeclarative/qmlerror.h>
+#include <private/qmlparser_p.h>
 
 QT_BEGIN_HEADER
 
@@ -74,6 +76,7 @@ public:
     ~QmlCustomParserProperty();
 
     QByteArray name() const;
+    QmlParser::Location location() const;
 
     bool isList() const;
     // Will be one of QmlParser::Variant, QmlCustomParserProperty or 
@@ -96,6 +99,7 @@ public:
     ~QmlCustomParserNode();
 
     QByteArray name() const;
+    QmlParser::Location location() const;
 
     QList<QmlCustomParserProperty> properties() const;
 
@@ -109,8 +113,19 @@ class Q_DECLARATIVE_EXPORT QmlCustomParser
 public:
     virtual ~QmlCustomParser() {}
 
-    virtual QByteArray compile(const QList<QmlCustomParserProperty> &, bool *ok);
-    virtual void setCustomData(QObject *, const QByteArray &);
+    void clearErrors();
+
+    virtual QByteArray compile(const QList<QmlCustomParserProperty> &)=0;
+    virtual void setCustomData(QObject *, const QByteArray &)=0;
+
+    QList<QmlError> errors() const { return exceptions; }
+
+protected:
+    void error(const QmlCustomParserProperty&, const QString& description);
+    void error(const QmlCustomParserNode&, const QString& description);
+
+private:
+    QList<QmlError> exceptions;
 };
 #define QML_DEFINE_CUSTOM_TYPE(URI, VERSION_MAJ, VERSION_MIN_FROM, VERSION_MAJ_TO, NAME, TYPE, CUSTOMTYPE) \
     template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *,(VERSION_MAJ), (VERSION_MIN_FROM), (VERSION_MAJ_TO)>::instance(qmlRegisterCustomType<TYPE>(#URI, VERSION_MAJ, VERSION_MIN_FROM, VERSION_MAJ_TO, #NAME, #TYPE, new CUSTOMTYPE));

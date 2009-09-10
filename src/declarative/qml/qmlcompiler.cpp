@@ -761,12 +761,13 @@ bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
 
     // Compile custom parser parts
     if (isCustomParser && !customProps.isEmpty()) {
-        // ### Check for failure
-        bool ok = false;
         QmlCustomParser *cp = output->types.at(obj->type).type->customParser();
-        obj->custom = cp->compile(customProps, &ok);
-        if(!ok)
-            COMPILE_EXCEPTION(obj, "Failure compiling custom type");
+        cp->clearErrors();
+        obj->custom = cp->compile(customProps);
+        foreach (QmlError err, cp->errors()) {
+            err.setUrl(output->url);
+            exceptions << err;
+        }
     }
 
     return true;
