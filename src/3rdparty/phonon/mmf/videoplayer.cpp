@@ -86,14 +86,14 @@ void MMF::VideoPlayer::construct()
     // and respond to future showEvents from the videoOutput widget.
     
     TRAPD(err,
-          m_player = CVideoPlayerUtility::NewL
+          m_player.reset(CVideoPlayerUtility::NewL
                      (
                          *this,
                          priority, preference,
                          *m_wsSession, *m_screenDevice,
                          *m_window,
                          m_windowRect, m_clipRect
-                     )
+                     ))
          );
 
     if (KErrNone != err) {
@@ -107,8 +107,6 @@ MMF::VideoPlayer::~VideoPlayer()
 {
     TRACE_CONTEXT(VideoPlayer::~VideoPlayer, EVideoApi);
     TRACE_ENTRY_0();
-
-    delete m_player;
 
     TRACE_EXIT_0();
 }

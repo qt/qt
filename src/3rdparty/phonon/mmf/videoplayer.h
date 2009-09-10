@@ -86,7 +86,7 @@ private:
     void updateMmfOutput();
     
 private:
-    CVideoPlayerUtility*                m_player;
+    QScopedPointer<CVideoPlayerUtility> m_player;
     QScopedPointer<VideoOutput>         m_dummyVideoOutput;
 
     // Not owned
