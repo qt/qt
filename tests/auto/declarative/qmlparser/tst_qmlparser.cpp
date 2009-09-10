@@ -160,6 +160,8 @@ void tst_qmlparser::errors_data()
     QTest::newRow("finalOverride") << "finalOverride.qml" << "finalOverride.errors.txt" << false;
 
     QTest::newRow("importNamespaceConflict") << "importNamespaceConflict.qml" << "importNamespaceConflict.errors.txt" << false;
+
+    QTest::newRow("customParserIdNotAllowed") << "customParserIdNotAllowed.qml" << "customParserIdNotAllowed.errors.txt" << false;
 }
 
 void tst_qmlparser::errors()
@@ -312,7 +314,7 @@ void tst_qmlparser::assignTypeExtremes()
     QCOMPARE(object->intProperty(), -0x77359400);
 }
 
-// Tests that custom parser tyeps can be instantiated
+// Tests that custom parser types can be instantiated
 void tst_qmlparser::customParserTypes()
 {
     QmlComponent component(&engine, TEST_FILE("customParserTypes.qml"));

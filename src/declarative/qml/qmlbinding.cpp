@@ -126,10 +126,6 @@ void QmlBinding::update()
                     value = con(value.toString());
             }
 
-            if (d->property.propertyType() == QVariant::Url && 
-                (value.type() == QVariant::String || value.type() == QVariant::ByteArray) && !value.isNull()) 
-                value.setValue(context()->resolvedUrl(QUrl(value.toString())));
-
             if (d->property.propertyType() == QVariant::Vector3D &&
                 value.type() == QVariant::String) {
                 value = qVariantFromValue(QmlStringConverters::vector3DFromString(value.toString()));

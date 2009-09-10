@@ -55,20 +55,16 @@
 
 #include <QtCore/qglobal.h>
 #include "qmlcustomparser_p.h"
+#include "qmlparser_p.h"
 
 QT_BEGIN_NAMESPACE
-
-namespace QmlParser
-{
-    class Object;
-    class Property;
-};
 
 class QmlCustomParserNodePrivate
 {
 public:
     QByteArray name;
     QList<QmlCustomParserProperty> properties;
+    QmlParser::Location location;
 
     static QmlCustomParserNode fromObject(QmlParser::Object *);
     static QmlCustomParserProperty fromProperty(QmlParser::Property *);
@@ -82,6 +78,7 @@ public:
 
     QByteArray name;
     bool isList;
+    QmlParser::Location location;
     QList<QVariant> values;
 };
 
