@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -1376,6 +1376,9 @@ void tst_QGraphicsScene::removeItem()
 void tst_QGraphicsScene::focusItem()
 {
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     QVERIFY(!scene.focusItem());
     QGraphicsItem *item = scene.addText("Qt");
     QVERIFY(!scene.focusItem());
@@ -1434,6 +1437,9 @@ protected:
 void tst_QGraphicsScene::focusItemLostFocus()
 {
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     FocusItem *item = new FocusItem;
     item->setTextInteractionFlags(Qt::TextEditorInteraction);
     scene.addItem(item);
@@ -1458,6 +1464,9 @@ void tst_QGraphicsScene::clear()
 void tst_QGraphicsScene::setFocusItem()
 {
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     QGraphicsItem *item = scene.addText("Qt");
     QVERIFY(!scene.focusItem());
     QVERIFY(!scene.hasFocus());
@@ -1627,7 +1636,7 @@ void tst_QGraphicsScene::hoverEvents_siblings()
     QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseMove);
     mouseEvent.setScenePos(QPointF(-1000, -1000));
     QApplication::sendEvent(&scene, &mouseEvent);
-    
+
     QTest::qWait(50);
 
     for (int j = 1; j >= 0; --j) {
@@ -1885,6 +1894,9 @@ void tst_QGraphicsScene::mouseEventPropagation()
 
     // scene -> a -> b -> c -> d
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     scene.addItem(a);
 
     // Prepare some events
@@ -2069,6 +2081,9 @@ void tst_QGraphicsScene::mouseEventPropagation_focus()
 
     // scene -> a -> b -> c -> d
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     scene.addItem(a);
 
     // Prepare some events
@@ -2465,7 +2480,7 @@ void tst_QGraphicsScene::dragAndDrop_propagate()
         QCOMPARE(item1->eventList.at(0), QEvent::GraphicsSceneDragEnter);
         QCOMPARE(item1->eventList.at(1), QEvent::GraphicsSceneDragMove);
     }
-    
+
     {
         // Move into the intersection item1-item2
         QDragMoveEvent dragMove(view.mapFromScene(5, 5), Qt::CopyAction, &mimeData, Qt::LeftButton, 0);
@@ -2680,6 +2695,9 @@ void tst_QGraphicsScene::render()
 void tst_QGraphicsScene::contextMenuEvent()
 {
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     EventTester *item = new EventTester;
     scene.addItem(item);
     item->setFlag(QGraphicsItem::ItemIsFocusable);
@@ -2875,7 +2893,7 @@ public:
 
     QList<QEvent::Type> receivedSceneEvents;
     QList<QEvent::Type> receivedSceneEventFilters;
-    
+
 protected:
     bool sceneEventFilter(QGraphicsItem *watched, QEvent *event)
     {
@@ -2961,10 +2979,10 @@ void tst_QGraphicsScene::exposedRect()
     scene.addItem(item);
 
     QCOMPARE(item->exposed, QRectF());
- 
+
     QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
     QPainter painter(&image);
-    
+
     scene.render(&painter);
     QCOMPARE(item->exposed, item->boundingRect());
 
@@ -3269,7 +3287,7 @@ void tst_QGraphicsScene::tabFocus_sceneWithNestedFocusWidgets()
     EventSpy focusOutSpy_1_2(widget1_2, QEvent::FocusOut);
     EventSpy focusInSpy_2(widget2, QEvent::FocusIn);
     EventSpy focusOutSpy_2(widget2, QEvent::FocusOut);
-    
+
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
     QTest::qWait(125);
     QVERIFY(widget1->hasFocus());
@@ -3649,6 +3667,9 @@ void tst_QGraphicsScene::stickyFocus()
     QFETCH(bool, sticky);
 
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     QGraphicsTextItem *text = scene.addText("Hei");
     text->setTextInteractionFlags(Qt::TextEditorInteraction);
     text->setFocus();
@@ -3703,6 +3724,9 @@ void tst_QGraphicsScene::inputMethod()
     item->setFlags((QGraphicsItem::GraphicsItemFlags)flags);
 
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     scene.addItem(item);
     QInputMethodEvent event;
 

@@ -1,10 +1,17 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Copyright (C) 2003-2006 Ben van Klinken and the CLucene Team.
+** All rights reserved.
 **
-** This file is part of the QCLucene library and is distributable under
-** the terms of the LGPL license as specified in the license.txt file.
+** Portion Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+**
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this file.
+** Please review the following information to ensure the GNU Lesser General
+** Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ****************************************************************************/
 
@@ -38,15 +45,15 @@ QCLuceneQueryParserPrivate::~QCLuceneQueryParserPrivate()
 }
 
 
-QCLuceneQueryParser::QCLuceneQueryParser(const QString &field, 
+QCLuceneQueryParser::QCLuceneQueryParser(const QString &field,
                                          QCLuceneAnalyzer &analyzer)
     : d(new QCLuceneQueryParserPrivate())
     , field(field)
     , analyzer(analyzer)
 {
     TCHAR *fieldName = QStringToTChar(field);
-    
-    d->queryParser = new lucene::queryParser::QueryParser(fieldName, 
+
+    d->queryParser = new lucene::queryParser::QueryParser(fieldName,
         analyzer.d->analyzer);
 
     delete [] fieldName;
@@ -114,7 +121,7 @@ QCLuceneMultiFieldQueryParser::~QCLuceneMultiFieldQueryParser()
     // nothing todo
 }
 
-QCLuceneQuery* QCLuceneMultiFieldQueryParser::parse(const QString &query, 
+QCLuceneQuery* QCLuceneMultiFieldQueryParser::parse(const QString &query,
                                                     const QStringList &fieldList,
                                                     QCLuceneAnalyzer &analyzer)
 {
@@ -144,7 +151,7 @@ QCLuceneQuery* QCLuceneMultiFieldQueryParser::parse(const QString &query,
         if (q) {
             qint32 flag = flags.at(i);
             switch (flag) {
-                case QCLuceneMultiFieldQueryParser::REQUIRED_FIELD: {    
+                case QCLuceneMultiFieldQueryParser::REQUIRED_FIELD: {
                     retValue->add(q, true, true, false);
                 }   break;
 

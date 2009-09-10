@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtMultimedia module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -72,11 +72,16 @@ QAudioOutputPrivate::QAudioOutputPrivate(const QByteArray &device, const QAudioF
     deviceState = QAudio::StopState;
     audioSource = 0;
     pullMode = true;
+    finished = false;
     InitializeCriticalSection(&waveOutCriticalSection);
 }
 
 QAudioOutputPrivate::~QAudioOutputPrivate()
 {
+    EnterCriticalSection(&waveOutCriticalSection);
+    finished = true;
+    LeaveCriticalSection(&waveOutCriticalSection);
+
     close();
     DeleteCriticalSection(&waveOutCriticalSection);
 }
@@ -101,11 +106,15 @@ void CALLBACK QAudioOutputPrivate::waveOutProc( HWAVEOUT hWaveOut, UINT uMsg,
             return;
         case WOM_DONE:
             EnterCriticalSection(&waveOutCriticalSection);
+            if(qAudio->finished || qAudio->buffer_size == 0 || qAudio->period_size == 0) {
+                LeaveCriticalSection(&waveOutCriticalSection);
+                return;
+	    }
             qAudio->waveFreeBlockCount++;
             if(qAudio->waveFreeBlockCount >= qAudio->buffer_size/qAudio->period_size)
                 qAudio->waveFreeBlockCount = qAudio->buffer_size/qAudio->period_size;
-            LeaveCriticalSection(&waveOutCriticalSection);
             qAudio->feedback();
+            LeaveCriticalSection(&waveOutCriticalSection);
             break;
         default:
             return;
@@ -201,7 +210,11 @@ bool QAudioOutputPrivate::open()
         period_size = buffer_size/5;
     }
     waveBlocks = allocateBlocks(period_size, buffer_size/period_size);
+
+    EnterCriticalSection(&waveOutCriticalSection);
     waveFreeBlockCount = buffer_size/period_size;
+    LeaveCriticalSection(&waveOutCriticalSection);
+
     waveCurrentBlock = 0;
 
     if(audioBuffer == 0)
@@ -281,6 +294,7 @@ int QAudioOutputPrivate::bytesFree() const
 {
     int buf;
     buf = waveFreeBlockCount*period_size;
+
     return buf;
 }
 
@@ -326,8 +340,12 @@ qint64 QAudioOutputPrivate::write( const char *data, qint64 len )
     int remain;
     current = &waveBlocks[waveCurrentBlock];
     while(l > 0) {
-        if(waveFreeBlockCount==0)
+        EnterCriticalSection(&waveOutCriticalSection);
+        if(waveFreeBlockCount==0) {
+            LeaveCriticalSection(&waveOutCriticalSection);
             break;
+        }
+        LeaveCriticalSection(&waveOutCriticalSection);
 
         if(current->dwFlags & WHDR_PREPARED)
             waveOutUnprepareHeader(hWaveOut, current, sizeof(WAVEHDR));
@@ -348,8 +366,10 @@ qint64 QAudioOutputPrivate::write( const char *data, qint64 len )
         waveFreeBlockCount--;
         LeaveCriticalSection(&waveOutCriticalSection);
 #ifdef DEBUG_AUDIO
+        EnterCriticalSection(&waveOutCriticalSection);
         qDebug("write out l=%d, waveFreeBlockCount=%d",
                 current->dwBufferLength,waveFreeBlockCount);
+        LeaveCriticalSection(&waveOutCriticalSection);
 #endif
         totalTimeValue += current->dwBufferLength
             /(settings.channels()*(settings.sampleSize()/8))
@@ -422,11 +442,14 @@ bool QAudioOutputPrivate::deviceReady()
 	        waveOutRestart(hWaveOut);
         } else if(l == 0) {
             bytesAvailable = bytesFree();
+
+            EnterCriticalSection(&waveOutCriticalSection);
             if(waveFreeBlockCount == buffer_size/period_size) {
                 errorState = QAudio::UnderrunError;
                 deviceState = QAudio::IdleState;
                 emit stateChanged(deviceState);
             }
+            LeaveCriticalSection(&waveOutCriticalSection);
 
         } else if(i < 0) {
             bytesAvailable = bytesFree();

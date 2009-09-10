@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -59,6 +59,9 @@
 #include <QScrollBar>
 #include <QVBoxLayout>
 #include <QGraphicsEffect>
+
+#include "../../shared/util.h"
+
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -161,7 +164,6 @@ public slots:
     void init();
 
 private slots:
-    void explicitDeleteAutoFocusProxy();
     void construction();
     void constructionWithParent();
     void destruction();
@@ -281,9 +283,7 @@ private slots:
     void hitTestUntransformableItem();
     void hitTestGraphicsEffectItem();
     void focusProxy();
-    void autoDetectFocusProxy();
     void subFocus();
-    void reverseCreateAutoFocusProxy();
     void focusProxyDeletion();
     void negativeZStacksBehindParent();
     void setGraphicsEffect();
@@ -704,6 +704,9 @@ void tst_QGraphicsItem::flags()
     QCOMPARE(item->flags(), 0);
 
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     scene.addItem(item);
 
     {
@@ -888,6 +891,9 @@ void tst_QGraphicsItem::visible()
     QVERIFY(item->isVisible());
 
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     scene.addItem(item);
     QVERIFY(item->isVisible());
     QCOMPARE(scene.itemAt(0, 0), item);
@@ -1035,6 +1041,9 @@ void tst_QGraphicsItem::enabled()
     item->setEnabled(false);
     item->setFlag(QGraphicsItem::ItemIsFocusable);
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     scene.addItem(item);
     item->setFocus();
     QVERIFY(!item->hasFocus());
@@ -1714,6 +1723,9 @@ void tst_QGraphicsItem::hasFocus()
     QVERIFY(!line->hasFocus());
 
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     scene.addItem(line);
 
     line->setFocus();
@@ -1723,6 +1735,8 @@ void tst_QGraphicsItem::hasFocus()
     QVERIFY(line->hasFocus());
 
     QGraphicsScene scene2;
+    QApplication::sendEvent(&scene2, &activate);
+
     scene2.addItem(line);
     QVERIFY(!line->hasFocus());
 
@@ -1933,7 +1947,7 @@ void tst_QGraphicsItem::zValue()
     QApplication::sendPostedEvents(); //glib workaround
 #endif
 
-    QVERIFY(!_paintedItems.isEmpty());
+    QTRY_VERIFY(!_paintedItems.isEmpty());
     QVERIFY((_paintedItems.size() % 4) == 0);
     for (int i = 0; i < 3; ++i)
         QVERIFY(_paintedItems.at(i)->zValue() < _paintedItems.at(i + 1)->zValue());
@@ -2917,6 +2931,7 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     qApp->processEvents();
     qApp->processEvents();
 
+    QTRY_COMPARE(tester->repaints, 1);
 
     // Send a hover enter event
     QGraphicsSceneHoverEvent hoverEnterEvent(QEvent::GraphicsSceneHoverEnter);
@@ -3492,6 +3507,9 @@ void tst_QGraphicsItem::handlesChildEvents2()
 void tst_QGraphicsItem::handlesChildEvents3()
 {
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     ChildEventTester *group2 = new ChildEventTester(QRectF(), 0);
     ChildEventTester *group1 = new ChildEventTester(QRectF(), group2);
     ChildEventTester *leaf = new ChildEventTester(QRectF(), group1);
@@ -4465,8 +4483,13 @@ protected:
 void tst_QGraphicsItem::sceneEventFilter()
 {
     QGraphicsScene scene;
+
     QGraphicsView view(&scene);
     view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+   QTest::qWait(250);
 
     QGraphicsTextItem *text1 = scene.addText(QLatin1String("Text1"));
     QGraphicsTextItem *text2 = scene.addText(QLatin1String("Text2"));
@@ -4583,8 +4606,10 @@ void tst_QGraphicsItem::paint()
     QGraphicsView view(&scene);
 
     view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
     QTest::qWait(250);
-
 #ifdef Q_OS_WIN32
     //we try to switch the desktop: if it fails, we skip the test
     if (::SwitchDesktop( ::GetThreadDesktop( ::GetCurrentThreadId() ) ) == 0) {
@@ -4592,8 +4617,7 @@ void tst_QGraphicsItem::paint()
     }
 #endif
 
-    QVERIFY(paintTester.widget == view.viewport());
-
+    QCOMPARE(paintTester.widget, view.viewport());
 
     view.hide();
 
@@ -5598,6 +5622,9 @@ void tst_QGraphicsItem::task240400_clickOnTextItem()
     QFETCH(int, textFlags);
 
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     QGraphicsTextItem *item = scene.addText("Hello");
     item->setFlags(QGraphicsItem::GraphicsItemFlags(flags));
     item->setTextInteractionFlags(Qt::TextInteractionFlags(textFlags));
@@ -6433,6 +6460,7 @@ void tst_QGraphicsItem::tabChangesFocus()
 
     QDial *dial1 = new QDial;
     QGraphicsView *view = new QGraphicsView(&scene);
+
     QDial *dial2 = new QDial;
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(dial1);
@@ -6445,6 +6473,8 @@ void tst_QGraphicsItem::tabChangesFocus()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&widget);
 #endif
+    QTest::qWait(250);
+    QVERIFY(scene.isActive());
 
     dial1->setFocus();
     QTest::qWait(125);
@@ -7471,6 +7501,9 @@ void tst_QGraphicsItem::hitTestGraphicsEffectItem()
 void tst_QGraphicsItem::focusProxy()
 {
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     QGraphicsItem *item = scene.addRect(0, 0, 10, 10);
     item->setFlag(QGraphicsItem::ItemIsFocusable);
     QVERIFY(!item->focusProxy());
@@ -7547,31 +7580,6 @@ void tst_QGraphicsItem::focusProxy()
     QCOMPARE(item3->focusProxy(), (QGraphicsItem *)0);
 }
 
-void tst_QGraphicsItem::autoDetectFocusProxy()
-{
-    QGraphicsScene scene;
-    QGraphicsItem *item = scene.addRect(0, 0, 10, 10);
-    item->setFlag(QGraphicsItem::ItemIsFocusable);
-
-    QGraphicsItem *item2 = scene.addRect(0, 0, 10, 10);
-    item2->setParentItem(item);
-    item2->setFlag(QGraphicsItem::ItemIsFocusable);
-
-    QGraphicsItem *item3 = scene.addRect(0, 0, 10, 10);
-    item3->setParentItem(item2);
-    item3->setFlag(QGraphicsItem::ItemIsFocusable);
-
-    item->setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
-    QCOMPARE(item->focusProxy(), (QGraphicsItem *)0);
-
-    item2->setFocus();
-    QCOMPARE(item->focusProxy(), item2);
-    item3->setFocus();
-    QCOMPARE(item->focusProxy(), item3);
-    item3->clearFocus();
-    QCOMPARE(item->focusProxy(), item3);
-}
-
 void tst_QGraphicsItem::subFocus()
 {
     // Construct a text item that's not part of a scene (yet)
@@ -7594,6 +7602,9 @@ void tst_QGraphicsItem::subFocus()
     // Add both items to a scene and check that it's text that
     // got input focus.
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     scene.addItem(text);
     scene.addItem(text2);
     QVERIFY(text->hasFocus());
@@ -7602,18 +7613,16 @@ void tst_QGraphicsItem::subFocus()
     text2->setData(0, "text2");
 
     // Remove text2 and set subfocus on it. Then readd. Reparent it onto the
-    // other item and see that although it becomes text's focus
-    // item, it does not immediately gain input focus.
+    // other item and see that it gains input focus.
     scene.removeItem(text2);
     text2->setFocus();
     scene.addItem(text2);
     QCOMPARE(text2->focusItem(), (QGraphicsItem *)text2);
     text2->setParentItem(text);
-    qDebug() << text->data(0).toString() << (void*)(QGraphicsItem *)text;
-    qDebug() << text2->data(0).toString() << (void*)(QGraphicsItem *)text2;
     QCOMPARE(text->focusItem(), (QGraphicsItem *)text2);
-    QVERIFY(text->hasFocus());
-    QVERIFY(!text2->hasFocus());
+    QCOMPARE(text2->focusItem(), (QGraphicsItem *)text2);
+    QVERIFY(!text->hasFocus());
+    QVERIFY(text2->hasFocus());
 
     // Remove both items from the scene, restore subfocus and
     // readd them. Now the subfocus should kick in and give
@@ -7629,49 +7638,33 @@ void tst_QGraphicsItem::subFocus()
     // Hiding and showing text should pass focus to text2.
     QCOMPARE(text->focusItem(), (QGraphicsItem *)text2);
     QVERIFY(text2->hasFocus());
-}
 
-void tst_QGraphicsItem::reverseCreateAutoFocusProxy()
-{
-    QGraphicsTextItem *text = new QGraphicsTextItem;
-    text->setTextInteractionFlags(Qt::TextEditorInteraction);
-    text->setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
+    // Subfocus should repropagate to root when reparenting.
+    QGraphicsRectItem *rect = new QGraphicsRectItem;
+    QGraphicsRectItem *rect2 = new QGraphicsRectItem(rect);
+    QGraphicsRectItem *rect3 = new QGraphicsRectItem(rect2);
+    rect3->setFlag(QGraphicsItem::ItemIsFocusable);
 
-    QGraphicsTextItem *text2 = new QGraphicsTextItem;
-    text2->setTextInteractionFlags(Qt::TextEditorInteraction);
-    text2->setFocus();
-    QVERIFY(!text2->hasFocus());
-    QCOMPARE(text->focusProxy(), (QGraphicsItem *)0);
-    text2->setParentItem(text);
-    QCOMPARE(text->focusProxy(), (QGraphicsItem *)text2);
-    QCOMPARE(text->focusItem(), (QGraphicsItem *)text2);
+    text->setData(0, "text");
+    text2->setData(0, "text2");
+    rect->setData(0, "rect");
+    rect2->setData(0, "rect2");
+    rect3->setData(0, "rect3");
 
-    QGraphicsScene scene;
-    scene.addItem(text);
-    QVERIFY(text2->hasFocus());
-}
-
-void tst_QGraphicsItem::explicitDeleteAutoFocusProxy()
-{
-    QGraphicsTextItem *text = new QGraphicsTextItem;
-    text->setTextInteractionFlags(Qt::TextEditorInteraction);
-    text->setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
-
-    QGraphicsTextItem *text2 = new QGraphicsTextItem;
-    text2->setTextInteractionFlags(Qt::TextEditorInteraction);
-    text2->setFocus();
-    QVERIFY(!text2->hasFocus());
-    QCOMPARE(text->focusProxy(), (QGraphicsItem *)0);
-    text2->setParentItem(text);
-    QCOMPARE(text->focusProxy(), (QGraphicsItem *)text2);
-    QCOMPARE(text->focusItem(), (QGraphicsItem *)text2);
-
-    QGraphicsScene scene;
-    scene.addItem(text);
-    QVERIFY(text2->hasFocus());
-
-    delete text2;
-    QCOMPARE(text->focusProxy(), (QGraphicsItem *)0);
+    rect3->setFocus();
+    QVERIFY(!rect3->hasFocus());
+    QCOMPARE(rect->focusItem(), (QGraphicsItem *)rect3);
+    QCOMPARE(rect2->focusItem(), (QGraphicsItem *)rect3);
+    QCOMPARE(rect3->focusItem(), (QGraphicsItem *)rect3);
+    rect->setParentItem(text2);
+    QCOMPARE(text->focusItem(), (QGraphicsItem *)rect3);
+    QCOMPARE(text2->focusItem(), (QGraphicsItem *)rect3);
+    QCOMPARE(rect->focusItem(), (QGraphicsItem *)rect3);
+    QCOMPARE(rect2->focusItem(), (QGraphicsItem *)rect3);
+    QCOMPARE(rect3->focusItem(), (QGraphicsItem *)rect3);
+    QVERIFY(!rect->hasFocus());
+    QVERIFY(!rect2->hasFocus());
+    QVERIFY(rect3->hasFocus());
 }
 
 void tst_QGraphicsItem::focusProxyDeletion()
@@ -7823,7 +7816,7 @@ void tst_QGraphicsItem::panel()
 
     QEvent activate(QEvent::WindowActivate);
     QEvent deactivate(QEvent::WindowDeactivate);
-    
+
     QApplication::sendEvent(&scene, &activate);
 
     // No previous activation, so the scene is active.

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -1077,6 +1077,7 @@ protected:
     }
 
     void cleanCache() {
+        QGLShareContextScope scope(buffer_ctx);
         QGLGradientColorTableHash::const_iterator it = cache.constBegin();
         for (; it != cache.constEnd(); ++it) {
             const CacheInfo &cache_info = it.value();
@@ -2115,7 +2116,7 @@ void QOpenGLPaintEngine::updatePen(const QPen &pen)
     Qt::PenStyle pen_style = pen.style();
     d->pen_brush_style = pen.brush().style();
     d->cpen = pen;
-    d->has_pen = (pen_style != Qt::NoPen);
+    d->has_pen = (pen_style != Qt::NoPen) && (d->pen_brush_style != Qt::NoBrush);
     d->updateUseEmulation();
 
     if (pen.isCosmetic()) {
@@ -4299,8 +4300,10 @@ void QOpenGLPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QR
     else {
         GLenum target = qt_gl_preferredTextureTarget();
         d->flushDrawQueue();
-        d->device->context()->bindTexture(pm, target);
-        drawTextureRect(pm.width(), pm.height(), r, sr, target);
+        QGLTexture *tex =
+            d->device->context()->d_func()->bindTexture(pm, target, GL_RGBA,
+                                                        QGLContext::InternalBindOption);
+        drawTextureRect(pm.width(), pm.height(), r, sr, target, tex);
     }
 }
 
@@ -4332,10 +4335,13 @@ void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
     } else {
         d->flushDrawQueue();
 
+        QGLTexture *tex;
         if (scaled.isNull())
-            d->device->context()->bindTexture(pm);
+            tex = d->device->context()->d_func()->bindTexture(pm, GL_TEXTURE_2D, GL_RGBA,
+                                                              QGLContext::InternalBindOption);
         else
-            d->device->context()->bindTexture(scaled);
+            tex = d->device->context()->d_func()->bindTexture(scaled, GL_TEXTURE_2D, GL_RGBA,
+                                                              QGLContext::InternalBindOption);
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, d->use_smooth_pixmap_transform);
 
 #ifndef QT_OPENGL_ES
@@ -4347,6 +4353,15 @@ void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
 
         GLdouble tc_w = r.width()/pm.width();
         GLdouble tc_h = r.height()/pm.height();
+
+        // Rotate the texture so that it is aligned correctly and the
+        // wrapping is done correctly
+        if (tex->options & QGLContext::InvertedYBindOption) {
+            glMatrixMode(GL_TEXTURE);
+            glPushMatrix();
+            glRotatef(180.0, 0.0, 1.0, 0.0);
+            glRotatef(180.0, 0.0, 0.0, 1.0);
+        }
 
         q_vertexType vertexArray[4*2];
         q_vertexType texCoordArray[4*2];
@@ -4366,6 +4381,8 @@ void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
         glDisableClientState(GL_VERTEX_ARRAY);
+        if (tex->options & QGLContext::InvertedYBindOption)
+            glPopMatrix();
 
         glDisable(GL_TEXTURE_2D);
 #ifndef QT_OPENGL_ES
@@ -4401,13 +4418,15 @@ void QOpenGLPaintEngine::drawImage(const QRectF &r, const QImage &image, const Q
     else {
         GLenum target = qt_gl_preferredTextureTarget();
         d->flushDrawQueue();
-        d->device->context()->bindTexture(image, target);
-        drawTextureRect(image.width(), image.height(), r, sr, target);
+        QGLTexture *tex =
+            d->device->context()->d_func()->bindTexture(image, target, GL_RGBA,
+                                                        QGLContext::InternalBindOption);
+        drawTextureRect(image.width(), image.height(), r, sr, target, tex);
     }
 }
 
 void QOpenGLPaintEngine::drawTextureRect(int tx_width, int tx_height, const QRectF &r,
-                                         const QRectF &sr, GLenum target)
+                                         const QRectF &sr, GLenum target, QGLTexture *tex)
 {
     Q_D(QOpenGLPaintEngine);
 #ifndef QT_OPENGL_ES
@@ -4422,8 +4441,13 @@ void QOpenGLPaintEngine::drawTextureRect(int tx_width, int tx_height, const QRec
     if (target == GL_TEXTURE_2D) {
         x1 = sr.x() / tx_width;
         x2 = x1 + sr.width() / tx_width;
-        y1 = 1 - (sr.bottom() / tx_height);
-        y2 = 1 - (sr.y() / tx_height);
+        if (tex->options & QGLContext::InvertedYBindOption) {
+            y1 = 1 - (sr.bottom() / tx_height);
+            y2 = 1 - (sr.y() / tx_height);
+        } else {
+            y1 = sr.bottom() / tx_height;
+            y2 = sr.y() / tx_height;
+        }
     } else {
         x1 = sr.x();
         x2 = sr.right();
@@ -5178,9 +5202,12 @@ void QOpenGLPaintEnginePrivate::composite(GLuint primitive, const q_vertexType *
         glActiveTexture(GL_TEXTURE0 + brush_texture_location);
 
         if (current_style == Qt::TexturePattern)
-            device->context()->bindTexture(cbrush.textureImage());
+            device->context()->d_func()->bindTexture(cbrush.textureImage(), GL_TEXTURE_2D, GL_RGBA,
+                                                     QGLContext::InternalBindOption);
         else
-            device->context()->bindTexture(qt_imageForBrush(current_style, true));
+            device->context()->d_func()->bindTexture(qt_imageForBrush(current_style, true),
+                                                     GL_TEXTURE_2D, GL_RGBA,
+                                                     QGLContext::InternalBindOption);
 
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, use_smooth_pixmap_transform);
     }
@@ -5587,8 +5614,11 @@ QPixmapFilter *QOpenGLPaintEngine::createPixmapFilter(int type) const
     if (QGLContext::currentContext())
         return QGLContext::currentContext()->d_func()->createPixmapFilter(type);
     else
-#endif
         return 0;
+#else
+    Q_UNUSED(type);
+    return 0;
+#endif
 }
 
 

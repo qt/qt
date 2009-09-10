@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -1594,11 +1594,13 @@ glyph_metrics_t QTextEngine::boundingBox(int from,  int len) const
 
     for (int i = 0; i < layoutData->items.size(); i++) {
         const QScriptItem *si = layoutData->items.constData() + i;
+        QFontEngine *fe = fontEngine(*si);
+
         int pos = si->position;
         int ilen = length(i);
         if (pos > from + len)
             break;
-        if (pos + len > from) {
+        if (pos + ilen > from) {
             if (!si->num_glyphs)
                 shape(i);
 
@@ -1631,7 +1633,6 @@ glyph_metrics_t QTextEngine::boundingBox(int from,  int len) const
                     charEnd++;
                 glyphEnd = (charEnd == ilen) ? si->num_glyphs : logClusters[charEnd];
                 if (glyphStart <= glyphEnd ) {
-                    QFontEngine *fe = fontEngine(*si);
                     glyph_metrics_t m = fe->boundingBox(glyphs.mid(glyphStart, glyphEnd - glyphStart));
                     gm.x = qMin(gm.x, m.x + gm.xoff);
                     gm.y = qMin(gm.y, m.y + gm.yoff);
@@ -1641,6 +1642,10 @@ glyph_metrics_t QTextEngine::boundingBox(int from,  int len) const
                     gm.yoff += m.yoff;
                 }
             }
+
+            glyph_t glyph = glyphs.glyphs[logClusters[pos + ilen - 1]];
+            glyph_metrics_t gi = fe->boundingBox(glyph);
+            gm.width -= qRound(gi.xoff - gi.x - gi.width);
         }
     }
     return gm;

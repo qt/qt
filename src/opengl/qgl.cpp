@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -1360,6 +1360,9 @@ bool operator!=(const QGLFormat& a, const QGLFormat& b)
  *****************************************************************************/
 QGLContextPrivate::~QGLContextPrivate()
 {
+    if (!reference->deref())
+        delete reference;
+
     if (!group->m_refs.deref()) {
         Q_ASSERT(group->context() == q_ptr);
         delete group;
@@ -1907,8 +1910,8 @@ static void convertToGLFormatHelper(QImage &dst, const QImage &img, GLenum textu
         int sbpl = img.bytesPerLine();
         int dbpl = dst.bytesPerLine();
 
-        int ix = 0x00010000 / sx;
-        int iy = 0x00010000 / sy;
+        int ix = int(0x00010000 / sx);
+        int iy = int(0x00010000 / sy);
 
         quint32 basex = int(0.5 * ix);
         quint32 srcy = int(0.5 * iy);
@@ -2214,6 +2217,9 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
             return data->texture();
         }
     }
+#else
+    Q_UNUSED(pd);
+    Q_UNUSED(q);
 #endif
 
     const qint64 key = pixmap.cacheKey();
@@ -5005,6 +5011,32 @@ void QGLContextResource::removeOne(const QGLContext *key)
             oldContext->makeCurrent();
     }
     m_resources.erase(it);
+}
+
+QGLContextReference::QGLContextReference(const QGLContext *ctx)
+    : m_ref(1), m_ctx(ctx)
+{
+    connect(QGLSignalProxy::instance(),
+            SIGNAL(aboutToDestroyContext(const QGLContext *)),
+            this, SLOT(aboutToDestroyContext(const QGLContext *)));
+}
+
+void QGLContextReference::aboutToDestroyContext(const QGLContext *ctx)
+{
+    // Bail out if our context is not being destroyed.
+    if (ctx != m_ctx || !m_ctx)
+        return;
+
+    // Find some other context that this one is shared with to take over.
+    QList<const QGLContext *> shares = qgl_share_reg()->shares(m_ctx);
+    shares.removeAll(m_ctx);
+    if (!shares.isEmpty()) {
+        m_ctx = shares[0];
+        return;
+    }
+
+    // No more contexts sharing with this one, so the reference is now invalid.
+    m_ctx = 0;
 }
 
 QT_END_NAMESPACE

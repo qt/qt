@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -44,7 +44,14 @@
 #include <private/qglpixelbuffer_p.h>
 #include <private/qglframebufferobject_p.h>
 #include <private/qwindowsurface_gl_p.h>
+
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
 #include <private/qpixmapdata_gl_p.h>
+#endif
+
+#if defined(QT_OPENGL_ES_1_CL)
+#include "qgl_cl_p.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -67,6 +74,12 @@ void QGLPaintDevice::beginPaint()
 
     // Record the currently bound FBO so we can restore it again
     // in endPaint() and bind this device's FBO
+    //
+    // Note: m_thisFBO could be zero if the paint device is not
+    // backed by an FBO (e.g. window back buffer).  But there could
+    // be a previous FBO bound to the context which we need to
+    // explicitly unbind.  Otherwise the painting will go into
+    // the previous FBO instead of to the window.
     m_previousFBO = ctx->d_func()->current_fbo;
     if (m_previousFBO != m_thisFBO) {
         ctx->d_ptr->current_fbo = m_thisFBO;
@@ -171,9 +184,13 @@ QGLPaintDevice* QGLPaintDevice::getDevice(QPaintDevice* pd)
             glpd = &(static_cast<QGLFramebufferObject*>(pd)->d_func()->glDevice);
             break;
         case QInternal::Pixmap: {
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
             QPixmapData* pmd = static_cast<QPixmap*>(pd)->pixmapData();
             Q_ASSERT(pmd->classId() == QPixmapData::OpenGLClass);
             glpd = static_cast<QGLPixmapData*>(pmd)->glDevice();
+#else
+            qWarning("Pixmap render targets not supported on OpenGL ES 1.x");
+#endif
             break;
         }
         default:
