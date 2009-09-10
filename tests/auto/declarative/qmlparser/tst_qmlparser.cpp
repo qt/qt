@@ -48,6 +48,7 @@ private slots:
     void customVariantTypes();
     void valueTypes();
     void cppnamespace();
+    void aliasProperties();
 
     void importsBuiltin_data();
     void importsBuiltin();
@@ -517,6 +518,76 @@ void tst_qmlparser::cppnamespace()
     QObject *object = component.create();
     QVERIFY(object != 0);
     delete object;
+}
+
+void tst_qmlparser::aliasProperties()
+{
+    // Simple "int" alias
+    {
+        QmlComponent component(&engine, TEST_FILE("alias.1.qml"));
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        // Read through alias
+        QCOMPARE(object->property("valueAlias").toInt(), 10);
+        object->setProperty("value", QVariant(13));
+        QCOMPARE(object->property("valueAlias").toInt(), 13);
+
+        // Write throught alias
+        object->setProperty("valueAlias", QVariant(19));
+        QCOMPARE(object->property("valueAlias").toInt(), 19);
+        QCOMPARE(object->property("value").toInt(), 19);
+
+        delete object;
+    }
+
+    // Complex object alias
+    {
+        QmlComponent component(&engine, TEST_FILE("alias.2.qml"));
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        // Read through alias
+        MyQmlObject *v = 
+            qvariant_cast<MyQmlObject *>(object->property("aliasObject"));
+        QVERIFY(v != 0);
+        QCOMPARE(v->value(), 10);
+
+        // Write through alias
+        MyQmlObject *v2 = new MyQmlObject();
+        v2->setParent(object);
+        object->setProperty("aliasObject", qVariantFromValue(v2));
+        MyQmlObject *v3 = 
+            qvariant_cast<MyQmlObject *>(object->property("aliasObject"));
+        QVERIFY(v3 != 0);
+        QCOMPARE(v3, v2);
+
+        delete object;
+    }
+
+    // Nested aliases
+    {
+        QmlComponent component(&engine, TEST_FILE("alias.3.qml"));
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("value").toInt(), 1892);
+        QCOMPARE(object->property("value2").toInt(), 1892);
+
+        object->setProperty("value", QVariant(1313));
+        QCOMPARE(object->property("value").toInt(), 1313);
+        QCOMPARE(object->property("value2").toInt(), 1313);
+
+        object->setProperty("value2", QVariant(8080));
+        QCOMPARE(object->property("value").toInt(), 8080);
+        QCOMPARE(object->property("value2").toInt(), 8080);
+
+        delete object;
+    }
+
 }
 
 class TestType : public QObject {
