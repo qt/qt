@@ -4790,7 +4790,24 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, const QTextItemInt &ti,
                 }
             }
 
-            QImage glyph_im(ti.fontEngine->alphaMapForGlyph(glyphs[i]).convertToFormat(QImage::Format_Indexed8));
+            QImage glyph_im(ti.fontEngine->alphaMapForGlyph(glyphs[i]));
+
+            // The QPF implementation of alphaMapForGlyph() uses the color
+            // RGBA = (value, value, value, 255) instead of the color
+            // RGBA = (0, 0, 0, value) that the other font engines use.
+            // We modify the image colors to rectify this situation.
+            QFontEngine::Type type = ti.fontEngine->type();
+            if (type == QFontEngine::QPF1 || type == QFontEngine::QPF2) {
+                if (glyph_im.format() == QImage::Format_Indexed8) {
+                    for (int i = 0; i < 256; ++i)
+                        glyph_im.setColor(i, qRgba(0, 0, 0, i));
+                } else if (glyph_im.format() == QImage::Format_Mono) {
+                    glyph_im.setColor(0, qRgba(0, 0, 0, 0));
+                    glyph_im.setColor(1, qRgba(0, 0, 0, 255));
+                }
+            }
+
+            glyph_im = glyph_im.convertToFormat(QImage::Format_Indexed8);
             glyph_width = glyph_im.width();
             Q_ASSERT(glyph_width >= 0);
             // pad the glyph width to an even number
