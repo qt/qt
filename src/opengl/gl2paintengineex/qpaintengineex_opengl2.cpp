@@ -1328,7 +1328,9 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->mode = BrushDrawingMode;
 
 #if !defined(QT_OPENGL_ES_2)
-    qt_resolve_version_2_0_functions(d->ctx);
+    d->ctx->makeCurrent();
+    bool success = qt_resolve_version_2_0_functions(d->ctx);
+    Q_ASSERT(success);
 #endif
 
     d->shaderManager = new QGLEngineShaderManager(d->ctx);
