@@ -672,6 +672,7 @@ int main(int argc, char **argv)
     }
     delete activeWidget;
 #endif
+    delete interactive_widget;
     return 0;
 }
 
