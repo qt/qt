@@ -157,12 +157,8 @@ void QGLPixmapGLPaintDevice::beginPaint()
         // uploaded from an image or rendered into before), we need to
         // copy it from the texture to the render FBO.
 
-        // Pass false to tell bind to _not_ copy the FBO into the texture!
-        GLuint texId = data->bind(false);
-
-        QGL2PaintEngineEx* pe = static_cast<QGL2PaintEngineEx*>(data->paintEngine());
-        QRect rect(0, 0, data->width(), data->height());
-        pe->drawTexture(QRectF(rect), texId, rect.size(), QRectF(rect));
+        // Pass false to bind so it doesn't copy the FBO into the texture!
+        context()->drawTexture(QPointF(0.0, 0.0), data->bind(false));
     }
 }
 

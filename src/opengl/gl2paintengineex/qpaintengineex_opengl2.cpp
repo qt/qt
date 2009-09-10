@@ -1318,23 +1318,13 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
         return false;
 
     d->ctx = d->device->context();
-
     d->ctx->d_ptr->active_engine = this;
-    d->last_created_state = 0;
 
-    QSize sz = d->device->size();
+    const QSize sz = d->device->size();
     d->width = sz.width();
     d->height = sz.height();
+    d->last_created_state = 0;
     d->mode = BrushDrawingMode;
-
-#if !defined(QT_OPENGL_ES_2)
-    d->ctx->makeCurrent();
-    bool success = qt_resolve_version_2_0_functions(d->ctx);
-    Q_ASSERT(success);
-#endif
-
-    d->shaderManager = new QGLEngineShaderManager(d->ctx);
-
     d->brushTextureDirty = true;
     d->brushUniformsDirty = true;
     d->matrixDirty = true;
@@ -1346,7 +1336,17 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->needsSync = true;
     d->use_system_clip = !systemClip().isEmpty();
 
+    // Calling begin paint should make the correct context current. So, any
+    // code which calls into GL or otherwise needs a current context *must*
+    // go after beginPaint:
     d->device->beginPaint();
+
+#if !defined(QT_OPENGL_ES_2)
+    bool success = qt_resolve_version_2_0_functions(d->ctx);
+    Q_ASSERT(success);
+#endif
+
+    d->shaderManager = new QGLEngineShaderManager(d->ctx);
 
     if (!d->inRenderText) {
         glDisable(GL_DEPTH_TEST);
