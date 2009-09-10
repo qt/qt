@@ -2036,14 +2036,14 @@ QGLTexture *QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 
 // #define QGL_BIND_TEXTURE_DEBUG
 
-QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint format,
+QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint internalFormat,
                                            const qint64 key, QGLContext::BindOptions options)
 {
     Q_Q(QGLContext);
 
 #ifdef QGL_BIND_TEXTURE_DEBUG
-    printf("QGLContextPrivate::bindTexture(), imageSize=(%d,%d), format=%x, options=%x\n",
-           image.width(), image.height(), format, int(options));
+    printf("QGLContextPrivate::bindTexture(), imageSize=(%d,%d), internalFormat =0x%x, options=%x\n",
+           image.width(), image.height(), internalFormat, int(options));
 #endif
 
     // Scale the pixmap if needed. GL textures needs to have the
@@ -2092,13 +2092,13 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 
     QImage::Format target_format = img.format();
     bool premul = options & QGLContext::PremultipliedAlphaBindOption;
-    GLenum texture_format;
+    GLenum externalFormat;
     GLuint pixel_type;
     if (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_1_2) {
-        texture_format = GL_BGRA;
+        externalFormat = GL_BGRA;
         pixel_type = GL_UNSIGNED_INT_8_8_8_8_REV;
     } else {
-        texture_format = GL_RGBA;
+        externalFormat = GL_RGBA;
         pixel_type = GL_UNSIGNED_BYTE;
     }
 
@@ -2121,12 +2121,10 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
         break;
     case QImage::Format_RGB16:
         pixel_type = GL_UNSIGNED_SHORT_5_6_5;
-        texture_format = GL_RGB;
-        format = GL_RGB;
+        externalFormat = GL_RGB;
+        internalFormat = GL_RGB;
         break;
     case QImage::Format_RGB32:
-        if (format == GL_RGBA)
-            format = GL_RGB;
         break;
     default:
         if (img.hasAlphaChannel()) {
@@ -2145,6 +2143,9 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     }
 
     if (options & QGLContext::InvertedYBindOption) {
+#ifdef QGL_BIND_TEXTURE_DEBUG
+            printf(" - flipping bits over y\n");
+#endif
         int ipl = img.bytesPerLine() / 4;
         int h = img.height();
         for (int y=0; y<h/2; ++y) {
@@ -2155,7 +2156,10 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
         }
     }
 
-    if (texture_format == GL_RGBA) {
+    if (externalFormat == GL_RGBA) {
+#ifdef QGL_BIND_TEXTURE_DEBUG
+            printf(" - doing byte swapping\n");
+#endif
         // The only case where we end up with a depth different from
         // 32 in the switch above is for the RGB16 case, where we set
         // the format to GL_RGB
@@ -2178,10 +2182,20 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
             }
         }
     }
+#ifdef QGL_BIND_TEXTURE_DEBUG
+    printf(" - uploading, image.format=%d, externalFormat=0x%d, internalFormat=0x%d\n",
+           img.format(), externalFormat, internalFormat);
+#endif
 
     const QImage &constRef = img; // to avoid detach in bits()...
-    glTexImage2D(target, 0, format, img.width(), img.height(), 0, texture_format,
+    glTexImage2D(target, 0, internalFormat, img.width(), img.height(), 0, externalFormat,
                  pixel_type, constRef.bits());
+#ifndef QT_NO_DEBUG
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+        qWarning(" - texture upload failed, error code 0x%x\n", error);
+    }
+#endif
 
     // this assumes the size of a texture is always smaller than the max cache size
     int cost = img.width()*img.height()*4/1024;
