@@ -27,7 +27,7 @@ Item {
                     anchors.centerIn: parent
                     maximumLength:21
                     font.bold: true
-                    color: "#151515"; highlightColor: "green"
+                    color: "#151515"; selectionColor: "green"
                     Keys.forwardTo: [(tabber), (nameIn)]
                     Item { 
                         id: tabber
@@ -56,9 +56,9 @@ Item {
                     height: parent.height - 12
                     anchors.centerIn: parent
                     maximumLength:21
-                    echoMode: 2
+                    echoMode: TextInput.Password
                     font.bold: true
-                    color: "#151515"; highlightColor: "green"
+                    color: "#151515"; selectionColor: "green"
                 }
             }
         }

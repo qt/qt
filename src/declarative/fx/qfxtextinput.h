@@ -59,11 +59,12 @@ class Q_DECLARATIVE_EXPORT QFxTextInput : public QFxPaintedItem
 {
     Q_OBJECT
     Q_ENUMS(HAlignment)
+    Q_ENUMS(EchoMode)
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor)
-    Q_PROPERTY(QColor highlightColor READ highlightColor WRITE setHighlightColor) //### selectionColor
-    Q_PROPERTY(QColor highlightedTextColor READ highlightedTextColor WRITE setHighlightedTextColor) //### selectedTextColor
+    Q_PROPERTY(QColor selectionColor READ selectionColor WRITE setSelectionColor)
+    Q_PROPERTY(QColor selectedTextColor READ selectedTextColor WRITE setSelectedTextColor)
     Q_PROPERTY(QFont font READ font WRITE setFont)
     Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign)
 
@@ -79,12 +80,19 @@ class Q_DECLARATIVE_EXPORT QFxTextInput : public QFxPaintedItem
     Q_PROPERTY(QValidator* validator READ validator WRITE setValidator)
     Q_PROPERTY(QString inputMask READ inputMask WRITE setInputMask)
     Q_PROPERTY(bool acceptableInput READ hasAcceptableInput NOTIFY acceptableInputChanged)
-    Q_PROPERTY(uint echoMode READ echoMode WRITE setEchoMode) //### enum
-    //### Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress)
+    Q_PROPERTY(EchoMode echoMode READ echoMode WRITE setEchoMode)
+    Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress)
 
 public:
     QFxTextInput(QFxItem* parent=0);
     ~QFxTextInput();
+
+    enum EchoMode {//To match QLineEdit::EchoMode
+        Normal,
+        NoEcho,
+        Password,
+        PasswordEchoOnEdit
+    };
 
     enum HAlignment {
         AlignLeft = Qt::AlignLeft,
@@ -105,11 +113,11 @@ public:
     QColor color() const;
     void setColor(const QColor &c);
 
-    QColor highlightColor() const;
-    void setHighlightColor(const QColor &c);
+    QColor selectionColor() const;
+    void setSelectionColor(const QColor &c);
 
-    QColor highlightedTextColor() const;
-    void setHighlightedTextColor(const QColor &c);
+    QColor selectedTextColor() const;
+    void setSelectedTextColor(const QColor &c);
 
     HAlignment hAlign() const;
     void setHAlign(HAlignment align);
@@ -140,11 +148,14 @@ public:
     QString inputMask() const;
     void setInputMask(const QString &im);
 
-    uint echoMode() const;
-    void setEchoMode(uint echo);
+    EchoMode echoMode() const;
+    void setEchoMode(EchoMode echo);
 
     QmlComponent* cursorDelegate() const;
     void setCursorDelegate(QmlComponent*);
+
+    bool focusOnPress() const;
+    void setFocusOnPress(bool);
 
     bool hasAcceptableInput() const;
 

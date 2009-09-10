@@ -84,8 +84,8 @@ public:
     QString text;
     QFont font;
     QColor  color;
-    QColor  highlightColor;
-    QColor  highlightedTextColor;
+    QColor  selectionColor;
+    QColor  selectedTextColor;
     QString style;
     QColor  styleColor;
     bool imgDirty;

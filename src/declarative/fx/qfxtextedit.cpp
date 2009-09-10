@@ -271,24 +271,24 @@ void QFxTextEdit::setColor(const QColor &color)
 }
 
 /*!
-    \qmlproperty color TextEdit::highlightColor
+    \qmlproperty color TextEdit::selectionColor
 
     The text highlight color, used behind selections.
 */
-QColor QFxTextEdit::highlightColor() const
+QColor QFxTextEdit::selectionColor() const
 {
     Q_D(const QFxTextEdit);
-    return d->highlightColor;
+    return d->selectionColor;
 }
 
-void QFxTextEdit::setHighlightColor(const QColor &color)
+void QFxTextEdit::setSelectionColor(const QColor &color)
 {
     Q_D(QFxTextEdit);
-    if (d->highlightColor == color)
+    if (d->selectionColor == color)
         return;
 
     clearCache();
-    d->highlightColor = color;
+    d->selectionColor = color;
     QPalette pal = d->control->palette();
     pal.setColor(QPalette::Highlight, color);
     d->control->setPalette(pal);
@@ -296,24 +296,24 @@ void QFxTextEdit::setHighlightColor(const QColor &color)
 }
 
 /*!
-    \qmlproperty color TextEdit::highlightedTextColor
+    \qmlproperty color TextEdit::selectedTextColor
 
-    The highlighted text color, used in selections.
+    The selected text color, used in selections.
 */
-QColor QFxTextEdit::highlightedTextColor() const
+QColor QFxTextEdit::selectedTextColor() const
 {
     Q_D(const QFxTextEdit);
-    return d->highlightedTextColor;
+    return d->selectedTextColor;
 }
 
-void QFxTextEdit::setHighlightedTextColor(const QColor &color)
+void QFxTextEdit::setSelectedTextColor(const QColor &color)
 {
     Q_D(QFxTextEdit);
-    if (d->highlightedTextColor == color)
+    if (d->selectedTextColor == color)
         return;
 
     clearCache();
-    d->highlightedTextColor = color;
+    d->selectedTextColor = color;
     QPalette pal = d->control->palette();
     pal.setColor(QPalette::HighlightedText, color);
     d->control->setPalette(pal);
