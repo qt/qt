@@ -421,9 +421,6 @@ QSpinBox::down-button { height: 10px }
 //! [59]
 /* implicitly sets the size of down-button to the size of spindown.png */
 QSpinBox::down-button { image: url(:/images/spindown.png) }
-
-QTextEdit { image: url(x1.png) url(x2.png) }
-QTextEdit { image: url(pic1.svg) }
 //! [59]
 
 
