@@ -72,7 +72,7 @@ public:
     void operator delete(void*);
 
     enum Type {
-        JSC,
+        JavaScriptCore,
         Number,
         String
     };
@@ -112,7 +112,7 @@ public:
 
     qint64 objectId()
     {
-        if ( (type == JSC) && (engine) )
+        if ( (type == JavaScriptCore) && (engine) )
             return (qint64)jscValue.asCell();
         else
             return -1;
@@ -142,7 +142,7 @@ inline QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate *e)
 
 inline bool QScriptValuePrivate::isJSC() const
 {
-    return (type == JSC);
+    return (type == JavaScriptCore);
 }
 
 inline bool QScriptValuePrivate::isObject() const
