@@ -293,7 +293,7 @@ void tst_Bic::sizesAndVTables()
 
     bool isFailed = false;
 
-    qDebug() << oldLib.arg(libName);
+    //qDebug() << oldLib.arg(libName);
     if (oldLib.isEmpty() || !QFile::exists(oldLib.arg(libName)))
         QSKIP("No platform spec found for this platform/version.", SkipSingle);
 

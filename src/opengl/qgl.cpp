@@ -2070,6 +2070,9 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     glBindTexture(target, tx_id);
     glTexParameterf(target, GL_TEXTURE_MAG_FILTER, filtering);
 
+#if defined(QT_OPENGL_ES_2)
+    bool genMipmap = false;
+#endif
     if (glFormat.directRendering()
         && QGLExtensions::glExtensions & QGLExtensions::GenerateMipmap
         && target == GL_TEXTURE_2D
@@ -2078,11 +2081,16 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 #ifdef QGL_BIND_TEXTURE_DEBUG
         printf(" - generating mipmaps\n");
 #endif
+#if !defined(QT_OPENGL_ES_2)
         glHint(GL_GENERATE_MIPMAP_HINT_SGIS, GL_NICEST);
 #ifndef QT_OPENGL_ES
         glTexParameteri(target, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
 #else
         glTexParameterf(target, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
+#endif
+#else
+        glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
+        genMipmap = true;
 #endif
         glTexParameterf(target, GL_TEXTURE_MIN_FILTER, options & QGLContext::LinearFilteringBindOption
                         ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_NEAREST);
@@ -2190,6 +2198,10 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     const QImage &constRef = img; // to avoid detach in bits()...
     glTexImage2D(target, 0, internalFormat, img.width(), img.height(), 0, externalFormat,
                  pixel_type, constRef.bits());
+#if defined(QT_OPENGL_ES_2)
+    if (genMipmap)
+        glGenerateMipmap(target);
+#endif
 #ifndef QT_NO_DEBUG
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {

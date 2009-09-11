@@ -367,9 +367,9 @@ QT_BEGIN_NAMESPACE
     this macro.
 
     Unlike QBENCHMARK, the contents of the contained code block is only run
-    once. The elapsed time will be reported as "0" if it's to short to 
+    once. The elapsed time will be reported as "0" if it's to short to
     be measured by the selected backend. (Use)
- 
+
     \sa {QTestLib Manual#Creating a Benchmark}{Creating a Benchmark},
     {Chapter 5: Writing a Benchmark}{Writing a Benchmark}
 */
@@ -738,7 +738,7 @@ QT_BEGIN_NAMESPACE
 
     \brief The QTouchEventSequence class is used to simulate a sequence of touch events.
 
-    To simulate a sequence of touch events on a specific device for a widget, call 
+    To simulate a sequence of touch events on a specific device for a widget, call
     QTest::touchEvent to create a QTouchEventSequence instance. Add touch events to
     the sequence by calling press(), move(), release() and stationary(), and let the
     instance run out of scope to commit the sequence to the event system.
@@ -756,7 +756,7 @@ QT_BEGIN_NAMESPACE
     Adds a press event for touchpoint \a touchId at position \a pt to this sequence and returns
     a reference to this QTouchEventSequence.
 
-    The position \a pt is interpreted as relative to \a widget. If \a widget is the null pointer, then 
+    The position \a pt is interpreted as relative to \a widget. If \a widget is the null pointer, then
     \a pt is interpreted as relative to the widget provided when instantiating this QTouchEventSequence.
 
     Simulates that the user pressed the touch screen or pad with the finger identified by \a touchId.
@@ -768,7 +768,7 @@ QT_BEGIN_NAMESPACE
     Adds a move event for touchpoint \a touchId at position \a pt to this sequence and returns
     a reference to this QTouchEventSequence.
 
-    The position \a pt is interpreted as relative to \a widget. If \a widget is the null pointer, then 
+    The position \a pt is interpreted as relative to \a widget. If \a widget is the null pointer, then
     \a pt is interpreted as relative to the widget provided when instantiating this QTouchEventSequence.
 
     Simulates that the user moved the finger identified by \a touchId.
@@ -779,8 +779,8 @@ QT_BEGIN_NAMESPACE
 
     Adds a release event for touchpoint \a touchId at position \a pt to this sequence and returns
     a reference to this QTouchEventSequence.
-        
-    The position \a pt is interpreted as relative to \a widget. If \a widget is the null pointer, then 
+
+    The position \a pt is interpreted as relative to \a widget. If \a widget is the null pointer, then
     \a pt is interpreted as relative to the widget provided when instantiating this QTouchEventSequence.
 
     Simulates that the user lifted the finger identified by \a touchId.
@@ -791,7 +791,7 @@ QT_BEGIN_NAMESPACE
 
     Adds a stationary event for touchpoint \a touchId to this sequence and returns
     a reference to this QTouchEventSequence.
-    
+
     Simulates that the user did not move the finger identified by \a touchId.
 */
 
@@ -1612,8 +1612,11 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     }
 #endif
 
-#ifdef Q_OS_SYMBIAN
-//### FIX THIS temporary hack to delay execution of symbian os tests. Used to get emulator to stable state before running testcase
+#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
+    // Delay execution of tests in Symbian emulator.
+    // Needed to allow worst of other higher priority apps and services launched by emulator
+    // to get out of the way before we run our test. Otherwise some of the timing sensitive tests
+    // will not work properly.
     qSleep(3000);
 #endif
 
@@ -2124,7 +2127,7 @@ bool QTest::compare_string_helper(const char *t1, const char *t2, const char *ac
 /*! \fn bool QTest::qCompare(bool const &t1, int const &t2, const char *actual, const char *expected, const char *file, int line)
   \internal
  */
-  
+
 /*! \fn bool QTest::qTest(const T& actual, const char *elementName, const char *actualStr, const char *expected, const char *file, int line)
     \internal
 */
