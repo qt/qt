@@ -92,8 +92,8 @@ static void setAnchor(QGraphicsAnchorLayout *l,
                       Qt::AnchorPoint secondEdge,
                       qreal spacing)
 {
-    l->addAnchor(firstItem, firstEdge, secondItem, secondEdge);
-    l->setAnchorSpacing(firstItem, firstEdge, secondItem, secondEdge, spacing);
+    QGraphicsAnchor *anchor = l->addAnchor(firstItem, firstEdge, secondItem, secondEdge);
+    anchor->setSpacing(spacing);
 }
 
 void tst_QGraphicsAnchorLayout::s60_hard_complex_data()
