@@ -199,13 +199,13 @@ bool qt_resolve_buffer_extensions(QGLContext *ctx)
         return true;
 
 #if !defined(QT_OPENGL_ES_2)
-    glBindBuffer = (_glBindBuffer) ctx->getProcAddress(QLatin1String("glBindBufferARB"));
-    glDeleteBuffers = (_glDeleteBuffers) ctx->getProcAddress(QLatin1String("glDeleteBuffersARB"));
-    glGenBuffers = (_glGenBuffers) ctx->getProcAddress(QLatin1String("glGenBuffersARB"));
-    glBufferData = (_glBufferData) ctx->getProcAddress(QLatin1String("glBufferDataARB"));
+    glBindBuffer = (_glBindBuffer) qt_gl_getProcAddressARB(ctx, "glBindBuffer");
+    glDeleteBuffers = (_glDeleteBuffers) qt_gl_getProcAddressARB(ctx, "glDeleteBuffers");
+    glGenBuffers = (_glGenBuffers) qt_gl_getProcAddressARB(ctx, "glGenBuffers");
+    glBufferData = (_glBufferData) qt_gl_getProcAddressARB(ctx, "glBufferData");
 #endif
-    glMapBufferARB = (_glMapBufferARB) ctx->getProcAddress(QLatin1String("glMapBufferARB"));
-    glUnmapBufferARB = (_glUnmapBufferARB) ctx->getProcAddress(QLatin1String("glUnmapBufferARB"));
+    glMapBufferARB = (_glMapBufferARB) qt_gl_getProcAddressARB(ctx, "glMapBuffer");
+    glUnmapBufferARB = (_glUnmapBufferARB) qt_gl_getProcAddressARB(ctx, "glUnmapBuffer");
 
     return glMapBufferARB
         && glUnmapBufferARB
