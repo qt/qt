@@ -1541,7 +1541,7 @@ void QTextDocumentPrivate::deleteObject(QTextObject *object)
 void QTextDocumentPrivate::contentsChanged()
 {
     Q_Q(QTextDocument);
-    if (editBlock)
+    if (editBlock || inEdit)
         return;
 
     bool m = undoEnabled ? (modifiedState != undoState) : true;

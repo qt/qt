@@ -1104,6 +1104,8 @@ void QFileSystemModelPrivate::sortChildren(int column, const QModelIndex &parent
     qStableSort(values.begin(), values.end(), ms);
     // First update the new visible list
     indexNode->visibleChildren.clear();
+    //No more dirty item we reset our internal dirty index
+    indexNode->dirtyChildrenIndex = -1;
     for (int i = 0; i < values.count(); ++i) {
         indexNode->visibleChildren.append(values.at(i).first->fileName);
         values.at(i).first->isVisible = true;
@@ -1706,6 +1708,10 @@ void QFileSystemModelPrivate::addVisibleFiles(QFileSystemNode *parentNode, const
     if (!indexHidden) {
         q->beginInsertRows(parent, parentNode->visibleChildren.count() , parentNode->visibleChildren.count() + newFiles.count() - 1);
     }
+
+    if (parentNode->dirtyChildrenIndex == -1)
+        parentNode->dirtyChildrenIndex = parentNode->visibleChildren.count();
+
     for (int i = 0; i < newFiles.count(); ++i) {
             parentNode->visibleChildren.append(newFiles.at(i));
             parentNode->children[newFiles.at(i)]->isVisible = true;

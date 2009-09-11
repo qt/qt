@@ -211,11 +211,11 @@ void tst_QFontMetrics::elidedMultiLength()
     QString text1_short = "Shorter";
     QString text1_small = "small";
     QFontMetrics fm = QFontMetrics(QFont());
-    int width_long = fm.boundingRect(text1_long).width();
+    int width_long = fm.size(0, text1_long).width();
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, 8000), text1_long);
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_long + 1), text1_long);
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_long - 1), text1_short);
-    int width_short = fm.boundingRect(text1_short).width();
+    int width_short = fm.size(0, text1_short).width();
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_short + 1), text1_short);
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_short - 1), text1_small);
 

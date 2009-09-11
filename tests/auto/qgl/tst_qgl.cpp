@@ -77,6 +77,7 @@ private slots:
     void glFBOUseInGLWidget();
     void glPBufferRendering();
     void glWidgetReparent();
+    void glWidgetRenderPixmap();
     void stackedFBOs();
     void colormap();
     void fboFormat();
@@ -1156,6 +1157,35 @@ void tst_QGL::glWidgetReparent()
 
     delete widget;
 }
+
+class RenderPixmapWidget : public QGLWidget
+{
+protected:
+    void initializeGL() {
+        // Set some gl state:
+        glClearColor(1.0, 0.0, 0.0, 1.0);
+    }
+
+    void paintGL() {
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+};
+
+void tst_QGL::glWidgetRenderPixmap()
+{
+    RenderPixmapWidget *w = new RenderPixmapWidget;
+
+    QPixmap pm = w->renderPixmap(100, 100, false);
+
+    delete w;
+
+    QImage fb = pm.toImage().convertToFormat(QImage::Format_RGB32);
+    QImage reference(fb.size(), QImage::Format_RGB32);
+    reference.fill(0xffff0000);
+
+    QCOMPARE(fb, reference);
+}
+
 
 // When using multiple FBOs at the same time, unbinding one FBO should re-bind the
 // previous. I.e. It should be possible to have a stack of FBOs where pop'ing there

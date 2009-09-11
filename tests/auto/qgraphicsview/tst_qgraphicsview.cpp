@@ -379,7 +379,7 @@ void tst_QGraphicsView::interactive()
     view.show();
 
     QTestEventLoop::instance().enterLoop(1);
-    QCOMPARE(item->events.size(), 1); // activate
+    QTRY_COMPARE(item->events.size(), 1); // activate
 
     QPoint itemPoint = view.mapFromScene(item->scenePos());
 
@@ -1869,6 +1869,9 @@ void tst_QGraphicsView::sendEvent()
 
     QGraphicsView view(&scene);
     view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWait(20);
+    QTRY_COMPARE(QApplication::activeWindow(), &view);
 
     QTestEventLoop::instance().enterLoop(1);
 
@@ -1938,7 +1941,10 @@ void tst_QGraphicsView::wheelEvent()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTest::qWait(250);
+    QApplication::setActiveWindow(&view);
+    QTest::qWait(20);
+    QTRY_COMPARE(QApplication::activeWindow(), &view);
+
 
     // Send a wheel event with horizontal orientation.
     {
@@ -3128,12 +3134,15 @@ void tst_QGraphicsView::moveItemWhileScrolling()
             setScene(new QGraphicsScene(0, 0, 1000, 1000));
             rect = scene()->addRect(0, 0, 10, 10);
             rect->setPos(50, 50);
+            painted = false;
         }
         QRegion lastPaintedRegion;
         QGraphicsItem *rect;
+        bool painted;
     protected:
         void paintEvent(QPaintEvent *event)
         {
+            painted = true;
             lastPaintedRegion = event->region();
             QGraphicsView::paintEvent(event);
         }
@@ -3152,12 +3161,15 @@ void tst_QGraphicsView::moveItemWhileScrolling()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTest::qWait(200);
+    QTest::qWait(100);
+    QTRY_VERIFY(view.painted);
+    view.painted = false;
 
     view.lastPaintedRegion = QRegion();
     view.horizontalScrollBar()->setValue(view.horizontalScrollBar()->value() + 10);
     view.rect->moveBy(0, 10);
     QTest::qWait(100);
+    QTRY_VERIFY(view.painted);
 
     QRegion expectedRegion;
     expectedRegion += QRect(0, 0, 200, 200);
@@ -3509,7 +3521,9 @@ void tst_QGraphicsView::inputMethodSensitivity()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTest::qWait(300);
+    QApplication::setActiveWindow(&view);
+    QTest::qWait(250);
+    QTRY_COMPARE(QApplication::activeWindow(), &view);
 
     QGraphicsRectItem *item = new QGraphicsRectItem;
 
@@ -3599,7 +3613,9 @@ void tst_QGraphicsView::inputContextReset()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTest::qWait(300);
+    QApplication::setActiveWindow(&view);
+    QTest::qWait(20);
+    QTRY_COMPARE(QApplication::activeWindow(), &view);
 
     QGraphicsItem *item1 = new QGraphicsRectItem;
     item1->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemAcceptsInputMethod);

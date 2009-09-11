@@ -1970,6 +1970,9 @@
            image within the rectangle can be specified using
            \l{image-position-prop}{image-position}.
 
+           This property is for \l{subcontrol}s only--we don't support it for
+           other elements.
+
            \warning The QIcon SVG plugin is needed to render SVG images.
 
            Example:

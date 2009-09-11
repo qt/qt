@@ -9229,6 +9229,7 @@ void tst_QWidget::destroyBackingStore()
 
     w.reset();
     w.update();
+    QApplication::processEvents();
     delete qt_widget_private(&w)->topData()->backingStore;
     qt_widget_private(&w)->topData()->backingStore = 0;
     qt_widget_private(&w)->topData()->backingStore = new QWidgetBackingStore(&w);

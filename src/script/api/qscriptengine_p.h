@@ -316,7 +316,7 @@ inline JSC::JSValue QScriptEnginePrivate::scriptValueToJSCValue(const QScriptVal
     QScriptValuePrivate *vv = QScriptValuePrivate::get(value);
     if (!vv)
         return JSC::JSValue();
-    if (vv->type != QScriptValuePrivate::JSC) {
+    if (vv->type != QScriptValuePrivate::JavaScriptCore) {
         Q_ASSERT(!vv->engine || vv->engine == this);
         vv->engine = this;
         if (vv->type == QScriptValuePrivate::Number) {
@@ -340,7 +340,7 @@ inline void QScriptValuePrivate::initFrom(JSC::JSValue value)
         Q_ASSERT(engine != 0);
         value = engine->toUsableValue(value);
     }
-    type = JSC;
+    type = JavaScriptCore;
     jscValue = value;
     if (engine)
         engine->registerScriptValue(this);

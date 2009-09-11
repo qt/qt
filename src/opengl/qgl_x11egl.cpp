@@ -470,7 +470,14 @@ void QGLExtensions::init()
     if (init_done)
         return;
     init_done = true;
+
+    // We need a context current to initialize the extensions.
+    QGLWidget tmpWidget;
+    tmpWidget.makeCurrent();
+
     init_extensions();
+
+    tmpWidget.doneCurrent();
 }
 
 // Re-creates the EGL surface if the window ID has changed or if force is true
@@ -623,9 +630,6 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
         haveTFP = false;
         return 0;
     }
-
-    // Always inverted because the opposite is not supported...
-    options |= QGLContext::InvertedYBindOption;
 
     QGLTexture *texture = new QGLTexture(q, textureId, GL_TEXTURE_2D, options);
     pixmapData->flags |= QX11PixmapData::InvertedWhenBoundToTexture;

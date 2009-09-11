@@ -730,7 +730,14 @@ void QGLExtensions::init()
     if (init_done)
         return;
     init_done = true;
+
+    // We need a context current to initialize the extensions.
+    QGLWidget tmpWidget;
+    tmpWidget.makeCurrent();
+
     init_extensions();
+
+    tmpWidget.doneCurrent();
 }
 
 QT_END_NAMESPACE
