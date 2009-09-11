@@ -93,11 +93,15 @@ class MyCustomProgressBar : public Q3ProgressBar
         void paintEvent(QPaintEvent * event)
         {
             paintNumber++;
+            qDebug() << "PAINT EVENT:" << paintNumber;
             Q3ProgressBar::paintEvent(event);
         }
         int paintNumber;
 };
 
+/*
+  Maybe this test should be redesigned.
+ */
 void tst_Q3ProgressBar::setProgress()
 {
     MyCustomProgressBar * m_progressBar = new MyCustomProgressBar();
@@ -111,15 +115,21 @@ void tst_Q3ProgressBar::setProgress()
     m_progressBar->setProgress(m_progressBar->progress() + 1);
     QCOMPARE(oldValue + 1,m_progressBar->progress());
     QApplication::processEvents();
-    QVERIFY(m_progressBar->paintNumber >= 1); //it might be more than 1 because it is animated
 
+    // It might be > 1 because it is animated.
+    QVERIFY(m_progressBar->paintNumber >= 1);
+    qDebug() << "Animation test: paintNumber =" << m_progressBar->paintNumber;
+    
     //standard case
     m_progressBar->setTotalSteps(3);
     m_progressBar->setProgress(0);
     m_progressBar->paintNumber = 0;
     m_progressBar->setProgress(m_progressBar->progress() + 1);
     QApplication::processEvents();
-    QCOMPARE(m_progressBar->paintNumber,1);
+
+    // It might be > 1 because other events might cause painting.
+    QVERIFY(m_progressBar->paintNumber >= 1);
+    qDebug() << "Standard test: paintNumber =" << m_progressBar->paintNumber;
 }
 
 QTEST_MAIN(tst_Q3ProgressBar)

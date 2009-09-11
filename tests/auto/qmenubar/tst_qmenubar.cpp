@@ -1545,22 +1545,27 @@ void tst_QMenuBar::task256322_highlight()
     win.show();
     QTest::qWait(200);
 
+    QTest::mousePress(win.menuBar(), Qt::LeftButton, 0, win.menuBar()->actionGeometry(file).center());
     QTest::mouseMove(win.menuBar(), win.menuBar()->actionGeometry(file).center());
-    QTest::mouseClick(win.menuBar(), Qt::LeftButton, 0, win.menuBar()->actionGeometry(file).center());
+    QTest::mouseRelease(win.menuBar(), Qt::LeftButton, 0, win.menuBar()->actionGeometry(file).center());
     QTRY_VERIFY(menu.isVisible());
     QVERIFY(!menu2.isVisible());
     QCOMPARE(win.menuBar()->activeAction(), file);
 
+    QTest::mousePress(win.menuBar(), Qt::LeftButton, 0, win.menuBar()->actionGeometry(file2).center());
     QTest::mouseMove(win.menuBar(), win.menuBar()->actionGeometry(file2).center());
     QTRY_VERIFY(!menu.isVisible());
     QVERIFY(menu2.isVisible());
     QCOMPARE(win.menuBar()->activeAction(), file2);
+    QTest::mouseRelease(win.menuBar(), Qt::LeftButton, 0, win.menuBar()->actionGeometry(file2).center());
 
     QPoint nothingCenter = win.menuBar()->actionGeometry(nothing).center();
+    QTest::mousePress(win.menuBar(), Qt::LeftButton, 0, nothingCenter);
     QTest::mouseMove(win.menuBar(), nothingCenter);
     QTRY_VERIFY(!menu2.isVisible());
     QVERIFY(!menu.isVisible());
     QCOMPARE(win.menuBar()->activeAction(), nothing);
+    QTest::mouseRelease(win.menuBar(), Qt::LeftButton, 0, nothingCenter);
 }
 
 void tst_QMenuBar::menubarSizeHint()

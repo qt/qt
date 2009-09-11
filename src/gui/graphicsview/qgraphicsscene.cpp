@@ -653,19 +653,6 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
             return;
     }
 
-    // Auto-update focus proxy. The closest parent that detects
-    // focus proxies is updated as the proxy gains or loses focus.
-    if (item) {
-        QGraphicsItem *p = item->d_ptr->parent;
-        while (p) {
-            if (p->d_ptr->flags & QGraphicsItem::ItemAutoDetectsFocusProxy) {
-                p->setFocusProxy(item);
-                break;
-            }
-            p = p->d_ptr->parent;
-        }
-    }
-
     if (focusItem) {
         QFocusEvent event(QEvent::FocusOut, focusReason);
         lastFocusItem = focusItem;
@@ -678,9 +665,14 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
             QInputMethodEvent imEvent;
             sendEvent(lastFocusItem, &imEvent);
 
-            // Close any external input method panel
-            for (int i = 0; i < views.size(); ++i)
-                views.at(i)->inputContext()->reset();
+            // Close any external input method panel. This happens
+            // automatically by removing WA_InputMethodEnabled on
+            // the views, but if we are changing focus, we have to
+            // do it ourselves.
+            if (item) {
+                for (int i = 0; i < views.size(); ++i)
+                    views.at(i)->inputContext()->reset();
+            }
         }
     }
 
@@ -1398,6 +1390,7 @@ QGraphicsScene::QGraphicsScene(qreal x, qreal y, qreal width, qreal height, QObj
 QGraphicsScene::~QGraphicsScene()
 {
     Q_D(QGraphicsScene);
+
     // Remove this scene from qApp's global scene list.
     qApp->d_func()->scene_list.removeAll(this);
 
@@ -2438,7 +2431,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
 
     // Ensure that newly added items that have subfocus set, gain
     // focus automatically if there isn't a focus item already.
-    if (!d->focusItem && item->focusItem())
+    if (!d->focusItem && item->focusItem() && item->isActive())
         item->focusItem()->setFocus();
 
     d->updateInputMethodSensitivityInViews();
@@ -4467,6 +4460,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             painter->setWorldTransform(*transformPtr * *effectTransform);
         else
             painter->setWorldTransform(*transformPtr);
+        painter->setOpacity(opacity);
         item->d_ptr->graphicsEffect->draw(painter, source);
         painter->setWorldTransform(restoreTransform);
         sourced->info = 0;

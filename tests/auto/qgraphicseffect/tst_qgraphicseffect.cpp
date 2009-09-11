@@ -62,6 +62,7 @@ private slots:
     void boundingRectFor();
     void boundingRect();
     void draw();
+    void opacity();
 };
 
 void tst_QGraphicsEffect::initTestCase()
@@ -100,7 +101,7 @@ class CustomEffect : public QGraphicsEffect
 public:
     CustomEffect()
         : QGraphicsEffect(), numRepaints(0), m_margin(10),
-          doNothingInDraw(false), m_painter(0), m_styleOption(0), m_source(0)
+          doNothingInDraw(false), m_painter(0), m_styleOption(0), m_source(0), m_opacity(1.0)
     {}
 
     QRectF boundingRectFor(const QRectF &rect) const
@@ -113,6 +114,7 @@ public:
         m_painter = 0;
         m_styleOption = 0;
         m_source = 0;
+        m_opacity = 1.0;
     }
 
     void setMargin(int margin)
@@ -132,6 +134,7 @@ public:
         m_source = source;
         m_painter = painter;
         m_styleOption = source->styleOption();
+        m_opacity = painter->opacity();
         source->draw(painter);
     }
 
@@ -145,6 +148,7 @@ public:
     QPainter *m_painter;
     const QStyleOption *m_styleOption;
     QGraphicsEffectSource *m_source;
+    qreal m_opacity;
 };
 
 void tst_QGraphicsEffect::setEnabled()
@@ -340,6 +344,25 @@ void tst_QGraphicsEffect::draw()
     QCOMPARE(effect->numRepaints, 0);
     QCOMPARE(item->numRepaints, 1);
     delete effect;
+}
+
+void tst_QGraphicsEffect::opacity()
+{
+    // Make sure the painter's opacity is correct in QGraphicsEffect::draw.
+    QGraphicsScene scene;
+    CustomItem *item = new CustomItem(0, 0, 100, 100);
+    item->setOpacity(0.5);
+    CustomEffect *effect = new CustomEffect;
+    item->setGraphicsEffect(effect);
+    scene.addItem(item);
+
+    QGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(100);
+    QCOMPARE(effect->m_opacity, qreal(0.5));
 }
 
 QTEST_MAIN(tst_QGraphicsEffect)

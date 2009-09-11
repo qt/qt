@@ -75,6 +75,11 @@
 #if defined(Q_OS_SYMBIAN)
 #include <e32def.h>
 #include <e32debug.h>
+#include <f32file.h>
+# include "private/qcore_symbian_p.h"
+
+_LIT(qt_S60Filter, "Series60v?.*.sis");
+_LIT(qt_S60SystemInstallDir, "z:\\system\\install\\");
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -1786,28 +1791,31 @@ QSysInfo::S60Version QSysInfo::s60Version()
     if (cachedS60Version != -1)
         return cachedS60Version;
 
-    QDir dir(QLatin1String("z:\\system\\install"));
-    QStringList filters;
-    filters << QLatin1String("Series60v?.*.sis");
-    dir.setNameFilters(filters);
-
-    QStringList names = dir.entryList(QDir::NoFilter, QDir::Name | QDir::Reversed | QDir::IgnoreCase);
-    if (names.size() == 0)
-        return cachedS60Version = SV_S60_Unknown;
-
-    int major, minor;
-    major = names[0][9].toAscii() - '0';
-    minor = names[0][11].toAscii() - '0';
-    if (major == 3) {
-        if (minor == 1) {
-            return cachedS60Version = SV_S60_3_1;
-        } else if (minor == 2) {
-            return cachedS60Version = SV_S60_3_2;
+    // Use pure Symbian code, because if done using QDir, there will be a call back
+    // to this method, resulting doing this expensive operation twice before the cache kicks in.
+    // Pure Symbian code also makes this method ~10x faster, speeding up the application launch.
+    RFs rfs = qt_s60GetRFs();
+    TFindFile fileFinder(rfs);
+    CDir* contents;
+    TInt err = fileFinder.FindWildByDir(qt_S60Filter, qt_S60SystemInstallDir, contents);
+    if (err == KErrNone) {
+        err = contents->Sort(EDescending|ESortByName);
+        if (err == KErrNone) {
+            TInt major = (*contents)[0].iName[9] - '0';
+            TInt minor = (*contents)[0].iName[11] - '0';
+            if (major == 3) {
+                if (minor == 1) {
+                    return cachedS60Version = SV_S60_3_1;
+                } else if (minor == 2) {
+                    return cachedS60Version = SV_S60_3_2;
+                }
+            } else if (major == 5) {
+                if (minor == 0) {
+                    return cachedS60Version = SV_S60_5_0;
+                }
+            }
         }
-    } else if (major == 5) {
-        if (minor == 0) {
-            return cachedS60Version = SV_S60_5_0;
-        }
+        delete contents;
     }
 
     return cachedS60Version = SV_S60_Unknown;

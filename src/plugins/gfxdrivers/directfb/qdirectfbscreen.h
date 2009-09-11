@@ -110,7 +110,7 @@ QT_MODULE(Gui)
 #error QT_DIRECTFB_WINDOW_AS_CURSOR requires QT_DIRECTFB_WM to be defined
 #endif
 
-#define Q_DIRECTFB_VERSION ((DIRECTFB_MAJOR_VERSION << 16) | (DIRECTFB_MINOR_VERION << 8) | DIRECTFB_MICRO_VERSION)
+#define Q_DIRECTFB_VERSION ((DIRECTFB_MAJOR_VERSION << 16) | (DIRECTFB_MINOR_VERSION << 8) | DIRECTFB_MICRO_VERSION)
 
 #define DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(F)                         \
     static inline F operator~(F f) { return F(~int(f)); } \

@@ -1328,6 +1328,8 @@ void QTextCursor::insertText(const QString &text, const QTextCharFormat &_format
 
             if (ch == QLatin1Char('\n')
                 || ch == QChar::ParagraphSeparator
+                || ch == QTextBeginningOfFrame
+                || ch == QTextEndOfFrame
                 || ch == QLatin1Char('\r')) {
 
                 if (!hasEditBlock) {

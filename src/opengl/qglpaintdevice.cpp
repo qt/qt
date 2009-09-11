@@ -49,6 +49,10 @@
 #include <private/qpixmapdata_gl_p.h>
 #endif
 
+#if defined(QT_OPENGL_ES_1_CL)
+#include "qgl_cl_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QGLPaintDevice::QGLPaintDevice()
@@ -70,6 +74,12 @@ void QGLPaintDevice::beginPaint()
 
     // Record the currently bound FBO so we can restore it again
     // in endPaint() and bind this device's FBO
+    //
+    // Note: m_thisFBO could be zero if the paint device is not
+    // backed by an FBO (e.g. window back buffer).  But there could
+    // be a previous FBO bound to the context which we need to
+    // explicitly unbind.  Otherwise the painting will go into
+    // the previous FBO instead of to the window.
     m_previousFBO = ctx->d_func()->current_fbo;
     if (m_previousFBO != m_thisFBO) {
         ctx->d_ptr->current_fbo = m_thisFBO;
@@ -174,8 +184,8 @@ QGLPaintDevice* QGLPaintDevice::getDevice(QPaintDevice* pd)
             glpd = &(static_cast<QGLFramebufferObject*>(pd)->d_func()->glDevice);
             break;
         case QInternal::Pixmap: {
-            QPixmapData* pmd = static_cast<QPixmap*>(pd)->pixmapData();
 #if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+            QPixmapData* pmd = static_cast<QPixmap*>(pd)->pixmapData();
             Q_ASSERT(pmd->classId() == QPixmapData::OpenGLClass);
             glpd = static_cast<QGLPixmapData*>(pmd)->glDevice();
 #else

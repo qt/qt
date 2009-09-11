@@ -52,7 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QGraphicsSvgItemPrivate : public QObjectPrivate
+class QGraphicsSvgItemPrivate : public QGraphicsItemPrivate
 {
 public:
     Q_DECLARE_PUBLIC(QGraphicsSvgItem)
@@ -62,9 +62,10 @@ public:
     {
     }
 
-    void init()
+    void init(QGraphicsItem *parent)
     {
         Q_Q(QGraphicsSvgItem);
+        q->setParentItem(parent);
         renderer = new QSvgRenderer(q);
         QObject::connect(renderer, SIGNAL(repaintNeeded()),
                          q, SLOT(_q_repaintItem()));
@@ -137,10 +138,10 @@ public:
     Constructs a new SVG item with the given \a parent.
 */
 QGraphicsSvgItem::QGraphicsSvgItem(QGraphicsItem *parent)
-    : QObject(*new QGraphicsSvgItemPrivate(), 0), QGraphicsItem(parent)
+    : QGraphicsObject(*new QGraphicsSvgItemPrivate(), 0, 0)
 {
     Q_D(QGraphicsSvgItem);
-    d->init();
+    d->init(parent);
 }
 
 /*!
@@ -148,10 +149,10 @@ QGraphicsSvgItem::QGraphicsSvgItem(QGraphicsItem *parent)
     SVG file with the specified \a fileName.
 */
 QGraphicsSvgItem::QGraphicsSvgItem(const QString &fileName, QGraphicsItem *parent)
-    : QObject(*new QGraphicsSvgItemPrivate(), 0), QGraphicsItem(parent)
+    : QGraphicsObject(*new QGraphicsSvgItemPrivate(), 0, 0)
 {
     Q_D(QGraphicsSvgItem);
-    d->init();
+    d->init(parent);
     d->renderer->load(fileName);
     d->updateDefaultSize();
 }

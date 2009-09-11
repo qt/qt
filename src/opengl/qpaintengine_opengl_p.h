@@ -58,6 +58,7 @@
 QT_BEGIN_NAMESPACE
 
 class QOpenGLPaintEnginePrivate;
+class QGLTexture;
 
 class QOpenGLPaintEngineState : public QPainterState
 {

@@ -381,6 +381,8 @@ class QFontEngineQPF1Data
 public:
     QPFFontMetrics fm;
     QPFGlyphTree *tree;
+    void *mmapStart;
+    size_t mmapLength;
 };
 
 
@@ -410,6 +412,8 @@ QFontEngineQPF1::QFontEngineQPF1(const QFontDef&, const QString &fn)
     QT_CLOSE(f);
 
     d = new QFontEngineQPF1Data;
+    d->mmapStart = data;
+    d->mmapLength = st.st_size;
     memcpy(reinterpret_cast<char*>(&d->fm),data,sizeof(d->fm));
 
     data += sizeof(d->fm);
@@ -431,6 +435,8 @@ QFontEngineQPF1::QFontEngineQPF1(const QFontDef&, const QString &fn)
 
 QFontEngineQPF1::~QFontEngineQPF1()
 {
+    if (d->mmapStart)
+        munmap(d->mmapStart, d->mmapLength);
     delete d->tree;
     delete d;
 }

@@ -206,12 +206,12 @@ void tst_Selftests::doRunSubTest(QString &subdir, QStringList &arguments )
     const QByteArray out(proc.readAllStandardOutput());
     const QByteArray err(proc.readAllStandardError());
 
-    /* Windows-MSVC decide to output an error message when exceptions are thrown,
-     * so let's not check stderr for those. */
-#if defined(Q_OS_WIN)
-    if(subdir != QLatin1String("exceptionthrow") && subdir != QLatin1String("fetchbogus"))
-#endif
-    if(subdir != QLatin1String("xunit"))
+    /* Some platforms decides to output a message for uncaught exceptions. For instance,
+     * this is what windows platforms says:
+     * "This application has requested the Runtime to terminate it in an unusual way.
+     * Please contact the application's support team for more information." */
+    if(subdir != QLatin1String("exceptionthrow") && subdir != QLatin1String("fetchbogus")
+        && subdir != QLatin1String("xunit"))
         QVERIFY2(err.isEmpty(), err.constData());
 
     QList<QByteArray> res = splitLines(out);

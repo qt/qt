@@ -629,6 +629,12 @@ void noop(void*) { }
     typedef HANDLE ThreadHandle;
 #endif
 
+#ifdef Q_OS_WIN
+#define WIN_FIX_STDCALL __stdcall
+#else
+#define WIN_FIX_STDCALL
+#endif
+
 class NativeThreadWrapper
 {
 public:
@@ -647,7 +653,7 @@ public:
     QWaitCondition stopCondition;
 protected:
     static void *runUnix(void *data);
-    static unsigned __stdcall runWin(void *data);
+    static unsigned WIN_FIX_STDCALL runWin(void *data);
 
     FunctionPointer functionPointer;
     void *data;
@@ -711,7 +717,7 @@ void *NativeThreadWrapper::runUnix(void *that)
     return 0;
 }
 
-unsigned __stdcall NativeThreadWrapper::runWin(void *data)
+unsigned WIN_FIX_STDCALL NativeThreadWrapper::runWin(void *data)
 {
     runUnix(data);
     return 0;

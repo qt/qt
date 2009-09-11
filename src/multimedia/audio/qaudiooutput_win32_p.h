@@ -132,6 +132,7 @@ private:
     MMRESULT result;
     WAVEHDR header;
     WAVEHDR* waveBlocks;
+    volatile bool finished;
     volatile int waveFreeBlockCount;
     int waveCurrentBlock;
     char* audioBuffer;

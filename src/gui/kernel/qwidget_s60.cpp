@@ -989,6 +989,32 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         return;
 
     if (isWindow()) {
+#ifdef Q_WS_S60
+        // Change window decoration visibility if switching to or from fullsccreen
+        // In addition decoration visibility is changed when the initial has been
+        // WindowNoState.
+        // The window decoration visibility has to be changed before doing actual
+        // window state change since in that order the availableGeometry will return
+        // directly the right size and we will avoid unnecessarty redraws
+        if((oldstate & Qt::WindowFullScreen) != (newstate & Qt::WindowFullScreen) ||
+            oldstate == Qt::WindowNoState) {
+            CEikStatusPane* statusPane = S60->statusPane();
+            CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
+            if (newstate & Qt::WindowFullScreen) {
+                if (statusPane)
+                    statusPane->MakeVisible(false);
+                if (buttonGroup)
+                    buttonGroup->MakeVisible(false);
+            } else {
+                if (statusPane)
+                    statusPane->MakeVisible(true);
+                if (buttonGroup)
+                    buttonGroup->MakeVisible(true);
+            }
+
+        }
+#endif // Q_WS_S60    
+    
         createWinId();
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));
         QTLWExtra *top = d->topData();
@@ -1013,30 +1039,15 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             }
         }
         if ((oldstate & Qt::WindowFullScreen) != (newstate & Qt::WindowFullScreen)) {
-#ifdef Q_WS_S60
-            CEikStatusPane* statusPane = S60->statusPane();
-            CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
-#endif
             if (newstate & Qt::WindowFullScreen) {
                 const QRect normalGeometry = geometry();
                 const QRect r = top->normalGeometry;
                 setGeometry(qApp->desktop()->screenGeometry(this));
-#ifdef Q_WS_S60
-                if (statusPane)
-                    statusPane->MakeVisible(false);
-                if (buttonGroup)
-                    buttonGroup->MakeVisible(false);
-#endif
+
                 top->normalGeometry = r;
                 if (top->normalGeometry.width() < 0)
                     top->normalGeometry = normalGeometry;
             } else {
-#ifdef Q_WS_S60
-                if (statusPane)
-                    statusPane->MakeVisible(true);
-                if (buttonGroup)
-                    buttonGroup->MakeVisible(true);
-#endif
                 if (newstate & Qt::WindowMaximized) {
                     const QRect r = top->normalGeometry;
                     setGeometry(qApp->desktop()->availableGeometry(this));

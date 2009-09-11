@@ -2540,13 +2540,12 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
 
     Q_D(QRasterPaintEngine);
     QRasterPaintEngineState *s = state();
-    const bool aa = s->flags.antialiased || s->flags.bilinear;
     int sr_l = qFloor(sr.left());
     int sr_r = qCeil(sr.right()) - 1;
     int sr_t = qFloor(sr.top());
     int sr_b = qCeil(sr.bottom()) - 1;
 
-    if (!aa && sr_l == sr_r && sr_t == sr_b) {
+    if (!s->flags.antialiased && sr_l == sr_r && sr_t == sr_b) {
         // as fillRect will apply the aliased coordinate delta we need to
         // subtract it here as we don't use it for image drawing
         QTransform old = s->matrix;
@@ -2623,7 +2622,7 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
             return;
         d->image_filler_xform.setupMatrix(copy, s->flags.bilinear);
 
-        if (!aa && s->matrix.type() == QTransform::TxScale) {
+        if (!s->flags.antialiased && s->matrix.type() == QTransform::TxScale) {
             QRectF rr = s->matrix.mapRect(r);
 
             const int x1 = qRound(rr.x());
@@ -2639,9 +2638,9 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
         ensureState();
         if (s->flags.tx_noshear || s->matrix.type() == QTransform::TxScale) {
             d->initializeRasterizer(&d->image_filler_xform);
-            d->rasterizer->setAntialiased(aa);
+            d->rasterizer->setAntialiased(s->flags.antialiased);
 
-            const QPointF offs = aa ? QPointF() : QPointF(aliasedCoordinateDelta, aliasedCoordinateDelta);
+            const QPointF offs = s->flags.antialiased ? QPointF() : QPointF(aliasedCoordinateDelta, aliasedCoordinateDelta);
 
             const QRectF &rect = r.normalized();
             const QPointF a = s->matrix.map((rect.topLeft() + rect.bottomLeft()) * 0.5f) - offs;
@@ -2654,9 +2653,6 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
             return;
         }
 #endif
-        bool wasAntialiased = s->flags.antialiased;
-        if (!s->flags.antialiased)
-            s->flags.antialiased = s->flags.bilinear;
         const qreal offs = s->flags.antialiased ? qreal(0) : aliasedCoordinateDelta;
         QPainterPath path;
         path.addRect(r);
@@ -2666,7 +2662,6 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
                                m.m31() - offs, m.m32() - offs, m.m33());
         fillPath(path, &d->image_filler_xform);
         s->matrix = m;
-        s->flags.antialiased = wasAntialiased;
     } else {
 
         if (s->flags.fast_images) {
@@ -2738,7 +2733,7 @@ void QRasterPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap,
         ensureState();
         if (s->flags.tx_noshear || s->matrix.type() == QTransform::TxScale) {
             d->initializeRasterizer(&d->image_filler_xform);
-            d->rasterizer->setAntialiased(s->flags.antialiased || s->flags.bilinear);
+            d->rasterizer->setAntialiased(s->flags.antialiased);
 
             const QRectF &rect = r.normalized();
             const QPointF a = s->matrix.map((rect.topLeft() + rect.bottomLeft()) * 0.5f);
@@ -2750,13 +2745,9 @@ void QRasterPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap,
             return;
         }
 #endif
-        bool wasAntialiased = s->flags.antialiased;
-        if (!s->flags.antialiased)
-            s->flags.antialiased = s->flags.bilinear;
         QPainterPath path;
         path.addRect(r);
         fillPath(path, &d->image_filler_xform);
-        s->flags.antialiased = wasAntialiased;
     } else {
         d->image_filler.clip = d->clip();
 

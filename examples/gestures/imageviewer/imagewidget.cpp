@@ -71,8 +71,12 @@ ImageWidget::ImageWidget(QWidget *parent)
     connect(pinchGesture, SIGNAL(cancelled()), this, SLOT(pinchTriggered()));
     connect(pinchGesture, SIGNAL(triggered()), this, SLOT(pinchTriggered()));
 
+//! [construct swipe gesture]
     QGesture *swipeGesture = new QSwipeGesture(this);
+//! [construct swipe gesture]
+//! [connect swipe gesture]
     connect(swipeGesture, SIGNAL(triggered()), this, SLOT(swipeTriggered()));
+//! [connect swipe gesture]
 }
 
 void ImageWidget::paintEvent(QPaintEvent*)
@@ -130,12 +134,15 @@ void ImageWidget::pinchTriggered()
     update();
 }
 
+//! [swipe slot start]
 void ImageWidget::swipeTriggered()
 {
     QSwipeGesture *pg = qobject_cast<QSwipeGesture*>(sender());
+//! [swipe slot start]
     qDebug() << (int) pg->horizontalDirection();
     qDebug() << pg->swipeAngle();
 
+//! [swipe slot finish]
     if (pg->horizontalDirection() == QSwipeGesture::Left
             || pg->verticalDirection() == QSwipeGesture::Up)
         goPrevImage();
@@ -143,6 +150,7 @@ void ImageWidget::swipeTriggered()
         goNextImage();
     update();
 }
+//! [swipe slot finish]
 
 void ImageWidget::resizeEvent(QResizeEvent*)
 {
@@ -245,5 +253,3 @@ void ImageWidget::goToImage(int index)
         nextImage = QImage();
     update();
 }
-
-#include "moc_imagewidget.cpp"

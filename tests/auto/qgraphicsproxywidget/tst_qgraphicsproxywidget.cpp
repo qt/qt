@@ -554,6 +554,9 @@ void tst_QGraphicsProxyWidget::eventFilter()
     QFETCH(bool, fromObject);
 
     QGraphicsScene scene;
+    QEvent windowActivate(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &windowActivate);
+
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     scene.addItem(proxy);
 
@@ -682,18 +685,18 @@ void tst_QGraphicsProxyWidget::focusInEvent_data()
 // protected void focusInEvent(QFocusEvent* event)
 void tst_QGraphicsProxyWidget::focusInEvent()
 {
+    // ### This test is just plain old broken
     QFETCH(bool, widgetHasFocus);
     QFETCH(bool, widgetCanHaveFocus);
 
-    QGraphicsView view;
-    QGraphicsScene scene(&view);
+    QGraphicsScene scene;
+    QEvent windowActivate(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &windowActivate);
+
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     proxy->setEnabled(true);
     scene.addItem(proxy);
     proxy->setVisible(true);
-    view.show();
-    QApplication::setActiveWindow(&view);
-    view.activateWindow();
 
     QWidget *widget = new QWidget;
     widget->resize(100, 100);
@@ -706,7 +709,11 @@ void tst_QGraphicsProxyWidget::focusInEvent()
 
     proxy->setWidget(widget);
     proxy->setFlag(QGraphicsItem::ItemIsFocusable, true); // <- shouldn't need to do this
-    QTRY_VERIFY(widget->isVisible() && view.isVisible());
+
+    // ### This test is just plain old broken - sending a focus in event
+    // does not cause items to gain input focus. The widget has focus
+    // because the proxy has focus, not because it got this event.
+
     QFocusEvent event(QEvent::FocusIn, Qt::TabFocusReason);
     event.ignore();
     proxy->call_focusInEvent(&event);
@@ -776,6 +783,12 @@ void tst_QGraphicsProxyWidget::focusNextPrevChild()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QApplication::setActiveWindow(&view);
+    QTest::qWait(250);
+    QTRY_COMPARE(QApplication::activeWindow(), &view);
     if (hasScene) {
         scene.addItem(proxy);
         proxy->show();
@@ -819,11 +832,15 @@ void tst_QGraphicsProxyWidget::focusOutEvent()
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     scene.addItem(proxy);
     view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
     QApplication::setActiveWindow(&view);
     view.activateWindow();
     view.setFocus();
-    QTRY_VERIFY(view.isVisible());
     QTest::qWait(125);
+    QTRY_VERIFY(view.isVisible());
+    QTRY_COMPARE(QApplication::activeWindow(), &view);
 
     QWidget *widget = new QWidget;
     widget->setFocusPolicy(Qt::WheelFocus);
@@ -1084,6 +1101,9 @@ void tst_QGraphicsProxyWidget::keyPressEvent()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
+    QApplication::setActiveWindow(&view);
+    QTest::qWait(250);
+    QTRY_COMPARE(QApplication::activeWindow(), &view);
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     proxy->setFlag(QGraphicsItem::ItemIsFocusable, true); // ### remove me!!!
@@ -1093,7 +1113,7 @@ void tst_QGraphicsProxyWidget::keyPressEvent()
     view.resize(100, 100);
     if (hasWidget) {
         proxy->setWidget(widget);
-	proxy->show();
+        proxy->show();
     }
     proxy->setPos(50, 0);
     scene.addItem(proxy);
@@ -1122,6 +1142,13 @@ void tst_QGraphicsProxyWidget::keyReleaseEvent()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QApplication::setActiveWindow(&view);
+    QTest::qWait(250);
+    QTRY_COMPARE(QApplication::activeWindow(), &view);
+
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     proxy->setFlag(QGraphicsItem::ItemIsFocusable, true); // ### remove me!!!
@@ -1131,7 +1158,7 @@ void tst_QGraphicsProxyWidget::keyReleaseEvent()
     view.resize(100, 100);
     if (hasWidget) {
         proxy->setWidget(widget);
-	proxy->show();
+        proxy->show();
     }
     proxy->setPos(50, 0);
     scene.addItem(proxy);
@@ -1162,6 +1189,10 @@ void tst_QGraphicsProxyWidget::mouseDoubleClickEvent()
     QGraphicsView view(&scene);
     view.show();
 
+    QApplication::setActiveWindow(&view);
+    QTest::qWait(250);
+    QTRY_COMPARE(QApplication::activeWindow(), &view);
+
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     proxy->setFlag(QGraphicsItem::ItemIsFocusable, true); // ### remove me!!!
     QLineEdit *widget = new QLineEdit;
@@ -1170,7 +1201,7 @@ void tst_QGraphicsProxyWidget::mouseDoubleClickEvent()
     view.resize(100, 100);
     if (hasWidget) {
         proxy->setWidget(widget);
-	proxy->show();
+        proxy->show();
     }
     proxy->setPos(50, 0);
     scene.addItem(proxy);
@@ -1476,7 +1507,8 @@ void tst_QGraphicsProxyWidget::scrollUpdate()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTest::qWait(200);
+    QTRY_COMPARE(view.npaints, 1);
+    QTest::qWait(20);
     widget->paintEventRegion = QRegion();
     widget->npaints = 0;
     view.paintEventRegion = QRegion();
@@ -1690,7 +1722,7 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleWidget()
 
     leftDial->setFocus();
     QTest::qWait(125);
-    QVERIFY(leftDial->hasFocus());
+    QTRY_VERIFY(leftDial->hasFocus());
 
     EventSpy eventSpy(edit);
 
@@ -1774,7 +1806,7 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleTwoWidgets()
 
     leftDial->setFocus();
     QTest::qWait(125);
-    QVERIFY(leftDial->hasFocus());
+    QTRY_VERIFY(leftDial->hasFocus());
 
     EventSpy eventSpy(edit);
     EventSpy eventSpy2(edit2);
@@ -1908,7 +1940,7 @@ void tst_QGraphicsProxyWidget::tabFocus_complexWidget()
 
     leftDial->setFocus();
     QTest::qWait(125);
-    QVERIFY(leftDial->hasFocus());
+    QTRY_VERIFY(leftDial->hasFocus());
 
     EventSpy eventSpy(edit1);
     EventSpy eventSpy2(edit2);
@@ -2042,7 +2074,7 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
 
     leftDial->setFocus();
     QTest::qWait(125);
-    QVERIFY(leftDial->hasFocus());
+    QTRY_VERIFY(leftDial->hasFocus());
 
     EventSpy eventSpy(edit1);
     EventSpy eventSpy2(edit2);
@@ -2178,7 +2210,7 @@ void tst_QGraphicsProxyWidget::setFocus_simpleWidget()
 
     leftDial->setFocus();
     QTest::qWait(125);
-    QVERIFY(leftDial->hasFocus());
+    QTRY_VERIFY(leftDial->hasFocus());
 
     EventSpy eventSpy(edit);
 
@@ -2250,7 +2282,7 @@ void tst_QGraphicsProxyWidget::setFocus_simpleTwoWidgets()
 
     leftDial->setFocus();
     QTest::qWait(125);
-    QVERIFY(leftDial->hasFocus());
+    QTRY_VERIFY(leftDial->hasFocus());
 
     EventSpy eventSpy(edit);
 
@@ -2329,7 +2361,7 @@ void tst_QGraphicsProxyWidget::setFocus_complexTwoWidgets()
 
     leftDial->setFocus();
     QTest::qWait(125);
-    QVERIFY(leftDial->hasFocus());
+    QTRY_VERIFY(leftDial->hasFocus());
 
     EventSpy eventSpy(edit1);
     EventSpy eventSpy2(edit2);
@@ -3230,7 +3262,8 @@ void tst_QGraphicsProxyWidget::updateAndDelete()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTest::qWait(200);
+    QTest::qWait(20);
+    QTRY_VERIFY(view.npaints > 0);
 
     const QRect itemDeviceBoundingRect = proxy->deviceTransform(view.viewportTransform())
                                          .mapRect(proxy->boundingRect()).toRect();
@@ -3327,9 +3360,10 @@ void tst_QGraphicsProxyWidget::clickFocus()
     QCOMPARE(widgetSpy.counts[QEvent::FocusIn], 0);
     QCOMPARE(widgetSpy.counts[QEvent::FocusOut], 0);
 
-    // Spontaneous mouse click sets focus on a clickable widget.
     QPointF lineEditCenter = proxy->mapToScene(proxy->boundingRect().center());
-    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(lineEditCenter));
+    // Spontaneous mouse click sets focus on a clickable widget.
+    for (int retry = 0; retry < 50 && !proxy->hasFocus(); retry++)
+        QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(lineEditCenter));
     QVERIFY(proxy->hasFocus());
     QVERIFY(proxy->widget()->hasFocus());
     QCOMPARE(proxySpy.counts[QEvent::FocusIn], 1);

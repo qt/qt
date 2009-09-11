@@ -1910,8 +1910,8 @@ static void convertToGLFormatHelper(QImage &dst, const QImage &img, GLenum textu
         int sbpl = img.bytesPerLine();
         int dbpl = dst.bytesPerLine();
 
-        int ix = 0x00010000 / sx;
-        int iy = 0x00010000 / sy;
+        int ix = int(0x00010000 / sx);
+        int iy = int(0x00010000 / sy);
 
         quint32 basex = int(0.5 * ix);
         quint32 srcy = int(0.5 * iy);
@@ -2036,14 +2036,14 @@ QGLTexture *QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 
 // #define QGL_BIND_TEXTURE_DEBUG
 
-QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint format,
+QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint internalFormat,
                                            const qint64 key, QGLContext::BindOptions options)
 {
     Q_Q(QGLContext);
 
 #ifdef QGL_BIND_TEXTURE_DEBUG
-    printf("QGLContextPrivate::bindTexture(), imageSize=(%d,%d), format=%x, options=%x\n",
-           image.width(), image.height(), format, int(options));
+    printf("QGLContextPrivate::bindTexture(), imageSize=(%d,%d), internalFormat =0x%x, options=%x\n",
+           image.width(), image.height(), internalFormat, int(options));
 #endif
 
     // Scale the pixmap if needed. GL textures needs to have the
@@ -2070,6 +2070,9 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     glBindTexture(target, tx_id);
     glTexParameterf(target, GL_TEXTURE_MAG_FILTER, filtering);
 
+#if defined(QT_OPENGL_ES_2)
+    bool genMipmap = false;
+#endif
     if (glFormat.directRendering()
         && QGLExtensions::glExtensions & QGLExtensions::GenerateMipmap
         && target == GL_TEXTURE_2D
@@ -2078,11 +2081,16 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 #ifdef QGL_BIND_TEXTURE_DEBUG
         printf(" - generating mipmaps\n");
 #endif
+#if !defined(QT_OPENGL_ES_2)
         glHint(GL_GENERATE_MIPMAP_HINT_SGIS, GL_NICEST);
 #ifndef QT_OPENGL_ES
         glTexParameteri(target, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
 #else
         glTexParameterf(target, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
+#endif
+#else
+        glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
+        genMipmap = true;
 #endif
         glTexParameterf(target, GL_TEXTURE_MIN_FILTER, options & QGLContext::LinearFilteringBindOption
                         ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_NEAREST);
@@ -2092,13 +2100,13 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 
     QImage::Format target_format = img.format();
     bool premul = options & QGLContext::PremultipliedAlphaBindOption;
-    GLenum texture_format;
+    GLenum externalFormat;
     GLuint pixel_type;
     if (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_1_2) {
-        texture_format = GL_BGRA;
+        externalFormat = GL_BGRA;
         pixel_type = GL_UNSIGNED_INT_8_8_8_8_REV;
     } else {
-        texture_format = GL_RGBA;
+        externalFormat = GL_RGBA;
         pixel_type = GL_UNSIGNED_BYTE;
     }
 
@@ -2121,12 +2129,10 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
         break;
     case QImage::Format_RGB16:
         pixel_type = GL_UNSIGNED_SHORT_5_6_5;
-        texture_format = GL_RGB;
-        format = GL_RGB;
+        externalFormat = GL_RGB;
+        internalFormat = GL_RGB;
         break;
     case QImage::Format_RGB32:
-        if (format == GL_RGBA)
-            format = GL_RGB;
         break;
     default:
         if (img.hasAlphaChannel()) {
@@ -2145,6 +2151,9 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     }
 
     if (options & QGLContext::InvertedYBindOption) {
+#ifdef QGL_BIND_TEXTURE_DEBUG
+            printf(" - flipping bits over y\n");
+#endif
         int ipl = img.bytesPerLine() / 4;
         int h = img.height();
         for (int y=0; y<h/2; ++y) {
@@ -2155,7 +2164,10 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
         }
     }
 
-    if (texture_format == GL_RGBA) {
+    if (externalFormat == GL_RGBA) {
+#ifdef QGL_BIND_TEXTURE_DEBUG
+            printf(" - doing byte swapping\n");
+#endif
         // The only case where we end up with a depth different from
         // 32 in the switch above is for the RGB16 case, where we set
         // the format to GL_RGB
@@ -2178,10 +2190,24 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
             }
         }
     }
+#ifdef QGL_BIND_TEXTURE_DEBUG
+    printf(" - uploading, image.format=%d, externalFormat=0x%x, internalFormat=0x%x, pixel_type=0x%x\n",
+           img.format(), externalFormat, internalFormat, pixel_type);
+#endif
 
     const QImage &constRef = img; // to avoid detach in bits()...
-    glTexImage2D(target, 0, format, img.width(), img.height(), 0, texture_format,
+    glTexImage2D(target, 0, internalFormat, img.width(), img.height(), 0, externalFormat,
                  pixel_type, constRef.bits());
+#if defined(QT_OPENGL_ES_2)
+    if (genMipmap)
+        glGenerateMipmap(target);
+#endif
+#ifndef QT_NO_DEBUG
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+        qWarning(" - texture upload failed, error code 0x%x\n", error);
+    }
+#endif
 
     // this assumes the size of a texture is always smaller than the max cache size
     int cost = img.width()*img.height()*4/1024;
@@ -2217,6 +2243,9 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
             return data->texture();
         }
     }
+#else
+    Q_UNUSED(pd);
+    Q_UNUSED(q);
 #endif
 
     const qint64 key = pixmap.cacheKey();
@@ -4798,6 +4827,19 @@ void QGLExtensions::init_extensions()
     glExtensions |= FramebufferObject;
     glExtensions |= GenerateMipmap;
 #endif
+#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
+    if (extensions.contains(QLatin1String("OES_framebuffer_object")))
+        glExtensions |= FramebufferObject;
+#endif
+#if defined(QT_OPENGL_ES)
+    if (extensions.contains(QLatin1String("OES_packed_depth_stencil")))
+        glExtensions |= PackedDepthStencil;
+#endif
+    if (extensions.contains(QLatin1String("ARB_framebuffer_object"))) {
+        // ARB_framebuffer_object also includes EXT_framebuffer_blit.
+        glExtensions |= FramebufferObject;
+        glExtensions |= FramebufferBlit;
+    }
     if (extensions.contains(QLatin1String("EXT_framebuffer_blit")))
         glExtensions |= FramebufferBlit;
 
@@ -4913,8 +4955,13 @@ QGLContextResource::QGLContextResource(FreeFunc f, QObject *parent)
 
 QGLContextResource::~QGLContextResource()
 {
-    while (!m_resources.empty())
-        removeGroup(m_resources.begin().key());
+#ifndef QT_NO_DEBUG
+    if (m_resources.size()) {
+        qWarning("QtOpenGL: Resources are still available at program shutdown.\n"
+                 "          This is possibly caused by a leaked QGLWidget, \n"
+                 "          QGLFrameBufferObject or QGLPixelBuffer.");
+    }
+#endif
 }
 
 void QGLContextResource::insert(const QGLContext *key, void *value)

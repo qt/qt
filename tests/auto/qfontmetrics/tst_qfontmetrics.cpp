@@ -72,6 +72,7 @@ private slots:
     void veryNarrowElidedText();
     void averageCharWidth();
     void elidedMultiLength();
+    void bearingIncludedInBoundingRect();
 };
 
 tst_QFontMetrics::tst_QFontMetrics()
@@ -210,11 +211,11 @@ void tst_QFontMetrics::elidedMultiLength()
     QString text1_short = "Shorter";
     QString text1_small = "small";
     QFontMetrics fm = QFontMetrics(QFont());
-    int width_long = fm.boundingRect(text1_long).width();
+    int width_long = fm.size(0, text1_long).width();
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, 8000), text1_long);
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_long + 1), text1_long);
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_long - 1), text1_short);
-    int width_short = fm.width(text1_short);
+    int width_short = fm.size(0, text1_short).width();
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_short + 1), text1_short);
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_short - 1), text1_small);
 
@@ -224,6 +225,17 @@ void tst_QFontMetrics::elidedMultiLength()
     int width_small = fm.width(text1_el);
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_small + 1), text1_el);
 
+}
+
+void tst_QFontMetrics::bearingIncludedInBoundingRect()
+{
+    QFont font;
+    font.setItalic(true);
+    QRect brectItalic = QFontMetrics(font).boundingRect("ITALIC");
+    font.setItalic(false);
+    QRect brectNormal = QFontMetrics(font).boundingRect("ITALIC");
+
+    QVERIFY(brectItalic.width() > brectNormal.width());
 }
 
 QTEST_MAIN(tst_QFontMetrics)
