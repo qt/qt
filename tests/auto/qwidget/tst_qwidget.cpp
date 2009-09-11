@@ -367,10 +367,12 @@ private slots:
     void setGraphicsEffect();
 
     void destroyBackingStore();
-    
+
+    void activateWindow();
+
 #ifdef Q_OS_SYMBIAN
     void cbaVisibility();
-#endif    
+#endif
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -9328,11 +9330,45 @@ void tst_QWidget::setGraphicsEffect()
     delete anotherWidget;
 }
 
+void tst_QWidget::activateWindow()
+{
+    // Test case for task 260685
+
+    // Create first mainwindow and set it active
+    QMainWindow* mainwindow = new QMainWindow();
+    QLabel* label = new QLabel(mainwindow);
+    mainwindow->setCentralWidget(label);
+    mainwindow->setVisible(true);
+    mainwindow->activateWindow();
+    qApp->processEvents();
+
+    QVERIFY(mainwindow->isActiveWindow());
+
+    // Create second mainwindow and set it active
+    QMainWindow* mainwindow2 = new QMainWindow();
+    QLabel* label2 = new QLabel(mainwindow2);
+    mainwindow2->setCentralWidget(label2);
+    mainwindow2->setVisible(true);
+    mainwindow2->activateWindow();
+    qApp->processEvents();
+
+    QVERIFY(!mainwindow->isActiveWindow());
+    QVERIFY(mainwindow2->isActiveWindow());
+
+    // Revert first mainwindow back to visible active
+    mainwindow->setVisible(true);
+    mainwindow->activateWindow();
+    qApp->processEvents();
+
+    QVERIFY(mainwindow->isActiveWindow());
+    QVERIFY(!mainwindow2->isActiveWindow());
+}
+
 #ifdef Q_OS_SYMBIAN
 void tst_QWidget::cbaVisibility()
 {
     // Test case for task 261048
-    
+
     // Create first mainwindow in fullsreen and activate it
     QMainWindow* mainwindow = new QMainWindow();
     QLabel* label = new QLabel(mainwindow);
@@ -9340,11 +9376,11 @@ void tst_QWidget::cbaVisibility()
     mainwindow->setWindowState(Qt::WindowFullScreen);
     mainwindow->setVisible(true);
     mainwindow->activateWindow();
-    qApp->processEvents();  
+    qApp->processEvents();
 
     QVERIFY(mainwindow->isActiveWindow());
-    QVERIFY(QDesktopWidget().availableGeometry().size() == mainwindow->size());    
-    
+    QVERIFY(QDesktopWidget().availableGeometry().size() == mainwindow->size());
+
     // Create second mainwindow in maximized and activate it
     QMainWindow* mainwindow2 = new QMainWindow();
     QLabel* label2 = new QLabel(mainwindow2);
@@ -9352,17 +9388,17 @@ void tst_QWidget::cbaVisibility()
     mainwindow2->setWindowState(Qt::WindowMaximized);
     mainwindow2->setVisible(true);
     mainwindow2->activateWindow();
-    qApp->processEvents();    
- 
+    qApp->processEvents();
+
     QVERIFY(!mainwindow->isActiveWindow());
     QVERIFY(mainwindow2->isActiveWindow());
-    QVERIFY(QDesktopWidget().availableGeometry().size() == mainwindow2->size());    
- 
+    QVERIFY(QDesktopWidget().availableGeometry().size() == mainwindow2->size());
+
     // Verify window decorations i.e. status pane and CBA are visible.
     CEikStatusPane* statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
     QVERIFY(statusPane->IsVisible());
     CEikButtonGroupContainer* buttonGroup = CEikonEnv::Static()->AppUiFactory()->Cba();
-    QVERIFY(buttonGroup->IsVisible());   
+    QVERIFY(buttonGroup->IsVisible());
 }
 #endif
 

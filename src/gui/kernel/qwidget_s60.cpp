@@ -315,7 +315,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         id = (WId)control;
         setWinId(id);
         QT_TRAP_THROWING(control->ConstructL(true,desktop));
-        
+
         if (!desktop) {
             TInt stackingFlags;
             if ((q->windowType() & Qt::Popup) == Qt::Popup) {
@@ -1013,8 +1013,8 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             }
 
         }
-#endif // Q_WS_S60    
-    
+#endif // Q_WS_S60
+
         createWinId();
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));
         QTLWExtra *top = d->topData();
@@ -1210,10 +1210,9 @@ void QWidget::activateWindow()
     Q_D(QWidget);
     QWidget *tlw = window();
     if (tlw->isVisible()) {
-        S60->windowGroup().SetOrdinalPosition(0);
         window()->createWinId();
-        RDrawableWindow* rw = tlw->d_func()->topData()->rwindow;
-        rw->SetOrdinalPosition(0);
+        WId id = tlw->internalWinId();
+        id->SetFocus(true);
     }
 }
 QT_END_NAMESPACE
