@@ -1360,25 +1360,23 @@ void QGraphicsAnchorLayoutPrivate::correctEdgeDirection(QGraphicsLayoutItem *&fi
 {
     Q_Q(QGraphicsAnchorLayout);
 
-    Qt::AnchorPoint effectiveFirst = firstEdge;
-    Qt::AnchorPoint effectiveSecond = secondEdge;
-
-    if (firstItem == q)
-        effectiveFirst = QGraphicsAnchorLayoutPrivate::oppositeEdge(firstEdge);
-    if (secondItem == q)
-        effectiveSecond = QGraphicsAnchorLayoutPrivate::oppositeEdge(secondEdge);
-
-    if (effectiveFirst < effectiveSecond) {
-
-        // ### DEBUG
-        /*        printf("Swapping Anchor from %s %d --to--> %s %d\n",
-               firstItem->isLayout() ? "<layout>" :
-               qPrintable(static_cast<QGraphicsWidget *>(firstItem)->data(0).toString()),
-               firstEdge,
-               secondItem->isLayout() ? "<layout>" :
-               qPrintable(static_cast<QGraphicsWidget *>(secondItem)->data(0).toString()),
-               secondEdge);
-        */
+    if ((firstItem != q) && (secondItem != q)) {
+        // If connection is between widgets (not the layout itself)
+        // Ensure that "right-edges" sit to the left of "left-edges".
+        if (firstEdge < secondEdge) {
+            qSwap(firstItem, secondItem);
+            qSwap(firstEdge, secondEdge);
+        }
+    } else if (firstItem == q) {
+        // If connection involves the right or bottom of a layout, ensure
+        // the layout is the second item.
+        if ((firstEdge == Qt::AnchorRight) || (firstEdge == Qt::AnchorBottom)) {
+            qSwap(firstItem, secondItem);
+            qSwap(firstEdge, secondEdge);
+        }
+    } else if ((secondEdge != Qt::AnchorRight) && (secondEdge != Qt::AnchorBottom)) {
+        // If connection involves the left, center or top of layout, ensure
+        // the layout is the first item.
         qSwap(firstItem, secondItem);
         qSwap(firstEdge, secondEdge);
     }
