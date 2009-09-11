@@ -372,7 +372,7 @@ private:
 
     friend class QByteRef;
     friend class QString;
-    friend QByteArray qUncompress(const uchar *data, int nbytes);
+    friend Q_CORE_EXPORT QByteArray qUncompress(const uchar *data, int nbytes);
 public:
     typedef Data * DataPtr;
     inline DataPtr &data_ptr() { return d; }
