@@ -7666,6 +7666,11 @@ void tst_QGraphicsItem::subFocus()
     QVERIFY(!rect->hasFocus());
     QVERIFY(!rect2->hasFocus());
     QVERIFY(rect3->hasFocus());
+
+    delete rect2;
+    QCOMPARE(text->focusItem(), (QGraphicsItem *)0);
+    QCOMPARE(text2->focusItem(), (QGraphicsItem *)0);
+    QCOMPARE(rect->focusItem(), (QGraphicsItem *)0);
 }
 
 void tst_QGraphicsItem::focusProxyDeletion()

@@ -1205,8 +1205,6 @@ QGraphicsItem::~QGraphicsItem()
         Q_ASSERT(d_ptr->children.isEmpty());
     }
 
-    d_ptr->subFocusItem = 0;
-
     if (d_ptr->scene) {
         d_ptr->scene->d_func()->removeItemHelper(this);
     } else {
