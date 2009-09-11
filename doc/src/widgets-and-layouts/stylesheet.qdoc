@@ -840,7 +840,8 @@
            \l{#first-ps}{:first}, \l{#last-ps}{:last},
            \l{#only-one-ps}{:only-one}, \l{#next-selected-ps}{:next-selected},
            \l{#previous-selected-ps}{:previous-selected},
-           \l{#selected-ps}{:selected} pseudo states.
+           \l{#selected-ps}{:selected},
+           and \l{#checked-ps}{:checked} pseudo states.
 
            Sort indicator in can be styled using the
            \l{#up-arrow-sub}{::up-arrow} and the
