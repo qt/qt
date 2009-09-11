@@ -1405,8 +1405,8 @@ void QGL2PaintEngineEx::ensureActive()
         glViewport(0, 0, d->width, d->height);
         glDepthMask(false);
         glDepthFunc(GL_LESS);
-        setState(state());
         d->needsSync = false;
+        setState(state());
     }
 }
 
@@ -1518,6 +1518,8 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
 {
 //     qDebug("QGL2PaintEngineEx::clip()");
     Q_D(QGL2PaintEngineEx);
+
+    ensureActive();
 
     if (op == Qt::ReplaceClip && !d->hasClipOperations())
         op = Qt::IntersectClip;
