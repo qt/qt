@@ -723,6 +723,7 @@ void QFxGridView::setModel(const QVariant &model)
     if (d->model) {
         disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
+        disconnect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
         disconnect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
         disconnect(d->model, SIGNAL(destroyingItem(QFxItem*)), this, SLOT(destroyingItem(QFxItem*)));
     }
@@ -751,6 +752,7 @@ void QFxGridView::setModel(const QVariant &model)
             d->updateCurrent(d->currentIndex);
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
+        connect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
         connect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
         connect(d->model, SIGNAL(destroyingItem(QFxItem*)), this, SLOT(destroyingItem(QFxItem*)));
         refill();
@@ -1353,6 +1355,67 @@ void QFxGridView::destroyRemoved()
     }
 
     // Correct the positioning of the items
+    d->layout();
+}
+
+void QFxGridView::itemsMoved(int from, int to, int count)
+{
+    Q_D(QFxGridView);
+    QHash<int,FxGridItem*> moved;
+
+    QList<FxGridItem*>::Iterator it = d->visibleItems.begin();
+    while (it != d->visibleItems.end()) {
+        FxGridItem *item = *it;
+        if (item->index >= from && item->index < from + count) {
+            // take the items that are moving
+            item->index += (to-from);
+            moved.insert(item->index, item);
+            it = d->visibleItems.erase(it);
+        } else {
+            if (item->index > from && item->index != -1) {
+                // move everything after the moved items.
+                item->index -= count;
+            }
+            ++it;
+        }
+    }
+
+    int remaining = count;
+    int endIndex = d->visibleIndex;
+    it = d->visibleItems.begin();
+    while (it != d->visibleItems.end()) {
+        FxGridItem *item = *it;
+        if (remaining && item->index >= to && item->index < to + count) {
+            // place items in the target position, reusing any existing items
+            FxGridItem *movedItem = moved.take(item->index);
+            if (!movedItem)
+                movedItem = d->createItem(item->index);
+            it = d->visibleItems.insert(it, movedItem);
+            ++it;
+            --remaining;
+        } else {
+            if (item->index != -1) {
+                if (item->index >= to) {
+                    // update everything after the moved items.
+                    item->index += count;
+                }
+                endIndex = item->index;
+            }
+            ++it;
+        }
+    }
+
+    // If we have moved items to the end of the visible items
+    // then add any existing moved items that we have
+    while (FxGridItem *item = moved.take(endIndex+1)) {
+        d->visibleItems.append(item);
+        ++endIndex;
+    }
+
+    // Whatever moved items remain are no longer visible items.
+    while (moved.count())
+        d->releaseItem(moved.take(moved.begin().key()));
+
     d->layout();
 }
 

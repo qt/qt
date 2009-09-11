@@ -130,6 +130,7 @@ private Q_SLOTS:
     void trackedPositionChanged();
     void itemsInserted(int index, int count);
     void itemsRemoved(int index, int count);
+    void itemsMoved(int from, int to, int count);
     void destroyRemoved();
     void createdItem(int index, QFxItem *item);
     void destroyingItem(QFxItem *item);
