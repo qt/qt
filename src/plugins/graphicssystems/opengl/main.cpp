@@ -41,6 +41,7 @@
 
 #include <private/qgraphicssystemplugin_p.h>
 #include <private/qgraphicssystem_gl_p.h>
+#include <qgl.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -53,11 +54,18 @@ public:
 
 QStringList QGLGraphicsSystemPlugin::keys() const
 {
-    return QStringList(QLatin1String("OpenGL"));
+    QStringList list;
+    list << QLatin1String("OpenGL") << QLatin1String("OpenGL1");
+    return list;
 }
 
 QGraphicsSystem* QGLGraphicsSystemPlugin::create(const QString& system)
 {
+    if (system.toLower() == QLatin1String("opengl1")) {
+        QGL::setPreferredPaintEngine(QPaintEngine::OpenGL);
+        return new QGLGraphicsSystem;
+    }
+
     if (system.toLower() == QLatin1String("opengl"))
         return new QGLGraphicsSystem;
 

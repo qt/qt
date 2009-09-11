@@ -473,6 +473,7 @@ void tst_QPropertyAnimation::startWhenAnotherIsRunning()
     {
         //normal case: the animation finishes and is deleted
         QPointer<QVariantAnimation> anim = new QPropertyAnimation(&o, "ole");
+        anim->setEndValue(100);
         QSignalSpy runningSpy(anim, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
         anim->start(QVariantAnimation::DeleteWhenStopped);
         QTest::qWait(anim->duration() + 50);
@@ -482,10 +483,12 @@ void tst_QPropertyAnimation::startWhenAnotherIsRunning()
 
     {
         QPointer<QVariantAnimation> anim = new QPropertyAnimation(&o, "ole");
+        anim->setEndValue(100);
         QSignalSpy runningSpy(anim, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
         anim->start(QVariantAnimation::DeleteWhenStopped);
         QTest::qWait(anim->duration()/2);
         QPointer<QVariantAnimation> anim2 = new QPropertyAnimation(&o, "ole");
+        anim2->setEndValue(100);
         QCOMPARE(runningSpy.count(), 1);
         QCOMPARE(anim->state(), QVariantAnimation::Running);
 
@@ -634,6 +637,7 @@ void tst_QPropertyAnimation::playForwardBackward()
     QCOMPARE(o.property("ole").toInt(), 0);
 
     QPropertyAnimation anim(&o, "ole");
+    anim.setStartValue(0);
     anim.setEndValue(100);
     anim.start();
     QTest::qWait(anim.duration() + 50);
@@ -906,6 +910,7 @@ void tst_QPropertyAnimation::operationsInStates()
     QObject o;
     o.setProperty("ole", 42);
     QPropertyAnimation anim(&o, "ole");
+    anim.setEndValue(100);
     QSignalSpy spy(&anim, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
 
     anim.stop();
