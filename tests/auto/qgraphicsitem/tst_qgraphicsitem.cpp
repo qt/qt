@@ -294,6 +294,7 @@ private slots:
     void activationOnShowHide();
     void moveWhileDeleting();
     void ensureDirtySceneTransform();
+    void focusScope();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -8243,6 +8244,94 @@ void tst_QGraphicsItem::ensureDirtySceneTransform()
     QCOMPARE(child->sceneTransform(), QTransform::fromTranslate(-90, -90));
     QCOMPARE(child2->sceneTransform(), QTransform::fromTranslate(-85, -85));
     QCOMPARE(child3->sceneTransform(), QTransform::fromTranslate(-80, -80));
+}
+
+void tst_QGraphicsItem::focusScope()
+{
+    // ItemIsFocusScope is an internal feature (for now).
+    QGraphicsScene scene;
+
+    QGraphicsRectItem *scope3 = new QGraphicsRectItem;
+    scope3->setData(0, "scope3");
+    scope3->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemIsFocusScope);
+    scope3->setFocus();
+    QVERIFY(!scope3->focusScopeItem());
+    QCOMPARE(scope3->focusItem(), (QGraphicsItem *)scope3);
+
+    QGraphicsRectItem *scope2 = new QGraphicsRectItem;
+    scope2->setData(0, "scope2");
+    scope2->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemIsFocusScope);
+    scope2->setFocus();
+    QVERIFY(!scope2->focusScopeItem());
+    scope3->setParentItem(scope2);
+    QCOMPARE(scope2->focusScopeItem(), (QGraphicsItem *)scope3);
+    QCOMPARE(scope2->focusItem(), (QGraphicsItem *)scope3);
+
+    QGraphicsRectItem *scope1 = new QGraphicsRectItem;
+    scope1->setData(0, "scope1");
+    scope1->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemIsFocusScope);
+    scope1->setFocus();
+    QVERIFY(!scope1->focusScopeItem());
+    scope2->setParentItem(scope1);
+
+    QCOMPARE(scope1->focusItem(), (QGraphicsItem *)scope3);
+    QCOMPARE(scope2->focusItem(), (QGraphicsItem *)scope3);
+    QCOMPARE(scope3->focusItem(), (QGraphicsItem *)scope3);
+    QCOMPARE(scope1->focusScopeItem(), (QGraphicsItem *)scope2);
+    QCOMPARE(scope2->focusScopeItem(), (QGraphicsItem *)scope3);
+    QCOMPARE(scope3->focusScopeItem(), (QGraphicsItem *)0);
+
+    scene.addItem(scope1);
+
+    QEvent windowActivate(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &windowActivate);
+    scene.setFocus();
+
+    QCOMPARE(scope1->focusItem(), (QGraphicsItem *)scope3);
+    QCOMPARE(scope2->focusItem(), (QGraphicsItem *)scope3);
+    QCOMPARE(scope3->focusItem(), (QGraphicsItem *)scope3);
+    QCOMPARE(scope1->focusScopeItem(), (QGraphicsItem *)scope2);
+    QCOMPARE(scope2->focusScopeItem(), (QGraphicsItem *)scope3);
+    QCOMPARE(scope3->focusScopeItem(), (QGraphicsItem *)0);
+
+    QVERIFY(scope3->hasFocus());
+
+    scope3->hide();
+    QVERIFY(scope2->hasFocus());
+    scope2->hide();
+    QVERIFY(scope1->hasFocus());
+    scope2->show();
+    QVERIFY(scope2->hasFocus());
+    scope3->show();
+    QVERIFY(scope3->hasFocus());
+    scope1->hide();
+    QVERIFY(!scope3->hasFocus());
+    scope1->show();
+    QVERIFY(scope3->hasFocus());
+    scope3->clearFocus();
+    QVERIFY(scope2->hasFocus());
+    scope2->clearFocus();
+    QVERIFY(scope1->hasFocus());
+    scope2->hide();
+    scope2->show();
+    QVERIFY(!scope2->hasFocus());
+    QVERIFY(scope3->hasFocus());
+
+    QGraphicsRectItem *rect4 = new QGraphicsRectItem;
+    rect4->setData(0, "rect4");
+    rect4->setParentItem(scope3);
+
+    QGraphicsRectItem *rect5 = new QGraphicsRectItem;
+    rect5->setData(0, "rect5");
+    rect5->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemIsFocusScope);
+    rect5->setFocus();
+    rect5->setParentItem(rect4);
+    QCOMPARE(scope3->focusScopeItem(), (QGraphicsItem *)rect5);
+    QVERIFY(rect5->hasFocus());
+
+    rect4->setParentItem(0);
+    QCOMPARE(scope3->focusScopeItem(), (QGraphicsItem *)0);
+    QVERIFY(!scope3->hasFocus());
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

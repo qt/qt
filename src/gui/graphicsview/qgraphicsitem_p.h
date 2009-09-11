@@ -129,6 +129,7 @@ public:
         itemDepth(-1),
         focusProxy(0),
         subFocusItem(0),
+        focusScopeItem(0),
         imHints(Qt::ImhNone),
         acceptedMouseButtons(0x1f),
         visible(1),
@@ -412,9 +413,11 @@ public:
                || (childrenCombineOpacity() && isFullyTransparent());
     }
 
-    void setSubFocus();
-    void clearSubFocus();
+    void setFocusHelper(Qt::FocusReason focusReason, bool climb);
+    void setSubFocus(QGraphicsItem *rootItem = 0);
+    void clearSubFocus(QGraphicsItem *rootItem = 0);
     void resetFocusProxy();
+    virtual void subFocusItemChange();
 
     inline QTransform transformToParent() const;
     inline void ensureSortedChildren();
@@ -439,6 +442,7 @@ public:
     QGraphicsItem *focusProxy;
     QList<QGraphicsItem **> focusProxyRefs;
     QGraphicsItem *subFocusItem;
+    QGraphicsItem *focusScopeItem;
     Qt::InputMethodHints imHints;
 
     // Packed 32 bits
