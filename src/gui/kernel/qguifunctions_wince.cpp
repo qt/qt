@@ -314,8 +314,8 @@ void qt_wince_maximize(QWidget *widget)
     }
 }
 
-void qt_wince_minimize(HWND hwnd) {
-
+void qt_wince_minimize(HWND hwnd)
+{
     uint exstyle = GetWindowLongW(hwnd, GWL_EXSTYLE);
     uint style = GetWindowLongW(hwnd, GWL_STYLE);
     RECT rect;
@@ -324,9 +324,12 @@ void qt_wince_minimize(HWND hwnd) {
     AdjustWindowRectEx(&crect, style & ~WS_OVERLAPPED, FALSE, exstyle);
     MoveWindow(hwnd, rect.left - crect.left, rect.top - crect.top, 0, 0, true);
     SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong (hwnd, GWL_EXSTYLE) | WS_EX_NODRAG);
+#ifdef Q_OS_WINCE_WM
     ShowWindow(hwnd, SW_HIDE);
+#else
+    ShowWindow(hwnd, SW_MINIMIZE);
+#endif
 }
-
 
 void qt_wince_hide_taskbar(HWND hwnd) {
     if (ptrAygFullScreen)
