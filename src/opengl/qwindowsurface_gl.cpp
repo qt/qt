@@ -579,7 +579,8 @@ void QGLWindowSurface::updateGeometry()
 #ifdef QT_OPENGL_ES_2
         && (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit)
 #endif
-        && (d_ptr->fbo || !d_ptr->tried_fbo))
+        && (d_ptr->fbo || !d_ptr->tried_fbo)
+        && qt_gl_preferGL2Engine())
     {
         d_ptr->tried_fbo = true;
         hijackWindow(window());
