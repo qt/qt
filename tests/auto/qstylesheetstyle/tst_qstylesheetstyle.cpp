@@ -850,6 +850,8 @@ void tst_QStyleSheetStyle::hoverColors()
         QTest::mouseMove ( widget, QPoint(5,5));
         QTest::qWait(60);
 
+        QVERIFY(widget->testAttribute(Qt::WA_UnderMouse));
+
         QImage image(frame.width(), frame.height(), QImage::Format_ARGB32);
         frame.render(&image);
 
@@ -876,6 +878,8 @@ void tst_QStyleSheetStyle::hoverColors()
         //move the mouse again inside the widget, it should be colored
         QTest::mouseMove (widget, QPoint(5,5));
         QTest::qWait(60);
+
+        QVERIFY(widget->testAttribute(Qt::WA_UnderMouse));
 
         frame.render(&image);
 
