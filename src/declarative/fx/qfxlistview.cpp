@@ -377,7 +377,6 @@ public:
     QmlComponent *highlightComponent;
     FxListItem *highlight;
     FxListItem *trackedItem;
-    QFxItem *activeItem; //XXX fix
     enum MovementReason { Other, Key, Mouse };
     MovementReason moveReason;
     int buffer;
@@ -1431,9 +1430,7 @@ void QFxListView::itemResized()
     Q_D(QFxListView);
     QFxItem *item = qobject_cast<QFxItem*>(sender());
     if (item) {
-        d->activeItem = item; // Ick - don't delete the sender
         d->layout();
-        d->activeItem = 0;
         d->fixupPosition();
     }
 }
@@ -1642,33 +1639,66 @@ void QFxListView::destroyRemoved()
 
 void QFxListView::itemsMoved(int from, int to, int count)
 {
-    qWarning() << "ListView does not support moving in models";
-
     Q_D(QFxListView);
-    int fromCount = count;
-    int toCount = count;
-    bool fromVisible = d->mapRangeFromModel(from, fromCount);
-    bool toVisible = d->mapRangeFromModel(to, toCount);
+    QHash<int,FxListItem*> moved;
+    int moveBy = 0;
 
-    if (!fromVisible && !toVisible) {
-        // The items are outside the visible range.
-        if (d->visibleItems.count())
-            d->visibleIndex = -1;
-        for (int i = 0; i < d->visibleItems.count(); ++i) {
-            FxListItem *listItem = d->visibleItems.at(i);
-            if (listItem->index != -1) {
-                listItem->index = d->model->indexOf(listItem->item, this);
-                if (d->visibleIndex < 0)
-                    d->visibleIndex = listItem->index;
+    QList<FxListItem*>::Iterator it = d->visibleItems.begin();
+    while (it != d->visibleItems.end()) {
+        FxListItem *item = *it;
+        if (item->index >= from && item->index < from + count) {
+            // take the items that are moving
+            item->index += (to-from);
+            moved.insert(item->index, item);
+            moveBy += item->size();
+            it = d->visibleItems.erase(it);
+        } else {
+            if (item->index > from && item->index != -1) {
+                // move everything after the moved items.
+                item->index -= count;
+                item->setPosition(item->position()-moveBy);
             }
+            ++it;
         }
-        if (d->currentItem) {
-            d->currentItem->index = d->model->indexOf(d->currentItem->item, this);
-            d->currentIndex = d->currentItem->index;
-        }
-        return;
     }
 
+    int remaining = count;
+    int endIndex = d->visibleIndex;
+    it = d->visibleItems.begin();
+    while (it != d->visibleItems.end()) {
+        FxListItem *item = *it;
+        if (remaining && item->index >= to && item->index < to + count) {
+            // place items in the target position, reusing any existing items
+            FxListItem *movedItem = moved.take(item->index);
+            if (!movedItem)
+                movedItem = d->createItem(item->index);
+            it = d->visibleItems.insert(it, movedItem);
+            ++it;
+            --remaining;
+        } else {
+            if (item->index != -1) {
+                if (item->index >= to) {
+                    // update everything after the moved items.
+                    item->index += count;
+                }
+                endIndex = item->index;
+            }
+            ++it;
+        }
+    }
+
+    // If we have moved items to the end of the visible items
+    // then add any existing moved items that we have
+    while (FxListItem *item = moved.take(endIndex+1)) {
+        d->visibleItems.append(item);
+        ++endIndex;
+    }
+
+    // Whatever moved items remain are no longer visible items.
+    while (moved.count())
+        d->releaseItem(moved.take(moved.begin().key()));
+
+    d->layout();
 }
 
 void QFxListView::createdItem(int index, QFxItem *item)

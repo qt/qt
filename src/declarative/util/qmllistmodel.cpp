@@ -497,7 +497,7 @@ void QmlListModel::insert(int index, const QScriptValue& valuemap)
 */
 void QmlListModel::move(int from, int to, int n)
 {
-    if (from+n > count() || to+n > count() || n==0 || from==to)
+    if (from+n > count() || to+n > count() || n==0 || from==to || from < 0 || to < 0)
         return;
     if (from > to) {
         // Only move forwards - flip if backwards moving
