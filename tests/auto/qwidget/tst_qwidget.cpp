@@ -74,6 +74,7 @@
 #include <akntitle.h>               // CAknTitlePane
 #include <akncontext.h>             // CAknContextPane
 #include <eikspane.h>               // CEikStatusPane
+#include <eikbtgpc.h>               // CEikButtonGroupContainer
 #endif
 
 #ifdef Q_WS_QWS
@@ -366,6 +367,10 @@ private slots:
     void setGraphicsEffect();
 
     void destroyBackingStore();
+    
+#ifdef Q_OS_SYMBIAN
+    void cbaVisibility();
+#endif    
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -9322,6 +9327,44 @@ void tst_QWidget::setGraphicsEffect()
     QVERIFY(!blurEffect);
     delete anotherWidget;
 }
+
+#ifdef Q_OS_SYMBIAN
+void tst_QWidget::cbaVisibility()
+{
+    // Test case for task 261048
+    
+    // Create first mainwindow in fullsreen and activate it
+    QMainWindow* mainwindow = new QMainWindow();
+    QLabel* label = new QLabel(mainwindow);
+    mainwindow->setCentralWidget(label);
+    mainwindow->setWindowState(Qt::WindowFullScreen);
+    mainwindow->setVisible(true);
+    mainwindow->activateWindow();
+    qApp->processEvents();  
+
+    QVERIFY(mainwindow->isActiveWindow());
+    QVERIFY(QDesktopWidget().availableGeometry().size() == mainwindow->size());    
+    
+    // Create second mainwindow in maximized and activate it
+    QMainWindow* mainwindow2 = new QMainWindow();
+    QLabel* label2 = new QLabel(mainwindow2);
+    mainwindow2->setCentralWidget(label2);
+    mainwindow2->setWindowState(Qt::WindowMaximized);
+    mainwindow2->setVisible(true);
+    mainwindow2->activateWindow();
+    qApp->processEvents();    
+ 
+    QVERIFY(!mainwindow->isActiveWindow());
+    QVERIFY(mainwindow2->isActiveWindow());
+    QVERIFY(QDesktopWidget().availableGeometry().size() == mainwindow2->size());    
+ 
+    // Verify window decorations i.e. status pane and CBA are visible.
+    CEikStatusPane* statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
+    QVERIFY(statusPane->IsVisible());
+    CEikButtonGroupContainer* buttonGroup = CEikonEnv::Static()->AppUiFactory()->Cba();
+    QVERIFY(buttonGroup->IsVisible());   
+}
+#endif
 
 QTEST_MAIN(tst_QWidget)
 #include "tst_qwidget.moc"
