@@ -1,4 +1,5 @@
 import Qt 4.6
+import "content"
 
 Item {
     width: 320
@@ -75,10 +76,12 @@ Item {
                 anchors.right: parent.right
                 width: childrenRect.width
                 Image { source: "content/pics/add.png"
-                    MouseRegion { anchors.fill: parent; onClicked: FruitModel.set(index,"cost",Number(cost)+0.25) }
+                    ClickAutoRepeating { id: ClickUp; anchors.fill: parent; onClicked: FruitModel.set(index,"cost",Number(cost)+0.25) }
+                    scale: ClickUp.pressed ? 0.9 : 1
                 }
                 Image { source: "content/pics/del.png"
-                    MouseRegion { anchors.fill: parent; onClicked: FruitModel.set(index,"cost",Number(cost)-0.25) }
+                    ClickAutoRepeating { id: ClickDown; anchors.fill: parent; onClicked: FruitModel.set(index,"cost",Math.max(0,Number(cost)-0.25)) }
+                    scale: ClickDown.pressed ? 0.9 : 1
                 }
                 Image { source: "content/pics/trash.png"
                     MouseRegion { anchors.fill: parent; onClicked: FruitModel.remove(index) }
