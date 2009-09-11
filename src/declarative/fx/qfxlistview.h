@@ -67,13 +67,13 @@ class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable
     Q_PROPERTY(QVariant model READ model WRITE setModel)
     Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate) //### what happens if delegate is not a QFxItem?
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
-    Q_PROPERTY(QFxItem *current READ currentItem NOTIFY currentIndexChanged) //### currentItem
+    Q_PROPERTY(QFxItem *currentItem READ currentItem NOTIFY currentIndexChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(QmlComponent *highlight READ highlight WRITE setHighlight)
     Q_PROPERTY(bool autoHighlight READ autoHighlight WRITE setAutoHighlight) //### highlightFollowsCurrentItem
     Q_PROPERTY(CurrentItemPositioning currentItemPositioning READ currentItemPositioning WRITE setCurrentItemPositioning) //### mode
     Q_PROPERTY(int snapPosition READ snapPosition WRITE setSnapPosition)
-    Q_PROPERTY(int spacing READ spacing WRITE setSpacing NOTIFY spacingChanged) //### qreal
+    Q_PROPERTY(qreal spacing READ spacing WRITE setSpacing NOTIFY spacingChanged)
     Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation)
     Q_PROPERTY(bool wrap READ isWrapEnabled WRITE setWrapEnabled) //### keyNavigationWraps, stops at end when held
     Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer)
@@ -115,8 +115,8 @@ public:
     int snapPosition() const;
     void setSnapPosition(int pos);
 
-    int spacing() const;
-    void setSpacing(int spacing);
+    qreal spacing() const;
+    void setSpacing(qreal spacing);
 
     Qt::Orientation orientation() const;
     void setOrientation(Qt::Orientation);
