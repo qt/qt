@@ -1225,12 +1225,35 @@ void QGraphicsAnchorLayoutPrivate::setAnchorSize(AnchorData *data, const qreal *
     // search recursively through all composite anchors
     Q_ASSERT(data);
     restoreSimplifiedGraph(edgeOrientation(data->from->m_edge));
+
+    QGraphicsLayoutItem *firstItem = data->from->m_item;
+    QGraphicsLayoutItem *secondItem = data->to->m_item;
+    Qt::AnchorPoint firstEdge = data->from->m_edge;
+    Qt::AnchorPoint secondEdge = data->to->m_edge;
+
+    // Use heuristics to find out what the user meant with this anchor.
+    correctEdgeDirection(firstItem, firstEdge, secondItem, secondEdge);
+    if (data->from->m_item != firstItem)
+        qSwap(data->from, data->to);
+
     if (anchorSize) {
-        data->setFixedSize(*anchorSize);
+        // ### The current implementation makes "setAnchorSize" behavior
+        //     dependent on the argument order for cases where we have
+        //     no heuristic. Ie. two widgets, same anchor point.
+
+        // We cannot have negative sizes inside the graph. This would cause
+        // the simplex solver to fail because all simplex variables are
+        // positive by definition.
+        // "negative spacing" is handled by inverting the standard item order.
+        if (*anchorSize >= 0) {
+            data->setFixedSize(*anchorSize);
+        } else {
+            data->setFixedSize(-*anchorSize);
+            qSwap(data->from, data->to);
+        }
     } else {
         data->unsetSize();
     }
-
     q->invalidate();
 }
 
