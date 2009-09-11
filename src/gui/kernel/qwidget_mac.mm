@@ -122,7 +122,7 @@ QT_BEGIN_NAMESPACE
 
 extern "C" {
     extern OSStatus _HIViewScrollRectWithOptions(HIViewRef, const HIRect *, CGFloat, CGFloat,
-                                                 OptionBits);
+                                                 OptionBits) __attribute__ ((weak));
 }
 #define kHIViewScrollRectAdjustInvalid 1
 #define kHIViewScrollRectDontInvalidateRevealedArea 2
