@@ -3781,7 +3781,10 @@ static void qt_mac_update_widget_posisiton(QWidget *q, QRect oldRect, QRect newR
         (oldRect.isValid() == false || newRect.isValid() == false)  ||
 
         // the position update is a part of a drag-and-drop operation
-        QDragManager::self()->object
+        QDragManager::self()->object || 
+        
+        // we are on Panther (no HIViewSetNeedsDisplayInRect) 
+        QSysInfo::MacintoshVersion < QSysInfo::MV_10_4 
     ){
         HIViewSetFrame(view, &bounds);
         return;
