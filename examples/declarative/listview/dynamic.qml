@@ -59,8 +59,8 @@ Item {
         id: FruitDelegate
         Item {
             width: parent.width; height: 55
-            Text { id: Label; font.pixelSize: 24; text: name }
-            Text { font.pixelSize: 24; text: '$'+Number(cost).toFixed(2); anchors.right: ItemButtons.left }
+            Text { id: Label; font.pixelSize: 24; text: name; elide: "ElideRight"; anchors.right: Cost.left; anchors.left:parent.left }
+            Text { id: Cost; font.pixelSize: 24; text: '$'+Number(cost).toFixed(2); anchors.right: ItemButtons.left }
             Row { 
                 anchors.top: Label.bottom
                 spacing: 5
