@@ -2183,8 +2183,8 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
         }
     }
 #ifdef QGL_BIND_TEXTURE_DEBUG
-    printf(" - uploading, image.format=%d, externalFormat=0x%d, internalFormat=0x%d\n",
-           img.format(), externalFormat, internalFormat);
+    printf(" - uploading, image.format=%d, externalFormat=0x%x, internalFormat=0x%x, pixel_type=0x%x\n",
+           img.format(), externalFormat, internalFormat, pixel_type);
 #endif
 
     const QImage &constRef = img; // to avoid detach in bits()...
