@@ -67,7 +67,7 @@ class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable
     Q_PROPERTY(QVariant model READ model WRITE setModel)
     Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate) //### what happens if delegate is not a QFxItem?
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
-    Q_PROPERTY(QFxItem *current READ currentItem NOTIFY currentIndexChanged) //### currentItem
+    Q_PROPERTY(QFxItem *currentItem READ currentItem NOTIFY currentIndexChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(QmlComponent *highlight READ highlight WRITE setHighlight)
     Q_PROPERTY(bool autoHighlight READ autoHighlight WRITE setAutoHighlight) //### highlightFollowsCurrentItem

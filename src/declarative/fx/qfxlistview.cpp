@@ -983,10 +983,10 @@ void QFxListView::setDelegate(QmlComponent *delegate)
 
 /*!
     \qmlproperty int ListView::currentIndex
-    \qmlproperty Item ListView::current
+    \qmlproperty Item ListView::currentItem
 
     \c currentIndex holds the index of the current item.
-    \c current is the current item.  Note that the position of the current item
+    \c currentItem is the current item.  Note that the position of the current item
     may only be approximate until it becomes visible in the view.
 */
 int QFxListView::currentIndex() const
