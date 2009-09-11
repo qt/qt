@@ -252,17 +252,12 @@ void QFxImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 
     if (width() != d->pix.width() || height() != d->pix.height()) {
         if (d->fillMode >= Tile) {
-            p->save();
-            p->setClipRect(0, 0, width(), height(), Qt::IntersectClip);
-
             if (d->fillMode == Tile)
                 p->drawTiledPixmap(QRectF(0,0,width(),height()), d->pix);
             else if (d->fillMode == TileVertically)
                 p->drawTiledPixmap(QRectF(0,0,d->pix.width(),height()), d->pix);
             else
                 p->drawTiledPixmap(QRectF(0,0,width(),d->pix.height()), d->pix);
-
-            p->restore();
         } else {
             qreal widthScale = width() / qreal(d->pix.width());
             qreal heightScale = height() / qreal(d->pix.height());
