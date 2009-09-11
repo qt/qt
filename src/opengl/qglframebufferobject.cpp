@@ -854,6 +854,7 @@ bool QGLFramebufferObject::bind()
     d->valid = d->checkFramebufferStatus();
     const QGLContext *context = QGLContext::currentContext();
     if (d->valid && context) {
+        Q_ASSERT(QGLContextPrivate::contextGroup(context) == ctx);
         // Save the previous setting to automatically restore in release().
         if (context->d_ptr->current_fbo != d->fbo) {
             d->previous_fbo = context->d_ptr->current_fbo;
@@ -885,6 +886,7 @@ bool QGLFramebufferObject::release()
 
     const QGLContext *context = QGLContext::currentContext();
     if (context) {
+        Q_ASSERT(QGLContextPrivate::contextGroup(context) == ctx);
         // Restore the previous setting for stacked framebuffer objects.
         if (d->previous_fbo != context->d_ptr->current_fbo) {
             context->d_ptr->current_fbo = d->previous_fbo;
