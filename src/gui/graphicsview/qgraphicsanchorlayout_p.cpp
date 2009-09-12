@@ -1772,9 +1772,23 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
   Use the current vertices distance to calculate and set the geometry of
   each item.
 */
-void QGraphicsAnchorLayoutPrivate::setItemsGeometries()
+void QGraphicsAnchorLayoutPrivate::setItemsGeometries(const QRectF &geom)
 {
+    Q_Q(QGraphicsAnchorLayout);
     AnchorVertex *firstH, *secondH, *firstV, *secondV;
+
+    qreal top;
+    qreal left;
+    qreal right;
+
+    q->getContentsMargins(&left, &top, &right, 0);
+    const Qt::LayoutDirection visualDir = visualDirection();
+    if (visualDir == Qt::RightToLeft)
+        qSwap(left, right);
+
+    left += geom.left();
+    top += geom.top();
+    right = geom.right() - right;
 
     foreach (QGraphicsLayoutItem *item, items) {
         firstH = internalVertex(item, Qt::AnchorLeft);
@@ -1782,10 +1796,18 @@ void QGraphicsAnchorLayoutPrivate::setItemsGeometries()
         firstV = internalVertex(item, Qt::AnchorTop);
         secondV = internalVertex(item, Qt::AnchorBottom);
 
-        QPointF topLeft(firstH->distance, firstV->distance);
-        QPointF bottomRight(secondH->distance, secondV->distance);
+        QRectF newGeom;
+        newGeom.setTop(top + firstV->distance);
+        newGeom.setBottom(top + secondV->distance);
 
-        item->setGeometry(QRectF(topLeft, bottomRight));
+        if (visualDir == Qt::LeftToRight) {
+            newGeom.setLeft(left + firstH->distance);
+            newGeom.setRight(left + secondH->distance);
+        } else {
+            newGeom.setLeft(right - secondH->distance);
+            newGeom.setRight(right - firstH->distance);
+        }
+        item->setGeometry(newGeom);
     }
 }
 
@@ -1798,26 +1820,13 @@ void QGraphicsAnchorLayoutPrivate::setItemsGeometries()
 void QGraphicsAnchorLayoutPrivate::calculateVertexPositions(
     QGraphicsAnchorLayoutPrivate::Orientation orientation)
 {
-    Q_Q(QGraphicsAnchorLayout);
     QQueue<QPair<AnchorVertex *, AnchorVertex *> > queue;
     QSet<AnchorVertex *> visited;
 
     // Get root vertex
     AnchorVertex *root = graph[orientation].rootVertex();
 
-    qreal widgetMargin;
-    qreal layoutMargin;
-
-    // Initialize the first vertex
-    if (orientation == Horizontal) {
-        widgetMargin = q->geometry().x();
-        q->getContentsMargins(&layoutMargin, 0, 0, 0);
-    } else {
-        // Root position is equal to the top margin
-        widgetMargin = q->geometry().y();
-        q->getContentsMargins(0, &layoutMargin, 0, 0);
-    }
-    root->distance = widgetMargin + layoutMargin;
+    root->distance = 0;
     visited.insert(root);
 
     // Add initial edges to the queue

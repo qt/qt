@@ -367,11 +367,11 @@ void QWin32PrintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem
         return ;
     }
 
-    // We only want to convert the glyphs to text if the entire string is latin1
-    bool latin1String = true;
+    // We only want to convert the glyphs to text if the entire string is compatible with ASCII
+    bool convertToText = true;
     for (int i=0;  i < ti.num_chars; ++i) {
-        if (ti.chars[i].unicode() >= 0x100) {
-            latin1String = false;
+        if (ti.chars[i].unicode() >= 0x80) {
+            convertToText = false;
             break;
         }
     }
@@ -381,7 +381,7 @@ void QWin32PrintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem
     SelectObject(d->hdc, CreatePen(PS_SOLID, 1, cf));
     SetTextColor(d->hdc, cf);
 
-    draw_text_item_win(p, ti, d->hdc, latin1String, d->matrix, d->devPaperRect.topLeft());
+    draw_text_item_win(p, ti, d->hdc, convertToText, d->matrix, d->devPaperRect.topLeft());
     DeleteObject(SelectObject(d->hdc,GetStockObject(HOLLOW_BRUSH)));
     DeleteObject(SelectObject(d->hdc,GetStockObject(BLACK_PEN)));
 }

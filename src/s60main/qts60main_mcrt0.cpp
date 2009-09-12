@@ -48,8 +48,8 @@
 // EPOC32 version of crt0.c for C programs which always want multi-threaded support
 
 #include <e32std.h>
+#include <exception> // must be before e32base.h so uncaught_exception gets defined
 #include <e32base.h>
-#include <exception>
 #include "estlib.h"
 
 // Needed for QT_TRYCATCH_LEAVING.

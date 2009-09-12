@@ -437,7 +437,7 @@ public:
     void removeInternalVertex(QGraphicsLayoutItem *item, Qt::AnchorPoint edge);
 
     // Geometry interpolation methods
-    void setItemsGeometries();
+    void setItemsGeometries(const QRectF &geom);
 
     void calculateVertexPositions(Orientation orientation);
     void setupEdgesInterpolation(Orientation orientation);

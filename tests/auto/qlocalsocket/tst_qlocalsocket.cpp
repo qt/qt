@@ -895,9 +895,9 @@ void tst_QLocalSocket::writeToClientAndDisconnect()
     QCOMPARE(clientSocket->write(buffer, sizeof(buffer)), (qint64)sizeof(buffer));
     clientSocket->waitForBytesWritten();
     clientSocket->disconnectFromServer();
-    qApp->processEvents();  // give the socket the chance to receive data
+    QVERIFY(client.waitForReadyRead());
     QCOMPARE(client.read(buffer, sizeof(buffer)), (qint64)sizeof(buffer));
-    qApp->processEvents();  // give the socket the chance to close itself
+    QVERIFY(client.waitForDisconnected());
     QCOMPARE(client.state(), QLocalSocket::UnconnectedState);
 }
 

@@ -375,7 +375,8 @@ void QLocalSocket::close()
     QIODevice::close();
     d->state = ClosingState;
     emit stateChanged(d->state);
-    emit readChannelFinished();
+    if (!d->pipeClosed)
+        emit readChannelFinished();
     d->serverName = QString();
     d->fullServerName = QString();
 
