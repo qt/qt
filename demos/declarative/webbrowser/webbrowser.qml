@@ -55,7 +55,7 @@ Item {
                 id: Header
                 source: "content/pics/header.png"
                 width: parent.width
-                height: 64
+                height: 60
                 state: "Normal"
                 x: Flick.viewportX < 0 ? -Flick.viewportX : Flick.viewportX > Flick.viewportWidth-Flick.width
                                          ? -Flick.viewportX+Flick.viewportWidth-Flick.width : 0
