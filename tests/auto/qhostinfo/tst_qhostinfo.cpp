@@ -247,6 +247,9 @@ void tst_QHostInfo::lookupIPv4()
     QVERIFY(!QTestEventLoop::instance().timeout());
     QVERIFY(lookupDone);
 
+    if ((int)lookupResults.error() != (int)err) {
+        qWarning() << hostname << "=>" << lookupResults.errorString();
+    }
     QCOMPARE((int)lookupResults.error(), (int)err);
 
     QStringList tmp;
@@ -362,6 +365,9 @@ void tst_QHostInfo::blockingLookup()
         tmp.append(hostInfo.addresses().at(i).toString());
     tmp.sort();
 
+    if ((int)hostInfo.error() != (int)err) {
+        qWarning() << hostname << "=>" << lookupResults.errorString();
+    }
     QCOMPARE((int)hostInfo.error(), (int)err);
 
     QStringList expected = addresses.split(' ');
