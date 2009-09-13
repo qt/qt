@@ -442,10 +442,10 @@ class Q_CORE_EXPORT QByteRef {
 public:
 #ifdef Q_COMPILER_MANGLES_RETURN_TYPE
     inline operator const char() const
-        { return i < a.d->size ? a.d->data[i] : 0; }
+        { return i < a.d->size ? a.d->data[i] : char(0); }
 #else
     inline operator char() const
-        { return i < a.d->size ? a.d->data[i] : 0; }
+        { return i < a.d->size ? a.d->data[i] : char(0); }
 #endif
     inline QByteRef &operator=(char c)
         { if (i >= a.d->size) a.expand(i); else a.detach();

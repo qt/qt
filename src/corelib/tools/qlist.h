@@ -202,7 +202,7 @@ public:
         inline iterator &operator-=(int j) { i-=j; return *this; }
         inline iterator operator+(int j) const { return iterator(i+j); }
         inline iterator operator-(int j) const { return iterator(i-j); }
-        inline int operator-(iterator j) const { return i - j.i; }
+        inline int operator-(iterator j) const { return int(i - j.i); }
     };
     friend class iterator;
 
@@ -420,7 +420,7 @@ Q_INLINE_TEMPLATE QList<T> &QList<T>::operator=(const QList<T> &l)
 template <typename T>
 inline typename QList<T>::iterator QList<T>::insert(iterator before, const T &t)
 {
-    int iBefore = before.i - reinterpret_cast<Node *>(p.begin());
+    int iBefore = int(before.i - reinterpret_cast<Node *>(p.begin()));
     Node *n = reinterpret_cast<Node *>(p.insert(iBefore));
     QT_TRY {
         node_construct(n, t);
@@ -706,7 +706,7 @@ Q_OUTOFLINE_TEMPLATE QList<T> &QList<T>::operator+=(const QList<T> &l)
         node_copy(n, reinterpret_cast<Node *>(p.end()), reinterpret_cast<Node *>(l.p.begin()));
     } QT_CATCH(...) {
         // restore the old end
-        d->end -= (reinterpret_cast<Node *>(p.end()) - n);
+        d->end -= int(reinterpret_cast<Node *>(p.end()) - n);
         QT_RETHROW;
     }
     return *this;
@@ -728,7 +728,7 @@ Q_OUTOFLINE_TEMPLATE int QList<T>::indexOf(const T &t, int from) const
         Node *e = reinterpret_cast<Node *>(p.end());
         while (++n != e)
             if (n->t() == t)
-                return n - reinterpret_cast<Node *>(p.begin());
+                return int(n - reinterpret_cast<Node *>(p.begin()));
     }
     return -1;
 }

@@ -149,9 +149,9 @@ template <> inline quint32 qFromLittleEndian<quint32>(const uchar *src)
 
 template <> inline quint16 qFromLittleEndian<quint16>(const uchar *src)
 {
-    return 0
-        | src[0]
-        | src[1] * 0x0100;
+    return quint16(0
+                   | src[0]
+                   | src[1] * 0x0100);
 }
 
 // signed specializations
@@ -241,9 +241,9 @@ inline quint32 qFromBigEndian<quint32>(const uchar *src)
 template<>
 inline quint16 qFromBigEndian<quint16>(const uchar *src)
 {
-    return 0
-        | src[1]
-        | src[0] * quint16(0x0100);
+    return quint16( 0
+                    | src[1]
+                    | src[0] * quint16(0x0100));
 }
 
 
@@ -288,9 +288,9 @@ template <> inline quint32 qbswap<quint32>(quint32 source)
 
 template <> inline quint16 qbswap<quint16>(quint16 source)
 {
-    return 0
-        | ((source & 0x00ff) << 8)
-        | ((source & 0xff00) >> 8);
+    return quint16( 0
+                    | ((source & 0x00ff) << 8)
+                    | ((source & 0xff00) >> 8) );
 }
 
 // signed specializations
