@@ -42,14 +42,14 @@
 /*!
     \class QGLColormap
     \brief The QGLColormap class is used for installing custom colormaps into
-    QGLWidgets.
+    a QGLWidget.
 
     \module OpenGL
     \ingroup painting-3D
     \ingroup shared
 
     QGLColormap provides a platform independent way of specifying and
-    installing indexed colormaps into QGLWidgets. QGLColormap is
+    installing indexed colormaps for a QGLWidget. QGLColormap is
     especially useful when using the OpenGL color-index mode.
 
     Under X11 you must use an X server that supports either a \c

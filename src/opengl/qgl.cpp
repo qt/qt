@@ -228,7 +228,7 @@ bool qt_gl_preferGL2Engine()
    \since 4.6
 
    Sets the preferred OpenGL paint engine that is used to draw onto
-   QGLWidgets, QGLPixelBuffers and QGLFrameBufferObjects with QPainter
+   QGLWidget, QGLPixelBuffer and QGLFramebufferObject targets with QPainter
    in Qt.
 
    The \a engineType parameter specifies which of the GL engines to
@@ -1265,8 +1265,8 @@ QGLFormat::OpenGLVersionFlags QGLFormat::openGLVersionFlags()
 
 
 /*!
-    Returns the default QGLFormat for the application. All QGLWidgets
-    that are created use this format unless another format is
+    Returns the default QGLFormat for the application. All QGLWidget
+    objects that are created use this format unless another format is
     specified, e.g. when they are constructed.
 
     If no special default format has been set using
@@ -1353,7 +1353,7 @@ void QGLFormat::setDefaultOverlayFormat(const QGLFormat &f)
 
 
 /*!
-    Returns true if all the options of the two QGLFormats are equal;
+    Returns true if all the options of the two QGLFormat objects are equal;
     otherwise returns false.
 */
 
@@ -1371,7 +1371,7 @@ bool operator==(const QGLFormat& a, const QGLFormat& b)
 
 
 /*!
-    Returns false if all the options of the two QGLFormats are equal;
+    Returns false if all the options of the two QGLFormat objects are equal;
     otherwise returns true.
 */
 
@@ -3100,7 +3100,7 @@ const QGLContext* QGLContext::currentContext()
     QGLFormat format\endlink and you can also create widgets with
     customized rendering \link QGLContext contexts\endlink.
 
-    You can also share OpenGL display lists between QGLWidgets (see
+    You can also share OpenGL display lists between QGLWidget objects (see
     the documentation of the QGLWidget constructors for details).
 
     Note that under Windows, the QGLContext belonging to a QGLWidget
@@ -3382,7 +3382,7 @@ bool QGLWidget::isValid() const
 
     Returns true if this widget's GL context is shared with another GL
     context, otherwise false is returned. Context sharing might not be
-    possible if the QGLWidgets use different formats.
+    possible if the widgets use different formats.
 
     \sa format()
 */
@@ -3480,7 +3480,7 @@ void QGLWidget::swapBuffers()
   resizeGL() or paintGL().
 
   This method will try to keep display list and texture object sharing
-  in effect with other QGLWidgets, but changing the format might make
+  in effect with other QGLWidget objects, but changing the format might make
   sharing impossible. Use isSharing() to see if sharing is still in
   effect.
 
@@ -3784,7 +3784,7 @@ void QGLWidget::paintEvent(QPaintEvent *)
 /*!
     Renders the current scene on a pixmap and returns the pixmap.
 
-    You can use this method on both visible and invisible QGLWidgets.
+    You can use this method on both visible and invisible QGLWidget objects.
 
     This method will create a pixmap and a temporary QGLContext to
     render on the pixmap. It will then call initializeGL(),
@@ -4866,7 +4866,7 @@ QGLContextResource::~QGLContextResource()
     if (m_resources.size()) {
         qWarning("QtOpenGL: Resources are still available at program shutdown.\n"
                  "          This is possibly caused by a leaked QGLWidget, \n"
-                 "          QGLFrameBufferObject or QGLPixelBuffer.");
+                 "          QGLFramebufferObject or QGLPixelBuffer.");
     }
 #endif
 }
