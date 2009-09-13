@@ -241,13 +241,9 @@ static void placeCall(const QString &service, const QString &path, const QString
                const QString &member, QStringList args)
 {
     QDBusInterface iface(service, path, interface, connection);
-    if (!iface.isValid()) {
-        QDBusError err(iface.lastError());
-        fprintf(stderr, "Interface '%s' not available in object %s at %s:\n%s (%s)\n",
-                qPrintable(interface), qPrintable(path), qPrintable(service),
-                qPrintable(err.name()), qPrintable(err.message()));
-        exit(1);
-    }
+
+    // Don't check whether the interface is valid to allow DBus try to
+    // activate the service if possible.
 
     QVariantList params;
     if (!args.isEmpty()) {
@@ -344,7 +340,10 @@ static void placeCall(const QString &service, const QString &path, const QString
     QDBusMessage reply = iface.callWithArgumentList(QDBus::Block, member, params);
     if (reply.type() == QDBusMessage::ErrorMessage) {
         QDBusError err = reply;
-        printf("Error: %s\n%s\n", qPrintable(err.name()), qPrintable(err.message()));
+        if (err.type() == QDBusError::ServiceUnknown)
+            fprintf(stderr, "Service '%s' does not exist.\n", qPrintable(service));
+        else
+            printf("Error: %s\n%s\n", qPrintable(err.name()), qPrintable(err.message()));
         exit(2);
     } else if (reply.type() != QDBusMessage::ReplyMessage) {
         fprintf(stderr, "Invalid reply type %d\n", int(reply.type()));
@@ -438,12 +437,12 @@ int main(int argc, char **argv)
         fprintf(stderr, "Service '%s' is not a valid name.\n", qPrintable(service));
         exit(1);
     }
-    if (!bus->isServiceRegistered(service)) {
-        fprintf(stderr, "Service '%s' does not exist.\n", qPrintable(service));
-        exit(1);
-    }
 
     if (args.isEmpty()) {
+        if (!bus->isServiceRegistered(service)) {
+            fprintf(stderr, "Service '%s' does not exist.\n", qPrintable(service));
+            exit(1);
+        }
         printf("/\n");
         listObjects(service, QString());
         exit(0);
@@ -455,6 +454,10 @@ int main(int argc, char **argv)
         exit(1);
     }
     if (args.isEmpty()) {
+        if (!bus->isServiceRegistered(service)) {
+            fprintf(stderr, "Service '%s' does not exist.\n", qPrintable(service));
+            exit(1);
+        }
         listAllInterfaces(service, path);
         exit(0);
     }
