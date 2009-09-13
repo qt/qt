@@ -4113,9 +4113,12 @@ QImage QGLWidget::convertToGLFormat(const QImage& img)
     the characters in the given \a font. \a listBase indicates the base
     value used when generating the display lists for the font. The
     default value is 2000.
+
+    \note This function is not supported on OpenGL/ES systems.
 */
 int QGLWidget::fontDisplayListBase(const QFont & font, int listBase)
 {
+#ifndef QT_OPENGL_ES
     Q_D(QGLWidget);
     int base;
 
@@ -4133,9 +4136,7 @@ int QGLWidget::fontDisplayListBase(const QFont & font, int listBase)
     QString color_key;
     if (font.styleStrategy() != QFont::NoAntialias) {
         GLfloat color[4];
-#ifndef QT_OPENGL_ES
         glGetFloatv(GL_CURRENT_COLOR, color);
-#endif
         color_key.sprintf("%f_%f_%f",color[0], color[1], color[2]);
     }
     QString key = font.key() + color_key + QString::number((int) regenerate);
@@ -4158,6 +4159,11 @@ int QGLWidget::fontDisplayListBase(const QFont & font, int listBase)
         base = maxBase;
     }
     return base;
+#else // QT_OPENGL_ES
+    Q_UNUSED(font);
+    Q_UNUSED(listBase);
+    return 0;
+#endif
 }
 
 #ifndef QT_OPENGL_ES
