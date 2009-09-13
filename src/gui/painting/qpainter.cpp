@@ -1894,8 +1894,13 @@ QPaintEngine *QPainter::paintEngine() const
 
 /*!
     Flushes the painting pipeline and prepares for the user issuing
-    native painting commands. Must be followed by a call to
-    endNativePainting().
+    commands directly to the underlying graphics context. Must be
+    followed by a call to endNativePainting().
+
+    Here is an example that shows intermixing of painter commands
+    and raw OpenGL commands:
+
+    \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 21
 
     \sa endNativePainting()
 */

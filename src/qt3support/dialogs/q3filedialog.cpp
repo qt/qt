@@ -116,6 +116,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_MAC_USE_COCOA
+
 /* XPM */
 static const char * const start_xpm[]={
     "16 15 8 1",
@@ -6051,7 +6053,8 @@ Q3FilePreview::Q3FilePreview()
   function to provide file previewing.
 */
 
-
+#endif // QT_MAC_USE_COCOA
+    
 QT_END_NAMESPACE
 
 #include "moc_q3filedialog.cpp"

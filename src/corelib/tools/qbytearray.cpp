@@ -47,6 +47,7 @@
 #include "qlocale.h"
 #include "qlocale_p.h"
 #include "qunicodetables_p.h"
+#include "qscopedpointer.h"
 #ifndef QT_NO_DATASTREAM
 #include <qdatastream.h>
 #endif
@@ -535,38 +536,49 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     ulong expectedSize = (data[0] << 24) | (data[1] << 16) |
                        (data[2] <<  8) | (data[3]      );
     ulong len = qMax(expectedSize, 1ul);
-    QByteArray baunzip;
-    int res;
-    do {
-        QT_TRY {
-            baunzip.resize(len);
-            res = ::uncompress((uchar*)baunzip.data(), &len,
-                                (uchar*)data+4, nbytes-4);
-        } QT_CATCH (const std::bad_alloc &) {
-            res = Z_MEM_ERROR;
+    QScopedPointer<QByteArray::Data, QScopedPointerPodDeleter> d;
+
+    forever {
+        ulong alloc = len;
+        d.reset(q_check_ptr(static_cast<QByteArray::Data *>(qRealloc(d.data(), sizeof(QByteArray::Data) + alloc))));
+        if (!d) {
+            // we are not allowed to crash here when compiling with QT_NO_EXCEPTIONS
+            qWarning("qUncompress: could not allocate enough memory to uncompress data");
+            return QByteArray();
         }
+
+        int res = ::uncompress((uchar*)d->array, &len,
+                               (uchar*)data+4, nbytes-4);
 
         switch (res) {
         case Z_OK:
-            if ((int)len != baunzip.size())
-                baunzip.resize(len);
-            break;
+            if (len != alloc) {
+                d.reset(q_check_ptr(static_cast<QByteArray::Data *>(qRealloc(d.data(), sizeof(QByteArray::Data) + len))));
+                if (!d) {
+                    // we are not allowed to crash here when compiling with QT_NO_EXCEPTIONS
+                    qWarning("qUncompress: could not allocate enough memory to uncompress data");
+                    return QByteArray();
+                }
+            }
+            d->ref = 1;
+            d->alloc = d->size = len;
+            d->data = d->array;
+
+            return QByteArray(d.take(), 0, 0);
+
         case Z_MEM_ERROR:
             qWarning("qUncompress: Z_MEM_ERROR: Not enough memory");
-            break;
+            return QByteArray();
+
         case Z_BUF_ERROR:
             len *= 2;
-            break;
+            continue;
+
         case Z_DATA_ERROR:
             qWarning("qUncompress: Z_DATA_ERROR: Input data is corrupted");
-            break;
+            return QByteArray();
         }
-    } while (res == Z_BUF_ERROR);
-
-    if (res != Z_OK)
-        baunzip = QByteArray();
-
-    return baunzip;
+    }
 }
 #endif
 

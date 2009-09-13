@@ -106,13 +106,19 @@ void QPropertyAnimationPrivate::updateMetaProperty()
         return;
     }
 
+    //propertyType will be set to a valid type only if there is a Q_PROPERTY
+    //otherwise it will be set to QVariant::Invalid at the end of this function
     propertyType = targetValue->property(propertyName).userType();
     propertyIndex = targetValue->metaObject()->indexOfProperty(propertyName);
-    if (propertyIndex == -1 && !targetValue->dynamicPropertyNames().contains(propertyName))
-        qWarning("QPropertyAnimation: you're trying to animate a non-existing property %s of your QObject", propertyName.constData());
 
     if (propertyType != QVariant::Invalid)
         convertValues(propertyType);
+    if (propertyIndex == -1) {
+        //there is no Q_PROPERTY on the object
+        propertyType = QVariant::Invalid;
+        if (!targetValue->dynamicPropertyNames().contains(propertyName))
+            qWarning("QPropertyAnimation: you're trying to animate a non-existing property %s of your QObject", propertyName.constData());
+    }
 }
 
 void QPropertyAnimationPrivate::updateProperty(const QVariant &newValue)
@@ -125,7 +131,7 @@ void QPropertyAnimationPrivate::updateProperty(const QVariant &newValue)
         return;
     }
 
-    if (propertyIndex != -1 && newValue.userType() == propertyType) {
+    if (newValue.userType() == propertyType) {
         //no conversion is needed, we directly call the QObject::qt_metacall
         void *data = const_cast<void*>(newValue.constData());
         targetValue->qt_metacall(QMetaObject::WriteProperty, propertyIndex, &data);
@@ -273,9 +279,9 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State oldState,
             if (oldState == Stopped) {
                 d->setDefaultStartEndValue(d->targetValue->property(d->propertyName.constData()));
                 //let's check if we have a start value and an end value
-                if (d->direction == Forward && !startValue().isValid() && !d->defaultStartEndValue.isValid())
+                if (!startValue().isValid() && (d->direction == Backward || !d->defaultStartEndValue.isValid()))
                     qWarning("QPropertyAnimation::updateState: starting an animation without start value");
-                if (d->direction == Backward && !endValue().isValid() && !d->defaultStartEndValue.isValid())
+                if (!endValue().isValid() && (d->direction == Forward || !d->defaultStartEndValue.isValid()))
                     qWarning("QPropertyAnimation::updateState: starting an animation without end value");
             }
         } else if (hash.value(key) == this) {

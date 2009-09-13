@@ -56,7 +56,7 @@ inline int qCeil(qreal v)
 {
 #ifdef QT_USE_MATH_H_FLOATS
     if (sizeof(qreal) == sizeof(float))
-        return int(ceilf(v));
+        return int(ceilf(float(v)));
     else
 #endif
         return int(ceil(v));
@@ -66,7 +66,7 @@ inline int qFloor(qreal v)
 {
 #ifdef QT_USE_MATH_H_FLOATS
     if (sizeof(qreal) == sizeof(float))
-        return int(floorf(v));
+        return int(floorf(float(v)));
     else
 #endif
         return int(floor(v));
@@ -76,7 +76,7 @@ inline qreal qSin(qreal v)
 {
 #ifdef QT_USE_MATH_H_FLOATS
     if (sizeof(qreal) == sizeof(float))
-        return sinf(v);
+        return sinf(float(v));
     else
 #endif
         return sin(v);
@@ -86,7 +86,7 @@ inline qreal qCos(qreal v)
 {
 #ifdef QT_USE_MATH_H_FLOATS
     if (sizeof(qreal) == sizeof(float))
-        return cosf(v);
+        return cosf(float(v));
     else
 #endif
         return cos(v);
@@ -96,7 +96,7 @@ inline qreal qAcos(qreal v)
 {
 #ifdef QT_USE_MATH_H_FLOATS
     if (sizeof(qreal) == sizeof(float))
-        return acosf(v);
+        return acosf(float(v));
     else
 #endif
         return acos(v);
@@ -106,7 +106,7 @@ inline qreal qSqrt(qreal v)
 {
 #ifdef QT_USE_MATH_H_FLOATS
     if (sizeof(qreal) == sizeof(float))
-        return sqrtf(v);
+        return sqrtf(float(v));
     else
 #endif
         return sqrt(v);
@@ -116,7 +116,7 @@ inline qreal qLn(qreal v)
 {
 #ifdef QT_USE_MATH_H_FLOATS
     if (sizeof(qreal) == sizeof(float))
-        return logf(v);
+        return logf(float(v));
     else
 #endif
         return log(v);
@@ -126,7 +126,7 @@ inline qreal qPow(qreal x, qreal y)
 {
 #ifdef QT_USE_MATH_H_FLOATS
     if (sizeof(qreal) == sizeof(float))
-        return powf(x, y);
+        return powf(float(x), float(y));
     else
 #endif
         return pow(x, y);

@@ -840,7 +840,8 @@
            \l{#first-ps}{:first}, \l{#last-ps}{:last},
            \l{#only-one-ps}{:only-one}, \l{#next-selected-ps}{:next-selected},
            \l{#previous-selected-ps}{:previous-selected},
-           \l{#selected-ps}{:selected} pseudo states.
+           \l{#selected-ps}{:selected},
+           and \l{#checked-ps}{:checked} pseudo states.
 
            Sort indicator in can be styled using the
            \l{#up-arrow-sub}{::up-arrow} and the
@@ -1969,6 +1970,9 @@
            In Qt 4.3 and later, the alignment of the
            image within the rectangle can be specified using
            \l{image-position-prop}{image-position}.
+
+           This property is for \l{subcontrol}s only--we don't support it for
+           other elements.
 
            \warning The QIcon SVG plugin is needed to render SVG images.
 

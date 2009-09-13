@@ -198,7 +198,7 @@ void QOutlineMapper::endOutline()
                                           m_m22 * e.y() + m_m12 * e.x() + m_dy);
             }
         } else {
-            const QVectorPath vp((qreal *)m_elements.data(), m_elements.size(), m_element_types.data());
+            const QVectorPath vp((qreal *)m_elements.data(), m_elements.size(), m_element_types.size() ? m_element_types.data() : 0);
             QPainterPath path = vp.convertToPainterPath();
             path = QTransform(m_m11, m_m12, m_m13, m_m21, m_m22, m_m23, m_dx, m_dy, m_m33).map(path);
             if (!(m_outline.flags & QT_FT_OUTLINE_EVEN_ODD_FILL))

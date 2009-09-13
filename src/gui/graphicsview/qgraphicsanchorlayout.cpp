@@ -383,7 +383,7 @@ void QGraphicsAnchorLayout::setGeometry(const QRectF &geom)
     QGraphicsLayout::setGeometry(geom);
     d->calculateVertexPositions(QGraphicsAnchorLayoutPrivate::Horizontal);
     d->calculateVertexPositions(QGraphicsAnchorLayoutPrivate::Vertical);
-    d->setItemsGeometries();
+    d->setItemsGeometries(geom);
 }
 
 /*!

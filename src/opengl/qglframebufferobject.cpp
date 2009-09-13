@@ -299,10 +299,21 @@ bool QGLFramebufferObjectFormat::operator!=(const QGLFramebufferObjectFormat& ot
     return !(*this == other);
 }
 
-void QGLFBOGLPaintDevice::setFBO(QGLFramebufferObject* f)
+void QGLFBOGLPaintDevice::setFBO(QGLFramebufferObject* f,
+                                 QGLFramebufferObject::Attachment attachment)
 {
     fbo = f;
     m_thisFBO = fbo->d_func()->fbo; // This shouldn't be needed
+
+    // The context that the fbo was created in may not have depth
+    // and stencil buffers, but the fbo itself might.
+    fboFormat = QGLContext::currentContext()->format();
+    if (attachment == QGLFramebufferObject::CombinedDepthStencil) {
+        fboFormat.setDepth(true);
+        fboFormat.setStencil(true);
+    } else if (attachment == QGLFramebufferObject::Depth) {
+        fboFormat.setDepth(true);
+    }
 }
 
 void QGLFBOGLPaintDevice::ensureActiveTarget()
@@ -395,7 +406,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER_EXT, fbo);
 
-    glDevice.setFBO(q);
+    glDevice.setFBO(q, attachment);
 
     QT_CHECK_GLERROR();
     // init texture
@@ -843,6 +854,7 @@ bool QGLFramebufferObject::bind()
     d->valid = d->checkFramebufferStatus();
     const QGLContext *context = QGLContext::currentContext();
     if (d->valid && context) {
+        Q_ASSERT(QGLContextPrivate::contextGroup(context) == ctx);
         // Save the previous setting to automatically restore in release().
         if (context->d_ptr->current_fbo != d->fbo) {
             d->previous_fbo = context->d_ptr->current_fbo;
@@ -874,6 +886,7 @@ bool QGLFramebufferObject::release()
 
     const QGLContext *context = QGLContext::currentContext();
     if (context) {
+        Q_ASSERT(QGLContextPrivate::contextGroup(context) == ctx);
         // Restore the previous setting for stacked framebuffer objects.
         if (d->previous_fbo != context->d_ptr->current_fbo) {
             context->d_ptr->current_fbo = d->previous_fbo;

@@ -121,19 +121,19 @@ inline bool QBitArray::testBit(int i) const
 
 inline void QBitArray::setBit(int i)
 { Q_ASSERT(i >= 0 && i < size());
- *(reinterpret_cast<uchar*>(d.data())+1+(i>>3)) |= (1 << (i & 7)); }
+ *(reinterpret_cast<uchar*>(d.data())+1+(i>>3)) |= uchar(1 << (i & 7)); }
 
 inline void QBitArray::clearBit(int i)
 { Q_ASSERT(i >= 0 && i < size());
- *(reinterpret_cast<uchar*>(d.data())+1+(i>>3)) &= ~(1 << (i & 7)); }
+ *(reinterpret_cast<uchar*>(d.data())+1+(i>>3)) &= ~uchar(1 << (i & 7)); }
 
 inline void QBitArray::setBit(int i, bool val)
 { if (val) setBit(i); else clearBit(i); }
 
 inline bool QBitArray::toggleBit(int i)
 { Q_ASSERT(i >= 0 &&  i < size());
- uchar b = 1<< (i&7); uchar* p = reinterpret_cast<uchar*>(d.data())+1+(i>>3);
- uchar c = *p&b; *p^=b; return c!=0; }
+ uchar b = uchar(1<<(i&7)); uchar* p = reinterpret_cast<uchar*>(d.data())+1+(i>>3);
+ uchar c = uchar(*p&b); *p^=b; return c!=0; }
 
 inline bool QBitArray::operator[](int i) const { return testBit(i); }
 inline bool QBitArray::operator[](uint i) const { return testBit(i); }

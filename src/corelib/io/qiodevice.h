@@ -198,7 +198,7 @@ public:
     inline QT3_SUPPORT qint64 writeBlock(const QByteArray &data) { return write(data); }
 
     inline QT3_SUPPORT int getch() { char c; return getChar(&c) ? int(uchar(c)) : -1; }
-    inline QT3_SUPPORT int putch(int c) { return putChar(c) ? int(uchar(c)) : -1; }
+    inline QT3_SUPPORT int putch(int c) { return putChar(char(c)) ? int(uchar(c)) : -1; }
     inline QT3_SUPPORT int ungetch(int c) { ungetChar(uchar(c)); return c; }
 #endif
 };

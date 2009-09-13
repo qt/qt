@@ -48,6 +48,11 @@
 #include "qdebug.h"
 #include "qdir.h"
 
+#if defined(Q_OS_SYMBIAN)
+# include <f32file.h>
+# include "private/qcore_symbian_p.h"
+#endif
+
 #ifndef QT_NO_LIBRARY
 
 QT_BEGIN_NAMESPACE
@@ -309,10 +314,18 @@ void QPluginLoader::setFileName(const QString &fileName)
             if (stubPath.at(1).toAscii() == ':')
                 stubPath.remove(0,2);
             QFileInfoList driveList(QDir::drives());
+            RFs rfs = qt_s60GetRFs();
             foreach(const QFileInfo& drive, driveList) {
                 QString testFilePath(drive.absolutePath() + stubPath);
                 testFilePath = QDir::cleanPath(testFilePath);
-                if (QFile::exists(testFilePath)) {
+                // Use native Symbian code to check for file existence, because checking
+                // for file from under non-existent protected dir like E:/private/<uid> using
+                // QFile::exists causes platform security violations on most apps.
+                QString nativePath = QDir::toNativeSeparators(testFilePath);
+                TPtrC ptr(qt_QString2TPtrC(nativePath));
+                TUint attributes;
+                TInt err = rfs.Att(ptr, attributes);
+                if (err == KErrNone) {
                     fn = testFilePath;
                     break;
                 }

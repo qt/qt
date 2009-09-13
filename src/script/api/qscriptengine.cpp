@@ -890,7 +890,7 @@ JSC::JSValue QScriptEnginePrivate::jscValueFromVariant(const QVariant &v)
     QScriptValue vv = scriptValueFromVariant(v);
     QScriptValuePrivate *p = QScriptValuePrivate::get(vv);
     switch (p->type) {
-    case QScriptValuePrivate::JSC:
+    case QScriptValuePrivate::JavaScriptCore:
         return p->jscValue;
     case QScriptValuePrivate::Number:
         return JSC::jsNumber(currentFrame, p->numberValue);
