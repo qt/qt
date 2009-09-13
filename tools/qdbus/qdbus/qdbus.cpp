@@ -108,19 +108,28 @@ static void printArg(const QVariant &v)
 
 static void listObjects(const QString &service, const QString &path)
 {
-    QDBusInterface iface(service, path.isEmpty() ? QLatin1String("/") : path,
-                         QLatin1String("org.freedesktop.DBus.Introspectable"), connection);
-    if (!iface.isValid()) {
-        QDBusError err(iface.lastError());
-        fprintf(stderr, "Cannot introspect object %s at %s:\n%s (%s)\n",
-                qPrintable(path.isEmpty() ? QString(QLatin1String("/")) : path), qPrintable(service),
-                qPrintable(err.name()), qPrintable(err.message()));
-        exit(1);
-    }
-    QDBusReply<QString> xml = iface.call(QLatin1String("Introspect"));
+    // make a low-level call, to avoid introspecting the Introspectable interface
+    QDBusMessage call = QDBusMessage::createMethodCall(service, path.isEmpty() ? QLatin1String("/") : path,
+                                                       QLatin1String("org.freedesktop.DBus.Introspectable"),
+                                                       QLatin1String("Introspect"));
+    QDBusReply<QString> xml = connection.call(call);
 
-    if (!xml.isValid())
-        return;                 // silently
+    if (path.isEmpty()) {
+        // top-level
+        if (xml.isValid()) {
+            printf("/\n");
+        } else {
+            QDBusError err = xml.error();
+            if (err.type() == QDBusError::ServiceUnknown)
+                fprintf(stderr, "Service '%s' does not exist.\n", qPrintable(service));
+            else
+                printf("Error: %s\n%s\n", qPrintable(err.name()), qPrintable(err.message()));
+            exit(2);
+        }
+    } else if (!xml.isValid()) {
+        // this is not the first object, just fail silently
+        return;
+    }
 
     QDomDocument doc;
     doc.setContent(xml);
@@ -192,18 +201,20 @@ static void listInterface(const QString &service, const QString &path, const QSt
 
 static void listAllInterfaces(const QString &service, const QString &path)
 {
-    QDBusInterface iface(service, path, QLatin1String("org.freedesktop.DBus.Introspectable"), connection);
-    if (!iface.isValid()) {
-        QDBusError err(iface.lastError());
-        fprintf(stderr, "Cannot introspect object %s at %s:\n%s (%s)\n",
-                qPrintable(path), qPrintable(service),
-                qPrintable(err.name()), qPrintable(err.message()));
-        exit(1);
-    }
-    QDBusReply<QString> xml = iface.call(QLatin1String("Introspect"));
+    // make a low-level call, to avoid introspecting the Introspectable interface
+    QDBusMessage call = QDBusMessage::createMethodCall(service, path.isEmpty() ? QLatin1String("/") : path,
+                                                       QLatin1String("org.freedesktop.DBus.Introspectable"),
+                                                       QLatin1String("Introspect"));
+    QDBusReply<QString> xml = connection.call(call);
 
-    if (!xml.isValid())
-        return;                 // silently
+    if (!xml.isValid()) {
+        QDBusError err = xml.error();
+        if (err.type() == QDBusError::ServiceUnknown)
+            fprintf(stderr, "Service '%s' does not exist.\n", qPrintable(service));
+        else
+            printf("Error: %s\n%s\n", qPrintable(err.name()), qPrintable(err.message()));
+        exit(2);
+    }
 
     QDomDocument doc;
     doc.setContent(xml);
@@ -439,11 +450,6 @@ int main(int argc, char **argv)
     }
 
     if (args.isEmpty()) {
-        if (!bus->isServiceRegistered(service)) {
-            fprintf(stderr, "Service '%s' does not exist.\n", qPrintable(service));
-            exit(1);
-        }
-        printf("/\n");
         listObjects(service, QString());
         exit(0);
     }
@@ -454,10 +460,6 @@ int main(int argc, char **argv)
         exit(1);
     }
     if (args.isEmpty()) {
-        if (!bus->isServiceRegistered(service)) {
-            fprintf(stderr, "Service '%s' does not exist.\n", qPrintable(service));
-            exit(1);
-        }
         listAllInterfaces(service, path);
         exit(0);
     }
