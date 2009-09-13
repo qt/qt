@@ -3970,6 +3970,8 @@ void QGLWidget::glDraw()
     Calls glColor4 (in RGBA mode) or glIndex (in color-index mode)
     with the color \a c. Applies to this widgets GL context.
 
+    \note This function is not supported on OpenGL/ES 2.0 systems.
+
     \sa qglClearColor(), QGLContext::currentContext(), QColor
 */
 
@@ -3993,6 +3995,8 @@ void QGLWidget::qglColor(const QColor& c) const
             glIndexi(ctx->colorIndex(c));
     }
 #endif //QT_OPENGL_ES
+#else
+    Q_UNUSED(c);
 #endif //QT_OPENGL_ES_2
 }
 
