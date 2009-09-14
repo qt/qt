@@ -94,7 +94,7 @@ You can create a new type of QML item by:
 To add a new type, you first must add a new C++ class derived from QFxItem.
 You may of course extend existing QFxItem subclasses.
 
-One existing subclass is QFxPainted, which provides
+One existing subclass is QFxPaintedItem, which provides
 a simple cached-image painting model.
 
 \section2 Reimplementing paint functions
@@ -105,11 +105,11 @@ Two alternative painters are available, offering
 different levels of performance and functionality:
 QPainter, GLPainter.
 
-You can choose to subclass QFxPainted rather than QFxItem,
+You can choose to subclass QFxPaintedItem rather than QFxItem,
 and then implement the virtual method:
 
 \code
-    void paint(QPainter *painter);
+    void drawContents(QPainter *painter, const QRect &rect);
 \endcode
 
 This paints into an offscreen pixmap which is then painted to the display (transformed,

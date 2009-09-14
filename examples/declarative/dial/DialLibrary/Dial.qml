@@ -26,8 +26,8 @@ Item {
             id: NeedleRotation
             origin.x: 7; origin.y: 65
             angle: -130
-            angle: Follow {
-id: MyFollow
+            angle: SpringFollow {
+                id: MyFollow
                 spring: 1.4
                 damping: .15
                 source: Math.min(Math.max(-130, Root.value*2.2 - 130), 133)

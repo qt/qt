@@ -26,7 +26,7 @@ Rectangle {
         color: "#ff0000"
         x: Rect.width; width: Rect.width; height: 20
         y: 200
-        y: Follow { source: Rect.y; velocity: 200 }
+        y: SpringFollow { source: Rect.y; velocity: 200 }
     }
     Text { x: Rect.width; y: 220; text: "Velocity" }
 
@@ -35,13 +35,13 @@ Rectangle {
         color: "#ff0000"
         x: Rect.width * 2; width: Rect.width/2; height: 20
         y: 200
-        y: Follow { source: Rect.y; spring: 1.0; damping: 0.2 }
+        y: SpringFollow { source: Rect.y; spring: 1.0; damping: 0.2 }
     }
     Rectangle {
         color: "#880000"
         x: Rect.width * 2.5; width: Rect.width/2; height: 20
         y: 200
-        y: Follow { source: Rect.y; spring: 1.0; damping: 0.2; mass: 3.0 } // "heavier" object
+        y: SpringFollow { source: Rect.y; spring: 1.0; damping: 0.2; mass: 3.0 } // "heavier" object
     }
     Text { x: Rect.width * 2; y: 220; text: "Spring" }
 
@@ -54,8 +54,8 @@ Rectangle {
             width: 20; height: 20
             radius: 10
             color: "#0000ff"
-            x: Follow { id: "F1"; source: Mouse.mouseX-10; spring: 1.0; damping: 0.05; epsilon: 0.25 }
-            y: Follow { id: "F2"; source: Mouse.mouseY-10; spring: 1.0; damping: 0.05; epsilon: 0.25 }
+            x: SpringFollow { id: "F1"; source: Mouse.mouseX-10; spring: 1.0; damping: 0.05; epsilon: 0.25 }
+            y: SpringFollow { id: "F2"; source: Mouse.mouseY-10; spring: 1.0; damping: 0.05; epsilon: 0.25 }
             states: [
                 State {
                     name: "following"

@@ -497,8 +497,11 @@ void QmlListModel::insert(int index, const QScriptValue& valuemap)
 */
 void QmlListModel::move(int from, int to, int n)
 {
-    if (from+n > count() || to+n > count() || n==0 || from==to)
+    if (from+n > count() || to+n > count() || n==0 || from==to || from < 0 || to < 0)
         return;
+    int origfrom=from; // preserve actual move, so any animations are correct
+    int origto=to;
+    int orign=n;
     if (from > to) {
         // Only move forwards - flip if backwards moving
         int tfrom = from;
@@ -524,7 +527,7 @@ void QmlListModel::move(int from, int to, int n)
         for (; f != replaced.end(); ++f, ++t)
             *t = *f;
     }
-    emit itemsMoved(from,to,n);
+    emit itemsMoved(origfrom,origto,orign);
 }
 
 /*!

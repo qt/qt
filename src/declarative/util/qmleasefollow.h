@@ -66,6 +66,7 @@ class Q_DECLARATIVE_EXPORT QmlEaseFollow : public QObject,
     Q_PROPERTY(qreal velocity READ velocity WRITE setVelocity)
     Q_PROPERTY(qreal duration READ duration WRITE setDuration)
     Q_PROPERTY(ReversingMode reversingMode READ reversingMode WRITE setReversingMode)
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
 
 public:
     enum ReversingMode { Eased, Immediate, Sync };
@@ -84,6 +85,9 @@ public:
 
     qreal duration() const;
     void setDuration(qreal);
+
+    bool enabled() const;
+    void setEnabled(bool enabled);
 
     virtual void setTarget(const QmlMetaProperty &);
 };

@@ -56,7 +56,7 @@ public:
     QmlEaseFollowPrivate()
         : source(0), velocity(200), duration(-1), 
           reversingMode(QmlEaseFollow::Eased), initialVelocity(0), 
-          initialValue(0), invert(false), trackVelocity(0), clockOffset(0), 
+          initialValue(0), invert(false), enabled(true), trackVelocity(0), clockOffset(0),
           lastTick(0), clock(this)
     {} 
 
@@ -68,6 +68,7 @@ public:
     qreal initialVelocity;
     qreal initialValue;
     bool invert;
+    bool enabled;
 
     qreal trackVelocity;
 
@@ -267,7 +268,7 @@ qreal QmlEaseFollow::sourceValue() const
 /*!
     \qmlproperty enumeration EaseFollow::reversingMode
 
-    Sets how the EaseFollow behaves if an animation diration is reversed.
+    Sets how the EaseFollow behaves if an animation direction is reversed.
 
     If reversing mode is \c Eased, the animation will smoothly decelerate, and
     then reverse direction.  If the reversing mode is \c Immediate, the 
@@ -289,6 +290,9 @@ void QmlEaseFollow::setReversingMode(ReversingMode m)
 
 void QmlEaseFollowPrivate::restart()
 {
+    if (!enabled)
+        return;
+
     initialValue = target.read().toReal();
 
     if (source == initialValue) {
@@ -380,6 +384,26 @@ void QmlEaseFollow::setVelocity(qreal v)
 
     if (d->clock.state() == QAbstractAnimation::Running) 
         d->restart();
+}
+
+/*!
+    \qmlproperty bool EaseFollow::enabled
+    This property holds whether the target will track the source.
+*/
+bool QmlEaseFollow::enabled() const
+{
+    Q_D(const QmlEaseFollow);
+    return d->enabled;
+}
+
+void QmlEaseFollow::setEnabled(bool enabled)
+{
+    Q_D(QmlEaseFollow);
+    d->enabled = enabled;
+    if (enabled)
+        d->restart();
+    else
+        d->clockStop();
 }
 
 void QmlEaseFollow::setTarget(const QmlMetaProperty &t)

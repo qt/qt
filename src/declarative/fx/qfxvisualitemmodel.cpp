@@ -695,7 +695,8 @@ QFxVisualDataModel::ReleaseFlags QFxVisualDataModel::release(QFxItem *item)
         if (inPackage)
             emit destroyingPackage(qobject_cast<QmlPackage*>(obj));
         stat |= Destroyed;
-        delete obj;
+        obj->setParent(0);
+        obj->deleteLater();
     } else if (!inPackage) {
         stat |= Referenced;
     }
@@ -906,6 +907,22 @@ void QFxVisualDataModel::_q_itemsMoved(int from, int to, int count)
         if (iter.key() >= from && iter.key() < from + count) {
             QFxVisualDataModelPrivate::ObjectRef objRef = *iter;
             int index = iter.key() - from + to;
+            iter = d->m_cache.erase(iter);
+
+            items.insert(index, objRef);
+
+            QFxVisualDataModelData *data = d->data(objRef.obj);
+            data->setIndex(index);
+        } else {
+            ++iter;
+        }
+    }
+    for (QHash<int,QFxVisualDataModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
+        iter != d->m_cache.end(); ) {
+
+        if (iter.key() >= qMin(from,to) && iter.key() < qMax(from+count,to+count)) {
+            QFxVisualDataModelPrivate::ObjectRef objRef = *iter;
+            int index = iter.key() + from - to;
             iter = d->m_cache.erase(iter);
 
             items.insert(index, objRef);

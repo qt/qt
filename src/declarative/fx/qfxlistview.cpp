@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "private/qfxflickable_p.h"
-#include "qmlfollow.h"
+#include "qmleasefollow.h"
 #include "qlistmodelinterface.h"
 #include "qfxvisualitemmodel.h"
 #include "qfxlistview.h"
@@ -172,11 +172,11 @@ public:
     QFxListViewPrivate()
         : model(0), currentItem(0), tmpCurrent(0), orient(Qt::Vertical)
         , visiblePos(0), visibleIndex(0)
-        , averageSize(100), currentIndex(-1), requestedIndex(-1)
+        , averageSize(100.0), currentIndex(-1), requestedIndex(-1)
         , currItemMode(QFxListView::Free), snapPos(0), highlightComponent(0), highlight(0), trackedItem(0)
-        , moveReason(Other), buffer(0), highlightPosAnimator(0), highlightSizeAnimator(0), spacing(0)
+        , moveReason(Other), buffer(0), highlightPosAnimator(0), highlightSizeAnimator(0), spacing(0.0)
         , ownModel(false), wrap(false), autoHighlight(true)
-        , fixCurrentVisibility(false) {}
+    {}
 
     void init();
     void clear();
@@ -205,7 +205,7 @@ public:
         else
             q->setViewportX(pos);
     }
-    int size() const {
+    qreal size() const {
         Q_Q(const QFxListView);
         return orient == Qt::Vertical ? q->height() : q->width();
     }
@@ -377,20 +377,18 @@ public:
     QmlComponent *highlightComponent;
     FxListItem *highlight;
     FxListItem *trackedItem;
-    QFxItem *activeItem; //XXX fix
     enum MovementReason { Other, Key, Mouse };
     MovementReason moveReason;
     int buffer;
-    QmlFollow *highlightPosAnimator;
-    QmlFollow *highlightSizeAnimator;
+    QmlEaseFollow *highlightPosAnimator;
+    QmlEaseFollow *highlightSizeAnimator;
     QString sectionExpression;
     QString currentSection;
-    int spacing;
+    qreal spacing;
 
-    int ownModel : 1;
-    int wrap : 1;
-    int autoHighlight : 1;
-    int fixCurrentVisibility : 1;
+    bool ownModel : 1;
+    bool wrap : 1;
+    bool autoHighlight : 1;
 };
 
 void QFxListViewPrivate::init()
@@ -660,15 +658,18 @@ void QFxListViewPrivate::createHighlight()
         }
         if (item) {
             highlight = new FxListItem(item, q);
+            if (orient == Qt::Vertical)
+                highlight->item->setHeight(currentItem->item->height());
+            else
+                highlight->item->setWidth(currentItem->item->width());
             const QLatin1String posProp(orient == Qt::Vertical ? "y" : "x");
-            highlightPosAnimator = new QmlFollow(q);
+            highlightPosAnimator = new QmlEaseFollow(q);
             highlightPosAnimator->setTarget(QmlMetaProperty(highlight->item, posProp));
-            highlightPosAnimator->setEpsilon(0.25);
-            highlightPosAnimator->setSpring(2.5);
-            highlightPosAnimator->setDamping(0.35);
+            highlightPosAnimator->setVelocity(400);
             highlightPosAnimator->setEnabled(autoHighlight);
             const QLatin1String sizeProp(orient == Qt::Vertical ? "height" : "width");
-            highlightSizeAnimator = new QmlFollow(q);
+            highlightSizeAnimator = new QmlEaseFollow(q);
+            highlightSizeAnimator->setVelocity(400);
             highlightSizeAnimator->setTarget(QmlMetaProperty(highlight->item, sizeProp));
             highlightSizeAnimator->setEnabled(autoHighlight);
         }
@@ -753,7 +754,6 @@ void QFxListViewPrivate::updateCurrent(int modelIndex)
     FxListItem *oldCurrentItem = currentItem;
     currentIndex = modelIndex;
     currentItem = createItem(modelIndex);
-    fixCurrentVisibility = true;
     if (oldCurrentItem && (!currentItem || oldCurrentItem->item != currentItem->item))
         oldCurrentItem->attached->setIsCurrentItem(false);
     if (currentItem) {
@@ -909,6 +909,7 @@ void QFxListView::setModel(const QVariant &model)
     if (d->model) {
         disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
+        disconnect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
         disconnect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
         disconnect(d->model, SIGNAL(destroyingItem(QFxItem*)), this, SLOT(destroyingItem(QFxItem*)));
     }
@@ -937,6 +938,7 @@ void QFxListView::setModel(const QVariant &model)
             d->updateCurrent(d->currentIndex);
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
+        connect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
         connect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
         connect(d->model, SIGNAL(destroyingItem(QFxItem*)), this, SLOT(destroyingItem(QFxItem*)));
         refill();
@@ -979,10 +981,10 @@ void QFxListView::setDelegate(QmlComponent *delegate)
 
 /*!
     \qmlproperty int ListView::currentIndex
-    \qmlproperty Item ListView::current
+    \qmlproperty Item ListView::currentItem
 
     \c currentIndex holds the index of the current item.
-    \c current is the current item.  Note that the position of the current item
+    \c currentItem is the current item.  Note that the position of the current item
     may only be approximate until it becomes visible in the view.
 */
 int QFxListView::currentIndex() const
@@ -1145,13 +1147,13 @@ void QFxListView::setSnapPosition(int pos)
 
     This property holds the spacing to leave between items.
 */
-int QFxListView::spacing() const
+qreal QFxListView::spacing() const
 {
     Q_D(const QFxListView);
     return d->spacing;
 }
 
-void QFxListView::setSpacing(int spacing)
+void QFxListView::setSpacing(qreal spacing)
 {
     Q_D(QFxListView);
     if (spacing != d->spacing) {
@@ -1426,9 +1428,7 @@ void QFxListView::itemResized()
     Q_D(QFxListView);
     QFxItem *item = qobject_cast<QFxItem*>(sender());
     if (item) {
-        d->activeItem = item; // Ick - don't delete the sender
         d->layout();
-        d->activeItem = 0;
         d->fixupPosition();
     }
 }
@@ -1632,6 +1632,72 @@ void QFxListView::destroyRemoved()
     }
 
     // Correct the positioning of the items
+    d->layout();
+}
+
+void QFxListView::itemsMoved(int from, int to, int count)
+{
+    Q_D(QFxListView);
+    qreal firstItemPos = d->visibleItems.first()->position();
+    QHash<int,FxListItem*> moved;
+    int moveBy = 0;
+
+    QList<FxListItem*>::Iterator it = d->visibleItems.begin();
+    while (it != d->visibleItems.end()) {
+        FxListItem *item = *it;
+        if (item->index >= from && item->index < from + count) {
+            // take the items that are moving
+            item->index += (to-from);
+            moved.insert(item->index, item);
+            moveBy += item->size();
+            it = d->visibleItems.erase(it);
+        } else {
+            // move everything after the moved items.
+            if (item->index > from && item->index != -1)
+                item->index -= count;
+            ++it;
+        }
+    }
+
+    int remaining = count;
+    int endIndex = d->visibleIndex;
+    it = d->visibleItems.begin();
+    while (it != d->visibleItems.end()) {
+        FxListItem *item = *it;
+        if (remaining && item->index >= to && item->index < to + count) {
+            // place items in the target position, reusing any existing items
+            FxListItem *movedItem = moved.take(item->index);
+            if (!movedItem)
+                movedItem = d->createItem(item->index);
+            it = d->visibleItems.insert(it, movedItem);
+            ++it;
+            --remaining;
+        } else {
+            if (item->index != -1) {
+                if (item->index >= to) {
+                    // update everything after the moved items.
+                    item->index += count;
+                }
+                endIndex = item->index;
+            }
+            ++it;
+        }
+    }
+
+    // If we have moved items to the end of the visible items
+    // then add any existing moved items that we have
+    while (FxListItem *item = moved.take(endIndex+1)) {
+        d->visibleItems.append(item);
+        ++endIndex;
+    }
+
+    // Whatever moved items remain are no longer visible items.
+    while (moved.count())
+        d->releaseItem(moved.take(moved.begin().key()));
+
+    // Ensure we don't cause an ugly list scroll.
+    d->visibleItems.first()->setPosition(firstItemPos);
+
     d->layout();
 }
 

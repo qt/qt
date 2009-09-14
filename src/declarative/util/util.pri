@@ -7,7 +7,7 @@ SOURCES += \
            util/qmlscript.cpp \
            util/qmlanimation.cpp \
            util/qmlsystempalette.cpp \
-           util/qmlfollow.cpp \
+           util/qmlspringfollow.cpp \
            util/qmleasefollow.cpp \
            util/qmlstate.cpp\
            util/qmltransitionmanager.cpp \
@@ -33,7 +33,7 @@ HEADERS += \
            util/qmlanimation.h \
            util/qmlanimation_p.h \
            util/qmlsystempalette.h \
-           util/qmlfollow.h \
+           util/qmlspringfollow.h \
            util/qmleasefollow.h \
            util/qmlstate.h\
            util/qmlstateoperations.h \

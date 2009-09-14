@@ -53,37 +53,8 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QmlContext;
-class Q_DECLARATIVE_EXPORT XmlListModelRole : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(QString name READ name WRITE setName)
-    Q_PROPERTY(QString query READ query WRITE setQuery)
 
-public:
-    XmlListModelRole() {}
-    ~XmlListModelRole() {}
-
-    QString name() const { return m_name; }
-    void setName(const QString &name) { m_name = name; }
-
-    QString query() const { return m_query; }
-    void setQuery(const QString &query)
-    {
-        if (query.startsWith(QLatin1Char('/'))) {
-            qmlInfo(this) << "An XmlRole query must not start with '/'";
-            return;
-        }
-        m_query = query;
-    }
-
-    bool isValid() {
-        return !m_name.isEmpty() && !m_query.isEmpty();
-    }
-
-private:
-    QString m_name;
-    QString m_query;
-};
+class QmlXmlListModelRole;
 
 class QmlXmlListModelPrivate;
 class Q_DECLARATIVE_EXPORT QmlXmlListModel : public QListModelInterface, public QmlParserStatus
@@ -98,7 +69,7 @@ class Q_DECLARATIVE_EXPORT QmlXmlListModel : public QListModelInterface, public 
     Q_PROPERTY(QString xml READ xml WRITE setXml)
     Q_PROPERTY(QString query READ query WRITE setQuery)
     Q_PROPERTY(QString namespaceDeclarations READ namespaceDeclarations WRITE setNamespaceDeclarations)
-    Q_PROPERTY(QmlList<XmlListModelRole *> *roles READ roleObjects)
+    Q_PROPERTY(QmlList<QmlXmlListModelRole *> *roles READ roleObjects)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_CLASSINFO("DefaultProperty", "roles")
 
@@ -111,7 +82,7 @@ public:
     virtual QList<int> roles() const;
     virtual QString toString(int role) const;
 
-    QmlList<XmlListModelRole *> *roleObjects();
+    QmlList<QmlXmlListModelRole *> *roleObjects();
 
     QUrl source() const;
     void setSource(const QUrl&);
@@ -138,6 +109,10 @@ signals:
     void countChanged();
 
 public Q_SLOTS:
+    // ### need to use/expose Expiry to guess when to call this?
+    // ### property to auto-call this on reasonable Expiry?
+    // ### LastModified/Age also useful to guess.
+    // ### Probably also applies to other network-requesting types.
     void reload();
 
 private Q_SLOTS:
@@ -152,7 +127,6 @@ private:
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(XmlListModelRole)
 QML_DECLARE_TYPE(QmlXmlListModel)
 
 QT_END_HEADER

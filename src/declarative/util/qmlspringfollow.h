@@ -51,12 +51,12 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QmlFollowPrivate;
-class Q_DECLARATIVE_EXPORT QmlFollow : public QObject, 
+class QmlSpringFollowPrivate;
+class Q_DECLARATIVE_EXPORT QmlSpringFollow : public QObject,
                                        public QmlPropertyValueSource
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlFollow)
+    Q_DECLARE_PRIVATE(QmlSpringFollow)
     Q_INTERFACES(QmlPropertyValueSource)
 
     Q_PROPERTY(qreal source READ sourceValue WRITE setSourceValue)
@@ -72,8 +72,8 @@ class Q_DECLARATIVE_EXPORT QmlFollow : public QObject,
     Q_PROPERTY(bool inSync READ inSync NOTIFY syncChanged)
 
 public:
-    QmlFollow(QObject *parent=0);
-    ~QmlFollow();
+    QmlSpringFollow(QObject *parent=0);
+    ~QmlSpringFollow();
 
     virtual void setTarget(const QmlMetaProperty &);
 
@@ -106,7 +106,7 @@ Q_SIGNALS:
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QmlFollow)
+QML_DECLARE_TYPE(QmlSpringFollow)
 
 QT_END_HEADER
 

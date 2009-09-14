@@ -1,4 +1,5 @@
 import Qt 4.6
+import "content"
 
 Item {
     width: 320
@@ -58,8 +59,8 @@ Item {
         id: FruitDelegate
         Item {
             width: parent.width; height: 55
-            Text { id: Label; font.pixelSize: 24; text: name }
-            Text { font.pixelSize: 24; text: '$'+Number(cost).toFixed(2); anchors.right: ItemButtons.left }
+            Text { id: Label; font.pixelSize: 24; text: name; elide: "ElideRight"; anchors.right: Cost.left; anchors.left:parent.left }
+            Text { id: Cost; font.pixelSize: 24; text: '$'+Number(cost).toFixed(2); anchors.right: ItemButtons.left }
             Row { 
                 anchors.top: Label.bottom
                 spacing: 5
@@ -75,10 +76,12 @@ Item {
                 anchors.right: parent.right
                 width: childrenRect.width
                 Image { source: "content/pics/add.png"
-                    MouseRegion { anchors.fill: parent; onClicked: FruitModel.set(index,"cost",Number(cost)+0.25) }
+                    ClickAutoRepeating { id: ClickUp; anchors.fill: parent; onClicked: FruitModel.set(index,"cost",Number(cost)+0.25) }
+                    scale: ClickUp.pressed ? 0.9 : 1
                 }
                 Image { source: "content/pics/del.png"
-                    MouseRegion { anchors.fill: parent; onClicked: FruitModel.set(index,"cost",Number(cost)-0.25) }
+                    ClickAutoRepeating { id: ClickDown; anchors.fill: parent; onClicked: FruitModel.set(index,"cost",Math.max(0,Number(cost)-0.25)) }
+                    scale: ClickDown.pressed ? 0.9 : 1
                 }
                 Image { source: "content/pics/trash.png"
                     MouseRegion { anchors.fill: parent; onClicked: FruitModel.remove(index) }

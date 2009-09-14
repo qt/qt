@@ -58,20 +58,85 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,XmlRole,XmlListModelRole)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,XmlRole,QmlXmlListModelRole)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,XmlListModel,QmlXmlListModel)
 
+/*!
+    \qmlclass XmlRole
+    \brief The XmlRole element allows you to specify a role for an XmlListModel.
+*/
+
+/*!
+    \qmlproperty string XmlRole::name
+    The name for the role. This name is used to access the model data for this role from Qml.
+
+    \qml
+    XmlRole { name: "title"; query: "title/string()" }
+
+    ...
+
+    Component {
+        id: Delegate
+        Text { text: title }
+    }
+    \endqml
+*/
+
+/*!
+    \qmlproperty string XmlRole::query
+    The relative XPath query for this role. The query should not start with a '/' (i.e. it must be
+    relative).
+
+    \qml
+    XmlRole { name: "title"; query: "title/string()" }
+    \endqml
+*/
+
+class Q_DECLARATIVE_EXPORT QmlXmlListModelRole : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(QString query READ query WRITE setQuery)
+
+public:
+    QmlXmlListModelRole() {}
+    ~QmlXmlListModelRole() {}
+
+    QString name() const { return m_name; }
+    void setName(const QString &name) { m_name = name; }
+
+    QString query() const { return m_query; }
+    void setQuery(const QString &query)
+    {
+        if (query.startsWith(QLatin1Char('/'))) {
+            qmlInfo(this) << "An XmlRole query must not start with '/'";
+            return;
+        }
+        m_query = query;
+    }
+
+    bool isValid() {
+        return !m_name.isEmpty() && !m_query.isEmpty();
+    }
+
+private:
+    QString m_name;
+    QString m_query;
+};
+
+QML_DECLARE_TYPE(QmlXmlListModelRole)
+
 class QmlXmlListModelPrivate;
-struct QmlXmlRoleList : public QmlConcreteList<XmlListModelRole *>
+struct QmlXmlRoleList : public QmlConcreteList<QmlXmlListModelRole *>
 {
     QmlXmlRoleList(QmlXmlListModelPrivate *p)
         : model(p) {}
-    virtual void append(XmlListModelRole *role);
+    virtual void append(QmlXmlListModelRole *role);
     //XXX clear, removeAt, and insert need to invalidate any cached data (in data table) as well
     //    (and the model should emit the appropriate signals)
     virtual void clear();
     virtual void removeAt(int i);
-    virtual void insert(int i, XmlListModelRole *role);
+    virtual void insert(int i, QmlXmlListModelRole *role);
 
     QmlXmlListModelPrivate *model;
 };
@@ -220,7 +285,7 @@ void QmlXmlQuery::doSubQueryJob()
 
     //### we might be able to condense even further (query for everything in one go)
     for (int i = 0; i < m_roleObjects->size(); ++i) {
-        XmlListModelRole *role = m_roleObjects->at(i);
+        QmlXmlListModelRole *role = m_roleObjects->at(i);
         if (!role->isValid()) {
             QList<QVariant> resultList;
             for (int j = 0; j < m_size; ++j)
@@ -248,7 +313,7 @@ void QmlXmlQuery::doSubQueryJob()
     /*for (int j = 0; j < m_size; ++j) {
         QList<QVariant> resultList;
         for (int i = 0; i < m_roleObjects->size(); ++i) {
-            XmlListModelRole *role = m_roleObjects->at(i);
+            QmlXmlListModelRole *role = m_roleObjects->at(i);
             subquery.setQuery(m_prefix.arg(j+1) + role->query());
             if (role->isStringList()) {
                 QStringList data;
@@ -274,10 +339,8 @@ void QmlXmlQuery::doSubQueryJob()
 }
 
 
-//TODO: do something smart while waiting for data to load
-//      error handling (currently quite fragile)
+//TODO: error handling (currently quite fragile)
 //      profile doQuery and doSubquery
-//      some sort of loading indication while we wait for initial data load (status property similar to QWebImage?)
 //      support complex/nested objects?
 //      how do we handle data updates (like rss feed -- usually items inserted at beginning)
 
@@ -310,43 +373,12 @@ public:
 };
 
 
-void QmlXmlRoleList::append(XmlListModelRole *role) {
-    QmlConcreteList<XmlListModelRole *>::append(role);
+void QmlXmlRoleList::append(QmlXmlListModelRole *role) {
+    QmlConcreteList<QmlXmlListModelRole *>::append(role);
     model->roles << model->highestRole;
     model->roleNames << role->name();
     ++model->highestRole;
 }
-
-/*!
-    \qmlclass XmlRole
-    \brief The XmlRole element allows you to specify a role for an XmlListModel.
-*/
-
-/*!
-    \qmlproperty string XmlRole::name
-    The name for the role. This name is used to access the model data for this role from Qml.
-
-    \qml
-    XmlRole { name: "title"; query: "title/string()" }
-
-    ...
-
-    Component {
-        id: Delegate
-        Text { text: title }
-    }
-    \endqml
-*/
-
-/*!
-    \qmlproperty string XmlRole::query
-    The relative XPath query for this role. The query should not start with a '/' (i.e. it must be
-    relative).
-
-    \qml
-    XmlRole { name: "title"; query: "title/string()" }
-    \endqml
-*/
 
 //XXX clear, removeAt, and insert need to invalidate any cached data (in data table) as well
 //    (and the model should emit the appropriate signals)
@@ -354,20 +386,20 @@ void QmlXmlRoleList::clear()
 {
     model->roles.clear();
     model->roleNames.clear();
-    QmlConcreteList<XmlListModelRole *>::clear();
+    QmlConcreteList<QmlXmlListModelRole *>::clear();
 }
 
 void QmlXmlRoleList::removeAt(int i)
 {
     model->roles.removeAt(i);
     model->roleNames.removeAt(i);
-    QmlConcreteList<XmlListModelRole *>::removeAt(i);
+    QmlConcreteList<QmlXmlListModelRole *>::removeAt(i);
 }
 
 //### we should enforce unique role names
-void QmlXmlRoleList::insert(int i, XmlListModelRole *role)
+void QmlXmlRoleList::insert(int i, QmlXmlListModelRole *role)
 {
-    QmlConcreteList<XmlListModelRole *>::insert(i, role);
+    QmlConcreteList<QmlXmlListModelRole *>::insert(i, role);
     model->roles.insert(i, model->highestRole);
     model->roleNames.insert(i, role->name());
     ++model->highestRole;
@@ -413,7 +445,7 @@ QmlXmlListModel::~QmlXmlListModel()
 
     The roles to make available for this model.
 */
-QmlList<XmlListModelRole *> *QmlXmlListModel::roleObjects()
+QmlList<QmlXmlListModelRole *> *QmlXmlListModel::roleObjects()
 {
     Q_D(QmlXmlListModel);
     return &d->roleObjects;

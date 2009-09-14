@@ -29,6 +29,7 @@ SetPropertyAction  -> PropertyAction
 RunScriptAction    -> ScriptAction
 ParentChangeAction -> ParentAction
 VisualModel        -> VisualDataModel
+Follow             -> SpringFollow
 
 Renamed properties:
 Item: contents         -> childrenRect
@@ -63,6 +64,8 @@ WebView: mouseY        -> clickY (parameter to onDoubleClick)
 WebView: cacheSize     -> pixelCacheSize
 Repeater: component    -> delegate
 Repeater: dataSource   -> model
+ListView: current      -> currentItem
+GridView: current      -> currentItem
 
 Additions:
 MouseRegion: add "acceptedButtons" property
