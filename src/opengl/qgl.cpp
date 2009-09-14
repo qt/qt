@@ -3983,7 +3983,7 @@ void QGLWidget::qglColor(const QColor& c) const
 {
 #if !defined(QT_OPENGL_ES_2)
 #ifdef QT_OPENGL_ES
-    glColor4f(c.red()/255.0, c.green()/255.0, c.blue()/255.0, c.alpha()/255.0);
+    glColor4f(c.redF(), c.greenF(), c.blueF(), c.alphaF());
 #else
     Q_D(const QGLWidget);
     const QGLContext *ctx = QGLContext::currentContext();
@@ -4015,15 +4015,13 @@ void QGLWidget::qglColor(const QColor& c) const
 void QGLWidget::qglClearColor(const QColor& c) const
 {
 #ifdef QT_OPENGL_ES
-    glClearColor((GLfloat)c.red() / 255.0, (GLfloat)c.green() / 255.0,
-                 (GLfloat)c.blue() / 255.0, (GLfloat) c.alpha() / 255.0);
+    glClearColor(c.redF(), c.greenF(), c.blueF(), c.alphaF());
 #else
     Q_D(const QGLWidget);
     const QGLContext *ctx = QGLContext::currentContext();
     if (ctx) {
         if (ctx->format().rgba())
-            glClearColor((GLfloat)c.red() / 255.0, (GLfloat)c.green() / 255.0,
-                          (GLfloat)c.blue() / 255.0, (GLfloat) c.alpha() / 255.0);
+            glClearColor(c.redF(), c.greenF(), c.blueF(), c.alphaF());
         else if (!d->cmap.isEmpty()) { // QGLColormap in use?
             int i = d->cmap.find(c.rgb());
             if (i < 0)
