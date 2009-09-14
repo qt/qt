@@ -66,6 +66,8 @@ Repeater: component    -> delegate
 Repeater: dataSource   -> model
 ListView: current      -> currentItem
 GridView: current      -> currentItem
+ListView: wrap         -> keyNavigationWraps
+ListView: autoHighlight -> highlightFollowsCurrentItem
 
 Additions:
 MouseRegion: add "acceptedButtons" property
@@ -76,6 +78,8 @@ WebView: add newWindowComponent and newWindowParent properties
 Loader: add status() and progress() properties
 Loader: add sourceComponent property
 Loader: add resizeMode property
+ListView: preferredHighlightBegin, preferredHighlightEnd
+ListView: strictlyEnforceHighlightRange
 
 Deletions:
 Column/VerticalPositioner: lost "margins" property
@@ -84,6 +88,8 @@ Grid/Positioner/Layout: lost "margins" property
 WebView: lost "interactive" property (always true now)
 Flickable: removed "dragMode" property
 ComponentInstance: removed.  Replaced by Loader.sourceComponent
+ListView: removed currentItemMode.  Replaced by highligh range.
+ListView: removed snapPos.
 
 Other Changes:
 Drag: axis becomes an enum with values "XAxis", "YAxis", "XandYAxis"
