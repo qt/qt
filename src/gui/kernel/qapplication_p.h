@@ -513,7 +513,7 @@ public:
 #ifdef Q_OS_SYMBIAN
     static TUint resolveS60ScanCode(TInt scanCode, TUint keysym);
 #endif
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
     void sendSyntheticEnterLeave(QWidget *widget);
 #endif
 
@@ -586,6 +586,9 @@ private:
                                                 Qt::FocusPolicy focusPolicy,
                                                 Qt::FocusReason focusReason);
     static bool shouldSetFocus(QWidget *w, Qt::FocusPolicy policy);
+
+
+    static bool isAlien(QWidget *);
 };
 
 Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,

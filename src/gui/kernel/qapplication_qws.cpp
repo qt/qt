@@ -430,6 +430,7 @@ static QWidget *popupOfPopupButtonFocus = 0;
 static bool popupCloseDownMode = false;
 static bool popupGrabOk;
 static QPointer<QWidget> *mouseInWidget = 0;
+QPointer<QWidget> qt_last_mouse_receiver = 0;
 
 static bool sm_blockUserInput = false;           // session management
 
@@ -3523,10 +3524,12 @@ bool QETWidget::translateMouseEvent(const QWSMouseEvent *event, int prevstate)
             if (widget != (*mouseInWidget)) {
                 QApplicationPrivate::dispatchEnterLeave(widget, *mouseInWidget);
                 (*mouseInWidget) = widget;
+                qt_last_mouse_receiver = widget;
             }
             QApplication::sendSpontaneousEvent(widget, &e);
             if (leaveAfterRelease && !QWidget::mouseGrabber()) {
                 *mouseInWidget = QApplication::widgetAt(globalPos);
+                qt_last_mouse_receiver = *mouseInWidget;
                 QApplicationPrivate::dispatchEnterLeave(*mouseInWidget, leaveAfterRelease);
                 leaveAfterRelease = 0;
             }

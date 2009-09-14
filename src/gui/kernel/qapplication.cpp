@@ -469,12 +469,18 @@ QWidget *QApplicationPrivate::oldEditFocus = 0;
 bool qt_tabletChokeMouse = false;
 static bool force_reverse = false;
 
-static inline bool isAlien(QWidget *widget)
+inline bool QApplicationPrivate::isAlien(QWidget *widget)
 {
     if (!widget)
         return false;
-#ifdef Q_WS_MAC // Fake alien behavior on the Mac :)
+#if defined(Q_WS_MAC) // Fake alien behavior on the Mac :)
     return !widget->isWindow() && widget->window()->testAttribute(Qt::WA_DontShowOnScreen);
+#elif defined(Q_WS_QWS)
+    return !widget->isWindow()
+# ifdef Q_BACKINGSTORE_SUBSURFACES
+        && !(widget->d_func()->maybeTopData() && widget->d_func()->maybeTopData()->windowSurface)
+# endif
+        ;
 #else
     return !widget->internalWinId();
 #endif
@@ -2974,7 +2980,7 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
     return result;
 }
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS)
 /*
     This function should only be called when the widget changes visibility, i.e.
     when the \a widget is shown, hidden or deleted. This function does nothing
@@ -2986,9 +2992,13 @@ extern QWidget *qt_button_down;
 void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
 {
 #ifndef QT_NO_CURSOR
+#ifdef Q_WS_QWS
+    if (!widget || widget->isWindow())
+        return;
+#else
     if (!widget || widget->internalWinId() || widget->isWindow())
         return;
-
+#endif
     const bool widgetInShow = widget->isVisible() && !widget->data->in_destructor;
     if (!widgetInShow && widget != qt_last_mouse_receiver)
         return; // Widget was not under the cursor when it was hidden/deleted.
