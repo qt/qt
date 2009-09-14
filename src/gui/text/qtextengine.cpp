@@ -1645,7 +1645,8 @@ glyph_metrics_t QTextEngine::boundingBox(int from,  int len) const
 
             glyph_t glyph = glyphs.glyphs[logClusters[pos + ilen - 1]];
             glyph_metrics_t gi = fe->boundingBox(glyph);
-            gm.width -= qRound(gi.xoff - gi.x - gi.width);
+            if (gi.isValid())
+                gm.width -= qRound(gi.xoff - gi.x - gi.width);
         }
     }
     return gm;
