@@ -759,6 +759,10 @@ class QPixmapColorizeFilterPrivate : public QPixmapFilterPrivate
     Q_DECLARE_PUBLIC(QPixmapColorizeFilter)
 public:
     QColor color;
+    qreal strength;
+    quint32 opaque : 1;
+    quint32 alphaBlend : 1;
+    quint32 padding : 30;
 };
 
 /*!
@@ -771,7 +775,11 @@ public:
 QPixmapColorizeFilter::QPixmapColorizeFilter(QObject *parent)
     : QPixmapFilter(*new QPixmapColorizeFilterPrivate, ColorizeFilter, parent)
 {
-    d_func()->color = QColor(0, 0, 192);
+    Q_D(QPixmapColorizeFilter);
+    d->color = QColor(0, 0, 192);
+    d->strength = qreal(1);
+    d->opaque = true;
+    d->alphaBlend = false;
 }
 
 /*!
@@ -797,6 +805,31 @@ void QPixmapColorizeFilter::setColor(const QColor &color)
 }
 
 /*!
+    Gets the strength of the colorize filter, 1.0 means full colorized while
+    0.0 equals to no filtering at all.
+
+    \internal
+*/
+qreal QPixmapColorizeFilter::strength() const
+{
+    Q_D(const QPixmapColorizeFilter);
+    return d->strength;
+}
+
+/*!
+    Sets the strength of the colorize filter to \a strength.
+
+    \internal
+*/
+void QPixmapColorizeFilter::setStrength(qreal strength)
+{
+    Q_D(QPixmapColorizeFilter);
+    d->strength = qBound(qreal(0), strength, qreal(1));
+    d->opaque = !qFuzzyIsNull(d->strength);
+    d->alphaBlend = !qFuzzyIsNull(d->strength - 1);
+}
+
+/*!
     \internal
 */
 void QPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const QPixmap &src, const QRectF &srcRect) const
@@ -807,12 +840,18 @@ void QPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const Q
     QPixmapColorizeFilter *colorizeFilter = static_cast<QPixmapColorizeFilter*>(filter);
     if (colorizeFilter) {
         colorizeFilter->setColor(d->color);
+        colorizeFilter->setStrength(d->strength);
         colorizeFilter->draw(painter, dest, src, srcRect);
         delete colorizeFilter;
         return;
     }
 
     // falling back to raster implementation
+
+    if (!d->opaque) {
+        painter->drawPixmap(dest, src, srcRect);
+        return;
+    }
 
     QImage srcImage;
     QImage destImage;
@@ -835,6 +874,16 @@ void QPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const Q
     destPainter.setCompositionMode(QPainter::CompositionMode_Screen);
     destPainter.fillRect(srcImage.rect(), d->color);
     destPainter.end();
+
+    if (d->alphaBlend) {
+        // alpha blending srcImage and destImage
+        QImage buffer = srcImage;
+        QPainter bufPainter(&buffer);
+        bufPainter.setOpacity(d->strength);
+        bufPainter.drawImage(0, 0, destImage);
+        bufPainter.end();
+        destImage = buffer;
+    }
 
     if (srcImage.hasAlphaChannel())
         destImage.setAlphaChannel(srcImage.alphaChannel());

@@ -155,6 +155,9 @@ public:
     void setColor(const QColor& color);
     QColor color() const;
 
+    void setStrength(qreal strength);
+    qreal strength() const;
+
     void draw(QPainter *painter, const QPointF &dest, const QPixmap &src, const QRectF &srcRect = QRectF()) const;
 };
 
