@@ -965,6 +965,12 @@ void QListView::paintEvent(QPaintEvent *e)
     for (QVector<QModelIndex>::const_iterator it = toBeRendered.constBegin(); it != end; ++it) {
         Q_ASSERT((*it).isValid());
         option.rect = visualRect(*it);
+
+        if (flow() == TopToBottom)
+            option.rect.setWidth(qMin(viewport()->size().width(), option.rect.width()));
+        else
+            option.rect.setHeight(qMin(viewport()->size().height(), option.rect.height()));
+
         option.state = state;
         if (selections && selections->isSelected(*it))
             option.state |= QStyle::State_Selected;

@@ -113,6 +113,7 @@ class QGraphicsGrayscaleEffectPrivate : public QGraphicsEffectPrivate
     Q_DECLARE_PUBLIC(QGraphicsGrayscaleEffect)
 public:
     QGraphicsGrayscaleEffectPrivate()
+        : opaque(true)
     {
         filter = new QPixmapColorizeFilter;
         filter->setColor(Qt::black);
@@ -120,16 +121,24 @@ public:
     ~QGraphicsGrayscaleEffectPrivate() { delete filter; }
 
     QPixmapColorizeFilter *filter;
+    quint32 opaque : 1;
+    quint32 padding : 31;
 };
 
 class QGraphicsColorizeEffectPrivate : public QGraphicsEffectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsColorizeEffect)
 public:
-    QGraphicsColorizeEffectPrivate() { filter = new QPixmapColorizeFilter; }
+    QGraphicsColorizeEffectPrivate()
+        : opaque(true)
+    {
+        filter = new QPixmapColorizeFilter;
+    }
     ~QGraphicsColorizeEffectPrivate() { delete filter; }
 
     QPixmapColorizeFilter *filter;
+    quint32 opaque : 1;
+    quint32 padding : 31;
 };
 
 class QGraphicsPixelizeEffectPrivate : public QGraphicsEffectPrivate

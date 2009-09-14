@@ -51,6 +51,47 @@
 
 QT_BEGIN_NAMESPACE
 
+
+QGraphicsAnchorPrivate::QGraphicsAnchorPrivate(int version)
+    : QObjectPrivate(version), layoutPrivate(0), data(0)
+{
+}
+
+QGraphicsAnchorPrivate::~QGraphicsAnchorPrivate()
+{
+    layoutPrivate->deleteAnchorData(data);
+}
+
+void QGraphicsAnchorPrivate::setSpacing(qreal value)
+{
+    if (data) {
+        layoutPrivate->setAnchorSize(data, &value);
+    } else {
+        qWarning("QGraphicsAnchor::setSpacing: The anchor does not exist.");
+    }
+}
+
+void QGraphicsAnchorPrivate::unsetSpacing()
+{
+    if (data) {
+        layoutPrivate->setAnchorSize(data, 0);
+    } else {
+        qWarning("QGraphicsAnchor::setSpacing: The anchor does not exist.");
+    }
+}
+
+qreal QGraphicsAnchorPrivate::spacing() const
+{
+    qreal size = 0;
+    if (data) {
+        layoutPrivate->anchorSize(data, 0, &size, 0);
+    } else {
+        qWarning("QGraphicsAnchor::setSpacing: The anchor does not exist.");
+    }
+    return size;
+}
+
+
 void AnchorData::refreshSizeHints(qreal effectiveSpacing)
 {
     if (!isLayoutAnchor && from->m_item == to->m_item) {
@@ -998,29 +1039,29 @@ void QGraphicsAnchorLayoutPrivate::removeCenterConstraints(QGraphicsLayoutItem *
  * Helper function that is called from the anchor functions in the public API.
  * If \a spacing is 0, it will pick up the spacing defined by the style.
  */
-void QGraphicsAnchorLayoutPrivate::anchor(QGraphicsLayoutItem *firstItem,
-                                          Qt::AnchorPoint firstEdge,
-                                          QGraphicsLayoutItem *secondItem,
-                                          Qt::AnchorPoint secondEdge,
-                                          qreal *spacing)
+QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::anchor(QGraphicsLayoutItem *firstItem,
+                                                      Qt::AnchorPoint firstEdge,
+                                                      QGraphicsLayoutItem *secondItem,
+                                                      Qt::AnchorPoint secondEdge,
+                                                      qreal *spacing)
 {
     Q_Q(QGraphicsAnchorLayout);
     if ((firstItem == 0) || (secondItem == 0)) {
         qWarning("QGraphicsAnchorLayout::addAnchor(): "
                  "Cannot anchor NULL items");
-        return;
+        return 0;
     }
 
     if (firstItem == secondItem) {
         qWarning("QGraphicsAnchorLayout::addAnchor(): "
                  "Cannot anchor the item to itself");
-        return;
+        return 0;
     }
 
     if (edgeOrientation(secondEdge) != edgeOrientation(firstEdge)) {
         qWarning("QGraphicsAnchorLayout::addAnchor(): "
                  "Cannot anchor edges of different orientations");
-        return;
+        return 0;
     }
 
     // Guarantee that the graph is no simplified when adding this anchor,
@@ -1079,6 +1120,7 @@ void QGraphicsAnchorLayoutPrivate::anchor(QGraphicsLayoutItem *firstItem,
         data = new AnchorData(-*spacing);
         addAnchor(secondItem, secondEdge, firstItem, firstEdge, data);
     }
+    return acquireGraphicsAnchor(data);
 }
 
 void QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *firstItem,
@@ -1117,77 +1159,97 @@ void QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *firstItem,
     graph[edgeOrientation(firstEdge)].createEdge(v1, v2, data);
 }
 
+QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::getAnchor(QGraphicsLayoutItem *firstItem,
+                                                         Qt::AnchorPoint firstEdge,
+                                                         QGraphicsLayoutItem *secondItem,
+                                                         Qt::AnchorPoint secondEdge)
+{
+    Orientation orient = edgeOrientation(firstEdge);
+    restoreSimplifiedGraph(orient);
+
+    AnchorVertex *v1 = internalVertex(firstItem, firstEdge);
+    AnchorVertex *v2 = internalVertex(secondItem, secondEdge);
+
+    QGraphicsAnchor *graphicsAnchor = 0;
+
+    AnchorData *data = graph[orient].edgeData(v1, v2);
+    if (data)
+        graphicsAnchor = acquireGraphicsAnchor(data);
+    return graphicsAnchor;
+}
+
 void QGraphicsAnchorLayoutPrivate::removeAnchor(QGraphicsLayoutItem *firstItem,
                                                 Qt::AnchorPoint firstEdge,
                                                 QGraphicsLayoutItem *secondItem,
                                                 Qt::AnchorPoint secondEdge)
 {
-    // Guarantee that the graph is no simplified when adding this anchor,
-    // anchor manipulation always happen in the full graph
-    restoreSimplifiedGraph(edgeOrientation(firstEdge));
+    removeAnchor_helper(internalVertex(firstItem, firstEdge),
+                        internalVertex(secondItem, secondEdge));
+}
 
-    // Look for both vertices
-    AnchorVertex *v1 = internalVertex(firstItem, firstEdge);
-    AnchorVertex *v2 = internalVertex(secondItem, secondEdge);
-
+void QGraphicsAnchorLayoutPrivate::removeAnchor_helper(AnchorVertex *v1, AnchorVertex *v2)
+{
     Q_ASSERT(v1 && v2);
+    // Guarantee that the graph is no simplified when removing this anchor,
+    // anchor manipulation always happen in the full graph
+    Orientation o = edgeOrientation(v1->m_edge);
+    restoreSimplifiedGraph(o);
 
     // Remove edge from graph
-    graph[edgeOrientation(firstEdge)].removeEdge(v1, v2);
+    graph[o].removeEdge(v1, v2);
 
     // Decrease vertices reference count (may trigger a deletion)
-    removeInternalVertex(firstItem, firstEdge);
-    removeInternalVertex(secondItem, secondEdge);
+    removeInternalVertex(v1->m_item, v1->m_edge);
+    removeInternalVertex(v2->m_item, v2->m_edge);
 }
 
-bool QGraphicsAnchorLayoutPrivate::setAnchorSize(const QGraphicsLayoutItem *firstItem,
-                                                 Qt::AnchorPoint firstEdge,
-                                                 const QGraphicsLayoutItem *secondItem,
-                                                 Qt::AnchorPoint secondEdge,
-                                                 const qreal *anchorSize)
+/*!
+    \internal
+    Only called from outside. (calls invalidate())
+*/
+void QGraphicsAnchorLayoutPrivate::deleteAnchorData(AnchorData *data)
 {
+    Q_Q(QGraphicsAnchorLayout);
+    removeAnchor_helper(data->from, data->to);
+    q->invalidate();
+}
+
+/*!
+    \internal
+    Only called from outside. (calls invalidate())
+*/
+void QGraphicsAnchorLayoutPrivate::setAnchorSize(AnchorData *data, const qreal *anchorSize)
+{
+    Q_Q(QGraphicsAnchorLayout);
     // ### we can avoid restoration if we really want to, but we would have to
     // search recursively through all composite anchors
-    restoreSimplifiedGraph(edgeOrientation(firstEdge));
-    AnchorVertex *v1 = internalVertex(firstItem, firstEdge);
-    AnchorVertex *v2 = internalVertex(secondItem, secondEdge);
-
-    AnchorData *data = graph[edgeOrientation(firstEdge)].edgeData(v1, v2);
-    if (data) {
-        if (anchorSize) {
-            data->setFixedSize(*anchorSize);
-        } else {
-            data->unsetSize();
-        }
+    Q_ASSERT(data);
+    restoreSimplifiedGraph(edgeOrientation(data->from->m_edge));
+    if (anchorSize) {
+        data->setFixedSize(*anchorSize);
+    } else {
+        data->unsetSize();
     }
 
-    return data;
+    q->invalidate();
 }
 
-bool QGraphicsAnchorLayoutPrivate::anchorSize(const QGraphicsLayoutItem *firstItem,
-                                              Qt::AnchorPoint firstEdge,
-                                              const QGraphicsLayoutItem *secondItem,
-                                              Qt::AnchorPoint secondEdge,
+void QGraphicsAnchorLayoutPrivate::anchorSize(const AnchorData *data,
                                               qreal *minSize,
                                               qreal *prefSize,
                                               qreal *maxSize) const
 {
     Q_ASSERT(minSize || prefSize || maxSize);
+    Q_ASSERT(data);
     QGraphicsAnchorLayoutPrivate *that = const_cast<QGraphicsAnchorLayoutPrivate *>(this);
-    that->restoreSimplifiedGraph(edgeOrientation(firstEdge));
-    AnchorVertex *v1 = internalVertex(firstItem, firstEdge);
-    AnchorVertex *v2 = internalVertex(secondItem, secondEdge);
+    that->restoreSimplifiedGraph(edgeOrientation(data->from->m_edge));
 
-    AnchorData *data = that->graph[edgeOrientation(firstEdge)].edgeData(v1, v2);
-    if (data) {
-        if (minSize)
-            *minSize = data->minSize;
-        if (prefSize)
-            *prefSize = data->prefSize;
-        if (maxSize)
-            *maxSize = data->maxSize;
-    }
-    return data;
+    if (minSize)
+        *minSize = data->minSize;
+    if (prefSize)
+        *prefSize = data->prefSize;
+    if (maxSize)
+        *maxSize = data->maxSize;
 }
 
 AnchorVertex *QGraphicsAnchorLayoutPrivate::addInternalVertex(QGraphicsLayoutItem *item,

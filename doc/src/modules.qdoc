@@ -919,8 +919,8 @@
     \target The QDBus compiler
 
     \brief The QtDBus module is a Unix-only library that you can use
-    to make Inter-Process Communication using the \l {Introduction to
-    D-Bus} {D-Bus} protocol.
+    to perform Inter-Process Communication using the \l{Introduction to
+    D-Bus}{D-Bus} protocol.
 
     Applications using the QtDBus module can provide services to
     other, remote applications by exporting objects, as well as use

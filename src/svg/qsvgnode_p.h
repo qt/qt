@@ -117,12 +117,11 @@ public:
 
     QSvgNode *parent() const;
 
-    void appendStyleProperty(QSvgStyleProperty *prop, const QString &id,
-                             bool justLink=false);
+    void appendStyleProperty(QSvgStyleProperty *prop, const QString &id);
     void applyStyle(QPainter *p, QSvgExtraStates &states);
     void revertStyle(QPainter *p, QSvgExtraStates &states);
     QSvgStyleProperty *styleProperty(QSvgStyleProperty::Type type) const;
-    QSvgStyleProperty *styleProperty(const QString &id) const;
+    QSvgFillStyleProperty *styleProperty(const QString &id) const;
 
     QSvgTinyDocument *document() const;
 
@@ -162,7 +161,6 @@ protected:
     qreal strokeWidth() const;
 private:
     QSvgNode   *m_parent;
-    QHash<QString, QSvgRefCounter<QSvgStyleProperty> > m_styles;
 
     QStringList m_requiredFeatures;
     QStringList m_requiredExtensions;

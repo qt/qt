@@ -48,8 +48,10 @@
 #endif
 
 #include <QtTest/qtest_global.h>
+#ifdef QT_GUI_LIB
 #include <QtTest/qtestkeyboard.h>
 #include <QtTest/qtestmouse.h>
+#endif
 #include <QtTest/qtestsystem.h>
 
 #include <QtCore/qlist.h>

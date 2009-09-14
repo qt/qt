@@ -125,7 +125,7 @@ static qulonglong qstrtoull(const char *nptr, const char **endptr, register int 
 #if defined(Q_CC_MWERKS) && defined(Q_OS_WIN32)
 inline bool isascii(int c)
 {
-	return (c >= 0 && c <=127);
+        return (c >= 0 && c <=127);
 }
 #endif
 
@@ -1149,6 +1149,23 @@ static QLocale::MeasurementSystem macMeasurementSystem()
     }
 }
 
+static void getMacPreferredLanguageAndCountry(QString *language, QString *country)
+{
+    QCFType<CFArrayRef> languages = (CFArrayRef)CFPreferencesCopyValue(
+             CFSTR("AppleLanguages"),
+             kCFPreferencesAnyApplication,
+             kCFPreferencesCurrentUser,
+             kCFPreferencesAnyHost);
+    if (CFArrayGetCount(languages) > 0) {
+        QCFType<CFLocaleRef> locale = CFLocaleCreate(kCFAllocatorDefault,
+                                                     CFStringRef(CFArrayGetValueAtIndex(languages, 0)));
+        if (language)
+            *language = QCFString::toQString(CFStringRef(CFLocaleGetValue(locale, kCFLocaleLanguageCode)));
+        if (country)
+            *country = QCFString::toQString(CFStringRef(CFLocaleGetValue(locale, kCFLocaleCountryCode)));
+    }
+}
+
 QLocale QSystemLocale::fallbackLocale() const
 {
     return QLocale(QString::fromUtf8(getMacLocaleName().constData()));
@@ -1193,9 +1210,16 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
     case NegativeSign:
     case PositiveSign:
     case ZeroDigit:
-    case LanguageId:
-    case CountryId:
         break;
+    case LanguageId:
+    case CountryId: {
+        QString preferredLanguage;
+        QString preferredCountry;
+        getMacPreferredLanguageAndCountry(&preferredLanguage, &preferredCountry);
+        if (type == LanguageId)
+            return codeToLanguage(preferredLanguage.data());
+        return codeToCountry(preferredCountry.data());
+    }
 
     case MeasurementSystem:
         return QVariant(static_cast<int>(macMeasurementSystem()));
@@ -7181,8 +7205,8 @@ Q_CORE_EXPORT double qstrtod(const char *s00, const char **se, bool *ok)
     double ret = strtod((char*)s00, (char**)se);
     if (ok) {
       if((ret == 0.0l && errno == ERANGE)
-	 || ret == HUGE_VAL || ret == -HUGE_VAL)
-	*ok = false;
+         || ret == HUGE_VAL || ret == -HUGE_VAL)
+        *ok = false;
       else
         *ok = true; // the result will be that we don't report underflow in this case
     }

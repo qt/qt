@@ -147,6 +147,7 @@ private slots:
     void task253944_itemDelegateIsReset();
     void subControlRectsWithOffset_data();
     void subControlRectsWithOffset();
+    void task260974_menuItemRectangleForComboBoxPopup();
 
 protected slots:
     void onEditTextChanged( const QString &newString );
@@ -2337,6 +2338,41 @@ void tst_QComboBox::subControlRectsWithOffset()
     QCOMPARE(arrowRect, arrowRectWithOffset.translated(-offset));
     QCOMPARE(listboxRect, listboxRectWithOffset.translated(-offset));
 
+}
+
+void tst_QComboBox::task260974_menuItemRectangleForComboBoxPopup()
+{
+    class TestStyle: public QWindowsStyle
+    {
+    public:
+        int styleHint(StyleHint hint, const QStyleOption *option, const QWidget *widget, QStyleHintReturn *ret) const
+        {
+            if (hint == SH_ComboBox_Popup) return 1;
+            else return QCommonStyle::styleHint(hint, option, widget, ret);
+        }
+
+        void drawControl(ControlElement element, const QStyleOption *option, QPainter *, const QWidget *) const
+        {
+            if (element == CE_MenuItem)
+                discoveredRect = option->rect;
+        }
+
+        mutable QRect discoveredRect;
+    } style;
+
+
+    {
+        QComboBox comboBox;
+        comboBox.setStyle(&style);
+        comboBox.addItem("Item 1");
+
+        comboBox.show();
+        QTest::qWait(100);
+        comboBox.showPopup();
+        QTest::qWait(100);
+
+        QVERIFY(style.discoveredRect.width() <= comboBox.width());
+    }
 }
 
 QTEST_MAIN(tst_QComboBox)

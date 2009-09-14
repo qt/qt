@@ -54,6 +54,7 @@
 //
 
 #include <QGraphicsWidget>
+#include <private/qobject_p.h>
 
 #include "qgraphicslayout_p.h"
 #include "qgraphicsanchorlayout.h"
@@ -153,6 +154,7 @@ struct AnchorData : public QSimplexVariable {
           minSize(minimumSize), prefSize(preferredSize),
           maxSize(maximumSize), sizeAtMinimum(preferredSize),
           sizeAtPreferred(preferredSize), sizeAtMaximum(preferredSize),
+          graphicsAnchor(0),
           skipInPreferred(0), type(Normal), hasSize(true),
           isLayoutAnchor(false) {}
 
@@ -160,6 +162,7 @@ struct AnchorData : public QSimplexVariable {
         : QSimplexVariable(), from(0), to(0),
           minSize(size), prefSize(size), maxSize(size),
           sizeAtMinimum(size), sizeAtPreferred(size), sizeAtMaximum(size),
+          graphicsAnchor(0),
           skipInPreferred(0), type(Normal), hasSize(true),
           isLayoutAnchor(false) {}
 
@@ -167,6 +170,7 @@ struct AnchorData : public QSimplexVariable {
         : QSimplexVariable(), from(0), to(0),
           minSize(0), prefSize(0), maxSize(0),
           sizeAtMinimum(0), sizeAtPreferred(0), sizeAtMaximum(0),
+          graphicsAnchor(0),
           skipInPreferred(0), type(Normal), hasSize(false),
           isLayoutAnchor(false) {}
 
@@ -215,6 +219,7 @@ struct AnchorData : public QSimplexVariable {
     qreal sizeAtMinimum;
     qreal sizeAtPreferred;
     qreal sizeAtMaximum;
+    QGraphicsAnchor *graphicsAnchor;
 
     uint skipInPreferred : 1;
     uint type : 2;            // either Normal, Sequential or Parallel
@@ -226,6 +231,7 @@ protected:
           minSize(size), prefSize(size),
           maxSize(size), sizeAtMinimum(size),
           sizeAtPreferred(size), sizeAtMaximum(size),
+          graphicsAnchor(0),
           skipInPreferred(0), type(type), hasSize(true),
           isLayoutAnchor(false) {}
 };
@@ -309,6 +315,28 @@ public:
     QSet<AnchorData *> negatives;
 };
 
+class QGraphicsAnchorLayoutPrivate;
+/*!
+    \internal
+*/
+class QGraphicsAnchorPrivate : public QObjectPrivate
+{
+    Q_DECLARE_PUBLIC(QGraphicsAnchor)
+
+public:
+    explicit QGraphicsAnchorPrivate(int version = QObjectPrivateVersion);
+    ~QGraphicsAnchorPrivate();
+
+    void setSpacing(qreal value);
+    void unsetSpacing();
+    qreal spacing() const;
+
+    QGraphicsAnchorLayoutPrivate *layoutPrivate;
+    AnchorData *data;
+};
+
+
+
 
 /*!
   \internal
@@ -365,12 +393,22 @@ public:
     void removeCenterAnchors(QGraphicsLayoutItem *item, Qt::AnchorPoint centerEdge, bool substitute = true);
     void removeCenterConstraints(QGraphicsLayoutItem *item, Orientation orientation);
 
+    QGraphicsAnchor *acquireGraphicsAnchor(AnchorData *data)
+    {
+        Q_Q(QGraphicsAnchorLayout);
+        if (!data->graphicsAnchor) {
+            data->graphicsAnchor = new QGraphicsAnchor(q);
+            data->graphicsAnchor->d_func()->data = data;
+        }
+        return data->graphicsAnchor;
+    }
+
     // helper function used by the 4 API functions
-    void anchor(QGraphicsLayoutItem *firstItem,
-                Qt::AnchorPoint firstEdge,
-                QGraphicsLayoutItem *secondItem,
-                Qt::AnchorPoint secondEdge,
-                qreal *spacing = 0);
+    QGraphicsAnchor *anchor(QGraphicsLayoutItem *firstItem,
+                            Qt::AnchorPoint firstEdge,
+                            QGraphicsLayoutItem *secondItem,
+                            Qt::AnchorPoint secondEdge,
+                            qreal *spacing = 0);
 
     // Anchor Manipulation methods
     void addAnchor(QGraphicsLayoutItem *firstItem,
@@ -379,21 +417,17 @@ public:
                    Qt::AnchorPoint secondEdge,
                    AnchorData *data);
 
+    QGraphicsAnchor *getAnchor(QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
+                               QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge);
+
     void removeAnchor(QGraphicsLayoutItem *firstItem,
                       Qt::AnchorPoint firstEdge,
                       QGraphicsLayoutItem *secondItem,
                       Qt::AnchorPoint secondEdge);
-
-    bool setAnchorSize(const QGraphicsLayoutItem *firstItem,
-                       Qt::AnchorPoint firstEdge,
-                       const QGraphicsLayoutItem *secondItem,
-                       Qt::AnchorPoint secondEdge,
-                       const qreal *anchorSize);
-
-    bool anchorSize(const QGraphicsLayoutItem *firstItem,
-                    Qt::AnchorPoint firstEdge,
-                    const QGraphicsLayoutItem *secondItem,
-                    Qt::AnchorPoint secondEdge,
+    void removeAnchor_helper(AnchorVertex *v1, AnchorVertex *v2);
+    void deleteAnchorData(AnchorData *data);
+    void setAnchorSize(AnchorData *data, const qreal *anchorSize);
+    void anchorSize(const AnchorData *data,
                     qreal *minSize = 0,
                     qreal *prefSize = 0,
                     qreal *maxSize = 0) const;

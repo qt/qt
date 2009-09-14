@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#if !defined(QTESTKEYBOARD_H) && defined(QT_GUI_LIB)
+#if !defined(QTESTKEYBOARD_H)
 #define QTESTKEYBOARD_H
 
 #if 0

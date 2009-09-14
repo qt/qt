@@ -975,15 +975,7 @@ static void parseColor(QSvgNode *,
 
 static QSvgStyleProperty *styleFromUrl(QSvgNode *node, const QString &url)
 {
-    while (node && (node->type() != QSvgNode::DOC  &&
-                    node->type() != QSvgNode::G    &&
-                    node->type() != QSvgNode::DEFS &&
-                    node->type() != QSvgNode::SWITCH)) {
-        node = node->parent();
-    }
-    if (!node)
-        return 0;
-    return static_cast<QSvgStructureNode*>(node)->scopeStyle(idFromUrl(url));
+    return node ? node->styleProperty(idFromUrl(url)) : 0;
 }
 
 static void parseBrush(QSvgNode *node,
@@ -3559,10 +3551,9 @@ void QSvgHandler::parse()
         case QXmlStreamReader::ProcessingInstruction:
             processingInstruction(xml->processingInstructionTarget().toString(), xml->processingInstructionData().toString());
             break;
-        default:
-            ;
         }
     }
+    resolveGradients(m_doc);
 }
 
 bool QSvgHandler::startElement(const QString &localName,
@@ -3672,7 +3663,7 @@ bool QSvgHandler::startElement(const QString &localName,
         QSvgStyleProperty *prop = method(m_nodes.top(), attributes, this);
         if (prop) {
             m_style = prop;
-            m_nodes.top()->appendStyleProperty(prop, someId(attributes), true);
+            m_nodes.top()->appendStyleProperty(prop, someId(attributes));
         } else {
             qWarning("Could not parse node: %s", qPrintable(localName));
         }
@@ -3713,51 +3704,50 @@ bool QSvgHandler::endElement(const QStringRef &localName)
     if (m_inStyle && localName == QLatin1String("style"))
         m_inStyle = false;
 
-    if (node == Graphics) {
-        // Iterate through the m_renderers to resolve any unresolved gradients.
-        QSvgNode* curNode = static_cast<QSvgNode*>(m_nodes.top());
-        if (curNode->type() == QSvgNode::DOC ||
-            curNode->type() == QSvgNode::G ||
-            curNode->type() == QSvgNode::DEFS ||
-            curNode->type() == QSvgNode::SWITCH) {
-            QSvgStructureNode* structureNode = static_cast<QSvgStructureNode*>(curNode);
-            QList<QSvgNode*> ren = structureNode->renderers();
-            QList<QSvgNode*>::iterator itr = ren.begin();
-            while (itr != ren.end()) {
-                QSvgNode *eleNode = *itr++;
-                QSvgFillStyle *fill = static_cast<QSvgFillStyle*>(eleNode->styleProperty(QSvgStyleProperty::FILL));
-                if (fill && !(fill->isGradientResolved())) {
-                    QString id = fill->gradientId();
-                    QSvgStyleProperty *style = structureNode->scopeStyle(id);
-                    if (style) {
-                        if (style->type() == QSvgStyleProperty::SOLID_COLOR || style->type() == QSvgStyleProperty::GRADIENT)
-                            fill->setFillStyle(reinterpret_cast<QSvgFillStyleProperty *>(style));
-                    } else {
-                        qWarning("Could not resolve property : %s",qPrintable(id));
-                        fill->setBrush(QBrush(Qt::NoBrush));
-                    }
-                }
-                QSvgStrokeStyle *stroke = static_cast<QSvgStrokeStyle*>(eleNode->styleProperty(QSvgStyleProperty::STROKE));
-                if (stroke && !(stroke->isGradientResolved())) {
-                    QString id = stroke->gradientId();
-                    QSvgStyleProperty *style = structureNode->scopeStyle(id);
-                    if (style) {
-                        if (style->type() == QSvgStyleProperty::SOLID_COLOR || style->type() == QSvgStyleProperty::GRADIENT)
-                            stroke->setStyle(reinterpret_cast<QSvgFillStyleProperty *>(style));
-                    } else {
-                        qWarning("Could not resolve property : %s",qPrintable(id));
-                        stroke->setStroke(QBrush(Qt::NoBrush));
-                    }
-                }
-            }
-        }
+    if (node == Graphics)
         m_nodes.pop();
-    }
-
     else if (m_style && !m_skipNodes.isEmpty() && m_skipNodes.top() != Style)
         m_style = 0;
 
     return true;
+}
+
+void QSvgHandler::resolveGradients(QSvgNode *node)
+{
+    if (!node || (node->type() != QSvgNode::DOC && node->type() != QSvgNode::G
+        && node->type() != QSvgNode::DEFS && node->type() != QSvgNode::SWITCH)) {
+        return;
+    }
+    QSvgStructureNode *structureNode = static_cast<QSvgStructureNode *>(node);
+
+    QList<QSvgNode *> ren = structureNode->renderers();
+    for (QList<QSvgNode *>::iterator it = ren.begin(); it != ren.end(); ++it) {
+        QSvgFillStyle *fill = static_cast<QSvgFillStyle *>((*it)->styleProperty(QSvgStyleProperty::FILL));
+        if (fill && !fill->isGradientResolved()) {
+            QString id = fill->gradientId();
+            QSvgFillStyleProperty *style = structureNode->styleProperty(id);
+            if (style) {
+                fill->setFillStyle(style);
+            } else {
+                qWarning("Could not resolve property : %s", qPrintable(id));
+                fill->setBrush(Qt::NoBrush);
+            }
+        }
+
+        QSvgStrokeStyle *stroke = static_cast<QSvgStrokeStyle *>((*it)->styleProperty(QSvgStyleProperty::STROKE));
+        if (stroke && !stroke->isGradientResolved()) {
+            QString id = stroke->gradientId();
+            QSvgFillStyleProperty *style = structureNode->styleProperty(id);
+            if (style) {
+                stroke->setStyle(style);
+            } else {
+                qWarning("Could not resolve property : %s", qPrintable(id));
+                stroke->setStroke(Qt::NoBrush);
+            }
+        }
+
+        resolveGradients(*it);
+    }
 }
 
 bool QSvgHandler::characters(const QStringRef &str)

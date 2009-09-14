@@ -110,6 +110,7 @@ struct glyph_metrics_t
     QFixed yoff;
 
     glyph_metrics_t transformed(const QTransform &xform) const;
+    inline bool isValid() const {return x != 100000 && y != 100000;}
 };
 Q_DECLARE_TYPEINFO(glyph_metrics_t, Q_PRIMITIVE_TYPE);
 

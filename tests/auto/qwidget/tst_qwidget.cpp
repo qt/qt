@@ -350,7 +350,7 @@ private slots:
 
     void setClearAndResizeMask();
     void maskedUpdate();
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS)
     void syntheticEnterLeave();
 #endif
     void windowFlags();
@@ -8990,7 +8990,7 @@ void tst_QWidget::maskedUpdate()
     QCOMPARE(grandChild.paintedRegion, QRegion(grandChild.rect())); // Full update.
 }
 
-#if defined(Q_WS_X11) || defined(Q_WS_WIN)
+#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS)
 void tst_QWidget::syntheticEnterLeave()
 {
     class MyWidget : public QWidget
@@ -9275,6 +9275,7 @@ void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&main);
 #endif
+    QCursor::setPos(main.pos()); //get the cursor out of the picture
     QTest::qWait(100);
     QPixmap pixmap = QPixmap::grabWindow(main.winId());
 

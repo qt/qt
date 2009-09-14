@@ -467,12 +467,44 @@ QGraphicsGrayscaleEffect::~QGraphicsGrayscaleEffect()
 {
 }
 
+
+/*!
+    \property QGraphicsGrayscaleEffect::strength
+    \brief the strength of the effect.
+
+    By default, the strength is 1.0.
+    A strength 0.0 equals to no effect, while 1.0 means full grayscale.
+*/
+qreal QGraphicsGrayscaleEffect::strength() const
+{
+    Q_D(const QGraphicsGrayscaleEffect);
+    return d->filter->strength();
+}
+
+void QGraphicsGrayscaleEffect::setStrength(qreal strength)
+{
+    Q_D(QGraphicsGrayscaleEffect);
+    if (qFuzzyCompare(d->filter->strength(), strength))
+        return;
+
+    d->filter->setStrength(strength);
+    d->opaque = !qFuzzyIsNull(strength);
+    update();
+    emit strengthChanged(strength);
+}
+
 /*!
     \reimp
 */
 void QGraphicsGrayscaleEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsGrayscaleEffect);
+
+    if (!d->opaque) {
+        source->draw(painter);
+        return;
+    }
+
     QPoint offset;
     if (source->isPixmap()) {
         // No point in drawing in device coordinates (pixmap will be scaled anyways).
@@ -546,6 +578,31 @@ void QGraphicsColorizeEffect::setColor(const QColor &color)
 }
 
 /*!
+    \property QGraphicsColorizeEffect::strength
+    \brief the strength of the effect.
+
+    By default, the strength is 1.0.
+    A strength 0.0 equals to no effect, while 1.0 means full colorization.
+*/
+qreal QGraphicsColorizeEffect::strength() const
+{
+    Q_D(const QGraphicsColorizeEffect);
+    return d->filter->strength();
+}
+
+void QGraphicsColorizeEffect::setStrength(qreal strength)
+{
+    Q_D(QGraphicsColorizeEffect);
+    if (qFuzzyCompare(d->filter->strength(), strength))
+        return;
+
+    d->filter->setStrength(strength);
+    d->opaque = !qFuzzyIsNull(strength);
+    update();
+    emit strengthChanged(strength);
+}
+
+/*!
     \fn void QGraphicsColorizeEffect::colorChanged(const QColor &color)
 
     This signal is emitted whenever the effect's color changes.
@@ -558,6 +615,12 @@ void QGraphicsColorizeEffect::setColor(const QColor &color)
 void QGraphicsColorizeEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsColorizeEffect);
+
+    if (!d->opaque) {
+        source->draw(painter);
+        return;
+    }
+
     QPoint offset;
     if (source->isPixmap()) {
         // No point in drawing in device coordinates (pixmap will be scaled anyways).

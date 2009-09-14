@@ -45,6 +45,7 @@
 
 #include "qsvgnode_p.h"
 #include "qsvgstyle_p.h"
+#include "qsvgtinydocument_p.h"
 
 #include "qpainter.h"
 #include "qlocale.h"
@@ -90,35 +91,20 @@ QSvgStructureNode::QSvgStructureNode(QSvgNode *parent)
 
 QSvgNode * QSvgStructureNode::scopeNode(const QString &id) const
 {
-    const QSvgStructureNode *group = this;
-    while (group && group->type() != QSvgNode::DOC) {
-        group = static_cast<QSvgStructureNode*>(group->parent());
-    }
-    if (group)
-        return group->m_scope[id];
-    return 0;
+    QSvgTinyDocument *doc = document();
+    return doc ? doc->namedNode(id) : 0;
 }
 
-void QSvgStructureNode::addChild(QSvgNode *child, const QString &id, bool def)
+void QSvgStructureNode::addChild(QSvgNode *child, const QString &id)
 {
-    if (!def)
-        m_renderers.append(child);
-
-    if (child->type() == QSvgNode::DEFS) {
-        QSvgDefs *defs =
-            static_cast<QSvgDefs*>(child);
-        m_linkedScopes.append(defs);
-    }
+    m_renderers.append(child);
 
     if (id.isEmpty())
         return; //we can't add it to scope without id
 
-    QSvgStructureNode *group = this;
-    while (group && group->type() != QSvgNode::DOC) {
-        group = static_cast<QSvgStructureNode*>(group->parent());
-    }
-    if (group)
-        group->m_scope.insert(id, child);
+    QSvgTinyDocument *doc = document();
+    if (doc)
+        doc->addNamedNode(id, child);
 }
 
 QSvgDefs::QSvgDefs(QSvgNode *parent)
@@ -135,26 +121,6 @@ QSvgNode::Type QSvgDefs::type() const
 {
     return DEFS;
 }
-
-QSvgStyleProperty * QSvgStructureNode::scopeStyle(const QString &id) const
-{
-    const QSvgStructureNode *group = this;
-    while (group) {
-        QSvgStyleProperty *prop = group->styleProperty(id);
-        if (prop)
-            return prop;
-        QList<QSvgStructureNode*>::const_iterator itr = group->m_linkedScopes.constBegin();
-        while (itr != group->m_linkedScopes.constEnd()) {
-            prop = (*itr)->styleProperty(id);
-            if (prop)
-                return prop;
-            ++itr;
-        }
-        group = static_cast<QSvgStructureNode*>(group->parent());
-    }
-    return 0;
-}
-
 
 /*
   Below is a lookup function based on the gperf output using the following set:

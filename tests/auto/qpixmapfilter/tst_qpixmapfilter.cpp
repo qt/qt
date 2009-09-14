@@ -63,8 +63,10 @@ public slots:
 
 private slots:
     void colorizeSetColor();
+    void colorizeSetStrength();
     void colorizeProcess();
     void colorizeDraw();
+    void colorizeDrawStrength();
     void colorizeDrawSubRect();
     void colorizeProcessSubRect();
     void convolutionBoundingRectFor();
@@ -127,6 +129,16 @@ void tst_QPixmapFilter::colorizeSetColor()
     QCOMPARE(filter.color(), QColor(50, 100, 200));
 }
 
+void tst_QPixmapFilter::colorizeSetStrength()
+{
+    QPixmapColorizeFilter filter;
+    QCOMPARE(filter.strength(), qreal(1));
+    filter.setStrength(0.5);
+    QCOMPARE(filter.strength(), qreal(0.5));
+    filter.setStrength(0.0);
+    QCOMPARE(filter.strength(), qreal(0.0));
+}
+
 void tst_QPixmapFilter::colorizeProcess()
 {
     QPixmapColorizeFilter filter;
@@ -176,6 +188,35 @@ void tst_QPixmapFilter::colorizeDraw()
             QRgb pixel = resultImg.pixel(x,y);
             QCOMPARE(qRed(pixel), qGreen(pixel));
             QCOMPARE(qGreen(pixel), qBlue(pixel));
+        }
+    }
+}
+
+void tst_QPixmapFilter::colorizeDrawStrength()
+{
+    QPixmapColorizeFilter filter;
+    filter.setColor(Qt::blue);
+    filter.setStrength(0.3);
+
+    QImage source(256, 128, QImage::Format_ARGB32);
+    source.fill(qRgb(255, 0, 0));
+    QPixmap pixmap = QPixmap::fromImage(source);
+
+    QImage result(pixmap.size(), QImage::Format_ARGB32_Premultiplied);
+    QPainter painter(&result);
+    painter.setCompositionMode(QPainter::CompositionMode_Source);
+    filter.draw(&painter, QPointF(0, 0), pixmap);
+    painter.end();
+
+    QImage resultImg = result;
+    for(int y = 0; y < resultImg.height(); y++)
+    {
+        for(int x = 0; x < resultImg.width(); x++)
+        {
+            QRgb pixel = resultImg.pixel(x,y);
+            QCOMPARE(qRed(pixel), 206);
+            QCOMPARE(qGreen(pixel), 26);
+            QCOMPARE(qBlue(pixel), 75);
         }
     }
 }
