@@ -471,7 +471,7 @@ static void initializeDb()
     // print the database
     for (int f = 0; f < db->count; f++) {
         QtFontFamily *family = db->families[f];
-        qDebug("    %s: %p", family->name.latin1(), family);
+        qDebug("    %s: %p", qPrintable(family->name), family);
         populate_database(family->name);
 
 #if 0
