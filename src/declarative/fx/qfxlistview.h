@@ -71,8 +71,11 @@ class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(QmlComponent *highlight READ highlight WRITE setHighlight)
     Q_PROPERTY(bool autoHighlight READ autoHighlight WRITE setAutoHighlight) //### highlightFollowsCurrentItem
-    Q_PROPERTY(CurrentItemPositioning currentItemPositioning READ currentItemPositioning WRITE setCurrentItemPositioning) //### mode
-    Q_PROPERTY(int snapPosition READ snapPosition WRITE setSnapPosition)
+
+    Q_PROPERTY(qreal preferredHighlightBegin READ preferredHighlightBegin WRITE setPreferredHighlightBegin)
+    Q_PROPERTY(qreal preferredHighlightEnd READ preferredHighlightEnd WRITE setPreferredHighlightEnd)
+    Q_PROPERTY(bool strictlyEnforceHighlightRange READ strictlyEnforceHighlightRange WRITE setStrictlyEnforceHighlightRange)
+
     Q_PROPERTY(qreal spacing READ spacing WRITE setSpacing NOTIFY spacingChanged)
     Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation)
     Q_PROPERTY(bool wrap READ isWrapEnabled WRITE setWrapEnabled) //### keyNavigationWraps, stops at end when held
@@ -103,17 +106,21 @@ public:
     bool autoHighlight() const;
     void setAutoHighlight(bool);
 
-    //### QSpan preferredHighlightRange
-    //### bool strictlyEnforceHighlightRange
-
-    //### don't jump around unnecessarily
-    //### fix highlight for snapAuto
     enum CurrentItemPositioning { Free, Snap, SnapAuto };
     CurrentItemPositioning currentItemPositioning() const;
     void setCurrentItemPositioning(CurrentItemPositioning mode);
 
     int snapPosition() const;
     void setSnapPosition(int pos);
+
+    bool strictlyEnforceHighlightRange() const;
+    void setStrictlyEnforceHighlightRange(bool strict);
+    
+    qreal preferredHighlightBegin() const;
+    void setPreferredHighlightBegin(qreal);
+
+    qreal preferredHighlightEnd() const;
+    void setPreferredHighlightEnd(qreal);
 
     qreal spacing() const;
     void setSpacing(qreal spacing);

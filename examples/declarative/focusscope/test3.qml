@@ -39,7 +39,9 @@ Rectangle {
         focus: true
         model: Model
         delegate: VerticalDelegate
-        currentItemPositioning: "SnapAuto"
+        preferredHighlightBegin: 100
+        preferredHighlightEnd: 101
+        strictlyEnforceHighlightRange: true
     }
 
 
