@@ -791,22 +791,15 @@ void QGLContext::makeCurrent()
     if (!ok)
         qWarning("QGLContext::makeCurrent(): Failed.");
 
-    if (ok) {
-        if (!qgl_context_storage.hasLocalData() && QThread::currentThread())
-            qgl_context_storage.setLocalData(new QGLThreadContext);
-        if (qgl_context_storage.hasLocalData())
-            qgl_context_storage.localData()->context = this;
-        currentCtx = this;
-    }
+    if (ok)
+        QGLContextPrivate::setCurrentContext(this);
 }
 
 void QGLContext::doneCurrent()
 {
     Q_D(QGLContext);
     glXMakeCurrent(qt_x11Info(d->paintDevice)->display(), 0, 0);
-    if (qgl_context_storage.hasLocalData())
-        qgl_context_storage.localData()->context = 0;
-    currentCtx = 0;
+    QGLContextPrivate::setCurrentContext(0);
 }
 
 

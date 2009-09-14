@@ -81,6 +81,8 @@ private slots:
     void stackedFBOs();
     void colormap();
     void fboFormat();
+
+    void testDontCrashOnDanglingResources();
 };
 
 tst_QGL::tst_QGL()
@@ -1511,6 +1513,17 @@ void tst_QGL::fboFormat()
     format4c.setInternalTextureFormat(DEFAULT_FORMAT);
     QVERIFY(!(format1c == format4c));
     QVERIFY(format1c != format4c);
+}
+
+void tst_QGL::testDontCrashOnDanglingResources()
+{
+    // We have a number of Q_GLOBAL_STATICS inside the QtOpenGL
+    // library. This test is verify that we don't crash as a result of
+    // them calling into libgl on application shutdown.
+    QWidget *widget = new UnclippedWidget();
+    widget->show();
+    qApp->processEvents();
+    widget->hide();
 }
 
 QTEST_MAIN(tst_QGL)

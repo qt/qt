@@ -1173,11 +1173,7 @@ void QGLContext::makeCurrent()
     }
 
     if (wglMakeCurrent(d->dc, d->rc)) {
-        if (!qgl_context_storage.hasLocalData() && QThread::currentThread())
-            qgl_context_storage.setLocalData(new QGLThreadContext);
-        if (qgl_context_storage.hasLocalData())
-            qgl_context_storage.localData()->context = this;
-        currentCtx = this;
+        QGLContextPrivate::setCurrentContext(this);
     } else {
         qwglError("QGLContext::makeCurrent()", "wglMakeCurrent");
     }
@@ -1187,10 +1183,8 @@ void QGLContext::makeCurrent()
 void QGLContext::doneCurrent()
 {
     Q_D(QGLContext);
-    currentCtx = 0;
     wglMakeCurrent(0, 0);
-    if (qgl_context_storage.hasLocalData())
-        qgl_context_storage.localData()->context = 0;
+    QGLContextPrivate::setCurrentContext(0);
     if (deviceIsPixmap() && d->hbitmap) {
         QPixmap *pm = static_cast<QPixmap *>(d->paintDevice);
         *pm = QPixmap::fromWinHBITMAP(d->hbitmap);

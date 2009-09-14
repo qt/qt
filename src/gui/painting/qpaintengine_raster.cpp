@@ -114,7 +114,7 @@ extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // 
 
 // #define QT_DEBUG_DRAW
 #ifdef QT_DEBUG_DRAW
-void dumpClip(int width, int height, QClipData *clip);
+void dumpClip(int width, int height, const QClipData *clip);
 #endif
 
 #define QT_FAST_SPANS
@@ -495,7 +495,7 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
              << ") devType:" << device->devType()
              << "devRect:" << d->deviceRect;
     if (d->baseClip) {
-        dumpClip(d->rasterBuffer->width(), d->rasterBuffer->height(), d->baseClip);
+        dumpClip(d->rasterBuffer->width(), d->rasterBuffer->height(), &*d->baseClip);
     }
 #endif
 
@@ -534,7 +534,7 @@ bool QRasterPaintEngine::end()
     Q_D(QRasterPaintEngine);
     qDebug() << "QRasterPaintEngine::end devRect:" << d->deviceRect;
     if (d->baseClip) {
-        dumpClip(d->rasterBuffer->width(), d->rasterBuffer->height(), d->baseClip);
+        dumpClip(d->rasterBuffer->width(), d->rasterBuffer->height(), &*d->baseClip);
     }
 #endif
 
@@ -1181,6 +1181,11 @@ static void qrasterpaintengine_dirty_clip(QRasterPaintEnginePrivate *d, QRasterP
 
     d->solid_color_filler.clip = d->clip();
     d->solid_color_filler.adjustSpanMethods();
+
+#ifdef QT_DEBUG_DRAW
+    dumpClip(d->rasterBuffer->width(), d->rasterBuffer->height(), &*d->clip());
+#endif
+
 }
 
 
@@ -1780,9 +1785,7 @@ void QRasterPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
     if (path.isEmpty())
         return;
 #ifdef QT_DEBUG_DRAW
-    QRealRect vectorPathBounds = path.controlPointRect();
-    QRectF rf(vectorPathBounds.x1, vectorPathBounds.y1,
-              vectorPathBounds.x2 - vectorPathBounds.x1, vectorPathBounds.y2 - vectorPathBounds.y1);
+    QRectF rf = path.controlPointRect();
     qDebug() << "QRasterPaintEngine::fill(): "
              << "size=" << path.elementCount()
              << ", hints=" << hex << path.hints()
@@ -6068,7 +6071,7 @@ static void drawEllipse_midpoint_i(const QRect &rect, const QRect &clip,
 */
 
 #ifdef QT_DEBUG_DRAW
-void dumpClip(int width, int height, QClipData *clip)
+void dumpClip(int width, int height, const QClipData *clip)
 {
     QImage clipImg(width, height, QImage::Format_ARGB32_Premultiplied);
     clipImg.fill(0xffff0000);
@@ -6078,8 +6081,10 @@ void dumpClip(int width, int height, QClipData *clip)
     int y0 = height;
     int y1 = 0;
 
+    ((QClipData *) clip)->spans(); // Force allocation of the spans structure...
+
     for (int i = 0; i < clip->count; ++i) {
-        QSpan *span = clip->spans() + i;
+        const QSpan *span = ((QClipData *) clip)->spans() + i;
         for (int j = 0; j < span->len; ++j)
             clipImg.setPixel(span->x + j, span->y, 0xffffff00);
         x0 = qMin(x0, int(span->x));

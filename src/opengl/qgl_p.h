@@ -196,7 +196,9 @@ public:
     bool autoSwap;
 
     QGLColormap cmap;
+#ifndef QT_OPENGL_ES
     QMap<QString, int> displayListCache;
+#endif
 
     bool disable_clear_on_painter_begin;
 
@@ -349,6 +351,8 @@ public:
     static inline QGLExtensionFuncs& extensionFuncs(QGLContextGroup *) { return qt_extensionFuncs; }
 #endif
 
+    static void setCurrentContext(QGLContext *context);
+
     QPixmapFilter *createPixmapFilter(int type) const;
 };
 
@@ -395,11 +399,6 @@ public:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGLExtensions::Extensions)
 
-
-struct QGLThreadContext {
-    QGLContext *context;
-};
-extern QThreadStorage<QGLThreadContext *> qgl_context_storage;
 
 class QGLShareRegister
 {

@@ -227,7 +227,7 @@ template <typename RandomAccessIterator, typename T>
 Q_OUTOFLINE_TEMPLATE RandomAccessIterator qLowerBound(RandomAccessIterator begin, RandomAccessIterator end, const T &value)
 {
     // Implementation is duplicated from QAlgorithmsPrivate to keep existing code
-    // compiling. We have to allow using *begin and value with different types, 
+    // compiling. We have to allow using *begin and value with different types,
     // and then implementing operator< for those types.
     RandomAccessIterator middle;
     int n = end - begin;
@@ -351,7 +351,7 @@ template <typename RandomAccessIterator, typename T, typename LessThan>
 Q_OUTOFLINE_TEMPLATE void qSortHelper(RandomAccessIterator start, RandomAccessIterator end, const T &t, LessThan lessThan)
 {
 top:
-    int span = end - start;
+    int span = int(end - start);
     if (span < 2)
         return;
 
@@ -417,9 +417,9 @@ Q_OUTOFLINE_TEMPLATE void qReverse(RandomAccessIterator begin, RandomAccessItera
 template <typename RandomAccessIterator>
 Q_OUTOFLINE_TEMPLATE void qRotate(RandomAccessIterator begin, RandomAccessIterator middle, RandomAccessIterator end)
 {
-    qReverse(begin, middle); 
-    qReverse(middle, end); 
-    qReverse(begin, end); 
+    qReverse(begin, middle);
+    qReverse(middle, end);
+    qReverse(begin, end);
 }
 
 template <typename RandomAccessIterator, typename T, typename LessThan>
@@ -463,7 +463,7 @@ Q_OUTOFLINE_TEMPLATE void qStableSortHelper(RandomAccessIterator begin, RandomAc
     const int span = end - begin;
     if (span < 2)
        return;
-       
+
     const RandomAccessIterator middle = begin + span / 2;
     qStableSortHelper(begin, middle, t, lessThan);
     qStableSortHelper(middle, end, t, lessThan);
@@ -480,7 +480,7 @@ template <typename RandomAccessIterator, typename T, typename LessThan>
 Q_OUTOFLINE_TEMPLATE RandomAccessIterator qLowerBoundHelper(RandomAccessIterator begin, RandomAccessIterator end, const T &value, LessThan lessThan)
 {
     RandomAccessIterator middle;
-    int n = end - begin;
+    int n = int(end - begin);
     int half;
 
     while (n > 0) {
