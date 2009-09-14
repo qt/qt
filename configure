@@ -5859,7 +5859,6 @@ case "$PLATFORM,$CFG_MAC_COCOA" in
     macx*,yes)
 	# Cocoa
 	QMakeVar set QMAKE_MACOSX_DEPLOYMENT_TARGET 10.5
-	CFG_QT3SUPPORT="no"
 	;;
     macx*,no)
 	# gcc, Carbon

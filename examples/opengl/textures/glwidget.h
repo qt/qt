@@ -42,9 +42,10 @@
 #ifndef GLWIDGET_H
 #define GLWIDGET_H
 
+#include <QtGui>
 #include <QGLWidget>
 
-class CubeObject;
+class QGLShaderProgram;
 
 class GLWidget : public QGLWidget
 {
@@ -78,7 +79,12 @@ private:
     int xRot;
     int yRot;
     int zRot;
-    CubeObject *cube;
+    GLuint textures[6];
+    QVector<QVector3D> vertices;
+    QVector<QVector2D> texCoords;
+#ifdef QT_OPENGL_ES_2
+    QGLShaderProgram *program;
+#endif
 };
 
 #endif

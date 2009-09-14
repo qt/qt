@@ -33,22 +33,16 @@ border: 5px solid white;
 #line1, #line2 {
 	border: 1px solid rgb(170, 85, 255);
 }
+
+
+QFrame::no-frame {
+  background: orange;
+ border-color: #000;
+ }
+
 </string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QLabel" name="label">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>This test that all the frame style can handle margins and paddings correctly</string>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="0">
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
@@ -99,7 +93,7 @@ border: 5px solid white;
         <item>
          <widget class="QFrame" name="frame_2">
           <property name="frameShape">
-           <enum>QFrame::Box</enum>
+           <enum>QFrame::StyledPanel</enum>
           </property>
           <property name="frameShadow">
            <enum>QFrame::Raised</enum>
@@ -171,7 +165,7 @@ border: 5px solid white;
         <item>
          <widget class="QFrame" name="frame_4">
           <property name="frameShape">
-           <enum>QFrame::Box</enum>
+           <enum>QFrame::StyledPanel</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout">
            <item>
@@ -204,7 +198,7 @@ border: 5px solid white;
         <item>
          <widget class="QFrame" name="frame_3">
           <property name="frameShape">
-           <enum>QFrame::Panel</enum>
+           <enum>QFrame::StyledPanel</enum>
           </property>
           <property name="frameShadow">
            <enum>QFrame::Raised</enum>
@@ -240,7 +234,7 @@ border: 5px solid white;
         <item>
          <widget class="QFrame" name="frame_5">
           <property name="frameShape">
-           <enum>QFrame::WinPanel</enum>
+           <enum>QFrame::StyledPanel</enum>
           </property>
           <property name="frameShadow">
            <enum>QFrame::Sunken</enum>
@@ -298,6 +292,23 @@ border: 5px solid white;
     <widget class="Line" name="line1">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="lineWidth">
+      <number>0</number>
+     </property>
+     <property name="text">
+      <string>This test that all the frame style can handle margins and paddings correctly 
+ (and the background of this label should be orange)</string>
      </property>
     </widget>
    </item>

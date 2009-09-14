@@ -1083,11 +1083,11 @@ void QCompleter::setPopup(QAbstractItemView *popup)
 #else
      popup->hide();
 #endif
-    popup->setParent(0, Qt::Popup);
 
     Qt::FocusPolicy origPolicy = Qt::NoFocus;
     if (d->widget)
         origPolicy = d->widget->focusPolicy();
+    popup->setParent(0, Qt::Popup);
     popup->setFocusPolicy(Qt::NoFocus);
     if (d->widget)
         d->widget->setFocusPolicy(origPolicy);

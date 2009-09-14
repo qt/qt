@@ -57,6 +57,8 @@
 #include <qsettings.h>
 #endif
 
+#include "../../shared/util.h"
+
 class SpecialRadioButton: public QRadioButton
 {
 public:
@@ -402,6 +404,8 @@ void tst_QButtonGroup::task106609()
     QSignalSpy spy2(buttons, SIGNAL(buttonClicked(int)));
 
     QTestEventLoop::instance().enterLoop(1);
+    QApplication::setActiveWindow(&dlg);
+    QTRY_COMPARE(QApplication::activeWindow(), &dlg);
 
     //qDebug() << "int:" << spy2.count() << "QAbstractButton*:" << spy1.count();
     QCOMPARE(spy2.count(), 2);

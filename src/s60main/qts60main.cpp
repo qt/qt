@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 // INCLUDE FILES
+#include <exception> // must be before e32base.h so uncaught_exception gets defined
 #include <e32base.h>
 #include <qglobal.h>
 

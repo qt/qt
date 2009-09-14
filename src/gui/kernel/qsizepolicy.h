@@ -224,8 +224,8 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QSizePolicy &);
 inline void QSizePolicy::transpose() {
     Policy hData = horizontalPolicy();
     Policy vData = verticalPolicy();
-    uchar hStretch = horizontalStretch();
-    uchar vStretch = verticalStretch();
+    uchar hStretch = uchar(horizontalStretch());
+    uchar vStretch = uchar(verticalStretch());
     setHorizontalPolicy(vData);
     setVerticalPolicy(hData);
     setHorizontalStretch(vStretch);

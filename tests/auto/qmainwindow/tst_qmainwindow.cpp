@@ -1692,8 +1692,12 @@ void tst_QMainWindow::dockWidgetSize()
 
     mainWindow.show();
     QTest::qWait(100);
-    QCOMPARE(widget.size(), widget.sizeHint());
-    QCOMPARE(dock.widget()->size(), dock.widget()->sizeHint());
+    if (mainWindow.size() == mainWindow.sizeHint()) {
+        QCOMPARE(widget.size(), widget.sizeHint());
+        QCOMPARE(dock.widget()->size(), dock.widget()->sizeHint());
+    } else {
+        //otherwise the screen is too small and the size are irrelevant
+    }
 }
 
 

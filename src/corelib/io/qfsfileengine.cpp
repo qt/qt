@@ -157,7 +157,15 @@ QString QFSFileEnginePrivate::canonicalized(const QString &path)
 #endif
         separatorPos = tmpPath.indexOf(slash, separatorPos + 1);
         QString prefix = separatorPos == -1 ? tmpPath : tmpPath.left(separatorPos);
-        if (!nonSymlinks.contains(prefix)) {
+        if (
+#ifdef Q_OS_SYMBIAN
+            // Symbian doesn't support directory symlinks, so do not check for link unless we
+            // are handling the last path element. This not only slightly improves performance, 
+            // but also saves us from lot of unnecessary platform security check failures
+            // when dealing with files under *:/private directories.
+            separatorPos == -1 &&
+#endif            
+            !nonSymlinks.contains(prefix)) {
             fi.setFile(prefix);
             if (fi.isSymLink()) {
                 QString target = fi.symLinkTarget();

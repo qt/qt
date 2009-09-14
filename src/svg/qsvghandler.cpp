@@ -670,7 +670,7 @@ static QVector<qreal> parseNumbersList(const QChar *&str)
         return points;
     points.reserve(32);
 
-    while (*str == QLatin1Char(' '))
+    while (str->isSpace())
         ++str;
     while (isDigit(str->unicode()) ||
            *str == QLatin1Char('-') || *str == QLatin1Char('+') ||
@@ -678,13 +678,13 @@ static QVector<qreal> parseNumbersList(const QChar *&str)
 
         points.append(toDouble(str));
 
-        while (*str == QLatin1Char(' '))
+        while (str->isSpace())
             ++str;
         if (*str == QLatin1Char(','))
             ++str;
 
         //eat the rest of space
-        while (*str == QLatin1Char(' '))
+        while (str->isSpace())
             ++str;
     }
 
@@ -693,7 +693,7 @@ static QVector<qreal> parseNumbersList(const QChar *&str)
 
 static inline void parseNumbersArray(const QChar *&str, QVarLengthArray<qreal, 8> &points)
 {
-    while (*str == QLatin1Char(' '))
+    while (str->isSpace())
         ++str;
     while (isDigit(str->unicode()) ||
            *str == QLatin1Char('-') || *str == QLatin1Char('+') ||
@@ -701,13 +701,13 @@ static inline void parseNumbersArray(const QChar *&str, QVarLengthArray<qreal, 8
 
         points.append(toDouble(str));
 
-        while (*str == QLatin1Char(' '))
+        while (str->isSpace())
             ++str;
         if (*str == QLatin1Char(','))
             ++str;
 
         //eat the rest of space
-        while (*str == QLatin1Char(' '))
+        while (str->isSpace())
             ++str;
     }
 }
@@ -726,17 +726,17 @@ static QVector<qreal> parsePercentageList(const QChar *&str)
 
         points.append(toDouble(str));
 
-        while (*str == QLatin1Char(' '))
+        while (str->isSpace())
             ++str;
         if (*str == QLatin1Char('%'))
             ++str;
-        while (*str == QLatin1Char(' '))
+        while (str->isSpace())
             ++str;
         if (*str == QLatin1Char(','))
             ++str;
 
         //eat the rest of space
-        while (*str == QLatin1Char(' '))
+        while (str->isSpace())
             ++str;
     }
 
@@ -968,6 +968,7 @@ static void parseColor(QSvgNode *,
 {
     QColor color;
     if (constructColor(attributes.color, attributes.colorOpacity, color, handler)) {
+        handler->popColor();
         handler->pushColor(color);
     }
 }
@@ -1517,7 +1518,7 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
     const QChar *end = str + dataStr.size();
 
     while (str != end) {
-        while (*str == QLatin1Char(' '))
+        while (str->isSpace())
             ++str;
         QChar pathElem = *str;
         ++str;
@@ -2728,6 +2729,14 @@ static void parseBaseGradient(QSvgNode *node,
     QStringRef trans  = attributes.value(QLatin1String("gradientTransform"));
     QString spread = attributes.value(QLatin1String("spreadMethod")).toString();
     QString units = attributes.value(QLatin1String("gradientUnits")).toString();
+    QStringRef colorStr = attributes.value(QLatin1String("color"));
+    QStringRef colorOpacityStr = attributes.value(QLatin1String("color-opacity"));
+
+    QColor color;
+    if (constructColor(colorStr, colorOpacityStr, color, handler)) {
+        handler->popColor();
+        handler->pushColor(color);
+    }
 
     QMatrix matrix;
     QGradient *grad = gradProp->qgradient();
@@ -3158,6 +3167,9 @@ static QSvgNode *createSvgNode(QSvgNode *parent,
     QStringList viewBoxValues;
     if (!viewBoxStr.isEmpty()) {
         viewBoxStr = viewBoxStr.replace(QLatin1Char(' '), QLatin1Char(','));
+        viewBoxStr = viewBoxStr.replace(QLatin1Char('\r'), QLatin1Char(','));
+        viewBoxStr = viewBoxStr.replace(QLatin1Char('\n'), QLatin1Char(','));
+        viewBoxStr = viewBoxStr.replace(QLatin1Char('\t'), QLatin1Char(','));
         viewBoxValues = viewBoxStr.split(QLatin1Char(','), QString::SkipEmptyParts);
     }
     if (viewBoxValues.count() == 4) {
@@ -3558,11 +3570,7 @@ bool QSvgHandler::startElement(const QString &localName,
 {
     QSvgNode *node = 0;
 
-    if (m_colorTagCount.count()) {
-        int top = m_colorTagCount.pop();
-        ++top;
-        m_colorTagCount.push(top);
-    }
+    pushColorCopy();
 
     /* The xml:space attribute may appear on any element. We do
      * a lookup by the qualified name here, but this is namespace aware, since
@@ -3696,15 +3704,7 @@ bool QSvgHandler::endElement(const QStringRef &localName)
     m_skipNodes.pop();
     m_whitespaceMode.pop();
 
-    if (m_colorTagCount.count()) {
-        int top = m_colorTagCount.pop();
-        --top;
-        if (!top) {
-            m_colorStack.pop();
-        } else {
-            m_colorTagCount.push(top);
-        }
-    }
+    popColor();
 
     if (node == Unknown) {
         return true;
@@ -3799,6 +3799,24 @@ void QSvgHandler::pushColor(const QColor &color)
 {
     m_colorStack.push(color);
     m_colorTagCount.push(1);
+}
+
+void QSvgHandler::pushColorCopy()
+{
+    if (m_colorTagCount.count())
+        ++m_colorTagCount.top();
+    else
+        pushColor(Qt::black);
+}
+
+void QSvgHandler::popColor()
+{
+    if (m_colorTagCount.count()) {
+        if (!--m_colorTagCount.top()) {
+            m_colorStack.pop();
+            m_colorTagCount.pop();
+        }
+    }
 }
 
 QColor QSvgHandler::currentColor() const

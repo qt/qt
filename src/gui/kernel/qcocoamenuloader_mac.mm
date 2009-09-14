@@ -44,6 +44,7 @@
 #include <qaction.h>
 #include <qcoreapplication.h>
 #include <private/qcocoamenuloader_mac_p.h>
+#include <private/qapplication_p.h>
 #include <private/qt_mac_p.h>
 #include <qmenubar.h>
 
@@ -198,6 +199,7 @@ QT_USE_NAMESPACE
 
 - (IBAction)qtDispatcherToQAction:(id)sender
 {
+    QScopedLoopLevelCounter loopLevelCounter(QApplicationPrivate::instance()->threadData);
     NSMenuItem *item = static_cast<NSMenuItem *>(sender);
     if (QAction *action = reinterpret_cast<QAction *>([item tag])) {
         action->trigger();

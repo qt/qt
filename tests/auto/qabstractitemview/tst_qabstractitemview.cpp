@@ -1200,13 +1200,13 @@ void tst_QAbstractItemView::task250754_fontChange()
     tree.setFont(font);
     QTest::qWait(30);
 
-    QVERIFY(!tree.verticalScrollBar()->isVisible());
+    QTRY_VERIFY(!tree.verticalScrollBar()->isVisible());
 
     font.setPointSize(45);
     tree.setFont(font);
     QTest::qWait(30);
     //now with the huge items, the scrollbar must be visible
-    QVERIFY(tree.verticalScrollBar()->isVisible());
+    QTRY_VERIFY(tree.verticalScrollBar()->isVisible());
 
     qApp->setStyleSheet(app_css);
 }

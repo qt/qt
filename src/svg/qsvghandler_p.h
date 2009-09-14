@@ -111,6 +111,8 @@ public:
     LengthType defaultCoordinateSystem() const;
 
     void pushColor(const QColor &color);
+    void pushColorCopy();
+    void popColor();
     QColor currentColor() const;
 
     void setInStyle(bool b);

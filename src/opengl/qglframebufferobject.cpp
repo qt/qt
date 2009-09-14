@@ -120,6 +120,7 @@ void QGLFramebufferObjectFormat::detach()
 
     By default the format specifies a non-multisample framebuffer object with no
     attachments, texture target \c GL_TEXTURE_2D, and internal format \c GL_RGBA8.
+    On OpenGL/ES systems, the default internal format is \c GL_RGBA.
 
     \sa samples(), attachment(), target(), internalTextureFormat()
 */
@@ -165,8 +166,8 @@ QGLFramebufferObjectFormat::~QGLFramebufferObjectFormat()
 
 /*!
     Sets the number of samples per pixel for a multisample framebuffer object
-    to \a samples.
-    A sample count of 0 represents a regular non-multisample framebuffer object.
+    to \a samples.  The default sample count of 0 represents a regular
+    non-multisample framebuffer object.
 
     If the desired amount of samples per pixel is not supported by the hardware
     then the maximum number of samples per pixel will be used. Note that
@@ -185,6 +186,7 @@ void QGLFramebufferObjectFormat::setSamples(int samples)
 /*!
     Returns the number of samples per pixel if a framebuffer object
     is a multisample framebuffer object. Otherwise, returns 0.
+    The default value is 0.
 
     \sa setSamples()
 */
@@ -205,8 +207,8 @@ void QGLFramebufferObjectFormat::setAttachment(QGLFramebufferObject::Attachment 
 }
 
 /*!
-    Returns the status of the depth and stencil buffers attached to
-    a framebuffer object.
+    Returns the configuration of the depth and stencil buffers attached to
+    a framebuffer object.  The default is QGLFramebufferObject::NoAttachment.
 
     \sa setAttachment()
 */
@@ -229,7 +231,8 @@ void QGLFramebufferObjectFormat::setTextureTarget(GLenum target)
 
 /*!
     Returns the texture target of the texture attached to a framebuffer object.
-    Ignored for multisample framebuffer objects.
+    Ignored for multisample framebuffer objects.  The default is
+    \c GL_TEXTURE_2D.
 
     \sa setTextureTarget(), samples()
 */
@@ -253,7 +256,9 @@ void QGLFramebufferObjectFormat::setInternalTextureFormat(GLenum internalTexture
 
 /*!
     Returns the internal format of a framebuffer object's texture or
-    multisample framebuffer object's color buffer.
+    multisample framebuffer object's color buffer.  The default is
+    \c GL_RGBA8 on desktop OpenGL systems, and \c GL_RGBA on
+    OpenGL/ES systems.
 
     \sa setInternalTextureFormat()
 */
@@ -299,10 +304,21 @@ bool QGLFramebufferObjectFormat::operator!=(const QGLFramebufferObjectFormat& ot
     return !(*this == other);
 }
 
-void QGLFBOGLPaintDevice::setFBO(QGLFramebufferObject* f)
+void QGLFBOGLPaintDevice::setFBO(QGLFramebufferObject* f,
+                                 QGLFramebufferObject::Attachment attachment)
 {
     fbo = f;
     m_thisFBO = fbo->d_func()->fbo; // This shouldn't be needed
+
+    // The context that the fbo was created in may not have depth
+    // and stencil buffers, but the fbo itself might.
+    fboFormat = QGLContext::currentContext()->format();
+    if (attachment == QGLFramebufferObject::CombinedDepthStencil) {
+        fboFormat.setDepth(true);
+        fboFormat.setStencil(true);
+    } else if (attachment == QGLFramebufferObject::Depth) {
+        fboFormat.setDepth(true);
+    }
 }
 
 void QGLFBOGLPaintDevice::ensureActiveTarget()
@@ -395,7 +411,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER_EXT, fbo);
 
-    glDevice.setFBO(q);
+    glDevice.setFBO(q, attachment);
 
     QT_CHECK_GLERROR();
     // init texture
@@ -630,7 +646,8 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     By default, no depth and stencil buffers are attached. This behavior
     can be toggled using one of the overloaded constructors.
 
-    The default internal texture format is \c GL_RGBA8.
+    The default internal texture format is \c GL_RGBA8 for desktop
+    OpenGL, and \c GL_RGBA for OpenGL/ES.
 
     It is important that you have a current GL context set when
     creating the QGLFramebufferObject, otherwise the initialization
@@ -716,7 +733,8 @@ QGLFramebufferObject::QGLFramebufferObject(int width, int height, QMacCompatGLen
     The \a attachment parameter describes the depth/stencil buffer
     configuration, \a target the texture target and \a internal_format
     the internal texture format. The default texture target is \c
-    GL_TEXTURE_2D, while the default internal format is \c GL_RGBA8.
+    GL_TEXTURE_2D, while the default internal format is \c GL_RGBA8
+    for desktop OpenGL and \c GL_RGBA for OpenGL/ES.
 
     \sa size(), texture(), attachment()
 */
@@ -747,7 +765,8 @@ QGLFramebufferObject::QGLFramebufferObject(int width, int height, Attachment att
     The \a attachment parameter describes the depth/stencil buffer
     configuration, \a target the texture target and \a internal_format
     the internal texture format. The default texture target is \c
-    GL_TEXTURE_2D, while the default internal format is \c GL_RGBA8.
+    GL_TEXTURE_2D, while the default internal format is \c GL_RGBA8
+    for desktop OpenGL and \c GL_RGBA for OpenGL/ES.
 
     \sa size(), texture(), attachment()
 */
@@ -843,6 +862,7 @@ bool QGLFramebufferObject::bind()
     d->valid = d->checkFramebufferStatus();
     const QGLContext *context = QGLContext::currentContext();
     if (d->valid && context) {
+        Q_ASSERT(QGLContextPrivate::contextGroup(context) == ctx);
         // Save the previous setting to automatically restore in release().
         if (context->d_ptr->current_fbo != d->fbo) {
             d->previous_fbo = context->d_ptr->current_fbo;
@@ -874,6 +894,7 @@ bool QGLFramebufferObject::release()
 
     const QGLContext *context = QGLContext::currentContext();
     if (context) {
+        Q_ASSERT(QGLContextPrivate::contextGroup(context) == ctx);
         // Restore the previous setting for stacked framebuffer objects.
         if (d->previous_fbo != context->d_ptr->current_fbo) {
             context->d_ptr->current_fbo = d->previous_fbo;

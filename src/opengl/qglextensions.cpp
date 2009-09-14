@@ -43,6 +43,52 @@
 
 QT_BEGIN_NAMESPACE
 
+static void *qt_gl_getProcAddress_search
+    (QGLContext *ctx, const char *name1, const char *name2,
+     const char *name3, const char *name4)
+{
+    void *addr;
+
+    addr = ctx->getProcAddress(QLatin1String(name1));
+    if (addr)
+        return addr;
+
+    addr = ctx->getProcAddress(QLatin1String(name2));
+    if (addr)
+        return addr;
+
+    addr = ctx->getProcAddress(QLatin1String(name3));
+    if (addr)
+        return addr;
+
+    if (name4)
+        return ctx->getProcAddress(QLatin1String(name4));
+
+    return 0;
+}
+
+// Search for an extension function starting with the most likely
+// function suffix first, and then trying the other variations.
+#if defined(QT_OPENGL_ES)
+#define qt_gl_getProcAddress(ctx,name) \
+    qt_gl_getProcAddress_search((ctx), name, name "OES", name "EXT", name "ARB")
+#define qt_gl_getProcAddressEXT(ctx,name) \
+    qt_gl_getProcAddress_search((ctx), name "OES", name, name "EXT", name "ARB")
+#define qt_gl_getProcAddressARB(ctx,name) \
+    qt_gl_getProcAddress_search((ctx), name "OES", name, name "ARB", name "EXT")
+#define qt_gl_getProcAddressOES(ctx,name) \
+    qt_gl_getProcAddress_search((ctx), name "OES", name, name "EXT", name "ARB")
+#else
+#define qt_gl_getProcAddress(ctx,name) \
+    qt_gl_getProcAddress_search((ctx), name, name "ARB", name "EXT", 0)
+#define qt_gl_getProcAddressEXT(ctx,name) \
+    qt_gl_getProcAddress_search((ctx), name "EXT", name, name "ARB", 0)
+#define qt_gl_getProcAddressARB(ctx,name) \
+    qt_gl_getProcAddress_search((ctx), name "ARB", name, name "EXT", 0)
+#define qt_gl_getProcAddressOES(ctx,name) \
+    qt_gl_getProcAddress_search((ctx), name "OES", name, name "EXT", name "ARB")
+#endif
+
 bool qt_resolve_framebufferobject_extensions(QGLContext *ctx)
 {
 #if defined(QT_OPENGL_ES_2)
@@ -62,30 +108,32 @@ bool qt_resolve_framebufferobject_extensions(QGLContext *ctx)
     }
 
 
-    glBlitFramebufferEXT = (_glBlitFramebufferEXT) ctx->getProcAddress(QLatin1String("glBlitFramebufferEXT"));
+    glBlitFramebufferEXT = (_glBlitFramebufferEXT) qt_gl_getProcAddressEXT(ctx, "glBlitFramebuffer");
     glRenderbufferStorageMultisampleEXT =
-        (_glRenderbufferStorageMultisampleEXT) ctx->getProcAddress(QLatin1String("glRenderbufferStorageMultisampleEXT"));
+        (_glRenderbufferStorageMultisampleEXT) qt_gl_getProcAddressEXT(ctx, "glRenderbufferStorageMultisample");
 
 #if !defined(QT_OPENGL_ES_2)
-    glIsRenderbuffer = (_glIsRenderbuffer) ctx->getProcAddress(QLatin1String("glIsRenderbufferEXT"));
-    glBindRenderbuffer = (_glBindRenderbuffer) ctx->getProcAddress(QLatin1String("glBindRenderbufferEXT"));
-    glDeleteRenderbuffers = (_glDeleteRenderbuffers) ctx->getProcAddress(QLatin1String("glDeleteRenderbuffersEXT"));
-    glGenRenderbuffers = (_glGenRenderbuffers) ctx->getProcAddress(QLatin1String("glGenRenderbuffersEXT"));
-    glRenderbufferStorage = (_glRenderbufferStorage) ctx->getProcAddress(QLatin1String("glRenderbufferStorageEXT"));
+    glIsRenderbuffer = (_glIsRenderbuffer) qt_gl_getProcAddressEXT(ctx, "glIsRenderbuffer");
+    if (!glIsRenderbuffer)
+        return false;   // Not much point searching for anything else.
+    glBindRenderbuffer = (_glBindRenderbuffer) qt_gl_getProcAddressEXT(ctx, "glBindRenderbuffer");
+    glDeleteRenderbuffers = (_glDeleteRenderbuffers) qt_gl_getProcAddressEXT(ctx, "glDeleteRenderbuffers");
+    glGenRenderbuffers = (_glGenRenderbuffers) qt_gl_getProcAddressEXT(ctx, "glGenRenderbuffers");
+    glRenderbufferStorage = (_glRenderbufferStorage) qt_gl_getProcAddressEXT(ctx, "glRenderbufferStorage");
     glGetRenderbufferParameteriv =
-        (_glGetRenderbufferParameteriv) ctx->getProcAddress(QLatin1String("glGetRenderbufferParameterivEXT"));
-    glIsFramebuffer = (_glIsFramebuffer) ctx->getProcAddress(QLatin1String("glIsFramebufferEXT"));
-    glBindFramebuffer = (_glBindFramebuffer) ctx->getProcAddress(QLatin1String("glBindFramebufferEXT"));
-    glDeleteFramebuffers = (_glDeleteFramebuffers) ctx->getProcAddress(QLatin1String("glDeleteFramebuffersEXT"));
-    glGenFramebuffers = (_glGenFramebuffers) ctx->getProcAddress(QLatin1String("glGenFramebuffersEXT"));
-    glCheckFramebufferStatus = (_glCheckFramebufferStatus) ctx->getProcAddress(QLatin1String("glCheckFramebufferStatusEXT"));
-    glFramebufferTexture2D = (_glFramebufferTexture2D) ctx->getProcAddress(QLatin1String("glFramebufferTexture2DEXT"));
-    glFramebufferRenderbuffer = (_glFramebufferRenderbuffer) ctx->getProcAddress(QLatin1String("glFramebufferRenderbufferEXT"));
+        (_glGetRenderbufferParameteriv) qt_gl_getProcAddressEXT(ctx, "glGetRenderbufferParameteriv");
+    glIsFramebuffer = (_glIsFramebuffer) qt_gl_getProcAddressEXT(ctx, "glIsFramebuffer");
+    glBindFramebuffer = (_glBindFramebuffer) qt_gl_getProcAddressEXT(ctx, "glBindFramebuffer");
+    glDeleteFramebuffers = (_glDeleteFramebuffers) qt_gl_getProcAddressEXT(ctx, "glDeleteFramebuffers");
+    glGenFramebuffers = (_glGenFramebuffers) qt_gl_getProcAddressEXT(ctx, "glGenFramebuffers");
+    glCheckFramebufferStatus = (_glCheckFramebufferStatus) qt_gl_getProcAddressEXT(ctx, "glCheckFramebufferStatus");
+    glFramebufferTexture2D = (_glFramebufferTexture2D) qt_gl_getProcAddressEXT(ctx, "glFramebufferTexture2D");
+    glFramebufferRenderbuffer = (_glFramebufferRenderbuffer) qt_gl_getProcAddressEXT(ctx, "glFramebufferRenderbuffer");
     glGetFramebufferAttachmentParameteriv =
-        (_glGetFramebufferAttachmentParameteriv) ctx->getProcAddress(QLatin1String("glGetFramebufferAttachmentParameterivEXT"));
-    glGenerateMipmap = (_glGenerateMipmap) ctx->getProcAddress(QLatin1String("glGenerateMipmapEXT"));
+        (_glGetFramebufferAttachmentParameteriv) qt_gl_getProcAddressEXT(ctx, "glGetFramebufferAttachmentParameteriv");
+    glGenerateMipmap = (_glGenerateMipmap) qt_gl_getProcAddressEXT(ctx, "glGenerateMipmap");
 
-    return glIsRenderbuffer;
+    return glIsRenderbuffer != 0;
 #else
     return true;
 #endif
@@ -151,13 +199,13 @@ bool qt_resolve_buffer_extensions(QGLContext *ctx)
         return true;
 
 #if !defined(QT_OPENGL_ES_2)
-    glBindBuffer = (_glBindBuffer) ctx->getProcAddress(QLatin1String("glBindBufferARB"));
-    glDeleteBuffers = (_glDeleteBuffers) ctx->getProcAddress(QLatin1String("glDeleteBuffersARB"));
-    glGenBuffers = (_glGenBuffers) ctx->getProcAddress(QLatin1String("glGenBuffersARB"));
-    glBufferData = (_glBufferData) ctx->getProcAddress(QLatin1String("glBufferDataARB"));
+    glBindBuffer = (_glBindBuffer) qt_gl_getProcAddressARB(ctx, "glBindBuffer");
+    glDeleteBuffers = (_glDeleteBuffers) qt_gl_getProcAddressARB(ctx, "glDeleteBuffers");
+    glGenBuffers = (_glGenBuffers) qt_gl_getProcAddressARB(ctx, "glGenBuffers");
+    glBufferData = (_glBufferData) qt_gl_getProcAddressARB(ctx, "glBufferData");
 #endif
-    glMapBufferARB = (_glMapBufferARB) ctx->getProcAddress(QLatin1String("glMapBufferARB"));
-    glUnmapBufferARB = (_glUnmapBufferARB) ctx->getProcAddress(QLatin1String("glUnmapBufferARB"));
+    glMapBufferARB = (_glMapBufferARB) qt_gl_getProcAddressARB(ctx, "glMapBuffer");
+    glUnmapBufferARB = (_glUnmapBufferARB) qt_gl_getProcAddressARB(ctx, "glUnmapBuffer");
 
     return glMapBufferARB
         && glUnmapBufferARB
