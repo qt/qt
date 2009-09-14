@@ -119,6 +119,11 @@ private slots:
     void tableModifyWithBlank_data() { generic_data(); }
     void tableModifyWithBlank(); // For mail task
 
+    void removeColumnAndRow_data() { generic_data(); }
+    void removeColumnAndRow(); // task 256032
+
+    void insertBeforeDelete_data() { generic_data(); }
+    void insertBeforeDelete();
 private:
     void generic_data(const QString& engine=QString());
 };
@@ -983,6 +988,62 @@ void tst_QSqlTableModel::tableModifyWithBlank()
 
     //Make sure the value of the first column matches what we set it to previously.
     QCOMPARE(model.record(0).value(1).toString(), QLatin1String("col1ModelData"));
+}
+
+void tst_QSqlTableModel::removeColumnAndRow()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlTableModel model(0, db);
+    model.setTable(qTableName("test"));
+    model.setEditStrategy(QSqlTableModel::OnManualSubmit);
+    QVERIFY_SQL(model, select());
+    QCOMPARE(model.rowCount(), 3);
+    QCOMPARE(model.columnCount(), 3);
+
+    QVERIFY(model.removeColumn(0));
+    QVERIFY(model.removeRow(0));
+    QVERIFY(model.submitAll());
+    QCOMPARE(model.rowCount(), 2);
+    QCOMPARE(model.columnCount(), 2);
+
+    // check with another table because the model has been modified
+    // but not the sql table
+    QSqlTableModel model2(0, db);
+    model2.setTable(qTableName("test"));
+    QVERIFY_SQL(model2, select());
+    QCOMPARE(model2.rowCount(), 2);
+    QCOMPARE(model2.columnCount(), 3);
+}
+
+void tst_QSqlTableModel::insertBeforeDelete()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlQuery q(db);
+    QVERIFY_SQL( q, exec("insert into " + qTableName("test") + " values(9, 'andrew', 9)"));
+    QVERIFY_SQL( q, exec("insert into " + qTableName("test") + " values(10, 'justin', 10)"));
+
+    QSqlTableModel model(0, db);
+    model.setTable(qTableName("test"));
+    model.setEditStrategy(QSqlTableModel::OnManualSubmit);
+    QVERIFY_SQL(model, select());
+
+    qDebug() << model.rowCount();
+
+    QSqlRecord rec = model.record();
+    rec.setValue(0, 4);
+    rec.setValue(1, QString("bill"));
+    rec.setValue(2, 4);
+    QVERIFY_SQL(model, insertRecord(4, rec));
+
+    QVERIFY_SQL(model, removeRow(5));
+    QVERIFY_SQL(model, submitAll());
+    QCOMPARE(model.rowCount(), 5);
 }
 
 QTEST_MAIN(tst_QSqlTableModel)
