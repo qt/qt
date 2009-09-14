@@ -61,7 +61,7 @@
     least a \c PseudoColor visual. Note that you may experience
     colormap flashing if your X server is running in 8 bit mode.
 
-    Under Windows the size of the colormap is always set to 256
+    The size() of the colormap is always set to 256
     colors. Note that under Windows you can also install colormaps
     in child widgets.
 
