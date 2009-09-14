@@ -17,12 +17,15 @@ SOURCES += 					\
 
 symbian {
 	HEADERS += $$OBJECTDUMP_DIR/objectdump_symbian.h
-	SOURCES += $$OBJECTDUMP_DIR/objectdump_symbian.cpp 
+	SOURCES += $$OBJECTDUMP_DIR/objectdump_symbian.cpp
 
 	LIBS += -lcone
 	LIBS += -lws32
 
 	TARGET.CAPABILITY = all -tcb
+
 } else {
 	SOURCES += $$OBJECTDUMP_DIR/objectdump_stub.cpp
 }
+
+TARGET.UID3=0x2001E62A

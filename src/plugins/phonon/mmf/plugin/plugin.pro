@@ -86,7 +86,5 @@ include(../../../qpluginbase.pri)
 # the SDK has the header.
 INCLUDEPATH *= /epoc32
 
-# Temporary steal one of the reserved, until we know that this MMF plugin is
-# turning into something at all.
-symbian:TARGET.UID3=0x2001E627
+TARGET.UID3=0x2001E629
 
