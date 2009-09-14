@@ -9,16 +9,16 @@ Item {
     Row {
         anchors.fill: parent
         Repeater {
-            dataSource: engines
+            model: engines
             Item {
                 width: 100; height: 100;
                 Image { 
-                    id: Image; 
+                    id: EngineIcon; 
                     source: "qrc:/engine.png"
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
                 Text { 
-                    anchors.top: Image.bottom; 
+                    anchors.top: EngineIcon.bottom; 
                     text: modelData.name + "(" + modelData.engineId + ")"
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
