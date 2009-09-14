@@ -78,7 +78,7 @@ QAudioInputPrivate::QAudioInputPrivate(const QByteArray &device, const QAudioFor
     pullMode = true;
     resuming = false;
 
-    QStringList list1 = QString(tr(device)).split(tr(":"));
+    QStringList list1 = QString(QLatin1String(device)).split(QLatin1String(":"));
     m_device = QByteArray(list1.at(0).toLocal8Bit().constData());
 
     timer = new QTimer(this);
@@ -254,9 +254,9 @@ bool QAudioInputPrivate::open()
     int count=0;
     unsigned int freakuency=settings.frequency();
 
-    QString dev = QString(tr(m_device.constData()));
-    if(!dev.contains(tr("default"))) {
-        dev = QString(tr("default:CARD=%1")).arg(tr(m_device.constData()));
+    QString dev = QString(QLatin1String(m_device.constData()));
+    if(!dev.contains(QLatin1String("default"))) {
+        dev = QString(QLatin1String("default:CARD=%1")).arg(QLatin1String(m_device.constData()));
     }
 
     // Step 1: try and open the device
