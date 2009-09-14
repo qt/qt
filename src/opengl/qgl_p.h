@@ -196,7 +196,9 @@ public:
     bool autoSwap;
 
     QGLColormap cmap;
+#ifndef QT_OPENGL_ES
     QMap<QString, int> displayListCache;
+#endif
 
     bool disable_clear_on_painter_begin;
 
