@@ -3752,7 +3752,7 @@ Qt for Embedded Linux only:
                           proper license for this switch to work.
                           Example values for <arch>: arm mips x86 generic
 
-    -armfpa ............. Target platform is uses the ARM-FPA floating point format.
+    -armfpa ............. Target platform uses the ARM-FPA floating point format.
     -no-armfpa .......... Target platform does not use the ARM-FPA floating point format.
 
                           The floating point format is usually autodetected by configure. Use this
