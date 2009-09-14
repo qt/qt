@@ -846,12 +846,12 @@ int QFxGridView::count() const
 
   An instance of the highlight component will be created for each view.
   The geometry of the resultant component instance will be managed by the view
-  so as to stay with the current item, unless the autoHighlight property is false.
+  so as to stay with the current item, unless the highlightFollowsCurrentItem property is false.
 
   The below example demonstrates how to make a simple highlight:
   \snippet doc/src/snippets/declarative/gridview/gridview.qml 1
 
-  \sa autoHighlight
+  \sa highlightFollowsCurrentItem
 */
 QmlComponent *QFxGridView::highlight() const
 {
@@ -868,11 +868,11 @@ void QFxGridView::setHighlight(QmlComponent *highlight)
 }
 
 /*!
-  \qmlproperty component GridView::autoHighlight
+  \qmlproperty bool GridView::highlightFollowsCurrentItem
   This property sets whether the highlight is managed by the view.
 
-  If autoHighlight is true, the highlight will be moved smoothly
-  to follow the current item.  If autoHighlight is false, the
+  If highlightFollowsCurrentItem is true, the highlight will be moved smoothly
+  to follow the current item.  If highlightFollowsCurrentItem is false, the
   highlight will not be moved by the view, and must be implemented
   by the highlight component, for example:
 
@@ -881,19 +881,19 @@ void QFxGridView::setHighlight(QmlComponent *highlight)
       id: Highlight
       Rectangle {
           id: Wrapper; color: "lightsteelblue"; radius: 4; width: 320; height: 60 >
-          y: Follow { source: Wrapper.GridView.view.current.y; spring: 3; damping: 0.2 }
-          x: Follow { source: Wrapper.GridView.view.current.x; spring: 3; damping: 0.2 }
+          y: SpringFollow { source: Wrapper.GridView.view.currentItem.y; spring: 3; damping: 0.2 }
+          x: SpringFollow { source: Wrapper.GridView.view.currentItem.x; spring: 3; damping: 0.2 }
       }
   }
   \endcode
 */
-bool QFxGridView::autoHighlight() const
+bool QFxGridView::highlightFollowsCurrentItem() const
 {
     Q_D(const QFxGridView);
     return d->autoHighlight;
 }
 
-void QFxGridView::setAutoHighlight(bool autoHighlight)
+void QFxGridView::setHighlightFollowsCurrentItem(bool autoHighlight)
 {
     Q_D(QFxGridView);
     d->autoHighlight = autoHighlight;
@@ -936,7 +936,7 @@ void QFxGridView::setFlow(Flow flow)
 }
 
 /*!
-  \qmlproperty bool GridView::wrap
+  \qmlproperty bool GridView::keyNavigationWraps
   This property holds whether the grid wraps key navigation
 
   If this property is true then key presses to move off of one end of the grid will cause the
