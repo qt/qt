@@ -536,7 +536,7 @@ void QKeyMapperPrivate::clearMappings()
             coreDesc.keysyms_per_keycode = 0;
             coreDesc.keysyms = XGetKeyboardMapping(X11->display,
                                                    coreDesc.min_keycode,
-                                                   coreDesc.max_keycode - coreDesc.min_keycode,
+                                                   coreDesc.max_keycode - coreDesc.min_keycode + 1,
                                                    &coreDesc.keysyms_per_keycode);
 
 #if 0
