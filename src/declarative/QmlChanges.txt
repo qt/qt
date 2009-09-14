@@ -66,6 +66,8 @@ Repeater: component    -> delegate
 Repeater: dataSource   -> model
 ListView: current      -> currentItem
 GridView: current      -> currentItem
+ListView: wrap         -> keyNavigationWraps
+ListView: autoHighlight -> highlightFollowsCurrentItem
 
 Additions:
 MouseRegion: add "acceptedButtons" property

@@ -443,7 +443,7 @@ FxListItem *QFxListViewPrivate::createItem(int modelIndex)
         }
         // complete
         model->completeItem();
-        listItem->item->setZValue(modelIndex + 1);
+        listItem->item->setZValue(1);
         listItem->item->setParent(q->viewport());
         if (orient == Qt::Vertical)
             QObject::connect(listItem->item, SIGNAL(heightChanged()), q, SLOT(itemResized()));
@@ -664,6 +664,7 @@ void QFxListViewPrivate::createHighlight()
             item->setParent(q->viewport());
         }
         if (item) {
+            item->setZValue(0);
             highlight = new FxListItem(item, q);
             if (orient == Qt::Vertical)
                 highlight->item->setHeight(currentItem->item->height());
@@ -1018,7 +1019,8 @@ int QFxListView::count() const
 
     An instance of the highlight component will be created for each list.
     The geometry of the resultant component instance will be managed by the list
-    so as to stay with the current item, unless the autoHighlight property is false.
+    so as to stay with the current item, unless the highlightFollowsCurrentItem
+    property is false.
 
     The below example demonstrates how to make a simple highlight
     for a vertical list.
@@ -1026,7 +1028,7 @@ int QFxListView::count() const
     \snippet doc/src/snippets/declarative/listview/listview.qml 1
     \image trivialListView.png
 
-    \sa autoHighlight
+    \sa highlightFollowsCurrentItem
 */
 QmlComponent *QFxListView::highlight() const
 {
@@ -1043,11 +1045,11 @@ void QFxListView::setHighlight(QmlComponent *highlight)
 }
 
 /*!
-    \qmlproperty bool ListView::autoHighlight
+    \qmlproperty bool ListView::highlightFollowsCurrentItem
     This property holds whether the highlight is managed by the view.
 
-    If autoHighlight is true, the highlight will be moved smoothly
-    to follow the current item.  If autoHighlight is false, the
+    If highlightFollowsCurrentItem is true, the highlight will be moved smoothly
+    to follow the current item.  If highlightFollowsCurrentItem is false, the
     highlight will not be moved by the view, and must be implemented
     by the highlight.  The following example creates a highlight with
     its motion defined by the spring \l {SpringFollow}:
@@ -1056,13 +1058,13 @@ void QFxListView::setHighlight(QmlComponent *highlight)
 
     \sa highlight
 */
-bool QFxListView::autoHighlight() const
+bool QFxListView::highlightFollowsCurrentItem() const
 {
     Q_D(const QFxListView);
     return d->autoHighlight;
 }
 
-void QFxListView::setAutoHighlight(bool autoHighlight)
+void QFxListView::setHighlightFollowsCurrentItem(bool autoHighlight)
 {
     Q_D(QFxListView);
     d->autoHighlight = autoHighlight;
@@ -1182,11 +1184,11 @@ void QFxListView::setOrientation(Qt::Orientation orientation)
 }
 
 /*!
-    \qmlproperty bool ListView::wrap
+    \qmlproperty bool ListView::keyNavigationWraps
     This property holds whether the list wraps key navigation
 
     If this property is true then key presses to move off of one end of the list will cause the
-    selection to jump to the other side.
+    current item to jump to the other end.
 */
 bool QFxListView::isWrapEnabled() const
 {

@@ -50,7 +50,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-//### get rid of z = index and set known z-value (1 for items, 0 for highlight)
 //### incrementCurrentIndex(), decrementCurrentIndex() slots
 //### default Keys.OnUp/DownPressed handler
 
@@ -70,7 +69,7 @@ class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable
     Q_PROPERTY(QFxItem *currentItem READ currentItem NOTIFY currentIndexChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(QmlComponent *highlight READ highlight WRITE setHighlight)
-    Q_PROPERTY(bool autoHighlight READ autoHighlight WRITE setAutoHighlight) //### highlightFollowsCurrentItem
+    Q_PROPERTY(bool highlightFollowsCurrentItem READ highlightFollowsCurrentItem WRITE setHighlightFollowsCurrentItem)
 
     Q_PROPERTY(qreal preferredHighlightBegin READ preferredHighlightBegin WRITE setPreferredHighlightBegin)
     Q_PROPERTY(qreal preferredHighlightEnd READ preferredHighlightEnd WRITE setPreferredHighlightEnd)
@@ -78,7 +77,7 @@ class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable
 
     Q_PROPERTY(qreal spacing READ spacing WRITE setSpacing NOTIFY spacingChanged)
     Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation)
-    Q_PROPERTY(bool wrap READ isWrapEnabled WRITE setWrapEnabled) //### keyNavigationWraps, stops at end when held
+    Q_PROPERTY(bool keyNavigationWraps READ isWrapEnabled WRITE setWrapEnabled)
     Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer)
     Q_PROPERTY(QString sectionExpression READ sectionExpression WRITE setSectionExpression NOTIFY sectionExpressionChanged)
     Q_PROPERTY(QString currentSection READ currentSection NOTIFY currentSectionChanged)
@@ -103,15 +102,8 @@ public:
     QmlComponent *highlight() const;
     void setHighlight(QmlComponent *highlight);
 
-    bool autoHighlight() const;
-    void setAutoHighlight(bool);
-
-    enum CurrentItemPositioning { Free, Snap, SnapAuto };
-    CurrentItemPositioning currentItemPositioning() const;
-    void setCurrentItemPositioning(CurrentItemPositioning mode);
-
-    int snapPosition() const;
-    void setSnapPosition(int pos);
+    bool highlightFollowsCurrentItem() const;
+    void setHighlightFollowsCurrentItem(bool);
 
     bool strictlyEnforceHighlightRange() const;
     void setStrictlyEnforceHighlightRange(bool strict);
