@@ -1296,6 +1296,9 @@ int QIBaseResult::numRowsAffected()
     case isc_info_sql_stmt_insert:
         cCountType = isc_info_req_insert_count;
         break;
+    default:
+        qWarning() << "numRowsAffected: Unknown statement type (" << d->queryType << ")";
+        return -1;
     }
 
     char acBuffer[33];
