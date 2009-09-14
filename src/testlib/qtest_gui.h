@@ -42,6 +42,14 @@
 #ifndef QTEST_GUI_H
 #define QTEST_GUI_H
 
+// enable GUI features
+#ifndef QT_GUI_LIB
+#define QT_GUI_LIB
+#endif
+#if 0
+#pragma qt_class(QtTestGui)
+#endif
+
 #include <QtTest/qtestassert.h>
 #include <QtTest/qtest.h>
 #include <QtTest/qtestevent.h>
