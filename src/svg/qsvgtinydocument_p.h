@@ -108,6 +108,10 @@ public:
 
     void addSvgFont(QSvgFont *);
     QSvgFont *svgFont(const QString &family) const;
+    void addNamedNode(const QString &id, QSvgNode *node);
+    QSvgNode *namedNode(const QString &id) const;
+    void addNamedStyle(const QString &id, QSvgFillStyleProperty *style);
+    QSvgFillStyleProperty *namedStyle(const QString &id) const;
 
     void restartAnimation();
     int currentElapsed() const;
@@ -127,6 +131,8 @@ private:
     mutable QRectF m_viewBox;
 
     QHash<QString, QSvgRefCounter<QSvgFont> > m_fonts;
+    QHash<QString, QSvgNode *> m_namedNodes;
+    QHash<QString, QSvgRefCounter<QSvgFillStyleProperty> > m_namedStyles;
 
     QTime m_time;
     bool  m_animated;
