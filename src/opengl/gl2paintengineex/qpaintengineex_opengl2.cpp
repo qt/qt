@@ -1538,6 +1538,7 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
     if (state()->rectangleClip.isValid() && op != Qt::NoClip && op != Qt::ReplaceClip) {
         QPainterPath path;
         path.addRect(state()->rectangleClip);
+        path = state()->matrix.inverted().map(path);
 
         state()->rectangleClip = QRect();
         d->updateDepthScissorTest();
