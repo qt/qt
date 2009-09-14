@@ -68,7 +68,7 @@ private:
     void setId(int);
     void setSignalValue(int);
     
-    Q_DISABLE_COPY(QMenuItem);
+    Q_DISABLE_COPY(QMenuItem)
 };
 
 QT_END_NAMESPACE
