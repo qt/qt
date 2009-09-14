@@ -62,7 +62,7 @@
 #elif defined(Q_OS_AIX)
 #  define NO_BOM
 #  define UTF16 "UCS-2"
-#elif defined(Q_OS_MAC)
+#elif defined(Q_OS_FREEBSD) || defined(Q_OS_MAC)
 #  define NO_BOM
 #  if Q_BYTE_ORDER == Q_BIG_ENDIAN
 #    define UTF16 "UTF-16BE"
