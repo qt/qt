@@ -411,7 +411,8 @@ IDirectFBSurface *QDirectFBWindowSurface::surfaceForWidget(const QWidget *widget
             *rect = QRect(widget->mapTo(win, QPoint(0, 0)), widget->size());
         }
     }
-    Q_ASSERT(win == widget || widget->isAncestorOf(win));
+
+    Q_ASSERT(win == widget || win->isAncestorOf(widget));
     return dfbSurface;
 }
 
