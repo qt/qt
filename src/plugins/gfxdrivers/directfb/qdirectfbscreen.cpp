@@ -1687,6 +1687,19 @@ IDirectFBSurface *QDirectFBScreen::subSurfaceForWidget(const QWidget *widget, co
 }
 #endif
 
+#ifndef QT_DIRECTFB_PLUGIN
+Q_GUI_EXPORT IDirectFBSurface *qt_directfb_surface_for_widget(const QWidget *widget, QRect *rect)
+{
+    return QDirectFBScreen::instance() ? QDirectFBScreen::instance()->surfaceForWidget(widget, rect) : 0;
+}
+#ifdef QT_DIRECTFB_SUBSURFACE
+Q_GUI_EXPORT IDirectFBSurface *qt_directfb_subsurface_for_widget(const QWidget *widget, const QRect &area)
+{
+    return QDirectFBScreen::instance() ? QDirectFBScreen::instance()->subSurfaceForWidget(widget, area) : 0;
+}
+#endif
+#endif
+
 QT_END_NAMESPACE
 
 #include "qdirectfbscreen.moc"
