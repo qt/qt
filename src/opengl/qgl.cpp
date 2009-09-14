@@ -103,7 +103,11 @@ QT_BEGIN_NAMESPACE
 QGLExtensionFuncs QGLContextPrivate::qt_extensionFuncs;
 #endif
 
-QThreadStorage<QGLThreadContext *> qgl_context_storage;
+struct QGLThreadContext {
+    QGLContext *context;
+};
+
+static QThreadStorage<QGLThreadContext *> qgl_context_storage;
 
 Q_GLOBAL_STATIC(QGLFormat, qgl_default_format)
 
@@ -2939,9 +2943,26 @@ void QGLContext::setInitialized(bool on)
 
 const QGLContext* QGLContext::currentContext()
 {
-    if (qgl_context_storage.hasLocalData())
-        return qgl_context_storage.localData()->context;
+    QGLThreadContext *threadContext = qgl_context_storage.localData();
+    if (threadContext)
+        return threadContext->context;
     return 0;
+}
+
+void QGLContextPrivate::setCurrentContext(QGLContext *context)
+{
+    QGLThreadContext *threadContext = qgl_context_storage.localData();
+    if (!threadContext) {
+        if (!QThread::currentThread()) {
+            // We don't have a current QThread, so just set the static.
+            QGLContext::currentCtx = context;
+            return;
+        }
+        threadContext = new QGLThreadContext;
+        qgl_context_storage.setLocalData(threadContext);
+    }
+    threadContext->context = context;
+    QGLContext::currentCtx = context; // XXX: backwards-compat, not thread-safe
 }
 
 /*!
