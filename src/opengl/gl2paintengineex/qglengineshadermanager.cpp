@@ -216,6 +216,8 @@ void QGLEngineSharedShaders::shaderDestroyed(QObject *shader)
 QGLShader *QGLEngineSharedShaders::compileNamedShader(ShaderName name, QGLShader::ShaderType type)
 {
     Q_ASSERT(name != CustomImageSrcFragmentShader);
+    Q_ASSERT(name < InvalidShaderName);
+
     if (compiledShaders[name])
         return compiledShaders[name];
 
@@ -514,7 +516,7 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
     else switch (srcPixelType) {
         default:
         case Qt::NoBrush:
-            qCritical("QGLEngineShaderManager::useCorrectShaderProg() - I'm scared, Qt::NoBrush style is set");
+            qFatal("QGLEngineShaderManager::useCorrectShaderProg() - Qt::NoBrush style is set");
             break;
         case QGLEngineShaderManager::ImageSrc:
             srcPixelFragShaderName = QGLEngineSharedShaders::ImageSrcFragmentShader;

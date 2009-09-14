@@ -1039,13 +1039,12 @@ void QGL2PaintEngineEx::fill(const QVectorPath &path, const QBrush &brush)
 {
     Q_D(QGL2PaintEngineEx);
 
-    if (brush.style() == Qt::NoBrush)
+    if (qbrush_style(brush) == Qt::NoBrush)
         return;
     if (!d->inRenderText)
         ensureActive();
     d->setBrush(&brush);
     d->fill(path);
-    d->setBrush(&(state()->brush)); // reset back to the state's brush
 }
 
 void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
@@ -1059,42 +1058,26 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 
     ensureActive();
 
-    if ( (pen.isCosmetic() && (pen.style() == Qt::SolidLine)) && (pen.widthF() < 2.5f) )
+    qreal penWidth = qpen_widthf(pen);
+    if ( (pen.isCosmetic() && (penStyle == Qt::SolidLine)) && (penWidth < 2.5f) )
     {
         // We only handle solid, cosmetic pens with a width of 1 pixel
         const QBrush& brush = pen.brush();
         d->setBrush(&brush);
 
-        if (pen.widthF() < 0.01f)
+        if (penWidth < 0.01f)
             glLineWidth(1.0);
         else
-            glLineWidth(pen.widthF());
+            glLineWidth(penWidth);
 
         d->drawOutline(path);
-        d->setBrush(&(state()->brush));
     } else
         return QPaintEngineEx::stroke(path, pen);
 }
 
-void QGL2PaintEngineEx::penChanged()
-{
-//    qDebug("QGL2PaintEngineEx::penChanged() not implemented!");
-}
-
-
-void QGL2PaintEngineEx::brushChanged()
-{
-//    qDebug("QGL2PaintEngineEx::brushChanged()");
-    Q_D(QGL2PaintEngineEx);
-    d->setBrush(&(state()->brush));
-}
-
-void QGL2PaintEngineEx::brushOriginChanged()
-{
-//    qDebug("QGL2PaintEngineEx::brushOriginChanged()");
-    Q_D(QGL2PaintEngineEx);
-    d->brushUniformsDirty = true;
-}
+void QGL2PaintEngineEx::penChanged() { }
+void QGL2PaintEngineEx::brushChanged() { }
+void QGL2PaintEngineEx::brushOriginChanged() { }
 
 void QGL2PaintEngineEx::opacityChanged()
 {
@@ -1302,8 +1285,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
         glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray.data());
 
     glDrawArrays(GL_TRIANGLES, 0, 6 * glyphs.size());
-
-    setBrush(&(q->state()->brush)); //###
 }
 
 bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
@@ -1717,8 +1698,6 @@ void QGL2PaintEngineEx::setState(QPainterState *new_state)
 
     d->matrixDirty = true;
     d->compositionModeDirty = true;
-    d->brushTextureDirty = true;
-    d->brushUniformsDirty = true;
     d->simpleShaderDepthUniformDirty = true;
     d->depthUniformDirty = true;
     d->simpleShaderMatrixUniformDirty = true;
