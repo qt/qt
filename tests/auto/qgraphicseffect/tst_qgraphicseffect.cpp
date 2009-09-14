@@ -63,6 +63,7 @@ private slots:
     void boundingRect();
     void draw();
     void opacity();
+    void grayscale();
 };
 
 void tst_QGraphicsEffect::initTestCase()
@@ -363,6 +364,29 @@ void tst_QGraphicsEffect::opacity()
 #endif
     QTest::qWait(100);
     QCOMPARE(effect->m_opacity, qreal(0.5));
+}
+
+void tst_QGraphicsEffect::grayscale()
+{
+    QGraphicsScene scene(0, 0, 100, 100);
+
+    QGraphicsRectItem *item = scene.addRect(0, 0, 50, 50);
+    item->setPen(Qt::NoPen);
+    item->setBrush(QColor(122, 193, 66)); // Qt light green
+
+    QGraphicsGrayscaleEffect *effect = new QGraphicsGrayscaleEffect;
+    item->setGraphicsEffect(effect);
+
+    QPainter painter;
+    QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
+
+    image.fill(0);
+    painter.begin(&image);
+    painter.setRenderHint(QPainter::Antialiasing);
+    scene.render(&painter);
+    painter.end();
+
+    QCOMPARE(image.pixel(10, 10), qRgb(148, 148, 148));
 }
 
 QTEST_MAIN(tst_QGraphicsEffect)
