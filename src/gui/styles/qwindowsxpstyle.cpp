@@ -586,7 +586,7 @@ bool QWindowsXPStylePrivate::swapAlphaChannel(const QRect &rect, bool allPixels)
             }
             register unsigned int alphaValue = (*buffer) & 0xFF000000;
             if (alphaValue == 0xFF000000) {
-                *buffer &= 0x00FFFFFF;
+                *buffer = 0;
                 valueChange = true;
             } else if (alphaValue == 0) {
                 *buffer |= 0xFF000000;
