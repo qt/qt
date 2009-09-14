@@ -1,6 +1,6 @@
 TEMPLATE = lib
-TARGET = objectdump
-OBJECTDUMP_DIR = $$QT_SOURCE_TREE/src/3rdparty/phonon/mmf/objectdump
+TARGET = mmfphonondebug
+OBJECTDUMP_DIR = $$QT_SOURCE_TREE/src/3rdparty/phonon/mmf/mmfphonondebug
 
 CONFIG += dll
 

@@ -1,2 +1,2 @@
 TEMPLATE    = subdirs
-SUBDIRS     = objectdump plugin
+SUBDIRS     = mmfphonondebug plugin

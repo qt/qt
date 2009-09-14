@@ -68,7 +68,8 @@ symbian: {
     codecs_plugins.path = $$QT_PLUGINS_BASE_DIR/codecs
 
     contains(QT_CONFIG, phonon-backend) {
-        phonon_backend_plugins.sources += phonon_mmf.dll objectdump.dll
+        phonon_backend_plugins.sources += phonon_mmf.dll
+
         phonon_backend_plugins.path = $$QT_PLUGINS_BASE_DIR/phonon_backend
         DEPLOYMENT += phonon_backend_plugins
     }
