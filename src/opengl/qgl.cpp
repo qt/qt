@@ -271,7 +271,7 @@ void QGL::setPreferredPaintEngine(QPaintEngine::Type engineType)
     \i \link setStereo() Stereo buffers.\endlink
     \i \link setDirectRendering() Direct rendering.\endlink
     \i \link setOverlay() Presence of an overlay.\endlink
-    \i \link setPlane() The plane of an overlay format.\endlink
+    \i \link setPlane() Plane of an overlay.\endlink
     \i \link setSampleBuffers() Multisample buffers.\endlink
     \endlist
 
@@ -1353,8 +1353,10 @@ void QGLFormat::setDefaultOverlayFormat(const QGLFormat &f)
 
 
 /*!
-    Returns true if all the options of the two QGLFormat objects are equal;
-    otherwise returns false.
+    Returns true if all the options of the two QGLFormat objects
+    \a a and \a b are equal; otherwise returns false.
+
+    \relates QGLFormat
 */
 
 bool operator==(const QGLFormat& a, const QGLFormat& b)
@@ -1371,8 +1373,10 @@ bool operator==(const QGLFormat& a, const QGLFormat& b)
 
 
 /*!
-    Returns false if all the options of the two QGLFormat objects are equal;
-    otherwise returns true.
+    Returns false if all the options of the two QGLFormat objects
+    \a a and \a b are equal; otherwise returns true.
+
+    \relates QGLFormat
 */
 
 bool operator!=(const QGLFormat& a, const QGLFormat& b)
