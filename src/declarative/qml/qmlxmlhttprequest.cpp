@@ -1124,6 +1124,11 @@ void QmlXMLHttpRequest::downloadProgress(qint64 bytes)
 
 void QmlXMLHttpRequest::error(QNetworkReply::NetworkError error)
 {
+    m_status =
+        m_network->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    m_statusText =
+        QLatin1String(m_network->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toByteArray());
+
     m_responseEntityBody = QByteArray();
     m_errorFlag = true;
     m_request = QNetworkRequest();
@@ -1137,6 +1142,11 @@ void QmlXMLHttpRequest::error(QNetworkReply::NetworkError error)
 void QmlXMLHttpRequest::finished()
 {
     // ### We need to transparently redirect as dictated by the spec
+
+    m_status =
+        m_network->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    m_statusText =
+        QLatin1String(m_network->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toByteArray());
 
     if (m_state < HeadersReceived) {
         m_state = HeadersReceived;
