@@ -144,12 +144,21 @@ class QGraphicsGrayscaleEffectPrivate;
 class Q_GUI_EXPORT QGraphicsGrayscaleEffect: public QGraphicsEffect
 {
     Q_OBJECT
+    Q_PROPERTY(qreal strength READ strength WRITE setStrength NOTIFY strengthChanged)
 public:
     QGraphicsGrayscaleEffect(QObject *parent = 0);
     ~QGraphicsGrayscaleEffect();
 
+    qreal strength() const;
+
 protected:
     void draw(QPainter *painter, QGraphicsEffectSource *source);
+
+public Q_SLOTS:
+    void setStrength(qreal strength);
+
+Q_SIGNALS:
+    void strengthChanged(qreal strength);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsGrayscaleEffect)
@@ -161,17 +170,21 @@ class Q_GUI_EXPORT QGraphicsColorizeEffect: public QGraphicsEffect
 {
     Q_OBJECT
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
+    Q_PROPERTY(qreal strength READ strength WRITE setStrength NOTIFY strengthChanged)
 public:
     QGraphicsColorizeEffect(QObject *parent = 0);
     ~QGraphicsColorizeEffect();
 
     QColor color() const;
+    qreal strength() const;
 
 public Q_SLOTS:
     void setColor(const QColor &c);
+    void setStrength(qreal strength);
 
 Q_SIGNALS:
     void colorChanged(const QColor &color);
+    void strengthChanged(qreal strength);
 
 protected:
     void draw(QPainter *painter, QGraphicsEffectSource *source);

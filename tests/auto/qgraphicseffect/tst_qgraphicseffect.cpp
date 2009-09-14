@@ -388,6 +388,26 @@ void tst_QGraphicsEffect::grayscale()
     painter.end();
 
     QCOMPARE(image.pixel(10, 10), qRgb(148, 148, 148));
+
+    effect->setStrength(0.5);
+
+    image.fill(0);
+    painter.begin(&image);
+    painter.setRenderHint(QPainter::Antialiasing);
+    scene.render(&painter);
+    painter.end();
+
+    QCOMPARE(image.pixel(10, 10), qRgb(135, 171, 107));
+
+    effect->setStrength(0.0);
+
+    image.fill(0);
+    painter.begin(&image);
+    painter.setRenderHint(QPainter::Antialiasing);
+    scene.render(&painter);
+    painter.end();
+
+    QCOMPARE(image.pixel(10, 10), qRgb(122, 193, 66));
 }
 
 void tst_QGraphicsEffect::colorize()
@@ -412,6 +432,26 @@ void tst_QGraphicsEffect::colorize()
     painter.end();
 
     QCOMPARE(image.pixel(10, 10), qRgb(191, 212, 169));
+
+    effect->setStrength(0.5);
+
+    image.fill(0);
+    painter.begin(&image);
+    painter.setRenderHint(QPainter::Antialiasing);
+    scene.render(&painter);
+    painter.end();
+
+    QCOMPARE(image.pixel(10, 10), qRgb(156, 203, 117));
+
+    effect->setStrength(0.0);
+
+    image.fill(0);
+    painter.begin(&image);
+    painter.setRenderHint(QPainter::Antialiasing);
+    scene.render(&painter);
+    painter.end();
+
+    QCOMPARE(image.pixel(10, 10), qRgb(122, 193, 66));
 }
 
 QTEST_MAIN(tst_QGraphicsEffect)
