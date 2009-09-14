@@ -1052,7 +1052,9 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 {
     Q_D(QGL2PaintEngineEx);
 
-    if (pen.style() == Qt::NoPen)
+    Qt::PenStyle penStyle = qpen_style(pen);
+    const QBrush &penBrush = qpen_brush(pen);
+    if (penStyle == Qt::NoPen || qbrush_style(penBrush) == Qt::NoBrush)
         return;
 
     ensureActive();
