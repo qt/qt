@@ -4092,10 +4092,10 @@ QImage QGLWidget::convertToGLFormat(const QImage& img)
     colormaps installed. Asking for the colormap of a child widget
     will return the colormap for the child's top-level widget.
 
-    If no colormap has been set for this widget, the QColormap
+    If no colormap has been set for this widget, the QGLColormap
     returned will be empty.
 
-    \sa setColormap()
+    \sa setColormap(), QGLColormap::isEmpty()
 */
 
 /*!
