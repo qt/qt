@@ -1720,6 +1720,9 @@ QPainterState *QGL2PaintEngineEx::createState(QPainterState *orig) const
 {
     Q_D(const QGL2PaintEngineEx);
 
+    if (orig)
+        const_cast<QGL2PaintEngineEx *>(this)->syncState();
+
     QOpenGL2PaintEngineState *s;
     if (!orig)
         s = new QOpenGL2PaintEngineState();
