@@ -59,7 +59,7 @@ QGraphicsAnchorPrivate::QGraphicsAnchorPrivate(int version)
 
 QGraphicsAnchorPrivate::~QGraphicsAnchorPrivate()
 {
-    layoutPrivate->deleteAnchorData(data);
+    layoutPrivate->removeAnchor(data->from, data->to);
 }
 
 void QGraphicsAnchorPrivate::setSpacing(qreal value)
@@ -1271,17 +1271,6 @@ void QGraphicsAnchorLayoutPrivate::removeAnchor_helper(AnchorVertex *v1, AnchorV
     // Decrease vertices reference count (may trigger a deletion)
     removeInternalVertex(v1->m_item, v1->m_edge);
     removeInternalVertex(v2->m_item, v2->m_edge);
-}
-
-/*!
-    \internal
-    Only called from outside. (calls invalidate())
-*/
-void QGraphicsAnchorLayoutPrivate::deleteAnchorData(AnchorData *data)
-{
-    Q_Q(QGraphicsAnchorLayout);
-    removeAnchor_helper(data->from, data->to);
-    q->invalidate();
 }
 
 /*!

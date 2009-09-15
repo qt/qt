@@ -422,7 +422,6 @@ public:
 
     void removeAnchor(AnchorVertex *firstVertex, AnchorVertex *secondVertex);
     void removeAnchor_helper(AnchorVertex *v1, AnchorVertex *v2);
-    void deleteAnchorData(AnchorData *data);
     void setAnchorSize(AnchorData *data, const qreal *anchorSize);
     void anchorSize(const AnchorData *data,
                     qreal *minSize = 0,
