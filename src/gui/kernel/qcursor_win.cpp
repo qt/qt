@@ -50,8 +50,6 @@
 
 QT_BEGIN_NAMESPACE
 
-extern QCursorData *qt_cursorTable[Qt::LastCursor + 1]; // qcursor.cpp
-
 /*****************************************************************************
   Internal QCursorData class
  *****************************************************************************/

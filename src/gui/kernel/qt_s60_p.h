@@ -83,6 +83,7 @@ const TInt KInternalStatusPaneChange = 0x50000000;
 class QS60Data
 {
 public:
+    QS60Data();
     TUid uid;
     int screenDepth;
     QPoint lastCursorPos;
@@ -95,6 +96,16 @@ public:
     int screenHeightInTwips;
     int defaultDpiX;
     int defaultDpiY;
+    WId curWin;
+    int virtualMouseLastKey;
+    int virtualMouseAccel;
+    int virtualMouseMaxAccel;
+#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
+    bool brokenPointerCursors;
+#endif
+    bool hasTouchscreen;
+    bool mouseInteractionEnabled;
+    bool virtualMouseRequired;
     int qtOwnsS60Environment : 1;
     static inline void updateScreenSize();
     static inline RWsSession& wsSession();
@@ -164,6 +175,11 @@ private:
     bool m_previousEventLongTap;
 };
 
+inline QS60Data::QS60Data()
+{
+    memclr(this, sizeof(QS60Data)); //zero init data
+}
+
 inline void QS60Data::updateScreenSize()
 {
     TPixelsTwipsAndRotation params;
@@ -173,6 +189,8 @@ inline void QS60Data::updateScreenSize()
     S60->screenHeightInPixels = params.iPixelSize.iHeight;
     S60->screenWidthInTwips = params.iTwipsSize.iWidth;
     S60->screenHeightInTwips = params.iTwipsSize.iHeight;
+    
+    S60->virtualMouseMaxAccel = qMax(S60->screenHeightInPixels, S60->screenWidthInPixels) / 20;
 
     TReal inches = S60->screenHeightInTwips / (TReal)KTwipsPerInch;
     S60->defaultDpiY = S60->screenHeightInPixels / inches;
@@ -286,6 +304,11 @@ static inline QImage::Format qt_TDisplayMode2Format(TDisplayMode mode)
     return format;
 }
 
+void qt_symbian_setWindowCursor(const QCursor &cursor, const CCoeControl* wid);
+void qt_symbian_setWindowGroupCursor(const QCursor &cursor, RWindowTreeNode &node);
+void qt_symbian_setGlobalCursor(const QCursor &cursor);
+void qt_symbian_set_cursor_visible(bool visible);
+bool qt_symbian_is_cursor_visible();
 
 QT_END_NAMESPACE
 

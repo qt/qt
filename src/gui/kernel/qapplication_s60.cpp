@@ -73,6 +73,9 @@
 
 #include "private/qstylesheetstyle_p.h"
 
+#include <hal.h>
+#include <hal_data.h>
+
 QT_BEGIN_NAMESPACE
 
 #if defined(QT_DEBUG)
@@ -151,21 +154,21 @@ void QS60Beep::ConstructL(TInt aFrequency, TTimeIntervalMicroSeconds aDuration)
 
 void QS60Beep::Play()
 {
-    if(iState!=EBeepNotPrepared){
-        if(iState==EBeepPlaying) {
+    if (iState != EBeepNotPrepared) {
+        if (iState == EBeepPlaying) {
             iToneUtil->CancelPlay();
-            iState=EBeepPrepared;
+            iState = EBeepPrepared;
         }
     }
 
     iToneUtil->Play();
-    iState=EBeepPlaying;
+    iState = EBeepPlaying;
 }
 
 void QS60Beep::MatoPrepareComplete(TInt aError)
 {
-    if(aError==KErrNone) {
-        iState=EBeepPrepared;
+    if (aError == KErrNone) {
+        iState = EBeepPrepared;
     }
 }
 
@@ -320,8 +323,9 @@ void QSymbianControl::ConstructL(bool topLevel, bool desktop)
 {
     if (!desktop)
     {
-        if (topLevel)
+        if (topLevel) {
             CreateWindowL(S60->windowGroup());
+        }
 
         SetFocusing(true);
         m_longTapDetector = QLongTapTimer::NewL(this);
@@ -330,6 +334,8 @@ void QSymbianControl::ConstructL(bool topLevel, bool desktop)
 
 QSymbianControl::~QSymbianControl()
 {
+    if (S60->curWin == this)
+        S60->curWin = 0;
     S60->appUi()->RemoveFromStack(this);
     delete m_longTapDetector;
 }
@@ -392,14 +398,15 @@ void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
     TPoint controlScreenPos = PositionRelativeToScreen();
     QPoint globalPos = QPoint(controlScreenPos.iX, controlScreenPos.iY) + widgetPos;
 
-    if (type == QEvent::MouseButtonPress || type == QEvent::MouseButtonDblClick)
+    if (type == QEvent::MouseButtonPress || type == QEvent::MouseButtonDblClick || type == QEvent::MouseMove)
     {
-        // get the button press target
+        // get the widget where the event happened
         alienWidget = qwidget->childAt(widgetPos);
         if (!alienWidget)
             alienWidget = qwidget;
         S60->mousePressTarget = alienWidget;
     }
+    
     alienWidget = S60->mousePressTarget;
 
     if (alienWidget != S60->lastPointerEventTarget)
@@ -412,12 +419,30 @@ void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
                     button, QApplicationPrivate::mouse_buttons, mapToQtModifiers(pEvent.iModifiers));
                 events.append(Event(S60->lastPointerEventTarget,mEventLeave));
             }
-            QMouseEvent mEventEnter(QEvent::Enter, alienWidget->mapFromGlobal(globalPos), globalPos,
-                button, QApplicationPrivate::mouse_buttons, mapToQtModifiers(pEvent.iModifiers));
+            if (alienWidget) {
+                QMouseEvent mEventEnter(QEvent::Enter, alienWidget->mapFromGlobal(globalPos),
+                    globalPos, button, QApplicationPrivate::mouse_buttons, mapToQtModifiers(
+                        pEvent.iModifiers));
 
-            events.append(Event(alienWidget,mEventEnter));
+                events.append(Event(alienWidget, mEventEnter));
+#ifndef QT_NO_CURSOR
+                S60->curWin = alienWidget->effectiveWinId();
+                if (!QApplication::overrideCursor()) {
+#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
+                    if (S60->brokenPointerCursors)
+                        qt_symbian_set_pointer_sprite(alienWidget->cursor());
+                    else
+#endif
+                        qt_symbian_setWindowCursor(alienWidget->cursor(), S60->curWin);
+                }
+#endif
+            }
         }
     S60->lastCursorPos = globalPos;
+#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
+    if (S60->brokenPointerCursors)
+        qt_symbian_move_cursor_sprite();
+#endif
     S60->lastPointerEventPos = widgetPos;
     S60->lastPointerEventTarget = alienWidget;
     if (alienWidget)
@@ -494,6 +519,82 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
             // Special S60 keys.
             keyCode = qt_keymapper_private()->mapS60KeyToQt(s60Keysym);
         }
+
+#ifndef QT_NO_CURSOR
+        if (S60->mouseInteractionEnabled && S60->virtualMouseRequired) {
+            //translate keys to pointer
+            if (keyCode >= Qt::Key_Left && keyCode <= Qt::Key_Down || keyCode == Qt::Key_Select) {
+                /*Explanation about virtualMouseAccel:
+                 Tapping an arrow key allows precise pixel positioning
+                 Holding an arrow key down, acceleration is applied to allow cursor 
+                 to be quickly moved to another part of the screen by key repeats.
+                 */
+                if (S60->virtualMouseLastKey == keyCode) {
+                    S60->virtualMouseAccel *= 2;
+                    if (S60->virtualMouseAccel > S60->virtualMouseMaxAccel)
+                        S60->virtualMouseAccel = S60->virtualMouseMaxAccel;
+                }
+                else
+                    S60->virtualMouseAccel = 1;
+                S60->virtualMouseLastKey = keyCode;
+
+                QPoint pos = QCursor::pos();
+                TPointerEvent fakeEvent;
+                TInt x = pos.x();
+                TInt y = pos.y();
+                if (type == EEventKeyUp) {
+                    if (keyCode == Qt::Key_Select)
+                        fakeEvent.iType = TPointerEvent::EButton1Up;
+                    S60->virtualMouseAccel = 1;
+                    S60->virtualMouseLastKey = 0;
+                }
+                else if (type == EEventKey) {
+                    switch (keyCode) {
+                    case Qt::Key_Left:
+                        x -= S60->virtualMouseAccel;
+                        fakeEvent.iType = TPointerEvent::EMove;
+                        break;
+                    case Qt::Key_Right:
+                        x += S60->virtualMouseAccel;
+                        fakeEvent.iType = TPointerEvent::EMove;
+                        break;
+                    case Qt::Key_Up:
+                        y -= S60->virtualMouseAccel;
+                        fakeEvent.iType = TPointerEvent::EMove;
+                        break;
+                    case Qt::Key_Down:
+                        y += S60->virtualMouseAccel;
+                        fakeEvent.iType = TPointerEvent::EMove;
+                        break;
+                    case Qt::Key_Select:
+                        fakeEvent.iType = TPointerEvent::EButton1Down;
+                        break;
+                    }
+                }
+                //clip to screen size (window server allows a sprite hotspot to be outside the screen)
+                if (x < 0)
+                    x = 0;
+                else if (x >= S60->screenWidthInPixels)
+                    x = S60->screenWidthInPixels - 1;
+                if (y < 0)
+                    y = 0;
+                else if (y >= S60->screenHeightInPixels)
+                    y = S60->screenHeightInPixels - 1;
+                TPoint epos(x, y);
+                TPoint cpos = epos - PositionRelativeToScreen();
+                fakeEvent.iModifiers = keyEvent.iModifiers;
+                fakeEvent.iPosition = cpos;
+                fakeEvent.iParentPosition = epos;
+                HandlePointerEvent(fakeEvent);
+                return EKeyWasConsumed;
+            }
+            else {
+                S60->virtualMouseLastKey = keyCode;
+                S60->virtualMouseAccel = 1;
+            }
+        }
+#endif
+        
         Qt::KeyboardModifiers mods = mapToQtModifiers(keyEvent.iModifiers);
         QKeyEventEx qKeyEvent(type == EEventKeyUp ? QEvent::KeyRelease : QEvent::KeyPress, keyCode,
                 mods, qt_keymapper_private()->translateKeyEvent(keyCode, mods),
@@ -557,7 +658,7 @@ TKeyResponse QSymbianControl::sendKeyEvent(QWidget *widget, QKeyEvent *keyEvent)
 #if !defined(QT_NO_IM) && defined(Q_WS_S60)
     if (widget && widget->isEnabled() && widget->testAttribute(Qt::WA_InputMethodEnabled)) {
         QInputContext *qic = widget->inputContext();
-        if(qic && qic->filterEvent(keyEvent))
+        if (qic && qic->filterEvent(keyEvent))
             return EKeyWasConsumed;
     }
 #endif // !defined(QT_NO_IM) && defined(Q_WS_S60)
@@ -574,11 +675,10 @@ TCoeInputCapabilities QSymbianControl::InputCapabilities() const
 {
     QWidget *w = 0;
 
-    if(qwidget->hasFocus()) {
+    if (qwidget->hasFocus())
         w = qwidget;
-    } else {
+    else
         w = qwidget->focusWidget();
-    }
 
     QCoeFepInputContext *ic;
     if (w && w->isEnabled() && w->testAttribute(Qt::WA_InputMethodEnabled)
@@ -749,6 +849,70 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     TSecureId securId = me.SecureId();
     S60->uid = securId.operator TUid();
 
+    // enable focus events - used to re-enable mouse after focus changed between mouse and non mouse app,
+    // and for dimming behind modal windows
+	S60->windowGroup().EnableFocusChangeEvents();
+
+	//Check if mouse interaction is supported (either EMouse=1 in the HAL, or EMachineUID is one of the phones known to support this)
+    const TInt KMachineUidSamsungI8510 = 0x2000C51E;
+    const TInt KMachineUidSamsungI550 = 0x2000A678;
+    TInt machineUID;
+    TInt mouse;
+    TInt touch;
+    TInt err;
+    err = HAL::Get(HALData::EMouse, mouse);
+    if (err != KErrNone)
+        mouse = 0;
+    err = HAL::Get(HALData::EMachineUid, machineUID);
+    if (err != KErrNone)
+        machineUID = 0;
+    err = HAL::Get(HALData::EPen, touch);
+    if (err != KErrNone)
+        touch = 0;
+    if (mouse || machineUID == KMachineUidSamsungI8510) {
+        S60->hasTouchscreen = false;
+        S60->virtualMouseRequired = false;
+    }
+    else if (!touch) {
+        S60->hasTouchscreen = false;
+        S60->virtualMouseRequired = true;
+    }
+    else {
+        S60->hasTouchscreen = true;
+        S60->virtualMouseRequired = false;
+    }
+    
+    if (touch) {
+        QApplicationPrivate::navigationMode = Qt::NavigationModeNone;
+    } else {
+        QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadDirectional;
+    }
+    
+    //Check if window server pointer cursors are supported or not
+#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
+    //In generic binary, use the HAL and OS version
+    //Any other known good phones should be added here.
+    if (machineUID == KMachineUidSamsungI8510 || (QSysInfo::symbianVersion() != QSysInfo::SV_9_4
+        && QSysInfo::symbianVersion() != QSysInfo::SV_9_3 && QSysInfo::symbianVersion()
+        != QSysInfo::SV_9_2)) {
+        S60->brokenPointerCursors = false;
+        qt_symbian_setWindowGroupCursor(Qt::ArrowCursor, S60->windowGroup());
+    }
+    else
+        S60->brokenPointerCursors = true;
+#endif
+
+    if (S60->mouseInteractionEnabled) {
+#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
+        if (S60->brokenPointerCursors) {
+            qt_symbian_set_pointer_sprite(Qt::ArrowCursor);
+            qt_symbian_show_pointer_sprite();
+        }
+        else
+#endif
+            S60->wsSession().SetPointerCursorMode(EPointerCursorNormal);
+    }
+
 /*
  ### Commented out for now as parameter handling not needed in SOS(yet). Code below will break testlib with -o flag
     int argc = priv->argc;
@@ -785,6 +949,9 @@ void qt_cleanup()
     // it dies.
     delete QApplicationPrivate::inputContext;
     QApplicationPrivate::inputContext = 0;
+    
+    //Change mouse pointer back
+    S60->wsSession().SetPointerCursorMode(EPointerCursorNone);
 
     if (S60->qtOwnsS60Environment) {
         CEikonEnv* coe = CEikonEnv::Static();
@@ -1016,9 +1183,8 @@ void QApplication::beep()
     TTimeIntervalMicroSeconds duration(500000);
     QS60Beep* beep=NULL;
     TRAPD(err, beep=QS60Beep::NewL(frequency, duration));
-    if(!err) {
+    if (!err)
         beep->Play();
-    }
     delete beep;
     beep=NULL;
 }
@@ -1108,7 +1274,31 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
             return 1;
         }
         break;
-    default:
+    case EEventFocusGained:
+        RDebug::Printf("focus gained %x", control);
+        //re-enable mouse interaction
+        if (S60->mouseInteractionEnabled) {
+#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
+            if (S60->brokenPointerCursors)
+                qt_symbian_show_pointer_sprite();
+            else
+#endif
+                S60->wsSession().SetPointerCursorMode(EPointerCursorNormal);
+        }
+        break;
+    case EEventFocusLost:
+        RDebug::Printf("focus lost %x", control);
+        //disable mouse as may be moving to application that does not support it
+        if (S60->mouseInteractionEnabled) {
+#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
+            if (S60->brokenPointerCursors)
+                qt_symbian_hide_pointer_sprite();
+            else
+#endif
+                S60->wsSession().SetPointerCursorMode(EPointerCursorNone);
+        }
+        break;
+	default:
         break;
     }
 
@@ -1279,4 +1469,81 @@ void QSessionManager::cancel()
 
 }
 #endif //QT_NO_SESSIONMANAGER
+
+#ifdef QT_KEYPAD_NAVIGATION
+/*
+ * Show/Hide the mouse cursor depending on phone type and chosen mode
+ */
+void QApplicationPrivate::setNavigationMode(Qt::NavigationMode mode)
+{
+#ifndef QT_NO_CURSOR
+    const bool wasCursorOn = (QApplicationPrivate::navigationMode == Qt::NavigationModeCursorAuto
+        && !S60->hasTouchscreen)
+        || QApplicationPrivate::navigationMode == Qt::NavigationModeCursorForceVisible;
+    const bool isCursorOn = (mode == Qt::NavigationModeCursorAuto
+        && !S60->hasTouchscreen)
+        || mode == Qt::NavigationModeCursorForceVisible;
+    
+    if (!wasCursorOn && isCursorOn) {
+        //Show the cursor, when changing from another mode to cursor mode
+        qt_symbian_set_cursor_visible(true);
+    }
+    else if (wasCursorOn && !isCursorOn) {
+        //Hide the cursor, when leaving cursor mode
+        qt_symbian_set_cursor_visible(false);
+    }
+#endif
+    QApplicationPrivate::navigationMode = mode;
+}
+#endif
+
+#ifndef QT_NO_CURSOR
+/*****************************************************************************
+ QApplication cursor stack
+ *****************************************************************************/
+
+void QApplication::setOverrideCursor(const QCursor &cursor)
+{
+    qApp->d_func()->cursor_list.prepend(cursor);
+    qt_symbian_setGlobalCursor(cursor);
+}
+
+void QApplication::restoreOverrideCursor()
+{
+    if (qApp->d_func()->cursor_list.isEmpty())
+        return;
+    qApp->d_func()->cursor_list.removeFirst();
+    
+    if (!qApp->d_func()->cursor_list.isEmpty()) {
+        qt_symbian_setGlobalCursor(qApp->d_func()->cursor_list.first());
+    }
+    else {
+        //determine which widget has focus
+        QWidget *w = QApplication::widgetAt(QCursor::pos());
+#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
+        if (S60->brokenPointerCursors) {
+            qt_symbian_set_pointer_sprite(w ? w->cursor() : Qt::ArrowCursor);
+        }
+        else
+#endif
+        {
+            //because of the internals of window server, we need to force the cursor
+            //to be set in all child windows too, otherwise when the cursor is over
+            //the child window it may show a widget cursor or arrow cursor instead,
+            //depending on construction order.
+            QListIterator<WId> iter(QWidgetPrivate::mapper->uniqueKeys());
+            while (iter.hasNext()) {
+                CCoeControl *ctrl = iter.next();
+                ctrl->DrawableWindow()->ClearPointerCursor();
+            }
+            if (w)
+                qt_symbian_setWindowCursor(w->cursor(), w->effectiveWinId());
+            else
+                qt_symbian_setWindowGroupCursor(Qt::ArrowCursor, S60->windowGroup());
+        }
+    }
+}
+
+#endif // QT_NO_CURSOR
+
 QT_END_NAMESPACE

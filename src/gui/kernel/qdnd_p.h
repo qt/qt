@@ -58,6 +58,7 @@
 #include "QtGui/qmime.h"
 #include "QtGui/qdrag.h"
 #include "QtGui/qpixmap.h"
+#include "QtGui/qcursor.h"
 #include "QtCore/qpoint.h"
 #include "private/qobject_p.h"
 #ifdef Q_WS_MAC
@@ -265,7 +266,11 @@ private:
 #ifdef Q_WS_QWS
     Qt::DropAction currentActionForOverrideCursor;
 #endif
-
+#ifdef Q_OS_SYMBIAN
+#ifndef QT_NO_CURSOR 
+    QCursor overrideCursor;
+#endif
+#endif
     QWidget *currentDropTarget;
 
     static QDragManager *instance;

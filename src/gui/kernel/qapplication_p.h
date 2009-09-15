@@ -71,6 +71,9 @@
 #include "QtGui/qscreen_qws.h"
 #include <private/qgraphicssystem_qws_p.h>
 #endif
+#ifdef Q_OS_SYMBIAN
+#include <w32std.h> 
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -492,8 +495,8 @@ public:
     static int app_compile_version;
 
 #ifdef QT_KEYPAD_NAVIGATION
-    static bool keypadNavigation;
     static QWidget *oldEditFocus;
+    static Qt::NavigationMode navigationMode;
 #endif
 
 #if defined(Q_WS_MAC) || defined(Q_WS_X11)
@@ -511,7 +514,9 @@ public:
                                QWidget *native, QWidget **buttonDown, QPointer<QWidget> &lastMouseReceiver,
                                bool spontaneous = true);
 #ifdef Q_OS_SYMBIAN
+    static void setNavigationMode(Qt::NavigationMode mode);
     static TUint resolveS60ScanCode(TInt scanCode, TUint keysym);
+    QSet<WId> nativeWindows;
 #endif
 #if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
     void sendSyntheticEnterLeave(QWidget *widget);
@@ -594,6 +599,15 @@ private:
 Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
                                             QTouchEvent::DeviceType deviceType,
                                             const QList<QTouchEvent::TouchPoint> &touchPoints);
+
+#if defined(Q_WS_WIN)
+  extern void qt_win_set_cursor(QWidget *, bool);
+#elif defined(Q_WS_X11)
+  extern void qt_x11_enforce_cursor(QWidget *, bool);
+  extern void qt_x11_enforce_cursor(QWidget *);
+#elif defined(Q_OS_SYMBIAN)
+  extern void qt_symbian_set_cursor(QWidget *, bool);
+#endif
 
 QT_END_NAMESPACE
 
