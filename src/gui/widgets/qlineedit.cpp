@@ -1851,8 +1851,12 @@ void QLineEdit::paintEvent(QPaintEvent *)
 #ifdef QT_KEYPAD_NAVIGATION
     if (!QApplication::keypadNavigationEnabled() || hasEditFocus())
 #endif
-    if (d->control->hasSelectedText() || (d->cursorVisible && !d->control->inputMask().isEmpty() && !d->control->isReadOnly()))
+    if (d->control->hasSelectedText() || (d->cursorVisible && !d->control->inputMask().isEmpty() && !d->control->isReadOnly())){
         flags |= QLineControl::DrawSelections;
+        // Palette only used for selections/mask and may not be in sync
+        if(d->control->palette() != pal)
+            d->control->setPalette(pal);
+    }
 
     // Asian users see an IM selection text as cursor on candidate
     // selection phase of input method, so the ordinary cursor should be
