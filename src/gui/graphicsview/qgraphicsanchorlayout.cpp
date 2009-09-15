@@ -434,7 +434,6 @@ void QGraphicsAnchorLayout::invalidate()
 */
 QSizeF QGraphicsAnchorLayout::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
 {
-    Q_UNUSED(which);
     Q_UNUSED(constraint);
     Q_D(const QGraphicsAnchorLayout);
 
