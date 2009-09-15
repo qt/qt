@@ -493,11 +493,7 @@ void QGLContext::makeCurrent()
 #else
     [static_cast<NSOpenGLContext *>(d->cx) makeCurrentContext];
 #endif
-    currentCtx = this;
-    if (!qgl_context_storage.hasLocalData() && QThread::currentThread())
-        qgl_context_storage.setLocalData(new QGLThreadContext);
-    if (qgl_context_storage.hasLocalData())
-        qgl_context_storage.localData()->context = this;
+    QGLContextPrivate::setCurrentContext(this);
 }
 
 #ifndef QT_MAC_USE_COCOA
@@ -656,9 +652,7 @@ void QGLContext::doneCurrent()
        )
         return;
 
-    currentCtx = 0;
-    if (qgl_context_storage.hasLocalData())
-        qgl_context_storage.localData()->context = 0;
+    QGLContextPrivate::setCurrentContext(0);
 #ifndef QT_MAC_USE_COCOA
     aglSetCurrentContext(0);
 #else

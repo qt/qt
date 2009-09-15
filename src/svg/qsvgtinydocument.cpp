@@ -350,6 +350,26 @@ QSvgFont * QSvgTinyDocument::svgFont(const QString &family) const
     return m_fonts[family];
 }
 
+void QSvgTinyDocument::addNamedNode(const QString &id, QSvgNode *node)
+{
+    m_namedNodes.insert(id, node);
+}
+
+QSvgNode *QSvgTinyDocument::namedNode(const QString &id) const
+{
+    return m_namedNodes.value(id);
+}
+
+void QSvgTinyDocument::addNamedStyle(const QString &id, QSvgFillStyleProperty *style)
+{
+    m_namedStyles.insert(id, style);
+}
+
+QSvgFillStyleProperty *QSvgTinyDocument::namedStyle(const QString &id) const
+{
+    return m_namedStyles.value(id);
+}
+
 void QSvgTinyDocument::restartAnimation()
 {
     m_time.restart();

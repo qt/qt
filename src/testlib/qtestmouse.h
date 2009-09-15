@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#if !defined(QTESTMOUSE_H) && defined(QT_GUI_LIB)
+#if !defined(QTESTMOUSE_H)
 #define QTESTMOUSE_H
 
 #if 0

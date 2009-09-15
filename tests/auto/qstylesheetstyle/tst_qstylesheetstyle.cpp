@@ -841,6 +841,11 @@ void tst_QStyleSheetStyle::hoverColors()
         frame.setLayout(layout);
 
         frame.show();
+#ifdef Q_WS_QWS
+//QWS does not implement enter/leave when windows are shown underneath the cursor
+        QCursor::setPos(QPoint(0,0));
+#endif
+
 #ifdef Q_WS_X11
         qt_x11_wait_for_window_manager(&frame);
 #endif

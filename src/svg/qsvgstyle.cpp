@@ -934,7 +934,7 @@ void QSvgGradientStyle::setStopLink(const QString &link, QSvgTinyDocument *doc)
 void QSvgGradientStyle::resolveStops()
 {
     if (!m_link.isEmpty() && m_doc) {
-        QSvgStyleProperty *prop = m_doc->scopeStyle(m_link);
+        QSvgStyleProperty *prop = m_doc->styleProperty(m_link);
         if (prop) {
             if (prop->type() == QSvgStyleProperty::GRADIENT) {
                 QSvgGradientStyle *st =
@@ -943,6 +943,8 @@ void QSvgGradientStyle::resolveStops()
                 m_gradient->setStops(st->qgradient()->stops());
                 m_gradientStopsSet = st->gradientStopsSet();
             }
+        } else {
+            qWarning("Could not resolve property : %s", qPrintable(m_link));
         }
         m_link = QString();
     }

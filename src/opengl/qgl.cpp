@@ -103,7 +103,11 @@ QT_BEGIN_NAMESPACE
 QGLExtensionFuncs QGLContextPrivate::qt_extensionFuncs;
 #endif
 
-QThreadStorage<QGLThreadContext *> qgl_context_storage;
+struct QGLThreadContext {
+    QGLContext *context;
+};
+
+static QThreadStorage<QGLThreadContext *> qgl_context_storage;
 
 Q_GLOBAL_STATIC(QGLFormat, qgl_default_format)
 
@@ -2939,9 +2943,26 @@ void QGLContext::setInitialized(bool on)
 
 const QGLContext* QGLContext::currentContext()
 {
-    if (qgl_context_storage.hasLocalData())
-        return qgl_context_storage.localData()->context;
+    QGLThreadContext *threadContext = qgl_context_storage.localData();
+    if (threadContext)
+        return threadContext->context;
     return 0;
+}
+
+void QGLContextPrivate::setCurrentContext(QGLContext *context)
+{
+    QGLThreadContext *threadContext = qgl_context_storage.localData();
+    if (!threadContext) {
+        if (!QThread::currentThread()) {
+            // We don't have a current QThread, so just set the static.
+            QGLContext::currentCtx = context;
+            return;
+        }
+        threadContext = new QGLThreadContext;
+        qgl_context_storage.setLocalData(threadContext);
+    }
+    threadContext->context = context;
+    QGLContext::currentCtx = context; // XXX: backwards-compat, not thread-safe
 }
 
 /*!
@@ -3983,7 +4004,7 @@ void QGLWidget::qglColor(const QColor& c) const
 {
 #if !defined(QT_OPENGL_ES_2)
 #ifdef QT_OPENGL_ES
-    glColor4f(c.red()/255.0, c.green()/255.0, c.blue()/255.0, c.alpha()/255.0);
+    glColor4f(c.redF(), c.greenF(), c.blueF(), c.alphaF());
 #else
     Q_D(const QGLWidget);
     const QGLContext *ctx = QGLContext::currentContext();
@@ -4015,15 +4036,13 @@ void QGLWidget::qglColor(const QColor& c) const
 void QGLWidget::qglClearColor(const QColor& c) const
 {
 #ifdef QT_OPENGL_ES
-    glClearColor((GLfloat)c.red() / 255.0, (GLfloat)c.green() / 255.0,
-                 (GLfloat)c.blue() / 255.0, (GLfloat) c.alpha() / 255.0);
+    glClearColor(c.redF(), c.greenF(), c.blueF(), c.alphaF());
 #else
     Q_D(const QGLWidget);
     const QGLContext *ctx = QGLContext::currentContext();
     if (ctx) {
         if (ctx->format().rgba())
-            glClearColor((GLfloat)c.red() / 255.0, (GLfloat)c.green() / 255.0,
-                          (GLfloat)c.blue() / 255.0, (GLfloat) c.alpha() / 255.0);
+            glClearColor(c.redF(), c.greenF(), c.blueF(), c.alphaF());
         else if (!d->cmap.isEmpty()) { // QGLColormap in use?
             int i = d->cmap.find(c.rgb());
             if (i < 0)
@@ -4094,10 +4113,10 @@ QImage QGLWidget::convertToGLFormat(const QImage& img)
     colormaps installed. Asking for the colormap of a child widget
     will return the colormap for the child's top-level widget.
 
-    If no colormap has been set for this widget, the QColormap
+    If no colormap has been set for this widget, the QGLColormap
     returned will be empty.
 
-    \sa setColormap()
+    \sa setColormap(), QGLColormap::isEmpty()
 */
 
 /*!

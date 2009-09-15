@@ -475,7 +475,8 @@ void QPainterPrivate::draw_helper(const QPainterPath &originalPath, DrawOperatio
     p.end();
 
     q->save();
-    q->resetMatrix();
+    state->matrix = QTransform();
+    state->dirtyFlags |= QPaintEngine::DirtyTransform;
     updateState(state);
     engine->drawImage(absPathRect,
                  image,

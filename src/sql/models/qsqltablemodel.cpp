@@ -559,7 +559,7 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
         if (row.op == QSqlTableModelPrivate::None) {
             row.op = QSqlTableModelPrivate::Update;
             row.rec = d->rec;
-			row.primaryValues = d->primaryValues(indexInQuery(index).row());
+            row.primaryValues = d->primaryValues(indexInQuery(index).row());
         }
         row.rec.setValue(index.column(), value);
         emit dataChanged(index, index);
@@ -669,7 +669,7 @@ bool QSqlTableModel::deleteRowFromTable(int row)
     Q_D(QSqlTableModel);
     emit beforeDelete(row);
 
-    QSqlRecord rec = d->primaryValues(row);
+    const QSqlRecord whereValues = d->strategy == OnManualSubmit ? d->cache[row].primaryValues : d->primaryValues(row);
     bool prepStatement = d->db.driver()->hasFeature(QSqlDriver::PreparedQueries);
     QString stmt = d->db.driver()->sqlStatement(QSqlDriver::DeleteStatement,
                                                 d->tableName,
@@ -677,7 +677,7 @@ bool QSqlTableModel::deleteRowFromTable(int row)
                                                 prepStatement);
     QString where = d->db.driver()->sqlStatement(QSqlDriver::WhereStatement,
                                                  d->tableName,
-                                                 rec,
+                                                 whereValues,
                                                  prepStatement);
 
     if (stmt.isEmpty() || where.isEmpty()) {
@@ -687,7 +687,7 @@ bool QSqlTableModel::deleteRowFromTable(int row)
     }
     stmt.append(QLatin1Char(' ')).append(where);
 
-    return d->exec(stmt, prepStatement, rec);
+    return d->exec(stmt, prepStatement, whereValues);
 }
 
 /*!
@@ -1099,6 +1099,7 @@ bool QSqlTableModel::removeRows(int row, int count, const QModelIndex &parent)
                 revertRow(idx);
             else {
                 d->cache[idx].op = QSqlTableModelPrivate::Delete;
+                d->cache[idx].primaryValues = d->primaryValues(indexInQuery(createIndex(idx, 0)).row());
                 emit headerDataChanged(Qt::Vertical, idx, idx);
             }
         }

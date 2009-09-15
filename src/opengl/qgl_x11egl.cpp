@@ -146,13 +146,8 @@ void QGLContext::makeCurrent()
         return;
     }
 
-    if (d->eglContext->makeCurrent()) {
-        if (!qgl_context_storage.hasLocalData() && QThread::currentThread())
-            qgl_context_storage.setLocalData(new QGLThreadContext);
-        if (qgl_context_storage.hasLocalData())
-            qgl_context_storage.localData()->context = this;
-        currentCtx = this;
-    }
+    if (d->eglContext->makeCurrent())
+        QGLContextPrivate::setCurrentContext(this);
 }
 
 void QGLContext::doneCurrent()
@@ -161,9 +156,7 @@ void QGLContext::doneCurrent()
     if (d->eglContext)
         d->eglContext->doneCurrent();
 
-    if (qgl_context_storage.hasLocalData())
-        qgl_context_storage.localData()->context = 0;
-    currentCtx = 0;
+    QGLContextPrivate::setCurrentContext(0);
 }
 
 

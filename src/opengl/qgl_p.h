@@ -351,6 +351,8 @@ public:
     static inline QGLExtensionFuncs& extensionFuncs(QGLContextGroup *) { return qt_extensionFuncs; }
 #endif
 
+    static void setCurrentContext(QGLContext *context);
+
     QPixmapFilter *createPixmapFilter(int type) const;
 };
 
@@ -397,11 +399,6 @@ public:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGLExtensions::Extensions)
 
-
-struct QGLThreadContext {
-    QGLContext *context;
-};
-extern QThreadStorage<QGLThreadContext *> qgl_context_storage;
 
 class QGLShareRegister
 {

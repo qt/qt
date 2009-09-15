@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,42 +39,18 @@
 **
 ****************************************************************************/
 
-#ifndef QMENUDATA_H
-#define QMENUDATA_H
+#include <QApplication>
 
-#include <QtCore/qglobal.h>
+#include "fademessage.h"
 
-#ifdef QT3_SUPPORT
-#include <QtGui/qaction.h>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Gui)
-
-class Q_GUI_EXPORT QMenuItem : public QAction
+int main(int argc, char **argv)
 {
-    Q_OBJECT
+    QApplication app(argc, argv);
 
-public:
-    QMenuItem();
+    FadeMessage widget;
+    widget.setWindowTitle(QT_TRANSLATE_NOOP(QGraphicsView, "Popup Message with Effect"));
+    widget.setFixedSize(400, 600);
+    widget.show();
 
-    QT3_SUPPORT int id() const;
-    QT3_SUPPORT int signalValue() const;
-private:
-    friend class QMenu;
-    friend class QMenuBar;
-    void setId(int);
-    void setSignalValue(int);
-    
-    Q_DISABLE_COPY(QMenuItem)
-};
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif
-
-#endif // QMENUDATA_H
+    return app.exec();
+}

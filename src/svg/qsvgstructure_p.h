@@ -73,8 +73,7 @@ public:
     QSvgStructureNode(QSvgNode *parent);
     ~QSvgStructureNode();
     QSvgNode *scopeNode(const QString &id) const;
-    QSvgStyleProperty *scopeStyle(const QString &id) const;
-    void addChild(QSvgNode *child, const QString &id, bool def = false);
+    void addChild(QSvgNode *child, const QString &id);
     virtual QRectF bounds() const;
     QSvgNode *previousSiblingNode(QSvgNode *n) const;
     QList<QSvgNode*> renderers() const { return m_renderers; }

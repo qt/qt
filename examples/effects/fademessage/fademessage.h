@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,42 +39,34 @@
 **
 ****************************************************************************/
 
-#ifndef QMENUDATA_H
-#define QMENUDATA_H
+#ifndef FADEMESSAGE_H
+#define FADEMESSAGE_H
 
-#include <QtCore/qglobal.h>
+#include <QGraphicsEffect>
+#include <QGraphicsView>
+#include <QTimeLine>
 
-#ifdef QT3_SUPPORT
-#include <QtGui/qaction.h>
+#include "fademessage.h"
 
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Gui)
-
-class Q_GUI_EXPORT QMenuItem : public QAction
+class FadeMessage: public QGraphicsView
 {
     Q_OBJECT
 
 public:
-    QMenuItem();
+    FadeMessage(QWidget *parent = 0);
 
-    QT3_SUPPORT int id() const;
-    QT3_SUPPORT int signalValue() const;
 private:
-    friend class QMenu;
-    friend class QMenuBar;
-    void setId(int);
-    void setSignalValue(int);
-    
-    Q_DISABLE_COPY(QMenuItem)
+    void setupScene();
+
+private slots:
+    void togglePopup();
+
+private:
+    qreal m_index;
+    QGraphicsScene m_scene;
+    QGraphicsColorizeEffect *m_effect;
+    QGraphicsItem *m_message;
+    QTimeLine *m_timeLine;
 };
 
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif
-
-#endif // QMENUDATA_H
+#endif // FADEMESSAGE_H

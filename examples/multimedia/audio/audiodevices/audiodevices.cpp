@@ -58,6 +58,14 @@ AudioDevicesBase::~AudioDevicesBase() {}
 AudioTest::AudioTest( QMainWindow *parent, Qt::WFlags f )
     : AudioDevicesBase( parent, f )
 {
+    nearestFreq->setDisabled(true);
+    nearestChannel->setDisabled(true);
+    nearestCodec->setDisabled(true);
+    nearestSampleSize->setDisabled(true);
+    nearestSampleType->setDisabled(true);
+    nearestEndian->setDisabled(true);
+    logOutput->setDisabled(true);
+
     mode = QAudio::AudioOutput;
     modeBox->addItem("Input");
     modeBox->addItem("Output");
@@ -87,6 +95,8 @@ AudioTest::~AudioTest()
 void AudioTest::test()
 {
     // tries to set all the settings picked.
+    logOutput->clear();
+    logOutput->append("NOTE: an invalid codec audio/test exists for testing, to get a fail condition.");
 
     if(device) {
         if(device->isFormatSupported(settings)) {
@@ -179,7 +189,7 @@ void AudioTest::deviceChanged(int idx)
     if(codecz.size())
         settings.setCodec(codecz.at(0));
     // Add false to create failed condition!
-    codecsBox->addItem("audio/mpeg");
+    codecsBox->addItem("audio/test");
 
     sampleSizesBox->clear();
     QList<int> sampleSizez = device->supportedSampleSizes();

@@ -54,7 +54,26 @@ QT_MODULE(Gui)
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
+class QGraphicsAnchorPrivate;
+class QGraphicsAnchorLayout;
 class QGraphicsAnchorLayoutPrivate;
+
+class Q_GUI_EXPORT QGraphicsAnchor : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(qreal spacing READ spacing WRITE setSpacing)
+public:
+    void setSpacing(qreal spacing);
+    void unsetSpacing();
+    qreal spacing() const;
+    ~QGraphicsAnchor();
+private:
+    QGraphicsAnchor(QGraphicsAnchorLayout *parent);
+
+    Q_DECLARE_PRIVATE(QGraphicsAnchor)
+
+    friend class QGraphicsAnchorLayoutPrivate;
+};
 
 class Q_GUI_EXPORT QGraphicsAnchorLayout : public QGraphicsLayout
 {
@@ -62,33 +81,17 @@ public:
     QGraphicsAnchorLayout(QGraphicsLayoutItem *parent = 0);
     virtual ~QGraphicsAnchorLayout();
 
-    void addAnchor(QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
-                   QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge);
+    QGraphicsAnchor *addAnchor(QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
+                               QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge);
+    QGraphicsAnchor *anchor(QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
+                            QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge);
 
     void addCornerAnchors(QGraphicsLayoutItem *firstItem, Qt::Corner firstCorner,
                           QGraphicsLayoutItem *secondItem, Qt::Corner secondCorner);
 
-    inline void addLeftAndRightAnchors(QGraphicsLayoutItem *firstItem,
-                                       QGraphicsLayoutItem *secondItem);
-
-    inline void addTopAndBottomAnchors(QGraphicsLayoutItem *firstItem,
-                                       QGraphicsLayoutItem *secondItem);
-
-    inline void addAllAnchors(QGraphicsLayoutItem *firstItem,
-                              QGraphicsLayoutItem *secondItem);
-
-    void setAnchorSpacing(const QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
-                          const QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge,
-                          qreal spacing);
-
-    qreal anchorSpacing(const QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
-                        const QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge) const;
-
-    void unsetAnchorSpacing(const QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
-                            const QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge);
-
-    void removeAnchor(QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
-                      QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge);
+    void addAnchors(QGraphicsLayoutItem *firstItem,
+                    QGraphicsLayoutItem *secondItem,
+                    Qt::Orientations orientations = Qt::Horizontal | Qt::Vertical);
 
     void setHorizontalSpacing(qreal spacing);
     void setVerticalSpacing(qreal spacing);
@@ -108,29 +111,9 @@ protected:
 private:
     Q_DISABLE_COPY(QGraphicsAnchorLayout)
     Q_DECLARE_PRIVATE(QGraphicsAnchorLayout)
+
+    friend class QGraphicsAnchor;
 };
-
-
-void QGraphicsAnchorLayout::addLeftAndRightAnchors(QGraphicsLayoutItem *firstItem,
-                                                   QGraphicsLayoutItem *secondItem)
-{
-    addAnchor(secondItem, Qt::AnchorLeft, firstItem, Qt::AnchorLeft);
-    addAnchor(firstItem, Qt::AnchorRight, secondItem, Qt::AnchorRight);
-}
-
-void QGraphicsAnchorLayout::addTopAndBottomAnchors(QGraphicsLayoutItem *firstItem,
-                                                   QGraphicsLayoutItem *secondItem)
-{
-    addAnchor(secondItem, Qt::AnchorTop, firstItem, Qt::AnchorTop);
-    addAnchor(firstItem, Qt::AnchorBottom, secondItem, Qt::AnchorBottom);
-}
-
-void QGraphicsAnchorLayout::addAllAnchors(QGraphicsLayoutItem *firstItem,
-                                          QGraphicsLayoutItem *secondItem)
-{
-    addLeftAndRightAnchors(firstItem, secondItem);
-    addTopAndBottomAnchors(firstItem, secondItem);
-}
 
 #endif
 
