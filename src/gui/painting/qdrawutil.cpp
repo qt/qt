@@ -1044,7 +1044,7 @@ void qDrawItem(QPainter *p, Qt::GUIStyle gs,
     Holds the rules used to draw a pixmap or image split into nine segments,
     similar to \l{http://www.w3.org/TR/css3-background/}{CSS3 border-images}.
 
-    \sa Qt::TileRule, QMargins
+    \sa Qt::TileRule, QMargins, qDrawBorderPixmap
 */
 
 /*! \fn QTileRules::QTileRules(Qt::TileRule horizontalRule, Qt::TileRule verticalRule)
@@ -1060,7 +1060,7 @@ void qDrawItem(QPainter *p, Qt::GUIStyle gs,
 /*!
     \fn void qDrawBorderPixmap(QPainter *painter, const QRect &target, const QMargins &margins, const QPixmap &pixmap)
     \since 4.6
-    \relates QMargins
+    \relates QPainter
 
     Draws the given \a pixmap into the given \a target rectangle, using the
     given \a painter. The pixmap will be split into nine segments and drawn
@@ -1155,6 +1155,8 @@ static inline void qDrawHorizontallyRoundedPixmap(QPainter *painter, const QRect
 
 /*!
     \since 4.6
+
+    \relates QPainter
 
     Draws the indicated \a sourceRect rectangle from the given \a pixmap into
     the given \a targetRect rectangle, using the given \a painter. The pixmap

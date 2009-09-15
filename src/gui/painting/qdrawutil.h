@@ -135,7 +135,7 @@ Q_GUI_EXPORT QT3_SUPPORT void qDrawArrow(QPainter *p, Qt::ArrowType type, Qt::GU
 
 struct QTileRules
 {
-    inline QTileRules(Qt::TileRule horizontalRule, Qt::TileRule verticalRule = Qt::Stretch)
+    inline QTileRules(Qt::TileRule horizontalRule, Qt::TileRule verticalRule)
             : horizontal(horizontalRule), vertical(verticalRule) {}
     inline QTileRules(Qt::TileRule rule = Qt::Stretch)
             : horizontal(rule), vertical(rule) {}
