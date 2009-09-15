@@ -64,5 +64,8 @@ int main(int argc, char** argv)
 
     viewer.showFullScreen();
 
+#ifdef QT_KEYPAD_NAVIGATION
+    QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);
+#endif
     return app.exec();
 } 

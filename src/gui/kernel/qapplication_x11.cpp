@@ -2820,8 +2820,6 @@ void QApplicationPrivate::applyX11SpecificCommandLineArguments(QWidget *main_wid
   QApplication cursor stack
  *****************************************************************************/
 
-extern void qt_x11_enforce_cursor(QWidget * w);
-
 void QApplication::setOverrideCursor(const QCursor &cursor)
 {
     qApp->d_func()->cursor_list.prepend(cursor);
