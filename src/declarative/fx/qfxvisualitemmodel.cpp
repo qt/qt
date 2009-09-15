@@ -50,6 +50,7 @@
 #include "private/qmetaobjectbuilder_p.h"
 #include "qmlopenmetaobject.h"
 #include "qmllistaccessor.h"
+#include "qmlinfo.h"
 #include "qfxvisualitemmodel.h"
 #include "private/qguard_p.h"
 #include <QtCore/qdebug.h>
@@ -750,8 +751,13 @@ QFxItem *QFxVisualDataModel::item(int index, const QByteArray &viewId, bool comp
         if (package) {
             QObject *o = package->part(QLatin1String(viewId));
             item = qobject_cast<QFxItem *>(o);
-            d->m_packaged.insertMulti(item, package);
+            if (item)
+                d->m_packaged.insertMulti(item, package);
         }
+    }
+    if (!item) {
+        d->m_cache.releaseItem(nobj);
+        qmlInfo(d->m_delegate) << "Delegate component must be Item type.";
     }
 
     return item;

@@ -21,7 +21,7 @@ unix {
 }
 
 for(p, QMAKE_LIBDIR_EGL) {
-    exists($$p):LIBS += -L$$p
+    exists($$p):LIBS_PRIVATE += -L$$p
 }
 
 !isEmpty(QMAKE_INCDIR_EGL): INCLUDEPATH += $$QMAKE_INCDIR_EGL

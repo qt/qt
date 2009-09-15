@@ -64,7 +64,7 @@ class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable
 
     Q_ENUMS(CurrentItemPositioning)
     Q_PROPERTY(QVariant model READ model WRITE setModel)
-    Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate) //### what happens if delegate is not a QFxItem?
+    Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate)
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
     Q_PROPERTY(QFxItem *currentItem READ currentItem NOTIFY currentIndexChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)

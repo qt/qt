@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -83,6 +83,7 @@ const TInt KInternalStatusPaneChange = 0x50000000;
 class QS60Data
 {
 public:
+    QS60Data();
     TUid uid;
     int screenDepth;
     QPoint lastCursorPos;
@@ -95,6 +96,16 @@ public:
     int screenHeightInTwips;
     int defaultDpiX;
     int defaultDpiY;
+    WId curWin;
+    int virtualMouseLastKey;
+    int virtualMouseAccel;
+    int virtualMouseMaxAccel;
+#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
+    bool brokenPointerCursors;
+#endif
+    bool hasTouchscreen;
+    bool mouseInteractionEnabled;
+    bool virtualMouseRequired;
     int qtOwnsS60Environment : 1;
     static inline void updateScreenSize();
     static inline RWsSession& wsSession();
@@ -138,7 +149,7 @@ public:
 #endif
     TTypeUid::Ptr MopSupplyObject(TTypeUid id);
 
-    inline QWidget* widget() const { return qwidget; };
+    inline QWidget* widget() const { return qwidget; }
     void setWidget(QWidget *w);
     void sendInputEvent(QWidget *widget, QInputEvent *inputEvent);
     void setIgnoreFocusChanged(bool enabled) { m_ignoreFocusChanged = enabled; }
@@ -164,6 +175,11 @@ private:
     bool m_previousEventLongTap;
 };
 
+inline QS60Data::QS60Data()
+{
+    memclr(this, sizeof(QS60Data)); //zero init data
+}
+
 inline void QS60Data::updateScreenSize()
 {
     TPixelsTwipsAndRotation params;
@@ -173,6 +189,8 @@ inline void QS60Data::updateScreenSize()
     S60->screenHeightInPixels = params.iPixelSize.iHeight;
     S60->screenWidthInTwips = params.iTwipsSize.iWidth;
     S60->screenHeightInTwips = params.iTwipsSize.iHeight;
+    
+    S60->virtualMouseMaxAccel = qMax(S60->screenHeightInPixels, S60->screenWidthInPixels) / 20;
 
     TReal inches = S60->screenHeightInTwips / (TReal)KTwipsPerInch;
     S60->defaultDpiY = S60->screenHeightInPixels / inches;
@@ -286,6 +304,11 @@ static inline QImage::Format qt_TDisplayMode2Format(TDisplayMode mode)
     return format;
 }
 
+void qt_symbian_setWindowCursor(const QCursor &cursor, const CCoeControl* wid);
+void qt_symbian_setWindowGroupCursor(const QCursor &cursor, RWindowTreeNode &node);
+void qt_symbian_setGlobalCursor(const QCursor &cursor);
+void qt_symbian_set_cursor_visible(bool visible);
+bool qt_symbian_is_cursor_visible();
 
 QT_END_NAMESPACE
 

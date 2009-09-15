@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -70,6 +70,9 @@
 #ifdef Q_WS_QWS
 #include "QtGui/qscreen_qws.h"
 #include <private/qgraphicssystem_qws_p.h>
+#endif
+#ifdef Q_OS_SYMBIAN
+#include <w32std.h> 
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -492,8 +495,8 @@ public:
     static int app_compile_version;
 
 #ifdef QT_KEYPAD_NAVIGATION
-    static bool keypadNavigation;
     static QWidget *oldEditFocus;
+    static Qt::NavigationMode navigationMode;
 #endif
 
 #if defined(Q_WS_MAC) || defined(Q_WS_X11)
@@ -511,9 +514,11 @@ public:
                                QWidget *native, QWidget **buttonDown, QPointer<QWidget> &lastMouseReceiver,
                                bool spontaneous = true);
 #ifdef Q_OS_SYMBIAN
+    static void setNavigationMode(Qt::NavigationMode mode);
     static TUint resolveS60ScanCode(TInt scanCode, TUint keysym);
+    QSet<WId> nativeWindows;
 #endif
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
     void sendSyntheticEnterLeave(QWidget *widget);
 #endif
 
@@ -586,11 +591,23 @@ private:
                                                 Qt::FocusPolicy focusPolicy,
                                                 Qt::FocusReason focusReason);
     static bool shouldSetFocus(QWidget *w, Qt::FocusPolicy policy);
+
+
+    static bool isAlien(QWidget *);
 };
 
 Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
                                             QTouchEvent::DeviceType deviceType,
                                             const QList<QTouchEvent::TouchPoint> &touchPoints);
+
+#if defined(Q_WS_WIN)
+  extern void qt_win_set_cursor(QWidget *, bool);
+#elif defined(Q_WS_X11)
+  extern void qt_x11_enforce_cursor(QWidget *, bool);
+  extern void qt_x11_enforce_cursor(QWidget *);
+#elif defined(Q_OS_SYMBIAN)
+  extern void qt_symbian_set_cursor(QWidget *, bool);
+#endif
 
 QT_END_NAMESPACE
 

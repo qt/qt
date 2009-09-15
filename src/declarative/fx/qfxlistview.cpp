@@ -1076,9 +1076,9 @@ void QFxListView::setHighlightFollowsCurrentItem(bool autoHighlight)
 }
 
 /*!
-    \qmlproperty real preferredHighlightBegin
-    \qmlproperty real preferredHighlightEnd
-    \qmlproperty bool strictlyEnforceHighlightRange
+    \qmlproperty real ListView::preferredHighlightBegin
+    \qmlproperty real ListView::preferredHighlightEnd
+    \qmlproperty bool ListView::strictlyEnforceHighlightRange
 
     These properties set the preferred range of the highlight (current item)
     within the view.

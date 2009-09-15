@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -1806,18 +1806,35 @@ QString QCoreApplication::applicationDirPath()
         RProcess proc;
         TInt err = proc.Open(proc.Id());
         if (err == KErrNone) {
+            QChar driveChar;
 #if defined(Q_CC_NOKIAX86)
             // In emulator, always resolve the private dir on C-drive
-            appPath.append(QChar('C'));
+            driveChar = QLatin1Char('C');
 #else
-            appPath.append(QChar((proc.FileName())[0]));
+            driveChar = QLatin1Char((proc.FileName())[0]);
 #endif
-            appPath.append(QLatin1String(":\\private\\"));
-            QString sid;
-            sid.setNum(proc.SecureId().iId, 16);
-            appPath.append(sid);
-            appPath.append(QLatin1Char('\\'));
             proc.Close();
+
+            driveChar = driveChar.toUpper();
+
+            TFileName privatePath;
+            RFs& fs = qt_s60GetRFs();
+            fs.PrivatePath(privatePath);
+            appPath = qt_TDesC2QString(privatePath);
+            appPath.prepend(QLatin1Char(':')).prepend(driveChar);
+
+            // Create the appPath if it doesn't exist. Non-existing appPath will cause
+            // Platform Security violations later on if the app doesn't have AllFiles capability.
+            // Can't create appPath for ROM unfortunately, so applications meant for
+            // ROM should always deploy something to their private dir to ensure appPath exists,
+            // if the PlatSec violations are an issue.
+            char driveDiff = QLatin1Char('Z').toLatin1() - driveChar.toLatin1();
+            TInt driveId = EDriveZ - static_cast<TInt>(driveDiff);
+            if (driveId != EDriveZ) {
+                TInt err = fs.CreatePrivatePath(driveId);
+                if (err != KErrNone)
+                    qWarning("QCoreApplication::applicationDirPath: Failed to create private path.");
+            }
         }
 
         QFileInfo fi(appPath);
@@ -2184,10 +2201,10 @@ QStringList QCoreApplication::libraryPaths()
         QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
 #if defined(Q_OS_SYMBIAN)
         // Add existing path on all drives for relative PluginsPath in Symbian
-        if (installPathPlugins.at(1) != QChar(':')) {
+        if (installPathPlugins.at(1) != QChar(QLatin1Char(':'))) {
             QString tempPath = installPathPlugins;
-            if (tempPath.at(tempPath.length() - 1) != QChar('\\')) {
-                tempPath += QChar('\\');
+            if (tempPath.at(tempPath.length() - 1) != QDir::separator()) {
+                tempPath += QDir::separator();
             }
             RFs& fs = qt_s60GetRFs();
             TPtrC tempPathPtr(reinterpret_cast<const TText*> (tempPath.constData()));

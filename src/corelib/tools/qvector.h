@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -543,7 +543,7 @@ void QVector<T>::append(const T &t)
 template <typename T>
 Q_TYPENAME QVector<T>::iterator QVector<T>::insert(iterator before, size_type n, const T &t)
 {
-    int offset = before - p->array;
+    int offset = int(before - p->array);
     if (n != 0) {
         const T copy(t);
         if (d->ref != 1 || d->size + n > d->alloc)
@@ -577,8 +577,8 @@ Q_TYPENAME QVector<T>::iterator QVector<T>::insert(iterator before, size_type n,
 template <typename T>
 Q_TYPENAME QVector<T>::iterator QVector<T>::erase(iterator abegin, iterator aend)
 {
-    int f = abegin - p->array;
-    int l = aend - p->array;
+    int f = int(abegin - p->array);
+    int l = int(aend - p->array);
     int n = l - f;
     detach();
     if (QTypeInfo<T>::isComplex) {

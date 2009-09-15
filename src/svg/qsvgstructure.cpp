@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSvg module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -45,6 +45,7 @@
 
 #include "qsvgnode_p.h"
 #include "qsvgstyle_p.h"
+#include "qsvgtinydocument_p.h"
 
 #include "qpainter.h"
 #include "qlocale.h"
@@ -90,35 +91,20 @@ QSvgStructureNode::QSvgStructureNode(QSvgNode *parent)
 
 QSvgNode * QSvgStructureNode::scopeNode(const QString &id) const
 {
-    const QSvgStructureNode *group = this;
-    while (group && group->type() != QSvgNode::DOC) {
-        group = static_cast<QSvgStructureNode*>(group->parent());
-    }
-    if (group)
-        return group->m_scope[id];
-    return 0;
+    QSvgTinyDocument *doc = document();
+    return doc ? doc->namedNode(id) : 0;
 }
 
-void QSvgStructureNode::addChild(QSvgNode *child, const QString &id, bool def)
+void QSvgStructureNode::addChild(QSvgNode *child, const QString &id)
 {
-    if (!def)
-        m_renderers.append(child);
-
-    if (child->type() == QSvgNode::DEFS) {
-        QSvgDefs *defs =
-            static_cast<QSvgDefs*>(child);
-        m_linkedScopes.append(defs);
-    }
+    m_renderers.append(child);
 
     if (id.isEmpty())
         return; //we can't add it to scope without id
 
-    QSvgStructureNode *group = this;
-    while (group && group->type() != QSvgNode::DOC) {
-        group = static_cast<QSvgStructureNode*>(group->parent());
-    }
-    if (group)
-        group->m_scope.insert(id, child);
+    QSvgTinyDocument *doc = document();
+    if (doc)
+        doc->addNamedNode(id, child);
 }
 
 QSvgDefs::QSvgDefs(QSvgNode *parent)
@@ -135,26 +121,6 @@ QSvgNode::Type QSvgDefs::type() const
 {
     return DEFS;
 }
-
-QSvgStyleProperty * QSvgStructureNode::scopeStyle(const QString &id) const
-{
-    const QSvgStructureNode *group = this;
-    while (group) {
-        QSvgStyleProperty *prop = group->styleProperty(id);
-        if (prop)
-            return prop;
-        QList<QSvgStructureNode*>::const_iterator itr = group->m_linkedScopes.constBegin();
-        while (itr != group->m_linkedScopes.constEnd()) {
-            prop = (*itr)->styleProperty(id);
-            if (prop)
-                return prop;
-            ++itr;
-        }
-        group = static_cast<QSvgStructureNode*>(group->parent());
-    }
-    return 0;
-}
-
 
 /*
   Below is a lookup function based on the gperf output using the following set:

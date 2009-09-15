@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -160,7 +160,7 @@ void tst_QSqlDriver::record()
 
     //check that we can't get records using incorrect tablename casing that's been quoted
     rec = db.driver()->record(db.driver()->escapeIdentifier(tablename,QSqlDriver::TableName));
-    if (tst_Databases::isMySQL(db) || db.driverName().startsWith("QSQLITE") || db.driverName().startsWith("QTDS"))
+    if (tst_Databases::isMySQL(db) || db.driverName().startsWith("QSQLITE") || db.driverName().startsWith("QTDS") || tst_Databases::isSqlServer(db))
         QCOMPARE(rec.count(), 4); //mysql, sqlite and tds will match
     else
         QCOMPARE(rec.count(), 0);
@@ -208,7 +208,7 @@ void tst_QSqlDriver::primaryIndex()
         tablename = tablename.toUpper();
 
     index = db.driver()->primaryIndex(db.driver()->escapeIdentifier(tablename, QSqlDriver::TableName));
-    if (tst_Databases::isMySQL(db) || db.driverName().startsWith("QSQLITE") || db.driverName().startsWith("QTDS"))
+    if (tst_Databases::isMySQL(db) || db.driverName().startsWith("QSQLITE") || db.driverName().startsWith("QTDS") || tst_Databases::isSqlServer(db))
         QCOMPARE(index.count(), 1); //mysql will always find the table name regardless of casing
     else
         QCOMPARE(index.count(), 0);

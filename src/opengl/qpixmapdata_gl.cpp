@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -98,7 +98,7 @@ QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize
                 sz.setHeight(qMax(requestSize.height(), qRound(sz.height() * 1.5)));
 
             // wasting too much space?
-            if (sz.width() * sz.height() > requestSize.width() * requestSize.height() * 2.5)
+            if (sz.width() * sz.height() > requestSize.width() * requestSize.height() * 4)
                 sz = requestSize;
 
             if (sz != fboSize) {
@@ -149,6 +149,7 @@ void QGLPixmapGLPaintDevice::beginPaint()
     if (data->needsFill()) {
         const QColor &c = data->fillColor();
         float alpha = c.alphaF();
+        glDisable(GL_SCISSOR_TEST);
         glClearColor(c.redF() * alpha, c.greenF() * alpha, c.blueF() * alpha, alpha);
         glClear(GL_COLOR_BUFFER_BIT);
     }
@@ -157,12 +158,23 @@ void QGLPixmapGLPaintDevice::beginPaint()
         // uploaded from an image or rendered into before), we need to
         // copy it from the texture to the render FBO.
 
-        // Pass false to tell bind to _not_ copy the FBO into the texture!
-        GLuint texId = data->bind(false);
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_SCISSOR_TEST);
+        glDisable(GL_BLEND);
 
-        QGL2PaintEngineEx* pe = static_cast<QGL2PaintEngineEx*>(data->paintEngine());
-        QRect rect(0, 0, data->width(), data->height());
-        pe->drawTexture(QRectF(rect), texId, rect.size(), QRectF(rect));
+#if !defined(QT_OPENGL_ES_2)
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(0, data->width(), data->height(), 0, -999999, 999999);
+#endif
+
+        glViewport(0, 0, data->width(), data->height());
+
+        // Pass false to bind so it doesn't copy the FBO into the texture!
+        context()->drawTexture(QRect(0, 0, data->width(), data->height()), data->bind(false));
     }
 }
 
@@ -173,12 +185,11 @@ void QGLPixmapGLPaintDevice::endPaint()
 
     data->copyBackFromRenderFbo(false);
 
-    data->m_renderFbo->release();
-    qgl_fbo_pool()->release(data->m_renderFbo);
-    data->m_renderFbo = 0;
-
     // Base's endPaint will restore the previous FBO binding
     QGLPaintDevice::endPaint();
+
+    qgl_fbo_pool()->release(data->m_renderFbo);
+    data->m_renderFbo = 0;
 }
 
 QGLContext* QGLPixmapGLPaintDevice::context() const
@@ -456,8 +467,8 @@ void QGLPixmapData::copyBackFromRenderFbo(bool keepCurrentFboBound) const
     if (!ctx->d_ptr->fbo)
         glGenFramebuffers(1, &ctx->d_ptr->fbo);
 
-    glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->fbo);
-    glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, ctx->d_ptr->fbo);
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
         GL_TEXTURE_2D, m_texture.id, 0);
 
     const int x0 = 0;
@@ -465,7 +476,8 @@ void QGLPixmapData::copyBackFromRenderFbo(bool keepCurrentFboBound) const
     const int y0 = 0;
     const int y1 = h;
 
-    glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, m_renderFbo->handle());
+    if (!m_renderFbo->isBound())
+        glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, m_renderFbo->handle());
 
     glDisable(GL_SCISSOR_TEST);
 

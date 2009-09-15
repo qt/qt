@@ -233,7 +233,9 @@ void Heap::destroy()
 template <HeapType heapType>
 static NEVER_INLINE CollectorBlock* allocateBlock()
 {
-#if PLATFORM(DARWIN)
+    // Disable the use of vm_map for the Qt build on Darwin, because when compiled on 10.4
+    // it crashes on 10.5
+#if PLATFORM(DARWIN) && !PLATFORM(QT)
     vm_address_t address = 0;
     // FIXME: tag the region as a JavaScriptCore heap when we get a registered VM tag: <rdar://problem/6054788>.
     vm_map(current_task(), &address, BLOCK_SIZE, BLOCK_OFFSET_MASK, VM_FLAGS_ANYWHERE | VM_TAG_FOR_COLLECTOR_MEMORY, MEMORY_OBJECT_NULL, 0, FALSE, VM_PROT_DEFAULT, VM_PROT_DEFAULT, VM_INHERIT_DEFAULT);
@@ -285,7 +287,9 @@ static NEVER_INLINE CollectorBlock* allocateBlock()
 
 static void freeBlock(CollectorBlock* block)
 {
-#if PLATFORM(DARWIN)    
+    // Disable the use of vm_deallocate for the Qt build on Darwin, because when compiled on 10.4
+    // it crashes on 10.5
+#if PLATFORM(DARWIN) && !PLATFORM(QT)
     vm_deallocate(current_task(), reinterpret_cast<vm_address_t>(block), BLOCK_SIZE);
 #elif PLATFORM(SYMBIAN)
     userChunk->Free(reinterpret_cast<TAny*>(block));

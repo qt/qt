@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -144,12 +144,21 @@ class QGraphicsGrayscaleEffectPrivate;
 class Q_GUI_EXPORT QGraphicsGrayscaleEffect: public QGraphicsEffect
 {
     Q_OBJECT
+    Q_PROPERTY(qreal strength READ strength WRITE setStrength NOTIFY strengthChanged)
 public:
     QGraphicsGrayscaleEffect(QObject *parent = 0);
     ~QGraphicsGrayscaleEffect();
 
+    qreal strength() const;
+
 protected:
     void draw(QPainter *painter, QGraphicsEffectSource *source);
+
+public Q_SLOTS:
+    void setStrength(qreal strength);
+
+Q_SIGNALS:
+    void strengthChanged(qreal strength);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsGrayscaleEffect)
@@ -161,17 +170,21 @@ class Q_GUI_EXPORT QGraphicsColorizeEffect: public QGraphicsEffect
 {
     Q_OBJECT
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
+    Q_PROPERTY(qreal strength READ strength WRITE setStrength NOTIFY strengthChanged)
 public:
     QGraphicsColorizeEffect(QObject *parent = 0);
     ~QGraphicsColorizeEffect();
 
     QColor color() const;
+    qreal strength() const;
 
 public Q_SLOTS:
     void setColor(const QColor &c);
+    void setStrength(qreal strength);
 
 Q_SIGNALS:
     void colorChanged(const QColor &color);
+    void strengthChanged(qreal strength);
 
 protected:
     void draw(QPainter *painter, QGraphicsEffectSource *source);

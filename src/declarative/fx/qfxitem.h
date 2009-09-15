@@ -89,7 +89,7 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_PROPERTY(qreal baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged)
     Q_PROPERTY(bool clip READ clip WRITE setClip) // ### move to QGI/QGO, NOTIFY
     Q_PROPERTY(bool focus READ hasFocus WRITE setFocus NOTIFY focusChanged FINAL)
-    Q_PROPERTY(bool activeFocus READ hasActiveFocus NOTIFY activeFocusChanged FINAL)
+    Q_PROPERTY(bool wantsFocus READ wantsFocus NOTIFY wantsFocusChanged)
     Q_PROPERTY(QmlList<QGraphicsTransform *>* transform READ transform DESIGNABLE false FINAL)
     Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin)
     Q_PROPERTY(bool smooth READ smoothTransform WRITE setSmoothTransform)
@@ -147,9 +147,9 @@ public:
     QRectF boundingRect() const;
     virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
-    virtual bool hasFocus() const;
+    bool wantsFocus() const;
+    bool hasFocus() const;
     void setFocus(bool);
-    bool hasActiveFocus() const;
 
     bool keepMouseGrab() const;
     void setKeepMouseGrab(bool);
@@ -161,6 +161,7 @@ Q_SIGNALS:
     void baselineOffsetChanged();
     void stateChanged(const QString &);
     void focusChanged();
+    void wantsFocusChanged();
     void activeFocusChanged();
     void parentChanged();
 

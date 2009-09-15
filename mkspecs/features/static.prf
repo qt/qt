@@ -6,4 +6,10 @@ contains(TEMPLATE, ".*lib"):{
         QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS_STATIC_LIB
     }
 }
+
+mac {
+    QMAKE_LFLAGS += $$QMAKE_LFLAGS_STATIC_LIB
+    CONFIG += hide_symbols
+}
+
 !static_and_shared:fix_output_dirs:fixExclusiveOutputDirs(static, shared)
