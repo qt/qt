@@ -3072,9 +3072,11 @@ void tst_QGraphicsView::scrollAfterResize_data()
     QTest::addColumn<QTransform>("x2");
     QTest::addColumn<QTransform>("x3");
 
-    int frameWidth = qApp->style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
-    int extent = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent);
-    int inside = qApp->style()->styleHint(QStyle::SH_ScrollView_FrameOnlyAroundContents);
+    QPlastiqueStyle *style = new QPlastiqueStyle;
+
+    int frameWidth = style->pixelMetric(QStyle::PM_DefaultFrameWidth);
+    int extent = style->pixelMetric(QStyle::PM_ScrollBarExtent);
+    int inside = style->styleHint(QStyle::SH_ScrollView_FrameOnlyAroundContents);
     int viewportWidth = 300;
     int scrollBarIndent = viewportWidth - extent - (inside ? 4 : 2)*frameWidth;
 
@@ -3096,6 +3098,7 @@ void tst_QGraphicsView::scrollAfterResize()
     QFETCH(QTransform, x3);
 
     QGraphicsView view;
+    view.setStyle(new QPlastiqueStyle);
     if (reverse)
         view.setLayoutDirection(Qt::RightToLeft);
 
