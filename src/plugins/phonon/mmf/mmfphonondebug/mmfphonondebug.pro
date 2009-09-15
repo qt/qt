@@ -1,8 +1,8 @@
 TEMPLATE = lib
-TARGET = mmfphonondebug
+TARGET = phonon_mmf_debug
 OBJECTDUMP_DIR = $$QT_SOURCE_TREE/src/3rdparty/phonon/mmf/mmfphonondebug
 
-CONFIG += dll
+CONFIG += staticlib
 
 DEFINES += OBJECTDUMP_LIBRARY
 

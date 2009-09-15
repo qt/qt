@@ -62,7 +62,7 @@ SOURCES +=                                           \
 
 debug {
     INCLUDEPATH += $$PHONON_MMF_DIR/mmfphonondebug
-    LIBS += -lmmfphonondebug
+    LIBS += -lphonon_mmf_debug.lib
 }
 
 LIBS += -lmediaclientvideo  # For CVideoPlayerUtility

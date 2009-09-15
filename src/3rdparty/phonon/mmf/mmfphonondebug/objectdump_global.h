@@ -22,9 +22,9 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtCore/QtGlobal>
 
 #if defined(OBJECTDUMP_LIBRARY)
-#  define OBJECTDUMP_EXPORT Q_DECL_EXPORT
+#  define OBJECTDUMP_EXPORT
 #else
-#  define OBJECTDUMP_EXPORT Q_DECL_IMPORT
+#  define OBJECTDUMP_EXPORT
 #endif
 
 #endif
