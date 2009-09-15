@@ -61,8 +61,8 @@ SOURCES +=                                           \
            $$PHONON_MMF_DIR/videowidget.cpp
 
 debug {
-    INCLUDEPATH += $$PHONON_MMF_DIR/objectdump
-    LIBS += -lobjectdump
+    INCLUDEPATH += $$PHONON_MMF_DIR/mmfphonondebug
+    LIBS += -lmmfphonondebug
 }
 
 LIBS += -lmediaclientvideo  # For CVideoPlayerUtility
