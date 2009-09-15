@@ -493,6 +493,12 @@ void QGraphicsGrayscaleEffect::setStrength(qreal strength)
     emit strengthChanged(strength);
 }
 
+/*! \fn void QGraphicsGrayscaleEffect::strengthChanged(qreal strength)
+  This signal is emitted whenever setStrength() changes the grayscale
+  strength property. \a strength contains the new strength value of
+  the grayscale effect.
+ */
+
 /*!
     \reimp
 */
@@ -601,6 +607,12 @@ void QGraphicsColorizeEffect::setStrength(qreal strength)
     update();
     emit strengthChanged(strength);
 }
+
+/*! \fn void QGraphicsColorizeEffect::strengthChanged(qreal strength)
+  This signal is emitted whenever setStrength() changes the colorize
+  strength property. \a strength contains the new strength value of
+  the colorize effect.
+ */
 
 /*!
     \fn void QGraphicsColorizeEffect::colorChanged(const QColor &color)
