@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -62,6 +62,9 @@ private slots:
     void boundingRectFor();
     void boundingRect();
     void draw();
+    void opacity();
+    void grayscale();
+    void colorize();
 };
 
 void tst_QGraphicsEffect::initTestCase()
@@ -100,7 +103,7 @@ class CustomEffect : public QGraphicsEffect
 public:
     CustomEffect()
         : QGraphicsEffect(), numRepaints(0), m_margin(10),
-          doNothingInDraw(false), m_painter(0), m_styleOption(0), m_source(0)
+          doNothingInDraw(false), m_painter(0), m_styleOption(0), m_source(0), m_opacity(1.0)
     {}
 
     QRectF boundingRectFor(const QRectF &rect) const
@@ -113,6 +116,7 @@ public:
         m_painter = 0;
         m_styleOption = 0;
         m_source = 0;
+        m_opacity = 1.0;
     }
 
     void setMargin(int margin)
@@ -132,6 +136,7 @@ public:
         m_source = source;
         m_painter = painter;
         m_styleOption = source->styleOption();
+        m_opacity = painter->opacity();
         source->draw(painter);
     }
 
@@ -145,6 +150,7 @@ public:
     QPainter *m_painter;
     const QStyleOption *m_styleOption;
     QGraphicsEffectSource *m_source;
+    qreal m_opacity;
 };
 
 void tst_QGraphicsEffect::setEnabled()
@@ -340,6 +346,112 @@ void tst_QGraphicsEffect::draw()
     QCOMPARE(effect->numRepaints, 0);
     QCOMPARE(item->numRepaints, 1);
     delete effect;
+}
+
+void tst_QGraphicsEffect::opacity()
+{
+    // Make sure the painter's opacity is correct in QGraphicsEffect::draw.
+    QGraphicsScene scene;
+    CustomItem *item = new CustomItem(0, 0, 100, 100);
+    item->setOpacity(0.5);
+    CustomEffect *effect = new CustomEffect;
+    item->setGraphicsEffect(effect);
+    scene.addItem(item);
+
+    QGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(100);
+    QCOMPARE(effect->m_opacity, qreal(0.5));
+}
+
+void tst_QGraphicsEffect::grayscale()
+{
+    QGraphicsScene scene(0, 0, 100, 100);
+
+    QGraphicsRectItem *item = scene.addRect(0, 0, 50, 50);
+    item->setPen(Qt::NoPen);
+    item->setBrush(QColor(122, 193, 66)); // Qt light green
+
+    QGraphicsGrayscaleEffect *effect = new QGraphicsGrayscaleEffect;
+    item->setGraphicsEffect(effect);
+
+    QPainter painter;
+    QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
+
+    image.fill(0);
+    painter.begin(&image);
+    painter.setRenderHint(QPainter::Antialiasing);
+    scene.render(&painter);
+    painter.end();
+
+    QCOMPARE(image.pixel(10, 10), qRgb(148, 148, 148));
+
+    effect->setStrength(0.5);
+
+    image.fill(0);
+    painter.begin(&image);
+    painter.setRenderHint(QPainter::Antialiasing);
+    scene.render(&painter);
+    painter.end();
+
+    QCOMPARE(image.pixel(10, 10), qRgb(135, 171, 107));
+
+    effect->setStrength(0.0);
+
+    image.fill(0);
+    painter.begin(&image);
+    painter.setRenderHint(QPainter::Antialiasing);
+    scene.render(&painter);
+    painter.end();
+
+    QCOMPARE(image.pixel(10, 10), qRgb(122, 193, 66));
+}
+
+void tst_QGraphicsEffect::colorize()
+{
+    QGraphicsScene scene(0, 0, 100, 100);
+
+    QGraphicsRectItem *item = scene.addRect(0, 0, 50, 50);
+    item->setPen(Qt::NoPen);
+    item->setBrush(QColor(122, 193, 66)); // Qt light green
+
+    QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
+    effect->setColor(QColor(102, 153, 51)); // Qt dark green
+    item->setGraphicsEffect(effect);
+
+    QPainter painter;
+    QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
+
+    image.fill(0);
+    painter.begin(&image);
+    painter.setRenderHint(QPainter::Antialiasing);
+    scene.render(&painter);
+    painter.end();
+
+    QCOMPARE(image.pixel(10, 10), qRgb(191, 212, 169));
+
+    effect->setStrength(0.5);
+
+    image.fill(0);
+    painter.begin(&image);
+    painter.setRenderHint(QPainter::Antialiasing);
+    scene.render(&painter);
+    painter.end();
+
+    QCOMPARE(image.pixel(10, 10), qRgb(156, 203, 117));
+
+    effect->setStrength(0.0);
+
+    image.fill(0);
+    painter.begin(&image);
+    painter.setRenderHint(QPainter::Antialiasing);
+    scene.render(&painter);
+    painter.end();
+
+    QCOMPARE(image.pixel(10, 10), qRgb(122, 193, 66));
 }
 
 QTEST_MAIN(tst_QGraphicsEffect)

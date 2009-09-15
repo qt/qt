@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSvg module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -697,14 +697,12 @@ void QSvgAnimateTransform::resolveMatrix(QSvgNode *node)
     case Translate: {
         startElem *= 3;
         endElem   *= 3;
-        qreal from1, from2, from3;
-        qreal to1, to2, to3;
+        qreal from1, from2;
+        qreal to1, to2;
         from1 = m_args[startElem++];
         from2 = m_args[startElem++];
-        from3 = m_args[startElem++];
         to1   = m_args[endElem++];
         to2   = m_args[endElem++];
-        to3   = m_args[endElem++];
 
         qreal transXDiff = (to1-from1) * percentOfAnimation;
         qreal transX = from1 + transXDiff;
@@ -717,14 +715,12 @@ void QSvgAnimateTransform::resolveMatrix(QSvgNode *node)
     case Scale: {
         startElem *= 3;
         endElem   *= 3;
-        qreal from1, from2, from3;
-        qreal to1, to2, to3;
+        qreal from1, from2;
+        qreal to1, to2;
         from1 = m_args[startElem++];
         from2 = m_args[startElem++];
-        from3 = m_args[startElem++];
         to1   = m_args[endElem++];
         to2   = m_args[endElem++];
-        to3   = m_args[endElem++];
 
         qreal transXDiff = (to1-from1) * percentOfAnimation;
         qreal transX = from1 + transXDiff;
@@ -764,14 +760,10 @@ void QSvgAnimateTransform::resolveMatrix(QSvgNode *node)
     case SkewX: {
         startElem *= 3;
         endElem   *= 3;
-        qreal from1, from2, from3;
-        qreal to1, to2, to3;
+        qreal from1;
+        qreal to1;
         from1 = m_args[startElem++];
-        from2 = m_args[startElem++];
-        from3 = m_args[startElem++];
         to1   = m_args[endElem++];
-        to2   = m_args[endElem++];
-        to3   = m_args[endElem++];
 
         qreal transXDiff = (to1-from1) * percentOfAnimation;
         qreal transX = from1 + transXDiff;
@@ -782,14 +774,10 @@ void QSvgAnimateTransform::resolveMatrix(QSvgNode *node)
     case SkewY: {
         startElem *= 3;
         endElem   *= 3;
-        qreal from1, from2, from3;
-        qreal to1, to2, to3;
+        qreal from1;
+        qreal to1;
         from1 = m_args[startElem++];
-        from2 = m_args[startElem++];
-        from3 = m_args[startElem++];
         to1   = m_args[endElem++];
-        to2   = m_args[endElem++];
-        to3   = m_args[endElem++];
 
 
         qreal transYDiff = (to1 - from1) * percentOfAnimation;
@@ -946,7 +934,7 @@ void QSvgGradientStyle::setStopLink(const QString &link, QSvgTinyDocument *doc)
 void QSvgGradientStyle::resolveStops()
 {
     if (!m_link.isEmpty() && m_doc) {
-        QSvgStyleProperty *prop = m_doc->scopeStyle(m_link);
+        QSvgStyleProperty *prop = m_doc->styleProperty(m_link);
         if (prop) {
             if (prop->type() == QSvgStyleProperty::GRADIENT) {
                 QSvgGradientStyle *st =
@@ -955,6 +943,8 @@ void QSvgGradientStyle::resolveStops()
                 m_gradient->setStops(st->qgradient()->stops());
                 m_gradientStopsSet = st->gradientStopsSet();
             }
+        } else {
+            qWarning("Could not resolve property : %s", qPrintable(m_link));
         }
         m_link = QString();
     }

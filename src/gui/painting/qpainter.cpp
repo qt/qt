@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -475,7 +475,8 @@ void QPainterPrivate::draw_helper(const QPainterPath &originalPath, DrawOperatio
     p.end();
 
     q->save();
-    q->resetMatrix();
+    state->matrix = QTransform();
+    state->dirtyFlags |= QPaintEngine::DirtyTransform;
     updateState(state);
     engine->drawImage(absPathRect,
                  image,
@@ -1894,8 +1895,13 @@ QPaintEngine *QPainter::paintEngine() const
 
 /*!
     Flushes the painting pipeline and prepares for the user issuing
-    native painting commands. Must be followed by a call to
-    endNativePainting().
+    commands directly to the underlying graphics context. Must be
+    followed by a call to endNativePainting().
+
+    Here is an example that shows intermixing of painter commands
+    and raw OpenGL commands:
+
+    \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 21
 
     \sa endNativePainting()
 */
@@ -7556,7 +7562,6 @@ start_lengthVariant:
     bool hasMoreLengthVariants = false;
     // compatible behaviour to the old implementation. Replace
     // tabs by spaces
-    bool has_tab = false;
     int old_offset = offset;
     for (; offset < text.length(); offset++) {
         QChar chr = text.at(offset);
@@ -7572,7 +7577,6 @@ start_lengthVariant:
             } else if (!tabarraylen && !tabstops) {
                 tabstops = qRound(fm.width(QLatin1Char('x'))*8);
             }
-            has_tab = true;
         } else if (chr == QChar(ushort(0x9c))) {
             // string with multiple length variants
             hasMoreLengthVariants = true;

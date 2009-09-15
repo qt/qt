@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -41,6 +41,7 @@
 
 #include "qgl.h"
 #include "qgl_egl_p.h"
+#include "qglpixelbuffer.h"
 
 #include <qglscreen_qws.h>
 #include <qscreenproxy_qws.h>
@@ -259,13 +260,8 @@ void QGLContext::makeCurrent()
         return;
     }
 
-    if (d->eglContext->makeCurrent()) {
-        if (!qgl_context_storage.hasLocalData() && QThread::currentThread())
-            qgl_context_storage.setLocalData(new QGLThreadContext);
-        if (qgl_context_storage.hasLocalData())
-            qgl_context_storage.localData()->context = this;
-        currentCtx = this;
-    }
+    if (d->eglContext->makeCurrent())
+        QGLContextPrivate::setCurrentContext(this);
 }
 
 void QGLContext::doneCurrent()
@@ -274,9 +270,7 @@ void QGLContext::doneCurrent()
     if (d->eglContext)
         d->eglContext->doneCurrent();
 
-    if (qgl_context_storage.hasLocalData())
-        qgl_context_storage.localData()->context = 0;
-    currentCtx = 0;
+    QGLContextPrivate::setCurrentContext(0);
 }
 
 
@@ -411,7 +405,29 @@ void QGLExtensions::init()
     if (init_done)
         return;
     init_done = true;
+
+    // We need a context current to initialize the extensions,
+    // but getting a valid EGLNativeWindowType this early can be
+    // problematic under QWS.  So use a pbuffer instead.
+    //
+    // Unfortunately OpenGL/ES 2.0 systems don't normally
+    // support pbuffers, so we have no choice but to try
+    // our luck with a window on those systems.
+#if defined(QT_OPENGL_ES_2)
+    QGLWidget tmpWidget;
+    tmpWidget.makeCurrent();
+
     init_extensions();
+
+    tmpWidget.doneCurrent();
+#else
+    QGLPixelBuffer pbuffer(16, 16);
+    pbuffer.makeCurrent();
+
+    init_extensions();
+
+    pbuffer.doneCurrent();
+#endif
 }
 
 QT_END_NAMESPACE

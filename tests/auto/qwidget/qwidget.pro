@@ -16,6 +16,7 @@ OBJECTIVE_SOURCES += tst_qwidget_mac_helpers.mm
 
 symbian  {
     INCLUDEPATH += $$MW_LAYER_SYSTEMINCLUDE
+    LIBS += -leikcore -lcone -leikcoctl
 }
 
 !wince*:!symbian:win32: LIBS += -luser32 -lgdi32

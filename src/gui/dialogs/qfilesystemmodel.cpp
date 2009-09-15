@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -1104,6 +1104,8 @@ void QFileSystemModelPrivate::sortChildren(int column, const QModelIndex &parent
     qStableSort(values.begin(), values.end(), ms);
     // First update the new visible list
     indexNode->visibleChildren.clear();
+    //No more dirty item we reset our internal dirty index
+    indexNode->dirtyChildrenIndex = -1;
     for (int i = 0; i < values.count(); ++i) {
         indexNode->visibleChildren.append(values.at(i).first->fileName);
         values.at(i).first->isVisible = true;
@@ -1706,6 +1708,10 @@ void QFileSystemModelPrivate::addVisibleFiles(QFileSystemNode *parentNode, const
     if (!indexHidden) {
         q->beginInsertRows(parent, parentNode->visibleChildren.count() , parentNode->visibleChildren.count() + newFiles.count() - 1);
     }
+
+    if (parentNode->dirtyChildrenIndex == -1)
+        parentNode->dirtyChildrenIndex = parentNode->visibleChildren.count();
+
     for (int i = 0; i < newFiles.count(); ++i) {
             parentNode->visibleChildren.append(newFiles.at(i));
             parentNode->children[newFiles.at(i)]->isVisible = true;

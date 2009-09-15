@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -467,12 +467,44 @@ QGraphicsGrayscaleEffect::~QGraphicsGrayscaleEffect()
 {
 }
 
+
+/*!
+    \property QGraphicsGrayscaleEffect::strength
+    \brief the strength of the effect.
+
+    By default, the strength is 1.0.
+    A strength 0.0 equals to no effect, while 1.0 means full grayscale.
+*/
+qreal QGraphicsGrayscaleEffect::strength() const
+{
+    Q_D(const QGraphicsGrayscaleEffect);
+    return d->filter->strength();
+}
+
+void QGraphicsGrayscaleEffect::setStrength(qreal strength)
+{
+    Q_D(QGraphicsGrayscaleEffect);
+    if (qFuzzyCompare(d->filter->strength(), strength))
+        return;
+
+    d->filter->setStrength(strength);
+    d->opaque = !qFuzzyIsNull(strength);
+    update();
+    emit strengthChanged(strength);
+}
+
 /*!
     \reimp
 */
 void QGraphicsGrayscaleEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsGrayscaleEffect);
+
+    if (!d->opaque) {
+        source->draw(painter);
+        return;
+    }
+
     QPoint offset;
     if (source->isPixmap()) {
         // No point in drawing in device coordinates (pixmap will be scaled anyways).
@@ -546,6 +578,31 @@ void QGraphicsColorizeEffect::setColor(const QColor &color)
 }
 
 /*!
+    \property QGraphicsColorizeEffect::strength
+    \brief the strength of the effect.
+
+    By default, the strength is 1.0.
+    A strength 0.0 equals to no effect, while 1.0 means full colorization.
+*/
+qreal QGraphicsColorizeEffect::strength() const
+{
+    Q_D(const QGraphicsColorizeEffect);
+    return d->filter->strength();
+}
+
+void QGraphicsColorizeEffect::setStrength(qreal strength)
+{
+    Q_D(QGraphicsColorizeEffect);
+    if (qFuzzyCompare(d->filter->strength(), strength))
+        return;
+
+    d->filter->setStrength(strength);
+    d->opaque = !qFuzzyIsNull(strength);
+    update();
+    emit strengthChanged(strength);
+}
+
+/*!
     \fn void QGraphicsColorizeEffect::colorChanged(const QColor &color)
 
     This signal is emitted whenever the effect's color changes.
@@ -558,6 +615,12 @@ void QGraphicsColorizeEffect::setColor(const QColor &color)
 void QGraphicsColorizeEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsColorizeEffect);
+
+    if (!d->opaque) {
+        source->draw(painter);
+        return;
+    }
+
     QPoint offset;
     if (source->isPixmap()) {
         // No point in drawing in device coordinates (pixmap will be scaled anyways).

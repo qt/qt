@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -341,6 +341,8 @@
     activates all non-panel items. Window items (i.e.,
     QGraphicsItem::isWindow() returns true) are panels. This flag was
     introduced in Qt 4.6.
+
+    \omitvalue ItemIsFocusScope Internal only (for now).
 */
 
 /*!
@@ -929,12 +931,9 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
         scene->d_func()->index->itemChange(q, QGraphicsItem::ItemParentChange, newParentVariant);
     }
 
-    QGraphicsItem *lastSubFocusItem = subFocusItem;
-    if (subFocusItem) {
-        // Update the child focus chain; when reparenting an item that has a
-        // focus child, ensure that that focus child clears its focus child
-        // chain from our parents before it's reparented.
-        subFocusItem->clearFocus();
+    if (subFocusItem && parent) {
+        // Make sure none of the old parents point to this guy.
+        subFocusItem->d_ptr->clearSubFocus(parent);
     }
 
     // We anticipate geometry changes. If the item is deleted, it will be
@@ -960,15 +959,46 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
         }
     }
 
+    // Ensure any last parent focus scope does not point to this item or any of
+    // its descendents.
+    QGraphicsItem *p = parent;
+    QGraphicsItem *parentFocusScopeItem = 0;
+    while (p) {
+        if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
+            // If this item's focus scope's focus scope item points
+            // to this item or a descendent, then clear it.
+            QGraphicsItem *fsi = p->d_ptr->focusScopeItem;
+            if (q_ptr == fsi || q_ptr->isAncestorOf(fsi)) {
+                parentFocusScopeItem = fsi;
+                p->d_ptr->focusScopeItem = 0;
+            }
+            break;
+        }
+        p = p->d_ptr->parent;
+    }
+
+    // Update focus scope item ptr in new scope.
+    if (newParent) {
+        QGraphicsItem *p = newParent;
+        while (p) {
+            if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
+                // ### We really want the parent's focus scope item to point
+                // to this item's focusItem...
+                if (q_ptr->flags() & QGraphicsItem::ItemIsFocusScope)
+                    p->d_ptr->focusScopeItem = q_ptr;
+                else
+                    p->d_ptr->focusScopeItem = subFocusItem ? subFocusItem : parentFocusScopeItem;
+                break;
+            }
+            p = p->d_ptr->parent;
+        }
+    }
+
     if ((parent = newParent)) {
         bool implicitUpdate = false;
         if (parent->d_func()->scene && parent->d_func()->scene != scene) {
             // Move this item to its new parent's scene
-
-            QGraphicsItem *focusScope = newParent;
-            while (focusScope && !(focusScope->d_ptr->flags & QGraphicsItem::ItemIsFocusScope))
-                focusScope = focusScope->d_ptr->parent;
-            parent->d_func()->scene->d_func()->addItem(q, focusScope);
+            parent->d_func()->scene->addItem(q);
             implicitUpdate = true;
         } else if (!parent->d_func()->scene && scene) {
             // Remove this item from its former scene
@@ -1030,8 +1060,11 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
     dirtySceneTransform = 1;
 
     // Restore the sub focus chain.
-    if (lastSubFocusItem)
-        lastSubFocusItem->d_ptr->setSubFocus();
+    if (subFocusItem) {
+        subFocusItem->d_ptr->setSubFocus(newParent);
+        if (parent && parent->isActive())
+            subFocusItem->setFocus();
+    }
 
     // Deliver post-change notification
     q->itemChange(QGraphicsItem::ItemParentHasChanged, newParentVariant);
@@ -1198,13 +1231,23 @@ QGraphicsItem::~QGraphicsItem()
     d_ptr->removeExtraItemCache();
 
     clearFocus();
+
+    // Update focus scope item ptr.
+    QGraphicsItem *p = d_ptr->parent;
+    while (p) {
+        if (p->flags() & ItemIsFocusScope) {
+            if (p->d_ptr->focusScopeItem == this)
+                p->d_ptr->focusScopeItem = 0;
+            break;
+        }
+        p = p->d_ptr->parent;
+    }
+
     if (!d_ptr->children.isEmpty()) {
         QList<QGraphicsItem *> oldChildren = d_ptr->children;
         qDeleteAll(oldChildren);
         Q_ASSERT(d_ptr->children.isEmpty());
     }
-
-    d_ptr->subFocusItem = 0;
 
     if (d_ptr->scene) {
         d_ptr->scene->d_func()->removeItemHelper(this);
@@ -1939,11 +1982,28 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
     }
 
     // Enable subfocus
-    if (newVisible && isWidget) {
-        QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(q_ptr);
-        QGraphicsWidget *fw = widget->focusWidget();
-        if (fw && fw != scene->focusItem())
-            scene->setFocusItem(fw);
+    if (newVisible) {
+        QGraphicsItem *p = parent;
+        bool done = false;
+        while (p) {
+            if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
+                QGraphicsItem *fsi = p->d_ptr->focusScopeItem;
+                if (q_ptr == fsi || q_ptr->isAncestorOf(fsi)) {
+                    done = true;
+                    while (fsi->d_ptr->focusScopeItem && fsi->d_ptr->focusScopeItem->isVisible())
+                        fsi = fsi->d_ptr->focusScopeItem;
+                    scene->setFocusItem(fsi);
+                }
+                break;
+            }
+            p = p->d_ptr->parent;
+        }
+        if (!done) {
+            QGraphicsItem *fi = subFocusItem;
+            if (fi && fi != scene->focusItem()) {
+                scene->setFocusItem(fi);
+            }
+        }
     }
 
     // Deliver post-change notification.
@@ -2731,45 +2791,54 @@ bool QGraphicsItem::hasFocus() const
 */
 void QGraphicsItem::setFocus(Qt::FocusReason focusReason)
 {
+    d_ptr->setFocusHelper(focusReason, /* climb = */ true);
+}
+
+/*!
+    \internal
+*/
+void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool climb)
+{
     // Disabled / unfocusable items cannot accept focus.
-    if (!isEnabled() || !(d_ptr->flags & QGraphicsItem::ItemIsFocusable))
+    if (!q_ptr->isEnabled() || !(flags & QGraphicsItem::ItemIsFocusable))
         return;
 
     // Find focus proxy.
-    QGraphicsItem *f = this;
+    QGraphicsItem *f = q_ptr;
     while (f->d_ptr->focusProxy)
         f = f->d_ptr->focusProxy;
 
     // Return if it already has focus.
-    if (d_ptr->scene && d_ptr->scene->focusItem() == f)
+    if (scene && scene->focusItem() == f)
         return;
 
     // Update the child focus chain.
-    d_ptr->setSubFocus();
+    setSubFocus();
+
+    // Update focus scope item ptr.
+    QGraphicsItem *p = parent;
+    while (p) {
+        if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
+            p->d_ptr->focusScopeItem = q_ptr;
+            if (!q_ptr->isActive())
+                return;
+            break;
+        }
+        p = p->d_ptr->parent;
+    }
+
+    if (climb) {
+        while (f->d_ptr->focusScopeItem && f->d_ptr->focusScopeItem->isVisible())
+            f = f->d_ptr->focusScopeItem;
+    }
 
     // Update the scene's focus item.
-    if (d_ptr->scene) {
-        QGraphicsItem *s = d_ptr->focusScope();
-        if (s) {
-            bool scopeHasFocus = 
-                s->d_ptr->hasActiveFocus(d_ptr->scene->focusItem());
-            if (s->d_ptr->focusScopeItem) 
-                s->d_ptr->focusScopeItem->d_ptr->setItemFocusedInScope(false);
-            s->d_ptr->focusScopeItem = this;
-            d_ptr->setItemFocusedInScope(true);
-            if (scopeHasFocus) 
-                d_ptr->scene->d_func()->setFocusItemHelper(s, focusReason);
-            return;
-        }
-        d_ptr->setItemFocusedInScope(false);
-
-        QGraphicsItem *p = panel();
-        if (!p || p->isActive()) {
+    if (scene) {
+        QGraphicsItem *p = q_ptr->panel();
+        if ((!p && scene->isActive()) || (p && p->isActive())) {
             // Visible items immediately gain focus from scene.
-            d_ptr->scene->d_func()->setFocusItemHelper(f, focusReason);
+            scene->d_func()->setFocusItemHelper(f, focusReason);
         }
-    } else {
-        d_ptr->setItemFocusedInScope(true);
     }
 }
 
@@ -2786,31 +2855,21 @@ void QGraphicsItem::setFocus(Qt::FocusReason focusReason)
 */
 void QGraphicsItem::clearFocus()
 {
-    if (!d_ptr->scene) {
-        d_ptr->setItemFocusedInScope(false);
-        return;
-    }
-    // Invisible items with focus must explicitly clear subfocus.
-    d_ptr->clearSubFocus();
-
-    if (d_ptr->itemIsFocusedInScope) {
-        d_ptr->setItemFocusedInScope(false);
-        QGraphicsItem *s = d_ptr->focusScope();
-        if (s) {
-            if (s->d_ptr->focusScopeItem == this) {
-                bool scopeHasFocus = 
-                    s->d_ptr->hasActiveFocus(d_ptr->scene->focusItem());
-                s->d_ptr->focusScopeItem = 0;
-                if (scopeHasFocus)
-                    d_ptr->scene->setFocusItem(s);
-                return;
-            }
+    // Pass focus to the closest parent focus scope.
+    QGraphicsItem *p = d_ptr->parent;
+    while (p) {
+        if (p->flags() & ItemIsFocusScope) {
+            p->d_ptr->setFocusHelper(Qt::OtherFocusReason, /* climb = */ false);
+            return;
         }
+        p = p->d_ptr->parent;
     }
+
+    // Invisible items with focus must explicitly clear subfocus.
+    d_ptr->clearSubFocus(this);
 
     if (hasFocus()) {
         // If this item has the scene's input focus, clear it.
-        d_ptr->setItemFocusedInScope(false);
         d_ptr->scene->setFocusItem(0);
     }
 }
@@ -2888,6 +2947,16 @@ void QGraphicsItem::setFocusProxy(QGraphicsItem *item)
 QGraphicsItem *QGraphicsItem::focusItem() const
 {
     return d_ptr->subFocusItem;
+}
+
+/*!
+    \internal
+
+    Returns this item's focus scope item.
+*/
+QGraphicsItem *QGraphicsItem::focusScopeItem() const
+{
+    return d_ptr->focusScopeItem;
 }
 
 /*!
@@ -4799,8 +4868,6 @@ void QGraphicsItemPrivate::updateCachedClipPathFromSetPosHelper(const QPointF &n
         thisToParentTransform *= clipParent->d_ptr->transformToParent();
         clipParent = clipParent->d_ptr->parent;
     }
-    if (clipParent && clipParent->d_ptr->inDestructor)
-        return;
 
     // Ensure no parents are currently being deleted. This can only
     // happen if the item is moved by a dying ancestor.
@@ -4867,50 +4934,52 @@ void QGraphicsItemPrivate::ensureSceneTransformRecursive(QGraphicsItem **topMost
         return; // Continue backtrack.
     }
 
+    // This item and all its descendants have dirty scene transforms.
+    // We're about to validate this item's scene transform, so we have to
+    // invalidate all the children; otherwise there's no way for the descendants
+    // to detect that the ancestor has changed.
+    invalidateChildrenSceneTransform();
+
     // COMBINE my transform with the parent's scene transform.
     updateSceneTransformFromParent();
     Q_ASSERT(!dirtySceneTransform);
 }
 
-void QGraphicsItemPrivate::ensureSceneTransform()
-{
-    if (dirtySceneTransform) {
-        // This item and all its descendants have dirty scene transforms.
-        // We're about to validate this item's scene transform, so we have to
-        // invalidate all the children; otherwise there's no way for the descendants
-        // to detect that the ancestor has changed.
-        invalidateChildrenSceneTransform();
-    }
-
-    QGraphicsItem *that = q_func();
-    ensureSceneTransformRecursive(&that);
-}
-
 /*!
     \internal
 */
-void QGraphicsItemPrivate::setSubFocus()
+void QGraphicsItemPrivate::setSubFocus(QGraphicsItem *rootItem)
 {
-    // Update focus child chain.
-    QGraphicsItem *item = q_ptr;
-    QGraphicsItem *parent = item;
-    bool hidden = !visible;
+    // Update focus child chain. Stop at panels, or if this item
+    // is hidden, stop at the first item with a visible parent.
+    QGraphicsItem *parent = rootItem ? rootItem : q_ptr;
     do {
-        parent->d_func()->subFocusItem = item;
-    } while (!parent->isPanel() && (parent = parent->d_ptr->parent) && (!hidden || !parent->d_func()->visible)  && !(parent->d_ptr->flags & QGraphicsItem::ItemIsFocusScope));
+        // Clear any existing ancestor's subFocusItem.
+        if (parent != q_ptr && parent->d_ptr->subFocusItem) {
+            if (parent->d_ptr->subFocusItem == q_ptr)
+                break;
+            parent->d_ptr->subFocusItem->d_ptr->clearSubFocus();
+        }
+        parent->d_ptr->subFocusItem = q_ptr;
+        parent->d_ptr->subFocusItemChange();
+    } while (!parent->isPanel() && (parent = parent->d_ptr->parent) && (visible || !parent->d_ptr->visible));
+
+    if (scene && !scene->isActive())
+        scene->d_func()->lastFocusItem = subFocusItem;
 }
 
 /*!
     \internal
 */
-void QGraphicsItemPrivate::clearSubFocus()
+void QGraphicsItemPrivate::clearSubFocus(QGraphicsItem *rootItem)
 {
-    // Reset focus child chain.
-    QGraphicsItem *parent = q_ptr;
+    // Reset sub focus chain.
+    QGraphicsItem *parent = rootItem ? rootItem : q_ptr;
     do {
         if (parent->d_ptr->subFocusItem != q_ptr)
             break;
         parent->d_ptr->subFocusItem = 0;
+        subFocusItemChange();
     } while (!parent->isPanel() && (parent = parent->d_ptr->parent));
 }
 
@@ -4925,6 +4994,16 @@ void QGraphicsItemPrivate::resetFocusProxy()
     for (int i = 0; i < focusProxyRefs.size(); ++i)
         *focusProxyRefs.at(i) = 0;
     focusProxyRefs.clear();
+}
+
+/*!
+    \internal
+
+    Subclasses can reimplement this function to be notified when subFocusItem
+    changes.
+*/
+void QGraphicsItemPrivate::subFocusItemChange()
+{
 }
 
 /*!
@@ -5837,6 +5916,8 @@ QPainterPath QGraphicsItem::mapFromScene(const QPainterPath &path) const
 bool QGraphicsItem::isAncestorOf(const QGraphicsItem *child) const
 {
     if (!child || child == this)
+        return false;
+    if (child->d_ptr->depth() < d_ptr->depth())
         return false;
     const QGraphicsItem *ancestor = child;
     while ((ancestor = ancestor->d_ptr->parent)) {
@@ -10583,11 +10664,11 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
     case QGraphicsItem::ItemNegativeZStacksBehindParent:
         str = "ItemNegativeZStacksBehindParent";
         break;
-    case QGraphicsItem::ItemIsFocusScope:
-        str = "ItemIsFocusScope";
-        break;
     case QGraphicsItem::ItemIsPanel:
         str = "ItemIsPanel";
+        break;
+    case QGraphicsItem::ItemIsFocusScope:
+        str = "ItemIsFocusScope";
         break;
     }
     debug << str;

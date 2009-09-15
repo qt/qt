@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -68,41 +68,42 @@ QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QIconLoader, iconLoaderInstance)
 
+static QString fallbackTheme()
+{
+    QString defaultTheme;
+#ifdef Q_WS_X11
+    if (X11->desktopEnvironment == DE_GNOME)
+        defaultTheme = QLatin1String("gnome");
+    else if (X11->desktopEnvironment == DE_KDE)
+        defaultTheme = X11->desktopVersion >= 4 ?
+                QString::fromLatin1("oxygen") :
+                QString::fromLatin1("crystalsvg");
+#endif
+    return defaultTheme;
+}
+
 static QString systemThemeName()
 {
-    QString result;
+    QString result = fallbackTheme();
 #ifdef Q_WS_X11
     if (X11->desktopEnvironment == DE_GNOME) {
-#if defined(QT_NO_STYLE_GTK)
-        result = QLatin1String("gnome");
-#else	
+#ifndef QT_NO_STYLE_GTK
         result = QGtk::getGConfString(QLatin1String("/desktop/gnome/interface/icon_theme"),
-                                      QLatin1String("gnome"));
+                                      result);
 #endif
     } else if (X11->desktopEnvironment == DE_KDE) {
-        QString kdeDefault = X11->desktopVersion >= 4 ?
-                             QString::fromLatin1("oxygen") :
-                             QString::fromLatin1("crystalsvg");
-
         QSettings settings(QKde::kdeHome() +
                            QLatin1String("/share/config/kdeglobals"),
                            QSettings::IniFormat);
 
         settings.beginGroup(QLatin1String("Icons"));
 
-        result = settings.value(QLatin1String("Theme"), kdeDefault).toString();
+        result = settings.value(QLatin1String("Theme"), result).toString();
     }
 #endif
     return result;
 }
 
-static QString fallbackTheme()
-{
-    QString defaultTheme = systemThemeName();
-    if (defaultTheme.isEmpty())
-        defaultTheme = QLatin1String("hicolor");
-    return defaultTheme;
-}
 
 QIconLoader::QIconLoader() :
         m_themeKey(1), m_supportsSvg(false)
@@ -269,7 +270,7 @@ QIconTheme::QIconTheme(const QString &themeName)
             m_parents.append(fallbackTheme());
 
         // Ensure that all themes fall back to hicolor
-        if (!m_parents.isEmpty())
+        if (!m_parents.contains(QLatin1String("hicolor")))
             m_parents.append(QLatin1String("hicolor"));
     }
 }
