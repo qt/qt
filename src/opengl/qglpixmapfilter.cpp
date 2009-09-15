@@ -75,9 +75,6 @@ public:
 
 protected:
     bool processGL(QPainter *painter, const QPointF &pos, const QPixmap &pixmap, const QRectF &srcRect) const;
-
-private:
-    mutable QGLShader *m_shader;
 };
 
 class QGLPixmapConvolutionFilter: public QGLPixmapFilter<QPixmapConvolutionFilter>
@@ -110,8 +107,6 @@ protected:
 
 private:
     static QByteArray generateBlurShader(int radius, bool gaussianBlur);
-
-    mutable QGLShader *m_shader;
 
     mutable QSize m_textureSize;
 
