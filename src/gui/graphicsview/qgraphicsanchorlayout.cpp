@@ -257,9 +257,9 @@ void QGraphicsAnchorLayout::addCornerAnchors(QGraphicsLayoutItem *firstItem,
 }
 
 /*!
-    Anchors two or four edges of \a firstItem with the corresponding edges of \secondItem,
-    so that \a firstItem has the same size as \a secondItem in the dimensions specified by
-    \a orientation.
+    Anchors two or four edges of \a firstItem with the corresponding
+    edges of \a secondItem, so that \a firstItem has the same size as
+    \a secondItem in the dimensions specified by \a orientations.
 
     Calling this convenience function with the following arguments
     \code
@@ -286,45 +286,6 @@ void QGraphicsAnchorLayout::addAnchors(QGraphicsLayoutItem *firstItem,
         addAnchor(firstItem, Qt::AnchorBottom, secondItem, Qt::AnchorBottom);
     }
 }
-
-/*!
-    \fn QGraphicsAnchorLayout::addLeftAndRightAnchors(QGraphicsLayoutItem *firstItem, QGraphicsLayoutItem *secondItem)
-
-    Anchors the left and right edges of \a firstItem to the same edges of
-    \a secondItem.
-
-    This convenience function is equivalent to calling
-    \code
-    l->addAnchor(firstItem, Qt::AnchorLeft, secondItem, Qt::AnchorLeft);
-    l->addAnchor(firstItem, Qt::AnchorRight, secondItem, Qt::AnchorRight);
-    \endcode
-*/
-
-/*!
-    \fn QGraphicsAnchorLayout::addTopAndBottomAnchors(QGraphicsLayoutItem *firstItem, QGraphicsLayoutItem *secondItem)
-
-    Anchors the top and bottom edges of \a firstItem to the same edges of
-    \a secondItem.
-
-    This convenience function is equivalent to calling
-    \code
-    l->addAnchor(firstItem, Qt::AnchorTop, secondItem, Qt::AnchorTop);
-    l->addAnchor(firstItem, Qt::AnchorBottom, secondItem, Qt::AnchorBottom);
-    \endcode
-*/
-
-/*!
-    \fn QGraphicsAnchorLayout::addAllAnchors(QGraphicsLayoutItem *firstItem, QGraphicsLayoutItem *secondItem)
-
-    Anchors all edges (left, right, top and bottom) of \a firstItem to the same edges of
-    \a secondItem.
-
-    This convenience function is equivalent to calling
-    \code
-    l->addLeftAndRightAnchors(firstItem, secondItem);
-    l->addTopAndBottomAnchors(firstItem, secondItem);
-    \endcode
-*/
 
 /*!
     Sets the default horizontal spacing for the anchor layout to \a spacing.

@@ -8332,6 +8332,22 @@ void tst_QGraphicsItem::focusScope()
     rect4->setParentItem(0);
     QCOMPARE(scope3->focusScopeItem(), (QGraphicsItem *)0);
     QVERIFY(!scope3->hasFocus());
+
+    QGraphicsRectItem *rectA = new QGraphicsRectItem;
+    QGraphicsRectItem *scopeA = new QGraphicsRectItem(rectA);
+    scopeA->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemIsFocusScope);
+    scopeA->setFocus();
+    QGraphicsRectItem *scopeB = new QGraphicsRectItem(scopeA);
+    scopeB->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemIsFocusScope);
+    scopeB->setFocus();
+
+    scene.addItem(rectA);
+    QVERIFY(rect5->hasFocus());
+    QVERIFY(!scopeB->hasFocus());
+
+    scopeA->setFocus();
+    QVERIFY(scopeB->hasFocus());
+    QCOMPARE(scopeB->focusItem(), (QGraphicsItem *)scopeB);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

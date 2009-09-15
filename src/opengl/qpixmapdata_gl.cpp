@@ -149,6 +149,7 @@ void QGLPixmapGLPaintDevice::beginPaint()
     if (data->needsFill()) {
         const QColor &c = data->fillColor();
         float alpha = c.alphaF();
+        glDisable(GL_SCISSOR_TEST);
         glClearColor(c.redF() * alpha, c.greenF() * alpha, c.blueF() * alpha, alpha);
         glClear(GL_COLOR_BUFFER_BIT);
     }
@@ -157,8 +158,21 @@ void QGLPixmapGLPaintDevice::beginPaint()
         // uploaded from an image or rendered into before), we need to
         // copy it from the texture to the render FBO.
 
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_SCISSOR_TEST);
+        glDisable(GL_BLEND);
+
+        glMatrixMode(GL_MODELVIEW_MATRIX);
+        glLoadIdentity();
+
+        glMatrixMode(GL_PROJECTION_MATRIX);
+        glLoadIdentity();
+        glOrtho(0, data->width(), data->height(), 0, -999999, 999999);
+
+        glViewport(0, 0, data->width(), data->height());
+
         // Pass false to bind so it doesn't copy the FBO into the texture!
-        context()->drawTexture(QPointF(0.0, 0.0), data->bind(false));
+        context()->drawTexture(QRect(0, 0, data->width(), data->height()), data->bind(false));
     }
 }
 

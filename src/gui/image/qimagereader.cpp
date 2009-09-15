@@ -696,13 +696,12 @@ bool QImageReader::autoDetectImageFormat() const
 
 
 /*!
-
     Specifies that the image reader should decide which plugin to use
     solely based on the contents in the datastream.
 
     Setting this flag means that all image plugins gets loaded. Each
     plugin will read the first bytes in the image data and decide if
-    the plugin is compatible or not.
+    the plugin is compatible or not. The flag is set to \a ignored.
 
     This also disables auto detecting image format.
 */

@@ -1507,7 +1507,7 @@ void tst_QGraphicsProxyWidget::scrollUpdate()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTRY_COMPARE(view.npaints, 1);
+    QTRY_VERIFY(view.npaints >= 1);
     QTest::qWait(20);
     widget->paintEventRegion = QRegion();
     widget->npaints = 0;

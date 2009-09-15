@@ -551,7 +551,6 @@ Q_SIGNALS:
     void zChanged();
     void rotationChanged();
     void scaleChanged();
-    void focusChanged();
 
 protected:
     QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent, QGraphicsScene *scene);

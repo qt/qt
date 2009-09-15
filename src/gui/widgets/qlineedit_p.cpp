@@ -159,7 +159,10 @@ void QLineEditPrivate::init(const QString& txt)
 
     QObject::connect(control, SIGNAL(updateNeeded(const QRect &)),
             q, SLOT(update()));
-    control->setPasswordCharacter(q->style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter));
+
+    QStyleOptionFrameV2 opt;
+    q->initStyleOption(&opt);
+    control->setPasswordCharacter(q->style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, q));
 #ifndef QT_NO_CURSOR
     q->setCursor(Qt::IBeamCursor);
 #endif

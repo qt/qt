@@ -71,7 +71,11 @@ QT_BEGIN_NAMESPACE
     audio plugins installed and the audio device capabilities. If you need a specific format, you can check if
     the device supports it with isFormatSupported(), or fetch a
     supported format that is as close as possible to the format with
-    nearestFormat().
+    nearestFormat(). For instance:
+
+    \snippet doc/src/snippets/audio/main.cpp 1
+    \dots 8
+    \snippet doc/src/snippets/audio/main.cpp 2
 
     A QAudioDeviceInfo is constructed with a QAudioDeviceId, which is
     an identifier for a physical device. It is used by Qt to construct
