@@ -787,6 +787,7 @@ static Atom send_targets_selection(QClipboardData *d, Window window, Atom proper
     types.append(ATOM(TARGETS));
     types.append(ATOM(MULTIPLE));
     types.append(ATOM(TIMESTAMP));
+    types.append(ATOM(SAVE_TARGETS));
 
     XChangeProperty(X11->display, window, property, XA_ATOM, 32,
                     PropModeReplace, (uchar *) types.data(), types.size());
@@ -911,8 +912,30 @@ bool QClipboard::event(QEvent *e)
     XEvent *xevent = (XEvent *)(((QClipboardEvent *)e)->data());
     Display *dpy = X11->display;
 
-    if (!xevent)
+    if (!xevent) {
+        // That means application exits and we need to give clipboard
+        // content to the clipboard manager.
+        // First we check if there is a clipboard manager.
+        if (XGetSelectionOwner(X11->display, ATOM(CLIPBOARD_MANAGER)) == XNone)
+            return true;
+
+        Window ownerId = owner->internalWinId();
+        Q_ASSERT(ownerId);
+        // we delete the property so the manager saves all TARGETS.
+        XDeleteProperty(X11->display, ownerId, ATOM(_QT_SELECTION));
+        XConvertSelection(X11->display, ATOM(CLIPBOARD_MANAGER), ATOM(SAVE_TARGETS),
+                          ATOM(_QT_SELECTION), ownerId, X11->time);
+        XSync(dpy, false);
+
+        XEvent event;
+        // waiting until the clipboard manager fetches the content.
+        if (!X11->clipboardWaitForEvent(ownerId, SelectionNotify, &event, 10000)) {
+            qWarning("QClipboard: Unable to receive an event from the "
+                     "clipboard manager in a reasonable time");
+        }
+
         return true;
+    }
 
     switch (xevent->type) {
 
