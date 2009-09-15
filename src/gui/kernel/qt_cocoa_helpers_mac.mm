@@ -876,6 +876,10 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
     QWidget *widgetToGetMouse = qwidget;
     QWidget *popup = qAppInstance()->activePopupWidget();
     NSView *tmpView = theView;
+    if (mac_mouse_grabber  && mac_mouse_grabber != widgetToGetMouse) {
+        widgetToGetMouse = mac_mouse_grabber;
+        tmpView = qt_mac_nativeview_for(widgetToGetMouse);
+    }
 
     if (popup && popup != qwidget->window()) {
         widgetToGetMouse = popup;
