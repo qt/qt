@@ -1181,6 +1181,82 @@ QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::getAnchor(QGraphicsLayoutItem *fi
     return graphicsAnchor;
 }
 
+/*!
+ * \internal
+ *
+ * Implements the high level "removeAnchor" feature. Called by
+ * the QAnchorData destructor.
+ */
+void QGraphicsAnchorLayoutPrivate::removeAnchor(AnchorVertex *firstVertex,
+                                                AnchorVertex *secondVertex)
+{
+    Q_Q(QGraphicsAnchorLayout);
+
+    // Actually delete the anchor
+    removeAnchor_helper(firstVertex, secondVertex);
+
+    QGraphicsLayoutItem *firstItem = firstVertex->m_item;
+    QGraphicsLayoutItem *secondItem = secondVertex->m_item;
+
+    // Checking if the item stays in the layout or not
+    bool keepFirstItem = false;
+    bool keepSecondItem = false;
+
+    QPair<AnchorVertex *, int> v;
+    int refcount = -1;
+
+    if (firstItem != q) {
+        for (int i = Qt::AnchorLeft; i <= Qt::AnchorBottom; ++i) {
+            v = m_vertexList.value(qMakePair(firstItem, static_cast<Qt::AnchorPoint>(i)));
+            if (v.first) {
+                if (i == Qt::AnchorHorizontalCenter || i == Qt::AnchorVerticalCenter)
+                    refcount = 2;
+                else
+                    refcount = 1;
+
+                if (v.second > refcount) {
+                    keepFirstItem = true;
+                    break;
+                }
+            }
+        }
+    } else
+        keepFirstItem = true;
+
+    if (secondItem != q) {
+        for (int i = Qt::AnchorLeft; i <= Qt::AnchorBottom; ++i) {
+            v = m_vertexList.value(qMakePair(secondItem, static_cast<Qt::AnchorPoint>(i)));
+            if (v.first) {
+                if (i == Qt::AnchorHorizontalCenter || i == Qt::AnchorVerticalCenter)
+                    refcount = 2;
+                else
+                    refcount = 1;
+
+                if (v.second > refcount) {
+                    keepSecondItem = true;
+                    break;
+                }
+            }
+        }
+    } else
+        keepSecondItem = true;
+
+    if (!keepFirstItem)
+        q->removeAt(items.indexOf(firstItem));
+
+    if (!keepSecondItem)
+        q->removeAt(items.indexOf(secondItem));
+
+    // Removing anchors invalidates the layout
+    q->invalidate();
+}
+
+/*
+  \internal
+
+  Implements the low level "removeAnchor" feature. Called by
+  private methods.
+*/
 void QGraphicsAnchorLayoutPrivate::removeAnchor_helper(AnchorVertex *v1, AnchorVertex *v2)
 {
     Q_ASSERT(v1 && v2);

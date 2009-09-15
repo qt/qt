@@ -420,6 +420,7 @@ public:
     QGraphicsAnchor *getAnchor(QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
                                QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge);
 
+    void removeAnchor(AnchorVertex *firstVertex, AnchorVertex *secondVertex);
     void removeAnchor_helper(AnchorVertex *v1, AnchorVertex *v2);
     void deleteAnchorData(AnchorData *data);
     void setAnchorSize(AnchorData *data, const qreal *anchorSize);
