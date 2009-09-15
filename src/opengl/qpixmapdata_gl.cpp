@@ -162,12 +162,14 @@ void QGLPixmapGLPaintDevice::beginPaint()
         glDisable(GL_SCISSOR_TEST);
         glDisable(GL_BLEND);
 
+#if !defined(QT_OPENGL_ES_2)
         glMatrixMode(GL_MODELVIEW_MATRIX);
         glLoadIdentity();
 
         glMatrixMode(GL_PROJECTION_MATRIX);
         glLoadIdentity();
         glOrtho(0, data->width(), data->height(), 0, -999999, 999999);
+#endif
 
         glViewport(0, 0, data->width(), data->height());
 
