@@ -2830,6 +2830,8 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
     if (climb) {
         while (f->d_ptr->focusScopeItem && f->d_ptr->focusScopeItem->isVisible())
             f = f->d_ptr->focusScopeItem;
+        if (f != q_ptr)
+            f->d_ptr->setSubFocus();
     }
 
     // Update the scene's focus item.
@@ -4979,7 +4981,7 @@ void QGraphicsItemPrivate::clearSubFocus(QGraphicsItem *rootItem)
         if (parent->d_ptr->subFocusItem != q_ptr)
             break;
         parent->d_ptr->subFocusItem = 0;
-        subFocusItemChange();
+        parent->d_ptr->subFocusItemChange();
     } while (!parent->isPanel() && (parent = parent->d_ptr->parent));
 }
 
