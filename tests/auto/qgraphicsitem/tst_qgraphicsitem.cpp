@@ -8171,8 +8171,6 @@ public:
         painter->setBrush(brush);
         painter->drawRect(boundingRect());
     }
-
-public slots :
     void move()
     {
         setPos(-100,-100);
@@ -8222,11 +8220,11 @@ void tst_QGraphicsItem::ensureDirtySceneTransform()
 
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWait(500);
+    QTRY_COMPARE(QApplication::activeWindow(), &view);
 
     //We move the parent
     parent->move();
-    QTest::qWait(500);
+    QApplication::processEvents();
 
     //We check if all items moved
     QCOMPARE(child->pos(), QPointF(10, 10));
