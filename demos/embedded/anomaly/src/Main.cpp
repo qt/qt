@@ -67,5 +67,8 @@ int main(int argc, char *argv[])
     app.setStyle("windows");
 #endif
 
+#ifdef QT_KEYPAD_NAVIGATION
+    QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);
+#endif
     return app.exec();
 }

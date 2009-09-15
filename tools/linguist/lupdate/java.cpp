@@ -631,7 +631,6 @@ bool loadJava(Translator &translator, const QString &filename, ConversionData &c
     yyFileName = filename;
     yyCurLineNo = 1;
     yyParenLineNo = 1;
-    yyCh = getChar();
 
     parse(&translator);
 

@@ -1385,6 +1385,7 @@ void QGL2PaintEngineEx::ensureActive()
     d->device->ensureActiveTarget();
 
     if (d->needsSync) {
+        d->transferMode(BrushDrawingMode);
         glViewport(0, 0, d->width, d->height);
         glDepthMask(false);
         glDepthFunc(GL_LESS);

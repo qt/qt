@@ -581,6 +581,9 @@ void QGraphicsScenePrivate::setActivePanelHelper(QGraphicsItem *item, bool durin
         return;
     }
 
+    // Ensure the scene has focus when we change panel activation.
+    q->setFocus(Qt::ActiveWindowFocusReason);
+
     // Find the item's panel.
     QGraphicsItem *panel = item ? item->panel() : 0;
     lastActivePanel = panel ? activePanel : 0;
@@ -2431,8 +2434,17 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
 
     // Ensure that newly added items that have subfocus set, gain
     // focus automatically if there isn't a focus item already.
-    if (!d->focusItem && item->focusItem() && item->isActive())
-        item->focusItem()->setFocus();
+    if (!d->focusItem) {
+        if (item->focusItem() == item && item != d->lastFocusItem) {
+            QGraphicsItem *fi = item->focusItem() ? item->focusItem() : item->focusScopeItem();
+            if (fi) {
+                QGraphicsItem *fsi;
+                while ((fsi = fi->focusScopeItem()) && fsi->isVisible())
+                    fi = fsi;
+                fi->setFocus();
+            }
+        }
+    }
 
     d->updateInputMethodSensitivityInViews();
 }
@@ -2780,7 +2792,7 @@ bool QGraphicsScene::hasFocus() const
 void QGraphicsScene::setFocus(Qt::FocusReason focusReason)
 {
     Q_D(QGraphicsScene);
-    if (d->hasFocus)
+    if (d->hasFocus || !isActive())
         return;
     QFocusEvent event(QEvent::FocusIn, focusReason);
     QCoreApplication::sendEvent(this, &event);

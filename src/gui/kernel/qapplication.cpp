@@ -458,10 +458,10 @@ bool QApplicationPrivate::widgetCount = false;
 bool QApplicationPrivate::inSizeMove = false;
 #endif
 #ifdef QT_KEYPAD_NAVIGATION
-#  if defined(Q_OS_SYMBIAN)
-bool QApplicationPrivate::keypadNavigation = true;
+#  ifdef Q_OS_SYMBIAN
+Qt::NavigationMode QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadDirectional;
 #  else
-bool QApplicationPrivate::keypadNavigation = false;
+Qt::NavigationMode QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadTabOrder;
 #  endif
 QWidget *QApplicationPrivate::oldEditFocus = 0;
 #endif
@@ -2521,12 +2521,6 @@ QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool 
     Creates the proper Enter/Leave event when widget \a enter is entered and
     widget \a leave is left.
  */
-#if defined(Q_WS_WIN)
-  extern void qt_win_set_cursor(QWidget *, bool);
-#elif defined(Q_WS_X11)
-  extern void qt_x11_enforce_cursor(QWidget *, bool);
-#endif
-
 void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
 #if 0
     if (leave) {
@@ -2676,6 +2670,8 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
             qt_win_set_cursor(cursorWidget, true);
 #elif defined(Q_WS_X11)
             qt_x11_enforce_cursor(cursorWidget, true);
+#elif defined(Q_WS_S60)
+            qt_symbian_set_cursor(cursorWidget, true);
 #endif
         }
     }
@@ -4777,10 +4773,7 @@ void QApplicationPrivate::emitLastWindowClosed()
 
 #ifdef QT_KEYPAD_NAVIGATION
 /*!
-    Sets whether Qt should use focus navigation suitable for use with a
-    minimal keypad.
-
-    If \a enable is true, Qt::Key_Up and Qt::Key_Down are used to change focus.
+    Sets what kind of focus navigation Qt should use.
 
     This feature is available in Qt for Embedded Linux, Symbian and Windows CE
     only.
@@ -4788,12 +4781,76 @@ void QApplicationPrivate::emitLastWindowClosed()
     \note On Windows CE this feature is disabled by default for touch device
           mkspecs. To enable keypad navigation, build Qt with
           QT_KEYPAD_NAVIGATION defined.
+          
+    \note On Symbian, setting the mode to Qt::NavigationModeCursorAuto will enable a
+          virtual mouse cursor on non touchscreen devices, which is controlled
+          by the cursor keys if there is no analog pointer device.
+          On other platforms and on touchscreen devices, it has the same
+          meaning as Qt::NavigationModeNone.
+          
+    \since 4.6
 
     \sa keypadNavigationEnabled()
 */
+void QApplication::setNavigationMode(Qt::NavigationMode mode)
+{
+#ifdef Q_OS_SYMBIAN
+    QApplicationPrivate::setNavigationMode(mode);
+#else
+    QApplicationPrivate::navigationMode = mode;
+#endif
+}
+
+/*!
+    Returns what kind of focus navigation Qt is using.
+
+    This feature is available in Qt for Embedded Linux, Symbian and Windows CE
+    only.
+
+    \note On Windows CE this feature is disabled by default for touch device
+          mkspecs. To enable keypad navigation, build Qt with
+          QT_KEYPAD_NAVIGATION defined.
+          
+    \note On Symbian, the default mode is Qt::NavigationModeNone for touch
+          devices, and Qt::NavigationModeKeypadDirectional.
+          
+    \since 4.6
+
+    \sa keypadNavigationEnabled()
+*/
+Qt::NavigationMode QApplication::navigationMode()
+{
+    return QApplicationPrivate::navigationMode;
+}
+
+/*!
+    Sets whether Qt should use focus navigation suitable for use with a
+    minimal keypad.
+
+    This feature is available in Qt for Embedded Linux, Symbian and Windows CE
+    only.
+    
+
+    \note On Windows CE this feature is disabled by default for touch device
+          mkspecs. To enable keypad navigation, build Qt with
+          QT_KEYPAD_NAVIGATION defined.
+          
+    \deprecated
+
+    \sa setNavigationMode()
+*/
 void QApplication::setKeypadNavigationEnabled(bool enable)
 {
-    QApplicationPrivate::keypadNavigation = enable;
+    if (enable) {
+#ifdef Q_OS_SYMBIAN
+        QApplication::setNavigationMode(Qt::NavigationModeKeypadDirectional);
+#else
+        QApplication::setNavigationMode(Qt::NavigationModeKeypadTabOrder);
+#endif  
+    }
+    else {
+        QApplication::setNavigationMode(Qt::NavigationModeNone);
+    }
 }
 
 /*!
@@ -4806,12 +4863,15 @@ void QApplication::setKeypadNavigationEnabled(bool enable)
     \note On Windows CE this feature is disabled by default for touch device
           mkspecs. To enable keypad navigation, build Qt with
           QT_KEYPAD_NAVIGATION defined.
+          
+    \deprecated
 
-    \sa setKeypadNavigationEnabled()
+    \sa navigationMode()
 */
 bool QApplication::keypadNavigationEnabled()
 {
-    return QApplicationPrivate::keypadNavigation;
+    return QApplicationPrivate::navigationMode == Qt::NavigationModeKeypadTabOrder ||
+        QApplicationPrivate::navigationMode == Qt::NavigationModeKeypadDirectional;
 }
 #endif
 

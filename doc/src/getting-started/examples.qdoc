@@ -1051,7 +1051,7 @@
 
     \previouspage State Machine Examples
     \contentspage Qt Examples
-    \nextpage Qt for Embedded Linux Examples
+    \nextpage Gestures Examples
 
     \image animation-examples.png Animation
 
@@ -1066,10 +1066,40 @@
 */
 
 /*!
+    \page examples-gestures.html
+    \title Gestures Examples
+    
+    \previouspage Animation Framework Examples
+    \contentspage Qt Examples
+    \nextpage D-Bus Examples
+
+    \list
+    \o \l{gestures/imageviewer}{Image Viewer}
+    \endlist
+*/
+
+/*!
+    \page examples-dbus.html
+    \title D-Bus Examples
+
+    \previouspage Gestures Examples
+    \contentspage Qt Examples
+    \nextpage Qt for Embedded Linux Examples
+
+    \list
+    \o \l{dbus/dbus-chat}{Chat}
+    \o \l{dbus/complexpingpong}{Complex Ping Pong}
+    \o \l{dbus/listnames}{List Names}
+    \o \l{dbus/pingpong}{Ping Pong}
+    \o \l{dbus/remotecontrolledcar}{Remote Controlled Car} 
+    \endlist
+*/
+
+/*!
     \page examples-embeddedlinux.html
     \title Qt for Embedded Linux Examples
 
-    \previouspage Animation Framework Examples
+    \previouspage D-Bus Examples
     \contentspage Qt Examples
     \nextpage ActiveQt Examples
 
@@ -1094,7 +1124,7 @@
 
     \previouspage Qt for Embedded Linux Examples
     \contentspage Qt Examples
-    \nextpage D-Bus Examples
+    \nextpage Qt Quarterly
     
     \image activeqt-examples.png ActiveQt
 
@@ -1109,22 +1139,5 @@
     \o \l{activeqt/simple}{Simple}\raisedaster
     \o \l{activeqt/webbrowser}{Web Browser}\raisedaster
     \o \l{activeqt/wrapper}{Wrapper}\raisedaster
-    \endlist
-*/
-
-/*!
-    \page examples-dbus.html
-    \title D-Bus Examples
-
-    \previouspage ActiveQt Examples
-    \contentspage Qt Examples
-    \nextpage Qt Quarterly
-
-    \list
-    \o \l{dbus/dbus-chat}{Chat}
-    \o \l{dbus/complexpingpong}{Complex Ping Pong}
-    \o \l{dbus/listnames}{List Names}
-    \o \l{dbus/pingpong}{Ping Pong}
-    \o \l{dbus/remotecontrolledcar}{Remote Controlled Car} 
     \endlist
 */

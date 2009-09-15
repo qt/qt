@@ -9236,13 +9236,15 @@ void tst_QWidget::destroyBackingStore()
 
     w.reset();
     w.update();
-    QApplication::processEvents();
     delete qt_widget_private(&w)->topData()->backingStore;
     qt_widget_private(&w)->topData()->backingStore = 0;
     qt_widget_private(&w)->topData()->backingStore = new QWidgetBackingStore(&w);
 
     w.update();
     QApplication::processEvents();
+#ifdef Q_WS_QWS
+    QApplication::processEvents();
+#endif
     QCOMPARE(w.numPaintEvents, 1);
 
     // Check one more time, because the second time around does more caching.
@@ -9293,6 +9295,7 @@ void tst_QWidget::inputFocus_task257832()
       if (!context)
             QSKIP("No input context", SkipSingle);
       widget->setFocus();
+      widget->winId();    // make sure, widget has been created
       context->setFocusWidget(widget);
       QCOMPARE(context->focusWidget(), static_cast<QWidget*>(widget));
       widget->setReadOnly(true);

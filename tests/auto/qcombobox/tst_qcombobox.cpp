@@ -2371,7 +2371,7 @@ void tst_QComboBox::task260974_menuItemRectangleForComboBoxPopup()
         comboBox.showPopup();
         QTest::qWait(100);
 
-        QVERIFY(style.discoveredRect.width() <= comboBox.width());
+        QTRY_VERIFY(style.discoveredRect.width() <= comboBox.width());
     }
 }
 

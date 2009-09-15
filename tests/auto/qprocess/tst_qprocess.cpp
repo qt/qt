@@ -1164,7 +1164,7 @@ void tst_QProcess::softExitInSlots()
         SoftExitProcess proc(i);
         proc.start(appName);
         proc.write("OLEBOLE", 8); // include the \0
-        QTestEventLoop::instance().enterLoop(1);
+        QTestEventLoop::instance().enterLoop(10);
         QCOMPARE(proc.state(), QProcess::NotRunning);
         QVERIFY(proc.waitedForFinished);
     }

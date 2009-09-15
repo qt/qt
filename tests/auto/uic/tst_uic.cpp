@@ -55,16 +55,16 @@ class tst_uic : public QObject
 
 public:
     tst_uic();
-    
+
 private Q_SLOTS:
     void initTestCase();
-    
+
     void run();
     void run_data() const;
 
     void compare();
     void compare_data() const;
-    
+
     void cleanupTestCase();
 
 private:
@@ -105,8 +105,8 @@ void tst_uic::initTestCase()
     qDebug() << msg;
     process.terminate();
 
-    QCOMPARE(QFileInfo(QLatin1String("baseline")).exists(), true);
-    QCOMPARE(QFileInfo(QLatin1String("generated_ui")).exists(), true);
+    QCOMPARE(QFileInfo(QLatin1String(SRCDIR "baseline")).exists(), true);
+    QCOMPARE(QFileInfo(QLatin1String(SRCDIR "generated_ui")).exists(), true);
 }
 
 void tst_uic::run()
@@ -163,23 +163,23 @@ void tst_uic::compare()
     QFile genFile(generatedFile);
 
     if (!orgFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QString err(QLatin1String("Could not read file: %1...")); 
+        QString err(QLatin1String("Could not read file: %1..."));
         QFAIL(err.arg(orgFile.fileName()).toUtf8());
     }
 
     if (!genFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QString err(QLatin1String("Could not read file: %1...")); 
+        QString err(QLatin1String("Could not read file: %1..."));
         QFAIL(err.arg(genFile.fileName()).toUtf8());
     }
 
     originalFile = orgFile.readAll();
     originalFile.replace(QRegExp(QLatin1String("Created:.{0,25}[\\d]{4,4}")), "");
     originalFile.replace(QRegExp(QLatin1String("by: Qt User Interface Compiler version [.\\d]{5,5}")), "");
-    
+
     generatedFile = genFile.readAll();
     generatedFile.replace(QRegExp(QLatin1String("Created:.{0,25}[\\d]{4,4}")), "");
     generatedFile.replace(QRegExp(QLatin1String("by: Qt User Interface Compiler version [.\\d]{5,5}")), "");
-    
+
     QCOMPARE(generatedFile, originalFile);
 }
 

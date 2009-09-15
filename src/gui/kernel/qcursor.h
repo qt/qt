@@ -72,12 +72,18 @@ private:
 
 #ifndef QT_NO_CURSOR
 
-struct QCursorData;
+class QCursorData;
 class QBitmap;
 class QPixmap;
 
 #if defined(Q_WS_MAC)
 void qt_mac_set_cursor(const QCursor *c, const QPoint &p);
+#endif
+#if defined(Q_OS_SYMBIAN)
+extern void qt_symbian_show_pointer_sprite();
+extern void qt_symbian_hide_pointer_sprite();
+extern void qt_symbian_set_pointer_sprite(const QCursor& cursor);
+extern void qt_symbian_move_cursor_sprite();
 #endif
 
 class Q_GUI_EXPORT QCursor
@@ -103,7 +109,7 @@ public:
     static QPoint pos();
     static void setPos(int x, int y);
     inline static void setPos(const QPoint &p) { setPos(p.x(), p.y()); }
-
+    
 #ifdef qdoc
     HCURSOR_or_HANDLE handle() const;
     QCursor(HCURSOR cursor);
@@ -122,6 +128,8 @@ public:
     Qt::HANDLE handle() const;
 #elif defined(Q_WS_QWS)
     int handle() const;
+#elif defined(Q_OS_SYMBIAN)
+    Qt::HANDLE handle() const;
 #endif
 #endif
 
@@ -130,6 +138,12 @@ private:
 #if defined(Q_WS_MAC)
     friend void *qt_mac_nsCursorForQCursor(const QCursor &c);
     friend void qt_mac_set_cursor(const QCursor *c, const QPoint &p);
+#endif
+#if defined(Q_OS_SYMBIAN)
+    friend void qt_symbian_show_pointer_sprite();
+    friend void qt_symbian_hide_pointer_sprite();
+    friend void qt_symbian_set_pointer_sprite(const QCursor& cursor);
+    friend void qt_symbian_move_cursor_sprite();
 #endif
 };
 

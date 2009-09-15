@@ -2051,7 +2051,11 @@ void QLineEdit::changeEvent(QEvent *ev)
         d->control->setFont(font());
         break;
     case QEvent::StyleChange:
-        d->control->setPasswordCharacter(style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter));
+        {
+            QStyleOptionFrameV2 opt;
+            initStyleOption(&opt);
+            d->control->setPasswordCharacter(style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, this));
+        }
         update();
         break;
     case QEvent::LayoutDirectionChange:

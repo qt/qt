@@ -78,8 +78,6 @@ QCursorData::~QCursorData()
   Global cursors
  *****************************************************************************/
 
-extern QCursorData *qt_cursorTable[Qt::LastCursor + 1]; // qcursor.cpp
-
 int QCursor::handle() const
 {
     return d->id;

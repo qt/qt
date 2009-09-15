@@ -170,8 +170,7 @@ QList<QNetworkProxy> macQueryInternal(const QNetworkProxyQuery &query)
                 (CFStringRef)CFDictionaryGetValue(dict, kSCPropNetProxiesProxyAutoConfigURLString);
             QString url = QCFString::toQString(pacUrl);
 
-            // ### Use PAC somehow
-            qDebug("Mac system proxy: found PAC script at \"%s\"", qPrintable(url));
+            // ### TODO: Use PAC somehow
         }
     }
 

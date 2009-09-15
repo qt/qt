@@ -104,7 +104,8 @@ public:
         ItemSendsGeometryChanges = 0x800,
         ItemAcceptsInputMethod = 0x1000,
         ItemNegativeZStacksBehindParent = 0x2000,
-        ItemIsPanel = 0x4000
+        ItemIsPanel = 0x4000,
+        ItemIsFocusScope = 0x8000 // internal
         // NB! Don't forget to increase the d_ptr->flags bit field by 1 when adding a new flag.
     };
     Q_DECLARE_FLAGS(GraphicsItemFlags, GraphicsItemFlag)
@@ -244,6 +245,7 @@ public:
     void setFocusProxy(QGraphicsItem *item);
 
     QGraphicsItem *focusItem() const;
+    QGraphicsItem *focusScopeItem() const;
 
     void grabMouse();
     void ungrabMouse();

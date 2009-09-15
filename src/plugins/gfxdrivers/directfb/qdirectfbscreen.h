@@ -174,9 +174,10 @@ public:
 #ifdef QT_DIRECTFB_SUBSURFACE
     IDirectFBSurface *subSurfaceForWidget(const QWidget *widget, const QRect &area = QRect()) const;
 #endif
-
     IDirectFB *dfb();
-#ifdef QT_NO_DIRECTFB_WM
+#ifdef QT_DIRECTFB_WM
+    IDirectFBWindow *windowForWidget(const QWidget *widget) const;
+#else
     IDirectFBSurface *primarySurface();
 #endif
 #ifndef QT_NO_DIRECTFB_LAYER

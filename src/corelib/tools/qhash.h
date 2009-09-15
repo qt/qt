@@ -52,7 +52,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-#undef QT_QHASH_DEBUG
 QT_MODULE(Core)
 
 class QBitArray;
