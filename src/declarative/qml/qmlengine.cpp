@@ -648,7 +648,8 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool cre
 }
 
 QmlDeclarativeData::QmlDeclarativeData(QmlContext *ctxt)
-: context(ctxt), bindings(0), deferredComponent(0), attachedProperties(0)
+: context(ctxt), bindings(0), outerContext(0), lineNumber(0), columnNumber(0), deferredComponent(0),
+  deferredIdx(0), attachedProperties(0)
 {
 }
 
