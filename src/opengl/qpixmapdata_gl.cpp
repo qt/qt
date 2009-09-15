@@ -163,10 +163,10 @@ void QGLPixmapGLPaintDevice::beginPaint()
         glDisable(GL_BLEND);
 
 #if !defined(QT_OPENGL_ES_2)
-        glMatrixMode(GL_MODELVIEW_MATRIX);
+        glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
 
-        glMatrixMode(GL_PROJECTION_MATRIX);
+        glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         glOrtho(0, data->width(), data->height(), 0, -999999, 999999);
 #endif
