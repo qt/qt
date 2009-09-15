@@ -128,7 +128,12 @@ QT_BEGIN_NAMESPACE
     which states the QAudioInput has been in.
 
     If an error should occur, you can fetch its reason with error().
-    The possible error reasons are described by the QAudio::Error enum.
+    The possible error reasons are described by the QAudio::Error
+    enum. The QAudioInput will enter the \l{QAudio::}{StopState} when
+    an error is encountered.  Connect to the stateChanged() signal to
+    handle the error:
+
+    \snippet doc/src/snippets/audio/main.cpp 0
 
     \sa QAudioOutput, QAudioDeviceInfo
 */

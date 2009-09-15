@@ -134,7 +134,8 @@ public:
     through functions in QAudioDeviceInfo. This class also lets you
     query available parameter values for a device, so that you can set
     the parameters yourself. See the QAudioDeviceInfo class
-    description for details.
+    description for details. You need to know the format of the audio
+    streams you wish to play. Qt does not set up formats for you.
 */
 
 /*!
