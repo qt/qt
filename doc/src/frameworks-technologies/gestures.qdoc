@@ -63,16 +63,16 @@
     QPanGesture, QPinchGesture, and QSwipeGesture. These standard
     classes are ready to use, and each exposes functions and
     properties that give gesture-specific information about the user's
-    input. This is described in the section \l{Using Standard Gestures
-    With Widgets}.
+    input. This is described in the \l{Using Standard Gestures With Widgets}
+    section.
 
     QGesture is also designed to be subclassed and extended so that
     support for new gestures can be implemented by developers. Adding
     support for a new gesture involves implementing code to recognize
-    the gesture from incoming events. This is described in the section
-    \l{Creating Your Own Gesture Recognizer}.
+    the gesture from incoming events. This is described in the
+    \l{Creating Your Own Gesture Recognizer} section.
 
-    \section1 Using Standard Gestures With Widgets
+    \section1 Using Standard Gestures with Widgets
 
     Gesture objects are applied directly to widgets and other controls that accept
     user input \mdash these are the \e{target objects}. When a gesture object is
@@ -91,11 +91,10 @@
 
     \snippet examples/gestures/imageviewer/imagewidget.cpp connect swipe gesture
 
-    Here, the \l{QGesture::} {triggered()} signal is used to inform
-    the application that a gesture was used. More precise monitoring
-    of a gesture can be implemented by connecting its \l{QGesture::}
-    {started()}, \l{QGesture::} {canceled()} and \l{QGesture::}
-    {finished()} signals to slots.
+    Here, the \l{QGesture::}{triggered()} signal is used to inform the application
+    that a gesture was used. More precise monitoring of a gesture can be implemented
+    by connecting its \l{QGesture::}{started()}, \l{QGesture::}{canceled()} and
+    \l{QGesture::}{finished()} signals to slots.
 
     Responding to a signal is simply a matter of obtaining the gesture that sent
     it and examining the information it contains.
@@ -132,9 +131,18 @@
     likely scenario. To find how to connect a source of events to automatically
     feed into the recognizer see the QGesture documentation.
 
-    Recognizers based on QGesture can emit any of the following signals:
+    Recognizers based on QGesture can emit any of the following signals to
+    indicate their progress in recognizing user input:
 
-    \snippet doc/src/snippets/gestures/qgesture.h  qgesture-signals
+    \list
+    \o \l{QGesture::}{triggered()} is emitted when a gesture is recognized.
+    \o \l{QGesture::}{started()} indicates that the gesture object has started
+    to recognize user input.
+    \o \l{QGesture::}{finished()} is emitted when the gesture object has
+    recognized the user input as a gesture, and finished handling it.
+    \o \l{QGesture::}{canceled()} indicates that the gesture was canceled,
+    either by the user or by the application.
+    \endlist
 
     These signals are emitted when the state changes with the call to
     \l{QGesture::}{updateState()}, more than one signal may
@@ -224,8 +232,4 @@
         \o The signals are caught by the defined slots in ImageWidget
         \o The widget logic changes and an update() results in a paint event.
     \endlist
-
-
-
 */
-
