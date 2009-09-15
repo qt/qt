@@ -15,6 +15,8 @@
     either for the first time at startup or subsequently thereafter - the 
     property is automatically updated with the new value.
 
+    \tableofcontents
+
     \section1 Loading and using QML Files
 
     QmlComponent is used to load a QML file and to create object instances.

@@ -106,7 +106,7 @@ class QmlPropertyChangesParser : public QmlCustomParser
 public:
     void compileList(QList<QPair<QByteArray, QVariant> > &list, const QByteArray &pre, const QmlCustomParserProperty &prop);
 
-    virtual QByteArray compile(const QList<QmlCustomParserProperty> &, bool *ok);
+    virtual QByteArray compile(const QList<QmlCustomParserProperty> &);
     virtual void setCustomData(QObject *, const QByteArray &);
 };
 
@@ -137,11 +137,8 @@ QmlPropertyChangesParser::compileList(QList<QPair<QByteArray, QVariant> > &list,
 }
 
 QByteArray
-QmlPropertyChangesParser::compile(const QList<QmlCustomParserProperty> &props,
-                                bool *ok)
+QmlPropertyChangesParser::compile(const QList<QmlCustomParserProperty> &props)
 {
-    *ok = true;
-
     QList<QPair<QByteArray, QVariant> > data;
     for(int ii = 0; ii < props.count(); ++ii)
         compileList(data, QByteArray(), props.at(ii));

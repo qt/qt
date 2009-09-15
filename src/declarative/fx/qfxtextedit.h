@@ -68,8 +68,8 @@ class Q_DECLARATIVE_EXPORT QFxTextEdit : public QFxPaintedItem
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor)
-    Q_PROPERTY(QColor highlightColor READ highlightColor WRITE setHighlightColor) //### selectionColor
-    Q_PROPERTY(QColor highlightedTextColor READ highlightedTextColor WRITE setHighlightedTextColor) //### selectedTextColor
+    Q_PROPERTY(QColor selectionColor READ selectionColor WRITE setSelectionColor)
+    Q_PROPERTY(QColor selectedTextColor READ selectedTextColor WRITE setSelectedTextColor)
     Q_PROPERTY(QFont font READ font WRITE setFont)
     Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign)
     Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign)
@@ -119,11 +119,11 @@ public:
     QColor color() const;
     void setColor(const QColor &c);
 
-    QColor highlightColor() const;
-    void setHighlightColor(const QColor &c);
+    QColor selectionColor() const;
+    void setSelectionColor(const QColor &c);
 
-    QColor highlightedTextColor() const;
-    void setHighlightedTextColor(const QColor &c);
+    QColor selectedTextColor() const;
+    void setSelectedTextColor(const QColor &c);
 
     HAlignment hAlign() const;
     void setHAlign(HAlignment align);

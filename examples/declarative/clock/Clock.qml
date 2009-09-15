@@ -28,7 +28,7 @@ Item {
             id: HourRotation
             origin.x: 4; origin.y: 45
             angle: 0
-            angle: Follow {
+            angle: SpringFollow {
                 spring: 2
                 damping: .2
                 source: Clock.hours * 50 * 3 + Clock.minutes / 2
@@ -44,7 +44,7 @@ Item {
             id: MinuteRotation
             origin.x: 4; origin.y: 70
             angle: 0
-            angle: Follow {
+            angle: SpringFollow {
                 spring: 2
                 damping: .2
                 source: Clock.minutes * 6
@@ -60,7 +60,7 @@ Item {
             id: SecondRotation
             origin.x: 2; origin.y: 60
             angle: 0
-            angle: Follow {
+            angle: SpringFollow {
                 spring: 5
                 damping: .25
                 modulus: 360

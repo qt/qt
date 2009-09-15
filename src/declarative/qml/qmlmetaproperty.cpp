@@ -874,6 +874,30 @@ void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value)
             }
             break;
 
+        case QVariant::Url:
+            {
+                QUrl u;
+                if (vt == QVariant::ByteArray) {
+                    u = QUrl(QLatin1String(value.toByteArray()));
+                    found = true;
+                } else if (vt == QVariant::String) {
+                    u = QUrl(value.toString());
+                    found = true;
+                }
+
+                if (found) {
+                    if (context && u.isRelative() && !u.isEmpty())
+                        u = context->baseUrl().resolved(u);
+                    void *a[1];
+                    a[0] = &u;
+                    QMetaObject::metacall(object, 
+                                          QMetaObject::WriteProperty,
+                                          coreIdx, a);
+                }
+
+            }
+            break;
+
 
         default:
             {

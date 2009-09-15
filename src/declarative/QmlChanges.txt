@@ -29,14 +29,18 @@ SetPropertyAction  -> PropertyAction
 RunScriptAction    -> ScriptAction
 ParentChangeAction -> ParentAction
 VisualModel        -> VisualDataModel
+Follow             -> SpringFollow
 
 Renamed properties:
+Item: contents         -> childrenRect
 MouseRegion: xmin      -> minimumX
 MouseRegion: xmax      -> maximumX
 MouseRegion: ymin      -> minimumY
 MouseRegion: ymin      -> maximumY
 Text elements: hAlign  -> horizontalAlignment
 Text elements: vAlign  -> verticalAlignment
+Text elements: highlightColor -> selectionColor
+Text elements: highlightedTextColor -> selectedTextColor
 State: operations      -> changes
 Transition: operations -> animations
 Transition: fromState  -> from
@@ -58,6 +62,14 @@ WebView: status        -> statusText
 WebView: mouseX        -> clickX (parameter to onDoubleClick)
 WebView: mouseY        -> clickY (parameter to onDoubleClick)
 WebView: cacheSize     -> pixelCacheSize
+Repeater: component    -> delegate
+Repeater: dataSource   -> model
+ListView: current      -> currentItem
+GridView: current      -> currentItem
+ListView: wrap         -> keyNavigationWraps
+ListView: autoHighlight -> highlightFollowsCurrentItem
+GridView: wrap         -> keyNavigationWraps
+GridView: autoHighlight -> highlightFollowsCurrentItem
 
 Additions:
 MouseRegion: add "acceptedButtons" property
@@ -66,6 +78,10 @@ MouseRegion: add "pressedButtons" property
 Timer: add start() and stop() slots
 WebView: add newWindowComponent and newWindowParent properties
 Loader: add status() and progress() properties
+Loader: add sourceComponent property
+Loader: add resizeMode property
+ListView: preferredHighlightBegin, preferredHighlightEnd
+ListView: strictlyEnforceHighlightRange
 
 Deletions:
 Column/VerticalPositioner: lost "margins" property
@@ -73,6 +89,9 @@ Row/HorizontalPositioner: lost "margins" property
 Grid/Positioner/Layout: lost "margins" property
 WebView: lost "interactive" property (always true now)
 Flickable: removed "dragMode" property
+ComponentInstance: removed.  Replaced by Loader.sourceComponent
+ListView: removed currentItemMode.  Replaced by highligh range.
+ListView: removed snapPos.
 
 Other Changes:
 Drag: axis becomes an enum with values "XAxis", "YAxis", "XandYAxis"

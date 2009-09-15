@@ -25,7 +25,7 @@ Rectangle {
         }
 
         // Make y follow the target y coordinate, with a velocity of 200
-        y: Follow { source: Ball.targetY; velocity: 200 }
+        y: SpringFollow { source: Ball.targetY; velocity: 200 }
 
         // Detect the ball hitting the top or bottom of the view and bounce it
         onYChanged: {
@@ -42,7 +42,7 @@ Rectangle {
         id: LeftBat
         color: "#00ee00"
         x: 2; width: 20; height: 90
-        y: Follow {
+        y: SpringFollow {
             source: Ball.y-45; velocity: 300
             enabled: Ball.direction == 'left'
         }
@@ -51,7 +51,7 @@ Rectangle {
         id: RightBat
         color: "#00ee00"
         x: Page.width-22; width: 20; height: 90
-        y: Follow {
+        y: SpringFollow {
             source: Ball.y-45; velocity: 300
             enabled: Ball.direction == 'right'
         }

@@ -55,14 +55,15 @@ class Q_DECLARATIVE_EXPORT QFxLoader : public QFxItem
 {
     Q_OBJECT
     Q_ENUMS(Status)
+    Q_ENUMS(ResizeMode)
 
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(QmlComponent *sourceComponent READ sourceComponent WRITE setSourceComponent NOTIFY sourceChanged)
+    Q_PROPERTY(ResizeMode resizeMode READ resizeMode WRITE setResizeMode)
     Q_PROPERTY(QFxItem *item READ item NOTIFY itemChanged)
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
     //### sourceItem
-    //### sourceComponent
-    //### resizeMode { NoResize, SizeLoaderToItem (default), SizeItemToLoader }
 
 public:
     QFxLoader(QFxItem *parent=0);
@@ -71,9 +72,16 @@ public:
     QUrl source() const;
     void setSource(const QUrl &);
 
+    QmlComponent *sourceComponent() const;
+    void setSourceComponent(QmlComponent *);
+
     enum Status { Null, Ready, Loading, Error };
     Status status() const;
     qreal progress() const;
+
+    enum ResizeMode { NoResize, SizeLoaderToItem, SizeItemToLoader };
+    ResizeMode resizeMode() const;
+    void setResizeMode(ResizeMode mode);
 
     QFxItem *item() const;
 
@@ -87,6 +95,7 @@ private:
     Q_DISABLE_COPY(QFxLoader)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxLoader)
     Q_PRIVATE_SLOT(d_func(), void _q_sourceLoaded())
+    Q_PRIVATE_SLOT(d_func(), void _q_updateSize())
 };
 
 QT_END_NAMESPACE

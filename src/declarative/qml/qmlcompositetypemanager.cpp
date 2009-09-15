@@ -87,6 +87,7 @@ QmlComponent *QmlCompositeTypeData::toComponent(QmlEngine *engine)
         QmlCompiledData *cc = toCompiledComponent(engine);
         if (cc) {
             component = new QmlComponent(engine, cc, -1, -1, 0);
+            cc->release();
         } else {
             component = new QmlComponent(engine, 0);
             component->d_func()->url = imports.baseUrl();

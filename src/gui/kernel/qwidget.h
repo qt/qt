@@ -731,6 +731,7 @@ private:
     friend class QGLContext;
     friend class QGLWidget;
     friend class QGLWindowSurface;
+    friend class QGLWindowSurfaceGLPaintDevice;
     friend class QVGWindowSurface;
     friend class QX11PaintEngine;
     friend class QWin32PaintEngine;

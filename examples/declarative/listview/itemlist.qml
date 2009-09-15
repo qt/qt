@@ -29,7 +29,9 @@ Rectangle {
         anchors.fill: parent
         anchors.bottomMargin: 30
         model: ItemModel
-        currentItemPositioning: "SnapAuto"
+        preferredHighlightBegin: 0
+        preferredHighlightEnd: 1
+        strictlyEnforceHighlightRange: true
         orientation: "Horizontal"
     }
 

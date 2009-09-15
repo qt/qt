@@ -55,6 +55,12 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,QIntValidator,QIntValidator);
 /*!
     \qmlclass TextInput
     The TextInput item allows you to add an editable line of text to a scene.
+
+    TextInput can only display a single line of text, and can only display
+    plain text. However it can provide addition input constraints on the text.
+
+    Input constraints include setting a QValidator, an input mask, or a
+    maximum input length.
 */
 QFxTextInput::QFxTextInput(QFxItem* parent)
     : QFxPaintedItem(*(new QFxTextInputPrivate), parent)
@@ -148,47 +154,62 @@ void QFxTextInput::setColor(const QColor &c)
 
 
 /*!
-    \qmlproperty color TextInput::highlightColor
+    \qmlproperty color TextInput::selectionColor
 
     The text highlight color, used behind selections.
 */
-QColor QFxTextInput::highlightColor() const
+QColor QFxTextInput::selectionColor() const
 {
     Q_D(const QFxTextInput);
-    return d->highlightColor;
+    return d->selectionColor;
 }
 
-void QFxTextInput::setHighlightColor(const QColor &color)
+void QFxTextInput::setSelectionColor(const QColor &color)
 {
     Q_D(QFxTextInput);
-    if (d->highlightColor == color)
+    if (d->selectionColor == color)
         return;
 
-    d->highlightColor = color;
+    d->selectionColor = color;
     //TODO: implement
 }
 
 /*!
-    \qmlproperty color TextInput::highlightedTextColor
+    \qmlproperty color TextInput::selectedTextColor
 
     The highlighted text color, used in selections.
 */
-QColor QFxTextInput::highlightedTextColor() const
+QColor QFxTextInput::selectedTextColor() const
 {
     Q_D(const QFxTextInput);
-    return d->highlightedTextColor;
+    return d->selectedTextColor;
 }
 
-void QFxTextInput::setHighlightedTextColor(const QColor &color)
+void QFxTextInput::setSelectedTextColor(const QColor &color)
 {
     Q_D(QFxTextInput);
-    if (d->highlightedTextColor == color)
+    if (d->selectedTextColor == color)
         return;
 
-    d->highlightedTextColor = color;
+    d->selectedTextColor = color;
     //TODO: implement
 }
 
+/*!
+    \qmlproperty enumeration TextInput::horizontalAlignment
+
+    Sets the horizontal alignment of the text within the TextInput item's
+    width and height.  By default, the text is left aligned.
+
+    TextInput does not have vertical alignment, as the natural height is
+    exactly the height of the single line of text. If you set the height
+    manually to something larger, TextInput will always be top aligned
+    vertically. You can use anchors to align it however you want within
+    another item.
+
+    The valid values for \c horizontalAlignment are \c AlignLeft, \c AlignRight and
+    \c AlignHCenter.
+*/
 QFxTextInput::HAlignment QFxTextInput::hAlign() const
 {
     Q_D(const QFxTextInput);
@@ -340,6 +361,34 @@ QString QFxTextInput::selectedText() const
     return d->control->selectedText();
 }
 
+/*!
+    \qmlproperty bool TextInput::focusOnPress
+
+    Whether the TextInput should gain focus on a mouse press. By default this is
+    set to true.
+*/
+bool QFxTextInput::focusOnPress() const
+{
+    Q_D(const QFxTextInput);
+    return d->focusOnPress;
+}
+
+void QFxTextInput::setFocusOnPress(bool b)
+{
+    Q_D(QFxTextInput);
+    d->focusOnPress = b;
+}
+
+/*!
+    \qmlproperty QValidator* TextInput::validator
+
+    Allows you to set a QValidator on the TextInput. When a validator is set
+    the TextInput will only accept input which leaves the text property in
+    an acceptable or intermediate state. The accepted signal will only be sent
+    if the text is in an acceptable state when enter is pressed.
+
+    \sa acceptableInput, inputMask
+*/
 QValidator* QFxTextInput::validator() const
 {
     Q_D(const QFxTextInput);
@@ -357,6 +406,15 @@ void QFxTextInput::setValidator(QValidator* v)
     }
 }
 
+/*!
+    \qmlproperty string TextInput::inputMask
+
+    Allows you to set an input mask on the TextInput, restricting the allowable
+    text inputs. See QLineEdit::inputMask for further details, as the exact
+    same mask strings are used by TextInput.
+
+    \sa acceptableInput, validator
+*/
 QString QFxTextInput::inputMask() const
 {
     Q_D(const QFxTextInput);
@@ -369,22 +427,40 @@ void QFxTextInput::setInputMask(const QString &im)
     d->control->setInputMask(im);
 }
 
+/*!
+    \qmlproperty bool TextInput::acceptableInput
+
+    This property is always true unless a validator or input mask has been set.
+    If a validator or input mask has been set, this property will only be true
+    if the current text is acceptable to the validator or input mask as a final
+    string (not as an intermediate string).
+*/
 bool QFxTextInput::hasAcceptableInput() const
 {
     Q_D(const QFxTextInput);
     return d->control->hasAcceptableInput();
 }
 
-uint QFxTextInput::echoMode() const
+/*!
+    \qmlproperty TextInput.EchoMode TextInput::echoMode
+
+    Specifies how the text should be displayed in the TextInput.
+    The default is Normal, which displays the text as it is. Other values
+    are Password, which displays asterixes instead of characters, NoEcho,
+    which displays nothing, and PasswordEchoOnEdit, which displays all but the
+    current character as asterixes.
+
+*/
+QFxTextInput::EchoMode QFxTextInput::echoMode() const
 {
     Q_D(const QFxTextInput);
-    return d->control->echoMode();
+    return (QFxTextInput::EchoMode)d->control->echoMode();
 }
 
-void QFxTextInput::setEchoMode(uint echo)
+void QFxTextInput::setEchoMode(QFxTextInput::EchoMode echo)
 {
     Q_D(QFxTextInput);
-    d->control->setEchoMode(echo);
+    d->control->setEchoMode((uint)echo);
 }
 
 /*!
@@ -431,7 +507,7 @@ void QFxTextInputPrivate::startCreatingCursor()
         q->connect(cursorComponent, SIGNAL(statusChanged(int)),
                 q, SLOT(createCursor()));
     }else{//isError
-        qWarning() << "You could really use the error checking for QFxTextInput. We'll implement it soon.";
+        qWarning() << "You could really use the error checking for QFxTextInput. We'll implement it soon.";//TODO:better error handling
     }
 }
 
@@ -446,7 +522,7 @@ void QFxTextInput::createCursor()
         delete d->cursorItem;
     d->cursorItem = qobject_cast<QFxItem*>(d->cursorComponent->create());
     if(!d->cursorItem){
-        qWarning() << "You could really use the error reporting for QFxTextInput. We'll implement it soon.";
+        qWarning() << "You could really use the error reporting for QFxTextInput. We'll implement it soon.";//TODO:better error handling
         return;
     }
 
@@ -480,7 +556,14 @@ void QFxTextInput::focusChanged(bool hasFocus)
 void QFxTextInput::keyPressEvent(QKeyEvent* ev)
 {
     Q_D(QFxTextInput);
-    d->control->processKeyEvent(ev);
+    if((d->control->cursor() == 0 && ev->key() == Qt::Key_Left)
+            || (d->control->cursor() == d->control->text().length()
+                && ev->key() == Qt::Key_Right)){
+        //ignore when moving off the end
+        ev->ignore();
+    }else{
+        d->control->processKeyEvent(ev);
+    }
     if (!ev->isAccepted())
         QFxPaintedItem::keyPressEvent(ev);
 }
@@ -488,11 +571,12 @@ void QFxTextInput::keyPressEvent(QKeyEvent* ev)
 void QFxTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxTextInput);
-    setFocus(true);//###Should we make 'focusOnPress' be optional like TextEdit?
-    setCursorVisible(true);
-    d->focused = true;
+    if(d->focusOnPress){
+        setFocus(true);
+        setCursorVisible(true);
+        d->focused = true;
+    }
     d->control->processEvent(event);
-    //event->accept();
 }
 
 bool QFxTextInput::event(QEvent* ev)
@@ -500,6 +584,7 @@ bool QFxTextInput::event(QEvent* ev)
     Q_D(QFxTextInput);
     //Anything we don't deal with ourselves, pass to the control
     switch(ev->type()){
+        case QEvent::KeyPress:
         case QEvent::GraphicsSceneMousePress:
             break;
         default:
@@ -645,7 +730,8 @@ void QFxTextInput::updateSize()
     setImplicitHeight(d->control->height());
     //d->control->width() is max width, not current width
     QFontMetrics fm = QFontMetrics(d->font);
-    setImplicitWidth(fm.boundingRect(d->control->text()).width()+1);
+    setImplicitWidth(fm.width(d->control->text())+1);
+    //setImplicitWidth(d->control->naturalWidth());//### This fn should be coming into 4.6 shortly, and might be faster
     setContentsSize(QSize(width(), height()));
 }
 

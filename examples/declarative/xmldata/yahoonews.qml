@@ -101,6 +101,5 @@ Rectangle {
         clip: true
         model: feedModel
         delegate: feedDelegate
-        currentItemPositioning: "Snap"
     }
 }

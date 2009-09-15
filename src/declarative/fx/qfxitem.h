@@ -70,7 +70,7 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
 
     Q_PROPERTY(QFxItem * parent READ parentItem WRITE setParentItem NOTIFY parentChanged DESIGNABLE false FINAL)
     Q_PROPERTY(QmlList<QObject *> *data READ data DESIGNABLE false)
-    Q_PROPERTY(QmlList<QFxItem *>* children READ children DESIGNABLE false)
+    Q_PROPERTY(QmlList<QFxItem *>* children READ fxChildren DESIGNABLE false)
     Q_PROPERTY(QmlList<QObject *>* resources READ resources DESIGNABLE false)
     Q_PROPERTY(QmlList<QmlState *>* states READ states DESIGNABLE false)
     Q_PROPERTY(QmlList<QmlTransition *>* transitions READ transitions DESIGNABLE false)
@@ -112,7 +112,7 @@ public:
     void setParent(QFxItem *parent) { setParentItem(parent); }
 
     QmlList<QObject *> *data();
-    QmlList<QFxItem *> *children();
+    QmlList<QFxItem *> *fxChildren();
     QmlList<QObject *> *resources();
 
     QFxAnchors *anchors();

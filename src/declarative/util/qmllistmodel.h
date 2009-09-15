@@ -50,6 +50,8 @@
 #include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qlistmodelinterface.h>
+#include <QtScript/qscriptvalue.h>
+
 
 QT_BEGIN_HEADER
 
@@ -71,6 +73,14 @@ public:
     virtual QString toString(int role) const;
     virtual int count() const;
     virtual QHash<int,QVariant> data(int index, const QList<int> &roles = (QList<int>())) const;
+
+    Q_INVOKABLE void clear();
+    Q_INVOKABLE void remove(int index);
+    Q_INVOKABLE void append(const QScriptValue&);
+    Q_INVOKABLE void insert(int index, const QScriptValue&);
+    Q_INVOKABLE void set(int index, const QScriptValue&);
+    Q_INVOKABLE void set(int index, const QString& property, const QVariant& value);
+    Q_INVOKABLE void move(int from, int to, int count);
 
 private:
     QVariant valueForNode(ModelNode *) const;

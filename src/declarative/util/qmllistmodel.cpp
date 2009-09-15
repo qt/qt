@@ -47,6 +47,7 @@
 #include "qmlopenmetaobject.h"
 #include <qmlcontext.h>
 #include "qmllistmodel.h"
+#include <QtScript/qscriptvalueiterator.h>
 
 Q_DECLARE_METATYPE(QListModelInterface *)
 
@@ -68,11 +69,15 @@ struct ListModelData
     ListInstruction *instructions() const { return (ListInstruction *)((char *)this + sizeof(ListModelData)); }
 };
 
+static void dump(ModelNode *node, int ind);
+
 /*!
     \qmlclass ListModel 
     \brief The ListModel element defines a free-form list data source.
 
-    The ListModel is a simple hierarchy of elements containing data roles.
+    The ListModel is a simple hierarchy of elements containing data roles. The contents can
+    be defined dynamically, or explicitly in QML:
+
     For example:
 
     \code
@@ -138,7 +143,7 @@ struct ListModelData
             name: "Banana"
             cost: 1.95
             attributes: [
-                ListElement { description: "Tropical" }
+                ListElement { description: "Tropical" },
                 ListElement { description: "Seedless" }
             ]
         }
@@ -166,13 +171,36 @@ struct ListModelData
     }
     \endcode
 
+    The content of a ListModel may be created and modified using the clear(),
+    append(), and set() methods.  For example:
+
+    \code
+    Component {
+        id: FruitDelegate
+        Item {
+            width: 200; height: 50
+            Text { text: name }
+            Text { text: '$'+cost; anchors.right: parent.right }
+
+            // Double the price when clicked.
+            MouseRegion {
+                anchors.fill: parent
+                onClicked: FruitModel.set(index, "cost", cost*2)
+            }
+        }
+    }
+    \endcode
+
+    When creating content dynamically, note that the set of available properties cannot be changed
+    except by first clearing the model - whatever properties are first added are then the
+    only permitted properties in the model.
 */
 
 class ModelObject : public QObject
 {
     Q_OBJECT
 public:
-    ModelObject(ModelNode *);
+    ModelObject();
 
     void setValue(const QByteArray &name, const QVariant &val)
     {
@@ -180,8 +208,6 @@ public:
     }
 
 private:
-    ModelNode *_node;
-    bool _haveProperties;
     QmlOpenMetaObject *_mo;
 };
 
@@ -189,7 +215,6 @@ struct ModelNode
 {
     ModelNode();
     ~ModelNode();
-    QString className;
 
     QList<QVariant> values;
     QHash<QString, ModelNode *> properties;
@@ -204,7 +229,7 @@ struct ModelNode
 
     ModelObject *object() {
         if (!objectCache) {
-            objectCache = new ModelObject(this);
+            objectCache = new ModelObject();
             QHash<QString, ModelNode *>::iterator it;
             for (it = properties.begin(); it != properties.end(); ++it) {
                 if (!(*it)->values.isEmpty())
@@ -214,12 +239,61 @@ struct ModelNode
         return objectCache;
     }
 
+    void setListValue(const QScriptValue& valuelist) {
+        QScriptValueIterator it(valuelist);
+        values.clear();
+        while (it.hasNext()) {
+            it.next();
+            ModelNode *value = new ModelNode;
+            QScriptValue v = it.value();
+            if (v.isArray()) {
+                value->setListValue(v);
+            } else if (v.isObject()) {
+                value->setObjectValue(v);
+            } else {
+                value->values << v.toVariant();
+            }
+            values.append(qVariantFromValue(value));
+
+        }
+    }
+
+    void setObjectValue(const QScriptValue& valuemap) {
+        QScriptValueIterator it(valuemap);
+        while (it.hasNext()) {
+            it.next();
+            ModelNode *value = new ModelNode;
+            QScriptValue v = it.value();
+            if (v.isArray()) {
+                value->setListValue(v);
+            } else if (v.isObject()) {
+                value->setObjectValue(v);
+            } else {
+                value->values << v.toVariant();
+            }
+            properties.insert(it.name(),value);
+        }
+    }
+
+    void setProperty(const QString& prop, const QVariant& val) {
+        QHash<QString, ModelNode *>::const_iterator it = properties.find(prop);
+        if (it != properties.end()) {
+            (*it)->values[0] = val;
+        } else {
+            ModelNode *n = new ModelNode;
+            n->values << val;
+            properties.insert(prop,n);
+        }
+        if (objectCache)
+            objectCache->setValue(prop.toLatin1(), val);
+    }
+
     QmlListModel *modelCache;
     ModelObject *objectCache;
 };
 
-ModelObject::ModelObject(ModelNode *node)
-: _node(node), _haveProperties(false), _mo(new QmlOpenMetaObject(this))
+ModelObject::ModelObject()
+: _mo(new QmlOpenMetaObject(this))
 {
 }
 
@@ -235,7 +309,7 @@ QmlListModel::~QmlListModel()
 
 void QmlListModel::checkRoles() const
 {
-    if (_rolesOk)
+    if (_rolesOk || !_root)
         return;
 
     for (int ii = 0; ii < _root->values.count(); ++ii) {
@@ -341,10 +415,229 @@ int QmlListModel::count() const
     return _root->values.count();
 }
 
+/*!
+    \qmlmethod ListModel::clear()
+
+    Deletes all content from the model. The properties are cleared such that
+    different properties may be set on subsequent additions.
+
+    \sa append() remove()
+*/
+void QmlListModel::clear()
+{
+    int cleared = count();
+    _rolesOk = false;
+    delete _root;
+    _root = 0;
+    roleStrings.clear();
+    emit itemsRemoved(0,cleared);
+}
+
+/*!
+    \qmlmethod ListModel::remove(int index)
+
+    Deletes the content at \a index from the model.
+
+    \sa clear()
+*/
+void QmlListModel::remove(int index)
+{
+    if (_root) {
+        ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
+        _root->values.removeAt(index);
+        if (node)
+            delete node;
+        emit itemsRemoved(index,1);
+    }
+}
+
+/*!
+    \qmlmethod ListModel::insert(index,dict)
+
+    Adds a new item to the list model at position \a index, with the
+    values in \a dict.
+
+    \code
+        FruitModel.insert(2, {"cost": 5.95, "name":"Pizza"})
+    \endcode
+
+    The \a index must be to an existing item in the list, or one past
+    the end of the list (equivalent to append).
+
+    \sa set() append()
+*/
+void QmlListModel::insert(int index, const QScriptValue& valuemap)
+{
+    if (!_root)
+        _root = new ModelNode;
+    if (index >= _root->values.count()) {
+        if (index == _root->values.count())
+            append(valuemap);
+        return;
+    }
+    ModelNode *mn = new ModelNode;
+    mn->setObjectValue(valuemap);
+    _root->values.insert(index,qVariantFromValue(mn));
+    emit itemsInserted(index,1);
+}
+
+/*!
+    \qmlmethod ListModel::move(from,to,n)
+
+    Moves \a n items \a from one position \a to another.
+
+    The from and to ranges must exist; for example, to move the first 3 items
+    to the end of the list:
+
+    \code
+        FruitModel.move(0,FruitModel.count-3,3)
+    \endcode
+
+    \sa append()
+*/
+void QmlListModel::move(int from, int to, int n)
+{
+    if (from+n > count() || to+n > count() || n==0 || from==to || from < 0 || to < 0)
+        return;
+    int origfrom=from; // preserve actual move, so any animations are correct
+    int origto=to;
+    int orign=n;
+    if (from > to) {
+        // Only move forwards - flip if backwards moving
+        int tfrom = from;
+        int tto = to;
+        from = tto;
+        to = tto+n;
+        n = tfrom-tto;
+    }
+    if (n==1) {
+        _root->values.move(from,to);
+    } else {
+        QList<QVariant> replaced;
+        int i=0;
+        QVariantList::const_iterator it=_root->values.begin(); it += from+n;
+        for (; i<to-from; ++i,++it)
+            replaced.append(*it);
+        i=0;
+        it=_root->values.begin(); it += from;
+        for (; i<n; ++i,++it)
+            replaced.append(*it);
+        QVariantList::const_iterator f=replaced.begin();
+        QVariantList::iterator t=_root->values.begin(); t += from;
+        for (; f != replaced.end(); ++f, ++t)
+            *t = *f;
+    }
+    emit itemsMoved(origfrom,origto,orign);
+}
+
+/*!
+    \qmlmethod ListModel::append(dict)
+
+    Adds a new item to the end of the list model, with the
+    values in \a dict.
+
+    \code
+        FruitModel.append({"cost": 5.95, "name":"Pizza"})
+    \endcode
+
+    \sa set() remove()
+*/
+void QmlListModel::append(const QScriptValue& valuemap)
+{
+    if (!valuemap.isObject()) {
+        qWarning("ListModel::append: value is not an object");
+        return;
+    }
+    if (!_root)
+        _root = new ModelNode;
+    ModelNode *mn = new ModelNode;
+    mn->setObjectValue(valuemap);
+    _root->values << qVariantFromValue(mn);
+    emit itemsInserted(count()-1,1);
+}
+
+/*!
+    \qmlmethod ListModel::set(index,dict)
+
+    Changes the item at \a index in the list model to the
+    values in \a dict.
+
+    \code
+        FruitModel.set(3, {"cost": 5.95, "name":"Pizza"})
+    \endcode
+
+    The \a index must be an element in the list.
+
+    \sa append()
+*/
+void QmlListModel::set(int index, const QScriptValue& valuemap)
+{
+    if (!_root)
+        _root = new ModelNode;
+    if ( index >= _root->values.count()) {
+        qWarning() << "ListModel::set index out of range:" << index;
+        return;
+    }
+    if (index == _root->values.count())
+        append(valuemap);
+    else {
+        ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
+        QList<int> roles;
+        node->setObjectValue(valuemap);
+        QScriptValueIterator it(valuemap);
+        while (it.hasNext()) {
+            it.next();
+            int r = roleStrings.indexOf(it.name());
+            if (r<0) {
+                r = roleStrings.count();
+                roleStrings << it.name();
+            }
+            roles.append(r);
+        }
+        emit itemsChanged(index,1,roles);
+    }
+}
+
+/*!
+    \qmlmethod ListModel::set(index,property,value)
+
+    Changes the \a property of the item at \a index in the list model to \a value.
+
+    \code
+        FruitModel.set(3, "cost", 5.95)
+    \endcode
+
+    The \a index must be an element in the list.
+
+    \sa append()
+*/
+void QmlListModel::set(int index, const QString& property, const QVariant& value)
+{
+    if (!_root)
+        _root = new ModelNode;
+    if ( index >= _root->values.count()) {
+        qWarning() << "ListModel::set index out of range:" << index;
+        return;
+    }
+    ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
+    int r = roleStrings.indexOf(property);
+    if (r<0) {
+        r = roleStrings.count();
+        roleStrings << property;
+    }
+    QList<int> roles;
+    roles.append(r);
+
+    if (node)
+        node->setProperty(property,value);
+    emit itemsChanged(index,1,roles);
+}
+
+
 class QmlListModelParser : public QmlCustomParser
 {
 public:
-    QByteArray compile(const QList<QmlCustomParserProperty> &, bool *ok);
+    QByteArray compile(const QList<QmlCustomParserProperty> &);
     bool compileProperty(const QmlCustomParserProperty &prop, QList<ListInstruction> &instr, QByteArray &data);
     void setCustomData(QObject *, const QByteArray &);
 };
@@ -369,8 +662,14 @@ bool QmlListModelParser::compileProperty(const QmlCustomParserProperty &prop, QL
             QList<QmlCustomParserProperty> props = node.properties();
             for(int jj = 0; jj < props.count(); ++jj) {
                 const QmlCustomParserProperty &nodeProp = props.at(jj);
-                if(nodeProp.name() == "")
+                if (nodeProp.name() == "") {
+                    error(nodeProp, QLatin1String("Cannot use default property in ListModel"));
                     return false;
+                }
+                if (nodeProp.name() == "id") {
+                    error(nodeProp, QLatin1String("Cannot use reserved \"id\" property in ListModel"));
+                    return false;
+                }
 
                 ListInstruction li;
                 int ref = data.count();
@@ -416,21 +715,19 @@ bool QmlListModelParser::compileProperty(const QmlCustomParserProperty &prop, QL
     return true;
 }
 
-QByteArray QmlListModelParser::compile(const QList<QmlCustomParserProperty> &customProps, bool *ok)
+QByteArray QmlListModelParser::compile(const QList<QmlCustomParserProperty> &customProps)
 {
-    *ok = true;
     QList<ListInstruction> instr;
     QByteArray data;
 
     for(int ii = 0; ii < customProps.count(); ++ii) {
         const QmlCustomParserProperty &prop = customProps.at(ii);
         if(prop.name() != "") { // isn't default property
-            *ok = false;
+            error(prop, QLatin1String("Cannot use default property"));
             return QByteArray();
         }
 
         if(!compileProperty(prop, instr, data)) {
-            *ok = false;
             return QByteArray();
         }
     }
@@ -518,7 +815,7 @@ static void dump(ModelNode *node, int ind)
     for (int ii = 0; ii < node->values.count(); ++ii) {
         ModelNode *subNode = qvariant_cast<ModelNode *>(node->values.at(ii));
         if (subNode) {
-            qWarning().nospace() << indent << "Sub-node " << ii << ": class " << subNode->className;
+            qWarning().nospace() << indent << "Sub-node " << ii;
             dump(subNode, ind + 1);
         } else {
             qWarning().nospace() << indent << "Sub-node " << ii << ": " << node->values.at(ii).toString();
@@ -543,7 +840,8 @@ ModelNode::~ModelNode()
         ModelNode *node = qvariant_cast<ModelNode *>(values.at(ii));
         if (node) { delete node; node = 0; }
     }
-    if (modelCache) { delete modelCache; modelCache = 0; }
+    if (modelCache) { modelCache->_root = 0/* ==this */; delete modelCache; modelCache = 0; }
+    if (objectCache) { delete objectCache; }
 }
 
 QT_END_NAMESPACE

@@ -71,7 +71,7 @@ extern double integerFromString(const char *buf, int size, int radix);
 
 using namespace QmlJS;
 
-Lexer::Lexer(Engine *eng)
+Lexer::Lexer(Engine *eng, bool tokenizeComments)
     : driver(eng),
       yylineno(0),
       done(false),
@@ -94,7 +94,8 @@ Lexer::Lexer(Engine *eng)
       check_reserved(true),
       parenthesesState(IgnoreParentheses),
       parenthesesCount(0),
-      prohibitAutomaticSemicolon(false)
+      prohibitAutomaticSemicolon(false),
+      tokenizeComments(tokenizeComments)
 {
     driver->setLexer(this);
     // allocate space for read buffers
@@ -647,22 +648,28 @@ int Lexer::lex()
                     setDone(Other);
                 } else
                     state = Start;
+                driver->addComment(startpos, tokenLength(), startlineno, startcolumn);
             } else if (current == 0) {
+                driver->addComment(startpos, tokenLength(), startlineno, startcolumn);
                 setDone(Eof);
             }
+
             break;
         case InMultiLineComment:
             if (current == 0) {
                 setDone(Bad);
                 err = UnclosedComment;
                 errmsg = QLatin1String("Unclosed comment at end of file");
+                driver->addComment(startpos, tokenLength(), startlineno, startcolumn);
             } else if (isLineTerminator()) {
                 shiftWindowsLineBreak();
                 yylineno++;
             } else if (current == '*' && next1 == '/') {
                 state = Start;
                 shift(1);
+                driver->addComment(startpos, tokenLength(), startlineno, startcolumn);
             }
+
             break;
         case InIdentifier:
             if (isIdentLetter(current) || isDecimalDigit(current)) {

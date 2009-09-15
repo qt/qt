@@ -50,6 +50,7 @@
 #include "private/qmetaobjectbuilder_p.h"
 #include "qmlopenmetaobject.h"
 #include "qmllistaccessor.h"
+#include "qmlinfo.h"
 #include "qfxvisualitemmodel.h"
 #include "private/qguard_p.h"
 #include <QtCore/qdebug.h>
@@ -243,6 +244,16 @@ public:
     QmlContext *m_context;
     QList<int> m_roles;
     QHash<int,QString> m_roleNames;
+    void ensureRoles() {
+        if (m_roles.isEmpty()) {
+            if (m_listModelInterface) {
+                m_roles = m_listModelInterface->roles();
+                for (int ii = 0; ii < m_roles.count(); ++ii) 
+                    m_roleNames.insert(m_roles.at(ii), 
+                                          m_listModelInterface->toString(m_roles.at(ii)));
+            }
+        }
+    }
 
     struct ObjectRef {
         ObjectRef(QObject *object=0) : obj(object), ref(1) {}
@@ -375,6 +386,7 @@ int QFxVisualDataModelDataMetaObject::createProperty(const char *name, const cha
             return QmlOpenMetaObject::createProperty(name, type);
     } else {
         const QLatin1String sname(name);
+        data->m_model->ensureRoles();
         for (QHash<int, QString>::ConstIterator iter = data->m_model->m_roleNames.begin();
             iter != data->m_model->m_roleNames.end(); ++iter) {
 
@@ -397,6 +409,7 @@ QFxVisualDataModelDataMetaObject::propertyCreated(int, QMetaPropertyBuilder &pro
             && data->m_model->m_modelList) {
         return data->m_model->m_modelList->at(data->m_index);
     } else if (data->m_model->m_listModelInterface) {
+        data->m_model->ensureRoles();
         for (QHash<int, QString>::ConstIterator iter = data->m_model->m_roleNames.begin();
             iter != data->m_model->m_roleNames.end(); ++iter) {
 
@@ -410,6 +423,7 @@ QFxVisualDataModelDataMetaObject::propertyCreated(int, QMetaPropertyBuilder &pro
             } 
         }
     } else if (data->m_model->m_abstractItemModel) {
+        data->m_model->ensureRoles();
         for (QHash<int, QString>::ConstIterator iter = data->m_model->m_roleNames.begin();
             iter != data->m_model->m_roleNames.end(); ++iter) {
 
@@ -560,12 +574,6 @@ void QFxVisualDataModel::setModel(const QVariant &model)
     if (object && (d->m_listModelInterface = qobject_cast<QListModelInterface *>(object))) {
         d->m_roles.clear();
         d->m_roleNames.clear();
-        if (d->m_listModelInterface) {
-            d->m_roles = d->m_listModelInterface->roles();
-            for (int ii = 0; ii < d->m_roles.count(); ++ii) 
-                d->m_roleNames.insert(d->m_roles.at(ii), 
-                                      d->m_listModelInterface->toString(d->m_roles.at(ii)));
-        }
 
         QObject::connect(d->m_listModelInterface, SIGNAL(itemsChanged(int,int,QList<int>)),
                          this, SLOT(_q_itemsChanged(int,int,QList<int>)));
@@ -688,7 +696,8 @@ QFxVisualDataModel::ReleaseFlags QFxVisualDataModel::release(QFxItem *item)
         if (inPackage)
             emit destroyingPackage(qobject_cast<QmlPackage*>(obj));
         stat |= Destroyed;
-        delete obj;
+        obj->setParent(0);
+        obj->deleteLater();
     } else if (!inPackage) {
         stat |= Referenced;
     }
@@ -742,8 +751,13 @@ QFxItem *QFxVisualDataModel::item(int index, const QByteArray &viewId, bool comp
         if (package) {
             QObject *o = package->part(QLatin1String(viewId));
             item = qobject_cast<QFxItem *>(o);
-            d->m_packaged.insertMulti(item, package);
+            if (item)
+                d->m_packaged.insertMulti(item, package);
         }
+    }
+    if (!item) {
+        d->m_cache.releaseItem(nobj);
+        qmlInfo(d->m_delegate) << "Delegate component must be Item type.";
     }
 
     return item;
@@ -899,6 +913,22 @@ void QFxVisualDataModel::_q_itemsMoved(int from, int to, int count)
         if (iter.key() >= from && iter.key() < from + count) {
             QFxVisualDataModelPrivate::ObjectRef objRef = *iter;
             int index = iter.key() - from + to;
+            iter = d->m_cache.erase(iter);
+
+            items.insert(index, objRef);
+
+            QFxVisualDataModelData *data = d->data(objRef.obj);
+            data->setIndex(index);
+        } else {
+            ++iter;
+        }
+    }
+    for (QHash<int,QFxVisualDataModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
+        iter != d->m_cache.end(); ) {
+
+        if (iter.key() >= qMin(from,to) && iter.key() < qMax(from+count,to+count)) {
+            QFxVisualDataModelPrivate::ObjectRef objRef = *iter;
+            int index = iter.key() + from - to;
             iter = d->m_cache.erase(iter);
 
             items.insert(index, objRef);

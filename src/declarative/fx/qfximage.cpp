@@ -252,41 +252,12 @@ void QFxImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 
     if (width() != d->pix.width() || height() != d->pix.height()) {
         if (d->fillMode >= Tile) {
-            p->save();
-            p->setClipRect(0, 0, width(), height(), Qt::IntersectClip);
-
-            if (d->fillMode == Tile) {
-                const int pw = d->pix.width();
-                const int ph = d->pix.height();
-                int yy = 0;
-
-                while(yy < height()) {
-                    int xx = 0;
-                    while(xx < width()) {
-                        p->drawPixmap(xx, yy, d->pix);
-                        xx += pw;
-                    }
-                    yy += ph;
-                }
-            } else if (d->fillMode == TileVertically) {
-                const int ph = d->pix.height();
-                int yy = 0;
-
-                while(yy < height()) {
-                    p->drawPixmap(QRect(0, yy, width(), ph), d->pix);
-                    yy += ph;
-                }
-            } else {
-                const int pw = d->pix.width();
-                int xx = 0;
-
-                while(xx < width()) {
-                    p->drawPixmap(QRect(xx, 0, pw, height()), d->pix);
-                    xx += pw;
-                }
-            }
-
-            p->restore();
+            if (d->fillMode == Tile)
+                p->drawTiledPixmap(QRectF(0,0,width(),height()), d->pix);
+            else if (d->fillMode == TileVertically)
+                p->drawTiledPixmap(QRectF(0,0,d->pix.width(),height()), d->pix);
+            else
+                p->drawTiledPixmap(QRectF(0,0,width(),d->pix.height()), d->pix);
         } else {
             qreal widthScale = width() / qreal(d->pix.width());
             qreal heightScale = height() / qreal(d->pix.height());

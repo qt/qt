@@ -92,7 +92,7 @@ Item {
                 height: parent.height - 8
                 font.pointSize: 10
                 wrap:true
-                color: "#151515"; highlightColor: "green"
+                color: "#151515"; selectionColor: "green"
             }
             Keys.forwardTo: [(ReturnKey), (Editor)]
             Item {

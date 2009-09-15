@@ -58,7 +58,6 @@ Q_DEFINE_PERFORMANCE_LOG(QFxPerf, "QFx") {
     Q_DEFINE_PERFORMANCE_METRIC(CreateParticle, "             QFxParticles: Particle creation")
     Q_DEFINE_PERFORMANCE_METRIC(ItemComponentComplete, "             QFxItem::componentComplete")
     Q_DEFINE_PERFORMANCE_METRIC(ImageComponentComplete, "             QFxImage::componentComplete")
-    Q_DEFINE_PERFORMANCE_METRIC(ComponentInstanceComponentComplete, "             QFxComponentInstance::componentComplete")
     Q_DEFINE_PERFORMANCE_METRIC(BaseLayoutComponentComplete, "             QFxBasePositioner::componentComplete")
     Q_DEFINE_PERFORMANCE_METRIC(TextComponentComplete, "             QFxText::componentComplete")
     Q_DEFINE_PERFORMANCE_METRIC(QFxText_setText, "             QFxText::setText")

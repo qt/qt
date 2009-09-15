@@ -48,8 +48,6 @@ Window::Window()
 {
     QGridLayout *mainLayout = new QGridLayout;
 
-    glWidgets[0][0] = 0;
-
     for (int i = 0; i < NumRows; ++i) {
         for (int j = 0; j < NumColumns; ++j) {
             QColor clearColor;
@@ -57,7 +55,7 @@ Window::Window()
                               / (NumRows * NumColumns - 1),
                               255, 63);
 
-            glWidgets[i][j] = new GLWidget(0, glWidgets[0][0]);
+            glWidgets[i][j] = new GLWidget(0, 0);
             glWidgets[i][j]->setClearColor(clearColor);
             glWidgets[i][j]->rotateBy(+42 * 16, +42 * 16, -21 * 16);
             mainLayout->addWidget(glWidgets[i][j], i, j);

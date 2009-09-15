@@ -466,9 +466,6 @@ void QFxTextPrivate::updateSize()
 {
     Q_Q(QFxText);
     if (q->isComponentComplete()) {
-        if (text.isEmpty()) {
-            return;
-        }
         QFontMetrics fm(font);
         int dy = q->height();
 
@@ -633,15 +630,17 @@ QPixmap QFxTextPrivate::wrappedTextImage(bool drawStyle)
 
     //paint text
     QPixmap img(size);
-    img.fill(Qt::transparent);
-    QPainter p(&img);
-    if (drawStyle) {
-        p.setPen(styleColor);
+    if (!size.isEmpty()) {
+        img.fill(Qt::transparent);
+        QPainter p(&img);
+        if (drawStyle) {
+            p.setPen(styleColor);
+        }
+        else
+            p.setPen(color);
+        p.setFont(font);
+        layout.draw(&p, QPointF(0, 0));
     }
-    else
-        p.setPen(color);
-    p.setFont(font);
-    layout.draw(&p, QPointF(0, 0));
     return img;
 }
 

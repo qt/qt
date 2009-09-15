@@ -90,7 +90,7 @@ Item {
         id: Editor
         font.bold: true
         color: "white"
-        highlightColor: "green"
+        selectionColor: "green"
         width: 0
         clip: true
         anchors.left: Label.right

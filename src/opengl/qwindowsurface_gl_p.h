@@ -56,6 +56,7 @@
 #include <qglobal.h>
 #include <qgl.h>
 #include <private/qwindowsurface_p.h>
+#include <private/qglpaintdevice_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -65,7 +66,18 @@ class QRegion;
 class QWidget;
 struct QGLWindowSurfacePrivate;
 
-class QGLWindowSurface : public QObject, public QWindowSurface, public QPaintDevice
+class QGLWindowSurfaceGLPaintDevice : public QGLPaintDevice
+{
+public:
+    QPaintEngine* paintEngine() const;
+    void endPaint();
+    QSize size() const;
+    int metric(PaintDeviceMetric m) const;
+    QGLContext* context() const;
+    QGLWindowSurfacePrivate* d;
+};
+
+class QGLWindowSurface : public QObject, public QWindowSurface // , public QPaintDevice
 {
     Q_OBJECT
 public:
@@ -86,11 +98,6 @@ public:
     QGLContext *context() const;
 
     static QGLFormat surfaceFormat;
-
-    QPaintEngine *paintEngine() const;
-
-protected:
-    int metric(PaintDeviceMetric metric) const;
 
 private slots:
     void deleted(QObject *object);

@@ -5,10 +5,9 @@ import "../../flickr/mobile"
 Item {
     id: wrapper
     Column {
-        width: childrenRect.width; height:childrenRect.height; anchors.centerIn: parent
+        anchors.centerIn: parent
         spacing: 20
         Row{
-            width: childrenRect.width; height:childrenRect.height;
             spacing: 4
             Text { 
                 width: 100
@@ -28,7 +27,7 @@ Item {
                     anchors.centerIn: parent
                     maximumLength:21
                     font.bold: true
-                    color: "#151515"; highlightColor: "green"
+                    color: "#151515"; selectionColor: "green"
                     Keys.forwardTo: [(tabber), (nameIn)]
                     Item { 
                         id: tabber
@@ -39,7 +38,6 @@ Item {
             }
         }
         Row{
-            width: childrenRect.width; height:childrenRect.height;
             spacing: 4
             Text { 
                 width: 100
@@ -58,15 +56,15 @@ Item {
                     height: parent.height - 12
                     anchors.centerIn: parent
                     maximumLength:21
-                    echoMode: 2
+                    echoMode: TextInput.Password
                     font.bold: true
-                    color: "#151515"; highlightColor: "green"
+                    color: "#151515"; selectionColor: "green"
                 }
             }
         }
         Item{
-            width: childrenRect.width; anchors.horizontalCenter: parent.horizontalCenter
-            height: childrenRect.height
+            width: childrenRect.width; height:childrenRect.height;
+            anchors.horizontalCenter: parent.horizontalCenter
             Button {
                 x: 10
                 width: 100

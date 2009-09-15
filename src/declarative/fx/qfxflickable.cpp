@@ -48,6 +48,16 @@
 
 QT_BEGIN_NAMESPACE
 
+
+// These are highly device dependant.
+// DragThreshold determines how far the "mouse" must move before
+// we begin a drag.
+// FlickThreshold determines how far the "mouse" must have moved
+// before we perform a flick.
+static const int DragThreshold = 8;
+static const int FlickThreshold = 20;
+
+
 class QFxFlickableVisibleArea : public QObject
 {
     Q_OBJECT
@@ -147,7 +157,7 @@ QFxFlickablePrivate::QFxFlickablePrivate()
   : viewport(new QFxItem), _moveX(viewport, &QFxItem::setX), _moveY(viewport, &QFxItem::setY)
     , vWidth(-1), vHeight(-1), overShoot(true), flicked(false), moving(false), stealMouse(false)
     , pressed(false), atXEnd(false), atXBeginning(true), atYEnd(false), atYBeginning(true)
-    , interactive(true), maxVelocity(-1), reportedVelocitySmoothing(100)
+    , interactive(true), maxVelocity(5000), reportedVelocitySmoothing(100)
     , delayedPressEvent(0), delayedPressTarget(0), pressDelay(0)
     , horizontalVelocity(this), verticalVelocity(this), vTime(0), visibleArea(0)
 {
@@ -326,8 +336,6 @@ void QFxFlickablePrivate::updateBeginningEnd()
     if (visibleArea)
         visibleArea->updateVisible();
 }
-
-static const int FlickThreshold = 5;
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Flickable,QFxFlickable)
 
@@ -602,7 +610,7 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
     if (q->yflick()) {
         int dy = int(event->pos().y() - pressPos.y());
-        if (qAbs(dy) > FlickThreshold || pressTime.elapsed() > 200) {
+        if (qAbs(dy) > DragThreshold || pressTime.elapsed() > 200) {
             qreal newY = dy + pressY;
             const qreal minY = q->minYExtent();
             const qreal maxY = q->maxYExtent();
@@ -615,14 +623,14 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 moved = true;
             } else if (!q->overShoot())
                 rejectY = true;
-            if (qAbs(dy) > FlickThreshold)
+            if (qAbs(dy) > DragThreshold)
                 stealMouse = true;
         }
     }
 
     if (q->xflick()) {
         int dx = int(event->pos().x() - pressPos.x());
-        if (qAbs(dx) > FlickThreshold || pressTime.elapsed() > 200) {
+        if (qAbs(dx) > DragThreshold || pressTime.elapsed() > 200) {
             qreal newX = dx + pressX;
             const qreal minX = q->minXExtent();
             const qreal maxX = q->maxXExtent();
@@ -635,7 +643,7 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 moved = true;
             } else if (!q->overShoot())
                 rejectX = true;
-            if (qAbs(dx) > FlickThreshold)
+            if (qAbs(dx) > DragThreshold)
                 stealMouse = true;
         }
     }
@@ -666,7 +674,7 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
     lastPos = event->pos();
 }
 
-void QFxFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEvent *)
+void QFxFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_Q(QFxFlickable);
     pressed = false;
@@ -674,12 +682,12 @@ void QFxFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEvent *)
         return;
 
     vTime = timeline.time();
-    if (qAbs(velocityY) > 10)
+    if (qAbs(velocityY) > 10 && qAbs(event->pos().y() - pressPos.y()) > FlickThreshold)
         flickY(velocityY);
     else
         fixupY();
 
-    if (qAbs(velocityX) > 10)
+    if (qAbs(velocityX) > 10 && qAbs(event->pos().x() - pressPos.x()) > FlickThreshold)
         flickX(velocityX);
     else
         fixupX();
@@ -853,7 +861,7 @@ void QFxFlickablePrivate::data_append(QObject *o)
     Q_Q(QFxFlickable);
     QFxItem *i = qobject_cast<QFxItem *>(o);
     if (i)
-        viewport->children()->append(i);
+        viewport->fxChildren()->append(i);
     else
         o->setParent(q);
 }
@@ -884,7 +892,7 @@ QmlList<QObject *> *QFxFlickable::flickableData()
 QmlList<QFxItem *> *QFxFlickable::flickableChildren()
 {
     Q_D(QFxFlickable);
-    return d->viewport->children();
+    return d->viewport->fxChildren();
 }
 
 /*!
@@ -1093,6 +1101,8 @@ bool QFxFlickable::sceneEventFilter(QGraphicsItem *i, QEvent *e)
 /*!
     \qmlproperty int Flickable::maximumFlickVelocity
     This property holds the maximum velocity that the user can flick the view in pixels/second.
+
+    The default is 5000 pixels/s
 */
 qreal QFxFlickable::maximumFlickVelocity() const
 {

@@ -550,6 +550,7 @@ void tst_QAbstractButton::setShortcut()
 {
     QKeySequence seq( Qt::Key_A );
     testWidget->setShortcut( seq );
+    QApplication::setActiveWindow(testWidget);
 
     // must be active to get shortcuts
     for (int i = 0; !testWidget->isActiveWindow() && i < 100; ++i) {
@@ -557,8 +558,8 @@ void tst_QAbstractButton::setShortcut()
        QApplication::instance()->processEvents();
        QTest::qWait(100);
     }
-    QVERIFY(testWidget->isActiveWindow());    
-    
+    QVERIFY(testWidget->isActiveWindow());
+
     QTest::keyClick( testWidget, 'A' );
     QTest::qWait(300);                      // Animate click takes time
     QCOMPARE(click_count,  (uint)1);

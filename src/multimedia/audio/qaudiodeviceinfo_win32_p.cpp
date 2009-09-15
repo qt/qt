@@ -341,8 +341,6 @@ QList<QByteArray> QAudioDeviceInfoPrivate::deviceList(QAudio::Mode mode)
 
     QList<QByteArray> devices;
 
-    devices.append("default");
-
     if(mode == QAudio::AudioOutput) {
         WAVEOUTCAPS woc;
 	unsigned long iNumDevs,i;
@@ -365,6 +363,9 @@ QList<QByteArray> QAudioDeviceInfoPrivate::deviceList(QAudio::Mode mode)
 	}
 
     }
+    if(devices.count() > 0)
+        devices.append("default");
+
     return devices;
 }
 

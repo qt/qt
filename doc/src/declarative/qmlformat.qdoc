@@ -16,21 +16,148 @@ Much of a QML file consists of valid ECMAScript \e {Statement}s.  Except where c
 by ECMAScript, C++ or QObject prevented it, the syntactic extensions introduced by QML are designed
 to look similar and fit well with existing ECMAScript syntax and concepts.  
 
+\section1 QML engine
+
+The \l {QmlEngine}{QML engine} executes a \l {QmlComponent}{QML document} in a 
+\l {QmlContext}{QML context} to produce a \l {QObject}{QML object}.  A single QML 
+document may be executed in one or many contexts to produce many QML objects.  A single 
+QML document may be executed many times in the same context to produce many QML objects.
+
+The QML engine provides the environment in which QML documents, contexts and objects
+exist.  It must exist before any of these structures can be created.  If the engine is removed,
+existing documents, contexts and objects are invalidated, but not destroyed.  An invalid
+
+\list
+\i \e {QML document} can no longer be used to create QML objects.
+\i \e {QML context} can no longer host QML objects, new context properties cannot be added
+and existing context properties cannot be modified.
+\i \e {QML object} will no longer evaluate bindings or scripts.
+\endlist
+
+A QML document is a block of QML source code.  QML documents generally correspond to files stored 
+on a disk or network resource, but can be constructed directly from text data.  Syntactically a QML
+document is self contained; QML does \bold {not} have a preprocessor that modifies the document 
+before presentation to the compiler.  Type references within a QML document are resolved based 
+exclusively on the import statements present in the document.
+
+A simple QML document looks like this:
+
+\table
+\row
+\o
+\code
+import Qt 4.6
+
+Rectangle {
+    id: MyRect
+    width: 100; height: 100
+    color: background
+}
+\endcode
+\endtable
+
+To instantiate a QML object, a QML document is executed in a QML context.  QML contexts are used by
+programmers to pass data to a QML document.  QML documents may include property bindings or 
+ECMAScript blocks that can contain variable references that need to be resolved.  Each property 
+binding and ECMAScript block has an associated QML context that is used to resolve these references
+that is determined by the QML context in which the document is executed.  The example document above
+contains one variable reference, \c background.  
+
+Each QML context defines a scope for variable resolution and each may define local, named context
+properties.  A QML context may also have a \l {QmlContext::addDefaultObject()}{default object}, 
+which is an object whose properties are searched \e after the context properties when resolving a 
+variable name.  QML contexts form a tree, starting from a root context that is provided by the QML 
+engine.  When resolving variable references, the QML contexts are searched starting from the
+QML objects containing context upwards towards the root context.
+
+Consider the following QML context tree.  If the example QML document is executed in \c Context1, 
+the \c background variable will resolve to \c Context1's context property.  If the document is 
+executed in \c Context2, the \c background variable will resolve to the root context's context 
+property.
+
+\image qml-context-tree.png
+
+While QML contexts can be created explicitly by the programmer to pass data into QML objects,
+the QML engine also creates a new implicit QML context for every object it instantiates.
+Property bindings and ECMAScript blocks in the document are associated with this QML engine 
+created context.  Object ids that are defined in the document are added as context properties, and 
+their value is set to reference the appropriate object, and the instantiated QML object is set as
+the context's default object.  The following diagram shows the result of executing a simple QML 
+document.
+
+\image qml-context-object.png
+
+The blue rectangle in the diagram represents a property binding.  Associated with each property 
+binding is the QML context to which it belongs, the object property to which it is bound and a
+\e {scope object}.  The scope object is usually, but not always, the object to which the bound 
+property belongs.  The context properties, context default objects and the scope object are all 
+involved when resolving a variable name in a binding.  The following pseudo code describes the
+algorithm used:
+
+\table
+\row
+\o
+\code
+if (scopeObject.hasProperty(name))
+    return scopeObject.property(name)
+
+foreach (context in contextChain) {
+    if (context.hasContextProperty(name)
+        return context.contextProperty(name)
+
+    if (context.defaultObject.hasProperty(name))
+        return context.defaultObject.property(name)
+}
+\endcode
+\endtable
+
+QML supports two categories of types: \e builtin types and \e composite types.  Builtin types are
+those written in C++ and registered with the QML engine.  Builtin types form the most basic 
+building blocks of QML.  Composite types are constructed by composing other builtin or composite 
+types, property bindings and ECMAScript blocks together into a brand new type using the QML 
+language.  Using a composite type is identical to using a builtin type.
+
+For example, Qt 4.6 includes a builtin type called \c Image that shows a bitmap image.  The 
+\c Image type has \c width and \c height properties that control the size of the displayed image.
+A simple composite type, that will be called \c SquareImage can be built that adds a \c size 
+property that sets both the width and the height.
+
+\table
+\row
+\o
+\code
+import Qt 4.6
+Image {
+    property int size
+    width: size 
+    height: size 
+}
+\endcode
+\endtable
+
+To the QML engine, a composite type is just another QML document.  When a composite type is
+used the engine instantiates it just as it would any other document - by creating a new implicit
+QML context and the object tree described by the document.  The diagram below shows the 
+\c SquareImage composite type used from within another QML document.  When instantiated, the
+\c SquareImage object is created in its own QML context.  Any property bindings specified in the
+\c SquareImage composite type document are associated with this context.  Property bindings created
+in the outer document, however, are associated with its context, even those that are applied to the
+created \c SquareImage object.  That is, the \c size, \c source, \c width and \c height property
+bindings all share a common \e {scope object}, but are owned by two different QML contexts.  The
+difference in containing context results in the \c Root variable resolving differently in the 
+different property bindings.
+
+\image qml-context.png
+
+\section1 Syntax
+
 \section2 Commenting
 
 The commenting rules in QML are the same as for ECMAScript.  Both \e {MultiLineComment} blocks and \e {SingleLineComment}'s are supported.
 
-\section1 Definitions
+\section2 QML Document
 
-\e {QML interpreter}: QmlEngine
-
-\e {QML execution context}: QmlContext
-
-\e {inherited characteristic}
-
-\section1 QML Document
-
-\section2 Syntax
+\section3 Syntax
 
 \e {QMLDocument} \bold {:}
 
@@ -69,22 +196,16 @@ The commenting rules in QML are the same as for ECMAScript.  Both \e {MultiLineC
 \e {DecimalLiteral} \bold {but not} with \e {ExponentPart}
 \endquotation
 
-\section2 Semantics
-
-A QML document is the unit in which QML code may be passed to the QML interpreter.  A QML document
-is syntactically self contained.  QML documents are evaluated by the QML interpreter in a QML 
-execution context to produce a single instantiated object of the type specified by 
-\e {QMLObjectDefinition}.
+\section3 Semantics
 
 The \e {QMLImportList} is used to statically resolve type references used within the enclosing 
-QML document.  The import list is \bold {not} an \e {inherited characteristic}; its scope of 
-influence is limited to structures logically contained by the document.
+QML document.  
 
 An import statement is used to bring a set of types into scope for a QML document.
 
-\section1 Object Definition
+\section2 Object Definition
 
-\section2 Syntax
+\section3 Syntax
 
 \e {QMLObjectDefinition} \bold {:}
 \quotation
@@ -125,11 +246,11 @@ An import statement is used to bring a set of types into scope for a QML documen
 
 \endquotation
 
-\section2 Semantics
+\section3 Semantics
 
-\section1 Object Extension
+\section2 Object Extension
 
-\section2 Syntax
+\section3 Syntax
 
 \e {QMLObjectExtensionDefinition} \bold {:}
 \quotation
@@ -171,14 +292,14 @@ An import statement is used to bring a set of types into scope for a QML documen
 \quotation
 \e {FunctionDeclaration} \bold {but not} \e {Identifier} \sub {opt}
 \endquotation
-\section2 Semantics
+\section3 Semantics
 
-\section1 Binding Expression
+\section2 Binding Expression
 
-\section2 Syntax
+\section3 Syntax
 
 \e {QMLBindingExpression} \bold {:}
 
-\section2 Semantics
+\section3 Semantics
 
 */

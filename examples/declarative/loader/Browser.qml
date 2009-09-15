@@ -82,7 +82,7 @@ Rectangle {
         focus: true
         Keys.onPressed: {
             if (event.key == Qt.Key_Return || event.key == Qt.Key_Select) {
-                View.current.launch();
+                View.currentItem.launch();
                 event.accepted = true;
             }
         }

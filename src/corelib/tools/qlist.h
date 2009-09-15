@@ -367,21 +367,26 @@ Q_INLINE_TEMPLATE void QList<T>::node_copy(Node *from, Node *to, Node *src)
     if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
         QT_TRY {
             while(current != to) {
-                (current++)->v = new T(*reinterpret_cast<T*>((src++)->v));
+                current->v = new T(*reinterpret_cast<T*>(src->v));
+                ++current;
+                ++src;
             }
         } QT_CATCH(...) {
-            while (current != from)
-                delete reinterpret_cast<T*>(current--);
+            while (current-- != from)
+                delete reinterpret_cast<T*>(current->v);
             QT_RETHROW;
         }
 
     } else if (QTypeInfo<T>::isComplex) {
         QT_TRY {
-            while(current != to)
-                new (current++) T(*reinterpret_cast<T*>(src++));
+            while(current != to) {
+                new (current) T(*reinterpret_cast<T*>(src));
+                ++current;
+                ++src;
+            }
         } QT_CATCH(...) {
-            while (current != from)
-                (reinterpret_cast<T*>(current--))->~T();
+            while (current-- != from)
+                (reinterpret_cast<T*>(current))->~T();
             QT_RETHROW;
         }
     } else {

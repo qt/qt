@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "private/qfxflickable_p.h"
-#include "qmlfollow.h"
+#include "qmleasefollow.h"
 #include "qlistmodelinterface.h"
 #include "qfxvisualitemmodel.h"
 #include "qfxlistview.h"
@@ -172,11 +172,13 @@ public:
     QFxListViewPrivate()
         : model(0), currentItem(0), tmpCurrent(0), orient(Qt::Vertical)
         , visiblePos(0), visibleIndex(0)
-        , averageSize(100), currentIndex(-1), requestedIndex(-1)
-        , currItemMode(QFxListView::Free), snapPos(0), highlightComponent(0), highlight(0), trackedItem(0)
-        , moveReason(Other), buffer(0), highlightPosAnimator(0), highlightSizeAnimator(0), spacing(0)
+        , averageSize(100.0), currentIndex(-1), requestedIndex(-1)
+        , highlightRangeStart(0), highlightRangeEnd(0)
+        , highlightComponent(0), highlight(0), trackedItem(0)
+        , moveReason(Other), buffer(0), highlightPosAnimator(0), highlightSizeAnimator(0), spacing(0.0)
         , ownModel(false), wrap(false), autoHighlight(true)
-        , fixCurrentVisibility(false) {}
+        , haveHighlightRange(false), strictHighlightRange(false)
+    {}
 
     void init();
     void clear();
@@ -205,7 +207,7 @@ public:
         else
             q->setViewportX(pos);
     }
-    int size() const {
+    qreal size() const {
         Q_Q(const QFxListView);
         return orient == Qt::Vertical ? q->height() : q->width();
     }
@@ -272,13 +274,16 @@ public:
     }
 
     int snapIndex() {
-        qreal pos = position();
+        int index = currentIndex;
         for (int i = 0; i < visibleItems.count(); ++i) {
-            qreal itemTop = visibleItems[i]->position() - pos;
-            if (itemTop >= snapPos-averageSize/2 && itemTop < snapPos+averageSize/2)
-                return visibleItems[i]->index;
+            FxListItem *item = visibleItems[i];
+            if (item->index == -1)
+                continue;
+            qreal itemTop = item->position();
+            if (itemTop >= highlight->position()-item->size()/2 && itemTop < highlight->position()+item->size()/2)
+                return item->index;
         }
-        return -1;
+        return index;
     }
 
     int lastVisibleIndex() const {
@@ -372,25 +377,25 @@ public:
     qreal averageSize;
     int currentIndex;
     int requestedIndex;
-    QFxListView::CurrentItemPositioning currItemMode;
-    int snapPos;
+    qreal highlightRangeStart;
+    qreal highlightRangeEnd;
     QmlComponent *highlightComponent;
     FxListItem *highlight;
     FxListItem *trackedItem;
-    QFxItem *activeItem; //XXX fix
     enum MovementReason { Other, Key, Mouse };
     MovementReason moveReason;
     int buffer;
-    QmlFollow *highlightPosAnimator;
-    QmlFollow *highlightSizeAnimator;
+    QmlEaseFollow *highlightPosAnimator;
+    QmlEaseFollow *highlightSizeAnimator;
     QString sectionExpression;
     QString currentSection;
-    int spacing;
+    qreal spacing;
 
-    int ownModel : 1;
-    int wrap : 1;
-    int autoHighlight : 1;
-    int fixCurrentVisibility : 1;
+    bool ownModel : 1;
+    bool wrap : 1;
+    bool autoHighlight : 1;
+    bool haveHighlightRange : 1;
+    bool strictHighlightRange : 1;
 };
 
 void QFxListViewPrivate::init()
@@ -438,7 +443,7 @@ FxListItem *QFxListViewPrivate::createItem(int modelIndex)
         }
         // complete
         model->completeItem();
-        listItem->item->setZValue(modelIndex + 1);
+        listItem->item->setZValue(1);
         listItem->item->setParent(q->viewport());
         if (orient == Qt::Vertical)
             QObject::connect(listItem->item, SIGNAL(heightChanged()), q, SLOT(itemResized()));
@@ -659,16 +664,20 @@ void QFxListViewPrivate::createHighlight()
             item->setParent(q->viewport());
         }
         if (item) {
+            item->setZValue(0);
             highlight = new FxListItem(item, q);
+            if (orient == Qt::Vertical)
+                highlight->item->setHeight(currentItem->item->height());
+            else
+                highlight->item->setWidth(currentItem->item->width());
             const QLatin1String posProp(orient == Qt::Vertical ? "y" : "x");
-            highlightPosAnimator = new QmlFollow(q);
+            highlightPosAnimator = new QmlEaseFollow(q);
             highlightPosAnimator->setTarget(QmlMetaProperty(highlight->item, posProp));
-            highlightPosAnimator->setEpsilon(0.25);
-            highlightPosAnimator->setSpring(2.5);
-            highlightPosAnimator->setDamping(0.35);
+            highlightPosAnimator->setVelocity(400);
             highlightPosAnimator->setEnabled(autoHighlight);
             const QLatin1String sizeProp(orient == Qt::Vertical ? "height" : "width");
-            highlightSizeAnimator = new QmlFollow(q);
+            highlightSizeAnimator = new QmlEaseFollow(q);
+            highlightSizeAnimator->setVelocity(400);
             highlightSizeAnimator->setTarget(QmlMetaProperty(highlight->item, sizeProp));
             highlightSizeAnimator->setEnabled(autoHighlight);
         }
@@ -680,7 +689,7 @@ void QFxListViewPrivate::updateHighlight()
     if ((!currentItem && highlight) || (currentItem && !highlight))
         createHighlight();
     updateTrackedItem();
-    if (currentItem && autoHighlight && highlight) {
+    if (currentItem && autoHighlight && highlight && !pressed && moveReason != QFxListViewPrivate::Mouse) {
         // auto-update highlight
         highlightPosAnimator->setSourceValue(currentItem->position());
         highlightSizeAnimator->setSourceValue(currentItem->size());
@@ -753,7 +762,6 @@ void QFxListViewPrivate::updateCurrent(int modelIndex)
     FxListItem *oldCurrentItem = currentItem;
     currentIndex = modelIndex;
     currentItem = createItem(modelIndex);
-    fixCurrentVisibility = true;
     if (oldCurrentItem && (!currentItem || oldCurrentItem->item != currentItem->item))
         oldCurrentItem->attached->setIsCurrentItem(false);
     if (currentItem) {
@@ -794,54 +802,30 @@ void QFxListViewPrivate::fixupPosition()
 
 void QFxListViewPrivate::fixupY()
 {
-    Q_Q(QFxListView);
     QFxFlickablePrivate::fixupY();
     if (orient == Qt::Horizontal)
         return;
-    if (currItemMode == QFxListView::SnapAuto) {
-        if (currentItem) {
+
+    if (haveHighlightRange && strictHighlightRange) {
+        if (currentItem && highlight && currentItem->position() != highlight->position()) {
             moveReason = Mouse;
             timeline.clear();
-            timeline.move(_moveY, -(currentItem->position() - snapPos), QEasingCurve(QEasingCurve::InOutQuad), 200);
-        }
-    } else if (currItemMode == QFxListView::Snap) {
-        moveReason = Mouse;
-        int idx = snapIndex();
-        if (FxListItem *snapItem = visibleItem(idx)) {
-            int pos = snapItem->position() - snapPos;
-            if (pos > -q->maxYExtent())
-                pos = -q->maxYExtent();
-            else if (pos < -q->minYExtent())
-                pos = -q->minYExtent();
-            timeline.clear();
-            timeline.move(_moveY, -(pos), QEasingCurve(QEasingCurve::InOutQuad), 200);
+            timeline.move(_moveY, -(currentItem->position() - highlightRangeStart), QEasingCurve(QEasingCurve::InOutQuad), 200);
         }
     }
 }
 
 void QFxListViewPrivate::fixupX()
 {
-    Q_Q(QFxListView);
     QFxFlickablePrivate::fixupX();
     if (orient == Qt::Vertical)
         return;
-    if (currItemMode == QFxListView::SnapAuto) {
-        if (currentItem) {
+
+    if (haveHighlightRange && strictHighlightRange) {
+        if (currentItem && highlight && currentItem->position() != highlight->position()) {
             moveReason = Mouse;
             timeline.clear();
-            timeline.move(_moveX, -(currentItem->position() - snapPos), QEasingCurve(QEasingCurve::InOutQuad), 200);
-        }
-    } else if (currItemMode == QFxListView::Snap) {
-        moveReason = Mouse;
-        int idx = snapIndex();
-        if (FxListItem *snapItem = visibleItem(idx)) {
-            int pos = snapItem->position() - snapPos;
-            if (pos > -q->maxXExtent())
-                pos = -q->maxXExtent();
-            else if (pos < -q->minXExtent())
-                pos = -q->minXExtent();
-            timeline.clear();
-            timeline.move(_moveX, -(pos), QEasingCurve(QEasingCurve::InOutQuad), 200);
+            timeline.move(_moveX, -(currentItem->position() - highlightRangeStart), QEasingCurve(QEasingCurve::InOutQuad), 200);
         }
     }
 }
@@ -909,6 +893,7 @@ void QFxListView::setModel(const QVariant &model)
     if (d->model) {
         disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
+        disconnect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
         disconnect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
         disconnect(d->model, SIGNAL(destroyingItem(QFxItem*)), this, SLOT(destroyingItem(QFxItem*)));
     }
@@ -937,6 +922,7 @@ void QFxListView::setModel(const QVariant &model)
             d->updateCurrent(d->currentIndex);
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
+        connect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
         connect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
         connect(d->model, SIGNAL(destroyingItem(QFxItem*)), this, SLOT(destroyingItem(QFxItem*)));
         refill();
@@ -979,10 +965,10 @@ void QFxListView::setDelegate(QmlComponent *delegate)
 
 /*!
     \qmlproperty int ListView::currentIndex
-    \qmlproperty Item ListView::current
+    \qmlproperty Item ListView::currentItem
 
     \c currentIndex holds the index of the current item.
-    \c current is the current item.  Note that the position of the current item
+    \c currentItem is the current item.  Note that the position of the current item
     may only be approximate until it becomes visible in the view.
 */
 int QFxListView::currentIndex() const
@@ -1033,7 +1019,8 @@ int QFxListView::count() const
 
     An instance of the highlight component will be created for each list.
     The geometry of the resultant component instance will be managed by the list
-    so as to stay with the current item, unless the autoHighlight property is false.
+    so as to stay with the current item, unless the highlightFollowsCurrentItem
+    property is false.
 
     The below example demonstrates how to make a simple highlight
     for a vertical list.
@@ -1041,7 +1028,7 @@ int QFxListView::count() const
     \snippet doc/src/snippets/declarative/listview/listview.qml 1
     \image trivialListView.png
 
-    \sa autoHighlight
+    \sa highlightFollowsCurrentItem
 */
 QmlComponent *QFxListView::highlight() const
 {
@@ -1058,26 +1045,26 @@ void QFxListView::setHighlight(QmlComponent *highlight)
 }
 
 /*!
-    \qmlproperty bool ListView::autoHighlight
+    \qmlproperty bool ListView::highlightFollowsCurrentItem
     This property holds whether the highlight is managed by the view.
 
-    If autoHighlight is true, the highlight will be moved smoothly
-    to follow the current item.  If autoHighlight is false, the
+    If highlightFollowsCurrentItem is true, the highlight will be moved smoothly
+    to follow the current item.  If highlightFollowsCurrentItem is false, the
     highlight will not be moved by the view, and must be implemented
     by the highlight.  The following example creates a highlight with
-    its motion defined by the spring \l {Follow}:
+    its motion defined by the spring \l {SpringFollow}:
 
     \snippet doc/src/snippets/declarative/listview/highlight.qml 1
 
     \sa highlight
 */
-bool QFxListView::autoHighlight() const
+bool QFxListView::highlightFollowsCurrentItem() const
 {
     Q_D(const QFxListView);
     return d->autoHighlight;
 }
 
-void QFxListView::setAutoHighlight(bool autoHighlight)
+void QFxListView::setHighlightFollowsCurrentItem(bool autoHighlight)
 {
     Q_D(QFxListView);
     d->autoHighlight = autoHighlight;
@@ -1089,55 +1076,58 @@ void QFxListView::setAutoHighlight(bool autoHighlight)
 }
 
 /*!
-    \qmlproperty enumeration ListView::currentItemPositioning
-    This property determines the current item positioning and selection characteristics.
+    \qmlproperty real ListView::preferredHighlightBegin
+    \qmlproperty real ListView::preferredHighlightEnd
+    \qmlproperty bool ListView::strictlyEnforceHighlightRange
 
-    The modes supported are:
-    \list
-    \i Free - For Mouse, the current item may be positioned anywhere,
-    whether within the visible area, or outside.  During Keyboard interaction,
-    the current item can move within the visible area, and the view will
-    scroll to keep the highlight visible.
-    \i Snap - For mouse, the current item may be positioned anywhere,
-    whether within the visible area, or outside.  During keyboard interaction,
-    the current item will be kept in the visible area and will prefer to be
-    positioned at the \l snapPosition, however the view will never scroll
-    beyond the beginning or end of the view.
-    \i SnapAuto - For both mouse and keyboard, the current item will be
-    kept at the \l {snapPosition}. Additionally, if the view is dragged or
-    flicked, the current item will be automatically updated to be the item
-    currently at the snapPosition.
-    \endlist
+    These properties set the preferred range of the highlight (current item)
+    within the view.
+
+    If the strictlyEnforceHighlightRange property is false (default)
+    the highlight can move outside of the range at the ends of the list
+    or due to a mouse interaction.
+
+    If strictlyEnforceHighlightRange is true then the highlight will never
+    move outside the range.  This means that the current item will change
+    if a keyboard or mouse action would cause the highlight to move
+    outside of the range.
 */
-QFxListView::CurrentItemPositioning QFxListView::currentItemPositioning() const
+qreal QFxListView::preferredHighlightBegin() const
 {
     Q_D(const QFxListView);
-    return d->currItemMode;
+    return d->highlightRangeStart;
 }
 
-void QFxListView::setCurrentItemPositioning(CurrentItemPositioning mode)
+void QFxListView::setPreferredHighlightBegin(qreal start)
 {
     Q_D(QFxListView);
-    d->currItemMode = mode;
+    d->highlightRangeStart = start;
+    d->haveHighlightRange = d->highlightRangeStart < d->highlightRangeEnd;
 }
 
-/*!
-    \qmlproperty int ListView::snapPosition
-
-    When currentItemPositioning is set to Snap or SnapAuto, the
-    \c snapPosition determines where the top of the items will
-    snap to.
-*/
-int QFxListView::snapPosition() const
+qreal QFxListView::preferredHighlightEnd() const
 {
     Q_D(const QFxListView);
-    return d->snapPos;
+    return d->highlightRangeEnd;
 }
 
-void QFxListView::setSnapPosition(int pos)
+void QFxListView::setPreferredHighlightEnd(qreal end)
 {
     Q_D(QFxListView);
-    d->snapPos = pos;
+    d->highlightRangeEnd = end;
+    d->haveHighlightRange = d->highlightRangeStart < d->highlightRangeEnd;
+}
+
+bool QFxListView::strictlyEnforceHighlightRange() const
+{
+    Q_D(const QFxListView);
+    return d->strictHighlightRange;
+}
+
+void QFxListView::setStrictlyEnforceHighlightRange(bool strict)
+{
+    Q_D(QFxListView);
+    d->strictHighlightRange = strict;
 }
 
 /*!
@@ -1145,13 +1135,13 @@ void QFxListView::setSnapPosition(int pos)
 
     This property holds the spacing to leave between items.
 */
-int QFxListView::spacing() const
+qreal QFxListView::spacing() const
 {
     Q_D(const QFxListView);
     return d->spacing;
 }
 
-void QFxListView::setSpacing(int spacing)
+void QFxListView::setSpacing(qreal spacing)
 {
     Q_D(QFxListView);
     if (spacing != d->spacing) {
@@ -1194,11 +1184,11 @@ void QFxListView::setOrientation(Qt::Orientation orientation)
 }
 
 /*!
-    \qmlproperty bool ListView::wrap
+    \qmlproperty bool ListView::keyNavigationWraps
     This property holds whether the list wraps key navigation
 
     If this property is true then key presses to move off of one end of the list will cause the
-    selection to jump to the other side.
+    current item to jump to the other end.
 */
 bool QFxListView::isWrapEnabled() const
 {
@@ -1278,11 +1268,19 @@ void QFxListView::viewportMoved()
     refill();
     if (isFlicking() || d->pressed)
         d->moveReason = QFxListViewPrivate::Mouse;
-    if (d->currItemMode == SnapAuto && d->moveReason == QFxListViewPrivate::Mouse) {
-        // Update current index
-        int idx = d->snapIndex();
-        if (idx >= 0 && idx != d->currentIndex)
-            d->updateCurrent(idx);
+    if (d->moveReason == QFxListViewPrivate::Mouse) {
+        if (d->haveHighlightRange && d->strictHighlightRange && d->highlight) {
+            int idx = d->snapIndex();
+            if (idx >= 0 && idx != d->currentIndex)
+                d->updateCurrent(idx);
+
+            qreal pos = d->currentItem->position();
+            if (pos > d->position() + d->highlightRangeEnd - d->highlight->size())
+                pos = d->position() + d->highlightRangeEnd - d->highlight->size();
+            if (pos < d->position() + d->highlightRangeStart)
+                pos = d->position() + d->highlightRangeStart;
+            d->highlight->setPosition(pos);
+        }
     }
 }
 
@@ -1292,8 +1290,8 @@ qreal QFxListView::minYExtent() const
     if (d->orient == Qt::Horizontal)
         return QFxFlickable::minYExtent();
     qreal extent = -d->startPosition();
-    if (d->currItemMode == SnapAuto)
-        extent += d->snapPos;
+    if (d->haveHighlightRange && d->strictHighlightRange)
+        extent += d->highlightRangeStart;
 
     return extent;
 }
@@ -1304,8 +1302,8 @@ qreal QFxListView::maxYExtent() const
     if (d->orient == Qt::Horizontal)
         return QFxFlickable::maxYExtent();
     qreal extent;
-    if (d->currItemMode == SnapAuto)
-        extent = -(d->positionAt(count()-1) - d->snapPos);
+    if (d->haveHighlightRange && d->strictHighlightRange)
+        extent = -(d->endPosition() - d->highlightRangeEnd);
     else
         extent = -(d->endPosition() - height());
     qreal minY = minYExtent();
@@ -1320,8 +1318,8 @@ qreal QFxListView::minXExtent() const
     if (d->orient == Qt::Vertical)
         return QFxFlickable::minXExtent();
     qreal extent = -d->startPosition();
-    if (d->currItemMode == SnapAuto)
-        extent += d->snapPos;
+    if (d->haveHighlightRange && d->strictHighlightRange)
+        extent += d->highlightRangeStart;
 
     return extent;
 }
@@ -1332,8 +1330,8 @@ qreal QFxListView::maxXExtent() const
     if (d->orient == Qt::Vertical)
         return QFxFlickable::maxXExtent();
     qreal extent;
-    if (d->currItemMode == SnapAuto)
-        extent = -(d->positionAt(count()-1) - d->snapPos);
+    if (d->haveHighlightRange && d->strictHighlightRange)
+        extent = -(d->endPosition() - d->highlightRangeEnd);
     else
         extent = -(d->endPosition() - width());
     qreal minX = minXExtent();
@@ -1348,7 +1346,7 @@ void QFxListView::keyPressEvent(QKeyEvent *event)
     if (d->model && d->model->count() && d->interactive) {
         if ((d->orient == Qt::Horizontal && event->key() == Qt::Key_Left)
                     || (d->orient == Qt::Vertical && event->key() == Qt::Key_Up)) {
-            if (currentIndex() > 0 || d->wrap) {
+            if (currentIndex() > 0 || (d->wrap && !event->isAutoRepeat())) {
                 d->moveReason = QFxListViewPrivate::Key;
                 int index = currentIndex()-1;
                 d->updateCurrent(index >= 0 ? index : d->model->count()-1);
@@ -1357,7 +1355,7 @@ void QFxListView::keyPressEvent(QKeyEvent *event)
             }
         } else if ((d->orient == Qt::Horizontal && event->key() == Qt::Key_Right)
                     || (d->orient == Qt::Vertical && event->key() == Qt::Key_Down)) {
-            if (currentIndex() < d->model->count() - 1 || d->wrap) {
+            if (currentIndex() < d->model->count() - 1 || (d->wrap && !event->isAutoRepeat())) {
                 d->moveReason = QFxListViewPrivate::Key;
                 int index = currentIndex()+1;
                 d->updateCurrent(index < d->model->count() ? index : 0);
@@ -1393,30 +1391,41 @@ void QFxListView::trackedPositionChanged()
     if (!d->trackedItem)
         return;
     if (!isFlicking() && !d->pressed && d->moveReason != QFxListViewPrivate::Mouse) {
-        switch (d->currItemMode) {
-        case Free:
-            if (d->trackedItem->position() < d->position()) {
-                d->setPosition(d->trackedItem->position());
+        const qreal trackedPos = d->trackedItem->position();
+        if (d->haveHighlightRange) {
+            if (d->strictHighlightRange) {
+                qreal pos = d->position();
+                if (trackedPos > pos + d->highlightRangeEnd - d->trackedItem->size())
+                    pos = trackedPos - d->highlightRangeEnd + d->trackedItem->size();
+                if (trackedPos < pos + d->highlightRangeStart)
+                    pos = trackedPos - d->highlightRangeStart;
+                d->setPosition(pos);
+            } else {
+                qreal pos = d->position();
+                if (trackedPos < d->startPosition() + d->highlightRangeStart) {
+                    pos = d->startPosition();
+                } else if (d->trackedItem->endPosition() > d->endPosition() - d->size() + d->highlightRangeEnd) {
+                    pos = d->endPosition() - d->size();
+                } else {
+                    if (trackedPos < d->position() + d->highlightRangeStart) {
+                        pos = trackedPos - d->highlightRangeStart;
+                    } else if (trackedPos > d->position() + d->highlightRangeEnd - d->trackedItem->size()) {
+                        pos = trackedPos - d->highlightRangeEnd + d->trackedItem->size();
+                    }
+                }
+                d->setPosition(pos);
+            }
+        } else {
+            if (trackedPos < d->position()) {
+                d->setPosition(trackedPos);
                 d->fixupPosition();
             } else if (d->trackedItem->endPosition() > d->position() + d->size()) {
                 qreal pos = d->trackedItem->endPosition() - d->size();
                 if (d->trackedItem->size() > d->size())
-                    pos = d->trackedItem->position();
+                    pos = trackedPos;
                 d->setPosition(pos);
                 d->fixupPosition();
             }
-            break;
-        case Snap:
-            if (d->trackedItem->position() < d->startPosition() + d->snapPos)
-                d->setPosition(d->startPosition());
-            else if (d->trackedItem->endPosition() > d->endPosition() - d->size() + d->snapPos + d->trackedItem->size())
-                d->setPosition(d->endPosition() - d->size());
-            else
-                d->setPosition(d->trackedItem->position() - d->snapPos);
-            break;
-        case SnapAuto:
-            d->setPosition(d->trackedItem->position() - d->snapPos);
-            break;
         }
     }
 }
@@ -1426,9 +1435,7 @@ void QFxListView::itemResized()
     Q_D(QFxListView);
     QFxItem *item = qobject_cast<QFxItem*>(sender());
     if (item) {
-        d->activeItem = item; // Ick - don't delete the sender
         d->layout();
-        d->activeItem = 0;
         d->fixupPosition();
     }
 }
@@ -1507,7 +1514,8 @@ void QFxListView::itemsInserted(int modelIndex, int count)
         // Update the indexes of the following visible items.
         for (; index < d->visibleItems.count(); ++index) {
             FxListItem *listItem = d->visibleItems.at(index);
-            listItem->setPosition(listItem->position() + (pos - initialPos));
+            if (listItem->item != d->currentItem->item)
+                listItem->setPosition(listItem->position() + (pos - initialPos));
             if (listItem->index != -1)
                 listItem->index += count;
         }
@@ -1631,6 +1639,72 @@ void QFxListView::destroyRemoved()
     }
 
     // Correct the positioning of the items
+    d->layout();
+}
+
+void QFxListView::itemsMoved(int from, int to, int count)
+{
+    Q_D(QFxListView);
+    qreal firstItemPos = d->visibleItems.first()->position();
+    QHash<int,FxListItem*> moved;
+    int moveBy = 0;
+
+    QList<FxListItem*>::Iterator it = d->visibleItems.begin();
+    while (it != d->visibleItems.end()) {
+        FxListItem *item = *it;
+        if (item->index >= from && item->index < from + count) {
+            // take the items that are moving
+            item->index += (to-from);
+            moved.insert(item->index, item);
+            moveBy += item->size();
+            it = d->visibleItems.erase(it);
+        } else {
+            // move everything after the moved items.
+            if (item->index > from && item->index != -1)
+                item->index -= count;
+            ++it;
+        }
+    }
+
+    int remaining = count;
+    int endIndex = d->visibleIndex;
+    it = d->visibleItems.begin();
+    while (it != d->visibleItems.end()) {
+        FxListItem *item = *it;
+        if (remaining && item->index >= to && item->index < to + count) {
+            // place items in the target position, reusing any existing items
+            FxListItem *movedItem = moved.take(item->index);
+            if (!movedItem)
+                movedItem = d->createItem(item->index);
+            it = d->visibleItems.insert(it, movedItem);
+            ++it;
+            --remaining;
+        } else {
+            if (item->index != -1) {
+                if (item->index >= to) {
+                    // update everything after the moved items.
+                    item->index += count;
+                }
+                endIndex = item->index;
+            }
+            ++it;
+        }
+    }
+
+    // If we have moved items to the end of the visible items
+    // then add any existing moved items that we have
+    while (FxListItem *item = moved.take(endIndex+1)) {
+        d->visibleItems.append(item);
+        ++endIndex;
+    }
+
+    // Whatever moved items remain are no longer visible items.
+    while (moved.count())
+        d->releaseItem(moved.take(moved.begin().key()));
+
+    // Ensure we don't cause an ugly list scroll.
+    d->visibleItems.first()->setPosition(firstItemPos);
+
     d->layout();
 }
 

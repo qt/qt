@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qmlenginedebug_p.h"
+#include "qmlboundsignal_p.h"
 #include <QtCore/qdebug.h>
 #include <QtCore/qmetaobject.h>
 #include <QtDeclarative/qmlengine.h>
@@ -103,7 +104,11 @@ QmlEngineDebugServer::propertyData(QObject *obj, int propIdx)
 
     if (prop.type() < QVariant::UserType) {
         rv.type = QmlObjectProperty::Basic;
-        rv.value = prop.read(obj);
+        if (qobject_cast<QmlBoundSignalParameters*>(obj) && prop.name() != QByteArray("objectName"))
+            // these "properties" only have meaning during signal emission
+            rv.value = tr("(signal parameter)");
+        else
+            rv.value = prop.read(obj);
     } else if (QmlMetaType::isObject(prop.userType()))  {
         rv.type = QmlObjectProperty::Object;
     } else if (QmlMetaType::isList(prop.userType()) ||

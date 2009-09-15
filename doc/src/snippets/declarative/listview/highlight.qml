@@ -15,7 +15,7 @@ Rectangle {
         Item {
             id: Wrapper
             width: 180; height: 40
-            VerticalLayout {
+            Column {
                 x: 5; y: 5
                 Text { text: '<b>Name:</b> ' + name }
                 Text { text: '<b>Number:</b> ' + number }
@@ -32,10 +32,10 @@ Rectangle {
         Rectangle {
             width: 180; height: 40
             color: "lightsteelblue"; radius: 5
-            y: Follow {
-                source: List.current.y
+            y: SpringFollow {
+                source: List.currentItem.y
                 spring: 3
-                damping: 0.1
+                damping: 0.2
             }
         }
     }
@@ -44,7 +44,7 @@ Rectangle {
         width: parent.height; height: parent.height
         model: ContactModel; delegate: Delegate
         highlight: Highlight
-        autoHighlight: false
+        highlightFollowsCurrentItem: false
         focus: true
     }
 //! [1]

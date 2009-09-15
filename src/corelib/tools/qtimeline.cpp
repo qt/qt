@@ -388,6 +388,10 @@ void QTimeLine::setDirection(Direction direction)
     By default, this value is 1000 (i.e., 1 second), but you can change this
     by either passing a duration to QTimeLine's constructor, or by calling
     setDuration(). The duration must be larger than 0.
+
+    \note Changing the duration does not cause the current time to be reset
+    to zero or the new duration. You also need to call setCurrentTime() with
+    the desired value.
 */
 int QTimeLine::duration() const
 {

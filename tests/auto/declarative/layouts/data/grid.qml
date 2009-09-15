@@ -5,32 +5,32 @@ Item {
     height: 480
     Grid {
         columns: 3
-        Rect {
-            id: one
+        Rectangle {
+            objectName: "one"
             color: "red"
             width: 50
             height: 50
         }
-        Rect {
-            id: two
+        Rectangle {
+            objectName: "two"
             color: "green"
             width: 20
             height: 50
         }
-        Rect {
-            id: three
+        Rectangle {
+            objectName: "three"
             color: "blue"
             width: 50
             height: 20
         }
-        Rect {
-            id: four
+        Rectangle {
+            objectName: "four"
             color: "cyan"
             width: 50
             height: 50
         }
-        Rect {
-            id: five
+        Rectangle {
+            objectName: "five"
             color: "magenta"
             width: 10
             height: 10
