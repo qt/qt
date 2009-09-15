@@ -282,7 +282,8 @@ QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineS
 
     // We have to bind the vertex attribute names before the program is linked:
     cached.program->bindAttributeLocation("vertexCoordsArray", QT_VERTEX_COORDS_ATTR);
-    cached.program->bindAttributeLocation("textureCoordArray", QT_TEXTURE_COORDS_ATTR);
+    if (cached.useTextureCoords)
+        cached.program->bindAttributeLocation("textureCoordArray", QT_TEXTURE_COORDS_ATTR);
 
     cached.program->link();
     if (!cached.program->isLinked()) {
@@ -491,6 +492,7 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
 
     QGLEngineShaderProg requiredProgram;
     requiredProgram.program = 0;
+    requiredProgram.useTextureCoords = useTextureCoords;
 
     // Choose vertex shader main function
     QGLEngineSharedShaders::ShaderName mainVertexShaderName = QGLEngineSharedShaders::InvalidShaderName;

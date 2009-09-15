@@ -245,6 +245,8 @@ struct QGLEngineShaderProg
 
     QVector<uint> uniformLocations;
 
+    bool                useTextureCoords;
+
     bool operator==(const QGLEngineShaderProg& other) {
         // We don't care about the program
         return ( mainVertexShader      == other.mainVertexShader &&
