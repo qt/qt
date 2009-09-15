@@ -5625,20 +5625,6 @@ void QOpenGLPaintEnginePrivate::ensureDrawableTexture()
 #endif
 }
 
-QPixmapFilter *QOpenGLPaintEngine::createPixmapFilter(int type) const
-{
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    if (QGLContext::currentContext())
-        return QGLContext::currentContext()->d_func()->createPixmapFilter(type);
-    else
-        return 0;
-#else
-    Q_UNUSED(type);
-    return 0;
-#endif
-}
-
-
 QT_END_NAMESPACE
 
 #include "qpaintengine_opengl.moc"
