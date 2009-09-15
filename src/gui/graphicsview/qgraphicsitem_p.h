@@ -318,7 +318,11 @@ public:
     void invalidateCachedClipPathRecursively(bool childrenOnly = false, const QRectF &emptyIfOutsideThisRect = QRectF());
     void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
     void ensureSceneTransformRecursive(QGraphicsItem **topMostDirtyItem);
-    void ensureSceneTransform();
+    inline void ensureSceneTransform()
+    {
+        QGraphicsItem *that = q_func();
+        ensureSceneTransformRecursive(&that);
+    }
 
     inline bool hasTranslateOnlySceneTransform()
     {
