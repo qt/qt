@@ -4830,23 +4830,15 @@ void QGraphicsItemPrivate::ensureSceneTransformRecursive(QGraphicsItem **topMost
         return; // Continue backtrack.
     }
 
+    // This item and all its descendants have dirty scene transforms.
+    // We're about to validate this item's scene transform, so we have to
+    // invalidate all the children; otherwise there's no way for the descendants
+    // to detect that the ancestor has changed.
+    invalidateChildrenSceneTransform();
+
     // COMBINE my transform with the parent's scene transform.
     updateSceneTransformFromParent();
     Q_ASSERT(!dirtySceneTransform);
-}
-
-void QGraphicsItemPrivate::ensureSceneTransform()
-{
-    if (dirtySceneTransform) {
-        // This item and all its descendants have dirty scene transforms.
-        // We're about to validate this item's scene transform, so we have to
-        // invalidate all the children; otherwise there's no way for the descendants
-        // to detect that the ancestor has changed.
-        invalidateChildrenSceneTransform();
-    }
-
-    QGraphicsItem *that = q_func();
-    ensureSceneTransformRecursive(&that);
 }
 
 /*!

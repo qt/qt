@@ -293,6 +293,7 @@ private slots:
     void setActivePanelOnInactiveScene();
     void activationOnShowHide();
     void moveWhileDeleting();
+    void ensureDirtySceneTransform();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -8154,6 +8155,91 @@ void tst_QGraphicsItem::moveWhileDeleting()
     QTest::qWait(125);
 
     delete rect;
+}
+
+class MyRectItem : public QGraphicsWidget
+{
+    Q_OBJECT
+public:
+    MyRectItem(QGraphicsItem *parent = 0) : QGraphicsWidget(parent)
+    {
+
+    }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+    {
+        painter->setBrush(brush);
+        painter->drawRect(boundingRect());
+    }
+
+public slots :
+    void move()
+    {
+        setPos(-100,-100);
+        topLevel->collidingItems(Qt::IntersectsItemBoundingRect);
+    }
+public:
+    QGraphicsItem *topLevel;
+    QBrush brush;
+};
+
+
+void tst_QGraphicsItem::ensureDirtySceneTransform()
+{
+    QGraphicsScene scene;
+
+    MyRectItem *topLevel = new MyRectItem;
+    topLevel->setGeometry(0, 0, 100, 100);
+    topLevel->setPos(-50, -50);
+    topLevel->brush = QBrush(QColor(Qt::black));
+    scene.addItem(topLevel);
+
+    MyRectItem *parent = new MyRectItem;
+    parent->topLevel = topLevel;
+    parent->setGeometry(0, 0, 100, 100);
+    parent->setPos(0, 0);
+    parent->brush = QBrush(QColor(Qt::magenta));
+    parent->setObjectName("parent");
+    scene.addItem(parent);
+
+    MyRectItem *child = new MyRectItem(parent);
+    child->setGeometry(0, 0, 80, 80);
+    child->setPos(10, 10);
+    child->setObjectName("child");
+    child->brush = QBrush(QColor(Qt::blue));
+
+    MyRectItem *child2 = new MyRectItem(parent);
+    child2->setGeometry(0, 0, 80, 80);
+    child2->setPos(15, 15);
+    child2->setObjectName("child2");
+    child2->brush = QBrush(QColor(Qt::green));
+
+    MyRectItem *child3 = new MyRectItem(parent);
+    child3->setGeometry(0, 0, 80, 80);
+    child3->setPos(20, 20);
+    child3->setObjectName("child3");
+    child3->brush = QBrush(QColor(Qt::gray));
+
+    QGraphicsView view(&scene);
+    view.show();
+    QTest::qWait(500);
+
+    //We move the parent
+    parent->move();
+    QTest::qWait(500);
+
+    //We check if all items moved
+    QCOMPARE(child->pos(), QPointF(10, 10));
+    QCOMPARE(child2->pos(), QPointF(15, 15));
+    QCOMPARE(child3->pos(), QPointF(20, 20));
+
+    QCOMPARE(child->sceneBoundingRect(), QRectF(-90, -90, 80, 80));
+    QCOMPARE(child2->sceneBoundingRect(), QRectF(-85, -85, 80, 80));
+    QCOMPARE(child3->sceneBoundingRect(), QRectF(-80, -80, 80, 80));
+
+    QCOMPARE(child->sceneTransform(), QTransform::fromTranslate(-90, -90));
+    QCOMPARE(child2->sceneTransform(), QTransform::fromTranslate(-85, -85));
+    QCOMPARE(child3->sceneTransform(), QTransform::fromTranslate(-80, -80));
 }
 
 QTEST_MAIN(tst_QGraphicsItem)
