@@ -816,8 +816,10 @@ void QGraphicsAnchorLayoutPrivate::deleteLayoutEdges()
     Q_ASSERT(internalVertex(q, Qt::AnchorHorizontalCenter) == NULL);
     Q_ASSERT(internalVertex(q, Qt::AnchorVerticalCenter) == NULL);
 
-    removeAnchor(q, Qt::AnchorLeft, q, Qt::AnchorRight);
-    removeAnchor(q, Qt::AnchorTop, q, Qt::AnchorBottom);
+    removeAnchor_helper(internalVertex(q, Qt::AnchorLeft),
+                        internalVertex(q, Qt::AnchorRight));
+    removeAnchor_helper(internalVertex(q, Qt::AnchorTop),
+                        internalVertex(q, Qt::AnchorBottom));
 }
 
 void QGraphicsAnchorLayoutPrivate::createItemEdges(QGraphicsLayoutItem *item)
@@ -913,7 +915,7 @@ void QGraphicsAnchorLayoutPrivate::createCenterAnchors(
     itemCenterConstraints[orientation].append(c);
 
     // Remove old one
-    removeAnchor(item, firstEdge, item, lastEdge);
+    removeAnchor_helper(first, last);
 }
 
 void QGraphicsAnchorLayoutPrivate::removeCenterAnchors(
@@ -979,8 +981,8 @@ void QGraphicsAnchorLayoutPrivate::removeCenterAnchors(
         addAnchor_helper(item, firstEdge, item, lastEdge, data);
 
         // Remove old anchors
-        removeAnchor(item, firstEdge, item, centerEdge);
-        removeAnchor(item, centerEdge, item, lastEdge);
+        removeAnchor_helper(first, center);
+        removeAnchor_helper(center, internalVertex(item, lastEdge));
 
     } else {
         // this is only called from removeAnchors()
@@ -989,13 +991,13 @@ void QGraphicsAnchorLayoutPrivate::removeCenterAnchors(
         for (int i = 0; i < adjacents.count(); ++i) {
             AnchorVertex *v = adjacents.at(i);
             if (v->m_item != item) {
-                removeAnchor(item, centerEdge, v->m_item, v->m_edge);
+                removeAnchor_helper(center, internalVertex(v->m_item, v->m_edge));
             }
         }
         // when all non-internal anchors is removed it will automatically merge the
         // center anchor into a left-right (or top-bottom) anchor. We must also delete that.
         // by this time, the center vertex is deleted and merged into a non-centered internal anchor
-        removeAnchor(item, firstEdge, item, lastEdge);
+        removeAnchor_helper(first, internalVertex(item, lastEdge));
     }
 }
 
@@ -1142,8 +1144,9 @@ void QGraphicsAnchorLayoutPrivate::addAnchor_helper(QGraphicsLayoutItem *firstIt
 
     // Remove previous anchor
     // ### Could we update the existing edgeData rather than creating a new one?
-    if (graph[edgeOrientation(firstEdge)].edgeData(v1, v2))
-        removeAnchor(firstItem, firstEdge, secondItem, secondEdge);
+    if (graph[edgeOrientation(firstEdge)].edgeData(v1, v2)) {
+        removeAnchor_helper(v1, v2);
+    }
 
     // Create a bi-directional edge in the sense it can be transversed both
     // from v1 or v2. "data" however is shared between the two references
@@ -1176,15 +1179,6 @@ QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::getAnchor(QGraphicsLayoutItem *fi
     if (data)
         graphicsAnchor = acquireGraphicsAnchor(data);
     return graphicsAnchor;
-}
-
-void QGraphicsAnchorLayoutPrivate::removeAnchor(QGraphicsLayoutItem *firstItem,
-                                                Qt::AnchorPoint firstEdge,
-                                                QGraphicsLayoutItem *secondItem,
-                                                Qt::AnchorPoint secondEdge)
-{
-    removeAnchor_helper(internalVertex(firstItem, firstEdge),
-                        internalVertex(secondItem, secondEdge));
 }
 
 void QGraphicsAnchorLayoutPrivate::removeAnchor_helper(AnchorVertex *v1, AnchorVertex *v2)
