@@ -224,8 +224,11 @@ public:
         q->geometryChanged(QRectF(this->pos.x(), this->pos.y(), width, height), oldGeometry);
     }
 
-    // Inherited from QGraphcisItemPrivate
-    virtual void focusedInScopeChanged();
+    // Reimplemented from QGraphicsItemPrivate
+    virtual void subFocusItemChange()
+    {
+        emit q_func()->wantsFocusChanged();
+    }
 };
 
 QT_END_NAMESPACE

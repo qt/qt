@@ -19,21 +19,21 @@ Rectangle {
 
             color: "transparent"
             border.width: 5
-            border.color: MyScope.focus?"blue":"black"
+            border.color: MyScope.wantsFocus?"blue":"black"
 
             Rectangle {
                 id: Item1
                 x: 10; y: 10 
                 width: 100; height: 100; color: "green"
                 border.width: 5
-                border.color: focus?"blue":"black"
+                border.color: wantsFocus?"blue":"black"
                 Keys.onDigit9Pressed: print("Top Left");
                 KeyNavigation.right: Item2
                 focus: true 
 
                 Rectangle {
                     width: 50; height: 50; anchors.centerIn: parent
-                    color: parent.activeFocus?"red":"transparent"
+                    color: parent.focus?"red":"transparent"
                 }
             }
 
@@ -42,13 +42,13 @@ Rectangle {
                 x: 310; y: 10
                 width: 100; height: 100; color: "green"
                 border.width: 5
-                border.color: focus?"blue":"black"
+                border.color: wantsFocus?"blue":"black"
                 KeyNavigation.left: Item1
                 Keys.onDigit9Pressed: print("Top Right");
 
                 Rectangle {
                     width: 50; height: 50; anchors.centerIn: parent
-                    color: parent.activeFocus?"red":"transparent"
+                    color: parent.focus?"red":"transparent"
                 }
             }
         }
@@ -62,14 +62,14 @@ Rectangle {
         x: 10; y: 300
         width: 100; height: 100; color: "green"
         border.width: 5
-        border.color: focus?"blue":"black"
+        border.color: wantsFocus?"blue":"black"
 
         Keys.onDigit9Pressed: print("Bottom Left");
         KeyNavigation.up: MyScope
 
         Rectangle {
             width: 50; height: 50; anchors.centerIn: parent
-            color: parent.activeFocus?"red":"transparent"
+            color: parent.focus?"red":"transparent"
         }
     }
 

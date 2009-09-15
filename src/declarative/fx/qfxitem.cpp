@@ -2575,7 +2575,7 @@ bool QFxItem::sceneEvent(QEvent *event)
 
     if (event->type() == QEvent::FocusIn ||
         event->type() == QEvent::FocusOut) {
-        activeFocusChanged(hasActiveFocus());
+        focusChanged(hasFocus());
     }
 
     return rv;
@@ -2756,37 +2756,31 @@ bool QFxItem::heightValid() const
 }
 
 /*!
-  \qmlproperty bool Item::focus
-  This property indicates whether the item has has an active focus request. Set this
-  property to true to request active focus.
-*/
+  \qmlproperty bool Item::wantsFocus
 
+  This property indicates whether the item has has an active focus request.
+*/
+bool QFxItem::wantsFocus() const
+{
+    return focusItem() != 0;
+}
+
+/*!
+  \qmlproperty bool Item::focus
+  This property indicates whether the item has keyboard input focus. Set this
+  property to true to request focus.
+*/
 bool QFxItem::hasFocus() const
 {
-    Q_D(const QFxItem);
-    return d->itemIsFocusedInScope;
+    return QGraphicsItem::hasFocus();
 }
 
 void QFxItem::setFocus(bool focus)
 {
-    if (focus) QGraphicsItem::setFocus(Qt::OtherFocusReason);
-    else QGraphicsItem::clearFocus();
-}
-
-void QFxItemPrivate::focusedInScopeChanged()
-{
-    Q_Q(QFxItem);
-    q->focusChanged(q->hasFocus());
-}
-
-/*!
-  \qmlproperty bool Item::activeFocus
-  This property indicates whether the item has the active focus.
-*/
-
-bool QFxItem::hasActiveFocus() const
-{
-    return QGraphicsItem::hasFocus();
+    if (focus)
+        QGraphicsItem::setFocus(Qt::OtherFocusReason);
+    else
+        QGraphicsItem::clearFocus();
 }
 
 /*!
