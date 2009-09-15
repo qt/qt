@@ -794,6 +794,8 @@ void QGraphicsPixelizeEffect::draw(QPainter *painter, QGraphicsEffectSource *sou
 QGraphicsBlurEffect::QGraphicsBlurEffect(QObject *parent)
     : QGraphicsEffect(*new QGraphicsBlurEffectPrivate, parent)
 {
+    Q_D(QGraphicsBlurEffect);
+    d->filter->setQuality(Qt::SmoothTransformation);
 }
 
 /*!
