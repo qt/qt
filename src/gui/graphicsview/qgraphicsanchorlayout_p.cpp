@@ -790,7 +790,7 @@ void QGraphicsAnchorLayoutPrivate::createLayoutEdges()
 
     // Horizontal
     AnchorData *data = new AnchorData(0, 0, QWIDGETSIZE_MAX);
-    addAnchor(layout, Qt::AnchorLeft, layout,
+    addAnchor_helper(layout, Qt::AnchorLeft, layout,
               Qt::AnchorRight, data);
     data->skipInPreferred = 1;
 
@@ -800,7 +800,7 @@ void QGraphicsAnchorLayoutPrivate::createLayoutEdges()
 
     // Vertical
     data = new AnchorData(0, 0, QWIDGETSIZE_MAX);
-    addAnchor(layout, Qt::AnchorTop, layout,
+    addAnchor_helper(layout, Qt::AnchorTop, layout,
               Qt::AnchorBottom, data);
     data->skipInPreferred = 1;
 
@@ -832,7 +832,7 @@ void QGraphicsAnchorLayoutPrivate::createItemEdges(QGraphicsLayoutItem *item)
     int maximumSize = item->maximumWidth();
 
     AnchorData *data = new AnchorData(minimumSize, preferredSize, maximumSize);
-    addAnchor(item, Qt::AnchorLeft, item,
+    addAnchor_helper(item, Qt::AnchorLeft, item,
               Qt::AnchorRight, data);
 
     // Vertical
@@ -841,7 +841,7 @@ void QGraphicsAnchorLayoutPrivate::createItemEdges(QGraphicsLayoutItem *item)
     maximumSize = item->maximumHeight();
 
     data = new AnchorData(minimumSize, preferredSize, maximumSize);
-    addAnchor(item, Qt::AnchorTop, item,
+    addAnchor_helper(item, Qt::AnchorTop, item,
               Qt::AnchorBottom, data);
 }
 
@@ -904,11 +904,11 @@ void QGraphicsAnchorLayoutPrivate::createCenterAnchors(
     QSimplexConstraint *c = new QSimplexConstraint;
     AnchorData *data = new AnchorData(minimumSize, preferredSize, maximumSize);
     c->variables.insert(data, 1.0);
-    addAnchor(item, firstEdge, item, centerEdge, data);
+    addAnchor_helper(item, firstEdge, item, centerEdge, data);
 
     data = new AnchorData(minimumSize, preferredSize, maximumSize);
     c->variables.insert(data, -1.0);
-    addAnchor(item, centerEdge, item, lastEdge, data);
+    addAnchor_helper(item, centerEdge, item, lastEdge, data);
 
     itemCenterConstraints[orientation].append(c);
 
@@ -976,7 +976,7 @@ void QGraphicsAnchorLayoutPrivate::removeCenterAnchors(
         int maximumSize = oldData->maxSize * 2;
 
         AnchorData *data = new AnchorData(minimumSize, preferredSize, maximumSize);
-        addAnchor(item, firstEdge, item, lastEdge, data);
+        addAnchor_helper(item, firstEdge, item, lastEdge, data);
 
         // Remove old anchors
         removeAnchor(item, firstEdge, item, centerEdge);
@@ -1039,7 +1039,7 @@ void QGraphicsAnchorLayoutPrivate::removeCenterConstraints(QGraphicsLayoutItem *
  * Helper function that is called from the anchor functions in the public API.
  * If \a spacing is 0, it will pick up the spacing defined by the style.
  */
-QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::anchor(QGraphicsLayoutItem *firstItem,
+QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *firstItem,
                                                       Qt::AnchorPoint firstEdge,
                                                       QGraphicsLayoutItem *secondItem,
                                                       Qt::AnchorPoint secondEdge,
@@ -1112,18 +1112,18 @@ QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::anchor(QGraphicsLayoutItem *first
         } else {
             data = new AnchorData(0);   // spacing should be 0
         }
-        addAnchor(firstItem, firstEdge, secondItem, secondEdge, data);
+        addAnchor_helper(firstItem, firstEdge, secondItem, secondEdge, data);
     } else if (*spacing >= 0) {
         data = new AnchorData(*spacing);
-        addAnchor(firstItem, firstEdge, secondItem, secondEdge, data);
+        addAnchor_helper(firstItem, firstEdge, secondItem, secondEdge, data);
     } else {
         data = new AnchorData(-*spacing);
-        addAnchor(secondItem, secondEdge, firstItem, firstEdge, data);
+        addAnchor_helper(secondItem, secondEdge, firstItem, firstEdge, data);
     }
     return acquireGraphicsAnchor(data);
 }
 
-void QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *firstItem,
+void QGraphicsAnchorLayoutPrivate::addAnchor_helper(QGraphicsLayoutItem *firstItem,
                                              Qt::AnchorPoint firstEdge,
                                              QGraphicsLayoutItem *secondItem,
                                              Qt::AnchorPoint secondEdge,

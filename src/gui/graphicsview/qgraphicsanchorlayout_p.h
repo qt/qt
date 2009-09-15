@@ -403,15 +403,15 @@ public:
         return data->graphicsAnchor;
     }
 
-    // helper function used by the 4 API functions
-    QGraphicsAnchor *anchor(QGraphicsLayoutItem *firstItem,
+    // function used by the 4 API functions
+    QGraphicsAnchor *addAnchor(QGraphicsLayoutItem *firstItem,
                             Qt::AnchorPoint firstEdge,
                             QGraphicsLayoutItem *secondItem,
                             Qt::AnchorPoint secondEdge,
                             qreal *spacing = 0);
 
-    // Anchor Manipulation methods
-    void addAnchor(QGraphicsLayoutItem *firstItem,
+    // Helper for Anchor Manipulation methods
+    void addAnchor_helper(QGraphicsLayoutItem *firstItem,
                    Qt::AnchorPoint firstEdge,
                    QGraphicsLayoutItem *secondItem,
                    Qt::AnchorPoint secondEdge,
