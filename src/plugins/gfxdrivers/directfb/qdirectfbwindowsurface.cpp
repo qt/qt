@@ -113,12 +113,16 @@ bool QDirectFBWindowSurface::isValid() const
 #ifdef QT_DIRECTFB_WM
 void QDirectFBWindowSurface::raise()
 {
-    if (dfbWindow) {
-        dfbWindow->RaiseToTop(dfbWindow);
-    } else if (sibling && (!sibling->sibling || sibling->dfbWindow)) {
-        sibling->raise();
+    if (IDirectFBWindow *window = directFBWindow()) {
+        window->RaiseToTop(window);
     }
 }
+
+IDirectFBWindow *QDirectFBWindowSurface::directFBWindow() const
+{
+    return (dfbWindow ? dfbWindow : (sibling ? sibling->dfbWindow : 0));
+}
+
 
 void QDirectFBWindowSurface::createWindow(const QRect &rect)
 {

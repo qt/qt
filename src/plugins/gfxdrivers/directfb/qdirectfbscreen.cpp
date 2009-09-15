@@ -1652,6 +1652,19 @@ void QDirectFBScreen::waitIdle()
     d_ptr->dfb->WaitIdle(d_ptr->dfb);
 }
 
+#ifdef QT_DIRECTFB_WM
+IDirectFBWindow *QDirectFBScreen::windowForWidget(const QWidget *widget) const
+{
+    if (widget) {
+        const QWSWindowSurface *surface = static_cast<const QWSWindowSurface*>(widget->windowSurface());
+        if (surface && surface->key() == QLatin1String("directfb")) {
+            return static_cast<const QDirectFBWindowSurface*>(surface)->directFBWindow();
+        }
+    }
+    return 0;
+}
+#endif
+
 IDirectFBSurface * QDirectFBScreen::surfaceForWidget(const QWidget *widget, QRect *rect) const
 {
     Q_ASSERT(widget);
@@ -1697,6 +1710,13 @@ Q_GUI_EXPORT IDirectFBSurface *qt_directfb_subsurface_for_widget(const QWidget *
 {
     return QDirectFBScreen::instance() ? QDirectFBScreen::instance()->subSurfaceForWidget(widget, area) : 0;
 }
+#endif
+#ifdef QT_DIRECTFB_WM
+Q_GUI_EXPORT IDirectFBWindow *qt_directfb_window_for_widget(const QWidget *widget)
+{
+    return QDirectFBScreen::instance() ? QDirectFBScreen::instance()->windowForWidget(widget) : 0;
+}
+
 #endif
 #endif
 
