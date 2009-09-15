@@ -135,7 +135,11 @@ public:
 
     int addClassInfo(const QByteArray& name, const QByteArray& value);
 
+#ifdef Q_NO_DATA_RELOCATION
+    int addRelatedMetaObject(const QMetaObjectAccessor &meta);
+#else
     int addRelatedMetaObject(const QMetaObject *meta);
+#endif
 
     void addMetaObject(const QMetaObject *prototype, QMetaObjectBuilder::AddMembers members = AllMembers);
 
@@ -180,7 +184,7 @@ public:
 #endif
 
 private:
-    Q_DISABLE_COPY(QMetaObjectBuilder);
+    Q_DISABLE_COPY(QMetaObjectBuilder)
 
     QMetaObjectBuilderPrivate *d;
 
