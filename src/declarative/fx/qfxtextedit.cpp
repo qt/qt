@@ -455,7 +455,6 @@ void QFxTextEdit::setCursorDelegate(QmlComponent* c)
 {
     Q_D(QFxTextEdit);
     if(d->cursorComponent){
-        delete d->cursorComponent;
         if(d->cursor){
             disconnect(d->control, SIGNAL(cursorPositionChanged()),
                     this, SLOT(moveCursorDelegate()));
