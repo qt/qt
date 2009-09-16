@@ -55,6 +55,8 @@
 #include <qlineedit.h>
 #include <qkeysequence.h>
 
+#include "../../shared/util.h"
+
 //TESTED_FILES=
 
 QT_FORWARD_DECLARE_CLASS(QAction)
@@ -973,12 +975,14 @@ void tst_QToolBar::accel()
     QSignalSpy spy(action, SIGNAL(triggered(bool)));
 
     mw.show();
-    QTest::qWait(1000);
+    QApplication::setActiveWindow(&mw);
+    QTest::qWait(100);
+    QTRY_COMPARE(QApplication::activeWindow(), &mw);
 
     QTest::keyClick(&mw, Qt::Key_T, Qt::AltModifier);
     QTest::qWait(300);
 
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
 #ifdef Q_WS_MAC
     qt_set_sequence_auto_mnemonic(false);
 #endif
