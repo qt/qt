@@ -1079,9 +1079,15 @@ void tst_QGraphicsAnchorLayout::delete_anchor()
     QVERIFY(anchor1);
     QGraphicsAnchor *anchor2 = l->anchor(w3, Qt::AnchorRight, l, Qt::AnchorRight);
     QVERIFY(anchor2);
+    QGraphicsAnchor *anchor3 = l->anchor(l, Qt::AnchorRight, w3, Qt::AnchorRight);
+    QVERIFY(anchor3);
+    QGraphicsAnchor *anchor4 = l->anchor(l, Qt::AnchorRight, w3, Qt::AnchorRight);
+    QVERIFY(anchor4);
 
-    // should be the same object
+    // should all be the same object
     QCOMPARE(anchor1, anchor2);
+    QCOMPARE(anchor2, anchor3);
+    QCOMPARE(anchor3, anchor4);
 
     // check if removal works
     delete anchor1;

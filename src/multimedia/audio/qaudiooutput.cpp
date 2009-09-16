@@ -129,9 +129,12 @@ QT_BEGIN_NAMESPACE
 
     If an error occurs, you can fetch the \l{QAudio::Error}{error
     type} with the error() function. Please see the QAudio::Error enum
-    for a description of the possible errors that are reported.
+    for a description of the possible errors that are reported.  When
+    an error is encountered, the state changes to QAudio::StopState.
+    You can check for errors by connecting to the stateChanged()
+    signal:
 
-    If an error is encountered state changes to QAudio::StopState.
+    \snippet doc/src/snippets/audio/main.cpp 3
 
     \sa QAudioInput, QAudioDeviceInfo
 */

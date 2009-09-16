@@ -81,6 +81,9 @@ public:
     void setAutoDetectImageFormat(bool enabled);
     bool autoDetectImageFormat() const;
 
+    void setDecideFormatFromContent(bool ignored);
+    bool decideFormatFromContent() const;
+
     void setDevice(QIODevice *device);
     QIODevice *device() const;
 

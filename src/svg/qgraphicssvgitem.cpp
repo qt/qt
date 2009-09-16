@@ -265,6 +265,12 @@ int QGraphicsSvgItem::type() const
     return Type;
 }
 
+/*!
+  \property QGraphicsSvgItem::maximumCacheSize
+
+  This property holds the maximum size of the device coordinate cache
+  for this item.
+ */
 
 /*!
     Sets the maximum device coordinate cache size of the item to \a size.
@@ -305,8 +311,13 @@ QSize QGraphicsSvgItem::maximumCacheSize() const
 }
 
 /*!
-    Sets the XML ID of the element that this item should render to \a
-    id.
+  \property QGraphicsSvgItem::elementId
+
+  This property holds the element's XML ID.
+ */
+
+/*!
+    Sets the XML ID of the element to \a id.
 */
 void QGraphicsSvgItem::setElementId(const QString &id)
 {
@@ -318,7 +329,7 @@ void QGraphicsSvgItem::setElementId(const QString &id)
 
 /*!
     Returns the XML ID the element that is currently
-    being renderer. Returns an empty string if the whole
+    being rendered. Returns an empty string if the whole
     file is being rendered.
 */
 QString QGraphicsSvgItem::elementId() const

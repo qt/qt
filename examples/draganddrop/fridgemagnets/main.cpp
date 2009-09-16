@@ -51,6 +51,9 @@ int main(int argc, char *argv[])
             smallScreen = true;
 
     QApplication app(argc, argv);
+#ifdef QT_KEYPAD_NAVIGATION
+    QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);
+#endif
     DragWidget window;
     if (smallScreen)
         window.showFullScreen();

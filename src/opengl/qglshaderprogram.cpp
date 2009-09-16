@@ -70,16 +70,7 @@ QT_BEGIN_NAMESPACE
     program is activated in the current QGLContext by calling
     QGLShaderProgram::enable():
 
-    \code
-    QGLShader shader(QGLShader::VertexShader);
-    shader.compile(code);
-
-    QGLShaderProgram program(context);
-    program.addShader(shader);
-    program.link();
-
-    program.enable();
-    \endcode
+    \snippet doc/src/snippets/code/src_opengl_qglshaderprogram.cpp 0
 
     \section1 Writing portable shaders
 
@@ -107,49 +98,12 @@ QT_BEGIN_NAMESPACE
 
     \section1 Simple shader example
 
-    \code
-    program.addShader(QGLShader::VertexShader,
-        "attribute highp vec4 vertex;\n"
-        "attribute mediump mat4 matrix;\n"
-        "void main(void)\n"
-        "{\n"
-        "   gl_Position = matrix * vertex;\n"
-        "}");
-    program.addShader(QGLShader::FragmentShader,
-        "uniform mediump vec4 color;\n"
-        "void main(void)\n"
-        "{\n"
-        "   gl_FragColor = color;\n"
-        "}");
-    program.link();
-    program.enable();
-
-    int vertexLocation = program.attributeLocation("vertex");
-    int matrixLocation = program.attributeLocation("matrix");
-    int colorLocation = program.uniformLocation("color");
-    \endcode
+    \snippet doc/src/snippets/code/src_opengl_qglshaderprogram.cpp 1
 
     With the above shader program active, we can draw a green triangle
     as follows:
 
-    \code
-    static GLfloat const triangleVertices[] = {
-        60.0f,  10.0f,  0.0f,
-        110.0f, 110.0f, 0.0f,
-        10.0f,  110.0f, 0.0f
-    };
-
-    QColor color(0, 255, 0, 255);
-
-    QMatrix4x4 pmvMatrix;
-    pmvMatrix.ortho(rect());
-
-    program.setAttributeArray(vertexLocation, triangleVertices, 3);
-    program.setUniformValue(matrixLocation, pmvMatrix);
-    program.setUniformValue(colorLocation, color);
-
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    \endcode
+    \snippet doc/src/snippets/code/src_opengl_qglshaderprogram.cpp 2
 
     \section1 Partial shaders
 

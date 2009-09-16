@@ -1618,6 +1618,14 @@ public:
         GestureFinished = 3
     };
 
+    enum NavigationMode
+    {
+        NavigationModeNone,
+        NavigationModeKeypadTabOrder,
+        NavigationModeKeypadDirectional,
+        NavigationModeCursorAuto,
+        NavigationModeCursorForceVisible
+    };
 }
 #ifdef Q_MOC_RUN
  ;

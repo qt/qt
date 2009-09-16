@@ -171,7 +171,6 @@ void tst_MacPlist::test_plist()
     QVERIFY(dir.cdUp());
     QVERIFY(dir.cdUp());
     QVERIFY(dir.cdUp());
-    QVERIFY(dir.cdUp());
     QVERIFY(dir.cd(QLatin1String("app")));
     QVERIFY(dir.cd(QLatin1String("app.app")));
     QVERIFY(dir.cd(QLatin1String("Contents")));

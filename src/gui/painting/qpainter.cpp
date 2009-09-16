@@ -1317,7 +1317,8 @@ void QPainterPrivate::updateState(QPainterState *newState)
     Another workaround is to convert the paths to polygons first and then draw the
     polygons instead.
 
-    \sa QPaintDevice, QPaintEngine, {QtSvg Module}, {Basic Drawing Example}
+    \sa QPaintDevice, QPaintEngine, {QtSvg Module}, {Basic Drawing Example},
+        {Drawing Utility Functions}
 */
 
 /*!

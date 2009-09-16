@@ -49,10 +49,17 @@
 QT_BEGIN_NAMESPACE
 
 /*!
+    \headerfile <qdrawutil.h>
+    \title Drawing Utility Functions
+
+    \sa QPainter
+*/
+
+/*!
     \fn void qDrawShadeLine(QPainter *painter, int x1, int y1, int x2, int y2,
                      const QPalette &palette, bool sunken,
                      int lineWidth, int midLineWidth)
-    \relates QPainter
+    \relates <qdrawutil.h>
 
     Draws a horizontal (\a y1 == \a y2) or vertical (\a x1 == \a x2)
     shaded line using the given \a painter.  Note that nothing is
@@ -166,7 +173,7 @@ void qDrawShadeLine(QPainter *p, int x1, int y1, int x2, int y2,
                      const QPalette &palette, bool sunken,
                      int lineWidth, int midLineWidth,
                      const QBrush *fill)
-    \relates QPainter
+    \relates <qdrawutil.h>
 
     Draws the shaded rectangle beginning at (\a x, \a y) with the
     given \a width and \a height using the provided \a painter.
@@ -270,7 +277,7 @@ void qDrawShadeRect(QPainter *p, int x, int y, int w, int h,
     \fn void qDrawShadePanel(QPainter *painter, int x, int y, int width, int height,
                       const QPalette &palette, bool sunken,
                       int lineWidth, const QBrush *fill)
-    \relates QPainter
+    \relates <qdrawutil.h>
 
     Draws the shaded panel beginning at (\a x, \a y) with the given \a
     width and \a height using the provided \a painter and the given \a
@@ -406,7 +413,7 @@ static void qDrawWinShades(QPainter *p,
     \fn void qDrawWinButton(QPainter *painter, int x, int y, int width, int height,
                      const QPalette &palette, bool sunken,
                      const QBrush *fill)
-    \relates QPainter
+    \relates <qdrawutil.h>
 
     Draws the Windows-style button specified by the given point (\a x,
     \a y}, \a width and \a height using the provided \a painter with a
@@ -444,7 +451,7 @@ void qDrawWinButton(QPainter *p, int x, int y, int w, int h,
     \fn void qDrawWinPanel(QPainter *painter, int x, int y, int width, int height,
                     const QPalette &palette, bool        sunken,
                     const QBrush *fill)
-    \relates QPainter
+    \relates <qdrawutil.h>
 
     Draws the Windows-style panel specified by the given point(\a x,
     \a y), \a width and \a height using the provided \a painter with a
@@ -483,7 +490,7 @@ void qDrawWinPanel(QPainter *p, int x, int y, int w, int h,
 /*!
     \fn void qDrawPlainRect(QPainter *painter, int x, int y, int width, int height, const QColor &lineColor,
                      int lineWidth, const QBrush *fill)
-    \relates QPainter
+    \relates <qdrawutil.h>
 
     Draws the plain rectangle beginning at (\a x, \a y) with the given
     \a width and \a height, using the specified \a painter, \a lineColor
@@ -532,7 +539,7 @@ void qDrawPlainRect(QPainter *p, int x, int y, int w, int h, const QColor &c,
 /*!
     \fn void qDrawShadeLine(QPainter *painter, const QPoint &p1, const QPoint &p2,
              const QPalette &palette, bool sunken, int lineWidth, int midLineWidth)
-    \relates QPainter
+    \relates <qdrawutil.h>
     \overload
 
     Draws a horizontal or vertical shaded line between \a p1 and \a p2
@@ -572,7 +579,7 @@ void qDrawShadeLine(QPainter *p, const QPoint &p1, const QPoint &p2,
 /*!
     \fn void qDrawShadeRect(QPainter *painter, const QRect &rect, const QPalette &palette,
              bool sunken, int lineWidth, int midLineWidth, const QBrush *fill)
-    \relates QPainter
+    \relates <qdrawutil.h>
     \overload
 
     Draws the shaded rectangle specified by \a rect using the given \a painter.
@@ -612,7 +619,7 @@ void qDrawShadeRect(QPainter *p, const QRect &r,
 /*!
     \fn void qDrawShadePanel(QPainter *painter, const QRect &rect, const QPalette &palette,
              bool sunken, int lineWidth, const QBrush *fill)
-    \relates QPainter
+    \relates <qdrawutil.h>
     \overload
 
     Draws the shaded panel at the rectangle specified by \a rect using the
@@ -648,7 +655,7 @@ void qDrawShadePanel(QPainter *p, const QRect &r,
 /*!
     \fn void qDrawWinButton(QPainter *painter, const QRect &rect, const QPalette &palette,
              bool sunken, const QBrush *fill)
-    \relates QPainter
+    \relates <qdrawutil.h>
     \overload
 
     Draws the Windows-style button at the rectangle specified by \a rect using
@@ -706,7 +713,7 @@ void qDrawWinPanel(QPainter *p, const QRect &r,
 
 /*!
     \fn void qDrawPlainRect(QPainter *painter, const QRect &rect, const QColor &lineColor, int lineWidth, const QBrush *fill)
-    \relates QPainter
+    \relates <qdrawutil.h>
     \overload
 
     Draws the plain rectangle specified by \a rect using the given \a painter,
@@ -1060,7 +1067,7 @@ void qDrawItem(QPainter *p, Qt::GUIStyle gs,
 /*!
     \fn void qDrawBorderPixmap(QPainter *painter, const QRect &target, const QMargins &margins, const QPixmap &pixmap)
     \since 4.6
-    \relates QMargins
+    \relates <qdrawutil.h>
 
     Draws the given \a pixmap into the given \a target rectangle, using the
     given \a painter. The pixmap will be split into nine segments and drawn
