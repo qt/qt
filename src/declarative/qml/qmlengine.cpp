@@ -82,6 +82,7 @@
 #include <private/qmlenginedebug_p.h>
 #include <private/qmlstringconverters_p.h>
 #include <private/qmlxmlhttprequest_p.h>
+#include <private/qmlsqldatabase_p.h>
 
 Q_DECLARE_METATYPE(QmlMetaProperty)
 Q_DECLARE_METATYPE(QList<QObject *>);
@@ -121,6 +122,7 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
     scriptEngine.globalObject().setProperty(QLatin1String("Qt"), qtObject);
 
     qt_add_qmlxmlhttprequest(&scriptEngine);
+    qt_add_qmlsqldatabase(&scriptEngine);
 
     //types
     qtObject.setProperty(QLatin1String("rgba"), scriptEngine.newFunction(QmlEnginePrivate::rgba, 4));
