@@ -739,10 +739,8 @@ void QFxTextInput::updateSize()
 {
     Q_D(QFxTextInput);
     setImplicitHeight(d->control->height());
-    //d->control->width() is max width, not current width
-    QFontMetrics fm = QFontMetrics(d->font);
-    setImplicitWidth(fm.width(d->control->text())+1);
-    //setImplicitWidth(d->control->naturalWidth());//### This fn should be coming into 4.6 shortly, and might be faster
+    //d->control->width() is width of the line, not of the text
+    setImplicitWidth(d->control->naturalTextWidth()+2);
     setContentsSize(QSize(width(), height()));
 }
 
