@@ -4,13 +4,11 @@ TODO list for MMF Phonon backend
 The following items are in rough order of priority.
 
 
-* Work out why video is not visible
-
-* Write a test app which allows the following:
-	- Dragging of the video widget
-	- Resizing of the video widget
-	- Dragging of other widgets on top of / underneath the video widget
-These will allow the video widget's moveEvent / resizeEvent implementations to be tested.
+* Review the latest changes for making video visible on target.  In particular, the temporary hack in qmediaplayer (setting the Qt::WA_TranslucentBackground attribute on the top-level widget, so that the CFbsBitmap used as the window surface is created with a display mode of EColor16MA) needs to be replaced with a change in QtGui.  Some possiblilities are as follows:
+1. Change the QS60WindowSurface constructor so that *all* window surfaces are 16MA.  This has some drawbacks:
+	- It causes application backgrounds to be transparent, because CFbsBitmap data (including the alpha channel) gets zero-initialized.  This may require the alpha values in the bitmap to be set to 255.
+	- Blitting of RGB32 and ABGR Qt pixmaps to a 16MA surface is slower than blitting to 16MU.  This could be alleviated by modifying the software blitting routines.
+2. Add a function in QS60WindowSurface, e.g. setAlphaValue(const QRegion& region, int value), allowing the client to set alpha values in the bitmap.  Assuming that WSERV will transfer these values, when blitting a 16MU source, this would allow the video to be visible, and avoid the performance penalties of option (1).  We would then call this from VideoOutput::paintEvent.
 
 * On-target testing
 1. Ensure that Phonon front- and back-end libraries are included in the SIS file.

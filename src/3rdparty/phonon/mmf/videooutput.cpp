@@ -47,9 +47,9 @@ MMF::VideoOutput::VideoOutput(QWidget* parent)
 
 #ifndef PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
     setPalette(QPalette(Qt::black));
-    //setAttribute(Qt::WA_OpaquePaintEvent, true);
-    setAttribute(Qt::WA_NoSystemBackground, true);
-    setAutoFillBackground(false);
+	setAttribute(Qt::WA_OpaquePaintEvent, true);
+	setAttribute(Qt::WA_NoSystemBackground, true);
+	setAutoFillBackground(false);
 #endif // PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
 
     dump();
@@ -120,13 +120,17 @@ void MMF::VideoOutput::paintEvent(QPaintEvent* event)
 
     dump();
     
-/*
+    // Note: composition mode code was a failed attempt to get transparent
+    // alpha values to be propagated to the (EColor16MU) window surface.
+
     QPainter painter;
+    //const QPainter::CompositionMode compositionMode = painter.compositionMode();
+    //painter.setCompositionMode(QPainter::CompositionMode_Source);
     painter.begin(this);
-    painter.setBrush(QColor(0, 0, 0, 255));   // opaque black
+    painter.setBrush(QColor(0, 0, 0, 0));
     painter.drawRects(event->region().rects());
     painter.end();
-*/
+    //painter.setCompositionMode(compositionMode);
 }
 
 void MMF::VideoOutput::resizeEvent(QResizeEvent* event)
