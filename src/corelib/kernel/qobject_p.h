@@ -194,11 +194,13 @@ public:
 #endif
 
     QList<QPointer<QObject> > eventFilters;
-    QObject *currentChildBeingDeleted;
+    union {
+        QObject *currentChildBeingDeleted;
+        QDeclarativeData *declarativeData; //extra data used by the DeclarativeUI project.
+    };
 
     // these objects are all used to indicate that a QObject was deleted
     // plus QPointer, which keeps a separate list
-    QDeclarativeData *declarativeData;
     QAtomicPointer<QtSharedPointer::ExternalRefCountData> sharedRefcount;
     int *deleteWatch;
 };
