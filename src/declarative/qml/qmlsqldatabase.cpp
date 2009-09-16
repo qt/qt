@@ -301,4 +301,3 @@ void qt_add_qmlsqldatabase(QScriptEngine *engine)
     engine->globalObject().setProperty(QLatin1String("openDatabase"), openDatabase);
 }
 
-#include "qmlsqldatabase.moc"
