@@ -166,9 +166,9 @@ tst_QKeySequence::~tst_QKeySequence()
 void tst_QKeySequence::initTestCase()
 {
     ourTranslator = new QTranslator(this);
-    ourTranslator->load(QLatin1String("keys_de"), ".");
+    ourTranslator->load(":/keys_de");
     qtTranslator = new QTranslator(this);
-    qtTranslator->load(QLatin1String("qt_de"), QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+    qtTranslator->load(":/qt_de");
 }
 
 void tst_QKeySequence::operatorQString_data()
