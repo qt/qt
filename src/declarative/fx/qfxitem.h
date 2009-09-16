@@ -134,9 +134,11 @@ public:
 
     qreal width() const;
     void setWidth(qreal);
+    qreal implicitWidth() const;
 
     qreal height() const;
     void setHeight(qreal);
+    qreal implicitHeight() const;
 
     TransformOrigin transformOrigin() const;
     void setTransformOrigin(TransformOrigin);

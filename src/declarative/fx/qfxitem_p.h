@@ -108,7 +108,7 @@ public:
       widthValid(false), heightValid(false),
       _componentComplete(true), _keepMouse(false),
       smooth(false), keyHandler(0),
-      width(0), height(0)
+      width(0), height(0), implicitWidth(0), implicitHeight(0)
     {}
     ~QFxItemPrivate()
     { delete _anchors; }
@@ -213,6 +213,8 @@ public:
 
     qreal width;
     qreal height;
+    qreal implicitWidth;
+    qreal implicitHeight;
 
     QPointF computeTransformOrigin() const;
 
