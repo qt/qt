@@ -55,6 +55,7 @@ class Q_DECLARATIVE_EXPORT QmlPropertyValueSource
 {
 public:
     QmlPropertyValueSource();
+    virtual ~QmlPropertyValueSource();
     virtual void setTarget(const QmlMetaProperty &) = 0;
 };
 Q_DECLARE_INTERFACE(QmlPropertyValueSource, "com.trolltech.qml.QmlPropertyValueSource")

@@ -56,6 +56,10 @@ QmlPropertyValueSource::QmlPropertyValueSource()
 {
 }
 
+QmlPropertyValueSource::~QmlPropertyValueSource()
+{
+}
+
 /*!
     \fn void QmlPropertyValueSource::setTarget(const QmlMetaProperty &property)
     Set the target \a property for the value source.  This method will
