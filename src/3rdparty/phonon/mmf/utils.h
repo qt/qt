@@ -59,6 +59,12 @@ MediaType mimeTypeToMediaType(const TDesC& mimeType);
  * Retrieve color of specified pixel from the screen.
  */
 QColor getScreenPixel(const QPoint& pos);
+
+/**
+ * Samples a small number of pixels from the screen, and dumps their
+ * colors to the debug log.
+ */
+void dumpScreenPixelSample();
 #endif
 }
 

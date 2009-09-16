@@ -123,6 +123,19 @@ QColor MMF::Utils::getScreenPixel(const QPoint& pos)
 	return pixel;
 }
 
+// Debugging: for debugging video visibility
+void MMF::Utils::dumpScreenPixelSample() 
+{
+    for(int i=0; i<20; ++i) {
+		const QPoint pos(i*10, i*10);
+		const QColor pixel = Utils::getScreenPixel(pos);
+		RDebug::Printf(
+			"Phonon::MMF::Utils::dumpScreenPixelSample %d %d = %d %d %d %d",
+			pos.x(), pos.y(), pixel.red(), pixel.green(), pixel.blue(), pixel.alpha()
+		);
+    }
+}
+
 #endif // _DEBUG
 
 QT_END_NAMESPACE
