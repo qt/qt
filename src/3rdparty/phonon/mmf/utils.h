@@ -22,6 +22,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <private/qcore_symbian_p.h>
 #include <e32debug.h>   // for RDebug
 
+#include <QColor>
+
 #include "defs.h"
 
 QT_BEGIN_NAMESPACE
@@ -51,6 +53,13 @@ void panic(PanicCode code);
  * type.  If it is neither, the function returns MediaTypeUnknown.
  */
 MediaType mimeTypeToMediaType(const TDesC& mimeType);
+
+#ifdef _DEBUG
+/**
+ * Retrieve color of specified pixel from the screen.
+ */
+QColor getScreenPixel(const QPoint& pos);
+#endif
 }
 
 /**

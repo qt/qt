@@ -50,5 +50,80 @@ MMF::MediaType MMF::Utils::mimeTypeToMediaType(const TDesC& mimeType)
 }
 
 
+#ifdef _DEBUG
+
+#include <hal.h>
+#include <hal_data.h>
+#include <gdi.h>
+#include <eikenv.h>
+
+struct TScreenInfo
+{
+	int width;
+	int height;
+	int bpp;
+	const char* address;
+	int initialOffset;
+	int lineOffset;
+	TDisplayMode displayMode;
+};
+
+void getScreenInfoL(TScreenInfo& info)
+{
+	info.displayMode = CEikonEnv::Static()->ScreenDevice()->DisplayMode();
+	
+	// Then we must set these as the input parameter
+	info.width = info.displayMode;
+	info.height = info.displayMode;
+	info.initialOffset = info.displayMode;
+	info.lineOffset = info.displayMode;
+	info.bpp = info.displayMode;
+
+	User::LeaveIfError( HAL::Get(HALData::EDisplayXPixels, info.width) );
+	User::LeaveIfError( HAL::Get(HALData::EDisplayYPixels, info.width) );
+		
+	int address;
+	User::LeaveIfError( HAL::Get(HALData::EDisplayMemoryAddress, address) );
+	info.address = reinterpret_cast<const char*>(address);
+	
+	User::LeaveIfError( HAL::Get(HALData::EDisplayOffsetToFirstPixel, info.initialOffset) );
+	
+	User::LeaveIfError( HAL::Get(HALData::EDisplayOffsetBetweenLines, info.lineOffset) );
+	
+	User::LeaveIfError( HAL::Get(HALData::EDisplayBitsPerPixel, info.bpp) );
+}
+
+
+QColor MMF::Utils::getScreenPixel(const QPoint& pos)
+{
+	TScreenInfo info;
+	TRAPD(err, getScreenInfoL(info));
+	QColor pixel;
+	if(err == KErrNone and pos.x() < info.width and pos.y() < info.height)
+	{
+		const int bytesPerPixel = info.bpp / 8;
+		Q_ASSERT(bytesPerPixel >= 3);
+		
+		const int stride = (info.width * bytesPerPixel) + info.lineOffset;
+	
+		const char* ptr =
+				info.address
+			+	info.initialOffset
+			+	pos.y() * stride
+			+	pos.x() * bytesPerPixel;
+		
+		// BGRA
+		pixel.setBlue(*ptr++);
+		pixel.setGreen(*ptr++);
+		pixel.setRed(*ptr++);
+		
+		if(bytesPerPixel == 4)
+			pixel.setAlpha(*ptr++);
+	}
+	return pixel;
+}
+
+#endif // _DEBUG
+
 QT_END_NAMESPACE
 
