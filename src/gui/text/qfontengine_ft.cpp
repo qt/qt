@@ -1848,6 +1848,28 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g)
     return img;
 }
 
+QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, int margin, const QTransform &t)
+{
+    if (t.type() != QTransform::TxTranslate)
+        return QFontEngine::alphaRGBMapForGlyph(g, margin, t);
+
+    lockFace();
+
+    GlyphFormat glyph_format = Format_A32;
+
+    Glyph *glyph = defaultGlyphSet.outline_drawing ? 0 : loadGlyph(g, glyph_format);
+    if (!glyph) {
+        unlockFace();
+        return QFontEngine::alphaRGBMapForGlyph(g, margin, t);
+    }
+
+    QImage img(glyph->width, glyph->height, QImage::Format_RGB32);
+    memcpy(img.bits(), glyph->data, 4 * glyph->width * glyph->height);
+    unlockFace();
+
+    return img;
+}
+
 void QFontEngineFT::removeGlyphFromCache(glyph_t glyph)
 {
     delete defaultGlyphSet.glyph_data.take(glyph);
