@@ -410,7 +410,6 @@ public:
     void optimiseForBrushTransform(const QTransform &transform);
     void setSrcPixelType(Qt::BrushStyle);
     void setSrcPixelType(PixelSrcType); // For non-brush sources, like pixmaps & images
-    void setTextureCoordsEnabled(bool); // For images & text glyphs
     void setUseGlobalOpacity(bool);
     void setMaskType(MaskType);
     void setCompositionMode(QPainter::CompositionMode);
@@ -452,7 +451,6 @@ private:
     int                         srcPixelType;
     bool                        useGlobalOpacity;
     MaskType                    maskType;
-    bool                        useTextureCoords;
     QPainter::CompositionMode   compositionMode;
     QGLCustomShaderStage*       customSrcStage;
 
