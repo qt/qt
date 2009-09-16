@@ -4773,7 +4773,7 @@ void QApplicationPrivate::emitLastWindowClosed()
 
 #ifdef QT_KEYPAD_NAVIGATION
 /*!
-    Sets what kind of focus navigation Qt should use.
+    Sets the kind of focus navigation Qt should use to \a mode.
 
     This feature is available in Qt for Embedded Linux, Symbian and Windows CE
     only.

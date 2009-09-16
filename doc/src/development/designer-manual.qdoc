@@ -1569,7 +1569,6 @@
     \raw HTML
     </div>
     \endraw
-    \table
 
     \section2 Creating a Menu Entry
 
@@ -1630,7 +1629,6 @@
     Since actions can be represented by menu entries and toolbar buttons,
     they can be moved between menus and toolbars.
 
-    \target AddingAnAction
     \raw HTML
     <div style="float: right; margin-left: 2em">
     \endraw
