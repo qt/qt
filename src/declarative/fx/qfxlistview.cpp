@@ -570,13 +570,7 @@ void QFxListViewPrivate::layout()
         return;
     q->refill();
     updateHighlight();
-    if (orient == Qt::Vertical) {
-        fixupY();
-        q->setViewportHeight(endPosition() - startPosition());
-    } else {
-        fixupX();
-        q->setViewportWidth(endPosition() - startPosition());
-    }
+    fixupPosition();
     updateUnrequestedPositions();
 }
 
@@ -1131,7 +1125,7 @@ void QFxListView::setStrictlyEnforceHighlightRange(bool strict)
 }
 
 /*!
-    \qmlproperty int ListView::spacing
+    \qmlproperty real ListView::spacing
 
     This property holds the spacing to leave between items.
 */
