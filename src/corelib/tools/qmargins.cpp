@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
     QMargin objects can be streamed as well as compared.
 
-    \sa qDrawBorderPixmap
+    \sa qDrawBorderPixmap()
 
 */
 
