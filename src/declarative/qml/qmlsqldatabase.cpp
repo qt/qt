@@ -64,109 +64,83 @@
 #include "qlibrary.h"
 #endif
 
+Q_DECLARE_METATYPE(QSqlDatabase)
 
-class QmlSqlDatabaseTransaction : public QObject
+static QScriptValue qmlsqldatabase_executeSql(QScriptContext *context, QScriptEngine *engine)
 {
-    Q_OBJECT
-public:
-    QmlSqlDatabaseTransaction(QSqlDatabase db, QmlEngine *engine) : database(db) {}
-    virtual ~QmlSqlDatabaseTransaction(){}
-    static QScriptValue executeSql(QScriptContext *context, QScriptEngine *engine)
-    {
-        QScriptValue tx = context->thisObject();
-        QmlSqlDatabaseTransaction *trans = qobject_cast<QmlSqlDatabaseTransaction *>(tx.toQObject());
-        QString sql = context->argument(0).toString();
-        QScriptValue values = context->argument(1);
-        QScriptValue cb = context->argument(2);
-        QScriptValue cberr = context->argument(3);
-        QSqlQuery query(trans->database);
-        bool err = false;
-        if (query.prepare(sql)) {
-            if (values.isArray()) {
-                for (QScriptValueIterator it(values); it.hasNext();) {
-                    it.next();
-                    query.addBindValue(it.value().toVariant());
-                }
-            } else {
-                query.bindValue(0,values.toVariant());
+    QSqlDatabase db = qscriptvalue_cast<QSqlDatabase>(context->thisObject());
+    QString sql = context->argument(0).toString();
+    QScriptValue values = context->argument(1);
+    QScriptValue cb = context->argument(2);
+    QScriptValue cberr = context->argument(3);
+    QSqlQuery query(db);
+    bool err = false;
+    if (query.prepare(sql)) {
+        if (values.isArray()) {
+            for (QScriptValueIterator it(values); it.hasNext();) {
+                it.next();
+                query.addBindValue(it.value().toVariant());
             }
-            if (query.exec()) {
-                QScriptValue rows = engine->newArray();
-                int i=0;
-                for (; query.next(); ++i) {
-                    QSqlRecord r = query.record();
-                    QScriptValue row = engine->newArray(r.count());
-                    for (int j=0; j<r.count(); ++j) {
-                        row.setProperty(j, QScriptValue(engine,r.value(j).toString()));
-                    }
-                    rows.setProperty(i, row);
+        } else {
+            query.bindValue(0,values.toVariant());
+        }
+        if (query.exec()) {
+            QScriptValue rows = engine->newArray();
+            int i=0;
+            for (; query.next(); ++i) {
+                QSqlRecord r = query.record();
+                QScriptValue row = engine->newArray(r.count());
+                for (int j=0; j<r.count(); ++j) {
+                    row.setProperty(j, QScriptValue(engine,r.value(j).toString()));
                 }
-                QScriptValue rs = engine->newObject();
-                rs.setProperty(QLatin1String("rows"), rows);
-                cb.call(QScriptValue(), QScriptValueList() << tx << rs);
-            } else {
-                err = true;
+                rows.setProperty(i, row);
             }
+            QScriptValue rs = engine->newObject();
+            rs.setProperty(QLatin1String("rows"), rows);
+            cb.call(QScriptValue(), QScriptValueList() << context->thisObject() << rs);
         } else {
             err = true;
         }
-        if (err) {
-            QScriptValue error = engine->newObject();
-            error.setProperty(QLatin1String("message"), query.lastError().text());
-            cberr.call(QScriptValue(), QScriptValueList() << tx << error);
-        }
-        return engine->undefinedValue();
+    } else {
+        err = true;
     }
+    if (err) {
+        QScriptValue error = engine->newObject();
+        error.setProperty(QLatin1String("message"), query.lastError().text());
+        cberr.call(QScriptValue(), QScriptValueList() << context->thisObject() << error);
+    }
+    return engine->undefinedValue();
+}
 
-private:
-    QSqlDatabase database;
-};
-
-class QmlSqlDatabase : public QObject
+static QScriptValue qmlsqldatabase_transaction(QScriptContext *context, QScriptEngine *engine)
 {
-    Q_OBJECT
-public:
-    QmlSqlDatabase(QmlEngine *engine, QScriptContext *context);
-    virtual ~QmlSqlDatabase();
-
-    QScriptValue callback() const;
-    void setCallback(const QScriptValue &);
-
-    static QScriptValue transaction(QScriptContext *context, QScriptEngine *engine)
-    {
-        QmlSqlDatabase *db = qobject_cast<QmlSqlDatabase *>(context->thisObject().toQObject());
-        if (!db)
-            return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an SqlDatabase object"));
-        if (context->argumentCount() != 1)
-            return engine->undefinedValue();
-        QScriptValue cb = context->argument(0);
-        if (!cb.isFunction())
-            return engine->undefinedValue();
-
-        // XXX Call synchronously...
-        QScriptValue tx = engine->newQObject(new QmlSqlDatabaseTransaction(db->database, QmlEnginePrivate::getEngine(engine)), QScriptEngine::ScriptOwnership);
-
-        tx.setProperty(QLatin1String("executeSql"), engine->newFunction(QmlSqlDatabaseTransaction::executeSql,4));
-
-        db->database.transaction();
-        cb.call(QScriptValue(), QScriptValueList() << tx);
-        if (engine->hasUncaughtException()) {
-            db->database.rollback();
-            QScriptValue cb = context->argument(1);
-            if (cb.isFunction())
-                cb.call();
-        } else {
-            db->database.commit();
-            QScriptValue cb = context->argument(2);
-            if (cb.isFunction())
-                cb.call();
-        }
+    QSqlDatabase db = qscriptvalue_cast<QSqlDatabase>(context->thisObject());
+    if (context->argumentCount() < 1)
         return engine->undefinedValue();
-    }
+    QScriptValue cb = context->argument(0);
+    if (!cb.isFunction())
+        return engine->undefinedValue();
 
-private:
-    QSqlDatabase database;
-};
+    // Call synchronously...  - XXX could do asynch with threads
+    QScriptValue instance = engine->newObject();
+    instance.setProperty(QLatin1String("executeSql"), engine->newFunction(qmlsqldatabase_executeSql,4));
+    QScriptValue tx = engine->newVariant(instance,qVariantFromValue(db));
+
+    db.transaction();
+    cb.call(QScriptValue(), QScriptValueList() << tx);
+    if (engine->hasUncaughtException()) {
+        db.rollback();
+        QScriptValue cb = context->argument(1);
+        if (cb.isFunction())
+            cb.call();
+    } else {
+        db.commit();
+        QScriptValue cb = context->argument(2);
+        if (cb.isFunction())
+            cb.call();
+    }
+    return engine->undefinedValue();
+}
 
 // XXX Something like this belongs in Qt.
 static QString userLocalDataPath(const QString& app)
@@ -207,8 +181,11 @@ static QString userLocalDataPath(const QString& app)
     return result;
 }
 
-QmlSqlDatabase::QmlSqlDatabase(QmlEngine *engine, QScriptContext *context)
+
+static QScriptValue qmlsqldatabase_open(QScriptContext *context, QScriptEngine *engine)
 {
+    QSqlDatabase database;
+
     QString dbname = context->argument(0).toString();
     QString dbversion = context->argument(1).toString();
     QString dbdescription = context->argument(2).toString();
@@ -219,7 +196,6 @@ QmlSqlDatabase::QmlSqlDatabase(QmlEngine *engine, QScriptContext *context)
     md5.addData(dbversion.utf8());
     QString dbid(QLatin1String(md5.result().toHex()));
 
-    QSqlDatabase db;
     if (QSqlDatabase::connectionNames().contains(dbid)) {
         database = QSqlDatabase::database(dbid);
     } else {
@@ -231,23 +207,16 @@ QmlSqlDatabase::QmlSqlDatabase(QmlEngine *engine, QScriptContext *context)
         basename += dbid;
         database.setDatabaseName(basename+QLatin1String(".sqllite"));
         QSettings ini(basename+QLatin1String(".ini"),QSettings::IniFormat);
-        ini.setValue("Name", dbname);
-        ini.setValue("Version", dbversion);
-        ini.setValue("Description", dbdescription);
-        ini.setValue("EstimatedSize", dbestimatedsize);
+        ini.setValue(QLatin1String("Name"), dbname);
+        ini.setValue(QLatin1String("Version"), dbversion);
+        ini.setValue(QLatin1String("Description"), dbdescription);
+        ini.setValue(QLatin1String("EstimatedSize"), dbestimatedsize);
         database.open();
     }
-}
 
-QmlSqlDatabase::~QmlSqlDatabase()
-{
-}
-
-static QScriptValue qmlsqldatabase_open(QScriptContext *context, QScriptEngine *engine)
-{
-    QScriptValue proto = engine->newQObject(new QmlSqlDatabase(QmlEnginePrivate::getEngine(engine),context), QScriptEngine::ScriptOwnership);
-    proto.setProperty(QLatin1String("transaction"), engine->newFunction(QmlSqlDatabase::transaction,1));
-    return proto;
+    QScriptValue instance = engine->newObject();
+    instance.setProperty(QLatin1String("transaction"), engine->newFunction(qmlsqldatabase_transaction,3));
+    return engine->newVariant(instance,qVariantFromValue(database));
 }
 
 void qt_add_qmlsqldatabase(QScriptEngine *engine)
