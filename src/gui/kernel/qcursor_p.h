@@ -64,6 +64,8 @@
 #  include "private/qt_x11_p.h"
 # elif defined(Q_WS_WIN)
 #  include "QtCore/qt_windows.h"
+# elif defined(Q_OS_SYMBIAN)
+#  include "private/qt_s60_p.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -74,7 +76,8 @@ class QMacAnimateCursor;
 #endif
 
 class QBitmap;
-struct QCursorData {
+class QCursorData {
+public:
     QCursorData(Qt::CursorShape s = Qt::ArrowCursor);
     ~QCursorData();
 
@@ -111,11 +114,20 @@ struct QCursorData {
     } curs;
     void initCursorFromBitmap();
     void initCursorFromPixmap();
+#elif defined Q_OS_SYMBIAN
+    void loadShapeFromResource(RWsSpriteBase& target, QString resource, int hx, int hy, int interval=0);
+    void constructShapeSprite(RWsSpriteBase& target);
+    void constructCursorSprite(RWsSpriteBase& target);
+    RWsPointerCursor pcurs;
+    RWsSprite scurs;
+    RPointerArray<TSpriteMember> nativeSpriteMembers;
 #endif
     static bool initialized;
     void update();
     static QCursorData *setBitmap(const QBitmap &bitmap, const QBitmap &mask, int hotX, int hotY);
 };
+
+extern QCursorData *qt_cursorTable[Qt::LastCursor + 1]; // qcursor.cpp
 
 QT_END_NAMESPACE
 

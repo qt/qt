@@ -2788,7 +2788,6 @@ static void applyTemporarySymbianFlags(QStringList &qconfigList)
     // This is removed because it uses UNIX signals which are not implemented yet
     qconfigList += "QT_NO_CRASHHANDLER";
     qconfigList += "QT_NO_PRINTER";
-    qconfigList += "QT_NO_CURSOR";
     qconfigList += "QT_NO_SYSTEMTRAYICON";
 }
 

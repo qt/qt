@@ -220,6 +220,9 @@ public:
     QString cancelText() const;
     void setCancelText(const QString &text);
 
+    const QPalette &palette() const;
+    void setPalette(const QPalette &);
+
     enum DrawFlags {
         DrawText = 0x01,
         DrawSelections = 0x02,
@@ -739,6 +742,16 @@ inline QString QLineControl::cancelText() const
 inline void QLineControl::setCancelText(const QString &text)
 {
     m_cancelText = text;
+}
+
+inline const QPalette & QLineControl::palette() const
+{
+    return m_palette;
+}
+
+inline void QLineControl::setPalette(const QPalette &p)
+{
+    m_palette = p;
 }
 
 QT_END_NAMESPACE

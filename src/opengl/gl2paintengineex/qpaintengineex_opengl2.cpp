@@ -1767,14 +1767,6 @@ QOpenGL2PaintEngineState::~QOpenGL2PaintEngineState()
 {
 }
 
-QPixmapFilter *QGL2PaintEngineEx::createPixmapFilter(int type) const
-{
-    const QGLContext *ctx = QGLContext::currentContext();
-    if (ctx)
-        return ctx->d_func()->createPixmapFilter(type);
-    return 0;
-}
-
 QT_END_NAMESPACE
 
 #include "qpaintengineex_opengl2.moc"
