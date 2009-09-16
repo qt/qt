@@ -2688,6 +2688,13 @@ void QFxItem::setWidth(qreal w)
                     QRectF(x(), y(), oldWidth, height()));
 }
 
+void QFxItem::resetWidth()
+{
+    Q_D(QFxItem);
+    d->widthValid = false;
+    setImplicitWidth(implicitWidth());
+}
+
 qreal QFxItem::implicitWidth() const
 {
     Q_D(const QFxItem);
@@ -2738,6 +2745,13 @@ void QFxItem::setHeight(qreal h)
 
     geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), width(), oldHeight));
+}
+
+void QFxItem::resetHeight()
+{
+    Q_D(QFxItem);
+    d->heightValid = false;
+    setImplicitHeight(implicitHeight());
 }
 
 qreal QFxItem::implicitHeight() const
