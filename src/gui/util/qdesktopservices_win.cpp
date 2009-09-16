@@ -41,6 +41,7 @@
 
 #include <qsettings.h>
 #include <qdir.h>
+#include <qlibrary.h>
 #include <qurl.h>
 #include <qstringlist.h>
 #include <qprocess.h>
@@ -168,49 +169,71 @@ static bool launchWebBrowser(const QUrl &url)
 
 QString QDesktopServices::storageLocation(StandardLocation type)
 {
-#if !defined(QT_NO_SETTINGS)	
-    QSettings settings(QSettings::UserScope, QLatin1String("Microsoft"), QLatin1String("Windows"));
-    settings.beginGroup(QLatin1String("CurrentVersion/Explorer/Shell Folders"));
+    QString result;
+
+#ifndef Q_OS_WINCE
+        QLibrary library(QLatin1String("shell32"));
+#else
+        QLibrary library(QLatin1String("coredll"));
+#endif // Q_OS_WINCE
+    typedef BOOL (WINAPI*GetSpecialFolderPath)(HWND, LPWSTR, int, BOOL);
+    static GetSpecialFolderPath SHGetSpecialFolderPath =
+            (GetSpecialFolderPath)library.resolve("SHGetSpecialFolderPathW");
+    if (!SHGetSpecialFolderPath)
+        return QString();
+
+    wchar_t path[MAX_PATH];
+
     switch (type) {
+    case DataLocation:
+        if (SHGetSpecialFolderPath(0, path, CSIDL_LOCAL_APPDATA, FALSE))
+            result = QString::fromWCharArray(path);
+        if (!QCoreApplication::organizationName().isEmpty())
+            result = result + QLatin1String("\\") + QCoreApplication::organizationName();
+        if (!QCoreApplication::applicationName().isEmpty())
+            result = result + QLatin1String("\\") + QCoreApplication::applicationName();
+        break;
+
+    case DesktopLocation:
+        if (SHGetSpecialFolderPath(0, path, CSIDL_DESKTOPDIRECTORY, FALSE))
+            result = QString::fromWCharArray(path);
+        break;
+
+    case DocumentsLocation:
+        if (SHGetSpecialFolderPath(0, path, CSIDL_PERSONAL, FALSE))
+            result = QString::fromWCharArray(path);
+        break;
+
+    case FontsLocation:
+        if (SHGetSpecialFolderPath(0, path, CSIDL_FONTS, FALSE))
+            result = QString::fromWCharArray(path);
+        break;
+
+    case ApplicationsLocation:
+        if (SHGetSpecialFolderPath(0, path, CSIDL_PROGRAMS, FALSE))
+            result = QString::fromWCharArray(path);
+        break;
+
+    case MusicLocation:
+        if (SHGetSpecialFolderPath(0, path, CSIDL_MYMUSIC, FALSE))
+            result = QString::fromWCharArray(path);
+        break;
+
+    case MoviesLocation:
+        if (SHGetSpecialFolderPath(0, path, CSIDL_MYVIDEO, FALSE))
+            result = QString::fromWCharArray(path);
+        break;
+
+    case PicturesLocation:
+        if (SHGetSpecialFolderPath(0, path, CSIDL_MYPICTURES, FALSE))
+            result = QString::fromWCharArray(path);
+        break;
+
     case CacheLocation:
         // Although Microsoft has a Cache key it is a pointer to IE's cache, not a cache
         // location for everyone.  Most applications seem to be using a
         // cache directory located in their AppData directory
         return storageLocation(DataLocation) + QLatin1String("\\cache");
-    case DataLocation:
-        if (!settings.contains(QLatin1String("Local AppData")))
-            break;
-        return settings.value(QLatin1String("Local AppData")).toString()
-            + QLatin1String("\\") + QCoreApplication::organizationName()
-            + QLatin1String("\\") + QCoreApplication::applicationName();
-        break;
-    case DesktopLocation:
-        return settings.value(QLatin1String("Desktop")).toString();
-        break;
-
-    case DocumentsLocation:
-        return settings.value(QLatin1String("Personal")).toString();
-        break;
-
-    case FontsLocation:
-        return settings.value(QLatin1String("Fonts")).toString();
-        break;
-
-    case ApplicationsLocation:
-        return settings.value(QLatin1String("Programs")).toString();
-        break;
-
-    case MusicLocation:
-        return settings.value(QLatin1String("My Music")).toString();
-        break;
-
-    case MoviesLocation:
-        return settings.value(QLatin1String("My Video")).toString();
-        break;
-
-    case PicturesLocation:
-        return settings.value(QLatin1String("My Pictures")).toString();
-        break;
 
     case QDesktopServices::HomeLocation:
         return QDir::homePath(); break;
@@ -221,8 +244,7 @@ QString QDesktopServices::storageLocation(StandardLocation type)
     default:
         break;
     }
-#endif
-    return QString();
+    return result;
 }
 
 QString QDesktopServices::displayName(StandardLocation type)
