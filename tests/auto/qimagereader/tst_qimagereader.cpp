@@ -642,7 +642,7 @@ void tst_QImageReader::imageFormatBeforeRead()
 void tst_QImageReader::gifHandlerBugs()
 {
     {
-        QImageReader io("images/trolltech.gif");
+        QImageReader io(":images/trolltech.gif");
         QVERIFY(io.loopCount() != 1);
         int count=0;
         for (; io.canRead(); io.read(), ++count) ;
@@ -651,8 +651,8 @@ void tst_QImageReader::gifHandlerBugs()
 
     // Task 95166
     {
-        QImageReader io1("images/bat1.gif");
-        QImageReader io2("images/bat2.gif");
+        QImageReader io1(":images/bat1.gif");
+        QImageReader io2(":images/bat2.gif");
         QVERIFY(io1.canRead());
         QVERIFY(io2.canRead());
         QImage im1 = io1.read();
@@ -664,8 +664,8 @@ void tst_QImageReader::gifHandlerBugs()
 
     // Task 9994
     {
-        QImageReader io1("images/noclearcode.gif");
-        QImageReader io2("images/noclearcode.bmp");
+        QImageReader io1(":images/noclearcode.gif");
+        QImageReader io2(":images/noclearcode.bmp");
         QVERIFY(io1.canRead());  QVERIFY(io2.canRead());
         QImage im1 = io1.read(); QImage im2 = io2.read();
         QVERIFY(!im1.isNull());  QVERIFY(!im2.isNull());
@@ -675,13 +675,14 @@ void tst_QImageReader::gifHandlerBugs()
 
 void tst_QImageReader::animatedGif()
 {
-    QImageReader io(prefix + "qt.gif");
-    QImage image= io.read();
-    int i=0;
+    QImageReader io(":images/qt.gif");
+    QImage image = io.read();
+    QVERIFY(!image.isNull());
+    int i = 0;
     while(!image.isNull()){
-        QString frameName = QString(prefix + "qt%1.gif").arg(++i);
+        QString frameName = QString(":images/qt%1.gif").arg(++i);
         QCOMPARE(image, QImage(frameName));
-        image=io.read();
+        image = io.read();
     }
 }
 #endif
