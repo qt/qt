@@ -916,7 +916,8 @@ bool QClipboard::event(QEvent *e)
         // That means application exits and we need to give clipboard
         // content to the clipboard manager.
         // First we check if there is a clipboard manager.
-        if (XGetSelectionOwner(X11->display, ATOM(CLIPBOARD_MANAGER)) == XNone)
+        if (XGetSelectionOwner(X11->display, ATOM(CLIPBOARD_MANAGER)) == XNone
+            || !owner)
             return true;
 
         Window ownerId = owner->internalWinId();
