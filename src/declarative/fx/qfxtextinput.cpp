@@ -41,6 +41,7 @@
 
 #include "qfxtextinput.h"
 #include "qfxtextinput_p.h"
+#include "qmlinfo.h"
 #include <QValidator>
 #include <QApplication>
 #include <QFontMetrics>
@@ -509,7 +510,7 @@ void QFxTextInputPrivate::startCreatingCursor()
         q->connect(cursorComponent, SIGNAL(statusChanged(int)),
                 q, SLOT(createCursor()));
     }else{//isError
-        qmlInfo(this) << "Could not load cursor delegate";
+        qmlInfo(q) << "Could not load cursor delegate";
         qWarning() << cursorComponent->errors();
     }
 }
@@ -519,7 +520,7 @@ void QFxTextInput::createCursor()
     Q_D(QFxTextInput);
     if(d->cursorComponent->isError()){
         qmlInfo(this) << "Could not load cursor delegate";
-        qWarning() << cursorComponent->errors();
+        qWarning() << d->cursorComponent->errors();
         return;
     }
 
