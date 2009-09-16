@@ -59,6 +59,8 @@ private slots:
 
 void tst_QtWidgets::snapshot()
 {
+    QSKIP("This test doesn't do anything useful at the moment.", SkipAll);
+
     StyleWidget widget(0, Qt::X11BypassWindowManagerHint);
     widget.show();
 
