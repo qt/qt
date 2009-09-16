@@ -266,8 +266,8 @@ static QScriptValue qmlsqldatabase_open(QScriptContext *context, QScriptEngine *
     int dbestimatedsize = context->argument(3).toNumber();
 
     QCryptographicHash md5(QCryptographicHash::Md5);
-    md5.addData(dbname.utf8());
-    md5.addData(dbversion.utf8());
+    md5.addData(dbname.toUtf8());
+    md5.addData(dbversion.toUtf8());
     QString dbid(QLatin1String(md5.result().toHex()));
 
     // Uses SQLLITE (like HTML5), but any could be used.
