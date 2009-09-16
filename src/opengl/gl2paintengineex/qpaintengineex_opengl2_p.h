@@ -59,6 +59,7 @@
 #include <private/qglengineshadermanager_p.h>
 #include <private/qgl2pexvertexarray_p.h>
 #include <private/qglpaintdevice_p.h>
+#include <private/qglpixmapfilter_p.h>
 
 enum EngineMode {
     ImageDrawingMode,
@@ -140,7 +141,7 @@ public:
 
     const QGLContext* context();
 
-    QPixmapFilter *createPixmapFilter(int type) const;
+    QPixmapFilter *pixmapFilter(int type, const QPixmapFilter *prototype);
 
     void setRenderTextActive(bool);
 
@@ -264,6 +265,10 @@ public:
     bool inRenderText;
 
     float textureInvertedY;
+
+    QScopedPointer<QPixmapFilter> convolutionFilter;
+    QScopedPointer<QPixmapFilter> colorizeFilter;
+    QScopedPointer<QPixmapFilter> blurFilter;
 };
 
 QT_END_NAMESPACE

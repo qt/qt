@@ -352,8 +352,6 @@ public:
 #endif
 
     static void setCurrentContext(QGLContext *context);
-
-    QPixmapFilter *createPixmapFilter(int type) const;
 };
 
 // ### make QGLContext a QObject in 5.0 and remove the proxy stuff
