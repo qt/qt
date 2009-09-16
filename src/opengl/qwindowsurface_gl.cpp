@@ -443,8 +443,6 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
                 QRegion dirtyRegion = QRegion(window()->rect()) - d_ptr->paintedRegion;
 
                 if (!dirtyRegion.isEmpty()) {
-                    context()->makeCurrent();
-
                     glMatrixMode(GL_MODELVIEW);
                     glLoadIdentity();
 
