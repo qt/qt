@@ -98,7 +98,10 @@ QList<QByteArray> QAnnotatorWindow::annotation(const QObject& object)
             
             stream << window.Position().iX << ',' << window.Position().iY << ' ';
             stream << '(' << window.AbsPosition().iX << ',' << window.AbsPosition().iY << ") ";
-            stream << window.Size().iWidth << 'x' << window.Size().iHeight;
+            stream << window.Size().iWidth << 'x' << window.Size().iHeight << ' ';
+            
+            const TDisplayMode displayMode = window.DisplayMode();
+            stream << "mode " << displayMode;
             
             stream.flush();
             result.append(array);
