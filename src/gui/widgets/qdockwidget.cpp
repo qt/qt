@@ -1136,7 +1136,7 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
 
 /*!
     \property QDockWidget::windowTitle
-    \internal
+    \brief the dock widget title (caption)
 
     By default, this property contains an empty string.
 */
