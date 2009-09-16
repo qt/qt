@@ -775,9 +775,11 @@ void tst_QDoubleSpinBox::editingFinished()
     layout->addWidget(box2);
 
     testFocusWidget->show();
+    QApplication::setActiveWindow(testFocusWidget);
     QTest::qWait(10);
-    QTRY_VERIFY(box->isActiveWindow());
+    QTRY_VERIFY(testFocusWidget->isActiveWindow());
     box->setFocus();
+    QTRY_VERIFY(box->hasFocus());
 
     QSignalSpy editingFinishedSpy1(box, SIGNAL(editingFinished()));
     QSignalSpy editingFinishedSpy2(box2, SIGNAL(editingFinished()));

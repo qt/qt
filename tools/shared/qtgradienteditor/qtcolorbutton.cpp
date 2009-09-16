@@ -68,14 +68,10 @@ public:
 
 void QtColorButtonPrivate::slotEditColor()
 {
-    bool ok;
-    const QRgb rgba = QColorDialog::getRgba(m_color.rgba(), &ok, q_ptr);
-    if (!ok)
+    const QColor newColor = QColorDialog::getColor(m_color, q_ptr, QString(), QColorDialog::ShowAlphaChannel);
+    if (!newColor.isValid() || newColor == q_ptr->color())
         return;
-    const QColor c = QColor::fromRgba(rgba);
-    if (c == q_ptr->color())
-        return;
-    q_ptr->setColor(c);
+    q_ptr->setColor(newColor);
     emit q_ptr->colorChanged(m_color);
 }
 

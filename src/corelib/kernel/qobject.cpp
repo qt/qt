@@ -129,7 +129,7 @@ QObjectData::~QObjectData() {}
 QDeclarativeData::~QDeclarativeData() {}
 
 QObjectPrivate::QObjectPrivate(int version)
-    : threadData(0), connectionLists(0), senders(0), currentSender(0), currentChildBeingDeleted(0), declarativeData(0), objectGuards(0)
+    : threadData(0), connectionLists(0), senders(0), currentSender(0), currentChildBeingDeleted(0)
 {
     if (version != QObjectPrivateVersion)
         qFatal("Cannot mix incompatible Qt libraries");
@@ -496,18 +496,14 @@ void QMetaObject::changeGuard(QObject **ptr, QObject *o)
 void QObjectPrivate::clearGuards(QObject *object)
 {
     QObjectPrivate *priv = QObjectPrivate::get(object);
-    QGuard<QObject> *guard = priv->objectGuards;
+    QGuard<QObject> *guard = priv->extraData ? priv->extraData->objectGuards : 0;
     while (guard) {
-        guard->o = 0;
+        QGuard<QObject> *g = guard;
         guard = guard->next;
-    }
-    while (priv->objectGuards) {
-        guard = priv->objectGuards;
-        guard->prev = 0;
-        if (guard->next) guard->next->prev = &priv->objectGuards;
-        priv->objectGuards = guard->next;
-        guard->next = 0;
-        guard->objectDestroyed(object);
+        g->o = 0;
+        g->prev = 0;
+        g->next = 0;
+        g->objectDestroyed(object);
     }
 
     if (!priv->hasGuards)

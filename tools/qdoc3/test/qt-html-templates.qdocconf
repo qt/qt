@@ -10,6 +10,8 @@ HTML.postheader         = "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0
                           "<font color=\"#004faf\">Home</font></a>&nbsp;&middot;" \
                           " <a href=\"classes.html\">" \
                           "<font color=\"#004faf\">All&nbsp;Classes</font></a>&nbsp;&middot;" \
+                          " <a href=\"functions.html\">" \
+                          "<font color=\"#004faf\">All&nbsp;Functions</font></a>&nbsp;&middot;" \
                           " <a href=\"overviews.html\">" \
                           "<font color=\"#004faf\">Overviews</font></a>" \
                           "</td>" \

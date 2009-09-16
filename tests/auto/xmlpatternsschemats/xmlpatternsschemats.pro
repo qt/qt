@@ -14,7 +14,7 @@ if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
     win32:PATTERNIST_SDK = $${PATTERNIST_SDK}d
     else: PATTERNIST_SDK = $${PATTERNIST_SDK}_debug
 }
-LIBS += -l$$PATTERNIST_SDK
+LIBS += -l$$PATTERNIST_SDK -lQtXml
 
 INCLUDEPATH += $$QT_SOURCE_TREE/tests/auto/xmlpatternsxqts/lib/ \
                $$QT_BUILD_TREE/include/QtXmlPatterns/private      \

@@ -170,7 +170,7 @@ void QSyntaxHighlighterPrivate::_q_reformatBlocks(int from, int charsRemoved, in
         return;
 
     int endPosition;
-    QTextBlock lastBlock = doc->findBlock(from + charsAdded);
+    QTextBlock lastBlock = doc->findBlock(from + charsAdded + (charsRemoved > 0 ? 1 : 0));
     if (lastBlock.isValid())
         endPosition = lastBlock.position() + lastBlock.length();
     else
