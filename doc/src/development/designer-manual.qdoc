@@ -1572,8 +1572,8 @@
 
     \section2 Creating a Menu Entry
 
-    Double-click the \gui{new action} placeholder to begin editing, or
-    double-click \gui{new separator} to insert a new separator line after
+    Double-click the \gui{Type Here} placeholder to begin editing, or
+    double-click \gui{Add Separator} to insert a new separator line after
     the last entry in the menu.
 
     The menu entry's text is displayed using a line edit, and can be
@@ -1743,13 +1743,19 @@
 
     \section2 Adding a Dock Widget
 
-    To add a dock widget, simply drag one from the \gui Containers section
-    of the widget box, and drop it onto the main form area. Just like other
-    widgets, its properties can be modified with the \gui{Property Editor}.
+    To add a dock widget to a form, drag one from the \gui Containers section
+    of the widget box, and drop it onto the main form area. Do not add the
+    dock widget to an existing layout. Instead, open the \gui{Property Editor}
+    and enable the \gui{docked} property to place it in a dock area.
 
-    Dock widgets can be optionally floated as indpendent tool windows.
+    Note that it is sometimes easier to configure a dock widget if it is added
+    to a form before a layout is applied to the central widget. For example,
+    it is possible to undock it and resize it, making it more convenient to
+    add child widgets.
+
+    Dock widgets can be optionally floated as independent tool windows.
     Hence, it is useful to give them window titles by setting their
-    \gui{windowTitle} property. This also helps to identify them on the
+    \l{QDockWidget::}{windowTitle} property. This also helps to identify them on the
     form.
 
     \raw HTML
