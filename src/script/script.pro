@@ -19,7 +19,7 @@ win32-msvc*: QMAKE_CXXFLAGS += -wd4291 -wd4344 -wd4503 -wd4800 -wd4819 -wd4996 -
 # fall back to src/3rdparty otherwise
 WEBKITDIR = $$(WEBKITDIR)
 isEmpty(WEBKITDIR) {
-    WEBKITDIR = $$PWD/../3rdparty/webkit
+    WEBKITDIR = $$PWD/../3rdparty/javascriptcore
 
     # FIXME: not needed once JSCBISON works
     # TODO: or leave it like this since the generated file is available anyway?
