@@ -639,7 +639,9 @@ void QSymbianControl::Draw(const TRect& r) const
                 << "rect " << r.iTl.iX << ',' << r.iTl.iY
                 << '-' << r.iBr.iX << ',' << r.iBr.iY
                 << "surface" << surface
-                << "engine" << engine;
+                << "engine" << engine
+                << "raster" << (engine ? engine->type() == QPaintEngine::Raster : false)
+                << "opaque" << (qwidget->d_func()->isOpaque);
 #endif
     
     if (!engine)
@@ -648,6 +650,18 @@ void QSymbianControl::Draw(const TRect& r) const
     if (engine->type() == QPaintEngine::Raster) {
         QS60WindowSurface *s60Surface = static_cast<QS60WindowSurface *>(qwidget->windowSurface());
         CFbsBitmap *bitmap = s60Surface->symbianBitmap();
+        
+#ifdef DEBUG_QSYMBIANCONTROL
+        const TDisplayMode displayMode = bitmap->DisplayMode();
+		qDebug()    << "QSymbianControl::Draw [" << this << "]"
+					<< "mode " << displayMode;
+		for(int i=0; i<10 and i*10<bitmap->SizeInPixels().iWidth and i*10<bitmap->SizeInPixels().iHeight; ++i) {
+			TRgb color;
+			bitmap->GetPixel(color, TPoint(i*10, i*10));
+			qDebug()    << "    " << i*10 << " : " << color.Red() << color.Green() << color.Blue() << color.Alpha();
+		}
+#endif
+        
         CWindowGc &gc = SystemGc();
         if (qwidget->d_func()->isOpaque)
             gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
