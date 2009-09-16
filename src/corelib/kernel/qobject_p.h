@@ -99,11 +99,13 @@ class Q_CORE_EXPORT QObjectPrivate : public QObjectData
 public:
     struct ExtraData
     {
+        ExtraData() : objectGuards(0) {}
 #ifndef QT_NO_USERDATA
         QVector<QObjectUserData *> userData;
 #endif
         QList<QByteArray> propertyNames;
         QList<QVariant> propertyValues;
+        QGuard<QObject> *objectGuards; //linked list handle of QGuards
     };
 
     struct Connection
@@ -197,7 +199,6 @@ public:
     // these objects are all used to indicate that a QObject was deleted
     // plus QPointer, which keeps a separate list
     QDeclarativeData *declarativeData;
-    QGuard<QObject> *objectGuards;
     QAtomicPointer<QtSharedPointer::ExternalRefCountData> sharedRefcount;
     int *deleteWatch;
 };
@@ -211,9 +212,12 @@ inline void q_guard_addGuard(QGuard<QObject> *g)
         return;
     }
 
-    g->next = p->objectGuards;
-    p->objectGuards = g;
-    g->prev = &p->objectGuards;
+    if (!p->extraData)
+        p->extraData = new QObjectPrivate::ExtraData;
+
+    g->next = p->extraData->objectGuards;
+    p->extraData->objectGuards = g;
+    g->prev = &p->extraData->objectGuards;
     if (g->next)
         g->next->prev = &g->next;
 }
