@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -68,17 +68,15 @@ void QGLPixmapFilterBase::drawImpl(QPainter *painter, const QPointF &pos, const 
     processGL(painter, pos, src, source);
 }
 
-class QGLPixmapColorizeFilter: public QGLPixmapFilter<QPixmapColorizeFilter>
+class QGLPixmapColorizeFilter: public QGLCustomShaderStage, public QGLPixmapFilter<QPixmapColorizeFilter>
 {
 public:
     QGLPixmapColorizeFilter();
 
+    void setUniforms(QGLShaderProgram *program);
+
 protected:
     bool processGL(QPainter *painter, const QPointF &pos, const QPixmap &pixmap, const QRectF &srcRect) const;
-
-private:
-    mutable QGLShaderProgram m_program;
-    int m_colorUniform;
 };
 
 class QGLPixmapConvolutionFilter: public QGLPixmapFilter<QPixmapConvolutionFilter>
@@ -105,7 +103,6 @@ class QGLPixmapBlurFilter : public QGLCustomShaderStage, public QGLPixmapFilter<
 {
 public:
     QGLPixmapBlurFilter();
-    ~QGLPixmapBlurFilter();
 
     void setUniforms(QGLShaderProgram *program);
 
@@ -115,13 +112,13 @@ protected:
 private:
     static QByteArray generateBlurShader(int radius, bool gaussianBlur);
 
-    mutable QGLShader *m_shader;
-
     mutable QSize m_textureSize;
 
     mutable bool m_horizontalBlur;
 
-    QGLShaderProgram *m_program;
+    mutable bool m_haveCached;
+    mutable int m_cachedRadius;
+    mutable Qt::TransformationMode m_cachedQuality;
 };
 
 extern QGLWidget *qt_gl_share_widget();
@@ -183,39 +180,36 @@ static void qgl_drawTexture(const QRectF &rect, int tx_width, int tx_height, con
 }
 
 static const char *qt_gl_colorize_filter =
-        "uniform sampler2D texture;"
-        "uniform vec3 color;"
-        "void main(void)"
+        "uniform lowp vec4 colorizeColor;"
+        "uniform lowp float colorizeStrength;"
+        "lowp vec4 customShader(lowp sampler2D src, highp vec2 srcCoords)"
         "{"
-        "        vec2 coords = gl_TexCoord[0].st;"
-        "        vec4 src = texture2D(texture, coords);"
-        "        float gray = dot(src.rgb, vec3(0.212671, 0.715160, 0.072169));"
-        "        vec3 colorizeed = 1.0-((1.0-gray)*(1.0-color));"
-        "        gl_FragColor = vec4(colorizeed, src.a);"
+        "        lowp vec4 srcPixel = texture2D(src, srcCoords);"
+        "        lowp float gray = dot(srcPixel.rgb, vec3(0.212671, 0.715160, 0.072169));"
+        "        lowp vec3 colorized = 1.0-((1.0-gray)*(1.0-colorizeColor.rgb));"
+        "        return vec4(mix(srcPixel.rgb, colorized * srcPixel.a, colorizeStrength), srcPixel.a);"
         "}";
 
 QGLPixmapColorizeFilter::QGLPixmapColorizeFilter()
 {
-    m_program.addShader(QGLShader::FragmentShader, qt_gl_colorize_filter);
-    m_program.link();
-    m_program.enable();
-    m_program.setUniformValue(m_program.uniformLocation("texture"), GLint(0)); // GL_TEXTURE_0
-    m_colorUniform = m_program.uniformLocation("color");
+    setSource(qt_gl_colorize_filter);
 }
 
-bool QGLPixmapColorizeFilter::processGL(QPainter *, const QPointF &pos, const QPixmap &src, const QRectF &srcRect) const
+bool QGLPixmapColorizeFilter::processGL(QPainter *painter, const QPointF &pos, const QPixmap &src, const QRectF &) const
 {
-    bindTexture(src);
+    QGLPixmapColorizeFilter *filter = const_cast<QGLPixmapColorizeFilter *>(this);
 
-    QColor col = color();
-    m_program.enable();
-    m_program.setUniformValue(m_colorUniform, col.redF(), col.greenF(), col.blueF());
-
-    QRectF target = (srcRect.isNull() ? QRectF(src.rect()) : srcRect).translated(pos);
-    qgl_drawTexture(target, src.width(), src.height(), srcRect);
-    m_program.disable();
+    filter->setOnPainter(painter);
+    painter->drawPixmap(pos, src);
+    filter->removeFromPainter(painter);
 
     return true;
+}
+
+void QGLPixmapColorizeFilter::setUniforms(QGLShaderProgram *program)
+{
+    program->setUniformValue("colorizeColor", color());
+    program->setUniformValue("colorizeStrength", float(strength()));
 }
 
 // generates convolution filter code for arbitrary sized kernel
@@ -311,17 +305,26 @@ bool QGLPixmapConvolutionFilter::processGL(QPainter *, const QPointF &pos, const
 }
 
 QGLPixmapBlurFilter::QGLPixmapBlurFilter()
-{
-}
-
-QGLPixmapBlurFilter::~QGLPixmapBlurFilter()
+    : m_haveCached(false), m_cachedRadius(5),
+      m_cachedQuality(Qt::FastTransformation)
 {
 }
 
 bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const QPixmap &src, const QRectF &) const
 {
     QGLPixmapBlurFilter *filter = const_cast<QGLPixmapBlurFilter *>(this);
-    filter->setSource(generateBlurShader(radius(), quality() == Qt::SmoothTransformation));
+
+    int radius = this->radius();
+    Qt::TransformationMode quality = this->quality();
+
+    if (!m_haveCached || radius != m_cachedRadius ||
+            quality != m_cachedQuality) {
+        // Only regenerate the shader from source if parameters have changed.
+        m_haveCached = true;
+        m_cachedRadius = radius;
+        m_cachedQuality = quality;
+        filter->setSource(generateBlurShader(radius, quality == Qt::SmoothTransformation));
+    }
 
     QGLFramebufferObjectFormat format;
     format.setInternalTextureFormat(GLenum(src.hasAlphaChannel() ? GL_RGBA : GL_RGB));
@@ -384,8 +387,6 @@ void QGLPixmapBlurFilter::setUniforms(QGLShaderProgram *program)
         program->setUniformValue("delta", 1.0, 0.0);
     else
         program->setUniformValue("delta", 0.0, 1.0);
-
-    m_program = program;
 }
 
 static inline qreal gaussian(qreal dx, qreal sigma)

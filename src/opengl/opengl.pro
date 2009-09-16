@@ -13,8 +13,16 @@ include(../qbase.pri)
 !win32:!embedded:!mac:CONFIG	   += x11
 contains(QT_CONFIG, opengl):CONFIG += opengl
 contains(QT_CONFIG, opengles1):CONFIG += opengles1
-contains(QT_CONFIG, opengles1):CONFIG += opengles1cl
+contains(QT_CONFIG, opengles1cl):CONFIG += opengles1cl
 contains(QT_CONFIG, opengles2):CONFIG += opengles2
+
+contains(QT_CONFIG, opengles.*) {
+	for(p, QMAKE_LIBDIR_EGL) {
+		exists($$p):LIBS_PRIVATE += -L$$p
+	}
+	!isEmpty(QMAKE_INCDIR_EGL): INCLUDEPATH += $$QMAKE_INCDIR_EGL
+	!isEmpty(QMAKE_LIBS_EGL): LIBS_PRIVATE += $$QMAKE_LIBS_EGL
+}
 
 HEADERS += qgl.h \
 	   qgl_p.h \

@@ -570,13 +570,7 @@ void QFxListViewPrivate::layout()
         return;
     q->refill();
     updateHighlight();
-    if (orient == Qt::Vertical) {
-        fixupY();
-        q->setViewportHeight(endPosition() - startPosition());
-    } else {
-        fixupX();
-        q->setViewportWidth(endPosition() - startPosition());
-    }
+    fixupPosition();
     updateUnrequestedPositions();
 }
 
@@ -1076,9 +1070,9 @@ void QFxListView::setHighlightFollowsCurrentItem(bool autoHighlight)
 }
 
 /*!
-    \qmlproperty real preferredHighlightBegin
-    \qmlproperty real preferredHighlightEnd
-    \qmlproperty bool strictlyEnforceHighlightRange
+    \qmlproperty real ListView::preferredHighlightBegin
+    \qmlproperty real ListView::preferredHighlightEnd
+    \qmlproperty bool ListView::strictlyEnforceHighlightRange
 
     These properties set the preferred range of the highlight (current item)
     within the view.
@@ -1131,7 +1125,7 @@ void QFxListView::setStrictlyEnforceHighlightRange(bool strict)
 }
 
 /*!
-    \qmlproperty int ListView::spacing
+    \qmlproperty real ListView::spacing
 
     This property holds the spacing to leave between items.
 */

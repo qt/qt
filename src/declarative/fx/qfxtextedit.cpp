@@ -455,7 +455,6 @@ void QFxTextEdit::setCursorDelegate(QmlComponent* c)
 {
     Q_D(QFxTextEdit);
     if(d->cursorComponent){
-        delete d->cursorComponent;
         if(d->cursor){
             disconnect(d->control, SIGNAL(cursorPositionChanged()),
                     this, SLOT(moveCursorDelegate()));
@@ -1044,18 +1043,13 @@ void QFxTextEdit::updateSize()
                 yoff = dy/2;
         }
         setBaselineOffset(fm.ascent() + yoff + d->textMargin);
-        if (!widthValid()) {
-            int newWidth = (int)d->document->idealWidth();
-            d->document->setTextWidth(newWidth); // ### QTextDoc> Alignment will not work unless textWidth is set
-            setImplicitWidth(newWidth);
-        }
-        if (!heightValid()) {
-            if (d->text.isEmpty()) {
-                setImplicitHeight(fm.height());
-            } else {
-                setImplicitHeight((int)d->document->size().height());
-            }
-        }
+
+        //### need to comfirm cost of always setting these
+        int newWidth = (int)d->document->idealWidth();
+        d->document->setTextWidth(newWidth); // ### QTextDoc> Alignment will not work unless textWidth is set. Does Text need this line as well?
+        setImplicitWidth(newWidth);
+        setImplicitHeight(d->text.isEmpty() ? fm.height() : (int)d->document->size().height());
+
         setContentsSize(QSize(width(), height()));
     } else {
         d->dirty = true;

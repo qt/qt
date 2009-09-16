@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -71,6 +71,7 @@
 #include <private/qgraphicssystem_gl_p.h>
 
 #include <private/qpaintengineex_opengl2_p.h>
+#include <private/qpixmapdata_gl_p.h>
 
 #ifndef QT_OPENGL_ES_2
 #include <private/qpaintengine_opengl_p.h>
@@ -399,6 +400,11 @@ void QGLWindowSurface::endPaint(const QRegion &rgn)
 
 void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &offset)
 {
+    if (context() && widget != window()) {
+        qWarning("No native child widget support in GL window surface without FBOs or pixel buffers");
+        return;
+    }
+
     QWidget *parent = widget->internalWinId() ? widget : widget->nativeParentWidget();
     Q_ASSERT(parent);
 
@@ -473,7 +479,22 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
         return;
     }
 
+    QGLContext *previous_ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     QGLContext *ctx = reinterpret_cast<QGLContext *>(parent->d_func()->extraData()->glContext);
+
+    if (ctx != previous_ctx) {
+        if (d_ptr->fbo && d_ptr->fbo->isBound())
+            d_ptr->fbo->release();
+        ctx->makeCurrent();
+    }
+
+    QSize size = widget->rect().size();
+    if (d_ptr->destructive_swap_buffers && ctx->format().doubleBuffer()) {
+        rect = parent->rect();
+        br = rect.translated(wOffset + offset);
+        size = parent->size();
+    }
+
     GLuint texture;
     if (d_ptr->fbo) {
         texture = d_ptr->fbo->texture();
@@ -486,31 +507,54 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
         glBindTexture(target, 0);
     }
 
-    QSize size = widget->rect().size();
-    if (d_ptr->destructive_swap_buffers && ctx->format().doubleBuffer()) {
-        rect = parent->rect();
-        br = rect.translated(wOffset);
-        size = parent->size();
-    }
-
     glDisable(GL_SCISSOR_TEST);
 
-    if (d_ptr->fbo && QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit) {
+    if (d_ptr->fbo && (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit)) {
         const int h = d_ptr->fbo->height();
 
-        const int x0 = rect.left();
-        const int x1 = rect.left() + rect.width();
-        const int y0 = h - (rect.top() + rect.height());
-        const int y1 = h - rect.top();
+        const int sx0 = br.left();
+        const int sx1 = br.left() + br.width();
+        const int sy0 = h - (br.top() + br.height());
+        const int sy1 = h - br.top();
 
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, 0);
+        const int tx0 = rect.left();
+        const int tx1 = rect.left() + rect.width();
+        const int ty0 = parent->height() - (rect.top() + rect.height());
+        const int ty1 = parent->height() - rect.top();
 
-        glBlitFramebufferEXT(x0, y0, x1, y1,
-                x0, y0, x1, y1,
-                GL_COLOR_BUFFER_BIT,
-                GL_NEAREST);
+        if (window() == parent || d_ptr->fbo->format().samples() <= 1) {
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, 0);
 
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, d_ptr->fbo->handle());
+            glBlitFramebufferEXT(sx0, sy0, sx1, sy1,
+                    tx0, ty0, tx1, ty1,
+                    GL_COLOR_BUFFER_BIT,
+                    GL_NEAREST);
+
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, d_ptr->fbo->handle());
+        } else {
+            // can't do sub-region blits with multisample FBOs
+            QGLFramebufferObject *temp = qgl_fbo_pool()->acquire(d_ptr->fbo->size(), QGLFramebufferObjectFormat());
+
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, temp->handle());
+            glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, d_ptr->fbo->handle());
+
+            glBlitFramebufferEXT(0, 0, d_ptr->fbo->width(), d_ptr->fbo->height(),
+                    0, 0, d_ptr->fbo->width(), d_ptr->fbo->height(),
+                    GL_COLOR_BUFFER_BIT,
+                    GL_NEAREST);
+
+            glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, temp->handle());
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, 0);
+
+            glBlitFramebufferEXT(sx0, sy0, sx1, sy1,
+                    tx0, ty0, tx1, ty1,
+                    GL_COLOR_BUFFER_BIT,
+                    GL_NEAREST);
+
+            glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, 0);
+
+            qgl_fbo_pool()->release(temp);
+        }
     }
 #if !defined(QT_OPENGL_ES_2)
     else {
@@ -579,7 +623,8 @@ void QGLWindowSurface::updateGeometry()
 #ifdef QT_OPENGL_ES_2
         && (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit)
 #endif
-        && (d_ptr->fbo || !d_ptr->tried_fbo))
+        && (d_ptr->fbo || !d_ptr->tried_fbo)
+        && qt_gl_preferGL2Engine())
     {
         d_ptr->tried_fbo = true;
         hijackWindow(window());

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -188,7 +188,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     if (isResize)
         data.window_state &= ~Qt::WindowMaximized;
 
-    if(q->isWindow()) {
+    if (q->isWindow()) {
         if (w == 0 || h == 0) {
             q->setAttribute(Qt::WA_OutsideWSRange, true);
             if (q->isVisible() && q->testAttribute(Qt::WA_Mapped))
@@ -287,7 +287,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         TSize screenSize = S60->screenDevice()->SizeInPixels();
         data.crect.setRect(0, 0, screenSize.iWidth, screenSize.iHeight);
         q->setAttribute(Qt::WA_DontShowOnScreen);
-    } else if(topLevel && !q->testAttribute(Qt::WA_Resized)){
+    } else if (topLevel && !q->testAttribute(Qt::WA_Resized)){
         int width = sw;
         int height = sh;
         if (extra) {
@@ -300,7 +300,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
     CCoeControl *destroyw = 0;
 
     createExtra();
-    if(window) {
+    if (window) {
         if (destroyOldWindow)
             destroyw = data.winid;
         id = window;
@@ -315,7 +315,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         id = (WId)control;
         setWinId(id);
         QT_TRAP_THROWING(control->ConstructL(true,desktop));
-        
+
         if (!desktop) {
             TInt stackingFlags;
             if ((q->windowType() & Qt::Popup) == Qt::Popup) {
@@ -416,7 +416,7 @@ void QWidgetPrivate::hide_sys()
     deactivateWidgetCleanup();
     WId id = q->internalWinId();
     if (q->isWindow() && id) {
-        if(id->IsFocused()) // Avoid unnecessary calls to FocusChanged()
+        if (id->IsFocused()) // Avoid unnecessary calls to FocusChanged()
             id->SetFocus(false);
         id->MakeVisible(false);
         if (QWidgetBackingStore *bs = maybeBackingStore())
@@ -432,7 +432,7 @@ void QWidgetPrivate::setFocus_sys()
 {
     Q_Q(QWidget);
     if (q->testAttribute(Qt::WA_WState_Created) && q->window()->windowType() != Qt::Popup)
-        if(!q->effectiveWinId()->IsFocused()) // Avoid unnecessry calls to FocusChanged()
+        if (!q->effectiveWinId()->IsFocused()) // Avoid unnecessry calls to FocusChanged()
             q->effectiveWinId()->SetFocus(true);
 }
 
@@ -482,7 +482,7 @@ void QWidgetPrivate::lower_sys()
     if (q->internalWinId() && tlwExtra) {
         tlwExtra->rwindow->SetOrdinalPosition(-1);
     }
-    if(!q->isWindow())
+    if (!q->isWindow())
         invalidateBuffer(q->rect());
 }
 
@@ -499,7 +499,7 @@ void QWidgetPrivate::stackUnder_sys(QWidget* w)
     QTLWExtra *tlwExtraSibling = w->d_func()->maybeTopData();
     if (q->internalWinId() && tlwExtra && w->internalWinId() && tlwExtraSibling)
         tlwExtra->rwindow->SetOrdinalPosition(tlwExtraSibling->rwindow->OrdinalPosition() + 1);
-    if(!q->isWindow() || !w->internalWinId())
+    if (!q->isWindow() || !w->internalWinId())
         invalidateBuffer(q->rect());
 }
 
@@ -553,7 +553,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     // destroyed when emitting the child remove event below. See QWorkspace.
     if (wasCreated && old_winid) {
         old_winid->MakeVisible(false);
-        if(old_winid->IsFocused()) // Avoid unnecessary calls to FocusChanged()
+        if (old_winid->IsFocused()) // Avoid unnecessary calls to FocusChanged()
             old_winid->SetFocus(false);
         old_winid->SetParent(0);
     }
@@ -660,7 +660,7 @@ CFbsBitmap* qt_pixmapToNativeBitmap(QPixmap pixmap, bool invert)
     fbsBitmap->LockHeap();
     QImage image = pixmap.toImage();
 
-    if(invert)
+    if (invert)
         image.invertPixels();
 
     int height = pixmap.size().height();
@@ -764,8 +764,8 @@ void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
     if (q->isWindow()) {
         Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
         CAknTitlePane* titlePane = S60->titlePane();
-        if(titlePane) {
-            if(caption.isEmpty()) {
+        if (titlePane) {
+            if (caption.isEmpty()) {
                 QT_TRAP_THROWING(titlePane->SetTextToDefaultL());
             } else {
                 QT_TRAP_THROWING(titlePane->SetTextL(qt_QString2TPtrC(caption)));
@@ -989,6 +989,32 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         return;
 
     if (isWindow()) {
+#ifdef Q_WS_S60
+        // Change window decoration visibility if switching to or from fullsccreen
+        // In addition decoration visibility is changed when the initial has been
+        // WindowNoState.
+        // The window decoration visibility has to be changed before doing actual
+        // window state change since in that order the availableGeometry will return
+        // directly the right size and we will avoid unnecessarty redraws
+        if ((oldstate & Qt::WindowFullScreen) != (newstate & Qt::WindowFullScreen) ||
+            oldstate == Qt::WindowNoState) {
+            CEikStatusPane* statusPane = S60->statusPane();
+            CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
+            if (newstate & Qt::WindowFullScreen) {
+                if (statusPane)
+                    statusPane->MakeVisible(false);
+                if (buttonGroup)
+                    buttonGroup->MakeVisible(false);
+            } else {
+                if (statusPane)
+                    statusPane->MakeVisible(true);
+                if (buttonGroup)
+                    buttonGroup->MakeVisible(true);
+            }
+
+        }
+#endif // Q_WS_S60
+
         createWinId();
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));
         QTLWExtra *top = d->topData();
@@ -1013,30 +1039,15 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             }
         }
         if ((oldstate & Qt::WindowFullScreen) != (newstate & Qt::WindowFullScreen)) {
-#ifdef Q_WS_S60
-            CEikStatusPane* statusPane = S60->statusPane();
-            CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
-#endif
             if (newstate & Qt::WindowFullScreen) {
                 const QRect normalGeometry = geometry();
                 const QRect r = top->normalGeometry;
                 setGeometry(qApp->desktop()->screenGeometry(this));
-#ifdef Q_WS_S60
-                if (statusPane)
-                    statusPane->MakeVisible(false);
-                if (buttonGroup)
-                    buttonGroup->MakeVisible(false);
-#endif
+
                 top->normalGeometry = r;
                 if (top->normalGeometry.width() < 0)
                     top->normalGeometry = normalGeometry;
             } else {
-#ifdef Q_WS_S60
-                if (statusPane)
-                    statusPane->MakeVisible(true);
-                if (buttonGroup)
-                    buttonGroup->MakeVisible(true);
-#endif
                 if (newstate & Qt::WindowMaximized) {
                     const QRect r = top->normalGeometry;
                     setGeometry(qApp->desktop()->availableGeometry(this));
@@ -1050,7 +1061,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             if (newstate & Qt::WindowMinimized) {
                 if (isVisible()) {
                     WId id = effectiveWinId();
-                    if(id->IsFocused()) // Avoid unnecessary calls to FocusChanged()
+                    if (id->IsFocused()) // Avoid unnecessary calls to FocusChanged()
                         id->SetFocus(false);
                     id->MakeVisible(false);
                 }
@@ -1058,7 +1069,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
                 if (isVisible()) {
                     WId id = effectiveWinId();
                     id->MakeVisible(true);
-                    if(!id->IsFocused()) // Avoid unnecessary calls to FocusChanged()
+                    if (!id->IsFocused()) // Avoid unnecessary calls to FocusChanged()
                         id->SetFocus(true);
                 }
                 const QRect normalGeometry = geometry();
@@ -1100,6 +1111,10 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
         }
 #endif
 
+        if (QWidgetPrivate::mouseGrabber == this)
+            releaseMouse();
+        if (QWidgetPrivate::keyboardGrabber == this)
+            releaseKeyboard();
         setAttribute(Qt::WA_WState_Created, false);
         QObjectList childList = children();
         for (int i = 0; i < childList.size(); ++i) { // destroy all widget children
@@ -1108,12 +1123,8 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
                 static_cast<QWidget*>(obj)->destroy(destroySubWindows,
                                                     destroySubWindows);
         }
-        if (QWidgetPrivate::mouseGrabber == this)
-            releaseMouse();
-        if (QWidgetPrivate::keyboardGrabber == this)
-            releaseKeyboard();
         if (destroyWindow && !(windowType() == Qt::Desktop) && id) {
-            if(id->IsFocused()) // Avoid unnecessry calls to FocusChanged()
+            if (id->IsFocused()) // Avoid unnecessry calls to FocusChanged()
                 id->SetFocus(false);
             id->ControlEnv()->AppUi()->RemoveFromStack(id);
 
@@ -1181,8 +1192,28 @@ void QWidget::grabMouse()
         WId id = effectiveWinId();
         id->SetPointerCapture(true);
         QWidgetPrivate::mouseGrabber = this;
+        
+#ifndef QT_NO_CURSOR
+        QApplication::setOverrideCursor(cursor());
+#endif
     }
 }
+
+#ifndef QT_NO_CURSOR
+void QWidget::grabMouse(const QCursor &cursor)
+{
+    if (!qt_nograb()) {
+        if (QWidgetPrivate::mouseGrabber && QWidgetPrivate::mouseGrabber != this)
+            QWidgetPrivate::mouseGrabber->releaseMouse();
+        Q_ASSERT(testAttribute(Qt::WA_WState_Created));
+        WId id = effectiveWinId();
+        id->SetPointerCapture(true);
+        QWidgetPrivate::mouseGrabber = this;
+
+        QApplication::setOverrideCursor(cursor);
+    }
+}
+#endif
 
 void QWidget::releaseMouse()
 {
@@ -1191,6 +1222,8 @@ void QWidget::releaseMouse()
         WId id = effectiveWinId();
         id->SetPointerCapture(false);
         QWidgetPrivate::mouseGrabber = 0;
+        
+        QApplication::restoreOverrideCursor();
     }
 }
 
@@ -1199,10 +1232,26 @@ void QWidget::activateWindow()
     Q_D(QWidget);
     QWidget *tlw = window();
     if (tlw->isVisible()) {
-        S60->windowGroup().SetOrdinalPosition(0);
         window()->createWinId();
-        RDrawableWindow* rw = tlw->d_func()->topData()->rwindow;
-        rw->SetOrdinalPosition(0);
+        WId id = tlw->internalWinId();
+        id->SetFocus(true);
     }
 }
+
+#ifndef QT_NO_CURSOR
+
+void QWidgetPrivate::setCursor_sys(const QCursor &cursor)
+{
+    Q_UNUSED(cursor);
+    Q_Q(QWidget);
+    qt_symbian_set_cursor(q, false);
+}
+
+void QWidgetPrivate::unsetCursor_sys()
+{
+    Q_Q(QWidget);
+    qt_symbian_set_cursor(q, false);
+}
+#endif
+
 QT_END_NAMESPACE

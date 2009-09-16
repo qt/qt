@@ -41,6 +41,7 @@
 
 #include "qfxtextinput.h"
 #include "qfxtextinput_p.h"
+#include "qmlinfo.h"
 #include <QValidator>
 #include <QApplication>
 #include <QFontMetrics>
@@ -171,7 +172,9 @@ void QFxTextInput::setSelectionColor(const QColor &color)
         return;
 
     d->selectionColor = color;
-    //TODO: implement
+    QPalette p = d->control->palette();
+    p.setColor(QPalette::Highlight, d->selectionColor);
+    d->control->setPalette(p);
 }
 
 /*!
@@ -192,7 +195,9 @@ void QFxTextInput::setSelectedTextColor(const QColor &color)
         return;
 
     d->selectedTextColor = color;
-    //TODO: implement
+    QPalette p = d->control->palette();
+    p.setColor(QPalette::HighlightedText, d->selectedTextColor);
+    d->control->setPalette(p);
 }
 
 /*!
@@ -485,8 +490,6 @@ QmlComponent* QFxTextInput::cursorDelegate() const
 void QFxTextInput::setCursorDelegate(QmlComponent* c)
 {
     Q_D(QFxTextInput);
-    if(d->cursorComponent)
-        delete d->cursorComponent;
     d->cursorComponent = c;
     d->startCreatingCursor();
 }
@@ -507,14 +510,20 @@ void QFxTextInputPrivate::startCreatingCursor()
         q->connect(cursorComponent, SIGNAL(statusChanged(int)),
                 q, SLOT(createCursor()));
     }else{//isError
-        qWarning() << "You could really use the error checking for QFxTextInput. We'll implement it soon.";//TODO:better error handling
+        qmlInfo(q) << "Could not load cursor delegate";
+        qWarning() << cursorComponent->errors();
     }
 }
 
 void QFxTextInput::createCursor()
 {
     Q_D(QFxTextInput);
-    //Handle isError too
+    if(d->cursorComponent->isError()){
+        qmlInfo(this) << "Could not load cursor delegate";
+        qWarning() << d->cursorComponent->errors();
+        return;
+    }
+
     if(!d->cursorComponent->isReady())
         return;
 
@@ -522,7 +531,8 @@ void QFxTextInput::createCursor()
         delete d->cursorItem;
     d->cursorItem = qobject_cast<QFxItem*>(d->cursorComponent->create());
     if(!d->cursorItem){
-        qWarning() << "You could really use the error reporting for QFxTextInput. We'll implement it soon.";//TODO:better error handling
+        qmlInfo(this) << "Could not instantiate cursor delegate";
+        //The failed instantiation should print its own error messages
         return;
     }
 
@@ -610,8 +620,9 @@ void QFxTextInput::drawContents(QPainter *p, const QRect &r)
     int flags = QLineControl::DrawText;
     if(!isReadOnly() && d->cursorVisible && !d->cursorItem)
         flags |= QLineControl::DrawCursor;
-    if (d->control->hasSelectedText())
+    if (d->control->hasSelectedText()){
             flags |= QLineControl::DrawSelections;
+    }
 
     d->control->draw(p, QPoint(0,0), r, flags);
 

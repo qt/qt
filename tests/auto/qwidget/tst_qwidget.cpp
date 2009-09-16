@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -74,6 +74,7 @@
 #include <akntitle.h>               // CAknTitlePane
 #include <akncontext.h>             // CAknContextPane
 #include <eikspane.h>               // CEikStatusPane
+#include <eikbtgpc.h>               // CEikButtonGroupContainer
 #endif
 
 #ifdef Q_WS_QWS
@@ -349,7 +350,7 @@ private slots:
 
     void setClearAndResizeMask();
     void maskedUpdate();
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS)
     void syntheticEnterLeave();
 #endif
     void windowFlags();
@@ -366,6 +367,12 @@ private slots:
     void setGraphicsEffect();
 
     void destroyBackingStore();
+
+    void activateWindow();
+
+#ifdef Q_OS_SYMBIAN
+    void cbaVisibility();
+#endif
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -8983,7 +8990,7 @@ void tst_QWidget::maskedUpdate()
     QCOMPARE(grandChild.paintedRegion, QRegion(grandChild.rect())); // Full update.
 }
 
-#if defined(Q_WS_X11) || defined(Q_WS_WIN)
+#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS)
 void tst_QWidget::syntheticEnterLeave()
 {
     class MyWidget : public QWidget
@@ -9235,6 +9242,9 @@ void tst_QWidget::destroyBackingStore()
 
     w.update();
     QApplication::processEvents();
+#ifdef Q_WS_QWS
+    QApplication::processEvents();
+#endif
     QCOMPARE(w.numPaintEvents, 1);
 
     // Check one more time, because the second time around does more caching.
@@ -9267,6 +9277,7 @@ void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&main);
 #endif
+    QCursor::setPos(main.pos()); //get the cursor out of the picture
     QTest::qWait(100);
     QPixmap pixmap = QPixmap::grabWindow(main.winId());
 
@@ -9284,6 +9295,7 @@ void tst_QWidget::inputFocus_task257832()
       if (!context)
             QSKIP("No input context", SkipSingle);
       widget->setFocus();
+      widget->winId();    // make sure, widget has been created
       context->setFocusWidget(widget);
       QCOMPARE(context->focusWidget(), static_cast<QWidget*>(widget));
       widget->setReadOnly(true);
@@ -9321,6 +9333,78 @@ void tst_QWidget::setGraphicsEffect()
     QVERIFY(!blurEffect);
     delete anotherWidget;
 }
+
+void tst_QWidget::activateWindow()
+{
+    // Test case for task 260685
+
+    // Create first mainwindow and set it active
+    QMainWindow* mainwindow = new QMainWindow();
+    QLabel* label = new QLabel(mainwindow);
+    mainwindow->setCentralWidget(label);
+    mainwindow->setVisible(true);
+    mainwindow->activateWindow();
+    qApp->processEvents();
+
+    QVERIFY(mainwindow->isActiveWindow());
+
+    // Create second mainwindow and set it active
+    QMainWindow* mainwindow2 = new QMainWindow();
+    QLabel* label2 = new QLabel(mainwindow2);
+    mainwindow2->setCentralWidget(label2);
+    mainwindow2->setVisible(true);
+    mainwindow2->activateWindow();
+    qApp->processEvents();
+
+    QVERIFY(!mainwindow->isActiveWindow());
+    QVERIFY(mainwindow2->isActiveWindow());
+
+    // Revert first mainwindow back to visible active
+    mainwindow->setVisible(true);
+    mainwindow->activateWindow();
+    qApp->processEvents();
+
+    QVERIFY(mainwindow->isActiveWindow());
+    QVERIFY(!mainwindow2->isActiveWindow());
+}
+
+#ifdef Q_OS_SYMBIAN
+void tst_QWidget::cbaVisibility()
+{
+    // Test case for task 261048
+
+    // Create first mainwindow in fullsreen and activate it
+    QMainWindow* mainwindow = new QMainWindow();
+    QLabel* label = new QLabel(mainwindow);
+    mainwindow->setCentralWidget(label);
+    mainwindow->setWindowState(Qt::WindowFullScreen);
+    mainwindow->setVisible(true);
+    mainwindow->activateWindow();
+    qApp->processEvents();
+
+    QVERIFY(mainwindow->isActiveWindow());
+    QVERIFY(QDesktopWidget().availableGeometry().size() == mainwindow->size());
+
+    // Create second mainwindow in maximized and activate it
+    QMainWindow* mainwindow2 = new QMainWindow();
+    QLabel* label2 = new QLabel(mainwindow2);
+    mainwindow2->setCentralWidget(label2);
+    mainwindow2->setWindowState(Qt::WindowMaximized);
+    mainwindow2->setVisible(true);
+    mainwindow2->activateWindow();
+    qApp->processEvents();
+
+    QVERIFY(!mainwindow->isActiveWindow());
+    QVERIFY(mainwindow2->isActiveWindow());
+    QVERIFY(QDesktopWidget().availableGeometry().size() == mainwindow2->size());
+
+    // Verify window decorations i.e. status pane and CBA are visible.
+    CEikStatusPane* statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
+    QVERIFY(statusPane->IsVisible());
+    CEikButtonGroupContainer* buttonGroup = CEikonEnv::Static()->AppUiFactory()->Cba();
+    QVERIFY(buttonGroup->IsVisible());
+}
+#endif
 
 QTEST_MAIN(tst_QWidget)
 #include "tst_qwidget.moc"

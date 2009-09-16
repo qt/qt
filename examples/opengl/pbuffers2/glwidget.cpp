@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -136,6 +136,7 @@ void GLWidget::draw()
     QPainter p(this); // used for text overlay
 
     // save the GL state set for QPainter
+    p.beginNativePainting();
     saveGLState();
 
     // render the 'bubbles.svg' file into our pbuffer
@@ -206,6 +207,7 @@ void GLWidget::draw()
 
     // restore the GL state that QPainter expects
     restoreGLState();
+    p.endNativePainting();
 
     // draw the overlayed text using QPainter
     p.setPen(QColor(197, 197, 197, 157));

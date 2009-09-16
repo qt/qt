@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtMultimedia module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -78,7 +78,7 @@ QAudioInputPrivate::QAudioInputPrivate(const QByteArray &device, const QAudioFor
     pullMode = true;
     resuming = false;
 
-    QStringList list1 = QString(tr(device)).split(tr(":"));
+    QStringList list1 = QString(QLatin1String(device)).split(QLatin1String(":"));
     m_device = QByteArray(list1.at(0).toLocal8Bit().constData());
 
     timer = new QTimer(this);
@@ -254,9 +254,9 @@ bool QAudioInputPrivate::open()
     int count=0;
     unsigned int freakuency=settings.frequency();
 
-    QString dev = QString(tr(m_device.constData()));
-    if(!dev.contains(tr("default"))) {
-        dev = QString(tr("default:CARD=%1")).arg(tr(m_device.constData()));
+    QString dev = QString(QLatin1String(m_device.constData()));
+    if(!dev.contains(QLatin1String("default"))) {
+        dev = QString(QLatin1String("default:CARD=%1")).arg(QLatin1String(m_device.constData()));
     }
 
     // Step 1: try and open the device

@@ -361,10 +361,8 @@ void QFxLoaderPrivate::_q_updateSize()
         return;
     switch (resizeMode) {
     case QFxLoader::SizeLoaderToItem:
-        if (!q->widthValid())
-            q->setImplicitWidth(item->width());
-        if (!q->heightValid())
-            q->setImplicitHeight(item->height());
+        q->setImplicitWidth(item->width());
+        q->setImplicitHeight(item->height());
         break;
     case QFxLoader::SizeItemToLoader:
         item->setWidth(q->width());

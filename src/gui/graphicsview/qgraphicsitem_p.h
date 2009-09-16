@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -97,8 +97,6 @@ public:
     void purge();
 };
 
-#include <QDebug>
-
 class Q_GUI_EXPORT QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsItem)
@@ -130,8 +128,8 @@ public:
         siblingIndex(-1),
         itemDepth(-1),
         focusProxy(0),
-        focusScopeItem(0),
         subFocusItem(0),
+        focusScopeItem(0),
         imHints(Qt::ImhNone),
         acceptedMouseButtons(0x1f),
         visible(1),
@@ -174,7 +172,6 @@ public:
         notifyBoundingRectChanged(0),
         notifyInvalidated(0),
         mouseSetsFocus(1),
-        itemIsFocusedInScope(0),
         explicitActivate(0),
         wantsActive(0),
         globalStackingOrder(-1),
@@ -322,7 +319,11 @@ public:
     void invalidateCachedClipPathRecursively(bool childrenOnly = false, const QRectF &emptyIfOutsideThisRect = QRectF());
     void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
     void ensureSceneTransformRecursive(QGraphicsItem **topMostDirtyItem);
-    void ensureSceneTransform();
+    inline void ensureSceneTransform()
+    {
+        QGraphicsItem *that = q_func();
+        ensureSceneTransformRecursive(&that);
+    }
 
     inline bool hasTranslateOnlySceneTransform()
     {
@@ -412,41 +413,11 @@ public:
                || (childrenCombineOpacity() && isFullyTransparent());
     }
 
-    void setSubFocus();
-    void clearSubFocus();
+    void setFocusHelper(Qt::FocusReason focusReason, bool climb);
+    void setSubFocus(QGraphicsItem *rootItem = 0);
+    void clearSubFocus(QGraphicsItem *rootItem = 0);
     void resetFocusProxy();
-
-    inline QGraphicsItem *rootLevelFocusItem() const {
-        QGraphicsItem *fi = q_ptr;
-        while(QGraphicsItem *i = fi->d_ptr->focusScope())
-            fi = i;
-        return fi;
-    }
-
-    inline QGraphicsItem *focusScope() const {
-        QGraphicsItem *item = parent;
-        while (item) {
-            if (item->isWindow())
-                return 0;
-            if (item->d_ptr->flags & QGraphicsItem::ItemIsFocusScope)
-                return item;
-            item = item->d_ptr->parent;
-        }
-        return 0;
-    }
-    inline bool hasActiveFocus(QGraphicsItem *focusItem) const {
-        if (!(flags & QGraphicsItem::ItemIsFocusScope) || !focusScopeItem)
-            return focusItem == q_ptr;
-        else
-            return focusScopeItem->d_ptr->hasActiveFocus(focusItem);
-    }
-    inline void setItemFocusedInScope(bool f) {
-        if (itemIsFocusedInScope != f) {
-            itemIsFocusedInScope = f;
-            if (!inDestructor) focusedInScopeChanged();
-        }
-    }
-    inline virtual void focusedInScopeChanged() {}
+    virtual void subFocusItemChange();
 
     inline QTransform transformToParent() const;
     inline void ensureSortedChildren();
@@ -469,9 +440,9 @@ public:
     int siblingIndex;
     int itemDepth;  // Lazily calculated when calling depth().
     QGraphicsItem *focusProxy;
-    QGraphicsItem *focusScopeItem; // Only used if this is a focus scope
     QList<QGraphicsItem **> focusProxyRefs;
     QGraphicsItem *subFocusItem;
+    QGraphicsItem *focusScopeItem;
     Qt::InputMethodHints imHints;
 
     // Packed 32 bits
@@ -520,10 +491,8 @@ public:
     quint32 mouseSetsFocus : 1;
 
     // New 32 bits
-    quint32 itemIsFocusedInScope : 1;
     quint32 explicitActivate : 1;
     quint32 wantsActive : 1;
-    quint32 unused : 29; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;
