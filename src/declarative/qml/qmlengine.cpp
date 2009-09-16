@@ -111,7 +111,7 @@ QScriptValue desktopOpenUrl(QScriptContext *ctxt, QScriptEngine *e)
 QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 : rootContext(0), currentExpression(0),
   isDebugging(false), contextClass(0), objectClass(0), valueTypeClass(0),
-  nodeListClass(0), namedNodeMapClass(0), scriptEngine(this), rootComponent(0),
+  nodeListClass(0), namedNodeMapClass(0), sqlQueryClass(0), scriptEngine(this), rootComponent(0),
   networkAccessManager(0), typeManager(e), uniqueId(1)
 {
     QScriptValue qtObject =
@@ -156,6 +156,8 @@ QmlEnginePrivate::~QmlEnginePrivate()
     nodeListClass = 0;
     delete namedNodeMapClass;
     namedNodeMapClass = 0;
+    delete sqlQueryClass;
+    sqlQueryClass = 0;
 
     for(int ii = 0; ii < bindValues.count(); ++ii)
         clear(bindValues[ii]);

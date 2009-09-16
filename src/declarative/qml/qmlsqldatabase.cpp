@@ -65,6 +65,84 @@
 #endif
 
 Q_DECLARE_METATYPE(QSqlDatabase)
+Q_DECLARE_METATYPE(QSqlQuery)
+
+class QmlSqlQueryScriptClass: public QScriptClass {
+public:
+    QmlSqlQueryScriptClass(QScriptEngine *engine) : QScriptClass(engine)
+    {
+        str_length = engine->toStringHandle(QLatin1String("length"));
+        str_forwardOnly = engine->toStringHandle(QLatin1String("forwardOnly")); // not in HTML5 (optimization)
+    }
+
+    QueryFlags queryProperty(const QScriptValue &object,
+                             const QScriptString &name,
+                             QueryFlags flags, uint *id)
+    {
+        if (flags & HandlesReadAccess) {
+            if (name == str_length) {
+                return HandlesReadAccess;
+            } else if (name == str_forwardOnly) {
+                return flags;
+            } else {
+                bool ok;
+                qint32 pos = name.toString().toInt(&ok);
+                if (pos < 0 || !ok)
+                    return 0;
+                QSqlQuery query = qscriptvalue_cast<QSqlQuery>(object.data());
+                *id = pos;
+                if (*id < (uint)query.size())
+                    return HandlesReadAccess;
+            }
+        }
+        if (flags & HandlesWriteAccess)
+            if (name == str_forwardOnly)
+                return flags;
+        return 0;
+    }
+
+    QScriptValue property(const QScriptValue &object,
+                          const QScriptString &name, uint id)
+    {
+        QSqlQuery query = qscriptvalue_cast<QSqlQuery>(object.data());
+        if (name == str_length) {
+            int s = query.size();
+            if (s<0) {
+                // Inefficient.
+                query.last();
+                return query.at()+1;
+            } else {
+                return s;
+            }
+        } else if (name == str_forwardOnly) {
+            return query.isForwardOnly();
+        } else {
+            if (query.at() == id || query.seek(id)) { // Qt 4.6 doesn't optimize at()==id
+                QSqlRecord r = query.record();
+                QScriptValue row = engine()->newArray(r.count());
+                for (int j=0; j<r.count(); ++j) {
+                    // XXX only strings
+                    row.setProperty(j, QScriptValue(engine(),r.value(j).toString()));
+                }
+                return row;
+            }
+        }
+        return engine()->undefinedValue();
+    }
+
+    void setProperty(QScriptValue &object,
+                      const QScriptString &name, uint, const QScriptValue & value)
+    {
+        if (name == str_forwardOnly) {
+            QSqlQuery query = qscriptvalue_cast<QSqlQuery>(object.data());
+            query.setForwardOnly(value.toBool());
+        }
+    }
+
+private:
+    QScriptString str_length;
+    QScriptString str_forwardOnly;
+};
 
 static QScriptValue qmlsqldatabase_executeSql(QScriptContext *context, QScriptEngine *engine)
 {
@@ -85,18 +163,14 @@ static QScriptValue qmlsqldatabase_executeSql(QScriptContext *context, QScriptEn
             query.bindValue(0,values.toVariant());
         }
         if (query.exec()) {
-            QScriptValue rows = engine->newArray();
-            int i=0;
-            for (; query.next(); ++i) {
-                QSqlRecord r = query.record();
-                QScriptValue row = engine->newArray(r.count());
-                for (int j=0; j<r.count(); ++j) {
-                    row.setProperty(j, QScriptValue(engine,r.value(j).toString()));
-                }
-                rows.setProperty(i, row);
-            }
             QScriptValue rs = engine->newObject();
-            rs.setProperty(QLatin1String("rows"), rows);
+            if (!QmlEnginePrivate::get(engine)->sqlQueryClass)
+                QmlEnginePrivate::get(engine)->sqlQueryClass= new QmlSqlQueryScriptClass(engine);
+            QScriptValue rows = engine->newObject(QmlEnginePrivate::get(engine)->sqlQueryClass);
+            rows.setData(engine->newVariant(qVariantFromValue(query)));
+            rs.setProperty(QLatin1String("rows"),rows);
+            rs.setProperty(QLatin1String("rowsAffected"),query.numRowsAffected());
+            rs.setProperty(QLatin1String("insertId"),query.lastInsertId().toString()); // XXX only string
             cb.call(QScriptValue(), QScriptValueList() << context->thisObject() << rs);
         } else {
             err = true;
@@ -142,7 +216,7 @@ static QScriptValue qmlsqldatabase_transaction(QScriptContext *context, QScriptE
     return engine->undefinedValue();
 }
 
-// XXX Something like this belongs in Qt.
+// XXX Something like this should be exported by Qt.
 static QString userLocalDataPath(const QString& app)
 {
     QString result;
@@ -195,6 +269,8 @@ static QScriptValue qmlsqldatabase_open(QScriptContext *context, QScriptEngine *
     md5.addData(dbname.utf8());
     md5.addData(dbversion.utf8());
     QString dbid(QLatin1String(md5.result().toHex()));
+
+    // Uses SQLLITE (like HTML5), but any could be used.
 
     if (QSqlDatabase::connectionNames().contains(dbid)) {
         database = QSqlDatabase::database(dbid);
