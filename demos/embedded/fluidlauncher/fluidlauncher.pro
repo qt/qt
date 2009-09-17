@@ -126,6 +126,12 @@ symbian {
     }
 
     resource.path = $$APP_RESOURCE_DIR
+    
+    contains(QT_CONFIG, script) {
+        executables.sources += context2d.exe    
+        reg_resource.sources += $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/context2d_reg.rsc
+        resource.sources += $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/context2d.rsc
+    }
 
     mifs.sources = \
         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/0xA000C611.mif
