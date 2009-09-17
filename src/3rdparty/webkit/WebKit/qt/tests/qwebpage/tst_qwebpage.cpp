@@ -111,6 +111,8 @@ private slots:
     void requestCache();
     void protectBindingsRuntimeObjectsFromCollector();
 
+    void consoleOutput();
+
 private:
 
 
@@ -236,6 +238,31 @@ void tst_QWebPage::loadFinished()
                             "foo \"><frame src=\"data:text/html,bar\"></frameset>"), QUrl());
     QTRY_COMPARE(spyLoadFinished.count(), 1);
     QCOMPARE(spyLoadFinished.count(), 1);
+}
+
+class ConsolePage : public QWebPage
+{
+public:
+    ConsolePage(QObject* parent = 0) : QWebPage(parent) {}
+
+    virtual void javaScriptConsoleMessage(const QString& message, int lineNumber, const QString& sourceID)
+    {
+        messages.append(message);
+        lineNumbers.append(lineNumber);
+        sourceIDs.append(sourceID);
+    }
+
+    QStringList messages;
+    QList<int> lineNumbers;
+    QStringList sourceIDs;
+};
+
+void tst_QWebPage::consoleOutput()
+{
+    ConsolePage page;
+    page.mainFrame()->evaluateJavaScript("this is not valid JavaScript");
+    QCOMPARE(page.messages.count(), 1);
+    QCOMPARE(page.lineNumbers.at(0), 1);
 }
 
 class TestPage : public QWebPage
