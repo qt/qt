@@ -473,4 +473,10 @@ EXPORTS
 	_ZNK10QSqlDriver24numericalPrecisionPolicyEv @ 472 NONAME
 	_ZNK10QSqlResult24numericalPrecisionPolicyEv @ 473 NONAME
 	_ZNK12QSqlDatabase24numericalPrecisionPolicyEv @ 474 NONAME
+	_ZN10QSqlDriver19getStaticMetaObjectEv @ 475 NONAME
+	_ZN13QSQLiteDriver19getStaticMetaObjectEv @ 476 NONAME
+	_ZN14QSqlQueryModel19getStaticMetaObjectEv @ 477 NONAME
+	_ZN14QSqlTableModel19getStaticMetaObjectEv @ 478 NONAME
+	_ZN16QSqlDriverPlugin19getStaticMetaObjectEv @ 479 NONAME
+	_ZN24QSqlRelationalTableModel19getStaticMetaObjectEv @ 480 NONAME
 

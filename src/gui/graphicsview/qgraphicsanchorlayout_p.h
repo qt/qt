@@ -403,15 +403,15 @@ public:
         return data->graphicsAnchor;
     }
 
-    // helper function used by the 4 API functions
-    QGraphicsAnchor *anchor(QGraphicsLayoutItem *firstItem,
+    // function used by the 4 API functions
+    QGraphicsAnchor *addAnchor(QGraphicsLayoutItem *firstItem,
                             Qt::AnchorPoint firstEdge,
                             QGraphicsLayoutItem *secondItem,
                             Qt::AnchorPoint secondEdge,
                             qreal *spacing = 0);
 
-    // Anchor Manipulation methods
-    void addAnchor(QGraphicsLayoutItem *firstItem,
+    // Helper for Anchor Manipulation methods
+    void addAnchor_helper(QGraphicsLayoutItem *firstItem,
                    Qt::AnchorPoint firstEdge,
                    QGraphicsLayoutItem *secondItem,
                    Qt::AnchorPoint secondEdge,
@@ -420,12 +420,8 @@ public:
     QGraphicsAnchor *getAnchor(QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
                                QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge);
 
-    void removeAnchor(QGraphicsLayoutItem *firstItem,
-                      Qt::AnchorPoint firstEdge,
-                      QGraphicsLayoutItem *secondItem,
-                      Qt::AnchorPoint secondEdge);
+    void removeAnchor(AnchorVertex *firstVertex, AnchorVertex *secondVertex);
     void removeAnchor_helper(AnchorVertex *v1, AnchorVertex *v2);
-    void deleteAnchorData(AnchorData *data);
     void setAnchorSize(AnchorData *data, const qreal *anchorSize);
     void anchorSize(const AnchorData *data,
                     qreal *minSize = 0,
@@ -482,9 +478,10 @@ public:
                                   Orientation orientation);
 
     // Linear Programming solver methods
-    QPair<qreal, qreal> solveMinMax(QList<QSimplexConstraint *> constraints,
-                                    GraphPath path);
-    void solvePreferred(QList<QSimplexConstraint *> constraints);
+    bool solveMinMax(QList<QSimplexConstraint *> constraints,
+                     GraphPath path, qreal *min, qreal *max);
+    bool solvePreferred(QList<QSimplexConstraint *> constraints);
+    bool hasConflicts() const;
 
 #ifdef QT_DEBUG
     void dumpGraph();
@@ -518,6 +515,7 @@ public:
 
     // ###
     bool graphSimplified[2];
+    bool graphHasConflicts[2];
 
     uint calculateGraphCacheDirty : 1;
 };

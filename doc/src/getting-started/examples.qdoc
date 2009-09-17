@@ -1074,7 +1074,7 @@
     \nextpage D-Bus Examples
 
     \list
-    \o \l{gestures/imageviewer}{Image Viewer}
+    \o \l{widgets/imageviewer}{Image Viewer}
     \endlist
 */
 

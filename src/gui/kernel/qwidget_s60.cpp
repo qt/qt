@@ -1222,8 +1222,9 @@ void QWidget::releaseMouse()
         WId id = effectiveWinId();
         id->SetPointerCapture(false);
         QWidgetPrivate::mouseGrabber = 0;
-        
+#ifndef QT_NO_CURSOR
         QApplication::restoreOverrideCursor();
+#endif
     }
 }
 

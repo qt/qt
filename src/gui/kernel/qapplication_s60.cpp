@@ -439,7 +439,7 @@ void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
             }
         }
     S60->lastCursorPos = globalPos;
-#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
+#if !defined(QT_NO_CURSOR) && !defined(Q_SYMBIAN_FIXED_POINTER_CURSORS)
     if (S60->brokenPointerCursors)
         qt_symbian_move_cursor_sprite();
 #endif
@@ -855,7 +855,6 @@ void qt_init(QApplicationPrivate * /* priv */, int)
 
 	//Check if mouse interaction is supported (either EMouse=1 in the HAL, or EMachineUID is one of the phones known to support this)
     const TInt KMachineUidSamsungI8510 = 0x2000C51E;
-    const TInt KMachineUidSamsungI550 = 0x2000A678;
     TInt machineUID;
     TInt mouse;
     TInt touch;
@@ -888,6 +887,7 @@ void qt_init(QApplicationPrivate * /* priv */, int)
         QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadDirectional;
     }
     
+#ifndef QT_NO_CURSOR
     //Check if window server pointer cursors are supported or not
 #ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
     //In generic binary, use the HAL and OS version
@@ -912,6 +912,7 @@ void qt_init(QApplicationPrivate * /* priv */, int)
 #endif
             S60->wsSession().SetPointerCursorMode(EPointerCursorNormal);
     }
+#endif
 
 /*
  ### Commented out for now as parameter handling not needed in SOS(yet). Code below will break testlib with -o flag
@@ -1275,7 +1276,7 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
         }
         break;
     case EEventFocusGained:
-        RDebug::Printf("focus gained %x", control);
+#ifndef QT_NO_CURSOR
         //re-enable mouse interaction
         if (S60->mouseInteractionEnabled) {
 #ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
@@ -1285,9 +1286,10 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
 #endif
                 S60->wsSession().SetPointerCursorMode(EPointerCursorNormal);
         }
+#endif
         break;
     case EEventFocusLost:
-        RDebug::Printf("focus lost %x", control);
+#ifndef QT_NO_CURSOR
         //disable mouse as may be moving to application that does not support it
         if (S60->mouseInteractionEnabled) {
 #ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
@@ -1297,6 +1299,7 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
 #endif
                 S60->wsSession().SetPointerCursorMode(EPointerCursorNone);
         }
+#endif
         break;
 	default:
         break;
@@ -1534,7 +1537,9 @@ void QApplication::restoreOverrideCursor()
             QListIterator<WId> iter(QWidgetPrivate::mapper->uniqueKeys());
             while (iter.hasNext()) {
                 CCoeControl *ctrl = iter.next();
-                ctrl->DrawableWindow()->ClearPointerCursor();
+                if(ctrl->OwnsWindow()) {
+                    ctrl->DrawableWindow()->ClearPointerCursor();
+                }
             }
             if (w)
                 qt_symbian_setWindowCursor(w->cursor(), w->effectiveWinId());

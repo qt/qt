@@ -304,11 +304,13 @@ static inline QImage::Format qt_TDisplayMode2Format(TDisplayMode mode)
     return format;
 }
 
+#ifndef QT_NO_CURSOR
 void qt_symbian_setWindowCursor(const QCursor &cursor, const CCoeControl* wid);
 void qt_symbian_setWindowGroupCursor(const QCursor &cursor, RWindowTreeNode &node);
 void qt_symbian_setGlobalCursor(const QCursor &cursor);
 void qt_symbian_set_cursor_visible(bool visible);
 bool qt_symbian_is_cursor_visible();
+#endif
 
 QT_END_NAMESPACE
 
