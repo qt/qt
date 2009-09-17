@@ -2337,7 +2337,7 @@ void tst_QTableView::scrollTo()
 
     view.show();
     // resizing to this size will ensure that there can ONLY_BE_ONE_CELL inside the view.
-    QSize forcedSize(columnWidth*2, rowHeight * 2);
+    QSize forcedSize(columnWidth * 2, rowHeight * 2);
     view.resize(forcedSize);
     QTest::qWait(0);
     QTRY_COMPARE(view.size(), forcedSize);
@@ -2363,8 +2363,6 @@ void tst_QTableView::scrollTo()
     view.scrollTo(index, (QAbstractItemView::ScrollHint)scrollHint);
     QCOMPARE(view.verticalScrollBar()->value(), expectedVerticalScroll);
     QCOMPARE(view.horizontalScrollBar()->value(), expectedHorizontalScroll);
-
-    //QTest::qWait(22100); // ### needed to pass the test
 }
 
 void tst_QTableView::indexAt_data()
