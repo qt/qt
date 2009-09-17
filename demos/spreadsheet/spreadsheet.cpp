@@ -420,7 +420,7 @@ void SpreadSheet::actionMath_helper(const QString &title, const QString &op)
                        &cell1, &cell2, &out)) {
         int row, col;
         decode_pos(out, &row, &col);
-        table->item(row, col)->setText(tr("%1, %2, %3").arg(op, cell1, cell2));
+        table->item(row, col)->setText(tr("%1 %2 %3").arg(op, cell1, cell2));
     }
 }
 
