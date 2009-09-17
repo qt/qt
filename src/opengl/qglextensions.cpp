@@ -391,9 +391,8 @@ bool qt_resolve_version_2_0_functions(QGLContext *ctx)
     if (glStencilOpSeparate)
         return gl2supported;
 
-    glBlendColor = (_glBlendColor) ctx->getProcAddress(QLatin1String("glBlendColor"));
     glStencilOpSeparate = (_glStencilOpSeparate) ctx->getProcAddress(QLatin1String("glStencilOpSeparate"));
-    if (!glBlendColor || !glStencilOpSeparate)
+    if (!glStencilOpSeparate)
         gl2supported = false;
 
     return gl2supported;
