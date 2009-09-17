@@ -171,8 +171,10 @@ void MMF::VideoOutput::transparentFill(const QVector<QRect>& rects)
 			// Note: not using the optimised qt_memfill function implemented in
 			// gui/painting/qdrawhelper.cpp - can we somehow link against this?
 		
-			//qt_memfill(row + x_start, 0U, width);
-			memset(row + x_start, 0, width*4);
+			QRgb *ptr = row + x_start;
+			for(int x = 0; x < width; ++x)
+				*ptr++ = 0x00000000;
+		
 			row += row_stride;
 		}
 	}
