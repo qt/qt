@@ -522,8 +522,10 @@ void qt_symbian_setGlobalCursor(const QCursor &cursor)
         while(iter.hasNext())
         {
             CCoeControl *ctrl = iter.next();
-            RWindowTreeNode *node = ctrl->DrawableWindow();
-            qt_symbian_setWindowGroupCursor(cursor, *node);
+            if(ctrl->OwnsWindow()) {
+                RWindowTreeNode *node = ctrl->DrawableWindow();
+                qt_symbian_setWindowGroupCursor(cursor, *node);
+            }
         }
     }
 }

@@ -1537,7 +1537,9 @@ void QApplication::restoreOverrideCursor()
             QListIterator<WId> iter(QWidgetPrivate::mapper->uniqueKeys());
             while (iter.hasNext()) {
                 CCoeControl *ctrl = iter.next();
-                ctrl->DrawableWindow()->ClearPointerCursor();
+                if(ctrl->OwnsWindow()) {
+                    ctrl->DrawableWindow()->ClearPointerCursor();
+                }
             }
             if (w)
                 qt_symbian_setWindowCursor(w->cursor(), w->effectiveWinId());
