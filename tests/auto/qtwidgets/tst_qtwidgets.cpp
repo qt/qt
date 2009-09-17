@@ -74,6 +74,8 @@ void tst_QtWidgets::snapshot()
 {
         QSKIP("Jesper will fix this test when he has time.", SkipAll);
 #if 0
+    QSKIP("This test doesn't do anything useful at the moment.", SkipAll);
+
     StyleWidget widget(0, Qt::X11BypassWindowManagerHint);
     widget.show();
 
