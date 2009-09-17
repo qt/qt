@@ -719,13 +719,14 @@ void tst_QImageReader::gifHandlerBugs()
 
 void tst_QImageReader::animatedGif()
 {
-    QImageReader io(prefix + "qt.gif");
-    QImage image= io.read();
-    int i=0;
+    QImageReader io(":images/qt.gif");
+    QImage image = io.read();
+    QVERIFY(!image.isNull());
+    int i = 0;
     while(!image.isNull()){
-        QString frameName = QString(prefix + "qt%1.gif").arg(++i);
+        QString frameName = QString(":images/qt%1.gif").arg(++i);
         QCOMPARE(image, QImage(frameName));
-        image=io.read();
+        image = io.read();
     }
 }
 #endif
