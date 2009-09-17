@@ -5688,7 +5688,7 @@ void QWidget::setWindowIconText(const QString &iconText)
 
 void QWidget::setWindowTitle(const QString &title)
 {
-    if (QWidget::windowTitle() == title)
+    if (QWidget::windowTitle() == title && !title.isEmpty() && !title.isNull())
         return;
 
     Q_D(QWidget);
