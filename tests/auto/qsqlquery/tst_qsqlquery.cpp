@@ -191,6 +191,9 @@ private slots:
     void task_233829_data() { generic_data("QPSQL"); }
     void task_233829();
 
+    void sqlServerReturn0_data() { generic_data(); }
+    void sqlServerReturn0();
+
 
 private:
     // returns all database connections
@@ -309,6 +312,13 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
     tablenames <<  qTableName( "Planet" );
 
     tablenames << qTableName( "task_250026" );
+
+    if (tst_Databases::isSqlServer( db )) {
+        QSqlQuery q( db );
+        q.exec("DROP PROCEDURE " + qTableName("test141895_proc"));
+    }
+
+    tablenames << qTableName("test141895");
 
     tst_Databases::safeDropTables( db, tablenames );
 }
@@ -2840,6 +2850,34 @@ void tst_QSqlQuery::task_233829()
     q.bindValue(0,0.0 / k); // nan
     q.bindValue(1,0.0 / k); // nan
     QVERIFY_SQL(q,exec());
+}
+
+void tst_QSqlQuery::sqlServerReturn0()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+    if (!tst_Databases::isSqlServer( db ))
+        QSKIP("SQL Server specific test", SkipSingle);
+
+    QString tableName(qTableName("test141895")), procName(qTableName("test141895_proc"));
+    QSqlQuery q( db );
+    q.exec("DROP TABLE " + tableName);
+    q.exec("DROP PROCEDURE " + procName);
+    QVERIFY_SQL(q, exec("CREATE TABLE "+tableName+" (id integer)"));
+    QVERIFY_SQL(q, exec("INSERT INTO "+tableName+" (id) VALUES (1)"));
+    QVERIFY_SQL(q, exec("INSERT INTO "+tableName+" (id) VALUES (2)"));
+    QVERIFY_SQL(q, exec("INSERT INTO "+tableName+" (id) VALUES (2)"));
+    QVERIFY_SQL(q, exec("INSERT INTO "+tableName+" (id) VALUES (3)"));
+    QVERIFY_SQL(q, exec("INSERT INTO "+tableName+" (id) VALUES (1)"));
+    QVERIFY_SQL(q, exec("CREATE PROCEDURE "+procName+
+        " AS "
+        "SELECT * FROM "+tableName+" WHERE ID = 2 "
+        "RETURN 0"));
+
+    QVERIFY_SQL(q, exec("{CALL "+procName+"}"));
+
+    QVERIFY_SQL(q, next());
 }
 
 QTEST_MAIN( tst_QSqlQuery )
