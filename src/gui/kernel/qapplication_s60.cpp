@@ -855,7 +855,6 @@ void qt_init(QApplicationPrivate * /* priv */, int)
 
 	//Check if mouse interaction is supported (either EMouse=1 in the HAL, or EMachineUID is one of the phones known to support this)
     const TInt KMachineUidSamsungI8510 = 0x2000C51E;
-    const TInt KMachineUidSamsungI550 = 0x2000A678;
     TInt machineUID;
     TInt mouse;
     TInt touch;
