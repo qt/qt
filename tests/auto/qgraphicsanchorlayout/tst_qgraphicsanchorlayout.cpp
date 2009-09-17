@@ -193,6 +193,8 @@ void tst_QGraphicsAnchorLayout::simple_center()
 
     QSizeF layoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
     QCOMPARE(layoutMaximumSize, QSizeF(200, 20));
+
+    delete p;
 }
 
 void tst_QGraphicsAnchorLayout::simple_semifloat()
@@ -240,6 +242,8 @@ void tst_QGraphicsAnchorLayout::simple_semifloat()
 
     QSizeF layoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
     QCOMPARE(layoutMaximumSize, QSizeF(200, 20));
+
+    delete p;
 }
 
 void tst_QGraphicsAnchorLayout::layoutDirection()
@@ -286,6 +290,9 @@ void tst_QGraphicsAnchorLayout::layoutDirection()
     view->show();
 
     QCOMPARE(checkReverseDirection(p), true);
+
+    delete p;
+    delete view;
 }
 
 void tst_QGraphicsAnchorLayout::diagonal()
@@ -985,6 +992,8 @@ void tst_QGraphicsAnchorLayout::setSpacing()
     QCOMPARE(b->geometry(), QRectF(24, 0, 20, 20));
     QCOMPARE(c->geometry(), QRectF(0, 20, 44, 20));
 
+    delete p;
+    delete view;
 }
 
 /*!
@@ -1067,6 +1076,7 @@ void tst_QGraphicsAnchorLayout::hardComplexS60()
     QSizeF layoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
     QCOMPARE(layoutMaximumSize, QSizeF(240, 40));
 
+    delete p;
 }
 
 void tst_QGraphicsAnchorLayout::stability()
@@ -1281,6 +1291,8 @@ void tst_QGraphicsAnchorLayout::conflicts()
     //QEXPECT_FAIL("", "The constraints are just within their bounds in order to be feasible", Continue);
     //a->setMinimumSize(QSizeF(30,10));
     //QCOMPARE(l->hasConflicts(), false);
+
+    delete p;
 }
 
 QTEST_MAIN(tst_QGraphicsAnchorLayout)
