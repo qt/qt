@@ -262,6 +262,8 @@ void QFxContents::calcHeight()
     QList<QGraphicsItem *> children = m_item->childItems();
     for (int i = 0; i < children.count(); ++i) {
         QFxItem *child = qobject_cast<QFxItem *>(children.at(i));
+        if(!child)//### Should this be ignoring non-QFxItem graphicsobjects?
+            continue;
         qreal y = child->y();
         if (y + child->height() > bottom)
             bottom = y + child->height();
@@ -288,6 +290,8 @@ void QFxContents::calcWidth()
     QList<QGraphicsItem *> children = m_item->childItems();
     for (int i = 0; i < children.count(); ++i) {
         QFxItem *child = qobject_cast<QFxItem *>(children.at(i));
+        if(!child)//### Should this be ignoring non-QFxItem graphicsobjects?
+            continue;
         qreal x = child->x();
         if (x + child->width() > right)
             right = x + child->width();
@@ -309,6 +313,8 @@ void QFxContents::setItem(QFxItem *item)
     QList<QGraphicsItem *> children = m_item->childItems();
     for (int i = 0; i < children.count(); ++i) {
         QFxItem *child = qobject_cast<QFxItem *>(children.at(i));
+        if(!child)//### Should this be ignoring non-QFxItem graphicsobjects?
+            continue;
         connect(child, SIGNAL(heightChanged()), this, SLOT(calcHeight()));
         connect(child, SIGNAL(yChanged()), this, SLOT(calcHeight()));
         connect(child, SIGNAL(widthChanged()), this, SLOT(calcWidth()));
