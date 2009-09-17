@@ -668,7 +668,6 @@ void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& s
 {
     // Setup for texture drawing
     shaderManager->setSrcPixelType(pattern ? QGLEngineShaderManager::PatternSrc : QGLEngineShaderManager::ImageSrc);
-    shaderManager->setTextureCoordsEnabled(true);
     if (prepareForDraw(opaque))
         shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::ImageTexture), QT_IMAGE_TEXTURE_UNIT);
 
@@ -1241,7 +1240,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
     else if (glyphType == QFontEngineGlyphCache::Raster_RGBMask)
         shaderManager->setMaskType(QGLEngineShaderManager::SubPixelMask);
     //### TODO: Gamma correction
-    shaderManager->setTextureCoordsEnabled(true);
 
     int margin = cache->glyphMargin();
 

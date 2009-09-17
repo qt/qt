@@ -88,6 +88,7 @@ private slots:
     void timerFiresOnlyOncePerProcessEvents_data();
     void timerFiresOnlyOncePerProcessEvents();
     void timerIdPersistsAfterThreadExit();
+    void cancelLongTimer();
 };
 
 class TimerHelper : public QObject
@@ -600,6 +601,17 @@ void tst_QTimer::timerIdPersistsAfterThreadExit()
     // have unregistered it)
     int timerId = thread.startTimer(100);
     QVERIFY((timerId & 0xffffff) != (thread.timerId & 0xffffff));
+}
+
+void tst_QTimer::cancelLongTimer()
+{
+    QTimer timer;
+    timer.setSingleShot(true);
+    timer.start(1000 * 60 * 60); //set timer for 1 hour (which would overflow Symbian RTimer)
+    QCoreApplication::processEvents();
+    QVERIFY(timer.isActive()); //if the timer completes immediately with an error, then this will fail
+    timer.stop();
+    QVERIFY(!timer.isActive());
 }
 
 QTEST_MAIN(tst_QTimer)

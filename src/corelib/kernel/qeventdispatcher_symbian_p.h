@@ -117,6 +117,7 @@ struct SymbianTimerInfo : public QSharedData
 
     int timerId;
     int interval;
+    int msLeft;
     bool inTimerEvent;
     QObject *receiver;
     QTimerActiveObject *timerAO;
@@ -140,6 +141,7 @@ protected:
 
 private:
     void Run();
+    void StartTimer();
 
 private:
     SymbianTimerInfo *m_timerInfo;

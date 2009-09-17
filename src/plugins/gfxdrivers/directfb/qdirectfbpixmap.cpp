@@ -250,19 +250,6 @@ bool QDirectFBPixmapData::fromDataBufferDescription(const DFBDataBufferDescripti
         return false;
     }
 
-    QDirectFBPointer<IDirectFBSurface> surfaceFromDescription;
-    surfaceFromDescription.reset(screen->createDFBSurface(surfaceDescription, QDirectFBScreen::DontTrackSurface, &result));
-    if (!surfaceFromDescription) {
-        DirectFBError("QDirectFBPixmapData::fromSurfaceDescription(): Can't create surface", result);
-        return false;
-    }
-
-    result = provider->RenderTo(provider.data(), surfaceFromDescription.data(), 0);
-    if (result != DFB_OK) {
-        DirectFBError("QDirectFBPixmapData::fromSurfaceDescription(): Can't render to surface", result);
-        return false;
-    }
-
     DFBImageDescription imageDescription;
     result = provider->GetImageDescription(provider.data(), &imageDescription);
     if (result != DFB_OK) {
@@ -275,51 +262,19 @@ bool QDirectFBPixmapData::fromDataBufferDescription(const DFBDataBufferDescripti
 
     dfbSurface = screen->createDFBSurface(QSize(surfaceDescription.width, surfaceDescription.height),
                                           imageFormat, QDirectFBScreen::TrackSurface);
-    if (alpha)
-        dfbSurface->Clear(dfbSurface, 0, 0, 0, 0);
 
-    DFBSurfaceBlittingFlags blittingFlags = DSBLIT_NOFX;
-    if (imageDescription.caps & DICAPS_COLORKEY) {
-        blittingFlags |= DSBLIT_SRC_COLORKEY;
-        result = surfaceFromDescription->SetSrcColorKey(surfaceFromDescription.data(),
-                                                        imageDescription.colorkey_r,
-                                                        imageDescription.colorkey_g,
-                                                        imageDescription.colorkey_b);
-        if (result != DFB_OK) {
-            DirectFBError("QDirectFBPixmapData::fromSurfaceDescription: Can't set src color key", result);
-            invalidate(); // release dfbSurface
-            return false;
-        }
-    }
-    if (imageDescription.caps & DICAPS_ALPHACHANNEL) {
-        blittingFlags |= DSBLIT_BLEND_ALPHACHANNEL;
-    }
-    result = dfbSurface->SetBlittingFlags(dfbSurface, blittingFlags);
+    result = provider->RenderTo(provider.data(), dfbSurface, 0);
     if (result != DFB_OK) {
-        DirectFBError("QDirectFBPixmapData::fromSurfaceDescription: Can't set blitting flags", result);
-        invalidate(); // release dfbSurface
+        DirectFBError("QDirectFBPixmapData::fromSurfaceDescription(): Can't render to surface", result);
         return false;
     }
-
-    result = dfbSurface->Blit(dfbSurface, surfaceFromDescription.data(), 0, 0, 0);
-    if (result != DFB_OK) {
-        DirectFBError("QDirectFBPixmapData::fromSurfaceDescription: Can't blit to surface", result);
-        invalidate(); // release dfbSurface
-        return false;
-    }
-    if (blittingFlags != DSBLIT_NOFX) {
-        dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_NOFX);
-    }
-
 
     w = surfaceDescription.width;
     h = surfaceDescription.height;
     is_null = (w <= 0 || h <= 0);
     d = QDirectFBScreen::depth(imageFormat);
     setSerialNumber(++global_ser_no);
-#if (Q_DIRECTFB_VERSION >= 0x010000)
-    dfbSurface->ReleaseSource(dfbSurface);
-#endif
+
 #if defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
     screen->setDirectFBImageProvider(providerPtr);
     provider.take();
