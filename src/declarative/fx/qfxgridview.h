@@ -63,11 +63,11 @@ class Q_DECLARATIVE_EXPORT QFxGridView : public QFxFlickable
     Q_PROPERTY(QFxItem *currentItem READ currentItem NOTIFY currentIndexChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(QmlComponent *highlight READ highlight WRITE setHighlight)
-    Q_PROPERTY(bool autoHighlight READ autoHighlight WRITE setAutoHighlight)
+    Q_PROPERTY(bool highlightFollowsCurrentItem READ highlightFollowsCurrentItem WRITE setHighlightFollowsCurrentItem)
     Q_PROPERTY(Flow flow READ flow WRITE setFlow)
-    Q_PROPERTY(bool wrap READ isWrapEnabled WRITE setWrapEnabled)
+    Q_PROPERTY(bool keyNavigationWraps READ isWrapEnabled WRITE setWrapEnabled)
     Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer)
-    Q_PROPERTY(int cellWidth READ cellWidth WRITE setCellWidth NOTIFY cellSizeChanged) //### columnCount, rowCount
+    Q_PROPERTY(int cellWidth READ cellWidth WRITE setCellWidth NOTIFY cellSizeChanged)
     Q_PROPERTY(int cellHeight READ cellHeight WRITE setCellHeight NOTIFY cellSizeChanged)
     Q_CLASSINFO("DefaultProperty", "data")
 
@@ -90,8 +90,8 @@ public:
     QmlComponent *highlight() const;
     void setHighlight(QmlComponent *highlight);
 
-    bool autoHighlight() const;
-    void setAutoHighlight(bool);
+    bool highlightFollowsCurrentItem() const;
+    void setHighlightFollowsCurrentItem(bool);
 
     Q_ENUMS(Flow)
     enum Flow { LeftToRight, TopToBottom };

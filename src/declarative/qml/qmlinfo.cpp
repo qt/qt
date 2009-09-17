@@ -85,7 +85,11 @@ QmlInfo::QmlInfo(QObject *object)
     QmlDeclarativeData *ddata = QmlDeclarativeData::get(object);
     if (ddata) {
         QString location = QLatin1String("(");
-        location += ddata->outerContext->baseUrl().toString();
+        if (ddata->outerContext) {
+            location += ddata->outerContext->baseUrl().toString();
+        } else {
+            location += "unknown";
+        }
         location += QLatin1String(":");
         location += QString::number(ddata->lineNumber);
         location += QLatin1String(":");

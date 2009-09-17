@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -581,6 +581,9 @@ void QGraphicsScenePrivate::setActivePanelHelper(QGraphicsItem *item, bool durin
         return;
     }
 
+    // Ensure the scene has focus when we change panel activation.
+    q->setFocus(Qt::ActiveWindowFocusReason);
+
     // Find the item's panel.
     QGraphicsItem *panel = item ? item->panel() : 0;
     lastActivePanel = panel ? activePanel : 0;
@@ -636,10 +639,6 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
                                                Qt::FocusReason focusReason)
 {
     Q_Q(QGraphicsScene);
-
-    while (item && item->d_ptr->focusScopeItem)
-        item = item->d_ptr->focusScopeItem;
-
     if (item == focusItem)
         return;
 
@@ -657,18 +656,9 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
             return;
     }
 
-    QGraphicsItem *itemRootLevelFocusItem = 
-        item?item->d_ptr->rootLevelFocusItem():0;
-
     if (focusItem) {
         QFocusEvent event(QEvent::FocusOut, focusReason);
         lastFocusItem = focusItem;
-
-        QGraphicsItem *oldRootLevelFocusItem = 
-            focusItem->d_ptr->rootLevelFocusItem();
-        if (oldRootLevelFocusItem != itemRootLevelFocusItem) 
-            oldRootLevelFocusItem->d_ptr->setItemFocusedInScope(false);
-
         focusItem = 0;
         sendEvent(lastFocusItem, &event);
 
@@ -678,16 +668,19 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
             QInputMethodEvent imEvent;
             sendEvent(lastFocusItem, &imEvent);
 
-            // Close any external input method panel
-            for (int i = 0; i < views.size(); ++i)
-                views.at(i)->inputContext()->reset();
+            // Close any external input method panel. This happens
+            // automatically by removing WA_InputMethodEnabled on
+            // the views, but if we are changing focus, we have to
+            // do it ourselves.
+            if (item) {
+                for (int i = 0; i < views.size(); ++i)
+                    views.at(i)->inputContext()->reset();
+            }
         }
     }
 
     if (item) {
         focusItem = item;
-        itemRootLevelFocusItem->d_ptr->setItemFocusedInScope(true);
-        item->d_ptr->setItemFocusedInScope(true);
         QFocusEvent event(QEvent::FocusIn, focusReason);
         sendEvent(item, &event);
     }
@@ -1400,6 +1393,7 @@ QGraphicsScene::QGraphicsScene(qreal x, qreal y, qreal width, qreal height, QObj
 QGraphicsScene::~QGraphicsScene()
 {
     Q_D(QGraphicsScene);
+
     // Remove this scene from qApp's global scene list.
     qApp->d_func()->scene_list.removeAll(this);
 
@@ -2298,19 +2292,11 @@ void QGraphicsScene::destroyItemGroup(QGraphicsItemGroup *group)
 void QGraphicsScene::addItem(QGraphicsItem *item)
 {
     Q_D(QGraphicsScene);
-    d->addItem(item);
-}
-
-void QGraphicsScenePrivate::addItem(QGraphicsItem *item, 
-                                    QGraphicsItem *focusScope)
-{
-    Q_Q(QGraphicsScene);
-
     if (!item) {
         qWarning("QGraphicsScene::addItem: cannot add null item");
         return;
     }
-    if (item->scene() == q) {
+    if (item->scene() == this) {
         qWarning("QGraphicsScene::addItem: item has already been added to this scene");
         return;
     }
@@ -2321,9 +2307,9 @@ void QGraphicsScenePrivate::addItem(QGraphicsItem *item,
     // Notify the item that its scene is changing, and allow the item to
     // react.
     const QVariant newSceneVariant(item->itemChange(QGraphicsItem::ItemSceneChange,
-                                                    qVariantFromValue<QGraphicsScene *>(q)));
+                                                    qVariantFromValue<QGraphicsScene *>(this)));
     QGraphicsScene *targetScene = qVariantValue<QGraphicsScene *>(newSceneVariant);
-    if (targetScene != q) {
+    if (targetScene != this) {
         if (targetScene && item->scene() != targetScene)
             targetScene->addItem(item);
         return;
@@ -2332,7 +2318,7 @@ void QGraphicsScenePrivate::addItem(QGraphicsItem *item,
     // Detach this item from its parent if the parent's scene is different
     // from this scene.
     if (QGraphicsItem *itemParent = item->parentItem()) {
-        if (itemParent->scene() != q)
+        if (itemParent->scene() != this)
             item->setParentItem(0);
     }
 
@@ -2340,121 +2326,127 @@ void QGraphicsScenePrivate::addItem(QGraphicsItem *item,
     item->d_func()->scene = targetScene;
 
     // Add the item in the index
-    index->addItem(item);
+    d->index->addItem(item);
 
     // Add to list of toplevels if this item is a toplevel.
     if (!item->d_ptr->parent)
-        registerTopLevelItem(item);
+        d->registerTopLevelItem(item);
 
     // Add to list of items that require an update. We cannot assume that the
     // item is fully constructed, so calling item->update() can lead to a pure
     // virtual function call to boundingRect().
-    markDirty(item);
-    dirtyGrowingItemsBoundingRect = true;
+    d->markDirty(item);
+    d->dirtyGrowingItemsBoundingRect = true;
 
     // Disable selectionChanged() for individual items
-    ++selectionChanging;
-    int oldSelectedItemSize = selectedItems.size();
+    ++d->selectionChanging;
+    int oldSelectedItemSize = d->selectedItems.size();
 
     // Enable mouse tracking if the item accepts hover events or has a cursor set.
-    if (allItemsIgnoreHoverEvents && itemAcceptsHoverEvents_helper(item)) {
-        allItemsIgnoreHoverEvents = false;
-        enableMouseTrackingOnViews();
+    if (d->allItemsIgnoreHoverEvents && d->itemAcceptsHoverEvents_helper(item)) {
+        d->allItemsIgnoreHoverEvents = false;
+        d->enableMouseTrackingOnViews();
     }
 #ifndef QT_NO_CURSOR
-    if (allItemsUseDefaultCursor && item->hasCursor()) {
-        allItemsUseDefaultCursor = false;
-        if (allItemsIgnoreHoverEvents) // already enabled otherwise
-            enableMouseTrackingOnViews();
+    if (d->allItemsUseDefaultCursor && item->hasCursor()) {
+        d->allItemsUseDefaultCursor = false;
+        if (d->allItemsIgnoreHoverEvents) // already enabled otherwise
+            d->enableMouseTrackingOnViews();
     }
 #endif //QT_NO_CURSOR
 
     // Enable touch events if the item accepts touch events.
-    if (allItemsIgnoreTouchEvents && item->acceptTouchEvents()) {
-        allItemsIgnoreTouchEvents = false;
-        enableTouchEventsOnViews();
+    if (d->allItemsIgnoreTouchEvents && item->acceptTouchEvents()) {
+        d->allItemsIgnoreTouchEvents = false;
+        d->enableTouchEventsOnViews();
     }
 
     // Update selection lists
     if (item->isSelected())
-        selectedItems << item;
+        d->selectedItems << item;
     if (item->isWidget() && item->isVisible() && static_cast<QGraphicsWidget *>(item)->windowType() == Qt::Popup)
-        addPopup(static_cast<QGraphicsWidget *>(item));
+        d->addPopup(static_cast<QGraphicsWidget *>(item));
 
     // Update creation order focus chain. Make sure to leave the widget's
     // internal tab order intact.
     if (item->isWidget()) {
         QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
-        if (!tabFocusFirst) {
+        if (!d->tabFocusFirst) {
             // No first tab focus widget - make this the first tab focus
             // widget.
-            tabFocusFirst = widget;
+            d->tabFocusFirst = widget;
         } else if (!widget->parentWidget()) {
             // Adding a widget that is not part of a tab focus chain.
-            QGraphicsWidget *last = tabFocusFirst->d_func()->focusPrev;
+            QGraphicsWidget *last = d->tabFocusFirst->d_func()->focusPrev;
             QGraphicsWidget *lastNew = widget->d_func()->focusPrev;
             last->d_func()->focusNext = widget;
             widget->d_func()->focusPrev = last;
-            tabFocusFirst->d_func()->focusPrev = lastNew;
-            lastNew->d_func()->focusNext = tabFocusFirst;
+            d->tabFocusFirst->d_func()->focusPrev = lastNew;
+            lastNew->d_func()->focusNext = d->tabFocusFirst;
         }
     }
 
     // Add all children recursively
-    QGraphicsItem *subFocusScope = 
-        (item->d_ptr->flags & QGraphicsItem::ItemIsFocusScope)?item:focusScope;
     foreach (QGraphicsItem *child, item->children())
-        addItem(child, subFocusScope);
+        addItem(child);
 
     // Resolve font and palette.
-    item->d_ptr->resolveFont(font.resolve());
-    item->d_ptr->resolvePalette(palette.resolve());
+    item->d_ptr->resolveFont(d->font.resolve());
+    item->d_ptr->resolvePalette(d->palette.resolve());
 
     if (!item->d_ptr->explicitlyHidden) {
-       if (unpolishedItems.isEmpty())
-           QMetaObject::invokeMethod(q, "_q_polishItems", Qt::QueuedConnection);
-       unpolishedItems << item;
+       if (d->unpolishedItems.isEmpty())
+           QMetaObject::invokeMethod(this, "_q_polishItems", Qt::QueuedConnection);
+       d->unpolishedItems << item;
     }
 
     // Reenable selectionChanged() for individual items
-    --selectionChanging;
-    if (!selectionChanging && selectedItems.size() != oldSelectedItemSize)
-        emit q->selectionChanged();
+    --d->selectionChanging;
+    if (!d->selectionChanging && d->selectedItems.size() != oldSelectedItemSize)
+        emit selectionChanged();
 
     // Deliver post-change notification
     item->itemChange(QGraphicsItem::ItemSceneHasChanged, newSceneVariant);
 
     // Update explicit activation
     bool autoActivate = true;
-    if (!childExplicitActivation && item->d_ptr->explicitActivate)
-        childExplicitActivation = item->d_ptr->wantsActive ? 1 : 2;
-    if (childExplicitActivation && item->isPanel()) {
-        if (childExplicitActivation == 1)
-            q->setActivePanel(item);
+    if (!d->childExplicitActivation && item->d_ptr->explicitActivate)
+        d->childExplicitActivation = item->d_ptr->wantsActive ? 1 : 2;
+    if (d->childExplicitActivation && item->isPanel()) {
+        if (d->childExplicitActivation == 1)
+            setActivePanel(item);
         else
             autoActivate = false;
-        childExplicitActivation = 0;
+        d->childExplicitActivation = 0;
     } else if (!item->d_ptr->parent) {
-        childExplicitActivation = 0;
+        d->childExplicitActivation = 0;
     }
 
     // Auto-activate this item's panel if nothing else has been activated
     if (autoActivate) {
-        if (!lastActivePanel && !activePanel && item->isPanel()) {
-            if (q->isActive())
-                q->setActivePanel(item);
+        if (!d->lastActivePanel && !d->activePanel && item->isPanel()) {
+            if (isActive())
+                setActivePanel(item);
             else
-                lastActivePanel = item;
+                d->lastActivePanel = item;
         }
     }
 
     // Ensure that newly added items that have subfocus set, gain
     // focus automatically if there isn't a focus item already.
-    if (!focusItem && item->focusItem() ||
-        focusScope && !focusScope->d_ptr->focusScopeItem && item->focusItem())
-        item->focusItem()->setFocus();
+    if (!d->focusItem) {
+        if (item->focusItem() == item && item != d->lastFocusItem) {
+            QGraphicsItem *fi = item->focusItem() ? item->focusItem() : item->focusScopeItem();
+            if (fi) {
+                QGraphicsItem *fsi;
+                while ((fsi = fi->focusScopeItem()) && fsi->isVisible())
+                    fi = fsi;
+                fi->setFocus();
+            }
+        }
+    }
 
-    updateInputMethodSensitivityInViews();
+    d->updateInputMethodSensitivityInViews();
 }
 
 /*!
@@ -2800,7 +2792,7 @@ bool QGraphicsScene::hasFocus() const
 void QGraphicsScene::setFocus(Qt::FocusReason focusReason)
 {
     Q_D(QGraphicsScene);
-    if (d->hasFocus)
+    if (d->hasFocus || !isActive())
         return;
     QFocusEvent event(QEvent::FocusIn, focusReason);
     QCoreApplication::sendEvent(this, &event);
@@ -4480,6 +4472,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             painter->setWorldTransform(*transformPtr * *effectTransform);
         else
             painter->setWorldTransform(*transformPtr);
+        painter->setOpacity(opacity);
         item->d_ptr->graphicsEffect->draw(painter, source);
         painter->setWorldTransform(restoreTransform);
         sourced->info = 0;

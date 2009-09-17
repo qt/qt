@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtMultimedia module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -99,13 +99,13 @@ QAudioFormat QAudioDeviceInfoPrivate::preferredFormat() const
         nearest.setByteOrder(QAudioFormat::LittleEndian);
         nearest.setSampleType(QAudioFormat::SignedInt);
         nearest.setSampleSize(16);
-        nearest.setCodec(tr("audio/pcm"));
+        nearest.setCodec(QLatin1String("audio/pcm"));
     } else {
         nearest.setFrequency(11025);
         nearest.setChannels(1);
         nearest.setSampleType(QAudioFormat::SignedInt);
         nearest.setSampleSize(8);
-        nearest.setCodec(tr("audio/pcm"));
+        nearest.setCodec(QLatin1String("audio/pcm"));
     }
     return nearest;
 }
@@ -174,27 +174,25 @@ bool QAudioDeviceInfoPrivate::testSettings(const QAudioFormat& format) const
     // Set nearest to closest settings that do work.
     // See if what is in settings will work (return value).
 
-    bool testChannel = false;
-    bool testCodec = false;
-    bool testFreq = false;
-
-    int  err = 0;
+    bool failed = false;
 
     // For now, just accept only audio/pcm codec
-    if(!format.codec().startsWith(tr("audio/pcm"))) {
-        err=-1;
-    } else
-        testCodec = true;
+    if(!format.codec().startsWith(QLatin1String("audio/pcm")))
+        failed = true;
 
-    if(err>=0 && format.channels() != -1) {
-        testChannel = true;
+    if(!failed && !(format.channels() == 1 || format.channels() == 2))
+        failed = true;
+
+    if(!failed) {
+        if(!(format.frequency() == 8000 || format.frequency() == 11025 || format.frequency() == 22050 ||
+	   format.frequency() == 44100 || format.frequency() == 48000 || format.frequency() == 96000))
+	    failed = true;
     }
 
-    if(err>=0 && format.frequency() != -1) {
-        testFreq = true;
-    }
+    if(!failed && !(format.sampleSize() == 8 || format.sampleSize() == 16))
+        failed = true;
 
-    if(err == 0) {
+    if(!failed) {
         // settings work
         return true;
     }
@@ -209,7 +207,7 @@ void QAudioDeviceInfoPrivate::updateLists()
     DWORD fmt = NULL;
     QString tmp;
 
-    if(device.compare(tr("default")) == 0)
+    if(device.compare(QLatin1String("default")) == 0)
         base = true;
 
     if(mode == QAudio::AudioOutput) {
@@ -331,7 +329,7 @@ void QAudioDeviceInfoPrivate::updateLists()
 	typez.append(QAudioFormat::SignedInt);
 	typez.append(QAudioFormat::UnSignedInt);
 
-	codecz.append(tr("audio/pcm"));
+	codecz.append(QLatin1String("audio/pcm"));
     }
 }
 

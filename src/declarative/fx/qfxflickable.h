@@ -143,7 +143,8 @@ Q_SIGNALS:
     void flickStarted();
     void flickEnded();
     void reportedVelocitySmoothingChanged(int);
-    void velocityChanged(qreal, qreal);
+    void horizontalVelocityChanged();
+    void verticalVelocityChanged();
     void isAtBoundaryChanged();
     void pageChanged();
 

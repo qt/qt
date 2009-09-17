@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -200,7 +200,10 @@ qint64 QLocalSocket::readData(char *data, qint64 maxSize)
     }
 
     if (d->pipeClosed) {
-        QTimer::singleShot(0, this, SLOT(_q_pipeClosed()));
+        if (readSoFar == 0) {
+            QTimer::singleShot(0, this, SLOT(_q_pipeClosed()));
+            return -1;  // signal EOF
+        }
     } else {
         if (!d->readSequenceStarted)
             d->startAsyncRead();
@@ -265,6 +268,8 @@ void QLocalSocketPrivate::startAsyncRead()
                         // It may happen, that the other side closes the connection directly
                         // after writing data. Then we must set the appropriate socket state.
                         pipeClosed = true;
+                        Q_Q(QLocalSocket);
+                        emit q->readChannelFinished();
                         return;
                     }
                 default:
@@ -302,8 +307,9 @@ qint64 QLocalSocket::writeData(const char *data, qint64 maxSize)
     Q_D(QLocalSocket);
     if (!d->pipeWriter) {
         d->pipeWriter = new QWindowsPipeWriter(d->handle, this);
-        d->pipeWriter->start();
         connect(d->pipeWriter, SIGNAL(canWrite()), this, SLOT(_q_canWrite()));
+        connect(d->pipeWriter, SIGNAL(bytesWritten(qint64)), this, SIGNAL(bytesWritten(qint64)));
+        d->pipeWriter->start();
     }
     return d->pipeWriter->write(data, maxSize);
 }
@@ -325,6 +331,7 @@ DWORD QLocalSocketPrivate::bytesAvailable()
     } else {
         if (!pipeClosed) {
             pipeClosed = true;
+            emit q->readChannelFinished();
             QTimer::singleShot(0, q, SLOT(_q_pipeClosed()));
         }
     }
@@ -368,7 +375,8 @@ void QLocalSocket::close()
     QIODevice::close();
     d->state = ClosingState;
     emit stateChanged(d->state);
-    emit readChannelFinished();
+    if (!d->pipeClosed)
+        emit readChannelFinished();
     d->serverName = QString();
     d->fullServerName = QString();
 
@@ -447,6 +455,7 @@ void QLocalSocketPrivate::_q_notified()
     Q_Q(QLocalSocket);
     if (!completeAsyncRead()) {
         pipeClosed = true;
+        emit q->readChannelFinished();
         return;
     }
     startAsyncRead();

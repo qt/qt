@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -149,9 +149,9 @@ template <> inline quint32 qFromLittleEndian<quint32>(const uchar *src)
 
 template <> inline quint16 qFromLittleEndian<quint16>(const uchar *src)
 {
-    return 0
-        | src[0]
-        | src[1] * 0x0100;
+    return quint16(0
+                   | src[0]
+                   | src[1] * 0x0100);
 }
 
 // signed specializations
@@ -241,9 +241,9 @@ inline quint32 qFromBigEndian<quint32>(const uchar *src)
 template<>
 inline quint16 qFromBigEndian<quint16>(const uchar *src)
 {
-    return 0
-        | src[1]
-        | src[0] * quint16(0x0100);
+    return quint16( 0
+                    | src[1]
+                    | src[0] * quint16(0x0100));
 }
 
 
@@ -288,9 +288,9 @@ template <> inline quint32 qbswap<quint32>(quint32 source)
 
 template <> inline quint16 qbswap<quint16>(quint16 source)
 {
-    return 0
-        | ((source & 0x00ff) << 8)
-        | ((source & 0xff00) >> 8);
+    return quint16( 0
+                    | ((source & 0x00ff) << 8)
+                    | ((source & 0xff00) >> 8) );
 }
 
 // signed specializations

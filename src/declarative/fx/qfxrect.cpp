@@ -69,14 +69,17 @@ void QFxPen::setColor(const QColor &c)
 {
     _color = c;
     _valid = _color.alpha() ? true : false;
-    emit updated();
+    emit penChanged();
 }
 
 void QFxPen::setWidth(int w)
 {
+    if (_width == w)
+        return;
+
     _width = w;
     _valid = (_width < 1) ? false : true;
-    emit updated();
+    emit penChanged();
 }
 
 
@@ -293,6 +296,7 @@ void QFxRect::setRadius(qreal radius)
     d->radius = radius;
     d->rectImage = QPixmap();
     update();
+    emit radiusChanged();
 }
 
 /*!
@@ -326,6 +330,7 @@ void QFxRect::setColor(const QColor &c)
     d->color = c;
     d->rectImage = QPixmap();
     update();
+    emit colorChanged();
 }
 
 void QFxRect::generateRoundedRect()
@@ -395,7 +400,7 @@ void QFxRect::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 void QFxRect::drawRect(QPainter &p)
 {
     Q_D(QFxRect);
-    if (d->gradient && d->gradient->gradient() /*|| p.usingQt() */) {
+    if (d->gradient && d->gradient->gradient()) {
         // XXX This path is still slower than the image path
         // Image path won't work for gradients though
         bool oldAA = p.testRenderHint(QPainter::Antialiasing);

@@ -586,13 +586,14 @@ NEVER_INLINE HandlerInfo* Interpreter::throwException(CallFrame*& callFrame, JSV
     unsigned bytecodeOffsetTemp = bytecodeOffset;
     CodeBlock *codeBlockTemp = codeBlock;
     while (!(handler = codeBlockTemp->handlerForBytecodeOffset(bytecodeOffsetTemp))) {
+        void* returnPC = callFrameTemp->returnPC();
         callFrameTemp = callFrameTemp->callerFrame();
         if (callFrameTemp->hasHostCallFrameFlag()) {
             hasHandler = false;
             break;
         } else {
             codeBlockTemp = callFrameTemp->codeBlock();
-            bytecodeOffsetTemp = bytecodeOffsetForPC(callFrameTemp, codeBlockTemp, callFrameTemp->returnPC());
+            bytecodeOffsetTemp = bytecodeOffsetForPC(callFrameTemp, codeBlockTemp, returnPC);
         }
     }
     if (debugger)

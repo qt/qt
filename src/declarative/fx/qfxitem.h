@@ -75,8 +75,8 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_PROPERTY(QmlList<QmlState *>* states READ states DESIGNABLE false)
     Q_PROPERTY(QmlList<QmlTransition *>* transitions READ transitions DESIGNABLE false)
     Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
-    Q_PROPERTY(qreal width READ width WRITE setWidth NOTIFY widthChanged FINAL)
-    Q_PROPERTY(qreal height READ height WRITE setHeight NOTIFY heightChanged FINAL)
+    Q_PROPERTY(qreal width READ width WRITE setWidth NOTIFY widthChanged RESET resetWidth FINAL)
+    Q_PROPERTY(qreal height READ height WRITE setHeight NOTIFY heightChanged RESET resetHeight FINAL)
     Q_PROPERTY(QRectF childrenRect READ childrenRect NOTIFY childrenRectChanged DESIGNABLE false FINAL)
     Q_PROPERTY(QFxAnchors * anchors READ anchors DESIGNABLE false CONSTANT FINAL)
     Q_PROPERTY(QFxAnchorLine left READ left CONSTANT FINAL)
@@ -89,7 +89,7 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_PROPERTY(qreal baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged)
     Q_PROPERTY(bool clip READ clip WRITE setClip) // ### move to QGI/QGO, NOTIFY
     Q_PROPERTY(bool focus READ hasFocus WRITE setFocus NOTIFY focusChanged FINAL)
-    Q_PROPERTY(bool activeFocus READ hasActiveFocus NOTIFY activeFocusChanged FINAL)
+    Q_PROPERTY(bool wantsFocus READ wantsFocus NOTIFY wantsFocusChanged)
     Q_PROPERTY(QmlList<QGraphicsTransform *>* transform READ transform DESIGNABLE false FINAL)
     Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin)
     Q_PROPERTY(bool smooth READ smoothTransform WRITE setSmoothTransform)
@@ -134,9 +134,13 @@ public:
 
     qreal width() const;
     void setWidth(qreal);
+    void resetWidth();
+    qreal implicitWidth() const;
 
     qreal height() const;
     void setHeight(qreal);
+    void resetHeight();
+    qreal implicitHeight() const;
 
     TransformOrigin transformOrigin() const;
     void setTransformOrigin(TransformOrigin);
@@ -147,9 +151,9 @@ public:
     QRectF boundingRect() const;
     virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
-    virtual bool hasFocus() const;
+    bool wantsFocus() const;
+    bool hasFocus() const;
     void setFocus(bool);
-    bool hasActiveFocus() const;
 
     bool keepMouseGrab() const;
     void setKeepMouseGrab(bool);
@@ -161,6 +165,7 @@ Q_SIGNALS:
     void baselineOffsetChanged();
     void stateChanged(const QString &);
     void focusChanged();
+    void wantsFocusChanged();
     void activeFocusChanged();
     void parentChanged();
 

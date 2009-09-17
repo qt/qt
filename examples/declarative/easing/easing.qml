@@ -59,7 +59,6 @@ Rectangle {
             model: EasingTypes
             Component {
                 Text {
-                    id: Text
                     text: type
                     height: 18
                     font.italic: true

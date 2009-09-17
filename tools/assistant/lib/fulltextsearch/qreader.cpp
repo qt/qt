@@ -1,10 +1,17 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Copyright (C) 2003-2006 Ben van Klinken and the CLucene Team.
+** All rights reserved.
 **
-** This file is part of the QCLucene library and is distributable under
-** the terms of the LGPL license as specified in the license.txt file.
+** Portion Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+**
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this file.
+** Please review the following information to ensure the GNU Lesser General
+** Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ****************************************************************************/
 
@@ -16,26 +23,25 @@
 
 QT_BEGIN_NAMESPACE
 
-QCLuceneReaderPrivate::QCLuceneReaderPrivate() 
+QCLuceneReaderPrivate::QCLuceneReaderPrivate()
     : QSharedData()
-{ 
-    reader = 0; 
+{
+    reader = 0;
     deleteCLuceneReader = true;
 }
 
 QCLuceneReaderPrivate::QCLuceneReaderPrivate(const QCLuceneReaderPrivate &other)
     : QSharedData()
 {
-    reader = _CL_POINTER(other.reader); 
+    reader = _CL_POINTER(other.reader);
     deleteCLuceneReader = other.deleteCLuceneReader;
 }
 
-QCLuceneReaderPrivate::~QCLuceneReaderPrivate() 
-{ 
+QCLuceneReaderPrivate::~QCLuceneReaderPrivate()
+{
     if (deleteCLuceneReader)
         _CLDECDELETE(reader);
 }
-    
 
 QCLuceneReader::QCLuceneReader()
     : d(new QCLuceneReaderPrivate())
@@ -63,7 +69,7 @@ QCLuceneStringReader::QCLuceneStringReader(const QString &value, qint32 length)
     d->reader = new lucene::util::StringReader(string, int32_t(length));
 }
 
-QCLuceneStringReader::QCLuceneStringReader(const QString &value, qint32 length, 
+QCLuceneStringReader::QCLuceneStringReader(const QString &value, qint32 length,
                                            bool copyData)
     : QCLuceneReader()
     , string(QStringToTChar(value))

@@ -498,9 +498,10 @@ void QFxView::paintEvent(QPaintEvent *event)
   This virtual function does nothing with the event \a e
   in this class.
  */
-void QFxView::focusInEvent(QFocusEvent *)
+void QFxView::focusInEvent(QFocusEvent *e)
 {
     // Do nothing (do not call QWidget::update())
+    QGraphicsView::focusInEvent(e);
 }
 
 
@@ -508,9 +509,10 @@ void QFxView::focusInEvent(QFocusEvent *)
   This virtual function does nothing with the event \a e
   in this class.
  */
-void QFxView::focusOutEvent(QFocusEvent *)
+void QFxView::focusOutEvent(QFocusEvent *e)
 {
     // Do nothing (do not call QWidget::update())
+    QGraphicsView::focusOutEvent(e);
 }
 
 QT_END_NAMESPACE

@@ -721,7 +721,8 @@ void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value)
     int vt = value.userType();
     int category = propertyCategory();
 
-    if (vt == t) {
+    if (vt == t
+        && t != QVariant::Url) { // always resolve relative urls
 
         void *a[1];
         a[0] = (void *)value.constData();
@@ -877,7 +878,10 @@ void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value)
         case QVariant::Url:
             {
                 QUrl u;
-                if (vt == QVariant::ByteArray) {
+                if (vt == QVariant::Url) {
+                    u = value.toUrl();
+                    found = true;
+                } else if (vt == QVariant::ByteArray) {
                     u = QUrl(QLatin1String(value.toByteArray()));
                     found = true;
                 } else if (vt == QVariant::String) {

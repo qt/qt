@@ -82,6 +82,7 @@
 #include <private/qmlenginedebug_p.h>
 #include <private/qmlstringconverters_p.h>
 #include <private/qmlxmlhttprequest_p.h>
+#include <private/qmlsqldatabase_p.h>
 
 Q_DECLARE_METATYPE(QmlMetaProperty)
 Q_DECLARE_METATYPE(QList<QObject *>);
@@ -110,7 +111,7 @@ QScriptValue desktopOpenUrl(QScriptContext *ctxt, QScriptEngine *e)
 QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 : rootContext(0), currentExpression(0),
   isDebugging(false), contextClass(0), objectClass(0), valueTypeClass(0),
-  nodeListClass(0), namedNodeMapClass(0), scriptEngine(this), rootComponent(0),
+  nodeListClass(0), namedNodeMapClass(0), sqlQueryClass(0), scriptEngine(this), rootComponent(0),
   networkAccessManager(0), typeManager(e), uniqueId(1)
 {
     QScriptValue qtObject =
@@ -121,6 +122,7 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
     scriptEngine.globalObject().setProperty(QLatin1String("Qt"), qtObject);
 
     qt_add_qmlxmlhttprequest(&scriptEngine);
+    qt_add_qmlsqldatabase(&scriptEngine);
 
     //types
     qtObject.setProperty(QLatin1String("rgba"), scriptEngine.newFunction(QmlEnginePrivate::rgba, 4));
@@ -154,6 +156,8 @@ QmlEnginePrivate::~QmlEnginePrivate()
     nodeListClass = 0;
     delete namedNodeMapClass;
     namedNodeMapClass = 0;
+    delete sqlQueryClass;
+    sqlQueryClass = 0;
 
     for(int ii = 0; ii < bindValues.count(); ++ii)
         clear(bindValues[ii]);
@@ -648,7 +652,8 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool cre
 }
 
 QmlDeclarativeData::QmlDeclarativeData(QmlContext *ctxt)
-: context(ctxt), bindings(0), deferredComponent(0), attachedProperties(0)
+: context(ctxt), bindings(0), outerContext(0), lineNumber(0), columnNumber(0), deferredComponent(0),
+  deferredIdx(0), attachedProperties(0)
 {
 }
 

@@ -587,8 +587,8 @@ void QFxFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
         stealMouse = false;
     pressed = true;
     timeline.clear();
-    velocityX = -1;
-    velocityY = -1;
+    velocityX = 0;
+    velocityY = 0;
     lastPos = QPoint();
     lastPosTime.start();
     pressPos = event->pos();
@@ -654,12 +654,16 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
             elapsed = 1;
         if (q->yflick()) {
             qreal diff = event->pos().y() - lastPos.y();
-            velocityY = diff / elapsed;
+            // average to reduce the effect of spurious moves
+            velocityY += diff / elapsed;
+            velocityY /= 2;
         }
 
         if (q->xflick()) {
             qreal diff = event->pos().x() - lastPos.x();
-            velocityX = diff / elapsed;
+            // average to reduce the effect of spurious moves
+            velocityX += diff / elapsed;
+            velocityX /= 2;
         }
     }
 
@@ -680,6 +684,12 @@ void QFxFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEvent *even
     pressed = false;
     if (lastPosTime.isNull())
         return;
+
+    if (lastPosTime.elapsed() > 100) {
+        // if we drag then pause before release we should not cause a flick.
+        velocityX = 0.0;
+        velocityY = 0.0;
+    }
 
     vTime = timeline.time();
     if (qAbs(velocityY) > 10 && qAbs(event->pos().y() - pressPos.y()) > FlickThreshold)
@@ -1200,7 +1210,8 @@ void QFxFlickable::movementEnding()
 void QFxFlickablePrivate::updateVelocity()
 {
     Q_Q(QFxFlickable);
-    emit q->velocityChanged(q->horizontalVelocity(), q->verticalVelocity());
+    emit q->horizontalVelocityChanged();
+    emit q->verticalVelocityChanged();
 }
 
 QT_END_NAMESPACE

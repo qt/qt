@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -255,12 +255,14 @@ int q_PEM_write_bio_RSA_PUBKEY(BIO *a, RSA *b);
 void q_RAND_seed(const void *a, int b);
 int q_RAND_status();
 void q_RSA_free(RSA *a);
-void q_sk_free(STACK *a);
 int q_sk_num(STACK *a);
-void q_sk_pop_free(STACK *a, void (*b)(STACK *));
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
+void q_sk_free(_STACK *a);
+void q_sk_pop_free(STACK *a, void (*b)(void *));
 void * q_sk_value(STACK *a, int b);
 #else
+void q_sk_free(STACK *a);
+void q_sk_pop_free(STACK *a, void (*b)(STACK *));
 char * q_sk_value(STACK *a, int b);
 #endif
 int q_SSL_accept(SSL *a);

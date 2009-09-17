@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -66,7 +66,7 @@ QFileInfoList alternativeFilePaths(const QString &path, const QStringList &nameF
     foreach (const QFileInfo &drive, QDir::drives())
         driveStrings.append(drive.absolutePath());
     driveStrings.sort();
-    const QString zDriveString("Z:/");
+    const QString zDriveString(QLatin1String("Z:/"));
     driveStrings.removeAll(zDriveString);
     driveStrings.prepend(zDriveString);
 
@@ -221,12 +221,14 @@ static void initializeDb()
     const int numTypeFaces = QS60Data::screenDevice()->NumTypefaces();
     const QFontDatabaseS60StoreImplementation *store = dynamic_cast<const QFontDatabaseS60StoreImplementation*>(db->s60Store);
     Q_ASSERT(store);
+    bool fontAdded = false;
     for (int i = 0; i < numTypeFaces; i++) {
         TTypefaceSupport typefaceSupport;
         QS60Data::screenDevice()->TypefaceSupport(typefaceSupport, i);
         CFont *font; // We have to get a font instance in order to know all the details
         TFontSpec fontSpec(typefaceSupport.iTypeface.iName, 11);
-        qt_symbian_throwIfError(QS60Data::screenDevice()->GetNearestFontInPixels(font, fontSpec));
+        if (QS60Data::screenDevice()->GetNearestFontInPixels(font, fontSpec) != KErrNone)
+            continue;
         if (font->TypeUid() == KCFbsFontUid) {
             TOpenFontFaceAttrib faceAttrib;
             const CFbsFont *cfbsFont = dynamic_cast<const CFbsFont *>(font);
@@ -264,9 +266,12 @@ static void initializeDb()
                 determineWritingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
             foreach (const QFontDatabase::WritingSystem system, writingSystems)
                 family->writingSystems[system] = QtFontFamily::Supported;
+
+            fontAdded = true;
         }
         QS60Data::screenDevice()->ReleaseFont(font);
     }
+    Q_ASSERT(fontAdded);
     QS60WindowSurface::lockBitmapHeap();
 #else // defined(QT_NO_FREETYPE)
     QDir dir(QDesktopServices::storageLocation(QDesktopServices::FontsLocation));

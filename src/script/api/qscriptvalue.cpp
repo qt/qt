@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtScript module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -1227,7 +1227,7 @@ bool QScriptValue::strictlyEquals(const QScriptValue &other) const
     if (d->type != other.d_ptr->type)
         return false;
     switch (d->type) {
-    case QScriptValuePrivate::JSC:
+    case QScriptValuePrivate::JavaScriptCore:
         return JSC::JSValue::strictEqual(d->jscValue, other.d_ptr->jscValue);
     case QScriptValuePrivate::Number:
         return (d->numberValue == other.d_ptr->numberValue);
@@ -1255,7 +1255,7 @@ QString QScriptValue::toString() const
     if (!d)
         return QString();
     switch (d->type) {
-    case QScriptValuePrivate::JSC: {
+    case QScriptValuePrivate::JavaScriptCore: {
         JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
         JSC::JSValue savedException;
         QScriptValuePrivate::saveException(exec, &savedException);
@@ -1296,7 +1296,7 @@ qsreal QScriptValue::toNumber() const
     if (!d)
         return 0;
     switch (d->type) {
-    case QScriptValuePrivate::JSC: {
+    case QScriptValuePrivate::JavaScriptCore: {
         JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
         JSC::JSValue savedException;
         QScriptValuePrivate::saveException(exec, &savedException);
@@ -1323,7 +1323,7 @@ bool QScriptValue::toBoolean() const
     if (!d)
         return false;
     switch (d->type) {
-    case QScriptValuePrivate::JSC: {
+    case QScriptValuePrivate::JavaScriptCore: {
         JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
         JSC::JSValue savedException;
         QScriptValuePrivate::saveException(exec, &savedException);
@@ -1359,7 +1359,7 @@ bool QScriptValue::toBool() const
     if (!d)
         return false;
     switch (d->type) {
-    case QScriptValuePrivate::JSC: {
+    case QScriptValuePrivate::JavaScriptCore: {
         JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
         JSC::JSValue savedException;
         QScriptValuePrivate::saveException(exec, &savedException);
@@ -1393,7 +1393,7 @@ qint32 QScriptValue::toInt32() const
     if (!d)
         return 0;
     switch (d->type) {
-    case QScriptValuePrivate::JSC: {
+    case QScriptValuePrivate::JavaScriptCore: {
         JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
         JSC::JSValue savedException;
         QScriptValuePrivate::saveException(exec, &savedException);
@@ -1427,7 +1427,7 @@ quint32 QScriptValue::toUInt32() const
     if (!d)
         return 0;
     switch (d->type) {
-    case QScriptValuePrivate::JSC: {
+    case QScriptValuePrivate::JavaScriptCore: {
         JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
         JSC::JSValue savedException;
         QScriptValuePrivate::saveException(exec, &savedException);
@@ -1461,7 +1461,7 @@ quint16 QScriptValue::toUInt16() const
     if (!d)
         return 0;
     switch (d->type) {
-    case QScriptValuePrivate::JSC: {
+    case QScriptValuePrivate::JavaScriptCore: {
         // ### no equivalent function in JSC
         return QScript::ToUint16(toNumber());
     }
@@ -1491,7 +1491,7 @@ qsreal QScriptValue::toInteger() const
     if (!d)
         return 0;
     switch (d->type) {
-    case QScriptValuePrivate::JSC: {
+    case QScriptValuePrivate::JavaScriptCore: {
         JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
         JSC::JSValue savedException;
         QScriptValuePrivate::saveException(exec, &savedException);
@@ -1535,7 +1535,7 @@ QVariant QScriptValue::toVariant() const
     if (!d)
         return QVariant();
     switch (d->type) {
-    case QScriptValuePrivate::JSC:
+    case QScriptValuePrivate::JavaScriptCore:
         if (isObject()) {
             if (isVariant())
                 return d->variantValue();
@@ -2190,7 +2190,7 @@ bool QScriptValue::isNumber() const
     if (!d)
         return false;
     switch (d->type) {
-    case QScriptValuePrivate::JSC:
+    case QScriptValuePrivate::JavaScriptCore:
         return d->jscValue.isNumber();
     case QScriptValuePrivate::Number:
         return true;
@@ -2212,7 +2212,7 @@ bool QScriptValue::isString() const
     if (!d)
         return false;
     switch (d->type) {
-    case QScriptValuePrivate::JSC:
+    case QScriptValuePrivate::JavaScriptCore:
         return d->jscValue.isString();
     case QScriptValuePrivate::Number:
         return false;
