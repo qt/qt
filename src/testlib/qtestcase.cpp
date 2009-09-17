@@ -731,6 +731,16 @@ QT_BEGIN_NAMESPACE
     \sa QTest::qSleep()
 */
 
+/*! \fn void QTest::qWaitForWindowManager(QWidget *window)
+
+    Waits until the window is shown in the screen. This is mainly useful for
+    asynchronous systems like X11, where a window will be mapped to screen some
+    time after being asked to show itself on the screen.
+
+    Example:
+    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 24
+*/
+
 /*!
     \class QTest::QTouchEventSequence
     \inmodule QtTest
