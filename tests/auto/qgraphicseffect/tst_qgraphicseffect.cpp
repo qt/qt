@@ -41,6 +41,7 @@
 
 
 #include <QtTest/QtTest>
+#include <QtGui/qdesktopwidget.h>
 #include <QtGui/qgraphicseffect.h>
 #include <QtGui/qgraphicsview.h>
 #include <QtGui/qgraphicsscene.h>
@@ -369,6 +370,11 @@ void tst_QGraphicsEffect::opacity()
 
 void tst_QGraphicsEffect::grayscale()
 {
+    if (qApp->desktop()->depth() < 24) {
+        QSKIP("Test only works on 32 bit displays", SkipAll);
+        return;
+    }
+
     QGraphicsScene scene(0, 0, 100, 100);
 
     QGraphicsRectItem *item = scene.addRect(0, 0, 50, 50);
@@ -412,6 +418,11 @@ void tst_QGraphicsEffect::grayscale()
 
 void tst_QGraphicsEffect::colorize()
 {
+    if (qApp->desktop()->depth() < 24) {
+        QSKIP("Test only works on 32 bit displays", SkipAll);
+        return;
+    }
+
     QGraphicsScene scene(0, 0, 100, 100);
 
     QGraphicsRectItem *item = scene.addRect(0, 0, 50, 50);

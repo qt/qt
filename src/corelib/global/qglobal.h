@@ -2386,6 +2386,11 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 
 #if defined(Q_OS_SYMBIAN)
 
+#ifdef SYMBIAN_GRAPHICS_USE_GCE
+//RWsPointerCursor is fixed, so don't use low performance sprites
+#define Q_SYMBIAN_FIXED_POINTER_CURSORS
+#endif
+
 //Symbian does not support data imports from a DLL
 #define Q_NO_DATA_RELOCATION
 

@@ -1537,6 +1537,9 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
     }
 
     d->updateInputMethodSensitivity();
+
+    if (d->scene && hasFocus())
+        d->scene->setFocus();
 }
 
 /*!
@@ -2607,7 +2610,6 @@ bool QGraphicsView::event(QEvent *event)
 bool QGraphicsView::viewportEvent(QEvent *event)
 {
     Q_D(QGraphicsView);
-
     if (!d->scene)
         return QAbstractScrollArea::viewportEvent(event);
 

@@ -722,8 +722,6 @@ QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 
 void QWidgetPrivate::updateSystemBackground() {}
 
-extern void qt_win_set_cursor(QWidget *, bool); // qapplication_win.cpp
-
 #ifndef QT_NO_CURSOR
 void QWidgetPrivate::setCursor_sys(const QCursor &cursor)
 {

@@ -1434,7 +1434,6 @@ void QLineEdit::mousePressEvent(QMouseEvent* e)
 #ifndef QT_NO_DRAGANDDROP
     if (!mark && d->dragEnabled && d->control->echoMode() == Normal &&
          e->button() == Qt::LeftButton && d->control->inSelection(e->pos().x())) {
-        d->control->moveCursor(cursor);
         d->dndPos = e->pos();
         if (!d->dndTimer.isActive())
             d->dndTimer.start(QApplication::startDragTime(), this);
@@ -1851,8 +1850,12 @@ void QLineEdit::paintEvent(QPaintEvent *)
 #ifdef QT_KEYPAD_NAVIGATION
     if (!QApplication::keypadNavigationEnabled() || hasEditFocus())
 #endif
-    if (d->control->hasSelectedText() || (d->cursorVisible && !d->control->inputMask().isEmpty() && !d->control->isReadOnly()))
+    if (d->control->hasSelectedText() || (d->cursorVisible && !d->control->inputMask().isEmpty() && !d->control->isReadOnly())){
         flags |= QLineControl::DrawSelections;
+        // Palette only used for selections/mask and may not be in sync
+        if(d->control->palette() != pal)
+            d->control->setPalette(pal);
+    }
 
     // Asian users see an IM selection text as cursor on candidate
     // selection phase of input method, so the ordinary cursor should be
@@ -2047,7 +2050,11 @@ void QLineEdit::changeEvent(QEvent *ev)
         d->control->setFont(font());
         break;
     case QEvent::StyleChange:
-        d->control->setPasswordCharacter(style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter));
+        {
+            QStyleOptionFrameV2 opt;
+            initStyleOption(&opt);
+            d->control->setPasswordCharacter(style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, this));
+        }
         update();
         break;
     case QEvent::LayoutDirectionChange:

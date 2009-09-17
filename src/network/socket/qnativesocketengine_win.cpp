@@ -917,9 +917,15 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxL
     int wsaRet = ::WSARecvFrom(socketDescriptor, &buf, 1, &bytesRead, &flags, &aa.a, &sz,0,0);
     if (wsaRet == SOCKET_ERROR) {
         int err = WSAGetLastError();
-        WS_ERROR_DEBUG(err);
-        setError(QAbstractSocket::NetworkError, ReceiveDatagramErrorString);
-        ret = -1;
+        if (err == WSAEMSGSIZE) {
+            // it is ok the buffer was to small if bytesRead is larger than
+            // maxLength then assume bytes read is really maxLenth
+            ret = qint64(bytesRead) > maxLength ? maxLength : qint64(bytesRead);
+        } else {
+            WS_ERROR_DEBUG(err);
+            setError(QAbstractSocket::NetworkError, ReceiveDatagramErrorString);
+            ret = -1;
+        }
     } else {
         ret = qint64(bytesRead);
     }

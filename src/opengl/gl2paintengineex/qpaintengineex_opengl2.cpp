@@ -668,7 +668,6 @@ void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& s
 {
     // Setup for texture drawing
     shaderManager->setSrcPixelType(pattern ? QGLEngineShaderManager::PatternSrc : QGLEngineShaderManager::ImageSrc);
-    shaderManager->setTextureCoordsEnabled(true);
     if (prepareForDraw(opaque))
         shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::ImageTexture), QT_IMAGE_TEXTURE_UNIT);
 
@@ -1241,7 +1240,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
     else if (glyphType == QFontEngineGlyphCache::Raster_RGBMask)
         shaderManager->setMaskType(QGLEngineShaderManager::SubPixelMask);
     //### TODO: Gamma correction
-    shaderManager->setTextureCoordsEnabled(true);
 
     int margin = cache->glyphMargin();
 
@@ -1385,6 +1383,7 @@ void QGL2PaintEngineEx::ensureActive()
     d->device->ensureActiveTarget();
 
     if (d->needsSync) {
+        d->transferMode(BrushDrawingMode);
         glViewport(0, 0, d->width, d->height);
         glDepthMask(false);
         glDepthFunc(GL_LESS);
@@ -1766,14 +1765,6 @@ QOpenGL2PaintEngineState::QOpenGL2PaintEngineState()
 
 QOpenGL2PaintEngineState::~QOpenGL2PaintEngineState()
 {
-}
-
-QPixmapFilter *QGL2PaintEngineEx::createPixmapFilter(int type) const
-{
-    const QGLContext *ctx = QGLContext::currentContext();
-    if (ctx)
-        return ctx->d_func()->createPixmapFilter(type);
-    return 0;
 }
 
 QT_END_NAMESPACE

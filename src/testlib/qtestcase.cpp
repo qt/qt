@@ -311,7 +311,7 @@ QT_BEGIN_NAMESPACE
     Example:
     \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 11
 
-    \sa QTEST_APPLESS_MAIN(), QTest::qExec(), QApplication::setKeypadNavigationEnabled()
+    \sa QTEST_APPLESS_MAIN(), QTest::qExec(), QApplication::setNavigationMode()
 */
 
 /*! \macro QTEST_APPLESS_MAIN(TestClass)

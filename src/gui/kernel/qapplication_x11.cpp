@@ -190,10 +190,12 @@ static const char * x11_atomnames = {
     "TARGETS\0"
     "MULTIPLE\0"
     "TIMESTAMP\0"
+    "SAVE_TARGETS\0"
     "CLIP_TEMPORARY\0"
     "_QT_SELECTION\0"
     "_QT_CLIPBOARD_SENTINEL\0"
     "_QT_SELECTION_SENTINEL\0"
+    "CLIPBOARD_MANAGER\0"
 
     "RESOURCE_MANAGER\0"
 
@@ -2819,8 +2821,6 @@ void QApplicationPrivate::applyX11SpecificCommandLineArguments(QWidget *main_wid
 /*****************************************************************************
   QApplication cursor stack
  *****************************************************************************/
-
-extern void qt_x11_enforce_cursor(QWidget * w);
 
 void QApplication::setOverrideCursor(const QCursor &cursor)
 {

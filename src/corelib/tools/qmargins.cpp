@@ -58,7 +58,6 @@ QT_BEGIN_NAMESPACE
     The isNull() function returns true only if all margins are set to zero.
 
     QMargin objects can be streamed as well as compared.
-
 */
 
 

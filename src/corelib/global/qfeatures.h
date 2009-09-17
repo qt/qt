@@ -446,6 +446,11 @@
 #define QT_NO_SPLITTER
 #endif
 
+// State machine
+#if !defined(QT_NO_STATEMACHINE) && (defined(QT_NO_PROPERTIES))
+#define QT_NO_STATEMACHINE
+#endif
+
 // QCDEStyle
 #if !defined(QT_NO_STYLE_CDE) && (defined(QT_NO_STYLE_MOTIF))
 #define QT_NO_STYLE_CDE
@@ -614,11 +619,6 @@
 // Sound Server
 #if !defined(QT_NO_QWS_SOUNDSERVER) && (defined(QT_NO_SOUND) || defined(QT_NO_HOSTINFO) || defined(QT_NO_QWS_MULTIPROCESS))
 #define QT_NO_QWS_SOUNDSERVER
-#endif
-
-// QtScript
-#if !defined(QT_NO_SCRIPT) && (defined(QT_NO_TEXTDATE) || defined(QT_NO_DATESTRING) || defined(QT_NO_PROPERTIES))
-#define QT_NO_SCRIPT
 #endif
 
 // QSvgGenerator

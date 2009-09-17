@@ -139,6 +139,10 @@ QVGSharedContext::QVGSharedContext()
 
 QVGSharedContext::~QVGSharedContext()
 {
+    // Don't accidentally destroy the QEglContext if the reference
+    // count falls to zero while deleting the paint engine.
+    ++refCount;
+
     if (context)
         qt_vg_make_current(context, qt_vg_shared_surface());
     delete engine;

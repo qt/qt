@@ -264,6 +264,8 @@ private slots:
     void inputMethod_data();
     void inputMethod();
     void dispatchHoverOnPress();
+    void initialFocus_data();
+    void initialFocus();
 
     // task specific tests below me
     void task139710_bspTreeCrash();
@@ -3820,6 +3822,62 @@ void tst_QGraphicsScene::dispatchHoverOnPress()
                  << QEvent::GraphicsSceneMousePress
                  << QEvent::UngrabMouse);
     }
+}
+
+void tst_QGraphicsScene::initialFocus_data()
+{
+    QTest::addColumn<bool>("activeScene");
+    QTest::addColumn<bool>("explicitSetFocus");
+    QTest::addColumn<bool>("isPanel");
+    QTest::addColumn<bool>("shouldHaveFocus");
+
+    QTest::newRow("inactive scene, normal item") << false << false << false << false;
+    QTest::newRow("inactive scene, panel item") << false << false << true << false;
+    QTest::newRow("inactive scene, normal item, explicit focus") << false << true << false << true;
+    QTest::newRow("inactive scene, panel, explicit focus") << false << true << true << true;
+    QTest::newRow("active scene, normal item") << true << false << false << false;
+    QTest::newRow("active scene, panel item") << true << false << true << false;
+    QTest::newRow("active scene, normal item, explicit focus") << true << true << false << true;
+    QTest::newRow("active scene, panel, explicit focus") << true << true << true << true;
+}
+
+void tst_QGraphicsScene::initialFocus()
+{
+    QFETCH(bool, activeScene);
+    QFETCH(bool, explicitSetFocus);
+    QFETCH(bool, isPanel);
+    QFETCH(bool, shouldHaveFocus);
+
+    QGraphicsRectItem *rect = new QGraphicsRectItem;
+    rect->setFlag(QGraphicsItem::ItemIsFocusable);
+    QVERIFY(!rect->hasFocus());
+
+    if (isPanel)
+        rect->setFlag(QGraphicsItem::ItemIsPanel);
+
+    // Setting focus on an item before adding to the scene will ensure
+    // it gets focus when the scene is activated.
+    if (explicitSetFocus)
+        rect->setFocus();
+
+    QGraphicsScene scene;
+    QVERIFY(!scene.isActive());
+
+    if (activeScene) {
+        QEvent windowActivate(QEvent::WindowActivate);
+        qApp->sendEvent(&scene, &windowActivate);
+        scene.setFocus();
+    }
+
+    scene.addItem(rect);
+
+    if (!activeScene) {
+        QEvent windowActivate(QEvent::WindowActivate);
+        qApp->sendEvent(&scene, &windowActivate);
+        scene.setFocus();
+    }
+
+    QCOMPARE(rect->hasFocus(), shouldHaveFocus);
 }
 
 QTEST_MAIN(tst_QGraphicsScene)

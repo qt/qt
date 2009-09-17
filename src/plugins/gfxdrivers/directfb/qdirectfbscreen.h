@@ -75,8 +75,8 @@ QT_MODULE(Gui)
 #if !defined QT_DIRECTFB_WINDOW_AS_CURSOR && !defined QT_NO_DIRECTFB_WINDOW_AS_CURSOR
 #define QT_NO_DIRECTFB_WINDOW_AS_CURSOR
 #endif
-#if !defined QT_NO_DIRECTFB_PALETTE && !defined QT_DIRECTFB_PALETTE
-#define QT_DIRECTFB_PALETTE
+#if !defined QT_DIRECTFB_PALETTE && !defined QT_NO_DIRECTFB_PALETTE
+#define QT_NO_DIRECTFB_PALETTE
 #endif
 #if !defined QT_NO_DIRECTFB_PREALLOCATED && !defined QT_DIRECTFB_PREALLOCATED
 #define QT_DIRECTFB_PREALLOCATED
@@ -174,9 +174,10 @@ public:
 #ifdef QT_DIRECTFB_SUBSURFACE
     IDirectFBSurface *subSurfaceForWidget(const QWidget *widget, const QRect &area = QRect()) const;
 #endif
-
     IDirectFB *dfb();
-#ifdef QT_NO_DIRECTFB_WM
+#ifdef QT_DIRECTFB_WM
+    IDirectFBWindow *windowForWidget(const QWidget *widget) const;
+#else
     IDirectFBSurface *primarySurface();
 #endif
 #ifndef QT_NO_DIRECTFB_LAYER

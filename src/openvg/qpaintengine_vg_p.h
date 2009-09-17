@@ -143,7 +143,7 @@ public:
     void beginNativePainting();
     void endNativePainting();
 
-    QPixmapFilter *createPixmapFilter(int type) const;
+    QPixmapFilter *pixmapFilter(int type, const QPixmapFilter *prototype);
 
     QVGPaintEnginePrivate *vgPrivate() { Q_D(QVGPaintEngine); return d; }
 

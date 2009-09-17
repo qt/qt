@@ -93,6 +93,9 @@ public:
 
     IDirectFBSurface *surfaceForWidget(const QWidget *widget, QRect *rect) const;
     IDirectFBSurface *directFBSurface() const;
+#ifdef QT_DIRECTFB_WM
+    IDirectFBWindow *directFBWindow() const;
+#endif
 private:
     void updateFormat();
     void releaseSurface();

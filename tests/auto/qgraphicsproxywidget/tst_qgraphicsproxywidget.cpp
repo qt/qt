@@ -1316,6 +1316,7 @@ void tst_QGraphicsProxyWidget::paintEvent()
 
     //make sure we flush all the paint events
     QTest::qWait(250);
+    QTRY_VERIFY(proxy.paintCount > 1);
     proxy.paintCount = 0;
 
     w->update();
@@ -1507,7 +1508,7 @@ void tst_QGraphicsProxyWidget::scrollUpdate()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTRY_COMPARE(view.npaints, 1);
+    QTRY_VERIFY(view.npaints >= 1);
     QTest::qWait(20);
     widget->paintEventRegion = QRegion();
     widget->npaints = 0;
@@ -2071,6 +2072,7 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
     QApplication::setActiveWindow(&window);
     window.activateWindow();
     QTest::qWait(125);
+    QTRY_COMPARE(QApplication::activeWindow(), &window);
 
     leftDial->setFocus();
     QTest::qWait(125);
@@ -2207,6 +2209,7 @@ void tst_QGraphicsProxyWidget::setFocus_simpleWidget()
     QApplication::setActiveWindow(&window);
     window.activateWindow();
     QTest::qWait(125);
+    QTRY_COMPARE(QApplication::activeWindow(), &window);
 
     leftDial->setFocus();
     QTest::qWait(125);
@@ -2279,6 +2282,7 @@ void tst_QGraphicsProxyWidget::setFocus_simpleTwoWidgets()
     QApplication::setActiveWindow(&window);
     window.activateWindow();
     QTest::qWait(125);
+    QTRY_COMPARE(QApplication::activeWindow(), &window);
 
     leftDial->setFocus();
     QTest::qWait(125);
@@ -2358,6 +2362,7 @@ void tst_QGraphicsProxyWidget::setFocus_complexTwoWidgets()
     QApplication::setActiveWindow(&window);
     window.activateWindow();
     QTest::qWait(125);
+    QTRY_COMPARE(QApplication::activeWindow(), &window);
 
     leftDial->setFocus();
     QTest::qWait(125);
@@ -3350,7 +3355,9 @@ void tst_QGraphicsProxyWidget::clickFocus()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTest::qWait(250);
+    QApplication::setActiveWindow(&view);
+    QTest::qWait(25);
+    QTRY_COMPARE(QApplication::activeWindow(), &view);
 
     QVERIFY(!proxy->hasFocus());
     QVERIFY(!proxy->widget()->hasFocus());

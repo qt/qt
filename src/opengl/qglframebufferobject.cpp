@@ -66,6 +66,11 @@ extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
 
 #define QGL_FUNC_CONTEXT QGLContextGroup *ctx = d_ptr->ctx;
 
+#ifndef QT_NO_DEBUG
+#define QT_RESET_GLERROR()                                \
+{                                                         \
+    while (glGetError() != GL_NO_ERROR) {}                \
+}
 #define QT_CHECK_GLERROR()                                \
 {                                                         \
     GLenum err = glGetError();                            \
@@ -74,6 +79,10 @@ extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
                __FILE__, __LINE__, (int)err);             \
     }                                                     \
 }
+#else
+#define QT_RESET_GLERROR() {}
+#define QT_CHECK_GLERROR() {}
+#endif
 
 /*!
     \class QGLFramebufferObjectFormat
@@ -407,7 +416,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     target = texture_target;
     // texture dimensions
 
-    while (glGetError() != GL_NO_ERROR) {} // reset error state
+    QT_RESET_GLERROR(); // reset error state
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER_EXT, fbo);
 

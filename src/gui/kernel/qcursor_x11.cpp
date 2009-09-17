@@ -63,8 +63,6 @@ QT_BEGIN_NAMESPACE
 // Define QT_USE_APPROXIMATE_CURSORS when compiling if you REALLY want to
 // use the ugly X11 cursors.
 
-extern QCursorData *qt_cursorTable[Qt::LastCursor + 1]; // qcursor.cpp
-
 /*****************************************************************************
   Internal QCursorData class
  *****************************************************************************/
@@ -100,6 +98,7 @@ QCursor::QCursor(Qt::HANDLE cursor)
     d = new QCursorData(Qt::CustomCursor);
     d->hcurs = cursor;
 }
+
 #endif
 
 QCursorData *QCursorData::setBitmap(const QBitmap &bitmap, const QBitmap &mask, int hotX, int hotY)

@@ -129,6 +129,7 @@ public:
         itemDepth(-1),
         focusProxy(0),
         subFocusItem(0),
+        focusScopeItem(0),
         imHints(Qt::ImhNone),
         acceptedMouseButtons(0x1f),
         visible(1),
@@ -318,7 +319,11 @@ public:
     void invalidateCachedClipPathRecursively(bool childrenOnly = false, const QRectF &emptyIfOutsideThisRect = QRectF());
     void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
     void ensureSceneTransformRecursive(QGraphicsItem **topMostDirtyItem);
-    void ensureSceneTransform();
+    inline void ensureSceneTransform()
+    {
+        QGraphicsItem *that = q_func();
+        ensureSceneTransformRecursive(&that);
+    }
 
     inline bool hasTranslateOnlySceneTransform()
     {
@@ -408,9 +413,11 @@ public:
                || (childrenCombineOpacity() && isFullyTransparent());
     }
 
-    void setSubFocus();
-    void clearSubFocus();
+    void setFocusHelper(Qt::FocusReason focusReason, bool climb);
+    void setSubFocus(QGraphicsItem *rootItem = 0);
+    void clearSubFocus(QGraphicsItem *rootItem = 0);
     void resetFocusProxy();
+    virtual void subFocusItemChange();
 
     inline QTransform transformToParent() const;
     inline void ensureSortedChildren();
@@ -435,6 +442,7 @@ public:
     QGraphicsItem *focusProxy;
     QList<QGraphicsItem **> focusProxyRefs;
     QGraphicsItem *subFocusItem;
+    QGraphicsItem *focusScopeItem;
     Qt::InputMethodHints imHints;
 
     // Packed 32 bits

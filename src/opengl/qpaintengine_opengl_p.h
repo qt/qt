@@ -136,8 +136,6 @@ public:
 
     void drawEllipse(const QRectF &rect);
 
-    QPixmapFilter *createPixmapFilter(int type) const;
-
 #ifdef Q_WS_WIN
     HDC handle() const;
 #else

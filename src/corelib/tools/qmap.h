@@ -51,7 +51,6 @@
 #endif
 
 #include <new>
-#undef QT_MAP_DEBUG
 
 QT_BEGIN_HEADER
 

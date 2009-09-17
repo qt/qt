@@ -1370,7 +1370,7 @@ QFile::flush()
 }
 
 /*!
-  Flushes the file and then closes it.
+  Calls QFile::flush() and closes the file. Errors from flush are ignored.
 
   \sa QIODevice::close()
 */

@@ -274,6 +274,9 @@ int main(int argc, char **argv)
     timer.setSingleShot(true);
     rootState->addTransition(&timer, SIGNAL(timeout()), ellipseState);
 
+#ifdef QT_KEYPAD_NAVIGATION
+    QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);
+#endif
     return app.exec();
 }
 
