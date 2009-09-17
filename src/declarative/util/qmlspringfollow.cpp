@@ -236,6 +236,8 @@ void QmlSpringFollowPrivate::stop()
         y: SpringFollow { source: Rect1.y; velocity: 200 }
     }
     \endcode
+
+    \sa EaseFollow
 */
 
 QmlSpringFollow::QmlSpringFollow(QObject *parent)

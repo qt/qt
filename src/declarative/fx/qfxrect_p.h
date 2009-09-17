@@ -85,7 +85,7 @@ public:
         if (!pen) {
             Q_Q(QFxRect);
             pen = new QFxPen;
-            QObject::connect(pen, SIGNAL(updated()), q, SLOT(doUpdate()));
+            QObject::connect(pen, SIGNAL(penChanged()), q, SLOT(doUpdate()));
         }
         return pen;
     }

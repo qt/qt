@@ -513,17 +513,9 @@ void QFxTextPrivate::updateSize()
         }
         q->setBaselineOffset(fm.ascent() + yoff);
 
-        if (!q->widthValid()) {
-            int newWidth = (richText ? (int)doc->idealWidth() : size.width());
-            q->setImplicitWidth(newWidth);
-        }
-        if (!q->heightValid()) {
-            if (richText) {
-                q->setImplicitHeight((int)doc->size().height());
-            } else {
-                q->setImplicitHeight(size.height());
-            }
-        }
+        //### need to comfirm cost of always setting these for richText
+        q->setImplicitWidth(richText ? (int)doc->idealWidth() : size.width());
+        q->setImplicitHeight(richText ? (int)doc->size().height() : size.height());
     } else {
         dirty = true;
     }

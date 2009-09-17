@@ -75,8 +75,8 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_PROPERTY(QmlList<QmlState *>* states READ states DESIGNABLE false)
     Q_PROPERTY(QmlList<QmlTransition *>* transitions READ transitions DESIGNABLE false)
     Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
-    Q_PROPERTY(qreal width READ width WRITE setWidth NOTIFY widthChanged FINAL)
-    Q_PROPERTY(qreal height READ height WRITE setHeight NOTIFY heightChanged FINAL)
+    Q_PROPERTY(qreal width READ width WRITE setWidth NOTIFY widthChanged RESET resetWidth FINAL)
+    Q_PROPERTY(qreal height READ height WRITE setHeight NOTIFY heightChanged RESET resetHeight FINAL)
     Q_PROPERTY(QRectF childrenRect READ childrenRect NOTIFY childrenRectChanged DESIGNABLE false FINAL)
     Q_PROPERTY(QFxAnchors * anchors READ anchors DESIGNABLE false CONSTANT FINAL)
     Q_PROPERTY(QFxAnchorLine left READ left CONSTANT FINAL)
@@ -134,9 +134,13 @@ public:
 
     qreal width() const;
     void setWidth(qreal);
+    void resetWidth();
+    qreal implicitWidth() const;
 
     qreal height() const;
     void setHeight(qreal);
+    void resetHeight();
+    qreal implicitHeight() const;
 
     TransformOrigin transformOrigin() const;
     void setTransformOrigin(TransformOrigin);

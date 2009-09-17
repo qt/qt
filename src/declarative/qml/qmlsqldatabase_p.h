@@ -39,29 +39,22 @@
 **
 ****************************************************************************/
 
-#ifndef QMLPROPERTYVALUESOURCE_H
-#define QMLPROPERTYVALUESOURCE_H
+#ifndef QMLSQLDATABASE_P_H
+#define QMLSQLDATABASE_P_H
 
-#include <QtCore/qobject.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_HEADER
+class QScriptEngine;
+void qt_add_qmlsqldatabase(QScriptEngine *engine);
 
-QT_BEGIN_NAMESPACE
+#endif // QMLSQLDATABASE_P_H
 
-QT_MODULE(Declarative)
-
-class QmlMetaProperty;
-class Q_DECLARATIVE_EXPORT QmlPropertyValueSource
-{
-public:
-    QmlPropertyValueSource();
-    virtual ~QmlPropertyValueSource();
-    virtual void setTarget(const QmlMetaProperty &) = 0;
-};
-Q_DECLARE_INTERFACE(QmlPropertyValueSource, "com.trolltech.qml.QmlPropertyValueSource")
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QMLPROPERTYVALUESOURCE_H

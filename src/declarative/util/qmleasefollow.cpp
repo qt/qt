@@ -242,6 +242,8 @@ Rectangle {
     Keys.onDownPressed: Rect1.y = Rect1.y + 100
 }
 \endcode
+
+    \sa SpringFollow
 */
 
 QmlEaseFollow::QmlEaseFollow(QObject *parent)
