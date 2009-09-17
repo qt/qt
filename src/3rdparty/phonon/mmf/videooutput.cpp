@@ -52,12 +52,10 @@ MMF::VideoOutput::VideoOutput(QWidget* parent)
     TRACE_CONTEXT(VideoOutput::VideoOutput, EVideoInternal);
     TRACE_ENTRY("parent 0x%08x", parent);
 
-#ifndef PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
     setPalette(QPalette(Qt::black));
 	setAttribute(Qt::WA_OpaquePaintEvent, true);
 	setAttribute(Qt::WA_NoSystemBackground, true);
 	setAutoFillBackground(false);
-#endif // PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
 
     dump();
     
@@ -74,9 +72,6 @@ MMF::VideoOutput::~VideoOutput()
 
 void MMF::VideoOutput::setFrameSize(const QSize& frameSize)
 {
-#ifdef PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
-    Q_UNUSED(frameSize);
-#else
     TRACE_CONTEXT(VideoOutput::setFrameSize, EVideoInternal);
     TRACE("oldSize %d %d newSize %d %d",
           m_frameSize.width(), m_frameSize.height(),
@@ -86,7 +81,6 @@ void MMF::VideoOutput::setFrameSize(const QSize& frameSize)
         m_frameSize = frameSize;
         updateGeometry();
     }
-#endif // PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
 }
 
 void MMF::VideoOutput::setObserver(VideoOutputObserver* observer)
@@ -101,8 +95,6 @@ void MMF::VideoOutput::setObserver(VideoOutputObserver* observer)
 //-----------------------------------------------------------------------------
 // QWidget
 //-----------------------------------------------------------------------------
-
-#ifndef PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
 
 QSize MMF::VideoOutput::sizeHint() const
 {
@@ -207,8 +199,6 @@ void MMF::VideoOutput::moveEvent(QMoveEvent* event)
     if (m_observer)
         m_observer->videoOutputRegionChanged();
 }
-
-#endif // PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
 
 
 //-----------------------------------------------------------------------------

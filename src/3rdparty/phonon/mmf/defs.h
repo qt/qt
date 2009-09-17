@@ -24,20 +24,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 // The following macros are for switching on / off various bits of code,
 // in order to debug the current problems with video visibility.
 
-// If this is defined, then VideoOutput is essentially just a typedef for
-// QWidget.  This is to allow us to test whether the QWidget function
-// overrides present in VideoOutput (e.g. sizeHint, paintEvent etc) may
-// be the cause of the visibility problems.
-//#define PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
-
-// Use hard-coded rectangle coordinates, rather than using CCoeControl
-// rect, i.e. QWidget::winId()->Rect()
-//#define PHONON_MMF_HARD_CODE_VIDEO_RECT
-
-// Hack to make the video invisible.  This is used in order to debug
-// problems caused by the window-owning control change.
-//#define PHONON_MMF_HARD_CODE_VIDEO_RECT_TO_EMPTY
-
 // Defining this macro causes VideoOutput::paintEvent to write transparent
 // alpha values directly into the backing store, rather than using QPainter
 //#define PHONON_MMF_DIRECT_WRITE_ALPHA

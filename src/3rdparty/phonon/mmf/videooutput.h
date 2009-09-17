@@ -44,13 +44,11 @@ public:
     void setObserver(VideoOutputObserver* observer);
 
 protected:
-#ifndef PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
     // Override QWidget functions
     QSize sizeHint() const;
     void paintEvent(QPaintEvent* event);
     void resizeEvent(QResizeEvent* event);
     void moveEvent(QMoveEvent* event);
-#endif // PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
 
 private:
     void dump() const;

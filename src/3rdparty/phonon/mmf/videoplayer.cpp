@@ -415,24 +415,12 @@ void MMF::VideoPlayer::getNativeWindowSystemHandles()
     dumper->dumpObject(output);
 #endif
 
-#ifdef PHONON_MMF_HARD_CODE_VIDEO_RECT
-    // HACK: why isn't control->Rect updated following a call to
-    // updateGeometry on the parent widget?
-    m_windowRect = TRect(0, 100, 320, 250);
-    m_clipRect = m_windowRect;
-#else    
     m_windowRect = TRect(
         control->DrawableWindow()->AbsPosition(),
         control->DrawableWindow()->Size());
     
     m_clipRect = m_windowRect;
-#endif
-    
-#ifdef PHONON_MMF_HARD_CODE_VIDEO_RECT_TO_EMPTY
-    m_windowRect = TRect(0, 0, 0, 0);
-    m_clipRect = m_windowRect;
-#endif
-    
+
     TRACE("windowRect            %d %d - %d %d",
         m_windowRect.iTl.iX, m_windowRect.iTl.iY,
         m_windowRect.iBr.iX, m_windowRect.iBr.iY);
