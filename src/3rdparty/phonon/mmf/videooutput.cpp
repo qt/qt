@@ -144,7 +144,21 @@ void MMF::VideoOutput::transparentFill(const QVector<QRect>& rects)
 	QImage *image = window()->windowSurface()->buffer(window());
 	QRgb *data = reinterpret_cast<QRgb *>(image->bits());
 	const int row_stride = image->bytesPerLine() / 4;
-
+	
+	// Paint the entire surface
+	const int imageWidth = image->size().width();
+	const int imageHeight = image->size().height();
+	QRgb *row = data;
+	for(int y=0; y<imageHeight; ++y) {
+	
+		QRgb *ptr = row;
+		for(int x=0; x<imageWidth; ++x)
+			*ptr++ = 0xff0000ff;
+		row += row_stride;
+	}
+	
+/*
+	// Paint the specified regions
 	for (QVector<QRect>::const_iterator it = rects.begin(); it != rects.end(); ++it) {
 	
 		const QRect& rect = *it;
@@ -170,6 +184,7 @@ void MMF::VideoOutput::transparentFill(const QVector<QRect>& rects)
 			row += row_stride;
 		}
 	}
+*/
 	
 	TRACE_EXIT_0();
 }

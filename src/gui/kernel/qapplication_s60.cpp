@@ -643,7 +643,18 @@ void QSymbianControl::Draw(const TRect& r) const
         const TDisplayMode displayMode = bitmap->DisplayMode();
 		qDebug()    << "QSymbianControl::Draw [" << this << "]"
 					<< "mode " << displayMode;
-		for(int i=0; i<10 and i*10<bitmap->SizeInPixels().iWidth and i*10<bitmap->SizeInPixels().iHeight; ++i) {
+		
+		const TUint32 *address = bitmap->DataAddress();
+		const int bitmapWidth = bitmap->SizeInPixels().iWidth;
+		const int bitmapHeight = bitmap->SizeInPixels().iHeight;
+		
+		for(int i=0; i<10 and i*10<bitmapWidth and i*10<bitmapHeight; ++i) {
+			const int coord = i*10;
+			const TUint32 *ptr = address + (coord * bitmapWidth) + coord;
+			const TUint32 pixel = *ptr;
+		}
+		
+		for(int i=0; i<10 and i*10<bitmapWidth and i*10<bitmapHeight; ++i) {
 			TRgb color;
 			bitmap->GetPixel(color, TPoint(i*10, i*10));
 			qDebug()    << "    " << i*10 << " : " << color.Red() << color.Green() << color.Blue() << color.Alpha();
