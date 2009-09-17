@@ -194,7 +194,7 @@ QGraphicsAnchorLayout::addAnchor(QGraphicsLayoutItem *firstItem, Qt::AnchorPoint
                                  QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge)
 {
     Q_D(QGraphicsAnchorLayout);
-    QGraphicsAnchor *a = d->anchor(firstItem, firstEdge, secondItem, secondEdge);
+    QGraphicsAnchor *a = d->addAnchor(firstItem, firstEdge, secondItem, secondEdge);
     invalidate();
     return a;
 }
@@ -246,12 +246,12 @@ void QGraphicsAnchorLayout::addCornerAnchors(QGraphicsLayoutItem *firstItem,
     // Horizontal anchor
     Qt::AnchorPoint firstEdge = (firstCorner & 1 ? Qt::AnchorRight: Qt::AnchorLeft);
     Qt::AnchorPoint secondEdge = (secondCorner & 1 ? Qt::AnchorRight: Qt::AnchorLeft);
-    d->anchor(firstItem, firstEdge, secondItem, secondEdge);
+    d->addAnchor(firstItem, firstEdge, secondItem, secondEdge);
 
     // Vertical anchor
     firstEdge = (firstCorner & 2 ? Qt::AnchorBottom: Qt::AnchorTop);
     secondEdge = (secondCorner & 2 ? Qt::AnchorBottom: Qt::AnchorTop);
-    d->anchor(firstItem, firstEdge, secondItem, secondEdge);
+    d->addAnchor(firstItem, firstEdge, secondItem, secondEdge);
 
     invalidate();
 }
