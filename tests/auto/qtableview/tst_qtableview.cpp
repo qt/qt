@@ -43,6 +43,7 @@
 #include <QtGui/QtGui>
 #include <QtTest/QtTest>
 #include "../../shared/util.h"
+#include "private/qapplication_p.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -179,6 +180,7 @@ private slots:
     void task240266_veryBigColumn();
     void task248688_autoScrollNavigation();
     void task259308_scrollVerticalHeaderSwappedSections();
+    void task191545_dragSelectRows();
 
     void mouseWheel_data();
     void mouseWheel();
@@ -3298,6 +3300,118 @@ void tst_QTableView::task259308_scrollVerticalHeaderSwappedSections()
     QTest::qWait(60);
     QTest::keyClick(&tv, Qt::Key_PageDown); // PageDown won't scroll when at the bottom
     QTRY_COMPARE(tv.rowAt(tv.viewport()->height() - 1), tv.verticalHeader()->logicalIndex(model.rowCount() - 1));
+}
+
+template <typename T>
+struct ValueSaver {
+    T &var, value;
+    ValueSaver(T &v) : var(v), value(v) { }
+    ~ValueSaver() { var = value; }
+};
+
+void tst_QTableView::task191545_dragSelectRows()
+{
+    QStandardItemModel model(10, 10);
+    QTableView table;
+    table.setModel(&model);
+    table.setSelectionBehavior(QAbstractItemView::SelectItems);
+    table.setSelectionMode(QAbstractItemView::ExtendedSelection);
+    table.setMinimumSize(1000, 400);
+    table.show();
+    QTest::qWait(200);
+
+    ValueSaver<Qt::KeyboardModifiers> saver(QApplicationPrivate::modifier_buttons);
+    QApplicationPrivate::modifier_buttons = Qt::ControlModifier;
+
+    {
+        QRect cellRect = table.visualRect(model.index(3, 0));
+        QHeaderView *vHeader = table.verticalHeader();
+        QWidget *vHeaderVp = vHeader->viewport();
+        QPoint rowPos(5, (cellRect.top() + cellRect.bottom()) / 2);
+        QMouseEvent rowPressEvent(QEvent::MouseButtonPress, rowPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        qApp->sendEvent(vHeaderVp, &rowPressEvent);
+
+        for (int i = 0; i < 4; ++i) {
+            rowPos.setY(rowPos.y() + cellRect.height());
+            QMouseEvent moveEvent(QEvent::MouseMove, rowPos, Qt::NoButton, Qt::LeftButton, Qt::ControlModifier);
+            qApp->sendEvent(vHeaderVp, &moveEvent);
+        }
+        QMouseEvent rowReleaseEvent(QEvent::MouseButtonRelease, rowPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        qApp->sendEvent(vHeaderVp, &rowReleaseEvent);
+
+        for (int i = 0; i < 4; ++i) {
+            QModelIndex index = model.index(3 + i, 0, table.rootIndex());
+            QVERIFY(vHeader->selectionModel()->selectedRows().contains(index));
+        }
+    }
+
+    {
+        QRect cellRect = table.visualRect(model.index(0, 3));
+        QHeaderView *hHeader = table.horizontalHeader();
+        QWidget *hHeaderVp = hHeader->viewport();
+        QPoint colPos((cellRect.left() + cellRect.right()) / 2, 5);
+        QMouseEvent colPressEvent(QEvent::MouseButtonPress, colPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        qApp->sendEvent(hHeaderVp, &colPressEvent);
+
+        for (int i = 0; i < 4; ++i) {
+            colPos.setX(colPos.x() + cellRect.width());
+            QMouseEvent moveEvent(QEvent::MouseMove, colPos, Qt::NoButton, Qt::LeftButton, Qt::ControlModifier);
+            qApp->sendEvent(hHeaderVp, &moveEvent);
+        }
+        QMouseEvent colReleaseEvent(QEvent::MouseButtonRelease, colPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        qApp->sendEvent(hHeaderVp, &colReleaseEvent);
+
+        for (int i = 0; i < 4; ++i) {
+            QModelIndex index = model.index(0, 3 + i, table.rootIndex());
+            QVERIFY(hHeader->selectionModel()->selectedColumns().contains(index));
+        }
+    }
+
+    {
+        QRect cellRect = table.visualRect(model.index(2, 2));
+        QWidget *tableVp = table.viewport();
+        QPoint cellPos = cellRect.center();
+        QMouseEvent cellPressEvent(QEvent::MouseButtonPress, cellPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        qApp->sendEvent(tableVp, &cellPressEvent);
+
+        for (int i = 0; i < 6; ++i) {
+            cellPos.setX(cellPos.x() + cellRect.width());
+            cellPos.setY(cellPos.y() + cellRect.height());
+            QMouseEvent moveEvent(QEvent::MouseMove, cellPos, Qt::NoButton, Qt::LeftButton, Qt::ControlModifier);
+            qApp->sendEvent(tableVp, &moveEvent);
+        }
+        QMouseEvent cellReleaseEvent(QEvent::MouseButtonRelease, cellPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        qApp->sendEvent(tableVp, &cellReleaseEvent);
+
+        for (int i = 0; i < 6; ++i)
+            for (int j = 0; j < 6; ++j) {
+                QModelIndex index = model.index(2 + i, 2 + j, table.rootIndex());
+                QVERIFY(table.selectionModel()->isSelected(index));
+            }
+    }
+
+    {
+        QRect cellRect = table.visualRect(model.index(3, 3));
+        QWidget *tableVp = table.viewport();
+        QPoint cellPos = cellRect.center();
+        QMouseEvent cellPressEvent(QEvent::MouseButtonPress, cellPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        qApp->sendEvent(tableVp, &cellPressEvent);
+
+        for (int i = 0; i < 6; ++i) {
+            cellPos.setX(cellPos.x() + cellRect.width());
+            cellPos.setY(cellPos.y() + cellRect.height());
+            QMouseEvent moveEvent(QEvent::MouseMove, cellPos, Qt::NoButton, Qt::LeftButton, Qt::ControlModifier);
+            qApp->sendEvent(tableVp, &moveEvent);
+        }
+        QMouseEvent cellReleaseEvent(QEvent::MouseButtonRelease, cellPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        qApp->sendEvent(tableVp, &cellReleaseEvent);
+
+        for (int i = 0; i < 6; ++i)
+            for (int j = 0; j < 6; ++j) {
+                QModelIndex index = model.index(3 + i, 3 + j, table.rootIndex());
+                QVERIFY(!table.selectionModel()->isSelected(index));
+            }
+    }
 }
 
 QTEST_MAIN(tst_QTableView)
