@@ -39,8 +39,6 @@
 **
 ****************************************************************************/
 
-#include <QCoreApplication>
-
 /* Patternist */
 #include "qbasictypesfactory_p.h"
 #include "qcommonnamespaces_p.h"
