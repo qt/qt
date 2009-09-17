@@ -70,12 +70,9 @@
 
 #include "private/qstylesheetstyle_p.h"
 
-#ifdef _DEBUG
-#define DEBUG_QSYMBIANCONTROL
+#ifdef DEBUG_QSYMBIANCONTROL
 #include <QDebug>
 #endif
-
-#include "window_owning_control.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -324,7 +321,6 @@ void QSymbianControl::ConstructL(bool topLevel, bool desktop)
 {
     if (!desktop)
     {        
-#ifdef QWIDGET_OWNS_WINDOW
         if (topLevel or !qwidget->parentWidget())
             CreateWindowL(S60->windowGroup());
         else
@@ -336,19 +332,11 @@ void QSymbianControl::ConstructL(bool topLevel, bool desktop)
              * this, then we need to take care of re-parenting when a window
              * is created for a widget between this one and the root window.
              */
-    #ifdef QWIDGET_IMMEDIATE_WINDOW_PARENT
             CreateWindowL(qwidget->parentWidget()->winId());
-    #else
-            CreateWindowL(qwidget->parentWidget()->effectiveWinId());
-    #endif // QWIDGET_IMMEDIATE_WINDOW_PARENT
         
         // Necessary in order to be able to track the activation status of
         // the control's window
         qwidget->d_func()->createTLExtra();
-#else
-        if (topLevel)
-            CreateWindowL(S60->windowGroup());
-#endif // QWIDGET_OWNS_WINDOW
         
 #ifdef DEBUG_QSYMBIANCONTROL
         qDebug()    << "QSymbianControl::ConstructL [" << this

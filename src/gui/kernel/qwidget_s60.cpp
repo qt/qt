@@ -56,12 +56,9 @@
 #include <aknappui.h>
 #endif
 
-#ifdef _DEBUG
-#define DEBUG_QWIDGET
+#ifdef DEBUG_QWIDGET
 #include <QDebug>
 #endif
-
-#include "window_owning_control.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -614,11 +611,6 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         }
         QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control, ECoeStackPriorityDefault, stackingFlags));
 
-#ifndef QWIDGET_OWNS_WINDOW
-        WId parentw = parentWidget->effectiveWinId();
-        QT_TRAP_THROWING(control->SetContainerWindowL(*parentw));
-#endif
-        
         q->setAttribute(Qt::WA_WState_Created);
         int x, y, w, h;
         data.crect.getRect(&x, &y, &w, &h);
@@ -653,11 +645,7 @@ void QWidgetPrivate::show_sys()
         return;
     }
 
-#ifdef QWIDGET_OWNS_WINDOW
     if (q->internalWinId()) {
-#else
-    if (q->isWindow() && q->internalWinId()) {    
-#endif
         
         WId id = q->internalWinId();
         if (!extra->topextra->activated) {
@@ -700,11 +688,7 @@ void QWidgetPrivate::hide_sys()
     deactivateWidgetCleanup();
     WId id = q->internalWinId();
     
-#ifdef QWIDGET_OWNS_WINDOW
     if (id) {
-#else
-    if (q->isWindow() && id) {
-#endif
         
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::show_sys [" << this << "]"

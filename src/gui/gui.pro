@@ -4,6 +4,9 @@ QT = core
 DEFINES   += QT_BUILD_GUI_LIB QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x65000000
 
+# These enable debugging of window management for Symbian.
+#DEFINES += DEBUG_QSYMBIANCONTROL DEBUG_QWIDGET
+
 !win32:!embedded:!mac:!symbian:CONFIG      += x11
 
 unix:QMAKE_PKGCONFIG_REQUIRES = QtCore
