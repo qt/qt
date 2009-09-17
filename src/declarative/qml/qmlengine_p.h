@@ -154,6 +154,8 @@ public:
     // Used by DOM Core 3 API
     QScriptClass *nodeListClass;
     QScriptClass *namedNodeMapClass;
+    // Used by SQL database API
+    QScriptClass *sqlQueryClass;
 
     struct QmlScriptEngine : public QScriptEngine
     {

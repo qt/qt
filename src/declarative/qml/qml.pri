@@ -32,6 +32,7 @@ SOURCES += qml/qmlparser.cpp \
     qml/qmlvaluetype.cpp \
     qml/qmlbindingoptimizations.cpp \
     qml/qmlxmlhttprequest.cpp \
+    qml/qmlsqldatabase.cpp \
     qml/qmetaobjectbuilder.cpp
 
 HEADERS += qml/qmlparser_p.h \
@@ -81,6 +82,7 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmlvaluetype_p.h \
     qml/qmlbindingoptimizations_p.h \
     qml/qmlxmlhttprequest_p.h \
+    qml/qmlsqldatabase_p.h \
     qml/qmetaobjectbuilder_p.h
 
 # for qtscript debugger

@@ -69,9 +69,11 @@ public:
     virtual void removeAt(int);
     virtual void clear();
 
+    enum Type { Invalid, StringList, VariantList, QmlList, QList, Instance, Integer };
+    Type type() const { return m_type; }
+
 private:
-    enum Type { Invalid, StringList, VariantList, QmlList, QList, Instance };
-    Type type;
+    Type m_type;
     QVariant d;
 };
 

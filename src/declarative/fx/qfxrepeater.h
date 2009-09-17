@@ -72,7 +72,11 @@ public:
 
     int count() const;
 
+Q_SIGNALS:
+    void countChanged();
+
 private:
+    void clear();
     void regenerate();
 
 protected:

@@ -55,8 +55,8 @@ class Q_DECLARATIVE_EXPORT QFxPen : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(int width READ width WRITE setWidth)
-    Q_PROPERTY(QColor color READ color WRITE setColor)
+    Q_PROPERTY(int width READ width WRITE setWidth NOTIFY penChanged)
+    Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY penChanged)
 public:
     QFxPen(QObject *parent=0)
         : QObject(parent), _width(1), _color("#000000"), _valid(false)
@@ -71,7 +71,7 @@ public:
     bool isValid() { return _valid; };
 
 Q_SIGNALS:
-    void updated();
+    void penChanged();
 
 private:
     int _width;
@@ -135,10 +135,10 @@ class Q_DECLARATIVE_EXPORT QFxRect : public QFxItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(QColor color READ color WRITE setColor)
+    Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
     Q_PROPERTY(QFxGradient *gradient READ gradient WRITE setGradient)
-    Q_PROPERTY(QFxPen * border READ border)
-    Q_PROPERTY(qreal radius READ radius WRITE setRadius)
+    Q_PROPERTY(QFxPen * border READ border CONSTANT)
+    Q_PROPERTY(qreal radius READ radius WRITE setRadius NOTIFY radiusChanged)
 public:
     QFxRect(QFxItem *parent=0);
 
@@ -156,6 +156,10 @@ public:
     QRectF boundingRect() const;
 
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
+
+Q_SIGNALS:
+    void colorChanged();
+    void radiusChanged();
 
 private Q_SLOTS:
     void doUpdate();
