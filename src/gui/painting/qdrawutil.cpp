@@ -1066,8 +1066,9 @@ void qDrawItem(QPainter *p, Qt::GUIStyle gs,
 
 /*!
     \fn void qDrawBorderPixmap(QPainter *painter, const QRect &target, const QMargins &margins, const QPixmap &pixmap)
-    \since 4.6
     \relates <qdrawutil.h>
+    \since 4.6
+    \overload
 
     Draws the given \a pixmap into the given \a target rectangle, using the
     given \a painter. The pixmap will be split into nine segments and drawn

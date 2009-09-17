@@ -211,6 +211,11 @@ public:
     QVGFontEngineCleaner *fontEngineCleaner;
 #endif
 
+    QScopedPointer<QPixmapFilter> convolutionFilter;
+    QScopedPointer<QPixmapFilter> colorizeFilter;
+    QScopedPointer<QPixmapFilter> dropShadowFilter;
+    QScopedPointer<QPixmapFilter> blurFilter;
+
     // Ensure that the path transform is properly set in the VG context
     // before we perform a vgDrawPath() operation.
     inline void ensurePathTransform()
@@ -3110,20 +3115,31 @@ void QVGPaintEngine::endNativePainting()
     vgSetPaint(d->brushPaint, VG_FILL_PATH);
 }
 
-QPixmapFilter *QVGPaintEngine::createPixmapFilter(int type) const
+QPixmapFilter *QVGPaintEngine::pixmapFilter(int type, const QPixmapFilter *prototype)
 {
 #if !defined(QT_SHIVAVG)
-    if (type == QPixmapFilter::ConvolutionFilter)
-        return new QVGPixmapConvolutionFilter;
-    else if (type == QPixmapFilter::ColorizeFilter)
-        return new QVGPixmapColorizeFilter;
-    else if (type == QPixmapFilter::DropShadowFilter)
-        return new QVGPixmapDropShadowFilter;
-    else if (type == QPixmapFilter::BlurFilter)
-        return new QVGPixmapBlurFilter;
-    else
+    Q_D(QVGPaintEngine);
+    switch (type) {
+        case QPixmapFilter::ConvolutionFilter:
+            if (!d->convolutionFilter)
+                d->convolutionFilter.reset(new QVGPixmapConvolutionFilter);
+            return d->convolutionFilter.data();
+        case QPixmapFilter::ColorizeFilter:
+            if (!d->colorizeFilter)
+                d->colorizeFilter.reset(new QVGPixmapColorizeFilter);
+            return d->colorizeFilter.data();
+        case QPixmapFilter::DropShadowFilter:
+            if (!d->dropShadowFilter)
+                d->dropShadowFilter.reset(new QVGPixmapDropShadowFilter);
+            return d->dropShadowFilter.data();
+        case QPixmapFilter::BlurFilter:
+            if (!d->blurFilter)
+                d->blurFilter.reset(new QVGPixmapBlurFilter);
+            return d->blurFilter.data();
+        default: break;
+    }
 #endif
-        return QPaintEngineEx::createPixmapFilter(type);
+    return QPaintEngineEx::pixmapFilter(type, prototype);
 }
 
 void QVGPaintEngine::restoreState(QPaintEngine::DirtyFlags dirty)

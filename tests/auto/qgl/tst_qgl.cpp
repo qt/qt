@@ -683,8 +683,16 @@ void tst_QGL::openGLVersionCheck()
     // However, the complicated parts are in openGLVersionFlags(const QString &versionString)
     // tested above
 
+#if defined(QT_OPENGL_ES_1)
+    QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Common_Version_1_0);
+#elif defined(QT_OPENGL_ES_1_CL)
+    QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_CommonLite_Version_1_0);
+#elif defined(QT_OPENGL_ES_2)
+    QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0);
+#else
     QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_1_1);
-#endif
+#endif //defined(QT_OPENGL_ES_1)
+#endif //QT_BUILD_INTERNAL
 }
 
 class UnclippedWidget : public QWidget
