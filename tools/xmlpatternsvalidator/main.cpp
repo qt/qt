@@ -43,6 +43,7 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
+#include <QtCore/QStringList>
 #include <QtCore/QUrl>
 #include <QtXmlPatterns/QXmlSchema>
 #include <QtXmlPatterns/QXmlSchemaValidator>
@@ -62,14 +63,15 @@ int main(int argc, char **argv)
     {
         InvalidMode,
         SchemaOnlyMode,
-        SchemaAndInstanceMode,
-        InstanceOnlyMode
+        InstanceOnlyMode,
+        SchemaAndInstanceMode
     };
 
     const QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName(QLatin1String("xmlpatternsvalidator"));
 
-    if (argc != 2 && argc != 3) {
+    QStringList arguments = QCoreApplication::arguments();
+    if (arguments.size() != 2 && arguments.size() != 3) {
         qDebug() << QXmlPatternistCLI::tr("usage: xmlpatternsvalidator (<schema url> | <instance url> <schema url> | <instance url>)");
         return ParseError;
     }
@@ -77,57 +79,52 @@ int main(int argc, char **argv)
     // parse command line arguments
     ExecutionMode mode = InvalidMode;
 
-    if (argc == 2) {
-        // either it is a schema or instance document
+    QUrl schemaUri;
+    QUrl instanceUri;
 
-        QString url = QFile::decodeName(argv[1]);
-        if (url.toLower().endsWith(QLatin1String(".xsd"))) {
-            mode = SchemaOnlyMode;
-        } else {
-            // as we could validate all types of xml documents, don't check the extension here
-            mode = InstanceOnlyMode;
+    {
+        QUrl url = arguments[1];
+
+        if (url.isRelative())
+            url = QUrl::fromLocalFile(arguments[1]);
+
+        if (arguments.size() == 2) {
+            // either it is a schema or instance document
+
+            if (arguments[1].toLower().endsWith(QLatin1String(".xsd"))) {
+                schemaUri = url;
+                mode = SchemaOnlyMode;
+            } else {
+                // as we could validate all types of xml documents, don't check the extension here
+                instanceUri = url;
+                mode = InstanceOnlyMode;
+            }
+        } else if (arguments.size() == 3) {
+            instanceUri = url;
+            schemaUri = arguments[2];
+
+            if (schemaUri.isRelative())
+                schemaUri = QUrl::fromLocalFile(schemaUri.toString());
+
+            mode = SchemaAndInstanceMode;
         }
-    } else if (argc == 3) {
-        mode = SchemaAndInstanceMode;
     }
 
-    // do validation
+    // Validate schema
     QXmlSchema schema;
-
-    if (mode == SchemaOnlyMode) {
-        const QString schemaUri = QFile::decodeName(argv[1]);
-
-        schema.load(QUrl(schemaUri));
-
-        if (schema.isValid())
-            return Valid;
-        else
-            return Invalid;
-    } else if (mode == SchemaAndInstanceMode) {
-        const QString instanceUri = QFile::decodeName(argv[1]);
-        const QString schemaUri = QFile::decodeName(argv[2]);
-
-        schema.load(QUrl(schemaUri));
-
+    if (InstanceOnlyMode != mode) {
+        schema.load(schemaUri);
         if (!schema.isValid())
             return Invalid;
-
-        QXmlSchemaValidator validator(schema);
-        if (validator.validate(QUrl(instanceUri)))
-            return Valid;
-        else
-            return Invalid;
-    } else if (mode == InstanceOnlyMode) {
-        const QString instanceUri = QFile::decodeName(argv[1]);
-
-        QXmlSchemaValidator validator(schema);
-        if (validator.validate(QUrl(instanceUri)))
-            return Valid;
-        else
-            return Invalid;
     }
 
-    Q_ASSERT(false);
+    if (SchemaOnlyMode == mode)
+        return Valid;
+
+    // Validate instance
+    QXmlSchemaValidator validator(schema);
+    if (validator.validate(instanceUri))
+        return Valid;
 
     return Invalid;
 }
