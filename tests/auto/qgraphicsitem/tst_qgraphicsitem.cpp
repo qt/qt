@@ -6542,6 +6542,9 @@ void tst_QGraphicsItem::cacheMode()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
+    // Increase the probability of window activation
+    // not causing another repaint of test items.
+    QTest::qWait(250);
 
     EventTester *tester = new EventTester;
     EventTester *testerChild = new EventTester;
