@@ -52,8 +52,10 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_CURSOR
 static QCursor cursorSprite;
-static int cursorSpriteVisible; 
+static int cursorSpriteVisible;
+#endif
 
 //pos and setpos are required whether cursors are configured or not.
 QPoint QCursor::pos()
