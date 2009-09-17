@@ -29,6 +29,13 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMoveEvent>
 #include <QResizeEvent>
 
+// Required for implementation of transparentFill
+#include <QtGui/private/qwidget_p.h>
+#include <QtGui/private/qdrawhelper_p.h>
+#include <QtGui/private/qwindowsurface_p.h>
+#include <QImage>
+
+
 QT_BEGIN_NAMESPACE
 
 using namespace Phonon;
@@ -120,6 +127,9 @@ void MMF::VideoOutput::paintEvent(QPaintEvent* event)
 
     dump();
     
+#ifdef PHONON_MMF_DIRECT_WRITE_ALPHA
+    transparentFill(event->region().rects());
+#else
     // Note: composition mode code was a failed attempt to get transparent
     // alpha values to be propagated to the (EColor16MU) window surface.
 
@@ -131,6 +141,43 @@ void MMF::VideoOutput::paintEvent(QPaintEvent* event)
     painter.drawRects(event->region().rects());
     painter.end();
     //painter.setCompositionMode(compositionMode);
+#endif
+}
+
+void MMF::VideoOutput::transparentFill(const QVector<QRect>& rects)
+{
+	TRACE_CONTEXT(VideoOutput::transparentFill, EVideoInternal);
+	TRACE_ENTRY_0();
+	
+	QImage *image = window()->windowSurface()->buffer(window());
+	QRgb *data = reinterpret_cast<QRgb *>(image->bits());
+	const int row_stride = image->bytesPerLine() / 4;
+
+	for (QVector<QRect>::const_iterator it = rects.begin(); it != rects.end(); ++it) {
+	
+		const QRect& rect = *it;
+		
+		TRACE("%d %d size %d x %d", rect.x(), rect.y(), rect.width(), rect.height());
+	
+		const int x_start = rect.x();
+		const int width = rect.width();
+
+		const int y_start = rect.y();
+		const int height = rect.height();
+
+		QRgb *row = data + row_stride * y_start;
+		for (int y = 0; y < height; ++y) {
+		
+			// Note: not using the optimised qt_memfill function implemented in
+			// gui/painting/qdrawhelper.cpp - can we somehow link against this?
+		
+			//qt_memfill(row + x_start, 0U, width);
+			memset(row + x_start, 0, width*4);
+			row += row_stride;
+		}
+	}
+	
+	TRACE_EXIT_0();
 }
 
 void MMF::VideoOutput::resizeEvent(QResizeEvent* event)

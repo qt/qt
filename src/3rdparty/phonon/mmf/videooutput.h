@@ -20,6 +20,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #define PHONON_MMF_VIDEOOUTPUT_H
 
 #include <QtGui/QWidget>
+#include <QVector>
+#include <QRect>
 #include "defs.h"
 
 QT_BEGIN_NAMESPACE
@@ -52,6 +54,7 @@ protected:
 
 private:
     void dump() const;
+    void transparentFill(const QVector<QRect>& rects);
     
 private:
     QSize m_frameSize;

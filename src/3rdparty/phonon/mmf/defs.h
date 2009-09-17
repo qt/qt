@@ -38,6 +38,10 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 // problems caused by the window-owning control change.
 //#define PHONON_MMF_HARD_CODE_VIDEO_RECT_TO_EMPTY
 
+// Defining this macro causes VideoOutput::paintEvent to write transparent
+// alpha values directly into the backing store, rather than using QPainter
+//#define PHONON_MMF_DIRECT_WRITE_ALPHA
+
 QT_BEGIN_NAMESPACE
 
 namespace Phonon
