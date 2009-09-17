@@ -900,11 +900,8 @@ void tst_QItemDelegate::decoration()
     item->setSelected(true);
 
     QApplication::processEvents();
-#ifdef Q_WS_QWS
-    QApplication::sendPostedEvents(); //glib workaround
-#endif
 
-    QCOMPARE(delegate.decorationRect.size(), expected);
+    QTRY_COMPARE(delegate.decorationRect.size(), expected);
 }
 
 void tst_QItemDelegate::editorEvent_data()
