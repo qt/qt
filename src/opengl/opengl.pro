@@ -159,4 +159,5 @@ wince*: {
 
 } else {
     LIBS_PRIVATE += $$QMAKE_LIBS_OPENGL
+    LIBS += $$QMAKE_LFLAGS_OPENGL
 }
