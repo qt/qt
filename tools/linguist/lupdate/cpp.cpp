@@ -1521,8 +1521,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                     yyTok = getToken();
                 }
                 NamespaceList nsl;
-                QStringList unresolved;
-                if (fullyQualify(namespaces, fullName, false, &nsl, &unresolved)) {
+                if (fullyQualify(namespaces, fullName, false, &nsl, 0)) {
                     modifyNamespace(&namespaces);
                     namespaces.last()->usings.insert(stringListifyNamespace(nsl));
                 }
