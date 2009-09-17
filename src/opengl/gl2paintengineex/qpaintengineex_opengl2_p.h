@@ -217,10 +217,12 @@ public:
     bool brushUniformsDirty;
     bool simpleShaderMatrixUniformDirty;
     bool shaderMatrixUniformDirty;
-    bool stencilBufferDirty;
     bool depthUniformDirty;
     bool simpleShaderDepthUniformDirty;
     bool opacityUniformDirty;
+
+    QRegion dirtyStencilRegion;
+    QRect currentScissorBounds;
 
     const QBrush*    currentBrush; // May not be the state's brush!
 

@@ -81,8 +81,9 @@ private slots:
     void stackedFBOs();
     void colormap();
     void fboFormat();
-
     void testDontCrashOnDanglingResources();
+    void replaceClipping();
+    void clipTest();
 };
 
 tst_QGL::tst_QGL()
@@ -1538,6 +1539,187 @@ void tst_QGL::testDontCrashOnDanglingResources()
     qApp->processEvents();
     widget->hide();
 }
+
+class ReplaceClippingGLWidget : public QGLWidget
+{
+public:
+    void paint(QPainter *painter)
+    {
+        painter->fillRect(rect(), Qt::white);
+
+        QPainterPath path;
+        path.addRect(0, 0, 100, 100);
+        path.addRect(50, 50, 100, 100);
+
+        painter->setClipRect(0, 0, 150, 150);
+        painter->fillPath(path, Qt::red);
+
+        painter->translate(150, 150);
+        painter->setClipRect(0, 0, 150, 150);
+        painter->fillPath(path, Qt::red);
+    }
+
+protected:
+    void paintEvent(QPaintEvent*)
+    {
+        // clear the stencil with junk
+        glStencilMask(0xFFFF);
+        glClearStencil(0xFFFF);
+        glDisable(GL_STENCIL_TEST);
+        glDisable(GL_SCISSOR_TEST);
+        glClear(GL_STENCIL_BUFFER_BIT);
+
+        QPainter painter(this);
+        paint(&painter);
+    }
+};
+
+void tst_QGL::replaceClipping()
+{
+    ReplaceClippingGLWidget glw;
+    glw.resize(300, 300);
+    glw.show();
+
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&glw);
+#endif
+    QTest::qWait(200);
+
+    QImage reference(300, 300, QImage::Format_RGB32);
+    QPainter referencePainter(&reference);
+    glw.paint(&referencePainter);
+    referencePainter.end();
+
+    const QImage widgetFB = glw.grabFrameBuffer(false).convertToFormat(QImage::Format_RGB32);
+
+    QCOMPARE(widgetFB, reference);
+}
+
+class ClipTestGLWidget : public QGLWidget
+{
+public:
+    void paint(QPainter *painter)
+    {
+        painter->fillRect(rect(), Qt::white);
+        painter->setClipRect(10, 10, width()-20, height()-20);
+        painter->fillRect(rect(), Qt::cyan);
+
+        painter->save();
+        painter->setClipRect(10, 10, 100, 100, Qt::IntersectClip);
+
+        painter->fillRect(rect(), Qt::blue);
+
+        painter->save();
+        painter->setClipRect(10, 10, 50, 50, Qt::IntersectClip);
+        painter->fillRect(rect(), Qt::red);
+        painter->restore();
+        painter->fillRect(0, 0, 40, 40, Qt::white);
+        painter->save();
+
+        painter->setClipRect(0, 0, 35, 35, Qt::IntersectClip);
+        painter->fillRect(rect(), Qt::black);
+        painter->restore();
+
+        painter->fillRect(0, 0, 30, 30, Qt::magenta);
+
+        painter->save();
+        painter->setClipRect(60, 10, 50, 50, Qt::ReplaceClip);
+        painter->fillRect(rect(), Qt::green);
+        painter->restore();
+
+        painter->save();
+        painter->setClipRect(0, 60, 60, 25, Qt::IntersectClip);
+        painter->setClipRect(60, 60, 50, 25, Qt::UniteClip);
+        painter->fillRect(rect(), Qt::yellow);
+        painter->restore();
+
+        painter->restore();
+
+        painter->translate(100, 100);
+
+        {
+            QPainterPath path;
+            path.addRect(10, 10, 100, 100);
+            path.addRect(10, 10, 10, 10);
+            painter->setClipPath(path, Qt::IntersectClip);
+        }
+
+        painter->fillRect(rect(), Qt::blue);
+
+        painter->save();
+        {
+            QPainterPath path;
+            path.addRect(10, 10, 50, 50);
+            path.addRect(10, 10, 10, 10);
+            painter->setClipPath(path, Qt::IntersectClip);
+        }
+        painter->fillRect(rect(), Qt::red);
+        painter->restore();
+        painter->fillRect(0, 0, 40, 40, Qt::white);
+        painter->save();
+
+        {
+            QPainterPath path;
+            path.addRect(0, 0, 35, 35);
+            path.addRect(10, 10, 10, 10);
+            painter->setClipPath(path, Qt::IntersectClip);
+        }
+        painter->fillRect(rect(), Qt::black);
+        painter->restore();
+
+        painter->fillRect(0, 0, 30, 30, Qt::magenta);
+
+        painter->save();
+        {
+            QPainterPath path;
+            path.addRect(60, 10, 50, 50);
+            path.addRect(10, 10, 10, 10);
+            painter->setClipPath(path, Qt::ReplaceClip);
+        }
+        painter->fillRect(rect(), Qt::green);
+        painter->restore();
+
+        painter->save();
+        {
+            QPainterPath path;
+            path.addRect(0, 60, 60, 25);
+            path.addRect(10, 10, 10, 10);
+            painter->setClipPath(path, Qt::IntersectClip);
+        }
+        painter->setClipRect(60, 60, 50, 25, Qt::UniteClip);
+        painter->fillRect(rect(), Qt::yellow);
+        painter->restore();
+    }
+
+protected:
+    void paintEvent(QPaintEvent*)
+    {
+        QPainter painter(this);
+        paint(&painter);
+    }
+};
+
+void tst_QGL::clipTest()
+{
+    ClipTestGLWidget glw;
+    glw.resize(220, 220);
+    glw.show();
+
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&glw);
+#endif
+    QTest::qWait(200);
+
+    QImage reference(glw.size(), QImage::Format_RGB32);
+    QPainter referencePainter(&reference);
+    glw.paint(&referencePainter);
+    referencePainter.end();
+
+    const QImage widgetFB = glw.grabFrameBuffer(false).convertToFormat(QImage::Format_RGB32);
+
+    QCOMPARE(widgetFB, reference);
+}
+
 
 QTEST_MAIN(tst_QGL)
 #include "tst_qgl.moc"
