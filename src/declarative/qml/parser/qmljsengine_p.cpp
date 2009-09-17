@@ -39,12 +39,13 @@
 **
 ****************************************************************************/
 
+#include "qmljsglobal_p.h"
 #include "qmljsengine_p.h"
 #include "qmljsnodepool_p.h"
 #include <qnumeric.h>
 #include <QHash>
 
-QT_BEGIN_NAMESPACE
+QT_QML_BEGIN_NAMESPACE
 
 namespace QmlJS {
 
@@ -206,4 +207,4 @@ void Engine::setNodePool(NodePool *nodePool)
 
 } // end of namespace QmlJS
 
-QT_END_NAMESPACE
+QT_QML_END_NAMESPACE

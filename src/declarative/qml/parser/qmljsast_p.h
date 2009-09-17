@@ -54,9 +54,10 @@
 //
 
 #include "qmljsastvisitor_p.h"
+#include "qmljsglobal_p.h"
 #include <QtCore/QString>
 
-QT_BEGIN_NAMESPACE
+QT_QML_BEGIN_NAMESPACE
 
 #define QMLJS_DECLARE_AST_NODE(name) \
   enum { K = Kind_##name };
@@ -2666,6 +2667,6 @@ public:
 
 
 
-QT_END_NAMESPACE
+QT_QML_END_NAMESPACE
 
 #endif

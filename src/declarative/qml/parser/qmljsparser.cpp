@@ -62,7 +62,7 @@
 
 using namespace QmlJS;
 
-QT_BEGIN_NAMESPACE
+QT_QML_BEGIN_NAMESPACE
 
 void Parser::reallocateStack()
 {
@@ -1803,6 +1803,6 @@ case 334: {
     return false;
 }
 
-QT_END_NAMESPACE
+QT_QML_END_NAMESPACE
 
 

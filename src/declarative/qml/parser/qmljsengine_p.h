@@ -56,9 +56,10 @@
 #include <QString>
 #include <QSet>
 
+#include "qmljsglobal_p.h"
 #include "qmljsastfwd_p.h"
 
-QT_BEGIN_NAMESPACE
+QT_QML_BEGIN_NAMESPACE
 
 namespace QmlJS {
 class NameId
@@ -167,6 +168,6 @@ public:
 
 } // end of namespace QmlJS
 
-QT_END_NAMESPACE
+QT_QML_END_NAMESPACE
 
 #endif // QMLJSENGINE_P_H

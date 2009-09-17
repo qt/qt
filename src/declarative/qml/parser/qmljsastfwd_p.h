@@ -43,6 +43,7 @@
 #define QMLJSAST_FWD_P_H
 
 #include <QtCore/qglobal.h>
+#include "qmljsglobal_p.h"
 
 //
 //  W A R N I N G
@@ -55,7 +56,7 @@
 // We mean it.
 //
 
-QT_BEGIN_NAMESPACE
+QT_QML_BEGIN_NAMESPACE
 
 namespace QmlJS { namespace AST {
 
@@ -182,6 +183,6 @@ class UiSignature;
 
 } } // namespace AST
 
-QT_END_NAMESPACE
+QT_QML_END_NAMESPACE
 
 #endif
