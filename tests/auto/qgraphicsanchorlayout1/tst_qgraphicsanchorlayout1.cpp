@@ -405,7 +405,9 @@ void TestGraphicsAnchorLayout::testAddAndRemoveAnchor()
     QCOMPARE( layout->count(), 4 );
 
     // test setting invalid anchors
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): Cannot anchor NULL items");
     layout->setAnchor(0, Qt::AnchorLeft, widget1, Qt::AnchorLeft, 1);
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): Cannot anchor NULL items");
     layout->setAnchor(layout, Qt::AnchorLeft, 0, Qt::AnchorLeft, 1);
     QCOMPARE( layout->count(), 4 );
 
@@ -413,11 +415,13 @@ void TestGraphicsAnchorLayout::testAddAndRemoveAnchor()
     layout->removeAnchor(widget4, Qt::AnchorRight, widget1, Qt::AnchorRight);
 
     // anchor one horizontal edge with vertical edge. it should not add this widget as a child
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): Cannot anchor edges of different orientations");
     layout->setAnchor(layout, Qt::AnchorLeft, widget5, Qt::AnchorTop, 10);
     QCOMPARE( layout->count(), 4 );
 
     // ###: NOT SUPPORTED
     // anchor two edges of a widget (to define width / height)
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): Cannot anchor the item to itself");
     layout->setAnchor(widget5, Qt::AnchorLeft, widget5, Qt::AnchorRight, 10);
     // QCOMPARE( layout->count(), 5 );
     QCOMPARE( layout->count(), 4 );
@@ -547,6 +551,9 @@ void TestGraphicsAnchorLayout::testSpecialCases()
 {
     // One widget, setLayout before defining layouts
     {
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsLayout::addChildLayoutItem: QGraphicsWidget \"\""
+                                       " in wrong parent; moved to correct parent");
+
     QGraphicsWidget *widget = new QGraphicsWidget;
     TheAnchorLayout *layout = new TheAnchorLayout();
     widget->setLayout(layout);
@@ -565,6 +572,8 @@ void TestGraphicsAnchorLayout::testSpecialCases()
 
     // One widget, layout inside layout, layout inside layout inside layout
     {
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsLayout::addChildLayoutItem: QGraphicsWidget \"\""
+                                       " in wrong parent; moved to correct parent");
     QGraphicsWidget *widget = new QGraphicsWidget;
     TheAnchorLayout *layout = new TheAnchorLayout();
     widget->setLayout(layout);
@@ -1798,6 +1807,15 @@ void TestGraphicsAnchorLayout::testCenterAnchors_data()
         theResult
             << BasicResult(0, QRectF(5, 5, 10, 10) );
 
+        QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): Cannot anchor edges of different orientations");
+        QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): Cannot anchor edges of different orientations");
+        QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): Cannot anchor edges of different orientations");
+        QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): Cannot anchor the item to itself");
+        QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): Cannot anchor the item to itself");
+        QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): Cannot anchor the item to itself");
+        QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): Cannot anchor the item to itself");
+        QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): Cannot anchor the item to itself");
+        QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): Cannot anchor the item to itself");
         QTest::newRow("center, basic with invalid") << QSizeF(20, 20) << theData << theResult;
     }
 
@@ -1928,6 +1946,9 @@ void TestGraphicsAnchorLayout::testCenterAnchors_data()
             << BasicResult(0, QRectF(0, 30, 10, 20))
             << BasicResult(1, QRectF(20, 0, 30, 10))
             << BasicResult(2, QRectF(60, 15, 40, 10));
+
+        QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): Cannot anchor the item to itself");
+        QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): Cannot anchor the item to itself");
 
         QTest::newRow("center, three") << QSizeF(100, 50) << theData << theResult;
     }
@@ -2095,6 +2116,11 @@ void TestGraphicsAnchorLayout::testRemoveCenterAnchor_data()
             << BasicResult(1, QRectF(20, 0, 30, 10))
             << BasicResult(2, QRectF(60, 15, 40, 10));
 
+        QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): Cannot anchor the item to itself");
+        QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): Cannot anchor the item to itself");
+        QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): Cannot anchor the item to itself");
+        QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): Cannot anchor the item to itself");
+
         QTest::newRow("remove, center, three") << QSizeF(100, 50) << theData << theRemoveData << theResult;
     }
 
@@ -2129,6 +2155,8 @@ void TestGraphicsAnchorLayout::testRemoveCenterAnchor_data()
         theResult
             << BasicResult(0, QRectF(5, 5, 10, 10) );
 
+        QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): Cannot anchor the item to itself");
+        QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): Cannot anchor the item to itself");
         QTest::newRow("remove, center, basic 2") << QSizeF(20, 20) << theData
             << theRemoveData << theResult;
     }
