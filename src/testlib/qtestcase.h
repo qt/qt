@@ -218,7 +218,7 @@ namespace QTest
     template <typename T1, typename T2>
     bool qCompare(T1 const &, T2 const &, const char *, const char *, const char *, int);
 
-#if defined(QT_ARCH_WINDOWSCE) && defined(QT_COORD_TYPE)
+#if defined(QT_COORD_TYPE) && (defined(QT_ARCH_ARM) || defined(QT_NO_FPU) || defined(QT_ARCH_WINDOWSCE))
     template <>
     inline bool qCompare<qreal, float>(qreal const &t1, float const &t2, const char *actual,
                                  const char *expected, const char *file, int line)
