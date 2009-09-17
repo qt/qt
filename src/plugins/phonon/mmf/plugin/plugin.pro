@@ -19,7 +19,7 @@ phonon_mmf_audio_drm {
 # In the internal 5th SDK, DrmAudioSamplePlayer.h is placed in this folder, as
 # opposed to the public, where it is placed in epoc32/include. In some cases
 # it's needed for other headers as well.
-INCLUDEPATH += /epoc32/include/osextensions
+INCLUDEPATH += $$MW_LAYER_SYSTEMINCLUDE
 
 HEADERS +=                                           \
            $$PHONON_MMF_DIR/abstractaudioeffect.h    \
