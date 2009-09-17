@@ -1210,7 +1210,8 @@ void QFxFlickable::movementEnding()
 void QFxFlickablePrivate::updateVelocity()
 {
     Q_Q(QFxFlickable);
-    emit q->velocityChanged(q->horizontalVelocity(), q->verticalVelocity());
+    emit q->horizontalVelocityChanged();
+    emit q->verticalVelocityChanged();
 }
 
 QT_END_NAMESPACE
