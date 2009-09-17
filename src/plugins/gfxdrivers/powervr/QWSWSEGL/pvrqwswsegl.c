@@ -50,8 +50,8 @@
 
 /* Capability information for the display */
 static WSEGLCaps const wseglDisplayCaps[] = {
-    {WSEGL_CAP_WINDOWS_USE_MBX_SYNC, 1},
-    {WSEGL_CAP_PIXMAPS_USE_MBX_SYNC, 1},
+    {WSEGL_CAP_WINDOWS_USE_HW_SYNC, 1},
+    {WSEGL_CAP_PIXMAPS_USE_HW_SYNC, 1},
     {WSEGL_NO_CAPS, 0}
 };
 
