@@ -856,21 +856,17 @@ void QGraphicsAnchorLayoutPrivate::createItemEdges(QGraphicsLayoutItem *item)
 
     items.append(item);
 
-    // Horizontal
-    int minimumSize = item->minimumWidth();
-    int preferredSize = item->preferredWidth();
-    int maximumSize = item->maximumWidth();
+    QSizeF minSize = item->effectiveSizeHint(Qt::MinimumSize);
+    QSizeF prefSize = item->effectiveSizeHint(Qt::PreferredSize);
+    QSizeF maxSize = item->effectiveSizeHint(Qt::MaximumSize);
 
-    AnchorData *data = new AnchorData(minimumSize, preferredSize, maximumSize);
+    // Horizontal
+    AnchorData *data = new AnchorData(minSize.width(), prefSize.width(), maxSize.width());
     addAnchor_helper(item, Qt::AnchorLeft, item,
               Qt::AnchorRight, data);
 
     // Vertical
-    minimumSize = item->minimumHeight();
-    preferredSize = item->preferredHeight();
-    maximumSize = item->maximumHeight();
-
-    data = new AnchorData(minimumSize, preferredSize, maximumSize);
+    data = new AnchorData(minSize.height(), prefSize.height(), maxSize.height());
     addAnchor_helper(item, Qt::AnchorTop, item,
               Qt::AnchorBottom, data);
 }
@@ -927,9 +923,9 @@ void QGraphicsAnchorLayoutPrivate::createCenterAnchors(
     // Create new anchors
     AnchorData *oldData = graph[orientation].edgeData(first, last);
 
-    int minimumSize = oldData->minSize / 2;
-    int preferredSize = oldData->prefSize / 2;
-    int maximumSize = oldData->maxSize / 2;
+    qreal minimumSize = oldData->minSize / 2;
+    qreal preferredSize = oldData->prefSize / 2;
+    qreal maximumSize = oldData->maxSize / 2;
 
     QSimplexConstraint *c = new QSimplexConstraint;
     AnchorData *data = new AnchorData(minimumSize, preferredSize, maximumSize);
@@ -1001,9 +997,9 @@ void QGraphicsAnchorLayoutPrivate::removeCenterAnchors(
         // Create the new anchor that should substitute the left-center-right anchors.
         AnchorData *oldData = g.edgeData(first, center);
 
-        int minimumSize = oldData->minSize * 2;
-        int preferredSize = oldData->prefSize * 2;
-        int maximumSize = oldData->maxSize * 2;
+        qreal minimumSize = oldData->minSize * 2;
+        qreal preferredSize = oldData->prefSize * 2;
+        qreal maximumSize = oldData->maxSize * 2;
 
         AnchorData *data = new AnchorData(minimumSize, preferredSize, maximumSize);
         addAnchor_helper(item, firstEdge, item, lastEdge, data);
