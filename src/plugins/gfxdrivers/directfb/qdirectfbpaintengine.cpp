@@ -170,7 +170,8 @@ enum PaintOperation {
     DRAW_PIXMAP = 0x0008, DRAW_TILED_PIXMAP = 0x0010, STROKE_PATH = 0x0020,
     DRAW_PATH = 0x0040, DRAW_POINTS = 0x0080, DRAW_ELLIPSE = 0x0100,
     DRAW_POLYGON = 0x0200, DRAW_TEXT = 0x0400, FILL_PATH = 0x0800,
-    FILL_RECT = 0x1000, DRAW_COLORSPANS = 0x2000, ALL = 0xffff
+    FILL_RECT = 0x1000, DRAW_COLORSPANS = 0x2000, DRAW_ROUNDED_RECT = 0x4000,
+    ALL = 0xffff
 };
 #endif
 
@@ -691,6 +692,13 @@ void QDirectFBPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
     QRasterPaintEngine::fill(path, brush);
 }
 
+void QDirectFBPaintEngine::drawRoundedRect(const QRectF &rect, qreal xrad, qreal yrad, Qt::SizeMode mode)
+{
+    RASTERFALLBACK(DRAW_ROUNDED_RECT, rect, xrad, yrad);
+    Q_D(QDirectFBPaintEngine);
+    d->lock();
+    QRasterPaintEngine::drawRoundedRect(rect, xrad, yrad, mode);
+}
 
 void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
 {
