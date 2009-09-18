@@ -95,58 +95,50 @@ qreal QGraphicsAnchorPrivate::spacing() const
 void AnchorData::refreshSizeHints(qreal effectiveSpacing)
 {
     if (!isLayoutAnchor && from->m_item == to->m_item) {
-        bool hasCenter = false;
         QGraphicsLayoutItem *item = from->m_item;
 
-        QSizePolicy policy = item->sizePolicy();
+        const QGraphicsAnchorLayoutPrivate::Orientation orient = QGraphicsAnchorLayoutPrivate::edgeOrientation(from->m_edge);
+        const Qt::AnchorPoint centerEdge = QGraphicsAnchorLayoutPrivate::pickEdge(Qt::AnchorHorizontalCenter, orient);
 
-        if (QGraphicsAnchorLayoutPrivate::edgeOrientation(from->m_edge)
-            == QGraphicsAnchorLayoutPrivate::Horizontal) {
-
-            // minSize, prefSize and maxSize are initialized
-            // with item's preferred Size: this is QSizePolicy::Fixed.
-            //
-            // Then we check each flag to find the resultant QSizePolicy,
-            // according to the following table:
-            //
-            //      constant               value
-            // QSizePolicy::Fixed            0
-            // QSizePolicy::Minimum       GrowFlag
-            // QSizePolicy::Maximum       ShrinkFlag
-            // QSizePolicy::Preferred     GrowFlag | ShrinkFlag
-            // QSizePolicy::Ignored       GrowFlag | ShrinkFlag | IgnoreFlag
-            prefSize = item->preferredWidth();
-            minSize = prefSize;
-            maxSize = prefSize;
-
-            if (policy.horizontalPolicy() & QSizePolicy::GrowFlag)
-                maxSize = item->maximumWidth();
-
-            if (policy.horizontalPolicy() & QSizePolicy::ShrinkFlag)
-                minSize = item->minimumWidth();
-
-            if (policy.horizontalPolicy() & QSizePolicy::IgnoreFlag)
-                prefSize = minSize;
-
-            hasCenter = (from->m_edge == Qt::AnchorHorizontalCenter
-                         || to->m_edge == Qt::AnchorHorizontalCenter);
+        QSizePolicy::Policy policy;
+        qreal minSizeHint, prefSizeHint, maxSizeHint;
+        if (orient == QGraphicsAnchorLayoutPrivate::Horizontal) {
+            policy = item->sizePolicy().horizontalPolicy();
+            minSizeHint = item->effectiveSizeHint(Qt::MinimumSize).width();
+            prefSizeHint = item->effectiveSizeHint(Qt::PreferredSize).width();
+            maxSizeHint = item->effectiveSizeHint(Qt::MaximumSize).width();
         } else {
-            prefSize = item->preferredHeight();
-            minSize = prefSize;
-            maxSize = prefSize;
-
-            if (policy.verticalPolicy() & QSizePolicy::GrowFlag)
-                maxSize = item->maximumHeight();
-
-            if (policy.verticalPolicy() & QSizePolicy::ShrinkFlag)
-                minSize = item->minimumHeight();
-
-            if (policy.verticalPolicy() & QSizePolicy::IgnoreFlag)
-                prefSize = minSize;
-
-            hasCenter = (from->m_edge == Qt::AnchorVerticalCenter
-                         || to->m_edge == Qt::AnchorVerticalCenter);
+            policy = item->sizePolicy().verticalPolicy();
+            minSizeHint = item->effectiveSizeHint(Qt::MinimumSize).height();
+            prefSizeHint = item->effectiveSizeHint(Qt::PreferredSize).height();
+            maxSizeHint = item->effectiveSizeHint(Qt::MaximumSize).height();
         }
+        // minSize, prefSize and maxSize are initialized
+        // with item's preferred Size: this is QSizePolicy::Fixed.
+        //
+        // Then we check each flag to find the resultant QSizePolicy,
+        // according to the following table:
+        //
+        //      constant               value
+        // QSizePolicy::Fixed            0
+        // QSizePolicy::Minimum       GrowFlag
+        // QSizePolicy::Maximum       ShrinkFlag
+        // QSizePolicy::Preferred     GrowFlag | ShrinkFlag
+        // QSizePolicy::Ignored       GrowFlag | ShrinkFlag | IgnoreFlag
+        prefSize = prefSizeHint;
+        minSize = prefSize;
+        maxSize = prefSize;
+
+        if (policy & QSizePolicy::GrowFlag)
+            maxSize = maxSizeHint;
+
+        if (policy & QSizePolicy::ShrinkFlag)
+            minSize = minSizeHint;
+
+        if (policy & QSizePolicy::IgnoreFlag)
+            prefSize = minSize;
+
+        bool hasCenter = (from->m_edge == centerEdge || to->m_edge == centerEdge);
 
         if (hasCenter) {
             minSize /= 2;
