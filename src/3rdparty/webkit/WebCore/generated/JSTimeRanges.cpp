@@ -19,6 +19,9 @@
 */
 
 #include "config.h"
+
+#if ENABLE(VIDEO)
+
 #include "JSTimeRanges.h"
 
 #include "TimeRanges.h"
@@ -75,6 +78,11 @@ bool JSTimeRangesPrototype::getOwnPropertySlot(ExecState* exec, const Identifier
     return getStaticFunctionSlot<JSObject>(exec, &JSTimeRangesPrototypeTable, this, propertyName, slot);
 }
 
+bool JSTimeRangesPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSTimeRangesPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSTimeRanges::s_info = { "TimeRanges", 0, &JSTimeRangesTable, 0 };
 
 JSTimeRanges::JSTimeRanges(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<TimeRanges> impl)
@@ -98,6 +106,11 @@ bool JSTimeRanges::getOwnPropertySlot(ExecState* exec, const Identifier& propert
     return getStaticValueSlot<JSTimeRanges, Base>(exec, &JSTimeRangesTable, this, propertyName, slot);
 }
 
+bool JSTimeRanges::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSTimeRanges, Base>(exec, &JSTimeRangesTable, this, propertyName, descriptor);
+}
+
 JSValue jsTimeRangesLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSTimeRanges* castedThis = static_cast<JSTimeRanges*>(asObject(slot.slotBase()));
@@ -109,7 +122,7 @@ JSValue jsTimeRangesLength(ExecState* exec, const Identifier&, const PropertySlo
 JSValue JSC_HOST_CALL jsTimeRangesPrototypeFunctionStart(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSTimeRanges::s_info))
+    if (!thisValue.inherits(&JSTimeRanges::s_info))
         return throwError(exec, TypeError);
     JSTimeRanges* castedThisObj = static_cast<JSTimeRanges*>(asObject(thisValue));
     TimeRanges* imp = static_cast<TimeRanges*>(castedThisObj->impl());
@@ -125,7 +138,7 @@ JSValue JSC_HOST_CALL jsTimeRangesPrototypeFunctionStart(ExecState* exec, JSObje
 JSValue JSC_HOST_CALL jsTimeRangesPrototypeFunctionEnd(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSTimeRanges::s_info))
+    if (!thisValue.inherits(&JSTimeRanges::s_info))
         return throwError(exec, TypeError);
     JSTimeRanges* castedThisObj = static_cast<JSTimeRanges*>(asObject(thisValue));
     TimeRanges* imp = static_cast<TimeRanges*>(castedThisObj->impl());
@@ -144,7 +157,9 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, TimeRan
 }
 TimeRanges* toTimeRanges(JSC::JSValue value)
 {
-    return value.isObject(&JSTimeRanges::s_info) ? static_cast<JSTimeRanges*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSTimeRanges::s_info) ? static_cast<JSTimeRanges*>(asObject(value))->impl() : 0;
 }
 
 }
+
+#endif // ENABLE(VIDEO)

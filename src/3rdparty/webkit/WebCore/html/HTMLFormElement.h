@@ -96,6 +96,9 @@ public:
     String name() const;
     void setName(const String&);
 
+    bool noValidate() const;
+    void setNoValidate(bool);
+
     String acceptCharset() const { return m_formDataBuilder.acceptCharset(); }
     void setAcceptCharset(const String&);
 
@@ -107,7 +110,11 @@ public:
 
     virtual String target() const;
     void setTarget(const String&);
-    
+
+    HTMLFormControlElement* defaultButton() const;
+
+    bool checkValidity();
+
     PassRefPtr<HTMLFormControlElement> elementForAlias(const AtomicString&);
     void addElementAlias(HTMLFormControlElement*, const AtomicString& alias);
 

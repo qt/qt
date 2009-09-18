@@ -91,6 +91,11 @@ bool JSWebKitPoint::getOwnPropertySlot(ExecState* exec, const Identifier& proper
     return getStaticValueSlot<JSWebKitPoint, Base>(exec, &JSWebKitPointTable, this, propertyName, slot);
 }
 
+bool JSWebKitPoint::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSWebKitPoint, Base>(exec, &JSWebKitPointTable, this, propertyName, descriptor);
+}
+
 JSValue jsWebKitPointX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSWebKitPoint* castedThis = static_cast<JSWebKitPoint*>(asObject(slot.slotBase()));
@@ -130,7 +135,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, WebKitP
 }
 WebKitPoint* toWebKitPoint(JSC::JSValue value)
 {
-    return value.isObject(&JSWebKitPoint::s_info) ? static_cast<JSWebKitPoint*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSWebKitPoint::s_info) ? static_cast<JSWebKitPoint*>(asObject(value))->impl() : 0;
 }
 
 }

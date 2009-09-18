@@ -25,10 +25,8 @@
 #include "CanvasPattern.h"
 #include "CanvasRenderingContext2D.h"
 #include "CanvasStyle.h"
-#include "HTMLCanvasElement.h"
 #include "ImageData.h"
 #include "JSCanvasGradient.h"
-#include "JSHTMLCanvasElement.h"
 #include "JSImageData.h"
 #include "JSTextMetrics.h"
 #include "KURL.h"
@@ -47,9 +45,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSCanvasRenderingContext2D);
 
 /* Hash table */
 
-static const HashTableValue JSCanvasRenderingContext2DTableValues[18] =
+static const HashTableValue JSCanvasRenderingContext2DTableValues[17] =
 {
-    { "canvas", DontDelete|ReadOnly, (intptr_t)jsCanvasRenderingContext2DCanvas, (intptr_t)0 },
     { "globalAlpha", DontDelete, (intptr_t)jsCanvasRenderingContext2DGlobalAlpha, (intptr_t)setJSCanvasRenderingContext2DGlobalAlpha },
     { "globalCompositeOperation", DontDelete, (intptr_t)jsCanvasRenderingContext2DGlobalCompositeOperation, (intptr_t)setJSCanvasRenderingContext2DGlobalCompositeOperation },
     { "lineWidth", DontDelete, (intptr_t)jsCanvasRenderingContext2DLineWidth, (intptr_t)setJSCanvasRenderingContext2DLineWidth },
@@ -73,7 +70,7 @@ static JSC_CONST_HASHTABLE HashTable JSCanvasRenderingContext2DTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 8191, JSCanvasRenderingContext2DTableValues, 0 };
 #else
-    { 67, 63, JSCanvasRenderingContext2DTableValues, 0 };
+    { 36, 31, JSCanvasRenderingContext2DTableValues, 0 };
 #endif
 
 /* Hash table for constructor */
@@ -98,6 +95,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSCanvasRenderingContext2DPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -112,6 +110,11 @@ const ClassInfo JSCanvasRenderingContext2DConstructor::s_info = { "CanvasRenderi
 bool JSCanvasRenderingContext2DConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCanvasRenderingContext2DConstructor, DOMObject>(exec, &JSCanvasRenderingContext2DConstructorTable, this, propertyName, slot);
+}
+
+bool JSCanvasRenderingContext2DConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCanvasRenderingContext2DConstructor, DOMObject>(exec, &JSCanvasRenderingContext2DConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -184,22 +187,21 @@ bool JSCanvasRenderingContext2DPrototype::getOwnPropertySlot(ExecState* exec, co
     return getStaticFunctionSlot<JSObject>(exec, &JSCanvasRenderingContext2DPrototypeTable, this, propertyName, slot);
 }
 
-const ClassInfo JSCanvasRenderingContext2D::s_info = { "CanvasRenderingContext2D", 0, &JSCanvasRenderingContext2DTable, 0 };
-
-JSCanvasRenderingContext2D::JSCanvasRenderingContext2D(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasRenderingContext2D> impl)
-    : DOMObjectWithGlobalPointer(structure, globalObject)
-    , m_impl(impl)
+bool JSCanvasRenderingContext2DPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
 {
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSCanvasRenderingContext2DPrototypeTable, this, propertyName, descriptor);
 }
 
-JSCanvasRenderingContext2D::~JSCanvasRenderingContext2D()
+const ClassInfo JSCanvasRenderingContext2D::s_info = { "CanvasRenderingContext2D", &JSCanvasRenderingContext::s_info, &JSCanvasRenderingContext2DTable, 0 };
+
+JSCanvasRenderingContext2D::JSCanvasRenderingContext2D(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasRenderingContext2D> impl)
+    : JSCanvasRenderingContext(structure, globalObject, impl)
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
 }
 
 JSObject* JSCanvasRenderingContext2D::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCanvasRenderingContext2DPrototype(JSCanvasRenderingContext2DPrototype::createStructure(globalObject->objectPrototype()));
+    return new (exec) JSCanvasRenderingContext2DPrototype(JSCanvasRenderingContext2DPrototype::createStructure(JSCanvasRenderingContextPrototype::self(exec, globalObject)));
 }
 
 bool JSCanvasRenderingContext2D::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -207,12 +209,9 @@ bool JSCanvasRenderingContext2D::getOwnPropertySlot(ExecState* exec, const Ident
     return getStaticValueSlot<JSCanvasRenderingContext2D, Base>(exec, &JSCanvasRenderingContext2DTable, this, propertyName, slot);
 }
 
-JSValue jsCanvasRenderingContext2DCanvas(ExecState* exec, const Identifier&, const PropertySlot& slot)
+bool JSCanvasRenderingContext2D::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
 {
-    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
-    UNUSED_PARAM(exec);
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->canvas()));
+    return getStaticValueDescriptor<JSCanvasRenderingContext2D, Base>(exec, &JSCanvasRenderingContext2DTable, this, propertyName, descriptor);
 }
 
 JSValue jsCanvasRenderingContext2DGlobalAlpha(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -437,7 +436,7 @@ JSValue JSCanvasRenderingContext2D::getConstructor(ExecState* exec, JSGlobalObje
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSave(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -449,7 +448,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSave(ExecState*
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionRestore(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -461,7 +460,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionRestore(ExecSta
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionScale(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -475,7 +474,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionScale(ExecState
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionRotate(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -488,7 +487,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionRotate(ExecStat
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionTranslate(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -502,7 +501,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionTranslate(ExecS
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionTransform(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -520,7 +519,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionTransform(ExecS
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSetTransform(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -538,7 +537,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSetTransform(Ex
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionCreateLinearGradient(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -557,7 +556,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionCreateLinearGra
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionCreateRadialGradient(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -578,7 +577,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionCreateRadialGra
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionClearRect(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -594,7 +593,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionClearRect(ExecS
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionFillRect(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -610,7 +609,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionFillRect(ExecSt
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionBeginPath(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -622,7 +621,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionBeginPath(ExecS
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionClosePath(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -634,7 +633,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionClosePath(ExecS
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionMoveTo(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -648,7 +647,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionMoveTo(ExecStat
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionLineTo(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -662,7 +661,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionLineTo(ExecStat
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionQuadraticCurveTo(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -678,7 +677,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionQuadraticCurveT
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionBezierCurveTo(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -696,7 +695,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionBezierCurveTo(E
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionArcTo(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -715,7 +714,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionArcTo(ExecState
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionRect(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -731,7 +730,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionRect(ExecState*
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionArc(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -751,7 +750,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionArc(ExecState* 
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionFill(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -763,7 +762,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionFill(ExecState*
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionStroke(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -775,7 +774,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionStroke(ExecStat
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionClip(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -787,7 +786,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionClip(ExecState*
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionIsPointInPath(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -802,7 +801,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionIsPointInPath(E
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionFillText(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     return castedThisObj->fillText(exec, args);
@@ -811,7 +810,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionFillText(ExecSt
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionStrokeText(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     return castedThisObj->strokeText(exec, args);
@@ -820,7 +819,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionStrokeText(Exec
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionMeasureText(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -834,7 +833,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionMeasureText(Exe
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSetAlpha(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -847,7 +846,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSetAlpha(ExecSt
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSetCompositeOperation(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -860,7 +859,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSetCompositeOpe
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSetLineWidth(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -873,7 +872,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSetLineWidth(Ex
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSetLineCap(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -886,7 +885,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSetLineCap(Exec
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSetLineJoin(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -899,7 +898,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSetLineJoin(Exe
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSetMiterLimit(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -912,7 +911,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSetMiterLimit(E
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionClearShadow(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -924,7 +923,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionClearShadow(Exe
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSetStrokeColor(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     return castedThisObj->setStrokeColor(exec, args);
@@ -933,7 +932,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSetStrokeColor(
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSetFillColor(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     return castedThisObj->setFillColor(exec, args);
@@ -942,7 +941,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSetFillColor(Ex
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionStrokeRect(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     return castedThisObj->strokeRect(exec, args);
@@ -951,7 +950,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionStrokeRect(Exec
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionDrawImage(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     return castedThisObj->drawImage(exec, args);
@@ -960,7 +959,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionDrawImage(ExecS
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionDrawImageFromRect(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     return castedThisObj->drawImageFromRect(exec, args);
@@ -969,7 +968,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionDrawImageFromRe
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSetShadow(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     return castedThisObj->setShadow(exec, args);
@@ -978,7 +977,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSetShadow(ExecS
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionCreatePattern(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     return castedThisObj->createPattern(exec, args);
@@ -987,22 +986,24 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionCreatePattern(E
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionCreateImageData(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
+    ExceptionCode ec = 0;
     float sw = args.at(0).toFloat(exec);
     float sh = args.at(1).toFloat(exec);
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createImageData(sw, sh)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createImageData(sw, sh, ec)));
+    setDOMException(exec, ec);
     return result;
 }
 
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionGetImageData(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThisObj->impl());
@@ -1021,19 +1022,11 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionGetImageData(Ex
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionPutImageData(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasRenderingContext2D::s_info))
+    if (!thisValue.inherits(&JSCanvasRenderingContext2D::s_info))
         return throwError(exec, TypeError);
     JSCanvasRenderingContext2D* castedThisObj = static_cast<JSCanvasRenderingContext2D*>(asObject(thisValue));
     return castedThisObj->putImageData(exec, args);
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, CanvasRenderingContext2D* object)
-{
-    return getDOMObjectWrapper<JSCanvasRenderingContext2D>(exec, globalObject, object);
-}
-CanvasRenderingContext2D* toCanvasRenderingContext2D(JSC::JSValue value)
-{
-    return value.isObject(&JSCanvasRenderingContext2D::s_info) ? static_cast<JSCanvasRenderingContext2D*>(asObject(value))->impl() : 0;
-}
 
 }

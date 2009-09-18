@@ -56,6 +56,10 @@ QT_END_NAMESPACE
 class wxString;
 #endif
 
+#if PLATFORM(HAIKU)
+class BString;
+#endif
+
 namespace WebCore {
 
 class CString;
@@ -229,6 +233,11 @@ public:
     operator wxString() const;
 #endif
 
+#if PLATFORM(HAIKU)
+    String(const BString&);
+    operator BString() const;
+#endif
+
 #ifndef NDEBUG
     Vector<char> ascii() const;
 #endif
@@ -271,6 +280,8 @@ inline bool operator!=(const char* a, const String& b) { return !equal(a, b.impl
 inline bool equalIgnoringCase(const String& a, const String& b) { return equalIgnoringCase(a.impl(), b.impl()); }
 inline bool equalIgnoringCase(const String& a, const char* b) { return equalIgnoringCase(a.impl(), b); }
 inline bool equalIgnoringCase(const char* a, const String& b) { return equalIgnoringCase(a, b.impl()); }
+
+inline bool equalIgnoringNullity(const String& a, const String& b) { return equalIgnoringNullity(a.impl(), b.impl()); }
 
 inline bool operator!(const String& str) { return str.isNull(); }
 

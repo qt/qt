@@ -61,7 +61,13 @@ class QStringList;
 class Q_CORE_EXPORT QRegExp
 {
 public:
-    enum PatternSyntax { RegExp, Wildcard, FixedString, RegExp2, W3CXmlSchema11 };
+    enum PatternSyntax {
+        RegExp,
+        Wildcard,
+        FixedString,
+        RegExp2,
+        WildcardUnix,
+        W3CXmlSchema11 };
     enum CaretMode { CaretAtZero, CaretAtOffset, CaretWontMatch };
 
     QRegExp();

@@ -7464,7 +7464,11 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
     bool hidemnmemonic = (tf & Qt::TextHideMnemonic);
 
     Qt::LayoutDirection layout_direction;
-    if(option)
+    if (tf & Qt::TextForceLeftToRight)
+        layout_direction = Qt::LeftToRight;
+    else if (tf & Qt::TextForceRightToLeft)
+        layout_direction = Qt::RightToLeft;
+    else if (option)
         layout_direction = option->textDirection();
     else if (painter)
         layout_direction = painter->layoutDirection();

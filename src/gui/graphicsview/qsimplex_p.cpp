@@ -84,12 +84,12 @@ void QSimplex::clearDataStructures()
     objective = 0;
 }
 
-void QSimplex::setConstraints(const QList<QSimplexConstraint *> newConstraints)
+bool QSimplex::setConstraints(const QList<QSimplexConstraint *> newConstraints)
 {
     clearDataStructures();
 
     if (newConstraints.isEmpty())
-        return;
+        return true;    // we are ok with no constraints
     constraints = newConstraints;
 
     // Set Variables direct mapping
@@ -153,7 +153,7 @@ void QSimplex::setConstraints(const QList<QSimplexConstraint *> newConstraints)
     matrix = (qreal *)malloc(sizeof(qreal) * columns * rows);
     if (!matrix) {
         qWarning() << "QSimplex: Unable to allocate memory!";
-        return;
+        return false;
     }
     for (int i = columns * rows - 1; i >= 0; --i)
         matrix[i] = 0.0;
@@ -198,11 +198,12 @@ void QSimplex::setConstraints(const QList<QSimplexConstraint *> newConstraints)
     if (valueAt(0, columns - 1) != 0.0) {
         qWarning() << "QSimplex: No feasible solution!";
         clearDataStructures();
-        return;
+        return false;
     }
 
     // Remove artificial variables
     clearColumns(firstArtificial, columns - 2);
+    return true;
 }
 
 void QSimplex::solveMaxHelper()

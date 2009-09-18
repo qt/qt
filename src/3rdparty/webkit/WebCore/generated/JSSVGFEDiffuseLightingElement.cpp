@@ -95,6 +95,11 @@ bool JSSVGFEDiffuseLightingElementPrototype::getOwnPropertySlot(ExecState* exec,
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGFEDiffuseLightingElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGFEDiffuseLightingElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGFEDiffuseLightingElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGFEDiffuseLightingElement::s_info = { "SVGFEDiffuseLightingElement", &JSSVGElement::s_info, &JSSVGFEDiffuseLightingElementTable, 0 };
 
 JSSVGFEDiffuseLightingElement::JSSVGFEDiffuseLightingElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEDiffuseLightingElement> impl)
@@ -110,6 +115,11 @@ JSObject* JSSVGFEDiffuseLightingElement::createPrototype(ExecState* exec, JSGlob
 bool JSSVGFEDiffuseLightingElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGFEDiffuseLightingElement, Base>(exec, &JSSVGFEDiffuseLightingElementTable, this, propertyName, slot);
+}
+
+bool JSSVGFEDiffuseLightingElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFEDiffuseLightingElement, Base>(exec, &JSSVGFEDiffuseLightingElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGFEDiffuseLightingElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -222,7 +232,7 @@ JSValue jsSVGFEDiffuseLightingElementStyle(ExecState* exec, const Identifier&, c
 JSValue JSC_HOST_CALL jsSVGFEDiffuseLightingElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGFEDiffuseLightingElement::s_info))
+    if (!thisValue.inherits(&JSSVGFEDiffuseLightingElement::s_info))
         return throwError(exec, TypeError);
     JSSVGFEDiffuseLightingElement* castedThisObj = static_cast<JSSVGFEDiffuseLightingElement*>(asObject(thisValue));
     SVGFEDiffuseLightingElement* imp = static_cast<SVGFEDiffuseLightingElement*>(castedThisObj->impl());

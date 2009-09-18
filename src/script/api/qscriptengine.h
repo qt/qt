@@ -363,7 +363,7 @@ inline bool qscriptvalue_cast_helper(const QScriptValue &value, int type, void *
 
 template<typename T>
 T qscriptvalue_cast(const QScriptValue &value
-#ifndef Q_QDOC
+#if !defined qdoc && defined Q_CC_MSVC && _MSC_VER < 1300
 , T * = 0
 #endif
     )
@@ -379,11 +379,13 @@ T qscriptvalue_cast(const QScriptValue &value
     return T();
 }
 
+#if !defined Q_CC_MSVC || _MSC_VER >= 1300
 template <>
-inline QVariant qscriptvalue_cast<QVariant>(const QScriptValue &value, QVariant *)
+inline QVariant qscriptvalue_cast<QVariant>(const QScriptValue &value)
 {
     return value.toVariant();
 }
+#endif
 
 template <typename T>
 inline T qScriptValueToValue(const QScriptValue &value)

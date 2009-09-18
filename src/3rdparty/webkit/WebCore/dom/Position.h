@@ -28,6 +28,7 @@
 
 #include "TextAffinity.h"
 #include "TextDirection.h"
+#include "Node.h" // for position creation functions
 #include <wtf/Assertions.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
@@ -188,14 +189,53 @@ inline bool operator!=(const Position& a, const Position& b)
     return !(a == b);
 }
 
-Position startPosition(const Range*);
-Position endPosition(const Range*);
+// We define position creation functions to make callsites more readable.
+// These are inline to prevent ref-churn when returning a Position object.
+// If we ever add a PassPosition we can make these non-inline.
 
-// NOTE: first/lastDeepEditingPositionForNode can return "editing positions" (like [img, 0])
-// for elements which editing "ignores".  the rest of the editing code will treat [img, 0]
-// as "the last position before the img"
-Position firstDeepEditingPositionForNode(Node*);
-Position lastDeepEditingPositionForNode(Node*);
+inline Position positionInParentBeforeNode(const Node* node)
+{
+    // FIXME: This should ASSERT(node->parentNode())
+    // At least one caller currently hits this ASSERT though, which indicates
+    // that the caller is trying to make a position relative to a disconnected node (which is likely an error)
+    // Specifically, editing/deleting/delete-ligature-001.html crashes with ASSERT(node->parentNode())
+    return Position(node->parentNode(), node->nodeIndex(), Position::PositionIsOffsetInAnchor);
+}
+
+inline Position positionInParentAfterNode(const Node* node)
+{
+    ASSERT(node->parentNode());
+    return Position(node->parentNode(), node->nodeIndex() + 1, Position::PositionIsOffsetInAnchor);
+}
+
+// positionBeforeNode and positionAfterNode return neighbor-anchored positions, construction is O(1)
+inline Position positionBeforeNode(Node* anchorNode)
+{
+    ASSERT(anchorNode);
+    return Position(anchorNode, Position::PositionIsBeforeAnchor);
+}
+
+inline Position positionAfterNode(Node* anchorNode)
+{
+    ASSERT(anchorNode);
+    return Position(anchorNode, Position::PositionIsAfterAnchor);
+}
+
+inline int lastOffsetInNode(Node* node)
+{
+    return node->offsetInCharacters() ? node->maxCharacterOffset() : node->childNodeCount();
+}
+
+// firstPositionInNode and lastPositionInNode return parent-anchored positions, lastPositionInNode construction is O(n) due to childNodeCount()
+inline Position firstPositionInNode(Node* anchorNode)
+{
+    return Position(anchorNode, 0, Position::PositionIsOffsetInAnchor);
+}
+
+inline Position lastPositionInNode(Node* anchorNode)
+{
+    return Position(anchorNode, lastOffsetInNode(anchorNode), Position::PositionIsOffsetInAnchor);
+}
 
 } // namespace WebCore
 

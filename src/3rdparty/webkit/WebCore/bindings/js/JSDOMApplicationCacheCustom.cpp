@@ -42,25 +42,25 @@ using namespace JSC;
 
 namespace WebCore {
 
-void JSDOMApplicationCache::mark()
+void JSDOMApplicationCache::markChildren(MarkStack& markStack)
 {
-    Base::mark();
+    Base::markChildren(markStack);
 
-    markIfNotNull(m_impl->onchecking());
-    markIfNotNull(m_impl->onerror());
-    markIfNotNull(m_impl->onnoupdate());
-    markIfNotNull(m_impl->ondownloading());
-    markIfNotNull(m_impl->onprogress());
-    markIfNotNull(m_impl->onupdateready());
-    markIfNotNull(m_impl->oncached());
-    markIfNotNull(m_impl->onobsolete());
+    markIfNotNull(markStack, m_impl->onchecking());
+    markIfNotNull(markStack, m_impl->onerror());
+    markIfNotNull(markStack, m_impl->onnoupdate());
+    markIfNotNull(markStack, m_impl->ondownloading());
+    markIfNotNull(markStack, m_impl->onprogress());
+    markIfNotNull(markStack, m_impl->onupdateready());
+    markIfNotNull(markStack, m_impl->oncached());
+    markIfNotNull(markStack, m_impl->onobsolete());
 
     typedef DOMApplicationCache::EventListenersMap EventListenersMap;
     typedef DOMApplicationCache::ListenerVector ListenerVector;
     EventListenersMap& eventListeners = m_impl->eventListeners();
     for (EventListenersMap::iterator mapIter = eventListeners.begin(); mapIter != eventListeners.end(); ++mapIter) {
         for (ListenerVector::iterator vecIter = mapIter->second.begin(); vecIter != mapIter->second.end(); ++vecIter)
-            (*vecIter)->markJSFunction();
+            (*vecIter)->markJSFunction(markStack);
     }
 }
 
@@ -112,10 +112,12 @@ JSValue JSDOMApplicationCache::addEventListener(ExecState* exec, const ArgList& 
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(impl()->scriptExecutionContext());
     if (!globalObject)
         return jsUndefined();
-    RefPtr<JSEventListener> listener = globalObject->findOrCreateJSEventListener(args.at(1));
-    if (!listener)
+
+    JSValue listener = args.at(1);
+    if (!listener.isObject())
         return jsUndefined();
-    impl()->addEventListener(args.at(0).toString(exec), listener.release(), args.at(2).toBoolean(exec));
+
+    impl()->addEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), globalObject, false), args.at(2).toBoolean(exec));
     return jsUndefined();
 }
 
@@ -124,10 +126,12 @@ JSValue JSDOMApplicationCache::removeEventListener(ExecState* exec, const ArgLis
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(impl()->scriptExecutionContext());
     if (!globalObject)
         return jsUndefined();
-    JSEventListener* listener = globalObject->findJSEventListener(args.at(1));
-    if (!listener)
+
+    JSValue listener = args.at(1);
+    if (!listener.isObject())
         return jsUndefined();
-    impl()->removeEventListener(args.at(0).toString(exec), listener, args.at(2).toBoolean(exec));
+
+    impl()->removeEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), globalObject, false).get(), args.at(2).toBoolean(exec));
     return jsUndefined();
 }
 

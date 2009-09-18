@@ -22,6 +22,7 @@ HEADERS += \
         painting/qpainter_p.h \
         painting/qpainterpath.h \
         painting/qpainterpath_p.h \
+        painting/qvectorpath_p.h \
         painting/qpathclipper_p.h \
         painting/qpdf_p.h \
         painting/qpen.h \

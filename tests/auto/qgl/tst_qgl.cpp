@@ -967,6 +967,11 @@ void tst_QGL::multipleFBOInterleavedRendering()
     QVERIFY(fbo2Painter.begin(fbo2));
     QVERIFY(fbo3Painter.begin(fbo3));
 
+    // Confirm we're using the GL2 engine, as interleaved rendering isn't supported
+    // on the GL1 engine:
+    if (fbo1Painter.paintEngine()->type() != QPaintEngine::OpenGL2)
+        QSKIP("Interleaved GL rendering requires OpenGL 2.0 or higher", SkipSingle);
+
     QPainterPath intersectingPath;
     intersectingPath.moveTo(0, 0);
     intersectingPath.lineTo(100, 0);

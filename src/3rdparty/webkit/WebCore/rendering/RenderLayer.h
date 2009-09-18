@@ -298,7 +298,7 @@ public:
     enum UpdateLayerPositionsFlag {
         DoFullRepaint = 1,
         CheckForRepaint = 1 << 1,
-        UpdateCompositingLayers = 1 << 2
+        UpdateCompositingLayers = 1 << 2,
     };
     typedef unsigned UpdateLayerPositionsFlags;
     void updateLayerPositions(UpdateLayerPositionsFlags = DoFullRepaint | UpdateCompositingLayers);
@@ -415,11 +415,13 @@ public:
 
 #if USE(ACCELERATED_COMPOSITING)
     bool isComposited() const { return m_backing != 0; }
+    bool hasCompositedMask() const;
     RenderLayerBacking* backing() const { return m_backing.get(); }
     RenderLayerBacking* ensureBacking();
     void clearBacking();
 #else
     bool isComposited() const { return false; }
+    bool hasCompositedMask() const { return false; }
 #endif
 
     bool paintsWithTransparency() const
@@ -507,6 +509,8 @@ private:
     Node* enclosingElement() const;
 
     void createReflection();
+    void removeReflection();
+
     void updateReflectionStyle();
     bool paintingInsideReflection() const { return m_paintingInsideReflection; }
     void setPaintingInsideReflection(bool b) { m_paintingInsideReflection = b; }

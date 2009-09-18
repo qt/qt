@@ -111,6 +111,11 @@ bool JSSVGPolygonElementPrototype::getOwnPropertySlot(ExecState* exec, const Ide
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGPolygonElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGPolygonElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGPolygonElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGPolygonElement::s_info = { "SVGPolygonElement", &JSSVGElement::s_info, &JSSVGPolygonElementTable, 0 };
 
 JSSVGPolygonElement::JSSVGPolygonElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPolygonElement> impl)
@@ -126,6 +131,11 @@ JSObject* JSSVGPolygonElement::createPrototype(ExecState* exec, JSGlobalObject* 
 bool JSSVGPolygonElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGPolygonElement, Base>(exec, &JSSVGPolygonElementTable, this, propertyName, slot);
+}
+
+bool JSSVGPolygonElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGPolygonElement, Base>(exec, &JSSVGPolygonElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGPolygonElementRequiredFeatures(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -255,7 +265,7 @@ void setJSSVGPolygonElementXmlspace(ExecState* exec, JSObject* thisObject, JSVal
 JSValue JSC_HOST_CALL jsSVGPolygonElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGPolygonElement::s_info))
+    if (!thisValue.inherits(&JSSVGPolygonElement::s_info))
         return throwError(exec, TypeError);
     JSSVGPolygonElement* castedThisObj = static_cast<JSSVGPolygonElement*>(asObject(thisValue));
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(castedThisObj->impl());
@@ -269,7 +279,7 @@ JSValue JSC_HOST_CALL jsSVGPolygonElementPrototypeFunctionHasExtension(ExecState
 JSValue JSC_HOST_CALL jsSVGPolygonElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGPolygonElement::s_info))
+    if (!thisValue.inherits(&JSSVGPolygonElement::s_info))
         return throwError(exec, TypeError);
     JSSVGPolygonElement* castedThisObj = static_cast<JSSVGPolygonElement*>(asObject(thisValue));
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(castedThisObj->impl());
@@ -283,7 +293,7 @@ JSValue JSC_HOST_CALL jsSVGPolygonElementPrototypeFunctionGetPresentationAttribu
 JSValue JSC_HOST_CALL jsSVGPolygonElementPrototypeFunctionGetBBox(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGPolygonElement::s_info))
+    if (!thisValue.inherits(&JSSVGPolygonElement::s_info))
         return throwError(exec, TypeError);
     JSSVGPolygonElement* castedThisObj = static_cast<JSSVGPolygonElement*>(asObject(thisValue));
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(castedThisObj->impl());
@@ -296,7 +306,7 @@ JSValue JSC_HOST_CALL jsSVGPolygonElementPrototypeFunctionGetBBox(ExecState* exe
 JSValue JSC_HOST_CALL jsSVGPolygonElementPrototypeFunctionGetCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGPolygonElement::s_info))
+    if (!thisValue.inherits(&JSSVGPolygonElement::s_info))
         return throwError(exec, TypeError);
     JSSVGPolygonElement* castedThisObj = static_cast<JSSVGPolygonElement*>(asObject(thisValue));
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(castedThisObj->impl());
@@ -309,7 +319,7 @@ JSValue JSC_HOST_CALL jsSVGPolygonElementPrototypeFunctionGetCTM(ExecState* exec
 JSValue JSC_HOST_CALL jsSVGPolygonElementPrototypeFunctionGetScreenCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGPolygonElement::s_info))
+    if (!thisValue.inherits(&JSSVGPolygonElement::s_info))
         return throwError(exec, TypeError);
     JSSVGPolygonElement* castedThisObj = static_cast<JSSVGPolygonElement*>(asObject(thisValue));
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(castedThisObj->impl());
@@ -322,7 +332,7 @@ JSValue JSC_HOST_CALL jsSVGPolygonElementPrototypeFunctionGetScreenCTM(ExecState
 JSValue JSC_HOST_CALL jsSVGPolygonElementPrototypeFunctionGetTransformToElement(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGPolygonElement::s_info))
+    if (!thisValue.inherits(&JSSVGPolygonElement::s_info))
         return throwError(exec, TypeError);
     JSSVGPolygonElement* castedThisObj = static_cast<JSSVGPolygonElement*>(asObject(thisValue));
     SVGPolygonElement* imp = static_cast<SVGPolygonElement*>(castedThisObj->impl());

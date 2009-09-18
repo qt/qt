@@ -31,7 +31,9 @@
 
 #include "Console.h"
 #include "PlatformString.h"
+#include "ScriptObject.h"
 #include "ScriptState.h"
+#include "ScriptValue.h"
 #include "StringHash.h"
 #include "Timer.h"
 
@@ -53,14 +55,16 @@ namespace WebCore {
 
 class CachedResource;
 class Database;
+class Document;
 class DocumentLoader;
 class GraphicsContext;
 class HitTestResult;
 class InspectorBackend;
 class InspectorClient;
+class InspectorDOMAgent;
 class InspectorFrontend;
+class InspectorTimelineAgent;
 class JavaScriptCallFrame;
-class StorageArea;
 class KURL;
 class Node;
 class Page;
@@ -68,9 +72,9 @@ struct ResourceRequest;
 class ResourceResponse;
 class ResourceError;
 class ScriptCallStack;
-class ScriptObject;
 class ScriptString;
 class SharedBuffer;
+class StorageArea;
 
 class ConsoleMessage;
 class InspectorDatabaseResource;
@@ -91,11 +95,11 @@ public:
     typedef enum {
         CurrentPanel,
         ConsolePanel,
-        DatabasesPanel,
         ElementsPanel,
         ProfilesPanel,
         ResourcesPanel,
-        ScriptsPanel
+        ScriptsPanel,
+        StoragePanel
     } SpecialPanels;
 
     struct Setting {
@@ -180,7 +184,8 @@ public:
 
     void addMessageToConsole(MessageSource, MessageType, MessageLevel, ScriptCallStack*);
     void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String& message, unsigned lineNumber, const String& sourceID);
-    void clearConsoleMessages();
+    void clearConsoleMessages(bool clearUI);
+    const Vector<ConsoleMessage*>& consoleMessages() const { return m_consoleMessages; }
 
     void attachWindow();
     void detachWindow();
@@ -190,10 +195,10 @@ public:
     void mouseDidMoveOverElement(const HitTestResult&, unsigned modifierFlags);
     void handleMousePressOnNode(Node*);
 
-    void inspectedWindowScriptObjectCleared(Frame*);
     void windowScriptObjectAvailable();
 
-    void setFrontendProxyObject(ScriptState* state, ScriptObject object);
+    void setFrontendProxyObject(ScriptState* state, ScriptObject webInspectorObj, ScriptObject injectedScriptObj = ScriptObject());
+    ScriptState* frontendScriptState() const { return m_scriptState; }
 
     void populateScriptObjects();
     void resetScriptObjects();
@@ -216,6 +221,11 @@ public:
     void disableResourceTracking(bool always = false);
     bool resourceTrackingEnabled() const { return m_resourceTrackingEnabled; }
     void ensureResourceTrackingSettingsLoaded();
+
+    void enableTimeline(bool always = false);
+    void disableTimeline(bool always = false);
+    bool timelineEnabled() const;
+    InspectorTimelineAgent* timelineAgent() { return m_timelineAgent.get(); }
 
 #if ENABLE(DATABASE)
     void didOpenDatabase(Database*, const String& domain, const String& name, const String& version);
@@ -240,7 +250,6 @@ public:
     void addProfile(PassRefPtr<JSC::Profile>, unsigned lineNumber, const JSC::UString& sourceURL);
     void addProfileFinishedMessageToConsole(PassRefPtr<JSC::Profile>, unsigned lineNumber, const JSC::UString& sourceURL);
     void addStartProfilingMessageToConsole(const JSC::UString& title, unsigned lineNumber, const JSC::UString& sourceURL);
-    void addScriptProfile(JSC::Profile*);
     const ProfilesArray& profiles() const { return m_profiles; }
 
     bool isRecordingUserInitiatedProfile() const { return m_recordingUserInitiatedProfile; }
@@ -267,7 +276,6 @@ public:
 
 private:
     friend class InspectorBackend;
- 
     // Following are used from InspectorBackend and internally.
     void scriptObjectReady();
     void moveWindowBy(float x, float y) const;
@@ -275,6 +283,19 @@ private:
     void setAttachedWindowHeight(unsigned height);
     void storeLastActivePanel(const String& panelName);
     void closeWindow();
+    InspectorDOMAgent* domAgent() { return m_domAgent.get(); }
+
+    friend class InspectorFrontend;
+    // Following are used from InspectorFrontend only. We don't want to expose them to the
+    // rest of the InspectorController clients.
+    // TODO: extract these into a separate interface.
+    ScriptValue wrapObject(const ScriptValue& object);
+    ScriptValue unwrapObject(const String& objectId);
+    
+    void resetInjectedScript();
+
+    void deleteCookie(const String& cookieName);
+
 #if ENABLE(JAVASCRIPT_DEBUGGER)
     void startUserInitiatedProfilingSoon();
     void toggleRecordButton(bool);
@@ -301,6 +322,9 @@ private:
     Page* m_inspectedPage;
     InspectorClient* m_client;
     OwnPtr<InspectorFrontend> m_frontend;
+    RefPtr<InspectorDOMAgent> m_domAgent;
+    OwnPtr<InspectorTimelineAgent> m_timelineAgent;
+    ScriptObject m_injectedScriptObj;
     Page* m_page;
     RefPtr<Node> m_nodeToFocus;
     RefPtr<InspectorResource> m_mainResource;
@@ -327,6 +351,8 @@ private:
     bool m_resourceTrackingEnabled;
     bool m_resourceTrackingSettingsLoaded;
     RefPtr<InspectorBackend> m_inspectorBackend;
+    HashMap<String, ScriptValue> m_idToConsoleObject;
+    long m_lastBoundObjectId;
 #if ENABLE(JAVASCRIPT_DEBUGGER)
     bool m_debuggerEnabled;
     bool m_attachDebuggerWhenShown;

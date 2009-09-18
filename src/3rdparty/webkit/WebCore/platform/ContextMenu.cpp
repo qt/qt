@@ -27,6 +27,8 @@
 #include "config.h"
 #include "ContextMenu.h"
 
+#if ENABLE(CONTEXT_MENUS)
+
 #include "ContextMenuController.h"
 #include "ContextMenuClient.h"
 #include "CSSComputedStyleDeclaration.h"
@@ -514,6 +516,7 @@ void ContextMenu::populate()
     }
 }
 
+#if ENABLE(INSPECTOR)
 void ContextMenu::addInspectElementItem()
 {
     Node* node = m_hitTestResult.innerNonSharedNode();
@@ -535,6 +538,7 @@ void ContextMenu::addInspectElementItem()
     appendItem(*separatorItem());
     appendItem(InspectElementItem);
 }
+#endif // ENABLE(INSPECTOR)
 
 void ContextMenu::checkOrEnableIfNeeded(ContextMenuItem& item) const
 {
@@ -711,7 +715,10 @@ void ContextMenu::checkOrEnableIfNeeded(ContextMenuItem& item) const
         case ContextMenuItemTagStopSpeaking:
             shouldEnable = controller() && controller()->client() && controller()->client()->isSpeaking();
             break;
-#endif // PLATFORM(MAC)
+#else // PLATFORM(MAC) ends here
+        case ContextMenuItemTagStopSpeaking:
+            break;
+#endif
 #if PLATFORM(GTK)
         case ContextMenuItemTagGoBack:
             shouldEnable = frame->loader()->canGoBackOrForward(-1);
@@ -769,7 +776,9 @@ void ContextMenu::checkOrEnableIfNeeded(ContextMenuItem& item) const
         case ContextMenuItemTagTextDirectionMenu:
         case ContextMenuItemTagPDFSinglePageScrolling:
         case ContextMenuItemTagPDFFacingPagesScrolling:
+#if ENABLE(INSPECTOR)
         case ContextMenuItemTagInspectElement:
+#endif
         case ContextMenuItemBaseApplicationTag:
             break;
     }
@@ -778,4 +787,6 @@ void ContextMenu::checkOrEnableIfNeeded(ContextMenuItem& item) const
     item.setEnabled(shouldEnable);
 }
 
-}
+} // namespace WebCore
+
+#endif // ENABLE(CONTEXT_MENUS)

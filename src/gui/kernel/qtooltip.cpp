@@ -290,8 +290,8 @@ void QTipLabel::timerEvent(QTimerEvent *e)
             // Fade out tip on mac (makes it invisible).
             // The tip will not be deleted until a new tip is shown.
 
-			// DRSWAT - Cocoa
-			macWindowFade(qt_mac_window_for(this));
+                        // DRSWAT - Cocoa
+                        macWindowFade(qt_mac_window_for(this));
             QTipLabel::instance->fadingOut = true; // will never be false again.
         }
         else
@@ -431,7 +431,7 @@ bool QTipLabel::tipChanged(const QPoint &pos, const QString &text, QObject *o)
 
 void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, const QRect &rect)
 {
-    if (QTipLabel::instance){ // a tip does already exist
+    if (QTipLabel::instance && QTipLabel::instance->isVisible()){ // a tip does already exist
         if (text.isEmpty()){ // empty text means hide current tip
             QTipLabel::instance->hideTip();
             return;

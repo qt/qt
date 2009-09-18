@@ -4,6 +4,7 @@
  *           (C) 2000 Dirk Mueller (mueller@kde.org)
  * Copyright (C) 2003, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
  * Copyright (C) 2006 Graham Dennis (graham.dennis@gmail.com)
+ * Copyright (C) 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -68,10 +69,9 @@ enum PseudoId {
     NOPSEUDO, FIRST_LINE, FIRST_LETTER, BEFORE, AFTER, SELECTION, FIRST_LINE_INHERITED, SCROLLBAR, FILE_UPLOAD_BUTTON, INPUT_PLACEHOLDER,
     SLIDER_THUMB, SEARCH_CANCEL_BUTTON, SEARCH_DECORATION, SEARCH_RESULTS_DECORATION, SEARCH_RESULTS_BUTTON, MEDIA_CONTROLS_PANEL,
     MEDIA_CONTROLS_PLAY_BUTTON, MEDIA_CONTROLS_MUTE_BUTTON, MEDIA_CONTROLS_TIMELINE, MEDIA_CONTROLS_TIMELINE_CONTAINER,
-    MEDIA_CONTROLS_CURRENT_TIME_DISPLAY, MEDIA_CONTROLS_TIME_REMAINING_DISPLAY, MEDIA_CONTROLS_SEEK_BACK_BUTTON, 
-    MEDIA_CONTROLS_SEEK_FORWARD_BUTTON, MEDIA_CONTROLS_FULLSCREEN_BUTTON, MEDIA_CONTROLS_REWIND_BUTTON,
-    MEDIA_CONTROLS_RETURN_TO_REALTIME_BUTTON, MEDIA_CONTROLS_STATUS_DISPLAY,
-    SCROLLBAR_THUMB, SCROLLBAR_BUTTON, SCROLLBAR_TRACK, SCROLLBAR_TRACK_PIECE, SCROLLBAR_CORNER, RESIZER,
+    MEDIA_CONTROLS_VOLUME_SLIDER, MEDIA_CONTROLS_VOLUME_SLIDER_CONTAINER, MEDIA_CONTROLS_CURRENT_TIME_DISPLAY, MEDIA_CONTROLS_TIME_REMAINING_DISPLAY, MEDIA_CONTROLS_SEEK_BACK_BUTTON,
+    MEDIA_CONTROLS_SEEK_FORWARD_BUTTON, MEDIA_CONTROLS_FULLSCREEN_BUTTON, MEDIA_CONTROLS_REWIND_BUTTON, MEDIA_CONTROLS_RETURN_TO_REALTIME_BUTTON,
+    MEDIA_CONTROLS_STATUS_DISPLAY, SCROLLBAR_THUMB, SCROLLBAR_BUTTON, SCROLLBAR_TRACK, SCROLLBAR_TRACK_PIECE, SCROLLBAR_CORNER, RESIZER,
 
     FIRST_INTERNAL_PSEUDOID = FILE_UPLOAD_BUTTON
 };
@@ -131,12 +131,15 @@ enum EFillBox {
 };
 
 enum EFillRepeat {
-    RepeatFill, RepeatXFill, RepeatYFill, NoRepeatFill
+    RepeatFill, NoRepeatFill, RoundFill, SpaceFill
 };
 
 enum EFillLayerType {
     BackgroundFillLayer, MaskFillLayer
 };
+
+// CSS3 Background Values
+enum EFillSizeType { Contain, Cover, SizeLength, SizeNone };
 
 // CSS3 Marquee Properties
 
@@ -211,6 +214,11 @@ enum StyleContentType {
 };
 
 enum EBorderFit { BorderFitBorder, BorderFitLines };
+
+enum EAnimPlayState {
+    AnimPlayStatePlaying = 0x0,
+    AnimPlayStatePaused = 0x1
+};
 
 enum ETimingFunctionType { LinearTimingFunction, CubicBezierTimingFunction };
 
@@ -293,7 +301,11 @@ enum EDisplay {
     TABLE, INLINE_TABLE, TABLE_ROW_GROUP,
     TABLE_HEADER_GROUP, TABLE_FOOTER_GROUP, TABLE_ROW,
     TABLE_COLUMN_GROUP, TABLE_COLUMN, TABLE_CELL,
-    TABLE_CAPTION, BOX, INLINE_BOX, NONE
+    TABLE_CAPTION, BOX, INLINE_BOX, 
+#if ENABLE(WCSS)
+    WAP_MARQUEE,
+#endif
+    NONE
 };
 
 enum EPointerEvents {
@@ -307,6 +319,10 @@ enum ETransformStyle3D {
 
 enum EBackfaceVisibility {
     BackfaceVisibilityVisible, BackfaceVisibilityHidden
+};
+
+enum FontSmoothing {
+    AutoSmoothing, NoSmoothing, Antialiased, SubpixelAntialiased
 };
 
 } // namespace WebCore

@@ -1,6 +1,6 @@
 /*
  *  Copyright (C) 1999-2001 Harri Porten (porten@kde.org)
- *  Copyright (C) 2003, 2007, 2008, 2009 Apple Computer, Inc.
+ *  Copyright (C) 2003, 2007, 2008, 2009 Apple Inc. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -22,15 +22,15 @@
 #ifndef ArgList_h
 #define ArgList_h
 
-#include "JSImmediate.h"
 #include "Register.h"
-
 #include <wtf/HashSet.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/Vector.h>
 
 namespace JSC {
-    
+
+    class MarkStack;
+
     class MarkedArgumentBuffer : public Noncopyable {
     private:
         static const unsigned inlineCapacity = 8;
@@ -136,7 +136,7 @@ namespace JSC {
         const_iterator begin() const { return m_buffer; }
         const_iterator end() const { return m_buffer + m_size; }
 
-        static void markLists(ListSet&);
+        static void markLists(MarkStack&, ListSet&);
 
     private:
         void slowAppend(JSValue);

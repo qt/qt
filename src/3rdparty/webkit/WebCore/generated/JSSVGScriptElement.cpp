@@ -92,6 +92,11 @@ bool JSSVGScriptElement::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticValueSlot<JSSVGScriptElement, Base>(exec, &JSSVGScriptElementTable, this, propertyName, slot);
 }
 
+bool JSSVGScriptElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGScriptElement, Base>(exec, &JSSVGScriptElementTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGScriptElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGScriptElement* castedThis = static_cast<JSSVGScriptElement*>(asObject(slot.slotBase()));

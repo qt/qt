@@ -77,6 +77,11 @@ bool JSGeolocationPrototype::getOwnPropertySlot(ExecState* exec, const Identifie
     return getStaticFunctionSlot<JSObject>(exec, &JSGeolocationPrototypeTable, this, propertyName, slot);
 }
 
+bool JSGeolocationPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSGeolocationPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSGeolocation::s_info = { "Geolocation", 0, &JSGeolocationTable, 0 };
 
 JSGeolocation::JSGeolocation(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Geolocation> impl)
@@ -100,6 +105,11 @@ bool JSGeolocation::getOwnPropertySlot(ExecState* exec, const Identifier& proper
     return getStaticValueSlot<JSGeolocation, Base>(exec, &JSGeolocationTable, this, propertyName, slot);
 }
 
+bool JSGeolocation::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSGeolocation, Base>(exec, &JSGeolocationTable, this, propertyName, descriptor);
+}
+
 JSValue jsGeolocationLastPosition(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSGeolocation* castedThis = static_cast<JSGeolocation*>(asObject(slot.slotBase()));
@@ -111,7 +121,7 @@ JSValue jsGeolocationLastPosition(ExecState* exec, const Identifier&, const Prop
 JSValue JSC_HOST_CALL jsGeolocationPrototypeFunctionGetCurrentPosition(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSGeolocation::s_info))
+    if (!thisValue.inherits(&JSGeolocation::s_info))
         return throwError(exec, TypeError);
     JSGeolocation* castedThisObj = static_cast<JSGeolocation*>(asObject(thisValue));
     return castedThisObj->getCurrentPosition(exec, args);
@@ -120,7 +130,7 @@ JSValue JSC_HOST_CALL jsGeolocationPrototypeFunctionGetCurrentPosition(ExecState
 JSValue JSC_HOST_CALL jsGeolocationPrototypeFunctionWatchPosition(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSGeolocation::s_info))
+    if (!thisValue.inherits(&JSGeolocation::s_info))
         return throwError(exec, TypeError);
     JSGeolocation* castedThisObj = static_cast<JSGeolocation*>(asObject(thisValue));
     return castedThisObj->watchPosition(exec, args);
@@ -129,7 +139,7 @@ JSValue JSC_HOST_CALL jsGeolocationPrototypeFunctionWatchPosition(ExecState* exe
 JSValue JSC_HOST_CALL jsGeolocationPrototypeFunctionClearWatch(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSGeolocation::s_info))
+    if (!thisValue.inherits(&JSGeolocation::s_info))
         return throwError(exec, TypeError);
     JSGeolocation* castedThisObj = static_cast<JSGeolocation*>(asObject(thisValue));
     Geolocation* imp = static_cast<Geolocation*>(castedThisObj->impl());
@@ -145,7 +155,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Geoloca
 }
 Geolocation* toGeolocation(JSC::JSValue value)
 {
-    return value.isObject(&JSGeolocation::s_info) ? static_cast<JSGeolocation*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSGeolocation::s_info) ? static_cast<JSGeolocation*>(asObject(value))->impl() : 0;
 }
 
 }

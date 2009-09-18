@@ -94,6 +94,11 @@ bool JSSVGFESpecularLightingElementPrototype::getOwnPropertySlot(ExecState* exec
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGFESpecularLightingElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGFESpecularLightingElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGFESpecularLightingElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGFESpecularLightingElement::s_info = { "SVGFESpecularLightingElement", &JSSVGElement::s_info, &JSSVGFESpecularLightingElementTable, 0 };
 
 JSSVGFESpecularLightingElement::JSSVGFESpecularLightingElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFESpecularLightingElement> impl)
@@ -109,6 +114,11 @@ JSObject* JSSVGFESpecularLightingElement::createPrototype(ExecState* exec, JSGlo
 bool JSSVGFESpecularLightingElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGFESpecularLightingElement, Base>(exec, &JSSVGFESpecularLightingElementTable, this, propertyName, slot);
+}
+
+bool JSSVGFESpecularLightingElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFESpecularLightingElement, Base>(exec, &JSSVGFESpecularLightingElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGFESpecularLightingElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -212,7 +222,7 @@ JSValue jsSVGFESpecularLightingElementStyle(ExecState* exec, const Identifier&, 
 JSValue JSC_HOST_CALL jsSVGFESpecularLightingElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGFESpecularLightingElement::s_info))
+    if (!thisValue.inherits(&JSSVGFESpecularLightingElement::s_info))
         return throwError(exec, TypeError);
     JSSVGFESpecularLightingElement* castedThisObj = static_cast<JSSVGFESpecularLightingElement*>(asObject(thisValue));
     SVGFESpecularLightingElement* imp = static_cast<SVGFESpecularLightingElement*>(castedThisObj->impl());

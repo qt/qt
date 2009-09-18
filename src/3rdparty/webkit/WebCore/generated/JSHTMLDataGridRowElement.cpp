@@ -73,6 +73,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLDataGridRowElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -87,6 +88,11 @@ const ClassInfo JSHTMLDataGridRowElementConstructor::s_info = { "HTMLDataGridRow
 bool JSHTMLDataGridRowElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLDataGridRowElementConstructor, DOMObject>(exec, &JSHTMLDataGridRowElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLDataGridRowElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLDataGridRowElementConstructor, DOMObject>(exec, &JSHTMLDataGridRowElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -125,6 +131,11 @@ JSObject* JSHTMLDataGridRowElement::createPrototype(ExecState* exec, JSGlobalObj
 bool JSHTMLDataGridRowElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLDataGridRowElement, Base>(exec, &JSHTMLDataGridRowElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLDataGridRowElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLDataGridRowElement, Base>(exec, &JSHTMLDataGridRowElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLDataGridRowElementSelected(ExecState* exec, const Identifier&, const PropertySlot& slot)

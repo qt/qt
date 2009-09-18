@@ -138,10 +138,7 @@ int Position::computeOffsetInContainerNode() const
 
     switch (anchorType()) {
     case PositionIsOffsetInAnchor:
-    {
-        int maximumValidOffset = m_anchorNode->offsetInCharacters() ? m_anchorNode->maxCharacterOffset() : m_anchorNode->childNodeCount();
-        return std::min(maximumValidOffset, m_offset);
-    }
+        return std::min(lastOffsetInNode(m_anchorNode.get()), m_offset);
     case PositionIsBeforeAnchor:
         return m_anchorNode->nodeIndex();
     case PositionIsAfterAnchor:
@@ -1115,28 +1112,7 @@ void Position::showTreeForThis() const
 
 #endif
 
-Position startPosition(const Range* r)
-{
-    return r ? r->startPosition() : Position();
-}
 
-Position endPosition(const Range* r)
-{
-    return r ? r->endPosition() : Position();
-}
-
-// NOTE: first/lastDeepEditingPositionForNode can return "editing positions" (like [img, 0])
-// for elements which editing "ignores".  the rest of the editing code will treat [img, 0]
-// as "the last position before the img"
-Position firstDeepEditingPositionForNode(Node* node)
-{
-    return Position(node, 0);
-}
-
-Position lastDeepEditingPositionForNode(Node* node)
-{
-    return Position(node, lastOffsetForEditing(node));
-}
 
 } // namespace WebCore
 

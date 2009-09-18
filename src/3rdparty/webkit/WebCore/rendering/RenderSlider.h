@@ -36,6 +36,7 @@ namespace WebCore {
 
         void forwardEvent(Event*);
         bool inDragMode() const;
+        IntRect thumbRect();
 
     private:
         virtual const char* renderName() const { return "RenderSlider"; }
@@ -65,6 +66,15 @@ namespace WebCore {
 
         friend class SliderThumbElement;
     };
+
+    inline RenderSlider* toRenderSlider(RenderObject* object)
+    {
+        ASSERT(!object || object->isSlider());
+        return static_cast<RenderSlider*>(object);
+    }
+
+    // This will catch anyone doing an unnecessary cast.
+    void toRenderSlider(const RenderSlider*);
 
 } // namespace WebCore
 

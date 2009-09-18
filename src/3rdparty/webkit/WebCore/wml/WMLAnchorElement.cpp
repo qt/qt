@@ -54,13 +54,25 @@ void WMLAnchorElement::defaultEventHandler(Event* event)
         shouldHandle = static_cast<KeyboardEvent*>(event)->keyIdentifier() == "Enter";
 
     if (shouldHandle && m_task) {
-        m_task->executeTask(event);
+        m_task->executeTask();
         event->setDefaultHandled();
         return;
     }
 
     // Skip WMLAElement::defaultEventHandler, we don't own a href attribute, that needs to be handled.
     WMLElement::defaultEventHandler(event); 
+}
+
+void WMLAnchorElement::registerTask(WMLTaskElement* task)
+{
+    ASSERT(!m_task);
+    m_task = task;
+}
+
+void WMLAnchorElement::deregisterTask(WMLTaskElement* task)
+{
+    ASSERT_UNUSED(task, m_task == task);
+    m_task = 0;
 }
 
 }

@@ -80,6 +80,7 @@ namespace WebCore {
 
         IntSize naturalSize() const;
         bool hasVideo() const;
+        bool hasAudio() const;
 
         void load(const String &url);
         void cancelLoad();
@@ -104,7 +105,7 @@ namespace WebCore {
         MediaPlayer::NetworkState networkState() const;
         MediaPlayer::ReadyState readyState() const;
 
-        float maxTimeBuffered() const;
+        PassRefPtr<TimeRanges> buffered() const;
         float maxTimeSeekable() const;
         unsigned bytesLoaded() const;
         bool totalBytesKnown() const;

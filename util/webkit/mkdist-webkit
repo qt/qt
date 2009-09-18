@@ -5,7 +5,7 @@ die() {
     exit 1
 }
 
-default_tag="qtwebkit-4.6-snapshot-29072009"
+default_tag="qtwebkit-4.6-snapshot-18092009"
 
 if [ $# -eq 0 ]; then
     tag="$default_tag"
@@ -42,6 +42,7 @@ excluded_directories="$excluded_directories JavaScriptCore/JavaScriptCore.xcodep
 excluded_directories="$excluded_directories JavaScriptCore/tests"
 excluded_directories="$excluded_directories JavaScriptCore/API/tests"
 excluded_directories="$excluded_directories JavaScriptCore/JavaScriptCore.vcproj"
+excluded_directories="$excluded_directories JavaScriptCore/JavaScriptCore.pro"
 excluded_directories="$excluded_directories JavaScriptCore/wtf/wx"
 excluded_directories="$excluded_directories JavaScriptCore/wtf/gtk"
 excluded_directories="$excluded_directories JavaScriptCore/wtf/mac"
@@ -76,6 +77,7 @@ excluded_directories="$excluded_directories WebCore/page/mac"
 excluded_directories="$excluded_directories WebCore/page/wx"
 excluded_directories="$excluded_directories WebCore/page/chromium"
 excluded_directories="$excluded_directories WebCore/page/haiku"
+excluded_directories="$excluded_directories WebCore/page/wince"
 
 excluded_directories="$excluded_directories WebCore/history/mac"
 
@@ -196,6 +198,10 @@ files_to_remove="$files_to_remove JavaScriptCore/AllInOneFile.cpp"
 files_to_remove="$files_to_remove JavaScriptCore/JavaScriptCoreSources.bkl"
 files_to_remove="$files_to_remove JavaScriptCore/jscore.bkl"
 
+files_to_remove="$files_to_remove WebCore/wscript"
+files_to_remove="$files_to_remove WebCore/WebCore.ContextMenus.exp"
+files_to_remove="$files_to_remove WebCore/WebCore.DragSupport.exp"
+files_to_remove="$files_to_remove WebCore/WebCore.Inspector.exp"
 files_to_remove="$files_to_remove WebCore/WebCoreSources.bkl"
 files_to_remove="$files_to_remove WebCore/webcore-base.bkl"
 files_to_remove="$files_to_remove WebCore/webcore-wx.bkl"

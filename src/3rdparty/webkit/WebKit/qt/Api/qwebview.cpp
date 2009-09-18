@@ -36,39 +36,21 @@ public:
         : view(view)
         , page(0)
         , renderHints(QPainter::TextAntialiasing)
-#ifndef QT_NO_CURSOR
-        , cursorSetByWebCore(false)
-        , usesWebCoreCursor(true)
-#endif
     {}
+
+    void _q_pageDestroyed();
 
     QWebView *view;
     QWebPage *page;
 
     QPainter::RenderHints renderHints;
-
-#ifndef QT_NO_CURSOR
-    /*
-     * We keep track of if we have called setCursor and if the CursorChange
-     * event is sent due our setCursor call and if we currently use the WebCore
-     * Cursor and use it to decide if we can update to another WebCore Cursor.
-     */
-    bool cursorSetByWebCore;
-    bool usesWebCoreCursor;
-
-    void setCursor(const QCursor& newCursor)
-    {
-        webCoreCursor = newCursor;
-
-        if (usesWebCoreCursor) {
-            cursorSetByWebCore = true;
-            view->setCursor(webCoreCursor);
-        }
-    }
-
-    QCursor webCoreCursor;
-#endif
 };
+
+void QWebViewPrivate::_q_pageDestroyed()
+{
+    page = 0;
+    view->setPage(0);
+}
 
 /*!
     \class QWebView
@@ -244,6 +226,8 @@ void QWebView::setPage(QWebPage* page)
 
         connect(d->page, SIGNAL(microFocusChanged()),
                 this, SLOT(updateMicroFocus()));
+        connect(d->page, SIGNAL(destroyed()),
+                this, SLOT(_q_pageDestroyed()));
     }
     setAttribute(Qt::WA_OpaquePaintEvent, d->page);
     update();
@@ -696,18 +680,25 @@ bool QWebView::event(QEvent *e)
         if (e->type() == QEvent::ShortcutOverride) {
             d->page->event(e);
 #ifndef QT_NO_CURSOR
-        } else if (e->type() == static_cast<QEvent::Type>(WebCore::SetCursorEvent::EventType)) {
-            d->setCursor(static_cast<WebCore::SetCursorEvent*>(e)->cursor());
 #if QT_VERSION >= 0x040400
         } else if (e->type() == QEvent::CursorChange) {
-            // Okay we might use the WebCore Cursor now.
-            d->usesWebCoreCursor = d->cursorSetByWebCore;
-            d->cursorSetByWebCore = false;
-
-            // Go back to the WebCore Cursor. QWidget::unsetCursor is appromixated with this
-            if (!d->usesWebCoreCursor && cursor().shape() == Qt::ArrowCursor) {
-                d->usesWebCoreCursor = true;
-                d->setCursor(d->webCoreCursor);
+            // might be a QWidget::unsetCursor()
+            if (cursor().shape() == Qt::ArrowCursor) {
+                QVariant prop = property("WebCoreCursor");
+                if (prop.isValid()) {
+                    QCursor webCoreCursor = qvariant_cast<QCursor>(prop);
+                    if (webCoreCursor.shape() != Qt::ArrowCursor)
+                        setCursor(webCoreCursor);
+                }
+            }
+        } else if (e->type() == QEvent::DynamicPropertyChange) {
+            const QByteArray& propName = static_cast<QDynamicPropertyChangeEvent *>(e)->propertyName();
+            if (!qstrcmp(propName, "WebCoreCursor")) {
+                QVariant prop = property("WebCoreCursor");
+                if (prop.isValid()) {
+                    QCursor webCoreCursor = qvariant_cast<QCursor>(prop);
+                    setCursor(webCoreCursor);
+                }
             }
 #endif
 #endif
@@ -1096,3 +1087,6 @@ void QWebView::changeEvent(QEvent *e)
 
     \sa QWebPage::linkDelegationPolicy()
 */
+
+#include "moc_qwebview.cpp"
+

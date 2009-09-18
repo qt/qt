@@ -4195,7 +4195,7 @@ EXPORTS
 	_ZN19QApplicationPrivate15graphics_systemE @ 4194 NONAME DATA 4
 	_ZN19QApplicationPrivate15process_cmdlineEv @ 4195 NONAME
 	_ZN19QApplicationPrivate16isBlockedByModalEP7QWidget @ 4196 NONAME
-	_ZN19QApplicationPrivate16keypadNavigationE @ 4197 NONAME DATA 1
+	_ZN19QApplicationPrivate16keypadNavigationE @ 4197 NONAME DATA 1 ABSENT
 	_ZN19QApplicationPrivate16modifier_buttonsE @ 4198 NONAME DATA 4
 	_ZN19QApplicationPrivate16setSystemPaletteERK8QPalette @ 4199 NONAME
 	_ZN19QApplicationPrivate17cursor_flash_timeE @ 4200 NONAME DATA 4
@@ -11925,12 +11925,12 @@ EXPORTS
 	_ZN19QKeyEventTransitionD1Ev @ 11924 NONAME
 	_ZN19QKeyEventTransitionD2Ev @ 11925 NONAME
 	_ZN20QGraphicsItemPrivate11removeChildEP13QGraphicsItem @ 11926 NONAME
-	_ZN20QGraphicsItemPrivate11setSubFocusEv @ 11927 NONAME
-	_ZN20QGraphicsItemPrivate13clearSubFocusEv @ 11928 NONAME
+	_ZN20QGraphicsItemPrivate11setSubFocusEv @ 11927 NONAME ABSENT
+	_ZN20QGraphicsItemPrivate13clearSubFocusEv @ 11928 NONAME ABSENT
 	_ZN20QGraphicsItemPrivate15resetFocusProxyEv @ 11929 NONAME
 	_ZN20QGraphicsItemPrivate18setTransformHelperERK10QTransform @ 11930 NONAME
 	_ZN20QGraphicsItemPrivate19setParentItemHelperEP13QGraphicsItem @ 11931 NONAME
-	_ZN20QGraphicsItemPrivate20ensureSceneTransformEv @ 11932 NONAME
+	_ZN20QGraphicsItemPrivate20ensureSceneTransformEv @ 11932 NONAME ABSENT
 	_ZN20QGraphicsItemPrivate23appendGraphicsTransformEP18QGraphicsTransform @ 11933 NONAME
 	_ZN20QGraphicsItemPrivate26childrenBoundingRectHelperEP10QTransformP6QRectF @ 11934 NONAME
 	_ZN20QGraphicsItemPrivate29ensureSceneTransformRecursiveEPP13QGraphicsItem @ 11935 NONAME
@@ -11988,7 +11988,7 @@ EXPORTS
 	_ZN25QGraphicsSceneLinearIndex11qt_metacallEN11QMetaObject4CallEiPPv @ 11987 NONAME
 	_ZN25QGraphicsSceneLinearIndex11qt_metacastEPKc @ 11988 NONAME
 	_ZN25QGraphicsSceneLinearIndex16staticMetaObjectE @ 11989 NONAME DATA 16
-	_ZN26QAbstractScrollAreaPrivate19_q_gestureTriggeredEv @ 11990 NONAME
+	_ZN26QAbstractScrollAreaPrivate19_q_gestureTriggeredEv @ 11990 NONAME ABSENT
 	_ZN26QBasicMouseEventTransition11qt_metacallEN11QMetaObject4CallEiPPv @ 11991 NONAME
 	_ZN26QBasicMouseEventTransition11qt_metacastEPKc @ 11992 NONAME
 	_ZN26QBasicMouseEventTransition12onTransitionEP6QEvent @ 11993 NONAME
@@ -12046,7 +12046,7 @@ EXPORTS
 	_ZN8QGesture5resetEv @ 12045 NONAME
 	_ZN8QGesture7startedEv @ 12046 NONAME
 	_ZN8QGesture8finishedEv @ 12047 NONAME
-	_ZN8QGesture9cancelledEv @ 12048 NONAME
+	_ZN8QGesture8canceledEv @ 12048 NONAME
 	_ZN8QGesture9triggeredEv @ 12049 NONAME
 	_ZN8QGestureC2EP7QObject @ 12050 NONAME ABSENT
 	_ZN8QGestureC2ER15QGesturePrivateP7QObject @ 12051 NONAME ABSENT
@@ -12140,7 +12140,7 @@ EXPORTS
 	_ZNK11QTouchEvent10TouchPoint9isPrimaryEv @ 12139 NONAME
 	_ZNK11QTouchEvent10TouchPoint9sceneRectEv @ 12140 NONAME
 	_ZNK11QTouchEvent10TouchPoint9screenPosEv @ 12141 NONAME
-	_ZNK11QVectorPath20convertToPainterPathEv @ 12142 NONAME
+	_ZNK11QVectorPath20convertToPainterPathEv @ 12142 NONAME ABSENT
 	_ZNK12QLineControl10cursorRectEv @ 12143 NONAME
 	_ZNK12QLineControl10findInMaskEibb5QChar @ 12144 NONAME
 	_ZNK12QLineControl10maskStringEjRK7QStringb @ 12145 NONAME
@@ -12364,11 +12364,11 @@ EXPORTS
 	_ZN21QGraphicsAnchorLayout10invalidateEv @ 12363 NONAME
 	_ZN21QGraphicsAnchorLayout10setSpacingEf @ 12364 NONAME
 	_ZN21QGraphicsAnchorLayout11setGeometryERK6QRectF @ 12365 NONAME
-	_ZN21QGraphicsAnchorLayout12removeAnchorEP19QGraphicsLayoutItemN2Qt11AnchorPointES1_S3_ @ 12366 NONAME
+	_ZN21QGraphicsAnchorLayout12removeAnchorEP19QGraphicsLayoutItemN2Qt11AnchorPointES1_S3_ @ 12366 NONAME ABSENT
 	_ZN21QGraphicsAnchorLayout16addCornerAnchorsEP19QGraphicsLayoutItemN2Qt6CornerES1_S3_ @ 12367 NONAME
-	_ZN21QGraphicsAnchorLayout16setAnchorSpacingEPK19QGraphicsLayoutItemN2Qt11AnchorPointES2_S4_f @ 12368 NONAME
+	_ZN21QGraphicsAnchorLayout16setAnchorSpacingEPK19QGraphicsLayoutItemN2Qt11AnchorPointES2_S4_f @ 12368 NONAME ABSENT
 	_ZN21QGraphicsAnchorLayout18setVerticalSpacingEf @ 12369 NONAME
-	_ZN21QGraphicsAnchorLayout18unsetAnchorSpacingEPK19QGraphicsLayoutItemN2Qt11AnchorPointES2_S4_ @ 12370 NONAME
+	_ZN21QGraphicsAnchorLayout18unsetAnchorSpacingEPK19QGraphicsLayoutItemN2Qt11AnchorPointES2_S4_ @ 12370 NONAME ABSENT
 	_ZN21QGraphicsAnchorLayout20setHorizontalSpacingEf @ 12371 NONAME
 	_ZN21QGraphicsAnchorLayout8removeAtEi @ 12372 NONAME
 	_ZN21QGraphicsAnchorLayout9addAnchorEP19QGraphicsLayoutItemN2Qt11AnchorPointES1_S3_ @ 12373 NONAME
@@ -12461,7 +12461,7 @@ EXPORTS
 	_ZNK20QGraphicsItemPrivate21effectiveBoundingRectEv @ 12460 NONAME
 	_ZNK20QGraphicsItemPrivate26sceneEffectiveBoundingRectEv @ 12461 NONAME
 	_ZNK20QGraphicsItemPrivate5depthEv @ 12462 NONAME
-	_ZNK21QGraphicsAnchorLayout13anchorSpacingEPK19QGraphicsLayoutItemN2Qt11AnchorPointES2_S4_ @ 12463 NONAME
+	_ZNK21QGraphicsAnchorLayout13anchorSpacingEPK19QGraphicsLayoutItemN2Qt11AnchorPointES2_S4_ @ 12463 NONAME ABSENT
 	_ZNK21QGraphicsAnchorLayout15verticalSpacingEv @ 12464 NONAME
 	_ZNK21QGraphicsAnchorLayout17horizontalSpacingEv @ 12465 NONAME
 	_ZNK21QGraphicsAnchorLayout5countEv @ 12466 NONAME
@@ -12510,4 +12510,434 @@ EXPORTS
 	_ZTV23QGraphicsPixelizeEffect @ 12509 NONAME
 	_ZTV24QGraphicsGrayscaleEffect @ 12510 NONAME
 	_ZTV25QGraphicsDropShadowEffect @ 12511 NONAME
+	_ZN10QBoxLayout19getStaticMetaObjectEv @ 12512 NONAME
+	_ZN10QClipboard19getStaticMetaObjectEv @ 12513 NONAME
+	_ZN10QCompleter19getStaticMetaObjectEv @ 12514 NONAME
+	_ZN10QLCDNumber19getStaticMetaObjectEv @ 12515 NONAME
+	_ZN10QScrollBar19getStaticMetaObjectEv @ 12516 NONAME
+	_ZN10QStatusBar19getStaticMetaObjectEv @ 12517 NONAME
+	_ZN10QTabWidget19getStaticMetaObjectEv @ 12518 NONAME
+	_ZN10QTableView19getStaticMetaObjectEv @ 12519 NONAME
+	_ZN10QTextFrame19getStaticMetaObjectEv @ 12520 NONAME
+	_ZN10QTextTable19getStaticMetaObjectEv @ 12521 NONAME
+	_ZN10QUndoGroup19getStaticMetaObjectEv @ 12522 NONAME
+	_ZN10QUndoStack19getStaticMetaObjectEv @ 12523 NONAME
+	_ZN10QValidator19getStaticMetaObjectEv @ 12524 NONAME
+	_ZN10QWorkspace19getStaticMetaObjectEv @ 12525 NONAME
+	_ZN11QColumnView19getStaticMetaObjectEv @ 12526 NONAME
+	_ZN11QDockWidget19getStaticMetaObjectEv @ 12527 NONAME
+	_ZN11QFileDialog19getStaticMetaObjectEv @ 12528 NONAME
+	_ZN11QFocusFrame19getStaticMetaObjectEv @ 12529 NONAME
+	_ZN11QFontDialog19getStaticMetaObjectEv @ 12530 NONAME
+	_ZN11QFormLayout19getStaticMetaObjectEv @ 12531 NONAME
+	_ZN11QGridLayout19getStaticMetaObjectEv @ 12532 NONAME
+	_ZN11QHBoxLayout19getStaticMetaObjectEv @ 12533 NONAME
+	_ZN11QHeaderView19getStaticMetaObjectEv @ 12534 NONAME
+	_ZN11QListWidget19getStaticMetaObjectEv @ 12535 NONAME
+	_ZN11QMainWindow19getStaticMetaObjectEv @ 12536 NONAME
+	_ZN11QMessageBox19getStaticMetaObjectEv @ 12537 NONAME
+	_ZN11QPanGesture19getStaticMetaObjectEv @ 12538 NONAME
+	_ZN11QPixmapData8fromDataEPKhjPKc6QFlagsIN2Qt19ImageConversionFlagEE @ 12539 NONAME
+	_ZN11QProxyModel19getStaticMetaObjectEv @ 12540 NONAME
+	_ZN11QProxyStyle19getStaticMetaObjectEv @ 12541 NONAME
+	_ZN11QPushButton19getStaticMetaObjectEv @ 12542 NONAME
+	_ZN11QRubberBand19getStaticMetaObjectEv @ 12543 NONAME
+	_ZN11QScrollArea19getStaticMetaObjectEv @ 12544 NONAME
+	_ZN11QSizePolicy19getStaticMetaObjectEv @ 12545 NONAME
+	_ZN11QTextFormat19getStaticMetaObjectEv @ 12546 NONAME
+	_ZN11QTextObject19getStaticMetaObjectEv @ 12547 NONAME
+	_ZN11QToolButton19getStaticMetaObjectEv @ 12548 NONAME
+	_ZN11QTreeWidget19getStaticMetaObjectEv @ 12549 NONAME
+	_ZN11QVBoxLayout19getStaticMetaObjectEv @ 12550 NONAME
+	_ZN11QWizardPage19getStaticMetaObjectEv @ 12551 NONAME
+	_ZN12QActionGroup19getStaticMetaObjectEv @ 12552 NONAME
+	_ZN12QApplication14navigationModeEv @ 12553 NONAME
+	_ZN12QApplication14overrideCursorEv @ 12554 NONAME
+	_ZN12QApplication17setNavigationModeEN2Qt14NavigationModeE @ 12555 NONAME
+	_ZN12QApplication17setOverrideCursorERK7QCursor @ 12556 NONAME
+	_ZN12QApplication19getStaticMetaObjectEv @ 12557 NONAME
+	_ZN12QApplication20changeOverrideCursorERK7QCursor @ 12558 NONAME
+	_ZN12QApplication21restoreOverrideCursorEv @ 12559 NONAME
+	_ZN12QButtonGroup19getStaticMetaObjectEv @ 12560 NONAME
+	_ZN12QColorDialog19getStaticMetaObjectEv @ 12561 NONAME
+	_ZN12QCommonStyle19getStaticMetaObjectEv @ 12562 NONAME
+	_ZN12QImageReader26setDecideFormatFromContentEb @ 12563 NONAME
+	_ZN12QInputDialog19getStaticMetaObjectEv @ 12564 NONAME
+	_ZN12QLineControl19getStaticMetaObjectEv @ 12565 NONAME
+	_ZN12QPaintBuffer13beginNewFrameEv @ 12566 NONAME
+	_ZN12QPaintBuffer15setBoundingRectERK6QRectF @ 12567 NONAME
+	_ZN12QPaintBufferC1ERKS_ @ 12568 NONAME
+	_ZN12QPaintBufferC1Ev @ 12569 NONAME
+	_ZN12QPaintBufferC2ERKS_ @ 12570 NONAME
+	_ZN12QPaintBufferC2Ev @ 12571 NONAME
+	_ZN12QPaintBufferD0Ev @ 12572 NONAME
+	_ZN12QPaintBufferD1Ev @ 12573 NONAME
+	_ZN12QPaintBufferD2Ev @ 12574 NONAME
+	_ZN12QPaintBufferaSERKS_ @ 12575 NONAME
+	_ZN12QProgressBar19getStaticMetaObjectEv @ 12576 NONAME
+	_ZN12QRadioButton19getStaticMetaObjectEv @ 12577 NONAME
+	_ZN12QStylePlugin19getStaticMetaObjectEv @ 12578 NONAME
+	_ZN12QTableWidget19getStaticMetaObjectEv @ 12579 NONAME
+	_ZN12QTextBrowser19getStaticMetaObjectEv @ 12580 NONAME
+	_ZN12QTextControl19getStaticMetaObjectEv @ 12581 NONAME
+	_ZN13QDateTimeEdit19getStaticMetaObjectEv @ 12582 NONAME
+	_ZN13QErrorMessage19getStaticMetaObjectEv @ 12583 NONAME
+	_ZN13QFontComboBox19getStaticMetaObjectEv @ 12584 NONAME
+	_ZN13QFontDatabase19getStaticMetaObjectEv @ 12585 NONAME
+	_ZN13QGraphicsItem11unsetCursorEv @ 12586 NONAME
+	_ZN13QGraphicsItem9setActiveEb @ 12587 NONAME
+	_ZN13QGraphicsItem9setCursorERK7QCursor @ 12588 NONAME
+	_ZN13QGraphicsView19getStaticMetaObjectEv @ 12589 NONAME
+	_ZN13QInputContext19getStaticMetaObjectEv @ 12590 NONAME
+	_ZN13QIntValidator19getStaticMetaObjectEv @ 12591 NONAME
+	_ZN13QItemDelegate19getStaticMetaObjectEv @ 12592 NONAME
+	_ZN13QMdiSubWindow19getStaticMetaObjectEv @ 12593 NONAME
+	_ZN13QPinchGesture19getStaticMetaObjectEv @ 12594 NONAME
+	_ZN13QPixmapFilter19getStaticMetaObjectEv @ 12595 NONAME
+	_ZN13QSplashScreen19getStaticMetaObjectEv @ 12596 NONAME
+	_ZN13QSwipeGesture11eventFilterEP7QObjectP6QEvent @ 12597 NONAME
+	_ZN13QSwipeGesture11filterEventEP6QEvent @ 12598 NONAME
+	_ZN13QSwipeGesture11qt_metacallEN11QMetaObject4CallEiPPv @ 12599 NONAME
+	_ZN13QSwipeGesture11qt_metacastEPKc @ 12600 NONAME
+	_ZN13QSwipeGesture16staticMetaObjectE @ 12601 NONAME DATA 16
+	_ZN13QSwipeGesture19getStaticMetaObjectEv @ 12602 NONAME
+	_ZN13QSwipeGesture5resetEv @ 12603 NONAME
+	_ZN13QSwipeGestureC1EP7QWidgetP7QObject @ 12604 NONAME
+	_ZN13QSwipeGestureC2EP7QWidgetP7QObject @ 12605 NONAME
+	_ZN13QTextDocument19getStaticMetaObjectEv @ 12606 NONAME
+	_ZN13QWidgetAction19getStaticMetaObjectEv @ 12607 NONAME
+	_ZN13QWindowsStyle19getStaticMetaObjectEv @ 12608 NONAME
+	_ZN14QDesktopWidget19getStaticMetaObjectEv @ 12609 NONAME
+	_ZN14QDoubleSpinBox19getStaticMetaObjectEv @ 12610 NONAME
+	_ZN14QGraphicsScale19getStaticMetaObjectEv @ 12611 NONAME
+	_ZN14QGraphicsScene14setActivePanelEP13QGraphicsItem @ 12612 NONAME
+	_ZN14QGraphicsScene19getStaticMetaObjectEv @ 12613 NONAME
+	_ZN14QImageIOPlugin19getStaticMetaObjectEv @ 12614 NONAME
+	_ZN14QPlainTextEdit19getStaticMetaObjectEv @ 12615 NONAME
+	_ZN14QStackedLayout19getStaticMetaObjectEv @ 12616 NONAME
+	_ZN14QStackedWidget19getStaticMetaObjectEv @ 12617 NONAME
+	_ZN14QWidgetPrivate13setCursor_sysERK7QCursor @ 12618 NONAME
+	_ZN14QWidgetPrivate15unsetCursor_sysEv @ 12619 NONAME
+	_ZN15QAbstractButton19getStaticMetaObjectEv @ 12620 NONAME
+	_ZN15QAbstractSlider19getStaticMetaObjectEv @ 12621 NONAME
+	_ZN15QCalendarWidget19getStaticMetaObjectEv @ 12622 NONAME
+	_ZN15QColumnViewGrip19getStaticMetaObjectEv @ 12623 NONAME
+	_ZN15QGraphicsAnchor10setSpacingEf @ 12624 NONAME
+	_ZN15QGraphicsAnchor11qt_metacallEN11QMetaObject4CallEiPPv @ 12625 NONAME
+	_ZN15QGraphicsAnchor11qt_metacastEPKc @ 12626 NONAME
+	_ZN15QGraphicsAnchor12unsetSpacingEv @ 12627 NONAME
+	_ZN15QGraphicsAnchor16staticMetaObjectE @ 12628 NONAME DATA 16
+	_ZN15QGraphicsAnchor19getStaticMetaObjectEv @ 12629 NONAME
+	_ZN15QGraphicsAnchorC1EP21QGraphicsAnchorLayout @ 12630 NONAME
+	_ZN15QGraphicsAnchorC2EP21QGraphicsAnchorLayout @ 12631 NONAME
+	_ZN15QGraphicsAnchorD0Ev @ 12632 NONAME
+	_ZN15QGraphicsAnchorD1Ev @ 12633 NONAME
+	_ZN15QGraphicsAnchorD2Ev @ 12634 NONAME
+	_ZN15QGraphicsEffect19getStaticMetaObjectEv @ 12635 NONAME
+	_ZN15QGraphicsEffect6updateEv @ 12636 NONAME
+	_ZN15QGraphicsObject19getStaticMetaObjectEv @ 12637 NONAME
+	_ZN15QGraphicsWidget19getStaticMetaObjectEv @ 12638 NONAME
+	_ZN15QProgressDialog19getStaticMetaObjectEv @ 12639 NONAME
+	_ZN15QSessionManager19getStaticMetaObjectEv @ 12640 NONAME
+	_ZN15QSplitterHandle19getStaticMetaObjectEv @ 12641 NONAME
+	_ZN15QTextBlockGroup19getStaticMetaObjectEv @ 12642 NONAME
+	_ZN16QAbstractSpinBox19getStaticMetaObjectEv @ 12643 NONAME
+	_ZN16QDialogButtonBox19getStaticMetaObjectEv @ 12644 NONAME
+	_ZN16QDoubleValidator19getStaticMetaObjectEv @ 12645 NONAME
+	_ZN16QFileSystemModel19getStaticMetaObjectEv @ 12646 NONAME
+	_ZN16QPainterReplayer14setupTransformEP8QPainter @ 12647 NONAME
+	_ZN16QPainterReplayer4drawERK12QPaintBufferP8QPainteri @ 12648 NONAME
+	_ZN16QPainterReplayer7processERK19QPaintBufferCommand @ 12649 NONAME
+	_ZN16QRegExpValidator19getStaticMetaObjectEv @ 12650 NONAME
+	_ZN16QStringListModel19getStaticMetaObjectEv @ 12651 NONAME
+	_ZN16QStyleSheetStyle19getStaticMetaObjectEv @ 12652 NONAME
+	_ZN17QAbstractItemView19getStaticMetaObjectEv @ 12653 NONAME
+	_ZN17QDataWidgetMapper19getStaticMetaObjectEv @ 12654 NONAME
+	_ZN17QDockWidgetLayout19getStaticMetaObjectEv @ 12655 NONAME
+	_ZN17QFileInfoGatherer19getStaticMetaObjectEv @ 12656 NONAME
+	_ZN17QGraphicsRotation19getStaticMetaObjectEv @ 12657 NONAME
+	_ZN17QGraphicsTextItem19getStaticMetaObjectEv @ 12658 NONAME
+	_ZN17QIconEnginePlugin19getStaticMetaObjectEv @ 12659 NONAME
+	_ZN17QMainWindowLayout19getStaticMetaObjectEv @ 12660 NONAME
+	_ZN17QPixmapBlurFilter19getStaticMetaObjectEv @ 12661 NONAME
+	_ZN18QCommandLinkButton19getStaticMetaObjectEv @ 12662 NONAME
+	_ZN18QGraphicsTransform19getStaticMetaObjectEv @ 12663 NONAME
+	_ZN18QStandardItemModel19getStaticMetaObjectEv @ 12664 NONAME
+	_ZN18QSyntaxHighlighter19getStaticMetaObjectEv @ 12665 NONAME
+	_ZN19QAbstractProxyModel19getStaticMetaObjectEv @ 12666 NONAME
+	_ZN19QAbstractScrollArea19getStaticMetaObjectEv @ 12667 NONAME
+	_ZN19QApplicationPrivate14navigationModeE @ 12668 NONAME DATA 4
+	_ZN19QApplicationPrivate17setNavigationModeEN2Qt14NavigationModeE @ 12669 NONAME
+	_ZN19QCoeFepInputContext19getStaticMetaObjectEv @ 12670 NONAME
+	_ZN19QEventDispatcherS6019getStaticMetaObjectEv @ 12671 NONAME
+	_ZN19QGraphicsBlurEffect19getStaticMetaObjectEv @ 12672 NONAME
+	_ZN19QGraphicsSceneIndex19getStaticMetaObjectEv @ 12673 NONAME
+	_ZN19QIconEnginePluginV219getStaticMetaObjectEv @ 12674 NONAME
+	_ZN19QInputContextPlugin19getStaticMetaObjectEv @ 12675 NONAME
+	_ZN19QItemSelectionModel19getStaticMetaObjectEv @ 12676 NONAME
+	_ZN19QKeyEventTransition19getStaticMetaObjectEv @ 12677 NONAME
+	_ZN19QStyledItemDelegate19getStaticMetaObjectEv @ 12678 NONAME
+	_ZN19QTextDocumentLayout19getStaticMetaObjectEv @ 12679 NONAME
+	_ZN20QGraphicsItemPrivate11setSubFocusEP13QGraphicsItem @ 12680 NONAME
+	_ZN20QGraphicsItemPrivate13clearSubFocusEP13QGraphicsItem @ 12681 NONAME
+	_ZN20QGraphicsItemPrivate14setFocusHelperEN2Qt11FocusReasonEb @ 12682 NONAME
+	_ZN20QGraphicsItemPrivate18subFocusItemChangeEv @ 12683 NONAME
+	_ZN20QGraphicsProxyWidget19getStaticMetaObjectEv @ 12684 NONAME
+	_ZN20QGraphicsViewPrivate20_q_setViewportCursorERK7QCursor @ 12685 NONAME
+	_ZN20QGraphicsViewPrivate22_q_unsetViewportCursorEv @ 12686 NONAME
+	_ZN20QPaintBufferResource11qt_metacallEN11QMetaObject4CallEiPPv @ 12687 NONAME
+	_ZN20QPaintBufferResource11qt_metacastEPKc @ 12688 NONAME
+	_ZN20QPaintBufferResource16staticMetaObjectE @ 12689 NONAME DATA 16
+	_ZN20QPaintBufferResource19getStaticMetaObjectEv @ 12690 NONAME
+	_ZN20QPaintBufferResource5valueEPK19QPaintBufferPrivate @ 12691 NONAME
+	_ZN20QPaintBufferResource6insertEPK19QPaintBufferPrivatePv @ 12692 NONAME
+	_ZN20QPaintBufferResource6removeEPK19QPaintBufferPrivate @ 12693 NONAME
+	_ZN20QPaintBufferResourceC1EPFvPvEP7QObject @ 12694 NONAME
+	_ZN20QPaintBufferResourceC2EPFvPvEP7QObject @ 12695 NONAME
+	_ZN20QPaintBufferResourceD0Ev @ 12696 NONAME
+	_ZN20QPaintBufferResourceD1Ev @ 12697 NONAME
+	_ZN20QPaintBufferResourceD2Ev @ 12698 NONAME
+	_ZN20QPictureFormatPlugin19getStaticMetaObjectEv @ 12699 NONAME
+	_ZN20QWidgetResizeHandler19getStaticMetaObjectEv @ 12700 NONAME
+	_ZN21QAbstractItemDelegate19getStaticMetaObjectEv @ 12701 NONAME
+	_ZN21QGraphicsAnchorLayout10addAnchorsEP19QGraphicsLayoutItemS1_6QFlagsIN2Qt11OrientationEE @ 12702 NONAME
+	_ZN21QGraphicsAnchorLayout6anchorEP19QGraphicsLayoutItemN2Qt11AnchorPointES1_S3_ @ 12703 NONAME
+	_ZN21QGraphicsEffectSource19getStaticMetaObjectEv @ 12704 NONAME
+	_ZN21QGraphicsSystemPlugin19getStaticMetaObjectEv @ 12705 NONAME
+	_ZN21QMouseEventTransition19getStaticMetaObjectEv @ 12706 NONAME
+	_ZN21QPixmapColorizeFilter11setStrengthEf @ 12707 NONAME
+	_ZN21QPixmapColorizeFilter19getStaticMetaObjectEv @ 12708 NONAME
+	_ZN21QSortFilterProxyModel19getStaticMetaObjectEv @ 12709 NONAME
+	_ZN22QGraphicsItemAnimation19getStaticMetaObjectEv @ 12710 NONAME
+	_ZN22QGraphicsOpacityEffect10setOpacityEf @ 12711 NONAME
+	_ZN22QGraphicsOpacityEffect11qt_metacallEN11QMetaObject4CallEiPPv @ 12712 NONAME
+	_ZN22QGraphicsOpacityEffect11qt_metacastEPKc @ 12713 NONAME
+	_ZN22QGraphicsOpacityEffect14opacityChangedEf @ 12714 NONAME
+	_ZN22QGraphicsOpacityEffect14setOpacityMaskERK6QBrush @ 12715 NONAME
+	_ZN22QGraphicsOpacityEffect16staticMetaObjectE @ 12716 NONAME DATA 16
+	_ZN22QGraphicsOpacityEffect18opacityMaskChangedERK6QBrush @ 12717 NONAME
+	_ZN22QGraphicsOpacityEffect19getStaticMetaObjectEv @ 12718 NONAME
+	_ZN22QGraphicsOpacityEffect4drawEP8QPainterP21QGraphicsEffectSource @ 12719 NONAME
+	_ZN22QGraphicsOpacityEffectC1EP7QObject @ 12720 NONAME
+	_ZN22QGraphicsOpacityEffectC2EP7QObject @ 12721 NONAME
+	_ZN22QGraphicsOpacityEffectD0Ev @ 12722 NONAME
+	_ZN22QGraphicsOpacityEffectD1Ev @ 12723 NONAME
+	_ZN22QGraphicsOpacityEffectD2Ev @ 12724 NONAME
+	_ZN22QPaintEngineExReplayer7processERK19QPaintBufferCommand @ 12725 NONAME
+	_ZN23QGraphicsColorizeEffect11setStrengthEf @ 12726 NONAME
+	_ZN23QGraphicsColorizeEffect15strengthChangedEf @ 12727 NONAME
+	_ZN23QGraphicsColorizeEffect19getStaticMetaObjectEv @ 12728 NONAME
+	_ZN23QGraphicsPixelizeEffect19getStaticMetaObjectEv @ 12729 NONAME
+	_ZN23QPaintBufferSignalProxy11qt_metacallEN11QMetaObject4CallEiPPv @ 12730 NONAME
+	_ZN23QPaintBufferSignalProxy11qt_metacastEPKc @ 12731 NONAME
+	_ZN23QPaintBufferSignalProxy14aboutToDestroyEPK19QPaintBufferPrivate @ 12732 NONAME
+	_ZN23QPaintBufferSignalProxy16staticMetaObjectE @ 12733 NONAME DATA 16
+	_ZN23QPaintBufferSignalProxy19getStaticMetaObjectEv @ 12734 NONAME
+	_ZN23QPaintBufferSignalProxy8instanceEv @ 12735 NONAME
+	_ZN23QPixmapDropShadowFilter19getStaticMetaObjectEv @ 12736 NONAME
+	_ZN24QBasicKeyEventTransition19getStaticMetaObjectEv @ 12737 NONAME
+	_ZN24QComboBoxPrivateScroller19getStaticMetaObjectEv @ 12738 NONAME
+	_ZN24QGraphicsGrayscaleEffect11setStrengthEf @ 12739 NONAME
+	_ZN24QGraphicsGrayscaleEffect15strengthChangedEf @ 12740 NONAME
+	_ZN24QGraphicsGrayscaleEffect19getStaticMetaObjectEv @ 12741 NONAME
+	_ZN24QPixmapConvolutionFilter19getStaticMetaObjectEv @ 12742 NONAME
+	_ZN24QPlainTextDocumentLayout19getStaticMetaObjectEv @ 12743 NONAME
+	_ZN25QComboBoxPrivateContainer19getStaticMetaObjectEv @ 12744 NONAME
+	_ZN25QGraphicsDropShadowEffect19getStaticMetaObjectEv @ 12745 NONAME
+	_ZN25QGraphicsSceneLinearIndex19getStaticMetaObjectEv @ 12746 NONAME
+	_ZN26QBasicMouseEventTransition19getStaticMetaObjectEv @ 12747 NONAME
+	_ZN26QGraphicsSceneBspTreeIndex19getStaticMetaObjectEv @ 12748 NONAME
+	_ZN27QAbstractTextDocumentLayout19getStaticMetaObjectEv @ 12749 NONAME
+	_ZN5QDial19getStaticMetaObjectEv @ 12750 NONAME
+	_ZN5QDrag19getStaticMetaObjectEv @ 12751 NONAME
+	_ZN5QFont19getStaticMetaObjectEv @ 12752 NONAME
+	_ZN5QMenu19getStaticMetaObjectEv @ 12753 NONAME
+	_ZN6QColor6setHslEiiii @ 12754 NONAME
+	_ZN6QColor7fromHslEiiii @ 12755 NONAME
+	_ZN6QColor7setHslFEffff @ 12756 NONAME
+	_ZN6QColor8fromHslFEffff @ 12757 NONAME
+	_ZN6QFrame19getStaticMetaObjectEv @ 12758 NONAME
+	_ZN6QLabel19getStaticMetaObjectEv @ 12759 NONAME
+	_ZN6QMovie19getStaticMetaObjectEv @ 12760 NONAME
+	_ZN6QSound19getStaticMetaObjectEv @ 12761 NONAME
+	_ZN6QStyle19getStaticMetaObjectEv @ 12762 NONAME
+	_ZN7QAction19getStaticMetaObjectEv @ 12763 NONAME
+	_ZN7QCursor8setShapeEN2Qt11CursorShapeE @ 12764 NONAME
+	_ZN7QCursorC1EN2Qt11CursorShapeE @ 12765 NONAME
+	_ZN7QCursorC1ERK7QBitmapS2_ii @ 12766 NONAME
+	_ZN7QCursorC1ERK7QPixmapii @ 12767 NONAME
+	_ZN7QCursorC1ERKS_ @ 12768 NONAME
+	_ZN7QCursorC1Ev @ 12769 NONAME
+	_ZN7QCursorC2EN2Qt11CursorShapeE @ 12770 NONAME
+	_ZN7QCursorC2ERK7QBitmapS2_ii @ 12771 NONAME
+	_ZN7QCursorC2ERK7QPixmapii @ 12772 NONAME
+	_ZN7QCursorC2ERKS_ @ 12773 NONAME
+	_ZN7QCursorC2Ev @ 12774 NONAME
+	_ZN7QCursorD1Ev @ 12775 NONAME
+	_ZN7QCursorD2Ev @ 12776 NONAME
+	_ZN7QCursoraSERKS_ @ 12777 NONAME
+	_ZN7QDialog19getStaticMetaObjectEv @ 12778 NONAME
+	_ZN7QLayout19getStaticMetaObjectEv @ 12779 NONAME
+	_ZN7QSlider19getStaticMetaObjectEv @ 12780 NONAME
+	_ZN7QTabBar19getStaticMetaObjectEv @ 12781 NONAME
+	_ZN7QWidget11unsetCursorEv @ 12782 NONAME
+	_ZN7QWidget18setContentsMarginsERK8QMargins @ 12783 NONAME
+	_ZN7QWidget19getStaticMetaObjectEv @ 12784 NONAME
+	_ZN7QWidget9grabMouseERK7QCursor @ 12785 NONAME
+	_ZN7QWidget9setCursorERK7QCursor @ 12786 NONAME
+	_ZN7QWizard19getStaticMetaObjectEv @ 12787 NONAME
+	_ZN8QGesture19getStaticMetaObjectEv @ 12788 NONAME
+	_ZN8QMdiArea19getStaticMetaObjectEv @ 12789 NONAME
+	_ZN8QMenuBar19getStaticMetaObjectEv @ 12790 NONAME
+	_ZN8QPainter17endNativePaintingEv @ 12791 NONAME
+	_ZN8QPainter19beginNativePaintingEv @ 12792 NONAME
+	_ZN8QPainter19getStaticMetaObjectEv @ 12793 NONAME
+	_ZN8QPalette19getStaticMetaObjectEv @ 12794 NONAME
+	_ZN8QSidebar19getStaticMetaObjectEv @ 12795 NONAME
+	_ZN8QSpinBox19getStaticMetaObjectEv @ 12796 NONAME
+	_ZN8QToolBar19getStaticMetaObjectEv @ 12797 NONAME
+	_ZN8QToolBox19getStaticMetaObjectEv @ 12798 NONAME
+	_ZN9QCheckBox19getStaticMetaObjectEv @ 12799 NONAME
+	_ZN9QComboBox19getStaticMetaObjectEv @ 12800 NONAME
+	_ZN9QDateEdit19getStaticMetaObjectEv @ 12801 NONAME
+	_ZN9QDirModel19getStaticMetaObjectEv @ 12802 NONAME
+	_ZN9QGradient19getStaticMetaObjectEv @ 12803 NONAME
+	_ZN9QGroupBox19getStaticMetaObjectEv @ 12804 NONAME
+	_ZN9QLineEdit19getStaticMetaObjectEv @ 12805 NONAME
+	_ZN9QListView19getStaticMetaObjectEv @ 12806 NONAME
+	_ZN9QS60Style19getStaticMetaObjectEv @ 12807 NONAME
+	_ZN9QS60Style5eventEP6QEvent @ 12808 NONAME
+	_ZN9QShortcut19getStaticMetaObjectEv @ 12809 NONAME
+	_ZN9QSizeGrip19getStaticMetaObjectEv @ 12810 NONAME
+	_ZN9QSplitter19getStaticMetaObjectEv @ 12811 NONAME
+	_ZN9QTextEdit19getStaticMetaObjectEv @ 12812 NONAME
+	_ZN9QTextList19getStaticMetaObjectEv @ 12813 NONAME
+	_ZN9QTimeEdit19getStaticMetaObjectEv @ 12814 NONAME
+	_ZN9QTreeView19getStaticMetaObjectEv @ 12815 NONAME
+	_ZN9QUndoView19getStaticMetaObjectEv @ 12816 NONAME
+	_ZN9QUrlModel19getStaticMetaObjectEv @ 12817 NONAME
+	_ZNK11QPanGesture6offsetEv @ 12818 NONAME
+	_ZNK12QImageReader23decideFormatFromContentEv @ 12819 NONAME
+	_ZNK12QPaintBuffer11paintEngineEv @ 12820 NONAME
+	_ZNK12QPaintBuffer12boundingRectEv @ 12821 NONAME
+	_ZNK12QPaintBuffer4drawEP8QPainteri @ 12822 NONAME
+	_ZNK12QPaintBuffer6metricEN12QPaintDevice17PaintDeviceMetricE @ 12823 NONAME
+	_ZNK12QPaintBuffer7devTypeEv @ 12824 NONAME
+	_ZNK12QPaintBuffer7isEmptyEv @ 12825 NONAME
+	_ZNK12QPaintBuffer9numFramesEv @ 12826 NONAME
+	_ZNK13QGraphicsItem14focusScopeItemEv @ 12827 NONAME
+	_ZNK13QGraphicsItem5panelEv @ 12828 NONAME
+	_ZNK13QGraphicsItem6cursorEv @ 12829 NONAME
+	_ZNK13QGraphicsItem7isPanelEv @ 12830 NONAME
+	_ZNK13QGraphicsItem8isActiveEv @ 12831 NONAME
+	_ZNK13QGraphicsItem9hasCursorEv @ 12832 NONAME
+	_ZNK13QPinchGesture11whatChangedEv @ 12833 NONAME
+	_ZNK13QPinchGesture16totalScaleFactorEv @ 12834 NONAME
+	_ZNK13QPinchGesture18totalRotationAngleEv @ 12835 NONAME
+	_ZNK13QSwipeGesture10metaObjectEv @ 12836 NONAME
+	_ZNK13QSwipeGesture10swipeAngleEv @ 12837 NONAME
+	_ZNK13QSwipeGesture17verticalDirectionEv @ 12838 NONAME
+	_ZNK13QSwipeGesture19horizontalDirectionEv @ 12839 NONAME
+	_ZNK14QGraphicsScene11activePanelEv @ 12840 NONAME
+	_ZNK14QGraphicsScene8isActiveEv @ 12841 NONAME
+	_ZNK15QGraphicsAnchor10metaObjectEv @ 12842 NONAME
+	_ZNK15QGraphicsAnchor7spacingEv @ 12843 NONAME
+	_ZNK20QPaintBufferResource10metaObjectEv @ 12844 NONAME
+	_ZNK21QPixmapColorizeFilter8strengthEv @ 12845 NONAME
+	_ZNK22QGraphicsOpacityEffect10metaObjectEv @ 12846 NONAME
+	_ZNK22QGraphicsOpacityEffect11opacityMaskEv @ 12847 NONAME
+	_ZNK22QGraphicsOpacityEffect7opacityEv @ 12848 NONAME
+	_ZNK23QGraphicsColorizeEffect8strengthEv @ 12849 NONAME
+	_ZNK23QPaintBufferSignalProxy10metaObjectEv @ 12850 NONAME
+	_ZNK24QGraphicsGrayscaleEffect8strengthEv @ 12851 NONAME
+	_ZNK6QColor10lightnessFEv @ 12852 NONAME
+	_ZNK6QColor13hslSaturationEv @ 12853 NONAME
+	_ZNK6QColor13hsvSaturationEv @ 12854 NONAME
+	_ZNK6QColor14hslSaturationFEv @ 12855 NONAME
+	_ZNK6QColor14hsvSaturationFEv @ 12856 NONAME
+	_ZNK6QColor5toHslEv @ 12857 NONAME
+	_ZNK6QColor6getHslEPiS0_S0_S0_ @ 12858 NONAME
+	_ZNK6QColor6hslHueEv @ 12859 NONAME
+	_ZNK6QColor6hsvHueEv @ 12860 NONAME
+	_ZNK6QColor7getHslFEPfS0_S0_S0_ @ 12861 NONAME
+	_ZNK6QColor7hslHueFEv @ 12862 NONAME
+	_ZNK6QColor7hsvHueFEv @ 12863 NONAME
+	_ZNK6QColor9lightnessEv @ 12864 NONAME
+	_ZNK7QCursor4maskEv @ 12865 NONAME
+	_ZNK7QCursor5shapeEv @ 12866 NONAME
+	_ZNK7QCursor6bitmapEv @ 12867 NONAME
+	_ZNK7QCursor6handleEv @ 12868 NONAME
+	_ZNK7QCursor6pixmapEv @ 12869 NONAME
+	_ZNK7QCursor7hotSpotEv @ 12870 NONAME
+	_ZNK7QCursorcv8QVariantEv @ 12871 NONAME
+	_ZNK7QWidget15contentsMarginsEv @ 12872 NONAME
+	_ZNK7QWidget6cursorEv @ 12873 NONAME
+	_ZTI10AnchorData @ 12874 NONAME ; #<TI>#
+	_ZTI11PixmapEntry @ 12875 NONAME ; #<TI>#
+	_ZTI12QPaintBuffer @ 12876 NONAME ; #<TI>#
+	_ZTI13QS60MainAppUi @ 12877 NONAME ; #<TI>#
+	_ZTI13QSwipeGesture @ 12878 NONAME ; #<TI>#
+	_ZTI13ScalableEntry @ 12879 NONAME ; #<TI>#
+	_ZTI15QGesturePrivate @ 12880 NONAME ; #<TI>#
+	_ZTI15QGraphicsAnchor @ 12881 NONAME ; #<TI>#
+	_ZTI16QPainterReplayer @ 12882 NONAME ; #<TI>#
+	_ZTI16QS60MainDocument @ 12883 NONAME ; #<TI>#
+	_ZTI16QTreeViewPrivate @ 12884 NONAME ; #<TI>#
+	_ZTI17QIconLoaderEngine @ 12885 NONAME ; #<TI>#
+	_ZTI17QIconModeViewBase @ 12886 NONAME ; #<TI>#
+	_ZTI17QListModeViewBase @ 12887 NONAME ; #<TI>#
+	_ZTI18ParallelAnchorData @ 12888 NONAME ; #<TI>#
+	_ZTI18QHeaderViewPrivate @ 12889 NONAME ; #<TI>#
+	_ZTI18QPaintBufferEngine @ 12890 NONAME ; #<TI>#
+	_ZTI18QPanGesturePrivate @ 12891 NONAME ; #<TI>#
+	_ZTI19QCommonListViewBase @ 12892 NONAME ; #<TI>#
+	_ZTI19QS60MainApplication @ 12893 NONAME ; #<TI>#
+	_ZTI20QPaintBufferResource @ 12894 NONAME ; #<TI>#
+	_ZTI20QPinchGesturePrivate @ 12895 NONAME ; #<TI>#
+	_ZTI20QSwipeGesturePrivate @ 12896 NONAME ; #<TI>#
+	_ZTI20SequentialAnchorData @ 12897 NONAME ; #<TI>#
+	_ZTI22QGraphicsAnchorPrivate @ 12898 NONAME ; #<TI>#
+	_ZTI22QGraphicsOpacityEffect @ 12899 NONAME ; #<TI>#
+	_ZTI22QPaintEngineExReplayer @ 12900 NONAME ; #<TI>#
+	_ZTI23QPaintBufferSignalProxy @ 12901 NONAME ; #<TI>#
+	_ZTI26QGraphicsSceneIndexPrivate @ 12902 NONAME ; #<TI>#
+	_ZTI26QWidgetEffectSourcePrivate @ 12903 NONAME ; #<TI>#
+	_ZTI32QGraphicsItemEffectSourcePrivate @ 12904 NONAME ; #<TI>#
+	_ZTI8QSimplex @ 12905 NONAME ; #<TI>#
+	_ZTV10AnchorData @ 12906 NONAME ; #<VT>#
+	_ZTV11PixmapEntry @ 12907 NONAME ; #<VT>#
+	_ZTV12QPaintBuffer @ 12908 NONAME ; #<VT>#
+	_ZTV13QS60MainAppUi @ 12909 NONAME ; #<VT>#
+	_ZTV13QSwipeGesture @ 12910 NONAME ; #<VT>#
+	_ZTV13ScalableEntry @ 12911 NONAME ; #<VT>#
+	_ZTV15QGesturePrivate @ 12912 NONAME ; #<VT>#
+	_ZTV15QGraphicsAnchor @ 12913 NONAME ; #<VT>#
+	_ZTV16QPainterReplayer @ 12914 NONAME ; #<VT>#
+	_ZTV16QS60MainDocument @ 12915 NONAME ; #<VT>#
+	_ZTV16QTreeViewPrivate @ 12916 NONAME ; #<VT>#
+	_ZTV17QIconLoaderEngine @ 12917 NONAME ; #<VT>#
+	_ZTV17QIconModeViewBase @ 12918 NONAME ; #<VT>#
+	_ZTV17QListModeViewBase @ 12919 NONAME ; #<VT>#
+	_ZTV18ParallelAnchorData @ 12920 NONAME ; #<VT>#
+	_ZTV18QHeaderViewPrivate @ 12921 NONAME ; #<VT>#
+	_ZTV18QPaintBufferEngine @ 12922 NONAME ; #<VT>#
+	_ZTV18QPanGesturePrivate @ 12923 NONAME ; #<VT>#
+	_ZTV19QCommonListViewBase @ 12924 NONAME ; #<VT>#
+	_ZTV19QS60MainApplication @ 12925 NONAME ; #<VT>#
+	_ZTV20QPaintBufferResource @ 12926 NONAME ; #<VT>#
+	_ZTV20QPinchGesturePrivate @ 12927 NONAME ; #<VT>#
+	_ZTV20QSwipeGesturePrivate @ 12928 NONAME ; #<VT>#
+	_ZTV20SequentialAnchorData @ 12929 NONAME ; #<VT>#
+	_ZTV22QGraphicsAnchorPrivate @ 12930 NONAME ; #<VT>#
+	_ZTV22QGraphicsOpacityEffect @ 12931 NONAME ; #<VT>#
+	_ZTV22QPaintEngineExReplayer @ 12932 NONAME ; #<VT>#
+	_ZTV23QPaintBufferSignalProxy @ 12933 NONAME ; #<VT>#
+	_ZTV26QGraphicsSceneIndexPrivate @ 12934 NONAME ; #<VT>#
+	_ZTV26QWidgetEffectSourcePrivate @ 12935 NONAME ; #<VT>#
+	_ZTV32QGraphicsItemEffectSourcePrivate @ 12936 NONAME ; #<VT>#
+	_ZTV8QSimplex @ 12937 NONAME ; #<VT>#
+	_ZlsR11QDataStreamRK12QPaintBuffer @ 12938 NONAME
+	_ZlsR11QDataStreamRK7QCursor @ 12939 NONAME
+	_ZrsR11QDataStreamR12QPaintBuffer @ 12940 NONAME
+	_ZrsR11QDataStreamR7QCursor @ 12941 NONAME
 

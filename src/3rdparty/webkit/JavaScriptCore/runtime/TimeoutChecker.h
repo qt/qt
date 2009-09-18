@@ -38,10 +38,8 @@ namespace JSC {
     class TimeoutChecker {
     public:
         TimeoutChecker();
-        virtual ~TimeoutChecker();
 
         void setTimeoutInterval(unsigned timeoutInterval) { m_timeoutInterval = timeoutInterval; }
-        void setCheckInterval(unsigned checkInterval) { if (checkInterval) m_intervalBetweenChecks = checkInterval; }
         
         unsigned ticksUntilNextCheck() { return m_ticksUntilNextCheck; }
         
@@ -60,7 +58,7 @@ namespace JSC {
 
         void reset();
 
-        virtual bool didTimeOut(ExecState*);
+        bool didTimeOut(ExecState*);
 
     private:
         unsigned m_timeoutInterval;
@@ -68,7 +66,6 @@ namespace JSC {
         unsigned m_timeExecuting;
         unsigned m_startCount;
         unsigned m_ticksUntilNextCheck;
-        unsigned m_intervalBetweenChecks;
     };
 
 } // namespace JSC

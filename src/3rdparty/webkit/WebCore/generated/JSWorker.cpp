@@ -28,7 +28,6 @@
 #include "Frame.h"
 #include "JSDOMGlobalObject.h"
 #include "JSEventListener.h"
-#include "JSMessagePort.h"
 #include "Worker.h"
 #include <runtime/Error.h>
 #include <wtf/GetPtr.h>
@@ -82,6 +81,11 @@ bool JSWorkerPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& pr
     return getStaticFunctionSlot<JSObject>(exec, &JSWorkerPrototypeTable, this, propertyName, slot);
 }
 
+bool JSWorkerPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSWorkerPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSWorker::s_info = { "Worker", &JSAbstractWorker::s_info, &JSWorkerTable, 0 };
 
 JSWorker::JSWorker(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Worker> impl)
@@ -97,6 +101,11 @@ JSObject* JSWorker::createPrototype(ExecState* exec, JSGlobalObject* globalObjec
 bool JSWorker::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSWorker, Base>(exec, &JSWorkerTable, this, propertyName, slot);
+}
+
+bool JSWorker::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSWorker, Base>(exec, &JSWorkerTable, this, propertyName, descriptor);
 }
 
 JSValue jsWorkerOnmessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -129,31 +138,16 @@ void setJSWorkerOnmessage(ExecState* exec, JSObject* thisObject, JSValue value)
 JSValue JSC_HOST_CALL jsWorkerPrototypeFunctionPostMessage(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSWorker::s_info))
+    if (!thisValue.inherits(&JSWorker::s_info))
         return throwError(exec, TypeError);
     JSWorker* castedThisObj = static_cast<JSWorker*>(asObject(thisValue));
-    Worker* imp = static_cast<Worker*>(castedThisObj->impl());
-    ExceptionCode ec = 0;
-    const UString& message = args.at(0).toString(exec);
-
-    int argsCount = args.size();
-    if (argsCount < 2) {
-        imp->postMessage(message, ec);
-        setDOMException(exec, ec);
-        return jsUndefined();
-    }
-
-    MessagePort* messagePort = toMessagePort(args.at(1));
-
-    imp->postMessage(message, messagePort, ec);
-    setDOMException(exec, ec);
-    return jsUndefined();
+    return castedThisObj->postMessage(exec, args);
 }
 
 JSValue JSC_HOST_CALL jsWorkerPrototypeFunctionTerminate(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSWorker::s_info))
+    if (!thisValue.inherits(&JSWorker::s_info))
         return throwError(exec, TypeError);
     JSWorker* castedThisObj = static_cast<JSWorker*>(asObject(thisValue));
     Worker* imp = static_cast<Worker*>(castedThisObj->impl());
@@ -168,7 +162,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Worker*
 }
 Worker* toWorker(JSC::JSValue value)
 {
-    return value.isObject(&JSWorker::s_info) ? static_cast<JSWorker*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSWorker::s_info) ? static_cast<JSWorker*>(asObject(value))->impl() : 0;
 }
 
 }

@@ -23,8 +23,8 @@
 #include "CSSComputedStyleDeclaration.h"
 #include "CSSMutableStyleDeclaration.h"
 #include "CSSParser.h"
-#include "CSSRuleList.h"
 #include "CSSRule.h"
+#include "CSSRuleList.h"
 #include "CSSStyleRule.h"
 #include "CString.h"
 #include "Document.h"
@@ -42,6 +42,7 @@
 #include "qwebframe.h"
 #include "qwebframe_p.h"
 #include "runtime_root.h"
+#include <parser/SourceCode.h>
 #include <wtf/Vector.h>
 
 using namespace WebCore;
@@ -218,7 +219,7 @@ QList<QWebElement> QWebElement::findAll(const QString &selectorQuery) const
     if (!nodes)
         return elements;
 
-    for (int i = 0; i < nodes->length(); ++i) {
+    for (unsigned i = 0; i < nodes->length(); ++i) {
         WebCore::Node* n = nodes->item(i);
         elements.append(QWebElement(static_cast<Element*>(n)));
     }
@@ -697,7 +698,7 @@ static bool setupScriptObject(WebCore::Element* element, ScriptObject& object, S
     if (!thisObject)
         return false;
 
-    object = ScriptObject(thisObject);
+    object = ScriptObject(state, thisObject);
     return true;
 }
 
@@ -1658,6 +1659,23 @@ void QWebElement::replace(const QString &markup)
 
     appendOutside(markup);
     takeFromDocument();
+}
+
+/*!
+    \internal
+    Walk \a node's parents until a valid QWebElement is found.
+    For example, a WebCore::Text node is not a valid Html QWebElement, but its
+    enclosing p tag is.
+*/
+QWebElement QWebElement::enclosingElement(WebCore::Node* node)
+{
+    QWebElement element(node);
+
+    while (element.isNull() && node) {
+        node = node->parentNode();
+        element = QWebElement(node);
+    }
+    return element;
 }
 
 /*!

@@ -107,6 +107,11 @@ bool JSSVGSwitchElementPrototype::getOwnPropertySlot(ExecState* exec, const Iden
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGSwitchElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGSwitchElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGSwitchElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGSwitchElement::s_info = { "SVGSwitchElement", &JSSVGElement::s_info, &JSSVGSwitchElementTable, 0 };
 
 JSSVGSwitchElement::JSSVGSwitchElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGSwitchElement> impl)
@@ -122,6 +127,11 @@ JSObject* JSSVGSwitchElement::createPrototype(ExecState* exec, JSGlobalObject* g
 bool JSSVGSwitchElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGSwitchElement, Base>(exec, &JSSVGSwitchElementTable, this, propertyName, slot);
+}
+
+bool JSSVGSwitchElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGSwitchElement, Base>(exec, &JSSVGSwitchElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGSwitchElementRequiredFeatures(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -235,7 +245,7 @@ void setJSSVGSwitchElementXmlspace(ExecState* exec, JSObject* thisObject, JSValu
 JSValue JSC_HOST_CALL jsSVGSwitchElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGSwitchElement::s_info))
+    if (!thisValue.inherits(&JSSVGSwitchElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSwitchElement* castedThisObj = static_cast<JSSVGSwitchElement*>(asObject(thisValue));
     SVGSwitchElement* imp = static_cast<SVGSwitchElement*>(castedThisObj->impl());
@@ -249,7 +259,7 @@ JSValue JSC_HOST_CALL jsSVGSwitchElementPrototypeFunctionHasExtension(ExecState*
 JSValue JSC_HOST_CALL jsSVGSwitchElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGSwitchElement::s_info))
+    if (!thisValue.inherits(&JSSVGSwitchElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSwitchElement* castedThisObj = static_cast<JSSVGSwitchElement*>(asObject(thisValue));
     SVGSwitchElement* imp = static_cast<SVGSwitchElement*>(castedThisObj->impl());
@@ -263,7 +273,7 @@ JSValue JSC_HOST_CALL jsSVGSwitchElementPrototypeFunctionGetPresentationAttribut
 JSValue JSC_HOST_CALL jsSVGSwitchElementPrototypeFunctionGetBBox(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGSwitchElement::s_info))
+    if (!thisValue.inherits(&JSSVGSwitchElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSwitchElement* castedThisObj = static_cast<JSSVGSwitchElement*>(asObject(thisValue));
     SVGSwitchElement* imp = static_cast<SVGSwitchElement*>(castedThisObj->impl());
@@ -276,7 +286,7 @@ JSValue JSC_HOST_CALL jsSVGSwitchElementPrototypeFunctionGetBBox(ExecState* exec
 JSValue JSC_HOST_CALL jsSVGSwitchElementPrototypeFunctionGetCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGSwitchElement::s_info))
+    if (!thisValue.inherits(&JSSVGSwitchElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSwitchElement* castedThisObj = static_cast<JSSVGSwitchElement*>(asObject(thisValue));
     SVGSwitchElement* imp = static_cast<SVGSwitchElement*>(castedThisObj->impl());
@@ -289,7 +299,7 @@ JSValue JSC_HOST_CALL jsSVGSwitchElementPrototypeFunctionGetCTM(ExecState* exec,
 JSValue JSC_HOST_CALL jsSVGSwitchElementPrototypeFunctionGetScreenCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGSwitchElement::s_info))
+    if (!thisValue.inherits(&JSSVGSwitchElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSwitchElement* castedThisObj = static_cast<JSSVGSwitchElement*>(asObject(thisValue));
     SVGSwitchElement* imp = static_cast<SVGSwitchElement*>(castedThisObj->impl());
@@ -302,7 +312,7 @@ JSValue JSC_HOST_CALL jsSVGSwitchElementPrototypeFunctionGetScreenCTM(ExecState*
 JSValue JSC_HOST_CALL jsSVGSwitchElementPrototypeFunctionGetTransformToElement(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGSwitchElement::s_info))
+    if (!thisValue.inherits(&JSSVGSwitchElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSwitchElement* castedThisObj = static_cast<JSSVGSwitchElement*>(asObject(thisValue));
     SVGSwitchElement* imp = static_cast<SVGSwitchElement*>(castedThisObj->impl());

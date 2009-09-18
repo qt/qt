@@ -707,10 +707,12 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
     if (a == b || width == 0 || d->clipRect.isEmpty())
         return;
 
+    Q_ASSERT(width > 0.0);
+
     QPointF pa = a;
     QPointF pb = b;
 
-    QPointF offs = QPointF(qAbs(b.y() - a.y()), qAbs(b.x() - a.x())) * width * 0.5;
+    QPointF offs = QPointF(qAbs(b.y() - a.y()), qAbs(b.x() - a.x())) * width * 0.5;    
     if (squareCap)
         offs += QPointF(offs.y(), offs.x());
     const QRectF clip(d->clipRect.topLeft() - offs, d->clipRect.bottomRight() + QPoint(1, 1) + offs);

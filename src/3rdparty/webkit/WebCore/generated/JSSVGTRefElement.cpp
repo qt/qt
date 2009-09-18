@@ -87,6 +87,11 @@ bool JSSVGTRefElement::getOwnPropertySlot(ExecState* exec, const Identifier& pro
     return getStaticValueSlot<JSSVGTRefElement, Base>(exec, &JSSVGTRefElementTable, this, propertyName, slot);
 }
 
+bool JSSVGTRefElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGTRefElement, Base>(exec, &JSSVGTRefElementTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGTRefElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGTRefElement* castedThis = static_cast<JSSVGTRefElement*>(asObject(slot.slotBase()));

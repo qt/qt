@@ -31,15 +31,17 @@
 #include "config.h"
 #include "InspectorResource.h"
 
+#if ENABLE(INSPECTOR)
+
 #include "CachedResource.h"
 #include "DocLoader.h"
 #include "DocumentLoader.h"
 #include "Frame.h"
 #include "InspectorFrontend.h"
-#include "InspectorJSONObject.h"
 #include "ResourceRequest.h"
 #include "ResourceResponse.h"
 #include "TextEncoding.h"
+#include "ScriptObject.h"
 
 namespace WebCore {
 
@@ -71,7 +73,7 @@ PassRefPtr<InspectorResource> InspectorResource::createCached(long long identifi
 
     resource->m_finished = true;
 
-    resource->m_requestURL = KURL(cachedResource->url());
+    resource->m_requestURL = KURL(ParsedURLString, cachedResource->url());
     resource->updateResponse(cachedResource->response());
 
     resource->m_length = cachedResource->encodedSize();
@@ -89,6 +91,9 @@ void InspectorResource::updateRequest(const ResourceRequest& request)
 {
     m_requestHeaderFields = request.httpHeaderFields();
     m_requestURL = request.url();
+    m_requestMethod = request.httpMethod();
+    if (request.httpBody() && !request.httpBody()->isEmpty())
+        m_requestFormData = request.httpBody()->flattenToString();
 
     m_changes.set(RequestChange);
 }
@@ -105,7 +110,7 @@ void InspectorResource::updateResponse(const ResourceResponse& response)
     m_changes.set(TypeChange);
 }
 
-static void populateHeadersObject(InspectorJSONObject* object, const HTTPHeaderMap& headers)
+static void populateHeadersObject(ScriptObject* object, const HTTPHeaderMap& headers)
 {
     HTTPHeaderMap::const_iterator end = headers.end();
     for (HTTPHeaderMap::const_iterator it = headers.begin(); it != end; ++it) {
@@ -116,8 +121,8 @@ static void populateHeadersObject(InspectorJSONObject* object, const HTTPHeaderM
 void InspectorResource::createScriptObject(InspectorFrontend* frontend)
 {
     if (!m_scriptObjectCreated) {
-        InspectorJSONObject jsonObject = frontend->newInspectorJSONObject();
-        InspectorJSONObject requestHeaders = frontend->newInspectorJSONObject();
+        ScriptObject jsonObject = frontend->newScriptObject();
+        ScriptObject requestHeaders = frontend->newScriptObject();
         populateHeadersObject(&requestHeaders, m_requestHeaderFields);
         jsonObject.set("requestHeaders", requestHeaders);
         jsonObject.set("requestURL", requestURL());
@@ -126,6 +131,8 @@ void InspectorResource::createScriptObject(InspectorFrontend* frontend)
         jsonObject.set("lastPathComponent", m_requestURL.lastPathComponent());
         jsonObject.set("isMainResource", m_isMainResource);
         jsonObject.set("cached", m_cached);
+        jsonObject.set("requestMethod", m_requestMethod);
+        jsonObject.set("requestFormData", m_requestFormData);
         if (!frontend->addResource(m_identifier, jsonObject))
             return;
 
@@ -143,16 +150,18 @@ void InspectorResource::updateScriptObject(InspectorFrontend* frontend)
     if (m_changes.hasChange(NoChange))
         return;
 
-    InspectorJSONObject jsonObject = frontend->newInspectorJSONObject();
+    ScriptObject jsonObject = frontend->newScriptObject();
     if (m_changes.hasChange(RequestChange)) {
         jsonObject.set("url", requestURL());
         jsonObject.set("domain", m_requestURL.host());
         jsonObject.set("path", m_requestURL.path());
         jsonObject.set("lastPathComponent", m_requestURL.lastPathComponent());
-        InspectorJSONObject requestHeaders = frontend->newInspectorJSONObject();
+        ScriptObject requestHeaders = frontend->newScriptObject();
         populateHeadersObject(&requestHeaders, m_requestHeaderFields);
         jsonObject.set("requestHeaders", requestHeaders);
         jsonObject.set("mainResource", m_isMainResource);
+        jsonObject.set("requestMethod", m_requestMethod);
+        jsonObject.set("requestFormData", m_requestFormData);
         jsonObject.set("didRequestChange", true);
     }
 
@@ -162,7 +171,7 @@ void InspectorResource::updateScriptObject(InspectorFrontend* frontend)
         jsonObject.set("expectedContentLength", m_expectedContentLength);
         jsonObject.set("statusCode", m_responseStatusCode);
         jsonObject.set("suggestedFilename", m_suggestedFilename);
-        InspectorJSONObject responseHeaders = frontend->newInspectorJSONObject();
+        ScriptObject responseHeaders = frontend->newScriptObject();
         populateHeadersObject(&responseHeaders, m_responseHeaderFields);
         jsonObject.set("responseHeaders", responseHeaders);
         jsonObject.set("didResponseChange", true);
@@ -323,3 +332,5 @@ void InspectorResource::addLength(int lengthReceived)
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(INSPECTOR)

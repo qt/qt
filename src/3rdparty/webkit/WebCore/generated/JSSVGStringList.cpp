@@ -85,6 +85,11 @@ bool JSSVGStringListPrototype::getOwnPropertySlot(ExecState* exec, const Identif
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGStringListPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGStringListPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGStringListPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGStringList::s_info = { "SVGStringList", 0, &JSSVGStringListTable, 0 };
 
 JSSVGStringList::JSSVGStringList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGStringList> impl, SVGElement* context)
@@ -108,6 +113,11 @@ bool JSSVGStringList::getOwnPropertySlot(ExecState* exec, const Identifier& prop
     return getStaticValueSlot<JSSVGStringList, Base>(exec, &JSSVGStringListTable, this, propertyName, slot);
 }
 
+bool JSSVGStringList::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGStringList, Base>(exec, &JSSVGStringListTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGStringListNumberOfItems(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGStringList* castedThis = static_cast<JSSVGStringList*>(asObject(slot.slotBase()));
@@ -119,7 +129,7 @@ JSValue jsSVGStringListNumberOfItems(ExecState* exec, const Identifier&, const P
 JSValue JSC_HOST_CALL jsSVGStringListPrototypeFunctionClear(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGStringList::s_info))
+    if (!thisValue.inherits(&JSSVGStringList::s_info))
         return throwError(exec, TypeError);
     JSSVGStringList* castedThisObj = static_cast<JSSVGStringList*>(asObject(thisValue));
     SVGStringList* imp = static_cast<SVGStringList*>(castedThisObj->impl());
@@ -133,7 +143,7 @@ JSValue JSC_HOST_CALL jsSVGStringListPrototypeFunctionClear(ExecState* exec, JSO
 JSValue JSC_HOST_CALL jsSVGStringListPrototypeFunctionInitialize(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGStringList::s_info))
+    if (!thisValue.inherits(&JSSVGStringList::s_info))
         return throwError(exec, TypeError);
     JSSVGStringList* castedThisObj = static_cast<JSSVGStringList*>(asObject(thisValue));
     SVGStringList* imp = static_cast<SVGStringList*>(castedThisObj->impl());
@@ -149,7 +159,7 @@ JSValue JSC_HOST_CALL jsSVGStringListPrototypeFunctionInitialize(ExecState* exec
 JSValue JSC_HOST_CALL jsSVGStringListPrototypeFunctionGetItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGStringList::s_info))
+    if (!thisValue.inherits(&JSSVGStringList::s_info))
         return throwError(exec, TypeError);
     JSSVGStringList* castedThisObj = static_cast<JSSVGStringList*>(asObject(thisValue));
     SVGStringList* imp = static_cast<SVGStringList*>(castedThisObj->impl());
@@ -165,7 +175,7 @@ JSValue JSC_HOST_CALL jsSVGStringListPrototypeFunctionGetItem(ExecState* exec, J
 JSValue JSC_HOST_CALL jsSVGStringListPrototypeFunctionInsertItemBefore(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGStringList::s_info))
+    if (!thisValue.inherits(&JSSVGStringList::s_info))
         return throwError(exec, TypeError);
     JSSVGStringList* castedThisObj = static_cast<JSSVGStringList*>(asObject(thisValue));
     SVGStringList* imp = static_cast<SVGStringList*>(castedThisObj->impl());
@@ -182,7 +192,7 @@ JSValue JSC_HOST_CALL jsSVGStringListPrototypeFunctionInsertItemBefore(ExecState
 JSValue JSC_HOST_CALL jsSVGStringListPrototypeFunctionReplaceItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGStringList::s_info))
+    if (!thisValue.inherits(&JSSVGStringList::s_info))
         return throwError(exec, TypeError);
     JSSVGStringList* castedThisObj = static_cast<JSSVGStringList*>(asObject(thisValue));
     SVGStringList* imp = static_cast<SVGStringList*>(castedThisObj->impl());
@@ -199,7 +209,7 @@ JSValue JSC_HOST_CALL jsSVGStringListPrototypeFunctionReplaceItem(ExecState* exe
 JSValue JSC_HOST_CALL jsSVGStringListPrototypeFunctionRemoveItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGStringList::s_info))
+    if (!thisValue.inherits(&JSSVGStringList::s_info))
         return throwError(exec, TypeError);
     JSSVGStringList* castedThisObj = static_cast<JSSVGStringList*>(asObject(thisValue));
     SVGStringList* imp = static_cast<SVGStringList*>(castedThisObj->impl());
@@ -215,7 +225,7 @@ JSValue JSC_HOST_CALL jsSVGStringListPrototypeFunctionRemoveItem(ExecState* exec
 JSValue JSC_HOST_CALL jsSVGStringListPrototypeFunctionAppendItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGStringList::s_info))
+    if (!thisValue.inherits(&JSSVGStringList::s_info))
         return throwError(exec, TypeError);
     JSSVGStringList* castedThisObj = static_cast<JSSVGStringList*>(asObject(thisValue));
     SVGStringList* imp = static_cast<SVGStringList*>(castedThisObj->impl());
@@ -234,7 +244,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGStri
 }
 SVGStringList* toSVGStringList(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGStringList::s_info) ? static_cast<JSSVGStringList*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGStringList::s_info) ? static_cast<JSSVGStringList*>(asObject(value))->impl() : 0;
 }
 
 }

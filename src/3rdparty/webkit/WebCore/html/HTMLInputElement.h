@@ -31,7 +31,9 @@
 namespace WebCore {
 
 class FileList;
+class HTMLDataListElement;
 class HTMLImageLoader;
+class HTMLOptionElement;
 class KURL;
 class VisibleSelection;
 
@@ -54,7 +56,8 @@ public:
         EMAIL,
         NUMBER,
         TELEPHONE,
-        URL
+        URL,
+        COLOR
     };
     
     enum AutoCompleteSetting {
@@ -95,7 +98,7 @@ public:
 
     bool isTextButton() const { return m_type == SUBMIT || m_type == RESET || m_type == BUTTON; }
     virtual bool isRadioButton() const { return m_type == RADIO; }
-    virtual bool isTextField() const { return m_type == TEXT || m_type == PASSWORD || m_type == SEARCH || m_type == ISINDEX || m_type == EMAIL || m_type == NUMBER || m_type == TELEPHONE || m_type == URL; }
+    virtual bool isTextField() const { return m_type == TEXT || m_type == PASSWORD || m_type == SEARCH || m_type == ISINDEX || m_type == EMAIL || m_type == NUMBER || m_type == TELEPHONE || m_type == URL || m_type == COLOR; }
     virtual bool isSearchField() const { return m_type == SEARCH; }
     virtual bool isInputTypeHidden() const { return m_type == HIDDEN; }
     virtual bool isPasswordField() const { return m_type == PASSWORD; }
@@ -194,6 +197,11 @@ public:
     KURL src() const;
     void setSrc(const String&);
 
+#if ENABLE(DATALIST)
+    HTMLElement* list() const;
+    HTMLOptionElement* selectedOption() const;
+#endif
+
     int maxLength() const;
     void setMaxLength(int);
 
@@ -214,7 +222,7 @@ public:
 
     VisibleSelection selection() const;
 
-    virtual String constrainValue(const String& proposedValue) const;
+    virtual String sanitizeValue(const String&) const;
 
     virtual void documentDidBecomeActive();
 
@@ -223,6 +231,11 @@ public:
     virtual bool willValidate() const;
 
     virtual bool placeholderShouldBeVisible() const;
+
+    // Converts the specified string to a floating number.
+    // If the conversion fails, the return value is false. Take care that leading or trailing unnecessary characters make failures.  This returns false for an empty string input.
+    // The double* parameter may be 0.
+    static bool formStringToDouble(const String&, double*);
     
 protected:
     virtual void willMoveToNewOwnerDocument();
@@ -230,7 +243,7 @@ protected:
 
     void updatePlaceholderVisibility()
     {
-        InputElement::updatePlaceholderVisibility(m_data, this, this, true);
+        InputElement::updatePlaceholderVisibility(this, this, true);
     }
 
 private:
@@ -242,6 +255,10 @@ private:
 
     virtual bool isOptionalFormControl() const { return !isRequiredFormControl(); }
     virtual bool isRequiredFormControl() const;
+
+#if ENABLE(DATALIST)
+    HTMLDataListElement* dataList() const;
+#endif
 
     InputElementData m_data;
     int m_xPos;
@@ -259,6 +276,9 @@ private:
     unsigned m_autocomplete : 2; // AutoCompleteSetting
     bool m_autofilled : 1;
     bool m_inited : 1;
+#if ENABLE(DATALIST)
+    bool m_hasNonEmptyList : 1;
+#endif
 };
 
 } //namespace

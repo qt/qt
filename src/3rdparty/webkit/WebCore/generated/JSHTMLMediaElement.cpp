@@ -111,6 +111,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLMediaElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -125,6 +126,11 @@ const ClassInfo JSHTMLMediaElementConstructor::s_info = { "HTMLMediaElementConst
 bool JSHTMLMediaElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLMediaElementConstructor, DOMObject>(exec, &JSHTMLMediaElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLMediaElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLMediaElementConstructor, DOMObject>(exec, &JSHTMLMediaElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -167,6 +173,11 @@ bool JSHTMLMediaElementPrototype::getOwnPropertySlot(ExecState* exec, const Iden
     return getStaticPropertySlot<JSHTMLMediaElementPrototype, JSObject>(exec, &JSHTMLMediaElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSHTMLMediaElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticPropertyDescriptor<JSHTMLMediaElementPrototype, JSObject>(exec, &JSHTMLMediaElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSHTMLMediaElement::s_info = { "HTMLMediaElement", &JSHTMLElement::s_info, &JSHTMLMediaElementTable, 0 };
 
 JSHTMLMediaElement::JSHTMLMediaElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLMediaElement> impl)
@@ -182,6 +193,11 @@ JSObject* JSHTMLMediaElement::createPrototype(ExecState* exec, JSGlobalObject* g
 bool JSHTMLMediaElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLMediaElement, Base>(exec, &JSHTMLMediaElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLMediaElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLMediaElement, Base>(exec, &JSHTMLMediaElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLMediaElementError(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -456,7 +472,7 @@ JSValue JSHTMLMediaElement::getConstructor(ExecState* exec, JSGlobalObject* glob
 JSValue JSC_HOST_CALL jsHTMLMediaElementPrototypeFunctionLoad(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLMediaElement::s_info))
+    if (!thisValue.inherits(&JSHTMLMediaElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLMediaElement* castedThisObj = static_cast<JSHTMLMediaElement*>(asObject(thisValue));
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThisObj->impl());
@@ -470,7 +486,7 @@ JSValue JSC_HOST_CALL jsHTMLMediaElementPrototypeFunctionLoad(ExecState* exec, J
 JSValue JSC_HOST_CALL jsHTMLMediaElementPrototypeFunctionCanPlayType(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLMediaElement::s_info))
+    if (!thisValue.inherits(&JSHTMLMediaElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLMediaElement* castedThisObj = static_cast<JSHTMLMediaElement*>(asObject(thisValue));
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThisObj->impl());
@@ -484,7 +500,7 @@ JSValue JSC_HOST_CALL jsHTMLMediaElementPrototypeFunctionCanPlayType(ExecState* 
 JSValue JSC_HOST_CALL jsHTMLMediaElementPrototypeFunctionPlay(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLMediaElement::s_info))
+    if (!thisValue.inherits(&JSHTMLMediaElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLMediaElement* castedThisObj = static_cast<JSHTMLMediaElement*>(asObject(thisValue));
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThisObj->impl());
@@ -496,7 +512,7 @@ JSValue JSC_HOST_CALL jsHTMLMediaElementPrototypeFunctionPlay(ExecState* exec, J
 JSValue JSC_HOST_CALL jsHTMLMediaElementPrototypeFunctionPause(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLMediaElement::s_info))
+    if (!thisValue.inherits(&JSHTMLMediaElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLMediaElement* castedThisObj = static_cast<JSHTMLMediaElement*>(asObject(thisValue));
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThisObj->impl());

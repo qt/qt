@@ -93,6 +93,11 @@ bool JSSVGFEOffsetElementPrototype::getOwnPropertySlot(ExecState* exec, const Id
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGFEOffsetElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGFEOffsetElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGFEOffsetElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGFEOffsetElement::s_info = { "SVGFEOffsetElement", &JSSVGElement::s_info, &JSSVGFEOffsetElementTable, 0 };
 
 JSSVGFEOffsetElement::JSSVGFEOffsetElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEOffsetElement> impl)
@@ -108,6 +113,11 @@ JSObject* JSSVGFEOffsetElement::createPrototype(ExecState* exec, JSGlobalObject*
 bool JSSVGFEOffsetElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGFEOffsetElement, Base>(exec, &JSSVGFEOffsetElementTable, this, propertyName, slot);
+}
+
+bool JSSVGFEOffsetElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFEOffsetElement, Base>(exec, &JSSVGFEOffsetElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGFEOffsetElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -202,7 +212,7 @@ JSValue jsSVGFEOffsetElementStyle(ExecState* exec, const Identifier&, const Prop
 JSValue JSC_HOST_CALL jsSVGFEOffsetElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGFEOffsetElement::s_info))
+    if (!thisValue.inherits(&JSSVGFEOffsetElement::s_info))
         return throwError(exec, TypeError);
     JSSVGFEOffsetElement* castedThisObj = static_cast<JSSVGFEOffsetElement*>(asObject(thisValue));
     SVGFEOffsetElement* imp = static_cast<SVGFEOffsetElement*>(castedThisObj->impl());

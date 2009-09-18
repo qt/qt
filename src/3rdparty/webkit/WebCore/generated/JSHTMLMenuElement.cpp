@@ -68,6 +68,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLMenuElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -82,6 +83,11 @@ const ClassInfo JSHTMLMenuElementConstructor::s_info = { "HTMLMenuElementConstru
 bool JSHTMLMenuElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLMenuElementConstructor, DOMObject>(exec, &JSHTMLMenuElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLMenuElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLMenuElementConstructor, DOMObject>(exec, &JSHTMLMenuElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -120,6 +126,11 @@ JSObject* JSHTMLMenuElement::createPrototype(ExecState* exec, JSGlobalObject* gl
 bool JSHTMLMenuElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLMenuElement, Base>(exec, &JSHTMLMenuElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLMenuElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLMenuElement, Base>(exec, &JSHTMLMenuElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLMenuElementCompact(ExecState* exec, const Identifier&, const PropertySlot& slot)

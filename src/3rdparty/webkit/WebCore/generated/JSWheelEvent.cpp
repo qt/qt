@@ -83,6 +83,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSWheelEventPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -97,6 +98,11 @@ const ClassInfo JSWheelEventConstructor::s_info = { "WheelEventConstructor", 0, 
 bool JSWheelEventConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSWheelEventConstructor, DOMObject>(exec, &JSWheelEventConstructorTable, this, propertyName, slot);
+}
+
+bool JSWheelEventConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSWheelEventConstructor, DOMObject>(exec, &JSWheelEventConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -135,6 +141,11 @@ JSObject* JSWheelEvent::createPrototype(ExecState* exec, JSGlobalObject* globalO
 bool JSWheelEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSWheelEvent, Base>(exec, &JSWheelEventTable, this, propertyName, slot);
+}
+
+bool JSWheelEvent::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSWheelEvent, Base>(exec, &JSWheelEventTable, this, propertyName, descriptor);
 }
 
 JSValue jsWheelEventScreenX(ExecState* exec, const Identifier&, const PropertySlot& slot)

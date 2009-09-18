@@ -30,6 +30,8 @@
 #include <wtf/Noncopyable.h>
 #include "LinkHash.h"
 #include "StringHash.h"
+#include "UserScript.h"
+#include "UserStyleSheet.h"
 
 namespace WebCore {
 
@@ -41,6 +43,7 @@ namespace WebCore {
     public:
         PageGroup(const String& name);
         PageGroup(Page*);
+        ~PageGroup();
 
         static PageGroup* pageGroup(const String& groupName);
         static void closeLocalStorage();
@@ -64,13 +67,22 @@ namespace WebCore {
 
 #if ENABLE(DOM_STORAGE)
         StorageNamespace* localStorage();
-#endif
-
-    private:
-        void addVisitedLink(LinkHash stringHash);
-#if ENABLE(DOM_STORAGE)
         bool hasLocalStorage() { return m_localStorage; }
 #endif
+
+        void addUserScript(const String& source, const KURL&, const Vector<String>& patterns,
+                           unsigned worldID, UserScriptInjectionTime);
+        const UserScriptMap* userScripts() const { return m_userScripts.get(); }
+        
+        void addUserStyleSheet(const String& source, const KURL&, const Vector<String>& patterns, unsigned worldID);
+        const UserStyleSheetMap* userStyleSheets() const { return m_userStyleSheets.get(); }
+        
+        void removeUserContentForWorld(unsigned);
+        void removeAllUserContent();
+        
+    private:
+        void addVisitedLink(LinkHash stringHash);
+
         String m_name;
 
         HashSet<Page*> m_pages;
@@ -82,6 +94,9 @@ namespace WebCore {
 #if ENABLE(DOM_STORAGE)
         RefPtr<StorageNamespace> m_localStorage;
 #endif
+
+        OwnPtr<UserScriptMap> m_userScripts;
+        OwnPtr<UserStyleSheetMap> m_userStyleSheets;
     };
 
 } // namespace WebCore

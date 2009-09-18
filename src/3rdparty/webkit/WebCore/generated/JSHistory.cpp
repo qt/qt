@@ -77,6 +77,11 @@ bool JSHistoryPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticFunctionSlot<JSObject>(exec, &JSHistoryPrototypeTable, this, propertyName, slot);
 }
 
+bool JSHistoryPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSHistoryPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSHistory::s_info = { "History", 0, &JSHistoryTable, 0 };
 
 JSHistory::JSHistory(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<History> impl)
@@ -102,6 +107,13 @@ bool JSHistory::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNa
     return getStaticValueSlot<JSHistory, Base>(exec, &JSHistoryTable, this, propertyName, slot);
 }
 
+bool JSHistory::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    if (getOwnPropertyDescriptorDelegate(exec, propertyName, descriptor))
+        return true;
+    return getStaticValueDescriptor<JSHistory, Base>(exec, &JSHistoryTable, this, propertyName, descriptor);
+}
+
 JSValue jsHistoryLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSHistory* castedThis = static_cast<JSHistory*>(asObject(slot.slotBase()));
@@ -120,7 +132,7 @@ void JSHistory::put(ExecState* exec, const Identifier& propertyName, JSValue val
 JSValue JSC_HOST_CALL jsHistoryPrototypeFunctionBack(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHistory::s_info))
+    if (!thisValue.inherits(&JSHistory::s_info))
         return throwError(exec, TypeError);
     JSHistory* castedThisObj = static_cast<JSHistory*>(asObject(thisValue));
     History* imp = static_cast<History*>(castedThisObj->impl());
@@ -132,7 +144,7 @@ JSValue JSC_HOST_CALL jsHistoryPrototypeFunctionBack(ExecState* exec, JSObject*,
 JSValue JSC_HOST_CALL jsHistoryPrototypeFunctionForward(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHistory::s_info))
+    if (!thisValue.inherits(&JSHistory::s_info))
         return throwError(exec, TypeError);
     JSHistory* castedThisObj = static_cast<JSHistory*>(asObject(thisValue));
     History* imp = static_cast<History*>(castedThisObj->impl());
@@ -144,7 +156,7 @@ JSValue JSC_HOST_CALL jsHistoryPrototypeFunctionForward(ExecState* exec, JSObjec
 JSValue JSC_HOST_CALL jsHistoryPrototypeFunctionGo(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHistory::s_info))
+    if (!thisValue.inherits(&JSHistory::s_info))
         return throwError(exec, TypeError);
     JSHistory* castedThisObj = static_cast<JSHistory*>(asObject(thisValue));
     History* imp = static_cast<History*>(castedThisObj->impl());
@@ -160,7 +172,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, History
 }
 History* toHistory(JSC::JSValue value)
 {
-    return value.isObject(&JSHistory::s_info) ? static_cast<JSHistory*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSHistory::s_info) ? static_cast<JSHistory*>(asObject(value))->impl() : 0;
 }
 
 }

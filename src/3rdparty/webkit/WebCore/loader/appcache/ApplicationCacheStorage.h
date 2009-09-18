@@ -37,6 +37,7 @@
 namespace WebCore {
 
 class ApplicationCache;
+class ApplicationCacheHost;
 class ApplicationCacheGroup;
 class ApplicationCacheResource;
 class KURL;
@@ -69,7 +70,7 @@ public:
     
     void empty();
     
-    static bool storeCopyOfCache(const String& cacheDirectory, ApplicationCache*);
+    static bool storeCopyOfCache(const String& cacheDirectory, ApplicationCacheHost*);
 
     bool manifestURLs(Vector<KURL>* urls);
     bool cacheGroupSize(const String& manifestURL, int64_t* size);

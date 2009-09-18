@@ -51,12 +51,17 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-SVGElement::SVGElement(const QualifiedName& tagName, Document* doc)
-    : StyledElement(tagName, doc)
+SVGElement::SVGElement(const QualifiedName& tagName, Document* document)
+    : StyledElement(tagName, document, CreateElementZeroRefCount)
     , m_shadowParent(0)
     , m_cursorElement(0)
     , m_cursorImageValue(0)
 {
+}
+
+PassRefPtr<SVGElement> SVGElement::create(const QualifiedName& tagName, Document* document)
+{
+    return new SVGElement(tagName, document);
 }
 
 SVGElement::~SVGElement()
@@ -214,7 +219,7 @@ void SVGElement::sendSVGLoadEventIfPossible(bool sendParentLoadEvents)
             event->setTarget(currentTarget);
             currentTarget->dispatchGenericEvent(event.release());
         }
-        currentTarget = (parent && parent->isSVGElement()) ? static_pointer_cast<SVGElement>(parent) : RefPtr<SVGElement>(0);
+        currentTarget = (parent && parent->isSVGElement()) ? static_pointer_cast<SVGElement>(parent) : 0;
     }
 }
 

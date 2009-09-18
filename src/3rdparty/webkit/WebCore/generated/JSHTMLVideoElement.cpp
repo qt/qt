@@ -78,6 +78,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLVideoElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -92,6 +93,11 @@ const ClassInfo JSHTMLVideoElementConstructor::s_info = { "HTMLVideoElementConst
 bool JSHTMLVideoElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLVideoElementConstructor, DOMObject>(exec, &JSHTMLVideoElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLVideoElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLVideoElementConstructor, DOMObject>(exec, &JSHTMLVideoElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -130,6 +136,11 @@ JSObject* JSHTMLVideoElement::createPrototype(ExecState* exec, JSGlobalObject* g
 bool JSHTMLVideoElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLVideoElement, Base>(exec, &JSHTMLVideoElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLVideoElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLVideoElement, Base>(exec, &JSHTMLVideoElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLVideoElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)

@@ -148,6 +148,9 @@ namespace WebCore {
         virtual void updateGlobalHistoryRedirectLinks();
         virtual bool shouldGoToHistoryItem(HistoryItem*) const;
 
+        virtual void didDisplayInsecureContent();
+        virtual void didRunInsecureContent(SecurityOrigin*);
+
         virtual ResourceError cancelledError(const ResourceRequest&);
         virtual ResourceError blockedError(const ResourceRequest&);
         virtual ResourceError cannotShowURLError(const ResourceRequest&);
@@ -211,7 +214,7 @@ namespace WebCore {
         WebCore::PluginView* m_pluginView;
         bool m_hasSentResponseToPlugin;
 
-        bool m_loadSucceeded;
+        ResourceError m_loadError;
     };
 
 }

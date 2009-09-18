@@ -69,6 +69,7 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
     :   model(QAbstractItemModelPrivate::staticEmptyModel()),
         itemDelegate(0),
         selectionModel(0),
+        ctrlDragSelectionFlag(QItemSelectionModel::NoUpdate),
         selectionMode(QAbstractItemView::ExtendedSelection),
         selectionBehavior(QAbstractItemView::SelectItems),
         currentlyCommittingEditor(0),
@@ -1589,6 +1590,11 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
         d->selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
         d->autoScroll = autoScroll;
         QRect rect(d->pressedPosition - offset, pos);
+        if (command.testFlag(QItemSelectionModel::Toggle)) {
+            command &= ~QItemSelectionModel::Toggle;
+            d->ctrlDragSelectionFlag = d->selectionModel->isSelected(index) ? QItemSelectionModel::Deselect : QItemSelectionModel::Select;
+            command |= d->ctrlDragSelectionFlag;
+        }
         setSelection(rect, command);
 
         // signal handlers may change the model
@@ -1659,6 +1665,10 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
     if ((event->buttons() & Qt::LeftButton) && d->selectionAllowed(index) && d->selectionModel) {
         setState(DragSelectingState);
         QItemSelectionModel::SelectionFlags command = selectionCommand(index, event);
+        if (command.testFlag(QItemSelectionModel::Toggle)) {
+            command &= ~QItemSelectionModel::Toggle;
+            command |= d->ctrlDragSelectionFlag;
+        }
 
         // Do the normalize ourselves, since QRect::normalized() is flawed
         QRect selectionRect = QRect(topLeft, bottomRight);
@@ -1698,6 +1708,8 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
     bool selectedClicked = click && (event->button() & Qt::LeftButton) && d->pressedAlreadySelected;
     EditTrigger trigger = (selectedClicked ? SelectedClicked : NoEditTriggers);
     bool edited = edit(index, trigger, event);
+
+    d->ctrlDragSelectionFlag = QItemSelectionModel::NoUpdate;
 
     //in the case the user presses on no item we might decide to clear the selection
     if (d->selectionModel && !index.isValid())

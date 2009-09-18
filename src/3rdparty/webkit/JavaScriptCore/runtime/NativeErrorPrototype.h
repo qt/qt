@@ -22,19 +22,10 @@
 #define NativeErrorPrototype_h
 
 #include "JSObject.h"
-#ifdef QT_BUILD_SCRIPT_LIB
-#include "ErrorInstance.h"
-#endif
 
 namespace JSC {
 
-    class NativeErrorPrototype :
-#ifdef QT_BUILD_SCRIPT_LIB    //According to ECMAScript Specification 15.11.7, errors must have the "Error" class
-        public ErrorInstance
-#else
-        public JSObject
-#endif
-    {
+    class NativeErrorPrototype : public JSObject {
     public:
         NativeErrorPrototype(ExecState*, PassRefPtr<Structure>, const UString& name, const UString& message);
     };

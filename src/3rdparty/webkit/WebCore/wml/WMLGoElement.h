@@ -36,9 +36,10 @@ public:
     WMLGoElement(const QualifiedName& tagName, Document*);
 
     void registerPostfieldElement(WMLPostfieldElement*);
+    void deregisterPostfieldElement(WMLPostfieldElement*);
 
     virtual void parseMappedAttribute(MappedAttribute*);
-    virtual void executeTask(Event*);
+    virtual void executeTask();
 
 private:
     void preparePOSTRequest(ResourceRequest&, bool inSameDeck, const String& cacheControl);

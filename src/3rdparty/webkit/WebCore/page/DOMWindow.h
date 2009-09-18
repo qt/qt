@@ -28,6 +28,7 @@
 
 #include "EventTarget.h"
 #include "KURL.h"
+#include "MessagePort.h"
 #include "PlatformString.h"
 #include "RegisteredEventListener.h"
 #include "SecurityOrigin.h"
@@ -52,9 +53,10 @@ namespace WebCore {
     class Frame;
     class History;
     class Location;
-    class MessagePort;
+    class Media;
     class Navigator;
     class Node;
+    class NotificationCenter;
     class PostMessageTimer;
     class ScheduledAction;
     class Screen;
@@ -171,6 +173,8 @@ namespace WebCore {
 
         // DOM Level 2 AbstractView Interface
         Document* document() const;
+        // CSSOM View Module
+        PassRefPtr<Media> media() const;
 
         // DOM Level 2 Style Interface
         PassRefPtr<CSSStyleDeclaration> getComputedStyle(Element*, const String& pseudoElt) const;
@@ -199,6 +203,12 @@ namespace WebCore {
         DOMApplicationCache* applicationCache() const;
 #endif
 
+#if ENABLE(NOTIFICATIONS)
+        NotificationCenter* webkitNotifications() const;
+#endif
+
+        void postMessage(const String& message, const MessagePortArray*, const String& targetOrigin, DOMWindow* source, ExceptionCode&);
+        // FIXME: remove this when we update the ObjC bindings (bug #28774).
         void postMessage(const String& message, MessagePort*, const String& targetOrigin, DOMWindow* source, ExceptionCode&);
         void postMessageTimerFired(PostMessageTimer*);
 
@@ -230,6 +240,7 @@ namespace WebCore {
         void dispatchLoadEvent();
         void dispatchUnloadEvent(RegisteredEventListenerVector* = 0);
         PassRefPtr<BeforeUnloadEvent> dispatchBeforeUnloadEvent(RegisteredEventListenerVector* = 0);
+        void dispatchPageTransitionEvent(const AtomicString& eventType, bool persisted);
 
         // Used for legacy "onEvent" property APIs.
         void setAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>);
@@ -268,6 +279,8 @@ namespace WebCore {
         void setOnerror(PassRefPtr<EventListener>);
         EventListener* onfocus() const;
         void setOnfocus(PassRefPtr<EventListener>);
+        EventListener* onhashchange() const;
+        void setOnhashchange(PassRefPtr<EventListener>);
         EventListener* onkeydown() const;
         void setOnkeydown(PassRefPtr<EventListener>);
         EventListener* onkeypress() const;
@@ -292,6 +305,10 @@ namespace WebCore {
         void setOnoffline(PassRefPtr<EventListener>);
         EventListener* ononline() const;
         void setOnonline(PassRefPtr<EventListener>);
+        EventListener* onpagehide() const;
+        void setOnpagehide(PassRefPtr<EventListener>);
+        EventListener* onpageshow() const;
+        void setOnpageshow(PassRefPtr<EventListener>);
         EventListener* onreset() const;
         void setOnreset(PassRefPtr<EventListener>);
         EventListener* onresize() const;
@@ -364,11 +381,13 @@ namespace WebCore {
         void setOnmessage(PassRefPtr<EventListener>);
         EventListener* oncontextmenu() const;
         void setOncontextmenu(PassRefPtr<EventListener>);
+        EventListener* oninvalid() const;
+        void setOninvalid(PassRefPtr<EventListener>);
 
         void captureEvents();
         void releaseEvents();
 
-        // These methods are used for GC marking. See JSDOMWindow::mark() in
+        // These methods are used for GC marking. See JSDOMWindow::markChildren(MarkStack&) in
         // JSDOMWindowCustom.cpp.
         Screen* optionalScreen() const { return m_screen.get(); }
         DOMSelection* optionalSelection() const { return m_selection.get(); }
@@ -423,6 +442,9 @@ namespace WebCore {
 #endif
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
         mutable RefPtr<DOMApplicationCache> m_applicationCache;
+#endif
+#if ENABLE(NOTIFICATIONS)
+        mutable RefPtr<NotificationCenter> m_notifications;
 #endif
 
         RegisteredEventListenerVector m_eventListeners;

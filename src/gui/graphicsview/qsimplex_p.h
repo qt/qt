@@ -107,7 +107,7 @@ public:
     qreal solveMax();
     QList<QSimplexVariable *> constraintsVariables();
 
-    void setConstraints(const QList<QSimplexConstraint *> constraints);
+    bool setConstraints(const QList<QSimplexConstraint *> constraints);
     void setObjective(QSimplexConstraint *objective);
 
     void dumpMatrix();

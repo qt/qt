@@ -60,6 +60,7 @@
 #include "Navigator.h"
 #include "NodeList.h"
 #include "Page.h"
+#include "PageGroup.h"
 #include "RegularExpression.h"
 #include "RenderPart.h"
 #include "RenderTableCell.h"
@@ -67,6 +68,8 @@
 #include "RenderTheme.h"
 #include "RenderView.h"
 #include "ScriptController.h"
+#include "ScriptSourceCode.h"
+#include "ScriptValue.h"
 #include "Settings.h"
 #include "TextIterator.h"
 #include "TextResourceDecoder.h"
@@ -81,10 +84,6 @@
 #if USE(JSC)
 #include "JSDOMWindowShell.h"
 #include "runtime_root.h"
-#endif
-
-#if FRAME_LOADS_USER_STYLESHEET
-#include "UserStyleSheetLoader.h"
 #endif
 
 #if ENABLE(SVG)
@@ -135,9 +134,6 @@ Frame::Frame(Page* page, HTMLFrameOwnerElement* ownerElement, FrameLoaderClient*
     , m_needsReapplyStyles(false)
     , m_isDisconnected(false)
     , m_excludeFromTextSearch(false)
-#if FRAME_LOADS_USER_STYLESHEET
-    , m_userStyleSheetLoader(0)
-#endif
 {
     Frame* parent = parentFromOwnerElement(ownerElement);
     m_zoomFactor = parent ? parent->m_zoomFactor : 1.0f;
@@ -200,10 +196,6 @@ Frame::~Frame()
     }
 
     ASSERT(!m_lifeSupportTimer.isActive());
-
-#if FRAME_LOADS_USER_STYLESHEET
-    delete m_userStyleSheetLoader;
-#endif
 }
 
 void Frame::init()
@@ -223,6 +215,12 @@ FrameView* Frame::view() const
 
 void Frame::setView(PassRefPtr<FrameView> view)
 {
+    // We the custom scroll bars as early as possible to prevent m_doc->detach()
+    // from messing with the view such that its scroll bars won't be torn down.
+    // FIXME: We should revisit this.
+    if (m_view)
+        m_view->detachCustomScrollbars();
+
     // Detach the document now, so any onUnload handlers get run - if
     // we wait until the view is destroyed, then things won't be
     // hooked up enough for some JavaScript calls to work.
@@ -387,10 +385,11 @@ static RegularExpression* createRegExpForLabels(const Vector<String>& labels)
 
 String Frame::searchForLabelsAboveCell(RegularExpression* regExp, HTMLTableCellElement* cell)
 {
-    RenderTableCell* cellRenderer = static_cast<RenderTableCell*>(cell->renderer());
+    RenderObject* cellRenderer = cell->renderer();
 
     if (cellRenderer && cellRenderer->isTableCell()) {
-        RenderTableCell* cellAboveRenderer = cellRenderer->table()->cellAbove(cellRenderer);
+        RenderTableCell* tableCellRenderer = toRenderTableCell(cellRenderer);
+        RenderTableCell* cellAboveRenderer = tableCellRenderer->table()->cellAbove(tableCellRenderer);
 
         if (cellAboveRenderer) {
             HTMLTableCellElement* aboveCell =
@@ -559,7 +558,7 @@ static bool isFrameElement(const Node *n)
     RenderObject *renderer = n->renderer();
     if (!renderer || !renderer->isWidget())
         return false;
-    Widget* widget = static_cast<RenderWidget*>(renderer)->widget();
+    Widget* widget = toRenderWidget(renderer)->widget();
     return widget && widget->isFrameView();
 }
 
@@ -825,19 +824,41 @@ void Frame::reapplyStyles()
     // We should probably eventually move it into its own function.
     m_doc->docLoader()->setAutoLoadImages(m_page && m_page->settings()->loadsImagesAutomatically());
 
-#if FRAME_LOADS_USER_STYLESHEET
-    const KURL userStyleSheetLocation = m_page ? m_page->settings()->userStyleSheetLocation() : KURL();
-    if (!userStyleSheetLocation.isEmpty())
-        setUserStyleSheetLocation(userStyleSheetLocation);
-    else
-        setUserStyleSheet(String());
-#endif
-
     // FIXME: It's not entirely clear why the following is needed.
     // The document automatically does this as required when you set the style sheet.
     // But we had problems when this code was removed. Details are in
     // <http://bugs.webkit.org/show_bug.cgi?id=8079>.
     m_doc->updateStyleSelector();
+}
+
+void Frame::injectUserScripts(UserScriptInjectionTime injectionTime)
+{
+    if (!m_page)
+        return;
+    
+    // Walk the hashtable. Inject by world.
+    const UserScriptMap* userScripts = m_page->group().userScripts();
+    if (!userScripts)
+        return;
+    UserScriptMap::const_iterator end = userScripts->end();
+    for (UserScriptMap::const_iterator it = userScripts->begin(); it != end; ++it)
+        injectUserScriptsForWorld(it->first, *it->second, injectionTime);
+}
+
+void Frame::injectUserScriptsForWorld(unsigned worldID, const UserScriptVector& userScripts, UserScriptInjectionTime injectionTime)
+{
+    if (userScripts.isEmpty())
+        return;
+
+    // FIXME: Need to implement pattern checking.
+    Vector<ScriptSourceCode> sourceCode;
+    unsigned count = userScripts.size();
+    for (unsigned i = 0; i < count; ++i) {
+        UserScript* script = userScripts[i].get();
+        if (script->injectionTime() == injectionTime)
+            sourceCode.append(ScriptSourceCode(script->source(), script->url()));
+    }
+    script()->evaluateInIsolatedWorld(worldID, sourceCode);
 }
 
 bool Frame::shouldChangeSelection(const VisibleSelection& newSelection) const
@@ -1153,7 +1174,7 @@ RenderPart* Frame::ownerRenderer() const
     // https://bugs.webkit.org/show_bug.cgi?id=18585
     if (!object->isRenderPart())
         return 0;
-    return static_cast<RenderPart*>(object);
+    return toRenderPart(object);
 }
 
 bool Frame::isDisconnected() const
@@ -1555,6 +1576,11 @@ Page* Frame::page() const
     return m_page;
 }
 
+void Frame::detachFromPage()
+{
+    m_page = 0;
+}
+
 EventHandler* Frame::eventHandler() const
 {
     return &m_eventHandler;
@@ -1574,7 +1600,7 @@ void Frame::pageDestroyed()
     script()->clearScriptObjects();
     script()->updatePlatformScriptObjects();
 
-    m_page = 0;
+    detachFromPage();
 }
 
 void Frame::disconnectOwnerElement()
@@ -1753,7 +1779,6 @@ void Frame::createView(const IntSize& viewportSize,
         frameView = FrameView::create(this);
 
     frameView->setScrollbarModes(horizontalScrollbarMode, verticalScrollbarMode);
-    frameView->updateDefaultScrollbarState();
 
     setView(frameView);
 

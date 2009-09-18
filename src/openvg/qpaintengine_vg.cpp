@@ -3125,6 +3125,9 @@ QPixmapFilter *QVGPaintEngine::pixmapFilter(int type, const QPixmapFilter *proto
                 d->convolutionFilter.reset(new QVGPixmapConvolutionFilter);
             return d->convolutionFilter.data();
         case QPixmapFilter::ColorizeFilter:
+            // Strength parameter does not work with current implementation.
+            if ((static_cast<const QPixmapColorizeFilter *>(prototype))->strength() != 1.0f)
+                break;
             if (!d->colorizeFilter)
                 d->colorizeFilter.reset(new QVGPixmapColorizeFilter);
             return d->colorizeFilter.data();

@@ -79,6 +79,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSXMLHttpRequestUploadPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -93,6 +94,11 @@ const ClassInfo JSXMLHttpRequestUploadConstructor::s_info = { "XMLHttpRequestUpl
 bool JSXMLHttpRequestUploadConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSXMLHttpRequestUploadConstructor, DOMObject>(exec, &JSXMLHttpRequestUploadConstructorTable, this, propertyName, slot);
+}
+
+bool JSXMLHttpRequestUploadConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSXMLHttpRequestUploadConstructor, DOMObject>(exec, &JSXMLHttpRequestUploadConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -128,6 +134,11 @@ bool JSXMLHttpRequestUploadPrototype::getOwnPropertySlot(ExecState* exec, const 
     return getStaticFunctionSlot<JSObject>(exec, getJSXMLHttpRequestUploadPrototypeTable(exec), this, propertyName, slot);
 }
 
+bool JSXMLHttpRequestUploadPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, getJSXMLHttpRequestUploadPrototypeTable(exec), this, propertyName, descriptor);
+}
+
 static const HashTable* getJSXMLHttpRequestUploadTable(ExecState* exec)
 {
     return getHashTableForGlobalData(exec->globalData(), &JSXMLHttpRequestUploadTable);
@@ -153,6 +164,11 @@ JSObject* JSXMLHttpRequestUpload::createPrototype(ExecState* exec, JSGlobalObjec
 bool JSXMLHttpRequestUpload::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSXMLHttpRequestUpload, Base>(exec, getJSXMLHttpRequestUploadTable(exec), this, propertyName, slot);
+}
+
+bool JSXMLHttpRequestUpload::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSXMLHttpRequestUpload, Base>(exec, getJSXMLHttpRequestUploadTable(exec), this, propertyName, descriptor);
 }
 
 JSValue jsXMLHttpRequestUploadOnabort(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -283,7 +299,7 @@ JSValue JSXMLHttpRequestUpload::getConstructor(ExecState* exec, JSGlobalObject* 
 JSValue JSC_HOST_CALL jsXMLHttpRequestUploadPrototypeFunctionAddEventListener(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSXMLHttpRequestUpload::s_info))
+    if (!thisValue.inherits(&JSXMLHttpRequestUpload::s_info))
         return throwError(exec, TypeError);
     JSXMLHttpRequestUpload* castedThisObj = static_cast<JSXMLHttpRequestUpload*>(asObject(thisValue));
     return castedThisObj->addEventListener(exec, args);
@@ -292,7 +308,7 @@ JSValue JSC_HOST_CALL jsXMLHttpRequestUploadPrototypeFunctionAddEventListener(Ex
 JSValue JSC_HOST_CALL jsXMLHttpRequestUploadPrototypeFunctionRemoveEventListener(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSXMLHttpRequestUpload::s_info))
+    if (!thisValue.inherits(&JSXMLHttpRequestUpload::s_info))
         return throwError(exec, TypeError);
     JSXMLHttpRequestUpload* castedThisObj = static_cast<JSXMLHttpRequestUpload*>(asObject(thisValue));
     return castedThisObj->removeEventListener(exec, args);
@@ -301,7 +317,7 @@ JSValue JSC_HOST_CALL jsXMLHttpRequestUploadPrototypeFunctionRemoveEventListener
 JSValue JSC_HOST_CALL jsXMLHttpRequestUploadPrototypeFunctionDispatchEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSXMLHttpRequestUpload::s_info))
+    if (!thisValue.inherits(&JSXMLHttpRequestUpload::s_info))
         return throwError(exec, TypeError);
     JSXMLHttpRequestUpload* castedThisObj = static_cast<JSXMLHttpRequestUpload*>(asObject(thisValue));
     XMLHttpRequestUpload* imp = static_cast<XMLHttpRequestUpload*>(castedThisObj->impl());
@@ -320,7 +336,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, XMLHttp
 }
 XMLHttpRequestUpload* toXMLHttpRequestUpload(JSC::JSValue value)
 {
-    return value.isObject(&JSXMLHttpRequestUpload::s_info) ? static_cast<JSXMLHttpRequestUpload*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSXMLHttpRequestUpload::s_info) ? static_cast<JSXMLHttpRequestUpload*>(asObject(value))->impl() : 0;
 }
 
 }
