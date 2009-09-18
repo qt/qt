@@ -5075,46 +5075,6 @@ void QGraphicsItem::update(const QRectF &rect)
 }
 
 /*!
-    \internal
-
-    Scrolls \a rect in \a pix by \a dx, \a dy.
-
-    ### This can be done much more efficiently by using XCopyArea on X11 with
-    the same dst and src, and through moving pixels in the raster engine. It
-    can probably also be done much better on the other paint engines.
-*/
-void _q_scrollPixmap(QPixmap *pix, const QRect &rect, int dx, int dy)
-{
-#if 0
-    QPainter painter(pix);
-    painter.setClipRect(rect);
-    painter.drawPixmap(rect.translated(dx, dy), *pix, rect);
-    painter.end();
-#elif defined Q_WS_X11
-    GC gc = XCreateGC(X11->display, pix->handle(), 0, 0);
-
-    XRectangle xrect;
-    xrect.x = rect.x();
-    xrect.y = rect.y();
-    xrect.width = rect.width();
-    xrect.height = rect.height();
-    XSetClipRectangles(X11->display, gc, 0, 0, &xrect, 1, YXBanded);
-
-    XCopyArea(X11->display, pix->handle(), pix->handle(), gc,
-              rect.x(), rect.y(), rect.width(), rect.height(),
-              rect.x()+dx, rect.y()+dy);
-    XFreeGC(X11->display, gc);
-#else
-    QPixmap newPix = *pix;
-    QPainter painter(&newPix);
-    painter.setClipRect(rect);
-    painter.drawPixmap(rect.translated(dx, dy), *pix, rect);
-    painter.end();
-    *pix = newPix;
-#endif
-}
-
-/*!
     \since 4.4
     Scrolls the contents of \a rect by \a dx, \a dy. If \a rect is a null rect
     (the default), the item's bounding rect is scrolled.
@@ -5154,7 +5114,7 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
                 QRectF br = boundingRect().adjusted(-adjust, -adjust, adjust, adjust);
                 QRect irect = rect.toRect().translated(-br.x(), -br.y());
 
-                _q_scrollPixmap(&pix, irect, dx, dy);
+                pix.scroll(dx, dy, irect);
 
                 QPixmapCache::replace(c->key, pix);
 

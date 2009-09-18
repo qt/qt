@@ -204,14 +204,14 @@ static TextStream &operator<<(TextStream& ts, const RenderObject& o)
         // FIXME: Deliberately dump the "inner" box of table cells, since that is what current results reflect.  We'd like
         // to clean up the results to dump both the outer box and the intrinsic padding so that both bits of information are
         // captured by the results.
-        const RenderTableCell& cell = static_cast<const RenderTableCell&>(o);
+        const RenderTableCell& cell = *toRenderTableCell(&o);
         r = IntRect(cell.x(), cell.y() + cell.intrinsicPaddingTop(), cell.width(), cell.height() - cell.intrinsicPaddingTop() - cell.intrinsicPaddingBottom());
     } else if (o.isBox())
         r = toRenderBox(&o)->frameRect();
 
     // FIXME: Temporary in order to ensure compatibility with existing layout test results.
     if (adjustForTableCells)
-        r.move(0, -static_cast<RenderTableCell*>(o.containingBlock())->intrinsicPaddingTop());
+        r.move(0, -toRenderTableCell(o.containingBlock())->intrinsicPaddingTop());
 
     ts << " " << r;
 
@@ -307,12 +307,12 @@ static TextStream &operator<<(TextStream& ts, const RenderObject& o)
     }
 
     if (o.isTableCell()) {
-        const RenderTableCell& c = static_cast<const RenderTableCell&>(o);
+        const RenderTableCell& c = *toRenderTableCell(&o);
         ts << " [r=" << c.row() << " c=" << c.col() << " rs=" << c.rowSpan() << " cs=" << c.colSpan() << "]";
     }
 
     if (o.isListMarker()) {
-        String text = static_cast<const RenderListMarker&>(o).text();
+        String text = toRenderListMarker(&o)->text();
         if (!text.isEmpty()) {
             if (text.length() != 1)
                 text = quoteAndEscapeNonPrintables(text);
@@ -343,7 +343,7 @@ static void writeTextRun(TextStream& ts, const RenderText& o, const InlineTextBo
     // FIXME: Table cell adjustment is temporary until results can be updated.
     int y = run.m_y;
     if (o.containingBlock()->isTableCell())
-        y -= static_cast<RenderTableCell*>(o.containingBlock())->intrinsicPaddingTop();
+        y -= toRenderTableCell(o.containingBlock())->intrinsicPaddingTop();
     ts << "text run at (" << run.m_x << "," << y << ") width " << run.m_width;
     if (run.direction() == RTL || run.m_dirOverride) {
         ts << (run.direction() == RTL ? " RTL" : " LTR");
@@ -359,26 +359,26 @@ void write(TextStream& ts, const RenderObject& o, int indent)
 {
 #if ENABLE(SVG)
     if (o.isRenderPath()) {
-        write(ts, static_cast<const RenderPath&>(o), indent);
+        write(ts, *toRenderPath(&o), indent);
         return;
     }
     if (o.isSVGContainer()) {
-        write(ts, static_cast<const RenderSVGContainer&>(o), indent);
+        writeSVGContainer(ts, o, indent);
         return;
     }
     if (o.isSVGRoot()) {
-        write(ts, static_cast<const RenderSVGRoot&>(o), indent);
+        write(ts, *toRenderSVGRoot(&o), indent);
         return;
     }
     if (o.isSVGText()) {
         if (!o.isText())
-            write(ts, static_cast<const RenderSVGText&>(o), indent);
+            writeSVGText(ts, *toRenderBlock(&o), indent);
         else
-            write(ts, static_cast<const RenderSVGInlineText&>(o), indent);
+            writeSVGInlineText(ts, *toRenderText(&o), indent);
         return;
     }
     if (o.isSVGImage()) {
-        write(ts, static_cast<const RenderSVGImage&>(o), indent);
+        writeSVGImage(ts, *toRenderImage(&o), indent);
         return;
     }
 #endif
@@ -402,7 +402,7 @@ void write(TextStream& ts, const RenderObject& o, int indent)
     }
 
     if (o.isWidget()) {
-        Widget* widget = static_cast<const RenderWidget&>(o).widget();
+        Widget* widget = toRenderWidget(&o)->widget();
         if (widget && widget->isFrameView()) {
             FrameView* view = static_cast<FrameView*>(widget);
             RenderView* root = view->frame()->contentRenderer();

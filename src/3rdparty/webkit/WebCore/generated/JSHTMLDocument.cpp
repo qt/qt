@@ -91,6 +91,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLDocumentPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -105,6 +106,11 @@ const ClassInfo JSHTMLDocumentConstructor::s_info = { "HTMLDocumentConstructor",
 bool JSHTMLDocumentConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLDocumentConstructor, DOMObject>(exec, &JSHTMLDocumentConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLDocumentConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLDocumentConstructor, DOMObject>(exec, &JSHTMLDocumentConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -141,6 +147,11 @@ bool JSHTMLDocumentPrototype::getOwnPropertySlot(ExecState* exec, const Identifi
     return getStaticFunctionSlot<JSObject>(exec, &JSHTMLDocumentPrototypeTable, this, propertyName, slot);
 }
 
+bool JSHTMLDocumentPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSHTMLDocumentPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSHTMLDocument::s_info = { "HTMLDocument", &JSDocument::s_info, &JSHTMLDocumentTable, 0 };
 
 JSHTMLDocument::JSHTMLDocument(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLDocument> impl)
@@ -160,6 +171,17 @@ bool JSHTMLDocument::getOwnPropertySlot(ExecState* exec, const Identifier& prope
         return true;
     }
     return getStaticValueSlot<JSHTMLDocument, Base>(exec, &JSHTMLDocumentTable, this, propertyName, slot);
+}
+
+bool JSHTMLDocument::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    if (canGetItemsForName(exec, static_cast<HTMLDocument*>(impl()), propertyName)) {
+        PropertySlot slot;
+        slot.setCustom(this, nameGetter);
+        descriptor.setDescriptor(slot.getValue(exec, propertyName), ReadOnly | DontDelete | DontEnum);
+        return true;
+    }
+    return getStaticValueDescriptor<JSHTMLDocument, Base>(exec, &JSHTMLDocumentTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLDocumentEmbeds(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -345,7 +367,7 @@ JSValue JSHTMLDocument::getConstructor(ExecState* exec, JSGlobalObject* globalOb
 JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionOpen(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLDocument::s_info))
+    if (!thisValue.inherits(&JSHTMLDocument::s_info))
         return throwError(exec, TypeError);
     JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(asObject(thisValue));
     return castedThisObj->open(exec, args);
@@ -354,7 +376,7 @@ JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionOpen(ExecState* exec, JSObj
 JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionClose(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLDocument::s_info))
+    if (!thisValue.inherits(&JSHTMLDocument::s_info))
         return throwError(exec, TypeError);
     JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(asObject(thisValue));
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThisObj->impl());
@@ -366,7 +388,7 @@ JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionClose(ExecState* exec, JSOb
 JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionWrite(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLDocument::s_info))
+    if (!thisValue.inherits(&JSHTMLDocument::s_info))
         return throwError(exec, TypeError);
     JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(asObject(thisValue));
     return castedThisObj->write(exec, args);
@@ -375,7 +397,7 @@ JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionWrite(ExecState* exec, JSOb
 JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionWriteln(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLDocument::s_info))
+    if (!thisValue.inherits(&JSHTMLDocument::s_info))
         return throwError(exec, TypeError);
     JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(asObject(thisValue));
     return castedThisObj->writeln(exec, args);
@@ -384,7 +406,7 @@ JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionWriteln(ExecState* exec, JS
 JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionClear(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLDocument::s_info))
+    if (!thisValue.inherits(&JSHTMLDocument::s_info))
         return throwError(exec, TypeError);
     JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(asObject(thisValue));
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThisObj->impl());
@@ -396,7 +418,7 @@ JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionClear(ExecState* exec, JSOb
 JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionCaptureEvents(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLDocument::s_info))
+    if (!thisValue.inherits(&JSHTMLDocument::s_info))
         return throwError(exec, TypeError);
     JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(asObject(thisValue));
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThisObj->impl());
@@ -408,7 +430,7 @@ JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionCaptureEvents(ExecState* ex
 JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionReleaseEvents(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLDocument::s_info))
+    if (!thisValue.inherits(&JSHTMLDocument::s_info))
         return throwError(exec, TypeError);
     JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(asObject(thisValue));
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThisObj->impl());
@@ -420,7 +442,7 @@ JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionReleaseEvents(ExecState* ex
 JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionHasFocus(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLDocument::s_info))
+    if (!thisValue.inherits(&JSHTMLDocument::s_info))
         return throwError(exec, TypeError);
     JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(asObject(thisValue));
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThisObj->impl());

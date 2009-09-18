@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,47 +37,11 @@ JSPropertyNameIterator::~JSPropertyNameIterator()
 {
 }
 
-JSValue JSPropertyNameIterator::toPrimitive(ExecState*, PreferredPrimitiveType) const
+void JSPropertyNameIterator::markChildren(MarkStack& markStack)
 {
-    ASSERT_NOT_REACHED();
-    return JSValue();
-}
-
-bool JSPropertyNameIterator::getPrimitiveNumber(ExecState*, double&, JSValue&)
-{
-    ASSERT_NOT_REACHED();
-    return false;
-}
-
-bool JSPropertyNameIterator::toBoolean(ExecState*) const
-{
-    ASSERT_NOT_REACHED();
-    return false;
-}
-
-double JSPropertyNameIterator::toNumber(ExecState*) const
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-UString JSPropertyNameIterator::toString(ExecState*) const
-{
-    ASSERT_NOT_REACHED();
-    return "";
-}
-
-JSObject* JSPropertyNameIterator::toObject(ExecState*) const
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-void JSPropertyNameIterator::mark()
-{
-    JSCell::mark();
-    if (m_object && !m_object->marked())
-        m_object->mark();
+    JSCell::markChildren(markStack);
+    if (m_object)
+        markStack.append(m_object);
 }
 
 void JSPropertyNameIterator::invalidate()

@@ -35,7 +35,7 @@ namespace JSC {
 
     class ArgList;
     class ExecState;
-    class FunctionBodyNode;
+    class FunctionExecutable;
     class JSObject;
     class JSValue;
     class ScopeChainNode;
@@ -48,38 +48,12 @@ namespace JSC {
 
     typedef JSValue (JSC_HOST_CALL *NativeFunction)(ExecState*, JSObject*, JSValue thisValue, const ArgList&);
 
-#ifdef QT_BUILD_SCRIPT_LIB
-    class NativeFuncWrapper
-    {
-        NativeFunction ptr;
-    public:
-        inline NativeFuncWrapper& operator=(NativeFunction func)
-        {
-            ptr = func;
-            return *this;
-        }
-        inline operator NativeFunction() const {return ptr;}
-        inline operator bool() const {return ptr;}
-       
-        JSValue operator()(ExecState* exec, JSObject* jsobj, JSValue thisValue, const ArgList& argList) const;
-    };
-#endif
-
-#if defined(QT_BUILD_SCRIPT_LIB) && PLATFORM(SOLARIS)
-    struct
-#else
-    union
-#endif
-    CallData {
+    union CallData {
         struct {
-#ifndef QT_BUILD_SCRIPT_LIB
             NativeFunction function;
-#else
-            NativeFuncWrapper function;
-#endif
         } native;
         struct {
-            FunctionBodyNode* functionBody;
+            FunctionExecutable* functionExecutable;
             ScopeChainNode* scopeChain;
         } js;
     };

@@ -75,6 +75,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSOverflowEventPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -89,6 +90,11 @@ const ClassInfo JSOverflowEventConstructor::s_info = { "OverflowEventConstructor
 bool JSOverflowEventConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSOverflowEventConstructor, DOMObject>(exec, &JSOverflowEventConstructorTable, this, propertyName, slot);
+}
+
+bool JSOverflowEventConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSOverflowEventConstructor, DOMObject>(exec, &JSOverflowEventConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -121,6 +127,11 @@ bool JSOverflowEventPrototype::getOwnPropertySlot(ExecState* exec, const Identif
     return getStaticPropertySlot<JSOverflowEventPrototype, JSObject>(exec, &JSOverflowEventPrototypeTable, this, propertyName, slot);
 }
 
+bool JSOverflowEventPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticPropertyDescriptor<JSOverflowEventPrototype, JSObject>(exec, &JSOverflowEventPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSOverflowEvent::s_info = { "OverflowEvent", &JSEvent::s_info, &JSOverflowEventTable, 0 };
 
 JSOverflowEvent::JSOverflowEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<OverflowEvent> impl)
@@ -136,6 +147,11 @@ JSObject* JSOverflowEvent::createPrototype(ExecState* exec, JSGlobalObject* glob
 bool JSOverflowEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSOverflowEvent, Base>(exec, &JSOverflowEventTable, this, propertyName, slot);
+}
+
+bool JSOverflowEvent::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSOverflowEvent, Base>(exec, &JSOverflowEventTable, this, propertyName, descriptor);
 }
 
 JSValue jsOverflowEventOrient(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -175,7 +191,7 @@ JSValue JSOverflowEvent::getConstructor(ExecState* exec, JSGlobalObject* globalO
 JSValue JSC_HOST_CALL jsOverflowEventPrototypeFunctionInitOverflowEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSOverflowEvent::s_info))
+    if (!thisValue.inherits(&JSOverflowEvent::s_info))
         return throwError(exec, TypeError);
     JSOverflowEvent* castedThisObj = static_cast<JSOverflowEvent*>(asObject(thisValue));
     OverflowEvent* imp = static_cast<OverflowEvent*>(castedThisObj->impl());

@@ -90,6 +90,11 @@ bool JSSVGPathSegCurvetoQuadraticRel::getOwnPropertySlot(ExecState* exec, const 
     return getStaticValueSlot<JSSVGPathSegCurvetoQuadraticRel, Base>(exec, &JSSVGPathSegCurvetoQuadraticRelTable, this, propertyName, slot);
 }
 
+bool JSSVGPathSegCurvetoQuadraticRel::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGPathSegCurvetoQuadraticRel, Base>(exec, &JSSVGPathSegCurvetoQuadraticRelTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGPathSegCurvetoQuadraticRelX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGPathSegCurvetoQuadraticRel* castedThis = static_cast<JSSVGPathSegCurvetoQuadraticRel*>(asObject(slot.slotBase()));

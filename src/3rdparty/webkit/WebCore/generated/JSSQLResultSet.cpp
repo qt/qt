@@ -97,6 +97,11 @@ bool JSSQLResultSet::getOwnPropertySlot(ExecState* exec, const Identifier& prope
     return getStaticValueSlot<JSSQLResultSet, Base>(exec, &JSSQLResultSetTable, this, propertyName, slot);
 }
 
+bool JSSQLResultSet::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSQLResultSet, Base>(exec, &JSSQLResultSetTable, this, propertyName, descriptor);
+}
+
 JSValue jsSQLResultSetRows(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSQLResultSet* castedThis = static_cast<JSSQLResultSet*>(asObject(slot.slotBase()));
@@ -129,7 +134,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SQLResu
 }
 SQLResultSet* toSQLResultSet(JSC::JSValue value)
 {
-    return value.isObject(&JSSQLResultSet::s_info) ? static_cast<JSSQLResultSet*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSQLResultSet::s_info) ? static_cast<JSSQLResultSet*>(asObject(value))->impl() : 0;
 }
 
 }

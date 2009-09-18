@@ -23,6 +23,7 @@
 #include "Frame.h"
 #include "JSNode.h"
 #include <runtime/FunctionConstructor.h>
+#include <runtime/JSFunction.h>
 #include <runtime/JSLock.h>
 #include <wtf/RefCountedLeakCounter.h>
 
@@ -97,7 +98,7 @@ void JSLazyEventListener::parseCode() const
     ExecState* exec = m_globalObject->globalExec();
 
     MarkedArgumentBuffer args;
-    UString sourceURL(executionContext->url().string().operator UString());
+    UString sourceURL(executionContext->url().string());
     args.append(jsNontrivialString(exec, m_eventParameterName));
     args.append(jsString(exec, m_code));
 

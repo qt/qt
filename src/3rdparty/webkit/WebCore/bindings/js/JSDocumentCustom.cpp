@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2007, 2008, 2009 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -24,6 +24,10 @@
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "HTMLDocument.h"
+#include "JSCanvasRenderingContext2D.h"
+#if ENABLE(3D_CANVAS)
+#include "JSCanvasRenderingContext3D.h"
+#endif
 #include "JSDOMWindowCustom.h"
 #include "JSHTMLDocument.h"
 #include "JSLocation.h"
@@ -35,15 +39,23 @@
 #include "SVGDocument.h"
 #endif
 
+#include <wtf/GetPtr.h>
+
 using namespace JSC;
 
 namespace WebCore {
 
-void JSDocument::mark()
+void JSDocument::markChildren(MarkStack& markStack)
 {
-    JSNode::mark();
-    markDOMNodesForDocument(impl());
-    markActiveObjectsForContext(*Heap::heap(this)->globalData(), impl());
+    JSNode::markChildren(markStack);
+
+    Document* document = impl();
+    JSGlobalData& globalData = *Heap::heap(this)->globalData();
+
+    markDOMNodesForDocument(markStack, document);
+    markActiveObjectsForContext(markStack, globalData, document);
+    markDOMObjectWrapper(markStack, globalData, document->implementation());
+    markDOMObjectWrapper(markStack, globalData, document->styleSheets());
 }
 
 JSValue JSDocument::location(ExecState* exec) const

@@ -27,6 +27,7 @@
 #import "CookieJar.h"
 
 #import "BlockExceptions.h"
+#import "Cookie.h"
 #import "Document.h"
 #import "KURL.h"
 #import <wtf/RetainPtr.h>
@@ -114,6 +115,54 @@ bool cookiesEnabled(const Document*)
 
     END_BLOCK_OBJC_EXCEPTIONS;
     return false;
+}
+
+bool getRawCookies(const Document*, const KURL& url, Vector<Cookie>& rawCookies)
+{
+    rawCookies.clear();
+    BEGIN_BLOCK_OBJC_EXCEPTIONS;
+
+    NSURL *cookieURL = url;
+    NSArray *cookies = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:cookieURL];
+
+    NSUInteger count = [cookies count];
+    rawCookies.reserveCapacity(count);
+    for (NSUInteger i = 0; i < count; ++i) {
+        NSHTTPCookie *cookie = (NSHTTPCookie *)[cookies objectAtIndex:i];
+        NSString *name = [cookie name];
+        NSString *value = [cookie value];
+        NSString *domain = [cookie domain];
+        NSString *path = [cookie path];
+        NSTimeInterval expires = [[cookie expiresDate] timeIntervalSince1970] * 1000;
+        bool httpOnly = [cookie isHTTPOnly];
+        bool secure = [cookie isSecure];
+        bool session = [cookie isSessionOnly];
+        rawCookies.uncheckedAppend(Cookie(name, value, domain, path, expires, httpOnly, secure, session));
+    }
+
+    END_BLOCK_OBJC_EXCEPTIONS;
+    return true;
+}
+
+void deleteCookie(const Document*, const KURL& url, const String& cookieName)
+{
+    BEGIN_BLOCK_OBJC_EXCEPTIONS;
+
+    NSURL *cookieURL = url;
+    NSHTTPCookieStorage *cookieStorage = [NSHTTPCookieStorage sharedHTTPCookieStorage];
+    NSArray *cookies = [cookieStorage cookiesForURL:cookieURL];
+    NSString *cookieNameString = (NSString *) cookieName;
+
+    NSUInteger count = [cookies count];
+    for (NSUInteger i = 0; i < count; ++i) {
+        NSHTTPCookie *cookie = (NSHTTPCookie *)[cookies objectAtIndex:i];
+        if ([[cookie name] isEqualToString:cookieNameString]) {
+            [cookieStorage deleteCookie:cookie];
+            break;
+        }
+    }
+
+    END_BLOCK_OBJC_EXCEPTIONS;
 }
 
 }

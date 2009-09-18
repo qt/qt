@@ -52,8 +52,10 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_CURSOR
 static QCursor cursorSprite;
-static int cursorSpriteVisible; 
+static int cursorSpriteVisible;
+#endif
 
 //pos and setpos are required whether cursors are configured or not.
 QPoint QCursor::pos()
@@ -520,8 +522,10 @@ void qt_symbian_setGlobalCursor(const QCursor &cursor)
         while(iter.hasNext())
         {
             CCoeControl *ctrl = iter.next();
-            RWindowTreeNode *node = ctrl->DrawableWindow();
-            qt_symbian_setWindowGroupCursor(cursor, *node);
+            if(ctrl->OwnsWindow()) {
+                RWindowTreeNode *node = ctrl->DrawableWindow();
+                qt_symbian_setWindowGroupCursor(cursor, *node);
+            }
         }
     }
 }

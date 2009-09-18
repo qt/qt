@@ -39,9 +39,10 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLButtonElement);
 
 /* Hash table */
 
-static const HashTableValue JSHTMLButtonElementTableValues[11] =
+static const HashTableValue JSHTMLButtonElementTableValues[12] =
 {
     { "form", DontDelete|ReadOnly, (intptr_t)jsHTMLButtonElementForm, (intptr_t)0 },
+    { "formNoValidate", DontDelete, (intptr_t)jsHTMLButtonElementFormNoValidate, (intptr_t)setJSHTMLButtonElementFormNoValidate },
     { "validity", DontDelete|ReadOnly, (intptr_t)jsHTMLButtonElementValidity, (intptr_t)0 },
     { "accessKey", DontDelete, (intptr_t)jsHTMLButtonElementAccessKey, (intptr_t)setJSHTMLButtonElementAccessKey },
     { "disabled", DontDelete, (intptr_t)jsHTMLButtonElementDisabled, (intptr_t)setJSHTMLButtonElementDisabled },
@@ -58,7 +59,7 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLButtonElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSHTMLButtonElementTableValues, 0 };
 #else
-    { 33, 31, JSHTMLButtonElementTableValues, 0 };
+    { 34, 31, JSHTMLButtonElementTableValues, 0 };
 #endif
 
 /* Hash table for constructor */
@@ -83,6 +84,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLButtonElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -99,19 +101,26 @@ bool JSHTMLButtonElementConstructor::getOwnPropertySlot(ExecState* exec, const I
     return getStaticValueSlot<JSHTMLButtonElementConstructor, DOMObject>(exec, &JSHTMLButtonElementConstructorTable, this, propertyName, slot);
 }
 
+bool JSHTMLButtonElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLButtonElementConstructor, DOMObject>(exec, &JSHTMLButtonElementConstructorTable, this, propertyName, descriptor);
+}
+
 /* Hash table for prototype */
 
-static const HashTableValue JSHTMLButtonElementPrototypeTableValues[2] =
+static const HashTableValue JSHTMLButtonElementPrototypeTableValues[4] =
 {
+    { "checkValidity", DontDelete|Function, (intptr_t)jsHTMLButtonElementPrototypeFunctionCheckValidity, (intptr_t)0 },
+    { "setCustomValidity", DontDelete|Function, (intptr_t)jsHTMLButtonElementPrototypeFunctionSetCustomValidity, (intptr_t)1 },
     { "click", DontDelete|Function, (intptr_t)jsHTMLButtonElementPrototypeFunctionClick, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
 static JSC_CONST_HASHTABLE HashTable JSHTMLButtonElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 0, JSHTMLButtonElementPrototypeTableValues, 0 };
+    { 7, JSHTMLButtonElementPrototypeTableValues, 0 };
 #else
-    { 2, 1, JSHTMLButtonElementPrototypeTableValues, 0 };
+    { 8, 7, JSHTMLButtonElementPrototypeTableValues, 0 };
 #endif
 
 const ClassInfo JSHTMLButtonElementPrototype::s_info = { "HTMLButtonElementPrototype", 0, &JSHTMLButtonElementPrototypeTable, 0 };
@@ -124,6 +133,11 @@ JSObject* JSHTMLButtonElementPrototype::self(ExecState* exec, JSGlobalObject* gl
 bool JSHTMLButtonElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticFunctionSlot<JSObject>(exec, &JSHTMLButtonElementPrototypeTable, this, propertyName, slot);
+}
+
+bool JSHTMLButtonElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSHTMLButtonElementPrototypeTable, this, propertyName, descriptor);
 }
 
 const ClassInfo JSHTMLButtonElement::s_info = { "HTMLButtonElement", &JSHTMLElement::s_info, &JSHTMLButtonElementTable, 0 };
@@ -143,12 +157,25 @@ bool JSHTMLButtonElement::getOwnPropertySlot(ExecState* exec, const Identifier& 
     return getStaticValueSlot<JSHTMLButtonElement, Base>(exec, &JSHTMLButtonElementTable, this, propertyName, slot);
 }
 
+bool JSHTMLButtonElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLButtonElement, Base>(exec, &JSHTMLButtonElementTable, this, propertyName, descriptor);
+}
+
 JSValue jsHTMLButtonElementForm(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSHTMLButtonElement* castedThis = static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(castedThis->impl());
     return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->form()));
+}
+
+JSValue jsHTMLButtonElementFormNoValidate(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSHTMLButtonElement* castedThis = static_cast<JSHTMLButtonElement*>(asObject(slot.slotBase()));
+    UNUSED_PARAM(exec);
+    HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(castedThis->impl());
+    return jsBoolean(imp->formNoValidate());
 }
 
 JSValue jsHTMLButtonElementValidity(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -225,6 +252,12 @@ void JSHTMLButtonElement::put(ExecState* exec, const Identifier& propertyName, J
     lookupPut<JSHTMLButtonElement, Base>(exec, propertyName, value, &JSHTMLButtonElementTable, this, slot);
 }
 
+void setJSHTMLButtonElementFormNoValidate(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(static_cast<JSHTMLButtonElement*>(thisObject)->impl());
+    imp->setFormNoValidate(value.toBoolean(exec));
+}
+
 void setJSHTMLButtonElementAccessKey(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(static_cast<JSHTMLButtonElement*>(thisObject)->impl());
@@ -260,10 +293,36 @@ JSValue JSHTMLButtonElement::getConstructor(ExecState* exec, JSGlobalObject* glo
     return getDOMConstructor<JSHTMLButtonElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
+JSValue JSC_HOST_CALL jsHTMLButtonElementPrototypeFunctionCheckValidity(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSHTMLButtonElement::s_info))
+        return throwError(exec, TypeError);
+    JSHTMLButtonElement* castedThisObj = static_cast<JSHTMLButtonElement*>(asObject(thisValue));
+    HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(castedThisObj->impl());
+
+
+    JSC::JSValue result = jsBoolean(imp->checkValidity());
+    return result;
+}
+
+JSValue JSC_HOST_CALL jsHTMLButtonElementPrototypeFunctionSetCustomValidity(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSHTMLButtonElement::s_info))
+        return throwError(exec, TypeError);
+    JSHTMLButtonElement* castedThisObj = static_cast<JSHTMLButtonElement*>(asObject(thisValue));
+    HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(castedThisObj->impl());
+    const UString& error = valueToStringWithUndefinedOrNullCheck(exec, args.at(0));
+
+    imp->setCustomValidity(error);
+    return jsUndefined();
+}
+
 JSValue JSC_HOST_CALL jsHTMLButtonElementPrototypeFunctionClick(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLButtonElement::s_info))
+    if (!thisValue.inherits(&JSHTMLButtonElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLButtonElement* castedThisObj = static_cast<JSHTMLButtonElement*>(asObject(thisValue));
     HTMLButtonElement* imp = static_cast<HTMLButtonElement*>(castedThisObj->impl());

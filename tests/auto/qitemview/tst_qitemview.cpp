@@ -45,6 +45,9 @@
 #include "viewstotest.cpp"
 #include <stdlib.h>
 
+#if defined(Q_OS_UNIX)
+#include <time.h>
+#endif
 #if defined(Q_OS_WIN)
 #include <time.h>
 #if defined(Q_OS_WINCE)

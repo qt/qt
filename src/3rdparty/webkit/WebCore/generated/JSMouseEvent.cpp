@@ -93,6 +93,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSMouseEventPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -107,6 +108,11 @@ const ClassInfo JSMouseEventConstructor::s_info = { "MouseEventConstructor", 0, 
 bool JSMouseEventConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSMouseEventConstructor, DOMObject>(exec, &JSMouseEventConstructorTable, this, propertyName, slot);
+}
+
+bool JSMouseEventConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSMouseEventConstructor, DOMObject>(exec, &JSMouseEventConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -136,6 +142,11 @@ bool JSMouseEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier
     return getStaticFunctionSlot<JSObject>(exec, &JSMouseEventPrototypeTable, this, propertyName, slot);
 }
 
+bool JSMouseEventPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSMouseEventPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSMouseEvent::s_info = { "MouseEvent", &JSUIEvent::s_info, &JSMouseEventTable, 0 };
 
 JSMouseEvent::JSMouseEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MouseEvent> impl)
@@ -151,6 +162,11 @@ JSObject* JSMouseEvent::createPrototype(ExecState* exec, JSGlobalObject* globalO
 bool JSMouseEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSMouseEvent, Base>(exec, &JSMouseEventTable, this, propertyName, slot);
+}
+
+bool JSMouseEvent::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSMouseEvent, Base>(exec, &JSMouseEventTable, this, propertyName, descriptor);
 }
 
 JSValue jsMouseEventScreenX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -302,7 +318,7 @@ JSValue JSMouseEvent::getConstructor(ExecState* exec, JSGlobalObject* globalObje
 JSValue JSC_HOST_CALL jsMouseEventPrototypeFunctionInitMouseEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSMouseEvent::s_info))
+    if (!thisValue.inherits(&JSMouseEvent::s_info))
         return throwError(exec, TypeError);
     JSMouseEvent* castedThisObj = static_cast<JSMouseEvent*>(asObject(thisValue));
     MouseEvent* imp = static_cast<MouseEvent*>(castedThisObj->impl());

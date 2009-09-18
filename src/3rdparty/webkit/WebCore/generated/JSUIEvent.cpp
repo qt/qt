@@ -80,6 +80,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSUIEventPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -94,6 +95,11 @@ const ClassInfo JSUIEventConstructor::s_info = { "UIEventConstructor", 0, &JSUIE
 bool JSUIEventConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSUIEventConstructor, DOMObject>(exec, &JSUIEventConstructorTable, this, propertyName, slot);
+}
+
+bool JSUIEventConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSUIEventConstructor, DOMObject>(exec, &JSUIEventConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -123,6 +129,11 @@ bool JSUIEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticFunctionSlot<JSObject>(exec, &JSUIEventPrototypeTable, this, propertyName, slot);
 }
 
+bool JSUIEventPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSUIEventPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSUIEvent::s_info = { "UIEvent", &JSEvent::s_info, &JSUIEventTable, 0 };
 
 JSUIEvent::JSUIEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<UIEvent> impl)
@@ -138,6 +149,11 @@ JSObject* JSUIEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObje
 bool JSUIEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSUIEvent, Base>(exec, &JSUIEventTable, this, propertyName, slot);
+}
+
+bool JSUIEvent::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSUIEvent, Base>(exec, &JSUIEventTable, this, propertyName, descriptor);
 }
 
 JSValue jsUIEventView(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -225,7 +241,7 @@ JSValue JSUIEvent::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 JSValue JSC_HOST_CALL jsUIEventPrototypeFunctionInitUIEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSUIEvent::s_info))
+    if (!thisValue.inherits(&JSUIEvent::s_info))
         return throwError(exec, TypeError);
     JSUIEvent* castedThisObj = static_cast<JSUIEvent*>(asObject(thisValue));
     UIEvent* imp = static_cast<UIEvent*>(castedThisObj->impl());

@@ -35,6 +35,7 @@ typedef struct _GdkEventScroll GdkEventScroll;
 #if PLATFORM(QT)
 QT_BEGIN_NAMESPACE
 class QWheelEvent;
+class QGraphicsSceneWheelEvent;
 QT_END_NAMESPACE
 #endif
 
@@ -47,6 +48,10 @@ typedef long LPARAM;
 #if PLATFORM(WX)
 class wxMouseEvent;
 class wxPoint;
+#endif
+
+#if PLATFORM(HAIKU)
+class BMessage;
 #endif
 
 namespace WebCore {
@@ -98,6 +103,8 @@ namespace WebCore {
 
 #if PLATFORM(QT)
         PlatformWheelEvent(QWheelEvent*);
+        PlatformWheelEvent(QGraphicsSceneWheelEvent*);
+        void applyDelta(int delta, Qt::Orientation);
 #endif
 
 #if PLATFORM(WIN)
@@ -107,6 +114,10 @@ namespace WebCore {
 
 #if PLATFORM(WX)
         PlatformWheelEvent(const wxMouseEvent&, const wxPoint&);
+#endif
+
+#if PLATFORM(HAIKU)
+        PlatformWheelEvent(BMessage*);
 #endif
 
     protected:

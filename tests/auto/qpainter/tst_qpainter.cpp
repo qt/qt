@@ -236,6 +236,8 @@ private slots:
     void clippingBug();
     void emptyClip();
 
+    void taskQT4444_dontOverflowDashOffset();
+
 private:
     void fillData();
     QColor baseColor( int k, int intensity=255 );
@@ -4285,6 +4287,29 @@ void tst_QPainter::drawImage_1x1()
     p.end();
 
     QCOMPARE(img, expected);
+}
+
+void tst_QPainter::taskQT4444_dontOverflowDashOffset()
+{
+    QPainter p;
+
+    QPen pen;
+    pen.setWidth(2);
+    pen.setStyle(Qt::DashDotLine);
+
+    QPointF point[4];
+    point[0] = QPointF(182.50868749707968,347.78457234212630);
+    point[1] = QPointF(182.50868749707968,107.22501998401277);
+    point[2] = QPointF(182.50868749707968,107.22501998401277);
+    point[3] = QPointF(520.46600762283651,107.22501998401277);
+
+    QImage crashImage(QSize(1000, 120), QImage::Format_ARGB32_Premultiplied);
+    p.begin(&crashImage);
+    p.setPen(pen);
+    p.drawLines(point, 2);
+    p.end();
+
+    QVERIFY(true); // Don't crash
 }
 
 QTEST_MAIN(tst_QPainter)

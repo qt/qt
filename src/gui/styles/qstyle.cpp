@@ -463,7 +463,7 @@ QRect QStyle::itemTextRect(const QFontMetrics &metrics, const QRect &rect, int a
     rect.getRect(&x, &y, &w, &h);
     if (!text.isEmpty()) {
         result = metrics.boundingRect(x, y, w, h, alignment, text);
-        if (!enabled && styleHint(SH_EtchDisabledText)) {
+        if (!enabled && proxy()->styleHint(SH_EtchDisabledText)) {
             result.setWidth(result.width()+1);
             result.setHeight(result.height()+1);
         }
@@ -525,12 +525,12 @@ void QStyle::drawItemText(QPainter *painter, const QRect &rect, int alignment, c
         painter->setPen(QPen(pal.brush(textRole), savedPen.widthF()));
     }
     if (!enabled) {
-        if (styleHint(SH_DitherDisabledText)) {
+        if (proxy()->styleHint(SH_DitherDisabledText)) {
             QRect br;
             painter->drawText(rect, alignment, text, &br);
             painter->fillRect(br, QBrush(painter->background().color(), Qt::Dense5Pattern));
             return;
-        } else if (styleHint(SH_EtchDisabledText)) {
+        } else if (proxy()->styleHint(SH_EtchDisabledText)) {
             QPen pen = painter->pen();
             painter->setPen(pal.light().color());
             painter->drawText(rect.adjusted(1, 1, 1, 1), alignment, text);

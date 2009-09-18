@@ -29,6 +29,7 @@
 WebInspector.MetricsSidebarPane = function()
 {
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Metrics"));
+    this._inlineStyleId = null;
 }
 
 WebInspector.MetricsSidebarPane.prototype = {
@@ -46,12 +47,28 @@ WebInspector.MetricsSidebarPane.prototype = {
         if (!node || !node.ownerDocument.defaultView)
             return;
 
-        var style;
-        if (node.nodeType === Node.ELEMENT_NODE)
-            style = node.ownerDocument.defaultView.getComputedStyle(node);
-        if (!style)
+        if (node.nodeType !== Node.ELEMENT_NODE)
             return;
 
+        var self = this;
+        var callback = function(stylePayload) {
+            if (!stylePayload)
+                return;
+            var style = WebInspector.CSSStyleDeclaration.parseStyle(stylePayload);
+            self._update(node, body, style);
+        };
+        InjectedScriptAccess.getComputedStyle(node.id, callback);
+
+        var inlineStyleCallback = function(stylePayload) {
+            if (!stylePayload)
+                return;
+            self._inlineStyleId = stylePayload.id;
+        };
+        InjectedScriptAccess.getInlineStyle(node.id, inlineStyleCallback);
+    },
+
+    _update: function(node, body, style)
+    {
         var metricsElement = document.createElement("div");
         metricsElement.className = "metrics";
 
@@ -184,11 +201,14 @@ WebInspector.MetricsSidebarPane.prototype = {
         if (/^\d+$/.test(userInput))
             userInput += "px";
 
-        this.node.style.setProperty(context.styleProperty, userInput, "");
-
-        this.dispatchEventToListeners("metrics edited");
-
-        this.update();
+        var self = this;
+        var callback = function(success) {
+            if (!success)
+                return;
+            self.dispatchEventToListeners("metrics edited");
+            self.update();
+        };
+        InjectedScriptAccess.setStyleProperty(this._inlineStyleId, context.styleProperty, userInput, callback);
     }
 }
 

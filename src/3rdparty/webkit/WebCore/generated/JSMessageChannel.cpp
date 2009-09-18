@@ -100,6 +100,11 @@ bool JSMessageChannel::getOwnPropertySlot(ExecState* exec, const Identifier& pro
     return getStaticValueSlot<JSMessageChannel, Base>(exec, getJSMessageChannelTable(exec), this, propertyName, slot);
 }
 
+bool JSMessageChannel::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSMessageChannel, Base>(exec, getJSMessageChannelTable(exec), this, propertyName, descriptor);
+}
+
 JSValue jsMessageChannelPort1(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSMessageChannel* castedThis = static_cast<JSMessageChannel*>(asObject(slot.slotBase()));
@@ -122,7 +127,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Message
 }
 MessageChannel* toMessageChannel(JSC::JSValue value)
 {
-    return value.isObject(&JSMessageChannel::s_info) ? static_cast<JSMessageChannel*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSMessageChannel::s_info) ? static_cast<JSMessageChannel*>(asObject(value))->impl() : 0;
 }
 
 }

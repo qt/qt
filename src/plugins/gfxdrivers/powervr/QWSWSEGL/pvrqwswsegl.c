@@ -48,10 +48,17 @@
 
 #define WSEGL_UNUSED(x) (void)x;
 
+// If the PVR2D version is not specified, then assume MBX-style headers.
+// If the version is defined, then we assume that we have SGX-style headers.
+#if !defined(PVR2D_REV_MAJOR)
+#define WSEGL_CAP_WINDOWS_USE_HW_SYNC WSEGL_CAP_WINDOWS_USE_MBX_SYNC
+#define WSEGL_CAP_PIXMAPS_USE_HW_SYNC WSEGL_CAP_PIXMAPS_USE_MBX_SYNC
+#endif
+
 /* Capability information for the display */
 static WSEGLCaps const wseglDisplayCaps[] = {
-    {WSEGL_CAP_WINDOWS_USE_MBX_SYNC, 1},
-    {WSEGL_CAP_PIXMAPS_USE_MBX_SYNC, 1},
+    {WSEGL_CAP_WINDOWS_USE_HW_SYNC, 1},
+    {WSEGL_CAP_PIXMAPS_USE_HW_SYNC, 1},
     {WSEGL_NO_CAPS, 0}
 };
 

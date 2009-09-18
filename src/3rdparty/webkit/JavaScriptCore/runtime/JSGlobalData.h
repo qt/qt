@@ -33,45 +33,39 @@
 #include "ExecutableAllocator.h"
 #include "JITStubs.h"
 #include "JSValue.h"
+#include "MarkStack.h"
+#include "NumericStrings.h"
 #include "SmallStrings.h"
 #include "TimeoutChecker.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/RefCounted.h>
 
-#ifdef QT_BUILD_SCRIPT_LIB
-#include "SourcePoolQt.h"
-#endif
-
 struct OpaqueJSClass;
 struct OpaqueJSClassContextData;
 
 namespace JSC {
 
+    class CodeBlock;
     class CommonIdentifiers;
-    class FunctionBodyNode;
     class IdentifierTable;
-    class Instruction;
     class Interpreter;
     class JSGlobalObject;
     class JSObject;
     class Lexer;
     class Parser;
-    class ScopeNode;
     class Stringifier;
     class Structure;
     class UString;
 
     struct HashTable;
+    struct Instruction;    
     struct VPtrSet;
 
     class JSGlobalData : public RefCounted<JSGlobalData> {
     public:
         struct ClientData {
             virtual ~ClientData() = 0;
-#ifdef QT_BUILD_SCRIPT_LIB
-            virtual void mark() {}
-#endif
         };
 
         static bool sharedInstanceExists();
@@ -104,7 +98,11 @@ namespace JSC {
         RefPtr<Structure> stringStructure;
         RefPtr<Structure> notAnObjectErrorStubStructure;
         RefPtr<Structure> notAnObjectStructure;
-#if !USE(ALTERNATE_JSIMMEDIATE)
+        RefPtr<Structure> propertyNameIteratorStructure;
+        RefPtr<Structure> getterSetterStructure;
+        RefPtr<Structure> apiWrapperStructure;
+
+#if USE(JSVALUE32)
         RefPtr<Structure> numberStructure;
 #endif
 
@@ -117,6 +115,7 @@ namespace JSC {
         CommonIdentifiers* propertyNames;
         const MarkedArgumentBuffer* emptyList; // Lists are supposed to be allocated on the stack to have their elements properly marked, which is not the case here - but this list has nothing to mark.
         SmallStrings smallStrings;
+        NumericStrings numericStrings;
 
 #if ENABLE(ASSEMBLER)
         ExecutableAllocator executableAllocator;
@@ -125,13 +124,10 @@ namespace JSC {
         Lexer* lexer;
         Parser* parser;
         Interpreter* interpreter;
-#ifdef QT_BUILD_SCRIPT_LIB
-        SourcePool* scriptpool;
-#endif
 #if ENABLE(JIT)
         JITThunks jitStubs;
 #endif
-        TimeoutChecker* timeoutChecker;
+        TimeoutChecker timeoutChecker;
         Heap heap;
 
         JSValue exception;
@@ -150,8 +146,14 @@ namespace JSC {
 
         HashSet<JSObject*> arrayVisitedElements;
 
-        ScopeNode* scopeNodeBeingReparsed;
+        CodeBlock* functionCodeBlockBeingReparsed;
         Stringifier* firstStringifierToMark;
+
+        MarkStack markStack;
+
+#ifndef NDEBUG
+        bool mainThreadOnly;
+#endif
 
     private:
         JSGlobalData(bool isShared, const VPtrSet&);

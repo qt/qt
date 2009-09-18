@@ -33,6 +33,7 @@
 #include "HTMLNames.h"
 #include "MediaControlElements.h"
 #include "MouseEvent.h"
+#include "RenderTheme.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MathExtras.h>
 
@@ -132,6 +133,10 @@ void RenderMedia::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
             m_currentTimeDisplay->updateStyle();
         if (m_timeRemainingDisplay)
             m_timeRemainingDisplay->updateStyle();
+        if (m_volumeSliderContainer)
+            m_volumeSliderContainer->updateStyle();
+        if (m_volumeSlider)
+            m_volumeSlider->updateStyle();
     }
 }
 
@@ -240,6 +245,22 @@ void RenderMedia::createTimeline()
     m_timeline->attachToParent(m_timelineContainer.get());
 }
 
+void RenderMedia::createVolumeSliderContainer()
+{
+    ASSERT(!m_volumeSliderContainer);
+    m_volumeSliderContainer = new MediaControlVolumeSliderContainerElement(document(), mediaElement());
+    m_volumeSliderContainer->attachToParent(m_panel.get());
+}
+
+void RenderMedia::createVolumeSlider()
+{
+    ASSERT(!m_volumeSlider);
+    m_volumeSlider = new MediaControlVolumeSliderElement(document(), mediaElement());
+    m_volumeSlider->setAttribute(precisionAttr, "float");
+    m_volumeSlider->setAttribute(maxAttr, "1");
+    m_volumeSlider->attachToParent(m_volumeSliderContainer.get());
+}
+
 void RenderMedia::createCurrentTimeDisplay()
 {
     ASSERT(!m_currentTimeDisplay);
@@ -285,6 +306,8 @@ void RenderMedia::updateControls()
             m_currentTimeDisplay = 0;
             m_timeRemainingDisplay = 0;
             m_fullscreenButton = 0;
+            m_volumeSliderContainer = 0;
+            m_volumeSlider = 0;
             m_controlsShadowRoot = 0;
         }
         m_opacityAnimationTo = 1.0f;
@@ -298,19 +321,22 @@ void RenderMedia::updateControls()
         createPanel();
         if (m_panel) {
             createRewindButton();
-            createMuteButton();
             createPlayButton();
             createReturnToRealtimeButton();
             createStatusDisplay();
             createTimelineContainer();
-            createSeekBackButton();
-            createSeekForwardButton();
-            createFullscreenButton();
             if (m_timelineContainer) {
                 createCurrentTimeDisplay();
                 createTimeline();
                 createTimeRemainingDisplay();
             }
+            createSeekBackButton();
+            createSeekForwardButton();
+            createFullscreenButton();
+            createMuteButton();
+            createVolumeSliderContainer();
+            if (m_volumeSliderContainer)
+                createVolumeSlider();
             m_panel->attach();
         }
     }
@@ -336,6 +362,8 @@ void RenderMedia::updateControls()
         m_playButton->update();
     if (m_timelineContainer)
         m_timelineContainer->update();
+    if (m_volumeSliderContainer)
+        m_volumeSliderContainer->update();
     if (m_timeline)
         m_timeline->update();
     if (m_currentTimeDisplay)
@@ -354,6 +382,8 @@ void RenderMedia::updateControls()
         m_statusDisplay->update();
     if (m_fullscreenButton)
         m_fullscreenButton->update();
+    if (m_volumeSlider)
+        m_volumeSlider->update();
 
     updateTimeDisplay();
     updateControlVisibility();
@@ -366,24 +396,6 @@ void RenderMedia::timeUpdateTimerFired(Timer<RenderMedia>*)
     updateTimeDisplay();
 }
     
-String RenderMedia::formatTime(float time)
-{
-    if (!isfinite(time))
-        time = 0;
-    int seconds = (int)fabsf(time); 
-    int hours = seconds / (60 * 60);
-    int minutes = (seconds / 60) % 60;
-    seconds %= 60;
-    if (hours) {
-        if (hours > 9)
-            return String::format("%s%02d:%02d:%02d", (time < 0 ? "-" : ""), hours, minutes, seconds);
-        else
-            return String::format("%s%01d:%02d:%02d", (time < 0 ? "-" : ""), hours, minutes, seconds);
-    }
-    else
-        return String::format("%s%02d:%02d", (time < 0 ? "-" : ""), minutes, seconds);
-}
-
 void RenderMedia::updateTimeDisplay()
 {
     if (!m_currentTimeDisplay || !m_currentTimeDisplay->renderer() || m_currentTimeDisplay->renderer()->style()->display() == NONE || style()->visibility() != VISIBLE)
@@ -391,12 +403,8 @@ void RenderMedia::updateTimeDisplay()
     float now = mediaElement()->currentTime();
     float duration = mediaElement()->duration();
 
-    String timeString = formatTime(now);
-    ExceptionCode ec;
-    m_currentTimeDisplay->setInnerText(timeString, ec);
-    
-    timeString = formatTime(now - duration);
-    m_timeRemainingDisplay->setInnerText(timeString, ec);
+    m_currentTimeDisplay->setCurrentValue(now);
+    m_timeRemainingDisplay->setCurrentValue(now - duration);
 }
 
 void RenderMedia::updateControlVisibility() 
@@ -463,13 +471,53 @@ void RenderMedia::opacityAnimationTimerFired(Timer<RenderMedia>*)
     changeOpacity(m_panel.get(), opacity);
 }
 
+void RenderMedia::updateVolumeSliderContainer(bool visible)
+{
+    if (!mediaElement()->hasAudio() || !m_volumeSliderContainer || !m_volumeSlider)
+        return;
+
+    if (visible && !m_volumeSliderContainer->isVisible()) {
+        if (!m_muteButton || !m_muteButton->renderer() || !m_muteButton->renderBox())
+            return;
+
+        RefPtr<RenderStyle> s = m_volumeSliderContainer->styleForElement();
+        int height = s->height().isPercent() ? 0 : s->height().value();
+        int x = m_muteButton->renderBox()->offsetLeft();
+        int y = m_muteButton->renderBox()->offsetTop() - height;
+        FloatPoint absPoint = m_muteButton->renderer()->localToAbsolute(FloatPoint(x, y), true, true);
+        if (absPoint.y() < 0)
+            y = m_muteButton->renderBox()->offsetTop() + m_muteButton->renderBox()->height();
+        m_volumeSliderContainer->setVisible(true);
+        m_volumeSliderContainer->setPosition(x, y);
+        m_volumeSliderContainer->update();
+        m_volumeSlider->update();
+    } else if (!visible && m_volumeSliderContainer->isVisible()) {
+        m_volumeSliderContainer->setVisible(false);
+        m_volumeSliderContainer->updateStyle();
+    }
+}
+
 void RenderMedia::forwardEvent(Event* event)
 {
     if (event->isMouseEvent() && m_controlsShadowRoot) {
         MouseEvent* mouseEvent = static_cast<MouseEvent*>(event);
         IntPoint point(mouseEvent->absoluteLocation());
-        if (m_muteButton && m_muteButton->hitTest(point))
+        bool showVolumeSlider = false;
+        if (m_muteButton && m_muteButton->hitTest(point)) {
             m_muteButton->defaultEventHandler(event);
+            if (event->type() != eventNames().mouseoutEvent)
+                showVolumeSlider = true;
+        }
+
+        if (m_volumeSliderContainer && m_volumeSliderContainer->hitTest(point))
+            showVolumeSlider = true;
+
+        if (m_volumeSlider && m_volumeSlider->hitTest(point)) {
+            m_volumeSlider->defaultEventHandler(event);
+            showVolumeSlider = true;
+        }
+
+        updateVolumeSliderContainer(showVolumeSlider);
 
         if (m_playButton && m_playButton->hitTest(point))
             m_playButton->defaultEventHandler(event);

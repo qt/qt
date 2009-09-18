@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004, 2006 Apple Computer, Inc.  All rights reserved.
+ * Copyright (C) 2004, 2006, 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2007 Alp Toker <alp@atoker.com>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,12 +30,14 @@
 #include "TransformationMatrix.h"
 #include "FloatRect.h"
 #include "HTMLElement.h"
+#if ENABLE(3D_CANVAS)    
+#include "GraphicsContext3D.h"
+#endif
 #include "IntSize.h"
 
 namespace WebCore {
 
-class CanvasRenderingContext2D;
-typedef CanvasRenderingContext2D CanvasRenderingContext;
+class CanvasRenderingContext;
 class FloatPoint;
 class FloatRect;
 class FloatSize;
@@ -47,7 +49,7 @@ class IntSize;
 
 class CanvasObserver {
 public:
-    virtual ~CanvasObserver() {};
+    virtual ~CanvasObserver() { }
 
     virtual void canvasChanged(HTMLCanvasElement*, const FloatRect& changedRect) = 0;
     virtual void canvasResized(HTMLCanvasElement*) = 0;
@@ -59,11 +61,6 @@ public:
     HTMLCanvasElement(const QualifiedName&, Document*);
     virtual ~HTMLCanvasElement();
 
-#if ENABLE(DASHBOARD_SUPPORT)
-    virtual HTMLTagStatus endTagRequirement() const;
-    virtual int tagPriority() const;
-#endif
-
     int width() const { return m_size.width(); }
     int height() const { return m_size.height(); }
     void setWidth(int);
@@ -73,10 +70,7 @@ public:
 
     CanvasRenderingContext* getContext(const String&);
 
-    virtual void parseMappedAttribute(MappedAttribute*);
-    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
-
-    IntSize size() const { return m_size; }
+    const IntSize& size() const { return m_size; }
     void setSize(const IntSize& size)
     { 
         if (size == m_size)
@@ -103,18 +97,33 @@ public:
     void setOriginTainted() { m_originClean = false; } 
     bool originClean() const { return m_originClean; }
 
-    static const float MaxCanvasArea;
-
-    void setObserver(CanvasObserver* o) { m_observer = o; }
+    void setObserver(CanvasObserver* observer) { m_observer = observer; }
 
     TransformationMatrix baseTransform() const;
+
+    CanvasRenderingContext* renderingContext() const { return m_context.get(); }
+
+#if ENABLE(3D_CANVAS)    
+    bool is3D() const;
+#endif
+
 private:
+#if ENABLE(DASHBOARD_SUPPORT)
+    virtual HTMLTagStatus endTagRequirement() const;
+    virtual int tagPriority() const;
+#endif
+
+    virtual void parseMappedAttribute(MappedAttribute*);
+    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
+
     void createImageBuffer() const;
     void reset();
 
+    static const float MaxCanvasArea;
+
     bool m_rendererIsCanvas;
 
-    OwnPtr<CanvasRenderingContext2D> m_2DContext;
+    OwnPtr<CanvasRenderingContext> m_context;
     IntSize m_size;    
     CanvasObserver* m_observer;
 

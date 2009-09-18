@@ -246,7 +246,6 @@ private slots:
     void itemClipsToShape();
     void itemClipsChildrenToShape();
     void itemClipsChildrenToShape2();
-    void itemClipsChildrenToShape3();
     void itemClipsTextChildToShape();
     void itemClippingDiscovery();
     void ancestorFlags();
@@ -2921,18 +2920,16 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     Q_CHECK_PAINTEVENTS
 
     QGraphicsScene scene;
-    EventTester *tester = new EventTester;
-    scene.addItem(tester);
-    tester->setAcceptsHoverEvents(true);
-
     QGraphicsView view(&scene);
     view.show();
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
+    QTest::qWait(250);
 
-    qApp->processEvents();
-    qApp->processEvents();
+    EventTester *tester = new EventTester;
+    scene.addItem(tester);
+    tester->setAcceptsHoverEvents(true);
 
     QTRY_COMPARE(tester->repaints, 1);
 
@@ -2946,7 +2943,7 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     int npaints = tester->repaints;
     qApp->processEvents();
     qApp->processEvents();
-    QCOMPARE(tester->events.size(), 3); // activate + enter + move
+    QCOMPARE(tester->events.size(), 2); //  enter + move
     QCOMPARE(tester->repaints, npaints + 1);
     QCOMPARE(tester->events.last(), QEvent::GraphicsSceneHoverMove);
 
@@ -2960,7 +2957,7 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     qApp->processEvents();
     qApp->processEvents();
 
-    QCOMPARE(tester->events.size(), 4);
+    QCOMPARE(tester->events.size(), 3);
     QCOMPARE(tester->repaints, npaints + 1);
     QCOMPARE(tester->events.last(), QEvent::GraphicsSceneHoverMove);
 
@@ -2974,7 +2971,7 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     qApp->processEvents();
     qApp->processEvents();
 
-    QCOMPARE(tester->events.size(), 5);
+    QCOMPARE(tester->events.size(), 4);
     QCOMPARE(tester->repaints, npaints + 2);
     QCOMPARE(tester->events.last(), QEvent::GraphicsSceneHoverLeave);
 }
@@ -5051,37 +5048,6 @@ void tst_QGraphicsItem::itemClipsChildrenToShape2()
 #endif
 }
 
-void tst_QGraphicsItem::itemClipsChildrenToShape3()
-{
-    // Construct a scene with nested children, each 50 pixels offset from the elder.
-    // Set a top-level clipping flag
-    QGraphicsScene scene;
-    QGraphicsRectItem *parent = scene.addRect( 0, 0, 150, 150 );
-    QGraphicsRectItem *child = scene.addRect( 0, 0, 150, 150 );
-    QGraphicsRectItem *grandchild = scene.addRect( 0, 0, 150, 150 );
-    child->setParentItem(parent);
-    grandchild->setParentItem(child);
-    child->setPos( 50, 50 );
-    grandchild->setPos( 50, 50 );
-    parent->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
-
-    QCOMPARE(scene.itemAt(25,25), (QGraphicsItem *)parent);
-    QCOMPARE(scene.itemAt(75,75), (QGraphicsItem *)child);
-    QCOMPARE(scene.itemAt(125,125), (QGraphicsItem *)grandchild);
-    QCOMPARE(scene.itemAt(175,175), (QGraphicsItem *)0);
-
-    // Move child to fully overlap the parent.  The grandchild should
-    // now occupy two-thirds of the scene
-    child->prepareGeometryChange();
-    child->setPos( 0, 0 );
-
-    QCOMPARE(scene.itemAt(25,25), (QGraphicsItem *)child);
-    QCOMPARE(scene.itemAt(75,75), (QGraphicsItem *)grandchild);
-    QCOMPARE(scene.itemAt(125,125), (QGraphicsItem *)grandchild);
-    QCOMPARE(scene.itemAt(175,175), (QGraphicsItem *)0);
-}
-
-
 void tst_QGraphicsItem::itemClipsTextChildToShape()
 {
     // Construct a scene with a rect that clips its children, with one text
@@ -6542,6 +6508,9 @@ void tst_QGraphicsItem::cacheMode()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
+    // Increase the probability of window activation
+    // not causing another repaint of test items.
+    QTest::qWait(250);
 
     EventTester *tester = new EventTester;
     EventTester *testerChild = new EventTester;

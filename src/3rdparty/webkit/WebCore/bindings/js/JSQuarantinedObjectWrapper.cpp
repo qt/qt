@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2008, 2009 Apple Inc. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -92,14 +92,12 @@ void JSQuarantinedObjectWrapper::transferExceptionToExecState(ExecState* exec) c
     exec->setException(wrapOutgoingValue(unwrappedExecState(), exception));
 }
 
-void JSQuarantinedObjectWrapper::mark()
+void JSQuarantinedObjectWrapper::markChildren(MarkStack& markStack)
 {
-    JSObject::mark();
+    JSObject::markChildren(markStack);
 
-    if (!m_unwrappedObject->marked())
-        m_unwrappedObject->mark();
-    if (!m_unwrappedGlobalObject->marked())
-        m_unwrappedGlobalObject->mark();
+    markStack.append(m_unwrappedObject);
+    markStack.append(m_unwrappedGlobalObject);
 }
 
 bool JSQuarantinedObjectWrapper::getOwnPropertySlot(ExecState* exec, const Identifier& identifier, PropertySlot& slot)
@@ -140,6 +138,26 @@ bool JSQuarantinedObjectWrapper::getOwnPropertySlot(ExecState* exec, unsigned id
     return result;
 }
 
+bool JSQuarantinedObjectWrapper::getOwnPropertyDescriptor(ExecState* exec, const Identifier& identifier, PropertyDescriptor& descriptor)
+{
+    if (!allowsGetProperty()) {
+        descriptor.setUndefined();
+        return true;
+    }
+
+    PropertyDescriptor unwrappedDescriptor;
+    bool result = m_unwrappedObject->getOwnPropertyDescriptor(unwrappedExecState(), identifier, unwrappedDescriptor);
+
+    if (unwrappedDescriptor.hasAccessors()) {
+        descriptor.setAccessorDescriptor(wrapOutgoingValue(unwrappedExecState(), unwrappedDescriptor.getter()),
+                                         wrapOutgoingValue(unwrappedExecState(), unwrappedDescriptor.setter()),
+                                         unwrappedDescriptor.attributes());
+    } else
+        descriptor.setDescriptor(wrapOutgoingValue(unwrappedExecState(), unwrappedDescriptor.value()), unwrappedDescriptor.attributes());
+    transferExceptionToExecState(exec);
+    return result;
+}
+
 void JSQuarantinedObjectWrapper::put(ExecState* exec, const Identifier& identifier, JSValue value, PutPropertySlot& slot)
 {
     if (!allowsSetProperty())
@@ -160,12 +178,12 @@ void JSQuarantinedObjectWrapper::put(ExecState* exec, unsigned identifier, JSVal
     transferExceptionToExecState(exec);
 }
 
-bool JSQuarantinedObjectWrapper::deleteProperty(ExecState* exec, const Identifier& identifier, bool checkDontDelete)
+bool JSQuarantinedObjectWrapper::deleteProperty(ExecState* exec, const Identifier& identifier)
 {
     if (!allowsDeleteProperty())
         return false;
 
-    bool result = m_unwrappedObject->deleteProperty(unwrappedExecState(), identifier, checkDontDelete);
+    bool result = m_unwrappedObject->deleteProperty(unwrappedExecState(), identifier);
 
     transferExceptionToExecState(exec);
 
@@ -268,12 +286,20 @@ CallType JSQuarantinedObjectWrapper::getCallData(CallData& callData)
     return CallTypeHost;
 }
 
-void JSQuarantinedObjectWrapper::getPropertyNames(ExecState*, PropertyNameArray& array, unsigned listedAttributes)
+void JSQuarantinedObjectWrapper::getPropertyNames(ExecState*, PropertyNameArray& array)
+{
+    if (!allowsGetPropertyNames())
+        return;
+    
+    m_unwrappedObject->getPropertyNames(unwrappedExecState(), array);
+}
+
+void JSQuarantinedObjectWrapper::getOwnPropertyNames(ExecState*, PropertyNameArray& array)
 {
     if (!allowsGetPropertyNames())
         return;
 
-    m_unwrappedObject->getPropertyNames(unwrappedExecState(), array, listedAttributes);
+    m_unwrappedObject->getOwnPropertyNames(unwrappedExecState(), array);
 }
 
 } // namespace WebCore

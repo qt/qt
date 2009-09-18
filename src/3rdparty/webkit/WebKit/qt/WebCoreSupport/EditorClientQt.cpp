@@ -41,6 +41,7 @@
 #include "FocusController.h"
 #include "Frame.h"
 #include "HTMLElement.h"
+#include "HTMLNames.h"
 #include "KeyboardCodes.h"
 #include "KeyboardEvent.h"
 #include "NotImplemented.h"
@@ -84,17 +85,19 @@ static QString dumpRange(WebCore::Range *range)
 {
     if (!range)
         return QLatin1String("(null)");
-    QString str;
     WebCore::ExceptionCode code;
-    str.sprintf("range from %ld of %ls to %ld of %ls",
-                range->startOffset(code), dumpPath(range->startContainer(code)).unicode(),
-                range->endOffset(code), dumpPath(range->endContainer(code)).unicode());
+
+    QString str = QString("range from %1 of %2 to %3 of %4")
+        .arg(range->startOffset(code)).arg(dumpPath(range->startContainer(code)))
+        .arg(range->endOffset(code)).arg(dumpPath(range->endContainer(code)));
+
     return str;
 }
 
 
 namespace WebCore {
 
+using namespace HTMLNames;
 
 bool EditorClientQt::shouldDeleteRange(Range* range)
 {
@@ -107,7 +110,7 @@ bool EditorClientQt::shouldDeleteRange(Range* range)
 bool EditorClientQt::shouldShowDeleteInterface(HTMLElement* element)
 {
     if (QWebPagePrivate::drtRun)
-        return element->className() == "needsDeletionUI";
+        return element->getAttribute(classAttr) == "needsDeletionUI";
     return false;
 }
 
@@ -592,10 +595,10 @@ bool EditorClientQt::isEditing() const
 void EditorClientQt::setInputMethodState(bool active)
 {
     QWidget *view = m_page->view();
-    if (view) {
+    if (view)
         view->setAttribute(Qt::WA_InputMethodEnabled, active);
-        emit m_page->microFocusChanged();
-    }
+
+    emit m_page->microFocusChanged();
 }
 
 }

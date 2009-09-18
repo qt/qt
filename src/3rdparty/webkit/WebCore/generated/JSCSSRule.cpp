@@ -86,6 +86,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSCSSRulePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -100,6 +101,11 @@ const ClassInfo JSCSSRuleConstructor::s_info = { "CSSRuleConstructor", 0, &JSCSS
 bool JSCSSRuleConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCSSRuleConstructor, DOMObject>(exec, &JSCSSRuleConstructorTable, this, propertyName, slot);
+}
+
+bool JSCSSRuleConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCSSRuleConstructor, DOMObject>(exec, &JSCSSRuleConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -138,6 +144,11 @@ bool JSCSSRulePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticValueSlot<JSCSSRulePrototype, JSObject>(exec, &JSCSSRulePrototypeTable, this, propertyName, slot);
 }
 
+bool JSCSSRulePrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCSSRulePrototype, JSObject>(exec, &JSCSSRulePrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSCSSRule::s_info = { "CSSRule", 0, &JSCSSRuleTable, 0 };
 
 JSCSSRule::JSCSSRule(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSRule> impl)
@@ -159,6 +170,11 @@ JSObject* JSCSSRule::createPrototype(ExecState* exec, JSGlobalObject* globalObje
 bool JSCSSRule::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCSSRule, Base>(exec, &JSCSSRuleTable, this, propertyName, slot);
+}
+
+bool JSCSSRule::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCSSRule, Base>(exec, &JSCSSRuleTable, this, propertyName, descriptor);
 }
 
 JSValue jsCSSRuleType(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -270,7 +286,7 @@ JSValue jsCSSRuleWEBKIT_KEYFRAME_RULE(ExecState* exec, const Identifier&, const 
 
 CSSRule* toCSSRule(JSC::JSValue value)
 {
-    return value.isObject(&JSCSSRule::s_info) ? static_cast<JSCSSRule*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSCSSRule::s_info) ? static_cast<JSCSSRule*>(asObject(value))->impl() : 0;
 }
 
 }

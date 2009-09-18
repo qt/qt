@@ -56,6 +56,7 @@ static QGraphicsProxyWidget *createItem(const QSizeF &minimum = QSizeF(100.0, 10
     w->setPreferredSize(preferred);
     w->setMaximumSize(maximum);
 
+    w->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     return w;
 }
 

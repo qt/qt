@@ -38,39 +38,93 @@ WebInspector.DOMStorageDataGrid.prototype = {
             return;
         this._startEditing(event);
     },
-    
+
+    _startEditingColumnOfDataGridNode: function(node, column)
+    {
+        this._editing = true;
+        this._editingNode = node;
+        this._editingNode.select();
+        WebInspector.panels.storage._unregisterStorageEventListener();
+
+        var element = this._editingNode._element.children[column];
+        WebInspector.startEditing(element, this._editingCommitted.bind(this), this._editingCancelled.bind(this), element.textContent);
+        window.getSelection().setBaseAndExtent(element, 0, element, 1);
+    },
+
     _startEditing: function(event)
     {
         var element = event.target.enclosingNodeOrSelfWithNodeName("td");
         if (!element)
             return;
+
         this._editingNode = this.dataGridNodeFromEvent(event);
-        if (!this._editingNode)
-            return;
+        if (!this._editingNode) {
+            if (!this.creationNode)
+                return;
+            this._editingNode = this.creationNode;
+        }
+
+        // Force editing the "Key" column when editing the creation node
+        if (this._editingNode.isCreationNode)
+            return this._startEditingColumnOfDataGridNode(this._editingNode, 0);
+
         this._editing = true;
-            
+        WebInspector.panels.storage._unregisterStorageEventListener();
         WebInspector.startEditing(element, this._editingCommitted.bind(this), this._editingCancelled.bind(this), element.textContent);
         window.getSelection().setBaseAndExtent(element, 0, element, 1);
     },
-    
-    _editingCommitted: function(element, newText)
+
+    _editingCommitted: function(element, newText, oldText, context, moveDirection)
     {
-        if (element.hasStyleClass("0-column"))
-            columnIdentifier = 0;
-        else
-            columnIdentifier = 1;
-        textBeforeEditing = this._editingNode.data[columnIdentifier];
+        var columnIdentifier = (element.hasStyleClass("0-column") ? 0 : 1);
+        var textBeforeEditing = this._editingNode.data[columnIdentifier];
+        var currentEditingNode = this._editingNode;
+
+        function moveToNextIfNeeded(wasChange) {
+            if (!moveDirection)
+                return;
+
+            if (moveDirection === "forward") {
+                if (currentEditingNode.isCreationNode && columnIdentifier === 0 && !wasChange)
+                    return;
+
+                if (columnIdentifier === 0)
+                    return this._startEditingColumnOfDataGridNode(currentEditingNode, 1);
+
+                var nextDataGridNode = currentEditingNode.traverseNextNode(true, null, true);
+                if (nextDataGridNode)
+                    return this._startEditingColumnOfDataGridNode(nextDataGridNode, 0);
+                if (currentEditingNode.isCreationNode && wasChange) {
+                    addCreationNode(false);
+                    return this._startEditingColumnOfDataGridNode(this.creationNode, 0);
+                }
+                return;
+            }
+
+            if (moveDirection === "backward") {
+                if (columnIdentifier === 1)
+                    return this._startEditingColumnOfDataGridNode(currentEditingNode, 0);
+                    var nextDataGridNode = currentEditingNode.traversePreviousNode(true, null, true);
+
+                if (nextDataGridNode)
+                    return this._startEditingColumnOfDataGridNode(nextDataGridNode, 1);
+                return;
+            }
+        }
+
         if (textBeforeEditing == newText) {
             this._editingCancelled(element);
+            moveToNextIfNeeded.call(this, false);
             return;
         }
-        
-        var domStorage = WebInspector.panels.databases.visibleView.domStorage.domStorage;
+
+        var domStorage = WebInspector.panels.storage.visibleView.domStorage.domStorage;
         if (domStorage) {
             if (columnIdentifier == 0) {
                 if (domStorage.getItem(newText) != null) {
                     element.textContent = this._editingNode.data[0];
                     this._editingCancelled(element);
+                    moveToNextIfNeeded.call(this, false);
                     return;
                 }
                 domStorage.removeItem(this._editingNode.data[0]);
@@ -81,20 +135,28 @@ WebInspector.DOMStorageDataGrid.prototype = {
                 this._editingNode.data[1] = newText;
             }
         }
-        
+
+        if (this._editingNode.isCreationNode)
+            this.addCreationNode(false);
+
         this._editingCancelled(element);
+        moveToNextIfNeeded.call(this, true);
     },
-    
+
     _editingCancelled: function(element, context)
     {
         delete this._editing;
         this._editingNode = null;
+        WebInspector.panels.storage._registerStorageEventListener();
     },
-    
+
     deleteSelectedRow: function()
     {
         var node = this.selectedNode;
-        var domStorage = WebInspector.panels.databases.visibleView.domStorage.domStorage;
+        if (this.selectedNode.isCreationNode)
+            return;
+
+        var domStorage = WebInspector.panels.storage.visibleView.domStorage.domStorage;
         if (node && domStorage)
             domStorage.removeItem(node.data[0]);
     }

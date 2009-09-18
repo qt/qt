@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2008, 2009 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2009 Torch Mobile, Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,28 +35,39 @@
 
 namespace WebCore {
 
-Geolocation::GeoNotifier::GeoNotifier(PassRefPtr<PositionCallback> successCallback, PassRefPtr<PositionErrorCallback> errorCallback, PassRefPtr<PositionOptions> options)
-    : m_successCallback(successCallback)
+Geolocation::GeoNotifier::GeoNotifier(Geolocation* geolocation, PassRefPtr<PositionCallback> successCallback, PassRefPtr<PositionErrorCallback> errorCallback, PassRefPtr<PositionOptions> options)
+    : m_geolocation(geolocation)
+    , m_successCallback(successCallback)
     , m_errorCallback(errorCallback)
     , m_options(options)
     , m_timer(this, &Geolocation::GeoNotifier::timerFired)
 {
+    ASSERT(m_successCallback);
+    // If no options were supplied from JS, we should have created a default set
+    // of options in JSGeolocationCustom.cpp.
+    ASSERT(m_options);
 }
 
-void Geolocation::GeoNotifier::startTimer()
+bool Geolocation::GeoNotifier::hasZeroTimeout() const
 {
-    if (m_errorCallback && m_options)
+    return m_options->hasTimeout() && m_options->timeout() == 0;
+}
+
+void Geolocation::GeoNotifier::startTimerIfNeeded()
+{
+    if (m_options->hasTimeout())
         m_timer.startOneShot(m_options->timeout() / 1000.0);
 }
 
 void Geolocation::GeoNotifier::timerFired(Timer<GeoNotifier>*)
 {
-    ASSERT(m_errorCallback);
-    
     m_timer.stop();
 
-    RefPtr<PositionError> error = PositionError::create(PositionError::TIMEOUT, "Timed out");
-    m_errorCallback->handleEvent(error.get());
+    if (m_errorCallback) {
+        RefPtr<PositionError> error = PositionError::create(PositionError::TIMEOUT, "Timeout expired");
+        m_errorCallback->handleEvent(error.get());
+    }
+    m_geolocation->requestTimedOut(this);
 }
 
 Geolocation::Geolocation(Frame* frame)
@@ -73,14 +85,18 @@ Geolocation::Geolocation(Frame* frame)
 void Geolocation::disconnectFrame()
 {
     m_service->stopUpdating();
+    if (m_frame && m_frame->document())
+        m_frame->document()->setUsingGeolocation(false);
     m_frame = 0;
 }
 
 void Geolocation::getCurrentPosition(PassRefPtr<PositionCallback> successCallback, PassRefPtr<PositionErrorCallback> errorCallback, PassRefPtr<PositionOptions> options)
 {
-    RefPtr<GeoNotifier> notifier = GeoNotifier::create(successCallback, errorCallback, options);
+    RefPtr<GeoNotifier> notifier = GeoNotifier::create(this, successCallback, errorCallback, options);
 
-    if (!m_service->startUpdating(notifier->m_options.get())) {
+    if (notifier->hasZeroTimeout() || m_service->startUpdating(notifier->m_options.get()))
+        notifier->startTimerIfNeeded();
+    else {
         if (notifier->m_errorCallback) {
             RefPtr<PositionError> error = PositionError::create(PositionError::PERMISSION_DENIED, "Unable to Start");
             notifier->m_errorCallback->handleEvent(error.get());
@@ -93,9 +109,11 @@ void Geolocation::getCurrentPosition(PassRefPtr<PositionCallback> successCallbac
 
 int Geolocation::watchPosition(PassRefPtr<PositionCallback> successCallback, PassRefPtr<PositionErrorCallback> errorCallback, PassRefPtr<PositionOptions> options)
 {
-    RefPtr<GeoNotifier> notifier = GeoNotifier::create(successCallback, errorCallback, options);
+    RefPtr<GeoNotifier> notifier = GeoNotifier::create(this, successCallback, errorCallback, options);
 
-    if (!m_service->startUpdating(notifier->m_options.get())) {
+    if (notifier->hasZeroTimeout() || m_service->startUpdating(notifier->m_options.get()))
+        notifier->startTimerIfNeeded();
+    else {
         if (notifier->m_errorCallback) {
             RefPtr<PositionError> error = PositionError::create(PositionError::PERMISSION_DENIED, "Unable to Start");
             notifier->m_errorCallback->handleEvent(error.get());
@@ -108,6 +126,15 @@ int Geolocation::watchPosition(PassRefPtr<PositionCallback> successCallback, Pas
     m_watchers.set(++sIdentifier, notifier);
 
     return sIdentifier;
+}
+
+void Geolocation::requestTimedOut(GeoNotifier* notifier)
+{
+    // If this is a one-shot request, stop it.
+    m_oneShots.remove(notifier);
+
+    if (!hasListeners())
+        m_service->stopUpdating();
 }
 
 void Geolocation::clearWatch(int watchId)
@@ -134,122 +161,90 @@ void Geolocation::setIsAllowed(bool allowed)
 {
     m_allowGeolocation = allowed ? Yes : No;
     
-    if (isAllowed()) {
-        startTimers();
-        geolocationServicePositionChanged(m_service.get());
-    } else {
-        WTF::RefPtr<WebCore::PositionError> error = WebCore::PositionError::create(PositionError::PERMISSION_DENIED, "User disallowed GeoLocation");
+    if (isAllowed())
+        makeSuccessCallbacks();
+    else {
+        RefPtr<PositionError> error = PositionError::create(PositionError::PERMISSION_DENIED, "User disallowed Geolocation");
+        error->setIsFatal(true);
         handleError(error.get());
     }
 }
 
-void Geolocation::sendErrorToOneShots(PositionError* error)
+void Geolocation::sendError(Vector<RefPtr<GeoNotifier> >& notifiers, PositionError* error)
 {
-    Vector<RefPtr<GeoNotifier> > copy;
-    copyToVector(m_oneShots, copy);
-
-    Vector<RefPtr<GeoNotifier> >::const_iterator end = copy.end();
-    for (Vector<RefPtr<GeoNotifier> >::const_iterator it = copy.begin(); it != end; ++it) {
-        RefPtr<GeoNotifier> notifier = *it;
-        
-        if (notifier->m_errorCallback)
-            notifier->m_errorCallback->handleEvent(error);
-    }
+     Vector<RefPtr<GeoNotifier> >::const_iterator end = notifiers.end();
+     for (Vector<RefPtr<GeoNotifier> >::const_iterator it = notifiers.begin(); it != end; ++it) {
+         RefPtr<GeoNotifier> notifier = *it;
+         
+         if (notifier->m_errorCallback)
+             notifier->m_errorCallback->handleEvent(error);
+     }
 }
 
-void Geolocation::sendErrorToWatchers(PositionError* error)
-{
-    Vector<RefPtr<GeoNotifier> > copy;
-    copyValuesToVector(m_watchers, copy);
-
-    Vector<RefPtr<GeoNotifier> >::const_iterator end = copy.end();
-    for (Vector<RefPtr<GeoNotifier> >::const_iterator it = copy.begin(); it != end; ++it) {
-        RefPtr<GeoNotifier> notifier = *it;
-        
-        if (notifier->m_errorCallback)
-            notifier->m_errorCallback->handleEvent(error);
-    }
-}
-
-void Geolocation::sendPositionToOneShots(Geoposition* position)
-{
-    Vector<RefPtr<GeoNotifier> > copy;
-    copyToVector(m_oneShots, copy);
-    
-    Vector<RefPtr<GeoNotifier> >::const_iterator end = copy.end();
-    for (Vector<RefPtr<GeoNotifier> >::const_iterator it = copy.begin(); it != end; ++it) {
-        RefPtr<GeoNotifier> notifier = *it;
-        ASSERT(notifier->m_successCallback);
-        
-        notifier->m_timer.stop();
-        bool shouldCallErrorCallback = false;
-        notifier->m_successCallback->handleEvent(position, shouldCallErrorCallback);
-        if (shouldCallErrorCallback) {
-            RefPtr<PositionError> error = PositionError::create(PositionError::UNKNOWN_ERROR, "An exception was thrown");
-            handleError(error.get());
-        }
-    }
-}
-
-void Geolocation::sendPositionToWatchers(Geoposition* position)
-{
-    Vector<RefPtr<GeoNotifier> > copy;
-    copyValuesToVector(m_watchers, copy);
-    
-    Vector<RefPtr<GeoNotifier> >::const_iterator end = copy.end();
-    for (Vector<RefPtr<GeoNotifier> >::const_iterator it = copy.begin(); it != end; ++it) {
-        RefPtr<GeoNotifier> notifier = *it;
-        ASSERT(notifier->m_successCallback);
-        
-        notifier->m_timer.stop();
-        bool shouldCallErrorCallback = false;
-        notifier->m_successCallback->handleEvent(position, shouldCallErrorCallback);
-        if (shouldCallErrorCallback) {
-            RefPtr<PositionError> error = PositionError::create(PositionError::UNKNOWN_ERROR, "An exception was thrown");
-            handleError(error.get());
-        }
-    }
-}
-
-void Geolocation::startTimer(Vector<RefPtr<GeoNotifier> >& notifiers)
+void Geolocation::sendPosition(Vector<RefPtr<GeoNotifier> >& notifiers, Geoposition* position)
 {
     Vector<RefPtr<GeoNotifier> >::const_iterator end = notifiers.end();
     for (Vector<RefPtr<GeoNotifier> >::const_iterator it = notifiers.begin(); it != end; ++it) {
         RefPtr<GeoNotifier> notifier = *it;
-        notifier->startTimer();
+        ASSERT(notifier->m_successCallback);
+        
+        notifier->m_successCallback->handleEvent(position);
     }
 }
 
-void Geolocation::startTimersForOneShots()
+void Geolocation::stopTimer(Vector<RefPtr<GeoNotifier> >& notifiers)
+{
+    Vector<RefPtr<GeoNotifier> >::const_iterator end = notifiers.end();
+    for (Vector<RefPtr<GeoNotifier> >::const_iterator it = notifiers.begin(); it != end; ++it) {
+        RefPtr<GeoNotifier> notifier = *it;
+        notifier->m_timer.stop();
+    }
+}
+
+void Geolocation::stopTimersForOneShots()
 {
     Vector<RefPtr<GeoNotifier> > copy;
     copyToVector(m_oneShots, copy);
     
-    startTimer(copy);
+    stopTimer(copy);
 }
 
-void Geolocation::startTimersForWatchers()
+void Geolocation::stopTimersForWatchers()
 {
     Vector<RefPtr<GeoNotifier> > copy;
     copyValuesToVector(m_watchers, copy);
     
-    startTimer(copy);
+    stopTimer(copy);
 }
 
-void Geolocation::startTimers()
+void Geolocation::stopTimers()
 {
-    startTimersForOneShots();
-    startTimersForWatchers();
+    stopTimersForOneShots();
+    stopTimersForWatchers();
 }
 
 void Geolocation::handleError(PositionError* error)
 {
     ASSERT(error);
     
-    sendErrorToOneShots(error);    
-    sendErrorToWatchers(error);
+    Vector<RefPtr<GeoNotifier> > oneShotsCopy;
+    copyToVector(m_oneShots, oneShotsCopy);
 
+    Vector<RefPtr<GeoNotifier> > watchersCopy;
+    copyValuesToVector(m_watchers, watchersCopy);
+
+    // Clear the lists before we make the callbacks, to avoid clearing notifiers
+    // added by calls to Geolocation methods from the callbacks, and to prevent
+    // further callbacks to these notifiers.
     m_oneShots.clear();
+    if (error->isFatal())
+        m_watchers.clear();
+
+    sendError(oneShotsCopy, error);
+    sendError(watchersCopy, error);
+
+    if (!hasListeners())
+        m_service->stopUpdating();
 }
 
 void Geolocation::requestPermission()
@@ -264,24 +259,50 @@ void Geolocation::requestPermission()
     if (!page)
         return;
     
+    m_allowGeolocation = InProgress;
+
     // Ask the chrome: it maintains the geolocation challenge policy itself.
     page->chrome()->requestGeolocationPermissionForFrame(m_frame, this);
-    
-    m_allowGeolocation = InProgress;
 }
 
 void Geolocation::geolocationServicePositionChanged(GeolocationService* service)
 {
-    ASSERT(service->lastPosition());
+    ASSERT_UNUSED(service, service == m_service);
+    ASSERT(m_service->lastPosition());
+
+    // Stop all currently running timers.
+    stopTimers();
     
-    requestPermission();
-    if (!isAllowed())
+    if (!isAllowed()) {
+        // requestPermission() will ask the chrome for permission. This may be
+        // implemented synchronously or asynchronously. In both cases,
+        // makeSuccessCallbacks() will be called if permission is granted, so
+        // there's nothing more to do here.
+        requestPermission();
         return;
+    }
+
+    makeSuccessCallbacks();
+}
+
+void Geolocation::makeSuccessCallbacks()
+{
+    ASSERT(m_service->lastPosition());
+    ASSERT(isAllowed());
     
-    sendPositionToOneShots(service->lastPosition());
-    sendPositionToWatchers(service->lastPosition());
-        
+    Vector<RefPtr<GeoNotifier> > oneShotsCopy;
+    copyToVector(m_oneShots, oneShotsCopy);
+    
+    Vector<RefPtr<GeoNotifier> > watchersCopy;
+    copyValuesToVector(m_watchers, watchersCopy);
+    
+    // Clear the lists before we make the callbacks, to avoid clearing notifiers
+    // added by calls to Geolocation methods from the callbacks, and to prevent
+    // further callbacks to these notifiers.
     m_oneShots.clear();
+
+    sendPosition(oneShotsCopy, m_service->lastPosition());
+    sendPosition(watchersCopy, m_service->lastPosition());
 
     if (!hasListeners())
         m_service->stopUpdating();

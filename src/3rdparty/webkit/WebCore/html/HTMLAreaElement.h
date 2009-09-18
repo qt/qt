@@ -25,6 +25,7 @@
 
 #include "HTMLAnchorElement.h"
 #include "IntSize.h"
+#include <wtf/OwnArrayPtr.h>
 
 namespace WebCore {
 
@@ -33,8 +34,7 @@ class Path;
 
 class HTMLAreaElement : public HTMLAnchorElement {
 public:
-    HTMLAreaElement(const QualifiedName&, Document*);
-    virtual ~HTMLAreaElement();
+    static PassRefPtr<HTMLAreaElement> create(const QualifiedName&, Document*);
 
     bool isDefault() const { return m_shape == Default; }
 
@@ -48,17 +48,19 @@ public:
     void setNoHref(bool);
 
 private:
+    HTMLAreaElement(const QualifiedName&, Document*);
+
     virtual HTMLTagStatus endTagRequirement() const { return TagStatusForbidden; }
     virtual int tagPriority() const { return 0; }
     virtual void parseMappedAttribute(MappedAttribute*);
-    virtual bool isFocusable() const;
+    virtual bool supportsFocus() const;
     virtual String target() const;
 
     enum Shape { Default, Poly, Rect, Circle, Unknown };
     Path getRegion(const IntSize&) const;
 
     OwnPtr<Path> m_region;
-    Length* m_coords;
+    OwnArrayPtr<Length> m_coords;
     int m_coordsLen;
     IntSize m_lastSize;
     Shape m_shape;

@@ -90,6 +90,11 @@ bool JSSVGFETileElementPrototype::getOwnPropertySlot(ExecState* exec, const Iden
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGFETileElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGFETileElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGFETileElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGFETileElement::s_info = { "SVGFETileElement", &JSSVGElement::s_info, &JSSVGFETileElementTable, 0 };
 
 JSSVGFETileElement::JSSVGFETileElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFETileElement> impl)
@@ -105,6 +110,11 @@ JSObject* JSSVGFETileElement::createPrototype(ExecState* exec, JSGlobalObject* g
 bool JSSVGFETileElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGFETileElement, Base>(exec, &JSSVGFETileElementTable, this, propertyName, slot);
+}
+
+bool JSSVGFETileElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFETileElement, Base>(exec, &JSSVGFETileElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGFETileElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -181,7 +191,7 @@ JSValue jsSVGFETileElementStyle(ExecState* exec, const Identifier&, const Proper
 JSValue JSC_HOST_CALL jsSVGFETileElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGFETileElement::s_info))
+    if (!thisValue.inherits(&JSSVGFETileElement::s_info))
         return throwError(exec, TypeError);
     JSSVGFETileElement* castedThisObj = static_cast<JSSVGFETileElement*>(asObject(thisValue));
     SVGFETileElement* imp = static_cast<SVGFETileElement*>(castedThisObj->impl());

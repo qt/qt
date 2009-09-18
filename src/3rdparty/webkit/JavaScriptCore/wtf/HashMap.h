@@ -178,10 +178,7 @@ namespace WTF {
     HashMap<T, U, V, W, X>::inlineAdd(const KeyType& key, const MappedType& mapped) 
     {
         typedef HashMapTranslator<ValueType, ValueTraits, HashFunctions> TranslatorType;
-        pair<typename HashTableType::iterator, bool> p = m_impl.template add<KeyType, MappedType, TranslatorType>(key, mapped);
-	typename HashMap<T, U, V, W, X>::iterator temp = p.first;
-        return make_pair<typename HashMap<T, U, V, W, X>::iterator, bool>(temp, p.second);
-//      return m_impl.template add<KeyType, MappedType, TranslatorType>(key, mapped);
+        return m_impl.template add<KeyType, MappedType, TranslatorType>(key, mapped);
     }
 
     template<typename T, typename U, typename V, typename W, typename X>

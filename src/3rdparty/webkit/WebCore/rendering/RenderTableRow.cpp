@@ -99,7 +99,7 @@ void RenderTableRow::addChild(RenderObject* child, RenderObject* beforeChild)
     while (beforeChild && beforeChild->parent() != this)
         beforeChild = beforeChild->parent();
 
-    RenderTableCell* cell = static_cast<RenderTableCell*>(child);
+    RenderTableCell* cell = toRenderTableCell(child);
 
     // Generated content can result in us having a null section so make sure to null check our parent.
     if (parent())
@@ -121,7 +121,7 @@ void RenderTableRow::layout()
 
     for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
         if (child->isTableCell()) {
-            RenderTableCell* cell = static_cast<RenderTableCell*>(child);
+            RenderTableCell* cell = toRenderTableCell(child);
             if (child->needsLayout()) {
                 cell->calcVerticalMargins();
                 cell->layout();
@@ -147,6 +147,11 @@ void RenderTableRow::layout()
 
 IntRect RenderTableRow::clippedOverflowRectForRepaint(RenderBoxModelObject* repaintContainer)
 {
+    ASSERT(parent());
+
+    if (repaintContainer == this)
+        return RenderBox::clippedOverflowRectForRepaint(repaintContainer);
+
     // For now, just repaint the whole table.
     // FIXME: Find a better way to do this, e.g., need to repaint all the cells that we
     // might have propagated a background color into.
@@ -185,7 +190,7 @@ void RenderTableRow::paint(PaintInfo& paintInfo, int tx, int ty)
         if (child->isTableCell()) {
             // Paint the row background behind the cell.
             if (paintInfo.phase == PaintPhaseBlockBackground || paintInfo.phase == PaintPhaseChildBlockBackground) {
-                RenderTableCell* cell = static_cast<RenderTableCell*>(child);
+                RenderTableCell* cell = toRenderTableCell(child);
                 cell->paintBackgroundsBehindCell(paintInfo, tx, ty, this);
             }
             if (!toRenderBox(child)->hasSelfPaintingLayer())

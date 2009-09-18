@@ -539,9 +539,8 @@ static bool equal(const UChar* a, const char* b, int length)
     return true;
 }
 
-static bool equalIgnoringCase(const UChar* a, const char* b, int length)
+bool equalIgnoringCase(const UChar* a, const char* b, unsigned length)
 {
-    ASSERT(length >= 0);
     while (length--) {
         unsigned char bc = *b++;
         if (foldCase(*a++) != foldCase(bc))
@@ -927,6 +926,18 @@ bool equalIgnoringCase(StringImpl* a, const char* b)
     }
 
     return equal && !b[length];
+}
+
+bool equalIgnoringNullity(StringImpl* a, StringImpl* b)
+{
+    if (StringHash::equal(a, b))
+        return true;
+    if (!a && b && !b->length())
+        return true;
+    if (!b && a && !a->length())
+        return true;
+
+    return false;
 }
 
 Vector<char> StringImpl::ascii()

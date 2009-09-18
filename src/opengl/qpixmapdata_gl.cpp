@@ -486,8 +486,12 @@ void QGLPixmapData::copyBackFromRenderFbo(bool keepCurrentFboBound) const
             GL_COLOR_BUFFER_BIT,
             GL_NEAREST);
 
-    if (keepCurrentFboBound)
+    if (keepCurrentFboBound) {
         glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->current_fbo);
+    } else {
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, m_renderFbo->handle());
+        ctx->d_ptr->current_fbo = m_renderFbo->handle();
+    }
 }
 
 bool QGLPixmapData::useFramebufferObjects()

@@ -73,6 +73,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLHRElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -87,6 +88,11 @@ const ClassInfo JSHTMLHRElementConstructor::s_info = { "HTMLHRElementConstructor
 bool JSHTMLHRElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLHRElementConstructor, DOMObject>(exec, &JSHTMLHRElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLHRElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLHRElementConstructor, DOMObject>(exec, &JSHTMLHRElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -125,6 +131,11 @@ JSObject* JSHTMLHRElement::createPrototype(ExecState* exec, JSGlobalObject* glob
 bool JSHTMLHRElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLHRElement, Base>(exec, &JSHTMLHRElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLHRElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLHRElement, Base>(exec, &JSHTMLHRElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLHRElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)

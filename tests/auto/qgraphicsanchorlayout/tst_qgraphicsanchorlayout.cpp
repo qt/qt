@@ -65,6 +65,8 @@ private slots:
     void setSpacing();
     void hardComplexS60();
     void delete_anchor();
+    void conflicts();
+    void sizePolicy();
 };
 
 class RectWidget : public QGraphicsWidget
@@ -100,7 +102,7 @@ static void setAnchor(QGraphicsAnchorLayout *l,
                       Qt::AnchorPoint firstEdge,
                       QGraphicsLayoutItem *secondItem,
                       Qt::AnchorPoint secondEdge,
-                      qreal spacing)
+                      qreal spacing = 0)
 {
     QGraphicsAnchor *anchor = l->addAnchor(firstItem, firstEdge, secondItem, secondEdge);
     anchor->setSpacing(spacing);
@@ -248,6 +250,11 @@ void tst_QGraphicsAnchorLayout::layoutDirection()
     QGraphicsWidget *a = createItem(min, pref, max, "a");
     QGraphicsWidget *b = createItem(min, pref, max, "b");
     QGraphicsWidget *c = createItem(min, pref, QSizeF(100, 20), "c");
+
+    a->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    b->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    c->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
 
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->setContentsMargins(0, 5, 10, 15);
@@ -1099,7 +1106,128 @@ void tst_QGraphicsAnchorLayout::delete_anchor()
 
     delete p;
     delete view;
+}
 
+void tst_QGraphicsAnchorLayout::sizePolicy()
+{
+    QGraphicsScene scene;
+    QSizeF minSize(0, 0);
+    QSizeF prefSize(50, 50);
+    QSizeF maxSize(100, 100);
+    QGraphicsWidget *w1 = createItem(minSize, prefSize, maxSize, "w1");
+
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+    l->setSpacing(0);
+    l->setContentsMargins(0, 0, 0, 0);
+
+    // horizontal
+    QGraphicsAnchor *anchor = l->addAnchor(l, Qt::AnchorLeft, w1, Qt::AnchorLeft);
+    anchor->setSpacing(0);
+
+    anchor = l->addAnchor(w1, Qt::AnchorRight, l, Qt::AnchorRight);
+    anchor->setSpacing(0);
+
+    // vertical
+    anchor = l->addAnchor(l, Qt::AnchorTop, w1, Qt::AnchorTop);
+    anchor->setSpacing(0);
+
+    anchor = l->addAnchor(w1, Qt::AnchorBottom, l, Qt::AnchorBottom);
+    anchor->setSpacing(0);
+
+    QGraphicsWidget *p = new QGraphicsWidget;
+    p->setLayout(l);
+
+    scene.addItem(p);
+    QGraphicsView *view = new QGraphicsView(&scene);
+
+    // QSizePolicy::Minimum
+    w1->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    QApplication::processEvents();
+    w1->adjustSize();
+
+    QCOMPARE(l->effectiveSizeHint(Qt::MinimumSize), QSizeF(50, 50));
+    QCOMPARE(l->effectiveSizeHint(Qt::PreferredSize), QSizeF(50, 50));
+    QCOMPARE(l->effectiveSizeHint(Qt::MaximumSize), QSizeF(100, 100));
+
+    // QSizePolicy::Maximum
+    w1->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+    QApplication::processEvents();
+    w1->adjustSize();
+
+    QCOMPARE(l->effectiveSizeHint(Qt::MinimumSize), QSizeF(0, 0));
+    QCOMPARE(l->effectiveSizeHint(Qt::PreferredSize), QSizeF(50, 50));
+    QCOMPARE(l->effectiveSizeHint(Qt::MaximumSize), QSizeF(50, 50));
+
+    // QSizePolicy::Fixed
+    w1->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    QApplication::processEvents();
+    w1->adjustSize();
+
+    QCOMPARE(l->effectiveSizeHint(Qt::MinimumSize), QSizeF(50, 50));
+    QCOMPARE(l->effectiveSizeHint(Qt::PreferredSize), QSizeF(50, 50));
+    QCOMPARE(l->effectiveSizeHint(Qt::MaximumSize), QSizeF(50, 50));
+
+    // QSizePolicy::Preferred
+    w1->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    QApplication::processEvents();
+    w1->adjustSize();
+
+    QCOMPARE(l->effectiveSizeHint(Qt::MinimumSize), QSizeF(0, 0));
+    QCOMPARE(l->effectiveSizeHint(Qt::PreferredSize), QSizeF(50, 50));
+    QCOMPARE(l->effectiveSizeHint(Qt::MaximumSize), QSizeF(100, 100));
+
+    // QSizePolicy::Ignored
+    w1->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+    QApplication::processEvents();
+    w1->adjustSize();
+
+    QCOMPARE(l->effectiveSizeHint(Qt::MinimumSize), QSizeF(0, 0));
+    QCOMPARE(l->effectiveSizeHint(Qt::PreferredSize), QSizeF(0, 0));
+    QCOMPARE(l->effectiveSizeHint(Qt::MaximumSize), QSizeF(100, 100));
+
+    delete p;
+    delete view;
+}
+
+void tst_QGraphicsAnchorLayout::conflicts()
+{
+    QGraphicsWidget *a = createItem(QSizeF(80,10), QSizeF(90,10), QSizeF(100,10), "a");
+    QGraphicsWidget *b = createItem(QSizeF(10,10), QSizeF(20,10), QSizeF(30,10), "b");
+    QGraphicsWidget *c = createItem(QSizeF(10,10), QSizeF(20,10), QSizeF(30,10), "c");
+
+    QGraphicsAnchorLayout *l;
+    QGraphicsWidget *p = new QGraphicsWidget(0, Qt::Window);
+
+    l = new QGraphicsAnchorLayout;
+    l->setContentsMargins(0, 0, 0, 0);
+
+    // with the following setup, 'a' cannot be larger than 30 we will first have a Simplex conflict
+
+    // horizontal
+    setAnchor(l, l, Qt::AnchorLeft, b, Qt::AnchorLeft);
+    setAnchor(l, b, Qt::AnchorRight, c, Qt::AnchorLeft);
+    setAnchor(l, c, Qt::AnchorRight, l, Qt::AnchorRight);
+    setAnchor(l, b, Qt::AnchorHorizontalCenter, a, Qt::AnchorLeft);
+    setAnchor(l, a, Qt::AnchorRight, c, Qt::AnchorHorizontalCenter);
+
+    // vertical
+    setAnchor(l, l, Qt::AnchorTop, a, Qt::AnchorTop);
+    setAnchor(l, a, Qt::AnchorBottom, b, Qt::AnchorTop);
+    setAnchor(l, a, Qt::AnchorBottom, c, Qt::AnchorTop);
+    setAnchor(l, b, Qt::AnchorBottom, l, Qt::AnchorBottom);
+    setAnchor(l, c, Qt::AnchorBottom, l, Qt::AnchorBottom);
+
+    p->setLayout(l);
+
+    QCOMPARE(l->hasConflicts(), true);
+
+    a->setMinimumSize(QSizeF(29,10));
+    QCOMPARE(l->hasConflicts(), false);
+
+    // It will currently fail if we uncomment this:
+    //QEXPECT_FAIL("", "The constraints are just within their bounds in order to be feasible", Continue);
+    //a->setMinimumSize(QSizeF(30,10));
+    //QCOMPARE(l->hasConflicts(), false);
 }
 
 QTEST_MAIN(tst_QGraphicsAnchorLayout)

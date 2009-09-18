@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008 Apple Inc.  All rights reserved.
+ * Copyright (C) 2007, 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -41,10 +41,12 @@ class MediaControlSeekButtonElement;
 class MediaControlRewindButtonElement;
 class MediaControlReturnToRealtimeButtonElement;
 class MediaControlTimelineElement;
+class MediaControlVolumeSliderElement;
 class MediaControlFullscreenButtonElement;
 class MediaControlTimeDisplayElement;
 class MediaControlStatusDisplayElement;
 class MediaControlTimelineContainerElement;
+class MediaControlVolumeSliderContainerElement;
 class MediaControlElement;
 class MediaPlayer;
 
@@ -54,22 +56,11 @@ public:
     RenderMedia(HTMLMediaElement*, const IntSize& intrinsicSize);
     virtual ~RenderMedia();
     
-    virtual RenderObjectChildList* virtualChildren() { return children(); }
-    virtual const RenderObjectChildList* virtualChildren() const { return children(); }
     const RenderObjectChildList* children() const { return &m_children; }
     RenderObjectChildList* children() { return &m_children; }
 
-    virtual void destroy();
-    
-    virtual void layout();
-
-    virtual const char* renderName() const { return "RenderMedia"; }
-    virtual bool isMedia() const { return true; }
-    
     HTMLMediaElement* mediaElement() const;
     MediaPlayer* player() const;
-
-    static String formatTime(float time);
 
     bool shouldShowTimeDisplayControls() const;
 
@@ -80,11 +71,22 @@ public:
     
     void forwardEvent(Event*);
 
+protected:
+    virtual void layout();
+
+private:
+    virtual RenderObjectChildList* virtualChildren() { return children(); }
+    virtual const RenderObjectChildList* virtualChildren() const { return children(); }
+
+    virtual void destroy();
+    
+    virtual const char* renderName() const { return "RenderMedia"; }
+    virtual bool isMedia() const { return true; }
+
     virtual int lowestPosition(bool includeOverflowInterior = true, bool includeSelf = true) const;
     virtual int rightmostPosition(bool includeOverflowInterior = true, bool includeSelf = true) const;
     virtual int leftmostPosition(bool includeOverflowInterior = true, bool includeSelf = true) const;
 
-private:
     void createControlsShadowRoot();
     void destroyControlsShadowRoot();
     void createPanel();
@@ -97,6 +99,8 @@ private:
     void createStatusDisplay();
     void createTimelineContainer();
     void createTimeline();
+    void createVolumeSliderContainer();
+    void createVolumeSlider();
     void createCurrentTimeDisplay();
     void createTimeRemainingDisplay();
     void createFullscreenButton();
@@ -106,6 +110,8 @@ private:
     void updateControlVisibility();
     void changeOpacity(HTMLElement*, float opacity);
     void opacityAnimationTimerFired(Timer<RenderMedia>*);
+
+    void updateVolumeSliderContainer(bool visible);
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
 
@@ -118,8 +124,10 @@ private:
     RefPtr<MediaControlRewindButtonElement> m_rewindButton;
     RefPtr<MediaControlReturnToRealtimeButtonElement> m_returnToRealtimeButton;
     RefPtr<MediaControlTimelineElement> m_timeline;
+    RefPtr<MediaControlVolumeSliderElement> m_volumeSlider;
     RefPtr<MediaControlFullscreenButtonElement> m_fullscreenButton;
     RefPtr<MediaControlTimelineContainerElement> m_timelineContainer;
+    RefPtr<MediaControlVolumeSliderContainerElement> m_volumeSliderContainer;
     RefPtr<MediaControlTimeDisplayElement> m_currentTimeDisplay;
     RefPtr<MediaControlTimeDisplayElement> m_timeRemainingDisplay;
     RefPtr<MediaControlStatusDisplayElement> m_statusDisplay;
@@ -135,6 +143,15 @@ private:
     float m_opacityAnimationFrom;
     float m_opacityAnimationTo;
 };
+
+inline RenderMedia* toRenderMedia(RenderObject* object)
+{
+    ASSERT(!object || object->isMedia());
+    return static_cast<RenderMedia*>(object);
+}
+
+// This will catch anyone doing an unnecessary cast.
+void toRenderMedia(const RenderMedia*);
 
 } // namespace WebCore
 

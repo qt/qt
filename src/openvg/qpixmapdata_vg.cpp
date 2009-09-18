@@ -44,6 +44,13 @@
 #include <QtGui/private/qdrawhelper_p.h>
 #include "qvg_p.h"
 
+#ifdef QT_SYMBIAN_SUPPORTS_SGIMAGE
+#include <graphics/sgimage.h>
+typedef EGLImageKHR (*pfnEglCreateImageKHR)(EGLDisplay, EGLContext, EGLenum, EGLClientBuffer, EGLint*);
+typedef EGLBoolean (*pfnEglDestroyImageKHR)(EGLDisplay, EGLImageKHR);
+typedef VGImage (*pfnVgCreateEGLImageTargetKHR)(VGeglImageKHR);
+#endif
+
 QT_BEGIN_NAMESPACE
 
 static int qt_vg_pixmap_serial = 0;
@@ -366,4 +373,175 @@ Q_OPENVG_EXPORT VGImage qPixmapToVGImage(const QPixmap& pixmap)
     return VG_INVALID_HANDLE;
 }
 
+#if defined(Q_OS_SYMBIAN)
+void QVGPixmapData::cleanup()
+{
+    is_null = w = h = 0;
+    recreate = false;
+    source = QImage();
+}
+
+void QVGPixmapData::fromRSgImage(RSgImage* sgImage)
+{
+    Q_UNUSED(sgImage);
+#if defined(QT_SYMBIAN_SUPPORTS_SGIMAGE) && !defined(QT_NO_EGL)
+    // when "0" used as argument then
+    // default display, context are used
+    if (!context)
+        context = qt_vg_create_context(0);
+
+    if (vgImage != VG_INVALID_HANDLE) {
+        vgDestroyImage(vgImage);
+        vgImage = VG_INVALID_HANDLE;
+    }
+    if (vgImageOpacity != VG_INVALID_HANDLE) {
+        vgDestroyImage(vgImageOpacity);
+        vgImageOpacity = VG_INVALID_HANDLE;
+    }
+
+    TInt err = 0;
+
+    err = SgDriver::Open();
+    if(err != KErrNone) {
+        cleanup();
+        return;
+    }
+
+    if(sgImage->IsNull()) {
+        cleanup();
+        SgDriver::Close();
+        return;
+    }
+
+    TSgImageInfo sgImageInfo;
+    err = sgImage->GetInfo(sgImageInfo);
+    if(err != KErrNone) {
+        cleanup();
+        SgDriver::Close();
+        return;
+    }
+
+    pfnEglCreateImageKHR eglCreateImageKHR = (pfnEglCreateImageKHR) eglGetProcAddress("eglCreateImageKHR");
+    pfnEglDestroyImageKHR eglDestroyImageKHR = (pfnEglDestroyImageKHR) eglGetProcAddress("eglDestroyImageKHR");
+    pfnVgCreateEGLImageTargetKHR vgCreateEGLImageTargetKHR = (pfnVgCreateEGLImageTargetKHR) eglGetProcAddress("vgCreateEGLImageTargetKHR");
+
+    if(eglGetError() != EGL_SUCCESS || !eglCreateImageKHR || !eglDestroyImageKHR || !vgCreateEGLImageTargetKHR) {
+        cleanup();
+        SgDriver::Close();
+        return;
+    }
+
+    const EGLint KEglImageAttribs[] = {EGL_IMAGE_PRESERVED_SYMBIAN, EGL_TRUE, EGL_NONE};
+    EGLImageKHR eglImage = eglCreateImageKHR(context->display(),
+                                             EGL_NO_CONTEXT,
+                                             EGL_NATIVE_PIXMAP_KHR,
+                                             (EGLClientBuffer)sgImage,
+                                             (EGLint*)KEglImageAttribs);
+
+    if(eglGetError() != EGL_SUCCESS) {
+        cleanup();
+        SgDriver::Close();
+        return;
+    }
+
+    vgImage = vgCreateEGLImageTargetKHR(eglImage);
+    if(vgGetError() != VG_NO_ERROR) {
+        cleanup();
+        eglDestroyImageKHR(context->display(), eglImage);
+        SgDriver::Close();
+        return;
+    }
+
+    w = sgImageInfo.iSizeInPixels.iWidth;
+    h = sgImageInfo.iSizeInPixels.iHeight;
+    d = 32; // We always use ARGB_Premultiplied for VG pixmaps.
+    is_null = (w <= 0 || h <= 0);
+    source = QImage();
+    recreate = false;
+    setSerialNumber(++qt_vg_pixmap_serial);
+    // release stuff
+    eglDestroyImageKHR(context->display(), eglImage);
+    SgDriver::Close();
+#else
+#endif
+}
+
+RSgImage* QVGPixmapData::toRSgImage()
+{
+#if defined(QT_SYMBIAN_SUPPORTS_SGIMAGE) && !defined(QT_NO_EGL)
+    toVGImage();
+
+    if(!isValid() || vgImage == VG_INVALID_HANDLE)
+        return 0;
+
+    TInt err = 0;
+
+    err = SgDriver::Open();
+    if(err != KErrNone)
+        return 0;
+
+    TSgImageInfo sgInfo;
+    sgInfo.iPixelFormat = EUidPixelFormatARGB_8888_PRE;
+    sgInfo.iSizeInPixels.SetSize(w, h);
+    sgInfo.iUsage = ESgUsageOpenVgImage | ESgUsageOpenVgTarget;
+    sgInfo.iShareable = ETrue;
+    sgInfo.iCpuAccess = ESgCpuAccessNone;
+    sgInfo.iScreenId = KSgScreenIdMain; //KSgScreenIdAny;
+    sgInfo.iUserAttributes = NULL;
+    sgInfo.iUserAttributeCount = 0;
+
+    RSgImage *sgImage = q_check_ptr(new RSgImage());
+    err = sgImage->Create(sgInfo, NULL, NULL);
+    if(err != KErrNone) {
+        SgDriver::Close();
+        return 0;
+      }
+
+    pfnEglCreateImageKHR eglCreateImageKHR = (pfnEglCreateImageKHR) eglGetProcAddress("eglCreateImageKHR");
+    pfnEglDestroyImageKHR eglDestroyImageKHR = (pfnEglDestroyImageKHR) eglGetProcAddress("eglDestroyImageKHR");
+    pfnVgCreateEGLImageTargetKHR vgCreateEGLImageTargetKHR = (pfnVgCreateEGLImageTargetKHR) eglGetProcAddress("vgCreateEGLImageTargetKHR");
+
+    if(eglGetError() != EGL_SUCCESS || !eglCreateImageKHR || !eglDestroyImageKHR || !vgCreateEGLImageTargetKHR) {
+        SgDriver::Close();
+        return 0;
+    }
+
+    const EGLint KEglImageAttribs[] = {EGL_IMAGE_PRESERVED_SYMBIAN, EGL_TRUE, EGL_NONE};
+    EGLImageKHR eglImage = eglCreateImageKHR(context->display(),
+                                             EGL_NO_CONTEXT,
+                                             EGL_NATIVE_PIXMAP_KHR,
+                                             (EGLClientBuffer)sgImage,
+                                             (EGLint*)KEglImageAttribs);
+    if(eglGetError() != EGL_SUCCESS) {
+        sgImage->Close();
+        SgDriver::Close();
+        return 0;
+    }
+
+    VGImage dstVgImage = vgCreateEGLImageTargetKHR(eglImage);
+    if(vgGetError() != VG_NO_ERROR) {
+        eglDestroyImageKHR(context->display(), eglImage);
+        sgImage->Close();
+        SgDriver::Close();
+        return 0;
+    }
+
+    vgCopyImage(dstVgImage, 0, 0,
+                vgImage, 0, 0,
+                w, h, VG_FALSE);
+
+    if(vgGetError() != VG_NO_ERROR) {
+        sgImage->Close();
+        sgImage = 0;
+    }
+    // release stuff
+    vgDestroyImage(dstVgImage);
+    eglDestroyImageKHR(context->display(), eglImage);
+    SgDriver::Close();
+    return sgImage;
+#else
+    return 0;
+#endif
+}
+#endif //Q_OS_SYMBIAN
 QT_END_NAMESPACE

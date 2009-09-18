@@ -331,7 +331,7 @@ const String& KURLGooglePrivate::string() const
 // Creates with NULL-terminated string input representing an absolute URL.
 // WebCore generally calls this only with hardcoded strings, so the input is
 // ASCII. We treat is as UTF-8 just in case.
-KURL::KURL(const char *url)
+KURL::KURL(ParsedURLStringTag, const char *url)
 {
     // FIXME The Mac code checks for beginning with a slash and converting to a
     // file: URL. We will want to add this as well once we can compile on a
@@ -349,7 +349,7 @@ KURL::KURL(const char *url)
 // to a string and then converted back. In this case, the URL is already
 // canonical and in proper escaped form so needs no encoding. We treat it was
 // UTF-8 just in case.
-KURL::KURL(const String& url)
+KURL::KURL(ParsedURLStringTag, const String& url)
 {
     if (!url.isNull())
         m_url.init(KURL(), url, 0);
@@ -504,7 +504,7 @@ String KURL::user() const
     return m_url.componentString(m_url.m_parsed.username);
 }
 
-String KURL::ref() const
+String KURL::fragmentIdentifier() const
 {
     // Empty but present refs ("foo.com/bar#") should result in the empty
     // string, which m_url.componentString will produce. Nonexistant refs should be
@@ -516,7 +516,7 @@ String KURL::ref() const
     return m_url.componentString(m_url.m_parsed.ref);
 }
 
-bool KURL::hasRef() const
+bool KURL::hasFragmentIdentifier() const
 {
     // Note: KURL.cpp unescapes here.
     // FIXME determine if KURL.cpp agrees about an empty ref
@@ -627,22 +627,22 @@ void KURL::setPass(const String& pass)
     m_url.replaceComponents(replacements);
 }
 
-void KURL::setRef(const String& ref)
+void KURL::setFragmentIdentifier(const String& s)
 {
     // This function is commonly called to clear the ref, which we
     // normally don't have, so we optimize this case.
-    if (ref.isNull() && !m_url.m_parsed.ref.is_valid())
+    if (s.isNull() && !m_url.m_parsed.ref.is_valid())
         return;
 
     KURLGooglePrivate::Replacements replacements;
-    if (ref.isNull())
+    if (s.isNull())
         replacements.ClearRef();
     else
-        replacements.SetRef(CharactersOrEmpty(ref), url_parse::Component(0, ref.length()));
+        replacements.SetRef(CharactersOrEmpty(s), url_parse::Component(0, s.length()));
     m_url.replaceComponents(replacements);
 }
 
-void KURL::removeRef()
+void KURL::removeFragmentIdentifier()
 {
     KURLGooglePrivate::Replacements replacements;
     replacements.ClearRef();
@@ -728,13 +728,8 @@ String decodeURLEscapeSequences(const String& str)
 // cause security holes. We never call this function for components, and
 // just return the ASCII versions instead.
 //
-// However, this static function is called directly in some cases. It appears
-// that this only happens for javascript: URLs, so this is essentially the
-// JavaScript URL decoder. It assumes UTF-8 encoding.
-//
-// IE doesn't unescape %00, forcing you to use \x00 in JS strings, so we do
-// the same. This also eliminates NULL-related problems should a consumer
-// incorrectly call this function for non-JavaScript.
+// This function is also used to decode javascript: URLs and as a general
+// purpose unescaping function.
 //
 // FIXME These should be merged to the KURL.cpp implementation.
 String decodeURLEscapeSequences(const String& str, const TextEncoding& encoding)
@@ -757,15 +752,9 @@ String decodeURLEscapeSequences(const String& str, const TextEncoding& encoding)
     for (int i = 0; i < inputLength; i++) {
         if (input[i] == '%') {
             unsigned char ch;
-            if (url_canon::DecodeEscaped(input, &i, inputLength, &ch)) {
-                if (!ch) {
-                    // Never unescape NULLs.
-                    unescaped.push_back('%');
-                    unescaped.push_back('0');
-                    unescaped.push_back('0');
-                } else
-                    unescaped.push_back(ch);
-            } else {
+            if (url_canon::DecodeEscaped(input, &i, inputLength, &ch))
+                unescaped.push_back(ch);
+            else {
                 // Invalid escape sequence, copy the percent literal.
                 unescaped.push_back('%');
             }
@@ -885,7 +874,7 @@ void KURL::invalidate()
 }
 
 // Equal up to reference fragments, if any.
-bool equalIgnoringRef(const KURL& a, const KURL& b)
+bool equalIgnoringFragmentIdentifier(const KURL& a, const KURL& b)
 {
     // Compute the length of each URL without its ref. Note that the reference
     // begin (if it exists) points to the character *after* the '#', so we need
@@ -936,7 +925,7 @@ unsigned KURL::pathAfterLastSlash() const
 
 const KURL& blankURL()
 {
-    static KURL staticBlankURL("about:blank");
+    static KURL staticBlankURL(ParsedURLString, "about:blank");
     return staticBlankURL;
 }
 
@@ -955,6 +944,32 @@ bool protocolIs(const String& url, const char* protocol)
 inline bool KURL::protocolIs(const String& string, const char* protocol)
 {
     return WebCore::protocolIs(string, protocol);
+}
+
+bool protocolHostAndPortAreEqual(const KURL& a, const KURL& b)
+{
+    if (a.parsed().scheme.end() != b.parsed().scheme.end())
+        return false;
+
+    int hostStartA = a.hostStart();
+    int hostStartB = b.hostStart();
+    if (a.hostEnd() - hostStartA != b.hostEnd() - hostStartB)
+        return false;
+
+    // Check the scheme
+    for (int i = 0; i < a.parsed().scheme.end(); ++i)
+        if (a.string()[i] != b.string()[i])
+            return false;
+    
+    // And the host
+    for (int i = hostStartA; i < static_cast<int>(a.hostEnd()); ++i)
+        if (a.string()[i] != b.string()[i])
+            return false;
+    
+    if (a.port() != b.port())
+        return false;
+
+    return true;
 }
 
 } // namespace WebCore

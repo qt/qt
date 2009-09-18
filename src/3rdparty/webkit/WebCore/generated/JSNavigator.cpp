@@ -67,17 +67,18 @@ static JSC_CONST_HASHTABLE HashTable JSNavigatorTable =
 
 /* Hash table for prototype */
 
-static const HashTableValue JSNavigatorPrototypeTableValues[2] =
+static const HashTableValue JSNavigatorPrototypeTableValues[3] =
 {
     { "javaEnabled", DontDelete|Function, (intptr_t)jsNavigatorPrototypeFunctionJavaEnabled, (intptr_t)0 },
+    { "getStorageUpdates", DontDelete|Function, (intptr_t)jsNavigatorPrototypeFunctionGetStorageUpdates, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
 static JSC_CONST_HASHTABLE HashTable JSNavigatorPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 0, JSNavigatorPrototypeTableValues, 0 };
+    { 1, JSNavigatorPrototypeTableValues, 0 };
 #else
-    { 2, 1, JSNavigatorPrototypeTableValues, 0 };
+    { 4, 3, JSNavigatorPrototypeTableValues, 0 };
 #endif
 
 const ClassInfo JSNavigatorPrototype::s_info = { "NavigatorPrototype", 0, &JSNavigatorPrototypeTable, 0 };
@@ -90,6 +91,11 @@ JSObject* JSNavigatorPrototype::self(ExecState* exec, JSGlobalObject* globalObje
 bool JSNavigatorPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticFunctionSlot<JSObject>(exec, &JSNavigatorPrototypeTable, this, propertyName, slot);
+}
+
+bool JSNavigatorPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSNavigatorPrototypeTable, this, propertyName, descriptor);
 }
 
 const ClassInfo JSNavigator::s_info = { "Navigator", 0, &JSNavigatorTable, 0 };
@@ -113,6 +119,11 @@ JSObject* JSNavigator::createPrototype(ExecState* exec, JSGlobalObject* globalOb
 bool JSNavigator::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSNavigator, Base>(exec, &JSNavigatorTable, this, propertyName, slot);
+}
+
+bool JSNavigator::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSNavigator, Base>(exec, &JSNavigatorTable, this, propertyName, descriptor);
 }
 
 JSValue jsNavigatorAppCodeName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -230,7 +241,7 @@ JSValue jsNavigatorOnLine(ExecState* exec, const Identifier&, const PropertySlot
 JSValue JSC_HOST_CALL jsNavigatorPrototypeFunctionJavaEnabled(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSNavigator::s_info))
+    if (!thisValue.inherits(&JSNavigator::s_info))
         return throwError(exec, TypeError);
     JSNavigator* castedThisObj = static_cast<JSNavigator*>(asObject(thisValue));
     Navigator* imp = static_cast<Navigator*>(castedThisObj->impl());
@@ -240,13 +251,25 @@ JSValue JSC_HOST_CALL jsNavigatorPrototypeFunctionJavaEnabled(ExecState* exec, J
     return result;
 }
 
+JSValue JSC_HOST_CALL jsNavigatorPrototypeFunctionGetStorageUpdates(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSNavigator::s_info))
+        return throwError(exec, TypeError);
+    JSNavigator* castedThisObj = static_cast<JSNavigator*>(asObject(thisValue));
+    Navigator* imp = static_cast<Navigator*>(castedThisObj->impl());
+
+    imp->getStorageUpdates();
+    return jsUndefined();
+}
+
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Navigator* object)
 {
     return getDOMObjectWrapper<JSNavigator>(exec, globalObject, object);
 }
 Navigator* toNavigator(JSC::JSValue value)
 {
-    return value.isObject(&JSNavigator::s_info) ? static_cast<JSNavigator*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSNavigator::s_info) ? static_cast<JSNavigator*>(asObject(value))->impl() : 0;
 }
 
 }

@@ -56,6 +56,10 @@
 #include <QtGui/qpixmap.h>
 #include <QtCore/qatomic.h>
 
+#if defined(Q_OS_SYMBIAN)
+class RSgImage;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class Q_GUI_EXPORT QPixmapData
@@ -108,6 +112,11 @@ public:
     inline int numColors() const { return metric(QPaintDevice::PdmNumColors); }
     inline int depth() const { return d; }
     inline bool isNull() const { return is_null; }
+
+#if defined(Q_OS_SYMBIAN)
+    virtual RSgImage* toRSgImage();
+    virtual void fromRSgImage(RSgImage* rsgImage);
+#endif
 
 protected:
     void setSerialNumber(int serNo);

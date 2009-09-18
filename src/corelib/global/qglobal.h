@@ -820,7 +820,6 @@ namespace QT_NAMESPACE {}
 #  define Q_WS_WIN
 #endif
 
-
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
@@ -2389,7 +2388,11 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 #ifdef SYMBIAN_GRAPHICS_USE_GCE
 //RWsPointerCursor is fixed, so don't use low performance sprites
 #define Q_SYMBIAN_FIXED_POINTER_CURSORS
+#define Q_SYMBIAN_HAS_EXTENDED_BITMAP_TYPE
+//enabling new graphics resources
+#define QT_SYMBIAN_SUPPORTS_SGIMAGE
 #endif
+
 
 //Symbian does not support data imports from a DLL
 #define Q_NO_DATA_RELOCATION

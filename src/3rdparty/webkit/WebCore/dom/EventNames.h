@@ -40,6 +40,7 @@ namespace WebCore {
     macro(checking) \
     macro(click) \
     macro(close) \
+    macro(connect) \
     macro(contextmenu) \
     macro(copy) \
     macro(cut) \
@@ -54,11 +55,14 @@ namespace WebCore {
     macro(drop) \
     macro(error) \
     macro(focus) \
+    macro(hashchange) \
     macro(input) \
+    macro(invalid) \
     macro(keydown) \
     macro(keypress) \
     macro(keyup) \
     macro(load) \
+    macro(loadend) \
     macro(loadstart) \
     macro(message) \
     macro(mousedown) \
@@ -71,7 +75,10 @@ namespace WebCore {
     macro(obsolete) \
     macro(offline) \
     macro(online) \
+    macro(open) \
     macro(overflowchanged) \
+    macro(pagehide) \
+    macro(pageshow) \
     macro(paste) \
     macro(readystatechange) \
     macro(reset) \

@@ -129,7 +129,8 @@ template <LiteralParser::ParserMode mode> static inline bool isSafeStringCharact
     return (c >= ' ' && (mode == LiteralParser::StrictJSON || c <= 0xff) && c != '\\' && c != '"') || c == '\t';
 }
 
-template <LiteralParser::ParserMode mode> LiteralParser::TokenType LiteralParser::Lexer::lexString(LiteralParserToken& token)
+// "inline" is required here to help WINSCW compiler resolve specialized argument in templated functions.
+template <LiteralParser::ParserMode mode> inline LiteralParser::TokenType LiteralParser::Lexer::lexString(LiteralParserToken& token)
 {
     ++m_ptr;
     const UChar* runStart;
@@ -294,7 +295,10 @@ JSValue LiteralParser::parse(ParserState initialState)
             }
             doParseArrayStartExpression:
             case DoParseArrayStartExpression: {
+                TokenType lastToken = m_lexer.currentToken().type;
                 if (m_lexer.next() == TokRBracket) {
+                    if (lastToken == TokComma)
+                        return JSValue();
                     m_lexer.next();
                     lastValue = objectStack.last();
                     objectStack.removeLast();

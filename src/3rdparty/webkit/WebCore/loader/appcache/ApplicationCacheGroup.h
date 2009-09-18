@@ -32,6 +32,7 @@
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
 
+#include "DOMApplicationCache.h"
 #include "KURL.h"
 #include "PlatformString.h"
 #include "ResourceHandle.h"
@@ -42,7 +43,6 @@ namespace WebCore {
 
 class ApplicationCache;
 class ApplicationCacheResource;
-class DOMApplicationCache;
 class Document;
 class DocumentLoader;
 class Frame;
@@ -91,13 +91,15 @@ public:
     bool isCopy() const { return m_isCopy; }
 
 private:
-    typedef void (DOMApplicationCache::*ListenerFunction)();
-    static void postListenerTask(ListenerFunction, const HashSet<DocumentLoader*>&);
-    static void postListenerTask(ListenerFunction, const Vector<RefPtr<DocumentLoader> >& loaders);
-    static void postListenerTask(ListenerFunction, DocumentLoader*);
+    static void postListenerTask(ApplicationCacheHost::EventID, const HashSet<DocumentLoader*>&);
+    static void postListenerTask(ApplicationCacheHost::EventID, DocumentLoader*);
     void scheduleReachedMaxAppCacheSizeCallback();
 
     PassRefPtr<ResourceHandle> createResourceHandle(const KURL&, ApplicationCacheResource* newestCachedResource);
+
+    // For normal resource loading, WebKit client is asked about each resource individually. Since application cache does not belong to any particular document,
+    // the existing client callback cannot be used, so assume that any client that enables application cache also wants it to use credential storage.
+    virtual bool shouldUseCredentialStorage(ResourceHandle*) { return true; }
 
     virtual void didReceiveResponse(ResourceHandle*, const ResourceResponse&);
     virtual void didReceiveData(ResourceHandle*, const char*, int, int lengthReceived);

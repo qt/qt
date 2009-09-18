@@ -89,6 +89,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLImageElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -103,6 +104,11 @@ const ClassInfo JSHTMLImageElementConstructor::s_info = { "HTMLImageElementConst
 bool JSHTMLImageElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLImageElementConstructor, DOMObject>(exec, &JSHTMLImageElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLImageElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLImageElementConstructor, DOMObject>(exec, &JSHTMLImageElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -141,6 +147,11 @@ JSObject* JSHTMLImageElement::createPrototype(ExecState* exec, JSGlobalObject* g
 bool JSHTMLImageElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLImageElement, Base>(exec, &JSHTMLImageElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLImageElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLImageElement, Base>(exec, &JSHTMLImageElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLImageElementName(ExecState* exec, const Identifier&, const PropertySlot& slot)

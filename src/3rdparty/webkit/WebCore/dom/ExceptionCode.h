@@ -57,7 +57,7 @@ namespace WebCore {
         NETWORK_ERR = 19,
         ABORT_ERR = 20,
         URL_MISMATCH_ERR = 21,
-        QUOTA_EXCEEDED_ERR = 22
+        QUOTA_EXCEEDED_ERR = 22,
     };
 
     enum ExceptionType {

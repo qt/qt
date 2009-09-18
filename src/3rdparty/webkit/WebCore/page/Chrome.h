@@ -44,6 +44,9 @@ namespace WebCore {
     class IntRect;
     class Page;
     class String;
+#if ENABLE(NOTIFICATIONS)
+    class NotificationPresenter;
+#endif
 
     struct FrameLoadRequest;
     struct WindowFeatures;
@@ -62,6 +65,7 @@ namespace WebCore {
         virtual IntRect windowToScreen(const IntRect&) const;
         virtual PlatformWidget platformWindow() const;
         virtual void scrollRectIntoView(const IntRect&, const ScrollView*) const;
+        virtual void scrollbarsModeDidChange() const;
 
         void contentsSizeChanged(Frame*, const IntSize&) const;
 
@@ -126,6 +130,10 @@ namespace WebCore {
 
 #if PLATFORM(MAC)
         void focusNSView(NSView*);
+#endif
+
+#if ENABLE(NOTIFICATIONS)
+        NotificationPresenter* notificationPresenter() const; 
 #endif
 
     private:

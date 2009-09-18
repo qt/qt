@@ -41,6 +41,7 @@
 #include "ScrollBehavior.h"
 #include "SelectionController.h"
 #include "TextGranularity.h"
+#include "UserScriptTypes.h"
 
 #if PLATFORM(WIN)
 #include "FrameWin.h"
@@ -79,10 +80,6 @@ namespace WebCore {
     class VisibleSelection;
     class Widget;
 
-#if FRAME_LOADS_USER_STYLESHEET
-    class UserStyleSheetLoader;
-#endif
-
     template <typename T> class Timer;
 
     class Frame : public RefCounted<Frame> {
@@ -97,6 +94,7 @@ namespace WebCore {
         void init();
 
         Page* page() const;
+        void detachFromPage();
         HTMLFrameOwnerElement* ownerElement() const;
 
         void pageDestroyed();
@@ -128,6 +126,10 @@ namespace WebCore {
         void createView(const IntSize&, const Color&, bool, const IntSize &, bool,
                         ScrollbarMode = ScrollbarAuto, ScrollbarMode = ScrollbarAuto);
 
+        void injectUserScripts(UserScriptInjectionTime);
+
+    private:
+        void injectUserScriptsForWorld(unsigned worldID, const UserScriptVector&, UserScriptInjectionTime);
 
     private:
         Frame(Page*, HTMLFrameOwnerElement*, FrameLoaderClient*);
@@ -138,11 +140,6 @@ namespace WebCore {
         static Frame* frameForWidget(const Widget*);
 
         Settings* settings() const; // can be NULL
-
-    #if FRAME_LOADS_USER_STYLESHEET
-        void setUserStyleSheetLocation(const KURL&);
-        void setUserStyleSheet(const String& styleSheetData);
-    #endif
 
         void setPrinting(bool printing, float minPageWidth, float maxPageWidth, bool adjustViewSize);
 
@@ -365,11 +362,6 @@ namespace WebCore {
         bool m_needsReapplyStyles;
         bool m_isDisconnected;
         bool m_excludeFromTextSearch;
-
-    #if FRAME_LOADS_USER_STYLESHEET
-        UserStyleSheetLoader* m_userStyleSheetLoader;
-    #endif
-
     };
 
 } // namespace WebCore

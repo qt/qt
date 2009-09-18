@@ -11,9 +11,9 @@ SOURCES+=\
     pvrqwsdrawable.c \
     pvrqwswsegl.c
 
-INCLUDEPATH += $$QMAKE_INCDIR_OPENGL
+INCLUDEPATH += $$QMAKE_INCDIR_EGL
 
-for(p, QMAKE_LIBDIR_OPENGL) {
+for(p, QMAKE_LIBDIR_EGL) {
     exists($$p):LIBS += -L$$p
 }
 

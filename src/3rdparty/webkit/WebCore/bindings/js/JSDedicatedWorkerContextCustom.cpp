@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2009 Apple, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -34,15 +35,23 @@
 
 #include "JSDedicatedWorkerContext.h"
 
+#include "JSDOMBinding.h"
+#include "JSMessagePortCustom.h"
+
 using namespace JSC;
 
 namespace WebCore {
 
-void JSDedicatedWorkerContext::mark()
+void JSDedicatedWorkerContext::markChildren(MarkStack& markStack)
 {
-    Base::mark();
+    Base::markChildren(markStack);
 
-    markIfNotNull(impl()->onmessage());
+    markIfNotNull(markStack, impl()->onmessage());
+}
+
+JSC::JSValue JSDedicatedWorkerContext::postMessage(JSC::ExecState* exec, const JSC::ArgList& args)
+{
+    return handlePostMessage(exec, args, impl());
 }
 
 } // namespace WebCore

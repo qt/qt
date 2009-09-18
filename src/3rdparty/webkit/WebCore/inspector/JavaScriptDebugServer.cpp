@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -45,10 +45,8 @@
 #include "ScrollView.h"
 #include "Widget.h"
 #include "ScriptController.h"
-#include <runtime/CollectorHeapIterator.h>
 #include <debugger/DebuggerCallFrame.h>
 #include <runtime/JSLock.h>
-#include <parser/Parser.h>
 #include <wtf/MainThread.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/UnusedParam.h>
@@ -58,6 +56,16 @@ using namespace JSC;
 namespace WebCore {
 
 typedef JavaScriptDebugServer::ListenerSet ListenerSet;
+
+inline const UString& JavaScriptDebugServer::BreakpointInfo::condition() const
+{
+    return m_condition;
+}
+
+void JavaScriptDebugServer::BreakpointInfo::setCondition(const UString& condition)
+{
+    m_condition = condition;
+}
 
 JavaScriptDebugServer& JavaScriptDebugServer::shared()
 {
@@ -157,42 +165,86 @@ bool JavaScriptDebugServer::hasListenersInterestedInPage(Page* page)
     return m_pageListenersMap.contains(page);
 }
 
-void JavaScriptDebugServer::addBreakpoint(intptr_t sourceID, unsigned lineNumber)
+void JavaScriptDebugServer::addBreakpoint(intptr_t sourceID, unsigned lineNumber, const UString& condition)
 {
-    HashSet<unsigned>* lines = m_breakpoints.get(sourceID);
-    if (!lines) {
-        lines = new HashSet<unsigned>;
-        m_breakpoints.set(sourceID, lines);
+    LineToBreakpointInfoMap* sourceBreakpoints = m_breakpoints.get(sourceID);
+    if (!sourceBreakpoints) {
+        sourceBreakpoints = new LineToBreakpointInfoMap;
+        m_breakpoints.set(sourceID, sourceBreakpoints);
     }
+    BreakpointInfo* info = sourceBreakpoints->get(lineNumber);
+    if (!info)
+        sourceBreakpoints->set(lineNumber, new BreakpointInfo(condition));
+    else
+        updateBreakpointInfo(info, condition);
+}
 
-    lines->add(lineNumber);
+JavaScriptDebugServer::BreakpointInfo* JavaScriptDebugServer::breakpointInfo(intptr_t sourceID, unsigned lineNumber) const
+{
+    LineToBreakpointInfoMap* sourceBreakpoints = m_breakpoints.get(sourceID);
+    if (!sourceBreakpoints)
+        return 0;
+    return sourceBreakpoints->get(lineNumber);
+}
+
+void JavaScriptDebugServer::updateBreakpoint(intptr_t sourceID, unsigned lineNumber, const UString& condition)
+{
+    BreakpointInfo* info = breakpointInfo(sourceID, lineNumber);
+    if (!info)
+        return;
+    updateBreakpointInfo(info, condition);
+}
+
+void JavaScriptDebugServer::updateBreakpointInfo(BreakpointInfo* info, const UString& condition)
+{
+    info->setCondition(condition);
 }
 
 void JavaScriptDebugServer::removeBreakpoint(intptr_t sourceID, unsigned lineNumber)
 {
-    HashSet<unsigned>* lines = m_breakpoints.get(sourceID);
-    if (!lines)
+    LineToBreakpointInfoMap* sourceBreakpoints = m_breakpoints.get(sourceID);
+    if (!sourceBreakpoints)
         return;
 
-    lines->remove(lineNumber);
-
-    if (!lines->isEmpty())
+    BreakpointInfo* info = sourceBreakpoints->get(lineNumber);
+    if (!info)
         return;
 
-    m_breakpoints.remove(sourceID);
-    delete lines;
+    sourceBreakpoints->remove(lineNumber);
+    delete info;
+
+    if (sourceBreakpoints->isEmpty()) {
+        m_breakpoints.remove(sourceID);
+        delete sourceBreakpoints;
+    }
 }
 
 bool JavaScriptDebugServer::hasBreakpoint(intptr_t sourceID, unsigned lineNumber) const
 {
-    HashSet<unsigned>* lines = m_breakpoints.get(sourceID);
-    if (!lines)
+    BreakpointInfo* info = breakpointInfo(sourceID, lineNumber);
+    if (!info)
         return false;
-    return lines->contains(lineNumber);
+
+    // An empty condition counts as no condition which is equivalent to "true".
+    if (info->condition().isEmpty())
+        return true;
+
+    JSValue exception;
+    JSValue result = m_currentCallFrame->evaluate(info->condition(), exception);
+    if (exception) {
+        // An erroneous condition counts as "false".
+        return false;
+    }
+    return result.toBoolean(m_currentCallFrame->scopeChain()->globalObject()->globalExec());
 }
 
 void JavaScriptDebugServer::clearBreakpoints()
 {
+    BreakpointsMap::iterator end = m_breakpoints.end();
+    for (BreakpointsMap::iterator it = m_breakpoints.begin(); it != end; ++it) {
+        deleteAllValues(*(it->second));
+        it->second->clear();
+    }
     deleteAllValues(m_breakpoints);
     m_breakpoints.clear();
 }
@@ -298,8 +350,6 @@ void JavaScriptDebugServer::sourceParsed(ExecState* exec, const SourceCode& sour
         return;
 
     m_callingListeners = true;
-
-    ASSERT(hasListeners());
 
     bool isError = errorLine != -1;
 
@@ -459,7 +509,7 @@ void JavaScriptDebugServer::callEvent(const DebuggerCallFrame& debuggerCallFrame
     pauseIfNeeded(toPage(debuggerCallFrame.dynamicGlobalObject()));
 }
 
-void JavaScriptDebugServer::atStatement(const DebuggerCallFrame& debuggerCallFrame, intptr_t sourceID, int lineNumber, int column)
+void JavaScriptDebugServer::atStatement(const DebuggerCallFrame& debuggerCallFrame, intptr_t sourceID, int lineNumber)
 {
     if (m_paused)
         return;
@@ -533,7 +583,7 @@ void JavaScriptDebugServer::didExecuteProgram(const DebuggerCallFrame& debuggerC
     m_currentCallFrame = m_currentCallFrame->caller();
 }
 
-void JavaScriptDebugServer::didReachBreakpoint(const DebuggerCallFrame& debuggerCallFrame, intptr_t sourceID, int lineNumber, int /*column*/)
+void JavaScriptDebugServer::didReachBreakpoint(const DebuggerCallFrame& debuggerCallFrame, intptr_t sourceID, int lineNumber)
 {
     if (m_paused)
         return;
@@ -555,60 +605,7 @@ void JavaScriptDebugServer::recompileAllJSFunctionsSoon()
 void JavaScriptDebugServer::recompileAllJSFunctions(Timer<JavaScriptDebugServer>*)
 {
     JSLock lock(SilenceAssertionsOnly);
-    JSGlobalData* globalData = JSDOMWindow::commonJSGlobalData();
-
-    // If JavaScript is running, it's not safe to recompile, since we'll end
-    // up throwing away code that is live on the stack.
-    ASSERT(!globalData->dynamicGlobalObject);
-    if (globalData->dynamicGlobalObject)
-        return;
-
-    Vector<ProtectedPtr<JSFunction> > functions;
-    Heap::iterator heapEnd = globalData->heap.primaryHeapEnd();
-    for (Heap::iterator it = globalData->heap.primaryHeapBegin(); it != heapEnd; ++it) {
-        if ((*it)->isObject(&JSFunction::info)) {
-            JSFunction* function = static_cast<JSFunction*>(*it);
-            if (!function->isHostFunction())
-                functions.append(function);
-        }
-    }
-
-    typedef HashMap<RefPtr<FunctionBodyNode>, RefPtr<FunctionBodyNode> > FunctionBodyMap;
-    typedef HashMap<SourceProvider*, ExecState*> SourceProviderMap;
-
-    FunctionBodyMap functionBodies;
-    SourceProviderMap sourceProviders;
-
-    size_t size = functions.size();
-    for (size_t i = 0; i < size; ++i) {
-        JSFunction* function = functions[i];
-
-        FunctionBodyNode* oldBody = function->body();
-        pair<FunctionBodyMap::iterator, bool> result = functionBodies.add(oldBody, 0);
-        if (!result.second) {
-            function->setBody(result.first->second.get());
-            continue;
-        }
-
-        ExecState* exec = function->scope().globalObject()->JSGlobalObject::globalExec();
-        const SourceCode& sourceCode = oldBody->source();
-
-        RefPtr<FunctionBodyNode> newBody = globalData->parser->parse<FunctionBodyNode>(exec, 0, sourceCode);
-        ASSERT(newBody);
-        newBody->finishParsing(oldBody->copyParameters(), oldBody->parameterCount());
-
-        result.first->second = newBody;
-        function->setBody(newBody.release());
-
-        if (hasListeners() && function->scope().globalObject()->debugger() == this)
-            sourceProviders.add(sourceCode.provider(), exec);
-    }
-
-    // Call sourceParsed() after reparsing all functions because it will execute
-    // JavaScript in the inspector.
-    SourceProviderMap::const_iterator end = sourceProviders.end();
-    for (SourceProviderMap::const_iterator iter = sourceProviders.begin(); iter != end; ++iter)
-        sourceParsed((*iter).second, SourceCode((*iter).first), -1, 0);
+    Debugger::recompileAllJSFunctions(JSDOMWindow::commonJSGlobalData());
 }
 
 void JavaScriptDebugServer::didAddListener(Page* page)

@@ -24,10 +24,7 @@
 #include "Coordinates.h"
 #include "Geoposition.h"
 #include "JSCoordinates.h"
-#include "KURL.h"
-#include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
-#include <runtime/JSString.h>
 #include <wtf/GetPtr.h>
 
 using namespace JSC;
@@ -54,9 +51,8 @@ static JSC_CONST_HASHTABLE HashTable JSGeopositionTable =
 
 /* Hash table for prototype */
 
-static const HashTableValue JSGeopositionPrototypeTableValues[2] =
+static const HashTableValue JSGeopositionPrototypeTableValues[1] =
 {
-    { "toString", DontDelete|DontEnum|Function, (intptr_t)jsGeopositionPrototypeFunctionToString, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -64,7 +60,7 @@ static JSC_CONST_HASHTABLE HashTable JSGeopositionPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSGeopositionPrototypeTableValues, 0 };
 #else
-    { 2, 1, JSGeopositionPrototypeTableValues, 0 };
+    { 1, 0, JSGeopositionPrototypeTableValues, 0 };
 #endif
 
 const ClassInfo JSGeopositionPrototype::s_info = { "GeopositionPrototype", 0, &JSGeopositionPrototypeTable, 0 };
@@ -72,11 +68,6 @@ const ClassInfo JSGeopositionPrototype::s_info = { "GeopositionPrototype", 0, &J
 JSObject* JSGeopositionPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
     return getDOMPrototype<JSGeoposition>(exec, globalObject);
-}
-
-bool JSGeopositionPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
-{
-    return getStaticFunctionSlot<JSObject>(exec, &JSGeopositionPrototypeTable, this, propertyName, slot);
 }
 
 const ClassInfo JSGeoposition::s_info = { "Geoposition", 0, &JSGeopositionTable, 0 };
@@ -102,6 +93,11 @@ bool JSGeoposition::getOwnPropertySlot(ExecState* exec, const Identifier& proper
     return getStaticValueSlot<JSGeoposition, Base>(exec, &JSGeopositionTable, this, propertyName, slot);
 }
 
+bool JSGeoposition::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSGeoposition, Base>(exec, &JSGeopositionTable, this, propertyName, descriptor);
+}
+
 JSValue jsGeopositionCoords(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSGeoposition* castedThis = static_cast<JSGeoposition*>(asObject(slot.slotBase()));
@@ -118,26 +114,13 @@ JSValue jsGeopositionTimestamp(ExecState* exec, const Identifier&, const Propert
     return jsNumber(exec, imp->timestamp());
 }
 
-JSValue JSC_HOST_CALL jsGeopositionPrototypeFunctionToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
-{
-    UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSGeoposition::s_info))
-        return throwError(exec, TypeError);
-    JSGeoposition* castedThisObj = static_cast<JSGeoposition*>(asObject(thisValue));
-    Geoposition* imp = static_cast<Geoposition*>(castedThisObj->impl());
-
-
-    JSC::JSValue result = jsString(exec, imp->toString());
-    return result;
-}
-
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Geoposition* object)
 {
     return getDOMObjectWrapper<JSGeoposition>(exec, globalObject, object);
 }
 Geoposition* toGeoposition(JSC::JSValue value)
 {
-    return value.isObject(&JSGeoposition::s_info) ? static_cast<JSGeoposition*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSGeoposition::s_info) ? static_cast<JSGeoposition*>(asObject(value))->impl() : 0;
 }
 
 }

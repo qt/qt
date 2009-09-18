@@ -225,5 +225,11 @@ void MyTestClass::cleanup()
 QTest::qSleep(250);
 //! [23]
 
+//! [24]
+QWidget widget;
+widget.show();
+QTest::qWaitForWindowShown(&widget);
+//! [24]
+
 }
 

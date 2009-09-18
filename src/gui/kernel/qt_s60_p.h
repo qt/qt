@@ -108,7 +108,7 @@ public:
     bool virtualMouseRequired;
     int qtOwnsS60Environment : 1;
     static inline void updateScreenSize();
-    static inline RWsSession& wsSession();
+	static inline RWsSession& wsSession();
     static inline RWindowGroup& windowGroup();
     static inline CWsScreenDevice* screenDevice();
     static inline CCoeAppUi* appUi();
@@ -284,7 +284,7 @@ static inline QImage::Format qt_TDisplayMode2Format(TDisplayMode mode)
         format = QImage::Format_RGB16;
         break;
     case EColor16M:
-        format = QImage::Format_RGB666;
+        format = QImage::Format_RGB888;
         break;
     case EColor16MU:
         format = QImage::Format_RGB32;
@@ -304,11 +304,13 @@ static inline QImage::Format qt_TDisplayMode2Format(TDisplayMode mode)
     return format;
 }
 
+#ifndef QT_NO_CURSOR
 void qt_symbian_setWindowCursor(const QCursor &cursor, const CCoeControl* wid);
 void qt_symbian_setWindowGroupCursor(const QCursor &cursor, RWindowTreeNode &node);
 void qt_symbian_setGlobalCursor(const QCursor &cursor);
 void qt_symbian_set_cursor_visible(bool visible);
 bool qt_symbian_is_cursor_visible();
+#endif
 
 QT_END_NAMESPACE
 

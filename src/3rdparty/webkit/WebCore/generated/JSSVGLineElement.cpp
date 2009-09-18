@@ -112,6 +112,11 @@ bool JSSVGLineElementPrototype::getOwnPropertySlot(ExecState* exec, const Identi
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGLineElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGLineElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGLineElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGLineElement::s_info = { "SVGLineElement", &JSSVGElement::s_info, &JSSVGLineElementTable, 0 };
 
 JSSVGLineElement::JSSVGLineElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGLineElement> impl)
@@ -127,6 +132,11 @@ JSObject* JSSVGLineElement::createPrototype(ExecState* exec, JSGlobalObject* glo
 bool JSSVGLineElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGLineElement, Base>(exec, &JSSVGLineElementTable, this, propertyName, slot);
+}
+
+bool JSSVGLineElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGLineElement, Base>(exec, &JSSVGLineElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGLineElementX1(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -276,7 +286,7 @@ void setJSSVGLineElementXmlspace(ExecState* exec, JSObject* thisObject, JSValue 
 JSValue JSC_HOST_CALL jsSVGLineElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGLineElement::s_info))
+    if (!thisValue.inherits(&JSSVGLineElement::s_info))
         return throwError(exec, TypeError);
     JSSVGLineElement* castedThisObj = static_cast<JSSVGLineElement*>(asObject(thisValue));
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThisObj->impl());
@@ -290,7 +300,7 @@ JSValue JSC_HOST_CALL jsSVGLineElementPrototypeFunctionHasExtension(ExecState* e
 JSValue JSC_HOST_CALL jsSVGLineElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGLineElement::s_info))
+    if (!thisValue.inherits(&JSSVGLineElement::s_info))
         return throwError(exec, TypeError);
     JSSVGLineElement* castedThisObj = static_cast<JSSVGLineElement*>(asObject(thisValue));
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThisObj->impl());
@@ -304,7 +314,7 @@ JSValue JSC_HOST_CALL jsSVGLineElementPrototypeFunctionGetPresentationAttribute(
 JSValue JSC_HOST_CALL jsSVGLineElementPrototypeFunctionGetBBox(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGLineElement::s_info))
+    if (!thisValue.inherits(&JSSVGLineElement::s_info))
         return throwError(exec, TypeError);
     JSSVGLineElement* castedThisObj = static_cast<JSSVGLineElement*>(asObject(thisValue));
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThisObj->impl());
@@ -317,7 +327,7 @@ JSValue JSC_HOST_CALL jsSVGLineElementPrototypeFunctionGetBBox(ExecState* exec, 
 JSValue JSC_HOST_CALL jsSVGLineElementPrototypeFunctionGetCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGLineElement::s_info))
+    if (!thisValue.inherits(&JSSVGLineElement::s_info))
         return throwError(exec, TypeError);
     JSSVGLineElement* castedThisObj = static_cast<JSSVGLineElement*>(asObject(thisValue));
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThisObj->impl());
@@ -330,7 +340,7 @@ JSValue JSC_HOST_CALL jsSVGLineElementPrototypeFunctionGetCTM(ExecState* exec, J
 JSValue JSC_HOST_CALL jsSVGLineElementPrototypeFunctionGetScreenCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGLineElement::s_info))
+    if (!thisValue.inherits(&JSSVGLineElement::s_info))
         return throwError(exec, TypeError);
     JSSVGLineElement* castedThisObj = static_cast<JSSVGLineElement*>(asObject(thisValue));
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThisObj->impl());
@@ -343,7 +353,7 @@ JSValue JSC_HOST_CALL jsSVGLineElementPrototypeFunctionGetScreenCTM(ExecState* e
 JSValue JSC_HOST_CALL jsSVGLineElementPrototypeFunctionGetTransformToElement(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGLineElement::s_info))
+    if (!thisValue.inherits(&JSSVGLineElement::s_info))
         return throwError(exec, TypeError);
     JSSVGLineElement* castedThisObj = static_cast<JSSVGLineElement*>(asObject(thisValue));
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThisObj->impl());

@@ -70,6 +70,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSImageDataPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -84,6 +85,11 @@ const ClassInfo JSImageDataConstructor::s_info = { "ImageDataConstructor", 0, &J
 bool JSImageDataConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSImageDataConstructor, DOMObject>(exec, &JSImageDataConstructorTable, this, propertyName, slot);
+}
+
+bool JSImageDataConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSImageDataConstructor, DOMObject>(exec, &JSImageDataConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -130,6 +136,11 @@ bool JSImageData::getOwnPropertySlot(ExecState* exec, const Identifier& property
     return getStaticValueSlot<JSImageData, Base>(exec, &JSImageDataTable, this, propertyName, slot);
 }
 
+bool JSImageData::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSImageData, Base>(exec, &JSImageDataTable, this, propertyName, descriptor);
+}
+
 JSValue jsImageDataWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSImageData* castedThis = static_cast<JSImageData*>(asObject(slot.slotBase()));
@@ -158,7 +169,7 @@ JSValue JSImageData::getConstructor(ExecState* exec, JSGlobalObject* globalObjec
 
 ImageData* toImageData(JSC::JSValue value)
 {
-    return value.isObject(&JSImageData::s_info) ? static_cast<JSImageData*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSImageData::s_info) ? static_cast<JSImageData*>(asObject(value))->impl() : 0;
 }
 
 }

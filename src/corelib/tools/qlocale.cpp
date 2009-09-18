@@ -1216,9 +1216,12 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         QString preferredLanguage;
         QString preferredCountry;
         getMacPreferredLanguageAndCountry(&preferredLanguage, &preferredCountry);
+        QLocale::Language languageCode = (preferredLanguage.isEmpty() ? QLocale::C : codeToLanguage(preferredLanguage.data()));
+        QLocale::Country countryCode = (preferredCountry.isEmpty() ? QLocale::AnyCountry : codeToCountry(preferredCountry.data()));
+        const QLocalePrivate *d = findLocale(languageCode, countryCode);
         if (type == LanguageId)
-            return codeToLanguage(preferredLanguage.data());
-        return codeToCountry(preferredCountry.data());
+            return (QLocale::Language)d->languageId();
+        return (QLocale::Country)d->countryId();
     }
 
     case MeasurementSystem:

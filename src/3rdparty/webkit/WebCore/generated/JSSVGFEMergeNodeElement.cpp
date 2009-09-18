@@ -87,6 +87,11 @@ bool JSSVGFEMergeNodeElement::getOwnPropertySlot(ExecState* exec, const Identifi
     return getStaticValueSlot<JSSVGFEMergeNodeElement, Base>(exec, &JSSVGFEMergeNodeElementTable, this, propertyName, slot);
 }
 
+bool JSSVGFEMergeNodeElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFEMergeNodeElement, Base>(exec, &JSSVGFEMergeNodeElementTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGFEMergeNodeElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGFEMergeNodeElement* castedThis = static_cast<JSSVGFEMergeNodeElement*>(asObject(slot.slotBase()));

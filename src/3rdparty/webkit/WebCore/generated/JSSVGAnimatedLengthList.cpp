@@ -94,6 +94,11 @@ bool JSSVGAnimatedLengthList::getOwnPropertySlot(ExecState* exec, const Identifi
     return getStaticValueSlot<JSSVGAnimatedLengthList, Base>(exec, &JSSVGAnimatedLengthListTable, this, propertyName, slot);
 }
 
+bool JSSVGAnimatedLengthList::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGAnimatedLengthList, Base>(exec, &JSSVGAnimatedLengthListTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGAnimatedLengthListBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGAnimatedLengthList* castedThis = static_cast<JSSVGAnimatedLengthList*>(asObject(slot.slotBase()));
@@ -116,7 +121,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAnim
 }
 SVGAnimatedLengthList* toSVGAnimatedLengthList(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGAnimatedLengthList::s_info) ? static_cast<JSSVGAnimatedLengthList*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGAnimatedLengthList::s_info) ? static_cast<JSSVGAnimatedLengthList*>(asObject(value))->impl() : 0;
 }
 
 }

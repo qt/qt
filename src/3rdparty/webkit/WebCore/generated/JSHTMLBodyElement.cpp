@@ -39,7 +39,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLBodyElement);
 
 /* Hash table */
 
-static const HashTableValue JSHTMLBodyElementTableValues[15] =
+static const HashTableValue JSHTMLBodyElementTableValues[16] =
 {
     { "aLink", DontDelete, (intptr_t)jsHTMLBodyElementALink, (intptr_t)setJSHTMLBodyElementALink },
     { "background", DontDelete, (intptr_t)jsHTMLBodyElementBackground, (intptr_t)setJSHTMLBodyElementBackground },
@@ -48,6 +48,7 @@ static const HashTableValue JSHTMLBodyElementTableValues[15] =
     { "text", DontDelete, (intptr_t)jsHTMLBodyElementText, (intptr_t)setJSHTMLBodyElementText },
     { "vLink", DontDelete, (intptr_t)jsHTMLBodyElementVLink, (intptr_t)setJSHTMLBodyElementVLink },
     { "onbeforeunload", DontDelete|DontEnum, (intptr_t)jsHTMLBodyElementOnbeforeunload, (intptr_t)setJSHTMLBodyElementOnbeforeunload },
+    { "onhashchange", DontDelete|DontEnum, (intptr_t)jsHTMLBodyElementOnhashchange, (intptr_t)setJSHTMLBodyElementOnhashchange },
     { "onmessage", DontDelete|DontEnum, (intptr_t)jsHTMLBodyElementOnmessage, (intptr_t)setJSHTMLBodyElementOnmessage },
     { "onoffline", DontDelete|DontEnum, (intptr_t)jsHTMLBodyElementOnoffline, (intptr_t)setJSHTMLBodyElementOnoffline },
     { "ononline", DontDelete|DontEnum, (intptr_t)jsHTMLBodyElementOnonline, (intptr_t)setJSHTMLBodyElementOnonline },
@@ -62,7 +63,7 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLBodyElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSHTMLBodyElementTableValues, 0 };
 #else
-    { 34, 31, JSHTMLBodyElementTableValues, 0 };
+    { 35, 31, JSHTMLBodyElementTableValues, 0 };
 #endif
 
 /* Hash table for constructor */
@@ -87,6 +88,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLBodyElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -101,6 +103,11 @@ const ClassInfo JSHTMLBodyElementConstructor::s_info = { "HTMLBodyElementConstru
 bool JSHTMLBodyElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLBodyElementConstructor, DOMObject>(exec, &JSHTMLBodyElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLBodyElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLBodyElementConstructor, DOMObject>(exec, &JSHTMLBodyElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -139,6 +146,11 @@ JSObject* JSHTMLBodyElement::createPrototype(ExecState* exec, JSGlobalObject* gl
 bool JSHTMLBodyElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLBodyElement, Base>(exec, &JSHTMLBodyElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLBodyElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLBodyElement, Base>(exec, &JSHTMLBodyElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLBodyElementALink(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -195,6 +207,18 @@ JSValue jsHTMLBodyElementOnbeforeunload(ExecState* exec, const Identifier&, cons
     UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
     if (EventListener* listener = imp->onbeforeunload()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsHTMLBodyElementOnhashchange(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSHTMLBodyElement* castedThis = static_cast<JSHTMLBodyElement*>(asObject(slot.slotBase()));
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
+    if (EventListener* listener = imp->onhashchange()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
     }
@@ -327,6 +351,16 @@ void setJSHTMLBodyElementOnbeforeunload(ExecState* exec, JSObject* thisObject, J
     if (!globalObject)
         return;
     imp->setOnbeforeunload(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSHTMLBodyElementOnhashchange(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    UNUSED_PARAM(exec);
+    HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    if (!globalObject)
+        return;
+    imp->setOnhashchange(globalObject->createJSAttributeEventListener(value));
 }
 
 void setJSHTMLBodyElementOnmessage(ExecState* exec, JSObject* thisObject, JSValue value)

@@ -44,6 +44,7 @@
 #include <QtGui/qpaintdevice.h>
 #include <private/qwidget_p.h>
 #include "qwindowsurface_s60_p.h"
+#include "qpixmap_s60_p.h"
 #include "qt_s60_p.h"
 #include "private/qdrawhelper_p.h"
 
@@ -51,20 +52,13 @@ QT_BEGIN_NAMESPACE
 
 struct QS60WindowSurfacePrivate
 {
-    QImage device;
-    CFbsBitmap *bitmap;
-    uchar* bytes;
-
-    // Since only one CFbsBitmap is allowed to be locked at a time, this is static.
-    static QS60WindowSurface* lockedSurface;
+    QPixmap device;
+    QList<QImage*> bufferImages;
 };
-QS60WindowSurface* QS60WindowSurfacePrivate::lockedSurface = NULL;
 
 QS60WindowSurface::QS60WindowSurface(QWidget* widget)
     : QWindowSurface(widget), d_ptr(new QS60WindowSurfacePrivate)
 {
-    d_ptr->bytes = 0;
-    d_ptr->bitmap = 0;
 
     TDisplayMode mode = S60->screenDevice()->DisplayMode();
     bool isOpaque = qt_widget_private(widget)->isOpaque;
@@ -73,39 +67,27 @@ QS60WindowSurface::QS60WindowSurface(QWidget* widget)
     else if (mode == EColor16MU && !isOpaque)
         mode = EColor16MA; // Try for transparency anyway
 
-
     // We create empty CFbsBitmap here -> it will be resized in setGeometry
-    d_ptr->bitmap = q_check_ptr(new CFbsBitmap);	// CBase derived object needs check on new
-    qt_symbian_throwIfError( d_ptr->bitmap->Create(TSize(0, 0), mode ) );
-
-    updatePaintDeviceOnBitmap();
-
+	CFbsBitmap *bitmap = q_check_ptr(new CFbsBitmap);	// CBase derived object needs check on new
+    qt_symbian_throwIfError( bitmap->Create( TSize(0, 0), mode ) );
+	
+    QS60PixmapData *data = new QS60PixmapData(QPixmapData::PixmapType);
+    data->fromSymbianBitmap(bitmap);
+    d_ptr->device = QPixmap(data);
+        
     setStaticContentsSupport(true);
 }
-
 QS60WindowSurface::~QS60WindowSurface()
 {
-    if (QS60WindowSurfacePrivate::lockedSurface == this)
-        unlockBitmapHeap();
-
-    delete d_ptr->bitmap;
     delete d_ptr;
 }
 
 void QS60WindowSurface::beginPaint(const QRegion &rgn)
 {
-    if(!d_ptr->bitmap)
-        return;
-
-    if (QS60WindowSurfacePrivate::lockedSurface)
-        unlockBitmapHeap();
-    
-    QS60WindowSurfacePrivate::lockedSurface = this;
-    lockBitmapHeap();
-
     if (!qt_widget_private(window())->isOpaque) {
-        QRgb *data = reinterpret_cast<QRgb *>(d_ptr->device.bits());
-        const int row_stride = d_ptr->device.bytesPerLine() / 4;
+        QImage image = static_cast<QS60PixmapData *>(d_ptr->device.data_ptr().data())->image;
+        QRgb *data = reinterpret_cast<QRgb *>(image.bits());
+        const int row_stride = image.bytesPerLine() / 4;
 
         const QVector<QRect> rects = rgn.rects();
         for (QVector<QRect>::const_iterator it = rects.begin(); it != rects.end(); ++it) {
@@ -122,6 +104,38 @@ void QS60WindowSurface::beginPaint(const QRegion &rgn)
             }
         }
     }
+}
+
+void QS60WindowSurface::endPaint(const QRegion &)
+{
+    qDeleteAll(d_ptr->bufferImages);
+    d_ptr->bufferImages.clear();
+}
+
+QImage* QS60WindowSurface::buffer(const QWidget *widget)
+{
+    if (widget->window() != window())
+        return 0;
+
+    QPaintDevice *pdev = paintDevice();
+    if (!pdev)
+        return 0;
+
+    const QPoint off = offset(widget);
+    QImage *img = &(static_cast<QS60PixmapData *>(d_ptr->device.data_ptr().data())->image);
+    
+    QRect rect(off, widget->size());
+    rect &= QRect(QPoint(), img->size());
+
+    if (rect.isEmpty())
+        return 0;
+
+    img = new QImage(img->scanLine(rect.y()) + rect.x() * img->depth() / 8,
+                     rect.width(), rect.height(),
+                     img->bytesPerLine(), img->format());
+    d_ptr->bufferImages.append(img);
+
+    return img;
 }
 
 void QS60WindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &)
@@ -143,28 +157,10 @@ bool QS60WindowSurface::scroll(const QRegion &area, int dx, int dy)
     if (d_ptr->device.isNull())
         return false;
 
-    CFbsBitmapDevice *bitmapDevice = 0;
-    QT_TRAP_THROWING(bitmapDevice = CFbsBitmapDevice::NewL(d_ptr->bitmap));
-    CBitmapContext *bitmapContext;
-    TInt err = bitmapDevice->CreateBitmapContext(bitmapContext);
-    if (err != KErrNone) {
-        CBase::Delete(bitmapDevice);
-        return false;
-    }
-    bitmapContext->CopyRect(TPoint(dx, dy), qt_QRect2TRect(rect));
-    CBase::Delete(bitmapContext);
-    CBase::Delete(bitmapDevice);
+    QS60PixmapData *data = static_cast<QS60PixmapData*>(d_ptr->device.data_ptr().data());
+    data->scroll(dx, dy, rect);
+
     return true;
-}
-
-void QS60WindowSurface::endPaint(const QRegion & /* rgn */)
-{
-    if(!d_ptr->bitmap)
-        return;
-
-    Q_ASSERT(QS60WindowSurfacePrivate::lockedSurface);
-    unlockBitmapHeap();
-    QS60WindowSurfacePrivate::lockedSurface = NULL;
 }
 
 QPaintDevice* QS60WindowSurface::paintDevice()
@@ -177,61 +173,17 @@ void QS60WindowSurface::setGeometry(const QRect& rect)
     if (rect == geometry())
         return;
 
+    QS60PixmapData *data = static_cast<QS60PixmapData*>(d_ptr->device.data_ptr().data());
+    data->resize(rect.width(), rect.height());
+
     QWindowSurface::setGeometry(rect);
-
-    TRect nativeRect(qt_QRect2TRect(rect));
-    qt_symbian_throwIfError(d_ptr->bitmap->Resize(nativeRect.Size()));
-
-    if (!rect.isNull())
-        updatePaintDeviceOnBitmap();
 }
 
-void QS60WindowSurface::lockBitmapHeap()
+CFbsBitmap* QS60WindowSurface::symbianBitmap() const
 {
-    if (!QS60WindowSurfacePrivate::lockedSurface)
-        return;
-
-    // Get some local variables to make later code lines more clear to read
-    CFbsBitmap*& bitmap = QS60WindowSurfacePrivate::lockedSurface->d_ptr->bitmap;
-    QImage& device = QS60WindowSurfacePrivate::lockedSurface->d_ptr->device;
-    uchar*& bytes = QS60WindowSurfacePrivate::lockedSurface->d_ptr->bytes;
-
-    bitmap->LockHeap();
-    uchar *newBytes = (uchar*)bitmap->DataAddress();
-    if (newBytes != bytes) {
-        bytes = newBytes;
-
-        // Get some values for QImage creation
-        TDisplayMode mode  = bitmap->DisplayMode();
-        if (mode == EColor16MA
-            && qt_widget_private(QS60WindowSurfacePrivate::lockedSurface->window())->isOpaque)
-            mode = EColor16MU;
-        QImage::Format format = qt_TDisplayMode2Format( mode );
-        TSize bitmapSize = bitmap->SizeInPixels();
-        int bytesPerLine = CFbsBitmap::ScanLineLength( bitmapSize.iWidth, mode);
-
-        device = QImage( bytes, bitmapSize.iWidth, bitmapSize.iHeight, bytesPerLine, format );
-    }
-}
-
-void QS60WindowSurface::unlockBitmapHeap()
-{
-    if (!QS60WindowSurfacePrivate::lockedSurface)
-        return;
-
-    QS60WindowSurfacePrivate::lockedSurface->d_ptr->bitmap->UnlockHeap();
-}
-
-void QS60WindowSurface::updatePaintDeviceOnBitmap()
-{
-    // This forces the actual device to be updated based on CFbsBitmap
-    beginPaint(QRegion());
-    endPaint(QRegion());
-}
-
-CFbsBitmap *QS60WindowSurface::symbianBitmap() const
-{
-    return d_ptr->bitmap;
+    QS60PixmapData *data = static_cast<QS60PixmapData*>(d_ptr->device.data_ptr().data());
+    return data->cfbsBitmap;
 }
 
 QT_END_NAMESPACE
+
