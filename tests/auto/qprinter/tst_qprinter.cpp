@@ -48,6 +48,7 @@
 #include <qpagesetupdialog.h>
 #include <qpainter.h>
 #include <qprintdialog.h>
+#include <qprinterinfo.h>
 #ifdef QT3_SUPPORT
 #include <q3paintdevicemetrics.h>
 #endif
@@ -557,6 +558,8 @@ void tst_QPrinter::changingOutputFormat()
 
 void tst_QPrinter::outputFormatFromSuffix()
 {
+    if (QPrinterInfo::availablePrinters().size() == 0)
+        QSKIP("No printers available.", SkipAll);
     QPrinter p;
     QVERIFY(p.outputFormat() == QPrinter::NativeFormat);
     p.setOutputFileName("test.ps");
