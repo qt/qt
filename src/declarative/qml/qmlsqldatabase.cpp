@@ -59,12 +59,6 @@
 #include <QtCore/qdir.h>
 #include <QtCore/qdebug.h>
 
-#ifdef Q_OS_WIN // for %APPDATA%
-#include "qt_windows.h"
-#include "qlibrary.h"
-#define CSIDL_APPDATA		0x001a	// <username>\Application Data
-#endif
-
 Q_DECLARE_METATYPE(QSqlDatabase)
 Q_DECLARE_METATYPE(QSqlQuery)
 

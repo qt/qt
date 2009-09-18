@@ -84,6 +84,12 @@
 #include <private/qmlxmlhttprequest_p.h>
 #include <private/qmlsqldatabase_p.h>
 
+#ifdef Q_OS_WIN // for %APPDATA%
+#include "qt_windows.h"
+#include "qlibrary.h"
+#define CSIDL_APPDATA		0x001a	// <username>\Application Data
+#endif
+
 Q_DECLARE_METATYPE(QmlMetaProperty)
 Q_DECLARE_METATYPE(QList<QObject *>);
 
