@@ -26,6 +26,7 @@ void usage()
     qWarning(" options:");
     qWarning("  -v, -version ............................. display version");
     qWarning("  -frameless ............................... run with no window frame");
+    qWarning("  -fullscreen............................... run fullscreen");
     qWarning("  -skin <qvfbskindir> ...................... run with a skin window frame");
     qWarning("                                             \"list\" for a list of built-ins");
     qWarning("  -resizeview .............................. resize the view, not the skin");
@@ -81,11 +82,14 @@ int main(int argc, char ** argv)
     int cache = 0;
     QString translationFile;
     bool useGL = false;
+    bool fullScreen = false;
 
     for (int i = 1; i < argc; ++i) {
         QString arg = argv[i];
         if (arg == "-frameless") {
             frameless = true;
+        } else if (arg == "-fullscreen") {
+            fullScreen = true;
         } else if (arg == "-skin") {
             skin = QString(argv[++i]);
         } else if (arg == "-resizeview") {
@@ -161,9 +165,9 @@ int main(int argc, char ** argv)
         viewer.setRecordArgs(recordargs);
     if (!fileName.isEmpty()) {
         viewer.openQml(fileName);
-        viewer.show();
+        fullScreen ? viewer.showFullScreen() : viewer.show();
     } else {
-        viewer.show();
+        fullScreen ? viewer.showFullScreen() : viewer.show();
         viewer.open();
     }
     viewer.raise();
