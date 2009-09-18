@@ -116,8 +116,6 @@ private slots:
 
     void consoleOutput();
 
-    void consoleOutput();
-
 private:
 
 
