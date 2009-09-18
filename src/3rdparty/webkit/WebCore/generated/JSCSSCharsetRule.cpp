@@ -69,6 +69,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSCSSCharsetRulePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -83,6 +84,11 @@ const ClassInfo JSCSSCharsetRuleConstructor::s_info = { "CSSCharsetRuleConstruct
 bool JSCSSCharsetRuleConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCSSCharsetRuleConstructor, DOMObject>(exec, &JSCSSCharsetRuleConstructorTable, this, propertyName, slot);
+}
+
+bool JSCSSCharsetRuleConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCSSCharsetRuleConstructor, DOMObject>(exec, &JSCSSCharsetRuleConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -121,6 +127,11 @@ JSObject* JSCSSCharsetRule::createPrototype(ExecState* exec, JSGlobalObject* glo
 bool JSCSSCharsetRule::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCSSCharsetRule, Base>(exec, &JSCSSCharsetRuleTable, this, propertyName, slot);
+}
+
+bool JSCSSCharsetRule::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCSSCharsetRule, Base>(exec, &JSCSSCharsetRuleTable, this, propertyName, descriptor);
 }
 
 JSValue jsCSSCharsetRuleEncoding(ExecState* exec, const Identifier&, const PropertySlot& slot)

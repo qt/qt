@@ -45,9 +45,9 @@
 #include "qfontengine_s60_p.h"
 #include "qabstractfileengine.h"
 #include "qdesktopservices.h"
+#include "qpixmap_s60_p.h"
 #include "qt_s60_p.h"
 #include "qendian.h"
-#include <private/qwindowsurface_s60_p.h>
 #include <private/qcore_symbian_p.h>
 #if defined(QT_NO_FREETYPE)
 #include <OPENFONT.H>
@@ -217,7 +217,8 @@ static void initializeDb()
     if (!db->s60Store)
         db->s60Store = new QFontDatabaseS60StoreImplementation;
 
-    QS60WindowSurface::unlockBitmapHeap();
+    QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
+    
     const int numTypeFaces = QS60Data::screenDevice()->NumTypefaces();
     const QFontDatabaseS60StoreImplementation *store = dynamic_cast<const QFontDatabaseS60StoreImplementation*>(db->s60Store);
     Q_ASSERT(store);
@@ -271,8 +272,11 @@ static void initializeDb()
         }
         QS60Data::screenDevice()->ReleaseFont(font);
     }
+
     Q_ASSERT(fontAdded);
-    QS60WindowSurface::lockBitmapHeap();
+    
+	lock.relock();
+
 #else // defined(QT_NO_FREETYPE)
     QDir dir(QDesktopServices::storageLocation(QDesktopServices::FontsLocation));
     dir.setNameFilters(QStringList() << QLatin1String("*.ttf")

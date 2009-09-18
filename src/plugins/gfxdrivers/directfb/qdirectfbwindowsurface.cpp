@@ -274,6 +274,8 @@ static inline void scrollSurface(IDirectFBSurface *surface, const QRect &r, int 
 {
     const DFBRectangle rect = { r.x(), r.y(), r.width(), r.height() };
     surface->Blit(surface, surface, &rect, r.x() + dx, r.y() + dy);
+    const DFBRegion region = { rect.x + dx, rect.y + dy, r.right() + dx, r.bottom() + dy };
+    surface->Flip(surface, &region, DSFLIP_BLIT);
 }
 
 bool QDirectFBWindowSurface::scroll(const QRegion &region, int dx, int dy)

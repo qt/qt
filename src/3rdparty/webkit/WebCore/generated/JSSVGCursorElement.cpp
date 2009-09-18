@@ -87,6 +87,11 @@ bool JSSVGCursorElementPrototype::getOwnPropertySlot(ExecState* exec, const Iden
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGCursorElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGCursorElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGCursorElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGCursorElement::s_info = { "SVGCursorElement", &JSSVGElement::s_info, &JSSVGCursorElementTable, 0 };
 
 JSSVGCursorElement::JSSVGCursorElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGCursorElement> impl)
@@ -102,6 +107,11 @@ JSObject* JSSVGCursorElement::createPrototype(ExecState* exec, JSGlobalObject* g
 bool JSSVGCursorElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGCursorElement, Base>(exec, &JSSVGCursorElementTable, this, propertyName, slot);
+}
+
+bool JSSVGCursorElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGCursorElement, Base>(exec, &JSSVGCursorElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGCursorElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -167,7 +177,7 @@ JSValue jsSVGCursorElementExternalResourcesRequired(ExecState* exec, const Ident
 JSValue JSC_HOST_CALL jsSVGCursorElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGCursorElement::s_info))
+    if (!thisValue.inherits(&JSSVGCursorElement::s_info))
         return throwError(exec, TypeError);
     JSSVGCursorElement* castedThisObj = static_cast<JSSVGCursorElement*>(asObject(thisValue));
     SVGCursorElement* imp = static_cast<SVGCursorElement*>(castedThisObj->impl());

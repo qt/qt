@@ -74,6 +74,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSStyleSheetListPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -88,6 +89,11 @@ const ClassInfo JSStyleSheetListConstructor::s_info = { "StyleSheetListConstruct
 bool JSStyleSheetListConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSStyleSheetListConstructor, DOMObject>(exec, &JSStyleSheetListConstructorTable, this, propertyName, slot);
+}
+
+bool JSStyleSheetListConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSStyleSheetListConstructor, DOMObject>(exec, &JSStyleSheetListConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -115,6 +121,11 @@ JSObject* JSStyleSheetListPrototype::self(ExecState* exec, JSGlobalObject* globa
 bool JSStyleSheetListPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticFunctionSlot<JSObject>(exec, &JSStyleSheetListPrototypeTable, this, propertyName, slot);
+}
+
+bool JSStyleSheetListPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSStyleSheetListPrototypeTable, this, propertyName, descriptor);
 }
 
 const ClassInfo JSStyleSheetList::s_info = { "StyleSheetList", 0, &JSStyleSheetListTable, 0 };
@@ -155,6 +166,32 @@ bool JSStyleSheetList::getOwnPropertySlot(ExecState* exec, const Identifier& pro
     return getStaticValueSlot<JSStyleSheetList, Base>(exec, &JSStyleSheetListTable, this, propertyName, slot);
 }
 
+bool JSStyleSheetList::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    const HashEntry* entry = JSStyleSheetListTable.entry(exec, propertyName);
+    if (entry) {
+        PropertySlot slot;
+        slot.setCustom(this, entry->propertyGetter());
+        descriptor.setDescriptor(slot.getValue(exec, propertyName), entry->attributes());
+        return true;
+    }
+    bool ok;
+    unsigned index = propertyName.toUInt32(&ok, false);
+    if (ok && index < static_cast<StyleSheetList*>(impl())->length()) {
+        PropertySlot slot;
+        slot.setCustomIndex(this, index, indexGetter);
+        descriptor.setDescriptor(slot.getValue(exec, propertyName), DontDelete | ReadOnly);
+        return true;
+    }
+    if (canGetItemsForName(exec, static_cast<StyleSheetList*>(impl()), propertyName)) {
+        PropertySlot slot;
+        slot.setCustom(this, nameGetter);
+        descriptor.setDescriptor(slot.getValue(exec, propertyName), ReadOnly | DontDelete | DontEnum);
+        return true;
+    }
+    return getStaticValueDescriptor<JSStyleSheetList, Base>(exec, &JSStyleSheetListTable, this, propertyName, descriptor);
+}
+
 bool JSStyleSheetList::getOwnPropertySlot(ExecState* exec, unsigned propertyName, PropertySlot& slot)
 {
     if (propertyName < static_cast<StyleSheetList*>(impl())->length()) {
@@ -177,11 +214,11 @@ JSValue jsStyleSheetListConstructor(ExecState* exec, const Identifier&, const Pr
     JSStyleSheetList* domObject = static_cast<JSStyleSheetList*>(asObject(slot.slotBase()));
     return JSStyleSheetList::getConstructor(exec, domObject->globalObject());
 }
-void JSStyleSheetList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
+void JSStyleSheetList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
 {
     for (unsigned i = 0; i < static_cast<StyleSheetList*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getPropertyNames(exec, propertyNames, listedAttributes);
+     Base::getOwnPropertyNames(exec, propertyNames);
 }
 
 JSValue JSStyleSheetList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -192,7 +229,7 @@ JSValue JSStyleSheetList::getConstructor(ExecState* exec, JSGlobalObject* global
 JSValue JSC_HOST_CALL jsStyleSheetListPrototypeFunctionItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSStyleSheetList::s_info))
+    if (!thisValue.inherits(&JSStyleSheetList::s_info))
         return throwError(exec, TypeError);
     JSStyleSheetList* castedThisObj = static_cast<JSStyleSheetList*>(asObject(thisValue));
     StyleSheetList* imp = static_cast<StyleSheetList*>(castedThisObj->impl());
@@ -215,7 +252,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, StyleSh
 }
 StyleSheetList* toStyleSheetList(JSC::JSValue value)
 {
-    return value.isObject(&JSStyleSheetList::s_info) ? static_cast<JSStyleSheetList*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSStyleSheetList::s_info) ? static_cast<JSStyleSheetList*>(asObject(value))->impl() : 0;
 }
 
 }

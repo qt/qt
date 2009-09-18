@@ -194,7 +194,7 @@ QGraphicsAnchorLayout::addAnchor(QGraphicsLayoutItem *firstItem, Qt::AnchorPoint
                                  QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge)
 {
     Q_D(QGraphicsAnchorLayout);
-    QGraphicsAnchor *a = d->anchor(firstItem, firstEdge, secondItem, secondEdge);
+    QGraphicsAnchor *a = d->addAnchor(firstItem, firstEdge, secondItem, secondEdge);
     invalidate();
     return a;
 }
@@ -246,12 +246,12 @@ void QGraphicsAnchorLayout::addCornerAnchors(QGraphicsLayoutItem *firstItem,
     // Horizontal anchor
     Qt::AnchorPoint firstEdge = (firstCorner & 1 ? Qt::AnchorRight: Qt::AnchorLeft);
     Qt::AnchorPoint secondEdge = (secondCorner & 1 ? Qt::AnchorRight: Qt::AnchorLeft);
-    d->anchor(firstItem, firstEdge, secondItem, secondEdge);
+    d->addAnchor(firstItem, firstEdge, secondItem, secondEdge);
 
     // Vertical anchor
     firstEdge = (firstCorner & 2 ? Qt::AnchorBottom: Qt::AnchorTop);
     secondEdge = (secondCorner & 2 ? Qt::AnchorBottom: Qt::AnchorTop);
-    d->anchor(firstItem, firstEdge, secondItem, secondEdge);
+    d->addAnchor(firstItem, firstEdge, secondItem, secondEdge);
 
     invalidate();
 }
@@ -285,6 +285,18 @@ void QGraphicsAnchorLayout::addAnchors(QGraphicsLayoutItem *firstItem,
         addAnchor(secondItem, Qt::AnchorTop, firstItem, Qt::AnchorTop);
         addAnchor(firstItem, Qt::AnchorBottom, secondItem, Qt::AnchorBottom);
     }
+}
+
+/*!
+    Returns true if there are no arrangement that satisfies all constraints.
+    Otherwise returns false.
+
+    \sa addAnchor()
+*/
+bool QGraphicsAnchorLayout::hasConflicts() const
+{
+    Q_D(const QGraphicsAnchorLayout);
+    return d->hasConflicts();
 }
 
 /*!
@@ -422,7 +434,6 @@ void QGraphicsAnchorLayout::invalidate()
 */
 QSizeF QGraphicsAnchorLayout::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
 {
-    Q_UNUSED(which);
     Q_UNUSED(constraint);
     Q_D(const QGraphicsAnchorLayout);
 

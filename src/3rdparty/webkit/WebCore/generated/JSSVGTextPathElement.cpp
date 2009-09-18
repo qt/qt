@@ -83,6 +83,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSSVGTextPathElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -97,6 +98,11 @@ const ClassInfo JSSVGTextPathElementConstructor::s_info = { "SVGTextPathElementC
 bool JSSVGTextPathElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGTextPathElementConstructor, DOMObject>(exec, &JSSVGTextPathElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGTextPathElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGTextPathElementConstructor, DOMObject>(exec, &JSSVGTextPathElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -131,6 +137,11 @@ bool JSSVGTextPathElementPrototype::getOwnPropertySlot(ExecState* exec, const Id
     return getStaticValueSlot<JSSVGTextPathElementPrototype, JSObject>(exec, &JSSVGTextPathElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGTextPathElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGTextPathElementPrototype, JSObject>(exec, &JSSVGTextPathElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGTextPathElement::s_info = { "SVGTextPathElement", &JSSVGTextContentElement::s_info, &JSSVGTextPathElementTable, 0 };
 
 JSSVGTextPathElement::JSSVGTextPathElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTextPathElement> impl)
@@ -146,6 +157,11 @@ JSObject* JSSVGTextPathElement::createPrototype(ExecState* exec, JSGlobalObject*
 bool JSSVGTextPathElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGTextPathElement, Base>(exec, &JSSVGTextPathElementTable, this, propertyName, slot);
+}
+
+bool JSSVGTextPathElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGTextPathElement, Base>(exec, &JSSVGTextPathElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGTextPathElementStartOffset(ExecState* exec, const Identifier&, const PropertySlot& slot)

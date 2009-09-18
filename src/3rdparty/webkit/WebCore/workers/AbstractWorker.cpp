@@ -38,6 +38,8 @@
 #include "Event.h"
 #include "EventException.h"
 #include "EventNames.h"
+#include "ScriptExecutionContext.h"
+#include "SecurityOrigin.h"
 
 namespace WebCore {
 
@@ -60,7 +62,7 @@ void AbstractWorker::addEventListener(const AtomicString& eventType, PassRefPtr<
     } else {
         ListenerVector& listeners = iter->second;
         for (ListenerVector::iterator listenerIter = listeners.begin(); listenerIter != listeners.end(); ++listenerIter) {
-            if (*listenerIter == eventListener)
+            if (**listenerIter == *eventListener)
                 return;
         }
 
@@ -77,7 +79,7 @@ void AbstractWorker::removeEventListener(const AtomicString& eventType, EventLis
 
     ListenerVector& listeners = iter->second;
     for (ListenerVector::const_iterator listenerIter = listeners.begin(); listenerIter != listeners.end(); ++listenerIter) {
-        if (*listenerIter == eventListener) {
+        if (**listenerIter == *eventListener) {
             listeners.remove(listenerIter - listeners.begin());
             return;
         }
@@ -128,10 +130,31 @@ bool AbstractWorker::dispatchScriptErrorEvent(const String& message, const Strin
     }
 
     ExceptionCode ec = 0;
-    dispatchEvent(event.release(), ec);
+    handled = !dispatchEvent(event.release(), ec);
     ASSERT(!ec);
 
     return handled;
+}
+
+KURL AbstractWorker::resolveURL(const String& url, ExceptionCode& ec)
+{
+    if (url.isEmpty()) {
+        ec = SYNTAX_ERR;
+        return KURL();
+    }
+
+    // FIXME: This should use the dynamic global scope (bug #27887)
+    KURL scriptURL = scriptExecutionContext()->completeURL(url);
+    if (!scriptURL.isValid()) {
+        ec = SYNTAX_ERR;
+        return KURL();
+    }
+
+    if (!scriptExecutionContext()->securityOrigin()->canAccess(SecurityOrigin::create(scriptURL).get())) {
+        ec = SECURITY_ERR;
+        return KURL();
+    }
+    return scriptURL;
 }
 
 } // namespace WebCore

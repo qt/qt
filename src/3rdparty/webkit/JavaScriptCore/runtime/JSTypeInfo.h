@@ -27,6 +27,9 @@
 #ifndef JSTypeInfo_h
 #define JSTypeInfo_h
 
+// This file would be called TypeInfo.h, but that conflicts with <typeinfo.h>
+// in the STL on systems without case-sensitive file systems. 
+
 #include "JSType.h"
 
 namespace JSC {
@@ -38,6 +41,8 @@ namespace JSC {
     static const unsigned ImplementsDefaultHasInstance = 1 << 3;
     static const unsigned NeedsThisConversion = 1 << 4;
     static const unsigned HasStandardGetOwnPropertySlot = 1 << 5;
+    static const unsigned HasDefaultMark = 1 << 6;
+    static const unsigned HasDefaultGetPropertyNames = 1 << 7;
 
     class TypeInfo {
         friend class JIT;
@@ -59,7 +64,8 @@ namespace JSC {
         bool overridesHasInstance() const { return m_flags & OverridesHasInstance; }
         bool needsThisConversion() const { return m_flags & NeedsThisConversion; }
         bool hasStandardGetOwnPropertySlot() const { return m_flags & HasStandardGetOwnPropertySlot; }
-
+        bool hasDefaultMark() const { return m_flags & HasDefaultMark; }
+        bool hasDefaultGetPropertyNames() const { return m_flags & HasDefaultGetPropertyNames; }
         unsigned flags() const { return m_flags; }
 
     private:

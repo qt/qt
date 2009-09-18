@@ -68,6 +68,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLDirectoryElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -82,6 +83,11 @@ const ClassInfo JSHTMLDirectoryElementConstructor::s_info = { "HTMLDirectoryElem
 bool JSHTMLDirectoryElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLDirectoryElementConstructor, DOMObject>(exec, &JSHTMLDirectoryElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLDirectoryElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLDirectoryElementConstructor, DOMObject>(exec, &JSHTMLDirectoryElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -120,6 +126,11 @@ JSObject* JSHTMLDirectoryElement::createPrototype(ExecState* exec, JSGlobalObjec
 bool JSHTMLDirectoryElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLDirectoryElement, Base>(exec, &JSHTMLDirectoryElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLDirectoryElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLDirectoryElement, Base>(exec, &JSHTMLDirectoryElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLDirectoryElementCompact(ExecState* exec, const Identifier&, const PropertySlot& slot)

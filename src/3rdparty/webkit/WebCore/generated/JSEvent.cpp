@@ -103,6 +103,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSEventPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -117,6 +118,11 @@ const ClassInfo JSEventConstructor::s_info = { "EventConstructor", 0, &JSEventCo
 bool JSEventConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSEventConstructor, DOMObject>(exec, &JSEventConstructorTable, this, propertyName, slot);
+}
+
+bool JSEventConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSEventConstructor, DOMObject>(exec, &JSEventConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -171,6 +177,11 @@ bool JSEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& pro
     return getStaticPropertySlot<JSEventPrototype, JSObject>(exec, getJSEventPrototypeTable(exec), this, propertyName, slot);
 }
 
+bool JSEventPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticPropertyDescriptor<JSEventPrototype, JSObject>(exec, getJSEventPrototypeTable(exec), this, propertyName, descriptor);
+}
+
 static const HashTable* getJSEventTable(ExecState* exec)
 {
     return getHashTableForGlobalData(exec->globalData(), &JSEventTable);
@@ -196,6 +207,11 @@ JSObject* JSEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject
 bool JSEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSEvent, Base>(exec, getJSEventTable(exec), this, propertyName, slot);
+}
+
+bool JSEvent::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSEvent, Base>(exec, getJSEventTable(exec), this, propertyName, descriptor);
 }
 
 JSValue jsEventType(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -314,7 +330,7 @@ JSValue JSEvent::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 JSValue JSC_HOST_CALL jsEventPrototypeFunctionStopPropagation(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSEvent::s_info))
+    if (!thisValue.inherits(&JSEvent::s_info))
         return throwError(exec, TypeError);
     JSEvent* castedThisObj = static_cast<JSEvent*>(asObject(thisValue));
     Event* imp = static_cast<Event*>(castedThisObj->impl());
@@ -326,7 +342,7 @@ JSValue JSC_HOST_CALL jsEventPrototypeFunctionStopPropagation(ExecState* exec, J
 JSValue JSC_HOST_CALL jsEventPrototypeFunctionPreventDefault(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSEvent::s_info))
+    if (!thisValue.inherits(&JSEvent::s_info))
         return throwError(exec, TypeError);
     JSEvent* castedThisObj = static_cast<JSEvent*>(asObject(thisValue));
     Event* imp = static_cast<Event*>(castedThisObj->impl());
@@ -338,7 +354,7 @@ JSValue JSC_HOST_CALL jsEventPrototypeFunctionPreventDefault(ExecState* exec, JS
 JSValue JSC_HOST_CALL jsEventPrototypeFunctionInitEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSEvent::s_info))
+    if (!thisValue.inherits(&JSEvent::s_info))
         return throwError(exec, TypeError);
     JSEvent* castedThisObj = static_cast<JSEvent*>(asObject(thisValue));
     Event* imp = static_cast<Event*>(castedThisObj->impl());
@@ -449,7 +465,7 @@ JSValue jsEventCHANGE(ExecState* exec, const Identifier&, const PropertySlot&)
 
 Event* toEvent(JSC::JSValue value)
 {
-    return value.isObject(&JSEvent::s_info) ? static_cast<JSEvent*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSEvent::s_info) ? static_cast<JSEvent*>(asObject(value))->impl() : 0;
 }
 
 }

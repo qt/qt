@@ -116,6 +116,11 @@ bool JSXMLHttpRequestPrototype::getOwnPropertySlot(ExecState* exec, const Identi
     return getStaticPropertySlot<JSXMLHttpRequestPrototype, JSObject>(exec, getJSXMLHttpRequestPrototypeTable(exec), this, propertyName, slot);
 }
 
+bool JSXMLHttpRequestPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticPropertyDescriptor<JSXMLHttpRequestPrototype, JSObject>(exec, getJSXMLHttpRequestPrototypeTable(exec), this, propertyName, descriptor);
+}
+
 static const HashTable* getJSXMLHttpRequestTable(ExecState* exec)
 {
     return getHashTableForGlobalData(exec->globalData(), &JSXMLHttpRequestTable);
@@ -141,6 +146,11 @@ JSObject* JSXMLHttpRequest::createPrototype(ExecState* exec, JSGlobalObject* glo
 bool JSXMLHttpRequest::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSXMLHttpRequest, Base>(exec, getJSXMLHttpRequestTable(exec), this, propertyName, slot);
+}
+
+bool JSXMLHttpRequest::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSXMLHttpRequest, Base>(exec, getJSXMLHttpRequestTable(exec), this, propertyName, descriptor);
 }
 
 JSValue jsXMLHttpRequestOnabort(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -349,7 +359,7 @@ void setJSXMLHttpRequestWithCredentials(ExecState* exec, JSObject* thisObject, J
 JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionOpen(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSXMLHttpRequest::s_info))
+    if (!thisValue.inherits(&JSXMLHttpRequest::s_info))
         return throwError(exec, TypeError);
     JSXMLHttpRequest* castedThisObj = static_cast<JSXMLHttpRequest*>(asObject(thisValue));
     return castedThisObj->open(exec, args);
@@ -358,7 +368,7 @@ JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionOpen(ExecState* exec, JSO
 JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionSetRequestHeader(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSXMLHttpRequest::s_info))
+    if (!thisValue.inherits(&JSXMLHttpRequest::s_info))
         return throwError(exec, TypeError);
     JSXMLHttpRequest* castedThisObj = static_cast<JSXMLHttpRequest*>(asObject(thisValue));
     return castedThisObj->setRequestHeader(exec, args);
@@ -367,7 +377,7 @@ JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionSetRequestHeader(ExecStat
 JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionSend(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSXMLHttpRequest::s_info))
+    if (!thisValue.inherits(&JSXMLHttpRequest::s_info))
         return throwError(exec, TypeError);
     JSXMLHttpRequest* castedThisObj = static_cast<JSXMLHttpRequest*>(asObject(thisValue));
     return castedThisObj->send(exec, args);
@@ -376,7 +386,7 @@ JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionSend(ExecState* exec, JSO
 JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionAbort(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSXMLHttpRequest::s_info))
+    if (!thisValue.inherits(&JSXMLHttpRequest::s_info))
         return throwError(exec, TypeError);
     JSXMLHttpRequest* castedThisObj = static_cast<JSXMLHttpRequest*>(asObject(thisValue));
     XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThisObj->impl());
@@ -388,7 +398,7 @@ JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionAbort(ExecState* exec, JS
 JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionGetAllResponseHeaders(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSXMLHttpRequest::s_info))
+    if (!thisValue.inherits(&JSXMLHttpRequest::s_info))
         return throwError(exec, TypeError);
     JSXMLHttpRequest* castedThisObj = static_cast<JSXMLHttpRequest*>(asObject(thisValue));
     XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThisObj->impl());
@@ -403,7 +413,7 @@ JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionGetAllResponseHeaders(Exe
 JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionGetResponseHeader(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSXMLHttpRequest::s_info))
+    if (!thisValue.inherits(&JSXMLHttpRequest::s_info))
         return throwError(exec, TypeError);
     JSXMLHttpRequest* castedThisObj = static_cast<JSXMLHttpRequest*>(asObject(thisValue));
     return castedThisObj->getResponseHeader(exec, args);
@@ -412,7 +422,7 @@ JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionGetResponseHeader(ExecSta
 JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionOverrideMimeType(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSXMLHttpRequest::s_info))
+    if (!thisValue.inherits(&JSXMLHttpRequest::s_info))
         return throwError(exec, TypeError);
     JSXMLHttpRequest* castedThisObj = static_cast<JSXMLHttpRequest*>(asObject(thisValue));
     return castedThisObj->overrideMimeType(exec, args);
@@ -421,7 +431,7 @@ JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionOverrideMimeType(ExecStat
 JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionAddEventListener(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSXMLHttpRequest::s_info))
+    if (!thisValue.inherits(&JSXMLHttpRequest::s_info))
         return throwError(exec, TypeError);
     JSXMLHttpRequest* castedThisObj = static_cast<JSXMLHttpRequest*>(asObject(thisValue));
     return castedThisObj->addEventListener(exec, args);
@@ -430,7 +440,7 @@ JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionAddEventListener(ExecStat
 JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionRemoveEventListener(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSXMLHttpRequest::s_info))
+    if (!thisValue.inherits(&JSXMLHttpRequest::s_info))
         return throwError(exec, TypeError);
     JSXMLHttpRequest* castedThisObj = static_cast<JSXMLHttpRequest*>(asObject(thisValue));
     return castedThisObj->removeEventListener(exec, args);
@@ -439,7 +449,7 @@ JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionRemoveEventListener(ExecS
 JSValue JSC_HOST_CALL jsXMLHttpRequestPrototypeFunctionDispatchEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSXMLHttpRequest::s_info))
+    if (!thisValue.inherits(&JSXMLHttpRequest::s_info))
         return throwError(exec, TypeError);
     JSXMLHttpRequest* castedThisObj = static_cast<JSXMLHttpRequest*>(asObject(thisValue));
     XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThisObj->impl());
@@ -485,7 +495,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, XMLHttp
 }
 XMLHttpRequest* toXMLHttpRequest(JSC::JSValue value)
 {
-    return value.isObject(&JSXMLHttpRequest::s_info) ? static_cast<JSXMLHttpRequest*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSXMLHttpRequest::s_info) ? static_cast<JSXMLHttpRequest*>(asObject(value))->impl() : 0;
 }
 
 }

@@ -61,6 +61,7 @@ private:
 
     void setWidgetGeometry(const IntRect&);
 
+    friend class RenderWidgetProtector;
     RenderArena* ref() { ++m_refCount; return renderArena(); }
     void deref(RenderArena*);
 
@@ -68,6 +69,21 @@ private:
     FrameView* m_frameView;
     int m_refCount;
 };
+
+inline RenderWidget* toRenderWidget(RenderObject* object)
+{
+    ASSERT(!object || object->isWidget());
+    return static_cast<RenderWidget*>(object);
+}
+
+inline const RenderWidget* toRenderWidget(const RenderObject* object)
+{
+    ASSERT(!object || object->isWidget());
+    return static_cast<const RenderWidget*>(object);
+}
+
+// This will catch anyone doing an unnecessary cast.
+void toRenderWidget(const RenderWidget*);
 
 } // namespace WebCore
 

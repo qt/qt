@@ -2519,9 +2519,21 @@ void QTableViewPrivate::selectRow(int row, bool anchor)
         QModelIndex index = model->index(row, column, root);
         QItemSelectionModel::SelectionFlags command = q->selectionCommand(index);
         selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
-        if ((!(command & QItemSelectionModel::Current) && anchor)
+        if ((anchor && !(command & QItemSelectionModel::Current))
             || (q->selectionMode() == QTableView::SingleSelection))
             rowSectionAnchor = row;
+
+        if (q->selectionMode() != QTableView::SingleSelection
+            && command.testFlag(QItemSelectionModel::Toggle)) {
+            if (anchor)
+                ctrlDragSelectionFlag = verticalHeader->selectionModel()->selectedRows().contains(index)
+                                    ? QItemSelectionModel::Deselect : QItemSelectionModel::Select;
+            command &= ~QItemSelectionModel::Toggle;
+            command |= ctrlDragSelectionFlag;
+            if (!anchor)
+                command |= QItemSelectionModel::Current;
+        }
+
         QModelIndex tl = model->index(qMin(rowSectionAnchor, row), 0, root);
         QModelIndex br = model->index(qMax(rowSectionAnchor, row), model->columnCount(root) - 1, root);
         if (verticalHeader->sectionsMoved() && tl.row() != br.row())
@@ -2545,9 +2557,21 @@ void QTableViewPrivate::selectColumn(int column, bool anchor)
         QModelIndex index = model->index(row, column, root);
         QItemSelectionModel::SelectionFlags command = q->selectionCommand(index);
         selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
-        if ((!(command & QItemSelectionModel::Current) && anchor)
+        if ((anchor && !(command & QItemSelectionModel::Current))
             || (q->selectionMode() == QTableView::SingleSelection))
             columnSectionAnchor = column;
+
+        if (q->selectionMode() != QTableView::SingleSelection
+            && command.testFlag(QItemSelectionModel::Toggle)) {
+            if (anchor)
+                ctrlDragSelectionFlag = horizontalHeader->selectionModel()->selectedColumns().contains(index)
+                                    ? QItemSelectionModel::Deselect : QItemSelectionModel::Select;
+            command &= ~QItemSelectionModel::Toggle;
+            command |= ctrlDragSelectionFlag;
+            if (!anchor)
+                command |= QItemSelectionModel::Current;
+        }
+
         QModelIndex tl = model->index(0, qMin(columnSectionAnchor, column), root);
         QModelIndex br = model->index(model->rowCount(root) - 1,
                                       qMax(columnSectionAnchor, column), root);

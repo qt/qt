@@ -1,7 +1,7 @@
 /*
  *  Copyright (C) 1999-2002 Harri Porten (porten@kde.org)
  *  Copyright (C) 2001 Peter Kelly (pmk@post.com)
- *  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ *  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  *  Copyright (C) 2007 Cameron Zwarich (cwzwarich@uwaterloo.ca)
  *  Copyright (C) 2007 Maks Orlovich
  *
@@ -43,30 +43,22 @@ Arguments::~Arguments()
         delete [] d->extraArguments;
 }
 
-void Arguments::mark()
+void Arguments::markChildren(MarkStack& markStack)
 {
-    JSObject::mark();
+    JSObject::markChildren(markStack);
 
-    if (d->registerArray) {
-        for (unsigned i = 0; i < d->numParameters; ++i) {
-            if (!d->registerArray[i].marked())
-                d->registerArray[i].mark();
-        }
-    }
+    if (d->registerArray)
+        markStack.appendValues(reinterpret_cast<JSValue*>(d->registerArray.get()), d->numParameters);
 
     if (d->extraArguments) {
         unsigned numExtraArguments = d->numArguments - d->numParameters;
-        for (unsigned i = 0; i < numExtraArguments; ++i) {
-            if (!d->extraArguments[i].marked())
-                d->extraArguments[i].mark();
-        }
+        markStack.appendValues(reinterpret_cast<JSValue*>(d->extraArguments), numExtraArguments);
     }
 
-    if (!d->callee->marked())
-        d->callee->mark();
+    markStack.append(d->callee);
 
-    if (d->activation && !d->activation->marked())
-        d->activation->mark();
+    if (d->activation)
+        markStack.append(d->activation);
 }
 
 void Arguments::copyToRegisters(ExecState* exec, Register* buffer, uint32_t maxSize)
@@ -187,6 +179,31 @@ bool Arguments::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNa
     return JSObject::getOwnPropertySlot(exec, propertyName, slot);
 }
 
+bool Arguments::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    bool isArrayIndex;
+    unsigned i = propertyName.toArrayIndex(&isArrayIndex);
+    if (isArrayIndex && i < d->numArguments && (!d->deletedArguments || !d->deletedArguments[i])) {
+        if (i < d->numParameters) {
+            descriptor.setDescriptor(d->registers[d->firstParameterIndex + i].jsValue(), DontEnum);
+        } else
+            descriptor.setDescriptor(d->extraArguments[i - d->numParameters].jsValue(), DontEnum);
+        return true;
+    }
+    
+    if (propertyName == exec->propertyNames().length && LIKELY(!d->overrodeLength)) {
+        descriptor.setDescriptor(jsNumber(exec, d->numArguments), DontEnum);
+        return true;
+    }
+    
+    if (propertyName == exec->propertyNames().callee && LIKELY(!d->overrodeCallee)) {
+        descriptor.setDescriptor(d->callee, DontEnum);
+        return true;
+    }
+    
+    return JSObject::getOwnPropertyDescriptor(exec, propertyName, descriptor);
+}
+
 void Arguments::put(ExecState* exec, unsigned i, JSValue value, PutPropertySlot& slot)
 {
     if (i < d->numArguments && (!d->deletedArguments || !d->deletedArguments[i])) {
@@ -227,7 +244,7 @@ void Arguments::put(ExecState* exec, const Identifier& propertyName, JSValue val
     JSObject::put(exec, propertyName, value, slot);
 }
 
-bool Arguments::deleteProperty(ExecState* exec, unsigned i, bool checkDontDelete)
+bool Arguments::deleteProperty(ExecState* exec, unsigned i) 
 {
     if (i < d->numArguments) {
         if (!d->deletedArguments) {
@@ -240,10 +257,10 @@ bool Arguments::deleteProperty(ExecState* exec, unsigned i, bool checkDontDelete
         }
     }
 
-    return JSObject::deleteProperty(exec, Identifier(exec, UString::from(i)), checkDontDelete);
+    return JSObject::deleteProperty(exec, Identifier(exec, UString::from(i)));
 }
 
-bool Arguments::deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete)
+bool Arguments::deleteProperty(ExecState* exec, const Identifier& propertyName) 
 {
     bool isArrayIndex;
     unsigned i = propertyName.toArrayIndex(&isArrayIndex);
@@ -268,17 +285,7 @@ bool Arguments::deleteProperty(ExecState* exec, const Identifier& propertyName, 
         return true;
     }
 
-    return JSObject::deleteProperty(exec, propertyName, checkDontDelete);
-}
-
-bool Arguments::getPropertyAttributes(ExecState* exec, const Identifier& propertyName, unsigned& attributes) const
-{
-    if ((propertyName == exec->propertyNames().length)
-        || (propertyName == exec->propertyNames().callee)) {
-        attributes = DontEnum;
-        return true;
-    }
-    return JSObject::getPropertyAttributes(exec, propertyName, attributes);
+    return JSObject::deleteProperty(exec, propertyName);
 }
 
 } // namespace JSC

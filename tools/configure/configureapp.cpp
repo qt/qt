@@ -1159,9 +1159,6 @@ void Configure::parseCmdLine()
             } else {
                 dictionary[ "QMAKEMAKEFILE" ] = "Makefile.win32-g++";
             }
-        } else if ( dictionary[ "QMAKESPEC" ] == QString( "win32-mwc" ) ) {
-                dictionary[ "QMAKEMAKEFILE" ] = "Makefile.win32-mwc";
-                dictionary[ "MAKE" ] = "make";
         } else {
             if ( dictionary[ "MAKE" ].isEmpty() ) dictionary[ "MAKE" ] = "make";
             dictionary[ "QMAKEMAKEFILE" ] = "Makefile.win32";

@@ -73,6 +73,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSCSSStyleRulePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -87,6 +88,11 @@ const ClassInfo JSCSSStyleRuleConstructor::s_info = { "CSSStyleRuleConstructor",
 bool JSCSSStyleRuleConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCSSStyleRuleConstructor, DOMObject>(exec, &JSCSSStyleRuleConstructorTable, this, propertyName, slot);
+}
+
+bool JSCSSStyleRuleConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCSSStyleRuleConstructor, DOMObject>(exec, &JSCSSStyleRuleConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -125,6 +131,11 @@ JSObject* JSCSSStyleRule::createPrototype(ExecState* exec, JSGlobalObject* globa
 bool JSCSSStyleRule::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCSSStyleRule, Base>(exec, &JSCSSStyleRuleTable, this, propertyName, slot);
+}
+
+bool JSCSSStyleRule::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCSSStyleRule, Base>(exec, &JSCSSStyleRuleTable, this, propertyName, descriptor);
 }
 
 JSValue jsCSSStyleRuleSelectorText(ExecState* exec, const Identifier&, const PropertySlot& slot)

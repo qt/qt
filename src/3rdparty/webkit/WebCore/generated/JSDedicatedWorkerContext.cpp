@@ -27,7 +27,6 @@
 #include "DedicatedWorkerContext.h"
 #include "EventListener.h"
 #include "JSEventListener.h"
-#include "JSMessagePort.h"
 #include <runtime/Error.h>
 #include <wtf/GetPtr.h>
 
@@ -83,6 +82,11 @@ bool JSDedicatedWorkerContextPrototype::getOwnPropertySlot(ExecState* exec, cons
     return getStaticFunctionSlot<JSObject>(exec, getJSDedicatedWorkerContextPrototypeTable(exec), this, propertyName, slot);
 }
 
+bool JSDedicatedWorkerContextPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, getJSDedicatedWorkerContextPrototypeTable(exec), this, propertyName, descriptor);
+}
+
 static const HashTable* getJSDedicatedWorkerContextTable(ExecState* exec)
 {
     return getHashTableForGlobalData(exec->globalData(), &JSDedicatedWorkerContextTable);
@@ -97,6 +101,11 @@ JSDedicatedWorkerContext::JSDedicatedWorkerContext(PassRefPtr<Structure> structu
 bool JSDedicatedWorkerContext::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSDedicatedWorkerContext, Base>(exec, getJSDedicatedWorkerContextTable(exec), this, propertyName, slot);
+}
+
+bool JSDedicatedWorkerContext::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSDedicatedWorkerContext, Base>(exec, getJSDedicatedWorkerContextTable(exec), this, propertyName, descriptor);
 }
 
 JSValue jsDedicatedWorkerContextOnmessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -130,27 +139,12 @@ JSValue JSC_HOST_CALL jsDedicatedWorkerContextPrototypeFunctionPostMessage(ExecS
     JSDedicatedWorkerContext* castedThisObj = toJSDedicatedWorkerContext(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
-    DedicatedWorkerContext* imp = static_cast<DedicatedWorkerContext*>(castedThisObj->impl());
-    ExceptionCode ec = 0;
-    const UString& message = args.at(0).toString(exec);
-
-    int argsCount = args.size();
-    if (argsCount < 2) {
-        imp->postMessage(message, ec);
-        setDOMException(exec, ec);
-        return jsUndefined();
-    }
-
-    MessagePort* messagePort = toMessagePort(args.at(1));
-
-    imp->postMessage(message, messagePort, ec);
-    setDOMException(exec, ec);
-    return jsUndefined();
+    return castedThisObj->postMessage(exec, args);
 }
 
 DedicatedWorkerContext* toDedicatedWorkerContext(JSC::JSValue value)
 {
-    return value.isObject(&JSDedicatedWorkerContext::s_info) ? static_cast<JSDedicatedWorkerContext*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSDedicatedWorkerContext::s_info) ? static_cast<JSDedicatedWorkerContext*>(asObject(value))->impl() : 0;
 }
 
 }

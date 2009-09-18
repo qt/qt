@@ -54,6 +54,8 @@
 # define STRINGIFY(x) #x
 # define TOSTRING(x) STRINGIFY(x)
 # define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"
+#elif defined(Q_OS_UNIX)
+# include <unistd.h>
 #endif
 
 #if defined(Q_OS_VXWORKS)

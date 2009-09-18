@@ -90,6 +90,11 @@ bool JSSVGFEComponentTransferElementPrototype::getOwnPropertySlot(ExecState* exe
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGFEComponentTransferElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGFEComponentTransferElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGFEComponentTransferElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGFEComponentTransferElement::s_info = { "SVGFEComponentTransferElement", &JSSVGElement::s_info, &JSSVGFEComponentTransferElementTable, 0 };
 
 JSSVGFEComponentTransferElement::JSSVGFEComponentTransferElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEComponentTransferElement> impl)
@@ -105,6 +110,11 @@ JSObject* JSSVGFEComponentTransferElement::createPrototype(ExecState* exec, JSGl
 bool JSSVGFEComponentTransferElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGFEComponentTransferElement, Base>(exec, &JSSVGFEComponentTransferElementTable, this, propertyName, slot);
+}
+
+bool JSSVGFEComponentTransferElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFEComponentTransferElement, Base>(exec, &JSSVGFEComponentTransferElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGFEComponentTransferElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -181,7 +191,7 @@ JSValue jsSVGFEComponentTransferElementStyle(ExecState* exec, const Identifier&,
 JSValue JSC_HOST_CALL jsSVGFEComponentTransferElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGFEComponentTransferElement::s_info))
+    if (!thisValue.inherits(&JSSVGFEComponentTransferElement::s_info))
         return throwError(exec, TypeError);
     JSSVGFEComponentTransferElement* castedThisObj = static_cast<JSSVGFEComponentTransferElement*>(asObject(thisValue));
     SVGFEComponentTransferElement* imp = static_cast<SVGFEComponentTransferElement*>(castedThisObj->impl());

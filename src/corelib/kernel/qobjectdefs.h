@@ -145,12 +145,18 @@ template <typename T1, typename T2>
 inline void qYouForgotTheQ_OBJECT_Macro(T1, T2) {}
 #endif // QT_NO_MEMBER_TEMPLATES
 
+#ifdef Q_NO_DATA_RELOCATION
+#define Q_OBJECT_GETSTATICMETAOBJECT static const QMetaObject &getStaticMetaObject();
+#else
+#define Q_OBJECT_GETSTATICMETAOBJECT
+#endif
+
 /* tmake ignore Q_OBJECT */
 #define Q_OBJECT \
 public: \
     Q_OBJECT_CHECK \
     static const QMetaObject staticMetaObject; \
-    static const QMetaObject &getStaticMetaObject(); \
+    Q_OBJECT_GETSTATICMETAOBJECT \
     virtual const QMetaObject *metaObject() const; \
     virtual void *qt_metacast(const char *); \
     QT_TR_FUNCTIONS \
@@ -162,7 +168,7 @@ private:
 #define Q_GADGET \
 public: \
     static const QMetaObject staticMetaObject; \
-    static const QMetaObject &getStaticMetaObject(); \
+    Q_OBJECT_GETSTATICMETAOBJECT \
 private:
 #else // Q_MOC_RUN
 #define slots slots

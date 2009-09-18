@@ -2804,6 +2804,6 @@
 
     \note: in 4.6, cursor navigation is only implemented for Symbian OS.
            On other platforms, it behaves as NavigationModeNone.
-    \sa QApplication::setNavigationMode
-    \sa QApplication::navigationMode
+    \sa QApplication::setNavigationMode()
+    \sa QApplication::navigationMode()
 */

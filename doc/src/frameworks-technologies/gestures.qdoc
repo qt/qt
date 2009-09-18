@@ -44,7 +44,8 @@
     \startpage index.html Qt Reference Documentation
 
     \title Gestures Programming
-    \ingroup howto
+    \ingroup frameworks-technologies
+
     \brief An overview of the Qt support for Gesture programming.
 
     Qt includes a framework for gesture programming that gives has the ability

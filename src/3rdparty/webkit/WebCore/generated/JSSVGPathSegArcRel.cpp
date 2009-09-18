@@ -93,6 +93,11 @@ bool JSSVGPathSegArcRel::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticValueSlot<JSSVGPathSegArcRel, Base>(exec, &JSSVGPathSegArcRelTable, this, propertyName, slot);
 }
 
+bool JSSVGPathSegArcRel::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGPathSegArcRel, Base>(exec, &JSSVGPathSegArcRelTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGPathSegArcRelX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGPathSegArcRel* castedThis = static_cast<JSSVGPathSegArcRel*>(asObject(slot.slotBase()));

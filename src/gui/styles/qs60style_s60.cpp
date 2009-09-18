@@ -44,8 +44,8 @@
 #include "qpainter.h"
 #include "qstyleoption.h"
 #include "qstyle.h"
-#include "private/qwindowsurface_s60_p.h"
 #include "private/qt_s60_p.h"
+#include "private/qpixmap_s60_p.h"
 #include "private/qcore_symbian_p.h"
 #include "qapplication.h"
 
@@ -1136,11 +1136,13 @@ QPixmap QS60StyleModeSpecifics::generateMissingThemeGraphic(QS60StyleEnums::Skin
 QPixmap QS60StylePrivate::part(QS60StyleEnums::SkinParts part,
     const QSize &size, SkinElementFlags flags)
 {
-    QS60WindowSurface::unlockBitmapHeap();
+    QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
+    
     QPixmap result = (flags & SF_ColorSkinned)?
           QS60StyleModeSpecifics::colorSkinnedGraphics(part, size, flags)
         : QS60StyleModeSpecifics::skinnedGraphics(part, size, flags);
-    QS60WindowSurface::lockBitmapHeap();
+    
+    lock.relock();
 
     if (flags & SF_StateDisabled && !QS60StyleModeSpecifics::disabledPartGraphic(part)) {
         QStyleOption opt;
@@ -1158,9 +1160,9 @@ QPixmap QS60StylePrivate::part(QS60StyleEnums::SkinParts part,
 
 QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size, SkinElementFlags flags)
 {
-    QS60WindowSurface::unlockBitmapHeap();
+    QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
     QPixmap result = QS60StyleModeSpecifics::skinnedGraphics(frame, size, flags);
-    QS60WindowSurface::lockBitmapHeap();
+    lock.relock();
 
     if (flags & SF_StateDisabled && !QS60StyleModeSpecifics::disabledFrameGraphic(frame)) {
         QStyleOption opt;

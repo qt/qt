@@ -86,6 +86,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSSVGFEFloodElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -100,6 +101,11 @@ const ClassInfo JSSVGFEFloodElementConstructor::s_info = { "SVGFEFloodElementCon
 bool JSSVGFEFloodElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGFEFloodElementConstructor, DOMObject>(exec, &JSSVGFEFloodElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGFEFloodElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFEFloodElementConstructor, DOMObject>(exec, &JSSVGFEFloodElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -129,6 +135,11 @@ bool JSSVGFEFloodElementPrototype::getOwnPropertySlot(ExecState* exec, const Ide
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGFEFloodElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGFEFloodElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGFEFloodElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGFEFloodElement::s_info = { "SVGFEFloodElement", &JSSVGElement::s_info, &JSSVGFEFloodElementTable, 0 };
 
 JSSVGFEFloodElement::JSSVGFEFloodElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEFloodElement> impl)
@@ -144,6 +155,11 @@ JSObject* JSSVGFEFloodElement::createPrototype(ExecState* exec, JSGlobalObject* 
 bool JSSVGFEFloodElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGFEFloodElement, Base>(exec, &JSSVGFEFloodElementTable, this, propertyName, slot);
+}
+
+bool JSSVGFEFloodElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFEFloodElement, Base>(exec, &JSSVGFEFloodElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGFEFloodElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -230,7 +246,7 @@ JSValue JSSVGFEFloodElement::getConstructor(ExecState* exec, JSGlobalObject* glo
 JSValue JSC_HOST_CALL jsSVGFEFloodElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGFEFloodElement::s_info))
+    if (!thisValue.inherits(&JSSVGFEFloodElement::s_info))
         return throwError(exec, TypeError);
     JSSVGFEFloodElement* castedThisObj = static_cast<JSSVGFEFloodElement*>(asObject(thisValue));
     SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(castedThisObj->impl());

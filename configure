@@ -4879,9 +4879,9 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
         CFG_EGL=yes
         CFG_EGL_GLES_INCLUDES=yes
     fi
-    if ( [ "$CFG_OPENGL" = "es1" ] || [ "$CFG_OPENGL" = "es1cl" ] || [ "$CFG_OPENGL" = "es2" ] ) && [ "$CFG_EGL" != "yes" ] && [ "$PLATFORM_X11" = "yes" ]; then
+    if ( [ "$CFG_OPENGL" = "es1" ] || [ "$CFG_OPENGL" = "es1cl" ] || [ "$CFG_OPENGL" = "es2" ] ) && [ "$CFG_EGL" != "yes" ]; then
         echo "The EGL functionality test failed!"
-        echo " EGL is required for OpenGL ES on X11 to manage contexts & surfaces."
+        echo " EGL is required for OpenGL ES to manage contexts & surfaces."
         echo " You might need to modify the include and library search paths by editing"
         echo " QMAKE_INCDIR_EGL, QMAKE_LIBDIR_EGL and QMAKE_LIBS_EGL in"
         echo " ${XQMAKESPEC}."

@@ -2065,7 +2065,7 @@ QString qt_error_string(int errorCode)
                       NULL,
                       errorCode,
                       MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                      string,
+                      (LPWSTR)&string,
                       0,
                       NULL);
         ret = QString::fromWCharArray(string);

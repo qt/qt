@@ -89,6 +89,11 @@ bool JSBarInfo::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNa
     return getStaticValueSlot<JSBarInfo, Base>(exec, &JSBarInfoTable, this, propertyName, slot);
 }
 
+bool JSBarInfo::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSBarInfo, Base>(exec, &JSBarInfoTable, this, propertyName, descriptor);
+}
+
 JSValue jsBarInfoVisible(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSBarInfo* castedThis = static_cast<JSBarInfo*>(asObject(slot.slotBase()));
@@ -103,7 +108,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, BarInfo
 }
 BarInfo* toBarInfo(JSC::JSValue value)
 {
-    return value.isObject(&JSBarInfo::s_info) ? static_cast<JSBarInfo*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSBarInfo::s_info) ? static_cast<JSBarInfo*>(asObject(value))->impl() : 0;
 }
 
 }

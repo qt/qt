@@ -44,6 +44,7 @@
 #include "Text.h"
 #include "TextIterator.h"
 #include "visible_units.h"
+#include "ApplyStyleCommand.h"
 
 namespace WebCore {
 
@@ -136,16 +137,15 @@ void DeleteSelectionCommand::initializeStartEnd(Position& start, Position& end)
             
         if (VisiblePosition(start) != m_selectionToDelete.visibleStart() || VisiblePosition(end) != m_selectionToDelete.visibleEnd())
             break;
-        
-        // If we're going to expand to include the startSpecialContainer, it must be fully selected.
 
-        if (startSpecialContainer && !endSpecialContainer && comparePositions(positionAfterNode(startSpecialContainer), end) > -1)
+        // If we're going to expand to include the startSpecialContainer, it must be fully selected.
+        if (startSpecialContainer && !endSpecialContainer && comparePositions(positionInParentAfterNode(startSpecialContainer), end) > -1)
             break;
 
         // If we're going to expand to include the endSpecialContainer, it must be fully selected.
-        if (endSpecialContainer && !startSpecialContainer && comparePositions(start, positionBeforeNode(endSpecialContainer)) > -1)
+        if (endSpecialContainer && !startSpecialContainer && comparePositions(start, positionInParentBeforeNode(endSpecialContainer)) > -1)
             break;
-        
+
         if (startSpecialContainer && startSpecialContainer->isDescendantOf(endSpecialContainer))
             // Don't adjust the end yet, it is the end of a special element that contains the start
             // special element (which may or may not be fully selected).
@@ -259,11 +259,8 @@ static void removeEnclosingAnchorStyle(CSSMutableStyleDeclaration* style, const 
     Node* enclosingAnchor = enclosingAnchorElement(position);
     if (!enclosingAnchor || !enclosingAnchor->parentNode())
         return;
-            
-    RefPtr<CSSMutableStyleDeclaration> parentStyle = Position(enclosingAnchor->parentNode(), 0).computedStyle()->deprecatedCopyInheritableProperties();
-    RefPtr<CSSMutableStyleDeclaration> anchorStyle = Position(enclosingAnchor, 0).computedStyle()->deprecatedCopyInheritableProperties();
-    parentStyle->diff(anchorStyle.get());
-    anchorStyle->diff(style);
+    
+    removeStylesAddedByNode(style, enclosingAnchor);
 }
 
 void DeleteSelectionCommand::saveTypingStyleState()
@@ -277,19 +274,17 @@ void DeleteSelectionCommand::saveTypingStyleState()
     // early return in calculateTypingStyleAfterDelete).
     if (m_upstreamStart.node() == m_downstreamEnd.node() && m_upstreamStart.node()->isTextNode())
         return;
-        
+
     // Figure out the typing style in effect before the delete is done.
-    RefPtr<CSSComputedStyleDeclaration> computedStyle = positionBeforeTabSpan(m_selectionToDelete.start()).computedStyle();
-    m_typingStyle = computedStyle->deprecatedCopyInheritableProperties();
-    
+    m_typingStyle = editingStyleAtPosition(positionBeforeTabSpan(m_selectionToDelete.start()));
+
     removeEnclosingAnchorStyle(m_typingStyle.get(), m_selectionToDelete.start());
-    
+
     // If we're deleting into a Mail blockquote, save the style at end() instead of start()
     // We'll use this later in computeTypingStyleAfterDelete if we end up outside of a Mail blockquote
-    if (nearestMailBlockquote(m_selectionToDelete.start().node())) {
-        computedStyle = m_selectionToDelete.end().computedStyle();
-        m_deleteIntoBlockquoteStyle = computedStyle->deprecatedCopyInheritableProperties();
-    } else
+    if (nearestMailBlockquote(m_selectionToDelete.start().node()))
+        m_deleteIntoBlockquoteStyle = editingStyleAtPosition(m_selectionToDelete.end());
+    else
         m_deleteIntoBlockquoteStyle = 0;
 }
 
@@ -321,7 +316,7 @@ static void updatePositionForNodeRemoval(Node* node, Position& position)
     if (node->parent() == position.node() && node->nodeIndex() < (unsigned)position.deprecatedEditingOffset())
         position = Position(position.node(), position.deprecatedEditingOffset() - 1);
     if (position.node() == node || position.node()->isDescendantOf(node))
-        position = positionBeforeNode(node);
+        position = positionInParentBeforeNode(node);
 }
 
 void DeleteSelectionCommand::removeNode(PassRefPtr<Node> node)
@@ -364,7 +359,7 @@ void DeleteSelectionCommand::removeNode(PassRefPtr<Node> node)
         // make sure empty cell has some height
         updateLayout();
         RenderObject *r = node->renderer();
-        if (r && r->isTableCell() && static_cast<RenderTableCell*>(r)->contentHeight() <= 0)
+        if (r && r->isTableCell() && toRenderTableCell(r)->contentHeight() <= 0)
             insertBlockPlaceholder(Position(node, 0));
         return;
     }
@@ -668,9 +663,8 @@ void DeleteSelectionCommand::calculateTypingStyleAfterDelete()
     if (m_deleteIntoBlockquoteStyle && !nearestMailBlockquote(m_endingPosition.node()))
         m_typingStyle = m_deleteIntoBlockquoteStyle;
     m_deleteIntoBlockquoteStyle = 0;
-    
-    RefPtr<CSSComputedStyleDeclaration> endingStyle = computedStyle(m_endingPosition.node());
-    endingStyle->diff(m_typingStyle.get());
+
+    prepareEditingStyleToApplyAt(m_typingStyle.get(), m_endingPosition);
     if (!m_typingStyle->length())
         m_typingStyle = 0;
     VisiblePosition visibleEnd(m_endingPosition);

@@ -75,6 +75,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSCSSValuePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -89,6 +90,11 @@ const ClassInfo JSCSSValueConstructor::s_info = { "CSSValueConstructor", 0, &JSC
 bool JSCSSValueConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCSSValueConstructor, DOMObject>(exec, &JSCSSValueConstructorTable, this, propertyName, slot);
+}
+
+bool JSCSSValueConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCSSValueConstructor, DOMObject>(exec, &JSCSSValueConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -121,6 +127,11 @@ bool JSCSSValuePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& 
     return getStaticValueSlot<JSCSSValuePrototype, JSObject>(exec, &JSCSSValuePrototypeTable, this, propertyName, slot);
 }
 
+bool JSCSSValuePrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCSSValuePrototype, JSObject>(exec, &JSCSSValuePrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSCSSValue::s_info = { "CSSValue", 0, &JSCSSValueTable, 0 };
 
 JSCSSValue::JSCSSValue(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSValue> impl)
@@ -142,6 +153,11 @@ JSObject* JSCSSValue::createPrototype(ExecState* exec, JSGlobalObject* globalObj
 bool JSCSSValue::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCSSValue, Base>(exec, &JSCSSValueTable, this, propertyName, slot);
+}
+
+bool JSCSSValue::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCSSValue, Base>(exec, &JSCSSValueTable, this, propertyName, descriptor);
 }
 
 JSValue jsCSSValueCssText(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -207,7 +223,7 @@ JSValue jsCSSValueCSS_CUSTOM(ExecState* exec, const Identifier&, const PropertyS
 
 CSSValue* toCSSValue(JSC::JSValue value)
 {
-    return value.isObject(&JSCSSValue::s_info) ? static_cast<JSCSSValue*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSCSSValue::s_info) ? static_cast<JSCSSValue*>(asObject(value))->impl() : 0;
 }
 
 }

@@ -72,6 +72,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSFilePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -86,6 +87,11 @@ const ClassInfo JSFileConstructor::s_info = { "FileConstructor", 0, &JSFileConst
 bool JSFileConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSFileConstructor, DOMObject>(exec, &JSFileConstructorTable, this, propertyName, slot);
+}
+
+bool JSFileConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSFileConstructor, DOMObject>(exec, &JSFileConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -132,6 +138,11 @@ bool JSFile::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName,
     return getStaticValueSlot<JSFile, Base>(exec, &JSFileTable, this, propertyName, slot);
 }
 
+bool JSFile::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSFile, Base>(exec, &JSFileTable, this, propertyName, descriptor);
+}
+
 JSValue jsFileFileName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSFile* castedThis = static_cast<JSFile*>(asObject(slot.slotBase()));
@@ -164,7 +175,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, File* o
 }
 File* toFile(JSC::JSValue value)
 {
-    return value.isObject(&JSFile::s_info) ? static_cast<JSFile*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSFile::s_info) ? static_cast<JSFile*>(asObject(value))->impl() : 0;
 }
 
 }

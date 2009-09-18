@@ -40,7 +40,7 @@ namespace WebCore {
 
     class Archive;
     class AuthenticationChallenge;
-    class CachedFrame;
+    class CachedFrameBase;
     class CachedPage;
     class CachedResource;
     class Document;
@@ -241,6 +241,7 @@ namespace WebCore {
 
         void checkLoadComplete();
         void detachFromParent();
+        void detachViewsAndDocumentLoader();
 
         void addExtraFieldsToSubresourceRequest(ResourceRequest&);
         void addExtraFieldsToMainResourceRequest(ResourceRequest&);
@@ -260,7 +261,7 @@ namespace WebCore {
             bool lockHistory, PassRefPtr<Event>, PassRefPtr<FormState>);
 
         void stop();
-        void stopLoading(bool sendUnload, DatabasePolicy = DatabasePolicyStop);
+        void stopLoading(UnloadEventPolicy, DatabasePolicy = DatabasePolicyStop);
         bool closeURL();
 
         void didExplicitOpen();
@@ -307,6 +308,11 @@ namespace WebCore {
         void dispatchDocumentElementAvailable();
         void restoreDocumentState();
 
+        // Mixed content related functions.
+        static bool isMixedContent(SecurityOrigin* context, const KURL&);
+        void checkIfDisplayInsecureContent(SecurityOrigin* context, const KURL&);
+        void checkIfRunInsecureContent(SecurityOrigin* context, const KURL&);
+
         Frame* opener();
         void setOpener(Frame*);
         bool openedByDOM() const;
@@ -345,6 +351,7 @@ namespace WebCore {
         void setTitle(const String&);
 
         void commitProvisionalLoad(PassRefPtr<CachedPage>);
+        bool isLoadingFromCachedPage() const { return m_loadingFromCachedPage; }
 
         void goToItem(HistoryItem*, FrameLoadType);
         void saveDocumentAndScrollState();
@@ -355,7 +362,7 @@ namespace WebCore {
         enum LocalLoadPolicy {
             AllowLocalLoadsForAll,  // No restriction on local loads.
             AllowLocalLoadsForLocalAndSubstituteData,
-            AllowLocalLoadsForLocalOnly
+            AllowLocalLoadsForLocalOnly,
         };
         static void setLocalLoadPolicy(LocalLoadPolicy);
         static bool restrictAccessToLocal();
@@ -373,6 +380,8 @@ namespace WebCore {
         void applyUserAgent(ResourceRequest& request);
 
         bool shouldInterruptLoadForXFrameOptions(const String&, const KURL&);
+
+        void open(CachedFrameBase&);
 
     private:
         PassRefPtr<HistoryItem> createHistoryItem(bool useOriginal);
@@ -418,6 +427,7 @@ namespace WebCore {
         
         bool loadProvisionalItemFromCachedPage();
         void cachePageForHistoryItem(HistoryItem*);
+        void pageHidden();
 
         void receivedFirstData();
 
@@ -467,11 +477,10 @@ namespace WebCore {
 
         void closeOldDataSources();
         void open(CachedPage&);
-        void open(CachedFrame&);
 
         void updateHistoryAfterClientRedirect();
 
-        void clear(bool clearWindowProperties = true, bool clearScriptObjects = true);
+        void clear(bool clearWindowProperties = true, bool clearScriptObjects = true, bool clearFrameView = true);
 
         bool shouldReloadToHandleUnreachableURL(DocumentLoader*);
         void handleUnimplementablePolicy(const ResourceError&);
@@ -617,6 +626,7 @@ namespace WebCore {
         RefPtr<HistoryItem> m_provisionalHistoryItem;
         
         bool m_didPerformFirstNavigation;
+        bool m_loadingFromCachedPage;
         
 #ifndef NDEBUG
         bool m_didDispatchDidCommitLoad;

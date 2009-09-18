@@ -105,11 +105,13 @@ SOURCES += \
     runtime/JSNotAnObject.cpp \
     runtime/JSONObject.cpp \
     runtime/LiteralParser.cpp \
+    runtime/MarkStack.cpp \
     runtime/TimeoutChecker.cpp \
     bytecode/CodeBlock.cpp \
     bytecode/StructureStubInfo.cpp \
     bytecode/JumpTable.cpp \
     assembler/ARMAssembler.cpp \
+    assembler/MacroAssemblerARM.cpp \
     jit/JIT.cpp \
     jit/JITCall.cpp \
     jit/JITArithmetic.cpp \
@@ -128,8 +130,13 @@ SOURCES += \
     yarr/RegexJIT.cpp \
     interpreter/RegisterFile.cpp
 
-win32-*|wince*: SOURCES += jit/ExecutableAllocatorWin.cpp
-else: SOURCES += jit/ExecutableAllocatorPosix.cpp
+win32-*|wince* {
+    SOURCES += jit/ExecutableAllocatorWin.cpp \
+               runtime/MarkStackWin.cpp
+} else {
+    SOURCES += jit/ExecutableAllocatorPosix.cpp \
+               runtime/MarkStackPosix.cpp
+}
 
 # AllInOneFile.cpp helps gcc analize and optimize code
 # Other compilers may be able to do this at link time
@@ -159,6 +166,7 @@ SOURCES += \
     runtime/ErrorInstance.cpp \
     runtime/ErrorPrototype.cpp \
     interpreter/CallFrame.cpp \
+    runtime/Executable.cpp \
     runtime/FunctionConstructor.cpp \
     runtime/FunctionPrototype.cpp \
     runtime/GetterSetter.cpp \
@@ -167,6 +175,7 @@ SOURCES += \
     runtime/InternalFunction.cpp \
     runtime/Completion.cpp \
     runtime/JSArray.cpp \
+    runtime/JSAPIValueWrapper.cpp \
     runtime/JSByteArray.cpp \
     runtime/JSCell.cpp \
     runtime/JSFunction.cpp \
@@ -192,6 +201,7 @@ SOURCES += \
     runtime/Operations.cpp \
     parser/Parser.cpp \
     parser/ParserArena.cpp \
+    runtime/PropertyDescriptor.cpp \
     runtime/PropertyNameArray.cpp \
     runtime/PropertySlot.cpp \
     runtime/PrototypeFunction.cpp \
@@ -216,8 +226,7 @@ SOURCES += \
     wtf/DateMath.cpp \
     wtf/FastMalloc.cpp \
     wtf/Threading.cpp \
-    wtf/qt/MainThreadQt.cpp \
-    parser/SourcePoolQt.cpp
+    wtf/qt/MainThreadQt.cpp
 
 !contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
     SOURCES += wtf/qt/ThreadingQt.cpp

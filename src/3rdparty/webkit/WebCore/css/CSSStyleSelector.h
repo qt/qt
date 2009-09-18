@@ -80,7 +80,9 @@ public:
     // This class selects a RenderStyle for a given element based on a collection of stylesheets.
     class CSSStyleSelector : public Noncopyable {
     public:
-        CSSStyleSelector(Document*, const String& userStyleSheet, StyleSheetList*, CSSStyleSheet*, bool strictParsing, bool matchAuthorAndUserStyles);
+        CSSStyleSelector(Document*, StyleSheetList* authorSheets, CSSStyleSheet* mappedElementSheet,
+                         CSSStyleSheet* pageUserSheet, const Vector<RefPtr<CSSStyleSheet> >* pageGroupUserSheets,
+                         bool strictParsing, bool matchAuthorAndUserStyles);
         ~CSSStyleSelector();
 
         void initElementAndPseudoState(Element*);
@@ -175,7 +177,6 @@ public:
         
         CSSRuleSet* m_authorStyle;
         CSSRuleSet* m_userStyle;
-        RefPtr<CSSStyleSheet> m_userSheet;
 
         bool m_hasUAAppearance;
         BorderData m_borderData;
@@ -223,7 +224,8 @@ public:
         void mapFillComposite(FillLayer*, CSSValue*);
         void mapFillOrigin(FillLayer*, CSSValue*);
         void mapFillImage(FillLayer*, CSSValue*);
-        void mapFillRepeat(FillLayer*, CSSValue*);
+        void mapFillRepeatX(FillLayer*, CSSValue*);
+        void mapFillRepeatY(FillLayer*, CSSValue*);
         void mapFillSize(FillLayer*, CSSValue*);
         void mapFillXPosition(FillLayer*, CSSValue*);
         void mapFillYPosition(FillLayer*, CSSValue*);
@@ -233,6 +235,7 @@ public:
         void mapAnimationDuration(Animation*, CSSValue*);
         void mapAnimationIterationCount(Animation*, CSSValue*);
         void mapAnimationName(Animation*, CSSValue*);
+        void mapAnimationPlayState(Animation*, CSSValue*);
         void mapAnimationProperty(Animation*, CSSValue*);
         void mapAnimationTimingFunction(Animation*, CSSValue*);
 
@@ -295,7 +298,9 @@ public:
                 prev->m_next = this;
         }
 
-        ~CSSRuleData() { delete m_next; }
+        ~CSSRuleData() 
+        { 
+        }
 
         unsigned position() { return m_position; }
         CSSStyleRule* rule() { return m_rule; }
@@ -317,7 +322,17 @@ public:
         {
         }
 
-        ~CSSRuleDataList() { delete m_first; }
+        ~CSSRuleDataList() 
+        { 
+            CSSRuleData* ptr;
+            CSSRuleData* next;
+            ptr = m_first;
+            while (ptr) {
+                next = ptr->next();
+                delete ptr;
+                ptr = next;
+            }
+        }
 
         CSSRuleData* first() { return m_first; }
         CSSRuleData* last() { return m_last; }

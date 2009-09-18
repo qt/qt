@@ -83,6 +83,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLAppletElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -97,6 +98,11 @@ const ClassInfo JSHTMLAppletElementConstructor::s_info = { "HTMLAppletElementCon
 bool JSHTMLAppletElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLAppletElementConstructor, DOMObject>(exec, &JSHTMLAppletElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLAppletElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLAppletElementConstructor, DOMObject>(exec, &JSHTMLAppletElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -141,6 +147,19 @@ bool JSHTMLAppletElement::getOwnPropertySlot(ExecState* exec, const Identifier& 
     if (getOwnPropertySlotDelegate(exec, propertyName, slot))
         return true;
     return getStaticValueSlot<JSHTMLAppletElement, Base>(exec, &JSHTMLAppletElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLAppletElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    if (canGetItemsForName(exec, static_cast<HTMLAppletElement*>(impl()), propertyName)) {
+        PropertySlot slot;
+        slot.setCustom(this, nameGetter);
+        descriptor.setDescriptor(slot.getValue(exec, propertyName), ReadOnly | DontDelete | DontEnum);
+        return true;
+    }
+    if (getOwnPropertyDescriptorDelegate(exec, propertyName, descriptor))
+        return true;
+    return getStaticValueDescriptor<JSHTMLAppletElement, Base>(exec, &JSHTMLAppletElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLAppletElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)

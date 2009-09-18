@@ -44,6 +44,13 @@ namespace JSC {
             return JSArray::getOwnPropertySlot(exec, propertyName, slot);
         }
 
+        virtual bool getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+        {
+            if (lazyCreationData())
+                fillArrayInstance(exec);
+            return JSArray::getOwnPropertyDescriptor(exec, propertyName, descriptor);
+        }
+
         virtual void put(ExecState* exec, const Identifier& propertyName, JSValue v, PutPropertySlot& slot)
         {
             if (lazyCreationData())
@@ -58,25 +65,25 @@ namespace JSC {
             JSArray::put(exec, propertyName, v);
         }
 
-        virtual bool deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete = true)
+        virtual bool deleteProperty(ExecState* exec, const Identifier& propertyName)
         {
             if (lazyCreationData())
                 fillArrayInstance(exec);
-            return JSArray::deleteProperty(exec, propertyName, checkDontDelete);
+            return JSArray::deleteProperty(exec, propertyName);
         }
 
-        virtual bool deleteProperty(ExecState* exec, unsigned propertyName, bool checkDontDelete = true)
+        virtual bool deleteProperty(ExecState* exec, unsigned propertyName)
         {
             if (lazyCreationData())
                 fillArrayInstance(exec);
-            return JSArray::deleteProperty(exec, propertyName, checkDontDelete);
+            return JSArray::deleteProperty(exec, propertyName);
         }
 
-        virtual void getPropertyNames(ExecState* exec, PropertyNameArray& arr, unsigned listedAttributes)
+        virtual void getOwnPropertyNames(ExecState* exec, PropertyNameArray& arr)
         {
             if (lazyCreationData())
                 fillArrayInstance(exec);
-            JSArray::getPropertyNames(exec, arr, listedAttributes);
+            JSArray::getOwnPropertyNames(exec, arr);
         }
 
         void fillArrayInstance(ExecState*);

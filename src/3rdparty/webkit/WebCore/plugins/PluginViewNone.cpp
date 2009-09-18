@@ -73,25 +73,6 @@ void PluginView::setNPWindowRect(const IntRect&)
     notImplemented();
 }
 
-void PluginView::stop()
-{
-    notImplemented();
-}
-
-const char* PluginView::userAgent()
-{
-    notImplemented();
-    return 0;
-}
-
-#if ENABLE(NETSCAPE_PLUGIN_API)
-const char* PluginView::userAgentStatic()
-{
-    notImplemented();
-    return 0;
-}
-#endif
-
 NPError PluginView::handlePostReadFile(Vector<char>&, uint32, const char*)
 {
     notImplemented();
@@ -133,12 +114,14 @@ void PluginView::forceRedraw()
     notImplemented();
 }
 
-PluginView::~PluginView()
+bool PluginView::platformStart()
 {
     notImplemented();
+
+    return true;
 }
 
-void PluginView::init()
+void PluginView::platformDestroy()
 {
     notImplemented();
 }

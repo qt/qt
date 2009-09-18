@@ -33,11 +33,28 @@
 #include "JSEventListener.h"
 #include "JSMessagePort.h"
 #include "JSNode.h"
+#if ENABLE(SHARED_WORKERS)
+
+#include "JSSharedWorker.h"
+#include "JSSharedWorkerContext.h"
+#endif
+
 #include "JSXMLHttpRequest.h"
 #include "JSXMLHttpRequestUpload.h"
 #include "MessagePort.h"
+
+#if ENABLE(SHARED_WORKERS)
+#include "SharedWorker.h"
+#include "SharedWorkerContext.h"
+#endif
+
 #include "XMLHttpRequest.h"
 #include "XMLHttpRequestUpload.h"
+
+#if ENABLE(EVENTSOURCE)
+#include "EventSource.h"
+#include "JSEventSource.h"
+#endif
 
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
 #include "DOMApplicationCache.h"
@@ -56,9 +73,14 @@
 #include "Worker.h"
 #endif
 
-#if ENABLE(SHARED_WORKERS)
-#include "JSSharedWorker.h"
-#include "SharedWorker.h"
+#if ENABLE(NOTIFICATIONS)
+#include "JSNotification.h"
+#include "Notification.h"
+#endif
+
+#if ENABLE(WEB_SOCKETS)
+#include "JSWebSocket.h"
+#include "WebSocket.h"
 #endif
 
 using namespace JSC;
@@ -70,6 +92,11 @@ JSValue toJS(ExecState* exec, JSDOMGlobalObject* globalObject, EventTarget* targ
     if (!target)
         return jsNull();
     
+#if ENABLE(EVENTSOURCE)
+    if (EventSource* eventSource = target->toEventSource())
+        return toJS(exec, globalObject, eventSource);
+#endif
+
 #if ENABLE(SVG)
     // SVGElementInstance supports both toSVGElementInstance and toNode since so much mouse handling code depends on toNode returning a valid node.
     if (SVGElementInstance* instance = target->toSVGElementInstance())
@@ -107,6 +134,19 @@ JSValue toJS(ExecState* exec, JSDOMGlobalObject* globalObject, EventTarget* targ
 #if ENABLE(SHARED_WORKERS)
     if (SharedWorker* sharedWorker = target->toSharedWorker())
         return toJS(exec, globalObject, sharedWorker);
+
+    if (SharedWorkerContext* workerContext = target->toSharedWorkerContext())
+        return toJSDOMGlobalObject(workerContext);
+#endif
+
+#if ENABLE(NOTIFICATIONS)
+    if (Notification* notification = target->toNotification())
+        return toJS(exec, notification);
+#endif
+
+#if ENABLE(WEB_SOCKETS)
+    if (WebSocket* webSocket = target->toWebSocket())
+        return toJS(exec, webSocket);
 #endif
 
     ASSERT_NOT_REACHED();
@@ -116,7 +156,7 @@ JSValue toJS(ExecState* exec, JSDOMGlobalObject* globalObject, EventTarget* targ
 EventTarget* toEventTarget(JSC::JSValue value)
 {
     #define CONVERT_TO_EVENT_TARGET(type) \
-        if (value.isObject(&JS##type::s_info)) \
+        if (value.inherits(&JS##type::s_info)) \
             return static_cast<JS##type*>(asObject(value))->impl();
 
     CONVERT_TO_EVENT_TARGET(Node)
@@ -124,8 +164,12 @@ EventTarget* toEventTarget(JSC::JSValue value)
     CONVERT_TO_EVENT_TARGET(XMLHttpRequestUpload)
     CONVERT_TO_EVENT_TARGET(MessagePort)
 
-    if (value.isObject(&JSDOMWindowShell::s_info))
+    if (value.inherits(&JSDOMWindowShell::s_info))
         return static_cast<JSDOMWindowShell*>(asObject(value))->impl();
+
+#if ENABLE(EVENTSOURCE)
+    CONVERT_TO_EVENT_TARGET(EventSource)
+#endif
 
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
     CONVERT_TO_EVENT_TARGET(DOMApplicationCache)
@@ -142,6 +186,15 @@ EventTarget* toEventTarget(JSC::JSValue value)
 
 #if ENABLE(SHARED_WORKERS)
     CONVERT_TO_EVENT_TARGET(SharedWorker)
+    CONVERT_TO_EVENT_TARGET(SharedWorkerContext)
+#endif
+
+#if ENABLE(NOTIFICATIONS)
+    CONVERT_TO_EVENT_TARGET(Notification)
+#endif
+
+#if ENABLE(WEB_SOCKETS)
+    CONVERT_TO_EVENT_TARGET(WebSocket)
 #endif
 
     return 0;

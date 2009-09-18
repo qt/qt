@@ -540,8 +540,12 @@ QUrl QWebFrame::url() const
 */
 QUrl QWebFrame::requestedUrl() const
 {
+    // In the following edge cases (where the failing document
+    // loader does not get commited by the frame loader) it is
+    // safer to rely on outgoingReferrer than originalRequest.
     if (!d->frame->loader()->activeDocumentLoader()
-        || !d->frameLoaderClient->m_loadSucceeded)
+        || (!d->frameLoaderClient->m_loadError.isNull()
+        &&  !d->frame->loader()->outgoingReferrer().isEmpty()))
         return QUrl(d->frame->loader()->outgoingReferrer());
 
     return d->frame->loader()->originalRequest().url();
@@ -799,13 +803,11 @@ void QWebFrame::setScrollBarPolicy(Qt::Orientation orientation, Qt::ScrollBarPol
         d->horizontalScrollBarPolicy = policy;
         if (d->frame->view()) {
             d->frame->view()->setHorizontalScrollbarMode((ScrollbarMode)policy);
-            d->frame->view()->updateDefaultScrollbarState();
         }
     } else {
         d->verticalScrollBarPolicy = policy;
         if (d->frame->view()) {
             d->frame->view()->setVerticalScrollbarMode((ScrollbarMode)policy);
-            d->frame->view()->updateDefaultScrollbarState();
         }
     }
 }
@@ -1022,7 +1024,8 @@ qreal QWebFrame::zoomFactor() const
 */
 bool QWebFrame::hasFocus() const
 {
-    return QWebFramePrivate::kit(d->frame->page()->focusController()->focusedFrame()) == this;
+    WebCore::Frame* ff = d->frame->page()->focusController()->focusedFrame();
+    return ff && QWebFramePrivate::kit(ff) == this;
 }
 
 /*!
@@ -1244,7 +1247,7 @@ QVariant QWebFrame::evaluateJavaScript(const QString& scriptSource)
     ScriptController *proxy = d->frame->script();
     QVariant rc;
     if (proxy) {
-        JSC::JSValue v = proxy->evaluate(ScriptSourceCode(scriptSource)).jsValue();
+        JSC::JSValue v = d->frame->loader()->executeScript(ScriptSourceCode(scriptSource)).jsValue();
         int distance = 0;
         rc = JSC::Bindings::convertValueToQVariant(proxy->globalObject()->globalExec(), v, QMetaType::Void, &distance);
     }

@@ -75,6 +75,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLStyleElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -89,6 +90,11 @@ const ClassInfo JSHTMLStyleElementConstructor::s_info = { "HTMLStyleElementConst
 bool JSHTMLStyleElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLStyleElementConstructor, DOMObject>(exec, &JSHTMLStyleElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLStyleElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLStyleElementConstructor, DOMObject>(exec, &JSHTMLStyleElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -127,6 +133,11 @@ JSObject* JSHTMLStyleElement::createPrototype(ExecState* exec, JSGlobalObject* g
 bool JSHTMLStyleElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLStyleElement, Base>(exec, &JSHTMLStyleElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLStyleElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLStyleElement, Base>(exec, &JSHTMLStyleElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLStyleElementDisabled(ExecState* exec, const Identifier&, const PropertySlot& slot)

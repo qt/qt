@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,6 +30,7 @@
 #include "JSType.h"
 #include "JSValue.h"
 #include "PropertyMapHashTable.h"
+#include "StructureChain.h"
 #include "StructureTransitionTable.h"
 #include "JSTypeInfo.h"
 #include "UString.h"
@@ -44,18 +45,14 @@
 
 namespace JSC {
 
+    class MarkStack;
     class PropertyNameArray;
     class PropertyNameArrayData;
-    class StructureChain;
 
     class Structure : public RefCounted<Structure> {
     public:
-        enum ListedAttribute {
-            NonEnumerable = 1 << 1,
-            Prototype = 1 << 2
-        };
-
         friend class JIT;
+        friend class StructureTransitionTable;
         static PassRefPtr<Structure> create(JSValue prototype, const TypeInfo& typeInfo)
         {
             return adoptRef(new Structure(prototype, typeInfo));
@@ -70,18 +67,15 @@ namespace JSC {
         static PassRefPtr<Structure> addPropertyTransitionToExistingStructure(Structure*, const Identifier& propertyName, unsigned attributes, JSCell* specificValue, size_t& offset);
         static PassRefPtr<Structure> removePropertyTransition(Structure*, const Identifier& propertyName, size_t& offset);
         static PassRefPtr<Structure> changePrototypeTransition(Structure*, JSValue prototype);
-        static PassRefPtr<Structure> despecifyFunctionTransition(Structure*, const Identifier&);        
+        static PassRefPtr<Structure> despecifyFunctionTransition(Structure*, const Identifier&);
+        static PassRefPtr<Structure> addAnonymousSlotsTransition(Structure*, unsigned count);
         static PassRefPtr<Structure> getterSetterTransition(Structure*);
         static PassRefPtr<Structure> toDictionaryTransition(Structure*);
         static PassRefPtr<Structure> fromDictionaryTransition(Structure*);
 
         ~Structure();
 
-        void mark()
-        {
-            if (!m_prototype.marked())
-                m_prototype.mark();
-        }
+        void markAggregate(MarkStack&);
 
         // These should be used with caution.  
         size_t addPropertyWithoutTransition(const Identifier& propertyName, unsigned attributes, JSCell* specificValue);
@@ -100,7 +94,7 @@ namespace JSC {
 
         void growPropertyStorageCapacity();
         size_t propertyStorageCapacity() const { return m_propertyStorageCapacity; }
-        size_t propertyStorageSize() const { return m_propertyTable ? m_propertyTable->keyCount + (m_propertyTable->deletedOffsets ? m_propertyTable->deletedOffsets->size() : 0) : m_offset + 1; }
+        size_t propertyStorageSize() const { return m_propertyTable ? m_propertyTable->keyCount + m_propertyTable->anonymousSlotCount + (m_propertyTable->deletedOffsets ? m_propertyTable->deletedOffsets->size() : 0) : m_offset + 1; }
         bool isUsingInlineStorage() const;
 
         size_t get(const Identifier& propertyName);
@@ -108,10 +102,20 @@ namespace JSC {
         size_t get(const Identifier& propertyName, unsigned& attributes, JSCell*& specificValue)
         {
             ASSERT(!propertyName.isNull());
-            return get(propertyName._ustring.rep(), attributes, specificValue);
+            return get(propertyName.ustring().rep(), attributes, specificValue);
+        }
+        bool transitionedFor(const JSCell* specificValue)
+        {
+            return m_specificValueInPrevious == specificValue;
+        }
+        bool hasTransition(UString::Rep*, unsigned attributes);
+        bool hasTransition(const Identifier& propertyName, unsigned attributes)
+        {
+            return hasTransition(propertyName._ustring.rep(), attributes);
         }
 
-        void getPropertyNames(ExecState*, PropertyNameArray&, JSObject*, unsigned listedAttributes = Prototype);
+        void getEnumerablePropertyNames(ExecState*, PropertyNameArray&, JSObject*);
+        void getOwnEnumerablePropertyNames(ExecState*, PropertyNameArray&, JSObject*);
 
         bool hasGetterSetterProperties() const { return m_hasGetterSetterProperties; }
         void setHasGetterSetterProperties(bool hasGetterSetterProperties) { m_hasGetterSetterProperties = hasGetterSetterProperties; }
@@ -126,8 +130,9 @@ namespace JSC {
 
         size_t put(const Identifier& propertyName, unsigned attributes, JSCell* specificValue);
         size_t remove(const Identifier& propertyName);
-        void getNamesFromPropertyTable(PropertyNameArray&, bool includeNonEnumerable = false);
-        void getNamesFromClassInfoTable(ExecState*, const ClassInfo*, PropertyNameArray&, bool includeNonEnumerable = false);
+        void addAnonymousSlots(unsigned slotCount);
+        void getEnumerableNamesFromPropertyTable(PropertyNameArray&);
+        void getEnumerableNamesFromClassInfoTable(ExecState*, const ClassInfo*, PropertyNameArray&);
 
         void expandPropertyMapHashTable();
         void rehashPropertyMapHashTable();
@@ -171,12 +176,9 @@ namespace JSC {
 
         RefPtr<Structure> m_previous;
         RefPtr<UString::Rep> m_nameInPrevious;
-
-        union {
-            Structure* singleTransition;
-            StructureTransitionTable* table;
-        } m_transitions;
         JSCell* m_specificValueInPrevious;
+
+        StructureTransitionTable table;
 
         RefPtr<PropertyNameArrayData> m_cachedPropertyNameArrayData;
 
@@ -188,8 +190,15 @@ namespace JSC {
         bool m_isDictionary : 1;
         bool m_isPinnedPropertyTable : 1;
         bool m_hasGetterSetterProperties : 1;
-        bool m_usingSingleTransitionSlot : 1;
+#if COMPILER(WINSCW)
+        // Workaround for Symbian WINSCW compiler that cannot resolve unsigned type of the declared 
+        // bitfield, when used as argument in make_pair() function calls in structure.ccp.
+        // This bitfield optimization is insignificant for the Symbian emulator target.
+        unsigned m_attributesInPrevious;
+#else
         unsigned m_attributesInPrevious : 7;
+#endif
+        unsigned m_anonymousSlotsInPrevious : 6;
     };
 
     inline size_t Structure::get(const Identifier& propertyName)
@@ -236,7 +245,58 @@ namespace JSC {
                 return m_propertyTable->entries()[entryIndex - 1].offset;
         }
     }
+    
+    bool StructureTransitionTable::contains(const StructureTransitionTableHash::Key& key, JSCell* specificValue)
+    {
+        if (usingSingleTransitionSlot()) {
+            Structure* existingTransition = singleTransition();
+            return existingTransition && existingTransition->m_nameInPrevious.get() == key.first
+                   && existingTransition->m_attributesInPrevious == key.second
+                   && (existingTransition->m_specificValueInPrevious == specificValue || existingTransition->m_specificValueInPrevious == 0);
+        }
+        TransitionTable::iterator find = table()->find(key);
+        if (find == table()->end())
+            return false;
 
+        return find->second.first || find->second.second->transitionedFor(specificValue);
+    }
+
+    Structure* StructureTransitionTable::get(const StructureTransitionTableHash::Key& key, JSCell* specificValue) const
+    {
+        if (usingSingleTransitionSlot()) {
+            Structure* existingTransition = singleTransition();
+            if (existingTransition && existingTransition->m_nameInPrevious.get() == key.first
+                && existingTransition->m_attributesInPrevious == key.second
+                && (existingTransition->m_specificValueInPrevious == specificValue || existingTransition->m_specificValueInPrevious == 0))
+                return existingTransition;
+            return 0;
+        }
+
+        Transition transition = table()->get(key);
+        if (transition.second && transition.second->transitionedFor(specificValue))
+            return transition.second;
+        return transition.first;
+    }
+
+    bool StructureTransitionTable::hasTransition(const StructureTransitionTableHash::Key& key) const
+    {
+        if (usingSingleTransitionSlot()) {
+            Structure* transition = singleTransition();
+            return transition && transition->m_nameInPrevious == key.first
+            && transition->m_attributesInPrevious == key.second;
+        }
+        return table()->contains(key);
+    }
+    
+    void StructureTransitionTable::reifySingleTransition()
+    {
+        ASSERT(usingSingleTransitionSlot());
+        Structure* existingTransition = singleTransition();
+        TransitionTable* transitionTable = new TransitionTable;
+        setTransitionTable(transitionTable);
+        if (existingTransition)
+            add(make_pair(existingTransition->m_nameInPrevious.get(), existingTransition->m_attributesInPrevious), existingTransition, existingTransition->m_specificValueInPrevious);
+    }
 } // namespace JSC
 
 #endif // Structure_h

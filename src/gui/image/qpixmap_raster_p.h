@@ -83,13 +83,13 @@ public:
 
 protected:
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
+    QImage image;
 
 private:
     friend class QPixmap;
     friend class QBitmap;
     friend class QDetachedPixmap;
     friend class QRasterPaintEngine;
-    QImage image;
 };
 
 QT_END_NAMESPACE

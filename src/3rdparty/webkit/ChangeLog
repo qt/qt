@@ -1,3 +1,297 @@
+2009-09-10  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Ariya Hidayat.
+
+        Disable some ARM compiler warnings
+        https://bugs.webkit.org/show_bug.cgi?id=29083
+
+        The following ARM compiler warnings are disabled
+
+        - #68-D: integer conversion resulted in a change of sign
+        - #111-D: statement is unreachable
+        - #177-D: variable XXX was declared but never referenced
+        - #368-D: class XXX defines no constructor to initialize the following: YYY
+        - #830-D: function XXX "XXX::operator new" has no corresponding operator delete
+        - #1293-D: assignment in condition
+
+        * WebKit.pri:
+
+2009-09-09  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Add the alternative QtLauncher (based on QGraphicsView) to the build.
+
+        https://bugs.webkit.org/show_bug.cgi?id=28862
+
+        * WebKit.pro:
+
+2009-09-07  Xan Lopez  <xlopez@igalia.com>
+
+        Rubber-stamped by Gustavo Noronha.
+
+        Bump versions in preparation for 1.1.14 release.
+
+        * configure.ac:
+
+2009-09-07  Gustavo Noronha Silva  <gustavo.noronha@collabora.co.uk>
+
+        Reviewed by Xan Lopez.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26854
+        [GTK] Needs API to allow more control over outgoing requests
+
+        * GNUmakefile.am: new files added to the build for new class
+        WebKitNetworkResponse
+
+2009-09-06  Martin Robinson  <martin.james.robinson@gmail.com>
+
+        Reviewed by Gustavo Noronha, Jan Alonzo and Xan Lopez.
+
+        [Gtk] Expose a database API
+        https://bugs.webkit.org/show_bug.cgi?id=27899
+
+        Expose an HTML5 database API for GTK+.
+
+        * GNUmakefile.am:
+
+2009-09-04  Albert Bachand  <albertb@google.com>
+
+        Reviewed by Eric Seidel.
+
+        Modify the condition regarding the key modifier for opening combo
+        boxes under GTK from just PLATFORM(GTK) to also look for
+        (PLATFORM(CHROMIUM) && PLATFORM(LINUX)).
+
+        * WebCore/dom/SelectElement.cpp:
+        * WebCore/manual-tests/select-popup-on-spacebar.html:
+
+2009-09-02  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+        Reviewed by Xan Lopez and Gustavo Noronha.
+
+        [Gtk] Implement a WebDataSource for the gtk port
+        https://bugs.webkit.org/show_bug.cgi?id=24758
+
+        Add WebKitWebDataSource unit test to the build script
+
+        * GNUmakefile.am:
+
+2009-09-02  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+        Reviewed by Xan Lopez and Gustavo Noronha.
+
+        [Gtk] Implement a WebDataSource for the gtk port
+        https://bugs.webkit.org/show_bug.cgi?id=24758
+
+        Add WebKitWebDataSource and DocumentLoaderGtk to the build script.
+
+        * GNUmakefile.am:
+
+2009-09-01  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+        Reviewed by Xan Lopez and Gustavo Noronha.
+
+        [Gtk] Implement a WebDataSource for the gtk port
+        https://bugs.webkit.org/show_bug.cgi?id=24758
+
+        Add WebKitWebResource to the build script.
+
+        * GNUmakefile.am:
+
+2009-08-28  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+        Reviewed by Oliver Hunt.
+
+        Gtk Build broken for OSX Quartz
+        https://bugs.webkit.org/show_bug.cgi?id=28727
+
+        Define XP_UNIX for non-Win OS builds.
+
+        * GNUmakefile.am:
+
+2009-08-28  Gustavo Noronha Silva  <gustavo.noronha@collabora.co.uk>
+
+        Reviewed by Holger Freyther.
+
+        https://bugs.webkit.org/show_bug.cgi?id=25889
+        [GTK] scrollbar policy for main frame is not implementable
+
+        Adding files for the new test for window-related issues (starting
+        with scrollbar policy).
+
+        * GNUmakefile.am:
+
+2009-08-27  Priit Laes  <plaes@plaes.org>
+
+        Reviewed by Xan Lopez.
+
+        [GTK] Out-of-srcdir build problem
+        https://bugs.webkit.org/show_bug.cgi?id=28741
+
+        * GNUmakefile.am, autotools/webkit.m4:
+        Fix problem with out-of-srcdir builds. Also bump required glib version.
+
+2009-08-24  Gustavo Noronha Silva  <gustavo.noronha@collabora.co.uk>
+
+        Reviewed by Xan Lopez.
+
+        Bump package and so versions for 1.1.13 release.
+
+        * configure.ac:
+
+2009-08-22 Javier Jardón <javierjc1982@gmail.com>
+
+        [GTK] Not use deprecated symbols in WebKitWebView example code.
+        https://bugs.webkit.org/show_bug.cgi?id=28651
+
+        * WebKit/gtk/webkit/webkitwebview.cpp
+
+2009-08-18  Xan Lopez  <xlopez@igalia.com>
+
+        Rubber-stamped by Holger Freyther.
+
+        Require at least libsoup 2.27.91 for the new password
+        manager/authentication APIs.
+
+        * configure.ac:
+
+2009-08-18  Drew Wilson  <atwilson@google.com>
+
+        Reviewed by NOBODY (Build Break).
+
+        Speculative fix for GTK DumpRenderTree.
+
+        * GNUmakefile.am:
+
+2009-08-18  Kent Tamura  <tkent@chromium.org>
+
+        Reviewed by Eric Seidel.
+
+        Add --enable-datalist option.
+
+        * configure.ac:
+
+2009-08-14  Adam Bergkvist  <adam.bergkvist@ericsson.com>
+
+        Reviewed by Sam Weinig.
+
+        [GTK] Added EventSource to the build (default on).
+        https://bugs.webkit.org/show_bug.cgi?id=14997 
+
+        * configure.ac:
+
+2009-08-14  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+        Rubber-stamped by Gustavo Noronha.
+
+        Initialize CFLAGS and CXXFLAGS before the main body of the
+        WEBKIT_INIT macro so C files don't get built with "-g -O2".
+
+        * autotools/webkit.m4:
+
+2009-08-12  Xan Lopez  <xlopez@igalia.com>
+
+        Reviewed by Jan Alonzo.
+
+        [GTK] Remove keyring optional features
+        https://bugs.webkit.org/show_bug.cgi?id=28173
+
+        Remove keyring support, we now do authentication storage through
+        libsoup. We depend on libsoup master now, will bump the dependency
+        when there's a new release.
+
+        * GNUmakefile.am:
+        * configure.ac:
+
+2009-08-11  Drew Wilson  <atwilson@google.com>
+
+        Reviewed by NOBODY (Build break).
+
+        Speculative fix for GTK build break.
+
+        * WebKit.pro:
+
+2009-08-11  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Build the TestNetscapePlugin on Qt/Mac
+
+        * WebKit.pro:
+
+2009-08-11  Xan Lopez  <xlopez@igalia.com>
+
+        Reviewed by Jan Alonzo.
+
+        Prefix lengthy commands with AM_V_GEN so that they produce an
+        output like 'GEN <filename>' when in silent mode.
+
+        * GNUmakefile.am:
+
+2009-08-05  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+        Reviewed by Xan Lopez.
+
+        [Gtk] macros in webkit.m4 should be defined once only
+        https://bugs.webkit.org/show_bug.cgi?id=27929
+
+        The macros in webkit.m4 are not meant to be called multiple times
+        so we'll make them AC_DEFUN_ONCE. Also make AC_HEADER_STDC and AC_PROG_CXX
+        AC_REQUIRE to remove the automake warnings when doing autogen.sh.
+
+        Lastly, make sure CXXFLAGS and CFLAGS are defined before
+        AC_PROG_CXX gets expanded so it doesn't add "-g -O2" on Release builds.
+
+        * autotools/webkit.m4:
+
+2009-08-05  Xan Lopez  <xlopez@igalia.com>
+
+        Revert r46714, it was making us build debug images by default.
+
+        * autotools/webkit.m4:
+
+2009-08-03  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        [Qt] Consolidate common gcc flags to WebKit.pri
+        https://bugs.webkit.org/show_bug.cgi?id=27934
+
+        * WebKit.pri:
+
+2009-08-03  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+        Rubber-stamped by Eric Seidel.
+
+        [Gtk] macros in webkit.m4 should be defined once only
+        https://bugs.webkit.org/show_bug.cgi?id=27929
+
+        The macros in webkit.m4 are not meant to be called multiple times
+        so we'll make them AC_DEFUN_ONCE. Also make AC_HEADER_STDC and AC_PROG_CXX
+        AC_REQUIRE to remove the automake warnings when doing autogen.sh.
+
+        * autotools/webkit.m4:
+
+2009-07-29  Ariya Hidayat  <ariya.hidayat@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Adding ImageDiff project file.
+
+        https://bugs.webkit.org/show_bug.cgi?id=27813
+
+        * WebKit.pro: Added ImageDiff.pro.
+
+2009-07-29  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+        Reviewed by Eric Seidel and Xan Lopez.
+
+        [Gtk] Enable http/tests/appcache tests
+        https://bugs.webkit.org/show_bug.cgi?id=27674
+
+        * GNUmakefile.am: Add webkit/webkitapplicationcache.cpp
+
 2009-07-28  Xan Lopez  <xlopez@igalia.com>
 
         Reviewed by Gustavo Noronha.

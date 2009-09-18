@@ -41,6 +41,7 @@
 
 namespace WebCore {
 
+    class NotificationCenter;
     class ScheduledAction;
     class WorkerLocation;
     class WorkerNavigator;
@@ -48,12 +49,14 @@ namespace WebCore {
 
     class WorkerContext : public RefCounted<WorkerContext>, public ScriptExecutionContext, public EventTarget {
     public:
-
         virtual ~WorkerContext();
 
         virtual bool isWorkerContext() const { return true; }
 
         virtual ScriptExecutionContext* scriptExecutionContext() const;
+
+        virtual bool isSharedWorkerContext() const { return false; }
+        virtual bool isDedicatedWorkerContext() const { return false; }
 
         const KURL& url() const { return m_url; }
         KURL completeURL(const String&) const;
@@ -67,8 +70,6 @@ namespace WebCore {
 
         bool hasPendingActivity() const;
 
-        virtual void reportException(const String& errorMessage, int lineNumber, const String& sourceURL) = 0;
-        virtual void addMessage(MessageDestination, MessageSource, MessageType, MessageLevel, const String& message, unsigned lineNumber, const String& sourceURL);
         virtual void resourceRetrievedByXMLHttpRequest(unsigned long identifier, const ScriptString& sourceString);
         virtual void scriptImported(unsigned long identifier, const String& sourceString);
 
@@ -82,7 +83,7 @@ namespace WebCore {
         EventListener* onerror() const { return m_onerrorListener.get(); }
 
         // WorkerUtils
-        void importScripts(const Vector<String>& urls, const String& callerURL, int callerLine, ExceptionCode&);
+        virtual void importScripts(const Vector<String>& urls, const String& callerURL, int callerLine, ExceptionCode&);
         WorkerNavigator* navigator() const;
 
         // Timers
@@ -100,8 +101,15 @@ namespace WebCore {
         typedef HashMap<AtomicString, ListenerVector> EventListenersMap;
         EventListenersMap& eventListeners() { return m_eventListeners; }
 
+        // ScriptExecutionContext
+        virtual void reportException(const String& errorMessage, int lineNumber, const String& sourceURL);
+        virtual void addMessage(MessageDestination, MessageSource, MessageType, MessageLevel, const String& message, unsigned lineNumber, const String& sourceURL);
 
-        // These methods are used for GC marking. See JSWorkerContext::mark() in
+#if ENABLE(NOTIFICATIONS)
+        NotificationCenter* webkitNotifications() const;
+#endif
+
+        // These methods are used for GC marking. See JSWorkerContext::markChildren(MarkStack&) in
         // JSWorkerContextCustom.cpp.
         WorkerNavigator* optionalNavigator() const { return m_navigator.get(); }
         WorkerLocation* optionalLocation() const { return m_location.get(); }
@@ -109,9 +117,10 @@ namespace WebCore {
         using RefCounted<WorkerContext>::ref;
         using RefCounted<WorkerContext>::deref;
 
+        bool isClosing() { return m_closing; }
+
     protected:
         WorkerContext(const KURL&, const String&, WorkerThread*);
-        bool isClosing() { return m_closing; }
 
     private:
         virtual void refScriptExecutionContext() { ref(); }
@@ -134,6 +143,9 @@ namespace WebCore {
         RefPtr<EventListener> m_onerrorListener;
         EventListenersMap m_eventListeners;
 
+#if ENABLE_NOTIFICATIONS
+        mutable RefPtr<NotificationCenter> m_notifications;
+#endif
         bool m_closing;
     };
 

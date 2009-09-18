@@ -104,6 +104,11 @@ bool JSDOMSelectionPrototype::getOwnPropertySlot(ExecState* exec, const Identifi
     return getStaticFunctionSlot<JSObject>(exec, &JSDOMSelectionPrototypeTable, this, propertyName, slot);
 }
 
+bool JSDOMSelectionPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSDOMSelectionPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSDOMSelection::s_info = { "DOMSelection", 0, &JSDOMSelectionTable, 0 };
 
 JSDOMSelection::JSDOMSelection(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DOMSelection> impl)
@@ -125,6 +130,11 @@ JSObject* JSDOMSelection::createPrototype(ExecState* exec, JSGlobalObject* globa
 bool JSDOMSelection::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSDOMSelection, Base>(exec, &JSDOMSelectionTable, this, propertyName, slot);
+}
+
+bool JSDOMSelection::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSDOMSelection, Base>(exec, &JSDOMSelectionTable, this, propertyName, descriptor);
 }
 
 JSValue jsDOMSelectionAnchorNode(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -218,7 +228,7 @@ JSValue jsDOMSelectionType(ExecState* exec, const Identifier&, const PropertySlo
 JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionCollapse(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDOMSelection::s_info))
+    if (!thisValue.inherits(&JSDOMSelection::s_info))
         return throwError(exec, TypeError);
     JSDOMSelection* castedThisObj = static_cast<JSDOMSelection*>(asObject(thisValue));
     DOMSelection* imp = static_cast<DOMSelection*>(castedThisObj->impl());
@@ -234,7 +244,7 @@ JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionCollapse(ExecState* exec, J
 JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionCollapseToEnd(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDOMSelection::s_info))
+    if (!thisValue.inherits(&JSDOMSelection::s_info))
         return throwError(exec, TypeError);
     JSDOMSelection* castedThisObj = static_cast<JSDOMSelection*>(asObject(thisValue));
     DOMSelection* imp = static_cast<DOMSelection*>(castedThisObj->impl());
@@ -246,7 +256,7 @@ JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionCollapseToEnd(ExecState* ex
 JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionCollapseToStart(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDOMSelection::s_info))
+    if (!thisValue.inherits(&JSDOMSelection::s_info))
         return throwError(exec, TypeError);
     JSDOMSelection* castedThisObj = static_cast<JSDOMSelection*>(asObject(thisValue));
     DOMSelection* imp = static_cast<DOMSelection*>(castedThisObj->impl());
@@ -258,7 +268,7 @@ JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionCollapseToStart(ExecState* 
 JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionDeleteFromDocument(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDOMSelection::s_info))
+    if (!thisValue.inherits(&JSDOMSelection::s_info))
         return throwError(exec, TypeError);
     JSDOMSelection* castedThisObj = static_cast<JSDOMSelection*>(asObject(thisValue));
     DOMSelection* imp = static_cast<DOMSelection*>(castedThisObj->impl());
@@ -270,7 +280,7 @@ JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionDeleteFromDocument(ExecStat
 JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionContainsNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDOMSelection::s_info))
+    if (!thisValue.inherits(&JSDOMSelection::s_info))
         return throwError(exec, TypeError);
     JSDOMSelection* castedThisObj = static_cast<JSDOMSelection*>(asObject(thisValue));
     DOMSelection* imp = static_cast<DOMSelection*>(castedThisObj->impl());
@@ -285,7 +295,7 @@ JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionContainsNode(ExecState* exe
 JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionSelectAllChildren(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDOMSelection::s_info))
+    if (!thisValue.inherits(&JSDOMSelection::s_info))
         return throwError(exec, TypeError);
     JSDOMSelection* castedThisObj = static_cast<JSDOMSelection*>(asObject(thisValue));
     DOMSelection* imp = static_cast<DOMSelection*>(castedThisObj->impl());
@@ -300,7 +310,7 @@ JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionSelectAllChildren(ExecState
 JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionExtend(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDOMSelection::s_info))
+    if (!thisValue.inherits(&JSDOMSelection::s_info))
         return throwError(exec, TypeError);
     JSDOMSelection* castedThisObj = static_cast<JSDOMSelection*>(asObject(thisValue));
     DOMSelection* imp = static_cast<DOMSelection*>(castedThisObj->impl());
@@ -316,7 +326,7 @@ JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionExtend(ExecState* exec, JSO
 JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionGetRangeAt(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDOMSelection::s_info))
+    if (!thisValue.inherits(&JSDOMSelection::s_info))
         return throwError(exec, TypeError);
     JSDOMSelection* castedThisObj = static_cast<JSDOMSelection*>(asObject(thisValue));
     DOMSelection* imp = static_cast<DOMSelection*>(castedThisObj->impl());
@@ -332,7 +342,7 @@ JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionGetRangeAt(ExecState* exec,
 JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionRemoveAllRanges(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDOMSelection::s_info))
+    if (!thisValue.inherits(&JSDOMSelection::s_info))
         return throwError(exec, TypeError);
     JSDOMSelection* castedThisObj = static_cast<JSDOMSelection*>(asObject(thisValue));
     DOMSelection* imp = static_cast<DOMSelection*>(castedThisObj->impl());
@@ -344,7 +354,7 @@ JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionRemoveAllRanges(ExecState* 
 JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionAddRange(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDOMSelection::s_info))
+    if (!thisValue.inherits(&JSDOMSelection::s_info))
         return throwError(exec, TypeError);
     JSDOMSelection* castedThisObj = static_cast<JSDOMSelection*>(asObject(thisValue));
     DOMSelection* imp = static_cast<DOMSelection*>(castedThisObj->impl());
@@ -357,7 +367,7 @@ JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionAddRange(ExecState* exec, J
 JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDOMSelection::s_info))
+    if (!thisValue.inherits(&JSDOMSelection::s_info))
         return throwError(exec, TypeError);
     JSDOMSelection* castedThisObj = static_cast<JSDOMSelection*>(asObject(thisValue));
     DOMSelection* imp = static_cast<DOMSelection*>(castedThisObj->impl());
@@ -370,7 +380,7 @@ JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionToString(ExecState* exec, J
 JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionModify(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDOMSelection::s_info))
+    if (!thisValue.inherits(&JSDOMSelection::s_info))
         return throwError(exec, TypeError);
     JSDOMSelection* castedThisObj = static_cast<JSDOMSelection*>(asObject(thisValue));
     DOMSelection* imp = static_cast<DOMSelection*>(castedThisObj->impl());
@@ -385,7 +395,7 @@ JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionModify(ExecState* exec, JSO
 JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionSetBaseAndExtent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDOMSelection::s_info))
+    if (!thisValue.inherits(&JSDOMSelection::s_info))
         return throwError(exec, TypeError);
     JSDOMSelection* castedThisObj = static_cast<JSDOMSelection*>(asObject(thisValue));
     DOMSelection* imp = static_cast<DOMSelection*>(castedThisObj->impl());
@@ -403,7 +413,7 @@ JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionSetBaseAndExtent(ExecState*
 JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionSetPosition(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDOMSelection::s_info))
+    if (!thisValue.inherits(&JSDOMSelection::s_info))
         return throwError(exec, TypeError);
     JSDOMSelection* castedThisObj = static_cast<JSDOMSelection*>(asObject(thisValue));
     DOMSelection* imp = static_cast<DOMSelection*>(castedThisObj->impl());
@@ -419,7 +429,7 @@ JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionSetPosition(ExecState* exec
 JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionEmpty(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDOMSelection::s_info))
+    if (!thisValue.inherits(&JSDOMSelection::s_info))
         return throwError(exec, TypeError);
     JSDOMSelection* castedThisObj = static_cast<JSDOMSelection*>(asObject(thisValue));
     DOMSelection* imp = static_cast<DOMSelection*>(castedThisObj->impl());
@@ -434,7 +444,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, DOMSele
 }
 DOMSelection* toDOMSelection(JSC::JSValue value)
 {
-    return value.isObject(&JSDOMSelection::s_info) ? static_cast<JSDOMSelection*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSDOMSelection::s_info) ? static_cast<JSDOMSelection*>(asObject(value))->impl() : 0;
 }
 
 }

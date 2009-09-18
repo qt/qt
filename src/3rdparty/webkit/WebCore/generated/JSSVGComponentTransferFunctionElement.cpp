@@ -86,6 +86,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSSVGComponentTransferFunctionElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -100,6 +101,11 @@ const ClassInfo JSSVGComponentTransferFunctionElementConstructor::s_info = { "SV
 bool JSSVGComponentTransferFunctionElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGComponentTransferFunctionElementConstructor, DOMObject>(exec, &JSSVGComponentTransferFunctionElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGComponentTransferFunctionElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGComponentTransferFunctionElementConstructor, DOMObject>(exec, &JSSVGComponentTransferFunctionElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -134,6 +140,11 @@ bool JSSVGComponentTransferFunctionElementPrototype::getOwnPropertySlot(ExecStat
     return getStaticValueSlot<JSSVGComponentTransferFunctionElementPrototype, JSObject>(exec, &JSSVGComponentTransferFunctionElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGComponentTransferFunctionElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGComponentTransferFunctionElementPrototype, JSObject>(exec, &JSSVGComponentTransferFunctionElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGComponentTransferFunctionElement::s_info = { "SVGComponentTransferFunctionElement", &JSSVGElement::s_info, &JSSVGComponentTransferFunctionElementTable, 0 };
 
 JSSVGComponentTransferFunctionElement::JSSVGComponentTransferFunctionElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGComponentTransferFunctionElement> impl)
@@ -149,6 +160,11 @@ JSObject* JSSVGComponentTransferFunctionElement::createPrototype(ExecState* exec
 bool JSSVGComponentTransferFunctionElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGComponentTransferFunctionElement, Base>(exec, &JSSVGComponentTransferFunctionElementTable, this, propertyName, slot);
+}
+
+bool JSSVGComponentTransferFunctionElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGComponentTransferFunctionElement, Base>(exec, &JSSVGComponentTransferFunctionElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGComponentTransferFunctionElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)

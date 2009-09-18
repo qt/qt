@@ -94,6 +94,11 @@ bool JSSVGAnimatedTransformList::getOwnPropertySlot(ExecState* exec, const Ident
     return getStaticValueSlot<JSSVGAnimatedTransformList, Base>(exec, &JSSVGAnimatedTransformListTable, this, propertyName, slot);
 }
 
+bool JSSVGAnimatedTransformList::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGAnimatedTransformList, Base>(exec, &JSSVGAnimatedTransformListTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGAnimatedTransformListBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGAnimatedTransformList* castedThis = static_cast<JSSVGAnimatedTransformList*>(asObject(slot.slotBase()));
@@ -116,7 +121,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAnim
 }
 SVGAnimatedTransformList* toSVGAnimatedTransformList(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGAnimatedTransformList::s_info) ? static_cast<JSSVGAnimatedTransformList*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGAnimatedTransformList::s_info) ? static_cast<JSSVGAnimatedTransformList*>(asObject(value))->impl() : 0;
 }
 
 }

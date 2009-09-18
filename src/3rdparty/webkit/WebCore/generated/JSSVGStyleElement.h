@@ -36,6 +36,7 @@ public:
     JSSVGStyleElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGStyleElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
@@ -59,14 +60,16 @@ public:
 
 // Attributes
 
-JSC::JSValue jsSVGStyleElementXmlspace(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGStyleElementXmlspace(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsSVGStyleElementType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSSVGStyleElementType(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsSVGStyleElementMedia(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSSVGStyleElementMedia(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsSVGStyleElementTitle(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSSVGStyleElementTitle(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGStyleElementXmllang(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGStyleElementXmllang(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGStyleElementXmlspace(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGStyleElementXmlspace(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 
 } // namespace WebCore
 

@@ -418,13 +418,12 @@ void QPixmapConvolutionFilter::draw(QPainter *painter, const QPointF &p, const Q
         return;
 
     QPixmapFilter *filter = painter->paintEngine() && painter->paintEngine()->isExtended() ?
-        static_cast<QPaintEngineEx *>(painter->paintEngine())->createPixmapFilter(type()) : 0;
+        static_cast<QPaintEngineEx *>(painter->paintEngine())->pixmapFilter(type(), this) : 0;
     QPixmapConvolutionFilter *convolutionFilter = static_cast<QPixmapConvolutionFilter*>(filter);
     if (convolutionFilter) {
         convolutionFilter->setConvolutionKernel(d->convolutionKernel, d->kernelWidth, d->kernelHeight);
         convolutionFilter->d_func()->convoluteAlpha = d->convoluteAlpha;
         convolutionFilter->draw(painter, p, src, srcRect);
-        delete convolutionFilter;
         return;
     }
 
@@ -669,13 +668,12 @@ void QPixmapBlurFilter::draw(QPainter *painter, const QPointF &p, const QPixmap 
     }
 
     QPixmapFilter *filter = painter->paintEngine() && painter->paintEngine()->isExtended() ?
-        static_cast<QPaintEngineEx *>(painter->paintEngine())->createPixmapFilter(type()) : 0;
+        static_cast<QPaintEngineEx *>(painter->paintEngine())->pixmapFilter(type(), this) : 0;
     QPixmapBlurFilter *blurFilter = static_cast<QPixmapBlurFilter*>(filter);
     if (blurFilter) {
         blurFilter->setRadius(d->radius);
         blurFilter->setQuality(d->quality);
         blurFilter->draw(painter, p, src, srcRect);
-        delete blurFilter;
         return;
     }
 
@@ -836,13 +834,12 @@ void QPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const Q
 {
     Q_D(const QPixmapColorizeFilter);
     QPixmapFilter *filter = painter->paintEngine() && painter->paintEngine()->isExtended() ?
-        static_cast<QPaintEngineEx *>(painter->paintEngine())->createPixmapFilter(type()) : 0;
+        static_cast<QPaintEngineEx *>(painter->paintEngine())->pixmapFilter(type(), this) : 0;
     QPixmapColorizeFilter *colorizeFilter = static_cast<QPixmapColorizeFilter*>(filter);
     if (colorizeFilter) {
         colorizeFilter->setColor(d->color);
         colorizeFilter->setStrength(d->strength);
         colorizeFilter->draw(painter, dest, src, srcRect);
-        delete colorizeFilter;
         return;
     }
 

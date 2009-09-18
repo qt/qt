@@ -31,6 +31,7 @@ module views {
         ObjCCustomImplementation
     ] AbstractView {
         readonly attribute Document document;
+        readonly attribute Media media;
     };
 
 }

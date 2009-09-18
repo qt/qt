@@ -97,6 +97,11 @@ bool JSScreen::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNam
     return getStaticValueSlot<JSScreen, Base>(exec, &JSScreenTable, this, propertyName, slot);
 }
 
+bool JSScreen::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSScreen, Base>(exec, &JSScreenTable, this, propertyName, descriptor);
+}
+
 JSValue jsScreenHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSScreen* castedThis = static_cast<JSScreen*>(asObject(slot.slotBase()));
@@ -167,7 +172,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Screen*
 }
 Screen* toScreen(JSC::JSValue value)
 {
-    return value.isObject(&JSScreen::s_info) ? static_cast<JSScreen*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSScreen::s_info) ? static_cast<JSScreen*>(asObject(value))->impl() : 0;
 }
 
 }

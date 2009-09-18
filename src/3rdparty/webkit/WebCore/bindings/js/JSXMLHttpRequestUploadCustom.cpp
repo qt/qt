@@ -41,28 +41,28 @@ using namespace JSC;
 
 namespace WebCore {
 
-void JSXMLHttpRequestUpload::mark()
+void JSXMLHttpRequestUpload::markChildren(MarkStack& markStack)
 {
-    Base::mark();
+    Base::markChildren(markStack);
 
     if (XMLHttpRequest* xmlHttpRequest = m_impl->associatedXMLHttpRequest()) {
         DOMObject* wrapper = getCachedDOMObjectWrapper(*Heap::heap(this)->globalData(), xmlHttpRequest);
-        if (wrapper && !wrapper->marked())
-            wrapper->mark();
+        if (wrapper)
+            markStack.append(wrapper);
     }
 
-    markIfNotNull(m_impl->onabort());
-    markIfNotNull(m_impl->onerror());
-    markIfNotNull(m_impl->onload());
-    markIfNotNull(m_impl->onloadstart());
-    markIfNotNull(m_impl->onprogress());
+    markIfNotNull(markStack, m_impl->onabort());
+    markIfNotNull(markStack, m_impl->onerror());
+    markIfNotNull(markStack, m_impl->onload());
+    markIfNotNull(markStack, m_impl->onloadstart());
+    markIfNotNull(markStack, m_impl->onprogress());
     
     typedef XMLHttpRequestUpload::EventListenersMap EventListenersMap;
     typedef XMLHttpRequestUpload::ListenerVector ListenerVector;
     EventListenersMap& eventListeners = m_impl->eventListeners();
     for (EventListenersMap::iterator mapIter = eventListeners.begin(); mapIter != eventListeners.end(); ++mapIter) {
         for (ListenerVector::iterator vecIter = mapIter->second.begin(); vecIter != mapIter->second.end(); ++vecIter)
-            (*vecIter)->markJSFunction();
+            (*vecIter)->markJSFunction(markStack);
     }
 }
 
@@ -71,10 +71,12 @@ JSValue JSXMLHttpRequestUpload::addEventListener(ExecState* exec, const ArgList&
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(impl()->scriptExecutionContext());
     if (!globalObject)
         return jsUndefined();
-    RefPtr<JSEventListener> listener = globalObject->findOrCreateJSEventListener(args.at(1));
-    if (!listener)
+
+    JSValue listener = args.at(1);
+    if (!listener.isObject())
         return jsUndefined();
-    impl()->addEventListener(args.at(0).toString(exec), listener.release(), args.at(2).toBoolean(exec));
+
+    impl()->addEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), globalObject, false), args.at(2).toBoolean(exec));
     return jsUndefined();
 }
 
@@ -83,10 +85,12 @@ JSValue JSXMLHttpRequestUpload::removeEventListener(ExecState* exec, const ArgLi
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(impl()->scriptExecutionContext());
     if (!globalObject)
         return jsUndefined();
-    JSEventListener* listener = globalObject->findJSEventListener(args.at(1));
-    if (!listener)
+
+    JSValue listener = args.at(1);
+    if (!listener.isObject())
         return jsUndefined();
-    impl()->removeEventListener(args.at(0).toString(exec), listener, args.at(2).toBoolean(exec));
+
+    impl()->removeEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), globalObject, false).get(), args.at(2).toBoolean(exec));
     return jsUndefined();
 }
 

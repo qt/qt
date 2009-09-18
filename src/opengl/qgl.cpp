@@ -2560,8 +2560,6 @@ static void qDrawTextureRect(const QRectF &target, GLint textureWidth, GLint tex
     Draws the given texture, \a textureId, to the given target rectangle,
     \a target, in OpenGL model space. The \a textureTarget should be a 2D
     texture target.
-
-    Equivalent to the corresponding QGLContext::drawTexture().
 */
 void QGLContext::drawTexture(const QRectF &target, GLuint textureId, GLenum textureTarget)
 {
@@ -2603,8 +2601,6 @@ void QGLContext::drawTexture(const QRectF &target, QMacCompatGLuint textureId, Q
 
     Draws the given texture at the given \a point in OpenGL model
     space. The \a textureTarget should be a 2D texture target.
-
-    Equivalent to the corresponding QGLContext::drawTexture().
 */
 void QGLContext::drawTexture(const QPointF &point, GLuint textureId, GLenum textureTarget)
 {

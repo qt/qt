@@ -78,6 +78,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSTreeWalkerPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -92,6 +93,11 @@ const ClassInfo JSTreeWalkerConstructor::s_info = { "TreeWalkerConstructor", 0, 
 bool JSTreeWalkerConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSTreeWalkerConstructor, DOMObject>(exec, &JSTreeWalkerConstructorTable, this, propertyName, slot);
+}
+
+bool JSTreeWalkerConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSTreeWalkerConstructor, DOMObject>(exec, &JSTreeWalkerConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -127,6 +133,11 @@ bool JSTreeWalkerPrototype::getOwnPropertySlot(ExecState* exec, const Identifier
     return getStaticFunctionSlot<JSObject>(exec, &JSTreeWalkerPrototypeTable, this, propertyName, slot);
 }
 
+bool JSTreeWalkerPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSTreeWalkerPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSTreeWalker::s_info = { "TreeWalker", 0, &JSTreeWalkerTable, 0 };
 
 JSTreeWalker::JSTreeWalker(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<TreeWalker> impl)
@@ -148,6 +159,11 @@ JSObject* JSTreeWalker::createPrototype(ExecState* exec, JSGlobalObject* globalO
 bool JSTreeWalker::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSTreeWalker, Base>(exec, &JSTreeWalkerTable, this, propertyName, slot);
+}
+
+bool JSTreeWalker::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSTreeWalker, Base>(exec, &JSTreeWalkerTable, this, propertyName, descriptor);
 }
 
 JSValue jsTreeWalkerRoot(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -216,7 +232,7 @@ JSValue JSTreeWalker::getConstructor(ExecState* exec, JSGlobalObject* globalObje
 JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionParentNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSTreeWalker::s_info))
+    if (!thisValue.inherits(&JSTreeWalker::s_info))
         return throwError(exec, TypeError);
     JSTreeWalker* castedThisObj = static_cast<JSTreeWalker*>(asObject(thisValue));
     return castedThisObj->parentNode(exec, args);
@@ -225,7 +241,7 @@ JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionParentNode(ExecState* exec, J
 JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionFirstChild(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSTreeWalker::s_info))
+    if (!thisValue.inherits(&JSTreeWalker::s_info))
         return throwError(exec, TypeError);
     JSTreeWalker* castedThisObj = static_cast<JSTreeWalker*>(asObject(thisValue));
     return castedThisObj->firstChild(exec, args);
@@ -234,7 +250,7 @@ JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionFirstChild(ExecState* exec, J
 JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionLastChild(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSTreeWalker::s_info))
+    if (!thisValue.inherits(&JSTreeWalker::s_info))
         return throwError(exec, TypeError);
     JSTreeWalker* castedThisObj = static_cast<JSTreeWalker*>(asObject(thisValue));
     return castedThisObj->lastChild(exec, args);
@@ -243,7 +259,7 @@ JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionLastChild(ExecState* exec, JS
 JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionPreviousSibling(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSTreeWalker::s_info))
+    if (!thisValue.inherits(&JSTreeWalker::s_info))
         return throwError(exec, TypeError);
     JSTreeWalker* castedThisObj = static_cast<JSTreeWalker*>(asObject(thisValue));
     return castedThisObj->previousSibling(exec, args);
@@ -252,7 +268,7 @@ JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionPreviousSibling(ExecState* ex
 JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionNextSibling(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSTreeWalker::s_info))
+    if (!thisValue.inherits(&JSTreeWalker::s_info))
         return throwError(exec, TypeError);
     JSTreeWalker* castedThisObj = static_cast<JSTreeWalker*>(asObject(thisValue));
     return castedThisObj->nextSibling(exec, args);
@@ -261,7 +277,7 @@ JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionNextSibling(ExecState* exec, 
 JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionPreviousNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSTreeWalker::s_info))
+    if (!thisValue.inherits(&JSTreeWalker::s_info))
         return throwError(exec, TypeError);
     JSTreeWalker* castedThisObj = static_cast<JSTreeWalker*>(asObject(thisValue));
     return castedThisObj->previousNode(exec, args);
@@ -270,7 +286,7 @@ JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionPreviousNode(ExecState* exec,
 JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionNextNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSTreeWalker::s_info))
+    if (!thisValue.inherits(&JSTreeWalker::s_info))
         return throwError(exec, TypeError);
     JSTreeWalker* castedThisObj = static_cast<JSTreeWalker*>(asObject(thisValue));
     return castedThisObj->nextNode(exec, args);
@@ -282,7 +298,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, TreeWal
 }
 TreeWalker* toTreeWalker(JSC::JSValue value)
 {
-    return value.isObject(&JSTreeWalker::s_info) ? static_cast<JSTreeWalker*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSTreeWalker::s_info) ? static_cast<JSTreeWalker*>(asObject(value))->impl() : 0;
 }
 
 }

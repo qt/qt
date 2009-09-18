@@ -214,11 +214,13 @@ bool QDragManager::eventFilter(QObject *o, QEvent *e)
         case QEvent::MouseButtonRelease:
         {
             qApp->removeEventFilter(this);
+#ifndef QT_NO_CURSOR
             if (restoreCursor) {
                 QApplication::restoreOverrideCursor();
                 willDrop = false;
                 restoreCursor = false;
             }
+#endif
             if (object && object->target()) {
 
                 QMouseEvent *me = (QMouseEvent *)e;
@@ -267,7 +269,9 @@ Qt::DropAction QDragManager::drag(QDrag *o)
     updatePixmap();
     updateCursor();
 
+#ifndef QT_NO_CURSOR
     qt_symbian_set_cursor_visible(true); //force cursor on even for touch phone
+#endif
 
     object->d_func()->target = 0;
 
@@ -282,10 +286,12 @@ Qt::DropAction QDragManager::drag(QDrag *o)
     delete eventLoop;
     eventLoop = 0;
 
+#ifndef QT_NO_CURSOR
     qt_symbian_set_cursor_visible(false);
     
     overrideCursor = QCursor(); //deref the cursor data
     qt_symbian_dnd_dragging = false;
+#endif
 
     return global_accepted_action;
 }
@@ -306,10 +312,12 @@ void QDragManager::cancel(bool deleteSource)
         drag_object = object = 0;
     }
 
+#ifndef QT_NO_CURSOR
     if (restoreCursor) {
         QApplication::restoreOverrideCursor();
         restoreCursor = false;
     }
+#endif
 
     global_accepted_action = Qt::IgnoreAction;
 }
@@ -317,10 +325,12 @@ void QDragManager::cancel(bool deleteSource)
 
 void QDragManager::drop()
 {
+#ifndef QT_NO_CURSOR
     if (restoreCursor) {
         QApplication::restoreOverrideCursor();
         restoreCursor = false;
     }
+#endif
 }
 
 QVariant QDropData::retrieveData_sys(const QString &mimetype, QVariant::Type type) const

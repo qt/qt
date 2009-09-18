@@ -33,6 +33,7 @@
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
 #include "Settings.h"
+#include "StorageNamespace.h"
 #include "XSSAuditor.h"
 #include "npruntime_impl.h"
 #include "runtime_root.h"
@@ -110,9 +111,9 @@ ScriptValue ScriptController::evaluate(const ScriptSourceCode& sourceCode)
 
     RefPtr<Frame> protect = m_frame;
 
-    m_windowShell->window()->globalData()->timeoutChecker->start();
+    m_windowShell->window()->globalData()->timeoutChecker.start();
     Completion comp = JSC::evaluate(exec, exec->dynamicGlobalObject()->globalScopeChain(), jsSourceCode, m_windowShell);
-    m_windowShell->window()->globalData()->timeoutChecker->stop();
+    m_windowShell->window()->globalData()->timeoutChecker.stop();
 
     // Evaluating the JavaScript could cause the frame to be deallocated
     // so we start the keep alive timer here.
@@ -128,6 +129,14 @@ ScriptValue ScriptController::evaluate(const ScriptSourceCode& sourceCode)
 
     m_sourceURL = savedSourceURL;
     return JSValue();
+}
+
+void ScriptController::evaluateInIsolatedWorld(unsigned /* worldID */, const Vector<ScriptSourceCode>& sourceCode) 
+{
+    // FIXME: Actually support isolated worlds!
+    unsigned size = sourceCode.size();
+    for (unsigned i = 0; i < size; ++i)
+        evaluate(sourceCode[i]);
 }
 
 void ScriptController::clearWindowShell()

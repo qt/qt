@@ -80,7 +80,7 @@
 #include "HitTestResult.h"
 #include "ImageLoader.h"
 #include "InspectorController.h"
-#include "ScriptEventListener.h"
+#include "InspectorTimelineAgent.h"
 #include "KeyboardEvent.h"
 #include "Logging.h"
 #include "MappedAttribute.h"
@@ -94,6 +94,8 @@
 #include "NodeWithIndex.h"
 #include "OverflowEvent.h"
 #include "Page.h"
+#include "PageGroup.h"
+#include "PageTransitionEvent.h"
 #include "PlatformKeyboardEvent.h"
 #include "ProcessingInstruction.h"
 #include "ProgressEvent.h"
@@ -104,6 +106,7 @@
 #include "RenderWidget.h"
 #include "ScriptController.h"
 #include "ScriptElement.h"
+#include "ScriptEventListener.h"
 #include "SecurityOrigin.h"
 #include "SegmentedString.h"
 #include "SelectionController.h"
@@ -121,6 +124,7 @@
 #include "XMLHttpRequest.h"
 #include "XMLNames.h"
 #include "XMLTokenizer.h"
+#include "htmlediting.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/HashFunctions.h>
 #include <wtf/MainThread.h>
@@ -130,6 +134,10 @@
 #if ENABLE(DATABASE)
 #include "Database.h"
 #include "DatabaseThread.h"
+#endif
+
+#if ENABLE(SHARED_WORKERS)
+#include "SharedWorkerRepository.h"
 #endif
 
 #if ENABLE(DOM_STORAGE)
@@ -154,6 +162,7 @@
 #if ENABLE(SVG)
 #include "SVGDocumentExtensions.h"
 #include "SVGElementFactory.h"
+#include "SVGNames.h"
 #include "SVGZoomEvent.h"
 #include "SVGStyleElement.h"
 #endif
@@ -267,7 +276,7 @@ static Widget* widgetForNode(Node* focusedNode)
     RenderObject* renderer = focusedNode->renderer();
     if (!renderer || !renderer->isWidget())
         return 0;
-    return static_cast<RenderWidget*>(renderer)->widget();
+    return toRenderWidget(renderer)->widget();
 }
 
 static bool acceptsEditingFocus(Node *node)
@@ -339,7 +348,9 @@ Document::Document(Frame* frame, bool isXHTML)
     , m_containsWMLContent(false)
 #endif
 {
-    m_document.resetSkippingRef(this);
+    m_document = this;
+
+    m_pageGroupUserSheetCacheValid = false;
 
     m_printing = false;
     
@@ -409,8 +420,7 @@ void Document::removedLastRef()
         // want the document to be destructed until after
         // removeAllChildren returns, so we guard ourselves with an
         // extra self-only ref.
-
-        DocPtr<Document> guard(this);
+        selfOnlyRef();
 
         // We must make sure not to be retaining any of our children through
         // these extra pointers or we will create a reference cycle.
@@ -434,6 +444,8 @@ void Document::removedLastRef()
 #ifndef NDEBUG
         m_inRemovedLastRefFunction = false;
 #endif
+
+        selfOnlyDeref();
     } else {
 #ifndef NDEBUG
         m_deletionHasBegun = true;
@@ -460,7 +472,7 @@ Document::~Document()
 #endif
 
     delete m_tokenizer;
-    m_document.resetSkippingRef(0);
+    m_document = 0;
     delete m_styleSelector;
     delete m_docLoader;
     
@@ -496,8 +508,6 @@ Document::~Document()
 
     if (m_styleSheets)
         m_styleSheets->documentDestroyed();
-
-    m_document = 0;
 }
 
 void Document::resetLinkColor()
@@ -567,17 +577,17 @@ PassRefPtr<Element> Document::createElement(const AtomicString& name, ExceptionC
 
 PassRefPtr<DocumentFragment> Document::createDocumentFragment()
 {
-    return new DocumentFragment(document());
+    return DocumentFragment::create(document());
 }
 
 PassRefPtr<Text> Document::createTextNode(const String& data)
 {
-    return new Text(this, data);
+    return Text::create(this, data);
 }
 
 PassRefPtr<Comment> Document::createComment(const String& data)
 {
-    return new Comment(this, data);
+    return Comment::create(this, data);
 }
 
 PassRefPtr<CDATASection> Document::createCDATASection(const String& data, ExceptionCode& ec)
@@ -586,7 +596,7 @@ PassRefPtr<CDATASection> Document::createCDATASection(const String& data, Except
         ec = NOT_SUPPORTED_ERR;
         return 0;
     }
-    return new CDATASection(this, data);
+    return CDATASection::create(this, data);
 }
 
 PassRefPtr<ProcessingInstruction> Document::createProcessingInstruction(const String& target, const String& data, ExceptionCode& ec)
@@ -599,7 +609,7 @@ PassRefPtr<ProcessingInstruction> Document::createProcessingInstruction(const St
         ec = NOT_SUPPORTED_ERR;
         return 0;
     }
-    return new ProcessingInstruction(this, target, data);
+    return ProcessingInstruction::create(this, target, data);
 }
 
 PassRefPtr<EntityReference> Document::createEntityReference(const String& name, ExceptionCode& ec)
@@ -612,12 +622,12 @@ PassRefPtr<EntityReference> Document::createEntityReference(const String& name, 
         ec = NOT_SUPPORTED_ERR;
         return 0;
     }
-    return new EntityReference(this, name);
+    return EntityReference::create(this, name);
 }
 
 PassRefPtr<EditingText> Document::createEditingTextNode(const String& text)
 {
-    return new EditingText(this, text);
+    return EditingText::create(this, text);
 }
 
 PassRefPtr<CSSStyleDeclaration> Document::createCSSStyleDeclaration()
@@ -682,11 +692,8 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionCo
 
             return newElement.release();
         }
-        case ATTRIBUTE_NODE: {
-            RefPtr<Attr> newAttr = new Attr(0, this, static_cast<Attr*>(importedNode)->attr()->clone());
-            newAttr->createTextChild();
-            return newAttr.release();
-        }
+        case ATTRIBUTE_NODE:
+            return Attr::create(0, this, static_cast<Attr*>(importedNode)->attr()->clone());
         case DOCUMENT_FRAGMENT_NODE: {
             DocumentFragment* oldFragment = static_cast<DocumentFragment*>(importedNode);
             RefPtr<DocumentFragment> newFragment = createDocumentFragment();
@@ -798,7 +805,7 @@ PassRefPtr<Element> Document::createElement(const QualifiedName& qName, bool cre
 #endif
     
     if (!e)
-        e = new Element(qName, document());
+        e = Element::create(qName, document());
 
     // <image> uses imgTag so we need a special rule.
 #if ENABLE(WML)
@@ -920,16 +927,25 @@ KURL Document::baseURI() const
 
 Element* Document::elementFromPoint(int x, int y) const
 {
+    // FIXME: Share code between this and caretRangeFromPoint.
     if (!renderer())
         return 0;
+    Frame* frame = this->frame();
+    if (!frame)
+        return 0;
+    FrameView* frameView = frame->view();
+    if (!frameView)
+        return 0;
 
-    HitTestRequest request(HitTestRequest::ReadOnly |
-                           HitTestRequest::Active);
+    float zoomFactor = frame->pageZoomFactor();
+    IntPoint point = roundedIntPoint(FloatPoint(x * zoomFactor, y * zoomFactor)) + view()->scrollOffset();
 
-    float zoomFactor = frame() ? frame()->pageZoomFactor() : 1.0f;
+    if (!frameView->visibleContentRect().contains(point))
+        return 0;
 
-    HitTestResult result(roundedIntPoint(FloatPoint(x * zoomFactor, y * zoomFactor)));
-    renderView()->layer()->hitTest(request, result); 
+    HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
+    HitTestResult result(point);
+    renderView()->layer()->hitTest(request, result);
 
     Node* n = result.innerNode();
     while (n && !n->isElementNode())
@@ -937,6 +953,50 @@ Element* Document::elementFromPoint(int x, int y) const
     if (n)
         n = n->shadowAncestorNode();
     return static_cast<Element*>(n);
+}
+
+PassRefPtr<Range> Document::caretRangeFromPoint(int x, int y)
+{
+    // FIXME: Share code between this and elementFromPoint.
+    if (!renderer())
+        return 0;
+    Frame* frame = this->frame();
+    if (!frame)
+        return 0;
+    FrameView* frameView = frame->view();
+    if (!frameView)
+        return 0;
+
+    float zoomFactor = frame->pageZoomFactor();
+    IntPoint point = roundedIntPoint(FloatPoint(x * zoomFactor, y * zoomFactor)) + view()->scrollOffset();
+
+    if (!frameView->visibleContentRect().contains(point))
+        return 0;
+
+    HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
+    HitTestResult result(point);
+    renderView()->layer()->hitTest(request, result);
+
+    Node* node = result.innerNode();
+    if (!node)
+        return 0;
+
+    Node* shadowAncestorNode = node->shadowAncestorNode();
+    if (shadowAncestorNode != node) {
+        unsigned offset = shadowAncestorNode->nodeIndex();
+        Node* container = shadowAncestorNode->parentNode();
+        return Range::create(this, container, offset, container, offset);
+    }
+
+    RenderObject* renderer = node->renderer();
+    if (!renderer)
+        return 0;
+    VisiblePosition visiblePosition = renderer->positionForPoint(result.localPoint());
+    if (visiblePosition.isNull())
+        return 0;
+
+    Position rangeCompliantPosition = rangeCompliantEquivalent(visiblePosition);
+    return Range::create(this, rangeCompliantPosition, rangeCompliantPosition);
 }
 
 void Document::addElementById(const AtomicString& elementId, Element* element)
@@ -1154,6 +1214,12 @@ void Document::recalcStyle(StyleChange change)
     if (m_inStyleRecalc)
         return; // Guard against re-entrancy. -dwh
 
+#if ENABLE(INSPECTOR)
+    InspectorTimelineAgent* timelineAgent = inspectorTimelineAgent();
+    if (timelineAgent)
+        timelineAgent->willRecalculateStyle();
+#endif
+
     m_inStyleRecalc = true;
     suspendPostAttachCallbacks();
     if (view())
@@ -1226,6 +1292,11 @@ bail_out:
         m_closeAfterStyleRecalc = false;
         implicitClose();
     }
+
+#if ENABLE(INSPECTOR)
+    if (timelineAgent)
+        timelineAgent->didRecalculateStyle();
+#endif
 }
 
 void Document::updateStyleIfNeeded()
@@ -1322,7 +1393,8 @@ void Document::attach()
         bool matchAuthorAndUserStyles = true;
         if (Settings* docSettings = settings())
             matchAuthorAndUserStyles = docSettings->authorAndUserStylesEnabled();
-        m_styleSelector = new CSSStyleSelector(this, userStyleSheet(), m_styleSheets.get(), m_mappedElementSheet.get(), !inCompatMode(), matchAuthorAndUserStyles);
+        m_styleSelector = new CSSStyleSelector(this, m_styleSheets.get(), m_mappedElementSheet.get(), pageUserSheet(), pageGroupUserSheets(), 
+                                               !inCompatMode(), matchAuthorAndUserStyles);
     }
 
     recalcStyle(Force);
@@ -1348,7 +1420,11 @@ void Document::detach()
     // Send out documentWillBecomeInactive() notifications to registered elements,
     // in order to stop media elements
     documentWillBecomeInactive();
-    
+
+#if ENABLE(SHARED_WORKERS)
+    SharedWorkerRepository::documentDetached(this);
+#endif
+
     if (m_frame) {
         FrameView* view = m_frame->view();
         if (view)
@@ -1386,27 +1462,8 @@ void Document::removeAllEventListeners()
 {
     if (DOMWindow* domWindow = this->domWindow())
         domWindow->removeAllEventListeners();
-    removeAllDisconnectedNodeEventListeners();
     for (Node* node = this; node; node = node->traverseNextNode())
         node->removeAllEventListeners();
-}
-
-void Document::registerDisconnectedNodeWithEventListeners(Node* node)
-{
-    m_disconnectedNodesWithEventListeners.add(node);
-}
-
-void Document::unregisterDisconnectedNodeWithEventListeners(Node* node)
-{
-    m_disconnectedNodesWithEventListeners.remove(node);
-}
-
-void Document::removeAllDisconnectedNodeEventListeners()
-{
-    HashSet<Node*>::iterator end = m_disconnectedNodesWithEventListeners.end();
-    for (HashSet<Node*>::iterator i = m_disconnectedNodesWithEventListeners.begin(); i != end; ++i)
-        (*i)->removeAllEventListeners();
-    m_disconnectedNodesWithEventListeners.clear();
 }
 
 RenderView* Document::renderView() const
@@ -1649,6 +1706,7 @@ void Document::implicitClose()
 
     ImageLoader::dispatchPendingLoadEvents();
     dispatchLoadEvent();
+    dispatchPageTransitionEvent(EventNames().pageshowEvent, false);
     if (f)
         f->loader()->handledOnloadEvents();
 #ifdef INSTRUMENT_LAYOUT_SCHEDULING
@@ -1695,7 +1753,7 @@ void Document::implicitClose()
         // exists in the cache (we ignore the return value because we don't need it here). This is 
         // only safe to call when a layout is not in progress, so it can not be used in postNotification.    
         axObjectCache()->getOrCreate(renderObject);
-        axObjectCache()->postNotification(renderObject, "AXLoadComplete", true);
+        axObjectCache()->postNotification(renderObject, AXObjectCache::AXLoadComplete, true);
     }
 #endif
 
@@ -1857,34 +1915,68 @@ String Document::userAgent(const KURL& url) const
     return frame() ? frame()->loader()->userAgent(url) : String();
 }
 
-void Document::setCSSStyleSheet(const String& url, const String& charset, const CachedCSSStyleSheet* sheet)
+CSSStyleSheet* Document::pageUserSheet()
 {
-    m_sheet = CSSStyleSheet::create(this, url, charset);
-    m_sheet->parseString(sheet->sheetText());
+    if (m_pageUserSheet)
+        return m_pageUserSheet.get();
+    
+    Page* owningPage = page();
+    if (!owningPage)
+        return 0;
+    
+    String userSheetText = owningPage->userStyleSheet();
+    if (userSheetText.isEmpty())
+        return 0;
+    
+    // Parse the sheet and cache it.
+    m_pageUserSheet = CSSStyleSheet::create(this);
+    m_pageUserSheet->parseString(userSheetText, !inCompatMode());
+    return m_pageUserSheet.get();
+}
 
+void Document::clearPageUserSheet()
+{
+    m_pageUserSheet = 0;
     updateStyleSelector();
 }
 
-#if FRAME_LOADS_USER_STYLESHEET
-void Document::setUserStyleSheet(const String& sheet)
+const Vector<RefPtr<CSSStyleSheet> >* Document::pageGroupUserSheets() const
 {
-    if (m_usersheet != sheet) {
-        m_usersheet = sheet;
-        updateStyleSelector();
-    }
-}
-#endif
+    if (m_pageGroupUserSheetCacheValid)
+        return m_pageGroupUserSheets.get();
+    
+    m_pageGroupUserSheetCacheValid = true;
+    
+    Page* owningPage = page();
+    if (!owningPage)
+        return 0;
+        
+    const PageGroup& pageGroup = owningPage->group();
+    const UserStyleSheetMap* sheetsMap = pageGroup.userStyleSheets();
+    if (!sheetsMap)
+        return 0;
 
-String Document::userStyleSheet() const
+    UserStyleSheetMap::const_iterator end = sheetsMap->end();
+    for (UserStyleSheetMap::const_iterator it = sheetsMap->begin(); it != end; ++it) {
+        const UserStyleSheetVector* sheets = it->second;
+        for (unsigned i = 0; i < sheets->size(); ++i) {
+            const UserStyleSheet* sheet = sheets->at(i).get();
+            RefPtr<CSSStyleSheet> parsedSheet = CSSStyleSheet::create(const_cast<Document*>(this));
+            parsedSheet->parseString(sheet->source(), !inCompatMode());
+            if (!m_pageGroupUserSheets)
+                m_pageGroupUserSheets.set(new Vector<RefPtr<CSSStyleSheet> >);
+            m_pageGroupUserSheets->append(parsedSheet.release());
+        }
+    }
+
+    return m_pageGroupUserSheets.get();
+}
+
+void Document::clearPageGroupUserSheets()
 {
-#if FRAME_LOADS_USER_STYLESHEET
-    return m_usersheet;
-#else
-    Page* page = this->page();
-    if (!page)
-        return String();
-    return page->userStyleSheet();
-#endif
+    m_pageGroupUserSheets.clear();
+    m_pageGroupUserSheetCacheValid = false;
+    updateStyleSelector();
 }
 
 CSSStyleSheet* Document::elementSheet()
@@ -2448,7 +2540,8 @@ void Document::recalcStyleSelector()
 
     // Create a new style selector
     delete m_styleSelector;
-    m_styleSelector = new CSSStyleSelector(this, userStyleSheet(), m_styleSheets.get(), m_mappedElementSheet.get(), !inCompatMode(), matchAuthorAndUserStyles);
+    m_styleSelector = new CSSStyleSelector(this, m_styleSheets.get(), m_mappedElementSheet.get(), 
+                                           pageUserSheet(), pageGroupUserSheets(), !inCompatMode(), matchAuthorAndUserStyles);
     m_didCalculateStyleSelector = true;
 }
 
@@ -2541,13 +2634,12 @@ bool Document::setFocusedNode(PassRefPtr<Node> newFocusedNode)
         oldFocusedNode->setFocus(false);
                 
         // Dispatch a change event for text fields or textareas that have been edited
-        RenderObject* r = static_cast<RenderObject*>(oldFocusedNode.get()->renderer());
+        RenderObject* r = oldFocusedNode->renderer();
         if (r && r->isTextControl() && toRenderTextControl(r)->isEdited()) {
             oldFocusedNode->dispatchEvent(eventNames().changeEvent, true, false);
-            if ((r = static_cast<RenderObject*>(oldFocusedNode.get()->renderer()))) {
-                if (r->isTextControl())
-                    toRenderTextControl(r)->setEdited(false);
-            }
+            r = oldFocusedNode->renderer();
+            if (r && r->isTextControl())
+                toRenderTextControl(r)->setEdited(false);
         }
 
         // Dispatch the blur event and let the node do any other blur related activities (important for text fields)
@@ -2564,10 +2656,10 @@ bool Document::setFocusedNode(PassRefPtr<Node> newFocusedNode)
             focusChangeBlocked = true;
             newFocusedNode = 0;
         }
-        if ((oldFocusedNode.get() == this) && oldFocusedNode->hasOneRef())
+        if (oldFocusedNode == this && oldFocusedNode->hasOneRef())
             return true;
             
-        if (oldFocusedNode.get() == oldFocusedNode->rootEditableElement())
+        if (oldFocusedNode == oldFocusedNode->rootEditableElement())
             frame()->editor()->didEndEditing();
     }
 
@@ -2596,7 +2688,7 @@ bool Document::setFocusedNode(PassRefPtr<Node> newFocusedNode)
         }
         m_focusedNode->setFocus();
 
-        if (m_focusedNode.get() == m_focusedNode->rootEditableElement())
+        if (m_focusedNode == m_focusedNode->rootEditableElement())
             frame()->editor()->didBeginEditing();
 
         // eww, I suck. set the qt focus correctly
@@ -2618,20 +2710,17 @@ bool Document::setFocusedNode(PassRefPtr<Node> newFocusedNode)
         }
     }
 
-#if PLATFORM(MAC) && !PLATFORM(CHROMIUM)
-    if (!focusChangeBlocked && m_focusedNode && AXObjectCache::accessibilityEnabled())
-        axObjectCache()->handleFocusedUIElementChanged();
-#elif PLATFORM(GTK)
+#if ((PLATFORM(MAC) || PLATFORM(WIN)) && !PLATFORM(CHROMIUM)) || PLATFORM(GTK)
     if (!focusChangeBlocked && m_focusedNode && AXObjectCache::accessibilityEnabled()) {
         RenderObject* oldFocusedRenderer = 0;
         RenderObject* newFocusedRenderer = 0;
 
         if (oldFocusedNode)
-            oldFocusedRenderer = oldFocusedNode.get()->renderer();
+            oldFocusedRenderer = oldFocusedNode->renderer();
         if (newFocusedNode)
-            newFocusedRenderer = newFocusedNode.get()->renderer();
+            newFocusedRenderer = newFocusedNode->renderer();
 
-        axObjectCache()->handleFocusedUIElementChangedWithRenderers(oldFocusedRenderer, newFocusedRenderer);
+        axObjectCache()->handleFocusedUIElementChanged(oldFocusedRenderer, newFocusedRenderer);
     }
 #endif
 
@@ -2802,6 +2891,15 @@ void Document::dispatchLoadEvent()
     domWindow->dispatchLoadEvent();
 }
 
+void Document::dispatchPageTransitionEvent(const AtomicString& eventType, bool persisted)
+{
+    ASSERT(!eventDispatchForbidden());
+    DOMWindow* domWindow = this->domWindow();
+    if (!domWindow)
+        return;
+    domWindow->dispatchPageTransitionEvent(eventType, persisted);
+}
+
 PassRefPtr<Event> Document::createEvent(const String& eventType, ExceptionCode& ec)
 {
     if (eventType == "Event" || eventType == "Events" || eventType == "HTMLEvents")
@@ -2816,6 +2914,8 @@ PassRefPtr<Event> Document::createEvent(const String& eventType, ExceptionCode& 
         return MutationEvent::create();
     if (eventType == "OverflowEvent")
         return OverflowEvent::create();
+    if (eventType == "PageTransitionEvent")
+        return PageTransitionEvent::create();
     if (eventType == "ProgressEvent")
         return ProgressEvent::create();
 #if ENABLE(DOM_STORAGE)
@@ -3825,7 +3925,7 @@ PassRefPtr<Attr> Document::createAttributeNS(const String& namespaceURI, const S
 
     // FIXME: Assume this is a mapped attribute, since createAttribute isn't namespace-aware.  There's no harm to XML
     // documents if we're wrong.
-    return new Attr(0, this, MappedAttribute::create(qName, StringImpl::empty()));
+    return Attr::create(0, this, MappedAttribute::create(qName, StringImpl::empty()));
 }
 
 #if ENABLE(SVG)
@@ -4126,7 +4226,7 @@ void Document::initSecurityContext()
     if (!m_frame) {
         // No source for a security context.
         // This can occur via document.implementation.createDocument().
-        m_cookieURL = KURL("");
+        m_cookieURL = KURL(ParsedURLString, "");
         ScriptExecutionContext::setSecurityOrigin(SecurityOrigin::createEmpty());
         return;
     }
@@ -4327,7 +4427,7 @@ void Document::detachRange(Range* range)
     m_ranges.remove(range);
 }
 
-CanvasRenderingContext2D* Document::getCSSCanvasContext(const String& type, const String& name, int width, int height)
+CanvasRenderingContext* Document::getCSSCanvasContext(const String& type, const String& name, int width, int height)
 {
     HTMLCanvasElement* result = getCSSCanvasElement(name);
     if (!result)
@@ -4378,10 +4478,12 @@ void Document::reportException(const String& errorMessage, int lineNumber, const
 void Document::addMessage(MessageDestination destination, MessageSource source, MessageType type, MessageLevel level, const String& message, unsigned lineNumber, const String& sourceURL)
 {
     switch (destination) {
+#if ENABLE(INSPECTOR)
     case InspectorControllerDestination:
         if (page())
             page()->inspectorController()->addMessageToConsole(source, type, level, message, lineNumber, sourceURL);
         return;
+#endif
     case ConsoleDestination:
         if (DOMWindow* window = domWindow())
             window->console()->addMessage(source, type, level, message, lineNumber, sourceURL);
@@ -4392,8 +4494,10 @@ void Document::addMessage(MessageDestination destination, MessageSource source, 
 
 void Document::resourceRetrievedByXMLHttpRequest(unsigned long identifier, const ScriptString& sourceString)
 {
+#if ENABLE(INSPECTOR)
     if (page())
         page()->inspectorController()->resourceRetrievedByXMLHttpRequest(identifier, sourceString);
+#endif
     Frame* frame = this->frame();
     if (frame) {
         FrameLoader* frameLoader = frame->loader();
@@ -4403,8 +4507,13 @@ void Document::resourceRetrievedByXMLHttpRequest(unsigned long identifier, const
 
 void Document::scriptImported(unsigned long identifier, const String& sourceString)
 {
+#if ENABLE(INSPECTOR)
     if (page())
         page()->inspectorController()->scriptImported(identifier, sourceString);
+#else
+    UNUSED_PARAM(identifier);
+    UNUSED_PARAM(sourceString);
+#endif
 }
 
 class ScriptExecutionContextTaskTimer : public TimerBase {

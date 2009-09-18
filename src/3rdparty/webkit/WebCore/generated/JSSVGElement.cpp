@@ -94,6 +94,11 @@ bool JSSVGElement::getOwnPropertySlot(ExecState* exec, const Identifier& propert
     return getStaticValueSlot<JSSVGElement, Base>(exec, &JSSVGElementTable, this, propertyName, slot);
 }
 
+bool JSSVGElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGElement, Base>(exec, &JSSVGElementTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGElementId(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGElement* castedThis = static_cast<JSSVGElement*>(asObject(slot.slotBase()));
@@ -149,7 +154,7 @@ void setJSSVGElementXmlbase(ExecState* exec, JSObject* thisObject, JSValue value
 
 SVGElement* toSVGElement(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGElement::s_info) ? static_cast<JSSVGElement*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGElement::s_info) ? static_cast<JSSVGElement*>(asObject(value))->impl() : 0;
 }
 
 }

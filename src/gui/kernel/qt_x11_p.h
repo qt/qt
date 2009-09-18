@@ -544,10 +544,12 @@ struct QX11Data
         TARGETS,
         MULTIPLE,
         TIMESTAMP,
+        SAVE_TARGETS,
         CLIP_TEMPORARY,
         _QT_SELECTION,
         _QT_CLIPBOARD_SENTINEL,
         _QT_SELECTION_SENTINEL,
+        CLIPBOARD_MANAGER,
 
         RESOURCE_MANAGER,
 

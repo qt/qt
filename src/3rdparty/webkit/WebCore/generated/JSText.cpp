@@ -73,6 +73,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSTextPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -87,6 +88,11 @@ const ClassInfo JSTextConstructor::s_info = { "TextConstructor", 0, &JSTextConst
 bool JSTextConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSTextConstructor, DOMObject>(exec, &JSTextConstructorTable, this, propertyName, slot);
+}
+
+bool JSTextConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSTextConstructor, DOMObject>(exec, &JSTextConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -117,6 +123,11 @@ bool JSTextPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& prop
     return getStaticFunctionSlot<JSObject>(exec, &JSTextPrototypeTable, this, propertyName, slot);
 }
 
+bool JSTextPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSTextPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSText::s_info = { "Text", &JSCharacterData::s_info, &JSTextTable, 0 };
 
 JSText::JSText(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Text> impl)
@@ -132,6 +143,11 @@ JSObject* JSText::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 bool JSText::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSText, Base>(exec, &JSTextTable, this, propertyName, slot);
+}
+
+bool JSText::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSText, Base>(exec, &JSTextTable, this, propertyName, descriptor);
 }
 
 JSValue jsTextWholeText(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -155,7 +171,7 @@ JSValue JSText::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 JSValue JSC_HOST_CALL jsTextPrototypeFunctionSplitText(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSText::s_info))
+    if (!thisValue.inherits(&JSText::s_info))
         return throwError(exec, TypeError);
     JSText* castedThisObj = static_cast<JSText*>(asObject(thisValue));
     Text* imp = static_cast<Text*>(castedThisObj->impl());
@@ -175,7 +191,7 @@ JSValue JSC_HOST_CALL jsTextPrototypeFunctionSplitText(ExecState* exec, JSObject
 JSValue JSC_HOST_CALL jsTextPrototypeFunctionReplaceWholeText(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSText::s_info))
+    if (!thisValue.inherits(&JSText::s_info))
         return throwError(exec, TypeError);
     JSText* castedThisObj = static_cast<JSText*>(asObject(thisValue));
     Text* imp = static_cast<Text*>(castedThisObj->impl());

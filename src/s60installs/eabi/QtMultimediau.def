@@ -156,4 +156,136 @@ EXPORTS
 	_ZThn8_N18QAudioEnginePluginD1Ev @ 155 NONAME
 	_ZlsR11QDataStreamRK14QAudioDeviceId @ 156 NONAME
 	_ZrsR11QDataStreamR14QAudioDeviceId @ 157 NONAME
+	_ZN11QAudioInput19getStaticMetaObjectEv @ 158 NONAME
+	_ZN11QVideoFrame10setEndTimeEx @ 159 NONAME
+	_ZN11QVideoFrame12setFieldTypeENS_9FieldTypeE @ 160 NONAME
+	_ZN11QVideoFrame12setStartTimeEx @ 161 NONAME
+	_ZN11QVideoFrame21equivalentImageFormatENS_11PixelFormatE @ 162 NONAME
+	_ZN11QVideoFrame21equivalentPixelFormatEN6QImage6FormatE @ 163 NONAME
+	_ZN11QVideoFrame3mapEN20QAbstractVideoBuffer7MapModeE @ 164 NONAME
+	_ZN11QVideoFrame4bitsEv @ 165 NONAME
+	_ZN11QVideoFrame5unmapEv @ 166 NONAME
+	_ZN11QVideoFrameC1EP20QAbstractVideoBufferRK5QSizeNS_11PixelFormatE @ 167 NONAME
+	_ZN11QVideoFrameC1ERK6QImage @ 168 NONAME
+	_ZN11QVideoFrameC1ERKS_ @ 169 NONAME
+	_ZN11QVideoFrameC1EiRK5QSizeiNS_11PixelFormatE @ 170 NONAME
+	_ZN11QVideoFrameC1Ev @ 171 NONAME
+	_ZN11QVideoFrameC2EP20QAbstractVideoBufferRK5QSizeNS_11PixelFormatE @ 172 NONAME
+	_ZN11QVideoFrameC2ERK6QImage @ 173 NONAME
+	_ZN11QVideoFrameC2ERKS_ @ 174 NONAME
+	_ZN11QVideoFrameC2EiRK5QSizeiNS_11PixelFormatE @ 175 NONAME
+	_ZN11QVideoFrameC2Ev @ 176 NONAME
+	_ZN11QVideoFrameD1Ev @ 177 NONAME
+	_ZN11QVideoFrameD2Ev @ 178 NONAME
+	_ZN11QVideoFrameaSERKS_ @ 179 NONAME
+	_ZN12QAudioOutput19getStaticMetaObjectEv @ 180 NONAME
+	_ZN16QAudioDeviceInfo19getStaticMetaObjectEv @ 181 NONAME
+	_ZN17QImageVideoBuffer3mapEN20QAbstractVideoBuffer7MapModeEPiS2_ @ 182 NONAME
+	_ZN17QImageVideoBuffer5unmapEv @ 183 NONAME
+	_ZN17QImageVideoBufferC1ERK6QImage @ 184 NONAME
+	_ZN17QImageVideoBufferC2ERK6QImage @ 185 NONAME
+	_ZN17QImageVideoBufferD0Ev @ 186 NONAME
+	_ZN17QImageVideoBufferD1Ev @ 187 NONAME
+	_ZN17QImageVideoBufferD2Ev @ 188 NONAME
+	_ZN18QAudioEnginePlugin19getStaticMetaObjectEv @ 189 NONAME
+	_ZN18QMemoryVideoBuffer3mapEN20QAbstractVideoBuffer7MapModeEPiS2_ @ 190 NONAME
+	_ZN18QMemoryVideoBuffer5unmapEv @ 191 NONAME
+	_ZN18QMemoryVideoBufferC1ERK10QByteArrayi @ 192 NONAME
+	_ZN18QMemoryVideoBufferC2ERK10QByteArrayi @ 193 NONAME
+	_ZN18QMemoryVideoBufferD0Ev @ 194 NONAME
+	_ZN18QMemoryVideoBufferD1Ev @ 195 NONAME
+	_ZN18QMemoryVideoBufferD2Ev @ 196 NONAME
+	_ZN19QAbstractAudioInput19getStaticMetaObjectEv @ 197 NONAME
+	_ZN19QVideoSurfaceFormat11setPropertyEPKcRK8QVariant @ 198 NONAME
+	_ZN19QVideoSurfaceFormat11setViewportERK5QRect @ 199 NONAME
+	_ZN19QVideoSurfaceFormat12setFrameRateERK5QPairIiiE @ 200 NONAME
+	_ZN19QVideoSurfaceFormat12setFrameRateEii @ 201 NONAME
+	_ZN19QVideoSurfaceFormat12setFrameSizeERK5QSizeNS_12ViewportModeE @ 202 NONAME
+	_ZN19QVideoSurfaceFormat12setFrameSizeEiiNS_12ViewportModeE @ 203 NONAME
+	_ZN19QVideoSurfaceFormat16setYuvColorSpaceENS_13YuvColorSpaceE @ 204 NONAME
+	_ZN19QVideoSurfaceFormat19setPixelAspectRatioERK5QSize @ 205 NONAME
+	_ZN19QVideoSurfaceFormat19setPixelAspectRatioEii @ 206 NONAME
+	_ZN19QVideoSurfaceFormat20setScanLineDirectionENS_9DirectionE @ 207 NONAME
+	_ZN19QVideoSurfaceFormatC1ERK5QSizeN11QVideoFrame11PixelFormatEN20QAbstractVideoBuffer10HandleTypeE @ 208 NONAME
+	_ZN19QVideoSurfaceFormatC1ERKS_ @ 209 NONAME
+	_ZN19QVideoSurfaceFormatC1Ev @ 210 NONAME
+	_ZN19QVideoSurfaceFormatC2ERK5QSizeN11QVideoFrame11PixelFormatEN20QAbstractVideoBuffer10HandleTypeE @ 211 NONAME
+	_ZN19QVideoSurfaceFormatC2ERKS_ @ 212 NONAME
+	_ZN19QVideoSurfaceFormatC2Ev @ 213 NONAME
+	_ZN19QVideoSurfaceFormatD1Ev @ 214 NONAME
+	_ZN19QVideoSurfaceFormatD2Ev @ 215 NONAME
+	_ZN19QVideoSurfaceFormataSERKS_ @ 216 NONAME
+	_ZN20QAbstractAudioOutput19getStaticMetaObjectEv @ 217 NONAME
+	_ZN20QAbstractVideoBufferC2ENS_10HandleTypeE @ 218 NONAME
+	_ZN20QAbstractVideoBufferC2ER27QAbstractVideoBufferPrivateNS_10HandleTypeE @ 219 NONAME
+	_ZN20QAbstractVideoBufferD0Ev @ 220 NONAME
+	_ZN20QAbstractVideoBufferD1Ev @ 221 NONAME
+	_ZN20QAbstractVideoBufferD2Ev @ 222 NONAME
+	_ZN21QAbstractVideoSurface11qt_metacallEN11QMetaObject4CallEiPPv @ 223 NONAME
+	_ZN21QAbstractVideoSurface11qt_metacastEPKc @ 224 NONAME
+	_ZN21QAbstractVideoSurface14startedChangedEb @ 225 NONAME
+	_ZN21QAbstractVideoSurface16staticMetaObjectE @ 226 NONAME DATA 16
+	_ZN21QAbstractVideoSurface19getStaticMetaObjectEv @ 227 NONAME
+	_ZN21QAbstractVideoSurface20surfaceFormatChangedERK19QVideoSurfaceFormat @ 228 NONAME
+	_ZN21QAbstractVideoSurface23supportedFormatsChangedEv @ 229 NONAME
+	_ZN21QAbstractVideoSurface4stopEv @ 230 NONAME
+	_ZN21QAbstractVideoSurface5startERK19QVideoSurfaceFormat @ 231 NONAME
+	_ZN21QAbstractVideoSurface8setErrorENS_5ErrorE @ 232 NONAME
+	_ZN21QAbstractVideoSurfaceC2EP7QObject @ 233 NONAME
+	_ZN21QAbstractVideoSurfaceC2ER28QAbstractVideoSurfacePrivateP7QObject @ 234 NONAME
+	_ZN21QAbstractVideoSurfaceD0Ev @ 235 NONAME
+	_ZN21QAbstractVideoSurfaceD1Ev @ 236 NONAME
+	_ZN21QAbstractVideoSurfaceD2Ev @ 237 NONAME
+	_ZN24QAbstractAudioDeviceInfo19getStaticMetaObjectEv @ 238 NONAME
+	_ZNK11QVideoFrame10handleTypeEv @ 239 NONAME
+	_ZNK11QVideoFrame10isReadableEv @ 240 NONAME
+	_ZNK11QVideoFrame10isWritableEv @ 241 NONAME
+	_ZNK11QVideoFrame11pixelFormatEv @ 242 NONAME
+	_ZNK11QVideoFrame12bytesPerLineEv @ 243 NONAME
+	_ZNK11QVideoFrame4bitsEv @ 244 NONAME
+	_ZNK11QVideoFrame4sizeEv @ 245 NONAME
+	_ZNK11QVideoFrame5widthEv @ 246 NONAME
+	_ZNK11QVideoFrame6handleEv @ 247 NONAME
+	_ZNK11QVideoFrame6heightEv @ 248 NONAME
+	_ZNK11QVideoFrame7endTimeEv @ 249 NONAME
+	_ZNK11QVideoFrame7isValidEv @ 250 NONAME
+	_ZNK11QVideoFrame7mapModeEv @ 251 NONAME
+	_ZNK11QVideoFrame8isMappedEv @ 252 NONAME
+	_ZNK11QVideoFrame8numBytesEv @ 253 NONAME
+	_ZNK11QVideoFrame9fieldTypeEv @ 254 NONAME
+	_ZNK11QVideoFrame9startTimeEv @ 255 NONAME
+	_ZNK17QImageVideoBuffer7mapModeEv @ 256 NONAME
+	_ZNK18QMemoryVideoBuffer7mapModeEv @ 257 NONAME
+	_ZNK19QVideoSurfaceFormat10frameWidthEv @ 258 NONAME
+	_ZNK19QVideoSurfaceFormat10handleTypeEv @ 259 NONAME
+	_ZNK19QVideoSurfaceFormat11frameHeightEv @ 260 NONAME
+	_ZNK19QVideoSurfaceFormat11pixelFormatEv @ 261 NONAME
+	_ZNK19QVideoSurfaceFormat13propertyNamesEv @ 262 NONAME
+	_ZNK19QVideoSurfaceFormat13yuvColorSpaceEv @ 263 NONAME
+	_ZNK19QVideoSurfaceFormat16pixelAspectRatioEv @ 264 NONAME
+	_ZNK19QVideoSurfaceFormat17scanLineDirectionEv @ 265 NONAME
+	_ZNK19QVideoSurfaceFormat7isValidEv @ 266 NONAME
+	_ZNK19QVideoSurfaceFormat8propertyEPKc @ 267 NONAME
+	_ZNK19QVideoSurfaceFormat8sizeHintEv @ 268 NONAME
+	_ZNK19QVideoSurfaceFormat8viewportEv @ 269 NONAME
+	_ZNK19QVideoSurfaceFormat9frameRateEv @ 270 NONAME
+	_ZNK19QVideoSurfaceFormat9frameSizeEv @ 271 NONAME
+	_ZNK19QVideoSurfaceFormateqERKS_ @ 272 NONAME
+	_ZNK19QVideoSurfaceFormatneERKS_ @ 273 NONAME
+	_ZNK20QAbstractVideoBuffer10handleTypeEv @ 274 NONAME
+	_ZNK20QAbstractVideoBuffer6handleEv @ 275 NONAME
+	_ZNK21QAbstractVideoSurface10metaObjectEv @ 276 NONAME
+	_ZNK21QAbstractVideoSurface13surfaceFormatEv @ 277 NONAME
+	_ZNK21QAbstractVideoSurface17isFormatSupportedERK19QVideoSurfaceFormatPS0_ @ 278 NONAME
+	_ZNK21QAbstractVideoSurface5errorEv @ 279 NONAME
+	_ZNK21QAbstractVideoSurface9isStartedEv @ 280 NONAME
+	_ZTI17QImageVideoBuffer @ 281 NONAME ; #<TI>#
+	_ZTI18QMemoryVideoBuffer @ 282 NONAME ; #<TI>#
+	_ZTI20QAbstractVideoBuffer @ 283 NONAME ; #<TI>#
+	_ZTI21QAbstractVideoSurface @ 284 NONAME ; #<TI>#
+	_ZTV17QImageVideoBuffer @ 285 NONAME ; #<VT>#
+	_ZTV18QMemoryVideoBuffer @ 286 NONAME ; #<VT>#
+	_ZTV20QAbstractVideoBuffer @ 287 NONAME ; #<VT>#
+	_ZTV21QAbstractVideoSurface @ 288 NONAME ; #<VT>#
+	_Zls6QDebugRK19QVideoSurfaceFormat @ 289 NONAME
 
