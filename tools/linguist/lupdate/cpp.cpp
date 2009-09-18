@@ -76,7 +76,7 @@ struct Namespace {
 
     Namespace() :
             isClass(false),
-            hasTrFunctions(false), needsTrFunctions(false), complained(false)
+            hasTrFunctions(false), complained(false)
     {}
 
     QString name;
@@ -89,7 +89,6 @@ struct Namespace {
     bool isClass;
 
     bool hasTrFunctions;
-    bool needsTrFunctions;
     bool complained; // ... that tr functions are missing.
 };
 
@@ -875,7 +874,6 @@ Namespace *ParseResults::include(Namespace *that, const Namespace *other)
             // (though not necessary) if they are shared
             thisSub->isClass |= otherSub->isClass;
             thisSub->hasTrFunctions |= otherSub->hasTrFunctions;
-            thisSub->needsTrFunctions |= otherSub->needsTrFunctions;
             thisSub->complained |= otherSub->complained;
 
             if (Namespace *newSub = include(thisSub, otherSub)) {
@@ -1843,17 +1841,8 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
 #endif
             break;
         case Tok_RightBrace:
-            if (yyBraceDepth + 1 == namespaceDepths.count()) {
-                // class or namespace
-                Namespace *ns = namespaces.last();
-                if (ns->needsTrFunctions && !ns->hasTrFunctions && !ns->complained) {
-                    qWarning("%s:%d: Class '%s' lacks Q_OBJECT macro\n",
-                             qPrintable(yyFileName), yyLineNo,
-                             qPrintable(stringifyNamespace(namespaces)));
-                    ns->complained = true;
-                }
+            if (yyBraceDepth + 1 == namespaceDepths.count()) // class or namespace
                 truncateNamespaces(&namespaces, namespaceDepths.pop());
-            }
             if (yyBraceDepth == namespaceDepths.count()) {
                 // function, class or namespace
                 if (!yyBraceDepth && !directInclude) {
