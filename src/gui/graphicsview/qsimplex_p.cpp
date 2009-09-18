@@ -273,6 +273,25 @@ bool QSimplex::setConstraints(const QList<QSimplexConstraint *> newConstraints)
     // solution for the first problem, thus we don't need them
     // anymore.
     clearColumns(firstArtificial, columns - 2);
+
+    #ifdef QT_DEBUG
+    // Ensure that at the end of the simplex each row should either:
+    //  - Have a positive value on the column associated to its variable, or
+    //  - Have zero values in all columns.
+    //
+    // This avoids a regression where restrictions would be lost
+    // due to randomness in the pivotRowForColumn method.
+    for (int i = 1; i < rows; ++i) {
+        int variableIndex = valueAt(i, 0);
+        if (valueAt(i, variableIndex) > 0)
+            continue;
+
+        for (int j = 1; j < columns; ++j) {
+            Q_ASSERT(valueAt(i, j) == 0);
+        }
+    }
+    #endif
+
     return true;
 }
 
@@ -371,6 +390,23 @@ int QSimplex::findPivotColumn()
     return minIndex;
 }
 
+/*!
+  \internal
+
+  For a given pivot column, find the pivot row. That is, the row with the
+  minimum associated "quotient" where:
+
+  - quotient is the division of the value in the last column by the value
+    in the pivot column.
+  - rows with value less or equal to zero are ignored
+  - if two rows have the same quotient, lines are chosen based on the
+    highest variable index (value in the first column)
+
+  The last condition avoids a bug where artificial variables would be
+  left behind for the second-phase simplex, and with 'good'
+  constraints would be removed before it, what would lead to incorrect
+  results.
+*/
 int QSimplex::pivotRowForColumn(int column)
 {
     qreal min = qreal(999999999999.0); // ###
@@ -384,6 +420,8 @@ int QSimplex::pivotRowForColumn(int column)
         qreal quotient = valueAt(i, columns - 1) / divisor;
         if (quotient < min) {
             min = quotient;
+            minIndex = i;
+        } else if ((quotient == min) && (valueAt(i, 0) > valueAt(minIndex, 0))) {
             minIndex = i;
         }
     }
