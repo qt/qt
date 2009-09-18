@@ -76,6 +76,7 @@ excluded_directories="$excluded_directories WebCore/page/mac"
 excluded_directories="$excluded_directories WebCore/page/wx"
 excluded_directories="$excluded_directories WebCore/page/chromium"
 excluded_directories="$excluded_directories WebCore/page/haiku"
+excluded_directories="$excluded_directories WebCore/page/wince"
 
 excluded_directories="$excluded_directories WebCore/history/mac"
 
@@ -196,6 +197,10 @@ files_to_remove="$files_to_remove JavaScriptCore/AllInOneFile.cpp"
 files_to_remove="$files_to_remove JavaScriptCore/JavaScriptCoreSources.bkl"
 files_to_remove="$files_to_remove JavaScriptCore/jscore.bkl"
 
+files_to_remove="$files_to_remove WebCore/wscript"
+files_to_remove="$files_to_remove WebCore/WebCore.ContextMenus.exp"
+files_to_remove="$files_to_remove WebCore/WebCore.DragSupport.exp"
+files_to_remove="$files_to_remove WebCore/WebCore.Inspector.exp"
 files_to_remove="$files_to_remove WebCore/WebCoreSources.bkl"
 files_to_remove="$files_to_remove WebCore/webcore-base.bkl"
 files_to_remove="$files_to_remove WebCore/webcore-wx.bkl"
