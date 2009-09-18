@@ -42,6 +42,7 @@ excluded_directories="$excluded_directories JavaScriptCore/JavaScriptCore.xcodep
 excluded_directories="$excluded_directories JavaScriptCore/tests"
 excluded_directories="$excluded_directories JavaScriptCore/API/tests"
 excluded_directories="$excluded_directories JavaScriptCore/JavaScriptCore.vcproj"
+excluded_directories="$excluded_directories JavaScriptCore/JavaScriptCore.pro"
 excluded_directories="$excluded_directories JavaScriptCore/wtf/wx"
 excluded_directories="$excluded_directories JavaScriptCore/wtf/gtk"
 excluded_directories="$excluded_directories JavaScriptCore/wtf/mac"
