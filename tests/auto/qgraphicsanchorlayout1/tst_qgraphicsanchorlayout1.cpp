@@ -193,7 +193,7 @@ QSizeF TestWidget::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
 
 
 //----------------------------- Test class ------------------------------------
-class TestGraphicsAnchorLayout : public QObject
+class tst_QGraphicsAnchorLayout1 : public QObject
 {
     Q_OBJECT
 
@@ -246,7 +246,7 @@ private slots:
 };
 
 
-void TestGraphicsAnchorLayout::testCount()
+void tst_QGraphicsAnchorLayout1::testCount()
 {
     QGraphicsWidget *widget = new QGraphicsWidget;
 
@@ -270,7 +270,7 @@ void TestGraphicsAnchorLayout::testCount()
     delete widget;
 }
 
-void TestGraphicsAnchorLayout::testRemoveAt()
+void tst_QGraphicsAnchorLayout1::testRemoveAt()
 {
     TheAnchorLayout *layout = new TheAnchorLayout();
     QVERIFY( layout->count() == 0 );
@@ -298,7 +298,7 @@ void TestGraphicsAnchorLayout::testRemoveAt()
     delete widget2;
 }
 
-void TestGraphicsAnchorLayout::testRemoveItem()
+void tst_QGraphicsAnchorLayout1::testRemoveItem()
 {
     TheAnchorLayout *layout = new TheAnchorLayout();
     QCOMPARE( layout->count(), 0 );
@@ -330,7 +330,7 @@ void TestGraphicsAnchorLayout::testRemoveItem()
     delete widget2;
 }
 
-void TestGraphicsAnchorLayout::testItemAt()
+void tst_QGraphicsAnchorLayout1::testItemAt()
 {
     QGraphicsWidget *widget = new QGraphicsWidget;
 
@@ -356,7 +356,7 @@ void TestGraphicsAnchorLayout::testItemAt()
     delete widget;
 }
 
-void TestGraphicsAnchorLayout::testIndexOf()
+void tst_QGraphicsAnchorLayout1::testIndexOf()
 {
     QGraphicsWidget *widget = new QGraphicsWidget;
 
@@ -386,7 +386,7 @@ void TestGraphicsAnchorLayout::testIndexOf()
     delete widget;
 }
 
-void TestGraphicsAnchorLayout::testAddAndRemoveAnchor()
+void tst_QGraphicsAnchorLayout1::testAddAndRemoveAnchor()
 {
     QGraphicsWidget *widget = new QGraphicsWidget;
 
@@ -461,7 +461,7 @@ void TestGraphicsAnchorLayout::testAddAndRemoveAnchor()
     delete widget;
 }
 
-void TestGraphicsAnchorLayout::testIsValid()
+void tst_QGraphicsAnchorLayout1::testIsValid()
 {
     // ###: REMOVE ME
     return;
@@ -547,7 +547,7 @@ void TestGraphicsAnchorLayout::testIsValid()
     }
 }
 
-void TestGraphicsAnchorLayout::testSpecialCases()
+void tst_QGraphicsAnchorLayout1::testSpecialCases()
 {
     // One widget, setLayout before defining layouts
     {
@@ -755,7 +755,7 @@ void TestGraphicsAnchorLayout::testSpecialCases()
     }
 }
 
-void TestGraphicsAnchorLayout::testBasicLayout_data()
+void tst_QGraphicsAnchorLayout1::testBasicLayout_data()
 {
     QTest::addColumn<QSizeF>("size");
     QTest::addColumn<BasicLayoutTestDataList>("data");
@@ -1117,7 +1117,7 @@ void TestGraphicsAnchorLayout::testBasicLayout_data()
     }
 }
 
-void TestGraphicsAnchorLayout::testNegativeSpacing_data()
+void tst_QGraphicsAnchorLayout1::testNegativeSpacing_data()
 {
     QTest::addColumn<QSizeF>("size");
     QTest::addColumn<BasicLayoutTestDataList>("data");
@@ -1280,7 +1280,7 @@ void TestGraphicsAnchorLayout::testNegativeSpacing_data()
     }
 }
 
-void TestGraphicsAnchorLayout::testMixedSpacing_data()
+void tst_QGraphicsAnchorLayout1::testMixedSpacing_data()
 {
     QTest::addColumn<QSizeF>("size");
     QTest::addColumn<BasicLayoutTestDataList>("data");
@@ -1442,7 +1442,7 @@ void TestGraphicsAnchorLayout::testMixedSpacing_data()
     }
 }
 
-void TestGraphicsAnchorLayout::testMulti_data()
+void tst_QGraphicsAnchorLayout1::testMulti_data()
 {
     QTest::addColumn<QSizeF>("size");
     QTest::addColumn<BasicLayoutTestDataList>("data");
@@ -1668,7 +1668,7 @@ inline QGraphicsLayoutItem *getItem(
     return widgets[index];
 }
 
-void TestGraphicsAnchorLayout::testBasicLayout()
+void tst_QGraphicsAnchorLayout1::testBasicLayout()
 {
     QFETCH(QSizeF, size);
     QFETCH(BasicLayoutTestDataList, data);
@@ -1741,25 +1741,25 @@ void TestGraphicsAnchorLayout::testBasicLayout()
     delete widget;
 }
 
-void TestGraphicsAnchorLayout::testNegativeSpacing()
+void tst_QGraphicsAnchorLayout1::testNegativeSpacing()
 {
     // use the same frame
     testBasicLayout();
 }
 
-void TestGraphicsAnchorLayout::testMixedSpacing()
+void tst_QGraphicsAnchorLayout1::testMixedSpacing()
 {
     // use the same frame
     testBasicLayout();
 }
 
-void TestGraphicsAnchorLayout::testMulti()
+void tst_QGraphicsAnchorLayout1::testMulti()
 {
     // use the same frame
     testBasicLayout();
 }
 
-void TestGraphicsAnchorLayout::testCenterAnchors_data()
+void tst_QGraphicsAnchorLayout1::testCenterAnchors_data()
 {
     QTest::addColumn<QSizeF>("size");
     QTest::addColumn<BasicLayoutTestDataList>("data");
@@ -2037,13 +2037,13 @@ void TestGraphicsAnchorLayout::testCenterAnchors_data()
 
 }
 
-void TestGraphicsAnchorLayout::testCenterAnchors()
+void tst_QGraphicsAnchorLayout1::testCenterAnchors()
 {
     // use the same frame
     testBasicLayout();
 }
 
-void TestGraphicsAnchorLayout::testRemoveCenterAnchor_data()
+void tst_QGraphicsAnchorLayout1::testRemoveCenterAnchor_data()
 {
     QTest::addColumn<QSizeF>("size");
     QTest::addColumn<BasicLayoutTestDataList>("data");
@@ -2168,7 +2168,7 @@ void TestGraphicsAnchorLayout::testRemoveCenterAnchor_data()
 
 }
 
-void TestGraphicsAnchorLayout::testRemoveCenterAnchor()
+void tst_QGraphicsAnchorLayout1::testRemoveCenterAnchor()
 {
     QFETCH(QSizeF, size);
     QFETCH(BasicLayoutTestDataList, data);
@@ -2231,7 +2231,7 @@ void TestGraphicsAnchorLayout::testRemoveCenterAnchor()
     delete widget;
 }
 
-void TestGraphicsAnchorLayout::testSingleSizePolicy_data()
+void tst_QGraphicsAnchorLayout1::testSingleSizePolicy_data()
 {
     QTest::addColumn<QSizeF>("size");
     QTest::addColumn<QSizePolicy>("policy");
@@ -2348,7 +2348,7 @@ void TestGraphicsAnchorLayout::testSingleSizePolicy_data()
     }
 }
 
-void TestGraphicsAnchorLayout::testSingleSizePolicy()
+void tst_QGraphicsAnchorLayout1::testSingleSizePolicy()
 {
     QFETCH(QSizeF, size);
     QFETCH(QSizePolicy, policy);
@@ -2377,7 +2377,7 @@ void TestGraphicsAnchorLayout::testSingleSizePolicy()
     Q_UNUSED( childRect );
 }
 
-void TestGraphicsAnchorLayout::testDoubleSizePolicy_data()
+void tst_QGraphicsAnchorLayout1::testDoubleSizePolicy_data()
 {
     // tests only horizontal direction
     QTest::addColumn<QSizePolicy>("policy1");
@@ -2501,7 +2501,7 @@ void TestGraphicsAnchorLayout::testDoubleSizePolicy_data()
     }
 }
 
-void TestGraphicsAnchorLayout::testDoubleSizePolicy()
+void tst_QGraphicsAnchorLayout1::testDoubleSizePolicy()
 {
     // ### Size policy is not yet supported
     return;
@@ -2544,7 +2544,7 @@ void TestGraphicsAnchorLayout::testDoubleSizePolicy()
 typedef QMap<int,qreal> SizeHintArray;
 Q_DECLARE_METATYPE(SizeHintArray)
 
-void TestGraphicsAnchorLayout::testSizeDistribution_data()
+void tst_QGraphicsAnchorLayout1::testSizeDistribution_data()
 {
     // tests only horizontal direction
     QTest::addColumn<SizeHintArray>("sizeHints1");
@@ -2637,7 +2637,7 @@ void TestGraphicsAnchorLayout::testSizeDistribution_data()
 
 }
 
-void TestGraphicsAnchorLayout::testSizeDistribution()
+void tst_QGraphicsAnchorLayout1::testSizeDistribution()
 {
     QFETCH(SizeHintArray, sizeHints1);
     QFETCH(SizeHintArray, sizeHints2);
@@ -2679,7 +2679,7 @@ void TestGraphicsAnchorLayout::testSizeDistribution()
     }
 }
 
-void TestGraphicsAnchorLayout::testSizeHint()
+void tst_QGraphicsAnchorLayout1::testSizeHint()
 {
     QGraphicsWidget *widget[5];
 
@@ -2816,7 +2816,7 @@ void TestGraphicsAnchorLayout::testSizeHint()
 
 #ifdef TEST_COMPLEX_CASES
 
-void TestGraphicsAnchorLayout::testComplexCases_data()
+void tst_QGraphicsAnchorLayout1::testComplexCases_data()
 {
     QTest::addColumn<QSizeF>("size");
     QTest::addColumn<BasicLayoutTestDataList>("data");
@@ -3009,7 +3009,7 @@ void TestGraphicsAnchorLayout::testComplexCases_data()
     }
 }
 
-void TestGraphicsAnchorLayout::testComplexCases()
+void tst_QGraphicsAnchorLayout1::testComplexCases()
 {
     QFETCH(QSizeF, size);
     QFETCH(BasicLayoutTestDataList, data);
@@ -3090,7 +3090,7 @@ void TestGraphicsAnchorLayout::testComplexCases()
 #endif //TEST_COMPLEX_CASES
 
 
-QTEST_MAIN(TestGraphicsAnchorLayout)
+QTEST_MAIN(tst_QGraphicsAnchorLayout1)
 #include "tst_qgraphicsanchorlayout1.moc"
 //-----------------------------------------------------------------------------
 
