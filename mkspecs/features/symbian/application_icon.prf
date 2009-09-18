@@ -6,7 +6,7 @@ contains( CONFIG, no_icon ) {
     symbian:RSS_RULES ="hidden = KAppIsHidden;" 
     CONFIG -= no_icon
 } else {
-# There is no sense to compile MIF icon is no_icon CONFIGS is set
+# There is no sense to compile MIF icon if no_icon CONFIGS is set
     !isEmpty(ICON) {
         
         !count(ICON, $$size(TRANSLATIONS)):!count(ICON, 1) {
