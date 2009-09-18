@@ -26,7 +26,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <ListenerOrientationBase.h>
 #include <LocationBase.h>
 #include <LoudnessBase.h>
-#include <RoomLevelBase.h>
 #include <SourceOrientationBase.h>
 #include <StereoWideningBase.h>
 
@@ -69,7 +68,6 @@ QHash<QByteArray, QVariant> EffectFactory::audioEffectDescriptions(AbstractAudio
             return constructEffectDescription(QObject::tr("Environmental Reverb"), "Environmental Reverb.");
         case AbstractAudioEffect::EffectLoudness:
             return constructEffectDescription(QObject::tr("Loudness"), "Loudness.");
-        //case EffectRoomLevel:
         case AbstractAudioEffect::EffectSourceOrientation:
             return constructEffectDescription(QObject::tr("Source Orientation"), "Source Orientation.");
         case AbstractAudioEffect::EffectStereoWidening:
@@ -95,7 +93,6 @@ AbstractAudioEffect *EffectFactory::createAudioEffect(AbstractAudioEffect::Type 
         case AbstractAudioEffect::EffectEnvironmentalReverb:
         case AbstractAudioEffect::EffectListenerOrientation:
         case AbstractAudioEffect::EffectLoudness:
-        //AbstractAudioEffect::EffectRoomLevel,
         case AbstractAudioEffect::EffectSourceOrientation:
         case AbstractAudioEffect::EffectStereoWidening:
             ;
@@ -140,11 +137,6 @@ QList<int> EffectFactory::effectIndexes()
 
     if (isEffectSupported<CSourceOrientation>())
         retval.append(AbstractAudioEffect::EffectSourceOrientation);
-
-    /*
-    if (isEffectSupported<CRoomLevel>())
-        retval.append(EffectRoomLevel);
-        */
 
     if (isEffectSupported<CStereoWidening>())
         retval.append(AbstractAudioEffect::EffectStereoWidening);

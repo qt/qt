@@ -76,7 +76,6 @@ public:
         EffectEnvironmentalReverb,
         EffectListenerOrientation,
         EffectLoudness,
-        //EffectRoomLevel,
         EffectSourceOrientation,
         EffectStereoWidening
     };
