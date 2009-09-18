@@ -63,7 +63,6 @@
 /* Note that for this platform PLATFORM(WIN_OS) is also defined. */
 #if defined(_WIN32_WCE)
 #define WTF_PLATFORM_WINCE 1
-#include <ce_time.h>
 #endif
 
 /* PLATFORM(LINUX) */
