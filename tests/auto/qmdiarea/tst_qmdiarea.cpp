@@ -1769,7 +1769,7 @@ void tst_QMdiArea::tileSubWindows()
     qt_x11_wait_for_window_manager(&workspace);
 #endif
     qApp->processEvents();
-    QCOMPARE(workspace.size(), QSize(150, 150));
+    QTRY_COMPARE(workspace.size(), QSize(150, 150));
 
     // Horizontal scroll bar.
     QScrollBar *hBar = workspace.horizontalScrollBar();
