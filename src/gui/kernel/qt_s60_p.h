@@ -108,7 +108,7 @@ public:
     bool virtualMouseRequired;
     int qtOwnsS60Environment : 1;
     static inline void updateScreenSize();
-    static inline RWsSession& wsSession();
+	static inline RWsSession& wsSession();
     static inline RWindowGroup& windowGroup();
     static inline CWsScreenDevice* screenDevice();
     static inline CCoeAppUi* appUi();
@@ -284,7 +284,7 @@ static inline QImage::Format qt_TDisplayMode2Format(TDisplayMode mode)
         format = QImage::Format_RGB16;
         break;
     case EColor16M:
-        format = QImage::Format_RGB666;
+        format = QImage::Format_RGB888;
         break;
     case EColor16MU:
         format = QImage::Format_RGB32;

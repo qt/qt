@@ -75,15 +75,11 @@ public:
     void beginPaint(const QRegion &);
     void endPaint(const QRegion &);
 
+    QImage* buffer(const QWidget *widget);
+
     void setGeometry(const QRect &rect);
 
-    static void lockBitmapHeap();
-    static void unlockBitmapHeap();
-
     CFbsBitmap *symbianBitmap() const;
-
-private:
-    void updatePaintDeviceOnBitmap();
 
 private:
     QS60WindowSurfacePrivate* d_ptr;

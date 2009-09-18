@@ -41,7 +41,7 @@
 
 #include "qfont.h"
 #include "qt_s60_p.h"
-#include <private/qwindowsurface_s60_p.h>
+#include "qpixmap_s60_p.h"
 #include "qmutex.h"
 
 QT_BEGIN_NAMESPACE
@@ -57,14 +57,17 @@ QString QFont::lastResortFamily() const
     QMutexLocker locker(lastResortFamilyMutex());
     static QString family;
     if (family.isEmpty()) {
-        QS60WindowSurface::unlockBitmapHeap();
+        
+        QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
+        
         CFont *font;
         const TInt err = S60->screenDevice()->GetNearestFontInTwips(font, TFontSpec());
         Q_ASSERT(err == KErrNone);
         const TFontSpec spec = font->FontSpecInTwips();
         family = QString((const QChar *)spec.iTypeface.iName.Ptr(), spec.iTypeface.iName.Length());
         S60->screenDevice()->ReleaseFont(font);
-        QS60WindowSurface::lockBitmapHeap();
+        
+        lock.relock();
     }
     return family;
 #else

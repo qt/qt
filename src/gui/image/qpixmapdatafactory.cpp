@@ -47,11 +47,14 @@
 #ifdef Q_WS_X11
 # include <private/qpixmap_x11_p.h>
 #endif
-#if defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_WIN)
 # include <private/qpixmap_raster_p.h>
 #endif
 #ifdef Q_WS_MAC
 # include <private/qpixmap_mac_p.h>
+#endif
+#ifdef Q_WS_S60
+# include <private/qpixmap_s60_p.h>
 #endif
 
 #include "private/qapplication_p.h"
@@ -75,10 +78,12 @@ QPixmapData* QSimplePixmapDataFactory::create(QPixmapData::PixelType type)
 
 #if defined(Q_WS_X11)
     return new QX11PixmapData(type);
-#elif defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
+#elif defined(Q_WS_WIN)
     return new QRasterPixmapData(type);
 #elif defined(Q_WS_MAC)
     return new QMacPixmapData(type);
+#elif defined(Q_WS_S60)
+    return new QS60PixmapData(type);    
 #else
 #error QSimplePixmapDataFactory::create() not implemented
 #endif

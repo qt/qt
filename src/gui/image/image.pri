@@ -70,6 +70,7 @@ mac {
     SOURCES += image/qpixmap_mac.cpp
 }
 symbian {
+    HEADERS += image/qpixmap_s60_p.h
     SOURCES += image/qpixmap_s60.cpp
 }
 
