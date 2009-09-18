@@ -54,6 +54,7 @@ QT_BEGIN_HEADER
 
 #if defined(Q_OS_SYMBIAN)
 class CFbsBitmap;
+class RSgImage;
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -158,9 +159,11 @@ public:
 
 #if defined(Q_OS_SYMBIAN)
     enum ConversionMode { CopyData, DuplicateHandle  };
-    
+
     CFbsBitmap *toSymbianCFbsBitmap(ConversionMode mode = DuplicateHandle) const;
     static QPixmap fromSymbianCFbsBitmap(CFbsBitmap *bitmap, ConversionMode mode = DuplicateHandle);
+    RSgImage* toSymbianRSgImage() const;
+    static QPixmap fromSymbianRSgImage(RSgImage *sgImage);
 #endif
 
     inline QPixmap copy(int x, int y, int width, int height) const;

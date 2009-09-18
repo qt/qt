@@ -42,6 +42,8 @@
 #include <w32std.h>
 #include <fbs.h>
 
+#include <private/qapplication_p.h>
+#include <private/qgraphicssystem_p.h>
 #include <private/qt_s60_p.h>
 #include <private/qpaintengine_s60_p.h>
 
@@ -895,5 +897,61 @@ void QS60PixmapData::endDataAccess(bool readOnly) const
     symbianBitmapDataAccess->endDataAccess(cfbsBitmap);
 }
 
+/*!
+  \since 4.6
+
+  Returns a QPixmap that wraps given \c RSgImage \a graphics resource.
+  The data should be valid even when original RSgImage handle has been
+  closed.
+
+  \warning This function is only available on Symbian OS.
+
+  \sa toSymbianRSgImage(), {QPixmap#Pixmap Conversion}{Pixmap Conversion}
+*/
+
+QPixmap QPixmap::fromSymbianRSgImage(RSgImage *sgImage)
+{
+    // It is expected that RSgImage will
+    // CURRENTLY be used in conjuction with
+    // OpenVG graphics system
+    //
+    // Surely things might change in future
+
+    if (!sgImage)
+        return QPixmap();
+
+    QPixmap pixmap;
+    pixmap.pixmapData()->fromRSgImage(sgImage);
+
+    return pixmap;
+}
+
+/*!
+\since 4.6
+
+Returns a \c RSgImage that is equivalent to the QPixmap by copying the data.
+
+It is the caller's responsibility to close/delete the \c RSgImage after use.
+
+\warning This function is only available on Symbian OS.
+
+\sa fromSymbianRSgImage()
+*/
+
+RSgImage *QPixmap::toSymbianRSgImage() const
+{
+    // It is expected that RSgImage will
+    // CURRENTLY be used in conjuction with
+    // OpenVG graphics system
+    //
+    // Surely things might change in future
+
+    if (isNull())
+        return 0;
+
+    RSgImage *sgImage = pixmapData()->toRSgImage();
+
+    return sgImage;
+}
 
 QT_END_NAMESPACE

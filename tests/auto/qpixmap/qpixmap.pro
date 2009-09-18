@@ -14,6 +14,9 @@ wince*: {
 } symbian*: {
    DEPLOYMENT_PLUGIN += qmng
    LIBS += -lfbscli.dll -lbitgdi.dll -lgdi.dll
+   contains(QT_CONFIG, openvg) {
+       LIBS += $$QMAKE_LIBS_OPENVG
+   }
 } else {
    DEFINES += SRCDIR=\\\"$$PWD\\\"
    win32:LIBS += -lgdi32 -luser32

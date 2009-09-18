@@ -98,6 +98,9 @@ EGLDisplay QEglContext::getDisplay(QPaintDevice *device)
 // Set pixel format and other properties based on a paint device.
 void QEglProperties::setPaintDeviceFormat(QPaintDevice *dev)
 {
+    if(!dev)
+        return;
+
     int devType = dev->devType();
     if (devType == QInternal::Image)
         setPixelFormat(static_cast<QImage *>(dev)->format());
