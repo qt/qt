@@ -93,7 +93,13 @@ void MMF::AudioPlayer::doSeek(qint64 ms)
 
 int MMF::AudioPlayer::setDeviceVolume(int mmfVolume)
 {
+    /* In SDK 3.1, this function is void. */
+#if !defined(__SERIES60_31__)
     return m_player->SetVolume(mmfVolume);
+#else
+    m_player->SetVolume(mmfVolume);
+    return KErrNone;
+#endif
 }
 
 int MMF::AudioPlayer::openFile(RFile& file)
