@@ -3056,7 +3056,43 @@ void QRasterPaintEngine::drawCachedGlyphs(const QPointF &p, const QTextItemInt &
     return;
 }
 
+#if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
+void QRasterPaintEngine::drawGlyphsS60(const QPointF &p, const QTextItemInt &ti)
+{
+    Q_D(QRasterPaintEngine);
+    QRasterPaintEngineState *s = state();
 
+    QFontEngine *fontEngine = ti.fontEngine;
+    if (fontEngine->type() != QFontEngine::S60FontEngine) {
+        QPaintEngineEx::drawTextItem(p, ti);
+        return;
+    }
+
+    QFontEngineS60 *fe = static_cast<QFontEngineS60 *>(fontEngine);
+
+    QVarLengthArray<QFixedPoint> positions;
+    QVarLengthArray<glyph_t> glyphs;
+    QTransform matrix = s->matrix;
+    matrix.translate(p.x(), p.y());
+    ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
+
+    const QFixed aliasDelta = QFixed::fromReal(aliasedCoordinateDelta);
+
+    for (int i=0; i<glyphs.size(); ++i) {
+        TOpenFontCharMetrics tmetrics;
+        const TUint8 *glyphBitmapBytes;
+        TSize glyphBitmapSize;
+        fe->getCharacterData(glyphs[i], tmetrics, glyphBitmapBytes, glyphBitmapSize);
+        const glyph_metrics_t metrics = ti.fontEngine->boundingBox(glyphs[i]);
+        const int x = qFloor(positions[i].x + metrics.x + aliasDelta);
+        const int y = qFloor(positions[i].y + metrics.y + aliasDelta);
+
+        alphaPenBlt(glyphBitmapBytes, glyphBitmapSize.iWidth, 8, x, y, glyphBitmapSize.iWidth, glyphBitmapSize.iHeight);
+    }
+
+    return;
+}
+#endif // Q_OS_SYMBIAN && QT_NO_FREETYPE
 
 /*!
  * Returns true if the rectangle is completly within the current clip
@@ -3191,7 +3227,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     ensurePen();
     ensureState();
 
-#if defined (Q_WS_WIN) || defined(Q_WS_MAC) || (defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE))
+#if defined (Q_WS_WIN) || defined(Q_WS_MAC)
 
     bool drawCached = true;
 
@@ -3224,7 +3260,12 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
         return;
     }
 
-#else // Q_WS_WIN || Q_WS_MAC || Q_OS_SYMBIAN && QT_NO_FREETYPE
+#elif defined (Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE) // Q_WS_WIN || Q_WS_MAC
+    if (s->matrix.type() <= QTransform::TxTranslate) {
+        drawGlyphsS60(p, ti);
+        return;
+    }
+#else // Q_WS_WIN || Q_WS_MAC
 
     QFontEngine *fontEngine = ti.fontEngine;
 
