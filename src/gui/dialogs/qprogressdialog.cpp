@@ -57,6 +57,11 @@
 #include <private/qdialog_p.h>
 #include <limits.h>
 
+#if defined(Q_WS_S60)
+#include <QtGui/qdesktopwidget.h>
+#include <qaction.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 // If the operation is expected to take this long (as predicted by
@@ -431,7 +436,16 @@ void QProgressDialog::setCancelButton(QPushButton *cancelButton)
     int h = qMax(isVisible() ? height() : 0, sizeHint().height());
     resize(w, h);
     if (cancelButton)
+#ifndef Q_WS_S60
         cancelButton->show();
+#else
+    {
+        QAction *cancelAction = new QAction(cancelButton->text(), this);
+        cancelAction->setSoftKeyRole(QAction::CancelSoftKey);
+        QObject::connect(cancelAction, SIGNAL(triggered()), this, SIGNAL(canceled()));
+        setSoftKey(cancelAction);
+    }
+#endif
 }
 
 /*!
@@ -701,7 +715,14 @@ QSize QProgressDialog::sizeHint() const
     int h = margin * 2 + bh.height() + sh.height() + spacing;
     if (d->cancel)
         h += d->cancel->sizeHint().height() + spacing;
+#ifdef Q_WS_S60
+    if (QApplication::desktop()->size().height() > QApplication::desktop()->size().width())
+        return QSize(qMax(QApplication::desktop()->size().width(), sh.width() + 2 * margin), h);
+    else
+        return QSize(qMax(QApplication::desktop()->size().height(), sh.width() + 2 * margin), h);
+#else
     return QSize(qMax(200, sh.width() + 2 * margin), h);
+#endif
 }
 
 /*!\reimp
@@ -718,10 +739,11 @@ void QProgressDialog::resizeEvent(QResizeEvent *)
 void QProgressDialog::changeEvent(QEvent *ev)
 {
     Q_D(QProgressDialog);
-    if (ev->type() == QEvent::StyleChange)
+    if (ev->type() == QEvent::StyleChange) {
         d->layout();
-    else if (ev->type() == QEvent::LanguageChange)
+    } else if (ev->type() == QEvent::LanguageChange) {
         d->retranslateStrings();
+    }
     QDialog::changeEvent(ev);
 }
 

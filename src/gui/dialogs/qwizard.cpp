@@ -75,6 +75,10 @@ extern bool qt_wince_is_mobile();     //defined in qguifunctions_wce.cpp
 
 #include <string.h>     // for memset()
 
+#ifdef Q_WS_S60
+#include "qaction.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 // These fudge terms were needed a few places to obtain pixel-perfect results
@@ -244,7 +248,7 @@ bool QWizardLayoutInfo::operator==(const QWizardLayoutInfo &other)
     return topLevelMarginLeft == other.topLevelMarginLeft
            && topLevelMarginRight == other.topLevelMarginRight
            && topLevelMarginTop == other.topLevelMarginTop
-           && topLevelMarginBottom == other.topLevelMarginBottom 
+           && topLevelMarginBottom == other.topLevelMarginBottom
            && childMarginLeft == other.childMarginLeft
            && childMarginRight == other.childMarginRight
            && childMarginTop == other.childMarginTop
@@ -328,7 +332,7 @@ bool QWizardHeader::vistaDisabled() const
     bool styleDisabled = false;
     QWizard *wiz = parentWidget() ? qobject_cast <QWizard *>(parentWidget()->parentWidget()) : 0;
     if (wiz) {
-        // Designer dosen't support the Vista style for Wizards. This property is used to turn 
+        // Designer dosen't support the Vista style for Wizards. This property is used to turn
         // off the Vista style.
         const QVariant v = wiz->property("_q_wizard_vista_off");
         styleDisabled = v.isValid() && v.toBool();
@@ -634,9 +638,9 @@ static QString buttonDefaultText(int wstyle, int which, const QWizardPrivate *wi
 #endif
     const bool macStyle = (wstyle == QWizard::MacStyle);
     switch (which) {
-    case QWizard::BackButton: 
+    case QWizard::BackButton:
         return macStyle ? QWizard::tr("Go Back") : QWizard::tr("< &Back");
-    case QWizard::NextButton: 
+    case QWizard::NextButton:
         if (macStyle)
             return QWizard::tr("Continue");
         else
@@ -959,12 +963,12 @@ void QWizardPrivate::recreateLayout(const QWizardLayoutInfo &info)
         if (modern) {
             mainLayout->setMargin(0);
             mainLayout->setSpacing(0);
-            pageVBoxLayout->setContentsMargins(deltaMarginLeft, deltaMarginTop, 
+            pageVBoxLayout->setContentsMargins(deltaMarginLeft, deltaMarginTop,
                                                deltaMarginRight, deltaMarginBottom);
-            buttonLayout->setContentsMargins(info.topLevelMarginLeft, info.topLevelMarginTop, 
+            buttonLayout->setContentsMargins(info.topLevelMarginLeft, info.topLevelMarginTop,
                                              info.topLevelMarginRight, info.topLevelMarginBottom);
         } else {
-            mainLayout->setContentsMargins(info.topLevelMarginLeft, info.topLevelMarginTop, 
+            mainLayout->setContentsMargins(info.topLevelMarginLeft, info.topLevelMarginTop,
                                            info.topLevelMarginRight, info.topLevelMarginBottom);
             mainLayout->setHorizontalSpacing(info.hspacing);
             mainLayout->setVerticalSpacing(info.vspacing);
@@ -1212,7 +1216,7 @@ void QWizardPrivate::updateLayout()
         QSpacerItem *bottomSpacer = pageVBoxLayout->itemAt(pageVBoxLayout->count() -  1)->spacerItem();
         Q_ASSERT(bottomSpacer);
         bottomSpacer->changeSize(0, 0, QSizePolicy::Ignored, expandPage ? QSizePolicy::Ignored : QSizePolicy::MinimumExpanding);
-        pageVBoxLayout->invalidate();        
+        pageVBoxLayout->invalidate();
     }
 
     if (info.header) {
@@ -1593,6 +1597,54 @@ void QWizardPrivate::_q_updateButtonStates()
         vistaHelper->backButton()->setVisible(backButtonVisible);
         btn.back->setVisible(false);
     }
+#endif
+
+#ifdef Q_WS_S60
+    //FIXME: needs to considered later on, when we implement equivalent of Symbian OS's CleanPushResetAndDestroy
+    QList<QAction *> actionList;
+    QAbstractButton *wizardButton;
+    for (int i = QWizard::BackButton; i < QWizard::NButtons; ++i) {
+        wizardButton = btns[i];
+        if (wizardButton && !wizardButton->testAttribute(Qt::WA_WState_Hidden)) {
+            wizardButton->hide();
+            QAction *action = new QAction(wizardButton->text(), q);
+            QAction::SoftKeyRole softKeyRole;
+            switch(i) {
+            case QWizard::BackButton:
+                softKeyRole = QAction::PreviousSoftKey;
+                break;
+            case QWizard::NextButton:
+                softKeyRole = QAction::NextSoftKey;
+                break;
+            case QWizard::CommitButton:
+                softKeyRole = QAction::EndEditSoftKey;
+                break;
+            case QWizard::FinishButton:
+                softKeyRole = QAction::FinishSoftKey;
+                break;
+            case QWizard::CancelButton:
+                softKeyRole = QAction::CancelSoftKey;
+                break;
+            case QWizard::HelpButton:
+                softKeyRole = QAction::ViewSoftKey;
+                break;
+            case QWizard::CustomButton1:
+                softKeyRole = QAction::SelectSoftKey;
+                break;
+            case QWizard::CustomButton2:
+                softKeyRole = QAction::SelectSoftKey;
+                break;
+            case QWizard::CustomButton3:
+                softKeyRole = QAction::SelectSoftKey;
+                break;
+            }
+            action->setSoftKeyRole(softKeyRole);
+            QObject::connect(action, SIGNAL(triggered()), wizardButton, SIGNAL(clicked()));
+            actionList.append(action);
+        }
+    }
+    //FIXME: setup Options Menu if there are more than two actions (waiting for SoftKey refactoring)
+    q->setSoftKeys(actionList);
 #endif
 
     enableUpdates();
@@ -2788,7 +2840,11 @@ QSize QWizard::sizeHint() const
 {
     Q_D(const QWizard);
     QSize result = d->mainLayout->totalSizeHint();
+#ifdef Q_WS_S60
+    QSize extra(QApplication::desktop()->availableGeometry(QCursor::pos()).size());
+#else
     QSize extra(500, 360);
+#endif
     if (d->wizStyle == MacStyle && d->current != -1) {
         QSize pixmap(currentPage()->pixmap(BackgroundPixmap).size());
         extra.setWidth(616);
@@ -3389,7 +3445,7 @@ bool QWizardPage::validatePage()
     changes. This ensures that QWizard updates the enabled or disabled state of
     its buttons. An example of the reimplementation is
     available \l{http://qt.nokia.com/doc/qq/qq22-qwizard.html#validatebeforeitstoolate}
-    {here}. 
+    {here}.
 
     \sa completeChanged(), isFinalPage()
 */

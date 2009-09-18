@@ -109,6 +109,7 @@ private slots:
     void testSignalOrder();
     void testDefaultButton_data();
     void testDefaultButton();
+    void testS60SoftKeys();
 
     void task191642_default();
 private:
@@ -711,6 +712,27 @@ void tst_QDialogButtonBox::testDefaultButton_data()
     QTest::newRow("second accept explicit after add") << 0 << 1 << 1;
     QTest::newRow("third accept explicit befare add") << 1 << 2 << 2;
     QTest::newRow("third accept explicit after add") << 0 << 2 << 2;
+}
+
+void tst_QDialogButtonBox::testS60SoftKeys()
+{
+#ifdef Q_WS_S60
+    QDialog dialog(0);
+    QDialogButtonBox buttonBox(&dialog);
+    buttonBox.setStandardButtons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    dialog.show();
+    QList<QAction*> softKeys = dialog.softKeys();
+    QCOMPARE( softKeys.count(), 2);
+
+    QDialog dialog2(0);
+    QDialogButtonBox buttonBox2(&dialog2);
+    buttonBox2.setStandardButtons(QDialogButtonBox::Cancel);
+    dialog2.show();
+    softKeys = dialog2.softKeys();
+    QCOMPARE( softKeys.count(), 1);
+#else
+    QSKIP();
+#endif
 }
 
 void tst_QDialogButtonBox::testDefaultButton()

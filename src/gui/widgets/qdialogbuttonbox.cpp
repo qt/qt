@@ -49,6 +49,14 @@
 
 #include "qdialogbuttonbox.h"
 
+
+#ifdef Q_WS_S60
+#include <QtGui/qaction.h>
+#include <QtGui/qmenubar.h>
+#include <QtGui/qmenu.h>
+#endif
+
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -263,6 +271,9 @@ public:
 
     QList<QAbstractButton *> buttonLists[QDialogButtonBox::NRoles];
     QHash<QPushButton *, QDialogButtonBox::StandardButton> standardButtonHash;
+#ifdef Q_WS_S60
+    QList<QAction *> softkeyActions;
+#endif
 
     Qt::Orientation orientation;
     QDialogButtonBox::ButtonLayout layoutPolicy;
@@ -282,6 +293,10 @@ public:
     void addButtonsToLayout(const QList<QAbstractButton *> &buttonList, bool reverse);
     void retranslateStrings();
     const char *standardButtonText(QDialogButtonBox::StandardButton sbutton) const;
+#ifdef Q_WS_S60
+    void addSoftKeyAction(QAbstractButton *button, QDialogButtonBox::ButtonRole role);
+    void setSoftKeys();
+#endif
 };
 
 QDialogButtonBoxPrivate::QDialogButtonBoxPrivate(Qt::Orientation orient)
@@ -457,6 +472,18 @@ void QDialogButtonBoxPrivate::layoutButtons()
 
     if (center)
         buttonLayout->addStretch();
+
+#ifdef Q_WS_S60
+    QWidget *dialog = 0;
+    QWidget *p = q;
+    while (p && !p->isWindow()) {
+        p = p->parentWidget();
+        if (dialog = qobject_cast<QDialog *>(p))
+            break;
+    }
+    if (dialog)
+        q->hide();
+#endif
 }
 
 QPushButton *QDialogButtonBoxPrivate::createButton(QDialogButtonBox::StandardButton sbutton,
@@ -539,6 +566,115 @@ void QDialogButtonBoxPrivate::addButton(QAbstractButton *button, QDialogButtonBo
     if (doLayout)
         layoutButtons();
 }
+
+/*! \internal */
+#ifdef Q_WS_S60
+void QDialogButtonBoxPrivate::addSoftKeyAction(QAbstractButton *button, QDialogButtonBox::ButtonRole role)
+{
+    Q_Q(QDialogButtonBox);
+
+    QAction::SoftKeyRole softkeyRole;
+    QAction *buttonAction = new QAction(button->text(), q);
+
+    switch (role) {
+    case ApplyRole:
+    case AcceptRole:
+        softkeyRole = QAction::OkSoftKey;
+        break;
+    case RejectRole:
+        softkeyRole = QAction::CancelSoftKey;
+        break;
+    case DestructiveRole:
+        softkeyRole = QAction::ExitSoftKey;
+        break;
+    case ActionRole:
+    case HelpRole:
+        softkeyRole = QAction::ViewSoftKey; //todo: uhh
+        break;
+    case YesRole:
+        softkeyRole = QAction::SelectSoftKey;
+        break;
+    case NoRole:
+        softkeyRole = QAction::DeselectSoftKey;
+        break;
+    case ResetRole:
+        softkeyRole = QAction::BackSoftKey;
+        break;
+    default:
+        break;
+    }
+    QObject::connect(buttonAction, SIGNAL(triggered()), button, SIGNAL(clicked()));
+    buttonAction->setSoftKeyRole(softkeyRole);
+    softkeyActions.append(buttonAction);
+}
+
+/*! \internal */
+void QDialogButtonBoxPrivate::setSoftKeys()
+{
+    Q_Q(QDialogButtonBox);
+
+    QDialog *dialog = 0;
+    QWidget *p = q;
+    while (p && !p->isWindow()) {
+        p = p->parentWidget();
+        if ((dialog = qobject_cast<QDialog *>(p)))
+            break;
+    }
+    if (dialog) {
+        softkeyActions.clear();
+        const int buttonCount = q->buttons().count();
+        for (int i=0; i< buttonCount; i++){
+            QAbstractButton *button = q->buttons().at(i);
+            QDialogButtonBox::ButtonRole role = q->buttonRole(button);
+            addSoftKeyAction(button, role);
+        }
+        //Need to re-arrange softkeys, if there are too many actions.
+        if (softkeyActions.count() > 2){
+            //FIXME- wait for Softkey API refactoring
+            /*
+            QAction *actionSoftKeyOption = new QAction(tr("Options"), this);
+            actionSoftKeyOption->setSoftKeyRole(QAction::OptionsSoftKey);
+            setSoftKey(actionSoftKeyOption);
+
+            QMenuBar *menuBarOptions = new QMenuBar(q->parentWidget());
+            menubarOptions->addActions(softkeyActions);
+            buttonLayout->setMenuBar(menuBar);
+            */
+            //Set right softkey
+            softkeyActions.clear();
+            QAction::SoftKeyRole softKeyAction;
+            QAbstractButton *lskButton;
+            QList<QAbstractButton *> &searchList = buttonLists[DestructiveRole];
+            if (searchList.count() > 0){
+                lskButton = searchList.at(0);
+                softKeyAction = QAction::ExitSoftKey;
+            } else {
+                searchList = buttonLists[RejectRole];
+                if (searchList.count() > 0){
+                    lskButton = searchList.at(0);
+                    softKeyAction = QAction::CancelSoftKey;
+                } else {
+                    searchList = buttonLists[NoRole];
+                    if (searchList.count() > 0) {
+                        lskButton = searchList.at(0);
+                        softKeyAction = QAction::DeselectSoftKey;
+                    } else {
+                        //no good candidates, rely on SoftKey API
+                    }
+                }
+            }
+            QAction *leftSoftKeyAction = new QAction(lskButton->text(), dialog);
+            leftSoftKeyAction->setSoftKeyRole(softKeyAction);
+            QObject::connect(leftSoftKeyAction, SIGNAL(triggered()), lskButton, SIGNAL(clicked()));
+            softkeyActions.append(leftSoftKeyAction);
+            dialog->setSoftKeys(softkeyActions);
+        } else {
+            dialog->setSoftKeys(softkeyActions);
+        }
+    }
+}
+
+#endif
 
 void QDialogButtonBoxPrivate::createStandardButtons(QDialogButtonBox::StandardButtons buttons)
 {
@@ -1128,6 +1264,12 @@ bool QDialogButtonBox::event(QEvent *event)
     }else if (event->type() == QEvent::LanguageChange) {
         d->retranslateStrings();
     }
+#ifdef Q_WS_S60
+    // Set the softkeys in polish, to avoid doing them several times, since each call causes flicker in the softkeys.
+    else if (event->type() == QEvent::Polish) {
+        d->setSoftKeys();
+    }
+#endif
 
     return QWidget::event(event);
 }

@@ -68,6 +68,11 @@ extern bool qt_wince_is_high_dpi();  //defined in qguifunctions_wince.cpp
 #include "qguifunctions_wince.h"
 #endif
 
+#if defined(Q_WS_S60)
+#include <qaction.h>
+#include "private/qt_s60_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QErrorMessagePrivate : public QDialogPrivate
@@ -86,6 +91,7 @@ public:
 
     bool nextPending();
     void retranslateStrings();
+    void enableSoftKey(bool enable);
 };
 
 class QErrorMessageTextView : public QTextEdit
@@ -124,8 +130,15 @@ QSize QErrorMessageTextView::sizeHint() const
     else
       return QSize(300, 100);
 #else
+
+#ifdef Q_WS_S60
+    const int smallerDimension = qMin(S60->screenHeightInPixels, S60->screenWidthInPixels);
+    // In S60 layout data, error messages seem to be one third of the screen height (in portrait) minus two.
+    return QSize(smallerDimension, smallerDimension/3-2);
+#else
     return QSize(250, 75);
-#endif
+#endif //Q_WS_S60
+#endif //Q_WS_WINCE
 }
 
 /*!
@@ -239,7 +252,8 @@ QErrorMessage::QErrorMessage(QWidget * parent)
     d->again->setChecked(true);
     grid->addWidget(d->again, 1, 1, Qt::AlignTop);
     d->ok = new QPushButton(this);
-#ifdef Q_WS_WINCE
+
+#if defined(Q_WS_WINCE) || defined(Q_WS_S60)
     d->ok->setFixedSize(0,0);
 #endif
     connect(d->ok, SIGNAL(clicked()), this, SLOT(accept()));
@@ -272,6 +286,7 @@ QErrorMessage::~QErrorMessage()
 void QErrorMessage::done(int a)
 {
     Q_D(QErrorMessage);
+    d->enableSoftKey(false);
     if (!d->again->isChecked() && !d->currentMessage.isEmpty() && d->currentType.isEmpty()) {
         d->doNotShow.insert(d->currentMessage);
     }
@@ -346,6 +361,10 @@ void QErrorMessage::showMessage(const QString &message)
     d->pending.enqueue(qMakePair(message,QString()));
     if (!isVisible() && d->nextPending())
         show();
+
+#ifdef Q_WS_S60
+    d->enableSoftKey(true);
+#endif
 }
 
 /*!
@@ -370,6 +389,28 @@ void QErrorMessage::showMessage(const QString &message, const QString &type)
      d->pending.push_back(qMakePair(message,type));
     if (!isVisible() && d->nextPending())
         show();
+
+#ifdef Q_WS_S60
+    d->enableSoftKey(true);
+#endif
+}
+
+/*! \internal */
+void QErrorMessagePrivate::enableSoftKey(bool enable)
+{
+#ifdef Q_WS_S60
+    Q_Q(QErrorMessage);
+    if (enable) {
+        QAction *okAction = new QAction(ok->text(), q);
+        okAction->setSoftKeyRole(QAction::OkSoftKey);
+        QObject::connect(okAction, SIGNAL(triggered()), q, SLOT(accept()));
+        q->setSoftKey(okAction);
+    } else {
+        q->setSoftKey(0);
+    }
+#else
+    Q_UNUSED(enable);
+#endif
 }
 
 

@@ -65,11 +65,19 @@ extern bool qt_wince_is_smartphone(); //is defined in qguifunctions_wce.cpp
 #elif defined(Q_WS_X11)
 #  include "../kernel/qt_x11_p.h"
 #elif defined(Q_OS_SYMBIAN)
-#  include "qfiledialog.h"
-#  include "qmenubar.h"
+#   include "qfiledialog.h"
+#   include "qfontdialog.h"
+#   include "qcolordialog.h"
+#   include "qwizard.h"
+#   include "qmenubar.h"
 #endif
+
+#if defined(Q_WS_S60)
+#include "private/qt_s60_p.h"
+#endif
+
 #ifndef SPI_GETSNAPTODEFBUTTON
-#  define SPI_GETSNAPTODEFBUTTON  95
+#   define SPI_GETSNAPTODEFBUTTON  95
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -370,7 +378,7 @@ void QDialogPrivate::resetModalitySetByOpen()
     resetModalityTo = -1;
 }
 
-#ifdef Q_WS_WINCE
+#if defined(Q_WS_WINCE) || defined(Q_WS_S60)
 #ifdef Q_WS_WINCE_WM
 void QDialogPrivate::_q_doneAction()
 {
@@ -385,10 +393,15 @@ void QDialogPrivate::_q_doneAction()
 bool QDialog::event(QEvent *e)
 {
     bool result = QWidget::event(e);
+#ifdef Q_WS_WINCE
     if (e->type() == QEvent::OkRequest) {
         accept();
         result = true;
      }
+#else
+    if ((e->type() == QEvent::StyleChange) || (e->type() == QEvent::Resize ))
+        adjustPosition(parentWidget());
+#endif
     return result;
 }
 #endif
@@ -499,8 +512,9 @@ int QDialog::exec()
         menuBar = new QMenuBar(this);
 #endif
 
-    if (qobject_cast<QFileDialog *>(this))
-        showFullScreen();
+    if (qobject_cast<QFileDialog *>(this) || qobject_cast<QFontDialog *>(this) ||
+        qobject_cast<QColorDialog *>(this) || qobject_cast<QWizard *>(this))
+        showMaximized();
     else
 #endif // Q_OS_SYMBIAN
 
@@ -816,6 +830,12 @@ void QDialog::adjustPosition(QWidget* w)
         return;
 #endif
 
+#ifdef Q_WS_S60
+    if (s60AdjustedPosition())
+        //dialog has already been positioned
+        return;
+#endif
+
     QPoint p(0, 0);
     int extraw = 0, extrah = 0, scrn = 0;
     if (w)
@@ -879,6 +899,44 @@ void QDialog::adjustPosition(QWidget* w)
     move(p);
 }
 
+#if defined(Q_WS_S60)
+/*! \internal */
+bool QDialog::s60AdjustedPosition()
+{
+    QPoint p;
+    const QSize mainAreaSize = QApplication::desktop()->availableGeometry(QCursor::pos()).size();
+    const int statusPaneHeight = (S60->screenHeightInPixels - mainAreaSize.height())>>1;
+    const bool doS60Positioning = !(isFullScreen()||isMaximized());
+    if (doS60Positioning) {
+        // naive way to deduce screen orientation
+        if (S60->screenHeightInPixels > S60->screenWidthInPixels) {
+            p.setY(S60->screenHeightInPixels-height()-qt_TSize2QSize(S60->buttonGroupContainer()->Size()).height());
+            p.setX(0);
+        } else {
+            const int scrollbarWidth = style()->pixelMetric(QStyle::PM_ScrollBarExtent);
+            TRect cbaRect = TRect();
+            AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EControlPane, cbaRect);
+            AknLayoutUtils::TAknCbaLocation cbaLocation = AknLayoutUtils::CbaLocation();
+            switch (cbaLocation) {
+            case AknLayoutUtils::EAknCbaLocationBottom:
+                p.setY(S60->screenHeightInPixels - height()-cbaRect.Height());
+                p.setX((S60->screenWidthInPixels - width())>>1);
+                break;
+            case AknLayoutUtils::EAknCbaLocationRight:
+                p.setY((S60->screenHeightInPixels - height())>>1);
+                p.setX(qMax(0,S60->screenWidthInPixels-width()-scrollbarWidth-cbaRect.Width()));
+                break;
+            case AknLayoutUtils::EAknCbaLocationLeft:
+                p.setY((S60->screenHeightInPixels - height())>>1);
+                p.setX(qMax(0,scrollbarWidth+cbaRect.Width()));
+                break;
+            }
+        }
+        move(p);
+    }
+    return doS60Positioning;
+}
+#endif
 
 /*!
     \obsolete
@@ -1038,8 +1096,17 @@ QSize QDialog::sizeHint() const
             return QSize(qMax(QWidget::sizeHint().width(), d->extension->sizeHint().width()),
                         QWidget::sizeHint().height());
     }
-
+#if defined(Q_WS_S60)
+    // if size is not fixed, try to adjust it according to S60 layoutting
+    if (minimumSize() != maximumSize()) {
+        // In S60, dialogs are always the width of screen (in portrait, regardless of current layout)
+        return QSize(qMax(S60->screenHeightInPixels, S60->screenWidthInPixels), QWidget::sizeHint().height());
+    } else {
+        return QWidget::sizeHint();
+    }
+#else
     return QWidget::sizeHint();
+#endif //Q_WS_S60
 }
 
 
