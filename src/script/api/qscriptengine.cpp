@@ -803,6 +803,7 @@ QScriptEnginePrivate::QScriptEnginePrivate()
     JSC::JSGlobalObject *globalObject = new (globalData)QScript::GlobalObject();
 
     JSC::ExecState* exec = globalObject->globalExec();
+    *thisRegisterForFrame(exec) = JSC::JSValue();
 
     scriptObjectStructure = QScriptObject::createStructure(globalObject->objectPrototype());
 
