@@ -1,3 +1,25 @@
+2009-09-18  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Ariya Hidayat.
+
+        Fixed a bunch of documentation warnings.
+
+        * Api/qwebgraphicsitem.cpp:
+        * Api/qwebplugindatabase.cpp:
+        * Api/qwebpluginfactory.cpp:
+        * Api/qwebsecurityorigin.cpp:
+
+2009-09-18  Warwick Allison  <warwick.allison@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Added a test that console output works.
+
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (ConsolePage::ConsolePage):
+        (ConsolePage::javaScriptConsoleMessage):
+        (tst_QWebPage::consoleOutput):
+
 2009-09-17  Janne Koskinen  <janne.p.koskinen@digia.com>
 
         Reviewed by Simon Hausmann.

@@ -4,8 +4,8 @@ This is a snapshot of the Qt port of WebKit from
 
 The commit imported was from the
 
-        qtwebkit-4.6-snapshot-18092009 branch/tag
+        origin/qtwebkit-4.6-staging branch/tag
 
 and has the sha1 checksum
 
-        15c07fb8d7fa5e93c939aa7eb21c06e19c754cee
+        f572f72dce91be9a4525941c87d1b0a8c383ba39
