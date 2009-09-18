@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007 Apple Inc.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2009 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -32,41 +32,15 @@ public:
     RenderReplaced(Node*, const IntSize& intrinsicSize);
     virtual ~RenderReplaced();
 
-    virtual const char* renderName() const { return "RenderReplaced"; }
-
-    virtual bool canHaveChildren() const { return false; }
-
-    virtual int lineHeight(bool firstLine, bool isRootLineBox = false) const;
-    virtual int baselinePosition(bool firstLine, bool isRootLineBox = false) const;
-
-    virtual void calcPrefWidths();
-    
+protected:
     virtual void layout();
-    virtual int minimumReplacedHeight() const { return 0; }
-
-    virtual void paint(PaintInfo&, int tx, int ty);
-    virtual void paintReplaced(PaintInfo&, int /*tx*/, int /*ty*/) { }
 
     virtual IntSize intrinsicSize() const;
 
-    virtual int overflowHeight(bool includeInterior = true) const;
-    virtual int overflowWidth(bool includeInterior = true) const;
-    virtual int overflowLeft(bool includeInterior = true) const;
-    virtual int overflowTop(bool includeInterior = true) const;
-    virtual IntRect overflowRect(bool includeInterior = true) const;
-
-    virtual IntRect clippedOverflowRectForRepaint(RenderBoxModelObject* repaintContainer);
-
-    virtual unsigned caretMaxRenderedOffset() const;
-    virtual VisiblePosition positionForPoint(const IntPoint&);
-    
-    virtual bool canBeSelectionLeaf() const { return true; }
     virtual void setSelectionState(SelectionState);
-    virtual IntRect selectionRectForRepaint(RenderBoxModelObject* repaintContainer, bool clipToVisibleContent = true);
 
     bool isSelected() const;
 
-protected:
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
 
     void setIntrinsicSize(const IntSize&);
@@ -77,6 +51,29 @@ protected:
     IntRect localSelectionRect(bool checkWhetherSelected = true) const;
 
 private:
+    virtual const char* renderName() const { return "RenderReplaced"; }
+
+    virtual bool canHaveChildren() const { return false; }
+
+    virtual int lineHeight(bool firstLine, bool isRootLineBox = false) const;
+    virtual int baselinePosition(bool firstLine, bool isRootLineBox = false) const;
+
+    virtual void calcPrefWidths();
+
+    virtual int minimumReplacedHeight() const { return 0; }
+
+    virtual void paint(PaintInfo&, int tx, int ty);
+    virtual void paintReplaced(PaintInfo&, int /*tx*/, int /*ty*/) { }
+
+    virtual IntRect clippedOverflowRectForRepaint(RenderBoxModelObject* repaintContainer);
+
+    virtual unsigned caretMaxRenderedOffset() const;
+    virtual VisiblePosition positionForPoint(const IntPoint&);
+    
+    virtual bool canBeSelectionLeaf() const { return true; }
+
+    virtual IntRect selectionRectForRepaint(RenderBoxModelObject* repaintContainer, bool clipToVisibleContent = true);
+
     IntSize m_intrinsicSize;
 };
 

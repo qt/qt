@@ -31,6 +31,7 @@
 
 #include "CString.h"
 #include "ChromeClient.h"
+#include "ConsoleMessage.h"
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "FrameTree.h"
@@ -128,6 +129,9 @@ static void printMessageSourceAndLevelPrefix(MessageSource source, MessageLevel 
     case ErrorMessageLevel:
         levelString = "ERROR";
         break;
+    case DebugMessageLevel:
+        levelString = "DEBUG";
+        break;
     default:
         ASSERT_NOT_REACHED();
         levelString = "UNKNOWN";
@@ -143,10 +147,12 @@ void Console::addMessage(MessageSource source, MessageType type, MessageLevel le
     if (!page)
         return;
 
-    if (source == JSMessageSource || source == WMLMessageSource)
+    if (source == JSMessageSource)
         page->chrome()->client()->addMessageToConsole(source, type, level, message, lineNumber, sourceURL);
 
+#if ENABLE(INSPECTOR)
     page->inspectorController()->addMessageToConsole(source, type, level, message, lineNumber, sourceURL);
+#endif
 
     if (!Console::shouldPrintExceptions())
         return;
@@ -172,7 +178,9 @@ void Console::addMessage(MessageType type, MessageLevel level, ScriptCallStack* 
     if (getFirstArgumentAsString(callStack->state(), lastCaller, message))
         page->chrome()->client()->addMessageToConsole(JSMessageSource, type, level, message, lastCaller.lineNumber(), lastCaller.sourceURL().prettyURL());
 
+#if ENABLE(INSPECTOR)
     page->inspectorController()->addMessageToConsole(JSMessageSource, type, level, callStack);
+#endif
 
     if (!Console::shouldPrintExceptions())
         return;
@@ -245,6 +253,7 @@ void Console::assertCondition(bool condition, ScriptCallStack* callStack)
 
 void Console::count(ScriptCallStack* callStack)
 {
+#if ENABLE(INSPECTOR)
     Page* page = this->page();
     if (!page)
         return;
@@ -256,7 +265,36 @@ void Console::count(ScriptCallStack* callStack)
     getFirstArgumentAsString(callStack->state(), lastCaller, title);
 
     page->inspectorController()->count(title, lastCaller.lineNumber(), lastCaller.sourceURL().string());
+#else
+    UNUSED_PARAM(callStack);
+#endif
 }
+
+#if ENABLE(WML)
+String Console::lastWMLErrorMessage() const
+{
+    Page* page = this->page();
+    if (!page)
+        return String();
+
+    const Vector<ConsoleMessage*>& consoleMessages = page->inspectorController()->consoleMessages();
+    if (consoleMessages.isEmpty())
+        return String();
+
+    Vector<ConsoleMessage*>::const_iterator it = consoleMessages.begin();
+    const Vector<ConsoleMessage*>::const_iterator end = consoleMessages.end();
+
+    for (; it != end; ++it) {
+        ConsoleMessage* message = *it;
+        if (message->source() != WMLMessageSource)
+            continue;
+
+        return message->message();
+    }
+
+    return String();
+}
+#endif
 
 #if ENABLE(JAVASCRIPT_DEBUGGER)
 
@@ -266,19 +304,27 @@ void Console::profile(const JSC::UString& title, ScriptCallStack* callStack)
     if (!page)
         return;
 
+#if ENABLE(INSPECTOR)
     InspectorController* controller = page->inspectorController();
     // FIXME: log a console message when profiling is disabled.
     if (!controller->profilerEnabled())
         return;
+#endif
 
     JSC::UString resolvedTitle = title;
     if (title.isNull())   // no title so give it the next user initiated profile title.
+#if ENABLE(INSPECTOR)
         resolvedTitle = controller->getCurrentUserInitiatedProfileName(true);
+#else
+        resolvedTitle = "";
+#endif
 
     JSC::Profiler::profiler()->startProfiling(callStack->state(), resolvedTitle);
 
+#if ENABLE(INSPECTOR)
     const ScriptCallFrame& lastCaller = callStack->at(0);
     controller->addStartProfilingMessageToConsole(resolvedTitle, lastCaller.lineNumber(), lastCaller.sourceURL());
+#endif
 }
 
 void Console::profileEnd(const JSC::UString& title, ScriptCallStack* callStack)
@@ -290,9 +336,11 @@ void Console::profileEnd(const JSC::UString& title, ScriptCallStack* callStack)
     if (!this->page())
         return;
 
+#if ENABLE(INSPECTOR)
     InspectorController* controller = page->inspectorController();
     if (!controller->profilerEnabled())
         return;
+#endif
 
     RefPtr<JSC::Profile> profile = JSC::Profiler::profiler()->stopProfiling(callStack->state(), title);
     if (!profile)
@@ -300,14 +348,17 @@ void Console::profileEnd(const JSC::UString& title, ScriptCallStack* callStack)
 
     m_profiles.append(profile);
 
+#if ENABLE(INSPECTOR)
     const ScriptCallFrame& lastCaller = callStack->at(0);
     controller->addProfile(profile, lastCaller.lineNumber(), lastCaller.sourceURL());
+#endif
 }
 
 #endif
 
 void Console::time(const String& title)
 {
+#if ENABLE(INSPECTOR)
     Page* page = this->page();
     if (!page)
         return;
@@ -318,10 +369,14 @@ void Console::time(const String& title)
         return;
 
     page->inspectorController()->startTiming(title);
+#else
+    UNUSED_PARAM(title);
+#endif
 }
 
 void Console::timeEnd(const String& title, ScriptCallStack* callStack)
 {
+#if ENABLE(INSPECTOR)
     Page* page = this->page();
     if (!page)
         return;
@@ -339,24 +394,34 @@ void Console::timeEnd(const String& title, ScriptCallStack* callStack)
 
     const ScriptCallFrame& lastCaller = callStack->at(0);
     page->inspectorController()->addMessageToConsole(JSMessageSource, LogMessageType, LogMessageLevel, message, lastCaller.lineNumber(), lastCaller.sourceURL().string());
+#else
+    UNUSED_PARAM(title);
+    UNUSED_PARAM(callStack);
+#endif
 }
 
 void Console::group(ScriptCallStack* callStack)
 {
+#if ENABLE(INSPECTOR)
     Page* page = this->page();
     if (!page)
         return;
 
     page->inspectorController()->startGroup(JSMessageSource, callStack);
+#else
+    UNUSED_PARAM(callStack);
+#endif
 }
 
 void Console::groupEnd()
 {
+#if ENABLE(INSPECTOR)
     Page* page = this->page();
     if (!page)
         return;
 
     page->inspectorController()->endGroup(JSMessageSource, 0, String());
+#endif
 }
 
 void Console::warn(ScriptCallStack* callStack)

@@ -110,6 +110,11 @@ bool JSSVGPatternElementPrototype::getOwnPropertySlot(ExecState* exec, const Ide
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGPatternElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGPatternElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGPatternElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGPatternElement::s_info = { "SVGPatternElement", &JSSVGElement::s_info, &JSSVGPatternElementTable, 0 };
 
 JSSVGPatternElement::JSSVGPatternElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPatternElement> impl)
@@ -125,6 +130,11 @@ JSObject* JSSVGPatternElement::createPrototype(ExecState* exec, JSGlobalObject* 
 bool JSSVGPatternElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGPatternElement, Base>(exec, &JSSVGPatternElementTable, this, propertyName, slot);
+}
+
+bool JSSVGPatternElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGPatternElement, Base>(exec, &JSSVGPatternElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGPatternElementPatternUnits(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -303,7 +313,7 @@ void setJSSVGPatternElementXmlspace(ExecState* exec, JSObject* thisObject, JSVal
 JSValue JSC_HOST_CALL jsSVGPatternElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGPatternElement::s_info))
+    if (!thisValue.inherits(&JSSVGPatternElement::s_info))
         return throwError(exec, TypeError);
     JSSVGPatternElement* castedThisObj = static_cast<JSSVGPatternElement*>(asObject(thisValue));
     SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThisObj->impl());
@@ -317,7 +327,7 @@ JSValue JSC_HOST_CALL jsSVGPatternElementPrototypeFunctionHasExtension(ExecState
 JSValue JSC_HOST_CALL jsSVGPatternElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGPatternElement::s_info))
+    if (!thisValue.inherits(&JSSVGPatternElement::s_info))
         return throwError(exec, TypeError);
     JSSVGPatternElement* castedThisObj = static_cast<JSSVGPatternElement*>(asObject(thisValue));
     SVGPatternElement* imp = static_cast<SVGPatternElement*>(castedThisObj->impl());

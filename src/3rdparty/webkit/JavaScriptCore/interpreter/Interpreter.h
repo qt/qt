@@ -42,19 +42,19 @@
 namespace JSC {
 
     class CodeBlock;
-    class EvalNode;
-    class FunctionBodyNode;
-    class Instruction;
+    class EvalExecutable;
+    class FunctionExecutable;
     class InternalFunction;
     class JSFunction;
     class JSGlobalObject;
-    class ProgramNode;
+    class ProgramExecutable;
     class Register;
     class ScopeChainNode;
     class SamplingTool;
     struct CallFrameClosure;
     struct HandlerInfo;
-
+    struct Instruction;
+    
     enum DebugHookID {
         WillExecuteProgram,
         DidExecuteProgram,
@@ -95,9 +95,9 @@ namespace JSC {
 
         bool isOpcode(Opcode);
         
-        JSValue execute(ProgramNode*, CallFrame*, ScopeChainNode*, JSObject* thisObj, JSValue* exception);
-        JSValue execute(FunctionBodyNode*, CallFrame*, JSFunction*, JSObject* thisObj, const ArgList& args, ScopeChainNode*, JSValue* exception);
-        JSValue execute(EvalNode* evalNode, CallFrame* exec, JSObject* thisObj, ScopeChainNode* scopeChain, JSValue* exception);
+        JSValue execute(ProgramExecutable*, CallFrame*, ScopeChainNode*, JSObject* thisObj, JSValue* exception);
+        JSValue execute(FunctionExecutable*, CallFrame*, JSFunction*, JSObject* thisObj, const ArgList& args, ScopeChainNode*, JSValue* exception);
+        JSValue execute(EvalExecutable* evalNode, CallFrame* exec, JSObject* thisObj, ScopeChainNode* scopeChain, JSValue* exception);
 
         JSValue retrieveArguments(CallFrame*, JSFunction*) const;
         JSValue retrieveCaller(CallFrame*, InternalFunction*) const;
@@ -110,16 +110,16 @@ namespace JSC {
 
         NEVER_INLINE JSValue callEval(CallFrame*, RegisterFile*, Register* argv, int argc, int registerOffset, JSValue& exceptionValue);
         NEVER_INLINE HandlerInfo* throwException(CallFrame*&, JSValue&, unsigned bytecodeOffset, bool);
-        NEVER_INLINE void debug(CallFrame*, DebugHookID, int firstLine, int lastLine, int column);
+        NEVER_INLINE void debug(CallFrame*, DebugHookID, int firstLine, int lastLine);
 
     private:
         enum ExecutionFlag { Normal, InitializeAndReturn };
 
-        CallFrameClosure prepareForRepeatCall(FunctionBodyNode*, CallFrame*, JSFunction*, int argCount, ScopeChainNode*, JSValue* exception);
+        CallFrameClosure prepareForRepeatCall(FunctionExecutable*, CallFrame*, JSFunction*, int argCount, ScopeChainNode*, JSValue* exception);
         void endRepeatCall(CallFrameClosure&);
         JSValue execute(CallFrameClosure&, JSValue* exception);
 
-        JSValue execute(EvalNode*, CallFrame*, JSObject* thisObject, int globalRegisterOffset, ScopeChainNode*, JSValue* exception);
+        JSValue execute(EvalExecutable*, CallFrame*, JSObject* thisObject, int globalRegisterOffset, ScopeChainNode*, JSValue* exception);
 
 #if USE(INTERPRETER)
         NEVER_INLINE bool resolve(CallFrame*, Instruction*, JSValue& exceptionValue);

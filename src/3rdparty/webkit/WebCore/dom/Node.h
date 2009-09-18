@@ -25,7 +25,6 @@
 #ifndef Node_h
 #define Node_h
 
-#include "DocPtr.h"
 #include "EventTarget.h"
 #include "KURLHash.h"
 #include "PlatformString.h"
@@ -68,7 +67,10 @@ class StringBuilder;
 
 typedef int ExceptionCode;
 
-enum StyleChangeType { NoStyleChange, InlineStyleChange, FullStyleChange, AnimationStyleChange };
+// SyntheticStyleChange means that we need to go through the entire style change logic even though
+// no style property has actually changed. It is used to restructure the tree when, for instance,
+// RenderLayers are created or destroyed due to animation changes.
+enum StyleChangeType { NoStyleChange, InlineStyleChange, FullStyleChange, SyntheticStyleChange };
 
 const unsigned short DOCUMENT_POSITION_EQUIVALENT = 0x00;
 const unsigned short DOCUMENT_POSITION_DISCONNECTED = 0x01;
@@ -108,7 +110,6 @@ public:
     enum StyleChange { NoChange, NoInherit, Inherit, Detach, Force };    
     static StyleChange diff(const RenderStyle*, const RenderStyle*);
 
-    Node(Document*, bool isElement = false, bool isContainer = false, bool isText = false);
     virtual ~Node();
 
     // DOM methods & attributes for Node
@@ -182,6 +183,7 @@ public:
     static bool isWMLElement() { return false; }
 #endif
 
+    virtual bool isMediaControlElement() const { return false; }
     virtual bool isStyledElement() const { return false; }
     virtual bool isFrameOwnerElement() const { return false; }
     virtual bool isAttributeNode() const { return false; }
@@ -289,10 +291,10 @@ public:
 
     virtual short tabIndex() const;
 
-    /**
-     * Whether this node can receive the keyboard focus.
-     */
-    virtual bool supportsFocus() const { return isFocusable(); }
+    // Whether this kind of node can receive focus by default. Most nodes are
+    // not focusable but some elements, such as form controls and links are.
+    virtual bool supportsFocus() const;
+    // Whether the node can actually be focused.
     virtual bool isFocusable() const;
     virtual bool isKeyboardFocusable(KeyboardEvent*) const;
     virtual bool isMouseFocusable() const;
@@ -316,7 +318,7 @@ public:
     {
         ASSERT(this);
         ASSERT(m_document || (nodeType() == DOCUMENT_TYPE_NODE && !inDocument()));
-        return m_document.get();
+        return m_document;
     }
     void setDocument(Document*);
 
@@ -499,19 +501,6 @@ public:
 
     unsigned short compareDocumentPosition(Node*);
 
-protected:
-    virtual void willMoveToNewOwnerDocument();
-    virtual void didMoveToNewOwnerDocument();
-    
-    virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const { }
-    void setTabIndexExplicitly(short);
-    
-    bool hasRareData() const { return m_hasRareData; }
-    
-    NodeRareData* rareData() const;
-    NodeRareData* ensureRareData();
-
-public:
     virtual Node* toNode() { return this; }
 
     virtual ScriptExecutionContext* scriptExecutionContext() const;
@@ -588,8 +577,24 @@ public:
     void setOncontextmenu(PassRefPtr<EventListener>);
     EventListener* ondblclick() const;
     void setOndblclick(PassRefPtr<EventListener>);
+    EventListener* ondragenter() const;
+    void setOndragenter(PassRefPtr<EventListener>);
+    EventListener* ondragover() const;
+    void setOndragover(PassRefPtr<EventListener>);
+    EventListener* ondragleave() const;
+    void setOndragleave(PassRefPtr<EventListener>);
+    EventListener* ondrop() const;
+    void setOndrop(PassRefPtr<EventListener>);
+    EventListener* ondragstart() const;
+    void setOndragstart(PassRefPtr<EventListener>);
+    EventListener* ondrag() const;
+    void setOndrag(PassRefPtr<EventListener>);
+    EventListener* ondragend() const;
+    void setOndragend(PassRefPtr<EventListener>);
     EventListener* oninput() const;
     void setOninput(PassRefPtr<EventListener>);
+    EventListener* oninvalid() const;
+    void setOninvalid(PassRefPtr<EventListener>);
     EventListener* onkeydown() const;
     void setOnkeydown(PassRefPtr<EventListener>);
     EventListener* onkeypress() const;
@@ -608,20 +613,6 @@ public:
     void setOnmouseup(PassRefPtr<EventListener>);
     EventListener* onmousewheel() const;
     void setOnmousewheel(PassRefPtr<EventListener>);
-    EventListener* ondragenter() const;
-    void setOndragenter(PassRefPtr<EventListener>);
-    EventListener* ondragover() const;
-    void setOndragover(PassRefPtr<EventListener>);
-    EventListener* ondragleave() const;
-    void setOndragleave(PassRefPtr<EventListener>);
-    EventListener* ondrop() const;
-    void setOndrop(PassRefPtr<EventListener>);
-    EventListener* ondragstart() const;
-    void setOndragstart(PassRefPtr<EventListener>);
-    EventListener* ondrag() const;
-    void setOndrag(PassRefPtr<EventListener>);
-    EventListener* ondragend() const;
-    void setOndragend(PassRefPtr<EventListener>);
     EventListener* onscroll() const;
     void setOnscroll(PassRefPtr<EventListener>);
     EventListener* onselect() const;
@@ -651,14 +642,35 @@ public:
 
     using TreeShared<Node>::ref;
     using TreeShared<Node>::deref;
- 
+
+protected:
+    // CreateElementZeroRefCount is deprecated and can be removed once we convert all element
+    // classes to start with a reference count of 1.
+    enum ConstructionType { CreateContainer, CreateElement, CreateOther, CreateText, CreateElementZeroRefCount };
+    Node(Document*, ConstructionType);
+
+    virtual void willMoveToNewOwnerDocument();
+    virtual void didMoveToNewOwnerDocument();
+    
+    virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const { }
+    void setTabIndexExplicitly(short);
+    
+    bool hasRareData() const { return m_hasRareData; }
+    
+    NodeRareData* rareData() const;
+    NodeRareData* ensureRareData();
+
 private:
+    static bool initialRefCount(ConstructionType);
+    static bool isContainer(ConstructionType);
+    static bool isElement(ConstructionType);
+    static bool isText(ConstructionType);
+
     virtual void refEventTarget() { ref(); }
     virtual void derefEventTarget() { deref(); }
 
     void removeAllEventListenersSlowCase();
 
-private:
     virtual NodeRareData* createRareData();
     Node* containerChildNode(unsigned index) const;
     unsigned containerChildNodeCount() const;
@@ -676,7 +688,7 @@ private:
 
     void appendTextContent(bool convertBRsToNewlines, StringBuilder&) const;
 
-    DocPtr<Document> m_document;
+    Document* m_document;
     Node* m_previous;
     Node* m_next;
     RenderObject* m_renderer;
@@ -699,22 +711,16 @@ private:
     const bool m_isText : 1;
 
 protected:
-    // These bits are used by the Element derived class, pulled up here so they can
+    // These bits are used by derived classes, pulled up here so they can
     // be stored in the same memory word as the Node bits above.
-    bool m_parsingChildrenFinished : 1;
-#if ENABLE(SVG)
-    mutable bool m_areSVGAttributesValid : 1;
-#endif
 
-    // These bits are used by the StyledElement derived class, and live here for the
-    // same reason as above.
-    mutable bool m_isStyleAttributeValid : 1;
-    mutable bool m_synchronizingStyleAttribute : 1;
+    bool m_parsingChildrenFinished : 1; // Element
+    mutable bool m_isStyleAttributeValid : 1; // StyledElement
+    mutable bool m_synchronizingStyleAttribute : 1; // StyledElement
 
 #if ENABLE(SVG)
-    // This bit is used by the SVGElement derived class, and lives here for the same
-    // reason as above.
-    mutable bool m_synchronizingSVGAttributes : 1;
+    mutable bool m_areSVGAttributesValid : 1; // Element
+    mutable bool m_synchronizingSVGAttributes : 1; // SVGElement
 #endif
 
     // 11 bits remaining

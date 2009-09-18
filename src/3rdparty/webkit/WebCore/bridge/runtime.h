@@ -100,7 +100,7 @@ public:
     virtual bool supportsConstruct() const { return false; }
     virtual JSValue invokeConstruct(ExecState*, const ArgList&) { return JSValue(); }
     
-    virtual void getPropertyNames(ExecState*, PropertyNameArray&, unsigned listedAttributes = JSC::Structure::Prototype) { }
+    virtual void getPropertyNames(ExecState*, PropertyNameArray&) { }
 
     virtual JSValue defaultValue(ExecState*, PreferredPrimitiveType) const = 0;
     
@@ -111,6 +111,7 @@ public:
     virtual ~Instance();
 
     virtual bool getOwnPropertySlot(JSObject*, ExecState*, const Identifier&, PropertySlot&) { return false; }
+    virtual bool getOwnPropertyDescriptor(JSObject*, ExecState*, const Identifier&, PropertyDescriptor&) { return false; }
     virtual void put(JSObject*, ExecState*, const Identifier&, JSValue, PutPropertySlot&) { }
 
 protected:

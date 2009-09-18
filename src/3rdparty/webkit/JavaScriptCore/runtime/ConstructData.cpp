@@ -28,38 +28,15 @@
 
 #include "JSFunction.h"
 
-
-#ifdef QT_BUILD_SCRIPT_LIB
-#include "Debugger.h"
-#include "DebuggerCallFrame.h"
-#include "JSGlobalObject.h"
-#endif
-
 namespace JSC {
 
-#ifdef QT_BUILD_SCRIPT_LIB
-JSObject* JSC::NativeConstrWrapper::operator() (ExecState* exec, JSObject* jsobj, const ArgList& argList) const
-{
-    Debugger* debugger = exec->lexicalGlobalObject()->debugger();
-    if (debugger)
-        debugger->callEvent(DebuggerCallFrame(exec), -1, -1);
-
-    JSObject* returnValue = ptr(exec, jsobj, argList);
-
-    if ((debugger) && (callDebuggerFunctionExit))
-        debugger->functionExit(JSValue(returnValue), -1);
-
-    return returnValue;
-}
-#endif
-
-JSObject* construct(ExecState* exec, JSValue callee, ConstructType constructType, const ConstructData& constructData, const ArgList& args)
+JSObject* construct(ExecState* exec, JSValue object, ConstructType constructType, const ConstructData& constructData, const ArgList& args)
 {
     if (constructType == ConstructTypeHost)
-        return constructData.native.function(exec, asObject(callee), args);
+        return constructData.native.function(exec, asObject(object), args);
     ASSERT(constructType == ConstructTypeJS);
     // FIXME: Can this be done more efficiently using the constructData?
-    return asFunction(callee)->construct(exec, args);
+    return asFunction(object)->construct(exec, args);
 }
 
 } // namespace JSC

@@ -71,6 +71,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSDOMParserPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -94,6 +95,11 @@ const ClassInfo JSDOMParserConstructor::s_info = { "DOMParserConstructor", 0, &J
 bool JSDOMParserConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSDOMParserConstructor, DOMObject>(exec, &JSDOMParserConstructorTable, this, propertyName, slot);
+}
+
+bool JSDOMParserConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSDOMParserConstructor, DOMObject>(exec, &JSDOMParserConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -123,6 +129,11 @@ bool JSDOMParserPrototype::getOwnPropertySlot(ExecState* exec, const Identifier&
     return getStaticFunctionSlot<JSObject>(exec, &JSDOMParserPrototypeTable, this, propertyName, slot);
 }
 
+bool JSDOMParserPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSDOMParserPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSDOMParser::s_info = { "DOMParser", 0, &JSDOMParserTable, 0 };
 
 JSDOMParser::JSDOMParser(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DOMParser> impl)
@@ -146,6 +157,11 @@ bool JSDOMParser::getOwnPropertySlot(ExecState* exec, const Identifier& property
     return getStaticValueSlot<JSDOMParser, Base>(exec, &JSDOMParserTable, this, propertyName, slot);
 }
 
+bool JSDOMParser::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSDOMParser, Base>(exec, &JSDOMParserTable, this, propertyName, descriptor);
+}
+
 JSValue jsDOMParserConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSDOMParser* domObject = static_cast<JSDOMParser*>(asObject(slot.slotBase()));
@@ -159,7 +175,7 @@ JSValue JSDOMParser::getConstructor(ExecState* exec, JSGlobalObject* globalObjec
 JSValue JSC_HOST_CALL jsDOMParserPrototypeFunctionParseFromString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDOMParser::s_info))
+    if (!thisValue.inherits(&JSDOMParser::s_info))
         return throwError(exec, TypeError);
     JSDOMParser* castedThisObj = static_cast<JSDOMParser*>(asObject(thisValue));
     DOMParser* imp = static_cast<DOMParser*>(castedThisObj->impl());
@@ -177,7 +193,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, DOMPars
 }
 DOMParser* toDOMParser(JSC::JSValue value)
 {
-    return value.isObject(&JSDOMParser::s_info) ? static_cast<JSDOMParser*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSDOMParser::s_info) ? static_cast<JSDOMParser*>(asObject(value))->impl() : 0;
 }
 
 }

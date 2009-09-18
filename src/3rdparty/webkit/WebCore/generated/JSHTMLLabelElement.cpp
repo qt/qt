@@ -74,6 +74,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLLabelElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -88,6 +89,11 @@ const ClassInfo JSHTMLLabelElementConstructor::s_info = { "HTMLLabelElementConst
 bool JSHTMLLabelElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLLabelElementConstructor, DOMObject>(exec, &JSHTMLLabelElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLLabelElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLLabelElementConstructor, DOMObject>(exec, &JSHTMLLabelElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -126,6 +132,11 @@ JSObject* JSHTMLLabelElement::createPrototype(ExecState* exec, JSGlobalObject* g
 bool JSHTMLLabelElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLLabelElement, Base>(exec, &JSHTMLLabelElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLLabelElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLLabelElement, Base>(exec, &JSHTMLLabelElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLLabelElementForm(ExecState* exec, const Identifier&, const PropertySlot& slot)

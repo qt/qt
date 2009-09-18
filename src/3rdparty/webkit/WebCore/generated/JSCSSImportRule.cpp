@@ -75,6 +75,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSCSSImportRulePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -89,6 +90,11 @@ const ClassInfo JSCSSImportRuleConstructor::s_info = { "CSSImportRuleConstructor
 bool JSCSSImportRuleConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCSSImportRuleConstructor, DOMObject>(exec, &JSCSSImportRuleConstructorTable, this, propertyName, slot);
+}
+
+bool JSCSSImportRuleConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCSSImportRuleConstructor, DOMObject>(exec, &JSCSSImportRuleConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -127,6 +133,11 @@ JSObject* JSCSSImportRule::createPrototype(ExecState* exec, JSGlobalObject* glob
 bool JSCSSImportRule::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCSSImportRule, Base>(exec, &JSCSSImportRuleTable, this, propertyName, slot);
+}
+
+bool JSCSSImportRule::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCSSImportRule, Base>(exec, &JSCSSImportRuleTable, this, propertyName, descriptor);
 }
 
 JSValue jsCSSImportRuleHref(ExecState* exec, const Identifier&, const PropertySlot& slot)

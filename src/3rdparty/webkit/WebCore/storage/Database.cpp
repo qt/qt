@@ -50,6 +50,8 @@
 #include "SQLiteFileSystem.h"
 #include "SQLiteStatement.h"
 #include "SQLResultSet.h"
+#include "SQLTransactionClient.h"
+#include "SQLTransactionCoordinator.h"
 #include <wtf/MainThread.h>
 #endif
 
@@ -109,20 +111,22 @@ PassRefPtr<Database> Database::openDatabase(Document* document, const String& na
         LOG(StorageAPI, "Database %s for origin %s not allowed to be established", name.ascii().data(), document->securityOrigin()->toString().ascii().data());
         return 0;
     }
-    
+
     RefPtr<Database> database = adoptRef(new Database(document, name, expectedVersion));
 
     if (!database->openAndVerifyVersion(e)) {
        LOG(StorageAPI, "Failed to open and verify version (expected %s) of database %s", expectedVersion.ascii().data(), database->databaseDebugName().ascii().data());
        return 0;
     }
-    
+
     DatabaseTracker::tracker().setDatabaseDetails(document->securityOrigin(), name, displayName, estimatedSize);
 
     document->setHasOpenDatabases();
 
+#if ENABLE(INSPECTOR)
     if (Page* page = document->frame()->page())
         page->inspectorController()->didOpenDatabase(database.get(), document->securityOrigin()->host(), name, expectedVersion);
+#endif
 
     return database;
 }
@@ -292,7 +296,7 @@ bool Database::versionMatchesExpected() const
         MutexLocker locker(guidMutex());
         return m_expectedVersion == guidToVersionMap().get(m_guid);
     }
-    
+
     return true;
 }
 
@@ -334,8 +338,8 @@ void Database::stop()
     // FIXME: The net effect of the following code is to remove all pending transactions and statements, but allow the current statement
     // to run to completion.  In the future we can use the sqlite3_progress_handler or sqlite3_interrupt interfaces to cancel the current
     // statement in response to close(), as well.
-    
-    // This method is meant to be used as an analog to cancelling a loader, and is used when a document is shut down as the result of 
+
+    // This method is meant to be used as an analog to cancelling a loader, and is used when a document is shut down as the result of
     // a page load or closing the page
     m_stopped = true;
 
@@ -355,10 +359,10 @@ unsigned long long Database::maximumSize() const
 {
     // The maximum size for this database is the full quota for this origin, minus the current usage within this origin,
     // except for the current usage of this database
-    
+
     OriginQuotaManager& manager(DatabaseTracker::tracker().originQuotaManager());
     Locker<OriginQuotaManager> locker(manager);
-    
+
     return DatabaseTracker::tracker().quotaForOrigin(m_securityOrigin.get()) - manager.diskUsage(m_securityOrigin.get()) + databaseSize();
 }
 
@@ -441,14 +445,6 @@ bool Database::performOpenAndVerify(ExceptionCode& e)
     m_sqliteDatabase.setAuthorizer(m_databaseAuthorizer);
     m_sqliteDatabase.setBusyTimeout(maxSqliteBusyWaitTime);
 
-    if (!m_sqliteDatabase.tableExists(databaseInfoTableName())) {
-        if (!m_sqliteDatabase.executeCommand("CREATE TABLE " + databaseInfoTableName() + " (key TEXT NOT NULL ON CONFLICT FAIL UNIQUE ON CONFLICT REPLACE,value TEXT NOT NULL ON CONFLICT FAIL);")) {
-            LOG_ERROR("Unable to create table %s in database %s", databaseInfoTableName().ascii().data(), databaseDebugName().ascii().data());
-            e = INVALID_STATE_ERR;
-            return false;
-        }
-    }
-
     String currentVersion;
     {
         MutexLocker locker(guidMutex());
@@ -466,6 +462,15 @@ bool Database::performOpenAndVerify(ExceptionCode& e)
             LOG(StorageAPI, "Current cached version for guid %i is %s", m_guid, currentVersion.ascii().data());
         } else {
             LOG(StorageAPI, "No cached version for guid %i", m_guid);
+
+            if (!m_sqliteDatabase.tableExists(databaseInfoTableName())) {
+                if (!m_sqliteDatabase.executeCommand("CREATE TABLE " + databaseInfoTableName() + " (key TEXT NOT NULL ON CONFLICT FAIL UNIQUE ON CONFLICT REPLACE,value TEXT NOT NULL ON CONFLICT FAIL);")) {
+                    LOG_ERROR("Unable to create table %s in database %s", databaseInfoTableName().ascii().data(), databaseDebugName().ascii().data());
+                    e = INVALID_STATE_ERR;
+                    return false;
+                }
+            }
+
             if (!getVersionFromDatabase(currentVersion)) {
                 LOG_ERROR("Failed to get current version from database %s", databaseDebugName().ascii().data());
                 e = INVALID_STATE_ERR;
@@ -507,7 +512,7 @@ bool Database::performOpenAndVerify(ExceptionCode& e)
     return true;
 }
 
-void Database::changeVersion(const String& oldVersion, const String& newVersion, 
+void Database::changeVersion(const String& oldVersion, const String& newVersion,
                              PassRefPtr<SQLTransactionCallback> callback, PassRefPtr<SQLTransactionErrorCallback> errorCallback,
                              PassRefPtr<VoidCallback> successCallback)
 {
@@ -518,9 +523,9 @@ void Database::changeVersion(const String& oldVersion, const String& newVersion,
 }
 
 void Database::transaction(PassRefPtr<SQLTransactionCallback> callback, PassRefPtr<SQLTransactionErrorCallback> errorCallback,
-                           PassRefPtr<VoidCallback> successCallback)
+                           PassRefPtr<VoidCallback> successCallback, bool readOnly)
 {
-    m_transactionQueue.append(SQLTransaction::create(this, callback, errorCallback, successCallback, 0));
+    m_transactionQueue.append(SQLTransaction::create(this, callback, errorCallback, successCallback, 0, readOnly));
     MutexLocker locker(m_transactionInProgressMutex);
     if (!m_transactionInProgress)
         scheduleTransaction();
@@ -539,13 +544,17 @@ void Database::scheduleTransaction()
         m_transactionInProgress = false;
 }
 
-void Database::scheduleTransactionStep(SQLTransaction* transaction)
+void Database::scheduleTransactionStep(SQLTransaction* transaction, bool immediately)
 {
-    if (m_document->databaseThread()) {
-        RefPtr<DatabaseTransactionTask> task = DatabaseTransactionTask::create(transaction);
-        LOG(StorageAPI, "Scheduling DatabaseTransactionTask %p for the transaction step\n", task.get());
+    if (!m_document->databaseThread())
+        return;
+
+    RefPtr<DatabaseTransactionTask> task = DatabaseTransactionTask::create(transaction);
+    LOG(StorageAPI, "Scheduling DatabaseTransactionTask %p for the transaction step\n", task.get());
+    if (immediately)
+        m_document->databaseThread()->scheduleImmediateTask(task.release());
+    else
         m_document->databaseThread()->scheduleTask(task.release());
-    }
 }
 
 void Database::scheduleTransactionCallback(SQLTransaction* transaction)
@@ -581,6 +590,16 @@ Vector<String> Database::performGetTableNames()
     }
 
     return tableNames;
+}
+
+SQLTransactionClient* Database::transactionClient() const
+{
+    return m_document->databaseThread()->transactionClient();
+}
+
+SQLTransactionCoordinator* Database::transactionCoordinator() const
+{
+    return m_document->databaseThread()->transactionCoordinator();
 }
 
 String Database::version() const

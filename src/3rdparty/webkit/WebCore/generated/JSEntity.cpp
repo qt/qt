@@ -71,6 +71,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSEntityPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -85,6 +86,11 @@ const ClassInfo JSEntityConstructor::s_info = { "EntityConstructor", 0, &JSEntit
 bool JSEntityConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSEntityConstructor, DOMObject>(exec, &JSEntityConstructorTable, this, propertyName, slot);
+}
+
+bool JSEntityConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSEntityConstructor, DOMObject>(exec, &JSEntityConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -123,6 +129,11 @@ JSObject* JSEntity::createPrototype(ExecState* exec, JSGlobalObject* globalObjec
 bool JSEntity::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSEntity, Base>(exec, &JSEntityTable, this, propertyName, slot);
+}
+
+bool JSEntity::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSEntity, Base>(exec, &JSEntityTable, this, propertyName, descriptor);
 }
 
 JSValue jsEntityPublicId(ExecState* exec, const Identifier&, const PropertySlot& slot)

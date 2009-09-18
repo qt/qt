@@ -45,7 +45,7 @@ namespace WTF {
         #define WTF_ALIGN_OF(type) __alignof(type)
         #define WTF_ALIGNED(variable_type, variable, n) __declspec(align(n)) variable_type variable
     #else
-        #define WTF_ALIGN_OF(type)   0
+        #error WTF_ALIGN macros need alignment control.
     #endif
 
     #if COMPILER(GCC) && (((__GNUC__ * 100) + __GNUC_MINOR__) >= 303)
@@ -54,7 +54,6 @@ namespace WTF {
         typedef char AlignedBufferChar; 
     #endif
 
-    #ifdef WTF_ALIGNED
     template <size_t size, size_t alignment> struct AlignedBuffer;
     template <size_t size> struct AlignedBuffer<size, 1> { AlignedBufferChar buffer[size]; };
     template <size_t size> struct AlignedBuffer<size, 2> { WTF_ALIGNED(AlignedBufferChar, buffer[size], 2);  };
@@ -63,18 +62,6 @@ namespace WTF {
     template <size_t size> struct AlignedBuffer<size, 16> { WTF_ALIGNED(AlignedBufferChar, buffer[size], 16); };
     template <size_t size> struct AlignedBuffer<size, 32> { WTF_ALIGNED(AlignedBufferChar, buffer[size], 32); };
     template <size_t size> struct AlignedBuffer<size, 64> { WTF_ALIGNED(AlignedBufferChar, buffer[size], 64); };
-    #else
-    template <size_t size, size_t> struct AlignedBuffer
-    {
-        AlignedBufferChar oversizebuffer[size + 64];
-        AlignedBufferChar *buffer()
-        {
-            AlignedBufferChar *ptr = oversizebuffer;
-            ptr += 64 - (reinterpret_cast<size_t>(ptr) & 0x3f);
-            return ptr;
-        }
-    };
-    #endif
 
     template <bool needsDestruction, typename T>
     class VectorDestructor;
@@ -129,7 +116,7 @@ namespace WTF {
     template<typename T>
     struct VectorMover<false, T>
     {
-        static void move(T* src, const T* srcEnd, T* dst)
+        static void move(const T* src, const T* srcEnd, T* dst)
         {
             while (src != srcEnd) {
                 new (dst) T(*src);
@@ -138,7 +125,7 @@ namespace WTF {
                 ++src;
             }
         }
-        static void moveOverlapping(T* src, const T* srcEnd, T* dst)
+        static void moveOverlapping(const T* src, const T* srcEnd, T* dst)
         {
             if (src > dst)
                 move(src, srcEnd, dst);
@@ -157,11 +144,11 @@ namespace WTF {
     template<typename T>
     struct VectorMover<true, T>
     {
-        static void move(T* src, const T* srcEnd, T* dst) 
+        static void move(const T* src, const T* srcEnd, T* dst) 
         {
             memcpy(dst, src, reinterpret_cast<const char*>(srcEnd) - reinterpret_cast<const char*>(src));
         }
-        static void moveOverlapping(T* src, const T* srcEnd, T* dst) 
+        static void moveOverlapping(const T* src, const T* srcEnd, T* dst) 
         {
             memmove(dst, src, reinterpret_cast<const char*>(srcEnd) - reinterpret_cast<const char*>(src));
         }
@@ -254,12 +241,12 @@ namespace WTF {
             VectorInitializer<VectorTraits<T>::needsInitialization, VectorTraits<T>::canInitializeWithMemset, T>::initialize(begin, end);
         }
 
-        static void move(T* src, const T* srcEnd, T* dst)
+        static void move(const T* src, const T* srcEnd, T* dst)
         {
             VectorMover<VectorTraits<T>::canMoveWithMemcpy, T>::move(src, srcEnd, dst);
         }
 
-        static void moveOverlapping(T* src, const T* srcEnd, T* dst)
+        static void moveOverlapping(const T* src, const T* srcEnd, T* dst)
         {
             VectorMover<VectorTraits<T>::canMoveWithMemcpy, T>::moveOverlapping(src, srcEnd, dst);
         }
@@ -441,11 +428,7 @@ namespace WTF {
         using Base::m_capacity;
 
         static const size_t m_inlineBufferSize = inlineCapacity * sizeof(T);
-        #ifdef WTF_ALIGNED
         T* inlineBuffer() { return reinterpret_cast<T*>(m_inlineBuffer.buffer); }
-        #else
-        T* inlineBuffer() { return reinterpret_cast<T*>(m_inlineBuffer.buffer()); }
-        #endif
 
         AlignedBuffer<m_inlineBufferSize, WTF_ALIGN_OF(T)> m_inlineBuffer;
     };
@@ -585,7 +568,6 @@ namespace WTF {
     };
 
 #if PLATFORM(QT)
-    QT_USE_NAMESPACE
     template<typename T>
     QDataStream& operator<<(QDataStream& stream, const Vector<T>& data)
     {

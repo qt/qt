@@ -78,6 +78,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSAttrPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -92,6 +93,11 @@ const ClassInfo JSAttrConstructor::s_info = { "AttrConstructor", 0, &JSAttrConst
 bool JSAttrConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSAttrConstructor, DOMObject>(exec, &JSAttrConstructorTable, this, propertyName, slot);
+}
+
+bool JSAttrConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSAttrConstructor, DOMObject>(exec, &JSAttrConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -130,6 +136,11 @@ JSObject* JSAttr::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 bool JSAttr::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSAttr, Base>(exec, &JSAttrTable, this, propertyName, slot);
+}
+
+bool JSAttr::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSAttr, Base>(exec, &JSAttrTable, this, propertyName, descriptor);
 }
 
 JSValue jsAttrName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -194,7 +205,7 @@ JSValue JSAttr::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 
 Attr* toAttr(JSC::JSValue value)
 {
-    return value.isObject(&JSAttr::s_info) ? static_cast<JSAttr*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSAttr::s_info) ? static_cast<JSAttr*>(asObject(value))->impl() : 0;
 }
 
 }

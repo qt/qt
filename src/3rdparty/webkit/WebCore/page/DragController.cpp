@@ -26,6 +26,7 @@
 #include "config.h"
 #include "DragController.h"
 
+#if ENABLE(DRAG_SUPPORT)
 #include "CSSStyleDeclaration.h"
 #include "Clipboard.h"
 #include "ClipboardAccessPolicy.h"
@@ -107,7 +108,7 @@ static PassRefPtr<DocumentFragment> documentFragmentFromDragData(DragData* dragD
             String title;
             String url = dragData->asURL(&title);
             if (!url.isEmpty()) {
-                RefPtr<HTMLAnchorElement> anchor = new HTMLAnchorElement(document);
+                RefPtr<HTMLAnchorElement> anchor = HTMLAnchorElement::create(document);
                 anchor->setHref(url);
                 ExceptionCode ec;
                 RefPtr<Node> anchorText = document->createTextNode(title);
@@ -281,9 +282,7 @@ bool DragController::tryDocumentDrag(DragData* dragData, DragDestinationAction a
     if (m_isHandlingDrag) {
         m_page->dragCaretController()->clear();
         return true;
-    }
-
-    if ((actionMask & DragDestinationActionEdit) && !m_isHandlingDrag && canProcessDrag(dragData)) {
+    } else if ((actionMask & DragDestinationActionEdit) && canProcessDrag(dragData)) {
         if (dragData->containsColor()) {
             operation = DragOperationGeneric;
             return true;
@@ -302,6 +301,8 @@ bool DragController::tryDocumentDrag(DragData* dragData, DragDestinationAction a
         operation = dragIsMove(innerFrame->selection()) ? DragOperationMove : DragOperationCopy;
         return true;
     }
+    // If we're not over an editable region, make sure we're clearing any prior drag cursor.
+    m_page->dragCaretController()->clear();
     return false;
 }
 
@@ -379,11 +380,10 @@ bool DragController::concludeEditDrag(DragData* dragData)
         if (filenames.isEmpty())
             return false;
 
-        // Ugly.  For security none of the API's available to us to set the input value
-        // on file inputs.  Even forcing a change in HTMLInputElement doesn't work as
-        // RenderFileUploadControl clears the file when doing updateFromElement()
-        RenderFileUploadControl* renderer = static_cast<RenderFileUploadControl*>(fileInput->renderer());
-
+        // Ugly. For security none of the APIs available to us can set the input value
+        // on file inputs. Even forcing a change in HTMLInputElement doesn't work as
+        // RenderFileUploadControl clears the file when doing updateFromElement().
+        RenderFileUploadControl* renderer = toRenderFileUploadControl(fileInput->renderer());
         if (!renderer)
             return false;
 
@@ -786,3 +786,5 @@ void DragController::placeDragCaret(const IntPoint& windowPoint)
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(DRAG_SUPPORT)

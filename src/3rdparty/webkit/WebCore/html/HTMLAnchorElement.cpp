@@ -40,51 +40,46 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLAnchorElement::HTMLAnchorElement(Document* document)
-    : HTMLElement(aTag, document)
-    , m_rootEditableElementForSelectionOnMouseDown(0)
+HTMLAnchorElement::HTMLAnchorElement(const QualifiedName& tagName, Document* document)
+    : HTMLElement(tagName, document, CreateElement)
     , m_wasShiftKeyDownOnMouseDown(false)
 {
 }
 
-HTMLAnchorElement::HTMLAnchorElement(const QualifiedName& tagName, Document* document)
-    : HTMLElement(tagName, document)
-    , m_rootEditableElementForSelectionOnMouseDown(0)
-    , m_wasShiftKeyDownOnMouseDown(false)
+PassRefPtr<HTMLAnchorElement> HTMLAnchorElement::create(Document* document)
 {
+    return adoptRef(new HTMLAnchorElement(aTag, document));
+}
+
+PassRefPtr<HTMLAnchorElement> HTMLAnchorElement::create(const QualifiedName& tagName, Document* document)
+{
+    return adoptRef(new HTMLAnchorElement(tagName, document));
 }
 
 bool HTMLAnchorElement::supportsFocus() const
 {
     if (isContentEditable())
         return HTMLElement::supportsFocus();
-    return isFocusable() || (isLink() && document() && !document()->haveStylesheetsLoaded());
-}
-
-bool HTMLAnchorElement::isFocusable() const
-{
-    if (isContentEditable())
-        return HTMLElement::isFocusable();
-
-    // FIXME: Even if we are not visible, we might have a child that is visible.
-    // Dave wants to fix that some day with a "has visible content" flag or the like.
-    if (!(isLink() && renderer() && renderer()->style()->visibility() == VISIBLE))
-        return false;
-
-    return true;
+    // If not a link we should still be able to focus the element if it has tabIndex.
+    return isLink() || HTMLElement::supportsFocus();
 }
 
 bool HTMLAnchorElement::isMouseFocusable() const
 {
-#if PLATFORM(GTK)
-    return HTMLElement::isMouseFocusable();
-#else
-    return false;
+    // Anchor elements should be mouse focusable, https://bugs.webkit.org/show_bug.cgi?id=26856
+#if !PLATFORM(GTK)
+    if (isLink())
+        return false;
 #endif
+    // Allow tab index etc to control focus.
+    return HTMLElement::isMouseFocusable();
 }
 
 bool HTMLAnchorElement::isKeyboardFocusable(KeyboardEvent* event) const
 {
+    if (!isLink())
+        return HTMLElement::isKeyboardFocusable(event);
+
     if (!isFocusable())
         return false;
     
@@ -344,21 +339,23 @@ String HTMLAnchorElement::target() const
 
 String HTMLAnchorElement::hash() const
 {
-    String ref = href().ref();
-    return ref.isEmpty() ? "" : "#" + ref;
+    String fragmentIdentifier = href().fragmentIdentifier();
+    return fragmentIdentifier.isEmpty() ? "" : "#" + fragmentIdentifier;
 }
 
 String HTMLAnchorElement::host() const
 {
-    return href().host();
+    const KURL& url = href();
+    if (url.hostEnd() == url.pathStart())
+        return url.host();
+    if (SecurityOrigin::isDefaultPortForProtocol(url.port(), url.protocol()))
+        return url.host();
+    return url.host() + ":" + String::number(url.port());
 }
 
 String HTMLAnchorElement::hostname() const
 {
-    const KURL& url = href();
-    if (url.port() == 0)
-        return url.host();
-    return url.host() + ":" + String::number(url.port());
+    return href().host();
 }
 
 String HTMLAnchorElement::pathname() const

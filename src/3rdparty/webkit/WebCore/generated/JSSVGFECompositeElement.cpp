@@ -101,6 +101,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSSVGFECompositeElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -115,6 +116,11 @@ const ClassInfo JSSVGFECompositeElementConstructor::s_info = { "SVGFECompositeEl
 bool JSSVGFECompositeElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGFECompositeElementConstructor, DOMObject>(exec, &JSSVGFECompositeElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGFECompositeElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFECompositeElementConstructor, DOMObject>(exec, &JSSVGFECompositeElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -151,6 +157,11 @@ bool JSSVGFECompositeElementPrototype::getOwnPropertySlot(ExecState* exec, const
     return getStaticPropertySlot<JSSVGFECompositeElementPrototype, JSObject>(exec, &JSSVGFECompositeElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGFECompositeElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticPropertyDescriptor<JSSVGFECompositeElementPrototype, JSObject>(exec, &JSSVGFECompositeElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGFECompositeElement::s_info = { "SVGFECompositeElement", &JSSVGElement::s_info, &JSSVGFECompositeElementTable, 0 };
 
 JSSVGFECompositeElement::JSSVGFECompositeElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFECompositeElement> impl)
@@ -166,6 +177,11 @@ JSObject* JSSVGFECompositeElement::createPrototype(ExecState* exec, JSGlobalObje
 bool JSSVGFECompositeElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGFECompositeElement, Base>(exec, &JSSVGFECompositeElementTable, this, propertyName, slot);
+}
+
+bool JSSVGFECompositeElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFECompositeElement, Base>(exec, &JSSVGFECompositeElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGFECompositeElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -306,7 +322,7 @@ JSValue JSSVGFECompositeElement::getConstructor(ExecState* exec, JSGlobalObject*
 JSValue JSC_HOST_CALL jsSVGFECompositeElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGFECompositeElement::s_info))
+    if (!thisValue.inherits(&JSSVGFECompositeElement::s_info))
         return throwError(exec, TypeError);
     JSSVGFECompositeElement* castedThisObj = static_cast<JSSVGFECompositeElement*>(asObject(thisValue));
     SVGFECompositeElement* imp = static_cast<SVGFECompositeElement*>(castedThisObj->impl());

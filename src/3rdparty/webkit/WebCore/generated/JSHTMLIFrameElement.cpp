@@ -24,6 +24,7 @@
 #include "DOMWindow.h"
 #include "Document.h"
 #include "HTMLIFrameElement.h"
+#include "HTMLNames.h"
 #include "JSDOMBinding.h"
 #include "JSDOMWindow.h"
 #include "JSDocument.h"
@@ -89,6 +90,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLIFrameElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -103,6 +105,11 @@ const ClassInfo JSHTMLIFrameElementConstructor::s_info = { "HTMLIFrameElementCon
 bool JSHTMLIFrameElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLIFrameElementConstructor, DOMObject>(exec, &JSHTMLIFrameElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLIFrameElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLIFrameElementConstructor, DOMObject>(exec, &JSHTMLIFrameElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -132,6 +139,11 @@ bool JSHTMLIFrameElementPrototype::getOwnPropertySlot(ExecState* exec, const Ide
     return getStaticFunctionSlot<JSObject>(exec, &JSHTMLIFrameElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSHTMLIFrameElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSHTMLIFrameElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSHTMLIFrameElement::s_info = { "HTMLIFrameElement", &JSHTMLElement::s_info, &JSHTMLIFrameElementTable, 0 };
 
 JSHTMLIFrameElement::JSHTMLIFrameElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLIFrameElement> impl)
@@ -149,12 +161,17 @@ bool JSHTMLIFrameElement::getOwnPropertySlot(ExecState* exec, const Identifier& 
     return getStaticValueSlot<JSHTMLIFrameElement, Base>(exec, &JSHTMLIFrameElementTable, this, propertyName, slot);
 }
 
+bool JSHTMLIFrameElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLIFrameElement, Base>(exec, &JSHTMLIFrameElementTable, this, propertyName, descriptor);
+}
+
 JSValue jsHTMLIFrameElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSHTMLIFrameElement* castedThis = static_cast<JSHTMLIFrameElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLIFrameElement* imp = static_cast<HTMLIFrameElement*>(castedThis->impl());
-    return jsString(exec, imp->align());
+    return jsString(exec, imp->getAttribute(HTMLNames::alignAttr));
 }
 
 JSValue jsHTMLIFrameElementFrameBorder(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -162,7 +179,7 @@ JSValue jsHTMLIFrameElementFrameBorder(ExecState* exec, const Identifier&, const
     JSHTMLIFrameElement* castedThis = static_cast<JSHTMLIFrameElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLIFrameElement* imp = static_cast<HTMLIFrameElement*>(castedThis->impl());
-    return jsString(exec, imp->frameBorder());
+    return jsString(exec, imp->getAttribute(HTMLNames::frameborderAttr));
 }
 
 JSValue jsHTMLIFrameElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -170,7 +187,7 @@ JSValue jsHTMLIFrameElementHeight(ExecState* exec, const Identifier&, const Prop
     JSHTMLIFrameElement* castedThis = static_cast<JSHTMLIFrameElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLIFrameElement* imp = static_cast<HTMLIFrameElement*>(castedThis->impl());
-    return jsString(exec, imp->height());
+    return jsString(exec, imp->getAttribute(HTMLNames::heightAttr));
 }
 
 JSValue jsHTMLIFrameElementLongDesc(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -178,7 +195,7 @@ JSValue jsHTMLIFrameElementLongDesc(ExecState* exec, const Identifier&, const Pr
     JSHTMLIFrameElement* castedThis = static_cast<JSHTMLIFrameElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLIFrameElement* imp = static_cast<HTMLIFrameElement*>(castedThis->impl());
-    return jsString(exec, imp->longDesc());
+    return jsString(exec, imp->getAttribute(HTMLNames::longdescAttr));
 }
 
 JSValue jsHTMLIFrameElementMarginHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -186,7 +203,7 @@ JSValue jsHTMLIFrameElementMarginHeight(ExecState* exec, const Identifier&, cons
     JSHTMLIFrameElement* castedThis = static_cast<JSHTMLIFrameElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLIFrameElement* imp = static_cast<HTMLIFrameElement*>(castedThis->impl());
-    return jsString(exec, imp->marginHeight());
+    return jsString(exec, imp->getAttribute(HTMLNames::marginheightAttr));
 }
 
 JSValue jsHTMLIFrameElementMarginWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -194,7 +211,7 @@ JSValue jsHTMLIFrameElementMarginWidth(ExecState* exec, const Identifier&, const
     JSHTMLIFrameElement* castedThis = static_cast<JSHTMLIFrameElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLIFrameElement* imp = static_cast<HTMLIFrameElement*>(castedThis->impl());
-    return jsString(exec, imp->marginWidth());
+    return jsString(exec, imp->getAttribute(HTMLNames::marginwidthAttr));
 }
 
 JSValue jsHTMLIFrameElementName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -202,7 +219,7 @@ JSValue jsHTMLIFrameElementName(ExecState* exec, const Identifier&, const Proper
     JSHTMLIFrameElement* castedThis = static_cast<JSHTMLIFrameElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLIFrameElement* imp = static_cast<HTMLIFrameElement*>(castedThis->impl());
-    return jsString(exec, imp->name());
+    return jsString(exec, imp->getAttribute(HTMLNames::nameAttr));
 }
 
 JSValue jsHTMLIFrameElementScrolling(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -210,7 +227,7 @@ JSValue jsHTMLIFrameElementScrolling(ExecState* exec, const Identifier&, const P
     JSHTMLIFrameElement* castedThis = static_cast<JSHTMLIFrameElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLIFrameElement* imp = static_cast<HTMLIFrameElement*>(castedThis->impl());
-    return jsString(exec, imp->scrolling());
+    return jsString(exec, imp->getAttribute(HTMLNames::scrollingAttr));
 }
 
 JSValue jsHTMLIFrameElementSrc(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -218,7 +235,7 @@ JSValue jsHTMLIFrameElementSrc(ExecState* exec, const Identifier&, const Propert
     JSHTMLIFrameElement* castedThis = static_cast<JSHTMLIFrameElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLIFrameElement* imp = static_cast<HTMLIFrameElement*>(castedThis->impl());
-    return jsString(exec, imp->src());
+    return jsString(exec, imp->getAttribute(HTMLNames::srcAttr));
 }
 
 JSValue jsHTMLIFrameElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -226,7 +243,7 @@ JSValue jsHTMLIFrameElementWidth(ExecState* exec, const Identifier&, const Prope
     JSHTMLIFrameElement* castedThis = static_cast<JSHTMLIFrameElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLIFrameElement* imp = static_cast<HTMLIFrameElement*>(castedThis->impl());
-    return jsString(exec, imp->width());
+    return jsString(exec, imp->getAttribute(HTMLNames::widthAttr));
 }
 
 JSValue jsHTMLIFrameElementContentDocument(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -257,49 +274,49 @@ void JSHTMLIFrameElement::put(ExecState* exec, const Identifier& propertyName, J
 void setJSHTMLIFrameElementAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLIFrameElement* imp = static_cast<HTMLIFrameElement*>(static_cast<JSHTMLIFrameElement*>(thisObject)->impl());
-    imp->setAlign(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::alignAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLIFrameElementFrameBorder(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLIFrameElement* imp = static_cast<HTMLIFrameElement*>(static_cast<JSHTMLIFrameElement*>(thisObject)->impl());
-    imp->setFrameBorder(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::frameborderAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLIFrameElementHeight(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLIFrameElement* imp = static_cast<HTMLIFrameElement*>(static_cast<JSHTMLIFrameElement*>(thisObject)->impl());
-    imp->setHeight(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::heightAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLIFrameElementLongDesc(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLIFrameElement* imp = static_cast<HTMLIFrameElement*>(static_cast<JSHTMLIFrameElement*>(thisObject)->impl());
-    imp->setLongDesc(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::longdescAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLIFrameElementMarginHeight(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLIFrameElement* imp = static_cast<HTMLIFrameElement*>(static_cast<JSHTMLIFrameElement*>(thisObject)->impl());
-    imp->setMarginHeight(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::marginheightAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLIFrameElementMarginWidth(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLIFrameElement* imp = static_cast<HTMLIFrameElement*>(static_cast<JSHTMLIFrameElement*>(thisObject)->impl());
-    imp->setMarginWidth(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::marginwidthAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLIFrameElementName(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLIFrameElement* imp = static_cast<HTMLIFrameElement*>(static_cast<JSHTMLIFrameElement*>(thisObject)->impl());
-    imp->setName(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::nameAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLIFrameElementScrolling(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLIFrameElement* imp = static_cast<HTMLIFrameElement*>(static_cast<JSHTMLIFrameElement*>(thisObject)->impl());
-    imp->setScrolling(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::scrollingAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLIFrameElementSrc(ExecState* exec, JSObject* thisObject, JSValue value)
@@ -310,7 +327,7 @@ void setJSHTMLIFrameElementSrc(ExecState* exec, JSObject* thisObject, JSValue va
 void setJSHTMLIFrameElementWidth(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLIFrameElement* imp = static_cast<HTMLIFrameElement*>(static_cast<JSHTMLIFrameElement*>(thisObject)->impl());
-    imp->setWidth(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::widthAttr, valueToStringWithNullCheck(exec, value));
 }
 
 JSValue JSHTMLIFrameElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -321,7 +338,7 @@ JSValue JSHTMLIFrameElement::getConstructor(ExecState* exec, JSGlobalObject* glo
 JSValue JSC_HOST_CALL jsHTMLIFrameElementPrototypeFunctionGetSVGDocument(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLIFrameElement::s_info))
+    if (!thisValue.inherits(&JSHTMLIFrameElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLIFrameElement* castedThisObj = static_cast<JSHTMLIFrameElement*>(asObject(thisValue));
     HTMLIFrameElement* imp = static_cast<HTMLIFrameElement*>(castedThisObj->impl());

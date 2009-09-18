@@ -73,6 +73,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLParamElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -87,6 +88,11 @@ const ClassInfo JSHTMLParamElementConstructor::s_info = { "HTMLParamElementConst
 bool JSHTMLParamElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLParamElementConstructor, DOMObject>(exec, &JSHTMLParamElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLParamElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLParamElementConstructor, DOMObject>(exec, &JSHTMLParamElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -125,6 +131,11 @@ JSObject* JSHTMLParamElement::createPrototype(ExecState* exec, JSGlobalObject* g
 bool JSHTMLParamElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLParamElement, Base>(exec, &JSHTMLParamElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLParamElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLParamElement, Base>(exec, &JSHTMLParamElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLParamElementName(ExecState* exec, const Identifier&, const PropertySlot& slot)

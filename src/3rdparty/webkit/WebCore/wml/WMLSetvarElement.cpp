@@ -56,13 +56,22 @@ void WMLSetvarElement::insertedIntoDocument()
     WMLElement::insertedIntoDocument();
  
     Node* parent = parentNode();
-    ASSERT(parent);
-
     if (!parent || !parent->isWMLElement())
         return;
 
     if (static_cast<WMLElement*>(parent)->isWMLTaskElement())
         static_cast<WMLTaskElement*>(parent)->registerVariableSetter(this);
+}
+
+void WMLSetvarElement::removedFromDocument()
+{
+    Node* parent = parentNode();
+    if (parent && parent->isWMLElement()) {
+        if (static_cast<WMLElement*>(parent)->isWMLTaskElement())
+            static_cast<WMLTaskElement*>(parent)->deregisterVariableSetter(this);
+    }
+
+    WMLElement::removedFromDocument(); 
 }
 
 String WMLSetvarElement::name() const

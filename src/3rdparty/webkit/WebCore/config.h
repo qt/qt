@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2004, 2005, 2006 Apple Inc.
- * 
+ * Copyright (C) 2009 Google Inc. All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
  * License as published by the Free Software Foundation; either
@@ -74,15 +75,6 @@
 
 #endif /* PLATFORM(WIN_OS) */
 
-// On MSW, wx headers need to be included before windows.h is.
-// The only way we can always ensure this is if we include wx here.
-#if PLATFORM(WX)
-// The defines in KeyboardCodes.h conflict with Windows as well, and the only way I've found
-// to address the problem is include KeyboarddCodes.h before windows.h, so do it here.
-#include "KeyboardCodes.h"
-#include <wx/defs.h>
-#endif
-
 #ifdef __cplusplus
 
 // These undefs match up with defines in WebCorePrefix.h for Mac OS X.
@@ -93,10 +85,19 @@
 
 #endif
 
+// On MSW, wx headers need to be included before windows.h is.
+// The only way we can always ensure this is if we include wx here.
+#if PLATFORM(WX)
+// The defines in KeyboardCodes.h conflict with Windows as well, and the only way I've found
+// to address the problem is include KeyboarddCodes.h before windows.h, so do it here.
+#include "KeyboardCodes.h"
+#include <wx/defs.h>
+#endif
+
 // this breaks compilation of <QFontDatabase>, at least, so turn it off for now
 // Also generates errors on wx on Windows, presumably because these functions
 // are used from wx headers.
-#if !PLATFORM(QT) && !PLATFORM(WX)
+#if !PLATFORM(QT) && !PLATFORM(WX) && !PLATFORM(CHROMIUM)
 #include <wtf/DisallowCType.h>
 #endif
 
@@ -156,13 +157,30 @@
 #include <wtf/MathExtras.h>
 #endif
 
-#if !defined(WTF_USE_V8)
-/* Currently Chromium is the only platform which uses V8 by default */
 #if PLATFORM(CHROMIUM)
+
+#if !PLATFORM(DARWIN)
+// Define SKIA on non-Mac.
+#define WTF_PLATFORM_SKIA 1
+#endif /* !PLATFORM(DARWIN) */
+
+// Chromium uses this file instead of JavaScriptCore/config.h to compile
+// JavaScriptCore/wtf (chromium doesn't compile the rest of JSC). Therefore,
+// this define is required.
+#define WTF_CHANGES 1
+
+#define WTF_USE_GOOGLEURL 1
+
+#if !defined(WTF_USE_V8)
 #define WTF_USE_V8 1
-#else
-#define WTF_USE_V8 0
+#endif
+
+#undef WTF_USE_CFNETWORK
+
 #endif /* PLATFORM(CHROMIUM) */
+
+#if !defined(WTF_USE_V8)
+#define WTF_USE_V8 0
 #endif /* !defined(WTF_USE_V8) */
 
 /* Using V8 implies not using JSC and vice versa */

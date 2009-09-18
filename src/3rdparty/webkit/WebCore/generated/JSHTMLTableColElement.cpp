@@ -76,6 +76,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLTableColElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -90,6 +91,11 @@ const ClassInfo JSHTMLTableColElementConstructor::s_info = { "HTMLTableColElemen
 bool JSHTMLTableColElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLTableColElementConstructor, DOMObject>(exec, &JSHTMLTableColElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLTableColElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLTableColElementConstructor, DOMObject>(exec, &JSHTMLTableColElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -128,6 +134,11 @@ JSObject* JSHTMLTableColElement::createPrototype(ExecState* exec, JSGlobalObject
 bool JSHTMLTableColElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLTableColElement, Base>(exec, &JSHTMLTableColElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLTableColElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLTableColElement, Base>(exec, &JSHTMLTableColElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLTableColElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)

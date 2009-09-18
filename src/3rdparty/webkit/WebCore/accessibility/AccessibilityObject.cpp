@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -41,6 +41,7 @@
 #include "NotImplemented.h"
 #include "Page.h"
 #include "RenderImage.h"
+#include "RenderListItem.h"
 #include "RenderListMarker.h"
 #include "RenderMenuList.h"
 #include "RenderTextControl.h"
@@ -62,6 +63,7 @@ using namespace HTMLNames;
 AccessibilityObject::AccessibilityObject()
     : m_id(0)
     , m_haveChildren(false)
+    , m_role(UnknownRole)
 #if PLATFORM(GTK)
     , m_wrapper(0)
 #endif
@@ -86,6 +88,35 @@ AccessibilityObject* AccessibilityObject::parentObjectUnignored() const
     for (parent = parentObject(); parent && parent->accessibilityIsIgnored(); parent = parent->parentObject())
         ;
     return parent;
+}
+
+AccessibilityObject* AccessibilityObject::firstAccessibleObjectFromNode(const Node* node)
+{
+    ASSERT(AXObjectCache::accessibilityEnabled());
+
+    if (!node)
+        return 0;
+
+    Document* document = node->document();
+    if (!document)
+        return 0;
+
+    AXObjectCache* cache = document->axObjectCache();
+
+    AccessibilityObject* accessibleObject = cache->getOrCreate(node->renderer());
+    while (accessibleObject && accessibleObject->accessibilityIsIgnored()) {
+        node = node->traverseNextNode();
+
+        while (node && !node->renderer())
+            node = node->traverseNextSibling();
+
+        if (!node)
+            return 0;
+
+        accessibleObject = cache->getOrCreate(node->renderer());
+    }
+
+    return accessibleObject;
 }
 
 bool AccessibilityObject::isARIAInput(AccessibilityRole ariaRole)
@@ -362,6 +393,49 @@ static bool replacedNodeNeedsCharacter(Node* replacedNode)
     return true;
 }
 
+// Finds a RenderListItem parent give a node.
+RenderListItem* AccessibilityObject::renderListItemContainerForNode(Node* node) const
+{
+    for (Node* stringNode = node; stringNode; stringNode = stringNode->parent()) {
+        RenderObject* renderObject = stringNode->renderer();
+        if (!renderObject || !renderObject->isListItem())
+            continue;
+        
+        return toRenderListItem(renderObject);
+    }
+    
+    return 0;
+}
+    
+// Returns the text associated with a list marker if this node is contained within a list item.
+String AccessibilityObject::listMarkerTextForNodeAndPosition(Node* node, const VisiblePosition& visiblePositionStart) const
+{
+    // If the range does not contain the start of the line, the list marker text should not be included.
+    if (!isStartOfLine(visiblePositionStart))
+        return String();
+
+    RenderListItem* listItem = renderListItemContainerForNode(node);
+    if (!listItem)
+        return String();
+        
+    // If this is in a list item, we need to manually add the text for the list marker 
+    // because a RenderListMarker does not have a Node equivalent and thus does not appear
+    // when iterating text.
+    const String& markerText = listItem->markerText();
+    if (markerText.isEmpty())
+        return String();
+                
+    // Append text, plus the period that follows the text.
+    // FIXME: Not all list marker styles are followed by a period, but this
+    // sounds much better when there is a synthesized pause because of a period.
+    Vector<UChar> resultVector;
+    resultVector.append(markerText.characters(), markerText.length());
+    resultVector.append('.');
+    resultVector.append(' ');
+    
+    return String::adopt(resultVector);
+}
+    
 String AccessibilityObject::stringForVisiblePositionRange(const VisiblePositionRange& visiblePositionRange) const
 {
     if (visiblePositionRange.isNull())
@@ -372,6 +446,11 @@ String AccessibilityObject::stringForVisiblePositionRange(const VisiblePositionR
     for (TextIterator it(range.get()); !it.atEnd(); it.advance()) {
         // non-zero length means textual node, zero length means replaced node (AKA "attachments" in AX)
         if (it.length() != 0) {
+            // Add a textual representation for list marker text
+            String listMarkerText = listMarkerTextForNodeAndPosition(it.node(), visiblePositionRange.start);
+            if (!listMarkerText.isEmpty())
+                resultVector.append(listMarkerText.characters(), listMarkerText.length());
+                
             resultVector.append(it.characters(), it.length());
         } else {
             // locate the node and starting offset for this replaced range
@@ -657,6 +736,24 @@ void AccessibilityObject::clearChildren()
     m_children.clear();
 }
 
+AccessibilityObject* AccessibilityObject::anchorElementForNode(Node* node)
+{
+    RenderObject* obj = node->renderer();
+    if (!obj)
+        return 0;
+    
+    RefPtr<AccessibilityObject> axObj = obj->document()->axObjectCache()->getOrCreate(obj);
+    Element* anchor = axObj->anchorElement();
+    if (!anchor)
+        return 0;
+    
+    RenderObject* anchorRenderer = anchor->renderer();
+    if (!anchorRenderer)
+        return 0;
+    
+    return anchorRenderer->document()->axObjectCache()->getOrCreate(anchorRenderer);
+}
+    
 const String& AccessibilityObject::actionVerb() const
 {
     // FIXME: Need to add verbs for select elements.
@@ -684,6 +781,19 @@ const String& AccessibilityObject::actionVerb() const
         default:
             return noAction;
     }
+}
+ 
+// Lacking concrete evidence of orientation, horizontal means width > height. vertical is height > width;
+AccessibilityOrientation AccessibilityObject::orientation() const
+{
+    IntRect bounds = elementRect();
+    if (bounds.size().width() > bounds.size().height())
+        return AccessibilityOrientationHorizontal;
+    if (bounds.size().height() > bounds.size().width())
+        return AccessibilityOrientationVertical;
+
+    // A tie goes to horizontal.
+    return AccessibilityOrientationHorizontal;
 }
     
 } // namespace WebCore

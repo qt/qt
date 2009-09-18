@@ -30,7 +30,8 @@
 #ifndef InspectorFrontend_h
 #define InspectorFrontend_h
 
-#include "InspectorJSONObject.h"
+#include "ScriptArray.h"
+#include "ScriptObject.h"
 #include "ScriptState.h"
 #include <wtf/PassOwnPtr.h>
 
@@ -44,26 +45,32 @@ namespace JSC {
 
 namespace WebCore {
     class ConsoleMessage;
+    class Database;
+    class Frame;
+    class InspectorController;
     class InspectorResource;
     class Node;
     class ScriptFunctionCall;
     class ScriptString;
+    class Storage;
 
     class InspectorFrontend {
     public:
-        InspectorFrontend(ScriptState*, ScriptObject webInspector);
+        InspectorFrontend(InspectorController* inspectorController, ScriptState*, ScriptObject webInspector);
         ~InspectorFrontend();
-        InspectorJSONObject newInspectorJSONObject();
 
-        void addMessageToConsole(const InspectorJSONObject& messageObj, const Vector<ScriptString>& frames, const Vector<ScriptValue> wrappedArguments, const String& message);
-        
-        bool addResource(long long identifier, const InspectorJSONObject& resourceObj);
-        bool updateResource(long long identifier, const InspectorJSONObject& resourceObj);
+        ScriptArray newScriptArray();
+        ScriptObject newScriptObject();
+
+        void addMessageToConsole(const ScriptObject& messageObj, const Vector<ScriptString>& frames, const Vector<ScriptValue> wrappedArguments, const String& message);
+        void clearConsoleMessages();
+
+        bool addResource(long long identifier, const ScriptObject& resourceObj);
+        bool updateResource(long long identifier, const ScriptObject& resourceObj);
         void removeResource(long long identifier);
 
-        void updateFocusedNode(Node* node);
+        void updateFocusedNode(long long nodeId);
         void setAttachedWindow(bool attached);
-        void inspectedWindowScriptObjectCleared(Frame* frame);
         void showPanel(int panel);
         void populateInterface();
         void reset();
@@ -81,21 +88,43 @@ namespace WebCore {
         void failedToParseScriptSource(const JSC::SourceCode&, int errorLine, const JSC::UString& errorMessage);
         void addProfile(const JSC::JSValue& profile);
         void setRecordingProfile(bool isProfiling);
-        void pausedScript();
+        void pausedScript(const ScriptValue& callFrames);
         void resumedScript();
 #endif
 
 #if ENABLE(DATABASE)
-        bool addDatabase(const InspectorJSONObject& dbObj);
+        bool addDatabase(const ScriptObject& dbObj);
+        void selectDatabase(Database* database);
 #endif
         
 #if ENABLE(DOM_STORAGE)
-        bool addDOMStorage(const InspectorJSONObject& domStorageObj);
+        bool addDOMStorage(const ScriptObject& domStorageObj);
+        void selectDOMStorage(Storage* storage);
 #endif
+
+        void setDocument(const ScriptObject& root);
+        void setDetachedRoot(const ScriptObject& root);
+        void setChildNodes(int parentId, const ScriptArray& nodes);
+        void childNodeCountUpdated(int id, int newValue);
+        void childNodeInserted(int parentId, int prevId, const ScriptObject& node);
+        void childNodeRemoved(int parentId, int id);
+        void attributesUpdated(int id, const ScriptArray& attributes);
+        void didGetChildNodes(int callId);
+        void didApplyDomChange(int callId, bool success);
+
+        void timelineWasEnabled();
+        void timelineWasDisabled();
+        void addItemToTimeline(const ScriptObject& itemObj);
+
+        void didGetCookies(int callId, const ScriptArray& cookies, const String& cookiesString);
+        void didDispatchOnInjectedScript(int callId, const String& result, bool isException);
+
+        void addNodesToSearchResult(const String& nodeIds);
 
     private:
         PassOwnPtr<ScriptFunctionCall> newFunctionCall(const String& functionName);
         void callSimpleFunction(const String& functionName);
+        InspectorController* m_inspectorController;
         ScriptState* m_scriptState;
         ScriptObject m_webInspector;
     };

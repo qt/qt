@@ -93,6 +93,11 @@ bool JSSVGZoomEvent::getOwnPropertySlot(ExecState* exec, const Identifier& prope
     return getStaticValueSlot<JSSVGZoomEvent, Base>(exec, &JSSVGZoomEventTable, this, propertyName, slot);
 }
 
+bool JSSVGZoomEvent::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGZoomEvent, Base>(exec, &JSSVGZoomEventTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGZoomEventZoomRectScreen(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGZoomEvent* castedThis = static_cast<JSSVGZoomEvent*>(asObject(slot.slotBase()));

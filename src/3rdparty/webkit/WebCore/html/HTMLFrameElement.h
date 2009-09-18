@@ -2,7 +2,7 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2000 Simon Hausmann <hausmann@kde.org>
- * Copyright (C) 2004, 2006 Apple Computer, Inc.
+ * Copyright (C) 2004, 2006, 2009 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -28,13 +28,16 @@
 
 namespace WebCore {
 
-class Document;
-class RenderObject;
-class RenderArena;
-class RenderStyle;
-
 class HTMLFrameElement : public HTMLFrameElementBase {
 public:
+    static PassRefPtr<HTMLFrameElement> create(const QualifiedName&, Document*);
+
+    bool hasFrameBorder() const { return m_frameBorder; }
+
+    bool noResize() const { return m_noResize; }
+    void setNoResize(bool);
+
+private:
     HTMLFrameElement(const QualifiedName&, Document*);
 
     virtual HTMLTagStatus endTagRequirement() const { return TagStatusForbidden; }
@@ -47,11 +50,10 @@ public:
     
     virtual void parseMappedAttribute(MappedAttribute*);
 
-    bool hasFrameBorder() const { return m_frameBorder; }
-
-private:
     bool m_frameBorder;
     bool m_frameBorderSet;
+
+    bool m_noResize;
 };
 
 } // namespace WebCore

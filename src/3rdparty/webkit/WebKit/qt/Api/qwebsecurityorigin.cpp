@@ -200,3 +200,49 @@ QList<QWebDatabase> QWebSecurityOrigin::databases() const
     return databases;
 }
 
+/*!
+    \since 4.6
+    Allow applications to use a custome scheme instead of file: scheme,
+    without being subjected to cross domain restrictions.
+*/
+void QWebSecurityOrigin::addLocalScheme(const QString& scheme)
+{
+    SecurityOrigin::registerURLSchemeAsLocal(scheme);
+}
+
+/*!
+    \since 4.6
+    Allow applications to stop using a custome scheme that was previously used,
+    \sa addLocalScheme().
+*/
+void QWebSecurityOrigin::removeLocalScheme(const QString& scheme)
+{
+    SecurityOrigin::removeURLSchemeRegisteredAsLocal(scheme);
+}
+
+/*!
+    \since 4.6
+    Returns a list of all the schemes that were set by the application as local schemes,
+    \sa addLocalScheme(), removeLocalScheme().
+*/
+QStringList QWebSecurityOrigin::localSchemes()
+{
+    QStringList list;
+    const URLSchemesMap& map = SecurityOrigin::localURLSchemes();
+    URLSchemesMap::const_iterator end = map.end();
+    for (URLSchemesMap::const_iterator i = map.begin(); i != end; ++i) {
+        const QString scheme = *i;
+        list.append(scheme);
+    }
+    return list;
+}
+
+void QWebSecurityOrigin::whiteListAccessFromOrigin(const QString& sourceOrigin, const QString& destinationProtocol, const QString& destinationHost, bool allowDestinationSubdomains)
+{
+    SecurityOrigin::whiteListAccessFromOrigin(*SecurityOrigin::createFromString(sourceOrigin), destinationProtocol, destinationHost, allowDestinationSubdomains);
+}
+
+void QWebSecurityOrigin::resetOriginAccessWhiteLists()
+{
+    SecurityOrigin::resetOriginAccessWhiteLists();
+}

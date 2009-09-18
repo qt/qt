@@ -58,7 +58,10 @@ static const int computedProperties[] = {
     CSSPropertyBackgroundOrigin,
     CSSPropertyBackgroundPosition, // more-specific background-position-x/y are non-standard
     CSSPropertyBackgroundRepeat,
+    CSSPropertyBackgroundSize,
     CSSPropertyBorderBottomColor,
+    CSSPropertyBorderBottomLeftRadius,
+    CSSPropertyBorderBottomRightRadius,
     CSSPropertyBorderBottomStyle,
     CSSPropertyBorderBottomWidth,
     CSSPropertyBorderCollapse,
@@ -69,6 +72,8 @@ static const int computedProperties[] = {
     CSSPropertyBorderRightStyle,
     CSSPropertyBorderRightWidth,
     CSSPropertyBorderTopColor,
+    CSSPropertyBorderTopLeftRadius,
+    CSSPropertyBorderTopRightRadius,
     CSSPropertyBorderTopStyle,
     CSSPropertyBorderTopWidth,
     CSSPropertyBottom,
@@ -145,20 +150,16 @@ static const int computedProperties[] = {
     CSSPropertyWebkitAnimationDuration,
     CSSPropertyWebkitAnimationIterationCount,
     CSSPropertyWebkitAnimationName,
+    CSSPropertyWebkitAnimationPlayState,
     CSSPropertyWebkitAnimationTimingFunction,
     CSSPropertyWebkitAppearance,
     CSSPropertyWebkitBackfaceVisibility,
     CSSPropertyWebkitBackgroundClip,
     CSSPropertyWebkitBackgroundComposite,
     CSSPropertyWebkitBackgroundOrigin,
-    CSSPropertyWebkitBackgroundSize,
-    CSSPropertyWebkitBorderBottomLeftRadius,
-    CSSPropertyWebkitBorderBottomRightRadius,
     CSSPropertyWebkitBorderFit,
     CSSPropertyWebkitBorderHorizontalSpacing,
     CSSPropertyWebkitBorderImage,
-    CSSPropertyWebkitBorderTopLeftRadius,
-    CSSPropertyWebkitBorderTopRightRadius,
     CSSPropertyWebkitBorderVerticalSpacing,
     CSSPropertyWebkitBoxAlign,
     CSSPropertyWebkitBoxDirection,
@@ -182,6 +183,7 @@ static const int computedProperties[] = {
 #if ENABLE(DASHBOARD_SUPPORT)
     CSSPropertyWebkitDashboardRegion,
 #endif
+    CSSPropertyWebkitFontSmoothing,
     CSSPropertyWebkitHighlight,
     CSSPropertyWebkitLineBreak,
     CSSPropertyWebkitLineClamp,
@@ -618,6 +620,23 @@ static PassRefPtr<CSSValue> renderTextDecorationFlagsToCSSValue(int textDecorati
     return list;
 }
 
+static PassRefPtr<CSSValue> fillRepeatToCSSValue(EFillRepeat xRepeat, EFillRepeat yRepeat)
+{
+    // For backwards compatibility, if both values are equal, just return one of them. And
+    // if the two values are equivalent to repeat-x or repeat-y, just return the shorthand.
+    if (xRepeat == yRepeat)
+        return CSSPrimitiveValue::create(xRepeat);
+    if (xRepeat == CSSValueRepeat && yRepeat == CSSValueNoRepeat)
+        return CSSPrimitiveValue::createIdentifier(CSSValueRepeatX);
+    if (xRepeat == CSSValueNoRepeat && yRepeat == CSSValueRepeat)
+        return CSSPrimitiveValue::createIdentifier(CSSValueRepeatY);
+
+    RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    list->append(CSSPrimitiveValue::create(xRepeat));
+    list->append(CSSPrimitiveValue::create(yRepeat));
+    return list.release();
+}
+
 PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(int propertyID, EUpdateLayout updateLayout) const
 {
     Node* node = m_node.get();
@@ -648,14 +667,19 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(int proper
             if (style->backgroundImage())
                 return style->backgroundImage()->cssValue();
             return CSSPrimitiveValue::createIdentifier(CSSValueNone);
-        case CSSPropertyWebkitBackgroundSize: {
+        case CSSPropertyBackgroundSize: {
+            EFillSizeType size = style->backgroundSizeType();
+            if (size == Contain)
+                return CSSPrimitiveValue::createIdentifier(CSSValueContain);
+            if (size == Cover)
+                return CSSPrimitiveValue::createIdentifier(CSSValueCover);
             RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-            list->append(CSSPrimitiveValue::create(style->backgroundSize().width()));
-            list->append(CSSPrimitiveValue::create(style->backgroundSize().height()));
+            list->append(CSSPrimitiveValue::create(style->backgroundSizeLength().width()));
+            list->append(CSSPrimitiveValue::create(style->backgroundSizeLength().height()));
             return list.release();
         }  
         case CSSPropertyBackgroundRepeat:
-            return CSSPrimitiveValue::create(style->backgroundRepeat());
+            return fillRepeatToCSSValue(style->backgroundRepeatX(), style->backgroundRepeatY());
         case CSSPropertyWebkitBackgroundComposite:
             return CSSPrimitiveValue::create(style->backgroundComposite());
         case CSSPropertyBackgroundAttachment:
@@ -925,7 +949,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(int proper
             return list.release();
         }  
         case CSSPropertyWebkitMaskRepeat:
-            return CSSPrimitiveValue::create(style->maskRepeat());
+            return fillRepeatToCSSValue(style->maskRepeatX(), style->maskRepeatY());
         case CSSPropertyWebkitMaskAttachment:
             return CSSPrimitiveValue::create(style->maskAttachment());
         case CSSPropertyWebkitMaskComposite:
@@ -1097,6 +1121,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(int proper
             return CSSPrimitiveValue::create(style->matchNearestMailBlockquoteColor());
         case CSSPropertyResize:
             return CSSPrimitiveValue::create(style->resize());
+        case CSSPropertyWebkitFontSmoothing:
+            return CSSPrimitiveValue::create(style->fontSmoothing());
         case CSSPropertyZIndex:
             if (style->hasAutoZIndex())
                 return CSSPrimitiveValue::createIdentifier(CSSValueAuto);
@@ -1183,6 +1209,21 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(int proper
                 list->append(CSSPrimitiveValue::createIdentifier(CSSValueNone));
             return list.release();
         }
+        case CSSPropertyWebkitAnimationPlayState: {
+            RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
+            const AnimationList* t = style->animations();
+            if (t) {
+                for (size_t i = 0; i < t->size(); ++i) {
+                    int prop = t->animation(i)->playState();
+                    if (prop == AnimPlayStatePlaying)
+                        list->append(CSSPrimitiveValue::createIdentifier(CSSValueRunning));
+                    else
+                        list->append(CSSPrimitiveValue::createIdentifier(CSSValuePaused));
+                }
+            } else
+                list->append(CSSPrimitiveValue::createIdentifier(CSSValueRunning));
+            return list.release();
+        }
         case CSSPropertyWebkitAnimationTimingFunction:
             return getTimingFunctionValue(style->animations());
         case CSSPropertyWebkitAppearance:
@@ -1225,13 +1266,13 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(int proper
             return CSSPrimitiveValue::create(style->userDrag());
         case CSSPropertyWebkitUserSelect:
             return CSSPrimitiveValue::create(style->userSelect());
-        case CSSPropertyWebkitBorderBottomLeftRadius:
+        case CSSPropertyBorderBottomLeftRadius:
             return getBorderRadiusCornerValue(style->borderBottomLeftRadius());
-        case CSSPropertyWebkitBorderBottomRightRadius:
+        case CSSPropertyBorderBottomRightRadius:
             return getBorderRadiusCornerValue(style->borderBottomRightRadius());
-        case CSSPropertyWebkitBorderTopLeftRadius:
+        case CSSPropertyBorderTopLeftRadius:
             return getBorderRadiusCornerValue(style->borderTopLeftRadius());
-        case CSSPropertyWebkitBorderTopRightRadius:
+        case CSSPropertyBorderTopRightRadius:
             return getBorderRadiusCornerValue(style->borderTopRightRadius());
         case CSSPropertyClip: {
             if (!style->hasClip())
@@ -1297,6 +1338,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(int proper
         case CSSPropertyBorderBottom:
         case CSSPropertyBorderColor:
         case CSSPropertyBorderLeft:
+        case CSSPropertyBorderRadius:
         case CSSPropertyBorderRight:
         case CSSPropertyBorderStyle:
         case CSSPropertyBorderTop:
@@ -1421,37 +1463,6 @@ String CSSComputedStyleDeclaration::item(unsigned i) const
     return getPropertyName(static_cast<CSSPropertyID>(computedProperties[i]));
 }
 
-// This is the list of properties we want to copy in the copyInheritableProperties() function.
-// It is the intersection of the list of inherited CSS properties and the
-// properties for which we have a computed implementation in this file.
-static const int inheritableProperties[] = {
-    CSSPropertyBorderCollapse,
-    CSSPropertyColor,
-    CSSPropertyFontFamily,
-    CSSPropertyFontSize,
-    CSSPropertyFontStyle,
-    CSSPropertyFontVariant,
-    CSSPropertyFontWeight,
-    CSSPropertyLetterSpacing,
-    CSSPropertyLineHeight,
-    CSSPropertyOrphans,
-    CSSPropertyTextAlign,
-    CSSPropertyTextIndent,
-    CSSPropertyTextTransform,
-    CSSPropertyWhiteSpace,
-    CSSPropertyWidows,
-    CSSPropertyWordSpacing,
-    CSSPropertyWebkitBorderHorizontalSpacing,
-    CSSPropertyWebkitBorderVerticalSpacing,
-    CSSPropertyWebkitTextDecorationsInEffect,
-    CSSPropertyWebkitTextFillColor,
-    CSSPropertyWebkitTextSizeAdjust,
-    CSSPropertyWebkitTextStrokeColor,
-    CSSPropertyWebkitTextStrokeWidth,
-};
-
-static const unsigned numInheritableProperties = sizeof(inheritableProperties) / sizeof(inheritableProperties[0]);
-
 bool CSSComputedStyleDeclaration::cssPropertyMatches(const CSSProperty* property) const
 {
     if (property->id() == CSSPropertyFontSize && property->value()->isPrimitiveValue() && m_node) {
@@ -1466,29 +1477,6 @@ bool CSSComputedStyleDeclaration::cssPropertyMatches(const CSSProperty* property
     }
 
     return CSSStyleDeclaration::cssPropertyMatches(property);
-}
-
-// FIXME: deprecatedCopyInheritableProperties is used for two purposes:
-// 1.  Calculating the typing style.
-// 2.  Moving HTML subtrees and seeking to remove redundant styles.
-// These tasks should be broken out into two separate functions.  New code should not use this function.
-PassRefPtr<CSSMutableStyleDeclaration> CSSComputedStyleDeclaration::deprecatedCopyInheritableProperties() const
-{
-    RefPtr<CSSMutableStyleDeclaration> style = copyPropertiesInSet(inheritableProperties, numInheritableProperties);
-    if (style && m_node && m_node->computedStyle()) {
-        // If a node's text fill color is invalid, then its children use 
-        // their font-color as their text fill color (they don't
-        // inherit it).  Likewise for stroke color.
-        ExceptionCode ec = 0;
-        if (!m_node->computedStyle()->textFillColor().isValid())
-            style->removeProperty(CSSPropertyWebkitTextFillColor, ec);
-        if (!m_node->computedStyle()->textStrokeColor().isValid())
-            style->removeProperty(CSSPropertyWebkitTextStrokeColor, ec);
-        ASSERT(ec == 0);
-        if (int keywordSize = m_node->computedStyle()->fontDescription().keywordSize())
-            style->setProperty(CSSPropertyFontSize, cssIdentifierForFontSizeKeyword(keywordSize));
-    }
-    return style.release();
 }
 
 PassRefPtr<CSSMutableStyleDeclaration> CSSComputedStyleDeclaration::copy() const

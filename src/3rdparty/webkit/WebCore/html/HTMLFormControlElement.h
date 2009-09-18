@@ -43,6 +43,9 @@ public:
     HTMLFormElement* form() const { return m_form; }
     virtual ValidityState* validity();
 
+    bool formNoValidate() const;
+    void setFormNoValidate(bool);
+
     virtual bool isTextFormControl() const { return false; }
     virtual bool isEnabledFormControl() const { return !disabled(); }
 
@@ -77,8 +80,6 @@ public:
     bool required() const;
     void setRequired(bool);
 
-    virtual bool valueMissing() const { return false; }
-
     virtual void recalcStyle(StyleChange);
 
     virtual const AtomicString& formControlName() const;
@@ -104,7 +105,10 @@ public:
     virtual short tabIndex() const;
 
     virtual bool willValidate() const;
+    bool checkValidity();
+    void setCustomValidity(const String&);
 
+    virtual bool valueMissing() const { return false; }
     virtual bool patternMismatch() const { return false; }
 
     void formDestroyed() { m_form = 0; }
@@ -117,6 +121,8 @@ protected:
 
 private:
     virtual HTMLFormElement* virtualForm() const;
+    virtual bool isDefaultButtonForForm() const;
+    virtual bool isValidFormControlElement();
 
     HTMLFormElement* m_form;
     RefPtr<ValidityState> m_validityState;

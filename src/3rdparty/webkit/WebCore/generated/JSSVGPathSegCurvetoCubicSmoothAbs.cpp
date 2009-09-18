@@ -90,6 +90,11 @@ bool JSSVGPathSegCurvetoCubicSmoothAbs::getOwnPropertySlot(ExecState* exec, cons
     return getStaticValueSlot<JSSVGPathSegCurvetoCubicSmoothAbs, Base>(exec, &JSSVGPathSegCurvetoCubicSmoothAbsTable, this, propertyName, slot);
 }
 
+bool JSSVGPathSegCurvetoCubicSmoothAbs::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGPathSegCurvetoCubicSmoothAbs, Base>(exec, &JSSVGPathSegCurvetoCubicSmoothAbsTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGPathSegCurvetoCubicSmoothAbsX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGPathSegCurvetoCubicSmoothAbs* castedThis = static_cast<JSSVGPathSegCurvetoCubicSmoothAbs*>(asObject(slot.slotBase()));

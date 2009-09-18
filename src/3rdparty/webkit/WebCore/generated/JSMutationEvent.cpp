@@ -81,6 +81,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSMutationEventPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -95,6 +96,11 @@ const ClassInfo JSMutationEventConstructor::s_info = { "MutationEventConstructor
 bool JSMutationEventConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSMutationEventConstructor, DOMObject>(exec, &JSMutationEventConstructorTable, this, propertyName, slot);
+}
+
+bool JSMutationEventConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSMutationEventConstructor, DOMObject>(exec, &JSMutationEventConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -127,6 +133,11 @@ bool JSMutationEventPrototype::getOwnPropertySlot(ExecState* exec, const Identif
     return getStaticPropertySlot<JSMutationEventPrototype, JSObject>(exec, &JSMutationEventPrototypeTable, this, propertyName, slot);
 }
 
+bool JSMutationEventPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticPropertyDescriptor<JSMutationEventPrototype, JSObject>(exec, &JSMutationEventPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSMutationEvent::s_info = { "MutationEvent", &JSEvent::s_info, &JSMutationEventTable, 0 };
 
 JSMutationEvent::JSMutationEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MutationEvent> impl)
@@ -142,6 +153,11 @@ JSObject* JSMutationEvent::createPrototype(ExecState* exec, JSGlobalObject* glob
 bool JSMutationEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSMutationEvent, Base>(exec, &JSMutationEventTable, this, propertyName, slot);
+}
+
+bool JSMutationEvent::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSMutationEvent, Base>(exec, &JSMutationEventTable, this, propertyName, descriptor);
 }
 
 JSValue jsMutationEventRelatedNode(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -197,7 +213,7 @@ JSValue JSMutationEvent::getConstructor(ExecState* exec, JSGlobalObject* globalO
 JSValue JSC_HOST_CALL jsMutationEventPrototypeFunctionInitMutationEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSMutationEvent::s_info))
+    if (!thisValue.inherits(&JSMutationEvent::s_info))
         return throwError(exec, TypeError);
     JSMutationEvent* castedThisObj = static_cast<JSMutationEvent*>(asObject(thisValue));
     MutationEvent* imp = static_cast<MutationEvent*>(castedThisObj->impl());

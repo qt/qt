@@ -48,11 +48,11 @@
 #endif
 
 // Configure platform-specific behavior when focused pop-up receives arrow/space/return keystroke.
-// (PLATFORM(MAC) is always false in Chromium, hence the extra test.)
+// (PLATFORM(MAC) and PLATFORM(GTK) are always false in Chromium, hence the extra tests.)
 #if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && PLATFORM(DARWIN))
 #define ARROW_KEYS_POP_MENU 1
 #define SPACE_OR_RETURN_POP_MENU 0
-#elif PLATFORM(GTK)
+#elif PLATFORM(GTK) || (PLATFORM(CHROMIUM) && PLATFORM(LINUX))
 #define ARROW_KEYS_POP_MENU 0
 #define SPACE_OR_RETURN_POP_MENU 1
 #else
@@ -218,7 +218,7 @@ void SelectElement::scrollToSelection(SelectElementData& data, Element* element)
         return;
 
     if (RenderObject* renderer = element->renderer())
-        static_cast<RenderListBox*>(renderer)->selectionChanged();
+        toRenderListBox(renderer)->selectionChanged();
 }
 
 void SelectElement::recalcStyle(SelectElementData& data, Element* element)
@@ -226,9 +226,9 @@ void SelectElement::recalcStyle(SelectElementData& data, Element* element)
     RenderObject* renderer = element->renderer();
     if (element->childNeedsStyleRecalc() && renderer) {
         if (data.usesMenuList())
-            static_cast<RenderMenuList*>(renderer)->setOptionsChanged(true);
+            toRenderMenuList(renderer)->setOptionsChanged(true);
         else
-            static_cast<RenderListBox*>(renderer)->setOptionsChanged(true);
+            toRenderListBox(renderer)->setOptionsChanged(true);
     } else if (data.shouldRecalcListItems())
         recalcListItems(data, element);
 }
@@ -239,9 +239,9 @@ void SelectElement::setRecalcListItems(SelectElementData& data, Element* element
     data.setActiveSelectionAnchorIndex(-1); // Manual selection anchor is reset when manipulating the select programmatically.
     if (RenderObject* renderer = element->renderer()) {
         if (data.usesMenuList())
-            static_cast<RenderMenuList*>(renderer)->setOptionsChanged(true);
+            toRenderMenuList(renderer)->setOptionsChanged(true);
         else
-            static_cast<RenderListBox*>(renderer)->setOptionsChanged(true);
+            toRenderListBox(renderer)->setOptionsChanged(true);
     }
     element->setNeedsStyleRecalc();
 }
@@ -492,8 +492,8 @@ bool SelectElement::appendFormData(SelectElementData& data, Element* element, Fo
 
 void SelectElement::reset(SelectElementData& data, Element* element)
 {
-    bool optionSelected = false;
     OptionElement* firstOption = 0;
+    OptionElement* selectedOption = 0;
 
     const Vector<Element*>& items = data.listItems(element);
     for (unsigned i = 0; i < items.size(); ++i) {
@@ -502,8 +502,10 @@ void SelectElement::reset(SelectElementData& data, Element* element)
             continue;
 
         if (!items[i]->getAttribute(HTMLNames::selectedAttr).isNull()) {
+            if (selectedOption && !data.multiple())
+                selectedOption->setSelectedState(false);
             optionElement->setSelectedState(true);
-            optionSelected = true;
+            selectedOption = optionElement;
         } else
             optionElement->setSelectedState(false);
 
@@ -511,7 +513,7 @@ void SelectElement::reset(SelectElementData& data, Element* element)
             firstOption = optionElement;
     }
 
-    if (!optionSelected && firstOption && data.usesMenuList())
+    if (!selectedOption && firstOption && data.usesMenuList())
         firstOption->setSelectedState(true);
 
     element->setNeedsStyleRecalc();
@@ -559,7 +561,7 @@ void SelectElement::menuListDefaultEventHandler(SelectElementData& data, Element
             // Save the selection so it can be compared to the new selection when dispatching change events during setSelectedIndex,
             // which gets called from RenderMenuList::valueChanged, which gets called after the user makes a selection from the menu.
             saveLastSelection(data, element);
-            if (RenderMenuList* menuList = static_cast<RenderMenuList*>(element->renderer()))
+            if (RenderMenuList* menuList = toRenderMenuList(element->renderer()))
                 menuList->showPopup();
             handled = true;
         }
@@ -587,7 +589,7 @@ void SelectElement::menuListDefaultEventHandler(SelectElementData& data, Element
             handled = true;
         }
         
-        if (handled && listIndex >= 0 && listIndex < listItems.size())
+        if (handled && listIndex >= 0 && (unsigned)listIndex < listItems.size())
             setSelectedIndex(data, element, listToOptionIndex(data, element, listIndex));
 #endif
         if (handled)
@@ -609,7 +611,7 @@ void SelectElement::menuListDefaultEventHandler(SelectElementData& data, Element
             // Save the selection so it can be compared to the new selection when dispatching change events during setSelectedIndex,
             // which gets called from RenderMenuList::valueChanged, which gets called after the user makes a selection from the menu.
             saveLastSelection(data, element);
-            if (RenderMenuList* menuList = static_cast<RenderMenuList*>(element->renderer()))
+            if (RenderMenuList* menuList = toRenderMenuList(element->renderer()))
                 menuList->showPopup();
             handled = true;
         }
@@ -619,7 +621,7 @@ void SelectElement::menuListDefaultEventHandler(SelectElementData& data, Element
             // Save the selection so it can be compared to the new selection when dispatching change events during setSelectedIndex,
             // which gets called from RenderMenuList::valueChanged, which gets called after the user makes a selection from the menu.
             saveLastSelection(data, element);
-            if (RenderMenuList* menuList = static_cast<RenderMenuList*>(element->renderer()))
+            if (RenderMenuList* menuList = toRenderMenuList(element->renderer()))
                 menuList->showPopup();
             handled = true;
         } else if (keyCode == '\r') {
@@ -642,14 +644,16 @@ void SelectElement::menuListDefaultEventHandler(SelectElementData& data, Element
 
     if (event->type() == eventNames().mousedownEvent && event->isMouseEvent() && static_cast<MouseEvent*>(event)->button() == LeftButton) {
         element->focus();
-        if (RenderMenuList* menuList = static_cast<RenderMenuList*>(element->renderer())) {
-            if (menuList->popupIsVisible())
-                menuList->hidePopup();
-            else {
-                // Save the selection so it can be compared to the new selection when we call onChange during setSelectedIndex,
-                // which gets called from RenderMenuList::valueChanged, which gets called after the user makes a selection from the menu.
-                saveLastSelection(data, element);
-                menuList->showPopup();
+        if (element->renderer() && element->renderer()->isMenuList()) {
+            if (RenderMenuList* menuList = toRenderMenuList(element->renderer())) {
+                if (menuList->popupIsVisible())
+                    menuList->hidePopup();
+                else {
+                    // Save the selection so it can be compared to the new selection when we call onChange during setSelectedIndex,
+                    // which gets called from RenderMenuList::valueChanged, which gets called after the user makes a selection from the menu.
+                    saveLastSelection(data, element);
+                    menuList->showPopup();
+                }
             }
         }
         event->setDefaultHandled();
@@ -666,7 +670,7 @@ void SelectElement::listBoxDefaultEventHandler(SelectElementData& data, Element*
         // Convert to coords relative to the list box if needed.
         MouseEvent* mouseEvent = static_cast<MouseEvent*>(event);
         IntPoint localOffset = roundedIntPoint(element->renderer()->absoluteToLocal(mouseEvent->absoluteLocation(), false, true));
-        int listIndex = static_cast<RenderListBox*>(element->renderer())->listIndexAtOffset(localOffset.x(), localOffset.y());
+        int listIndex = toRenderListBox(element->renderer())->listIndexAtOffset(localOffset.x(), localOffset.y());
         if (listIndex >= 0) {
             // Save the selection so it can be compared to the new selection when dispatching change events during mouseup, or after autoscroll finishes.
             saveLastSelection(data, element);
@@ -674,7 +678,7 @@ void SelectElement::listBoxDefaultEventHandler(SelectElementData& data, Element*
             data.setActiveSelectionState(true);
             
             bool multiSelectKeyPressed = false;
-#if PLATFORM(MAC)
+#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && PLATFORM(DARWIN))
             multiSelectKeyPressed = mouseEvent->metaKey();
 #else
             multiSelectKeyPressed = mouseEvent->ctrlKey();
@@ -759,7 +763,7 @@ void SelectElement::listBoxDefaultEventHandler(SelectElementData& data, Element*
                 setActiveSelectionAnchorIndex(data, element, data.activeSelectionEndIndex());
             }
 
-            static_cast<RenderListBox*>(element->renderer())->scrollToRevealElementAtListIndex(endIndex);
+            toRenderListBox(element->renderer())->scrollToRevealElementAtListIndex(endIndex);
             updateListBoxSelection(data, element, deselectOthers);
             listBoxOnChange(data, element);
             event->setDefaultHandled();

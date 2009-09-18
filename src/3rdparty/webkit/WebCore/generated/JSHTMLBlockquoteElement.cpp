@@ -71,6 +71,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLBlockquoteElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -85,6 +86,11 @@ const ClassInfo JSHTMLBlockquoteElementConstructor::s_info = { "HTMLBlockquoteEl
 bool JSHTMLBlockquoteElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLBlockquoteElementConstructor, DOMObject>(exec, &JSHTMLBlockquoteElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLBlockquoteElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLBlockquoteElementConstructor, DOMObject>(exec, &JSHTMLBlockquoteElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -123,6 +129,11 @@ JSObject* JSHTMLBlockquoteElement::createPrototype(ExecState* exec, JSGlobalObje
 bool JSHTMLBlockquoteElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLBlockquoteElement, Base>(exec, &JSHTMLBlockquoteElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLBlockquoteElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLBlockquoteElement, Base>(exec, &JSHTMLBlockquoteElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLBlockquoteElementCite(ExecState* exec, const Identifier&, const PropertySlot& slot)

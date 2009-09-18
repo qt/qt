@@ -80,6 +80,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSStyleSheetPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -94,6 +95,11 @@ const ClassInfo JSStyleSheetConstructor::s_info = { "StyleSheetConstructor", 0, 
 bool JSStyleSheetConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSStyleSheetConstructor, DOMObject>(exec, &JSStyleSheetConstructorTable, this, propertyName, slot);
+}
+
+bool JSStyleSheetConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSStyleSheetConstructor, DOMObject>(exec, &JSStyleSheetConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -138,6 +144,11 @@ JSObject* JSStyleSheet::createPrototype(ExecState* exec, JSGlobalObject* globalO
 bool JSStyleSheet::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSStyleSheet, Base>(exec, &JSStyleSheetTable, this, propertyName, slot);
+}
+
+bool JSStyleSheet::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSStyleSheet, Base>(exec, &JSStyleSheetTable, this, propertyName, descriptor);
 }
 
 JSValue jsStyleSheetType(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -219,7 +230,7 @@ JSValue JSStyleSheet::getConstructor(ExecState* exec, JSGlobalObject* globalObje
 
 StyleSheet* toStyleSheet(JSC::JSValue value)
 {
-    return value.isObject(&JSStyleSheet::s_info) ? static_cast<JSStyleSheet*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSStyleSheet::s_info) ? static_cast<JSStyleSheet*>(asObject(value))->impl() : 0;
 }
 
 }

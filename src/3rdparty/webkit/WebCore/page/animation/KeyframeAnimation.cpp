@@ -93,8 +93,10 @@ void KeyframeAnimation::getKeyframeAnimationInterval(const RenderStyle*& fromSty
         return;
 
     const TimingFunction* timingFunction = 0;
-    if (fromStyle->animations() && fromStyle->animations()->size() > 0)
+    if (fromStyle->animations() && fromStyle->animations()->size() > 0) {
+        // We get the timing function from the first animation, because we've synthesized a RenderStyle for each keyframe.
         timingFunction = &(fromStyle->animations()->animation(0)->timingFunction());
+    }
 
     prog = progress(scale, offset, timingFunction);
 }
@@ -209,8 +211,12 @@ void KeyframeAnimation::endAnimation(bool reset)
 #if USE(ACCELERATED_COMPOSITING)
         if (m_object->hasLayer()) {
             RenderLayer* layer = toRenderBoxModelObject(m_object)->layer();
-            if (layer->isComposited())
-                layer->backing()->animationFinished(m_keyframes.animationName(), 0, reset);
+            if (layer->isComposited()) {
+                if (reset)
+                    layer->backing()->animationFinished(m_keyframes.animationName());
+                else
+                    layer->backing()->animationPaused(m_keyframes.animationName());
+            }
         }
 #else
         UNUSED_PARAM(reset);

@@ -82,6 +82,7 @@ void ScrollView::setHasHorizontalScrollbar(bool hasBar)
     if (hasBar && !m_horizontalScrollbar) {
         m_horizontalScrollbar = createScrollbar(HorizontalScrollbar);
         addChild(m_horizontalScrollbar.get());
+        m_horizontalScrollbar->styleChanged();
     } else if (!hasBar && m_horizontalScrollbar) {
         removeChild(m_horizontalScrollbar.get());
         m_horizontalScrollbar = 0;
@@ -93,6 +94,7 @@ void ScrollView::setHasVerticalScrollbar(bool hasBar)
     if (hasBar && !m_verticalScrollbar) {
         m_verticalScrollbar = createScrollbar(VerticalScrollbar);
         addChild(m_verticalScrollbar.get());
+        m_verticalScrollbar->styleChanged();
     } else if (!hasBar && m_verticalScrollbar) {
         removeChild(m_verticalScrollbar.get());
         m_verticalScrollbar = 0;
@@ -104,7 +106,6 @@ PassRefPtr<Scrollbar> ScrollView::createScrollbar(ScrollbarOrientation orientati
 {
     return Scrollbar::createNativeScrollbar(this, orientation, RegularScrollbar);
 }
-#endif
 
 void ScrollView::setScrollbarModes(ScrollbarMode horizontalMode, ScrollbarMode verticalMode)
 {
@@ -117,6 +118,7 @@ void ScrollView::setScrollbarModes(ScrollbarMode horizontalMode, ScrollbarMode v
     else
         updateScrollbars(scrollOffset());
 }
+#endif
 
 void ScrollView::scrollbarModes(ScrollbarMode& horizontalMode, ScrollbarMode& verticalMode) const
 {
@@ -327,6 +329,15 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
     if (m_inUpdateScrollbars || prohibitsScrolling() || platformWidget())
         return;
 
+    // If we came in here with the view already needing a layout, then go ahead and do that
+    // first.  (This will be the common case, e.g., when the page changes due to window resizing for example).
+    // This layout will not re-enter updateScrollbars and does not count towards our max layout pass total.
+    if (!m_scrollbarsSuppressed) {
+        m_inUpdateScrollbars = true;
+        visibleContentsResized();
+        m_inUpdateScrollbars = false;
+    }
+
     bool hasHorizontalScrollbar = m_horizontalScrollbar;
     bool hasVerticalScrollbar = m_verticalScrollbar;
     
@@ -347,13 +358,6 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
         if (hasVerticalScrollbar != newHasVerticalScrollbar)
             setHasVerticalScrollbar(newHasVerticalScrollbar);
     } else {
-        // If we came in here with the view already needing a layout, then go ahead and do that
-        // first.  (This will be the common case, e.g., when the page changes due to window resizing for example).
-        // This layout will not re-enter updateScrollers and does not count towards our max layout pass total.
-        m_inUpdateScrollbars = true;
-        visibleContentsResized();
-        m_inUpdateScrollbars = false;
-
         bool sendContentResizedNotification = false;
         
         IntSize docSize = contentsSize();
@@ -460,8 +464,10 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
             m_verticalScrollbar->setSuppressInvalidation(false);
     }
 
-    if (hasHorizontalScrollbar != (m_horizontalScrollbar != 0) || hasVerticalScrollbar != (m_verticalScrollbar != 0))
+    if (hasHorizontalScrollbar != (m_horizontalScrollbar != 0) || hasVerticalScrollbar != (m_verticalScrollbar != 0)) {
         frameRectsChanged();
+        updateScrollCorner();
+    }
 
     // See if our offset has changed in a situation where we might not have scrollbars.
     // This can happen when editing a body with overflow:hidden and scrolling to reveal selection.
@@ -476,7 +482,7 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
     m_inUpdateScrollbars = false;
 }
 
-const int panIconSizeLength = 20;
+const int panIconSizeLength = 16;
 
 void ScrollView::scrollContents(const IntSize& scrollDelta)
 {
@@ -621,23 +627,7 @@ void ScrollView::setScrollbarsSuppressed(bool suppressed, bool repaintOnUnsuppre
             m_verticalScrollbar->invalidate();
 
         // Invalidate the scroll corner too on unsuppress.
-        IntRect hCorner;
-        if (m_horizontalScrollbar && width() - m_horizontalScrollbar->width() > 0) {
-            hCorner = IntRect(m_horizontalScrollbar->width(),
-                              height() - m_horizontalScrollbar->height(),
-                              width() - m_horizontalScrollbar->width(),
-                              m_horizontalScrollbar->height());
-            invalidateRect(hCorner);
-        }
-
-        if (m_verticalScrollbar && height() - m_verticalScrollbar->height() > 0) {
-            IntRect vCorner(width() - m_verticalScrollbar->width(),
-                            m_verticalScrollbar->height(),
-                            m_verticalScrollbar->width(),
-                            height() - m_verticalScrollbar->height());
-            if (vCorner != hCorner)
-                invalidateRect(vCorner);
-        }
+        invalidateRect(scrollCornerRect());
     }
 }
 
@@ -717,16 +707,48 @@ void ScrollView::frameRectsChanged()
 
 void ScrollView::repaintContentRectangle(const IntRect& rect, bool now)
 {
-    if (rect.isEmpty())
+    IntRect visibleContent = visibleContentRect();
+    visibleContent.intersect(rect);
+    if (visibleContent.isEmpty())
         return;
 
     if (platformWidget()) {
-        platformRepaintContentRectangle(rect, now);
+        platformRepaintContentRectangle(visibleContent, now);
         return;
     }
 
     if (hostWindow())
-        hostWindow()->repaint(contentsToWindow(rect), true, now);
+        hostWindow()->repaint(contentsToWindow(visibleContent), true, now);
+}
+
+IntRect ScrollView::scrollCornerRect() const
+{
+    IntRect cornerRect;
+    
+    if (m_horizontalScrollbar && width() - m_horizontalScrollbar->width() > 0) {
+        cornerRect.unite(IntRect(m_horizontalScrollbar->width(),
+                                 height() - m_horizontalScrollbar->height(),
+                                 width() - m_horizontalScrollbar->width(),
+                                 m_horizontalScrollbar->height()));
+    }
+
+    if (m_verticalScrollbar && height() - m_verticalScrollbar->height() > 0) {
+        cornerRect.unite(IntRect(width() - m_verticalScrollbar->width(),
+                                 m_verticalScrollbar->height(),
+                                 m_verticalScrollbar->width(),
+                                 height() - m_verticalScrollbar->height()));
+    }
+    
+    return cornerRect;
+}
+
+void ScrollView::updateScrollCorner()
+{
+}
+
+void ScrollView::paintScrollCorner(GraphicsContext* context, const IntRect& cornerRect)
+{
+    ScrollbarTheme::nativeTheme()->paintScrollCorner(this, context, cornerRect);
 }
 
 void ScrollView::paint(GraphicsContext* context, const IntRect& rect)
@@ -768,25 +790,7 @@ void ScrollView::paint(GraphicsContext* context, const IntRect& rect)
         if (m_verticalScrollbar)
             m_verticalScrollbar->paint(context, scrollViewDirtyRect);
 
-        IntRect hCorner;
-        if (m_horizontalScrollbar && width() - m_horizontalScrollbar->width() > 0) {
-            hCorner = IntRect(m_horizontalScrollbar->width(),
-                              height() - m_horizontalScrollbar->height(),
-                              width() - m_horizontalScrollbar->width(),
-                              m_horizontalScrollbar->height());
-            if (hCorner.intersects(scrollViewDirtyRect))
-                ScrollbarTheme::nativeTheme()->paintScrollCorner(this, context, hCorner);
-        }
-
-        if (m_verticalScrollbar && height() - m_verticalScrollbar->height() > 0) {
-            IntRect vCorner(width() - m_verticalScrollbar->width(),
-                            m_verticalScrollbar->height(),
-                            m_verticalScrollbar->width(),
-                            height() - m_verticalScrollbar->height());
-            if (vCorner != hCorner && vCorner.intersects(scrollViewDirtyRect))
-                ScrollbarTheme::nativeTheme()->paintScrollCorner(this, context, vCorner);
-        }
-
+        paintScrollCorner(context, scrollCornerRect());
         context->restore();
     }
 

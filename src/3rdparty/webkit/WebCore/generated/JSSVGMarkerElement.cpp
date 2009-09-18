@@ -106,6 +106,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSSVGMarkerElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -120,6 +121,11 @@ const ClassInfo JSSVGMarkerElementConstructor::s_info = { "SVGMarkerElementConst
 bool JSSVGMarkerElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGMarkerElementConstructor, DOMObject>(exec, &JSSVGMarkerElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGMarkerElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGMarkerElementConstructor, DOMObject>(exec, &JSSVGMarkerElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -157,6 +163,11 @@ bool JSSVGMarkerElementPrototype::getOwnPropertySlot(ExecState* exec, const Iden
     return getStaticPropertySlot<JSSVGMarkerElementPrototype, JSObject>(exec, &JSSVGMarkerElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGMarkerElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticPropertyDescriptor<JSSVGMarkerElementPrototype, JSObject>(exec, &JSSVGMarkerElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGMarkerElement::s_info = { "SVGMarkerElement", &JSSVGElement::s_info, &JSSVGMarkerElementTable, 0 };
 
 JSSVGMarkerElement::JSSVGMarkerElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGMarkerElement> impl)
@@ -172,6 +183,11 @@ JSObject* JSSVGMarkerElement::createPrototype(ExecState* exec, JSGlobalObject* g
 bool JSSVGMarkerElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGMarkerElement, Base>(exec, &JSSVGMarkerElementTable, this, propertyName, slot);
+}
+
+bool JSSVGMarkerElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGMarkerElement, Base>(exec, &JSSVGMarkerElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGMarkerElementRefX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -327,7 +343,7 @@ JSValue JSSVGMarkerElement::getConstructor(ExecState* exec, JSGlobalObject* glob
 JSValue JSC_HOST_CALL jsSVGMarkerElementPrototypeFunctionSetOrientToAuto(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGMarkerElement::s_info))
+    if (!thisValue.inherits(&JSSVGMarkerElement::s_info))
         return throwError(exec, TypeError);
     JSSVGMarkerElement* castedThisObj = static_cast<JSSVGMarkerElement*>(asObject(thisValue));
     SVGMarkerElement* imp = static_cast<SVGMarkerElement*>(castedThisObj->impl());
@@ -339,7 +355,7 @@ JSValue JSC_HOST_CALL jsSVGMarkerElementPrototypeFunctionSetOrientToAuto(ExecSta
 JSValue JSC_HOST_CALL jsSVGMarkerElementPrototypeFunctionSetOrientToAngle(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGMarkerElement::s_info))
+    if (!thisValue.inherits(&JSSVGMarkerElement::s_info))
         return throwError(exec, TypeError);
     JSSVGMarkerElement* castedThisObj = static_cast<JSSVGMarkerElement*>(asObject(thisValue));
     SVGMarkerElement* imp = static_cast<SVGMarkerElement*>(castedThisObj->impl());
@@ -352,7 +368,7 @@ JSValue JSC_HOST_CALL jsSVGMarkerElementPrototypeFunctionSetOrientToAngle(ExecSt
 JSValue JSC_HOST_CALL jsSVGMarkerElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGMarkerElement::s_info))
+    if (!thisValue.inherits(&JSSVGMarkerElement::s_info))
         return throwError(exec, TypeError);
     JSSVGMarkerElement* castedThisObj = static_cast<JSSVGMarkerElement*>(asObject(thisValue));
     SVGMarkerElement* imp = static_cast<SVGMarkerElement*>(castedThisObj->impl());

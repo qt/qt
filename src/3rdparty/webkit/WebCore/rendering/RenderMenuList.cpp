@@ -292,7 +292,6 @@ void RenderMenuList::hidePopup()
 {
     if (m_popup)
         m_popup->hide();
-    m_popupIsVisible = false;
 }
 
 void RenderMenuList::valueChanged(unsigned listIndex, bool fireOnChange)
@@ -316,6 +315,13 @@ String RenderMenuList::itemText(unsigned listIndex) const
     else if (OptionElement* optionElement = toOptionElement(element))
         return optionElement->textIndentedToRespectGroupLabel();
     return String();
+}
+
+String RenderMenuList::itemToolTip(unsigned listIndex) const
+{
+    SelectElement* select = toSelectElement(static_cast<Element*>(node()));
+    Element* element = select->listItems()[listIndex];
+    return element->title();
 }
 
 bool RenderMenuList::itemIsEnabled(unsigned listIndex) const
@@ -419,6 +425,11 @@ int RenderMenuList::selectedIndex() const
 {
     SelectElement* select = toSelectElement(static_cast<Element*>(node()));
     return select->optionToListIndex(select->selectedIndex());
+}
+
+void RenderMenuList::popupDidHide()
+{
+    m_popupIsVisible = false;
 }
 
 bool RenderMenuList::itemIsSeparator(unsigned listIndex) const

@@ -88,6 +88,11 @@ bool JSSVGFEDistantLightElement::getOwnPropertySlot(ExecState* exec, const Ident
     return getStaticValueSlot<JSSVGFEDistantLightElement, Base>(exec, &JSSVGFEDistantLightElementTable, this, propertyName, slot);
 }
 
+bool JSSVGFEDistantLightElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFEDistantLightElement, Base>(exec, &JSSVGFEDistantLightElementTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGFEDistantLightElementAzimuth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGFEDistantLightElement* castedThis = static_cast<JSSVGFEDistantLightElement*>(asObject(slot.slotBase()));

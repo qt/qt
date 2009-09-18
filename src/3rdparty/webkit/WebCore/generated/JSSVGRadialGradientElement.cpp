@@ -91,6 +91,11 @@ bool JSSVGRadialGradientElement::getOwnPropertySlot(ExecState* exec, const Ident
     return getStaticValueSlot<JSSVGRadialGradientElement, Base>(exec, &JSSVGRadialGradientElementTable, this, propertyName, slot);
 }
 
+bool JSSVGRadialGradientElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGRadialGradientElement, Base>(exec, &JSSVGRadialGradientElementTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGRadialGradientElementCx(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGRadialGradientElement* castedThis = static_cast<JSSVGRadialGradientElement*>(asObject(slot.slotBase()));

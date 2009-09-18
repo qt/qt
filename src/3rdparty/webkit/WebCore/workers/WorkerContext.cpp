@@ -50,6 +50,10 @@
 #include "XMLHttpRequestException.h"
 #include <wtf/RefPtr.h>
 
+#if ENABLE(NOTIFICATIONS)
+#include "NotificationCenter.h"
+#endif
+
 namespace WebCore {
 
 WorkerContext::WorkerContext(const KURL& url, const String& userAgent, WorkerThread* thread)
@@ -64,6 +68,12 @@ WorkerContext::WorkerContext(const KURL& url, const String& userAgent, WorkerThr
 
 WorkerContext::~WorkerContext()
 {
+    ASSERT(currentThread() == thread()->threadID());
+#if ENABLE(NOTIFICATIONS)
+    m_notifications.clear();
+#endif
+    // Notify proxy that we are going away. This can free the WorkerThread object, so do not access it after this.
+    thread()->workerReportingProxy().workerContextDestroyed();
 }
 
 ScriptExecutionContext* WorkerContext::scriptExecutionContext() const
@@ -109,7 +119,8 @@ void WorkerContext::close()
         return;
 
     m_closing = true;
-    m_thread->stop();
+    // Notify parent that this context is closed. Parent is responsible for calling WorkerThread::stop().
+    thread()->workerReportingProxy().workerContextClosed();
 }
 
 WorkerNavigator* WorkerContext::navigator() const
@@ -138,11 +149,6 @@ bool WorkerContext::hasPendingActivity() const
     return false;
 }
 
-void WorkerContext::addMessage(MessageDestination destination, MessageSource source, MessageType type, MessageLevel level, const String& message, unsigned lineNumber, const String& sourceURL)
-{
-    m_thread->workerObjectProxy().postConsoleMessageToWorkerObject(destination, source, type, level, message, lineNumber, sourceURL);
-}
-
 void WorkerContext::resourceRetrievedByXMLHttpRequest(unsigned long, const ScriptString&)
 {
     // FIXME: The implementation is pending the fixes in https://bugs.webkit.org/show_bug.cgi?id=23175
@@ -165,7 +171,7 @@ void WorkerContext::addEventListener(const AtomicString& eventType, PassRefPtr<E
     } else {
         ListenerVector& listeners = iter->second;
         for (ListenerVector::iterator listenerIter = listeners.begin(); listenerIter != listeners.end(); ++listenerIter) {
-            if (*listenerIter == eventListener)
+            if (**listenerIter == *eventListener)
                 return;
         }
         
@@ -182,7 +188,7 @@ void WorkerContext::removeEventListener(const AtomicString& eventType, EventList
     
     ListenerVector& listeners = iter->second;
     for (ListenerVector::const_iterator listenerIter = listeners.begin(); listenerIter != listeners.end(); ++listenerIter) {
-        if (*listenerIter == eventListener) {
+        if (**listenerIter == *eventListener) {
             listeners.remove(listenerIter - listeners.begin());
             return;
         }
@@ -233,6 +239,10 @@ void WorkerContext::clearInterval(int timeoutId)
 
 void WorkerContext::importScripts(const Vector<String>& urls, const String& callerURL, int callerLine, ExceptionCode& ec)
 {
+#if !ENABLE(INSPECTOR)
+    UNUSED_PARAM(callerURL);
+    UNUSED_PARAM(callerLine);
+#endif
     ec = 0;
     Vector<String>::const_iterator urlsEnd = urls.end();
     Vector<KURL> completedURLs;
@@ -244,12 +254,11 @@ void WorkerContext::importScripts(const Vector<String>& urls, const String& call
         }
         completedURLs.append(url);
     }
-    String securityOrigin = scriptExecutionContext()->securityOrigin()->toString();
     Vector<KURL>::const_iterator end = completedURLs.end();
 
     for (Vector<KURL>::const_iterator it = completedURLs.begin(); it != end; ++it) {
         WorkerScriptLoader scriptLoader;
-        scriptLoader.loadSynchronously(scriptExecutionContext(), *it, DoNotCompleteURL, AllowCrossOriginLoad);
+        scriptLoader.loadSynchronously(scriptExecutionContext(), *it, AllowCrossOriginRequests);
 
         // If the fetching attempt failed, throw a NETWORK_ERR exception and abort all these steps.
         if (scriptLoader.failed()) {
@@ -258,7 +267,9 @@ void WorkerContext::importScripts(const Vector<String>& urls, const String& call
         }
 
         scriptExecutionContext()->scriptImported(scriptLoader.identifier(), scriptLoader.script());
+#if ENABLE(INSPECTOR)
         scriptExecutionContext()->addMessage(InspectorControllerDestination, JSMessageSource, LogMessageType, LogMessageLevel, "Worker script imported: \"" + *it + "\".", callerLine, callerURL);
+#endif
 
         ScriptValue exception;
         m_script->evaluate(ScriptSourceCode(scriptLoader.script(), *it), &exception);
@@ -268,6 +279,30 @@ void WorkerContext::importScripts(const Vector<String>& urls, const String& call
         }
     }
 }
+
+void WorkerContext::reportException(const String& errorMessage, int lineNumber, const String& sourceURL)
+{
+    bool errorHandled = false;
+    if (onerror())
+        errorHandled = onerror()->reportError(errorMessage, sourceURL, lineNumber);
+
+    if (!errorHandled)
+        thread()->workerReportingProxy().postExceptionToWorkerObject(errorMessage, lineNumber, sourceURL);
+}
+
+void WorkerContext::addMessage(MessageDestination destination, MessageSource source, MessageType type, MessageLevel level, const String& message, unsigned lineNumber, const String& sourceURL)
+{
+    thread()->workerReportingProxy().postConsoleMessageToWorkerObject(destination, source, type, level, message, lineNumber, sourceURL);
+}
+
+#if ENABLE(NOTIFICATIONS)
+NotificationCenter* WorkerContext::webkitNotifications() const
+{
+    if (!m_notifications)
+        m_notifications = NotificationCenter::create(scriptExecutionContext(), m_thread->getNotificationPresenter());
+    return m_notifications.get();
+}
+#endif
 
 } // namespace WebCore
 

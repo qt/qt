@@ -72,6 +72,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLFontElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -86,6 +87,11 @@ const ClassInfo JSHTMLFontElementConstructor::s_info = { "HTMLFontElementConstru
 bool JSHTMLFontElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLFontElementConstructor, DOMObject>(exec, &JSHTMLFontElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLFontElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLFontElementConstructor, DOMObject>(exec, &JSHTMLFontElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -124,6 +130,11 @@ JSObject* JSHTMLFontElement::createPrototype(ExecState* exec, JSGlobalObject* gl
 bool JSHTMLFontElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLFontElement, Base>(exec, &JSHTMLFontElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLFontElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLFontElement, Base>(exec, &JSHTMLFontElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLFontElementColor(ExecState* exec, const Identifier&, const PropertySlot& slot)

@@ -39,14 +39,12 @@ namespace WebCore {
 class ImageDecoderQt : public ImageDecoder
 {
 public:
-    static ImageDecoderQt* create(const SharedBuffer& data);
+    ImageDecoderQt(const QString& imageFormat);
     ~ImageDecoderQt();
 
-    typedef Vector<char> IncomingData;
-
-    virtual void setData(const IncomingData& data, bool allDataReceived);
+    virtual void setData(SharedBuffer* data, bool allDataReceived);
     virtual bool isSizeAvailable();
-    virtual int frameCount() const;
+    virtual size_t frameCount() const;
     virtual int repetitionCount() const;
     virtual RGBA32Buffer* frameBufferAtIndex(size_t index);
 
@@ -58,7 +56,6 @@ public:
     void clearFrame(size_t index);
 
 private:
-    ImageDecoderQt(const QString &imageFormat);
     ImageDecoderQt(const ImageDecoderQt&);
     ImageDecoderQt &operator=(const ImageDecoderQt&);
 

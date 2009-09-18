@@ -40,6 +40,7 @@
 #include <QImageWriter>
 #include <QPainter>
 #include <QPixmap>
+#include <math.h>
 
 namespace WebCore {
 
@@ -67,7 +68,7 @@ ImageBufferData::ImageBufferData(const IntSize& size)
     painter->setCompositionMode(QPainter::CompositionMode_SourceOver);
 }
 
-ImageBuffer::ImageBuffer(const IntSize& size, bool grayScale, bool& success)
+ImageBuffer::ImageBuffer(const IntSize& size, ImageColorSpace imageColorSpace, bool& success)
     : m_data(size)
     , m_size(size)
 {
@@ -98,12 +99,39 @@ Image* ImageBuffer::image() const
     return m_image.get();
 }
 
-PassRefPtr<ImageData> ImageBuffer::getImageData(const IntRect& rect) const
+void ImageBuffer::platformTransformColorSpace(const Vector<int>& lookUpTable)
+{
+    bool isPainting = m_data.m_painter->isActive();
+    if (isPainting)
+        m_data.m_painter->end();
+
+    QImage image = m_data.m_pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+    ASSERT(!image.isNull());
+
+    for (int y = 0; y < m_size.height(); ++y) {
+        for (int x = 0; x < m_size.width(); x++) {
+            QRgb value = image.pixel(x, y);
+            value = qRgba(lookUpTable[qRed(value)],
+                          lookUpTable[qGreen(value)],
+                          lookUpTable[qBlue(value)],
+                          lookUpTable[qAlpha(value)]);
+            image.setPixel(x, y, value);
+        }
+    }
+
+    m_data.m_pixmap = QPixmap::fromImage(image);
+
+    if (isPainting)
+        m_data.m_painter->begin(&m_data.m_pixmap);
+}
+
+template <Multiply multiplied>
+PassRefPtr<ImageData> getImageData(const IntRect& rect, const ImageBufferData& imageData, const IntSize& size)
 {
     PassRefPtr<ImageData> result = ImageData::create(rect.width(), rect.height());
     unsigned char* data = result->data()->data()->data();
 
-    if (rect.x() < 0 || rect.y() < 0 || (rect.x() + rect.width()) > m_size.width() || (rect.y() + rect.height()) > m_size.height())
+    if (rect.x() < 0 || rect.y() < 0 || (rect.x() + rect.width()) > size.width() || (rect.y() + rect.height()) > size.height())
         memset(data, 0, result->data()->length());
 
     int originx = rect.x();
@@ -113,8 +141,8 @@ PassRefPtr<ImageData> ImageBuffer::getImageData(const IntRect& rect) const
         originx = 0;
     }
     int endx = rect.x() + rect.width();
-    if (endx > m_size.width())
-        endx = m_size.width();
+    if (endx > size.width())
+        endx = size.width();
     int numColumns = endx - originx;
 
     int originy = rect.y();
@@ -124,11 +152,16 @@ PassRefPtr<ImageData> ImageBuffer::getImageData(const IntRect& rect) const
         originy = 0;
     }
     int endy = rect.y() + rect.height();
-    if (endy > m_size.height())
-        endy = m_size.height();
+    if (endy > size.height())
+        endy = size.height();
     int numRows = endy - originy;
 
-    QImage image = m_data.m_pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+    QImage image = imageData.m_pixmap.toImage();
+    if (multiplied == Unmultiplied)
+        image = image.convertToFormat(QImage::Format_ARGB32);
+    else
+        image = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+
     ASSERT(!image.isNull());
 
     unsigned destBytesPerRow = 4 * rect.width();
@@ -149,7 +182,18 @@ PassRefPtr<ImageData> ImageBuffer::getImageData(const IntRect& rect) const
     return result;
 }
 
-void ImageBuffer::putImageData(ImageData* source, const IntRect& sourceRect, const IntPoint& destPoint)
+PassRefPtr<ImageData> ImageBuffer::getUnmultipliedImageData(const IntRect& rect) const
+{
+    return getImageData<Unmultiplied>(rect, m_data, m_size);
+}
+
+PassRefPtr<ImageData> ImageBuffer::getPremultipliedImageData(const IntRect& rect) const
+{
+    return getImageData<Premultiplied>(rect, m_data, m_size);
+}
+
+template <Multiply multiplied>
+void putImageData(ImageData*& source, const IntRect& sourceRect, const IntPoint& destPoint, ImageBufferData& data, const IntSize& size)
 {
     ASSERT(sourceRect.width() > 0);
     ASSERT(sourceRect.height() > 0);
@@ -157,49 +201,65 @@ void ImageBuffer::putImageData(ImageData* source, const IntRect& sourceRect, con
     int originx = sourceRect.x();
     int destx = destPoint.x() + sourceRect.x();
     ASSERT(destx >= 0);
-    ASSERT(destx < m_size.width());
+    ASSERT(destx < size.width());
     ASSERT(originx >= 0);
     ASSERT(originx <= sourceRect.right());
 
     int endx = destPoint.x() + sourceRect.right();
-    ASSERT(endx <= m_size.width());
+    ASSERT(endx <= size.width());
 
     int numColumns = endx - destx;
 
     int originy = sourceRect.y();
     int desty = destPoint.y() + sourceRect.y();
     ASSERT(desty >= 0);
-    ASSERT(desty < m_size.height());
+    ASSERT(desty < size.height());
     ASSERT(originy >= 0);
     ASSERT(originy <= sourceRect.bottom());
 
     int endy = destPoint.y() + sourceRect.bottom();
-    ASSERT(endy <= m_size.height());
+    ASSERT(endy <= size.height());
     int numRows = endy - desty;
 
     unsigned srcBytesPerRow = 4 * source->width();
 
-    bool isPainting = m_data.m_painter->isActive();
+    bool isPainting = data.m_painter->isActive();
     if (isPainting)
-        m_data.m_painter->end();
+        data.m_painter->end();
 
-    QImage image = m_data.m_pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+    QImage image = data.m_pixmap.toImage();
+    if (multiplied == Unmultiplied)
+        image = image.convertToFormat(QImage::Format_ARGB32);
+    else
+        image = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
 
     unsigned char* srcRows = source->data()->data()->data() + originy * srcBytesPerRow + originx * 4;
     for (int y = 0; y < numRows; ++y) {
         quint32* scanLine = reinterpret_cast<quint32*>(image.scanLine(y + desty));
         for (int x = 0; x < numColumns; x++) {
-            int basex = x * 4;
-            scanLine[x + destx] = reinterpret_cast<quint32*>(srcRows + basex)[0];
+            // ImageData stores the pixels in RGBA while QImage is ARGB
+            quint32 pixel = reinterpret_cast<quint32*>(srcRows + 4 * x)[0];
+            pixel = ((pixel << 16) & 0xff0000) | ((pixel >> 16) & 0xff) | (pixel & 0xff00ff00);
+            scanLine[x + destx] = pixel;
         }
 
         srcRows += srcBytesPerRow;
     }
 
-    m_data.m_pixmap = QPixmap::fromImage(image);
+    data.m_pixmap = QPixmap::fromImage(image);
 
     if (isPainting)
-        m_data.m_painter->begin(&m_data.m_pixmap);
+        data.m_painter->begin(&data.m_pixmap);
+}
+
+void ImageBuffer::putUnmultipliedImageData(ImageData* source, const IntRect& sourceRect, const IntPoint& destPoint)
+{
+    putImageData<Unmultiplied>(source, sourceRect, destPoint, m_data, m_size);
+}
+
+void ImageBuffer::putPremultipliedImageData(ImageData* source, const IntRect& sourceRect, const IntPoint& destPoint)
+{
+    putImageData<Premultiplied>(source, sourceRect, destPoint, m_data, m_size);
 }
 
 // We get a mimeType here but QImageWriter does not support mimetypes but

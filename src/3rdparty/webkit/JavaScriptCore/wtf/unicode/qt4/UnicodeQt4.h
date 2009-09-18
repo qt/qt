@@ -58,7 +58,7 @@ QT_END_NAMESPACE
 #endif
 
 // ugly hack to make UChar compatible with JSChar in API/JSStringRef.h
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) || COMPILER(WINSCW)
 typedef wchar_t UChar;
 #else
 typedef uint16_t UChar;
@@ -107,8 +107,6 @@ typedef uint32_t UChar32;
 
 namespace WTF {
 namespace Unicode {
-
-QT_USE_NAMESPACE
 
 enum Direction {
     LeftToRight = QChar::DirL,

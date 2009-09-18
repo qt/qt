@@ -211,7 +211,7 @@ NativeImagePtr SVGImage::nativeImageForCurrentFrame()
     if (!m_frameCache) {
         if (!m_page)
             return 0;
-        m_frameCache = ImageBuffer::create(size(), false);
+        m_frameCache = ImageBuffer::create(size());
         if (!m_frameCache) // failed to allocate image
             return 0;
         renderSubtreeToImage(m_frameCache.get(), m_page->mainFrame()->contentRenderer());
@@ -228,8 +228,16 @@ bool SVGImage::dataChanged(bool allDataReceived)
     if (allDataReceived) {
         static FrameLoaderClient* dummyFrameLoaderClient =  new EmptyFrameLoaderClient;
         static EditorClient* dummyEditorClient = new EmptyEditorClient;
+#if ENABLE(CONTEXT_MENUS)
         static ContextMenuClient* dummyContextMenuClient = new EmptyContextMenuClient;
+#else
+        static ContextMenuClient* dummyContextMenuClient = 0;
+#endif
+#if ENABLE(DRAG_SUPPORT)
         static DragClient* dummyDragClient = new EmptyDragClient;
+#else
+        static DragClient* dummyDragClient = 0;
+#endif
         static InspectorClient* dummyInspectorClient = new EmptyInspectorClient;
 
         m_chromeClient.set(new SVGImageChromeClient(this));
@@ -244,7 +252,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
         RefPtr<Frame> frame = Frame::create(m_page.get(), 0, dummyFrameLoaderClient);
         frame->setView(FrameView::create(frame.get()));
         frame->init();
-        ResourceRequest fakeRequest(KURL(""));
+        ResourceRequest fakeRequest(KURL(ParsedURLString, ""));
         FrameLoader* loader = frame->loader();
         loader->load(fakeRequest, false); // Make sure the DocumentLoader is created
         loader->cancelContentPolicyCheck(); // cancel any policy checks

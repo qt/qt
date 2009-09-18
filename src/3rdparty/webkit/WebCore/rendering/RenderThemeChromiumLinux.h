@@ -49,12 +49,19 @@ namespace WebCore {
         virtual Color inactiveListBoxSelectionBackgroundColor() const;
         virtual Color inactiveListBoxSelectionForegroundColor() const;
 
+        virtual void adjustSliderThumbSize(RenderObject*) const;
+
+        void setCaretBlinkInterval(double interval);
+        virtual double caretBlinkIntervalInternal() const;
+
     private:
         RenderThemeChromiumLinux();
         virtual ~RenderThemeChromiumLinux();
 
         // A general method asking if any control tinting is supported at all.
         virtual bool supportsControlTints() const;
+
+        double m_caretBlinkInterval;
     };
 
 } // namespace WebCore

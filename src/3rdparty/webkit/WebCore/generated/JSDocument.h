@@ -37,6 +37,7 @@ public:
     virtual ~JSDocument();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
@@ -46,7 +47,7 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    virtual void mark();
+    virtual void markChildren(JSC::MarkStack&);
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 
@@ -64,6 +65,11 @@ ALWAYS_INLINE bool JSDocument::getOwnPropertySlot(JSC::ExecState* exec, const JS
     return JSC::getStaticValueSlot<JSDocument, Base>(exec, s_info.staticPropHashTable, this, propertyName, slot);
 }
 
+ALWAYS_INLINE bool JSDocument::getOwnPropertyDescriptor(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::PropertyDescriptor& descriptor)
+{
+    return JSC::getStaticValueDescriptor<JSDocument, Base>(exec, s_info.staticPropHashTable, this, propertyName, descriptor);
+}
+
 JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, Document*);
 Document* toDocument(JSC::JSValue);
 
@@ -74,6 +80,7 @@ public:
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
@@ -114,6 +121,7 @@ JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQueryCommandSupported(JSC:
 JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQueryCommandValue(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetElementsByName(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionElementFromPoint(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCaretRangeFromPoint(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetSelection(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetCSSCanvasContext(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetElementsByClassName(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
@@ -192,6 +200,8 @@ JSC::JSValue jsDocumentOnfocus(JSC::ExecState*, const JSC::Identifier&, const JS
 void setJSDocumentOnfocus(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDocumentOninput(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDocumentOninput(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOninvalid(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOninvalid(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDocumentOnkeydown(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDocumentOnkeydown(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDocumentOnkeypress(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

@@ -106,6 +106,11 @@ bool JSWorkerNavigator::getOwnPropertySlot(ExecState* exec, const Identifier& pr
     return getStaticValueSlot<JSWorkerNavigator, Base>(exec, getJSWorkerNavigatorTable(exec), this, propertyName, slot);
 }
 
+bool JSWorkerNavigator::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSWorkerNavigator, Base>(exec, getJSWorkerNavigatorTable(exec), this, propertyName, descriptor);
+}
+
 JSValue jsWorkerNavigatorAppName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSWorkerNavigator* castedThis = static_cast<JSWorkerNavigator*>(asObject(slot.slotBase()));
@@ -152,7 +157,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, WorkerN
 }
 WorkerNavigator* toWorkerNavigator(JSC::JSValue value)
 {
-    return value.isObject(&JSWorkerNavigator::s_info) ? static_cast<JSWorkerNavigator*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSWorkerNavigator::s_info) ? static_cast<JSWorkerNavigator*>(asObject(value))->impl() : 0;
 }
 
 }

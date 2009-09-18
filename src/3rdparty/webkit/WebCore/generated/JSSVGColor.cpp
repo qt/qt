@@ -80,6 +80,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSSVGColorPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -94,6 +95,11 @@ const ClassInfo JSSVGColorConstructor::s_info = { "SVGColorConstructor", 0, &JSS
 bool JSSVGColorConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGColorConstructor, DOMObject>(exec, &JSSVGColorConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGColorConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGColorConstructor, DOMObject>(exec, &JSSVGColorConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -129,6 +135,11 @@ bool JSSVGColorPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& 
     return getStaticPropertySlot<JSSVGColorPrototype, JSObject>(exec, &JSSVGColorPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGColorPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticPropertyDescriptor<JSSVGColorPrototype, JSObject>(exec, &JSSVGColorPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGColor::s_info = { "SVGColor", &JSCSSValue::s_info, &JSSVGColorTable, 0 };
 
 JSSVGColor::JSSVGColor(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGColor> impl)
@@ -144,6 +155,11 @@ JSObject* JSSVGColor::createPrototype(ExecState* exec, JSGlobalObject* globalObj
 bool JSSVGColor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGColor, Base>(exec, &JSSVGColorTable, this, propertyName, slot);
+}
+
+bool JSSVGColor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGColor, Base>(exec, &JSSVGColorTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGColorColorType(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -175,7 +191,7 @@ JSValue JSSVGColor::getConstructor(ExecState* exec, JSGlobalObject* globalObject
 JSValue JSC_HOST_CALL jsSVGColorPrototypeFunctionSetRGBColor(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGColor::s_info))
+    if (!thisValue.inherits(&JSSVGColor::s_info))
         return throwError(exec, TypeError);
     JSSVGColor* castedThisObj = static_cast<JSSVGColor*>(asObject(thisValue));
     SVGColor* imp = static_cast<SVGColor*>(castedThisObj->impl());
@@ -190,7 +206,7 @@ JSValue JSC_HOST_CALL jsSVGColorPrototypeFunctionSetRGBColor(ExecState* exec, JS
 JSValue JSC_HOST_CALL jsSVGColorPrototypeFunctionSetRGBColorICCColor(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGColor::s_info))
+    if (!thisValue.inherits(&JSSVGColor::s_info))
         return throwError(exec, TypeError);
     JSSVGColor* castedThisObj = static_cast<JSSVGColor*>(asObject(thisValue));
     SVGColor* imp = static_cast<SVGColor*>(castedThisObj->impl());
@@ -206,7 +222,7 @@ JSValue JSC_HOST_CALL jsSVGColorPrototypeFunctionSetRGBColorICCColor(ExecState* 
 JSValue JSC_HOST_CALL jsSVGColorPrototypeFunctionSetColor(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGColor::s_info))
+    if (!thisValue.inherits(&JSSVGColor::s_info))
         return throwError(exec, TypeError);
     JSSVGColor* castedThisObj = static_cast<JSSVGColor*>(asObject(thisValue));
     SVGColor* imp = static_cast<SVGColor*>(castedThisObj->impl());
