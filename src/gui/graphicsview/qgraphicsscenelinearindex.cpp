@@ -62,7 +62,7 @@
 */
 
 /*!
-    \fn QList<QGraphicsItem *> QGraphicsSceneLinearIndex::items(Qt::SortOrder order = Qt::AscendingOrder) const;
+    \fn QList<QGraphicsItem *> QGraphicsSceneLinearIndex::items(Qt::SortOrder order = Qt::DescendingOrder) const;
 
     Return all items in the index and sort them using \a order.
 */

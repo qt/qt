@@ -88,7 +88,7 @@ public:
 
     QGraphicsScene *scene() const;
 
-    virtual QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const  = 0;
+    virtual QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::DescendingOrder) const  = 0;
     virtual QList<QGraphicsItem *> items(const QPointF &pos, Qt::ItemSelectionMode mode,
                                          Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
     virtual QList<QGraphicsItem *> items(const QRectF &rect, Qt::ItemSelectionMode mode,
@@ -154,10 +154,10 @@ inline void QGraphicsSceneIndexPrivate::items_helper(const QRectF &rect, QGraphi
                                                      Qt::ItemSelectionMode mode, Qt::SortOrder order) const
 {
     Q_Q(const QGraphicsSceneIndex);
-    const QList<QGraphicsItem *> tli = q->estimateTopLevelItems(rect, Qt::DescendingOrder);
+    const QList<QGraphicsItem *> tli = q->estimateTopLevelItems(rect, Qt::AscendingOrder);
     for (int i = 0; i < tli.size(); ++i)
         recursive_items_helper(tli.at(i), rect, intersector, items, viewTransform, mode, order);
-    if (order == Qt::AscendingOrder) {
+    if (order == Qt::DescendingOrder) {
         const int n = items->size();
         for (int i = 0; i < n / 2; ++i)
             items->swap(i, n - i - 1);
