@@ -300,7 +300,7 @@
     \o{2,1} \l{Gestures Examples}{\bold{Gestures}}
     \o{2,1} \l{D-Bus Examples}{\bold{D-Bus}}
     \row
-    \o \image gestures-examples.png
+    \o \image gestures.png
     \o
     Applications can be written to respond to gestures as a natural input method.
     These examples show how to enable support for standard and custom gestures in
