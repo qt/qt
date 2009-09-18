@@ -72,6 +72,10 @@ LIBS += -lws32              # For RWindow
 LIBS += -lefsrv             # For file server
 LIBS += -lapgrfx -lapmime   # For recognizer
 
+# *** Temporary hack, necessitated by
+# inline QSymbianControl::setTransparentBlit
+LIBS += -lfbscli
+
 # These are for effects.
 LIBS += -lAudioEqualizerEffect -lBassBoostEffect -lDistanceAttenuationEffect -lDopplerBase -lEffectBase -lEnvironmentalReverbEffect -lListenerDopplerEffect -lListenerLocationEffect -lListenerOrientationEffect -lLocationBase -lLoudnessEffect -lOrientationBase -lSourceDopplerEffect -lSourceLocationEffect -lSourceOrientationEffect -lStereoWideningEffect
 

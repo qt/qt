@@ -652,6 +652,7 @@ void QSymbianControl::Draw(const TRect& r) const
 			const int coord = i*10;
 			const TUint32 *ptr = address + (coord * bitmapWidth) + coord;
 			const TUint32 pixel = *ptr;
+			qDebug()    << "    " << i*10 << " : " << ptr << pixel;
 		}
 		
 		for(int i=0; i<10 and i*10<bitmapWidth and i*10<bitmapHeight; ++i) {
@@ -664,7 +665,16 @@ void QSymbianControl::Draw(const TRect& r) const
         CWindowGc &gc = SystemGc();
         if (qwidget->d_func()->isOpaque)
             gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
-        gc.BitBlt(r.iTl, bitmap, r);
+        
+        if(m_bitmap.data()) {
+			//gc.BitBlt(r.iTl, m_bitmap.data(), TRect(TPoint(), r.Size()));
+        
+			gc.SetBrushColor(TRgb(0, 0, 0, 0));
+        	gc.SetBrushStyle(CGraphicsContext::ESolidBrush);
+        	gc.Clear(r);
+        }
+        else
+        	gc.BitBlt(r.iTl, bitmap, r);
     } else {
         surface->flush(qwidget, QRegion(qt_TRect2QRect(r)), QPoint());
     }
@@ -698,6 +708,11 @@ void QSymbianControl::SizeChanged()
                 qwidget->d_func()->syncBackingStore();
             if (!slowResize && tlwExtra)
                 tlwExtra->inTopLevelResize = false;
+        }
+        
+        if(m_bitmap.data()) {
+			m_bitmap->Resize(Size());
+			fillBitmap();
         }
     }
 }

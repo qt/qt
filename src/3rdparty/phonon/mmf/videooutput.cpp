@@ -29,11 +29,16 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMoveEvent>
 #include <QResizeEvent>
 
-// Required for implementation of transparentFill
+// Required for implementation of transparentFill (direct write to backing store)
 #include <QtGui/private/qwidget_p.h>
 #include <QtGui/private/qdrawhelper_p.h>
 #include <QtGui/private/qwindowsurface_p.h>
 #include <QImage>
+
+// Required for implementation of transparentFill (GC brush)
+#include <coecntrl.h>
+#include <w32std.h>
+#include <eikenv.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -140,11 +145,35 @@ void MMF::VideoOutput::transparentFill(const QVector<QRect>& rects)
 {
 	TRACE_CONTEXT(VideoOutput::transparentFill, EVideoInternal);
 	TRACE_ENTRY_0();
+
+/*	
+	// Graphics context brushing approach
+	RWindow *const window = static_cast<RWindow *>(winId()->DrawableWindow());
+	const TDisplayMode displayMode = static_cast<TDisplayMode>(window->SetRequiredDisplayMode(EColor16MA));
+	CWindowGc& gc = CEikonEnv::Static()->SystemGc();
+	gc.Activate(*window);
+	gc.SetBrushColor(TRgb(255, 255, 255, 0));
+	gc.SetBrushStyle(CGraphicsContext::ESolidBrush);
+	gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
+	window->Invalidate();
+	window->BeginRedraw();
+	gc.Clear();
+	window->EndRedraw();
+	gc.Deactivate();
+*/
 	
+/*
+	// Direct draw into backing store approach (entire TLW)
 	QImage *image = window()->windowSurface()->buffer(window());
 	QRgb *data = reinterpret_cast<QRgb *>(image->bits());
 	const int row_stride = image->bytesPerLine() / 4;
 	
+	const QRgb color = 
+		//0xff0000ff	// opaque blue
+		0x000000ff	// transparent blue
+		//0x00000000	// transparent black
+		;
+		
 	// Paint the entire surface
 	const int imageWidth = image->size().width();
 	const int imageHeight = image->size().height();
@@ -153,12 +182,13 @@ void MMF::VideoOutput::transparentFill(const QVector<QRect>& rects)
 	
 		QRgb *ptr = row;
 		for(int x=0; x<imageWidth; ++x)
-			*ptr++ = 0xff0000ff;
+			*ptr++ = color;
 		row += row_stride;
 	}
+*/
 	
 /*
-	// Paint the specified regions
+	// Direct draw into backing store approach (specified regions)
 	for (QVector<QRect>::const_iterator it = rects.begin(); it != rects.end(); ++it) {
 	
 		const QRect& rect = *it;

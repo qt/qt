@@ -30,6 +30,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "objectdump.h"
 #endif
 
+#include <QtGui/private/qt_s60_p.h> // for QSymbianControl
+
 QT_BEGIN_NAMESPACE
 
 using namespace Phonon;
@@ -125,7 +127,9 @@ void MMF::VideoPlayer::doPlay()
         updateMmfOutput();
     }
     
+    TRAP_IGNORE(m_player->SetVolumeL(0));  // *** HACK ***
     m_player->Play();
+    TRAP_IGNORE(m_player->SetVolumeL(0));  // *** HACK ***
 }
 
 void MMF::VideoPlayer::doPause()
@@ -402,10 +406,26 @@ void MMF::VideoPlayer::getNativeWindowSystemHandles()
     VideoOutput& output = videoOutput();
     CCoeControl* const control = output.winId();
     
+    // Inform control that it needs to brush rather than blit the backing store
+    QSymbianControl* const symbianControl = static_cast<QSymbianControl *>(control);
+    //symbianControl->setBlit(0xff00ff00); // opaque green
+    //symbianControl->setBlit(0x0000ff00); // transparent green
+    symbianControl->setBlit(0x00000000); // transparent black
+    
     CCoeEnv* const coeEnv = control->ControlEnv();
     m_wsSession = &(coeEnv->WsSession());
     m_screenDevice = coeEnv->ScreenDevice();
     m_window = control->DrawableWindow();
+    
+/*
+	// Set background window color
+    RWindow *const window = static_cast<RWindow *>(m_window);
+	const TDisplayMode displayMode = static_cast<TDisplayMode>(window->SetRequiredDisplayMode(EColor16MA));
+	//const TInt err = window->SetTransparencyAlphaChannel();
+	//if (err == KErrNone)
+		window->SetBackgroundColor(TRgb(255, 0, 255, 255));
+	window->Invalidate(); // force a redraw
+*/
     
 #ifdef _DEBUG
     QScopedPointer<ObjectDump::QDumper> dumper(new ObjectDump::QDumper);

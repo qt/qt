@@ -156,9 +156,11 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     m_videoWidget->setObjectName("videoWidget");
 
 #ifdef Q_OS_SYMBIAN
+/*
     // setWindowTitle triggers creation of the window surface, so we set
     // transparency here
     setAttribute(Qt::WA_TranslucentBackground, true);
+*/
 #endif
 
     setWindowTitle(tr("Media Player"));
