@@ -1394,8 +1394,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
         }
         case Tok_friend:
             yyTok = getToken();
-            // Ensure that these don't end up being interpreted as forward declarations
-            // (they are forwards, but with different namespacing).
+            // These are forward declarations, so ignore them.
             if (yyTok == Tok_class)
                 yyTok = getToken();
             break;
@@ -1406,7 +1405,8 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
             */
             yyTok = getToken();
             if (yyBraceDepth == namespaceDepths.count() && yyParenDepth == 0) {
-                QStringList fct;
+                QStringList quali;
+                QString fct;
                 do {
                     /*
                       This code should execute only once, but we play
@@ -1414,24 +1414,39 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                       'class Q_EXPORT QMessageBox', in which case
                       'QMessageBox' is the class name, not 'Q_EXPORT'.
                     */
-                    text = yyWord;
-                    text.detach();
-                    fct = QStringList(text);
+                    fct = yyWord;
+                    fct.detach();
                     yyTok = getToken();
                 } while (yyTok == Tok_Ident);
                 while (yyTok == Tok_ColonColon) {
                     yyTok = getToken();
                     if (yyTok != Tok_Ident)
                         break; // Oops ...
-                    text = yyWord;
-                    text.detach();
-                    fct += text;
+                    quali << fct;
+                    fct = yyWord;
+                    fct.detach();
                     yyTok = getToken();
                 }
-                if (fct.count() > 1) {
-                    // Forward-declared class definitions can be namespaced
+                while (yyTok == Tok_Comment)
+                    yyTok = getToken();
+                if (yyTok == Tok_Colon) {
+                    // Skip any token until '{' since we might do things wrong if we find
+                    // a '::' token here.
+                    do {
+                        yyTok = getToken();
+                    } while (yyTok != Tok_LeftBrace && yyTok != Tok_Eof);
+                } else {
+                    if (yyTok != Tok_LeftBrace) {
+                        // Obviously a forward declaration. We skip those, as they
+                        // don't create actually usable namespaces.
+                        break;
+                    }
+                }
+
+                if (!quali.isEmpty()) {
+                    // Forward-declared class definitions can be namespaced.
                     NamespaceList nsl;
-                    if (!fullyQualify(namespaces, fct, true, &nsl, 0)) {
+                    if (!fullyQualify(namespaces, quali, true, &nsl, 0)) {
                         qWarning("%s:%d: Ignoring definition of undeclared qualified class\n",
                                  qPrintable(yyFileName), yyLineNo);
                         break;
@@ -1440,25 +1455,9 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                     namespaces = nsl;
                 } else {
                     namespaceDepths.push(namespaces.count());
-                    enterNamespace(&namespaces, fct.first());
                 }
+                enterNamespace(&namespaces, fct);
                 namespaces.last()->isClass = true;
-
-                while (yyTok == Tok_Comment)
-                    yyTok = getToken();
-                if (yyTok == Tok_Colon) {
-                    // Skip any token until '{' since lupdate might do things wrong if it finds
-                    // a '::' token here.
-                    do {
-                        yyTok = getToken();
-                    } while (yyTok != Tok_LeftBrace && yyTok != Tok_Eof);
-                } else {
-                    if (yyTok != Tok_LeftBrace) {
-                        // Obviously a forward decl
-                        truncateNamespaces(&namespaces, namespaceDepths.pop());
-                        break;
-                    }
-                }
 
                 functionContext = namespaces;
                 functionContextUnresolved.clear(); // Pointless
