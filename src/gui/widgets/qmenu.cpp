@@ -60,13 +60,13 @@
 #ifndef QT_NO_WHATSTHIS
 # include <qwhatsthis.h>
 #endif
-#include <private/qactiontokeyeventmapper_p.h>
 
 #include "qmenu_p.h"
 #include "qmenubar_p.h"
 #include "qwidgetaction.h"
 #include "qtoolbutton.h"
 #include <private/qaction_p.h>
+#include <private/qsoftkeymanager_p.h>
 #ifdef QT3_SUPPORT
 #include <qmenudata.h>
 #endif // QT3_SUPPORT
@@ -162,6 +162,15 @@ void QMenuPrivate::init()
         scroll = new QMenuPrivate::QMenuScroller;
         scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollNone;
     }
+
+#ifdef QT_KEYPAD_NAVIGATION
+    selectAction = QSoftKeyManager::createKeyedAction(QAction::SelectSoftKey, Qt::Key_Select, q);
+    cancelAction = QSoftKeyManager::createKeyedAction(QAction::CancelSoftKey, Qt::Key_Back, q);
+    selectAction->setVisible(false); // Don't show these in the menu
+    cancelAction->setVisible(false);
+    q->addAction(selectAction);
+    q->addAction(cancelAction);
+#endif
 }
 
 int QMenuPrivate::scrollerHeight() const
@@ -1926,9 +1935,6 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
 #ifndef QT_NO_ACCESSIBILITY
     QAccessible::updateAccessibility(this, 0, QAccessible::PopupMenuStart);
 #endif
-#ifdef QT_KEYPAD_NAVIGATION
-    QActionToKeyEventMapper::addSoftKey(QAction::CancelSoftKey, Qt::Key_Back, this);
-#endif
 }
 
 /*!
@@ -2587,7 +2593,6 @@ void QMenu::keyPressEvent(QKeyEvent *e)
     case Qt::Key_Escape:
 #ifdef QT_KEYPAD_NAVIGATION
     case Qt::Key_Back:
-        QActionToKeyEventMapper::removeSoftkey(this);
 #endif
         key_consumed = true;
         if (d->tornoff) {

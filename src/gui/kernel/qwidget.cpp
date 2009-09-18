@@ -82,6 +82,7 @@
 #include "private/qstyle_p.h"
 #include "private/qinputcontext_p.h"
 #include "qfileinfo.h"
+#include "private/qsoftkeymanager_p.h"
 
 #if defined (Q_WS_WIN)
 # include <private/qwininputcontext_p.h>
@@ -4971,13 +4972,6 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     d->extra->inRenderWithPainter = false;
 }
 
-#if !defined(Q_OS_SYMBIAN)
-void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
-{
-    Q_UNUSED(softkeys)
-}
-#endif // !defined(Q_OS_SYMBIAN)
-
 /*!
     Returns a pointer to this widget's effect if it has one; otherwise 0.
 
@@ -7997,7 +7991,9 @@ bool QWidget::event(QEvent *event)
         }
         break;
     case QEvent::FocusIn:
-        d->setSoftKeys_sys(softKeys());
+#ifdef QT_KEYPAD_NAVIGATION
+        QSoftKeyManager::updateSoftKeys();
+#endif
         focusInEvent((QFocusEvent*)event);
         break;
 
@@ -8148,8 +8144,10 @@ bool QWidget::event(QEvent *event)
                 QApplication::sendEvent(w, event);
         }
 
+#ifdef QT_KEYPAD_NAVIGATION
         if (isWindow() && isActiveWindow())
-            d->setSoftKeys_sys(softKeys());
+            QSoftKeyManager::updateSoftKeys();
+#endif
 
         break; }
 
@@ -8258,6 +8256,9 @@ bool QWidget::event(QEvent *event)
     case QEvent::ActionAdded:
     case QEvent::ActionRemoved:
     case QEvent::ActionChanged:
+#ifdef QT_KEYPAD_NAVIGATION
+        QSoftKeyManager::updateSoftKeys(true);
+#endif
         actionEvent((QActionEvent*)event);
         break;
 #endif
@@ -11936,67 +11937,6 @@ void QWidget::setMask(const QBitmap &bitmap)
 void QWidget::clearMask()
 {
     setMask(QRegion());
-}
-
-/*!
-    \preliminary
-    \since 4.6
-
-    Returns the (possibly empty) list of this widget's softkeys.
-    Returned list cannot be changed. Softkeys should be added
-    and removed via method called setSoftKeys
-
-    \sa setSoftKey(), setSoftKeys()
-*/
-const QList<QAction*>& QWidget::softKeys() const
-{
-    Q_D(const QWidget);
-    if( d->softKeys.count() > 0)
-        return d->softKeys;
-    if (isWindow() || !parentWidget())
-        return d->softKeys;
-
-    return parentWidget()->softKeys();
-}
-
-/*!
-    \preliminary
-    \since 4.6
-
-    Sets the softkey \a softKey to this widget's list of softkeys.
-    Setting 0 as softkey will clear all the existing softkeys set
-    to the widget. A QWidget can have 0 or more softkeys.
-
-    \sa softKeys(), setSoftKeys()
-*/
-void QWidget::setSoftKey(QAction *softKey)
-{
-    Q_D(QWidget);
-    qDeleteAll(d->softKeys);
-    d->softKeys.clear();
-    if (softKey)
-        d->softKeys.append(softKey);
-    if ((!QApplication::focusWidget() && this == QApplication::activeWindow())
-        || QApplication::focusWidget() == this)
-        d->setSoftKeys_sys(this->softKeys());
-}
-
-/*!
-    Sets the list of softkeys \a softKeys to this widget's list of softkeys.
-    A QWidget can have 0 or more softkeys.
-
-    \sa softKeys(), setSoftKey()
-*/
-void QWidget::setSoftKeys(const QList<QAction*> &softKeys)
-{
-    Q_D(QWidget);
-    qDeleteAll(d->softKeys);
-    d->softKeys.clear();
-        d->softKeys = softKeys;
-
-    if ((!QApplication::focusWidget() && this == QApplication::activeWindow())
-        || QApplication::focusWidget() == this)
-        d->setSoftKeys_sys(this->softKeys());
 }
 
 /*! \fn const QX11Info &QWidget::x11Info() const

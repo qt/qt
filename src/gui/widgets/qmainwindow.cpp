@@ -65,6 +65,9 @@ QT_BEGIN_NAMESPACE
 extern OSWindowRef qt_mac_window_for(const QWidget *); // qwidget_mac.cpp
 QT_END_NAMESPACE
 #endif
+#ifdef QT_KEYPAD_NAVIGATION
+#include <private/qsoftkeymanager_p.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -77,6 +80,9 @@ public:
 #ifdef Q_WS_MAC
             , useHIToolBar(false)
 #endif
+#ifdef QT_KEYPAD_NAVIGATION
+            , menuBarAction(0)
+#endif
 #if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_CURSOR)
             , hasOldCursor(false) , cursorAdjusted(false)
 #endif
@@ -87,6 +93,9 @@ public:
     Qt::ToolButtonStyle toolButtonStyle;
 #ifdef Q_WS_MAC
     bool useHIToolBar;
+#endif
+#ifdef QT_KEYPAD_NAVIGATION
+    QAction *menuBarAction;
 #endif
     void init();
     QList<int> hoverSeparator;
@@ -108,6 +117,9 @@ void QMainWindowPrivate::init()
     const int metric = q->style()->pixelMetric(QStyle::PM_ToolBarIconSize, 0, q);
     iconSize = QSize(metric, metric);
     q->setAttribute(Qt::WA_Hover);
+#ifdef QT_KEYPAD_NAVIGATION
+    menuBarAction = QSoftKeyManager::createAction(QAction::MenuSoftKey, q);
+#endif
 }
 
 /*
@@ -479,11 +491,13 @@ void QMainWindow::setMenuBar(QMenuBar *menuBar)
         oldMenuBar->deleteLater();
     }
     d->layout->setMenuBar(menuBar);
-    if (menuBar) {
-        QAction* menu = new QAction(QString::fromLatin1("Options"), this);
-        menu->setSoftKeyRole(QAction::MenuSoftKey);
-        setSoftKey(menu);
-    }
+
+#ifdef QT_KEYPAD_NAVIGATION
+    if (menuBar)
+        addAction(d->menuBarAction);
+    else
+        removeAction(d->menuBarAction);
+#endif
 }
 
 /*!
@@ -1411,16 +1425,6 @@ bool QMainWindow::event(QEvent *event)
                d->hasOldCursor = testAttribute(Qt::WA_SetCursor);
            }
            break;
-#endif
-#ifndef QT_NO_MENUBAR
-        case QEvent::WindowActivate:
-            if (d->layout->menuBar()) {
-                // ### TODO: This is evil, there is no need to create a new action every time
-                QAction* menu = new QAction(QString::fromLatin1("Options"), this);
-                menu->setSoftKeyRole(QAction::MenuSoftKey);
-                setSoftKey(menu);
-            }
-            break;
 #endif
         default:
             break;

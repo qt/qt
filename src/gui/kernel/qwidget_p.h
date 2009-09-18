@@ -85,9 +85,6 @@
 #if defined(Q_OS_SYMBIAN)
 class RDrawableWindow;
 class CCoeControl;
-// The following 2 defines may only be needed for s60. To be seen.
-const int SOFTKEYSTART=5000;
-const int SOFTKEYEND=5004;
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -263,7 +260,6 @@ public:
     explicit QWidgetPrivate(int version = QObjectPrivateVersion);
     ~QWidgetPrivate();
 
-    void setSoftKeys_sys(const QList<QAction*> &softkeys);
     QWExtra *extraData() const;
     QTLWExtra *topData() const;
     QTLWExtra *maybeTopData() const;
@@ -517,7 +513,6 @@ public:
     QWidget *focus_next;
     QWidget *focus_prev;
     QWidget *focus_child;
-    QList<QAction*> softKeys;
     QLayout *layout;
     QRegion *needsFlush;
     QPaintDevice *redirectDev;

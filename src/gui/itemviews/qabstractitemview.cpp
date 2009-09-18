@@ -61,7 +61,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include <qaccessible.h>
 #endif
-#include <private/qactiontokeyeventmapper_p.h>
+#include <private/qsoftkeymanager_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -87,6 +87,9 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         dragDropMode(QAbstractItemView::NoDragDrop),
         overwrite(false),
         dropIndicatorPosition(QAbstractItemView::OnItem),
+#endif
+#ifdef QT_KEYPAD_NAVIGATION
+        doneSoftKey(0),
 #endif
         autoScroll(true),
         autoScrollMargin(16),
@@ -128,6 +131,10 @@ void QAbstractItemViewPrivate::init()
     doDelayedItemsLayout();
 
     q->setAttribute(Qt::WA_InputMethodEnabled);
+
+#ifdef QT_KEYPAD_NAVIGATION
+    doneSoftKey = QSoftKeyManager::createKeyedAction(QAction::EndEditSoftKey, Qt::Key_Back, q);
+#endif
 }
 
 void QAbstractItemViewPrivate::checkMouseMove(const QPersistentModelIndex &index)
@@ -2064,14 +2071,14 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         if (QApplication::keypadNavigationEnabled()) {
             if (!hasEditFocus()) {
                 setEditFocus(true);
-                QActionToKeyEventMapper::addSoftKey(QAction::BackSoftKey, Qt::Key_Back, this);
+                addAction(d->doneSoftKey);
                 return;
             }
         }
         break;
     case Qt::Key_Back:
         if (QApplication::keypadNavigationEnabled() && hasEditFocus()) {
-            QActionToKeyEventMapper::removeSoftkey(this);
+            removeAction(d->doneSoftKey);
             setEditFocus(false);
         } else {
             event->ignore();

@@ -59,6 +59,7 @@
 #include "private/qwindowsurface_s60_p.h"
 #include "qpaintengine.h"
 #include "private/qmenubar_p.h"
+#include "private/qsoftkeymanager_p.h"
 
 #include "apgwgnam.h" // For CApaWindowGroupName
 #include <MdaAudioTonePlayer.h>     // For CMdaAudioToneUtility
@@ -1348,17 +1349,12 @@ void QApplication::symbianHandleCommand(int command)
         exit();
         break;
     default:
-        if (command >= SOFTKEYSTART && command <= SOFTKEYEND) {
-            int index= command-SOFTKEYSTART;
-            QWidget *focused = QApplication::focusWidget();
-            QWidget *softKeySource = focused ? focused : QApplication::activeWindow();
-            const QList<QAction*>& softKeys = softKeySource->softKeys();
-            Q_ASSERT(index < softKeys.count());
-            softKeys.at(index)->activate(QAction::Trigger);
-        }
+        bool handled = QSoftKeyManager::handleCommand(command);
 #ifdef Q_WS_S60
-        else
+        if (!handled)
             QMenuBarPrivate::symbianCommands(command);
+#else
+        Q_UNUSED(handled);
 #endif
         break;
     }

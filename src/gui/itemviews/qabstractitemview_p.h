@@ -379,6 +379,10 @@ public:
     QAbstractItemView::DropIndicatorPosition dropIndicatorPosition;
 #endif
 
+#ifdef QT_KEYPAD_NAVIGATION
+    QAction *doneSoftKey;
+#endif
+
     QString keyboardInput;
     QTime keyboardInputTime;
 

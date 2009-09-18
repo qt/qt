@@ -55,10 +55,16 @@ MainWindow::MainWindow(QWidget *parent)
     QAction* clear = new QAction(tr("Clear"), this);
     clear->setSoftKeyRole(QAction::CancelSoftKey);
 
-    QList<QAction*> textEditorSoftKeys;
-    textEditorSoftKeys.append(menu);
-    textEditorSoftKeys.append(clear);
-    textEditor->setSoftKeys(textEditorSoftKeys);
+    textEditor->addAction(menu);
+    textEditor->addAction(clear);
+
+    ok = new QAction(tr("Ok"), this);
+    ok->setSoftKeyRole(QAction::OkSoftKey);
+    connect(ok, SIGNAL(triggered()), this, SLOT(okPressed()));
+
+    cancel = new QAction(tr("Cancel"), this);
+    cancel->setSoftKeyRole(QAction::CancelSoftKey);
+    connect(cancel, SIGNAL(triggered()), this, SLOT(cancelPressed()));
 
     infoLabel = new QLabel(tr(""), this);
     infoLabel->setContextMenuPolicy(Qt::NoContextMenu);
@@ -113,20 +119,8 @@ void MainWindow::openDialog()
 
 void MainWindow::addSoftKeys()
 {
-    ok = new QAction(tr("Ok"), this);
-    ok->setSoftKeyRole(QAction::OkSoftKey);
-    connect(ok, SIGNAL(triggered()), this, SLOT(okPressed()));
-
-    cancel = new QAction(tr("Cancel"), this);
-    cancel->setSoftKeyRole(QAction::CancelSoftKey);
-    connect(cancel, SIGNAL(triggered()), this, SLOT(cancelPressed()));
-
-    QList<QAction*> softkeys;
-    softkeys.append(ok);
-    softkeys.append(cancel);
-    QWidget* focusWidget = QApplication::focusWidget();
-    if (focusWidget)
-        focusWidget->setSoftKeys(softkeys);
+    addAction(ok);
+    addAction(cancel);
 }
 
 void MainWindow::setCustomSoftKeys()
@@ -137,9 +131,8 @@ void MainWindow::setCustomSoftKeys()
         }
     else {
         infoLabel->setText(tr("Custom softkeys removed"));
-        QWidget* focusWidget = QApplication::focusWidget();
-        if (focusWidget)
-            focusWidget->setSoftKey(0);
+        removeAction(ok);
+        removeAction(cancel);
     }
 }
 

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QACTIONTOKEYEVENTMAPPER_P_H
-#define QACTIONTOKEYEVENTMAPPER_P_H
+#ifndef QSOFTKEYMANAGER_P_H
+#define QSOFTKEYMANAGER_P_H
 
 //
 //  W A R N I N G
@@ -59,17 +59,31 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QActionToKeyEventMapper : public QObject
+class QSoftKeyManager : public QObject
 {
     Q_OBJECT
+
 public:
-    QActionToKeyEventMapper(QAction *softKeyAction, Qt::Key key, QObject *parent);
-    static QString roleText(QAction::SoftKeyRole role);
-    static void addSoftKey(QAction::SoftKeyRole standardRole, Qt::Key key, QWidget *actionWidget);
-    static void removeSoftkey(QWidget *focussedWidget);
+    static void updateSoftKeys(bool force = false);
+    static QAction *createAction(QAction::SoftKeyRole standardRole, QWidget *actionWidget);
+    static QAction *createKeyedAction(QAction::SoftKeyRole standardRole, Qt::Key key, QWidget *actionWidget);
+
+#ifdef Q_WS_S60
+    static bool handleCommand(int);
+#endif
+
 private:
-    QAction *m_softKeyAction;
-    Qt::Key m_key;
+    QSoftKeyManager();
+    static QSoftKeyManager *instance();
+    static const char *standardSoftKeyText(QAction::SoftKeyRole role);
+    static void updateSoftKeys_sys(const QList<QAction*> &softKeys);
+
+    static QSoftKeyManager *self;
+    static QWidget *softKeySource;
+    QHash<QAction*, Qt::Key> keyedActions;
+
+    Q_DISABLE_COPY(QSoftKeyManager)
+
 private Q_SLOTS:
     void sendKeyEvent();
 };
@@ -78,4 +92,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif //QACTIONTOKEYEVENTMAPPER_P_H
+#endif //QSOFTKEYMANAGER_P_H

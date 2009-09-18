@@ -81,7 +81,7 @@ static QString qt_strippedText(QString s)
 
 QActionPrivate::QActionPrivate() : group(0), enabled(1), forceDisabled(0),
                                    visible(1), forceInvisible(0), checkable(0), checked(0), separator(0), fontSet(false),
-                                   menuRole(QAction::TextHeuristicRole), softKeyRole(QAction::OptionsSoftKey),
+                                   menuRole(QAction::TextHeuristicRole), softKeyRole(QAction::NoSoftKey),
                                    priority(QAction::NormalPriority), iconVisibleInMenu(-1)
 {
 #ifdef QT3_SUPPORT
