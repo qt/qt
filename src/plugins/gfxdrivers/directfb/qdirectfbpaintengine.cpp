@@ -399,7 +399,7 @@ void QDirectFBPaintEngine::drawRects(const QRect *rects, int rectCount)
     Q_D(QDirectFBPaintEngine);
     const QPen &pen = state()->pen;
     const QBrush &brush = state()->brush;
-    if (brush == Qt::NoBrush && pen == Qt::NoPen)
+    if (brush.style() == Qt::NoBrush && pen.style() == Qt::NoPen)
         return;
 
     if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedPrimitives)
@@ -412,11 +412,13 @@ void QDirectFBPaintEngine::drawRects(const QRect *rects, int rectCount)
         QRasterPaintEngine::drawRects(rects, rectCount);
         return;
     }
-    if (brush != Qt::NoBrush) {
+
+    if (brush.style() != Qt::NoBrush) {
         d->setDFBColor(brush.color());
         CLIPPED_PAINT(QT_PREPEND_NAMESPACE(fillRects<QRect>)(rects, rectCount, state()->matrix, d->surface));
     }
-    if (pen != Qt::NoPen) {
+
+    if (pen.style() != Qt::NoPen) {
         d->setDFBColor(pen.color());
         CLIPPED_PAINT(QT_PREPEND_NAMESPACE(drawRects<QRect>)(rects, rectCount, state()->matrix, d->surface));
     }
@@ -427,7 +429,7 @@ void QDirectFBPaintEngine::drawRects(const QRectF *rects, int rectCount)
     Q_D(QDirectFBPaintEngine);
     const QPen &pen = state()->pen;
     const QBrush &brush = state()->brush;
-    if (brush == Qt::NoBrush && pen == Qt::NoPen)
+    if (brush.style() == Qt::NoBrush && pen.style() == Qt::NoPen)
         return;
 
     if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedPrimitives)
@@ -440,11 +442,13 @@ void QDirectFBPaintEngine::drawRects(const QRectF *rects, int rectCount)
         QRasterPaintEngine::drawRects(rects, rectCount);
         return;
     }
-    if (brush != Qt::NoBrush) {
+
+    if (brush.style() != Qt::NoBrush) {
         d->setDFBColor(brush.color());
         CLIPPED_PAINT(fillRects<QRectF>(rects, rectCount, state()->matrix, d->surface));
     }
-    if (pen != Qt::NoPen) {
+
+    if (pen.style() != Qt::NoPen) {
         d->setDFBColor(pen.color());
         CLIPPED_PAINT(QT_PREPEND_NAMESPACE(drawRects<QRectF>)(rects, rectCount, state()->matrix, d->surface));
     }
@@ -464,7 +468,7 @@ void QDirectFBPaintEngine::drawLines(const QLine *lines, int lineCount)
     }
 
     const QPen &pen = state()->pen;
-    if (pen != Qt::NoPen) {
+    if (pen.style() != Qt::NoPen) {
         d->setDFBColor(pen.color());
         CLIPPED_PAINT(QT_PREPEND_NAMESPACE(drawLines<QLine>)(lines, lineCount, state()->matrix, d->surface));
     }
@@ -484,7 +488,7 @@ void QDirectFBPaintEngine::drawLines(const QLineF *lines, int lineCount)
     }
 
     const QPen &pen = state()->pen;
-    if (pen != Qt::NoPen) {
+    if (pen.style() != Qt::NoPen) {
         d->setDFBColor(pen.color());
         CLIPPED_PAINT(QT_PREPEND_NAMESPACE(drawLines<QLineF>)(lines, lineCount, state()->matrix, d->surface));
     }
