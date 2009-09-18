@@ -217,45 +217,6 @@ static QScriptValue qmlsqldatabase_transaction(QScriptContext *context, QScriptE
     return engine->undefinedValue();
 }
 
-// XXX Something like this should be exported by Qt.
-static QString userLocalDataPath(const QString& app)
-{
-    QString result;
-
-#ifdef Q_OS_WIN
-#ifndef Q_OS_WINCE
-    QLibrary library(QLatin1String("shell32"));
-#else
-    QLibrary library(QLatin1String("coredll"));
-#endif // Q_OS_WINCE
-    typedef BOOL (WINAPI*GetSpecialFolderPath)(HWND, LPWSTR, int, BOOL);
-    GetSpecialFolderPath SHGetSpecialFolderPath = (GetSpecialFolderPath)library.resolve("SHGetSpecialFolderPathW");
-    if (SHGetSpecialFolderPath) {
-        wchar_t path[MAX_PATH];
-        SHGetSpecialFolderPath(0, path, CSIDL_APPDATA, FALSE);
-        result = QString::fromWCharArray(path);
-    }
-#endif // Q_OS_WIN
-
-#ifdef Q_OS_MAC
-    result = QLatin1String(qgetenv("HOME"));
-    result += "/Library/Application Support";
-#else
-    if (result.isEmpty()) {
-        // Fallback: UNIX style
-        result = QLatin1String(qgetenv("XDG_DATA_HOME"));
-        if (result.isEmpty()) {
-            result = QLatin1String(qgetenv("HOME"));
-            result += QLatin1String("/.local/share");
-        }
-    }
-#endif
-
-    result += QLatin1Char('/');
-    result += app;
-    return result;
-}
-
 
 static QScriptValue qmlsqldatabase_open(QScriptContext *context, QScriptEngine *engine)
 {
@@ -279,7 +240,7 @@ static QScriptValue qmlsqldatabase_open(QScriptContext *context, QScriptEngine *
         database = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"), dbid);
     }
     if (!database.isOpen()) {
-        QString basename = userLocalDataPath(QLatin1String("Nokia/Qt/QML/Databases/"));
+        QString basename = QmlEnginePrivate::get(engine)->offlineStoragePath + "/Databases/";
         QDir().mkpath(basename);
         basename += dbid;
         database.setDatabaseName(basename+QLatin1String(".sqllite"));

@@ -201,6 +201,7 @@ public:
 
     QmlCompositeTypeManager typeManager;
     QStringList fileImportPath;
+    QString offlineStoragePath;
 
     mutable quint32 uniqueId;
     quint32 getUniqueId() const {

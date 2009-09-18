@@ -65,6 +65,7 @@ class QScriptContext;
 class QNetworkAccessManager;
 class Q_DECLARATIVE_EXPORT QmlEngine : public QObject
 {
+    Q_PROPERTY(QString offlineStoragePath READ offlineStoragePath WRITE setOfflineStoragePath)
     Q_OBJECT
 public:
     QmlEngine(QObject *p = 0);
@@ -78,6 +79,9 @@ public:
 
     void setNetworkAccessManager(QNetworkAccessManager *);
     QNetworkAccessManager *networkAccessManager() const;
+
+    void setOfflineStoragePath(const QString& dir);
+    QString offlineStoragePath() const;
 
     QUrl baseUrl() const;
     void setBaseUrl(const QUrl &);
