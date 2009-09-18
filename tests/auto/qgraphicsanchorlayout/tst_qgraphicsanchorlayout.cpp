@@ -1316,10 +1316,8 @@ void tst_QGraphicsAnchorLayout::conflicts()
     a->setMinimumSize(QSizeF(29,10));
     QCOMPARE(l->hasConflicts(), false);
 
-    // It will currently fail if we uncomment this:
-    //QEXPECT_FAIL("", "The constraints are just within their bounds in order to be feasible", Continue);
-    //a->setMinimumSize(QSizeF(30,10));
-    //QCOMPARE(l->hasConflicts(), false);
+    a->setMinimumSize(QSizeF(30,10));
+    QCOMPARE(l->hasConflicts(), false);
 
     delete p;
 }
