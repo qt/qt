@@ -1077,9 +1077,15 @@ JSC::JSValue QScriptEnginePrivate::thisForContext(JSC::ExecState *frame)
     if (frame->codeBlock() != 0) {
         return frame->thisValue();
     } else {
-        JSC::Register* thisRegister = frame->registers() - JSC::RegisterFile::CallFrameHeaderSize - frame->argumentCount();
+        JSC::Register *thisRegister = thisRegisterForFrame(frame);
         return thisRegister->jsValue();
     }
+}
+
+JSC::Register* QScriptEnginePrivate::thisRegisterForFrame(JSC::ExecState *frame)
+{
+    Q_ASSERT(frame->codeBlock() == 0); // only for native calls
+    return frame->registers() - JSC::RegisterFile::CallFrameHeaderSize - frame->argumentCount();
 }
 
 /*! \internal
@@ -2306,7 +2312,7 @@ JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, JSC::JSV
 #endif
         if (calledAsConstructor) {
             //update the new created this
-            JSC::Register* thisRegister = newCallFrame->registers() - JSC::RegisterFile::CallFrameHeaderSize - newCallFrame->argumentCount();
+            JSC::Register* thisRegister = thisRegisterForFrame(newCallFrame);
             *thisRegister = thisObject;
         }
     }

@@ -571,7 +571,7 @@ void QScriptContext::setThisObject(const QScriptValue &thisObject)
     if (cb != 0) {
         frame[cb->thisRegister()] = jscThisObject;
     } else {
-        JSC::Register* thisRegister = frame->registers() - JSC::RegisterFile::CallFrameHeaderSize - frame->argumentCount();
+        JSC::Register* thisRegister = QScriptEnginePrivate::thisRegisterForFrame(frame);
         thisRegister[0] = jscThisObject;
     }
 }
