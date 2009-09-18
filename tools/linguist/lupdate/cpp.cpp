@@ -1590,14 +1590,14 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                         }
                         while (!functionContext.at(idx - 1)->hasTrFunctions) {
                             if (idx == 1 || !functionContext.at(idx - 2)->isClass) {
-                                idx = functionContext.length();
+                                context = stringifyNamespace(functionContext);
                                 if (!functionContext.last()->complained) {
                                     qWarning("%s:%d: Class '%s' lacks Q_OBJECT macro\n",
                                              qPrintable(yyFileName), yyLineNo,
-                                             qPrintable(stringifyNamespace(functionContext)));
+                                             qPrintable(context));
                                     functionContext.last()->complained = true;
                                 }
-                                break;
+                                goto gotctx;
                             }
                             --idx;
                         }
@@ -1626,19 +1626,20 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                     NamespaceList nsl;
                     QStringList unresolved;
                     if (fullyQualify(functionContext, prefix.split(strColons), false, &nsl, &unresolved)) {
+                        context = stringifyNamespace(nsl);
                         if (!nsl.last()->hasTrFunctions && !nsl.last()->complained) {
                             qWarning("%s:%d: Class '%s' lacks Q_OBJECT macro\n",
                                      qPrintable(yyFileName), yyLineNo,
-                                     qPrintable(stringifyNamespace(nsl)));
+                                     qPrintable(context));
                             nsl.last()->complained = true;
                         }
-                        context = stringifyNamespace(nsl);
                     } else {
                         context = (stringListifyNamespace(nsl) + unresolved).join(strColons);
                     }
                     prefix.clear();
                 }
 
+              gotctx:
                 recordMessage(line, context, text, comment, extracomment, msgid, extra, utf8, plural);
             }
             extracomment.clear();
