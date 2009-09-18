@@ -8227,6 +8227,7 @@ void tst_QGraphicsItem::ensureDirtySceneTransform()
 
     QGraphicsView view(&scene);
     view.show();
+    QTest::qWaitForWindowShown(&view);
     QTRY_COMPARE(QApplication::activeWindow(), &view);
 
     //We move the parent

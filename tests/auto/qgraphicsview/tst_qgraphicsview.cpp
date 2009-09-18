@@ -257,7 +257,7 @@ void tst_QGraphicsView::construction()
     QCOMPARE(view.transformationAnchor(), QGraphicsView::AnchorViewCenter);
     QCOMPARE(view.resizeAnchor(), QGraphicsView::NoAnchor);
     view.show();
-    QTest::qWait(25);
+    QTest::qWaitForWindowShown(&view);
 }
 
 class TestItem : public QGraphicsItem
@@ -305,7 +305,7 @@ void tst_QGraphicsView::renderHints()
 
     QCOMPARE(item->hints, 0);
     view.show();
-    QTest::qWait(125);
+    QTest::qWaitForWindowShown(&view);
     view.repaint();
     QTest::qWait(125);
     QCOMPARE(item->hints, view.renderHints());
@@ -325,6 +325,7 @@ void tst_QGraphicsView::alignment()
 
     QGraphicsView view(&scene);
     view.show();
+    QTest::qWaitForWindowShown(&view);
 
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 3; ++j) {
@@ -377,6 +378,7 @@ void tst_QGraphicsView::interactive()
     view.setFixedSize(300, 300);
     QCOMPARE(item->events.size(), 0);
     view.show();
+    QTest::qWaitForWindowShown(&view);
 
     QTestEventLoop::instance().enterLoop(1);
     QTRY_COMPARE(item->events.size(), 1); // activate
@@ -438,6 +440,7 @@ void tst_QGraphicsView::setScene()
 
     QGraphicsView view(&scene);
     view.show();
+    QTest::qWaitForWindowShown(&view);
 
     QCOMPARE(view.sceneRect(), scene.sceneRect());
 
@@ -1869,11 +1872,10 @@ void tst_QGraphicsView::sendEvent()
 
     QGraphicsView view(&scene);
     view.show();
+    QTest::qWaitForWindowShown(&view);
     QApplication::setActiveWindow(&view);
     QTest::qWait(20);
     QTRY_COMPARE(QApplication::activeWindow(), &view);
-
-    QTestEventLoop::instance().enterLoop(1);
 
     item->setFocus();
 
@@ -1938,9 +1940,7 @@ void tst_QGraphicsView::wheelEvent()
     // Assign a view.
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QTest::qWaitForWindowShown(&view);
     QApplication::setActiveWindow(&view);
     QTest::qWait(20);
     QTRY_COMPARE(QApplication::activeWindow(), &view);
@@ -1981,9 +1981,7 @@ void tst_QGraphicsView::cursor()
     QGraphicsView view(&scene);
     view.setFixedSize(400, 400);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QTest::qWaitForWindowShown(&view);
 
     QCOMPARE(view.viewport()->cursor().shape(), QCursor().shape());
     view.viewport()->setCursor(Qt::PointingHandCursor);
@@ -2015,9 +2013,7 @@ void tst_QGraphicsView::cursor2()
     view.viewport()->setCursor(Qt::PointingHandCursor);
     view.setFixedSize(400, 400);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QTest::qWaitForWindowShown(&view);
 
     sendMouseMove(view.viewport(), view.mapFromScene(-30, -30));
     QCOMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
@@ -2176,10 +2172,7 @@ void tst_QGraphicsView::viewportUpdateMode()
 
     // Show the view, and initialize our test.
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(50);
+    QTest::qWaitForWindowShown(&view);
     QTRY_VERIFY(!view.lastUpdateRegions.isEmpty());
     view.lastUpdateRegions.clear();
 
@@ -2256,10 +2249,7 @@ void tst_QGraphicsView::viewportUpdateMode2()
     view.getContentsMargins(&left, &top, &right, &bottom);
     view.resize(200 + left + right, 200 + top + bottom);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(300);
+    QTest::qWaitForWindowShown(&view);
     const QRect viewportRect = view.viewport()->rect();
     QCOMPARE(viewportRect, QRect(0, 0, 200, 200));
 
@@ -2407,11 +2397,7 @@ void tst_QGraphicsView::optimizationFlags_dontSavePainterState()
 
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#else
-    QTest::qWait(100);
-#endif
+    QTest::qWaitForWindowShown(&view);
     view.viewport()->repaint();
 
     QVERIFY(!parent->dirtyPainter);
@@ -2429,12 +2415,12 @@ void tst_QGraphicsView::optimizationFlags_dontSavePainterState()
 
     MyGraphicsView painter(&scene);
     painter.show();
-    QTest::qWait(1000);
+    QTest::qWaitForWindowShown(&painter);
 
     MyGraphicsView painter2(&scene);
     painter2.setOptimizationFlag(QGraphicsView::DontSavePainterState,true);
     painter2.show();
-    QTest::qWait(1000);
+    QTest::qWaitForWindowShown(&painter2);
 }
 
 class LodItem : public QGraphicsRectItem
@@ -2486,20 +2472,11 @@ void tst_QGraphicsView::levelOfDetail()
 
     QGraphicsView view(&scene);
     view.show();
-
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(50);
+    QTest::qWaitForWindowShown(&view);
 
     QTRY_COMPARE(item->lastLod, qreal(1));
 
     view.setTransform(transform);
-
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(50);
 
     QTRY_COMPARE(item->lastLod, lod);
 }
@@ -2587,7 +2564,7 @@ void tst_QGraphicsView::acceptMousePressEvent()
 
     TestView view(&scene);
     view.show();
-    QTest::qWait(125);
+    QTest::qWaitForWindowShown(&view);
 
     QMouseEvent event(QEvent::MouseButtonPress,
                       view.viewport()->rect().center(),
@@ -2662,10 +2639,7 @@ void tst_QGraphicsView::itemsUnderMouse()
 
    QGraphicsView view(&scene);
    view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-   QTest::qWait(50);
+   QTest::qWaitForWindowShown(&view);
 
    QCOMPARE(view.items(view.mapFromScene(w3.boundingRect().center())).first(),
             static_cast<QGraphicsItem *>(&w3));
@@ -2702,11 +2676,8 @@ void tst_QGraphicsView::task172231_untransformableItems()
 
     view.scale(2, 1);
     view.show();
+    QTest::qWaitForWindowShown(&view);
     QApplication::setActiveWindow(&view);
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(50);
     QTRY_COMPARE(QApplication::activeWindow(), &view);
 
     QRectF origExposedRect = text->exposedRect;
@@ -2766,10 +2737,7 @@ void tst_QGraphicsView::task187791_setSceneCausesUpdate()
     QGraphicsScene scene(0, 0, 200, 200);
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(view.viewport());
-#endif
-    QTest::qWait(125);
+    QTest::qWaitForWindowShown(&view);
 
     EventSpy updateSpy(view.viewport(), QEvent::Paint);
     QCOMPARE(updateSpy.count(), 0);
@@ -2814,10 +2782,8 @@ void tst_QGraphicsView::task186827_deleteReplayedItem()
     MouseMoveCounter view;
     view.setScene(&scene);
     view.show();
+    QTest::qWaitForWindowShown(&view);
     view.viewport()->setMouseTracking(true);
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
 
     QCOMPARE(view.mouseMoves, 0);
     {
@@ -2850,13 +2816,9 @@ void tst_QGraphicsView::task207546_focusCrash()
     widget.layout()->addWidget(gr1);
     widget.layout()->addWidget(gr2);
     widget.show();
-    QTest::qWait(20);
+    QTest::qWaitForWindowShown(&widget);
     widget.activateWindow();
     QApplication::setActiveWindow(&widget);
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&widget);
-#endif
-    QTest::qWait(50);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&widget));
     widget.focusNextPrevChild(true);
     QCOMPARE(static_cast<QWidget *>(gr2), widget.focusWidget());
@@ -2948,10 +2910,7 @@ void tst_QGraphicsView::task239729_noViewUpdate()
     }
 
     view->show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(view);
-#endif
-    QTest::qWait(250);
+    QTest::qWaitForWindowShown(view);
 
     EventSpy spy(view->viewport(), QEvent::Paint);
     QCOMPARE(spy.count(), 0);
@@ -2998,10 +2957,7 @@ void tst_QGraphicsView::task245469_itemsAtPointWithClip()
     QGraphicsView view(&scene);
     view.rotate(90);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(&view);
 
     QList<QGraphicsItem *> itemsAtCenter = view.items(view.viewport()->rect().center());
     QCOMPARE(itemsAtCenter, (QList<QGraphicsItem *>() << child << parent));
@@ -3106,9 +3062,7 @@ void tst_QGraphicsView::scrollAfterResize()
     view.setSceneRect(-1000, -1000, 2000, 2000);
     view.resize(300, 300);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QTest::qWaitForWindowShown(&view);
     view.horizontalScrollBar()->setValue(0);
     view.verticalScrollBar()->setValue(0);
     QCOMPARE(view.viewportTransform(), x1);
@@ -3135,6 +3089,7 @@ void tst_QGraphicsView::moveItemWhileScrolling()
     public:
         MoveItemScrollView()
         {
+            setWindowFlags(Qt::X11BypassWindowManagerHint);
             setScene(new QGraphicsScene(0, 0, 1000, 1000));
             rect = scene()->addRect(0, 0, 10, 10);
             rect->setPos(50, 50);
@@ -3143,12 +3098,20 @@ void tst_QGraphicsView::moveItemWhileScrolling()
         QRegion lastPaintedRegion;
         QGraphicsItem *rect;
         bool painted;
+        void waitForPaintEvent()
+        {
+            QTimer::singleShot(2000, &eventLoop, SLOT(quit()));
+            eventLoop.exec();
+        }
     protected:
+        QEventLoop eventLoop;
         void paintEvent(QPaintEvent *event)
         {
             painted = true;
             lastPaintedRegion = event->region();
             QGraphicsView::paintEvent(event);
+            if (eventLoop.isRunning())
+                eventLoop.quit();
         }
     };
 
@@ -3160,19 +3123,16 @@ void tst_QGraphicsView::moveItemWhileScrolling()
     view.setTransformationAnchor(QGraphicsView::NoAnchor);
     if (!adjustForAntialiasing)
         view.setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing);
-    view.show();
     view.resize(200, 200);
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(100);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
     QTRY_VERIFY(view.painted);
     view.painted = false;
 
     view.lastPaintedRegion = QRegion();
     view.horizontalScrollBar()->setValue(view.horizontalScrollBar()->value() + 10);
     view.rect->moveBy(0, 10);
-    QTest::qWait(100);
+    view.waitForPaintEvent();
     QTRY_VERIFY(view.painted);
 
     QRegion expectedRegion;
@@ -3201,11 +3161,7 @@ void tst_QGraphicsView::centerOnDirtyItem()
     view.centerOn(item);
 
     view.show();
-    view.raise();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(50);
+    QTest::qWaitForWindowShown(&view);
 
     QImage before(view.viewport()->size(), QImage::Format_ARGB32);
     view.viewport()->render(&before);
@@ -3213,9 +3169,6 @@ void tst_QGraphicsView::centerOnDirtyItem()
     item->setPos(20, 0);
     view.centerOn(item);
 
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
     QTest::qWait(50);
 
     QImage after(view.viewport()->size(), QImage::Format_ARGB32);
@@ -3337,10 +3290,7 @@ void tst_QGraphicsView::mouseTracking2()
 
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(200);
+    QTest::qWaitForWindowShown(&view);
 
     QVERIFY(!view.viewport()->hasMouseTracking());
     view.viewport()->setMouseTracking(true); // Explicitly enable mouse tracking.
@@ -3379,10 +3329,7 @@ void tst_QGraphicsView::render()
     view.setFrameStyle(0);
     view.resize(200, 200);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(200);
+    QTest::qWaitForWindowShown(&view);
 
     RenderTester *r1 = new RenderTester(QRectF(0, 0, 50, 50));
     RenderTester *r2 = new RenderTester(QRectF(50, 50, 50, 50));
@@ -3421,10 +3368,7 @@ void tst_QGraphicsView::exposeRegion()
     CustomView view;
     view.setScene(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(125);
+    QTest::qWaitForWindowShown(&view);
 
     item->paints = 0;
     view.lastUpdateRegions.clear();
@@ -3484,10 +3428,7 @@ void tst_QGraphicsView::update()
     view.getContentsMargins(&left, &top, &right, &bottom);
     view.resize(200 + left + right, 200 + top + bottom);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(300);
+    QTest::qWaitForWindowShown(&view);
     const QRect viewportRect = view.viewport()->rect();
     QCOMPARE(viewportRect, QRect(0, 0, 200, 200));
 
@@ -3522,11 +3463,8 @@ void tst_QGraphicsView::inputMethodSensitivity()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QTest::qWaitForWindowShown(&view);
     QApplication::setActiveWindow(&view);
-    QTest::qWait(250);
     QTRY_COMPARE(QApplication::activeWindow(), &view);
 
     QGraphicsRectItem *item = new QGraphicsRectItem;
@@ -3614,11 +3552,8 @@ void tst_QGraphicsView::inputContextReset()
     view.setInputContext(&inputContext);
 
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QTest::qWaitForWindowShown(&view);
     QApplication::setActiveWindow(&view);
-    QTest::qWait(20);
     QTRY_COMPARE(QApplication::activeWindow(), &view);
 
     QGraphicsItem *item1 = new QGraphicsRectItem;
@@ -3693,9 +3628,7 @@ void tst_QGraphicsView::task255529_transformationAnchorMouseAndViewportMargins()
 
     VpGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QTest::qWaitForWindowShown(&view);
     QPoint mouseViewPos(20, 20);
     sendMouseMove(view.viewport(), mouseViewPos);
 
@@ -3751,9 +3684,7 @@ void tst_QGraphicsView::task259503_scrollingArtifacts()
 
     SAGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QTest::qWaitForWindowShown(&view);
 
     int hsbValue = view.horizontalScrollBar()->value();
     view.horizontalScrollBar()->setValue(hsbValue / 2);
