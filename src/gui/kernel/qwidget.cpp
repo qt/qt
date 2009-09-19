@@ -7991,7 +7991,7 @@ bool QWidget::event(QEvent *event)
         }
         break;
     case QEvent::FocusIn:
-#ifdef QT_KEYPAD_NAVIGATION
+#ifdef QT_SOFTKEYS_ENABLED
         QSoftKeyManager::updateSoftKeys();
 #endif
         focusInEvent((QFocusEvent*)event);
@@ -8144,7 +8144,7 @@ bool QWidget::event(QEvent *event)
                 QApplication::sendEvent(w, event);
         }
 
-#ifdef QT_KEYPAD_NAVIGATION
+#ifdef QT_SOFTKEYS_ENABLED
         if (isWindow() && isActiveWindow())
             QSoftKeyManager::updateSoftKeys();
 #endif
@@ -8256,7 +8256,7 @@ bool QWidget::event(QEvent *event)
     case QEvent::ActionAdded:
     case QEvent::ActionRemoved:
     case QEvent::ActionChanged:
-#ifdef QT_KEYPAD_NAVIGATION
+#ifdef QT_SOFTKEYS_ENABLED
         QSoftKeyManager::updateSoftKeys(true);
 #endif
         actionEvent((QActionEvent*)event);

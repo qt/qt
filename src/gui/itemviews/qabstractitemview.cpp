@@ -88,7 +88,7 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         overwrite(false),
         dropIndicatorPosition(QAbstractItemView::OnItem),
 #endif
-#ifdef QT_KEYPAD_NAVIGATION
+#ifdef QT_SOFTKEYS_ENABLED
         doneSoftKey(0),
 #endif
         autoScroll(true),
@@ -132,7 +132,7 @@ void QAbstractItemViewPrivate::init()
 
     q->setAttribute(Qt::WA_InputMethodEnabled);
 
-#ifdef QT_KEYPAD_NAVIGATION
+#ifdef QT_SOFTKEYS_ENABLED
     doneSoftKey = QSoftKeyManager::createKeyedAction(QAction::EndEditSoftKey, Qt::Key_Back, q);
 #endif
 }
@@ -2071,14 +2071,18 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         if (QApplication::keypadNavigationEnabled()) {
             if (!hasEditFocus()) {
                 setEditFocus(true);
+#ifdef QT_SOFTKEYS_ENABLED
                 addAction(d->doneSoftKey);
+#endif
                 return;
             }
         }
         break;
     case Qt::Key_Back:
         if (QApplication::keypadNavigationEnabled() && hasEditFocus()) {
+#ifdef QT_SOFTKEYS_ENABLED
             removeAction(d->doneSoftKey);
+#endif
             setEditFocus(false);
         } else {
             event->ignore();

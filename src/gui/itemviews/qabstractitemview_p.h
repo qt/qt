@@ -379,7 +379,7 @@ public:
     QAbstractItemView::DropIndicatorPosition dropIndicatorPosition;
 #endif
 
-#ifdef QT_KEYPAD_NAVIGATION
+#ifdef QT_SOFTKEYS_ENABLED
     QAction *doneSoftKey;
 #endif
 

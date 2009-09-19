@@ -255,7 +255,7 @@ private:
     QAbstractItemView *view;
     QComboBoxPrivateScroller *top;
     QComboBoxPrivateScroller *bottom;
-#ifdef QT_KEYPAD_NAVIGATION
+#ifdef QT_SOFTKEYS_ENABLED
     QAction *selectAction;
     QAction *cancelAction;
 #endif

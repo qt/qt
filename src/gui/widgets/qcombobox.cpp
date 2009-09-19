@@ -402,7 +402,7 @@ QComboBoxPrivateContainer::QComboBoxPrivateContainer(QAbstractItemView *itemView
     layout->setSpacing(0);
     layout->setMargin(0);
 
-#ifdef QT_KEYPAD_NAVIGATION
+#ifdef QT_SOFTKEYS_ENABLED
     selectAction = QSoftKeyManager::createKeyedAction(QAction::SelectSoftKey, Qt::Key_Select, itemView);
     cancelAction = QSoftKeyManager::createKeyedAction(QAction::CancelSoftKey, Qt::Key_Escape, itemView);
     addAction(selectAction);
@@ -572,7 +572,7 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
     connect(view, SIGNAL(destroyed()),
             this, SLOT(viewDestroyed()));
 
-#ifdef QT_KEYPAD_NAVIGATION
+#ifdef QT_SOFTKEYS_ENABLED
     selectAction->setParent(itemView);
     cancelAction->setParent(itemView);
 #endif
