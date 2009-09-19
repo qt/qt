@@ -57,10 +57,13 @@
 #include <private/qdialog_p.h>
 #include <limits.h>
 
-#if defined(Q_WS_S60)
-#include <QtGui/qdesktopwidget.h>
+#if defined(QT_SOFTKEYS_ENABLED)
 #include <qaction.h>
 #endif
+#ifdef Q_WS_S60
+#include <QtGui/qdesktopwidget.h>
+#endif
+
 
 QT_BEGIN_NAMESPACE
 
@@ -81,6 +84,9 @@ public:
         showTime(defaultShowTime),
 #ifndef QT_NO_SHORTCUT
         escapeShortcut(0),
+#endif
+#ifdef QT_SOFTKEYS_ENABLED
+        cancelAction(0),
 #endif
         useDefaultCancelText(false)
     {
@@ -107,6 +113,9 @@ public:
     bool forceHide;
 #ifndef QT_NO_SHORTCUT
     QShortcut *escapeShortcut;
+#endif
+#ifdef QT_SOFTKEYS_ENABLED
+    QAction *cancelAction;
 #endif
     bool useDefaultCancelText;
     QPointer<QObject> receiverToDisconnectOnClose;
@@ -415,6 +424,10 @@ void QProgressDialog::setCancelButton(QPushButton *cancelButton)
 {
     Q_D(QProgressDialog);
     delete d->cancel;
+#ifdef QT_SOFTKEYS_ENABLED
+    delete d->cancelAction;
+    d->cancelAction = 0;
+#endif
     d->cancel = cancelButton;
     if (cancelButton) {
         if (cancelButton->parentWidget() == this) {
@@ -436,14 +449,14 @@ void QProgressDialog::setCancelButton(QPushButton *cancelButton)
     int h = qMax(isVisible() ? height() : 0, sizeHint().height());
     resize(w, h);
     if (cancelButton)
-#ifndef Q_WS_S60
+#if !defined(QT_SOFTKEYS_ENABLED)
         cancelButton->show();
 #else
     {
-        QAction *cancelAction = new QAction(cancelButton->text(), this);
-        cancelAction->setSoftKeyRole(QAction::CancelSoftKey);
-        QObject::connect(cancelAction, SIGNAL(triggered()), this, SIGNAL(canceled()));
-        setSoftKey(cancelAction);
+        d->cancelAction = new QAction(cancelButton->text(), this);
+        d->cancelAction->setSoftKeyRole(QAction::CancelSoftKey);
+        connect(d->cancelAction, SIGNAL(triggered()), this, SIGNAL(canceled()));
+        addAction(d->cancelAction);
     }
 #endif
 }
@@ -462,10 +475,14 @@ void QProgressDialog::setCancelButtonText(const QString &cancelButtonText)
     d->useDefaultCancelText = false;
 
     if (!cancelButtonText.isNull()) {
-        if (d->cancel)
+        if (d->cancel) {
             d->cancel->setText(cancelButtonText);
-        else
+#ifdef QT_SOFTKEYS_ENABLED
+            d->cancelAction->setText(cancelButtonText);
+#endif
+        } else {
             setCancelButton(new QPushButton(cancelButtonText, this));
+        }
     } else {
         setCancelButton(0);
     }
