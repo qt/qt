@@ -75,7 +75,7 @@ extern bool qt_wince_is_mobile();     //defined in qguifunctions_wce.cpp
 
 #include <string.h>     // for memset()
 
-#ifdef Q_WS_S60
+#ifdef QT_SOFTKEYS_ENABLED
 #include "qaction.h"
 #endif
 
@@ -527,8 +527,12 @@ public:
         , maximumWidth(QWIDGETSIZE_MAX)
         , maximumHeight(QWIDGETSIZE_MAX)
     {
-        for (int i = 0; i < QWizard::NButtons; ++i)
+        for (int i = 0; i < QWizard::NButtons; ++i) {
             btns[i] = 0;
+#ifdef QT_SOFTKEYS_ENABLED
+            softKeys[i] = 0;
+#endif
+        }
 #if !defined(QT_NO_STYLE_WINDOWSVISTA)
         if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
             && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)
@@ -613,6 +617,9 @@ public:
     QLabel *titleLabel;
     QLabel *subTitleLabel;
     QWizardRuler *bottomRuler;
+#ifdef QT_SOFTKEYS_ENABLED
+    mutable QAction *softKeys[QWizard::NButtons];
+#endif
 
     QVBoxLayout *pageVBoxLayout;
     QHBoxLayout *buttonLayout;
@@ -1331,6 +1338,42 @@ bool QWizardPrivate::ensureButton(QWizard::WizardButton which) const
 #endif
         if (which < QWizard::NStandardButtons)
             pushButton->setText(buttonDefaultText(wizStyle, which, this));
+
+#ifdef QT_SOFTKEYS_ENABLED
+        QAction *softKey = new QAction(pushButton->text(), antiFlickerWidget);
+        QAction::SoftKeyRole softKeyRole;
+        switch(which) {
+        case QWizard::BackButton:
+            softKeyRole = QAction::PreviousSoftKey;
+            break;
+        case QWizard::NextButton:
+            softKeyRole = QAction::NextSoftKey;
+            break;
+        case QWizard::CommitButton:
+            softKeyRole = QAction::EndEditSoftKey;
+            break;
+        case QWizard::FinishButton:
+            softKeyRole = QAction::FinishSoftKey;
+            break;
+        case QWizard::CancelButton:
+            softKeyRole = QAction::CancelSoftKey;
+            break;
+        case QWizard::HelpButton:
+            softKeyRole = QAction::ViewSoftKey;
+            break;
+        case QWizard::CustomButton1:
+            softKeyRole = QAction::SelectSoftKey;
+            break;
+        case QWizard::CustomButton2:
+            softKeyRole = QAction::SelectSoftKey;
+            break;
+        case QWizard::CustomButton3:
+            softKeyRole = QAction::SelectSoftKey;
+            break;
+        }
+        softKey->setSoftKeyRole(softKeyRole);
+        softKeys[which] = softKey;
+#endif
         connectButton(which);
     }
     return true;
@@ -1344,6 +1387,10 @@ void QWizardPrivate::connectButton(QWizard::WizardButton which) const
     } else {
         QObject::connect(btns[which], SIGNAL(clicked()), q, SLOT(_q_emitCustomButtonClicked()));
     }
+
+#ifdef QT_SOFTKEYS_ENABLED
+    QObject::connect(softKeys[which], SIGNAL(triggered()), btns[which], SIGNAL(clicked()));
+#endif
 }
 
 void QWizardPrivate::updateButtonTexts()
@@ -1357,6 +1404,9 @@ void QWizardPrivate::updateButtonTexts()
                 btns[i]->setText(buttonCustomTexts.value(i));
             else if (i < QWizard::NStandardButtons)
                 btns[i]->setText(buttonDefaultText(wizStyle, i, this));
+#ifdef QT_SOFTKEYS_ENABLED
+            softKeys[i]->setText(btns[i]->text());
+#endif
         }
     }
 }
@@ -1599,52 +1649,17 @@ void QWizardPrivate::_q_updateButtonStates()
     }
 #endif
 
-#ifdef Q_WS_S60
-    //FIXME: needs to considered later on, when we implement equivalent of Symbian OS's CleanPushResetAndDestroy
-    QList<QAction *> actionList;
+#ifdef QT_SOFTKEYS_ENABLED
     QAbstractButton *wizardButton;
-    for (int i = QWizard::BackButton; i < QWizard::NButtons; ++i) {
+    for (int i = 0; i < QWizard::NButtons; ++i) {
         wizardButton = btns[i];
         if (wizardButton && !wizardButton->testAttribute(Qt::WA_WState_Hidden)) {
             wizardButton->hide();
-            QAction *action = new QAction(wizardButton->text(), q);
-            QAction::SoftKeyRole softKeyRole;
-            switch(i) {
-            case QWizard::BackButton:
-                softKeyRole = QAction::PreviousSoftKey;
-                break;
-            case QWizard::NextButton:
-                softKeyRole = QAction::NextSoftKey;
-                break;
-            case QWizard::CommitButton:
-                softKeyRole = QAction::EndEditSoftKey;
-                break;
-            case QWizard::FinishButton:
-                softKeyRole = QAction::FinishSoftKey;
-                break;
-            case QWizard::CancelButton:
-                softKeyRole = QAction::CancelSoftKey;
-                break;
-            case QWizard::HelpButton:
-                softKeyRole = QAction::ViewSoftKey;
-                break;
-            case QWizard::CustomButton1:
-                softKeyRole = QAction::SelectSoftKey;
-                break;
-            case QWizard::CustomButton2:
-                softKeyRole = QAction::SelectSoftKey;
-                break;
-            case QWizard::CustomButton3:
-                softKeyRole = QAction::SelectSoftKey;
-                break;
-            }
-            action->setSoftKeyRole(softKeyRole);
-            QObject::connect(action, SIGNAL(triggered()), wizardButton, SIGNAL(clicked()));
-            actionList.append(action);
+            q->addAction(softKeys[i]);
+        } else {
+            q->removeAction(softKeys[i]);
         }
     }
-    //FIXME: setup Options Menu if there are more than two actions (waiting for SoftKey refactoring)
-    q->setSoftKeys(actionList);
 #endif
 
     enableUpdates();
