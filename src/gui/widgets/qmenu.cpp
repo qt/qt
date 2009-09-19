@@ -570,11 +570,6 @@ void QMenuPrivate::setCurrentAction(QAction *action, int popup, SelectionReason 
                     // Since the menu is a pop-up, it uses the popup reason.
                     if (!q->hasFocus()) {
                         q->setFocus(Qt::PopupFocusReason);
-#ifdef QT_KEYPAD_NAVIGATION
-                        // TODO: aportale, remove KEYPAD_NAVIGATION_HACK when softkey stack
-                        //       handles focus related and user related actions separately...
-                        QActionToKeyEventMapper::addSoftKey(QAction::CancelSoftKey, Qt::Key_Back, q);
-#endif
                     }
                 }
             }

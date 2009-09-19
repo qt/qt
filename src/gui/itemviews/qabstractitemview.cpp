@@ -2166,6 +2166,12 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
 #endif
     case Qt::Key_Left:
     case Qt::Key_Right:
+#ifdef QT_KEYPAD_NAVIGATION
+        if (QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional) {
+            event->accept(); // don't change horizontal focus in directional mode
+            break;
+        }
+#endif // QT_KEYPAD_NAVIGATION
     case Qt::Key_Home:
     case Qt::Key_End:
     case Qt::Key_PageUp:

@@ -4781,13 +4781,13 @@ void QApplicationPrivate::emitLastWindowClosed()
     \note On Windows CE this feature is disabled by default for touch device
           mkspecs. To enable keypad navigation, build Qt with
           QT_KEYPAD_NAVIGATION defined.
-          
+
     \note On Symbian, setting the mode to Qt::NavigationModeCursorAuto will enable a
           virtual mouse cursor on non touchscreen devices, which is controlled
           by the cursor keys if there is no analog pointer device.
           On other platforms and on touchscreen devices, it has the same
           meaning as Qt::NavigationModeNone.
-          
+
     \since 4.6
 
     \sa keypadNavigationEnabled()
@@ -4810,10 +4810,10 @@ void QApplication::setNavigationMode(Qt::NavigationMode mode)
     \note On Windows CE this feature is disabled by default for touch device
           mkspecs. To enable keypad navigation, build Qt with
           QT_KEYPAD_NAVIGATION defined.
-          
+
     \note On Symbian, the default mode is Qt::NavigationModeNone for touch
           devices, and Qt::NavigationModeKeypadDirectional.
-          
+
     \since 4.6
 
     \sa keypadNavigationEnabled()
@@ -4829,12 +4829,11 @@ Qt::NavigationMode QApplication::navigationMode()
 
     This feature is available in Qt for Embedded Linux, Symbian and Windows CE
     only.
-    
 
     \note On Windows CE this feature is disabled by default for touch device
           mkspecs. To enable keypad navigation, build Qt with
           QT_KEYPAD_NAVIGATION defined.
-          
+
     \deprecated
 
     \sa setNavigationMode()
@@ -4846,7 +4845,7 @@ void QApplication::setKeypadNavigationEnabled(bool enable)
         QApplication::setNavigationMode(Qt::NavigationModeKeypadDirectional);
 #else
         QApplication::setNavigationMode(Qt::NavigationModeKeypadTabOrder);
-#endif  
+#endif
     }
     else {
         QApplication::setNavigationMode(Qt::NavigationModeNone);
@@ -4863,7 +4862,7 @@ void QApplication::setKeypadNavigationEnabled(bool enable)
     \note On Windows CE this feature is disabled by default for touch device
           mkspecs. To enable keypad navigation, build Qt with
           QT_KEYPAD_NAVIGATION defined.
-          
+
     \deprecated
 
     \sa navigationMode()

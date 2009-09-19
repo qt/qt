@@ -252,6 +252,13 @@ public:
         CloseWithSpontaneousEvent
     };
 
+    enum Direction {
+        DirectionNorth = 0x01,
+        DirectionEast = 0x10,
+        DirectionSouth = 0x02,
+        DirectionWest = 0x20
+    };
+
     // Functions.
     explicit QWidgetPrivate(int version = QObjectPrivateVersion);
     ~QWidgetPrivate();
@@ -397,6 +404,11 @@ public:
 
     void updateFrameStrut();
     QRect frameStrut() const;
+
+#ifdef QT_KEYPAD_NAVIGATION
+    static bool navigateToDirection(Direction direction);
+    static QWidget *widgetInNavigationDirection(Direction direction);
+#endif
 
     void setWindowIconText_sys(const QString &cap);
     void setWindowIconText_helper(const QString &cap);

@@ -1639,6 +1639,15 @@ void QPlainTextEdit::keyPressEvent(QKeyEvent *e)
                     return;
                 }
                 break;
+            case Qt::Key_Left:
+            case Qt::Key_Right:
+                if (QApplication::keypadNavigationEnabled()
+                        && QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional) {
+                    // Same as for Key_Up and Key_Down.
+                    e->ignore();
+                    return;
+                }
+                break;
             case Qt::Key_Back:
                 if (!e->isAutoRepeat()) {
                     if (QApplication::keypadNavigationEnabled()) {

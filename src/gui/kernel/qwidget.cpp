@@ -410,7 +410,6 @@ void QWidget::setEditFocus(bool on)
         QApplication::sendEvent(f, &event);
         QApplication::sendEvent(f->style(), &event);
     }
-    f->repaint(); // Widget might want to repaint a focus indicator
 }
 #endif
 
@@ -6449,6 +6448,8 @@ void QWidgetPrivate::reparentFocusWidgets(QWidget * oldtlw)
 
   This function is called from QDesktopwidget::screen(QPoint) to find the
   closest screen for a point.
+  In directional KeypadNavigation, it is called to find the closest
+  widget to the current focus widget center.
 */
 int QWidgetPrivate::pointToRect(const QPoint &p, const QRect &r)
 {
@@ -7929,10 +7930,21 @@ bool QWidget::event(QEvent *event)
 #ifdef QT_KEYPAD_NAVIGATION
         if (!k->isAccepted() && QApplication::keypadNavigationEnabled()
             && !(k->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier))) {
-            if (k->key() == Qt::Key_Up)
-                res = focusNextPrevChild(false);
-            else if (k->key() == Qt::Key_Down)
-                res = focusNextPrevChild(true);
+            if (QApplication::navigationMode() == Qt::NavigationModeKeypadTabOrder) {
+                if (k->key() == Qt::Key_Up)
+                    res = focusNextPrevChild(false);
+                else if (k->key() == Qt::Key_Down)
+                    res = focusNextPrevChild(true);
+            } else if (QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional) {
+                if (k->key() == Qt::Key_Up)
+                    res = QWidgetPrivate::navigateToDirection(QWidgetPrivate::DirectionNorth);
+                else if (k->key() == Qt::Key_Right)
+                    res = QWidgetPrivate::navigateToDirection(QWidgetPrivate::DirectionEast);
+                else if (k->key() == Qt::Key_Down)
+                    res = QWidgetPrivate::navigateToDirection(QWidgetPrivate::DirectionSouth);
+                else if (k->key() == Qt::Key_Left)
+                    res = QWidgetPrivate::navigateToDirection(QWidgetPrivate::DirectionWest);
+            }
             if (res) {
                 k->accept();
                 break;
@@ -11372,6 +11384,74 @@ QRect QWidgetPrivate::frameStrut() const
 
     return maybeTopData() ? maybeTopData()->frameStrut : QRect();
 }
+
+#ifdef QT_KEYPAD_NAVIGATION
+/*!
+    \internal
+
+    Changes the focus  from the current focusWidget to a widget in
+    the \a direction.
+
+    Returns true, if there was a widget in that direction
+*/
+bool QWidgetPrivate::navigateToDirection(Direction direction)
+{
+    QWidget *targetWidget = widgetInNavigationDirection(direction);
+    if (targetWidget)
+        targetWidget->setFocus();
+    return (targetWidget != 0);
+}
+
+/*!
+    \internal
+
+    Searches for a widget that is positioned in the \a direction, starting
+    from the current focusWidget.
+
+    Returns the pointer to a found widget or 0, if there was no widget in
+    that direction.
+*/
+QWidget *QWidgetPrivate::widgetInNavigationDirection(Direction direction)
+{
+    const QWidget *sourceWidget = QApplication::focusWidget();
+    if (!sourceWidget)
+        return 0;
+    const QRect sourceRect = sourceWidget->rect().translated(sourceWidget->mapToGlobal(QPoint()));
+    const int sourceX =
+            (direction == DirectionNorth || direction == DirectionSouth) ?
+                (sourceRect.left() + (sourceRect.right() - sourceRect.left()) / 2)
+                :(direction == DirectionEast ? sourceRect.right() : sourceRect.left());
+    const int sourceY =
+            (direction == DirectionEast || direction == DirectionWest) ?
+                (sourceRect.top() + (sourceRect.bottom() - sourceRect.top()) / 2)
+                :(direction == DirectionSouth ? sourceRect.bottom() : sourceRect.top());
+    const QPoint sourcePoint(sourceX, sourceY);
+    const QPoint sourceCenter = sourceRect.center();
+    const QWidget *sourceWindow = sourceWidget->window();
+
+    QWidget *targetWidget = 0;
+    int shortestDistance = INT_MAX;
+    foreach(QWidget *targetCandidate, QApplication::allWidgets()) {
+        const QRect targetCandidateRect = targetCandidate->rect().translated(targetCandidate->mapToGlobal(QPoint()));
+        if (       targetCandidate != sourceWidget
+                && targetCandidate->focusPolicy() & Qt::TabFocus
+                && !(direction == DirectionNorth && targetCandidateRect.bottom() > sourceRect.top())
+                && !(direction == DirectionEast  && targetCandidateRect.left()   < sourceRect.right())
+                && !(direction == DirectionSouth && targetCandidateRect.top()    < sourceRect.bottom())
+                && !(direction == DirectionWest  && targetCandidateRect.right()  > sourceRect.left())
+                && targetCandidate->isEnabled()
+                && targetCandidate->isVisible()
+                && targetCandidate->window() == sourceWindow) {
+            const int targetCandidateDistance = pointToRect(sourcePoint, targetCandidateRect);
+            if (targetCandidateDistance < shortestDistance) {
+                shortestDistance = targetCandidateDistance;
+                targetWidget = targetCandidate;
+            }
+        }
+    }
+    return targetWidget;
+}
+#endif
 
 /*!
     \preliminary
