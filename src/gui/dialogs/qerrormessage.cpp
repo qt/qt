@@ -68,9 +68,11 @@ extern bool qt_wince_is_high_dpi();  //defined in qguifunctions_wince.cpp
 #include "qguifunctions_wince.h"
 #endif
 
-#if defined(Q_WS_S60)
+#if defined(QT_SOFTKEYS_ENABLED)
 #include <qaction.h>
+#ifdef Q_WS_S60
 #include "private/qt_s60_p.h"
+#endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -83,6 +85,9 @@ public:
     QCheckBox * again;
     QTextEdit * errors;
     QLabel * icon;
+#ifdef QT_SOFTKEYS_ENABLED
+    QAction *okAction;
+#endif
     QQueue<QPair<QString, QString> > pending;
     QSet<QString> doNotShow;
     QSet<QString> doNotShowType;
@@ -91,7 +96,6 @@ public:
 
     bool nextPending();
     void retranslateStrings();
-    void enableSoftKey(bool enable);
 };
 
 class QErrorMessageTextView : public QTextEdit
@@ -241,6 +245,12 @@ QErrorMessage::QErrorMessage(QWidget * parent)
     Q_D(QErrorMessage);
     QGridLayout * grid = new QGridLayout(this);
     d->icon = new QLabel(this);
+#ifdef QT_SOFTKEYS_ENABLED
+    d->okAction = new QAction(this);
+    d->okAction->setSoftKeyRole(QAction::OkSoftKey);
+    connect(d->okAction, SIGNAL(triggered()), this, SLOT(accept()));
+    addAction(d->okAction);
+#endif
 #ifndef QT_NO_MESSAGEBOX
     d->icon->setPixmap(QMessageBox::standardIcon(QMessageBox::Information));
     d->icon->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
@@ -286,7 +296,6 @@ QErrorMessage::~QErrorMessage()
 void QErrorMessage::done(int a)
 {
     Q_D(QErrorMessage);
-    d->enableSoftKey(false);
     if (!d->again->isChecked() && !d->currentMessage.isEmpty() && d->currentType.isEmpty()) {
         d->doNotShow.insert(d->currentMessage);
     }
@@ -361,10 +370,6 @@ void QErrorMessage::showMessage(const QString &message)
     d->pending.enqueue(qMakePair(message,QString()));
     if (!isVisible() && d->nextPending())
         show();
-
-#ifdef Q_WS_S60
-    d->enableSoftKey(true);
-#endif
 }
 
 /*!
@@ -389,30 +394,7 @@ void QErrorMessage::showMessage(const QString &message, const QString &type)
      d->pending.push_back(qMakePair(message,type));
     if (!isVisible() && d->nextPending())
         show();
-
-#ifdef Q_WS_S60
-    d->enableSoftKey(true);
-#endif
 }
-
-/*! \internal */
-void QErrorMessagePrivate::enableSoftKey(bool enable)
-{
-#ifdef Q_WS_S60
-    Q_Q(QErrorMessage);
-    if (enable) {
-        QAction *okAction = new QAction(ok->text(), q);
-        okAction->setSoftKeyRole(QAction::OkSoftKey);
-        QObject::connect(okAction, SIGNAL(triggered()), q, SLOT(accept()));
-        q->setSoftKey(okAction);
-    } else {
-        q->setSoftKey(0);
-    }
-#else
-    Q_UNUSED(enable);
-#endif
-}
-
 
 /*!
     \reimp
@@ -430,6 +412,9 @@ void QErrorMessagePrivate::retranslateStrings()
 {
     again->setText(QErrorMessage::tr("&Show this message again"));
     ok->setText(QErrorMessage::tr("&OK"));
+#ifdef QT_SOFTKEYS_ENABLED
+    okAction->setText(ok->text());
+#endif
 }
 
 /*!
