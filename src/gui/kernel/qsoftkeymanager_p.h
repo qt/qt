@@ -55,6 +55,7 @@
 
 #include <QtCore/qobject.h>
 #include "QtGui/qaction.h"
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -64,9 +65,17 @@ class QSoftKeyManager : public QObject
     Q_OBJECT
 
 public:
+
+    enum StandardSoftKey {
+        OkSoftKey,
+        SelectSoftKey,
+        DoneSoftKey,
+        CancelSoftKey,
+    };
+
     static void updateSoftKeys(bool force = false);
-    static QAction *createAction(QAction::SoftKeyRole standardRole, QWidget *actionWidget);
-    static QAction *createKeyedAction(QAction::SoftKeyRole standardRole, Qt::Key key, QWidget *actionWidget);
+    static QAction *createAction(StandardSoftKey standardKey, QWidget *actionWidget);
+    static QAction *createKeyedAction(StandardSoftKey standardKey, Qt::Key key, QWidget *actionWidget);
 
 #ifdef Q_WS_S60
     static bool handleCommand(int);
@@ -75,7 +84,7 @@ public:
 private:
     QSoftKeyManager();
     static QSoftKeyManager *instance();
-    static const char *standardSoftKeyText(QAction::SoftKeyRole role);
+    static const char *standardSoftKeyText(StandardSoftKey standardKey);
     static void updateSoftKeys_sys(const QList<QAction*> &softKeys);
 
     static QSoftKeyManager *self;

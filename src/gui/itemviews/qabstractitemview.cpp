@@ -133,7 +133,7 @@ void QAbstractItemViewPrivate::init()
     q->setAttribute(Qt::WA_InputMethodEnabled);
 
 #ifdef QT_SOFTKEYS_ENABLED
-    doneSoftKey = QSoftKeyManager::createKeyedAction(QAction::EndEditSoftKey, Qt::Key_Back, q);
+    doneSoftKey = QSoftKeyManager::createKeyedAction(QSoftKeyManager::DoneSoftKey, Qt::Key_Back, q);
 #endif
 }
 

@@ -247,7 +247,7 @@ QErrorMessage::QErrorMessage(QWidget * parent)
     d->icon = new QLabel(this);
 #ifdef QT_SOFTKEYS_ENABLED
     d->okAction = new QAction(this);
-    d->okAction->setSoftKeyRole(QAction::OkSoftKey);
+    d->okAction->setSoftKeyRole(QAction::PositiveSoftKey);
     connect(d->okAction, SIGNAL(triggered()), this, SLOT(accept()));
     addAction(d->okAction);
 #endif

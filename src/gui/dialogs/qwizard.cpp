@@ -1343,32 +1343,19 @@ bool QWizardPrivate::ensureButton(QWizard::WizardButton which) const
         QAction *softKey = new QAction(pushButton->text(), antiFlickerWidget);
         QAction::SoftKeyRole softKeyRole;
         switch(which) {
-        case QWizard::BackButton:
-            softKeyRole = QAction::PreviousSoftKey;
-            break;
         case QWizard::NextButton:
-            softKeyRole = QAction::NextSoftKey;
-            break;
-        case QWizard::CommitButton:
-            softKeyRole = QAction::EndEditSoftKey;
-            break;
         case QWizard::FinishButton:
-            softKeyRole = QAction::FinishSoftKey;
-            break;
         case QWizard::CancelButton:
-            softKeyRole = QAction::CancelSoftKey;
+            softKeyRole = QAction::NegativeSoftKey;
             break;
+        case QWizard::BackButton:
+        case QWizard::CommitButton:
         case QWizard::HelpButton:
-            softKeyRole = QAction::ViewSoftKey;
-            break;
         case QWizard::CustomButton1:
-            softKeyRole = QAction::SelectSoftKey;
-            break;
         case QWizard::CustomButton2:
-            softKeyRole = QAction::SelectSoftKey;
-            break;
         case QWizard::CustomButton3:
-            softKeyRole = QAction::SelectSoftKey;
+        default:
+            softKeyRole = QAction::PositiveSoftKey;
             break;
         }
         softKey->setSoftKeyRole(softKeyRole);

@@ -55,39 +55,24 @@ static const int s60CommandStart = 6000;
 QWidget *QSoftKeyManager::softKeySource = 0;
 QSoftKeyManager *QSoftKeyManager::self = 0;
 
-const char *QSoftKeyManager::standardSoftKeyText(QAction::SoftKeyRole role)
+const char *QSoftKeyManager::standardSoftKeyText(StandardSoftKey standardKey)
 {
     const char *softKeyText = 0;
-    switch (role) {
-    case QAction::OptionsSoftKey:
-        softKeyText = QT_TRANSLATE_NOOP("QSoftKeyManager", "Options");
-        break;
-    case QAction::SelectSoftKey:
-        softKeyText = QT_TRANSLATE_NOOP("QSoftKeyManager", "Select");
-        break;
-    case QAction::BackSoftKey:
-        softKeyText = QT_TRANSLATE_NOOP("QSoftKeyManager", "Back");
-        break;
-    case QAction::NextSoftKey:
-        softKeyText = QT_TRANSLATE_NOOP("QSoftKeyManager", "Next");
-        break;
-    case QAction::PreviousSoftKey:
-        softKeyText = QT_TRANSLATE_NOOP("QSoftKeyManager", "Previous");
-        break;
-    case QAction::OkSoftKey:
+    switch (standardKey) {
+    case OkSoftKey:
         softKeyText = QT_TRANSLATE_NOOP("QSoftKeyManager", "Ok");
         break;
-    case QAction::CancelSoftKey:
+    case SelectSoftKey:
+        softKeyText = QT_TRANSLATE_NOOP("QSoftKeyManager", "Select");
+        break;
+    case DoneSoftKey:
+        softKeyText = QT_TRANSLATE_NOOP("QSoftKeyManager", "Done");
+        break;
+    case CancelSoftKey:
         softKeyText = QT_TRANSLATE_NOOP("QSoftKeyManager", "Cancel");
         break;
-    case QAction::EditSoftKey:
-        softKeyText = QT_TRANSLATE_NOOP("QSoftKeyManager", "Edit");
-        break;
-    case QAction::ViewSoftKey:
-        softKeyText = QT_TRANSLATE_NOOP("QSoftKeyManager", "View");
-        break;
     default:
-        ;
+        break;
     };
 
     return softKeyText;
@@ -105,10 +90,21 @@ QSoftKeyManager::QSoftKeyManager() : QObject()
 {
 }
 
-QAction *QSoftKeyManager::createAction(QAction::SoftKeyRole softKeyRole, QWidget *actionWidget)
+QAction *QSoftKeyManager::createAction(StandardSoftKey standardKey, QWidget *actionWidget)
 {
-    const char* text = standardSoftKeyText(softKeyRole);
+    const char* text = standardSoftKeyText(standardKey);
     QAction *action = new QAction(QSoftKeyManager::tr(text), actionWidget);
+    QAction::SoftKeyRole softKeyRole;
+    switch (standardKey) {
+    case OkSoftKey:
+    case SelectSoftKey:
+    case DoneSoftKey:
+        softKeyRole = QAction::PositiveSoftKey;
+        break;
+    case CancelSoftKey:
+        softKeyRole = QAction::NegativeSoftKey;
+        break;
+    }
     action->setSoftKeyRole(softKeyRole);
     return action;
 }
@@ -119,9 +115,9 @@ QAction *QSoftKeyManager::createAction(QAction::SoftKeyRole softKeyRole, QWidget
   \a actionWidget as a convenience.
 
 */
-QAction *QSoftKeyManager::createKeyedAction(QAction::SoftKeyRole softKeyRole, Qt::Key key, QWidget *actionWidget)
+QAction *QSoftKeyManager::createKeyedAction(StandardSoftKey standardKey, Qt::Key key, QWidget *actionWidget)
 {
-    QScopedPointer<QAction> action(createAction(softKeyRole, actionWidget));
+    QScopedPointer<QAction> action(createAction(standardKey, actionWidget));
 
     connect(action.data(), SIGNAL(triggered()), QSoftKeyManager::instance(), SLOT(sendKeyEvent()));
 
@@ -186,41 +182,22 @@ void QSoftKeyManager::updateSoftKeys_sys(const QList<QAction*> &softkeys)
         const QAction* softKeyAction = softkeys.at(index);
         switch (softKeyAction->softKeyRole()) {
         // Positive Actions go on LSK
-        case QAction::OptionsSoftKey:
-        case QAction::MenuSoftKey:
-        case QAction::ContextMenuSoftKey:
-            command = EAknSoftkeyOptions; //Calls DynInitMenuPane in AppUI
+        case QAction::PositiveSoftKey:
             position = 0;
             break;
         case QAction::SelectSoftKey:
-        case QAction::PreviousSoftKey:
-        case QAction::OkSoftKey:
-        case QAction::EditSoftKey:
-        case QAction::ViewSoftKey:
-        case QAction::EndEditSoftKey:
-        case QAction::FinishSoftKey:
-            command = s60CommandStart + index;
             position = 0;
             break;
         // Negative Actions on the RSK
-        case QAction::BackSoftKey:
-        case QAction::NextSoftKey:
-        case QAction::CancelSoftKey:
-        case QAction::BackSpaceSoftKey:
-        case QAction::RevertEditSoftKey:
-        case QAction::DeselectSoftKey:
+        case QAction::NegativeSoftKey:
             needsExitButton = false;
-            command = s60CommandStart + index;
-            position = 2;
-            break;
-        case QAction::ExitSoftKey:
-            needsExitButton = false;
-            command = EAknSoftkeyExit; //Calls HandleCommand in AppUI
             position = 2;
             break;
         default:
             break;
         }
+
+        command = s60CommandStart + index;
 
         if (position != -1) {
             TPtrC text = qt_QString2TPtrC(softKeyAction->text());

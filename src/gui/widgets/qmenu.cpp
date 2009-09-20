@@ -163,9 +163,9 @@ void QMenuPrivate::init()
         scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollNone;
     }
 
-#ifdef QT_KEYPAD_NAVIGATION
-    selectAction = QSoftKeyManager::createKeyedAction(QAction::SelectSoftKey, Qt::Key_Select, q);
-    cancelAction = QSoftKeyManager::createKeyedAction(QAction::CancelSoftKey, Qt::Key_Back, q);
+#ifdef QT_SOFTKEYS_ENABLED
+    selectAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::SelectSoftKey, Qt::Key_Select, q);
+    cancelAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::CancelSoftKey, Qt::Key_Back, q);
     selectAction->setVisible(false); // Don't show these in the menu
     cancelAction->setVisible(false);
     q->addAction(selectAction);

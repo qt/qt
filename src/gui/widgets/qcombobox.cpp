@@ -403,8 +403,8 @@ QComboBoxPrivateContainer::QComboBoxPrivateContainer(QAbstractItemView *itemView
     layout->setMargin(0);
 
 #ifdef QT_SOFTKEYS_ENABLED
-    selectAction = QSoftKeyManager::createKeyedAction(QAction::SelectSoftKey, Qt::Key_Select, itemView);
-    cancelAction = QSoftKeyManager::createKeyedAction(QAction::CancelSoftKey, Qt::Key_Escape, itemView);
+    selectAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::SelectSoftKey, Qt::Key_Select, itemView);
+    cancelAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::CancelSoftKey, Qt::Key_Escape, itemView);
     addAction(selectAction);
     addAction(cancelAction);
 #endif

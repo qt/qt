@@ -580,13 +580,13 @@ QAction* QDialogButtonBoxPrivate::createSoftKey(QAbstractButton *button, QDialog
     case YesRole:
     case ActionRole:
     case HelpRole:
-        softkeyRole = QAction::OkSoftKey;
+        softkeyRole = QAction::PositiveSoftKey;
         break;
     case RejectRole:
     case DestructiveRole:
     case NoRole:
     case ResetRole:
-        softkeyRole = QAction::CancelSoftKey;
+        softkeyRole = QAction::NegativeSoftKey;
         break;
     default:
         break;

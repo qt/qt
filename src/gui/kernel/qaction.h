@@ -94,10 +94,7 @@ public:
     enum MenuRole { NoRole, TextHeuristicRole, ApplicationSpecificRole, AboutQtRole,
                     AboutRole, PreferencesRole, QuitRole };
     enum SoftKeyRole {
-                    NoSoftKey, OptionsSoftKey, SelectSoftKey, BackSoftKey, NextSoftKey,
-                    PreviousSoftKey, OkSoftKey, CancelSoftKey, EditSoftKey, ViewSoftKey,
-                    BackSpaceSoftKey, EndEditSoftKey, RevertEditSoftKey, DeselectSoftKey,
-                    FinishSoftKey, MenuSoftKey, ContextMenuSoftKey, ExitSoftKey };
+                    NoSoftKey, PositiveSoftKey, NegativeSoftKey, SelectSoftKey };
     enum Priority { LowPriority = 0,
                     NormalPriority = 128,
                     HighPriority = 256};

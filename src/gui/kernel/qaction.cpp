@@ -269,24 +269,24 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
     MenuRole for the actions in that submenu have no effect. They will never be moved.
 */
 
-/*! \enum QAction::SoftKeyRole
-  \value OptionsSoftKey
-  \value SelectSoftKey
-  \value BackSoftKey
-  \value NextSoftKey
-  \value PreviousSoftKey
-  \value OkSoftKey
-  \value CancelSoftKey
-  \value EditSoftKey
-  \value ViewSoftKey
-  \value BackSpaceSoftKey
-  \value EndEditSoftKey
-  \value RevertEditSoftKey
-  \value DeselectSoftKey
-  \value FinishSoftKey
-  \value MenuSoftKey
-  \value ContextMenuSoftKey
-  \value ExitSoftKey
+/*! \since 4.6
+
+    \enum QAction::SoftKeyRole
+
+    This enum describes how an action should be placed in the softkey bar. Currently this enum only
+    has an effect on the Symbian platform.
+
+    \value NoSoftKey This action should be used as a softkey
+    \value PositiveSoftKey This action is used to describe a softkey with a positive or non-destructive
+           role such as Ok, Select, or Options.
+    \value NegativeSoftKey This action is used to describe a soft ey with a negative or destructive role
+           role such as Cancel, Discard, or Close.
+    \value SelectSoftKey This action is used to describe a role that selects a particular item or widget
+           in the application.
+
+    Actions with a softkey role defined are only visible in the softkey bar when the widget containing
+    the action has focus. If no widget currently has focus, the softkey framework will traverse up the
+    widget parent heirarchy looking for a widget containing softkey actions.
  */
 
 /*!
@@ -1437,8 +1437,9 @@ QAction::MenuRole QAction::menuRole() const
     \brief the action's softkey role
     \since 4.6
 
-    This indicates what softkey action this action is. Usually used on mobile
-    platforms to map QActions to hardware keys.
+    This indicates what type of role this action describes in the softkey framework
+    on platforms where such a framework is supported. Currently this is only
+    supported on the Symbian platform.
 
     The softkey role can be changed any time.
 */
