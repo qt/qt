@@ -1160,6 +1160,7 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
           || event->type() == QEvent::Resize
           || event->type() == QEvent::Move
           || event->type() == QEvent::LanguageChange
+          || event->type() == QEvent::UpdateSoftKeys
           || event->type() == QEvent::InputMethod)) {
         for (int i = 0; i < postedEvents->size(); ++i) {
             const QPostEvent &cur = postedEvents->at(i);
@@ -1176,6 +1177,8 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
             } else if (cur.event->type() == QEvent::Move) {
                 ((QMoveEvent *)(cur.event))->p = ((QMoveEvent *)event)->p;
             } else if (cur.event->type() == QEvent::LanguageChange) {
+                ;
+            } else if (cur.event->type() == QEvent::UpdateSoftKeys) {
                 ;
             } else if ( cur.event->type() == QEvent::InputMethod ) {
                 *(QInputMethodEvent *)(cur.event) = *(QInputMethodEvent *)event;

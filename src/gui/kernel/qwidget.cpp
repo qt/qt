@@ -8257,7 +8257,7 @@ bool QWidget::event(QEvent *event)
     case QEvent::ActionRemoved:
     case QEvent::ActionChanged:
 #ifdef QT_SOFTKEYS_ENABLED
-        QSoftKeyManager::updateSoftKeys(true);
+        QSoftKeyManager::updateSoftKeys();
 #endif
         actionEvent((QActionEvent*)event);
         break;

@@ -60,7 +60,7 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QSoftKeyManager : public QObject
+class Q_AUTOTEST_EXPORT QSoftKeyManager : public QObject
 {
     Q_OBJECT
 
@@ -73,7 +73,7 @@ public:
         CancelSoftKey,
     };
 
-    static void updateSoftKeys(bool force = false);
+    static void updateSoftKeys();
     static QAction *createAction(StandardSoftKey standardKey, QWidget *actionWidget);
     static QAction *createKeyedAction(StandardSoftKey standardKey, Qt::Key key, QWidget *actionWidget);
 
@@ -90,6 +90,9 @@ private:
     static QSoftKeyManager *self;
     static QWidget *softKeySource;
     QHash<QAction*, Qt::Key> keyedActions;
+
+protected:
+    bool event(QEvent *e);
 
     Q_DISABLE_COPY(QSoftKeyManager)
 

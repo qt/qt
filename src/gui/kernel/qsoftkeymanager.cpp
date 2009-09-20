@@ -139,32 +139,40 @@ void QSoftKeyManager::sendKeyEvent()
                                 new QKeyEvent(QEvent::KeyPress, keyToSend, Qt::NoModifier));
 }
 
-void QSoftKeyManager::updateSoftKeys(bool force)
+void QSoftKeyManager::updateSoftKeys()
 {
-    QList<QAction*> softKeys;
-    QWidget *source = QApplication::focusWidget();
-    do {
-        if (source) {
-            QList<QAction*> actions = source->actions();
-            for (int i = 0; i < actions.count(); ++i) {
-                if (actions.at(i)->softKeyRole() != QAction::NoSoftKey)
-                    softKeys.append(actions.at(i));
+    QEvent *event = new QEvent(QEvent::UpdateSoftKeys);
+    QApplication::postEvent(QSoftKeyManager::instance(), event);
+}
+
+bool QSoftKeyManager::event(QEvent *e)
+{
+    if (e->type() == QEvent::UpdateSoftKeys) {
+        QList<QAction*> softKeys;
+        QWidget *source = QApplication::focusWidget();
+        do {
+            if (source) {
+                QList<QAction*> actions = source->actions();
+                for (int i = 0; i < actions.count(); ++i) {
+                    if (actions.at(i)->softKeyRole() != QAction::NoSoftKey)
+                        softKeys.append(actions.at(i));
+                }
+
+                QWidget *parent = source->parentWidget();
+                if (parent && softKeys.isEmpty())
+                    source = parent;
+                else
+                    break;
+            } else {
+                source = QApplication::activeWindow();
             }
+        } while (source);
 
-            QWidget *parent = source->parentWidget();
-            if (parent && softKeys.isEmpty())
-                source = parent;
-            else
-                break;
-        } else {
-            source = QApplication::activeWindow();
-        }
-    } while (source);
-
-    if (force || (source != QSoftKeyManager::softKeySource)) {
-            QSoftKeyManager::softKeySource = source;
-            QSoftKeyManager::updateSoftKeys_sys(softKeys);
+        QSoftKeyManager::softKeySource = source;
+        QSoftKeyManager::updateSoftKeys_sys(softKeys);
+        return true;
     }
+    return false;
 }
 
 #ifdef Q_WS_S60
