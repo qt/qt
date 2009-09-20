@@ -82,6 +82,9 @@ const char *QSoftKeyManager::standardSoftKeyText(StandardSoftKey standardKey)
     case DoneSoftKey:
         softKeyText = QT_TRANSLATE_NOOP("QSoftKeyManager", "Done");
         break;
+    case MenuSoftKey:
+        softKeyText = QT_TRANSLATE_NOOP("QSoftKeyManager", "Options");
+        break;
     case CancelSoftKey:
         softKeyText = QT_TRANSLATE_NOOP("QSoftKeyManager", "Cancel");
         break;
@@ -113,6 +116,7 @@ QAction *QSoftKeyManager::createAction(StandardSoftKey standardKey, QWidget *act
     case OkSoftKey:
     case SelectSoftKey:
     case DoneSoftKey:
+    case MenuSoftKey:
         softKeyRole = QAction::PositiveSoftKey;
         break;
     case CancelSoftKey:

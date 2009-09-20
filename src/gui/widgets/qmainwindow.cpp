@@ -118,7 +118,7 @@ void QMainWindowPrivate::init()
     iconSize = QSize(metric, metric);
     q->setAttribute(Qt::WA_Hover);
 #ifdef QT_SOFTKEYS_ENABLED
-    menuBarAction = QSoftKeyManager::createAction(QSoftKeyManager::DoneSoftKey, q);
+    menuBarAction = QSoftKeyManager::createAction(QSoftKeyManager::MenuSoftKey, q);
 #endif
 }
 

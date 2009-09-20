@@ -73,6 +73,7 @@ public:
         OkSoftKey,
         SelectSoftKey,
         DoneSoftKey,
+        MenuSoftKey,
         CancelSoftKey,
     };
 
