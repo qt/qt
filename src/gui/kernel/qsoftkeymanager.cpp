@@ -45,6 +45,7 @@
 #include "private/qt_s60_p.h"
 #endif
 #include "private/qsoftkeymanager_p.h"
+#include "private/qobject_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -52,8 +53,21 @@ QT_BEGIN_NAMESPACE
 static const int s60CommandStart = 6000;
 #endif
 
-QWidget *QSoftKeyManager::softKeySource = 0;
-QSoftKeyManager *QSoftKeyManager::self = 0;
+class QSoftKeyManagerPrivate : public QObjectPrivate
+{
+    Q_DECLARE_PUBLIC(QSoftKeyManager)
+
+public:
+    static void updateSoftKeys_sys(const QList<QAction*> &softKeys);
+
+private:
+    QHash<QAction*, Qt::Key> keyedActions;
+    static QSoftKeyManager *self;
+    static QWidget *softKeySource;
+};
+
+QWidget *QSoftKeyManagerPrivate::softKeySource = 0;
+QSoftKeyManager *QSoftKeyManagerPrivate::self = 0;
 
 const char *QSoftKeyManager::standardSoftKeyText(StandardSoftKey standardKey)
 {
@@ -80,13 +94,13 @@ const char *QSoftKeyManager::standardSoftKeyText(StandardSoftKey standardKey)
 
 QSoftKeyManager *QSoftKeyManager::instance()
 {
-    if (!QSoftKeyManager::self)
-        QSoftKeyManager::self = new QSoftKeyManager;
+    if (!QSoftKeyManagerPrivate::self)
+        QSoftKeyManagerPrivate::self = new QSoftKeyManager;
 
-    return self;
+    return QSoftKeyManagerPrivate::self;
 }
 
-QSoftKeyManager::QSoftKeyManager() : QObject()
+QSoftKeyManager::QSoftKeyManager() : QObject(*(new QSoftKeyManagerPrivate), 0)
 {
 }
 
@@ -121,18 +135,19 @@ QAction *QSoftKeyManager::createKeyedAction(StandardSoftKey standardKey, Qt::Key
 
     connect(action.data(), SIGNAL(triggered()), QSoftKeyManager::instance(), SLOT(sendKeyEvent()));
 
-    QSoftKeyManager::instance()->keyedActions.insert(action.data(), key);
+    QSoftKeyManager::instance()->d_func()->keyedActions.insert(action.data(), key);
     return action.take();
 }
 
 void QSoftKeyManager::sendKeyEvent()
 {
+    Q_D(QSoftKeyManager);
     QAction *action = qobject_cast<QAction*>(sender());
 
     if (!action)
         return;
 
-    Qt::Key keyToSend = keyedActions.value(action, Qt::Key_unknown);
+    Qt::Key keyToSend = d->keyedActions.value(action, Qt::Key_unknown);
 
     if (keyToSend != Qt::Key_unknown)
         QApplication::postEvent(action->parentWidget(),
@@ -168,15 +183,15 @@ bool QSoftKeyManager::event(QEvent *e)
             }
         } while (source);
 
-        QSoftKeyManager::softKeySource = source;
-        QSoftKeyManager::updateSoftKeys_sys(softKeys);
+        QSoftKeyManagerPrivate::softKeySource = source;
+        QSoftKeyManagerPrivate::updateSoftKeys_sys(softKeys);
         return true;
     }
     return false;
 }
 
 #ifdef Q_WS_S60
-void QSoftKeyManager::updateSoftKeys_sys(const QList<QAction*> &softkeys)
+void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
 {
 
     CEikButtonGroupContainer* nativeContainer = S60->buttonGroupContainer();
@@ -221,9 +236,9 @@ void QSoftKeyManager::updateSoftKeys_sys(const QList<QAction*> &softkeys)
 
 bool QSoftKeyManager::handleCommand(int command)
 {
-    if (command >= s60CommandStart && QSoftKeyManager::softKeySource) {
+    if (command >= s60CommandStart && QSoftKeyManagerPrivate::softKeySource) {
         int index = command - s60CommandStart;
-        const QList<QAction*>& softKeys = QSoftKeyManager::softKeySource->actions();
+        const QList<QAction*>& softKeys = QSoftKeyManagerPrivate::softKeySource->actions();
         if (index < softKeys.count()) {
             softKeys.at(index)->activate(QAction::Trigger);
             return true;

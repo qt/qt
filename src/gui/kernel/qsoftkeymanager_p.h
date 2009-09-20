@@ -60,9 +60,12 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+class QSoftKeyManagerPrivate;
+
 class Q_AUTOTEST_EXPORT QSoftKeyManager : public QObject
 {
     Q_OBJECT
+    Q_DECLARE_PRIVATE(QSoftKeyManager)
 
 public:
 
@@ -85,11 +88,6 @@ private:
     QSoftKeyManager();
     static QSoftKeyManager *instance();
     static const char *standardSoftKeyText(StandardSoftKey standardKey);
-    static void updateSoftKeys_sys(const QList<QAction*> &softKeys);
-
-    static QSoftKeyManager *self;
-    static QWidget *softKeySource;
-    QHash<QAction*, Qt::Key> keyedActions;
 
 protected:
     bool event(QEvent *e);
