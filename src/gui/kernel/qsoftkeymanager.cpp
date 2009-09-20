@@ -224,7 +224,9 @@ void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
             break;
         }
 
-        command = s60CommandStart + index;
+        command = (softKeyAction->objectName().contains("_q_menuSoftKeyAction"))
+                    ? EAknSoftkeyOptions
+                    : s60CommandStart + index;
 
         if (position != -1) {
             TPtrC text = qt_QString2TPtrC(softKeyAction->text());
