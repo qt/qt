@@ -50,20 +50,17 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Create text editor and set softkeys to it
     textEditor= new QTextEdit(tr("Navigate in UI to see context sensitive softkeys in action"), this);
-    QAction* menu = new QAction(tr("Menu"), this);
-    menu->setSoftKeyRole(QAction::MenuSoftKey);
     QAction* clear = new QAction(tr("Clear"), this);
-    clear->setSoftKeyRole(QAction::CancelSoftKey);
+    clear->setSoftKeyRole(QAction::NegativeSoftKey);
 
-    textEditor->addAction(menu);
     textEditor->addAction(clear);
 
     ok = new QAction(tr("Ok"), this);
-    ok->setSoftKeyRole(QAction::OkSoftKey);
+    ok->setSoftKeyRole(QAction::PositiveSoftKey);
     connect(ok, SIGNAL(triggered()), this, SLOT(okPressed()));
 
     cancel = new QAction(tr("Cancel"), this);
-    cancel->setSoftKeyRole(QAction::CancelSoftKey);
+    cancel->setSoftKeyRole(QAction::NegativeSoftKey);
     connect(cancel, SIGNAL(triggered()), this, SLOT(cancelPressed()));
 
     infoLabel = new QLabel(tr(""), this);
