@@ -52,6 +52,7 @@
 #include <QtGui/private/qtextureglyphcache_p.h>
 #include <QtGui/private/qtextengine_p.h>
 #include <QtGui/private/qfontengine_p.h>
+#include <QtGui/private/qpainterpath_p.h>
 #include <QDebug>
 #include <QSet>
 
@@ -131,6 +132,7 @@ public:
     void fill(VGPath path, const QBrush& brush, VGint rule = VG_EVEN_ODD);
     VGPath vectorPathToVGPath(const QVectorPath& path);
     VGPath painterPathToVGPath(const QPainterPath& path);
+    VGPath roundedRectPath(const QRectF &rect, qreal xRadius, qreal yRadius, Qt::SizeMode mode);
     VGPaintType setBrush
         (VGPaint paint, const QBrush& brush, VGMatrixMode mode,
          VGPaintType prevPaintType);
@@ -172,6 +174,7 @@ public:
 #if !defined(QVG_NO_MODIFY_PATH)
     VGPath rectPath;        // Cached path for quick drawing of rectangles.
     VGPath linePath;        // Cached path for quick drawing of lines.
+    VGPath roundRectPath;   // Cached path for quick drawing of rounded rects.
 #endif
 
     QTransform transform;   // Currently active transform.
@@ -341,6 +344,7 @@ void QVGPaintEnginePrivate::init()
 #if !defined(QVG_NO_MODIFY_PATH)
     rectPath = 0;
     linePath = 0;
+    roundRectPath = 0;
 #endif
 
     simpleTransform = true;
@@ -453,6 +457,8 @@ void QVGPaintEnginePrivate::destroy()
         vgDestroyPath(rectPath);
     if (linePath)
         vgDestroyPath(linePath);
+    if (roundRectPath)
+        vgDestroyPath(roundRectPath);
 #endif
 
 #if !defined(QVG_NO_DRAW_GLYPHS)
@@ -875,6 +881,83 @@ VGPath QVGPaintEnginePrivate::painterPathToVGPath(const QPainterPath& path)
 
     vgAppendPathData(vgpath, segments.count(),
                      segments.constData(), coords.constData());
+
+    return vgpath;
+}
+
+VGPath QVGPaintEnginePrivate::roundedRectPath(const QRectF &rect, qreal xRadius, qreal yRadius, Qt::SizeMode mode)
+{
+    static VGubyte roundedrect_types[] = {
+        VG_MOVE_TO_ABS,
+        VG_LINE_TO_ABS,
+        VG_CUBIC_TO_ABS,
+        VG_LINE_TO_ABS,
+        VG_CUBIC_TO_ABS,
+        VG_LINE_TO_ABS,
+        VG_CUBIC_TO_ABS,
+        VG_LINE_TO_ABS,
+        VG_CUBIC_TO_ABS,
+        VG_CLOSE_PATH
+    };
+
+    qreal x1 = rect.left();
+    qreal x2 = rect.right();
+    qreal y1 = rect.top();
+    qreal y2 = rect.bottom();
+
+    if (mode == Qt::RelativeSize) {
+        xRadius = xRadius * rect.width() / 200.;
+        yRadius = yRadius * rect.height() / 200.;
+    }
+
+    xRadius = qMin(xRadius, rect.width() / 2);
+    yRadius = qMin(yRadius, rect.height() / 2);
+
+    VGfloat pts[] = {
+        x1 + xRadius, y1,                   // MoveTo
+        x2 - xRadius, y1,                   // LineTo
+        x2 - (1 - KAPPA) * xRadius, y1,     // CurveTo
+        x2, y1 + (1 - KAPPA) * yRadius,
+        x2, y1 + yRadius,
+        x2, y2 - yRadius,                   // LineTo
+        x2, y2 - (1 - KAPPA) * yRadius,     // CurveTo
+        x2 - (1 - KAPPA) * xRadius, y2,
+        x2 - xRadius, y2,
+        x1 + xRadius, y2,                   // LineTo
+        x1 + (1 - KAPPA) * xRadius, y2,     // CurveTo
+        x1, y2 - (1 - KAPPA) * yRadius,
+        x1, y2 - yRadius,
+        x1, y1 + yRadius,                   // LineTo
+        x1, y1 + KAPPA * yRadius,           // CurveTo
+        x1 + (1 - KAPPA) * xRadius, y1,
+        x1 + xRadius, y1
+    };
+
+#if !defined(QVG_NO_MODIFY_PATH)
+    VGPath vgpath = roundRectPath;
+    if (!vgpath) {
+        vgpath = vgCreatePath(VG_PATH_FORMAT_STANDARD,
+                              VG_PATH_DATATYPE_F,
+                              1.0f,        // scale
+                              0.0f,        // bias
+                              10,          // segmentCapacityHint
+                              17 * 2,      // coordCapacityHint
+                              VG_PATH_CAPABILITY_ALL);
+        vgAppendPathData(vgpath, 10, roundedrect_types, pts);
+        roundRectPath = vgpath;
+    } else {
+        vgModifyPathCoords(vgpath, 0, 9, pts);
+    }
+#else
+    VGPath vgpath = vgCreatePath(VG_PATH_FORMAT_STANDARD,
+                                 VG_PATH_DATATYPE_F,
+                                 1.0f,        // scale
+                                 0.0f,        // bias
+                                 10,          // segmentCapacityHint
+                                 17 * 2,      // coordCapacityHint
+                                 VG_PATH_CAPABILITY_ALL);
+    vgAppendPathData(vgpath, 10, roundedrect_types, pts);
+#endif
 
     return vgpath;
 }
@@ -2330,6 +2413,21 @@ void QVGPaintEngine::fillRect(const QRectF &rect, const QColor &color)
 #else
     QPaintEngineEx::fillRect(rect, QBrush(color));
 #endif
+}
+
+void QVGPaintEngine::drawRoundedRect(const QRectF &rect, qreal xrad, qreal yrad, Qt::SizeMode mode)
+{
+    Q_D(QVGPaintEngine);
+    if (d->simpleTransform) {
+        QVGPainterState *s = state();
+        VGPath vgpath = d->roundedRectPath(rect, xrad, yrad, mode);
+        d->draw(vgpath, s->pen, s->brush);
+#if defined(QVG_NO_MODIFY_PATH)
+        vgDestroyPath(vgpath);
+#endif
+    } else {
+        QPaintEngineEx::drawRoundedRect(rect, xrad, yrad, mode);
+    }
 }
 
 void QVGPaintEngine::drawRects(const QRect *rects, int rectCount)
