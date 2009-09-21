@@ -1656,7 +1656,7 @@ QScriptValue QScriptEngine::newVariant(const QScriptValue &object,
     if (!object.isObject())
         return newVariant(value);
     JSC::JSObject *jscObject = JSC::asObject(QScriptValuePrivate::get(object)->jscValue);
-    if (!jscObject->isObject(&QScriptObject::info)) {
+    if (!jscObject->inherits(&QScriptObject::info)) {
         qWarning("QScriptEngine::newVariant(): changing class of non-QScriptObject not supported");
         return QScriptValue();
     }
@@ -1733,7 +1733,7 @@ QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject,
     if (!scriptObject.isObject())
         return newQObject(qtObject, ownership, options);
     JSC::JSObject *jscObject = JSC::asObject(QScriptValuePrivate::get(scriptObject)->jscValue);
-    if (!jscObject->isObject(&QScriptObject::info)) {
+    if (!jscObject->inherits(&QScriptObject::info)) {
         qWarning("QScriptEngine::newQObject(): changing class of non-QScriptObject not supported");
         return QScriptValue();
     }

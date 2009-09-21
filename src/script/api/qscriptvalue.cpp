@@ -2321,7 +2321,7 @@ bool QScriptValue::isQMetaObject() const
     Q_D(const QScriptValue);
     if (!d || !d->isObject())
         return false;
-    return JSC::asObject(d->jscValue)->isObject(&QScript::QMetaObjectWrapperObject::info);
+    return JSC::asObject(d->jscValue)->inherits(&QScript::QMetaObjectWrapperObject::info);
 }
 
 /*!

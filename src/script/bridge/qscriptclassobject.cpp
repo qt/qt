@@ -212,7 +212,7 @@ JSC::CallType ClassObjectDelegate::getCallData(QScriptObject*, JSC::CallData &ca
 JSC::JSValue JSC_HOST_CALL ClassObjectDelegate::call(JSC::ExecState *exec, JSC::JSObject *callee,
                                              JSC::JSValue thisValue, const JSC::ArgList &args)
 {
-    if (!callee->isObject(&QScriptObject::info))
+    if (!callee->inherits(&QScriptObject::info))
         return JSC::throwError(exec, JSC::TypeError, "callee is not a ClassObject object");
     QScriptObject *obj = static_cast<QScriptObject*>(callee);
     QScriptObjectDelegate *delegate = obj->delegate();
@@ -243,7 +243,7 @@ JSC::ConstructType ClassObjectDelegate::getConstructData(QScriptObject*, JSC::Co
 JSC::JSObject* ClassObjectDelegate::construct(JSC::ExecState *exec, JSC::JSObject *callee,
                                               const JSC::ArgList &args)
 {
-    Q_ASSERT(callee->isObject(&QScriptObject::info));
+    Q_ASSERT(callee->inherits(&QScriptObject::info));
     QScriptObject *obj = static_cast<QScriptObject*>(callee);
     QScriptObjectDelegate *delegate = obj->delegate();
     QScriptClass *scriptClass = static_cast<ClassObjectDelegate*>(delegate)->scriptClass();

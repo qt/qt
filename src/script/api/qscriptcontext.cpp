@@ -468,7 +468,7 @@ QScriptValue QScriptContext::activationObject() const
         }*/
     }
 
-    if (result && result->isObject(&QScript::QScriptActivationObject::info)
+    if (result && result->inherits(&QScript::QScriptActivationObject::info)
         && (static_cast<QScript::QScriptActivationObject*>(result)->delegate() != 0)) {
         // Return the object that property access is being delegated to
         result = static_cast<QScript::QScriptActivationObject*>(result)->delegate();
@@ -517,7 +517,7 @@ void QScriptContext::setActivationObject(const QScriptValue &activation)
     while (node != 0) {
         if (node->object && node->object->isVariableObject()) {
             if (!object->isVariableObject()) {
-                if (node->object->isObject(&QScript::QScriptActivationObject::info)) {
+                if (node->object->inherits(&QScript::QScriptActivationObject::info)) {
                     static_cast<QScript::QScriptActivationObject*>(node->object)->setDelegate(object);
                 } else {
                     // Create a QScriptActivationObject that acts as a proxy
@@ -687,7 +687,7 @@ QScriptValueList QScriptContext::scopeChain() const
         JSC::JSObject *object = *it;
         if (!object)
             continue;
-        if (object->isObject(&QScript::QScriptActivationObject::info)
+        if (object->inherits(&QScript::QScriptActivationObject::info)
             && (static_cast<QScript::QScriptActivationObject*>(object)->delegate() != 0)) {
             // Return the object that property access is being delegated to
             object = static_cast<QScript::QScriptActivationObject*>(object)->delegate();

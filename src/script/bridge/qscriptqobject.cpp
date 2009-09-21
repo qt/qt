@@ -1021,7 +1021,7 @@ const JSC::ClassInfo QtFunction::info = { "QtFunction", &InternalFunction::info,
 JSC::JSValue JSC_HOST_CALL QtFunction::call(JSC::ExecState *exec, JSC::JSObject *callee,
                                             JSC::JSValue thisValue, const JSC::ArgList &args)
 {
-    if (!callee->isObject(&QtFunction::info))
+    if (!callee->inherits(&QtFunction::info))
         return throwError(exec, JSC::TypeError, "callee is not a QtFunction object");
     QtFunction *qfun =  static_cast<QtFunction*>(callee);
     QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
@@ -1060,7 +1060,7 @@ JSC::JSValue JSC_HOST_CALL QtPropertyFunction::call(
     JSC::ExecState *exec, JSC::JSObject *callee,
     JSC::JSValue thisValue, const JSC::ArgList &args)
 {
-    if (!callee->isObject(&QtPropertyFunction::info))
+    if (!callee->inherits(&QtPropertyFunction::info))
         return throwError(exec, JSC::TypeError, "callee is not a QtPropertyFunction object");
     QtPropertyFunction *qfun =  static_cast<QtPropertyFunction*>(callee);
     QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
@@ -1836,7 +1836,7 @@ JSC::JSValue JSC_HOST_CALL QMetaObjectWrapperObject::call(
 {
     QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
     thisValue = eng_p->toUsableValue(thisValue);
-    if (!callee->isObject(&QMetaObjectWrapperObject::info))
+    if (!callee->inherits(&QMetaObjectWrapperObject::info))
         return throwError(exec, JSC::TypeError, "callee is not a QMetaObject");
     QMetaObjectWrapperObject *self =  static_cast<QMetaObjectWrapperObject*>(callee);
     JSC::ExecState *previousFrame = eng_p->currentFrame;
