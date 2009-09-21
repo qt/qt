@@ -2092,7 +2092,7 @@ void QVGPaintEngine::updateScissor()
             if (region.isEmpty())
                 region = d->maskRect;
             else
-                region.intersect(d->maskRect);
+                region = region.intersect(d->maskRect);
             if (isDefaultClipRegion(region)) {
                 // The scissor region is the entire drawing surface,
                 // so there is no point doing any scissoring.
