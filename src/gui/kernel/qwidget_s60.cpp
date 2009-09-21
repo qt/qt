@@ -1160,6 +1160,7 @@ void QWidgetPrivate::deleteTLSysExtra()
 void QWidgetPrivate::createSysExtra()
 {
 	extra->activated = 0;
+	extra->disableBlit = 0;
 }
 
 void QWidgetPrivate::deleteSysExtra()

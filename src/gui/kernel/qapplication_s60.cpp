@@ -629,7 +629,8 @@ void QSymbianControl::Draw(const TRect& r) const
                 << "surface" << surface
                 << "engine" << engine
                 << "raster" << (engine ? engine->type() == QPaintEngine::Raster : false)
-                << "opaque" << (qwidget->d_func()->isOpaque);
+                << "opaque" << (qwidget->d_func()->isOpaque)
+                << "disableBlit" << (qwidget->d_func()->extraData()->disableBlit);
 #endif
     
     if (!engine)
@@ -666,6 +667,7 @@ void QSymbianControl::Draw(const TRect& r) const
         if (qwidget->d_func()->isOpaque)
             gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
         
+        if(!qwidget->d_func()->extraData()->disableBlit)
         	gc.BitBlt(r.iTl, bitmap, r);
     } else {
         surface->flush(qwidget, QRegion(qt_TRect2QRect(r)), QPoint());
