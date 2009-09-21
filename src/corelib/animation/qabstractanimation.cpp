@@ -214,14 +214,18 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
             time.start();
         }
     } else if (event->timerId() == animationTimer.timerId()) {
-        const int delta = lastTick - oldLastTick;
-        for (currentAnimationIdx = 0; currentAnimationIdx < animations.count(); ++currentAnimationIdx) {
-            QAbstractAnimation *animation = animations.at(currentAnimationIdx);
-            int elapsed = QAbstractAnimationPrivate::get(animation)->totalCurrentTime
-                + (animation->direction() == QAbstractAnimation::Forward ? delta : -delta);
-            animation->setCurrentTime(elapsed);
+        //we make sure we only call update time if the time has actually changed
+        //it might happen in some cases that the time doesn't change because events are delayed
+        //when the CPU load is high
+        if (const int delta = lastTick - oldLastTick) {
+            for (currentAnimationIdx = 0; currentAnimationIdx < animations.count(); ++currentAnimationIdx) {
+                QAbstractAnimation *animation = animations.at(currentAnimationIdx);
+                int elapsed = QAbstractAnimationPrivate::get(animation)->totalCurrentTime
+                    + (animation->direction() == QAbstractAnimation::Forward ? delta : -delta);
+                animation->setCurrentTime(elapsed);
+            }
+            currentAnimationIdx = 0;
         }
-        currentAnimationIdx = 0;
     }
 }
 
