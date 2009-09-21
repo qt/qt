@@ -605,6 +605,22 @@ scissors, vertex buffers and arrays, texture manipulation, and
     functions to query audio devices for which audio formats they
     support.
 
+    \section1 Classes and Functions Introduced in 4.6
+
+    Links to class, function, and macro documentation.
+
+    \section2 Classes
+
+    Classes introduced in Qt 4.6.
+
+    \sincelist classes
+
+    \section2 Functions & Macros
+
+    Fuctions and macros introduced in Qt 4.6.
+
+    \sincelist functions
+
 */
 
 /*
