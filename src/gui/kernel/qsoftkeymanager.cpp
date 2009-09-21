@@ -256,7 +256,7 @@ bool QSoftKeyManager::handleCommand(int command)
 
 #else
 
-void QSoftKeyManager::updateSoftKeys_sys(const QList<QAction*> &)
+void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &)
 {
 }
 
