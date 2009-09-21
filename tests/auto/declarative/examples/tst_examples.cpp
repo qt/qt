@@ -16,6 +16,7 @@ private slots:
     void namingConvention();
 private:
     QString qmlviewer;
+    QStringList excludedDirs;
 
     void namingConvention(const QDir &);
     QStringList findQmlFiles(const QDir &);
@@ -32,6 +33,10 @@ tst_examples::tst_examples()
 #else
     qmlviewer = QDir(binaries).absoluteFilePath("qmlviewer");
 #endif
+
+
+    // Add directories you want excluded here
+    excludedDirs << "examples/declarative/extending";
 }
 
 /*
@@ -40,6 +45,12 @@ to have them tested by the examples() test.
 */
 void tst_examples::namingConvention(const QDir &d)
 {
+    for (int ii = 0; ii < excludedDirs.count(); ++ii) {
+        QString s = QDir::toNativeSeparators(excludedDirs.at(ii));
+        if (d.absolutePath().endsWith(s))
+            return;
+    }
+
     QStringList files = d.entryList(QStringList() << QLatin1String("*.qml"), 
                                     QDir::Files);
 
@@ -75,6 +86,12 @@ void tst_examples::namingConvention()
 
 QStringList tst_examples::findQmlFiles(const QDir &d)
 {
+    for (int ii = 0; ii < excludedDirs.count(); ++ii) {
+        QString s = QDir::toNativeSeparators(excludedDirs.at(ii));
+        if (d.absolutePath().endsWith(s))
+            return QStringList();
+    }
+
     QStringList rv;
 
     QStringList files = d.entryList(QStringList() << QLatin1String("*.qml"), 
