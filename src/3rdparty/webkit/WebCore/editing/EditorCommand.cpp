@@ -40,6 +40,7 @@
 #include "FormatBlockCommand.h"
 #include "Frame.h"
 #include "HTMLFontElement.h"
+#include "HTMLHRElement.h"
 #include "HTMLImageElement.h"
 #include "IndentOutdentCommand.h"
 #include "InsertListCommand.h"
@@ -120,6 +121,9 @@ static bool executeApplyStyle(Frame* frame, EditorCommandSource source, EditActi
     return applyCommandToFrame(frame, source, action, style.get());
 }
 
+// FIXME: executeToggleStyleInList does not handle complicated cases such as <b><u>hello</u>world</b> properly.
+//        This function must use Editor::selectionHasStyle to determine the current style but we cannot fix this
+//        until https://bugs.webkit.org/show_bug.cgi?id=27818 is resolved.
 static bool executeToggleStyleInList(Frame* frame, EditorCommandSource source, EditAction action, int propertyID, CSSValue* value)
 {
     ExceptionCode ec = 0;
@@ -148,12 +152,23 @@ static bool executeToggleStyleInList(Frame* frame, EditorCommandSource source, E
     newMutableStyle->setProperty(propertyID, newStyle,ec);
     return applyCommandToFrame(frame, source, action, newMutableStyle.get());
 }
-    
+
 static bool executeToggleStyle(Frame* frame, EditorCommandSource source, EditAction action, int propertyID, const char* offValue, const char* onValue)
 {
     RefPtr<CSSMutableStyleDeclaration> style = CSSMutableStyleDeclaration::create();
-    style->setProperty(propertyID, onValue);
-    style->setProperty(propertyID, frame->editor()->selectionStartHasStyle(style.get()) ? offValue : onValue);
+    style->setProperty(propertyID, onValue); // We need to add this style to pass it to selectionStartHasStyle / selectionHasStyle
+
+    // Style is considered present when
+    // mac: present at the beginning of selection
+    // other: present throughout the selection
+    Settings* settings = frame->document()->settings();
+    bool styleIsPresent;
+    if (settings && settings->editingBehavior() == EditingMacBehavior)
+        styleIsPresent = frame->editor()->selectionStartHasStyle(style.get());
+    else
+        styleIsPresent = frame->editor()->selectionHasStyle(style.get()) == TrueTriState;
+
+    style->setProperty(propertyID, styleIsPresent ? offValue : onValue);
     return applyCommandToFrame(frame, source, action, style.get());
 }
 
@@ -184,7 +199,7 @@ static bool executeInsertFragment(Frame* frame, PassRefPtr<DocumentFragment> fra
 
 static bool executeInsertNode(Frame* frame, PassRefPtr<Node> content)
 {
-    RefPtr<DocumentFragment> fragment = new DocumentFragment(frame->document());
+    RefPtr<DocumentFragment> fragment = DocumentFragment::create(frame->document());
     ExceptionCode ec = 0;
     fragment->appendChild(content, ec);
     if (ec)
@@ -453,9 +468,9 @@ static bool executeInsertBacktab(Frame* frame, Event* event, EditorCommandSource
 
 static bool executeInsertHorizontalRule(Frame* frame, Event*, EditorCommandSource, const String& value)
 {
-    RefPtr<HTMLElement> hr = new HTMLElement(hrTag, frame->document());
+    RefPtr<HTMLHRElement> hr = new HTMLHRElement(hrTag, frame->document());
     if (!value.isEmpty())
-        hr->setId(value);
+        hr->setAttribute(idAttr, value);
     return executeInsertNode(frame, hr.release());
 }
 
@@ -1179,7 +1194,7 @@ static TriState stateOrderedList(Frame* frame, Event*)
 
 static TriState stateStrikethrough(Frame* frame, Event*)
 {
-    return stateStyle(frame, CSSPropertyTextDecoration, "line-through");
+    return stateStyle(frame, CSSPropertyWebkitTextDecorationsInEffect, "line-through");
 }
 
 static TriState stateStyleWithCSS(Frame* frame, Event*)
@@ -1214,7 +1229,7 @@ static TriState stateTextWritingDirectionRightToLeft(Frame* frame, Event*)
 
 static TriState stateUnderline(Frame* frame, Event*)
 {
-    return stateStyle(frame, CSSPropertyTextDecoration, "underline");
+    return stateStyle(frame, CSSPropertyWebkitTextDecorationsInEffect, "underline");
 }
 
 static TriState stateUnorderedList(Frame* frame, Event*)

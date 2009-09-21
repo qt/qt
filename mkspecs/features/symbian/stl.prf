@@ -18,19 +18,8 @@ INCLUDEPATH -= $$[QT_INSTALL_PREFIX]/mkspecs/common/symbian/stl-off
 exists($${EPOCROOT}epoc32/release/armv5/urel/libstdcppv5.dll ) {
     LIBS *= -llibstdcppv5.dll
 
-    # STDCPP turns on standard C++ new behaviour in SBSv2
+    # STDCPP turns on standard C++ new behaviour (ie. throwing new)
     MMP_RULES += "STDCPP"
-    
-    # defining __SYMBIAN_STDCPP_SUPPORT__ turns on standard C++ new behaviour pre SBSv2
-    DEFINES += "__SYMBIAN_STDCPP_SUPPORT__"
-
-    # operator new is actually supplied in stdnew.lib for hardware builds
-    eabiStdNewLibBlock = \
-        "$${LITERAL_HASH}ifdef EABI" \
-        "LIBRARY stdnew.lib" \
-        "$${LITERAL_HASH}endif"
-
-    MMP_RULES += eabiStdNewLibBlock
 } else {
     LIBS *= -llibstdcpp.dll
 }

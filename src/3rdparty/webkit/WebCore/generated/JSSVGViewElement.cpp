@@ -87,6 +87,11 @@ bool JSSVGViewElementPrototype::getOwnPropertySlot(ExecState* exec, const Identi
     return getStaticValueSlot<JSSVGViewElementPrototype, JSObject>(exec, &JSSVGViewElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGViewElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGViewElementPrototype, JSObject>(exec, &JSSVGViewElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGViewElement::s_info = { "SVGViewElement", &JSSVGElement::s_info, &JSSVGViewElementTable, 0 };
 
 JSSVGViewElement::JSSVGViewElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGViewElement> impl)
@@ -102,6 +107,11 @@ JSObject* JSSVGViewElement::createPrototype(ExecState* exec, JSGlobalObject* glo
 bool JSSVGViewElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGViewElement, Base>(exec, &JSSVGViewElementTable, this, propertyName, slot);
+}
+
+bool JSSVGViewElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGViewElement, Base>(exec, &JSSVGViewElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGViewElementViewTarget(ExecState* exec, const Identifier&, const PropertySlot& slot)

@@ -58,6 +58,11 @@ bool JSVoidCallbackPrototype::getOwnPropertySlot(ExecState* exec, const Identifi
     return getStaticFunctionSlot<JSObject>(exec, &JSVoidCallbackPrototypeTable, this, propertyName, slot);
 }
 
+bool JSVoidCallbackPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSVoidCallbackPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSVoidCallback::s_info = { "VoidCallback", 0, 0, 0 };
 
 JSVoidCallback::JSVoidCallback(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<VoidCallback> impl)
@@ -79,7 +84,7 @@ JSObject* JSVoidCallback::createPrototype(ExecState* exec, JSGlobalObject* globa
 JSValue JSC_HOST_CALL jsVoidCallbackPrototypeFunctionHandleEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSVoidCallback::s_info))
+    if (!thisValue.inherits(&JSVoidCallback::s_info))
         return throwError(exec, TypeError);
     JSVoidCallback* castedThisObj = static_cast<JSVoidCallback*>(asObject(thisValue));
     VoidCallback* imp = static_cast<VoidCallback*>(castedThisObj->impl());

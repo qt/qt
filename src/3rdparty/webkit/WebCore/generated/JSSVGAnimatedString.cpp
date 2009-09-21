@@ -95,6 +95,11 @@ bool JSSVGAnimatedString::getOwnPropertySlot(ExecState* exec, const Identifier& 
     return getStaticValueSlot<JSSVGAnimatedString, Base>(exec, &JSSVGAnimatedStringTable, this, propertyName, slot);
 }
 
+bool JSSVGAnimatedString::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGAnimatedString, Base>(exec, &JSSVGAnimatedStringTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGAnimatedStringBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGAnimatedString* castedThis = static_cast<JSSVGAnimatedString*>(asObject(slot.slotBase()));
@@ -130,7 +135,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAnim
 }
 SVGAnimatedString* toSVGAnimatedString(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGAnimatedString::s_info) ? static_cast<JSSVGAnimatedString*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGAnimatedString::s_info) ? static_cast<JSSVGAnimatedString*>(asObject(value))->impl() : 0;
 }
 
 }

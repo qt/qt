@@ -96,6 +96,11 @@ bool JSSQLError::getOwnPropertySlot(ExecState* exec, const Identifier& propertyN
     return getStaticValueSlot<JSSQLError, Base>(exec, &JSSQLErrorTable, this, propertyName, slot);
 }
 
+bool JSSQLError::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSQLError, Base>(exec, &JSSQLErrorTable, this, propertyName, descriptor);
+}
+
 JSValue jsSQLErrorCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSQLError* castedThis = static_cast<JSSQLError*>(asObject(slot.slotBase()));
@@ -118,7 +123,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SQLErro
 }
 SQLError* toSQLError(JSC::JSValue value)
 {
-    return value.isObject(&JSSQLError::s_info) ? static_cast<JSSQLError*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSQLError::s_info) ? static_cast<JSSQLError*>(asObject(value))->impl() : 0;
 }
 
 }

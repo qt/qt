@@ -1,6 +1,7 @@
 TARGET     = QtScript
 QPRO_PWD   = $$PWD
 QT         = core
+DEFINES   += JSC=QTJSC
 DEFINES   += QT_BUILD_SCRIPT_LIB
 DEFINES   += QT_NO_USING_NAMESPACE
 DEFINES   += QLALR_NO_QSCRIPTGRAMMAR_DEBUG_INFO
@@ -21,7 +22,7 @@ DEFINES += ENABLE_JIT=0
 # fall back to src/3rdparty otherwise
 WEBKITDIR = $$(WEBKITDIR)
 isEmpty(WEBKITDIR) {
-    WEBKITDIR = $$PWD/../3rdparty/webkit
+    WEBKITDIR = $$PWD/../3rdparty/javascriptcore
 
     # FIXME: not needed once JSCBISON works
     # TODO: or leave it like this since the generated file is available anyway?

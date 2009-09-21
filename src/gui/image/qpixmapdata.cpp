@@ -223,4 +223,15 @@ QImage* QPixmapData::buffer()
     return 0;
 }
 
+#if defined(Q_OS_SYMBIAN)
+RSgImage* QPixmapData::toRSgImage()
+{
+    return 0;
+}
+
+void QPixmapData::fromRSgImage(RSgImage* rsgImage)
+{
+    return;
+}
+#endif
 QT_END_NAMESPACE

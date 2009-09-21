@@ -46,6 +46,8 @@ typedef struct _GtkMenuItem GtkMenuItem;
 #include <QAction>
 #elif PLATFORM(WX)
 class wxMenuItem;
+#elif PLATFORM(HAIKU)
+class BMenuItem;
 #endif
 
 namespace WebCore {
@@ -119,7 +121,9 @@ namespace WebCore {
         ContextMenuItemTagRightToLeft,
         ContextMenuItemTagPDFSinglePageScrolling,
         ContextMenuItemTagPDFFacingPagesScrolling,
+#if ENABLE(INSPECTOR)
         ContextMenuItemTagInspectElement,
+#endif
         ContextMenuItemTagTextDirectionMenu, // Text Direction sub-menu
         ContextMenuItemTagTextDirectionDefault,
         ContextMenuItemTagTextDirectionLeftToRight,
@@ -202,6 +206,8 @@ namespace WebCore {
         bool checked;
         bool enabled;
     };
+#elif PLATFORM(HAIKU)
+    typedef BMenuItem* PlatformMenuItemDescription;
 #else
     typedef void* PlatformMenuItemDescription;
 #endif

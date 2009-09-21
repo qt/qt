@@ -93,6 +93,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSXPathResultPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -107,6 +108,11 @@ const ClassInfo JSXPathResultConstructor::s_info = { "XPathResultConstructor", 0
 bool JSXPathResultConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSXPathResultConstructor, DOMObject>(exec, &JSXPathResultConstructorTable, this, propertyName, slot);
+}
+
+bool JSXPathResultConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSXPathResultConstructor, DOMObject>(exec, &JSXPathResultConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -147,6 +153,11 @@ bool JSXPathResultPrototype::getOwnPropertySlot(ExecState* exec, const Identifie
     return getStaticPropertySlot<JSXPathResultPrototype, JSObject>(exec, &JSXPathResultPrototypeTable, this, propertyName, slot);
 }
 
+bool JSXPathResultPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticPropertyDescriptor<JSXPathResultPrototype, JSObject>(exec, &JSXPathResultPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSXPathResult::s_info = { "XPathResult", 0, &JSXPathResultTable, 0 };
 
 JSXPathResult::JSXPathResult(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XPathResult> impl)
@@ -168,6 +179,11 @@ JSObject* JSXPathResult::createPrototype(ExecState* exec, JSGlobalObject* global
 bool JSXPathResult::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSXPathResult, Base>(exec, &JSXPathResultTable, this, propertyName, slot);
+}
+
+bool JSXPathResult::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSXPathResult, Base>(exec, &JSXPathResultTable, this, propertyName, descriptor);
 }
 
 JSValue jsXPathResultResultType(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -249,7 +265,7 @@ JSValue JSXPathResult::getConstructor(ExecState* exec, JSGlobalObject* globalObj
 JSValue JSC_HOST_CALL jsXPathResultPrototypeFunctionIterateNext(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSXPathResult::s_info))
+    if (!thisValue.inherits(&JSXPathResult::s_info))
         return throwError(exec, TypeError);
     JSXPathResult* castedThisObj = static_cast<JSXPathResult*>(asObject(thisValue));
     XPathResult* imp = static_cast<XPathResult*>(castedThisObj->impl());
@@ -264,7 +280,7 @@ JSValue JSC_HOST_CALL jsXPathResultPrototypeFunctionIterateNext(ExecState* exec,
 JSValue JSC_HOST_CALL jsXPathResultPrototypeFunctionSnapshotItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSXPathResult::s_info))
+    if (!thisValue.inherits(&JSXPathResult::s_info))
         return throwError(exec, TypeError);
     JSXPathResult* castedThisObj = static_cast<JSXPathResult*>(asObject(thisValue));
     XPathResult* imp = static_cast<XPathResult*>(castedThisObj->impl());
@@ -335,7 +351,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, XPathRe
 }
 XPathResult* toXPathResult(JSC::JSValue value)
 {
-    return value.isObject(&JSXPathResult::s_info) ? static_cast<JSXPathResult*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSXPathResult::s_info) ? static_cast<JSXPathResult*>(asObject(value))->impl() : 0;
 }
 
 }

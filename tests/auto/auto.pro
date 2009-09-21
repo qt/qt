@@ -143,6 +143,7 @@ SUBDIRS += \
            qgraphicsitem \
            qgraphicsitemanimation \
            qgraphicsanchorlayout \
+           qgraphicsanchorlayout1 \
            qgraphicslayout \
            qgraphicslayoutitem \
            qgraphicslinearlayout \

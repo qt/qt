@@ -50,6 +50,7 @@
 #include "Frame.h"
 #include "FrameView.h"
 #include "HTMLNames.h"
+#include "InspectorTimelineAgent.h"
 #include "KeyboardEvent.h"
 #include "Logging.h"
 #include "MouseEvent.h"
@@ -332,8 +333,69 @@ Node::StyleChange Node::diff(const RenderStyle* s1, const RenderStyle* s2)
     return ch;
 }
 
-Node::Node(Document* doc, bool isElement, bool isContainer, bool isText)
-    : m_document(doc)
+inline bool Node::initialRefCount(ConstructionType type)
+{
+    switch (type) {
+        case CreateContainer:
+        case CreateElement:
+        case CreateOther:
+        case CreateText:
+            return 1;
+        case CreateElementZeroRefCount:
+            return 0;
+    }
+    ASSERT_NOT_REACHED();
+    return 1;
+}
+
+inline bool Node::isContainer(ConstructionType type)
+{
+    switch (type) {
+        case CreateContainer:
+        case CreateElement:
+        case CreateElementZeroRefCount:
+            return true;
+        case CreateOther:
+        case CreateText:
+            return false;
+    }
+    ASSERT_NOT_REACHED();
+    return false;
+}
+
+inline bool Node::isElement(ConstructionType type)
+{
+    switch (type) {
+        case CreateContainer:
+        case CreateOther:
+        case CreateText:
+            return false;
+        case CreateElement:
+        case CreateElementZeroRefCount:
+            return true;
+    }
+    ASSERT_NOT_REACHED();
+    return false;
+}
+
+inline bool Node::isText(ConstructionType type)
+{
+    switch (type) {
+        case CreateContainer:
+        case CreateElement:
+        case CreateElementZeroRefCount:
+        case CreateOther:
+            return false;
+        case CreateText:
+            return true;
+    }
+    ASSERT_NOT_REACHED();
+    return false;
+}
+
+Node::Node(Document* document, ConstructionType type)
+    : TreeShared<Node>(initialRefCount(type))
+    , m_document(document)
     , m_previous(0)
     , m_next(0)
     , m_renderer(0)
@@ -350,25 +412,27 @@ Node::Node(Document* doc, bool isElement, bool isContainer, bool isText)
     , m_inDetach(false)
     , m_inSubtreeMark(false)
     , m_hasRareData(false)
-    , m_isElement(isElement)
-    , m_isContainer(isContainer)
-    , m_isText(isText)
+    , m_isElement(isElement(type))
+    , m_isContainer(isContainer(type))
+    , m_isText(isText(type))
     , m_parsingChildrenFinished(true)
-#if ENABLE(SVG)
-    , m_areSVGAttributesValid(true)
-#endif
     , m_isStyleAttributeValid(true)
     , m_synchronizingStyleAttribute(false)
 #if ENABLE(SVG)
+    , m_areSVGAttributesValid(true)
     , m_synchronizingSVGAttributes(false)
 #endif
 {
+    if (m_document)
+        m_document->selfOnlyRef();
+
 #ifndef NDEBUG
     if (shouldIgnoreLeaks)
         ignoreSet.add(this);
     else
         nodeCounter.increment();
 #endif
+
 #if DUMP_NODE_STATISTICS
     liveNodeSet.add(this);
 #endif
@@ -387,9 +451,6 @@ Node::~Node()
 #if DUMP_NODE_STATISTICS
     liveNodeSet.remove(this);
 #endif
-
-    if (!eventListeners().isEmpty() && !inDocument())
-        document()->unregisterDisconnectedNodeWithEventListeners(this);
 
     if (!hasRareData())
         ASSERT(!NodeRareData::rareDataMap().contains(this));
@@ -411,6 +472,9 @@ Node::~Node()
         m_previous->setNextSibling(0);
     if (m_next)
         m_next->setPreviousSibling(0);
+
+    if (m_document)
+        m_document->selfOnlyDeref();
 }
 
 #ifdef NDEBUG
@@ -445,13 +509,18 @@ void Node::setDocument(Document* document)
     if (inDocument() || m_document == document)
         return;
 
+    document->selfOnlyRef();
+
     setWillMoveToNewOwnerDocumentWasCalled(false);
     willMoveToNewOwnerDocument();
     ASSERT(willMoveToNewOwnerDocumentWasCalled);
 
 #if USE(JSC)
-    updateDOMNodeDocument(this, m_document.get(), document);
+    updateDOMNodeDocument(this, m_document, document);
 #endif
+
+    if (m_document)
+        m_document->selfOnlyDeref();
 
     m_document = document;
 
@@ -514,7 +583,8 @@ PassRefPtr<NodeList> Node::childNodes()
     NodeRareData* data = ensureRareData();
     if (!data->nodeLists()) {
         data->setNodeLists(NodeListsNodeData::create());
-        document()->addNodeListCache();
+        if (document())
+            document()->addNodeListCache();
     }
 
     return ChildNodeList::create(this, data->nodeLists()->m_childNodeListCaches.get());
@@ -694,7 +764,7 @@ void Node::setNeedsStyleRecalc(StyleChangeType changeType)
     if ((changeType != NoStyleChange) && !attached()) // changed compared to what?
         return;
 
-    if (!(changeType == InlineStyleChange && (m_styleChange == FullStyleChange || m_styleChange == AnimationStyleChange)))
+    if (!(changeType == InlineStyleChange && (m_styleChange == FullStyleChange || m_styleChange == SyntheticStyleChange)))
         m_styleChange = changeType;
 
     if (m_styleChange != NoStyleChange) {
@@ -757,10 +827,30 @@ bool Node::rareDataFocused() const
     ASSERT(hasRareData());
     return rareData()->isFocused();
 }
+
+bool Node::supportsFocus() const
+{
+    return hasRareData() && rareData()->tabIndexSetExplicitly();
+}
     
 bool Node::isFocusable() const
 {
-    return hasRareData() && rareData()->tabIndexSetExplicitly();
+    if (!inDocument() || !supportsFocus())
+        return false;
+    
+    if (renderer())
+        ASSERT(!renderer()->needsLayout());
+    else
+        // If the node is in a display:none tree it might say it needs style recalc but
+        // the whole document is atually up to date.
+        ASSERT(!document()->childNeedsStyleRecalc());
+    
+    // FIXME: Even if we are not visible, we might have a child that is visible.
+    // Hyatt wants to fix that some day with a "has visible content" flag or the like.
+    if (!renderer() || renderer()->style()->visibility() != VISIBLE)
+        return false;
+
+    return true;
 }
 
 bool Node::isKeyboardFocusable(KeyboardEvent*) const
@@ -788,7 +878,7 @@ void Node::registerDynamicNodeList(DynamicNodeList* list)
     if (!data->nodeLists()) {
         data->setNodeLists(NodeListsNodeData::create());
         document()->addNodeListCache();
-    } else if (!m_document->hasNodeListCaches()) {
+    } else if (!m_document || !m_document->hasNodeListCaches()) {
         // We haven't been receiving notifications while there were no registered lists, so the cache is invalid now.
         data->nodeLists()->invalidateCaches();
     }
@@ -806,7 +896,8 @@ void Node::unregisterDynamicNodeList(DynamicNodeList* list)
         data->nodeLists()->m_listsWithCaches.remove(list);
         if (data->nodeLists()->isEmpty()) {
             data->clearNodeLists();
-            document()->removeNodeListCache();
+            if (document())
+                document()->removeNodeListCache();
         }
     }
 }
@@ -1895,11 +1986,11 @@ void Node::appendTextContent(bool convertBRsToNewlines, StringBuilder& content) 
         case TEXT_NODE:
         case CDATA_SECTION_NODE:
         case COMMENT_NODE:
-            content.append(static_cast<const CharacterData*>(this)->CharacterData::nodeValue());
+            content.append(static_cast<const CharacterData*>(this)->data());
             break;
 
         case PROCESSING_INSTRUCTION_NODE:
-            content.append(static_cast<const ProcessingInstruction*>(this)->ProcessingInstruction::nodeValue());
+            content.append(static_cast<const ProcessingInstruction*>(this)->data());
             break;
         
         case ELEMENT_NODE:
@@ -2263,34 +2354,22 @@ const RegisteredEventListenerVector& Node::eventListeners() const
 
 void Node::insertedIntoDocument()
 {
-    if (!eventListeners().isEmpty())
-        document()->unregisterDisconnectedNodeWithEventListeners(this);
-
     setInDocument(true);
 }
 
 void Node::removedFromDocument()
 {
-    if (!eventListeners().isEmpty())
-        document()->registerDisconnectedNodeWithEventListeners(this);
-
     setInDocument(false);
 }
 
 void Node::willMoveToNewOwnerDocument()
 {
-    if (!eventListeners().isEmpty())
-        document()->unregisterDisconnectedNodeWithEventListeners(this);
-
     ASSERT(!willMoveToNewOwnerDocumentWasCalled);
     setWillMoveToNewOwnerDocumentWasCalled(true);
 }
 
 void Node::didMoveToNewOwnerDocument()
 {
-    if (!eventListeners().isEmpty())
-        document()->registerDisconnectedNodeWithEventListeners(this);
-
     ASSERT(!didMoveToNewOwnerDocumentWasCalled);
     setDidMoveToNewOwnerDocumentWasCalled(true);
 }
@@ -2322,21 +2401,14 @@ static inline void updateSVGElementInstancesAfterEventListenerChange(Node* refer
 
 void Node::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
 {
-    Document* document = this->document();
-    if (!document->attached())
-        return;
-
-    document->addListenerTypeIfNeeded(eventType);
+    if (Document* document = this->document())
+        document->addListenerTypeIfNeeded(eventType);
 
     RegisteredEventListenerVector& listeners = ensureRareData()->ensureListeners();
 
     // Remove existing identical listener set with identical arguments.
     // The DOM2 spec says that "duplicate instances are discarded" in this case.
     removeEventListener(eventType, listener.get(), useCapture);
-
-    // adding the first one
-    if (listeners.isEmpty() && !inDocument())
-        document->registerDisconnectedNodeWithEventListeners(this);
 
     listeners.append(RegisteredEventListener::create(eventType, listener, useCapture));
     updateSVGElementInstancesAfterEventListenerChange(this);
@@ -2354,13 +2426,9 @@ void Node::removeEventListener(const AtomicString& eventType, EventListener* lis
     size_t size = listeners->size();
     for (size_t i = 0; i < size; ++i) {
         RegisteredEventListener& r = *listeners->at(i);
-        if (r.eventType() == eventType && r.listener() == listener && r.useCapture() == useCapture) {
+        if (r.eventType() == eventType && r.useCapture() == useCapture && *r.listener() == *listener) {
             r.setRemoved(true);
             listeners->remove(i);
-
-            // removed last
-            if (listeners->isEmpty() && !inDocument())
-                document()->unregisterDisconnectedNodeWithEventListeners(this);
 
             updateSVGElementInstancesAfterEventListenerChange(this);
             return;
@@ -2456,6 +2524,12 @@ bool Node::dispatchGenericEvent(PassRefPtr<Event> prpEvent)
     ASSERT(!eventDispatchForbidden());
     ASSERT(event->target());
     ASSERT(!event->type().isNull()); // JavaScript code can create an event with an empty name, but not null.
+
+#if ENABLE(INSPECTOR)
+    InspectorTimelineAgent* timelineAgent = document()->inspectorTimelineAgent();
+    if (timelineAgent)
+        timelineAgent->willDispatchDOMEvent(*event);
+#endif
 
     // Make a vector of ancestors to send the event to.
     // If the node is not in a document just send the event to it.
@@ -2568,6 +2642,11 @@ doneDispatching:
     }
 
 doneWithDefault:
+#if ENABLE(INSPECTOR)
+    if (timelineAgent)
+        timelineAgent->didDispatchDOMEvent();
+#endif
+
     Document::updateStyleForAllDocuments();
 
     return !event->defaultPrevented();
@@ -2851,10 +2930,6 @@ void Node::clearAttributeEventListener(const AtomicString& eventType)
         r.setRemoved(true);
         listeners->remove(i);
 
-        // removed last
-        if (listeners->isEmpty() && !inDocument())
-            document()->unregisterDisconnectedNodeWithEventListeners(this);
-
         updateSVGElementInstancesAfterEventListenerChange(this);
         return;
     }
@@ -2896,10 +2971,12 @@ void Node::defaultEventHandler(Event* event)
     } else if (eventType == eventNames().clickEvent) {
         int detail = event->isUIEvent() ? static_cast<UIEvent*>(event)->detail() : 0;
         dispatchUIEvent(eventNames().DOMActivateEvent, detail, event);
+#if ENABLE(CONTEXT_MENUS)
     } else if (eventType == eventNames().contextmenuEvent) {
         if (Frame* frame = document()->frame())
             if (Page* page = frame->page())
                 page->contextMenuController()->handleContextMenuEvent(event);
+#endif
     } else if (eventType == eventNames().textInputEvent) {
         if (event->isTextEvent())
             if (Frame* frame = document()->frame())
@@ -2995,6 +3072,16 @@ EventListener* Node::oninput() const
 void Node::setOninput(PassRefPtr<EventListener> eventListener)
 {
     setAttributeEventListener(eventNames().inputEvent, eventListener);
+}
+
+EventListener* Node::oninvalid() const
+{
+    return getAttributeEventListener(eventNames().invalidEvent);
+}
+
+void Node::setOninvalid(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().invalidEvent, eventListener);
 }
 
 EventListener* Node::onkeydown() const

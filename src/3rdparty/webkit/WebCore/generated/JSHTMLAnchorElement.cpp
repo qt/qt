@@ -90,6 +90,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLAnchorElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -104,6 +105,11 @@ const ClassInfo JSHTMLAnchorElementConstructor::s_info = { "HTMLAnchorElementCon
 bool JSHTMLAnchorElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLAnchorElementConstructor, DOMObject>(exec, &JSHTMLAnchorElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLAnchorElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLAnchorElementConstructor, DOMObject>(exec, &JSHTMLAnchorElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -133,6 +139,11 @@ bool JSHTMLAnchorElementPrototype::getOwnPropertySlot(ExecState* exec, const Ide
     return getStaticFunctionSlot<JSObject>(exec, &JSHTMLAnchorElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSHTMLAnchorElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSHTMLAnchorElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSHTMLAnchorElement::s_info = { "HTMLAnchorElement", &JSHTMLElement::s_info, &JSHTMLAnchorElementTable, 0 };
 
 JSHTMLAnchorElement::JSHTMLAnchorElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLAnchorElement> impl)
@@ -148,6 +159,11 @@ JSObject* JSHTMLAnchorElement::createPrototype(ExecState* exec, JSGlobalObject* 
 bool JSHTMLAnchorElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLAnchorElement, Base>(exec, &JSHTMLAnchorElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLAnchorElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLAnchorElement, Base>(exec, &JSHTMLAnchorElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLAnchorElementAccessKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -386,7 +402,7 @@ JSValue JSHTMLAnchorElement::getConstructor(ExecState* exec, JSGlobalObject* glo
 JSValue JSC_HOST_CALL jsHTMLAnchorElementPrototypeFunctionToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLAnchorElement::s_info))
+    if (!thisValue.inherits(&JSHTMLAnchorElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLAnchorElement* castedThisObj = static_cast<JSHTMLAnchorElement*>(asObject(thisValue));
     HTMLAnchorElement* imp = static_cast<HTMLAnchorElement*>(castedThisObj->impl());

@@ -49,11 +49,11 @@ ARMWord* ARMAssembler::getLdrImmAddress(ARMWord* insn, uint32_t* constPool)
         return reinterpret_cast<ARMWord*>(addr - (*insn & SDT_OFFSET_MASK));
 }
 
-void ARMAssembler::linkBranch(void* code, JmpSrc from, void* to)
+void ARMAssembler::linkBranch(void* code, JmpSrc from, void* to, int useConstantPool)
 {
     ARMWord* insn = reinterpret_cast<ARMWord*>(code) + (from.m_offset / sizeof(ARMWord));
 
-    if (!from.m_latePatch) {
+    if (!useConstantPool) {
         int diff = reinterpret_cast<ARMWord*>(to) - reinterpret_cast<ARMWord*>(insn + 2);
 
         if ((diff <= BOFFSET_MAX && diff >= BOFFSET_MIN)) {
@@ -291,10 +291,10 @@ void ARMAssembler::dataTransfer32(bool isLoad, RegisterID srcDst, RegisterID bas
         if (offset <= 0xfff)
             dtr_u(isLoad, srcDst, base, offset);
         else if (offset <= 0xfffff) {
-            add_r(ARM::S0, base, OP2_IMM | (offset >> 12) | (10 << 8));
-            dtr_u(isLoad, srcDst, ARM::S0, offset & 0xfff);
+            add_r(ARMRegisters::S0, base, OP2_IMM | (offset >> 12) | (10 << 8));
+            dtr_u(isLoad, srcDst, ARMRegisters::S0, offset & 0xfff);
         } else {
-            ARMWord reg = getImm(offset, ARM::S0);
+            ARMWord reg = getImm(offset, ARMRegisters::S0);
             dtr_ur(isLoad, srcDst, base, reg);
         }
     } else {
@@ -302,10 +302,10 @@ void ARMAssembler::dataTransfer32(bool isLoad, RegisterID srcDst, RegisterID bas
         if (offset <= 0xfff)
             dtr_d(isLoad, srcDst, base, offset);
         else if (offset <= 0xfffff) {
-            sub_r(ARM::S0, base, OP2_IMM | (offset >> 12) | (10 << 8));
-            dtr_d(isLoad, srcDst, ARM::S0, offset & 0xfff);
+            sub_r(ARMRegisters::S0, base, OP2_IMM | (offset >> 12) | (10 << 8));
+            dtr_d(isLoad, srcDst, ARMRegisters::S0, offset & 0xfff);
         } else {
-            ARMWord reg = getImm(offset, ARM::S0);
+            ARMWord reg = getImm(offset, ARMRegisters::S0);
             dtr_dr(isLoad, srcDst, base, reg);
         }
     }
@@ -319,30 +319,70 @@ void ARMAssembler::baseIndexTransfer32(bool isLoad, RegisterID srcDst, RegisterI
     op2 = lsl(index, scale);
 
     if (offset >= 0 && offset <= 0xfff) {
-        add_r(ARM::S0, base, op2);
-        dtr_u(isLoad, srcDst, ARM::S0, offset);
+        add_r(ARMRegisters::S0, base, op2);
+        dtr_u(isLoad, srcDst, ARMRegisters::S0, offset);
         return;
     }
     if (offset <= 0 && offset >= -0xfff) {
-        add_r(ARM::S0, base, op2);
-        dtr_d(isLoad, srcDst, ARM::S0, -offset);
+        add_r(ARMRegisters::S0, base, op2);
+        dtr_d(isLoad, srcDst, ARMRegisters::S0, -offset);
         return;
     }
 
-    moveImm(offset, ARM::S0);
-    add_r(ARM::S0, ARM::S0, op2);
-    dtr_ur(isLoad, srcDst, base, ARM::S0);
+    ldr_un_imm(ARMRegisters::S0, offset);
+    add_r(ARMRegisters::S0, ARMRegisters::S0, op2);
+    dtr_ur(isLoad, srcDst, base, ARMRegisters::S0);
+}
+
+void ARMAssembler::doubleTransfer(bool isLoad, FPRegisterID srcDst, RegisterID base, int32_t offset)
+{
+    if (offset & 0x3) {
+        if (offset <= 0x3ff && offset >= 0) {
+            fdtr_u(isLoad, srcDst, base, offset >> 2);
+            return;
+        }
+        if (offset <= 0x3ffff && offset >= 0) {
+            add_r(ARMRegisters::S0, base, OP2_IMM | (offset >> 10) | (11 << 8));
+            fdtr_u(isLoad, srcDst, ARMRegisters::S0, (offset >> 2) & 0xff);
+            return;
+        }
+        offset = -offset;
+
+        if (offset <= 0x3ff && offset >= 0) {
+            fdtr_d(isLoad, srcDst, base, offset >> 2);
+            return;
+        }
+        if (offset <= 0x3ffff && offset >= 0) {
+            sub_r(ARMRegisters::S0, base, OP2_IMM | (offset >> 10) | (11 << 8));
+            fdtr_d(isLoad, srcDst, ARMRegisters::S0, (offset >> 2) & 0xff);
+            return;
+        }
+        offset = -offset;
+    }
+
+    ldr_un_imm(ARMRegisters::S0, offset);
+    add_r(ARMRegisters::S0, ARMRegisters::S0, base);
+    fdtr_u(isLoad, srcDst, ARMRegisters::S0, 0);
 }
 
 void* ARMAssembler::executableCopy(ExecutablePool* allocator)
 {
+    // 64-bit alignment is required for next constant pool and JIT code as well
+    m_buffer.flushWithoutBarrier(true);
+    if (m_buffer.uncheckedSize() & 0x7)
+        bkpt(0);
+
     char* data = reinterpret_cast<char*>(m_buffer.executableCopy(allocator));
 
     for (Jumps::Iterator iter = m_jumps.begin(); iter != m_jumps.end(); ++iter) {
-        ARMWord* ldrAddr = reinterpret_cast<ARMWord*>(data + *iter);
-        ARMWord* offset = getLdrImmAddress(ldrAddr);
-        if (*offset != 0xffffffff)
-            linkBranch(data, JmpSrc(*iter), data + *offset);
+        // The last bit is set if the constant must be placed on constant pool.
+        int pos = (*iter) & (~0x1);
+        ARMWord* ldrAddr = reinterpret_cast<ARMWord*>(data + pos);
+        ARMWord offset = *getLdrImmAddress(ldrAddr);
+        if (offset != 0xffffffff) {
+            JmpSrc jmpSrc(pos);
+            linkBranch(data, jmpSrc, data + offset, ((*iter) & 1));
+        }
     }
 
     return data;

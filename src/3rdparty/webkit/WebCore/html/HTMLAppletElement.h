@@ -27,12 +27,9 @@
 
 namespace WebCore {
 
-class HTMLFormElement;
-class HTMLImageLoader;
-
 class HTMLAppletElement : public HTMLPlugInElement {
 public:
-    HTMLAppletElement(const QualifiedName&, Document*);
+    static PassRefPtr<HTMLAppletElement> create(const QualifiedName&, Document*);
 
     String hspace() const;
     void setHspace(const String&);
@@ -41,6 +38,8 @@ public:
     void setVspace(const String&);
 
 private:
+    HTMLAppletElement(const QualifiedName&, Document*);
+
     virtual int tagPriority() const { return 1; }
 
     virtual void parseMappedAttribute(MappedAttribute*);

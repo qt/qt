@@ -111,6 +111,11 @@ bool JSSVGPolylineElementPrototype::getOwnPropertySlot(ExecState* exec, const Id
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGPolylineElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGPolylineElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGPolylineElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGPolylineElement::s_info = { "SVGPolylineElement", &JSSVGElement::s_info, &JSSVGPolylineElementTable, 0 };
 
 JSSVGPolylineElement::JSSVGPolylineElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPolylineElement> impl)
@@ -126,6 +131,11 @@ JSObject* JSSVGPolylineElement::createPrototype(ExecState* exec, JSGlobalObject*
 bool JSSVGPolylineElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGPolylineElement, Base>(exec, &JSSVGPolylineElementTable, this, propertyName, slot);
+}
+
+bool JSSVGPolylineElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGPolylineElement, Base>(exec, &JSSVGPolylineElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGPolylineElementRequiredFeatures(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -255,7 +265,7 @@ void setJSSVGPolylineElementXmlspace(ExecState* exec, JSObject* thisObject, JSVa
 JSValue JSC_HOST_CALL jsSVGPolylineElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGPolylineElement::s_info))
+    if (!thisValue.inherits(&JSSVGPolylineElement::s_info))
         return throwError(exec, TypeError);
     JSSVGPolylineElement* castedThisObj = static_cast<JSSVGPolylineElement*>(asObject(thisValue));
     SVGPolylineElement* imp = static_cast<SVGPolylineElement*>(castedThisObj->impl());
@@ -269,7 +279,7 @@ JSValue JSC_HOST_CALL jsSVGPolylineElementPrototypeFunctionHasExtension(ExecStat
 JSValue JSC_HOST_CALL jsSVGPolylineElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGPolylineElement::s_info))
+    if (!thisValue.inherits(&JSSVGPolylineElement::s_info))
         return throwError(exec, TypeError);
     JSSVGPolylineElement* castedThisObj = static_cast<JSSVGPolylineElement*>(asObject(thisValue));
     SVGPolylineElement* imp = static_cast<SVGPolylineElement*>(castedThisObj->impl());
@@ -283,7 +293,7 @@ JSValue JSC_HOST_CALL jsSVGPolylineElementPrototypeFunctionGetPresentationAttrib
 JSValue JSC_HOST_CALL jsSVGPolylineElementPrototypeFunctionGetBBox(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGPolylineElement::s_info))
+    if (!thisValue.inherits(&JSSVGPolylineElement::s_info))
         return throwError(exec, TypeError);
     JSSVGPolylineElement* castedThisObj = static_cast<JSSVGPolylineElement*>(asObject(thisValue));
     SVGPolylineElement* imp = static_cast<SVGPolylineElement*>(castedThisObj->impl());
@@ -296,7 +306,7 @@ JSValue JSC_HOST_CALL jsSVGPolylineElementPrototypeFunctionGetBBox(ExecState* ex
 JSValue JSC_HOST_CALL jsSVGPolylineElementPrototypeFunctionGetCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGPolylineElement::s_info))
+    if (!thisValue.inherits(&JSSVGPolylineElement::s_info))
         return throwError(exec, TypeError);
     JSSVGPolylineElement* castedThisObj = static_cast<JSSVGPolylineElement*>(asObject(thisValue));
     SVGPolylineElement* imp = static_cast<SVGPolylineElement*>(castedThisObj->impl());
@@ -309,7 +319,7 @@ JSValue JSC_HOST_CALL jsSVGPolylineElementPrototypeFunctionGetCTM(ExecState* exe
 JSValue JSC_HOST_CALL jsSVGPolylineElementPrototypeFunctionGetScreenCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGPolylineElement::s_info))
+    if (!thisValue.inherits(&JSSVGPolylineElement::s_info))
         return throwError(exec, TypeError);
     JSSVGPolylineElement* castedThisObj = static_cast<JSSVGPolylineElement*>(asObject(thisValue));
     SVGPolylineElement* imp = static_cast<SVGPolylineElement*>(castedThisObj->impl());
@@ -322,7 +332,7 @@ JSValue JSC_HOST_CALL jsSVGPolylineElementPrototypeFunctionGetScreenCTM(ExecStat
 JSValue JSC_HOST_CALL jsSVGPolylineElementPrototypeFunctionGetTransformToElement(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGPolylineElement::s_info))
+    if (!thisValue.inherits(&JSSVGPolylineElement::s_info))
         return throwError(exec, TypeError);
     JSSVGPolylineElement* castedThisObj = static_cast<JSSVGPolylineElement*>(asObject(thisValue));
     SVGPolylineElement* imp = static_cast<SVGPolylineElement*>(castedThisObj->impl());

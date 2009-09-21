@@ -85,6 +85,11 @@ bool JSSVGStopElementPrototype::getOwnPropertySlot(ExecState* exec, const Identi
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGStopElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGStopElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGStopElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGStopElement::s_info = { "SVGStopElement", &JSSVGElement::s_info, &JSSVGStopElementTable, 0 };
 
 JSSVGStopElement::JSSVGStopElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGStopElement> impl)
@@ -100,6 +105,11 @@ JSObject* JSSVGStopElement::createPrototype(ExecState* exec, JSGlobalObject* glo
 bool JSSVGStopElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGStopElement, Base>(exec, &JSSVGStopElementTable, this, propertyName, slot);
+}
+
+bool JSSVGStopElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGStopElement, Base>(exec, &JSSVGStopElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGStopElementOffset(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -131,7 +141,7 @@ JSValue jsSVGStopElementStyle(ExecState* exec, const Identifier&, const Property
 JSValue JSC_HOST_CALL jsSVGStopElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGStopElement::s_info))
+    if (!thisValue.inherits(&JSSVGStopElement::s_info))
         return throwError(exec, TypeError);
     JSSVGStopElement* castedThisObj = static_cast<JSSVGStopElement*>(asObject(thisValue));
     SVGStopElement* imp = static_cast<SVGStopElement*>(castedThisObj->impl());

@@ -89,6 +89,12 @@ namespace WebCore {
         virtual void adjustSearchFieldResultsButtonStyle(CSSStyleSelector*, RenderStyle*, Element*) const;
         virtual bool paintSearchFieldResultsButton(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
 
+        virtual bool paintMediaControlsBackground(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
+        virtual bool paintMediaSliderTrack(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
+        virtual bool paintMediaVolumeSliderTrack(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
+        virtual void adjustSliderThumbSize(RenderObject*) const;
+        virtual bool paintMediaSliderThumb(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
+        virtual bool paintMediaVolumeSliderThumb(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
         virtual bool paintMediaPlayButton(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
         virtual bool paintMediaMuteButton(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
 
@@ -105,6 +111,9 @@ namespace WebCore {
         virtual bool paintMenuList(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
         virtual void adjustMenuListButtonStyle(CSSStyleSelector*, RenderStyle*, Element*) const;
         virtual bool paintMenuListButton(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
+
+        virtual bool paintSliderTrack(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
+        virtual bool paintSliderThumb(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
 
         // These methods define the padding for the MenuList's inner block.
         virtual int popupInternalPaddingLeft(RenderStyle*) const;

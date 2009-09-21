@@ -339,6 +339,7 @@ void tst_QLineEdit::initTestCase()
 
     testWidget->resize(200,50);
     testWidget->show();
+    QApplication::setActiveWindow(testWidget);
 #ifdef Q_WS_X11
     // to be safe and avoid failing setFocus with window managers
     qt_x11_wait_for_window_manager(testWidget);

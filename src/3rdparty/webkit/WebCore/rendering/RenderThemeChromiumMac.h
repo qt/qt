@@ -62,7 +62,7 @@ namespace WebCore {
 
         virtual Color platformActiveSelectionBackgroundColor() const;
         virtual Color platformInactiveSelectionBackgroundColor() const;
-        virtual Color activeListBoxSelectionBackgroundColor() const;
+        virtual Color platformActiveListBoxSelectionBackgroundColor() const;
 
         virtual Color platformFocusRingColor() const;
         
@@ -156,6 +156,7 @@ namespace WebCore {
         IntSize sizeForSystemFont(RenderStyle*, const IntSize* sizes) const;
         void setFontFromControlSize(CSSStyleSelector*, RenderStyle*, NSControlSize) const;
 
+        void updateActiveState(NSCell*, const RenderObject*);
         void updateCheckedState(NSCell*, const RenderObject*);
         void updateEnabledState(NSCell*, const RenderObject*);
         void updateFocusedState(NSCell*, const RenderObject*);

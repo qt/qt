@@ -109,6 +109,11 @@ bool JSSVGClipPathElementPrototype::getOwnPropertySlot(ExecState* exec, const Id
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGClipPathElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGClipPathElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGClipPathElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGClipPathElement::s_info = { "SVGClipPathElement", &JSSVGElement::s_info, &JSSVGClipPathElementTable, 0 };
 
 JSSVGClipPathElement::JSSVGClipPathElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGClipPathElement> impl)
@@ -124,6 +129,11 @@ JSObject* JSSVGClipPathElement::createPrototype(ExecState* exec, JSGlobalObject*
 bool JSSVGClipPathElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGClipPathElement, Base>(exec, &JSSVGClipPathElementTable, this, propertyName, slot);
+}
+
+bool JSSVGClipPathElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGClipPathElement, Base>(exec, &JSSVGClipPathElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGClipPathElementClipPathUnits(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -246,7 +256,7 @@ void setJSSVGClipPathElementXmlspace(ExecState* exec, JSObject* thisObject, JSVa
 JSValue JSC_HOST_CALL jsSVGClipPathElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGClipPathElement::s_info))
+    if (!thisValue.inherits(&JSSVGClipPathElement::s_info))
         return throwError(exec, TypeError);
     JSSVGClipPathElement* castedThisObj = static_cast<JSSVGClipPathElement*>(asObject(thisValue));
     SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(castedThisObj->impl());
@@ -260,7 +270,7 @@ JSValue JSC_HOST_CALL jsSVGClipPathElementPrototypeFunctionHasExtension(ExecStat
 JSValue JSC_HOST_CALL jsSVGClipPathElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGClipPathElement::s_info))
+    if (!thisValue.inherits(&JSSVGClipPathElement::s_info))
         return throwError(exec, TypeError);
     JSSVGClipPathElement* castedThisObj = static_cast<JSSVGClipPathElement*>(asObject(thisValue));
     SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(castedThisObj->impl());
@@ -274,7 +284,7 @@ JSValue JSC_HOST_CALL jsSVGClipPathElementPrototypeFunctionGetPresentationAttrib
 JSValue JSC_HOST_CALL jsSVGClipPathElementPrototypeFunctionGetBBox(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGClipPathElement::s_info))
+    if (!thisValue.inherits(&JSSVGClipPathElement::s_info))
         return throwError(exec, TypeError);
     JSSVGClipPathElement* castedThisObj = static_cast<JSSVGClipPathElement*>(asObject(thisValue));
     SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(castedThisObj->impl());
@@ -287,7 +297,7 @@ JSValue JSC_HOST_CALL jsSVGClipPathElementPrototypeFunctionGetBBox(ExecState* ex
 JSValue JSC_HOST_CALL jsSVGClipPathElementPrototypeFunctionGetCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGClipPathElement::s_info))
+    if (!thisValue.inherits(&JSSVGClipPathElement::s_info))
         return throwError(exec, TypeError);
     JSSVGClipPathElement* castedThisObj = static_cast<JSSVGClipPathElement*>(asObject(thisValue));
     SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(castedThisObj->impl());
@@ -300,7 +310,7 @@ JSValue JSC_HOST_CALL jsSVGClipPathElementPrototypeFunctionGetCTM(ExecState* exe
 JSValue JSC_HOST_CALL jsSVGClipPathElementPrototypeFunctionGetScreenCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGClipPathElement::s_info))
+    if (!thisValue.inherits(&JSSVGClipPathElement::s_info))
         return throwError(exec, TypeError);
     JSSVGClipPathElement* castedThisObj = static_cast<JSSVGClipPathElement*>(asObject(thisValue));
     SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(castedThisObj->impl());
@@ -313,7 +323,7 @@ JSValue JSC_HOST_CALL jsSVGClipPathElementPrototypeFunctionGetScreenCTM(ExecStat
 JSValue JSC_HOST_CALL jsSVGClipPathElementPrototypeFunctionGetTransformToElement(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGClipPathElement::s_info))
+    if (!thisValue.inherits(&JSSVGClipPathElement::s_info))
         return throwError(exec, TypeError);
     JSSVGClipPathElement* castedThisObj = static_cast<JSSVGClipPathElement*>(asObject(thisValue));
     SVGClipPathElement* imp = static_cast<SVGClipPathElement*>(castedThisObj->impl());

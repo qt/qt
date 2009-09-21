@@ -94,6 +94,11 @@ bool JSSVGAnimatedRect::getOwnPropertySlot(ExecState* exec, const Identifier& pr
     return getStaticValueSlot<JSSVGAnimatedRect, Base>(exec, &JSSVGAnimatedRectTable, this, propertyName, slot);
 }
 
+bool JSSVGAnimatedRect::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGAnimatedRect, Base>(exec, &JSSVGAnimatedRectTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGAnimatedRectBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGAnimatedRect* castedThis = static_cast<JSSVGAnimatedRect*>(asObject(slot.slotBase()));
@@ -116,7 +121,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAnim
 }
 SVGAnimatedRect* toSVGAnimatedRect(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGAnimatedRect::s_info) ? static_cast<JSSVGAnimatedRect*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGAnimatedRect::s_info) ? static_cast<JSSVGAnimatedRect*>(asObject(value))->impl() : 0;
 }
 
 }

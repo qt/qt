@@ -475,7 +475,7 @@ void tst_QItemDelegate::font()
     QApplication::sendPostedEvents(); //glib workaround
 #endif
 
-    QCOMPARE(delegate->displayText, item->text());
+    QTRY_COMPARE(delegate->displayText, item->text());
     if (properties.contains("italic")) {
         QCOMPARE(delegate->displayFont.italic(), item->font().italic());
     }
@@ -900,11 +900,8 @@ void tst_QItemDelegate::decoration()
     item->setSelected(true);
 
     QApplication::processEvents();
-#ifdef Q_WS_QWS
-    QApplication::sendPostedEvents(); //glib workaround
-#endif
 
-    QCOMPARE(delegate.decorationRect.size(), expected);
+    QTRY_COMPARE(delegate.decorationRect.size(), expected);
 }
 
 void tst_QItemDelegate::editorEvent_data()
@@ -1166,7 +1163,7 @@ void tst_QItemDelegate::task257859_finalizeEdit()
     QCOMPARE(editor->hasFocus(), true);
 
     QDialog dialog;
-    QTimer::singleShot(100, &dialog, SLOT(close()));
+    QTimer::singleShot(500, &dialog, SLOT(close()));
     dialog.exec();
     QTRY_VERIFY(!editor);
 }

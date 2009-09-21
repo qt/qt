@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2008 Nikolas Zimmermann <zimmermann@kde.org>
+ * Copyright (C) 2009 Apple, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,14 +38,14 @@ using namespace JSC;
 
 namespace WebCore {
 
-void JSSVGElementInstance::mark()
+void JSSVGElementInstance::markChildren(MarkStack& markStack)
 {
-    Base::mark();
+    Base::markChildren(markStack);
 
     // Mark the wrapper for our corresponding element, so it can mark its event handlers.
     JSNode* correspondingWrapper = getCachedDOMNodeWrapper(impl()->correspondingElement()->document(), impl()->correspondingElement());
-    if (correspondingWrapper && !correspondingWrapper->marked())
-        correspondingWrapper->mark();
+    if (correspondingWrapper)
+        markStack.append(correspondingWrapper);
 }
 
 JSValue JSSVGElementInstance::addEventListener(ExecState* exec, const ArgList& args)
@@ -53,9 +54,11 @@ JSValue JSSVGElementInstance::addEventListener(ExecState* exec, const ArgList& a
     if (!globalObject)
         return jsUndefined();
 
-    if (RefPtr<JSEventListener> listener = globalObject->findOrCreateJSEventListener(args.at(1)))
-        impl()->addEventListener(args.at(0).toString(exec), listener.release(), args.at(2).toBoolean(exec));
+    JSValue listener = args.at(1);
+    if (!listener.isObject())
+        return jsUndefined();
 
+    impl()->addEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), globalObject, false), args.at(2).toBoolean(exec));
     return jsUndefined();
 }
 
@@ -65,9 +68,11 @@ JSValue JSSVGElementInstance::removeEventListener(ExecState* exec, const ArgList
     if (!globalObject)
         return jsUndefined();
 
-    if (JSEventListener* listener = globalObject->findJSEventListener(args.at(1)))
-        impl()->removeEventListener(args.at(0).toString(exec), listener, args.at(2).toBoolean(exec));
+    JSValue listener = args.at(1);
+    if (!listener.isObject())
+        return jsUndefined();
 
+    impl()->removeEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), globalObject, false).get(), args.at(2).toBoolean(exec));
     return jsUndefined();
 }
 

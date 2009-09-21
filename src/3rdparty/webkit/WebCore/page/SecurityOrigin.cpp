@@ -32,14 +32,19 @@
 #include "CString.h"
 #include "FrameLoader.h"
 #include "KURL.h"
-#include "PlatformString.h"
-#include "StringHash.h"
-#include <wtf/HashSet.h>
+#include "OriginAccessEntry.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {
 
-typedef HashSet<String, CaseFoldingHash> URLSchemesMap;
+typedef Vector<OriginAccessEntry> OriginAccessWhiteList;
+typedef HashMap<String, OriginAccessWhiteList*> OriginAccessMap;
+
+static OriginAccessMap& originAccessMap()
+{
+    DEFINE_STATIC_LOCAL(OriginAccessMap, originAccessMap, ());
+    return originAccessMap;
+}
 
 static URLSchemesMap& localSchemes()
 {
@@ -68,7 +73,7 @@ static URLSchemesMap& noAccessSchemes()
     return noAccessSchemes;
 }
 
-static bool isDefaultPortForProtocol(unsigned short port, const String& protocol)
+bool SecurityOrigin::isDefaultPortForProtocol(unsigned short port, const String& protocol)
 {
     if (protocol.isEmpty())
         return false;
@@ -203,7 +208,17 @@ bool SecurityOrigin::canRequest(const KURL& url) const
 
     // We call isSameSchemeHostPort here instead of canAccess because we want
     // to ignore document.domain effects.
-    return isSameSchemeHostPort(targetOrigin.get());
+    if (isSameSchemeHostPort(targetOrigin.get()))
+        return true;
+
+    if (OriginAccessWhiteList* list = originAccessMap().get(toString())) {
+        for (size_t i = 0; i < list->size(); ++i) {
+            if (list->at(i).matchesOrigin(*targetOrigin))
+                return true;
+        }
+    }
+
+    return false;
 }
 
 void SecurityOrigin::grantLoadLocalResources()
@@ -281,15 +296,16 @@ PassRefPtr<SecurityOrigin> SecurityOrigin::createFromDatabaseIdentifier(const St
     if (separator2 == -1)
         return create(KURL());
         
-    // Ensure there were at least 2 seperator characters. Some hostnames on intranets have
+    // Ensure there were at least 2 separator characters. Some hostnames on intranets have
     // underscores in them, so we'll assume that any additional underscores are part of the host.
-    if (separator1 != separator2)
+    if (separator1 == separator2)
         return create(KURL());
         
     // Make sure the port section is a valid port number or doesn't exist
     bool portOkay;
     int port = databaseIdentifier.right(databaseIdentifier.length() - separator2 - 1).toInt(&portOkay);
-    if (!portOkay && separator2 + 1 == static_cast<int>(databaseIdentifier.length()))
+    bool portAbsent = (separator2 == static_cast<int>(databaseIdentifier.length()) - 1);
+    if (!(portOkay || portAbsent))
         return create(KURL());
     
     if (port < 0 || port > 65535)
@@ -345,6 +361,28 @@ void SecurityOrigin::registerURLSchemeAsLocal(const String& scheme)
 }
 
 // static
+void SecurityOrigin::removeURLSchemeRegisteredAsLocal(const String& scheme)
+{
+    if (scheme == "file")
+        return;
+#if PLATFORM(MAC)
+    if (scheme == "applewebdata")
+        return;
+#endif
+#if PLATFORM(QT)
+    if (scheme == "qrc")
+        return;
+#endif
+    localSchemes().remove(scheme);
+}
+
+// static
+const URLSchemesMap&  SecurityOrigin::localURLSchemes()
+{
+    return localSchemes();
+}
+
+// static
 bool SecurityOrigin::shouldTreatURLAsLocal(const String& url)
 {
     // This avoids an allocation of another String and the HashSet contains()
@@ -394,6 +432,30 @@ void SecurityOrigin::registerURLSchemeAsNoAccess(const String& scheme)
 bool SecurityOrigin::shouldTreatURLSchemeAsNoAccess(const String& scheme)
 {
     return noAccessSchemes().contains(scheme);
+}
+
+void SecurityOrigin::whiteListAccessFromOrigin(const SecurityOrigin& sourceOrigin, const String& destinationProtocol, const String& destinationDomains, bool allowDestinationSubdomains)
+{
+    ASSERT(isMainThread());
+    ASSERT(!sourceOrigin.isEmpty());
+    if (sourceOrigin.isEmpty())
+        return;
+
+    String sourceString = sourceOrigin.toString();
+    OriginAccessWhiteList* list = originAccessMap().get(sourceString);
+    if (!list) {
+        list = new OriginAccessWhiteList;
+        originAccessMap().set(sourceString, list);
+    }
+    list->append(OriginAccessEntry(destinationProtocol, destinationDomains, allowDestinationSubdomains ? OriginAccessEntry::AllowSubdomains : OriginAccessEntry::DisallowSubdomains));
+}
+
+void SecurityOrigin::resetOriginAccessWhiteLists()
+{
+    ASSERT(isMainThread());
+    OriginAccessMap& map = originAccessMap();
+    deleteAllValues(map);
+    map.clear();
 }
 
 } // namespace WebCore

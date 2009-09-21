@@ -76,6 +76,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSRangeExceptionPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -90,6 +91,11 @@ const ClassInfo JSRangeExceptionConstructor::s_info = { "RangeExceptionConstruct
 bool JSRangeExceptionConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSRangeExceptionConstructor, DOMObject>(exec, &JSRangeExceptionConstructorTable, this, propertyName, slot);
+}
+
+bool JSRangeExceptionConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSRangeExceptionConstructor, DOMObject>(exec, &JSRangeExceptionConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -121,6 +127,11 @@ bool JSRangeExceptionPrototype::getOwnPropertySlot(ExecState* exec, const Identi
     return getStaticPropertySlot<JSRangeExceptionPrototype, JSObject>(exec, &JSRangeExceptionPrototypeTable, this, propertyName, slot);
 }
 
+bool JSRangeExceptionPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticPropertyDescriptor<JSRangeExceptionPrototype, JSObject>(exec, &JSRangeExceptionPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSRangeException::s_info = { "RangeException", 0, &JSRangeExceptionTable, 0 };
 
 JSRangeException::JSRangeException(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<RangeException> impl)
@@ -142,6 +153,11 @@ JSObject* JSRangeException::createPrototype(ExecState* exec, JSGlobalObject* glo
 bool JSRangeException::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSRangeException, Base>(exec, &JSRangeExceptionTable, this, propertyName, slot);
+}
+
+bool JSRangeException::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSRangeException, Base>(exec, &JSRangeExceptionTable, this, propertyName, descriptor);
 }
 
 JSValue jsRangeExceptionCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -181,7 +197,7 @@ JSValue JSRangeException::getConstructor(ExecState* exec, JSGlobalObject* global
 JSValue JSC_HOST_CALL jsRangeExceptionPrototypeFunctionToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSRangeException::s_info))
+    if (!thisValue.inherits(&JSRangeException::s_info))
         return throwError(exec, TypeError);
     JSRangeException* castedThisObj = static_cast<JSRangeException*>(asObject(thisValue));
     RangeException* imp = static_cast<RangeException*>(castedThisObj->impl());
@@ -209,7 +225,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, RangeEx
 }
 RangeException* toRangeException(JSC::JSValue value)
 {
-    return value.isObject(&JSRangeException::s_info) ? static_cast<JSRangeException*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSRangeException::s_info) ? static_cast<JSRangeException*>(asObject(value))->impl() : 0;
 }
 
 }

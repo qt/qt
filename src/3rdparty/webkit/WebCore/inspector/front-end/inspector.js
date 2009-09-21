@@ -1,19 +1,20 @@
 /*
  * Copyright (C) 2006, 2007, 2008 Apple Inc.  All rights reserved.
  * Copyright (C) 2007 Matt Lilek (pewtermoose@gmail.com).
+ * Copyright (C) 2009 Joseph Pecoraro
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  *
  * 1.  Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer. 
+ *     notice, this list of conditions and the following disclaimer.
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution. 
+ *     documentation and/or other materials provided with the distribution.
  * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
  *     its contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission. 
+ *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -37,7 +38,11 @@ var Preferences = {
     minScriptsSidebarWidth: 200,
     showInheritedComputedStyleProperties: false,
     styleRulesExpandedState: {},
-    showMissingLocalizedStrings: false
+    showMissingLocalizedStrings: false,
+    heapProfilerPresent: false,
+    samplingCPUProfiler: false,
+    showColorNicknames: true,
+    colorFormat: "hex"
 }
 
 var WebInspector = {
@@ -68,7 +73,7 @@ var WebInspector = {
             // there isn't already a caret selection inside.
             var selection = window.getSelection();
             if (selection.isCollapsed && !this._currentFocusElement.isInsertionCaretInside()) {
-                var selectionRange = document.createRange();
+                var selectionRange = this._currentFocusElement.ownerDocument.createRange();
                 selectionRange.setStart(this._currentFocusElement, 0);
                 selectionRange.setEnd(this._currentFocusElement, 0);
 
@@ -117,13 +122,13 @@ var WebInspector = {
                 }
             }
         }
-        
+
         for (var panelName in WebInspector.panels) {
             if (WebInspector.panels[panelName] == x)
                 InspectorController.storeLastActivePanel(panelName);
         }
     },
-  
+
     _createPanels: function()
     {
         var hiddenPanels = (InspectorController.hiddenPanels() || "").split(',');
@@ -135,8 +140,8 @@ var WebInspector = {
             this.panels.scripts = new WebInspector.ScriptsPanel();
         if (hiddenPanels.indexOf("profiles") === -1)
             this.panels.profiles = new WebInspector.ProfilesPanel();
-        if (hiddenPanels.indexOf("databases") === -1)
-            this.panels.databases = new WebInspector.DatabasesPanel();      
+        if (hiddenPanels.indexOf("storage") === -1 && hiddenPanels.indexOf("databases") === -1)
+            this.panels.storage = new WebInspector.StoragePanel();      
     },
 
     get attached()
@@ -251,6 +256,53 @@ var WebInspector = {
             errorWarningElement.title = null;
     },
 
+    get styleChanges()
+    {
+        return this._styleChanges;
+    },
+
+    set styleChanges(x)
+    {
+        x = Math.max(x, 0);
+
+        if (this._styleChanges === x)
+            return;
+        this._styleChanges = x;
+        this._updateChangesCount();
+    },
+
+    _updateChangesCount: function()
+    {
+        // TODO: Remove immediate return when enabling the Changes Panel
+        return;
+
+        var changesElement = document.getElementById("changes-count");
+        if (!changesElement)
+            return;
+
+        if (!this.styleChanges) {
+            changesElement.addStyleClass("hidden");
+            return;
+        }
+
+        changesElement.removeStyleClass("hidden");
+        changesElement.removeChildren();
+
+        if (this.styleChanges) {
+            var styleChangesElement = document.createElement("span");
+            styleChangesElement.id = "style-changes-count";
+            styleChangesElement.textContent = this.styleChanges;
+            changesElement.appendChild(styleChangesElement);
+        }
+
+        if (this.styleChanges) {
+            if (this.styleChanges === 1)
+                changesElement.title = WebInspector.UIString("%d style change", this.styleChanges);
+            else
+                changesElement.title = WebInspector.UIString("%d style changes", this.styleChanges);
+        }
+    },
+
     get hoveredDOMNode()
     {
         return this._hoveredDOMNode;
@@ -258,7 +310,7 @@ var WebInspector = {
 
     set hoveredDOMNode(x)
     {
-        if (objectsAreSame(this._hoveredDOMNode, x))
+        if (this._hoveredDOMNode === x)
             return;
 
         this._hoveredDOMNode = x;
@@ -284,7 +336,7 @@ var WebInspector = {
         }
 
         if (this._hoveredDOMNode) {
-            InspectorController.highlightDOMNode(this._hoveredDOMNode);
+            InspectorController.highlightDOMNode(this._hoveredDOMNode.id);
             this.showingDOMNodeHighlight = true;
         } else {
             InspectorController.hideDOMNodeHighlight();
@@ -298,7 +350,27 @@ WebInspector.loaded = function()
     var platform = InspectorController.platform();
     document.body.addStyleClass("platform-" + platform);
 
-    this.console = new WebInspector.Console();
+    var colorFormat = InspectorController.setting("color-format");
+    if (colorFormat)
+        Preferences.colorFormat = colorFormat;
+
+    this.drawer = new WebInspector.Drawer();
+    this.console = new WebInspector.ConsoleView(this.drawer);
+    // TODO: Uncomment when enabling the Changes Panel
+    // this.changes = new WebInspector.ChangesView(this.drawer);
+    // TODO: Remove class="hidden" from inspector.html on button#changes-status-bar-item
+    this.drawer.visibleView = this.console;
+    this.domAgent = new WebInspector.DOMAgent();
+
+    this.resourceCategories = {
+        documents: new WebInspector.ResourceCategory(WebInspector.UIString("Documents"), "documents"),
+        stylesheets: new WebInspector.ResourceCategory(WebInspector.UIString("Stylesheets"), "stylesheets"),
+        images: new WebInspector.ResourceCategory(WebInspector.UIString("Images"), "images"),
+        scripts: new WebInspector.ResourceCategory(WebInspector.UIString("Scripts"), "scripts"),
+        xhr: new WebInspector.ResourceCategory(WebInspector.UIString("XHR"), "xhr"),
+        fonts: new WebInspector.ResourceCategory(WebInspector.UIString("Fonts"), "fonts"),
+        other: new WebInspector.ResourceCategory(WebInspector.UIString("Other"), "other")
+    };
 
     this.panels = {};
     this._createPanels();
@@ -319,16 +391,6 @@ WebInspector.loaded = function()
         previousToolbarItem = panelToolbarItem;
     }
 
-    this.resourceCategories = {
-        documents: new WebInspector.ResourceCategory(WebInspector.UIString("Documents"), "documents"),
-        stylesheets: new WebInspector.ResourceCategory(WebInspector.UIString("Stylesheets"), "stylesheets"),
-        images: new WebInspector.ResourceCategory(WebInspector.UIString("Images"), "images"),
-        scripts: new WebInspector.ResourceCategory(WebInspector.UIString("Scripts"), "scripts"),
-        xhr: new WebInspector.ResourceCategory(WebInspector.UIString("XHR"), "xhr"),
-        fonts: new WebInspector.ResourceCategory(WebInspector.UIString("Fonts"), "fonts"),
-        other: new WebInspector.ResourceCategory(WebInspector.UIString("Other"), "other")
-    };
-
     this.Tips = {
         ResourceNotCompressed: {id: 0, message: WebInspector.UIString("You could save bandwidth by having your web server compress this transfer with gzip or zlib.")}
     };
@@ -347,6 +409,7 @@ WebInspector.loaded = function()
     document.addEventListener("keyup", this.documentKeyUp.bind(this), true);
     document.addEventListener("beforecopy", this.documentCanCopy.bind(this), true);
     document.addEventListener("copy", this.documentCopy.bind(this), true);
+    document.addEventListener("contextmenu", this.contextMenu.bind(this), true);
 
     var mainPanelsElement = document.getElementById("main-panels");
     mainPanelsElement.handleKeyEvent = this.mainKeyDown.bind(this);
@@ -367,8 +430,14 @@ WebInspector.loaded = function()
         dockToggleButton.title = WebInspector.UIString("Dock to main window.");
 
     var errorWarningCount = document.getElementById("error-warning-count");
-    errorWarningCount.addEventListener("click", this.console.show.bind(this.console), false);
+    errorWarningCount.addEventListener("click", this.showConsole.bind(this), false);
     this._updateErrorAndWarningCounts();
+
+    this.styleChanges = 0;
+    // TODO: Uncomment when enabling the Changes Panel
+    // var changesElement = document.getElementById("changes-count");
+    // changesElement.addEventListener("click", this.showChanges.bind(this), false);
+    // this._updateErrorAndWarningCounts();
 
     var searchField = document.getElementById("search");
     searchField.addEventListener("keydown", this.searchKeyDown.bind(this), false);
@@ -498,7 +567,7 @@ WebInspector.documentKeyDown = function(event)
 
         switch (event.keyIdentifier) {
             case "U+001B": // Escape key
-                this.console.visible = !this.console.visible;
+                this.drawer.visible = !this.drawer.visible;
                 event.preventDefault();
                 break;
 
@@ -593,6 +662,12 @@ WebInspector.documentCopy = function(event)
         this.currentFocusElement.handleCopyEvent(event);
     else if (this.currentFocusElement.id && this.currentFocusElement.id.length && WebInspector[this.currentFocusElement.id + "Copy"])
         WebInspector[this.currentFocusElement.id + "Copy"](event);
+}
+
+WebInspector.contextMenu = function(event)
+{
+    if (event.handled || event.target.hasStyleClass("popup-glasspane"))
+        event.preventDefault();
 }
 
 WebInspector.mainKeyDown = function(event)
@@ -759,7 +834,7 @@ WebInspector.toolbarDrag = function(event)
     event.preventDefault();
 }
 
-WebInspector.elementDragStart = function(element, dividerDrag, elementDragEnd, event, cursor) 
+WebInspector.elementDragStart = function(element, dividerDrag, elementDragEnd, event, cursor)
 {
     if (this._elementDraggingEventListener || this._elementEndDraggingEventListener)
         this.elementDragEnd(event);
@@ -790,7 +865,12 @@ WebInspector.elementDragEnd = function(event)
 
 WebInspector.showConsole = function()
 {
-    this.console.show();
+    this.drawer.showView(this.console);
+}
+
+WebInspector.showChanges = function()
+{
+    this.drawer.showView(this.changes);
 }
 
 WebInspector.showElementsPanel = function()
@@ -813,9 +893,9 @@ WebInspector.showProfilesPanel = function()
     this.currentPanel = this.panels.profiles;
 }
 
-WebInspector.showDatabasesPanel = function()
+WebInspector.showStoragePanel = function()
 {
-    this.currentPanel = this.panels.databases;
+    this.currentPanel = this.panels.storage;
 }
 
 WebInspector.addResource = function(identifier, payload)
@@ -828,7 +908,9 @@ WebInspector.addResource = function(identifier, payload)
         payload.lastPathComponent,
         identifier,
         payload.isMainResource,
-        payload.cached);
+        payload.cached,
+        payload.requestMethod,
+        payload.requestFormData);
     this.resources[identifier] = resource;
     this.resourceURLMap[resource.url] = resource;
 
@@ -839,6 +921,23 @@ WebInspector.addResource = function(identifier, payload)
 
     if (this.panels.resources)
         this.panels.resources.addResource(resource);
+}
+
+WebInspector.clearConsoleMessages = function()
+{
+    WebInspector.console.clearMessages(false);
+}
+
+WebInspector.selectDatabase = function(o)
+{
+    WebInspector.showStoragePanel();
+    WebInspector.panels.storage.selectDatabase(o);
+}
+
+WebInspector.selectDOMStorage = function(o)
+{
+    WebInspector.showStoragePanel();
+    WebInspector.panels.storage.selectDOMStorage(o);
 }
 
 WebInspector.updateResource = function(identifier, payload)
@@ -854,6 +953,8 @@ WebInspector.updateResource = function(identifier, payload)
         resource.lastPathComponent = payload.lastPathComponent;
         resource.requestHeaders = payload.requestHeaders;
         resource.mainResource = payload.mainResource;
+        resource.requestMethod = payload.requestMethod;
+        resource.requestFormData = payload.requestFormData;
     }
 
     if (payload.didResponseChange) {
@@ -868,7 +969,7 @@ WebInspector.updateResource = function(identifier, payload)
     if (payload.didTypeChange) {
         resource.type = payload.type;
     }
-    
+
     if (payload.didLengthChange) {
         resource.contentLength = payload.contentLength;
     }
@@ -909,7 +1010,7 @@ WebInspector.addDatabase = function(payload)
         payload.domain,
         payload.name,
         payload.version);
-    this.panels.databases.addDatabase(database);
+    this.panels.storage.addDatabase(database);
 }
 
 WebInspector.addDOMStorage = function(payload)
@@ -918,7 +1019,7 @@ WebInspector.addDOMStorage = function(payload)
         payload.domStorage,
         payload.host,
         payload.isLocalStorage);
-    this.panels.databases.addDOMStorage(domStorage);
+    this.panels.storage.addDOMStorage(domStorage);
 }
 
 WebInspector.resourceTrackingWasEnabled = function()
@@ -966,9 +1067,9 @@ WebInspector.failedToParseScriptSource = function(sourceURL, source, startingLin
     this.panels.scripts.addScript(null, sourceURL, source, startingLine, errorLine, errorMessage);
 }
 
-WebInspector.pausedScript = function()
+WebInspector.pausedScript = function(callFrames)
 {
-    this.panels.scripts.debuggerPaused();
+    this.panels.scripts.debuggerPaused(callFrames);
 }
 
 WebInspector.resumedScript = function()
@@ -1005,11 +1106,6 @@ WebInspector.reset = function()
     this.console.clearMessages();
 }
 
-WebInspector.inspectedWindowCleared = function(inspectedWindow)
-{
-    this.panels.elements.inspectedWindowCleared(inspectedWindow);
-}
-
 WebInspector.resourceURLChanged = function(resource, oldURL)
 {
     delete this.resourceURLMap[oldURL];
@@ -1028,6 +1124,20 @@ WebInspector.addMessageToConsole = function(payload)
         payload.repeatCount);
     consoleMessage.setMessageBody(Array.prototype.slice.call(arguments, 1));
     this.console.addMessage(consoleMessage);
+}
+
+WebInspector.log = function(message)
+{
+    var msg = new WebInspector.ConsoleMessage(
+        WebInspector.ConsoleMessage.MessageSource.Other,
+        WebInspector.ConsoleMessage.MessageType.Log,
+        WebInspector.ConsoleMessage.MessageLevel.Debug,
+        -1,
+        null,
+        null,
+        1,
+        message);
+    this.console.addMessage(msg);
 }
 
 WebInspector.addProfile = function(profile)
@@ -1049,7 +1159,7 @@ WebInspector.drawLoadingPieChart = function(canvas, percent) {
     var r = 7;
 
     g.beginPath();
-    g.arc(cx, cy, r, 0, Math.PI * 2, false); 
+    g.arc(cx, cy, r, 0, Math.PI * 2, false);
     g.closePath();
 
     g.lineWidth = 1;
@@ -1063,15 +1173,16 @@ WebInspector.drawLoadingPieChart = function(canvas, percent) {
 
     g.beginPath();
     g.moveTo(cx, cy);
-    g.arc(cx, cy, r, startangle, endangle, false); 
+    g.arc(cx, cy, r, startangle, endangle, false);
     g.closePath();
 
     g.fillStyle = darkColor;
     g.fill();
 }
 
-WebInspector.updateFocusedNode = function(node)
+WebInspector.updateFocusedNode = function(nodeId)
 {
+    var node = WebInspector.domAgent.nodeForId(nodeId);
     if (!node)
         // FIXME: Should we deselect if null is passed in?
         return;
@@ -1179,7 +1290,7 @@ WebInspector.linkifyURLAsNode = function(url, linkText, classes, isExternal)
     a.title = url;
     a.target = "_blank";
     a.textContent = linkText;
-    
+
     return a;
 }
 
@@ -1261,6 +1372,11 @@ WebInspector.performSearch = function(event)
     this.currentPanel.performSearch(query);
 }
 
+WebInspector.addNodesToSearchResult = function(nodeIds)
+{
+    WebInspector.panels.elements.addNodesToSearchResult(nodeIds);
+}
+
 WebInspector.updateSearchMatchesCount = function(matches, panel)
 {
     if (!panel)
@@ -1317,7 +1433,7 @@ WebInspector.startEditing = function(element, committedCallback, cancelledCallba
         return;
     element.__editing = true;
 
-    var oldText = element.textContent;
+    var oldText = getContent(element);
     var oldHandleKeyEvent = element.handleKeyEvent;
     var moveDirection = "";
 
@@ -1329,6 +1445,13 @@ WebInspector.startEditing = function(element, committedCallback, cancelledCallba
 
     function blurEventListener() {
         editingCommitted.call(element);
+    }
+
+    function getContent(element) {
+        if (element.tagName === "INPUT" && element.type === "text")
+            return element.value;
+        else
+            return element.textContent;
     }
 
     function cleanUpAfterEditing() {
@@ -1347,17 +1470,22 @@ WebInspector.startEditing = function(element, committedCallback, cancelledCallba
     }
 
     function editingCancelled() {
-        this.innerText = oldText;
+        if (this.tagName === "INPUT" && this.type === "text")
+            this.value = oldText;
+        else
+            this.textContent = oldText;
 
         cleanUpAfterEditing.call(this);
 
-        cancelledCallback(this, context);
+        if (cancelledCallback)
+            cancelledCallback(this, context);
     }
 
     function editingCommitted() {
         cleanUpAfterEditing.call(this);
 
-        committedCallback(this, this.textContent, oldText, context, moveDirection);
+        if (committedCallback)
+            committedCallback(this, getContent(this), oldText, context, moveDirection);
     }
 
     element.handleKeyEvent = function(event) {

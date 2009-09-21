@@ -50,18 +50,17 @@ HTMLFrameElementBase::HTMLFrameElementBase(const QualifiedName& tagName, Documen
     , m_scrolling(ScrollbarAuto)
     , m_marginWidth(-1)
     , m_marginHeight(-1)
-    , m_noResize(false)
     , m_viewSource(false)
     , m_shouldOpenURLAfterAttach(false)
 {
 }
 
-bool HTMLFrameElementBase::isURLAllowed(const AtomicString& URLString) const
+bool HTMLFrameElementBase::isURLAllowed() const
 {
-    if (URLString.isEmpty())
+    if (m_URL.isEmpty())
         return true;
 
-    const KURL& completeURL = document()->completeURL(URLString);
+    const KURL& completeURL = document()->completeURL(m_URL);
 
     // Don't allow more than 200 total frames in a set. This seems
     // like a reasonable upper bound, and otherwise mutually recursive
@@ -79,7 +78,7 @@ bool HTMLFrameElementBase::isURLAllowed(const AtomicString& URLString) const
     // But we don't allow more than one.
     bool foundSelfReference = false;
     for (Frame* frame = document()->frame(); frame; frame = frame->tree()->parent()) {
-        if (equalIgnoringRef(frame->loader()->url(), completeURL)) {
+        if (equalIgnoringFragmentIdentifier(frame->loader()->url(), completeURL)) {
             if (foundSelfReference)
                 return false;
             foundSelfReference = true;
@@ -93,7 +92,7 @@ void HTMLFrameElementBase::openURL()
 {
     ASSERT(!m_frameName.isEmpty());
 
-    if (!isURLAllowed(m_URL))
+    if (!isURLAllowed())
         return;
 
     if (m_URL.isEmpty())
@@ -126,9 +125,6 @@ void HTMLFrameElementBase::parseMappedAttribute(MappedAttribute *attr)
         // FIXME: If we are already attached, this has no effect.
     } else if (attr->name() == marginheightAttr) {
         m_marginHeight = attr->value().toInt();
-        // FIXME: If we are already attached, this has no effect.
-    } else if (attr->name() == noresizeAttr) {
-        m_noResize = true;
         // FIXME: If we are already attached, this has no effect.
     } else if (attr->name() == scrollingAttr) {
         // Auto and yes both simply mean "allow scrolling." No means "don't allow scrolling."
@@ -193,14 +189,15 @@ void HTMLFrameElementBase::attach()
 
     HTMLFrameOwnerElement::attach();
     
-    if (RenderPart* renderPart = static_cast<RenderPart*>(renderer()))
+    if (RenderPart* renderPart = toRenderPart(renderer())) {
         if (Frame* frame = contentFrame())
             renderPart->setWidget(frame->view());
+    }
 }
 
 KURL HTMLFrameElementBase::location() const
 {
-    return src();
+    return document()->completeURL(getAttribute(srcAttr));
 }
 
 void HTMLFrameElementBase::setLocation(const String& str)
@@ -215,9 +212,9 @@ void HTMLFrameElementBase::setLocation(const String& str)
         openURL();
 }
 
-bool HTMLFrameElementBase::isFocusable() const
+bool HTMLFrameElementBase::supportsFocus() const
 {
-    return renderer();
+    return true;
 }
 
 void HTMLFrameElementBase::setFocus(bool received)
@@ -230,81 +227,6 @@ void HTMLFrameElementBase::setFocus(bool received)
 bool HTMLFrameElementBase::isURLAttribute(Attribute *attr) const
 {
     return attr->name() == srcAttr;
-}
-
-String HTMLFrameElementBase::frameBorder() const
-{
-    return getAttribute(frameborderAttr);
-}
-
-void HTMLFrameElementBase::setFrameBorder(const String &value)
-{
-    setAttribute(frameborderAttr, value);
-}
-
-String HTMLFrameElementBase::longDesc() const
-{
-    return getAttribute(longdescAttr);
-}
-
-void HTMLFrameElementBase::setLongDesc(const String &value)
-{
-    setAttribute(longdescAttr, value);
-}
-
-String HTMLFrameElementBase::marginHeight() const
-{
-    return getAttribute(marginheightAttr);
-}
-
-void HTMLFrameElementBase::setMarginHeight(const String &value)
-{
-    setAttribute(marginheightAttr, value);
-}
-
-String HTMLFrameElementBase::marginWidth() const
-{
-    return getAttribute(marginwidthAttr);
-}
-
-void HTMLFrameElementBase::setMarginWidth(const String &value)
-{
-    setAttribute(marginwidthAttr, value);
-}
-
-String HTMLFrameElementBase::name() const
-{
-    return getAttribute(nameAttr);
-}
-
-void HTMLFrameElementBase::setName(const String &value)
-{
-    setAttribute(nameAttr, value);
-}
-
-void HTMLFrameElementBase::setNoResize(bool noResize)
-{
-    setAttribute(noresizeAttr, noResize ? "" : 0);
-}
-
-String HTMLFrameElementBase::scrolling() const
-{
-    return getAttribute(scrollingAttr);
-}
-
-void HTMLFrameElementBase::setScrolling(const String &value)
-{
-    setAttribute(scrollingAttr, value);
-}
-
-KURL HTMLFrameElementBase::src() const
-{
-    return document()->completeURL(getAttribute(srcAttr));
-}
-
-void HTMLFrameElementBase::setSrc(const String &value)
-{
-    setAttribute(srcAttr, value);
 }
 
 int HTMLFrameElementBase::width() const

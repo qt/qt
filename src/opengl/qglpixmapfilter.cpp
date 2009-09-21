@@ -123,23 +123,28 @@ private:
 
 extern QGLWidget *qt_gl_share_widget();
 
-QPixmapFilter *QGLContextPrivate::createPixmapFilter(int type) const
+QPixmapFilter *QGL2PaintEngineEx::pixmapFilter(int type, const QPixmapFilter *prototype)
 {
+    Q_D(QGL2PaintEngineEx);
     switch (type) {
     case QPixmapFilter::ColorizeFilter:
-        return new QGLPixmapColorizeFilter;
+        if (!d->colorizeFilter)
+            d->colorizeFilter.reset(new QGLPixmapColorizeFilter);
+        return d->colorizeFilter.data();
 
     case QPixmapFilter::BlurFilter:
-        return new QGLPixmapBlurFilter;
+        if (!d->blurFilter)
+            d->blurFilter.reset(new QGLPixmapBlurFilter);
+        return d->blurFilter.data();
 
     case QPixmapFilter::ConvolutionFilter:
-        return new QGLPixmapConvolutionFilter;
+        if (!d->convolutionFilter)
+            d->convolutionFilter.reset(new QGLPixmapConvolutionFilter);
+        return d->convolutionFilter.data();
 
-    default:
-        return 0;
-        break;
+    default: break;
     }
-    return 0;
+    return QPaintEngineEx::pixmapFilter(type, prototype);
 }
 
 extern void qt_add_rect_to_array(const QRectF &r, q_vertexType *array);

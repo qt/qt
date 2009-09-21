@@ -42,6 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <qtooltip.h>
+#include "../../shared/util.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -132,20 +133,24 @@ void tst_QToolTip::task183679()
 void tst_QToolTip::setPalette()
 {
     //the previous test may still have a tooltip pending for deletion
-    QTest::qWait(100);
     QVERIFY(!QToolTip::isVisible());
 
     QToolTip::showText(QPoint(), "tool tip text", 0);
-    QTest::qWait(100);
+
+    QTRY_VERIFY(QToolTip::isVisible());
 
     QWidget *toolTip = 0;
     foreach (QWidget *widget, QApplication::topLevelWidgets()) {
-        if (widget->windowType() == Qt::ToolTip) {
+        if (widget->windowType() == Qt::ToolTip
+            && widget->objectName() == QLatin1String("qtooltip_label"))
+        {
             toolTip = widget;
             break;
         }
     }
+
     QVERIFY(toolTip);
+    QTRY_VERIFY(toolTip->isVisible());
 
     const QPalette oldPalette = toolTip->palette();
     QPalette newPalette = oldPalette;

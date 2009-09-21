@@ -33,7 +33,6 @@
 #include "HTMLNames.h"
 #include "htmlediting.h"
 #include "InlineTextBox.h"
-#include "Position.h"
 #include "Range.h"
 #include "RenderTableCell.h"
 #include "RenderTableRow.h"
@@ -599,7 +598,7 @@ static bool shouldEmitTabBeforeNode(Node* node)
         return false;
     
     // Want a tab before every cell other than the first one
-    RenderTableCell* rc = static_cast<RenderTableCell*>(r);
+    RenderTableCell* rc = toRenderTableCell(r);
     RenderTable* t = rc->table();
     return t && (t->cellBefore(rc) || t->cellAbove(rc));
 }
@@ -649,7 +648,7 @@ static bool shouldEmitNewlinesBeforeAndAfterNode(Node* node)
     // Need to make an exception for table row elements, because they are neither
     // "inline" or "RenderBlock", but we want newlines for them.
     if (r->isTableRow()) {
-        RenderTable* t = static_cast<RenderTableRow*>(r)->table();
+        RenderTable* t = toRenderTableRow(r)->table();
         if (t && !t->isInline())
             return true;
     }
@@ -941,7 +940,7 @@ SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator(const Range* r)
     if (!endNode->offsetInCharacters()) {
         if (endOffset > 0 && endOffset <= static_cast<int>(endNode->childNodeCount())) {
             endNode = endNode->childNode(endOffset - 1);
-            endOffset = endNode->offsetInCharacters() ? endNode->maxCharacterOffset() : endNode->childNodeCount();
+            endOffset = lastOffsetInNode(endNode);
         }
     }
 

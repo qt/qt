@@ -80,6 +80,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLOptionElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -94,6 +95,11 @@ const ClassInfo JSHTMLOptionElementConstructor::s_info = { "HTMLOptionElementCon
 bool JSHTMLOptionElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLOptionElementConstructor, DOMObject>(exec, &JSHTMLOptionElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLOptionElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLOptionElementConstructor, DOMObject>(exec, &JSHTMLOptionElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -132,6 +138,11 @@ JSObject* JSHTMLOptionElement::createPrototype(ExecState* exec, JSGlobalObject* 
 bool JSHTMLOptionElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLOptionElement, Base>(exec, &JSHTMLOptionElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLOptionElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLOptionElement, Base>(exec, &JSHTMLOptionElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLOptionElementForm(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -253,7 +264,7 @@ JSValue JSHTMLOptionElement::getConstructor(ExecState* exec, JSGlobalObject* glo
 
 HTMLOptionElement* toHTMLOptionElement(JSC::JSValue value)
 {
-    return value.isObject(&JSHTMLOptionElement::s_info) ? static_cast<JSHTMLOptionElement*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSHTMLOptionElement::s_info) ? static_cast<JSHTMLOptionElement*>(asObject(value))->impl() : 0;
 }
 
 }

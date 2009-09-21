@@ -125,30 +125,10 @@ static inline IntPoint topLevelOffsetFor(PlatformWidget widget)
 
 // --------------- Lifetime management -----------------
 
-void PluginView::init()
+bool PluginView::platformStart()
 {
-    LOG(Plugins, "PluginView::init(): Initializing plug-in '%s'", m_plugin->name().utf8().data());
-
-    if (m_haveInitialized)
-        return;
-    m_haveInitialized = true;
-
-    if (!m_plugin) {
-        ASSERT(m_status == PluginStatusCanNotFindPlugin);
-        return;
-    }
-
-    if (!m_plugin->load()) {
-        m_plugin = 0;
-        m_status = PluginStatusCanNotLoadPlugin;
-        return;
-    }
-
-    if (!start()) {
-        m_status = PluginStatusCanNotLoadPlugin;
-        stop(); // Make sure we unregister the plugin
-        return;
-    }
+    ASSERT(m_isStarted);
+    ASSERT(m_status == PluginStatusLoadedSuccessfully);
 
     if (m_drawingModel == NPDrawingModel(-1)) {
         // We default to QuickDraw, even though we don't support it,
@@ -180,8 +160,7 @@ void PluginView::init()
         m_status = PluginStatusCanNotLoadPlugin;
         LOG(Plugins, "Plug-in '%s' uses unsupported event model %s",
                 m_plugin->name().utf8().data(), prettyNameForEventModel(m_eventModel));
-        stop();
-        return;
+        return false;
     }
 
     if (getValueStatic(NPNVariable(NPNVsupportsQuickDrawBool + m_drawingModel), &drawingModelSupported) != NPERR_NO_ERROR
@@ -189,70 +168,24 @@ void PluginView::init()
         m_status = PluginStatusCanNotLoadPlugin;
         LOG(Plugins, "Plug-in '%s' uses unsupported drawing model %s",
                 m_plugin->name().utf8().data(), prettyNameForDrawingModel(m_drawingModel));
-        stop();
-        return;
+        return false;
     }
 
     setPlatformPluginWidget(m_parentFrame->view()->hostWindow()->platformWindow());
 
     show();
 
-    m_status = PluginStatusLoadedSuccessfully;
-
     // TODO: Implement null timer throttling depending on plugin activation
     m_nullEventTimer.set(new Timer<PluginView>(this, &PluginView::nullEventTimerFired));
     m_nullEventTimer->startRepeating(0.02);
+
+    return true;
 }
 
-PluginView::~PluginView()
+void PluginView::platformDestroy()
 {
-    LOG(Plugins, "PluginView::~PluginView()");
-
-    stop();
-
-    deleteAllValues(m_requests);
-
-    freeStringArray(m_paramNames, m_paramCount);
-    freeStringArray(m_paramValues, m_paramCount);
-
-    m_parentFrame->script()->cleanupScriptObjectsForPlugin(this);
-
-    if (m_plugin && !(m_plugin->quirks().contains(PluginQuirkDontUnloadPlugin)))
-        m_plugin->unload();
-
-    m_window = 0;
-}
-
-void PluginView::stop()
-{
-    if (!m_isStarted)
-        return;
-
-    LOG(Plugins, "PluginView::stop(): Stopping plug-in '%s'", m_plugin->name().utf8().data());
-
-    HashSet<RefPtr<PluginStream> > streams = m_streams;
-    HashSet<RefPtr<PluginStream> >::iterator end = streams.end();
-    for (HashSet<RefPtr<PluginStream> >::iterator it = streams.begin(); it != end; ++it) {
-        (*it)->stop();
-        disconnectStream((*it).get());
-    }
-
-    ASSERT(m_streams.isEmpty());
-
-    m_isStarted = false;
-
-    JSC::JSLock::DropAllLocks dropAllLocks(JSC::SilenceAssertionsOnly);
-
-    PluginMainThreadScheduler::scheduler().unregisterPlugin(m_instance);
-
-    // Destroy the plugin
-    PluginView::setCurrentPluginView(this);
-    setCallingPlugin(true);
-    m_plugin->pluginFuncs()->destroy(m_instance, 0);
-    setCallingPlugin(false);
-    PluginView::setCurrentPluginView(0);
-
-    m_instance->pdata = 0;
+    if (platformPluginWidget())
+        setPlatformPluginWidget(0);
 }
 
 // Used before the plugin view has been initialized properly, and as a
@@ -723,24 +656,6 @@ bool PluginView::dispatchNPEvent(NPEvent& event)
 }
 
 // ------------------- Miscellaneous  ------------------
-
-static const char* MozillaUserAgent = "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1) Gecko/20061010 Firefox/2.0";
-
-const char* PluginView::userAgent()
-{
-    if (m_plugin->quirks().contains(PluginQuirkWantsMozillaUserAgent))
-        return MozillaUserAgent;
-
-    if (m_userAgent.isNull())
-        m_userAgent = m_parentFrame->loader()->userAgent(m_url).utf8();
-
-    return m_userAgent.data();
-}
-
-const char* PluginView::userAgentStatic()
-{
-    return MozillaUserAgent;
-}
 
 NPError PluginView::handlePostReadFile(Vector<char>& buffer, uint32 len, const char* buf)
 {

@@ -93,6 +93,11 @@ bool JSSVGSymbolElementPrototype::getOwnPropertySlot(ExecState* exec, const Iden
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGSymbolElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGSymbolElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGSymbolElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGSymbolElement::s_info = { "SVGSymbolElement", &JSSVGElement::s_info, &JSSVGSymbolElementTable, 0 };
 
 JSSVGSymbolElement::JSSVGSymbolElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGSymbolElement> impl)
@@ -108,6 +113,11 @@ JSObject* JSSVGSymbolElement::createPrototype(ExecState* exec, JSGlobalObject* g
 bool JSSVGSymbolElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGSymbolElement, Base>(exec, &JSSVGSymbolElementTable, this, propertyName, slot);
+}
+
+bool JSSVGSymbolElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGSymbolElement, Base>(exec, &JSSVGSymbolElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGSymbolElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -190,7 +200,7 @@ void setJSSVGSymbolElementXmlspace(ExecState* exec, JSObject* thisObject, JSValu
 JSValue JSC_HOST_CALL jsSVGSymbolElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGSymbolElement::s_info))
+    if (!thisValue.inherits(&JSSVGSymbolElement::s_info))
         return throwError(exec, TypeError);
     JSSVGSymbolElement* castedThisObj = static_cast<JSSVGSymbolElement*>(asObject(thisValue));
     SVGSymbolElement* imp = static_cast<SVGSymbolElement*>(castedThisObj->impl());

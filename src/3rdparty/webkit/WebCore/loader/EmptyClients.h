@@ -123,6 +123,7 @@ public:
     virtual PlatformWidget platformWindow() const { return 0; }
     virtual void contentsSizeChanged(Frame*, const IntSize&) const { }
 
+    virtual void scrollbarsModeDidChange() const { }
     virtual void mouseDidMoveOverElement(const HitTestResult&, unsigned) { }
 
     virtual void setToolTip(const String&, TextDirection) { }
@@ -135,6 +136,10 @@ public:
 
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
     virtual void reachedMaxAppCacheSize(int64_t) { }
+#endif
+
+#if ENABLE(NOTIFICATIONS)
+    virtual NotificationPresenter* notificationPresenter() const { return 0; }
 #endif
 
     virtual void runOpenPanel(Frame*, PassRefPtr<FileChooser>) { }
@@ -155,7 +160,7 @@ public:
 #if USE(ACCELERATED_COMPOSITING)
     virtual void attachRootGraphicsLayer(Frame*, GraphicsLayer*) {};
     virtual void setNeedsOneShotDrawingSynchronization() {};
-    virtual void scheduleViewUpdate() {};
+    virtual void scheduleCompositingLayerSync() {};
 #endif
 };
 
@@ -275,7 +280,8 @@ public:
     virtual bool shouldGoToHistoryItem(HistoryItem*) const { return false; }
     virtual void saveViewStateToItem(HistoryItem*) { }
     virtual bool canCachePage() const { return false; }
-
+    virtual void didDisplayInsecureContent() { }
+    virtual void didRunInsecureContent(SecurityOrigin*) { }
     virtual PassRefPtr<Frame> createFrame(const KURL&, const String&, HTMLFrameOwnerElement*, const String&, bool, int, int) { return 0; }
     virtual PassRefPtr<Widget> createPlugin(const IntSize&, HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool) { return 0; }
     virtual PassRefPtr<Widget> createJavaAppletWidget(const IntSize&, HTMLAppletElement*, const KURL&, const Vector<String>&, const Vector<String>&) { return 0; }
@@ -409,6 +415,7 @@ public:
 
 };
 
+#if ENABLE(CONTEXT_MENUS)
 class EmptyContextMenuClient : public ContextMenuClient {
 public:
     virtual ~EmptyContextMenuClient() {  }
@@ -429,7 +436,9 @@ public:
     virtual void searchWithSpotlight() { }
 #endif
 };
+#endif // ENABLE(CONTEXT_MENUS)
 
+#if ENABLE(DRAG_SUPPORT)
 class EmptyDragClient : public DragClient {
 public:
     virtual ~EmptyDragClient() {}
@@ -441,6 +450,7 @@ public:
     virtual DragImageRef createDragImageForLink(KURL&, const String&, Frame*) { return 0; }
     virtual void dragControllerDestroyed() { }
 };
+#endif // ENABLE(DRAG_SUPPORT)
 
 class EmptyInspectorClient : public InspectorClient {
 public:
@@ -469,6 +479,8 @@ public:
     virtual void populateSetting(const String&, InspectorController::Setting&) { }
     virtual void storeSetting(const String&, const InspectorController::Setting&) { }
     virtual void removeSetting(const String&) { }
+
+    virtual void inspectorWindowObjectCleared() { }
 };
 
 }

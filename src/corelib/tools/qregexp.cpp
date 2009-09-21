@@ -522,6 +522,10 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
          outside, backslash has no special meaning.
     \endtable
 
+    In the mode Wildcard, the wildcard characters cannot be
+    escaped. In the mode WildcardUnix, the character '\' escapes the
+    wildcard.
+
     For example if we are in wildcard mode and have strings which
     contain filenames we could identify HTML files with \bold{*.html}.
     This will match zero or more characters followed by a dot followed
@@ -751,50 +755,100 @@ static void mergeInto(QVector<int> *a, const QVector<int> &b)
 /*
   Translates a wildcard pattern to an equivalent regular expression
   pattern (e.g., *.cpp to .*\.cpp).
+
+  If enableEscaping is true, it is possible to escape the wildcard
+  characters with \
 */
-static QString wc2rx(const QString &wc_str)
+static QString wc2rx(const QString &wc_str, const bool enableEscaping)
 {
-    int wclen = wc_str.length();
+    const int wclen = wc_str.length();
     QString rx;
     int i = 0;
+    bool isEscaping = false; // the previous character is '\'
     const QChar *wc = wc_str.unicode();
+
     while (i < wclen) {
-        QChar c = wc[i++];
+        const QChar c = wc[i++];
         switch (c.unicode()) {
+        case '\\':
+            if (enableEscaping) {
+                if (isEscaping) {
+                    rx += QLatin1String("\\\\");
+                } // we insert the \\ later if necessary
+                if (i+1 == wclen) { // the end
+                    rx += QLatin1String("\\\\");
+                }
+            } else {
+                rx += QLatin1String("\\\\");
+            }
+            isEscaping = true;
+            break;
         case '*':
-            rx += QLatin1String(".*");
+            if (isEscaping) {
+                rx += QLatin1String("\\*");
+                isEscaping = false;
+            } else {
+                rx += QLatin1String(".*");
+            }
             break;
         case '?':
-            rx += QLatin1Char('.');
+            if (isEscaping) {
+                rx += QLatin1String("\\?");
+                isEscaping = false;
+            } else {
+                rx += QLatin1Char('.');
+            }
+
             break;
         case '$':
         case '(':
         case ')':
         case '+':
         case '.':
-        case '\\':
         case '^':
         case '{':
         case '|':
         case '}':
+            if (isEscaping) {
+                isEscaping = false;
+                rx += QLatin1String("\\\\");
+            }
             rx += QLatin1Char('\\');
             rx += c;
             break;
-        case '[':
-            rx += c;
-            if (wc[i] == QLatin1Char('^'))
-                rx += wc[i++];
-            if (i < wclen) {
-                if (rx[i] == QLatin1Char(']'))
+         case '[':
+            if (isEscaping) {
+                isEscaping = false;
+                rx += QLatin1String("\\[");
+            } else {
+                rx += c;
+                if (wc[i] == QLatin1Char('^'))
                     rx += wc[i++];
-                while (i < wclen && wc[i] != QLatin1Char(']')) {
-                    if (wc[i] == QLatin1Char('\\'))
-                        rx += QLatin1Char('\\');
-                    rx += wc[i++];
+                if (i < wclen) {
+                    if (rx[i] == QLatin1Char(']'))
+                        rx += wc[i++];
+                    while (i < wclen && wc[i] != QLatin1Char(']')) {
+                        if (wc[i] == QLatin1Char('\\'))
+                            rx += QLatin1Char('\\');
+                        rx += wc[i++];
+                    }
                 }
             }
+             break;
+
+        case ']':
+            if(isEscaping){
+                isEscaping = false;
+                rx += QLatin1String("\\");
+            }
+            rx += c;
             break;
+
         default:
+            if(isEscaping){
+                isEscaping = false;
+                rx += QLatin1String("\\\\");
+            }
             rx += c;
         }
     }
@@ -1272,7 +1326,10 @@ Q_CORE_EXPORT QString qt_regexp_toCanonical(const QString &pattern, QRegExp::Pat
     switch (patternSyntax) {
 #ifndef QT_NO_REGEXP_WILDCARD
     case QRegExp::Wildcard:
-        return wc2rx(pattern);
+        return wc2rx(pattern, false);
+        break;
+    case QRegExp::WildcardUnix:
+        return wc2rx(pattern, true);
         break;
 #endif
     case QRegExp::FixedString:
@@ -3714,6 +3771,10 @@ static void invalidateEngine(QRegExpPrivate *priv)
     \value Wildcard This provides a simple pattern matching syntax
     similar to that used by shells (command interpreters) for "file
     globbing". See \l{Wildcard Matching}.
+
+    \value WildcardUnix This is similar to Wildcard but with the
+    behavior of a Unix shell. The wildcard characters can be escaped
+    with the character "\".
 
     \value FixedString The pattern is a fixed string. This is
     equivalent to using the RegExp pattern on a string in

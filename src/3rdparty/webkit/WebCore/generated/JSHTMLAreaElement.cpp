@@ -84,6 +84,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLAreaElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -98,6 +99,11 @@ const ClassInfo JSHTMLAreaElementConstructor::s_info = { "HTMLAreaElementConstru
 bool JSHTMLAreaElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLAreaElementConstructor, DOMObject>(exec, &JSHTMLAreaElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLAreaElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLAreaElementConstructor, DOMObject>(exec, &JSHTMLAreaElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -136,6 +142,11 @@ JSObject* JSHTMLAreaElement::createPrototype(ExecState* exec, JSGlobalObject* gl
 bool JSHTMLAreaElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLAreaElement, Base>(exec, &JSHTMLAreaElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLAreaElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLAreaElement, Base>(exec, &JSHTMLAreaElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLAreaElementAccessKey(ExecState* exec, const Identifier&, const PropertySlot& slot)

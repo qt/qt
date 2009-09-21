@@ -913,6 +913,8 @@ public:
 
     void open(const QString &, const QUrl &);
     void addHeader(const QString &, const QString &);
+    QString header(const QString &name);
+    QString headers();
     void send(const QByteArray &);
     void abort();
 
@@ -931,6 +933,11 @@ private:
     QString m_method;
     QUrl m_url;
     QByteArray m_responseEntityBody;
+
+    typedef QPair<QByteArray, QByteArray> HeaderPair;
+    typedef QList<HeaderPair> HeadersList;
+    HeadersList m_headersList;
+    void fillHeadersList();
 
     void dispatchCallback();
     QScriptValue m_callback;
@@ -1012,6 +1019,42 @@ void QmlXMLHttpRequest::addHeader(const QString &name, const QString &value)
     }
 }
 
+QString QmlXMLHttpRequest::header(const QString &name)
+{
+    QByteArray utfname = name.toUtf8();
+
+    foreach (const HeaderPair &header, m_headersList) {
+        if (header.first == utfname)
+            return QString::fromUtf8(header.second);
+    }
+    return QString();
+}
+
+QString QmlXMLHttpRequest::headers()
+{
+    QString ret;
+
+    foreach (const HeaderPair &header, m_headersList) {
+        if (ret.length())
+            ret.append(QString::fromUtf8("\r\n"));
+        ret.append(QString::fromUtf8(header.first));
+        ret.append(QString::fromUtf8(": "));
+        ret.append(QString::fromUtf8(header.second));
+    }
+    return ret;
+}
+
+void QmlXMLHttpRequest::fillHeadersList()
+{
+    QList<QByteArray> headerList = m_network->rawHeaderList();
+
+    m_headersList.clear();
+    foreach (const QByteArray &header, headerList) {
+        HeaderPair pair (header, m_network->rawHeader(header));
+        m_headersList << pair;
+    }
+}
+
 void QmlXMLHttpRequest::send(const QByteArray &data)
 {
     m_errorFlag = false;
@@ -1067,6 +1110,7 @@ void QmlXMLHttpRequest::downloadProgress(qint64 bytes)
     // ### We assume if this is called the headers are now available
     if (m_state < HeadersReceived) {
         m_state = HeadersReceived;
+        fillHeadersList ();
         dispatchCallback();
     }
 
@@ -1080,6 +1124,11 @@ void QmlXMLHttpRequest::downloadProgress(qint64 bytes)
 
 void QmlXMLHttpRequest::error(QNetworkReply::NetworkError error)
 {
+    m_status =
+        m_network->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    m_statusText =
+        QLatin1String(m_network->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toByteArray());
+
     m_responseEntityBody = QByteArray();
     m_errorFlag = true;
     m_request = QNetworkRequest();
@@ -1094,8 +1143,14 @@ void QmlXMLHttpRequest::finished()
 {
     // ### We need to transparently redirect as dictated by the spec
 
+    m_status =
+        m_network->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    m_statusText =
+        QLatin1String(m_network->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toByteArray());
+
     if (m_state < HeadersReceived) {
         m_state = HeadersReceived;
+        fillHeadersList ();
         dispatchCallback();
     }
     m_responseEntityBody.append(m_network->readAll());
@@ -1260,16 +1315,36 @@ static QScriptValue qmlxmlhttprequest_abort(QScriptContext *context, QScriptEngi
 
 static QScriptValue qmlxmlhttprequest_getResponseHeader(QScriptContext *context, QScriptEngine *engine)
 {
-    // ### Implement
+    QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
+    if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
 
-    return engine->undefinedValue();
+    if (context->argumentCount() != 1)
+        return context->throwError(QScriptContext::SyntaxError, QLatin1String("Incorrect argument count"));
+
+    if (request->readyState() != QmlXMLHttpRequest::Loading &&
+        request->readyState() != QmlXMLHttpRequest::Done &&
+        request->readyState() != QmlXMLHttpRequest::HeadersReceived)
+        return context->throwError(INVALID_STATE_ERR, "Invalid state");
+
+    QString headerName = context->argument(0).toString();
+
+    return QScriptValue(request->header(headerName));
 }
 
 static QScriptValue qmlxmlhttprequest_getAllResponseHeaders(QScriptContext *context, QScriptEngine *engine)
 {
-    // ### Implement
+    QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
+    if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
 
-    return engine->undefinedValue();
+    if (context->argumentCount() != 0)
+        return context->throwError(QScriptContext::SyntaxError, QLatin1String("Incorrect argument count"));
+
+    if (request->readyState() != QmlXMLHttpRequest::Loading &&
+        request->readyState() != QmlXMLHttpRequest::Done &&
+        request->readyState() != QmlXMLHttpRequest::HeadersReceived)
+        return context->throwError(INVALID_STATE_ERR, "Invalid state");
+
+    return QScriptValue(request->headers());
 }
 
 // XMLHttpRequest properties

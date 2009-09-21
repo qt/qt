@@ -26,6 +26,7 @@ module html {
         ImplementationUUID=1be13b5f-40df-4550-b70e-8c805e546cad
     ] HTMLButtonElement : HTMLElement {
         readonly attribute  HTMLFormElement      form;
+                 attribute  boolean              formNoValidate;
 #if !defined(LANGUAGE_COM) || !LANGUAGE_COM
         readonly attribute  ValidityState        validity;
 #endif
@@ -36,6 +37,8 @@ module html {
         readonly attribute  DOMString            type;
                  attribute  [ConvertNullToNullString] DOMString            value;
         readonly attribute boolean               willValidate;
+        boolean  checkValidity();
+        void setCustomValidity(in [ConvertUndefinedOrNullToNullString] DOMString error);
         void click();
     };
 

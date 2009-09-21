@@ -121,12 +121,6 @@ void IndentOutdentCommand::indentIntoBlockquote(const VisiblePosition& startOfCu
         targetBlockquote = 0;
 }
 
-bool IndentOutdentCommand::isAtUnsplittableElement(const Position& pos) const
-{
-    Node* node = pos.node();
-    return node == editableRootForPosition(pos) || node == enclosingNodeOfType(pos, &isTableCell);
-}
-
 // Enclose all nodes between start and end by newParent, which is a sibling node of nodes between start and end
 // FIXME: moveParagraph is overly complicated.  We need to clean up moveParagraph so that it uses appendParagraphIntoNode
 // or prepare more specialized functions and delete moveParagraph
@@ -173,7 +167,7 @@ void IndentOutdentCommand::removeUnnecessaryLineBreakAt(const Position& endOfPar
     Node* parentNode = br->parentNode();
 
     // If the node isn't br or the parent node is empty, then don't remove.
-    if (!br->hasTagName(brTag) || isVisiblyAdjacent(positionBeforeNode(parentNode), positionAfterNode(parentNode)))
+    if (!br->hasTagName(brTag) || isVisiblyAdjacent(positionInParentBeforeNode(parentNode), positionInParentAfterNode(parentNode)))
         return;
 
     removeNodeAndPruneAncestors(br);
@@ -211,7 +205,7 @@ void IndentOutdentCommand::indentRegion()
             blockquoteForNextIndent = 0;
         else {
             VisiblePosition startOfCurrentParagraph = startOfParagraph(endOfCurrentParagraph);
-            Node* blockNode = enclosingBlock(endOfCurrentParagraph.deepEquivalent().node());
+            Node* blockNode = enclosingBlock(endOfCurrentParagraph.deepEquivalent().node()->parentNode());
             // extend the region so that it contains all the ancestor blocks within the selection
             ExceptionCode ec;
             Element* unsplittableNode = unsplittableElementForPosition(endOfCurrentParagraph.deepEquivalent());
@@ -244,7 +238,7 @@ void IndentOutdentCommand::outdentParagraph()
     VisiblePosition visibleEndOfParagraph = endOfParagraph(visibleStartOfParagraph);
 
     Node* enclosingNode = enclosingNodeOfType(visibleStartOfParagraph.deepEquivalent(), &isListOrIndentBlockquote);
-    if (!enclosingNode || !isContentEditable(enclosingNode->parentNode()))  // We can't outdent if there is no place to go!
+    if (!enclosingNode || !enclosingNode->parentNode()->isContentEditable())  // We can't outdent if there is no place to go!
         return;
 
     // Use InsertListCommand to remove the selection from the list
@@ -273,7 +267,7 @@ void IndentOutdentCommand::outdentParagraph()
             if (Node* splitPointParent = splitPoint->parentNode()) {
                 if (splitPointParent->hasTagName(blockquoteTag)
                     && !splitPoint->hasTagName(blockquoteTag)
-                    && isContentEditable(splitPointParent->parentNode())) // We can't outdent if there is no place to go!
+                    && splitPointParent->parentNode()->isContentEditable()) // We can't outdent if there is no place to go!
                     splitElement(static_cast<Element*>(splitPointParent), splitPoint);
             }
         }

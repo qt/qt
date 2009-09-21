@@ -114,6 +114,11 @@ bool JSSVGRectElementPrototype::getOwnPropertySlot(ExecState* exec, const Identi
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGRectElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGRectElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGRectElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGRectElement::s_info = { "SVGRectElement", &JSSVGElement::s_info, &JSSVGRectElementTable, 0 };
 
 JSSVGRectElement::JSSVGRectElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGRectElement> impl)
@@ -129,6 +134,11 @@ JSObject* JSSVGRectElement::createPrototype(ExecState* exec, JSGlobalObject* glo
 bool JSSVGRectElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGRectElement, Base>(exec, &JSSVGRectElementTable, this, propertyName, slot);
+}
+
+bool JSSVGRectElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGRectElement, Base>(exec, &JSSVGRectElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGRectElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -296,7 +306,7 @@ void setJSSVGRectElementXmlspace(ExecState* exec, JSObject* thisObject, JSValue 
 JSValue JSC_HOST_CALL jsSVGRectElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGRectElement::s_info))
+    if (!thisValue.inherits(&JSSVGRectElement::s_info))
         return throwError(exec, TypeError);
     JSSVGRectElement* castedThisObj = static_cast<JSSVGRectElement*>(asObject(thisValue));
     SVGRectElement* imp = static_cast<SVGRectElement*>(castedThisObj->impl());
@@ -310,7 +320,7 @@ JSValue JSC_HOST_CALL jsSVGRectElementPrototypeFunctionHasExtension(ExecState* e
 JSValue JSC_HOST_CALL jsSVGRectElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGRectElement::s_info))
+    if (!thisValue.inherits(&JSSVGRectElement::s_info))
         return throwError(exec, TypeError);
     JSSVGRectElement* castedThisObj = static_cast<JSSVGRectElement*>(asObject(thisValue));
     SVGRectElement* imp = static_cast<SVGRectElement*>(castedThisObj->impl());
@@ -324,7 +334,7 @@ JSValue JSC_HOST_CALL jsSVGRectElementPrototypeFunctionGetPresentationAttribute(
 JSValue JSC_HOST_CALL jsSVGRectElementPrototypeFunctionGetBBox(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGRectElement::s_info))
+    if (!thisValue.inherits(&JSSVGRectElement::s_info))
         return throwError(exec, TypeError);
     JSSVGRectElement* castedThisObj = static_cast<JSSVGRectElement*>(asObject(thisValue));
     SVGRectElement* imp = static_cast<SVGRectElement*>(castedThisObj->impl());
@@ -337,7 +347,7 @@ JSValue JSC_HOST_CALL jsSVGRectElementPrototypeFunctionGetBBox(ExecState* exec, 
 JSValue JSC_HOST_CALL jsSVGRectElementPrototypeFunctionGetCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGRectElement::s_info))
+    if (!thisValue.inherits(&JSSVGRectElement::s_info))
         return throwError(exec, TypeError);
     JSSVGRectElement* castedThisObj = static_cast<JSSVGRectElement*>(asObject(thisValue));
     SVGRectElement* imp = static_cast<SVGRectElement*>(castedThisObj->impl());
@@ -350,7 +360,7 @@ JSValue JSC_HOST_CALL jsSVGRectElementPrototypeFunctionGetCTM(ExecState* exec, J
 JSValue JSC_HOST_CALL jsSVGRectElementPrototypeFunctionGetScreenCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGRectElement::s_info))
+    if (!thisValue.inherits(&JSSVGRectElement::s_info))
         return throwError(exec, TypeError);
     JSSVGRectElement* castedThisObj = static_cast<JSSVGRectElement*>(asObject(thisValue));
     SVGRectElement* imp = static_cast<SVGRectElement*>(castedThisObj->impl());
@@ -363,7 +373,7 @@ JSValue JSC_HOST_CALL jsSVGRectElementPrototypeFunctionGetScreenCTM(ExecState* e
 JSValue JSC_HOST_CALL jsSVGRectElementPrototypeFunctionGetTransformToElement(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGRectElement::s_info))
+    if (!thisValue.inherits(&JSSVGRectElement::s_info))
         return throwError(exec, TypeError);
     JSSVGRectElement* castedThisObj = static_cast<JSSVGRectElement*>(asObject(thisValue));
     SVGRectElement* imp = static_cast<SVGRectElement*>(castedThisObj->impl());

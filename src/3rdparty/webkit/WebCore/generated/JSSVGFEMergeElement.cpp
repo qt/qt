@@ -89,6 +89,11 @@ bool JSSVGFEMergeElementPrototype::getOwnPropertySlot(ExecState* exec, const Ide
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGFEMergeElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGFEMergeElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGFEMergeElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGFEMergeElement::s_info = { "SVGFEMergeElement", &JSSVGElement::s_info, &JSSVGFEMergeElementTable, 0 };
 
 JSSVGFEMergeElement::JSSVGFEMergeElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEMergeElement> impl)
@@ -104,6 +109,11 @@ JSObject* JSSVGFEMergeElement::createPrototype(ExecState* exec, JSGlobalObject* 
 bool JSSVGFEMergeElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGFEMergeElement, Base>(exec, &JSSVGFEMergeElementTable, this, propertyName, slot);
+}
+
+bool JSSVGFEMergeElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFEMergeElement, Base>(exec, &JSSVGFEMergeElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGFEMergeElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -171,7 +181,7 @@ JSValue jsSVGFEMergeElementStyle(ExecState* exec, const Identifier&, const Prope
 JSValue JSC_HOST_CALL jsSVGFEMergeElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGFEMergeElement::s_info))
+    if (!thisValue.inherits(&JSSVGFEMergeElement::s_info))
         return throwError(exec, TypeError);
     JSSVGFEMergeElement* castedThisObj = static_cast<JSSVGFEMergeElement*>(asObject(thisValue));
     SVGFEMergeElement* imp = static_cast<SVGFEMergeElement*>(castedThisObj->impl());

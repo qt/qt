@@ -240,13 +240,10 @@ void StyleSheetEditorDialog::slotAddGradient(const QString &property)
 
 void StyleSheetEditorDialog::slotAddColor(const QString &property)
 {
-    bool ok;
-    QRgb rgba = QColorDialog::getRgba(0xffffffff, &ok, this);
-    if (!ok)
+    const QColor color = QColorDialog::getColor(0xffffffff, this, QString(), QColorDialog::ShowAlphaChannel);
+    if (!color.isValid())
         return;
 
-    QColor color;
-    color.setRgba(rgba);
     QString colorStr;
 
     if (color.alpha() == 255) {

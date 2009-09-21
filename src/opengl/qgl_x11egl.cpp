@@ -298,7 +298,7 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
                 XRenderPictFormat *format;
                 format = XRenderFindVisualFormat(x11Info().display(), chosenVisualInfo->visual);
                 if (format->type == PictTypeDirect && format->direct.alphaMask) {
-                    qDebug("Using opaque X Visual ID (%d) provided by EGL", (int)vi.visualid);
+//                    qDebug("Using opaque X Visual ID (%d) provided by EGL", (int)vi.visualid);
                     vi = *chosenVisualInfo;
                 }
                 else {
@@ -309,7 +309,7 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
             } else
 #endif
             {
-                qDebug("Using opaque X Visual ID (%d) provided by EGL", (int)vi.visualid);
+//                qDebug("Using opaque X Visual ID (%d) provided by EGL", (int)vi.visualid);
                 vi = *chosenVisualInfo;
             }
             XFree(chosenVisualInfo);
@@ -342,7 +342,7 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
             format = XRenderFindVisualFormat(x11Info().display(), matchingVisuals[i].visual);
             if (format->type == PictTypeDirect && format->direct.alphaMask) {
                 vi = matchingVisuals[i];
-                qDebug("Using X Visual ID (%d) for ARGB visual as provided by XRender", (int)vi.visualid);
+//                qDebug("Using X Visual ID (%d) for ARGB visual as provided by XRender", (int)vi.visualid);
                 break;
             }
         }
@@ -365,8 +365,9 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
                 return;
             } else
                 qWarning("         - Falling back to X11 suggested depth (%d)", depth);
-        } else
-            qDebug("Using X Visual ID (%d) for EGL provided depth (%d)", (int)vi.visualid, depth);
+        }
+//        else
+//            qDebug("Using X Visual ID (%d) for EGL provided depth (%d)", (int)vi.visualid, depth);
 
         // Don't try to use ARGB now unless the visual is 32-bit - even then it might stil fail :-(
         if (useArgb)

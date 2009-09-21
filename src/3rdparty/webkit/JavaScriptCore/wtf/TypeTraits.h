@@ -70,30 +70,30 @@ namespace WTF {
     template <> struct IsPod<long double>        { static const bool value = true; };
     template <typename P> struct IsPod<P*>       { static const bool value = true; };
 
-    // Avoid "possible loss of data" warning when using Microsoft's C++ compiler
-    // by not converting int's to doubles.
-    template<bool performCheck, typename U> class CheckedIsConvertibleToDouble;
-    template<typename U> class CheckedIsConvertibleToDouble<false, U> {
-    public:
-        static const bool value = false;
-    };
-
-    template<typename U> class CheckedIsConvertibleToDouble<true, U> {
-        typedef char YesType;
-        struct NoType {
-            char padding[8];
+    template<typename T> class IsConvertibleToInteger {
+        // Avoid "possible loss of data" warning when using Microsoft's C++ compiler
+        // by not converting int's to doubles.
+        template<bool performCheck, typename U> class IsConvertibleToDouble;
+        template<typename U> class IsConvertibleToDouble<false, U> {
+        public:
+            static const bool value = false;
         };
 
-        static YesType floatCheck(long double);
-        static NoType floatCheck(...);
-        static U& t;
-    public:
-        static const bool value = sizeof(floatCheck(t)) == sizeof(YesType);
-    };
+        template<typename U> class IsConvertibleToDouble<true, U> {
+            typedef char YesType;
+            struct NoType {
+                char padding[8];
+            };
 
-    template<typename T> class IsConvertibleToInteger {
+            static YesType floatCheck(long double);
+            static NoType floatCheck(...);
+            static T& t;
+        public:
+            static const bool value = sizeof(floatCheck(t)) == sizeof(YesType);
+        };
+
     public:
-        static const bool value = IsInteger<T>::value || CheckedIsConvertibleToDouble<!IsInteger<T>::value, T>::value;
+        static const bool value = IsInteger<T>::value || IsConvertibleToDouble<!IsInteger<T>::value, T>::value;
     };
 
     template <typename T, typename U> struct IsSameType {

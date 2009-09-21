@@ -32,11 +32,14 @@
 #include "CSSHelper.h"
 #include "Document.h"
 #include "HTMLIFrameElement.h"
+#include "HTMLNames.h"
 #include "JSDOMBinding.h"
 
 using namespace JSC;
 
 namespace WebCore {
+
+using namespace HTMLNames;
 
 void JSHTMLIFrameElement::setSrc(ExecState* exec, JSValue value)
 {
@@ -45,11 +48,12 @@ void JSHTMLIFrameElement::setSrc(ExecState* exec, JSValue value)
     String srcValue = valueToStringWithNullCheck(exec, value);
 
     if (protocolIsJavaScript(deprecatedParseURL(srcValue))) {
-        if (!checkNodeSecurity(exec, imp->contentDocument()))
+        Document* contentDocument = imp->contentDocument();
+        if (contentDocument && !checkNodeSecurity(exec, contentDocument))
             return;
     }
 
-    imp->setSrc(srcValue);
+    imp->setAttribute(srcAttr, srcValue);
 }
 
 } // namespace WebCore

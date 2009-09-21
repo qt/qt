@@ -94,6 +94,11 @@ bool JSSVGFEGaussianBlurElementPrototype::getOwnPropertySlot(ExecState* exec, co
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGFEGaussianBlurElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGFEGaussianBlurElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGFEGaussianBlurElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGFEGaussianBlurElement::s_info = { "SVGFEGaussianBlurElement", &JSSVGElement::s_info, &JSSVGFEGaussianBlurElementTable, 0 };
 
 JSSVGFEGaussianBlurElement::JSSVGFEGaussianBlurElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEGaussianBlurElement> impl)
@@ -109,6 +114,11 @@ JSObject* JSSVGFEGaussianBlurElement::createPrototype(ExecState* exec, JSGlobalO
 bool JSSVGFEGaussianBlurElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGFEGaussianBlurElement, Base>(exec, &JSSVGFEGaussianBlurElementTable, this, propertyName, slot);
+}
+
+bool JSSVGFEGaussianBlurElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFEGaussianBlurElement, Base>(exec, &JSSVGFEGaussianBlurElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGFEGaussianBlurElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -203,7 +213,7 @@ JSValue jsSVGFEGaussianBlurElementStyle(ExecState* exec, const Identifier&, cons
 JSValue JSC_HOST_CALL jsSVGFEGaussianBlurElementPrototypeFunctionSetStdDeviation(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGFEGaussianBlurElement::s_info))
+    if (!thisValue.inherits(&JSSVGFEGaussianBlurElement::s_info))
         return throwError(exec, TypeError);
     JSSVGFEGaussianBlurElement* castedThisObj = static_cast<JSSVGFEGaussianBlurElement*>(asObject(thisValue));
     SVGFEGaussianBlurElement* imp = static_cast<SVGFEGaussianBlurElement*>(castedThisObj->impl());
@@ -217,7 +227,7 @@ JSValue JSC_HOST_CALL jsSVGFEGaussianBlurElementPrototypeFunctionSetStdDeviation
 JSValue JSC_HOST_CALL jsSVGFEGaussianBlurElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGFEGaussianBlurElement::s_info))
+    if (!thisValue.inherits(&JSSVGFEGaussianBlurElement::s_info))
         return throwError(exec, TypeError);
     JSSVGFEGaussianBlurElement* castedThisObj = static_cast<JSSVGFEGaussianBlurElement*>(asObject(thisValue));
     SVGFEGaussianBlurElement* imp = static_cast<SVGFEGaussianBlurElement*>(castedThisObj->impl());

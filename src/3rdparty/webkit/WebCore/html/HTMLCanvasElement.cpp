@@ -30,6 +30,9 @@
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
 #include "CanvasRenderingContext2D.h"
+#if ENABLE(3D_CANVAS)    
+#include "CanvasRenderingContext3D.h"
+#endif
 #include "CanvasStyle.h"
 #include "Chrome.h"
 #include "Document.h"
@@ -146,17 +149,42 @@ String HTMLCanvasElement::toDataURL(const String& mimeType, ExceptionCode& ec)
 
 CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type)
 {
+    // A Canvas can either be "2D" or "3D" never both. If you request a 2D canvas and the existing
+    // context is already 2D, just return that. If the existing context is 3D, then destroy it
+    // before creating a new 2D context. Vice versa when requesting a 3D canvas. Requesting a
+    // context with any other type string will destroy any existing context.
+    
+    // FIXME - The code depends on the context not going away once created, to prevent JS from
+    // seeing a dangling pointer. So for now we will disallow the context from being changed
+    // once it is created.
     if (type == "2d") {
-        if (!m_2DContext)
-            m_2DContext.set(new CanvasRenderingContext2D(this));
-        return m_2DContext.get();
+        if (m_context && !m_context->is2d())
+            return 0;
+        if (!m_context)
+            m_context = new CanvasRenderingContext2D(this);
+        return m_context.get();
     }
+#if ENABLE(3D_CANVAS)    
+    if ((type == "webkit-3d") ||
+        (type == "GL")) {
+        if (m_context && !m_context->is3d())
+            return 0;
+        if (!m_context) {
+            m_context = new CanvasRenderingContext3D(this);
+            
+            // Need to make sure a RenderLayer and compositing layer get created for the Canvas
+            setNeedsStyleRecalc(SyntheticStyleChange);
+        }
+        return m_context.get();
+    }
+#endif
     return 0;
 }
 
 void HTMLCanvasElement::willDraw(const FloatRect& rect)
 {
-    m_imageBuffer->clearImage();
+    if (m_imageBuffer)
+        m_imageBuffer->clearImage();
     
     if (RenderBox* ro = renderBox()) {
         FloatRect destRect = ro->contentBoxRect();
@@ -192,17 +220,18 @@ void HTMLCanvasElement::reset()
     bool hadImageBuffer = m_createdImageBuffer;
     m_createdImageBuffer = false;
     m_imageBuffer.clear();
-    if (m_2DContext)
-        m_2DContext->reset();
+    if (m_context && m_context->is2d())
+        static_cast<CanvasRenderingContext2D*>(m_context.get())->reset();
 
-    if (RenderObject* ro = renderer())
+    if (RenderObject* renderer = this->renderer()) {
         if (m_rendererIsCanvas) {
             if (oldSize != m_size)
-                static_cast<RenderHTMLCanvas*>(ro)->canvasSizeChanged();
+                toRenderHTMLCanvas(renderer)->canvasSizeChanged();
             if (hadImageBuffer)
-                ro->repaint();
+                renderer->repaint();
         }
-        
+    }
+
     if (m_observer)
         m_observer->canvasResized(this);
 }
@@ -215,11 +244,26 @@ void HTMLCanvasElement::paint(GraphicsContext* context, const IntRect& r)
     if (context->paintingDisabled())
         return;
     
+#if ENABLE(3D_CANVAS)
+    CanvasRenderingContext3D* context3D = NULL;
+    if (m_context && m_context->is3d()) {
+        context3D = static_cast<CanvasRenderingContext3D*>(m_context.get());
+        context3D->beginPaint();
+    }
+#endif
+
     if (m_imageBuffer) {
         Image* image = m_imageBuffer->image();
         if (image)
             context->drawImage(image, r);
     }
+
+#if ENABLE(3D_CANVAS)
+    if (context3D != NULL) {
+        context3D->reshape(r.width(), r.height());
+        context3D->endPaint();
+    }
+#endif
 }
 
 IntRect HTMLCanvasElement::convertLogicalToDevice(const FloatRect& logicalRect) const
@@ -259,7 +303,7 @@ void HTMLCanvasElement::createImageBuffer() const
     if (!size.width() || !size.height())
         return;
 
-    m_imageBuffer = ImageBuffer::create(size, false);
+    m_imageBuffer = ImageBuffer::create(size);
     // The convertLogicalToDevice MaxCanvasArea check should prevent common cases
     // where ImageBuffer::create() returns NULL, however we could still be low on memory.
     if (!m_imageBuffer)
@@ -291,5 +335,12 @@ TransformationMatrix HTMLCanvasElement::baseTransform() const
     transform.multiply(m_imageBuffer->baseTransform());
     return transform;
 }
+
+#if ENABLE(3D_CANVAS)    
+bool HTMLCanvasElement::is3D() const
+{
+    return m_context && m_context->is3d();
+}
+#endif
 
 }

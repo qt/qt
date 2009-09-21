@@ -100,10 +100,12 @@ public:
 
 protected:
     void calculateBackgroundImageGeometry(const FillLayer*, int tx, int ty, int w, int h, IntRect& destRect, IntPoint& phase, IntSize& tileSize);
-    IntSize calculateBackgroundSize(const FillLayer*, int scaledWidth, int scaledHeight) const;
 
 private:
     virtual bool isBoxModelObject() const { return true; }
+
+    IntSize calculateFillTileSize(const FillLayer*, IntSize scaledSize) const;
+
     friend class RenderView;
 
     RenderLayer* m_layer;
@@ -114,16 +116,16 @@ private:
     static bool s_layerWasSelfPainting;
 };
 
-inline RenderBoxModelObject* toRenderBoxModelObject(RenderObject* o)
+inline RenderBoxModelObject* toRenderBoxModelObject(RenderObject* object)
 { 
-    ASSERT(!o || o->isBoxModelObject());
-    return static_cast<RenderBoxModelObject*>(o);
+    ASSERT(!object || object->isBoxModelObject());
+    return static_cast<RenderBoxModelObject*>(object);
 }
 
-inline const RenderBoxModelObject* toRenderBoxModelObject(const RenderObject* o)
+inline const RenderBoxModelObject* toRenderBoxModelObject(const RenderObject* object)
 { 
-    ASSERT(!o || o->isBoxModelObject());
-    return static_cast<const RenderBoxModelObject*>(o);
+    ASSERT(!object || object->isBoxModelObject());
+    return static_cast<const RenderBoxModelObject*>(object);
 }
 
 // This will catch anyone doing an unnecessary cast.

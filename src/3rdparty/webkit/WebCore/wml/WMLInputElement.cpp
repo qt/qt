@@ -69,7 +69,7 @@ bool WMLInputElement::isMouseFocusable() const
 
 void WMLInputElement::dispatchFocusEvent()
 {
-    InputElement::dispatchFocusEvent(m_data, this, this);
+    InputElement::dispatchFocusEvent(this, this);
     WMLElement::dispatchFocusEvent();
 }
 
@@ -87,7 +87,7 @@ void WMLInputElement::dispatchBlurEvent()
     if (!nameVariable.isEmpty())
         wmlPageStateForDocument(document())->storeVariable(nameVariable, val); 
 
-    InputElement::dispatchBlurEvent(m_data, this, this);
+    InputElement::dispatchBlurEvent(this, this);
     WMLElement::dispatchBlurEvent();
 }
 
@@ -134,7 +134,7 @@ String WMLInputElement::value() const
 
 void WMLInputElement::setValue(const String& value)
 {
-    InputElement::updatePlaceholderVisibility(m_data, this, this);
+    InputElement::updatePlaceholderVisibility(this, this);
     setFormControlValueMatchesRenderer(false);
     m_data.setValue(constrainValue(value));
     if (inDocument())
@@ -295,10 +295,10 @@ void WMLInputElement::defaultEventHandler(Event* evt)
     }
 
     if (evt->isBeforeTextInsertedEvent())
-        InputElement::handleBeforeTextInsertedEvent(m_data, this, document(), evt);
+        InputElement::handleBeforeTextInsertedEvent(m_data, this, this, evt);
 
     if (renderer() && (evt->isMouseEvent() || evt->isDragEvent() || evt->isWheelEvent() || evt->type() == eventNames().blurEvent || evt->type() == eventNames().focusEvent))
-        static_cast<RenderTextControlSingleLine*>(renderer())->forwardEvent(evt);
+        toRenderTextControlSingleLine(renderer())->forwardEvent(evt);
 }
 
 void WMLInputElement::cacheSelection(int start, int end)
@@ -309,7 +309,7 @@ void WMLInputElement::cacheSelection(int start, int end)
 
 String WMLInputElement::constrainValue(const String& proposedValue) const
 {
-    return InputElement::constrainValue(this, proposedValue, m_data.maxLength());
+    return InputElement::sanitizeUserInputValue(this, proposedValue, m_data.maxLength());
 }
 
 void WMLInputElement::documentDidBecomeActive()
@@ -320,7 +320,7 @@ void WMLInputElement::documentDidBecomeActive()
 
 bool WMLInputElement::placeholderShouldBeVisible() const
 {
-    return m_data.placeholderShouldBeVisible();
+    return InputElement::placeholderShouldBeVisible(this, this);
 }
 
 void WMLInputElement::willMoveToNewOwnerDocument()

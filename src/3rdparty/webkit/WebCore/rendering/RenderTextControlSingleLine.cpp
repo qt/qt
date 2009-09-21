@@ -50,12 +50,12 @@ using namespace HTMLNames;
 
 RenderTextControlSingleLine::RenderTextControlSingleLine(Node* node)
     : RenderTextControl(node)
-    , m_placeholderVisible(false)
     , m_searchPopupIsVisible(false)
     , m_shouldDrawCapsLockIndicator(false)
     , m_searchEventTimer(this, &RenderTextControlSingleLine::searchEventTimerFired)
     , m_searchPopup(0)
 {
+    m_placeholderVisible = inputElement()->placeholderShouldBeVisible();
 }
 
 RenderTextControlSingleLine::~RenderTextControlSingleLine()
@@ -69,25 +69,9 @@ RenderTextControlSingleLine::~RenderTextControlSingleLine()
         m_innerBlock->detach();
 }
 
-bool RenderTextControlSingleLine::placeholderShouldBeVisible() const
+RenderStyle* RenderTextControlSingleLine::textBaseStyle() const
 {
-    return inputElement()->placeholderShouldBeVisible();
-}
-
-void RenderTextControlSingleLine::updatePlaceholderVisibility()
-{
-    RenderStyle* parentStyle = m_innerBlock ? m_innerBlock->renderer()->style() : style();
-
-    RefPtr<RenderStyle> textBlockStyle = createInnerTextStyle(parentStyle);
-    HTMLElement* innerText = innerTextElement();
-    innerText->renderer()->setStyle(textBlockStyle);
-
-    for (Node* n = innerText->firstChild(); n; n = n->traverseNextNode(innerText)) {
-        if (RenderObject* renderer = n->renderer())
-            renderer->setStyle(textBlockStyle);
-    }
-
-    updateFromElement();
+    return m_innerBlock ? m_innerBlock->renderer()->style() : style();
 }
 
 void RenderTextControlSingleLine::addSearchResult()
@@ -163,8 +147,6 @@ void RenderTextControlSingleLine::hidePopup()
     ASSERT(node()->isHTMLElement());
     if (m_searchPopup)
         m_searchPopup->hide();
-
-    m_searchPopupIsVisible = false;
 }
 
 void RenderTextControlSingleLine::subtreeHasChanged()
@@ -173,7 +155,11 @@ void RenderTextControlSingleLine::subtreeHasChanged()
     RenderTextControl::subtreeHasChanged();
 
     InputElement* input = inputElement();
-    input->setValueFromRenderer(input->constrainValue(text()));
+    // We don't need to call sanitizeUserInputValue() function here because
+    // InputElement::handleBeforeTextInsertedEvent() has already called
+    // sanitizeUserInputValue().
+    // sanitizeValue() is needed because IME input doesn't dispatch BeforeTextInsertedEvent.
+    input->setValueFromRenderer(input->sanitizeValue(text()));
 
     if (m_cancelButton)
         updateCancelButtonVisibility();
@@ -469,9 +455,6 @@ void RenderTextControlSingleLine::updateFromElement()
     createSubtreeIfNeeded();
     RenderTextControl::updateFromElement();
 
-    bool placeholderVisibilityShouldChange = m_placeholderVisible != placeholderShouldBeVisible();
-    m_placeholderVisible = placeholderShouldBeVisible();
-
     if (m_cancelButton)
         updateCancelButtonVisibility();
 
@@ -479,7 +462,7 @@ void RenderTextControlSingleLine::updateFromElement()
         ExceptionCode ec = 0;
         innerTextElement()->setInnerText(inputElement()->placeholder(), ec);
         ASSERT(!ec);
-    } else if (!static_cast<Element*>(node())->formControlValueMatchesRenderer() || placeholderVisibilityShouldChange)
+    } else
         setInnerTextValue(inputElement()->value());
 
     if (m_searchPopupIsVisible)
@@ -494,7 +477,7 @@ void RenderTextControlSingleLine::cacheSelection(int start, int end)
 PassRefPtr<RenderStyle> RenderTextControlSingleLine::createInnerTextStyle(const RenderStyle* startStyle) const
 {
     RefPtr<RenderStyle> textBlockStyle;
-    if (placeholderShouldBeVisible()) {
+    if (m_placeholderVisible) {
         if (RenderStyle* pseudoStyle = getCachedPseudoStyle(INPUT_PLACEHOLDER))
             textBlockStyle = RenderStyle::clone(pseudoStyle);
     } 
@@ -524,7 +507,7 @@ PassRefPtr<RenderStyle> RenderTextControlSingleLine::createInnerTextStyle(const 
     // After this, updateFromElement will immediately update the text displayed.
     // When the placeholder is no longer visible, updatePlaceholderVisiblity will reset the style, 
     // and the text security mode will be set back to the computed value correctly.
-    if (placeholderShouldBeVisible())
+    if (m_placeholderVisible)
         textBlockStyle->setTextSecurity(TSNONE);
 
     return textBlockStyle.release();
@@ -740,6 +723,11 @@ int RenderTextControlSingleLine::listSize() const
 int RenderTextControlSingleLine::selectedIndex() const
 {
     return -1;
+}
+
+void RenderTextControlSingleLine::popupDidHide()
+{
+    m_searchPopupIsVisible = false;
 }
 
 bool RenderTextControlSingleLine::itemIsSeparator(unsigned listIndex) const

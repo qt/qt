@@ -87,6 +87,11 @@ bool JSSVGTitleElementPrototype::getOwnPropertySlot(ExecState* exec, const Ident
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGTitleElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGTitleElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGTitleElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGTitleElement::s_info = { "SVGTitleElement", &JSSVGElement::s_info, &JSSVGTitleElementTable, 0 };
 
 JSSVGTitleElement::JSSVGTitleElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTitleElement> impl)
@@ -102,6 +107,11 @@ JSObject* JSSVGTitleElement::createPrototype(ExecState* exec, JSGlobalObject* gl
 bool JSSVGTitleElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGTitleElement, Base>(exec, &JSSVGTitleElementTable, this, propertyName, slot);
+}
+
+bool JSSVGTitleElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGTitleElement, Base>(exec, &JSSVGTitleElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGTitleElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -157,7 +167,7 @@ void setJSSVGTitleElementXmlspace(ExecState* exec, JSObject* thisObject, JSValue
 JSValue JSC_HOST_CALL jsSVGTitleElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGTitleElement::s_info))
+    if (!thisValue.inherits(&JSSVGTitleElement::s_info))
         return throwError(exec, TypeError);
     JSSVGTitleElement* castedThisObj = static_cast<JSSVGTitleElement*>(asObject(thisValue));
     SVGTitleElement* imp = static_cast<SVGTitleElement*>(castedThisObj->impl());

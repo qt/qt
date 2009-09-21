@@ -43,29 +43,33 @@
 #include "WorkerNavigator.h"
 #include <interpreter/Interpreter.h>
 
+#if ENABLE(EVENTSOURCE)
+#include "JSEventSourceConstructor.h"
+#endif
+
 using namespace JSC;
 
 namespace WebCore {
 
-void JSWorkerContext::mark()
+void JSWorkerContext::markChildren(MarkStack& markStack)
 {
-    Base::mark();
+    Base::markChildren(markStack);
 
     JSGlobalData& globalData = *this->globalData();
 
-    markActiveObjectsForContext(globalData, scriptExecutionContext());
+    markActiveObjectsForContext(markStack, globalData, scriptExecutionContext());
 
-    markDOMObjectWrapper(globalData, impl()->optionalLocation());
-    markDOMObjectWrapper(globalData, impl()->optionalNavigator());
+    markDOMObjectWrapper(markStack, globalData, impl()->optionalLocation());
+    markDOMObjectWrapper(markStack, globalData, impl()->optionalNavigator());
 
-    markIfNotNull(impl()->onerror());
+    markIfNotNull(markStack, impl()->onerror());
 
     typedef WorkerContext::EventListenersMap EventListenersMap;
     typedef WorkerContext::ListenerVector ListenerVector;
     EventListenersMap& eventListeners = impl()->eventListeners();
     for (EventListenersMap::iterator mapIter = eventListeners.begin(); mapIter != eventListeners.end(); ++mapIter) {
         for (ListenerVector::iterator vecIter = mapIter->second.begin(); vecIter != mapIter->second.end(); ++vecIter)
-            (*vecIter)->markJSFunction();
+            (*vecIter)->markJSFunction(markStack);
     }
 }
 
@@ -76,6 +80,21 @@ bool JSWorkerContext::getOwnPropertySlotDelegate(ExecState* exec, const Identifi
         return true;
     return false;
 }
+
+bool JSWorkerContext::getOwnPropertyDescriptorDelegate(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    // Look for overrides before looking at any of our own properties.
+    if (JSGlobalObject::getOwnPropertyDescriptor(exec, propertyName, descriptor))
+        return true;
+    return false;
+}
+
+#if ENABLE(EVENTSOURCE)
+JSValue JSWorkerContext::eventSource(ExecState* exec) const
+{
+    return getDOMConstructor<JSEventSourceConstructor>(exec, this);
+}
+#endif
 
 JSValue JSWorkerContext::xmlHttpRequest(ExecState* exec) const
 {
@@ -107,19 +126,21 @@ JSValue JSWorkerContext::importScripts(ExecState* exec, const ArgList& args)
 
 JSValue JSWorkerContext::addEventListener(ExecState* exec, const ArgList& args)
 {
-    RefPtr<JSEventListener> listener = findOrCreateJSEventListener(args.at(1));
-    if (!listener)
+    JSValue listener = args.at(1);
+    if (!listener.isObject())
         return jsUndefined();
-    impl()->addEventListener(args.at(0).toString(exec), listener.release(), args.at(2).toBoolean(exec));
+
+    impl()->addEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), this, false), args.at(2).toBoolean(exec));
     return jsUndefined();
 }
 
 JSValue JSWorkerContext::removeEventListener(ExecState* exec, const ArgList& args)
 {
-    JSEventListener* listener = findJSEventListener(args.at(1));
-    if (!listener)
+    JSValue listener = args.at(1);
+    if (!listener.isObject())
         return jsUndefined();
-    impl()->removeEventListener(args.at(0).toString(exec), listener, args.at(2).toBoolean(exec));
+
+    impl()->removeEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), this, false).get(), args.at(2).toBoolean(exec));
     return jsUndefined();
 }
 

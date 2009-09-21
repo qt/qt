@@ -44,8 +44,10 @@ namespace WebCore {
     class String;
 
     enum MessageDestination {
+#if ENABLE(INSPECTOR)
         InspectorControllerDestination,
-        ConsoleDestination
+#endif
+        ConsoleDestination,
     };
 
     class ScriptExecutionContext {

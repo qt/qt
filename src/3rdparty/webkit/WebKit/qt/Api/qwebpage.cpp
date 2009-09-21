@@ -27,7 +27,10 @@
 #include "qwebframe_p.h"
 #include "qwebhistory.h"
 #include "qwebhistory_p.h"
+#include "qwebinspector.h"
+#include "qwebinspector_p.h"
 #include "qwebsettings.h"
+#include "qwebkitversion.h"
 
 #include "Frame.h"
 #include "FrameTree.h"
@@ -35,6 +38,7 @@
 #include "FrameLoaderClientQt.h"
 #include "FrameView.h"
 #include "FormState.h"
+#include "ApplicationCacheStorage.h"
 #include "ChromeClientQt.h"
 #include "ContextMenu.h"
 #include "ContextMenuClientQt.h"
@@ -223,18 +227,6 @@ const char* QWebPagePrivate::editorCommandForWebActions(QWebPage::WebAction acti
     return 0;
 }
 
-#ifndef QT_NO_CURSOR
-SetCursorEvent::SetCursorEvent(const QCursor& cursor)
-    : QEvent(static_cast<QEvent::Type>(EventType))
-    , m_cursor(cursor)
-{}
-
-QCursor SetCursorEvent::cursor() const
-{
-    return m_cursor;
-}
-#endif
-
 // If you change this make sure to also adjust the docs for QWebPage::userAgentForUrl
 #define WEBKIT_VERSION "527+"
 
@@ -265,6 +257,9 @@ static inline Qt::DropAction dragOpToDropAction(unsigned actions)
 QWebPagePrivate::QWebPagePrivate(QWebPage *qq)
     : q(qq)
     , view(0)
+    , inspectorFrontend(0)
+    , inspector(0)
+    , inspectorIsInternalOnly(false)
     , viewportSize(QSize(0, 0))
 {
     WebCore::InitializeLoggingChannelsIfNecessary();
@@ -437,13 +432,13 @@ void QWebPagePrivate::_q_webActionTriggered(bool checked)
     q->triggerAction(action, checked);
 }
 
-#ifndef NDEBUG
 void QWebPagePrivate::_q_cleanupLeakMessages()
 {
+#ifndef NDEBUG
     // Need this to make leak messages accurate.
     cache()->setCapacities(0, 0, 0);
-}
 #endif
+}
 
 void QWebPagePrivate::updateAction(QWebPage::WebAction action)
 {
@@ -580,6 +575,18 @@ void QWebPagePrivate::timerEvent(QTimerEvent *ev)
         q->QObject::timerEvent(ev);
 }
 
+void QWebPagePrivate::mouseMoveEvent(QGraphicsSceneMouseEvent* ev)
+{
+    q->setView(ev->widget());
+
+    WebCore::Frame* frame = QWebFramePrivate::core(mainFrame);
+    if (!frame->view())
+        return;
+
+    bool accepted = frame->eventHandler()->mouseMoved(PlatformMouseEvent(ev, 0));
+    ev->setAccepted(accepted);
+}
+
 void QWebPagePrivate::mouseMoveEvent(QMouseEvent *ev)
 {
     WebCore::Frame* frame = QWebFramePrivate::core(mainFrame);
@@ -587,6 +594,29 @@ void QWebPagePrivate::mouseMoveEvent(QMouseEvent *ev)
         return;
 
     bool accepted = frame->eventHandler()->mouseMoved(PlatformMouseEvent(ev, 0));
+    ev->setAccepted(accepted);
+}
+
+void QWebPagePrivate::mousePressEvent(QGraphicsSceneMouseEvent* ev)
+{
+    q->setView(ev->widget());
+
+    WebCore::Frame* frame = QWebFramePrivate::core(mainFrame);
+    if (!frame->view())
+        return;
+
+    if (tripleClickTimer.isActive()
+            && (ev->pos().toPoint() - tripleClick).manhattanLength()
+                < QApplication::startDragDistance()) {
+        mouseTripleClickEvent(ev);
+        return;
+    }
+
+    bool accepted = false;
+    PlatformMouseEvent mev(ev, 1);
+    // ignore the event if we can't map Qt's mouse buttons to WebCore::MouseButton
+    if (mev.button() != NoButton)
+        accepted = frame->eventHandler()->handleMousePressEvent(mev);
     ev->setAccepted(accepted);
 }
 
@@ -611,6 +641,25 @@ void QWebPagePrivate::mousePressEvent(QMouseEvent *ev)
     ev->setAccepted(accepted);
 }
 
+void QWebPagePrivate::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *ev)
+{
+    q->setView(ev->widget());
+
+    WebCore::Frame* frame = QWebFramePrivate::core(mainFrame);
+    if (!frame->view())
+        return;
+
+    bool accepted = false;
+    PlatformMouseEvent mev(ev, 2);
+    // ignore the event if we can't map Qt's mouse buttons to WebCore::MouseButton
+    if (mev.button() != NoButton)
+        accepted = frame->eventHandler()->handleMousePressEvent(mev);
+    ev->setAccepted(accepted);
+
+    tripleClickTimer.start(QApplication::doubleClickInterval(), q);
+    tripleClick = ev->pos().toPoint();
+}
+
 void QWebPagePrivate::mouseDoubleClickEvent(QMouseEvent *ev)
 {
     WebCore::Frame* frame = QWebFramePrivate::core(mainFrame);
@@ -628,6 +677,20 @@ void QWebPagePrivate::mouseDoubleClickEvent(QMouseEvent *ev)
     tripleClick = ev->pos();
 }
 
+void QWebPagePrivate::mouseTripleClickEvent(QGraphicsSceneMouseEvent *ev)
+{
+    WebCore::Frame* frame = QWebFramePrivate::core(mainFrame);
+    if (!frame->view())
+        return;
+
+    bool accepted = false;
+    PlatformMouseEvent mev(ev, 3);
+    // ignore the event if we can't map Qt's mouse buttons to WebCore::MouseButton
+    if (mev.button() != NoButton)
+        accepted = frame->eventHandler()->handleMousePressEvent(mev);
+    ev->setAccepted(accepted);
+}
+
 void QWebPagePrivate::mouseTripleClickEvent(QMouseEvent *ev)
 {
     WebCore::Frame* frame = QWebFramePrivate::core(mainFrame);
@@ -640,6 +703,47 @@ void QWebPagePrivate::mouseTripleClickEvent(QMouseEvent *ev)
     if (mev.button() != NoButton)
         accepted = frame->eventHandler()->handleMousePressEvent(mev);
     ev->setAccepted(accepted);
+}
+
+void QWebPagePrivate::handleClipboard(QEvent* ev, Qt::MouseButton button)
+{
+#ifndef QT_NO_CLIPBOARD
+    if (QApplication::clipboard()->supportsSelection()) {
+        bool oldSelectionMode = Pasteboard::generalPasteboard()->isSelectionMode();
+        Pasteboard::generalPasteboard()->setSelectionMode(true);
+        WebCore::Frame* focusFrame = page->focusController()->focusedOrMainFrame();
+        if (button == Qt::LeftButton) {
+            if (focusFrame && (focusFrame->editor()->canCopy() || focusFrame->editor()->canDHTMLCopy())) {
+                focusFrame->editor()->copy();
+                ev->setAccepted(true);
+            }
+        } else if (button == Qt::MidButton) {
+            if (focusFrame && (focusFrame->editor()->canPaste() || focusFrame->editor()->canDHTMLPaste())) {
+                focusFrame->editor()->paste();
+                ev->setAccepted(true);
+            }
+        }
+        Pasteboard::generalPasteboard()->setSelectionMode(oldSelectionMode);
+    }
+#endif
+}
+
+void QWebPagePrivate::mouseReleaseEvent(QGraphicsSceneMouseEvent* ev)
+{
+    q->setView(ev->widget());
+
+    WebCore::Frame* frame = QWebFramePrivate::core(mainFrame);
+    if (!frame->view())
+        return;
+
+    bool accepted = false;
+    PlatformMouseEvent mev(ev, 0);
+    // ignore the event if we can't map Qt's mouse buttons to WebCore::MouseButton
+    if (mev.button() != NoButton)
+        accepted = frame->eventHandler()->handleMouseReleaseEvent(mev);
+    ev->setAccepted(accepted);
+
+    handleClipboard(ev, ev->button());
 }
 
 void QWebPagePrivate::mouseReleaseEvent(QMouseEvent *ev)
@@ -655,33 +759,15 @@ void QWebPagePrivate::mouseReleaseEvent(QMouseEvent *ev)
         accepted = frame->eventHandler()->handleMouseReleaseEvent(mev);
     ev->setAccepted(accepted);
 
-#ifndef QT_NO_CLIPBOARD
-    if (QApplication::clipboard()->supportsSelection()) {
-        bool oldSelectionMode = Pasteboard::generalPasteboard()->isSelectionMode();
-        Pasteboard::generalPasteboard()->setSelectionMode(true);
-        WebCore::Frame* focusFrame = page->focusController()->focusedOrMainFrame();
-        if (ev->button() == Qt::LeftButton) {
-            if (focusFrame && (focusFrame->editor()->canCopy() || focusFrame->editor()->canDHTMLCopy())) {
-                focusFrame->editor()->copy();
-                ev->setAccepted(true);
-            }
-        } else if (ev->button() == Qt::MidButton) {
-            if (focusFrame && (focusFrame->editor()->canPaste() || focusFrame->editor()->canDHTMLPaste())) {
-                focusFrame->editor()->paste();
-                ev->setAccepted(true);
-            }
-        }
-        Pasteboard::generalPasteboard()->setSelectionMode(oldSelectionMode);
-    }
-#endif
+    handleClipboard(ev, ev->button());
 }
 
 #ifndef QT_NO_CONTEXTMENU
-void QWebPagePrivate::contextMenuEvent(QContextMenuEvent *ev)
+void QWebPagePrivate::contextMenuEvent(const QPoint& globalPos)
 {
     QMenu *menu = q->createStandardContextMenu();
     if (menu) {
-        menu->exec(ev->globalPos());
+        menu->exec(globalPos);
         delete menu;
     }
 }
@@ -706,6 +792,19 @@ QMenu *QWebPage::createStandardContextMenu()
 }
 
 #ifndef QT_NO_WHEELEVENT
+void QWebPagePrivate::wheelEvent(QGraphicsSceneWheelEvent* ev)
+{
+    q->setView(ev->widget());
+
+    WebCore::Frame* frame = QWebFramePrivate::core(mainFrame);
+    if (!frame->view())
+        return;
+
+    WebCore::PlatformWheelEvent pev(ev);
+    bool accepted = frame->eventHandler()->handleWheelEvent(pev);
+    ev->setAccepted(accepted);
+}
+
 void QWebPagePrivate::wheelEvent(QWheelEvent *ev)
 {
     WebCore::Frame* frame = QWebFramePrivate::core(mainFrame);
@@ -776,7 +875,6 @@ void QWebPagePrivate::keyPressEvent(QKeyEvent *ev)
 {
     bool handled = false;
     WebCore::Frame* frame = page->focusController()->focusedOrMainFrame();
-    WebCore::Editor* editor = frame->editor();
     // we forward the key event to WebCore first to handle potential DOM
     // defined event handlers and later on end up in EditorClientQt::handleKeyboardEvent
     // to trigger editor commands via triggerAction().
@@ -788,7 +886,6 @@ void QWebPagePrivate::keyPressEvent(QKeyEvent *ev)
         if (view)
             defaultFont = view->font();
         QFontMetrics fm(defaultFont);
-        int fontHeight = fm.height();
         if (!handleScrolling(ev, frame)) {
             switch (ev->key()) {
             case Qt::Key_Back:
@@ -852,7 +949,21 @@ void QWebPagePrivate::focusOutEvent(QFocusEvent *ev)
     focusController->setFocused(false);
 }
 
-void QWebPagePrivate::dragEnterEvent(QDragEnterEvent *ev)
+void QWebPagePrivate::dragEnterEvent(QGraphicsSceneDragDropEvent* ev)
+{
+    q->setView(ev->widget());
+
+#ifndef QT_NO_DRAGANDDROP
+    DragData dragData(ev->mimeData(), ev->pos().toPoint(),
+            QCursor::pos(), dropActionToDragOp(ev->possibleActions()));
+    Qt::DropAction action = dragOpToDropAction(page->dragController()->dragEntered(&dragData));
+    ev->setDropAction(action);
+    if (action != Qt::IgnoreAction)
+        ev->accept();
+#endif
+}
+
+void QWebPagePrivate::dragEnterEvent(QDragEnterEvent* ev)
 {
 #ifndef QT_NO_DRAGANDDROP
     DragData dragData(ev->mimeData(), ev->pos(), QCursor::pos(),
@@ -864,7 +975,18 @@ void QWebPagePrivate::dragEnterEvent(QDragEnterEvent *ev)
 #endif
 }
 
-void QWebPagePrivate::dragLeaveEvent(QDragLeaveEvent *ev)
+void QWebPagePrivate::dragLeaveEvent(QGraphicsSceneDragDropEvent* ev)
+{
+    q->setView(ev->widget());
+
+#ifndef QT_NO_DRAGANDDROP
+    DragData dragData(0, IntPoint(), QCursor::pos(), DragOperationNone);
+    page->dragController()->dragExited(&dragData);
+    ev->accept();
+#endif
+}
+
+void QWebPagePrivate::dragLeaveEvent(QDragLeaveEvent* ev)
 {
 #ifndef QT_NO_DRAGANDDROP
     DragData dragData(0, IntPoint(), QCursor::pos(), DragOperationNone);
@@ -873,7 +995,21 @@ void QWebPagePrivate::dragLeaveEvent(QDragLeaveEvent *ev)
 #endif
 }
 
-void QWebPagePrivate::dragMoveEvent(QDragMoveEvent *ev)
+void QWebPagePrivate::dragMoveEvent(QGraphicsSceneDragDropEvent* ev)
+{
+    q->setView(ev->widget());
+
+#ifndef QT_NO_DRAGANDDROP
+    DragData dragData(ev->mimeData(), ev->pos().toPoint(),
+            QCursor::pos(), dropActionToDragOp(ev->possibleActions()));
+    Qt::DropAction action = dragOpToDropAction(page->dragController()->dragUpdated(&dragData));
+    ev->setDropAction(action);
+    if (action != Qt::IgnoreAction)
+        ev->accept();
+#endif
+}
+
+void QWebPagePrivate::dragMoveEvent(QDragMoveEvent* ev)
 {
 #ifndef QT_NO_DRAGANDDROP
     DragData dragData(ev->mimeData(), ev->pos(), QCursor::pos(),
@@ -885,7 +1021,18 @@ void QWebPagePrivate::dragMoveEvent(QDragMoveEvent *ev)
 #endif
 }
 
-void QWebPagePrivate::dropEvent(QDropEvent *ev)
+void QWebPagePrivate::dropEvent(QGraphicsSceneDragDropEvent* ev)
+{
+#ifndef QT_NO_DRAGANDDROP
+    DragData dragData(ev->mimeData(), ev->pos().toPoint(),
+            QCursor::pos(), dropActionToDragOp(ev->possibleActions()));
+    Qt::DropAction action = dragOpToDropAction(page->dragController()->performDrag(&dragData));
+    if (action != Qt::IgnoreAction)
+        ev->accept();
+#endif
+}
+
+void QWebPagePrivate::dropEvent(QDropEvent* ev)
 {
 #ifndef QT_NO_DRAGANDDROP
     DragData dragData(ev->mimeData(), ev->pos(), QCursor::pos(),
@@ -1085,6 +1232,54 @@ QVariant QWebPage::inputMethodQuery(Qt::InputMethodQuery property) const
         return QVariant();
     }
 }
+
+/*!
+    \internal
+*/
+void QWebPagePrivate::setInspector(QWebInspector* insp)
+{
+    if (inspector)
+        inspector->d->setFrontend(0);
+
+    if (inspectorIsInternalOnly) {
+        QWebInspector* inspToDelete = inspector;
+        inspector = 0;
+        inspectorIsInternalOnly = false;
+        delete inspToDelete;    // Delete after to prevent infinite recursion
+    }
+
+    inspector = insp;
+
+    // Give inspector frontend web view if previously created
+    if (inspector && inspectorFrontend)
+        inspector->d->setFrontend(inspectorFrontend);
+}
+
+/*!
+    \internal
+    Returns the inspector and creates it if it wasn't created yet.
+    The instance created here will not be available through QWebPage's API.
+*/
+QWebInspector* QWebPagePrivate::getOrCreateInspector()
+{
+    if (!inspector) {
+        QWebInspector* insp = new QWebInspector;
+        insp->setPage(q);
+        insp->connect(q, SIGNAL(webInspectorTriggered(const QWebElement&)), SLOT(show()));
+        insp->show(); // The inspector is expected to be shown on inspection
+        inspectorIsInternalOnly = true;
+
+        Q_ASSERT(inspector); // Associated through QWebInspector::setPage(q)
+    }
+    return inspector;
+}
+
+/*! \internal */
+InspectorController* QWebPagePrivate::inspectorController()
+{
+    return page->inspectorController();
+}
+
 
 /*!
    \enum QWebPage::FindFlag
@@ -1298,6 +1493,8 @@ QWebPage::~QWebPage()
     FrameLoader *loader = d->mainFrame->d->frame->loader();
     if (loader)
         loader->detachFromParent();
+    if (d->inspector)
+        d->inspector->setPage(0);
     delete d;
 }
 
@@ -1593,12 +1790,16 @@ void QWebPage::triggerAction(WebAction action, bool checked)
         case SetTextDirectionRightToLeft:
             editor->setBaseWritingDirection(RightToLeftWritingDirection);
             break;
-        case InspectElement:
-            if (!d->hitTestResult.isNull())
+        case InspectElement: {
+            QWebElement inspectedElement(QWebElement::enclosingElement(d->hitTestResult.d->innerNonSharedNode.get()));
+            emit webInspectorTriggered(inspectedElement);
+
+            if (!d->hitTestResult.isNull()) {
+                d->getOrCreateInspector(); // Make sure the inspector is created
                 d->page->inspectorController()->inspect(d->hitTestResult.d->innerNonSharedNode.get());
-            else
-                d->page->inspectorController()->show();
+            }
             break;
+        }
         default:
             command = QWebPagePrivate::editorCommandForWebActions(action);
             break;
@@ -2053,23 +2254,41 @@ bool QWebPage::event(QEvent *ev)
     case QEvent::MouseMove:
         d->mouseMoveEvent(static_cast<QMouseEvent*>(ev));
         break;
+    case QEvent::GraphicsSceneMouseMove:
+        d->mouseMoveEvent(static_cast<QGraphicsSceneMouseEvent*>(ev));
+        break;
     case QEvent::MouseButtonPress:
         d->mousePressEvent(static_cast<QMouseEvent*>(ev));
+        break;
+    case QEvent::GraphicsSceneMousePress:
+        d->mousePressEvent(static_cast<QGraphicsSceneMouseEvent*>(ev));
         break;
     case QEvent::MouseButtonDblClick:
         d->mouseDoubleClickEvent(static_cast<QMouseEvent*>(ev));
         break;
+    case QEvent::GraphicsSceneMouseDoubleClick:
+        d->mouseDoubleClickEvent(static_cast<QGraphicsSceneMouseEvent*>(ev));
+        break;
     case QEvent::MouseButtonRelease:
         d->mouseReleaseEvent(static_cast<QMouseEvent*>(ev));
         break;
+    case QEvent::GraphicsSceneMouseRelease:
+        d->mouseReleaseEvent(static_cast<QGraphicsSceneMouseEvent*>(ev));
+        break;
 #ifndef QT_NO_CONTEXTMENU
     case QEvent::ContextMenu:
-        d->contextMenuEvent(static_cast<QContextMenuEvent*>(ev));
+        d->contextMenuEvent(static_cast<QContextMenuEvent*>(ev)->globalPos());
+        break;
+    case QEvent::GraphicsSceneContextMenu:
+        d->contextMenuEvent(static_cast<QGraphicsSceneContextMenuEvent*>(ev)->screenPos());
         break;
 #endif
 #ifndef QT_NO_WHEELEVENT
     case QEvent::Wheel:
         d->wheelEvent(static_cast<QWheelEvent*>(ev));
+        break;
+    case QEvent::GraphicsSceneWheel:
+        d->wheelEvent(static_cast<QGraphicsSceneWheelEvent*>(ev));
         break;
 #endif
     case QEvent::KeyPress:
@@ -2088,14 +2307,26 @@ bool QWebPage::event(QEvent *ev)
     case QEvent::DragEnter:
         d->dragEnterEvent(static_cast<QDragEnterEvent*>(ev));
         break;
+    case QEvent::GraphicsSceneDragEnter:
+        d->dragEnterEvent(static_cast<QGraphicsSceneDragDropEvent*>(ev));
+        break;
     case QEvent::DragLeave:
         d->dragLeaveEvent(static_cast<QDragLeaveEvent*>(ev));
+        break;
+    case QEvent::GraphicsSceneDragLeave:
+        d->dragLeaveEvent(static_cast<QGraphicsSceneDragDropEvent*>(ev));
         break;
     case QEvent::DragMove:
         d->dragMoveEvent(static_cast<QDragMoveEvent*>(ev));
         break;
+    case QEvent::GraphicsSceneDragMove:
+        d->dragMoveEvent(static_cast<QGraphicsSceneDragDropEvent*>(ev));
+        break;
     case QEvent::Drop:
         d->dropEvent(static_cast<QDropEvent*>(ev));
+        break;
+    case QEvent::GraphicsSceneDrop:
+        d->dropEvent(static_cast<QGraphicsSceneDragDropEvent*>(ev));
         break;
 #endif
     case QEvent::InputMethod:
@@ -2538,7 +2769,7 @@ QWebPluginFactory *QWebPage::pluginFactory() const
 
     The default implementation returns the following value:
 
-    "Mozilla/5.0 (%Platform%; %Security%; %Subplatform%; %Locale%) AppleWebKit/%WebKitVersion% (KHTML, like Gecko, Safari/419.3) %AppVersion"
+    "Mozilla/5.0 (%Platform%; %Security%; %Subplatform%; %Locale%) AppleWebKit/%WebKitVersion% (KHTML, like Gecko) %AppVersion Safari/%WebKitVersion%"
 
     In this string the following values are replaced at run-time:
     \list
@@ -2546,7 +2777,7 @@ QWebPluginFactory *QWebPage::pluginFactory() const
     \o %Security% expands to U if SSL is enabled, otherwise N. SSL is enabled if QSslSocket::supportsSsl() returns true.
     \o %Locale% is replaced with QLocale::name(). The locale is determined from the view of the QWebPage. If no view is set on the QWebPage,
     then a default constructed QLocale is used instead.
-    \o %WebKitVersion% currently expands to 527+
+    \o %WebKitVersion% is the version of WebKit the application was compiled against.
     \o %AppVersion% expands to QCoreApplication::applicationName()/QCoreApplication::applicationVersion() if they're set; otherwise defaulting to Qt and the current Qt version.
     \endlist
 */
@@ -2678,6 +2909,9 @@ QString QWebPage::userAgentForUrl(const QUrl& url) const
         case QSysInfo::WV_VISTA:
             ver = "Windows NT 6.0";
             break;
+        case QSysInfo::WV_WINDOWS7:
+            ver = "Windows NT 6.1";
+            break;
         case QSysInfo::WV_CE:
             ver = "Windows CE";
             break;
@@ -2704,12 +2938,13 @@ QString QWebPage::userAgentForUrl(const QUrl& url) const
     ua.append(QLatin1String(") "));
 
     // webkit/qt version
-    ua.append(QLatin1String("AppleWebKit/" WEBKIT_VERSION " (KHTML, like Gecko, Safari/419.3) "));
+    ua.append(QString(QLatin1String("AppleWebKit/%1 (KHTML, like Gecko) "))
+                      .arg(QString(qWebKitVersion())));
 
     // Application name/version
     QString appName = QCoreApplication::applicationName();
     if (!appName.isEmpty()) {
-        ua.append(QLatin1Char(' ') + appName);
+        ua.append(appName);
 #if QT_VERSION >= 0x040400
         QString appVer = QCoreApplication::applicationVersion();
         if (!appVer.isEmpty())
@@ -2720,6 +2955,10 @@ QString QWebPage::userAgentForUrl(const QUrl& url) const
         ua.append(QLatin1String("Qt/"));
         ua.append(QLatin1String(qVersion()));
     }
+
+    ua.append(QString(QLatin1String(" Safari/%1"))
+                      .arg(qWebKitVersion()));
+
     return ua;
 }
 
@@ -2908,6 +3147,24 @@ quint64 QWebPage::bytesReceived() const
     By default no links are delegated and are handled by QWebPage instead.
 
     \sa linkHovered()
+*/
+
+/*!
+    \fn void QWebPage::webInspectorTriggered(const QWebElement& inspectedElement);
+    \since 4.6
+
+    This signal is emitted when the user triggered an inspection through the
+    context menu. If a QWebInspector is associated to this page, it should be
+    visible to the user after this signal has been emitted.
+
+    If still no QWebInspector is associated to this QWebPage after the emission
+    of this signal, a privately owned inspector will be shown to the user.
+
+    \note \a inspectedElement contains the QWebElement under the context menu.
+    It is not garanteed to be the same as the focused element in the web
+    inspector.
+
+    \sa QWebInspector
 */
 
 /*!

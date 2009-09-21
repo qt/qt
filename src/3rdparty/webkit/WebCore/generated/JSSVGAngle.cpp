@@ -83,6 +83,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSSVGAnglePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -97,6 +98,11 @@ const ClassInfo JSSVGAngleConstructor::s_info = { "SVGAngleConstructor", 0, &JSS
 bool JSSVGAngleConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGAngleConstructor, DOMObject>(exec, &JSSVGAngleConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGAngleConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGAngleConstructor, DOMObject>(exec, &JSSVGAngleConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -132,6 +138,11 @@ bool JSSVGAnglePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& 
     return getStaticPropertySlot<JSSVGAnglePrototype, JSObject>(exec, &JSSVGAnglePrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGAnglePrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticPropertyDescriptor<JSSVGAnglePrototype, JSObject>(exec, &JSSVGAnglePrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGAngle::s_info = { "SVGAngle", 0, &JSSVGAngleTable, 0 };
 
 JSSVGAngle::JSSVGAngle(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAngle> impl, SVGElement* context)
@@ -153,6 +164,11 @@ JSObject* JSSVGAngle::createPrototype(ExecState* exec, JSGlobalObject* globalObj
 bool JSSVGAngle::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGAngle, Base>(exec, &JSSVGAngleTable, this, propertyName, slot);
+}
+
+bool JSSVGAngle::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGAngle, Base>(exec, &JSSVGAngleTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGAngleUnitType(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -229,7 +245,7 @@ JSValue JSSVGAngle::getConstructor(ExecState* exec, JSGlobalObject* globalObject
 JSValue JSC_HOST_CALL jsSVGAnglePrototypeFunctionNewValueSpecifiedUnits(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGAngle::s_info))
+    if (!thisValue.inherits(&JSSVGAngle::s_info))
         return throwError(exec, TypeError);
     JSSVGAngle* castedThisObj = static_cast<JSSVGAngle*>(asObject(thisValue));
     SVGAngle* imp = static_cast<SVGAngle*>(castedThisObj->impl());
@@ -243,7 +259,7 @@ JSValue JSC_HOST_CALL jsSVGAnglePrototypeFunctionNewValueSpecifiedUnits(ExecStat
 JSValue JSC_HOST_CALL jsSVGAnglePrototypeFunctionConvertToSpecifiedUnits(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGAngle::s_info))
+    if (!thisValue.inherits(&JSSVGAngle::s_info))
         return throwError(exec, TypeError);
     JSSVGAngle* castedThisObj = static_cast<JSSVGAngle*>(asObject(thisValue));
     SVGAngle* imp = static_cast<SVGAngle*>(castedThisObj->impl());
@@ -286,7 +302,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAngl
 }
 SVGAngle* toSVGAngle(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGAngle::s_info) ? static_cast<JSSVGAngle*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGAngle::s_info) ? static_cast<JSSVGAngle*>(asObject(value))->impl() : 0;
 }
 
 }

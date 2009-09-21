@@ -2920,18 +2920,16 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     Q_CHECK_PAINTEVENTS
 
     QGraphicsScene scene;
-    EventTester *tester = new EventTester;
-    scene.addItem(tester);
-    tester->setAcceptsHoverEvents(true);
-
     QGraphicsView view(&scene);
     view.show();
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
+    QTest::qWait(250);
 
-    qApp->processEvents();
-    qApp->processEvents();
+    EventTester *tester = new EventTester;
+    scene.addItem(tester);
+    tester->setAcceptsHoverEvents(true);
 
     QTRY_COMPARE(tester->repaints, 1);
 
@@ -2945,7 +2943,7 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     int npaints = tester->repaints;
     qApp->processEvents();
     qApp->processEvents();
-    QCOMPARE(tester->events.size(), 3); // activate + enter + move
+    QCOMPARE(tester->events.size(), 2); //  enter + move
     QCOMPARE(tester->repaints, npaints + 1);
     QCOMPARE(tester->events.last(), QEvent::GraphicsSceneHoverMove);
 
@@ -2959,7 +2957,7 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     qApp->processEvents();
     qApp->processEvents();
 
-    QCOMPARE(tester->events.size(), 4);
+    QCOMPARE(tester->events.size(), 3);
     QCOMPARE(tester->repaints, npaints + 1);
     QCOMPARE(tester->events.last(), QEvent::GraphicsSceneHoverMove);
 
@@ -2973,7 +2971,7 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     qApp->processEvents();
     qApp->processEvents();
 
-    QCOMPARE(tester->events.size(), 5);
+    QCOMPARE(tester->events.size(), 4);
     QCOMPARE(tester->repaints, npaints + 2);
     QCOMPARE(tester->events.last(), QEvent::GraphicsSceneHoverLeave);
 }
@@ -6510,6 +6508,9 @@ void tst_QGraphicsItem::cacheMode()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
+    // Increase the probability of window activation
+    // not causing another repaint of test items.
+    QTest::qWait(250);
 
     EventTester *tester = new EventTester;
     EventTester *testerChild = new EventTester;

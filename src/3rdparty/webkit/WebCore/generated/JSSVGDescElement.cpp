@@ -87,6 +87,11 @@ bool JSSVGDescElementPrototype::getOwnPropertySlot(ExecState* exec, const Identi
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGDescElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGDescElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGDescElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGDescElement::s_info = { "SVGDescElement", &JSSVGElement::s_info, &JSSVGDescElementTable, 0 };
 
 JSSVGDescElement::JSSVGDescElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGDescElement> impl)
@@ -102,6 +107,11 @@ JSObject* JSSVGDescElement::createPrototype(ExecState* exec, JSGlobalObject* glo
 bool JSSVGDescElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGDescElement, Base>(exec, &JSSVGDescElementTable, this, propertyName, slot);
+}
+
+bool JSSVGDescElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGDescElement, Base>(exec, &JSSVGDescElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGDescElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -157,7 +167,7 @@ void setJSSVGDescElementXmlspace(ExecState* exec, JSObject* thisObject, JSValue 
 JSValue JSC_HOST_CALL jsSVGDescElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGDescElement::s_info))
+    if (!thisValue.inherits(&JSSVGDescElement::s_info))
         return throwError(exec, TypeError);
     JSSVGDescElement* castedThisObj = static_cast<JSSVGDescElement*>(asObject(thisValue));
     SVGDescElement* imp = static_cast<SVGDescElement*>(castedThisObj->impl());

@@ -49,7 +49,28 @@ using namespace WTF;
 
 namespace JSC {
 
-static void substitute(UString& string, const UString& substring);
+/*
+    Details of the emitBytecode function.
+
+    Return value: The register holding the production's value.
+             dst: An optional parameter specifying the most efficient destination at
+                  which to store the production's value. The callee must honor dst.
+
+    The dst argument provides for a crude form of copy propagation. For example,
+
+        x = 1
+
+    becomes
+    
+        load r[x], 1
+    
+    instead of 
+
+        load r0, 1
+        mov r[x], r0
+    
+    because the assignment node, "x =", passes r[x] as dst to the number node, "1".
+*/
 
 // ------------------------------ ThrowableExpressionData --------------------------------
 
@@ -63,31 +84,35 @@ static void substitute(UString& string, const UString& substring)
     string = newString;
 }
 
-RegisterID* ThrowableExpressionData::emitThrowError(BytecodeGenerator& generator, ErrorType e, const char* msg)
+RegisterID* ThrowableExpressionData::emitThrowError(BytecodeGenerator& generator, ErrorType type, const char* message)
 {
     generator.emitExpressionInfo(divot(), startOffset(), endOffset());
-    RegisterID* exception = generator.emitNewError(generator.newTemporary(), e, jsString(generator.globalData(), msg));
+    RegisterID* exception = generator.emitNewError(generator.newTemporary(), type, jsString(generator.globalData(), message));
     generator.emitThrow(exception);
     return exception;
 }
 
-RegisterID* ThrowableExpressionData::emitThrowError(BytecodeGenerator& generator, ErrorType e, const char* msg, const Identifier& label)
+RegisterID* ThrowableExpressionData::emitThrowError(BytecodeGenerator& generator, ErrorType type, const char* messageTemplate, const UString& label)
 {
-    UString message = msg;
-    substitute(message, label.ustring());
+    UString message = messageTemplate;
+    substitute(message, label);
     generator.emitExpressionInfo(divot(), startOffset(), endOffset());
-    RegisterID* exception = generator.emitNewError(generator.newTemporary(), e, jsString(generator.globalData(), message));
+    RegisterID* exception = generator.emitNewError(generator.newTemporary(), type, jsString(generator.globalData(), message));
     generator.emitThrow(exception);
     return exception;
+}
+
+inline RegisterID* ThrowableExpressionData::emitThrowError(BytecodeGenerator& generator, ErrorType type, const char* messageTemplate, const Identifier& label)
+{
+    return emitThrowError(generator, type, messageTemplate, label.ustring());
 }
 
 // ------------------------------ StatementNode --------------------------------
 
-void StatementNode::setLoc(int firstLine, int lastLine, int column)
+void StatementNode::setLoc(int firstLine, int lastLine)
 {
     m_line = firstLine;
     m_lastLine = lastLine;
-    m_column = column;
 }
 
 // ------------------------------ SourceElements --------------------------------
@@ -97,6 +122,18 @@ void SourceElements::append(StatementNode* statement)
     if (statement->isEmptyStatement())
         return;
     m_statements.append(statement);
+}
+
+inline StatementNode* SourceElements::singleStatement() const
+{
+    size_t size = m_statements.size();
+    return size == 1 ? m_statements[0] : 0;
+}
+
+inline StatementNode* SourceElements::lastStatement() const
+{
+    size_t size = m_statements.size();
+    return size ? m_statements[size - 1] : 0;
 }
 
 // ------------------------------ NullNode -------------------------------------
@@ -123,7 +160,7 @@ RegisterID* NumberNode::emitBytecode(BytecodeGenerator& generator, RegisterID* d
 {
     if (dst == generator.ignoredResult())
         return 0;
-    return generator.emitLoad(dst, m_double);
+    return generator.emitLoad(dst, m_value);
 }
 
 // ------------------------------ StringNode -----------------------------------
@@ -139,9 +176,9 @@ RegisterID* StringNode::emitBytecode(BytecodeGenerator& generator, RegisterID* d
 
 RegisterID* RegExpNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    RefPtr<RegExp> regExp = RegExp::create(generator.globalData(), m_pattern, m_flags);
+    RefPtr<RegExp> regExp = RegExp::create(generator.globalData(), m_pattern.ustring(), m_flags.ustring());
     if (!regExp->isValid())
-        return emitThrowError(generator, SyntaxError, ("Invalid regular expression: " + UString(regExp->errorMessage())).UTF8String().c_str());
+        return emitThrowError(generator, SyntaxError, "Invalid regular expression: %s", regExp->errorMessage());
     if (dst == generator.ignoredResult())
         return 0;
     return generator.emitNewRegExp(generator.finalDestination(dst), regExp.get());
@@ -356,7 +393,7 @@ RegisterID* FunctionCallResolveNode::emitBytecode(BytecodeGenerator& generator, 
     RefPtr<RegisterID> thisRegister = generator.newTemporary();
     int identifierStart = divot() - startOffset();
     generator.emitExpressionInfo(identifierStart + m_ident.size(), m_ident.size(), 0);
-    generator.emitResolveFunction(thisRegister.get(), func.get(), m_ident);
+    generator.emitResolveWithBase(thisRegister.get(), func.get(), m_ident);
     return generator.emitCall(generator.finalDestination(dst, func.get()), func.get(), thisRegister.get(), m_args, divot(), startOffset(), endOffset());
 }
 
@@ -376,11 +413,12 @@ RegisterID* FunctionCallBracketNode::emitBytecode(BytecodeGenerator& generator, 
 
 RegisterID* FunctionCallDotNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    RefPtr<RegisterID> base = generator.emitNode(m_base);
+    RefPtr<RegisterID> function = generator.tempDestination(dst);
+    RefPtr<RegisterID> thisRegister = generator.newTemporary();
+    generator.emitNode(thisRegister.get(), m_base);
     generator.emitExpressionInfo(divot() - m_subexpressionDivotOffset, startOffset() - m_subexpressionDivotOffset, m_subexpressionEndOffset);
     generator.emitMethodCheck();
-    RefPtr<RegisterID> function = generator.emitGetById(generator.tempDestination(dst), base.get(), m_ident);
-    RefPtr<RegisterID> thisRegister = generator.emitMove(generator.newTemporary(), base.get());
+    generator.emitGetById(function.get(), thisRegister.get(), m_ident);
     return generator.emitCall(generator.finalDestination(dst, function.get()), function.get(), thisRegister.get(), m_args, divot(), startOffset(), endOffset());
 }
 
@@ -596,7 +634,9 @@ RegisterID* PostfixDotNode::emitBytecode(BytecodeGenerator& generator, RegisterI
 
 RegisterID* PostfixErrorNode::emitBytecode(BytecodeGenerator& generator, RegisterID*)
 {
-    return emitThrowError(generator, ReferenceError, m_operator == OpPlusPlus ? "Postfix ++ operator applied to value that is not a reference." : "Postfix -- operator applied to value that is not a reference.");
+    return emitThrowError(generator, ReferenceError, m_operator == OpPlusPlus
+        ? "Postfix ++ operator applied to value that is not a reference."
+        : "Postfix -- operator applied to value that is not a reference.");
 }
 
 // ------------------------------ DeleteResolveNode -----------------------------------
@@ -758,7 +798,9 @@ RegisterID* PrefixDotNode::emitBytecode(BytecodeGenerator& generator, RegisterID
 
 RegisterID* PrefixErrorNode::emitBytecode(BytecodeGenerator& generator, RegisterID*)
 {
-    return emitThrowError(generator, ReferenceError, m_operator == OpPlusPlus ? "Prefix ++ operator applied to value that is not a reference." : "Prefix -- operator applied to value that is not a reference.");
+    return emitThrowError(generator, ReferenceError, m_operator == OpPlusPlus
+        ? "Prefix ++ operator applied to value that is not a reference."
+        : "Prefix -- operator applied to value that is not a reference.");
 }
 
 // ------------------------------ Unary Operation Nodes -----------------------------------
@@ -1205,7 +1247,13 @@ RegisterID* ConstDeclNode::emitCodeSingle(BytecodeGenerator& generator)
 
         return generator.emitNode(local, m_init);
     }
-    
+
+    if (generator.codeType() != EvalCode) {
+        if (m_init)
+            return generator.emitNode(m_init);
+        else
+            return generator.emitResolve(generator.newTemporary(), m_ident);
+    }
     // FIXME: While this code should only be hit in eval code, it will potentially
     // assign to the wrong base if m_ident exists in an intervening dynamic scope.
     RefPtr<RegisterID> base = generator.emitResolveBase(generator.newTemporary(), m_ident);
@@ -1226,24 +1274,30 @@ RegisterID* ConstDeclNode::emitBytecode(BytecodeGenerator& generator, RegisterID
 
 RegisterID* ConstStatementNode::emitBytecode(BytecodeGenerator& generator, RegisterID*)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
     return generator.emitNode(m_next);
 }
 
-// ------------------------------ Helper functions for handling Vectors of StatementNode -------------------------------
+// ------------------------------ SourceElements -------------------------------
 
-static inline void statementListEmitCode(const StatementVector& statements, BytecodeGenerator& generator, RegisterID* dst)
+inline void SourceElements::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    size_t size = statements.size();
+    size_t size = m_statements.size();
     for (size_t i = 0; i < size; ++i)
-        generator.emitNode(dst, statements[i]);
+        generator.emitNode(dst, m_statements[i]);
 }
 
 // ------------------------------ BlockNode ------------------------------------
 
+inline StatementNode* BlockNode::lastStatement() const
+{
+    return m_statements ? m_statements->lastStatement() : 0;
+}
+
 RegisterID* BlockNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    statementListEmitCode(m_children, generator, dst);
+    if (m_statements)
+        m_statements->emitBytecode(generator, dst);
     return 0;
 }
 
@@ -1251,7 +1305,7 @@ RegisterID* BlockNode::emitBytecode(BytecodeGenerator& generator, RegisterID* ds
 
 RegisterID* EmptyStatementNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
     return dst;
 }
 
@@ -1259,7 +1313,7 @@ RegisterID* EmptyStatementNode::emitBytecode(BytecodeGenerator& generator, Regis
 
 RegisterID* DebuggerStatementNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(DidReachBreakpoint, firstLine(), lastLine(), column());
+    generator.emitDebugHook(DidReachBreakpoint, firstLine(), lastLine());
     return dst;
 }
 
@@ -1268,7 +1322,7 @@ RegisterID* DebuggerStatementNode::emitBytecode(BytecodeGenerator& generator, Re
 RegisterID* ExprStatementNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
     ASSERT(m_expr);
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column()); 
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine()); 
     return generator.emitNode(dst, m_expr);
 }
 
@@ -1277,7 +1331,7 @@ RegisterID* ExprStatementNode::emitBytecode(BytecodeGenerator& generator, Regist
 RegisterID* VarStatementNode::emitBytecode(BytecodeGenerator& generator, RegisterID*)
 {
     ASSERT(m_expr);
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
     return generator.emitNode(m_expr);
 }
 
@@ -1285,7 +1339,7 @@ RegisterID* VarStatementNode::emitBytecode(BytecodeGenerator& generator, Registe
 
 RegisterID* IfNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
     
     RefPtr<Label> afterThen = generator.newLabel();
 
@@ -1303,7 +1357,7 @@ RegisterID* IfNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 
 RegisterID* IfElseNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
     
     RefPtr<Label> beforeElse = generator.newLabel();
     RefPtr<Label> afterElse = generator.newLabel();
@@ -1333,14 +1387,12 @@ RegisterID* DoWhileNode::emitBytecode(BytecodeGenerator& generator, RegisterID* 
     RefPtr<Label> topOfLoop = generator.newLabel();
     generator.emitLabel(topOfLoop.get());
 
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
    
     RefPtr<RegisterID> result = generator.emitNode(dst, m_statement);
 
     generator.emitLabel(scope->continueTarget());
-#ifndef QT_BUILD_SCRIPT_LIB
-    generator.emitDebugHook(WillExecuteStatement, m_expr->lineNo(), m_expr->lineNo(), column());
-#endif
+    generator.emitDebugHook(WillExecuteStatement, m_expr->lineNo(), m_expr->lineNo());
     RegisterID* cond = generator.emitNode(m_expr);
     generator.emitJumpIfTrue(cond, topOfLoop.get());
 
@@ -1353,9 +1405,7 @@ RegisterID* DoWhileNode::emitBytecode(BytecodeGenerator& generator, RegisterID* 
 RegisterID* WhileNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
     RefPtr<LabelScope> scope = generator.newLabelScope(LabelScope::Loop);
-#ifdef QT_BUILD_SCRIPT_LIB
-    generator.emitDebugHook(WillExecuteStatement, m_expr->lineNo(), m_expr->lineNo(), column());
-#endif
+
     generator.emitJump(scope->continueTarget());
 
     RefPtr<Label> topOfLoop = generator.newLabel();
@@ -1364,9 +1414,7 @@ RegisterID* WhileNode::emitBytecode(BytecodeGenerator& generator, RegisterID* ds
     generator.emitNode(dst, m_statement);
 
     generator.emitLabel(scope->continueTarget());
-#ifndef QT_BUILD_SCRIPT_LIB
-    generator.emitDebugHook(WillExecuteStatement, m_expr->lineNo(), m_expr->lineNo(), column());
-#endif
+    generator.emitDebugHook(WillExecuteStatement, m_expr->lineNo(), m_expr->lineNo());
     RegisterID* cond = generator.emitNode(m_expr);
     generator.emitJumpIfTrue(cond, topOfLoop.get());
 
@@ -1380,12 +1428,9 @@ RegisterID* WhileNode::emitBytecode(BytecodeGenerator& generator, RegisterID* ds
 
 RegisterID* ForNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    if (dst == generator.ignoredResult())
-        dst = 0;
-
     RefPtr<LabelScope> scope = generator.newLabelScope(LabelScope::Loop);
 
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
 
     if (m_expr1)
         generator.emitNode(generator.ignoredResult(), m_expr1);
@@ -1399,9 +1444,7 @@ RegisterID* ForNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
     RefPtr<RegisterID> result = generator.emitNode(dst, m_statement);
 
     generator.emitLabel(scope->continueTarget());
-#ifndef QT_BUILD_SCRIPT_LIB
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
-#endif
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
     if (m_expr3)
         generator.emitNode(generator.ignoredResult(), m_expr3);
 
@@ -1427,7 +1470,7 @@ RegisterID* ForInNode::emitBytecode(BytecodeGenerator& generator, RegisterID* ds
 
     RefPtr<Label> continueTarget = generator.newLabel(); 
 
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
 
     if (m_init)
         generator.emitNode(generator.ignoredResult(), m_init);
@@ -1475,9 +1518,7 @@ RegisterID* ForInNode::emitBytecode(BytecodeGenerator& generator, RegisterID* ds
 
     generator.emitLabel(scope->continueTarget());
     generator.emitNextPropertyName(propertyName, iter.get(), loopStart.get());
-#ifndef QT_BUILD_SCRIPT_LIB
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
-#endif
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
     generator.emitLabel(scope->breakTarget());
     return dst;
 }
@@ -1487,7 +1528,7 @@ RegisterID* ForInNode::emitBytecode(BytecodeGenerator& generator, RegisterID* ds
 // ECMA 12.7
 RegisterID* ContinueNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
     
     LabelScope* scope = generator.continueTarget(m_ident);
 
@@ -1505,7 +1546,7 @@ RegisterID* ContinueNode::emitBytecode(BytecodeGenerator& generator, RegisterID*
 // ECMA 12.8
 RegisterID* BreakNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
     
     LabelScope* scope = generator.breakTarget(m_ident);
     
@@ -1522,7 +1563,7 @@ RegisterID* BreakNode::emitBytecode(BytecodeGenerator& generator, RegisterID* ds
 
 RegisterID* ReturnNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
     if (generator.codeType() != FunctionCode)
         return emitThrowError(generator, SyntaxError, "Invalid return statement.");
 
@@ -1539,7 +1580,7 @@ RegisterID* ReturnNode::emitBytecode(BytecodeGenerator& generator, RegisterID* d
         generator.emitJumpScopes(l0.get(), 0);
         generator.emitLabel(l0.get());
     }
-    generator.emitDebugHook(WillLeaveCallFrame, firstLine(), lastLine(), column());
+    generator.emitDebugHook(WillLeaveCallFrame, firstLine(), lastLine());
     return generator.emitReturn(r0);
 }
 
@@ -1547,7 +1588,7 @@ RegisterID* ReturnNode::emitBytecode(BytecodeGenerator& generator, RegisterID* d
 
 RegisterID* WithNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
     
     RefPtr<RegisterID> scope = generator.newTemporary();
     generator.emitNode(scope.get(), m_expr); // scope must be protected until popped
@@ -1556,6 +1597,14 @@ RegisterID* WithNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst
     RegisterID* result = generator.emitNode(dst, m_statement);
     generator.emitPopScope();
     return result;
+}
+
+// ------------------------------ CaseClauseNode --------------------------------
+
+inline void CaseClauseNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
+{
+    if (m_statements)
+        m_statements->emitBytecode(generator, dst);
 }
 
 // ------------------------------ CaseBlockNode --------------------------------
@@ -1574,13 +1623,11 @@ static void processClauseList(ClauseListNode* list, Vector<ExpressionNode*, 8>& 
         literalVector.append(clauseExpression);
         if (clauseExpression->isNumber()) {
             double value = static_cast<NumberNode*>(clauseExpression)->value();
-            JSValue jsValue = JSValue::makeInt32Fast(static_cast<int32_t>(value));
-            if ((typeForTable & ~SwitchNumber) || !jsValue || (jsValue.getInt32Fast() != value)) {
+            int32_t intVal = static_cast<int32_t>(value);
+            if ((typeForTable & ~SwitchNumber) || (intVal != value)) {
                 typeForTable = SwitchNeither;
                 break;
             }
-            int32_t intVal = static_cast<int32_t>(value);
-            ASSERT(intVal == value);
             if (intVal < min_num)
                 min_num = intVal;
             if (intVal > max_num)
@@ -1679,17 +1726,17 @@ RegisterID* CaseBlockNode::emitBytecodeForBlock(BytecodeGenerator& generator, Re
     size_t i = 0;
     for (ClauseListNode* list = m_list1; list; list = list->getNext()) {
         generator.emitLabel(labelVector[i++].get());
-        statementListEmitCode(list->getClause()->children(), generator, dst);
+        list->getClause()->emitBytecode(generator, dst);
     }
 
     if (m_defaultClause) {
         generator.emitLabel(defaultLabel.get());
-        statementListEmitCode(m_defaultClause->children(), generator, dst);
+        m_defaultClause->emitBytecode(generator, dst);
     }
 
     for (ClauseListNode* list = m_list2; list; list = list->getNext()) {
         generator.emitLabel(labelVector[i++].get());
-        statementListEmitCode(list->getClause()->children(), generator, dst);
+        list->getClause()->emitBytecode(generator, dst);
     }
     if (!m_defaultClause)
         generator.emitLabel(defaultLabel.get());
@@ -1706,7 +1753,7 @@ RegisterID* CaseBlockNode::emitBytecodeForBlock(BytecodeGenerator& generator, Re
 
 RegisterID* SwitchNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
     
     RefPtr<LabelScope> scope = generator.newLabelScope(LabelScope::Switch);
 
@@ -1721,7 +1768,7 @@ RegisterID* SwitchNode::emitBytecode(BytecodeGenerator& generator, RegisterID* d
 
 RegisterID* LabelNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
 
     if (generator.breakTarget(m_name))
         return emitThrowError(generator, SyntaxError, "Duplicate label: %s.", m_name);
@@ -1737,7 +1784,7 @@ RegisterID* LabelNode::emitBytecode(BytecodeGenerator& generator, RegisterID* ds
 
 RegisterID* ThrowNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
 
     if (dst == generator.ignoredResult())
         dst = 0;
@@ -1751,12 +1798,12 @@ RegisterID* ThrowNode::emitBytecode(BytecodeGenerator& generator, RegisterID* ds
 
 RegisterID* TryNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-#ifndef QT_BUILD_SCRIPT_LIB
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
-#endif
+    // NOTE: The catch and finally blocks must be labeled explicitly, so the
+    // optimizer knows they may be jumped to from anywhere.
+
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
 
     RefPtr<Label> tryStartLabel = generator.newLabel();
-    RefPtr<Label> tryEndLabel = generator.newLabel();
     RefPtr<Label> finallyStart;
     RefPtr<RegisterID> finallyReturnAddr;
     if (m_finallyBlock) {
@@ -1764,14 +1811,19 @@ RegisterID* TryNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
         finallyReturnAddr = generator.newTemporary();
         generator.pushFinallyContext(finallyStart.get(), finallyReturnAddr.get());
     }
+
     generator.emitLabel(tryStartLabel.get());
     generator.emitNode(dst, m_tryBlock);
-    generator.emitLabel(tryEndLabel.get());
 
     if (m_catchBlock) {
-        RefPtr<Label> handlerEndLabel = generator.newLabel();
-        generator.emitJump(handlerEndLabel.get());
-        RefPtr<RegisterID> exceptionRegister = generator.emitCatch(generator.newTemporary(), tryStartLabel.get(), tryEndLabel.get());
+        RefPtr<Label> catchEndLabel = generator.newLabel();
+        
+        // Normal path: jump over the catch block.
+        generator.emitJump(catchEndLabel.get());
+
+        // Uncaught exception path: the catch block.
+        RefPtr<Label> here = generator.emitLabel(generator.newLabel().get());
+        RefPtr<RegisterID> exceptionRegister = generator.emitCatch(generator.newTemporary(), tryStartLabel.get(), here.get());
         if (m_catchHasEval) {
             RefPtr<RegisterID> dynamicScopeObject = generator.emitNewObject(generator.newTemporary());
             generator.emitPutById(dynamicScopeObject.get(), m_exceptionIdent, exceptionRegister.get());
@@ -1781,7 +1833,7 @@ RegisterID* TryNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
             generator.emitPushNewScope(exceptionRegister.get(), m_exceptionIdent, exceptionRegister.get());
         generator.emitNode(dst, m_catchBlock);
         generator.emitPopScope();
-        generator.emitLabel(handlerEndLabel.get());
+        generator.emitLabel(catchEndLabel.get());
     }
 
     if (m_finallyBlock) {
@@ -1792,21 +1844,18 @@ RegisterID* TryNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
         // approach to not clobbering anything important
         RefPtr<RegisterID> highestUsedRegister = generator.highestUsedRegister();
         RefPtr<Label> finallyEndLabel = generator.newLabel();
+
+        // Normal path: invoke the finally block, then jump over it.
         generator.emitJumpSubroutine(finallyReturnAddr.get(), finallyStart.get());
-        // Use a label to record the subtle fact that sret will return to the
-        // next instruction. sret is the only way to jump without an explicit label.
-        generator.emitLabel(generator.newLabel().get());
         generator.emitJump(finallyEndLabel.get());
 
-        // Finally block for exception path
-        RefPtr<RegisterID> tempExceptionRegister = generator.emitCatch(generator.newTemporary(), tryStartLabel.get(), generator.emitLabel(generator.newLabel().get()).get());
+        // Uncaught exception path: invoke the finally block, then re-throw the exception.
+        RefPtr<Label> here = generator.emitLabel(generator.newLabel().get());
+        RefPtr<RegisterID> tempExceptionRegister = generator.emitCatch(generator.newTemporary(), tryStartLabel.get(), here.get());
         generator.emitJumpSubroutine(finallyReturnAddr.get(), finallyStart.get());
-        // Use a label to record the subtle fact that sret will return to the
-        // next instruction. sret is the only way to jump without an explicit label.
-        generator.emitLabel(generator.newLabel().get());
         generator.emitThrow(tempExceptionRegister.get());
 
-        // emit the finally block itself
+        // The finally block.
         generator.emitLabel(finallyStart.get());
         generator.emitNode(dst, m_finallyBlock);
         generator.emitSubroutineReturn(finallyReturnAddr.get());
@@ -1819,27 +1868,15 @@ RegisterID* TryNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 
 // -----------------------------ScopeNodeData ---------------------------
 
-ScopeNodeData::ScopeNodeData(ParserArena& arena, SourceElements* children, VarStack* varStack, FunctionStack* funcStack, int numConstants)
+ScopeNodeData::ScopeNodeData(ParserArena& arena, SourceElements* statements, VarStack* varStack, FunctionStack* funcStack, int numConstants)
     : m_numConstants(numConstants)
+    , m_statements(statements)
 {
     m_arena.swap(arena);
     if (varStack)
         m_varStack.swap(*varStack);
     if (funcStack)
         m_functionStack.swap(*funcStack);
-    if (children)
-        children->releaseContentsIntoVector(m_children);
-}
-
-void ScopeNodeData::mark()
-{
-    FunctionStack::iterator end = m_functionStack.end();
-    for (FunctionStack::iterator ptr = m_functionStack.begin(); ptr != end; ++ptr) {
-        FunctionBodyNode* body = (*ptr)->body();
-        if (!body->isGenerated())
-            continue;
-        body->generatedBytecode().mark();
-    }
 }
 
 // ------------------------------ ScopeNode -----------------------------
@@ -1868,6 +1905,17 @@ ScopeNode::ScopeNode(JSGlobalData* globalData, const SourceCode& source, SourceE
 #endif
 }
 
+inline void ScopeNode::emitStatementsBytecode(BytecodeGenerator& generator, RegisterID* dst)
+{
+    if (m_data->m_statements)
+        m_data->m_statements->emitBytecode(generator, dst);
+}
+
+StatementNode* ScopeNode::singleStatement() const
+{
+    return m_data->m_statements ? m_data->m_statements->singleStatement() : 0;
+}
+
 // ------------------------------ ProgramNode -----------------------------
 
 inline ProgramNode::ProgramNode(JSGlobalData* globalData, SourceElements* children, VarStack* varStack, FunctionStack* funcStack, const SourceCode& source, CodeFeatures features, int numConstants)
@@ -1888,40 +1936,16 @@ PassRefPtr<ProgramNode> ProgramNode::create(JSGlobalData* globalData, SourceElem
 
 RegisterID* ProgramNode::emitBytecode(BytecodeGenerator& generator, RegisterID*)
 {
-    generator.emitDebugHook(WillExecuteProgram, firstLine(), lastLine(), column());
+    generator.emitDebugHook(WillExecuteProgram, firstLine(), lastLine());
 
     RefPtr<RegisterID> dstRegister = generator.newTemporary();
     generator.emitLoad(dstRegister.get(), jsUndefined());
-    statementListEmitCode(children(), generator, dstRegister.get());
+    emitStatementsBytecode(generator, dstRegister.get());
 
-    generator.emitDebugHook(DidExecuteProgram, firstLine(), lastLine(), column());
+    generator.emitDebugHook(DidExecuteProgram, firstLine(), lastLine());
     generator.emitEnd(dstRegister.get());
     return 0;
 }
-
-void ProgramNode::generateBytecode(ScopeChainNode* scopeChainNode)
-{
-    ScopeChain scopeChain(scopeChainNode);
-    JSGlobalObject* globalObject = scopeChain.globalObject();
-    
-    m_code.set(new ProgramCodeBlock(this, GlobalCode, globalObject, source().provider()));
-    
-    OwnPtr<BytecodeGenerator> generator(new BytecodeGenerator(this, globalObject->debugger(), scopeChain, &globalObject->symbolTable(), m_code.get()));
-    generator->generate();
-
-    destroyData();
-}
-
-#if ENABLE(JIT)
-void ProgramNode::generateJITCode(ScopeChainNode* scopeChainNode)
-{
-    bytecode(scopeChainNode);
-    ASSERT(m_code);
-    ASSERT(!m_jitCode);
-    JIT::compile(scopeChainNode->globalData, m_code.get());
-    ASSERT(m_jitCode);
-}
-#endif
 
 // ------------------------------ EvalNode -----------------------------
 
@@ -1943,135 +1967,46 @@ PassRefPtr<EvalNode> EvalNode::create(JSGlobalData* globalData, SourceElements* 
 
 RegisterID* EvalNode::emitBytecode(BytecodeGenerator& generator, RegisterID*)
 {
-    generator.emitDebugHook(WillExecuteProgram, firstLine(), lastLine(), column());
+    generator.emitDebugHook(WillExecuteProgram, firstLine(), lastLine());
 
     RefPtr<RegisterID> dstRegister = generator.newTemporary();
     generator.emitLoad(dstRegister.get(), jsUndefined());
-    statementListEmitCode(children(), generator, dstRegister.get());
+    emitStatementsBytecode(generator, dstRegister.get());
 
-    generator.emitDebugHook(DidExecuteProgram, firstLine(), lastLine(), column());
+    generator.emitDebugHook(DidExecuteProgram, firstLine(), lastLine());
     generator.emitEnd(dstRegister.get());
     return 0;
 }
 
-void EvalNode::generateBytecode(ScopeChainNode* scopeChainNode)
-{
-    ScopeChain scopeChain(scopeChainNode);
-    JSGlobalObject* globalObject = scopeChain.globalObject();
-
-    m_code.set(new EvalCodeBlock(this, globalObject, source().provider(), scopeChain.localDepth()));
-
-    OwnPtr<BytecodeGenerator> generator(new BytecodeGenerator(this, globalObject->debugger(), scopeChain, &m_code->symbolTable(), m_code.get()));
-    generator->generate();
-
-    // Eval code needs to hang on to its declaration stacks to keep declaration info alive until Interpreter::execute time,
-    // so the entire ScopeNodeData cannot be destoyed.
-    children().clear();
-}
-
-EvalCodeBlock& EvalNode::bytecodeForExceptionInfoReparse(ScopeChainNode* scopeChainNode, CodeBlock* codeBlockBeingRegeneratedFrom)
-{
-    ASSERT(!m_code);
-
-    ScopeChain scopeChain(scopeChainNode);
-    JSGlobalObject* globalObject = scopeChain.globalObject();
-
-    m_code.set(new EvalCodeBlock(this, globalObject, source().provider(), scopeChain.localDepth()));
-
-    OwnPtr<BytecodeGenerator> generator(new BytecodeGenerator(this, globalObject->debugger(), scopeChain, &m_code->symbolTable(), m_code.get()));
-    generator->setRegeneratingForExceptionInfo(codeBlockBeingRegeneratedFrom);
-    generator->generate();
-
-    return *m_code;
-}
-
-void EvalNode::mark()
-{
-    // We don't need to mark our own CodeBlock as the JSGlobalObject takes care of that
-    data()->mark();
-}
-
-#if ENABLE(JIT)
-void EvalNode::generateJITCode(ScopeChainNode* scopeChainNode)
-{
-    bytecode(scopeChainNode);
-    ASSERT(m_code);
-    ASSERT(!m_jitCode);
-    JIT::compile(scopeChainNode->globalData, m_code.get());
-    ASSERT(m_jitCode);
-}
-#endif
-
 // ------------------------------ FunctionBodyNode -----------------------------
+
+FunctionParameters::FunctionParameters(ParameterNode* firstParameter)
+{
+    for (ParameterNode* parameter = firstParameter; parameter; parameter = parameter->nextParam())
+        append(parameter->ident());
+}
 
 inline FunctionBodyNode::FunctionBodyNode(JSGlobalData* globalData)
     : ScopeNode(globalData)
-    , m_parameters(0)
-    , m_parameterCount(0)
 {
-#ifdef QT_BUILD_SCRIPT_LIB
-    sourceToken = globalData->scriptpool->objectRegister();
-#endif
 }
 
 inline FunctionBodyNode::FunctionBodyNode(JSGlobalData* globalData, SourceElements* children, VarStack* varStack, FunctionStack* funcStack, const SourceCode& sourceCode, CodeFeatures features, int numConstants)
     : ScopeNode(globalData, sourceCode, children, varStack, funcStack, features, numConstants)
-    , m_parameters(0)
-    , m_parameterCount(0)
 {
-#ifdef QT_BUILD_SCRIPT_LIB
-    sourceToken = globalData->scriptpool->objectRegister();
-#endif
 }
 
-FunctionBodyNode::~FunctionBodyNode()
+void FunctionBodyNode::finishParsing(const SourceCode& source, ParameterNode* firstParameter, const Identifier& ident)
 {
-#ifdef QT_BUILD_SCRIPT_LIB
-    if (sourceToken) delete sourceToken;
-#endif
-    for (size_t i = 0; i < m_parameterCount; ++i)
-        m_parameters[i].~Identifier();
-    fastFree(m_parameters);
-}
-
-void FunctionBodyNode::finishParsing(const SourceCode& source, ParameterNode* firstParameter)
-{
-    Vector<Identifier> parameters;
-    for (ParameterNode* parameter = firstParameter; parameter; parameter = parameter->nextParam())
-        parameters.append(parameter->ident());
-    size_t count = parameters.size();
-
     setSource(source);
-    finishParsing(parameters.releaseBuffer(), count);
+    finishParsing(FunctionParameters::create(firstParameter), ident);
 }
 
-void FunctionBodyNode::finishParsing(Identifier* parameters, size_t parameterCount)
+void FunctionBodyNode::finishParsing(PassRefPtr<FunctionParameters> parameters, const Identifier& ident)
 {
     ASSERT(!source().isNull());
     m_parameters = parameters;
-    m_parameterCount = parameterCount;
-}
-
-void FunctionBodyNode::mark()
-{
-    if (m_code)
-        m_code->mark();
-}
-
-#if ENABLE(JIT)
-PassRefPtr<FunctionBodyNode> FunctionBodyNode::createNativeThunk(JSGlobalData* globalData)
-{
-    RefPtr<FunctionBodyNode> body = new FunctionBodyNode(globalData);
-    globalData->parser->arena().reset();
-    body->m_code.set(new CodeBlock(body.get()));
-    body->m_jitCode = JITCode(JITCode::HostFunction(globalData->jitStubs.ctiNativeCallThunk()));
-    return body.release();
-}
-#endif
-
-bool FunctionBodyNode::isHostFunction() const
-{
-    return m_code && m_code->codeType() == NativeCode;
+    m_ident = ident;
 }
 
 FunctionBodyNode* FunctionBodyNode::create(JSGlobalData* globalData)
@@ -2090,93 +2025,24 @@ PassRefPtr<FunctionBodyNode> FunctionBodyNode::create(JSGlobalData* globalData, 
     return node.release();
 }
 
-void FunctionBodyNode::generateBytecode(ScopeChainNode* scopeChainNode)
-{
-    // This branch is only necessary since you can still create a non-stub FunctionBodyNode by
-    // calling Parser::parse<FunctionBodyNode>().   
-    if (!data())
-        scopeChainNode->globalData->parser->reparseInPlace(scopeChainNode->globalData, this);
-    ASSERT(data());
-
-    ScopeChain scopeChain(scopeChainNode);
-    JSGlobalObject* globalObject = scopeChain.globalObject();
-
-    m_code.set(new CodeBlock(this, FunctionCode, source().provider(), source().startOffset()));
-
-    OwnPtr<BytecodeGenerator> generator(new BytecodeGenerator(this, globalObject->debugger(), scopeChain, &m_code->symbolTable(), m_code.get()));
-    generator->generate();
-
-    destroyData();
-}
-
-#if ENABLE(JIT)
-void FunctionBodyNode::generateJITCode(ScopeChainNode* scopeChainNode)
-{
-    bytecode(scopeChainNode);
-    ASSERT(m_code);
-    ASSERT(!m_jitCode);
-    JIT::compile(scopeChainNode->globalData, m_code.get());
-    ASSERT(m_jitCode);
-}
-#endif
-
-CodeBlock& FunctionBodyNode::bytecodeForExceptionInfoReparse(ScopeChainNode* scopeChainNode, CodeBlock* codeBlockBeingRegeneratedFrom)
-{
-    ASSERT(!m_code);
-
-    ScopeChain scopeChain(scopeChainNode);
-    JSGlobalObject* globalObject = scopeChain.globalObject();
-
-    m_code.set(new CodeBlock(this, FunctionCode, source().provider(), source().startOffset()));
-
-    OwnPtr<BytecodeGenerator> generator(new BytecodeGenerator(this, globalObject->debugger(), scopeChain, &m_code->symbolTable(), m_code.get()));
-    generator->setRegeneratingForExceptionInfo(codeBlockBeingRegeneratedFrom);
-    generator->generate();
-
-    return *m_code;
-}
-
 RegisterID* FunctionBodyNode::emitBytecode(BytecodeGenerator& generator, RegisterID*)
 {
-    generator.emitDebugHook(DidEnterCallFrame, firstLine(), lastLine(), column());
-    statementListEmitCode(children(), generator, generator.ignoredResult());
-    if (children().size() && children().last()->isBlock()) {
-        BlockNode* blockNode = static_cast<BlockNode*>(children().last());
-        if (blockNode->children().size() && blockNode->children().last()->isReturnNode())
+    generator.emitDebugHook(DidEnterCallFrame, firstLine(), lastLine());
+    emitStatementsBytecode(generator, generator.ignoredResult());
+    StatementNode* singleStatement = this->singleStatement();
+    if (singleStatement && singleStatement->isBlock()) {
+        StatementNode* lastStatementInBlock = static_cast<BlockNode*>(singleStatement)->lastStatement();
+        if (lastStatementInBlock && lastStatementInBlock->isReturnNode())
             return 0;
     }
 
     RegisterID* r0 = generator.emitLoad(0, jsUndefined());
-    generator.emitDebugHook(WillLeaveCallFrame, firstLine(), lastLine(), column());
+    generator.emitDebugHook(WillLeaveCallFrame, firstLine(), lastLine());
     generator.emitReturn(r0);
     return 0;
 }
 
-UString FunctionBodyNode::paramString() const
-{
-    UString s("");
-    for (size_t pos = 0; pos < m_parameterCount; ++pos) {
-        if (!s.isEmpty())
-            s += ", ";
-        s += parameters()[pos].ustring();
-    }
-
-    return s;
-}
-
-Identifier* FunctionBodyNode::copyParameters()
-{
-    Identifier* parameters = static_cast<Identifier*>(fastMalloc(m_parameterCount * sizeof(Identifier)));
-    VectorCopier<false, Identifier>::uninitializedCopy(m_parameters, m_parameters + m_parameterCount, parameters);
-    return parameters;
-}
-
 // ------------------------------ FuncDeclNode ---------------------------------
-
-JSFunction* FuncDeclNode::makeFunction(ExecState* exec, ScopeChainNode* scopeChain)
-{
-    return new (exec) JSFunction(exec, m_ident, m_body.get(), scopeChain);
-}
 
 RegisterID* FuncDeclNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
@@ -2190,26 +2056,6 @@ RegisterID* FuncDeclNode::emitBytecode(BytecodeGenerator& generator, RegisterID*
 RegisterID* FuncExprNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
     return generator.emitNewFunctionExpression(generator.finalDestination(dst), this);
-}
-
-JSFunction* FuncExprNode::makeFunction(ExecState* exec, ScopeChainNode* scopeChain)
-{
-    JSFunction* func = new (exec) JSFunction(exec, m_ident, m_body.get(), scopeChain);
-
-    /* 
-        The Identifier in a FunctionExpression can be referenced from inside
-        the FunctionExpression's FunctionBody to allow the function to call
-        itself recursively. However, unlike in a FunctionDeclaration, the
-        Identifier in a FunctionExpression cannot be referenced from and
-        does not affect the scope enclosing the FunctionExpression.
-     */
-
-    if (!m_ident.isNull()) {
-        JSStaticScopeObject* functionScopeObject = new (exec) JSStaticScopeObject(exec, m_ident, func, ReadOnly | DontDelete);
-        func->scope().push(functionScopeObject);
-    }
-
-    return func;
 }
 
 } // namespace JSC

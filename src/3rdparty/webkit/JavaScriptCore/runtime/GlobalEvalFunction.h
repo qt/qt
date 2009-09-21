@@ -1,6 +1,6 @@
 /*
  *  Copyright (C) 1999-2000 Harri Porten (porten@kde.org)
- *  Copyright (C) 2003, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ *  Copyright (C) 2003, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  *  Copyright (C) 2007 Cameron Zwarich (cwzwarich@uwaterloo.ca)
  *  Copyright (C) 2007 Maks Orlovich
  *
@@ -35,8 +35,13 @@ namespace JSC {
         GlobalEvalFunction(ExecState*, PassRefPtr<Structure>, int len, const Identifier&, NativeFunction, JSGlobalObject* expectedThisObject);
         JSGlobalObject* cachedGlobalObject() const { return m_cachedGlobalObject; }
 
+        static PassRefPtr<Structure> createStructure(JSValue prototype) 
+        { 
+            return Structure::create(prototype, TypeInfo(ObjectType, ImplementsHasInstance | HasStandardGetOwnPropertySlot));
+        }
+
     private:
-        virtual void mark();
+        virtual void markChildren(MarkStack&);
 
         JSGlobalObject* m_cachedGlobalObject;
     };

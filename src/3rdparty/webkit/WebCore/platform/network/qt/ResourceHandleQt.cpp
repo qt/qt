@@ -35,6 +35,7 @@
 #include "ResourceHandleClient.h"
 #include "ResourceHandleInternal.h"
 #include "qwebpage_p.h"
+#include "qwebframe_p.h"
 #include "ChromeClientQt.h"
 #include "FrameLoaderClientQt.h"
 #include "Page.h"
@@ -42,6 +43,9 @@
 
 #include "NotImplemented.h"
 
+#if QT_VERSION >= 0x040500
+#include <QAbstractNetworkCache>
+#endif
 #include <QCoreApplication>
 #include <QUrl>
 #if QT_VERSION >= 0x040400
@@ -73,11 +77,10 @@ private:
     ResourceResponse m_response;
     ResourceError m_error;
     Vector<char> m_data;
-    bool m_finished;
+    QEventLoop m_eventLoop;
 };
 
 WebCoreSynchronousLoader::WebCoreSynchronousLoader()
-    : m_finished(false)
 {
 }
 
@@ -93,19 +96,18 @@ void WebCoreSynchronousLoader::didReceiveData(ResourceHandle*, const char* data,
 
 void WebCoreSynchronousLoader::didFinishLoading(ResourceHandle*)
 {
-    m_finished = true;
+    m_eventLoop.exit();
 }
 
 void WebCoreSynchronousLoader::didFail(ResourceHandle*, const ResourceError& error)
 {
     m_error = error;
-    m_finished = true;
+    m_eventLoop.exit();
 }
 
 void WebCoreSynchronousLoader::waitForCompletion()
 {
-    while (!m_finished)
-        QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+    m_eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
 }
 
 ResourceHandleInternal::~ResourceHandleInternal()
@@ -154,10 +156,28 @@ bool ResourceHandle::loadsBlocked()
     return false;
 }
 
-bool ResourceHandle::willLoadFromCache(ResourceRequest& request)
+bool ResourceHandle::willLoadFromCache(ResourceRequest& request, Frame* frame)
 {
-    notImplemented();
+    if (!frame)
+        return false;
+
+#if QT_VERSION >= 0x040500
+    QNetworkAccessManager* manager = QWebFramePrivate::kit(frame)->page()->networkAccessManager();
+    QAbstractNetworkCache* cache = manager->cache();
+
+    if (!cache)
+        return false;
+
+    QNetworkCacheMetaData data = cache->metaData(request.url());
+    if (data.isValid()) {
+        request.setCachePolicy(ReturnCacheDataDontLoad);
+        return true;
+    }
+
     return false;
+#else
+    return false;
+#endif
 }
 
 bool ResourceHandle::supportsBufferedData()

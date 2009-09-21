@@ -75,6 +75,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSCSSMediaRulePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -89,6 +90,11 @@ const ClassInfo JSCSSMediaRuleConstructor::s_info = { "CSSMediaRuleConstructor",
 bool JSCSSMediaRuleConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCSSMediaRuleConstructor, DOMObject>(exec, &JSCSSMediaRuleConstructorTable, this, propertyName, slot);
+}
+
+bool JSCSSMediaRuleConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCSSMediaRuleConstructor, DOMObject>(exec, &JSCSSMediaRuleConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -119,6 +125,11 @@ bool JSCSSMediaRulePrototype::getOwnPropertySlot(ExecState* exec, const Identifi
     return getStaticFunctionSlot<JSObject>(exec, &JSCSSMediaRulePrototypeTable, this, propertyName, slot);
 }
 
+bool JSCSSMediaRulePrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSCSSMediaRulePrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSCSSMediaRule::s_info = { "CSSMediaRule", &JSCSSRule::s_info, &JSCSSMediaRuleTable, 0 };
 
 JSCSSMediaRule::JSCSSMediaRule(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSMediaRule> impl)
@@ -134,6 +145,11 @@ JSObject* JSCSSMediaRule::createPrototype(ExecState* exec, JSGlobalObject* globa
 bool JSCSSMediaRule::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCSSMediaRule, Base>(exec, &JSCSSMediaRuleTable, this, propertyName, slot);
+}
+
+bool JSCSSMediaRule::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCSSMediaRule, Base>(exec, &JSCSSMediaRuleTable, this, propertyName, descriptor);
 }
 
 JSValue jsCSSMediaRuleMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -165,7 +181,7 @@ JSValue JSCSSMediaRule::getConstructor(ExecState* exec, JSGlobalObject* globalOb
 JSValue JSC_HOST_CALL jsCSSMediaRulePrototypeFunctionInsertRule(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCSSMediaRule::s_info))
+    if (!thisValue.inherits(&JSCSSMediaRule::s_info))
         return throwError(exec, TypeError);
     JSCSSMediaRule* castedThisObj = static_cast<JSCSSMediaRule*>(asObject(thisValue));
     CSSMediaRule* imp = static_cast<CSSMediaRule*>(castedThisObj->impl());
@@ -182,7 +198,7 @@ JSValue JSC_HOST_CALL jsCSSMediaRulePrototypeFunctionInsertRule(ExecState* exec,
 JSValue JSC_HOST_CALL jsCSSMediaRulePrototypeFunctionDeleteRule(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCSSMediaRule::s_info))
+    if (!thisValue.inherits(&JSCSSMediaRule::s_info))
         return throwError(exec, TypeError);
     JSCSSMediaRule* castedThisObj = static_cast<JSCSSMediaRule*>(asObject(thisValue));
     CSSMediaRule* imp = static_cast<CSSMediaRule*>(castedThisObj->impl());

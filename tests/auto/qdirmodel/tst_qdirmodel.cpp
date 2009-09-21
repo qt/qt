@@ -614,17 +614,24 @@ void tst_QDirModel::task196768_sorting()
     QTreeView view;
     QPersistentModelIndex index = model.index(path);
 
+    qDebug() << "Path" << path << "count" << model.rowCount(index) << "index" << index;
+
     view.setModel(&model);
+    qDebug() << "After setModel" << index;
     QModelIndex index2 = model.index(path);
+    qDebug() << "A" << index << index2;
     QCOMPARE(index.data(), index2.data());
     view.setRootIndex(index);
     index2 = model.index(path);
+    qDebug() << "B" << index << index2;
     QCOMPARE(index.data(), index2.data());
     view.setCurrentIndex(index);
     index2 = model.index(path);
+    qDebug() << "C" << index << index2;
     QCOMPARE(index.data(), index2.data());
     view.setSortingEnabled(true);
     index2 = model.index(path);
+    qDebug() << "After sorting" << index << index2;
     QCOMPARE(index.data(), index2.data());
 }
 

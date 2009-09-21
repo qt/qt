@@ -31,34 +31,47 @@
 #ifndef DedicatedWorkerContext_h
 #define DedicatedWorkerContext_h
 
+#if ENABLE(WORKERS)
+
+#include "MessagePort.h"
 #include "WorkerContext.h"
 
 namespace WebCore {
 
+    class DedicatedWorkerThread;
+
     class DedicatedWorkerContext : public WorkerContext {
     public:
-        static PassRefPtr<DedicatedWorkerContext> create(const KURL& url, const String& userAgent, WorkerThread* thread)
+        typedef WorkerContext Base;
+        static PassRefPtr<DedicatedWorkerContext> create(const KURL& url, const String& userAgent, DedicatedWorkerThread* thread)
         {
             return adoptRef(new DedicatedWorkerContext(url, userAgent, thread));
         }
-        virtual ~DedicatedWorkerContext();
 
-        virtual void reportException(const String& errorMessage, int lineNumber, const String& sourceURL);
+        virtual bool isDedicatedWorkerContext() const { return true; }
+
+        // Overridden to allow us to check our pending activity after executing imported script.
+        virtual void importScripts(const Vector<String>& urls, const String& callerURL, int callerLine, ExceptionCode&);
 
         // EventTarget
         virtual DedicatedWorkerContext* toDedicatedWorkerContext() { return this; }
         void postMessage(const String&, ExceptionCode&);
+        void postMessage(const String&, const MessagePortArray*, ExceptionCode&);
+        // FIXME: remove this when we update the ObjC bindings (bug #28774).
         void postMessage(const String&, MessagePort*, ExceptionCode&);
         void setOnmessage(PassRefPtr<EventListener> eventListener) { m_onmessageListener = eventListener; }
         EventListener* onmessage() const { return m_onmessageListener.get(); }
 
-        void dispatchMessage(const String&, PassRefPtr<MessagePort>);
+        void dispatchMessage(const String&, PassOwnPtr<MessagePortArray>);
 
+        DedicatedWorkerThread* thread();
     private:
-        DedicatedWorkerContext(const KURL&, const String&, WorkerThread*);
+        DedicatedWorkerContext(const KURL&, const String&, DedicatedWorkerThread*);
         RefPtr<EventListener> m_onmessageListener;
     };
 
 } // namespace WebCore
+
+#endif // ENABLE(WORKERS)
 
 #endif // DedicatedWorkerContext_h

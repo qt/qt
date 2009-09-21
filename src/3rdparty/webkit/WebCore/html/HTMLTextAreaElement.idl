@@ -35,15 +35,19 @@ module html {
                  attribute  boolean              disabled;
                  attribute  boolean              autofocus;
                  attribute  [ConvertNullToNullString] DOMString            name;
+                 attribute  [ConvertNullToNullString, Reflect] DOMString   placeholder;
                  attribute  boolean              readOnly;
                  attribute  boolean              required;
                  attribute  long                 rows;
         readonly attribute  DOMString            type;
                  attribute  [ConvertNullToNullString] DOMString            value;
+        readonly attribute  unsigned long        textLength;
         
         void     select();
 
         readonly attribute boolean         willValidate;
+        boolean  checkValidity();
+        void     setCustomValidity(in [ConvertUndefinedOrNullToNullString] DOMString error);
 
        // WinIE & FireFox extension:
                  attribute long selectionStart;

@@ -558,4 +558,16 @@ EXPORTS
 	_ZThn8_N6Phonon19AbstractAudioOutputD1Ev @ 557 NONAME
 	_ZThn8_N6Phonon6EffectD0Ev @ 558 NONAME
 	_ZThn8_N6Phonon6EffectD1Ev @ 559 NONAME
+	_ZN6Phonon10SeekSlider19getStaticMetaObjectEv @ 560 NONAME
+	_ZN6Phonon11AudioOutput19getStaticMetaObjectEv @ 561 NONAME
+	_ZN6Phonon11MediaObject19getStaticMetaObjectEv @ 562 NONAME
+	_ZN6Phonon11VideoPlayer19getStaticMetaObjectEv @ 563 NONAME
+	_ZN6Phonon11VideoWidget19getStaticMetaObjectEv @ 564 NONAME
+	_ZN6Phonon12EffectWidget19getStaticMetaObjectEv @ 565 NONAME
+	_ZN6Phonon12VolumeSlider19getStaticMetaObjectEv @ 566 NONAME
+	_ZN6Phonon15MediaController19getStaticMetaObjectEv @ 567 NONAME
+	_ZN6Phonon17VolumeFaderEffect19getStaticMetaObjectEv @ 568 NONAME
+	_ZN6Phonon19AbstractAudioOutput19getStaticMetaObjectEv @ 569 NONAME
+	_ZN6Phonon19AbstractMediaStream19getStaticMetaObjectEv @ 570 NONAME
+	_ZN6Phonon6Effect19getStaticMetaObjectEv @ 571 NONAME
 
