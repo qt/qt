@@ -917,14 +917,13 @@ QEventDispatcherMac::QEventDispatcherMac(QObject *parent)
     CFRunLoopObserverContext firstTimeObserverContext;
     bzero(&firstTimeObserverContext, sizeof(CFRunLoopObserverContext));
     firstTimeObserverContext.info = d;
-    CFRunLoopObserverRef firstTimeObserver = CFRunLoopObserverCreate(kCFAllocatorDefault,
-                                                                     kCFRunLoopEntry,
-                                                                     /* repeats = */ false,
-                                                                     0,
-                                                                     QEventDispatcherMacPrivate::firstLoopEntry,
-                                                                     &firstTimeObserverContext);
-    CFRunLoopAddObserver(mainRunLoop(), firstTimeObserver, kCFRunLoopCommonModes);
-    CFRelease(firstTimeObserver);
+    d->firstTimeObserver = CFRunLoopObserverCreate(kCFAllocatorDefault,
+                                                   kCFRunLoopEntry,
+                                                   /* repeats = */ false,
+                                                   0,
+                                                   QEventDispatcherMacPrivate::firstLoopEntry,
+                                                   &firstTimeObserverContext);
+    CFRunLoopAddObserver(mainRunLoop(), d->firstTimeObserver, kCFRunLoopCommonModes);
 }
 
 void QEventDispatcherMacPrivate::waitingObserverCallback(CFRunLoopObserverRef,
@@ -1025,6 +1024,9 @@ QEventDispatcherMac::~QEventDispatcherMac()
 
     CFRunLoopObserverInvalidate(d->waitingObserver);
     CFRelease(d->waitingObserver);
+
+    CFRunLoopObserverInvalidate(d->firstTimeObserver);
+    CFRelease(d->firstTimeObserver);
 }
 
 /////////////////////////////////////////////////////////////////////////////

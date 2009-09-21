@@ -187,6 +187,7 @@ public:
     QList<void *> queuedUserInputEvents; // List of EventRef in Carbon, and NSEvent * in Cocoa
     CFRunLoopSourceRef postedEventsSource;
     CFRunLoopObserverRef waitingObserver;
+    CFRunLoopObserverRef firstTimeObserver;
     QAtomicInt serialNumber;
     int lastSerial;
     bool interrupt;
