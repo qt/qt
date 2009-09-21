@@ -3323,7 +3323,7 @@ QPoint QWidget::pos() const
 
     \note Do not use this function to find the width of a screen on
     a \l{QDesktopWidget}{multiple screen desktop}. Read
-    \l{multiple screens note}{this note} for details.
+    \l{QDesktopWidget#Screen Geometry}{this note} for details.
 
     By default, this property contains a value that depends on the user's
     platform and screen geometry.
@@ -3339,8 +3339,8 @@ QPoint QWidget::pos() const
     issues with windows.
 
     \note Do not use this function to find the height of a screen
-    on a \l {QDesktopWidget} {multiple screen desktop}. Read
-    \l {multiple screens note} {this note} for details.
+    on a \l{QDesktopWidget}{multiple screen desktop}. Read
+    \l{QDesktopWidget#Screen Geometry}{this note} for details.
 
     By default, this property contains a value that depends on the user's
     platform and screen geometry.
@@ -8500,8 +8500,10 @@ void QWidget::mouseReleaseEvent(QMouseEvent *event)
 
     The default implementation generates a normal mouse press event.
 
-    Note that the widgets gets a mousePressEvent() and a
-    mouseReleaseEvent() before the mouseDoubleClickEvent().
+    \note The widget will also receive mouse press and mouse release
+    events in addition to the double click event. It is up to the
+    developer to ensure that the application interprets these events
+    correctly.
 
     \sa mousePressEvent(), mouseReleaseEvent() mouseMoveEvent(),
     event(), QMouseEvent
