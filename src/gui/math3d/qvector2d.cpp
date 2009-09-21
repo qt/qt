@@ -190,7 +190,9 @@ qreal QVector2D::lengthSquared() const
 */
 QVector2D QVector2D::normalized() const
 {
-    qreal len = lengthSquared();
+    // Need some extra precision if the length is very small.
+    double len = double(xp) * double(xp) +
+                 double(yp) * double(yp);
     if (qFuzzyIsNull(len - 1.0f))
         return *this;
     else if (!qFuzzyIsNull(len))
@@ -207,7 +209,9 @@ QVector2D QVector2D::normalized() const
 */
 void QVector2D::normalize()
 {
-    qreal len = lengthSquared();
+    // Need some extra precision if the length is very small.
+    double len = double(xp) * double(xp) +
+                 double(yp) * double(yp);
     if (qFuzzyIsNull(len - 1.0f) || qFuzzyIsNull(len))
         return;
 
