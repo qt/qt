@@ -196,6 +196,7 @@ private:
     static void activateTimer(CFRunLoopTimerRef, void *info);
     static void waitingObserverCallback(CFRunLoopObserverRef observer,
                                         CFRunLoopActivity activity, void *info);
+    static void firstLoopEntry(CFRunLoopObserverRef ref, CFRunLoopActivity activity, void *info);
 };
 
 #ifdef QT_MAC_USE_COCOA

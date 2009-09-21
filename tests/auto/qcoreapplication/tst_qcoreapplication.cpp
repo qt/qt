@@ -47,6 +47,7 @@ class tst_QCoreApplication: public QObject
 {
     Q_OBJECT
 private slots:
+    void sendEventsOnProcessEvents(); // this must be the first test
     void getSetCheck();
     void qAppName();
     void argc();
@@ -58,6 +59,35 @@ private slots:
     void applicationPid();
     void globalPostedEventsCount();
 };
+
+class EventSpy : public QObject
+{
+   Q_OBJECT
+
+public:
+    QList<int> recordedEvents;
+    bool eventFilter(QObject *, QEvent *event)
+    {
+        recordedEvents.append(event->type());
+        return false;
+    }
+};
+
+void tst_QCoreApplication::sendEventsOnProcessEvents()
+{
+    int argc = 1;
+    char *argv[] = { "tst_qcoreapplication" };
+    QCoreApplication app(argc, argv);
+
+    EventSpy spy;
+    app.installEventFilter(&spy);
+
+    QCoreApplication::postEvent(&app,  new QEvent(QEvent::Type(QEvent::User + 1)));
+    QCoreApplication::processEvents();
+    QList<int> expected;
+    expected << QEvent::User + 1;
+    QCOMPARE(expected, spy.recordedEvents);
+}
 
 void tst_QCoreApplication::getSetCheck()
 {
@@ -113,19 +143,6 @@ void tst_QCoreApplication::argc()
         QCOMPARE(app.argc(), 0);
     }
 }
-
-class EventSpy : public QObject
-{
-   Q_OBJECT
-
-public:
-    QList<int> recordedEvents;
-    bool eventFilter(QObject *, QEvent *event)
-    {
-        recordedEvents.append(event->type());
-        return false;
-    }
-};
 
 class EventGenerator : public QObject
 {
@@ -393,6 +410,8 @@ public:
                 break;
             }
         case QEvent::User + 1:
+            break;
+        default:
             break;
         }
         return QObject::event(event);
