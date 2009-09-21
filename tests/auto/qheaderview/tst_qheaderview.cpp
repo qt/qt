@@ -579,8 +579,8 @@ void tst_QHeaderView::sectionSize()
     // stretch last section
     view->setStretchLastSection(true);
     int lastSection = view->count() - 1;
-    
-    //test that when hiding the last column, 
+
+    //test that when hiding the last column,
     //resizing the new last visible columns still works
     view->hideSection(lastSection);
     view->resizeSection(lastSection - 1, lastVisibleSectionSize);
@@ -1015,12 +1015,12 @@ void tst_QHeaderView::resizeAndInsertSection()
     QFETCH(int, expected);
 
     view->setStretchLastSection(false);
-    
+
     view->resizeSection(section, size);
     QCOMPARE(view->sectionSize(section), size);
 
     model->insertRow(insert);
-    
+
     QCOMPARE(view->sectionSize(compare), expected);
 }
 
@@ -1079,7 +1079,7 @@ void tst_QHeaderView::moveAndInsertSection()
     QFETCH(QList<int>, mapping);
 
     view->setStretchLastSection(false);
-    
+
     view->moveSection(from, to);
 
     model->insertRow(insert);
@@ -1141,7 +1141,7 @@ void tst_QHeaderView::resizeSection_data()
 
 void tst_QHeaderView::resizeSection()
 {
-    
+
     QFETCH(int, initial);
     QFETCH(QList<int>, logical);
     QFETCH(QList<int>, size);
@@ -1638,7 +1638,7 @@ void tst_QHeaderView::globalResizeMode()
     QFETCH(int, direction);
     QFETCH(int, mode);
     QFETCH(int, insert);
-    
+
     QStandardItemModel m(4, 4);
     QHeaderView h((Qt::Orientation)direction);
     h.setModel(&m);
@@ -1660,7 +1660,7 @@ void tst_QHeaderView::sectionPressedSignal_data()
         << int(Qt::Horizontal)
         << false
         << 0;
-    
+
     QTest::newRow("horizontal clickable 1")
         << int(Qt::Horizontal)
         << true
@@ -1672,7 +1672,7 @@ void tst_QHeaderView::sectionPressedSignal()
     QFETCH(int, direction);
     QFETCH(bool, clickable);
     QFETCH(int, count);
-    
+
     QStandardItemModel m(4, 4);
     QHeaderView h((Qt::Orientation)direction);
 
@@ -1692,7 +1692,7 @@ void tst_QHeaderView::sectionClickedSignal()
     QFETCH(int, direction);
     QFETCH(bool, clickable);
     QFETCH(int, count);
-    
+
     QStandardItemModel m(4, 4);
     QHeaderView h((Qt::Orientation)direction);
 
@@ -1736,7 +1736,7 @@ void tst_QHeaderView::defaultSectionSize()
     QFETCH(int, direction);
     QFETCH(int, oldDefaultSize);
     QFETCH(int, newDefaultSize);
-    
+
     QStandardItemModel m(4, 4);
     QHeaderView h((Qt::Orientation)direction);
 
@@ -1756,7 +1756,7 @@ void tst_QHeaderView::hideAndInsert_data()
     QTest::addColumn<int>("hide");
     QTest::addColumn<int>("insert");
     QTest::addColumn<int>("hidden");
-    
+
     QTest::newRow("horizontal, 0, 0") << int(Qt::Horizontal) << 0 << 0 << 1;
 }
 
@@ -1766,7 +1766,7 @@ void tst_QHeaderView::hideAndInsert()
     QFETCH(int, hide);
     QFETCH(int, insert);
     QFETCH(int, hidden);
-        
+
     QStandardItemModel m(4, 4);
     QHeaderView h((Qt::Orientation)direction);
 
@@ -1841,15 +1841,15 @@ void tst_QHeaderView::preserveHiddenSectionWidth()
 
 void tst_QHeaderView::invisibleStretchLastSection()
 {
-    int count = 10;
+    int count = 6;
     QStandardItemModel model(1, count);
     QHeaderView view(Qt::Horizontal);
     view.setModel(&model);
-    view.setStretchLastSection(true);
     int height = view.height();
 
     view.resize(view.defaultSectionSize() * (count / 2), height); // don't show all sections
     view.show();
+    view.setStretchLastSection(true);
     // stretch section is not visible; it should not be stretched
     for (int i = 0; i < count; ++i)
         QCOMPARE(view.sectionSize(i), view.defaultSectionSize());
