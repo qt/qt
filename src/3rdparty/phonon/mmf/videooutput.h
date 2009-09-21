@@ -52,7 +52,6 @@ protected:
 
 private:
     void dump() const;
-    void transparentFill(const QVector<QRect>& rects);
     
 private:
     QSize m_frameSize;

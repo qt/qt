@@ -21,13 +21,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QtGlobal>
 
-// The following macros are for switching on / off various bits of code,
-// in order to debug the current problems with video visibility.
-
-// Defining this macro causes VideoOutput::paintEvent to write transparent
-// alpha values directly into the backing store, rather than using QPainter
-#define PHONON_MMF_DIRECT_WRITE_ALPHA
-
 QT_BEGIN_NAMESPACE
 
 namespace Phonon
