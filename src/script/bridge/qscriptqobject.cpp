@@ -1572,6 +1572,18 @@ void QObjectDelegate::mark(QScriptObject *object)
     QScriptObjectDelegate::mark(object);
 }
 
+bool QObjectDelegate::compareToObject(QScriptObject *, JSC::ExecState *exec, JSC::JSObject *o2)
+{
+    if(!o2->inherits(&QScriptObject::info))
+        return false;
+    QScriptObject *object = static_cast<QScriptObject*>(o2);
+    QScriptObjectDelegate *delegate = object->delegate();
+    if (!delegate || (delegate->type() != QScriptObjectDelegate::QtObject))
+        return false;
+    return value() == static_cast<QObjectDelegate *>(delegate)->value();
+}
+
+
 static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChild(JSC::ExecState *exec, JSC::JSObject*,
                                                             JSC::JSValue thisValue, const JSC::ArgList &args)
 {

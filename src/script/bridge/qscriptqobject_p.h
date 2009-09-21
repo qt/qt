@@ -122,6 +122,8 @@ public:
     inline void setOptions(QScriptEngine::QObjectWrapOptions options)
         { data->options = options; }
 
+    virtual bool compareToObject(QScriptObject*, JSC::ExecState*, JSC::JSObject*);
+
 protected:
     Data *data;
 };

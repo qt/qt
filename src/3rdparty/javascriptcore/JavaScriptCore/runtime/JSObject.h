@@ -189,6 +189,9 @@ namespace JSC {
         virtual bool isActivationObject() const { return false; }
         virtual bool isWatchdogException() const { return false; }
         virtual bool isNotAnObjectErrorStub() const { return false; }
+#ifdef QT_BUILD_SCRIPT_LIB
+        virtual bool compareToObject(ExecState*, JSObject *other) { return other == this; }
+#endif
 
         void allocatePropertyStorage(size_t oldSize, size_t newSize);
         void allocatePropertyStorageInline(size_t oldSize, size_t newSize);

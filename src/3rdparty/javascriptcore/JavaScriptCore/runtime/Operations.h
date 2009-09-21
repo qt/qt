@@ -73,7 +73,11 @@ namespace JSC {
 
             if (v1.isObject()) {
                 if (v2.isObject())
-                    return v1 == v2;
+                    return v1 == v2
+#ifdef QT_BUILD_SCRIPT_LIB
+                        || asObject(v1)->compareToObject(exec, asObject(v2))
+#endif
+                        ;
                 JSValue p1 = v1.toPrimitive(exec);
                 if (exec->hadException())
                     return false;

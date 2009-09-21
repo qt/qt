@@ -145,6 +145,15 @@ void QScriptObject::getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArra
     d->delegate->getPropertyNames(this, exec, propertyNames, listedAttributes);
 }
 
+bool QScriptObject::compareToObject(JSC::ExecState* exec, JSC::JSObject *other)
+{
+    if (!d || !d->delegate) {
+        return JSC::JSObject::compareToObject(exec, other);
+    }
+    return d->delegate->compareToObject(this, exec, other);
+}
+
+
 void QScriptObject::mark()
 {
     Q_ASSERT(!marked());
@@ -253,6 +262,11 @@ bool QScriptObjectDelegate::hasInstance(QScriptObject* object, JSC::ExecState* e
                                         JSC::JSValue value, JSC::JSValue proto)
 {
     return object->JSC::JSObject::hasInstance(exec, value, proto);
+}
+
+bool QScriptObjectDelegate::compareToObject(QScriptObject* object, JSC::ExecState* exec, JSC::JSObject* o)
+{
+    return object->JSC::JSObject::compareToObject(exec, o);
 }
 
 QT_END_NAMESPACE

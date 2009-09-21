@@ -2875,15 +2875,27 @@ void tst_QScriptValue::equals()
 
     QScriptValue qobj1 = eng.newQObject(this);
     QScriptValue qobj2 = eng.newQObject(this);
+    QScriptValue qobj3 = eng.newQObject(0);
+    QScriptValue qobj4 = eng.newQObject(new QObject());
     QVERIFY(qobj1.equals(qobj2)); // compares the QObject pointers
+    QVERIFY(!qobj2.equals(qobj4)); // compares the QObject pointers
+    QVERIFY(!qobj2.equals(obj2)); // compares the QObject pointers
 
     QScriptValue compareFun = eng.evaluate("(function(a, b) { return a == b; })");
     QVERIFY(compareFun.isFunction());
     {
         QScriptValue ret = compareFun.call(QScriptValue(), QScriptValueList() << qobj1 << qobj2);
         QVERIFY(ret.isBool());
-        QEXPECT_FAIL("", "In JSC back-end, == on QObject wrappers doesn't work", Continue);
         QVERIFY(ret.toBool());
+        ret = compareFun.call(QScriptValue(), QScriptValueList() << qobj1 << qobj3);
+        QVERIFY(ret.isBool());
+        QVERIFY(!ret.toBool());
+        ret = compareFun.call(QScriptValue(), QScriptValueList() << qobj1 << qobj4);
+        QVERIFY(ret.isBool());
+        QVERIFY(!ret.toBool());
+        ret = compareFun.call(QScriptValue(), QScriptValueList() << qobj1 << obj1);
+        QVERIFY(ret.isBool());
+        QVERIFY(!ret.toBool());
     }
 
     {
@@ -2893,7 +2905,6 @@ void tst_QScriptValue::equals()
         {
             QScriptValue ret = compareFun.call(QScriptValue(), QScriptValueList() << var1 << var2);
             QVERIFY(ret.isBool());
-            QEXPECT_FAIL("", "In JSC back-end, == on QVariant wrappers doesn't work", Continue);
             QVERIFY(ret.toBool());
         }
     }
@@ -2928,6 +2939,33 @@ void tst_QScriptValue::equals()
         QScriptValue var2 = eng.newVariant(QVariant(double(1)));
         // QVariant::operator==() performs type conversion
         QVERIFY(var1.equals(var2));
+    }
+    {
+        QScriptValue var1 = eng.newVariant(QVariant(QString::fromLatin1("123")));
+        QScriptValue var2 = eng.newVariant(QVariant(double(123)));
+        QScriptValue var3(QString::fromLatin1("123"));
+        QScriptValue var4(123);
+        QScriptValue var4(123.0);
+
+        QVERIFY(var1.equals(var1));
+        QVERIFY(var1.equals(var2));
+        QVERIFY(var1.equals(var3));
+        QVERIFY(var1.equals(var4));
+
+        QVERIFY(var2.equals(var1));
+        QVERIFY(var2.equals(var2));
+        QVERIFY(var2.equals(var3));
+        QVERIFY(var2.equals(var4));
+
+        QVERIFY(var3.equals(var1));
+        QVERIFY(var3.equals(var2));
+        QVERIFY(var3.equals(var3));
+        QVERIFY(var3.equals(var4));
+
+        QVERIFY(var4.equals(var1));
+        QVERIFY(var4.equals(var2));
+        QVERIFY(var4.equals(var3));
+        QVERIFY(var4.equals(var4));
     }
 
     QScriptEngine otherEngine;

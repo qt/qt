@@ -73,6 +73,8 @@ public:
 
     Type type() const;
 
+    bool compareToObject(QScriptObject*, JSC::ExecState*, JSC::JSObject*);
+
 private:
     QVariant m_value;
 };

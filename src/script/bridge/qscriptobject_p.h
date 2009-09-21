@@ -108,6 +108,8 @@ public:
     QScriptObjectDelegate *delegate() const;
     void setDelegate(QScriptObjectDelegate *delegate);
 
+    virtual bool compareToObject(JSC::ExecState*, JSC::JSObject*);
+
 protected:
     Data *d;
 };
@@ -150,6 +152,8 @@ public:
     virtual JSC::ConstructType getConstructData(QScriptObject*, JSC::ConstructData&);
     virtual bool hasInstance(QScriptObject*, JSC::ExecState*,
                              JSC::JSValue value, JSC::JSValue proto);
+
+    virtual bool compareToObject(QScriptObject*, JSC::ExecState*, JSC::JSObject*);
 
 private:
     Q_DISABLE_COPY(QScriptObjectDelegate)
