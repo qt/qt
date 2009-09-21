@@ -48,6 +48,8 @@
 #include "QtCore/qlocale.h"
 #include "QtCore/qdatetime.h"
 
+#include <ctype.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -606,26 +608,25 @@ static QNetworkRequest::KnownHeaders parseHeaderName(const QByteArray &headerNam
 {
     // headerName is not empty here
 
-    QByteArray lower = headerName.toLower();
-    switch (lower.at(0)) {
+    switch (tolower(headerName.at(0))) {
     case 'c':
-        if (lower == "content-type")
+        if (qstricmp(headerName.constData(), "content-type") == 0)
             return QNetworkRequest::ContentTypeHeader;
-        else if (lower == "content-length")
+        else if (qstricmp(headerName.constData(), "content-length") == 0)
             return QNetworkRequest::ContentLengthHeader;
-        else if (lower == "cookie")
+        else if (qstricmp(headerName.constData(), "cookie") == 0)
             return QNetworkRequest::CookieHeader;
         break;
 
     case 'l':
-        if (lower == "location")
+        if (qstricmp(headerName.constData(), "location") == 0)
             return QNetworkRequest::LocationHeader;
-        else if (lower == "last-modified")
+        else if (qstricmp(headerName.constData(), "last-modified") == 0)
             return QNetworkRequest::LastModifiedHeader;
         break;
 
     case 's':
-        if (lower == "set-cookie")
+        if (qstricmp(headerName.constData(), "set-cookie") == 0)
             return QNetworkRequest::SetCookieHeader;
         break;
     }
@@ -697,11 +698,10 @@ static QVariant parseHeaderValue(QNetworkRequest::KnownHeaders header, const QBy
 QNetworkHeadersPrivate::RawHeadersList::ConstIterator
 QNetworkHeadersPrivate::findRawHeader(const QByteArray &key) const
 {
-    QByteArray lowerKey = key.toLower();
     RawHeadersList::ConstIterator it = rawHeaders.constBegin();
     RawHeadersList::ConstIterator end = rawHeaders.constEnd();
     for ( ; it != end; ++it)
-        if (it->first.toLower() == lowerKey)
+        if (qstricmp(it->first.constData(), key.constData()) == 0)
             return it;
 
     return end;                 // not found
@@ -775,10 +775,9 @@ void QNetworkHeadersPrivate::setCookedHeader(QNetworkRequest::KnownHeaders heade
 
 void QNetworkHeadersPrivate::setRawHeaderInternal(const QByteArray &key, const QByteArray &value)
 {
-    QByteArray lowerKey = key.toLower();
     RawHeadersList::Iterator it = rawHeaders.begin();
     while (it != rawHeaders.end()) {
-        if (it->first.toLower() == lowerKey)
+        if (qstricmp(it->first.constData(), key.constData()) == 0)
             it = rawHeaders.erase(it);
         else
             ++it;
