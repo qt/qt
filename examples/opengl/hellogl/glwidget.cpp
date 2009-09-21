@@ -47,9 +47,13 @@
 #include "glwidget.h"
 #include "qtlogo.h"
 
+#ifndef GL_MULTISAMPLE
+#define GL_MULTISAMPLE  0x809D
+#endif
+
 //! [0]
 GLWidget::GLWidget(QWidget *parent)
-    : QGLWidget(parent)
+    : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
 {
     logo = 0;
     xRot = 0;
