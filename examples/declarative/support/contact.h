@@ -15,8 +15,7 @@
 #define CONTACT_H
 
 #include <qml.h>
-#include <QtGui>
-
+#include <QtCore>
 
 class Address : public QObject
 {
@@ -105,7 +104,7 @@ public:
     Q_PROPERTY(QList<PhoneNumber *>* numbers READ numbers);
     QList<PhoneNumber *>* numbers() { return &m_numbers; }
 
-    
+
     void addEmail(QString&);
     void addAddress(Address*);
     void addNumber(PhoneNumber*);
