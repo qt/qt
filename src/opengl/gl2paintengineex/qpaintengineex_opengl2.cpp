@@ -543,46 +543,59 @@ void QGL2PaintEngineExPrivate::updateMatrix()
 {
 //     qDebug("QGL2PaintEngineExPrivate::updateMatrix()");
 
-    // We setup the Projection matrix to be the equivilant of glOrtho(0, w, h, 0, -1, 1):
-    GLfloat P[4][4] = {
-        {2.0/width,  0.0,        0.0, -1.0},
-        {0.0,       -2.0/height, 0.0,  1.0},
-        {0.0,        0.0,       -1.0,  0.0},
-        {0.0,        0.0,        0.0,  1.0}
-    };
+    // We set up the 4x4 transformation matrix on the vertex shaders to
+    // be the equivalent of glOrtho(0, w, h, 0, -1, 1) * transform:
+    //
+    // | 2/width     0     0 -1 |   | m11  m21  0   dx |
+    // |   0    -2/height  0  1 |   | m12  m22  0   dy |
+    // |   0         0    -1  0 | * |  0    0   1   0  |
+    // |   0         0     0  1 |   | m13  m23  0  m33 |
+    //
+    // We expand out the multiplication to save the cost of a full 4x4
+    // matrix multiplication as most of the components are trivial.
 
     const QTransform& transform = q->state()->matrix;
 
     if (mode == TextDrawingMode) {
         // Text drawing mode is only used for non-scaling transforms
-        for (int row = 0; row < 4; ++row)
-            for (int col = 0; col < 4; ++col)
-                pmvMatrix[col][row] = P[row][col];
-
-        pmvMatrix[3][0] += P[0][0] * qRound(transform.dx());
-        pmvMatrix[3][1] += P[1][1] * qRound(transform.dy());
+        pmvMatrix[0][0] = 2.0 / width;
+        pmvMatrix[0][1] = 0.0;
+        pmvMatrix[0][2] = 0.0;
+        pmvMatrix[0][3] = 0.0;
+        pmvMatrix[1][0] = 0.0;
+        pmvMatrix[1][1] = -2.0 / height;
+        pmvMatrix[1][2] = 0.0;
+        pmvMatrix[1][3] = 0.0;
+        pmvMatrix[2][0] = 0.0;
+        pmvMatrix[2][1] = 0.0;
+        pmvMatrix[2][2] = -1.0;
+        pmvMatrix[2][3] = 0.0;
+        pmvMatrix[3][0] = pmvMatrix[0][0] * qRound(transform.dx()) - 1.0;
+        pmvMatrix[3][1] = pmvMatrix[1][1] * qRound(transform.dy()) + 1.0;
+        pmvMatrix[3][2] = 0.0;
+        pmvMatrix[3][3] = 1.0;
 
         inverseScale = 1;
     } else {
-        // Use the (3x3) transform for the Model~View matrix:
-        GLfloat MV[4][4] = {
-            {transform.m11(), transform.m21(), 0.0, transform.dx()},
-            {transform.m12(), transform.m22(), 0.0, transform.dy()},
-            {0.0,             0.0,             1.0, 0.0},
-            {transform.m13(), transform.m23(), 0.0, transform.m33()}
-        };
+        qreal wfactor = 2.0 / width;
+        qreal hfactor = -2.0 / height;
 
-        // NOTE: OpenGL ES works with column-major matrices, so when we multiply the matrices,
-        //       we also transpose them ready for GL.
-        for (int row = 0; row < 4; ++row) {
-            for (int col = 0; col < 4; ++col) {
-                pmvMatrix[col][row] = 0.0;
-
-                // P[row][n] is 0.0 for n < row
-                for (int n = row; n < 4; ++n)
-                    pmvMatrix[col][row] += P[row][n] * MV[n][col];
-            }
-        }
+        pmvMatrix[0][0] = wfactor * transform.m11() - transform.m13();
+        pmvMatrix[0][1] = hfactor * transform.m12() + transform.m13();
+        pmvMatrix[0][2] = 0.0;
+        pmvMatrix[0][3] = transform.m13();
+        pmvMatrix[1][0] = wfactor * transform.m21() - transform.m23();
+        pmvMatrix[1][1] = hfactor * transform.m22() + transform.m23();
+        pmvMatrix[1][2] = 0.0;
+        pmvMatrix[1][3] = transform.m23();
+        pmvMatrix[2][0] = 0.0;
+        pmvMatrix[2][1] = 0.0;
+        pmvMatrix[2][2] = -1.0;
+        pmvMatrix[2][3] = 0.0;
+        pmvMatrix[3][0] = wfactor * transform.dx() - transform.m33();
+        pmvMatrix[3][1] = hfactor * transform.dy() + transform.m33();
+        pmvMatrix[3][2] = 0.0;
+        pmvMatrix[3][3] = transform.m33();
 
         // 1/10000 == 0.0001, so we have good enough res to cover curves
         // that span the entire widget...
