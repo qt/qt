@@ -401,39 +401,6 @@ static const char* const qglslMaskFragmentShader = "\
         return src * mask.a; \
     }";
 
-// For source over with subpixel antialiasing, the final color is calculated per component as follows
-// (.a is alpha component, .c is red, green or blue component):
-// alpha = src.a * mask.c * opacity
-// dest.c = dest.c * (1 - alpha) + src.c * alpha
-//
-// In the first pass, calculate: dest.c = dest.c * (1 - alpha) with blend funcs: zero, 1 - source color
-// In the second pass, calculate: dest.c = dest.c + src.c * alpha with blend funcs: one, one
-//
-// If source is a solid color (src is constant), only the first pass is needed, with blend funcs: constant, 1 - source color
-
-// For source composition with subpixel antialiasing, the final color is calculated per component as follows:
-// alpha = src.a * mask.c * opacity
-// dest.c = dest.c * (1 - mask.c) + src.c * alpha
-//
-
-static const char* const qglslRgbMaskFragmentShaderPass1 = "\
-    varying highp   vec2      textureCoords;\
-    uniform lowp    sampler2D maskTexture;\
-    lowp vec4 applyMask(lowp vec4 src) \
-    {\
-        lowp vec4 mask = texture2D(maskTexture, textureCoords); \
-        return src.a * mask; \
-    }";
-
-static const char* const qglslRgbMaskFragmentShaderPass2 = "\
-    varying highp   vec2      textureCoords;\
-    uniform lowp    sampler2D maskTexture;\
-    lowp vec4 applyMask(lowp vec4 src) \
-    {\
-        lowp vec4 mask = texture2D(maskTexture, textureCoords); \
-        return src * mask; \
-    }";
-
 /*
     Left to implement:
         RgbMaskFragmentShader,

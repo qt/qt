@@ -90,10 +90,6 @@ static const GLuint QT_IMAGE_TEXTURE_UNIT       = 0; //Can be the same as brush 
 static const GLuint QT_MASK_TEXTURE_UNIT        = 1;
 static const GLuint QT_BACKGROUND_TEXTURE_UNIT  = 2;
 
-#ifdef Q_WS_WIN
-extern Q_GUI_EXPORT bool qt_cleartype_enabled;
-#endif
-
 class QGLTextureGlyphCache : public QObject, public QTextureGlyphCache
 {
     Q_OBJECT
@@ -104,7 +100,6 @@ public:
     virtual void createTextureData(int width, int height);
     virtual void resizeTextureData(int width, int height);
     virtual void fillTexture(const Coord &c, glyph_t glyph);
-    virtual int glyphMargin() const;
 
     inline GLuint texture() const { return m_texture; }
 
@@ -295,7 +290,7 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph)
 
     glBindTexture(GL_TEXTURE_2D, m_texture);
     if (mask.format() == QImage::Format_RGB32) {
-        glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_BGRA, GL_UNSIGNED_BYTE, mask.bits());
+        glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, m_height - c.y, maskWidth, maskHeight, GL_BGRA, GL_UNSIGNED_BYTE, mask.bits());
     } else {
 #ifdef QT_OPENGL_ES2
         glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_ALPHA, GL_UNSIGNED_BYTE, mask.bits());
@@ -313,17 +308,6 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph)
             glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y + i, maskWidth, 1, GL_ALPHA, GL_UNSIGNED_BYTE, mask.scanLine(i));
 #endif
     }
-}
-
-int QGLTextureGlyphCache::glyphMargin() const
-{
-#if defined(Q_WS_MAC)
-    return 2;
-#elif defined (Q_WS_X11)
-    return 0;
-#else
-    return m_type == QFontEngineGlyphCache::Raster_RGBMask ? 2 : 0;
-#endif
 }
 
 extern QImage qt_imageForBrush(int brushStyle, bool invert);
@@ -1226,12 +1210,6 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
     if (ti.fontEngine->fontDef.pixelSize * qSqrt(s->matrix.determinant()) >= 64)
         drawCached = false;
 
-    if (d->glyphCacheType == QFontEngineGlyphCache::Raster_RGBMask
-        && state()->composition_mode != QPainter::CompositionMode_Source
-        && state()->composition_mode != QPainter::CompositionMode_SourceOver) {
-        drawCached = false;
-    }
-
     if (drawCached) {
         d->drawCachedGlyphs(p, ti);
         return;
@@ -1252,12 +1230,11 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
 
     QFontEngineGlyphCache::Type glyphType = ti.fontEngine->glyphFormat >= 0
         ? QFontEngineGlyphCache::Type(ti.fontEngine->glyphFormat)
-        : glyphCacheType;
+        : QFontEngineGlyphCache::Raster_A8;
 
     QGLTextureGlyphCache *cache =
         (QGLTextureGlyphCache *) ti.fontEngine->glyphCache(ctx, s->matrix);
-
-    if (!cache || cache->cacheType() != glyphType) {
+    if (!cache) {
         cache = new QGLTextureGlyphCache(ctx, glyphType, s->matrix);
         ti.fontEngine->setGlyphCache(ctx, cache);
     }
@@ -1271,6 +1248,12 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
     if (inRenderText)
         transferMode(BrushDrawingMode);
     transferMode(TextDrawingMode);
+
+    if (glyphType == QFontEngineGlyphCache::Raster_A8)
+        shaderManager->setMaskType(QGLEngineShaderManager::PixelMask);
+    else if (glyphType == QFontEngineGlyphCache::Raster_RGBMask)
+        shaderManager->setMaskType(QGLEngineShaderManager::SubPixelMask);
+    //### TODO: Gamma correction
 
     int margin = cache->glyphMargin();
 
@@ -1292,96 +1275,10 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
         textureCoordinateArray.addRect(QRectF(c.x*dx, c.y*dy, c.w * dx, c.h * dy));
     }
 
-    if (vertexCoordinateArray.data() != oldVertexCoordinateDataPtr)
-        glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray.data());
-    if (textureCoordinateArray.data() != oldTextureCoordinateDataPtr)
-        glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray.data());
-
     QBrush pensBrush = q->state()->pen.brush();
     setBrush(&pensBrush);
 
-    if (glyphType == QFontEngineGlyphCache::Raster_A8) {
-
-        // Greyscale antialiasing
-
-        shaderManager->setMaskType(QGLEngineShaderManager::PixelMask);
-        prepareForDraw(false); // Text always causes src pixels to be transparent
-    } else if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
-
-        // Subpixel antialiasing without gamma correction
-
-        QPainter::CompositionMode compMode = q->state()->composition_mode;
-        Q_ASSERT(compMode == QPainter::CompositionMode_Source
-            || compMode == QPainter::CompositionMode_SourceOver);
-
-        shaderManager->setMaskType(QGLEngineShaderManager::SubPixelMaskPass1);
-
-        if (pensBrush.style() == Qt::SolidPattern) {
-            // Solid patterns can get away with only one pass.
-            QColor c = pensBrush.color();
-            qreal oldOpacity = q->state()->opacity;
-            if (compMode == QPainter::CompositionMode_Source) {
-                c = premultiplyColor(c, q->state()->opacity);
-                q->state()->opacity = 1;
-                opacityUniformDirty = true;
-            }
-
-            compositionModeDirty = false; // I can handle this myself, thank you very much
-            prepareForDraw(false); // Text always causes src pixels to be transparent
-
-            // prepareForDraw() have set the opacity on the current shader, so the opacity state can now be reset.
-            if (compMode == QPainter::CompositionMode_Source) {
-                q->state()->opacity = oldOpacity;
-                opacityUniformDirty = true;
-            }
-
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_CONSTANT_COLOR, GL_ONE_MINUS_SRC_COLOR);
-            glBlendColor(c.redF(), c.greenF(), c.blueF(), c.alphaF());
-        } else {
-            // Other brush styles need two passes.
-
-            qreal oldOpacity = q->state()->opacity;
-            if (compMode == QPainter::CompositionMode_Source) {
-                q->state()->opacity = 1;
-                opacityUniformDirty = true;
-                pensBrush = Qt::white;
-                setBrush(&pensBrush);
-            }
-
-            compositionModeDirty = false; // I can handle this myself, thank you very much
-            prepareForDraw(false); // Text always causes src pixels to be transparent
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
-
-            glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
-            glBindTexture(GL_TEXTURE_2D, cache->texture());
-            updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
-
-#ifndef QT_OPENGL_ES_2
-            if (inRenderText)
-                shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::Depth), zValueForRenderText());
-#endif
-            shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
-            glDrawArrays(GL_TRIANGLES, 0, 6 * glyphs.size());
-
-            shaderManager->setMaskType(QGLEngineShaderManager::SubPixelMaskPass2);
-
-            if (compMode == QPainter::CompositionMode_Source) {
-                q->state()->opacity = oldOpacity;
-                opacityUniformDirty = true;
-                pensBrush = q->state()->pen.brush();
-                setBrush(&pensBrush);
-            }
-
-            compositionModeDirty = false;
-            prepareForDraw(false); // Text always causes src pixels to be transparent
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_ONE, GL_ONE);
-        }
-        compositionModeDirty = true;
-    }
-    //### TODO: Gamma correction
+    prepareForDraw(false); // Text always causes src pixels to be transparent
 
     glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
     glBindTexture(GL_TEXTURE_2D, cache->texture());
@@ -1391,7 +1288,14 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
     if (inRenderText)
         shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::Depth), zValueForRenderText());
 #endif
+
     shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
+
+    if (vertexCoordinateArray.data() != oldVertexCoordinateDataPtr)
+        glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray.data());
+    if (textureCoordinateArray.data() != oldTextureCoordinateDataPtr)
+        glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray.data());
+
     glDrawArrays(GL_TRIANGLES, 0, 6 * glyphs.size());
 }
 
@@ -1449,18 +1353,6 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 
 #if !defined(QT_OPENGL_ES_2)
     glDisable(GL_MULTISAMPLE);
-#endif
-
-    d->glyphCacheType = QFontEngineGlyphCache::Raster_A8;
-
-#if !defined(QT_OPENGL_ES_2)
-    if (!d->device->format().alpha()
-#if defined(Q_WS_WIN)
-        && qt_cleartype_enabled
-#endif
-       ) {
-        d->glyphCacheType = QFontEngineGlyphCache::Raster_RGBMask;
-    }
 #endif
 
     return true;
