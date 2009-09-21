@@ -2903,6 +2903,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
         if (const QStyleOptionSpinBox *spin = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
             QStyleOptionSpinBox spinOpt(*spin);
             rule.configurePalette(&spinOpt.palette, QPalette::ButtonText, QPalette::Button);
+            rule.configurePalette(&spinOpt.palette, QPalette::Text, QPalette::Base);
             spinOpt.rect = rule.borderRect(opt->rect);
             bool customUp = true, customDown = true;
             QRenderRule upRule = renderRule(w, opt, PseudoElement_SpinBoxUpButton);
@@ -4169,6 +4170,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
                 QRenderRule spinboxRule = renderRule(w->parentWidget(), opt);
                 if (!spinboxRule.hasNativeBorder() || !spinboxRule.baseStyleCanDraw())
                     return;
+                rule = spinboxRule;
             }
 #endif
             if (rule.hasNativeBorder()) {
