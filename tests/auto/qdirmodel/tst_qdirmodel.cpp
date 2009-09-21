@@ -631,7 +631,7 @@ void tst_QDirModel::task196768_sorting()
     QCOMPARE(index.data(), index2.data());
     view.setSortingEnabled(true);
     index2 = model.index(path);
-    qDebug() << "After sorting" << index << index2;
+    qDebug() << "After sorting" << index << index2 << "count" << model.rowCount(index2);
     QCOMPARE(index.data(), index2.data());
 }
 
