@@ -247,10 +247,10 @@ void QFxView::continueExecute()
 
     if(d->component->isError()) {
         QList<QmlError> errorList = d->component->errors();
-        emit errors(errorList);
         foreach (const QmlError &error, errorList) {
             qWarning() << error;
         }
+        emit errors(errorList);
 
         return;
     }
@@ -259,10 +259,10 @@ void QFxView::continueExecute()
 
     if(d->component->isError()) {
         QList<QmlError> errorList = d->component->errors();
-        emit errors(errorList);
         foreach (const QmlError &error, errorList) {
             qWarning() << error;
         }
+        emit errors(errorList);
 
         return;
     }
@@ -407,10 +407,10 @@ QFxItem* QFxView::addItem(const QString &qml, QFxItem* parent)
     QmlComponent component(&d->engine, qml.toUtf8(), QUrl());
     if(d->component->isError()) {
         QList<QmlError> errorList = d->component->errors();
-        emit errors(errorList);
         foreach (const QmlError &error, errorList) {
             qWarning() << error;
         }
+        emit errors(errorList);
 
         return 0;
     }
@@ -418,10 +418,10 @@ QFxItem* QFxView::addItem(const QString &qml, QFxItem* parent)
     QObject *obj = component.create();
     if(d->component->isError()) {
         QList<QmlError> errorList = d->component->errors();
-        emit errors(errorList);
         foreach (const QmlError &error, errorList) {
             qWarning() << error;
         }
+        emit errors(errorList);
 
         return 0;
     }

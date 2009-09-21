@@ -43,8 +43,25 @@ void usage()
     qWarning("  -translation <translationfile> ........... set the language to run in");
     qWarning("  -L <directory> ........................... prepend to the library search path");
     qWarning("  -opengl .................................. use a QGLWidget for the viewport");
+    qWarning("  -script <path> ........................... set the script to use");
+    qWarning("  -scriptopts <options>|help ............... set the script options to use");
+
     qWarning(" ");
     qWarning(" Press F1 for interactive help");
+    exit(1);
+}
+
+void scriptOptsUsage()
+{
+    qWarning("Usage: qmlviewer -scriptopts <option>[,<option>...] ...");
+    qWarning(" options:");
+    qWarning("  record ................................... record a new script");
+    qWarning("  play ..................................... playback an existing script");
+    qWarning("  testimages ............................... compare images on playback");
+    qWarning("  exitoncomplete ........................... cleanly exit the viewer on script completion");
+    qWarning("  exitonfailure ............................ immediately exit the viewer on script failure");
+    qWarning(" ");
+    qWarning(" One of record or play must be specified.");
     exit(1);
 }
 
@@ -78,6 +95,9 @@ int main(int argc, char ** argv)
     QStringList recordargs;
     QStringList libraries;
     QString skin;
+    QString script;
+    QString scriptopts;
+    bool runScript = false;
     bool devkeys = false;
     int cache = 0;
     QString translationFile;
@@ -85,26 +105,34 @@ int main(int argc, char ** argv)
     bool fullScreen = false;
 
     for (int i = 1; i < argc; ++i) {
+        bool lastArg = (i == argc - 1);
         QString arg = argv[i];
         if (arg == "-frameless") {
             frameless = true;
         } else if (arg == "-fullscreen") {
             fullScreen = true;
         } else if (arg == "-skin") {
+            if (lastArg) usage();
             skin = QString(argv[++i]);
         } else if (arg == "-resizeview") {
             resizeview = true;
         } else if (arg == "-netcache") {
+            if (lastArg) usage();
             cache = QString(argv[++i]).toInt();
         } else if (arg == "-recordrate") {
+            if (lastArg) usage();
             fps = QString(argv[++i]).toDouble();
         } else if (arg == "-recordfile") {
+            if (lastArg) usage();
             recordfile = QString(argv[++i]);
         } else if (arg == "-record") {
+            if (lastArg) usage();
             recordargs << QString(argv[++i]);
         } else if (arg == "-recorddither") {
+            if (lastArg) usage();
             dither = QString(argv[++i]);
         } else if (arg == "-autorecord") {
+            if (lastArg) usage();
             QString range = QString(argv[++i]);
             int dash = range.indexOf('-');
             if (dash > 0)
@@ -116,14 +144,27 @@ int main(int argc, char ** argv)
             fprintf(stderr, "Qt Declarative UI Viewer version %s\n", QT_VERSION_STR);
             return 0;
         } else if (arg == "-translation") {
-            if(i + 1 >= argc)
-                usage();
-            translationFile = argv[i + 1];
-            ++i;
+            if (lastArg) usage();
+            translationFile = argv[++i];
         } else if (arg == "-opengl") {
             useGL = true;
         } else if (arg == "-L") {
+            if (lastArg) usage();
             libraries << QString(argv[++i]);
+        } else if (arg == "-script") {
+            if (lastArg) usage();
+            script = QString(argv[++i]);
+        } else if (arg == "-scriptopts") {
+            if (lastArg) usage();
+            scriptopts = QString(argv[++i]);
+        } else if (arg == "-savescript") {
+            if (lastArg) usage();
+            script = QString(argv[++i]);
+            runScript = false;
+        } else if (arg == "-playscript") {
+            if (lastArg) usage();
+            script = QString(argv[++i]);
+            runScript = true;
         } else if (arg[0] != '-') {
             fileName = arg;
         } else if (1 || arg == "-help") {
@@ -138,6 +179,44 @@ int main(int argc, char ** argv)
     }
 
     QmlViewer viewer(0, frameless ? Qt::FramelessWindowHint : Qt::Widget);
+    if (!scriptopts.isEmpty()) {
+
+        QStringList options = 
+            scriptopts.split(QLatin1Char(','), QString::SkipEmptyParts);
+
+        QmlViewer::ScriptOptions scriptOptions = 0;
+        for (int i = 0; i < options.count(); ++i) {
+            const QString &option = options.at(i);
+            if (option == QLatin1String("help")) {
+                scriptOptsUsage();
+            } else if (option == QLatin1String("play")) {
+                if (scriptOptions & QmlViewer::Record) scriptOptsUsage();
+                scriptOptions |= QmlViewer::Play;
+            } else if (option == QLatin1String("record")) {
+                if (scriptOptions & QmlViewer::Play) scriptOptsUsage();
+                scriptOptions |= QmlViewer::Record;
+            } else if (option == QLatin1String("testimages")) {
+                scriptOptions |= QmlViewer::TestImages;
+            } else if (option == QLatin1String("exitoncomplete")) {
+                scriptOptions |= QmlViewer::ExitOnComplete;
+            } else if (option == QLatin1String("exitonfailure")) {
+                scriptOptions |= QmlViewer::ExitOnFailure;
+            } else {
+                scriptOptsUsage();
+            }
+        }
+
+        if (script.isEmpty())
+            usage();
+
+        if (!(scriptOptions & QmlViewer::Record) && !(scriptOptions & QmlViewer::Play))
+            scriptOptsUsage();
+        viewer.setScriptOptions(scriptOptions);
+        viewer.setScript(script);
+    }  else if (!script.isEmpty()) {
+        usage();
+    }
+
     viewer.setUseGL(useGL);
     foreach (QString lib, libraries)
         viewer.addLibraryPath(lib);

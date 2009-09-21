@@ -590,13 +590,13 @@ void QFxFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
     velocityX = 0;
     velocityY = 0;
     lastPos = QPoint();
-    lastPosTime.start();
+    QFxItemPrivate::start(lastPosTime);
     pressPos = event->pos();
     pressX = _moveX.value();
     pressY = _moveY.value();
     flicked = false;
-    pressTime.start();
-    velocityTime.start();
+    QFxItemPrivate::start(pressTime);
+    QFxItemPrivate::start(velocityTime);
 }
 
 void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
@@ -610,7 +610,7 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
     if (q->yflick()) {
         int dy = int(event->pos().y() - pressPos.y());
-        if (qAbs(dy) > DragThreshold || pressTime.elapsed() > 200) {
+        if (qAbs(dy) > DragThreshold || QFxItemPrivate::elapsed(pressTime) > 200) {
             qreal newY = dy + pressY;
             const qreal minY = q->minYExtent();
             const qreal maxY = q->maxYExtent();
@@ -630,7 +630,7 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
     if (q->xflick()) {
         int dx = int(event->pos().x() - pressPos.x());
-        if (qAbs(dx) > DragThreshold || pressTime.elapsed() > 200) {
+        if (qAbs(dx) > DragThreshold || QFxItemPrivate::elapsed(pressTime) > 200) {
             qreal newX = dx + pressX;
             const qreal minX = q->minXExtent();
             const qreal maxX = q->maxXExtent();
@@ -649,7 +649,7 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
 
     if (!lastPos.isNull()) {
-        qreal elapsed = qreal(lastPosTime.restart()) / 1000.;
+        qreal elapsed = qreal(QFxItemPrivate::restart(lastPosTime)) / 1000.;
         if (elapsed <= 0)
             elapsed = 1;
         if (q->yflick()) {
@@ -685,7 +685,7 @@ void QFxFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEvent *even
     if (lastPosTime.isNull())
         return;
 
-    if (lastPosTime.elapsed() > 100) {
+    if (QFxItemPrivate::elapsed(lastPosTime) > 100) {
         // if we drag then pause before release we should not cause a flick.
         velocityX = 0.0;
         velocityY = 0.0;
@@ -802,7 +802,7 @@ void QFxFlickable::viewportMoved()
 {
     Q_D(QFxFlickable);
 
-    int elapsed = d->velocityTime.elapsed();
+    int elapsed = QFxItemPrivate::elapsed(d->velocityTime);
 
     if (elapsed) {
         qreal prevY = d->lastFlickablePosition.x();
@@ -827,7 +827,7 @@ void QFxFlickable::viewportMoved()
     }
 
     d->lastFlickablePosition = QPointF(d->_moveY.value(), d->_moveX.value());
-    d->velocityTime.restart();
+    QFxItemPrivate::restart(d->velocityTime);
     d->updateBeginningEnd();
 
     if (d->flicked) {

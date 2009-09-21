@@ -2846,6 +2846,43 @@ QDebug operator<<(QDebug debug, QFxItem *item)
     return debug;
 }
 
+int QFxItemPrivate::consistentTime = -1;
+void QFxItemPrivate::setConsistentTime(int t) 
+{ 
+    consistentTime = t; 
+}
+
+QTime QFxItemPrivate::currentTime()
+{
+    if (consistentTime == -1)
+        return QTime::currentTime();
+    else 
+        return QTime(0, 0).addMSecs(consistentTime);
+}
+
+void QFxItemPrivate::start(QTime &t)
+{
+    t = currentTime();
+}
+
+int QFxItemPrivate::elapsed(QTime &t)
+{
+    int n = t.msecsTo(currentTime());
+    if (n < 0)                                // passed midnight
+        n += 86400 * 1000;
+    return n;
+}
+
+int QFxItemPrivate::restart(QTime &t)
+{
+    QTime time = currentTime();
+    int n = t.msecsTo(time);
+    if (n < 0)                                // passed midnight
+        n += 86400*1000;
+    t = time;
+    return n;
+}
+
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QFxKeysAttached)

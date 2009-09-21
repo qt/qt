@@ -414,7 +414,7 @@ void QFxPathView::mousePressEvent(QGraphicsSceneMouseEvent *event)
     d->stealMouse = false;
     d->lastElapsed = 0;
     d->lastDist = 0;
-    d->lastPosTime.start();
+    QFxItemPrivate::start(d->lastPosTime);
     d->tl.clear();
 }
 
@@ -443,7 +443,7 @@ void QFxPathView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             else if (diff < -50)
                 diff += 100;
 
-            d->lastElapsed = d->lastPosTime.restart();
+            d->lastElapsed = QFxItemPrivate::restart(d->lastPosTime);
             d->lastDist = diff;
             d->startPc = newPc;
         }
@@ -456,7 +456,7 @@ void QFxPathView::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
     if (d->lastPosTime.isNull())
         return;
 
-    qreal elapsed = qreal(d->lastElapsed + d->lastPosTime.elapsed()) / 1000.;
+    qreal elapsed = qreal(d->lastElapsed + QFxItemPrivate::elapsed(d->lastPosTime)) / 1000.;
     qreal velocity = elapsed > 0. ? d->lastDist / elapsed : 0;
     if (d->model && d->model->count() && qAbs(velocity) > 5) {
         if (velocity > 100)

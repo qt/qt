@@ -26,6 +26,7 @@ class PreviewDeviceSkin;
 class QFxTestEngine;
 class QProcess;
 class RecordingDialog;
+class QFxTester;
 
 class QmlViewer : public QWidget
 {
@@ -33,6 +34,16 @@ Q_OBJECT
 public:
     QmlViewer(QWidget *parent=0, Qt::WindowFlags flags=0);
 
+    enum ScriptOption {
+        Play = 0x00000001,
+        Record = 0x00000002,
+        TestImages = 0x00000004,
+        ExitOnComplete = 0x00000008,
+        ExitOnFailure = 0x00000010
+    };
+    Q_DECLARE_FLAGS(ScriptOptions, ScriptOption)
+    void setScript(const QString &s) { m_script = s; }
+    void setScriptOptions(ScriptOptions opt) { m_scriptOptions = opt; }
     void setRecordDither(const QString& s) { record_dither = s; }
     void setRecordRate(int fps);
     void setRecordFile(const QString&);
@@ -62,6 +73,7 @@ public slots:
     void showProxySettings ();
     void proxySettingsChanged ();
     void setScaleView();
+    void executeErrors();
 
 protected:
     virtual void keyPressEvent(QKeyEvent *);
@@ -109,7 +121,12 @@ private:
     QWidget *ffmpegHelpWindow;
     bool ffmpegAvailable;
     bool convertAvailable;
+
+    QString m_script;
+    ScriptOptions m_scriptOptions;
+    QFxTester *tester;
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(QmlViewer::ScriptOptions)
 
 QT_END_NAMESPACE
 
