@@ -666,14 +666,6 @@ void QSymbianControl::Draw(const TRect& r) const
         if (qwidget->d_func()->isOpaque)
             gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
         
-        if(m_bitmap.data()) {
-			//gc.BitBlt(r.iTl, m_bitmap.data(), TRect(TPoint(), r.Size()));
-        
-			gc.SetBrushColor(TRgb(0, 0, 0, 0));
-        	gc.SetBrushStyle(CGraphicsContext::ESolidBrush);
-        	gc.Clear(r);
-        }
-        else
         	gc.BitBlt(r.iTl, bitmap, r);
     } else {
         surface->flush(qwidget, QRegion(qt_TRect2QRect(r)), QPoint());
@@ -708,11 +700,6 @@ void QSymbianControl::SizeChanged()
                 qwidget->d_func()->syncBackingStore();
             if (!slowResize && tlwExtra)
                 tlwExtra->inTopLevelResize = false;
-        }
-        
-        if(m_bitmap.data()) {
-			m_bitmap->Resize(Size());
-			fillBitmap();
         }
     }
 }

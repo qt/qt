@@ -146,8 +146,6 @@ public:
     void sendInputEvent(QWidget *widget, QInputEvent *inputEvent);
     void setIgnoreFocusChanged(bool enabled) { m_ignoreFocusChanged = enabled; }
     void CancelLongTapTimer();
-    
-    void setBlit(TUint32 color);
 
 protected:
     void Draw(const TRect& aRect) const;
@@ -161,40 +159,13 @@ private:
     TKeyResponse sendKeyEvent(QWidget *widget, QKeyEvent *keyEvent);
     void sendMouseEvent(QWidget *widget, QMouseEvent *mEvent);
     void HandleLongTapEventL( const TPoint& aPenEventLocation, const TPoint& aPenEventScreenLocation );
-
-	void fillBitmap();
     
 private:
     QWidget *qwidget;
     bool m_ignoreFocusChanged;
     QLongTapTimer* m_longTapDetector;
     bool m_previousEventLongTap;
-    
-    QScopedPointer<CFbsBitmap> m_bitmap;
-    TUint32 m_color;
 };
-
-
-
-inline void QSymbianControl::setBlit(TUint32 color)
-{
-	m_bitmap.reset( q_check_ptr(new CFbsBitmap) );	// CBase derived object needs check on new
-	qt_symbian_throwIfError( m_bitmap->Create(Size(), EColor16MA) );
-	
-	// Not sure if bitmap pixel data is zero-initialized, so do it here to make sure
-	m_color = color;
-	fillBitmap();
-}
-
-inline void QSymbianControl::fillBitmap() 
-{
-	TUint32* ptr = m_bitmap->DataAddress();
-	for(int y=0; y<Size().iHeight; ++y)
-		for(int x=0; x<Size().iWidth; ++x)
-			*ptr++ = m_color;
-}
-
-
 
 inline void QS60Data::updateScreenSize()
 {
