@@ -39,57 +39,29 @@
 **
 ****************************************************************************/
 
-#ifndef GLWIDGET_H
-#define GLWIDGET_H
+#ifndef QTLOGO_H
+#define QTLOGO_H
 
-#include <QGLWidget>
+#include <QObject>
+#include <QtOpenGL>
 
-class QtLogo;
+class Patch;
+class Geometry;
 
 //! [0]
-class GLWidget : public QGLWidget
+class QtLogo : public QObject
 {
-    Q_OBJECT
-
 public:
-    GLWidget(QWidget *parent = 0);
-    ~GLWidget();
+    QtLogo(QObject *parent, int d = 64, qreal s = 1.0);
+    ~QtLogo();
+    void setColor(QColor c);
+    void draw() const;
+private:
+    void buildGeometry(int d, qreal s);
 
-    QSize minimumSizeHint() const;
-    QSize sizeHint() const;
+    QList<Patch *> parts;
+    Geometry *geom;
+};
 //! [0]
 
-//! [1]
-public slots:
-    void setXRotation(int angle);
-    void setYRotation(int angle);
-    void setZRotation(int angle);
-
-signals:
-    void xRotationChanged(int angle);
-    void yRotationChanged(int angle);
-    void zRotationChanged(int angle);
-//! [1]
-
-//! [2]
-protected:
-    void initializeGL();
-    void paintGL();
-    void resizeGL(int width, int height);
-    void mousePressEvent(QMouseEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
-//! [2]
-
-//! [3]
-private:
-    QtLogo *logo;
-    int xRot;
-    int yRot;
-    int zRot;
-    QPoint lastPos;
-    QColor qtGreen;
-    QColor qtPurple;
-};
-//! [3]
-
-#endif
+#endif // QTLOGO_H
