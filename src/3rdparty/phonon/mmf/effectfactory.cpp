@@ -123,6 +123,7 @@ QList<int> EffectFactory::effectIndexes()
     if (isEffectSupported<CBassBoost>())
         retval.append(AbstractAudioEffect::EffectBassBoost);
 
+    /* We haven't implemented these yet.
     if (isEffectSupported<CDistanceAttenuation>())
         retval.append(AbstractAudioEffect::EffectDistanceAttenuation);
 
@@ -140,6 +141,7 @@ QList<int> EffectFactory::effectIndexes()
 
     if (isEffectSupported<CStereoWidening>())
         retval.append(AbstractAudioEffect::EffectStereoWidening);
+    */
 
     return retval;
 }
