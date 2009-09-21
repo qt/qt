@@ -29,6 +29,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMoveEvent>
 #include <QResizeEvent>
 
+#include <QtGui/private/qwidget_p.h> // to access QWExtra
 
 QT_BEGIN_NAMESPACE
 
@@ -50,6 +51,13 @@ MMF::VideoOutput::VideoOutput(QWidget* parent)
 	setAttribute(Qt::WA_OpaquePaintEvent, true);
 	setAttribute(Qt::WA_NoSystemBackground, true);
 	setAutoFillBackground(false);
+
+	// Causes QSymbianControl::Draw not to BitBlt this widget's region of the
+	// backing store.  Since the backing store is (by default) a 16MU bitmap,
+	// blitting it results in this widget's screen region in the final
+	// framebuffer having opaque alpha values.  This in turn causes the video
+	// to be invisible when running on the target device.
+	qt_widget_private(this)->extraData()->disableBlit = true;
 
     dump();
     
