@@ -2668,13 +2668,18 @@ Text Doc::trimmedBriefText(const QString &className) const
 	    standardWording = false;
         }
 
-        if (!w.isEmpty() && (w.first() == "class" || w.first() == "widget"
-                             || w.first() == "namespace" || w.first() == "header"))
+        if (!w.isEmpty() && ((w.first() == "class") ||
+                             (w.first() == "function") ||
+                             (w.first() == "macro") ||
+                             (w.first() == "widget") ||
+                             (w.first() == "namespace") ||
+                             (w.first() == "header")))
 	    w.removeFirst();
         else {
 	    location().warning(
                 tr("Nonstandard wording in '\\%1' text for '%2' ("
-                   "expected 'class', 'widget', 'namespace' or 'header')")
+                   "expected 'class', 'function', 'macro', 'widget', "
+                   "'namespace' or 'header')")
                 .arg(COMMAND_BRIEF).arg(className));
 	    standardWording = false;
         }

@@ -2678,6 +2678,8 @@ int qrand()
     \reentrant
     \since 4.6
 
+    \brief The qtTrId function finds and returns a translated string.
+
     Returns a translated string identified by \a id.
     If no matching string is found, the id itself is returned. This
     should not happen under normal conditions.
@@ -2715,7 +2717,8 @@ int qrand()
     \relates <QtGlobal>
     \since 4.6
 
-    Marks \a id for dynamic translation.
+    \brief The QT_TRID_NOOP macro marks an id for dynamic translation.
+    
     The only purpose of this macro is to provide an anchor for attaching
     meta data like to qtTrId().
 

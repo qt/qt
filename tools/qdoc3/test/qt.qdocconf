@@ -6,7 +6,7 @@ include(qt-defines.qdocconf)
 
 project                 = Qt
 versionsym              =
-version                 = %VERSION%
+version                 = 4.6
 description             = Qt Reference Documentation
 url                     = http://qt.nokia.com/doc/4.6
 

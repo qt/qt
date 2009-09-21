@@ -1070,6 +1070,9 @@ void qDrawItem(QPainter *p, Qt::GUIStyle gs,
     \since 4.6
     \overload
 
+    \brief The qDrawBorderPixmap function is for drawing a pixmap into
+    the margins of a rectangle.
+
     Draws the given \a pixmap into the given \a target rectangle, using the
     given \a painter. The pixmap will be split into nine segments and drawn
     according to the \a margins structure.

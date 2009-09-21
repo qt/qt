@@ -4973,7 +4973,10 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
 }
 
 /*!
-    Returns a pointer to this widget's effect if it has one; otherwise 0.
+    \brief The graphicsEffect function returns a pointer to the
+    widget's graphics effect.
+
+    If the widget has no graphics effect, 0 is returned.
 
     \since 4.6
 
@@ -4986,6 +4989,9 @@ QGraphicsEffect *QWidget::graphicsEffect() const
 }
 
 /*!
+
+  \brief The setGraphicsEffect function is for setting the widget's graphics effect.
+  
     Sets \a effect as the widget's effect. If there already is an effect installed
     on this widget, QWidget will delete the existing effect before installing
     the new \a effect.
@@ -6205,7 +6211,8 @@ QWidget *QWidget::nextInFocusChain() const
 }
 
 /*!
-    Returns the previous widget in this widget's focus chain.
+    \brief The previousInFocusChain function returns the previous
+    widget in this widget's focus chain.
 
     \sa nextInFocusChain()
 
@@ -6708,14 +6715,14 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
 */
 
 /*!
-    Sets the margins around the contents of the widget to have the
-    sizes \a left, \a top, \a right, and \a bottom. The margins are
-    used by the layout system, and may be used by subclasses to
-    specify the area to draw in (e.g. excluding the frame).
+  Sets the margins around the contents of the widget to have the sizes
+  \a left, \a top, \a right, and \a bottom. The margins are used by
+  the layout system, and may be used by subclasses to specify the area
+  to draw in (e.g. excluding the frame).
 
-    Changing the margins will trigger a resizeEvent().
+  Changing the margins will trigger a resizeEvent().
 
-    \sa contentsRect(), getContentsMargins()
+  \sa contentsRect(), getContentsMargins()
 */
 void QWidget::setContentsMargins(int left, int top, int right, int bottom)
 {
@@ -6749,6 +6756,9 @@ void QWidget::setContentsMargins(int left, int top, int right, int bottom)
 /*!
   \overload
   \since 4.6
+
+  \brief The setContentsMargins function sets the margins around the
+  widget's contents.
 
   Sets the margins around the contents of the widget to have the
   sizes determined by \a margins. The margins are
@@ -6787,7 +6797,7 @@ void QWidget::getContentsMargins(int *left, int *top, int *right, int *bottom) c
 /*!
   \since 4.6
 
-  Returns the widget's contents margins.
+  \brief The contentsMargins function returns the widget's contents margins.
 
   \sa getContentsMargins(), setContentsMargins(), contentsRect()
  */

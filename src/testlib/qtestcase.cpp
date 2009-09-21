@@ -362,6 +362,9 @@ QT_BEGIN_NAMESPACE
 
     \relates QTest
 
+    \brief The QBENCHMARK_ONCE macro is for measuring performance of a
+    code block by running it once.
+
     This macro is used to measure the performance of code within a test.
     The code to be benchmarked is contained within a code block following
     this macro.
