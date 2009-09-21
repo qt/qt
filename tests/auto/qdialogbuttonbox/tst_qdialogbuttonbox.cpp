@@ -731,7 +731,7 @@ void tst_QDialogButtonBox::testS60SoftKeys()
     softKeys = dialog2.softKeys();
     QCOMPARE( softKeys.count(), 1);
 #else
-    QSKIP();
+    QSKIP("S60-specific test", SkipAll );
 #endif
 }
 
