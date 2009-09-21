@@ -2945,7 +2945,6 @@ void tst_QScriptValue::equals()
         QScriptValue var2 = eng.newVariant(QVariant(double(123)));
         QScriptValue var3(QString::fromLatin1("123"));
         QScriptValue var4(123);
-        QScriptValue var4(123.0);
 
         QVERIFY(var1.equals(var1));
         QVERIFY(var1.equals(var2));
