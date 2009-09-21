@@ -60,10 +60,69 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmldebug.h>
+#include <QtDeclarative/qmldebugservice.h>
+#include <QtCore/qabstractanimation.h>
 
 QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(frameRateDebug, QML_SHOW_FRAMERATE)
+
+class QFxViewDebugServer;
+class FrameBreakAnimation : public QAbstractAnimation
+{
+public:
+    FrameBreakAnimation(QFxViewDebugServer *s)
+    : QAbstractAnimation((QObject*)s), server(s)
+    {
+        start();
+    }
+
+    virtual int duration() const { return -1; }
+    virtual void updateCurrentTime(int msecs);
+
+private:
+    QFxViewDebugServer *server;
+};
+
+class QFxViewDebugServer : public QmlDebugService
+{
+public:
+    QFxViewDebugServer(QObject *parent = 0) : QmlDebugService(QLatin1String("CanvasFrameRate"), parent), breaks(0)
+    {
+        timer.start();
+        new FrameBreakAnimation(this);
+    }
+
+    void addTiming(int pe, int tbf)
+    {
+        if (!isEnabled())
+            return;
+
+        bool isFrameBreak = breaks > 1;
+        breaks = 0;
+        int e = timer.elapsed();
+        QByteArray data;
+        QDataStream ds(&data, QIODevice::WriteOnly);
+        ds << (int)pe << (int)pe << (int)tbf << (int)e
+           << (bool)isFrameBreak;
+        sendMessage(data);
+    }
+
+    void frameBreak() { ++breaks; }
+
+private:
+    QTime timer;
+    int breaks;
+};
+
+Q_GLOBAL_STATIC(QFxViewDebugServer, qfxViewDebugServer);
+
+void FrameBreakAnimation::updateCurrentTime(int msecs)
+{
+    Q_UNUSED(msecs);
+    server->frameBreak();
+}
+
 
 static QVariant stringToKeySequence(const QString &str)
 {
@@ -487,9 +546,11 @@ void QFxView::resizeEvent(QResizeEvent *e)
 void QFxView::paintEvent(QPaintEvent *event)
 {
     int time = 0;
-    if (frameRateDebug())
+    if (frameRateDebug() || QFxViewDebugServer::isDebuggingEnabled())
         time = d->frameTimer.restart();
     QGraphicsView::paintEvent(event);
+    if (QFxViewDebugServer::isDebuggingEnabled())
+        qfxViewDebugServer()->addTiming(d->frameTimer.elapsed(), time);
     if (frameRateDebug())
         qDebug() << "paintEvent:" << d->frameTimer.elapsed() << "time since last frame:" << time;
 }
