@@ -46,7 +46,7 @@
 #include <QtOpenGL>
 
 class Patch;
-class Geometry;
+struct Geometry;
 
 //! [0]
 class QtLogo : public QObject
