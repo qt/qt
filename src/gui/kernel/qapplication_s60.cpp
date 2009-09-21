@@ -336,7 +336,7 @@ void QSymbianControl::ConstructL(bool topLevel, bool desktop)
         
         // Necessary in order to be able to track the activation status of
         // the control's window
-        qwidget->d_func()->createTLExtra();
+        qwidget->d_func()->createExtra();
         
 #ifdef DEBUG_QSYMBIANCONTROL
         qDebug()    << "QSymbianControl::ConstructL [" << this
@@ -971,14 +971,14 @@ QWidget * QApplication::topLevelAt(QPoint const& point)
             if (widget->geometry().adjusted(0,0,1,1).contains(point)) {
                 // At this point we know there is a Qt widget under the point.
                 // Now we need to make sure it is the top most in the z-order.
-                RDrawableWindow* rw = widget->d_func()->topData()->rwindow;
-                int z = rw->OrdinalPosition();
+                RDrawableWindow *const window = widget->effectiveWinId()->DrawableWindow();
+                int z = window->OrdinalPosition();
                 if (z < lowestZ) {
                     lowestZ = z;
                     found = widget;
                 }
             }
-            }
+        }
     }
     return found;
 }

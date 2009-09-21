@@ -577,19 +577,18 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
                 stackingFlags = ECoeStackFlagStandard;
             }
             QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control, ECoeStackPriorityDefault, stackingFlags));
-
-            QTLWExtra *topExtra = topData();
-            topExtra->rwindow = control->DrawableWindow();
+            
+            RDrawableWindow *const drawableWindow = control->DrawableWindow();
             // Request mouse move events.
-            topExtra->rwindow->PointerFilter(EPointerFilterEnterExit
+            drawableWindow->PointerFilter(EPointerFilterEnterExit
                 | EPointerFilterMove | EPointerFilterDrag, 0);
-            topExtra->rwindow->EnableVisibilityChangeEvents();
+            drawableWindow->EnableVisibilityChangeEvents();
 
             if (!isOpaque) {
-                RWindow *rwindow = static_cast<RWindow*>(topExtra->rwindow);
-                TDisplayMode gotDM = (TDisplayMode)rwindow->SetRequiredDisplayMode(EColor16MA);
-                if (rwindow->SetTransparencyAlphaChannel() == KErrNone)
-                    rwindow->SetBackgroundColor(TRgb(255, 255, 255, 0));
+                RWindow *const window = static_cast<RWindow *>(drawableWindow);
+                const TDisplayMode displayMode = static_cast<TDisplayMode>(window->SetRequiredDisplayMode(EColor16MA));
+                if (window->SetTransparencyAlphaChannel() == KErrNone)
+                	window->SetBackgroundColor(TRgb(255, 255, 255, 0));
             }
         }
 
@@ -610,7 +609,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
             stackingFlags = ECoeStackFlagStandard;
         }
         QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control, ECoeStackPriorityDefault, stackingFlags));
-
+        
         q->setAttribute(Qt::WA_WState_Created);
         int x, y, w, h;
         data.crect.getRect(&x, &y, &w, &h);
@@ -648,7 +647,7 @@ void QWidgetPrivate::show_sys()
     if (q->internalWinId()) {
         
         WId id = q->internalWinId();
-        if (!extra->topextra->activated) {
+        if (!extra->activated) {
             
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::show_sys [" << this << "]"
@@ -658,7 +657,7 @@ void QWidgetPrivate::show_sys()
 #endif
             
             QT_TRAP_THROWING(id->ActivateL());
-            extra->topextra->activated = 1;
+            extra->activated = 1;
         }
         id->MakeVisible(true);
         
@@ -761,10 +760,8 @@ void QWidgetPrivate::raise_sys()
 #endif
     
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
-    QTLWExtra *tlwExtra = maybeTopData();
-    if (q->internalWinId() && tlwExtra) {
-        tlwExtra->rwindow->SetOrdinalPosition(0);
-    }
+    if (q->internalWinId())
+    	q->internalWinId()->DrawableWindow()->SetOrdinalPosition(0);
 }
 
 void QWidgetPrivate::lower_sys()
@@ -777,10 +774,9 @@ void QWidgetPrivate::lower_sys()
 #endif
     
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
-    QTLWExtra *tlwExtra = maybeTopData();
-    if (q->internalWinId() && tlwExtra) {
-        tlwExtra->rwindow->SetOrdinalPosition(-1);
-    }
+    if (q->internalWinId())
+    	q->internalWinId()->DrawableWindow()->SetOrdinalPosition(-1);
+  
     if(!q->isWindow())
         invalidateBuffer(q->rect());
 }
@@ -794,10 +790,13 @@ void QWidgetPrivate::stackUnder_sys(QWidget* w)
 {
     Q_Q(QWidget);
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
-    QTLWExtra *tlwExtra = maybeTopData();
-    QTLWExtra *tlwExtraSibling = w->d_func()->maybeTopData();
-    if (q->internalWinId() && tlwExtra && w->internalWinId() && tlwExtraSibling)
-        tlwExtra->rwindow->SetOrdinalPosition(tlwExtraSibling->rwindow->OrdinalPosition() + 1);
+    
+    if (q->internalWinId() && w->internalWinId()) {
+		RDrawableWindow *const thisWindow = q->internalWinId()->DrawableWindow();
+		RDrawableWindow *const otherWindow = w->internalWinId()->DrawableWindow();
+    	thisWindow->SetOrdinalPosition(otherWindow->OrdinalPosition() + 1);
+    }
+    
     if(!q->isWindow() || !w->internalWinId())
         invalidateBuffer(q->rect());
 }
@@ -923,17 +922,14 @@ void QWidgetPrivate::s60UpdateIsOpaque()
     if ((data.window_flags & Qt::FramelessWindowHint) == 0)
         return;
 
+    RWindow *const window = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
+    
     if (!isOpaque) {
-        QTLWExtra *topExtra = topData();
-        RWindow *rwindow = static_cast<RWindow*>(topExtra->rwindow);
-        TDisplayMode gotDM = (TDisplayMode)rwindow->SetRequiredDisplayMode(EColor16MA);
-        if (rwindow->SetTransparencyAlphaChannel() == KErrNone)
-            rwindow->SetBackgroundColor(TRgb(255, 255, 255, 0));
-    } else {
-        QTLWExtra *topExtra = topData();
-        RWindow *rwindow = static_cast<RWindow*>(topExtra->rwindow);
-        rwindow->SetTransparentRegion(TRegionFix<1>());
-    }
+        const TDisplayMode displayMode = static_cast<TDisplayMode>(window->SetRequiredDisplayMode(EColor16MA));
+        if (window->SetTransparencyAlphaChannel() == KErrNone)
+        	window->SetBackgroundColor(TRgb(255, 255, 255, 0));
+    } else
+    	window->SetTransparentRegion(TRegionFix<1>());
 }
 
 CFbsBitmap* qt_pixmapToNativeBitmap(QPixmap pixmap, bool invert)
@@ -1107,8 +1103,8 @@ void QWidgetPrivate::scroll_sys(int dx, int dy)
         scrollRect(q->rect(), dx, dy);
     } else {
         Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
-        RDrawableWindow* rw = topData()->rwindow;
-        rw->Scroll(TPoint(dx, dy));
+        RDrawableWindow *const window = q->internalWinId()->DrawableWindow();
+        window->Scroll(TPoint(dx, dy));
     }
 }
 
@@ -1120,8 +1116,8 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &r)
         scrollRect(r, dx, dy);
     } else {
         Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
-        RDrawableWindow* rw = topData()->rwindow;
-        rw->Scroll(TPoint(dx, dy), qt_QRect2TRect(r));
+        RDrawableWindow *const window = q->internalWinId()->DrawableWindow();
+        window->Scroll(TPoint(dx, dy), qt_QRect2TRect(r));
     }
 }
 
@@ -1153,8 +1149,6 @@ void QWidgetPrivate::registerDropSite(bool /* on */)
 void QWidgetPrivate::createTLSysExtra()
 {
     extra->topextra->backingStore = 0;
-    extra->topextra->activated = 0;
-    extra->topextra->rwindow = 0;
 }
 
 void QWidgetPrivate::deleteTLSysExtra()
@@ -1165,7 +1159,7 @@ void QWidgetPrivate::deleteTLSysExtra()
 
 void QWidgetPrivate::createSysExtra()
 {
-
+	extra->activated = 0;
 }
 
 void QWidgetPrivate::deleteSysExtra()
