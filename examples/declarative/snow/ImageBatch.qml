@@ -41,9 +41,9 @@ GridView {
         transformOrigin: "Center"
         width: MyGrid.imageWidth; height: MyGrid.imageHeight;
 
-        Image { id: Image; source: url; fillMode: "PreserveAspectFit"; smooth: true; anchors.fill: parent;
+        Image { id: FlickrImage; source: url; fillMode: "PreserveAspectFit"; smooth: true; anchors.fill: parent;
                 opacity: (status == 1)?1:0; opacity: Behavior { NumberAnimation { properties: "opacity" } } } 
-        Loading { anchors.centerIn: parent; visible: Image.status!=1 }
+        Loading { anchors.centerIn: parent; visible: FlickrImage.status!=1 }
 
         states: State {
             name: "selected"
