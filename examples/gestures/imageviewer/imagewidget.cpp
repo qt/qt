@@ -62,13 +62,13 @@ ImageWidget::ImageWidget(QWidget *parent)
     QGesture *panGesture = new QPanGesture(this);
     connect(panGesture, SIGNAL(started()), this, SLOT(panTriggered()));
     connect(panGesture, SIGNAL(finished()), this, SLOT(panTriggered()));
-    connect(panGesture, SIGNAL(cancelled()), this, SLOT(panTriggered()));
+    connect(panGesture, SIGNAL(canceled()), this, SLOT(panTriggered()));
     connect(panGesture, SIGNAL(triggered()), this, SLOT(panTriggered()));
 
     QGesture *pinchGesture = new QPinchGesture(this);
     connect(pinchGesture, SIGNAL(started()), this, SLOT(pinchTriggered()));
     connect(pinchGesture, SIGNAL(finished()), this, SLOT(pinchTriggered()));
-    connect(pinchGesture, SIGNAL(cancelled()), this, SLOT(pinchTriggered()));
+    connect(pinchGesture, SIGNAL(canceled()), this, SLOT(pinchTriggered()));
     connect(pinchGesture, SIGNAL(triggered()), this, SLOT(pinchTriggered()));
 
 //! [construct swipe gesture]
@@ -138,11 +138,6 @@ void ImageWidget::pinchTriggered()
 void ImageWidget::swipeTriggered()
 {
     QSwipeGesture *pg = qobject_cast<QSwipeGesture*>(sender());
-//! [swipe slot start]
-    qDebug() << (int) pg->horizontalDirection();
-    qDebug() << pg->swipeAngle();
-
-//! [swipe slot finish]
     if (pg->horizontalDirection() == QSwipeGesture::Left
             || pg->verticalDirection() == QSwipeGesture::Up)
         goPrevImage();
