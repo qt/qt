@@ -208,7 +208,7 @@ public:
 
 public slots:
     bool shouldInterruptJavaScript() {
-        return true; 
+        return true;
     }
 };
 
@@ -348,7 +348,7 @@ void tst_QWebPage::userStyleSheet()
 
     m_page->settings()->setUserStyleSheetUrl(QUrl("data:text/css,p { background-image: url('http://does.not/exist.png');}"));
     m_view->setHtml("<p>hello world</p>");
-    QVERIFY(::waitForSignal(m_view, SIGNAL(loadFinished(bool))));
+    QVERIFY(::waitForSignal(m_view, SIGNAL(loadFinished(bool)), 1000));
 
     QVERIFY(networkManager->requestedUrls.count() >= 2);
     QCOMPARE(networkManager->requestedUrls.at(0), QUrl("data:text/css,p { background-image: url('http://does.not/exist.png');}"));
@@ -674,7 +674,7 @@ void tst_QWebPage::multiplePageGroupsAndLocalStorage()
     view1.page()->settings()->setAttribute(QWebSettings::LocalStorageEnabled, true);
     view1.page()->settings()->setLocalStoragePath(QDir::toNativeSeparators(QDir::currentPath() + "/path1"));
     qt_webpage_setGroupName(view1.page(), "group1");
-    view2.page()->settings()->setAttribute(QWebSettings::LocalStorageEnabled, true);    
+    view2.page()->settings()->setAttribute(QWebSettings::LocalStorageEnabled, true);
     view2.page()->settings()->setLocalStoragePath(QDir::toNativeSeparators(QDir::currentPath() + "/path2"));
     qt_webpage_setGroupName(view2.page(), "group2");
     QCOMPARE(qt_webpage_groupName(view1.page()), QString("group1"));
@@ -945,7 +945,7 @@ void tst_QWebPage::textSelection()
     QVERIFY(page->action(QWebPage::SelectStartOfDocument) != 0);
     QVERIFY(page->action(QWebPage::SelectEndOfDocument) != 0);
 
-    // right now they are disabled because contentEditable is false and 
+    // right now they are disabled because contentEditable is false and
     // there isn't an existing selection to modify
     QCOMPARE(page->action(QWebPage::SelectNextChar)->isEnabled(), false);
     QCOMPARE(page->action(QWebPage::SelectPreviousChar)->isEnabled(), false);
@@ -1114,14 +1114,14 @@ void tst_QWebPage::textEditing()
     QCOMPARE(page->action(QWebPage::AlignJustified)->isEnabled(), true);
     QCOMPARE(page->action(QWebPage::AlignLeft)->isEnabled(), true);
     QCOMPARE(page->action(QWebPage::AlignRight)->isEnabled(), true);
-    
+
     // make sure these are disabled since there isn't a selection
     QCOMPARE(page->action(QWebPage::Cut)->isEnabled(), false);
     QCOMPARE(page->action(QWebPage::RemoveFormat)->isEnabled(), false);
-    
+
     // make sure everything is selected
     page->triggerAction(QWebPage::SelectAll);
-    
+
     // this is only true if there is an editable selection
     QCOMPARE(page->action(QWebPage::Cut)->isEnabled(), true);
     QCOMPARE(page->action(QWebPage::RemoveFormat)->isEnabled(), true);
