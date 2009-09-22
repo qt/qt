@@ -387,12 +387,29 @@ QPixmap QPixmap::fromWinHICON(HICON icon)
     ReleaseDC(0, screenDevice);
 
     ICONINFO iconinfo;
-    bool result = GetIconInfo(icon, &iconinfo); //x and y Hotspot describes the icon center
+    bool result = GetIconInfo(icon, &iconinfo);
     if (!result)
         qWarning("QPixmap::fromWinHICON(), failed to GetIconInfo()");
 
-    int w = iconinfo.xHotspot * 2;
-    int h = iconinfo.yHotspot * 2;
+    int w = 0;
+    int h = 0;
+    if (!iconinfo.xHotspot || !iconinfo.yHotspot) {
+        // We could not retrieve the icon size via GetIconInfo,
+        // so we try again using the icon bitmap.
+        BITMAP bm;
+        int result = GetObject(iconinfo.hbmColor, sizeof(BITMAP), &bm);
+        if (!result) result = GetObject(iconinfo.hbmMask, sizeof(BITMAP), &bm);
+        if (!result) {
+            qWarning("QPixmap::fromWinHICON(), failed to retrieve icon size");
+            return QPixmap();
+        }
+        w = bm.bmWidth;
+        h = bm.bmHeight;
+    } else {
+        // x and y Hotspot describes the icon center
+        w = iconinfo.xHotspot * 2;
+        h = iconinfo.yHotspot * 2;
+    }
     const DWORD dwImageSize = w * h * 4;
 
     BITMAPINFO bmi;
