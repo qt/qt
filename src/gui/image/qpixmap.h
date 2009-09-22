@@ -149,7 +149,10 @@ public:
     };
 
     HBITMAP toWinHBITMAP(HBitmapFormat format = NoAlpha) const;
+    HICON toWinHICON() const;
+
     static QPixmap fromWinHBITMAP(HBITMAP hbitmap, HBitmapFormat format = NoAlpha);
+    static QPixmap fromWinHICON(HICON hicon);
 #endif
 
 #if defined(Q_WS_MAC)

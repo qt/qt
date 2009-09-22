@@ -236,6 +236,49 @@ QPixmap QPixmap::fromWinHBITMAP(HBITMAP bitmap, HBitmapFormat format)
     return fromImage(result);
 }
 
+HBITMAP qt_createIconMask(const QBitmap &bitmap)
+{
+    QImage bm = bitmap.toImage().convertToFormat(QImage::Format_Mono);
+    int w = bm.width();
+    int h = bm.height();
+    int bpl = ((w+15)/16)*2;                        // bpl, 16 bit alignment
+    uchar *bits = new uchar[bpl*h];
+    bm.invertPixels();
+    for (int y=0; y<h; y++)
+        memcpy(bits+y*bpl, bm.scanLine(y), bpl);
+    HBITMAP hbm = CreateBitmap(w, h, 1, 1, bits);
+    delete [] bits;
+    return hbm;
+}
+
+HICON QPixmap::toWinHICON() const
+{
+    QBitmap maskBitmap = mask();
+    if (maskBitmap.isNull()) {
+        maskBitmap= QBitmap(size());
+        maskBitmap.fill(Qt::color1);
+    }
+
+    ICONINFO ii;
+    ii.fIcon    = true;
+    ii.hbmMask  = qt_createIconMask(maskBitmap);
+    ii.hbmColor = toWinHBITMAP(QPixmap::Alpha);
+    ii.xHotspot = 0;
+    ii.yHotspot = 0;
+
+    HICON hIcon = CreateIconIndirect(&ii);
+
+    DeleteObject(ii.hbmColor);
+    DeleteObject(ii.hbmMask);
+
+    return hIcon;
+}
+
+QPixmap QPixmap::fromWinHICON(HICON icon)
+{
+	return convertHIconToPixmap(icon);
+}
+
 #ifdef Q_WS_WIN
 #ifndef Q_WS_WINCE
 
