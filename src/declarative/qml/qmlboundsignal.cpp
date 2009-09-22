@@ -42,6 +42,7 @@
 #include "qmlboundsignal_p.h"
 #include "private/qmetaobjectbuilder_p.h"
 #include "private/qmlengine_p.h"
+#include "private/qmlexpression_p.h"
 #include "private/qmlcontext_p.h"
 #include <qfxglobal.h>
 #include <qmlmetatype.h>
@@ -60,7 +61,8 @@ QmlBoundSignal::QmlBoundSignal(QmlContext *ctxt, const QString &val, QObject *me
     // This is thread safe.  Although it may be updated by two threads, they
     // will both set it to the same value - so the worst thing that can happen
     // is that they both do the work to figure it out.  Boo hoo.
-    if (evaluateIdx == -1) evaluateIdx = QmlExpression::staticMetaObject.indexOfMethod("value()");
+    if (evaluateIdx == -1) 
+        evaluateIdx = QmlExpression::staticMetaObject.indexOfMethod("value()");
 
     setTrackChange(false);
     QFx_setParent_noEvent(this, parent);
@@ -73,15 +75,13 @@ QmlBoundSignalProxy::QmlBoundSignalProxy(QmlContext *ctxt, const QString &val, Q
     QMetaMethod signal = me->metaObject()->method(idx);
 
     params = new QmlBoundSignalParameters(signal, this);
-
-    ctxt->d_func()->addDefaultObject(params, QmlContextPrivate::HighPriority);
 }
 
 int QmlBoundSignalProxy::qt_metacall(QMetaObject::Call c, int id, void **a)
 {
     if (c == QMetaObject::InvokeMetaMethod && id == evaluateIdx) {
         params->setValues(a);
-        value();
+        QmlExpressionPrivate::get(this)->value(params);
         params->clearValues();
         return -1;
     } else {

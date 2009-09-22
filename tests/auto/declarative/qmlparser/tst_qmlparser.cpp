@@ -376,6 +376,8 @@ void tst_qmlparser::assignSignal()
     QVERIFY(object != 0);
     QTest::ignoreMessage(QtWarningMsg, "MyQmlObject::basicSlot");
     emit object->basicSignal();
+    QTest::ignoreMessage(QtWarningMsg, "MyQmlObject::basicSlot(9)");
+    emit object->basicParameterizedSignal(9);
 }
 
 // Tests the creation and assignment of dynamic properties
