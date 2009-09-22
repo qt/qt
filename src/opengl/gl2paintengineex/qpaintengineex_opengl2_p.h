@@ -60,6 +60,7 @@
 #include <private/qgl2pexvertexarray_p.h>
 #include <private/qglpaintdevice_p.h>
 #include <private/qglpixmapfilter_p.h>
+#include <private/qfontengine_p.h>
 
 enum EngineMode {
     ImageDrawingMode,
@@ -205,6 +206,7 @@ public:
     int width, height;
     QGLContext *ctx;
     EngineMode mode;
+    QFontEngineGlyphCache::Type glyphCacheType;
 
     mutable QOpenGL2PaintEngineState *last_created_state;
 

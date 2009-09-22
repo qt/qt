@@ -2435,7 +2435,6 @@ public:
 
 void tst_QScriptEngine::throwErrorFromProcessEvents()
 {
-    QSKIP("Not implemented", SkipAll);
     QScriptEngine eng;
 
     EventReceiver2 receiver(&eng);

@@ -141,15 +141,6 @@ private:
     uint is_cached;
 };
 
-#ifdef Q_WS_WIN
-#ifndef Q_WS_WINCE
-QPixmap convertHIconToPixmap( const HICON icon);
-#else
-QPixmap convertHIconToPixmap( const HICON icon, bool large = false);
-#endif
-QPixmap loadIconFromShell32( int resourceId, int size );
-#endif
-
 #  define QT_XFORM_TYPE_MSBFIRST 0
 #  define QT_XFORM_TYPE_LSBFIRST 1
 #  if defined(Q_WS_WIN)

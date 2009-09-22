@@ -1,20 +1,22 @@
 QT = core
 TEMPLATE = subdirs
 
-# Directories
-!wince*:SUBDIRS += \
-           headers
-
-SUBDIRS += \
+# These tests use host tools and therefore can't work for cross-compiled Qt.
+!cross_compile:SUBDIRS += \
+           headers \
            bic \
-           collections \
            compiler \
            compilerwarnings \
-           exceptionsafety \
            linguist \
+           moc \
+           uic \
+           uic3
+
+SUBDIRS += \
+           collections \
+           exceptionsafety \
            mediaobject \
 #           mediaobject_wince_ds9 \   This is Windows CE only (we test the second phonon backend ds9 here)
-           moc \
            modeltest \
            networkselftest \
            q3accel \
@@ -394,8 +396,6 @@ SUBDIRS += \
            selftests \
            symbols \
            qrand \
-           uic \
-           uic3 \
            utf8
 
 contains(QT_CONFIG, OdfWriter):SUBDIRS += qzip qtextodfwriter

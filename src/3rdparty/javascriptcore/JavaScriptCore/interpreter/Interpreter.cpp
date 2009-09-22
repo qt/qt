@@ -1182,8 +1182,9 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
             goto vm_throw; \
         } \
         tickCount = globalData->timeoutChecker->ticksUntilNextCheck(); \
+        CHECK_FOR_EXCEPTION(); \
     }
-    
+
 #if ENABLE(OPCODE_SAMPLING)
     #define SAMPLE(codeBlock, vPC) m_sampler->sample(codeBlock, vPC)
 #else

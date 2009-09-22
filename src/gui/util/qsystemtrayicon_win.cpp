@@ -98,7 +98,6 @@ public:
     bool allowsMessages();
     bool supportsMessages();
     QRect findIconGeometry(const int a_iButtonID);
-    HBITMAP createIconMask(const QBitmap &bitmap);
     void createIcon();
     HICON hIcon;
     QPoint globalPos;
@@ -241,21 +240,6 @@ bool QSystemTrayIconSys::iconDrawItem(LPDRAWITEMSTRUCT lpdi)
     return true;
 }
 
-HBITMAP QSystemTrayIconSys::createIconMask(const QBitmap &bitmap)
-{
-    QImage bm = bitmap.toImage().convertToFormat(QImage::Format_Mono);
-    int w = bm.width();
-    int h = bm.height();
-    int bpl = ((w+15)/16)*2;                        // bpl, 16 bit alignment
-    uchar *bits = new uchar[bpl*h];
-    bm.invertPixels();
-    for (int y=0; y<h; y++)
-        memcpy(bits+y*bpl, bm.scanLine(y), bpl);
-    HBITMAP hbm = CreateBitmap(w, h, 1, 1, bits);
-    delete [] bits;
-    return hbm;
-}
-
 void QSystemTrayIconSys::createIcon()
 {
     hIcon = 0;
@@ -270,23 +254,7 @@ void QSystemTrayIconSys::createIcon()
     if (pm.isNull())
         return;
 
-    QBitmap mask = pm.mask();
-    if (mask.isNull()) {
-        mask = QBitmap(pm.size());
-        mask.fill(Qt::color1);
-    }
-
-    HBITMAP im = createIconMask(mask);
-    ICONINFO ii;
-    ii.fIcon    = true;
-    ii.hbmMask  = im;
-    ii.hbmColor = pm.toWinHBITMAP(QPixmap::Alpha);
-    ii.xHotspot = 0;
-    ii.yHotspot = 0;
-    hIcon = CreateIconIndirect(&ii);
-
-    DeleteObject(ii.hbmColor);
-    DeleteObject(im);
+    hIcon = pm.toWinHICON();
 }
 
 bool QSystemTrayIconSys::winEvent( MSG *m, long *result )

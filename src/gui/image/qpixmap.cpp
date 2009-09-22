@@ -1678,12 +1678,15 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     operation, you can use QBitmap::fromImage() instead.
 
     In addition, on Windows, the QPixmap class supports conversion to
-    and from HBitmap: the toWinHBITMAP() function creates a HBITMAP
+    and from HBITMAP: the toWinHBITMAP() function creates a HBITMAP
     equivalent to the QPixmap, based on the given HBitmapFormat, and
     returns the HBITMAP handle. The fromWinHBITMAP() function returns
     a QPixmap that is equivalent to the given bitmap which has the
-    specified format.
-    
+    specified format. The QPixmap class also supports conversion to
+    and from HICON: the toWinHICON() function creates a HICON equivalent
+    to the QPixmap, and returns the HICON handle. The fromWinHICON()
+    function returns a QPixmap that is equivalent to the given icon.
+
     In addition, on Symbian, the QPixmap class supports conversion to
     and from CFbsBitmap: the toSymbianCFbsBitmap() function creates
     CFbsBitmap equivalent to the QPixmap, based on given mode and returns 
@@ -2040,7 +2043,7 @@ QPixmapData* QPixmap::pixmapData() const
 
     \warning This function is only available on Windows.
 
-    \sa fromWinHBITMAP()
+    \sa fromWinHBITMAP(), {QPixmap#Pixmap Conversion}{Pixmap Conversion}
 */
 
 /*! \fn QPixmap QPixmap::fromWinHBITMAP(HBITMAP bitmap, HBitmapFormat format)
@@ -2051,6 +2054,31 @@ QPixmapData* QPixmap::pixmapData() const
     \warning This function is only available on Windows.
 
     \sa toWinHBITMAP(), {QPixmap#Pixmap Conversion}{Pixmap Conversion}
+
+*/
+
+/*! \fn HICON QPixmap::toWinHICON() const
+    \since 4.6
+
+    \bold{Win32 only:} Creates a \c HICON equivalent to the QPixmap.
+    Returns the \c HICON handle.
+
+    It is the caller's responsibility to free the \c HICON data after use.
+
+    \warning This function is only available on Windows.
+
+    \sa fromWinHICON(), {QPixmap#Pixmap Conversion}{Pixmap Conversion}
+*/
+
+/*! \fn QPixmap QPixmap::fromWinHICON(HICON icon)
+    \since 4.6
+
+    \bold{Win32 only:} Returns a QPixmap that is equivalent to the given
+    \a icon.
+
+    \warning This function is only available on Windows.
+
+    \sa toWinHICON(), {QPixmap#Pixmap Conversion}{Pixmap Conversion}
 
 */
 

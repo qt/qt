@@ -42,6 +42,7 @@
 #include "qapplication.h"
 #include "qevent.h"
 #ifdef Q_WS_S60
+#include "qstyle.h"
 #include "private/qt_s60_p.h"
 #endif
 #include "private/qsoftkeymanager_p.h"
@@ -197,7 +198,6 @@ bool QSoftKeyManager::event(QEvent *e)
 #ifdef Q_WS_S60
 void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
 {
-
     CEikButtonGroupContainer* nativeContainer = S60->buttonGroupContainer();
     QT_TRAP_THROWING(nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS));
 
@@ -229,7 +229,9 @@ void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
                     : s60CommandStart + index;
 
         if (position != -1) {
-            TPtrC text = qt_QString2TPtrC(softKeyAction->text());
+            const int underlineShortCut = QApplication::style()->styleHint(QStyle::SH_UnderlineShortcut);
+            QString iconText = softKeyAction->iconText();
+            TPtrC text = qt_QString2TPtrC( underlineShortCut ? softKeyAction->text() : iconText);
             QT_TRAP_THROWING(nativeContainer->SetCommandL(position, command, text));
         }
     }

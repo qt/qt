@@ -560,13 +560,8 @@ QScriptValue::QScriptValue(QScriptEngine *engine, int val)
     if (engine) {
         JSC::ExecState *exec = d_ptr->engine->currentFrame;
         d_ptr->initFrom(JSC::jsNumber(exec, val));
-    } else {
-        JSC::JSValue immediate = JSC::JSImmediate::from(val);
-        if (immediate)
-            d_ptr->initFrom(immediate);
-        else
-            d_ptr->initFrom(val);
-    }
+    } else
+        d_ptr->initFrom(val);
 }
 
 /*!
@@ -582,13 +577,8 @@ QScriptValue::QScriptValue(QScriptEngine *engine, uint val)
     if (engine) {
         JSC::ExecState *exec = d_ptr->engine->currentFrame;
         d_ptr->initFrom(JSC::jsNumber(exec, val));
-    } else {
-        JSC::JSValue immediate = JSC::JSImmediate::from(val);
-        if (immediate)
-            d_ptr->initFrom(immediate);
-        else
-            d_ptr->initFrom(val);
-    }
+    } else
+        d_ptr->initFrom(val);
 }
 
 /*!
@@ -604,13 +594,8 @@ QScriptValue::QScriptValue(QScriptEngine *engine, qsreal val)
     if (engine) {
         JSC::ExecState *exec = d_ptr->engine->currentFrame;
         d_ptr->initFrom(JSC::jsNumber(exec, val));
-    } else {
-        JSC::JSValue immediate = JSC::JSImmediate::from(val);
-        if (immediate)
-            d_ptr->initFrom(immediate);
-        else
-            d_ptr->initFrom(val);
-    }
+    } else
+        d_ptr->initFrom(val);
 }
 
 /*!
@@ -689,11 +674,7 @@ QScriptValue::QScriptValue(bool value)
 QScriptValue::QScriptValue(int value)
     : d_ptr(new (/*engine=*/0)QScriptValuePrivate(/*engine=*/0))
 {
-    JSC::JSValue immediate = JSC::JSImmediate::from(value);
-    if (immediate)
-        d_ptr->initFrom(immediate);
-    else
-        d_ptr->initFrom(value);
+    d_ptr->initFrom(value);
 }
 
 /*!
@@ -704,11 +685,7 @@ QScriptValue::QScriptValue(int value)
 QScriptValue::QScriptValue(uint value)
     : d_ptr(new (/*engine=*/0)QScriptValuePrivate(/*engine=*/0))
 {
-    JSC::JSValue immediate = JSC::JSImmediate::from(value);
-    if (immediate)
-        d_ptr->initFrom(immediate);
-    else
-        d_ptr->initFrom(value);
+    d_ptr->initFrom(value);
 }
 
 /*!
@@ -719,11 +696,7 @@ QScriptValue::QScriptValue(uint value)
 QScriptValue::QScriptValue(qsreal value)
     : d_ptr(new (/*engine=*/0)QScriptValuePrivate(/*engine=*/0))
 {
-    JSC::JSValue immediate = JSC::JSImmediate::from(value);
-    if (immediate)
-        d_ptr->initFrom(immediate);
-    else
-        d_ptr->initFrom(value);
+    d_ptr->initFrom(value);
 }
 
 /*!
@@ -1224,8 +1197,15 @@ bool QScriptValue::strictlyEquals(const QScriptValue &other) const
                  "a different engine");
         return false;
     }
-    if (d->type != other.d_ptr->type)
+
+    if (d->type != other.d_ptr->type) {
+        if (d->type == QScriptValuePrivate::JavaScriptCore)
+            return JSC::JSValue::strictEqual(d->jscValue, d->engine->scriptValueToJSCValue(other));
+        else if (other.d_ptr->type == QScriptValuePrivate::JavaScriptCore)
+            return JSC::JSValue::strictEqual(other.d_ptr->engine->scriptValueToJSCValue(*this), other.d_ptr->jscValue);
+
         return false;
+    }
     switch (d->type) {
     case QScriptValuePrivate::JavaScriptCore:
         return JSC::JSValue::strictEqual(d->jscValue, other.d_ptr->jscValue);

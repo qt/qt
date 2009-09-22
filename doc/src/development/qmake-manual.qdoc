@@ -959,7 +959,8 @@
     General compiler options can as usual be set using \c QMAKE_CFLAGS and \c QMAKE_CXXFLAGS.
     In order to set specific compiler options, \c QMAKE_CFLAGS.<compiler> and
     \c QMAKE_CXXFLAGS.<compiler> can be used. \c <compiler> can be either \c CW for the WINSCW
-    architecture (emulator), or \c ARMCC for the ARMv5 architecture (hardware).
+    architecture (emulator), or \c ARMCC for the ARMv5 architecture (hardware), or \c GCCE for
+    the ARMv5 architecture (hardware).
 
     Here is an example:
 

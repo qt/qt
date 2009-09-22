@@ -6953,10 +6953,12 @@ void QGraphicsItem::prepareGeometryChange()
     if (d_ptr->inSetPosHelper)
         return;
 
-    if (d_ptr->flags & ItemClipsChildrenToShape)
+    if (d_ptr->flags & ItemClipsChildrenToShape
+        || d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren) {
         d_ptr->invalidateCachedClipPathRecursively();
-    else
+    } else {
         d_ptr->invalidateCachedClipPath();
+    }
 }
 
 /*!

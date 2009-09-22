@@ -103,22 +103,6 @@ static bool hasContextMenu(QWidget* widget)
     }
     return false;
 }
-// ### FIX THIS, copy/paste of original (faulty) stripped text implementation.
-// Implementation should be removed from QAction implementation to some generic place
-static QString qt_strippedText_copy_from_qaction(QString s)
-{
-    s.remove(QString::fromLatin1("..."));
-    int i = 0;
-    while (i < s.size()) {
-        ++i;
-        if (s.at(i-1) != QLatin1Char('&'))
-            continue;
-        if (i < s.size() && s.at(i) == QLatin1Char('&'))
-            ++i;
-        s.remove(i-1,1);
-    }
-    return s.trimmed();
-};
 
 static SymbianMenuItem* qt_symbian_find_menu(int id, const QList<SymbianMenuItem*> &parent)
 {
@@ -161,11 +145,9 @@ static void qt_symbian_insert_action(QSymbianMenuAction* action, QList<SymbianMe
         if (action->action->isSeparator())
             return;
 
-// ### FIX THIS, the qt_strippedText2 doesn't work perfectly for stripping & marks. Same bug is in QAction
-//     New really working method is needed in a place where the implementation isn't copy/pasted
-        QString text = qt_strippedText_copy_from_qaction(action->action->text());
-        TPtrC menuItemText(qt_QString2TPtrC(text));
-
+        const int underlineShortCut = QApplication::style()->styleHint(QStyle::SH_UnderlineShortcut);
+        QString iconText = action->action->iconText();
+        TPtrC menuItemText = qt_QString2TPtrC( underlineShortCut ? action->action->text() : iconText);
         if (action->action->menu()) {
             SymbianMenuItem* menuItem = new SymbianMenuItem();
             menuItem->menuItemData.iCascadeId = action->command;
