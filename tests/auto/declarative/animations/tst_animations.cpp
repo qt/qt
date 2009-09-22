@@ -1,7 +1,7 @@
 #include <qtest.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qfxview.h>
+#include <QtDeclarative/qmlview.h>
 #include <QtDeclarative/qfxrect.h>
 #include <QtDeclarative/QmlNumberAnimation>
 
@@ -97,7 +97,7 @@ void tst_animations::badTypes()
 {
     //don't crash
     {
-        QFxView *view = new QFxView;
+        QmlView *view = new QmlView;
         view->setUrl(QUrl("file://" SRCDIR "/data/badtype1.qml"));
 
         view->execute();

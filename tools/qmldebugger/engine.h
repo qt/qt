@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcontext.h>
-#include <QtDeclarative/qfxview.h>
+#include <QtDeclarative/qmlview.h>
 #include <QtDeclarative/qmldebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -51,7 +51,7 @@ private:
     QTreeWidget *m_objTree;
     QTableWidget *m_propTable;
 
-    QFxView *m_engineView;
+    QmlView *m_engineView;
     QList<QObject *> m_engineItems;
 };
 

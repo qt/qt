@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QFxPaintedItem
-    \brief The QFxPaintedItem class is an abstract base class for QFxView items that want cached painting.
+    \brief The QFxPaintedItem class is an abstract base class for QmlView items that want cached painting.
     \ingroup group_coreitems
 
     This is a convenience class for implementing items that paint their contents

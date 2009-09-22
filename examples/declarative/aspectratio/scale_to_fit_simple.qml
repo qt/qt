@@ -1,19 +1,19 @@
 import Qt 4.6
 
 // Here, we implement "Scale to Fit" behaviour, using the
-// preserveAspect property.
+// fillMode property.
 //
 Rectangle {
     // default size: whole image, unscaled
-    width: Image.width
-    height: Image.height
+    width: Face.width
+    height: Face.height
     color: "gray"
     clip: true
 
     Image {
-        id: Image
+        id: Face
         source: "pics/face.png"
-        fillMode: "PreserveAspect"
+        fillMode: "PreserveAspectFit"
         anchors.fill: parent
     }
 }

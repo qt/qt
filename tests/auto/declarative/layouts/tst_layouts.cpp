@@ -1,6 +1,6 @@
 #include <QtTest/QtTest>
 #include <qlistmodelinterface.h>
-#include <qfxview.h>
+#include <qmlview.h>
 #include <qfxrect.h>
 #include <qmlexpression.h>
 
@@ -19,7 +19,7 @@ private slots:
     void test_grid_spacing();
 
 private:
-    QFxView *createView(const QString &filename);
+    QmlView *createView(const QString &filename);
 };
 
 tst_QFxLayouts::tst_QFxLayouts()
@@ -28,7 +28,7 @@ tst_QFxLayouts::tst_QFxLayouts()
 
 void tst_QFxLayouts::test_horizontal()
 {
-    QFxView *canvas = createView(SRCDIR "/data/horizontal.qml");
+    QmlView *canvas = createView(SRCDIR "/data/horizontal.qml");
 
     canvas->execute();
     qApp->processEvents();
@@ -52,7 +52,7 @@ void tst_QFxLayouts::test_horizontal()
 
 void tst_QFxLayouts::test_horizontal_spacing()
 {
-    QFxView *canvas = createView(SRCDIR "/data/horizontal-spacing.qml");
+    QmlView *canvas = createView(SRCDIR "/data/horizontal-spacing.qml");
 
     canvas->execute();
     qApp->processEvents();
@@ -76,7 +76,7 @@ void tst_QFxLayouts::test_horizontal_spacing()
 
 void tst_QFxLayouts::test_vertical()
 {
-    QFxView *canvas = createView(SRCDIR "/data/vertical.qml");
+    QmlView *canvas = createView(SRCDIR "/data/vertical.qml");
 
     canvas->execute();
     qApp->processEvents();
@@ -100,7 +100,7 @@ void tst_QFxLayouts::test_vertical()
 
 void tst_QFxLayouts::test_vertical_spacing()
 {
-    QFxView *canvas = createView(SRCDIR "/data/vertical-spacing.qml");
+    QmlView *canvas = createView(SRCDIR "/data/vertical-spacing.qml");
 
     canvas->execute();
     qApp->processEvents();
@@ -124,7 +124,7 @@ void tst_QFxLayouts::test_vertical_spacing()
 
 void tst_QFxLayouts::test_grid()
 {
-    QFxView *canvas = createView("data/grid.qml");
+    QmlView *canvas = createView("data/grid.qml");
 
     canvas->execute();
     qApp->processEvents();
@@ -154,7 +154,7 @@ void tst_QFxLayouts::test_grid()
 
 void tst_QFxLayouts::test_grid_spacing()
 {
-    QFxView *canvas = createView("data/grid-spacing.qml");
+    QmlView *canvas = createView("data/grid-spacing.qml");
 
     canvas->execute();
     qApp->processEvents();
@@ -182,9 +182,9 @@ void tst_QFxLayouts::test_grid_spacing()
     QCOMPARE(five->y(), 54.0);
 }
 
-QFxView *tst_QFxLayouts::createView(const QString &filename)
+QmlView *tst_QFxLayouts::createView(const QString &filename)
 {
-    QFxView *canvas = new QFxView(0);
+    QmlView *canvas = new QmlView(0);
 
     QFile file(filename);
     file.open(QFile::ReadOnly);
