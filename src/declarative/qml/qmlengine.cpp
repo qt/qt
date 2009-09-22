@@ -1519,8 +1519,9 @@ public:
             bool found = false;
             foreach (QString p, importPath) {
                 QString dir = p+QLatin1Char('/')+url;
-                if (QFile::exists(dir+QLatin1String("/qmldir"))) {
-                    url = QLatin1String("file://")+dir;
+                QFileInfo fi(dir+QLatin1String("/qmldir"));
+                if (fi.isFile()) {
+                    url = QUrl::fromLocalFile(fi.absolutePath()).toString();
                     found = true;
                     break;
                 }
