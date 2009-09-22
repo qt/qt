@@ -1148,15 +1148,15 @@ void DeleteLaterWidget::runTest()
     connect(w, SIGNAL(destroyed()), this, SLOT(childDeleted()));
 
     w->deleteLater();
-    Q_ASSERT(!child_deleted);
+    QVERIFY(!child_deleted);
 
     QDialog dlg;
     QTimer::singleShot(500, &dlg, SLOT(reject()));
     dlg.exec();
 
-    Q_ASSERT(!child_deleted);
+    QVERIFY(!child_deleted);
     app->processEvents();
-    Q_ASSERT(!child_deleted);
+    QVERIFY(!child_deleted);
 
     QTimer::singleShot(500, this, SLOT(checkDeleteLater()));
 
@@ -1167,7 +1167,7 @@ void DeleteLaterWidget::runTest()
 
 void DeleteLaterWidget::checkDeleteLater()
 {
-    Q_ASSERT(child_deleted);
+    QVERIFY(child_deleted);
 
     close();
 }
