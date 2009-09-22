@@ -1720,10 +1720,15 @@ void QTextLine::layout_helper(int maxGlyphs)
                 goto found;
 
             QFixed x = line.x + line.textWidth + lbh.tmpData.textWidth + lbh.spaceData.textWidth;
-            lbh.spaceData.textWidth += eng->calculateTabWidth(item, x);
+            QFixed tabWidth = eng->calculateTabWidth(item, x);
+
+            lbh.spaceData.textWidth += tabWidth;
             lbh.spaceData.length++;
             newItem = item + 1;
-            ++lbh.glyphCount;
+
+            QFixed averageCharWidth = eng->fontEngine(current)->averageCharWidth();
+            lbh.glyphCount += qRound(tabWidth / averageCharWidth);
+
             if (lbh.checkFullOtherwiseExtend(line))
                 goto found;
         } else if (current.analysis.flags == QScriptAnalysis::LineOrParagraphSeparator) {
