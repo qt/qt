@@ -51,7 +51,6 @@
 #include <qt_windows.h>
 #include <commctrl.h>
 #include <objbase.h>
-#include <private/qpixmapdata_p.h>
 #elif defined(Q_WS_MAC)
 #include <private/qt_cocoa_helpers_mac_p.h>
 #endif
@@ -262,9 +261,9 @@ QIcon QFileIconProviderPrivate::getWinIcon(const QFileInfo &fileInfo) const
         }
         if (pixmap.isNull()) {
 #ifndef Q_OS_WINCE
-            pixmap = convertHIconToPixmap(info.hIcon);
+            pixmap = QPixmap::fromWinHICON(info.hIcon);
 #else
-            pixmap = convertHIconToPixmap(ImageList_GetIcon((HIMAGELIST) val, info.iIcon, ILD_NORMAL));
+            pixmap = QPixmap::fromWinHICON(ImageList_GetIcon((HIMAGELIST) val, info.iIcon, ILD_NORMAL));
 #endif
             if (!pixmap.isNull()) {
                 retIcon.addPixmap(pixmap);
@@ -292,9 +291,9 @@ QIcon QFileIconProviderPrivate::getWinIcon(const QFileInfo &fileInfo) const
             key = QString::fromLatin1("qt_dir_%1").arg(info.iIcon);
         }
 #ifndef Q_OS_WINCE
-        pixmap = convertHIconToPixmap(info.hIcon);
+        pixmap = QPixmap::fromWinHICON(info.hIcon);
 #else
-        pixmap = convertHIconToPixmap(ImageList_GetIcon((HIMAGELIST) val, info.iIcon, ILD_NORMAL), true);
+        pixmap = QPixmap::fromWinHICON(ImageList_GetIcon((HIMAGELIST) val, info.iIcon, ILD_NORMAL));
 #endif
         if (!pixmap.isNull()) {
             retIcon.addPixmap(pixmap);

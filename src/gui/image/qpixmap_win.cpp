@@ -274,11 +274,6 @@ HICON QPixmap::toWinHICON() const
     return hIcon;
 }
 
-QPixmap QPixmap::fromWinHICON(HICON icon)
-{
-	return convertHIconToPixmap(icon);
-}
-
 #ifdef Q_WS_WIN
 #ifndef Q_WS_WINCE
 
@@ -316,7 +311,7 @@ static QImage qt_fromWinHBITMAP(HDC hdc, HBITMAP bitmap, int w, int h)
     return image;
 }
 
-QPixmap convertHIconToPixmap( const HICON icon)
+QPixmap QPixmap::fromWinHICON(HICON icon)
 {
     bool foundAlpha = false;
     HDC screenDevice = GetDC(0);
@@ -326,7 +321,7 @@ QPixmap convertHIconToPixmap( const HICON icon)
     ICONINFO iconinfo;
     bool result = GetIconInfo(icon, &iconinfo); //x and y Hotspot describes the icon center
     if (!result)
-        qWarning("convertHIconToPixmap(), failed to GetIconInfo()");
+        qWarning("QPixmap::fromWinHICON(), failed to GetIconInfo()");
 
     int w = iconinfo.xHotspot * 2;
     int h = iconinfo.yHotspot * 2;
@@ -385,19 +380,25 @@ QPixmap convertHIconToPixmap( const HICON icon)
     return QPixmap::fromImage(image);
 }
 #else //ifndef Q_WS_WINCE
-QPixmap convertHIconToPixmap( const HICON icon, bool large)
+QPixmap QPixmap::fromWinHICON(HICON icon)
 {
     HDC screenDevice = GetDC(0);
     HDC hdc = CreateCompatibleDC(screenDevice);
     ReleaseDC(0, screenDevice);
 
-    int size = large ? 64 : 32;
+    ICONINFO iconinfo;
+    bool result = GetIconInfo(icon, &iconinfo); //x and y Hotspot describes the icon center
+    if (!result)
+        qWarning("QPixmap::fromWinHICON(), failed to GetIconInfo()");
+
+    int w = iconinfo.xHotspot * 2;
+    int h = iconinfo.yHotspot * 2;
 
     BITMAPINFO bmi;
     memset(&bmi, 0, sizeof(bmi));
     bmi.bmiHeader.biSize        = sizeof(BITMAPINFO);
-    bmi.bmiHeader.biWidth       = size;
-    bmi.bmiHeader.biHeight      = -size;
+    bmi.bmiHeader.biWidth       = w;
+    bmi.bmiHeader.biHeight      = -h;
     bmi.bmiHeader.biPlanes      = 1;
     bmi.bmiHeader.biBitCount    = 32;
     bmi.bmiHeader.biCompression = BI_RGB;
@@ -409,13 +410,13 @@ QPixmap convertHIconToPixmap( const HICON icon, bool large)
     if (winBitmap )
         memset(bits, 0xff, size*size*4);
     if (!winBitmap) {
-        qWarning("convertHIconToPixmap(), failed to CreateDIBSection()");
+        qWarning("QPixmap::fromWinHICON(), failed to CreateDIBSection()");
         return QPixmap();
     }
 
     HGDIOBJ oldhdc = (HBITMAP)SelectObject(hdc, winBitmap);
     if (!DrawIconEx( hdc, 0, 0, icon, size, size, 0, 0, DI_NORMAL))
-        qWarning("convertHIconToPixmap(), failed to DrawIcon()");
+        qWarning("QPixmap::fromWinHICON(), failed to DrawIcon()");
 
     uint mask = 0xff000000;
     // Create image and copy data into image.
@@ -432,7 +433,7 @@ QPixmap convertHIconToPixmap( const HICON icon, bool large)
         }
     }
     if (!DrawIconEx( hdc, 0, 0, icon, size, size, 0, 0, DI_MASK))
-        qWarning("convertHIconToPixmap(), failed to DrawIcon()");
+        qWarning("QPixmap::fromWinHICON(), failed to DrawIcon()");
     if (!image.isNull()) { // failed to alloc?
         int bytes_per_line = size * sizeof(QRgb);
         for (int y=0; y<size; ++y) {
@@ -450,25 +451,6 @@ QPixmap convertHIconToPixmap( const HICON icon, bool large)
     return QPixmap::fromImage(image);
 }
 #endif //ifndef Q_WS_WINCE
-
-QPixmap loadIconFromShell32( int resourceId, int size )
-{
-#ifdef Q_OS_WINCE
-    HMODULE hmod = LoadLibrary(L"ceshell.dll");
-#else
-    HMODULE hmod = LoadLibrary(L"shell32.dll");
-#endif
-    if( hmod ) {
-        HICON iconHandle = (HICON)LoadImage(hmod, MAKEINTRESOURCE(resourceId), IMAGE_ICON, size, size, 0);
-        if( iconHandle ) {
-            QPixmap iconpixmap = convertHIconToPixmap( iconHandle );
-            DestroyIcon(iconHandle);
-            return iconpixmap;
-        }
-    }
-    return QPixmap();
-}
-
-#endif
+#endif //ifdef Q_WS_WIN
 
 QT_END_NAMESPACE

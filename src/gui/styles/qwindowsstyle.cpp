@@ -41,7 +41,6 @@
 
 #include "qwindowsstyle.h"
 #include "qwindowsstyle_p.h"
-#include <private/qpixmapdata_p.h>
 #include <private/qstylehelper_p.h>
 
 #if !defined(QT_NO_STYLE_WINDOWS) || defined(QT_PLUGIN)
@@ -927,6 +926,24 @@ static const char *const question_xpm[] = {
 
 #endif //QT_NO_IMAGEFORMAT_XPM
 
+static QPixmap loadIconFromShell32( int resourceId, int size )
+{
+#ifdef Q_OS_WINCE
+    HMODULE hmod = LoadLibrary(L"ceshell.dll");
+#else
+    HMODULE hmod = LoadLibrary(L"shell32.dll");
+#endif
+    if( hmod ) {
+        HICON iconHandle = (HICON)LoadImage(hmod, MAKEINTRESOURCE(resourceId), IMAGE_ICON, size, size, 0);
+        if( iconHandle ) {
+            QPixmap iconpixmap = QPixmap::fromWinHICON( iconHandle );
+            DestroyIcon(iconHandle);
+            return iconpixmap;
+        }
+    }
+    return QPixmap();
+}
+
 /*!
  \reimp
  */
@@ -1016,28 +1033,28 @@ QPixmap QWindowsStyle::standardPixmap(StandardPixmap standardPixmap, const QStyl
     case SP_MessageBoxInformation:
         {
             HICON iconHandle = LoadIcon(NULL, IDI_INFORMATION);
-            desktopIcon = convertHIconToPixmap( iconHandle );
+            desktopIcon = QPixmap::fromWinHICON( iconHandle );
             DestroyIcon(iconHandle);
             break;
         }
     case SP_MessageBoxWarning:
         {
             HICON iconHandle = LoadIcon(NULL, IDI_WARNING);
-            desktopIcon = convertHIconToPixmap( iconHandle );
+            desktopIcon = QPixmap::fromWinHICON( iconHandle );
             DestroyIcon(iconHandle);
             break;
         }
     case SP_MessageBoxCritical:
         {
             HICON iconHandle = LoadIcon(NULL, IDI_ERROR);
-            desktopIcon = convertHIconToPixmap( iconHandle );
+            desktopIcon = QPixmap::fromWinHICON( iconHandle );
             DestroyIcon(iconHandle);
             break;
         }
     case SP_MessageBoxQuestion:
         {
             HICON iconHandle = LoadIcon(NULL, IDI_QUESTION);
-            desktopIcon = convertHIconToPixmap( iconHandle );
+            desktopIcon = QPixmap::fromWinHICON( iconHandle );
             DestroyIcon(iconHandle);
             break;
         }
@@ -1052,7 +1069,7 @@ QPixmap QWindowsStyle::standardPixmap(StandardPixmap standardPixmap, const QStyl
                 memset(&iconInfo, 0, sizeof(iconInfo));
                 iconInfo.cbSize = sizeof(iconInfo);
                 if (pSHGetStockIconInfo(_SIID_SHIELD, _SHGFI_ICON | _SHGFI_SMALLICON, &iconInfo) == S_OK) {
-                    pixmap = convertHIconToPixmap(iconInfo.hIcon);
+                    pixmap = QPixmap::fromWinHICON(iconInfo.hIcon);
                     DestroyIcon(iconInfo.hIcon);
                     return pixmap;
                 }
@@ -3346,7 +3363,7 @@ QIcon QWindowsStyle::standardIconImplementation(StandardPixmap standardIcon, con
                 memset(&iconInfo, 0, sizeof(iconInfo));
                 iconInfo.cbSize = sizeof(iconInfo);
                 if (pSHGetStockIconInfo(_SIID_SHIELD, _SHGFI_ICON | _SHGFI_LARGEICON, &iconInfo) == S_OK) {
-                    icon.addPixmap(convertHIconToPixmap(iconInfo.hIcon));
+                    icon.addPixmap(QPixmap::fromWinHICON(iconInfo.hIcon));
                     DestroyIcon(iconInfo.hIcon);
                 }
             }
