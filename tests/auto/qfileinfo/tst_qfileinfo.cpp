@@ -1049,7 +1049,10 @@ void tst_QFileInfo::isHidden_data()
     QTest::newRow("~/.qt/..") << QDir::homePath() + QString("/.qt/..") << false;
 #endif
 
-#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_MAC)
+    // /bin has the hidden attribute on Mac OS X
+    QTest::newRow("/bin/") << QString::fromLatin1("/bin/") << true;
+#elif !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
     QTest::newRow("/bin/") << QString::fromLatin1("/bin/") << false;
 #endif
 
