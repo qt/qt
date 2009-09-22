@@ -153,7 +153,8 @@ struct AnchorData : public QSimplexVariable {
         : QSimplexVariable(), from(0), to(0),
           minSize(minimumSize), prefSize(preferredSize),
           maxSize(maximumSize), sizeAtMinimum(preferredSize),
-          sizeAtPreferred(preferredSize), sizeAtMaximum(preferredSize),
+          sizeAtPreferred(preferredSize), sizeAtExpanding(preferredSize),
+          sizeAtMaximum(preferredSize),
           graphicsAnchor(0),
           skipInPreferred(0), type(Normal), hasSize(true),
           isLayoutAnchor(false) {}
@@ -161,7 +162,8 @@ struct AnchorData : public QSimplexVariable {
     AnchorData(qreal size)
         : QSimplexVariable(), from(0), to(0),
           minSize(size), prefSize(size), maxSize(size),
-          sizeAtMinimum(size), sizeAtPreferred(size), sizeAtMaximum(size),
+          sizeAtMinimum(size), sizeAtPreferred(size), sizeAtExpanding(size),
+          sizeAtMaximum(size),
           graphicsAnchor(0),
           skipInPreferred(0), type(Normal), hasSize(true),
           isLayoutAnchor(false) {}
@@ -169,7 +171,8 @@ struct AnchorData : public QSimplexVariable {
     AnchorData()
         : QSimplexVariable(), from(0), to(0),
           minSize(0), prefSize(0), maxSize(0),
-          sizeAtMinimum(0), sizeAtPreferred(0), sizeAtMaximum(0),
+          sizeAtMinimum(0), sizeAtPreferred(0), sizeAtExpanding(0),
+          sizeAtMaximum(0),
           graphicsAnchor(0),
           skipInPreferred(0), type(Normal), hasSize(false),
           isLayoutAnchor(false) {}
@@ -192,6 +195,7 @@ struct AnchorData : public QSimplexVariable {
         maxSize = size;
         sizeAtMinimum = size;
         sizeAtPreferred = size;
+        sizeAtExpanding = size;
         sizeAtMaximum = size;
         hasSize = true;
     }
@@ -218,6 +222,7 @@ struct AnchorData : public QSimplexVariable {
     // calculated by the Simplex solver based on the current layout setup.
     qreal sizeAtMinimum;
     qreal sizeAtPreferred;
+    qreal sizeAtExpanding;
     qreal sizeAtMaximum;
     QGraphicsAnchor *graphicsAnchor;
 
@@ -225,12 +230,15 @@ struct AnchorData : public QSimplexVariable {
     uint type : 2;            // either Normal, Sequential or Parallel
     uint hasSize : 1;         // if false, get size from style.
     uint isLayoutAnchor : 1;  // if this anchor is connected to a layout 'edge'
+    uint isExpanding : 1;     // if true, expands before other anchors
+
 protected:
     AnchorData(Type type, qreal size = 0)
         : QSimplexVariable(), from(0), to(0),
           minSize(size), prefSize(size),
           maxSize(size), sizeAtMinimum(size),
-          sizeAtPreferred(size), sizeAtMaximum(size),
+          sizeAtPreferred(size), sizeAtExpanding(size),
+          sizeAtMaximum(size),
           graphicsAnchor(0),
           skipInPreferred(0), type(type), hasSize(true),
           isLayoutAnchor(false) {}
@@ -355,7 +363,8 @@ public:
     // Interval represents which interpolation interval are we operating in.
     enum Interval {
         MinToPreferred = 0,
-        PreferredToMax
+        PreferredToExpanding,
+        ExpandingToMax
     };
 
     // Several structures internal to the layout are duplicated to handle
@@ -496,6 +505,7 @@ public:
     qreal spacings[NOrientations];
     // Size hints from simplex engine
     qreal sizeHints[2][3];
+    qreal sizeAtExpanding[2];
 
     // Items
     QVector<QGraphicsLayoutItem *> items;

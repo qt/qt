@@ -94,7 +94,9 @@ qreal QGraphicsAnchorPrivate::spacing() const
 
 void AnchorData::refreshSizeHints(qreal effectiveSpacing)
 {
-    if (!isLayoutAnchor && from->m_item == to->m_item) {
+    isExpanding = 0;
+
+    if (!isLayoutAnchor && (from->m_item == to->m_item)) {
         QGraphicsLayoutItem *item = from->m_item;
 
         const QGraphicsAnchorLayoutPrivate::Orientation orient = QGraphicsAnchorLayoutPrivate::edgeOrientation(from->m_edge);
@@ -138,6 +140,9 @@ void AnchorData::refreshSizeHints(qreal effectiveSpacing)
         if (policy & QSizePolicy::IgnoreFlag)
             prefSize = minSize;
 
+        if (policy & QSizePolicy::ExpandFlag)
+            isExpanding = 1;
+
         bool hasCenter = (from->m_edge == centerEdge || to->m_edge == centerEdge);
 
         if (hasCenter) {
@@ -155,6 +160,7 @@ void AnchorData::refreshSizeHints(qreal effectiveSpacing)
         // recalculate and override the values we set here.
         sizeAtMinimum = prefSize;
         sizeAtPreferred = prefSize;
+        sizeAtExpanding = prefSize;
         sizeAtMaximum = prefSize;
 
     } else if (!hasSize) {
@@ -165,6 +171,7 @@ void AnchorData::refreshSizeHints(qreal effectiveSpacing)
 
         sizeAtMinimum = prefSize;
         sizeAtPreferred = prefSize;
+        sizeAtExpanding = prefSize;
         sizeAtMaximum = prefSize;
     }
 }
@@ -357,6 +364,12 @@ QGraphicsAnchorLayoutPrivate::QGraphicsAnchorLayoutPrivate()
     : calculateGraphCacheDirty(1)
 {
     for (int i = 0; i < NOrientations; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            sizeHints[i][j] = -1;
+        }
+        sizeAtExpanding[i] = -1;
+        interpolationProgress[i] = -1;
+
         spacings[i] = -1;
         graphSimplified[i] = false;
         graphHasConflicts[i] = false;
@@ -1649,6 +1662,10 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
             sizeHints[orientation][Qt::PreferredSize] = pref;
             sizeHints[orientation][Qt::MaximumSize] = max;
 
+            // XXX implement Expanding simplex
+            for (int i = 0; i < trunkVariables.count(); ++i)
+                trunkVariables.at(i)->sizeAtExpanding = trunkVariables.at(i)->sizeAtPreferred;
+            sizeAtExpanding[orientation] = pref;
         }
     } else {
 #if 0
@@ -1664,6 +1681,7 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
         AnchorData *ad = trunkPath.positives.toList()[0];
         ad->sizeAtMinimum = ad->minSize;
         ad->sizeAtPreferred = ad->prefSize;
+        ad->sizeAtExpanding = ad->prefSize;
         ad->sizeAtMaximum = ad->maxSize;
 
         // Propagate
@@ -1672,6 +1690,7 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
         sizeHints[orientation][Qt::MinimumSize] = ad->sizeAtMinimum;
         sizeHints[orientation][Qt::PreferredSize] = ad->sizeAtPreferred;
         sizeHints[orientation][Qt::MaximumSize] = ad->sizeAtMaximum;
+        sizeAtExpanding[orientation] = ad->sizeAtPreferred;
     }
 
     // Delete the constraints, we won't use them anymore.
@@ -1701,6 +1720,7 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
                 AnchorData *ad = partVariables[j];
                 Q_ASSERT(ad);
                 ad->sizeAtMinimum = ad->sizeAtPreferred;
+                ad->sizeAtExpanding = ad->sizeAtPreferred;
                 ad->sizeAtMaximum = ad->sizeAtPreferred;
                 ad->updateChildrenSizes();
             }
@@ -2058,9 +2078,13 @@ void QGraphicsAnchorLayoutPrivate::setupEdgesInterpolation(
         interpolationInterval[orientation] = MinToPreferred;
         lower = sizeHints[orientation][Qt::MinimumSize];
         upper = sizeHints[orientation][Qt::PreferredSize];
-    } else {
-        interpolationInterval[orientation] = PreferredToMax;
+    } else if (current < sizeAtExpanding[orientation]) {
+        interpolationInterval[orientation] = PreferredToExpanding;
         lower = sizeHints[orientation][Qt::PreferredSize];
+        upper = sizeAtExpanding[orientation];
+    } else {
+        interpolationInterval[orientation] = ExpandingToMax;
+        lower = sizeAtExpanding[orientation];
         upper = sizeHints[orientation][Qt::MaximumSize];
     }
 
@@ -2075,11 +2099,12 @@ void QGraphicsAnchorLayoutPrivate::setupEdgesInterpolation(
   \internal
 
   Calculate the current Edge size based on the current Layout size and the
-  size the edge is supposed to have when:
+  size the edge is supposed to have when the layout is at its:
 
-   - the layout is at its minimum size.
-   - the layout is at its preferred size.
-   - the layout is at its maximum size.
+   - minimum size,
+   - preferred size,
+   - size when all expanding anchors are expanded,
+   - maximum size.
 
    These three key values are calculated in advance using linear
    programming (more expensive) or the simplification algorithm, then
@@ -2099,8 +2124,11 @@ void QGraphicsAnchorLayoutPrivate::interpolateEdge(AnchorVertex *base,
     if (interpolationInterval[orientation] == MinToPreferred) {
         lower = edge->sizeAtMinimum;
         upper = edge->sizeAtPreferred;
-    } else {
+    } else if (interpolationInterval[orientation] == PreferredToExpanding) {
         lower = edge->sizeAtPreferred;
+        upper = edge->sizeAtExpanding;
+    } else {
+        lower = edge->sizeAtExpanding;
         upper = edge->sizeAtMaximum;
     }
 
