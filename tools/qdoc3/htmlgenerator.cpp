@@ -3523,7 +3523,7 @@ void HtmlGenerator::findAllSince(const InnerNode *node, QString version)
     while (c != node->childNodes().constEnd()) {
         if (((*c)->access() != Node::Private) && ((*c)->since() == version)) {
             if ((*c)->type() == Node::Function) {
-                FunctionNode *func = static_cast<const FunctionNode *>(*c);
+                FunctionNode *func = static_cast<FunctionNode *>(*c);
                 if ((func->status() > Node::Obsolete) &&
                     (func->metaness() != FunctionNode::Ctor) &&
                     (func->metaness() != FunctionNode::Dtor)) {

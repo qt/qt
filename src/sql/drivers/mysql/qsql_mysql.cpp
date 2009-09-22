@@ -1213,6 +1213,9 @@ bool QMYSQLDriver::open(const QString& db,
     unsigned int optionFlags = Q_CLIENT_MULTI_STATEMENTS;
     const QStringList opts(connOpts.split(QLatin1Char(';'), QString::SkipEmptyParts));
     QString unixSocket;
+#if MYSQL_VERSION_ID >= 50000
+    my_bool reconnect=false;
+#endif
 
     // extract the real options from the string
     for (int i = 0; i < opts.count(); ++i) {
@@ -1223,6 +1226,12 @@ bool QMYSQLDriver::open(const QString& db,
             QString opt = tmp.left(idx).simplified();
             if (opt == QLatin1String("UNIX_SOCKET"))
                 unixSocket = val;
+#if MYSQL_VERSION_ID >= 50000
+            else if (opt == QLatin1String("MYSQL_OPT_RECONNECT")) {
+                if (val == QLatin1String("TRUE") || val == QLatin1String("1") || val.isEmpty())
+                    reconnect = true;
+            }
+#endif
             else if (val == QLatin1String("TRUE") || val == QLatin1String("1"))
                 setOptionFlag(optionFlags, tmp.left(idx).simplified());
             else
@@ -1255,6 +1264,10 @@ bool QMYSQLDriver::open(const QString& db,
             setOpenError(true);
             return false;
         }
+#if MYSQL_VERSION_ID >= 50000
+        if(reconnect)
+            mysql_options(d->mysql, MYSQL_OPT_RECONNECT, &reconnect);
+#endif
     } else {
         setLastError(qMakeError(tr("Unable to connect"),
                      QSqlError::ConnectionError, d));
