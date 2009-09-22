@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the Symbian application wrapper of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,28 +39,41 @@
 **
 ****************************************************************************/
 
-#ifndef QS60MAINAPPLICATION_P_H
-#define QS60MAINAPPLICATION_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of qapplication_*.cpp, qwidget*.cpp and qfiledialog.cpp.  This header
-// file may change from version to version without notice, or even be removed.
-//
-// We mean it.
-//
+#ifndef QS60MAINAPPLICATION_H
+#define QS60MAINAPPLICATION_H
 
 #include <qglobal.h>
 
-#include <apparc.h>
+#ifdef Q_WS_S60
+
+#include <aknapp.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-CApaApplication *newS60Application();
+QT_MODULE(Gui)
+
+class Q_GUI_EXPORT QS60MainApplication : public CAknApplication
+{
+public:
+    QS60MainApplication();
+    // The virtuals are for qdoc.
+    virtual ~QS60MainApplication();
+
+    virtual TUid AppDllUid() const;
+
+    virtual TFileName ResourceFileName() const;
+
+protected:
+
+    virtual CApaDocument *CreateDocumentL();
+};
 
 QT_END_NAMESPACE
 
-#endif // QS60MAINAPPLICATION_P_H
+QT_END_HEADER
+
+#endif // Q_WS_S60
+
+#endif // QS60MAINAPPLICATION_H

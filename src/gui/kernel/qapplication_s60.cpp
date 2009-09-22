@@ -817,11 +817,50 @@ TTypeUid::Ptr QSymbianControl::MopSupplyObject(TTypeUid id)
     return CCoeControl::MopSupplyObject(id);
 }
 
+/*!
+    \typedef QApplication::QS60MainApplicationFactory
+
+    This is a typedef for a pointer to a function with the following
+    signature:
+
+    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 47
+
+    \sa QApplication::QApplication(QApplication::QS60MainApplicationFactory, int &, char **)
+*/
+
+/*!
+    \since 4.6
+
+    Creates an application using the application factory given in
+    \a factory, and using \a argc command line arguments in \a argv.
+    \a factory can be leaving, but the error will be converted to a
+    standard exception.
+
+    This function is only available on S60.
+*/
+QApplication::QApplication(QApplication::QS60MainApplicationFactory factory, int &argc, char **argv)
+    : QCoreApplication(*new QApplicationPrivate(argc, argv, GuiClient))
+{
+    Q_D(QApplication);
+    S60->s60ApplicationFactory = factory;
+    d->construct();
+}
+
+QApplication::QApplication(QApplication::QS60MainApplicationFactory factory, int &argc, char **argv, int _internal)
+    : QCoreApplication(*new QApplicationPrivate(argc, argv, GuiClient))
+{
+    Q_D(QApplication);
+    S60->s60ApplicationFactory = factory;
+    d->construct();
+    QApplicationPrivate::app_compile_version = _internal;
+}
+
 void qt_init(QApplicationPrivate * /* priv */, int)
 {
     if (!CCoeEnv::Static()) {
         // The S60 framework has not been initalized. We need to do it.
-        TApaApplicationFactory factory(NewApplication);
+        TApaApplicationFactory factory(S60->s60ApplicationFactory ?
+                S60->s60ApplicationFactory : newS60Application);
         CApaCommandLine* commandLine = 0;
         TInt err = CApaCommandLine::GetCommandLineFromProcessEnvironment(commandLine);
         // After this construction, CEikonEnv will be available from CEikonEnv::Static().

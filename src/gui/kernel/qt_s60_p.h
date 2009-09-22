@@ -61,6 +61,7 @@
 #include "QtGui/qimage.h"
 #include "QtGui/qevent.h"
 #include "qpointer.h"
+#include "qapplication.h"
 #include <w32std.h>
 #include <coecntrl.h>
 #include <eikenv.h>
@@ -107,6 +108,7 @@ public:
     int mouseInteractionEnabled : 1;
     int virtualMouseRequired : 1;
     int qtOwnsS60Environment : 1;
+    QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
     static inline void updateScreenSize();
 	static inline RWsSession& wsSession();
     static inline RWindowGroup& windowGroup();
