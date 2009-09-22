@@ -46,7 +46,7 @@
 #include <QtGui>
 #ifdef Q_OS_WINCE_WM
 #include <windows.h>
-#include <ddhelper.h>
+#include "ddhelper.h"
 #endif
 
 
