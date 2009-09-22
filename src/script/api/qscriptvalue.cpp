@@ -2409,12 +2409,16 @@ void QScriptValue::setScriptClass(QScriptClass *scriptClass)
         return;
     }
     QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
-    QScriptObjectDelegate *delegate = scriptObject->delegate();
-    if (!delegate || (delegate->type() != QScriptObjectDelegate::ClassObject)) {
-        delegate = new QScript::ClassObjectDelegate(scriptClass);
-        scriptObject->setDelegate(delegate);
+    if (!scriptClass) {
+        scriptObject->setDelegate(0);
+    } else {
+        QScriptObjectDelegate *delegate = scriptObject->delegate();
+        if (!delegate || (delegate->type() != QScriptObjectDelegate::ClassObject)) {
+            delegate = new QScript::ClassObjectDelegate(scriptClass);
+            scriptObject->setDelegate(delegate);
+        }
+        static_cast<QScript::ClassObjectDelegate*>(delegate)->setScriptClass(scriptClass);
     }
-    static_cast<QScript::ClassObjectDelegate*>(delegate)->setScriptClass(scriptClass);
 }
 
 /*!

@@ -625,6 +625,7 @@ void tst_QScriptClass::getAndSetProperty()
     QScriptValue obj2 = eng.newObject(&cls);
     QScriptString foo = eng.toStringHandle("foo");
     QScriptString bar = eng.toStringHandle("bar");
+    QScriptValue num(&eng, 123);
 
     // should behave just like normal
     for (int x = 0; x < 2; ++x) {
@@ -644,7 +645,6 @@ void tst_QScriptClass::getAndSetProperty()
 
             // write property
             cls.clearReceivedArgs();
-            QScriptValue num(&eng, 123);
             o.setProperty(s, num);
             QVERIFY(cls.lastQueryPropertyObject().strictlyEquals(o));
             QVERIFY(cls.lastQueryPropertyName() == s);
@@ -712,6 +712,16 @@ void tst_QScriptClass::getAndSetProperty()
         QVERIFY(cls.lastPropertyName() == foo2);
         QCOMPARE(cls.lastPropertyId(), foo2Id);
     }
+
+    // remove script class; normal properties should remain
+    obj1.setScriptClass(0);
+    QCOMPARE(obj1.scriptClass(), (QScriptClass*)0);
+    QVERIFY(obj1.property(foo).equals(num));
+    QVERIFY(obj1.property(bar).equals(num));
+    obj1.setProperty(foo, QScriptValue());
+    QVERIFY(!obj1.property(foo).isValid());
+    obj1.setProperty(bar, QScriptValue());
+    QVERIFY(!obj1.property(bar).isValid());
 }
 
 void tst_QScriptClass::enumerate()

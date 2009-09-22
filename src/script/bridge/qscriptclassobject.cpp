@@ -77,6 +77,7 @@ QScriptClass *ClassObjectDelegate::scriptClass() const
 
 void ClassObjectDelegate::setScriptClass(QScriptClass *scriptClass)
 {
+    Q_ASSERT(scriptClass != 0);
     m_scriptClass = scriptClass;
 }
 
