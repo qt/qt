@@ -6736,10 +6736,10 @@ void tst_QGraphicsItem::updateCachedItemAfterMove()
     scene.addItem(tester);
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QTest::qWaitForWindowShown(&view);
+
     QTest::qWait(125);
+    QTRY_VERIFY(tester->repaints > 0);
     tester->repaints = 0;
 
     // Move the item, should not cause repaints

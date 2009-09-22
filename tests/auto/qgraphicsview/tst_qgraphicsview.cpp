@@ -2250,6 +2250,7 @@ void tst_QGraphicsView::viewportUpdateMode2()
     view.resize(200 + left + right, 200 + top + bottom);
     view.show();
     QTest::qWaitForWindowShown(&view);
+    QTest::qWait(50);
     const QRect viewportRect = view.viewport()->rect();
     QCOMPARE(viewportRect, QRect(0, 0, 200, 200));
 
@@ -2911,6 +2912,7 @@ void tst_QGraphicsView::task239729_noViewUpdate()
 
     view->show();
     QTest::qWaitForWindowShown(view);
+    QTest::qWait(150);
 
     EventSpy spy(view->viewport(), QEvent::Paint);
     QCOMPARE(spy.count(), 0);
@@ -2919,7 +2921,7 @@ void tst_QGraphicsView::task239729_noViewUpdate()
     QCOMPARE(spy.count(), 0);
     scene.update();
     QTest::qWait(150);
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
 
     delete view;
 }
@@ -3342,7 +3344,7 @@ void tst_QGraphicsView::render()
 
     qApp->processEvents();
 
-    QCOMPARE(r1->paints, 1);
+    QTRY_COMPARE(r1->paints, 1);
     QCOMPARE(r2->paints, 1);
     QCOMPARE(r3->paints, 1);
     QCOMPARE(r4->paints, 1);
@@ -3429,14 +3431,15 @@ void tst_QGraphicsView::update()
     view.resize(200 + left + right, 200 + top + bottom);
     view.show();
     QTest::qWaitForWindowShown(&view);
-    const QRect viewportRect = view.viewport()->rect();
-    QCOMPARE(viewportRect, QRect(0, 0, 200, 200));
 
-#if defined QT_BUILD_INTERNAL
     QApplication::setActiveWindow(&view);
     QTest::qWait(50);
     QTRY_COMPARE(QApplication::activeWindow(), &view);
 
+    const QRect viewportRect = view.viewport()->rect();
+    QCOMPARE(viewportRect, QRect(0, 0, 200, 200));
+
+#if defined QT_BUILD_INTERNAL
     const bool intersects = updateRect.intersects(viewportRect);
     QGraphicsViewPrivate *viewPrivate = static_cast<QGraphicsViewPrivate *>(qt_widget_private(&view));
     QCOMPARE(viewPrivate->updateRect(updateRect), intersects);
