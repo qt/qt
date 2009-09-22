@@ -209,7 +209,7 @@ QmlEnginePrivate::~QmlEnginePrivate()
         clear(bindValues[ii]);
     for(int ii = 0; ii < parserStatus.count(); ++ii)
         clear(parserStatus[ii]);
-    for(QHash<int, QmlCompiledData*>::ConstIterator iter = m_compositeTypes.begin(); iter != m_compositeTypes.end(); ++iter) 
+    for(QHash<int, QmlCompiledData*>::ConstIterator iter = m_compositeTypes.constBegin(); iter != m_compositeTypes.constEnd(); ++iter)
         (*iter)->release();
 }
 
