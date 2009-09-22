@@ -2965,7 +2965,7 @@ QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
     Used by QStandardItemModel::dropMimeData
     stream out an item and his children 
  */
-static void decodeDataRecursive(QDataStream &stream, QStandardItem *item)
+void QStandardItemModelPrivate::decodeDataRecursive(QDataStream &stream, QStandardItem *item)
 {
     int colCount, childCount;
     stream >> *item;
@@ -2976,7 +2976,7 @@ static void decodeDataRecursive(QDataStream &stream, QStandardItem *item)
     
     while(childPos > 0) {
         childPos--;
-        QStandardItem *child = new QStandardItem;
+        QStandardItem *child = createItem();
         decodeDataRecursive(stream, child);
         item->setChild( childPos / colCount, childPos % colCount, child);
     }
@@ -2989,6 +2989,7 @@ static void decodeDataRecursive(QDataStream &stream, QStandardItem *item)
 bool QStandardItemModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
                                       int row, int column, const QModelIndex &parent)
 {
+    Q_D(QStandardItemModel);
     // check if the action is supported
     if (!data || !(action == Qt::CopyAction || action == Qt::MoveAction))
         return false;
@@ -3020,9 +3021,9 @@ bool QStandardItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
 
     while (!stream.atEnd()) {
         int r, c;
-        QStandardItem *item = new QStandardItem;
+        QStandardItem *item = d->createItem();
         stream >> r >> c;
-        decodeDataRecursive(stream, item);
+        d->decodeDataRecursive(stream, item);
 
         rows.append(r);
         columns.append(c);
