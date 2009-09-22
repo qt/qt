@@ -194,6 +194,7 @@ private slots:
     void itemClipsToShape();
     void itemClipsChildrenToShape();
     void itemClipsChildrenToShape2();
+    void itemClipsChildrenToShape3();
     void itemClipsTextChildToShape();
     void itemClippingDiscovery();
     void ancestorFlags();
@@ -4690,6 +4691,37 @@ void tst_QGraphicsItem::itemClipsChildrenToShape2()
     QTest::qWait(5000);
 #endif
 }
+
+void tst_QGraphicsItem::itemClipsChildrenToShape3()
+{
+    // Construct a scene with nested children, each 50 pixels offset from the elder.
+    // Set a top-level clipping flag
+    QGraphicsScene scene;
+    QGraphicsRectItem *parent = scene.addRect( 0, 0, 150, 150 );
+    QGraphicsRectItem *child = scene.addRect( 0, 0, 150, 150 );
+    QGraphicsRectItem *grandchild = scene.addRect( 0, 0, 150, 150 );
+    child->setParentItem(parent);
+    grandchild->setParentItem(child);
+    child->setPos( 50, 50 );
+    grandchild->setPos( 50, 50 );
+    parent->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
+
+    QCOMPARE(scene.itemAt(25,25), (QGraphicsItem *)parent);
+    QCOMPARE(scene.itemAt(75,75), (QGraphicsItem *)child);
+    QCOMPARE(scene.itemAt(125,125), (QGraphicsItem *)grandchild);
+    QCOMPARE(scene.itemAt(175,175), (QGraphicsItem *)0);
+
+    // Move child to fully overlap the parent.  The grandchild should
+    // now occupy two-thirds of the scene
+    child->prepareGeometryChange();
+    child->setPos( 0, 0 );
+
+    QCOMPARE(scene.itemAt(25,25), (QGraphicsItem *)child);
+    QCOMPARE(scene.itemAt(75,75), (QGraphicsItem *)grandchild);
+    QCOMPARE(scene.itemAt(125,125), (QGraphicsItem *)grandchild);
+    QCOMPARE(scene.itemAt(175,175), (QGraphicsItem *)0);
+}
+
 
 void tst_QGraphicsItem::itemClipsTextChildToShape()
 {
