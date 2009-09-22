@@ -1747,10 +1747,17 @@ void tst_QTextCodec::codecForHtml()
 
     QCOMPARE(QTextCodec::codecForHtml(html)->mibEnum(), 4); // latin 1
 
-    QCOMPARE(QTextCodec::codecForHtml(html, QTextCodec::codecForMib(106))->mibEnum(), 106); // utf-8
+    QCOMPARE(QTextCodec::codecForHtml(html, QTextCodec::codecForMib(106))->mibEnum(), 106); // UTF-8
 
     html = "<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=ISO-8859-15\" /></head></html>";
     QCOMPARE(QTextCodec::codecForHtml(html, QTextCodec::codecForMib(106))->mibEnum(), 111); // latin 15
+
+    html = "<html><head><meta content=\"text/html; charset=ISO-8859-15\" http-equiv=\"content-type\" /></head></html>";
+    QCOMPARE(QTextCodec::codecForHtml(html, QTextCodec::codecForMib(106))->mibEnum(), 111); // latin 15
+
+    html = "<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=invalid-foo\" /></head></html>";
+    QCOMPARE(QTextCodec::codecForHtml(html, QTextCodec::codecForMib(106))->mibEnum(), 106); // UTF-8
+    QCOMPARE(QTextCodec::codecForHtml(html)->mibEnum(), 4); // latin 1
 }
 
 #ifdef Q_OS_UNIX
