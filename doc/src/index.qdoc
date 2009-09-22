@@ -43,24 +43,8 @@
     \page index.html
     \keyword Qt Reference Documentation
 
-    \if defined(opensourceedition)
-    \title Qt Reference Documentation (Open Source Edition)
-    \endif
-
-    \if defined(desktoplightedition)
-    \title Qt Reference Documentation (GUI Framework Edition)
-    \endif
-
-    \if defined(desktopedition)
-    \title Qt Reference Documentation (Full Framework Edition)
-    \endif
-
-    \if !defined(opensourceedition) \
-        && !defined(desktoplightedition) \
-        && !defined(desktopedition)
     \title Qt Reference Documentation
-        \endif
-    
+
     \raw HTML
         <table cellpadding="2" cellspacing="1" border="0" width="95%" class="indextable" align="center">
         <tr>
