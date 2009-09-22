@@ -133,6 +133,8 @@ struct Namespace {
     // definition (either one in case of multiple definitions).
     Namespace *classDef;
 
+    QString trQualification;
+
     bool hasTrFunctions;
     bool complained; // ... that tr functions are missing.
 };
@@ -221,6 +223,7 @@ private:
 
     uint getChar();
     uint getToken();
+    bool getMacroArgs();
     bool match(uint t);
     bool matchString(QString *s);
     bool matchEncoding(bool *utf8);
@@ -414,6 +417,34 @@ uint CppParser::getChar()
         yyInPtr = uc;
         return c;
     }
+}
+
+// This ignores commas, parens and comments.
+// IOW, it understands only a single, simple argument.
+bool CppParser::getMacroArgs()
+{
+    // Failing this assertion would mean losing the preallocated buffer.
+    Q_ASSERT(yyWord.isDetached());
+    yyWord.resize(0);
+
+    while (isspace(yyCh))
+        yyCh = getChar();
+    if (yyCh != '(')
+        return false;
+    do {
+        yyCh = getChar();
+    } while (isspace(yyCh));
+    ushort *ptr = (ushort *)yyWord.unicode();
+    while (yyCh != ')') {
+        if (yyCh == EOF)
+            return false;
+        *ptr++ = yyCh;
+        yyCh = getChar();
+    }
+    yyCh = getChar();
+    for (; ptr != (ushort *)yyWord.unicode() && isspace(*(ptr - 1)); --ptr) ;
+    yyWord.resize(ptr - (ushort *)yyWord.unicode());
+    return true;
 }
 
 STRING(Q_OBJECT);
@@ -1666,10 +1697,11 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                                      qPrintable(yyFileName), yyLineNo);
                             break;
                         }
-                        while (!findNamespace(functionContext, idx)->classDef->hasTrFunctions) {
+                        Namespace *fctx;
+                        while (!(fctx = findNamespace(functionContext, idx)->classDef)->hasTrFunctions) {
                             if (idx == 1) {
                                 context = stringifyNamespace(functionContext);
-                                Namespace *fctx = findNamespace(functionContext)->classDef;
+                                fctx = findNamespace(functionContext)->classDef;
                                 if (!fctx->complained) {
                                     qWarning("%s:%d: Class '%s' lacks Q_OBJECT macro\n",
                                              qPrintable(yyFileName), yyLineNo,
@@ -1680,12 +1712,17 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                             }
                             --idx;
                         }
-                        context.clear();
-                        for (int i = 1;;) {
-                            context += functionContext.at(i).value();
-                            if (++i == idx)
-                                break;
-                            context += strColons;
+                        if (fctx->trQualification.isEmpty()) {
+                            context.clear();
+                            for (int i = 1;;) {
+                                context += functionContext.at(i).value();
+                                if (++i == idx)
+                                    break;
+                                context += strColons;
+                            }
+                            fctx->trQualification = context;
+                        } else {
+                            context = fctx->trQualification;
                         }
                     } else {
                         context = (stringListifyNamespace(functionContext)
@@ -1705,8 +1742,13 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                     NamespaceList nsl;
                     QStringList unresolved;
                     if (fullyQualify(functionContext, prefix, false, &nsl, &unresolved)) {
-                        context = stringifyNamespace(nsl);
                         Namespace *fctx = findNamespace(nsl)->classDef;
+                        if (fctx->trQualification.isEmpty()) {
+                            context = stringifyNamespace(nsl);
+                            fctx->trQualification = context;
+                        } else {
+                            context = fctx->trQualification;
+                        }
                         if (!fctx->hasTrFunctions && !fctx->complained) {
                             qWarning("%s:%d: Class '%s' lacks Q_OBJECT macro\n",
                                      qPrintable(yyFileName), yyLineNo,
@@ -1806,6 +1848,14 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
             extra.clear();
             break;
         case Tok_Q_DECLARE_TR_FUNCTIONS:
+            if (getMacroArgs()) {
+                Namespace *ns = modifyNamespace(&namespaces, true);
+                ns->hasTrFunctions = true;
+                ns->trQualification = yyWord;
+                ns->trQualification.detach();
+            }
+            yyTok = getToken();
+            break;
         case Tok_Q_OBJECT:
             modifyNamespace(&namespaces, true)->hasTrFunctions = true;
             yyTok = getToken();
