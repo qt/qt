@@ -12,7 +12,6 @@
 ****************************************************************************/
 
 #include "contact.h"
-#include "qmltypes.h"
 
 QML_DEFINE_TYPE(0,0,0,0,Contact,Contact);
 Contact::Contact() : QObject(0)
@@ -26,13 +25,13 @@ Contact::Contact() : QObject(0)
     m_numbers << new PhoneNumber;
     m_numbers << new PhoneNumber;
     m_numbers << new PhoneNumber;
-    
+
     m_numbers.at(0)->setType(PhoneNumber::HomePhone);
     m_numbers.at(0)->setNumber("35412451");
 
     m_numbers.at(1)->setType(PhoneNumber::BusinessPhone);
     m_numbers.at(1)->setNumber("33424994");
-    
+
     m_numbers.at(2)->setType(PhoneNumber::MobilePhone);
     m_numbers.at(2)->setNumber("0424655137");
 
@@ -52,8 +51,7 @@ Contact::Contact() : QObject(0)
 
 void Contact::addNumber(PhoneNumber *newNumber)
 {
-    
-    m_numbers << newNumber;    
+    m_numbers << newNumber;
     emit numbersChanged();
 }
 
