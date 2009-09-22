@@ -147,9 +147,20 @@ public:
             --tailBuffer;
             head = 0;
         }
+
+        if (isEmpty())
+            clear(); // try to minify/squeeze us
     }
 
     inline char *reserve(int bytes) {
+        // if this is a fresh empty QRingBuffer
+        if (bufferSize == 0) {
+            buffers[0].resize(qMax(basicBlockSize, bytes));
+            bufferSize += bytes;
+            tail = bytes;
+            return buffers[tailBuffer].data();
+        }
+
         bufferSize += bytes;
 
         // if there is already enough space, simply return.
@@ -208,6 +219,9 @@ public:
             --tailBuffer;
             tail = buffers.at(tailBuffer).size();
         }
+
+        if (isEmpty())
+            clear(); // try to minify/squeeze us
     }
 
     inline bool isEmpty() const {
@@ -244,11 +258,10 @@ public:
     }
 
     inline void clear() {
-        if(!buffers.isEmpty()) {
-            buffers.erase(buffers.begin() + 1, buffers.end());
-            if (buffers.at(0).size() != basicBlockSize)
-                buffers[0].resize(basicBlockSize);
-        }
+        buffers.erase(buffers.begin() + 1, buffers.end());
+        buffers[0].resize(0);
+        buffers[0].squeeze();
+
         head = tail = 0;
         tailBuffer = 0;
         bufferSize = 0;
