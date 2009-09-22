@@ -1759,7 +1759,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QWidget *w, const QStyleOption *o
             QStyle::SubControl subControl = knownPseudoElements[pseudoElement].subControl;
 
             if (!(complex->activeSubControls & subControl))
-                state = QStyle::State(state & (QStyle::State_Enabled | QStyle::State_Horizontal));
+                state &= (QStyle::State_Enabled | QStyle::State_Horizontal | QStyle::State_HasFocus);
         }
 
         switch (pseudoElement) {
