@@ -265,6 +265,29 @@ public:
 #endif
 };
 
+namespace QScript
+{
+
+class SaveFrameHelper
+{
+public:
+    SaveFrameHelper(QScriptEnginePrivate *eng,
+                    JSC::ExecState *newFrame)
+        : engine(eng), oldFrame(eng->currentFrame)
+    {
+        eng->currentFrame = newFrame;
+    }
+    ~SaveFrameHelper()
+    {
+        engine->currentFrame = oldFrame;
+    }
+private:
+    QScriptEnginePrivate *engine;
+    JSC::ExecState *oldFrame;
+};
+
+} // namespace QScript
+
 inline QScriptValuePrivate *QScriptEnginePrivate::allocateScriptValuePrivate(size_t size)
 {
     if (freeScriptValues) {

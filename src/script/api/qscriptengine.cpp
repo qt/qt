@@ -508,6 +508,7 @@ JSC::JSValue JSC_HOST_CALL functionDisconnect(JSC::ExecState *exec, JSC::JSObjec
             slot = arg1;
         else {
             // ### don't go via QScriptValue
+            QScript::SaveFrameHelper saveFrame(engine, exec);
             QScriptValue tmp = engine->scriptValueFromJSCValue(arg0);
             QString propertyName(arg1.toString(exec));
             slot = engine->scriptValueToJSCValue(tmp.property(propertyName, QScriptValue::ResolvePrototype));
@@ -591,6 +592,7 @@ JSC::JSValue JSC_HOST_CALL functionConnect(JSC::ExecState *exec, JSC::JSObject *
             slot = arg1;
         else {
             // ### don't go via QScriptValue
+            QScript::SaveFrameHelper saveFrame(engine, exec);
             QScriptValue tmp = engine->scriptValueFromJSCValue(arg0);
             QString propertyName = arg1.toString(exec);
             slot = engine->scriptValueToJSCValue(tmp.property(propertyName, QScriptValue::ResolvePrototype));
