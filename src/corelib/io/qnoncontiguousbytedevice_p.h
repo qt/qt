@@ -72,9 +72,11 @@ public:
     void disableReset();
     virtual qint64 size() = 0;
 
+    virtual ~QNonContiguousByteDevice();
+
 protected:
     QNonContiguousByteDevice();
-    virtual ~QNonContiguousByteDevice();
+
 
     bool resetDisabled;
 Q_SIGNALS:
