@@ -77,6 +77,8 @@ private slots:
     void watchFileAndItsDirectory_data() { basicTest_data(); }
     void watchFileAndItsDirectory();
 
+    void nonExistingFile();
+
     void cleanup();
 private:
     QStringList do_force_engines;
@@ -523,6 +525,14 @@ void tst_QFileSystemWatcher::cleanup()
     QFile::remove(testFileName);
     QFile::remove(secondFileName);
     QDir().rmdir("testDir");
+}
+
+void tst_QFileSystemWatcher::nonExistingFile()
+{
+    // Don't crash...
+    QFileSystemWatcher watcher;
+    watcher.addPath("file_that_does_not_exist.txt");
+    QVERIFY(true);
 }
 
 QTEST_MAIN(tst_QFileSystemWatcher)
