@@ -151,7 +151,7 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl 
     d->errors.clear();
     d->imports.clear();
 
-    QmlCompiledData component;
+    QmlCompiledData *component = new QmlCompiledData;
     QmlCompiler compiler;
 
     QmlCompositeTypeData *td = ((QmlEnginePrivate *)QmlEnginePrivate::get(engine))->typeManager.getImmediate(data, url);
@@ -159,20 +159,23 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl 
     if(td->status == QmlCompositeTypeData::Error) {
         d->errors = td->errors;
         td->release();
+        component->release();
         return false;
     } else if(td->status == QmlCompositeTypeData::Waiting) {
         QmlError error;
         error.setDescription(QLatin1String("QmlDomDocument supports local types only"));
         d->errors << error;
         td->release();
+        component->release();
         return false;
     }
 
-    compiler.compile(engine, td, &component);
+    compiler.compile(engine, td, component);
 
     if (compiler.isError()) {
         d->errors = compiler.errors();
         td->release();
+        component->release();
         return false;
     }
 
@@ -196,6 +199,7 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl 
         d->root->addref();
     }
 
+    component->release();
     return true;
 }
 
