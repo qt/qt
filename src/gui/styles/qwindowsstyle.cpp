@@ -926,6 +926,7 @@ static const char *const question_xpm[] = {
 
 #endif //QT_NO_IMAGEFORMAT_XPM
 
+#ifdef Q_OS_WIN
 static QPixmap loadIconFromShell32( int resourceId, int size )
 {
 #ifdef Q_OS_WINCE
@@ -943,6 +944,7 @@ static QPixmap loadIconFromShell32( int resourceId, int size )
     }
     return QPixmap();
 }
+#endif
 
 /*!
  \reimp
