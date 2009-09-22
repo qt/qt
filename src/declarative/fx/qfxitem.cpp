@@ -56,7 +56,7 @@
 #include "qmlstate.h"
 #include "qlistmodelinterface.h"
 
-#include "qfxview.h"
+#include "qmlview.h"
 #include "qmlstategroup.h"
 
 #include "qfxitem_p.h"
@@ -1216,7 +1216,7 @@ QFxKeysAttached *QFxKeysAttached::qmlAttachedProperties(QObject *obj)
 
 /*!
     \class QFxItem Item
-    \brief The QFxItem class is a generic QFxView item. It is the base class for all other view items.
+    \brief The QFxItem class is a generic QmlView item. It is the base class for all other view items.
 
     \qmltext
     All visual items in Qt Declarative inherit from QFxItem.  Although QFxItem

@@ -1,6 +1,6 @@
 #include <QtTest/QtTest>
 #include <qlistmodelinterface.h>
-#include <qfxview.h>
+#include <qmlview.h>
 #include <qfxpathview.h>
 #include <qfxtext.h>
 #include <qfxrect.h>
@@ -19,7 +19,7 @@ private slots:
     void limitedItems();
 
 private:
-    QFxView *createView(const QString &filename);
+    QmlView *createView(const QString &filename);
     template<typename T>
     T *findItem(QFxItem *parent, const QString &id, int index=0);
 };
@@ -101,7 +101,7 @@ tst_QFxPathView::tst_QFxPathView()
 
 void tst_QFxPathView::items()
 {
-    QFxView *canvas = createView(SRCDIR "/data/pathview.qml");
+    QmlView *canvas = createView(SRCDIR "/data/pathview.qml");
 
     TestModel model;
     model.addItem("Fred", "12345");
@@ -133,7 +133,7 @@ void tst_QFxPathView::items()
 
 void tst_QFxPathView::pathMoved()
 {
-    QFxView *canvas = createView(SRCDIR "/data/pathview.qml");
+    QmlView *canvas = createView(SRCDIR "/data/pathview.qml");
 
     TestModel model;
     model.addItem("Ben", "12345");
@@ -176,7 +176,7 @@ void tst_QFxPathView::pathMoved()
 
 void tst_QFxPathView::limitedItems()
 {
-    QFxView *canvas = createView(SRCDIR "/data/pathview.qml");
+    QmlView *canvas = createView(SRCDIR "/data/pathview.qml");
 
     TestModel model;
     for(int i=0; i<100; i++)
@@ -213,9 +213,9 @@ void tst_QFxPathView::limitedItems()
     QVERIFY(testItem != 0);
 }
 
-QFxView *tst_QFxPathView::createView(const QString &filename)
+QmlView *tst_QFxPathView::createView(const QString &filename)
 {
-    QFxView *canvas = new QFxView(0);
+    QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
 
     QFile file(filename);

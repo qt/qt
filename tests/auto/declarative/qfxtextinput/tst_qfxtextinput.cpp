@@ -2,7 +2,7 @@
 #include "../../../shared/util.h"
 #include <QtDeclarative/qmlengine.h>
 #include <QFile>
-#include <QtDeclarative/qfxview.h>
+#include <QtDeclarative/qmlview.h>
 #include <QFxTextInput>
 #include <QDebug>
 
@@ -28,8 +28,8 @@ private slots:
     void navigation();
 
 private:
-    void simulateKey(QFxView *, int key);
-    QFxView *createView(const QString &filename);
+    void simulateKey(QmlView *, int key);
+    QmlView *createView(const QString &filename);
 
     QmlEngine engine;
     QStringList standard;
@@ -268,7 +268,7 @@ void tst_qfxtextinput::selection()
 
 void tst_qfxtextinput::maxLength()
 {
-    QFxView *canvas = createView(SRCDIR "/data/navigation.qml");
+    QmlView *canvas = createView(SRCDIR "/data/navigation.qml");
     canvas->execute();
     canvas->show();
 
@@ -282,7 +282,7 @@ void tst_qfxtextinput::maxLength()
 
 void tst_qfxtextinput::masks()
 {
-    QFxView *canvas = createView(SRCDIR "/data/navigation.qml");
+    QmlView *canvas = createView(SRCDIR "/data/navigation.qml");
     canvas->execute();
     canvas->show();
 
@@ -296,7 +296,7 @@ void tst_qfxtextinput::masks()
 
 void tst_qfxtextinput::validators()
 {
-    QFxView *canvas = createView(SRCDIR "/data/navigation.qml");
+    QmlView *canvas = createView(SRCDIR "/data/navigation.qml");
     canvas->execute();
     canvas->show();
 
@@ -314,7 +314,7 @@ the extent of the text, then they should ignore the keys.
 */
 void tst_qfxtextinput::navigation()
 {
-    QFxView *canvas = createView(SRCDIR "/data/navigation.qml");
+    QmlView *canvas = createView(SRCDIR "/data/navigation.qml");
     canvas->execute();
     canvas->show();
 
@@ -339,7 +339,7 @@ void tst_qfxtextinput::cursorDelegate()
     //TODO:Get the QFxTextInput test passing first
 }
 
-void tst_qfxtextinput::simulateKey(QFxView *view, int key)
+void tst_qfxtextinput::simulateKey(QmlView *view, int key)
 {
     QKeyEvent press(QKeyEvent::KeyPress, key, 0);
     QKeyEvent release(QKeyEvent::KeyRelease, key, 0);
@@ -348,9 +348,9 @@ void tst_qfxtextinput::simulateKey(QFxView *view, int key)
     QApplication::sendEvent(view, &release);
 }
 
-QFxView *tst_qfxtextinput::createView(const QString &filename)
+QmlView *tst_qfxtextinput::createView(const QString &filename)
 {
-    QFxView *canvas = new QFxView(0);
+    QmlView *canvas = new QmlView(0);
 
     QFile file(filename);
     file.open(QFile::ReadOnly);
