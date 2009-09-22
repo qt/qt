@@ -647,8 +647,14 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format)
 {
     defaultFormat = format;
     this->antialias = antialias;
+
     if (!antialias)
         glyphFormat = QFontEngineGlyphCache::Raster_Mono;
+    else if (format == Format_A8)
+        glyphFormat = QFontEngineGlyphCache::Raster_A8;
+    else if (format == Format_A32)
+        glyphFormat = QFontEngineGlyphCache::Raster_RGBMask;
+
     face_id = faceId;
     freetype = QFreetypeFace::getFace(face_id);
     if (!freetype) {

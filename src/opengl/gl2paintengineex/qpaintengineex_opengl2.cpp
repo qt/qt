@@ -289,9 +289,18 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph)
 {
     QImage mask = textureMapForGlyph(glyph);
+    const int maskWidth = mask.width();
+    const int maskHeight = mask.height();
 
-    const uint maskWidth = mask.width();
-    const uint maskHeight = mask.height();
+    if (mask.format() == QImage::Format_Mono) {
+        mask = mask.convertToFormat(QImage::Format_Indexed8);
+        for (int y = 0; y < maskHeight; ++y) {
+            uchar *src = (uchar *) mask.scanLine(y);
+            for (int x = 0; x < maskWidth; ++x)
+                src[x] = -src[x];
+        }
+     }
+
 
     glBindTexture(GL_TEXTURE_2D, m_texture);
     if (mask.format() == QImage::Format_RGB32) {
@@ -309,7 +318,7 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph)
         // by converting it to a format with four bytes per pixel. Another is to copy one line at a
         // time.
 
-        for (uint i = 0; i < maskHeight; ++i)
+        for (int i = 0; i < maskHeight; ++i)
             glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y + i, maskWidth, 1, GL_ALPHA, GL_UNSIGNED_BYTE, mask.scanLine(i));
 #endif
     }
@@ -1226,21 +1235,27 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
     if (ti.fontEngine->fontDef.pixelSize * qSqrt(s->matrix.determinant()) >= 64)
         drawCached = false;
 
-    if (d->glyphCacheType == QFontEngineGlyphCache::Raster_RGBMask
+    QFontEngineGlyphCache::Type glyphType = ti.fontEngine->glyphFormat >= 0
+                                            ? QFontEngineGlyphCache::Type(ti.fontEngine->glyphFormat)
+                                            : d->glyphCacheType;
+
+    if (glyphType == QFontEngineGlyphCache::Raster_RGBMask
         && state()->composition_mode != QPainter::CompositionMode_Source
-        && state()->composition_mode != QPainter::CompositionMode_SourceOver) {
+        && state()->composition_mode != QPainter::CompositionMode_SourceOver)
+    {
         drawCached = false;
     }
 
     if (drawCached) {
-        d->drawCachedGlyphs(p, ti);
+        d->drawCachedGlyphs(p, glyphType, ti);
         return;
     }
 
     QPaintEngineEx::drawTextItem(p, ti);
 }
 
-void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti)
+void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGlyphCache::Type glyphType,
+                                                const QTextItemInt &ti)
 {
     Q_Q(QGL2PaintEngineEx);
     QOpenGL2PaintEngineState *s = q->state();
@@ -1249,10 +1264,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
     QVarLengthArray<glyph_t> glyphs;
     QTransform matrix = QTransform::fromTranslate(p.x(), p.y());
     ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
-
-    QFontEngineGlyphCache::Type glyphType = ti.fontEngine->glyphFormat >= 0
-        ? QFontEngineGlyphCache::Type(ti.fontEngine->glyphFormat)
-        : glyphCacheType;
 
     QGLTextureGlyphCache *cache =
         (QGLTextureGlyphCache *) ti.fontEngine->glyphCache(ctx, s->matrix);
@@ -1300,13 +1311,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
     QBrush pensBrush = q->state()->pen.brush();
     setBrush(&pensBrush);
 
-    if (glyphType == QFontEngineGlyphCache::Raster_A8) {
-
-        // Greyscale antialiasing
-
-        shaderManager->setMaskType(QGLEngineShaderManager::PixelMask);
-        prepareForDraw(false); // Text always causes src pixels to be transparent
-    } else if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
+    if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
 
         // Subpixel antialiasing without gamma correction
 
@@ -1380,6 +1385,11 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
             glBlendFunc(GL_ONE, GL_ONE);
         }
         compositionModeDirty = true;
+    } else {
+        // Greyscale/mono glyphs
+
+        shaderManager->setMaskType(QGLEngineShaderManager::PixelMask);
+        prepareForDraw(false); // Text always causes src pixels to be transparent
     }
     //### TODO: Gamma correction
 
