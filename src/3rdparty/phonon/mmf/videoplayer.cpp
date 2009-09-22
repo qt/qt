@@ -125,9 +125,7 @@ void MMF::VideoPlayer::doPlay()
         updateMmfOutput();
     }
     
-    TRAP_IGNORE(m_player->SetVolumeL(0));  // *** HACK ***
     m_player->Play();
-    TRAP_IGNORE(m_player->SetVolumeL(0));  // *** HACK ***
 }
 
 void MMF::VideoPlayer::doPause()
