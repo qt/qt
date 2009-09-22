@@ -103,6 +103,8 @@ static int usage(const QStringList &args)
         "           Drop obsolete messages.\n\n"
         "    --no-finished\n"
         "           Drop finished messages.\n\n"
+        "    --sort-contexts\n"
+        "           Sort contexts in output TS file alphabetically.\n\n"
         "    --locations {absolute|relative|none}\n"
         "           Override how source code references are saved in TS files.\n"
         "           Default is absolute.\n\n"
@@ -201,6 +203,8 @@ int main(int argc, char *argv[])
             noObsolete = true;
         } else if (args[i] == QLatin1String("-no-finished")) {
             noFinished = true;
+        } else if (args[i] == QLatin1String("-sort-contexts")) {
+            cd.m_sortContexts = true;
         } else if (args[i] == QLatin1String("-locations")) {
             if (++i >= args.size())
                 return usage(args);
