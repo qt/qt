@@ -131,9 +131,7 @@ void QFxTextInput::setFont(const QFont &font)
         d->cursorItem->setHeight(QFontMetrics(d->font).height());
         moveCursor();
     }
-    //updateSize();
-    updateAll();//TODO: Only necessary updates
-    update();
+    updateSize();
 }
 
 /*!
@@ -272,7 +270,7 @@ void QFxTextInput::setCursorVisible(bool on)
         return;
     d->cursorVisible = on;
     d->control->setCursorBlinkPeriod(on?QApplication::cursorFlashTime():0);
-    updateAll();//TODO: Only update cursor rect
+    //d->control should emit the cursor update regions
 }
 
 /*!
@@ -593,14 +591,17 @@ bool QFxTextInput::event(QEvent* ev)
 {
     Q_D(QFxTextInput);
     //Anything we don't deal with ourselves, pass to the control
+    bool handled = false;
     switch(ev->type()){
         case QEvent::KeyPress:
         case QEvent::GraphicsSceneMousePress:
             break;
         default:
-            return d->control->processEvent(ev);
+            handled = d->control->processEvent(ev);
     }
-    return false;
+    if(!handled)
+        return QFxPaintedItem::event(ev);
+    return true;
 }
 
 void QFxTextInput::geometryChanged(const QRectF &newGeometry,
@@ -667,13 +668,13 @@ void QFxTextInputPrivate::init()
                q, SLOT(q_textChanged()));
     q->connect(control, SIGNAL(accepted()),
                q, SIGNAL(accepted()));
-    q->connect(control, SIGNAL(updateNeeded(const QRect &)),
-               //        q, SLOT(dirtyCache(const QRect &)));
-               q, SLOT(updateAll()));
+    q->connect(control, SIGNAL(updateNeeded(QRect)),
+               q, SLOT(updateRect(QRect)));
     q->connect(control, SIGNAL(cursorPositionChanged(int,int)),
-               q, SLOT(updateAll()));
+               q, SLOT(updateRect()));//TODO: Only update rect between pos's
     q->connect(control, SIGNAL(selectionChanged()),
-               q, SLOT(updateAll()));
+               q, SLOT(updateRect()));//TODO: Only update rect in selection
+    //Note that above TODOs are waiting, pending getting the updateRect working right
     q->updateSize();
     oldValidity = control->hasAcceptableInput();
     lastSelectionStart = 0;
@@ -719,7 +720,7 @@ void QFxTextInput::selectionChanged()
 void QFxTextInput::q_textChanged()
 {
     Q_D(QFxTextInput);
-    updateAll();
+    updateSize();
     emit textChanged();
     if(hasAcceptableInput() != d->oldValidity){
         d->oldValidity = hasAcceptableInput();
@@ -727,21 +728,33 @@ void QFxTextInput::q_textChanged()
     }
 }
 
-//### Please replace this function with proper updating
-void QFxTextInput::updateAll()
+void QFxTextInput::updateRect(const QRect &r)
 {
-    clearCache();
-    updateSize();
+    //### Only update that rect.
+    if(r == QRect())
+        clearCache();
+    //else
+        //dirtyCache(r);//Not working yet
     update();
 }
 
-void QFxTextInput::updateSize()
+void QFxTextInput::updateSize(bool needsRedraw)
 {
     Q_D(QFxTextInput);
+    int w = width();
+    int h = height();
     setImplicitHeight(d->control->height());
     //d->control->width() is width of the line, not of the text
-    setImplicitWidth(d->control->naturalTextWidth()+2);
-    setContentsSize(QSize(width(), height()));
+    //And naturalTextWidth() is the text, not including the cursor
+    int cursorWidth = d->control->cursorWidth();
+    if(d->cursorItem)
+        cursorWidth = d->cursorItem->width();
+    setImplicitWidth(d->control->naturalTextWidth()+2+cursorWidth);
+    setContentsSize(QSize(width(), height()));//Repaints if changed
+    if(w==width() && h==height() && needsRedraw){
+        clearCache();
+        update();
+    }
 }
 
 QT_END_NAMESPACE
