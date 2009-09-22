@@ -12,7 +12,6 @@
 ****************************************************************************/
 
 #include "contactmodel.h"
-#include "qmltypes.h"
 
 ContactModel::ContactModel(QObject *parent) : QListModelInterface(parent)
 {
@@ -29,7 +28,7 @@ ContactModel::ContactModel(QObject *parent) : QListModelInterface(parent)
             c->addEmail(list[i]);
         //contactList.append(c);
         insertContact(c);
-        
+
         text = ts.readLine();
     }
     f.close();
@@ -149,7 +148,7 @@ int ContactModel::findIndex(QString &searchName) const
         else return middle;
     }
     return start;
-}   
+}
 
 int ContactModel::isAfter(QString &name1, QString &name2) const
 {

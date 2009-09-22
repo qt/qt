@@ -21,7 +21,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFxView;
+class QmlView;
 class PreviewDeviceSkin;
 class QFxTestEngine;
 class QProcess;
@@ -95,7 +95,7 @@ private:
     QString currentFileName;
     PreviewDeviceSkin *skin;
     QSize skinscreensize;
-    QFxView *canvas;
+    QmlView *canvas;
     QmlTimer recordTimer;
     QString frame_fmt;
     QImage frame;

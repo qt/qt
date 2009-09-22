@@ -1,5 +1,5 @@
 SOURCES += \
-           util/qfxview.cpp \
+           util/qmlview.cpp \
            util/qfxperf.cpp \
            util/qperformancelog.cpp \
            util/qmlconnection.cpp \
@@ -23,7 +23,7 @@ SOURCES += \
            util/qmlbind.cpp
 
 HEADERS += \
-           util/qfxview.h \
+           util/qmlview.h \
            util/qfxperf_p.h \
            util/qfxglobal.h \
            util/qperformancelog_p.h \

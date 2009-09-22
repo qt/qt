@@ -118,13 +118,36 @@ private:
     QVariant *data;
     QBitArray aConnected;
 
-#if 0
-    QList<QString> *slotData;
-    int slotDataIdx;
-#endif
-
     QAbstractDynamicMetaObject *parent;
 
+    void listChanged(int);
+    class List : public QmlConcreteList<QObject*>
+    {
+    public:
+        List(QmlVMEMetaObject *p, int propIdx) 
+            : parent(p), parentProperty(propIdx) { }
+
+        virtual void append(QObject *v) { 
+            QmlConcreteList<QObject*>::append(v); 
+            parent->listChanged(parentProperty);
+        }
+        virtual void insert(int i, QObject *v) { 
+            QmlConcreteList<QObject*>::insert(i, v); 
+            parent->listChanged(parentProperty);
+        }
+        virtual void clear() { 
+            QmlConcreteList<QObject*>::clear();
+            parent->listChanged(parentProperty);
+        }
+        virtual void removeAt(int i) { 
+            QmlConcreteList<QObject*>::removeAt(i);
+            parent->listChanged(parentProperty);
+        }
+    private:
+        QmlVMEMetaObject *parent;
+        int parentProperty;
+    };
+    QList<List *> listProperties;
 };
 
 QT_END_NAMESPACE

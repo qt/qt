@@ -44,6 +44,9 @@
 #include <qmlmetatype.h>
 #include <QtCore/qdebug.h>
 
+// ### Remove me
+#include <private/qmlengine_p.h>
+
 QT_BEGIN_NAMESPACE
 
 QmlListAccessor::QmlListAccessor()
@@ -60,9 +63,11 @@ QVariant QmlListAccessor::list() const
     return d;
 }
 
-void QmlListAccessor::setList(const QVariant &v)
+void QmlListAccessor::setList(const QVariant &v, QmlEngine *engine)
 {
     d = v;
+
+    QmlEnginePrivate *enginePrivate = engine?QmlEnginePrivate::get(engine):0;
 
     if (!d.isValid()) {
         m_type = Invalid;
@@ -75,12 +80,14 @@ void QmlListAccessor::setList(const QVariant &v)
         m_type = Integer;
     } else if (d.type() != QVariant::UserType) {
         m_type = Instance;
-    } else if (QmlMetaType::isObject(d.userType())) {
+    } else if ((!enginePrivate && QmlMetaType::isObject(d.userType())) ||
+               (enginePrivate && enginePrivate->isObject(d.userType()))) {
         QObject *data = 0;
         data = *(QObject **)v.constData();
         d = QVariant::fromValue(data);
         m_type = Instance;
-    } else if (QmlMetaType::isQmlList(d.userType())) {
+    } else if ((!enginePrivate && QmlMetaType::isQmlList(d.userType())) ||
+               (enginePrivate && enginePrivate->isQmlList(d.userType()))) {
         m_type = QmlList;
     } else if (QmlMetaType::isList(d.userType())) {
         qDebug() << "list";

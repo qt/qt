@@ -11,7 +11,7 @@
 **
 ****************************************************************************/
 
-#include <qfxview.h>
+#include <qmlview.h>
 #include "ui_recopts.h"
 
 #include "qmlviewer.h"
@@ -286,7 +286,7 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     if (!(flags & Qt::FramelessWindowHint))
         createMenu(menuBar(),0);
 
-    canvas = new QFxView(this);
+    canvas = new QmlView(this);
     canvas->setAttribute(Qt::WA_OpaquePaintEvent);
     canvas->setAttribute(Qt::WA_NoSystemBackground);
     canvas->setContentResizable(!skin || !scaleSkin);
@@ -348,7 +348,7 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     connect(snapshotAction, SIGNAL(triggered()), this, SLOT(takeSnapShot()));
     recordMenu->addAction(snapshotAction);
 
-    recordAction = new QAction(tr("Start Recording &Video\tF2"), parent);
+    recordAction = new QAction(tr("Start Recording &Video\tF9"), parent);
     connect(recordAction, SIGNAL(triggered()), this, SLOT(toggleRecordingWithSelection()));
     recordMenu->addAction(recordAction);
 
@@ -570,7 +570,7 @@ void QmlViewer::toggleRecording()
         return;
     }
     bool recording = !recordTimer.isRunning();
-    recordAction->setText(recording ? tr("&Stop Recording Video\tF2") : tr("&Start Recording Video\tF2"));
+    recordAction->setText(recording ? tr("&Stop Recording Video\tF9") : tr("&Start Recording Video\tF9"));
     setRecording(recording);
 }
 

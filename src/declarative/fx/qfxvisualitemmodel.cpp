@@ -639,7 +639,7 @@ void QFxVisualDataModel::setModel(const QVariant &model)
         return;
     }
     d->m_modelList = new QmlListAccessor;
-    d->m_modelList->setList(model);
+    d->m_modelList->setList(model, d->m_context?d->m_context->engine():qmlEngine(this));
     if (d->m_delegate && d->modelCount()) {
         emit itemsInserted(0, d->modelCount());
         emit countChanged();

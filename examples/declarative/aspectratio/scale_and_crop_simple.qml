@@ -1,6 +1,7 @@
 import Qt 4.6
 
-// Here, we implement "Scale and Crop" behaviour.
+// Here, we implement "Scale to Fit" behaviour, using the
+// fillMode property.
 //
 Rectangle {
     // default size: whole image, unscaled
@@ -12,8 +13,7 @@ Rectangle {
     Image {
         id: Face
         source: "pics/face.png"
-        x: (parent.width-width*scale)/2
-        y: (parent.height-height*scale)/2
-        scale: Math.max(parent.width/width,parent.height/height)
+        fillMode: "PreserveAspectCrop"
+        anchors.fill: parent
     }
 }

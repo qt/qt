@@ -97,9 +97,11 @@ public:
     void setCustomType(const MyCustomVariantType &v)  { m_custom = v; }
 public slots:
     void basicSlot() { qWarning("MyQmlObject::basicSlot"); }
+    void basicSlot(int v) { qWarning("MyQmlObject::basicSlot(%d)", v); }
 
 signals:
     void basicSignal();
+    void basicParameterizedSignal(int parameter);
 
 private:
     friend class tst_qmlparser;

@@ -65,7 +65,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,BorderImage,QFxBorderImage)
 /*!
     \internal
     \class QFxBorderImage BorderImage
-    \brief The QFxBorderImage class provides an image item that you can add to a QFxView.
+    \brief The QFxBorderImage class provides an image item that you can add to a QmlView.
 */
 
 QFxBorderImage::QFxBorderImage(QFxItem *parent)

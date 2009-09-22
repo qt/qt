@@ -241,7 +241,7 @@ public:
 /*!
     \internal
     \class QFxWebView
-    \brief The QFxWebView class allows you to add web content to a QFxView.
+    \brief The QFxWebView class allows you to add web content to a QmlView.
 
     A WebView renders web content base on a URL.
 

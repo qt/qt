@@ -74,11 +74,16 @@ QmlVMEMetaObject::QmlVMEMetaObject(QObject *obj,
     data = new QVariant[metaData->propertyCount];
     aConnected.resize(metaData->aliasCount);
 
+    int list_type = qMetaTypeId<QmlList<QObject*>* >();
     // ### Optimize
     for (int ii = 0; ii < metaData->propertyCount; ++ii) {
         int t = (metaData->propertyData() + ii)->propertyType;
-        if (t != -1)
+        if (t == list_type) {
+            listProperties.append(new List(this, ii));
+            data[ii] = QVariant::fromValue((QmlList<QObject *>*)listProperties.last());
+        } else if (t != -1) {
             data[ii] = QVariant((QVariant::Type)t);
+        }
     }
 }
 
@@ -88,6 +93,7 @@ QmlVMEMetaObject::~QmlVMEMetaObject()
         ref->release();
     if (parent)
         delete parent;
+    qDeleteAll(listProperties);
     delete [] data;
 }
 
@@ -137,8 +143,14 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
                         case QVariant::Date:
                             *reinterpret_cast<QDate *>(a[0]) = data[id].toDate();
                             break;
+                        case QMetaType::QObjectStar:
+                            *reinterpret_cast<QObject **>(a[0]) = data[id].value<QObject*>();
+                            break;
                         default:
                             break;
+                        }
+                        if (t == qMetaTypeId<QmlList<QObject*>* >()) {
+                            *reinterpret_cast<QmlList<QObject *> **>(a[0]) = data[id].value<QmlList<QObject*>*>();
                         }
 
                     } else if (c == QMetaObject::WriteProperty) {
@@ -234,6 +246,11 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
         return parent->metaCall(c, _id, a);
     else
         return object->qt_metacall(c, _id, a);
+}
+
+void QmlVMEMetaObject::listChanged(int id)
+{
+    activate(object, methodOffset + id, 0);
 }
 
 QT_END_NAMESPACE
