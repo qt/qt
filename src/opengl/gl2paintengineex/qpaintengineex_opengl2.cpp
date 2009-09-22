@@ -1717,6 +1717,8 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
         state()->depthTestEnabled = true;
         break;
         }
+    default:
+        break;
     }
 
     glDepthFunc(GL_LESS);
