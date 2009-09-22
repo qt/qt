@@ -2429,7 +2429,7 @@ void QIconModeViewBase::appendHiddenRow(int row)
 
 void QIconModeViewBase::removeHiddenRow(int row)
 {
-    QCommonListViewBase::appendHiddenRow(row);
+    QCommonListViewBase::removeHiddenRow(row);
     if (row >= 0 && row < items.count()) //insert item
         tree.insertLeaf(items.at(row).rect(), row);
 }
