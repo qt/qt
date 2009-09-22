@@ -45,7 +45,7 @@
 #include <QtCore/QObject>
 #include <QtGui>
 #include <windows.h>
-#include <ddhelper.h>
+#include "ddhelper.h"
 
 
 
