@@ -804,6 +804,68 @@ void QNetworkHeadersPrivate::parseAndSetHeader(const QByteArray &key, const QByt
     }
 }
 
+// Fast month string to int conversion. This code
+// assumes that the Month name is correct and that
+// the string is at least three chars long.
+static int name_to_month(const char* month_str)
+{
+    switch (month_str[0]) {
+    case 'J':
+        switch (month_str[1]) {
+        case 'a':
+            return 1;
+            break;
+        case 'u':
+            switch (month_str[2] ) {
+            case 'n':
+                return 6;
+                break;
+            case 'l':
+                return 7;
+                break;
+            }
+        }
+        break;
+    case 'F':
+        return 2;
+        break;
+    case 'M':
+        switch (month_str[2] ) {
+        case 'r':
+            return 3;
+            break;
+        case 'y':
+            return 5;
+            break;
+        }
+        break;
+    case 'A':
+        switch (month_str[1]) {
+        case 'p':
+            return 4;
+            break;
+        case 'u':
+            return 8;
+            break;
+        }
+        break;
+    case 'O':
+        return 10;
+        break;
+    case 'S':
+        return 9;
+        break;
+    case 'N':
+        return 11;
+        break;
+    case 'D':
+        return 12;
+        break;
+    }
+
+    return 0;
+}
+
 QDateTime QNetworkHeadersPrivate::fromHttpDate(const QByteArray &value)
 {
     // HTTP dates have three possible formats:
@@ -819,16 +881,20 @@ QDateTime QNetworkHeadersPrivate::fromHttpDate(const QByteArray &value)
         // no comma -> asctime(3) format
         dt = QDateTime::fromString(QString::fromLatin1(value), Qt::TextDate);
     } else {
-        // eat the weekday, the comma and the space following it
-        QString sansWeekday = QString::fromLatin1(value.constData() + pos + 2);
-
-        QLocale c = QLocale::c();
-        if (pos == 3)
-            // must be RFC 1123 date
-            dt = c.toDateTime(sansWeekday, QLatin1String("dd MMM yyyy hh:mm:ss 'GMT"));
-        else
+        // Use sscanf over QLocal/QDateTimeParser for speed reasons. See the
+        // QtWebKit performance benchmarks to get an idea.
+        if (pos == 3) {
+            char month_name[4];
+            int day, year, hour, minute, second;
+            if (sscanf(value.constData(), "%*3s, %d %3s %d %d:%d:%d 'GMT'", &day, month_name, &year, &hour, &minute, &second) == 6)
+                dt = QDateTime(QDate(year, name_to_month(month_name), day), QTime(hour, minute, second));
+        } else {
+            QLocale c = QLocale::c();
+            // eat the weekday, the comma and the space following it
+            QString sansWeekday = QString::fromLatin1(value.constData() + pos + 2);
             // must be RFC 850 date
             dt = c.toDateTime(sansWeekday, QLatin1String("dd-MMM-yy hh:mm:ss 'GMT'"));
+        }
     }
 #endif // QT_NO_DATESTRING
 
