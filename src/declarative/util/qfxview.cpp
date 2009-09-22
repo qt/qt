@@ -103,7 +103,7 @@ public:
         int e = timer.elapsed();
         QByteArray data;
         QDataStream ds(&data, QIODevice::WriteOnly);
-        ds << (int)pe << (int)pe << (int)tbf << (int)e
+        ds << (int)pe << (int)tbf << (int)e
            << (bool)isFrameBreak;
         sendMessage(data);
     }
