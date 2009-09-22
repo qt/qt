@@ -155,11 +155,10 @@ void tst_QWindowSurface::flushOutsidePaintEvent()
     // prevent custom styles from messing up the background
     w.setStyle(new QWindowsStyle);
     w.show();
+    QTest::qWaitForWindowShown(&w);
 
     QApplication::processEvents();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&w);
-#elif defined(Q_WS_QWS)
+#if defined(Q_WS_QWS)
     QApplication::sendPostedEvents(); //for the glib event loop
 #elif defined(Q_WS_S60)
     QTest::qWait(5000);
@@ -189,9 +188,6 @@ void tst_QWindowSurface::flushOutsidePaintEvent()
 
     // the paintEvent() should overwrite the painted rectangle
     QApplication::processEvents();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&w);
-#endif
 
 #if defined(Q_WS_QWS)
     QSKIP("task 176755", SkipAll);
@@ -232,8 +228,9 @@ void tst_QWindowSurface::grabWidget()
     babyWidget.show();
     childWidget.show();
     parentWidget.show();
+    QTest::qWaitForWindowShown(&parentWidget);
 
-    QTest::qWait(200);
+    QTest::qWait(20);
 
     QPixmap parentPixmap = parentWidget.windowSurface()->grabWidget(&parentWidget);
     QPixmap childPixmap = childWidget.windowSurface()->grabWidget(&childWidget);
