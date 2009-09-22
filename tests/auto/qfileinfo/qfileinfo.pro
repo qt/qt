@@ -17,3 +17,13 @@ symbian {
     TARGET.CAPABILITY=AllFiles
     LIBS *= -lefsrv
     }
+
+# support for running test from shadow build directory
+wince* {
+    DEFINES += SRCDIR=\\\"\\\"
+} else:symbian {
+    # do not define SRCDIR at all
+} else {
+    DEFINES += SRCDIR=\\\"$$PWD/\\\"
+}
+
