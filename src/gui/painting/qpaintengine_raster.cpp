@@ -3663,6 +3663,7 @@ void QRasterPaintEngine::drawEllipse(const QRectF &rect)
     ensurePen();
     if (((qpen_style(s->lastPen) == Qt::SolidLine && s->flags.fast_pen)
          || (qpen_style(s->lastPen) == Qt::NoPen && !s->flags.antialiased))
+        && qMax(rect.width(), rect.height()) < QT_RASTER_COORD_LIMIT
 #ifdef FLOATING_POINT_BUGGY_OR_NO_FPU
         && qMax(rect.width(), rect.height()) < 128 // integer math breakdown
 #endif
