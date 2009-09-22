@@ -850,6 +850,21 @@ case $rule_number: {
 }   break;
 ./
 
+UiObjectMember: T_PROPERTY T_IDENTIFIER T_LT UiPropertyType T_GT T_IDENTIFIER T_AUTOMATIC_SEMICOLON ;
+UiObjectMember: T_PROPERTY T_IDENTIFIER T_LT UiPropertyType T_GT T_IDENTIFIER T_SEMICOLON ;
+/.
+case $rule_number: {
+    AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), sym(4).sval, sym(6).sval);
+    node->typeModifier = sym(2).sval;
+    node->propertyToken = loc(1);
+    node->typeModifierToken = loc(2);
+    node->typeToken = loc(4);
+    node->identifierToken = loc(6);
+    node->semicolonToken = loc(7);
+    sym(1).Node = node;
+}   break;
+./
+
 UiObjectMember: T_PROPERTY UiPropertyType T_IDENTIFIER T_AUTOMATIC_SEMICOLON ;
 UiObjectMember: T_PROPERTY UiPropertyType T_IDENTIFIER T_SEMICOLON ;
 /.

@@ -172,10 +172,11 @@ namespace QmlParser
             DynamicProperty();
             DynamicProperty(const DynamicProperty &);
 
-            enum Type { Variant, Int, Bool, Real, String, Url, Color, Date, Alias };
+            enum Type { Variant, Int, Bool, Real, String, Url, Color, Date, Alias, Custom, CustomList };
 
             bool isDefaultProperty;
             Type type;
+            QByteArray customType;
             QByteArray name;
             QmlParser::Property *defaultValue;
             LocationSpan location;
