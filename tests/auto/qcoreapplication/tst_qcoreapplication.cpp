@@ -84,9 +84,7 @@ void tst_QCoreApplication::sendEventsOnProcessEvents()
 
     QCoreApplication::postEvent(&app,  new QEvent(QEvent::Type(QEvent::User + 1)));
     QCoreApplication::processEvents();
-    QList<int> expected;
-    expected << QEvent::User + 1;
-    QCOMPARE(expected, spy.recordedEvents);
+    QVERIFY(spy.recordedEvents.contains(QEvent::User + 1));
 }
 
 void tst_QCoreApplication::getSetCheck()
