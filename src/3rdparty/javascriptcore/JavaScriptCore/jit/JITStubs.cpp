@@ -717,7 +717,7 @@ DEFINE_STUB_FUNCTION(int, timeout_check)
         globalData->exception = createInterruptedExecutionException(globalData);
         VM_THROW_EXCEPTION_AT_END();
     }
-    
+    CHECK_FOR_EXCEPTION_AT_END();
     return timeoutChecker->ticksUntilNextCheck();
 }
 
