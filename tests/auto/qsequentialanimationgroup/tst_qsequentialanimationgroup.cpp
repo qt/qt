@@ -142,14 +142,28 @@ public:
     };
 };
 
+class DummyPropertyAnimation : public QPropertyAnimation
+{
+public:
+    DummyPropertyAnimation(QObject *parent = 0) : QPropertyAnimation(parent)
+    {
+        setTargetObject(&o);
+        this->setPropertyName("value");
+        setEndValue(0);
+    }
+
+    AnimationObject o;
+};
+
 class UncontrolledAnimation : public QPropertyAnimation
 {
     Q_OBJECT
 public:
-    UncontrolledAnimation(QObject *target, const QByteArray &propertyName, QObject *parent = 0)
-        : QPropertyAnimation(target, propertyName, parent)
+    UncontrolledAnimation(QObject *target, QObject *parent = 0)
+        : QPropertyAnimation(target, "value", parent)
     {
         setDuration(250);
+        setEndValue(0);
     }
 
     int duration() const { return -1; /* not time driven */ }
@@ -165,15 +179,11 @@ protected:
 
 void tst_QSequentialAnimationGroup::setCurrentTime()
 {
-    AnimationObject s_o1;
-    AnimationObject s_o2;
-    AnimationObject s_o3;
-
     // sequence operating on same object/property
     QAnimationGroup *sequence = new QSequentialAnimationGroup();
-    QVariantAnimation *a1_s_o1 = new QPropertyAnimation(&s_o1, "value");
-    QVariantAnimation *a2_s_o1 = new QPropertyAnimation(&s_o1, "value");
-    QVariantAnimation *a3_s_o1 = new QPropertyAnimation(&s_o1, "value");
+    QVariantAnimation *a1_s_o1 = new DummyPropertyAnimation;
+    QVariantAnimation *a2_s_o1 = new DummyPropertyAnimation;
+    QVariantAnimation *a3_s_o1 = new DummyPropertyAnimation;
     a2_s_o1->setLoopCount(3);
     sequence->addAnimation(a1_s_o1);
     sequence->addAnimation(a2_s_o1);
@@ -181,8 +191,8 @@ void tst_QSequentialAnimationGroup::setCurrentTime()
 
     // sequence operating on different object/properties
     QAnimationGroup *sequence2 = new QSequentialAnimationGroup();
-    QVariantAnimation *a1_s_o2 = new QPropertyAnimation(&s_o2, "value");
-    QVariantAnimation *a1_s_o3 = new QPropertyAnimation(&s_o3, "value");
+    QVariantAnimation *a1_s_o2 = new DummyPropertyAnimation;
+    QVariantAnimation *a1_s_o3 = new DummyPropertyAnimation;
     sequence2->addAnimation(a1_s_o2);
     sequence2->addAnimation(a1_s_o3);
 
@@ -315,22 +325,19 @@ void tst_QSequentialAnimationGroup::setCurrentTime()
 
 void tst_QSequentialAnimationGroup::setCurrentTimeWithUncontrolledAnimation()
 {
-    AnimationObject s_o1;
-    AnimationObject s_o2;
     AnimationObject t_o1;
-    AnimationObject t_o2;
 
     // sequence operating on different object/properties
     QAnimationGroup *sequence = new QSequentialAnimationGroup();
-    QAbstractAnimation *a1_s_o1 = new QPropertyAnimation(&s_o1, "value");
-    QAbstractAnimation *a1_s_o2 = new QPropertyAnimation(&s_o2, "value");
+    QPropertyAnimation *a1_s_o1 = new DummyPropertyAnimation;
+    QPropertyAnimation *a1_s_o2 = new DummyPropertyAnimation;
     sequence->addAnimation(a1_s_o1);
     sequence->addAnimation(a1_s_o2);
 
-    QAbstractAnimation *notTimeDriven = new UncontrolledAnimation(&t_o1, "value");
+    QPropertyAnimation *notTimeDriven = new UncontrolledAnimation(&t_o1);
     QCOMPARE(notTimeDriven->totalDuration(), -1);
 
-    QAbstractAnimation *loopsForever = new QPropertyAnimation(&t_o2, "value");
+    QAbstractAnimation *loopsForever = new DummyPropertyAnimation;
     loopsForever->setLoopCount(-1);
     QCOMPARE(loopsForever->totalDuration(), -1);
 
@@ -428,24 +435,21 @@ void tst_QSequentialAnimationGroup::setCurrentTimeWithUncontrolledAnimation()
 
 void tst_QSequentialAnimationGroup::seekingForwards()
 {
-    AnimationObject s_o1;
-    AnimationObject s_o2;
-    AnimationObject s_o3;
 
     // sequence operating on same object/property
-    QAnimationGroup *sequence = new QSequentialAnimationGroup();
-    QVariantAnimation *a1_s_o1 = new QPropertyAnimation(&s_o1, "value");
-    QVariantAnimation *a2_s_o1 = new QPropertyAnimation(&s_o1, "value");
-    QVariantAnimation *a3_s_o1 = new QPropertyAnimation(&s_o1, "value");
+    QAnimationGroup *sequence = new QSequentialAnimationGroup;
+    QVariantAnimation *a1_s_o1 = new DummyPropertyAnimation;
+    QVariantAnimation *a2_s_o1 = new DummyPropertyAnimation;
+    QVariantAnimation *a3_s_o1 = new DummyPropertyAnimation;
     a2_s_o1->setLoopCount(3);
     sequence->addAnimation(a1_s_o1);
     sequence->addAnimation(a2_s_o1);
     sequence->addAnimation(a3_s_o1);
 
     // sequence operating on different object/properties
-    QAnimationGroup *sequence2 = new QSequentialAnimationGroup();
-    QVariantAnimation *a1_s_o2 = new QPropertyAnimation(&s_o2, "value");
-    QVariantAnimation *a1_s_o3 = new QPropertyAnimation(&s_o3, "value");
+    QAnimationGroup *sequence2 = new QSequentialAnimationGroup;
+    QVariantAnimation *a1_s_o2 = new DummyPropertyAnimation;
+    QVariantAnimation *a1_s_o3 = new DummyPropertyAnimation;
     sequence2->addAnimation(a1_s_o2);
     sequence2->addAnimation(a1_s_o3);
 
@@ -508,15 +512,11 @@ void tst_QSequentialAnimationGroup::seekingForwards()
 
 void tst_QSequentialAnimationGroup::seekingBackwards()
 {
-    AnimationObject s_o1;
-    AnimationObject s_o2;
-    AnimationObject s_o3;
-
     // sequence operating on same object/property
     QAnimationGroup *sequence = new QSequentialAnimationGroup();
-    QVariantAnimation *a1_s_o1 = new QPropertyAnimation(&s_o1, "value");
-    QVariantAnimation *a2_s_o1 = new QPropertyAnimation(&s_o1, "value");
-    QVariantAnimation *a3_s_o1 = new QPropertyAnimation(&s_o1, "value");
+    QVariantAnimation *a1_s_o1 = new DummyPropertyAnimation;
+    QVariantAnimation *a2_s_o1 = new DummyPropertyAnimation;
+    QVariantAnimation *a3_s_o1 = new DummyPropertyAnimation;
     a2_s_o1->setLoopCount(3);
     sequence->addAnimation(a1_s_o1);
     sequence->addAnimation(a2_s_o1);
@@ -524,8 +524,8 @@ void tst_QSequentialAnimationGroup::seekingBackwards()
 
     // sequence operating on different object/properties
     QAnimationGroup *sequence2 = new QSequentialAnimationGroup();
-    QVariantAnimation *a1_s_o2 = new QPropertyAnimation(&s_o2, "value");
-    QVariantAnimation *a1_s_o3 = new QPropertyAnimation(&s_o3, "value");
+    QVariantAnimation *a1_s_o2 = new DummyPropertyAnimation;
+    QVariantAnimation *a1_s_o3 = new DummyPropertyAnimation;
     sequence2->addAnimation(a1_s_o2);
     sequence2->addAnimation(a1_s_o3);
 
@@ -650,13 +650,11 @@ static bool compareStates(const QSignalSpy& spy, const StateList &expectedStates
 
 void tst_QSequentialAnimationGroup::pauseAndResume()
 {
-    AnimationObject s_o1;
-
     // sequence operating on same object/property
     QAnimationGroup *sequence = new QSequentialAnimationGroup();
-    QVariantAnimation *a1_s_o1 = new QPropertyAnimation(&s_o1, "value");
-    QVariantAnimation *a2_s_o1 = new QPropertyAnimation(&s_o1, "value");
-    QVariantAnimation *a3_s_o1 = new QPropertyAnimation(&s_o1, "value");
+    QVariantAnimation *a1_s_o1 = new DummyPropertyAnimation;
+    QVariantAnimation *a2_s_o1 = new DummyPropertyAnimation;
+    QVariantAnimation *a3_s_o1 = new DummyPropertyAnimation;
     a2_s_o1->setLoopCount(2);
     sequence->addAnimation(a1_s_o1);
     sequence->addAnimation(a2_s_o1);
@@ -765,8 +763,6 @@ void tst_QSequentialAnimationGroup::pauseAndResume()
 
 void tst_QSequentialAnimationGroup::restart()
 {
-    AnimationObject s_o1;
-
     // sequence operating on same object/property
     QAnimationGroup *sequence = new QSequentialAnimationGroup();
     QSignalSpy seqCurrentAnimChangedSpy(sequence, SIGNAL(currentAnimationChanged(QAbstractAnimation*)));
@@ -776,7 +772,7 @@ void tst_QSequentialAnimationGroup::restart()
     QSignalSpy *animsStateChanged[3];
 
     for (int i = 0; i < 3; i++) {
-        anims[i] = new QPropertyAnimation(&s_o1, "value");
+        anims[i] = new DummyPropertyAnimation;
         anims[i]->setDuration(100);
         animsStateChanged[i] = new QSignalSpy(anims[i], SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
     }
@@ -831,15 +827,11 @@ void tst_QSequentialAnimationGroup::restart()
 
 void tst_QSequentialAnimationGroup::looping()
 {
-    AnimationObject s_o1;
-    AnimationObject s_o2;
-    AnimationObject s_o3;
-
     // sequence operating on same object/property
     QSequentialAnimationGroup *sequence = new QSequentialAnimationGroup();
-    QAbstractAnimation *a1_s_o1 = new QPropertyAnimation(&s_o1, "value");
-    QAbstractAnimation *a2_s_o1 = new QPropertyAnimation(&s_o1, "value");
-    QAbstractAnimation *a3_s_o1 = new QPropertyAnimation(&s_o1, "value");
+    QAbstractAnimation *a1_s_o1 = new DummyPropertyAnimation;
+    QAbstractAnimation *a2_s_o1 = new DummyPropertyAnimation;
+    QAbstractAnimation *a3_s_o1 = new DummyPropertyAnimation;
 
     QSignalSpy a1Spy(a1_s_o1, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
     QSignalSpy a2Spy(a2_s_o1, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
@@ -1030,7 +1022,7 @@ void tst_QSequentialAnimationGroup::groupWithZeroDurationAnimations()
     QCOMPARE(o2.property("myProperty").toInt(), 42);
     QCOMPARE(o2.property("myOtherProperty").toInt(), 13);
 
-    QTest::qWait(50);
+    QTest::qWait(100);
 
     int o2val = o2.property("myOtherProperty").toInt();
     QVERIFY(o2val > 13);
@@ -1181,7 +1173,7 @@ void tst_QSequentialAnimationGroup::deleteChildrenWithRunningGroup()
     QCOMPARE(group.state(), QAnimationGroup::Running);
     QCOMPARE(anim1->state(), QAnimationGroup::Running);
 
-    QTest::qWait(50);
+    QTest::qWait(100);
     QVERIFY(group.currentTime() > 0);
 
     delete anim1;
@@ -1357,8 +1349,7 @@ void tst_QSequentialAnimationGroup::zeroDurationAnimation()
     anim2->setEndValue(100);
     anim2->setDuration(100);
 
-    AnimationObject o1;
-    QPropertyAnimation *anim3 = new QPropertyAnimation(&o1, "value");
+    DummyPropertyAnimation *anim3 = new DummyPropertyAnimation;
     anim3->setEndValue(100);
     anim3->setDuration(0);
 
@@ -1386,7 +1377,7 @@ void tst_QSequentialAnimationGroup::zeroDurationAnimation()
     QCOMPARE(anim2->state(), QAnimationGroup::Running);
     QCOMPARE(anim3->state(), QAnimationGroup::Stopped);
     QCOMPARE(group.state(), QAnimationGroup::Running);
-    QCOMPARE(o1.value(), 100); //anim3 should have been run
+    QCOMPARE(anim3->o.value(), 100); //anim3 should have been run
 }
 
 void tst_QSequentialAnimationGroup::stopUncontrolledAnimations()
@@ -1394,7 +1385,7 @@ void tst_QSequentialAnimationGroup::stopUncontrolledAnimations()
     QSequentialAnimationGroup group;
 
     AnimationObject o1;
-    UncontrolledAnimation notTimeDriven(&o1, "value");
+    UncontrolledAnimation notTimeDriven(&o1);
     QCOMPARE(notTimeDriven.totalDuration(), -1);
 
     TestAnimation loopsForever;
@@ -1432,7 +1423,7 @@ void tst_QSequentialAnimationGroup::finishWithUncontrolledAnimation()
     //1st case:
     //first we test a group with one uncontrolled animation
     QSequentialAnimationGroup group;
-    UncontrolledAnimation notTimeDriven(&o1, "value", &group);
+    UncontrolledAnimation notTimeDriven(&o1, &group);
     QSignalSpy spy(&group, SIGNAL(finished()));
 
     group.start();
@@ -1451,7 +1442,7 @@ void tst_QSequentialAnimationGroup::finishWithUncontrolledAnimation()
     //2nd case:
     // lets make sure the seeking will work again
     spy.clear();
-    QPropertyAnimation anim(&group);
+    DummyPropertyAnimation anim(&group);
     QSignalSpy animStateChangedSpy(&anim, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
 
     group.setCurrentTime(300);
@@ -1593,7 +1584,7 @@ void tst_QSequentialAnimationGroup::insertAnimation()
 {
     QSequentialAnimationGroup group;
     group.setLoopCount(2);
-    QPropertyAnimation *anim = new QPropertyAnimation(&group);
+    QPropertyAnimation *anim = new DummyPropertyAnimation(&group);
     QCOMPARE(group.duration(), anim->duration());
     group.setCurrentTime(300);
     QCOMPARE(group.currentLoop(), 1);
@@ -1616,7 +1607,7 @@ public slots:
     {
         stop();
         clearAnimations();
-        new QPropertyAnimation(this);
+        new DummyPropertyAnimation(this);
         start();
     }
 
@@ -1626,9 +1617,9 @@ public slots:
 void tst_QSequentialAnimationGroup::clearAnimations()
 {
     SequentialAnimationGroup group;
-    QPointer<QAbstractAnimation> anim1 = new QPropertyAnimation(&group);
+    QPointer<QAbstractAnimation> anim1 = new DummyPropertyAnimation(&group);
     group.connect(anim1, SIGNAL(finished()), SLOT(clearAnimations()));
-    new QPropertyAnimation(&group);
+    new DummyPropertyAnimation(&group);
     QCOMPARE(group.animationCount(), 2);
 
     group.start();
@@ -1637,7 +1628,7 @@ void tst_QSequentialAnimationGroup::clearAnimations()
     QCOMPARE(group.state(), QAbstractAnimation::Stopped);
     QCOMPARE(group.currentTime(), 0);
 
-    anim1 = new QPropertyAnimation(&group);
+    anim1 = new DummyPropertyAnimation(&group);
     group.connect(anim1, SIGNAL(finished()), SLOT(refill()));
     group.start();
     QTest::qWait(anim1->duration() + 100);
