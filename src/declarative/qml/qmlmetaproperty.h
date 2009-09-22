@@ -53,6 +53,7 @@ QT_MODULE(Declarative)
 
 class QObject;
 class QmlAbstractBinding;
+class QmlExpression;
 class QStringList;
 class QVariant;
 struct QMetaObject;
@@ -124,6 +125,9 @@ public:
 
     QmlAbstractBinding *binding() const;
     QmlAbstractBinding *setBinding(QmlAbstractBinding *) const;
+
+    QmlExpression *signalExpression() const;
+    QmlExpression *setSignalExpression(QmlExpression *) const;
 
     static QmlMetaProperty createProperty(QObject *, const QString &);
 

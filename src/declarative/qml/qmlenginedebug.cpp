@@ -104,11 +104,7 @@ QmlEngineDebugServer::propertyData(QObject *obj, int propIdx)
 
     if (prop.type() < QVariant::UserType) {
         rv.type = QmlObjectProperty::Basic;
-        if (qobject_cast<QmlBoundSignalParameters*>(obj) && prop.name() != QByteArray("objectName"))
-            // these "properties" only have meaning during signal emission
-            rv.value = tr("(signal parameter)");
-        else
-            rv.value = prop.read(obj);
+        rv.value = prop.read(obj);
     } else if (QmlMetaType::isObject(prop.userType()))  {
         rv.type = QmlObjectProperty::Object;
     } else if (QmlMetaType::isList(prop.userType()) ||

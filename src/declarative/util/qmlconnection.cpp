@@ -187,10 +187,7 @@ void QmlConnection::connectIfValid()
             return;
         }
 
-        if (sigparams.isEmpty())
-            d->boundsignal = new QmlBoundSignal(qmlContext(this), d->script, sender, sigIdx, this);
-        else
-            d->boundsignal = new QmlBoundSignalProxy(new QmlContext(qmlContext(this),this), d->script, sender, sigIdx, this);
+        d->boundsignal = new QmlBoundSignal(qmlContext(this), d->script, sender, mo->method(sigIdx), this);
     }
 }
 
@@ -238,7 +235,7 @@ void QmlConnection::setScript(const QString& script)
         } else {
             // must exist - update
             d->script = script;
-            d->boundsignal->setExpression(script);
+            d->boundsignal->expression()->setExpression(script);
         }
     } else {
         d->script = script;
