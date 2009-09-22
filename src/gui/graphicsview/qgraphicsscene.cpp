@@ -2434,17 +2434,8 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
 
     // Ensure that newly added items that have subfocus set, gain
     // focus automatically if there isn't a focus item already.
-    if (!d->focusItem) {
-        if (item->focusItem() == item && item != d->lastFocusItem) {
-            QGraphicsItem *fi = item->focusItem() ? item->focusItem() : item->focusScopeItem();
-            if (fi) {
-                QGraphicsItem *fsi;
-                while ((fsi = fi->focusScopeItem()) && fsi->isVisible())
-                    fi = fsi;
-                fi->setFocus();
-            }
-        }
-    }
+    if (!d->focusItem && item != d->lastFocusItem && item->focusItem() == item)
+        item->focusItem()->setFocus();
 
     d->updateInputMethodSensitivityInViews();
 }

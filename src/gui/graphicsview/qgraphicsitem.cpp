@@ -982,12 +982,10 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
         QGraphicsItem *p = newParent;
         while (p) {
             if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
-                // ### We really want the parent's focus scope item to point
-                // to this item's focusItem...
-                if (q_ptr->flags() & QGraphicsItem::ItemIsFocusScope)
-                    p->d_ptr->focusScopeItem = q_ptr;
-                else
-                    p->d_ptr->focusScopeItem = subFocusItem ? subFocusItem : parentFocusScopeItem;
+                p->d_ptr->focusScopeItem = subFocusItem ? subFocusItem : parentFocusScopeItem;
+                // ### The below line might not make sense...
+                if (subFocusItem)
+                    subFocusItem->d_ptr->clearSubFocus();
                 break;
             }
             p = p->d_ptr->parent;
@@ -2812,15 +2810,12 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
     if (scene && scene->focusItem() == f)
         return;
 
-    // Update the child focus chain.
-    setSubFocus();
-
     // Update focus scope item ptr.
     QGraphicsItem *p = parent;
     while (p) {
         if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
             p->d_ptr->focusScopeItem = q_ptr;
-            if (!q_ptr->isActive())
+            if (!q_ptr->isActive() || !p->focusItem())
                 return;
             break;
         }
@@ -2830,9 +2825,10 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
     if (climb) {
         while (f->d_ptr->focusScopeItem && f->d_ptr->focusScopeItem->isVisible())
             f = f->d_ptr->focusScopeItem;
-        if (f != q_ptr)
-            f->d_ptr->setSubFocus();
     }
+
+    // Update the child focus chain.
+    f->d_ptr->setSubFocus();
 
     // Update the scene's focus item.
     if (scene) {
@@ -2858,13 +2854,15 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
 void QGraphicsItem::clearFocus()
 {
     // Pass focus to the closest parent focus scope.
-    QGraphicsItem *p = d_ptr->parent;
-    while (p) {
-        if (p->flags() & ItemIsFocusScope) {
-            p->d_ptr->setFocusHelper(Qt::OtherFocusReason, /* climb = */ false);
-            return;
+    if (!d_ptr->inDestructor) {
+        QGraphicsItem *p = d_ptr->parent;
+        while (p) {
+            if (p->flags() & ItemIsFocusScope) {
+                p->d_ptr->setFocusHelper(Qt::OtherFocusReason, /* climb = */ false);
+                return;
+            }
+            p = p->d_ptr->parent;
         }
-        p = p->d_ptr->parent;
     }
 
     // Invisible items with focus must explicitly clear subfocus.
