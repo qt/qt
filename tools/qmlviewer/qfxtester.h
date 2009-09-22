@@ -155,7 +155,7 @@ QML_DECLARE_TYPE(QFxVisualTestKey)
 class QFxTester : public QAbstractAnimation
 {
 public:
-    QFxTester(const QString &script, QmlViewer::ScriptOptions options, QFxView *parent);
+    QFxTester(const QString &script, QmlViewer::ScriptOptions options, QmlView *parent);
 
     virtual int duration() const;
 
@@ -174,7 +174,7 @@ private:
     enum Destination { View, ViewPort };
     void addKeyEvent(Destination, QKeyEvent *);
     void addMouseEvent(Destination, QMouseEvent *);
-    QFxView *m_view;
+    QmlView *m_view;
 
     struct MouseEvent {
         MouseEvent(QMouseEvent *e)

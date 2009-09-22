@@ -113,7 +113,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Image,QFxImage)
 /*!
     \internal
     \class QFxImage Image
-    \brief The QFxImage class provides an image item that you can add to a QFxView.
+    \brief The QFxImage class provides an image item that you can add to a QmlView.
 
     \ingroup group_coreitems
 

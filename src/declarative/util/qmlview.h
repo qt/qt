@@ -59,15 +59,15 @@ class QmlEngine;
 class QmlContext;
 class QmlError;
 
-class QFxViewPrivate;
-class Q_DECLARATIVE_EXPORT QFxView : public QGraphicsView
+class QmlViewPrivate;
+class Q_DECLARATIVE_EXPORT QmlView : public QGraphicsView
 {
     Q_OBJECT
     Q_PROPERTY(bool contentResizable READ contentResizable WRITE setContentResizable)
 public:
-    explicit QFxView(QWidget *parent = 0);
+    explicit QmlView(QWidget *parent = 0);
 
-    virtual ~QFxView();
+    virtual ~QmlView();
 
     void setUrl(const QUrl&);
     void setQml(const QString &qml, const QString &filename=QString());
@@ -102,8 +102,8 @@ protected:
     void timerEvent(QTimerEvent*);
 
 private:
-    friend class QFxViewPrivate;
-    QFxViewPrivate *d;
+    friend class QmlViewPrivate;
+    QmlViewPrivate *d;
 };
 
 QT_END_NAMESPACE

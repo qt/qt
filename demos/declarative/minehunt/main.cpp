@@ -2,7 +2,7 @@
 #include "qmlcontext.h"
 #include "qml.h"
 #include <qfxitem.h>
-#include <qfxview.h>
+#include <qmlview.h>
 
 #include <QWidget>
 #include <QApplication>
@@ -94,7 +94,7 @@ private:
     int getHint(int row, int col);
     void setPlaying(bool b){if(b==playing) return; playing=b; emit isPlayingChanged();}
 
-    QFxView *canvas;
+    QmlView *canvas;
 
     QList<Tile *> _tiles;
     int numCols;
@@ -123,7 +123,7 @@ MyWidget::MyWidget(int width, int height, QWidget *parent, Qt::WindowFlags flags
     vbox->setMargin(0);
     setLayout(vbox);
 
-    canvas = new QFxView(this);
+    canvas = new QmlView(this);
     canvas->setFixedSize(width, height);
     vbox->addWidget(canvas);
 

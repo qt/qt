@@ -52,7 +52,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Gradient,QFxGradient)
 /*!
     \internal
     \class QFxPen
-    \brief The QFxPen class provides a pen used for drawing rectangle borders on a QFxView.
+    \brief The QFxPen class provides a pen used for drawing rectangle borders on a QmlView.
 
     By default, the pen is invalid and nothing is drawn. You must either set a color (then the default
     width is 1) or a width (then the default color is black).
@@ -175,7 +175,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rectangle,QFxRect)
 /*!
     \internal
     \class QFxRect
-    \brief The QFxRect class provides a rectangle item that you can add to a QFxView.
+    \brief The QFxRect class provides a rectangle item that you can add to a QmlView.
 */
 QFxRect::QFxRect(QFxItem *parent)
   : QFxItem(*(new QFxRectPrivate), parent)

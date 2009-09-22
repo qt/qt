@@ -11,7 +11,7 @@
 **
 ****************************************************************************/
 
-#include <qfxview.h>
+#include <qmlview.h>
 #include "ui_recopts.h"
 
 #include "qmlviewer.h"
@@ -286,7 +286,7 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     if (!(flags & Qt::FramelessWindowHint))
         createMenu(menuBar(),0);
 
-    canvas = new QFxView(this);
+    canvas = new QmlView(this);
     canvas->setAttribute(Qt::WA_OpaquePaintEvent);
     canvas->setAttribute(Qt::WA_NoSystemBackground);
     canvas->setContentResizable(!skin || !scaleSkin);

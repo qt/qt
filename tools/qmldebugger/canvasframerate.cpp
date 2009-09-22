@@ -13,6 +13,8 @@
 #include <QPushButton>
 #include <QLineEdit>
 #include <QCheckBox>
+#include <QSpinBox>
+#include <QLabel>
 
 QT_BEGIN_NAMESPACE
 
@@ -26,6 +28,7 @@ public:
 
 public slots:
     void addSample(int, int, int, bool);
+    void setResolutionForHeight(int);
 
 protected:
     virtual void paintEvent(QPaintEvent *);
@@ -153,7 +156,7 @@ void QLineGraph::drawSample(QPainter *p, int s, const QRect &rect)
         first = qMax(0, _samples.count() - samplesPerWidth - 1);
     int last = qMin(_samples.count() - 1, first + samplesPerWidth);
 
-    qreal scaleY = rect.height() / resolutionForHeight;
+    qreal scaleY = qreal(rect.height()) / resolutionForHeight;
     qreal scaleX = qreal(rect.width()) / qreal(samplesPerWidth);
 
     int xEnd;
@@ -203,6 +206,12 @@ void QLineGraph::paintEvent(QPaintEvent *)
     }
 
     drawTime(&p, r);
+}
+
+void QLineGraph::setResolutionForHeight(int resolution)
+{
+    resolutionForHeight = resolution;
+    update();
 }
 
 class CanvasFrameRatePlugin : public QmlDebugClient
@@ -256,7 +265,18 @@ CanvasFrameRate::CanvasFrameRate(QmlDebugConnection *client, QWidget *parent)
     layout->addWidget(m_tabs);
 
     QHBoxLayout *bottom = new QHBoxLayout;
+    bottom->setSpacing(5);
     layout->addLayout(bottom);
+
+    QLabel *label = new QLabel("Resolution", this);
+    bottom->addWidget(label);
+
+    m_spin = new QSpinBox(this);
+    m_spin->setRange(50,200);
+    m_spin->setValue(50);
+    m_spin->setSuffix("ms");
+    bottom->addWidget(m_spin);
+
     bottom->addStretch(2);
 
     QCheckBox *check = new QCheckBox("Enable", this);
@@ -284,6 +304,7 @@ void CanvasFrameRate::newTab()
     QLineGraph *graph = new QLineGraph(this);
     QObject::connect(m_plugin, SIGNAL(sample(int,int,int,bool)),
                      graph, SLOT(addSample(int,int,int,bool)));
+    QObject::connect(m_spin, SIGNAL(valueChanged(int)), graph, SLOT(setResolutionForHeight(int)));
 
     QString name = QLatin1String("Graph ") + QString::number(id);
     m_tabs->addTab(graph, name);

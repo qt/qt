@@ -84,7 +84,7 @@ TextEdit {
     \qmlclass TextEdit
     \ingroup group_coreitems
 
-    \brief The QFxTextEdit class provides an editable formatted text item that you can add to a QFxView.
+    \brief The QFxTextEdit class provides an editable formatted text item that you can add to a QmlView.
 
     It can display both plain and rich text.
 
