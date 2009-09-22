@@ -658,7 +658,7 @@ void tst_QMenu::task242454_sizeHint()
     QMenu menu;
     QString s = QLatin1String("foo\nfoo\nfoo\nfoo");
     menu.addAction(s);
-    QVERIFY(menu.sizeHint().width() > menu.fontMetrics().width(s));
+    QVERIFY(menu.sizeHint().width() > menu.fontMetrics().boundingRect(QRect(), Qt::TextSingleLine, s).width());
 }
 
 
