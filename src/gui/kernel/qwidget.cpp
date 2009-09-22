@@ -2106,6 +2106,13 @@ static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QBrus
             painter->drawTiledPixmap(rect, brush.texture(), rect.topLeft());
         }
 #endif // Q_WS_MAC
+
+    } else if (brush.gradient()
+               && brush.gradient()->coordinateMode() == QGradient::ObjectBoundingMode) {
+        painter->save();
+        painter->setClipRegion(rgn);
+        painter->fillRect(0, 0, painter->device()->width(), painter->device()->height(), brush);
+        painter->restore();
     } else {
         const QVector<QRect> &rects = rgn.rects();
         for (int i = 0; i < rects.size(); ++i)
@@ -2145,7 +2152,6 @@ void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, int 
 
     if (q->autoFillBackground())
         fillRegion(painter, rgn, autoFillBrush);
-
 
     if (q->testAttribute(Qt::WA_StyledBackground)) {
         painter->setClipRegion(rgn);
@@ -4991,7 +4997,7 @@ QGraphicsEffect *QWidget::graphicsEffect() const
 /*!
 
   \brief The setGraphicsEffect function is for setting the widget's graphics effect.
-  
+
     Sets \a effect as the widget's effect. If there already is an effect installed
     on this widget, QWidget will delete the existing effect before installing
     the new \a effect.
