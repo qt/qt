@@ -209,6 +209,8 @@ QmlEnginePrivate::~QmlEnginePrivate()
         clear(bindValues[ii]);
     for(int ii = 0; ii < parserStatus.count(); ++ii)
         clear(parserStatus[ii]);
+    for(QHash<int, QmlCompiledData*>::ConstIterator iter = m_compositeTypes.constBegin(); iter != m_compositeTypes.constEnd(); ++iter)
+        (*iter)->release();
 }
 
 void QmlEnginePrivate::clear(SimpleList<QmlAbstractBinding> &bvs)
@@ -1746,6 +1748,77 @@ bool QmlEnginePrivate::resolveType(const Imports& imports, const QByteArray& typ
 void QmlEnginePrivate::resolveTypeInNamespace(ImportedNamespace* ns, const QByteArray& type, QmlType** type_return, QUrl* url_return, int *vmaj, int *vmin ) const
 {
     ns->find(type,vmaj,vmin,type_return,url_return);
+}
+
+static void voidptr_destructor(void *v)
+{
+    void **ptr = (void **)v;
+    delete ptr;
+}
+
+static void *voidptr_constructor(const void *v)
+{
+    if (!v) {
+        return new void*;
+    } else {
+        return new void*(*(void **)v);
+    }
+}
+
+void QmlEnginePrivate::registerCompositeType(QmlCompiledData *data)
+{
+    QByteArray name = data->root.className();
+
+    QByteArray ptr = name + "*";
+    QByteArray lst = "QmlList<" + ptr + ">*";
+
+    int ptr_type = QMetaType::registerType(ptr.constData(), voidptr_destructor,
+                                           voidptr_constructor);
+    int lst_type = QMetaType::registerType(lst.constData(), voidptr_destructor,
+                                           voidptr_constructor);
+
+    m_qmlLists.insert(lst_type, ptr_type);
+    m_compositeTypes.insert(ptr_type, data);
+    data->addref();
+}
+
+bool QmlEnginePrivate::isQmlList(int t) const
+{
+    return m_qmlLists.contains(t) || QmlMetaType::isQmlList(t);
+}
+
+bool QmlEnginePrivate::isObject(int t)
+{
+    return m_compositeTypes.contains(t) || QmlMetaType::isObject(t);
+}
+
+int QmlEnginePrivate::qmlListType(int t) const
+{
+    QHash<int, int>::ConstIterator iter = m_qmlLists.find(t);
+    if (iter != m_qmlLists.end())
+        return *iter;
+    else
+        return QmlMetaType::qmlListType(t);
+}
+
+const QMetaObject *QmlEnginePrivate::rawMetaObjectForType(int t) const
+{
+    QHash<int, QmlCompiledData*>::ConstIterator iter = m_compositeTypes.find(t);
+    if (iter != m_compositeTypes.end()) {
+        return &(*iter)->root;
+    } else {
+        return QmlMetaType::rawMetaObjectForType(t);
+    }
+}
+
+const QMetaObject *QmlEnginePrivate::metaObjectForType(int t) const
+{
+    QHash<int, QmlCompiledData*>::ConstIterator iter = m_compositeTypes.find(t);
+    if (iter != m_compositeTypes.end()) {
+        return &(*iter)->root;
+    } else {
+        return QmlMetaType::metaObjectForType(t);
+    }
 }
 
 QT_END_NAMESPACE

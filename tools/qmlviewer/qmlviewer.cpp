@@ -348,7 +348,7 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     connect(snapshotAction, SIGNAL(triggered()), this, SLOT(takeSnapShot()));
     recordMenu->addAction(snapshotAction);
 
-    recordAction = new QAction(tr("Start Recording &Video\tF2"), parent);
+    recordAction = new QAction(tr("Start Recording &Video\tF9"), parent);
     connect(recordAction, SIGNAL(triggered()), this, SLOT(toggleRecordingWithSelection()));
     recordMenu->addAction(recordAction);
 
@@ -570,7 +570,7 @@ void QmlViewer::toggleRecording()
         return;
     }
     bool recording = !recordTimer.isRunning();
-    recordAction->setText(recording ? tr("&Stop Recording Video\tF2") : tr("&Start Recording Video\tF2"));
+    recordAction->setText(recording ? tr("&Stop Recording Video\tF9") : tr("&Start Recording Video\tF9"));
     setRecording(recording);
 }
 

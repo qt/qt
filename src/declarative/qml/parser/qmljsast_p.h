@@ -2481,13 +2481,13 @@ public:
 
     UiPublicMember(NameId *memberType,
                    NameId *name)
-        : type(Property), memberType(memberType), name(name), expression(0), isDefaultMember(false), isReadonlyMember(false), parameters(0)
+        : type(Property), typeModifier(0), memberType(memberType), name(name), expression(0), isDefaultMember(false), isReadonlyMember(false), parameters(0)
     { kind = K; }
 
     UiPublicMember(NameId *memberType,
                    NameId *name,
                    ExpressionNode *expression)
-        : type(Property), memberType(memberType), name(name), expression(expression), isDefaultMember(false), isReadonlyMember(false), parameters(0)
+        : type(Property), typeModifier(0), memberType(memberType), name(name), expression(expression), isDefaultMember(false), isReadonlyMember(false), parameters(0)
     { kind = K; }
 
     virtual SourceLocation firstSourceLocation() const
@@ -2509,6 +2509,7 @@ public:
 
 // attributes
     enum { Signal, Property } type;
+    NameId *typeModifier;
     NameId *memberType;
     NameId *name;
     ExpressionNode *expression;
@@ -2518,6 +2519,7 @@ public:
     SourceLocation defaultToken;
     SourceLocation readonlyToken;
     SourceLocation propertyToken;
+    SourceLocation typeModifierToken;
     SourceLocation typeToken;
     SourceLocation identifierToken;
     SourceLocation colonToken;

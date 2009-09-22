@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
+class QmlEngine;
 class Q_DECLARATIVE_EXPORT QmlListAccessor
 {
 public:
@@ -57,7 +58,7 @@ public:
     virtual ~QmlListAccessor();
 
     QVariant list() const;
-    void setList(const QVariant &);
+    void setList(const QVariant &, QmlEngine * = 0);
 
     bool isValid() const;
 

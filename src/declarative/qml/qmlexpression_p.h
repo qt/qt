@@ -93,6 +93,7 @@ public:
         PreTransformedQtScriptData = 2
     };
 
+
     void init(QmlContext *, const QString &, QObject *);
     void init(QmlContext *, void *, QmlRefCount *, QObject *);
 
@@ -108,8 +109,9 @@ public:
     QString fileName;
     int line;
 
+    QVariant value(QObject *secondaryScope = 0);
     QVariant evalSSE();
-    QVariant evalQtScript();
+    QVariant evalQtScript(QObject *secondaryScope);
 
     struct SignalGuard : public QGuard<QObject> {
         SignalGuard() : isDuplicate(false), notifyIndex(-1) {}
@@ -132,6 +134,10 @@ public:
     int guardListLength;
     void updateGuards(const QPODVector<QmlEnginePrivate::CapturedProperty> &properties);
     void clearGuards();
+
+    static QmlExpressionPrivate *get(QmlExpression *expr) {
+        return static_cast<QmlExpressionPrivate *>(QObjectPrivate::get(expr));
+    }
 };
 
 QT_END_NAMESPACE

@@ -524,6 +524,32 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
             }
         }
 
+        if (!typeFound && memberType.at(0).isUpper()) {
+            QString typemodifier;
+            if(node->typeModifier)
+                typemodifier = node->typeModifier->asString();
+            if (typemodifier == QString()) {
+                type = Object::DynamicProperty::Custom;
+            } else if(typemodifier == QLatin1String("list")) {
+                type = Object::DynamicProperty::CustomList;
+            } else {
+                QmlError error;
+                error.setDescription(QCoreApplication::translate("QmlParser","Invalid property type modifier"));
+                error.setLine(node->typeModifierToken.startLine);
+                error.setColumn(node->typeModifierToken.startColumn);
+                _parser->_errors << error;
+                return false;
+            }
+            typeFound = true;
+        } else if (node->typeModifier) {
+            QmlError error;
+            error.setDescription(QCoreApplication::translate("QmlParser","Unexpected property type modifier"));
+            error.setLine(node->typeModifierToken.startLine);
+            error.setColumn(node->typeModifierToken.startColumn);
+            _parser->_errors << error;
+            return false;
+        }
+
         if(!typeFound) {
             QmlError error;
             error.setDescription(QCoreApplication::translate("QmlParser","Expected property type"));
@@ -545,6 +571,12 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         Object::DynamicProperty property;
         property.isDefaultProperty = node->isDefaultMember;
         property.type = type;
+        if (type >= Object::DynamicProperty::Custom) {
+            QmlScriptParser::TypeReference *typeRef = 
+                _parser->findOrCreateType(memberType);
+            typeRef->refObjects.append(_stateStack.top().object);
+            property.customType = memberType.toUtf8();
+        }
         property.name = name.toUtf8();
         property.location = location(node->firstSourceLocation(),
                                      node->lastSourceLocation());
