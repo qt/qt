@@ -117,7 +117,7 @@ typedef QList<HashString> NamespaceList;
 struct Namespace {
 
     Namespace() :
-            classDef(0),
+            classDef(this),
             hasTrFunctions(false), complained(false)
     {}
 
@@ -260,7 +260,7 @@ private:
                       NamespaceList *resolved, QStringList *unresolved) const;
     bool findNamespaceCallback(const Namespace *ns, void *context) const;
     const Namespace *findNamespace(const NamespaceList &namespaces, int nsCount = -1) const;
-    void enterNamespace(NamespaceList *namespaces, const HashString &name, bool isClass);
+    void enterNamespace(NamespaceList *namespaces, const HashString &name);
     void truncateNamespaces(NamespaceList *namespaces, int lenght);
     Namespace *modifyNamespace(NamespaceList *namespaces, bool tryOrigin = true);
 
@@ -1111,14 +1111,11 @@ const Namespace *CppParser::findNamespace(const NamespaceList &namespaces, int n
     return ns;
 }
 
-void CppParser::enterNamespace(NamespaceList *namespaces, const HashString &name, bool isClass)
+void CppParser::enterNamespace(NamespaceList *namespaces, const HashString &name)
 {
     *namespaces << name;
-    if (!findNamespace(*namespaces)) {
-        Namespace *ns = modifyNamespace(namespaces, false);
-        if (isClass)
-            ns->classDef = ns;
-    }
+    if (!findNamespace(*namespaces))
+        modifyNamespace(namespaces, false);
 }
 
 void CppParser::truncateNamespaces(NamespaceList *namespaces, int length)
@@ -1543,7 +1540,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                 } else {
                     namespaceDepths.push(namespaces.count());
                 }
-                enterNamespace(&namespaces, fct, true);
+                enterNamespace(&namespaces, fct);
 
                 functionContext = namespaces;
                 functionContextUnresolved.clear(); // Pointless
@@ -1561,7 +1558,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                 yyTok = getToken();
                 if (yyTok == Tok_LeftBrace) {
                     namespaceDepths.push(namespaces.count());
-                    enterNamespace(&namespaces, ns, false);
+                    enterNamespace(&namespaces, ns);
                     yyTok = getToken();
                 } else if (yyTok == Tok_Equals) {
                     // e.g. namespace Is = OuterSpace::InnerSpace;
@@ -1670,7 +1667,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                             break;
                         }
                         while (!findNamespace(functionContext, idx)->classDef->hasTrFunctions) {
-                            if (idx == 1 || !findNamespace(functionContext, idx - 1)->classDef) {
+                            if (idx == 1) {
                                 context = stringifyNamespace(functionContext);
                                 Namespace *fctx = findNamespace(functionContext)->classDef;
                                 if (!fctx->complained) {
