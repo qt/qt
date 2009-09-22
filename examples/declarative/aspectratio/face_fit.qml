@@ -8,13 +8,13 @@ import Qt 4.6
 //
 Rectangle {
     // default size: whole image, unscaled
-    width: Image.width
-    height: Image.height
+    width: Face.width
+    height: Face.height
     color: "gray"
     clip: true
 
     Image {
-        id: Image
+        id: Face
         source: "pics/face.png"
         x: (parent.width-width*scale)/2
         y: (parent.height-height*scale)/2

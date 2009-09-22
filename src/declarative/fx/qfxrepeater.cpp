@@ -62,15 +62,15 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Repeater,QFxRepeater)
     \qmlclass Repeater
     \inherits Item
 
-    \brief The Repeater item allows you to repeat a component based on a data source.
+    \brief The Repeater item allows you to repeat a component based on a model.
 
     The Repeater item is used when you want to create a large number of
-    similar items.  For each entry in the data source, an item is instantiated
-    in a context seeded with data from the data source.  If the repeater will
+    similar items.  For each entry in the model, an item is instantiated
+    in a context seeded with data from the model.  If the repeater will
     be instantiating a large number of instances, it may be more efficient to
     use one of Qt Declarative's \l {xmlViews}{view items}.
 
-    The data source may be either an object list, a string list or a Qt model.
+    The model may be either an object list, a string list, a number or a Qt model.
     In each case, the data element and the index is exposed to each instantiated
     component.  The index is always exposed as an accessible \c index property.
     In the case of an object or string list, the data element (of type string
@@ -131,7 +131,7 @@ QFxRepeater::~QFxRepeater()
 
     The model providing data for the repeater.
 
-    The model may be either an object list, a string list or a Qt model.
+    The model may be either an object list, a string list, a number or a Qt model.
     In each case, the data element and the index is exposed to each instantiated
     component.  The index is always exposed as an accessible \c index property.
     In the case of an object or string list, the data element (of type string

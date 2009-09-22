@@ -1,5 +1,5 @@
 #include <qtest.h>
-#include <QFxView>
+#include <QmlView>
 #include <QApplication>
 #include <QFxTestView>
 #include <QFile>

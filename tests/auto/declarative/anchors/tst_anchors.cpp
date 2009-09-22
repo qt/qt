@@ -1,7 +1,7 @@
 #include <qtest.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qfxview.h>
+#include <QtDeclarative/qmlview.h>
 #include <QtDeclarative/qfxrect.h>
 
 class tst_anchors : public QObject
@@ -43,7 +43,7 @@ T *tst_anchors::findItem(QFxItem *parent, const QString &objectName)
 
 void tst_anchors::basicAnchors()
 {
-    QFxView *view = new QFxView;
+    QmlView *view = new QmlView;
     view->setUrl(QUrl("file://" SRCDIR "/data/anchors.qml"));
 
     view->execute();
@@ -93,7 +93,7 @@ void tst_anchors::basicAnchors()
 void tst_anchors::loops()
 {
     {
-        QFxView *view = new QFxView;
+        QmlView *view = new QmlView;
 
         view->setUrl(QUrl("file://" SRCDIR "/data/loop1.qml"));
 
@@ -105,7 +105,7 @@ void tst_anchors::loops()
     }
 
     {
-        QFxView *view = new QFxView;
+        QmlView *view = new QmlView;
 
         view->setUrl(QUrl("file://" SRCDIR "/data/loop2.qml"));
 
@@ -120,7 +120,7 @@ void tst_anchors::loops()
 void tst_anchors::illegalSets()
 {
     {
-        QFxView *view = new QFxView;
+        QmlView *view = new QmlView;
 
         view->setUrl(QUrl("file://" SRCDIR "/data/illegal1.qml"));
 
@@ -132,7 +132,7 @@ void tst_anchors::illegalSets()
     }
 
     {
-        QFxView *view = new QFxView;
+        QmlView *view = new QmlView;
 
         view->setUrl(QUrl("file://" SRCDIR "/data/illegal2.qml"));
 
@@ -144,7 +144,7 @@ void tst_anchors::illegalSets()
     }
 
     {
-        QFxView *view = new QFxView;
+        QmlView *view = new QmlView;
 
         view->setUrl(QUrl("file://" SRCDIR "/data/illegal3.qml"));
 
