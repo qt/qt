@@ -90,9 +90,27 @@ win32 {
     !static: DEFINES+=QT_MAKEDLL
 }
 symbian {
-    !static {
+    shared {
         DEFINES+=QT_MAKEDLL
-        TARGET.CAPABILITY = All -Tcb        
+        TARGET.CAPABILITY = All -Tcb
+
+        defBlock = \
+        "$${LITERAL_HASH}ifdef WINSCW" \
+        "DEFFILE ../s60installs/bwins/$${TARGET}.def" \
+        "$${LITERAL_HASH}elif defined EABI" \
+        "DEFFILE ../s60installs/eabi/$${TARGET}.def" \
+        "$${LITERAL_HASH}endif"
+
+        #with defBlock enabled, removed exported symbols are treated as errors
+        #and there is binary compatibility between successive builds.
+        #with defBlock disabled, binary compatibility is broken every time you build
+        #MMP_RULES += defBlock
+        
+        #with EXPORTUNFROZEN enabled, new exports are included in the dll without
+        #needing to run abld freeze, however binary compatibility is only maintained
+        #for symbols that are frozen (and only if defBlock is also enabled)
+        #the downside of EXPORTUNFROZEN is that the linker gets run twice
+        MMP_RULES += EXPORTUNFROZEN
     }
     load(armcc_warnings)
 }

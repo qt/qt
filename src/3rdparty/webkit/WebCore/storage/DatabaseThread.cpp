@@ -35,11 +35,15 @@
 #include "Database.h"
 #include "DatabaseTask.h"
 #include "Logging.h"
+#include "SQLTransactionClient.h"
+#include "SQLTransactionCoordinator.h"
 
 namespace WebCore {
 
 DatabaseThread::DatabaseThread()
     : m_threadID(0)
+    , m_transactionClient(new SQLTransactionClient())
+    , m_transactionCoordinator(new SQLTransactionCoordinator())
 {
     m_selfRef = this;
 }
@@ -97,6 +101,9 @@ void* DatabaseThread::databaseThread()
         pool.cycle();
     }
 
+    // Clean up the list of all pending transactions on this database thread
+    m_transactionCoordinator->shutdown();
+
     LOG(StorageAPI, "About to detach thread %i and clear the ref to DatabaseThread %p, which currently has %i ref(s)", m_threadID, this, refCount());
 
     // Close the databases that we ran transactions on. This ensures that if any transactions are still open, they are rolled back and we don't leave the database in an
@@ -119,7 +126,7 @@ void* DatabaseThread::databaseThread()
     return 0;
 }
 
-void DatabaseThread::recordDatabaseOpen(Database* database) 
+void DatabaseThread::recordDatabaseOpen(Database* database)
 {
     ASSERT(currentThread() == m_threadID);
     ASSERT(database);
@@ -127,7 +134,7 @@ void DatabaseThread::recordDatabaseOpen(Database* database)
     m_openDatabaseSet.add(database);
 }
 
-void DatabaseThread::recordDatabaseClosed(Database* database) 
+void DatabaseThread::recordDatabaseClosed(Database* database)
 {
     ASSERT(currentThread() == m_threadID);
     ASSERT(database);

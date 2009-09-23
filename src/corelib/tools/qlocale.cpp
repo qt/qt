@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -125,7 +125,7 @@ static qulonglong qstrtoull(const char *nptr, const char **endptr, register int 
 #if defined(Q_CC_MWERKS) && defined(Q_OS_WIN32)
 inline bool isascii(int c)
 {
-	return (c >= 0 && c <=127);
+        return (c >= 0 && c <=127);
 }
 #endif
 
@@ -636,6 +636,9 @@ static QString winSystemPMText()
     return QString();
 }
 
+/*!
+  Returns the fallback locale obtained from the system.
+ */
 QLocale QSystemLocale::fallbackLocale() const
 {
     return QLocale(QString::fromLatin1(getWinLocaleName()));
@@ -1146,6 +1149,23 @@ static QLocale::MeasurementSystem macMeasurementSystem()
     }
 }
 
+static void getMacPreferredLanguageAndCountry(QString *language, QString *country)
+{
+    QCFType<CFArrayRef> languages = (CFArrayRef)CFPreferencesCopyValue(
+             CFSTR("AppleLanguages"),
+             kCFPreferencesAnyApplication,
+             kCFPreferencesCurrentUser,
+             kCFPreferencesAnyHost);
+    if (CFArrayGetCount(languages) > 0) {
+        QCFType<CFLocaleRef> locale = CFLocaleCreate(kCFAllocatorDefault,
+                                                     CFStringRef(CFArrayGetValueAtIndex(languages, 0)));
+        if (language)
+            *language = QCFString::toQString(CFStringRef(CFLocaleGetValue(locale, kCFLocaleLanguageCode)));
+        if (country)
+            *country = QCFString::toQString(CFStringRef(CFLocaleGetValue(locale, kCFLocaleCountryCode)));
+    }
+}
+
 QLocale QSystemLocale::fallbackLocale() const
 {
     return QLocale(QString::fromUtf8(getMacLocaleName().constData()));
@@ -1190,9 +1210,19 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
     case NegativeSign:
     case PositiveSign:
     case ZeroDigit:
-    case LanguageId:
-    case CountryId:
         break;
+    case LanguageId:
+    case CountryId: {
+        QString preferredLanguage;
+        QString preferredCountry;
+        getMacPreferredLanguageAndCountry(&preferredLanguage, &preferredCountry);
+        QLocale::Language languageCode = (preferredLanguage.isEmpty() ? QLocale::C : codeToLanguage(preferredLanguage.data()));
+        QLocale::Country countryCode = (preferredCountry.isEmpty() ? QLocale::AnyCountry : codeToCountry(preferredCountry.data()));
+        const QLocalePrivate *d = findLocale(languageCode, countryCode);
+        if (type == LanguageId)
+            return (QLocale::Language)d->languageId();
+        return (QLocale::Country)d->countryId();
+    }
 
     case MeasurementSystem:
         return QVariant(static_cast<int>(macMeasurementSystem()));
@@ -7178,8 +7208,8 @@ Q_CORE_EXPORT double qstrtod(const char *s00, const char **se, bool *ok)
     double ret = strtod((char*)s00, (char**)se);
     if (ok) {
       if((ret == 0.0l && errno == ERANGE)
-	 || ret == HUGE_VAL || ret == -HUGE_VAL)
-	*ok = false;
+         || ret == HUGE_VAL || ret == -HUGE_VAL)
+        *ok = false;
       else
         *ok = true; // the result will be that we don't report underflow in this case
     }

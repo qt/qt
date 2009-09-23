@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,13 +60,13 @@
 #ifndef QT_NO_WHATSTHIS
 # include <qwhatsthis.h>
 #endif
-#include <private/qactiontokeyeventmapper_p.h>
 
 #include "qmenu_p.h"
 #include "qmenubar_p.h"
 #include "qwidgetaction.h"
 #include "qtoolbutton.h"
 #include <private/qaction_p.h>
+#include <private/qsoftkeymanager_p.h>
 #ifdef QT3_SUPPORT
 #include <qmenudata.h>
 #endif // QT3_SUPPORT
@@ -162,6 +162,15 @@ void QMenuPrivate::init()
         scroll = new QMenuPrivate::QMenuScroller;
         scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollNone;
     }
+
+#ifdef QT_SOFTKEYS_ENABLED
+    selectAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::SelectSoftKey, Qt::Key_Select, q);
+    cancelAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::CancelSoftKey, Qt::Key_Back, q);
+    selectAction->setVisible(false); // Don't show these in the menu
+    cancelAction->setVisible(false);
+    q->addAction(selectAction);
+    q->addAction(cancelAction);
+#endif
 }
 
 int QMenuPrivate::scrollerHeight() const
@@ -368,7 +377,9 @@ QRect QMenuPrivate::actionRect(QAction *act) const
     return actionRects.at(index);
 }
 
+#if defined(Q_WS_MAC)
 static const qreal MenuFadeTimeInSec = 0.150;
+#endif
 
 void QMenuPrivate::hideUpToMenuBar()
 {
@@ -568,11 +579,6 @@ void QMenuPrivate::setCurrentAction(QAction *action, int popup, SelectionReason 
                     // Since the menu is a pop-up, it uses the popup reason.
                     if (!q->hasFocus()) {
                         q->setFocus(Qt::PopupFocusReason);
-#ifdef QT_KEYPAD_NAVIGATION
-                        // TODO: aportale, remove KEYPAD_NAVIGATION_HACK when softkey stack
-                        //       handles focus related and user related actions separately...
-                        QActionToKeyEventMapper::addSoftKey(QAction::CancelSoftKey, Qt::Key_Back, q);
-#endif
                     }
                 }
             }
@@ -1301,6 +1307,11 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     do not support the signals: aboutToHide (), aboutToShow () and hovered ().
     It is not possible to display an icon in a native menu on Windows Mobile.
 
+    \section1 QMenu on Mac OS X with Qt build against Cocoa
+
+    QMenu can be inserted only once in a menu/menubar. Subsequent insertions will
+    have no effect or will result in a disabled menu item.
+
     See the \l{mainwindows/menus}{Menus} example for an example of how
     to use QMenuBar and QMenu in your application.
 
@@ -1832,7 +1843,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
 
     if (adjustToDesktop) {
         //handle popup falling "off screen"
-        if (QApplication::layoutDirection() == Qt::RightToLeft) {
+        if (isRightToLeft()) {
             if(snapToMouse) //position flowing left from the mouse
                 pos.setX(mouse.x()-size.width());
 
@@ -1870,9 +1881,9 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     }
     setGeometry(QRect(pos, size));
 #ifndef QT_NO_EFFECTS
-    int hGuess = QApplication::layoutDirection() == Qt::RightToLeft ? QEffects::LeftScroll : QEffects::RightScroll;
+    int hGuess = isRightToLeft() ? QEffects::LeftScroll : QEffects::RightScroll;
     int vGuess = QEffects::DownScroll;
-    if (QApplication::layoutDirection() == Qt::RightToLeft) {
+    if (isRightToLeft()) {
         if ((snapToMouse && (pos.x() + size.width()/2 > mouse.x())) ||
            (qobject_cast<QMenu*>(d->causedPopup.widget) && pos.x() + size.width()/2 > d->causedPopup.widget->x()))
             hGuess = QEffects::RightScroll;
@@ -1923,9 +1934,6 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
 
 #ifndef QT_NO_ACCESSIBILITY
     QAccessible::updateAccessibility(this, 0, QAccessible::PopupMenuStart);
-#endif
-#ifdef QT_KEYPAD_NAVIGATION
-    QActionToKeyEventMapper::addSoftKey(QAction::CancelSoftKey, Qt::Key_Back, this);
 #endif
 }
 
@@ -2585,7 +2593,6 @@ void QMenu::keyPressEvent(QKeyEvent *e)
     case Qt::Key_Escape:
 #ifdef QT_KEYPAD_NAVIGATION
     case Qt::Key_Back:
-        QActionToKeyEventMapper::removeSoftkey(this);
 #endif
         key_consumed = true;
         if (d->tornoff) {
@@ -2779,6 +2786,8 @@ void QMenu::leaveEvent(QEvent *)
     d->sloppyAction = 0;
     if (!d->sloppyRegion.isEmpty())
         d->sloppyRegion = QRegion();
+    if (!d->activeMenu && d->currentAction)
+        setActiveAction(0);
 }
 
 /*!

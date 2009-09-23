@@ -10,7 +10,7 @@ SOURCES += main.cpp \
            lifecycle.cpp \
            graphicsview.cpp
 
-INCLUDEPATH += $$PWD
+RESOURCES += stickman.qrc
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/animation/stickman

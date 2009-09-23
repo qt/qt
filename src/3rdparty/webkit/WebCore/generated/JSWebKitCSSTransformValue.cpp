@@ -90,6 +90,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSWebKitCSSTransformValuePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -104,6 +105,11 @@ const ClassInfo JSWebKitCSSTransformValueConstructor::s_info = { "WebKitCSSTrans
 bool JSWebKitCSSTransformValueConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSWebKitCSSTransformValueConstructor, DOMObject>(exec, &JSWebKitCSSTransformValueConstructorTable, this, propertyName, slot);
+}
+
+bool JSWebKitCSSTransformValueConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSWebKitCSSTransformValueConstructor, DOMObject>(exec, &JSWebKitCSSTransformValueConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -153,6 +159,11 @@ bool JSWebKitCSSTransformValuePrototype::getOwnPropertySlot(ExecState* exec, con
     return getStaticValueSlot<JSWebKitCSSTransformValuePrototype, JSObject>(exec, &JSWebKitCSSTransformValuePrototypeTable, this, propertyName, slot);
 }
 
+bool JSWebKitCSSTransformValuePrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSWebKitCSSTransformValuePrototype, JSObject>(exec, &JSWebKitCSSTransformValuePrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSWebKitCSSTransformValue::s_info = { "WebKitCSSTransformValue", &JSCSSValueList::s_info, &JSWebKitCSSTransformValueTable, 0 };
 
 JSWebKitCSSTransformValue::JSWebKitCSSTransformValue(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebKitCSSTransformValue> impl)
@@ -168,6 +179,11 @@ JSObject* JSWebKitCSSTransformValue::createPrototype(ExecState* exec, JSGlobalOb
 bool JSWebKitCSSTransformValue::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSWebKitCSSTransformValue, Base>(exec, &JSWebKitCSSTransformValueTable, this, propertyName, slot);
+}
+
+bool JSWebKitCSSTransformValue::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSWebKitCSSTransformValue, Base>(exec, &JSWebKitCSSTransformValueTable, this, propertyName, descriptor);
 }
 
 JSValue jsWebKitCSSTransformValueOperationType(ExecState* exec, const Identifier&, const PropertySlot& slot)

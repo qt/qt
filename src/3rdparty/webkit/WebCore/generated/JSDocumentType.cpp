@@ -77,6 +77,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSDocumentTypePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -91,6 +92,11 @@ const ClassInfo JSDocumentTypeConstructor::s_info = { "DocumentTypeConstructor",
 bool JSDocumentTypeConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSDocumentTypeConstructor, DOMObject>(exec, &JSDocumentTypeConstructorTable, this, propertyName, slot);
+}
+
+bool JSDocumentTypeConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSDocumentTypeConstructor, DOMObject>(exec, &JSDocumentTypeConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -129,6 +135,11 @@ JSObject* JSDocumentType::createPrototype(ExecState* exec, JSGlobalObject* globa
 bool JSDocumentType::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSDocumentType, Base>(exec, &JSDocumentTypeTable, this, propertyName, slot);
+}
+
+bool JSDocumentType::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSDocumentType, Base>(exec, &JSDocumentTypeTable, this, propertyName, descriptor);
 }
 
 JSValue jsDocumentTypeName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -191,7 +202,7 @@ JSValue JSDocumentType::getConstructor(ExecState* exec, JSGlobalObject* globalOb
 
 DocumentType* toDocumentType(JSC::JSValue value)
 {
-    return value.isObject(&JSDocumentType::s_info) ? static_cast<JSDocumentType*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSDocumentType::s_info) ? static_cast<JSDocumentType*>(asObject(value))->impl() : 0;
 }
 
 }

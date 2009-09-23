@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -224,6 +224,7 @@ public:
 
     QByteArray &prepend(char c);
     QByteArray &prepend(const char *s);
+    QByteArray &prepend(const char *s, int len);
     QByteArray &prepend(const QByteArray &a);
     QByteArray &append(char c);
     QByteArray &append(const char *s);
@@ -231,6 +232,7 @@ public:
     QByteArray &append(const QByteArray &a);
     QByteArray &insert(int i, char c);
     QByteArray &insert(int i, const char *s);
+    QByteArray &insert(int i, const char *s, int len);
     QByteArray &insert(int i, const QByteArray &a);
     QByteArray &remove(int index, int len);
     QByteArray &replace(int index, int len, const char *s);
@@ -321,6 +323,7 @@ public:
     // stl compatibility
     typedef const char & const_reference;
     typedef char & reference;
+    typedef char value_type;
     void push_back(char c);
     void push_back(const char *c);
     void push_back(const QByteArray &a);
@@ -369,6 +372,7 @@ private:
 
     friend class QByteRef;
     friend class QString;
+    friend Q_CORE_EXPORT QByteArray qUncompress(const uchar *data, int nbytes);
 public:
     typedef Data * DataPtr;
     inline DataPtr &data_ptr() { return d; }
@@ -438,10 +442,10 @@ class Q_CORE_EXPORT QByteRef {
 public:
 #ifdef Q_COMPILER_MANGLES_RETURN_TYPE
     inline operator const char() const
-        { return i < a.d->size ? a.d->data[i] : 0; }
+        { return i < a.d->size ? a.d->data[i] : char(0); }
 #else
     inline operator char() const
-        { return i < a.d->size ? a.d->data[i] : 0; }
+        { return i < a.d->size ? a.d->data[i] : char(0); }
 #endif
     inline QByteRef &operator=(char c)
         { if (i >= a.d->size) a.expand(i); else a.detach();

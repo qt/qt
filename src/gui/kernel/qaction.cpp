@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -81,7 +81,7 @@ static QString qt_strippedText(QString s)
 
 QActionPrivate::QActionPrivate() : group(0), enabled(1), forceDisabled(0),
                                    visible(1), forceInvisible(0), checkable(0), checked(0), separator(0), fontSet(false),
-                                   menuRole(QAction::TextHeuristicRole), softKeyRole(QAction::OptionsSoftKey),
+                                   menuRole(QAction::TextHeuristicRole), softKeyRole(QAction::NoSoftKey),
                                    priority(QAction::NormalPriority), iconVisibleInMenu(-1)
 {
 #ifdef QT3_SUPPORT
@@ -262,7 +262,32 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
            \c{Info.plist} file in the application's bundle (See \l{Deploying an Application on Mac OS X}).
     \value PreferencesRole This action should be placed where the  "Preferences..." menu item is in the application menu.
     \value QuitRole This action should be placed where the Quit menu item is in the application menu.
+
+    Setting this value only has effect on items that are in the immediate menus
+    of the menubar, not the submenus of those menus. For example, if you have
+    File menu in your menubar and the File menu has a submenu, setting the
+    MenuRole for the actions in that submenu have no effect. They will never be moved.
 */
+
+/*! \since 4.6
+
+    \enum QAction::SoftKeyRole
+
+    This enum describes how an action should be placed in the softkey bar. Currently this enum only
+    has an effect on the Symbian platform.
+
+    \value NoSoftKey This action should be used as a softkey
+    \value PositiveSoftKey This action is used to describe a softkey with a positive or non-destructive
+           role such as Ok, Select, or Options.
+    \value NegativeSoftKey This action is used to describe a soft ey with a negative or destructive role
+           role such as Cancel, Discard, or Close.
+    \value SelectSoftKey This action is used to describe a role that selects a particular item or widget
+           in the application.
+
+    Actions with a softkey role defined are only visible in the softkey bar when the widget containing
+    the action has focus. If no widget currently has focus, the softkey framework will traverse up the
+    widget parent heirarchy looking for a widget containing softkey actions.
+ */
 
 /*!
     Constructs an action with \a parent. If \a parent is an action
@@ -1412,8 +1437,9 @@ QAction::MenuRole QAction::menuRole() const
     \brief the action's softkey role
     \since 4.6
 
-    This indicates what softkey action this action is. Usually used on mobile
-    platforms to map QActions to hardware keys.
+    This indicates what type of role this action describes in the softkey framework
+    on platforms where such a framework is supported. Currently this is only
+    supported on the Symbian platform.
 
     The softkey role can be changed any time.
 */

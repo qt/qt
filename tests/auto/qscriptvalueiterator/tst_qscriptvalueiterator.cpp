@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -47,6 +47,8 @@
 
 //TESTED_CLASS=
 //TESTED_FILES=
+
+Q_DECLARE_METATYPE(QScriptValue);
 
 class tst_QScriptValueIterator : public QObject
 {
@@ -61,15 +63,14 @@ private slots:
     void iterateForward();
     void iterateBackward_data();
     void iterateBackward();
+    void iterateArray_data();
     void iterateArray();
     void iterateBackAndForth();
     void setValue();
     void remove();
     void iterateString();
     void iterateGetterSetter();
-    void iterateArgumentsObject();
     void assignObjectToIterator();
-    void undefinedBehavior();
 };
 
 tst_QScriptValueIterator::tst_QScriptValueIterator()
@@ -207,48 +208,101 @@ void tst_QScriptValueIterator::iterateBackward()
     QCOMPARE(it.hasNext(), false);
 }
 
+void tst_QScriptValueIterator::iterateArray_data()
+{
+    QTest::addColumn<QStringList>("inputPropertyNames");
+    QTest::addColumn<QStringList>("inputPropertyValues");
+    QTest::addColumn<QStringList>("propertyNames");
+    QTest::addColumn<QStringList>("propertyValues");
+    QTest::newRow("no elements") << QStringList() << QStringList() << QStringList() << QStringList();
+
+
+    QTest::newRow("0=foo, 1=barr")
+        << (QStringList() << "0" << "1")
+        << (QStringList() << "foo" << "bar")
+        << (QStringList() << "0" << "1")
+        << (QStringList() << "foo" << "bar");
+
+
+    QTest::newRow("0=foo, 3=barr")
+        << (QStringList() << "0" << "1" << "2" << "3")
+        << (QStringList() << "foo" << "" << "" << "bar")
+        << (QStringList() << "0" << "1" << "2" << "3")
+        << (QStringList() << "foo" << "" << "" << "bar");
+}
+
 void tst_QScriptValueIterator::iterateArray()
 {
+    QFETCH(QStringList, inputPropertyNames);
+    QFETCH(QStringList, inputPropertyValues);
+    QFETCH(QStringList, propertyNames);
+    QFETCH(QStringList, propertyValues);
+
     QScriptEngine engine;
     QScriptValue array = engine.newArray();
-    array.setProperty("0", QScriptValue(&engine, 123));
-    array.setProperty("1", QScriptValue(&engine, 456));
-    array.setProperty("2", QScriptValue(&engine, 789));
+    for (int i = 0; i < inputPropertyNames.size(); ++i) {
+        array.setProperty(inputPropertyNames.at(i), inputPropertyValues.at(i));
+    }
+
     int length = array.property("length").toInt32();
-    QCOMPARE(length, 3);
+    QCOMPARE(length, propertyNames.size());
     QScriptValueIterator it(array);
     for (int i = 0; i < length; ++i) {
         QCOMPARE(it.hasNext(), true);
-        QString indexStr = QScriptValue(&engine, i).toString();
         it.next();
-        QCOMPARE(it.name(), indexStr);
-        QCOMPARE(it.flags(), array.propertyFlags(indexStr));
-        QCOMPARE(it.value().strictlyEquals(array.property(indexStr)), true);
+        QCOMPARE(it.name(), propertyNames.at(i));
+        QCOMPARE(it.flags(), array.propertyFlags(propertyNames.at(i)));
+        QVERIFY(it.value().strictlyEquals(array.property(propertyNames.at(i))));
+        QCOMPARE(it.value().toString(), propertyValues.at(i));
     }
     QCOMPARE(it.hasNext(), false);
 
+    QCOMPARE(it.hasPrevious(), length > 0);
     for (int i = length - 1; i >= 0; --i) {
         it.previous();
-        QString indexStr = QScriptValue(&engine, i).toString();
-        QCOMPARE(it.name(), indexStr);
-        QCOMPARE(it.value().strictlyEquals(array.property(indexStr)), true);
+        QCOMPARE(it.name(), propertyNames.at(i));
+        QCOMPARE(it.flags(), array.propertyFlags(propertyNames.at(i)));
+        QVERIFY(it.value().strictlyEquals(array.property(propertyNames.at(i))));
+        QCOMPARE(it.value().toString(), propertyValues.at(i));
         QCOMPARE(it.hasPrevious(), i > 0);
     }
     QCOMPARE(it.hasPrevious(), false);
 
     // hasNext() and hasPrevious() cache their result; verify that the result is in sync
-    QVERIFY(it.hasNext());
-    it.next();
-    QCOMPARE(it.name(), QString::fromLatin1("0"));
-    QVERIFY(it.hasNext());
-    it.previous();
-    QCOMPARE(it.name(), QString::fromLatin1("0"));
-    QVERIFY(!it.hasPrevious());
-    it.next();
-    QCOMPARE(it.name(), QString::fromLatin1("0"));
-    QVERIFY(it.hasPrevious());
-    it.next();
-    QCOMPARE(it.name(), QString::fromLatin1("1"));
+    if (length > 1) {
+        QVERIFY(it.hasNext());
+        it.next();
+        QCOMPARE(it.name(), QString::fromLatin1("0"));
+        QVERIFY(it.hasNext());
+        it.previous();
+        QCOMPARE(it.name(), QString::fromLatin1("0"));
+        QVERIFY(!it.hasPrevious());
+        it.next();
+        QCOMPARE(it.name(), QString::fromLatin1("0"));
+        QVERIFY(it.hasPrevious());
+        it.next();
+        QCOMPARE(it.name(), QString::fromLatin1("1"));
+    }
+    {
+        // same test as object:
+        QScriptValue originalArray = engine.newArray();
+        for (int i = 0; i < inputPropertyNames.size(); ++i) {
+            originalArray.setProperty(inputPropertyNames.at(i), inputPropertyValues.at(i));
+        }
+        QScriptValue array = originalArray.toObject();
+        int length = array.property("length").toInt32();
+        QCOMPARE(length, propertyNames.size());
+        QScriptValueIterator it(array);
+        for (int i = 0; i < length; ++i) {
+            QCOMPARE(it.hasNext(), true);
+            it.next();
+            QCOMPARE(it.name(), propertyNames.at(i));
+            QCOMPARE(it.flags(), array.propertyFlags(propertyNames.at(i)));
+            QVERIFY(it.value().strictlyEquals(array.property(propertyNames.at(i))));
+            QCOMPARE(it.value().toString(), propertyValues.at(i));
+        }
+        QCOMPARE(it.hasNext(), false);
+    }
 }
 
 void tst_QScriptValueIterator::iterateBackAndForth()
@@ -260,22 +314,31 @@ void tst_QScriptValueIterator::iterateBackAndForth()
         object.setProperty("rab", QScriptValue(&engine, "oof"),
                            QScriptValue::SkipInEnumeration); // should not affect iterator
         QScriptValueIterator it(object);
+        QVERIFY(it.hasNext());
         it.next();
         QCOMPARE(it.name(), QLatin1String("foo"));
+        QVERIFY(it.hasPrevious());
         it.previous();
         QCOMPARE(it.name(), QLatin1String("foo"));
+        QVERIFY(it.hasNext());
         it.next();
         QCOMPARE(it.name(), QLatin1String("foo"));
+        QVERIFY(it.hasPrevious());
         it.previous();
         QCOMPARE(it.name(), QLatin1String("foo"));
+        QVERIFY(it.hasNext());
         it.next();
         QCOMPARE(it.name(), QLatin1String("foo"));
+        QVERIFY(it.hasNext());
         it.next();
         QCOMPARE(it.name(), QLatin1String("rab"));
+        QVERIFY(it.hasPrevious());
         it.previous();
         QCOMPARE(it.name(), QLatin1String("rab"));
+        QVERIFY(it.hasNext());
         it.next();
         QCOMPARE(it.name(), QLatin1String("rab"));
+        QVERIFY(it.hasPrevious());
         it.previous();
         QCOMPARE(it.name(), QLatin1String("rab"));
     }
@@ -359,6 +422,7 @@ void tst_QScriptValueIterator::iterateString()
     }
     QCOMPARE(it.hasNext(), false);
 
+    QVERIFY(it.hasPrevious());
     for (int i = length - 1; i >= 0; --i) {
         it.previous();
         QString indexStr = QScriptValue(&engine, i).toString();
@@ -471,96 +535,6 @@ void tst_QScriptValueIterator::iterateGetterSetter()
         QVERIFY(obj.property("bar").strictlyEquals(val));
         QVERIFY(obj.property("foo").strictlyEquals(val));
     }
-}
-
-static QScriptValue getArgumentsObject(QScriptContext *ctx, QScriptEngine *)
-{
-    return ctx->argumentsObject();
-}
-
-void tst_QScriptValueIterator::iterateArgumentsObject()
-{
-    QScriptEngine eng;
-    QScriptValue fun = eng.newFunction(getArgumentsObject);
-    QScriptValue ret = fun.call(QScriptValue(), QScriptValueList() << QScriptValue(&eng, 123) << QScriptValue(&eng, 456));
-    QCOMPARE(ret.property("length").toInt32(), 2);
-
-    QScriptValueIterator it(ret);
-    QVERIFY(it.hasNext());
-    it.next();
-    QCOMPARE(it.name(), QString::fromLatin1("callee"));
-    QVERIFY(it.value().isFunction());
-    QVERIFY(it.value().strictlyEquals(fun));
-    QVERIFY(it.hasNext());
-
-    it.next();
-    QCOMPARE(it.name(), QString::fromLatin1("length"));
-    QVERIFY(it.value().isNumber());
-    QCOMPARE(it.value().toInt32(), 2);
-    QVERIFY(it.hasNext());
-
-    it.next();
-    QCOMPARE(it.name(), QString::fromLatin1("0"));
-    QVERIFY(it.value().isNumber());
-    QCOMPARE(it.value().toInt32(), 123);
-    QVERIFY(it.hasNext());
-
-    it.next();
-    QCOMPARE(it.name(), QString::fromLatin1("1"));
-    QVERIFY(it.value().isNumber());
-    QCOMPARE(it.value().toInt32(), 456);
-    QVERIFY(!it.hasNext());
-
-    QVERIFY(it.hasPrevious());
-    it.previous();
-    QCOMPARE(it.name(), QString::fromLatin1("1"));
-    QVERIFY(it.value().isNumber());
-    QCOMPARE(it.value().toInt32(), 456);
-    QVERIFY(it.hasPrevious());
-
-    it.previous();
-    QCOMPARE(it.name(), QString::fromLatin1("0"));
-    QVERIFY(it.value().isNumber());
-    QCOMPARE(it.value().toInt32(), 123);
-    QVERIFY(it.hasPrevious());
-
-    it.previous();
-    QCOMPARE(it.name(), QString::fromLatin1("length"));
-    QVERIFY(it.value().isNumber());
-    QCOMPARE(it.value().toInt32(), 2);
-    QVERIFY(it.hasPrevious());
-
-    it.previous();
-    QCOMPARE(it.name(), QString::fromLatin1("callee"));
-    QVERIFY(it.value().isFunction());
-    QVERIFY(it.value().strictlyEquals(fun));
-    QVERIFY(!it.hasPrevious());
-}
-
-void tst_QScriptValueIterator::undefinedBehavior()
-{
-    QScriptEngine eng;
-    QScriptValue obj = eng.newObject();
-    obj.setProperty("foo", QScriptValue(&eng, 123));
-
-    QScriptValueIterator it(obj);
-    QVERIFY(it.hasNext());
-
-    // delete the property
-    obj.setProperty("foo", QScriptValue());
-
-    it.next();
-    QCOMPARE(it.name(), QString::fromLatin1("foo"));
-    QVERIFY(!it.value().isValid());
-
-    QVERIFY(!it.hasNext());
-    // add a property
-    obj.setProperty("bar", QScriptValue(&eng, 123));
-    QVERIFY(it.hasNext());
-
-    it.next();
-    QCOMPARE(it.name(), QString::fromLatin1("bar"));
-    QVERIFY(it.value().isNumber());
 }
 
 void tst_QScriptValueIterator::assignObjectToIterator()

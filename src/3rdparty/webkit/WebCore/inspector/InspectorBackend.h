@@ -38,9 +38,12 @@
 namespace WebCore {
 
 class CachedResource;
+class Database;
 class InspectorClient;
+class InspectorDOMAgent;
 class JavaScriptCallFrame;
 class Node;
+class Storage;
 
 class InspectorBackend : public RefCounted<InspectorBackend>
 {
@@ -68,7 +71,7 @@ public:
     void addResourceSourceToFrame(long identifier, Node* frame);
     bool addSourceToFrame(const String& mimeType, const String& source, Node* frame);
 
-    void clearMessages();
+    void clearMessages(bool clearUI);
 
     void toggleNodeSearch();
 
@@ -92,6 +95,13 @@ public:
 
     const String& platform() const;
 
+    void enableTimeline(bool always);
+    void disableTimeline(bool always);
+    bool timelineEnabled() const;
+
+    void getCookies(long callId);
+    void deleteCookie(const String& cookieName);
+
 #if ENABLE(JAVASCRIPT_DEBUGGER)
     const ProfilesArray& profiles() const;
 
@@ -108,7 +118,8 @@ public:
 
     JavaScriptCallFrame* currentCallFrame() const;
 
-    void addBreakpoint(const String& sourceID, unsigned lineNumber);
+    void addBreakpoint(const String& sourceID, unsigned lineNumber, const String& condition);
+    void updateBreakpoint(const String& sourceID, unsigned lineNumber, const String& condition);
     void removeBreakpoint(const String& sourceID, unsigned lineNumber);
 
     bool pauseOnExceptions();
@@ -122,11 +133,30 @@ public:
     void stepOutOfFunctionInDebugger();
 #endif
 
+    void dispatchOnInjectedScript(long callId, const String& methodName, const String& arguments);
+    void getChildNodes(long callId, long nodeId);
+    void setAttribute(long callId, long elementId, const String& name, const String& value);
+    void removeAttribute(long callId, long elementId, const String& name);
+    void setTextNodeValue(long callId, long nodeId, const String& value);
+
     // Generic code called from custom implementations.
-    void highlight(Node* node);
+    void highlight(long nodeId);
+    Node* nodeForId(long nodeId);
+    ScriptValue wrapObject(const ScriptValue& object);
+    ScriptValue unwrapObject(const String& objectId);
+    long pushNodePathToFrontend(Node* node, bool selectInUI);
+    void addNodesToSearchResult(const String& nodeIds);
+#if ENABLE(DATABASE)
+    void selectDatabase(Database* database);
+#endif
+#if ENABLE(DOM_STORAGE)
+    void selectDOMStorage(Storage* storage);
+#endif
 
 private:
     InspectorBackend(InspectorController* inspectorController, InspectorClient* client);
+    InspectorDOMAgent* inspectorDOMAgent();
+    InspectorFrontend* inspectorFrontend();
 
     InspectorController* m_inspectorController;
     InspectorClient* m_client;

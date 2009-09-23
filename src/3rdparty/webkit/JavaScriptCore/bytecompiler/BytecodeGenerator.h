@@ -61,7 +61,7 @@ namespace JSC {
         FinallyContext finallyContext;
     };
 
-    class BytecodeGenerator : public WTF::FastAllocBase {
+    class BytecodeGenerator : public FastAllocBase {
     public:
         typedef DeclarationStacks::VarStack VarStack;
         typedef DeclarationStacks::FunctionStack FunctionStack;
@@ -254,7 +254,7 @@ namespace JSC {
         RegisterID* emitNewObject(RegisterID* dst);
         RegisterID* emitNewArray(RegisterID* dst, ElementNode*); // stops at first elision
 
-        RegisterID* emitNewFunction(RegisterID* dst, FuncDeclNode* func);
+        RegisterID* emitNewFunction(RegisterID* dst, FunctionBodyNode* body);
         RegisterID* emitNewFunctionExpression(RegisterID* dst, FuncExprNode* func);
         RegisterID* emitNewRegExp(RegisterID* dst, RegExp* regExp);
 
@@ -276,7 +276,6 @@ namespace JSC {
 
         RegisterID* emitResolveBase(RegisterID* dst, const Identifier& property);
         RegisterID* emitResolveWithBase(RegisterID* baseDst, RegisterID* propDst, const Identifier& property);
-        RegisterID* emitResolveFunction(RegisterID* baseDst, RegisterID* funcDst, const Identifier& property);
 
         void emitMethodCheck();
 
@@ -319,7 +318,7 @@ namespace JSC {
         RegisterID* emitCatch(RegisterID*, Label* start, Label* end);
         void emitThrow(RegisterID* exc) { emitUnaryNoDstOp(op_throw, exc); }
         RegisterID* emitNewError(RegisterID* dst, ErrorType type, JSValue message);
-        void emitPushNewScope(RegisterID* dst, Identifier& property, RegisterID* value);
+        void emitPushNewScope(RegisterID* dst, const Identifier& property, RegisterID* value);
 
         RegisterID* emitPushScope(RegisterID* scope);
         void emitPopScope();
@@ -355,7 +354,7 @@ namespace JSC {
 
         PassRefPtr<Label> emitComplexJumpScopes(Label* target, ControlFlowContext* topScope, ControlFlowContext* bottomScope);
 
-        typedef HashMap<EncodedJSValue, unsigned, PtrHash<EncodedJSValue>, JSValueHashTraits> JSValueMap;
+        typedef HashMap<EncodedJSValue, unsigned, EncodedJSValueHash, EncodedJSValueHashTraits> JSValueMap;
 
         struct IdentifierMapIndexHashTraits {
             typedef int TraitType;
@@ -414,11 +413,14 @@ namespace JSC {
             return m_globals[-index - 1];
         }
 
-        unsigned addConstant(FuncDeclNode*);
-        unsigned addConstant(FuncExprNode*);
         unsigned addConstant(const Identifier&);
         RegisterID* addConstantValue(JSValue);
         unsigned addRegExp(RegExp*);
+
+        PassRefPtr<FunctionExecutable> makeFunction(FunctionBodyNode* body)
+        {
+            return FunctionExecutable::create(body->ident(), body->source(), body->usesArguments(), body->parameters(), body->lineNo(), body->lastLine());
+        }
 
         Vector<Instruction>& instructions() { return m_codeBlock->instructions(); }
         SymbolTable& symbolTable() { return *m_symbolTable; }
@@ -446,12 +448,12 @@ namespace JSC {
         RegisterID m_thisRegister;
         RegisterID m_argumentsRegister;
         int m_activationRegisterIndex;
-        WTF::SegmentedVector<RegisterID, 32> m_constantPoolRegisters;
-        WTF::SegmentedVector<RegisterID, 32> m_calleeRegisters;
-        WTF::SegmentedVector<RegisterID, 32> m_parameters;
-        WTF::SegmentedVector<RegisterID, 32> m_globals;
-        WTF::SegmentedVector<Label, 32> m_labels;
-        WTF::SegmentedVector<LabelScope, 8> m_labelScopes;
+        SegmentedVector<RegisterID, 32> m_constantPoolRegisters;
+        SegmentedVector<RegisterID, 32> m_calleeRegisters;
+        SegmentedVector<RegisterID, 32> m_parameters;
+        SegmentedVector<RegisterID, 32> m_globals;
+        SegmentedVector<Label, 32> m_labels;
+        SegmentedVector<LabelScope, 8> m_labelScopes;
         RefPtr<RegisterID> m_lastVar;
         int m_finallyDepth;
         int m_dynamicScopeDepth;

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -100,6 +100,22 @@ void qgl_cleanup_glyph_cache(QGLContext *) {}
 
 extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
 
+
+QGLContext* QGLPBufferGLPaintDevice::context() const
+{
+    return pbuf->d_func()->qctx;
+}
+
+void QGLPBufferGLPaintDevice::endPaint() {
+    glFlush();
+    QGLPaintDevice::endPaint();
+}
+
+void QGLPBufferGLPaintDevice::setPBuffer(QGLPixelBuffer* pb)
+{
+    pbuf = pb;
+}
+
 void QGLPixelBufferPrivate::common_init(const QSize &size, const QGLFormat &format, QGLWidget *shareWidget)
 {
     Q_Q(QGLPixelBuffer);
@@ -110,9 +126,12 @@ void QGLPixelBufferPrivate::common_init(const QSize &size, const QGLFormat &form
         invalid = false;
         qctx = new QGLContext(format);
         qctx->d_func()->sharing = (shareWidget != 0);
-        if (shareWidget != 0 && shareWidget->d_func()->glcx)
+        if (shareWidget != 0 && shareWidget->d_func()->glcx) {
             qgl_share_reg()->addShare(qctx, shareWidget->d_func()->glcx);
+            shareWidget->d_func()->glcx->d_func()->sharing = true;
+        }
 
+        glDevice.setPBuffer(q);
         qctx->d_func()->paintDevice = q;
         qctx->d_func()->valid = true;
 #if defined(Q_WS_WIN) && !defined(QT_OPENGL_ES)
@@ -383,7 +402,7 @@ QPaintEngine *QGLPixelBuffer::paintEngine() const
 #elif defined(QT_OPENGL_ES_2)
     return qt_buffer_2_engine();
 #else
-    if (d_ptr->qctx->d_func()->internal_context || qt_gl_preferGL2Engine())
+    if (qt_gl_preferGL2Engine())
         return qt_buffer_2_engine();
     else
         return qt_buffer_engine();

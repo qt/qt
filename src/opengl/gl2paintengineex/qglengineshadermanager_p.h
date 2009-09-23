@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -142,7 +142,8 @@
 
     Masks are implementations of "qcolorp vec4 applyMask(qcolorp vec4 src)":
         qglslMaskFragmentShader
-        qglslRgbMaskFragmentShader
+        qglslRgbMaskFragmentShaderPass1
+        qglslRgbMaskFragmentShaderPass2
         qglslRgbMaskWithGammaFragmentShader
 
     Composition modes are "qcolorp vec4 compose(qcolorp vec4 src)":
@@ -199,19 +200,23 @@
         O = Global Opacity
 
 
-    CUSTOM SHADER CODE (idea, depricated)
+    CUSTOM SHADER CODE
     ==================
 
     The use of custom shader code is supported by the engine for drawImage and
     drawPixmap calls. This is implemented via hooks in the fragment pipeline.
+
     The custom shader is passed to the engine as a partial fragment shader
-    (QGLCustomizedShader). The shader will implement a pre-defined method name
-    which Qt's fragment pipeline will call. There are two different hooks which
-    can be implemented as custom shader code:
+    (QGLCustomShaderStage). The shader will implement a pre-defined method name
+    which Qt's fragment pipeline will call:
 
-        mediump vec4 customShader(sampler2d src, vec2 srcCoords)
-        mediump vec4 customShaderWithDest(sampler2d dest, sampler2d src, vec2 srcCoords)
+        lowp vec4 customShader(lowp sampler2d imageTexture, highp vec2 textureCoords)
 
+    The provided src and srcCoords parameters can be used to sample from the
+    source image.
+
+    Transformations, clipping, opacity, and composition modes set using QPainter
+    will be respected when using the custom shader hook.
 */
 
 #ifndef QGLENGINE_SHADER_MANAGER_H
@@ -221,13 +226,13 @@
 #include <QGLShaderProgram>
 #include <QPainter>
 #include <private/qgl_p.h>
+#include <private/qglcustomshaderstage_p.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(OpenGL)
-
 
 struct QGLEngineShaderProg
 {
@@ -240,6 +245,19 @@ struct QGLEngineShaderProg
     QGLShaderProgram*   program;
 
     QVector<uint> uniformLocations;
+
+    bool                useTextureCoords;
+
+    bool operator==(const QGLEngineShaderProg& other) {
+        // We don't care about the program
+        return ( mainVertexShader      == other.mainVertexShader &&
+                 positionVertexShader  == other.positionVertexShader &&
+                 mainFragShader        == other.mainFragShader &&
+                 srcPixelFragShader    == other.srcPixelFragShader &&
+                 maskFragShader        == other.maskFragShader &&
+                 compositionFragShader == other.compositionFragShader
+               );
+    }
 };
 
 /*
@@ -260,14 +278,107 @@ struct QGLEngineCachedShaderProg
 static const GLuint QT_VERTEX_COORDS_ATTR  = 0;
 static const GLuint QT_TEXTURE_COORDS_ATTR = 1;
 
-class QGLEngineShaderManager : public QObject
+class QGLEngineSharedShaders : public QObject
+{
+    Q_OBJECT
+public:
+    enum ShaderName {
+        MainVertexShader,
+        MainWithTexCoordsVertexShader,
+
+        UntransformedPositionVertexShader,
+        PositionOnlyVertexShader,
+        PositionWithPatternBrushVertexShader,
+        PositionWithLinearGradientBrushVertexShader,
+        PositionWithConicalGradientBrushVertexShader,
+        PositionWithRadialGradientBrushVertexShader,
+        PositionWithTextureBrushVertexShader,
+        AffinePositionWithPatternBrushVertexShader,
+        AffinePositionWithLinearGradientBrushVertexShader,
+        AffinePositionWithConicalGradientBrushVertexShader,
+        AffinePositionWithRadialGradientBrushVertexShader,
+        AffinePositionWithTextureBrushVertexShader,
+
+        MainFragmentShader_CMO,
+        MainFragmentShader_CM,
+        MainFragmentShader_MO,
+        MainFragmentShader_M,
+        MainFragmentShader_CO,
+        MainFragmentShader_C,
+        MainFragmentShader_O,
+        MainFragmentShader,
+
+        ImageSrcFragmentShader,
+        ImageSrcWithPatternFragmentShader,
+        NonPremultipliedImageSrcFragmentShader,
+        CustomImageSrcFragmentShader,
+        SolidBrushSrcFragmentShader,
+        TextureBrushSrcFragmentShader,
+        TextureBrushSrcWithPatternFragmentShader,
+        PatternBrushSrcFragmentShader,
+        LinearGradientBrushSrcFragmentShader,
+        RadialGradientBrushSrcFragmentShader,
+        ConicalGradientBrushSrcFragmentShader,
+        ShockingPinkSrcFragmentShader,
+
+        MaskFragmentShader,
+        RgbMaskFragmentShaderPass1,
+        RgbMaskFragmentShaderPass2,
+        RgbMaskWithGammaFragmentShader,
+
+        MultiplyCompositionModeFragmentShader,
+        ScreenCompositionModeFragmentShader,
+        OverlayCompositionModeFragmentShader,
+        DarkenCompositionModeFragmentShader,
+        LightenCompositionModeFragmentShader,
+        ColorDodgeCompositionModeFragmentShader,
+        ColorBurnCompositionModeFragmentShader,
+        HardLightCompositionModeFragmentShader,
+        SoftLightCompositionModeFragmentShader,
+        DifferenceCompositionModeFragmentShader,
+        ExclusionCompositionModeFragmentShader,
+
+        TotalShaderCount, InvalidShaderName
+    };
+
+    QGLEngineSharedShaders(const QGLContext *context);
+
+    QGLShader *compileNamedShader(ShaderName name, QGLShader::ShaderType type);
+
+    QGLShaderProgram *simpleProgram() { return simpleShaderProg; }
+    QGLShaderProgram *blitProgram() { return blitShaderProg; }
+    // Compile the program if it's not already in the cache, return the item in the cache.
+    QGLEngineShaderProg *findProgramInCache(const QGLEngineShaderProg &prog);
+    // Compile the custom shader if it's not already in the cache, return the item in the cache.
+    QGLShader *compileCustomShader(QGLCustomShaderStage *stage, QGLShader::ShaderType type);
+
+    static QGLEngineSharedShaders *shadersForContext(const QGLContext *context);
+
+signals:
+    void shaderProgNeedsChanging();
+
+private slots:
+    void shaderDestroyed(QObject *shader);
+
+private:
+    QGLContextGroup *ctx;
+    QGLShaderProgram *blitShaderProg;
+    QGLShaderProgram *simpleShaderProg;
+    QList<QGLEngineShaderProg> cachedPrograms;
+    QCache<QByteArray, QGLShader> customShaderCache;
+    QGLShader* compiledShaders[TotalShaderCount];
+
+    static const char* qglEngineShaderSourceCode[TotalShaderCount];
+};
+
+class Q_OPENGL_EXPORT QGLEngineShaderManager : public QObject
 {
     Q_OBJECT
 public:
     QGLEngineShaderManager(QGLContext* context);
     ~QGLEngineShaderManager();
 
-    enum MaskType {NoMask, PixelMask, SubPixelMask, SubPixelWithGammaMask};
+    enum MaskType {NoMask, PixelMask, SubPixelMaskPass1, SubPixelMaskPass2, SubPixelWithGammaMask};
     enum PixelSrcType {
         ImageSrc = Qt::TexturePattern+1,
         NonPremultipliedImageSrc = Qt::TexturePattern+2,
@@ -301,10 +412,11 @@ public:
     void optimiseForBrushTransform(const QTransform &transform);
     void setSrcPixelType(Qt::BrushStyle);
     void setSrcPixelType(PixelSrcType); // For non-brush sources, like pixmaps & images
-    void setTextureCoordsEnabled(bool); // For images & text glyphs
     void setUseGlobalOpacity(bool);
     void setMaskType(MaskType);
     void setCompositionMode(QPainter::CompositionMode);
+    void setCustomStage(QGLCustomShaderStage* stage);
+    void removeCustomStage(QGLCustomShaderStage* stage);
 
     uint getUniformLocation(Uniform id);
 
@@ -314,66 +426,6 @@ public:
     QGLShaderProgram* currentProgram(); // Returns pointer to the shader the manager has chosen
     QGLShaderProgram* simpleProgram(); // Used to draw into e.g. stencil buffers
     QGLShaderProgram* blitProgram(); // Used to blit a texture into the framebuffer
-
-    static QGLEngineShaderManager *managerForContext(const QGLContext *context);
-
-    enum ShaderName {
-        MainVertexShader,
-        MainWithTexCoordsVertexShader,
-
-        UntransformedPositionVertexShader,
-        PositionOnlyVertexShader,
-        PositionWithPatternBrushVertexShader,
-        PositionWithLinearGradientBrushVertexShader,
-        PositionWithConicalGradientBrushVertexShader,
-        PositionWithRadialGradientBrushVertexShader,
-        PositionWithTextureBrushVertexShader,
-        AffinePositionWithPatternBrushVertexShader,
-        AffinePositionWithLinearGradientBrushVertexShader,
-        AffinePositionWithConicalGradientBrushVertexShader,
-        AffinePositionWithRadialGradientBrushVertexShader,
-        AffinePositionWithTextureBrushVertexShader,
-
-        MainFragmentShader_CMO,
-        MainFragmentShader_CM,
-        MainFragmentShader_MO,
-        MainFragmentShader_M,
-        MainFragmentShader_CO,
-        MainFragmentShader_C,
-        MainFragmentShader_O,
-        MainFragmentShader,
-
-        ImageSrcFragmentShader,
-        ImageSrcWithPatternFragmentShader,
-        NonPremultipliedImageSrcFragmentShader,
-        SolidBrushSrcFragmentShader,
-        TextureBrushSrcFragmentShader,
-        TextureBrushSrcWithPatternFragmentShader,
-        PatternBrushSrcFragmentShader,
-        LinearGradientBrushSrcFragmentShader,
-        RadialGradientBrushSrcFragmentShader,
-        ConicalGradientBrushSrcFragmentShader,
-        ShockingPinkSrcFragmentShader,
-
-        MaskFragmentShader,
-        RgbMaskFragmentShader,
-        RgbMaskWithGammaFragmentShader,
-
-        MultiplyCompositionModeFragmentShader,
-        ScreenCompositionModeFragmentShader,
-        OverlayCompositionModeFragmentShader,
-        DarkenCompositionModeFragmentShader,
-        LightenCompositionModeFragmentShader,
-        ColorDodgeCompositionModeFragmentShader,
-        ColorBurnCompositionModeFragmentShader,
-        HardLightCompositionModeFragmentShader,
-        SoftLightCompositionModeFragmentShader,
-        DifferenceCompositionModeFragmentShader,
-        ExclusionCompositionModeFragmentShader,
-
-        TotalShaderCount, InvalidShaderName
-    };
-
 
 /*
     // These allow the ShaderName enum to be used as a cache key
@@ -389,6 +441,8 @@ public:
     Q_ENUMS(ShaderName)
 #endif
 
+private slots:
+    void shaderProgNeedsChangingSlot() { shaderProgNeedsChanging = true; }
 
 private:
     QGLContext*     ctx;
@@ -399,21 +453,12 @@ private:
     int                         srcPixelType;
     bool                        useGlobalOpacity;
     MaskType                    maskType;
-    bool                        useTextureCoords;
     QPainter::CompositionMode   compositionMode;
+    QGLCustomShaderStage*       customSrcStage;
 
-    QGLShaderProgram*     blitShaderProg;
-    QGLShaderProgram*     simpleShaderProg;
     QGLEngineShaderProg*  currentShaderProg;
-
-    // TODO: Possibly convert to a LUT
-    QList<QGLEngineShaderProg> cachedPrograms;
-
-    QGLShader* compiledShaders[TotalShaderCount];
-
-    void compileNamedShader(QGLEngineShaderManager::ShaderName name, QGLShader::ShaderType type);
-
-    static const char* qglEngineShaderSourceCode[TotalShaderCount];
+    QGLEngineSharedShaders *sharedShaders;
+    QGLShader *customShader;
 };
 
 QT_END_NAMESPACE

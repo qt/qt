@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,16 +59,23 @@
 #include "private/qwindowsurface_s60_p.h"
 #include "qpaintengine.h"
 #include "private/qmenubar_p.h"
+#include "private/qsoftkeymanager_p.h"
 
 #include "apgwgnam.h" // For CApaWindowGroupName
 #include <MdaAudioTonePlayer.h>     // For CMdaAudioToneUtility
 
-#if !defined(QT_NO_IM) && defined(Q_WS_S60)
-#include "qinputcontext.h"
-#include <private/qcoefepinputcontext_p.h>
-#endif // !defined(QT_NO_IM) && defined(Q_WS_S60)
+#if defined(Q_WS_S60)
+# if !defined(QT_NO_IM)
+#  include "qinputcontext.h"
+#  include <private/qcoefepinputcontext_p.h>
+# endif
+# include <private/qs60mainapplication_p.h>
+#endif
 
 #include "private/qstylesheetstyle_p.h"
+
+#include <hal.h>
+#include <hal_data.h>
 
 #ifdef DEBUG_QSYMBIANCONTROL
 #include <QDebug>
@@ -152,21 +159,21 @@ void QS60Beep::ConstructL(TInt aFrequency, TTimeIntervalMicroSeconds aDuration)
 
 void QS60Beep::Play()
 {
-    if(iState!=EBeepNotPrepared){
-        if(iState==EBeepPlaying) {
+    if (iState != EBeepNotPrepared) {
+        if (iState == EBeepPlaying) {
             iToneUtil->CancelPlay();
-            iState=EBeepPrepared;
+            iState = EBeepPrepared;
         }
     }
 
     iToneUtil->Play();
-    iState=EBeepPlaying;
+    iState = EBeepPlaying;
 }
 
 void QS60Beep::MatoPrepareComplete(TInt aError)
 {
-    if(aError==KErrNone) {
-        iState=EBeepPrepared;
+    if (aError == KErrNone) {
+        iState = EBeepPrepared;
     }
 }
 
@@ -355,6 +362,8 @@ void QSymbianControl::ConstructL(bool topLevel, bool desktop)
 
 QSymbianControl::~QSymbianControl()
 {
+    if (S60->curWin == this)
+        S60->curWin = 0;
     S60->appUi()->RemoveFromStack(this);
     delete m_longTapDetector;
 }
@@ -375,14 +384,21 @@ void QSymbianControl::HandleLongTapEventL( const TPoint& aPenEventLocation, cons
     QApplicationPrivate::mouse_buttons = QApplicationPrivate::mouse_buttons | Qt::RightButton;
     QMouseEvent mEvent(QEvent::MouseButtonPress, alienWidget->mapFrom(qwidget, widgetPos), globalPos,
         Qt::RightButton, QApplicationPrivate::mouse_buttons, Qt::NoModifier);
-    sendMouseEvent(alienWidget, &mEvent);
+
+    bool res = sendMouseEvent(alienWidget, &mEvent);
+
+#if !defined(QT_NO_CONTEXTMENU)
+    QContextMenuEvent contextMenuEvent(QContextMenuEvent::Mouse, widgetPos, globalPos, mEvent.modifiers());
+    qt_sendSpontaneousEvent(alienWidget, &contextMenuEvent);
+#endif
+
     m_previousEventLongTap = true;
 }
 
 void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
 {
     m_longTapDetector->PointerEventL(pEvent);
-    QT_TRYCATCH_LEAVING(HandlePointerEvent(pEvent));  
+    QT_TRYCATCH_LEAVING(HandlePointerEvent(pEvent));
 }
 
 void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
@@ -410,23 +426,15 @@ void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
     TPoint controlScreenPos = PositionRelativeToScreen();
     QPoint globalPos = QPoint(controlScreenPos.iX, controlScreenPos.iY) + widgetPos;
 
-    if (type == QEvent::MouseButtonPress || type == QEvent::MouseButtonDblClick)
+    if (type == QEvent::MouseButtonPress || type == QEvent::MouseButtonDblClick || type == QEvent::MouseMove)
     {
-        // get the button press target
+        // get the widget where the event happened
         alienWidget = qwidget->childAt(widgetPos);
         if (!alienWidget)
             alienWidget = qwidget;
         S60->mousePressTarget = alienWidget;
-        //pointer grab
-        SetGloballyCapturing(ETrue);
-        SetPointerCapture(ETrue);
     }
-    else if (type == QEvent::MouseButtonRelease)
-    {
-        //release pointer grab
-        SetGloballyCapturing(EFalse);
-        SetPointerCapture(EFalse);
-    }
+    
     alienWidget = S60->mousePressTarget;
 
     if (alienWidget != S60->lastPointerEventTarget)
@@ -439,12 +447,30 @@ void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
                     button, QApplicationPrivate::mouse_buttons, mapToQtModifiers(pEvent.iModifiers));
                 events.append(Event(S60->lastPointerEventTarget,mEventLeave));
             }
-            QMouseEvent mEventEnter(QEvent::Enter, alienWidget->mapFromGlobal(globalPos), globalPos,
-                button, QApplicationPrivate::mouse_buttons, mapToQtModifiers(pEvent.iModifiers));
+            if (alienWidget) {
+                QMouseEvent mEventEnter(QEvent::Enter, alienWidget->mapFromGlobal(globalPos),
+                    globalPos, button, QApplicationPrivate::mouse_buttons, mapToQtModifiers(
+                        pEvent.iModifiers));
 
-            events.append(Event(alienWidget,mEventEnter));
+                events.append(Event(alienWidget, mEventEnter));
+#ifndef QT_NO_CURSOR
+                S60->curWin = alienWidget->effectiveWinId();
+                if (!QApplication::overrideCursor()) {
+#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
+                    if (S60->brokenPointerCursors)
+                        qt_symbian_set_pointer_sprite(alienWidget->cursor());
+                    else
+#endif
+                        qt_symbian_setWindowCursor(alienWidget->cursor(), S60->curWin);
+                }
+#endif
+            }
         }
     S60->lastCursorPos = globalPos;
+#if !defined(QT_NO_CURSOR) && !defined(Q_SYMBIAN_FIXED_POINTER_CURSORS)
+    if (S60->brokenPointerCursors)
+        qt_symbian_move_cursor_sprite();
+#endif
     S60->lastPointerEventPos = widgetPos;
     S60->lastPointerEventTarget = alienWidget;
     if (alienWidget)
@@ -472,9 +498,9 @@ void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
     }
 }
 
-void QSymbianControl::sendMouseEvent(QWidget *widget, QMouseEvent *mEvent)
+bool QSymbianControl::sendMouseEvent(QWidget *widget, QMouseEvent *mEvent)
 {
-    qt_sendSpontaneousEvent(widget, mEvent);
+    return qt_sendSpontaneousEvent(widget, mEvent);
 }
 
 TKeyResponse QSymbianControl::OfferKeyEventL(const TKeyEvent& keyEvent, TEventCode type)
@@ -521,6 +547,82 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
             // Special S60 keys.
             keyCode = qt_keymapper_private()->mapS60KeyToQt(s60Keysym);
         }
+
+#ifndef QT_NO_CURSOR
+        if (S60->mouseInteractionEnabled && S60->virtualMouseRequired) {
+            //translate keys to pointer
+            if (keyCode >= Qt::Key_Left && keyCode <= Qt::Key_Down || keyCode == Qt::Key_Select) {
+                /*Explanation about virtualMouseAccel:
+                 Tapping an arrow key allows precise pixel positioning
+                 Holding an arrow key down, acceleration is applied to allow cursor 
+                 to be quickly moved to another part of the screen by key repeats.
+                 */
+                if (S60->virtualMouseLastKey == keyCode) {
+                    S60->virtualMouseAccel *= 2;
+                    if (S60->virtualMouseAccel > S60->virtualMouseMaxAccel)
+                        S60->virtualMouseAccel = S60->virtualMouseMaxAccel;
+                }
+                else
+                    S60->virtualMouseAccel = 1;
+                S60->virtualMouseLastKey = keyCode;
+
+                QPoint pos = QCursor::pos();
+                TPointerEvent fakeEvent;
+                TInt x = pos.x();
+                TInt y = pos.y();
+                if (type == EEventKeyUp) {
+                    if (keyCode == Qt::Key_Select)
+                        fakeEvent.iType = TPointerEvent::EButton1Up;
+                    S60->virtualMouseAccel = 1;
+                    S60->virtualMouseLastKey = 0;
+                }
+                else if (type == EEventKey) {
+                    switch (keyCode) {
+                    case Qt::Key_Left:
+                        x -= S60->virtualMouseAccel;
+                        fakeEvent.iType = TPointerEvent::EMove;
+                        break;
+                    case Qt::Key_Right:
+                        x += S60->virtualMouseAccel;
+                        fakeEvent.iType = TPointerEvent::EMove;
+                        break;
+                    case Qt::Key_Up:
+                        y -= S60->virtualMouseAccel;
+                        fakeEvent.iType = TPointerEvent::EMove;
+                        break;
+                    case Qt::Key_Down:
+                        y += S60->virtualMouseAccel;
+                        fakeEvent.iType = TPointerEvent::EMove;
+                        break;
+                    case Qt::Key_Select:
+                        fakeEvent.iType = TPointerEvent::EButton1Down;
+                        break;
+                    }
+                }
+                //clip to screen size (window server allows a sprite hotspot to be outside the screen)
+                if (x < 0)
+                    x = 0;
+                else if (x >= S60->screenWidthInPixels)
+                    x = S60->screenWidthInPixels - 1;
+                if (y < 0)
+                    y = 0;
+                else if (y >= S60->screenHeightInPixels)
+                    y = S60->screenHeightInPixels - 1;
+                TPoint epos(x, y);
+                TPoint cpos = epos - PositionRelativeToScreen();
+                fakeEvent.iModifiers = keyEvent.iModifiers;
+                fakeEvent.iPosition = cpos;
+                fakeEvent.iParentPosition = epos;
+                HandlePointerEvent(fakeEvent);
+                return EKeyWasConsumed;
+            }
+            else {
+                S60->virtualMouseLastKey = keyCode;
+                S60->virtualMouseAccel = 1;
+            }
+        }
+#endif
+        
         Qt::KeyboardModifiers mods = mapToQtModifiers(keyEvent.iModifiers);
         QKeyEventEx qKeyEvent(type == EEventKeyUp ? QEvent::KeyRelease : QEvent::KeyPress, keyCode,
                 mods, qt_keymapper_private()->translateKeyEvent(keyCode, mods),
@@ -584,7 +686,7 @@ TKeyResponse QSymbianControl::sendKeyEvent(QWidget *widget, QKeyEvent *keyEvent)
 #if !defined(QT_NO_IM) && defined(Q_WS_S60)
     if (widget && widget->isEnabled() && widget->testAttribute(Qt::WA_InputMethodEnabled)) {
         QInputContext *qic = widget->inputContext();
-        if(qic && qic->filterEvent(keyEvent))
+        if (qic && qic->filterEvent(keyEvent))
             return EKeyWasConsumed;
     }
 #endif // !defined(QT_NO_IM) && defined(Q_WS_S60)
@@ -601,11 +703,10 @@ TCoeInputCapabilities QSymbianControl::InputCapabilities() const
 {
     QWidget *w = 0;
 
-    if(qwidget->hasFocus()) {
+    if (qwidget->hasFocus())
         w = qwidget;
-    } else {
+    else
         w = qwidget->focusWidget();
-    }
 
     QCoeFepInputContext *ic;
     if (w && w->isEnabled() && w->testAttribute(Qt::WA_InputMethodEnabled)
@@ -793,6 +894,22 @@ TTypeUid::Ptr QSymbianControl::MopSupplyObject(TTypeUid id)
 
 void qt_init(QApplicationPrivate * /* priv */, int)
 {
+    if (!CCoeEnv::Static()) {
+        // The S60 framework has not been initalized. We need to do it.
+        TApaApplicationFactory factory(NewApplication);
+        CApaCommandLine* commandLine = 0;
+        TInt err = CApaCommandLine::GetCommandLineFromProcessEnvironment(commandLine);
+        // After this construction, CEikonEnv will be available from CEikonEnv::Static().
+        // (much like our qApp).
+        CEikonEnv* coe = new CEikonEnv;
+        QT_TRAP_THROWING(coe->ConstructAppFromCommandLineL(factory,*commandLine));
+        delete commandLine;
+
+        S60->qtOwnsS60Environment = true;
+    } else {
+        S60->qtOwnsS60Environment = false;
+    }
+
 #ifdef QT_NO_DEBUG
     if (!qgetenv("QT_S60_AUTO_FLUSH_WSERV").isEmpty())
 #endif
@@ -807,6 +924,71 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     RProcess me;
     TSecureId securId = me.SecureId();
     S60->uid = securId.operator TUid();
+
+    // enable focus events - used to re-enable mouse after focus changed between mouse and non mouse app,
+    // and for dimming behind modal windows
+	S60->windowGroup().EnableFocusChangeEvents();
+
+	//Check if mouse interaction is supported (either EMouse=1 in the HAL, or EMachineUID is one of the phones known to support this)
+    const TInt KMachineUidSamsungI8510 = 0x2000C51E;
+    TInt machineUID;
+    TInt mouse;
+    TInt touch;
+    TInt err;
+    err = HAL::Get(HALData::EMouse, mouse);
+    if (err != KErrNone)
+        mouse = 0;
+    err = HAL::Get(HALData::EMachineUid, machineUID);
+    if (err != KErrNone)
+        machineUID = 0;
+    err = HAL::Get(HALData::EPen, touch);
+    if (err != KErrNone)
+        touch = 0;
+    if (mouse || machineUID == KMachineUidSamsungI8510) {
+        S60->hasTouchscreen = false;
+        S60->virtualMouseRequired = false;
+    }
+    else if (!touch) {
+        S60->hasTouchscreen = false;
+        S60->virtualMouseRequired = true;
+    }
+    else {
+        S60->hasTouchscreen = true;
+        S60->virtualMouseRequired = false;
+    }
+    
+    if (touch) {
+        QApplicationPrivate::navigationMode = Qt::NavigationModeNone;
+    } else {
+        QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadDirectional;
+    }
+    
+#ifndef QT_NO_CURSOR
+    //Check if window server pointer cursors are supported or not
+#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
+    //In generic binary, use the HAL and OS version
+    //Any other known good phones should be added here.
+    if (machineUID == KMachineUidSamsungI8510 || (QSysInfo::symbianVersion() != QSysInfo::SV_9_4
+        && QSysInfo::symbianVersion() != QSysInfo::SV_9_3 && QSysInfo::symbianVersion()
+        != QSysInfo::SV_9_2)) {
+        S60->brokenPointerCursors = false;
+        qt_symbian_setWindowGroupCursor(Qt::ArrowCursor, S60->windowGroup());
+    }
+    else
+        S60->brokenPointerCursors = true;
+#endif
+
+    if (S60->mouseInteractionEnabled) {
+#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
+        if (S60->brokenPointerCursors) {
+            qt_symbian_set_pointer_sprite(Qt::ArrowCursor);
+            qt_symbian_show_pointer_sprite();
+        }
+        else
+#endif
+            S60->wsSession().SetPointerCursorMode(EPointerCursorNormal);
+    }
+#endif
 
 /*
  ### Commented out for now as parameter handling not needed in SOS(yet). Code below will break testlib with -o flag
@@ -844,6 +1026,16 @@ void qt_cleanup()
     // it dies.
     delete QApplicationPrivate::inputContext;
     QApplicationPrivate::inputContext = 0;
+    
+    //Change mouse pointer back
+    S60->wsSession().SetPointerCursorMode(EPointerCursorNone);
+
+    if (S60->qtOwnsS60Environment) {
+        CEikonEnv* coe = CEikonEnv::Static();
+        coe->PrepareToExit();
+        // The CEikonEnv itself is destroyed in here.
+        coe->DestroyEnvironment();
+    }
 }
 
 void QApplicationPrivate::initializeWidgetPaletteHash()
@@ -870,14 +1062,27 @@ bool QApplicationPrivate::modalState()
 
 void QApplicationPrivate::enterModal_sys(QWidget *widget)
 {
+    if (widget) {
+        widget->effectiveWinId()->DrawableWindow()->FadeBehind(ETrue);
+        // Modal partial screen dialogs (like queries) capture pointer events.
+        // ### FixMe: Add specialized behaviour for fullscreen modal dialogs
+        widget->effectiveWinId()->SetGloballyCapturing(ETrue);
+        widget->effectiveWinId()->SetPointerCapture(ETrue);
+    }
     if (!qt_modal_stack)
         qt_modal_stack = new QWidgetList;
     qt_modal_stack->insert(0, widget);
-    app_do_modal = true;    
+    app_do_modal = true;
 }
 
 void QApplicationPrivate::leaveModal_sys(QWidget *widget)
 {
+    if (widget) {
+        widget->effectiveWinId()->DrawableWindow()->FadeBehind(EFalse);
+        // ### FixMe: Add specialized behaviour for fullscreen modal dialogs
+        widget->effectiveWinId()->SetGloballyCapturing(EFalse);
+        widget->effectiveWinId()->SetPointerCapture(EFalse);
+    }
     if (qt_modal_stack && qt_modal_stack->removeAll(widget)) {
         if (qt_modal_stack->isEmpty()) {
             delete qt_modal_stack;
@@ -893,18 +1098,31 @@ void QApplicationPrivate::openPopup(QWidget *popup)
         QApplicationPrivate::popupWidgets = new QWidgetList;
     QApplicationPrivate::popupWidgets->append(popup);
 
-    if (QApplicationPrivate::popupWidgets->count() == 1 && !qt_nograb()) {
+
+    // Cancel focus widget pointer capture and long tap timer
+    if (QApplication::focusWidget()) {
+        static_cast<QSymbianControl*>(QApplication::focusWidget()->effectiveWinId())->CancelLongTapTimer();
+        QApplication::focusWidget()->effectiveWinId()->SetPointerCapture(false);
+        }
+
+    if (!qt_nograb()) {
+        // Cancel pointer capture and long tap timer for earlier popup
+        int popupCount = QApplicationPrivate::popupWidgets->count();
+        if (popupCount > 1) {
+            QWidget* prevPopup = QApplicationPrivate::popupWidgets->at(popupCount-2);
+            static_cast<QSymbianControl*>(prevPopup->effectiveWinId())->CancelLongTapTimer();
+            prevPopup->effectiveWinId()->SetPointerCapture(false);
+        }
+
+        // Enable pointer capture for this (topmost) popup
         Q_ASSERT(popup->testAttribute(Qt::WA_WState_Created));
         WId id = popup->effectiveWinId();
         id->SetPointerCapture(true);
-        id->SetGloballyCapturing(true);
     }
 
     // popups are not focus-handled by the window system (the first
     // popup grabbed the keyboard), so we have to do that manually: A
     // new popup gets the focus
-    if (QApplication::focusWidget())
-        static_cast<QSymbianControl*>(QApplication::focusWidget()->effectiveWinId())->CancelLongTapTimer();
     QWidget *fw = popup->focusWidget();
     if (fw) {
         fw->setFocus(Qt::PopupFocusReason);
@@ -923,14 +1141,16 @@ void QApplicationPrivate::closePopup(QWidget *popup)
         return;
     QApplicationPrivate::popupWidgets->removeAll(popup);
 
+    // Cancel pointer capture and long tap for this popup
+    WId id = popup->effectiveWinId();
+    id->SetPointerCapture(false);
+    static_cast<QSymbianControl*>(id)->CancelLongTapTimer();
+
     if (QApplicationPrivate::popupWidgets->isEmpty()) { // this was the last popup
         delete QApplicationPrivate::popupWidgets;
         QApplicationPrivate::popupWidgets = 0;
         if (!qt_nograb()) {                        // grabbing not disabled
             Q_ASSERT(popup->testAttribute(Qt::WA_WState_Created));
-            WId id = popup->effectiveWinId();
-            id->SetPointerCapture(false);
-            id->SetGloballyCapturing(false);
             if (QWidgetPrivate::mouseGrabber != 0)
                 QWidgetPrivate::mouseGrabber->grabMouse();
 
@@ -949,6 +1169,7 @@ void QApplicationPrivate::closePopup(QWidget *popup)
           }
         }
     } else {
+
         // popups are not focus-handled by the window system (the
         // first popup grabbed the keyboard), so we have to do that
         // manually: A popup was closed, so the previous popup gets
@@ -957,6 +1178,11 @@ void QApplicationPrivate::closePopup(QWidget *popup)
         if (QWidget *fw = QApplication::focusWidget()) {
             QFocusEvent e(QEvent::FocusOut, Qt::PopupFocusReason);
             q_func()->sendEvent(fw, &e);
+        }
+
+        // Enable pointer capture for previous popup
+        if (aw) {
+            aw->effectiveWinId()->SetPointerCapture(true);
         }
     }
 }
@@ -1034,13 +1260,21 @@ void QApplication::beep()
     TTimeIntervalMicroSeconds duration(500000);
     QS60Beep* beep=NULL;
     TRAPD(err, beep=QS60Beep::NewL(frequency, duration));
-    if(!err) {
+    if (!err)
         beep->Play();
-    }
     delete beep;
     beep=NULL;
 }
 
+/*!
+    \warning This function is only available on Symbian.
+
+    This function processes an individual Symbian window server
+    \a event. It returns 1 if the event was handled, 0 if
+    the \a event was not handled, and -1 if the event was
+    not handled because the event handle (\c{TWsEvent::Handle()})
+    is not known to Qt.
+ */
 int QApplication::s60ProcessEvent(TWsEvent *event)
 {
     bool handled = s60EventFilter(event);
@@ -1117,7 +1351,33 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
             return 1;
         }
         break;
-    default:
+    case EEventFocusGained:
+#ifndef QT_NO_CURSOR
+        //re-enable mouse interaction
+        if (S60->mouseInteractionEnabled) {
+#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
+            if (S60->brokenPointerCursors)
+                qt_symbian_show_pointer_sprite();
+            else
+#endif
+                S60->wsSession().SetPointerCursorMode(EPointerCursorNormal);
+        }
+#endif
+        break;
+    case EEventFocusLost:
+#ifndef QT_NO_CURSOR
+        //disable mouse as may be moving to application that does not support it
+        if (S60->mouseInteractionEnabled) {
+#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
+            if (S60->brokenPointerCursors)
+                qt_symbian_hide_pointer_sprite();
+            else
+#endif
+                S60->wsSession().SetPointerCursorMode(EPointerCursorNone);
+        }
+#endif
+        break;
+	default:
         break;
     }
 
@@ -1127,17 +1387,32 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
     return 0;
 }
 
+/*!
+  \warning This virtual function is only available on Symbian.
+
+  If you create an application that inherits QApplication and reimplement
+  this function, you get direct access to events that the are received
+  from the Symbian window server. The events are passed in the TWsEvent
+  \a aEvent parameter.
+
+  Return true if you want to stop the event from being processed. Return
+  false for normal event dispatching. The default implementation
+  false, and does nothing with \a aEvent.
+ */
 bool QApplication::s60EventFilter(TWsEvent * /* aEvent */)
 {
     return false;
 }
 
 /*!
-    Handles commands which are typically handled by CAknAppUi::HandleCommandL()
-    Qts Ui integration into Symbian is partially achieved by deriving from CAknAppUi.
-    Currently, exit, menu and softkey commands are handled
+  \warning This function is only available on Symbian.
 
-    \sa s60EventFilter(), s60ProcessEvent()
+  Handles \a{command}s which are typically handled by
+  CAknAppUi::HandleCommandL(). Qts Ui integration into Symbian is
+  partially achieved by deriving from CAknAppUi. Currently, exit,
+  menu and softkey commands are handled.
+
+  \sa s60EventFilter(), s60ProcessEvent()
 */
 void QApplication::symbianHandleCommand(int command)
 {
@@ -1149,22 +1424,25 @@ void QApplication::symbianHandleCommand(int command)
         exit();
         break;
     default:
-        if (command >= SOFTKEYSTART && command <= SOFTKEYEND) {
-            int index= command-SOFTKEYSTART;
-            QWidget *focused = QApplication::focusWidget();
-            QWidget *softKeySource = focused ? focused : QApplication::activeWindow();
-            const QList<QAction*>& softKeys = softKeySource->softKeys();
-            Q_ASSERT(index < softKeys.count());
-            softKeys.at(index)->activate(QAction::Trigger);
-        }
+        bool handled = QSoftKeyManager::handleCommand(command);
 #ifdef Q_WS_S60
-        else
+        if (!handled)
             QMenuBarPrivate::symbianCommands(command);
+#else
+        Q_UNUSED(handled);
 #endif
         break;
     }
 }
 
+/*!
+  \warning This function is only available on Symbian.
+
+  Handles the resource change specified by \a type.
+
+  Currently, KEikDynamicLayoutVariantSwitch and
+  KAknsMessageSkinChange are handled.
+ */
 void QApplication::symbianResourceChange(int type)
 {
     switch (type) {
@@ -1265,4 +1543,83 @@ void QSessionManager::cancel()
 
 }
 #endif //QT_NO_SESSIONMANAGER
+
+#ifdef QT_KEYPAD_NAVIGATION
+/*
+ * Show/Hide the mouse cursor depending on phone type and chosen mode
+ */
+void QApplicationPrivate::setNavigationMode(Qt::NavigationMode mode)
+{
+#ifndef QT_NO_CURSOR
+    const bool wasCursorOn = (QApplicationPrivate::navigationMode == Qt::NavigationModeCursorAuto
+        && !S60->hasTouchscreen)
+        || QApplicationPrivate::navigationMode == Qt::NavigationModeCursorForceVisible;
+    const bool isCursorOn = (mode == Qt::NavigationModeCursorAuto
+        && !S60->hasTouchscreen)
+        || mode == Qt::NavigationModeCursorForceVisible;
+    
+    if (!wasCursorOn && isCursorOn) {
+        //Show the cursor, when changing from another mode to cursor mode
+        qt_symbian_set_cursor_visible(true);
+    }
+    else if (wasCursorOn && !isCursorOn) {
+        //Hide the cursor, when leaving cursor mode
+        qt_symbian_set_cursor_visible(false);
+    }
+#endif
+    QApplicationPrivate::navigationMode = mode;
+}
+#endif
+
+#ifndef QT_NO_CURSOR
+/*****************************************************************************
+ QApplication cursor stack
+ *****************************************************************************/
+
+void QApplication::setOverrideCursor(const QCursor &cursor)
+{
+    qApp->d_func()->cursor_list.prepend(cursor);
+    qt_symbian_setGlobalCursor(cursor);
+}
+
+void QApplication::restoreOverrideCursor()
+{
+    if (qApp->d_func()->cursor_list.isEmpty())
+        return;
+    qApp->d_func()->cursor_list.removeFirst();
+    
+    if (!qApp->d_func()->cursor_list.isEmpty()) {
+        qt_symbian_setGlobalCursor(qApp->d_func()->cursor_list.first());
+    }
+    else {
+        //determine which widget has focus
+        QWidget *w = QApplication::widgetAt(QCursor::pos());
+#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
+        if (S60->brokenPointerCursors) {
+            qt_symbian_set_pointer_sprite(w ? w->cursor() : Qt::ArrowCursor);
+        }
+        else
+#endif
+        {
+            //because of the internals of window server, we need to force the cursor
+            //to be set in all child windows too, otherwise when the cursor is over
+            //the child window it may show a widget cursor or arrow cursor instead,
+            //depending on construction order.
+            QListIterator<WId> iter(QWidgetPrivate::mapper->uniqueKeys());
+            while (iter.hasNext()) {
+                CCoeControl *ctrl = iter.next();
+                if(ctrl->OwnsWindow()) {
+                    ctrl->DrawableWindow()->ClearPointerCursor();
+                }
+            }
+            if (w)
+                qt_symbian_setWindowCursor(w->cursor(), w->effectiveWinId());
+            else
+                qt_symbian_setWindowGroupCursor(Qt::ArrowCursor, S60->windowGroup());
+        }
+    }
+}
+
+#endif // QT_NO_CURSOR
+
 QT_END_NAMESPACE

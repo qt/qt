@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,6 +55,9 @@
 #include <qmenu.h>
 #include <qstyle.h>
 #include <qdebug.h>
+
+#include "../../shared/util.h"
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -266,6 +269,9 @@ tst_QMenu::addActionsAndClear()
 
 void tst_QMenu::mouseActivation()
 {
+#ifdef Q_OS_WINCE_WM
+    QSKIP("We have a separate mouseActivation test for Windows mobile.", SkipAll);
+#endif
     QMenu menu;
     menu.addAction("Menu Action");
     menu.show();
@@ -434,15 +440,16 @@ void tst_QMenu::overrideMenuAction()
 	m->addAction(aQuit);
 
 	w.show();
-        QTest::qWait(200);
+    w.setFocus();
+    QTRY_VERIFY(w.hasFocus());
 
 	//test of the action inside the menu
 	QTest::keyClick(&w, Qt::Key_X, Qt::ControlModifier);
-    QCOMPARE(activated, aQuit);
+    QTRY_COMPARE(activated, aQuit);
 
 	//test if the menu still pops out
 	QTest::keyClick(&w, Qt::Key_F, Qt::AltModifier);
-    QVERIFY(m->isVisible());
+    QTRY_VERIFY(m->isVisible());
 
 	delete aFileMenu;
 
@@ -700,12 +707,12 @@ void tst_QMenu::task250673_activeMultiColumnSubMenuPosition()
     };
 
     QMenu sub;
-	
+
     if (sub.style()->styleHint(QStyle::SH_Menu_Scrollable, 0, &sub)) {
         //the style prevents the menus from getting columns
         QSKIP("the style doesn't support multiple columns, it makes the menu scrollable", SkipSingle);
     }
-	
+
     sub.addAction("Sub-Item1");
     QAction *subAction = sub.addAction("Sub-Item2");
 
@@ -717,7 +724,6 @@ void tst_QMenu::task250673_activeMultiColumnSubMenuPosition()
     uint i = 2;
     while (main.columnCount() < 2) {
         main.addAction(QString("Item %1").arg(i));
-        qDebug() << "adding action" << i;
         ++i;
         Q_ASSERT(i<1000);
     }
@@ -800,6 +806,7 @@ void tst_QMenu::task258920_mouseBorder()
     QAction *action = menu.addAction("test");
 
     menu.popup(QApplication::desktop()->availableGeometry().center());
+    QTest::qWaitForWindowShown(&menu);
     QTest::qWait(100);
     QRect actionRect = menu.actionGeometry(action);
     QTest::mouseMove(&menu, actionRect.center());

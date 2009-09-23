@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1025,6 +1025,7 @@ void tst_QCompleter::multipleWidgets()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&window);
 #endif
+    QApplication::setActiveWindow(&window);
     QTest::qWait(50);
     QTRY_VERIFY(qApp->focusWidget() == comboBox);
     comboBox->lineEdit()->setText("it");
@@ -1058,6 +1059,7 @@ void tst_QCompleter::focusIn()
     window.show();
     QTest::qWait(100);
     window.activateWindow();
+    QApplication::setActiveWindow(&window);
     QTest::qWait(100);
 
     QTRY_COMPARE(qApp->activeWindow(), &window);
@@ -1322,8 +1324,10 @@ void tst_QCompleter::task253125_lineEditCompletion()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&edit);
 #endif
+    QTest::qWait(10);
+    QApplication::setActiveWindow(&edit);
+    QTRY_COMPARE(QApplication::activeWindow(), &edit);
 
-    QTest::qWait(100);
     QTest::keyClick(&edit, 'i');
     QCOMPARE(edit.completer()->currentCompletion(), QString("iota"));
     QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);
@@ -1358,7 +1362,9 @@ void tst_QCompleter::task247560_keyboardNavigation()
     qt_x11_wait_for_window_manager(&edit);
 #endif
 
-    QTest::qWait(100);
+    QTest::qWait(10);
+    QApplication::setActiveWindow(&edit);
+    QTRY_COMPARE(QApplication::activeWindow(), &edit);
 
     QTest::keyClick(&edit, 'r');
     QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);

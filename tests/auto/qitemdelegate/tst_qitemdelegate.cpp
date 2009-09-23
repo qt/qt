@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -62,6 +62,8 @@
 #include <QTextEdit>
 #include <QPlainTextEdit>
 #include <QDialog>
+
+#include "../../shared/util.h"
 
 Q_DECLARE_METATYPE(QAbstractItemDelegate::EndEditHint)
 
@@ -473,7 +475,7 @@ void tst_QItemDelegate::font()
     QApplication::sendPostedEvents(); //glib workaround
 #endif
 
-    QCOMPARE(delegate->displayText, item->text());
+    QTRY_COMPARE(delegate->displayText, item->text());
     if (properties.contains("italic")) {
         QCOMPARE(delegate->displayFont.italic(), item->font().italic());
     }
@@ -862,6 +864,8 @@ void tst_QItemDelegate::decoration()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&table);
 #endif
+    QApplication::setActiveWindow(&table);
+    QTRY_COMPARE(QApplication::activeWindow(), &table);
 
     QVariant value;
     switch ((QVariant::Type)type) {
@@ -896,11 +900,8 @@ void tst_QItemDelegate::decoration()
     item->setSelected(true);
 
     QApplication::processEvents();
-#ifdef Q_WS_QWS
-    QApplication::sendPostedEvents(); //glib workaround
-#endif
 
-    QCOMPARE(delegate.decorationRect.size(), expected);
+    QTRY_COMPARE(delegate.decorationRect.size(), expected);
 }
 
 void tst_QItemDelegate::editorEvent_data()
@@ -1055,23 +1056,31 @@ void tst_QItemDelegate::editorEvent()
     QCOMPARE(index.data(Qt::CheckStateRole).toInt(), expectedCheckState);
 }
 
+enum WidgetType
+{
+    LineEdit,
+    TextEdit,
+    PlainTextEdit
+};
+Q_DECLARE_METATYPE(WidgetType);
+
 void tst_QItemDelegate::enterKey_data()
 {
-    QTest::addColumn<int>("widget");
+    QTest::addColumn<WidgetType>("widget");
     QTest::addColumn<int>("key");
     QTest::addColumn<bool>("expectedFocus");
 
-    QTest::newRow("lineedit enter") << 1 << int(Qt::Key_Enter) << false;
-    QTest::newRow("textedit enter") << 2 << int(Qt::Key_Enter) << true;
-    QTest::newRow("plaintextedit enter") << 3 << int(Qt::Key_Enter) << true;
-    QTest::newRow("plaintextedit return") << 3 << int(Qt::Key_Return) << true;
-    QTest::newRow("plaintextedit tab") << 3 << int(Qt::Key_Tab) << false;
-    QTest::newRow("lineedit tab") << 1 << int(Qt::Key_Tab) << false;
+    QTest::newRow("lineedit enter") << LineEdit << int(Qt::Key_Enter) << false;
+    QTest::newRow("textedit enter") << TextEdit << int(Qt::Key_Enter) << true;
+    QTest::newRow("plaintextedit enter") << PlainTextEdit << int(Qt::Key_Enter) << true;
+    QTest::newRow("plaintextedit return") << PlainTextEdit << int(Qt::Key_Return) << true;
+    QTest::newRow("plaintextedit tab") << PlainTextEdit << int(Qt::Key_Tab) << false;
+    QTest::newRow("lineedit tab") << LineEdit << int(Qt::Key_Tab) << false;
 }
 
 void tst_QItemDelegate::enterKey()
 {
-    QFETCH(int, widget);
+    QFETCH(WidgetType, widget);
     QFETCH(int, key);
     QFETCH(bool, expectedFocus);
 
@@ -1087,18 +1096,18 @@ void tst_QItemDelegate::enterKey()
 
     struct TestDelegate : public QItemDelegate
     {
-        int widgetType;
+        WidgetType widgetType;
         virtual QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
         {
             QWidget *editor = 0;
             switch(widgetType) {
-                case 1:
+                case LineEdit:
                     editor = new QLineEdit(parent);
                     break;
-                case 2:
+                case TextEdit:
                     editor = new QTextEdit(parent);
                     break;
-                case 3:
+                case PlainTextEdit:
                     editor = new QPlainTextEdit(parent);
                     break;
             }
@@ -1124,7 +1133,8 @@ void tst_QItemDelegate::enterKey()
     QTest::keyClick(editor, Qt::Key(key));
     QApplication::processEvents();
 
-    if (widget == 2 || widget == 3) {
+    // The line edit has already been destroyed, so avoid that case.
+    if (widget == TextEdit || widget == PlainTextEdit) {
         QVERIFY(!editor.isNull());
         QCOMPARE(editor && editor->hasFocus(), expectedFocus);
     }
@@ -1146,19 +1156,16 @@ void tst_QItemDelegate::task257859_finalizeEdit()
     view.edit(index);
     QTest::qWait(30);
 
-    QList<QWidget*> lineEditors = qFindChildren<QWidget *>(view.viewport());
+    QList<QLineEdit *> lineEditors = qFindChildren<QLineEdit *>(view.viewport());
     QCOMPARE(lineEditors.count(), 1);
 
     QPointer<QWidget> editor = lineEditors.at(0);
     QCOMPARE(editor->hasFocus(), true);
 
     QDialog dialog;
-    QTimer::singleShot(100, &dialog, SLOT(close()));
+    QTimer::singleShot(500, &dialog, SLOT(close()));
     dialog.exec();
-
-    QTest::qWait(100);
-
-    QVERIFY(!editor);
+    QTRY_VERIFY(!editor);
 }
 
 

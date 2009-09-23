@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -149,6 +149,9 @@ public:
     QScriptString lastPropertyFlagsName() const;
     uint lastPropertyFlagsId() const;
 
+    QScriptClass::Extension lastExtensionType() const;
+    QVariant lastExtensionArgument() const;
+
     void clearReceivedArgs();
 
     void setIterationEnabled(bool enable);
@@ -181,6 +184,9 @@ private:
     QScriptValue m_lastPropertyFlagsObject;
     QScriptString m_lastPropertyFlagsName;
     uint m_lastPropertyFlagsId;
+
+    QScriptClass::Extension m_lastExtensionType;
+    QVariant m_lastExtensionArgument;
 
     QScriptValue m_prototype;
     bool m_iterationEnabled;
@@ -333,6 +339,8 @@ bool TestClass::supportsExtension(Extension extension) const
 QVariant TestClass::extension(Extension extension,
                               const QVariant &argument)
 {
+    m_lastExtensionType = extension;
+    m_lastExtensionArgument = argument;
     if (extension == Callable) {
         Q_ASSERT(m_callableMode != NotCallable);
         QScriptContext *ctx = qvariant_cast<QScriptContext*>(argument);
@@ -354,7 +362,6 @@ QVariant TestClass::extension(Extension extension,
     } else if (extension == HasInstance) {
         Q_ASSERT(m_hasInstance);
         QScriptValueList args = qvariant_cast<QScriptValueList>(argument);
-        Q_ASSERT(args.size() == 2);
         QScriptValue obj = args.at(0);
         QScriptValue value = args.at(1);
         return value.property("foo").equals(obj.property("foo"));
@@ -427,6 +434,16 @@ uint TestClass::lastPropertyFlagsId() const
     return m_lastPropertyFlagsId;
 }
 
+QScriptClass::Extension TestClass::lastExtensionType() const
+{
+    return m_lastExtensionType;
+}
+
+QVariant TestClass::lastExtensionArgument() const
+{
+    return m_lastExtensionArgument;
+}
+
 void TestClass::clearReceivedArgs()
 {
     m_lastQueryPropertyObject = QScriptValue();
@@ -445,6 +462,9 @@ void TestClass::clearReceivedArgs()
     m_lastPropertyFlagsObject = QScriptValue();
     m_lastPropertyFlagsName = QScriptString();
     m_lastPropertyFlagsId = uint(-1);
+
+    m_lastExtensionType = static_cast<QScriptClass::Extension>(-1);
+    m_lastExtensionArgument = QVariant();
 }
 
 void TestClass::setIterationEnabled(bool enable)
@@ -558,6 +578,7 @@ void tst_QScriptClass::newInstance()
     QScriptValue obj1 = eng.newObject(&cls);
     QVERIFY(!obj1.data().isValid());
     QVERIFY(obj1.prototype().strictlyEquals(cls.prototype()));
+    QEXPECT_FAIL("", "classname is not implemented", Continue);
     QCOMPARE(obj1.toString(), QString::fromLatin1("[object TestClass]"));
     QCOMPARE(obj1.scriptClass(), (QScriptClass*)&cls);
 
@@ -585,8 +606,11 @@ void tst_QScriptClass::newInstance()
     QScriptValue arr = eng.newArray();
     QVERIFY(arr.isArray());
     QCOMPARE(arr.scriptClass(), (QScriptClass*)0);
+    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setScriptClass() failed: cannot change class of non-QScriptObject");
     arr.setScriptClass(&cls);
+    QEXPECT_FAIL("", "Changing class of arbitrary script object is not allowed (it's OK)", Continue);
     QCOMPARE(arr.scriptClass(), (QScriptClass*)&cls);
+    QEXPECT_FAIL("", "Changing class of arbitrary script object is not allowed (it's OK)", Continue);
     QVERIFY(!arr.isArray());
     QVERIFY(arr.isObject());
 }
@@ -601,6 +625,7 @@ void tst_QScriptClass::getAndSetProperty()
     QScriptValue obj2 = eng.newObject(&cls);
     QScriptString foo = eng.toStringHandle("foo");
     QScriptString bar = eng.toStringHandle("bar");
+    QScriptValue num(&eng, 123);
 
     // should behave just like normal
     for (int x = 0; x < 2; ++x) {
@@ -620,16 +645,17 @@ void tst_QScriptClass::getAndSetProperty()
 
             // write property
             cls.clearReceivedArgs();
-            QScriptValue num(&eng, 123);
             o.setProperty(s, num);
             QVERIFY(cls.lastQueryPropertyObject().strictlyEquals(o));
             QVERIFY(cls.lastQueryPropertyName() == s);
             QVERIFY(!cls.lastPropertyObject().isValid());
             QVERIFY(!cls.lastSetPropertyObject().isValid());
-            // ### ideally, we should only test for HandlesWriteAccess in this case
-            QVERIFY(cls.lastQueryPropertyFlags() == (QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess));
+            QVERIFY(cls.lastQueryPropertyFlags() == QScriptClass::HandlesWriteAccess);
 
             // re-read property
+            // When a QScriptClass doesn't want to handle a property write,
+            // that property becomes a normal property and the QScriptClass
+            // shall not be queried about it again.
             cls.clearReceivedArgs();
             QVERIFY(o.property(s).strictlyEquals(num));
             QVERIFY(!cls.lastQueryPropertyObject().isValid());
@@ -686,6 +712,16 @@ void tst_QScriptClass::getAndSetProperty()
         QVERIFY(cls.lastPropertyName() == foo2);
         QCOMPARE(cls.lastPropertyId(), foo2Id);
     }
+
+    // remove script class; normal properties should remain
+    obj1.setScriptClass(0);
+    QCOMPARE(obj1.scriptClass(), (QScriptClass*)0);
+    QVERIFY(obj1.property(foo).equals(num));
+    QVERIFY(obj1.property(bar).equals(num));
+    obj1.setProperty(foo, QScriptValue());
+    QVERIFY(!obj1.property(foo).isValid());
+    obj1.setProperty(bar, QScriptValue());
+    QVERIFY(!obj1.property(bar).isValid());
 }
 
 void tst_QScriptClass::enumerate()
@@ -720,6 +756,7 @@ void tst_QScriptClass::enumerate()
     for (int x = 0; x < 2; ++x) {
         QVERIFY(it.hasNext());
         it.next();
+        QEXPECT_FAIL("", "", Abort);
         QVERIFY(it.scriptName() == foo);
         QVERIFY(it.hasNext());
         it.next();
@@ -746,6 +783,11 @@ void tst_QScriptClass::extension()
         cls.setCallableMode(TestClass::NotCallable);
         QVERIFY(!cls.supportsExtension(QScriptClass::Callable));
         QVERIFY(!cls.supportsExtension(QScriptClass::HasInstance));
+        QScriptValue obj = eng.newObject(&cls);
+        QVERIFY(!obj.call().isValid());
+        QCOMPARE((int)cls.lastExtensionType(), -1);
+        QVERIFY(!obj.instanceOf(obj));
+        QCOMPARE((int)cls.lastExtensionType(), -1);
     }
     // Callable
     {
@@ -757,21 +799,31 @@ void tst_QScriptClass::extension()
         obj.setProperty("one", QScriptValue(&eng, 1));
         obj.setProperty("two", QScriptValue(&eng, 2));
         obj.setProperty("three", QScriptValue(&eng, 3));
+        cls.clearReceivedArgs();
         {
             QScriptValueList args;
             args << QScriptValue(&eng, 4) << QScriptValue(&eng, 5);
             QScriptValue ret = obj.call(obj, args);
+            QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
+            QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
+            QVERIFY(ret.isNumber());
             QCOMPARE(ret.toNumber(), qsreal(15));
         }
 
         cls.setCallableMode(TestClass::CallableReturnsArgument);
+        cls.clearReceivedArgs();
         {
             QScriptValue ret = obj.call(obj, QScriptValueList() << 123);
+            QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
+            QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
             QVERIFY(ret.isNumber());
             QCOMPARE(ret.toInt32(), 123);
         }
+        cls.clearReceivedArgs();
         {
             QScriptValue ret = obj.call(obj, QScriptValueList() << true);
+            QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
+            QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
             QVERIFY(ret.isBoolean());
             QCOMPARE(ret.toBoolean(), true);
         }
@@ -796,6 +848,15 @@ void tst_QScriptClass::extension()
             QScriptValue ret = obj.call(obj);
             QVERIFY(ret.isUndefined());
         }
+
+        // construct()
+        cls.clearReceivedArgs();
+        {
+            QScriptValue ret = obj.construct();
+            QCOMPARE(cls.lastExtensionType(), QScriptClass::Callable);
+            QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptContext*>());
+            QVERIFY(ret.isObject());
+        }
     }
     // HasInstance
     {
@@ -810,8 +871,15 @@ void tst_QScriptClass::extension()
 
         eng.globalObject().setProperty("HasInstanceTester", obj);
         eng.globalObject().setProperty("hasInstanceValue", plain);
+        cls.clearReceivedArgs();
         {
             QScriptValue ret = eng.evaluate("hasInstanceValue instanceof HasInstanceTester");
+            QCOMPARE(cls.lastExtensionType(), QScriptClass::HasInstance);
+            QCOMPARE(cls.lastExtensionArgument().userType(), qMetaTypeId<QScriptValueList>());
+            QScriptValueList lst = qvariant_cast<QScriptValueList>(cls.lastExtensionArgument());
+            QCOMPARE(lst.size(), 2);
+            QVERIFY(lst.at(0).strictlyEquals(obj));
+            QVERIFY(lst.at(1).strictlyEquals(plain));
             QVERIFY(ret.isBoolean());
             QVERIFY(!ret.toBoolean());
         }

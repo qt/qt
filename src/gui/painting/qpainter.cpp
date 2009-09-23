@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -162,6 +162,9 @@ static bool qt_painter_thread_test(int devType, const char *what, bool extraCond
 void QPainterPrivate::checkEmulation()
 {
     Q_ASSERT(extended);
+    if (extended->flags() & QPaintEngineEx::DoNotEmulate)
+        return;
+
     bool doEmulation = false;
     if (state->bgMode == Qt::OpaqueMode)
         doEmulation = true;
@@ -472,7 +475,8 @@ void QPainterPrivate::draw_helper(const QPainterPath &originalPath, DrawOperatio
     p.end();
 
     q->save();
-    q->resetMatrix();
+    state->matrix = QTransform();
+    state->dirtyFlags |= QPaintEngine::DirtyTransform;
     updateState(state);
     engine->drawImage(absPathRect,
                  image,
@@ -1313,7 +1317,8 @@ void QPainterPrivate::updateState(QPainterState *newState)
     Another workaround is to convert the paths to polygons first and then draw the
     polygons instead.
 
-    \sa QPaintDevice, QPaintEngine, {QtSvg Module}, {Basic Drawing Example}
+    \sa QPaintDevice, QPaintEngine, {QtSvg Module}, {Basic Drawing Example},
+        {Drawing Utility Functions}
 */
 
 /*!
@@ -1835,11 +1840,6 @@ bool QPainter::end()
         return true;
     }
 
-    if (d->states.size() > 1) {
-        qWarning("QPainter::end: Painter ended with %d saved states",
-                 d->states.size());
-    }
-
     bool ended = true;
 
     if (d->engine->isActive()) {
@@ -1851,6 +1851,11 @@ bool QPainter::end()
             d->engine->setPaintDevice(0);
             d->engine->setActive(false);
         }
+    }
+
+    if (d->states.size() > 1) {
+        qWarning("QPainter::end: Painter ended with %d saved states",
+                 d->states.size());
     }
 
     if (d->engine->autoDestruct()) {
@@ -1889,6 +1894,50 @@ QPaintEngine *QPainter::paintEngine() const
     return d->engine;
 }
 
+/*!
+    Flushes the painting pipeline and prepares for the user issuing
+    commands directly to the underlying graphics context. Must be
+    followed by a call to endNativePainting().
+
+    Here is an example that shows intermixing of painter commands
+    and raw OpenGL commands:
+
+    \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 21
+
+    \sa endNativePainting()
+*/
+void QPainter::beginNativePainting()
+{
+    Q_D(QPainter);
+    if (!d->engine) {
+        qWarning("QPainter::beginNativePainting: Painter not active");
+        return;
+    }
+
+    if (d->extended)
+        d->extended->beginNativePainting();
+}
+
+/*!
+    Restores the painter after manually issuing native painting commands.
+    Lets the painter restore any native state that it relies on before
+    calling any other painter commands.
+
+    \sa beginNativePainting()
+*/
+void QPainter::endNativePainting()
+{
+    Q_D(const QPainter);
+    if (!d->engine) {
+        qWarning("QPainter::beginNativePainting: Painter not active");
+        return;
+    }
+
+    if (d->extended)
+        d->extended->endNativePainting();
+    else
+        d->engine->syncState();
+}
 
 /*!
     Returns the font metrics for the painter if the painter is
@@ -2563,6 +2612,8 @@ void QPainter::setClipRect(const QRectF &rect, Qt::ClipOperation op)
         QVectorPath vp(pts, 4, 0, QVectorPath::RectangleHint);
         d->state->clipEnabled = true;
         d->extended->clip(vp, op);
+        if (op == Qt::ReplaceClip || op == Qt::NoClip)
+            d->state->clipInfo.clear();
         d->state->clipInfo << QPainterClipInfo(rect, op, d->state->matrix);
         d->state->clipOperation = op;
         return;
@@ -2609,6 +2660,8 @@ void QPainter::setClipRect(const QRect &rect, Qt::ClipOperation op)
     if (d->extended) {
         d->state->clipEnabled = true;
         d->extended->clip(rect, op);
+        if (op == Qt::ReplaceClip || op == Qt::NoClip)
+            d->state->clipInfo.clear();
         d->state->clipInfo << QPainterClipInfo(rect, op, d->state->matrix);
         d->state->clipOperation = op;
         return;
@@ -2662,6 +2715,8 @@ void QPainter::setClipRegion(const QRegion &r, Qt::ClipOperation op)
     if (d->extended) {
         d->state->clipEnabled = true;
         d->extended->clip(r, op);
+        if (op == Qt::NoClip || op == Qt::ReplaceClip)
+            d->state->clipInfo.clear();
         d->state->clipInfo << QPainterClipInfo(r, op, d->state->matrix);
         d->state->clipOperation = op;
         return;
@@ -3066,6 +3121,8 @@ void QPainter::setClipPath(const QPainterPath &path, Qt::ClipOperation op)
     if (d->extended) {
         d->state->clipEnabled = true;
         d->extended->clip(path, op);
+        if (op == Qt::NoClip || op == Qt::ReplaceClip)
+            d->state->clipInfo.clear();
         d->state->clipInfo << QPainterClipInfo(path, op, d->state->matrix);
         d->state->clipOperation = op;
         return;
@@ -3981,7 +4038,6 @@ const QFont &QPainter::font() const
 
     \sa drawRect(), QPen
 */
-// FALCON: Should we add a specialized method in QPaintEngineEx?
 void QPainter::drawRoundedRect(const QRectF &rect, qreal xRadius, qreal yRadius, Qt::SizeMode mode)
 {
 #ifdef QT_DEBUG_DRAW
@@ -3999,61 +4055,7 @@ void QPainter::drawRoundedRect(const QRectF &rect, qreal xRadius, qreal yRadius,
     }
 
     if (d->extended) {
-        QPainterPath::ElementType types[] = {
-            QPainterPath::MoveToElement,
-            QPainterPath::LineToElement,
-            QPainterPath::CurveToElement,
-            QPainterPath::CurveToDataElement,
-            QPainterPath::CurveToDataElement,
-            QPainterPath::LineToElement,
-            QPainterPath::CurveToElement,
-            QPainterPath::CurveToDataElement,
-            QPainterPath::CurveToDataElement,
-            QPainterPath::LineToElement,
-            QPainterPath::CurveToElement,
-            QPainterPath::CurveToDataElement,
-            QPainterPath::CurveToDataElement,
-            QPainterPath::LineToElement,
-            QPainterPath::CurveToElement,
-            QPainterPath::CurveToDataElement,
-            QPainterPath::CurveToDataElement
-        };
-
-        qreal x1 = rect.left();
-        qreal x2 = rect.right();
-        qreal y1 = rect.top();
-        qreal y2 = rect.bottom();
-
-        if (mode == Qt::RelativeSize) {
-            xRadius = xRadius * rect.width() / 200.;
-            yRadius = yRadius * rect.height() / 200.;
-        }
-
-        xRadius = qMin(xRadius, rect.width() / 2);
-        yRadius = qMin(yRadius, rect.height() / 2);
-
-        qreal pts[] = {
-            x1 + xRadius, y1,                   // MoveTo
-            x2 - xRadius, y1,                   // LineTo
-            x2 - (1 - KAPPA) * xRadius, y1,     // CurveTo
-            x2, y1 + (1 - KAPPA) * yRadius,
-            x2, y1 + yRadius,
-            x2, y2 - yRadius,                   // LineTo
-            x2, y2 - (1 - KAPPA) * yRadius,     // CurveTo
-            x2 - (1 - KAPPA) * xRadius, y2,
-            x2 - xRadius, y2,
-            x1 + xRadius, y2,                   // LineTo
-            x1 + (1 - KAPPA) * xRadius, y2,           // CurveTo
-            x1, y2 - (1 - KAPPA) * yRadius,
-            x1, y2 - yRadius,
-            x1, y1 + yRadius,                   // LineTo
-            x1, y1 + KAPPA * yRadius,           // CurveTo
-            x1 + (1 - KAPPA) * xRadius, y1,
-            x1 + xRadius, y1
-        };
-
-        QVectorPath path(pts, 17, types);
-        d->extended->draw(path);
+        d->extended->drawRoundedRect(rect, xRadius, yRadius, mode);
         return;
     }
 
@@ -4095,23 +4097,7 @@ void QPainter::drawRoundedRect(const QRectF &rect, qreal xRadius, qreal yRadius,
 */
 void QPainter::drawRoundRect(const QRectF &r, int xRnd, int yRnd)
 {
-#ifdef QT_DEBUG_DRAW
-    if (qt_show_painter_debug_output)
-        printf("QPainter::drawRoundRectangle(), [%.2f,%.2f,%.2f,%.2f]\n", r.x(), r.y(), r.width(), r.height());
-#endif
-    Q_D(QPainter);
-
-    if (!d->engine)
-        return;
-
-    if(xRnd <= 0 || yRnd <= 0) {             // draw normal rectangle
-        drawRect(r);
-        return;
-    }
-
-    QPainterPath path;
-    path.addRoundRect(r, xRnd, yRnd);
-    drawPath(path);
+    drawRoundedRect(r, xRnd, yRnd, Qt::RelativeSize);
 }
 
 
@@ -7161,7 +7147,8 @@ QPoint QPainter::xFormDev(const QPoint &p) const
         QRect transformed = painter.xFormDev(rectangle);
     \newcode
         QPainter painter(this);
-        QRect transformed = painter.combinedTransform().inverted(rectangle);
+        QRegion region = QRegion(rectangle) * painter.combinedTransform().inverted();
+        QRect transformed = region.boundingRect();
     \endcode
 */
 
@@ -7477,7 +7464,11 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
     bool hidemnmemonic = (tf & Qt::TextHideMnemonic);
 
     Qt::LayoutDirection layout_direction;
-    if(option)
+    if (tf & Qt::TextForceLeftToRight)
+        layout_direction = Qt::LeftToRight;
+    else if (tf & Qt::TextForceRightToLeft)
+        layout_direction = Qt::RightToLeft;
+    else if (option)
         layout_direction = option->textDirection();
     else if (painter)
         layout_direction = painter->layoutDirection();
@@ -7505,14 +7496,13 @@ start_lengthVariant:
     bool hasMoreLengthVariants = false;
     // compatible behaviour to the old implementation. Replace
     // tabs by spaces
-    bool has_tab = false;
     int old_offset = offset;
     for (; offset < text.length(); offset++) {
         QChar chr = text.at(offset);
         if (chr == QLatin1Char('\r') || (singleline && chr == QLatin1Char('\n'))) {
             text[offset] = QLatin1Char(' ');
         } else if (chr == QLatin1Char('\n')) {
-            chr = QChar::LineSeparator;
+            text[offset] = QChar::LineSeparator;
         } else if (chr == QLatin1Char('&')) {
             ++maxUnderlines;
         } else if (chr == QLatin1Char('\t')) {
@@ -7521,7 +7511,6 @@ start_lengthVariant:
             } else if (!tabarraylen && !tabstops) {
                 tabstops = qRound(fm.width(QLatin1Char('x'))*8);
             }
-            has_tab = true;
         } else if (chr == QChar(ushort(0x9c))) {
             // string with multiple length variants
             hasMoreLengthVariants = true;
@@ -7544,7 +7533,7 @@ start_lengthVariant:
                 if (!l)
                     break;
                 if (*cin != QLatin1Char('&') && !hidemnmemonic)
-                    underlinePositions[numUnderlines++] =  cout - text.data() - old_offset;
+                    underlinePositions[numUnderlines++] = cout - text.data() - old_offset;
             }
             *cout = *cin;
             ++cout;

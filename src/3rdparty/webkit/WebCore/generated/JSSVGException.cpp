@@ -80,6 +80,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSSVGExceptionPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -94,6 +95,11 @@ const ClassInfo JSSVGExceptionConstructor::s_info = { "SVGExceptionConstructor",
 bool JSSVGExceptionConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGExceptionConstructor, DOMObject>(exec, &JSSVGExceptionConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGExceptionConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGExceptionConstructor, DOMObject>(exec, &JSSVGExceptionConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -126,6 +132,11 @@ bool JSSVGExceptionPrototype::getOwnPropertySlot(ExecState* exec, const Identifi
     return getStaticPropertySlot<JSSVGExceptionPrototype, JSObject>(exec, &JSSVGExceptionPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGExceptionPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticPropertyDescriptor<JSSVGExceptionPrototype, JSObject>(exec, &JSSVGExceptionPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGException::s_info = { "SVGException", 0, &JSSVGExceptionTable, 0 };
 
 JSSVGException::JSSVGException(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGException> impl, SVGElement* context)
@@ -147,6 +158,11 @@ JSObject* JSSVGException::createPrototype(ExecState* exec, JSGlobalObject* globa
 bool JSSVGException::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGException, Base>(exec, &JSSVGExceptionTable, this, propertyName, slot);
+}
+
+bool JSSVGException::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGException, Base>(exec, &JSSVGExceptionTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGExceptionCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -186,7 +202,7 @@ JSValue JSSVGException::getConstructor(ExecState* exec, JSGlobalObject* globalOb
 JSValue JSC_HOST_CALL jsSVGExceptionPrototypeFunctionToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGException::s_info))
+    if (!thisValue.inherits(&JSSVGException::s_info))
         return throwError(exec, TypeError);
     JSSVGException* castedThisObj = static_cast<JSSVGException*>(asObject(thisValue));
     SVGException* imp = static_cast<SVGException*>(castedThisObj->impl());
@@ -219,7 +235,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGExce
 }
 SVGException* toSVGException(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGException::s_info) ? static_cast<JSSVGException*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGException::s_info) ? static_cast<JSSVGException*>(asObject(value))->impl() : 0;
 }
 
 }

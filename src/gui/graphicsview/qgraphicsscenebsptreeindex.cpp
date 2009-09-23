@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -172,7 +172,7 @@ void QGraphicsSceneBspTreeIndexPrivate::_q_updateIndex()
             if (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
                 continue;
 
-            bsp.insertItem(item, item->sceneBoundingRect());
+            bsp.insertItem(item, item->d_ptr->sceneEffectiveBoundingRect());
         }
     }
     unindexedItems.clear();
@@ -352,7 +352,7 @@ void QGraphicsSceneBspTreeIndexPrivate::removeItem(QGraphicsItem *item, bool rec
             purgePending = true;
             removedItems << item;
         } else if (!(item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)) {
-            bsp.removeItem(item, item->sceneBoundingRect());
+            bsp.removeItem(item, item->d_ptr->sceneEffectiveBoundingRect());
         }
     } else {
         unindexedItems.removeOne(item);
@@ -419,8 +419,8 @@ bool QGraphicsSceneBspTreeIndexPrivate::closestItemFirst_withoutCache(const QGra
 
     // Find common ancestor, and each item's ancestor closest to the common
     // ancestor.
-    int item1Depth = d1->depth;
-    int item2Depth = d2->depth;
+    int item1Depth = d1->depth();
+    int item2Depth = d2->depth();
     const QGraphicsItem *p = item1;
     const QGraphicsItem *t1 = item1;
     while (item1Depth > item2Depth && (p = p->d_ptr->parent)) {
@@ -480,23 +480,23 @@ void QGraphicsSceneBspTreeIndexPrivate::sortItems(QList<QGraphicsItem *> *itemLi
         return;
 
     if (onlyTopLevelItems) {
-        if (order == Qt::AscendingOrder)
+        if (order == Qt::DescendingOrder)
             qSort(itemList->begin(), itemList->end(), qt_closestLeaf);
-        else if (order == Qt::DescendingOrder)
+        else if (order == Qt::AscendingOrder)
             qSort(itemList->begin(), itemList->end(), qt_notclosestLeaf);
         return;
     }
 
     if (sortCacheEnabled) {
-        if (order == Qt::AscendingOrder) {
+        if (order == Qt::DescendingOrder) {
             qSort(itemList->begin(), itemList->end(), closestItemFirst_withCache);
-        } else if (order == Qt::DescendingOrder) {
+        } else if (order == Qt::AscendingOrder) {
             qSort(itemList->begin(), itemList->end(), closestItemLast_withCache);
         }
     } else {
-        if (order == Qt::AscendingOrder) {
+        if (order == Qt::DescendingOrder) {
             qSort(itemList->begin(), itemList->end(), closestItemFirst_withoutCache);
-        } else if (order == Qt::DescendingOrder) {
+        } else if (order == Qt::AscendingOrder) {
             qSort(itemList->begin(), itemList->end(), closestItemLast_withoutCache);
         }
     }
@@ -605,7 +605,7 @@ QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::estimateTopLevelItems(const Q
 }
 
 /*!
-    \fn QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::items(Qt::SortOrder order = Qt::AscendingOrder) const;
+    \fn QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::items(Qt::SortOrder order = Qt::DescendingOrder) const;
 
     Return all items in the BSP index and sort them using \a order.
 */

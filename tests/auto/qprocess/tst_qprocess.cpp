@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -134,6 +134,8 @@ private slots:
     void exitCodeTest();
     void setEnvironment_data();
     void setEnvironment();
+    void setProcessEnvironment_data();
+    void setProcessEnvironment();
     void systemEnvironment();
     void spaceInName();
     void lockupsInStartDetached();
@@ -1162,7 +1164,7 @@ void tst_QProcess::softExitInSlots()
         SoftExitProcess proc(i);
         proc.start(appName);
         proc.write("OLEBOLE", 8); // include the \0
-        QTestEventLoop::instance().enterLoop(1);
+        QTestEventLoop::instance().enterLoop(10);
         QCOMPARE(proc.state(), QProcess::NotRunning);
         QVERIFY(proc.waitedForFinished);
     }
@@ -1316,6 +1318,15 @@ protected slots:
 
 private:
     int exitCode;
+#ifdef Q_OS_SYMBIAN
+    enum
+    {
+        /**
+         * The maximum stack size.
+         */
+        SymbianStackSize = 0x14000
+    };
+#endif
 };
 
 //-----------------------------------------------------------------------------
@@ -1324,7 +1335,7 @@ void tst_QProcess::processInAThread()
     for (int i = 0; i < 10; ++i) {
         TestThread thread;
 #if defined(Q_OS_SYMBIAN)
-        thread.setStackSize(0x14000);
+        thread.setStackSize(SymbianStackSize);
 #endif
         thread.start();
         QVERIFY(thread.wait(10000));
@@ -1349,9 +1360,9 @@ void tst_QProcess::processesInMultipleThreads()
         thread2.serial = serialCounter++;
         thread3.serial = serialCounter++;
 
-        thread1.setStackSize(0x14000);
-        thread2.setStackSize(0x14000);
-        thread3.setStackSize(0x14000);
+        thread1.setStackSize(SymbianStackSize);
+        thread2.setStackSize(SymbianStackSize);
+        thread3.setStackSize(SymbianStackSize);
 #endif
         thread1.start();
         thread2.start();
@@ -1863,16 +1874,39 @@ void tst_QProcess::setEnvironment()
 
         QCOMPARE(process.readAll(), value.toLocal8Bit());
     }
+#endif
+}
 
-    // use the hash variant now
+//-----------------------------------------------------------------------------
+void tst_QProcess::setProcessEnvironment_data()
+{
+    setEnvironment_data();
+}
+
+void tst_QProcess::setProcessEnvironment()
+{
+#if !defined (Q_OS_WINCE)
+    // there is no concept of system variables on Windows CE as there is no console
+
+    // make sure our environment variables are correct
+    QVERIFY(qgetenv("tst_QProcess").isEmpty());
+    QVERIFY(!qgetenv("PATH").isEmpty());
+#ifdef Q_OS_WIN
+    QVERIFY(!qgetenv("PROMPT").isEmpty());
+#endif
+
+    QFETCH(QString, name);
+    QFETCH(QString, value);
+    QString executable = QDir::currentPath() + "/testProcessEnvironment/testProcessEnvironment";
+
     {
         QProcess process;
-        QHash<QString, QString> environment = QProcess::systemEnvironmentHash();
+        QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
         if (value.isNull())
             environment.remove(name);
         else
             environment.insert(name, value);
-        process.setEnvironmentHash(environment);
+        process.setProcessEnvironment(environment);
         process.start(executable, QStringList() << name);
 
         QVERIFY(process.waitForFinished());
@@ -1890,12 +1924,12 @@ void tst_QProcess::systemEnvironment()
 #if defined (Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     // there is no concept of system variables on Windows CE as there is no console
     QVERIFY(QProcess::systemEnvironment().isEmpty());
-    QVERIFY(QProcess::systemEnvironmentHash().isEmpty());
+    QVERIFY(QProcessEnvironment::systemEnvironment().isEmpty());
 #else
     QVERIFY(!QProcess::systemEnvironment().isEmpty());
-    QVERIFY(!QProcess::systemEnvironmentHash().isEmpty());
+    QVERIFY(!QProcessEnvironment::systemEnvironment().isEmpty());
 
-    QVERIFY(QProcess::systemEnvironmentHash().contains("PATH"));
+    QVERIFY(QProcessEnvironment::systemEnvironment().contains("PATH"));
     QVERIFY(!QProcess::systemEnvironment().filter(QRegExp("^PATH=", Qt::CaseInsensitive)).isEmpty());
 #endif
 }

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -107,7 +107,11 @@ private slots:
 
     void recycleServer();
 
+    void writeToClientAndDisconnect();
+
     void debug();
+    void bytesWrittenSignal();
+
 
 #ifdef Q_OS_SYMBIAN
 private:
@@ -368,7 +372,7 @@ void tst_QLocalSocket::listenAndConnect()
         QSignalSpy spyReadyRead(socket, SIGNAL(readyRead()));
 
         socket->connectToServer(name);
-#if defined(QT_LOCALSOCKET_TCP) || defined (Q_OS_SYMBIAN)
+#if defined(QT_LOCALSOCKET_TCP)
         QTest::qWait(250);
 #endif
 
@@ -420,7 +424,7 @@ void tst_QLocalSocket::listenAndConnect()
         for (int j = 0; j < spyStateChanged.count(); ++j) {
             QLocalSocket::LocalSocketState s;
             s = qVariantValue<QLocalSocket::LocalSocketState>(spyStateChanged.at(j).at(0));
-	    qDebug() << s;
+            qDebug() << s;
         }
 #endif
         if (canListen)
@@ -494,7 +498,7 @@ void tst_QLocalSocket::sendData()
 
     QCOMPARE(server.waitForNewConnection(3000, &timedOut), canListen);
 
-#if defined(QT_LOCALSOCKET_TCP) || defined(Q_OS_SYMBIAN)
+#if defined(QT_LOCALSOCKET_TCP)
     QTest::qWait(250);
 #endif
     QVERIFY(!timedOut);
@@ -505,11 +509,11 @@ void tst_QLocalSocket::sendData()
     if (server.hasPendingConnections()) {
         QString testLine = "test";
 #ifdef Q_OS_SYMBIAN
-    for (int i = 0; i < 25 * 1024; ++i)
+        for (int i = 0; i < 25 * 1024; ++i)
 #else
-	for (int i = 0; i < 50000; ++i)
+        for (int i = 0; i < 50000; ++i)
 #endif
-		testLine += "a";
+            testLine += "a";
         QLocalSocket *serverSocket = server.nextPendingConnection();
         QVERIFY(serverSocket);
         QCOMPARE(serverSocket->state(), QLocalSocket::ConnectedState);
@@ -570,9 +574,6 @@ void tst_QLocalSocket::fullPath()
 
     LocalSocket socket;
     socket.connectToServer(serverName);
-#if defined (Q_OS_SYMBIAN)
-    QTest::qWait(250);
-#endif
 
     QCOMPARE(socket.serverName(), serverName);
     QCOMPARE(socket.fullServerName(), serverName);
@@ -646,7 +647,7 @@ public:
             ++tries;
         } while ((socket.error() == QLocalSocket::ServerNotFoundError
                   || socket.error() == QLocalSocket::ConnectionRefusedError)
-		 && tries < 1000);
+             && tries < 1000);
         if (tries == 0 && socket.state() != QLocalSocket::ConnectedState) {
             QVERIFY(socket.waitForConnected(3000));
             QVERIFY(socket.state() == QLocalSocket::ConnectedState);
@@ -736,10 +737,10 @@ void tst_QLocalSocket::threadedConnection()
 
     server.wait();
     while (!clients.isEmpty()) {
-        QVERIFY(clients.first()->wait(30000));
+        QVERIFY(clients.first()->wait(3000));
         Client *client =clients.takeFirst();
-	client->terminate();
-	delete client;
+        client->terminate();
+        delete client;
     }
 }
 
@@ -873,10 +874,83 @@ void tst_QLocalSocket::recycleServer()
     QVERIFY(server.nextPendingConnection() != 0);
 }
 
+void tst_QLocalSocket::writeToClientAndDisconnect()
+{
+#ifdef Q_OS_SYMBIAN
+    unlink("writeAndDisconnectServer");
+#endif
+
+    QLocalServer server;
+    QLocalSocket client;
+
+    QVERIFY(server.listen("writeAndDisconnectServer"));
+    client.connectToServer("writeAndDisconnectServer");
+    QVERIFY(client.waitForConnected(200));
+    QVERIFY(server.waitForNewConnection(200));
+    QLocalSocket* clientSocket = server.nextPendingConnection();
+    QVERIFY(clientSocket);
+
+    char buffer[100];
+    memset(buffer, 0, sizeof(buffer));
+    QCOMPARE(clientSocket->write(buffer, sizeof(buffer)), (qint64)sizeof(buffer));
+    clientSocket->waitForBytesWritten();
+    clientSocket->disconnectFromServer();
+    QVERIFY(client.waitForReadyRead());
+    QCOMPARE(client.read(buffer, sizeof(buffer)), (qint64)sizeof(buffer));
+    QVERIFY(client.waitForDisconnected());
+    QCOMPARE(client.state(), QLocalSocket::UnconnectedState);
+}
+
 void tst_QLocalSocket::debug()
 {
     // Make sure this compiles
     qDebug() << QLocalSocket::ConnectionRefusedError << QLocalSocket::UnconnectedState;
+}
+
+class WriteThread : public QThread
+{
+Q_OBJECT
+public:
+    void run() {
+        QLocalSocket socket;
+        socket.connectToServer("qlocalsocket_readyread");
+
+        if (!socket.waitForConnected(3000))
+            exec();
+        connect(&socket, SIGNAL(bytesWritten(qint64)), 
+        this, SLOT(bytesWritten(qint64)), Qt::QueuedConnection);
+        socket.write("testing\n");
+        exec();
+    }
+public slots:
+   void bytesWritten(qint64) {
+        exit();
+   }
+
+private:
+};
+
+/*
+    Tests the emission of the bytesWritten(qint64)
+    signal.
+
+    Create a thread that will write to a socket.
+    If the bytesWritten(qint64) signal is generated, 
+    the slot connected to it will exit the thread,
+    indicating test success.  
+
+*/
+void tst_QLocalSocket::bytesWrittenSignal()
+{
+    QLocalServer server;
+    QVERIFY(server.listen("qlocalsocket_readyread"));
+    WriteThread writeThread;
+    writeThread.start();
+    bool timedOut = false;
+    QVERIFY(server.waitForNewConnection(3000, &timedOut));
+    QVERIFY(!timedOut);
+    QTest::qWait(2000);
+    QVERIFY(writeThread.wait(2000));
 }
 
 #ifdef Q_OS_SYMBIAN

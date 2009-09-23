@@ -77,6 +77,22 @@
 */
 
 /*!
+    Returns true if this mimetype is the same as the \a other mime type.
+*/
+bool QWebPluginFactory::MimeType::operator==(const MimeType& other) const
+{
+    return name == other.name
+           && description == other.description
+           && fileExtensions == other.fileExtensions;
+}
+
+/*!
+    \fn bool QWebPluginFactory::MimeType::operator!=(const MimeType& other) const
+
+    Returns true if this mimetype is different from the \a other mime type.
+*/
+
+/*!
     \variable QWebPluginFactory::MimeType::name
 
     The full name of the MIME type; e.g., \c{text/plain} or \c{image/png}.
@@ -142,7 +158,7 @@ void QWebPluginFactory::refreshPlugins()
     For example:
 
     \code
-    <object type="application/x-pdf" data="http://qtsoftware.com/document.pdf" width="500" height="400">
+    <object type="application/x-pdf" data="http://qt.nokia.com/document.pdf" width="500" height="400">
         <param name="showTableOfContents" value="true" />
         <param name="hideThumbnails" value="false" />
     </object>
@@ -155,7 +171,7 @@ void QWebPluginFactory::refreshPlugins()
     \row    \o mimeType
             \o "application/x-pdf"
     \row    \o url
-            \o "http://qtsoftware.com/document.pdf"
+            \o "http://qt.nokia.com/document.pdf"
     \row    \o argumentNames
             \o "showTableOfContents" "hideThumbnails"
     \row    \o argumentVaues

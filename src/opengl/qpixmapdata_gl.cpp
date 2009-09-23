@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,42 +55,158 @@ QT_BEGIN_NAMESPACE
 
 extern QGLWidget* qt_gl_share_widget();
 
-class QGLShareContextScope
+/*!
+    \class QGLFramebufferObjectPool
+    \since 4.6
+
+    \brief The QGLFramebufferObject class provides a pool of framebuffer
+    objects for offscreen rendering purposes.
+
+    When requesting an FBO of a given size and format, an FBO of the same
+    format and a size at least as big as the requested size will be returned.
+
+    \internal
+*/
+
+static inline int areaDiff(const QSize &size, const QGLFramebufferObject *fbo)
 {
-public:
-    QGLShareContextScope(const QGLContext *ctx)
-        : m_oldContext(0)
-    {
-        QGLContext *currentContext = const_cast<QGLContext *>(QGLContext::currentContext());
-        if (currentContext != ctx && !qgl_share_reg()->checkSharing(ctx, currentContext)) {
-            m_oldContext = currentContext;
-            m_ctx = const_cast<QGLContext *>(ctx);
-            m_ctx->makeCurrent();
-        } else {
-            m_ctx = currentContext;
+    return qAbs(size.width() * size.height() - fbo->width() * fbo->height());
+}
+
+QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize, const QGLFramebufferObjectFormat &requestFormat)
+{
+    QGLFramebufferObject *chosen = 0;
+    QGLFramebufferObject *candidate = 0;
+    for (int i = 0; !chosen && i < m_fbos.size(); ++i) {
+        QGLFramebufferObject *fbo = m_fbos.at(i);
+
+        if (fbo->format() == requestFormat) {
+            // choose the fbo with a matching format and the closest size
+            if (!candidate || areaDiff(requestSize, candidate) > areaDiff(requestSize, fbo))
+                candidate = fbo;
+        }
+
+        if (candidate) {
+            m_fbos.removeOne(candidate);
+
+            const QSize fboSize = candidate->size();
+            QSize sz = fboSize;
+
+            if (sz.width() < requestSize.width())
+                sz.setWidth(qMax(requestSize.width(), qRound(sz.width() * 1.5)));
+            if (sz.height() < requestSize.height())
+                sz.setHeight(qMax(requestSize.height(), qRound(sz.height() * 1.5)));
+
+            // wasting too much space?
+            if (sz.width() * sz.height() > requestSize.width() * requestSize.height() * 4)
+                sz = requestSize;
+
+            if (sz != fboSize) {
+                delete candidate;
+                candidate = new QGLFramebufferObject(sz, requestFormat);
+            }
+
+            chosen = candidate;
         }
     }
 
-    operator QGLContext *()
-    {
-        return m_ctx;
+    if (!chosen) {
+        chosen = new QGLFramebufferObject(requestSize, requestFormat);
     }
 
-    QGLContext *operator->()
-    {
-        return m_ctx;
+    if (!chosen->isValid()) {
+        delete chosen;
+        chosen = 0;
     }
 
-    ~QGLShareContextScope()
-    {
-        if (m_oldContext)
-            m_oldContext->makeCurrent();
-    }
+    return chosen;
+}
 
-private:
-    QGLContext *m_oldContext;
-    QGLContext *m_ctx;
-};
+void QGLFramebufferObjectPool::release(QGLFramebufferObject *fbo)
+{
+    m_fbos << fbo;
+}
+
+
+QPaintEngine* QGLPixmapGLPaintDevice::paintEngine() const
+{
+    return data->paintEngine();
+}
+
+void QGLPixmapGLPaintDevice::beginPaint()
+{
+    if (!data->isValid())
+        return;
+
+    // QGLPaintDevice::beginPaint will store the current binding and replace
+    // it with m_thisFBO:
+    m_thisFBO = data->m_renderFbo->handle();
+    QGLPaintDevice::beginPaint();
+
+    Q_ASSERT(data->paintEngine()->type() == QPaintEngine::OpenGL2);
+
+    // QPixmap::fill() is deferred until now, where we actually need to do the fill:
+    if (data->needsFill()) {
+        const QColor &c = data->fillColor();
+        float alpha = c.alphaF();
+        glDisable(GL_SCISSOR_TEST);
+        glClearColor(c.redF() * alpha, c.greenF() * alpha, c.blueF() * alpha, alpha);
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+    else if (!data->isUninitialized()) {
+        // If the pixmap (GL Texture) has valid content (it has been
+        // uploaded from an image or rendered into before), we need to
+        // copy it from the texture to the render FBO.
+
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_SCISSOR_TEST);
+        glDisable(GL_BLEND);
+
+#if !defined(QT_OPENGL_ES_2)
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(0, data->width(), data->height(), 0, -999999, 999999);
+#endif
+
+        glViewport(0, 0, data->width(), data->height());
+
+        // Pass false to bind so it doesn't copy the FBO into the texture!
+        context()->drawTexture(QRect(0, 0, data->width(), data->height()), data->bind(false));
+    }
+}
+
+void QGLPixmapGLPaintDevice::endPaint()
+{
+    if (!data->isValid())
+        return;
+
+    data->copyBackFromRenderFbo(false);
+
+    // Base's endPaint will restore the previous FBO binding
+    QGLPaintDevice::endPaint();
+
+    qgl_fbo_pool()->release(data->m_renderFbo);
+    data->m_renderFbo = 0;
+}
+
+QGLContext* QGLPixmapGLPaintDevice::context() const
+{
+    data->ensureCreated();
+    return data->m_ctx;
+}
+
+QSize QGLPixmapGLPaintDevice::size() const
+{
+    return data->size();
+}
+
+void QGLPixmapGLPaintDevice::setPixmapData(QGLPixmapData* d)
+{
+    data = d;
+}
 
 static int qt_gl_pixmap_serial = 0;
 
@@ -104,6 +220,7 @@ QGLPixmapData::QGLPixmapData(PixelType type)
     , m_hasAlpha(false)
 {
     setSerialNumber(++qt_gl_pixmap_serial);
+    m_glDevice.setPixmapData(this);
 }
 
 QGLPixmapData::~QGLPixmapData()
@@ -111,6 +228,8 @@ QGLPixmapData::~QGLPixmapData()
     QGLWidget *shareWidget = qt_gl_share_widget();
     if (!shareWidget)
         return;
+
+    delete m_engine;
 
     if (m_texture.id) {
         QGLShareContextScope ctx(shareWidget->context());
@@ -192,12 +311,7 @@ void QGLPixmapData::ensureCreated() const
             m_source = QImage();
     }
 
-    m_texture.clean = false;
-}
-
-QGLFramebufferObject *QGLPixmapData::fbo() const
-{
-    return m_renderFbo;
+    m_texture.options &= ~QGLContext::MemoryManagedBindOption;
 }
 
 void QGLPixmapData::fromImage(const QImage &image,
@@ -332,8 +446,11 @@ struct TextureBuffer
     QGL2PaintEngineEx *engine;
 };
 
-static QVector<TextureBuffer> textureBufferStack;
-static int currentTextureBuffer = 0;
+Q_GLOBAL_STATIC(QGLFramebufferObjectPool, _qgl_fbo_pool)
+QGLFramebufferObjectPool* qgl_fbo_pool()
+{
+    return _qgl_fbo_pool();
+}
 
 void QGLPixmapData::copyBackFromRenderFbo(bool keepCurrentFboBound) const
 {
@@ -350,8 +467,8 @@ void QGLPixmapData::copyBackFromRenderFbo(bool keepCurrentFboBound) const
     if (!ctx->d_ptr->fbo)
         glGenFramebuffers(1, &ctx->d_ptr->fbo);
 
-    glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->fbo);
-    glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, ctx->d_ptr->fbo);
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
         GL_TEXTURE_2D, m_texture.id, 0);
 
     const int x0 = 0;
@@ -359,7 +476,8 @@ void QGLPixmapData::copyBackFromRenderFbo(bool keepCurrentFboBound) const
     const int y0 = 0;
     const int y1 = h;
 
-    glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, m_renderFbo->handle());
+    if (!m_renderFbo->isBound())
+        glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, m_renderFbo->handle());
 
     glDisable(GL_SCISSOR_TEST);
 
@@ -368,47 +486,12 @@ void QGLPixmapData::copyBackFromRenderFbo(bool keepCurrentFboBound) const
             GL_COLOR_BUFFER_BIT,
             GL_NEAREST);
 
-    if (keepCurrentFboBound)
+    if (keepCurrentFboBound) {
         glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->current_fbo);
-}
-
-void QGLPixmapData::swapBuffers()
-{
-    if (!isValid())
-        return;
-
-    copyBackFromRenderFbo(false);
-    m_renderFbo->release();
-
-    --currentTextureBuffer;
-
-    m_renderFbo = 0;
-    m_engine = 0;
-}
-
-void QGLPixmapData::makeCurrent()
-{
-    if (isValid() && m_renderFbo)
-        m_renderFbo->bind();
-}
-
-void QGLPixmapData::doneCurrent()
-{
-    if (isValid() && m_renderFbo)
-        m_renderFbo->release();
-}
-
-static TextureBuffer createTextureBuffer(const QSize &size, QGL2PaintEngineEx *engine = 0)
-{
-    TextureBuffer buffer;
-    QGLFramebufferObjectFormat fmt;
-    fmt.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
-    fmt.setSamples(4);
-
-    buffer.fbo = new QGLFramebufferObject(size, fmt);
-    buffer.engine = engine ? engine : new QGL2PaintEngineEx;
-
-    return buffer;
+    } else {
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, m_renderFbo->handle());
+        ctx->d_ptr->current_fbo = m_renderFbo->handle();
+    }
 }
 
 bool QGLPixmapData::useFramebufferObjects()
@@ -423,7 +506,7 @@ QPaintEngine* QGLPixmapData::paintEngine() const
     if (!isValid())
         return 0;
 
-    if (m_engine)
+    if (m_renderFbo)
         return m_engine;
 
     if (useFramebufferObjects()) {
@@ -433,33 +516,16 @@ QPaintEngine* QGLPixmapData::paintEngine() const
             qt_gl_share_widget()->makeCurrent();
         QGLShareContextScope ctx(qt_gl_share_widget()->context());
 
-        if (textureBufferStack.size() <= currentTextureBuffer) {
-            textureBufferStack << createTextureBuffer(size());
-        } else {
-            QSize sz = textureBufferStack.at(currentTextureBuffer).fbo->size();
-            if (sz.width() < w || sz.height() < h) {
-                if (sz.width() < w)
-                    sz.setWidth(qMax(w, qRound(sz.width() * 1.5)));
-                if (sz.height() < h)
-                    sz.setHeight(qMax(h, qRound(sz.height() * 1.5)));
+        QGLFramebufferObjectFormat format;
+        format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+        format.setSamples(4);
+        format.setInternalTextureFormat(GLenum(m_hasAlpha ? GL_RGBA : GL_RGB));
 
-                // wasting too much space?
-                if (sz.width() * sz.height() > w * h * 2.5)
-                    sz = QSize(w, h);
+        m_renderFbo = qgl_fbo_pool()->acquire(size(), format);
 
-                delete textureBufferStack.at(currentTextureBuffer).fbo;
-                textureBufferStack[currentTextureBuffer] =
-                    createTextureBuffer(sz, textureBufferStack.at(currentTextureBuffer).engine);
-                qDebug() << "Creating new pixmap texture buffer:" << sz;
-            }
-        }
-
-        if (textureBufferStack.at(currentTextureBuffer).fbo->isValid()) {
-            m_renderFbo = textureBufferStack.at(currentTextureBuffer).fbo;
-            m_engine = textureBufferStack.at(currentTextureBuffer).engine;
-
-            ++currentTextureBuffer;
-
+        if (m_renderFbo) {
+            if (!m_engine)
+                m_engine = new QGL2PaintEngineEx;
             return m_engine;
         }
 
@@ -476,6 +542,10 @@ QPaintEngine* QGLPixmapData::paintEngine() const
     return m_source.paintEngine();
 }
 
+
+// If copyBack is true, bind will copy the contents of the render
+// FBO to the texture (which is not bound to the texture, as it's
+// a multisample FBO).
 GLuint QGLPixmapData::bind(bool copyBack) const
 {
     if (m_renderFbo && copyBack) {
@@ -493,12 +563,6 @@ GLuint QGLPixmapData::bind(bool copyBack) const
     GLuint id = m_texture.id;
     glBindTexture(GL_TEXTURE_2D, id);
     return id;
-}
-
-GLuint QGLPixmapData::textureId() const
-{
-    ensureCreated();
-    return m_texture.id;
 }
 
 QGLTexture* QGLPixmapData::texture() const
@@ -537,6 +601,11 @@ int QGLPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
         qWarning("QGLPixmapData::metric(): Invalid metric");
         return 0;
     }
+}
+
+QGLPaintDevice *QGLPixmapData::glDevice() const
+{
+    return &m_glDevice;
 }
 
 QT_END_NAMESPACE

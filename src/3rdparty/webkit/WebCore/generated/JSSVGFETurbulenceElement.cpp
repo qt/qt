@@ -100,6 +100,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSSVGFETurbulenceElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -114,6 +115,11 @@ const ClassInfo JSSVGFETurbulenceElementConstructor::s_info = { "SVGFETurbulence
 bool JSSVGFETurbulenceElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGFETurbulenceElementConstructor, DOMObject>(exec, &JSSVGFETurbulenceElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGFETurbulenceElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFETurbulenceElementConstructor, DOMObject>(exec, &JSSVGFETurbulenceElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -149,6 +155,11 @@ bool JSSVGFETurbulenceElementPrototype::getOwnPropertySlot(ExecState* exec, cons
     return getStaticPropertySlot<JSSVGFETurbulenceElementPrototype, JSObject>(exec, &JSSVGFETurbulenceElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGFETurbulenceElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticPropertyDescriptor<JSSVGFETurbulenceElementPrototype, JSObject>(exec, &JSSVGFETurbulenceElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGFETurbulenceElement::s_info = { "SVGFETurbulenceElement", &JSSVGElement::s_info, &JSSVGFETurbulenceElementTable, 0 };
 
 JSSVGFETurbulenceElement::JSSVGFETurbulenceElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFETurbulenceElement> impl)
@@ -164,6 +175,11 @@ JSObject* JSSVGFETurbulenceElement::createPrototype(ExecState* exec, JSGlobalObj
 bool JSSVGFETurbulenceElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGFETurbulenceElement, Base>(exec, &JSSVGFETurbulenceElementTable, this, propertyName, slot);
+}
+
+bool JSSVGFETurbulenceElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFETurbulenceElement, Base>(exec, &JSSVGFETurbulenceElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGFETurbulenceElementBaseFrequencyX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -295,7 +311,7 @@ JSValue JSSVGFETurbulenceElement::getConstructor(ExecState* exec, JSGlobalObject
 JSValue JSC_HOST_CALL jsSVGFETurbulenceElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGFETurbulenceElement::s_info))
+    if (!thisValue.inherits(&JSSVGFETurbulenceElement::s_info))
         return throwError(exec, TypeError);
     JSSVGFETurbulenceElement* castedThisObj = static_cast<JSSVGFETurbulenceElement*>(asObject(thisValue));
     SVGFETurbulenceElement* imp = static_cast<SVGFETurbulenceElement*>(castedThisObj->impl());

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -89,6 +89,7 @@ class Q_AUTOTEST_EXPORT QHttpNetworkConnection : public QObject
 public:
 
     QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false, QObject *parent = 0);
+    QHttpNetworkConnection(quint16 channelCount, const QString &hostName, quint16 port = 80, bool encrypt = false, QObject *parent = 0);
     ~QHttpNetworkConnection();
 
     //The hostname to which this is connected to.
@@ -153,25 +154,26 @@ class QHttpNetworkConnectionPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QHttpNetworkConnection)
 public:
+    static const int defaultChannelCount;
+    static const int defaultPipelineLength;
+
     QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt);
+    QHttpNetworkConnectionPrivate(quint16 channelCount, const QString &hostName, quint16 port, bool encrypt);
     ~QHttpNetworkConnectionPrivate();
     void init();
 
     enum { ChunkSize = 4096 };
 
     int indexOf(QAbstractSocket *socket) const;
-    bool isSocketBusy(QAbstractSocket *socket) const;
-    bool isSocketWriting(QAbstractSocket *socket) const;
-    bool isSocketWaiting(QAbstractSocket *socket) const;
-    bool isSocketReading(QAbstractSocket *socket) const;
 
     QHttpNetworkReply *queueRequest(const QHttpNetworkRequest &request);
-    void unqueueAndSendRequest(QAbstractSocket *socket);
+    void requeueRequest(const HttpMessagePair &pair); // e.g. after pipeline broke
+    void dequeueAndSendRequest(QAbstractSocket *socket);
     void prepareRequest(HttpMessagePair &request);
-    bool sendRequest(QAbstractSocket *socket);
-    void receiveReply(QAbstractSocket *socket, QHttpNetworkReply *reply);
-    void resendCurrentRequest(QAbstractSocket *socket);
-    void closeChannel(int channel);
+
+    void fillPipeline(QAbstractSocket *socket);
+    bool fillPipeline(QList<HttpMessagePair> &queue, QHttpNetworkConnectionChannel &channel);
+
     void copyCredentials(int fromChannel, QAuthenticator *auth, bool isProxy);
 
     // private slots
@@ -179,9 +181,9 @@ public:
     void _q_restartAuthPendingRequests(); // send the currently blocked request
 
     void createAuthorization(QAbstractSocket *socket, QHttpNetworkRequest &request);
-    bool ensureConnection(QAbstractSocket *socket);
+
     QString errorDetail(QNetworkReply::NetworkError errorCode, QAbstractSocket *socket);
-    void eraseData(QHttpNetworkReply *reply);
+
 #ifndef QT_NO_COMPRESS
     bool expand(QAbstractSocket *socket, QHttpNetworkReply *reply, bool dataComplete);
 #endif
@@ -191,7 +193,7 @@ public:
     quint16 port;
     bool encrypt;
 
-    static const int channelCount;
+    const int channelCount;
     QHttpNetworkConnectionChannel *channels; // parallel connections to the server
 
     bool pendingAuthSignal; // there is an incomplete authentication signal
@@ -199,14 +201,11 @@ public:
 
     qint64 uncompressedBytesAvailable(const QHttpNetworkReply &reply) const;
     qint64 uncompressedBytesAvailableNextBlock(const QHttpNetworkReply &reply) const;
-    qint64 compressedBytesAvailable(const QHttpNetworkReply &reply) const;
+
 
     void emitReplyError(QAbstractSocket *socket, QHttpNetworkReply *reply, QNetworkReply::NetworkError errorCode);
     bool handleAuthenticateChallenge(QAbstractSocket *socket, QHttpNetworkReply *reply, bool isProxy, bool &resend);
-    void allDone(QAbstractSocket *socket, QHttpNetworkReply *reply);
-    void handleStatus(QAbstractSocket *socket, QHttpNetworkReply *reply);
-    inline bool shouldEmitSignals(QHttpNetworkReply *reply);
-    inline bool expectContent(QHttpNetworkReply *reply);
+
 
 #ifndef QT_NO_OPENSSL
     QSslConfiguration sslConfiguration(const QHttpNetworkReply &reply) const;
@@ -214,6 +213,7 @@ public:
 
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy networkProxy;
+    void emitProxyAuthenticationRequired(const QHttpNetworkConnectionChannel *chan, const QNetworkProxy &proxy, QAuthenticator* auth);
 #endif
 
     //The request queues

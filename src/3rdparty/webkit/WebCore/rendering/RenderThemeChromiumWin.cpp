@@ -316,13 +316,14 @@ void RenderThemeChromiumWin::adjustSliderThumbSize(RenderObject* o) const
     // These sizes match what WinXP draws for various menus.
     const int sliderThumbAlongAxis = 11;
     const int sliderThumbAcrossAxis = 21;
-    if (o->style()->appearance() == SliderThumbHorizontalPart || o->style()->appearance() == MediaSliderThumbPart) {
+    if (o->style()->appearance() == SliderThumbHorizontalPart) {
         o->style()->setWidth(Length(sliderThumbAlongAxis, Fixed));
         o->style()->setHeight(Length(sliderThumbAcrossAxis, Fixed));
     } else if (o->style()->appearance() == SliderThumbVerticalPart) {
         o->style()->setWidth(Length(sliderThumbAcrossAxis, Fixed));
         o->style()->setHeight(Length(sliderThumbAlongAxis, Fixed));
-    }
+    } else
+        RenderThemeChromiumSkia::adjustSliderThumbSize(o);
 }
 
 bool RenderThemeChromiumWin::paintCheckbox(RenderObject* o, const RenderObject::PaintInfo& i, const IntRect& r)
@@ -464,7 +465,7 @@ unsigned RenderThemeChromiumWin::determineSliderThumbState(RenderObject* o)
         result = TUS_DISABLED;
     else if (supportsFocus(o->style()->appearance()) && isFocused(o->parent()))
         result = TUS_FOCUSED;
-    else if (static_cast<RenderSlider*>(o->parent())->inDragMode())
+    else if (toRenderSlider(o->parent())->inDragMode())
         result = TUS_PRESSED;
     else if (isHovered(o))
         result = TUS_HOT;
@@ -474,14 +475,36 @@ unsigned RenderThemeChromiumWin::determineSliderThumbState(RenderObject* o)
 unsigned RenderThemeChromiumWin::determineClassicState(RenderObject* o)
 {
     unsigned result = 0;
-    if (!isEnabled(o))
-        result = DFCS_INACTIVE;
-    else if (isPressed(o)) // Active supersedes hover
-        result = DFCS_PUSHED;
-    else if (isHovered(o))
-        result = DFCS_HOT;
-    if (isChecked(o))
-        result |= DFCS_CHECKED;
+
+    ControlPart part = o->style()->appearance();
+
+    // Sliders are always in the normal state.
+    if (part == SliderHorizontalPart || part == SliderVerticalPart)
+        return result;
+
+    // So are readonly text fields.
+    if (isReadOnlyControl(o) && (part == TextFieldPart || part == TextAreaPart || part == SearchFieldPart))
+        return result;   
+
+    if (part == SliderThumbHorizontalPart || part == SliderThumbVerticalPart) {
+        if (!isEnabled(o->parent()))
+            result = DFCS_INACTIVE;
+        else if (toRenderSlider(o->parent())->inDragMode()) // Active supersedes hover
+            result = DFCS_PUSHED;
+        else if (isHovered(o))
+            result = DFCS_HOT;
+    } else {
+        if (!isEnabled(o))
+            result = DFCS_INACTIVE;
+        else if (isPressed(o)) // Active supersedes hover
+            result = DFCS_PUSHED;
+        else if (supportsFocus(part) && isFocused(o)) // So does focused
+            result = 0;
+        else if (isHovered(o))
+            result = DFCS_HOT;
+        if (isChecked(o))
+            result |= DFCS_CHECKED;
+    }
     return result;
 }
 
@@ -523,6 +546,7 @@ ThemeData RenderThemeChromiumWin::getThemeData(RenderObject* o)
         break;
     case ListboxPart:
     case MenulistPart:
+    case MenulistButtonPart:
     case SearchFieldPart:
     case TextFieldPart:
     case TextAreaPart:

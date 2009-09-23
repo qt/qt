@@ -109,14 +109,14 @@ String HTMLDocument::dir()
     HTMLElement* b = body();
     if (!b)
         return String();
-    return b->dir();
+    return b->getAttribute(dirAttr);
 }
 
 void HTMLDocument::setDir(const String& value)
 {
     HTMLElement* b = body();
     if (b)
-        b->setDir(value);
+        b->setAttribute(dirAttr, value);
 }
 
 String HTMLDocument::designMode() const
@@ -284,8 +284,10 @@ void HTMLDocument::releaseEvents()
 Tokenizer *HTMLDocument::createTokenizer()
 {
     bool reportErrors = false;
+#if ENABLE(INSPECTOR)
     if (Page* page = this->page())
         reportErrors = page->inspectorController()->windowVisible();
+#endif
 
     return new HTMLTokenizer(this, reportErrors);
 }

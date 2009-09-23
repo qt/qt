@@ -7,6 +7,7 @@ PRECOMPILED_HEADER = kernel/qt_gui_pch.h
 KERNEL_P= kernel
 HEADERS += \
 	kernel/qaction.h \
+        kernel/qaction_p.h \
 	kernel/qactiongroup.h \
 	kernel/qapplication.h \
 	kernel/qapplication_p.h \
@@ -45,7 +46,8 @@ HEADERS += \
 	kernel/qgesture.h \
 	kernel/qgesture_p.h \
 	kernel/qstandardgestures.h \
-	kernel/qstandardgestures_p.h
+        kernel/qstandardgestures_p.h \
+        kernel/qsoftkeymanager_p.h
 
 SOURCES += \
 	kernel/qaction.cpp \
@@ -76,7 +78,8 @@ SOURCES += \
 	kernel/qwidgetaction.cpp \
 	kernel/qkeymapper.cpp \
 	kernel/qgesture.cpp \
-	kernel/qstandardgestures.cpp
+        kernel/qstandardgestures.cpp \
+        kernel/qsoftkeymanager.cpp
 
 win32 {
 	DEFINES += QT_NO_DIRECTDRAW

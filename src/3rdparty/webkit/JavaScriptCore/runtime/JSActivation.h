@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -43,10 +43,10 @@ namespace JSC {
     class JSActivation : public JSVariableObject {
         typedef JSVariableObject Base;
     public:
-        JSActivation(CallFrame*, PassRefPtr<FunctionBodyNode>);
+        JSActivation(CallFrame*, PassRefPtr<FunctionExecutable>);
         virtual ~JSActivation();
 
-        virtual void mark();
+        virtual void markChildren(MarkStack&);
 
         virtual bool isDynamicScope() const;
 
@@ -70,13 +70,20 @@ namespace JSC {
 
     private:
         struct JSActivationData : public JSVariableObjectData {
-            JSActivationData(PassRefPtr<FunctionBodyNode> functionBody, Register* registers)
-                : JSVariableObjectData(&functionBody->generatedBytecode().symbolTable(), registers)
-                , functionBody(functionBody)
+            JSActivationData(PassRefPtr<FunctionExecutable> _functionExecutable, Register* registers)
+                : JSVariableObjectData(_functionExecutable->generatedBytecode().symbolTable(), registers)
+                , functionExecutable(_functionExecutable)
             {
+                // We have to manually ref and deref the symbol table as JSVariableObjectData
+                // doesn't know about SharedSymbolTable
+                functionExecutable->generatedBytecode().sharedSymbolTable()->ref();
+            }
+            ~JSActivationData()
+            {
+                static_cast<SharedSymbolTable*>(symbolTable)->deref();
             }
 
-            RefPtr<FunctionBodyNode> functionBody;
+            RefPtr<FunctionExecutable> functionExecutable;
         };
         
         static JSValue argumentsGetter(ExecState*, const Identifier&, const PropertySlot&);

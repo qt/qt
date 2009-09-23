@@ -90,6 +90,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -104,6 +105,11 @@ const ClassInfo JSHTMLElementConstructor::s_info = { "HTMLElementConstructor", 0
 bool JSHTMLElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLElementConstructor, DOMObject>(exec, &JSHTMLElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLElementConstructor, DOMObject>(exec, &JSHTMLElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -135,6 +141,11 @@ bool JSHTMLElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifie
     return getStaticFunctionSlot<JSObject>(exec, &JSHTMLElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSHTMLElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSHTMLElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSHTMLElement::s_info = { "HTMLElement", &JSElement::s_info, &JSHTMLElementTable, 0 };
 
 JSHTMLElement::JSHTMLElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> impl)
@@ -150,6 +161,11 @@ JSObject* JSHTMLElement::createPrototype(ExecState* exec, JSGlobalObject* global
 bool JSHTMLElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLElement, Base>(exec, &JSHTMLElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLElement, Base>(exec, &JSHTMLElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLElementId(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -362,7 +378,7 @@ JSValue JSHTMLElement::getConstructor(ExecState* exec, JSGlobalObject* globalObj
 JSValue JSC_HOST_CALL jsHTMLElementPrototypeFunctionInsertAdjacentElement(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLElement::s_info))
+    if (!thisValue.inherits(&JSHTMLElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLElement* castedThisObj = static_cast<JSHTMLElement*>(asObject(thisValue));
     HTMLElement* imp = static_cast<HTMLElement*>(castedThisObj->impl());
@@ -379,7 +395,7 @@ JSValue JSC_HOST_CALL jsHTMLElementPrototypeFunctionInsertAdjacentElement(ExecSt
 JSValue JSC_HOST_CALL jsHTMLElementPrototypeFunctionInsertAdjacentHTML(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLElement::s_info))
+    if (!thisValue.inherits(&JSHTMLElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLElement* castedThisObj = static_cast<JSHTMLElement*>(asObject(thisValue));
     HTMLElement* imp = static_cast<HTMLElement*>(castedThisObj->impl());
@@ -395,7 +411,7 @@ JSValue JSC_HOST_CALL jsHTMLElementPrototypeFunctionInsertAdjacentHTML(ExecState
 JSValue JSC_HOST_CALL jsHTMLElementPrototypeFunctionInsertAdjacentText(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLElement::s_info))
+    if (!thisValue.inherits(&JSHTMLElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLElement* castedThisObj = static_cast<JSHTMLElement*>(asObject(thisValue));
     HTMLElement* imp = static_cast<HTMLElement*>(castedThisObj->impl());
@@ -410,7 +426,7 @@ JSValue JSC_HOST_CALL jsHTMLElementPrototypeFunctionInsertAdjacentText(ExecState
 
 HTMLElement* toHTMLElement(JSC::JSValue value)
 {
-    return value.isObject(&JSHTMLElement::s_info) ? static_cast<JSHTMLElement*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSHTMLElement::s_info) ? static_cast<JSHTMLElement*>(asObject(value))->impl() : 0;
 }
 
 }

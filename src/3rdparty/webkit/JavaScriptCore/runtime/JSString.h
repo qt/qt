@@ -23,10 +23,11 @@
 #ifndef JSString_h
 #define JSString_h
 
-#include "CommonIdentifiers.h"
 #include "CallFrame.h"
+#include "CommonIdentifiers.h"
 #include "Identifier.h"
 #include "JSNumberCell.h"
+#include "PropertyDescriptor.h"
 #include "PropertySlot.h"
 
 namespace JSC {
@@ -60,7 +61,7 @@ namespace JSC {
 
     class JSString : public JSCell {
         friend class JIT;
-        friend class VPtrSet;
+        friend struct VPtrSet;
 
     public:
         JSString(JSGlobalData* globalData, const UString& value)
@@ -86,11 +87,12 @@ namespace JSC {
 
         bool getStringPropertySlot(ExecState*, const Identifier& propertyName, PropertySlot&);
         bool getStringPropertySlot(ExecState*, unsigned propertyName, PropertySlot&);
+        bool getStringPropertyDescriptor(ExecState*, const Identifier& propertyName, PropertyDescriptor&);
 
         bool canGetIndex(unsigned i) { return i < static_cast<unsigned>(m_value.size()); }
         JSString* getIndex(JSGlobalData*, unsigned);
 
-        static PassRefPtr<Structure> createStructure(JSValue proto) { return Structure::create(proto, TypeInfo(StringType, NeedsThisConversion)); }
+        static PassRefPtr<Structure> createStructure(JSValue proto) { return Structure::create(proto, TypeInfo(StringType, NeedsThisConversion | HasDefaultMark)); }
 
     private:
         enum VPtrStealingHackType { VPtrStealingHack };
@@ -113,6 +115,7 @@ namespace JSC {
         // Actually getPropertySlot, not getOwnPropertySlot (see JSCell).
         virtual bool getOwnPropertySlot(ExecState*, const Identifier& propertyName, PropertySlot&);
         virtual bool getOwnPropertySlot(ExecState*, unsigned propertyName, PropertySlot&);
+        virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
 
         UString m_value;
     };
@@ -208,7 +211,27 @@ namespace JSC {
 
     inline JSString* JSValue::toThisJSString(ExecState* exec)
     {
-        return JSImmediate::isImmediate(asValue()) ? jsString(exec, JSImmediate::toString(asValue())) : asCell()->toThisJSString(exec);
+        return isCell() ? asCell()->toThisJSString(exec) : jsString(exec, toString(exec));
+    }
+
+    inline UString JSValue::toString(ExecState* exec) const
+    {
+        if (isString())
+            return static_cast<JSString*>(asCell())->value();
+        if (isInt32())
+            return exec->globalData().numericStrings.add(asInt32());
+        if (isDouble())
+            return exec->globalData().numericStrings.add(asDouble());
+        if (isTrue())
+            return "true";
+        if (isFalse())
+            return "false";
+        if (isNull())
+            return "null";
+        if (isUndefined())
+            return "undefined";
+        ASSERT(isCell());
+        return asCell()->toString(exec);
     }
 
 } // namespace JSC

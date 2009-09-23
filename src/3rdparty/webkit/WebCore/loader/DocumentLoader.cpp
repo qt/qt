@@ -29,11 +29,7 @@
 #include "config.h"
 #include "DocumentLoader.h"
 
-#if ENABLE(OFFLINE_WEB_APPLICATIONS)
-#include "ApplicationCache.h"
-#include "ApplicationCacheGroup.h"
-#include "ApplicationCacheResource.h"
-#endif
+#include "ApplicationCacheHost.h"
 #include "ArchiveFactory.h"
 #include "ArchiveResourceCollection.h"
 #include "CachedPage.h"
@@ -148,12 +144,11 @@ DocumentLoader::DocumentLoader(const ResourceRequest& req, const SubstituteData&
     , m_gotFirstByte(false)
     , m_primaryLoadComplete(false)
     , m_isClientRedirect(false)
-    , m_loadingFromCachedPage(false)
     , m_stopRecordingResponses(false)
     , m_substituteResourceDeliveryTimer(this, &DocumentLoader::substituteResourceDeliveryTimerFired)
     , m_didCreateGlobalHistoryEntry(false)
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
-    , m_candidateApplicationCacheGroup(0)
+    , m_applicationCacheHost(new ApplicationCacheHost(this))
 #endif
 {
 }
@@ -168,13 +163,6 @@ FrameLoader* DocumentLoader::frameLoader() const
 DocumentLoader::~DocumentLoader()
 {
     ASSERT(!m_frame || frameLoader()->activeDocumentLoader() != this || !frameLoader()->isLoading());
-    
-#if ENABLE(OFFLINE_WEB_APPLICATIONS)
-    if (m_applicationCache)
-        m_applicationCache->group()->disassociateDocumentLoader(this);
-    else if (m_candidateApplicationCacheGroup)
-        m_candidateApplicationCacheGroup->disassociateDocumentLoader(this);
-#endif
 }
 
 PassRefPtr<SharedBuffer> DocumentLoader::mainResourceData() const
@@ -258,14 +246,7 @@ void DocumentLoader::mainReceivedError(const ResourceError& error, bool isComple
     ASSERT(!error.isNull());
 
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
-    ApplicationCacheGroup* group = m_candidateApplicationCacheGroup;
-    if (!group && m_applicationCache) {
-        ASSERT(!mainResourceApplicationCache()); // If the main resource were loaded from a cache, it wouldn't fail.
-        group = m_applicationCache->group();
-    }
-    
-    if (group)
-        group->failedLoadingMainResource(this);
+    m_applicationCacheHost->failedLoadingMainResource();
 #endif
     
     if (!frameLoader())
@@ -292,7 +273,7 @@ void DocumentLoader::stopLoading(DatabasePolicy databasePolicy)
         Document* doc = m_frame->document();
         
         if (loading || doc->parsing())
-            m_frame->loader()->stopLoading(false, databasePolicy);
+            m_frame->loader()->stopLoading(UnloadEventPolicyNone, databasePolicy);
     }
 
     // Always cancel multipart loaders
@@ -430,6 +411,9 @@ void DocumentLoader::attachToFrame()
 void DocumentLoader::detachFromFrame()
 {
     ASSERT(m_frame);
+#if ENABLE(OFFLINE_WEB_APPLICATIONS)
+    m_applicationCacheHost->setDOMApplicationCache(0);
+#endif
     m_frame = 0;
 }
 
@@ -451,9 +435,6 @@ void DocumentLoader::setPrimaryLoadComplete(bool flag)
     if (flag) {
         if (m_mainResourceLoader) {
             m_mainResourceData = m_mainResourceLoader->resourceData();
-#if ENABLE(OFFLINE_WEB_APPLICATIONS)
-            m_mainResourceApplicationCache = m_mainResourceLoader->applicationCache();
-#endif
             m_mainResourceLoader = 0;
         }
 
@@ -579,7 +560,7 @@ void DocumentLoader::getSubresources(Vector<PassRefPtr<ArchiveResource> >& subre
     const DocLoader::DocumentResourceMap& allResources = document->docLoader()->allCachedResources();
     DocLoader::DocumentResourceMap::const_iterator end = allResources.end();
     for (DocLoader::DocumentResourceMap::const_iterator it = allResources.begin(); it != end; ++it) {
-        RefPtr<ArchiveResource> subresource = this->subresource(KURL(it->second->url()));
+        RefPtr<ArchiveResource> subresource = this->subresource(KURL(ParsedURLString, it->second->url()));
         if (subresource)
             subresources.append(subresource.release());
     }
@@ -703,16 +684,6 @@ KURL DocumentLoader::urlForHistory() const
 bool DocumentLoader::urlForHistoryReflectsFailure() const
 {
     return m_substituteData.isValid() || m_response.httpStatusCode() >= 400;
-}
-
-void DocumentLoader::loadFromCachedPage(PassRefPtr<CachedPage> cachedPage)
-{
-    LOG(PageCache, "WebCorePageCache: DocumentLoader %p loading from cached page %p", this, cachedPage.get());
-    
-    prepareForLoadStart();
-    setLoadingFromCachedPage(true);
-    setCommitted(true);
-    frameLoader()->commitProvisionalLoad(cachedPage);
 }
 
 const KURL& DocumentLoader::originalURL() const
@@ -846,114 +817,5 @@ void DocumentLoader::iconLoadDecisionAvailable()
     if (m_frame)
         m_frame->loader()->iconLoadDecisionAvailable();
 }
-
-#if ENABLE(OFFLINE_WEB_APPLICATIONS)
-void DocumentLoader::setCandidateApplicationCacheGroup(ApplicationCacheGroup* group)
-{
-    ASSERT(!m_applicationCache);
-    m_candidateApplicationCacheGroup = group;
-}
-    
-void DocumentLoader::setApplicationCache(PassRefPtr<ApplicationCache> applicationCache)
-{
-    if (m_candidateApplicationCacheGroup) {
-        ASSERT(!m_applicationCache);
-        m_candidateApplicationCacheGroup = 0;
-    }
-
-    m_applicationCache = applicationCache;
-}
-
-ApplicationCache* DocumentLoader::mainResourceApplicationCache() const
-{
-    if (m_mainResourceApplicationCache)
-        return m_mainResourceApplicationCache.get();
-    if (m_mainResourceLoader)
-        return m_mainResourceLoader->applicationCache();
-    return 0;
-}
-
-bool DocumentLoader::shouldLoadResourceFromApplicationCache(const ResourceRequest& request, ApplicationCacheResource*& resource)
-{
-    ApplicationCache* cache = applicationCache();
-    if (!cache || !cache->isComplete())
-        return false;
-
-    // If the resource is not a HTTP/HTTPS GET, then abort
-    if (!ApplicationCache::requestIsHTTPOrHTTPSGet(request))
-        return false;
-
-    // If the resource's URL is an master entry, the manifest, an explicit entry, or a fallback entry
-    // in the application cache, then get the resource from the cache (instead of fetching it).
-    resource = cache->resourceForURL(request.url());
-
-    // Resources that match fallback namespaces or online whitelist entries are fetched from the network,
-    // unless they are also cached.
-    if (!resource && (cache->urlMatchesFallbackNamespace(request.url()) || cache->isURLInOnlineWhitelist(request.url())))
-        return false;
-
-    // Resources that are not present in the manifest will always fail to load (at least, after the
-    // cache has been primed the first time), making the testing of offline applications simpler.
-    return true;
-}
-
-bool DocumentLoader::getApplicationCacheFallbackResource(const ResourceRequest& request, ApplicationCacheResource*& resource, ApplicationCache* cache)
-{
-    if (!cache) {
-        cache = applicationCache();
-        if (!cache)
-            return false;
-    }
-    if (!cache->isComplete())
-        return false;
-    
-    // If the resource is not a HTTP/HTTPS GET, then abort
-    if (!ApplicationCache::requestIsHTTPOrHTTPSGet(request))
-        return false;
-
-    KURL fallbackURL;
-    if (!cache->urlMatchesFallbackNamespace(request.url(), &fallbackURL))
-        return false;
-
-    resource = cache->resourceForURL(fallbackURL);
-    ASSERT(resource);
-
-    return true;
-}
-
-bool DocumentLoader::scheduleApplicationCacheLoad(ResourceLoader* loader, const ResourceRequest& request, const KURL& originalURL)
-{
-    if (!frameLoader()->frame()->settings() || !frameLoader()->frame()->settings()->offlineWebApplicationCacheEnabled())
-        return false;
-    
-    if (request.url() != originalURL)
-        return false;
-
-    ApplicationCacheResource* resource;
-    if (!shouldLoadResourceFromApplicationCache(request, resource))
-        return false;
-    
-    m_pendingSubstituteResources.set(loader, resource);
-    deliverSubstituteResourcesAfterDelay();
-        
-    return true;
-}
-
-bool DocumentLoader::scheduleLoadFallbackResourceFromApplicationCache(ResourceLoader* loader, const ResourceRequest& request, ApplicationCache* cache)
-{
-    if (!frameLoader()->frame()->settings() || !frameLoader()->frame()->settings()->offlineWebApplicationCacheEnabled())
-        return false;
-
-    ApplicationCacheResource* resource;
-    if (!getApplicationCacheFallbackResource(request, resource, cache))
-        return false;
-
-    m_pendingSubstituteResources.set(loader, resource);
-    deliverSubstituteResourcesAfterDelay();
-        
-    return true;
-}
-
-#endif // ENABLE(OFFLINE_WEB_APPLICATIONS)
 
 }

@@ -1,7 +1,7 @@
 load(qttest_p4)
 SOURCES  += ../tst_qfile.cpp
 
-wince*|symbian:{
+wince*|symbian {
     QT = core gui
     files.sources += ..\dosfile.txt ..\noendofline.txt ..\testfile.txt \
                      ..\testlog.txt ..\two.dots.file ..\tst_qfile.cpp \
@@ -13,10 +13,10 @@ wince*|symbian:{
     DEPLOYMENT = files resour
 }
 
-wince*:{
+wince* {
     DEFINES += SRCDIR=\\\"\\\"
-} symbian: {
-    # don't define SRCDIR at all
+} else:symbian {
+    # do not define SRCDIR at all
     TARGET.EPOCHEAPSIZE = 0x100000 0x3000000
 } else {
     QT = core network

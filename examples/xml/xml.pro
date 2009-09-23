@@ -14,4 +14,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS xml.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/xml
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

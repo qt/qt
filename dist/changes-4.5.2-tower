@@ -7,14 +7,14 @@ S60 porting project. "Tower" is based on the Qt 4.5 codebase (mostly Qt 4.5.2).
 This list of changes lists S60 specific fixes only,
 for general 4.5.x changes go to:
 
-  http://www.qtsoftware.com/developer/changes/changes-4.5.0
-  http://www.qtsoftware.com/developer/changes/changes-4.5.1
-  http://www.qtsoftware.com/developer/changes/changes-4.5.2 (partially in Tower)
+  http://qt.nokia.com/developer/changes/changes-4.5.0
+  http://qt.nokia.com/developer/changes/changes-4.5.1
+  http://qt.nokia.com/developer/changes/changes-4.5.2 (partially in Tower)
 
 Some of the changes listed in this file include issue tracking numbers
 corresponding to tasks in the Task Tracker:
 
-  http://qtsoftware.com/developer/task-tracker
+  http://qt.nokia.com/developer/task-tracker
 
 Each of these identifiers can be entered in the task tracker to obtain
 more information about a particular change. Sometimes the task is internal

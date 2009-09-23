@@ -45,7 +45,7 @@ namespace WebCore {
 
 class GeolocationServiceMac : public GeolocationService {
 public:
-    GeolocationServiceMac(GeolocationServiceClient*);
+    static GeolocationService* create(GeolocationServiceClient*);
     virtual ~GeolocationServiceMac();
     
     virtual bool startUpdating(PositionOptions*);
@@ -61,6 +61,8 @@ public:
     void errorOccurred(PassRefPtr<PositionError>);
 
 private:
+    GeolocationServiceMac(GeolocationServiceClient*);
+
     RetainPtr<CLLocationManager> m_locationManager;
     RetainPtr<WebCoreCoreLocationObserver> m_objcObserver;
     

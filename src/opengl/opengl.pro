@@ -13,8 +13,16 @@ include(../qbase.pri)
 !win32:!embedded:!mac:CONFIG	   += x11
 contains(QT_CONFIG, opengl):CONFIG += opengl
 contains(QT_CONFIG, opengles1):CONFIG += opengles1
-contains(QT_CONFIG, opengles1):CONFIG += opengles1cl
+contains(QT_CONFIG, opengles1cl):CONFIG += opengles1cl
 contains(QT_CONFIG, opengles2):CONFIG += opengles2
+
+contains(QT_CONFIG, opengles.*) {
+	for(p, QMAKE_LIBDIR_EGL) {
+		exists($$p):LIBS_PRIVATE += -L$$p
+	}
+	!isEmpty(QMAKE_INCDIR_EGL): INCLUDEPATH += $$QMAKE_INCDIR_EGL
+	!isEmpty(QMAKE_LIBS_EGL): LIBS_PRIVATE += $$QMAKE_LIBS_EGL
+}
 
 HEADERS += qgl.h \
 	   qgl_p.h \
@@ -22,13 +30,18 @@ HEADERS += qgl.h \
 	   qglpixelbuffer.h \
            qglpixelbuffer_p.h \
 	   qglframebufferobject.h  \
-        qglextensions_p.h
+           qglframebufferobject_p.h  \
+           qglextensions_p.h \
+           qglpaintdevice_p.h \
+
 
 SOURCES	+= qgl.cpp \
 	   qglcolormap.cpp \
 	   qglpixelbuffer.cpp \
 	   qglframebufferobject.cpp \
            qglextensions.cpp \
+           qglpaintdevice.cpp \
+
 
 !contains(QT_CONFIG, opengles2) {
     HEADERS += qpaintengine_opengl_p.h
@@ -38,6 +51,7 @@ SOURCES	+= qgl.cpp \
 !contains(QT_CONFIG, opengles1):!contains(QT_CONFIG, opengles1cl) {
     HEADERS +=  qglshaderprogram.h \
                 qglpixmapfilter_p.h  \
+                qgraphicsshadereffect_p.h \
                 qgraphicssystem_gl_p.h \
                 qwindowsurface_gl_p.h \
                 qpixmapdata_gl_p.h \
@@ -45,17 +59,20 @@ SOURCES	+= qgl.cpp \
                 gl2paintengineex/qglengineshadermanager_p.h \
                 gl2paintengineex/qgl2pexvertexarray_p.h \
                 gl2paintengineex/qpaintengineex_opengl2_p.h \
-                gl2paintengineex/qglengineshadersource_p.h
+                gl2paintengineex/qglengineshadersource_p.h \
+                gl2paintengineex/qglcustomshaderstage_p.h
 
     SOURCES +=  qglshaderprogram.cpp \
                 qglpixmapfilter.cpp \
+                qgraphicsshadereffect.cpp \
                 qgraphicssystem_gl.cpp \
                 qwindowsurface_gl.cpp \
                 qpixmapdata_gl.cpp \
                 gl2paintengineex/qglgradientcache.cpp \
                 gl2paintengineex/qglengineshadermanager.cpp \
                 gl2paintengineex/qgl2pexvertexarray.cpp \
-                gl2paintengineex/qpaintengineex_opengl2.cpp
+                gl2paintengineex/qpaintengineex_opengl2.cpp \
+                gl2paintengineex/qglcustomshaderstage.cpp
 
 }
 
@@ -142,4 +159,5 @@ wince*: {
 
 } else {
     LIBS_PRIVATE += $$QMAKE_LIBS_OPENGL
+    LIBS += $$QMAKE_LFLAGS_OPENGL
 }

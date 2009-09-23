@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'filterpage.ui'
 **
-** Created: Mon Jun 16 17:58:59 2008
-**      by: Qt User Interface Compiler version 4.5.0
+** Created: Fri Sep 4 10:17:13 2009
+**      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -114,7 +114,6 @@ public:
         ___qtreewidgetitem->setText(0, QApplication::translate("FilterPage", "1", 0, QApplication::UnicodeUTF8));
         addButton->setText(QApplication::translate("FilterPage", "Add", 0, QApplication::UnicodeUTF8));
         removeButton->setText(QApplication::translate("FilterPage", "Remove", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(FilterPage);
     } // retranslateUi
 
 };

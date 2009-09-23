@@ -63,7 +63,6 @@
 /* Note that for this platform PLATFORM(WIN_OS) is also defined. */
 #if defined(_WIN32_WCE)
 #define WTF_PLATFORM_WINCE 1
-#include <ce_time.h>
 #endif
 
 /* PLATFORM(LINUX) */
@@ -127,6 +126,7 @@
    || defined(__unix)      \
    || defined(__unix__)    \
    || defined(_AIX)        \
+   || defined(__HAIKU__)   \
    || defined(__QNXNTO__)
 #define WTF_PLATFORM_UNIX 1
 #endif
@@ -152,6 +152,8 @@
 #define WTF_PLATFORM_WX 1
 #elif defined(BUILDING_GTK__)
 #define WTF_PLATFORM_GTK 1
+#elif defined(BUILDING_HAIKU__)
+#define WTF_PLATFORM_HAIKU 1
 #elif PLATFORM(DARWIN)
 #define WTF_PLATFORM_MAC 1
 #elif PLATFORM(WIN_OS)
@@ -198,7 +200,7 @@
 
 /* Makes PLATFORM(WIN) default to PLATFORM(CAIRO) */
 /* FIXME: This should be changed from a blacklist to a whitelist */
-#if !PLATFORM(MAC) && !PLATFORM(QT) && !PLATFORM(WX) && !PLATFORM(CHROMIUM) && !PLATFORM(WINCE)
+#if !PLATFORM(MAC) && !PLATFORM(QT) && !PLATFORM(WX) && !PLATFORM(CHROMIUM) && !PLATFORM(WINCE) && !PLATFORM(HAIKU)
 #define WTF_PLATFORM_CAIRO 1
 #endif
 
@@ -229,11 +231,8 @@
 #define WTF_PLATFORM_ARM 1
 #if defined(__ARMEB__)
 #define WTF_PLATFORM_BIG_ENDIAN 1
-#elif !defined(__ARM_EABI__) && !defined(__ARMEB__) && !defined(__VFP_FP__)
+#elif !defined(__ARM_EABI__) && !defined(__EABI__) && !defined(__VFP_FP__)
 #define WTF_PLATFORM_MIDDLE_ENDIAN 1
-#endif
-#if !defined(__ARM_EABI__)
-#define WTF_PLATFORM_FORCE_PACK 1
 #endif
 #define ARM_ARCH_VERSION 3
 #if defined(__ARM_ARCH_4__) || defined(__ARM_ARCH_4T__)
@@ -280,7 +279,7 @@
 #endif
 
 /* PLATFORM(SPARC64) */
-#if defined(__sparc64__)
+#if defined(__sparc__) && defined(__arch64__) || defined (__sparcv9)
 #define WTF_PLATFORM_SPARC64 1
 #define WTF_PLATFORM_BIG_ENDIAN 1
 #endif
@@ -347,6 +346,11 @@
 #define ENABLE_JSC_MULTIPLE_THREADS 1
 #endif
 
+/* On Windows, use QueryPerformanceCounter by default */
+#if PLATFORM(WIN_OS)
+#define WTF_USE_QUERY_PERFORMANCE_COUNTER  1
+#endif
+
 #if PLATFORM(WINCE) && !PLATFORM(QT)
 #undef ENABLE_JSC_MULTIPLE_THREADS
 #define ENABLE_JSC_MULTIPLE_THREADS        0
@@ -377,6 +381,8 @@
 /* for Unicode, KDE uses Qt */
 #if PLATFORM(KDE) || PLATFORM(QT)
 #define WTF_USE_QT4_UNICODE 1
+#elif PLATFORM(WINCE)
+#define WTF_USE_WINCE_UNICODE 1
 #elif PLATFORM(GTK)
 /* The GTK+ Unicode backend is configurable */
 #else
@@ -404,7 +410,10 @@
 #if PLATFORM(IPHONE)
 #define WTF_PLATFORM_CF 1
 #define WTF_USE_PTHREADS 1
+#define ENABLE_CONTEXT_MENUS 0
+#define ENABLE_DRAG_SUPPORT 0
 #define ENABLE_FTPDIR 1
+#define ENABLE_INSPECTOR 0
 #define ENABLE_MAC_JAVA_BRIDGE 0
 #define ENABLE_ICONDATABASE 0
 #define ENABLE_GEOLOCATION 1
@@ -419,14 +428,20 @@
 
 #if PLATFORM(WX)
 #define ENABLE_ASSEMBLER 1
-#define WTF_USE_CURL 1
-#define WTF_USE_PTHREADS 1
 #endif
 
 #if PLATFORM(GTK)
 #if HAVE(PTHREAD_H)
 #define WTF_USE_PTHREADS 1
 #endif
+#endif
+
+#if PLATFORM(HAIKU)
+#define HAVE_POSIX_MEMALIGN 1
+#define WTF_USE_CURL 1
+#define WTF_USE_PTHREADS 1
+#define USE_SYSTEM_MALLOC 1
+#define ENABLE_NETSCAPE_PLUGIN_API 0
 #endif
 
 #if !defined(HAVE_ACCESSIBILITY)
@@ -440,7 +455,7 @@
 #endif
 
 #if !PLATFORM(WIN_OS) && !PLATFORM(SOLARIS) && !PLATFORM(QNX) \
-    && !PLATFORM(SYMBIAN) && !COMPILER(RVCT)
+    && !PLATFORM(SYMBIAN) && !PLATFORM(HAIKU) && !COMPILER(RVCT)
 #define HAVE_TM_GMTOFF 1
 #define HAVE_TM_ZONE 1
 #define HAVE_TIMEGM 1
@@ -504,7 +519,10 @@
 /* FIXME: is this actually used or do other platforms generate their own config.h? */
 
 #define HAVE_ERRNO_H 1
+/* As long as Haiku doesn't have a complete support of locale this will be disabled. */
+#if !PLATFORM(HAIKU)
 #define HAVE_LANGINFO_H 1
+#endif
 #define HAVE_MMAP 1
 #define HAVE_SBRK 1
 #define HAVE_STRINGS_H 1
@@ -537,8 +555,20 @@
 #define ENABLE_FTPDIR 1
 #endif
 
+#if !defined(ENABLE_CONTEXT_MENUS)
+#define ENABLE_CONTEXT_MENUS 1
+#endif
+
+#if !defined(ENABLE_DRAG_SUPPORT)
+#define ENABLE_DRAG_SUPPORT 1
+#endif
+
 #if !defined(ENABLE_DASHBOARD_SUPPORT)
 #define ENABLE_DASHBOARD_SUPPORT 0
+#endif
+
+#if !defined(ENABLE_INSPECTOR)
+#define ENABLE_INSPECTOR 1
 #endif
 
 #if !defined(ENABLE_MAC_JAVA_BRIDGE)
@@ -568,6 +598,10 @@
 #define ENABLE_GEOLOCATION 0
 #endif
 
+#if !defined(ENABLE_NOTIFICATIONS)
+#define ENABLE_NOTIFICATIONS 0
+#endif
+
 #if !defined(ENABLE_TEXT_CARET)
 #define ENABLE_TEXT_CARET 1
 #endif
@@ -576,9 +610,19 @@
 #define ENABLE_ON_FIRST_TEXTAREA_FOCUS_SELECT_ALL 0
 #endif
 
-#if !defined(WTF_USE_ALTERNATE_JSIMMEDIATE) && PLATFORM(X86_64) && PLATFORM(MAC)
-#define WTF_USE_ALTERNATE_JSIMMEDIATE 1
+#if !defined(WTF_USE_JSVALUE64) && !defined(WTF_USE_JSVALUE32) && !defined(WTF_USE_JSVALUE32_64)
+#if PLATFORM(X86_64) && (PLATFORM(DARWIN) || PLATFORM(LINUX))
+#define WTF_USE_JSVALUE64 1
+#elif PLATFORM(ARM) || PLATFORM(PPC64)
+#define WTF_USE_JSVALUE32 1
+#elif PLATFORM(WIN_OS) && COMPILER(MINGW)
+/* Using JSVALUE32_64 causes padding/alignement issues for JITStubArg
+on MinGW. See https://bugs.webkit.org/show_bug.cgi?id=29268 */
+#define WTF_USE_JSVALUE32 1
+#else
+#define WTF_USE_JSVALUE32_64 1
 #endif
+#endif /* !defined(WTF_USE_JSVALUE64) && !defined(WTF_USE_JSVALUE32) && !defined(WTF_USE_JSVALUE32_64) */
 
 #if !defined(ENABLE_REPAINT_THROTTLING)
 #define ENABLE_REPAINT_THROTTLING 0
@@ -602,18 +646,20 @@
     #define ENABLE_JIT 1
 #endif
 
-#if PLATFORM(X86) && PLATFORM(QT)
-#if PLATFORM(WIN_OS) && COMPILER(MINGW) && GCC_VERSION >= 40100
+#if PLATFORM(QT)
+#if PLATFORM(X86) && PLATFORM(WIN_OS) && COMPILER(MINGW) && GCC_VERSION >= 40100
     #define ENABLE_JIT 1
     #define WTF_USE_JIT_STUB_ARGUMENT_VA_LIST 1
-#elif PLATFORM(WIN_OS) && COMPILER(MSVC)
+#elif PLATFORM(X86) && PLATFORM(WIN_OS) && COMPILER(MSVC)
     #define ENABLE_JIT 1
     #define WTF_USE_JIT_STUB_ARGUMENT_REGISTER 1
-#elif PLATFORM(LINUX) && GCC_VERSION >= 40100
+#elif PLATFORM(X86) && PLATFORM(LINUX) && GCC_VERSION >= 40100
     #define ENABLE_JIT 1
     #define WTF_USE_JIT_STUB_ARGUMENT_VA_LIST 1
+#elif PLATFORM(ARM) && !PLATFORM_ARM_ARCH(7) && PLATFORM(LINUX)
+    #define ENABLE_JIT 1
 #endif
-#endif /* PLATFORM(QT) && PLATFORM(X86) */
+#endif /* PLATFORM(QT) */
 
 #endif /* !defined(ENABLE_JIT) */
 
@@ -626,9 +672,6 @@
 #endif
 #ifndef ENABLE_JIT_OPTIMIZE_PROPERTY_ACCESS
 #define ENABLE_JIT_OPTIMIZE_PROPERTY_ACCESS 1
-#endif
-#ifndef ENABLE_JIT_OPTIMIZE_ARITHMETIC
-#define ENABLE_JIT_OPTIMIZE_ARITHMETIC 1
 #endif
 #ifndef ENABLE_JIT_OPTIMIZE_METHOD_CALLS
 #define ENABLE_JIT_OPTIMIZE_METHOD_CALLS 1
@@ -666,10 +709,11 @@
 #define ENABLE_YARR_JIT 1
 #endif
 
-#if PLATFORM(X86) && PLATFORM(QT)
-#if (PLATFORM(WIN_OS) && COMPILER(MINGW) && GCC_VERSION >= 40100) \
- || (PLATFORM(WIN_OS) && COMPILER(MSVC)) \
- || (PLATFORM(LINUX) && GCC_VERSION >= 40100)
+#if PLATFORM(QT)
+#if (PLATFORM(X86) && PLATFORM(WIN_OS) && COMPILER(MINGW) && GCC_VERSION >= 40100) \
+ || (PLATFORM(X86) && PLATFORM(WIN_OS) && COMPILER(MSVC)) \
+ || (PLATFORM(X86) && PLATFORM(LINUX) && GCC_VERSION >= 40100) \
+ || (PLATFORM(ARM) && !PLATFORM_ARM_ARCH(7) && PLATFORM(LINUX))
 #define ENABLE_YARR 1
 #define ENABLE_YARR_JIT 1
 #endif
@@ -687,7 +731,7 @@
 #endif
 /* Setting this flag prevents the assembler from using RWX memory; this may improve
    security but currectly comes at a significant performance cost. */
-#if PLATFORM(ARM)
+#if PLATFORM(IPHONE)
 #define ENABLE_ASSEMBLER_WX_EXCLUSIVE 1
 #else
 #define ENABLE_ASSEMBLER_WX_EXCLUSIVE 0
@@ -695,10 +739,6 @@
 
 #if !defined(ENABLE_PAN_SCROLLING) && PLATFORM(WIN_OS)
 #define ENABLE_PAN_SCROLLING 1
-#endif
-
-#if !defined(ENABLE_ACTIVEX_TYPE_CONVERSION_WMPLAYER)
-#define ENABLE_ACTIVEX_TYPE_CONVERSION_WMPLAYER 1
 #endif
 
 /* Use the QtXmlStreamReader implementation for XMLTokenizer */
@@ -722,5 +762,14 @@
 #if PLATFORM(IPHONE)
 #define WTF_USE_ACCELERATED_COMPOSITING 1
 #endif
+
+#if COMPILER(GCC)
+#define WARN_UNUSED_RETURN __attribute__ ((warn_unused_result))
+#else
+#define WARN_UNUSED_RETURN
+#endif
+
+/* Set up a define for a common error that is intended to cause a build error -- thus the space after Error. */
+#define WTF_PLATFORM_CFNETWORK Error USE_macro_should_be_used_with_CFNETWORK
 
 #endif /* WTF_Platform_h */

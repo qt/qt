@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2007,37 +2007,6 @@ void tst_QLocale::symbianSystemLocale()
 
     TPtrC s60DateFormat = s60Locale.GetShortDateFormatSpec();
     QString dateFormat = locale.query(QSystemLocale::DateFormatShort, QVariant()).toString();
-
-#if 0
-    QTime nowTime = QTime::currentTime();
-    QDateTime nowDateTime = QDateTime::currentDateTime();
-    qDebug() << "locale.query(QSystemLocale::LanguageId)" << locale.query(QSystemLocale::LanguageId, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::CountryId)" << locale.query(QSystemLocale::CountryId, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::DecimalPoint)" << locale.query(QSystemLocale::DecimalPoint, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::GroupSeparator)" << locale.query(QSystemLocale::GroupSeparator, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::ZeroDigit)" << locale.query(QSystemLocale::ZeroDigit, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::NegativeSign)" << locale.query(QSystemLocale::NegativeSign, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::PositiveSign)" << locale.query(QSystemLocale::PositiveSign, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::DateFormatLong)" << locale.query(QSystemLocale::DateFormatLong, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::DateFormatShort)" << locale.query(QSystemLocale::DateFormatShort, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::TimeFormatLong)" << locale.query(QSystemLocale::TimeFormatLong, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::TimeFormatShort)" << locale.query(QSystemLocale::TimeFormatShort, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::DayNameLong)" << locale.query(QSystemLocale::DayNameLong, QVariant(1)).toString();
-    qDebug() << "locale.query(QSystemLocale::DayNameShort)" << locale.query(QSystemLocale::DayNameShort, QVariant(1)).toString();
-    qDebug() << "locale.query(QSystemLocale::MonthNameLong)" << locale.query(QSystemLocale::MonthNameLong, QVariant(2)).toString();
-    qDebug() << "locale.query(QSystemLocale::MonthNameShort)" << locale.query(QSystemLocale::MonthNameShort, QVariant(2)).toString();
-    qDebug() << "locale.query(QSystemLocale::DateToStringLong)" << locale.query(QSystemLocale::DateToStringLong, QVariant(date)).toString();
-    qDebug() << "locale.query(QSystemLocale::DateToStringShort)" << locale.query(QSystemLocale::DateToStringShort, QVariant(date)).toString();
-    qDebug() << "locale.query(QSystemLocale::TimeToStringLong)" << locale.query(QSystemLocale::TimeToStringLong, QVariant(nowTime)).toString();
-    qDebug() << "locale.query(QSystemLocale::TimeToStringShort)" << locale.query(QSystemLocale::TimeToStringShort, QVariant(nowTime)).toString();
-    qDebug() << "locale.query(QSystemLocale::DateTimeFormatLong)" << locale.query(QSystemLocale::DateTimeFormatLong, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::DateTimeFormatShort)" << locale.query(QSystemLocale::DateTimeFormatShort, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::DateTimeToStringLong)" << locale.query(QSystemLocale::DateTimeToStringLong, QVariant(nowDateTime)).toString();
-    qDebug() << "locale.query(QSystemLocale::DateTimeToStringShort)" << locale.query(QSystemLocale::DateTimeToStringShort, QVariant(nowDateTime)).toString();
-    qDebug() << "locale.query(QSystemLocale::MeasurementSystem)" << locale.query(QSystemLocale::MeasurementSystem, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::AMText)" << locale.query(QSystemLocale::AMText, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::PMText)" << locale.query(QSystemLocale::PMText, QVariant()).toString();
-#endif
 
     TBuf<50> s60FormattedDate;
     TRAPD(err, s60Date.FormatL(s60FormattedDate, s60DateFormat));

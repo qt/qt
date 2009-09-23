@@ -1,6 +1,6 @@
 /*
  *  Copyright (C) 1999-2000 Harri Porten (porten@kde.org)
- *  Copyright (C) 2003, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ *  Copyright (C) 2003, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  *  Copyright (C) 2007 Cameron Zwarich (cwzwarich@uwaterloo.ca)
  *  Copyright (C) 2007 Maks Orlovich
  *
@@ -28,6 +28,8 @@
 #include "JSFunction.h"
 #include "JSGlobalObject.h"
 #include "Interpreter.h"
+#include "ObjectConstructor.h"
+#include "PrototypeFunction.h"
 
 namespace JSC {
 
@@ -61,7 +63,7 @@ namespace JSC {
 
         static const ClassInfo info;
 
-        virtual void mark();
+        virtual void markChildren(MarkStack&);
 
         void fillArgList(ExecState*, MarkedArgumentBuffer&);
 
@@ -90,6 +92,7 @@ namespace JSC {
         void getArgumentsData(CallFrame*, JSFunction*&, ptrdiff_t& firstParameterIndex, Register*& argv, int& argc);
         virtual bool getOwnPropertySlot(ExecState*, const Identifier& propertyName, PropertySlot&);
         virtual bool getOwnPropertySlot(ExecState*, unsigned propertyName, PropertySlot&);
+        virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
         virtual void put(ExecState*, const Identifier& propertyName, JSValue, PutPropertySlot&);
         virtual void put(ExecState*, unsigned propertyName, JSValue, PutPropertySlot&);
         virtual bool deleteProperty(ExecState*, const Identifier& propertyName);
@@ -113,18 +116,17 @@ namespace JSC {
     ALWAYS_INLINE void Arguments::getArgumentsData(CallFrame* callFrame, JSFunction*& function, ptrdiff_t& firstParameterIndex, Register*& argv, int& argc)
     {
         function = callFrame->callee();
-    
-        CodeBlock* codeBlock = &function->body()->generatedBytecode();
-        int numParameters = codeBlock->m_numParameters;
+
+        int numParameters = function->jsExecutable()->parameterCount();
         argc = callFrame->argumentCount();
 
         if (argc <= numParameters)
-            argv = callFrame->registers() - RegisterFile::CallFrameHeaderSize - numParameters + 1; // + 1 to skip "this"
+            argv = callFrame->registers() - RegisterFile::CallFrameHeaderSize - numParameters;
         else
-            argv = callFrame->registers() - RegisterFile::CallFrameHeaderSize - numParameters - argc + 1; // + 1 to skip "this"
+            argv = callFrame->registers() - RegisterFile::CallFrameHeaderSize - numParameters - argc;
 
         argc -= 1; // - 1 to skip "this"
-        firstParameterIndex = -RegisterFile::CallFrameHeaderSize - numParameters + 1; // + 1 to skip "this"
+        firstParameterIndex = -RegisterFile::CallFrameHeaderSize - numParameters;
     }
 
     inline Arguments::Arguments(CallFrame* callFrame)
@@ -137,7 +139,7 @@ namespace JSC {
         int numArguments;
         getArgumentsData(callFrame, callee, firstParameterIndex, argv, numArguments);
 
-        d->numParameters = callee->body()->parameterCount();
+        d->numParameters = callee->jsExecutable()->parameterCount();
         d->firstParameterIndex = firstParameterIndex;
         d->numArguments = numArguments;
 
@@ -168,7 +170,7 @@ namespace JSC {
         : JSObject(callFrame->lexicalGlobalObject()->argumentsStructure())
         , d(new ArgumentsData)
     {
-        ASSERT(!callFrame->callee()->body()->parameterCount());
+        ASSERT(!callFrame->callee()->jsExecutable()->parameterCount());
 
         unsigned numArguments = callFrame->argumentCount() - 1;
 
@@ -214,8 +216,8 @@ namespace JSC {
     {
         ASSERT(!d()->registerArray);
 
-        size_t numParametersMinusThis = d()->functionBody->generatedBytecode().m_numParameters - 1;
-        size_t numVars = d()->functionBody->generatedBytecode().m_numVars;
+        size_t numParametersMinusThis = d()->functionExecutable->generatedBytecode().m_numParameters - 1;
+        size_t numVars = d()->functionExecutable->generatedBytecode().m_numVars;
         size_t numLocals = numVars + numParametersMinusThis;
 
         if (!numLocals)
@@ -229,6 +231,14 @@ namespace JSC {
         if (arguments && !arguments->isTornOff())
             static_cast<Arguments*>(arguments)->setActivation(this);
     }
+
+    ALWAYS_INLINE Arguments* Register::arguments() const
+    {
+        if (jsValue() == JSValue())
+            return 0;
+        return asArguments(jsValue());
+    }
+    
 
 } // namespace JSC
 

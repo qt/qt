@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'browserwidget.ui'
 **
-** Created: Mon Jun 16 18:01:09 2008
-**      by: Qt User Interface Compiler version 4.5.0
+** Created: Fri Sep 4 10:17:12 2009
+**      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -169,7 +169,6 @@ public:
         groupBox->setTitle(QApplication::translate("Browser", "SQL Query", 0, QApplication::UnicodeUTF8));
         clearButton->setText(QApplication::translate("Browser", "&Clear", 0, QApplication::UnicodeUTF8));
         submitButton->setText(QApplication::translate("Browser", "&Submit", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(Browser);
     } // retranslateUi
 
 };

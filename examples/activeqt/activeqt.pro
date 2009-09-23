@@ -19,4 +19,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS activeqt.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/activeqt
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

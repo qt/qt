@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -72,6 +72,7 @@
 //#include "qwsregionmanager_qws.h"
 #include "qwindowsystem_qws.h"
 #include "private/qwindowsystem_p.h"
+#include "qdecorationfactory_qws.h"
 
 #include "qwsdisplay_qws.h"
 #include "private/qwsdisplay_qws_p.h"
@@ -122,6 +123,8 @@
 #endif
 #endif
 
+QT_BEGIN_NAMESPACE
+
 #ifndef QT_NO_DIRECTPAINTER
 class QDirectPainter;
 extern void qt_directpainter_region(QDirectPainter *dp, const QRegion &alloc, int type);
@@ -161,13 +164,9 @@ int qt_servershmid = -1;
 
 bool qws_overrideCursor = false;
 #ifndef QT_NO_QWS_MANAGER
-#include "qdecorationfactory_qws.h"
 
 extern Q_GUI_EXPORT QWSServer *qwsServer;
 
-QT_BEGIN_NAMESPACE
-
-QT_USE_NAMESPACE
 static QDecoration *qws_decoration = 0;
 #endif
 
@@ -431,6 +430,7 @@ static QWidget *popupOfPopupButtonFocus = 0;
 static bool popupCloseDownMode = false;
 static bool popupGrabOk;
 static QPointer<QWidget> *mouseInWidget = 0;
+QPointer<QWidget> qt_last_mouse_receiver = 0;
 
 static bool sm_blockUserInput = false;           // session management
 
@@ -2203,6 +2203,8 @@ void qt_init(QApplicationPrivate *priv, int type)
 
     mouse_double_click_distance = read_int_env_var("QWS_DBLCLICK_DISTANCE", 5);
 
+    priv->inputContext = 0;
+
     int flags = 0;
     char *p;
     int argc = priv->argc;
@@ -2362,6 +2364,11 @@ void qt_cleanup()
 
     delete mouseInWidget;
     mouseInWidget = 0;
+
+#if !defined(QT_NO_IM)
+    delete QApplicationPrivate::inputContext;
+    QApplicationPrivate::inputContext = 0;
+#endif
 }
 
 
@@ -2371,7 +2378,7 @@ void qt_cleanup()
 
 QString QApplicationPrivate::appName() const // get application name
 {
-    return ::appName;
+    return QT_PREPEND_NAMESPACE(appName);
 }
 
 /*****************************************************************************
@@ -3517,10 +3524,12 @@ bool QETWidget::translateMouseEvent(const QWSMouseEvent *event, int prevstate)
             if (widget != (*mouseInWidget)) {
                 QApplicationPrivate::dispatchEnterLeave(widget, *mouseInWidget);
                 (*mouseInWidget) = widget;
+                qt_last_mouse_receiver = widget;
             }
             QApplication::sendSpontaneousEvent(widget, &e);
             if (leaveAfterRelease && !QWidget::mouseGrabber()) {
                 *mouseInWidget = QApplication::widgetAt(globalPos);
+                qt_last_mouse_receiver = *mouseInWidget;
                 QApplicationPrivate::dispatchEnterLeave(*mouseInWidget, leaveAfterRelease);
                 leaveAfterRelease = 0;
             }

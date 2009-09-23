@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -201,7 +201,6 @@ extern "C" {
     composingText = new QString();
     composing = false;
     sendKeyEvents = true;
-    inKeyDown = false;
     currentCustomTypes = 0;
     [self setHidden:YES];
     return self;
@@ -667,7 +666,15 @@ extern "C" {
 
 - (void)mouseMoved:(NSEvent *)theEvent
 {
-    qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::NoButton);
+    // We always enable mouse tracking for all QCocoaView-s. In cases where we have
+    // child views, we will receive mouseMoved for both parent & the child (if
+    // mouse is over the child). We need to ignore the parent mouseMoved in such
+    // cases.
+    NSPoint windowPoint = [theEvent locationInWindow];
+    NSView *candidateView = [[[self window] contentView] hitTest:windowPoint];
+    if (candidateView && candidateView == self) {
+        qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::NoButton);
+    }
 }
 
 - (void)mouseDown:(NSEvent *)theEvent
@@ -872,7 +879,7 @@ extern "C" {
     NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
     qNGEvent.position = flipPoint(p).toPoint();
     qNGEvent.percentage = [event magnification];
-    qApp->sendEvent(qwidget, &qNGEvent);
+    qt_sendSpontaneousEvent(qwidget, &qNGEvent);
 }
 
 - (void)rotateWithEvent:(NSEvent *)event;
@@ -884,8 +891,8 @@ extern "C" {
     qNGEvent.gestureType = QNativeGestureEvent::Rotate;
     NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
     qNGEvent.position = flipPoint(p).toPoint();
-    qNGEvent.percentage = [event rotation];
-    qApp->sendEvent(qwidget, &qNGEvent);
+    qNGEvent.percentage = -[event rotation];
+    qt_sendSpontaneousEvent(qwidget, &qNGEvent);
 }
 
 - (void)swipeWithEvent:(NSEvent *)event;
@@ -897,8 +904,15 @@ extern "C" {
     qNGEvent.gestureType = QNativeGestureEvent::Swipe;
     NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
     qNGEvent.position = flipPoint(p).toPoint();
-    qNGEvent.direction = QSize(-[event deltaX], -[event deltaY]);
-    qApp->sendEvent(qwidget, &qNGEvent);
+    if ([event deltaX] == 1)
+        qNGEvent.angle = 180.0f;
+    else if ([event deltaX] == -1)
+        qNGEvent.angle = 0.0f;
+    else if ([event deltaY] == 1)
+        qNGEvent.angle = 90.0f;
+    else if ([event deltaY] == -1)
+        qNGEvent.angle = 270.0f;
+    qt_sendSpontaneousEvent(qwidget, &qNGEvent);
 }
 
 - (void)beginGestureWithEvent:(NSEvent *)event;
@@ -910,7 +924,7 @@ extern "C" {
     qNGEvent.gestureType = QNativeGestureEvent::GestureBegin;
     NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
     qNGEvent.position = flipPoint(p).toPoint();
-    qApp->sendEvent(qwidget, &qNGEvent);
+    qt_sendSpontaneousEvent(qwidget, &qNGEvent);
 }
 
 - (void)endGestureWithEvent:(NSEvent *)event;
@@ -922,7 +936,7 @@ extern "C" {
     qNGEvent.gestureType = QNativeGestureEvent::GestureEnd;
     NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
     qNGEvent.position = flipPoint(p).toPoint();
-    qApp->sendEvent(qwidget, &qNGEvent);
+    qt_sendSpontaneousEvent(qwidget, &qNGEvent);
 }
 #endif // MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
 
@@ -966,6 +980,15 @@ extern "C" {
     if (qwidget->isWindow())
         return YES;  // Always do it, so that windows can accept key press events.
     return qwidget->focusPolicy() != Qt::NoFocus;
+}
+
+- (BOOL)resignFirstResponder
+{
+    // Seems like the following test only triggers if this
+    // view is inside a QMacNativeWidget:
+    if (qwidget == QApplication::focusWidget())
+        QApplicationPrivate::setFocusWidget(0, Qt::OtherFocusReason);
+    return YES;
 }
 
 - (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal
@@ -1013,7 +1036,6 @@ extern "C" {
 
 - (void)keyDown:(NSEvent *)theEvent
 {
-    inKeyDown = true;
     sendKeyEvents = true;
 
     QWidget *widgetToGetKey = qwidget;
@@ -1033,7 +1055,6 @@ extern "C" {
         if (!keyOK && !sendToPopup)
             [super keyDown:theEvent];
     }
-    inKeyDown = false;
 }
 
 
@@ -1080,13 +1101,7 @@ extern "C" {
         };
     }
 
-    if ([aString length] && !inKeyDown) {
-        // Handle the case where insertText is called from somewhere else than the keyDown
-        // implementation, for example when inserting text from the character palette.
-        QInputMethodEvent e;
-        e.setCommitString(commitText);
-        qt_sendSpontaneousEvent(qwidget, &e);
-    } else if ([aString length] && composing) {
+    if ([aString length] && composing) {
         // Send the commit string to the widget.
         composing = false;
         sendKeyEvents = false;

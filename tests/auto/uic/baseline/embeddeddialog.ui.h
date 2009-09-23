@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'embeddeddialog.ui'
 **
-** Created: Mon Sep 1 09:31:03 2008
-**      by: Qt User Interface Compiler version 4.5.0
+** Created: Fri Sep 4 10:17:13 2009
+**      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -109,7 +109,6 @@ public:
         label_2->setText(QApplication::translate("embeddedDialog", "Select Font:", 0, QApplication::UnicodeUTF8));
         label_3->setText(QApplication::translate("embeddedDialog", "Style:", 0, QApplication::UnicodeUTF8));
         label_4->setText(QApplication::translate("embeddedDialog", "Layout spacing:", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(embeddedDialog);
     } // retranslateUi
 
 };

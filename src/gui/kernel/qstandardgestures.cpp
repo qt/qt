@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -47,6 +47,7 @@
 #include <private/qapplication_p.h>
 #include <private/qevent_p.h>
 #include <private/qwidget_p.h>
+#include <qmath.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -63,57 +64,70 @@ QWidgetPrivate *qt_widget_private(QWidget *widget);
 */
 
 /*!
-    Creates a new Pan gesture handler object and marks it as a child of \a
-    parent.
+    \enum QSwipeGesture::SwipeDirection
+    \brief This enum specifies the direction of the swipe gesture.
 
-    On some platform like Windows it's necessary to provide a non-null widget
-    as \a parent to get native gesture support.
+    \value NoDirection
+    \value Left
+    \value Right
+    \value Up
+    \value Down
 */
-QPanGesture::QPanGesture(QWidget *parent)
-    : QGesture(*new QPanGesturePrivate, parent)
+
+/*!
+  Creates a new pan gesture handler object and marks it as a child of
+  \a parent. The pan gesture handler watches \a gestureTarget for its
+  events.
+
+  On some platform like Windows it's necessary to provide a non-null
+  widget as \a parent to get native gesture support.
+*/
+QPanGesture::QPanGesture(QWidget *gestureTarget, QObject *parent)
+    : QGesture(*new QPanGesturePrivate, gestureTarget, parent)
 {
-    if (parent) {
-        QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
-        qAppPriv->widgetGestures[parent].pan = this;
-#ifdef Q_WS_WIN
-        qt_widget_private(parent)->winSetupGestures();
+    setObjectName(QLatin1String("QPanGesture"));
+}
+
+void QPanGesturePrivate::setupGestureTarget(QObject *newGestureTarget)
+{
+    Q_Q(QPanGesture);
+    QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
+
+    if (gestureTarget && gestureTarget->isWidgetType()) {
+        QWidget *w = static_cast<QWidget*>(gestureTarget.data());
+        if (qAppPriv->widgetGestures[w].pan == q)
+            qAppPriv->widgetGestures[w].pan = 0;
+#if defined(Q_WS_WIN)
+        qt_widget_private(w)->winSetupGestures();
+#elif defined(Q_WS_MAC)
+        w->setAttribute(Qt::WA_AcceptTouchEvents, false);
+        w->setAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents, false);
 #endif
     }
+
+    if (newGestureTarget && newGestureTarget->isWidgetType()) {
+        QWidget *w = static_cast<QWidget*>(newGestureTarget);
+        qAppPriv->widgetGestures[w].pan = q;
+#if defined(Q_WS_WIN)
+        qt_widget_private(w)->winSetupGestures();
+#elif defined(Q_WS_MAC)
+        w->setAttribute(Qt::WA_AcceptTouchEvents);
+        w->setAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
+#endif
+    }
+    QGesturePrivate::setupGestureTarget(newGestureTarget);
 }
 
 /*! \internal */
 bool QPanGesture::event(QEvent *event)
 {
-    switch (event->type()) {
-    case QEvent::ParentAboutToChange:
-        if (QWidget *w = qobject_cast<QWidget*>(parent())) {
-            QApplicationPrivate::instance()->widgetGestures[w].pan = 0;
-#ifdef Q_WS_WIN
-            qt_widget_private(w)->winSetupGestures();
-#endif
-        }
-        break;
-    case QEvent::ParentChange:
-        if (QWidget *w = qobject_cast<QWidget*>(parent())) {
-            QApplicationPrivate::instance()->widgetGestures[w].pan = this;
-#ifdef Q_WS_WIN
-            qt_widget_private(w)->winSetupGestures();
-#endif
-        }
-        break;
-    default:
-        break;
-    }
-
-#if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
+#if defined(QT_MAC_USE_COCOA)
     Q_D(QPanGesture);
     if (event->type() == QEvent::Timer) {
         const QTimerEvent *te = static_cast<QTimerEvent *>(event);
-        if (te->timerId() == d->panFinishedTimer) {
-            killTimer(d->panFinishedTimer);
-            d->panFinishedTimer = 0;
-            d->lastOffset = QSize(0, 0);
-            updateState(Qt::GestureFinished);
+        if (te->timerId() == d->singleTouchPanTimer.timerId()) {
+            d->singleTouchPanTimer.stop();
+            updateState(Qt::GestureStarted);
         }
     }
 #endif
@@ -123,8 +137,13 @@ bool QPanGesture::event(QEvent *event)
 
 bool QPanGesture::eventFilter(QObject *receiver, QEvent *event)
 {
-#ifdef Q_WS_WIN
     Q_D(QPanGesture);
+
+    if (d->implicitGesture && d->gestureTarget && d->gestureTarget->isWidgetType() &&
+        static_cast<QWidget*>(d->gestureTarget.data())->testAttribute(Qt::WA_DontUseStandardGestures))
+        return false;
+
+#ifdef Q_WS_WIN
     if (receiver->isWidgetType() && event->type() == QEvent::NativeGesture) {
         QNativeGestureEvent *ev = static_cast<QNativeGestureEvent*>(event);
         QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
@@ -154,11 +173,12 @@ bool QPanGesture::eventFilter(QObject *receiver, QEvent *event)
             return false;
         }
         if (state() == Qt::NoGesture) {
-            d->lastOffset = d->totalOffset = QSize();
+            d->lastOffset = d->totalOffset = d->offset = QSize();
         } else {
-            d->lastOffset = QSize(ev->position.x() - d->lastPosition.x(),
-                                  ev->position.y() - d->lastPosition.y());
-            d->totalOffset += d->lastOffset;
+            d->lastOffset = d->offset;
+            d->offset = QSize(ev->position.x() - d->lastPosition.x(),
+                              ev->position.y() - d->lastPosition.y());
+            d->totalOffset += d->offset;
         }
         d->lastPosition = ev->position;
         updateState(nextState);
@@ -172,65 +192,96 @@ bool QPanGesture::eventFilter(QObject *receiver, QEvent *event)
 bool QPanGesture::filterEvent(QEvent *event)
 {
     Q_D(QPanGesture);
-    if (!event->spontaneous())
+
+    if (d->implicitGesture && d->gestureTarget && d->gestureTarget->isWidgetType() &&
+        static_cast<QWidget*>(d->gestureTarget.data())->testAttribute(Qt::WA_DontUseStandardGestures))
         return false;
+
+#if defined(Q_WS_WIN)
     const QTouchEvent *ev = static_cast<const QTouchEvent*>(event);
+
     if (event->type() == QEvent::TouchBegin) {
         QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
         d->lastPosition = p.pos().toPoint();
-        d->lastOffset = d->totalOffset = QSize();
+        d->lastOffset = d->totalOffset = d->offset = QSize();
     } else if (event->type() == QEvent::TouchEnd) {
         if (state() != Qt::NoGesture) {
-            if (!ev->touchPoints().isEmpty()) {
-                QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
-                const QPoint pos = p.pos().toPoint();
-                const QPoint lastPos = p.lastPos().toPoint();
-                const QPoint startPos = p.startPos().toPoint();
-                d->lastOffset = QSize(pos.x() - lastPos.x(), pos.y() - lastPos.y());
-                d->totalOffset = QSize(pos.x() - startPos.x(), pos.y() - startPos.y());
+            if (ev->touchPoints().size() == 2) {
+                QTouchEvent::TouchPoint p1 = ev->touchPoints().at(0);
+                QTouchEvent::TouchPoint p2 = ev->touchPoints().at(1);
+                d->lastOffset = d->offset;
+                d->offset =
+                        QSize(p1.pos().x() - p1.lastPos().x() + p2.pos().x() - p2.lastPos().x(),
+                              p1.pos().y() - p1.lastPos().y() + p2.pos().y() - p2.lastPos().y()) / 2;
+                d->totalOffset += d->offset;
             }
             updateState(Qt::GestureFinished);
         }
         reset();
     } else if (event->type() == QEvent::TouchUpdate) {
-        QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
-        const QPoint pos = p.pos().toPoint();
-        const QPoint lastPos = p.lastPos().toPoint();
-        const QPoint startPos = p.startPos().toPoint();
-        d->lastOffset = QSize(pos.x() - lastPos.x(), pos.y() - lastPos.y());
-        d->totalOffset = QSize(pos.x() - startPos.x(), pos.y() - startPos.y());
-        if (d->totalOffset.width() > 10  || d->totalOffset.height() > 10 ||
-            d->totalOffset.width() < -10 || d->totalOffset.height() < -10) {
-            updateState(Qt::GestureUpdated);
+        if (ev->touchPoints().size() == 2) {
+            QTouchEvent::TouchPoint p1 = ev->touchPoints().at(0);
+            QTouchEvent::TouchPoint p2 = ev->touchPoints().at(1);
+            d->lastOffset = d->offset;
+            d->offset =
+                    QSize(p1.pos().x() - p1.lastPos().x() + p2.pos().x() - p2.lastPos().x(),
+                          p1.pos().y() - p1.lastPos().y() + p2.pos().y() - p2.lastPos().y()) / 2;
+            d->totalOffset += d->offset;
+            if (d->totalOffset.width() > 10  || d->totalOffset.height() > 10 ||
+                d->totalOffset.width() < -10 || d->totalOffset.height() < -10) {
+                updateState(Qt::GestureUpdated);
+            }
         }
     }
-#ifdef Q_OS_MAC
-    else if (event->type() == QEvent::Wheel) {
-        // On Mac, there is really no native panning gesture. Instead, a two 
-        // finger pan is delivered as mouse wheel events. Otoh, on Windows, you
-        // either get mouse wheel events or pan events. We have decided to make this
-        // the Qt behaviour as well, meaning that on Mac, wheel
-        // events will be masked away when listening for pan events.
-#ifndef QT_MAC_USE_COCOA
-        // In Carbon we receive neither touch-, nor pan gesture events.
-        // So we create pan gestures by converting wheel events. After all, this
-        // is how things are supposed to work on mac in the first place.
-        const QWheelEvent *wev = static_cast<const QWheelEvent*>(event);
-        int offset = wev->delta() / -120;
-        d->lastOffset = wev->orientation() == Qt::Horizontal ? QSize(offset, 0) : QSize(0, offset);
+#elif defined(QT_MAC_USE_COCOA)
+    // The following implements single touch
+    // panning on Mac:
+    const int panBeginDelay = 300;
+    const int panBeginRadius = 3;
+    const QTouchEvent *ev = static_cast<const QTouchEvent*>(event);
 
-        if (state() == Qt::NoGesture) {
-            d->totalOffset = d->lastOffset;
-        } else {
-            d->totalOffset += d->lastOffset;
+    switch (event->type()) {
+    case QEvent::TouchBegin: {
+        if (ev->touchPoints().size() == 1) {
+            d->lastPosition = QCursor::pos();
+            d->singleTouchPanTimer.start(panBeginDelay, this);
         }
-
-        killTimer(d->panFinishedTimer);
-        d->panFinishedTimer = startTimer(200);
-        updateState(Qt::GestureUpdated);
-#endif
-        return true;
+        break;}
+    case QEvent::TouchEnd: {
+        if (state() != Qt::NoGesture)
+            updateState(Qt::GestureFinished);
+        reset();
+        break;}
+    case QEvent::TouchUpdate: {
+        if (ev->touchPoints().size() == 1) {
+            if (state() == Qt::NoGesture) {
+                // INVARIANT: The singleTouchTimer has still not fired.
+                // Lets check if the user moved his finger so much from
+                // the starting point that it makes sense to cancel:
+                const QPointF startPos = ev->touchPoints().at(0).startPos().toPoint();
+                const QPointF p = ev->touchPoints().at(0).pos().toPoint();
+                if ((startPos - p).manhattanLength() > panBeginRadius)
+                    reset();
+                else
+                    d->lastPosition = QCursor::pos();
+            } else {
+                QPointF mousePos = QCursor::pos();
+                QPointF dist = mousePos - d->lastPosition;
+                d->lastPosition = mousePos;
+                d->lastOffset = d->offset;
+                d->offset = QSizeF(dist.x(), dist.y());
+                d->totalOffset += d->offset;
+                updateState(Qt::GestureUpdated);
+            }
+        } else if (state() == Qt::NoGesture) {
+            reset();
+        }
+        break;}
+    default:
+        return false;
     }
+#else
+    Q_UNUSED(event);
 #endif
     return false;
 }
@@ -239,14 +290,14 @@ bool QPanGesture::filterEvent(QEvent *event)
 void QPanGesture::reset()
 {
     Q_D(QPanGesture);
-    d->lastOffset = d->totalOffset = QSize();
-    d->lastPosition = QPoint();
-#if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
-    if (d->panFinishedTimer) {
-        killTimer(d->panFinishedTimer);
-        d->panFinishedTimer = 0;
-    }
+    d->lastOffset = d->totalOffset = d->offset = QSize(0, 0);
+    d->lastPosition = QPoint(0, 0);
+
+#if defined(QT_MAC_USE_COCOA)
+    d->singleTouchPanTimer.stop();
+    d->prevMousePos = QPointF(0, 0);
 #endif
+
     QGesture::reset();
 }
 
@@ -255,7 +306,7 @@ void QPanGesture::reset()
 
     Specifies a total pan offset since the start of the gesture.
 */
-QSize QPanGesture::totalOffset() const
+QSizeF QPanGesture::totalOffset() const
 {
     Q_D(const QPanGesture);
     return d->totalOffset;
@@ -264,15 +315,27 @@ QSize QPanGesture::totalOffset() const
 /*!
     \property QPanGesture::lastOffset
 
-    Specifies a pan offset since the last time the gesture was
-    triggered.
+    Specifies a pan offset the last time the gesture was triggered.
 */
-QSize QPanGesture::lastOffset() const
+QSizeF QPanGesture::lastOffset() const
 {
     Q_D(const QPanGesture);
     return d->lastOffset;
 }
 
+/*!
+    \property QPanGesture::offset
+
+    Specifies the current pan offset since the last time the gesture was
+    triggered.
+*/
+QSizeF QPanGesture::offset() const
+{
+    Q_D(const QPanGesture);
+    return d->offset;
+}
+
+//////////////////////////////////////////////////////////////////////////////
 
 /*!
     \class QPinchGesture
@@ -283,56 +346,58 @@ QSize QPanGesture::lastOffset() const
 */
 
 /*!
-    Creates a new Pinch gesture handler object and marks it as a child of \a
-    parent.
+  Creates a new Pinch gesture handler object and marks it as a child
+  of \a parent. The pan gesture handler watches \a gestureTarget for its
+  events.
 
-    On some platform like Windows it's necessary to provide a non-null widget
-    as \a parent to get native gesture support.
+  On some platform like Windows it's necessary to provide a non-null
+  widget as \a parent to get native gesture support.
 */
-QPinchGesture::QPinchGesture(QWidget *parent)
-    : QGesture(*new QPinchGesturePrivate, parent)
+QPinchGesture::QPinchGesture(QWidget *gestureTarget, QObject *parent)
+    : QGesture(*new QPinchGesturePrivate, gestureTarget, parent)
 {
-    if (parent) {
-        QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
-        qAppPriv->widgetGestures[parent].pinch = this;
+    setObjectName(QLatin1String("QPinchGesture"));
+}
+
+void QPinchGesturePrivate::setupGestureTarget(QObject *newGestureTarget)
+{
+    Q_Q(QPinchGesture);
+    if (gestureTarget && gestureTarget->isWidgetType()) {
+        QWidget *w = static_cast<QWidget*>(gestureTarget.data());
+        QApplicationPrivate::instance()->widgetGestures[w].pinch = 0;
 #ifdef Q_WS_WIN
-        qt_widget_private(parent)->winSetupGestures();
+        qt_widget_private(w)->winSetupGestures();
 #endif
     }
+
+    if (newGestureTarget && newGestureTarget->isWidgetType()) {
+        QWidget *w = static_cast<QWidget*>(newGestureTarget);
+        QApplicationPrivate::instance()->widgetGestures[w].pinch = q;
+#ifdef Q_WS_WIN
+        qt_widget_private(w)->winSetupGestures();
+#endif
+    }
+    QGesturePrivate::setupGestureTarget(newGestureTarget);
 }
 
 /*! \internal */
 bool QPinchGesture::event(QEvent *event)
 {
-    switch (event->type()) {
-    case QEvent::ParentAboutToChange:
-        if (QWidget *w = qobject_cast<QWidget*>(parent())) {
-            QApplicationPrivate::instance()->widgetGestures[w].pinch = 0;
-#ifdef Q_WS_WIN
-            qt_widget_private(w)->winSetupGestures();
-#endif
-        }
-        break;
-    case QEvent::ParentChange:
-        if (QWidget *w = qobject_cast<QWidget*>(parent())) {
-            QApplicationPrivate::instance()->widgetGestures[w].pinch = this;
-#ifdef Q_WS_WIN
-            qt_widget_private(w)->winSetupGestures();
-#endif
-        }
-        break;
-    default:
-        break;
-    }
     return QObject::event(event);
 }
 
 bool QPinchGesture::eventFilter(QObject *receiver, QEvent *event)
 {
-#ifdef Q_WS_WIN
     Q_D(QPinchGesture);
+
+    if (d->implicitGesture && d->gestureTarget && d->gestureTarget->isWidgetType() &&
+        static_cast<QWidget*>(d->gestureTarget.data())->testAttribute(Qt::WA_DontUseStandardGestures))
+        return false;
+
+#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
     if (receiver->isWidgetType() && event->type() == QEvent::NativeGesture) {
         QNativeGestureEvent *ev = static_cast<QNativeGestureEvent*>(event);
+#if defined(Q_WS_WIN)
         QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
         QApplicationPrivate::WidgetStandardGesturesMap::iterator it;
         it = qAppPriv->widgetGestures.find(static_cast<QWidget*>(receiver));
@@ -340,32 +405,88 @@ bool QPinchGesture::eventFilter(QObject *receiver, QEvent *event)
             return false;
         if (this != it.value().pinch)
             return false;
+#endif
         Qt::GestureState nextState = Qt::NoGesture;
+
         switch(ev->gestureType) {
         case QNativeGestureEvent::GestureBegin:
             // next we might receive the first gesture update event, so we
             // prepare for it.
             d->state = Qt::NoGesture;
-            d->scaleFactor = d->lastScaleFactor = 1;
-            d->rotationAngle = d->lastRotationAngle = 0;
-            d->startCenterPoint = d->centerPoint = d->lastCenterPoint = QPoint();
+            d->changes = 0;
+            d->totalScaleFactor = d->scaleFactor = d->lastScaleFactor = 1.;
+            d->totalRotationAngle = d->rotationAngle = d->lastRotationAngle = 0.;
+            d->startCenterPoint = d->centerPoint = d->lastCenterPoint = QPointF();
+#if defined(Q_WS_WIN)
             d->initialDistance = 0;
+            d->lastSequenceId = ev->sequenceId;
+#endif
             return false;
-        case QNativeGestureEvent::Rotate:
+        case QNativeGestureEvent::Rotate: {
+            d->lastScaleFactor = d->scaleFactor;
             d->lastRotationAngle = d->rotationAngle;
-            d->rotationAngle = -1 * GID_ROTATE_ANGLE_FROM_ARGUMENT(ev->argument);
+#if defined(Q_WS_MAC)
+            d->rotationAngle += ev->percentage;
             nextState = Qt::GestureUpdated;
+#elif defined(Q_WS_WIN)
+            // This is a workaround for an issue with the native rotation
+            // gesture on Windows 7. For some reason the rotation angle in the
+            // first WM_GESTURE message in a sequence contains value that is
+            // off a little bit and causes the rotating item to "jump", so
+            // we just ignore the first WM_GESTURE in every sequence.
+            bool windowsRotateWorkaround = false;
+            if (!d->lastSequenceId) {
+                windowsRotateWorkaround = true;
+                d->lastSequenceId = ev->sequenceId;
+            }
+            if (d->lastSequenceId > 0 && d->lastSequenceId != (ulong)-1 && ev->sequenceId != d->lastSequenceId) {
+                // this is the first WM_GESTURE message in a sequence.
+                d->totalRotationAngle += d->rotationAngle;
+                windowsRotateWorkaround = true;
+                // a magic value to mark that the next WM_GESTURE message is
+                // the second message in a sequence and we should clear the
+                // lastRotationAngle
+                d->lastSequenceId = (ulong)-1;
+            }
+            if (!windowsRotateWorkaround) {
+                d->rotationAngle = -1 * GID_ROTATE_ANGLE_FROM_ARGUMENT(ev->argument) * 180. / M_PI;
+                if (d->lastSequenceId == (ulong)-1) {
+                    // a special case since we need to set the lastRotationAngle to
+                    // rotationAngle when the first WM_GESTURE is received in each
+                    // sequence.
+                    d->lastRotationAngle = d->rotationAngle;
+                }
+                d->lastSequenceId = ev->sequenceId;
+            }
+            if (!windowsRotateWorkaround)
+                nextState = Qt::GestureUpdated;
+#endif
+            d->changes = QPinchGesture::RotationAngleChanged;
             event->accept();
             break;
+        }
         case QNativeGestureEvent::Zoom:
+            d->lastRotationAngle = d->rotationAngle;
+            d->lastScaleFactor = d->scaleFactor;
+#if defined(Q_WS_WIN)
             if (d->initialDistance != 0) {
-                d->lastScaleFactor = d->scaleFactor;
                 int distance = int(qint64(ev->argument));
-                d->scaleFactor = (qreal) distance / d->initialDistance;
+                if (d->lastSequenceId && ev->sequenceId != d->lastSequenceId) {
+                    d->totalScaleFactor *= d->scaleFactor;
+                    d->initialDistance = int(qint64(ev->argument));
+                    d->lastScaleFactor = d->scaleFactor = (qreal) distance / d->initialDistance;
+                } else {
+                    d->scaleFactor = (qreal) distance / d->initialDistance;
+                }
+                d->lastSequenceId = ev->sequenceId;
             } else {
                 d->initialDistance = int(qint64(ev->argument));
             }
+#elif defined(Q_WS_MAC)
+            d->scaleFactor += ev->percentage;
+#endif
             nextState = Qt::GestureUpdated;
+            d->changes = QPinchGesture::ScaleFactorChanged;
             event->accept();
             break;
         case QNativeGestureEvent::GestureEnd:
@@ -380,6 +501,8 @@ bool QPinchGesture::eventFilter(QObject *receiver, QEvent *event)
             d->startCenterPoint = d->centerPoint;
         d->lastCenterPoint = d->centerPoint;
         d->centerPoint = static_cast<QWidget*>(receiver)->mapFromGlobal(ev->position);
+        if (d->lastCenterPoint != d->centerPoint)
+            d->changes |= QPinchGesture::CenterPointChanged;
         updateState(nextState);
         return true;
     }
@@ -387,9 +510,16 @@ bool QPinchGesture::eventFilter(QObject *receiver, QEvent *event)
     return QGesture::eventFilter(receiver, event);
 }
 
+
 /*! \internal */
 bool QPinchGesture::filterEvent(QEvent *event)
 {
+    Q_D(QPinchGesture);
+
+    if (d->implicitGesture && d->gestureTarget && d->gestureTarget->isWidgetType() &&
+        static_cast<QWidget*>(d->gestureTarget.data())->testAttribute(Qt::WA_DontUseStandardGestures))
+        return false;
+
     Q_UNUSED(event);
     return false;
 }
@@ -398,16 +528,50 @@ bool QPinchGesture::filterEvent(QEvent *event)
 void QPinchGesture::reset()
 {
     Q_D(QPinchGesture);
-    d->scaleFactor = d->lastScaleFactor = 0;
-    d->rotationAngle = d->lastRotationAngle = 0;
-    d->startCenterPoint = d->centerPoint = d->lastCenterPoint = QPoint();
+    d->changes = 0;
+    d->totalScaleFactor = d->scaleFactor = d->lastScaleFactor = 1.;
+    d->totalRotationAngle = d->rotationAngle = d->lastRotationAngle = 0.;
+    d->startCenterPoint = d->centerPoint = d->lastCenterPoint = QPointF();
     QGesture::reset();
+}
+
+/*! \enum QPinchGesture::WhatChange
+  \value ScaleFactorChanged
+  \value RotationAngleChanged
+  \value CenterPointChanged
+*/
+
+/*!
+    \property QPinchGesture::whatChanged
+
+    Specifies which values were changed in the gesture.
+*/
+QPinchGesture::WhatChanged QPinchGesture::whatChanged() const
+{
+    return d_func()->changes;
+}
+
+/*!
+    \property QPinchGesture::totalScaleFactor
+
+    Specifies a total scale factor of the pinch gesture since the gesture
+    started.
+*/
+qreal QPinchGesture::totalScaleFactor() const
+{
+    Q_D(const QPinchGesture);
+    return d->totalScaleFactor * d->scaleFactor;
 }
 
 /*!
     \property QPinchGesture::scaleFactor
 
     Specifies a scale factor of the pinch gesture.
+
+    If the gesture consists of several pinch sequences (i.e. zoom and rotate
+    sequences), then this property specifies the scale factor in the current
+    sequence. When pinching changes the rotation angle only, the value of this
+    property is 1.
 */
 qreal QPinchGesture::scaleFactor() const
 {
@@ -425,9 +589,29 @@ qreal QPinchGesture::lastScaleFactor() const
 }
 
 /*!
+    \property QPinchGesture::totalRotationAngle
+
+    Specifies a total rotation angle of the gesture since the gesture started.
+
+    The angle is specified in degrees.
+*/
+qreal QPinchGesture::totalRotationAngle() const
+{
+    Q_D(const QPinchGesture);
+    return d->totalRotationAngle + d->rotationAngle;
+}
+
+/*!
     \property QPinchGesture::rotationAngle
 
     Specifies a rotation angle of the gesture.
+
+    If the gesture consists of several pinch sequences (i.e. zoom and rotate
+    sequences), then this property specifies the rotation angle in the current
+    sequence. When pinching changes the scale factor only, the value of this
+    property is 0.
+
+    The angle is specified in degrees.
 */
 qreal QPinchGesture::rotationAngle() const
 {
@@ -438,6 +622,8 @@ qreal QPinchGesture::rotationAngle() const
     \property QPinchGesture::lastRotationAngle
 
     Specifies a previous rotation angle of the gesture.
+
+    The angle is specified in degrees.
 */
 qreal QPinchGesture::lastRotationAngle() const
 {
@@ -450,7 +636,7 @@ qreal QPinchGesture::lastRotationAngle() const
     Specifies a center point of the gesture. The point can be used as a center
     point that the object is rotated around.
 */
-QPoint QPinchGesture::centerPoint() const
+QPointF QPinchGesture::centerPoint() const
 {
     return d_func()->centerPoint;
 }
@@ -460,7 +646,7 @@ QPoint QPinchGesture::centerPoint() const
 
     Specifies a previous center point of the gesture.
 */
-QPoint QPinchGesture::lastCenterPoint() const
+QPointF QPinchGesture::lastCenterPoint() const
 {
     return d_func()->lastCenterPoint;
 }
@@ -472,9 +658,138 @@ QPoint QPinchGesture::lastCenterPoint() const
     startCenterPoint and the centerPoint is the distance at which pinching
     fingers has shifted.
 */
-QPoint QPinchGesture::startCenterPoint() const
+QPointF QPinchGesture::startCenterPoint() const
 {
     return d_func()->startCenterPoint;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+/*!
+    \class QSwipeGesture
+    \since 4.6
+
+    \brief The QSwipeGesture class represents a swipe gesture,
+    providing additional information related to swiping.
+*/
+
+/*!
+  Creates a new Swipe gesture handler object and marks it as a
+  child of \a parent. The swipe gesture handler watches \a
+  gestureTarget for its events.
+
+  On some platform like Windows it's necessary to provide a non-null
+  widget as \a parent to get native gesture support.
+*/
+QSwipeGesture::QSwipeGesture(QWidget *gestureTarget, QObject *parent)
+    : QGesture(*new QSwipeGesturePrivate, gestureTarget, parent)
+{
+    setObjectName(QLatin1String("QSwipeGesture"));
+}
+
+void QSwipeGesturePrivate::setupGestureTarget(QObject *newGestureTarget)
+{
+    Q_Q(QSwipeGesture);
+    if (gestureTarget && gestureTarget->isWidgetType()) {
+        QWidget *w = static_cast<QWidget*>(gestureTarget.data());
+        QApplicationPrivate::instance()->widgetGestures[w].swipe = 0;
+#if defined(Q_WS_WIN)
+        qt_widget_private(w)->winSetupGestures();
+#endif
+    }
+
+    if (newGestureTarget && newGestureTarget->isWidgetType()) {
+        QWidget *w = static_cast<QWidget*>(newGestureTarget);
+        QApplicationPrivate::instance()->widgetGestures[w].swipe = q;
+#if defined(Q_WS_WIN)
+        qt_widget_private(w)->winSetupGestures();
+#endif
+    }
+    QGesturePrivate::setupGestureTarget(newGestureTarget);
+}
+
+/*!
+  \property QSwipeGesture::swipeAngle
+
+  Holds the angle of the swipe gesture, 0..360.
+*/
+qreal QSwipeGesture::swipeAngle() const
+{
+    Q_D(const QSwipeGesture);
+    return d->swipeAngle;
+}
+
+/*!
+  \property QSwipeGesture::horizontalDirection
+
+  Holds the direction for the horizontal component of the swipe
+  gesture, SwipeDirection::Left or SwipeDirection::Right.
+  SwipeDirection::NoDirection if there is no horizontal
+  component to the swipe gesture.
+*/
+QSwipeGesture::SwipeDirection QSwipeGesture::horizontalDirection() const
+{
+    Q_D(const QSwipeGesture);
+    if (d->swipeAngle < 0 || d->swipeAngle == 90 || d->swipeAngle == 270)
+        return QSwipeGesture::NoDirection;
+    else if (d->swipeAngle < 90 || d->swipeAngle > 270)
+        return QSwipeGesture::Right;
+    else
+        return QSwipeGesture::Left;
+}
+
+
+/*!
+  \property QSwipeGesture::verticalDirection
+
+  Holds the direction for the vertical component of the swipe
+  gesture, SwipeDirection::Down or SwipeDirection::Up.
+  SwipeDirection::NoDirection if there is no vertical
+  component to the swipe gesture.
+*/
+QSwipeGesture::SwipeDirection QSwipeGesture::verticalDirection() const
+{
+    Q_D(const QSwipeGesture);
+    if (d->swipeAngle <= 0 || d->swipeAngle == 180)
+        return QSwipeGesture::NoDirection;
+    else if (d->swipeAngle < 180)
+        return QSwipeGesture::Up;
+    else
+        return QSwipeGesture::Down;
+}
+
+bool QSwipeGesture::eventFilter(QObject *receiver, QEvent *event)
+{
+    Q_D(QSwipeGesture);
+    if (receiver->isWidgetType() && event->type() == QEvent::NativeGesture) {
+        QNativeGestureEvent *ev = static_cast<QNativeGestureEvent*>(event);
+        switch (ev->gestureType) {
+        case QNativeGestureEvent::Swipe:
+            d->swipeAngle = ev->angle;
+            updateState(Qt::GestureStarted);
+            updateState(Qt::GestureUpdated);
+            updateState(Qt::GestureFinished);
+            break;
+        default:
+            return false;
+        }
+        return true;
+    }
+    return QGesture::eventFilter(receiver, event);
+}
+
+/*! \internal */
+bool QSwipeGesture::filterEvent(QEvent *)
+{
+    return false;
+}
+
+/*! \internal */
+void QSwipeGesture::reset()
+{
+    Q_D(QSwipeGesture);
+    d->swipeAngle = -1;
+    QGesture::reset();
 }
 
 QT_END_NAMESPACE

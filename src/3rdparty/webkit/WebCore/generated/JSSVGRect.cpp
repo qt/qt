@@ -96,6 +96,11 @@ bool JSSVGRect::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNa
     return getStaticValueSlot<JSSVGRect, Base>(exec, &JSSVGRectTable, this, propertyName, slot);
 }
 
+bool JSSVGRect::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGRect, Base>(exec, &JSSVGRectTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGRectX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGRect* castedThis = static_cast<JSSVGRect*>(asObject(slot.slotBase()));
@@ -167,7 +172,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, JSSVGPO
 }
 FloatRect toSVGRect(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGRect::s_info) ? (FloatRect) *static_cast<JSSVGRect*>(asObject(value))->impl() : FloatRect();
+    return value.inherits(&JSSVGRect::s_info) ? (FloatRect) *static_cast<JSSVGRect*>(asObject(value))->impl() : FloatRect();
 }
 
 }

@@ -33,6 +33,8 @@
 #include "ExecutableAllocator.h"
 #include "JITStubs.h"
 #include "JSValue.h"
+#include "MarkStack.h"
+#include "NumericStrings.h"
 #include "SmallStrings.h"
 #include "TimeoutChecker.h"
 #include <wtf/Forward.h>
@@ -44,21 +46,20 @@ struct OpaqueJSClassContextData;
 
 namespace JSC {
 
+    class CodeBlock;
     class CommonIdentifiers;
-    class FunctionBodyNode;
     class IdentifierTable;
-    class Instruction;
     class Interpreter;
     class JSGlobalObject;
     class JSObject;
     class Lexer;
     class Parser;
-    class ScopeNode;
     class Stringifier;
     class Structure;
     class UString;
 
     struct HashTable;
+    struct Instruction;    
     struct VPtrSet;
 
     class JSGlobalData : public RefCounted<JSGlobalData> {
@@ -97,7 +98,11 @@ namespace JSC {
         RefPtr<Structure> stringStructure;
         RefPtr<Structure> notAnObjectErrorStubStructure;
         RefPtr<Structure> notAnObjectStructure;
-#if !USE(ALTERNATE_JSIMMEDIATE)
+        RefPtr<Structure> propertyNameIteratorStructure;
+        RefPtr<Structure> getterSetterStructure;
+        RefPtr<Structure> apiWrapperStructure;
+
+#if USE(JSVALUE32)
         RefPtr<Structure> numberStructure;
 #endif
 
@@ -110,6 +115,7 @@ namespace JSC {
         CommonIdentifiers* propertyNames;
         const MarkedArgumentBuffer* emptyList; // Lists are supposed to be allocated on the stack to have their elements properly marked, which is not the case here - but this list has nothing to mark.
         SmallStrings smallStrings;
+        NumericStrings numericStrings;
 
 #if ENABLE(ASSEMBLER)
         ExecutableAllocator executableAllocator;
@@ -140,8 +146,14 @@ namespace JSC {
 
         HashSet<JSObject*> arrayVisitedElements;
 
-        ScopeNode* scopeNodeBeingReparsed;
+        CodeBlock* functionCodeBlockBeingReparsed;
         Stringifier* firstStringifierToMark;
+
+        MarkStack markStack;
+
+#ifndef NDEBUG
+        bool mainThreadOnly;
+#endif
 
     private:
         JSGlobalData(bool isShared, const VPtrSet&);

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -579,8 +579,8 @@ void tst_QHeaderView::sectionSize()
     // stretch last section
     view->setStretchLastSection(true);
     int lastSection = view->count() - 1;
-    
-    //test that when hiding the last column, 
+
+    //test that when hiding the last column,
     //resizing the new last visible columns still works
     view->hideSection(lastSection);
     view->resizeSection(lastSection - 1, lastVisibleSectionSize);
@@ -1015,12 +1015,12 @@ void tst_QHeaderView::resizeAndInsertSection()
     QFETCH(int, expected);
 
     view->setStretchLastSection(false);
-    
+
     view->resizeSection(section, size);
     QCOMPARE(view->sectionSize(section), size);
 
     model->insertRow(insert);
-    
+
     QCOMPARE(view->sectionSize(compare), expected);
 }
 
@@ -1079,7 +1079,7 @@ void tst_QHeaderView::moveAndInsertSection()
     QFETCH(QList<int>, mapping);
 
     view->setStretchLastSection(false);
-    
+
     view->moveSection(from, to);
 
     model->insertRow(insert);
@@ -1141,7 +1141,7 @@ void tst_QHeaderView::resizeSection_data()
 
 void tst_QHeaderView::resizeSection()
 {
-    
+
     QFETCH(int, initial);
     QFETCH(QList<int>, logical);
     QFETCH(QList<int>, size);
@@ -1638,7 +1638,7 @@ void tst_QHeaderView::globalResizeMode()
     QFETCH(int, direction);
     QFETCH(int, mode);
     QFETCH(int, insert);
-    
+
     QStandardItemModel m(4, 4);
     QHeaderView h((Qt::Orientation)direction);
     h.setModel(&m);
@@ -1660,7 +1660,7 @@ void tst_QHeaderView::sectionPressedSignal_data()
         << int(Qt::Horizontal)
         << false
         << 0;
-    
+
     QTest::newRow("horizontal clickable 1")
         << int(Qt::Horizontal)
         << true
@@ -1672,7 +1672,7 @@ void tst_QHeaderView::sectionPressedSignal()
     QFETCH(int, direction);
     QFETCH(bool, clickable);
     QFETCH(int, count);
-    
+
     QStandardItemModel m(4, 4);
     QHeaderView h((Qt::Orientation)direction);
 
@@ -1692,7 +1692,7 @@ void tst_QHeaderView::sectionClickedSignal()
     QFETCH(int, direction);
     QFETCH(bool, clickable);
     QFETCH(int, count);
-    
+
     QStandardItemModel m(4, 4);
     QHeaderView h((Qt::Orientation)direction);
 
@@ -1736,7 +1736,7 @@ void tst_QHeaderView::defaultSectionSize()
     QFETCH(int, direction);
     QFETCH(int, oldDefaultSize);
     QFETCH(int, newDefaultSize);
-    
+
     QStandardItemModel m(4, 4);
     QHeaderView h((Qt::Orientation)direction);
 
@@ -1756,7 +1756,7 @@ void tst_QHeaderView::hideAndInsert_data()
     QTest::addColumn<int>("hide");
     QTest::addColumn<int>("insert");
     QTest::addColumn<int>("hidden");
-    
+
     QTest::newRow("horizontal, 0, 0") << int(Qt::Horizontal) << 0 << 0 << 1;
 }
 
@@ -1766,7 +1766,7 @@ void tst_QHeaderView::hideAndInsert()
     QFETCH(int, hide);
     QFETCH(int, insert);
     QFETCH(int, hidden);
-        
+
     QStandardItemModel m(4, 4);
     QHeaderView h((Qt::Orientation)direction);
 
@@ -1841,15 +1841,15 @@ void tst_QHeaderView::preserveHiddenSectionWidth()
 
 void tst_QHeaderView::invisibleStretchLastSection()
 {
-    int count = 10;
+    int count = 6;
     QStandardItemModel model(1, count);
     QHeaderView view(Qt::Horizontal);
     view.setModel(&model);
-    view.setStretchLastSection(true);
     int height = view.height();
 
     view.resize(view.defaultSectionSize() * (count / 2), height); // don't show all sections
     view.show();
+    view.setStretchLastSection(true);
     // stretch section is not visible; it should not be stretched
     for (int i = 0; i < count; ++i)
         QCOMPARE(view.sectionSize(i), view.defaultSectionSize());

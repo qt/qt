@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,6 +43,7 @@
 #include <QtGui/QtGui>
 #include <QtTest/QtTest>
 #include "../../shared/util.h"
+#include "private/qapplication_p.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -179,6 +180,7 @@ private slots:
     void task240266_veryBigColumn();
     void task248688_autoScrollNavigation();
     void task259308_scrollVerticalHeaderSwappedSections();
+    void task191545_dragSelectRows();
 
     void mouseWheel_data();
     void mouseWheel();
@@ -584,13 +586,13 @@ void tst_QTableView::keyboardNavigation()
     QTableView view;
     view.setModel(&model);
 
-    view.show();
     view.setTabKeyNavigation(tabKeyNavigation);
-
     QModelIndex index = model.index(rowCount - 1, columnCount - 1);
     view.setCurrentIndex(index);
 
-    QApplication::processEvents();
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    qApp->setActiveWindow(&view);
 
     int row = rowCount - 1;
     int column = columnCount - 1;
@@ -2277,7 +2279,7 @@ void tst_QTableView::scrollTo_data()
         << (int)QAbstractItemView::ScrollPerItem
         << (int)QAbstractItemView::ScrollPerItem
         << 10 << 10  // table
-        << 40 << 40  // size
+        << 80 << 80  // size
         << -1 << -1  // hide
         << 0 << 0    // cell
         << 1 << 1    // span
@@ -2289,7 +2291,7 @@ void tst_QTableView::scrollTo_data()
         << (int)QAbstractItemView::ScrollPerPixel
         << (int)QAbstractItemView::ScrollPerPixel
         << 10 << 10  // table
-        << 40 << 40  // size
+        << 80 << 80  // size
         << -1 << -1  // hide
         << 0 << 0    // cell
         << 1 << 1    // span
@@ -2301,7 +2303,7 @@ void tst_QTableView::scrollTo_data()
         << (int)QAbstractItemView::ScrollPerItem
         << (int)QAbstractItemView::ScrollPerItem
         << 10 << 10  // table
-        << 40 << 40  // size
+        << 80 << 80  // size
         << 3 << 3    // hide
         << 5 << 5    // cell
         << 1 << 1    // span
@@ -2334,8 +2336,11 @@ void tst_QTableView::scrollTo()
     QtTestTableView view;
 
     view.show();
-    view.resize(columnWidth * 2, rowHeight * 2);
+    // resizing to this size will ensure that there can ONLY_BE_ONE_CELL inside the view.
+    QSize forcedSize(columnWidth * 2, rowHeight * 2);
+    view.resize(forcedSize);
     QTest::qWait(0);
+    QTRY_COMPARE(view.size(), forcedSize);
 
     view.setModel(&model);
     view.setSpan(row, column, rowSpan, columnSpan);
@@ -2349,7 +2354,7 @@ void tst_QTableView::scrollTo()
     for (int c = 0; c < columnCount; ++c)
         view.setColumnWidth(c, columnWidth);
 
-    QTest::qWait(50); // ### needed to pass the test
+    QTest::qWait(100); // ### needed to pass the test
     view.horizontalScrollBar()->setValue(horizontalScroll);
     view.verticalScrollBar()->setValue(verticalScroll);
 
@@ -2487,6 +2492,11 @@ void tst_QTableView::indexAt()
     QtTestTableView view;
 
     view.show();
+
+    //some styles change the scroll mode in their polish
+    view.setHorizontalScrollMode(QAbstractItemView::ScrollPerItem);
+    view.setVerticalScrollMode(QAbstractItemView::ScrollPerItem);
+
     view.setModel(&model);
     view.setSpan(row, column, rowSpan, columnSpan);
     view.hideRow(hiddenRow);
@@ -2898,13 +2908,11 @@ void tst_QTableView::tabFocus()
     QLineEdit *edit = new QLineEdit(&window);
 
     window.show();
-//wait for window manager:
-#ifdef Q_WS_QWS
-    qApp->processEvents();
-#endif
+    QTest::qWaitForWindowShown(&window);
     window.setFocus();
     QTest::qWait(100);
     window.activateWindow();
+    QApplication::setActiveWindow(&window);
     QTest::qWait(100);
 
     qApp->processEvents();
@@ -2921,43 +2929,43 @@ void tst_QTableView::tabFocus()
     for (int i = 0; i < 2; ++i) {
         // tab to view
         QTest::keyPress(qApp->focusWidget(), Qt::Key_Tab);
-        QVERIFY(!window.hasFocus());
+        QTRY_VERIFY(!window.hasFocus());
         QVERIFY(view->hasFocus());
         QVERIFY(!edit->hasFocus());
 
         // tab to edit
         QTest::keyPress(qApp->focusWidget(), Qt::Key_Tab);
+        QTRY_VERIFY(edit->hasFocus());
         QVERIFY(!window.hasFocus());
         QVERIFY(!view->hasFocus());
-        QVERIFY(edit->hasFocus());
     }
 
     // backtab to view
     QTest::keyPress(qApp->focusWidget(), Qt::Key_Backtab);
+    QTRY_VERIFY(view->hasFocus());
     QVERIFY(!window.hasFocus());
-    QVERIFY(view->hasFocus());
     QVERIFY(!edit->hasFocus());
 
     // backtab to edit
     QTest::keyPress(qApp->focusWidget(), Qt::Key_Backtab);
+    QTRY_VERIFY(edit->hasFocus());
     QVERIFY(!window.hasFocus());
     QVERIFY(!view->hasFocus());
-    QVERIFY(edit->hasFocus());
 
     QStandardItemModel *model = new QStandardItemModel;
     view->setModel(model);
 
     // backtab to view
     QTest::keyPress(qApp->focusWidget(), Qt::Key_Backtab);
+    QTRY_VERIFY(view->hasFocus());
     QVERIFY(!window.hasFocus());
-    QVERIFY(view->hasFocus());
     QVERIFY(!edit->hasFocus());
 
     // backtab to edit
     QTest::keyPress(qApp->focusWidget(), Qt::Key_Backtab);
+    QTRY_VERIFY(edit->hasFocus());
     QVERIFY(!window.hasFocus());
     QVERIFY(!view->hasFocus());
-    QVERIFY(edit->hasFocus());
 
     model->insertRow(0, new QStandardItem("Hei"));
     model->insertRow(0, new QStandardItem("Hei"));
@@ -2965,8 +2973,8 @@ void tst_QTableView::tabFocus()
 
     // backtab to view
     QTest::keyPress(qApp->focusWidget(), Qt::Key_Backtab);
+    QTRY_VERIFY(view->hasFocus());
     QVERIFY(!window.hasFocus());
-    QVERIFY(view->hasFocus());
     QVERIFY(!edit->hasFocus());
 
     // backtab to edit doesn't work
@@ -2979,14 +2987,14 @@ void tst_QTableView::tabFocus()
 
     // backtab to edit
     QTest::keyPress(qApp->focusWidget(), Qt::Key_Backtab);
+    QTRY_VERIFY(edit->hasFocus());
     QVERIFY(!window.hasFocus());
     QVERIFY(!view->hasFocus());
-    QVERIFY(edit->hasFocus());
 
     QTest::keyPress(qApp->focusWidget(), Qt::Key_Tab);
-    QVERIFY(view->hasFocus());
+    QTRY_VERIFY(view->hasFocus());
     QTest::keyPress(qApp->focusWidget(), Qt::Key_Tab);
-    QVERIFY(edit->hasFocus());
+    QTRY_VERIFY(edit->hasFocus());
 
     delete model;
 }
@@ -3040,7 +3048,7 @@ void tst_QTableView::selectionSignal()
     view.setModel(&model);
     view.resize(200, 200);
     view.show();
-    WAIT_FOR_CONDITION(view.isVisible(), true);
+    QTest::qWaitForWindowShown(&view);
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.visualRect(model.index(2, 0)).center());
 }
 
@@ -3073,10 +3081,7 @@ void tst_QTableView::task173773_updateVerticalHeader()
     view.setModel(&proxyModel);
     view.setSortingEnabled(true);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(&view);
 
     view.sortByColumn(0, Qt::AscendingOrder);
     QTest::qWait(100);
@@ -3141,7 +3146,11 @@ void tst_QTableView::task240266_veryBigColumn()
     table.setColumnWidth(1, 100); //normal column
     table.setColumnWidth(2, 9000); //very big column
     table.show();
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(&table);
+
+    //some styles change the scroll mode in their polish
+    table.setHorizontalScrollMode(QAbstractItemView::ScrollPerItem);
+    table.setVerticalScrollMode(QAbstractItemView::ScrollPerItem);
 
     QScrollBar *scroll = table.horizontalScrollBar();
     QCOMPARE(scroll->minimum(), 0);
@@ -3270,8 +3279,9 @@ void tst_QTableView::task259308_scrollVerticalHeaderSwappedSections()
     tv.setModel(&model);
     tv.show();
     tv.verticalHeader()->swapSections(0, model.rowCount() - 1);
+    tv.setCurrentIndex(model.index(model.rowCount() - 1, 0));
 
-    QTest::qWait(60);
+    QTest::qWaitForWindowShown(&tv);
     QTest::keyClick(&tv, Qt::Key_PageUp);   // PageUp won't scroll when at top
     QTRY_COMPARE(tv.rowAt(0), tv.verticalHeader()->logicalIndex(0));
 
@@ -3285,6 +3295,118 @@ void tst_QTableView::task259308_scrollVerticalHeaderSwappedSections()
     QTest::qWait(60);
     QTest::keyClick(&tv, Qt::Key_PageDown); // PageDown won't scroll when at the bottom
     QTRY_COMPARE(tv.rowAt(tv.viewport()->height() - 1), tv.verticalHeader()->logicalIndex(model.rowCount() - 1));
+}
+
+template <typename T>
+struct ValueSaver {
+    T &var, value;
+    ValueSaver(T &v) : var(v), value(v) { }
+    ~ValueSaver() { var = value; }
+};
+
+void tst_QTableView::task191545_dragSelectRows()
+{
+    QStandardItemModel model(10, 10);
+    QTableView table;
+    table.setModel(&model);
+    table.setSelectionBehavior(QAbstractItemView::SelectItems);
+    table.setSelectionMode(QAbstractItemView::ExtendedSelection);
+    table.setMinimumSize(1000, 400);
+    table.show();
+    QTest::qWait(200);
+
+    ValueSaver<Qt::KeyboardModifiers> saver(QApplicationPrivate::modifier_buttons);
+    QApplicationPrivate::modifier_buttons = Qt::ControlModifier;
+
+    {
+        QRect cellRect = table.visualRect(model.index(3, 0));
+        QHeaderView *vHeader = table.verticalHeader();
+        QWidget *vHeaderVp = vHeader->viewport();
+        QPoint rowPos(5, (cellRect.top() + cellRect.bottom()) / 2);
+        QMouseEvent rowPressEvent(QEvent::MouseButtonPress, rowPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        qApp->sendEvent(vHeaderVp, &rowPressEvent);
+
+        for (int i = 0; i < 4; ++i) {
+            rowPos.setY(rowPos.y() + cellRect.height());
+            QMouseEvent moveEvent(QEvent::MouseMove, rowPos, Qt::NoButton, Qt::LeftButton, Qt::ControlModifier);
+            qApp->sendEvent(vHeaderVp, &moveEvent);
+        }
+        QMouseEvent rowReleaseEvent(QEvent::MouseButtonRelease, rowPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        qApp->sendEvent(vHeaderVp, &rowReleaseEvent);
+
+        for (int i = 0; i < 4; ++i) {
+            QModelIndex index = model.index(3 + i, 0, table.rootIndex());
+            QVERIFY(vHeader->selectionModel()->selectedRows().contains(index));
+        }
+    }
+
+    {
+        QRect cellRect = table.visualRect(model.index(0, 3));
+        QHeaderView *hHeader = table.horizontalHeader();
+        QWidget *hHeaderVp = hHeader->viewport();
+        QPoint colPos((cellRect.left() + cellRect.right()) / 2, 5);
+        QMouseEvent colPressEvent(QEvent::MouseButtonPress, colPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        qApp->sendEvent(hHeaderVp, &colPressEvent);
+
+        for (int i = 0; i < 4; ++i) {
+            colPos.setX(colPos.x() + cellRect.width());
+            QMouseEvent moveEvent(QEvent::MouseMove, colPos, Qt::NoButton, Qt::LeftButton, Qt::ControlModifier);
+            qApp->sendEvent(hHeaderVp, &moveEvent);
+        }
+        QMouseEvent colReleaseEvent(QEvent::MouseButtonRelease, colPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        qApp->sendEvent(hHeaderVp, &colReleaseEvent);
+
+        for (int i = 0; i < 4; ++i) {
+            QModelIndex index = model.index(0, 3 + i, table.rootIndex());
+            QVERIFY(hHeader->selectionModel()->selectedColumns().contains(index));
+        }
+    }
+
+    {
+        QRect cellRect = table.visualRect(model.index(2, 2));
+        QWidget *tableVp = table.viewport();
+        QPoint cellPos = cellRect.center();
+        QMouseEvent cellPressEvent(QEvent::MouseButtonPress, cellPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        qApp->sendEvent(tableVp, &cellPressEvent);
+
+        for (int i = 0; i < 6; ++i) {
+            cellPos.setX(cellPos.x() + cellRect.width());
+            cellPos.setY(cellPos.y() + cellRect.height());
+            QMouseEvent moveEvent(QEvent::MouseMove, cellPos, Qt::NoButton, Qt::LeftButton, Qt::ControlModifier);
+            qApp->sendEvent(tableVp, &moveEvent);
+        }
+        QMouseEvent cellReleaseEvent(QEvent::MouseButtonRelease, cellPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        qApp->sendEvent(tableVp, &cellReleaseEvent);
+
+        for (int i = 0; i < 6; ++i)
+            for (int j = 0; j < 6; ++j) {
+                QModelIndex index = model.index(2 + i, 2 + j, table.rootIndex());
+                QVERIFY(table.selectionModel()->isSelected(index));
+            }
+    }
+
+    {
+        QRect cellRect = table.visualRect(model.index(3, 3));
+        QWidget *tableVp = table.viewport();
+        QPoint cellPos = cellRect.center();
+        QMouseEvent cellPressEvent(QEvent::MouseButtonPress, cellPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        qApp->sendEvent(tableVp, &cellPressEvent);
+
+        for (int i = 0; i < 6; ++i) {
+            cellPos.setX(cellPos.x() + cellRect.width());
+            cellPos.setY(cellPos.y() + cellRect.height());
+            QMouseEvent moveEvent(QEvent::MouseMove, cellPos, Qt::NoButton, Qt::LeftButton, Qt::ControlModifier);
+            qApp->sendEvent(tableVp, &moveEvent);
+        }
+        QMouseEvent cellReleaseEvent(QEvent::MouseButtonRelease, cellPos, Qt::LeftButton, Qt::NoButton, Qt::ControlModifier);
+        qApp->sendEvent(tableVp, &cellReleaseEvent);
+
+        for (int i = 0; i < 6; ++i)
+            for (int j = 0; j < 6; ++j) {
+                QModelIndex index = model.index(3 + i, 3 + j, table.rootIndex());
+                QVERIFY(!table.selectionModel()->isSelected(index));
+            }
+    }
 }
 
 QTEST_MAIN(tst_QTableView)

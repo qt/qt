@@ -28,6 +28,7 @@
 #include "GraphicsContext.h"
 #include "HitTestResult.h"
 #include "RenderView.h"
+#include "RenderWidgetProtector.h"
 
 using namespace std;
 
@@ -60,6 +61,15 @@ void RenderWidget::destroy()
     // So the code below includes copied and pasted contents of
     // both RenderBox::destroy() and RenderObject::destroy().
     // Fix originally made for <rdar://problem/4228818>.
+
+    // <rdar://problem/6937089> suggests that node() can be null by the time we call renderArena()
+    // in the end of this function. One way this might happen is if this function was invoked twice
+    // in a row, so bail out and turn a crash into an assertion failure in debug builds and a leak
+    // in release builds.
+    ASSERT(node());
+    if (!node())
+        return;
+
     animation()->cancelAnimations(this);
 
     if (RenderView* v = view())
@@ -90,6 +100,14 @@ void RenderWidget::destroy()
         destroyLayer();
     }
 
+    // <rdar://problem/6937089> suggests that node() can be null here. One way this might happen is
+    // if this function was re-entered (and therefore the null check at the beginning did not fail),
+    // so bail out and turn a crash into an assertion failure in debug builds and a leak in release
+    // builds.
+    ASSERT(node());
+    if (!node())
+        return;
+
     // Grab the arena from node()->document()->renderArena() before clearing the node pointer.
     // Clear the node before deref-ing, as this may be deleted when deref is called.
     RenderArena* arena = renderArena();
@@ -106,10 +124,9 @@ RenderWidget::~RenderWidget()
 void RenderWidget::setWidgetGeometry(const IntRect& frame)
 {
     if (node() && m_widget->frameRect() != frame) {
-        RenderArena* arena = ref();
-        RefPtr<Node> protectedElement(node());
+        RenderWidgetProtector protector(this);
+        RefPtr<Node> protectedNode(node());
         m_widget->setFrameRect(frame);
-        deref(arena);
     }
 }
 
@@ -183,11 +200,15 @@ void RenderWidget::paint(PaintInfo& paintInfo, int tx, int ty)
 #endif
 
     if (style()->hasBorderRadius()) {
+        IntRect borderRect = IntRect(tx, ty, width(), height());
+
+        if (borderRect.isEmpty())
+            return;
+
         // Push a clip if we have a border radius, since we want to round the foreground content that gets painted.
         paintInfo.context->save();
         
         IntSize topLeft, topRight, bottomLeft, bottomRight;
-        IntRect borderRect = IntRect(tx, ty, width(), height());
         style()->getBorderRadiiForRect(borderRect, topLeft, topRight, bottomLeft, bottomRight);
 
         paintInfo.context->addRoundedRectClip(borderRect, topLeft, topRight, bottomLeft, bottomRight);
@@ -248,11 +269,9 @@ void RenderWidget::updateWidgetPosition()
     IntRect oldBounds(m_widget->frameRect());
     bool boundsChanged = newBounds != oldBounds;
     if (boundsChanged) {
-        RenderArena* arena = ref();
-        node()->ref();
+        RenderWidgetProtector protector(this);
+        RefPtr<Node> protectedNode(node());
         m_widget->setFrameRect(newBounds);
-        node()->deref();
-        deref(arena);
     }
     
     // if the frame bounds got changed, or if view needs layout (possibly indicating

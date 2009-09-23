@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,8 +59,10 @@
 #include "QtCore/qthread.h"
 #include "QtCore/qthreadstorage.h"
 #include "QtCore/qhash.h"
+#include "QtCore/qatomic.h"
 #include "private/qwidget_p.h"
 #include "qcache.h"
+#include "qglpaintdevice_p.h"
 
 #ifndef QT_OPENGL_ES_1_CL
 #define q_vertexType float
@@ -127,7 +129,9 @@ QT_END_INCLUDE_NAMESPACE
 class QGLFormatPrivate
 {
 public:
-    QGLFormatPrivate() {
+    QGLFormatPrivate()
+        : ref(1)
+    {
         opts = QGL::DoubleBuffer | QGL::DepthBuffer | QGL::Rgba | QGL::DirectRendering | QGL::StencilBuffer;
 #if defined(QT_OPENGL_ES_2)
         opts |= QGL::SampleBuffers;
@@ -137,6 +141,22 @@ public:
         numSamples = -1;
         swapInterval = -1;
     }
+    QGLFormatPrivate(const QGLFormatPrivate *other)
+        : ref(1),
+          opts(other->opts),
+          pln(other->pln),
+          depthSize(other->depthSize),
+          accumSize(other->accumSize),
+          stencilSize(other->stencilSize),
+          redSize(other->redSize),
+          greenSize(other->greenSize),
+          blueSize(other->blueSize),
+          alphaSize(other->alphaSize),
+          numSamples(other->numSamples),
+          swapInterval(other->swapInterval)
+    {
+    }
+    QAtomicInt ref;
     QGL::FormatOptions opts;
     int pln;
     int depthSize;
@@ -155,6 +175,7 @@ class QGLWidgetPrivate : public QWidgetPrivate
     Q_DECLARE_PUBLIC(QGLWidget)
 public:
     QGLWidgetPrivate() : QWidgetPrivate()
+                       , disable_clear_on_painter_begin(false)
 #ifdef Q_WS_QWS
                        , wsurf(0)
 #endif
@@ -171,10 +192,15 @@ public:
     void cleanupColormaps();
 
     QGLContext *glcx;
+    QGLWidgetGLPaintDevice glDevice;
     bool autoSwap;
 
     QGLColormap cmap;
+#ifndef QT_OPENGL_ES
     QMap<QString, int> displayListCache;
+#endif
+
+    bool disable_clear_on_painter_begin;
 
 #if defined(Q_WS_WIN)
     void updateColormap();
@@ -193,11 +219,48 @@ public:
 #endif
 };
 
-struct QGLContextGroupResources
+// QGLContextPrivate has the responsibility of creating context groups.
+// QGLContextPrivate and QGLShareRegister will both maintain the reference counter and destroy
+// context groups when needed.
+// QGLShareRegister has the responsibility of keeping the context pointer up to date.
+class QGLContextGroup
 {
-    QGLContextGroupResources() : refs(1) { }
-    QGLExtensionFuncs extensionFuncs;
-    QAtomicInt refs;
+public:
+    QGLExtensionFuncs &extensionFuncs() {return m_extensionFuncs;}
+    const QGLContext *context() const {return m_context;}
+private:
+    QGLContextGroup(const QGLContext *context) : m_context(context), m_refs(1) { }
+
+    QGLExtensionFuncs m_extensionFuncs;
+    const QGLContext *m_context; // context group's representative
+    QAtomicInt m_refs;
+
+    friend class QGLShareRegister;
+    friend class QGLContextPrivate;
+};
+
+// Reference to a QGLContext which automatically switches to another
+// shared context when the main one is destroyed.  If there is no
+// shared context to switch to, the context pointer is set to null.
+// Note: should be merged into QGLContextGroup at some point.
+class QGLContextReference : public QObject
+{
+    Q_OBJECT
+public:
+    QGLContextReference(const QGLContext *ctx);
+    ~QGLContextReference() {}
+
+    const QGLContext *context() const { return m_ctx; }
+
+    void ref() { m_ref.ref(); }
+    bool deref() { return m_ref.deref(); }
+
+private slots:
+    void aboutToDestroyContext(const QGLContext *ctx);
+
+private:
+    QAtomicInt m_ref;
+    const QGLContext *m_ctx;
 };
 
 class QGLTexture;
@@ -206,12 +269,14 @@ class QGLContextPrivate
 {
     Q_DECLARE_PUBLIC(QGLContext)
 public:
-    explicit QGLContextPrivate(QGLContext *context) : internal_context(false), q_ptr(context) {groupResources = new QGLContextGroupResources;}
-    ~QGLContextPrivate() {if (!groupResources->refs.deref()) delete groupResources;}
-    QGLTexture *bindTexture(const QImage &image, GLenum target, GLint format, bool clean);
+    explicit QGLContextPrivate(QGLContext *context) : internal_context(false), q_ptr(context) {reference = new QGLContextReference(context); group = new QGLContextGroup(context);}
+    ~QGLContextPrivate();
+    QGLTexture *bindTexture(const QImage &image, GLenum target, GLint format,
+                            QGLContext::BindOptions options);
     QGLTexture *bindTexture(const QImage &image, GLenum target, GLint format, const qint64 key,
-                       bool clean = false);
-    QGLTexture *bindTexture(const QPixmap &pixmap, GLenum target, GLint format, bool clean, bool canInvert = false);
+                            QGLContext::BindOptions options);
+    QGLTexture *bindTexture(const QPixmap &pixmap, GLenum target, GLint format,
+                            QGLContext::BindOptions options);
     QGLTexture *textureCacheLookup(const qint64 key, GLenum target);
     void init(QPaintDevice *dev, const QGLFormat &format);
     QImage convertToGLFormat(const QImage &image, bool force_premul, GLenum texture_format);
@@ -241,7 +306,8 @@ public:
     quint32 gpm;
     int screen;
     QHash<QPixmapData*, QPixmap> boundPixmaps;
-    QGLTexture *bindTextureFromNativePixmap(QPixmapData*, const qint64 key, bool canInvert);
+    QGLTexture *bindTextureFromNativePixmap(QPixmapData*, const qint64 key,
+                                            QGLContext::BindOptions options);
     static void destroyGlSurfaceForPixmap(QPixmapData*);
     static void unbindPixmapFromTexture(QPixmapData*);
 #endif
@@ -252,14 +318,12 @@ public:
 #endif
     QGLFormat glFormat;
     QGLFormat reqFormat;
-    GLuint pbo;
     GLuint fbo;
 
     uint valid : 1;
     uint sharing : 1;
     uint initDone : 1;
     uint crWin : 1;
-    uint clear_on_painter_begin : 1;
     uint internal_context : 1;
     uint version_flags_cached : 1;
     QPaintDevice *paintDevice;
@@ -267,22 +331,27 @@ public:
     QGLContext *q_ptr;
     QGLFormat::OpenGLVersionFlags version_flags;
 
-    QGLContextGroupResources *groupResources;
+    QGLContextReference *reference;
+    QGLContextGroup *group;
     GLint max_texture_size;
 
     GLuint current_fbo;
     QPaintEngine *active_engine;
 
+    static inline QGLContextGroup *contextGroup(const QGLContext *ctx) { return ctx->d_ptr->group; }
+
 #ifdef Q_WS_WIN
-    static inline QGLExtensionFuncs& qt_get_extension_funcs(const QGLContext *ctx) { return ctx->d_ptr->groupResources->extensionFuncs; }
+    static inline QGLExtensionFuncs& extensionFuncs(const QGLContext *ctx) { return ctx->d_ptr->group->extensionFuncs(); }
+    static inline QGLExtensionFuncs& extensionFuncs(QGLContextGroup *ctx) { return ctx->extensionFuncs(); }
 #endif
 
 #if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
     static QGLExtensionFuncs qt_extensionFuncs;
-    static inline QGLExtensionFuncs& qt_get_extension_funcs(const QGLContext *) { return qt_extensionFuncs; }
+    static inline QGLExtensionFuncs& extensionFuncs(const QGLContext *) { return qt_extensionFuncs; }
+    static inline QGLExtensionFuncs& extensionFuncs(QGLContextGroup *) { return qt_extensionFuncs; }
 #endif
 
-    QPixmapFilter *createPixmapFilter(int type) const;
+    static void setCurrentContext(QGLContext *context);
 };
 
 // ### make QGLContext a QObject in 5.0 and remove the proxy stuff
@@ -297,55 +366,6 @@ public:
     static QGLSignalProxy *instance();
 Q_SIGNALS:
     void aboutToDestroyContext(const QGLContext *context);
-};
-
-class QGLPixelBuffer;
-class QGLFramebufferObject;
-class QWSGLWindowSurface;
-class QGLWindowSurface;
-class QGLPixmapData;
-class QGLDrawable {
-public:
-    QGLDrawable() : widget(0), buffer(0), fbo(0)
-#if defined(Q_WS_QWS) || (!defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL))
-                  , wsurf(0)
-#endif
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-                  , pixmapData(0)
-#endif
-        {}
-    void setDevice(QPaintDevice *pdev);
-    void swapBuffers();
-    void makeCurrent();
-    void doneCurrent();
-    QSize size() const;
-    QGLFormat format() const;
-    GLuint bindTexture(const QImage &image, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA);
-    GLuint bindTexture(const QPixmap &pixmap, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA);
-    QColor backgroundColor() const;
-    QGLContext *context() const;
-    bool autoFillBackground() const;
-    bool hasTransparentBackground() const;
-
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    QGLPixmapData *copyOnBegin() const;
-#endif
-
-private:
-    bool wasBound;
-    QGLWidget *widget;
-    QGLPixelBuffer *buffer;
-    QGLFramebufferObject *fbo;
-#ifdef Q_WS_QWS
-    QWSGLWindowSurface *wsurf;
-#elif !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    QGLWindowSurface *wsurf;
-#endif
-
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    QGLPixmapData *pixmapData;
-#endif
-    int previous_fbo;
 };
 
 // GL extension definitions
@@ -378,11 +398,6 @@ public:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGLExtensions::Extensions)
 
 
-struct QGLThreadContext {
-    QGLContext *context;
-};
-extern QThreadStorage<QGLThreadContext *> qgl_context_storage;
-
 class QGLShareRegister
 {
 public:
@@ -394,9 +409,9 @@ public:
     QList<const QGLContext *> shares(const QGLContext *context);
     void removeShare(const QGLContext *context);
 private:
-    // Use a context's 'groupResources' pointer to uniquely identify a group.
+    // Use a context's 'group' pointer to uniquely identify a group.
     typedef QList<const QGLContext *> ContextList;
-    typedef QHash<const QGLContextGroupResources *, ContextList> SharingHash;
+    typedef QHash<const QGLContextGroup *, ContextList> SharingHash;
     SharingHash reg;
 };
 
@@ -405,15 +420,18 @@ extern Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg();
 class QGLTexture {
 public:
     QGLTexture(QGLContext *ctx = 0, GLuint tx_id = 0, GLenum tx_target = GL_TEXTURE_2D,
-               bool _clean = false, bool _yInverted = false)
-        : context(ctx), id(tx_id), target(tx_target), clean(_clean), yInverted(_yInverted)
+               QGLContext::BindOptions opt = QGLContext::DefaultBindOption)
+        : context(ctx),
+          id(tx_id),
+          target(tx_target),
+          options(opt)
 #if defined(Q_WS_X11)
-            , boundPixmap(0)
+        , boundPixmap(0)
 #endif
     {}
 
     ~QGLTexture() {
-        if (clean) {
+        if (options & QGLContext::MemoryManagedBindOption) {
             QGLContext *current = const_cast<QGLContext *>(QGLContext::currentContext());
             QGLContext *ctx = const_cast<QGLContext *>(context);
             Q_ASSERT(ctx);
@@ -437,8 +455,9 @@ public:
     QGLContext *context;
     GLuint id;
     GLenum target;
-    bool clean;
-    bool yInverted; // NOTE: Y-Inverted textures are for internal use only!
+
+    QGLContext::BindOptions options;
+
 #if defined(Q_WS_X11)
     QPixmapData* boundPixmap;
 #endif
@@ -475,15 +494,7 @@ extern QPaintEngine* qt_qgl_paint_engine();
 extern EGLDisplay qt_qgl_egl_display();
 #endif
 
-inline bool qt_gl_preferGL2Engine()
-{
-#if defined(QT_OPENGL_ES_2)
-    return true;
-#else
-    return (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0)
-           && qgetenv("QT_GL_USE_OPENGL1ENGINE").isEmpty();
-#endif
-}
+bool qt_gl_preferGL2Engine();
 
 inline GLenum qt_gl_preferredTextureFormat()
 {
@@ -515,14 +526,113 @@ public:
     // Return resource for 'key' or a shared context.
     void *value(const QGLContext *key);
     // Free resource for 'key' and all its shared contexts.
-    void remove(const QGLContext *key);
+    void removeGroup(const QGLContext *key);
 private slots:
     // Remove entry 'key' from cache and delete resource if there are no shared contexts.
-    void aboutToDestroyContext(const QGLContext *key);
+    void removeOne(const QGLContext *key);
 private:
     typedef QHash<const QGLContext *, void *> ResourceHash;
     ResourceHash m_resources;
     FreeFunc free;
+};
+
+// Temporarily make a context current if not already current or
+// shared with the current contex.  The previous context is made
+// current when the object goes out of scope.
+class Q_OPENGL_EXPORT QGLShareContextScope
+{
+public:
+    QGLShareContextScope(const QGLContext *ctx)
+        : m_oldContext(0)
+    {
+        QGLContext *currentContext = const_cast<QGLContext *>(QGLContext::currentContext());
+        if (currentContext != ctx && !qgl_share_reg()->checkSharing(ctx, currentContext)) {
+            m_oldContext = currentContext;
+            m_ctx = const_cast<QGLContext *>(ctx);
+            m_ctx->makeCurrent();
+        } else {
+            m_ctx = currentContext;
+        }
+    }
+
+    operator QGLContext *()
+    {
+        return m_ctx;
+    }
+
+    QGLContext *operator->()
+    {
+        return m_ctx;
+    }
+
+    ~QGLShareContextScope()
+    {
+        if (m_oldContext)
+            m_oldContext->makeCurrent();
+    }
+
+private:
+    QGLContext *m_oldContext;
+    QGLContext *m_ctx;
+};
+
+// Put a guard around a GL object identifier and its context.
+// When the context goes away, a shared context will be used
+// in its place.  If there are no more shared contexts, then
+// the identifier is returned as zero - it is assumed that the
+// context destruction cleaned up the identifier in this case.
+class Q_OPENGL_EXPORT QGLSharedResourceGuard
+{
+public:
+    QGLSharedResourceGuard(const QGLContext *context)
+        : m_ctxref(0), m_id(0)
+    {
+        setContext(context);
+    }
+    QGLSharedResourceGuard(const QGLContext *context, GLuint id)
+        : m_ctxref(0), m_id(id)
+    {
+        setContext(context);
+    }
+    ~QGLSharedResourceGuard()
+    {
+        if (m_ctxref && !m_ctxref->deref())
+            delete m_ctxref;
+    }
+
+    const QGLContext *context() const
+    {
+        return m_ctxref ? m_ctxref->context() : 0;
+    }
+
+    void setContext(const QGLContext *context)
+    {
+        if (m_ctxref && !m_ctxref->deref())
+            delete m_ctxref;
+        if (context) {
+            m_ctxref = context->d_ptr->reference;
+            m_ctxref->ref();
+        } else {
+            m_ctxref = 0;
+        }
+    }
+
+    GLuint id() const
+    {
+        if (m_ctxref && m_ctxref->context())
+            return m_id;
+        else
+            return 0;
+    }
+
+    void setId(GLuint id)
+    {
+        m_id = id;
+    }
+
+private:
+    QGLContextReference *m_ctxref;
+    GLuint m_id;
 };
 
 QT_END_NAMESPACE

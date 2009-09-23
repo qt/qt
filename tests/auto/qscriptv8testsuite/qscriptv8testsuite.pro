@@ -8,5 +8,3 @@ testFiles.sources = tests
 testFiles.path = .
 DEPLOYMENT += testFiles
 }
-
-symbian:TARGET.EPOCHEAPSIZE = 0x00020000 0x02000000

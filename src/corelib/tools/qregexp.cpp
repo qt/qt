@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,6 +52,7 @@
 #include "qstringlist.h"
 #include "qstringmatcher.h"
 #include "qvector.h"
+#include "private/qfunctions_p.h"
 
 #include <limits.h>
 
@@ -521,6 +522,10 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
          outside, backslash has no special meaning.
     \endtable
 
+    In the mode Wildcard, the wildcard characters cannot be
+    escaped. In the mode WildcardUnix, the character '\' escapes the
+    wildcard.
+
     For example if we are in wildcard mode and have strings which
     contain filenames we could identify HTML files with \bold{*.html}.
     This will match zero or more characters followed by a dot followed
@@ -750,50 +755,100 @@ static void mergeInto(QVector<int> *a, const QVector<int> &b)
 /*
   Translates a wildcard pattern to an equivalent regular expression
   pattern (e.g., *.cpp to .*\.cpp).
+
+  If enableEscaping is true, it is possible to escape the wildcard
+  characters with \
 */
-static QString wc2rx(const QString &wc_str)
+static QString wc2rx(const QString &wc_str, const bool enableEscaping)
 {
-    int wclen = wc_str.length();
+    const int wclen = wc_str.length();
     QString rx;
     int i = 0;
+    bool isEscaping = false; // the previous character is '\'
     const QChar *wc = wc_str.unicode();
+
     while (i < wclen) {
-        QChar c = wc[i++];
+        const QChar c = wc[i++];
         switch (c.unicode()) {
+        case '\\':
+            if (enableEscaping) {
+                if (isEscaping) {
+                    rx += QLatin1String("\\\\");
+                } // we insert the \\ later if necessary
+                if (i+1 == wclen) { // the end
+                    rx += QLatin1String("\\\\");
+                }
+            } else {
+                rx += QLatin1String("\\\\");
+            }
+            isEscaping = true;
+            break;
         case '*':
-            rx += QLatin1String(".*");
+            if (isEscaping) {
+                rx += QLatin1String("\\*");
+                isEscaping = false;
+            } else {
+                rx += QLatin1String(".*");
+            }
             break;
         case '?':
-            rx += QLatin1Char('.');
+            if (isEscaping) {
+                rx += QLatin1String("\\?");
+                isEscaping = false;
+            } else {
+                rx += QLatin1Char('.');
+            }
+
             break;
         case '$':
         case '(':
         case ')':
         case '+':
         case '.':
-        case '\\':
         case '^':
         case '{':
         case '|':
         case '}':
+            if (isEscaping) {
+                isEscaping = false;
+                rx += QLatin1String("\\\\");
+            }
             rx += QLatin1Char('\\');
             rx += c;
             break;
-        case '[':
-            rx += c;
-            if (wc[i] == QLatin1Char('^'))
-                rx += wc[i++];
-            if (i < wclen) {
-                if (rx[i] == QLatin1Char(']'))
+         case '[':
+            if (isEscaping) {
+                isEscaping = false;
+                rx += QLatin1String("\\[");
+            } else {
+                rx += c;
+                if (wc[i] == QLatin1Char('^'))
                     rx += wc[i++];
-                while (i < wclen && wc[i] != QLatin1Char(']')) {
-                    if (wc[i] == QLatin1Char('\\'))
-                        rx += QLatin1Char('\\');
-                    rx += wc[i++];
+                if (i < wclen) {
+                    if (rx[i] == QLatin1Char(']'))
+                        rx += wc[i++];
+                    while (i < wclen && wc[i] != QLatin1Char(']')) {
+                        if (wc[i] == QLatin1Char('\\'))
+                            rx += QLatin1Char('\\');
+                        rx += wc[i++];
+                    }
                 }
             }
+             break;
+
+        case ']':
+            if(isEscaping){
+                isEscaping = false;
+                rx += QLatin1String("\\");
+            }
+            rx += c;
             break;
+
         default:
+            if(isEscaping){
+                isEscaping = false;
+                rx += QLatin1String("\\\\");
+            }
             rx += c;
         }
     }
@@ -832,7 +887,7 @@ struct QRegExpEngineKey
     }
 };
 
-bool operator==(const QRegExpEngineKey &key1, const QRegExpEngineKey &key2)
+Q_STATIC_GLOBAL_OPERATOR bool operator==(const QRegExpEngineKey &key1, const QRegExpEngineKey &key2)
 {
     return key1.pattern == key2.pattern && key1.patternSyntax == key2.patternSyntax
            && key1.cs == key2.cs;
@@ -1261,28 +1316,38 @@ struct QRegExpLookahead
 };
 #endif
 
+/*! \internal
+    convert the pattern string to the RegExp syntax.
+
+    This is also used by QScriptEngine::newRegExp to convert to a pattern that JavaScriptCore can understan
+ */
+Q_CORE_EXPORT QString qt_regexp_toCanonical(const QString &pattern, QRegExp::PatternSyntax patternSyntax)
+{
+    switch (patternSyntax) {
+#ifndef QT_NO_REGEXP_WILDCARD
+    case QRegExp::Wildcard:
+        return wc2rx(pattern, false);
+        break;
+    case QRegExp::WildcardUnix:
+        return wc2rx(pattern, true);
+        break;
+#endif
+    case QRegExp::FixedString:
+        return QRegExp::escape(pattern);
+        break;
+    case QRegExp::W3CXmlSchema11:
+    default:
+        return pattern;
+    }
+}
+
 QRegExpEngine::QRegExpEngine(const QRegExpEngineKey &key)
     : cs(key.cs), greedyQuantifiers(key.patternSyntax == QRegExp::RegExp2),
-      xmlSchemaExtensions(false)
+      xmlSchemaExtensions(key.patternSyntax == QRegExp::W3CXmlSchema11)
 {
     setup();
 
-    QString rx;
-
-    switch (key.patternSyntax) {
-    case QRegExp::Wildcard:
-#ifndef QT_NO_REGEXP_WILDCARD
-        rx = wc2rx(key.pattern);
-#endif
-        break;
-    case QRegExp::FixedString:
-        rx = QRegExp::escape(key.pattern);
-        break;
-    case QRegExp::W3CXmlSchema11:
-        xmlSchemaExtensions = true;
-    default:
-        rx = key.pattern;
-    }
+    QString rx = qt_regexp_toCanonical(key.pattern, key.patternSyntax);
 
     valid = (parse(rx.unicode(), rx.length()) == rx.length());
     if (!valid) {
@@ -3706,6 +3771,10 @@ static void invalidateEngine(QRegExpPrivate *priv)
     \value Wildcard This provides a simple pattern matching syntax
     similar to that used by shells (command interpreters) for "file
     globbing". See \l{Wildcard Matching}.
+
+    \value WildcardUnix This is similar to Wildcard but with the
+    behavior of a Unix shell. The wildcard characters can be escaped
+    with the character "\".
 
     \value FixedString The pattern is a fixed string. This is
     equivalent to using the RegExp pattern on a string in

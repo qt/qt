@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -93,6 +93,9 @@ public:
     \value DropShadowFilter   A filter that is used to add a drop shadow to an
                               image. See QPixmapDropShadowFilter for more
                               information.
+    \value BlurFilter         A filter that is used to blur an image using
+                              a simple blur radius. See QPixmapBlurFilter
+                              for more information.
 
     \value UserFilter   The first filter type that can be used for
                         application-specific purposes.
@@ -415,13 +418,12 @@ void QPixmapConvolutionFilter::draw(QPainter *painter, const QPointF &p, const Q
         return;
 
     QPixmapFilter *filter = painter->paintEngine() && painter->paintEngine()->isExtended() ?
-        static_cast<QPaintEngineEx *>(painter->paintEngine())->createPixmapFilter(type()) : 0;
+        static_cast<QPaintEngineEx *>(painter->paintEngine())->pixmapFilter(type(), this) : 0;
     QPixmapConvolutionFilter *convolutionFilter = static_cast<QPixmapConvolutionFilter*>(filter);
     if (convolutionFilter) {
         convolutionFilter->setConvolutionKernel(d->convolutionKernel, d->kernelWidth, d->kernelHeight);
         convolutionFilter->d_func()->convoluteAlpha = d->convoluteAlpha;
         convolutionFilter->draw(painter, p, src, srcRect);
-        delete convolutionFilter;
         return;
     }
 
@@ -473,6 +475,222 @@ void QPixmapConvolutionFilter::draw(QPainter *painter, const QPointF &p, const Q
                   d->kernelHeight);
         painter->drawImage(p - offset, result);
     }
+}
+
+/*!
+    \class QPixmapBlurFilter
+    \since 4.6
+    \ingroup multimedia
+
+    \brief The QPixmapBlurFilter class provides blur filtering
+    for pixmaps.
+
+    QPixmapBlurFilter implements a blur pixmap filter,
+    which is applied when \l{QPixmapFilter::}{draw()} is called.
+
+    The filter lets you specialize the radius of the blur as well
+    as the quality.
+
+    By default, the blur effect is produced by applying an exponential
+    filter generated from the specified blurRadius().  Paint engines
+    may override this with a custom blur that is faster on the
+    underlying hardware.
+
+    \sa {Pixmap Filters Example}, QPixmapConvolutionFilter, QPixmapDropShadowFilter
+
+    \internal
+*/
+
+class QPixmapBlurFilterPrivate : public QPixmapFilterPrivate
+{
+public:
+    QPixmapBlurFilterPrivate() : radius(5), quality(Qt::FastTransformation) {}
+
+    int radius;
+    Qt::TransformationMode quality;
+};
+
+
+/*!
+    Constructs a pixmap blur filter.
+
+    \internal
+*/
+QPixmapBlurFilter::QPixmapBlurFilter(QObject *parent)
+    : QPixmapFilter(*new QPixmapBlurFilterPrivate, BlurFilter, parent)
+{
+}
+
+/*!
+    Destructor of pixmap blur filter.
+
+    \internal
+*/
+QPixmapBlurFilter::~QPixmapBlurFilter()
+{
+}
+
+/*!
+    Sets the radius of the blur filter. Higher radius produces increased blurriness.
+
+    \internal
+*/
+void QPixmapBlurFilter::setRadius(int radius)
+{
+    Q_D(QPixmapBlurFilter);
+    d->radius = radius;
+}
+
+/*!
+    Gets the radius of the blur filter.
+
+    \internal
+*/
+int QPixmapBlurFilter::radius() const
+{
+    Q_D(const QPixmapBlurFilter);
+    return d->radius;
+}
+
+/*!
+    Setting the quality to FastTransformation causes the implementation
+    to trade off visual quality to blur the image faster.  Setting the
+    quality to SmoothTransformation causes the implementation to improve
+    visual quality at the expense of speed.  The implementation is free
+    to ignore this value if it only has a single blur algorithm.
+
+    \internal
+*/
+void QPixmapBlurFilter::setQuality(Qt::TransformationMode quality)
+{
+    Q_D(QPixmapBlurFilter);
+    d->quality = quality;
+}
+
+/*!
+    Gets the quality of the blur filter.
+
+    \internal
+*/
+Qt::TransformationMode QPixmapBlurFilter::quality() const
+{
+    Q_D(const QPixmapBlurFilter);
+    return d->quality;
+}
+
+/*!
+    \internal
+*/
+QRectF QPixmapBlurFilter::boundingRectFor(const QRectF &rect) const
+{
+    Q_D(const QPixmapBlurFilter);
+    const qreal delta = d->radius * 2;
+    return rect.adjusted(-delta, -delta, delta, delta);
+}
+
+// Blur the image according to the blur radius
+// Based on exponential blur algorithm by Jani Huhtanen
+// (maximum radius is set to 16)
+static QImage blurred(const QImage& image, const QRect& rect, int radius)
+{
+    int tab[] = { 14, 10, 8, 6, 5, 5, 4, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2 };
+    int alpha = (radius < 1)  ? 16 : (radius > 17) ? 1 : tab[radius-1];
+
+    QImage result = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    int r1 = rect.top();
+    int r2 = rect.bottom();
+    int c1 = rect.left();
+    int c2 = rect.right();
+
+    int bpl = result.bytesPerLine();
+    int rgba[4];
+    unsigned char* p;
+
+    for (int col = c1; col <= c2; col++) {
+        p = result.scanLine(r1) + col * 4;
+        for (int i = 0; i < 4; i++)
+            rgba[i] = p[i] << 4;
+
+        p += bpl;
+        for (int j = r1; j < r2; j++, p += bpl)
+            for (int i = 0; i < 4; i++)
+                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
+    }
+
+    for (int row = r1; row <= r2; row++) {
+        p = result.scanLine(row) + c1 * 4;
+        for (int i = 0; i < 4; i++)
+            rgba[i] = p[i] << 4;
+
+        p += 4;
+        for (int j = c1; j < c2; j++, p += 4)
+            for (int i = 0; i < 4; i++)
+                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
+    }
+
+    for (int col = c1; col <= c2; col++) {
+        p = result.scanLine(r2) + col * 4;
+        for (int i = 0; i < 4; i++)
+            rgba[i] = p[i] << 4;
+
+        p -= bpl;
+        for (int j = r1; j < r2; j++, p -= bpl)
+            for (int i = 0; i < 4; i++)
+                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
+    }
+
+    for (int row = r1; row <= r2; row++) {
+        p = result.scanLine(row) + c2 * 4;
+        for (int i = 0; i < 4; i++)
+            rgba[i] = p[i] << 4;
+
+        p -= 4;
+        for (int j = c1; j < c2; j++, p -= 4)
+            for (int i = 0; i < 4; i++)
+                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
+    }
+
+    return result;
+}
+
+/*!
+    \internal
+*/
+void QPixmapBlurFilter::draw(QPainter *painter, const QPointF &p, const QPixmap &src, const QRectF &srcRect) const
+{
+    Q_D(const QPixmapBlurFilter);
+    if (!painter->isActive())
+        return;
+
+    if (d->radius == 0) {
+        painter->drawPixmap(srcRect.translated(p), src, srcRect);
+        return;
+    }
+
+    QPixmapFilter *filter = painter->paintEngine() && painter->paintEngine()->isExtended() ?
+        static_cast<QPaintEngineEx *>(painter->paintEngine())->pixmapFilter(type(), this) : 0;
+    QPixmapBlurFilter *blurFilter = static_cast<QPixmapBlurFilter*>(filter);
+    if (blurFilter) {
+        blurFilter->setRadius(d->radius);
+        blurFilter->setQuality(d->quality);
+        blurFilter->draw(painter, p, src, srcRect);
+        return;
+    }
+
+    QImage srcImage;
+    QImage destImage;
+
+    if (srcRect.isNull()) {
+        srcImage = src.toImage();
+        destImage = blurred(srcImage, srcImage.rect(), d->radius);
+    } else {
+        QRect rect = srcRect.toAlignedRect().intersected(src.rect());
+
+        srcImage = src.copy(rect).toImage();
+        destImage = blurred(srcImage, srcImage.rect(), d->radius);
+    }
+
+    painter->drawImage(p, destImage);
 }
 
 // grayscales the image to dest (could be same). If rect isn't defined
@@ -539,6 +757,10 @@ class QPixmapColorizeFilterPrivate : public QPixmapFilterPrivate
     Q_DECLARE_PUBLIC(QPixmapColorizeFilter)
 public:
     QColor color;
+    qreal strength;
+    quint32 opaque : 1;
+    quint32 alphaBlend : 1;
+    quint32 padding : 30;
 };
 
 /*!
@@ -551,7 +773,11 @@ public:
 QPixmapColorizeFilter::QPixmapColorizeFilter(QObject *parent)
     : QPixmapFilter(*new QPixmapColorizeFilterPrivate, ColorizeFilter, parent)
 {
-    d_func()->color = QColor(0, 0, 192);
+    Q_D(QPixmapColorizeFilter);
+    d->color = QColor(0, 0, 192);
+    d->strength = qreal(1);
+    d->opaque = true;
+    d->alphaBlend = false;
 }
 
 /*!
@@ -577,22 +803,52 @@ void QPixmapColorizeFilter::setColor(const QColor &color)
 }
 
 /*!
+    Gets the strength of the colorize filter, 1.0 means full colorized while
+    0.0 equals to no filtering at all.
+
+    \internal
+*/
+qreal QPixmapColorizeFilter::strength() const
+{
+    Q_D(const QPixmapColorizeFilter);
+    return d->strength;
+}
+
+/*!
+    Sets the strength of the colorize filter to \a strength.
+
+    \internal
+*/
+void QPixmapColorizeFilter::setStrength(qreal strength)
+{
+    Q_D(QPixmapColorizeFilter);
+    d->strength = qBound(qreal(0), strength, qreal(1));
+    d->opaque = !qFuzzyIsNull(d->strength);
+    d->alphaBlend = !qFuzzyIsNull(d->strength - 1);
+}
+
+/*!
     \internal
 */
 void QPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const QPixmap &src, const QRectF &srcRect) const
 {
     Q_D(const QPixmapColorizeFilter);
     QPixmapFilter *filter = painter->paintEngine() && painter->paintEngine()->isExtended() ?
-        static_cast<QPaintEngineEx *>(painter->paintEngine())->createPixmapFilter(type()) : 0;
+        static_cast<QPaintEngineEx *>(painter->paintEngine())->pixmapFilter(type(), this) : 0;
     QPixmapColorizeFilter *colorizeFilter = static_cast<QPixmapColorizeFilter*>(filter);
     if (colorizeFilter) {
         colorizeFilter->setColor(d->color);
+        colorizeFilter->setStrength(d->strength);
         colorizeFilter->draw(painter, dest, src, srcRect);
-        delete colorizeFilter;
         return;
     }
 
     // falling back to raster implementation
+
+    if (!d->opaque) {
+        painter->drawPixmap(dest, src, srcRect);
+        return;
+    }
 
     QImage srcImage;
     QImage destImage;
@@ -616,6 +872,16 @@ void QPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const Q
     destPainter.fillRect(srcImage.rect(), d->color);
     destPainter.end();
 
+    if (d->alphaBlend) {
+        // alpha blending srcImage and destImage
+        QImage buffer = srcImage;
+        QPainter bufPainter(&buffer);
+        bufPainter.setOpacity(d->strength);
+        bufPainter.drawImage(0, 0, destImage);
+        bufPainter.end();
+        destImage = buffer;
+    }
+
     if (srcImage.hasAlphaChannel())
         destImage.setAlphaChannel(srcImage.alphaChannel());
 
@@ -626,16 +892,11 @@ class QPixmapDropShadowFilterPrivate : public QPixmapFilterPrivate
 {
 public:
     QPixmapDropShadowFilterPrivate()
-            : offset(8, 8),
-            radius(1),
-            color(63, 63, 63, 255) {
-    }
+        : offset(8, 8), color(63, 63, 63, 180), blurFilter(new QPixmapBlurFilter) {}
 
     QPointF offset;
-    qreal radius;
     QColor color;
-
-    QPixmapConvolutionFilter *convolution;
+    QPixmapBlurFilter *blurFilter;
 };
 
 /*!
@@ -680,9 +941,7 @@ QPixmapDropShadowFilter::QPixmapDropShadowFilter(QObject *parent)
     : QPixmapFilter(*new QPixmapDropShadowFilterPrivate, DropShadowFilter, parent)
 {
     Q_D(QPixmapDropShadowFilter);
-    d->convolution = new QPixmapConvolutionFilter;
-
-    setBlurRadius(1);
+    d->blurFilter->setRadius(1);
 }
 
 /*!
@@ -693,7 +952,7 @@ QPixmapDropShadowFilter::QPixmapDropShadowFilter(QObject *parent)
 QPixmapDropShadowFilter::~QPixmapDropShadowFilter()
 {
     Q_D(QPixmapDropShadowFilter);
-    delete d->convolution;
+    delete d->blurFilter;
 }
 
 /*!
@@ -705,10 +964,10 @@ QPixmapDropShadowFilter::~QPixmapDropShadowFilter()
 
     \internal
 */
-qreal QPixmapDropShadowFilter::blurRadius() const
+int QPixmapDropShadowFilter::blurRadius() const
 {
     Q_D(const QPixmapDropShadowFilter);
-    return d->radius;
+    return d->blurFilter->radius();
 }
 
 /*!
@@ -720,18 +979,10 @@ qreal QPixmapDropShadowFilter::blurRadius() const
 
     \internal
 */
-void QPixmapDropShadowFilter::setBlurRadius(qreal radius)
+void QPixmapDropShadowFilter::setBlurRadius(int radius)
 {
     Q_D(QPixmapDropShadowFilter);
-
-    d->radius = radius;
-
-    int dim = 2 * qRound(radius) + 1;
-    QVarLengthArray<qreal> arr(dim * dim);
-    qreal f = 1 / qreal(dim * dim);
-    for (int i = 0; i < dim * dim; ++i)
-        arr[i] = f;
-    d->convolution->setConvolutionKernel(arr.data(), dim, dim);
+    d->blurFilter->setRadius(radius);
 }
 
 /*!
@@ -805,10 +1056,11 @@ QRectF QPixmapDropShadowFilter::boundingRectFor(const QRectF &rect) const
 {
     Q_D(const QPixmapDropShadowFilter);
 
-    qreal x1 = qMin(rect.left(), rect.left() + d->offset.x() - d->radius);
-    qreal y1 = qMin(rect.top(), rect.top() + d->offset.y() - d->radius);
-    qreal x2 = qMax(rect.right(), rect.right() + d->offset.x() + d->radius);
-    qreal y2 = qMax(rect.bottom(), rect.bottom() + d->offset.y() + d->radius);
+    const qreal delta = qreal(d->blurFilter->radius() * 2);
+    qreal x1 = qMin(rect.left(), rect.left() + d->offset.x() - delta);
+    qreal y1 = qMin(rect.top(), rect.top() + d->offset.y() - delta);
+    qreal x2 = qMax(rect.right(), rect.right() + d->offset.x() + delta);
+    qreal y2 = qMax(rect.bottom(), rect.bottom() + d->offset.y() + delta);
 
     return QRectF(x1, y1, x2 - x1, y2 - y1);
 }
@@ -823,7 +1075,7 @@ void QPixmapDropShadowFilter::draw(QPainter *p,
 {
     Q_D(const QPixmapDropShadowFilter);
 
-    QPixmap tmp = src.isNull() ? px : px.copy(src.toRect());
+    QImage tmp = src.isNull() ? px.toImage() : px.copy(src.toRect()).toImage();
     QPainter tmpPainter(&tmp);
 
     // blacken the image...
@@ -831,10 +1083,13 @@ void QPixmapDropShadowFilter::draw(QPainter *p,
     tmpPainter.fillRect(0, 0, tmp.width(), tmp.height(), d->color);
     tmpPainter.end();
 
+    const QPixmap pixTmp = QPixmap::fromImage(tmp);
+
     // draw the blurred drop shadow...
-    d->convolution->draw(p, pos + d->offset, tmp);
+    d->blurFilter->draw(p, pos + d->offset, pixTmp);
 
     // Draw the actual pixmap...
     p->drawPixmap(pos, px, src);
 }
+
 QT_END_NAMESPACE

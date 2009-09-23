@@ -8,4 +8,4 @@ sources.files = $$SOURCES *.h $$RESOURCES $$FORMS tablemodel.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/sql/tablemodel
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

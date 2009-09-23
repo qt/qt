@@ -74,6 +74,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSCharacterDataPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -88,6 +89,11 @@ const ClassInfo JSCharacterDataConstructor::s_info = { "CharacterDataConstructor
 bool JSCharacterDataConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCharacterDataConstructor, DOMObject>(exec, &JSCharacterDataConstructorTable, this, propertyName, slot);
+}
+
+bool JSCharacterDataConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCharacterDataConstructor, DOMObject>(exec, &JSCharacterDataConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -121,6 +127,11 @@ bool JSCharacterDataPrototype::getOwnPropertySlot(ExecState* exec, const Identif
     return getStaticFunctionSlot<JSObject>(exec, &JSCharacterDataPrototypeTable, this, propertyName, slot);
 }
 
+bool JSCharacterDataPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSCharacterDataPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSCharacterData::s_info = { "CharacterData", &JSNode::s_info, &JSCharacterDataTable, 0 };
 
 JSCharacterData::JSCharacterData(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CharacterData> impl)
@@ -136,6 +147,11 @@ JSObject* JSCharacterData::createPrototype(ExecState* exec, JSGlobalObject* glob
 bool JSCharacterData::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCharacterData, Base>(exec, &JSCharacterDataTable, this, propertyName, slot);
+}
+
+bool JSCharacterData::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCharacterData, Base>(exec, &JSCharacterDataTable, this, propertyName, descriptor);
 }
 
 JSValue jsCharacterDataData(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -180,7 +196,7 @@ JSValue JSCharacterData::getConstructor(ExecState* exec, JSGlobalObject* globalO
 JSValue JSC_HOST_CALL jsCharacterDataPrototypeFunctionSubstringData(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCharacterData::s_info))
+    if (!thisValue.inherits(&JSCharacterData::s_info))
         return throwError(exec, TypeError);
     JSCharacterData* castedThisObj = static_cast<JSCharacterData*>(asObject(thisValue));
     CharacterData* imp = static_cast<CharacterData*>(castedThisObj->impl());
@@ -205,7 +221,7 @@ JSValue JSC_HOST_CALL jsCharacterDataPrototypeFunctionSubstringData(ExecState* e
 JSValue JSC_HOST_CALL jsCharacterDataPrototypeFunctionAppendData(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCharacterData::s_info))
+    if (!thisValue.inherits(&JSCharacterData::s_info))
         return throwError(exec, TypeError);
     JSCharacterData* castedThisObj = static_cast<JSCharacterData*>(asObject(thisValue));
     CharacterData* imp = static_cast<CharacterData*>(castedThisObj->impl());
@@ -220,7 +236,7 @@ JSValue JSC_HOST_CALL jsCharacterDataPrototypeFunctionAppendData(ExecState* exec
 JSValue JSC_HOST_CALL jsCharacterDataPrototypeFunctionInsertData(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCharacterData::s_info))
+    if (!thisValue.inherits(&JSCharacterData::s_info))
         return throwError(exec, TypeError);
     JSCharacterData* castedThisObj = static_cast<JSCharacterData*>(asObject(thisValue));
     CharacterData* imp = static_cast<CharacterData*>(castedThisObj->impl());
@@ -240,7 +256,7 @@ JSValue JSC_HOST_CALL jsCharacterDataPrototypeFunctionInsertData(ExecState* exec
 JSValue JSC_HOST_CALL jsCharacterDataPrototypeFunctionDeleteData(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCharacterData::s_info))
+    if (!thisValue.inherits(&JSCharacterData::s_info))
         return throwError(exec, TypeError);
     JSCharacterData* castedThisObj = static_cast<JSCharacterData*>(asObject(thisValue));
     CharacterData* imp = static_cast<CharacterData*>(castedThisObj->impl());
@@ -264,7 +280,7 @@ JSValue JSC_HOST_CALL jsCharacterDataPrototypeFunctionDeleteData(ExecState* exec
 JSValue JSC_HOST_CALL jsCharacterDataPrototypeFunctionReplaceData(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCharacterData::s_info))
+    if (!thisValue.inherits(&JSCharacterData::s_info))
         return throwError(exec, TypeError);
     JSCharacterData* castedThisObj = static_cast<JSCharacterData*>(asObject(thisValue));
     CharacterData* imp = static_cast<CharacterData*>(castedThisObj->impl());

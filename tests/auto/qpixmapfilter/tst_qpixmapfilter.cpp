@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -63,8 +63,10 @@ public slots:
 
 private slots:
     void colorizeSetColor();
+    void colorizeSetStrength();
     void colorizeProcess();
     void colorizeDraw();
+    void colorizeDrawStrength();
     void colorizeDrawSubRect();
     void colorizeProcessSubRect();
     void convolutionBoundingRectFor();
@@ -127,6 +129,16 @@ void tst_QPixmapFilter::colorizeSetColor()
     QCOMPARE(filter.color(), QColor(50, 100, 200));
 }
 
+void tst_QPixmapFilter::colorizeSetStrength()
+{
+    QPixmapColorizeFilter filter;
+    QCOMPARE(filter.strength(), qreal(1));
+    filter.setStrength(0.5);
+    QCOMPARE(filter.strength(), qreal(0.5));
+    filter.setStrength(0.0);
+    QCOMPARE(filter.strength(), qreal(0.0));
+}
+
 void tst_QPixmapFilter::colorizeProcess()
 {
     QPixmapColorizeFilter filter;
@@ -176,6 +188,35 @@ void tst_QPixmapFilter::colorizeDraw()
             QRgb pixel = resultImg.pixel(x,y);
             QCOMPARE(qRed(pixel), qGreen(pixel));
             QCOMPARE(qGreen(pixel), qBlue(pixel));
+        }
+    }
+}
+
+void tst_QPixmapFilter::colorizeDrawStrength()
+{
+    QPixmapColorizeFilter filter;
+    filter.setColor(Qt::blue);
+    filter.setStrength(0.3);
+
+    QImage source(256, 128, QImage::Format_ARGB32);
+    source.fill(qRgb(255, 0, 0));
+    QPixmap pixmap = QPixmap::fromImage(source);
+
+    QImage result(pixmap.size(), QImage::Format_ARGB32_Premultiplied);
+    QPainter painter(&result);
+    painter.setCompositionMode(QPainter::CompositionMode_Source);
+    filter.draw(&painter, QPointF(0, 0), pixmap);
+    painter.end();
+
+    QImage resultImg = result;
+    for(int y = 0; y < resultImg.height(); y++)
+    {
+        for(int x = 0; x < resultImg.width(); x++)
+        {
+            QRgb pixel = resultImg.pixel(x,y);
+            QCOMPARE(qRed(pixel), 206);
+            QCOMPARE(qGreen(pixel), 26);
+            QCOMPARE(qBlue(pixel), 75);
         }
     }
 }
@@ -342,39 +383,44 @@ void tst_QPixmapFilter::dropShadowBoundingRectFor()
     QPixmapDropShadowFilter filter;
     filter.setBlurRadius(0);
 
-    QCOMPARE(filter.blurRadius(), 0.0);
+    QCOMPARE(filter.blurRadius(), 0);
+
+    const QRectF rect1(0, 0, 50, 50);
+    const QRectF rect2(30, 20, 10, 40);
+    const QRectF rect3(2.2, 6.3, 11.4, 47.5);
 
     filter.setOffset(QPointF(0,0));
-    QCOMPARE(filter.boundingRectFor(QRectF(0, 0, 50, 50)), QRectF(0, 0, 50, 50));
-    QCOMPARE(filter.boundingRectFor(QRectF(30, 20, 10, 40)), QRectF(30, 20, 10, 40));
-    QCOMPARE(filter.boundingRectFor(QRectF(2.2, 6.3, 11.4, 47.5)), QRectF(2.2, 6.3, 11.4, 47.5));
+    QCOMPARE(filter.boundingRectFor(rect1), rect1);
+    QCOMPARE(filter.boundingRectFor(rect2), rect2);
+    QCOMPARE(filter.boundingRectFor(rect3), rect3);
 
     filter.setOffset(QPointF(1,1));
     QCOMPARE(filter.offset(), QPointF(1, 1));
-    QCOMPARE(filter.boundingRectFor(QRectF(0, 0, 50, 50)), QRectF(0, 0, 51, 51));
-    QCOMPARE(filter.boundingRectFor(QRectF(30, 20, 10, 40)), QRectF(30, 20, 11, 41));
-    QCOMPARE(filter.boundingRectFor(QRectF(2.2, 6.3, 11.4, 47.5)), QRectF(2.2, 6.3, 12.4, 48.5));
+    QCOMPARE(filter.boundingRectFor(rect1), rect1.adjusted(0, 0, 1, 1));
+    QCOMPARE(filter.boundingRectFor(rect2), rect2.adjusted(0, 0, 1, 1));
+    QCOMPARE(filter.boundingRectFor(rect3), rect3.adjusted(0, 0, 1, 1));
 
     filter.setOffset(QPointF(-1,-1));
-    QCOMPARE(filter.boundingRectFor(QRectF(0, 0, 50, 50)), QRectF(-1, -1, 51, 51));
-    QCOMPARE(filter.boundingRectFor(QRectF(30, 20, 10, 40)), QRectF(29, 19, 11, 41));
-    QCOMPARE(filter.boundingRectFor(QRectF(2.2, 6.3, 11.4, 47.5)), QRectF(1.2, 5.3, 12.4, 48.5));
+    QCOMPARE(filter.boundingRectFor(rect1), rect1.adjusted(-1, -1, 0, 0));
+    QCOMPARE(filter.boundingRectFor(rect2), rect2.adjusted(-1, -1, 0, 0));
+    QCOMPARE(filter.boundingRectFor(rect3), rect3.adjusted(-1, -1, 0, 0));
 
     filter.setBlurRadius(2);
     filter.setOffset(QPointF(0,0));
-    QCOMPARE(filter.boundingRectFor(QRectF(0, 0, 50, 50)), QRectF(-2, -2, 54, 54));
-    QCOMPARE(filter.boundingRectFor(QRectF(30, 20, 10, 40)), QRectF(28, 18, 14, 44));
-    QCOMPARE(filter.boundingRectFor(QRectF(2.2, 6.3, 11.4, 47.5)), QRectF(0.2, 4.3, 15.4, 51.5));
+    int delta = 2 * 2;
+    QCOMPARE(filter.boundingRectFor(rect1), rect1.adjusted(-delta, -delta, delta, delta));
+    QCOMPARE(filter.boundingRectFor(rect2), rect2.adjusted(-delta, -delta, delta, delta));
+    QCOMPARE(filter.boundingRectFor(rect3), rect3.adjusted(-delta, -delta, delta, delta));
 
     filter.setOffset(QPointF(1,1));
-    QCOMPARE(filter.boundingRectFor(QRectF(0, 0, 50, 50)), QRectF(-1, -1, 54, 54));
-    QCOMPARE(filter.boundingRectFor(QRectF(30, 20, 10, 40)), QRectF(29, 19, 14, 44));
-    QCOMPARE(filter.boundingRectFor(QRectF(2.2, 6.3, 11.4, 47.5)), QRectF(1.2, 5.3, 15.4, 51.5));
+    QCOMPARE(filter.boundingRectFor(rect1), rect1.adjusted(-delta + 1, -delta + 1, delta + 1, delta + 1));
+    QCOMPARE(filter.boundingRectFor(rect2), rect2.adjusted(-delta + 1, -delta + 1, delta + 1, delta + 1));
+    QCOMPARE(filter.boundingRectFor(rect3), rect3.adjusted(-delta + 1, -delta + 1, delta + 1, delta + 1));
 
     filter.setOffset(QPointF(-10,-10));
-    QCOMPARE(filter.boundingRectFor(QRectF(0, 0, 50, 50)), QRectF(-12, -12, 62, 62));
-    QCOMPARE(filter.boundingRectFor(QRectF(30, 20, 10, 40)), QRectF(18, 8, 22, 52));
-    QCOMPARE(filter.boundingRectFor(QRectF(2.2, 6.3, 11.4, 47.5)), QRectF(-9.8, -5.7, 23.4, 59.5));
+    QCOMPARE(filter.boundingRectFor(rect1), rect1.adjusted(-delta - 10, -delta - 10, 0, 0));
+    QCOMPARE(filter.boundingRectFor(rect2), rect2.adjusted(-delta - 10, -delta - 10, 0, 0));
+    QCOMPARE(filter.boundingRectFor(rect3), rect3.adjusted(-delta - 10, -delta - 10, 0, 0));
 }
 
 

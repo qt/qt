@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -101,17 +101,17 @@ static void handleMailtoSchemeLX(const QUrl &url)
     // this function has many intermingled leaves and throws. Qt and Symbian objects do not have
     // destructor dependencies, and cleanup object is used to prevent cleanup stack dependency on stack.
     QString recipient = url.path();
-    QString subject = url.queryItemValue("subject");
-    QString body = url.queryItemValue("body");
-    QString to = url.queryItemValue("to");
-    QString cc = url.queryItemValue("cc");
-    QString bcc = url.queryItemValue("bcc");
+    QString subject = url.queryItemValue(QLatin1String("subject"));
+    QString body = url.queryItemValue(QLatin1String("body"));
+    QString to = url.queryItemValue(QLatin1String("to"));
+    QString cc = url.queryItemValue(QLatin1String("cc"));
+    QString bcc = url.queryItemValue(QLatin1String("bcc"));
 
     // these fields might have comma separated addresses
-    QStringList recipients = recipient.split(",", QString::SkipEmptyParts);
-    QStringList tos = to.split(",", QString::SkipEmptyParts);
-    QStringList ccs = cc.split(",", QString::SkipEmptyParts);
-    QStringList bccs = bcc.split(",", QString::SkipEmptyParts);
+    QStringList recipients = recipient.split(QLatin1String(","), QString::SkipEmptyParts);
+    QStringList tos = to.split(QLatin1String(","), QString::SkipEmptyParts);
+    QStringList ccs = cc.split(QLatin1String(","), QString::SkipEmptyParts);
+    QStringList bccs = bcc.split(QLatin1String(","), QString::SkipEmptyParts);
 
 
     RSendAs sendAs;
@@ -200,7 +200,7 @@ static void handleOtherSchemesL(const TDesC& aUrl)
 
 static bool handleOtherSchemes(const QUrl &url)
 {
-    QString encUrl(url.toEncoded());
+    QString encUrl(QString::fromUtf8(url.toEncoded()));
     TPtrC urlPtr(qt_QString2TPtrC(encUrl));
     TRAPD( err, handleOtherSchemesL(urlPtr));
     return err ? false : true;

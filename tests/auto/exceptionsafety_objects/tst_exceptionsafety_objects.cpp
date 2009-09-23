@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,8 +49,8 @@ QT_USE_NAMESPACE
 // this test only works with
 //   * GLIBC
 //   * MSVC - only debug builds (we need the crtdbg.h helpers)
-//   * SYMBIAN - only when __UHEAP_BURSTFAILNEXT is available
-#if (defined(QT_NO_EXCEPTIONS) || (!defined(__GLIBC__) && !defined(Q_CC_MSVC) && (!defined(Q_OS_SYMBIAN) || !defined(__UHEAP_BURSTFAILNEXT)))) && !defined(Q_MOC_RUN)
+//   * SYMBIAN
+#if (defined(QT_NO_EXCEPTIONS) || (!defined(__GLIBC__) && !defined(Q_CC_MSVC) && !defined(Q_OS_SYMBIAN))) && !defined(Q_MOC_RUN)
     QTEST_NOOP_MAIN
 #else
 
@@ -65,6 +65,7 @@ class tst_ExceptionSafetyObjects: public QObject
 
 public slots:
     void initTestCase();
+    void cleanupTestCase();
 
 private slots:
     void objects_data();
@@ -81,6 +82,10 @@ private slots:
 
     void linkedList_data();
     void linkedList();
+
+private:
+    static QtMsgHandler testMessageHandler;
+    static void safeMessageHandler(QtMsgType, const char *);
 };
 
 // helper structs to create an arbitrary widget
@@ -160,7 +165,6 @@ void tst_ExceptionSafetyObjects::objects_data()
     NEWROW(QFile);
     NEWROW(QProcess);
     NEWROW(QSettings);
-    // NEWROW(QSocketNotifier);
     NEWROW(QThread);
     NEWROW(QThreadPool);
     NEWROW(QTranslator);
@@ -269,8 +273,22 @@ public:
     }
 };
 
+QtMsgHandler tst_ExceptionSafetyObjects::testMessageHandler;
+
+void tst_ExceptionSafetyObjects::safeMessageHandler(QtMsgType type, const char *msg)
+{
+    // this temporarily suspends OOM testing while handling a message
+    int currentIndex = mallocFailIndex;
+    AllocFailer allocFailer(0);
+    allocFailer.deactivate();
+    (*testMessageHandler)(type, msg);
+    allocFailer.reactivateAt(currentIndex);
+}
+
 void tst_ExceptionSafetyObjects::initTestCase()
 {
+    testMessageHandler = qInstallMsgHandler(safeMessageHandler);
+
     QVERIFY(AllocFailer::initialize());
 
     // sanity check whether OOM simulation works
@@ -306,6 +324,11 @@ void tst_ExceptionSafetyObjects::initTestCase()
     QCOMPARE(alloc4Failed, 3);
     QCOMPARE(malloc1Failed, 1);
     QCOMPARE(malloc2Failed, 1);
+}
+
+void tst_ExceptionSafetyObjects::cleanupTestCase()
+{
+    qInstallMsgHandler(testMessageHandler);
 }
 
 void tst_ExceptionSafetyObjects::objects()
@@ -348,6 +371,13 @@ template <> struct WidgetCreator<QDesktopWidget> : public AbstractTester
 };
 void tst_ExceptionSafetyObjects::widgets_data()
 {
+#ifdef Q_OS_SYMBIAN
+    // Initialise the S60 rasteriser, which crashes if started while out of memory
+    QImage image(20, 20, QImage::Format_RGB32); 
+    QPainter p(&image); 
+    p.drawText(0, 15, "foo"); 
+#endif
+
     QTest::addColumn<AbstractTester *>("widgetCreator");
 
 #undef NEWROW
@@ -393,9 +423,6 @@ void tst_ExceptionSafetyObjects::widgets_data()
     NEWROW(QToolBox);
     NEWROW(QToolButton);
     NEWROW(QStatusBar);
-    NEWROW(QSplitter);
-    NEWROW(QTextEdit);
-    NEWROW(QTextBrowser);
     NEWROW(QToolBar);
     NEWROW(QMenuBar);
     NEWROW(QMainWindow);
@@ -463,22 +490,62 @@ struct Integer
 
 int Integer::instanceCount = 0;
 
-template <template<typename T> class Container>
+struct IntegerMoveable
+    {
+    IntegerMoveable(int value = 42)
+        : val(value)
+    {
+        delete new int;
+        ++instanceCount;
+    }
+
+    IntegerMoveable(const IntegerMoveable &other)
+        : val(other.val)
+    {
+        delete new int;
+        ++instanceCount;
+    }
+
+    IntegerMoveable &operator=(const IntegerMoveable &other)
+    {
+        delete new int;
+        val = other.val;
+        return *this;
+    }
+
+    ~IntegerMoveable()
+    {
+        --instanceCount;
+    }
+
+    int value() const
+    {
+        return val;
+    }
+
+    int val;
+    static int instanceCount;
+    };
+
+int IntegerMoveable::instanceCount = 0;
+Q_DECLARE_TYPEINFO(IntegerMoveable, Q_MOVABLE_TYPE);
+
+template <typename T, template<typename> class Container>
 void containerInsertTest(QObject*)
 {
-    Container<Integer> container;
+    Container<T> container;
 
     // insert an item in an empty container
     try {
         container.insert(container.begin(), 41);
     } catch (...) {
         QVERIFY(container.isEmpty());
-        QCOMPARE(Integer::instanceCount, 0);
+        QCOMPARE(T::instanceCount, 0);
         return;
     }
 
     QCOMPARE(container.size(), 1);
-    QCOMPARE(Integer::instanceCount, 1);
+    QCOMPARE(T::instanceCount, 1);
 
     // insert an item before another item
     try {
@@ -486,11 +553,11 @@ void containerInsertTest(QObject*)
     } catch (...) {
         QCOMPARE(container.size(), 1);
         QCOMPARE(container.first().value(), 41);
-        QCOMPARE(Integer::instanceCount, 1);
+        QCOMPARE(T::instanceCount, 1);
         return;
     }
 
-    QCOMPARE(Integer::instanceCount, 2);
+    QCOMPARE(T::instanceCount, 2);
 
     // insert an item in between
     try {
@@ -499,24 +566,24 @@ void containerInsertTest(QObject*)
         QCOMPARE(container.size(), 2);
         QCOMPARE(container.first().value(), 41);
         QCOMPARE((container.begin() + 1)->value(), 42);
-        QCOMPARE(Integer::instanceCount, 2);
+        QCOMPARE(T::instanceCount, 2);
         return;
     }
 
-    QCOMPARE(Integer::instanceCount, 3);
+    QCOMPARE(T::instanceCount, 3);
 }
 
-template <template<typename T> class Container>
+template <typename T, template<typename> class Container>
 void containerAppendTest(QObject*)
 {
-    Container<Integer> container;
+    Container<T> container;
 
     // append to an empty container
     try {
         container.append(42);
     } catch (...) {
         QCOMPARE(container.size(), 0);
-        QCOMPARE(Integer::instanceCount, 0);
+        QCOMPARE(T::instanceCount, 0);
         return;
     }
 
@@ -526,15 +593,38 @@ void containerAppendTest(QObject*)
     } catch (...) {
         QCOMPARE(container.size(), 1);
         QCOMPARE(container.first().value(), 42);
-        QCOMPARE(Integer::instanceCount, 1);
+        QCOMPARE(T::instanceCount, 1);
         return;
     }
+
+    Container<T> container2;
+
+    try {
+        container2.append(44);
+    } catch (...) {
+        // don't care
+        return;
+    }
+    QCOMPARE(T::instanceCount, 3);
+
+    // append another container with one item
+    try {
+        container += container2;
+    } catch (...) {
+        QCOMPARE(container.size(), 2);
+        QCOMPARE(container.first().value(), 42);
+        QCOMPARE((container.begin() + 1)->value(), 43);
+        QCOMPARE(T::instanceCount, 3);
+        return;
+    }
+
+    QCOMPARE(T::instanceCount, 4);
 }
 
-template <template<typename T> class Container>
+template <typename T, template<typename> class Container>
 void containerEraseTest(QObject*)
 {
-    Container<Integer> container;
+    Container<T> container;
 
     try {
         container.append(42);
@@ -549,7 +639,7 @@ void containerEraseTest(QObject*)
 
     // sanity checks
     QCOMPARE(container.size(), 5);
-    QCOMPARE(Integer::instanceCount, 5);
+    QCOMPARE(T::instanceCount, 5);
 
     // delete the first one
     try {
@@ -557,20 +647,20 @@ void containerEraseTest(QObject*)
     } catch (...) {
         QCOMPARE(container.size(), 5);
         QCOMPARE(container.first().value(), 42);
-        QCOMPARE(Integer::instanceCount, 5);
+        QCOMPARE(T::instanceCount, 5);
         return;
     }
 
     QCOMPARE(container.size(), 4);
     QCOMPARE(container.first().value(), 43);
-    QCOMPARE(Integer::instanceCount, 4);
+    QCOMPARE(T::instanceCount, 4);
 
     // delete the last one
     try {
         container.erase(container.end() - 1);
     } catch (...) {
         QCOMPARE(container.size(), 4);
-        QCOMPARE(Integer::instanceCount, 4);
+        QCOMPARE(T::instanceCount, 4);
         return;
     }
 
@@ -578,7 +668,7 @@ void containerEraseTest(QObject*)
     QCOMPARE(container.first().value(), 43);
     QCOMPARE((container.begin() + 1)->value(), 44);
     QCOMPARE((container.begin() + 2)->value(), 45);
-    QCOMPARE(Integer::instanceCount, 3);
+    QCOMPARE(T::instanceCount, 3);
 
     // delete the middle one
     try {
@@ -588,14 +678,14 @@ void containerEraseTest(QObject*)
         QCOMPARE(container.first().value(), 43);
         QCOMPARE((container.begin() + 1)->value(), 44);
         QCOMPARE((container.begin() + 2)->value(), 45);
-        QCOMPARE(Integer::instanceCount, 3);
+        QCOMPARE(T::instanceCount, 3);
         return;
     }
 
     QCOMPARE(container.size(), 2);
     QCOMPARE(container.first().value(), 43);
     QCOMPARE((container.begin() + 1)->value(), 45);
-    QCOMPARE(Integer::instanceCount, 2);
+    QCOMPARE(T::instanceCount, 2);
 }
 
 template <template<typename T> class Container>
@@ -603,9 +693,12 @@ static void containerData()
 {
     QTest::addColumn<TestFunction>("testFunction");
 
-    QTest::newRow("insert") << static_cast<TestFunction>(containerInsertTest<Container>);
-    QTest::newRow("append") << static_cast<TestFunction>(containerAppendTest<Container>);
-    QTest::newRow("erase") << static_cast<TestFunction>(containerEraseTest<Container>);
+    QTest::newRow("insert static") << static_cast<TestFunction>(containerInsertTest<Integer, Container>);
+    QTest::newRow("append static") << static_cast<TestFunction>(containerAppendTest<Integer, Container>);
+    QTest::newRow("erase static") << static_cast<TestFunction>(containerEraseTest<Integer, Container>);
+    QTest::newRow("insert moveable") << static_cast<TestFunction>(containerInsertTest<IntegerMoveable, Container>);
+    QTest::newRow("append moveable") << static_cast<TestFunction>(containerAppendTest<IntegerMoveable, Container>);
+    QTest::newRow("erase moveable") << static_cast<TestFunction>(containerEraseTest<IntegerMoveable, Container>);
 }
 
 void tst_ExceptionSafetyObjects::vector_data()
@@ -617,7 +710,8 @@ void tst_ExceptionSafetyObjects::vector()
 {
     QFETCH(TestFunction, testFunction);
 
-    if (QLatin1String(QTest::currentDataTag()) == QLatin1String("insert"))
+    if (QLatin1String(QTest::currentDataTag()) == QLatin1String("insert static")
+        || QLatin1String(QTest::currentDataTag()) == QLatin1String("insert moveable"))
         QSKIP("QVector::insert is currently not strongly exception safe", SkipSingle);
 
     doOOMTest(testFunction, 0);

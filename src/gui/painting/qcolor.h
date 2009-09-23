@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -67,7 +67,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QColor &);
 class Q_GUI_EXPORT QColor
 {
 public:
-    enum Spec { Invalid, Rgb, Hsv, Cmyk };
+    enum Spec { Invalid, Rgb, Hsv, Cmyk, Hsl };
 
     QColor();
     QColor(Qt::GlobalColor color);
@@ -122,10 +122,14 @@ public:
 
     int hue() const; // 0 <= hue < 360
     int saturation() const;
+    int hsvHue() const; // 0 <= hue < 360
+    int hsvSaturation() const;
     int value() const;
 
     qreal hueF() const; // 0.0 <= hueF < 360.0
     qreal saturationF() const;
+    qreal hsvHueF() const; // 0.0 <= hueF < 360.0
+    qreal hsvSaturationF() const;
     qreal valueF() const;
 
     void getHsv(int *h, int *s, int *v, int *a = 0) const;
@@ -150,9 +154,24 @@ public:
     void getCmykF(qreal *c, qreal *m, qreal *y, qreal *k, qreal *a = 0);
     void setCmykF(qreal c, qreal m, qreal y, qreal k, qreal a = 1.0);
 
+    int hslHue() const; // 0 <= hue < 360
+    int hslSaturation() const;
+    int lightness() const;
+
+    qreal hslHueF() const; // 0.0 <= hueF < 360.0
+    qreal hslSaturationF() const;
+    qreal lightnessF() const;
+
+    void getHsl(int *h, int *s, int *l, int *a = 0) const;
+    void setHsl(int h, int s, int l, int a = 255);
+
+    void getHslF(qreal *h, qreal *s, qreal *l, qreal *a = 0) const;
+    void setHslF(qreal h, qreal s, qreal l, qreal a = 1.0);
+
     QColor toRgb() const;
     QColor toHsv() const;
     QColor toCmyk() const;
+    QColor toHsl() const;
 
     QColor convertTo(Spec colorSpec) const;
 
@@ -167,6 +186,9 @@ public:
 
     static QColor fromCmyk(int c, int m, int y, int k, int a = 255);
     static QColor fromCmykF(qreal c, qreal m, qreal y, qreal k, qreal a = 1.0);
+
+    static QColor fromHsl(int h, int s, int l, int a = 255);
+    static QColor fromHslF(qreal h, qreal s, qreal l, qreal a = 1.0);
 
     QColor light(int f = 150) const;
     QColor lighter(int f = 150) const;
@@ -234,6 +256,14 @@ private:
             ushort yellow;
             ushort black;
         } acmyk;
+        struct {
+            ushort alpha;
+            ushort hue;
+            ushort saturation;
+            ushort lightness;
+            ushort pad;
+        } ahsl;
+        ushort array[5];
     } ct;
 
     friend class QColormap;

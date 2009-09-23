@@ -64,13 +64,15 @@ namespace WebCore {
         }
 
     private:
-        virtual void mark();
+        virtual void markChildren(JSC::MarkStack&);
         virtual JSC::UString className() const;
         virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
+        virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
         virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
         virtual void putWithAttributes(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, unsigned attributes);
         virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier& propertyName);
         virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
+        virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
         virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier& propertyName, unsigned& attributes) const;
         virtual void defineGetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction);
         virtual void defineSetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* setterFunction);

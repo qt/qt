@@ -16,4 +16,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS webbrowser.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/activeqt/webbrowser
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

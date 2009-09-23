@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,10 +49,17 @@
 QT_BEGIN_NAMESPACE
 
 /*!
+    \headerfile <qdrawutil.h>
+    \title Drawing Utility Functions
+
+    \sa QPainter
+*/
+
+/*!
     \fn void qDrawShadeLine(QPainter *painter, int x1, int y1, int x2, int y2,
                      const QPalette &palette, bool sunken,
                      int lineWidth, int midLineWidth)
-    \relates QPainter
+    \relates <qdrawutil.h>
 
     Draws a horizontal (\a y1 == \a y2) or vertical (\a x1 == \a x2)
     shaded line using the given \a painter.  Note that nothing is
@@ -166,7 +173,7 @@ void qDrawShadeLine(QPainter *p, int x1, int y1, int x2, int y2,
                      const QPalette &palette, bool sunken,
                      int lineWidth, int midLineWidth,
                      const QBrush *fill)
-    \relates QPainter
+    \relates <qdrawutil.h>
 
     Draws the shaded rectangle beginning at (\a x, \a y) with the
     given \a width and \a height using the provided \a painter.
@@ -270,7 +277,7 @@ void qDrawShadeRect(QPainter *p, int x, int y, int w, int h,
     \fn void qDrawShadePanel(QPainter *painter, int x, int y, int width, int height,
                       const QPalette &palette, bool sunken,
                       int lineWidth, const QBrush *fill)
-    \relates QPainter
+    \relates <qdrawutil.h>
 
     Draws the shaded panel beginning at (\a x, \a y) with the given \a
     width and \a height using the provided \a painter and the given \a
@@ -406,7 +413,7 @@ static void qDrawWinShades(QPainter *p,
     \fn void qDrawWinButton(QPainter *painter, int x, int y, int width, int height,
                      const QPalette &palette, bool sunken,
                      const QBrush *fill)
-    \relates QPainter
+    \relates <qdrawutil.h>
 
     Draws the Windows-style button specified by the given point (\a x,
     \a y}, \a width and \a height using the provided \a painter with a
@@ -444,7 +451,7 @@ void qDrawWinButton(QPainter *p, int x, int y, int w, int h,
     \fn void qDrawWinPanel(QPainter *painter, int x, int y, int width, int height,
                     const QPalette &palette, bool        sunken,
                     const QBrush *fill)
-    \relates QPainter
+    \relates <qdrawutil.h>
 
     Draws the Windows-style panel specified by the given point(\a x,
     \a y), \a width and \a height using the provided \a painter with a
@@ -483,7 +490,7 @@ void qDrawWinPanel(QPainter *p, int x, int y, int w, int h,
 /*!
     \fn void qDrawPlainRect(QPainter *painter, int x, int y, int width, int height, const QColor &lineColor,
                      int lineWidth, const QBrush *fill)
-    \relates QPainter
+    \relates <qdrawutil.h>
 
     Draws the plain rectangle beginning at (\a x, \a y) with the given
     \a width and \a height, using the specified \a painter, \a lineColor
@@ -532,7 +539,7 @@ void qDrawPlainRect(QPainter *p, int x, int y, int w, int h, const QColor &c,
 /*!
     \fn void qDrawShadeLine(QPainter *painter, const QPoint &p1, const QPoint &p2,
              const QPalette &palette, bool sunken, int lineWidth, int midLineWidth)
-    \relates QPainter
+    \relates <qdrawutil.h>
     \overload
 
     Draws a horizontal or vertical shaded line between \a p1 and \a p2
@@ -572,7 +579,7 @@ void qDrawShadeLine(QPainter *p, const QPoint &p1, const QPoint &p2,
 /*!
     \fn void qDrawShadeRect(QPainter *painter, const QRect &rect, const QPalette &palette,
              bool sunken, int lineWidth, int midLineWidth, const QBrush *fill)
-    \relates QPainter
+    \relates <qdrawutil.h>
     \overload
 
     Draws the shaded rectangle specified by \a rect using the given \a painter.
@@ -612,7 +619,7 @@ void qDrawShadeRect(QPainter *p, const QRect &r,
 /*!
     \fn void qDrawShadePanel(QPainter *painter, const QRect &rect, const QPalette &palette,
              bool sunken, int lineWidth, const QBrush *fill)
-    \relates QPainter
+    \relates <qdrawutil.h>
     \overload
 
     Draws the shaded panel at the rectangle specified by \a rect using the
@@ -648,7 +655,7 @@ void qDrawShadePanel(QPainter *p, const QRect &r,
 /*!
     \fn void qDrawWinButton(QPainter *painter, const QRect &rect, const QPalette &palette,
              bool sunken, const QBrush *fill)
-    \relates QPainter
+    \relates <qdrawutil.h>
     \overload
 
     Draws the Windows-style button at the rectangle specified by \a rect using
@@ -706,7 +713,7 @@ void qDrawWinPanel(QPainter *p, const QRect &r,
 
 /*!
     \fn void qDrawPlainRect(QPainter *painter, const QRect &rect, const QColor &lineColor, int lineWidth, const QBrush *fill)
-    \relates QPainter
+    \relates <qdrawutil.h>
     \overload
 
     Draws the plain rectangle specified by \a rect using the given \a painter,
@@ -1038,27 +1045,6 @@ void qDrawItem(QPainter *p, Qt::GUIStyle gs,
 #endif
 
 /*!
-    \class QMargins
-    \since 4.6
-
-    Holds the borders used to split a pixmap into nine segments in order to
-    draw it, similar to \l{http://www.w3.org/TR/css3-background/}
-    {CSS3 border-images}.
-
-    \sa Qt::TileRule, QTileRules
-*/
-
-/*! \fn QMargins::QMargins(int margin)
-  Constructs a QMargins with the top, left, bottom, and
-  right margins set to \a margin.
-*/
-
-/*! \fn QMargins::QMargins(int topMargin, int leftMargin, int bottomMargin, int rightMargin)
-  Constructs a QMargins with the given \a topMargin, \a leftMargin,
-  \a bottomMargin, and \a rightMargin.
- */
-
-/*!
     \class QTileRules
     \since 4.6
 
@@ -1080,8 +1066,12 @@ void qDrawItem(QPainter *p, Qt::GUIStyle gs,
 
 /*!
     \fn void qDrawBorderPixmap(QPainter *painter, const QRect &target, const QMargins &margins, const QPixmap &pixmap)
+    \relates <qdrawutil.h>
     \since 4.6
-    \relates QMargins
+    \overload
+
+    \brief The qDrawBorderPixmap function is for drawing a pixmap into
+    the margins of a rectangle.
 
     Draws the given \a pixmap into the given \a target rectangle, using the
     given \a painter. The pixmap will be split into nine segments and drawn
@@ -1195,79 +1185,79 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
     // source center
     const int sourceTop = sourceRect.top();
     const int sourceLeft = sourceRect.left();
-    const int sourceCenterTop = sourceTop + sourceMargins.top;
-    const int sourceCenterLeft = sourceLeft + sourceMargins.left;
-    const int sourceCenterBottom = sourceRect.bottom() - sourceMargins.bottom + 1;
-    const int sourceCenterRight = sourceRect.right() - sourceMargins.right + 1;
-    const int sourceCenterWidth = sourceCenterRight - sourceMargins.left;
-    const int sourceCenterHeight = sourceCenterBottom - sourceMargins.top;
+    const int sourceCenterTop = sourceTop + sourceMargins.top();
+    const int sourceCenterLeft = sourceLeft + sourceMargins.left();
+    const int sourceCenterBottom = sourceRect.bottom() - sourceMargins.bottom() + 1;
+    const int sourceCenterRight = sourceRect.right() - sourceMargins.right() + 1;
+    const int sourceCenterWidth = sourceCenterRight - sourceMargins.left();
+    const int sourceCenterHeight = sourceCenterBottom - sourceMargins.top();
     // target center
     const int targetTop = targetRect.top();
     const int targetLeft = targetRect.left();
-    const int targetCenterTop = targetTop + targetMargins.top;
-    const int targetCenterLeft = targetLeft + targetMargins.left;
-    const int targetCenterBottom = targetRect.bottom() - targetMargins.bottom + 1;
-    const int targetCenterRight = targetRect.right() - targetMargins.right + 1;
+    const int targetCenterTop = targetTop + targetMargins.top();
+    const int targetCenterLeft = targetLeft + targetMargins.left();
+    const int targetCenterBottom = targetRect.bottom() - targetMargins.bottom() + 1;
+    const int targetCenterRight = targetRect.right() - targetMargins.right() + 1;
     const int targetCenterWidth = targetCenterRight - targetCenterLeft;
     const int targetCenterHeight = targetCenterBottom - targetCenterTop;
 
     // corners
-    if (targetMargins.top > 0 && targetMargins.left > 0 && sourceMargins.top > 0 && sourceMargins.left > 0) { // top left
-        const QRect targetTopLeftRect(targetLeft, targetTop, targetMargins.left, targetMargins.top);
-        const QRect sourceTopLeftRect(sourceLeft, sourceTop, sourceMargins.left, sourceMargins.top);
+    if (targetMargins.top() > 0 && targetMargins.left() > 0 && sourceMargins.top() > 0 && sourceMargins.left() > 0) { // top left
+        const QRect targetTopLeftRect(targetLeft, targetTop, targetMargins.left(), targetMargins.top());
+        const QRect sourceTopLeftRect(sourceLeft, sourceTop, sourceMargins.left(), sourceMargins.top());
         qDrawPixmap(painter, targetTopLeftRect, pixmap, sourceTopLeftRect);
     }
-    if (targetMargins.top > 0 && targetMargins.right > 0 && sourceMargins.top > 0 && sourceMargins.right > 0) { // top right
-        const QRect targetTopRightRect(targetCenterRight, targetTop, targetMargins.right, targetMargins.top);
-        const QRect sourceTopRightRect(sourceCenterRight, sourceTop, sourceMargins.right, sourceMargins.top);
+    if (targetMargins.top() > 0 && targetMargins.right() > 0 && sourceMargins.top() > 0 && sourceMargins.right() > 0) { // top right
+        const QRect targetTopRightRect(targetCenterRight, targetTop, targetMargins.right(), targetMargins.top());
+        const QRect sourceTopRightRect(sourceCenterRight, sourceTop, sourceMargins.right(), sourceMargins.top());
         qDrawPixmap(painter, targetTopRightRect, pixmap, sourceTopRightRect);
     }
-    if (targetMargins.bottom > 0 && targetMargins.left > 0 && sourceMargins.bottom > 0 && sourceMargins.left > 0) { // bottom left
-        const QRect targetBottomLeftRect(targetLeft, targetCenterBottom, targetMargins.left, targetMargins.bottom);
-        const QRect sourceBottomLeftRect(sourceLeft, sourceCenterBottom, sourceMargins.left, sourceMargins.bottom);
+    if (targetMargins.bottom() > 0 && targetMargins.left() > 0 && sourceMargins.bottom() > 0 && sourceMargins.left() > 0) { // bottom left
+        const QRect targetBottomLeftRect(targetLeft, targetCenterBottom, targetMargins.left(), targetMargins.bottom());
+        const QRect sourceBottomLeftRect(sourceLeft, sourceCenterBottom, sourceMargins.left(), sourceMargins.bottom());
         qDrawPixmap(painter, targetBottomLeftRect, pixmap, sourceBottomLeftRect);
     }
-    if (targetMargins.bottom > 0 && targetMargins.right > 0 && sourceMargins.bottom > 0 && sourceMargins.right > 0) { // bottom right
-        const QRect targetBottomRightRect(targetCenterRight, targetCenterBottom, targetMargins.right, targetMargins.bottom);
-        const QRect sourceBottomRightRect(sourceCenterRight, sourceCenterBottom, sourceMargins.right, sourceMargins.bottom);
+    if (targetMargins.bottom() > 0 && targetMargins.right() > 0 && sourceMargins.bottom() > 0 && sourceMargins.right() > 0) { // bottom right
+        const QRect targetBottomRightRect(targetCenterRight, targetCenterBottom, targetMargins.right(), targetMargins.bottom());
+        const QRect sourceBottomRightRect(sourceCenterRight, sourceCenterBottom, sourceMargins.right(), sourceMargins.bottom());
         qDrawPixmap(painter, targetBottomRightRect, pixmap, sourceBottomRightRect);
     }
 
     // horizontal edges
     switch (rules.horizontal) {
         case Qt::Stretch:
-        if (targetMargins.top > 0 && sourceMargins.top > 0) { // top
-            const QRect targetTopRect(targetCenterLeft, targetTop, targetCenterWidth, targetMargins.top);
-            const QRect sourceTopRect(sourceCenterLeft, sourceTop, sourceCenterWidth, sourceMargins.top);
+        if (targetMargins.top() > 0 && sourceMargins.top() > 0) { // top
+            const QRect targetTopRect(targetCenterLeft, targetTop, targetCenterWidth, targetMargins.top());
+            const QRect sourceTopRect(sourceCenterLeft, sourceTop, sourceCenterWidth, sourceMargins.top());
             qDrawPixmap(painter, targetTopRect, pixmap, sourceTopRect);
         }
-        if (targetMargins.bottom > 0 && sourceMargins.bottom > 0) { // bottom
-            const QRect targetBottomRect(targetCenterLeft, targetCenterBottom, targetCenterWidth, targetMargins.bottom);
-            const QRect sourceBottomRect(sourceCenterLeft, sourceCenterBottom, sourceCenterWidth, sourceMargins.bottom);
+        if (targetMargins.bottom() > 0 && sourceMargins.bottom() > 0) { // bottom
+            const QRect targetBottomRect(targetCenterLeft, targetCenterBottom, targetCenterWidth, targetMargins.bottom());
+            const QRect sourceBottomRect(sourceCenterLeft, sourceCenterBottom, sourceCenterWidth, sourceMargins.bottom());
             qDrawPixmap(painter, targetBottomRect, pixmap, sourceBottomRect);
         }
         break;
         case Qt::Repeat:
-        if (targetMargins.top > 0 && sourceMargins.top > 0) { // top
-            const QRect targetTopRect(targetCenterLeft, targetTop, targetCenterWidth, targetMargins.top);
-            const QRect sourceTopRect(sourceCenterLeft, sourceTop, sourceCenterWidth, sourceMargins.top);
+        if (targetMargins.top() > 0 && sourceMargins.top() > 0) { // top
+            const QRect targetTopRect(targetCenterLeft, targetTop, targetCenterWidth, targetMargins.top());
+            const QRect sourceTopRect(sourceCenterLeft, sourceTop, sourceCenterWidth, sourceMargins.top());
             qDrawHorizontallyRepeatedPixmap(painter, targetTopRect, pixmap, sourceTopRect);
         }
-        if (targetMargins.bottom > 0 && sourceMargins.bottom > 0) { // bottom
-            const QRect targetBottomRect(targetCenterLeft, targetCenterBottom, targetCenterWidth, targetMargins.bottom);
-            const QRect sourceBottomRect(sourceCenterLeft, sourceCenterBottom, sourceCenterWidth, sourceMargins.bottom);
+        if (targetMargins.bottom() > 0 && sourceMargins.bottom() > 0) { // bottom
+            const QRect targetBottomRect(targetCenterLeft, targetCenterBottom, targetCenterWidth, targetMargins.bottom());
+            const QRect sourceBottomRect(sourceCenterLeft, sourceCenterBottom, sourceCenterWidth, sourceMargins.bottom());
             qDrawHorizontallyRepeatedPixmap(painter, targetBottomRect, pixmap, sourceBottomRect);
         }
         break;
         case Qt::Round:
-        if (targetMargins.top > 0 && sourceMargins.top > 0) { // top
-            const QRect targetTopRect(targetCenterLeft, targetTop, targetCenterWidth, targetMargins.top);
-            const QRect sourceTopRect(sourceCenterLeft, sourceTop, sourceCenterWidth, sourceMargins.top);
+        if (targetMargins.top() > 0 && sourceMargins.top() > 0) { // top
+            const QRect targetTopRect(targetCenterLeft, targetTop, targetCenterWidth, targetMargins.top());
+            const QRect sourceTopRect(sourceCenterLeft, sourceTop, sourceCenterWidth, sourceMargins.top());
             qDrawHorizontallyRoundedPixmap(painter, targetTopRect, pixmap, sourceTopRect);
         }
-        if (targetMargins.bottom > 0 && sourceMargins.bottom > 0) { // bottom
-            const QRect targetBottomRect(targetCenterLeft, targetCenterBottom, targetCenterWidth, targetMargins.bottom);
-            const QRect sourceBottomRect(sourceCenterLeft, sourceCenterBottom, sourceCenterWidth, sourceMargins.bottom);
+        if (targetMargins.bottom() > 0 && sourceMargins.bottom() > 0) { // bottom
+            const QRect targetBottomRect(targetCenterLeft, targetCenterBottom, targetCenterWidth, targetMargins.bottom());
+            const QRect sourceBottomRect(sourceCenterLeft, sourceCenterBottom, sourceCenterWidth, sourceMargins.bottom());
             qDrawHorizontallyRoundedPixmap(painter, targetBottomRect, pixmap, sourceBottomRect);
         }
         break;
@@ -1276,38 +1266,38 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
     // vertical edges
     switch (rules.vertical) {
         case Qt::Stretch:
-        if (targetMargins.left > 0 && sourceMargins.left > 0) { // left
-            const QRect targetLeftRect(targetLeft, targetCenterTop, targetMargins.left, targetCenterHeight);
-            const QRect sourceLeftRect(sourceLeft, sourceCenterTop, sourceMargins.left, sourceCenterHeight);
+        if (targetMargins.left() > 0 && sourceMargins.left() > 0) { // left
+            const QRect targetLeftRect(targetLeft, targetCenterTop, targetMargins.left(), targetCenterHeight);
+            const QRect sourceLeftRect(sourceLeft, sourceCenterTop, sourceMargins.left(), sourceCenterHeight);
             qDrawPixmap(painter, targetLeftRect, pixmap, sourceLeftRect);
         }
-        if (targetMargins.right > 0 && sourceMargins.right > 0) { // right
-            const QRect targetRightRect(targetCenterRight, targetCenterTop, targetMargins.right, targetCenterHeight);
-            const QRect sourceRightRect(sourceCenterRight, sourceCenterTop, sourceMargins.right, sourceCenterHeight);
+        if (targetMargins.right() > 0 && sourceMargins.right() > 0) { // right
+            const QRect targetRightRect(targetCenterRight, targetCenterTop, targetMargins.right(), targetCenterHeight);
+            const QRect sourceRightRect(sourceCenterRight, sourceCenterTop, sourceMargins.right(), sourceCenterHeight);
             qDrawPixmap(painter, targetRightRect, pixmap, sourceRightRect);
         }
         break;
         case Qt::Repeat:
-        if (targetMargins.left > 0 && sourceMargins.left > 0) { // left
-            const QRect targetLeftRect(targetLeft, targetCenterTop, targetMargins.left, targetCenterHeight);
-            const QRect sourceLeftRect(sourceLeft, sourceCenterTop, sourceMargins.left, sourceCenterHeight);
+        if (targetMargins.left() > 0 && sourceMargins.left() > 0) { // left
+            const QRect targetLeftRect(targetLeft, targetCenterTop, targetMargins.left(), targetCenterHeight);
+            const QRect sourceLeftRect(sourceLeft, sourceCenterTop, sourceMargins.left(), sourceCenterHeight);
             qDrawVerticallyRepeatedPixmap(painter, targetLeftRect, pixmap, sourceLeftRect);
         }
-        if (targetMargins.right > 0 && sourceMargins.right > 0) { // right
-            const QRect targetRightRect(targetCenterRight, targetCenterTop, targetMargins.right, targetCenterHeight);
-            const QRect sourceRightRect(sourceCenterRight, sourceCenterTop, sourceMargins.right, sourceCenterHeight);
+        if (targetMargins.right() > 0 && sourceMargins.right() > 0) { // right
+            const QRect targetRightRect(targetCenterRight, targetCenterTop, targetMargins.right(), targetCenterHeight);
+            const QRect sourceRightRect(sourceCenterRight, sourceCenterTop, sourceMargins.right(), sourceCenterHeight);
             qDrawVerticallyRepeatedPixmap(painter, targetRightRect, pixmap, sourceRightRect);
         }
         break;
         case Qt::Round:
-        if (targetMargins.left > 0 && sourceMargins.left > 0) { // left
-            const QRect targetLeftRect(targetLeft, targetCenterTop, targetMargins.left, targetCenterHeight);
-            const QRect sourceLeftRect(sourceLeft, sourceCenterTop, sourceMargins.left, sourceCenterHeight);
+        if (targetMargins.left() > 0 && sourceMargins.left() > 0) { // left
+            const QRect targetLeftRect(targetLeft, targetCenterTop, targetMargins.left(), targetCenterHeight);
+            const QRect sourceLeftRect(sourceLeft, sourceCenterTop, sourceMargins.left(), sourceCenterHeight);
             qDrawVerticallyRoundedPixmap(painter, targetLeftRect, pixmap, sourceLeftRect);
         }
-        if (targetMargins.right > 0 && sourceMargins.right > 0) { // right
-            const QRect targetRightRect(targetCenterRight, targetCenterTop, targetMargins.right, targetCenterHeight);
-            const QRect sourceRightRect(sourceCenterRight, sourceCenterTop, sourceMargins.right, sourceCenterHeight);
+        if (targetMargins.right() > 0 && sourceMargins.right() > 0) { // right
+            const QRect targetRightRect(targetCenterRight, targetCenterTop, targetMargins.right(), targetCenterHeight);
+            const QRect sourceRightRect(sourceCenterRight, sourceCenterTop, sourceMargins.right(), sourceCenterHeight);
             qDrawVerticallyRoundedPixmap(painter, targetRightRect, pixmap, sourceRightRect);
         }
         break;

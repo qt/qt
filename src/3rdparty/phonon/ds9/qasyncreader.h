@@ -48,11 +48,12 @@ namespace Phonon
             STDMETHODIMP WaitForNext(DWORD,IMediaSample **,DWORD_PTR *);
             STDMETHODIMP SyncReadAligned(IMediaSample *);
             STDMETHODIMP SyncRead(LONGLONG,LONG,BYTE *);
-            virtual STDMETHODIMP Length(LONGLONG *,LONGLONG *) = 0;
+            STDMETHODIMP Length(LONGLONG *,LONGLONG *) = 0;
             STDMETHODIMP BeginFlush();
             STDMETHODIMP EndFlush();
 
         protected:
+            STDMETHODIMP syncReadAlignedUnlocked(IMediaSample *);
             virtual HRESULT read(LONGLONG pos, LONG length, BYTE *buffer, LONG *actual) = 0;
 
         private:
@@ -62,9 +63,6 @@ namespace Phonon
                 IMediaSample *sample;
                 DWORD_PTR user;
             };
-            AsyncRequest getNextRequest();
-
-            QMutex m_mutexWait;
 
             QQueue<AsyncRequest> m_requestQueue;
             QWaitCondition m_requestWait;

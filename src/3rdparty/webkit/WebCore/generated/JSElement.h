@@ -36,6 +36,7 @@ public:
     JSElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Element>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
@@ -44,6 +45,8 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
+
+    virtual void markChildren(JSC::MarkStack&);
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 
@@ -63,6 +66,11 @@ ALWAYS_INLINE bool JSElement::getOwnPropertySlot(JSC::ExecState* exec, const JSC
     return JSC::getStaticValueSlot<JSElement, Base>(exec, s_info.staticPropHashTable, this, propertyName, slot);
 }
 
+ALWAYS_INLINE bool JSElement::getOwnPropertyDescriptor(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::PropertyDescriptor& descriptor)
+{
+    return JSC::getStaticValueDescriptor<JSElement, Base>(exec, s_info.staticPropHashTable, this, propertyName, descriptor);
+}
+
 Element* toElement(JSC::JSValue);
 JSC::JSValue toJSNewlyCreated(JSC::ExecState*, JSDOMGlobalObject*, Element*);
 
@@ -73,6 +81,7 @@ public:
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
@@ -165,6 +174,8 @@ JSC::JSValue jsElementOnfocus(JSC::ExecState*, const JSC::Identifier&, const JSC
 void setJSElementOnfocus(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsElementOninput(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSElementOninput(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsElementOninvalid(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSElementOninvalid(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsElementOnkeydown(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSElementOnkeydown(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsElementOnkeypress(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

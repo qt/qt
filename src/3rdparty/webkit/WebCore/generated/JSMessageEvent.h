@@ -33,6 +33,7 @@ public:
     JSMessageEvent(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<MessageEvent>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
@@ -42,6 +43,12 @@ public:
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
+
+    // Custom attributes
+    JSC::JSValue ports(JSC::ExecState*) const;
+
+    // Custom functions
+    JSC::JSValue initMessageEvent(JSC::ExecState*, const JSC::ArgList&);
 };
 
 
@@ -52,9 +59,10 @@ public:
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
     JSMessageEventPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
@@ -68,7 +76,7 @@ JSC::JSValue jsMessageEventData(JSC::ExecState*, const JSC::Identifier&, const J
 JSC::JSValue jsMessageEventOrigin(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsMessageEventLastEventId(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsMessageEventSource(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsMessageEventMessagePort(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsMessageEventPorts(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsMessageEventConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore

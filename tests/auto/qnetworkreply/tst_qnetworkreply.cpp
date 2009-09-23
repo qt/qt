@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -523,16 +523,19 @@ public:
         QTcpSocket *active = new QTcpSocket(this);
         active->connectToHost("127.0.0.1", server.serverPort());
 #ifndef Q_OS_SYMBIAN
+        // need more time as working with embedded
+		// device and testing from emualtor
+		// things tend to get slower
+        if (!active->waitForConnected(1000))
+            return false;
+
+        if (!server.waitForNewConnection(1000))
+            return false;
+#else
         if (!active->waitForConnected(100))
             return false;
 
         if (!server.waitForNewConnection(100))
-            return false;
-#else
-        if (!active->waitForConnected(5000))
-            return false;
-
-        if (!server.waitForNewConnection(5000))
             return false;
 #endif
         QTcpSocket *passive = server.nextPendingConnection();
@@ -1363,8 +1366,10 @@ void tst_QNetworkReply::getFromHttp()
     QCOMPARE(reply->url(), request.url());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
-
-    QCOMPARE(reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), reference.size());
+    QCOMPARE(reply->size(), reference.size());
+    // only compare when the header is set.
+    if (reply->header(QNetworkRequest::ContentLengthHeader).isValid())
+        QCOMPARE(reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), reference.size());
     QCOMPARE(reply->readAll(), reference.readAll());
 }
 
@@ -1823,11 +1828,7 @@ void tst_QNetworkReply::ioGetFromFtp()
     DataReader reader(reply);
 
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-#ifdef Q_OS_SYMBIAN
-    QTestEventLoop::instance().enterLoop(20);
-#else
     QTestEventLoop::instance().enterLoop(10);
-#endif
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(reply->url(), request.url());
@@ -1857,19 +1858,11 @@ void tst_QNetworkReply::ioGetFromFtpWithReuse()
     QSignalSpy spy(reply1, SIGNAL(finished()));
 
     connect(reply2, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-#ifdef Q_OS_SYMBIAN
-    QTestEventLoop::instance().enterLoop(20);
-#else
     QTestEventLoop::instance().enterLoop(10);
-#endif
     QVERIFY(!QTestEventLoop::instance().timeout());
     if (spy.count() == 0) {
         connect(reply1, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-#ifdef Q_OS_SYMBIAN
-        QTestEventLoop::instance().enterLoop(20);
-#else
         QTestEventLoop::instance().enterLoop(10);
-#endif
         QVERIFY(!QTestEventLoop::instance().timeout());
     }
 
@@ -2288,8 +2281,11 @@ void tst_QNetworkReply::ioGetFromHttpBrokenServer_data()
     QTest::addColumn<bool>("doDisconnect");
 
     QTest::newRow("no-newline") << QByteArray("Hello World") << false;
-    QTest::newRow("just-newline") << QByteArray("\r\n") << false;
-    QTest::newRow("just-2newline") << QByteArray("\r\n\r\n") << false;
+
+    // these are OK now, we just eat the lonely newlines
+    //QTest::newRow("just-newline") << QByteArray("\r\n") << false;
+    //QTest::newRow("just-2newline") << QByteArray("\r\n\r\n") << false;
+
     QTest::newRow("with-newlines") << QByteArray("Long first line\r\nLong second line") << false;
     QTest::newRow("with-newlines2") << QByteArray("\r\nSecond line") << false;
     QTest::newRow("with-newlines3") << QByteArray("ICY\r\nSecond line") << false;
@@ -2557,12 +2553,7 @@ void tst_QNetworkReply::ioGetWithManyProxies()
     connect(&manager, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
             SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
 #endif
-
-#ifndef Q_OS_SYMBIAN
     QTestEventLoop::instance().enterLoop(10);
-#else
-    QTestEventLoop::instance().enterLoop(60);
-#endif
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     manager.disconnect(SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
@@ -2662,6 +2653,7 @@ void tst_QNetworkReply::ioPutToFileFromSocket()
 
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(10);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(reply->url(), url);
@@ -2691,13 +2683,8 @@ void tst_QNetworkReply::ioPutToFileFromLocalSocket()
     }
     QLocalSocket active;
     active.connectToServer(socketname);
-#ifndef Q_OS_SYMBIAN
     QVERIFY2(server.waitForNewConnection(10), server.errorString().toLatin1().constData());
     QVERIFY2(active.waitForConnected(10), active.errorString().toLatin1().constData());
-#else
-    QVERIFY2(server.waitForNewConnection(5000), server.errorString().toLatin1().constData());
-    QVERIFY2(active.waitForConnected(5000), active.errorString().toLatin1().constData());
-#endif
     QVERIFY2(server.hasPendingConnections(), server.errorString().toLatin1().constData());
     QLocalSocket *passive = server.nextPendingConnection();
 
@@ -2712,11 +2699,8 @@ void tst_QNetworkReply::ioPutToFileFromLocalSocket()
     passive->setParent(reply);
 
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-#ifndef Q_OS_SYMBIAN
     QTestEventLoop::instance().enterLoop(10);
-#else
-    QTestEventLoop::instance().enterLoop(30);
-#endif
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(reply->url(), url);
@@ -2979,12 +2963,17 @@ void tst_QNetworkReply::ioPostToHttpFromSocket()
     QSignalSpy authenticationRequiredSpy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
     QSignalSpy proxyAuthenticationRequiredSpy(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
 
-    QTestEventLoop::instance().enterLoop(1);
+#ifdef Q_OS_SYMBIAN
+    QTestEventLoop::instance().enterLoop(6);
+#else
+    QTestEventLoop::instance().enterLoop(3);
+#endif
 
     disconnect(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
     disconnect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
                this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(reply->url(), url);
@@ -3308,13 +3297,19 @@ void tst_QNetworkReply::uploadPerformance()
       connect(&reader, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
       QTimer::singleShot(5000, &generator, SLOT(stop()));
 
-      QTestEventLoop::instance().enterLoop(10);
+      QTestEventLoop::instance().enterLoop(30);
+      QCOMPARE(reply->error(), QNetworkReply::NoError);
       QVERIFY(!QTestEventLoop::instance().timeout());
 }
 
 void tst_QNetworkReply::httpUploadPerformance()
 {
+#ifdef Q_OS_SYMBIAN
+      // SHow some mercy for non-desktop platform/s
+      enum {UploadSize = 4*1024*1024}; // 4 MB
+#else
       enum {UploadSize = 128*1024*1024}; // 128 MB
+#endif
       ThreadedDataReaderHttpServer reader;
       FixedSizeDataGenerator generator(UploadSize);
 
@@ -3329,6 +3324,7 @@ void tst_QNetworkReply::httpUploadPerformance()
       generator.start();
       time.start();
       QTestEventLoop::instance().enterLoop(40);
+      QCOMPARE(reply->error(), QNetworkReply::NoError);
       QVERIFY(!QTestEventLoop::instance().timeout());
 
       qint64 elapsed = time.elapsed();
@@ -3379,8 +3375,12 @@ void tst_QNetworkReply::httpDownloadPerformance()
 {
     QFETCH(bool, serverSendsContentLength);
     QFETCH(bool, chunkedEncoding);
-
+#ifdef Q_OS_SYMBIAN
+    // Show some mercy to non-desktop platform/s
+    enum {UploadSize = 4*1024*1024}; // 4 MB
+#else
     enum {UploadSize = 128*1024*1024}; // 128 MB
+#endif
     HttpDownloadPerformanceServer server(UploadSize, serverSendsContentLength, chunkedEncoding);
 
     QNetworkRequest request(QUrl("http://127.0.0.1:" + QString::number(server.serverPort()) + "/?bare=1"));
@@ -3392,6 +3392,7 @@ void tst_QNetworkReply::httpDownloadPerformance()
     QTime time;
     time.start();
     QTestEventLoop::instance().enterLoop(40);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     qint64 elapsed = time.elapsed();
@@ -3408,6 +3409,9 @@ void tst_QNetworkReply::downloadProgress_data()
 #ifndef Q_OS_SYMBIAN
     QTest::newRow("big") << 4096;
 #else
+    // it can run even with 4096
+	// but it takes lot time
+	//especially on emulator
     QTest::newRow("big") << 1024;
 #endif
 }
@@ -3438,20 +3442,11 @@ void tst_QNetworkReply::downloadProgress()
 
     QFETCH(int, loopCount);
     for (int i = 1; i <= loopCount; ++i) {
-#ifdef Q_OS_SYMBIAN
-        if(i % 500 == 0) {
-            qWarning("iteration %d", i);
-        }
-#endif
         sender->write(data);
         QVERIFY2(sender->waitForBytesWritten(2000), "Network timeout");
 
         spy.clear();
-#ifdef Q_OS_SYMBIAN
-        QTestEventLoop::instance().enterLoop(5);
-#else
         QTestEventLoop::instance().enterLoop(2);
-#endif
         QVERIFY(!QTestEventLoop::instance().timeout());
         QVERIFY(spy.count() > 0);
         QVERIFY(!reply->isFinished());
@@ -3466,11 +3461,8 @@ void tst_QNetworkReply::downloadProgress()
     delete sender;
 
     spy.clear();
-#ifdef Q_OS_SYMBIAN
-    QTestEventLoop::instance().enterLoop(5);
-#else
     QTestEventLoop::instance().enterLoop(2);
-#endif
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QVERIFY(spy.count() > 0);
     QVERIFY(!reply->isRunning());
@@ -3759,11 +3751,7 @@ void tst_QNetworkReply::httpProxyCommands()
     // wait for the finished signal
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 
-#ifdef Q_OS_SYMBIAN
-    QTestEventLoop::instance().enterLoop(5);
-#else
     QTestEventLoop::instance().enterLoop(1);
-#endif
 
     QVERIFY(!QTestEventLoop::instance().timeout());
 
@@ -3794,7 +3782,15 @@ void tst_QNetworkReply::proxyChange()
     QNetworkReplyPtr reply2 = manager.get(req);
 
     connect(reply2, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+#ifdef Q_OS_SYMBIAN
+    // we need more time as:
+    // 1. running from the emulator
+    // 2. not perfect POSIX implementation
+    // 3. embedded device
+    QTestEventLoop::instance().enterLoop(20);
+#else
     QTestEventLoop::instance().enterLoop(10);
+#endif
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     if (finishedspy.count() == 0) {

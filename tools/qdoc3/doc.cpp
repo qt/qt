@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -90,10 +90,10 @@ enum {
     CMD_PRINTUNTIL, CMD_QUOTATION, CMD_QUOTEFILE,
     CMD_QUOTEFROMFILE, CMD_QUOTEFUNCTION, CMD_RAW, CMD_ROW,
     CMD_SA, CMD_SECTION1, CMD_SECTION2, CMD_SECTION3,
-    CMD_SECTION4, CMD_SIDEBAR, CMD_SKIPLINE, CMD_SKIPTO,
-    CMD_SKIPUNTIL, CMD_SNIPPET, CMD_SUB, CMD_SUP, CMD_TABLE,
-    CMD_TABLEOFCONTENTS, CMD_TARGET, CMD_TT, CMD_UNDERLINE,
-    CMD_UNICODE, CMD_VALUE, CMD_WARNING,
+    CMD_SECTION4, CMD_SIDEBAR, CMD_SINCELIST, CMD_SKIPLINE,
+    CMD_SKIPTO, CMD_SKIPUNTIL, CMD_SNIPPET, CMD_SUB, CMD_SUP,
+    CMD_TABLE, CMD_TABLEOFCONTENTS, CMD_TARGET, CMD_TT,
+    CMD_UNDERLINE, CMD_UNICODE, CMD_VALUE, CMD_WARNING,
 #ifdef QDOC_QML    
     CMD_QML, CMD_ENDQML, CMD_CPP, CMD_ENDCPP, CMD_QMLTEXT,
     CMD_ENDQMLTEXT, CMD_CPPTEXT, CMD_ENDCPPTEXT,
@@ -177,6 +177,7 @@ static struct {
     { "section3", CMD_SECTION3, 0 },
     { "section4", CMD_SECTION4, 0 },
     { "sidebar", CMD_SIDEBAR, 0 }, // ### don't document for now
+    { "sincelist", CMD_SINCELIST, 0 },
     { "skipline", CMD_SKIPLINE, 0 },
     { "skipto", CMD_SKIPTO, 0 },
     { "skipuntil", CMD_SKIPUNTIL, 0 },
@@ -726,6 +727,9 @@ void DocParser::parse(const QString& source,
                         break;
                     case CMD_ANNOTATEDLIST:
                         append(Atom::AnnotatedList, getArgument());
+                        break;
+                    case CMD_SINCELIST:
+                        append(Atom::SinceList, getArgument());
                         break;
                     case CMD_GENERATELIST:
                         append(Atom::GeneratedList, getArgument());
@@ -2664,13 +2668,18 @@ Text Doc::trimmedBriefText(const QString &className) const
 	    standardWording = false;
         }
 
-        if (!w.isEmpty() && (w.first() == "class" || w.first() == "widget"
-                             || w.first() == "namespace" || w.first() == "header"))
+        if (!w.isEmpty() && ((w.first() == "class") ||
+                             (w.first() == "function") ||
+                             (w.first() == "macro") ||
+                             (w.first() == "widget") ||
+                             (w.first() == "namespace") ||
+                             (w.first() == "header")))
 	    w.removeFirst();
         else {
 	    location().warning(
                 tr("Nonstandard wording in '\\%1' text for '%2' ("
-                   "expected 'class', 'widget', 'namespace' or 'header')")
+                   "expected 'class', 'function', 'macro', 'widget', "
+                   "'namespace' or 'header')")
                 .arg(COMMAND_BRIEF).arg(className));
 	    standardWording = false;
         }

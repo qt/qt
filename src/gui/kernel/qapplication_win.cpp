@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -171,6 +171,10 @@ typedef struct tagTOUCHINPUT
 #include <mywinsock.h>
 #endif
 
+#ifndef IMR_CONFIRMRECONVERTSTRING
+#define IMR_CONFIRMRECONVERTSTRING 0x0005
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_WS_WINCE
@@ -216,7 +220,7 @@ static void resolveAygLibs()
 #  define FE_FONTSMOOTHINGCLEARTYPE 0x0002
 #endif
 
-bool qt_cleartype_enabled;
+Q_GUI_EXPORT bool qt_cleartype_enabled;
 Q_GUI_EXPORT bool qt_win_owndc_required; // CS_OWNDC is required if we use the GL graphicssystem as default
 
 typedef HCTX (API *PtrWTOpen)(HWND, LPLOGCONTEXT, BOOL);
@@ -323,6 +327,7 @@ extern HRGN qt_tryCreateRegion(QRegion::RegionType type, int left, int top, int 
 #define APPCOMMAND_BASS_UP                21
 #define APPCOMMAND_TREBLE_DOWN            22
 #define APPCOMMAND_TREBLE_UP              23
+#endif // FAPPCOMMAND_MOUSE
 
 // New commands from Windows XP (some even Sp1)
 #ifndef APPCOMMAND_MICROPHONE_VOLUME_MUTE
@@ -356,8 +361,6 @@ extern HRGN qt_tryCreateRegion(QRegion::RegionType type, int left, int top, int 
 #define APPCOMMAND_MEDIA_CHANNEL_UP       51
 #define APPCOMMAND_MEDIA_CHANNEL_DOWN     52
 #endif // APPCOMMAND_MICROPHONE_VOLUME_MUTE
-
-#endif // FAPPCOMMAND_MOUSE
 
 #if (_WIN32_WINNT < 0x0400)
 // This struct is defined in winuser.h if the _WIN32_WINNT >= 0x0400 -- in the
@@ -452,7 +455,7 @@ public:
     bool        translateConfigEvent(const MSG &msg);
     bool        translateCloseEvent(const MSG &msg);
     bool        translateTabletEvent(const MSG &msg, PACKET *localPacketBuf, int numPackets);
-    bool        translateGestureEvent(const MSG &msg);
+    bool        translateGestureEvent(const MSG &msg, const GESTUREINFO &gi);
     void        repolishStyle(QStyle &style);
     inline void showChildren(bool spontaneous) { d_func()->showChildren(spontaneous); }
     inline void hideChildren(bool spontaneous) { d_func()->hideChildren(spontaneous); }
@@ -848,6 +851,7 @@ void qt_init(QApplicationPrivate *priv, int)
         (PtrEndPanningFeedback)QLibrary::resolve(QLatin1String("uxtheme"),
                                                    "EndPanningFeedback");
 #endif
+    priv->gestureWidget = 0;
 }
 
 /*****************************************************************************
@@ -1899,11 +1903,9 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                     QHideEvent e;
                     qt_sendSpontaneousEvent(widget, &e);
                     widget->hideChildren(true);
-#ifndef Q_WS_WINCE
                     const QString title = widget->windowIconText();
                     if (!title.isEmpty())
                         widget->setWindowTitle_helper(title);
-#endif
                 }
                 result = false;
                 break;
@@ -1922,11 +1924,9 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                     widget->showChildren(true);
                     QShowEvent e;
                     qt_sendSpontaneousEvent(widget, &e);
-#ifndef Q_WS_WINCE
                     const QString title = widget->windowTitle();
                     if (!title.isEmpty())
                         widget->setWindowTitle_helper(title);
-#endif
                 }
                 result = false;
                 break;
@@ -1939,7 +1939,7 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                 QWindowStateChangeEvent e(oldstate);
                 qt_sendSpontaneousEvent(widget, &e);
             }
-#endif
+#endif // #ifndef Q_OS_WINCE
 
             break;
         }
@@ -2026,13 +2026,19 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                 // WM_ACTIVATEAPP handles the "true" false case, as this is only when the application
                 // loses focus. Doing it here would result in the widget getting focus to not know
                 // where it got it from; it would simply get a 0 value as the old focus widget.
-#ifndef Q_WS_WINCE_WM
-                if (!(widget->windowState() & Qt::WindowMinimized)) {
-                    // Ignore the activate message send by WindowsXP to a minimized window
-#else
+#ifdef Q_WS_WINCE
                 {
-                    if (widget->windowState() & Qt::WindowMinimized)
-                        widget->dataPtr()->window_state &= ~Qt::WindowMinimized;
+                    if (widget->windowState() & Qt::WindowMinimized) {
+                        if (widget->windowState() & Qt::WindowMaximized)
+                            widget->showMaximized();
+                        else
+                            widget->show();
+                    }
+#else
+                if (!(widget->windowState() & Qt::WindowMinimized)) {
+#endif
+                    // Ignore the activate message send by WindowsXP to a minimized window
+#ifdef Q_WS_WINCE_WM
                     if  (widget->windowState() & Qt::WindowFullScreen)
                         qt_wince_hide_taskbar(widget->winId());
 #endif
@@ -2263,7 +2269,26 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
             }
             break;
         }
-
+        case WM_IME_REQUEST: {
+            QWidget *fw = QApplication::focusWidget();
+            QWinInputContext *im = fw ? qobject_cast<QWinInputContext *>(fw->inputContext()) : 0;
+            if (fw && im) {
+                if(wParam == IMR_RECONVERTSTRING) {
+                    int ret = im->reconvertString((RECONVERTSTRING *)lParam);
+                    if (ret == -1) {
+                        result = false;
+                    } else {
+                        return ret;
+                    }
+                } else if (wParam == IMR_CONFIRMRECONVERTSTRING) {
+                    RETURN(TRUE);
+                } else {
+                    // in all other cases, call DefWindowProc()
+                    result = false;
+                }
+            }
+            break;
+        }
 #ifndef Q_WS_WINCE
         case WM_CHANGECBCHAIN:
         case WM_DRAWCLIPBOARD:
@@ -2513,10 +2538,38 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
             }
             result = false;
             break;
-        case WM_GESTURE:
-            widget->translateGestureEvent(msg);
+        case WM_GESTURE: {
+            GESTUREINFO gi;
+            memset(&gi, 0, sizeof(GESTUREINFO));
+            gi.cbSize = sizeof(GESTUREINFO);
+
+            QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
+            BOOL bResult = false;
+            if (qAppPriv->GetGestureInfo)
+                bResult = qAppPriv->GetGestureInfo((HANDLE)msg.lParam, &gi);
+            if (bResult) {
+                if (gi.dwID == GID_BEGIN) {
+                    // find the alien widget for the gesture position.
+                    // This might not be accurate as the position is the center
+                    // point of two fingers for multi-finger gestures.
+                    QPoint pt(gi.ptsLocation.x, gi.ptsLocation.y);
+                    QWidget *w = widget->childAt(widget->mapFromGlobal(pt));
+                    qAppPriv->gestureWidget = w ? w : widget;
+                }
+                if (qAppPriv->gestureWidget)
+                    static_cast<QETWidget*>(qAppPriv->gestureWidget)->translateGestureEvent(msg, gi);
+                if (qAppPriv->CloseGestureInfoHandle)
+                    qAppPriv->CloseGestureInfoHandle((HANDLE)msg.lParam);
+                if (gi.dwID == GID_END)
+                    qAppPriv->gestureWidget = 0;
+            } else {
+                DWORD dwErr = GetLastError();
+                if (dwErr > 0)
+                    qWarning() << "translateGestureEvent: error = " << dwErr;
+            }
             result = true;
             break;
+        }
         default:
             result = false;                        // event was not processed
             break;
@@ -3725,69 +3778,42 @@ bool QETWidget::translateCloseEvent(const MSG &)
     return d_func()->close_helper(QWidgetPrivate::CloseWithSpontaneousEvent);
 }
 
-bool QETWidget::translateGestureEvent(const MSG &msg)
+bool QETWidget::translateGestureEvent(const MSG &, const GESTUREINFO &gi)
 {
-    GESTUREINFO gi;
-    memset(&gi, 0, sizeof(GESTUREINFO));
-    gi.cbSize = sizeof(GESTUREINFO);
+    const QPoint widgetPos = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
+    QWidget *alienWidget = !internalWinId() ? this : childAt(widgetPos);
+    if (alienWidget && alienWidget->internalWinId())
+        alienWidget = 0;
+    QWidget *widget = alienWidget ? alienWidget : this;
 
-    QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
-#if defined(Q_WS_WINCE_WM) && defined(QT_WINCE_GESTURES)
-#undef GID_ZOOM
-#define GID_ZOOM 0xf000
-#undef GID_ROTATE
-#define GID_ROTATE 0xf001
-#undef GID_TWOFINGERTAP
-#define GID_TWOFINGERTAP 0xf002
-#undef GID_ROLLOVER
-#define GID_ROLLOVER 0xf003
-#endif
-    BOOL bResult = false;
-    if (qAppPriv->GetGestureInfo)
-        bResult = qAppPriv->GetGestureInfo((HANDLE)msg.lParam, &gi);
+    QNativeGestureEvent event;
+    event.sequenceId = gi.dwSequenceID;
+    event.position = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
+    event.argument = gi.ullArguments;
 
-    if (bResult) {
-        const QPoint widgetPos = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
-        QWidget *alienWidget = !internalWinId() ? this : childAt(widgetPos);
-        if (alienWidget && alienWidget->internalWinId())
-            alienWidget = 0;
-        QWidget *widget = alienWidget ? alienWidget : this;
-
-        QNativeGestureEvent event;
-        event.sequenceId = gi.dwSequenceID;
-        event.position = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
-        event.argument = gi.ullArguments;
-
-        switch (gi.dwID) {
-        case GID_BEGIN:
-            event.gestureType = QNativeGestureEvent::GestureBegin;
-            break;
-        case GID_END:
-            event.gestureType = QNativeGestureEvent::GestureEnd;
-            break;
-        case GID_ZOOM:
-            event.gestureType = QNativeGestureEvent::Zoom;
-            break;
-        case GID_PAN:
-            event.gestureType = QNativeGestureEvent::Pan;
-            break;
-        case GID_ROTATE:
-            event.gestureType = QNativeGestureEvent::Rotate;
-            break;
-        case GID_TWOFINGERTAP:
-        case GID_ROLLOVER:
-        default:
-            break;
-        }
-        if (qAppPriv->CloseGestureInfoHandle)
-            qAppPriv->CloseGestureInfoHandle((HANDLE)msg.lParam);
-        if (event.gestureType != QNativeGestureEvent::None)
-            qt_sendSpontaneousEvent(widget, &event);
-    } else {
-        DWORD dwErr = GetLastError();
-        if (dwErr > 0)
-            qWarning() << "translateGestureEvent: error = " << dwErr;
+    switch (gi.dwID) {
+    case GID_BEGIN:
+        event.gestureType = QNativeGestureEvent::GestureBegin;
+        break;
+    case GID_END:
+        event.gestureType = QNativeGestureEvent::GestureEnd;
+        break;
+    case GID_ZOOM:
+        event.gestureType = QNativeGestureEvent::Zoom;
+        break;
+    case GID_PAN:
+        event.gestureType = QNativeGestureEvent::Pan;
+        break;
+    case GID_ROTATE:
+        event.gestureType = QNativeGestureEvent::Rotate;
+        break;
+    case GID_TWOFINGERTAP:
+    case GID_ROLLOVER:
+    default:
+        break;
     }
+    if (event.gestureType != QNativeGestureEvent::None)
+        qt_sendSpontaneousEvent(widget, &event);
     return true;
 }
 

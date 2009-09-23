@@ -73,6 +73,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSCSSValueListPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -87,6 +88,11 @@ const ClassInfo JSCSSValueListConstructor::s_info = { "CSSValueListConstructor",
 bool JSCSSValueListConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCSSValueListConstructor, DOMObject>(exec, &JSCSSValueListConstructorTable, this, propertyName, slot);
+}
+
+bool JSCSSValueListConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCSSValueListConstructor, DOMObject>(exec, &JSCSSValueListConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -114,6 +120,11 @@ JSObject* JSCSSValueListPrototype::self(ExecState* exec, JSGlobalObject* globalO
 bool JSCSSValueListPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticFunctionSlot<JSObject>(exec, &JSCSSValueListPrototypeTable, this, propertyName, slot);
+}
+
+bool JSCSSValueListPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSCSSValueListPrototypeTable, this, propertyName, descriptor);
 }
 
 const ClassInfo JSCSSValueList::s_info = { "CSSValueList", &JSCSSValue::s_info, &JSCSSValueListTable, 0 };
@@ -144,6 +155,26 @@ bool JSCSSValueList::getOwnPropertySlot(ExecState* exec, const Identifier& prope
     return getStaticValueSlot<JSCSSValueList, Base>(exec, &JSCSSValueListTable, this, propertyName, slot);
 }
 
+bool JSCSSValueList::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    const HashEntry* entry = JSCSSValueListTable.entry(exec, propertyName);
+    if (entry) {
+        PropertySlot slot;
+        slot.setCustom(this, entry->propertyGetter());
+        descriptor.setDescriptor(slot.getValue(exec, propertyName), entry->attributes());
+        return true;
+    }
+    bool ok;
+    unsigned index = propertyName.toUInt32(&ok, false);
+    if (ok && index < static_cast<CSSValueList*>(impl())->length()) {
+        PropertySlot slot;
+        slot.setCustomIndex(this, index, indexGetter);
+        descriptor.setDescriptor(slot.getValue(exec, propertyName), DontDelete | ReadOnly);
+        return true;
+    }
+    return getStaticValueDescriptor<JSCSSValueList, Base>(exec, &JSCSSValueListTable, this, propertyName, descriptor);
+}
+
 bool JSCSSValueList::getOwnPropertySlot(ExecState* exec, unsigned propertyName, PropertySlot& slot)
 {
     if (propertyName < static_cast<CSSValueList*>(impl())->length()) {
@@ -166,11 +197,11 @@ JSValue jsCSSValueListConstructor(ExecState* exec, const Identifier&, const Prop
     JSCSSValueList* domObject = static_cast<JSCSSValueList*>(asObject(slot.slotBase()));
     return JSCSSValueList::getConstructor(exec, domObject->globalObject());
 }
-void JSCSSValueList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSCSSValueList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
 {
     for (unsigned i = 0; i < static_cast<CSSValueList*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getPropertyNames(exec, propertyNames);
+     Base::getOwnPropertyNames(exec, propertyNames);
 }
 
 JSValue JSCSSValueList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -181,7 +212,7 @@ JSValue JSCSSValueList::getConstructor(ExecState* exec, JSGlobalObject* globalOb
 JSValue JSC_HOST_CALL jsCSSValueListPrototypeFunctionItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCSSValueList::s_info))
+    if (!thisValue.inherits(&JSCSSValueList::s_info))
         return throwError(exec, TypeError);
     JSCSSValueList* castedThisObj = static_cast<JSCSSValueList*>(asObject(thisValue));
     CSSValueList* imp = static_cast<CSSValueList*>(castedThisObj->impl());

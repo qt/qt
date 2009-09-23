@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2008, 2009 Apple Inc. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,6 +25,7 @@
 
 #include "config.h"
 #include "RenderScrollbar.h"
+
 #include "RenderScrollbarPart.h"
 #include "RenderScrollbarTheme.h"
 
@@ -39,6 +40,16 @@ RenderScrollbar::RenderScrollbar(ScrollbarClient* client, ScrollbarOrientation o
     : Scrollbar(client, orientation, RegularScrollbar, RenderScrollbarTheme::renderScrollbarTheme())
     , m_owner(renderer)
 {
+    // FIXME: We need to do this because RenderScrollbar::styleChanged is called as soon as the scrollbar is created.
+    
+    // Update the scrollbar size.
+    updateScrollbarPart(ScrollbarBGPart);
+    RenderScrollbarPart* part = m_parts.get(ScrollbarBGPart);
+    if (!part)
+        return;
+
+    part->layout();
+    setFrameRect(IntRect(0, 0, part->width(), part->height()));
 }
 
 RenderScrollbar::~RenderScrollbar()
@@ -173,9 +184,14 @@ static PseudoId pseudoForScrollbarPart(ScrollbarPart part)
             return SCROLLBAR_THUMB;
         case TrackBGPart:
             return SCROLLBAR_TRACK;
-        default:
+        case ScrollbarBGPart:
             return SCROLLBAR;
+        case NoPart:
+        case AllParts:
+            break;
     }
+    ASSERT_NOT_REACHED();
+    return SCROLLBAR;
 }
 
 void RenderScrollbar::updateScrollbarPart(ScrollbarPart partType, bool destroy)

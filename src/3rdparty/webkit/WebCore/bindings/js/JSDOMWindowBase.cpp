@@ -113,7 +113,7 @@ ExecState* JSDOMWindowBase::globalExec()
 
 bool JSDOMWindowBase::supportsProfiling() const
 {
-#if !ENABLE(JAVASCRIPT_DEBUGGER)
+#if !ENABLE(JAVASCRIPT_DEBUGGER) || !ENABLE(INSPECTOR)
     return false;
 #else
     Frame* frame = impl()->frame();
@@ -167,6 +167,9 @@ JSGlobalData* JSDOMWindowBase::commonJSGlobalData()
     if (!globalData) {
         globalData = JSGlobalData::createLeaked().releaseRef();
         globalData->timeoutChecker.setTimeoutInterval(10000); // 10 seconds
+#ifndef NDEBUG
+        globalData->mainThreadOnly = true;
+#endif
     }
 
     return globalData;

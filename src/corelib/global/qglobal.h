@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -186,7 +186,6 @@ namespace QT_NAMESPACE {}
 #elif defined(__SYMBIAN32__) || defined(SYMBIAN)
 #  define Q_OS_SYMBIAN
 #  define Q_NO_POSIX_SIGNALS
-// TODO: should this be in qconfig.h
 #  define QT_NO_GETIFADDRS
 #elif defined(__CYGWIN__)
 #  define Q_OS_CYGWIN
@@ -303,7 +302,7 @@ namespace QT_NAMESPACE {}
 #  ifdef MAC_OS_X_VERSION_MIN_REQUIRED
 #    undef MAC_OS_X_VERSION_MIN_REQUIRED
 #  endif
-#  define MAC_OS_X_VERSION_MIN_REQUIRED MAC_OS_X_VERSION_10_3
+#  define MAC_OS_X_VERSION_MIN_REQUIRED MAC_OS_X_VERSION_10_4
 #  include <AvailabilityMacros.h>
 #  if !defined(MAC_OS_X_VERSION_10_3)
 #     define MAC_OS_X_VERSION_10_3 MAC_OS_X_VERSION_10_2 + 1
@@ -726,7 +725,6 @@ namespace QT_NAMESPACE {}
 
 #elif defined(__WINSCW__) && !defined(Q_CC_NOKIAX86)
 #  define Q_CC_NOKIAX86
-// #  define Q_CC_MWERKS // May be required
 
 
 #else
@@ -821,7 +819,6 @@ namespace QT_NAMESPACE {}
 #if defined(Q_WS_WIN16) || defined(Q_WS_WIN32) || defined(Q_WS_WINCE)
 #  define Q_WS_WIN
 #endif
-
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
@@ -1083,10 +1080,10 @@ inline int qRound(qreal d)
 
 #if defined(QT_NO_FPU) || defined(QT_ARCH_ARM) || defined(QT_ARCH_WINDOWSCE) || defined(QT_ARCH_SYMBIAN)
 inline qint64 qRound64(double d)
-{ return d >= 0.0 ? qint64(d + 0.5) : qint64(d - qint64(d-1) + 0.5) + qint64(d-1); }
+{ return d >= 0.0 ? qint64(d + 0.5) : qint64(d - qreal(qint64(d-1)) + 0.5) + qint64(d-1); }
 #else
 inline qint64 qRound64(qreal d)
-{ return d >= 0.0 ? qint64(d + 0.5) : qint64(d - qint64(d-1) + 0.5) + qint64(d-1); }
+{ return d >= 0.0 ? qint64(d + 0.5) : qint64(d - qreal(qint64(d-1)) + 0.5) + qint64(d-1); }
 #endif
 
 template <typename T>
@@ -1156,9 +1153,7 @@ class QDataStream;
 #define QT_SUPPORTS(FEATURE) (!defined(QT_NO_##FEATURE))
 
 #ifndef Q_DECL_EXPORT
-#  ifdef Q_OS_WIN
-#    define Q_DECL_EXPORT __declspec(dllexport)
-#  elif  defined(Q_CC_NOKIAX86) || defined(Q_CC_RVCT)
+#  if defined(Q_OS_WIN) || defined(Q_CC_NOKIAX86) || defined(Q_CC_RVCT)
 #    define Q_DECL_EXPORT __declspec(dllexport)
 #  elif defined(QT_VISIBILITY_AVAILABLE)
 #    define Q_DECL_EXPORT __attribute__((visibility("default")))
@@ -1168,9 +1163,7 @@ class QDataStream;
 #  endif
 #endif
 #ifndef Q_DECL_IMPORT
-#  if defined(Q_OS_WIN)
-#    define Q_DECL_IMPORT __declspec(dllimport)
-#  elif defined(Q_CC_NOKIAX86) || defined(Q_CC_RVCT)
+#  if defined(Q_OS_WIN) || defined(Q_CC_NOKIAX86) || defined(Q_CC_RVCT)
 #    define Q_DECL_IMPORT __declspec(dllimport)
 #  else
 #    define Q_DECL_IMPORT
@@ -1178,7 +1171,7 @@ class QDataStream;
 #endif
 
 /*
-   Create Qt DLL if QT_DLL is defined (Windows only)
+   Create Qt DLL if QT_DLL is defined (Windows and Symbian only)
 */
 
 #if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
@@ -1331,6 +1324,12 @@ class QDataStream;
 #    else
 #      define Q_GUI_EXPORT_INLINE inline
 #    endif
+#elif defined(Q_CC_RVCT)
+// we force RVCT not to export inlines by passing --visibility_inlines_hidden
+// so we need to just inline it, rather than exporting and inlining
+// note: this affects the contents of the DEF files (ie. these functions do not appear)
+#    define Q_CORE_EXPORT_INLINE inline
+#    define Q_GUI_EXPORT_INLINE inline
 #else
 #    define Q_CORE_EXPORT_INLINE Q_CORE_EXPORT inline
 #    define Q_GUI_EXPORT_INLINE Q_GUI_EXPORT inline
@@ -1362,6 +1361,9 @@ inline void qt_noop() {}
 */
 
 #ifdef QT_BOOTSTRAPPED
+#  define QT_NO_EXCEPTIONS
+#endif
+#if !defined(QT_NO_EXCEPTIONS) && defined(Q_CC_GNU) && !defined (__EXCEPTIONS) && !defined(Q_MOC_RUN)
 #  define QT_NO_EXCEPTIONS
 #endif
 
@@ -1546,6 +1548,11 @@ inline void qUnused(T &x) { (void)x; }
    Debugging and error handling
 */
 
+/*
+   On Symbian we do not know beforehand whether we are compiling in
+   release or debug mode, so check the Symbian build define here,
+   and set the QT_NO_DEBUG define appropriately.
+*/
 #if defined(Q_OS_SYMBIAN) && defined(NDEBUG) && !defined(QT_NO_DEBUG)
 #  define QT_NO_DEBUG
 #endif
@@ -2027,7 +2034,7 @@ inline void qSwap(T &value1, T &value2)
 template <> inline bool qIsDetached<TYPE>(TYPE &t) { return t.isDetached(); } \
 template <> inline void qSwap<TYPE>(TYPE &value1, TYPE &value2) \
 { \
-    qSwap<TYPE::DataPtr>(value1.data_ptr(), value2.data_ptr()); \
+    qSwap(value1.data_ptr(), value2.data_ptr()); \
 }
 
 /*
@@ -2156,7 +2163,7 @@ public:
 
     inline bool operator!() const { return !i; }
 
-    inline bool testFlag(Enum f) const { return (i & f) == f && (f != 0 || i == f ); }
+    inline bool testFlag(Enum f) const { return (i & f) == f && (f != 0 || i == int(f) ); }
 };
 
 #define Q_DECLARE_FLAGS(Flags, Enum)\
@@ -2338,16 +2345,9 @@ Q_CORE_EXPORT QString qtTrId(const char *id, int n = -1);
    classes contains a private copy constructor and assignment
    operator to disable copying (the compiler gives an error message).
 */
-
-#if !defined(Q_NO_DECLARED_NOT_DEFINED) || !defined(QT_MAKEDLL)
-# define Q_DISABLE_COPY(Class) \
-     Class(const Class &); \
-     Class &operator=(const Class &);
-#else
-# define Q_DISABLE_COPY(Class) \
-     Class(const Class &); \
-     Class &operator=(const Class &);
-#endif
+#define Q_DISABLE_COPY(Class) \
+    Class(const Class &); \
+    Class &operator=(const Class &);
 
 class QByteArray;
 Q_CORE_EXPORT QByteArray qgetenv(const char *varName);
@@ -2384,6 +2384,19 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 #endif
 
 #if defined(Q_OS_SYMBIAN)
+
+#ifdef SYMBIAN_GRAPHICS_USE_GCE
+//RWsPointerCursor is fixed, so don't use low performance sprites
+#define Q_SYMBIAN_FIXED_POINTER_CURSORS
+#define Q_SYMBIAN_HAS_EXTENDED_BITMAP_TYPE
+//enabling new graphics resources
+#define QT_SYMBIAN_SUPPORTS_SGIMAGE
+#endif
+
+
+//Symbian does not support data imports from a DLL
+#define Q_NO_DATA_RELOCATION
+
 QT_END_NAMESPACE
 // forward declare std::exception
 #ifdef __cplusplus

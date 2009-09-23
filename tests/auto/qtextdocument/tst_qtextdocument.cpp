@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -99,6 +99,9 @@ private slots:
     void mightBeRichText();
 
     void task240325();
+
+    void stylesheetFont_data();
+    void stylesheetFont();
 
     void toHtml_data();
     void toHtml();
@@ -569,6 +572,63 @@ void tst_QTextDocument::task240325()
             QCOMPARE(text, QString::fromLatin1("Foobar"));
         }
     }
+}
+
+void tst_QTextDocument::stylesheetFont_data()
+{    
+    QTest::addColumn<QString>("stylesheet");
+    QTest::addColumn<QFont>("font");
+
+    {
+        QFont font;
+        font.setBold(true);
+        font.setPixelSize(64);
+
+        QTest::newRow("Regular font specification")
+                 << "font-size: 64px; font-weight: bold;"
+                 << font;
+    }
+
+
+    {
+        QFont font;
+        font.setBold(true);
+        font.setPixelSize(64);
+
+        QTest::newRow("Shorthand font specification")
+                << "font: normal bold 64px Arial;"
+                << font;
+    }
+
+}
+
+void tst_QTextDocument::stylesheetFont()
+{
+    QFETCH(QString, stylesheet);
+    QFETCH(QFont, font);
+
+    QString html = QString::fromLatin1("<html>"
+                                       "<body>"
+                                       "<div style=\"%1\" >"
+                                       "Foobar"
+                                       "</div>"
+                                       "</body>"
+                                       "</html>").arg(stylesheet);
+
+    qDebug() << html;
+    doc->setHtml(html);
+    QCOMPARE(doc->blockCount(), 1);
+
+    // First and only block
+    QTextBlock block = doc->firstBlock();
+
+    QString text = block.text();
+    QCOMPARE(text, QString::fromLatin1("Foobar"));
+
+    QFont actualFont = block.charFormat().font();
+
+    QCOMPARE(actualFont.bold(), font.bold());
+    QCOMPARE(actualFont.pixelSize(), font.pixelSize());
 }
 
 void tst_QTextDocument::noundo_moreIsModified()
@@ -1128,7 +1188,7 @@ void tst_QTextDocument::toHtml_data()
         QTest::newRow("lists") << QTextDocumentFragment(&doc)
                           <<
                              QString("EMPTYBLOCK") +
-                             QString("<ul style=\"-qt-list-indent: 1;\"><li DEFAULTBLOCKSTYLE>Blubb</li>\n<li DEFAULTBLOCKSTYLE>Blah</li></ul>");
+                             QString("<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li DEFAULTBLOCKSTYLE>Blubb</li>\n<li DEFAULTBLOCKSTYLE>Blah</li></ul>");
     }
 
     {
@@ -1151,7 +1211,7 @@ void tst_QTextDocument::toHtml_data()
         QTest::newRow("charfmt-for-list-item") << QTextDocumentFragment(&doc)
                           <<
                              QString("EMPTYBLOCK") +
-                             QString("<ul style=\"-qt-list-indent: 1;\"><li DEFAULTBLOCKSTYLE>Blubb</li>\n<li style=\" color:#0000ff;\" DEFAULTBLOCKSTYLE><span style=\" color:#ff0000;\">Blah</span></li></ul>");
+                             QString("<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li DEFAULTBLOCKSTYLE>Blubb</li>\n<li style=\" color:#0000ff;\" DEFAULTBLOCKSTYLE><span style=\" color:#ff0000;\">Blah</span></li></ul>");
     }
 
     {
@@ -1181,7 +1241,7 @@ void tst_QTextDocument::toHtml_data()
         QTest::newRow("list-indent") << QTextDocumentFragment(&doc)
                                   <<
                                     QString("EMPTYBLOCK") +
-                                    QString("<ul style=\"-qt-list-indent: 4;\"><li DEFAULTBLOCKSTYLE>Blah</li></ul>");
+                                    QString("<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 4;\"><li DEFAULTBLOCKSTYLE>Blah</li></ul>");
     }
 
     {
@@ -1444,6 +1504,20 @@ void tst_QTextDocument::toHtml_data()
                                       QString("<p OPENDEFAULTBLOCKSTYLE page-break-before:always;\">Foo</p>"
                                               "\n<p OPENDEFAULTBLOCKSTYLE page-break-before:always; page-break-after:always;\">Bar</p>"
                                               "\n<table border=\"1\" style=\" page-break-after:always;\" cellspacing=\"2\">\n<tr>\n<td></td></tr></table>");
+    }
+
+    {
+        CREATE_DOC_AND_CURSOR();
+
+        QTextListFormat listFmt;
+        listFmt.setStyle(QTextListFormat::ListDisc);
+
+        cursor.insertList(listFmt);
+        cursor.insertText("Blah");
+
+        QTest::newRow("list-ul-margin") << QTextDocumentFragment(&doc)
+                                        << QString("EMPTYBLOCK") +
+                                           QString("<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li DEFAULTBLOCKSTYLE>Blah</li></ul>");
     }
 }
 
@@ -2490,6 +2564,25 @@ void tst_QTextDocument::testUndoBlocks()
     QCOMPARE(doc->toPlainText(), QString("Hello WorldOne\nTwo\nThree"));
     doc->undo();
     QCOMPARE(doc->toPlainText(), QString("Hello World"));
+    cursor.insertText("One\nTwo\nThree");
+    cursor.insertText("Trailing text");
+    doc->undo();
+    QCOMPARE(doc->toPlainText(), QString("Hello WorldOne\nTwo\nThree"));
+    doc->undo();
+    QCOMPARE(doc->toPlainText(), QString("Hello World"));
+    doc->undo();
+    QCOMPARE(doc->toPlainText(), QString(""));
+
+    cursor.insertText("quod");
+    cursor.beginEditBlock();
+    cursor.insertText(" erat");
+    cursor.endEditBlock();
+    cursor.insertText(" demonstrandum");
+    QCOMPARE(doc->toPlainText(), QString("quod erat demonstrandum"));
+    doc->undo();
+    QCOMPARE(doc->toPlainText(), QString("quod erat"));
+    doc->undo();
+    QCOMPARE(doc->toPlainText(), QString("quod"));
     doc->undo();
     QCOMPARE(doc->toPlainText(), QString(""));
 }

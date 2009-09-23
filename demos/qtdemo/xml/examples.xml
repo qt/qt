@@ -25,7 +25,7 @@
     <example filename="appchooser" name="Appchooser" />
     <example filename="easing" name="Easing Curves" />
     <example filename="moveblocks" name="Moving Blocks" />
-    <example filename="states" name="UI States" />
+    <example filename="states" name="States" />
     <example filename="stickman" name="Stickman" />
   </category>
   <category dirname="qtconcurrent" name="Concurrent Programming">
@@ -184,7 +184,6 @@
   <category dirname="statemachine" name="State Machine">
     <example filename="eventtransitions" name="Event Transitions" />
     <example filename="rogue" name="Rogue" />
-    <example filename="tankgame" name="Tank Game" />
     <example filename="trafficlight" name="Traffic Light" />
     <example filename="twowaybutton" name="Two-way Button" />
   </category>
@@ -196,6 +195,7 @@
     <example filename="completer" name="Completer" />
     <example filename="customcompleter" name="Custom Completer" />
     <example filename="i18n" name="Internationalization" />
+    <example filename="inputpanel" name="Input Panel" />
     <example filename="plugandpaint" name="Plug and Paint" />
     <example filename="regexp" name="Regular Expressions" />
     <example filename="settingseditor" name="Settings Editor" />

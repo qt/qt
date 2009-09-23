@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -79,6 +79,7 @@
 #include <private/qcolor_p.h>
 #include <private/qcursor_p.h>
 #include <private/qiconloader_p.h>
+#include <private/gtksymbols_p.h>
 #include "qstyle.h"
 #include "qmetaobject.h"
 #include "qtimer.h"
@@ -189,10 +190,12 @@ static const char * x11_atomnames = {
     "TARGETS\0"
     "MULTIPLE\0"
     "TIMESTAMP\0"
+    "SAVE_TARGETS\0"
     "CLIP_TEMPORARY\0"
     "_QT_SELECTION\0"
     "_QT_CLIPBOARD_SENTINEL\0"
     "_QT_SELECTION_SENTINEL\0"
+    "CLIPBOARD_MANAGER\0"
 
     "RESOURCE_MANAGER\0"
 
@@ -1851,10 +1854,20 @@ void qt_init(QApplicationPrivate *priv, int,
             QX11InfoData *screen = X11->screens + s;
             screen->ref = 1; // ensures it doesn't get deleted
             screen->screen = s;
-            screen->dpiX = (DisplayWidth(X11->display, s) * 254 + DisplayWidthMM(X11->display, s)*5)
-                           / (DisplayWidthMM(X11->display, s)*10);
-            screen->dpiY = (DisplayHeight(X11->display, s) * 254 + DisplayHeightMM(X11->display, s)*5)
-                           / (DisplayHeightMM(X11->display, s)*10);
+
+            int widthMM = DisplayWidthMM(X11->display, s);
+            if (widthMM != 0) {
+                screen->dpiX = (DisplayWidth(X11->display, s) * 254 + widthMM * 5) / (widthMM * 10);
+            } else {
+                screen->dpiX = 72;
+            }
+
+            int heightMM = DisplayHeightMM(X11->display, s);
+            if (heightMM != 0) {
+                screen->dpiY = (DisplayHeight(X11->display, s) * 254 + heightMM * 5) / (heightMM * 10);
+            } else {
+                screen->dpiY = 72;
+            }
 
             X11->argbVisuals[s] = 0;
             X11->argbColormaps[s] = 0;
@@ -1905,9 +1918,12 @@ void qt_init(QApplicationPrivate *priv, int,
             bool local = displayName.isEmpty() || displayName.lastIndexOf(QLatin1Char(':')) == 0;
             if (local && (qgetenv("QT_X11_NO_MITSHM").toInt() == 0)) {
                 Visual *defaultVisual = DefaultVisual(X11->display, DefaultScreen(X11->display));
-                X11->use_mitshm = mitshm_pixmaps && (defaultVisual->red_mask == 0xff0000
-                                                     && defaultVisual->green_mask == 0xff00
-                                                     && defaultVisual->blue_mask == 0xff);
+                X11->use_mitshm = mitshm_pixmaps && ((defaultVisual->red_mask == 0xff0000
+                                                      || defaultVisual->red_mask == 0xf800)
+                                                     && (defaultVisual->green_mask == 0xff00
+                                                         || defaultVisual->green_mask == 0x7e0)
+                                                     && (defaultVisual->blue_mask == 0xff
+                                                         || defaultVisual->blue_mask == 0x1f));
             }
         }
 #endif // QT_NO_MITSHM
@@ -2274,6 +2290,12 @@ void qt_init(QApplicationPrivate *priv, int,
         if (X11->desktopEnvironment == DE_KDE)
             X11->desktopVersion = QString::fromLocal8Bit(qgetenv("KDE_SESSION_VERSION")).toInt();
 
+#if !defined(QT_NO_STYLE_GTK)
+        if (X11->desktopEnvironment == DE_GNOME) {
+            static bool menusHaveIcons = QGtk::getGConfBool(QLatin1String("/desktop/gnome/interface/menus_have_icons"), true);
+            QApplication::setAttribute(Qt::AA_DontShowIconsInMenus, !menusHaveIcons);
+        }
+#endif
         qt_set_input_encoding();
 
         qt_set_x11_resources(appFont, appFGCol, appBGCol, appBTNCol);
@@ -2799,8 +2821,6 @@ void QApplicationPrivate::applyX11SpecificCommandLineArguments(QWidget *main_wid
 /*****************************************************************************
   QApplication cursor stack
  *****************************************************************************/
-
-extern void qt_x11_enforce_cursor(QWidget * w);
 
 void QApplication::setOverrideCursor(const QCursor &cursor)
 {
@@ -4497,7 +4517,9 @@ void fetchWacomToolId(int &deviceType, qint64 &serialId)
 
 struct qt_tablet_motion_data
 {
-    Time timestamp;
+    bool filterByWidget;
+    const QWidget *widget;
+    const QWidget *etWidget;
     int tabletMotionType;
     bool error; // found a reason to stop searching
 };
@@ -4520,15 +4542,20 @@ static Bool qt_tabletMotion_scanner(Display *, XEvent *event, XPointer arg)
     qt_tablet_motion_data *data = (qt_tablet_motion_data *) arg;
     if (data->error)
         return false;
-
     if (event->type == data->tabletMotionType) {
-        if (data->timestamp > 0) {
-            if ((reinterpret_cast<const XDeviceMotionEvent*>(event))->time > data->timestamp) {
-                data->error = true;
-                return false;
+        const XDeviceMotionEvent *const motion = reinterpret_cast<const XDeviceMotionEvent*>(event);
+        if (data->filterByWidget) {
+            const QPoint curr(motion->x, motion->y);
+            const QWidget *w = data->etWidget;
+            const QWidget *const child = w->childAt(curr);
+            if (child) {
+                w = child;
             }
+            if (w == data->widget)
+                return true;
+        } else {
+            return true;
         }
-        return true;
     }
 
     data->error = event->type != MotionNotify; // we stop compression when another event gets in between.
@@ -4561,57 +4588,17 @@ bool QETWidget::translateXinputEvent(const XEvent *ev, QTabletDeviceData *tablet
     qreal rotation = 0;
     int deviceType = QTabletEvent::NoDevice;
     int pointerType = QTabletEvent::UnknownPointer;
-    XEvent mouseMotionEvent;
     const XDeviceMotionEvent *motion = 0;
     XDeviceButtonEvent *button = 0;
     const XProximityNotifyEvent *proximity = 0;
     QEvent::Type t;
     Qt::KeyboardModifiers modifiers = 0;
-    bool reinsertMouseEvent = false;
-    XEvent mouseMotionEventSave;
 #if !defined (Q_OS_IRIX)
     XID device_id;
 #endif
 
     if (ev->type == tablet->xinput_motion) {
         motion = reinterpret_cast<const XDeviceMotionEvent*>(ev);
-
-        // Do event compression.  Skip over tablet+mouse move events if there are newer ones.
-        qt_tablet_motion_data tabletMotionData;
-        tabletMotionData.tabletMotionType = tablet->xinput_motion;
-        XEvent dummy;
-        while (true) {
-            // Find first mouse event since we expect them in pairs inside Qt
-            tabletMotionData.error =false;
-            tabletMotionData.timestamp = 0;
-            if (XCheckIfEvent(X11->display, &mouseMotionEvent, &qt_mouseMotion_scanner, (XPointer) &tabletMotionData)) {
-                mouseMotionEventSave = mouseMotionEvent;
-                reinsertMouseEvent = true;
-            } else {
-                break;
-            }
-
-            // Now discard any duplicate tablet events.
-            tabletMotionData.error = false;
-            tabletMotionData.timestamp = mouseMotionEvent.xmotion.time;
-            while (XCheckIfEvent(X11->display, &dummy, &qt_tabletMotion_scanner, (XPointer) &tabletMotionData)) {
-                motion = reinterpret_cast<const XDeviceMotionEvent*>(&dummy);
-            }
-
-            // now check if there are more recent tablet motion events since we'll compress the current one with
-            // newer ones in that case
-            tabletMotionData.error = false;
-            tabletMotionData.timestamp = 0;
-            if (! XCheckIfEvent(X11->display, &dummy, &qt_tabletMotion_scanner, (XPointer) &tabletMotionData)) {
-                break; // done with compression
-            }
-            motion = reinterpret_cast<const XDeviceMotionEvent*>(&dummy);
-        }
-
-        if (reinsertMouseEvent) {
-            XPutBackEvent(X11->display, &mouseMotionEventSave);
-        }
-
         t = QEvent::TabletMove;
         global = QPoint(motion->x_root, motion->y_root);
         curr = QPoint(motion->x, motion->y);
@@ -4764,11 +4751,14 @@ bool QETWidget::translateXinputEvent(const XEvent *ev, QTabletDeviceData *tablet
     }
 #endif
 
-    QWidget *child = w->childAt(curr);
-    if (child) {
-        w = child;
-        curr = w->mapFromGlobal(global);
+    if (tablet->widgetToGetPress) {
+        w = tablet->widgetToGetPress;
+    } else {
+        QWidget *child = w->childAt(curr);
+        if (child)
+            w = child;
     }
+    curr = w->mapFromGlobal(global);
 
     if (t == QEvent::TabletPress) {
         tablet->widgetToGetPress = w;
@@ -4782,10 +4772,45 @@ bool QETWidget::translateXinputEvent(const XEvent *ev, QTabletDeviceData *tablet
                    deviceType, pointerType,
                    qreal(pressure / qreal(tablet->maxPressure - tablet->minPressure)),
                    xTilt, yTilt, tangentialPressure, rotation, z, modifiers, uid);
-    if (proximity)
+    if (proximity) {
         QApplication::sendSpontaneousEvent(qApp, &e);
-    else
+    } else {
         QApplication::sendSpontaneousEvent(w, &e);
+        const bool accepted = e.isAccepted();
+        if (!accepted && ev->type == tablet->xinput_motion) {
+            // If the widget does not accept tablet events, we drop the next ones from the event queue
+            // for this widget so it is not overloaded with the numerous tablet events.
+            qt_tablet_motion_data tabletMotionData;
+            tabletMotionData.tabletMotionType = tablet->xinput_motion;
+            tabletMotionData.widget = w;
+            tabletMotionData.etWidget = this;
+            // if nothing is pressed, the events are filtered by position
+            tabletMotionData.filterByWidget = (tablet->widgetToGetPress == 0);
+
+            bool reinsertMouseEvent = false;
+            XEvent mouseMotionEvent;
+            while (true) {
+                // Find first mouse event since we expect them in pairs inside Qt
+                tabletMotionData.error =false;
+                if (XCheckIfEvent(X11->display, &mouseMotionEvent, &qt_mouseMotion_scanner, (XPointer) &tabletMotionData)) {
+                    reinsertMouseEvent = true;
+                } else {
+                    break;
+                }
+
+                // Now discard any duplicate tablet events.
+                tabletMotionData.error = false;
+                XEvent dummy;
+                while (XCheckIfEvent(X11->display, &dummy, &qt_tabletMotion_scanner, (XPointer) &tabletMotionData)) {
+                    // just discard the event
+                }
+            }
+
+            if (reinsertMouseEvent) {
+                XPutBackEvent(X11->display, &mouseMotionEvent);
+            }
+        }
+    }
     return true;
 }
 #endif
@@ -5391,7 +5416,8 @@ class QSessionManagerPrivate : public QObjectPrivate
 {
 public:
     QSessionManagerPrivate(QSessionManager* mgr, QString& id, QString& key)
-        : QObjectPrivate(), sm(mgr), sessionId(id), sessionKey(key), eventLoop(0) {}
+        : QObjectPrivate(), sm(mgr), sessionId(id), sessionKey(key),
+            restartHint(QSessionManager::RestartIfRunning), eventLoop(0) {}
     QSessionManager* sm;
     QStringList restartCommand;
     QStringList discardCommand;

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -330,6 +330,7 @@ void HtmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
 #ifdef ZZZ_QDOC_QML
     findAllQmlClasses(tree->root());
 #endif
+    findAllSince(tree->root(),tree->version());
 
     PageGenerator::generateTree(tree, marker);
 
@@ -543,8 +544,10 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             QMap<QString, const Node*> nodeMap;
             for (int i = 0; i < values.size(); ++i) {
                 const Node* n = values.at(i);
-                if ((n->status() != Node::Internal) && (n->access() != Node::Private))
-                    nodeMap.insert(n->name(),n);
+                if ((n->status() != Node::Internal) && (n->access() != Node::Private)) {
+                    nodeMap.insert(n->nameForLists(),n);
+                    //qDebug() << "  " << n->nameForLists();
+                }
             }
             generateAnnotatedList(relative, marker, nodeMap);
         }
@@ -650,7 +653,26 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             }
         }
         break;
-    case Atom::Image:
+    case Atom::SinceList:
+        {
+            QList<Node*> values;
+            if (atom->string() == "classes") {
+                values = sinceClasses.values();
+            }
+            else if (atom->string() == "functions") {
+                values = sinceFunctions.values();
+            }
+            if (!values.isEmpty()) {
+                QMap<QString, const Node*> nodeMap;
+                for (int i=0; i<values.size(); ++i) {
+                    const Node* n = values.at(i);
+                    nodeMap.insert(n->nameForLists(),n);
+                }
+                generateAnnotatedList(relative, marker, nodeMap);
+            }
+        }
+        break;
+case Atom::Image:
     case Atom::InlineImage:
         {
             QString fileName = imageFileName(relative, atom->string());
@@ -3486,6 +3508,40 @@ void HtmlGenerator::findAllClasses(const InnerNode *node)
             }
             else if ((*c)->isInnerNode()) {
                 findAllClasses(static_cast<InnerNode *>(*c));
+            }
+        }
+        ++c;
+    }
+}
+
+/*!
+  For generating the "Since x.y" page.
+ */
+void HtmlGenerator::findAllSince(const InnerNode *node, QString version)
+{
+    NodeList::const_iterator c = node->childNodes().constBegin();
+    while (c != node->childNodes().constEnd()) {
+        if (((*c)->access() != Node::Private) && ((*c)->since() == version)) {
+            if ((*c)->type() == Node::Function) {
+                FunctionNode *func = static_cast<FunctionNode *>(*c);
+                if ((func->status() > Node::Obsolete) &&
+                    (func->metaness() != FunctionNode::Ctor) &&
+                    (func->metaness() != FunctionNode::Dtor)) {
+                    sinceFunctions.insert(func->name(), func);
+                }
+            }
+            else if ((*c)->url().isEmpty()) {
+                if ((*c)->type() == Node::Class && !(*c)->doc().isEmpty()) {
+                    QString className = (*c)->name();
+                    if ((*c)->parent() &&
+                        (*c)->parent()->type() == Node::Namespace &&
+                        !(*c)->parent()->name().isEmpty())
+                        className = (*c)->parent()->name()+"::"+className;
+                    sinceClasses.insert(className, *c);
+                }
+            }
+            if ((*c)->isInnerNode()) {
+                findAllSince(static_cast<InnerNode *>(*c),version);
             }
         }
         ++c;

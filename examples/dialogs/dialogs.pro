@@ -16,4 +16,4 @@ sources.files = README *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/dialogs
 INSTALLS += sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.example.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,47 +44,117 @@
     \startpage index.html Qt Reference Documentation
 
     \title Gestures Programming
-    \ingroup howto
+    \ingroup frameworks-technologies
+
     \brief An overview of the Qt support for Gesture programming.
 
-    The QGesture class provides the ability to form gestures from a series
-    of events independent of the input method. A gesture could be a particular
-    movement of a mouse, a touch screen action, or a series of events from
-    some other source. The nature of the input, the interpretation
-    of the gesture and the action taken are the choice of the implementing
+    Qt includes a framework for gesture programming that gives has the ability
+    to form gestures from a series of events, independently of the input methods
+    used. A gesture could be a particular movement of a mouse, a touch screen
+    action, or a series of events from some other source. The nature of the input,
+    the interpretation of the gesture and the action taken are the choice of the
     developer.
 
     \tableofcontents
 
+    \section1 Overview
 
-    \section1   Creating Your Own Gesture Recognizer
+    QGesture is the central class in Qt's gesture framework, providing
+    the API used by classes that represent specific gestures, such as
+    QPanGesture, QPinchGesture, and QSwipeGesture. These standard
+    classes are ready to use, and each exposes functions and
+    properties that give gesture-specific information about the user's
+    input. This is described in the \l{Using Standard Gestures With Widgets}
+    section.
+
+    QGesture is also designed to be subclassed and extended so that
+    support for new gestures can be implemented by developers. Adding
+    support for a new gesture involves implementing code to recognize
+    the gesture from incoming events. This is described in the
+    \l{Creating Your Own Gesture Recognizer} section.
+
+    \section1 Using Standard Gestures with Widgets
+
+    Gesture objects are applied directly to widgets and other controls that accept
+    user input \mdash these are the \e{target objects}. When a gesture object is
+    constructed, the target object is typically passed to the constructor, though
+    it can also be passed as the argument to the \l{QGesture::}{setGestureTarget()}
+    function.
+
+    \snippet examples/gestures/imageviewer/imagewidget.cpp construct swipe gesture
+
+    In the above code, the gesture is set up in the constructor of the target object
+    itself, so the argument to the QSwipeGesture constructor is \e this.
+
+    When the user performs a gesture, various signals may be emitted by the
+    gesture object. To monitor the user's actions, you need to connect signals
+    from the gesture object to slots in your code.
+
+    \snippet examples/gestures/imageviewer/imagewidget.cpp connect swipe gesture
+
+    Here, the \l{QGesture::}{triggered()} signal is used to inform the application
+    that a gesture was used. More precise monitoring of a gesture can be implemented
+    by connecting its \l{QGesture::}{started()}, \l{QGesture::}{canceled()} and
+    \l{QGesture::}{finished()} signals to slots.
+
+    Responding to a signal is simply a matter of obtaining the gesture that sent
+    it and examining the information it contains.
+
+    \snippet examples/gestures/imageviewer/imagewidget.cpp swipe slot start
+
+    \snippet examples/gestures/imageviewer/imagewidget.cpp swipe slot finish
+
+    Here, we examine the direction in which the user swiped the widget and modify
+    its contents accordingly.
+
+    \section1 Using Standard Gestures with Graphics Items
+
+    The approach used for applying gestures to widgets can also be used with
+    graphics items. However, instead of passing a target object to the
+    gesture object's constructor, you set a target graphics item with the
+    \l{QGesture::}{setGraphicsItem()} function.
+
+    \section1 Creating Your Own Gesture Recognizer
 
     QGesture is a base class for a user defined gesture recognizer class. In
     order to implement the recognizer you will need to subclass the
-    QGesture class and implement the pure virtual function \l{QGesture::filterEvent()}{filterEvent()}. Once
-    you have implemented the \l{QGesture::filterEvent()}{filterEvent()} function to
+    QGesture class and implement the pure virtual function
+    \l{QGesture::}{filterEvent()} to filter out events that are not relevant
+    to your gesture.
+
+    Once you have implemented the \l{QGesture::}{filterEvent()} function to
     make your own recognizer you can process events. A sequence of events may,
     according to your own rules, represent a gesture. The events can be singly
-    passed to the recognizer via the \l{QGesture::filterEvent()}{filterEvent()} function or as a stream of
-    events by specifying a parent source of events. The events can be from any
-    source and could result in any action as defined by the user. The source
-    and action need not be graphical though that would be the most likely
-    scenario. To find how to connect a source of events to automatically feed into the recognizer see QGesture.
+    passed to the recognizer via the \l{QGesture::}{filterEvent()} function
+    or as a stream of events by specifying a parent source of events. The events
+    can be from any source and could result in any action as defined by the user.
+    The source and action need not be graphical, though that would be the most
+    likely scenario. To find how to connect a source of events to automatically
+    feed into the recognizer see the QGesture documentation.
 
-    Recognizers based on QGesture can emit any of the following signals:
+    Recognizers based on QGesture can emit any of the following signals to
+    indicate their progress in recognizing user input:
 
-    \snippet doc/src/snippets/gestures/qgesture.h  qgesture-signals
+    \list
+    \o \l{QGesture::}{triggered()} is emitted when a gesture is recognized.
+    \o \l{QGesture::}{started()} indicates that the gesture object has started
+    to recognize user input.
+    \o \l{QGesture::}{finished()} is emitted when the gesture object has
+    recognized the user input as a gesture, and finished handling it.
+    \o \l{QGesture::}{canceled()} indicates that the gesture was canceled,
+    either by the user or by the application.
+    \endlist
 
     These signals are emitted when the state changes with the call to
-    \l{QGesture::updateState()}{updateState()}, more than one signal may
+    \l{QGesture::}{updateState()}, more than one signal may
     be emitted when a change of state occurs. There are four GestureStates
 
     \table
-    \header \o New State                \o Description              \o QGesture Actions on Entering this State
-    \row    \o Qt::NoGesture        \o Initial value            \o emit \l {QGesture::cancelled()}{cancelled()}
-    \row    \o Qt::GestureStarted   \o A continuous gesture has started \o emit \l{QGesture::started()}{started()} and emit \l{QGesture::triggered()}{triggered()}
-    \row    \o Qt::GestureUpdated   \o A gesture continues      \o emit \l{QGesture::triggered()}{triggered()}
-    \row    \o Qt::GestureFinished  \o A gesture has finished.  \o emit \l{QGesture::finished()}{finished()}
+    \header \o New State            \o Description              \o QGesture Actions on Entering this State
+    \row    \o Qt::NoGesture        \o Initial value            \o emit \l {QGesture::}{canceled()}
+    \row    \o Qt::GestureStarted   \o A continuous gesture has started \o emit \l{QGesture::}{started()} and emit \l{QGesture::}{triggered()}
+    \row    \o Qt::GestureUpdated   \o A gesture continues      \o emit \l{QGesture::}{triggered()}
+    \row    \o Qt::GestureFinished  \o A gesture has finished.  \o emit \l{QGesture::}{finished()}
     \endtable
 
     \note \l{QGesture::started()}{started()} can be emitted if entering any
@@ -105,12 +175,12 @@
     conclude with a call to \l{QGesture::updateState()}{updateState()} to
     change the current state to Qt::NoGesture.
 
-    \section1   An Example, ImageViewer
+    \section1 The ImageViewer Example
 
     To illustrate how to use QGesture we will look at the ImageViewer
-    example. This example uses QPanGesture, standard gesture, and an
+    example. This example uses QPanGesture, a standard gesture, and an
     implementation of TapAndHoldGesture. Note that TapAndHoldGesture is
-    platform dependent.
+    platform-dependent.
 
     \snippet doc/src/snippets/gestures/imageviewer/tapandholdgesture.cpp tapandhold-reset
 
@@ -130,13 +200,13 @@
     then the gesture is considered to have finished whether or not the
     appropriate touch or mouse event has occurred. Also if a large jump in
     the position of the event occurs, as calculated by the \l {QPoint::manhattanLength()}{manhattanLength()}
-    call, then the gesture is cancelled by calling \l{QGesture::reset()}{reset()}
+    call, then the gesture is canceled by calling \l{QGesture::reset()}{reset()}
     which tidies up  and uses \l{QGesture::updateState()}{updateState()} to
-    change state to NoGesture which will result in the \l{QGesture::cancelled()}{cancelled()}
+    change state to NoGesture which will result in the \l{QGesture::canceled()}{canceled()}
     signal being emitted by the recognizer.
 
     ImageWidget handles the signals by connecting the slots to the signals,
-    although \c cancelled() is not connected here.
+    although \c canceled() is not connected here.
 
     \snippet doc/src/snippets/gestures/imageviewer/imagewidget.cpp  imagewidget-connect
 
@@ -156,15 +226,11 @@
     Following the logic of how the QEvent is processed we can summmarize
     it as follows:
     \list
-        \o filterEvent() becomes the event filter of the parent ImageWidget object for a QPanGesture object and a
-    TapAndHoldGesture object.
+        \o filterEvent() becomes the event filter of the parent ImageWidget object
+        for a QPanGesture object and a TapAndHoldGesture object.
         \o filterEvent() then calls updateState() to change states
         \o updateState() emits the appropriate signal(s) for the state change.
         \o The signals are caught by the defined slots in ImageWidget
         \o The widget logic changes and an update() results in a paint event.
     \endlist
-
-
-
 */
-

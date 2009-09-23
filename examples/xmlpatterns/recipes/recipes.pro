@@ -10,4 +10,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.xq *.html forms files
 sources.path = $$[QT_INSTALL_EXAMPLES]/xmlpatterns/recipes
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

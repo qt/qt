@@ -1,15 +1,23 @@
-QT          += opengl
+VPATH += ../shared
+INCLUDEPATH += ../shared
 
-HEADERS     = bubble.h \
-              glwidget.h
-SOURCES     = bubble.cpp \
-              glwidget.cpp \
-              main.cpp
+QT += opengl
+HEADERS = bubble.h \
+    glwidget.h \
+    qtlogo.h
+SOURCES = bubble.cpp \
+    glwidget.cpp \
+    main.cpp \
+    qtlogo.cpp
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/opengl/overpainting
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS overpainting.pro
+sources.files = $$SOURCES \
+    $$HEADERS \
+    $$RESOURCES \
+    $$FORMS \
+    overpainting.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/opengl/overpainting
-INSTALLS += target sources
-
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
+INSTALLS += target \
+    sources
+symbian:include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'qtgradientview.ui'
 **
-** Created: Thu Jul 10 09:47:35 2008
-**      by: Qt User Interface Compiler version 4.5.0
+** Created: Fri Sep 4 10:17:14 2009
+**      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -114,7 +114,6 @@ public:
         editButton->setText(QApplication::translate("QtGradientView", "Edit...", 0, QApplication::UnicodeUTF8));
         renameButton->setText(QApplication::translate("QtGradientView", "Rename", 0, QApplication::UnicodeUTF8));
         removeButton->setText(QApplication::translate("QtGradientView", "Remove", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(QtGradientView);
     } // retranslateUi
 
 };

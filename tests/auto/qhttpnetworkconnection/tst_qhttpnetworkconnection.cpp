@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -103,6 +103,9 @@ private Q_SLOTS:
     void get401_data();
     void get401();
 
+    void getMultiple_data();
+    void getMultiple();
+    void getMultipleWithPipeliningAndMultiplePriorities();
 };
 
 tst_QHttpNetworkConnection::tst_QHttpNetworkConnection()
@@ -186,7 +189,9 @@ void tst_QHttpNetworkConnection::head()
 
     QCOMPARE(reply->statusCode(), statusCode);
     QCOMPARE(reply->reasonPhrase(), statusString);
-    QCOMPARE(reply->contentLength(), qint64(contentLength));
+    // only check it if it is set
+    if (reply->contentLength() != -1)
+        QCOMPARE(reply->contentLength(), qint64(contentLength));
 
     QVERIFY(reply->isFinished());
 
@@ -246,7 +251,9 @@ void tst_QHttpNetworkConnection::get()
 
     QCOMPARE(reply->statusCode(), statusCode);
     QCOMPARE(reply->reasonPhrase(), statusString);
-    QCOMPARE(reply->contentLength(), qint64(contentLength));
+    // only check it if it is set
+    if (reply->contentLength() != -1)
+        QCOMPARE(reply->contentLength(), qint64(contentLength));
 
     stopWatch.start();
     QByteArray ba;
@@ -313,6 +320,7 @@ void tst_QHttpNetworkConnection::put()
 
     QByteArray array = data.toLatin1();
     QNonContiguousByteDevice *bd = QNonContiguousByteDeviceFactory::create(&array);
+    bd->setParent(this);
     request.setUploadByteDevice(bd);
 
     finishedCalled = false;
@@ -404,6 +412,7 @@ void tst_QHttpNetworkConnection::post()
 
     QByteArray array = data.toLatin1();
     QNonContiguousByteDevice *bd = QNonContiguousByteDeviceFactory::create(&array);
+    bd->setParent(this);
     request.setUploadByteDevice(bd);
 
     QHttpNetworkReply *reply = connection.sendRequest(request);
@@ -780,6 +789,124 @@ void tst_QHttpNetworkConnection::nossl()
     delete reply;
 }
 #endif
+
+
+void tst_QHttpNetworkConnection::getMultiple_data()
+{
+    QTest::addColumn<quint16>("connectionCount");
+    QTest::addColumn<bool>("pipeliningAllowed");
+    // send 100 requests. apache will usually force-close after 100 requests in a single tcp connection
+    QTest::addColumn<int>("requestCount");
+
+    QTest::newRow("6 connections, no pipelining, 100 requests")  << quint16(6) << false << 100;
+    QTest::newRow("1 connection, no pipelining, 100 requests")  << quint16(1) << false << 100;
+    QTest::newRow("6 connections, pipelining allowed, 100 requests")  << quint16(2) << true << 100;
+    QTest::newRow("1 connection, pipelining allowed, 100 requests")  << quint16(1) << true << 100;
+}
+
+void tst_QHttpNetworkConnection::getMultiple()
+{
+    QFETCH(quint16, connectionCount);
+    QFETCH(bool, pipeliningAllowed);
+    QFETCH(int, requestCount);
+
+    QHttpNetworkConnection connection(connectionCount, QtNetworkSettings::serverName());
+
+    QList<QHttpNetworkRequest*> requests;
+    QList<QHttpNetworkReply*> replies;
+
+    for (int i = 0; i < requestCount; i++) {
+        // depending on what you use the results will vary.
+        // for the "real" results, use a URL that has "internet latency" for you. Then (6 connections, pipelining) will win.
+        // for LAN latency, you will possibly get that (1 connection, no pipelining) is the fastest
+        QHttpNetworkRequest *request = new QHttpNetworkRequest("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
+        // located in Berlin:
+        //QHttpNetworkRequest *request = new QHttpNetworkRequest(QUrl("http://klinsmann.nokia.trolltech.de/~berlin/qtcreatorad.gif"));
+        if (pipeliningAllowed)
+            request->setPipeliningAllowed(true);
+        requests.append(request);
+        QHttpNetworkReply *reply = connection.sendRequest(*request);
+        replies.append(reply);
+    }
+
+    QTime stopWatch;
+    stopWatch.start();
+    int finishedCount = 0;
+    do {
+        QCoreApplication::instance()->processEvents();
+        if (stopWatch.elapsed() >= 60000)
+            break;
+
+        finishedCount = 0;
+        for (int i = 0; i < replies.length(); i++)
+            if (replies.at(i)->isFinished())
+                finishedCount++;
+
+    } while (finishedCount != replies.length());
+
+    // redundant
+    for (int i = 0; i < replies.length(); i++)
+        QVERIFY(replies.at(i)->isFinished());
+
+    qDebug() << "===" << stopWatch.elapsed() << "msec ===";
+
+    qDeleteAll(requests);
+    qDeleteAll(replies);
+}
+
+void tst_QHttpNetworkConnection::getMultipleWithPipeliningAndMultiplePriorities()
+{
+    quint16 requestCount = 100;
+
+    // use 2 connections.
+    QHttpNetworkConnection connection(2, QtNetworkSettings::serverName());
+
+    QList<QHttpNetworkRequest*> requests;
+    QList<QHttpNetworkReply*> replies;
+
+    for (int i = 0; i < requestCount; i++) {
+
+        QHttpNetworkRequest *request = new QHttpNetworkRequest("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
+        
+        if (i % 2 || i % 3)
+            request->setPipeliningAllowed(true);
+        
+        if (i % 3)
+            request->setPriority(QHttpNetworkRequest::HighPriority);
+        else if (i % 5)
+            request->setPriority(QHttpNetworkRequest::NormalPriority);
+        else if (i % 7)
+            request->setPriority(QHttpNetworkRequest::LowPriority);
+        
+        requests.append(request);
+        QHttpNetworkReply *reply = connection.sendRequest(*request);
+        replies.append(reply);
+    }
+
+    QTime stopWatch;
+    stopWatch.start();
+    int finishedCount = 0;
+    do {
+        QCoreApplication::instance()->processEvents();
+        if (stopWatch.elapsed() >= 60000)
+            break;
+
+        finishedCount = 0;
+        for (int i = 0; i < replies.length(); i++)
+            if (replies.at(i)->isFinished())
+                finishedCount++;
+
+    } while (finishedCount != replies.length());
+
+    // redundant
+    for (int i = 0; i < replies.length(); i++)
+        QVERIFY(replies.at(i)->isFinished());
+
+    qDebug() << "===" << stopWatch.elapsed() << "msec ===";
+
+    qDeleteAll(requests);
+    qDeleteAll(replies);
+}
 
 QTEST_MAIN(tst_QHttpNetworkConnection)
 #include "tst_qhttpnetworkconnection.moc"

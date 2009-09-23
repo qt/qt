@@ -14,4 +14,4 @@ sources.files = $$SOURCES $$HEADERS $$FORMS $$RESOURCES *.png *.jpg *.pro
 sources.path = $$[QT_INSTALL_DEMOS]/mainwindow
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/demos/demobase.pri)
+symbian: include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -131,7 +131,6 @@ QPicture::QPicture(int formatVersion)
       d_ptr(new QPicturePrivate)
 {
     Q_D(QPicture);
-    d_ptr->q_ptr = this;
 
     if (formatVersion == 0)
         qWarning("QPicture: invalid format version 0");
@@ -141,8 +140,7 @@ QPicture::QPicture(int formatVersion)
         d->formatMajor = formatVersion;
         d->formatMinor = 0;
         d->formatOk = false;
-    }
-    else {
+    } else {
         d->resetFormat();
     }
 }
@@ -154,9 +152,8 @@ QPicture::QPicture(int formatVersion)
 */
 
 QPicture::QPicture(const QPicture &pic)
-    : QPaintDevice(), d_ptr(pic.d_ptr.data())
+    : QPaintDevice(), d_ptr(pic.d_ptr)
 {
-    d_func()->ref.ref();
 }
 
 /*! \internal */
@@ -164,7 +161,6 @@ QPicture::QPicture(QPicturePrivate &dptr)
     : QPaintDevice(),
       d_ptr(&dptr)
 {
-    d_ptr->q_ptr = this;
 }
 
 /*!
@@ -225,8 +221,7 @@ const char* QPicture::data() const
 
 void QPicture::detach()
 {
-    if (d_func()->ref != 1)
-        detach_helper();
+    d_ptr.detach();
 }
 
 bool QPicture::isDetached() const
@@ -1012,22 +1007,16 @@ int QPicture::metric(PaintDeviceMetric m) const
 /*! \fn bool QPicture::isDetached() const
 \internal
 */
+
+/*! \internal
+### Qt 5 - remove me
+ */
 void QPicture::detach_helper()
 {
-    Q_D(QPicture);
-    QPicturePrivate *x = new QPicturePrivate;
-    int pictsize = size();
-    x->pictb.setData(data(), pictsize);
-    if (d->pictb.isOpen()) {
-        x->pictb.open(d->pictb.openMode());
-        x->pictb.seek(d->pictb.pos());
-    }
-    x->trecs = d->trecs;
-    x->formatOk = d->formatOk;
-    x->formatMinor = d->formatMinor;
-    x->brect = d->brect;
-    x->override_rect = d->override_rect;
-    d_ptr.reset(x);
+    // QExplicitelySharedDataPointer takes care of cloning using
+    // QPicturePrivate's copy constructor. Do not call detach_helper() anymore
+    // and remove in Qt 5, please.
+    Q_ASSERT_X(false, "QPicture::detach_helper()", "Do not call this function");
 }
 
 /*!
@@ -1036,7 +1025,7 @@ void QPicture::detach_helper()
 */
 QPicture& QPicture::operator=(const QPicture &p)
 {
-    d_ptr.assign(p.d_ptr.data());
+    d_ptr = p.d_ptr;
     return *this;
 }
 
@@ -1046,10 +1035,28 @@ QPicture& QPicture::operator=(const QPicture &p)
   Constructs a QPicturePrivate
 */
 QPicturePrivate::QPicturePrivate()
-    : in_memory_only(false),
-      q_ptr(0)
+    : in_memory_only(false)
 {
-    ref = 1;
+}
+
+/*!
+  \internal
+
+  Copy-Constructs a QPicturePrivate. Needed when detaching.
+*/
+QPicturePrivate::QPicturePrivate(const QPicturePrivate &other)
+    : trecs(other.trecs),
+      formatOk(other.formatOk),
+      formatMinor(other.formatMinor),
+      brect(other.brect),
+      override_rect(other.override_rect),
+      in_memory_only(false)
+{
+    pictb.setData(other.pictb.data(), other.pictb.size());
+    if (other.pictb.isOpen()) {
+        pictb.open(other.pictb.openMode());
+        pictb.seek(other.pictb.pos());
+    }
 }
 
 /*!

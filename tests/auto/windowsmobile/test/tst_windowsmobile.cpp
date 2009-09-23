@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -46,7 +46,7 @@
 #include <QtGui>
 #ifdef Q_OS_WINCE_WM
 #include <windows.h>
-#include <ddhelper.h>
+#include "ddhelper.h"
 #endif
 
 
@@ -62,14 +62,14 @@ public:
 #endif
     }
 
-#ifdef Q_OS_WINCE_WM
+#if defined(Q_OS_WINCE_WM) && defined(_WIN32_WCE) && _WIN32_WCE <= 0x501
     private slots:
         void testMainWindowAndMenuBar();
         void testSimpleWidget();
 #endif
 };
 
-#ifdef Q_OS_WINCE_WM
+#if defined(Q_OS_WINCE_WM) && defined(_WIN32_WCE) && _WIN32_WCE <= 0x501
 
 bool qt_wince_is_platform(const QString &platformString) {
     wchar_t tszPlatform[64];
@@ -120,8 +120,6 @@ void openMenu()
 
 void compareScreenshots(const QString &image1, const QString &image2)
 {
-    if (qt_wince_is_smartphone())
-        QSKIP("This test is only for Windows Mobile", SkipAll);
     QImage screenShot(image1);
     QImage original(image2);
 
@@ -145,6 +143,9 @@ void takeScreenShot(const QString filename)
 
 void tst_WindowsMobile::testMainWindowAndMenuBar()
 {
+    if (qt_wince_is_smartphone())
+        QSKIP("This test is only for Windows Mobile", SkipAll);
+
     QProcess process;
     process.start("testQMenuBar.exe");
     QCOMPARE(process.state(), QProcess::Running);
@@ -158,6 +159,9 @@ void tst_WindowsMobile::testMainWindowAndMenuBar()
 
 void tst_WindowsMobile::testSimpleWidget()
 {
+    if (qt_wince_is_smartphone())
+        QSKIP("This test is only for Windows Mobile", SkipAll);
+
     QMenuBar menubar;
     menubar.show();
     QWidget maximized;

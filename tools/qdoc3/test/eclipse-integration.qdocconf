@@ -2,9 +2,9 @@ include(qt.qdocconf)
 
 headerdirs = 
 sourcedirs =
-sourcedirs = $QTDIR/../qteclipsetools/main/doc
-imagedirs = $QTDIR/../qteclipsetools/main/doc
-outputdir = $QTDIR/../qteclipsetools/main/doc/html
+sourcedirs = $QTDIR/../qteclipsetools/eclipse_patched/doc
+imagedirs = $QTDIR/../qteclipsetools/eclipse_patched/doc
+outputdir = $QTDIR/../qteclipsetools/eclipse_patched/doc/html
 
 project               = Qt Eclipse Integration
 description           = "Qt Eclipse Integration"

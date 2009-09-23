@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the qmake application of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,6 +44,8 @@
 #include "option.h"
 #include "cachekeys.h"
 
+#include "epocroot.h"
+
 #include <qdatetime.h>
 #include <qfile.h>
 #include <qfileinfo.h>
@@ -52,8 +54,6 @@
 #include <qtextstream.h>
 #include <qstack.h>
 #include <qhash.h>
-#include <qxmlstream.h>
-#include <qsettings.h>
 #include <qdebug.h>
 #ifdef Q_OS_UNIX
 #include <unistd.h>
@@ -79,7 +79,7 @@ enum ExpandFunc { E_MEMBER=1, E_FIRST, E_LAST, E_CAT, E_FROMFILE, E_EVAL, E_LIST
                   E_SPRINTF, E_JOIN, E_SPLIT, E_BASENAME, E_DIRNAME, E_SECTION,
                   E_FIND, E_SYSTEM, E_UNIQUE, E_QUOTE, E_ESCAPE_EXPAND,
                   E_UPPER, E_LOWER, E_FILES, E_PROMPT, E_RE_ESCAPE, E_REPLACE,
-                  E_GENERATE_TEST_UID, E_SIZE };
+                  E_SIZE };
 QMap<QString, ExpandFunc> qmake_expandFunctions()
 {
     static QMap<QString, ExpandFunc> *qmake_expand_functions = 0;
@@ -110,7 +110,6 @@ QMap<QString, ExpandFunc> qmake_expandFunctions()
         qmake_expand_functions->insert("files", E_FILES);
         qmake_expand_functions->insert("prompt", E_PROMPT);
         qmake_expand_functions->insert("replace", E_REPLACE);
-        qmake_expand_functions->insert("generate_test_uid", E_GENERATE_TEST_UID);
         qmake_expand_functions->insert("size", E_SIZE);
     }
     return *qmake_expand_functions;
@@ -157,91 +156,6 @@ QMap<QString, TestFunc> qmake_testFunctions()
     }
     return *qmake_test_functions;
 }
-
-QT_END_NAMESPACE
-
-#ifdef QTSCRIPT_SUPPORT
-#include "qscriptvalue.h"
-#include "qscriptengine.h"
-#include "qscriptvalueiterator.h"
-
-QT_BEGIN_NAMESPACE
-
-static QScriptValue qscript_projectWrapper(QScriptEngine *eng, QMakeProject *project,
-                                    const QMap<QString, QStringList> &place);
-
-static bool qscript_createQMakeProjectMap(QMap<QString, QStringList> &vars, QScriptValue js)
-{
-    QScriptValueIterator it(js);
-    while(it.hasNext()) {
-        it.next();
-        vars[it.name()] = qscriptvalue_cast<QStringList>(it.value());
-    }
-    return true;
-}
-
-static QScriptValue qscript_call_testfunction(QScriptContext *context, QScriptEngine *engine)
-{
-    QMakeProject *self = qscriptvalue_cast<QMakeProject*>(context->callee().property("qmakeProject"));
-    QString func = context->callee().property("functionName").toString();
-    QStringList args;
-    for(int i = 0; i < context->argumentCount(); ++i)
-        args += context->argument(i).toString();
-    QMap<QString, QStringList> place = self->variables();
-    qscript_createQMakeProjectMap(place, engine->globalObject().property("qmake"));
-    QScriptValue ret(engine, self->doProjectTest(func, args, place));
-    engine->globalObject().setProperty("qmake", qscript_projectWrapper(engine, self, place));
-    return ret;
-}
-
-static QScriptValue qscript_call_expandfunction(QScriptContext *context, QScriptEngine *engine)
-{
-    QMakeProject *self = qscriptvalue_cast<QMakeProject*>(context->callee().property("qmakeProject"));
-    QString func = context->callee().property("functionName").toString();
-    QStringList args;
-    for(int i = 0; i < context->argumentCount(); ++i)
-        args += context->argument(i).toString();
-    QMap<QString, QStringList> place = self->variables();
-    qscript_createQMakeProjectMap(place, engine->globalObject().property("qmake"));
-    QScriptValue ret = qScriptValueFromValue(engine, self->doProjectExpand(func, args, place));
-    engine->globalObject().setProperty("qmake", qscript_projectWrapper(engine, self, place));
-    return ret;
-}
-
-static QScriptValue qscript_projectWrapper(QScriptEngine *eng, QMakeProject *project,
-                                           const QMap<QString, QStringList> &place)
-{
-    QScriptValue ret = eng->newObject();
-    {
-        QStringList testFuncs = qmake_testFunctions().keys() + project->userTestFunctions();
-        for(int i = 0; i < testFuncs.size(); ++i) {
-            QString funcName = testFuncs.at(i);
-            QScriptValue fun = eng->newFunction(qscript_call_testfunction);
-            fun.setProperty("qmakeProject", eng->newVariant(qVariantFromValue(project)));
-            fun.setProperty("functionName", QScriptValue(eng, funcName));
-            eng->globalObject().setProperty(funcName, fun);
-        }
-    }
-    {
-        QStringList testFuncs = qmake_expandFunctions().keys() + project->userExpandFunctions();
-        for(int i = 0; i < testFuncs.size(); ++i) {
-            QString funcName = testFuncs.at(i);
-            QScriptValue fun = eng->newFunction(qscript_call_expandfunction);
-            fun.setProperty("qmakeProject", eng->newVariant(qVariantFromValue(project)));
-            fun.setProperty("functionName", QScriptValue(eng, funcName));
-            eng->globalObject().setProperty(funcName, fun);
-        }
-    }
-    for(QMap<QString, QStringList>::ConstIterator it = place.begin(); it != place.end(); ++it)
-        ret.setProperty(it.key(), qScriptValueFromValue(eng, it.value()));
-    return ret;
-}
-
-QT_END_NAMESPACE
-
-#endif
-
-QT_BEGIN_NAMESPACE
 
 struct parser_info {
     QString file;
@@ -1887,27 +1801,8 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QMap<QString, QStringL
     bool parsed = false;
     parser_info pi = parser;
     if(format == JSFormat) {
-#ifdef QTSCRIPT_SUPPORT
-        eng.globalObject().setProperty("qmake", qscript_projectWrapper(&eng, this, place));
-        QFile f(file);
-        if (f.open(QFile::ReadOnly)) {
-            QString code = f.readAll();
-            QScriptValue r = eng.evaluate(code);
-            if(eng.hasUncaughtException()) {
-                const int lineNo = eng.uncaughtExceptionLineNumber();
-                fprintf(stderr, "%s:%d: %s\n", file.toLatin1().constData(), lineNo,
-                        r.toString().toLatin1().constData());
-            } else {
-                parsed = true;
-                QScriptValue variables = eng.globalObject().property("qmake");
-                if (variables.isValid() && variables.isObject())
-                    qscript_createQMakeProjectMap(place, variables);
-            }
-        }
-#else
         warn_msg(WarnParser, "%s:%d: QtScript support disabled for %s.",
                  pi.file.toLatin1().constData(), pi.line_no, orig_file.toLatin1().constData());
-#endif
     } else {
         QStack<ScopeBlock> sc = scope_blocks;
         IteratorBlock *it = iterator;
@@ -2395,22 +2290,6 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
                 ret += it->replace(before, after);
         }
         break; }
-    case E_GENERATE_TEST_UID: {
-        if(args.count() != 1) {
-            fprintf(stderr, "%s:%d: generate_test_uid(targetname) requires one argument.\n",
-                    parser.file.toLatin1().constData(), parser.line_no);
-        } else {
-            QString target = args[0];
-
-            QString currPath = qmake_getpwd();
-            target.prepend("/").prepend(currPath);
-
-
-            QString tmp = generate_test_uid(target);
-
-            ret += tmp;
-        }
-        break; }
     case E_SIZE: {
         if(args.count() != 1) {
             fprintf(stderr, "%s:%d: size(var) requires one argument.\n",
@@ -2422,19 +2301,6 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
         }
         break; }
     default: {
-#ifdef QTSCRIPT_SUPPORT
-        {
-            QScriptValue jsFunc = eng.globalObject().property(func);
-            if(jsFunc.isFunction()) {
-                QScriptValueList jsArgs;
-                for(int i = 0; i < args.size(); ++i)
-                    jsArgs += QScriptValue(&eng, args.at(i));
-                QScriptValue jsRet = jsFunc.call(eng.globalObject(), jsArgs);
-                ret = qscriptvalue_cast<QStringList>(jsRet);
-                break;
-            }
-        }
-#endif
         fprintf(stderr, "%s:%d: Unknown replace function: %s\n",
                 parser.file.toLatin1().constData(), parser.line_no,
                 func.toLatin1().constData());
@@ -2903,20 +2769,6 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QSt
 #endif
         return true; }
     default:
-#ifdef QTSCRIPT_SUPPORT
-        {
-            QScriptValue jsFunc = eng.globalObject().property(func);
-            if(jsFunc.isFunction()) {
-                QScriptValueList jsArgs;
-                for(int i = 0; i < args.size(); ++i)
-                    jsArgs += QScriptValue(&eng, args.at(i));
-                QScriptValue jsRet = jsFunc.call(eng.globalObject(), jsArgs);
-                if(eng.hasUncaughtException())
-                    return false;
-                return qscriptvalue_cast<bool>(jsRet);
-            }
-        }
-#endif
         fprintf(stderr, "%s:%d: Unknown test function: %s\n", parser.file.toLatin1().constData(), parser.line_no,
                 func.toLatin1().constData());
     }
@@ -3306,152 +3158,6 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
     }
     //qDebug("REPLACE [%s]->[%s]", qPrintable(var), qPrintable(place[var].join("::")));
     return place[var];
-}
-
-
-// UIDs starting with 0xE are test UIDs in symbian
-QString generate_test_uid(const QString& target)
-{
-    QString tmp = generate_uid(target);
-    tmp.replace(0, 1, "E");
-    tmp.prepend("0x");
-
-    return tmp;
-}
-
-
-// UIDs starting with 0xE are test UIDs in symbian
-QString generate_uid(const QString& target)
-{
-    static QMap<QString, QString> targetToUid;
-
-    QString tmp = targetToUid[target];
-
-    if (!tmp.isEmpty()) {
-        return tmp;
-    }
-
-    unsigned long hash = 5381;
-    int c;
-
-    for (int i = 0; i < target.size(); ++i) {
-        c = target.at(i).toAscii();
-        hash ^= c + ((c - i) << i % 20) + ((c + i) << (i + 5) % 20) + ((c - 2 * i) << (i + 10) % 20) + ((c + 2 * i) << (i + 15) % 20);
-    }
-
-    tmp.setNum(hash, 16);
-    for (int i = tmp.size(); i < 8; ++i)
-        tmp.prepend("0");
-
-#if 0
-    static QMap<QString, QString> uidConflictCheckList;
-    QString testStr = tmp;
-    testStr.replace(0, 1, "E"); // Simulate actual UID generation
-    if (uidConflictCheckList.contains(testStr)) {
-        printf("\n\n!!!! generated duplicate uid for %s is %s <-> %s !!!!\n\n\n",
-               qPrintable(target),
-               qPrintable(testStr),
-               qPrintable(uidConflictCheckList.value(testStr)));
-    }
-    uidConflictCheckList.insert(testStr, target);
-    printf("generate_uid for %s is %s \n", qPrintable(target), qPrintable(tmp));
-#endif
-
-    targetToUid[target] = tmp;
-
-    return tmp;
-}
-
-static void fixEpocRootStr(QString& path)
-{
-    path.replace("\\", "/");
-
-    if (path.size() > 1 && path[1] == QChar(':')) {
-        path = path.mid(2);
-    }
-
-    if (!path.size() || path[path.size()-1] != QChar('/')) {
-        path += QChar('/');
-    }
-}
-
-#define SYMBIAN_SDKS_KEY "HKEY_LOCAL_MACHINE\\Software\\Symbian\\EPOC SDKs"
-
-static QString epocRootStr;
-
-QString epocRoot()
-{
-    if (!epocRootStr.isEmpty()) {
-        return epocRootStr;
-    }
-
-    // First, check the env variable
-    epocRootStr = qgetenv("EPOCROOT");
-
-    if (epocRootStr.isEmpty()) {
-        // No EPOCROOT set, check the default device
-        // First check EPOCDEVICE env variable
-        QString defaultDevice = qgetenv("EPOCDEVICE");
-
-        // Check the windows registry via QSettings for devices.xml path
-        QSettings settings(SYMBIAN_SDKS_KEY, QSettings::NativeFormat);
-        QString devicesXmlPath = settings.value("CommonPath").toString();
-
-        if (!devicesXmlPath.isEmpty()) {
-            // Parse xml for correct device
-            devicesXmlPath += "/devices.xml";
-            QFile devicesFile(devicesXmlPath);
-            if (devicesFile.open(QIODevice::ReadOnly)) {
-                QXmlStreamReader xml(&devicesFile);
-                while (!xml.atEnd()) {
-                    xml.readNext();
-                    if (xml.isStartElement() && xml.name() == "devices") {
-                        if (xml.attributes().value("version") == "1.0") {
-                            // Look for correct device
-                            while (!(xml.isEndElement() && xml.name() == "devices") && !xml.atEnd()) {
-                                xml.readNext();
-                                if (xml.isStartElement() && xml.name() == "device") {
-                                    if ((defaultDevice.isEmpty() && xml.attributes().value("default") == "yes") ||
-                                        (!defaultDevice.isEmpty() && (xml.attributes().value("id").toString() + QString(":") + xml.attributes().value("name").toString()) == defaultDevice)) {
-                                        // Found the correct device
-                                        while (!(xml.isEndElement() && xml.name() == "device") && !xml.atEnd()) {
-                                            xml.readNext();
-                                            if (xml.isStartElement() && xml.name() == "epocroot") {
-                                                epocRootStr = xml.readElementText();
-                                                fixEpocRootStr(epocRootStr);
-                                                return epocRootStr;
-                                            }
-                                        }
-                                        xml.raiseError("No epocroot element found");
-                                    }
-                                }
-                            }
-                        } else {
-                            xml.raiseError("Invalid 'devices' element version");
-                        }
-                    }
-                }
-                if (xml.hasError()) {
-                    fprintf(stderr, "ERROR: \"%s\" when parsing devices.xml\n", qPrintable(xml.errorString()));
-                }
-            } else {
-                fprintf(stderr, "Could not open devices.xml (%s)\n", qPrintable(devicesXmlPath));
-            }
-        } else {
-            fprintf(stderr, "Could not retrieve " SYMBIAN_SDKS_KEY " setting\n");
-        }
-
-        fprintf(stderr, "Failed to determine epoc root.\n");
-        if (!defaultDevice.isEmpty())
-            fprintf(stderr, "The device indicated by EPOCDEVICE environment variable (%s) could not be found.\n", qPrintable(defaultDevice));
-        fprintf(stderr, "Either set EPOCROOT or EPOCDEVICE environment variable to a valid value, or provide a default Symbian device.\n");
-
-        // No valid device found; set epocroot to "/"
-        epocRootStr = QLatin1String("/");
-    }
-
-    fixEpocRootStr(epocRootStr);
-    return epocRootStr;
 }
 
 QT_END_NAMESPACE

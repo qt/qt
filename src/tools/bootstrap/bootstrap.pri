@@ -55,7 +55,7 @@ hpux-acc*|hpuxi-acc* {
    unix:LIBS += -lz
 #  win32:LIBS += libz.lib
 }
-win32:!win32-mwc:LIBS += -luser32
+win32:LIBS += -luser32
 
 mac {
     CONFIG -= incremental

@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2003, 2006, 2007 Apple Inc.  All rights reserved.
+ * Copyright (C) 2008-2009 Torch Mobile, Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -48,8 +49,8 @@ typedef QPainter PlatformGraphicsContext;
 class wxGCDC;
 class wxWindowDC;
 
-// wxGraphicsContext allows us to support Path, etc. 
-// but on some platforms, e.g. Linux, it requires fairly 
+// wxGraphicsContext allows us to support Path, etc.
+// but on some platforms, e.g. Linux, it requires fairly
 // new software.
 #if USE(WXGC)
 // On OS X, wxGCDC is just a typedef for wxDC, so use wxDC explicitly to make
@@ -65,6 +66,12 @@ class wxWindowDC;
 #endif
 #elif PLATFORM(SKIA)
 typedef class PlatformContextSkia PlatformGraphicsContext;
+#elif PLATFORM(HAIKU)
+class BView;
+typedef BView PlatformGraphicsContext;
+struct pattern;
+#elif PLATFORM(WINCE)
+typedef struct HDC__ PlatformGraphicsContext;
 #else
 typedef void PlatformGraphicsContext;
 #endif
@@ -88,6 +95,12 @@ typedef unsigned char UInt8;
 
 namespace WebCore {
 
+#if PLATFORM(WINCE) && !PLATFORM(QT)
+    class SharedBitmap;
+    class SimpleFontData;
+    class GlyphBuffer;
+#endif
+
     const int cMisspellingLineThickness = 3;
     const int cMisspellingLinePatternWidth = 4;
     const int cMisspellingLinePatternGapWidth = 1;
@@ -109,7 +122,7 @@ namespace WebCore {
     const int cTextFill = 1;
     const int cTextStroke = 2;
     const int cTextClip = 4;
-    
+
     enum StrokeStyle {
         NoStroke,
         SolidStroke,
@@ -117,12 +130,12 @@ namespace WebCore {
         DashedStroke
     };
 
-// FIXME: This is a place-holder until we decide to add
-// real color space support to WebCore.  At that time, ColorSpace will be a
-// class and instances will be held  off of Colors.   There will be
-// special singleton Gradient and Pattern color spaces to mark when
-// a fill or stroke is using a gradient or pattern instead of a solid color.
-// https://bugs.webkit.org/show_bug.cgi?id=20558
+    // FIXME: This is a place-holder until we decide to add
+    // real color space support to WebCore.  At that time, ColorSpace will be a
+    // class and instances will be held  off of Colors.   There will be
+    // special singleton Gradient and Pattern color spaces to mark when
+    // a fill or stroke is using a gradient or pattern instead of a solid color.
+    // https://bugs.webkit.org/show_bug.cgi?id=20558
     enum ColorSpace {
         SolidColorSpace,
         PatternColorSpace,
@@ -141,9 +154,11 @@ namespace WebCore {
     public:
         GraphicsContext(PlatformGraphicsContext*);
         ~GraphicsContext();
-       
+
+#if !PLATFORM(WINCE) || PLATFORM(QT)
         PlatformGraphicsContext* platformContext() const;
-        
+#endif
+
         float strokeThickness() const;
         void setStrokeThickness(float);
         StrokeStyle strokeStyle() const;
@@ -219,7 +234,7 @@ namespace WebCore {
                        CompositeOperator = CompositeSourceOver, bool useLowQualityScale = false);
         void drawTiledImage(Image*, const IntRect& destRect, const IntPoint& srcPoint, const IntSize& tileSize,
                        CompositeOperator = CompositeSourceOver);
-        void drawTiledImage(Image*, const IntRect& destRect, const IntRect& srcRect, 
+        void drawTiledImage(Image*, const IntRect& destRect, const IntRect& srcRect,
                             Image::TileRule hRule = Image::StretchTile, Image::TileRule vRule = Image::StretchTile,
                             CompositeOperator = CompositeSourceOver);
 
@@ -243,13 +258,13 @@ namespace WebCore {
         void drawHighlightForText(const Font&, const TextRun&, const IntPoint&, int h, const Color& backgroundColor, int from = 0, int to = -1);
 
         FloatRect roundToDevicePixels(const FloatRect&);
-        
+
         void drawLineForText(const IntPoint&, int width, bool printing);
         void drawLineForMisspellingOrBadGrammar(const IntPoint&, int width, bool grammar);
-        
+
         bool paintingDisabled() const;
         void setPaintingDisabled(bool);
-        
+
         bool updatingControlTints() const;
         void setUpdatingControlTints(bool);
 
@@ -288,13 +303,29 @@ namespace WebCore {
         void rotate(float angleInRadians);
         void translate(float x, float y);
         IntPoint origin();
-        
+
         void setURLForRect(const KURL&, const IntRect&);
 
         void concatCTM(const TransformationMatrix&);
         TransformationMatrix getCTM() const;
 
-#if PLATFORM(WIN)
+#if PLATFORM(WINCE) && !PLATFORM(QT)
+        void setBitmap(PassRefPtr<SharedBitmap>);
+        const TransformationMatrix& affineTransform() const;
+        TransformationMatrix& affineTransform();
+        void resetAffineTransform();
+        void fillRect(const FloatRect&, const Gradient*);
+        void drawText(const SimpleFontData* fontData, const GlyphBuffer& glyphBuffer, int from, int numGlyphs, const FloatPoint& point);
+        void drawFrameControl(const IntRect& rect, unsigned type, unsigned state);
+        void drawFocusRect(const IntRect& rect);
+        void paintTextField(const IntRect& rect, unsigned state);
+        void drawBitmap(SharedBitmap*, const IntRect& dstRect, const IntRect& srcRect, CompositeOperator compositeOp);
+        void drawBitmapPattern(SharedBitmap*, const FloatRect& tileRectIn, const TransformationMatrix& patternTransform, const FloatPoint& phase, CompositeOperator op, const FloatRect& destRect, const IntSize& origSourceSize);
+        void drawIcon(HICON icon, const IntRect& dstRect, UINT flags);
+        HDC getWindowsContext(const IntRect&, bool supportAlphaBlend = false, bool mayCreateBitmap = true); // The passed in rect is used to create a bitmap for compositing inside transparency layers.
+        void releaseWindowsContext(HDC, const IntRect&, bool supportAlphaBlend = false, bool mayCreateBitmap = true);    // The passed in HDC should be the one handed back by getWindowsContext.
+        void drawRoundCorner(bool newClip, RECT clipRect, RECT rectWin, HDC dc, int width, int height);
+#elif PLATFORM(WIN)
         GraphicsContext(HDC, bool hasAlpha = false); // FIXME: To be removed.
         bool inTransparencyLayer() const;
         HDC getWindowsContext(const IntRect&, bool supportAlphaBlend = true, bool mayCreateBitmap = true); // The passed in rect is used to create a bitmap for compositing inside transparency layers.
@@ -354,6 +385,10 @@ namespace WebCore {
         GdkEventExpose* gdkExposeEvent() const;
 #endif
 
+#if PLATFORM(HAIKU)
+        pattern getHaikuStrokeStyle();
+#endif
+
     private:
         void savePlatformState();
         void restorePlatformState();
@@ -375,6 +410,8 @@ namespace WebCore {
 
         void setPlatformShadow(const IntSize&, int blur, const Color&);
         void clearPlatformShadow();
+
+        static void adjustLineToPixelBoundaries(FloatPoint& p1, FloatPoint& p2, float strokeWidth, const StrokeStyle&);
 
         int focusRingWidth() const;
         int focusRingOffset() const;

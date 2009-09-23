@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -47,6 +47,7 @@
 #include "qlocale.h"
 #include "qlocale_p.h"
 #include "qunicodetables_p.h"
+#include "qscopedpointer.h"
 #ifndef QT_NO_DATASTREAM
 #include <qdatastream.h>
 #endif
@@ -535,38 +536,49 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     ulong expectedSize = (data[0] << 24) | (data[1] << 16) |
                        (data[2] <<  8) | (data[3]      );
     ulong len = qMax(expectedSize, 1ul);
-    QByteArray baunzip;
-    int res;
-    do {
-        QT_TRY {
-            baunzip.resize(len);
-            res = ::uncompress((uchar*)baunzip.data(), &len,
-                                (uchar*)data+4, nbytes-4);
-        } QT_CATCH (const std::bad_alloc &) {
-            res = Z_MEM_ERROR;
+    QScopedPointer<QByteArray::Data, QScopedPointerPodDeleter> d;
+
+    forever {
+        ulong alloc = len;
+        d.reset(q_check_ptr(static_cast<QByteArray::Data *>(qRealloc(d.data(), sizeof(QByteArray::Data) + alloc))));
+        if (!d) {
+            // we are not allowed to crash here when compiling with QT_NO_EXCEPTIONS
+            qWarning("qUncompress: could not allocate enough memory to uncompress data");
+            return QByteArray();
         }
+
+        int res = ::uncompress((uchar*)d->array, &len,
+                               (uchar*)data+4, nbytes-4);
 
         switch (res) {
         case Z_OK:
-            if ((int)len != baunzip.size())
-                baunzip.resize(len);
-            break;
+            if (len != alloc) {
+                d.reset(q_check_ptr(static_cast<QByteArray::Data *>(qRealloc(d.data(), sizeof(QByteArray::Data) + len))));
+                if (!d) {
+                    // we are not allowed to crash here when compiling with QT_NO_EXCEPTIONS
+                    qWarning("qUncompress: could not allocate enough memory to uncompress data");
+                    return QByteArray();
+                }
+            }
+            d->ref = 1;
+            d->alloc = d->size = len;
+            d->data = d->array;
+
+            return QByteArray(d.take(), 0, 0);
+
         case Z_MEM_ERROR:
             qWarning("qUncompress: Z_MEM_ERROR: Not enough memory");
-            break;
+            return QByteArray();
+
         case Z_BUF_ERROR:
             len *= 2;
-            break;
+            continue;
+
         case Z_DATA_ERROR:
             qWarning("qUncompress: Z_DATA_ERROR: Input data is corrupted");
-            break;
+            return QByteArray();
         }
-    } while (res == Z_BUF_ERROR);
-
-    if (res != Z_OK)
-        baunzip = QByteArray();
-
-    return baunzip;
+    }
 }
 #endif
 
@@ -1467,8 +1479,19 @@ QByteArray &QByteArray::prepend(const QByteArray &ba)
 
 QByteArray &QByteArray::prepend(const char *str)
 {
+    return prepend(str, qstrlen(str));
+}
+
+/*!
+    \overload
+    \since 4.6
+
+    Prepends \a len bytes of the string \a str to this byte array.
+*/
+
+QByteArray &QByteArray::prepend(const char *str, int len)
+{
     if (str) {
-        int len = qstrlen(str);
         if (d->ref != 1 || d->size + len > d->alloc)
             realloc(qAllocMore(d->size + len, sizeof(Data)));
         memmove(d->data+len, d->data, d->size);
@@ -1675,6 +1698,22 @@ QByteArray &QByteArray::insert(int i, const QByteArray &ba)
 QByteArray &QByteArray::insert(int i, const char *str)
 {
     return qbytearray_insert(this, i, str, qstrlen(str));
+}
+
+/*!
+    \overload
+    \since 4.6
+
+    Inserts \a len bytes of the string \a str at position
+    \a i in the byte array.
+
+    If \a i is greater than size(), the array is first extended using
+    resize().
+*/
+
+QByteArray &QByteArray::insert(int i, const char *str, int len)
+{
+    return qbytearray_insert(this, i, str, len);
 }
 
 /*!
@@ -4098,6 +4137,10 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
 /*! \typedef QByteArray::reference
     \internal
 */
+
+/*! \typedef QByteArray::value_type
+  \internal
+ */
 
 /*!
     \fn QByteArray::QByteArray(int size)

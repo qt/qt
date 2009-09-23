@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -421,7 +421,24 @@ static bool qt_unix_query(const QString &library, uint *version, bool *debug, QB
 #endif // Q_OS_UNIX && !Q_OS_MAC && !defined(Q_OS_SYMBIAN) && !defined(QT_NO_PLUGIN_CHECK)
 
 typedef QMap<QString, QLibraryPrivate*> LibraryMap;
-Q_GLOBAL_STATIC(LibraryMap, libraryMap)
+
+struct LibraryData {
+    LibraryData() : settings(0) { }
+    ~LibraryData() {
+        delete settings;
+    }
+
+    QSettings *settings;
+    LibraryMap libraryMap;
+};
+
+Q_GLOBAL_STATIC(LibraryData, libraryData)
+
+static LibraryMap *libraryMap()
+{
+    LibraryData *data = libraryData();
+    return data ? &data->libraryMap : 0;
+}
 
 QLibraryPrivate::QLibraryPrivate(const QString &canonicalFileName, const QString &version)
     :pHnd(0), fileName(canonicalFileName), fullVersion(version), instance(0), qt_version(0),
@@ -499,9 +516,12 @@ bool QLibraryPrivate::loadPlugin()
     if (load()) {
         instance = (QtPluginInstanceFunction)resolve("qt_plugin_instance");
 #if defined(Q_OS_SYMBIAN)
-        // If resolving with function name failed (i.e. not STDDLL), try resolving using known ordinal
-        if (!instance)
+        if (!instance) {
+            // If resolving with function name failed (i.e. not STDDLL),
+            // try resolving using known ordinal, which for
+            // qt_plugin_instance function is always "2".
             instance = (QtPluginInstanceFunction)resolve("2");
+        }
 #endif
         return instance;
     }
@@ -611,10 +631,12 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
                      .arg(fileName);
     QStringList reg;
 #ifndef QT_NO_SETTINGS
-    QScopedPointer<QSettings> madeSettings;
     if (!settings) {
-        settings = new QSettings(QSettings::UserScope, QLatin1String("Trolltech"));
-        madeSettings.reset(settings);
+        settings = libraryData()->settings;
+        if (!settings) {
+            settings = new QSettings(QSettings::UserScope, QLatin1String("Trolltech"));
+            libraryData()->settings = settings;
+        }
     }
     reg = settings->value(regkey).toStringList();
 #endif
@@ -706,9 +728,6 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
         settings->setValue(regkey, queried);
 #endif
     }
-#ifndef QT_NO_SETTINGS
-    madeSettings.reset();
-#endif
 
     if (!success) {
         if (errorString.isEmpty()){

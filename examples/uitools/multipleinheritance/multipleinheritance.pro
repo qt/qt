@@ -10,4 +10,7 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/uitools/multipleinheritance
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
+symbian {
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    TARGET.UID3 = 0xA000D7C1
+}

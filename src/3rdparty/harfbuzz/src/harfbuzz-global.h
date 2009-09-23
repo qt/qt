@@ -28,13 +28,7 @@
 #ifndef HARFBUZZ_GLOBAL_H
 #define HARFBUZZ_GLOBAL_H
 
-// Bug in stdlib.h, see more information from fixed_stdlib.h
-#if (defined __SYMBIAN32__ && !defined __cplusplus)
-#include <fixed_stdlib.h>
-#else
 #include <stdlib.h>
-#endif  // defined __SYMBIAN32__ && !defined __cplusplus
-
 #include <string.h>
 
 #ifdef __cplusplus

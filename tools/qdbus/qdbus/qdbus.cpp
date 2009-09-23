@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -108,19 +108,28 @@ static void printArg(const QVariant &v)
 
 static void listObjects(const QString &service, const QString &path)
 {
-    QDBusInterface iface(service, path.isEmpty() ? QLatin1String("/") : path,
-                         QLatin1String("org.freedesktop.DBus.Introspectable"), connection);
-    if (!iface.isValid()) {
-        QDBusError err(iface.lastError());
-        fprintf(stderr, "Cannot introspect object %s at %s:\n%s (%s)\n",
-                qPrintable(path.isEmpty() ? QString(QLatin1String("/")) : path), qPrintable(service),
-                qPrintable(err.name()), qPrintable(err.message()));
-        exit(1);
-    }
-    QDBusReply<QString> xml = iface.call(QLatin1String("Introspect"));
+    // make a low-level call, to avoid introspecting the Introspectable interface
+    QDBusMessage call = QDBusMessage::createMethodCall(service, path.isEmpty() ? QLatin1String("/") : path,
+                                                       QLatin1String("org.freedesktop.DBus.Introspectable"),
+                                                       QLatin1String("Introspect"));
+    QDBusReply<QString> xml = connection.call(call);
 
-    if (!xml.isValid())
-        return;                 // silently
+    if (path.isEmpty()) {
+        // top-level
+        if (xml.isValid()) {
+            printf("/\n");
+        } else {
+            QDBusError err = xml.error();
+            if (err.type() == QDBusError::ServiceUnknown)
+                fprintf(stderr, "Service '%s' does not exist.\n", qPrintable(service));
+            else
+                printf("Error: %s\n%s\n", qPrintable(err.name()), qPrintable(err.message()));
+            exit(2);
+        }
+    } else if (!xml.isValid()) {
+        // this is not the first object, just fail silently
+        return;
+    }
 
     QDomDocument doc;
     doc.setContent(xml);
@@ -192,18 +201,20 @@ static void listInterface(const QString &service, const QString &path, const QSt
 
 static void listAllInterfaces(const QString &service, const QString &path)
 {
-    QDBusInterface iface(service, path, QLatin1String("org.freedesktop.DBus.Introspectable"), connection);
-    if (!iface.isValid()) {
-        QDBusError err(iface.lastError());
-        fprintf(stderr, "Cannot introspect object %s at %s:\n%s (%s)\n",
-                qPrintable(path), qPrintable(service),
-                qPrintable(err.name()), qPrintable(err.message()));
-        exit(1);
-    }
-    QDBusReply<QString> xml = iface.call(QLatin1String("Introspect"));
+    // make a low-level call, to avoid introspecting the Introspectable interface
+    QDBusMessage call = QDBusMessage::createMethodCall(service, path.isEmpty() ? QLatin1String("/") : path,
+                                                       QLatin1String("org.freedesktop.DBus.Introspectable"),
+                                                       QLatin1String("Introspect"));
+    QDBusReply<QString> xml = connection.call(call);
 
-    if (!xml.isValid())
-        return;                 // silently
+    if (!xml.isValid()) {
+        QDBusError err = xml.error();
+        if (err.type() == QDBusError::ServiceUnknown)
+            fprintf(stderr, "Service '%s' does not exist.\n", qPrintable(service));
+        else
+            printf("Error: %s\n%s\n", qPrintable(err.name()), qPrintable(err.message()));
+        exit(2);
+    }
 
     QDomDocument doc;
     doc.setContent(xml);
@@ -241,13 +252,9 @@ static void placeCall(const QString &service, const QString &path, const QString
                const QString &member, QStringList args)
 {
     QDBusInterface iface(service, path, interface, connection);
-    if (!iface.isValid()) {
-        QDBusError err(iface.lastError());
-        fprintf(stderr, "Interface '%s' not available in object %s at %s:\n%s (%s)\n",
-                qPrintable(interface), qPrintable(path), qPrintable(service),
-                qPrintable(err.name()), qPrintable(err.message()));
-        exit(1);
-    }
+
+    // Don't check whether the interface is valid to allow DBus try to
+    // activate the service if possible.
 
     QVariantList params;
     if (!args.isEmpty()) {
@@ -344,7 +351,10 @@ static void placeCall(const QString &service, const QString &path, const QString
     QDBusMessage reply = iface.callWithArgumentList(QDBus::Block, member, params);
     if (reply.type() == QDBusMessage::ErrorMessage) {
         QDBusError err = reply;
-        printf("Error: %s\n%s\n", qPrintable(err.name()), qPrintable(err.message()));
+        if (err.type() == QDBusError::ServiceUnknown)
+            fprintf(stderr, "Service '%s' does not exist.\n", qPrintable(service));
+        else
+            printf("Error: %s\n%s\n", qPrintable(err.name()), qPrintable(err.message()));
         exit(2);
     } else if (reply.type() != QDBusMessage::ReplyMessage) {
         fprintf(stderr, "Invalid reply type %d\n", int(reply.type()));
@@ -438,13 +448,8 @@ int main(int argc, char **argv)
         fprintf(stderr, "Service '%s' is not a valid name.\n", qPrintable(service));
         exit(1);
     }
-    if (!bus->isServiceRegistered(service)) {
-        fprintf(stderr, "Service '%s' does not exist.\n", qPrintable(service));
-        exit(1);
-    }
 
     if (args.isEmpty()) {
-        printf("/\n");
         listObjects(service, QString());
         exit(0);
     }

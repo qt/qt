@@ -38,6 +38,7 @@
 #include "Text.h"
 #include "htmlediting.h"
 #include "visible_units.h"
+#include "ApplyStyleCommand.h"
 
 namespace WebCore {
 
@@ -63,7 +64,7 @@ void InsertParagraphSeparatorCommand::calculateStyleBeforeInsertion(const Positi
     if (!isStartOfParagraph(visiblePos) && !isEndOfParagraph(visiblePos))
         return;
     
-    m_style = styleAtPosition(pos);
+    m_style = editingStyleAtPosition(pos, IncludeTypingStyle);
 }
 
 void InsertParagraphSeparatorCommand::applyStyleAfterInsertion(Node* originalEnclosingBlock)
@@ -79,8 +80,9 @@ void InsertParagraphSeparatorCommand::applyStyleAfterInsertion(Node* originalEnc
         
     if (!m_style)
         return;
+    
+    prepareEditingStyleToApplyAt(m_style.get(), endingSelection().start());
 
-    computedStyle(endingSelection().start().node())->diff(m_style.get());
     if (m_style->length() > 0)
         applyStyle(m_style.get());
 }
@@ -232,7 +234,7 @@ void InsertParagraphSeparatorCommand::doApply()
     if (isStartOfParagraph(visiblePos)) {
         RefPtr<Element> br = createBreakElement(document());
         insertNodeAt(br.get(), insertionPosition);
-        insertionPosition = positionAfterNode(br.get());
+        insertionPosition = positionInParentAfterNode(br.get());
     }
     
     // Move downstream. Typing style code will take care of carrying along the 

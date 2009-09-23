@@ -36,7 +36,7 @@ INCLUDEPATH = $$QMAKE_INCDIR_QT $$INCLUDEPATH #prepending prevents us from picki
 win32:INCLUDEPATH += $$QMAKE_INCDIR_QT/ActiveQt
 
 # As order does matter for static libs, we reorder the QT variable here
-TMPLIBS = multimedia webkit phonon dbus testlib script scripttools svg qt3support sql xmlpatterns xml egl opengl openvg gui network core
+TMPLIBS = webkit phonon multimedia dbus testlib script scripttools svg qt3support sql xmlpatterns xml egl opengl openvg gui network core
 for(QTLIB, $$list($$TMPLIBS)) {
    contains(QT, $$QTLIB): QT_ORDERED += $$QTLIB
 }

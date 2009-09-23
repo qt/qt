@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,14 +42,21 @@
 #ifndef QDIRECTFBSCREEN_H
 #define QDIRECTFBSCREEN_H
 
+#include <qglobal.h>
+#ifndef QT_NO_QWS_DIRECTFB
 #include <QtGui/qscreen_qws.h>
 #include <directfb.h>
 #include <directfb_version.h>
 
 QT_BEGIN_HEADER
 
+QT_BEGIN_NAMESPACE
+
 QT_MODULE(Gui)
 
+#if !defined QT_NO_DIRECTFB_SUBSURFACE && !defined QT_DIRECTFB_SUBSURFACE
+#define QT_DIRECTFB_SUBSURFACE
+#endif
 #if !defined QT_NO_DIRECTFB_LAYER && !defined QT_DIRECTFB_LAYER
 #define QT_DIRECTFB_LAYER
 #endif
@@ -59,8 +66,17 @@ QT_MODULE(Gui)
 #if !defined QT_DIRECTFB_IMAGECACHE && !defined QT_NO_DIRECTFB_IMAGECACHE
 #define QT_NO_DIRECTFB_IMAGECACHE
 #endif
-#if !defined QT_NO_DIRECTFB_PALETTE && !defined QT_DIRECTFB_PALETTE
-#define QT_DIRECTFB_PALETTE
+#if !defined QT_NO_DIRECTFB_IMAGEPROVIDER && !defined QT_DIRECTFB_IMAGEPROVIDER
+#define QT_DIRECTFB_IMAGEPROVIDER
+#endif
+#if !defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE && !defined QT_NO_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
+#define QT_NO_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
+#endif
+#if !defined QT_DIRECTFB_WINDOW_AS_CURSOR && !defined QT_NO_DIRECTFB_WINDOW_AS_CURSOR
+#define QT_NO_DIRECTFB_WINDOW_AS_CURSOR
+#endif
+#if !defined QT_DIRECTFB_PALETTE && !defined QT_NO_DIRECTFB_PALETTE
+#define QT_NO_DIRECTFB_PALETTE
 #endif
 #if !defined QT_NO_DIRECTFB_PREALLOCATED && !defined QT_DIRECTFB_PREALLOCATED
 #define QT_DIRECTFB_PREALLOCATED
@@ -74,8 +90,27 @@ QT_MODULE(Gui)
 #if !defined QT_NO_DIRECTFB_OPAQUE_DETECTION && !defined QT_DIRECTFB_OPAQUE_DETECTION
 #define QT_DIRECTFB_OPAQUE_DETECTION
 #endif
+#ifndef QT_NO_QWS_CURSOR
+#if defined QT_DIRECTFB_WM && defined QT_DIRECTFB_WINDOW_AS_CURSOR
+#define QT_DIRECTFB_CURSOR
+#elif defined QT_DIRECTFB_LAYER
+#define QT_DIRECTFB_CURSOR
+#endif
+#endif
+#ifndef QT_DIRECTFB_CURSOR
+#define QT_NO_DIRECTFB_CURSOR
+#endif
+#if defined QT_NO_DIRECTFB_LAYER && defined QT_DIRECTFB_WM
+#error QT_NO_DIRECTFB_LAYER requires QT_NO_DIRECTFB_WM
+#endif
+#if defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE && defined QT_NO_DIRECTFB_IMAGEPROVIDER
+#error QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE requires QT_DIRECTFB_IMAGEPROVIDER to be defined
+#endif
+#if defined QT_DIRECTFB_WINDOW_AS_CURSOR && defined QT_NO_DIRECTFB_WM
+#error QT_DIRECTFB_WINDOW_AS_CURSOR requires QT_DIRECTFB_WM to be defined
+#endif
 
-#define Q_DIRECTFB_VERSION ((DIRECTFB_MAJOR_VERSION << 16) | (DIRECTFB_MINOR_VERION << 8) | DIRECTFB_MICRO_VERSION)
+#define Q_DIRECTFB_VERSION ((DIRECTFB_MAJOR_VERSION << 16) | (DIRECTFB_MINOR_VERSION << 8) | DIRECTFB_MICRO_VERSION)
 
 #define DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(F)                         \
     static inline F operator~(F f) { return F(~int(f)); } \
@@ -86,6 +121,8 @@ QT_MODULE(Gui)
 
 DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBInputDeviceCapabilities);
 DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBWindowDescriptionFlags);
+DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBWindowCapabilities);
+DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBWindowOptions);
 DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBSurfaceDescriptionFlags);
 DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBSurfaceCapabilities);
 DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBSurfaceLockFlags);
@@ -132,8 +169,15 @@ public:
         return static_cast<QDirectFBScreen*>(inst);
     }
 
+    void waitIdle();
+    IDirectFBSurface *surfaceForWidget(const QWidget *widget, QRect *rect) const;
+#ifdef QT_DIRECTFB_SUBSURFACE
+    IDirectFBSurface *subSurfaceForWidget(const QWidget *widget, const QRect &area = QRect()) const;
+#endif
     IDirectFB *dfb();
-#ifdef QT_NO_DIRECTFB_WM
+#ifdef QT_DIRECTFB_WM
+    IDirectFBWindow *windowForWidget(const QWidget *widget) const;
+#else
     IDirectFBSurface *primarySurface();
 #endif
 #ifndef QT_NO_DIRECTFB_LAYER
@@ -142,38 +186,49 @@ public:
 
     // Track surface creation/release so we can release all on exit
     enum SurfaceCreationOption {
-        DontTrackSurface = 0,
-        TrackSurface = 1
+        DontTrackSurface = 0x1,
+        TrackSurface = 0x2,
+        NoPreallocated = 0x4
     };
     Q_DECLARE_FLAGS(SurfaceCreationOptions, SurfaceCreationOption);
     IDirectFBSurface *createDFBSurface(const QImage &image,
-                                       SurfaceCreationOptions options);
+                                       QImage::Format format,
+                                       SurfaceCreationOptions options,
+                                       DFBResult *result = 0);
     IDirectFBSurface *createDFBSurface(const QSize &size,
                                        QImage::Format format,
-                                       SurfaceCreationOptions options);
+                                       SurfaceCreationOptions options,
+                                       DFBResult *result = 0);
     IDirectFBSurface *copyDFBSurface(IDirectFBSurface *src,
                                      QImage::Format format,
-                                     SurfaceCreationOptions options);
-    IDirectFBSurface *copyToDFBSurface(const QImage &image,
-                                       QImage::Format format,
-                                       SurfaceCreationOptions options);
+                                     SurfaceCreationOptions options,
+                                     DFBResult *result = 0);
+    IDirectFBSurface *createDFBSurface(DFBSurfaceDescription desc,
+                                       SurfaceCreationOptions options,
+                                       DFBResult *result);
+#ifdef QT_DIRECTFB_SUBSURFACE
+    IDirectFBSurface *getSubSurface(IDirectFBSurface *surface,
+                                    const QRect &rect,
+                                    SurfaceCreationOptions options,
+                                    DFBResult *result);
+#endif
+
     void flipSurface(IDirectFBSurface *surface, DFBSurfaceFlipFlags flipFlags,
                      const QRegion &region, const QPoint &offset);
     void releaseDFBSurface(IDirectFBSurface *surface);
-    void erase(const QRegion &region);
 
     using QScreen::depth;
     static int depth(DFBSurfacePixelFormat format);
+    static int depth(QImage::Format format);
 
     static DFBSurfacePixelFormat getSurfacePixelFormat(QImage::Format format);
-    static DFBSurfaceDescription getSurfaceDescription(const QImage &image);
     static DFBSurfaceDescription getSurfaceDescription(const uint *buffer,
                                                        int length);
     static QImage::Format getImageFormat(IDirectFBSurface *surface);
     static bool initSurfaceDescriptionPixelFormat(DFBSurfaceDescription *description, QImage::Format format);
     static inline bool isPremultiplied(QImage::Format format);
-    static inline bool hasAlpha(DFBSurfacePixelFormat format);
-    static inline bool hasAlpha(IDirectFBSurface *surface);
+    static inline bool hasAlphaChannel(DFBSurfacePixelFormat format);
+    static inline bool hasAlphaChannel(IDirectFBSurface *surface);
     QImage::Format alphaPixmapFormat() const;
 
 #ifndef QT_NO_DIRECTFB_PALETTE
@@ -181,12 +236,12 @@ public:
                                      const QImage &image);
 #endif
 
-    static uchar *lockSurface(IDirectFBSurface *surface, uint flags, int *bpl = 0);
+    static uchar *lockSurface(IDirectFBSurface *surface, DFBSurfaceLockFlags flags, int *bpl = 0);
+#if defined QT_DIRECTFB_IMAGEPROVIDER && defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
+    void setDirectFBImageProvider(IDirectFBImageProvider *provider);
+#endif
 private:
-    IDirectFBSurface *createDFBSurface(DFBSurfaceDescription desc,
-                                       SurfaceCreationOptions options);
     QDirectFBScreenPrivate *d_ptr;
-    friend class SurfaceCache;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDirectFBScreen::SurfaceCreationOptions);
@@ -207,7 +262,7 @@ inline bool QDirectFBScreen::isPremultiplied(QImage::Format format)
     return false;
 }
 
-inline bool QDirectFBScreen::hasAlpha(DFBSurfacePixelFormat format)
+inline bool QDirectFBScreen::hasAlphaChannel(DFBSurfacePixelFormat format)
 {
     switch (format) {
     case DSPF_ARGB1555:
@@ -232,14 +287,18 @@ inline bool QDirectFBScreen::hasAlpha(DFBSurfacePixelFormat format)
     }
 }
 
-inline bool QDirectFBScreen::hasAlpha(IDirectFBSurface *surface)
+inline bool QDirectFBScreen::hasAlphaChannel(IDirectFBSurface *surface)
 {
     Q_ASSERT(surface);
     DFBSurfacePixelFormat format;
     surface->GetPixelFormat(surface, &format);
-    return QDirectFBScreen::hasAlpha(format);
+    return QDirectFBScreen::hasAlphaChannel(format);
 }
+
+QT_END_NAMESPACE
 
 QT_END_HEADER
 
+#endif // QT_NO_QWS_DIRECTFB
 #endif // QDIRECTFBSCREEN_H
+

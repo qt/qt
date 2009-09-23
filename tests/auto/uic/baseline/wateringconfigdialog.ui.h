@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'wateringconfigdialog.ui'
 **
-** Created: Thu Jul 10 09:47:35 2008
-**      by: Qt User Interface Compiler version 4.5.0
+** Created: Fri Sep 4 10:17:15 2009
+**      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -276,7 +276,6 @@ public:
         label_6->setText(QApplication::translate("WateringConfigDialog", "Filter:", 0, QApplication::UnicodeUTF8));
         filterCheckBox->setText(QString());
         helpLabel->setText(QApplication::translate("WateringConfigDialog", "<a href=\"test\">Show Details</a>", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(WateringConfigDialog);
     } // retranslateUi
 
 };

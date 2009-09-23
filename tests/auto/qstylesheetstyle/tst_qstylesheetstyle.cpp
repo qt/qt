@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -96,6 +96,7 @@ private slots:
     void opaquePaintEvent_data();
     void opaquePaintEvent();
     void task188195_baseBackground();
+    void task232085_spinBoxLineEditBg();
 
     //at the end because it mess with the style.
     void widgetStyle();
@@ -828,10 +829,11 @@ void tst_QStyleSheetStyle::hoverColors()
     widgets << new QLabel("<b>TESTING</b>");
 
     foreach (QWidget *widget, widgets) {
-        QDialog frame;
+        //without Qt::X11BypassWindowManagerHint the window manager may move the window after we moved the cursor
+        QDialog frame(0, Qt::X11BypassWindowManagerHint);
         QLayout* layout = new QGridLayout;
 
-        QLineEdit* dummy = new QLineEdit; 
+        QLineEdit* dummy = new QLineEdit;
 
         widget->setStyleSheet("*:hover { border:none; background: #e8ff66; color: #ff0084 }");
 
@@ -840,13 +842,21 @@ void tst_QStyleSheetStyle::hoverColors()
         frame.setLayout(layout);
 
         frame.show();
+#ifdef Q_WS_QWS
+//QWS does not implement enter/leave when windows are shown underneath the cursor
+        QCursor::setPos(QPoint(0,0));
+#endif
+
 #ifdef Q_WS_X11
         qt_x11_wait_for_window_manager(&frame);
 #endif
         QApplication::setActiveWindow(&frame);
         QTest::qWait(60);
+        //move the mouse inside the widget, it should be colored
         QTest::mouseMove ( widget, QPoint(5,5));
         QTest::qWait(60);
+
+        QVERIFY(widget->testAttribute(Qt::WA_UnderMouse));
 
         QImage image(frame.width(), frame.height(), QImage::Format_ARGB32);
         frame.render(&image);
@@ -857,6 +867,34 @@ void tst_QStyleSheetStyle::hoverColors()
         QVERIFY2(testForColors(image, QColor(0xff, 0x00, 0x84)),
                  (QString::fromLatin1(widget->metaObject()->className())
                   + " did not contain text color #ff0084").toLocal8Bit().constData());
+
+        //move the mouse outside the widget, it should NOT be colored
+        QTest::mouseMove ( dummy, QPoint(5,5));
+        QTest::qWait(60);
+
+        frame.render(&image);
+
+        QVERIFY2(!testForColors(image, QColor(0xe8, 0xff, 0x66)),
+                  (QString::fromLatin1(widget->metaObject()->className())
+                  + " did contain background color #e8ff66").toLocal8Bit().constData());
+        QVERIFY2(!testForColors(image, QColor(0xff, 0x00, 0x84)),
+                 (QString::fromLatin1(widget->metaObject()->className())
+                  + " did contain text color #ff0084").toLocal8Bit().constData());
+
+        //move the mouse again inside the widget, it should be colored
+        QTest::mouseMove (widget, QPoint(5,5));
+        QTest::qWait(60);
+
+        QVERIFY(widget->testAttribute(Qt::WA_UnderMouse));
+
+        frame.render(&image);
+
+        QVERIFY2(testForColors(image, QColor(0xe8, 0xff, 0x66)),
+                 (QString::fromLatin1(widget->metaObject()->className())
+                 + " did not contain background color #e8ff66").toLocal8Bit().constData());
+        QVERIFY2(testForColors(image, QColor(0xff, 0x00, 0x84)),
+                (QString::fromLatin1(widget->metaObject()->className())
+                + " did not contain text color #ff0084").toLocal8Bit().constData());
     }
 
 }
@@ -1210,6 +1248,7 @@ void tst_QStyleSheetStyle::proxyStyle()
     QTest::qWait(100);
     delete w;
     delete proxy;
+    delete newProxy;
 }
 
 void tst_QStyleSheetStyle::dialogButtonBox()
@@ -1400,7 +1439,7 @@ void tst_QStyleSheetStyle::opaquePaintEvent()
     QWidget tl;
     QWidget cl(&tl);
     cl.setAttribute(Qt::WA_OpaquePaintEvent, true);
-    cl.setAutoFillBackground(true);     
+    cl.setAutoFillBackground(true);
     cl.setStyleSheet(stylesheet);
     cl.ensurePolished();
     QCOMPARE(cl.testAttribute(Qt::WA_OpaquePaintEvent), !transparent);
@@ -1415,7 +1454,7 @@ void tst_QStyleSheetStyle::task188195_baseBackground()
     tree.show();
     QTest::qWait(20);
     QImage image(tree.width(), tree.height(), QImage::Format_ARGB32);
-    
+
     tree.render(&image);
     QVERIFY(testForColors(image, tree.palette().base().color()));
     QVERIFY(!testForColors(image, QColor(0xab, 0x12, 0x51)));
@@ -1428,6 +1467,56 @@ void tst_QStyleSheetStyle::task188195_baseBackground()
     tree.render(&image);
     QVERIFY(testForColors(image, tree.palette().base().color()));
     QVERIFY(!testForColors(image, QColor(0xab, 0x12, 0x51)));
+}
+
+void tst_QStyleSheetStyle::task232085_spinBoxLineEditBg()
+{
+    // This test is a simplified version of the focusColors() test above.
+
+    // Tests if colors can be changed by altering the focus of the widget.
+    // To avoid messy pixel-by-pixel comparison, we assume that the goal
+    // is reached if at least ten pixels of the right color can be found in
+    // the image.
+    // For this reason, we use unusual and extremely ugly colors! :-)
+
+    QSpinBox *spinbox = new QSpinBox;
+    spinbox->setValue(8888);
+
+    QDialog frame;
+    QLayout* layout = new QGridLayout;
+
+    QLineEdit* dummy = new QLineEdit; // Avoids initial focus.
+
+    // We only want to test the line edit colors.
+    spinbox->setStyleSheet("QSpinBox:focus { background: #e8ff66; color: #ff0084 } "
+                           "QSpinBox::up-button, QSpinBox::down-button { background: black; }");
+
+    layout->addWidget(dummy);
+    layout->addWidget(spinbox);
+    frame.setLayout(layout);
+
+    frame.show();
+    QTest::qWaitForWindowShown(&frame);
+    QApplication::setActiveWindow(&frame);
+    spinbox->setFocus();
+    QApplication::processEvents();
+
+    QImage image(frame.width(), frame.height(), QImage::Format_ARGB32);
+    frame.render(&image);
+    if (image.depth() < 24) {
+        QSKIP("Test doesn't support color depth < 24", SkipAll);
+    }
+
+    QVERIFY2(testForColors(image, QColor(0xe8, 0xff, 0x66)),
+            (QString::fromLatin1(spinbox->metaObject()->className())
+            + " did not contain background color #e8ff66, using style "
+            + QString::fromLatin1(qApp->style()->metaObject()->className()))
+            .toLocal8Bit().constData());
+    QVERIFY2(testForColors(image, QColor(0xff, 0x00, 0x84)),
+            (QString::fromLatin1(spinbox->metaObject()->className())
+            + " did not contain text color #ff0084, using style "
+            + QString::fromLatin1(qApp->style()->metaObject()->className()))
+            .toLocal8Bit().constData());
 }
 
 QTEST_MAIN(tst_QStyleSheetStyle)

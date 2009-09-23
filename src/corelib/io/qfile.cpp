@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,10 +50,6 @@
 #include "private/qfile_p.h"
 #if defined(QT_BUILD_CORE_LIB)
 # include "qcoreapplication.h"
-#endif
-
-#if !defined(Q_OS_WINCE)
-#include <errno.h>
 #endif
 
 #ifdef QT_NO_QOBJECT
@@ -653,11 +649,7 @@ QFile::remove()
             unsetError();
             return true;
         }
-#if defined(Q_OS_WIN)
-        d->setError(QFile::RemoveError, GetLastError());
-#else
-        d->setError(QFile::RemoveError, errno);
-#endif
+        d->setError(QFile::RemoveError, fileEngine()->errorString());
     }
     return false;
 }
@@ -747,7 +739,7 @@ QFile::rename(const QString &newName)
                 if (error) {
                     out.remove();
                 } else {
-					fileEngine()->setFileName(newName);
+                    fileEngine()->setFileName(newName);
                     setPermissions(permissions());
                     unsetError();
                     setFileName(newName);
@@ -812,7 +804,7 @@ QFile::link(const QString &linkName)
         unsetError();
         return true;
     }
-    d->setError(QFile::RenameError, errno);
+    d->setError(QFile::RenameError, fileEngine()->errorString());
     return false;
 }
 
@@ -1258,7 +1250,7 @@ QFile::resize(qint64 sz)
         unsetError();
         return true;
     }
-    d->setError(QFile::ResizeError, errno);
+    d->setError(QFile::ResizeError, fileEngine()->errorString());
     return false;
 }
 
@@ -1322,7 +1314,7 @@ QFile::setPermissions(Permissions permissions)
         unsetError();
         return true;
     }
-    d->setError(QFile::PermissionsError, errno);
+    d->setError(QFile::PermissionsError, fileEngine()->errorString());
     return false;
 }
 
@@ -1378,7 +1370,7 @@ QFile::flush()
 }
 
 /*!
-  Flushes the file and then closes it.
+  Calls QFile::flush() and closes the file. Errors from flush are ignored.
 
   \sa QIODevice::close()
 */
@@ -1478,7 +1470,7 @@ bool QFile::seek(qint64 off)
         d->setError(err, fileEngine()->errorString());
         return false;
     }
-    d->error = NoError;
+    unsetError();
     return true;
 }
 
@@ -1506,7 +1498,7 @@ qint64 QFile::readLineData(char *data, qint64 maxlen)
 qint64 QFile::readData(char *data, qint64 len)
 {
     Q_D(QFile);
-    d->error = NoError;
+    unsetError();
     if (!d->ensureFlushed())
         return -1;
 
@@ -1588,7 +1580,7 @@ qint64
 QFile::writeData(const char *data, qint64 len)
 {
     Q_D(QFile);
-    d->error = NoError;
+    unsetError();
     d->lastWasWrite = true;
     bool buffered = !(d->openMode & Unbuffered);
 

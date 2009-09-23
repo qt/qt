@@ -11,6 +11,7 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS basicdrawing.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/painting/basicdrawing
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
-
-symbian:TARGET.UID3 = 0xA000A649
+symbian {
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    TARGET.UID3 = 0xA000A649
+}

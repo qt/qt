@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -78,13 +78,13 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-  \class QStateMachine
-  \reentrant
+    \class QStateMachine
+    \reentrant
 
-  \brief The QStateMachine class provides a hierarchical finite state machine.
+    \brief The QStateMachine class provides a hierarchical finite state machine.
 
-  \since 4.6
-  \ingroup statemachine
+    \since 4.6
+    \ingroup statemachine
 
     QStateMachine is based on the concepts and notation of
     \l{Statecharts: A visual formalism for complex
@@ -128,21 +128,7 @@ QT_BEGIN_NAMESPACE
     The following snippet shows a state machine that will finish when a button
     is clicked:
 
-    \code
-    QPushButton button;
-
-    QStateMachine machine;
-    QState *s1 = new QState();
-    s1->assignProperty(&button, "text", "Click me");
-
-    QFinalState *s2 = new QFinalState();
-    s1->addTransition(&button, SIGNAL(clicked()), s2);
-
-    machine.addState(s1);
-    machine.addState(s2);
-    machine.setInitialState(s1);
-    machine.start();
-    \endcode
+    \snippet doc/src/snippets/code/src_corelib_statemachine_qstatemachine.cpp simple state machine
 
     This code example uses QState, which inherits QAbstractState. The
     QState class provides a state that you can use to set properties
@@ -160,17 +146,7 @@ QT_BEGIN_NAMESPACE
     no error state applies to the erroneous state, the machine will stop 
     executing and an error message will be printed to the console.
 
-    \omit This stuff will be moved elsewhere
-This is
-  typically used in conjunction with \l{Signals and Slots}{signals}; the
-  signals determine the flow of the state graph, whereas the states' property
-  assignments and method invocations are the actions.
-
-  The postEvent() function posts an event to the state machine. This is useful
-  when you are using custom events to trigger transitions.
-    \endomit
-
-  \sa QAbstractState, QAbstractTransition, QState, {The State Machine Framework}
+    \sa QAbstractState, QAbstractTransition, QState, {The State Machine Framework}
 */
 
 /*!
@@ -1408,6 +1384,7 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
         signal.remove(0, 1);
     const QMetaObject *meta = sender->metaObject();
     int signalIndex = meta->indexOfSignal(signal);
+    int originalSignalIndex = signalIndex;
     if (signalIndex == -1) {
         signalIndex = meta->indexOfSignal(QMetaObject::normalizedSignature(signal));
         if (signalIndex == -1) {
@@ -1416,6 +1393,11 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
             return;
         }
     }
+    // The signal index we actually want to connect to is the one
+    // that is going to be sent, i.e. the non-cloned original index.
+    while (meta->method(signalIndex).attributes() & QMetaMethod::Cloned)
+        --signalIndex;
+
     QVector<int> &connectedSignalIndexes = connections[sender];
     if (connectedSignalIndexes.size() <= signalIndex)
         connectedSignalIndexes.resize(signalIndex+1);
@@ -1435,6 +1417,7 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
     }
     ++connectedSignalIndexes[signalIndex];
     QSignalTransitionPrivate::get(transition)->signalIndex = signalIndex;
+    QSignalTransitionPrivate::get(transition)->originalSignalIndex = originalSignalIndex;
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q << ": added signal transition from" << transition->sourceState()
              << ": ( sender =" << sender << ", signal =" << signal
@@ -1740,6 +1723,10 @@ bool QStateMachine::isRunning() const
   Starts this state machine.  The machine will reset its configuration and
   transition to the initial state.  When a final top-level state (QFinalState)
   is entered, the machine will emit the finished() signal.
+
+  \note A state machine will not run without a running event loop, such as
+  the main application event loop started with QCoreApplication::exec() or
+  QApplication::exec().
 
   \sa started(), finished(), stop(), initialState()
 */

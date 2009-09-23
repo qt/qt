@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSvg module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,20 +56,21 @@
 
 QT_BEGIN_NAMESPACE
 
-#define QT_SVG_DRAW_SHAPE(command)                  \
-    applyStyle(p, states);                          \
-    qreal oldOpacity = p->opacity();                \
-    QBrush oldBrush = p->brush();                   \
-    QPen oldPen = p->pen();                         \
-    p->setPen(Qt::NoPen);                           \
-    p->setOpacity(oldOpacity * states.fillOpacity); \
-    command;                                        \
-    p->setOpacity(oldOpacity);                      \
-    p->setPen(oldPen);                              \
-    p->setBrush(Qt::NoBrush);                       \
-    command;                                        \
-    p->setBrush(oldBrush);                          \
-    revertStyle(p, states);
+#define QT_SVG_DRAW_SHAPE(command)                          \
+    qreal oldOpacity = p->opacity();                        \
+    QBrush oldBrush = p->brush();                           \
+    QPen oldPen = p->pen();                                 \
+    p->setPen(Qt::NoPen);                                   \
+    p->setOpacity(oldOpacity * states.fillOpacity);         \
+    command;                                                \
+    p->setPen(oldPen);                                      \
+    if (oldPen.widthF() != 0) {                             \
+        p->setOpacity(oldOpacity * states.strokeOpacity);   \
+        p->setBrush(Qt::NoBrush);                           \
+        command;                                            \
+        p->setBrush(oldBrush);                              \
+    }                                                       \
+    p->setOpacity(oldOpacity);
 
 
 void QSvgAnimation::draw(QPainter *, QSvgExtraStates &)
@@ -105,7 +106,9 @@ QRectF QSvgCircle::bounds() const
 
 void QSvgCircle::draw(QPainter *p, QSvgExtraStates &states)
 {
+    applyStyle(p, states);
     QT_SVG_DRAW_SHAPE(p->drawEllipse(m_bounds));
+    revertStyle(p, states);
 }
 
 QSvgArc::QSvgArc(QSvgNode *parent, const QPainterPath &path)
@@ -117,7 +120,12 @@ QSvgArc::QSvgArc(QSvgNode *parent, const QPainterPath &path)
 void QSvgArc::draw(QPainter *p, QSvgExtraStates &states)
 {
     applyStyle(p, states);
-    p->drawPath(cubic);
+    if (p->pen().widthF() != 0) {
+        qreal oldOpacity = p->opacity();
+        p->setOpacity(oldOpacity * states.strokeOpacity);
+        p->drawPath(cubic);
+        p->setOpacity(oldOpacity);
+    }
     revertStyle(p, states);
 }
 
@@ -140,7 +148,9 @@ QRectF QSvgEllipse::bounds() const
 
 void QSvgEllipse::draw(QPainter *p, QSvgExtraStates &states)
 {
+    applyStyle(p, states);
     QT_SVG_DRAW_SHAPE(p->drawEllipse(m_bounds));
+    revertStyle(p, states);
 }
 
 QSvgImage::QSvgImage(QSvgNode *parent, const QImage &image,
@@ -171,34 +181,45 @@ QSvgLine::QSvgLine(QSvgNode *parent, const QLineF &line)
 void QSvgLine::draw(QPainter *p, QSvgExtraStates &states)
 {
     applyStyle(p, states);
-    p->drawLine(m_bounds);
+    if (p->pen().widthF() != 0) {
+        qreal oldOpacity = p->opacity();
+        p->setOpacity(oldOpacity * states.strokeOpacity);
+        p->drawLine(m_bounds);
+        p->setOpacity(oldOpacity);
+    }
     revertStyle(p, states);
 }
 
 QSvgPath::QSvgPath(QSvgNode *parent, const QPainterPath &qpath)
     : QSvgNode(parent), m_path(qpath)
 {
-    //m_cachedBounds = m_path.controlPointRect();
-    m_cachedBounds = m_path.boundingRect();
 }
 
 void QSvgPath::draw(QPainter *p, QSvgExtraStates &states)
 {
+    applyStyle(p, states);
+    m_path.setFillRule(states.fillRule);
     QT_SVG_DRAW_SHAPE(p->drawPath(m_path));
+    revertStyle(p, states);
 }
 
 QRectF QSvgPath::bounds() const
 {
     qreal sw = strokeWidth();
-    if (qFuzzyIsNull(sw))
+    if (qFuzzyIsNull(sw)) {
+        if (m_cachedBounds.isNull())
+            //m_cachedBounds = m_path.controlPointRect();
+            m_cachedBounds = m_path.boundingRect();
+
         return m_cachedBounds;
+    }
     else {
         return boundsOnStroke(m_path, sw);
     }
 }
 
 QSvgPolygon::QSvgPolygon(QSvgNode *parent, const QPolygonF &poly)
-    : QSvgNode(parent), m_poly(poly), m_fillRule(Qt::WindingFill)
+    : QSvgNode(parent), m_poly(poly)
 {
 }
 
@@ -216,7 +237,9 @@ QRectF QSvgPolygon::bounds() const
 
 void QSvgPolygon::draw(QPainter *p, QSvgExtraStates &states)
 {
-    QT_SVG_DRAW_SHAPE(p->drawPolygon(m_poly, m_fillRule));
+    applyStyle(p, states);
+    QT_SVG_DRAW_SHAPE(p->drawPolygon(m_poly, states.fillRule));
+    revertStyle(p, states);
 }
 
 
@@ -229,13 +252,19 @@ QSvgPolyline::QSvgPolyline(QSvgNode *parent, const QPolygonF &poly)
 void QSvgPolyline::draw(QPainter *p, QSvgExtraStates &states)
 {
     applyStyle(p, states);
+    qreal oldOpacity = p->opacity();
     if (p->brush().style() != Qt::NoBrush) {
         QPen save = p->pen();
         p->setPen(QPen(Qt::NoPen));
-        p->drawPolygon(m_poly);
+        p->setOpacity(oldOpacity * states.fillOpacity);
+        p->drawPolygon(m_poly, states.fillRule);
         p->setPen(save);
     }
-    p->drawPolyline(m_poly);
+    if (p->pen().widthF() != 0) {
+        p->setOpacity(oldOpacity * states.strokeOpacity);
+        p->drawPolyline(m_poly);
+    }
+    p->setOpacity(oldOpacity);
     revertStyle(p, states);
 }
 
@@ -259,11 +288,13 @@ QRectF QSvgRect::bounds() const
 
 void QSvgRect::draw(QPainter *p, QSvgExtraStates &states)
 {
+    applyStyle(p, states);
     if (m_rx || m_ry) {
         QT_SVG_DRAW_SHAPE(p->drawRoundedRect(m_rect, m_rx, m_ry, Qt::RelativeSize));
     } else {
         QT_SVG_DRAW_SHAPE(p->drawRect(m_rect));
     }
+    revertStyle(p, states);
 }
 
 QSvgTspan * const QSvgText::LINEBREAK = 0;
@@ -296,6 +327,8 @@ void QSvgText::setTextArea(const QSizeF &size)
 void QSvgText::draw(QPainter *p, QSvgExtraStates &states)
 {
     applyStyle(p, states);
+    qreal oldOpacity = p->opacity();
+    p->setOpacity(oldOpacity * states.fillOpacity);
 
     // Force the font to have a size of 100 pixels to avoid truncation problems
     // when the font is very small.
@@ -401,7 +434,7 @@ void QSvgText::draw(QPainter *p, QSvgExtraStates &states)
             text.append(QLatin1Char('\n'));
             text.append(paragraphs[i]);
         }
-        states.svgFont->draw(p, m_coord, text, p->font().pointSizeF() * scale, states.textAnchor);
+        states.svgFont->draw(p, m_coord * scale, text, p->font().pointSizeF() * scale, states.textAnchor);
     } else {
         for (int i = 0; i < paragraphs.size(); ++i) {
             QTextLayout tl(paragraphs[i]);
@@ -456,6 +489,7 @@ void QSvgText::draw(QPainter *p, QSvgExtraStates &states)
     }
 
     p->setWorldTransform(oldTransform, false);
+    p->setOpacity(oldOpacity);
     revertStyle(p, states);
 }
 

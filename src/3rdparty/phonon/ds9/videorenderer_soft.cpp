@@ -365,7 +365,7 @@ namespace Phonon
         {
         public:
             VideoRendererSoftPin(VideoRendererSoftFilter *parent) :
-              QMemInputPin(parent, videoMediaTypes(), false /*no transformation of the samples*/),
+              QMemInputPin(parent, videoMediaTypes(), false /*no transformation of the samples*/, 0),
                   m_renderer(parent)
               {
               }

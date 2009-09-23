@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,6 +49,7 @@
 #include "qbuffer.h"
 #include "qwidget.h"
 #include "qevent.h"
+#include "private/qcore_symbian_p.h"
 #include <QtDebug>
 
 // Symbian's clipboard
@@ -57,7 +58,7 @@ QT_BEGIN_NAMESPACE
 
 //###  Mime Type mapping to UIDs
 
-const TUid KQtCbDataStream = {0x666777};
+const TUid KQtCbDataStream = {0x2001B2DD};
 
 
 class QClipboardData
@@ -78,28 +79,19 @@ public:
     bool connected()
     { return connection; }
     void clear();
-    RFs fsSession();
-
 
 private:
     QMimeData* src;
-    RFs iFs;
     bool connection;
 };
 
 QClipboardData::QClipboardData():src(0),connection(true)
 {
     clear();
-    if (KErrNone != iFs.Connect())
-    {
-        qWarning("QClipboardData::fileserver connnect failed");
-        connection = false;
-    }
 }
 
 QClipboardData::~QClipboardData()
 {
-    iFs.Close();
     connection = false;
     delete src;
 }
@@ -109,10 +101,6 @@ void QClipboardData::clear()
     QMimeData* newSrc = new QMimeData;
     delete src;
     src = newSrc;
-}
-RFs QClipboardData::fsSession()
-{
-    return iFs;
 }
 
 static QClipboardData *internalCbData = 0;
@@ -206,7 +194,7 @@ const QMimeData* QClipboard::mimeData(Mode mode) const
     if (d)
     {
         TRAPD(err,{
-            RFs fs = d->fsSession();
+            RFs fs = qt_s60GetRFs();
             CClipboard* cb = CClipboard::NewForReadingLC(fs);
             Q_ASSERT(cb);
             RStoreReadStream stream;
@@ -232,7 +220,7 @@ void QClipboard::setMimeData(QMimeData* src, Mode mode)
     if (d)
     {
         TRAPD(err,{
-            RFs fs = d->fsSession();
+            RFs fs = qt_s60GetRFs();
             CClipboard* cb = CClipboard::NewForWritingLC(fs);
             RStoreWriteStream  stream;
             TStreamId stid = stream.CreateLC(cb->Store());

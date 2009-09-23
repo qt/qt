@@ -94,6 +94,11 @@ bool JSSVGAnimatedPreserveAspectRatio::getOwnPropertySlot(ExecState* exec, const
     return getStaticValueSlot<JSSVGAnimatedPreserveAspectRatio, Base>(exec, &JSSVGAnimatedPreserveAspectRatioTable, this, propertyName, slot);
 }
 
+bool JSSVGAnimatedPreserveAspectRatio::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGAnimatedPreserveAspectRatio, Base>(exec, &JSSVGAnimatedPreserveAspectRatioTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGAnimatedPreserveAspectRatioBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGAnimatedPreserveAspectRatio* castedThis = static_cast<JSSVGAnimatedPreserveAspectRatio*>(asObject(slot.slotBase()));
@@ -116,7 +121,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAnim
 }
 SVGAnimatedPreserveAspectRatio* toSVGAnimatedPreserveAspectRatio(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGAnimatedPreserveAspectRatio::s_info) ? static_cast<JSSVGAnimatedPreserveAspectRatio*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGAnimatedPreserveAspectRatio::s_info) ? static_cast<JSSVGAnimatedPreserveAspectRatio*>(asObject(value))->impl() : 0;
 }
 
 }

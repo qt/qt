@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'backside.ui'
 **
-** Created: Tue Jun 17 09:18:47 2008
-**      by: Qt User Interface Compiler version 4.5.0
+** Created: Fri Sep 4 10:17:12 2009
+**      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -183,7 +183,6 @@ public:
         ___qtreewidgetitem11->setText(0, QApplication::translate("BackSide", "QGraphicsLayoutItem", 0, QApplication::UnicodeUTF8));
         treeWidget->setSortingEnabled(__sortingEnabled);
 
-        Q_UNUSED(BackSide);
     } // retranslateUi
 
 };

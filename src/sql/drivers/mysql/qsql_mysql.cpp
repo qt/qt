@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1213,6 +1213,9 @@ bool QMYSQLDriver::open(const QString& db,
     unsigned int optionFlags = Q_CLIENT_MULTI_STATEMENTS;
     const QStringList opts(connOpts.split(QLatin1Char(';'), QString::SkipEmptyParts));
     QString unixSocket;
+#if MYSQL_VERSION_ID >= 50000
+    my_bool reconnect=false;
+#endif
 
     // extract the real options from the string
     for (int i = 0; i < opts.count(); ++i) {
@@ -1223,6 +1226,12 @@ bool QMYSQLDriver::open(const QString& db,
             QString opt = tmp.left(idx).simplified();
             if (opt == QLatin1String("UNIX_SOCKET"))
                 unixSocket = val;
+#if MYSQL_VERSION_ID >= 50000
+            else if (opt == QLatin1String("MYSQL_OPT_RECONNECT")) {
+                if (val == QLatin1String("TRUE") || val == QLatin1String("1") || val.isEmpty())
+                    reconnect = true;
+            }
+#endif
             else if (val == QLatin1String("TRUE") || val == QLatin1String("1"))
                 setOptionFlag(optionFlags, tmp.left(idx).simplified());
             else
@@ -1255,6 +1264,10 @@ bool QMYSQLDriver::open(const QString& db,
             setOpenError(true);
             return false;
         }
+#if MYSQL_VERSION_ID >= 50000
+        if(reconnect)
+            mysql_options(d->mysql, MYSQL_OPT_RECONNECT, &reconnect);
+#endif
     } else {
         setLastError(qMakeError(tr("Unable to connect"),
                      QSqlError::ConnectionError, d));
@@ -1310,23 +1323,42 @@ QSqlResult *QMYSQLDriver::createResult() const
 QStringList QMYSQLDriver::tables(QSql::TableType type) const
 {
     QStringList tl;
-    if (!isOpen())
-        return tl;
-    if (!(type & QSql::Tables))
-        return tl;
+#if MYSQL_VERSION_ID >= 40100
+    if( mysql_get_server_version(d->mysql) < 50000)
+    {
+#endif
+        if (!isOpen())
+            return tl;
+        if (!(type & QSql::Tables))
+            return tl;
 
-    MYSQL_RES* tableRes = mysql_list_tables(d->mysql, NULL);
-    MYSQL_ROW row;
-    int i = 0;
-    while (tableRes) {
-        mysql_data_seek(tableRes, i);
-        row = mysql_fetch_row(tableRes);
-        if (!row)
-            break;
-        tl.append(toUnicode(d->tc, row[0]));
-        i++;
+        MYSQL_RES* tableRes = mysql_list_tables(d->mysql, NULL);
+        MYSQL_ROW row;
+        int i = 0;
+        while (tableRes) {
+            mysql_data_seek(tableRes, i);
+            row = mysql_fetch_row(tableRes);
+            if (!row)
+                break;
+            tl.append(toUnicode(d->tc, row[0]));
+            i++;
+        }
+        mysql_free_result(tableRes);
+#if MYSQL_VERSION_ID >= 40100
+    } else {
+        QSqlQuery q(createResult());
+        if(type & QSql::Tables) {
+            q.exec(QLatin1String("select table_name from information_schema.tables where table_type = 'BASE TABLE'"));
+            while(q.next())
+                tl.append(q.value(0).toString());
+        }
+        if(type & QSql::Views) {
+            q.exec(QLatin1String("select table_name from information_schema.tables where table_type = 'VIEW'"));
+            while(q.next())
+                tl.append(q.value(0).toString());
+        }
     }
-    mysql_free_result(tableRes);
+#endif
     return tl;
 }
 

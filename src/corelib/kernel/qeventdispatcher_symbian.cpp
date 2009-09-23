@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -184,7 +184,7 @@ QWakeUpActiveObject::~QWakeUpActiveObject()
 
 void QWakeUpActiveObject::DoCancel()
 {
-    if (iStatus.Int() & KRequestPending) {
+    if (iStatus.Int() == KRequestPending) {
         TRequestStatus *status = &iStatus;
         QEventDispatcherSymbian::RequestComplete(status, KErrNone);
     }
@@ -214,7 +214,7 @@ void QTimerActiveObject::DoCancel()
         m_rTimer.Cancel();
         m_rTimer.Close();
     } else {
-        if (iStatus.Int() & KRequestPending) {
+        if (iStatus.Int() == KRequestPending) {
             TRequestStatus *status = &iStatus;
             QEventDispatcherSymbian::RequestComplete(status, KErrNone);
         }
@@ -225,21 +225,45 @@ void QTimerActiveObject::RunL()
 {
     int error;
     QT_TRYCATCH_ERROR(error, Run());
+    // All Symbian error codes are negative.
     if (error < 0) {
         CActiveScheduler::Current()->Error(error);  // stop and report here, as this timer will be deleted on scope exit
     }
 }
 
+#define MAX_SYMBIAN_TIMEOUT_MS 2000000
+void QTimerActiveObject::StartTimer()
+{
+    if (m_timerInfo->msLeft > MAX_SYMBIAN_TIMEOUT_MS) {
+        //There is loss of accuracy anyway due to needing to restart the timer every 33 minutes,
+        //so the 1/64s res of After() is acceptable for these very long timers.
+        m_rTimer.After(iStatus, MAX_SYMBIAN_TIMEOUT_MS * 1000);
+        m_timerInfo->msLeft -= MAX_SYMBIAN_TIMEOUT_MS;
+    } else {
+        //HighRes gives the 1ms accuracy expected by Qt, the +1 is to ensure that
+        //"Timers will never time out earlier than the specified timeout value"
+        //condition is always met.
+        m_rTimer.HighRes(iStatus, (m_timerInfo->msLeft + 1) * 1000);
+        m_timerInfo->msLeft = 0;
+    }
+    SetActive();
+}
+
 void QTimerActiveObject::Run()
 {
+    //restart timer immediately, if the timeout has been split because it overflows max for platform.
+    if (m_timerInfo->msLeft > 0) {
+        StartTimer();
+        return;
+    }
+
     if (!okToRun())
         return;
 
     if (m_timerInfo->interval > 0) {
         // Start a new timer immediately so that we don't lose time.
-        iStatus = KRequestPending;
-        SetActive();
-        m_rTimer.After(iStatus, m_timerInfo->interval*1000);
+        m_timerInfo->msLeft = m_timerInfo->interval;
+        StartTimer();
 
         m_timerInfo->dispatcher->timerFired(m_timerInfo->timerId);
     } else {
@@ -261,11 +285,10 @@ void QTimerActiveObject::Run()
 void QTimerActiveObject::Start()
 {
     CActiveScheduler::Add(this);
+    m_timerInfo->msLeft = m_timerInfo->interval;
     if (m_timerInfo->interval > 0) {
         m_rTimer.CreateLocal();
-        iStatus = KRequestPending;
-        SetActive();
-        m_rTimer.After(iStatus, m_timerInfo->interval*1000);
+        StartTimer();
     } else {
         iStatus = KRequestPending;
         SetActive();
@@ -275,7 +298,7 @@ void QTimerActiveObject::Start()
 }
 
 SymbianTimerInfo::SymbianTimerInfo()
-: timerAO(0)
+    : timerAO(0)
 {
 }
 
@@ -300,7 +323,7 @@ QCompleteDeferredAOs::~QCompleteDeferredAOs()
 
 void QCompleteDeferredAOs::complete()
 {
-    if (iStatus.Int() & KRequestPending) {
+    if (iStatus.Int() == KRequestPending) {
         TRequestStatus *status = &iStatus;
         QEventDispatcherSymbian::RequestComplete(status, KErrNone);
     }
@@ -308,7 +331,7 @@ void QCompleteDeferredAOs::complete()
 
 void QCompleteDeferredAOs::DoCancel()
 {
-    if (iStatus.Int() & KRequestPending) {
+    if (iStatus.Int() == KRequestPending) {
         TRequestStatus *status = &iStatus;
         QEventDispatcherSymbian::RequestComplete(status, KErrNone);
     }
@@ -369,10 +392,8 @@ void QSelectThread::run()
 
         int ret;
         int savedSelectErrno;
-        //do {
-            ret = qt_socket_select(maxfd, &readfds, &writefds, &exceptionfds, 0);
-            savedSelectErrno = errno;
-        //} while (ret == 0);
+        ret = qt_socket_select(maxfd, &readfds, &writefds, &exceptionfds, 0);
+        savedSelectErrno = errno;
 
         char buffer;
 
@@ -405,7 +426,6 @@ void QSelectThread::run()
                 FD_ZERO(&readfds);
                 FD_ZERO(&writefds);
                 FD_ZERO(&exceptionfds);
-                {
                 for (QHash<QSocketNotifier *, TRequestStatus *>::const_iterator i = m_AOStatuses.begin();
                         i != m_AOStatuses.end(); ++i) {
 
@@ -434,7 +454,6 @@ void QSelectThread::run()
                     }
 
                 } // end for
-                }
 
                 // traversed all, so update
                 updateActivatedNotifiers(QSocketNotifier::Read, &readfds);
@@ -581,7 +600,7 @@ QSocketActiveObject::~QSocketActiveObject()
 
 void QSocketActiveObject::DoCancel()
 {
-    if (iStatus.Int() & KRequestPending) {
+    if (iStatus.Int() == KRequestPending) {
         TRequestStatus *status = &iStatus;
         QEventDispatcherSymbian::RequestComplete(status, KErrNone);
     }

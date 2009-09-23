@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1293,6 +1293,7 @@ QSize QTabBarPrivate::minimumTabSizeHint(int index)
 */
 QSize QTabBar::tabSizeHint(int index) const
 {
+    //Note: this must match with the computations in QCommonStylePrivate::tabLayout
     Q_D(const QTabBar);
     if (const QTabBarPrivate::Tab *tab = d->at(index)) {
         QStyleOptionTabV3 opt;
@@ -1309,18 +1310,18 @@ QSize QTabBar::tabSizeHint(int index) const
         int widgetWidth = 0;
         int widgetHeight = 0;
         int padding = 0;
-        if (opt.leftButtonSize.isValid()) {
-            padding += 6 + 2;
+        if (!opt.leftButtonSize.isEmpty()) {
+            padding += 4;
             widgetWidth += opt.leftButtonSize.width();
             widgetHeight += opt.leftButtonSize.height();
         }
-        if (opt.rightButtonSize.isValid()) {
-            padding += 6 + 2;
+        if (!opt.rightButtonSize.isEmpty()) {
+            padding += 4;
             widgetWidth += opt.rightButtonSize.width();
             widgetHeight += opt.rightButtonSize.height();
         }
-        if (opt.iconSize.isValid())
-            padding += 2;
+        if (!opt.icon.isNull())
+            padding += 4;
 
         QSize csz;
         if (verticalTabs(d->shape)) {
@@ -1836,7 +1837,8 @@ void QTabBarPrivate::moveTabFinished(int index)
     }
 #endif //QT_NO_ANIMATION
     if (allAnimationsFinished && cleanup) {
-        movingTab->setVisible(false); // We might not get a mouse release
+        if(movingTab)
+            movingTab->setVisible(false); // We might not get a mouse release
         for (int i = 0; i < tabList.count(); ++i) {
             tabList[i].dragOffset = 0;
         }
@@ -1895,13 +1897,8 @@ void QTabBar::keyPressEvent(QKeyEvent *event)
         event->ignore();
         return;
     }
-    int dx = event->key() == (isRightToLeft() ? Qt::Key_Right : Qt::Key_Left) ? -1 : 1;
-    for (int index = d->currentIndex + dx; d->validIndex(index); index += dx) {
-        if (d->tabList.at(index).enabled) {
-            setCurrentIndex(index);
-            break;
-        }
-    }
+    int offset = event->key() == (isRightToLeft() ? Qt::Key_Right : Qt::Key_Left) ? -1 : 1;    
+    d->setCurrentNextEnabledIndex(offset);
 }
 
 /*!\reimp
@@ -1910,14 +1907,22 @@ void QTabBar::keyPressEvent(QKeyEvent *event)
 void QTabBar::wheelEvent(QWheelEvent *event)
 {
     Q_D(QTabBar);
-    int overIndex = d->indexAtPos(event->pos());
-    if (overIndex != -1) {
-        int offset = event->delta() > 0 ? -1 : 1;
-        setCurrentIndex(currentIndex() + offset);
-    }
+    int offset = event->delta() > 0 ? -1 : 1;
+    d->setCurrentNextEnabledIndex(offset);
     QWidget::wheelEvent(event);
 }
 #endif //QT_NO_WHEELEVENT
+
+void QTabBarPrivate::setCurrentNextEnabledIndex(int offset)
+{
+    Q_Q(QTabBar);
+    for (int index = currentIndex + offset; validIndex(index); index += offset) {
+        if (tabList.at(index).enabled) {
+            q->setCurrentIndex(index);
+            break;
+        }
+    }
+}
 
 /*!\reimp
  */

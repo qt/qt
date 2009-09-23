@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -364,7 +364,7 @@ void QCoreApplicationPrivate::appendApplicationPathToLibraryPaths()
     QString app_location( QCoreApplication::applicationFilePath() );
     app_location.truncate(app_location.lastIndexOf(QLatin1Char('/')));
     app_location = QDir(app_location).canonicalPath();
-    if (app_location !=  QLibraryInfo::location(QLibraryInfo::PluginsPath) && QFile::exists(app_location) && !app_libpaths->contains(app_location))
+    if (QFile::exists(app_location) && !app_libpaths->contains(app_location))
 # endif
         app_libpaths->append(app_location);
 #endif
@@ -393,43 +393,61 @@ QString qAppName()
     application's initialization and finalization, as well as
     system-wide and application-wide settings.
 
-    The command line arguments which QCoreApplication's constructor
-    should be called with are accessible using arguments(). The
-    event loop is started with a call to exec(). Long running
+    \section1 The Event Loop and Event Handling
+
+    The event loop is started with a call to exec(). Long running
     operations can call processEvents() to keep the application
     responsive.
 
     Some Qt classes, such as QString, can be used without a
     QCoreApplication object. However, in general, we recommend that
     you create a QCoreApplication or a QApplication object in your \c
-    main() function as early as possible. The application will enter
-    the event loop when exec() is called. exit() will not return
-    until the event loop exits, e.g., when quit() is called.
-
-    An application has an applicationDirPath() and an
-    applicationFilePath(). Translation files can be added or removed
-    using installTranslator() and removeTranslator(). Application
-    strings can be translated using translate(). The QObject::tr()
-    and QObject::trUtf8() functions are implemented in terms of
-    translate().
-
-    The class provides a quit() slot and an aboutToQuit() signal.
+    main() function as early as possible. exit() will not return
+    until the event loop exits; e.g., when quit() is called.
 
     Several static convenience functions are also provided. The
     QCoreApplication object is available from instance(). Events can
     be sent or posted using sendEvent(), postEvent(), and
     sendPostedEvents(). Pending events can be removed with
-    removePostedEvents() or flushed with flush(). Library paths (see
-    QLibrary) can be retrieved with libraryPaths() and manipulated by
-    setLibraryPaths(), addLibraryPath(), and removeLibraryPath().
+    removePostedEvents() or flushed with flush().
 
-	On Unix/Linux Qt is configured to use the system local settings by
-	default. This can cause a conflict when using POSIX functions, for
-	instance, when converting between data types such as floats and
-	strings, since the notation may differ between locales. To get
-	around this problem call the POSIX function setlocale(LC_NUMERIC,"C")
-	right after initializing QApplication or QCoreApplication to reset
-	the locale that is used for number formatting to "C"-locale.
+    The class provides a quit() slot and an aboutToQuit() signal.
+
+    \section1 Application and Library Paths
+
+    An application has an applicationDirPath() and an
+    applicationFilePath(). Library paths (see QLibrary) can be retrieved
+    with libraryPaths() and manipulated by setLibraryPaths(), addLibraryPath(),
+    and removeLibraryPath().
+
+    \section1 Internationalization and Translations
+
+    Translation files can be added or removed
+    using installTranslator() and removeTranslator(). Application
+    strings can be translated using translate(). The QObject::tr()
+    and QObject::trUtf8() functions are implemented in terms of
+    translate().
+
+    \section1 Accessing Command Line Arguments
+
+    The command line arguments which are passed to QCoreApplication's
+    constructor should be accessed using the arguments() function.
+    Note that some arguments supplied by the user may have been
+    processed and removed by QCoreApplication.
+
+    In cases where command line arguments need to be obtained using the
+    argv() function, you must convert them from the local string encoding
+    using QString::fromLocal8Bit().
+
+    \section1 Locale Settings
+
+    On Unix/Linux Qt is configured to use the system locale settings by
+    default. This can cause a conflict when using POSIX functions, for
+    instance, when converting between data types such as floats and
+    strings, since the notation may differ between locales. To get
+    around this problem, call the POSIX function \c{setlocale(LC_NUMERIC,"C")}
+    right after initializing QApplication or QCoreApplication to reset
+    the locale that is used for number formatting to "C"-locale.
 
     \sa QApplication, QAbstractEventDispatcher, QEventLoop,
     {Semaphores Example}, {Wait Conditions Example}
@@ -490,7 +508,7 @@ QCoreApplication::QCoreApplication(int &argc, char **argv)
 {
     init();
     QCoreApplicationPrivate::eventDispatcher->startingUp();
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS) && defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
     // Refresh factoryloader, as text codecs are requested during lib path
     // resolving process and won't be therefore properly loaded.
     // Unknown if this is symbian specific issue.
@@ -1011,7 +1029,7 @@ void QCoreApplication::exit(int returnCode)
     The event is \e not deleted when the event has been sent. The normal
     approach is to create the event on the stack, for example:
 
-    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 0
+    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 0
 
     \sa postEvent(), notify()
 */
@@ -1117,7 +1135,7 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
         event->d = reinterpret_cast<QEventPrivate *>(quintptr(data->loopLevel));
     }
 
-    // delete the event on exceptions to protect against memory leaks till the event is 
+    // delete the event on exceptions to protect against memory leaks till the event is
     // properly owned in the postEventList
     QScopedPointer<QEvent> eventDeleter(event);
     if (data->postEventList.isEmpty() || data->postEventList.last().priority >= priority) {
@@ -1534,7 +1552,7 @@ bool QCoreApplication::event(QEvent *e)
 
     Example:
 
-    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 1
+    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 1
 
     \sa exit(), aboutToQuit(), QApplication::lastWindowClosed()
 */
@@ -1768,9 +1786,10 @@ bool QCoreApplicationPrivate::isTranslatorInstalled(QTranslator *translator)
     function also assumes that the current directory has not been
     changed by the application.
 
-    In Symbian this function will return the application private directory
-    in C-drive, not the path to executable itself, as those are always in
-    /sys/bin.
+    In Symbian this function will return the application private directory,
+    not the path to executable itself, as those are always in \c {/sys/bin}.
+    If the application is in a read only drive, i.e. ROM, then the private path
+    on the system drive will be returned.
 
     \sa applicationFilePath()
 */
@@ -1786,25 +1805,39 @@ QString QCoreApplication::applicationDirPath()
 #if defined(Q_OS_SYMBIAN)
     {
         QString appPath;
-        RProcess proc;
-        TInt err = proc.Open(proc.Id());
+        RFs& fs = qt_s60GetRFs();
+        TChar driveChar;
+        QChar qDriveChar;
+        driveChar = (RProcess().FileName())[0];
+
+        //Check if the process is installed in a read only drive (typically ROM),
+        //and use the system drive (typically C:) if so.
+        TInt drive;
+        TDriveInfo driveInfo;
+        TInt err = fs.CharToDrive(driveChar, drive);
         if (err == KErrNone) {
-#if defined(Q_CC_NOKIAX86)
-            // In emulator, always resolve the private dir on C-drive
-            appPath.append(QChar('C'));
-#else
-            appPath.append(QChar((proc.FileName())[0]));
-#endif
-            appPath.append(QLatin1String(":\\private\\"));
-            QString sid;
-            sid.setNum(proc.SecureId().iId, 16);
-            appPath.append(sid);
-            appPath.append(QLatin1Char('\\'));
-            proc.Close();
+            err = fs.Drive(driveInfo, drive);
+        }
+        if (err != KErrNone || (driveInfo.iDriveAtt & KDriveAttRom) || (driveInfo.iMediaAtt
+            & KMediaAttWriteProtected)) {
+            driveChar = fs.GetSystemDriveChar();
+            drive = fs.GetSystemDrive();
         }
 
-        QFileInfo fi(appPath);
-        d->cachedApplicationDirPath = fi.exists() ? fi.canonicalFilePath() : QString();
+        qDriveChar = QChar(QLatin1Char(driveChar)).toUpper();
+
+        TFileName privatePath;
+        fs.PrivatePath(privatePath);
+        appPath = qt_TDesC2QString(privatePath);
+        appPath.prepend(QLatin1Char(':')).prepend(qDriveChar);
+
+        // Create the appPath if it doesn't exist. Non-existing appPath will cause
+        // Platform Security violations later on if the app doesn't have AllFiles capability.
+        err = fs.CreatePrivatePath(drive);
+        if (err != KErrNone)
+            qWarning("QCoreApplication::applicationDirPath: Failed to create private path.");
+
+        d->cachedApplicationDirPath = QFileInfo(appPath).path();
     }
 #else
         d->cachedApplicationDirPath = QFileInfo(applicationFilePath()).path();
@@ -1976,9 +2009,9 @@ char **QCoreApplication::argv()
     \warning On Unix, this list is built from the argc and argv parameters passed
     to the constructor in the main() function. The string-data in argv is
     interpreted using QString::fromLocal8Bit(); hence it is not possible to
-    pass i.e. Japanese command line arguments on a system that runs in a latin1
-    locale. Most modern Unix systems do not have this limitation, as they are
-    Unicode based.
+    pass, for example, Japanese command line arguments on a system that runs in a
+    Latin1 locale. Most modern Unix systems do not have this limitation, as they are
+    Unicode-based.
 
     On NT-based Windows, this limitation does not apply either.
     On Windows, the arguments() are not built from the contents of argv/argc, as
@@ -2154,7 +2187,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMutex, libraryPathMutex, (QMutex::Recursive))
     If you want to iterate over the list, you can use the \l foreach
     pseudo-keyword:
 
-    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 2
+    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 2
 
     \sa setLibraryPaths(), addLibraryPath(), removeLibraryPath(), QLibrary,
         {How to Create Qt Plugins}
@@ -2167,25 +2200,21 @@ QStringList QCoreApplication::libraryPaths()
         QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
 #if defined(Q_OS_SYMBIAN)
         // Add existing path on all drives for relative PluginsPath in Symbian
-        if (installPathPlugins.at(1) != QChar(':')) {
+        if (installPathPlugins.at(1) != QChar(QLatin1Char(':'))) {
             QString tempPath = installPathPlugins;
-            if (tempPath.at(tempPath.length()-1) != QChar('\\')) {
-                tempPath += QChar('\\');
+            if (tempPath.at(tempPath.length() - 1) != QDir::separator()) {
+                tempPath += QDir::separator();
             }
-            RFs fs;
-            TInt err = fs.Connect();
-            if (err == KErrNone) {
-                TPtrC tempPathPtr(reinterpret_cast<const TText*>(tempPath.constData()));
-                TFindFile finder(fs);
-                err = finder.FindByDir(tempPathPtr, tempPathPtr);
-                while (err == KErrNone) {
-                    QString foundDir = QString::fromUtf16(finder.File().Ptr(), finder.File().Length());
-                    foundDir = QDir(foundDir).canonicalPath();
-                    if (!app_libpaths->contains(foundDir))
-                        app_libpaths->append(foundDir);
-                    err = finder.Find();
-                }
-                fs.Close();
+            RFs& fs = qt_s60GetRFs();
+            TPtrC tempPathPtr(reinterpret_cast<const TText*> (tempPath.constData()));
+            TFindFile finder(fs);
+            TInt err = finder.FindByDir(tempPathPtr, tempPathPtr);
+            while (err == KErrNone) {
+                QString foundDir = QString::fromUtf16(finder.File().Ptr(), finder.File().Length());
+                foundDir = QDir(foundDir).canonicalPath();
+                if (!app_libpaths->contains(foundDir))
+                    app_libpaths->append(foundDir);
+                err = finder.Find();
             }
         }
 #else
@@ -2305,7 +2334,7 @@ void QCoreApplication::removeLibraryPath(const QString &path)
     A function with the following signature that can be used as an
     event filter:
 
-    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 3
+    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 3
 
     \sa setEventFilter()
 */
@@ -2329,7 +2358,7 @@ void QCoreApplication::removeLibraryPath(const QString &path)
 
     By default, no event filter function is set (i.e., this function
     returns a null EventFilter the first time it is called).
-    
+
     \note The filter function set here receives native messages,
     i.e. MSG or XEvent structs, that are going to Qt objects. It is
     called by QCoreApplication::filterEvent(). If the filter function
@@ -2494,7 +2523,7 @@ int QCoreApplication::loopLevel()
 }
 #endif
 
-/*!
+/*
     \fn void QCoreApplication::watchUnixSignal(int signal, bool watch)
     \internal
 */
@@ -2518,7 +2547,7 @@ int QCoreApplication::loopLevel()
     The function specified by \a ptr should take no arguments and should
     return nothing. For example:
 
-    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 4
+    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 4
 
     Note that for an application- or module-wide cleanup,
     qAddPostRoutine() is often not suitable. For example, if the
@@ -2532,7 +2561,7 @@ int QCoreApplication::loopLevel()
     parent-child mechanism to call a cleanup function at the right
     time:
 
-    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 5
+    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 5
 
     By selecting the right parent object, this can often be made to
     clean up the module's data at the right moment.
@@ -2546,7 +2575,7 @@ int QCoreApplication::loopLevel()
     translation functions, \c tr() and \c trUtf8(), with these
     signatures:
 
-    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 6
+    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 6
 
     This macro is useful if you want to use QObject::tr() or
     QObject::trUtf8() in classes that don't inherit from QObject.
@@ -2555,7 +2584,7 @@ int QCoreApplication::loopLevel()
     class definition (before the first \c{public:} or \c{protected:}).
     For example:
 
-    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 7
+    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 7
 
     The \a context parameter is normally the class name, but it can
     be any string.

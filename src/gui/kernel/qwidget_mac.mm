@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -107,6 +107,7 @@
 #include <private/qcocoapanel_mac_p.h>
 
 #include "qwidget_p.h"
+#include "qevent_p.h"
 #include "qdnd_p.h"
 #include <QtGui/qgraphicsproxywidget.h>
 
@@ -119,7 +120,7 @@ QT_BEGIN_NAMESPACE
 
 extern "C" {
     extern OSStatus _HIViewScrollRectWithOptions(HIViewRef, const HIRect *, CGFloat, CGFloat,
-                                                 OptionBits);
+                                                 OptionBits) __attribute__ ((weak));
 }
 #define kHIViewScrollRectAdjustInvalid 1
 #define kHIViewScrollRectDontInvalidateRevealedArea 2
@@ -298,6 +299,14 @@ bool qt_mac_is_macsheet(const QWidget *w)
 bool qt_mac_is_macdrawer(const QWidget *w)
 {
     return (w && w->parentWidget() && w->windowType() == Qt::Drawer);
+}
+
+bool qt_mac_insideKeyWindow(const QWidget *w)
+{
+#ifdef QT_MAC_USE_COCOA
+    return [[reinterpret_cast<NSView *>(w->winId()) window] isKeyWindow];
+#endif
+    return false;
 }
 
 bool qt_mac_set_drawer_preferred_edge(QWidget *w, Qt::DockWidgetArea where) //users of Qt for Mac OS X can use this..
@@ -729,6 +738,13 @@ static EventTypeSpec window_events[] = {
     { kEventClassWindow, kEventWindowGetRegion },
     { kEventClassWindow, kEventWindowGetClickModality },
     { kEventClassWindow, kEventWindowTransitionCompleted },
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+    { kEventClassGesture, kEventGestureStarted },
+    { kEventClassGesture, kEventGestureEnded },
+    { kEventClassGesture, kEventGestureMagnify },
+    { kEventClassGesture, kEventGestureSwipe },
+    { kEventClassGesture, kEventGestureRotate },
+#endif
     { kEventClassMouse, kEventMouseDown }
 };
 static EventHandlerUPP mac_win_eventUPP = 0;
@@ -1013,6 +1029,76 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
             return SendEventToApplication(event);
         handled_event = false;
         break; }
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+    case kEventClassGesture: {
+        // First, find the widget that was under
+        // the mouse when the gesture happened:
+        HIPoint screenLocation;
+        if (GetEventParameter(event, kEventParamMouseLocation, typeHIPoint, 0,
+                    sizeof(screenLocation), 0, &screenLocation) != noErr) {
+            handled_event = false;
+            break;
+        }
+        QWidget *widget = QApplication::widgetAt(screenLocation.x, screenLocation.y);
+        if (!widget) {
+            handled_event = false;
+            break;
+        }
+
+        QNativeGestureEvent qNGEvent;
+        qNGEvent.position = QPoint(screenLocation.x, screenLocation.y);
+
+        switch (ekind) {
+            case kEventGestureStarted:
+                qNGEvent.gestureType = QNativeGestureEvent::GestureBegin;
+                break;
+            case kEventGestureEnded:
+                qNGEvent.gestureType = QNativeGestureEvent::GestureEnd;
+                break;
+            case kEventGestureRotate: {
+                CGFloat amount;
+                if (GetEventParameter(event, kEventParamRotationAmount, typeCGFloat, 0,
+                            sizeof(amount), 0, &amount) != noErr) {
+                    handled_event = false;
+                    break;
+                }
+                qNGEvent.gestureType = QNativeGestureEvent::Rotate;
+                qNGEvent.percentage = float(-amount);
+                break; }
+            case kEventGestureSwipe: {
+                HIPoint swipeDirection;
+                if (GetEventParameter(event, kEventParamSwipeDirection, typeHIPoint, 0,
+                            sizeof(swipeDirection), 0, &swipeDirection) != noErr) {
+                    handled_event = false;
+                    break;
+                }
+                qNGEvent.gestureType = QNativeGestureEvent::Swipe;
+                if (swipeDirection.x == 1)
+                    qNGEvent.angle = 180.0f;
+                else if (swipeDirection.x == -1)
+                    qNGEvent.angle = 0.0f;
+                else if (swipeDirection.y == 1)
+                    qNGEvent.angle = 90.0f;
+                else if (swipeDirection.y == -1)
+                    qNGEvent.angle = 270.0f;
+                break; }
+            case kEventGestureMagnify: {
+                CGFloat amount;
+                if (GetEventParameter(event, kEventParamMagnificationAmount, typeCGFloat, 0,
+                            sizeof(amount), 0, &amount) != noErr) {
+                    handled_event = false;
+                    break;
+                }
+                qNGEvent.gestureType = QNativeGestureEvent::Zoom;
+                qNGEvent.percentage = float(amount);
+                break; }
+        }
+
+        QApplication::sendSpontaneousEvent(widget, &qNGEvent);
+    break; }
+#endif // gestures
+
     default:
         handled_event = false;
     }
@@ -2496,7 +2582,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 {
     Q_D(QWidget);
     if (!isWindow() && parentWidget())
-        parentWidget()->d_func()->invalidateBuffer(geometry());
+        parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
     d->deactivateWidgetCleanup();
     qt_mac_event_release(this);
     if(testAttribute(Qt::WA_WState_Created)) {
@@ -2602,7 +2688,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     OSViewRef old_id = 0;
 
     if (q->isVisible() && q->parentWidget() && parent != q->parentWidget())
-        q->parentWidget()->d_func()->invalidateBuffer(q->geometry());
+        q->parentWidget()->d_func()->invalidateBuffer(effectiveRectFor(q->geometry()));
 
     // Maintain the glWidgets list on parent change: remove "our" gl widgets
     // from the list on the old parent and grandparents.
@@ -3699,7 +3785,10 @@ static void qt_mac_update_widget_posisiton(QWidget *q, QRect oldRect, QRect newR
         (oldRect.isValid() == false || newRect.isValid() == false)  ||
 
         // the position update is a part of a drag-and-drop operation
-        QDragManager::self()->object
+        QDragManager::self()->object || 
+        
+        // we are on Panther (no HIViewSetNeedsDisplayInRect) 
+        QSysInfo::MacintoshVersion < QSysInfo::MV_10_4 
     ){
         HIViewSetFrame(view, &bounds);
         return;
@@ -4098,12 +4187,12 @@ void QWidgetPrivate::setGeometry_sys_helper(int x, int y, int w, int h, bool isM
         setWSGeometry(false, oldRect);
         if (isResize && QApplicationPrivate::graphicsSystem()) {
             invalidateBuffer(q->rect());
-            if (extra && !extra->mask.isEmpty()) {
+            if (extra && !graphicsEffect && !extra->mask.isEmpty()) {
                 QRegion oldRegion(extra->mask.translated(oldp));
                 oldRegion &= oldRect;
                 q->parentWidget()->d_func()->invalidateBuffer(oldRegion);
             } else {
-                q->parentWidget()->d_func()->invalidateBuffer(oldRect);
+                q->parentWidget()->d_func()->invalidateBuffer(effectiveRectFor(oldRect));
             }
         }
     }

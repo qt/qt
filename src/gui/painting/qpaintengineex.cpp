@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -90,40 +90,6 @@ QRectF QVectorPath::controlPointRect() const
 
     m_hints |= ControlPointRect;
     return QRectF(QPointF(m_cp_rect.x1, m_cp_rect.y1), QPointF(m_cp_rect.x2, m_cp_rect.y2));
-}
-
-QPainterPath QVectorPath::convertToPainterPath() const
-{
-    QPainterPath path;
-
-    if (m_count == 0)
-        return path;
-
-    const QPointF *points = (const QPointF *) m_points;
-
-    if (m_elements) {
-        for (int i=0; i<m_count; ++i) {
-            switch (m_elements[i]) {
-            case QPainterPath::MoveToElement:
-                path.moveTo(points[i]);
-                break;
-            case QPainterPath::LineToElement:
-                path.lineTo(points[i]);
-                break;
-            case QPainterPath::CurveToElement:
-                path.cubicTo(points[i], points[i+1], points[i+2]);
-                break;
-            default:
-                break;
-            }
-        }
-    } else {
-        path.moveTo(points[0]);
-        for (int i=1; i<m_count; ++i)
-            path.lineTo(points[i]);
-    }
-
-    return path;
 }
 
 const QVectorPath &qtVectorPathForPath(const QPainterPath &path)
@@ -313,6 +279,29 @@ static QPainterPath::ElementType qpaintengineex_rect4_types_32[] = {
     QPainterPath::MoveToElement, QPainterPath::LineToElement, QPainterPath::LineToElement, QPainterPath::LineToElement, // 31
     QPainterPath::MoveToElement, QPainterPath::LineToElement, QPainterPath::LineToElement, QPainterPath::LineToElement, // 32
 };
+
+
+static QPainterPath::ElementType qpaintengineex_roundedrect_types[] = {
+    QPainterPath::MoveToElement,
+    QPainterPath::LineToElement,
+    QPainterPath::CurveToElement,
+    QPainterPath::CurveToDataElement,
+    QPainterPath::CurveToDataElement,
+    QPainterPath::LineToElement,
+    QPainterPath::CurveToElement,
+    QPainterPath::CurveToDataElement,
+    QPainterPath::CurveToDataElement,
+    QPainterPath::LineToElement,
+    QPainterPath::CurveToElement,
+    QPainterPath::CurveToDataElement,
+    QPainterPath::CurveToDataElement,
+    QPainterPath::LineToElement,
+    QPainterPath::CurveToElement,
+    QPainterPath::CurveToDataElement,
+    QPainterPath::CurveToDataElement
+};
+
+
 
 static void qpaintengineex_moveTo(qreal x, qreal y, void *data) {
     ((StrokeHandler *) data)->pts.add(x);
@@ -569,8 +558,13 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 
 void QPaintEngineEx::draw(const QVectorPath &path)
 {
-    fill(path, state()->brush);
-    stroke(path, state()->pen);
+    const QBrush &brush = state()->brush;
+    if (qbrush_style(brush) != Qt::NoBrush)
+        fill(path, brush);
+
+    const QPen &pen = state()->pen;
+    if (qpen_style(pen) != Qt::NoPen && qbrush_style(qpen_brush(pen)) != Qt::NoBrush)
+        stroke(path, pen);
 }
 
 
@@ -707,6 +701,49 @@ void QPaintEngineEx::drawRects(const QRectF *rects, int rectCount)
         draw(vp);
     }
 }
+
+
+void QPaintEngineEx::drawRoundedRect(const QRectF &rect, qreal xRadius, qreal yRadius,
+                                     Qt::SizeMode mode)
+{
+    qreal x1 = rect.left();
+    qreal x2 = rect.right();
+    qreal y1 = rect.top();
+    qreal y2 = rect.bottom();
+
+    if (mode == Qt::RelativeSize) {
+        xRadius = xRadius * rect.width() / 200.;
+        yRadius = yRadius * rect.height() / 200.;
+    }
+
+    xRadius = qMin(xRadius, rect.width() / 2);
+    yRadius = qMin(yRadius, rect.height() / 2);
+
+    qreal pts[] = {
+        x1 + xRadius, y1,                   // MoveTo
+        x2 - xRadius, y1,                   // LineTo
+        x2 - (1 - KAPPA) * xRadius, y1,     // CurveTo
+        x2, y1 + (1 - KAPPA) * yRadius,
+        x2, y1 + yRadius,
+        x2, y2 - yRadius,                   // LineTo
+        x2, y2 - (1 - KAPPA) * yRadius,     // CurveTo
+        x2 - (1 - KAPPA) * xRadius, y2,
+        x2 - xRadius, y2,
+        x1 + xRadius, y2,                   // LineTo
+        x1 + (1 - KAPPA) * xRadius, y2,           // CurveTo
+        x1, y2 - (1 - KAPPA) * yRadius,
+        x1, y2 - yRadius,
+        x1, y1 + yRadius,                   // LineTo
+        x1, y1 + KAPPA * yRadius,           // CurveTo
+        x1 + (1 - KAPPA) * xRadius, y1,
+        x1 + xRadius, y1
+    };
+
+    QVectorPath path(pts, 17, qpaintengineex_roundedrect_types);
+    draw(path);
+}
+
+
 
 void QPaintEngineEx::drawLines(const QLine *lines, int lineCount)
 {

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,6 +52,7 @@
 #endif
 
 #include <new>
+#include <string.h>
 
 QT_BEGIN_HEADER
 
@@ -72,13 +73,15 @@ struct Q_CORE_EXPORT QListData {
     enum { DataHeaderSize = sizeof(Data) - sizeof(void *) };
 
     Data *detach(); // remove in 5.0
-    Data *detach2();
+    Data *detach2(); // remove in 5.0
+    Data *detach3();
     void realloc(int alloc);
     static Data shared_null;
     Data *d;
     void **erase(void **xi);
     void **append();
     void **append(const QListData &l);
+    void **append2(const QListData &l); // remove in 5.0
     void **prepend();
     void **insert(int i);
     void remove(int i);
@@ -199,7 +202,7 @@ public:
         inline iterator &operator-=(int j) { i-=j; return *this; }
         inline iterator operator+(int j) const { return iterator(i+j); }
         inline iterator operator-(int j) const { return iterator(i-j); }
-        inline int operator-(iterator j) const { return i - j.i; }
+        inline int operator-(iterator j) const { return int(i - j.i); }
     };
     friend class iterator;
 
@@ -364,21 +367,26 @@ Q_INLINE_TEMPLATE void QList<T>::node_copy(Node *from, Node *to, Node *src)
     if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
         QT_TRY {
             while(current != to) {
-                (current++)->v = new T(*reinterpret_cast<T*>((src++)->v));
+                current->v = new T(*reinterpret_cast<T*>(src->v));
+                ++current;
+                ++src;
             }
         } QT_CATCH(...) {
-            while (current != from)
-                delete reinterpret_cast<T*>(current--);
+            while (current-- != from)
+                delete reinterpret_cast<T*>(current->v);
             QT_RETHROW;
         }
 
     } else if (QTypeInfo<T>::isComplex) {
         QT_TRY {
-            while(current != to)
-                new (current++) T(*reinterpret_cast<T*>(src++));
+            while(current != to) {
+                new (current) T(*reinterpret_cast<T*>(src));
+                ++current;
+                ++src;
+            }
         } QT_CATCH(...) {
-            while (current != from)
-                (reinterpret_cast<T*>(current--))->~T();
+            while (current-- != from)
+                (reinterpret_cast<T*>(current))->~T();
             QT_RETHROW;
         }
     } else {
@@ -412,7 +420,7 @@ Q_INLINE_TEMPLATE QList<T> &QList<T>::operator=(const QList<T> &l)
 template <typename T>
 inline typename QList<T>::iterator QList<T>::insert(iterator before, const T &t)
 {
-    int iBefore = before.i - reinterpret_cast<Node *>(p.begin());
+    int iBefore = int(before.i - reinterpret_cast<Node *>(p.begin()));
     Node *n = reinterpret_cast<Node *>(p.insert(iBefore));
     QT_TRY {
         node_construct(n, t);
@@ -593,7 +601,7 @@ template <typename T>
 Q_OUTOFLINE_TEMPLATE void QList<T>::detach_helper()
 {
     Node *n = reinterpret_cast<Node *>(p.begin());
-    QListData::Data *x = p.detach2();
+    QListData::Data *x = p.detach3();
     QT_TRY {
         node_copy(reinterpret_cast<Node *>(p.begin()), reinterpret_cast<Node *>(p.end()), n);
     } QT_CATCH(...) {
@@ -693,12 +701,12 @@ template <typename T>
 Q_OUTOFLINE_TEMPLATE QList<T> &QList<T>::operator+=(const QList<T> &l)
 {
     detach();
-    Node *n = reinterpret_cast<Node *>(p.append(l.p));
+    Node *n = reinterpret_cast<Node *>(p.append2(l.p));
     QT_TRY{
         node_copy(n, reinterpret_cast<Node *>(p.end()), reinterpret_cast<Node *>(l.p.begin()));
     } QT_CATCH(...) {
         // restore the old end
-        d->end -= (reinterpret_cast<Node *>(p.end()) - n);
+        d->end -= int(reinterpret_cast<Node *>(p.end()) - n);
         QT_RETHROW;
     }
     return *this;
@@ -720,7 +728,7 @@ Q_OUTOFLINE_TEMPLATE int QList<T>::indexOf(const T &t, int from) const
         Node *e = reinterpret_cast<Node *>(p.end());
         while (++n != e)
             if (n->t() == t)
-                return n - reinterpret_cast<Node *>(p.begin());
+                return int(n - reinterpret_cast<Node *>(p.begin()));
     }
     return -1;
 }

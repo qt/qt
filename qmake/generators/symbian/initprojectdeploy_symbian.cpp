@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the qmake application of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,6 +42,8 @@
 #include "initprojectdeploy_symbian.h"
 #include <QDirIterator>
 #include <project.h>
+#include <qxmlstream.h>
+#include <qsettings.h>
 #include <qdebug.h>
 
 #define PLUGIN_STUB_DIR "qmakepluginstubs"
@@ -50,6 +52,99 @@
 #define SUFFIX_DLL "dll"
 #define SUFFIX_EXE "exe"
 #define SUFFIX_QTPLUGIN "qtplugin"
+
+static void fixEpocRootStr(QString& path)
+{
+    path.replace("\\", "/");
+
+    if (path.size() > 1 && path[1] == QChar(':')) {
+        path = path.mid(2);
+    }
+
+    if (!path.size() || path[path.size()-1] != QChar('/')) {
+        path += QChar('/');
+    }
+}
+
+#define SYMBIAN_SDKS_KEY "HKEY_LOCAL_MACHINE\\Software\\Symbian\\EPOC SDKs"
+
+static QString epocRootStr;
+
+QString epocRoot()
+{
+    if (!epocRootStr.isEmpty()) {
+        return epocRootStr;
+    }
+
+    // First, check the env variable
+    epocRootStr = qgetenv("EPOCROOT");
+
+    if (epocRootStr.isEmpty()) {
+        // No EPOCROOT set, check the default device
+        // First check EPOCDEVICE env variable
+        QString defaultDevice = qgetenv("EPOCDEVICE");
+
+        // Check the windows registry via QSettings for devices.xml path
+        QSettings settings(SYMBIAN_SDKS_KEY, QSettings::NativeFormat);
+        QString devicesXmlPath = settings.value("CommonPath").toString();
+
+        if (!devicesXmlPath.isEmpty()) {
+            // Parse xml for correct device
+            devicesXmlPath += "/devices.xml";
+            QFile devicesFile(devicesXmlPath);
+            if (devicesFile.open(QIODevice::ReadOnly)) {
+                QXmlStreamReader xml(&devicesFile);
+                while (!xml.atEnd()) {
+                    xml.readNext();
+                    if (xml.isStartElement() && xml.name() == "devices") {
+                        if (xml.attributes().value("version") == "1.0") {
+                            // Look for correct device
+                            while (!(xml.isEndElement() && xml.name() == "devices") && !xml.atEnd()) {
+                                xml.readNext();
+                                if (xml.isStartElement() && xml.name() == "device") {
+                                    if ((defaultDevice.isEmpty() && xml.attributes().value("default") == "yes") ||
+                                        (!defaultDevice.isEmpty() && (xml.attributes().value("id").toString() + QString(":") + xml.attributes().value("name").toString()) == defaultDevice)) {
+                                        // Found the correct device
+                                        while (!(xml.isEndElement() && xml.name() == "device") && !xml.atEnd()) {
+                                            xml.readNext();
+                                            if (xml.isStartElement() && xml.name() == "epocroot") {
+                                                epocRootStr = xml.readElementText();
+                                                fixEpocRootStr(epocRootStr);
+                                                return epocRootStr;
+                                            }
+                                        }
+                                        xml.raiseError("No epocroot element found");
+                                    }
+                                }
+                            }
+                        } else {
+                            xml.raiseError("Invalid 'devices' element version");
+                        }
+                    }
+                }
+                if (xml.hasError()) {
+                    fprintf(stderr, "ERROR: \"%s\" when parsing devices.xml\n", qPrintable(xml.errorString()));
+                }
+            } else {
+                fprintf(stderr, "Could not open devices.xml (%s)\n", qPrintable(devicesXmlPath));
+            }
+        } else {
+            fprintf(stderr, "Could not retrieve " SYMBIAN_SDKS_KEY " setting\n");
+        }
+
+        fprintf(stderr, "Failed to determine epoc root.\n");
+        if (!defaultDevice.isEmpty())
+            fprintf(stderr, "The device indicated by EPOCDEVICE environment variable (%s) could not be found.\n", qPrintable(defaultDevice));
+        fprintf(stderr, "Either set EPOCROOT or EPOCDEVICE environment variable to a valid value, or provide a default Symbian device.\n");
+
+        // No valid device found; set epocroot to "/"
+        epocRootStr = QLatin1String("/");
+    }
+
+    fixEpocRootStr(epocRootStr);
+    return epocRootStr;
+}
+
 
 static bool isPlugin(const QFileInfo& info, const QString& devicePath)
 {
@@ -102,6 +197,44 @@ static void createPluginStub(const QFileInfo& info,
     deploymentList.append(CopyItem(Option::fixPathToLocalOS(stubInfo.absoluteFilePath()),
                                    Option::fixPathToLocalOS(devicePath + "\\" + stubInfo.fileName())));
 }
+
+QString generate_uid(const QString& target)
+{
+    static QMap<QString, QString> targetToUid;
+
+    QString tmp = targetToUid[target];
+
+    if (!tmp.isEmpty()) {
+        return tmp;
+    }
+
+    unsigned long hash = 5381;
+    int c;
+
+    for (int i = 0; i < target.size(); ++i) {
+        c = target.at(i).toAscii();
+        hash ^= c + ((c - i) << i % 20) + ((c + i) << (i + 5) % 20) + ((c - 2 * i) << (i + 10) % 20) + ((c + 2 * i) << (i + 15) % 20);
+    }
+
+    tmp.setNum(hash, 16);
+    for (int i = tmp.size(); i < 8; ++i)
+        tmp.prepend("0");
+
+    targetToUid[target] = tmp;
+
+    return tmp;
+}
+
+// UIDs starting with 0xE are test UIDs in symbian
+QString generate_test_uid(const QString& target)
+{
+    QString tmp = generate_uid(target);
+    tmp.replace(0, 1, "E");
+    tmp.prepend("0x");
+
+    return tmp;
+}
+
 
 void initProjectDeploySymbian(QMakeProject* project,
                               DeploymentList &deploymentList,
@@ -198,8 +331,13 @@ void initProjectDeploySymbian(QMakeProject* project,
                         if (deployBinaries) {
                             // Executables and libraries are deployed to \sys\bin
                             QFileInfo releasePath(epocRoot() + "epoc32\\release\\" + platform + "\\" + build + "\\");
-                            deploymentList.append(CopyItem(Option::fixPathToLocalOS(releasePath.absolutePath() + "\\" + info.fileName()),
-                                                           Option::fixPathToLocalOS(deploymentDrive + QLatin1String(SYSBIN_DIR "\\") + info.fileName())));
+                            if(devicePathHasDriveLetter) {
+                                deploymentList.append(CopyItem(Option::fixPathToLocalOS(releasePath.absolutePath() + "\\" + info.fileName(), false, true),
+                                                               Option::fixPathToLocalOS(devicePath.left(2) + QLatin1String(SYSBIN_DIR "\\") + info.fileName())));
+                            } else {
+                                deploymentList.append(CopyItem(Option::fixPathToLocalOS(releasePath.absolutePath() + "\\" + info.fileName(), false, true),
+                                                               Option::fixPathToLocalOS(deploymentDrive + QLatin1String(SYSBIN_DIR "\\") + info.fileName())));
+                            }
                         }
                         if (isPlugin(info, devicePath)) {
                             createPluginStub(info, devicePath, deploymentList, generatedDirs, generatedFiles);

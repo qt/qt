@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -71,6 +71,7 @@
 #include <private/qgraphicssystem_gl_p.h>
 
 #include <private/qpaintengineex_opengl2_p.h>
+#include <private/qpixmapdata_gl_p.h>
 
 #ifndef QT_OPENGL_ES_2
 #include <private/qpaintengine_opengl_p.h>
@@ -229,6 +230,7 @@ QGLWidget* qt_gl_share_widget()
     return _qt_gl_share_widget()->shareWidget();
 }
 
+
 struct QGLWindowSurfacePrivate
 {
     QGLFramebufferObject *fbo;
@@ -239,6 +241,7 @@ struct QGLWindowSurfacePrivate
     int tried_fbo : 1;
     int tried_pb : 1;
     int destructive_swap_buffers : 1;
+    int geometry_updated : 1;
 
     QGLContext *ctx;
 
@@ -248,9 +251,48 @@ struct QGLWindowSurfacePrivate
     QSize size;
 
     QList<QImage> buffers;
+    QGLWindowSurfaceGLPaintDevice glDevice;
+    QGLWindowSurface* q_ptr;
 };
 
 QGLFormat QGLWindowSurface::surfaceFormat;
+
+void QGLWindowSurfaceGLPaintDevice::endPaint()
+{
+    glFlush();
+    QGLPaintDevice::endPaint();
+}
+
+QSize QGLWindowSurfaceGLPaintDevice::size() const
+{
+    return d->size;
+}
+
+QGLContext* QGLWindowSurfaceGLPaintDevice::context() const
+{
+    return d->ctx;
+}
+
+
+int QGLWindowSurfaceGLPaintDevice::metric(PaintDeviceMetric m) const
+{
+    return d->q_ptr->window()->metric(m);
+}
+
+Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_window_surface_2_engine)
+
+#if !defined (QT_OPENGL_ES_2)
+Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_window_surface_engine)
+#endif
+
+QPaintEngine *QGLWindowSurfaceGLPaintDevice::paintEngine() const
+{
+#if !defined(QT_OPENGL_ES_2)
+    if (!qt_gl_preferGL2Engine())
+        return qt_gl_window_surface_engine();
+#endif
+    return qt_gl_window_surface_2_engine();
+}
 
 QGLWindowSurface::QGLWindowSurface(QWidget *window)
     : QWindowSurface(window), d_ptr(new QGLWindowSurfacePrivate)
@@ -263,6 +305,9 @@ QGLWindowSurface::QGLWindowSurface(QWidget *window)
     d_ptr->tried_fbo = false;
     d_ptr->tried_pb = false;
     d_ptr->destructive_swap_buffers = qgetenv("QT_GL_SWAPBUFFER_PRESERVE").isNull();
+    d_ptr->glDevice.d = d_ptr;
+    d_ptr->q_ptr = this;
+    d_ptr->geometry_updated = false;
 }
 
 QGLWindowSurface::~QGLWindowSurface()
@@ -306,9 +351,7 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
 
     QGLContext *ctx = new QGLContext(surfaceFormat, widget);
     ctx->create(qt_gl_share_widget()->context());
-#ifdef Q_WS_MAC
-    ctx->updatePaintDevice();
-#endif
+
     widgetPrivate->extraData()->glContext = ctx;
 
     union { QGLContext **ctxPtr; void **voidPtr; };
@@ -318,27 +361,6 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
     voidPtr = &widgetPrivate->extraData()->glContext;
     d_ptr->contexts << ctxPtr;
     qDebug() << "hijackWindow() context created for" << widget << d_ptr->contexts.size();
-}
-
-Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_window_surface_2_engine)
-
-#if !defined (QT_OPENGL_ES_2)
-Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_window_surface_engine)
-#endif
-
-/*! \reimp */
-QPaintEngine *QGLWindowSurface::paintEngine() const
-{
-#if !defined(QT_OPENGL_ES_2)
-    if (!qt_gl_preferGL2Engine())
-        return qt_gl_window_surface_engine();
-#endif
-    return qt_gl_window_surface_2_engine();
-}
-
-int QGLWindowSurface::metric(PaintDeviceMetric m) const
-{
-    return window()->metric(m);
 }
 
 QGLContext *QGLWindowSurface::context() const
@@ -354,10 +376,8 @@ QPaintDevice *QGLWindowSurface::paintDevice()
         return d_ptr->pb;
 
     if (d_ptr->ctx)
-        return this;
+        return &d_ptr->glDevice;
 
-    QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
-    ctx->makeCurrent();
     return d_ptr->fbo;
 }
 
@@ -365,7 +385,6 @@ static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize,
 
 void QGLWindowSurface::beginPaint(const QRegion &)
 {
-    updateGeometry();
 }
 
 void QGLWindowSurface::endPaint(const QRegion &rgn)
@@ -378,12 +397,18 @@ void QGLWindowSurface::endPaint(const QRegion &rgn)
 
 void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &offset)
 {
+    if (context() && widget != window()) {
+        qWarning("No native child widget support in GL window surface without FBOs or pixel buffers");
+        return;
+    }
+
     QWidget *parent = widget->internalWinId() ? widget : widget->nativeParentWidget();
     Q_ASSERT(parent);
 
     if (!geometry().isValid())
         return;
 
+    // Needed to support native child-widgets...
     hijackWindow(parent);
 
     QRect br = rgn.boundingRect().translated(offset);
@@ -416,8 +441,6 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
                 QRegion dirtyRegion = QRegion(window()->rect()) - d_ptr->paintedRegion;
 
                 if (!dirtyRegion.isEmpty()) {
-                    context()->makeCurrent();
-
                     glMatrixMode(GL_MODELVIEW);
                     glLoadIdentity();
 
@@ -452,8 +475,76 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
         return;
     }
 
+    QGLContext *previous_ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     QGLContext *ctx = reinterpret_cast<QGLContext *>(parent->d_func()->extraData()->glContext);
-    GLuint texture;
+
+    // QPainter::end() should have unbound the fbo, otherwise something is very wrong...
+    Q_ASSERT(!d_ptr->fbo || !d_ptr->fbo->isBound());
+
+    if (ctx != previous_ctx) {
+        ctx->makeCurrent();
+    }
+
+    QSize size = widget->rect().size();
+    if (d_ptr->destructive_swap_buffers && ctx->format().doubleBuffer()) {
+        rect = parent->rect();
+        br = rect.translated(wOffset + offset);
+        size = parent->size();
+    }
+
+    glDisable(GL_SCISSOR_TEST);
+
+    if (d_ptr->fbo && (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit)) {
+        const int h = d_ptr->fbo->height();
+
+        const int sx0 = br.left();
+        const int sx1 = br.left() + br.width();
+        const int sy0 = h - (br.top() + br.height());
+        const int sy1 = h - br.top();
+
+        const int tx0 = rect.left();
+        const int tx1 = rect.left() + rect.width();
+        const int ty0 = parent->height() - (rect.top() + rect.height());
+        const int ty1 = parent->height() - rect.top();
+
+        if (window() == parent || d_ptr->fbo->format().samples() <= 1) {
+            // glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, 0);
+            glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, d_ptr->fbo->handle());
+
+            glBlitFramebufferEXT(sx0, sy0, sx1, sy1,
+                    tx0, ty0, tx1, ty1,
+                    GL_COLOR_BUFFER_BIT,
+                    GL_NEAREST);
+
+            glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, 0);
+        } else {
+            // can't do sub-region blits with multisample FBOs
+            QGLFramebufferObject *temp = qgl_fbo_pool()->acquire(d_ptr->fbo->size(), QGLFramebufferObjectFormat());
+
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, temp->handle());
+            glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, d_ptr->fbo->handle());
+
+            glBlitFramebufferEXT(0, 0, d_ptr->fbo->width(), d_ptr->fbo->height(),
+                    0, 0, d_ptr->fbo->width(), d_ptr->fbo->height(),
+                    GL_COLOR_BUFFER_BIT,
+                    GL_NEAREST);
+
+            glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, temp->handle());
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, 0);
+
+            glBlitFramebufferEXT(sx0, sy0, sx1, sy1,
+                    tx0, ty0, tx1, ty1,
+                    GL_COLOR_BUFFER_BIT,
+                    GL_NEAREST);
+
+            glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, 0);
+
+            qgl_fbo_pool()->release(temp);
+        }
+    }
+#if !defined(QT_OPENGL_ES_2)
+    else {
+        GLuint texture;
     if (d_ptr->fbo) {
         texture = d_ptr->fbo->texture();
     } else {
@@ -465,43 +556,12 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
         glBindTexture(target, 0);
     }
 
-    QSize size = widget->rect().size();
-    if (d_ptr->destructive_swap_buffers && ctx->format().doubleBuffer()) {
-        rect = parent->rect();
-        br = rect.translated(wOffset);
-        size = parent->size();
-    }
-
-    glDisable(GL_SCISSOR_TEST);
-
-    if (d_ptr->fbo && QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit) {
-        const int h = d_ptr->fbo->height();
-
-        const int x0 = rect.left();
-        const int x1 = rect.left() + rect.width();
-        const int y0 = h - (rect.top() + rect.height());
-        const int y1 = h - rect.top();
-
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, 0);
-
-        glBlitFramebufferEXT(x0, y0, x1, y1,
-                x0, y0, x1, y1,
-                GL_COLOR_BUFFER_BIT,
-                GL_NEAREST);
-
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, d_ptr->fbo->handle());
-    }
-#if !defined(QT_OPENGL_ES_2)
-    else {
         glDisable(GL_DEPTH_TEST);
 
         if (d_ptr->fbo) {
             d_ptr->fbo->release();
         } else {
             ctx->makeCurrent();
-#ifdef Q_WS_MAC
-            ctx->updatePaintDevice();
-#endif
         }
 
         glMatrixMode(GL_MODELVIEW);
@@ -530,9 +590,27 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
         glFlush();
 }
 
-void QGLWindowSurface::updateGeometry()
+
+void QGLWindowSurface::setGeometry(const QRect &rect)
 {
-    QRect rect = QWindowSurface::geometry();
+    QWindowSurface::setGeometry(rect);
+    d_ptr->geometry_updated = true;
+}
+
+
+void QGLWindowSurface::updateGeometry() {
+    if (!d_ptr->geometry_updated)
+        return;
+    d_ptr->geometry_updated = false;
+
+
+    QRect rect = geometry();
+    hijackWindow(window());
+    QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
+
+#ifdef Q_WS_MAC
+    ctx->updatePaintDevice();
+#endif
 
     const GLenum target = GL_TEXTURE_2D;
 
@@ -558,25 +636,24 @@ void QGLWindowSurface::updateGeometry()
 #ifdef QT_OPENGL_ES_2
         && (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit)
 #endif
-        && (d_ptr->fbo || !d_ptr->tried_fbo))
+        && (d_ptr->fbo || !d_ptr->tried_fbo)
+        && qt_gl_preferGL2Engine())
     {
         d_ptr->tried_fbo = true;
-        hijackWindow(window());
-        QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
         ctx->d_ptr->internal_context = true;
         ctx->makeCurrent();
         delete d_ptr->fbo;
 
         QGLFramebufferObjectFormat format;
         format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
-        format.setInternalFormat(GL_RGBA);
+        format.setInternalTextureFormat(GLenum(GL_RGBA));
         format.setTextureTarget(target);
 
         if (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit)
             format.setSamples(8);
 
         d_ptr->fbo = new QGLFramebufferObject(rect.size(), format);
-        d_ptr->fbo->bind();
+
         if (d_ptr->fbo->isValid()) {
             qDebug() << "Created Window Surface FBO" << rect.size()
                      << "with samples" << d_ptr->fbo->format().samples();
@@ -633,8 +710,6 @@ void QGLWindowSurface::updateGeometry()
     }
 #endif // !defined(QT_OPENGL_ES_2)
 
-    hijackWindow(window());
-    QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
     ctx->makeCurrent();
 
     if (d_ptr->destructive_swap_buffers) {
@@ -650,11 +725,6 @@ void QGLWindowSurface::updateGeometry()
     qDebug() << "QGLWindowSurface: Using plain widget as window surface" << this;;
     d_ptr->ctx = ctx;
     d_ptr->ctx->d_ptr->internal_context = true;
-}
-
-void QGLWindowSurface::setGeometry(const QRect &rect)
-{
-    QWindowSurface::setGeometry(rect);
 }
 
 bool QGLWindowSurface::scroll(const QRegion &area, int dx, int dy)

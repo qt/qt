@@ -70,6 +70,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLQuoteElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -84,6 +85,11 @@ const ClassInfo JSHTMLQuoteElementConstructor::s_info = { "HTMLQuoteElementConst
 bool JSHTMLQuoteElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLQuoteElementConstructor, DOMObject>(exec, &JSHTMLQuoteElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLQuoteElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLQuoteElementConstructor, DOMObject>(exec, &JSHTMLQuoteElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -122,6 +128,11 @@ JSObject* JSHTMLQuoteElement::createPrototype(ExecState* exec, JSGlobalObject* g
 bool JSHTMLQuoteElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLQuoteElement, Base>(exec, &JSHTMLQuoteElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLQuoteElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLQuoteElement, Base>(exec, &JSHTMLQuoteElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLQuoteElementCite(ExecState* exec, const Identifier&, const PropertySlot& slot)

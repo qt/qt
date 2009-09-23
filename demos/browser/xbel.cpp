@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the demonstration applications of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -133,16 +133,13 @@ BookmarkNode *XbelReader::read(QIODevice *device)
 {
     BookmarkNode *root = new BookmarkNode(BookmarkNode::Root);
     setDevice(device);
-    while (!atEnd()) {
-        readNext();
-        if (isStartElement()) {
-            QString version = attributes().value(QLatin1String("version")).toString();
-            if (name() == QLatin1String("xbel")
-                && (version.isEmpty() || version == QLatin1String("1.0"))) {
-                readXBEL(root);
-            } else {
-                raiseError(QObject::tr("The file is not an XBEL version 1.0 file."));
-            }
+    if (readNextStartElement()) {
+        QString version = attributes().value(QLatin1String("version")).toString();
+        if (name() == QLatin1String("xbel")
+            && (version.isEmpty() || version == QLatin1String("1.0"))) {
+            readXBEL(root);
+        } else {
+            raiseError(QObject::tr("The file is not an XBEL version 1.0 file."));
         }
     }
     return root;
@@ -152,21 +149,15 @@ void XbelReader::readXBEL(BookmarkNode *parent)
 {
     Q_ASSERT(isStartElement() && name() == QLatin1String("xbel"));
 
-    while (!atEnd()) {
-        readNext();
-        if (isEndElement())
-            break;
-
-        if (isStartElement()) {
-            if (name() == QLatin1String("folder"))
-                readFolder(parent);
-            else if (name() == QLatin1String("bookmark"))
-                readBookmarkNode(parent);
-            else if (name() == QLatin1String("separator"))
-                readSeparator(parent);
-            else
-                skipUnknownElement();
-        }
+    while (readNextStartElement()) {
+        if (name() == QLatin1String("folder"))
+            readFolder(parent);
+        else if (name() == QLatin1String("bookmark"))
+            readBookmarkNode(parent);
+        else if (name() == QLatin1String("separator"))
+            readSeparator(parent);
+        else
+            skipCurrentElement();
     }
 }
 
@@ -177,26 +168,19 @@ void XbelReader::readFolder(BookmarkNode *parent)
     BookmarkNode *folder = new BookmarkNode(BookmarkNode::Folder, parent);
     folder->expanded = (attributes().value(QLatin1String("folded")) == QLatin1String("no"));
 
-    while (!atEnd()) {
-        readNext();
-
-        if (isEndElement())
-            break;
-
-        if (isStartElement()) {
-            if (name() == QLatin1String("title"))
-                readTitle(folder);
-            else if (name() == QLatin1String("desc"))
-                readDescription(folder);
-            else if (name() == QLatin1String("folder"))
-                readFolder(folder);
-            else if (name() == QLatin1String("bookmark"))
-                readBookmarkNode(folder);
-            else if (name() == QLatin1String("separator"))
-                readSeparator(folder);
-            else
-                skipUnknownElement();
-        }
+    while (readNextStartElement()) {
+        if (name() == QLatin1String("title"))
+            readTitle(folder);
+        else if (name() == QLatin1String("desc"))
+            readDescription(folder);
+        else if (name() == QLatin1String("folder"))
+            readFolder(folder);
+        else if (name() == QLatin1String("bookmark"))
+            readBookmarkNode(folder);
+        else if (name() == QLatin1String("separator"))
+            readSeparator(folder);
+        else
+            skipCurrentElement();
     }
 }
 
@@ -224,37 +208,16 @@ void XbelReader::readBookmarkNode(BookmarkNode *parent)
     Q_ASSERT(isStartElement() && name() == QLatin1String("bookmark"));
     BookmarkNode *bookmark = new BookmarkNode(BookmarkNode::Bookmark, parent);
     bookmark->url = attributes().value(QLatin1String("href")).toString();
-    while (!atEnd()) {
-        readNext();
-        if (isEndElement())
-            break;
-
-        if (isStartElement()) {
-            if (name() == QLatin1String("title"))
-                readTitle(bookmark);
-            else if (name() == QLatin1String("desc"))
-                readDescription(bookmark);
-            else
-                skipUnknownElement();
-        }
+    while (readNextStartElement()) {
+        if (name() == QLatin1String("title"))
+            readTitle(bookmark);
+        else if (name() == QLatin1String("desc"))
+            readDescription(bookmark);
+        else
+            skipCurrentElement();
     }
     if (bookmark->title.isEmpty())
         bookmark->title = QObject::tr("Unknown title");
-}
-
-void XbelReader::skipUnknownElement()
-{
-    Q_ASSERT(isStartElement());
-
-    while (!atEnd()) {
-        readNext();
-
-        if (isEndElement())
-            break;
-
-        if (isStartElement())
-            skipUnknownElement();
-    }
 }
 
 

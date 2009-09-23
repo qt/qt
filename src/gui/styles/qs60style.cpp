@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -67,6 +67,7 @@
 #include "qtoolbar.h"
 #include "qtoolbutton.h"
 #include "qtreeview.h"
+#include "qfocusframe.h"
 
 #include "private/qtoolbarextension_p.h"
 #include "private/qcombobox_p.h"
@@ -85,6 +86,8 @@ const QS60StylePrivate::SkinElementFlags QS60StylePrivate::KDefaultSkinElementFl
 
 static const QByteArray propertyKeyLayouts = "layouts";
 static const QByteArray propertyKeyCurrentlayout = "currentlayout";
+
+static const qreal goldenRatio = 1.618;
 
 const layoutHeader QS60StylePrivate::m_layoutHeaders[] = {
 // *** generated layout data ***
@@ -426,13 +429,12 @@ QColor QS60StylePrivate::colorFromFrameGraphics(SkinFrameElements frame) const
         Q_ASSERT(2*frameCornerHeight<32);
 
         const QImage frameImage = QS60StylePrivate::frame(frame, QSize(32,32)).toImage();
+        Q_ASSERT(frameImage.bytesPerLine() > 0);
         if (frameImage.isNull())
             return Qt::black;
 
         const QRgb *pixelRgb = (const QRgb*)frameImage.bits();
         const int pixels = frameImage.numBytes()/sizeof(QRgb);
-        const int bytesPerLine = frameImage.bytesPerLine();
-        Q_ASSERT(bytesPerLine);
 
         int estimatedRed = 0;
         int estimatedGreen = 0;
@@ -507,11 +509,6 @@ void QS60StylePrivate::deleteBackground()
         delete m_background;
         m_background = 0;
     }
-}
-
-int QS60StylePrivate::focusRectPenWidth()
-{
-    return pixelMetric(QS60Style::PM_DefaultFrameWidth);
 }
 
 void QS60StylePrivate::setCurrentLayout(int index)
@@ -709,10 +706,11 @@ void QS60StylePrivate::setThemePalette(QPalette *palette) const
     palette->setColor(QPalette::AlternateBase, Qt::transparent);
     palette->setBrush(QPalette::Base, Qt::transparent);
     // set button and tooltipbase based on pixel colors
-    const QColor buttonColor = this->colorFromFrameGraphics(SF_ButtonNormal);
-    palette->setColor(QPalette::Button, buttonColor );
-    const QColor toolTipColor = this->colorFromFrameGraphics(SF_ToolTip);
-    palette->setColor(QPalette::ToolTipBase, toolTipColor );
+// After natitive pixmap support, colorFromFrameGraphics caused reproducable crashes on some setups.
+//    const QColor buttonColor = colorFromFrameGraphics(SF_ButtonNormal);
+//    palette->setColor(QPalette::Button, buttonColor);
+//    const QColor toolTipColor = colorFromFrameGraphics(SF_ToolTip);
+//    palette->setColor(QPalette::ToolTipBase, toolTipColor);
     palette->setColor(QPalette::Light, palette->color(QPalette::Button).lighter());
     palette->setColor(QPalette::Dark, palette->color(QPalette::Button).darker());
     palette->setColor(QPalette::Midlight, palette->color(QPalette::Button).lighter(125));
@@ -889,6 +887,10 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
   \sa QMacStyle, QWindowsStyle, QWindowsXPStyle, QWindowsVistaStyle, QPlastiqueStyle, QCleanlooksStyle, QMotifStyle
 */
 
+
+/*!
+    Destroys the style.
+*/
 QS60Style::~QS60Style()
 {
 }
@@ -951,13 +953,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             const QS60StylePrivate::SkinElements handleElement =
                 horizontal ? QS60StylePrivate::SE_SliderHandleHorizontal : QS60StylePrivate::SE_SliderHandleVertical;
             QS60StylePrivate::drawSkinElement(handleElement, painter, sliderHandle, flags);
-
-            if (optionSlider->state & State_HasFocus) {
-                QStyleOptionFocusRect fropt;
-                fropt.QStyleOption::operator=(*optionSlider);
-                fropt.rect = subElementRect(SE_SliderFocusRect, optionSlider, widget);
-                drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
-            }
         }
         break;
 #endif // QT_NO_SLIDER
@@ -991,17 +986,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 painter->setPen(option->palette.buttonText().color());
                 drawPrimitive(PE_IndicatorSpinDown, &buttonOption, painter, widget);
                 painter->restore();
-            }
-
-            if (cmb->subControls & SC_ComboBoxEditField) {
-                if (cmb->state & State_HasFocus && !cmb->editable) {
-                    QStyleOptionFocusRect focus;
-                    focus.QStyleOption::operator=(*cmb);
-                    focus.rect = cmbxEditField;
-                    focus.state |= State_FocusAtBorder;
-                    focus.backgroundColor = cmb->palette.highlight().color();
-                    drawPrimitive(PE_FrameFocusRect, &focus, painter, widget);
-                }
             }
         }
         break;
@@ -1079,13 +1063,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                         drawPrimitive(PE_PanelButtonTool, &tool, painter, widget);
                     }
                 }
-            }
-            if (toolBtn->state & State_HasFocus) {
-                QStyleOptionFocusRect fr;
-                fr.QStyleOption::operator=(*toolBtn);
-                const int frameWidth = pixelMetric(PM_DefaultFrameWidth, option, widget);
-                fr.rect.adjust(frameWidth, frameWidth, -frameWidth, -frameWidth);
-                drawPrimitive(PE_FrameFocusRect, &fr, painter, widget);
             }
 
             if (toolBtn->features & QStyleOptionToolButton::Arrow) {
@@ -1210,13 +1187,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                              groupBox->palette, groupBox->state & State_Enabled, groupBox->text,
                              textColor.isValid() ? QPalette::NoRole : QPalette::WindowText);
                 painter->restore();
-
-                if (groupBox->state & State_HasFocus) {
-                    QStyleOptionFocusRect fropt;
-                    fropt.QStyleOption::operator=(*groupBox);
-                    fropt.rect = textRect;
-                    drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
-                }
             }
 
             // Draw checkbox
@@ -1250,12 +1220,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             subopt.rect = subElementRect(SE_PushButtonContents, btn, widget);
 
             drawControl(CE_PushButtonLabel, &subopt, painter, widget);
-            if (btn->state & State_HasFocus) {
-                QStyleOptionFocusRect fropt;
-                fropt.QStyleOption::operator=(*btn);
-                fropt.rect = subElementRect(SE_PushButtonFocusRect, btn, widget);
-                drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
-            }
         }
         break;
     case CE_PushButtonBevel:
@@ -1613,18 +1577,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             if (verticalTabs)
                 painter->restore();
 
-            if (optionTab.state & State_HasFocus) {
-                const int OFFSET = 1 + pixelMetric(PM_DefaultFrameWidth);
-                const int leftBorder = optionTab.rect.left();
-                const int rightBorder = optionTab.rect.right() - 1;
-
-                QStyleOptionFocusRect fropt;
-                fropt.QStyleOption::operator=(*tab);
-                fropt.rect.setRect(leftBorder + 1 + OFFSET, optionTab.rect.y() + OFFSET,
-                                   rightBorder - leftBorder - 2*OFFSET, optionTab.rect.height() - 2*OFFSET);
-                drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
-            }
-
             painter->restore();
         }
         break;
@@ -1876,10 +1828,47 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         } else if (qobject_cast<const QFrame *>(widget)) { 
             QCommonStyle::drawControl(element, option, painter, widget); 
         }
-        if (option->state & State_HasFocus)
-            drawPrimitive(PE_FrameFocusRect, option, painter, widget);
         break;
     case CE_MenuScroller:
+        break;
+    case CE_FocusFrame:
+        {
+            // The pen width should nearly fill the layoutspacings around the widget
+            const int penWidth =
+                qMin(pixelMetric(QS60Style::PM_LayoutVerticalSpacing), pixelMetric(QS60Style::PM_LayoutHorizontalSpacing))
+                - 2; // But keep 1 pixel distance to the focus widget and 1 pixel to the adjacent widgets
+
+#ifdef QT_KEYPAD_NAVIGATION
+            bool editFocus = false;
+            if (const QFocusFrame *focusFrame = qobject_cast<const QFocusFrame*>(widget)) {
+                if (focusFrame->widget() && focusFrame->widget()->hasEditFocus())
+                    editFocus = true;
+            }
+            const qreal opacity = editFocus ? 0.65 : 0.45; // Trial and error factors. Feel free to improve.
+#else
+            const qreal opacity = 0.5;
+#endif
+            // Because of Qts coordinate system, we need to tweak the rect by .5 pixels, otherwise it gets blurred.
+            const qreal rectAdjustment = (penWidth % 2) ? -.5 : 0;
+
+            // Make sure that the pen stroke is inside the rect
+            const QRectF adjustedRect =
+                QRectF(option->rect).adjusted(
+                    rectAdjustment + penWidth,
+                    rectAdjustment + penWidth,
+                    -rectAdjustment - penWidth,
+                    -rectAdjustment - penWidth
+                );
+
+            const qreal roundRectRadius = penWidth * goldenRatio;
+
+            painter->save();
+            painter->setRenderHint(QPainter::Antialiasing);
+            painter->setOpacity(opacity);
+            painter->setPen(QPen(option->palette.color(QPalette::Highlight), penWidth));
+            painter->drawRoundedRect(adjustedRect, roundRectRadius, roundRectRadius);
+            painter->restore();
+        }
         break;
     default:
         QCommonStyle::drawControl(element, option, painter, widget);
@@ -1902,9 +1891,6 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 #endif
             QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_FrameLineEdit,
                 painter, option->rect, flags);
-
-            if (lineEdit->state & State_HasFocus)
-                drawPrimitive(PE_FrameFocusRect, lineEdit, painter, widget);
         }
     break;
 #endif // QT_NO_LINEEDIT
@@ -2031,50 +2017,6 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 #endif //QT_NO_COMBOBOX
         break;
 #endif //QT_NO_SPINBOX
-    case PE_FrameFocusRect:
-// Calendar widget and combox both do not use styled itemDelegate
-        if (widget && !(false
-#ifndef QT_NO_CALENDARWIDGET
-            || qobject_cast<const QCalendarWidget *>(widget->parent())
-#endif //QT_NO_CALENDARWIDGET
-#ifndef QT_NO_COMBOBOX
-            || qobject_cast<const QComboBoxListView *>(widget)
-#endif //QT_NO_COMBOBOX
-            )) {
-            // no focus selection for touch
-            if (option->state & State_HasFocus && !QS60StylePrivate::isTouchSupported()) {
-                painter->save();
-                const int penWidth = QS60StylePrivate::focusRectPenWidth();
-#ifdef QT_KEYPAD_NAVIGATION
-                const Qt::PenStyle penStyle = widget->hasEditFocus() ? Qt::SolidLine :Qt::DashLine;
-                const qreal opacity = widget->hasEditFocus() ? 0.6 : 0.4;
-#else
-                const Qt::PenStyle penStyle = Qt::SolidLine;
-                const qreal opacity = 0.5;
-#endif
-                painter->setRenderHint(QPainter::Antialiasing);
-                painter->setOpacity(opacity);
-                // Because of Qts coordinate system, we need to tweak the rect by .5 pixels, otherwise it gets blurred.
-                const qreal rectAdjustment = penWidth % 2?.5:0;
-                // Also we try to stay inside the option->rect, with penWidth > 1. Therefore these +1/-1
-                const QRectF adjustedRect = QRectF(option->rect).adjusted(
-                        rectAdjustment + penWidth - 1,
-                        rectAdjustment + penWidth - 1,
-                        -rectAdjustment - penWidth + 1,
-                        -rectAdjustment - penWidth + 1);
-                const qreal roundRectRadius = penWidth * 1.5;
-#ifdef QT_KEYPAD_NAVIGATION
-                if (penStyle != Qt::SolidLine) {
-                    painter->setPen(QPen(option->palette.color(QPalette::HighlightedText), penWidth, Qt::SolidLine));					
-                    painter->drawRoundedRect(adjustedRect, roundRectRadius, roundRectRadius);
-                }
-#endif
-                painter->setPen(QPen((option->palette.color(QPalette::Text), penWidth, penStyle)));
-                painter->drawRoundedRect(adjustedRect, roundRectRadius, roundRectRadius);
-                painter->restore();
-            }
-        }
-        break;
     case PE_Widget:
         if (QS60StylePrivate::drawsOwnThemeBackground(widget)
 #ifndef QT_NO_COMBOBOX
@@ -2119,8 +2061,6 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
         Q_ASSERT(false);
         break;
     case PE_Frame:
-        if (const QStyleOptionFrameV3 *frame = qstyleoption_cast<const QStyleOptionFrameV3 *>(option))
-            drawPrimitive(PE_FrameFocusRect, frame, painter, widget);
         break;
 #ifndef QT_NO_ITEMVIEWS
     case PE_PanelItemViewItem:
@@ -2515,6 +2455,9 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
     return ret;
 }
 
+/*!
+  \reimp
+*/
 QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, const QWidget *widget) const
 {
     QRect ret;
@@ -2669,22 +2612,15 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                 }
             ret = visualRect(opt->direction, opt->rect, ret);
             break;
-        case SE_FrameContents:
-            if (QS60StylePrivate::isTouchSupported()) {
-                return QCommonStyle::subElementRect(element, opt, widget);
-            } else if (const QStyleOptionFrameV2 *f = qstyleoption_cast<const QStyleOptionFrameV2 *>(opt)) {
-                // We shrink the frame contents by focusFrameWidth, so that we can draw the frame around it in keypad navigation mode.
-                const int frameWidth = QS60StylePrivate::focusRectPenWidth();
-                ret = opt->rect.adjusted(frameWidth, frameWidth, -frameWidth, -frameWidth);
-                ret = visualRect(opt->direction, opt->rect, ret);
-            }
-            break;
         default:
             ret = QCommonStyle::subElementRect(element, opt, widget);
     }
     return ret;
 }
 
+/*!
+  \reimp
+ */
 void QS60Style::polish(QWidget *widget)
 {
     Q_D(const QS60Style);
@@ -2720,6 +2656,9 @@ void QS60Style::polish(QWidget *widget)
     d->setFont(widget);
 }
 
+/*!
+  \reimp
+ */
 void QS60Style::unpolish(QWidget *widget)
 {
     if (false
@@ -2751,6 +2690,9 @@ void QS60Style::unpolish(QWidget *widget)
     QCommonStyle::unpolish(widget);
 }
 
+/*!
+  \reimp
+ */
 void QS60Style::polish(QApplication *application)
 {
     Q_D(QS60Style);
@@ -2758,6 +2700,9 @@ void QS60Style::polish(QApplication *application)
     d->setThemePalette(application);
 }
 
+/*!
+  \reimp
+ */
 void QS60Style::unpolish(QApplication *application)
 {
     Q_UNUSED(application)
@@ -2767,18 +2712,64 @@ void QS60Style::unpolish(QApplication *application)
     QApplicationPrivate::setSystemPalette(d->m_originalPalette);
 }
 
+/*!
+  Sets the style property \a name to the \a value.
+ */
 void QS60Style::setStyleProperty(const char *name, const QVariant &value)
 {
     Q_D(QS60Style);
     d->setStyleProperty_specific(name, value);
 }
 
+/*!
+  Returns the value of style property \a name.
+ */
 QVariant QS60Style::styleProperty(const char *name) const
 {
     Q_D(const QS60Style);
     return d->styleProperty_specific(name);
 }
 
+/*!
+  \reimp
+ */
+bool QS60Style::event(QEvent *e)
+{
+#ifdef QT_KEYPAD_NAVIGATION
+    if (QS60StylePrivate::isTouchSupported())
+        return false;
+    Q_D(QS60Style);
+    switch (e->type()) {
+    case QEvent::FocusIn:
+        if (QWidget *focusWidget = QApplication::focusWidget()) {
+            if (!d->m_focusFrame)
+                d->m_focusFrame = new QFocusFrame(focusWidget);
+            d->m_focusFrame->setWidget(focusWidget);
+        } else if (d->m_focusFrame) {
+            d->m_focusFrame->setWidget(0);
+        }
+        break;
+    case QEvent::FocusOut:
+        if (d->m_focusFrame)
+            d->m_focusFrame->setWidget(0);
+        break;
+    case QEvent::EnterEditFocus:
+    case QEvent::LeaveEditFocus:
+        if (d->m_focusFrame)
+            d->m_focusFrame->update();
+        break;
+    default:
+        break;
+    }
+#else
+    Q_UNUSED(e)
+#endif
+    return false;
+}
+
+/*!
+    \internal
+ */
 QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
     const QStyleOption *option, const QWidget *widget) const
 {

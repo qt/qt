@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -181,6 +181,7 @@ private slots:
     void ignoreSslErrorsList();
     void ignoreSslErrorsListWithSlot_data();
     void ignoreSslErrorsListWithSlot();
+    void readFromClosedSocket();
 
     static void exitLoop()
     {
@@ -249,13 +250,13 @@ void tst_QSslSocket::initTestCase_data()
     QTest::addColumn<bool>("setProxy");
     QTest::addColumn<int>("proxyType");
 
-    //QTest::newRow("WithoutProxy") << false << 0;
+    QTest::newRow("WithoutProxy") << false << 0;
 #ifdef TEST_QNETWORK_PROXY
     QTest::newRow("WithSocks5Proxy") << true << int(Socks5Proxy);
-    //QTest::newRow("WithSocks5ProxyAuth") << true << int(Socks5Proxy | AuthBasic);
+    QTest::newRow("WithSocks5ProxyAuth") << true << int(Socks5Proxy | AuthBasic);
 
-    //QTest::newRow("WithHttpProxy") << true << int(HttpProxy);
-    //QTest::newRow("WithHttpProxyBasicAuth") << true << int(HttpProxy | AuthBasic);
+    QTest::newRow("WithHttpProxy") << true << int(HttpProxy);
+    QTest::newRow("WithHttpProxyBasicAuth") << true << int(HttpProxy | AuthBasic);
     // uncomment the line below when NTLM works
 //    QTest::newRow("WithHttpProxyNtlmAuth") << true << int(HttpProxy | AuthNtlm);
 #endif
@@ -538,7 +539,6 @@ void tst_QSslSocket::sslErrors()
 
     SslErrorList output;
     foreach (QSslError error, socket->sslErrors()) {
-        //printf("error = %s\n", error.errorString().toAscii().data());
         output << error.error();
     }
 
@@ -592,7 +592,7 @@ void tst_QSslSocket::connectToHostEncrypted()
 
     QSslSocketPtr socket = newSocket();
     this->socket = socket;
-    QVERIFY(socket->addCaCertificates(QLatin1String("certs/qt-test-server-cacert.pem")));
+    QVERIFY(socket->addCaCertificates(QLatin1String(SRCDIR "certs/qt-test-server-cacert.pem")));
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
     connect(socket, SIGNAL(sslErrors(QList<QSslError>)),
             this, SLOT(untrustedWorkaroundSlot(QList<QSslError>)));
@@ -1667,6 +1667,34 @@ void tst_QSslSocket::ignoreSslErrorsListWithSlot()
     QFETCH(int, expectedSslErrorSignalCount);
     bool expectEncryptionSuccess = (expectedSslErrorSignalCount == 0);
     QCOMPARE(socket.waitForEncrypted(10000), expectEncryptionSuccess);
+}
+
+// make sure a closed socket has no bytesAvailable()
+// related to https://bugs.webkit.org/show_bug.cgi?id=28016
+void tst_QSslSocket::readFromClosedSocket()
+{
+    QSslSocketPtr socket = newSocket();
+    socket->ignoreSslErrors();
+    socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+    socket->ignoreSslErrors();
+    socket->waitForConnected();
+    socket->waitForEncrypted();
+    // provoke a response by sending a request
+    socket->write("GET /gif/fluke.gif HTTP/1.1\n");
+    socket->write("Host: ");
+    socket->write(QtNetworkSettings::serverName().toLocal8Bit().constData());
+    socket->write("\n");
+    socket->write("\n");
+    socket->waitForBytesWritten();
+    socket->waitForReadyRead();
+    QVERIFY(socket->state() == QAbstractSocket::ConnectedState);
+    QVERIFY(socket->bytesAvailable());
+    socket->close();
+    QVERIFY(!socket->bytesAvailable());
+    QVERIFY(!socket->bytesToWrite());
+    socket->waitForDisconnected();
+    QVERIFY(!socket->bytesAvailable());
+    QVERIFY(!socket->bytesToWrite());
 }
 
 #endif // QT_NO_OPENSSL

@@ -37,9 +37,10 @@ class IntRect;
 class FloatPoint;
 
 enum GraphicsLayerPaintingPhase {
-    GraphicsLayerPaintBackgroundMask = (1 << 0),
-    GraphicsLayerPaintForegroundMask = (1 << 1),
-    GraphicsLayerPaintAllMask = (GraphicsLayerPaintBackgroundMask | GraphicsLayerPaintForegroundMask)
+    GraphicsLayerPaintBackground = (1 << 0),
+    GraphicsLayerPaintForeground = (1 << 1),
+    GraphicsLayerPaintMask = (1 << 2),
+    GraphicsLayerPaintAll = (GraphicsLayerPaintBackground | GraphicsLayerPaintForeground | GraphicsLayerPaintMask)
 };
 
 enum AnimatedPropertyID {
@@ -53,13 +54,14 @@ class GraphicsLayerClient {
 public:
     virtual ~GraphicsLayerClient() {}
 
-    // Callbacks for when hardware-accelerated transitions and animation started
+    // Callback for when hardware-accelerated animation started.
     virtual void notifyAnimationStarted(const GraphicsLayer*, double time) = 0;
+
+    // Notification that a layer property changed that requires a subsequent call to syncCompositingState()
+    // to appear on the screen.
+    virtual void notifySyncRequired(const GraphicsLayer*) = 0;
     
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) = 0;
-
-    // Return a rect for the "contents" of the graphics layer, i.e. video or image content, in GraphicsLayer coordinates.
-    virtual IntRect contentsBox(const GraphicsLayer*) = 0;
 };
 
 } // namespace WebCore

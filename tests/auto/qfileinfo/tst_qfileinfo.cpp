@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -65,6 +65,10 @@
 #endif
 #include "../network-settings.h"
 #include <private/qfileinfo_p.h>
+
+#if defined(Q_OS_SYMBIAN)
+# define SRCDIR ""
+#endif
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -142,6 +146,7 @@ private slots:
     void fileTimes();
     void fileTimes_oldFile();
 
+    void isSymLink_data();
     void isSymLink();
 
     void isHidden_data();
@@ -169,6 +174,10 @@ private slots:
     void notEqualOperator() const;
 };
 
+tst_QFileInfo::tst_QFileInfo()
+{
+}
+
 tst_QFileInfo::~tst_QFileInfo()
 {
     QFile::remove("brokenlink.lnk");
@@ -178,6 +187,12 @@ tst_QFileInfo::~tst_QFileInfo()
 #ifdef Q_OS_SYMBIAN
     QFile::remove("hidden.txt");
     QFile::remove("nothidden.txt");
+#else
+    QFile::remove("tempfile.txt");
+#endif
+
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+    QDir().rmdir("./.hidden-directory");
 #endif
 }
 
@@ -241,12 +256,6 @@ void tst_QFileInfo::copy()
     QVERIFY(privateInfo->data != privateInfo3->data);
     QVERIFY(privateInfo2->data != privateInfo3->data);
     QCOMPARE(privateInfo->data, privateInfo2->data);
-
-
-}
-
-tst_QFileInfo::tst_QFileInfo()
-{
 }
 
 void tst_QFileInfo::isFile_data()
@@ -255,7 +264,7 @@ void tst_QFileInfo::isFile_data()
     QTest::addColumn<bool>("expected");
 
     QTest::newRow("data0") << QDir::currentPath() << false;
-    QTest::newRow("data1") << "tst_qfileinfo.cpp" << true;
+    QTest::newRow("data1") << SRCDIR "tst_qfileinfo.cpp" << true;
     QTest::newRow("data2") << ":/tst_qfileinfo/resources/" << false;
     QTest::newRow("data3") << ":/tst_qfileinfo/resources/file1" << true;
     QTest::newRow("data4") << ":/tst_qfileinfo/resources/afilethatshouldnotexist" << false;
@@ -288,13 +297,13 @@ void tst_QFileInfo::isDir_data()
     QTest::addColumn<bool>("expected");
 
     QTest::newRow("data0") << QDir::currentPath() << true;
-    QTest::newRow("data1") << "tst_qfileinfo.cpp" << false;
+    QTest::newRow("data1") << SRCDIR "tst_qfileinfo.cpp" << false;
     QTest::newRow("data2") << ":/tst_qfileinfo/resources/" << true;
     QTest::newRow("data3") << ":/tst_qfileinfo/resources/file1" << false;
     QTest::newRow("data4") << ":/tst_qfileinfo/resources/afilethatshouldnotexist" << false;
 
-    QTest::newRow("simple dir") << "resources" << true;
-    QTest::newRow("simple dir with slash") << "resources/" << true;
+    QTest::newRow("simple dir") << SRCDIR "resources" << true;
+    QTest::newRow("simple dir with slash") << SRCDIR "resources/" << true;
 
     QTest::newRow("broken link") << "brokenlink.lnk" << false;
 
@@ -334,8 +343,8 @@ void tst_QFileInfo::isRoot_data()
     QTest::newRow("data4") << ":/tst_qfileinfo/resources/" << false;
     QTest::newRow("data5") << ":/" << true;
 
-    QTest::newRow("simple dir") << "resources" << false;
-    QTest::newRow("simple dir with slash") << "resources/" << false;
+    QTest::newRow("simple dir") << SRCDIR "resources" << false;
+    QTest::newRow("simple dir with slash") << SRCDIR "resources/" << false;
 #if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
     QTest::newRow("drive 1") << "c:" << false;
     QTest::newRow("drive 2") << "c:/" << true;
@@ -366,20 +375,20 @@ void tst_QFileInfo::exists_data()
     QTest::addColumn<bool>("expected");
 
     QTest::newRow("data0") << QDir::currentPath() << true;
-    QTest::newRow("data1") << "tst_qfileinfo.cpp" << true;
+    QTest::newRow("data1") << SRCDIR "tst_qfileinfo.cpp" << true;
     QTest::newRow("data2") << "/I/do_not_expect_this_path_to_exist/" << false;
     QTest::newRow("data3") << ":/tst_qfileinfo/resources/" << true;
     QTest::newRow("data4") << ":/tst_qfileinfo/resources/file1" << true;
     QTest::newRow("data5") << ":/I/do_not_expect_this_path_to_exist/" << false;
-    QTest::newRow("data6") << "resources/*" << false;
-    QTest::newRow("data7") << "resources/*.foo" << false;
-    QTest::newRow("data8") << "resources/*.ext1" << false;
-    QTest::newRow("data9") << "resources/file?.ext1" << false;
+    QTest::newRow("data6") << SRCDIR "resources/*" << false;
+    QTest::newRow("data7") << SRCDIR "resources/*.foo" << false;
+    QTest::newRow("data8") << SRCDIR "resources/*.ext1" << false;
+    QTest::newRow("data9") << SRCDIR "resources/file?.ext1" << false;
     QTest::newRow("data10") << "." << true;
     QTest::newRow("data11") << ". " << false;
 
-    QTest::newRow("simple dir") << "resources" << true;
-    QTest::newRow("simple dir with slash") << "resources/" << true;
+    QTest::newRow("simple dir") << SRCDIR "resources" << true;
+    QTest::newRow("simple dir with slash") << SRCDIR "resources/" << true;
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QTest::newRow("unc 1") << "//"  + QtNetworkSettings::winServerName() << true;
@@ -412,6 +421,14 @@ void tst_QFileInfo::absolutePath_data()
     QString drivePrefix;
 #if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
     drivePrefix = QDir::currentPath().left(2);
+    QString nonCurrentDrivePrefix =
+        drivePrefix.left(1).compare("X", Qt::CaseInsensitive) == 0 ? QString("Y:") : QString("X:");
+
+    // Make sure drive-relative paths return correct absolute paths (task 255326)
+    QTest::newRow("<current drive>:my.dll") << drivePrefix + "my.dll" << QDir::currentPath() << "my.dll";
+    QTest::newRow("<not current drive>:my.dll") << nonCurrentDrivePrefix + "my.dll"
+                                                << nonCurrentDrivePrefix + "/"
+                                                << "my.dll";
 #endif
     QTest::newRow("0") << "/machine/share/dir1/" << drivePrefix + "/machine/share/dir1" << "";
     QTest::newRow("1") << "/machine/share/dir1" << drivePrefix + "/machine/share" << "dir1";
@@ -447,9 +464,19 @@ void tst_QFileInfo::absFilePath_data()
     QTest::newRow("relativeFileInSubDir") << "temp/tmp.txt" << QDir::currentPath() + "/" + "temp/tmp.txt";
 #if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
     QString curr = QDir::currentPath();
+
     curr.remove(0, 2);   // Make it a absolute path with no drive specifier: \depot\qt-4.2\tests\auto\qfileinfo
     QTest::newRow(".")            << curr << QDir::currentPath();
     QTest::newRow("absFilePath") << "c:\\home\\andy\\tmp.txt" << "C:/home/andy/tmp.txt";
+
+    // Make sure drive-relative paths return correct absolute paths (task 255326)
+    QString drivePrefix = QDir::currentPath().left(2);
+    QString nonCurrentDrivePrefix =
+        drivePrefix.left(1).compare("X", Qt::CaseInsensitive) == 0 ? QString("Y:") : QString("X:");
+
+    QTest::newRow("<current drive>:my.dll") << drivePrefix + "temp/my.dll" << QDir::currentPath() + "/temp/my.dll";
+    QTest::newRow("<not current drive>:my.dll") << nonCurrentDrivePrefix + "temp/my.dll"
+                                                << nonCurrentDrivePrefix + "/temp/my.dll";
 #else
     QTest::newRow("absFilePath") << "/home/andy/tmp.txt" << "/home/andy/tmp.txt";
 #endif
@@ -490,7 +517,7 @@ void tst_QFileInfo::canonicalFilePath()
     // test symlinks
     QFile::remove("link.lnk");
     {
-        QFile file("tst_qfileinfo.cpp");
+        QFile file(SRCDIR "tst_qfileinfo.cpp");
         if (file.link("link.lnk")) {
             QFileInfo info1(file);
             QFileInfo info2("link.lnk");
@@ -504,16 +531,25 @@ void tst_QFileInfo::canonicalFilePath()
         QFile::remove(link);
         QFile file(QDir::currentPath());
         if (file.link(link)) {
-            QFileInfo info1("tst_qfileinfo.cpp");
-            QFileInfo info2(link + QDir::separator() + "tst_qfileinfo.cpp");
+            QFile tempfile("tempfile.txt");
+            tempfile.open(QIODevice::ReadWrite);
+            tempfile.write("This file is generated by the QFileInfo autotest.");
+            QVERIFY(tempfile.flush());
+            tempfile.close();
 
-            QVERIFY2(info1.exists(), "If this fails, one reason might be the test system has failed to copy the files.");
-            QVERIFY2(info2.exists(), "If this fails, one reason might be the test system has failed to copy the files.");
+            QFileInfo info1("tempfile.txt");
+            QFileInfo info2(link + QDir::separator() + "tempfile.txt");
+
+            QVERIFY(info1.exists());
+            QVERIFY(info2.exists());
             QCOMPARE(info1.canonicalFilePath(), info2.canonicalFilePath());
 
             QFileInfo info3(link + QDir::separator() + "link.lnk");
+            QFileInfo info4(SRCDIR "tst_qfileinfo.cpp");
             QVERIFY(!info3.canonicalFilePath().isEmpty());
-            QCOMPARE(info1.canonicalFilePath(), info3.canonicalFilePath());
+            QCOMPARE(info4.canonicalFilePath(), info3.canonicalFilePath());
+
+            tempfile.remove();
         }
     }
     {
@@ -532,7 +568,6 @@ void tst_QFileInfo::canonicalFilePath()
     }
 #  endif
 #endif
-
 }
 
 void tst_QFileInfo::fileName_data()
@@ -727,12 +762,11 @@ void tst_QFileInfo::permission_data()
     QTest::addColumn<bool>("expected");
 
     QTest::newRow("data0") << QCoreApplication::instance()->applicationFilePath() << int(QFile::ExeUser) << true;
-    QTest::newRow("data1") << "tst_qfileinfo.cpp" << int(QFile::ReadUser) << true;
+    QTest::newRow("data1") << SRCDIR "tst_qfileinfo.cpp" << int(QFile::ReadUser) << true;
 //    QTest::newRow("data2") << "tst_qfileinfo.cpp" << int(QFile::WriteUser) << false;
     QTest::newRow("resource1") << ":/tst_qfileinfo/resources/file1.ext1" << int(QFile::ReadUser) << true;
     QTest::newRow("resource2") << ":/tst_qfileinfo/resources/file1.ext1" << int(QFile::WriteUser) << false;
     QTest::newRow("resource3") << ":/tst_qfileinfo/resources/file1.ext1" << int(QFile::ExeUser) << false;
-
 }
 
 void tst_QFileInfo::permission()
@@ -788,19 +822,28 @@ void tst_QFileInfo::compare_data()
     QTest::addColumn<QString>("file2");
     QTest::addColumn<bool>("same");
 
-    QTest::newRow("data0") << QString::fromLatin1("tst_qfileinfo.cpp") << QString::fromLatin1("tst_qfileinfo.cpp") << true;
-    QTest::newRow("data1") << QString::fromLatin1("tst_qfileinfo.cpp") << QString::fromLatin1("/tst_qfileinfo.cpp") << false;
-    QTest::newRow("data2") << QString::fromLatin1("tst_qfileinfo.cpp")
-                        << QDir::currentPath() + QString::fromLatin1("/tst_qfileinfo.cpp") << true;
-    QTest::newRow("casesense1") << QString::fromLatin1("tst_qfileInfo.cpp")
-                        << QDir::currentPath() + QString::fromLatin1("/tst_qfileinfo.cpp")
+    QTest::newRow("data0")
+        << QString::fromLatin1(SRCDIR "tst_qfileinfo.cpp")
+        << QString::fromLatin1(SRCDIR "tst_qfileinfo.cpp")
+        << true;
+    QTest::newRow("data1")
+        << QString::fromLatin1(SRCDIR "tst_qfileinfo.cpp")
+        << QString::fromLatin1("/tst_qfileinfo.cpp")
+        << false;
+    QTest::newRow("data2")
+        << QString::fromLatin1("tst_qfileinfo.cpp")
+        << QDir::currentPath() + QString::fromLatin1("/tst_qfileinfo.cpp")
+        << true;
+    QTest::newRow("casesense1")
+        << QString::fromLatin1(SRCDIR "tst_qfileInfo.cpp")
+        << QString::fromLatin1(SRCDIR "tst_qfileinfo.cpp")
 #if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
-                        << true;
+        << true;
 #else
-                        << false;
+        << false;
 #endif
-
 }
+
 void tst_QFileInfo::compare()
 {
     QFETCH(QString, file1);
@@ -973,31 +1016,46 @@ void tst_QFileInfo::fileTimes_oldFile()
 #endif
 }
 
-void tst_QFileInfo::isSymLink()
+void tst_QFileInfo::isSymLink_data()
 {
     QFile::remove("link.lnk");
     QFile::remove("brokenlink.lnk");
     QFile::remove("dummyfile");
 
-    QFileInfo info1("tst_qfileinfo.cpp");
-    QVERIFY( !info1.isSymLink() );
+    QFile file1(SRCDIR "tst_qfileinfo.cpp");
+    QVERIFY(file1.link("link.lnk"));
 
-    QFile file2("tst_qfileinfo.cpp");
-    if (file2.link("link.lnk")) {
-        QFileInfo info2("link.lnk");
-        QVERIFY( info2.isSymLink() );
-    }
+    QFile file2("dummyfile");
+    file2.open(QIODevice::WriteOnly);
+    QVERIFY(file2.link("brokenlink.lnk"));
+    file2.remove();
 
-    QFile file3("dummyfile");
-    file3.open(QIODevice::WriteOnly);
-    if (file3.link("brokenlink.lnk")) {
-        // In Symbian ARMV5 builds, this will panic with KERN-EXEC 3 inside OpenC fclose() call
-        // in QFSFileEnginePrivate::closeFdFh(), if "dummyfile" exists prior calling to isSymLink
-        // and is not deleted at the beginning of isSymLink.
-        file3.remove();
-        QFileInfo info3("brokenlink.lnk");
-        QVERIFY( info3.isSymLink() );
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<bool>("isSymLink");
+    QTest::addColumn<QString>("linkTarget");
+
+    QTest::newRow("existent file") << SRCDIR "tst_qfileinfo.cpp" << false << "";
+    QTest::newRow("link") << "link.lnk" << true << QFileInfo(SRCDIR "tst_qfileinfo.cpp").absoluteFilePath();
+    QTest::newRow("broken link") << "brokenlink.lnk" << true << QFileInfo("dummyfile").absoluteFilePath();
+
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    if (QSysInfo::WindowsVersion & QSysInfo::WV_VISTA) {
+        QTest::newRow("Documents and Settings") << "C:/Documents and Settings" << true << "C:/Users";
+        QTest::newRow("All Users") << "C:/Users/All Users" << true << "C:/ProgramData";
+        QTest::newRow("Default User") << "C:/Users/Default User" << true << "C:/Users/Default";
     }
+#endif
+}
+
+void tst_QFileInfo::isSymLink()
+{
+    QFETCH(QString, path);
+    QFETCH(bool, isSymLink);
+    QFETCH(QString, linkTarget);
+
+    QFileInfo fi(path);
+    QCOMPARE(fi.isSymLink(), isSymLink);
+    QCOMPARE(fi.symLinkTarget(), linkTarget);
 }
 
 void tst_QFileInfo::isHidden_data()
@@ -1014,12 +1072,24 @@ void tst_QFileInfo::isHidden_data()
     QTest::newRow("C:/RECYCLER/..") << QString::fromLatin1("C:/RECYCLER/..") << false;
 #endif
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
-    QTest::newRow("~/.qt") << QDir::homePath() + QString("/.qt") << true;
-    QTest::newRow("~/.qt/.") << QDir::homePath() + QString("/.qt/.") << false;
-    QTest::newRow("~/.qt/..") << QDir::homePath() + QString("/.qt/..") << false;
+
+    if (!QDir("./.hidden-directory").exists()
+            && !QDir().mkdir("./.hidden-directory"))
+        qWarning("Unable to create directory './.hidden-directory'. Some tests will fail.");
+
+    QTest::newRow("./.hidden-directory") << QString("./.hidden-directory") << true;
+    QTest::newRow("./.hidden-directory/.") << QString("./.hidden-directory/.") << false;
+    QTest::newRow("./.hidden-directory/..") << QString("./.hidden-directory/..") << false;
+
+    QTest::newRow("/path/to/.hidden-directory") << QDir::currentPath() + QString("/.hidden-directory") << true;
+    QTest::newRow("/path/to/.hidden-directory/.") << QDir::currentPath() + QString("/.hidden-directory/.") << false;
+    QTest::newRow("/path/to/.hidden-directory/..") << QDir::currentPath() + QString("/.hidden-directory/..") << false;
 #endif
 
-#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_MAC)
+    // /bin has the hidden attribute on Mac OS X
+    QTest::newRow("/bin/") << QString::fromLatin1("/bin/") << true;
+#elif !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
     QTest::newRow("/bin/") << QString::fromLatin1("/bin/") << false;
 #endif
 
@@ -1040,19 +1110,19 @@ void tst_QFileInfo::isHidden_data()
         QFile file(hiddenFileName);
         if (file.open(QIODevice::WriteOnly)) {
             QTextStream t(&file);
-            t << "foobar";       
+            t << "foobar";
         } else {
             qWarning("Failed to create hidden file");
         }
         QFile file2(notHiddenFileName);
         if (file2.open(QIODevice::WriteOnly)) {
             QTextStream t(&file);
-            t << "foobar";       
+            t << "foobar";
         } else {
             qWarning("Failed to create non-hidden file");
         }
     }
-    
+
     RFs rfs;
     TInt err = rfs.Connect();
     if (err == KErrNone) {
@@ -1074,6 +1144,7 @@ void tst_QFileInfo::isHidden()
     QFETCH(QString, path);
     QFETCH(bool, isHidden);
     QFileInfo fi(path);
+
     QCOMPARE(fi.isHidden(), isHidden);
 }
 
@@ -1190,7 +1261,14 @@ void tst_QFileInfo::isWritable()
     QSKIP("Currently skipped on Symbian OS, but surely there is a writeable file somewhere???", SkipAll);
 #endif
 
-    QVERIFY(QFileInfo("tst_qfileinfo.cpp").isWritable());
+    QFile tempfile("tempfile.txt");
+    tempfile.open(QIODevice::WriteOnly);
+    tempfile.write("This file is generated by the QFileInfo autotest.");
+    tempfile.close();
+
+    QVERIFY(QFileInfo("tempfile.txt").isWritable());
+    tempfile.remove();
+
 #ifdef Q_OS_WIN
 #ifdef Q_OS_WINCE
     QFileInfo fi("\\Windows\\wince.nls");

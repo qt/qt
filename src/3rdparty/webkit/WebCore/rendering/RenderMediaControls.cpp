@@ -110,8 +110,8 @@ bool RenderMediaControls::paintMediaControlsPart(MediaControlElementType part, R
         case MediaPauseButton:
         case MediaPlayButton:
             if (MediaControlPlayButtonElement* btn = static_cast<MediaControlPlayButtonElement*>(o->node())) {
-                bool currentlyPlaying = btn->displayType() == MediaPlayButton;
-                paintThemePart(currentlyPlaying ? SafariTheme::MediaPauseButtonPart : SafariTheme::MediaPlayButtonPart, paintInfo.context->platformContext(), r, NSRegularControlSize, determineState(o));
+                bool canPlay = btn->displayType() == MediaPlayButton;
+                paintThemePart(canPlay ? SafariTheme::MediaPlayButtonPart : SafariTheme::MediaPauseButtonPart, paintInfo.context->platformContext(), r, NSRegularControlSize, determineState(o));
             }
             break;
         case MediaSeekBackButton:
@@ -127,6 +127,18 @@ bool RenderMediaControls::paintMediaControlsPart(MediaControlElementType part, R
         }
         case MediaSliderThumb:
             paintThemePart(SafariTheme::MediaSliderThumbPart, paintInfo.context->platformContext(), r, NSRegularControlSize, determineState(o));
+            break;
+        case MediaVolumeSliderContainer:
+            // FIXME: Implement volume slider.
+            ASSERT_NOT_REACHED();
+            break;
+        case MediaVolumeSlider:
+            // FIXME: Implement volume slider.
+            ASSERT_NOT_REACHED();
+            break;
+        case MediaVolumeSliderThumb:
+            // FIXME: Implement volume slider.
+            ASSERT_NOT_REACHED();
             break;
         case MediaTimelineContainer:
             ASSERT_NOT_REACHED();

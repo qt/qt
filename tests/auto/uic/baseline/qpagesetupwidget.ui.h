@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'qpagesetupwidget.ui'
 **
-** Created: Mon Sep 1 09:31:03 2008
-**      by: Qt User Interface Compiler version 4.5.0
+** Created: Fri Sep 4 10:17:14 2009
+**      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -306,7 +306,6 @@ public:
 #ifndef QT_NO_ACCESSIBILITY
         bottomMargin->setAccessibleName(QApplication::translate("QPageSetupWidget", "bottom margin", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_ACCESSIBILITY
-        Q_UNUSED(QPageSetupWidget);
     } // retranslateUi
 
 };

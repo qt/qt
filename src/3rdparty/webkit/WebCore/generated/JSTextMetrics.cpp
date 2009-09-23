@@ -69,6 +69,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSTextMetricsPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -83,6 +84,11 @@ const ClassInfo JSTextMetricsConstructor::s_info = { "TextMetricsConstructor", 0
 bool JSTextMetricsConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSTextMetricsConstructor, DOMObject>(exec, &JSTextMetricsConstructorTable, this, propertyName, slot);
+}
+
+bool JSTextMetricsConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSTextMetricsConstructor, DOMObject>(exec, &JSTextMetricsConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -129,6 +135,11 @@ bool JSTextMetrics::getOwnPropertySlot(ExecState* exec, const Identifier& proper
     return getStaticValueSlot<JSTextMetrics, Base>(exec, &JSTextMetricsTable, this, propertyName, slot);
 }
 
+bool JSTextMetrics::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSTextMetrics, Base>(exec, &JSTextMetricsTable, this, propertyName, descriptor);
+}
+
 JSValue jsTextMetricsWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSTextMetrics* castedThis = static_cast<JSTextMetrics*>(asObject(slot.slotBase()));
@@ -153,7 +164,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, TextMet
 }
 TextMetrics* toTextMetrics(JSC::JSValue value)
 {
-    return value.isObject(&JSTextMetrics::s_info) ? static_cast<JSTextMetrics*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSTextMetrics::s_info) ? static_cast<JSTextMetrics*>(asObject(value))->impl() : 0;
 }
 
 }

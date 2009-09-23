@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -244,11 +244,13 @@
 #include <QtGui/qtransform.h>
 #include <QtGui/qgesture.h>
 #include <QtGui/qinputcontext.h>
+#include <QtGui/qgraphicseffect.h>
 #include <private/qapplication_p.h>
 #include <private/qobject_p.h>
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
 #endif
+#include <private/qgraphicseffect_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -265,12 +267,13 @@ static void _q_hoverFromMouseEvent(QGraphicsSceneHoverEvent *hover, const QGraph
     hover->setAccepted(mouseEvent->isAccepted());
 }
 
+int QGraphicsScenePrivate::changedSignalIndex;
+
 /*!
     \internal
 */
 QGraphicsScenePrivate::QGraphicsScenePrivate()
-    : changedSignalMask(0),
-      indexMethod(QGraphicsScene::BspTreeIndex),
+    : indexMethod(QGraphicsScene::BspTreeIndex),
       index(0),
       lastItemCount(0),
       hasSceneRect(false),
@@ -285,8 +288,10 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       focusItem(0),
       lastFocusItem(0),
       tabFocusFirst(0),
-      activeWindow(0),
+      activePanel(0),
+      lastActivePanel(0),
       activationRefCount(0),
+      childExplicitActivation(0),
       lastMouseGrabberItem(0),
       lastMouseGrabberItemHasImplicitMouseGrab(false),
       dragDropItem(0),
@@ -311,7 +316,9 @@ void QGraphicsScenePrivate::init()
     index = new QGraphicsSceneBspTreeIndex(q);
 
     // Keep this index so we can check for connected slots later on.
-    changedSignalMask = (1 << q->metaObject()->indexOfSignal("changed(QList<QRectF>)"));
+    if (!changedSignalIndex) {
+        changedSignalIndex = signalIndex("changed(QList<QRectF>)");
+    }
     qApp->d_func()->scene_list.append(q);
     q->update();
 }
@@ -343,7 +350,7 @@ void QGraphicsScenePrivate::_q_emitUpdated()
     // the optimization that items send updates directly to the views, but it
     // needs to happen in order to keep compatibility with the behavior from
     // Qt 4.4 and backward.
-    if (connectedSignals[0] & changedSignalMask) {
+    if (isSignalConnected(changedSignalIndex)) {
         for (int i = 0; i < views.size(); ++i) {
             QGraphicsView *view = views.at(i);
             if (!view->d_func()->connectedToScene) {
@@ -511,10 +518,12 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
         focusItem = 0;
     if (item == lastFocusItem)
         lastFocusItem = 0;
-    if (item == activeWindow) {
+    if (item == activePanel) {
         // ### deactivate...
-        activeWindow = 0;
+        activePanel = 0;
     }
+    if (item == lastActivePanel)
+        lastActivePanel = 0;
 
     // Disable selectionChanged() for individual items
     ++selectionChanging;
@@ -563,6 +572,69 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
 /*!
     \internal
 */
+void QGraphicsScenePrivate::setActivePanelHelper(QGraphicsItem *item, bool duringActivationEvent)
+{
+    Q_Q(QGraphicsScene);
+    if (item && item->scene() != q) {
+        qWarning("QGraphicsScene::setActivePanel: item %p must be part of this scene",
+                 item);
+        return;
+    }
+
+    // Ensure the scene has focus when we change panel activation.
+    q->setFocus(Qt::ActiveWindowFocusReason);
+
+    // Find the item's panel.
+    QGraphicsItem *panel = item ? item->panel() : 0;
+    lastActivePanel = panel ? activePanel : 0;
+    if (panel == activePanel || (!q->isActive() && !duringActivationEvent))
+        return;
+
+    // Deactivate the last active panel.
+    if (activePanel) {
+        if (QGraphicsItem *fi = activePanel->focusItem()) {
+            // Remove focus from the current focus item.
+            if (fi == q->focusItem())
+                q->setFocusItem(0, Qt::ActiveWindowFocusReason);
+        }
+
+        QEvent event(QEvent::WindowDeactivate);
+        q->sendEvent(activePanel, &event);
+    } else if (panel && !duringActivationEvent) {
+        // Deactivate the scene if changing activation to a panel.
+        QEvent event(QEvent::WindowDeactivate);
+        foreach (QGraphicsItem *item, q->items()) {
+            if (item->isVisible() && !item->isPanel() && !item->parentItem())
+                q->sendEvent(item, &event);
+        }
+    }
+
+    // Update activate state.
+    activePanel = panel;
+    QEvent event(QEvent::ActivationChange);
+    QApplication::sendEvent(q, &event);
+
+    // Activate
+    if (panel) {
+        QEvent event(QEvent::WindowActivate);
+        q->sendEvent(panel, &event);
+
+        // Set focus on the panel's focus item.
+        if (QGraphicsItem *focusItem = panel->focusItem())
+            focusItem->setFocus(Qt::ActiveWindowFocusReason);
+    } else if (q->isActive()) {
+        // Activate the scene
+        QEvent event(QEvent::WindowActivate);
+        foreach (QGraphicsItem *item, q->items()) {
+            if (item->isVisible() && !item->isPanel() && !item->parentItem())
+                q->sendEvent(item, &event);
+        }
+    }
+}
+
+/*!
+    \internal
+*/
 void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
                                                Qt::FocusReason focusReason)
 {
@@ -584,19 +656,6 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
             return;
     }
 
-    // Auto-update focus proxy. The closest parent that detects
-    // focus proxies is updated as the proxy gains or loses focus.
-    if (item) {
-        QGraphicsItem *p = item->d_ptr->parent;
-        while (p) {
-            if (p->d_ptr->flags & QGraphicsItem::ItemAutoDetectsFocusProxy) {
-                p->setFocusProxy(item);
-                break;
-            }
-            p = p->d_ptr->parent;
-        }
-    }
-
     if (focusItem) {
         QFocusEvent event(QEvent::FocusOut, focusReason);
         lastFocusItem = focusItem;
@@ -609,9 +668,14 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
             QInputMethodEvent imEvent;
             sendEvent(lastFocusItem, &imEvent);
 
-            // Close any external input method panel
-            for (int i = 0; i < views.size(); ++i)
-                views.at(i)->inputContext()->reset();
+            // Close any external input method panel. This happens
+            // automatically by removing WA_InputMethodEnabled on
+            // the views, but if we are changing focus, we have to
+            // do it ourselves.
+            if (item) {
+                for (int i = 0; i < views.size(); ++i)
+                    views.at(i)->inputContext()->reset();
+            }
         }
     }
 
@@ -665,8 +729,8 @@ void QGraphicsScenePrivate::removePopup(QGraphicsWidget *widget, bool itemIsDyin
         if (focusItem && popupWidgets.isEmpty()) {
             QFocusEvent event(QEvent::FocusIn, Qt::PopupFocusReason);
             sendEvent(focusItem, &event);
-        } else {
-            ungrabKeyboard((QGraphicsItem *)widget, itemIsDying);
+        } else if (keyboardGrabberItems.contains(static_cast<QGraphicsItem *>(widget))) {
+            ungrabKeyboard(static_cast<QGraphicsItem *>(widget), itemIsDying);
         }
         if (!itemIsDying && widget->isVisible()) {
             widget->hide();
@@ -861,19 +925,19 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::itemsAtPosition(const QPoint &scre
     Q_Q(const QGraphicsScene);
     QGraphicsView *view = widget ? qobject_cast<QGraphicsView *>(widget->parentWidget()) : 0;
     if (!view)
-        return q->items(scenePos, Qt::IntersectsItemShape, Qt::AscendingOrder, QTransform());
+        return q->items(scenePos, Qt::IntersectsItemShape, Qt::DescendingOrder, QTransform());
 
     const QRectF pointRect(QPointF(widget->mapFromGlobal(screenPos)), QSizeF(1, 1));
     if (!view->isTransformed())
-        return q->items(pointRect, Qt::IntersectsItemShape, Qt::AscendingOrder);
+        return q->items(pointRect, Qt::IntersectsItemShape, Qt::DescendingOrder);
 
     const QTransform viewTransform = view->viewportTransform();
     if (viewTransform.type() <= QTransform::TxScale) {
         return q->items(viewTransform.inverted().mapRect(pointRect), Qt::IntersectsItemShape,
-                        Qt::AscendingOrder, viewTransform);
+                        Qt::DescendingOrder, viewTransform);
     }
     return q->items(viewTransform.inverted().map(pointRect), Qt::IntersectsItemShape,
-                    Qt::AscendingOrder, viewTransform);
+                    Qt::DescendingOrder, viewTransform);
 }
 
 /*!
@@ -1071,8 +1135,9 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
     }
 
     // Update window activation.
-    QGraphicsWidget *newActiveWindow = windowForItem(cachedItemsUnderMouse.value(0));
-    if (newActiveWindow != activeWindow)
+    QGraphicsItem *topItem = cachedItemsUnderMouse.value(0);
+    QGraphicsWidget *newActiveWindow = topItem ? topItem->window() : 0;
+    if (newActiveWindow != q->activeWindow())
         q->setActiveWindow(newActiveWindow);
 
     // Set focus on the topmost enabled item that can take focus.
@@ -1107,7 +1172,7 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
 
         // check if the item we are sending to are disabled (before we send the event)
         bool disabled = !item->isEnabled();
-        bool isWindow = item->isWindow();
+        bool isPanel = item->isPanel();
         if (mouseEvent->type() == QEvent::GraphicsSceneMouseDoubleClick
             && item != lastMouseGrabberItem && lastMouseGrabberItem) {
             // If this item is different from the item that received the last
@@ -1148,8 +1213,8 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
         }
         ungrabMouse(item, /* itemIsDying = */ dontSendUngrabEvents);
 
-        // Don't propagate through windows.
-        if (isWindow)
+        // Don't propagate through panels.
+        if (isPanel)
             break;
     }
 
@@ -1169,18 +1234,6 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
             q->clearSelection();
         }
     }
-}
-
-QGraphicsWidget *QGraphicsScenePrivate::windowForItem(const QGraphicsItem *item) const
-{
-    if (!item)
-        return 0;
-    do {
-        if (item->isWidget())
-            return static_cast<const QGraphicsWidget *>(item)->window();
-        item = item->parentItem();
-    } while (item);
-    return 0;
 }
 
 /*!
@@ -1340,6 +1393,7 @@ QGraphicsScene::QGraphicsScene(qreal x, qreal y, qreal width, qreal height, QObj
 QGraphicsScene::~QGraphicsScene()
 {
     Q_D(QGraphicsScene);
+
     // Remove this scene from qApp's global scene list.
     qApp->d_func()->scene_list.removeAll(this);
 
@@ -1530,7 +1584,7 @@ void QGraphicsScene::setItemIndexMethod(ItemIndexMethod method)
 
     d->indexMethod = method;
 
-    QList<QGraphicsItem *> oldItems = d->index->items(Qt::AscendingOrder);
+    QList<QGraphicsItem *> oldItems = d->index->items(Qt::DescendingOrder);
     delete d->index;
     if (method == BspTreeIndex)
         d->index = new QGraphicsSceneBspTreeIndex(this);
@@ -1639,7 +1693,7 @@ QRectF QGraphicsScene::itemsBoundingRect() const
 QList<QGraphicsItem *> QGraphicsScene::items() const
 {
     Q_D(const QGraphicsScene);
-    return d->index->items(Qt::AscendingOrder);
+    return d->index->items(Qt::DescendingOrder);
 }
 
 /*!
@@ -1670,7 +1724,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(Qt::SortOrder order) const
 QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos) const
 {
     Q_D(const QGraphicsScene);
-    return d->index->items(pos, Qt::IntersectsItemShape, Qt::AscendingOrder);
+    return d->index->items(pos, Qt::IntersectsItemShape, Qt::DescendingOrder);
 }
 
 /*!
@@ -1692,7 +1746,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos) const
 QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rectangle, Qt::ItemSelectionMode mode) const
 {
     Q_D(const QGraphicsScene);
-    return d->index->items(rectangle, mode, Qt::AscendingOrder);
+    return d->index->items(rectangle, mode, Qt::DescendingOrder);
 }
 
 /*!
@@ -1740,7 +1794,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rectangle, Qt::ItemSe
 QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemSelectionMode mode) const
 {
     Q_D(const QGraphicsScene);
-    return d->index->items(polygon, mode, Qt::AscendingOrder);
+    return d->index->items(polygon, mode, Qt::DescendingOrder);
 }
 
 /*!
@@ -1762,7 +1816,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemS
 QList<QGraphicsItem *> QGraphicsScene::items(const QPainterPath &path, Qt::ItemSelectionMode mode) const
 {
     Q_D(const QGraphicsScene);
-    return d->index->items(path, mode, Qt::AscendingOrder);
+    return d->index->items(path, mode, Qt::DescendingOrder);
 }
 
 /*!
@@ -1874,7 +1928,7 @@ QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
 
     // Does not support ItemIgnoresTransformations.
     QList<QGraphicsItem *> tmp;
-    foreach (QGraphicsItem *itemInVicinity, d->index->estimateItems(item->sceneBoundingRect(), Qt::AscendingOrder)) {
+    foreach (QGraphicsItem *itemInVicinity, d->index->estimateItems(item->sceneBoundingRect(), Qt::DescendingOrder)) {
         if (item != itemInVicinity && item->collidesWithItem(itemInVicinity, mode))
             tmp << itemInVicinity;
     }
@@ -1918,7 +1972,7 @@ QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position) const
 QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position, const QTransform &deviceTransform) const
 {
     QList<QGraphicsItem *> itemsAtPoint = items(position, Qt::IntersectsItemShape,
-                                                Qt::AscendingOrder, deviceTransform);
+                                                Qt::DescendingOrder, deviceTransform);
     return itemsAtPoint.isEmpty() ? 0 : itemsAtPoint.first();
 }
 
@@ -2073,7 +2127,7 @@ void QGraphicsScene::setSelectionArea(const QPainterPath &path, Qt::ItemSelectio
     bool changed = false;
 
     // Set all items in path to selected.
-    foreach (QGraphicsItem *item, items(path, mode, Qt::AscendingOrder, deviceTransform)) {
+    foreach (QGraphicsItem *item, items(path, mode, Qt::DescendingOrder, deviceTransform)) {
         if (item->flags() & QGraphicsItem::ItemIsSelectable) {
             if (!item->isSelected())
                 changed = true;
@@ -2229,6 +2283,9 @@ void QGraphicsScene::destroyItemGroup(QGraphicsItemGroup *group)
     moved to this scene), QGraphicsScene will send an addition notification as
     the item is removed from its previous scene.
 
+    If the item is a panel, the scene is active, and there is no active panel
+    in the scene, then the item will be activated.
+
     \sa removeItem(), addEllipse(), addLine(), addPath(), addPixmap(),
     addRect(), addText(), addWidget()
 */
@@ -2351,13 +2408,33 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     // Deliver post-change notification
     item->itemChange(QGraphicsItem::ItemSceneHasChanged, newSceneVariant);
 
-    // Auto-activate the first inactive window if the scene is active.
-    if (d->activationRefCount > 0 && !d->activeWindow && item->isWindow())
-        setActiveWindow(static_cast<QGraphicsWidget *>(item));
+    // Update explicit activation
+    bool autoActivate = true;
+    if (!d->childExplicitActivation && item->d_ptr->explicitActivate)
+        d->childExplicitActivation = item->d_ptr->wantsActive ? 1 : 2;
+    if (d->childExplicitActivation && item->isPanel()) {
+        if (d->childExplicitActivation == 1)
+            setActivePanel(item);
+        else
+            autoActivate = false;
+        d->childExplicitActivation = 0;
+    } else if (!item->d_ptr->parent) {
+        d->childExplicitActivation = 0;
+    }
+
+    // Auto-activate this item's panel if nothing else has been activated
+    if (autoActivate) {
+        if (!d->lastActivePanel && !d->activePanel && item->isPanel()) {
+            if (isActive())
+                setActivePanel(item);
+            else
+                d->lastActivePanel = item;
+        }
+    }
 
     // Ensure that newly added items that have subfocus set, gain
     // focus automatically if there isn't a focus item already.
-    if (!d->focusItem && item->focusItem())
+    if (!d->focusItem && item != d->lastFocusItem && item->focusItem() == item)
         item->focusItem()->setFocus();
 
     d->updateInputMethodSensitivityInViews();
@@ -2706,7 +2783,7 @@ bool QGraphicsScene::hasFocus() const
 void QGraphicsScene::setFocus(Qt::FocusReason focusReason)
 {
     Q_D(QGraphicsScene);
-    if (d->hasFocus)
+    if (d->hasFocus || !isActive())
         return;
     QFocusEvent event(QEvent::FocusIn, focusReason);
     QCoreApplication::sendEvent(this, &event);
@@ -2894,7 +2971,7 @@ void QGraphicsScene::update(const QRectF &rect)
 
     // Check if anyone's connected; if not, we can send updates directly to
     // the views. Otherwise or if there are no views, use old behavior.
-    bool directUpdates = !(d->connectedSignals[0] & d->changedSignalMask) && !d->views.isEmpty();
+    bool directUpdates = !(d->isSignalConnected(d->changedSignalIndex)) && !d->views.isEmpty();
     if (rect.isNull()) {
         d->updateAll = true;
         d->updatedRects.clear();
@@ -3125,40 +3202,43 @@ bool QGraphicsScene::event(QEvent *event)
     case QEvent::InputMethod:
         inputMethodEvent(static_cast<QInputMethodEvent *>(event));
         break;
-    case QEvent::WindowActivate: {
+    case QEvent::WindowActivate:
         if (!d->activationRefCount++) {
-            // Notify all non-window widgets.
-            foreach (QGraphicsItem *item, items()) {
-                if (item->isWidget() && item->isVisible() && !item->isWindow() && !item->parentWidget()) {
-                    QEvent event(QEvent::WindowActivate);
-                    QApplication::sendEvent(static_cast<QGraphicsWidget *>(item), &event);
+            if (d->lastActivePanel) {
+                // Activate the last panel.
+                d->setActivePanelHelper(d->lastActivePanel, true);
+            } else if (d->tabFocusFirst && d->tabFocusFirst->isPanel()) {
+                // Activate the panel of the first item in the tab focus
+                // chain.
+                d->setActivePanelHelper(d->tabFocusFirst, true);
+            } else {
+                // Activate all toplevel items.
+                QEvent event(QEvent::WindowActivate);
+                foreach (QGraphicsItem *item, items()) {
+                    if (item->isVisible() && !item->isPanel() && !item->parentItem())
+                        sendEvent(item, &event);
                 }
             }
-
-            // Restore window activation.
-            QGraphicsItem *nextFocusItem = d->focusItem ? d->focusItem : d->lastFocusItem;
-            if (nextFocusItem && nextFocusItem->window())
-                setActiveWindow(static_cast<QGraphicsWidget *>(nextFocusItem));
-            else if (d->tabFocusFirst && d->tabFocusFirst->isWindow())
-                setActiveWindow(d->tabFocusFirst);
         }
         break;
-    }
-    case QEvent::WindowDeactivate: {
+    case QEvent::WindowDeactivate:
         if (!--d->activationRefCount) {
-            // Remove window activation.
-            setActiveWindow(0);
-
-            // Notify all non-window widgets.
-            foreach (QGraphicsItem *item, items()) {
-                if (item->isWidget() && item->isVisible() && !item->isWindow() && !item->parentWidget()) {
-                    QEvent event(QEvent::WindowDeactivate);
-                    QApplication::sendEvent(static_cast<QGraphicsWidget *>(item), &event);
+            if (d->activePanel) {
+                // Deactivate the active panel (but keep it so we can
+                // reactivate it later).
+                QGraphicsItem *lastActivePanel = d->activePanel;
+                d->setActivePanelHelper(0, true);
+                d->lastActivePanel = lastActivePanel;
+            } else {
+                // Activate all toplevel items.
+                QEvent event(QEvent::WindowDeactivate);
+                foreach (QGraphicsItem *item, items()) {
+                    if (item->isVisible() && !item->isPanel() && !item->parentItem())
+                        sendEvent(item, &event);
                 }
             }
         }
         break;
-    }
     case QEvent::ApplicationFontChange: {
         // Resolve the existing scene font.
         d->resolveFont();
@@ -3521,8 +3601,8 @@ bool QGraphicsScenePrivate::dispatchHoverEvent(QGraphicsSceneHoverEvent *hoverEv
     QGraphicsItem *commonAncestorItem = (item && !hoverItems.isEmpty()) ? item->commonAncestorItem(hoverItems.last()) : 0;
     while (commonAncestorItem && !itemAcceptsHoverEvents_helper(commonAncestorItem))
         commonAncestorItem = commonAncestorItem->parentItem();
-    if (commonAncestorItem && commonAncestorItem->window() != item->window()) {
-        // The common ancestor isn't in the same window as the two hovered
+    if (commonAncestorItem && commonAncestorItem->panel() != item->panel()) {
+        // The common ancestor isn't in the same panel as the two hovered
         // items.
         commonAncestorItem = 0;
     }
@@ -3543,8 +3623,8 @@ bool QGraphicsScenePrivate::dispatchHoverEvent(QGraphicsSceneHoverEvent *hoverEv
     QGraphicsItem *parent = item;
     while (parent && parent != commonAncestorItem) {
         parents.prepend(parent);
-        if (parent->isWindow()) {
-            // Stop at the window - we don't deliver beyond this point.
+        if (parent->isPanel()) {
+            // Stop at the panel - we don't deliver beyond this point.
             break;
         }
         parent = parent->parentItem();
@@ -3621,7 +3701,7 @@ void QGraphicsScene::keyPressEvent(QKeyEvent *keyEvent)
             // is filtered out, stop propagating it.
             if (!d->sendEvent(p, keyEvent))
                 break;
-        } while (!keyEvent->isAccepted() && !p->isWindow() && (p = p->parentItem()));
+        } while (!keyEvent->isAccepted() && !p->isPanel() && (p = p->parentItem()));
     } else {
         keyEvent->ignore();
     }
@@ -3651,7 +3731,7 @@ void QGraphicsScene::keyReleaseEvent(QKeyEvent *keyEvent)
             // is filtered out, stop propagating it.
             if (!d->sendEvent(p, keyEvent))
                 break;
-        } while (!keyEvent->isAccepted() && !p->isWindow() && (p = p->parentItem()));
+        } while (!keyEvent->isAccepted() && !p->isPanel() && (p = p->parentItem()));
     } else {
         keyEvent->ignore();
     }
@@ -3813,9 +3893,9 @@ void QGraphicsScene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent)
         wheelEvent->setPos(item->d_ptr->genericMapFromScene(wheelEvent->scenePos(),
                                                             wheelEvent->widget()));
         wheelEvent->accept();
-        bool isWindow = item->isWindow();
+        bool isPanel = item->isPanel();
         d->sendEvent(item, wheelEvent);
-        if (isWindow || wheelEvent->isAccepted())
+        if (isPanel || wheelEvent->isAccepted())
             break;
     }
 }
@@ -4291,7 +4371,7 @@ void QGraphicsScenePrivate::drawItems(QPainter *painter, const QTransform *const
         if (viewTransform)
             exposedSceneRect = viewTransform->inverted().mapRect(exposedSceneRect);
     }
-    const QList<QGraphicsItem *> tli = index->estimateTopLevelItems(exposedSceneRect, Qt::DescendingOrder);
+    const QList<QGraphicsItem *> tli = index->estimateTopLevelItems(exposedSceneRect, Qt::AscendingOrder);
     for (int i = 0; i < tli.size(); ++i)
         drawSubtreeRecursive(tli.at(i), painter, viewTransform, exposedRegion, widget);
 }
@@ -4299,7 +4379,7 @@ void QGraphicsScenePrivate::drawItems(QPainter *painter, const QTransform *const
 void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter,
                                                  const QTransform *const viewTransform,
                                                  QRegion *exposedRegion, QWidget *widget,
-                                                 qreal parentOpacity)
+                                                 qreal parentOpacity, const QTransform *const effectTransform)
 {
     Q_ASSERT(item);
 
@@ -4348,11 +4428,12 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     const bool itemClipsChildrenToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
     bool drawItem = itemHasContents && !itemIsFullyTransparent;
     if (drawItem) {
-        const QRectF brect = adjustedItemBoundingRect(item);
+        const QRectF brect = adjustedItemEffectiveBoundingRect(item);
         ENSURE_TRANSFORM_PTR
         QRect viewBoundingRect = translateOnlyTransform ? brect.translated(transformPtr->dx(), transformPtr->dy()).toRect()
                                                         : transformPtr->mapRect(brect).toRect();
-        item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
+        if (widget)
+            item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
         viewBoundingRect.adjust(-1, -1, 1, 1);
         drawItem = exposedRegion ? exposedRegion->intersects(viewBoundingRect) : !viewBoundingRect.isEmpty();
         if (!drawItem) {
@@ -4366,14 +4447,52 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         }
     } // else we know for sure this item has children we must process.
 
+    if (itemHasChildren && itemClipsChildrenToShape)
+        ENSURE_TRANSFORM_PTR;
+
+    if (item->d_ptr->graphicsEffect && item->d_ptr->graphicsEffect->isEnabled()) {
+        ENSURE_TRANSFORM_PTR;
+        QGraphicsItemPaintInfo info(viewTransform, transformPtr, effectTransform, exposedRegion, widget, &styleOptionTmp,
+                                    painter, opacity, wasDirtyParentSceneTransform, drawItem);
+        QGraphicsEffectSource *source = item->d_ptr->graphicsEffect->d_func()->source;
+        QGraphicsItemEffectSourcePrivate *sourced = static_cast<QGraphicsItemEffectSourcePrivate *>
+                                                    (source->d_func());
+        sourced->info = &info;
+        const QTransform restoreTransform = painter->worldTransform();
+        if (effectTransform)
+            painter->setWorldTransform(*transformPtr * *effectTransform);
+        else
+            painter->setWorldTransform(*transformPtr);
+        painter->setOpacity(opacity);
+        item->d_ptr->graphicsEffect->draw(painter, source);
+        painter->setWorldTransform(restoreTransform);
+        sourced->info = 0;
+    } else {
+        draw(item, painter, viewTransform, transformPtr, exposedRegion, widget, opacity,
+             effectTransform, wasDirtyParentSceneTransform, drawItem);
+    }
+}
+
+void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const QTransform *const viewTransform,
+                                 const QTransform *const transformPtr, QRegion *exposedRegion, QWidget *widget,
+                                 qreal opacity, const QTransform *effectTransform,
+                                 bool wasDirtyParentSceneTransform, bool drawItem)
+{
+    const bool itemIsFullyTransparent = (opacity < 0.0001);
+    const bool itemClipsChildrenToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
+    const bool itemHasChildren = !item->d_ptr->children.isEmpty();
+
     int i = 0;
     if (itemHasChildren) {
         item->d_ptr->ensureSortedChildren();
 
         if (itemClipsChildrenToShape) {
             painter->save();
-            ENSURE_TRANSFORM_PTR
-            painter->setWorldTransform(*transformPtr);
+            Q_ASSERT(transformPtr);
+            if (effectTransform)
+                painter->setWorldTransform(*transformPtr * *effectTransform);
+            else
+                painter->setWorldTransform(*transformPtr);
             painter->setClipPath(item->shape(), Qt::IntersectClip);
         }
 
@@ -4386,15 +4505,15 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
                 break;
             if (itemIsFullyTransparent && !(child->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity))
                 continue;
-            drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget, opacity);
+            drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget, opacity, effectTransform);
         }
     }
 
     // Draw item
     if (drawItem) {
         Q_ASSERT(!itemIsFullyTransparent);
-        Q_ASSERT(itemHasContents);
-        ENSURE_TRANSFORM_PTR
+        Q_ASSERT(!(item->d_ptr->flags & QGraphicsItem::ItemHasNoContents));
+        Q_ASSERT(transformPtr);
         item->d_ptr->initStyleOption(&styleOptionTmp, *transformPtr, exposedRegion
                                      ? *exposedRegion : QRegion(), exposedRegion == 0);
 
@@ -4403,8 +4522,12 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         if (savePainter)
             painter->save();
 
-        if (!itemHasChildren || !itemClipsChildrenToShape)
-            painter->setWorldTransform(*transformPtr);
+        if (!itemHasChildren || !itemClipsChildrenToShape) {
+            if (effectTransform)
+                painter->setWorldTransform(*transformPtr * *effectTransform);
+            else
+                painter->setWorldTransform(*transformPtr);
+        }
 
         if (itemClipsToShape)
             painter->setClipPath(item->shape(), Qt::IntersectClip);
@@ -4427,7 +4550,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
                 child->d_ptr->dirtySceneTransform = 1;
             if (itemIsFullyTransparent && !(child->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity))
                 continue;
-            drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget, opacity);
+            drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget, opacity, effectTransform);
         }
     }
 
@@ -4473,7 +4596,7 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
     if (removingItemFromScene) {
         // Note that this function can be called from the item's destructor, so
         // do NOT call any virtual functions on it within this block.
-        if ((connectedSignals[0] & changedSignalMask) || views.isEmpty()) {
+        if (isSignalConnected(changedSignalIndex) || views.isEmpty()) {
             // This block of code is kept for compatibility. Since 4.5, by default
             // QGraphicsView does not connect the signal and we use the below
             // method of delivering updates.
@@ -4490,7 +4613,8 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
         return;
     }
 
-    bool hasNoContents = item->d_ptr->flags & QGraphicsItem::ItemHasNoContents;
+    bool hasNoContents = item->d_ptr->flags & QGraphicsItem::ItemHasNoContents
+                         && !item->d_ptr->graphicsEffect;
     if (!hasNoContents) {
         item->d_ptr->dirty = 1;
         if (fullItemUpdate)
@@ -4510,8 +4634,12 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
         item->d_ptr->ignoreOpacity = 1;
 
     QGraphicsItem *p = item->d_ptr->parent;
-    while (p && !p->d_ptr->dirtyChildren) {
+    while (p) {
         p->d_ptr->dirtyChildren = 1;
+        if (p->d_ptr->graphicsEffect && p->d_ptr->graphicsEffect->isEnabled()) {
+            p->d_ptr->dirty = 1;
+            p->d_ptr->fullUpdatePending = 1;
+        }
         p = p->d_ptr->parent;
     }
 }
@@ -4576,11 +4704,15 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
         return;
     }
 
-    const bool itemHasContents = !(item->d_ptr->flags & QGraphicsItem::ItemHasNoContents);
+    bool itemHasContents = !(item->d_ptr->flags & QGraphicsItem::ItemHasNoContents);
     const bool itemHasChildren = !item->d_ptr->children.isEmpty();
-    if (!itemHasContents && !itemHasChildren) {
-        resetDirtyItem(item);
-        return; // Item has neither contents nor children!(?)
+    if (!itemHasContents) {
+        if (!itemHasChildren) {
+            resetDirtyItem(item);
+            return; // Item has neither contents nor children!(?)
+        }
+        if (item->d_ptr->graphicsEffect)
+            itemHasContents = true;
     }
 
     const qreal opacity = item->d_ptr->combineOpacityFromParent(parentOpacity);
@@ -4619,8 +4751,8 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
     // Process item.
     if (item->d_ptr->dirty || item->d_ptr->paintedViewBoundingRectsNeedRepaint) {
-        const bool useCompatUpdate = views.isEmpty() || (connectedSignals[0] & changedSignalMask);
-        const QRectF itemBoundingRect = adjustedItemBoundingRect(item);
+        const bool useCompatUpdate = views.isEmpty() || isSignalConnected(changedSignalIndex);
+        const QRectF itemBoundingRect = adjustedItemEffectiveBoundingRect(item);
 
         if (useCompatUpdate && !itemIsUntransformable && qFuzzyIsNull(item->boundingRegionGranularity())) {
             // This block of code is kept for compatibility. Since 4.5, by default
@@ -4828,7 +4960,7 @@ bool QGraphicsScene::focusNextPrevChild(bool next)
         if (widget->flags() & QGraphicsItem::ItemIsFocusable
             && widget->isEnabled() && widget->isVisibleTo(0)
             && (widget->focusPolicy() & Qt::TabFocus)
-            && (!item || !item->isWindow() || item->isAncestorOf(widget))
+            && (!item || !item->isPanel() || item->isAncestorOf(widget))
             ) {
             setFocusItem(widget, next ? Qt::TabFocusReason : Qt::BacktabFocusReason);
             return true;
@@ -5015,6 +5147,49 @@ void QGraphicsScene::setPalette(const QPalette &palette)
 }
 
 /*!
+    \since 4.6
+
+    Returns true if the scene is active (e.g., it's viewed by
+    at least one QGraphicsView that is active); otherwise returns false.
+
+    \sa QGraphicsItem::isActive(), QWidget::isActiveWindow()
+*/
+bool QGraphicsScene::isActive() const
+{
+    Q_D(const QGraphicsScene);
+    return d->activationRefCount > 0;
+}
+
+/*!
+    \since 4.6
+    Returns the current active panel, or 0 if no panel is currently active.
+
+    \sa QGraphicsScene::setActivePanel()
+*/
+QGraphicsItem *QGraphicsScene::activePanel() const
+{
+    Q_D(const QGraphicsScene);
+    return d->activePanel;
+}
+
+/*!
+    \since 4.6
+    Activates \a item, which must be an item in this scene. You
+    can also pass 0 for \a item, in which case QGraphicsScene will
+    deactivate any currently active panel.
+
+    If the scene is currently inactive, \a item remains inactive until the
+    scene becomes active (or, ir \a item is 0, no item will be activated).
+
+    \sa activePanel(), isActive(), QGraphicsItem::isActive()
+*/
+void QGraphicsScene::setActivePanel(QGraphicsItem *item)
+{
+    Q_D(QGraphicsScene);
+    d->setActivePanelHelper(item, false);
+}
+
+/*!
     \since 4.4
 
     Returns the current active window, or 0 if there is no window is currently
@@ -5025,7 +5200,9 @@ void QGraphicsScene::setPalette(const QPalette &palette)
 QGraphicsWidget *QGraphicsScene::activeWindow() const
 {
     Q_D(const QGraphicsScene);
-    return d->activeWindow;
+    if (d->activePanel && d->activePanel->isWindow())
+        return static_cast<QGraphicsWidget *>(d->activePanel);
+    return 0;
 }
 
 /*!
@@ -5038,61 +5215,34 @@ QGraphicsWidget *QGraphicsScene::activeWindow() const
 */
 void QGraphicsScene::setActiveWindow(QGraphicsWidget *widget)
 {
-    Q_D(QGraphicsScene);
     if (widget && widget->scene() != this) {
         qWarning("QGraphicsScene::setActiveWindow: widget %p must be part of this scene",
                  widget);
         return;
     }
 
-    // Activate the widget's window.
-    QGraphicsWidget *window = widget ? widget->window() : 0;
-    if (window == d->activeWindow)
-        return;
+    // Activate the widget's panel (all windows are panels).
+    QGraphicsItem *panel = widget ? widget->panel() : 0;
+    setActivePanel(panel);
 
-    // Deactivate the last active window.
-    if (d->activeWindow) {
-        if (QGraphicsWidget *fw = d->activeWindow->focusWidget()) {
-            // Remove focus from the current focus item.
-            if (fw == focusItem())
-                setFocusItem(0, Qt::ActiveWindowFocusReason);
-        }
-
-        QEvent event(QEvent::WindowDeactivate);
-        QApplication::sendEvent(d->activeWindow, &event);
-    }
-
-    // Update activate state.
-    d->activeWindow = window;
-    QEvent event(QEvent::ActivationChange);
-    QApplication::sendEvent(this, &event);
-
-    // Activate
-    if (window) {
-        QEvent event(QEvent::WindowActivate);
-        QApplication::sendEvent(window, &event);
-
+    // Raise
+    if (panel) {
         QList<QGraphicsItem *> siblingWindows;
-        QGraphicsItem *parent = window->parentItem();
+        QGraphicsItem *parent = panel->parentItem();
         // Raise ### inefficient for toplevels
         foreach (QGraphicsItem *sibling, parent ? parent->children() : items()) {
-            if (sibling != window && sibling->isWidget()
-                && static_cast<QGraphicsWidget *>(sibling)->isWindow()) {
+            if (sibling != panel && sibling->isWindow())
                 siblingWindows << sibling;
-            }
         }
 
         // Find the highest z value.
-        qreal z = window->zValue();
+        qreal z = panel->zValue();
         for (int i = 0; i < siblingWindows.size(); ++i)
             z = qMax(z, siblingWindows.at(i)->zValue());
 
         // This will probably never overflow.
         const qreal litt = qreal(0.001);
-        window->setZValue(z + litt);
-
-        if (QGraphicsWidget *focusChild = window->focusWidget())
-            focusChild->setFocus(Qt::ActiveWindowFocusReason);
+        panel->setZValue(z + litt);
     }
 }
 

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the demonstration applications of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -649,6 +649,24 @@ void Scene::initGL()
     m_renderOptions->emitParameterChanged();
 }
 
+static void loadMatrix(const QMatrix4x4& m)
+{
+    GLfloat mat[16];
+    const qreal *data = m.constData();
+    for (int index = 0; index < 16; ++index)
+        mat[index] = data[index];
+    glLoadMatrixf(mat);
+}
+
+static void multMatrix(const QMatrix4x4& m)
+{
+    GLfloat mat[16];
+    const qreal *data = m.constData();
+    for (int index = 0; index < 16; ++index)
+        mat[index] = data[index];
+    glMultMatrixf(mat);
+}
+
 // If one of the boxes should not be rendered, set excludeBox to its index.
 // If the main box should not be rendered, set excludeBox to -1.
 void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
@@ -673,7 +691,7 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
     viewRotation(3, 0) = viewRotation(3, 1) = viewRotation(3, 2) = 0.0f;
     viewRotation(0, 3) = viewRotation(1, 3) = viewRotation(2, 3) = 0.0f;
     viewRotation(3, 3) = 1.0f;
-    glLoadMatrixf(viewRotation.data());
+    loadMatrix(viewRotation);
     glScalef(20.0f, 20.0f, 20.0f);
 
     // Don't render the environment if the environment texture can't be set for the correct sampler.
@@ -688,7 +706,7 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
         m_environment->unbind();
     }
 
-    glLoadMatrixf(view.data());
+    loadMatrix(view);
 
     glEnable(GL_CULL_FACE);
     glEnable(GL_LIGHTING);
@@ -700,9 +718,7 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
         glPushMatrix();
         QMatrix4x4 m;
         m.rotate(m_trackBalls[1].rotation());
-        m = m.transposed();
-
-        glMultMatrixf(m.data());
+        multMatrix(m);
 
         glRotatef(360.0f * i / m_programs.size(), 0.0f, 0.0f, 1.0f);
         glTranslatef(2.0f, 0.0f, 0.0f);
@@ -735,8 +751,7 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
     if (-1 != excludeBox) {
         QMatrix4x4 m;
         m.rotate(m_trackBalls[0].rotation());
-        m = m.transposed();
-        glMultMatrixf(m.data());
+        multMatrix(m);
 
         if (glActiveTexture) {
             if (m_dynamicCubemap)
@@ -842,7 +857,7 @@ void Scene::renderCubemaps()
 
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
-    glLoadMatrixf(mat.data());
+    loadMatrix(mat);
 
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
@@ -862,7 +877,7 @@ void Scene::renderCubemaps()
 
             GLRenderTargetCube::getViewMatrix(mat, face);
             QVector4D v = QVector4D(-center.x(), -center.y(), -center.z(), 1.0);
-            mat.setColumn(3, v * mat);
+            mat.setColumn(3, mat * v);
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             renderBoxes(mat, i);
@@ -894,6 +909,7 @@ void Scene::drawBackground(QPainter *painter, const QRectF &)
     float width = float(painter->device()->width());
     float height = float(painter->device()->height());
 
+    painter->beginNativePainting();
     setStates();
 
     if (m_dynamicCubemap)
@@ -913,6 +929,8 @@ void Scene::drawBackground(QPainter *painter, const QRectF &)
 
     defaultStates();
     ++m_frame;
+
+    painter->endNativePainting();
 }
 
 QPointF Scene::pixelPosToViewPos(const QPointF& p)

@@ -15,6 +15,7 @@ sources.files = $$SOURCES $$HEADERS $$FORMS $$RESOURCES *.pro form.html images
 sources.path = $$[QT_INSTALL_EXAMPLES]/webkit/formextractor
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
-
-symbian:TARGET.UID3 = 0xA000CF6D
+symbian {
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    TARGET.UID3 = 0xA000CF6D
+}

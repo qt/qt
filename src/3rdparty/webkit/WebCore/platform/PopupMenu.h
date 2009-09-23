@@ -59,6 +59,8 @@ class wxMenu;
 #include <wx/event.h>
 #elif PLATFORM(CHROMIUM)
 #include "PopupMenuPrivate.h"
+#elif PLATFORM(HAIKU)
+class BMenu;
 #endif
 
 namespace WebCore {
@@ -91,6 +93,8 @@ public:
 
 #if PLATFORM(WIN)
     Scrollbar* scrollbar() const { return m_scrollbar.get(); }
+
+    static LPCTSTR popupClassName();
 
     bool up(unsigned lines = 1);
     bool down(unsigned lines = 1);
@@ -153,6 +157,10 @@ private:
     void calculatePositionAndSize(const IntRect&, FrameView*);
     void invalidateItem(int index);
 
+    static LRESULT CALLBACK PopupMenuWndProc(HWND, UINT, WPARAM, LPARAM);
+    LRESULT wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+    static void registerClass();
+
     RefPtr<Scrollbar> m_scrollbar;
     HWND m_popup;
     HDC m_DC;
@@ -164,6 +172,7 @@ private:
     int m_wheelDelta;
     int m_focusedIndex;
     bool m_scrollbarCapturingMouse;
+    bool m_showPopup;
 #elif PLATFORM(GTK)
     IntPoint m_menuPosition;
     GtkMenu* m_popup;
@@ -177,6 +186,8 @@ private:
     void OnMenuItemSelected(wxCommandEvent&);
 #elif PLATFORM(CHROMIUM)
     PopupMenuPrivate p;
+#elif PLATFORM(HAIKU)
+    BMenu* m_menu;
 #endif
 
 };

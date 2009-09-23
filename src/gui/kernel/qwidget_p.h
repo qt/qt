@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -62,6 +62,7 @@
 #include "QtGui/qsizepolicy.h"
 #include "QtGui/qstyle.h"
 #include "QtGui/qapplication.h"
+#include <private/qgraphicseffect_p.h>
 
 #ifdef Q_WS_WIN
 #include "QtCore/qt_windows.h"
@@ -84,9 +85,6 @@
 #if defined(Q_OS_SYMBIAN)
 class RDrawableWindow;
 class CCoeControl;
-// The following 2 defines may only be needed for s60. To be seen.
-const int SOFTKEYSTART=5000;
-const int SOFTKEYEND=5004;
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -257,11 +255,17 @@ public:
         CloseWithSpontaneousEvent
     };
 
+    enum Direction {
+        DirectionNorth = 0x01,
+        DirectionEast = 0x10,
+        DirectionSouth = 0x02,
+        DirectionWest = 0x20
+    };
+
     // Functions.
     explicit QWidgetPrivate(int version = QObjectPrivateVersion);
     ~QWidgetPrivate();
 
-    void setSoftKeys_sys(const QList<QAction*> &softkeys);
     QWExtra *extraData() const;
     QTLWExtra *topData() const;
     QTLWExtra *maybeTopData() const;
@@ -403,6 +407,11 @@ public:
     void updateFrameStrut();
     QRect frameStrut() const;
 
+#ifdef QT_KEYPAD_NAVIGATION
+    static bool navigateToDirection(Direction direction);
+    static QWidget *widgetInNavigationDirection(Direction direction);
+#endif
+
     void setWindowIconText_sys(const QString &cap);
     void setWindowIconText_helper(const QString &cap);
     void setWindowTitle_sys(const QString &cap);
@@ -466,6 +475,13 @@ public:
         return extra ? extra->nativeChildrenForced : false;
     }
 
+    inline QRect effectiveRectFor(const QRect &rect) const
+    {
+        if (graphicsEffect && graphicsEffect->isEnabled())
+            return graphicsEffect->boundingRectFor(rect).toAlignedRect();
+        return rect;
+    }
+
     QSize adjustedSize() const;
 
     inline void handleSoftwareInputPanel(Qt::MouseButton button, bool clickCausedFocus)
@@ -503,13 +519,13 @@ public:
     QWidget *focus_next;
     QWidget *focus_prev;
     QWidget *focus_child;
-    QList<QAction*> softKeys;
     QLayout *layout;
     QRegion *needsFlush;
     QPaintDevice *redirectDev;
     QWidgetItemV2 *widgetItem;
     QPaintEngine *extraPaintEngine;
     mutable const QMetaObject *polished;
+    QGraphicsEffect *graphicsEffect;
     // All widgets are added into the allWidgets set. Once
     // they receive a window id they are also added to the mapper.
     // This should just ensure that all widgets are deleted by QApplication
@@ -685,6 +701,67 @@ public:
     void reparentChildren();
 #endif
 
+};
+
+struct QWidgetPaintContext
+{
+    inline QWidgetPaintContext(QPaintDevice *d, const QRegion &r, const QPoint &o, int f,
+                               QPainter *p, QWidgetBackingStore *b)
+        : pdev(d), rgn(r), offset(o), flags(f), sharedPainter(p), backingStore(b), painter(0) {}
+
+    QPaintDevice *pdev;
+    QRegion rgn;
+    QPoint offset;
+    int flags;
+    QPainter *sharedPainter;
+    QWidgetBackingStore *backingStore;
+    QPainter *painter;
+};
+
+class QWidgetEffectSourcePrivate : public QGraphicsEffectSourcePrivate
+{
+public:
+    QWidgetEffectSourcePrivate(QWidget *widget)
+        : QGraphicsEffectSourcePrivate(), m_widget(widget), context(0)
+    {}
+
+    inline void detach()
+    { m_widget->setGraphicsEffect(0); }
+
+    inline const QGraphicsItem *graphicsItem() const
+    { return 0; }
+
+    inline const QWidget *widget() const
+    { return m_widget; }
+
+    inline void update()
+    { m_widget->update(); }
+
+    inline bool isPixmap() const
+    { return false; }
+
+    inline void effectBoundingRectChanged()
+    {
+        // ### This function should take a rect parameter; then we can avoid
+        // updating too much on the parent widget.
+        if (QWidget *parent = m_widget->parentWidget())
+            parent->update();
+        else
+            m_widget->update();
+    }
+
+    inline const QStyleOption *styleOption() const
+    { return 0; }
+
+    inline QRect deviceRect() const
+    { return m_widget->window()->rect(); }
+
+    QRectF boundingRect(Qt::CoordinateSystem system) const;
+    void draw(QPainter *p);
+    QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset) const;
+
+    QWidget *m_widget;
+    QWidgetPaintContext *context;
 };
 
 inline QWExtra *QWidgetPrivate::extraData() const

@@ -96,7 +96,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSDocument);
 
 /* Hash table */
 
-static const HashTableValue JSDocumentTableValues[69] =
+static const HashTableValue JSDocumentTableValues[70] =
 {
     { "doctype", DontDelete|ReadOnly, (intptr_t)jsDocumentDoctype, (intptr_t)0 },
     { "implementation", DontDelete|ReadOnly, (intptr_t)jsDocumentImplementation, (intptr_t)0 },
@@ -143,6 +143,7 @@ static const HashTableValue JSDocumentTableValues[69] =
     { "onerror", DontDelete|DontEnum, (intptr_t)jsDocumentOnerror, (intptr_t)setJSDocumentOnerror },
     { "onfocus", DontDelete|DontEnum, (intptr_t)jsDocumentOnfocus, (intptr_t)setJSDocumentOnfocus },
     { "oninput", DontDelete|DontEnum, (intptr_t)jsDocumentOninput, (intptr_t)setJSDocumentOninput },
+    { "oninvalid", DontDelete|DontEnum, (intptr_t)jsDocumentOninvalid, (intptr_t)setJSDocumentOninvalid },
     { "onkeydown", DontDelete|DontEnum, (intptr_t)jsDocumentOnkeydown, (intptr_t)setJSDocumentOnkeydown },
     { "onkeypress", DontDelete|DontEnum, (intptr_t)jsDocumentOnkeypress, (intptr_t)setJSDocumentOnkeypress },
     { "onkeyup", DontDelete|DontEnum, (intptr_t)jsDocumentOnkeyup, (intptr_t)setJSDocumentOnkeyup },
@@ -173,7 +174,7 @@ static JSC_CONST_HASHTABLE HashTable JSDocumentTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 2047, JSDocumentTableValues, 0 };
 #else
-    { 259, 255, JSDocumentTableValues, 0 };
+    { 260, 255, JSDocumentTableValues, 0 };
 #endif
 
 /* Hash table for constructor */
@@ -198,6 +199,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSDocumentPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -214,9 +216,14 @@ bool JSDocumentConstructor::getOwnPropertySlot(ExecState* exec, const Identifier
     return getStaticValueSlot<JSDocumentConstructor, DOMObject>(exec, &JSDocumentConstructorTable, this, propertyName, slot);
 }
 
+bool JSDocumentConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSDocumentConstructor, DOMObject>(exec, &JSDocumentConstructorTable, this, propertyName, descriptor);
+}
+
 /* Hash table for prototype */
 
-static const HashTableValue JSDocumentPrototypeTableValues[37] =
+static const HashTableValue JSDocumentPrototypeTableValues[38] =
 {
     { "createElement", DontDelete|Function, (intptr_t)jsDocumentPrototypeFunctionCreateElement, (intptr_t)1 },
     { "createDocumentFragment", DontDelete|Function, (intptr_t)jsDocumentPrototypeFunctionCreateDocumentFragment, (intptr_t)0 },
@@ -249,6 +256,7 @@ static const HashTableValue JSDocumentPrototypeTableValues[37] =
     { "queryCommandValue", DontDelete|Function, (intptr_t)jsDocumentPrototypeFunctionQueryCommandValue, (intptr_t)1 },
     { "getElementsByName", DontDelete|Function, (intptr_t)jsDocumentPrototypeFunctionGetElementsByName, (intptr_t)1 },
     { "elementFromPoint", DontDelete|Function, (intptr_t)jsDocumentPrototypeFunctionElementFromPoint, (intptr_t)2 },
+    { "caretRangeFromPoint", DontDelete|Function, (intptr_t)jsDocumentPrototypeFunctionCaretRangeFromPoint, (intptr_t)2 },
     { "getSelection", DontDelete|Function, (intptr_t)jsDocumentPrototypeFunctionGetSelection, (intptr_t)0 },
     { "getCSSCanvasContext", DontDelete|Function, (intptr_t)jsDocumentPrototypeFunctionGetCSSCanvasContext, (intptr_t)4 },
     { "getElementsByClassName", DontDelete|Function, (intptr_t)jsDocumentPrototypeFunctionGetElementsByClassName, (intptr_t)1 },
@@ -274,6 +282,11 @@ JSObject* JSDocumentPrototype::self(ExecState* exec, JSGlobalObject* globalObjec
 bool JSDocumentPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticFunctionSlot<JSObject>(exec, &JSDocumentPrototypeTable, this, propertyName, slot);
+}
+
+bool JSDocumentPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSDocumentPrototypeTable, this, propertyName, descriptor);
 }
 
 const ClassInfo JSDocument::s_info = { "Document", &JSNode::s_info, &JSDocumentTable, 0 };
@@ -709,6 +722,18 @@ JSValue jsDocumentOninput(ExecState* exec, const Identifier&, const PropertySlot
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(castedThis->impl());
     if (EventListener* listener = imp->oninput()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDocumentOninvalid(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
+    UNUSED_PARAM(exec);
+    Document* imp = static_cast<Document*>(castedThis->impl());
+    if (EventListener* listener = imp->oninvalid()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
     }
@@ -1214,6 +1239,16 @@ void setJSDocumentOninput(ExecState* exec, JSObject* thisObject, JSValue value)
     imp->setOninput(globalObject->createJSAttributeEventListener(value));
 }
 
+void setJSDocumentOninvalid(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    UNUSED_PARAM(exec);
+    Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    if (!globalObject)
+        return;
+    imp->setOninvalid(globalObject->createJSAttributeEventListener(value));
+}
+
 void setJSDocumentOnkeydown(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
@@ -1442,7 +1477,7 @@ JSValue JSDocument::getConstructor(ExecState* exec, JSGlobalObject* globalObject
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateElement(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1458,7 +1493,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateElement(ExecState* exec, 
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateDocumentFragment(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1471,7 +1506,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateDocumentFragment(ExecStat
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateTextNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1485,7 +1520,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateTextNode(ExecState* exec,
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateComment(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1499,7 +1534,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateComment(ExecState* exec, 
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateCDATASection(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1515,7 +1550,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateCDATASection(ExecState* e
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateProcessingInstruction(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1532,7 +1567,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateProcessingInstruction(Exe
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1548,7 +1583,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateAttribute(ExecState* exec
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateEntityReference(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1564,7 +1599,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateEntityReference(ExecState
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetElementsByTagName(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1578,7 +1613,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetElementsByTagName(ExecState*
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionImportNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1595,7 +1630,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionImportNode(ExecState* exec, JSO
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateElementNS(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1612,7 +1647,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateElementNS(ExecState* exec
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateAttributeNS(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1629,7 +1664,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateAttributeNS(ExecState* ex
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetElementsByTagNameNS(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1644,7 +1679,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetElementsByTagNameNS(ExecStat
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetElementById(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1658,7 +1693,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetElementById(ExecState* exec,
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionAdoptNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1674,7 +1709,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionAdoptNode(ExecState* exec, JSOb
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1690,7 +1725,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateEvent(ExecState* exec, JS
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateRange(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1703,7 +1738,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateRange(ExecState* exec, JS
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateNodeIterator(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1722,7 +1757,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateNodeIterator(ExecState* e
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateTreeWalker(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1741,7 +1776,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateTreeWalker(ExecState* exe
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetOverrideStyle(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1756,7 +1791,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetOverrideStyle(ExecState* exe
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateExpression(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1780,7 +1815,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateExpression(ExecState* exe
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateNSResolver(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1794,7 +1829,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCreateNSResolver(ExecState* exe
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionEvaluate(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1821,7 +1856,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionEvaluate(ExecState* exec, JSObj
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionExecCommand(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1837,7 +1872,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionExecCommand(ExecState* exec, JS
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQueryCommandEnabled(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1851,7 +1886,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQueryCommandEnabled(ExecState* 
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQueryCommandIndeterm(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1865,7 +1900,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQueryCommandIndeterm(ExecState*
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQueryCommandState(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1879,7 +1914,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQueryCommandState(ExecState* ex
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQueryCommandSupported(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1893,7 +1928,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQueryCommandSupported(ExecState
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQueryCommandValue(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1907,7 +1942,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQueryCommandValue(ExecState* ex
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetElementsByName(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1921,7 +1956,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetElementsByName(ExecState* ex
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionElementFromPoint(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1933,10 +1968,25 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionElementFromPoint(ExecState* exe
     return result;
 }
 
+JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionCaretRangeFromPoint(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSDocument::s_info))
+        return throwError(exec, TypeError);
+    JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
+    Document* imp = static_cast<Document*>(castedThisObj->impl());
+    int x = args.at(0).toInt32(exec);
+    int y = args.at(1).toInt32(exec);
+
+
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->caretRangeFromPoint(x, y)));
+    return result;
+}
+
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetSelection(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1949,7 +1999,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetSelection(ExecState* exec, J
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetCSSCanvasContext(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1966,7 +2016,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetCSSCanvasContext(ExecState* 
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetElementsByClassName(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1980,7 +2030,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionGetElementsByClassName(ExecStat
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQuerySelector(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -1996,7 +2046,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQuerySelector(ExecState* exec, 
 JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQuerySelectorAll(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocument::s_info))
+    if (!thisValue.inherits(&JSDocument::s_info))
         return throwError(exec, TypeError);
     JSDocument* castedThisObj = static_cast<JSDocument*>(asObject(thisValue));
     Document* imp = static_cast<Document*>(castedThisObj->impl());
@@ -2011,7 +2061,7 @@ JSValue JSC_HOST_CALL jsDocumentPrototypeFunctionQuerySelectorAll(ExecState* exe
 
 Document* toDocument(JSC::JSValue value)
 {
-    return value.isObject(&JSDocument::s_info) ? static_cast<JSDocument*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSDocument::s_info) ? static_cast<JSDocument*>(asObject(value))->impl() : 0;
 }
 
 }

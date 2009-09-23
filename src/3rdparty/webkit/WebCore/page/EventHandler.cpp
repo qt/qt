@@ -78,6 +78,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
+#if ENABLE(DRAG_SUPPORT)
 // The link drag hysteresis is much larger than the others because there
 // needs to be enough space to cancel the link press without starting a link drag,
 // and because dragging links is rare.
@@ -85,6 +86,7 @@ const int LinkDragHysteresis = 40;
 const int ImageDragHysteresis = 5;
 const int TextDragHysteresis = 3;
 const int GeneralDragHysteresis = 3;
+#endif // ENABLE(DRAG_SUPPORT)
 
 // Match key code of composition keydown event on windows.
 // IE sends VK_PROCESSKEY which has value 229;
@@ -97,7 +99,6 @@ using namespace SVGNames;
 // When the autoscroll or the panScroll is triggered when do the scroll every 0.05s to make it smooth
 const double autoscrollInterval = 0.05;
 
-static Frame* subframeForTargetNode(Node*);
 static Frame* subframeForHitTestResult(const MouseEventWithHitTestResults&);
 
 static inline void scrollAndAcceptEvent(float delta, ScrollDirection positiveDirection, ScrollDirection negativeDirection, PlatformWheelEvent& e, Node* node)
@@ -137,7 +138,9 @@ EventHandler::EventHandler(Frame* frame)
     , m_mousePressed(false)
     , m_capturesDragging(false)
     , m_mouseDownMayStartSelect(false)
+#if ENABLE(DRAG_SUPPORT)
     , m_mouseDownMayStartDrag(false)
+#endif
     , m_mouseDownWasSingleClickInSelection(false)
     , m_beganSelectingText(false)
     , m_panScrollInProgress(false)
@@ -170,11 +173,13 @@ EventHandler::~EventHandler()
 {
 }
     
+#if ENABLE(DRAG_SUPPORT)
 EventHandler::EventHandlerDragState& EventHandler::dragState()
 {
     DEFINE_STATIC_LOCAL(EventHandlerDragState, state, ());
     return state;
 }
+#endif // ENABLE(DRAG_SUPPORT)
     
 void EventHandler::clear()
 {
@@ -191,7 +196,9 @@ void EventHandler::clear()
     m_clickCount = 0;
     m_clickNode = 0;
     m_frameSetBeingResized = 0;
+#if ENABLE(DRAG_SUPPORT)
     m_dragTarget = 0;
+#endif
     m_currentMousePosition = IntPoint();
     m_mousePressNode = 0;
     m_mousePressed = false;
@@ -345,8 +352,10 @@ bool EventHandler::handleMousePressEventSingleClick(const MouseEventWithHitTestR
 
 bool EventHandler::handleMousePressEvent(const MouseEventWithHitTestResults& event)
 {
+#if ENABLE(DRAG_SUPPORT)
     // Reset drag state.
     dragState().m_dragSrc = 0;
+#endif
 
     if (ScrollView* scrollView = m_frame->view()) {
         if (scrollView->isPointInScrollbarCorner(event.event().pos()))
@@ -359,8 +368,10 @@ bool EventHandler::handleMousePressEvent(const MouseEventWithHitTestResults& eve
     // so it's allowed to start a drag or selection.
     m_mouseDownMayStartSelect = canMouseDownStartSelect(event.targetNode());
     
+#if ENABLE(DRAG_SUPPORT)
     // Careful that the drag starting logic stays in sync with eventMayStartDrag()
     m_mouseDownMayStartDrag = singleClick;
+#endif
 
     m_mouseDownWasSingleClickInSelection = false;
 
@@ -388,7 +399,9 @@ bool EventHandler::handleMousePressEvent(const MouseEventWithHitTestResults& eve
     Node* innerNode = event.targetNode();
 
     m_mousePressNode = innerNode;
+#if ENABLE(DRAG_SUPPORT)
     m_dragStartPos = event.event().pos();
+#endif
 
     bool swallowEvent = false;
     m_frame->selection()->setCaretBlinkingSuspended(true);
@@ -408,6 +421,7 @@ bool EventHandler::handleMousePressEvent(const MouseEventWithHitTestResults& eve
     return swallowEvent;
 }
 
+#if ENABLE(DRAG_SUPPORT)
 bool EventHandler::handleMouseDraggedEvent(const MouseEventWithHitTestResults& event)
 {
     if (handleDrag(event))
@@ -430,7 +444,7 @@ bool EventHandler::handleMouseDraggedEvent(const MouseEventWithHitTestResults& e
         // If the selection is contained in a layer that can scroll, that layer should handle the autoscroll
         // Otherwise, let the bridge handle it so the view can scroll itself.
         RenderObject* renderer = targetNode->renderer();
-        while (renderer && (!renderer->isBox() || !toRenderBox(renderer)->canBeProgramaticallyScrolled(false))) {
+        while (renderer && (!renderer->isBox() || !toRenderBox(renderer)->canBeScrolledAndHasScrollableArea())) {
             if (!renderer->parent() && renderer->node() == renderer->document() && renderer->document()->ownerElement())
                 renderer = renderer->document()->ownerElement()->renderer();
             else
@@ -547,6 +561,7 @@ void EventHandler::updateSelectionForMouseDrag(Node* targetNode, const IntPoint&
         m_frame->selection()->setSelection(newSelection);
     }
 }
+#endif // ENABLE(DRAG_SUPPORT)
     
 bool EventHandler::handleMouseUp(const MouseEventWithHitTestResults& event)
 {
@@ -574,7 +589,9 @@ bool EventHandler::handleMouseReleaseEvent(const MouseEventWithHitTestResults& e
     m_frame->selection()->setCaretBlinkingSuspended(false);
     m_mousePressed = false;
     m_capturesDragging = false;
+#if ENABLE(DRAG_SUPPORT)
     m_mouseDownMayStartDrag = false;
+#endif
     m_mouseDownMayStartSelect = false;
     m_mouseDownMayStartAutoscroll = false;
     m_mouseDownWasInSubframe = false;
@@ -586,7 +603,9 @@ bool EventHandler::handleMouseReleaseEvent(const MouseEventWithHitTestResults& e
     // on the selection, the selection goes away.  However, if we are
     // editing, place the caret.
     if (m_mouseDownWasSingleClickInSelection && !m_beganSelectingText
+#if ENABLE(DRAG_SUPPORT)
             && m_dragStartPos == event.event().pos()
+#endif
             && m_frame->selection()->isRange()
             && event.event().button() != RightButton) {
         VisibleSelection newSelection;
@@ -720,7 +739,7 @@ void EventHandler::updateAutoscrollRenderer()
     if (Node* nodeAtPoint = hitTest.innerNode())
         m_autoscrollRenderer = nodeAtPoint->renderer();
 
-    while (m_autoscrollRenderer && (!m_autoscrollRenderer->isBox() || !toRenderBox(m_autoscrollRenderer)->canBeProgramaticallyScrolled(false)))
+    while (m_autoscrollRenderer && (!m_autoscrollRenderer->isBox() || !toRenderBox(m_autoscrollRenderer)->canBeScrolledAndHasScrollableArea()))
         m_autoscrollRenderer = m_autoscrollRenderer->parent();
 }
 
@@ -729,6 +748,7 @@ void EventHandler::setAutoscrollRenderer(RenderObject* renderer)
     m_autoscrollRenderer = renderer;
 }
 
+#if ENABLE(DRAG_SUPPORT)
 void EventHandler::allowDHTMLDrag(bool& flagDHTML, bool& flagUA) const
 {
     flagDHTML = false;
@@ -749,6 +769,7 @@ void EventHandler::allowDHTMLDrag(bool& flagDHTML, bool& flagUA) const
     flagDHTML = (mask & DragSourceActionDHTML) != DragSourceActionNone;
     flagUA = ((mask & DragSourceActionImage) || (mask & DragSourceActionLink) || (mask & DragSourceActionSelection));
 }
+#endif // ENABLE(DRAG_SUPPORT)
     
 HitTestResult EventHandler::hitTestResultAtPoint(const IntPoint& point, bool allowShadowContent, bool ignoreClipping, HitTestScrollbars testScrollbars)
 {
@@ -764,7 +785,7 @@ HitTestResult EventHandler::hitTestResultAtPoint(const IntPoint& point, bool all
         Node* n = result.innerNode();
         if (!result.isOverWidget() || !n || !n->renderer() || !n->renderer()->isWidget())
             break;
-        RenderWidget* renderWidget = static_cast<RenderWidget*>(n->renderer());
+        RenderWidget* renderWidget = toRenderWidget(n->renderer());
         Widget* widget = renderWidget->widget();
         if (!widget || !widget->isFrameView())
             break;
@@ -902,10 +923,10 @@ Frame* subframeForHitTestResult(const MouseEventWithHitTestResults& hitTestResul
 {
     if (!hitTestResult.isOverWidget())
         return 0;
-    return subframeForTargetNode(hitTestResult.targetNode());
+    return EventHandler::subframeForTargetNode(hitTestResult.targetNode());
 }
 
-Frame* subframeForTargetNode(Node* node)
+Frame* EventHandler::subframeForTargetNode(Node* node)
 {
     if (!node)
         return 0;
@@ -914,7 +935,7 @@ Frame* subframeForTargetNode(Node* node)
     if (!renderer || !renderer->isWidget())
         return 0;
 
-    Widget* widget = static_cast<RenderWidget*>(renderer)->widget();
+    Widget* widget = toRenderWidget(renderer)->widget();
     if (!widget || !widget->isFrameView())
         return 0;
 
@@ -945,10 +966,10 @@ Cursor EventHandler::selectCursor(const MouseEventWithHitTestResults& event, Scr
     RenderStyle* style = renderer ? renderer->style() : 0;
 
     if (renderer && renderer->isFrameSet()) {
-        RenderFrameSet* fs = static_cast<RenderFrameSet*>(renderer);
-        if (fs->canResizeRow(event.localPoint()))
+        RenderFrameSet* frameSetRenderer = toRenderFrameSet(renderer);
+        if (frameSetRenderer->canResizeRow(event.localPoint()))
             return rowResizeCursor();
-        if (fs->canResizeColumn(event.localPoint()))
+        if (frameSetRenderer->canResizeColumn(event.localPoint()))
             return columnResizeCursor();
     }
 
@@ -1105,7 +1126,9 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     m_capturesDragging = true;
     m_currentMousePosition = mouseEvent.pos();
     m_mouseDownTimestamp = mouseEvent.timestamp();
+#if ENABLE(DRAG_SUPPORT)
     m_mouseDownMayStartDrag = false;
+#endif
     m_mouseDownMayStartSelect = false;
     m_mouseDownMayStartAutoscroll = false;
     if (FrameView* view = m_frame->view())
@@ -1129,6 +1152,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
 
     m_mousePressNode = mev.targetNode();
 
+#if ENABLE(INSPECTOR)
     if (Page* page = m_frame->page()) {
         InspectorController* inspector = page->inspectorController();
         if (inspector && inspector->enabled() && inspector->searchingForNodeInPage()) {
@@ -1137,6 +1161,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
             return true;
         }
     }
+#endif
 
     Frame* subframe = subframeForHitTestResult(mev);
     if (subframe && passMousePressEventToSubframe(mev, subframe)) {
@@ -1160,7 +1185,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     if (mouseEvent.button() == MiddleButton && !mev.isOverLink()) {
         RenderObject* renderer = mev.targetNode()->renderer();
 
-        while (renderer && (!renderer->isBox() || !toRenderBox(renderer)->canBeProgramaticallyScrolled(false))) {
+        while (renderer && (!renderer->isBox() || !toRenderBox(renderer)->canBeScrolledAndHasScrollableArea())) {
             if (!renderer->parent() && renderer->node() == renderer->document() && renderer->document()->ownerElement())
                 renderer = renderer->document()->ownerElement()->renderer();
             else
@@ -1381,8 +1406,10 @@ bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& mouseEvent, Hi
         return true;
     
     swallowEvent = dispatchMouseEvent(eventNames().mousemoveEvent, mev.targetNode(), false, 0, mouseEvent, true);
+#if ENABLE(DRAG_SUPPORT)
     if (!swallowEvent)
         swallowEvent = handleMouseDraggedEvent(mev);
+#endif // ENABLE(DRAG_SUPPORT)
 
     return swallowEvent;
 }
@@ -1452,6 +1479,7 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
     return swallowMouseUpEvent || swallowClickEvent || swallowMouseReleaseEvent;
 }
 
+#if ENABLE(DRAG_SUPPORT)
 bool EventHandler::dispatchDragEvent(const AtomicString& eventType, Node* dragTarget, const PlatformMouseEvent& event, Clipboard* clipboard)
 {
     FrameView* view = m_frame->view();
@@ -1559,6 +1587,7 @@ void EventHandler::clearDragState()
     m_sendingEventToSubview = false;
 #endif
 }
+#endif // ENABLE(DRAG_SUPPORT)
 
 void EventHandler::setCapturingMouseEventsNode(PassRefPtr<Node> n)
 {
@@ -1680,12 +1709,15 @@ bool EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targe
         swallowEvent = m_nodeUnderMouse->dispatchMouseEvent(mouseEvent, eventType, clickCount);
     
     if (!swallowEvent && eventType == eventNames().mousedownEvent) {
+        // The layout needs to be up to date to determine if an element is focusable.
+        m_frame->document()->updateLayoutIgnorePendingStylesheets();
+
         // Blur current focus node when a link/button is clicked; this
         // is expected by some sites that rely on onChange handlers running
         // from form fields before the button click is processed.
         Node* node = m_nodeUnderMouse.get();
         RenderObject* renderer = node ? node->renderer() : 0;
-                
+
         // Walk up the render tree to search for a node to focus.
         // Walking up the DOM tree wouldn't work for shadow trees, like those behind the engine-based text fields.
         while (renderer) {
@@ -1771,8 +1803,7 @@ bool EventHandler::handleWheelEvent(PlatformWheelEvent& e)
         RenderObject* target = node->renderer();
         
         if (isOverWidget && target && target->isWidget()) {
-            Widget* widget = static_cast<RenderWidget*>(target)->widget();
-
+            Widget* widget = toRenderWidget(target)->widget();
             if (widget && passWheelEventToWidget(e, widget)) {
                 e.accept();
                 return true;
@@ -1808,6 +1839,7 @@ bool EventHandler::handleWheelEvent(PlatformWheelEvent& e)
     return e.isAccepted();
 }
 
+#if ENABLE(CONTEXT_MENUS)
 bool EventHandler::sendContextMenuEvent(const PlatformMouseEvent& event)
 {
     Document* doc = m_frame->document();
@@ -1838,6 +1870,7 @@ bool EventHandler::sendContextMenuEvent(const PlatformMouseEvent& event)
     
     return swallowEvent;
 }
+#endif // ENABLE(CONTEXT_MENUS)
 
 void EventHandler::scheduleHoverStateUpdate()
 {
@@ -1863,6 +1896,7 @@ bool EventHandler::canMouseDownStartSelect(Node* node)
     return true;
 }
 
+#if ENABLE(DRAG_SUPPORT)
 bool EventHandler::canMouseDragExtendSelect(Node* node)
 {
     if (!node || !node->renderer())
@@ -1875,6 +1909,7 @@ bool EventHandler::canMouseDragExtendSelect(Node* node)
 
     return true;
 }
+#endif // ENABLE(DRAG_SUPPORT)
 
 void EventHandler::setResizingFrameSet(HTMLFrameSetElement* frameSet)
 {
@@ -1945,10 +1980,8 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
 #if ENABLE(PAN_SCROLLING)
     if (Page* page = m_frame->page()) {
         if (page->mainFrame()->eventHandler()->panScrollInProgress() || m_autoscrollInProgress) {
-            static const char* const escapeKeyIdentifier = "U+001B";
-
             // If a key is pressed while the autoscroll/panScroll is in progress then we want to stop
-            if (initialKeyEvent.keyIdentifier() == escapeKeyIdentifier && initialKeyEvent.type() == PlatformKeyboardEvent::KeyUp) 
+            if (initialKeyEvent.type() == PlatformKeyboardEvent::KeyDown || initialKeyEvent.type() == PlatformKeyboardEvent::RawKeyDown) 
                 stopAutoscrollTimer();
 
             // If we were in autoscroll/panscroll mode, we swallow the key event
@@ -2093,6 +2126,7 @@ void EventHandler::defaultKeyboardEventHandler(KeyboardEvent* event)
     }
 }
 
+#if ENABLE(DRAG_SUPPORT)
 bool EventHandler::dragHysteresisExceeded(const FloatPoint& floatDragViewportLocation) const
 {
     IntPoint dragViewportLocation((int)floatDragViewportLocation.x(), (int)floatDragViewportLocation.y());
@@ -2292,6 +2326,7 @@ cleanupDrag:
     // No more default handling (like selection), whether we're past the hysteresis bounds or not
     return true;
 }
+#endif // ENABLE(DRAG_SUPPORT)
   
 bool EventHandler::handleTextInputEvent(const String& text, Event* underlyingEvent, bool isLineBreak, bool isBackTab)
 {
@@ -2323,7 +2358,7 @@ bool EventHandler::handleTextInputEvent(const String& text, Event* underlyingEve
 }
     
     
-#if !PLATFORM(MAC) && !PLATFORM(QT)
+#if !PLATFORM(MAC) && !PLATFORM(QT) && !PLATFORM(HAIKU)
 bool EventHandler::invertSenseOfTabsToLinks(KeyboardEvent*) const
 {
     return false;
@@ -2417,7 +2452,7 @@ void EventHandler::capsLockStateMayHaveChanged()
     if (Node* node = d->focusedNode()) {
         if (RenderObject* r = node->renderer()) {
             if (r->isTextField())
-                static_cast<RenderTextControlSingleLine*>(r)->capsLockStateMayHaveChanged();
+                toRenderTextControlSingleLine(r)->capsLockStateMayHaveChanged();
         }
     }
 }

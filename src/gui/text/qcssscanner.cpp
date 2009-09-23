@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -46,7 +46,7 @@ public:
     QCssScanner_Generated(const QString &inp);
 
     inline QChar next() {
-        return (pos < input.length()) ? input.at(pos++).toLower() : QChar();
+        return (pos < input.length()) ? input.at(pos++) : QChar();
     }
     int handleCommentStart();
     int lex();
@@ -73,7 +73,7 @@ int QCssScanner_Generated::lex()
     int lastAcceptingPos = -1;
     int token = -1;
     QChar ch;
-    
+
     // initial state
         ch = next();
         if (ch.unicode() >= 9 && ch.unicode() <= 10)
@@ -146,7 +146,7 @@ int QCssScanner_Generated::lex()
         }
         if (ch.unicode() == 95)
             goto state_24;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_24;
         if (ch.unicode() == 123)
             goto state_25;
@@ -196,7 +196,7 @@ int QCssScanner_Generated::lex()
             goto state_32;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
             goto state_30;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_30;
         if (ch.unicode() >= 123)
             goto state_30;
@@ -211,7 +211,7 @@ int QCssScanner_Generated::lex()
             goto state_34;
         if (ch.unicode() == 95)
             goto state_33;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_33;
         goto out;
     state_5:
@@ -232,7 +232,7 @@ int QCssScanner_Generated::lex()
             goto state_37;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
             goto state_35;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_35;
         if (ch.unicode() >= 123)
             goto state_35;
@@ -255,7 +255,7 @@ int QCssScanner_Generated::lex()
             goto state_22;
         if (ch.unicode() == 95)
             goto state_24;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_24;
         goto out;
     state_12:
@@ -290,7 +290,7 @@ int QCssScanner_Generated::lex()
             goto state_45;
         if (ch.unicode() == 95)
             goto state_46;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_46;
         goto out;
     state_17:
@@ -310,7 +310,7 @@ int QCssScanner_Generated::lex()
             goto state_49;
         if (ch.unicode() == 95)
             goto state_50;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_50;
         goto out;
     state_22:
@@ -340,7 +340,7 @@ int QCssScanner_Generated::lex()
             goto state_54;
         if (ch.unicode() == 95)
             goto state_53;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_53;
         goto out;
     state_25:
@@ -400,7 +400,7 @@ int QCssScanner_Generated::lex()
             goto state_32;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
             goto state_30;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_30;
         if (ch.unicode() >= 123)
             goto state_30;
@@ -440,7 +440,7 @@ int QCssScanner_Generated::lex()
             goto state_62;
         if (ch.unicode() == 95)
             goto state_61;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_61;
         goto out;
     state_34:
@@ -474,7 +474,7 @@ int QCssScanner_Generated::lex()
             goto state_37;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
             goto state_35;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_35;
         if (ch.unicode() >= 123)
             goto state_35;
@@ -523,7 +523,7 @@ int QCssScanner_Generated::lex()
             goto state_45;
         if (ch.unicode() == 95)
             goto state_46;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_46;
         goto out;
     state_41:
@@ -536,7 +536,7 @@ int QCssScanner_Generated::lex()
             goto state_45;
         if (ch.unicode() == 95)
             goto state_46;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_46;
         goto out;
     state_43:
@@ -560,7 +560,7 @@ int QCssScanner_Generated::lex()
             goto state_45;
         if (ch.unicode() == 95)
             goto state_46;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_46;
         goto out;
     state_45:
@@ -588,7 +588,7 @@ int QCssScanner_Generated::lex()
             goto state_72;
         if (ch.unicode() == 95)
             goto state_71;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_71;
         goto out;
     state_47:
@@ -602,7 +602,7 @@ int QCssScanner_Generated::lex()
             goto state_49;
         if (ch.unicode() == 95)
             goto state_50;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_50;
         goto out;
     state_49:
@@ -630,7 +630,7 @@ int QCssScanner_Generated::lex()
             goto state_76;
         if (ch.unicode() == 95)
             goto state_75;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_75;
         goto out;
     state_51:
@@ -647,7 +647,7 @@ int QCssScanner_Generated::lex()
             goto state_54;
         if (ch.unicode() == 95)
             goto state_53;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_53;
         goto out;
     state_52:
@@ -668,7 +668,7 @@ int QCssScanner_Generated::lex()
             goto state_54;
         if (ch.unicode() == 95)
             goto state_53;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_53;
         goto out;
     state_54:
@@ -702,7 +702,7 @@ int QCssScanner_Generated::lex()
             goto state_32;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
             goto state_30;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_30;
         if (ch.unicode() >= 123)
             goto state_30;
@@ -725,7 +725,7 @@ int QCssScanner_Generated::lex()
             goto state_32;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
             goto state_30;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_30;
         if (ch.unicode() >= 123)
             goto state_30;
@@ -748,7 +748,7 @@ int QCssScanner_Generated::lex()
             goto state_32;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
             goto state_30;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_30;
         if (ch.unicode() >= 123)
             goto state_30;
@@ -773,7 +773,7 @@ int QCssScanner_Generated::lex()
             goto state_32;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
             goto state_30;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_30;
         if (ch.unicode() >= 123)
             goto state_30;
@@ -790,7 +790,7 @@ int QCssScanner_Generated::lex()
             goto state_62;
         if (ch.unicode() == 95)
             goto state_61;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_61;
         goto out;
     state_62:
@@ -818,7 +818,7 @@ int QCssScanner_Generated::lex()
             goto state_62;
         if (ch.unicode() == 95)
             goto state_61;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_61;
         goto out;
     state_64:
@@ -839,7 +839,7 @@ int QCssScanner_Generated::lex()
             goto state_37;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
             goto state_35;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_35;
         if (ch.unicode() >= 123)
             goto state_35;
@@ -862,7 +862,7 @@ int QCssScanner_Generated::lex()
             goto state_37;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
             goto state_35;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_35;
         if (ch.unicode() >= 123)
             goto state_35;
@@ -885,7 +885,7 @@ int QCssScanner_Generated::lex()
             goto state_37;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
             goto state_35;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_35;
         if (ch.unicode() >= 123)
             goto state_35;
@@ -910,7 +910,7 @@ int QCssScanner_Generated::lex()
             goto state_37;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
             goto state_35;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_35;
         if (ch.unicode() >= 123)
             goto state_35;
@@ -929,7 +929,7 @@ int QCssScanner_Generated::lex()
             goto state_45;
         if (ch.unicode() == 95)
             goto state_46;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_46;
         goto out;
     state_70:
@@ -944,7 +944,7 @@ int QCssScanner_Generated::lex()
             goto state_72;
         if (ch.unicode() == 95)
             goto state_71;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_71;
         goto out;
     state_71:
@@ -959,7 +959,7 @@ int QCssScanner_Generated::lex()
             goto state_72;
         if (ch.unicode() == 95)
             goto state_71;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_71;
         goto out;
     state_72:
@@ -994,7 +994,7 @@ int QCssScanner_Generated::lex()
             goto state_76;
         if (ch.unicode() == 95)
             goto state_75;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_75;
         goto out;
     state_75:
@@ -1009,7 +1009,7 @@ int QCssScanner_Generated::lex()
             goto state_76;
         if (ch.unicode() == 95)
             goto state_75;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_75;
         goto out;
     state_76:
@@ -1039,7 +1039,7 @@ int QCssScanner_Generated::lex()
             goto state_54;
         if (ch.unicode() == 95)
             goto state_53;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_53;
         goto out;
     state_78:
@@ -1060,7 +1060,7 @@ int QCssScanner_Generated::lex()
             goto state_32;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
             goto state_30;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_30;
         if (ch.unicode() >= 123)
             goto state_30;
@@ -1077,7 +1077,7 @@ int QCssScanner_Generated::lex()
             goto state_62;
         if (ch.unicode() == 95)
             goto state_61;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_61;
         goto out;
     state_80:
@@ -1098,7 +1098,7 @@ int QCssScanner_Generated::lex()
             goto state_37;
         if (ch.unicode() >= 93 && ch.unicode() <= 96)
             goto state_35;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_35;
         if (ch.unicode() >= 123)
             goto state_35;
@@ -1115,7 +1115,7 @@ int QCssScanner_Generated::lex()
             goto state_72;
         if (ch.unicode() == 95)
             goto state_71;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_71;
         goto out;
     state_83:
@@ -1130,12 +1130,12 @@ int QCssScanner_Generated::lex()
             goto state_76;
         if (ch.unicode() == 95)
             goto state_75;
-        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256)
+        if ((ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256)
             goto state_75;
         goto out;
     found:
     lastAcceptingPos = pos;
-    
+
     out:
     if (lastAcceptingPos != -1) {
         lexemLength = lastAcceptingPos - lexemStart;

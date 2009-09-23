@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -610,6 +610,12 @@
     \value Saturday
     \value Sunday
 */
+
+/*!
+  \enum Qt::CoordinateSystem 
+  \value DeviceCoordinates
+  \value LogicalCoordinates
+ */
 
 /*!
     \enum Qt::CaseSensitivity
@@ -1215,6 +1221,8 @@
 
     \value WA_TouchPadAcceptSingleTouchEvents Allows touchpad single
     touch events to be sent to the widget. 
+
+    \value WA_DontUseStandardGestures Disables standard gestures on Qt widgets.
 
     \omitvalue WA_SetLayoutDirection
     \omitvalue WA_InputMethodTransparent
@@ -2422,12 +2430,30 @@
 */
 
 /*!
+    \enum Qt::AnchorPoint
+
+    Specifies a side of a layout item that can be anchored. This is used by
+    QGraphicsAnchorLayout.
+
+    \value AnchorLeft               The left side of a layout item.
+    \value AnchorHorizontalCenter   A "virtual" side that is centered between the left and the
+                                    right side of a layout item.
+    \value AnchorRight              The right side of a layout item.
+    \value AnchorTop                The top side of a layout item.
+    \value AnchorVerticalCenter     A "virtual" side that is centered between the top and the
+                                    bottom side of a layout item.
+    \value AnchorBottom             The bottom side of a layout item.
+
+    \sa QGraphicsAnchorLayout
+*/
+
+/*!
     \enum Qt::InputMethodHint
 
     \value ImhNone                   No hints.
     \value ImhHiddenText             Characters should be hidden, as is typically used when entering passwords.
                                      This is automatically set when setting QLineEdit::echoMode to \c Password.
-    \value ImhNumbersOnly            Only number input is allowed.
+    \value ImhDigitsOnly             Only number input is allowed.
     \value ImhUppercaseOnly          Only upper case letter input is allowed.
     \value ImhLowercaseOnly          Only lower case letter input is allowed.
     \value ImhNoAutoUppercase        The input method should not try to automatically switch to upper case
@@ -2437,6 +2463,9 @@
     \value ImhPreferLowercase        Lower case letters are preferred (but not required).
     \value ImhNoPredictiveText       Do not use predictive text (i.e. dictionary lookup) while typing.
     \value ImhDialableCharactersOnly Only characters suitable for phone dialling are allowed.
+
+    \omitvalue ImhFormattedNumbersOnly
+    \omitvalue ImhExclusiveInputMask
 
     \note If several flags ending with \c Only are ORed together, the resulting character set will
           consist of the union of the specified sets. For instance specifying \c ImhNumbersOnly and
@@ -2751,4 +2780,30 @@
     \value GestureFinished  A gesture has finished.
 
     \sa QGesture
+*/
+
+/*!
+    \enum Qt::NavigationMode
+    \since 4.6
+
+    This enum type describes the mode for moving focus.
+
+    \value NavigationModeNone                Only the touch screen is used.
+    \value NavigationModeKeypadTabOrder      Qt::Key_Up and Qt::Key_Down are used to change focus.
+    \value NavigationModeKeypadDirectional   Qt::Key_Up, Qt::Key_Down, Qt::Key_Left and Qt::Key_Right are used to change focus.
+    \value NavigationModeCursorAuto          The mouse cursor is used to change focus, 
+                                             it is displayed only on non touchscreen devices.
+                                             The keypad is used to implement a virtual cursor, unless
+                                             the device has an analog mouse type of input device (e.g. touchpad).
+                                             This is the recommended setting for an application such as a web browser that
+                                             needs pointer control on both touch and non-touch devices.
+    \value NavigationModeCursorForceVisible  The mouse cursor is used to change focus, 
+                                             it is displayed regardless of device type.
+                                             The keypad is used to implement a virtual cursor, unless
+                                             the device has an analog mouse type of input device (e.g. touchpad)
+
+    \note: in 4.6, cursor navigation is only implemented for Symbian OS.
+           On other platforms, it behaves as NavigationModeNone.
+    \sa QApplication::setNavigationMode()
+    \sa QApplication::navigationMode()
 */

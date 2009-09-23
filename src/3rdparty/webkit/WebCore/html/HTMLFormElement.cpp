@@ -47,6 +47,7 @@
 #include "MappedAttribute.h"
 #include "Page.h"
 #include "RenderTextControl.h"
+#include "ValidityState.h"
 #include <limits>
 #include <wtf/CurrentTime.h>
 #include <wtf/RandomNumber.h>
@@ -537,6 +538,16 @@ void HTMLFormElement::setName(const String &value)
     setAttribute(nameAttr, value);
 }
 
+bool HTMLFormElement::noValidate() const
+{
+    return !getAttribute(novalidateAttr).isNull();
+}
+
+void HTMLFormElement::setNoValidate(bool novalidate)
+{
+    setAttribute(novalidateAttr, novalidate ? "" : 0);
+}
+
 void HTMLFormElement::setAcceptCharset(const String &value)
 {
     setAttribute(accept_charsetAttr, value);
@@ -575,6 +586,31 @@ String HTMLFormElement::target() const
 void HTMLFormElement::setTarget(const String &value)
 {
     setAttribute(targetAttr, value);
+}
+
+HTMLFormControlElement* HTMLFormElement::defaultButton() const
+{
+    for (unsigned i = 0; i < formElements.size(); ++i) {
+        HTMLFormControlElement* control = formElements[i];
+        if (control->isSuccessfulSubmitButton())
+            return control;
+    }
+
+    return 0;
+}
+
+bool HTMLFormElement::checkValidity()
+{
+    // TODO: Check for unhandled invalid controls, see #27452 for tips.
+
+    bool hasOnlyValidControls = true;
+    for (unsigned i = 0; i < formElements.size(); ++i) {
+        HTMLFormControlElement* control = formElements[i];
+        if (!control->checkValidity())
+            hasOnlyValidControls = false;
+    }
+
+    return hasOnlyValidControls;
 }
 
 PassRefPtr<HTMLFormControlElement> HTMLFormElement::elementForAlias(const AtomicString& alias)

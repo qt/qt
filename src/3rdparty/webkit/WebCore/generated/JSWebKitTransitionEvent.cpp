@@ -73,6 +73,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSWebKitTransitionEventPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -87,6 +88,11 @@ const ClassInfo JSWebKitTransitionEventConstructor::s_info = { "WebKitTransition
 bool JSWebKitTransitionEventConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSWebKitTransitionEventConstructor, DOMObject>(exec, &JSWebKitTransitionEventConstructorTable, this, propertyName, slot);
+}
+
+bool JSWebKitTransitionEventConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSWebKitTransitionEventConstructor, DOMObject>(exec, &JSWebKitTransitionEventConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -116,6 +122,11 @@ bool JSWebKitTransitionEventPrototype::getOwnPropertySlot(ExecState* exec, const
     return getStaticFunctionSlot<JSObject>(exec, &JSWebKitTransitionEventPrototypeTable, this, propertyName, slot);
 }
 
+bool JSWebKitTransitionEventPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSWebKitTransitionEventPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSWebKitTransitionEvent::s_info = { "WebKitTransitionEvent", &JSEvent::s_info, &JSWebKitTransitionEventTable, 0 };
 
 JSWebKitTransitionEvent::JSWebKitTransitionEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebKitTransitionEvent> impl)
@@ -131,6 +142,11 @@ JSObject* JSWebKitTransitionEvent::createPrototype(ExecState* exec, JSGlobalObje
 bool JSWebKitTransitionEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSWebKitTransitionEvent, Base>(exec, &JSWebKitTransitionEventTable, this, propertyName, slot);
+}
+
+bool JSWebKitTransitionEvent::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSWebKitTransitionEvent, Base>(exec, &JSWebKitTransitionEventTable, this, propertyName, descriptor);
 }
 
 JSValue jsWebKitTransitionEventPropertyName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -162,7 +178,7 @@ JSValue JSWebKitTransitionEvent::getConstructor(ExecState* exec, JSGlobalObject*
 JSValue JSC_HOST_CALL jsWebKitTransitionEventPrototypeFunctionInitWebKitTransitionEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSWebKitTransitionEvent::s_info))
+    if (!thisValue.inherits(&JSWebKitTransitionEvent::s_info))
         return throwError(exec, TypeError);
     JSWebKitTransitionEvent* castedThisObj = static_cast<JSWebKitTransitionEvent*>(asObject(thisValue));
     WebKitTransitionEvent* imp = static_cast<WebKitTransitionEvent*>(castedThisObj->impl());

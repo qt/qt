@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -71,11 +71,11 @@ void JSDOMWindowShell::setWindow(PassRefPtr<DOMWindow> domWindow)
 // JSObject methods
 // ----
 
-void JSDOMWindowShell::mark()
+void JSDOMWindowShell::markChildren(MarkStack& markStack)
 {
-    Base::mark();
-    if (m_window && !m_window->marked())
-        m_window->mark();
+    Base::markChildren(markStack);
+    if (m_window)
+        markStack.append(m_window);
 }
 
 UString JSDOMWindowShell::className() const
@@ -86,6 +86,11 @@ UString JSDOMWindowShell::className() const
 bool JSDOMWindowShell::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return m_window->getOwnPropertySlot(exec, propertyName, slot);
+}
+
+bool JSDOMWindowShell::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return m_window->getOwnPropertyDescriptor(exec, propertyName, descriptor);
 }
 
 void JSDOMWindowShell::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -106,6 +111,11 @@ bool JSDOMWindowShell::deleteProperty(ExecState* exec, const Identifier& propert
 void JSDOMWindowShell::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
 {
     m_window->getPropertyNames(exec, propertyNames);
+}
+
+void JSDOMWindowShell::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+{
+    m_window->getOwnPropertyNames(exec, propertyNames);
 }
 
 bool JSDOMWindowShell::getPropertyAttributes(JSC::ExecState* exec, const Identifier& propertyName, unsigned& attributes) const

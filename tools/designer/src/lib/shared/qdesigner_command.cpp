@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Designer of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1113,7 +1113,7 @@ void AddToolBoxPageCommand::init(QToolBox *toolBox, InsertionMode mode)
     m_widget = new QDesignerWidget(formWindow(), m_toolBox);
     m_itemText = QApplication::translate("Command", "Page");
     m_itemIcon = QIcon();
-    m_widget->setObjectName(QApplication::translate("Command", "page"));
+    m_widget->setObjectName(QLatin1String("page"));
     formWindow()->ensureUniqueObjectName(m_widget);
 
     setText(QApplication::translate("Command", "Insert Page"));
@@ -1236,7 +1236,7 @@ void AddTabPageCommand::init(QTabWidget *tabWidget, InsertionMode mode)
     m_widget = new QDesignerWidget(formWindow(), m_tabWidget);
     m_itemText = QApplication::translate("Command", "Page");
     m_itemIcon = QIcon();
-    m_widget->setObjectName(QApplication::translate("Command", "tab"));
+    m_widget->setObjectName(QLatin1String("tab"));
     formWindow()->ensureUniqueObjectName(m_widget);
 
     setText(QApplication::translate("Command", "Insert Page"));
@@ -1422,7 +1422,7 @@ void AddStackedWidgetPageCommand::init(QStackedWidget *stackedWidget, InsertionM
     if (mode == InsertAfter)
         m_index++;
     m_widget = new QDesignerWidget(formWindow(), m_stackedWidget);
-    m_widget->setObjectName(QApplication::translate("Command", "page"));
+    m_widget->setObjectName(QLatin1String("page"));
     formWindow()->ensureUniqueObjectName(m_widget);
 
     setText(QApplication::translate("Command", "Insert Page"));

@@ -1,20 +1,22 @@
 QT = core
 TEMPLATE = subdirs
 
-# Directories
-!wince*:SUBDIRS += \
-           headers
+# These tests use host tools and therefore can't work for cross-compiled Qt.
+!cross_compile:SUBDIRS += \
+           headers \
+           bic \
+           compiler \
+           compilerwarnings \
+           linguist \
+           moc \
+           uic \
+           uic3
 
 SUBDIRS += \
-           bic \
            collections \
-           compile \
-           compilerwarnings \
            exceptionsafety \
-           linguist \
            mediaobject \
 #           mediaobject_wince_ds9 \   This is Windows CE only (we test the second phonon backend ds9 here)
-           moc \
            modeltest \
            networkselftest \
            q3accel \
@@ -72,6 +74,8 @@ SUBDIRS += \
            qabstractsocket \
            qabstractspinbox \
            qabstracttextdocumentlayout \
+           qabstractvideobuffer \
+           qabstractvideosurface \
            qaccessibility \
            qaction \
            qactiongroup \
@@ -135,9 +139,13 @@ SUBDIRS += \
            qgetputenv \
            qgl \
            qglobal \
+           qgraphicseffect \
+           qgraphicseffectsource \
            qgraphicsgridlayout \
            qgraphicsitem \
            qgraphicsitemanimation \
+           qgraphicsanchorlayout \
+           qgraphicsanchorlayout1 \
            qgraphicslayout \
            qgraphicslayoutitem \
            qgraphicslinearlayout \
@@ -194,6 +202,7 @@ SUBDIRS += \
            qmainwindow \
            qmake \
            qmap \
+           qmatrixnxn \
            qmdiarea \
            qmdisubwindow \
            qmenu \
@@ -240,7 +249,7 @@ SUBDIRS += \
            qprogressdialog \
            qpropertyanimation \
            qpushbutton \
-           qscopedpointer \
+           qquaternion \
            qqueue \
            qradiobutton \
            qreadlocker \
@@ -251,19 +260,7 @@ SUBDIRS += \
            qregion \
            qresourceengine \
            qringbuffer \
-           qscriptable \
-           qscriptclass \
-           qscriptcontext \
-           qscriptcontextinfo \
-           qscriptengine \
-           qscriptengineagent \
-           qscriptextqobject \
-           qscriptjstestsuite \
-           qscriptv8testsuite \
-           qscriptstring \
-           qscriptvalue \
-           qscriptvalueiterator \
-           qscriptenginedebugger \
+           qscopedpointer \
            qscrollarea \
            qsemaphore \
            qsharedpointer \
@@ -311,7 +308,10 @@ SUBDIRS += \
            qstatusbar \
            qstl \
            qstring \
-           qstringbuilder \
+           qstringbuilder1 \
+           qstringbuilder2 \
+           qstringbuilder3 \
+           qstringbuilder4 \
            qstringmatcher \
            qstringlist \
            qstringlistmodel \
@@ -373,6 +373,9 @@ SUBDIRS += \
            qvariant \
            qvarlengtharray \
            qvector \
+           qvideoframe \
+           qvideosurfaceformat \
+           qvectornd \
            qwaitcondition \
            qwidget \
            qwidgetaction \
@@ -393,8 +396,6 @@ SUBDIRS += \
            selftests \
            symbols \
            qrand \
-           uic \
-           uic3 \
            utf8
 
 contains(QT_CONFIG, OdfWriter):SUBDIRS += qzip qtextodfwriter
@@ -471,11 +472,24 @@ unix:!embedded:contains(QT_CONFIG, dbus):SUBDIRS += \
            qdbusthreading \
            qdbusxmlparser
 
+contains(QT_CONFIG, script): SUBDIRS += \
+           qscriptable \
+           qscriptclass \
+           qscriptcontext \
+           qscriptcontextinfo \
+           qscriptengine \
+           qscriptengineagent \
+           qscriptextqobject \
+           qscriptjstestsuite \
+           qscriptv8testsuite \
+           qscriptstring \
+           qscriptvalue \
+           qscriptvalueiterator \
+           qscriptenginedebugger
+
 contains(QT_CONFIG, webkit): SUBDIRS += \
            qwebframe \
            qwebpage \
            qwebhistoryinterface \
            qwebelement \
            qwebhistory
-
-SUBDIRS += math3d

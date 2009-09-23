@@ -31,4 +31,4 @@ sources.files = $$SOURCES $$RESOURCES *.pro images $$HEADERS
 sources.path = $$[QT_INSTALL_DEMOS]/spreadsheet
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/demos/demobase.pri)
+symbian: include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -573,6 +573,7 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
                                                          int start, int end)
 {
     Q_Q(QItemSelectionModel);
+    finalize();
 
     // update current index
     if (currentIndex.isValid() && parent == currentIndex.parent()
@@ -591,8 +592,8 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
     }
 
     QItemSelection deselected;
-    QItemSelection::iterator it = currentSelection.begin();
-    while (it != currentSelection.end()) {
+    QItemSelection::iterator it = ranges.begin();
+    while (it != ranges.end()) {
         if (it->topLeft().parent() != parent) {  // Check parents until reaching root or contained in range
             QModelIndex itParent = it->topLeft().parent();
             while (itParent.isValid() && itParent.parent() != parent)
@@ -600,24 +601,22 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
 
             if (parent.isValid() && start <= itParent.row() && itParent.row() <= end) {
                 deselected.append(*it);
-                it = currentSelection.erase(it);
+                it = ranges.erase(it);
             } else {
                 ++it;
             }
         } else if (start <= it->bottom() && it->bottom() <= end    // Full inclusion
                    && start <= it->top() && it->top() <= end) {
             deselected.append(*it);
-            it = currentSelection.erase(it);
+            it = ranges.erase(it);
         } else if (start <= it->top() && it->top() <= end) {      // Top intersection
             deselected.append(QItemSelectionRange(it->topLeft(), model->index(end, it->left(), it->parent())));
-            it = currentSelection.insert(it, QItemSelectionRange(model->index(end + 1, it->left(), it->parent()),
-                                                                 it->bottomRight()));
-            it = currentSelection.erase(++it);
+            *it = QItemSelectionRange(model->index(end + 1, it->left(), it->parent()), it->bottomRight());
+            ++it;
         } else if (start <= it->bottom() && it->bottom() <= end) {    // Bottom intersection
             deselected.append(QItemSelectionRange(model->index(start, it->right(), it->parent()), it->bottomRight()));
-            it = currentSelection.insert(it, QItemSelectionRange(it->topLeft(),
-                                                                 model->index(start - 1, it->right(), it->parent())));
-            it = currentSelection.erase(++it);
+            *it = QItemSelectionRange(it->topLeft(), model->index(start - 1, it->right(), it->parent()));
+            ++it;
         } else {
             if (it->top() < start && end < it->bottom())  // Middle intersection (do nothing)
                 deselected.append(QItemSelectionRange(model->index(start, it->right(), it->parent()),
@@ -626,7 +625,8 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
        }
     }
 
-    emit q->selectionChanged(QItemSelection(), deselected);
+    if (!deselected.isEmpty())
+        emit q->selectionChanged(QItemSelection(), deselected);
 }
 
 /*!
@@ -734,14 +734,15 @@ void QItemSelectionModelPrivate::_q_layoutAboutToBeChanged()
     if (ranges.isEmpty() && currentSelection.count() == 1) {
         QItemSelectionRange range = currentSelection.first();
         QModelIndex parent = range.parent();
-        if (range.top() == 0
+        tableRowCount = model->rowCount(parent);
+        tableColCount = model->columnCount(parent);
+        if (tableRowCount * tableColCount > 100
+            && range.top() == 0
             && range.left() == 0
-            && range.bottom() == model->rowCount(parent) - 1
-            && range.right() == model->columnCount(parent) - 1) {
+            && range.bottom() == tableRowCount - 1
+            && range.right() == tableColCount - 1) {
             tableSelected = true;
             tableParent = parent;
-            tableColCount = model->columnCount(parent);
-            tableRowCount = model->rowCount(parent);
             return;
         }
     }

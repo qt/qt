@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -146,13 +146,8 @@ void QGLContext::makeCurrent()
         return;
     }
 
-    if (d->eglContext->makeCurrent()) {
-        if (!qgl_context_storage.hasLocalData() && QThread::currentThread())
-            qgl_context_storage.setLocalData(new QGLThreadContext);
-        if (qgl_context_storage.hasLocalData())
-            qgl_context_storage.localData()->context = this;
-        currentCtx = this;
-    }
+    if (d->eglContext->makeCurrent())
+        QGLContextPrivate::setCurrentContext(this);
 }
 
 void QGLContext::doneCurrent()
@@ -161,9 +156,7 @@ void QGLContext::doneCurrent()
     if (d->eglContext)
         d->eglContext->doneCurrent();
 
-    if (qgl_context_storage.hasLocalData())
-        qgl_context_storage.localData()->context = 0;
-    currentCtx = 0;
+    QGLContextPrivate::setCurrentContext(0);
 }
 
 
@@ -305,7 +298,7 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
                 XRenderPictFormat *format;
                 format = XRenderFindVisualFormat(x11Info().display(), chosenVisualInfo->visual);
                 if (format->type == PictTypeDirect && format->direct.alphaMask) {
-                    qDebug("Using opaque X Visual ID (%d) provided by EGL", (int)vi.visualid);
+//                    qDebug("Using opaque X Visual ID (%d) provided by EGL", (int)vi.visualid);
                     vi = *chosenVisualInfo;
                 }
                 else {
@@ -316,7 +309,7 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
             } else
 #endif
             {
-                qDebug("Using opaque X Visual ID (%d) provided by EGL", (int)vi.visualid);
+//                qDebug("Using opaque X Visual ID (%d) provided by EGL", (int)vi.visualid);
                 vi = *chosenVisualInfo;
             }
             XFree(chosenVisualInfo);
@@ -349,7 +342,7 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
             format = XRenderFindVisualFormat(x11Info().display(), matchingVisuals[i].visual);
             if (format->type == PictTypeDirect && format->direct.alphaMask) {
                 vi = matchingVisuals[i];
-                qDebug("Using X Visual ID (%d) for ARGB visual as provided by XRender", (int)vi.visualid);
+//                qDebug("Using X Visual ID (%d) for ARGB visual as provided by XRender", (int)vi.visualid);
                 break;
             }
         }
@@ -372,8 +365,9 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
                 return;
             } else
                 qWarning("         - Falling back to X11 suggested depth (%d)", depth);
-        } else
-            qDebug("Using X Visual ID (%d) for EGL provided depth (%d)", (int)vi.visualid, depth);
+        }
+//        else
+//            qDebug("Using X Visual ID (%d) for EGL provided depth (%d)", (int)vi.visualid, depth);
 
         // Don't try to use ARGB now unless the visual is 32-bit - even then it might stil fail :-(
         if (useArgb)
@@ -470,7 +464,14 @@ void QGLExtensions::init()
     if (init_done)
         return;
     init_done = true;
+
+    // We need a context current to initialize the extensions.
+    QGLWidget tmpWidget;
+    tmpWidget.makeCurrent();
+
     init_extensions();
+
+    tmpWidget.doneCurrent();
 }
 
 // Re-creates the EGL surface if the window ID has changed or if force is true
@@ -490,9 +491,14 @@ void QGLWidgetPrivate::recreateEglSurface(bool force)
 }
 
 
-QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, const qint64 key, bool canInvert)
+QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, const qint64 key,
+                                                           QGLContext::BindOptions options)
 {
     Q_Q(QGLContext);
+
+    // The EGL texture_from_pixmap has no facility to invert the y coordinate
+    if (!(options & QGLContext::CanFlipNativePixmapBindOption))
+        return 0;
 
     Q_ASSERT(pd->classId() == QPixmapData::X11Class);
 
@@ -619,7 +625,7 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
         return 0;
     }
 
-    QGLTexture *texture = new QGLTexture(q, textureId, GL_TEXTURE_2D, canInvert, true);
+    QGLTexture *texture = new QGLTexture(q, textureId, GL_TEXTURE_2D, options);
     pixmapData->flags |= QX11PixmapData::InvertedWhenBoundToTexture;
 
     // We assume the cost of bound pixmaps is zero

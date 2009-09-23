@@ -7,6 +7,7 @@ sources.files = $$SOURCES *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtestlib/tutorial1
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
-
-symbian:TARGET.UID3 = 0xA000C60B
+symbian {
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    TARGET.UID3 = 0xA000C60B
+}

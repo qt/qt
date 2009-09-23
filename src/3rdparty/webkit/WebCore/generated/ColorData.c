@@ -1,6 +1,5 @@
-#include <string.h>// bogus
 /* ANSI-C code produced by gperf version 3.0.3 */
-/* Command-line: gperf -CDEot -L ANSI-C --key-positions='*' -N findColor -D -s 2  */
+/* Command-line: gperf -CDEot -L ANSI-C --includes --key-positions='*' -N findColor -D -s 2  */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
       && ('%' == 37) && ('&' == 38) && ('\'' == 39) && ('(' == 40) \
@@ -30,6 +29,7 @@
 #endif
 
 struct NamedColor { const char *name; int RGBValue; };
+#include <string.h>
 /* maximum key range = 1053, duplicates = 0 */
 
 #ifdef __GNUC__

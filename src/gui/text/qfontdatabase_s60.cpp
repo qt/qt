@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,9 +45,9 @@
 #include "qfontengine_s60_p.h"
 #include "qabstractfileengine.h"
 #include "qdesktopservices.h"
+#include "qpixmap_s60_p.h"
 #include "qt_s60_p.h"
 #include "qendian.h"
-#include <private/qwindowsurface_s60_p.h>
 #include <private/qcore_symbian_p.h>
 #if defined(QT_NO_FREETYPE)
 #include <OPENFONT.H>
@@ -66,7 +66,7 @@ QFileInfoList alternativeFilePaths(const QString &path, const QStringList &nameF
     foreach (const QFileInfo &drive, QDir::drives())
         driveStrings.append(drive.absolutePath());
     driveStrings.sort();
-    const QString zDriveString("Z:/");
+    const QString zDriveString(QLatin1String("Z:/"));
     driveStrings.removeAll(zDriveString);
     driveStrings.prepend(zDriveString);
 
@@ -126,8 +126,13 @@ QFontDatabaseS60StoreImplementation::QFontDatabaseS60StoreImplementation()
 }
 QFontDatabaseS60StoreImplementation::~QFontDatabaseS60StoreImplementation()
 {
-    qDeleteAll(m_extensions);
-    // TODO m_store cleanup removed because it was crashing
+    typedef QHash<QString, const QFontEngineS60Extensions *>::iterator iterator;
+    for (iterator p = m_extensions.begin(); p != m_extensions.end(); ++p) {
+        m_store->ReleaseFont((*p)->fontOwner());
+        delete *p;
+    }
+
+    delete m_store;
     m_heap->Close();
 }
 
@@ -140,7 +145,7 @@ const QFontEngineS60Extensions *QFontDatabaseS60StoreImplementation::extension(c
         const TInt err = m_store->GetNearestFontToDesignHeightInPixels(font, spec);
         Q_ASSERT(err == KErrNone && font);
         CBitmapFont *bitmapFont = static_cast<CBitmapFont*>(font);
-        m_extensions.insert(typeface, new QFontEngineS60Extensions(bitmapFont->OpenFont()));
+        m_extensions.insert(typeface, new QFontEngineS60Extensions(font, bitmapFont->OpenFont()));
     }
     return m_extensions.value(typeface);
 }
@@ -212,16 +217,19 @@ static void initializeDb()
     if (!db->s60Store)
         db->s60Store = new QFontDatabaseS60StoreImplementation;
 
-    QS60WindowSurface::unlockBitmapHeap();
+    QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
+    
     const int numTypeFaces = QS60Data::screenDevice()->NumTypefaces();
     const QFontDatabaseS60StoreImplementation *store = dynamic_cast<const QFontDatabaseS60StoreImplementation*>(db->s60Store);
     Q_ASSERT(store);
+    bool fontAdded = false;
     for (int i = 0; i < numTypeFaces; i++) {
         TTypefaceSupport typefaceSupport;
         QS60Data::screenDevice()->TypefaceSupport(typefaceSupport, i);
         CFont *font; // We have to get a font instance in order to know all the details
         TFontSpec fontSpec(typefaceSupport.iTypeface.iName, 11);
-        qt_symbian_throwIfError(QS60Data::screenDevice()->GetNearestFontInPixels(font, fontSpec));
+        if (QS60Data::screenDevice()->GetNearestFontInPixels(font, fontSpec) != KErrNone)
+            continue;
         if (font->TypeUid() == KCFbsFontUid) {
             TOpenFontFaceAttrib faceAttrib;
             const CFbsFont *cfbsFont = dynamic_cast<const CFbsFont *>(font);
@@ -259,10 +267,16 @@ static void initializeDb()
                 determineWritingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
             foreach (const QFontDatabase::WritingSystem system, writingSystems)
                 family->writingSystems[system] = QtFontFamily::Supported;
+
+            fontAdded = true;
         }
         QS60Data::screenDevice()->ReleaseFont(font);
     }
-    QS60WindowSurface::lockBitmapHeap();
+
+    Q_ASSERT(fontAdded);
+    
+	lock.relock();
+
 #else // defined(QT_NO_FREETYPE)
     QDir dir(QDesktopServices::storageLocation(QDesktopServices::FontsLocation));
     dir.setNameFilters(QStringList() << QLatin1String("*.ttf")

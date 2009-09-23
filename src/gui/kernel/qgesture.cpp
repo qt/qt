@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -131,38 +131,37 @@ private:
     about the gesture is contained in the signal sender object.
 */
 
-/*! \fn void QGesture::cancelled()
+/*! \fn void QGesture::canceled()
 
-    The signal is emitted when the gesture is cancelled, for example the reset()
-    function is called while the gesture was in the process of emitting a
-    triggered() signal.  Extended information about the gesture is contained in
-    the sender object.
+  The signal is emitted when the gesture is canceled, for example the
+  reset() function is called while the gesture was in the process of
+  emitting a triggered() signal.  Extended information about the
+  gesture is contained in the sender object.
 */
-
 
 /*!
-    Creates a new gesture handler object and marks it as a child of \a parent.
+  Creates a new gesture handler object and marks it as a child of \a
+  parent.  \a gestureTarget is the object that the gesture will watch
+  for events.
 
-    The \a parent object is also the default event source for the gesture,
-    meaning that the gesture installs itself as an event filter for the \a
-    parent.
+  The \a parent object is also the default event source for the
+  gesture, meaning that the gesture installs itself as an event filter
+  for the \a parent.
 
-    \sa setGraphicsItem()
+  \sa setGraphicsItem()
 */
-QGesture::QGesture(QObject *parent)
+QGesture::QGesture(QObject *gestureTarget, QObject *parent)
     : QObject(*new QGesturePrivate, parent)
 {
-    if (parent)
-        parent->installEventFilter(this);
+    setGestureTarget(gestureTarget);
 }
 
 /*! \internal
  */
-QGesture::QGesture(QGesturePrivate &dd, QObject *parent)
+QGesture::QGesture(QGesturePrivate &dd, QObject *gestureTarget, QObject *parent)
     : QObject(dd, parent)
 {
-    if (parent)
-        parent->installEventFilter(this);
+    setGestureTarget(gestureTarget);
 }
 
 /*!
@@ -170,6 +169,33 @@ QGesture::QGesture(QGesturePrivate &dd, QObject *parent)
 */
 QGesture::~QGesture()
 {
+}
+
+/*!
+    \property QGesture::gestureTarget
+
+    Gesture target is the object that the gesture will watch for events.
+    Typically this means that the gesture installs an event filter on the
+    target object.
+*/
+void QGesture::setGestureTarget(QObject *object)
+{
+    d_func()->setupGestureTarget(object);
+}
+
+QObject* QGesture::gestureTarget() const
+{
+    return d_func()->gestureTarget;
+}
+
+void QGesturePrivate::setupGestureTarget(QObject *object)
+{
+    Q_Q(QGesture);
+    if (gestureTarget)
+        gestureTarget->removeEventFilter(q);
+    if (object)
+        object->installEventFilter(q);
+    gestureTarget = object;
 }
 
 /*! \internal
@@ -204,7 +230,7 @@ Qt::GestureState QGesture::state() const
   \a state, and it should be called after all the internal properties have been
   initialized.
 
-  \sa started(), triggered(), finished(), cancelled()
+  \sa started(), triggered(), finished(), canceled()
  */
 void QGesture::updateState(Qt::GestureState state)
 {
@@ -215,21 +241,24 @@ void QGesture::updateState(Qt::GestureState state)
         return;
     }
     const Qt::GestureState oldState = d->state;
-    d->state = state;
     if (state != Qt::NoGesture && oldState > state) {
         // comparing the state as ints: state should only be changed from
         // started to (optionally) updated and to finished.
+        d->state = state;
         qWarning("QGesture::updateState: incorrect new state");
         return;
     }
-    if (oldState == Qt::NoGesture)
+    if (oldState == Qt::NoGesture) {
+        d->state = Qt::GestureStarted;
         emit started();
+    }
+    d->state = state;
     if (state == Qt::GestureUpdated)
         emit triggered();
     else if (state == Qt::GestureFinished)
         emit finished();
     else if (state == Qt::NoGesture)
-        emit cancelled();
+        emit canceled();
 
     if (state == Qt::GestureFinished) {
         // gesture is finished, so we reset the internal state.
@@ -272,7 +301,7 @@ QGraphicsItem* QGesture::graphicsItem() const
     Resets the internal state of the gesture. This function might be called by
     the filterEvent() implementation in a derived class, or by the user to
     cancel a gesture.  The base class implementation calls
-    updateState(Qt::NoGesture) which emits the cancelled()
+    updateState(Qt::NoGesture) which emits the canceled()
     signal if the state() of the gesture indicated it was active.
 */
 void QGesture::reset()

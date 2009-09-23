@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenVG module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,6 +52,7 @@
 #include <QtGui/private/qtextureglyphcache_p.h>
 #include <QtGui/private/qtextengine_p.h>
 #include <QtGui/private/qfontengine_p.h>
+#include <QtGui/private/qpainterpath_p.h>
 #include <QDebug>
 #include <QSet>
 
@@ -131,6 +132,7 @@ public:
     void fill(VGPath path, const QBrush& brush, VGint rule = VG_EVEN_ODD);
     VGPath vectorPathToVGPath(const QVectorPath& path);
     VGPath painterPathToVGPath(const QPainterPath& path);
+    VGPath roundedRectPath(const QRectF &rect, qreal xRadius, qreal yRadius, Qt::SizeMode mode);
     VGPaintType setBrush
         (VGPaint paint, const QBrush& brush, VGMatrixMode mode,
          VGPaintType prevPaintType);
@@ -172,6 +174,7 @@ public:
 #if !defined(QVG_NO_MODIFY_PATH)
     VGPath rectPath;        // Cached path for quick drawing of rectangles.
     VGPath linePath;        // Cached path for quick drawing of lines.
+    VGPath roundRectPath;   // Cached path for quick drawing of rounded rects.
 #endif
 
     QTransform transform;   // Currently active transform.
@@ -210,6 +213,11 @@ public:
     QVGFontCache fontCache;
     QVGFontEngineCleaner *fontEngineCleaner;
 #endif
+
+    QScopedPointer<QPixmapFilter> convolutionFilter;
+    QScopedPointer<QPixmapFilter> colorizeFilter;
+    QScopedPointer<QPixmapFilter> dropShadowFilter;
+    QScopedPointer<QPixmapFilter> blurFilter;
 
     // Ensure that the path transform is properly set in the VG context
     // before we perform a vgDrawPath() operation.
@@ -336,6 +344,7 @@ void QVGPaintEnginePrivate::init()
 #if !defined(QVG_NO_MODIFY_PATH)
     rectPath = 0;
     linePath = 0;
+    roundRectPath = 0;
 #endif
 
     simpleTransform = true;
@@ -448,6 +457,8 @@ void QVGPaintEnginePrivate::destroy()
         vgDestroyPath(rectPath);
     if (linePath)
         vgDestroyPath(linePath);
+    if (roundRectPath)
+        vgDestroyPath(roundRectPath);
 #endif
 
 #if !defined(QVG_NO_DRAW_GLYPHS)
@@ -874,6 +885,83 @@ VGPath QVGPaintEnginePrivate::painterPathToVGPath(const QPainterPath& path)
     return vgpath;
 }
 
+VGPath QVGPaintEnginePrivate::roundedRectPath(const QRectF &rect, qreal xRadius, qreal yRadius, Qt::SizeMode mode)
+{
+    static VGubyte roundedrect_types[] = {
+        VG_MOVE_TO_ABS,
+        VG_LINE_TO_ABS,
+        VG_CUBIC_TO_ABS,
+        VG_LINE_TO_ABS,
+        VG_CUBIC_TO_ABS,
+        VG_LINE_TO_ABS,
+        VG_CUBIC_TO_ABS,
+        VG_LINE_TO_ABS,
+        VG_CUBIC_TO_ABS,
+        VG_CLOSE_PATH
+    };
+
+    qreal x1 = rect.left();
+    qreal x2 = rect.right();
+    qreal y1 = rect.top();
+    qreal y2 = rect.bottom();
+
+    if (mode == Qt::RelativeSize) {
+        xRadius = xRadius * rect.width() / 200.;
+        yRadius = yRadius * rect.height() / 200.;
+    }
+
+    xRadius = qMin(xRadius, rect.width() / 2);
+    yRadius = qMin(yRadius, rect.height() / 2);
+
+    VGfloat pts[] = {
+        x1 + xRadius, y1,                   // MoveTo
+        x2 - xRadius, y1,                   // LineTo
+        x2 - (1 - KAPPA) * xRadius, y1,     // CurveTo
+        x2, y1 + (1 - KAPPA) * yRadius,
+        x2, y1 + yRadius,
+        x2, y2 - yRadius,                   // LineTo
+        x2, y2 - (1 - KAPPA) * yRadius,     // CurveTo
+        x2 - (1 - KAPPA) * xRadius, y2,
+        x2 - xRadius, y2,
+        x1 + xRadius, y2,                   // LineTo
+        x1 + (1 - KAPPA) * xRadius, y2,     // CurveTo
+        x1, y2 - (1 - KAPPA) * yRadius,
+        x1, y2 - yRadius,
+        x1, y1 + yRadius,                   // LineTo
+        x1, y1 + KAPPA * yRadius,           // CurveTo
+        x1 + (1 - KAPPA) * xRadius, y1,
+        x1 + xRadius, y1
+    };
+
+#if !defined(QVG_NO_MODIFY_PATH)
+    VGPath vgpath = roundRectPath;
+    if (!vgpath) {
+        vgpath = vgCreatePath(VG_PATH_FORMAT_STANDARD,
+                              VG_PATH_DATATYPE_F,
+                              1.0f,        // scale
+                              0.0f,        // bias
+                              10,          // segmentCapacityHint
+                              17 * 2,      // coordCapacityHint
+                              VG_PATH_CAPABILITY_ALL);
+        vgAppendPathData(vgpath, 10, roundedrect_types, pts);
+        roundRectPath = vgpath;
+    } else {
+        vgModifyPathCoords(vgpath, 0, 9, pts);
+    }
+#else
+    VGPath vgpath = vgCreatePath(VG_PATH_FORMAT_STANDARD,
+                                 VG_PATH_DATATYPE_F,
+                                 1.0f,        // scale
+                                 0.0f,        // bias
+                                 10,          // segmentCapacityHint
+                                 17 * 2,      // coordCapacityHint
+                                 VG_PATH_CAPABILITY_ALL);
+    vgAppendPathData(vgpath, 10, roundedrect_types, pts);
+#endif
+
+    return vgpath;
+}
+
 extern QImage qt_imageForBrush(int style, bool invert);
 
 static QImage colorizeBitmap(const QImage &image, const QColor &color)
@@ -1091,6 +1179,7 @@ VGPaintType QVGPaintEnginePrivate::setBrush
         // The brush is a texture specified by a QPixmap/QImage.
         QPixmapData *pd = brush.texture().pixmapData();
         VGImage vgImg;
+        bool deref = false;
         if (pd->pixelType() == QPixmapData::BitmapType) {
             // Colorize bitmaps using the brush color and opacity.
             QColor color = brush.color();
@@ -1098,15 +1187,21 @@ VGPaintType QVGPaintEnginePrivate::setBrush
                 color.setAlphaF(color.alphaF() * opacity);
             QImage image = colorizeBitmap(*(pd->buffer()), color);
             vgImg = toVGImage(image);
+            deref = true;
         } else if (opacity == 1.0) {
             if (pd->classId() == QPixmapData::OpenVGClass) {
                 QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
                 vgImg = vgpd->toVGImage();
             } else {
                 vgImg = toVGImage(*(pd->buffer()));
+                deref = true;
             }
+        } else if (pd->classId() == QPixmapData::OpenVGClass) {
+            QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
+            vgImg = vgpd->toVGImage(opacity);
         } else {
             vgImg = toVGImageWithOpacity(*(pd->buffer()), opacity);
+            deref = true;
         }
         if (vgImg == VG_INVALID_HANDLE)
             break;
@@ -1114,7 +1209,8 @@ VGPaintType QVGPaintEnginePrivate::setBrush
             vgSetParameteri(paint, VG_PAINT_TYPE, VG_PAINT_TYPE_PATTERN);
         vgSetParameteri(paint, VG_PAINT_PATTERN_TILING_MODE, VG_TILE_REPEAT);
         vgPaintPattern(paint, vgImg);
-        vgDestroyImage(vgImg); // Will stay valid until pattern is destroyed.
+        if (deref)
+            vgDestroyImage(vgImg); // Will be valid until pattern is destroyed.
         return VG_PAINT_TYPE_PATTERN;
     }
 
@@ -1323,7 +1419,7 @@ QPainterState *QVGPaintEngine::createState(QPainterState *orig) const
         return new QVGPainterState();
     } else {
         Q_D(const QVGPaintEngine);
-        QVGPaintEnginePrivate *d2 = const_cast<QVGPaintEnginePrivate*>(d.data());
+        QVGPaintEnginePrivate *d2 = const_cast<QVGPaintEnginePrivate*>(d);
         QVGPainterState *origState = static_cast<QVGPainterState *>(orig);
         origState->savedDirty = d2->dirty;
         d2->dirty = 0;
@@ -1996,7 +2092,7 @@ void QVGPaintEngine::updateScissor()
             if (region.isEmpty())
                 region = d->maskRect;
             else
-                region.intersect(d->maskRect);
+                region = region.intersect(d->maskRect);
             if (isDefaultClipRegion(region)) {
                 // The scissor region is the entire drawing surface,
                 // so there is no point doing any scissoring.
@@ -2317,6 +2413,21 @@ void QVGPaintEngine::fillRect(const QRectF &rect, const QColor &color)
 #else
     QPaintEngineEx::fillRect(rect, QBrush(color));
 #endif
+}
+
+void QVGPaintEngine::drawRoundedRect(const QRectF &rect, qreal xrad, qreal yrad, Qt::SizeMode mode)
+{
+    Q_D(QVGPaintEngine);
+    if (d->simpleTransform) {
+        QVGPainterState *s = state();
+        VGPath vgpath = d->roundedRectPath(rect, xrad, yrad, mode);
+        d->draw(vgpath, s->pen, s->brush);
+#if defined(QVG_NO_MODIFY_PATH)
+        vgDestroyPath(vgpath);
+#endif
+    } else {
+        QPaintEngineEx::drawRoundedRect(rect, xrad, yrad, mode);
+    }
 }
 
 void QVGPaintEngine::drawRects(const QRect *rects, int rectCount)
@@ -3064,57 +3175,72 @@ void QVGPaintEngine::setState(QPainterState *s)
     }
 }
 
-// Called from QPaintEngine::syncState() to force a state flush.
-// This should be called before and after raw VG operations.
-void QVGPaintEngine::updateState(const QPaintEngineState &state)
+void QVGPaintEngine::beginNativePainting()
 {
-    Q_UNUSED(state);
     Q_D(QVGPaintEngine);
 
-    if (!(d->rawVG)) {
-        // About to enter raw VG mode: flush pending changes and make
-        // sure that all matrices are set to the current transformation.
-        QVGPainterState *s = this->state();
-        d->ensurePen(s->pen);
-        d->ensureBrush(s->brush);
-        d->ensurePathTransform();
-        d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, d->imageTransform);
+    // About to enter raw VG mode: flush pending changes and make
+    // sure that all matrices are set to the current transformation.
+    QVGPainterState *s = this->state();
+    d->ensurePen(s->pen);
+    d->ensureBrush(s->brush);
+    d->ensurePathTransform();
+    d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, d->imageTransform);
 #if !defined(QVG_NO_DRAW_GLYPHS)
-        d->setTransform(VG_MATRIX_GLYPH_USER_TO_SURFACE, d->pathTransform);
+    d->setTransform(VG_MATRIX_GLYPH_USER_TO_SURFACE, d->pathTransform);
 #endif
-        d->rawVG = true;
-    } else {
-        // Exiting raw VG mode: force all state values to be
-        // explicitly set on the VG engine to undo any changes
-        // that were made by the raw VG function calls.
-        QPaintEngine::DirtyFlags dirty = d->dirty;
-        d->clearModes();
-        d->forcePenChange = true;
-        d->forceBrushChange = true;
-        d->penType = (VGPaintType)0;
-        d->brushType = (VGPaintType)0;
-        d->clearColor = QColor();
-        d->fillPaint = d->brushPaint;
-        restoreState(QPaintEngine::AllDirty);
-        d->dirty = dirty;
-        d->rawVG = false;
-        vgSetPaint(d->penPaint, VG_STROKE_PATH);
-        vgSetPaint(d->brushPaint, VG_FILL_PATH);
-    }
+    d->rawVG = true;
 }
 
-QPixmapFilter *QVGPaintEngine::createPixmapFilter(int type) const
+void QVGPaintEngine::endNativePainting()
+{
+    Q_D(QVGPaintEngine);
+    // Exiting raw VG mode: force all state values to be
+    // explicitly set on the VG engine to undo any changes
+    // that were made by the raw VG function calls.
+    QPaintEngine::DirtyFlags dirty = d->dirty;
+    d->clearModes();
+    d->forcePenChange = true;
+    d->forceBrushChange = true;
+    d->penType = (VGPaintType)0;
+    d->brushType = (VGPaintType)0;
+    d->clearColor = QColor();
+    d->fillPaint = d->brushPaint;
+    restoreState(QPaintEngine::AllDirty);
+    d->dirty = dirty;
+    d->rawVG = false;
+    vgSetPaint(d->penPaint, VG_STROKE_PATH);
+    vgSetPaint(d->brushPaint, VG_FILL_PATH);
+}
+
+QPixmapFilter *QVGPaintEngine::pixmapFilter(int type, const QPixmapFilter *prototype)
 {
 #if !defined(QT_SHIVAVG)
-    if (type == QPixmapFilter::ConvolutionFilter)
-        return new QVGPixmapConvolutionFilter;
-    else if (type == QPixmapFilter::ColorizeFilter)
-        return new QVGPixmapColorizeFilter;
-    else if (type == QPixmapFilter::DropShadowFilter)
-        return new QVGPixmapDropShadowFilter;
-    else
+    Q_D(QVGPaintEngine);
+    switch (type) {
+        case QPixmapFilter::ConvolutionFilter:
+            if (!d->convolutionFilter)
+                d->convolutionFilter.reset(new QVGPixmapConvolutionFilter);
+            return d->convolutionFilter.data();
+        case QPixmapFilter::ColorizeFilter:
+            // Strength parameter does not work with current implementation.
+            if ((static_cast<const QPixmapColorizeFilter *>(prototype))->strength() != 1.0f)
+                break;
+            if (!d->colorizeFilter)
+                d->colorizeFilter.reset(new QVGPixmapColorizeFilter);
+            return d->colorizeFilter.data();
+        case QPixmapFilter::DropShadowFilter:
+            if (!d->dropShadowFilter)
+                d->dropShadowFilter.reset(new QVGPixmapDropShadowFilter);
+            return d->dropShadowFilter.data();
+        case QPixmapFilter::BlurFilter:
+            if (!d->blurFilter)
+                d->blurFilter.reset(new QVGPixmapBlurFilter);
+            return d->blurFilter.data();
+        default: break;
+    }
 #endif
-        return QPaintEngineEx::createPixmapFilter(type);
+    return QPaintEngineEx::pixmapFilter(type, prototype);
 }
 
 void QVGPaintEngine::restoreState(QPaintEngine::DirtyFlags dirty)

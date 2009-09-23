@@ -1,77 +1,79 @@
 # Qt tools module
 
 HEADERS +=  \
-	tools/qalgorithms.h \
-	tools/qbitarray.h \
-	tools/qbytearray.h \
-	tools/qbytearraymatcher.h \
+        tools/qalgorithms.h \
+        tools/qbitarray.h \
+        tools/qbytearray.h \
+        tools/qbytearraymatcher.h \
         tools/qbytedata_p.h \
-	tools/qcache.h \
-	tools/qchar.h \
-	tools/qcontainerfwd.h \
-	tools/qcryptographichash.h \
-	tools/qdatetime.h \
-	tools/qdatetime_p.h \
+        tools/qcache.h \
+        tools/qchar.h \
+        tools/qcontainerfwd.h \
+        tools/qcryptographichash.h \
+        tools/qdatetime.h \
+        tools/qdatetime_p.h \
         tools/qeasingcurve.h \
-	tools/qhash.h \
+        tools/qhash.h \
         tools/qline.h \
-	tools/qlinkedlist.h \
-	tools/qlist.h \
-	tools/qlocale.h \
-	tools/qlocale_p.h \
-	tools/qlocale_data_p.h \
-	tools/qmap.h \
+        tools/qlinkedlist.h \
+        tools/qlist.h \
+        tools/qlocale.h \
+        tools/qlocale_p.h \
+        tools/qlocale_data_p.h \
+        tools/qmap.h \
+        tools/qmargins.h \
         tools/qcontiguouscache.h \
         tools/qpodlist_p.h \
         tools/qpoint.h \
-	tools/qqueue.h \
+        tools/qqueue.h \
         tools/qrect.h \
-	tools/qregexp.h \
-	tools/qringbuffer_p.h \
-	tools/qshareddata.h \
+        tools/qregexp.h \
+        tools/qringbuffer_p.h \
+        tools/qshareddata.h \
         tools/qsharedpointer.h \
         tools/qsharedpointer_impl.h \
-	tools/qset.h \
+        tools/qset.h \
         tools/qsize.h \
-	tools/qstack.h \
-	tools/qstring.h \
-	tools/qstringbuilder.h \
-	tools/qstringlist.h \
-	tools/qstringmatcher.h \
-	tools/qtextboundaryfinder.h \
-	tools/qtimeline.h \
-	tools/qunicodetables_p.h \
-	tools/qvarlengtharray.h \
-	tools/qvector.h \
+        tools/qstack.h \
+        tools/qstring.h \
+        tools/qstringbuilder.h \
+        tools/qstringlist.h \
+        tools/qstringmatcher.h \
+        tools/qtextboundaryfinder.h \
+        tools/qtimeline.h \
+        tools/qunicodetables_p.h \
+        tools/qvarlengtharray.h \
+        tools/qvector.h \
         tools/qscopedpointer.h
 
 
 SOURCES += \
-	tools/qbitarray.cpp \
-	tools/qbytearray.cpp \
-	tools/qbytearraymatcher.cpp \
-	tools/qcryptographichash.cpp \
-	tools/qdatetime.cpp \
+        tools/qbitarray.cpp \
+        tools/qbytearray.cpp \
+        tools/qbytearraymatcher.cpp \
+        tools/qcryptographichash.cpp \
+        tools/qdatetime.cpp \
         tools/qeasingcurve.cpp \
-	tools/qhash.cpp \
+        tools/qhash.cpp \
         tools/qline.cpp \
-	tools/qlinkedlist.cpp \
-	tools/qlist.cpp \
-	tools/qlocale.cpp \
+        tools/qlinkedlist.cpp \
+        tools/qlist.cpp \
+        tools/qlocale.cpp \
         tools/qpoint.cpp \
-	tools/qmap.cpp \
-	tools/qcontiguouscache.cpp \
+        tools/qmap.cpp \
+        tools/qmargins.cpp \
+        tools/qcontiguouscache.cpp \
         tools/qrect.cpp \
-	tools/qregexp.cpp \
-	tools/qshareddata.cpp \
-	tools/qsharedpointer.cpp \
+        tools/qregexp.cpp \
+        tools/qshareddata.cpp \
+        tools/qsharedpointer.cpp \
         tools/qsize.cpp \
-	tools/qstring.cpp \
-	tools/qstringbuilder.cpp \
-	tools/qstringlist.cpp \
-	tools/qtextboundaryfinder.cpp \
-	tools/qtimeline.cpp \
-	tools/qvector.cpp \
+        tools/qstring.cpp \
+        tools/qstringbuilder.cpp \
+        tools/qstringlist.cpp \
+        tools/qtextboundaryfinder.cpp \
+        tools/qtimeline.cpp \
+        tools/qvector.cpp \
         tools/qvsnprintf.cpp
 
 symbian:SOURCES+=tools/qlocale_symbian.cpp
@@ -81,17 +83,17 @@ contains(QT_CONFIG, zlib) {
    wince*: DEFINES += NO_ERRNO_H
    INCLUDEPATH += ../3rdparty/zlib
    SOURCES+= \
-	../3rdparty/zlib/adler32.c \
-	../3rdparty/zlib/compress.c \
-	../3rdparty/zlib/crc32.c \
-	../3rdparty/zlib/deflate.c \
-	../3rdparty/zlib/gzio.c \
-	../3rdparty/zlib/inffast.c \
-	../3rdparty/zlib/inflate.c \
-	../3rdparty/zlib/inftrees.c \
-	../3rdparty/zlib/trees.c \
-	../3rdparty/zlib/uncompr.c \
-	../3rdparty/zlib/zutil.c
+        ../3rdparty/zlib/adler32.c \
+        ../3rdparty/zlib/compress.c \
+        ../3rdparty/zlib/crc32.c \
+        ../3rdparty/zlib/deflate.c \
+        ../3rdparty/zlib/gzio.c \
+        ../3rdparty/zlib/inffast.c \
+        ../3rdparty/zlib/inflate.c \
+        ../3rdparty/zlib/inftrees.c \
+        ../3rdparty/zlib/trees.c \
+        ../3rdparty/zlib/uncompr.c \
+        ../3rdparty/zlib/zutil.c
 } else:!contains(QT_CONFIG, no-zlib) {
    unix:LIBS_PRIVATE += -lz
 #  win32:LIBS += libz.lib

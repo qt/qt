@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'calculator.ui'
 **
-** Created: Thu Jul 10 09:47:34 2008
-**      by: Qt User Interface Compiler version 4.5.0
+** Created: Fri Sep 4 10:17:12 2009
+**      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -188,7 +188,6 @@ public:
         powerButton->setText(QApplication::translate("Calculator", "x^2", 0, QApplication::UnicodeUTF8));
         reciprocalButton->setText(QApplication::translate("Calculator", "1/x", 0, QApplication::UnicodeUTF8));
         equalButton->setText(QApplication::translate("Calculator", "=", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(Calculator);
     } // retranslateUi
 
 };

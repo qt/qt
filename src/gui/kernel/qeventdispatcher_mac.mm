@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -500,7 +500,7 @@ static bool IsMouseOrKeyEvent( NSEvent* event )
 static inline void qt_mac_waitForMoreEvents()
 {
 #ifndef QT_MAC_USE_COCOA
-    while(CFRunLoopRunInMode(kCFRunLoopDefaultMode, 1.0e20, true) == kCFRunLoopRunTimedOut);
+    while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 1.0e20, true) == kCFRunLoopRunTimedOut) ;
 #else
     // If no event exist in the cocoa event que, wait
     // (and free up cpu time) until at least one event occur.
@@ -909,6 +909,21 @@ QEventDispatcherMac::QEventDispatcherMac(QObject *parent)
                                                  QEventDispatcherMacPrivate::waitingObserverCallback,
                                                  &observerContext);
     CFRunLoopAddObserver(mainRunLoop(), d->waitingObserver, kCFRunLoopCommonModes);
+
+    /* The first cycle in the loop adds the source and the events of the source
+       are not processed.
+       We use an observer to process the posted events for the first
+       execution of the loop. */
+    CFRunLoopObserverContext firstTimeObserverContext;
+    bzero(&firstTimeObserverContext, sizeof(CFRunLoopObserverContext));
+    firstTimeObserverContext.info = d;
+    d->firstTimeObserver = CFRunLoopObserverCreate(kCFAllocatorDefault,
+                                                   kCFRunLoopEntry,
+                                                   /* repeats = */ false,
+                                                   0,
+                                                   QEventDispatcherMacPrivate::firstLoopEntry,
+                                                   &firstTimeObserverContext);
+    CFRunLoopAddObserver(mainRunLoop(), d->firstTimeObserver, kCFRunLoopCommonModes);
 }
 
 void QEventDispatcherMacPrivate::waitingObserverCallback(CFRunLoopObserverRef,
@@ -925,9 +940,8 @@ Boolean QEventDispatcherMacPrivate::postedEventSourceEqualCallback(const void *i
     return info1 == info2;
 }
 
-void QEventDispatcherMacPrivate::postedEventsSourcePerformCallback(void *info)
+inline static void processPostedEvents(QEventDispatcherMacPrivate *const d, const bool blockSendPostedEvents)
 {
-    QEventDispatcherMacPrivate *d = static_cast<QEventDispatcherMacPrivate *>(info);
     if (blockSendPostedEvents) {
         CFRunLoopSourceSignal(d->postedEventsSource);
     } else {
@@ -936,6 +950,20 @@ void QEventDispatcherMacPrivate::postedEventsSourcePerformCallback(void *info)
             QApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
         }
     }
+}
+
+void QEventDispatcherMacPrivate::firstLoopEntry(CFRunLoopObserverRef ref,
+                                                CFRunLoopActivity activity,
+                                                void *info)
+{
+    Q_UNUSED(ref);
+    Q_UNUSED(activity);
+    processPostedEvents(static_cast<QEventDispatcherMacPrivate *>(info), blockSendPostedEvents);
+}
+
+void QEventDispatcherMacPrivate::postedEventsSourcePerformCallback(void *info)
+{
+    processPostedEvents(static_cast<QEventDispatcherMacPrivate *>(info), blockSendPostedEvents);
 }
 
 void QEventDispatcherMac::interrupt()
@@ -996,6 +1024,9 @@ QEventDispatcherMac::~QEventDispatcherMac()
 
     CFRunLoopObserverInvalidate(d->waitingObserver);
     CFRelease(d->waitingObserver);
+
+    CFRunLoopObserverInvalidate(d->firstTimeObserver);
+    CFRelease(d->firstTimeObserver);
 }
 
 /////////////////////////////////////////////////////////////////////////////

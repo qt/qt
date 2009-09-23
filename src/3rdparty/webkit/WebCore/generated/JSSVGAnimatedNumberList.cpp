@@ -94,6 +94,11 @@ bool JSSVGAnimatedNumberList::getOwnPropertySlot(ExecState* exec, const Identifi
     return getStaticValueSlot<JSSVGAnimatedNumberList, Base>(exec, &JSSVGAnimatedNumberListTable, this, propertyName, slot);
 }
 
+bool JSSVGAnimatedNumberList::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGAnimatedNumberList, Base>(exec, &JSSVGAnimatedNumberListTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGAnimatedNumberListBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGAnimatedNumberList* castedThis = static_cast<JSSVGAnimatedNumberList*>(asObject(slot.slotBase()));
@@ -116,7 +121,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAnim
 }
 SVGAnimatedNumberList* toSVGAnimatedNumberList(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGAnimatedNumberList::s_info) ? static_cast<JSSVGAnimatedNumberList*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGAnimatedNumberList::s_info) ? static_cast<JSSVGAnimatedNumberList*>(asObject(value))->impl() : 0;
 }
 
 }

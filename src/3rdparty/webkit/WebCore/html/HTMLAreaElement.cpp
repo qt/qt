@@ -34,9 +34,8 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLAreaElement::HTMLAreaElement(const QualifiedName& tagName, Document* document)
+inline HTMLAreaElement::HTMLAreaElement(const QualifiedName& tagName, Document* document)
     : HTMLAnchorElement(tagName, document)
-    , m_coords(0)
     , m_coordsLen(0)
     , m_lastSize(-1, -1)
     , m_shape(Unknown)
@@ -44,9 +43,9 @@ HTMLAreaElement::HTMLAreaElement(const QualifiedName& tagName, Document* documen
     ASSERT(hasTagName(areaTag));
 }
 
-HTMLAreaElement::~HTMLAreaElement()
+PassRefPtr<HTMLAreaElement> HTMLAreaElement::create(const QualifiedName& tagName, Document* document)
 {
-    delete [] m_coords;
+    return adoptRef(new HTMLAreaElement(tagName, document));
 }
 
 void HTMLAreaElement::parseMappedAttribute(MappedAttribute* attr)
@@ -61,8 +60,7 @@ void HTMLAreaElement::parseMappedAttribute(MappedAttribute* attr)
         else if (equalIgnoringCase(attr->value(), "rect"))
             m_shape = Rect;
     } else if (attr->name() == coordsAttr) {
-        delete [] m_coords;
-        m_coords = newCoordsArray(attr->value().string(), m_coordsLen);
+        m_coords.set(newCoordsArray(attr->value().string(), m_coordsLen));
     } else if (attr->name() == altAttr || attr->name() == accesskeyAttr) {
         // Do nothing.
     } else
@@ -164,9 +162,10 @@ void HTMLAreaElement::setNoHref(bool noHref)
     setAttribute(nohrefAttr, noHref ? "" : 0);
 }
 
-bool HTMLAreaElement::isFocusable() const
+bool HTMLAreaElement::supportsFocus() const
 {
-    return HTMLElement::isFocusable();
+    // Skip HTMLAnchorElements isLink() check.
+    return HTMLElement::supportsFocus();
 }
 
 String HTMLAreaElement::target() const

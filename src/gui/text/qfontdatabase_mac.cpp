@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -308,6 +308,21 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
                 if (familyRef) {
                     fontRef = ATSFontFindFromName(QCFString(db->families[k]->name), kATSOptionFlagsDefault);
                     goto FamilyFound;
+                } else {
+#if defined(QT_MAC_USE_COCOA)
+                    // ATS and CT disagrees on what the family name should be,
+                    // use CT to look up the font if ATS fails.
+                    QCFString familyName = QString::fromAscii(family_name);
+                    QCFType<CTFontRef> CTfontRef = CTFontCreateWithName(familyName, 12, NULL);
+                    QCFType<CTFontDescriptorRef> fontDescriptor = CTFontCopyFontDescriptor(CTfontRef);
+                    QCFString displayName = (CFStringRef)CTFontDescriptorCopyAttribute(fontDescriptor, kCTFontDisplayNameAttribute);
+
+                    familyRef = ATSFontFamilyFindFromName(displayName, kATSOptionFlagsDefault);
+                    if (familyRef) {
+                        fontRef = ATSFontFindFromName(displayName, kATSOptionFlagsDefault);
+                        goto FamilyFound;
+                    }
+#endif
                 }
             }
         }
@@ -456,11 +471,27 @@ static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
         return;
 
     fnt->families.clear();
+#if defined(QT_MAC_USE_COCOA)
+    // Make sure that the family name set on the font matches what
+    // kCTFontFamilyNameAttribute returns in initializeDb().
+    // So far the best solution seems find the installed font
+    // using CoreText and get the family name from it.
+    // (ATSFontFamilyGetName appears to be the correct API, but also
+    // returns the font display name.)
+    for(int i = 0; i < containedFonts.size(); ++i) {
+        QCFString fontPostScriptName;
+        ATSFontGetPostScriptName(containedFonts[i], kATSOptionFlagsDefault, &fontPostScriptName);
+        QCFType<CTFontDescriptorRef> font = CTFontDescriptorCreateWithNameAndSize(fontPostScriptName, 14);
+        QCFString familyName = (CFStringRef)CTFontDescriptorCopyAttribute(font, kCTFontFamilyNameAttribute);
+        fnt->families.append(familyName);
+    }
+#else
     for(int i = 0; i < containedFonts.size(); ++i) {
         QCFString family;
         ATSFontGetName(containedFonts[i], kATSOptionFlagsDefault, &family);
         fnt->families.append(family);
     }
+#endif
 
     fnt->handle = handle;
 }

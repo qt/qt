@@ -54,6 +54,7 @@ bin/lconvert*
 bin/moc*
 bin/pixeltool*
 bin/qmake*
+bin/qdoc3*
 bin/qt3to4*
 bin/qtdemo*
 bin/rcc*
@@ -173,6 +174,7 @@ doc/qch
 doc-build
 .rcc
 .pch
+.metadata
 
 # Symbian build system generated files
 # ---------------------
@@ -197,6 +199,8 @@ plugin_commonU.def
 # ---------------------
 .project
 .cproject
+.make.cache
+*.d
 
 qtc-debugging-helper
 src/corelib/lib

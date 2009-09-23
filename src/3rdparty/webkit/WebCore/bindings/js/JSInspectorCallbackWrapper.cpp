@@ -26,6 +26,8 @@
 #include "config.h"
 #include "JSInspectorCallbackWrapper.h"
 
+#if ENABLE(INSPECTOR)
+
 #include "JSInspectedObjectWrapper.h"
 #include <wtf/StdLibExtras.h>
 
@@ -73,7 +75,7 @@ JSValue JSInspectorCallbackWrapper::wrap(ExecState* unwrappedExec, JSValue unwra
         static Structure* structure = leakInspectorCallbackWrapperStructure();
         return new (unwrappedExec) JSInspectorCallbackWrapper(unwrappedExec, unwrappedObject, structure);
     }
-    return new (unwrappedExec) JSInspectorCallbackWrapper(unwrappedExec, unwrappedObject, asObject(wrap(unwrappedExec, prototype))->inheritorID());
+    return new (unwrappedExec) JSInspectorCallbackWrapper(unwrappedExec, unwrappedObject, createStructure(wrap(unwrappedExec, prototype)));
 }
 
 JSInspectorCallbackWrapper::JSInspectorCallbackWrapper(ExecState* unwrappedExec, JSObject* unwrappedObject, PassRefPtr<Structure> structure)
@@ -105,3 +107,5 @@ JSValue JSInspectorCallbackWrapper::prepareIncomingValue(ExecState* unwrappedExe
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(INSPECTOR)

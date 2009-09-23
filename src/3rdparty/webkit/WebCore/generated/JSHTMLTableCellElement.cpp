@@ -85,6 +85,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLTableCellElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -99,6 +100,11 @@ const ClassInfo JSHTMLTableCellElementConstructor::s_info = { "HTMLTableCellElem
 bool JSHTMLTableCellElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLTableCellElementConstructor, DOMObject>(exec, &JSHTMLTableCellElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLTableCellElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLTableCellElementConstructor, DOMObject>(exec, &JSHTMLTableCellElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -137,6 +143,11 @@ JSObject* JSHTMLTableCellElement::createPrototype(ExecState* exec, JSGlobalObjec
 bool JSHTMLTableCellElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLTableCellElement, Base>(exec, &JSHTMLTableCellElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLTableCellElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLTableCellElement, Base>(exec, &JSHTMLTableCellElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLTableCellElementCellIndex(ExecState* exec, const Identifier&, const PropertySlot& slot)

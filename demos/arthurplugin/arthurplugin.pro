@@ -44,7 +44,7 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.jpg *.png
 sources.path = $$[QT_INSTALL_DEMOS]/arthurplugin
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/demos/demobase.pri)
+symbian: include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
 
 win32-msvc* {
 	QMAKE_CFLAGS += /Zm500

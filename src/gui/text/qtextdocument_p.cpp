@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -63,10 +63,10 @@ QT_BEGIN_NAMESPACE
 // The VxWorks DIAB compiler crashes when initializing the anonymouse union with { a7 }
 #if !defined(Q_CC_DIAB)
 #  define QT_INIT_TEXTUNDOCOMMAND(c, a1, a2, a3, a4, a5, a6, a7, a8) \
-          QTextUndoCommand c = { a1, a2, a3, a4, a5, a6, { a7 }, a8 }
+          QTextUndoCommand c = { a1, a2, 0, 0, a3, a4, a5, a6, { a7 }, a8 }
 #else
 #  define QT_INIT_TEXTUNDOCOMMAND(c, a1, a2, a3, a4, a5, a6, a7, a8) \
-          QTextUndoCommand c = { a1, a2, a3, a4, a5, a6 }; c.blockFormat = a7; c.revision = a8
+          QTextUndoCommand c = { a1, a2, 0, 0, a3, a4, a5, a6 }; c.blockFormat = a7; c.revision = a8
 #endif
 
 /*
@@ -421,7 +421,7 @@ int QTextDocumentPrivate::insertBlock(const QChar &blockSeparator,
     int b = blocks.findNode(pos);
     QTextBlockData *B = blocks.fragment(b);
 
-    QT_INIT_TEXTUNDOCOMMAND(c, QTextUndoCommand::BlockInserted, editBlock != 0,
+    QT_INIT_TEXTUNDOCOMMAND(c, QTextUndoCommand::BlockInserted, (editBlock != 0),
                             op, charFormat, strPos, pos, blockFormat,
                             B->revision);
 
@@ -462,7 +462,7 @@ void QTextDocumentPrivate::insert(int pos, int strPos, int strLength, int format
         int b = blocks.findNode(pos);
         QTextBlockData *B = blocks.fragment(b);
 
-        QT_INIT_TEXTUNDOCOMMAND(c, QTextUndoCommand::Inserted, editBlock != 0,
+        QT_INIT_TEXTUNDOCOMMAND(c, QTextUndoCommand::Inserted, (editBlock != 0),
                                 QTextUndoCommand::MoveCursor, format, strPos, pos, strLength,
                                 B->revision);
         appendUndoItem(c);
@@ -621,10 +621,10 @@ void QTextDocumentPrivate::move(int pos, int to, int length, QTextUndoCommand::O
         int blockRevision = B->revision;
 
         QTextFragmentData *X = fragments.fragment(x);
-        QT_INIT_TEXTUNDOCOMMAND(c, QTextUndoCommand::Removed, editBlock != 0,
+        QT_INIT_TEXTUNDOCOMMAND(c, QTextUndoCommand::Removed, (editBlock != 0),
                                 op, X->format, X->stringPosition, key, X->size_array[0],
                                 blockRevision);
-        QT_INIT_TEXTUNDOCOMMAND(cInsert, QTextUndoCommand::Inserted, editBlock != 0,
+        QT_INIT_TEXTUNDOCOMMAND(cInsert, QTextUndoCommand::Inserted, (editBlock != 0),
                                 op, X->format, X->stringPosition, dstKey, X->size_array[0],
                                 blockRevision);
 
@@ -967,14 +967,18 @@ int QTextDocumentPrivate::undoRedo(bool undo)
             B->revision = c.revision;
         }
 
-        if (undo) {
-            if (undoState == 0 || !undoStack[undoState-1].block)
-                break;
-        } else {
+        if (!undo)
             ++undoState;
-            if (undoState == undoStack.size() || !undoStack[undoState-1].block)
-                break;
-        }
+
+        bool inBlock = (
+                undoState > 0
+                && undoState < undoStack.size()
+                && undoStack[undoState].block_part
+                && undoStack[undoState-1].block_part
+                && !undoStack[undoState-1].block_end
+                );
+        if (!inBlock)
+            break;
     }
     undoEnabled = true;
     int editPos = -1;
@@ -999,7 +1003,8 @@ void QTextDocumentPrivate::appendUndoItem(QAbstractUndoItem *item)
 
     QTextUndoCommand c;
     c.command = QTextUndoCommand::Custom;
-    c.block = editBlock != 0;
+    c.block_part = editBlock != 0;
+    c.block_end = 0;
     c.operation = QTextUndoCommand::MoveCursor;
     c.format = 0;
     c.strPos = 0;
@@ -1020,9 +1025,10 @@ void QTextDocumentPrivate::appendUndoItem(const QTextUndoCommand &c)
 
     if (!undoStack.isEmpty() && modified) {
         QTextUndoCommand &last = undoStack[undoState - 1];
-        if ( (last.block && c.block) // part of the same block => can merge
-            || (!c.block && !last.block  // two single undo items => can merge
-                && (undoState < 2 || !undoStack[undoState-2].block))) {
+
+        if ( (last.block_part && c.block_part && !last.block_end) // part of the same block => can merge
+            || (!c.block_part && !last.block_part)) {  // two single undo items => can merge
+
             if (last.tryMerge(c))
                 return;
         }
@@ -1034,7 +1040,7 @@ void QTextDocumentPrivate::appendUndoItem(const QTextUndoCommand &c)
     emitUndoAvailable(true);
     emitRedoAvailable(false);
 
-    if (!c.block)
+    if (!c.block_part)
         emit document()->undoCommandAdded();
 }
 
@@ -1100,7 +1106,7 @@ void QTextDocumentPrivate::joinPreviousEditBlock()
     beginEditBlock();
 
     if (undoEnabled && undoState)
-        undoStack[undoState - 1].block = true;
+        undoStack[undoState - 1].block_end = false;
 }
 
 void QTextDocumentPrivate::endEditBlock()
@@ -1109,10 +1115,10 @@ void QTextDocumentPrivate::endEditBlock()
         return;
 
     if (undoEnabled && undoState > 0) {
-        const bool wasBlocking = undoStack[undoState - 1].block;
-        undoStack[undoState - 1].block = false;
-        if (wasBlocking)
+        if (undoStack[undoState - 1].block_part) {
+            undoStack[undoState - 1].block_end = true;
             emit document()->undoCommandAdded();
+        }
     }
 
     finishEdit();
@@ -1313,7 +1319,7 @@ void QTextDocumentPrivate::changeObjectFormat(QTextObject *obj, int format)
     if (f)
         documentChange(f->firstPosition(), f->lastPosition() - f->firstPosition());
 
-    QT_INIT_TEXTUNDOCOMMAND(c, QTextUndoCommand::GroupFormatChange, editBlock != 0, QTextUndoCommand::MoveCursor, oldFormatIndex,
+    QT_INIT_TEXTUNDOCOMMAND(c, QTextUndoCommand::GroupFormatChange, (editBlock != 0), QTextUndoCommand::MoveCursor, oldFormatIndex,
                             0, 0, obj->d_func()->objectIndex, 0);
     appendUndoItem(c);
 
@@ -1535,7 +1541,7 @@ void QTextDocumentPrivate::deleteObject(QTextObject *object)
 void QTextDocumentPrivate::contentsChanged()
 {
     Q_Q(QTextDocument);
-    if (editBlock)
+    if (editBlock || inEdit)
         return;
 
     bool m = undoEnabled ? (modifiedState != undoState) : true;

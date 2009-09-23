@@ -4,6 +4,7 @@
 # Copyright (C) 2006, 2007 Samuel Weinig <sam@webkit.org>
 # Copyright (C) 2006 Alexey Proskuryakov <ap@webkit.org>
 # Copyright (C) 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+# Copyright (C) 2009 Cameron McCormack <cam@mcc.id.au>
 # 
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Library General Public
@@ -26,6 +27,7 @@ use File::stat;
 
 my $module = "";
 my $outputDir = "";
+my $writeDependencies = 0;
 
 my @headerContentHeader = ();
 my @headerContent = ();
@@ -34,6 +36,7 @@ my %headerIncludes = ();
 my @implContentHeader = ();
 my @implContent = ();
 my %implIncludes = ();
+my @depsContent = ();
 
 # Default .h template
 my $headerTemplate = << "EOF";
@@ -66,6 +69,9 @@ sub new
 
     $codeGenerator = shift;
     $outputDir = shift;
+    shift; # $useLayerOnTop
+    shift; # $preprocessor
+    $writeDependencies = shift;
 
     bless($reference, $object);
     return $reference;
@@ -100,9 +106,16 @@ sub GenerateInterface
     # Open files for writing
     my $headerFileName = "$outputDir/JS$name.h";
     my $implFileName = "$outputDir/JS$name.cpp";
+    my $depsFileName = "$outputDir/JS$name.dep";
+
+    # Remove old dependency file.
+    unlink($depsFileName);
 
     open($IMPL, ">$implFileName") || die "Couldn't open file $implFileName";
     open($HEADER, ">$headerFileName") || die "Couldn't open file $headerFileName";
+    if (@depsContent) {
+        open($DEPS, ">$depsFileName") || die "Couldn't open file $depsFileName";
+    }
 }
 
 # Params: 'idlDocument' struct
@@ -300,11 +313,11 @@ sub GenerateGetOwnPropertySlotBody
         &$manualLookupGetterGeneration();
     }
 
-    if ($dataNode->extendedAttributes->{"HasIndexGetter"} || $dataNode->extendedAttributes->{"HasCustomIndexGetter"}) {
+    if ($dataNode->extendedAttributes->{"HasIndexGetter"} || $dataNode->extendedAttributes->{"HasCustomIndexGetter"} || $dataNode->extendedAttributes->{"HasNumericIndexGetter"}) {
         push(@getOwnPropertySlotImpl, "    bool ok;\n");
         push(@getOwnPropertySlotImpl, "    unsigned index = propertyName.toUInt32(&ok, false);\n");
         push(@getOwnPropertySlotImpl, "    if (ok && index < static_cast<$implClassName*>(impl())->length()) {\n");
-        if ($dataNode->extendedAttributes->{"HasCustomIndexGetter"}) {
+        if ($dataNode->extendedAttributes->{"HasCustomIndexGetter"} || $dataNode->extendedAttributes->{"HasNumericIndexGetter"}) {
             push(@getOwnPropertySlotImpl, "        slot.setValue(getByIndex(exec, index));\n");
         } else {
             push(@getOwnPropertySlotImpl, "        slot.setCustomIndex(this, index, indexGetter);\n");
@@ -348,6 +361,99 @@ sub GenerateGetOwnPropertySlotBody
     return @getOwnPropertySlotImpl;
 }
 
+sub GenerateGetOwnPropertyDescriptorBody
+{
+    my ($dataNode, $interfaceName, $className, $implClassName, $hasAttributes, $inlined) = @_;
+    
+    my $namespaceMaybe = ($inlined ? "JSC::" : "");
+    
+    my @getOwnPropertyDescriptorImpl = ();
+    
+    if ($interfaceName eq "NamedNodeMap" or $interfaceName eq "HTMLCollection") {
+        push(@getOwnPropertyDescriptorImpl, "    ${namespaceMaybe}JSValue proto = prototype();\n");
+        push(@getOwnPropertyDescriptorImpl, "    if (proto.isObject() && static_cast<${namespaceMaybe}JSObject*>(asObject(proto))->hasProperty(exec, propertyName))\n");
+        push(@getOwnPropertyDescriptorImpl, "        return false;\n\n");
+    }
+    
+    my $manualLookupGetterGeneration = sub {
+        my $requiresManualLookup = $dataNode->extendedAttributes->{"HasIndexGetter"} || $dataNode->extendedAttributes->{"HasNameGetter"};
+        if ($requiresManualLookup) {
+            push(@getOwnPropertyDescriptorImpl, "    const ${namespaceMaybe}HashEntry* entry = ${className}Table.entry(exec, propertyName);\n");
+            push(@getOwnPropertyDescriptorImpl, "    if (entry) {\n");
+            push(@getOwnPropertyDescriptorImpl, "        PropertySlot slot;\n");
+            push(@getOwnPropertyDescriptorImpl, "        slot.setCustom(this, entry->propertyGetter());\n");
+            push(@getOwnPropertyDescriptorImpl, "        descriptor.setDescriptor(slot.getValue(exec, propertyName), entry->attributes());\n");
+            push(@getOwnPropertyDescriptorImpl, "        return true;\n");
+            push(@getOwnPropertyDescriptorImpl, "    }\n");
+        }
+    };
+    
+    if (!$dataNode->extendedAttributes->{"HasOverridingNameGetter"}) {
+        &$manualLookupGetterGeneration();
+    }
+    
+    if ($dataNode->extendedAttributes->{"HasIndexGetter"} || $dataNode->extendedAttributes->{"HasCustomIndexGetter"} || $dataNode->extendedAttributes->{"HasNumericIndexGetter"}) {
+        push(@getOwnPropertyDescriptorImpl, "    bool ok;\n");
+        push(@getOwnPropertyDescriptorImpl, "    unsigned index = propertyName.toUInt32(&ok, false);\n");
+        push(@getOwnPropertyDescriptorImpl, "    if (ok && index < static_cast<$implClassName*>(impl())->length()) {\n");
+        if ($dataNode->extendedAttributes->{"HasCustomIndexGetter"} || $dataNode->extendedAttributes->{"HasNumericIndexGetter"}) {
+            # Assume that if there's a setter, the index will be writable
+            if ($dataNode->extendedAttributes->{"HasIndexSetter"} || $dataNode->extendedAttributes->{"HasCustomIndexSetter"}) {
+                push(@getOwnPropertyDescriptorImpl, "        descriptor.setDescriptor(getByIndex(exec, index), ${namespaceMaybe}DontDelete);\n");
+            } else {
+                push(@getOwnPropertyDescriptorImpl, "        descriptor.setDescriptor(getByIndex(exec, index), ${namespaceMaybe}DontDelete | ${namespaceMaybe}ReadOnly);\n");
+            }
+        } else {
+            push(@getOwnPropertyDescriptorImpl, "        ${namespaceMaybe}PropertySlot slot;\n");
+            push(@getOwnPropertyDescriptorImpl, "        slot.setCustomIndex(this, index, indexGetter);\n");
+            # Assume that if there's a setter, the index will be writable
+            if ($dataNode->extendedAttributes->{"HasIndexSetter"} || $dataNode->extendedAttributes->{"HasCustomIndexSetter"}) {
+                push(@getOwnPropertyDescriptorImpl, "        descriptor.setDescriptor(slot.getValue(exec, propertyName), ${namespaceMaybe}DontDelete);\n");
+            } else {
+                push(@getOwnPropertyDescriptorImpl, "        descriptor.setDescriptor(slot.getValue(exec, propertyName), ${namespaceMaybe}DontDelete | ${namespaceMaybe}ReadOnly);\n");
+            }
+        }
+        push(@getOwnPropertyDescriptorImpl, "        return true;\n");
+        push(@getOwnPropertyDescriptorImpl, "    }\n");
+    }
+    
+    if ($dataNode->extendedAttributes->{"HasNameGetter"} || $dataNode->extendedAttributes->{"HasOverridingNameGetter"}) {
+        push(@getOwnPropertyDescriptorImpl, "    if (canGetItemsForName(exec, static_cast<$implClassName*>(impl()), propertyName)) {\n");
+        push(@getOwnPropertyDescriptorImpl, "        ${namespaceMaybe}PropertySlot slot;\n");
+        push(@getOwnPropertyDescriptorImpl, "        slot.setCustom(this, nameGetter);\n");
+        push(@getOwnPropertyDescriptorImpl, "        descriptor.setDescriptor(slot.getValue(exec, propertyName), ReadOnly | DontDelete | DontEnum);\n");
+        push(@getOwnPropertyDescriptorImpl, "        return true;\n");
+        push(@getOwnPropertyDescriptorImpl, "    }\n");
+        if ($inlined) {
+            $headerIncludes{"AtomicString.h"} = 1;
+        } else {
+            $implIncludes{"AtomicString.h"} = 1;
+        }
+    }
+    
+    if ($dataNode->extendedAttributes->{"HasOverridingNameGetter"}) {
+        &$manualLookupGetterGeneration();
+    }
+    
+    if ($dataNode->extendedAttributes->{"DelegatingGetOwnPropertySlot"}) {
+        push(@getOwnPropertyDescriptorImpl, "    if (getOwnPropertyDescriptorDelegate(exec, propertyName, descriptor))\n");
+        push(@getOwnPropertyDescriptorImpl, "        return true;\n");
+    }
+    
+    if ($hasAttributes) {
+        if ($inlined) {
+            die "Cannot inline if NoStaticTables is set." if ($dataNode->extendedAttributes->{"NoStaticTables"});
+            push(@getOwnPropertyDescriptorImpl, "    return ${namespaceMaybe}getStaticValueDescriptor<$className, Base>(exec, s_info.staticPropHashTable, this, propertyName, descriptor);\n");
+        } else {
+            push(@getOwnPropertyDescriptorImpl, "    return ${namespaceMaybe}getStaticValueDescriptor<$className, Base>(exec, " . hashTableAccessor($dataNode->extendedAttributes->{"NoStaticTables"}, $className) . ", this, propertyName, descriptor);\n");
+        }
+    } else {
+        push(@getOwnPropertyDescriptorImpl, "    return Base::getOwnPropertyDescriptor(exec, propertyName, descriptor);\n");
+    }
+    
+    return @getOwnPropertyDescriptorImpl;
+}
+
 sub GenerateHeader
 {
     my $object = shift;
@@ -356,11 +462,12 @@ sub GenerateHeader
     my $interfaceName = $dataNode->name;
     my $className = "JS$interfaceName";
     my $implClassName = $interfaceName;
+    my @ancestorInterfaceNames = ();
 
     # We only support multiple parents with SVG (for now).
     if (@{$dataNode->parents} > 1) {
         die "A class can't have more than one parent" unless $interfaceName =~ /SVG/;
-        $codeGenerator->AddMethodsConstantsAndAttributesFromParentClasses($dataNode);
+        $codeGenerator->AddMethodsConstantsAndAttributesFromParentClasses($dataNode, \@ancestorInterfaceNames);
     }
 
     my $hasLegacyParent = $dataNode->extendedAttributes->{"LegacyParent"};
@@ -452,6 +559,7 @@ sub GenerateHeader
                  || $dataNode->extendedAttributes->{"GenerateConstructor"} 
                  || $dataNode->extendedAttributes->{"HasIndexGetter"}
                  || $dataNode->extendedAttributes->{"HasCustomIndexGetter"}
+                 || $dataNode->extendedAttributes->{"HasNumericIndexGetter"}
                  || $dataNode->extendedAttributes->{"CustomGetOwnPropertySlot"}
                  || $dataNode->extendedAttributes->{"DelegatingGetOwnPropertySlot"}
                  || $dataNode->extendedAttributes->{"HasNameGetter"}
@@ -460,8 +568,10 @@ sub GenerateHeader
     # Getters
     if ($hasGetter) {
         push(@headerContent, "    virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);\n");
-        push(@headerContent, "    virtual bool getOwnPropertySlot(JSC::ExecState*, unsigned propertyName, JSC::PropertySlot&);\n") if ($dataNode->extendedAttributes->{"HasIndexGetter"} || $dataNode->extendedAttributes->{"HasCustomIndexGetter"}) && !$dataNode->extendedAttributes->{"HasOverridingNameGetter"};
+        push(@headerContent, "    virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);\n");
+        push(@headerContent, "    virtual bool getOwnPropertySlot(JSC::ExecState*, unsigned propertyName, JSC::PropertySlot&);\n") if ($dataNode->extendedAttributes->{"HasIndexGetter"} || $dataNode->extendedAttributes->{"HasCustomIndexGetter"} || $dataNode->extendedAttributes->{"HasNumericIndexGetter"}) && !$dataNode->extendedAttributes->{"HasOverridingNameGetter"};
         push(@headerContent, "    bool getOwnPropertySlotDelegate(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);\n") if $dataNode->extendedAttributes->{"DelegatingGetOwnPropertySlot"};
+        push(@headerContent, "    bool getOwnPropertyDescriptorDelegate(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);\n") if $dataNode->extendedAttributes->{"DelegatingGetOwnPropertySlot"};
     }
 
     # Check if we have any writable properties
@@ -504,7 +614,7 @@ sub GenerateHeader
     }
 
     # Custom mark function
-    push(@headerContent, "    virtual void mark();\n\n") if $dataNode->extendedAttributes->{"CustomMarkFunction"};
+    push(@headerContent, "    virtual void markChildren(JSC::MarkStack&);\n\n") if $dataNode->extendedAttributes->{"CustomMarkFunction"};
 
     # Custom pushEventHandlerScope function
     push(@headerContent, "    virtual void pushEventHandlerScope(JSC::ExecState*, JSC::ScopeChain&) const;\n\n") if $dataNode->extendedAttributes->{"CustomPushEventHandlerScope"};
@@ -515,8 +625,10 @@ sub GenerateHeader
     # Custom deleteProperty function
     push(@headerContent, "    virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier&);\n") if $dataNode->extendedAttributes->{"CustomDeleteProperty"};
 
-    # Custom getPropertyNames function
-    push(@headerContent, "    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);\n") if ($dataNode->extendedAttributes->{"CustomGetPropertyNames"} || $dataNode->extendedAttributes->{"HasIndexGetter"} || $dataNode->extendedAttributes->{"HasCustomIndexGetter"});
+    # Custom getPropertyNames function exists on DOMWindow
+    push(@headerContent, "    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);\n") if $interfaceName eq "DOMWindow";
+    # Custom getOwnPropertyNames function
+    push(@headerContent, "    virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);\n") if ($dataNode->extendedAttributes->{"CustomGetPropertyNames"} || $dataNode->extendedAttributes->{"HasIndexGetter"} || $dataNode->extendedAttributes->{"HasCustomIndexGetter"} || $dataNode->extendedAttributes->{"HasNumericIndexGetter"});    
 
     # Custom getPropertyAttributes function
     push(@headerContent, "    virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&, unsigned& attributes) const;\n") if $dataNode->extendedAttributes->{"CustomGetPropertyAttributes"};
@@ -599,7 +711,7 @@ sub GenerateHeader
     if ($dataNode->extendedAttributes->{"HasIndexGetter"}) {
         push(@headerContent, "    static JSC::JSValue indexGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);\n");
     }
-    if ($dataNode->extendedAttributes->{"HasCustomIndexGetter"}) {
+    if ($dataNode->extendedAttributes->{"HasCustomIndexGetter"} || $dataNode->extendedAttributes->{"HasNumericIndexGetter"}) {
         push(@headerContent, "    JSC::JSValue getByIndex(JSC::ExecState*, unsigned index);\n");
     }
     
@@ -620,6 +732,10 @@ sub GenerateHeader
         push(@headerContent, "ALWAYS_INLINE bool ${className}::getOwnPropertySlot(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::PropertySlot& slot)\n");
         push(@headerContent, "{\n");
         push(@headerContent, GenerateGetOwnPropertySlotBody($dataNode, $interfaceName, $className, $implClassName, $numAttributes > 0, 1));
+        push(@headerContent, "}\n\n");
+        push(@headerContent, "ALWAYS_INLINE bool ${className}::getOwnPropertyDescriptor(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::PropertyDescriptor& descriptor)\n");
+        push(@headerContent, "{\n");
+        push(@headerContent, GenerateGetOwnPropertyDescriptorBody($dataNode, $interfaceName, $className, $implClassName, $numAttributes > 0, 1));
         push(@headerContent, "}\n\n");
     }
 
@@ -662,8 +778,16 @@ sub GenerateHeader
     push(@headerContent, "    static const JSC::ClassInfo s_info;\n");
     if ($numFunctions > 0 || $numConstants > 0 || $dataNode->extendedAttributes->{"DelegatingPrototypeGetOwnPropertySlot"}) {
         push(@headerContent, "    virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);\n");
+        push(@headerContent, "    virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);\n");
         push(@headerContent, "    bool getOwnPropertySlotDelegate(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);\n") if $dataNode->extendedAttributes->{"DelegatingPrototypeGetOwnPropertySlot"};
+        push(@headerContent, "    bool getOwnPropertyDescriptorDelegate(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);\n") if $dataNode->extendedAttributes->{"DelegatingPrototypeGetOwnPropertySlot"};
 
+        push(@headerContent,
+            "    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)\n" .
+            "    {\n" .
+            "        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType" . ($dataNode->extendedAttributes->{"CustomMarkFunction"} ? "" : ", JSC::HasDefaultMark") . "));\n" .
+            "    }\n");
+    } elsif ($dataNode->extendedAttributes->{"CustomMarkFunction"}) {
         push(@headerContent,
             "    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)\n" .
             "    {\n" .
@@ -718,6 +842,12 @@ sub GenerateHeader
     push(@headerContent, "\n} // namespace WebCore\n\n");
     push(@headerContent, "#endif // ${conditionalString}\n\n") if $conditional;
     push(@headerContent, "#endif\n");
+
+    # - Generate dependencies.
+    if ($writeDependencies && @ancestorInterfaceNames) {
+        push(@depsContent, "$className.h : ", join(" ", map { "$_.idl" } @ancestorInterfaceNames), "\n");
+        push(@depsContent, map { "$_.idl :\n" } @ancestorInterfaceNames); 
+    }
 }
 
 sub GenerateImplementation
@@ -749,7 +879,7 @@ sub GenerateImplementation
     AddIncludesForSVGAnimatedType($interfaceName) if $className =~ /^JSSVGAnimated/;
 
     $implIncludes{"<wtf/GetPtr.h>"} = 1;
-    $implIncludes{"<runtime/PropertyNameArray.h>"} = 1 if $dataNode->extendedAttributes->{"HasIndexGetter"} || $dataNode->extendedAttributes->{"HasCustomIndexGetter"};
+    $implIncludes{"<runtime/PropertyNameArray.h>"} = 1 if $dataNode->extendedAttributes->{"HasIndexGetter"} || $dataNode->extendedAttributes->{"HasCustomIndexGetter"} || $dataNode->extendedAttributes->{"HasNumericIndexGetter"};
 
     AddIncludesForType($interfaceName);
 
@@ -933,6 +1063,25 @@ sub GenerateImplementation
             push(@implContent, "    return getStaticPropertySlot<${className}Prototype, JSObject>(exec, " . prototypeHashTableAccessor($dataNode->extendedAttributes->{"NoStaticTables"}, $className) . ", this, propertyName, slot);\n");
         }
         push(@implContent, "}\n\n");
+
+        push(@implContent, "bool ${className}Prototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)\n");
+        push(@implContent, "{\n");
+        
+        if ($dataNode->extendedAttributes->{"DelegatingPrototypeGetOwnPropertySlot"}) {
+            push(@implContent, "    if (getOwnPropertyDescriptorDelegate(exec, propertyName, descriptor))\n");
+            push(@implContent, "        return true;\n");
+        }
+        
+        if ($numConstants eq 0 && $numFunctions eq 0) {
+            push(@implContent, "    return Base::getOwnPropertyDescriptor(exec, propertyName, descriptor);\n");        
+        } elsif ($numConstants eq 0) {
+            push(@implContent, "    return getStaticFunctionDescriptor<JSObject>(exec, " . prototypeHashTableAccessor($dataNode->extendedAttributes->{"NoStaticTables"}, $className) . ", this, propertyName, descriptor);\n");
+        } elsif ($numFunctions eq 0) {
+            push(@implContent, "    return getStaticValueDescriptor<${className}Prototype, JSObject>(exec, " . prototypeHashTableAccessor($dataNode->extendedAttributes->{"NoStaticTables"}, $className) . ", this, propertyName, descriptor);\n");
+        } else {
+            push(@implContent, "    return getStaticPropertyDescriptor<${className}Prototype, JSObject>(exec, " . prototypeHashTableAccessor($dataNode->extendedAttributes->{"NoStaticTables"}, $className) . ", this, propertyName, descriptor);\n");
+        }
+        push(@implContent, "}\n\n");
     }
 
     if ($dataNode->extendedAttributes->{"DelegatingPrototypePutFunction"}) {
@@ -1049,6 +1198,7 @@ sub GenerateImplementation
                  || $dataNode->extendedAttributes->{"GenerateConstructor"} 
                  || $dataNode->extendedAttributes->{"HasIndexGetter"}
                  || $dataNode->extendedAttributes->{"HasCustomIndexGetter"}
+                 || $dataNode->extendedAttributes->{"HasNumericIndexGetter"}
                  || $dataNode->extendedAttributes->{"DelegatingGetOwnPropertySlot"}
                  || $dataNode->extendedAttributes->{"CustomGetOwnPropertySlot"}
                  || $dataNode->extendedAttributes->{"HasNameGetter"}
@@ -1061,14 +1211,18 @@ sub GenerateImplementation
             push(@implContent, "{\n");
             push(@implContent, GenerateGetOwnPropertySlotBody($dataNode, $interfaceName, $className, $implClassName, $numAttributes > 0, 0));
             push(@implContent, "}\n\n");
+            push(@implContent, "bool ${className}::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)\n");
+            push(@implContent, "{\n");
+            push(@implContent, GenerateGetOwnPropertyDescriptorBody($dataNode, $interfaceName, $className, $implClassName, $numAttributes > 0, 0));
+            push(@implContent, "}\n\n");
         }
 
-        if (($dataNode->extendedAttributes->{"HasIndexGetter"} || $dataNode->extendedAttributes->{"HasCustomIndexGetter"}) 
+        if (($dataNode->extendedAttributes->{"HasIndexGetter"} || $dataNode->extendedAttributes->{"HasCustomIndexGetter"} || $dataNode->extendedAttributes->{"HasNumericIndexGetter"}) 
                 && !$dataNode->extendedAttributes->{"HasOverridingNameGetter"}) {
             push(@implContent, "bool ${className}::getOwnPropertySlot(ExecState* exec, unsigned propertyName, PropertySlot& slot)\n");
             push(@implContent, "{\n");
             push(@implContent, "    if (propertyName < static_cast<$implClassName*>(impl())->length()) {\n");
-            if ($dataNode->extendedAttributes->{"HasCustomIndexGetter"}) {
+            if ($dataNode->extendedAttributes->{"HasCustomIndexGetter"} || $dataNode->extendedAttributes->{"HasNumericIndexGetter"}) {
                 push(@implContent, "        slot.setValue(getByIndex(exec, propertyName));\n");
             } else {
                 push(@implContent, "        slot.setCustomIndex(this, propertyName, indexGetter);\n");
@@ -1333,14 +1487,14 @@ sub GenerateImplementation
         }
     }
 
-    if (($dataNode->extendedAttributes->{"HasIndexGetter"} || $dataNode->extendedAttributes->{"HasCustomIndexGetter"}) && !$dataNode->extendedAttributes->{"CustomGetPropertyNames"}) {
-        push(@implContent, "void ${className}::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)\n");
+    if (($dataNode->extendedAttributes->{"HasIndexGetter"} || $dataNode->extendedAttributes->{"HasCustomIndexGetter"} || $dataNode->extendedAttributes->{"HasNumericIndexGetter"}) && !$dataNode->extendedAttributes->{"CustomGetPropertyNames"}) {
+        push(@implContent, "void ${className}::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)\n");
         push(@implContent, "{\n");
-        if ($dataNode->extendedAttributes->{"HasIndexGetter"} || $dataNode->extendedAttributes->{"HasCustomIndexGetter"}) {
+        if ($dataNode->extendedAttributes->{"HasIndexGetter"} || $dataNode->extendedAttributes->{"HasCustomIndexGetter"} || $dataNode->extendedAttributes->{"HasNumericIndexGetter"}) {
             push(@implContent, "    for (unsigned i = 0; i < static_cast<${implClassName}*>(impl())->length(); ++i)\n");
             push(@implContent, "        propertyNames.add(Identifier::from(exec, i));\n");
         }
-        push(@implContent, "     Base::getPropertyNames(exec, propertyNames);\n");
+        push(@implContent, "     Base::getOwnPropertyNames(exec, propertyNames);\n");
         push(@implContent, "}\n\n");
     }
 
@@ -1373,7 +1527,7 @@ sub GenerateImplementation
                 push(@implContent, "    if (!castedThisObj)\n");
                 push(@implContent, "        return throwError(exec, TypeError);\n");
             } else {
-                push(@implContent, "    if (!thisValue.isObject(&${className}::s_info))\n");
+                push(@implContent, "    if (!thisValue.inherits(&${className}::s_info))\n");
                 push(@implContent, "        return throwError(exec, TypeError);\n");
                 push(@implContent, "    $className* castedThisObj = static_cast<$className*>(asObject(thisValue));\n");
             }
@@ -1507,6 +1661,17 @@ sub GenerateImplementation
             $implIncludes{"Node.h"} = 1;
         }
     }
+    
+    if ($dataNode->extendedAttributes->{"HasNumericIndexGetter"}) {
+        push(@implContent, "\nJSValue ${className}::getByIndex(ExecState* exec, unsigned index)\n");
+        push(@implContent, "{\n");
+        push(@implContent, "    return jsNumber(exec, static_cast<$implClassName*>(impl())->item(index));\n");
+        push(@implContent, "}\n");
+        if ($interfaceName eq "HTMLCollection") {
+            $implIncludes{"JSNode.h"} = 1;
+            $implIncludes{"Node.h"} = 1;
+        }
+    }
 
     if ((!$hasParent or $dataNode->extendedAttributes->{"GenerateToJS"}) and !$dataNode->extendedAttributes->{"CustomToJS"}) {
         if ($podType) {
@@ -1537,7 +1702,7 @@ sub GenerateImplementation
 
         push(@implContent, "{\n");
 
-        push(@implContent, "    return value.isObject(&${className}::s_info) ? " . ($podType ? "($podType) *" : "") . "static_cast<$className*>(asObject(value))->impl() : ");
+        push(@implContent, "    return value.inherits(&${className}::s_info) ? " . ($podType ? "($podType) *" : "") . "static_cast<$className*>(asObject(value))->impl() : ");
         if ($podType and $podType ne "float") {
             push(@implContent, "$podType();\n}\n");
         } else {
@@ -2021,6 +2186,15 @@ sub WriteData
         @headerContent = ();
         %headerIncludes = ();
     }
+
+    if (defined($DEPS)) {
+        # Write dependency file.
+        print $DEPS @depsContent;
+        close($DEPS);
+        undef($DEPS);
+
+        @depsContent = ();
+    }
 }
 
 sub constructorFor
@@ -2041,6 +2215,7 @@ public:
         putDirect(exec->propertyNames().prototype, ${protoClassName}::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -2072,6 +2247,11 @@ const ClassInfo ${constructorClassName}::s_info = { "${visibleClassName}Construc
 bool ${constructorClassName}::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<${constructorClassName}, DOMObject>(exec, &${constructorClassName}Table, this, propertyName, slot);
+}
+
+bool ${constructorClassName}::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<${constructorClassName}, DOMObject>(exec, &${constructorClassName}Table, this, propertyName, descriptor);
 }
 
 EOF

@@ -1,13 +1,44 @@
 #!/bin/sh
-#
-# Configures to build the Qt library
-#
-# Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-# Contact: Nokia Corporation (qt-info@nokia.com)
-#
-# This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
-# WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-#
+#############################################################################
+##
+## Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+## All rights reserved.
+## Contact: Nokia Corporation (qt-info@nokia.com)
+##
+## This file is the build configuration utility of the Qt Toolkit.
+##
+## $QT_BEGIN_LICENSE:LGPL$
+## No Commercial Usage
+## This file contains pre-release code and may not be distributed.
+## You may use this file in accordance with the terms and conditions
+## contained in the Technology Preview License Agreement accompanying
+## this package.
+##
+## GNU Lesser General Public License Usage
+## Alternatively, this file may be used under the terms of the GNU Lesser
+## General Public License version 2.1 as published by the Free Software
+## Foundation and appearing in the file LICENSE.LGPL included in the
+## packaging of this file.  Please review the following information to
+## ensure the GNU Lesser General Public License version 2.1 requirements
+## will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+##
+## In addition, as a special exception, Nokia gives you certain additional
+## rights.  These rights are described in the Nokia Qt LGPL Exception
+## version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+##
+## If you have questions regarding the use of this file, please contact
+## Nokia at qt-info@nokia.com.
+##
+##
+##
+##
+##
+##
+##
+##
+## $QT_END_LICENSE$
+##
+#############################################################################
 
 #-------------------------------------------------------------------------------
 # script initialization
@@ -46,6 +77,11 @@ QMAKE_VARS_FILE=.qmake.vars
 #-------------------------------------------------------------------------------
 # utility functions
 #-------------------------------------------------------------------------------
+
+shellEscape()
+{
+    echo "$@" | sed 's/ /\ /g'
+}
 
 # Adds a new qmake variable to the cache
 # Usage: QMakeVar mode varname contents
@@ -87,6 +123,30 @@ getQMakeConf()
     next
 }
 { print }' "$tmpSPEC/qmake.conf"
+}
+
+# relies on $TEST_COMPILER being set correctly
+compilerSupportsFlag()
+{
+    cat >conftest.cpp <<EOF
+int main() { return 0; }
+EOF
+    "$TEST_COMPILER" "$@" -o /dev/null conftest.cpp
+    ret=$?
+    rm -f conftest.cpp conftest.o
+    return $ret
+}
+
+# relies on $TEST_COMPILER being set correctly
+linkerSupportsFlag()
+{
+    lflags=-Wl
+    for flag
+    do
+	safe_flag=`shellEscape "$flag"`
+	lflags=$lflags,$safe_flag
+    done
+    compilerSupportsFlag "$lflags" >/dev/null 2>&1
 }
 
 #-------------------------------------------------------------------------------
@@ -563,6 +623,7 @@ MIN_DBUS_1_VERSION=0.62
 CFG_CONFIGURE_EXIT_ON_ERROR=yes
 CFG_PROFILE=no
 CFG_EXCEPTIONS=unspecified
+CFG_SCRIPT=auto # (yes|no|auto)
 CFG_SCRIPTTOOLS=auto # (yes|no|auto)
 CFG_XMLPATTERNS=auto # (yes|no|auto)
 CFG_INCREMENTAL=auto
@@ -613,7 +674,7 @@ CFG_MULTIMEDIA=yes
 CFG_SVG=yes
 CFG_WEBKIT=auto # (yes|no|auto)
 
-CFG_GFX_AVAILABLE="linuxfb transformed qvfb vnc multiscreen"
+CFG_GFX_AVAILABLE="linuxfb transformed qvfb vnc multiscreen directfb"
 CFG_GFX_ON="linuxfb multiscreen"
 CFG_GFX_PLUGIN_AVAILABLE=
 CFG_GFX_PLUGIN=
@@ -850,7 +911,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-svg|-webkit|-scripttools|-rpath|-force-pkg-config)
+        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-svg|-webkit|-script|-scripttools|-rpath|-force-pkg-config)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1186,7 +1247,7 @@ while [ "$#" -gt 0 ]; do
             fi
         fi
 	;;
-	    
+
     qvfb) # left for commandline compatibility, not documented
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             if [ "$VAL" = "yes" ]; then
@@ -1744,6 +1805,17 @@ while [ "$#" -gt 0 ]; do
         else
             if [ "$VAL" = "no" ]; then
                 CFG_XMLPATTERNS="no"
+            else
+                UNKNOWN_OPT=yes
+            fi
+        fi
+        ;;
+    script)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ]; then
+            CFG_SCRIPT="yes"
+        else
+            if [ "$VAL" = "no" ]; then
+                CFG_SCRIPT="no"
             else
                 UNKNOWN_OPT=yes
             fi
@@ -3161,11 +3233,10 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-no-separate-debug-info] [-no-mmx] [-no-3dnow] [-no-sse] [-no-sse2]
         [-qtnamespace <namespace>] [-qtlibinfix <infix>] [-separate-debug-info] [-armfpa]
         [-no-optimized-qmake] [-optimized-qmake] [-no-xmlpatterns] [-xmlpatterns]
-        [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
+        [-no-multimedia] [-multimedia] [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
         [-no-openssl] [-openssl] [-openssl-linked]
-        [-no-multimedia] [-multimedia]
         [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg] [-no-webkit] [-webkit]
-        [-no-scripttools] [-scripttools]
+        [-no-script] [-script] [-no-scripttools] [-scripttools]
 
         [additional platform specific options (see below)]
 
@@ -3298,14 +3369,14 @@ fi
                          QtXmlPatterns is built if a decent C++ compiler
                          is used and exceptions are enabled.
 
+    -no-multimedia ..... Do not build the QtMultimedia module.
+ +  -multimedia ........ Build the QtMultimedia module.
+
     -no-phonon ......... Do not build the Phonon module.
  +  -phonon ............ Build the Phonon module.
                          Phonon is built if a decent C++ compiler is used.
     -no-phonon-backend.. Do not build the platform phonon plugin.
  +  -phonon-backend..... Build the platform phonon plugin.
-
-    -no-multimedia ..... Do not build the multimedia module.
- *  -multimedia ........ Build the multimedia module.
 
     -no-svg ............ Do not build the SVG module.
  +  -svg ............... Build the SVG module.
@@ -3313,6 +3384,9 @@ fi
     -no-webkit ......... Do not build the WebKit module.
  +  -webkit ............ Build the WebKit module.
                          WebKit is built if a decent C++ compiler is used.
+
+    -no-script ......... Do not build the QtScript module.
+ +  -script ............ Build the QtScript module.
 
     -no-scripttools .... Do not build the QtScriptTools module.
  +  -scripttools ....... Build the QtScriptTools module.
@@ -3678,7 +3752,7 @@ Qt for Embedded Linux only:
                           proper license for this switch to work.
                           Example values for <arch>: arm mips x86 generic
 
-    -armfpa ............. Target platform is uses the ARM-FPA floating point format.
+    -armfpa ............. Target platform uses the ARM-FPA floating point format.
     -no-armfpa .......... Target platform does not use the ARM-FPA floating point format.
 
                           The floating point format is usually autodetected by configure. Use this
@@ -3799,16 +3873,22 @@ if [ "$Edition" = "NokiaInternalBuild" ]; then
 elif [ "$Edition" = "OpenSource" ]; then
     while true; do
         echo "You are licensed to use this software under the terms of"
-        echo "the GNU General Public License (GPL) versions 3."
-        echo "You are also licensed to use this software under the terms of"
         echo "the Lesser GNU General Public License (LGPL) versions 2.1."
+        if [ -f "$relpath/LICENSE.GPL3" ]; then
+            echo "You are also licensed to use this software under the terms of"
+            echo "the GNU General Public License (GPL) versions 3."
+            affix="either"
+        else
+            affix="the"
+        fi
         echo
-        affix="either"
         if [ "$OPT_CONFIRM_LICENSE" = "yes" ]; then
-	    echo "You have already accepted the terms of the $LicenseType license."
+            echo "You have already accepted the terms of the $LicenseType license."
             acceptance=yes
         else
-	    echo "Type '3' to view the GNU General Public License version 3."
+            if [ -f "$relpath/LICENSE.GPL3" ]; then
+                echo "Type '3' to view the GNU General Public License version 3."
+            fi
             echo "Type 'L' to view the Lesser GNU General Public License version 2.1."
             echo "Type 'yes' to accept this license offer."
             echo "Type 'no' to decline this license offer."
@@ -4784,9 +4864,9 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
         CFG_EGL=yes
         CFG_EGL_GLES_INCLUDES=yes
     fi
-    if ( [ "$CFG_OPENGL" = "es1" ] || [ "$CFG_OPENGL" = "es1cl" ] || [ "$CFG_OPENGL" = "es2" ] ) && [ "$CFG_EGL" != "yes" ] && [ "$PLATFORM_X11" = "yes" ]; then
+    if ( [ "$CFG_OPENGL" = "es1" ] || [ "$CFG_OPENGL" = "es1cl" ] || [ "$CFG_OPENGL" = "es2" ] ) && [ "$CFG_EGL" != "yes" ]; then
         echo "The EGL functionality test failed!"
-        echo " EGL is required for OpenGL ES on X11 to manage contexts & surfaces."
+        echo " EGL is required for OpenGL ES to manage contexts & surfaces."
         echo " You might need to modify the include and library search paths by editing"
         echo " QMAKE_INCDIR_EGL, QMAKE_LIBDIR_EGL and QMAKE_LIBS_EGL in"
         echo " ${XQMAKESPEC}."
@@ -5069,9 +5149,9 @@ if [ "$PLATFORM_X11" = "yes" ]; then
 
     # auto-detect FontConfig support
     if [ "$CFG_FONTCONFIG" != "no" ]; then
-    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists fontconfig 2>/dev/null; then
-        QT_CFLAGS_FONTCONFIG=`$PKG_CONFIG --cflags fontconfig 2>/dev/null`
-        QT_LIBS_FONTCONFIG=`$PKG_CONFIG --libs fontconfig 2>/dev/null`
+    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists fontconfig --exists freetype2 2>/dev/null; then
+        QT_CFLAGS_FONTCONFIG=`$PKG_CONFIG --cflags fontconfig --cflags freetype2 2>/dev/null`
+        QT_LIBS_FONTCONFIG=`$PKG_CONFIG --libs fontconfig --libs freetype2 2>/dev/null`
     else
         QT_CFLAGS_FONTCONFIG=
         QT_LIBS_FONTCONFIG="-lfreetype -lfontconfig"
@@ -5773,13 +5853,12 @@ else
     fi
 fi;
 
-# set the global Mac deployment target. This is overridden on an arch-by-arch basis 
+# set the global Mac deployment target. This is overridden on an arch-by-arch basis
 # in some cases, see code further down
 case "$PLATFORM,$CFG_MAC_COCOA" in
     macx*,yes)
 	# Cocoa
 	QMakeVar set QMAKE_MACOSX_DEPLOYMENT_TARGET 10.5
-	CFG_QT3SUPPORT="no"
 	;;
     macx*,no)
 	# gcc, Carbon
@@ -6278,6 +6357,12 @@ else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XMLPATTERNS"
 fi
 
+if [ "$CFG_MULTIMEDIA" = "no" ]; then
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MULTIMEDIA"
+else
+    QT_CONFIG="$QT_CONFIG multimedia"
+fi
+
 if [ "$CFG_SVG" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG svg"
 else
@@ -6297,21 +6382,30 @@ else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_WEBKIT"
 fi
 
-if [ "$CFG_SCRIPTTOOLS" = "auto" ]; then
+if [ "$CFG_SCRIPT" = "auto" ]; then
+    CFG_SCRIPT="$canBuildWebKit"
+fi
+
+if [ "$CFG_SCRIPT" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG script"
+else
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SCRIPT"
+fi
+
+if [ "$CFG_SCRIPTTOOLS" = "yes" -a "$CFG_SCRIPT" = "no" ]; then
+    echo "QtScriptTools was requested, but it can't be built due to QtScript being disabled."
+    exit 1
+fi
+if [ "$CFG_SCRIPTTOOLS" = "auto" -a "$CFG_SCRIPT" != "no" ]; then
     CFG_SCRIPTTOOLS="yes"
+elif [ "$CFG_SCRIPT" = "no" ]; then
+    CFG_SCRIPTTOOLS="no"
 fi
 
 if [ "$CFG_SCRIPTTOOLS" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG scripttools"
-    CFG_SCRIPTTOOLS="yes"
 else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SCRIPTTOOLS"
-fi
-
-if [ "$CFG_MULTIMEDIA" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG multimedia"
-else
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MULTIMEDIA"
 fi
 
 if [ "$CFG_EXCEPTIONS" = "no" ]; then
@@ -6978,6 +7072,11 @@ QMAKE_LIBDIR_QT  = \$\$QT_BUILD_TREE/lib
 
 EOF
 
+# Ensure we can link to uninistalled libraries
+if linkerSupportsFlag -rpath-link "$outpath/lib"; then
+    echo "QMAKE_LFLAGS    += -Wl,-rpath-link,\$\$QT_BUILD_TREE/lib" >> "$CACHEFILE.tmp"
+fi
+
 if [ -n "$QT_CFLAGS_PSQL" ]; then
     echo "QT_CFLAGS_PSQL   = $QT_CFLAGS_PSQL" >> "$CACHEFILE.tmp"
 fi
@@ -7172,6 +7271,7 @@ echo "Qt 3 compatibility .. $CFG_QT3SUPPORT"
 [ "$CFG_DBUS" = "yes" ]    && echo "QtDBus module ....... yes (run-time)"
 [ "$CFG_DBUS" = "linked" ] && echo "QtDBus module ....... yes (linked)"
 echo "QtConcurrent code.... $CFG_CONCURRENT"
+echo "QtScript module ..... $CFG_SCRIPT"
 echo "QtScriptTools module  $CFG_SCRIPTTOOLS"
 echo "QtXmlPatterns module  $CFG_XMLPATTERNS"
 echo "Phonon module ....... $CFG_PHONON"

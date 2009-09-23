@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -77,6 +77,9 @@
 #include <qabstractitemview.h>
 #include "../../shared/util.h"
 #include <qstyleditemdelegate.h>
+#ifndef QT_NO_STYLE_WINDOWS
+#include <qwindowsstyle.h>
+#endif
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -145,6 +148,9 @@ private slots:
     void noScrollbar();
     void setItemDelegate();
     void task253944_itemDelegateIsReset();
+    void subControlRectsWithOffset_data();
+    void subControlRectsWithOffset();
+    void task260974_menuItemRectangleForComboBoxPopup();
 
 protected slots:
     void onEditTextChanged( const QString &newString );
@@ -877,12 +883,12 @@ void tst_QComboBox::hide()
 {
     testWidget->addItem("foo");
     testWidget->showPopup();
-    QTest::qWait(500); //allow combobox effect to complete
-    QVERIFY(testWidget->view());
-    QVERIFY(testWidget->view()->isVisible());
+    //allow combobox effect to complete
+    QTRY_VERIFY(testWidget->view());
+    QTRY_VERIFY(testWidget->view()->isVisible());
     testWidget->hidePopup();
-    QTest::qWait(500); //allow combobox effect to complete
-    QVERIFY(!testWidget->view()->isVisible());
+    //allow combobox effect to complete
+    QTRY_VERIFY(!testWidget->view()->isVisible());
     testWidget->hide();
     QVERIFY(!testWidget->isVisible());
 }
@@ -1917,9 +1923,11 @@ void tst_QComboBox::itemListPosition()
     combo.move(screen.width()-combo.sizeHint().width(), 0); //puts the combo to the top-right corner
 
     combo.show();
-    QTest::qWait(100); //wait because the window manager can move the window if there is a right panel
+    //wait because the window manager can move the window if there is a right panel
+    QTRY_VERIFY(combo.isVisible());
     combo.showPopup();
-    QTest::qWait(100);
+    QTRY_VERIFY(combo.view());
+    QTRY_VERIFY(combo.view()->isVisible());
 
 #if defined(Q_WS_S60)
     // Assuming that QtS60 style is used, here. But other ones would certainly also fail
@@ -1972,10 +1980,14 @@ void tst_QComboBox::task190351_layout()
         list->addItem(QLatin1String("list") + QString::number(i));
 
     listCombo.show();
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(&listCombo);
+    QTRY_VERIFY(listCombo.isVisible());
     listCombo.setCurrentIndex(70);
     listCombo.showPopup();
-    QTest::qWait(100);
+    QTRY_VERIFY(listCombo.view());
+    QTest::qWaitForWindowShown(listCombo.view());
+    QTRY_VERIFY(listCombo.view()->isVisible());
+    QApplication::processEvents();
 
 #ifdef QT_BUILD_INTERNAL
     QFrame *container = qFindChild<QComboBoxPrivateContainer *>(&listCombo);
@@ -2047,9 +2059,10 @@ void tst_QComboBox::task191329_size()
     tableCombo.setModel(&model);
 
     tableCombo.show();
-    QTest::qWait(100);
+    QTRY_VERIFY(tableCombo.isVisible());
     tableCombo.showPopup();
-    QTest::qWait(100);
+    QTRY_VERIFY(tableCombo.view());
+    QTRY_VERIFY(tableCombo.view()->isVisible());
 
 #ifdef QT_BUILD_INTERNAL
     QFrame *container = qFindChild<QComboBoxPrivateContainer *>(&tableCombo);
@@ -2079,11 +2092,10 @@ void tst_QComboBox::task190205_setModelAdjustToContents()
     box.addItems(initialContent);
     box.show();
 
-    QTest::qWait(100); //wait needed in order to get the combo initial size
+    //wait needed in order to get the combo initial size
+    QTRY_VERIFY(box.isVisible());
 
     box.setModel(new QStringListModel(finalContent));
-
-    QTest::qWait(500); //wait needed in order to resize the combo
 
     QComboBox correctBox;
     correctBox.addItems(finalContent);
@@ -2111,9 +2123,10 @@ void tst_QComboBox::task248169_popupWithMinimalSize()
     comboBox.setGeometry(desktop.availableGeometry().width() - 200, 100, 200, 100);
 
     comboBox.show();
-    QTest::qWait(100);
+    QTRY_VERIFY(comboBox.isVisible());
     comboBox.showPopup();
-    QTest::qWait(100);
+    QTRY_VERIFY(comboBox.view());
+    QTRY_VERIFY(comboBox.view()->isVisible());
 
 #ifdef QT_BUILD_INTERNAL
     QFrame *container = qFindChild<QComboBoxPrivateContainer *>(&comboBox);
@@ -2130,7 +2143,7 @@ void tst_QComboBox::task247863_keyBoardSelection()
   combo.addItem( QLatin1String("222"));
   combo.show();
   QApplication::setActiveWindow(&combo);
-  QTest::qWait(100);
+  QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&combo));
 
   QSignalSpy spy(&combo, SIGNAL(activated(const QString &)));
   qApp->setEffectEnabled(Qt::UI_AnimateCombo, false);
@@ -2151,7 +2164,7 @@ void tst_QComboBox::task220195_keyBoardSelection2()
     combo.addItem( QLatin1String("foo3"));
     combo.show();
     QApplication::setActiveWindow(&combo);
-    QTest::qWait(100);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&combo));
 
     combo.setCurrentIndex(-1);
     QVERIFY(combo.currentText().isNull());
@@ -2231,9 +2244,11 @@ void tst_QComboBox::noScrollbar()
         comboBox.addItems(initialContent);
         comboBox.show();
         comboBox.resize(200, comboBox.height());
-        QTest::qWait(100);
+        QTRY_VERIFY(comboBox.isVisible());
         comboBox.showPopup();
-        QTest::qWait(100);
+        QTRY_VERIFY(comboBox.view());
+        QTRY_VERIFY(comboBox.view()->isVisible());
+
         QVERIFY(!comboBox.view()->horizontalScrollBar()->isVisible());
         QVERIFY(!comboBox.view()->verticalScrollBar()->isVisible());
     }
@@ -2244,10 +2259,12 @@ void tst_QComboBox::noScrollbar()
         comboBox.setModel(table->model());
         comboBox.setView(table);
         comboBox.show();
-        QTest::qWait(100);
+        QTRY_VERIFY(comboBox.isVisible());
         comboBox.resize(200, comboBox.height());
         comboBox.showPopup();
-        QTest::qWait(100);
+        QTRY_VERIFY(comboBox.view());
+        QTRY_VERIFY(comboBox.view()->isVisible());
+
         QVERIFY(!comboBox.view()->horizontalScrollBar()->isVisible());
         QVERIFY(!comboBox.view()->verticalScrollBar()->isVisible());
     }
@@ -2260,7 +2277,11 @@ void tst_QComboBox::setItemDelegate()
     QComboBox comboBox;
     QStyledItemDelegate *itemDelegate = new QStyledItemDelegate;
     comboBox.setItemDelegate(itemDelegate);
-    QCOMPARE(static_cast<QStyledItemDelegate*>(comboBox.itemDelegate()), itemDelegate);
+#ifdef Q_CC_MWERKS
+    QCOMPARE(static_cast<QStyledItemDelegate *>(comboBox.itemDelegate()), itemDelegate);
+#else
+    QCOMPARE(comboBox.itemDelegate(), itemDelegate);
+#endif
 }
 
 void tst_QComboBox::task253944_itemDelegateIsReset()
@@ -2270,12 +2291,108 @@ void tst_QComboBox::task253944_itemDelegateIsReset()
     comboBox.setItemDelegate(itemDelegate);
 
     comboBox.setEditable(true);
-    QCOMPARE(static_cast<QStyledItemDelegate*>(comboBox.itemDelegate()), itemDelegate);
+#ifdef Q_CC_MWERKS
+    QCOMPARE(static_cast<QStyledItemDelegate *>(comboBox.itemDelegate()), itemDelegate);
+#else
+    QCOMPARE(comboBox.itemDelegate(), itemDelegate);
+#endif
 
     comboBox.setStyleSheet("QComboBox { border: 1px solid gray; }");
-    QCOMPARE(static_cast<QStyledItemDelegate*>(comboBox.itemDelegate()), itemDelegate);
+#ifdef Q_CC_MWERKS
+    QCOMPARE(static_cast<QStyledItemDelegate *>(comboBox.itemDelegate()), itemDelegate);
+#else
+    QCOMPARE(comboBox.itemDelegate(), itemDelegate);
+#endif
 }
 
+
+void tst_QComboBox::subControlRectsWithOffset_data()
+{
+    QTest::addColumn<bool>("editable");
+
+    QTest::newRow("editable = true") << true;
+    QTest::newRow("editable = false") << false;
+}
+
+void tst_QComboBox::subControlRectsWithOffset()
+{
+    // The sub control rect relative position should not depends
+    // on the position of the combobox
+
+    class FriendlyCombo : public QComboBox {
+    public:
+        void styleOption(QStyleOptionComboBox *optCombo) {
+            initStyleOption(optCombo);
+        }
+    } combo;
+    QStyleOptionComboBox optCombo;
+    combo.styleOption(&optCombo);
+
+
+    const QRect rectAtOrigin(0, 0, 80, 30);
+    const QPoint offset(25, 50);
+    const QRect rectWithOffset = rectAtOrigin.translated(offset);
+
+    QStyle *style = combo.style();
+
+    QFETCH(bool, editable);
+    optCombo.editable = editable;
+
+    optCombo.rect = rectAtOrigin;
+    QRect editFieldRect = style->subControlRect(QStyle::CC_ComboBox, &optCombo, QStyle::SC_ComboBoxEditField, 0);
+    QRect arrowRect = style->subControlRect(QStyle::CC_ComboBox, &optCombo, QStyle::SC_ComboBoxArrow, 0);
+    QRect listboxRect = style->subControlRect(QStyle::CC_ComboBox, &optCombo, QStyle::SC_ComboBoxListBoxPopup, 0);
+
+    optCombo.rect = rectWithOffset;
+    QRect editFieldRectWithOffset = style->subControlRect(QStyle::CC_ComboBox, &optCombo, QStyle::SC_ComboBoxEditField, 0);
+    QRect arrowRectWithOffset = style->subControlRect(QStyle::CC_ComboBox, &optCombo, QStyle::SC_ComboBoxArrow, 0);
+    QRect listboxRectWithOffset = style->subControlRect(QStyle::CC_ComboBox, &optCombo, QStyle::SC_ComboBoxListBoxPopup, 0);
+
+    QCOMPARE(editFieldRect, editFieldRectWithOffset.translated(-offset));
+    QCOMPARE(arrowRect, arrowRectWithOffset.translated(-offset));
+    QCOMPARE(listboxRect, listboxRectWithOffset.translated(-offset));
+
+}
+
+void tst_QComboBox::task260974_menuItemRectangleForComboBoxPopup()
+{
+#ifdef QT_NO_STYLE_WINDOWS
+    QSKIP("test depends on windows style", QTest::SkipAll);
+#else
+    class TestStyle: public QWindowsStyle
+    {
+    public:
+        int styleHint(StyleHint hint, const QStyleOption *option, const QWidget *widget, QStyleHintReturn *ret) const
+        {
+            if (hint == SH_ComboBox_Popup) return 1;
+            else return QCommonStyle::styleHint(hint, option, widget, ret);
+        }
+
+        void drawControl(ControlElement element, const QStyleOption *option, QPainter *, const QWidget *) const
+        {
+            if (element == CE_MenuItem)
+                discoveredRect = option->rect;
+        }
+
+        mutable QRect discoveredRect;
+    } style;
+
+
+    {
+        QComboBox comboBox;
+        comboBox.setStyle(&style);
+        comboBox.addItem("Item 1");
+
+        comboBox.show();
+        QTRY_VERIFY(comboBox.isVisible());
+        comboBox.showPopup();
+        QTRY_VERIFY(comboBox.view());
+        QTRY_VERIFY(comboBox.view()->isVisible());
+
+        QTRY_VERIFY(style.discoveredRect.width() <= comboBox.width());
+    }
+#endif
+}
 
 QTEST_MAIN(tst_QComboBox)
 #include "tst_qcombobox.moc"

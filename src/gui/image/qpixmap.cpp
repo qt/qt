@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -120,7 +120,6 @@ void QPixmap::init(int w, int h, int type)
         data = QGraphicsSystem::createDefaultPixmapData(static_cast<QPixmapData::PixelType>(type));
 
     data->resize(w, h);
-    data->ref.ref();
 }
 
 /*!
@@ -222,7 +221,6 @@ QPixmap::QPixmap(const QSize &s, int type)
 QPixmap::QPixmap(QPixmapData *d)
     : QPaintDevice(), data(d)
 {
-    data->ref.ref();
 }
 
 /*!
@@ -261,12 +259,7 @@ QPixmap::QPixmap(const QString& fileName, const char *format, Qt::ImageConversio
     if (!qt_pixmap_thread_test())
         return;
 
-    QT_TRY {
-        load(fileName, format, flags);
-    } QT_CATCH(...) {
-        deref();
-        QT_RETHROW;
-    }
+    load(fileName, format, flags);
 }
 
 /*!
@@ -283,11 +276,9 @@ QPixmap::QPixmap(const QPixmap &pixmap)
         return;
     }
     if (pixmap.paintingActive()) {                // make a deep copy
-        data = 0;
         operator=(pixmap.copy());
     } else {
         data = pixmap.data;
-        data->ref.ref();
     }
 }
 
@@ -314,17 +305,12 @@ QPixmap::QPixmap(const char * const xpm[])
     if (!xpm)
         return;
 
-    QT_TRY {
-        QImage image(xpm);
-        if (!image.isNull()) {
-            if (data->pixelType() == QPixmapData::BitmapType)
-                *this = QBitmap::fromImage(image);
-            else
-                *this = fromImage(image);
-        }
-    } QT_CATCH(...) {
-        deref();
-        QT_RETHROW;
+    QImage image(xpm);
+    if (!image.isNull()) {
+        if (data->pixelType() == QPixmapData::BitmapType)
+            *this = QBitmap::fromImage(image);
+        else
+            *this = fromImage(image);
     }
 }
 #endif
@@ -336,7 +322,8 @@ QPixmap::QPixmap(const char * const xpm[])
 
 QPixmap::~QPixmap()
 {
-    deref();
+    if (data->is_cached && data->ref == 1)
+        QImagePixmapCleanupHooks::executePixmapHooks(this);
 }
 
 /*!
@@ -381,7 +368,7 @@ QPixmap QPixmap::copy(const QRect &rect) const
     else
         d = QGraphicsSystem::createDefaultPixmapData(data->pixelType());
 
-    d->copy(data, r);
+    d->copy(data.data(), r);
     return QPixmap(d);
 }
 
@@ -454,8 +441,6 @@ QPixmap &QPixmap::operator=(const QPixmap &pixmap)
     if (pixmap.paintingActive()) {                // make a deep copy
         *this = pixmap.copy();
     } else {
-        pixmap.data->ref.ref();                                // avoid 'x = x'
-        deref();
         data = pixmap.data;
     }
     return *this;
@@ -660,13 +645,13 @@ void QPixmap::resize_helper(const QSize &s)
     QPixmap pm(QSize(w, h), data->type);
     bool uninit = false;
 #if defined(Q_WS_X11)
-    QX11PixmapData *x11Data = data->classId() == QPixmapData::X11Class ? static_cast<QX11PixmapData*>(data) : 0;
+    QX11PixmapData *x11Data = data->classId() == QPixmapData::X11Class ? static_cast<QX11PixmapData*>(data.data()) : 0;
     if (x11Data) {
         pm.x11SetScreen(x11Data->xinfo.screen());
         uninit = x11Data->flags & QX11PixmapData::Uninitialized;
     }
 #elif defined(Q_WS_MAC)
-    QMacPixmapData *macData = data->classId() == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data) : 0;
+    QMacPixmapData *macData = data->classId() == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data.data()) : 0;
     if (macData)
         uninit = macData->uninit;
 #endif
@@ -680,7 +665,7 @@ void QPixmap::resize_helper(const QSize &s)
 
 #if defined(Q_WS_X11)
     if (x11Data && x11Data->x11_mask) {
-        QX11PixmapData *pmData = static_cast<QX11PixmapData*>(pm.data);
+        QX11PixmapData *pmData = static_cast<QX11PixmapData*>(pm.data.data());
         pmData->x11_mask = (Qt::HANDLE)XCreatePixmap(X11->display,
                                                      RootWindow(x11Data->xinfo.display(),
                                                                 x11Data->xinfo.screen()),
@@ -849,20 +834,11 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
     if (QPixmapCache::find(key, *this))
         return true;
 
-    QImage image = QImageReader(fileName, format).read();
-    if (image.isNull())
-        return false;
-
-    QPixmap pm;
-    if (data->pixelType() == QPixmapData::BitmapType)
-        pm = QBitmap::fromImage(image, flags);
-    else
-        pm = fromImage(image, flags);
-    if (!pm.isNull()) {
-        *this = pm;
+    if (data->fromFile(fileName, format, flags)) {
         QPixmapCache::insert(key, *this);
         return true;
     }
+
     return false;
 }
 
@@ -887,21 +863,7 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
 
 bool QPixmap::loadFromData(const uchar *buf, uint len, const char *format, Qt::ImageConversionFlags flags)
 {
-    QByteArray a = QByteArray::fromRawData(reinterpret_cast<const char *>(buf), len);
-    QBuffer b(&a);
-    b.open(QIODevice::ReadOnly);
-
-    QImage image = QImageReader(&b, format).read();
-    QPixmap pm;
-    if (data->pixelType() == QPixmapData::BitmapType)
-        pm = QBitmap::fromImage(image, flags);
-    else
-        pm = fromImage(image, flags);
-    if (!pm.isNull()) {
-        *this = pm;
-        return true;
-    }
-    return false;
+    return data->fromData(buf, len, format, flags);
 }
 
 /*!
@@ -1175,7 +1137,7 @@ Qt::HANDLE QPixmap::handle() const
 {
 #if defined(Q_WS_X11)
     if (data->classId() == QPixmapData::X11Class)
-        return static_cast<QX11PixmapData*>(data)->handle();
+        return static_cast<const QX11PixmapData*>(data.constData())->handle();
 #endif
     return 0;
 }
@@ -1362,14 +1324,12 @@ bool QPixmap::isDetached() const
     return data->ref == 1;
 }
 
+/*! \internal
+  ### Qt5 - remove me.
+*/
 void QPixmap::deref()
 {
-    if (data && !data->ref.deref()) { // Destroy image if last ref
-        if (data->is_cached)
-            QImagePixmapCleanupHooks::executePixmapHooks(this);
-        delete data;
-        data = 0;
-    }
+    Q_ASSERT_X(false, "QPixmap::deref()", "Do not call this function anymore!");
 }
 
 /*!
@@ -1597,8 +1557,8 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     premultiplied alpha format. If the image has an alpha channel, and
     if the system allows, the preferred format is premultiplied alpha.
     Note also that QPixmap, unlike QImage, may be hardware dependent.
-    On X11 and Mac, a QPixmap is stored on the server side while a
-    QImage is stored on the client side (on Windows, these two classes
+    On X11, Mac and Symbian, a QPixmap is stored on the server side while
+    a QImage is stored on the client side (on Windows, these two classes
     have an equivalent internal representation, i.e. both QImage and
     QPixmap are stored on the client side and don't use any GDI
     resources).
@@ -1617,7 +1577,8 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     screen. Alternatively, if no manipulation is desired, the image
     file can be loaded directly into a QPixmap. On Windows, the
     QPixmap class also supports conversion between \c HBITMAP and
-    QPixmap.
+    QPixmap. On Symbian, the QPixmap class also supports conversion
+    between CFbsBitmap and QPixmap.
 
     QPixmap provides a collection of functions that can be used to
     obtain a variety of information about the pixmap. In addition,
@@ -1717,11 +1678,20 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     operation, you can use QBitmap::fromImage() instead.
 
     In addition, on Windows, the QPixmap class supports conversion to
-    and from HBitmap: the toWinHBITMAP() function creates a HBITMAP
+    and from HBITMAP: the toWinHBITMAP() function creates a HBITMAP
     equivalent to the QPixmap, based on the given HBitmapFormat, and
     returns the HBITMAP handle. The fromWinHBITMAP() function returns
     a QPixmap that is equivalent to the given bitmap which has the
-    specified format.
+    specified format. The QPixmap class also supports conversion to
+    and from HICON: the toWinHICON() function creates a HICON equivalent
+    to the QPixmap, and returns the HICON handle. The fromWinHICON()
+    function returns a QPixmap that is equivalent to the given icon.
+
+    In addition, on Symbian, the QPixmap class supports conversion to
+    and from CFbsBitmap: the toSymbianCFbsBitmap() function creates
+    CFbsBitmap equivalent to the QPixmap, based on given mode and returns 
+    a CFbsBitmap object. The fromSymbianCFbsBitmap() function returns a 
+    QPixmap that is equivalent to the given bitmap and given mode.
 
     \section1 Pixmap Transformations
 
@@ -1928,7 +1898,7 @@ void QPixmap::detach()
 {
     QPixmapData::ClassId id = data->classId();
     if (id == QPixmapData::RasterClass) {
-        QRasterPixmapData *rasterData = static_cast<QRasterPixmapData*>(data);
+        QRasterPixmapData *rasterData = static_cast<QRasterPixmapData*>(data.data());
         rasterData->image.detach();
     }
 
@@ -1936,7 +1906,7 @@ void QPixmap::detach()
         QImagePixmapCleanupHooks::executePixmapHooks(this);
 
 #if defined(Q_WS_MAC)
-    QMacPixmapData *macData = id == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data) : 0;
+    QMacPixmapData *macData = id == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data.data()) : 0;
     if (macData) {
         if (macData->cg_mask) {
             CGImageRelease(macData->cg_mask);
@@ -1952,7 +1922,7 @@ void QPixmap::detach()
 
 #if defined(Q_WS_X11)
     if (data->classId() == QPixmapData::X11Class) {
-        QX11PixmapData *d = static_cast<QX11PixmapData*>(data);
+        QX11PixmapData *d = static_cast<QX11PixmapData*>(data.data());
         d->flags &= ~QX11PixmapData::Uninitialized;
 
         // reset the cache data
@@ -2038,7 +2008,7 @@ QPixmap QPixmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
 */
 QPixmapData* QPixmap::pixmapData() const
 {
-    return data;
+    return data.data();
 }
 
 /*!
@@ -2073,7 +2043,7 @@ QPixmapData* QPixmap::pixmapData() const
 
     \warning This function is only available on Windows.
 
-    \sa fromWinHBITMAP()
+    \sa fromWinHBITMAP(), {QPixmap#Pixmap Conversion}{Pixmap Conversion}
 */
 
 /*! \fn QPixmap QPixmap::fromWinHBITMAP(HBITMAP bitmap, HBitmapFormat format)
@@ -2084,6 +2054,31 @@ QPixmapData* QPixmap::pixmapData() const
     \warning This function is only available on Windows.
 
     \sa toWinHBITMAP(), {QPixmap#Pixmap Conversion}{Pixmap Conversion}
+
+*/
+
+/*! \fn HICON QPixmap::toWinHICON() const
+    \since 4.6
+
+    \bold{Win32 only:} Creates a \c HICON equivalent to the QPixmap.
+    Returns the \c HICON handle.
+
+    It is the caller's responsibility to free the \c HICON data after use.
+
+    \warning This function is only available on Windows.
+
+    \sa fromWinHICON(), {QPixmap#Pixmap Conversion}{Pixmap Conversion}
+*/
+
+/*! \fn QPixmap QPixmap::fromWinHICON(HICON icon)
+    \since 4.6
+
+    \bold{Win32 only:} Returns a QPixmap that is equivalent to the given
+    \a icon.
+
+    \warning This function is only available on Windows.
+
+    \sa toWinHICON(), {QPixmap#Pixmap Conversion}{Pixmap Conversion}
 
 */
 

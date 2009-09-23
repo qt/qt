@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,101 +21,130 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#ifndef QT_NO_DIRECTFB
 
 #include "qdirectfbscreen.h"
 #include "qdirectfbpaintdevice.h"
 #include "qdirectfbpaintengine.h"
 
+#ifndef QT_NO_QWS_DIRECTFB
+
+QT_BEGIN_NAMESPACE
+
 QDirectFBPaintDevice::QDirectFBPaintDevice(QDirectFBScreen *scr)
-    : QCustomRasterPaintDevice(0), dfbSurface(0), lockedImage(0), screen(scr),
-      lock(DFBSurfaceLockFlags(0)), mem(0), engine(0)
-{}
+    : QCustomRasterPaintDevice(0), dfbSurface(0), screen(scr),
+      bpl(-1), lockFlgs(DFBSurfaceLockFlags(0)), mem(0), engine(0), imageFormat(QImage::Format_Invalid)
+{
+#ifdef QT_DIRECTFB_SUBSURFACE
+    subSurface = 0;
+    syncPending = false;
+#endif
+}
 
 QDirectFBPaintDevice::~QDirectFBPaintDevice()
 {
-    delete lockedImage;
+    if (QDirectFBScreen::instance()) {
+        unlockSurface();
+#ifdef QT_DIRECTFB_SUBSURFACE
+        releaseSubSurface();
+#endif
+        if (dfbSurface) {
+            screen->releaseDFBSurface(dfbSurface);
+        }
+    }
     delete engine;
 }
-
 
 IDirectFBSurface *QDirectFBPaintDevice::directFBSurface() const
 {
     return dfbSurface;
 }
 
-
-void QDirectFBPaintDevice::lockDirectFB(DFBSurfaceLockFlags flags)
+bool QDirectFBPaintDevice::lockSurface(DFBSurfaceLockFlags lockFlags)
 {
-    if (!(lock & flags)) {
-        if (lock)
-            unlockDirectFB();
-        mem = QDirectFBScreen::lockSurface(dfbSurface, flags, &bpl);
+    if (lockFlgs && (lockFlags & ~lockFlgs))
+        unlockSurface();
+    if (!mem) {
+        Q_ASSERT(dfbSurface);
+#ifdef QT_DIRECTFB_SUBSURFACE
+        if (!subSurface) {
+            DFBResult result;
+            subSurface = screen->getSubSurface(dfbSurface, QRect(), QDirectFBScreen::TrackSurface, &result);
+            if (result != DFB_OK || !subSurface) {
+                DirectFBError("Couldn't create sub surface", result);
+                return false;
+            }
+        }
+        IDirectFBSurface *surface = subSurface;
+#else
+        IDirectFBSurface *surface = dfbSurface;
+#endif
+        Q_ASSERT(surface);
+        mem = QDirectFBScreen::lockSurface(surface, lockFlags, &bpl);
+        lockFlgs = lockFlags;
         Q_ASSERT(mem);
+        Q_ASSERT(bpl > 0);
         const QSize s = size();
-        lockedImage = new QImage(mem, s.width(), s.height(), bpl,
-                                 QDirectFBScreen::getImageFormat(dfbSurface));
-        lock = flags;
+        lockedImage = QImage(mem, s.width(), s.height(), bpl,
+                             QDirectFBScreen::getImageFormat(dfbSurface));
+        return true;
+    }
+#ifdef QT_DIRECTFB_SUBSURFACE
+    if (syncPending) {
+        syncPending = false;
+        screen->waitIdle();
+    }
+#endif
+    return false;
+}
+
+void QDirectFBPaintDevice::unlockSurface()
+{
+    if (QDirectFBScreen::instance() && lockFlgs) {
+#ifdef QT_DIRECTFB_SUBSURFACE
+        IDirectFBSurface *surface = subSurface;
+#else
+        IDirectFBSurface *surface = dfbSurface;
+#endif
+        if (surface) {
+            surface->Unlock(surface);
+            lockFlgs = static_cast<DFBSurfaceLockFlags>(0);
+            mem = 0;
+        }
     }
 }
-
-
-void QDirectFBPaintDevice::unlockDirectFB()
-{
-    if (!lockedImage || !QDirectFBScreen::instance())
-        return;
-
-    dfbSurface->Unlock(dfbSurface);
-    delete lockedImage;
-    lockedImage = 0;
-    mem = 0;
-    lock = DFBSurfaceLockFlags(0);
-}
-
 
 void *QDirectFBPaintDevice::memory() const
 {
     return mem;
 }
 
-
 QImage::Format QDirectFBPaintDevice::format() const
 {
-    return QDirectFBScreen::getImageFormat(dfbSurface);
+    return imageFormat;
 }
-
 
 int QDirectFBPaintDevice::bytesPerLine() const
 {
-    if (bpl == -1) {
-        // Can only get the stride when we lock the surface
-        Q_ASSERT(!lockedImage);
-        QDirectFBPaintDevice* that = const_cast<QDirectFBPaintDevice*>(this);
-        that->lockDirectFB(DSLF_READ);
-        Q_ASSERT(bpl != -1);
-    }
+    Q_ASSERT(!mem || bpl != -1);
     return bpl;
 }
-
 
 QSize QDirectFBPaintDevice::size() const
 {
@@ -143,12 +173,10 @@ int QDirectFBPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
     case QPaintDevice::PdmDpiY:
         return (dotsPerMeterY() * 254) / 10000; // 0.0254 meters-per-inch
     case QPaintDevice::PdmDepth:
-        DFBSurfacePixelFormat format;
-        dfbSurface->GetPixelFormat(dfbSurface, &format);
-        return QDirectFBScreen::depth(format);
+        return QDirectFBScreen::depth(imageFormat);
     case QPaintDevice::PdmNumColors: {
-       if (lockedImage)
-            return lockedImage->numColors();
+        if (!lockedImage.isNull())
+            return lockedImage.numColors();
 
         DFBResult result;
         IDirectFBPalette *palette = 0;
@@ -176,5 +204,17 @@ QPaintEngine *QDirectFBPaintDevice::paintEngine() const
     return engine;
 }
 
+#ifdef QT_DIRECTFB_SUBSURFACE
+void QDirectFBPaintDevice::releaseSubSurface()
+{
+    Q_ASSERT(QDirectFBScreen::instance());
+    if (subSurface) {
+        screen->releaseDFBSurface(subSurface);
+        subSurface = 0;
+    }
+}
 #endif
 
+QT_END_NAMESPACE
+
+#endif // QT_NO_QWS_DIRECTFB

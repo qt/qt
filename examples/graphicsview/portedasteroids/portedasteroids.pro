@@ -18,4 +18,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS portedasteroids.pro bg.p
 sources.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/portedasteroids
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

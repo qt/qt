@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -82,8 +82,7 @@
 #include "private/qstyle_p.h"
 #include "private/qinputcontext_p.h"
 #include "qfileinfo.h"
-#include "qstandardgestures.h"
-#include "qstandardgestures_p.h"
+#include "private/qsoftkeymanager_p.h"
 
 #if defined (Q_WS_WIN)
 # include <private/qwininputcontext_p.h>
@@ -186,6 +185,10 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , widgetItem(0)
       , extraPaintEngine(0)
       , polished(0)
+      , graphicsEffect(0)
+#if !defined(QT_NO_IM)
+      , imHints(Qt::ImhNone)
+#endif
       , inheritedFontResolveMask(0)
       , inheritedPaletteResolveMask(0)
       , leftmargin(0)
@@ -216,7 +219,6 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , window_event(0)
       , qd_hd(0)
 #endif
-		,imHints(Qt::ImhNone)
 {
     if (!qApp) {
         qFatal("QWidget: Must construct a QApplication before a QPaintDevice");
@@ -242,6 +244,8 @@ QWidgetPrivate::~QWidgetPrivate()
 
     if (extra)
         deleteExtra();
+
+    delete graphicsEffect;
 }
 
 QWindowSurface *QWidgetPrivate::createDefaultWindowSurface()
@@ -407,7 +411,6 @@ void QWidget::setEditFocus(bool on)
         QApplication::sendEvent(f, &event);
         QApplication::sendEvent(f->style(), &event);
     }
-    f->repaint(); // Widget might want to repaint a focus indicator
 }
 #endif
 
@@ -914,7 +917,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     any amount of widgets there might be physical restrictions to amount of
     softkeys that can be used by the device.
 
-    \o Series60: For series60 menu button is automatically mapped to left
+    \e Series60: For series60 menu button is automatically mapped to left
     soft key if there is QMainWindow with QMenuBar in widgets parent hierarchy.
 
     \sa softKeys()
@@ -968,7 +971,10 @@ struct QWidgetExceptionCleaner
     /* this cleans up when the constructor throws an exception */
     static inline void cleanup(QWidget *that, QWidgetPrivate *d)
     {
-#ifndef QT_NO_EXCEPTIONS
+#ifdef QT_NO_EXCEPTIONS
+        Q_UNUSED(that);
+        Q_UNUSED(d);
+#else
         QWidgetPrivate::allWidgets->remove(that);
         if (d->focus_next != that) {
             if (d->focus_next)
@@ -1436,9 +1442,13 @@ QWidget::~QWidget()
         }
     }
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
     else if (!internalWinId() && isVisible()) {
         qApp->d_func()->sendSyntheticEnterLeave(this);
+#ifdef Q_WS_QWS
+    } else if (isVisible()) {
+        qApp->d_func()->sendSyntheticEnterLeave(this);
+#endif
     }
 #endif
 
@@ -1628,9 +1638,9 @@ bool QWidgetPrivate::isOverlapped(const QRect &rect) const
                 continue;
             }
 
-            if (qRectIntersects(sibling->data->crect, r)) {
+            if (qRectIntersects(sibling->d_func()->effectiveRectFor(sibling->data->crect), r)) {
                 const QWExtra *siblingExtra = sibling->d_func()->extra;
-                if (siblingExtra && siblingExtra->hasMask
+                if (siblingExtra && siblingExtra->hasMask && !sibling->d_func()->graphicsEffect
                     && !siblingExtra->mask.translated(sibling->data->crect.topLeft()).intersects(r)) {
                     continue;
                 }
@@ -1729,7 +1739,7 @@ QRect QWidgetPrivate::clipRect() const
     const QWidget * w = q;
     if (!w->isVisible())
         return QRect();
-    QRect r = q->rect();
+    QRect r = effectiveRectFor(q->rect());
     int ox = 0;
     int oy = 0;
     while (w
@@ -1871,12 +1881,14 @@ void QWidgetPrivate::subtractOpaqueSiblings(QRegion &sourceRegion, bool *hasDirt
             break;
         QWidgetPrivate *pd = w->parentWidget()->d_func();
         const int myIndex = pd->children.indexOf(const_cast<QWidget *>(w));
+        const QRect widgetGeometry = w->d_func()->effectiveRectFor(w->data->crect);
         for (int i = myIndex + 1; i < pd->children.size(); ++i) {
             QWidget *sibling = qobject_cast<QWidget *>(pd->children.at(i));
             if (!sibling || !sibling->isVisible() || sibling->isWindow())
                 continue;
 
-            if (!qRectIntersects(sibling->data->crect, w->data->crect))
+            const QRect siblingGeometry = sibling->d_func()->effectiveRectFor(sibling->data->crect);
+            if (!qRectIntersects(siblingGeometry, widgetGeometry))
                 continue;
 
             if (dirtyClipBoundingRect) {
@@ -1884,7 +1896,7 @@ void QWidgetPrivate::subtractOpaqueSiblings(QRegion &sourceRegion, bool *hasDirt
                 dirtyClipBoundingRect = false;
             }
 
-            if (!qRectIntersects(sibling->data->crect, clipBoundingRect.translated(parentOffset)))
+            if (!qRectIntersects(siblingGeometry, clipBoundingRect.translated(parentOffset)))
                 continue;
 
             if (dirtyParentClip) {
@@ -1896,7 +1908,8 @@ void QWidgetPrivate::subtractOpaqueSiblings(QRegion &sourceRegion, bool *hasDirt
             const QRect siblingClipRect(sibling->d_func()->clipRect());
             QRegion siblingDirty(parentClip);
             siblingDirty &= (siblingClipRect.translated(siblingPos));
-            const bool hasMask = sibling->d_func()->extra && sibling->d_func()->extra->hasMask;
+            const bool hasMask = sibling->d_func()->extra && sibling->d_func()->extra->hasMask
+                                 && !sibling->d_func()->graphicsEffect;
             if (hasMask)
                 siblingDirty &= sibling->d_func()->extra->mask.translated(siblingPos);
             if (siblingDirty.isEmpty())
@@ -1907,7 +1920,7 @@ void QWidgetPrivate::subtractOpaqueSiblings(QRegion &sourceRegion, bool *hasDirt
                     siblingDirty.translate(-parentOffset);
                     sourceRegion -= siblingDirty;
                 } else {
-                    sourceRegion -= sibling->data->crect.translated(-parentOffset);
+                    sourceRegion -= siblingGeometry.translated(-parentOffset);
                 }
             } else {
                 if (hasDirtySiblingsAbove)
@@ -1937,6 +1950,11 @@ void QWidgetPrivate::clipToEffectiveMask(QRegion &region) const
 
     const QWidget *w = q;
     QPoint offset;
+
+    if (graphicsEffect) {
+        w = q->parentWidget();
+        offset -= data.crect.topLeft();
+    }
 
     while (w) {
         const QWidgetPrivate *wd = w->d_func();
@@ -1970,6 +1988,12 @@ void QWidgetPrivate::updateIsOpaque()
 {
     // hw: todo: only needed if opacity actually changed
     setDirtyOpaqueRegion();
+
+    if (graphicsEffect) {
+        // ### We should probably add QGraphicsEffect::isOpaque at some point.
+        setOpaque(false);
+        return;
+    }
 
     Q_Q(QWidget);
 #ifdef Q_WS_X11
@@ -2082,6 +2106,13 @@ static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QBrus
             painter->drawTiledPixmap(rect, brush.texture(), rect.topLeft());
         }
 #endif // Q_WS_MAC
+
+    } else if (brush.gradient()
+               && brush.gradient()->coordinateMode() == QGradient::ObjectBoundingMode) {
+        painter->save();
+        painter->setClipRegion(rgn);
+        painter->fillRect(0, 0, painter->device()->width(), painter->device()->height(), brush);
+        painter->restore();
     } else {
         const QVector<QRect> &rects = rgn.rects();
         for (int i = 0; i < rects.size(); ++i)
@@ -2121,7 +2152,6 @@ void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, int 
 
     if (q->autoFillBackground())
         fillRegion(painter, rgn, autoFillBrush);
-
 
     if (q->testAttribute(Qt::WA_StyledBackground)) {
         painter->setClipRegion(rgn);
@@ -3024,7 +3054,6 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
     if (q->testAttribute(Qt::WA_SetCursor) || q->isWindow()) {
         // enforce the windows behavior of clearing the cursor on
         // disabled widgets
-        extern void qt_x11_enforce_cursor(QWidget * w); // defined in qwidget_x11.cpp
         qt_x11_enforce_cursor(q);
     }
 #endif
@@ -3300,7 +3329,7 @@ QPoint QWidget::pos() const
 
     \note Do not use this function to find the width of a screen on
     a \l{QDesktopWidget}{multiple screen desktop}. Read
-    \l{multiple screens note}{this note} for details.
+    \l{QDesktopWidget#Screen Geometry}{this note} for details.
 
     By default, this property contains a value that depends on the user's
     platform and screen geometry.
@@ -3316,8 +3345,8 @@ QPoint QWidget::pos() const
     issues with windows.
 
     \note Do not use this function to find the height of a screen
-    on a \l {QDesktopWidget} {multiple screen desktop}. Read
-    \l {multiple screens note} {this note} for details.
+    on a \l{QDesktopWidget}{multiple screen desktop}. Read
+    \l{QDesktopWidget#Screen Geometry}{this note} for details.
 
     By default, this property contains a value that depends on the user's
     platform and screen geometry.
@@ -4155,6 +4184,10 @@ QPalette::ColorRole QWidget::backgroundRole() const
   If \a role is QPalette::NoRole, then the widget inherits its
   parent's background role.
 
+  Note that styles are free to choose any color from the palette.
+  You can modify the palette or set a style sheet if you don't
+  achieve the result you want with setBackgroundRole().
+
   \sa backgroundRole(), foregroundRole()
  */
 
@@ -4216,6 +4249,10 @@ QPalette::ColorRole QWidget::foregroundRole() const
 
   If \a role is QPalette::NoRole, the widget uses a foreground role
   that contrasts with the background role.
+
+  Note that styles are free to choose any color from the palette.
+  You can modify the palette or set a style sheet if you don't
+  achieve the result you want with setForegroundRole().
 
   \sa foregroundRole(), backgroundRole()
  */
@@ -4941,12 +4978,68 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     d->extra->inRenderWithPainter = false;
 }
 
-#if !defined(Q_OS_SYMBIAN)
-void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
+/*!
+    \brief The graphicsEffect function returns a pointer to the
+    widget's graphics effect.
+
+    If the widget has no graphics effect, 0 is returned.
+
+    \since 4.6
+
+    \sa setGraphicsEffect()
+*/
+QGraphicsEffect *QWidget::graphicsEffect() const
 {
-    Q_UNUSED(softkeys)
+    Q_D(const QWidget);
+    return d->graphicsEffect;
 }
-#endif // !defined(Q_OS_SYMBIAN)
+
+/*!
+
+  \brief The setGraphicsEffect function is for setting the widget's graphics effect.
+
+    Sets \a effect as the widget's effect. If there already is an effect installed
+    on this widget, QWidget will delete the existing effect before installing
+    the new \a effect.
+
+    If \a effect is the installed on a different widget, setGraphicsEffect() will remove
+    the effect from the widget and install it on this widget.
+
+    \note This function will apply the effect on itself and all its children.
+
+    \since 4.6
+
+    \sa graphicsEffect()
+*/
+void QWidget::setGraphicsEffect(QGraphicsEffect *effect)
+{
+    Q_D(QWidget);
+    if (d->graphicsEffect == effect)
+        return;
+
+    if (d->graphicsEffect && effect) {
+        delete d->graphicsEffect;
+        d->graphicsEffect = 0;
+    }
+
+    if (!effect) {
+        // Unset current effect.
+        QGraphicsEffectPrivate *oldEffectPrivate = d->graphicsEffect->d_func();
+        d->graphicsEffect = 0;
+        if (oldEffectPrivate) {
+            oldEffectPrivate->setGraphicsEffectSource(0); // deletes the current source.
+        }
+    } else {
+        // Set new effect.
+        QGraphicsEffectSourcePrivate *sourced = new QWidgetEffectSourcePrivate(this);
+        QGraphicsEffectSource *source = new QGraphicsEffectSource(*sourced);
+        d->graphicsEffect = effect;
+        effect->d_func()->setGraphicsEffectSource(source);
+    }
+
+    d->updateIsOpaque();
+    update();
+}
 
 bool QWidgetPrivate::isAboutToShow() const
 {
@@ -5092,6 +5185,33 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
         return;
 
     Q_Q(QWidget);
+    if (graphicsEffect && graphicsEffect->isEnabled()) {
+        QGraphicsEffectSource *source = graphicsEffect->d_func()->source;
+        QWidgetEffectSourcePrivate *sourced = static_cast<QWidgetEffectSourcePrivate *>
+                                                         (source->d_func());
+        if (!sourced->context) {
+            QWidgetPaintContext context(pdev, rgn, offset, flags, sharedPainter, backingStore);
+            sourced->context = &context;
+            if (!sharedPainter) {
+                QPaintEngine *paintEngine = pdev->paintEngine();
+                paintEngine->d_func()->systemClip = rgn.translated(offset);
+                QPainter p(pdev);
+                p.translate(offset);
+                context.painter = &p;
+                graphicsEffect->draw(&p, source);
+                paintEngine->d_func()->systemClip = QRegion();
+            } else {
+                context.painter = sharedPainter;
+                sharedPainter->save();
+                sharedPainter->translate(offset);
+                graphicsEffect->draw(sharedPainter, source);
+                sharedPainter->restore();
+            }
+            sourced->context = 0;
+            return;
+        }
+    }
+
     const bool asRoot = flags & DrawAsRoot;
     const bool alsoOnScreen = flags & DrawPaintOnScreen;
     const bool recursive = flags & DrawRecursive;
@@ -5124,7 +5244,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 if (sharedPainter)
                     paintEngine->d_func()->systemClip = toBePainted;
                 else
-                    paintEngine->setSystemRect(q->data->crect);
+                    paintEngine->d_func()->systemRect = q->data->crect;
 
                 //paint the background
                 if ((asRoot || q->autoFillBackground() || onScreen || q->testAttribute(Qt::WA_StyledBackground))
@@ -5163,7 +5283,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             if (paintEngine) {
                 restoreRedirected();
                 if (!sharedPainter)
-                    paintEngine->setSystemRect(QRect());
+                    paintEngine->d_func()->systemRect = QRect();
                 else
                     paintEngine->d_func()->currentClipWidget = 0;
                 paintEngine->d_func()->systemClip = QRegion();
@@ -5226,7 +5346,7 @@ void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectLis
                 dirtyBoundingRect = false;
             }
 
-            if (qRectIntersects(boundingRect, x->data->crect)) {
+            if (qRectIntersects(boundingRect, x->d_func()->effectiveRectFor(x->data->crect))) {
 #ifdef Q_BACKINGSTORE_SUBSURFACES
                 if (x->windowSurface() == currentSurface)
 #endif
@@ -5244,7 +5364,7 @@ void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectLis
 
     QWidgetPrivate *wd = w->d_func();
     const QPoint widgetPos(w->data->crect.topLeft());
-    const bool hasMask = wd->extra && wd->extra->hasMask;
+    const bool hasMask = wd->extra && wd->extra->hasMask && !wd->graphicsEffect;
 
     if (index > 0) {
         QRegion wr(rgn);
@@ -5259,12 +5379,99 @@ void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectLis
 
     if (w->updatesEnabled() && (!w->d_func()->extra || !w->d_func()->extra->proxyWidget)) {
         QRegion wRegion(rgn);
-        wRegion &= w->data->crect;
+        wRegion &= wd->effectiveRectFor(w->data->crect);
         wRegion.translate(-widgetPos);
         if (hasMask)
             wRegion &= wd->extra->mask;
         wd->drawWidget(pdev, wRegion, offset + widgetPos, flags, sharedPainter, backingStore);
     }
+}
+
+QRectF QWidgetEffectSourcePrivate::boundingRect(Qt::CoordinateSystem system) const
+{
+    if (system != Qt::DeviceCoordinates)
+        return m_widget->rect();
+
+    if (!context) {
+        // Device coordinates without context not yet supported.
+        qWarning("QGraphicsEffectSource::boundingRect: Not yet implemented, lacking device context");
+        return QRectF();
+    }
+
+    return context->painter->worldTransform().mapRect(m_widget->rect());
+}
+
+void QWidgetEffectSourcePrivate::draw(QPainter *painter)
+{
+    if (!context || context->painter != painter) {
+        m_widget->render(painter);
+        return;
+    }
+
+    // The region saved in the context is neither clipped to the rect
+    // nor the mask, so we have to clip it here before calling drawWidget.
+    QRegion toBePainted = context->rgn;
+    toBePainted &= m_widget->rect();
+    QWidgetPrivate *wd = qt_widget_private(m_widget);
+    if (wd->extra && wd->extra->hasMask)
+        toBePainted &= wd->extra->mask;
+
+    wd->drawWidget(context->pdev, toBePainted, context->offset, context->flags,
+                   context->sharedPainter, context->backingStore);
+}
+
+QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *offset) const
+{
+    const bool deviceCoordinates = (system == Qt::DeviceCoordinates);
+    if (!context && deviceCoordinates) {
+        // Device coordinates without context not yet supported.
+        qWarning("QGraphicsEffectSource::pixmap: Not yet implemented, lacking device context");
+        return QPixmap();
+    }
+
+    QPoint pixmapOffset;
+    QRectF sourceRect = m_widget->rect();
+
+    if (deviceCoordinates) {
+        const QTransform &painterTransform = context->painter->worldTransform();
+        sourceRect = painterTransform.mapRect(sourceRect);
+        pixmapOffset = painterTransform.map(pixmapOffset);
+    }
+
+    QRect effectRect = m_widget->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
+    if (offset)
+        *offset = effectRect.topLeft();
+
+    if (deviceCoordinates) {
+        // Clip to device rect.
+        int left, top, right, bottom;
+        effectRect.getCoords(&left, &top, &right, &bottom);
+        if (left < 0) {
+            if (offset)
+                offset->rx() += -left;
+            effectRect.setX(0);
+        }
+        if (top < 0) {
+            if (offset)
+                offset->ry() += -top;
+            effectRect.setY(0);
+        }
+        // NB! We use +-1 for historical reasons (see QRect documentation).
+        QPaintDevice *device = context->painter->device();
+        const int deviceWidth = device->width();
+        const int deviceHeight = device->height();
+        if (right + 1 > deviceWidth)
+            effectRect.setRight(deviceWidth - 1);
+        if (bottom + 1 > deviceHeight)
+            effectRect.setBottom(deviceHeight -1);
+    }
+
+    pixmapOffset -= effectRect.topLeft();
+
+    QPixmap pixmap(effectRect.size());
+    pixmap.fill(Qt::transparent);
+    m_widget->render(&pixmap, pixmapOffset);
+    return pixmap;
 }
 
 /*!
@@ -5486,7 +5693,7 @@ void QWidget::setWindowIconText(const QString &iconText)
 
 void QWidget::setWindowTitle(const QString &title)
 {
-    if (QWidget::windowTitle() == title)
+    if (QWidget::windowTitle() == title && !title.isEmpty() && !title.isNull())
         return;
 
     Q_D(QWidget);
@@ -5761,6 +5968,8 @@ bool QWidget::hasFocus() const
     isActiveWindow() active window\endlink. The \a reason argument will
     be passed into any focus event sent from this function, it is used
     to give an explanation of what caused the widget to get focus.
+    If the window is not active, the widget will be given the focus when
+    the window becomes active.
 
     First, a focus out event is sent to the focus widget (if any) to
     tell it that it is about to lose the focus. Then a focus in event
@@ -5785,8 +5994,6 @@ bool QWidget::hasFocus() const
 
 void QWidget::setFocus(Qt::FocusReason reason)
 {
-    Q_D(QWidget);
-
     if (!isEnabled())
         return;
 
@@ -6010,7 +6217,8 @@ QWidget *QWidget::nextInFocusChain() const
 }
 
 /*!
-    Returns the previous widget in this widget's focus chain.
+    \brief The previousInFocusChain function returns the previous
+    widget in this widget's focus chain.
 
     \sa nextInFocusChain()
 
@@ -6053,6 +6261,10 @@ bool QWidget::isActiveWindow() const
     extern bool qt_mac_is_macdrawer(const QWidget *); //qwidget_mac.cpp
     if(qt_mac_is_macdrawer(tlw) &&
        tlw->parentWidget() && tlw->parentWidget()->isActiveWindow())
+        return true;
+
+    extern bool qt_mac_insideKeyWindow(const QWidget *); //qwidget_mac.cpp
+    if (QApplication::testAttribute(Qt::AA_MacPluginApplication) && qt_mac_insideKeyWindow(tlw))
         return true;
 #endif
     if(style()->styleHint(QStyle::SH_Widget_ShareActivation, 0, this)) {
@@ -6243,6 +6455,8 @@ void QWidgetPrivate::reparentFocusWidgets(QWidget * oldtlw)
 
   This function is called from QDesktopwidget::screen(QPoint) to find the
   closest screen for a point.
+  In directional KeypadNavigation, it is called to find the closest
+  widget to the current focus widget center.
 */
 int QWidgetPrivate::pointToRect(const QPoint &p, const QRect &r)
 {
@@ -6507,14 +6721,14 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
 */
 
 /*!
-    Sets the margins around the contents of the widget to have the
-    sizes \a left, \a top, \a right, and \a bottom. The margins are
-    used by the layout system, and may be used by subclasses to
-    specify the area to draw in (e.g. excluding the frame).
+  Sets the margins around the contents of the widget to have the sizes
+  \a left, \a top, \a right, and \a bottom. The margins are used by
+  the layout system, and may be used by subclasses to specify the area
+  to draw in (e.g. excluding the frame).
 
-    Changing the margins will trigger a resizeEvent().
+  Changing the margins will trigger a resizeEvent().
 
-    \sa contentsRect(), getContentsMargins()
+  \sa contentsRect(), getContentsMargins()
 */
 void QWidget::setContentsMargins(int left, int top, int right, int bottom)
 {
@@ -6545,7 +6759,30 @@ void QWidget::setContentsMargins(int left, int top, int right, int bottom)
     QApplication::sendEvent(this, &e);
 }
 
-/*!  Returns the widget's contents margins for \a left, \a top, \a
+/*!
+  \overload
+  \since 4.6
+
+  \brief The setContentsMargins function sets the margins around the
+  widget's contents.
+
+  Sets the margins around the contents of the widget to have the
+  sizes determined by \a margins. The margins are
+  used by the layout system, and may be used by subclasses to
+  specify the area to draw in (e.g. excluding the frame).
+
+  Changing the margins will trigger a resizeEvent().
+
+  \sa contentsRect(), getContentsMargins()
+*/
+void QWidget::setContentsMargins(const QMargins &margins)
+{
+    setContentsMargins(margins.left(), margins.top(),
+                       margins.right(), margins.bottom());
+}
+
+/*!
+  Returns the widget's contents margins for \a left, \a top, \a
   right, and \a bottom.
 
   \sa setContentsMargins(), contentsRect()
@@ -6562,6 +6799,20 @@ void QWidget::getContentsMargins(int *left, int *top, int *right, int *bottom) c
     if (bottom)
         *bottom = d->bottommargin;
 }
+
+/*!
+  \since 4.6
+
+  \brief The contentsMargins function returns the widget's contents margins.
+
+  \sa getContentsMargins(), setContentsMargins(), contentsRect()
+ */
+QMargins QWidget::contentsMargins() const
+{
+    Q_D(const QWidget);
+    return QMargins(d->leftmargin, d->topmargin, d->rightmargin, d->bottommargin);
+}
+
 
 /*!
     Returns the area inside the widget's margins.
@@ -6944,7 +7195,7 @@ void QWidgetPrivate::hide_helper()
     // next bit tries to move the focus if the focus widget is now
     // hidden.
     if (wasVisible) {
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
         qApp->d_func()->sendSyntheticEnterLeave(q);
 #endif
 
@@ -7076,7 +7327,7 @@ void QWidget::setVisible(bool visible)
 
             d->show_helper();
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
             qApp->d_func()->sendSyntheticEnterLeave(this);
 #endif
         }
@@ -7191,7 +7442,7 @@ void QWidgetPrivate::hideChildren(bool spontaneous)
                 widget->d_func()->hide_sys();
             }
         }
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
         qApp->d_func()->sendSyntheticEnterLeave(widget);
 #endif
 #ifndef QT_NO_ACCESSIBILITY
@@ -7689,10 +7940,21 @@ bool QWidget::event(QEvent *event)
 #ifdef QT_KEYPAD_NAVIGATION
         if (!k->isAccepted() && QApplication::keypadNavigationEnabled()
             && !(k->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier))) {
-            if (k->key() == Qt::Key_Up)
-                res = focusNextPrevChild(false);
-            else if (k->key() == Qt::Key_Down)
-                res = focusNextPrevChild(true);
+            if (QApplication::navigationMode() == Qt::NavigationModeKeypadTabOrder) {
+                if (k->key() == Qt::Key_Up)
+                    res = focusNextPrevChild(false);
+                else if (k->key() == Qt::Key_Down)
+                    res = focusNextPrevChild(true);
+            } else if (QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional) {
+                if (k->key() == Qt::Key_Up)
+                    res = QWidgetPrivate::navigateToDirection(QWidgetPrivate::DirectionNorth);
+                else if (k->key() == Qt::Key_Right)
+                    res = QWidgetPrivate::navigateToDirection(QWidgetPrivate::DirectionEast);
+                else if (k->key() == Qt::Key_Down)
+                    res = QWidgetPrivate::navigateToDirection(QWidgetPrivate::DirectionSouth);
+                else if (k->key() == Qt::Key_Left)
+                    res = QWidgetPrivate::navigateToDirection(QWidgetPrivate::DirectionWest);
+            }
             if (res) {
                 k->accept();
                 break;
@@ -7745,7 +8007,9 @@ bool QWidget::event(QEvent *event)
         }
         break;
     case QEvent::FocusIn:
-        d->setSoftKeys_sys(softKeys());
+#ifdef QT_SOFTKEYS_ENABLED
+        QSoftKeyManager::updateSoftKeys();
+#endif
         focusInEvent((QFocusEvent*)event);
         break;
 
@@ -7896,8 +8160,10 @@ bool QWidget::event(QEvent *event)
                 QApplication::sendEvent(w, event);
         }
 
+#ifdef QT_SOFTKEYS_ENABLED
         if (isWindow() && isActiveWindow())
-            d->setSoftKeys_sys(softKeys());
+            QSoftKeyManager::updateSoftKeys();
+#endif
 
         break; }
 
@@ -8006,6 +8272,9 @@ bool QWidget::event(QEvent *event)
     case QEvent::ActionAdded:
     case QEvent::ActionRemoved:
     case QEvent::ActionChanged:
+#ifdef QT_SOFTKEYS_ENABLED
+        QSoftKeyManager::updateSoftKeys();
+#endif
         actionEvent((QActionEvent*)event);
         break;
 #endif
@@ -8237,8 +8506,10 @@ void QWidget::mouseReleaseEvent(QMouseEvent *event)
 
     The default implementation generates a normal mouse press event.
 
-    Note that the widgets gets a mousePressEvent() and a
-    mouseReleaseEvent() before the mouseDoubleClickEvent().
+    \note The widget will also receive mouse press and mouse release
+    events in addition to the double click event. It is up to the
+    developer to ensure that the application interprets these events
+    correctly.
 
     \sa mousePressEvent(), mouseReleaseEvent() mouseMoveEvent(),
     event(), QMouseEvent
@@ -11133,6 +11404,74 @@ QRect QWidgetPrivate::frameStrut() const
     return maybeTopData() ? maybeTopData()->frameStrut : QRect();
 }
 
+#ifdef QT_KEYPAD_NAVIGATION
+/*!
+    \internal
+
+    Changes the focus  from the current focusWidget to a widget in
+    the \a direction.
+
+    Returns true, if there was a widget in that direction
+*/
+bool QWidgetPrivate::navigateToDirection(Direction direction)
+{
+    QWidget *targetWidget = widgetInNavigationDirection(direction);
+    if (targetWidget)
+        targetWidget->setFocus();
+    return (targetWidget != 0);
+}
+
+/*!
+    \internal
+
+    Searches for a widget that is positioned in the \a direction, starting
+    from the current focusWidget.
+
+    Returns the pointer to a found widget or 0, if there was no widget in
+    that direction.
+*/
+QWidget *QWidgetPrivate::widgetInNavigationDirection(Direction direction)
+{
+    const QWidget *sourceWidget = QApplication::focusWidget();
+    if (!sourceWidget)
+        return 0;
+    const QRect sourceRect = sourceWidget->rect().translated(sourceWidget->mapToGlobal(QPoint()));
+    const int sourceX =
+            (direction == DirectionNorth || direction == DirectionSouth) ?
+                (sourceRect.left() + (sourceRect.right() - sourceRect.left()) / 2)
+                :(direction == DirectionEast ? sourceRect.right() : sourceRect.left());
+    const int sourceY =
+            (direction == DirectionEast || direction == DirectionWest) ?
+                (sourceRect.top() + (sourceRect.bottom() - sourceRect.top()) / 2)
+                :(direction == DirectionSouth ? sourceRect.bottom() : sourceRect.top());
+    const QPoint sourcePoint(sourceX, sourceY);
+    const QPoint sourceCenter = sourceRect.center();
+    const QWidget *sourceWindow = sourceWidget->window();
+
+    QWidget *targetWidget = 0;
+    int shortestDistance = INT_MAX;
+    foreach(QWidget *targetCandidate, QApplication::allWidgets()) {
+        const QRect targetCandidateRect = targetCandidate->rect().translated(targetCandidate->mapToGlobal(QPoint()));
+        if (       targetCandidate != sourceWidget
+                && targetCandidate->focusPolicy() & Qt::TabFocus
+                && !(direction == DirectionNorth && targetCandidateRect.bottom() > sourceRect.top())
+                && !(direction == DirectionEast  && targetCandidateRect.left()   < sourceRect.right())
+                && !(direction == DirectionSouth && targetCandidateRect.top()    < sourceRect.bottom())
+                && !(direction == DirectionWest  && targetCandidateRect.right()  > sourceRect.left())
+                && targetCandidate->isEnabled()
+                && targetCandidate->isVisible()
+                && targetCandidate->window() == sourceWindow) {
+            const int targetCandidateDistance = pointToRect(sourcePoint, targetCandidateRect);
+            if (targetCandidateDistance < shortestDistance) {
+                shortestDistance = targetCandidateDistance;
+                targetWidget = targetCandidate;
+            }
+        }
+    }
+    return targetWidget;
+}
+#endif
+
 /*!
     \preliminary
     \since 4.2
@@ -11616,68 +11955,6 @@ void QWidget::setMask(const QBitmap &bitmap)
 void QWidget::clearMask()
 {
     setMask(QRegion());
-}
-
-/*!
-    \preliminary
-    \since 4.6
-
-    Returns the (possibly empty) list of this widget's softkeys.
-    Returned list cannot be changed. Softkeys should be added
-    and removed via method called setSoftKeys
-
-    \sa setSoftKey(), setSoftKeys()
-*/
-const QList<QAction*>& QWidget::softKeys() const
-{
-    Q_D(const QWidget);
-    if( d->softKeys.count() > 0)
-        return d->softKeys;
-    if (isWindow() || !parentWidget())
-        return d->softKeys;
-
-    return parentWidget()->softKeys();
-}
-
-/*!
-    \preliminary
-    \since 4.6
-
-    Sets the softkey \a softkey to this widget's list of softkeys,
-    Setting 0 as softkey will clear all the existing softkeys set
-    to the widget
-    A QWidget can have 0 or more softkeys
-
-    \sa softKeys(), setSoftKeys()
-*/
-void QWidget::setSoftKey(QAction *softKey)
-{
-    Q_D(QWidget);
-    qDeleteAll(d->softKeys);
-    d->softKeys.clear();
-    if (softKey)
-        d->softKeys.append(softKey);
-    if ((!QApplication::focusWidget() && this == QApplication::activeWindow())
-        || QApplication::focusWidget() == this)
-        d->setSoftKeys_sys(this->softKeys());
-}
-
-/*!
-    Sets the list of softkeys \a softkeys to this widget's list of softkeys,
-    A QWidget can have 0 or more softkeys
-
-    \sa softKeys(), setSoftKey()
-*/
-void QWidget::setSoftKeys(const QList<QAction*> &softKeys)
-{
-    Q_D(QWidget);
-    qDeleteAll(d->softKeys);
-    d->softKeys.clear();
-        d->softKeys = softKeys;
-
-    if ((!QApplication::focusWidget() && this == QApplication::activeWindow())
-        || QApplication::focusWidget() == this)
-        d->setSoftKeys_sys(this->softKeys());
 }
 
 /*! \fn const QX11Info &QWidget::x11Info() const

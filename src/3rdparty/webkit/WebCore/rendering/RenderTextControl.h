@@ -34,17 +34,6 @@ class RenderTextControl : public RenderBlock {
 public:
     virtual ~RenderTextControl();
 
-    virtual const char* renderName() const { return "RenderTextControl"; }
-    virtual bool isTextControl() const { return true; }
-    virtual bool hasControlClip() const { return false; }
-    virtual IntRect controlClipRect(int tx, int ty) const;
-    virtual void calcHeight();
-    virtual void calcPrefWidths();
-    virtual void removeLeftoverAnonymousBlock(RenderBlock*) { }
-    virtual void updateFromElement();
-    virtual bool canHaveChildren() const { return false; }
-    virtual bool avoidsFloats() const { return true; }
-    
     bool isEdited() const { return m_edited; }
     void setEdited(bool isEdited) { m_edited = isEdited; }
 
@@ -64,12 +53,10 @@ public:
     String textWithHardLineBreaks();
     void selectionChanged(bool userTriggered);
 
-    virtual void addFocusRingRects(GraphicsContext*, int tx, int ty);
-
-    virtual bool canBeProgramaticallyScrolled(bool) const { return true; }
-
     VisiblePosition visiblePositionForIndex(int index);
     int indexForVisiblePosition(const VisiblePosition&);
+
+    void updatePlaceholderVisibility(bool, bool);
 
 protected:
     RenderTextControl(Node*);
@@ -91,11 +78,31 @@ protected:
     virtual void adjustControlHeightBasedOnLineHeight(int lineHeight) = 0;
     virtual void cacheSelection(int start, int end) = 0;
     virtual PassRefPtr<RenderStyle> createInnerTextStyle(const RenderStyle* startStyle) const = 0;
+    virtual RenderStyle* textBaseStyle() const = 0;
+
+    virtual void updateFromElement();
+    virtual void calcHeight();
 
     friend class TextIterator;
     HTMLElement* innerTextElement() const;
 
+    bool m_placeholderVisible;
+
 private:
+    virtual const char* renderName() const { return "RenderTextControl"; }
+    virtual bool isTextControl() const { return true; }
+    virtual bool hasControlClip() const { return false; }
+    virtual IntRect controlClipRect(int tx, int ty) const;
+    virtual void calcPrefWidths();
+    virtual void removeLeftoverAnonymousBlock(RenderBlock*) { }
+    virtual bool canHaveChildren() const { return false; }
+    virtual bool avoidsFloats() const { return true; }
+    void setInnerTextStyle(PassRefPtr<RenderStyle>);
+    
+    virtual void addFocusRingRects(GraphicsContext*, int tx, int ty);
+
+    virtual bool canBeProgramaticallyScrolled(bool) const { return true; }
+
     String finishText(Vector<UChar>&) const;
 
     bool m_edited;
@@ -103,16 +110,16 @@ private:
     RefPtr<TextControlInnerTextElement> m_innerText;
 };
 
-inline RenderTextControl* toRenderTextControl(RenderObject* o)
+inline RenderTextControl* toRenderTextControl(RenderObject* object)
 { 
-    ASSERT(!o || o->isTextControl());
-    return static_cast<RenderTextControl*>(o);
+    ASSERT(!object || object->isTextControl());
+    return static_cast<RenderTextControl*>(object);
 }
 
-inline const RenderTextControl* toRenderTextControl(const RenderObject* o)
+inline const RenderTextControl* toRenderTextControl(const RenderObject* object)
 { 
-    ASSERT(!o || o->isTextControl());
-    return static_cast<const RenderTextControl*>(o);
+    ASSERT(!object || object->isTextControl());
+    return static_cast<const RenderTextControl*>(object);
 }
 
 // This will catch anyone doing an unnecessary cast.

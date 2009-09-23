@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,7 +51,11 @@
 #include "qdebug.h"
 #include "qboxlayout.h"
 #include "qpainter.h"
+
+#ifdef Q_WS_WIN
 #include "qstandardgestures.h"
+#include <private/qstandardgestures_p.h>
+#endif
 
 #include "qabstractscrollarea_p.h"
 #include <qwidget.h>
@@ -159,9 +163,9 @@ QT_BEGIN_NAMESPACE
 QAbstractScrollAreaPrivate::QAbstractScrollAreaPrivate()
     :hbar(0), vbar(0), vbarpolicy(Qt::ScrollBarAsNeeded), hbarpolicy(Qt::ScrollBarAsNeeded),
      viewport(0), cornerWidget(0), left(0), top(0), right(0), bottom(0),
-     xoffset(0), yoffset(0), viewportFilter(0), panGesture(0)
+     xoffset(0), yoffset(0), viewportFilter(0)
 #ifdef Q_WS_WIN
-     , singleFingerPanEnabled(false)
+     , panGesture(0), singleFingerPanEnabled(false)
 #endif
 {
 }
@@ -295,8 +299,13 @@ void QAbstractScrollAreaPrivate::init()
     q->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     layoutChildren();
 
-    panGesture = new QPanGesture(q);
+#ifdef Q_WS_WIN
+    panGesture = new QPanGesture(viewport, q);
+    panGesture->d_func()->implicitGesture = true;
+    QObject::connect(panGesture, SIGNAL(started()), q, SLOT(_q_gestureTriggered()));
     QObject::connect(panGesture, SIGNAL(triggered()), q, SLOT(_q_gestureTriggered()));
+    QObject::connect(panGesture, SIGNAL(finished()), q, SLOT(_q_gestureTriggered()));
+#endif // Q_WS_WIN
 }
 
 #ifdef Q_WS_WIN
@@ -547,6 +556,9 @@ void QAbstractScrollArea::setViewport(QWidget *widget)
         if (isVisible())
             d->viewport->show();
         QMetaObject::invokeMethod(this, "setupViewport", Q_ARG(QWidget *, widget));
+#ifdef Q_WS_WIN
+        d->panGesture->setGestureTarget(widget);
+#endif
         delete oldViewport;
     }
 }
@@ -934,6 +946,10 @@ bool QAbstractScrollArea::event(QEvent *e)
     case QEvent::DragMove:
     case QEvent::DragLeave:
 #endif
+        // ignore touch events in case they have been propagated from the viewport
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
         return false;
     case QEvent::StyleChange:
     case QEvent::LayoutDirectionChange:
@@ -974,6 +990,9 @@ bool QAbstractScrollArea::viewportEvent(QEvent *e)
     case QEvent::MouseButtonPress:
     case QEvent::MouseButtonRelease:
     case QEvent::MouseButtonDblClick:
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
     case QEvent::MouseMove:
     case QEvent::ContextMenu:
 #ifndef QT_NO_WHEELEVENT
@@ -1332,6 +1351,7 @@ void QAbstractScrollArea::setupViewport(QWidget *viewport)
     Q_UNUSED(viewport);
 }
 
+#ifdef Q_WS_WIN
 void QAbstractScrollAreaPrivate::_q_gestureTriggered()
 {
     Q_Q(QAbstractScrollArea);
@@ -1340,7 +1360,7 @@ void QAbstractScrollAreaPrivate::_q_gestureTriggered()
         return;
     QScrollBar *hBar = q->horizontalScrollBar();
     QScrollBar *vBar = q->verticalScrollBar();
-    QSize delta = g->lastOffset();
+    QSizeF delta = g->lastOffset();
     if (!delta.isNull()) {
         if (QApplication::isRightToLeft())
             delta.rwidth() *= -1;
@@ -1350,6 +1370,7 @@ void QAbstractScrollAreaPrivate::_q_gestureTriggered()
         vbar->setValue(newY);
     }
 }
+#endif
 
 QT_END_NAMESPACE
 

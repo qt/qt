@@ -56,13 +56,9 @@ using namespace HTMLNames;
 using std::min;
 using std::max;
 
-HTMLElement::HTMLElement(const QualifiedName& tagName, Document *doc)
-    : StyledElement(tagName, doc)
+PassRefPtr<HTMLElement> HTMLElement::create(const QualifiedName& tagName, Document* document)
 {
-}
-
-HTMLElement::~HTMLElement()
-{
+    return adoptRef(new HTMLElement(tagName, document, CreateElement));
 }
 
 String HTMLElement::nodeName() const
@@ -92,7 +88,7 @@ int HTMLElement::tagPriority() const
         return 0;
     if (hasLocalName(addressTag) || hasLocalName(ddTag) || hasLocalName(dtTag) || hasLocalName(noscriptTag) || hasLocalName(rpTag) || hasLocalName(rtTag))
         return 3;
-    if (hasLocalName(centerTag) || hasLocalName(nobrTag) || hasLocalName(rubyTag))
+    if (hasLocalName(centerTag) || hasLocalName(nobrTag) || hasLocalName(rubyTag) || hasLocalName(navTag))
         return 5;
     if (hasLocalName(noembedTag) || hasLocalName(noframesTag))
         return 10;
@@ -224,6 +220,8 @@ void HTMLElement::parseMappedAttribute(MappedAttribute *attr)
         setAttributeEventListener(eventNames().webkitTransitionEndEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == oninputAttr) {
         setAttributeEventListener(eventNames().inputEvent, createAttributeEventListener(this, attr));
+    } else if (attr->name() == oninvalidAttr) {
+        setAttributeEventListener(eventNames().invalidEvent, createAttributeEventListener(this, attr));
     }
 }
 
@@ -247,7 +245,7 @@ PassRefPtr<DocumentFragment> HTMLElement::createContextualFragment(const String 
         hasLocalName(headTag) || hasLocalName(styleTag) || hasLocalName(titleTag))
         return 0;
 
-    RefPtr<DocumentFragment> fragment = new DocumentFragment(document());
+    RefPtr<DocumentFragment> fragment = DocumentFragment::create(document());
     
     if (document()->isHTMLDocument())
          parseHTMLDocumentFragment(html, fragment.get());
@@ -309,7 +307,7 @@ static void replaceChildrenWithFragment(HTMLElement* element, PassRefPtr<Documen
     }
 
     if (hasOneTextChild(element) && hasOneTextChild(fragment.get())) {
-        static_cast<Text*>(element->firstChild())->setData(static_cast<Text*>(fragment->firstChild())->string(), ec);
+        static_cast<Text*>(element->firstChild())->setData(static_cast<Text*>(fragment->firstChild())->data(), ec);
         return;
     }
 
@@ -329,7 +327,7 @@ static void replaceChildrenWithText(HTMLElement* element, const String& text, Ex
         return;
     }
 
-    RefPtr<Text> textNode = new Text(element->document(), text);
+    RefPtr<Text> textNode = Text::create(element->document(), text);
 
     if (hasOneChild(element)) {
         element->replaceChild(textNode.release(), element->firstChild(), ec);
@@ -415,7 +413,7 @@ void HTMLElement::setInnerText(const String& text, ExceptionCode& ec)
 
     // Add text nodes and <br> elements.
     ec = 0;
-    RefPtr<DocumentFragment> fragment = new DocumentFragment(document());
+    RefPtr<DocumentFragment> fragment = DocumentFragment::create(document());
     int lineStart = 0;
     UChar prev = 0;
     int length = text.length();
@@ -423,7 +421,7 @@ void HTMLElement::setInnerText(const String& text, ExceptionCode& ec)
         UChar c = text[i];
         if (c == '\n' || c == '\r') {
             if (i > lineStart) {
-                fragment->appendChild(new Text(document(), text.substring(lineStart, i - lineStart)), ec);
+                fragment->appendChild(Text::create(document(), text.substring(lineStart, i - lineStart)), ec);
                 if (ec)
                     return;
             }
@@ -437,7 +435,7 @@ void HTMLElement::setInnerText(const String& text, ExceptionCode& ec)
         prev = c;
     }
     if (length > lineStart)
-        fragment->appendChild(new Text(document(), text.substring(lineStart, length - lineStart)), ec);
+        fragment->appendChild(Text::create(document(), text.substring(lineStart, length - lineStart)), ec);
     replaceChildrenWithFragment(this, fragment.release(), ec);
 }
 
@@ -465,7 +463,7 @@ void HTMLElement::setOuterText(const String &text, ExceptionCode& ec)
     // FIXME: This creates a new text node even when the text is empty.
     // FIXME: This creates a single text node even when the text has CR and LF
     // characters in it. Instead it should create <br> elements.
-    RefPtr<Text> t = new Text(document(), text);
+    RefPtr<Text> t = Text::create(document(), text);
     ec = 0;
     parent->replaceChild(t, this, ec);
     if (ec)
@@ -603,9 +601,9 @@ void HTMLElement::addHTMLAlignmentToStyledElement(StyledElement* element, Mapped
         element->addCSSProperty(attr, CSSPropertyVerticalAlign, verticalAlignValue);
 }
 
-bool HTMLElement::isFocusable() const
+bool HTMLElement::supportsFocus() const
 {
-    return Element::isFocusable() || (isContentEditable() && parent() && !parent()->isContentEditable());
+    return Element::supportsFocus() || (isContentEditable() && parent() && !parent()->isContentEditable());
 }
 
 bool HTMLElement::isContentEditable() const 
@@ -727,54 +725,9 @@ void HTMLElement::accessKeyAction(bool sendToAnyElement)
         dispatchSimulatedClick(0, true);
 }
 
-String HTMLElement::id() const
-{
-    return getAttribute(idAttr);
-}
-
-void HTMLElement::setId(const String& value)
-{
-    setAttribute(idAttr, value);
-}
-
 String HTMLElement::title() const
 {
     return getAttribute(titleAttr);
-}
-
-void HTMLElement::setTitle(const String& value)
-{
-    setAttribute(titleAttr, value);
-}
-
-String HTMLElement::lang() const
-{
-    return getAttribute(langAttr);
-}
-
-void HTMLElement::setLang(const String& value)
-{
-    setAttribute(langAttr, value);
-}
-
-String HTMLElement::dir() const
-{
-    return getAttribute(dirAttr);
-}
-
-void HTMLElement::setDir(const String &value)
-{
-    setAttribute(dirAttr, value);
-}
-
-String HTMLElement::className() const
-{
-    return getAttribute(classAttr);
-}
-
-void HTMLElement::setClassName(const String &value)
-{
-    setAttribute(classAttr, value);
 }
 
 short HTMLElement::tabIndex() const
@@ -884,6 +837,7 @@ static HashSet<AtomicStringImpl*>* inlineTagList()
         tagList.add(textareaTag.localName().impl());
         tagList.add(labelTag.localName().impl());
         tagList.add(buttonTag.localName().impl());
+        tagList.add(datalistTag.localName().impl());
         tagList.add(insTag.localName().impl());
         tagList.add(delTag.localName().impl());
         tagList.add(nobrTag.localName().impl());
@@ -926,6 +880,7 @@ static HashSet<AtomicStringImpl*>* blockTagList()
         tagList.add(listingTag.localName().impl());
         tagList.add(marqueeTag.localName().impl());
         tagList.add(menuTag.localName().impl());
+        tagList.add(navTag.localName().impl());
         tagList.add(noembedTag.localName().impl());
         tagList.add(noframesTag.localName().impl());
         tagList.add(nolayerTag.localName().impl());

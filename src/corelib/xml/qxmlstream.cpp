@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -126,6 +126,21 @@ QT_BEGIN_NAMESPACE
     \value ProcessingInstruction The reader reports a processing
     instruction in processingInstructionTarget() and
     processingInstructionData().
+*/
+
+/*!
+    \enum QXmlStreamReader::ReadElementTextBehaviour
+
+    This enum specifies the different behaviours of readElementText().
+
+    \value ErrorOnUnexpectedElement Raise an UnexpectedElementError and return
+    what was read so far when a child element is encountered.
+
+    \value IncludeChildElements Recursively include the text from child elements.
+
+    \value SkipChildElements Skip child elements.
+
+    \since 4.6
 */
 
 /*!
@@ -298,8 +313,8 @@ QXmlStreamEntityResolver *QXmlStreamReader::entityResolver() const
   error handling described.
 
   The \l{QXmlStream Bookmarks Example} illustrates how to use the
-  recursive descent technique with a subclassed stream reader to read
-  an XML bookmark file (XBEL).
+  recursive descent technique to read an XML bookmark file (XBEL) with
+  a stream reader.
 
   \section1 Namespaces
 
@@ -619,6 +634,56 @@ QXmlStreamReader::TokenType QXmlStreamReader::tokenType() const
 {
     Q_D(const QXmlStreamReader);
     return d->type;
+}
+
+/*!
+  Reads until the next start element within the current element. Returns true
+  when a start element was reached. When the end element was reached, or when
+  an error occurred, false is returned.
+
+  The current element is the element matching the most recently parsed start
+  element of which a matching end element has not yet been reached. When the
+  parser has reached the end element, the current element becomes the parent
+  element.
+
+  This is a convenience function for when you're only concerned with parsing
+  XML elements. The \l{QXmlStream Bookmarks Example} makes extensive use of
+  this function.
+
+  \since 4.6
+  \sa readNext()
+ */
+bool QXmlStreamReader::readNextStartElement()
+{
+    while (readNext() != Invalid) {
+        if (isEndElement())
+            return false;
+        else if (isStartElement())
+            return true;
+    }
+    return false;
+}
+
+/*!
+  Reads until the end of the current element, skipping any child nodes.
+  This function is useful for skipping unknown elements.
+
+  The current element is the element matching the most recently parsed start
+  element of which a matching end element has not yet been reached. When the
+  parser has reached the end element, the current element becomes the parent
+  element.
+
+  \since 4.6
+ */
+void QXmlStreamReader::skipCurrentElement()
+{
+    int depth = 1;
+    while (depth && readNext() != Invalid) {
+        if (isEndElement())
+            --depth;
+        else if (isStartElement())
+            ++depth;
+    }
 }
 
 /*
@@ -2022,12 +2087,17 @@ void QXmlStreamReader::addExtraNamespaceDeclarations(const QXmlStreamNamespaceDe
 
   The function concatenates text() when it reads either \l Characters
   or EntityReference tokens, but skips ProcessingInstruction and \l
-  Comment. In case anything else is read before reaching EndElement,
-  the function returns what it read so far and raises an
-  UnexpectedElementError. If the current token is not StartElement, an
-  empty string is returned.
+  Comment. If the current token is not StartElement, an empty string is
+  returned.
+
+  The \a behaviour defines what happens in case anything else is
+  read before reaching EndElement. The function can include the text from
+  child elements (useful for example for HTML), ignore child elements, or
+  raise an UnexpectedElementError and return what was read so far.
+
+  \since 4.6
  */
-QString QXmlStreamReader::readElementText()
+QString QXmlStreamReader::readElementText(ReadElementTextBehaviour behaviour)
 {
     Q_D(QXmlStreamReader);
     if (isStartElement()) {
@@ -2043,14 +2113,35 @@ QString QXmlStreamReader::readElementText()
             case ProcessingInstruction:
             case Comment:
                 break;
+            case StartElement:
+                if (behaviour == SkipChildElements) {
+                    skipCurrentElement();
+                    break;
+                } else if (behaviour == IncludeChildElements) {
+                    result += readElementText(behaviour);
+                    break;
+                }
+                // Fall through (for ErrorOnUnexpectedElement)
             default:
-                if (!d->error)
-                    d->raiseError(UnexpectedElementError, QXmlStream::tr("Expected character data."));
-                return result;
+                if (d->error || behaviour == ErrorOnUnexpectedElement) {
+                    if (!d->error)
+                        d->raiseError(UnexpectedElementError, QXmlStream::tr("Expected character data."));
+                    return result;
+                }
             }
         }
     }
     return QString();
+}
+
+/*!
+  \overload readElementText()
+
+  Calling this function is equivalent to calling readElementText(ErrorOnUnexpectedElement).
+ */
+QString QXmlStreamReader::readElementText()
+{
+    return readElementText(ErrorOnUnexpectedElement);
 }
 
 /*!  Raises a custom error with an optional error \a message.
@@ -2853,7 +2944,7 @@ QStringRef QXmlStreamReader::documentEncoding() const
   encodings can be enforced using setCodec().
 
   The \l{QXmlStream Bookmarks Example} illustrates how to use a
-  subclassed stream writer to write an XML bookmark file (XBEL) that
+  stream writer to write an XML bookmark file (XBEL) that
   was previously read in by a QXmlStreamReader.
 
 */

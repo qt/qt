@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,6 +52,7 @@
 #include <qlibrary.h>
 #include <qtimer.h>
 #include <qmutex.h>
+#include <qurl.h>
 #include <private/qmutexpool_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -129,7 +130,6 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     }
 
     QHostInfo results;
-    results.setHostName(hostName);
 
 #if defined(QHOSTINFO_DEBUG)
     qDebug("QHostInfoAgent::fromName(%p): looking up \"%s\" (IPv6 support is %s)",
@@ -178,12 +178,28 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
         }
     }
 
+    // IDN support
+    QByteArray aceHostname;
+    if (results.hostName().isEmpty()) {
+        // it's a hostname resolution
+        aceHostname = QUrl::toAce(hostName);
+        results.setHostName(hostName);
+        if (aceHostname.isEmpty()) {
+            results.setError(QHostInfo::HostNotFound);
+            results.setErrorString(hostName.isEmpty() ? QObject::tr("No host name given") : QObject::tr("Invalid hostname"));
+            return results;
+        }
+    } else {
+        // it's an IP reverse resolution
+        aceHostname = results.hostName().toLatin1();
+    }
+
     if (local_getaddrinfo && local_freeaddrinfo) {
         // Call getaddrinfo, and place all IPv4 addresses at the start
         // and the IPv6 addresses at the end of the address list in
         // results.
         qt_addrinfo *res;
-        int err = local_getaddrinfo(hostName.toLatin1().constData(), 0, 0, &res);
+        int err = local_getaddrinfo(aceHostname.constData(), 0, 0, &res);
         if (err == 0) {
             QList<QHostAddress> addresses;
             for (qt_addrinfo *p = res; p != 0; p = p->ai_next) {
@@ -218,7 +234,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
         }
     } else {
         // Fall back to gethostbyname, which only supports IPv4.
-        hostent *ent = gethostbyname(hostName.toLatin1().constData());
+        hostent *ent = gethostbyname(aceHostname.constData());
         if (ent) {
             char **p;
             QList<QHostAddress> addresses;

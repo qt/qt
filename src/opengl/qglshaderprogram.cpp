@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -70,16 +70,7 @@ QT_BEGIN_NAMESPACE
     program is activated in the current QGLContext by calling
     QGLShaderProgram::enable():
 
-    \code
-    QGLShader shader(QGLShader::VertexShader);
-    shader.compile(code);
-
-    QGLShaderProgram program(context);
-    program.addShader(shader);
-    program.link();
-
-    program.enable();
-    \endcode
+    \snippet doc/src/snippets/code/src_opengl_qglshaderprogram.cpp 0
 
     \section1 Writing portable shaders
 
@@ -104,52 +95,15 @@ QT_BEGIN_NAMESPACE
     on desktop systems.  The programmer should restrict themselves
     to just features that are present in GLSL/ES, and avoid
     standard variable names that only work on the desktop.
-    
+
     \section1 Simple shader example
 
-    \code
-    program.addShader(QGLShader::VertexShader,
-        "attribute highp vec4 vertex;\n"
-        "attribute mediump mat4 matrix;\n"
-        "void main(void)\n"
-        "{\n"
-        "   gl_Position = matrix * vertex;\n"
-        "}");
-    program.addShader(QGLShader::FragmentShader,
-        "uniform mediump vec4 color;\n"
-        "void main(void)\n"
-        "{\n"
-        "   gl_FragColor = color;\n"
-        "}");
-    program.link();
-    program.enable();
-
-    int vertexLocation = program.attributeLocation("vertex");
-    int matrixLocation = program.attributeLocation("matrix");
-    int colorLocation = program.uniformLocation("color");
-    \endcode
+    \snippet doc/src/snippets/code/src_opengl_qglshaderprogram.cpp 1
 
     With the above shader program active, we can draw a green triangle
     as follows:
 
-    \code
-    static GLfloat const triangleVertices[] = {
-        60.0f,  10.0f,  0.0f,
-        110.0f, 110.0f, 0.0f,
-        10.0f,  110.0f, 0.0f
-    };
-
-    QColor color(0, 255, 0, 255);
-
-    QMatrix4x4 pmvMatrix;
-    pmvMatrix.ortho(rect());
-
-    program.setAttributeArray(vertexLocation, triangleVertices, 3);
-    program.setUniformValue(matrixLocation, pmvMatrix);
-    program.setUniformValue(colorLocation, color);
-
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    \endcode
+    \snippet doc/src/snippets/code/src_opengl_qglshaderprogram.cpp 2
 
     \section1 Partial shaders
 
@@ -194,13 +148,16 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum QGLShader::ShaderType
+    \enum QGLShader::ShaderTypeBits
     This enum specifies the type of QGLShader that is being created.
 
     \value VertexShader Vertex shader written in the OpenGL Shading Language (GLSL).
     \value FragmentShader Fragment shader written in the OpenGL Shading Language (GLSL).
+
     \value PartialVertexShader Partial vertex shader that will be concatenated with all other partial vertex shaders at link time.
     \value PartialFragmentShader Partial fragment shader that will be concatenated with all other partial fragment shaders at link time.
+
+    \omitvalue PartialShader
 */
 
 #ifndef GL_FRAGMENT_SHADER
@@ -246,19 +203,16 @@ QT_BEGIN_NAMESPACE
 class QGLShaderPrivate
 {
 public:
-    QGLShaderPrivate(QGLShader::ShaderType type, const QGLContext *ctx)
-        : context(ctx)
-        , shader(0)
+    QGLShaderPrivate(const QGLContext *context, QGLShader::ShaderType type)
+        : shaderGuard(context)
         , shaderType(type)
         , compiled(false)
-        , isPartial(type == QGLShader::PartialVertexShader ||
-                    type == QGLShader::PartialFragmentShader)
+        , isPartial((type & QGLShader::PartialShader) != 0)
         , hasPartialSource(false)
     {
     }
 
-    const QGLContext *context;
-    GLuint shader;
+    QGLSharedResourceGuard shaderGuard;
     QGLShader::ShaderType shaderType;
     bool compiled;
     bool isPartial;
@@ -268,19 +222,20 @@ public:
 
     bool create();
     bool compile(QGLShader *q);
+    void deleteShader();
 };
 
-#define ctx     context
+#define ctx shaderGuard.context()
 
 bool QGLShaderPrivate::create()
 {
-    if (isPartial)
-        return true;
-    if (!context)
-        context = QGLContext::currentContext();
+    const QGLContext *context = shaderGuard.context();
     if (!context)
         return false;
+    if (isPartial)
+        return true;
     if (qt_resolve_glsl_extensions(const_cast<QGLContext *>(context))) {
+        GLuint shader;
         if (shaderType == QGLShader::VertexShader)
             shader = glCreateShader(GL_VERTEX_SHADER);
         else
@@ -289,6 +244,7 @@ bool QGLShaderPrivate::create()
             qWarning() << "QGLShader: could not create shader";
             return false;
         }
+        shaderGuard.setId(shader);
         return true;
     } else {
         return false;
@@ -302,6 +258,7 @@ bool QGLShaderPrivate::compile(QGLShader *q)
         compiled = true;
         return true;
     }
+    GLuint shader = shaderGuard.id();
     if (!shader)
         return false;
     glCompileShader(shader);
@@ -325,8 +282,16 @@ bool QGLShaderPrivate::compile(QGLShader *q)
     return compiled;
 }
 
+void QGLShaderPrivate::deleteShader()
+{
+    if (shaderGuard.id()) {
+        glDeleteShader(shaderGuard.id());
+        shaderGuard.setId(0);
+    }
+}
+
 #undef ctx
-#define ctx d->context
+#define ctx d->shaderGuard.context()
 
 /*!
     Constructs a new QGLShader object of the specified \a type
@@ -343,33 +308,8 @@ bool QGLShaderPrivate::compile(QGLShader *q)
 QGLShader::QGLShader(QGLShader::ShaderType type, QObject *parent)
     : QObject(parent)
 {
-    d = new QGLShaderPrivate(type, QGLContext::currentContext());
+    d = new QGLShaderPrivate(QGLContext::currentContext(), type);
     d->create();
-}
-
-/*!
-    Constructs a new QGLShader object from the source code in \a fileName
-    and attaches it to \a parent.  If the filename ends in \c{.fsh},
-    it is assumed to be a fragment shader, otherwise it is assumed to
-    be a vertex shader (normally the extension is \c{.vsh} for vertex shaders).
-    If the shader could not be loaded, then isCompiled() will return false.
-
-    The shader will be associated with the current QGLContext.
-
-    \sa isCompiled()
-*/
-QGLShader::QGLShader(const QString& fileName, QObject *parent)
-    : QObject(parent)
-{
-    if (fileName.endsWith(QLatin1String(".fsh"), Qt::CaseInsensitive))
-        d = new QGLShaderPrivate(QGLShader::FragmentShader, QGLContext::currentContext());
-    else
-        d = new QGLShaderPrivate(QGLShader::VertexShader, QGLContext::currentContext());
-    if (d->create() && !compileFile(fileName)) {
-        if (d->shader)
-            glDeleteShader(d->shader);
-        d->shader = 0;
-    }
 }
 
 /*!
@@ -385,12 +325,9 @@ QGLShader::QGLShader
         (const QString& fileName, QGLShader::ShaderType type, QObject *parent)
     : QObject(parent)
 {
-    d = new QGLShaderPrivate(type, QGLContext::currentContext());
-    if (d->create() && !compileFile(fileName)) {
-        if (d->shader)
-            glDeleteShader(d->shader);
-        d->shader = 0;
-    }
+    d = new QGLShaderPrivate(QGLContext::currentContext(), type);
+    if (d->create() && !compileFile(fileName))
+        d->deleteShader();
 }
 
 /*!
@@ -408,33 +345,16 @@ QGLShader::QGLShader
 QGLShader::QGLShader(QGLShader::ShaderType type, const QGLContext *context, QObject *parent)
     : QObject(parent)
 {
-    d = new QGLShaderPrivate(type, context);
-    d->create();
-}
-
-/*!
-    Constructs a new QGLShader object from the source code in \a fileName
-    and attaches it to \a parent.  If the filename ends in \c{.fsh},
-    it is assumed to be a fragment shader, otherwise it is assumed to
-    be a vertex shader (normally the extension is \c{.vsh} for vertex shaders).
-    If the shader could not be loaded, then isCompiled() will return false.
-
-    The shader will be associated with \a context.
-
-    \sa isCompiled()
-*/
-QGLShader::QGLShader(const QString& fileName, const QGLContext *context, QObject *parent)
-    : QObject(parent)
-{
-    if (fileName.endsWith(QLatin1String(".fsh"), Qt::CaseInsensitive))
-        d = new QGLShaderPrivate(QGLShader::FragmentShader, context);
-    else
-        d = new QGLShaderPrivate(QGLShader::VertexShader, context);
-    if (d->create() && !compileFile(fileName)) {
-        if (d->shader)
-            glDeleteShader(d->shader);
-        d->shader = 0;
+    if (!context)
+        context = QGLContext::currentContext();
+    d = new QGLShaderPrivate(context, type);
+#ifndef QT_NO_DEBUG
+    if (context && !qgl_share_reg()->checkSharing(context, QGLContext::currentContext())) {
+        qWarning("QGLShader::QGLShader: \'context\' must be the currect context or sharing with it.");
+        return;
     }
+#endif
+    d->create();
 }
 
 /*!
@@ -450,12 +370,17 @@ QGLShader::QGLShader
         (const QString& fileName, QGLShader::ShaderType type, const QGLContext *context, QObject *parent)
     : QObject(parent)
 {
-    d = new QGLShaderPrivate(type, context);
-    if (d->create() && !compileFile(fileName)) {
-        if (d->shader)
-            glDeleteShader(d->shader);
-        d->shader = 0;
+    if (!context)
+        context = QGLContext::currentContext();
+    d = new QGLShaderPrivate(context, type);
+#ifndef QT_NO_DEBUG
+    if (context && !qgl_share_reg()->checkSharing(context, QGLContext::currentContext())) {
+        qWarning("QGLShader::QGLShader: \'context\' must be currect context or sharing with it.");
+        return;
     }
+#endif
+    if (d->create() && !compileFile(fileName))
+        d->deleteShader();
 }
 
 /*!
@@ -465,8 +390,10 @@ QGLShader::QGLShader
 */
 QGLShader::~QGLShader()
 {
-    if (d->shader)
-        glDeleteShader(d->shader);
+    if (d->shaderGuard.id()) {
+        QGLShareContextScope scope(d->shaderGuard.context());
+        glDeleteShader(d->shaderGuard.id());
+    }
     delete d;
 }
 
@@ -489,6 +416,16 @@ static const char qualifierDefines[] =
     "#define highp\n";
 #endif
 
+// The "highp" qualifier doesn't exist in fragment shaders
+// on all ES platforms.  When it doesn't exist, use "mediump".
+#ifdef QT_OPENGL_ES
+#define QGL_REDEFINE_HIGHP 1
+static const char redefineHighp[] =
+    "#ifndef GL_FRAGMENT_PRECISION_HIGH\n"
+    "#define highp mediump\n"
+    "#endif\n";
+#endif
+
 /*!
     Sets the \a source code for this shader and compiles it.
     Returns true if the source was successfully compiled, false otherwise.
@@ -506,13 +443,37 @@ bool QGLShader::compile(const char *source)
         d->partialSource = QByteArray(source);
         d->hasPartialSource = true;
         return d->compile(this);
-    } else if (d->shader) {
+    } else if (d->shaderGuard.id()) {
         QVarLengthArray<const char *> src;
+        int headerLen = 0;
+        while (source && source[headerLen] == '#') {
+            // Skip #version and #extension directives at the start of
+            // the shader code.  We need to insert the qualifierDefines
+            // and redefineHighp just after them.
+            if (qstrncmp(source + headerLen, "#version", 8) != 0 &&
+                    qstrncmp(source + headerLen, "#extension", 10) != 0) {
+                break;
+            }
+            while (source[headerLen] != '\0' && source[headerLen] != '\n')
+                ++headerLen;
+            if (source[headerLen] == '\n')
+                ++headerLen;
+        }
+        QByteArray header;
+        if (headerLen > 0) {
+            header = QByteArray(source, headerLen);
+            src.append(header.constData());
+        }
 #ifdef QGL_DEFINE_QUALIFIERS
         src.append(qualifierDefines);
 #endif
-        src.append(source);
-        glShaderSource(d->shader, src.size(), src.data(), 0);
+#ifdef QGL_REDEFINE_HIGHP
+        if (d->shaderType == FragmentShader ||
+                d->shaderType == PartialFragmentShader)
+            src.append(redefineHighp);
+#endif
+        src.append(source + headerLen);
+        glShaderSource(d->shaderGuard.id(), src.size(), src.data(), 0);
         return d->compile(this);
     } else {
         return false;
@@ -598,10 +559,11 @@ bool QGLShader::setShaderBinary(GLenum format, const void *binary, int length)
     if (!glShaderBinary)
         return false;
 #endif
-    if (d->isPartial || !d->shader)
+    GLuint shader = d->shaderGuard.id();
+    if (d->isPartial || !shader)
         return false;
     glGetError();   // Clear error state.
-    glShaderBinary(1, &(d->shader), format, binary, length);
+    glShaderBinary(1, &shader, format, binary, length);
     d->compiled = (glGetError() == GL_NO_ERROR);
     return d->compiled;
 }
@@ -630,14 +592,14 @@ bool QGLShader::setShaderBinary
     if (!glShaderBinary)
         return false;
 #endif
-    if (d->isPartial || !d->shader)
+    if (d->isPartial || !d->shaderGuard.id())
         return false;
-    if (otherShader.d->isPartial || !otherShader.d->shader)
+    if (otherShader.d->isPartial || !otherShader.d->shaderGuard.id())
         return false;
     glGetError();   // Clear error state.
     GLuint shaders[2];
-    shaders[0] = d->shader;
-    shaders[1] = otherShader.d->shader;
+    shaders[0] = d->shaderGuard.id();
+    shaders[1] = otherShader.d->shaderGuard.id();
     glShaderBinary(2, shaders, format, binary, length);
     d->compiled = (glGetError() == GL_NO_ERROR);
     otherShader.d->compiled = d->compiled;
@@ -674,15 +636,16 @@ QByteArray QGLShader::sourceCode() const
 {
     if (d->isPartial)
         return d->partialSource;
-    if (!d->shader)
+    GLuint shader = d->shaderGuard.id();
+    if (!shader)
         return QByteArray();
     GLint size = 0;
-    glGetShaderiv(d->shader, GL_SHADER_SOURCE_LENGTH, &size);
+    glGetShaderiv(shader, GL_SHADER_SOURCE_LENGTH, &size);
     if (size <= 0)
         return QByteArray();
     GLint len = 0;
     char *source = new char [size];
-    glGetShaderSource(d->shader, size, &len, source);
+    glGetShaderSource(shader, size, &len, source);
     QByteArray src(source);
     delete [] source;
     return src;
@@ -719,36 +682,32 @@ QString QGLShader::log() const
 */
 GLuint QGLShader::shaderId() const
 {
-    return d->shader;
+    return d->shaderGuard.id();
 }
 
 #undef ctx
-#define ctx context
+#define ctx programGuard.context()
 
 class QGLShaderProgramPrivate
 {
 public:
-    QGLShaderProgramPrivate(const QGLContext *ctx)
-        : context(ctx)
-        , program(0)
+    QGLShaderProgramPrivate(const QGLContext *context)
+        : programGuard(context)
         , linked(false)
         , inited(false)
         , hasPartialShaders(false)
+        , removingShaders(false)
         , vertexShader(0)
         , fragmentShader(0)
     {
     }
-    ~QGLShaderProgramPrivate()
-    {
-        if (program)
-            glDeleteProgram(program);
-    }
+    ~QGLShaderProgramPrivate();
 
-    const QGLContext *context;
-    GLuint program;
+    QGLSharedResourceGuard programGuard;
     bool linked;
     bool inited;
     bool hasPartialShaders;
+    bool removingShaders;
     QString log;
     QList<QGLShader *> shaders;
     QList<QGLShader *> anonShaders;
@@ -756,8 +715,16 @@ public:
     QGLShader *fragmentShader;
 };
 
+QGLShaderProgramPrivate::~QGLShaderProgramPrivate()
+{
+    if (programGuard.id()) {
+        QGLShareContextScope scope(programGuard.context());
+        glDeleteProgram(programGuard.id());
+    }
+}
+
 #undef ctx
-#define ctx d->context
+#define ctx d->programGuard.context()
 
 /*!
     Constructs a new shader program and attaches it to \a parent.
@@ -797,19 +764,23 @@ QGLShaderProgram::~QGLShaderProgram()
 
 bool QGLShaderProgram::init()
 {
-    if (d->program || d->inited)
+    if (d->programGuard.id() || d->inited)
         return true;
     d->inited = true;
-    if (!d->context)
-        d->context = QGLContext::currentContext();
-    if (!d->context)
+    const QGLContext *context = d->programGuard.context();
+    if (!context) {
+        context = QGLContext::currentContext();
+        d->programGuard.setContext(context);
+    }
+    if (!context)
         return false;
-    if (qt_resolve_glsl_extensions(const_cast<QGLContext *>(d->context))) {
-        d->program = glCreateProgram();
-        if (!(d->program)) {
+    if (qt_resolve_glsl_extensions(const_cast<QGLContext *>(context))) {
+        GLuint program = glCreateProgram();
+        if (!program) {
             qWarning() << "QGLShaderProgram: could not create shader program";
             return false;
         }
+        d->programGuard.setId(program);
         return true;
     } else {
         qWarning() << "QGLShaderProgram: shader programs are not supported";
@@ -834,18 +805,24 @@ bool QGLShaderProgram::addShader(QGLShader *shader)
         return false;
     if (d->shaders.contains(shader))
         return true;    // Already added to this shader program.
-    if (d->program && shader) {
+    if (d->programGuard.id() && shader) {
+        if (!qgl_share_reg()->checkSharing(shader->d->shaderGuard.context(),
+                                           d->programGuard.context())) {
+            qWarning("QGLShaderProgram::addShader: Program and shader are not associated with same context.");
+            return false;
+        }
         if (!shader->d->compiled)
             return false;
         if (!shader->d->isPartial) {
-            if (!shader->d->shader)
+            if (!shader->d->shaderGuard.id())
                 return false;
-            glAttachShader(d->program, shader->d->shader);
+            glAttachShader(d->programGuard.id(), shader->d->shaderGuard.id());
         } else {
             d->hasPartialShaders = true;
         }
         d->linked = false;  // Program needs to be relinked.
         d->shaders.append(shader);
+        connect(shader, SIGNAL(destroyed()), this, SLOT(shaderDestroyed()));
         return true;
     } else {
         return false;
@@ -917,18 +894,49 @@ bool QGLShaderProgram::addShader(QGLShader::ShaderType type, const QString& sour
 }
 
 /*!
+    Compiles the contents of \a fileName as a shader of the specified
+    \a type and adds it to this shader program.  Returns true if
+    compilation was successful, false otherwise.  The compilation errors
+    and warnings will be made available via log().
+
+    This function is intended to be a short-cut for quickly
+    adding vertex and fragment shaders to a shader program without
+    creating an instance of QGLShader first.
+
+    \sa addShader()
+*/
+bool QGLShaderProgram::addShaderFromFile
+    (QGLShader::ShaderType type, const QString& fileName)
+{
+    if (!init())
+        return false;
+    QGLShader *shader = new QGLShader(type, this);
+    if (!shader->compileFile(fileName)) {
+        d->log = shader->log();
+        delete shader;
+        return false;
+    }
+    d->anonShaders.append(shader);
+    return addShader(shader);
+}
+
+/*!
     Removes \a shader from this shader program.  The object is not deleted.
 
     \sa addShader(), link(), removeAllShaders()
 */
 void QGLShaderProgram::removeShader(QGLShader *shader)
 {
-    if (d->program && shader && shader->d->shader) {
-        glDetachShader(d->program, shader->d->shader);
-        d->linked = false;  // Program needs to be relinked.
+    if (d->programGuard.id() && shader && shader->d->shaderGuard.id()) {
+        QGLShareContextScope scope(d->programGuard.context());
+        glDetachShader(d->programGuard.id(), shader->d->shaderGuard.id());
     }
-    d->shaders.removeAll(shader);
-    d->anonShaders.removeAll(shader);
+    d->linked = false;  // Program needs to be relinked.
+    if (shader) {
+        d->shaders.removeAll(shader);
+        d->anonShaders.removeAll(shader);
+        disconnect(shader, SIGNAL(destroyed()), this, SLOT(shaderDestroyed()));
+    }
 }
 
 /*!
@@ -952,9 +960,10 @@ QList<QGLShader *> QGLShaderProgram::shaders() const
 */
 void QGLShaderProgram::removeAllShaders()
 {
+    d->removingShaders = true;
     foreach (QGLShader *shader, d->shaders) {
-        if (d->program && shader && shader->d->shader)
-            glDetachShader(d->program, shader->d->shader);
+        if (d->programGuard.id() && shader && shader->d->shaderGuard.id())
+            glDetachShader(d->programGuard.id(), shader->d->shaderGuard.id());
     }
     foreach (QGLShader *shader, d->anonShaders) {
         // Delete shader objects that were created anonymously.
@@ -963,6 +972,7 @@ void QGLShaderProgram::removeAllShaders()
     d->shaders.clear();
     d->anonShaders.clear();
     d->linked = false;  // Program needs to be relinked.
+    d->removingShaders = false;
 }
 
 #if defined(QT_OPENGL_ES_2)
@@ -1004,14 +1014,15 @@ QByteArray QGLShaderProgram::programBinary(int *format) const
 
     // Get the length of the binary data, bailing out if there is none.
     GLint length = 0;
-    glGetProgramiv(d->program, GL_PROGRAM_BINARY_LENGTH_OES, &length);
+    GLuint program = d->programGuard.id();
+    glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH_OES, &length);
     if (length <= 0)
         return QByteArray();
 
     // Retrieve the binary data.
     QByteArray binary(length, 0);
     GLenum binaryFormat;
-    glGetProgramBinaryOES(d->program, length, 0, &binaryFormat, binary.data());
+    glGetProgramBinaryOES(program, length, 0, &binaryFormat, binary.data());
     if (format)
         *format = (int)binaryFormat;
     return binary;
@@ -1033,18 +1044,21 @@ bool QGLShaderProgram::setProgramBinary(int format, const QByteArray& binary)
 {
 #if defined(QT_OPENGL_ES_2)
     // Load the binary and check that it was linked correctly.
-    glProgramBinaryOES(d->program, (GLenum)format,
+    GLuint program = d->programGuard.id();
+    if (!program)
+        return false;
+    glProgramBinaryOES(program, (GLenum)format,
                        binary.constData(), binary.size());
     GLint value = 0;
-    glGetProgramiv(d->program, GL_LINK_STATUS, &value);
+    glGetProgramiv(program, GL_LINK_STATUS, &value);
     d->linked = (value != 0);
     value = 0;
-    glGetProgramiv(d->program, GL_INFO_LOG_LENGTH, &value);
+    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &value);
     d->log = QString();
     if (value > 1) {
         char *logbuf = new char [value];
         GLint len;
-        glGetProgramInfoLog(d->program, value, &len, logbuf);
+        glGetProgramInfoLog(program, value, &len, logbuf);
         d->log = QString::fromLatin1(logbuf);
         QString name = objectName();
         if (name.isEmpty())
@@ -1099,7 +1113,8 @@ QList<int> QGLShaderProgram::programBinaryFormats()
 */
 bool QGLShaderProgram::link()
 {
-    if (!d->program)
+    GLuint program = d->programGuard.id();
+    if (!program)
         return false;
     if (d->hasPartialShaders) {
         // Compile the partial vertex and fragment shaders.
@@ -1113,7 +1128,7 @@ bool QGLShaderProgram::link()
         }
         if (vertexSource.isEmpty()) {
             if (d->vertexShader) {
-                glDetachShader(d->program, d->vertexShader->d->shader);
+                glDetachShader(program, d->vertexShader->d->shaderGuard.id());
                 delete d->vertexShader;
                 d->vertexShader = 0;
             }
@@ -1126,11 +1141,11 @@ bool QGLShaderProgram::link()
                 d->log = d->vertexShader->log();
                 return false;
             }
-            glAttachShader(d->program, d->vertexShader->d->shader);
+            glAttachShader(program, d->vertexShader->d->shaderGuard.id());
         }
         if (fragmentSource.isEmpty()) {
             if (d->fragmentShader) {
-                glDetachShader(d->program, d->fragmentShader->d->shader);
+                glDetachShader(program, d->fragmentShader->d->shaderGuard.id());
                 delete d->fragmentShader;
                 d->fragmentShader = 0;
             }
@@ -1143,20 +1158,20 @@ bool QGLShaderProgram::link()
                 d->log = d->fragmentShader->log();
                 return false;
             }
-            glAttachShader(d->program, d->fragmentShader->d->shader);
+            glAttachShader(program, d->fragmentShader->d->shaderGuard.id());
         }
     }
-    glLinkProgram(d->program);
+    glLinkProgram(program);
     GLint value = 0;
-    glGetProgramiv(d->program, GL_LINK_STATUS, &value);
+    glGetProgramiv(program, GL_LINK_STATUS, &value);
     d->linked = (value != 0);
     value = 0;
-    glGetProgramiv(d->program, GL_INFO_LOG_LENGTH, &value);
+    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &value);
     d->log = QString();
     if (value > 1) {
         char *logbuf = new char [value];
         GLint len;
-        glGetProgramInfoLog(d->program, value, &len, logbuf);
+        glGetProgramInfoLog(program, value, &len, logbuf);
         d->log = QString::fromLatin1(logbuf);
         QString name = objectName();
         if (name.isEmpty())
@@ -1199,11 +1214,12 @@ QString QGLShaderProgram::log() const
 */
 bool QGLShaderProgram::enable()
 {
-    if (!d->program)
+    GLuint program = d->programGuard.id();
+    if (!program)
         return false;
     if (!d->linked && !link())
         return false;
-    glUseProgram(d->program);
+    glUseProgram(program);
     return true;
 }
 
@@ -1227,7 +1243,7 @@ void QGLShaderProgram::disable()
 }
 
 #undef ctx
-#define ctx d->context
+#define ctx d->programGuard.context()
 
 /*!
     Returns the OpenGL identifier associated with this shader program.
@@ -1236,7 +1252,7 @@ void QGLShaderProgram::disable()
 */
 GLuint QGLShaderProgram::programId() const
 {
-    return d->program;
+    return d->programGuard.id();
 }
 
 /*!
@@ -1249,7 +1265,7 @@ GLuint QGLShaderProgram::programId() const
 */
 void QGLShaderProgram::bindAttributeLocation(const char *name, int location)
 {
-    glBindAttribLocation(d->program, location, name);
+    glBindAttribLocation(d->programGuard.id(), location, name);
 }
 
 /*!
@@ -1264,7 +1280,7 @@ void QGLShaderProgram::bindAttributeLocation(const char *name, int location)
 */
 void QGLShaderProgram::bindAttributeLocation(const QByteArray& name, int location)
 {
-    glBindAttribLocation(d->program, location, name.constData());
+    glBindAttribLocation(d->programGuard.id(), location, name.constData());
 }
 
 /*!
@@ -1279,7 +1295,7 @@ void QGLShaderProgram::bindAttributeLocation(const QByteArray& name, int locatio
 */
 void QGLShaderProgram::bindAttributeLocation(const QString& name, int location)
 {
-    glBindAttribLocation(d->program, location, name.toLatin1().constData());
+    glBindAttribLocation(d->programGuard.id(), location, name.toLatin1().constData());
 }
 
 /*!
@@ -1292,7 +1308,7 @@ void QGLShaderProgram::bindAttributeLocation(const QString& name, int location)
 int QGLShaderProgram::attributeLocation(const char *name) const
 {
     if (d->linked) {
-        return glGetAttribLocation(d->program, name);
+        return glGetAttribLocation(d->programGuard.id(), name);
     } else {
         qWarning() << "QGLShaderProgram::attributeLocation(" << name
                    << "): shader program is not linked";
@@ -1752,7 +1768,7 @@ void QGLShaderProgram::disableAttributeArray(const char *name)
 int QGLShaderProgram::uniformLocation(const char *name) const
 {
     if (d->linked) {
-        return glGetUniformLocation(d->program, name);
+        return glGetUniformLocation(d->programGuard.id(), name);
     } else {
         qWarning() << "QGLShaderProgram::uniformLocation(" << name
                    << "): shader program is not linked";
@@ -2153,6 +2169,58 @@ void QGLShaderProgram::setUniformValue(const char *name, const QSizeF& size)
     setUniformValue(uniformLocation(name), size);
 }
 
+// We have to repack matrices from qreal to GLfloat.
+#define setUniformMatrix(func,location,value,cols,rows) \
+    if (location == -1) \
+        return; \
+    if (sizeof(qreal) == sizeof(GLfloat)) { \
+        func(location, 1, GL_FALSE, \
+             reinterpret_cast<const GLfloat *>(value.constData())); \
+    } else { \
+        GLfloat mat[cols * rows]; \
+        const qreal *data = value.constData(); \
+        for (int i = 0; i < cols * rows; ++i) \
+            mat[i] = data[i]; \
+        func(location, 1, GL_FALSE, mat); \
+    }
+#if !defined(QT_OPENGL_ES_2)
+#define setUniformGenericMatrix(func,colfunc,location,value,cols,rows) \
+    if (location == -1) \
+        return; \
+    if (sizeof(qreal) == sizeof(GLfloat)) { \
+        const GLfloat *data = reinterpret_cast<const GLfloat *> \
+            (value.constData());  \
+        if (func) \
+            func(location, 1, GL_FALSE, data); \
+        else \
+            colfunc(location, cols, data); \
+    } else { \
+        GLfloat mat[cols * rows]; \
+        const qreal *data = value.constData(); \
+        for (int i = 0; i < cols * rows; ++i) \
+            mat[i] = data[i]; \
+        if (func) \
+            func(location, 1, GL_FALSE, mat); \
+        else \
+            colfunc(location, cols, mat); \
+    }
+#else
+#define setUniformGenericMatrix(func,colfunc,location,value,cols,rows) \
+    if (location == -1) \
+        return; \
+    if (sizeof(qreal) == sizeof(GLfloat)) { \
+        const GLfloat *data = reinterpret_cast<const GLfloat *> \
+            (value.constData());  \
+        colfunc(location, cols, data); \
+    } else { \
+        GLfloat mat[cols * rows]; \
+        const qreal *data = value.constData(); \
+        for (int i = 0; i < cols * rows; ++i) \
+            mat[i] = data[i]; \
+        colfunc(location, cols, mat); \
+    }
+#endif
+
 /*!
     Sets the uniform variable at \a location in the current context
     to a 2x2 matrix \a value.
@@ -2161,8 +2229,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QSizeF& size)
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix2x2& value)
 {
-    if (location != -1)
-        glUniformMatrix2fv(location, 1, GL_FALSE, value.data());
+    setUniformMatrix(glUniformMatrix2fv, location, value, 2, 2);
 }
 
 /*!
@@ -2186,20 +2253,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix2x2& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix2x3& value)
 {
-#if !defined(QT_OPENGL_ES_2)
-    if (location != -1) {
-        if (glUniformMatrix2x3fv) {
-            // OpenGL 2.1+: pass the matrix directly.
-            glUniformMatrix2x3fv(location, 1, GL_FALSE, value.data());
-        } else {
-            // OpenGL 2.0: pass the matrix columns as a vector.
-            glUniform3fv(location, 2, value.data());
-        }
-    }
-#else
-    if (location != -1)
-        glUniform3fv(location, 2, value.data());
-#endif
+    setUniformGenericMatrix
+        (glUniformMatrix2x3fv, glUniform3fv, location, value, 2, 3);
 }
 
 /*!
@@ -2223,20 +2278,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix2x3& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix2x4& value)
 {
-#if !defined(QT_OPENGL_ES_2)
-    if (location != -1) {
-        if (glUniformMatrix2x4fv) {
-            // OpenGL 2.1+: pass the matrix directly.
-            glUniformMatrix2x4fv(location, 1, GL_FALSE, value.data());
-        } else {
-            // OpenGL 2.0: pass the matrix columns as a vector.
-            glUniform4fv(location, 2, value.data());
-        }
-    }
-#else
-    if (location != -1)
-        glUniform4fv(location, 2, value.data());
-#endif
+    setUniformGenericMatrix
+        (glUniformMatrix2x4fv, glUniform4fv, location, value, 2, 4);
 }
 
 /*!
@@ -2260,20 +2303,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix2x4& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix3x2& value)
 {
-#if !defined(QT_OPENGL_ES_2)
-    if (location != -1) {
-        if (glUniformMatrix3x2fv) {
-            // OpenGL 2.1+: pass the matrix directly.
-            glUniformMatrix3x2fv(location, 1, GL_FALSE, value.data());
-        } else {
-            // OpenGL 2.0: pass the matrix columns as a vector.
-            glUniform2fv(location, 3, value.data());
-        }
-    }
-#else
-    if (location != -1)
-        glUniform2fv(location, 3, value.data());
-#endif
+    setUniformGenericMatrix
+        (glUniformMatrix3x2fv, glUniform2fv, location, value, 3, 2);
 }
 
 /*!
@@ -2297,8 +2328,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix3x2& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix3x3& value)
 {
-    if (location != -1)
-        glUniformMatrix3fv(location, 1, GL_FALSE, value.data());
+    setUniformMatrix(glUniformMatrix3fv, location, value, 3, 3);
 }
 
 /*!
@@ -2322,20 +2352,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix3x3& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix3x4& value)
 {
-#if !defined(QT_OPENGL_ES_2)
-    if (location != -1) {
-        if (glUniformMatrix3x4fv) {
-            // OpenGL 2.1+: pass the matrix directly.
-            glUniformMatrix3x4fv(location, 1, GL_FALSE, value.data());
-        } else {
-            // OpenGL 2.0: pass the matrix columns as a vector.
-            glUniform4fv(location, 3, value.data());
-        }
-    }
-#else
-    if (location != -1)
-        glUniform4fv(location, 3, value.data());
-#endif
+    setUniformGenericMatrix
+        (glUniformMatrix3x4fv, glUniform4fv, location, value, 3, 4);
 }
 
 /*!
@@ -2359,20 +2377,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix3x4& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix4x2& value)
 {
-#if !defined(QT_OPENGL_ES_2)
-    if (location != -1) {
-        if (glUniformMatrix4x2fv) {
-            // OpenGL 2.1+: pass the matrix directly.
-            glUniformMatrix4x2fv(location, 1, GL_FALSE, value.data());
-        } else {
-            // OpenGL 2.0: pass the matrix columns as a vector.
-            glUniform2fv(location, 4, value.data());
-        }
-    }
-#else
-    if (location != -1)
-        glUniform2fv(location, 4, value.data());
-#endif
+    setUniformGenericMatrix
+        (glUniformMatrix4x2fv, glUniform2fv, location, value, 4, 2);
 }
 
 /*!
@@ -2396,20 +2402,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix4x2& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix4x3& value)
 {
-#if !defined(QT_OPENGL_ES_2)
-    if (location != -1) {
-        if (glUniformMatrix4x3fv) {
-            // OpenGL 2.1+: pass the matrix directly.
-            glUniformMatrix4x3fv(location, 1, GL_FALSE, value.data());
-        } else {
-            // OpenGL 2.0: pass the matrix columns as a vector.
-            glUniform3fv(location, 4, value.data());
-        }
-    }
-#else
-    if (location != -1)
-        glUniform3fv(location, 4, value.data());
-#endif
+    setUniformGenericMatrix
+        (glUniformMatrix4x3fv, glUniform3fv, location, value, 4, 3);
 }
 
 /*!
@@ -2433,8 +2427,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix4x3& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix4x4& value)
 {
-    if (location != -1)
-        glUniformMatrix4fv(location, 1, GL_FALSE, value.data());
+    setUniformMatrix(glUniformMatrix4fv, location, value, 4, 4);
 }
 
 /*!
@@ -2680,18 +2673,20 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QVector4D *v
     setUniformValueArray(uniformLocation(name), values, count);
 }
 
-// We may have to repack matrix arrays if the matrix types
-// contain additional flag bits.  Especially QMatrix4x4.
+// We have to repack matrix arrays from qreal to GLfloat.
 #define setUniformMatrixArray(func,location,values,count,type,cols,rows) \
     if (location == -1 || count <= 0) \
         return; \
-    if (count == 1 || sizeof(type) == cols * rows * sizeof(GLfloat)) { \
-        func(location, count, GL_FALSE, values->constData()); \
+    if (sizeof(type) == sizeof(GLfloat) * cols * rows) { \
+        func(location, count, GL_FALSE, \
+             reinterpret_cast<const GLfloat *>(values[0].constData())); \
     } else { \
         QVarLengthArray<GLfloat> temp(cols * rows * count); \
         for (int index = 0; index < count; ++index) { \
-            qMemCopy(temp.data() + cols * rows * index, \
-                     values[index].constData(), cols * rows * sizeof(GLfloat)); \
+            for (int index2 = 0; index2 < (cols * rows); ++index2) { \
+                temp.data()[cols * rows * index + index2] = \
+                    values[index].constData()[index2]; \
+            } \
         } \
         func(location, count, GL_FALSE, temp.constData()); \
     }
@@ -2699,16 +2694,20 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QVector4D *v
 #define setUniformGenericMatrixArray(func,colfunc,location,values,count,type,cols,rows) \
     if (location == -1 || count <= 0) \
         return; \
-    if (count == 1 || sizeof(type) == cols * rows * sizeof(GLfloat)) { \
+    if (sizeof(type) == sizeof(GLfloat) * cols * rows) { \
+        const GLfloat *data = reinterpret_cast<const GLfloat *> \
+            (values[0].constData());  \
         if (func) \
-            func(location, count, GL_FALSE, values->constData()); \
+            func(location, count, GL_FALSE, data); \
         else \
-            colfunc(location, cols * count, values->constData()); \
+            colfunc(location, count * cols, data); \
     } else { \
         QVarLengthArray<GLfloat> temp(cols * rows * count); \
         for (int index = 0; index < count; ++index) { \
-            qMemCopy(temp.data() + cols * rows * index, \
-                     values[index].constData(), cols * rows * sizeof(GLfloat)); \
+            for (int index2 = 0; index2 < (cols * rows); ++index2) { \
+                temp.data()[cols * rows * index + index2] = \
+                    values[index].constData()[index2]; \
+            } \
         } \
         if (func) \
             func(location, count, GL_FALSE, temp.constData()); \
@@ -2719,13 +2718,17 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QVector4D *v
 #define setUniformGenericMatrixArray(func,colfunc,location,values,count,type,cols,rows) \
     if (location == -1 || count <= 0) \
         return; \
-    if (count == 1 || sizeof(type) == cols * rows * sizeof(GLfloat)) { \
-        colfunc(location, cols * count, values->constData()); \
+    if (sizeof(type) == sizeof(GLfloat) * cols * rows) { \
+        const GLfloat *data = reinterpret_cast<const GLfloat *> \
+            (values[0].constData());  \
+        colfunc(location, count * cols, data); \
     } else { \
         QVarLengthArray<GLfloat> temp(cols * rows * count); \
         for (int index = 0; index < count; ++index) { \
-            qMemCopy(temp.data() + cols * rows * index, \
-                     values[index].constData(), cols * rows * sizeof(GLfloat)); \
+            for (int index2 = 0; index2 < (cols * rows); ++index2) { \
+                temp.data()[cols * rows * index + index2] = \
+                    values[index].constData()[index2]; \
+            } \
         } \
         colfunc(location, count * cols, temp.constData()); \
     }
@@ -2962,6 +2965,8 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix4x4 *
     setUniformValueArray(uniformLocation(name), values, count);
 }
 
+#undef ctx
+
 /*!
     Returns true if shader programs written in the OpenGL Shading
     Language (GLSL) are supported on this system; false otherwise.
@@ -2981,6 +2986,16 @@ bool QGLShaderProgram::hasShaderPrograms(const QGLContext *context)
     Q_UNUSED(context);
     return true;
 #endif
+}
+
+/*!
+    \internal
+*/
+void QGLShaderProgram::shaderDestroyed()
+{
+    QGLShader *shader = qobject_cast<QGLShader *>(sender());
+    if (shader && !d->removingShaders)
+        removeShader(shader);
 }
 
 #endif

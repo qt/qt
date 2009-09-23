@@ -16,6 +16,7 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES addressbook.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/itemviews/addressbook
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
-
-symbian:TARGET.UID3 = 0xA000A646
+symbian {
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    TARGET.UID3 = 0xA000A646
+}

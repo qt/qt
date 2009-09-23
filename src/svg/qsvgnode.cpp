@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSvg module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,56 +60,57 @@ QSvgNode::~QSvgNode()
 
 }
 
-void QSvgNode::appendStyleProperty(QSvgStyleProperty *prop, const QString &id,
-                                   bool justLink)
+void QSvgNode::appendStyleProperty(QSvgStyleProperty *prop, const QString &id)
 {
     //qDebug()<<"appending "<<prop->type()<< " ("<< id <<") "<<"to "<<this<<this->type();
-    if (!justLink) {
-        switch (prop->type()) {
-        case QSvgStyleProperty::QUALITY:
-            m_style.quality = static_cast<QSvgQualityStyle*>(prop);
-            break;
-        case QSvgStyleProperty::FILL:
-            m_style.fill = static_cast<QSvgFillStyle*>(prop);
-            break;
-        case QSvgStyleProperty::VIEWPORT_FILL:
-            m_style.viewportFill = static_cast<QSvgViewportFillStyle*>(prop);
-            break;
-        case QSvgStyleProperty::FONT:
-            m_style.font = static_cast<QSvgFontStyle*>(prop);
-            break;
-        case QSvgStyleProperty::STROKE:
-            m_style.stroke = static_cast<QSvgStrokeStyle*>(prop);
-            break;
-        case QSvgStyleProperty::SOLID_COLOR:
-            m_style.solidColor = static_cast<QSvgSolidColorStyle*>(prop);
-            break;
-        case QSvgStyleProperty::GRADIENT:
-            m_style.gradient = static_cast<QSvgGradientStyle*>(prop);
-            break;
-        case QSvgStyleProperty::TRANSFORM:
-            m_style.transform = static_cast<QSvgTransformStyle*>(prop);
-            break;
-        case QSvgStyleProperty::ANIMATE_COLOR:
-            m_style.animateColor = static_cast<QSvgAnimateColor*>(prop);
-            break;
-        case QSvgStyleProperty::ANIMATE_TRANSFORM:
-            m_style.animateTransforms.append(
-                static_cast<QSvgAnimateTransform*>(prop));
-            break;
-        case QSvgStyleProperty::OPACITY:
-            m_style.opacity = static_cast<QSvgOpacityStyle*>(prop);
-            break;
-        case QSvgStyleProperty::COMP_OP:
-            m_style.compop = static_cast<QSvgCompOpStyle*>(prop);
-            break;
-        default:
-            qDebug("QSvgNode: Trying to append unknown property!");
-            break;
-        }
-    }
-    if (!id.isEmpty()) {
-        m_styles.insert(id, prop);
+    QSvgTinyDocument *doc;
+    switch (prop->type()) {
+    case QSvgStyleProperty::QUALITY:
+        m_style.quality = static_cast<QSvgQualityStyle*>(prop);
+        break;
+    case QSvgStyleProperty::FILL:
+        m_style.fill = static_cast<QSvgFillStyle*>(prop);
+        break;
+    case QSvgStyleProperty::VIEWPORT_FILL:
+        m_style.viewportFill = static_cast<QSvgViewportFillStyle*>(prop);
+        break;
+    case QSvgStyleProperty::FONT:
+        m_style.font = static_cast<QSvgFontStyle*>(prop);
+        break;
+    case QSvgStyleProperty::STROKE:
+        m_style.stroke = static_cast<QSvgStrokeStyle*>(prop);
+        break;
+    case QSvgStyleProperty::SOLID_COLOR:
+        m_style.solidColor = static_cast<QSvgSolidColorStyle*>(prop);
+        doc = document();
+        if (doc && !id.isEmpty())
+            doc->addNamedStyle(id, m_style.solidColor);
+        break;
+    case QSvgStyleProperty::GRADIENT:
+        m_style.gradient = static_cast<QSvgGradientStyle*>(prop);
+        doc = document();
+        if (doc && !id.isEmpty())
+            doc->addNamedStyle(id, m_style.gradient);
+        break;
+    case QSvgStyleProperty::TRANSFORM:
+        m_style.transform = static_cast<QSvgTransformStyle*>(prop);
+        break;
+    case QSvgStyleProperty::ANIMATE_COLOR:
+        m_style.animateColor = static_cast<QSvgAnimateColor*>(prop);
+        break;
+    case QSvgStyleProperty::ANIMATE_TRANSFORM:
+        m_style.animateTransforms.append(
+            static_cast<QSvgAnimateTransform*>(prop));
+        break;
+    case QSvgStyleProperty::OPACITY:
+        m_style.opacity = static_cast<QSvgOpacityStyle*>(prop);
+        break;
+    case QSvgStyleProperty::COMP_OP:
+        m_style.compop = static_cast<QSvgCompOpStyle*>(prop);
+        break;
+    default:
+        qDebug("QSvgNode: Trying to append unknown property!");
+        break;
     }
 }
 
@@ -185,20 +186,13 @@ QSvgStyleProperty * QSvgNode::styleProperty(QSvgStyleProperty::Type type) const
     return 0;
 }
 
-QSvgStyleProperty * QSvgNode::styleProperty(const QString &id) const
+QSvgFillStyleProperty * QSvgNode::styleProperty(const QString &id) const
 {
     QString rid = id;
     if (rid.startsWith(QLatin1Char('#')))
         rid.remove(0, 1);
-    const QSvgNode *node = this;
-    while (node) {
-        QSvgStyleProperty *style = node->m_styles[rid];
-        if (style)
-            return style;
-        node = node->parent();
-    }
-
-    return 0;
+    QSvgTinyDocument *doc = document();
+    return doc ? doc->namedStyle(rid) : 0;
 }
 
 QRectF QSvgNode::bounds() const
@@ -320,9 +314,11 @@ qreal QSvgNode::strokeWidth() const
 {
     QSvgStrokeStyle *stroke = static_cast<QSvgStrokeStyle*>(
         styleProperty(QSvgStyleProperty::STROKE));
-    if (!stroke || !stroke->strokePresent())
+    if (!stroke)
         return 0;
-    return stroke->qpen().widthF();
+    if (stroke->stroke().brush().style() == Qt::NoBrush)
+        return 0;
+    return stroke->width();
 }
 
 QT_END_NAMESPACE

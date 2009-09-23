@@ -4,9 +4,8 @@ CONFIG += qt warn_on console depend_includepath
 qtAddLibrary(QtTest)
 
 symbian:{
-# qt.prf sets TARGET.EPOCSTACKSIZE and TARGET.EPOCHEAPSIZE
+    TARGET.EPOCHEAPSIZE = 0x100000 0x2000000
 #    DEFINES += QTEST_NO_SPECIALIZATIONS
-    TARGET.UID3 = $$generate_test_uid($$TARGET)
     TARGET.CAPABILITY="ALL -TCB"
     RSS_RULES ="group_name=\"QtTests\";" 
 }

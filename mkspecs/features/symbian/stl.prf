@@ -1,14 +1,13 @@
 CONFIG -= stl_off
 
-# STL usage in S60 requires the following mmp variables to be uses
-# OPTION CW -wchar_t on
-# MACRO  _WCHAR_T_DECLARED
+# STL usage in S60 requires the "OPTION CW -wchar_t on" mmp statement to be used.
+# This statement is added via $$STLLIB_USAGE_CW_FLAGS variable below.
+# S60 STL documentation instructs to use also "MACRO  _WCHAR_T_DECLARED" statement,
+# but QtS60 will not compile if that statement is set.
 
 QMAKE_CXXFLAGS.CW *= $$STLLIB_USAGE_CW_FLAGS 
-DEFINES *= $$STLLIB_USAGE_DEFINES
 
-# Legacy support requires some hardcoded stdapis paths.
-# Note: Also the new header is used from STL when it is enabled
+# Path to stlport headers
 INCLUDEPATH += $$OS_LAYER_STDCPP_SYSTEMINCLUDE 
 
 # Remove mkspecs/common/symbian/stl-off from beginning of includepath 
@@ -19,19 +18,8 @@ INCLUDEPATH -= $$[QT_INSTALL_PREFIX]/mkspecs/common/symbian/stl-off
 exists($${EPOCROOT}epoc32/release/armv5/urel/libstdcppv5.dll ) {
     LIBS *= -llibstdcppv5.dll
 
-    # STDCPP turns on standard C++ new behaviour in SBSv2
+    # STDCPP turns on standard C++ new behaviour (ie. throwing new)
     MMP_RULES += "STDCPP"
-    
-    # defining __SYMBIAN_STDCPP_SUPPORT__ turns on standard C++ new behaviour pre SBSv2
-    DEFINES += "__SYMBIAN_STDCPP_SUPPORT__"
-
-    # operator new is actually supplied in stdnew.lib for hardware builds
-    eabiStdNewLibBlock = \
-        "$${LITERAL_HASH}ifdef EABI" \
-        "LIBRARY stdnew.lib" \
-        "$${LITERAL_HASH}endif"
-
-    MMP_RULES += eabiStdNewLibBlock
 } else {
     LIBS *= -llibstdcpp.dll
 }

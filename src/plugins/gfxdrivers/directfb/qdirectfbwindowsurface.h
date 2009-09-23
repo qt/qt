@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -46,15 +46,18 @@
 #include "qdirectfbpaintdevice.h"
 #include "qdirectfbscreen.h"
 
+#ifndef QT_NO_QWS_DIRECTFB
+
 #include <private/qpaintengine_raster_p.h>
 #include <private/qwindowsurface_qws_p.h>
-#include <directfb.h>
 
 #ifdef QT_DIRECTFB_TIMING
 #include <qdatetime.h>
 #endif
 
 QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
@@ -65,6 +68,9 @@ public:
     QDirectFBWindowSurface(DFBSurfaceFlipFlags flipFlags, QDirectFBScreen *scr, QWidget *widget);
     ~QDirectFBWindowSurface();
 
+#ifdef QT_DIRECTFB_WM
+    void raise();
+#endif
     bool isValid() const;
 
     void setGeometry(const QRect &rect);
@@ -85,21 +91,26 @@ public:
     void beginPaint(const QRegion &);
     void endPaint(const QRegion &);
 
-    QImage *buffer(const QWidget *widget);
-private:
-#ifndef QT_NO_DIRECTFB_WM
-    void createWindow();
-    IDirectFBWindow *dfbWindow;
+    IDirectFBSurface *surfaceForWidget(const QWidget *widget, QRect *rect) const;
+    IDirectFBSurface *directFBSurface() const;
+#ifdef QT_DIRECTFB_WM
+    IDirectFBWindow *directFBWindow() const;
 #endif
+private:
+    void updateFormat();
+    void releaseSurface();
+    QDirectFBWindowSurface *sibling;
 
-#ifdef QT_NO_DIRECTFB_WM
+#ifdef QT_DIRECTFB_WM
+    void createWindow(const QRect &rect);
+    IDirectFBWindow *dfbWindow;
+#else
     enum Mode {
         Primary,
         Offscreen
     } mode;
 #endif
 
-    QList<QImage*> bufferImages;
     DFBSurfaceFlipFlags flipFlags;
     bool boundingRectFlip;
 #ifdef QT_DIRECTFB_TIMING
@@ -108,6 +119,10 @@ private:
 #endif
 };
 
+QT_END_NAMESPACE
+
 QT_END_HEADER
+
+#endif // QT_NO_QWS_DIRECTFB
 
 #endif // QDIRECFBWINDOWSURFACE_H

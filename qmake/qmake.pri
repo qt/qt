@@ -29,6 +29,7 @@ HEADERS += project.h property.h generators/makefile.h \
            generators/symbian/symmake.h \
            generators/symbian/symmake_abld.h \
            generators/symbian/symmake_sbsv2.h \
+           generators/symbian/epocroot.h \
            generators/symbian/initprojectdeploy_symbian.h
 
 contains(QT_EDITION, OpenSource) {
@@ -133,10 +134,9 @@ bootstrap { #Qt code
         LFLAGS += -lcpp
     }
     DEFINES *= QT_NO_QOBJECT
-    include($$QT_SOURCE_TREE/src/script/script.pri)
 } else {
     CONFIG += qt 
-    QT = core script
+    QT = core
 }
 *-g++:profiling {
   QMAKE_CFLAGS = -pg

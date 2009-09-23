@@ -1,6 +1,6 @@
 
 INCLUDEPATH += $$PWD
-QT += script
+contains(QT_CONFIG, script): QT += script
 
 include($$QT_SOURCE_TREE/tools/shared/qtpropertybrowser/qtpropertybrowser.pri)
 include($$QT_SOURCE_TREE/tools/shared/deviceskin/deviceskin.pri)

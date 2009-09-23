@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -47,6 +47,9 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
 #endif
+#ifdef QT_KEYPAD_NAVIGATION
+#include "qtabwidget.h" // Needed in inTabWidget()
+#endif // QT_KEYPAD_NAVIGATION
 #include <limits.h>
 
 QT_BEGIN_NAMESPACE
@@ -687,9 +690,7 @@ void QAbstractSlider::wheelEvent(QWheelEvent * e)
     Q_D(QAbstractSlider);
     e->ignore();
     if (e->orientation() != d->orientation && !rect().contains(e->pos()))
-    {
         return;
-    }
     static qreal offset = 0;
     static QAbstractSlider *offset_owner = 0;
     if (offset_owner != this){
@@ -726,6 +727,45 @@ void QAbstractSlider::wheelEvent(QWheelEvent * e)
     }
 }
 #endif
+#ifdef QT_KEYPAD_NAVIGATION
+/*!
+    \internal
+
+    Tells us if it there is currently a reachable widget by keypad navigation in
+    a certain \a orientation.
+    If no navigation is possible, occuring key events in that \a orientation may
+    be used to interact with the value in the focussed widget, even though it
+    currently has not the editFocus.
+
+    \sa QWidgetPrivate::widgetInNavigationDirection(), QWidget::hasEditFocus()
+*/
+inline static bool canKeypadNavigate(Qt::Orientation orientation)
+{
+    return orientation == Qt::Horizontal?
+            (QWidgetPrivate::widgetInNavigationDirection(QWidgetPrivate::DirectionEast)
+                    || QWidgetPrivate::widgetInNavigationDirection(QWidgetPrivate::DirectionWest))
+            :(QWidgetPrivate::widgetInNavigationDirection(QWidgetPrivate::DirectionNorth)
+                    || QWidgetPrivate::widgetInNavigationDirection(QWidgetPrivate::DirectionSouth));
+}
+/*!
+    \internal
+
+    Checks, if the \a widget is inside a QTabWidget. If is is inside
+    one, left/right key events will be used to switch between tabs in keypad
+    navigation. If there is no QTabWidget, the horizontal key events can be used to
+    interact with the value in the focussed widget, even though it currently has
+    not the editFocus.
+
+    \sa QWidget::hasEditFocus()
+*/
+inline static bool inTabWidget(QWidget *widget)
+{
+    for (QWidget *tabWidget = widget; tabWidget; tabWidget = tabWidget->parentWidget())
+        if (qobject_cast<const QTabWidget*>(tabWidget))
+            return true;
+    return false;
+}
+#endif // QT_KEYPAD_NAVIGATION
 /*!
     \reimp
 */
@@ -753,7 +793,13 @@ void QAbstractSlider::keyPressEvent(QKeyEvent *ev)
         // It seems we need to use invertedAppearance for Left and right, otherwise, things look weird.
         case Qt::Key_Left:
 #ifdef QT_KEYPAD_NAVIGATION
-            if (QApplication::keypadNavigationEnabled() && !hasEditFocus()) {
+            // In QApplication::KeypadNavigationDirectional, we want to change the slider
+            // value if there is no left/right navigation possible and if this slider is not
+            // inside a tab widget.
+            if (QApplication::keypadNavigationEnabled()
+                    && (!hasEditFocus() && QApplication::navigationMode() == Qt::NavigationModeKeypadTabOrder
+                    || d->orientation == Qt::Vertical
+                    || !hasEditFocus() && (canKeypadNavigate(Qt::Horizontal) || inTabWidget(this)))) {
                 ev->ignore();
                 return;
             }
@@ -768,7 +814,11 @@ void QAbstractSlider::keyPressEvent(QKeyEvent *ev)
             break;
         case Qt::Key_Right:
 #ifdef QT_KEYPAD_NAVIGATION
-            if (QApplication::keypadNavigationEnabled() && !hasEditFocus()) {
+            // Same logic as in Qt::Key_Left
+            if (QApplication::keypadNavigationEnabled()
+                    && (!hasEditFocus() && QApplication::navigationMode() == Qt::NavigationModeKeypadTabOrder
+                    || d->orientation == Qt::Vertical
+                    || !hasEditFocus() && (canKeypadNavigate(Qt::Horizontal) || inTabWidget(this)))) {
                 ev->ignore();
                 return;
             }
@@ -783,7 +833,12 @@ void QAbstractSlider::keyPressEvent(QKeyEvent *ev)
             break;
         case Qt::Key_Up:
 #ifdef QT_KEYPAD_NAVIGATION
-            if (QApplication::keypadNavigationEnabled()) {
+            // In QApplication::KeypadNavigationDirectional, we want to change the slider
+            // value if there is no up/down navigation possible.
+            if (QApplication::keypadNavigationEnabled()
+                    && (QApplication::navigationMode() == Qt::NavigationModeKeypadTabOrder
+                    || d->orientation == Qt::Horizontal
+                    || !hasEditFocus() && canKeypadNavigate(Qt::Vertical))) {
                 ev->ignore();
                 break;
             }
@@ -792,7 +847,11 @@ void QAbstractSlider::keyPressEvent(QKeyEvent *ev)
             break;
         case Qt::Key_Down:
 #ifdef QT_KEYPAD_NAVIGATION
-            if (QApplication::keypadNavigationEnabled()) {
+            // Same logic as in Qt::Key_Up
+            if (QApplication::keypadNavigationEnabled()
+                    && (QApplication::navigationMode() == Qt::NavigationModeKeypadTabOrder
+                    || d->orientation == Qt::Horizontal
+                    || !hasEditFocus() && canKeypadNavigate(Qt::Vertical))) {
                 ev->ignore();
                 break;
             }

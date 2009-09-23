@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -241,7 +241,8 @@ Configure::Configure( int& argc, char** argv )
     dictionary[ "CE_CRT" ]          = "no";
     dictionary[ "CETEST" ]          = "auto";
     dictionary[ "CE_SIGNATURE" ]    = "no";
-    dictionary[ "SCRIPTTOOLS" ]     = "yes";
+    dictionary[ "SCRIPT" ]          = "auto";
+    dictionary[ "SCRIPTTOOLS" ]     = "auto";
     dictionary[ "XMLPATTERNS" ]     = "auto";
     dictionary[ "PHONON" ]          = "auto";
     dictionary[ "PHONON_BACKEND" ]  = "yes";
@@ -874,6 +875,10 @@ void Configure::parseCmdLine()
             dictionary[ "DBUS" ] = "yes";
         } else if( configCmdLine.at(i) == "-dbus-linked" ) {
             dictionary[ "DBUS" ] = "linked";
+        } else if( configCmdLine.at(i) == "-no-script" ) {
+            dictionary[ "SCRIPT" ] = "no";
+        } else if( configCmdLine.at(i) == "-script" ) {
+            dictionary[ "SCRIPT" ] = "yes";
         } else if( configCmdLine.at(i) == "-no-scripttools" ) {
             dictionary[ "SCRIPTTOOLS" ] = "no";
         } else if( configCmdLine.at(i) == "-scripttools" ) {
@@ -1149,9 +1154,6 @@ void Configure::parseCmdLine()
             } else {
                 dictionary[ "QMAKEMAKEFILE" ] = "Makefile.win32-g++";
             }
-        } else if ( dictionary[ "QMAKESPEC" ] == QString( "win32-mwc" ) ) {
-                dictionary[ "QMAKEMAKEFILE" ] = "Makefile.win32-mwc";
-                dictionary[ "MAKE" ] = "make";
         } else {
             if ( dictionary[ "MAKE" ].isEmpty() ) dictionary[ "MAKE" ] = "make";
             dictionary[ "QMAKEMAKEFILE" ] = "Makefile.win32";
@@ -1162,7 +1164,7 @@ void Configure::parseCmdLine()
     dictionary["QTBUILDINSTRUCTION"] = dictionary["MAKE"];
     if (dictionary.contains("XQMAKESPEC")) {
         if (dictionary["XQMAKESPEC"].startsWith("symbian")) {
-            dictionary["QTBUILDINSTRUCTION"] = dictionary["MAKE"] + QString(" debug-winscw|debug-armv5|release-armv5");
+            dictionary["QTBUILDINSTRUCTION"] = QString("make debug-winscw|debug-armv5|release-armv5");
         } else if (dictionary["XQMAKESPEC"].startsWith("wince")) {
             dictionary["QTBUILDINSTRUCTION"] =
                 QString("setcepaths.bat ") + dictionary["XQMAKESPEC"] + QString(" && ") + dictionary["MAKE"];
@@ -1553,9 +1555,8 @@ bool Configure::displayHelp()
                     "[-no-openssl] [-no-dbus] [-dbus] [-dbus-linked] [-platform <spec>]\n"
                     "[-qtnamespace <namespace>] [-qtlibinfix <infix>] [-no-phonon]\n"
                     "[-phonon] [-no-phonon-backend] [-phonon-backend]\n"
-                    "[-no-multimedia] [-multimedia]\n"
-                    "[-no-webkit] [-webkit]\n"
-                    "[-no-scripttools] [-scripttools]\n"
+                    "[-no-multimedia] [-multimedia] [-no-webkit] [-webkit]\n"
+                    "[-no-script] [-script] [-no-scripttools] [-scripttools]\n"
                     "[-graphicssystem raster|opengl|openvg]\n\n", 0, 7);
 
         desc("Installation options:\n\n");
@@ -1738,6 +1739,8 @@ bool Configure::displayHelp()
         desc("MULTIMEDIA", "yes","-multimedia",         "Compile in multimedia module");
         desc("WEBKIT", "no",    "-no-webkit",           "Do not compile in the WebKit module");
         desc("WEBKIT", "yes",   "-webkit",              "Compile in the WebKit module (WebKit is built if a decent C++ compiler is used.)");
+        desc("SCRIPT", "no",    "-no-script",           "Do not build the QtScript module.");
+        desc("SCRIPT", "yes",   "-script",              "Build the QtScript module.");
         desc("SCRIPTTOOLS", "no", "-no-scripttools",    "Do not build the QtScriptTools module.");
         desc("SCRIPTTOOLS", "yes", "-scripttools",      "Build the QtScriptTools module.");
 
@@ -2024,10 +2027,8 @@ bool Configure::checkAvailability(const QString &part)
         }
     } else if (part == "MULTIMEDIA") {
         available = true;
-    } else if (part == "WEBKIT") {
+    } else if (part == "WEBKIT" || part == "SCRIPT" || part == "SCRIPTTOOLS") {
         available = (dictionary.value("QMAKESPEC") == "win32-msvc2005") || (dictionary.value("QMAKESPEC") == "win32-msvc2008") || (dictionary.value("QMAKESPEC") == "win32-g++");
-    } else if (part == "SCRIPTTOOLS") {
-        available = true;
     }
 
     return available;
@@ -2104,6 +2105,8 @@ void Configure::autoDetection()
         dictionary["OPENSSL"] = checkAvailability("OPENSSL") ? "yes" : "no";
     if (dictionary["DBUS"] == "auto")
         dictionary["DBUS"] = checkAvailability("DBUS") ? "yes" : "no";
+    if (dictionary["SCRIPT"] == "auto")
+        dictionary["SCRIPT"] = checkAvailability("SCRIPT") ? "yes" : "no";
     if (dictionary["SCRIPTTOOLS"] == "auto")
         dictionary["SCRIPTTOOLS"] = checkAvailability("SCRIPTTOOLS") ? "yes" : "no";
     if (dictionary["XMLPATTERNS"] == "auto")
@@ -2472,8 +2475,17 @@ void Configure::generateOutputVars()
     if (dictionary[ "CETEST" ] == "yes")
         qtConfig += "cetest";
 
-    if (dictionary[ "SCRIPTTOOLS" ] == "yes")
+    if (dictionary[ "SCRIPT" ] == "yes")
+        qtConfig += "script";
+
+    if (dictionary[ "SCRIPTTOOLS" ] == "yes") {
+        if (dictionary[ "SCRIPT" ] == "no") {
+            cout << "QtScriptTools was requested, but it can't be built due to QtScript being "
+                    "disabled." << endl;
+            dictionary[ "DONE" ] = "error";
+        }
         qtConfig += "scripttools";
+    }
 
     if (dictionary[ "XMLPATTERNS" ] == "yes")
         qtConfig += "xmlpatterns";
@@ -2773,7 +2785,6 @@ static void applyTemporarySymbianFlags(QStringList &qconfigList)
     // This is removed because it uses UNIX signals which are not implemented yet
     qconfigList += "QT_NO_CRASHHANDLER";
     qconfigList += "QT_NO_PRINTER";
-    qconfigList += "QT_NO_CURSOR";
     qconfigList += "QT_NO_SYSTEMTRAYICON";
 }
 
@@ -2873,6 +2884,7 @@ void Configure::generateConfigfiles()
         if(dictionary["PHONON"] == "no")            qconfigList += "QT_NO_PHONON";
         if(dictionary["MULTIMEDIA"] == "no")        qconfigList += "QT_NO_MULTIMEDIA";
         if(dictionary["XMLPATTERNS"] == "no")       qconfigList += "QT_NO_XMLPATTERNS";
+        if(dictionary["SCRIPT"] == "no")            qconfigList += "QT_NO_SCRIPT";
         if(dictionary["SCRIPTTOOLS"] == "no")       qconfigList += "QT_NO_SCRIPTTOOLS";
         if(dictionary["FREETYPE"] == "no")          qconfigList += "QT_NO_FREETYPE";
         if(dictionary["S60"] == "no")               qconfigList += "QT_NO_S60";
@@ -3138,8 +3150,9 @@ void Configure::displayConfig()
     cout << "QtDBus support.............." << dictionary[ "DBUS" ] << endl;
     cout << "QtXmlPatterns support......." << dictionary[ "XMLPATTERNS" ] << endl;
     cout << "Phonon support.............." << dictionary[ "PHONON" ] << endl;
-    cout << "Multimedia support.........." << dictionary[ "MULTIMEDIA" ] << endl;
+    cout << "QtMultimedia support........" << dictionary[ "MULTIMEDIA" ] << endl;
     cout << "WebKit support.............." << dictionary[ "WEBKIT" ] << endl;
+    cout << "QtScript support............" << dictionary[ "SCRIPT" ] << endl;
     cout << "QtScriptTools support......." << dictionary[ "SCRIPTTOOLS" ] << endl;
     cout << "Graphics System............." << dictionary[ "GRAPHICS_SYSTEM" ] << endl;
     cout << "Qt3 compatibility..........." << dictionary[ "QT3SUPPORT" ] << endl << endl;
@@ -3621,10 +3634,14 @@ bool Configure::showLicense(QString orgLicenseFile)
         return true;
     }
 
+    bool haveGpl3 = false;
     QString licenseFile = orgLicenseFile;
     QString theLicense;
     if (dictionary["EDITION"] == "OpenSource" || dictionary["EDITION"] == "Snapshot") {
-        theLicense = "GNU General Public License (GPL) version 3 \nor the GNU Lesser General Public License (LGPL) version 2.1";
+        haveGpl3 = QFile::exists(orgLicenseFile + "/LICENSE.GPL3");
+        theLicense = "GNU Lesser General Public License (LGPL) version 2.1";
+        if (haveGpl3)
+            theLicense += "\nor the GNU General Public License (GPL) version 3";
     } else {
         // the first line of the license file tells us which license it is
         QFile file(licenseFile);
@@ -3641,7 +3658,8 @@ bool Configure::showLicense(QString orgLicenseFile)
              << "the " << theLicense << "." << endl
              << endl;
         if (dictionary["EDITION"] == "OpenSource" || dictionary["EDITION"] == "Snapshot") {
-            cout << "Type '3' to view the GNU General Public License version 3 (GPLv3)." << endl;
+            if (haveGpl3)
+                cout << "Type '3' to view the GNU General Public License version 3 (GPLv3)." << endl;
             cout << "Type 'L' to view the Lesser GNU General Public License version 2.1 (LGPLv2.1)." << endl;
         } else {
             cout << "Type '?' to view the " << theLicense << "." << endl;

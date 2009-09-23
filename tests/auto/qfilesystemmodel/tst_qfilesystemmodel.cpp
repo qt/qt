@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,6 +44,7 @@
 #include "../../../src/gui/dialogs/qfilesystemmodel_p.h"
 #include <QFileIconProvider>
 #include <QTreeView>
+#include <QHeaderView>
 #include "../../shared/util.h"
 #include <QTime>
 #include <QStyle>
@@ -802,37 +803,64 @@ void tst_QFileSystemModel::sort()
     if (fileDialogMode)
         myModel->d_func()->disableRecursiveSort = true;
 
-    const QString dirPath = QString("%1/sortTemp").arg(QDir::tempPath());
-    QDir dir(dirPath);
-    dir.mkpath(dirPath);
+    QDir dir(QDir::tempPath());
+    dir.mkdir("sortTemp");
+    dir.cd("sortTemp");
+    const QString dirPath = dir.absolutePath();
     QVERIFY(dir.exists());
-    dir.mkdir("a");
-    dir.mkdir("b");
-    dir.mkdir("c");
-    dir.mkdir("d");
-    dir.mkdir("e");
-    dir.mkdir("f");
-    dir.mkdir("g");
-    QTemporaryFile tempFile(dirPath + "/rXXXXXX");
-    tempFile.open();
+
+    //Create a file that will be at the end when sorting by name (For Mac, the default)
+    //but if we sort by size descending it will be the first
+    QFile tempFile(dirPath + "/plop2.txt");
+    tempFile.open(QIODevice::WriteOnly | QIODevice::Text);
+    QTextStream out(&tempFile);
+    out << "The magic number is: " << 49 << "\n";
+    tempFile.close();
+
+    QFile tempFile2(dirPath + "/plop.txt");
+    tempFile2.open(QIODevice::WriteOnly | QIODevice::Text);
+    QTextStream out2(&tempFile2);
+    out2 << "The magic number is : " << 49 << " but i write some stuff in the file \n";
+    tempFile2.close();
+
     myModel->setRootPath(QDir::rootPath());
+    myModel->setFilter(QDir::AllEntries | QDir::System | QDir::Hidden);
+    tree->setSortingEnabled(true);
     tree->setModel(myModel);
     tree->show();
+    tree->resize(800, 800);
     QTest::qWait(500);
-    tree->expand(myModel->index(dir.absolutePath(), 0));
-    while (dir.cdUp())
+    tree->header()->setSortIndicator(1,Qt::DescendingOrder);
+    tree->header()->setResizeMode(0, QHeaderView::ResizeToContents);
+    QStringList dirsToOpen;
+    do
     {
-        tree->expand(myModel->index(dir.absolutePath(), 0));
+        dirsToOpen<<dir.absolutePath();
+    } while (dir.cdUp());
+
+    for (int i = dirsToOpen.size() -1 ; i > 0 ; --i) {
+        QString path = dirsToOpen[i];
+        QTest::qWait(500);
+        tree->expand(myModel->index(path, 0));
     }
-    QTest::qWait(250);
+    tree->expand(myModel->index(dirPath, 0));
+    QTest::qWait(500);
+    QModelIndex parent = myModel->index(dirPath, 0);
     //File dialog Mode means sub trees are not sorted, only the current root
     if (fileDialogMode)
-        QVERIFY(myModel->index(0, 1, myModel->index(dirPath, 0)).data(QFileSystemModel::FilePathRole).toString() != dirPath + QLatin1String("/a"));
+        QVERIFY(dirPath + QChar('/') + myModel->index(0, 1, parent).data(QFileSystemModel::FileNameRole).toString() != tempFile2.fileName());
     else
-        QCOMPARE(myModel->index(0, 1, myModel->index(dirPath, 0)).data(QFileSystemModel::FilePathRole).toString(), dirPath + QLatin1String("/a"));
+        QCOMPARE(dirPath + QChar('/') + myModel->index(0, 1, parent).data(QFileSystemModel::FileNameRole).toString(), tempFile2.fileName());
 
     delete tree;
     delete myModel;
+
+    dir.setPath(QDir::tempPath());
+    dir.cd("sortTemp");
+    tempFile.remove();
+    tempFile2.remove();
+    dir.cdUp();
+    dir.rmdir("sortTemp");
 
 }
 

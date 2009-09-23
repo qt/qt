@@ -93,6 +93,11 @@ bool JSSVGAnimatedEnumeration::getOwnPropertySlot(ExecState* exec, const Identif
     return getStaticValueSlot<JSSVGAnimatedEnumeration, Base>(exec, &JSSVGAnimatedEnumerationTable, this, propertyName, slot);
 }
 
+bool JSSVGAnimatedEnumeration::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGAnimatedEnumeration, Base>(exec, &JSSVGAnimatedEnumerationTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGAnimatedEnumerationBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGAnimatedEnumeration* castedThis = static_cast<JSSVGAnimatedEnumeration*>(asObject(slot.slotBase()));
@@ -128,7 +133,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAnim
 }
 SVGAnimatedEnumeration* toSVGAnimatedEnumeration(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGAnimatedEnumeration::s_info) ? static_cast<JSSVGAnimatedEnumeration*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGAnimatedEnumeration::s_info) ? static_cast<JSSVGAnimatedEnumeration*>(asObject(value))->impl() : 0;
 }
 
 }

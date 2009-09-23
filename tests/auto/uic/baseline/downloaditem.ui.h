@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'downloaditem.ui'
 **
-** Created: Thu Jul 10 09:47:34 2008
-**      by: Qt User Interface Compiler version 4.5.0
+** Created: Fri Sep 4 10:17:13 2009
+**      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -135,7 +135,6 @@ public:
         tryAgainButton->setText(QApplication::translate("DownloadItem", "Try Again", 0, QApplication::UnicodeUTF8));
         stopButton->setText(QApplication::translate("DownloadItem", "Stop", 0, QApplication::UnicodeUTF8));
         openButton->setText(QApplication::translate("DownloadItem", "Open", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(DownloadItem);
     } // retranslateUi
 
 };

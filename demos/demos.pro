@@ -44,7 +44,7 @@ sources.files = README *.pro
 sources.path = $$[QT_INSTALL_DEMOS]
 INSTALLS += sources
 
-include($$QT_SOURCE_TREE/demos/demobase.pri)
+symbian: include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
 
 demos_chip.subdir = chip
 demos_embeddeddialogs.subdir = embeddeddialogs

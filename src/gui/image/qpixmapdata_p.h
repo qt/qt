@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,6 +56,10 @@
 #include <QtGui/qpixmap.h>
 #include <QtCore/qatomic.h>
 
+#if defined(Q_OS_SYMBIAN)
+class RSgImage;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class Q_GUI_EXPORT QPixmapData
@@ -75,8 +79,12 @@ public:
     virtual void resize(int width, int height) = 0;
     virtual void fromImage(const QImage &image,
                            Qt::ImageConversionFlags flags) = 0;
-    virtual void fromFile(const QString &filename, const char *format,
+
+    virtual bool fromFile(const QString &filename, const char *format,
                           Qt::ImageConversionFlags flags);
+    virtual bool fromData(const uchar *buffer, uint len, const char *format,
+                          Qt::ImageConversionFlags flags);
+
     virtual void copy(const QPixmapData *data, const QRect &rect);
     virtual bool scroll(int dx, int dy, const QRect &rect);
 
@@ -105,6 +113,11 @@ public:
     inline int depth() const { return d; }
     inline bool isNull() const { return is_null; }
 
+#if defined(Q_OS_SYMBIAN)
+    virtual RSgImage* toRSgImage();
+    virtual void fromRSgImage(RSgImage* rsgImage);
+#endif
+
 protected:
     void setSerialNumber(int serNo);
     int w;
@@ -117,6 +130,7 @@ private:
     friend class QGLContextPrivate;
     friend class QX11PixmapData;
     friend class QGLTextureCache; //Needs to check the reference count
+    friend class QExplicitlySharedDataPointer<QPixmapData>;
 
     QAtomicInt ref;
     int detach_no;
@@ -126,15 +140,6 @@ private:
     int ser_no;
     uint is_cached;
 };
-
-#ifdef Q_WS_WIN
-#ifndef Q_WS_WINCE
-QPixmap convertHIconToPixmap( const HICON icon);
-#else
-QPixmap convertHIconToPixmap( const HICON icon, bool large = false);
-#endif
-QPixmap loadIconFromShell32( int resourceId, int size );
-#endif
 
 #  define QT_XFORM_TYPE_MSBFIRST 0
 #  define QT_XFORM_TYPE_LSBFIRST 1

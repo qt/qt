@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -559,7 +559,8 @@ void QWidgetBackingStore::markDirty(const QRegion &rgn, QWidget *widget, bool up
     }
 
     const QPoint offset = widget->mapTo(tlw, QPoint());
-    if (qt_region_strictContains(dirty, widget->rect().translated(offset))) {
+    const QRect widgetRect = widget->d_func()->effectiveRectFor(widget->rect());
+    if (qt_region_strictContains(dirty, widgetRect.translated(offset))) {
         if (updateImmediately)
             sendUpdateRequest(tlw, updateImmediately);
         return; // Already dirty.
@@ -567,7 +568,10 @@ void QWidgetBackingStore::markDirty(const QRegion &rgn, QWidget *widget, bool up
 
     if (invalidateBuffer) {
         const bool eventAlreadyPosted = !dirty.isEmpty();
-        dirty += rgn.translated(offset);
+        if (widget->d_func()->graphicsEffect)
+            dirty += widget->d_func()->effectiveRectFor(rgn.boundingRect()).translated(offset);
+        else
+            dirty += rgn.translated(offset);
         if (!eventAlreadyPosted || updateImmediately)
             sendUpdateRequest(tlw, updateImmediately);
         return;
@@ -580,8 +584,12 @@ void QWidgetBackingStore::markDirty(const QRegion &rgn, QWidget *widget, bool up
     }
 
     if (widget->d_func()->inDirtyList) {
-        if (!qt_region_strictContains(widget->d_func()->dirty, widget->rect()))
-            widget->d_func()->dirty += rgn;
+        if (!qt_region_strictContains(widget->d_func()->dirty, widgetRect)) {
+            if (widget->d_func()->graphicsEffect)
+                widget->d_func()->dirty += widget->d_func()->effectiveRectFor(rgn.boundingRect());
+            else
+                widget->d_func()->dirty += rgn;
+        }
     } else {
         addDirtyWidget(widget, rgn);
     }
@@ -625,7 +633,8 @@ void QWidgetBackingStore::markDirty(const QRect &rect, QWidget *widget, bool upd
         return;
     }
 
-    const QRect translatedRect(rect.translated(widget->mapTo(tlw, QPoint())));
+    const QRect widgetRect = widget->d_func()->effectiveRectFor(rect);
+    const QRect translatedRect(widgetRect.translated(widget->mapTo(tlw, QPoint())));
     if (qt_region_strictContains(dirty, translatedRect)) {
         if (updateImmediately)
             sendUpdateRequest(tlw, updateImmediately);
@@ -647,8 +656,8 @@ void QWidgetBackingStore::markDirty(const QRect &rect, QWidget *widget, bool upd
     }
 
     if (widget->d_func()->inDirtyList) {
-        if (!qt_region_strictContains(widget->d_func()->dirty, rect))
-            widget->d_func()->dirty += rect;
+        if (!qt_region_strictContains(widget->d_func()->dirty, widgetRect))
+            widget->d_func()->dirty += widgetRect;
     } else {
         addDirtyWidget(widget, rect);
     }
@@ -884,7 +893,7 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
                           && !isOverlapped(sourceRect) && !isOverlapped(destRect);
 
     if (!accelerateMove) {
-        QRegion parentR(parentRect);
+        QRegion parentR(effectiveRectFor(parentRect));
         if (!extra || !extra->hasMask) {
             parentR -= newRect;
         } else {
@@ -1388,7 +1397,7 @@ void QWidgetPrivate::invalidateBuffer_resizeHelper(const QPoint &oldPos, const Q
     const QRect newWidgetRect(q->rect());
     const QRect oldWidgetRect(0, 0, oldSize.width(), oldSize.height());
 
-    if (!staticContents) {
+    if (!staticContents || graphicsEffect) {
         QRegion staticChildren;
         QWidgetBackingStore *bs = 0;
         if (offset.isNull() && (bs = maybeBackingStore()))
@@ -1408,19 +1417,19 @@ void QWidgetPrivate::invalidateBuffer_resizeHelper(const QPoint &oldPos, const Q
             return;
 
         // Invalidate newly exposed area of the parent.
-        if (extra && extra->hasMask) {
+        if (!graphicsEffect && extra && extra->hasMask) {
             QRegion parentExpose(extra->mask.translated(oldPos));
             parentExpose &= QRect(oldPos, oldSize);
             if (hasStaticChildren)
                 parentExpose -= data.crect; // Offset is unchanged, safe to do this.
             q->parentWidget()->d_func()->invalidateBuffer(parentExpose);
         } else {
-            if (hasStaticChildren) {
+            if (hasStaticChildren && !graphicsEffect) {
                 QRegion parentExpose(QRect(oldPos, oldSize));
                 parentExpose -= data.crect; // Offset is unchanged, safe to do this.
                 q->parentWidget()->d_func()->invalidateBuffer(parentExpose);
             } else {
-                q->parentWidget()->d_func()->invalidateBuffer(QRect(oldPos, oldSize));
+                q->parentWidget()->d_func()->invalidateBuffer(effectiveRectFor(QRect(oldPos, oldSize)));
             }
         }
         return;
@@ -1478,7 +1487,7 @@ void QWidgetPrivate::invalidateBuffer(const QRegion &rgn)
 
     QRegion wrgn(rgn);
     wrgn &= clipRect();
-    if (extra && extra->hasMask)
+    if (!graphicsEffect && extra && extra->hasMask)
         wrgn &= extra->mask;
     if (wrgn.isEmpty())
         return;
@@ -1506,7 +1515,7 @@ void QWidgetPrivate::invalidateBuffer(const QRect &rect)
     if (wRect.isEmpty())
         return;
 
-    if (!extra || !extra->hasMask) {
+    if (graphicsEffect || !extra || !extra->hasMask) {
         tlwExtra->backingStore->markDirty(wRect, q, false, true);
         return;
     }
@@ -1535,7 +1544,8 @@ void QWidgetPrivate::repaint_sys(const QRegion &rgn)
     // QGLWidget does not support partial updates if:
     // 1) The context is double buffered
     // 2) The context is single buffered and auto-fill background is enabled.
-    const bool noPartialUpdateSupport = (engine && engine->type() == QPaintEngine::OpenGL)
+    const bool noPartialUpdateSupport = (engine && (engine->type() == QPaintEngine::OpenGL
+                                                || engine->type() == QPaintEngine::OpenGL2))
                                         && (usesDoubleBufferedGLContext || q->autoFillBackground());
     QRegion toBePainted(noPartialUpdateSupport ? q->rect() : rgn);
 

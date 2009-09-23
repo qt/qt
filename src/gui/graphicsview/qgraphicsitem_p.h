@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -47,8 +47,8 @@
 //  -------------
 //
 // This file is not part of the Qt API.  It exists for the convenience
-// of qapplication_*.cpp, qwidget*.cpp and qfiledialog.cpp.  This header
-// file may change from version to version without notice, or even be removed.
+// of other Qt classes.  This header file may change from version to
+// version without notice, or even be removed.
 //
 // We mean it.
 //
@@ -59,6 +59,8 @@
 #include <private/qgraphicsview_p.h>
 #include "qgraphicstransform.h"
 #include <private/qgraphicstransform_p.h>
+
+#include <private/qgraphicseffect_p.h>
 
 #include <QtCore/qpoint.h>
 
@@ -121,11 +123,13 @@ public:
         scene(0),
         parent(0),
         transformData(0),
+        graphicsEffect(0),
         index(-1),
         siblingIndex(-1),
-        depth(0),
+        itemDepth(-1),
         focusProxy(0),
         subFocusItem(0),
+        focusScopeItem(0),
         imHints(Qt::ImhNone),
         acceptedMouseButtons(0x1f),
         visible(1),
@@ -165,7 +169,11 @@ public:
         acceptedTouchBeginEvent(0),
         filtersDescendantEvents(0),
         sceneTransformTranslateOnly(0),
+        notifyBoundingRectChanged(0),
+        notifyInvalidated(0),
         mouseSetsFocus(1),
+        explicitActivate(0),
+        wantsActive(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -209,13 +217,17 @@ public:
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);
     bool discardUpdateRequest(bool ignoreClipping = false, bool ignoreVisibleBit = false,
                               bool ignoreDirtyBit = false, bool ignoreOpacity = false) const;
-    void resolveDepth(int parentDepth);
+    int depth() const;
+    void invalidateDepthRecursively();
+    void resolveDepth();
     void addChild(QGraphicsItem *child);
     void removeChild(QGraphicsItem *child);
     void setParentItemHelper(QGraphicsItem *parent);
     void childrenBoundingRectHelper(QTransform *x, QRectF *rect);
     void initStyleOption(QStyleOptionGraphicsItem *option, const QTransform &worldTransform,
                          const QRegion &exposedRegion, bool allItems = false) const;
+    QRectF effectiveBoundingRect() const;
+    QRectF sceneEffectiveBoundingRect() const;
 
     virtual void resolveFont(uint inheritedMask)
     {
@@ -307,7 +319,11 @@ public:
     void invalidateCachedClipPathRecursively(bool childrenOnly = false, const QRectF &emptyIfOutsideThisRect = QRectF());
     void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
     void ensureSceneTransformRecursive(QGraphicsItem **topMostDirtyItem);
-    void ensureSceneTransform();
+    inline void ensureSceneTransform()
+    {
+        QGraphicsItem *that = q_func();
+        ensureSceneTransformRecursive(&that);
+    }
 
     inline bool hasTranslateOnlySceneTransform()
     {
@@ -397,9 +413,11 @@ public:
                || (childrenCombineOpacity() && isFullyTransparent());
     }
 
-    void setSubFocus();
-    void clearSubFocus();
+    void setFocusHelper(Qt::FocusReason focusReason, bool climb);
+    void setSubFocus(QGraphicsItem *rootItem = 0);
+    void clearSubFocus(QGraphicsItem *rootItem = 0);
     void resetFocusProxy();
+    virtual void subFocusItemChange();
 
     inline QTransform transformToParent() const;
     inline void ensureSortedChildren();
@@ -416,13 +434,15 @@ public:
     QList<QGraphicsItem *> children;
     struct TransformData;
     TransformData *transformData;
+    QGraphicsEffect *graphicsEffect;
     QTransform sceneTransform;
     int index;
     int siblingIndex;
-    int depth;
+    int itemDepth;  // Lazily calculated when calling depth().
     QGraphicsItem *focusProxy;
     QList<QGraphicsItem **> focusProxyRefs;
     QGraphicsItem *subFocusItem;
+    QGraphicsItem *focusScopeItem;
     Qt::InputMethodHints imHints;
 
     // Packed 32 bits
@@ -451,9 +471,9 @@ public:
     quint32 needSortChildren : 1;
     quint32 allChildrenDirty : 1;
 
-    // New 32 bits
+    // Packed 32 bits
     quint32 fullUpdatePending : 1;
-    quint32 flags : 15;
+    quint32 flags : 16;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform : 1;
@@ -466,8 +486,13 @@ public:
     quint32 acceptedTouchBeginEvent : 1;
     quint32 filtersDescendantEvents : 1;
     quint32 sceneTransformTranslateOnly : 1;
+    quint32 notifyBoundingRectChanged : 1;
+    quint32 notifyInvalidated : 1;
     quint32 mouseSetsFocus : 1;
-    quint32 unused : 3; // feel free to use
+
+    // New 32 bits
+    quint32 explicitActivate : 1;
+    quint32 wantsActive : 1;
 
     // Optional stacking order
     int globalStackingOrder;
@@ -501,10 +526,14 @@ struct QGraphicsItemPrivate::TransformData
         }
 
         QTransform x(transform);
-        for (int i = 0; i < graphicsTransforms.size(); ++i)
-            graphicsTransforms.at(i)->applyTo(&x);
+        if (!graphicsTransforms.isEmpty()) {
+            QMatrix4x4 m;
+            for (int i = 0; i < graphicsTransforms.size(); ++i)
+                graphicsTransforms.at(i)->applyTo(&m);
+            x *= m.toTransform();
+        }
         x.translate(xOrigin, yOrigin);
-        x.rotate(rotation, Qt::ZAxis);
+        x.rotate(rotation);
         x.scale(scale, scale);
         x.translate(-xOrigin, -yOrigin);
         if (postmultiplyTransform)
@@ -512,6 +541,77 @@ struct QGraphicsItemPrivate::TransformData
         return x;
     }
 };
+
+struct QGraphicsItemPaintInfo
+{
+    inline QGraphicsItemPaintInfo(const QTransform *const xform1, const QTransform *const xform2,
+                                  const QTransform *const xform3,
+                                  QRegion *r, QWidget *w, QStyleOptionGraphicsItem *opt,
+                                  QPainter *p, qreal o, bool b1, bool b2)
+        : viewTransform(xform1), transformPtr(xform2), effectTransform(xform3), exposedRegion(r), widget(w),
+          option(opt), painter(p), opacity(o), wasDirtySceneTransform(b1), drawItem(b2)
+    {}
+
+    const QTransform *viewTransform;
+    const QTransform *transformPtr;
+    const QTransform *effectTransform;
+    QRegion *exposedRegion;
+    QWidget *widget;
+    QStyleOptionGraphicsItem *option;
+    QPainter *painter;
+    qreal opacity;
+    quint32 wasDirtySceneTransform : 1;
+    quint32 drawItem : 1;
+};
+
+class QGraphicsItemEffectSourcePrivate : public QGraphicsEffectSourcePrivate
+{
+public:
+    QGraphicsItemEffectSourcePrivate(QGraphicsItem *i)
+        : QGraphicsEffectSourcePrivate(), item(i), info(0)
+    {}
+
+    inline void detach()
+    { item->setGraphicsEffect(0); }
+
+    inline const QGraphicsItem *graphicsItem() const
+    { return item; }
+
+    inline const QWidget *widget() const
+    { return 0; }
+
+    inline void update()
+    { item->update(); }
+
+    inline void effectBoundingRectChanged()
+    { item->prepareGeometryChange(); }
+
+    inline bool isPixmap() const
+    {
+        return (item->type() == QGraphicsPixmapItem::Type);
+            //|| (item->d_ptr->isObject && qobject_cast<QFxImage *>(q_func()));
+    }
+
+    inline const QStyleOption *styleOption() const
+    { return info ? info->option : 0; }
+
+    inline QRect deviceRect() const
+    {
+        if (!info || !info->widget) {
+            qWarning("QGraphicsEffectSource::deviceRect: Not yet implemented, lacking device context");
+            return QRect();
+        }
+        return info->widget->rect();
+    }
+
+    QRectF boundingRect(Qt::CoordinateSystem system) const;
+    void draw(QPainter *);
+    QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset) const;
+
+    QGraphicsItem *item;
+    QGraphicsItemPaintInfo *info;
+};
+
 
 /*!
     \internal

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -311,7 +311,7 @@ QT_BEGIN_NAMESPACE
     Example:
     \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 11
 
-    \sa QTEST_APPLESS_MAIN(), QTest::qExec(), QApplication::setKeypadNavigationEnabled()
+    \sa QTEST_APPLESS_MAIN(), QTest::qExec(), QApplication::setNavigationMode()
 */
 
 /*! \macro QTEST_APPLESS_MAIN(TestClass)
@@ -362,14 +362,17 @@ QT_BEGIN_NAMESPACE
 
     \relates QTest
 
+    \brief The QBENCHMARK_ONCE macro is for measuring performance of a
+    code block by running it once.
+
     This macro is used to measure the performance of code within a test.
     The code to be benchmarked is contained within a code block following
     this macro.
 
     Unlike QBENCHMARK, the contents of the contained code block is only run
-    once. The elapsed time will be reported as "0" if it's to short to 
+    once. The elapsed time will be reported as "0" if it's to short to
     be measured by the selected backend. (Use)
- 
+
     \sa {QTestLib Manual#Creating a Benchmark}{Creating a Benchmark},
     {Chapter 5: Writing a Benchmark}{Writing a Benchmark}
 */
@@ -731,6 +734,16 @@ QT_BEGIN_NAMESPACE
     \sa QTest::qSleep()
 */
 
+/*! \fn void QTest::qWaitForWindowManager(QWidget *window)
+
+    Waits until the window is shown in the screen. This is mainly useful for
+    asynchronous systems like X11, where a window will be mapped to screen some
+    time after being asked to show itself on the screen.
+
+    Example:
+    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 24
+*/
+
 /*!
     \class QTest::QTouchEventSequence
     \inmodule QtTest
@@ -738,7 +751,7 @@ QT_BEGIN_NAMESPACE
 
     \brief The QTouchEventSequence class is used to simulate a sequence of touch events.
 
-    To simulate a sequence of touch events on a specific device for a widget, call 
+    To simulate a sequence of touch events on a specific device for a widget, call
     QTest::touchEvent to create a QTouchEventSequence instance. Add touch events to
     the sequence by calling press(), move(), release() and stationary(), and let the
     instance run out of scope to commit the sequence to the event system.
@@ -756,7 +769,7 @@ QT_BEGIN_NAMESPACE
     Adds a press event for touchpoint \a touchId at position \a pt to this sequence and returns
     a reference to this QTouchEventSequence.
 
-    The position \a pt is interpreted as relative to \a widget. If \a widget is the null pointer, then 
+    The position \a pt is interpreted as relative to \a widget. If \a widget is the null pointer, then
     \a pt is interpreted as relative to the widget provided when instantiating this QTouchEventSequence.
 
     Simulates that the user pressed the touch screen or pad with the finger identified by \a touchId.
@@ -768,7 +781,7 @@ QT_BEGIN_NAMESPACE
     Adds a move event for touchpoint \a touchId at position \a pt to this sequence and returns
     a reference to this QTouchEventSequence.
 
-    The position \a pt is interpreted as relative to \a widget. If \a widget is the null pointer, then 
+    The position \a pt is interpreted as relative to \a widget. If \a widget is the null pointer, then
     \a pt is interpreted as relative to the widget provided when instantiating this QTouchEventSequence.
 
     Simulates that the user moved the finger identified by \a touchId.
@@ -779,8 +792,8 @@ QT_BEGIN_NAMESPACE
 
     Adds a release event for touchpoint \a touchId at position \a pt to this sequence and returns
     a reference to this QTouchEventSequence.
-        
-    The position \a pt is interpreted as relative to \a widget. If \a widget is the null pointer, then 
+
+    The position \a pt is interpreted as relative to \a widget. If \a widget is the null pointer, then
     \a pt is interpreted as relative to the widget provided when instantiating this QTouchEventSequence.
 
     Simulates that the user lifted the finger identified by \a touchId.
@@ -791,7 +804,7 @@ QT_BEGIN_NAMESPACE
 
     Adds a stationary event for touchpoint \a touchId to this sequence and returns
     a reference to this QTouchEventSequence.
-    
+
     Simulates that the user did not move the finger identified by \a touchId.
 */
 
@@ -813,12 +826,12 @@ namespace QTest
 {
     static QObject *currentTestObject = 0;
 
-    struct TestFunction {
+    static struct TestFunction {
         TestFunction():function(0), data(0) {}
         ~TestFunction() { delete [] data; }
         int function;
         char *data;
-    } testFuncs[512];
+    } *testFuncs;
 
     /**
      * Contains the count of test functions that was supplied
@@ -1125,6 +1138,11 @@ static void qParseArgs(int argc, char *argv[])
                 exit(1);
             }
             ++QTest::lastTestFuncIdx;
+            if (!QTest::testFuncs) {
+                struct Cleanup { ~Cleanup() { delete[] QTest::testFuncs; } };
+                static Cleanup cleanup;
+                QTest::testFuncs = new TestFunction[512];
+            }
             QTest::testFuncs[QTest::lastTestFuncIdx].function = idx;
             QTest::testFuncs[QTest::lastTestFuncIdx].data = data;
             QTEST_ASSERT(QTest::lastTestFuncIdx < 512);
@@ -1607,8 +1625,11 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     }
 #endif
 
-#ifdef Q_OS_SYMBIAN
-//### FIX THIS temporary hack to delay execution of symbian os tests. Used to get emulator to stable state before running testcase
+#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
+    // Delay execution of tests in Symbian emulator.
+    // Needed to allow worst of other higher priority apps and services launched by emulator
+    // to get out of the way before we run our test. Otherwise some of the timing sensitive tests
+    // will not work properly.
     qSleep(3000);
 #endif
 
@@ -1654,10 +1675,8 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
              IOPMAssertionRelease(powerID);
          }
 #endif
-//#  ifdef Q_OS_WIN
-         // rethrow exception to make debugging easier
+         // Rethrow exception to make debugging easier.
          throw;
-//#  endif
          return 1;
      }
 #  endif
@@ -2117,6 +2136,10 @@ bool QTest::compare_string_helper(const char *t1, const char *t2, const char *ac
 /*! \fn bool QTest::qCompare(QFlags<T> const &t1, int const &t2, const char *actual, const char *expected, const char *file, int line)
     \internal
 */
+
+/*! \fn bool QTest::qCompare(bool const &t1, int const &t2, const char *actual, const char *expected, const char *file, int line)
+  \internal
+ */
 
 /*! \fn bool QTest::qTest(const T& actual, const char *elementName, const char *actualStr, const char *expected, const char *file, int line)
     \internal

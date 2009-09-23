@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -393,49 +393,162 @@ void QGraphicsWidgetPrivate::windowFrameMousePressEvent(QGraphicsSceneMouseEvent
     event->setAccepted(windowData->grabbedSection != Qt::NoSection);
 }
 
+/*!
+  Used to calculate the
+  Precondition:
+  \a widget should support either hfw or wfh
+
+  If \a heightForWidth is set to false, this function will query the width for height
+  instead. \a width will then be interpreted as height, \a minh and \a maxh will be interpreted
+  as minimum width and maximum width.
+ */
+static qreal minimumHeightForWidth(qreal width, qreal minh, qreal maxh,
+                                   const QGraphicsWidget *widget,
+                                   bool heightForWidth = true)
+{
+    qreal minimumHeightForWidth = -1;
+    const QSizePolicy sp = widget->layout() ? widget->layout()->sizePolicy() : widget->sizePolicy();
+    const bool hasHFW = sp.hasHeightForWidth();
+    if (hasHFW == heightForWidth) {
+        minimumHeightForWidth = hasHFW
+                                ? widget->effectiveSizeHint(Qt::MinimumSize, QSizeF(width, -1)).height()
+                                : widget->effectiveSizeHint(Qt::MinimumSize, QSizeF(-1, width)).width();    //"width" is here height!
+    } else {
+        // widthForHeight
+        const qreal constraint = width;
+        while (maxh - minh > 0.1) {
+            qreal middle = minh + (maxh - minh)/2;
+            // ### really bad, if we are a widget with a layout it will call
+            // layout->effectiveSizeHint(Qt::MiniumumSize), which again will call
+            // sizeHint three times because of how the cache works
+            qreal hfw = hasHFW
+                        ? widget->effectiveSizeHint(Qt::MinimumSize, QSizeF(middle, -1)).height()
+                        : widget->effectiveSizeHint(Qt::MinimumSize, QSizeF(-1, middle)).width();
+            if (hfw > constraint) {
+                minh = middle;
+            } else if (hfw <= constraint) {
+                maxh = middle;
+            }
+        }
+        minimumHeightForWidth = maxh;
+    }
+    return minimumHeightForWidth;
+}
+
+static qreal minimumWidthForHeight(qreal height, qreal minw, qreal maxw,
+                                   const QGraphicsWidget *widget)
+{
+    return minimumHeightForWidth(height, minw, maxw, widget, false);
+}
+
+static QSizeF closestAcceptableSize(const QSizeF &proposed,
+                                    const QGraphicsWidget *widget)
+{
+    const QSizeF current = widget->size();
+
+    qreal minw = proposed.width();
+    qreal maxw = current.width();
+    qreal minh = proposed.height();
+    qreal maxh = current.height();
+
+    qreal middlew = maxw;
+    qreal middleh = maxh;
+    qreal min_hfw;
+    min_hfw = minimumHeightForWidth(maxw, minh, maxh, widget);
+
+    do {
+        if (maxw - minw < 0.1) {
+            // we still havent found anything, cut off binary search
+            minw = maxw;
+            minh = maxh;
+        }
+        middlew = minw + (maxw - minw)/2.0;
+        middleh = minh + (maxh - minh)/2.0;
+
+        min_hfw = minimumHeightForWidth(middlew, minh, maxh, widget);
+
+        if (min_hfw > middleh) {
+            minw = middlew;
+            minh = middleh;
+        } else if (min_hfw <= middleh) {
+            maxw = middlew;
+            maxh = middleh;
+        }
+    } while (maxw != minw);
+
+    min_hfw = minimumHeightForWidth(middlew, minh, maxh, widget);
+
+    QSizeF result;
+    if (min_hfw < maxh) {
+        result = QSizeF(middlew, min_hfw);
+    } else {
+        // Needed because of the cut-off we do above.
+        result = QSizeF(minimumWidthForHeight(maxh, proposed.width(), current.width(), widget), maxh);
+    }
+    return result;
+}
+
 static void _q_boundGeometryToSizeConstraints(const QRectF &startGeometry,
                                               QRectF *rect, Qt::WindowFrameSection section,
-                                              const QSizeF &min, const QSizeF &max)
+                                              const QSizeF &min, const QSizeF &max,
+                                              const QGraphicsWidget *widget)
 {
-    int height;
-    int width;
+    const QRectF proposedRect = *rect;
+    qreal width = qBound(min.width(), proposedRect.width(), max.width());
+    qreal height = qBound(min.height(), proposedRect.height(), max.height());
+
+    QSizePolicy sp = widget->sizePolicy();
+    if (const QGraphicsLayout *l = widget->layout()) {
+        sp = l->sizePolicy();
+    }
+    const bool hasHFW = sp.hasHeightForWidth(); // || sp.hasWidthForHeight();
+
+    const bool widthChanged = proposedRect.width() < widget->size().width();
+    const bool heightChanged = proposedRect.height() < widget->size().height();
+
+    if (hasHFW) {
+        if (widthChanged || heightChanged) {
+            const qreal minh = min.height();
+            const qreal maxh = max.height();
+            const qreal proposedHFW = minimumHeightForWidth(width, minh, maxh, widget);
+            if (proposedHFW > proposedRect.height()) {
+                QSizeF effectiveSize = closestAcceptableSize(QSizeF(width, height), widget);
+                width = effectiveSize.width();
+                height = effectiveSize.height();
+            }
+        }
+    }
+
     switch (section) {
     case Qt::LeftSection:
-        width = qRound(qBound(min.width(), rect->width(), max.width()));
-        rect->setRect(startGeometry.right() - width, startGeometry.top(),
-                      width, startGeometry.height());
+        rect->setRect(startGeometry.right() - qRound(width), startGeometry.top(),
+                      qRound(width), startGeometry.height());
         break;
     case Qt::TopLeftSection:
-        width = qRound(qBound(min.width(), rect->width(), max.width()));
-        height = qRound(qBound(min.height(), rect->height(), max.height()));
-        rect->setRect(startGeometry.right() - width, startGeometry.bottom() - height,
-                      width, height);
+        rect->setRect(startGeometry.right() - qRound(width), startGeometry.bottom() - qRound(height),
+                      qRound(width), qRound(height));
         break;
     case Qt::TopSection:
-        height = qRound(qBound(min.height(), rect->height(), max.height()));
-        rect->setRect(startGeometry.left(), startGeometry.bottom() - height,
-                      startGeometry.width(), height);
+        rect->setRect(startGeometry.left(), startGeometry.bottom() - qRound(height),
+                      startGeometry.width(), qRound(height));
         break;
     case Qt::TopRightSection:
-        height = qRound(qBound(min.height(), rect->height(), max.height()));
-        rect->setTop(rect->bottom() - height);
-        rect->setWidth(qBound(min.width(), rect->width(), max.width()));
+        rect->setTop(rect->bottom() - qRound(height));
+        rect->setWidth(qRound(width));
         break;
     case Qt::RightSection:
-        rect->setWidth(qBound(min.width(), rect->width(), max.width()));
+        rect->setWidth(qRound(width));
         break;
     case Qt::BottomRightSection:
-        rect->setWidth(qBound(min.width(), rect->width(), max.width()));
-        rect->setHeight(qBound(min.height(), rect->height(), max.height()));
+        rect->setWidth(qRound(width));
+        rect->setHeight(qRound(height));
         break;
     case Qt::BottomSection:
-        rect->setHeight(qBound(min.height(), rect->height(), max.height()));
+        rect->setHeight(qRound(height));
         break;
     case Qt::BottomLeftSection:
-        height = qRound(qBound(min.height(), rect->height(), max.height()));
-        width = qRound(qBound(min.width(), rect->width(), max.width()));
-        rect->setRect(startGeometry.right() - width, startGeometry.top(),
-                      width, height);
+        rect->setRect(startGeometry.right() - qRound(width), startGeometry.top(),
+                      qRound(width), qRound(height));
         break;
     default:
         break;
@@ -506,7 +619,8 @@ void QGraphicsWidgetPrivate::windowFrameMouseMoveEvent(QGraphicsSceneMouseEvent 
         _q_boundGeometryToSizeConstraints(windowData->startGeometry, &newGeometry,
                                           windowData->grabbedSection,
                                           q->effectiveSizeHint(Qt::MinimumSize),
-                                          q->effectiveSizeHint(Qt::MaximumSize));
+                                          q->effectiveSizeHint(Qt::MaximumSize),
+                                          q);
         q->setGeometry(newGeometry);
     }
 }

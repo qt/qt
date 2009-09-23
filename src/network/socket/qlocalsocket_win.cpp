@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -199,9 +199,16 @@ qint64 QLocalSocket::readData(char *data, qint64 maxSize)
         }
     }
 
-    if (!d->readSequenceStarted)
-        d->startAsyncRead();
-    d->checkReadyRead();
+    if (d->pipeClosed) {
+        if (readSoFar == 0) {
+            QTimer::singleShot(0, this, SLOT(_q_pipeClosed()));
+            return -1;  // signal EOF
+        }
+    } else {
+        if (!d->readSequenceStarted)
+            d->startAsyncRead();
+        d->checkReadyRead();
+    }
 
     return readSoFar;
 }
@@ -251,9 +258,24 @@ void QLocalSocketPrivate::startAsyncRead()
         readSequenceStarted = true;
         if (ReadFile(handle, ptr, bytesToRead, NULL, &overlapped)) {
             completeAsyncRead();
-        } else if (GetLastError() != ERROR_IO_PENDING) {
-            setErrorString(QLatin1String("QLocalSocketPrivate::startAsyncRead"));
-            return;
+        } else {
+            switch (GetLastError()) {
+                case ERROR_IO_PENDING:
+                    // This is not an error. We're getting notified, when data arrives.
+                    return;
+                case ERROR_PIPE_NOT_CONNECTED:
+                    {
+                        // It may happen, that the other side closes the connection directly
+                        // after writing data. Then we must set the appropriate socket state.
+                        pipeClosed = true;
+                        Q_Q(QLocalSocket);
+                        emit q->readChannelFinished();
+                        return;
+                    }
+                default:
+                    setErrorString(QLatin1String("QLocalSocketPrivate::startAsyncRead"));
+                    return;
+            }
         }
     } while (!readSequenceStarted);
 }
@@ -261,20 +283,23 @@ void QLocalSocketPrivate::startAsyncRead()
 /*!
     \internal
     Sets the correct size of the read buffer after a read operation.
+    Returns false, if an error occured or the connection dropped.
  */
-void QLocalSocketPrivate::completeAsyncRead()
+bool QLocalSocketPrivate::completeAsyncRead()
 {
     ResetEvent(overlapped.hEvent);
     readSequenceStarted = false;
 
     DWORD bytesRead;
     if (!GetOverlappedResult(handle, &overlapped, &bytesRead, TRUE)) {
-        setErrorString(QLatin1String("QLocalSocketPrivate::completeAsyncRead"));
-        return;
+        if (GetLastError() != ERROR_PIPE_NOT_CONNECTED)
+            setErrorString(QLatin1String("QLocalSocketPrivate::completeAsyncRead"));
+        return false;
     }
 
     actualReadBufferSize += bytesRead;
     readBuffer.truncate(actualReadBufferSize);
+    return true;
 }
 
 qint64 QLocalSocket::writeData(const char *data, qint64 maxSize)
@@ -282,8 +307,9 @@ qint64 QLocalSocket::writeData(const char *data, qint64 maxSize)
     Q_D(QLocalSocket);
     if (!d->pipeWriter) {
         d->pipeWriter = new QWindowsPipeWriter(d->handle, this);
-        d->pipeWriter->start();
         connect(d->pipeWriter, SIGNAL(canWrite()), this, SLOT(_q_canWrite()));
+        connect(d->pipeWriter, SIGNAL(bytesWritten(qint64)), this, SIGNAL(bytesWritten(qint64)));
+        d->pipeWriter->start();
     }
     return d->pipeWriter->write(data, maxSize);
 }
@@ -305,6 +331,7 @@ DWORD QLocalSocketPrivate::bytesAvailable()
     } else {
         if (!pipeClosed) {
             pipeClosed = true;
+            emit q->readChannelFinished();
             QTimer::singleShot(0, q, SLOT(_q_pipeClosed()));
         }
     }
@@ -348,7 +375,8 @@ void QLocalSocket::close()
     QIODevice::close();
     d->state = ClosingState;
     emit stateChanged(d->state);
-    emit readChannelFinished();
+    if (!d->pipeClosed)
+        emit readChannelFinished();
     d->serverName = QString();
     d->fullServerName = QString();
 
@@ -425,7 +453,11 @@ void QLocalSocketPrivate::_q_canWrite()
 void QLocalSocketPrivate::_q_notified()
 {
     Q_Q(QLocalSocket);
-    completeAsyncRead();
+    if (!completeAsyncRead()) {
+        pipeClosed = true;
+        emit q->readChannelFinished();
+        return;
+    }
     startAsyncRead();
     pendingReadyRead = false;
     emit q->readyRead();

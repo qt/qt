@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,8 +44,8 @@
 #include "qpainter.h"
 #include "qstyleoption.h"
 #include "qstyle.h"
-#include "private/qwindowsurface_s60_p.h"
 #include "private/qt_s60_p.h"
+#include "private/qpixmap_s60_p.h"
 #include "private/qcore_symbian_p.h"
 #include "qapplication.h"
 
@@ -117,7 +117,7 @@ private:
     static void checkAndUnCompressBitmap(CFbsBitmap*& aOriginalBitmap);
     static void unCompressBitmapL(const TRect& aTrgRect, CFbsBitmap* aTrgBitmap, CFbsBitmap* aSrcBitmap);
     static void colorGroupAndIndex(QS60StyleEnums::SkinParts skinID,
-        TAknsItemID &colorGroup, int colorIndex);
+        TAknsItemID &colorGroup, int &colorIndex);
     static void fallbackInfo(const QS60StyleEnums::SkinParts &stylepart, TDes& fallbackFileName, TInt& fallbackIndex);
     static bool checkSupport(const int supportedRelease);
     static TAknsItemID checkAndUpdateReleaseSpecificGraphics(int part);
@@ -1016,7 +1016,7 @@ QS60StylePrivate::QS60StylePrivate()
 
 void QS60StylePrivate::setStyleProperty_specific(const char *name, const QVariant &value)
 {
-    if (name == QLatin1String("foo")) {
+    if (QLatin1String(name) == QLatin1String("foo")) {
         // BaR
     } else {
         setStyleProperty(name, value);
@@ -1025,7 +1025,7 @@ void QS60StylePrivate::setStyleProperty_specific(const char *name, const QVarian
 
 QVariant QS60StylePrivate::styleProperty_specific(const char *name) const
 {
-    if (name == QLatin1String("foo"))
+    if (QLatin1String(name) == QLatin1String("foo"))
         return QLatin1String("Bar");
     else
         return styleProperty(name);
@@ -1136,11 +1136,13 @@ QPixmap QS60StyleModeSpecifics::generateMissingThemeGraphic(QS60StyleEnums::Skin
 QPixmap QS60StylePrivate::part(QS60StyleEnums::SkinParts part,
     const QSize &size, SkinElementFlags flags)
 {
-    QS60WindowSurface::unlockBitmapHeap();
+    QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
+    
     QPixmap result = (flags & SF_ColorSkinned)?
           QS60StyleModeSpecifics::colorSkinnedGraphics(part, size, flags)
         : QS60StyleModeSpecifics::skinnedGraphics(part, size, flags);
-    QS60WindowSurface::lockBitmapHeap();
+    
+    lock.relock();
 
     if (flags & SF_StateDisabled && !QS60StyleModeSpecifics::disabledPartGraphic(part)) {
         QStyleOption opt;
@@ -1158,9 +1160,9 @@ QPixmap QS60StylePrivate::part(QS60StyleEnums::SkinParts part,
 
 QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size, SkinElementFlags flags)
 {
-    QS60WindowSurface::unlockBitmapHeap();
+    QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
     QPixmap result = QS60StyleModeSpecifics::skinnedGraphics(frame, size, flags);
-    QS60WindowSurface::lockBitmapHeap();
+    lock.relock();
 
     if (flags & SF_StateDisabled && !QS60StyleModeSpecifics::disabledFrameGraphic(frame)) {
         QStyleOption opt;
@@ -1331,7 +1333,7 @@ QSize QS60StylePrivate::screenSize()
 }
 
 void QS60StyleModeSpecifics::colorGroupAndIndex(
-    QS60StyleEnums::SkinParts skinID, TAknsItemID &colorGroup, int colorIndex)
+    QS60StyleEnums::SkinParts skinID, TAknsItemID &colorGroup, int &colorIndex)
 {
     switch(skinID) {
         case QS60StyleEnums::SP_QgnIndiSubMenu:
@@ -1350,14 +1352,12 @@ void QS60StyleModeSpecifics::colorGroupAndIndex(
     }
 }
 
-/*!
-  Constructs a QS60Style object.
-*/
 QS60Style::QS60Style()
     : QCommonStyle(*new QS60StylePrivate)
 {
 }
 
+#ifdef Q_WS_S60
 void QS60StylePrivate::handleDynamicLayoutVariantSwitch()
 {
     clearCaches(QS60StylePrivate::CC_LayoutChange);
@@ -1379,6 +1379,7 @@ void QS60StylePrivate::handleSkinChange()
         topLevelWidget->ensurePolished();
     }
 }
+#endif // Q_WS_S60
 
 QT_END_NAMESPACE
 

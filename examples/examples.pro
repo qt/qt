@@ -4,6 +4,7 @@ SUBDIRS       = \
                 desktop \
                 dialogs \
                 draganddrop \
+                effects \
                 graphicsview \
                 ipc \
                 itemviews \
@@ -22,7 +23,6 @@ SUBDIRS       = \
                 widgets \
                 uitools \
                 xml \
-                script \
                 multitouch \
                 gestures
 
@@ -34,12 +34,17 @@ symbian: SUBDIRS = \
                 widgets \
                 draganddrop \
                 mainwindows \
-                script \
                 sql \
                 uitools \
                 xml
 
-contains(QT_CONFIG, multimedia):!static: SUBDIRS += multimedia
+contains(QT_CONFIG, multimedia) {
+    SUBDIRS += video
+    !static: SUBDIRS += multimedia
+}
+
+contains(QT_CONFIG, script): SUBDIRS += script
+
 contains(QT_CONFIG, phonon):!static: SUBDIRS += phonon
 contains(QT_CONFIG, webkit): SUBDIRS += webkit
 embedded:SUBDIRS += qws
@@ -61,4 +66,4 @@ sources.files = README *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]
 INSTALLS += sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

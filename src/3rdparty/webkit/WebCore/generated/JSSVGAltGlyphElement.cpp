@@ -91,6 +91,11 @@ bool JSSVGAltGlyphElement::getOwnPropertySlot(ExecState* exec, const Identifier&
     return getStaticValueSlot<JSSVGAltGlyphElement, Base>(exec, &JSSVGAltGlyphElementTable, this, propertyName, slot);
 }
 
+bool JSSVGAltGlyphElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGAltGlyphElement, Base>(exec, &JSSVGAltGlyphElementTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGAltGlyphElementGlyphRef(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGAltGlyphElement* castedThis = static_cast<JSSVGAltGlyphElement*>(asObject(slot.slotBase()));

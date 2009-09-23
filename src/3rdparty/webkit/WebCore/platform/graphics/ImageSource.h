@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2004, 2005, 2006 Apple Computer, Inc.  All rights reserved.
+ * Copyright (C) 2007-2008 Torch Mobile, Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -46,6 +47,10 @@ struct _cairo_surface;
 typedef struct _cairo_surface cairo_surface_t;
 #elif PLATFORM(SKIA)
 class NativeImageSkia;
+#elif PLATFORM(HAIKU)
+class BBitmap;
+#elif PLATFORM(WINCE)
+#include "SharedBitmap.h"
 #endif
 
 namespace WebCore {
@@ -54,30 +59,31 @@ class IntSize;
 class SharedBuffer;
 class String;
 
-#if PLATFORM(WX)
-class ImageDecoder;
-typedef ImageDecoder* NativeImageSourcePtr;
-typedef const Vector<char>* NativeBytePtr;
-#if USE(WXGC)
-typedef wxGraphicsBitmap* NativeImagePtr;
-#else
-typedef wxBitmap* NativeImagePtr;
-#endif
-#elif PLATFORM(CG)
+#if PLATFORM(CG)
 typedef CGImageSourceRef NativeImageSourcePtr;
 typedef CGImageRef NativeImagePtr;
 #elif PLATFORM(QT)
 class ImageDecoderQt;
 typedef ImageDecoderQt* NativeImageSourcePtr;
 typedef QPixmap* NativeImagePtr;
-#elif PLATFORM(CAIRO)
+#else
 class ImageDecoder;
 typedef ImageDecoder* NativeImageSourcePtr;
+#if PLATFORM(WX)
+#if USE(WXGC)
+typedef wxGraphicsBitmap* NativeImagePtr;
+#else
+typedef wxBitmap* NativeImagePtr;
+#endif
+#elif PLATFORM(CAIRO)
 typedef cairo_surface_t* NativeImagePtr;
 #elif PLATFORM(SKIA)
-class ImageDecoder;
-typedef ImageDecoder* NativeImageSourcePtr;
 typedef NativeImageSkia* NativeImagePtr;
+#elif PLATFORM(HAIKU)
+typedef BBitmap* NativeImagePtr;
+#elif PLATFORM(WINCE)
+typedef RefPtr<SharedBitmap> NativeImagePtr;
+#endif
 #endif
 
 const int cAnimationLoopOnce = -1;
@@ -135,9 +141,7 @@ public:
     bool frameHasAlphaAtIndex(size_t); // Whether or not the frame actually used any alpha.
     bool frameIsCompleteAtIndex(size_t); // Whether or not the frame is completely decoded.
 
-    // FIXME: This is protected only to allow ImageSourceSkia to set ICO decoder
-    // with a preferred size. See ImageSourceSkia.h for discussion.
-protected:
+private:
     NativeImageSourcePtr m_decoder;
 };
 

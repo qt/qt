@@ -169,6 +169,8 @@ repeat
 repeat-x
 repeat-y
 no-repeat
+# round
+# space
 #
 # CSS_PROP__WEBKIT_BACKGROUND_COMPOSITE:
 #
@@ -260,6 +262,7 @@ table-cell
 table-caption
 -webkit-box
 -webkit-inline-box
+-wap-marquee
 #none
 #
 # CSS_PROP_CURSOR:
@@ -509,6 +512,9 @@ media-rewind-button
 media-return-to-realtime-button
 media-slider
 media-sliderthumb
+media-volume-slider-container
+media-volume-slider
+media-volume-sliderthumb
 media-controls-background
 media-current-time-display
 media-time-remaining-display
@@ -549,6 +555,12 @@ content
 content-box
 padding
 padding-box
+
+#
+# background-size
+#
+contain
+cover
 
 #
 # CSS_PROP__KHTML_RTL_ORDERING
@@ -611,3 +623,11 @@ fill
 stroke
 #all
 #none
+
+#
+# -webkit-font-smoothing
+#
+# auto
+# none
+antialiased
+subpixel-antialiased

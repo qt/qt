@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'stylesheeteditor.ui'
 **
-** Created: Thu Jul 10 09:47:35 2008
-**      by: Qt User Interface Compiler version 4.5.0
+** Created: Fri Sep 4 10:17:14 2009
+**      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -141,7 +141,6 @@ public:
         label_7->setText(QApplication::translate("StyleSheetEditor", "Style:", 0, QApplication::UnicodeUTF8));
         applyButton->setText(QApplication::translate("StyleSheetEditor", "&Apply", 0, QApplication::UnicodeUTF8));
         label_8->setText(QApplication::translate("StyleSheetEditor", "Style Sheet:", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(StyleSheetEditor);
     } // retranslateUi
 
 };

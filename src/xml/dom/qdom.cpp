@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtXml module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,6 +56,7 @@
 #include <qxml.h>
 #include <qvariant.h>
 #include <qmap.h>
+#include <qshareddata.h>
 #include <qdebug.h>
 #include <stdio.h>
 
@@ -124,7 +125,8 @@ static void qt_split_namespace(QString& prefix, QString& name, const QString& qN
 class QDomImplementationPrivate
 {
 public:
-    QDomImplementationPrivate() { ref = 1; }
+    inline QDomImplementationPrivate() {}
+
     QDomImplementationPrivate* clone();
     QAtomicInt ref;
     static QDomImplementation::InvalidDataPolicy invalidDataPolicy;
@@ -512,8 +514,8 @@ public:
     bool setContent(QXmlInputSource *source, QXmlReader *reader, QString *errorMsg, int *errorLine, int *errorColumn);
 
     // Attributes
-    QDomDocumentTypePrivate* doctype() { return type.data(); };
-    QDomImplementationPrivate* implementation() { return impl.data(); };
+    QDomDocumentTypePrivate* doctype() { return type.data(); }
+    QDomImplementationPrivate* implementation() { return impl.data(); }
     QDomElementPrivate* documentElement();
 
     // Factories
@@ -537,8 +539,8 @@ public:
     void clear();
 
     // Variables
-    QScopedSharedPointer<QDomImplementationPrivate> impl;
-    QScopedSharedPointer<QDomDocumentTypePrivate> type;
+    QExplicitlySharedDataPointer<QDomImplementationPrivate> impl;
+    QExplicitlySharedDataPointer<QDomDocumentTypePrivate> type;
 
     void saveDocument(QTextStream& stream, const int indent, QDomNode::EncodingPolicy encUsed) const;
 
@@ -864,10 +866,7 @@ static QString fixedSystemLiteral(const QString &data, bool *ok)
 
 QDomImplementationPrivate* QDomImplementationPrivate::clone()
 {
-    QDomImplementationPrivate* p = new QDomImplementationPrivate;
-    // We are not interested in this node
-    p->ref.deref();
-    return p;
+    return new QDomImplementationPrivate;
 }
 
 /**************************************************************
@@ -6149,20 +6148,22 @@ void QDomProcessingInstruction::setData(const QString& d)
 
 QDomDocumentPrivate::QDomDocumentPrivate()
     : QDomNodePrivate(0),
+      impl(new QDomImplementationPrivate),
       nodeListTime(1)
 {
-    impl.reset(new QDomImplementationPrivate);
-    type.reset(new QDomDocumentTypePrivate(this, this));
+    type = new QDomDocumentTypePrivate(this, this);
+    type->ref.deref();
 
     name = QLatin1String("#document");
 }
 
 QDomDocumentPrivate::QDomDocumentPrivate(const QString& aname)
     : QDomNodePrivate(0),
+      impl(new QDomImplementationPrivate),
       nodeListTime(1)
 {
-    impl.reset(new QDomImplementationPrivate);
-    type.reset(new QDomDocumentTypePrivate(this, this));
+    type = new QDomDocumentTypePrivate(this, this);
+    type->ref.deref();
     type->name = aname;
 
     name = QLatin1String("#document");
@@ -6170,13 +6171,14 @@ QDomDocumentPrivate::QDomDocumentPrivate(const QString& aname)
 
 QDomDocumentPrivate::QDomDocumentPrivate(QDomDocumentTypePrivate* dt)
     : QDomNodePrivate(0),
+      impl(new QDomImplementationPrivate),
       nodeListTime(1)
 {
-    impl.reset(new QDomImplementationPrivate);
     if (dt != 0) {
-        type.assign(dt);
+        type = dt;
     } else {
-        type.reset(new QDomDocumentTypePrivate(this, this));
+        type = new QDomDocumentTypePrivate(this, this);
+        type->ref.deref();
     }
 
     name = QLatin1String("#document");
@@ -6184,10 +6186,10 @@ QDomDocumentPrivate::QDomDocumentPrivate(QDomDocumentTypePrivate* dt)
 
 QDomDocumentPrivate::QDomDocumentPrivate(QDomDocumentPrivate* n, bool deep)
     : QDomNodePrivate(n, deep),
+      impl(n->impl->clone()),
       nodeListTime(1)
 {
-    impl.assign(n->impl->clone());
-    type.assign((QDomDocumentTypePrivate*)n->type->cloneNode());
+    type = static_cast<QDomDocumentTypePrivate*>(n->type->cloneNode());
     type->setParent(this);
 }
 
@@ -6197,8 +6199,8 @@ QDomDocumentPrivate::~QDomDocumentPrivate()
 
 void QDomDocumentPrivate::clear()
 {
-    impl.assign(0);
-    type.assign(0);
+    impl.reset();
+    type.reset();
     QDomNodePrivate::clear();
 }
 
@@ -6219,8 +6221,9 @@ bool QDomDocumentPrivate::setContent(QXmlInputSource *source, bool namespaceProc
 bool QDomDocumentPrivate::setContent(QXmlInputSource *source, QXmlReader *reader, QString *errorMsg, int *errorLine, int *errorColumn)
 {
     clear();
-    impl.reset(new QDomImplementationPrivate);
-    type.reset(new QDomDocumentTypePrivate(this, this));
+    impl = new QDomImplementationPrivate;
+    type = new QDomDocumentTypePrivate(this, this);
+    type->ref.deref();
 
     bool namespaceProcessing = reader->feature(QLatin1String("http://xml.org/sax/features/namespaces"))
         && !reader->feature(QLatin1String("http://xml.org/sax/features/namespace-prefixes"));
@@ -7369,11 +7372,9 @@ QDomComment QDomNode::toComment() const
  **************************************************************/
 
 QDomHandler::QDomHandler(QDomDocumentPrivate* adoc, bool namespaceProcessing)
+    : errorLine(0), errorColumn(0), doc(adoc), node(adoc), cdata(false),
+        nsProcessing(namespaceProcessing), locator(0)
 {
-    doc = adoc;
-    node = doc;
-    cdata = false;
-    nsProcessing = namespaceProcessing;
 }
 
 QDomHandler::~QDomHandler()
@@ -7405,7 +7406,9 @@ bool QDomHandler::startElement(const QString& nsURI, const QString&, const QStri
     } else {
         n = doc->createElement(qName);
     }
-    n->setLocation(locator->lineNumber(), locator->columnNumber());
+
+    if (n)
+        n->setLocation(locator->lineNumber(), locator->columnNumber());
 
     node->appendChild(n);
     node = n;
@@ -7425,7 +7428,7 @@ bool QDomHandler::startElement(const QString& nsURI, const QString&, const QStri
 
 bool QDomHandler::endElement(const QString&, const QString&, const QString&)
 {
-    if (node == doc)
+    if (!node || node == doc)
         return false;
     node = node->parent();
 

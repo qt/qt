@@ -73,6 +73,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSSVGUnitTypesPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -87,6 +88,11 @@ const ClassInfo JSSVGUnitTypesConstructor::s_info = { "SVGUnitTypesConstructor",
 bool JSSVGUnitTypesConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGUnitTypesConstructor, DOMObject>(exec, &JSSVGUnitTypesConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGUnitTypesConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGUnitTypesConstructor, DOMObject>(exec, &JSSVGUnitTypesConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -118,6 +124,11 @@ bool JSSVGUnitTypesPrototype::getOwnPropertySlot(ExecState* exec, const Identifi
     return getStaticValueSlot<JSSVGUnitTypesPrototype, JSObject>(exec, &JSSVGUnitTypesPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGUnitTypesPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGUnitTypesPrototype, JSObject>(exec, &JSSVGUnitTypesPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGUnitTypes::s_info = { "SVGUnitTypes", 0, &JSSVGUnitTypesTable, 0 };
 
 JSSVGUnitTypes::JSSVGUnitTypes(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGUnitTypes> impl, SVGElement* context)
@@ -139,6 +150,11 @@ JSObject* JSSVGUnitTypes::createPrototype(ExecState* exec, JSGlobalObject* globa
 bool JSSVGUnitTypes::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGUnitTypes, Base>(exec, &JSSVGUnitTypesTable, this, propertyName, slot);
+}
+
+bool JSSVGUnitTypes::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGUnitTypes, Base>(exec, &JSSVGUnitTypesTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGUnitTypesConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -174,7 +190,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGUnit
 }
 SVGUnitTypes* toSVGUnitTypes(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGUnitTypes::s_info) ? static_cast<JSSVGUnitTypes*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGUnitTypes::s_info) ? static_cast<JSSVGUnitTypes*>(asObject(value))->impl() : 0;
 }
 
 }

@@ -21,12 +21,7 @@
 #    include <stddef.h>
 #  endif
 #  include <string.h>
-// Bug in stdlib.h, see more information from fixed_stdlib.h
-#if (defined __SYMBIAN32__ && !defined __cplusplus)
-#include <fixed_stdlib.h>
-#else
-#include <stdlib.h>
-#endif // defined __SYMBIAN32__ && !defined __cplusplus
+#  include <stdlib.h>
 #endif
 #ifdef NO_ERRNO_H
 #   ifdef _WIN32_WCE

@@ -22,6 +22,7 @@ wince*: {
    addFiles.path = .
    DEPLOYMENT += addFiles
    TARGET.EPOCHEAPSIZE = 1000000 10000000
+   TARGET.UID3 = 0xE0340001
    DEFINES += SYMBIAN_SRCDIR_UID=$$lower($$replace(TARGET.UID3,"0x",""))
 }else {
    DEFINES += SRCDIR=\\\"$$PWD/\\\"

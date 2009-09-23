@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -190,6 +190,7 @@ private slots:
 
     void selectedText();
     void hasSelectedText();
+    void deleteSelectedText();
 
     void textChangedAndTextEdited();
     void returnPressed();
@@ -338,10 +339,12 @@ void tst_QLineEdit::initTestCase()
 
     testWidget->resize(200,50);
     testWidget->show();
+    QApplication::setActiveWindow(testWidget);
 #ifdef Q_WS_X11
     // to be safe and avoid failing setFocus with window managers
     qt_x11_wait_for_window_manager(testWidget);
 #endif
+    QTRY_VERIFY(testWidget->hasFocus());
 
     changed_count = 0;
     edited_count = 0;
@@ -1600,8 +1603,7 @@ void tst_QLineEdit::passwordEchoOnEdit()
     testWidget->setEchoMode(QLineEdit::PasswordEchoOnEdit);
     testWidget->setFocus();
     testWidget->raise();
-    QTest::qWait(250);
-    QVERIFY(testWidget->hasFocus());
+    QTRY_VERIFY(testWidget->hasFocus());
 
     QTest::keyPress(testWidget, '0');
     QTest::keyPress(testWidget, '1');
@@ -1613,6 +1615,7 @@ void tst_QLineEdit::passwordEchoOnEdit()
     QVERIFY(!testWidget->hasFocus());
     QCOMPARE(testWidget->displayText(), QString(5, fillChar));
     testWidget->setFocus();
+    QTRY_VERIFY(testWidget->hasFocus());
 
     QCOMPARE(testWidget->displayText(), QString(5, fillChar));
     QTest::keyPress(testWidget, '0');
@@ -2053,6 +2056,32 @@ void tst_QLineEdit::hasSelectedText()
 {
     DEPENDS_ON("selectedText");
 }
+
+void tst_QLineEdit::deleteSelectedText()
+{
+    const QString text = QString::fromLatin1("bar");
+    QLineEdit edit( text );
+    QCOMPARE(edit.text(), text);
+
+    edit.selectAll();
+
+    QTest::keyClick(&edit, Qt::Key_Delete, 0);
+    QVERIFY(edit.text().isEmpty());
+
+    edit.setText(text);
+    edit.selectAll();
+
+    QMenu *menu = edit.createStandardContextMenu();
+    for (int i = 0; i < menu->actions().count(); ++i) {
+        QAction *current = menu->actions().at(i);
+        if (current->text() == QLineEdit::tr("Delete")) {
+            current->trigger(); //this will delete the whole text selected
+            QVERIFY(edit.text().isEmpty());
+        }
+    }
+
+}
+
 
 void tst_QLineEdit::textChangedAndTextEdited()
 {
@@ -3370,7 +3399,7 @@ void tst_QLineEdit::task210502_caseInsensitiveInlineCompletion()
     qt_x11_wait_for_window_manager(&lineEdit);
 #endif
     lineEdit.setFocus();
-    QTest::qWait(200);
+    QTRY_VERIFY(lineEdit.hasFocus());
     QTest::keyPress(&lineEdit, 'a');
     QTest::keyPress(&lineEdit, Qt::Key_Return);
     QCOMPARE(lineEdit.text(), completion);
@@ -3464,7 +3493,7 @@ void tst_QLineEdit::task241436_passwordEchoOnEditRestoreEchoMode()
 
     testWidget->setEchoMode(QLineEdit::PasswordEchoOnEdit);
     testWidget->setFocus();
-    QTest::qWait(250);
+    QTRY_VERIFY(testWidget->hasFocus());
 
     QTest::keyPress(testWidget, '0');
     QCOMPARE(testWidget->displayText(), QString("0"));

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -140,6 +140,7 @@ private slots:
 
 #if defined QTEST_HAVE_GIF
     void gifHandlerBugs();
+    void animatedGif();
 #endif
 
     void readCorruptImage_data();
@@ -166,6 +167,10 @@ private slots:
 
     void task255627_setNullScaledSize_data();
     void task255627_setNullScaledSize();
+
+    void testIgnoresFormatAndExtension_data();
+    void testIgnoresFormatAndExtension();
+
 };
 
 static const QLatin1String prefix(SRCDIR "/images/");
@@ -224,6 +229,7 @@ void tst_QImageReader::readImage_data()
     QTest::newRow("PPM: runners") << QString("runners.ppm") << true << QByteArray("ppm");
     QTest::newRow("PPM: test") << QString("test.ppm") << true << QByteArray("ppm");
     QTest::newRow("XBM: gnus") << QString("gnus.xbm") << true << QByteArray("xbm");
+
 #if defined QTEST_HAVE_JPEG
     QTest::newRow("JPEG: beavis") << QString("beavis.jpg") << true << QByteArray("jpeg");
 #endif
@@ -708,6 +714,19 @@ void tst_QImageReader::gifHandlerBugs()
         QImage im1 = io1.read(); QImage im2 = io2.read();
         QVERIFY(!im1.isNull());  QVERIFY(!im2.isNull());
         QCOMPARE(im1.convertToFormat(QImage::Format_ARGB32), im2.convertToFormat(QImage::Format_ARGB32));
+    }
+}
+
+void tst_QImageReader::animatedGif()
+{
+    QImageReader io(":images/qt.gif");
+    QImage image = io.read();
+    QVERIFY(!image.isNull());
+    int i = 0;
+    while(!image.isNull()){
+        QString frameName = QString(":images/qt%1.gif").arg(++i);
+        QCOMPARE(image, QImage(frameName));
+        image = io.read();
     }
 }
 #endif
@@ -1236,7 +1255,7 @@ void tst_QImageReader::readCorruptImage()
 
 void tst_QImageReader::readCorruptBmp()
 {
-    QCOMPARE(QImage("tst7.bmp").convertToFormat(QImage::Format_ARGB32_Premultiplied), QImage("images/tst7.png").convertToFormat(QImage::Format_ARGB32_Premultiplied));
+    QCOMPARE(QImage(prefix + "tst7.bmp").convertToFormat(QImage::Format_ARGB32_Premultiplied), QImage(prefix + "tst7.png").convertToFormat(QImage::Format_ARGB32_Premultiplied));
 }
 
 void tst_QImageReader::supportsOption_data()
@@ -1479,6 +1498,72 @@ void tst_QImageReader::pixelCompareWithBaseline()
         QVERIFY(baseImg.load(baselineFileName));
         QCOMPARE(baseImg, icoImg);
 #endif
+    }
+}
+
+
+void tst_QImageReader::testIgnoresFormatAndExtension_data()
+{
+    QTest::addColumn<QString>("name");
+    QTest::addColumn<QString>("extension");
+    QTest::addColumn<QString>("expected");
+
+    QTest::newRow("black.png") << "black" << "png" << "png";
+    QTest::newRow("black.xpm") << "black" << "xpm" << "xpm";
+    QTest::newRow("colorful.bmp") << "colorful" << "bmp" << "bmp";
+    QTest::newRow("image.ppm") << "image" << "ppm" << "ppm";
+    QTest::newRow("image.pbm") << "image" << "pbm" << "pbm";
+    QTest::newRow("image.pgm") << "image" << "pgm" << "pgm";
+
+#if defined QTEST_HAVE_GIF
+    QTest::newRow("bat1.gif") << "bat1" << "gif" << "gif";
+#endif
+
+#if defined QTEST_HAVE_JPEG
+    QTest::newRow("beavis.jpg") << "beavis" << "jpg" << "jpeg";
+#endif
+
+#if defined QTEST_HAVE_MNG
+    QTest::newRow("fire.mng") << "fire" << "mng" << "mng";
+#endif
+
+#if defined QTEST_HAVE_TIFF
+    QTest::newRow("image_100dpi.tif") << "image_100dpi" << "tif" << "tiff";
+#endif
+}
+
+
+void tst_QImageReader::testIgnoresFormatAndExtension()
+{
+    QFETCH(QString, name);
+    QFETCH(QString, extension);
+    QFETCH(QString, expected);
+
+    QList<QByteArray> formats = QImageReader::supportedImageFormats();
+    QString fileNameBase = "images/" + name + ".";
+
+    foreach (const QByteArray &f, formats) {
+        if (f == extension)
+            continue;
+        QFile tmp(QDir::tempPath() + "/" + name + "_" + expected + "." + f);
+
+        QFile::copy(fileNameBase + extension, QFileInfo(tmp).absoluteFilePath());
+
+        QString format;
+        QImage image;
+        {
+            // image reader needs to be scoped for the remove() to work..
+            QImageReader r;
+            r.setFileName(QFileInfo(tmp).absoluteFilePath());
+            r.setDecideFormatFromContent(true);
+            format = r.format();
+            r.read(&image);
+        }
+
+        tmp.remove();
+
+        QVERIFY(!image.isNull());
+        QCOMPARE(format, expected);
     }
 }
 

@@ -11,6 +11,7 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.pro *.html
 sources.path = $$[QT_INSTALL_DEMOS]/embedded/styledemo
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/demos/demobase.pri)
-
-symbian:TARGET.UID3 = 0xA000A63F
+symbian {
+    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
+    TARGET.UID3 = 0xA000A63F
+}

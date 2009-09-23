@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -561,14 +561,20 @@ static void qt_cleanlooks_draw_mdibutton(QPainter *painter, const QStyleOptionTi
     QColor mdiButtonBorderColor(active ? option->palette.highlight().color().darker(180): dark.darker(110));
 
     painter->setPen(QPen(mdiButtonBorderColor, 1));
-    painter->drawLine(tmp.left() + 2, tmp.top(), tmp.right() - 2, tmp.top());
-    painter->drawLine(tmp.left() + 2, tmp.bottom(), tmp.right() - 2, tmp.bottom());
-    painter->drawLine(tmp.left(), tmp.top() + 2, tmp.left(), tmp.bottom() - 2);
-    painter->drawLine(tmp.right(), tmp.top() + 2, tmp.right(), tmp.bottom() - 2);
-    painter->drawPoint(tmp.left() + 1, tmp.top() + 1);
-    painter->drawPoint(tmp.right() - 1, tmp.top() + 1);
-    painter->drawPoint(tmp.left() + 1, tmp.bottom() - 1);
-    painter->drawPoint(tmp.right() - 1, tmp.bottom() - 1);
+    const QLine lines[4] = {
+        QLine(tmp.left() + 2, tmp.top(), tmp.right() - 2, tmp.top()),
+        QLine(tmp.left() + 2, tmp.bottom(), tmp.right() - 2, tmp.bottom()),
+        QLine(tmp.left(), tmp.top() + 2, tmp.left(), tmp.bottom() - 2),
+        QLine(tmp.right(), tmp.top() + 2, tmp.right(), tmp.bottom() - 2)
+    };
+    painter->drawLines(lines, 4);
+    const QPoint points[4] = {
+        QPoint(tmp.left() + 1, tmp.top() + 1),
+        QPoint(tmp.right() - 1, tmp.top() + 1),
+        QPoint(tmp.left() + 1, tmp.bottom() - 1),
+        QPoint(tmp.right() - 1, tmp.bottom() - 1)
+    };
+    painter->drawPoints(points, 4);
 
     painter->setPen(titleBarHighlight);
     painter->drawLine(tmp.left() + 2, tmp.top() + 1, tmp.right() - 2, tmp.top() + 1);
@@ -900,14 +906,17 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
             QRect r = rect.adjusted(0, 1, 0, -1);
             painter->setPen(buttonShadowAlpha);
             painter->drawLine(QPoint(r.left() + 2, r.top() - 1), QPoint(r.right() - 2, r.top() - 1));
-            painter->drawPoint(r.right() - 1, r.top());
-            painter->drawPoint(r.right(), r.top() + 1);
-            painter->drawPoint(r.right() - 1, r.bottom());
-            painter->drawPoint(r.right(), r.bottom() - 1);
-            painter->drawPoint(r.left() + 1, r.top() );
-            painter->drawPoint(r.left(), r.top() + 1);
-            painter->drawPoint(r.left() + 1, r.bottom() );
-            painter->drawPoint(r.left(), r.bottom() - 1);
+            const QPoint points[8] = {
+                QPoint(r.right() - 1, r.top()),
+                QPoint(r.right(), r.top() + 1),
+                QPoint(r.right() - 1, r.bottom()),
+                QPoint(r.right(), r.bottom() - 1),
+                QPoint(r.left() + 1, r.top() ),
+                QPoint(r.left(), r.top() + 1),
+                QPoint(r.left() + 1, r.bottom() ),
+                QPoint(r.left(), r.bottom() - 1)
+            };
+            painter->drawPoints(points, 8);
             painter->setPen(QPen(option->palette.background().color(), 1));
             painter->drawLine(QPoint(r.left() + 2, r.top() + 1), QPoint(r.right() - 2, r.top() + 1));
 
@@ -939,10 +948,13 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
             painter->drawLine(QPoint(r.left(), r.top() + 2), QPoint(r.left(), r.bottom() - 2));
             painter->drawLine(QPoint(r.right(), r.top() + 2), QPoint(r.right(), r.bottom() - 2));
             painter->drawLine(QPoint(r.left() + 2, r.bottom()), QPoint(r.right() - 2, r.bottom()));
-            painter->drawPoint(QPoint(r.right() - 1, r.bottom() - 1));
-            painter->drawPoint(QPoint(r.right() - 1, r.top() + 1));
-            painter->drawPoint(QPoint(r.left() + 1, r.bottom() - 1));
-            painter->drawPoint(QPoint(r.left() + 1, r.top() + 1));
+            const QPoint points2[4] = {
+                QPoint(r.right() - 1, r.bottom() - 1),
+                QPoint(r.right() - 1, r.top() + 1),
+                QPoint(r.left() + 1, r.bottom() - 1),
+                QPoint(r.left() + 1, r.top() + 1)
+            };
+            painter->drawPoints(points2, 4);
             painter->drawLine(QPoint(r.left() + 2, r.top()), QPoint(r.right() - 2, r.top()));
             painter->setPen(oldPen);
         }
@@ -1040,10 +1052,13 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
             painter->setBrush(QBrush(dark.darker(120), Qt::Dense4Pattern));
             painter->setBrushOrigin(rect.topLeft());
             painter->setPen(Qt::NoPen);
-            painter->drawRect(rect.left(), rect.top(), rect.width(), 1);    // Top
-            painter->drawRect(rect.left(), rect.bottom(), rect.width(), 1); // Bottom
-            painter->drawRect(rect.left(), rect.top(), 1, rect.height());   // Left
-            painter->drawRect(rect.right(), rect.top(), 1, rect.height());  // Right
+            const QRect rects[4] = {
+                QRect(rect.left(), rect.top(), rect.width(), 1),    // Top
+                QRect(rect.left(), rect.bottom(), rect.width(), 1), // Bottom
+                QRect(rect.left(), rect.top(), 1, rect.height()),   // Left
+                QRect(rect.right(), rect.top(), 1, rect.height())   // Right
+            };
+            painter->drawRects(rects, 4);
             painter->restore();
         }
         break;
@@ -1065,18 +1080,24 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
                 if (isDefault) {
                     r = option->rect.adjusted(0, 1, 0, -1);
                     painter->setPen(QPen(Qt::black, 0));
-                    painter->drawLine(QPoint(r.left() + 2, r.top()),
-                                    QPoint(r.right() - 2, r.top()));
-                    painter->drawLine(QPoint(r.left(), r.top() + 2),
-                                    QPoint(r.left(), r.bottom() - 2));
-                    painter->drawLine(QPoint(r.right(), r.top() + 2),
-                                    QPoint(r.right(), r.bottom() - 2));
-                    painter->drawLine(QPoint(r.left() + 2, r.bottom()),
-                                    QPoint(r.right() - 2, r.bottom()));
-                    painter->drawPoint(QPoint(r.right() - 1, r.bottom() - 1));
-                    painter->drawPoint(QPoint(r.right() - 1, r.top() + 1));
-                    painter->drawPoint(QPoint(r.left() + 1, r.bottom() - 1));
-                    painter->drawPoint(QPoint(r.left() + 1, r.top() + 1));
+                    const QLine lines[4] = {
+                        QLine(QPoint(r.left() + 2, r.top()),
+                              QPoint(r.right() - 2, r.top())),
+                        QLine(QPoint(r.left(), r.top() + 2),
+                              QPoint(r.left(), r.bottom() - 2)),
+                        QLine(QPoint(r.right(), r.top() + 2),
+                              QPoint(r.right(), r.bottom() - 2)),
+                        QLine(QPoint(r.left() + 2, r.bottom()),
+                              QPoint(r.right() - 2, r.bottom()))
+                    };
+                    painter->drawLines(lines, 4);
+                    const QPoint points[4] = {
+                        QPoint(r.right() - 1, r.bottom() - 1),
+                        QPoint(r.right() - 1, r.top() + 1),
+                        QPoint(r.left() + 1, r.bottom() - 1),
+                        QPoint(r.left() + 1, r.top() + 1)
+                    };
+                    painter->drawPoints(points, 4);
                     painter->setPen(oldPen);
                 }
                 return;
@@ -1140,10 +1161,13 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
                               QPoint(r.right(), r.bottom() - 2));
             p->drawLine(QPoint(r.left() + 2, r.bottom()),
                               QPoint(r.right() - 2, r.bottom()));
-            p->drawPoint(QPoint(r.right() - 1, r.bottom() - 1));
-            p->drawPoint(QPoint(r.right() - 1, r.top() + 1));
-            p->drawPoint(QPoint(r.left() + 1, r.bottom() - 1));
-            p->drawPoint(QPoint(r.left() + 1, r.top() + 1));
+            const QPoint points[4] = {
+                QPoint(r.right() - 1, r.bottom() - 1),
+                QPoint(r.right() - 1, r.top() + 1),
+                QPoint(r.left() + 1, r.bottom() - 1),
+                QPoint(r.left() + 1, r.top() + 1)
+            };
+            p->drawPoints(points, 4);
 
             if (!isDefault && !hasFocus && isEnabled)
                 p->setPen(QPen(darkOutline.darker(110), 0));
@@ -1163,14 +1187,17 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
             topShadow.setAlpha(60);
 
             p->setPen(topShadow);
-            p->drawPoint(QPoint(r.right(), r.top() + 1));
-            p->drawPoint(QPoint(r.right() - 1, r.top() ));
-            p->drawPoint(QPoint(r.right(), r.bottom() - 1));
-            p->drawPoint(QPoint(r.right() - 1, r.bottom() ));
-            p->drawPoint(QPoint(r.left() + 1, r.bottom()));
-            p->drawPoint(QPoint(r.left(), r.bottom() - 1));
-            p->drawPoint(QPoint(r.left() + 1, r.top()));
-            p->drawPoint(QPoint(r.left(), r.top() + 1));
+            const QPoint points2[8] = {
+                QPoint(r.right(), r.top() + 1),
+                QPoint(r.right() - 1, r.top() ),
+                QPoint(r.right(), r.bottom() - 1),
+                QPoint(r.right() - 1, r.bottom() ),
+                QPoint(r.left() + 1, r.bottom()),
+                QPoint(r.left(), r.bottom() - 1),
+                QPoint(r.left() + 1, r.top()),
+                QPoint(r.left(), r.top() + 1)
+            };
+            p->drawPoints(points2, 8);
 
             topShadow.setAlpha(30);
             p->setPen(topShadow);
@@ -1183,18 +1210,24 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
             if (isDefault) {
                 r.adjust(-1, -1, 1, 1);
                 p->setPen(buttonShadowAlpha.darker(120));
-                p->drawLine(r.topLeft() + QPoint(3, 0), r.topRight() - QPoint(3, 0));
-                p->drawLine(r.bottomLeft() + QPoint(3, 0), r.bottomRight() - QPoint(3, 0));
-                p->drawLine(r.topLeft() + QPoint(0, 3), r.bottomLeft() - QPoint(0, 3));
-                p->drawLine(r.topRight() + QPoint(0, 3), r.bottomRight() - QPoint(0, 3));
-                p->drawPoint(r.topRight() + QPoint(-2, 1));
-                p->drawPoint(r.topRight() + QPoint(-1, 2));
-                p->drawPoint(r.bottomRight() + QPoint(-1, -2));
-                p->drawPoint(r.bottomRight() + QPoint(-2, -1));
-                p->drawPoint(r.topLeft() + QPoint(1, 2));
-                p->drawPoint(r.topLeft() + QPoint(2, 1));
-                p->drawPoint(r.bottomLeft() + QPoint(1, -2));
-                p->drawPoint(r.bottomLeft() + QPoint(2, -1));
+                const QLine lines[4] = {
+                    QLine(r.topLeft() + QPoint(3, 0), r.topRight() - QPoint(3, 0)),
+                    QLine(r.bottomLeft() + QPoint(3, 0), r.bottomRight() - QPoint(3, 0)),
+                    QLine(r.topLeft() + QPoint(0, 3), r.bottomLeft() - QPoint(0, 3)),
+                    QLine(r.topRight() + QPoint(0, 3), r.bottomRight() - QPoint(0, 3))
+                };
+                p->drawLines(lines, 4);
+                const QPoint points3[8] = {
+                    r.topRight() + QPoint(-2, 1),
+                    r.topRight() + QPoint(-1, 2),
+                    r.bottomRight() + QPoint(-1, -2),
+                    r.bottomRight() + QPoint(-2, -1),
+                    r.topLeft() + QPoint(1, 2),
+                    r.topLeft() + QPoint(2, 1),
+                    r.bottomLeft() + QPoint(1, -2),
+                    r.bottomLeft() + QPoint(2, -1)
+                };
+                p->drawPoints(points3, 8);
             }
             painter->setPen(oldPen);
             painter->setBrush(oldBrush);
@@ -1307,12 +1340,15 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
             painter->drawLine(innerBottomLine);
 
             painter->setPen(alphaCornerColor);
-            painter->drawPoint(leftBottomInnerCorner1);
-            painter->drawPoint(leftBottomInnerCorner2);
-            painter->drawPoint(rightBottomInnerCorner1);
-            painter->drawPoint(rightBottomInnerCorner2);
-            painter->drawPoint(leftTopInnerCorner1);
-            painter->drawPoint(leftTopInnerCorner2);
+            const QPoint points[6] = {
+                leftBottomInnerCorner1,
+                leftBottomInnerCorner2,
+                rightBottomInnerCorner1,
+                rightBottomInnerCorner2,
+                leftTopInnerCorner1,
+                leftTopInnerCorner2
+            };
+            painter->drawPoints(points, 6);
         }
 #endif // QT_NO_TABWIDGET
     painter->restore();
@@ -1499,7 +1535,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                 default:
                     break;
                 }
-                if (QApplication::layoutDirection() == Qt::RightToLeft) { //reverse layout changes the order of Beginning/end
+                if (toolbar->direction == Qt::RightToLeft) { //reverse layout changes the order of Beginning/end
                     bool tmp = paintLeftBorder;
                     paintRightBorder=paintLeftBorder;
                     paintLeftBorder=tmp;
@@ -1670,19 +1706,25 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
             painter->fillRect(rect, option->palette.base());
             QColor borderColor = dark.lighter(110);
             painter->setPen(QPen(borderColor, 0));
-            painter->drawLine(QPoint(rect.left() + 1, rect.top()), QPoint(rect.right() - 1, rect.top()));
-            painter->drawLine(QPoint(rect.left() + 1, rect.bottom()), QPoint(rect.right() - 1, rect.bottom()));
-            painter->drawLine(QPoint(rect.left(), rect.top() + 1), QPoint(rect.left(), rect.bottom() - 1));
-            painter->drawLine(QPoint(rect.right(), rect.top() + 1), QPoint(rect.right(), rect.bottom() - 1));
+            const QLine lines[4] = {
+                QLine(QPoint(rect.left() + 1, rect.top()), QPoint(rect.right() - 1, rect.top())),
+                QLine(QPoint(rect.left() + 1, rect.bottom()), QPoint(rect.right() - 1, rect.bottom())),
+                QLine(QPoint(rect.left(), rect.top() + 1), QPoint(rect.left(), rect.bottom() - 1)),
+                QLine(QPoint(rect.right(), rect.top() + 1), QPoint(rect.right(), rect.bottom() - 1))
+            };
+            painter->drawLines(lines, 4);
             QColor alphaCorner = mergedColors(borderColor, option->palette.background().color());
             QColor innerShadow = mergedColors(borderColor, option->palette.base().color());
 
             //corner smoothing
             painter->setPen(alphaCorner);
-            painter->drawPoint(rect.topRight());
-            painter->drawPoint(rect.topLeft());
-            painter->drawPoint(rect.bottomRight());
-            painter->drawPoint(rect.bottomLeft());
+            const QPoint points[4] = {
+                rect.topRight(),
+                rect.topLeft(),
+                rect.bottomRight(),
+                rect.bottomLeft()
+            };
+            painter->drawPoints(points, 4);
 
             //inner shadow
             painter->setPen(innerShadow);
@@ -1807,10 +1849,13 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                                             option->palette.highlight());
 
                 painter->setPen(QPen(highlightOutline, 0));
-                painter->drawLine(QPoint(r.left(), r.top() + 1), QPoint(r.left(), r.bottom()));
-                painter->drawLine(QPoint(r.right(), r.top() + 1), QPoint(r.right(), r.bottom()));
-                painter->drawLine(QPoint(r.left() + 1, r.bottom()), QPoint(r.right() - 1, r.bottom()));
-                painter->drawLine(QPoint(r.left() + 1, r.top()), QPoint(r.right() - 1, r.top()));
+                const QLine lines[4] = {
+                    QLine(QPoint(r.left(), r.top() + 1), QPoint(r.left(), r.bottom())),
+                    QLine(QPoint(r.right(), r.top() + 1), QPoint(r.right(), r.bottom())),
+                    QLine(QPoint(r.left() + 1, r.bottom()), QPoint(r.right() - 1, r.bottom())),
+                    QLine(QPoint(r.left() + 1, r.top()), QPoint(r.right() - 1, r.top()))
+                };
+                painter->drawLines(lines, 4);
 
                 //draw text
                 QPalette::ColorRole textRole = dis ? QPalette::Text : QPalette::HighlightedText;
@@ -1864,10 +1909,13 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                                             highlight);
                 r = r.adjusted(-1, 0, 1, 0);
                 painter->setPen(QPen(highlightOutline, 0));
-                painter->drawLine(QPoint(r.left(), r.top() + 1), QPoint(r.left(), r.bottom() - 1));
-                painter->drawLine(QPoint(r.right(), r.top() + 1), QPoint(r.right(), r.bottom() - 1));
-                painter->drawLine(QPoint(r.left() + 1, r.bottom()), QPoint(r.right() - 1, r.bottom()));
-                painter->drawLine(QPoint(r.left() + 1, r.top()), QPoint(r.right() - 1, r.top()));
+                const QLine lines[4] = {
+                    QLine(QPoint(r.left(), r.top() + 1), QPoint(r.left(), r.bottom() - 1)),
+                    QLine(QPoint(r.right(), r.top() + 1), QPoint(r.right(), r.bottom() - 1)),
+                    QLine(QPoint(r.left() + 1, r.bottom()), QPoint(r.right() - 1, r.bottom())),
+                    QLine(QPoint(r.left() + 1, r.top()), QPoint(r.right() - 1, r.top()))
+                };
+                painter->drawLines(lines, 4);
             } else {
                 painter->fillRect(option->rect, menuBackground);
             }
@@ -2447,14 +2495,17 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     cachePainter.setPen(topShadow);
 
                     // antialias corners
-                    cachePainter.drawPoint(QPoint(r.right(), r.top() + 1));
-                    cachePainter.drawPoint(QPoint(r.right() - 1, r.top() ));
-                    cachePainter.drawPoint(QPoint(r.right(), r.bottom() - 1));
-                    cachePainter.drawPoint(QPoint(r.right() - 1, r.bottom() ));
-                    cachePainter.drawPoint(QPoint(r.left() + 1, r.bottom()));
-                    cachePainter.drawPoint(QPoint(r.left(), r.bottom() - 1));
-                    cachePainter.drawPoint(QPoint(r.left() + 1, r.top()));
-                    cachePainter.drawPoint(QPoint(r.left(), r.top() + 1));
+                    const QPoint points[8] = {
+                        QPoint(r.right(), r.top() + 1),
+                        QPoint(r.right() - 1, r.top() ),
+                        QPoint(r.right(), r.bottom() - 1),
+                        QPoint(r.right() - 1, r.bottom() ),
+                        QPoint(r.left() + 1, r.bottom()),
+                        QPoint(r.left(), r.bottom() - 1),
+                        QPoint(r.left() + 1, r.top()),
+                        QPoint(r.left(), r.top() + 1)
+                    };
+                    cachePainter.drawPoints(points, 8);
 
                     // draw frame
                     topShadow.setAlpha(30);
@@ -2482,10 +2533,13 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     cachePainter.setPen(QPen(darkOutline, 1));
 
                     // top and bottom lines
-                    cachePainter.drawLine(QPoint(r.left() + 2, r.bottom()), QPoint(r.right()- 2, r.bottom()));
-                    cachePainter.drawLine(QPoint(r.left() + 2, r.top()), QPoint(r.right() - 2, r.top()));
-                    cachePainter.drawLine(QPoint(r.right(), r.top() + 2), QPoint(r.right(), r.bottom() - 2));
-                    cachePainter.drawLine(QPoint(r.left(), r.top() + 2), QPoint(r.left(), r.bottom() - 2));
+                    const QLine lines[4] = {
+                        QLine(QPoint(r.left() + 2, r.bottom()), QPoint(r.right()- 2, r.bottom())),
+                        QLine(QPoint(r.left() + 2, r.top()), QPoint(r.right() - 2, r.top())),
+                        QLine(QPoint(r.right(), r.top() + 2), QPoint(r.right(), r.bottom() - 2)),
+                        QLine(QPoint(r.left(), r.top() + 2), QPoint(r.left(), r.bottom() - 2))
+                    };
+                    cachePainter.drawLines(lines, 4);
                 }
 
                     // gradients
@@ -2519,10 +2573,13 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
 
                 if (spinBox->frame) {
                     // rounded corners
-                    cachePainter.drawPoint(QPoint(r.left() + 1, r.bottom() - 1));
-                    cachePainter.drawPoint(QPoint(r.left() + 1, r.top() + 1));
-                    cachePainter.drawPoint(QPoint(r.right() - 1, r.bottom() - 1));
-                    cachePainter.drawPoint(QPoint(r.right() - 1, r.top() + 1));
+                    const QPoint points[4] = {
+                        QPoint(r.left() + 1, r.bottom() - 1),
+                        QPoint(r.left() + 1, r.top() + 1),
+                        QPoint(r.right() - 1, r.bottom() - 1),
+                        QPoint(r.right() - 1, r.top() + 1)
+                    };
+                    cachePainter.drawPoints(points, 4);
 
                     if (option->state & State_HasFocus) {
                         QColor darkoutline = option->palette.highlight().color().darker(150);
@@ -2531,10 +2588,13 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                         if (spinBox->direction == Qt::LeftToRight) {
                             cachePainter.drawRect(rect.adjusted(1, 2, -3 -downRect.width(), -3));
                             cachePainter.setPen(QPen(darkoutline, 0));
-                            cachePainter.drawLine(QPoint(r.left() + 2, r.bottom()), QPoint(r.right()- downRect.width() - 1, r.bottom()));
-                            cachePainter.drawLine(QPoint(r.left() + 2, r.top()), QPoint(r.right() - downRect.width() - 1, r.top()));
-                            cachePainter.drawLine(QPoint(r.right() - downRect.width() - 1, r.top() + 1), QPoint(r.right()- downRect.width() - 1, r.bottom() - 1));
-                            cachePainter.drawLine(QPoint(r.left(), r.top() + 2), QPoint(r.left(), r.bottom() - 2));
+                            const QLine lines[4] = {
+                                QLine(QPoint(r.left() + 2, r.bottom()), QPoint(r.right()- downRect.width() - 1, r.bottom())),
+                                QLine(QPoint(r.left() + 2, r.top()), QPoint(r.right() - downRect.width() - 1, r.top())),
+                                QLine(QPoint(r.right() - downRect.width() - 1, r.top() + 1), QPoint(r.right()- downRect.width() - 1, r.bottom() - 1)),
+                                QLine(QPoint(r.left(), r.top() + 2), QPoint(r.left(), r.bottom() - 2))
+                            };
+                            cachePainter.drawLines(lines, 4);
                             cachePainter.drawPoint(QPoint(r.left() + 1, r.bottom() - 1));
                             cachePainter.drawPoint(QPoint(r.left() + 1, r.top() + 1));
                             cachePainter.drawLine(QPoint(r.left(), r.top() + 2), QPoint(r.left(), r.bottom() - 2));
@@ -2679,18 +2739,24 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                 // top outline
                 painter->drawLine(fullRect.left() + 5, fullRect.top(), fullRect.right() - 5, fullRect.top());
                 painter->drawLine(fullRect.left(), fullRect.top() + 4, fullRect.left(), fullRect.bottom());
-                painter->drawPoint(fullRect.left() + 4, fullRect.top() + 1);
-                painter->drawPoint(fullRect.left() + 3, fullRect.top() + 1);
-                painter->drawPoint(fullRect.left() + 2, fullRect.top() + 2);
-                painter->drawPoint(fullRect.left() + 1, fullRect.top() + 3);
-                painter->drawPoint(fullRect.left() + 1, fullRect.top() + 4);
+                const QPoint points[5] = {
+                    QPoint(fullRect.left() + 4, fullRect.top() + 1),
+                    QPoint(fullRect.left() + 3, fullRect.top() + 1),
+                    QPoint(fullRect.left() + 2, fullRect.top() + 2),
+                    QPoint(fullRect.left() + 1, fullRect.top() + 3),
+                    QPoint(fullRect.left() + 1, fullRect.top() + 4)
+                };
+                painter->drawPoints(points, 5);
 
                 painter->drawLine(fullRect.right(), fullRect.top() + 4, fullRect.right(), fullRect.bottom());
-                painter->drawPoint(fullRect.right() - 3, fullRect.top() + 1);
-                painter->drawPoint(fullRect.right() - 4, fullRect.top() + 1);
-                painter->drawPoint(fullRect.right() - 2, fullRect.top() + 2);
-                painter->drawPoint(fullRect.right() - 1, fullRect.top() + 3);
-                painter->drawPoint(fullRect.right() - 1, fullRect.top() + 4);
+                const QPoint points2[5] = {
+                    QPoint(fullRect.right() - 3, fullRect.top() + 1),
+                    QPoint(fullRect.right() - 4, fullRect.top() + 1),
+                    QPoint(fullRect.right() - 2, fullRect.top() + 2),
+                    QPoint(fullRect.right() - 1, fullRect.top() + 3),
+                    QPoint(fullRect.right() - 1, fullRect.top() + 4)
+                };
+                painter->drawPoints(points2, 5);
 
                 // draw bottomline
                 painter->drawLine(fullRect.right(), fullRect.bottom(), fullRect.left(), fullRect.bottom());
@@ -2749,10 +2815,13 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     painter->drawLine(maxButtonIconRect.left() + 1, maxButtonIconRect.top() + 1,
                                     maxButtonIconRect.right() - 1, maxButtonIconRect.top() + 1);
                     painter->setPen(textAlphaColor);
-                    painter->drawPoint(maxButtonIconRect.topLeft());
-                    painter->drawPoint(maxButtonIconRect.topRight());
-                    painter->drawPoint(maxButtonIconRect.bottomLeft());
-                    painter->drawPoint(maxButtonIconRect.bottomRight());
+                    const QPoint points[4] = {
+                        maxButtonIconRect.topLeft(),
+                        maxButtonIconRect.topRight(),
+                        maxButtonIconRect.bottomLeft(),
+                        maxButtonIconRect.bottomRight()
+                    };
+                    painter->drawPoints(points, 4);
                 }
             }
 
@@ -2765,18 +2834,24 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     qt_cleanlooks_draw_mdibutton(painter, titleBar, closeButtonRect, hover, sunken);
                     QRect closeIconRect = closeButtonRect.adjusted(buttonMargin, buttonMargin, -buttonMargin, -buttonMargin);
                     painter->setPen(textAlphaColor);
-                    painter->drawLine(closeIconRect.left() + 1, closeIconRect.top(),
-                                    closeIconRect.right(), closeIconRect.bottom() - 1);
-                    painter->drawLine(closeIconRect.left(), closeIconRect.top() + 1,
-                                    closeIconRect.right() - 1, closeIconRect.bottom());
-                    painter->drawLine(closeIconRect.right() - 1, closeIconRect.top(),
-                                    closeIconRect.left(), closeIconRect.bottom() - 1);
-                    painter->drawLine(closeIconRect.right(), closeIconRect.top() + 1,
-                                    closeIconRect.left() + 1, closeIconRect.bottom());
-                    painter->drawPoint(closeIconRect.topLeft());
-                    painter->drawPoint(closeIconRect.topRight());
-                    painter->drawPoint(closeIconRect.bottomLeft());
-                    painter->drawPoint(closeIconRect.bottomRight());
+                    const QLine lines[4] = {
+                        QLine(closeIconRect.left() + 1, closeIconRect.top(),
+                              closeIconRect.right(), closeIconRect.bottom() - 1),
+                        QLine(closeIconRect.left(), closeIconRect.top() + 1,
+                              closeIconRect.right() - 1, closeIconRect.bottom()),
+                        QLine(closeIconRect.right() - 1, closeIconRect.top(),
+                              closeIconRect.left(), closeIconRect.bottom() - 1),
+                        QLine(closeIconRect.right(), closeIconRect.top() + 1,
+                              closeIconRect.left() + 1, closeIconRect.bottom())
+                    };
+                    painter->drawLines(lines, 4);
+                    const QPoint points[4] = {
+                        closeIconRect.topLeft(),
+                        closeIconRect.topRight(),
+                        closeIconRect.bottomLeft(),
+                        closeIconRect.bottomRight()
+                    };
+                    painter->drawPoints(points, 4);
 
                     painter->setPen(textColor);
                     painter->drawLine(closeIconRect.left() + 1, closeIconRect.top() + 1,
@@ -2806,10 +2881,13 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     painter->drawLine(frontWindowRect.left() + 1, frontWindowRect.top() + 1,
                                     frontWindowRect.right() - 1, frontWindowRect.top() + 1);
                     painter->setPen(textAlphaColor);
-                    painter->drawPoint(frontWindowRect.topLeft());
-                    painter->drawPoint(frontWindowRect.topRight());
-                    painter->drawPoint(frontWindowRect.bottomLeft());
-                    painter->drawPoint(frontWindowRect.bottomRight());
+                    const QPoint points[4] = {
+                        frontWindowRect.topLeft(),
+                        frontWindowRect.topRight(),
+                        frontWindowRect.bottomLeft(),
+                        frontWindowRect.bottomRight()
+                    };
+                    painter->drawPoints(points, 4);
 
                     QRect backWindowRect = normalButtonIconRect.adjusted(3, 0, 0, -3);
                     QRegion clipRegion = backWindowRect;
@@ -2821,10 +2899,13 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     painter->drawLine(backWindowRect.left() + 1, backWindowRect.top() + 1,
                                     backWindowRect.right() - 1, backWindowRect.top() + 1);
                     painter->setPen(textAlphaColor);
-                    painter->drawPoint(backWindowRect.topLeft());
-                    painter->drawPoint(backWindowRect.topRight());
-                    painter->drawPoint(backWindowRect.bottomLeft());
-                    painter->drawPoint(backWindowRect.bottomRight());
+                    const QPoint points2[4] = {
+                        backWindowRect.topLeft(),
+                        backWindowRect.topRight(),
+                        backWindowRect.bottomLeft(),
+                        backWindowRect.bottomRight()
+                    };
+                    painter->drawPoints(points2, 4);
                     painter->restore();
                 }
             }
@@ -3498,10 +3579,13 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     handlePainter.save();
                     handlePainter.setRenderHint(QPainter::Antialiasing);
                     handlePainter.translate(0.5, 0.5);
-                    handlePainter.drawLine(QPoint(r.left(), r.bottom() - 2), QPoint(r.left() + 2, r.bottom()));
-                    handlePainter.drawLine(QPoint(r.left(), r.top() + 2), QPoint(r.left() + 2, r.top()));
-                    handlePainter.drawLine(QPoint(r.right(), r.bottom() - 2), QPoint(r.right() - 2, r.bottom()));
-                    handlePainter.drawLine(QPoint(r.right(), r.top() + 2), QPoint(r.right() - 2, r.top()));
+                    const QLine lines[4] = {
+                        QLine(QPoint(r.left(), r.bottom() - 2), QPoint(r.left() + 2, r.bottom())),
+                        QLine(QPoint(r.left(), r.top() + 2), QPoint(r.left() + 2, r.top())),
+                        QLine(QPoint(r.right(), r.bottom() - 2), QPoint(r.right() - 2, r.bottom())),
+                        QLine(QPoint(r.right(), r.top() + 2), QPoint(r.right() - 2, r.top()))
+                    };
+                    handlePainter.drawLines(lines, 4);
                     handlePainter.restore();;
                     handlePainter.setPen(QPen(outline.darker(130), 1));
                     handlePainter.drawLine(QPoint(r.left() + 3, r.top()), QPoint(r.right() - 3, r.top()));
@@ -4323,7 +4407,7 @@ QRect QCleanlooksStyle::subElementRect(SubElement sr, const QStyleOption *opt, c
         if (verticalTitleBar) {
             r.adjust(0, 0, 0, -4);
         } else {
-            if (QApplication::layoutDirection() == Qt::LeftToRight)
+            if (opt->direction == Qt::LeftToRight)
                 r.adjust(4, 0, 0, 0);
             else
                 r.adjust(0, 0, -4, 0);

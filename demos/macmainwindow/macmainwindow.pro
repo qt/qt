@@ -20,6 +20,4 @@ target.path = $$[QT_INSTALL_DEMOS]/macmainwindow
 sources.files = $$SOURCES  *.pro *.html
 sources.path = $$[QT_INSTALL_DEMOS]/macmainwindow
 INSTALLS += target sources
-
-include($$QT_SOURCE_TREE/demos/demobase.pri)
 }

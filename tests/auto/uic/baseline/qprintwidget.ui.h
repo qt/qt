@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'qprintwidget.ui'
 **
-** Created: Mon Sep 1 09:31:03 2008
-**      by: Qt User Interface Compiler version 4.5.0
+** Created: Fri Sep 4 10:17:14 2009
+**      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -153,7 +153,6 @@ public:
         label_3->setText(QApplication::translate("QPrintWidget", "Type:", 0, QApplication::UnicodeUTF8));
         lOutput->setText(QApplication::translate("QPrintWidget", "Output &file:", 0, QApplication::UnicodeUTF8));
         fileBrowser->setText(QApplication::translate("QPrintWidget", "...", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(QPrintWidget);
     } // retranslateUi
 
 };

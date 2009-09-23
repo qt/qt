@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -159,9 +159,8 @@ QSslCertificate::QSslCertificate(const QByteArray &data, QSsl::EncodingFormat fo
 /*!
     Constructs an identical copy of \a other.
 */
-QSslCertificate::QSslCertificate(const QSslCertificate &other) : d(other.d.data())
+QSslCertificate::QSslCertificate(const QSslCertificate &other) : d(other.d)
 {
-    d->ref.ref();
 }
 
 /*!
@@ -177,7 +176,7 @@ QSslCertificate::~QSslCertificate()
 */
 QSslCertificate &QSslCertificate::operator=(const QSslCertificate &other)
 {
-    d.assign(other.d.data());
+    d = other.d;
     return *this;
 }
 
@@ -243,7 +242,7 @@ void QSslCertificate::clear()
 {
     if (isNull())
         return;
-    d.reset(new QSslCertificatePrivate);
+    d = new QSslCertificatePrivate;
 }
 
 /*!
@@ -251,14 +250,22 @@ void QSslCertificate::clear()
 */
 QByteArray QSslCertificate::version() const
 {
+    if (d->versionString.isEmpty() && d->x509)
+        d->versionString =
+            QByteArray::number(qlonglong(q_ASN1_INTEGER_get(d->x509->cert_info->version)) + 1);
+
     return d->versionString;
 }
 
 /*!
-    Returns the certificate's serial number string.
+    Returns the certificate's serial number string in decimal format.
 */
 QByteArray QSslCertificate::serialNumber() const
 {
+    if (d->serialNumberString.isEmpty() && d->x509)
+        d->serialNumberString =
+            QByteArray::number(qlonglong(q_ASN1_INTEGER_get(d->x509->cert_info->serialNumber)));
+
     return d->serialNumberString;
 }
 
@@ -382,13 +389,17 @@ QMultiMap<QSsl::AlternateNameEntryType, QString> QSslCertificate::alternateSubje
             }
 
             const char *altNameStr = reinterpret_cast<const char *>(q_ASN1_STRING_data(genName->d.ia5));
-            const QString altName = QLatin1String(QByteArray(altNameStr, len));
+            const QString altName = QString::fromLatin1(altNameStr, len);
             if (genName->type == GEN_DNS)
                 result.insert(QSsl::DnsEntry, altName);
             else if (genName->type == GEN_EMAIL)
                 result.insert(QSsl::EmailEntry, altName);
         }
-        q_sk_free((STACK*)altNames);
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+        q_sk_pop_free((STACK*)altNames, reinterpret_cast<void(*)(void*)>(q_sk_free));
+#else
+        q_sk_pop_free((STACK*)altNames, q_sk_free);
+#endif
     }
 
     return result;

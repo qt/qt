@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,9 +51,11 @@
 #include <stdlib.h>
 #include <time.h>
 
+QT_BEGIN_NAMESPACE
 namespace QtSharedPointer {
     Q_CORE_EXPORT void internalSafetyCheckCleanCheck();
 }
+QT_END_NAMESPACE
 
 #ifdef Q_OS_SYMBIAN
 #define SRCDIR "."
@@ -546,6 +548,13 @@ class OtherObject: public QObject
 void tst_QSharedPointer::qobjectWeakManagement()
 {
     {
+        QWeakPointer<QObject> weak;
+        weak = QWeakPointer<QObject>();
+        QVERIFY(weak.isNull());
+        QVERIFY(!weak.data());
+    }
+
+    {
         QObject *obj = new QObject;
         QWeakPointer<QObject> weak(obj);
         QVERIFY(!weak.isNull());
@@ -765,17 +774,47 @@ void tst_QSharedPointer::differentPointers()
     {
         DiffPtrDerivedData *aData = new DiffPtrDerivedData;
         Data *aBase = aData;
-        Q_ASSERT(aData == aBase);
-        Q_ASSERT(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
+
+        // ensure that this compiler isn't broken
+        if (*reinterpret_cast<quintptr *>(&aData) == *reinterpret_cast<quintptr *>(&aBase))
+            qFatal("Something went very wrong -- we couldn't create two different pointers to the same object");
+        if (aData != aBase)
+            QSKIP("Broken compiler", SkipAll);
+        if (aBase != aData)
+            QSKIP("Broken compiler", SkipAll);
 
         QSharedPointer<DiffPtrDerivedData> ptr = QSharedPointer<DiffPtrDerivedData>(aData);
         QSharedPointer<Data> baseptr = qSharedPointerCast<Data>(ptr);
-        QVERIFY(ptr == baseptr);
+        qDebug("naked: orig: %p; base: %p (%s) -- QSharedPointer: orig: %p; base %p (%s) -- result: %s",
+               aData, aBase, aData == aBase ? "equal" : "not equal",
+               ptr.data(), baseptr.data(), ptr.data() == baseptr.data() ? "equal" : "not equal",
+               baseptr.data() == aData ? "equal" : "not equal");
+
         QVERIFY(ptr.data() == baseptr.data());
+        QVERIFY(baseptr.data() == ptr.data());
+        QVERIFY(ptr == baseptr);
+        QVERIFY(baseptr == ptr);
+
+        QVERIFY(ptr.data() == aBase);
+        QVERIFY(aBase == ptr.data());
+        QVERIFY(ptr.data() == aData);
+        QVERIFY(aData == ptr.data());
+
         QVERIFY(ptr == aBase);
+        QVERIFY(aBase == ptr);
         QVERIFY(ptr == aData);
-        QVERIFY(baseptr == aData);
+        QVERIFY(aData == ptr);
+
+        QVERIFY(baseptr.data() == aBase);
+        QVERIFY(aBase == baseptr.data());
         QVERIFY(baseptr == aBase);
+        QVERIFY(aBase == baseptr);
+
+        QVERIFY(baseptr.data() == aData);
+        QVERIFY(aData == baseptr.data());
+        QVERIFY(bool(operator==<Data,DiffPtrDerivedData>(baseptr, aData)));
+        QVERIFY(baseptr == aData);
+        QVERIFY(aData == baseptr);
     }
     check();
 
@@ -1630,20 +1669,10 @@ void tst_QSharedPointer::invalidConstructs_data()
            "QWeakPointer<QObject> weak = ptr;\n"    // this makes the object unmanaged
            "QSharedPointer<QObject> shared(ptr);\n";
 
-#ifndef QT_NO_DEBUG
-    // this tests a Q_ASSERT, so it is only valid in debug mode
-    // the DerivedFromQObject destructor below creates a QWeakPointer from parent().
-    // parent() is not 0 in the current Qt implementation, but has started destruction,
-    // so the code should detect that issue
-    QTest::newRow("shared-pointer-from-qobject-in-destruction")
-        << &QTest::QExternalTest::tryRunFail
-        << "class DerivedFromQObject: public QObject { public:\n"
-           "    DerivedFromQObject(QObject *parent): QObject(parent) {}\n"
-           "    ~DerivedFromQObject() { QWeakPointer<QObject> weak = parent(); }\n"
-           "};\n"
-           "QObject obj;\n"
-           "new DerivedFromQObject(&obj);";
-#endif
+    QTest::newRow("shared-pointer-implicit-from-uninitialized")
+        << &QTest::QExternalTest::tryCompileFail
+        << "Data *ptr = 0;\n"
+           "QSharedPointer<Data> weakptr = Qt::Uninitialized;\n";
 }
 
 void tst_QSharedPointer::invalidConstructs()

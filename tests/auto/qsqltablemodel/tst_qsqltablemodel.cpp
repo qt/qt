@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -119,6 +119,11 @@ private slots:
     void tableModifyWithBlank_data() { generic_data(); }
     void tableModifyWithBlank(); // For mail task
 
+    void removeColumnAndRow_data() { generic_data(); }
+    void removeColumnAndRow(); // task 256032
+
+    void insertBeforeDelete_data() { generic_data(); }
+    void insertBeforeDelete();
 private:
     void generic_data(const QString& engine=QString());
 };
@@ -987,6 +992,62 @@ void tst_QSqlTableModel::tableModifyWithBlank()
 
     //Make sure the value of the first column matches what we set it to previously.
     QCOMPARE(model.record(0).value(1).toString(), QLatin1String("col1ModelData"));
+}
+
+void tst_QSqlTableModel::removeColumnAndRow()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlTableModel model(0, db);
+    model.setTable(qTableName("test"));
+    model.setEditStrategy(QSqlTableModel::OnManualSubmit);
+    QVERIFY_SQL(model, select());
+    QCOMPARE(model.rowCount(), 3);
+    QCOMPARE(model.columnCount(), 3);
+
+    QVERIFY(model.removeColumn(0));
+    QVERIFY(model.removeRow(0));
+    QVERIFY(model.submitAll());
+    QCOMPARE(model.rowCount(), 2);
+    QCOMPARE(model.columnCount(), 2);
+
+    // check with another table because the model has been modified
+    // but not the sql table
+    QSqlTableModel model2(0, db);
+    model2.setTable(qTableName("test"));
+    QVERIFY_SQL(model2, select());
+    QCOMPARE(model2.rowCount(), 2);
+    QCOMPARE(model2.columnCount(), 3);
+}
+
+void tst_QSqlTableModel::insertBeforeDelete()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlQuery q(db);
+    QVERIFY_SQL( q, exec("insert into " + qTableName("test") + " values(9, 'andrew', 9)"));
+    QVERIFY_SQL( q, exec("insert into " + qTableName("test") + " values(10, 'justin', 10)"));
+
+    QSqlTableModel model(0, db);
+    model.setTable(qTableName("test"));
+    model.setEditStrategy(QSqlTableModel::OnManualSubmit);
+    QVERIFY_SQL(model, select());
+
+    qDebug() << model.rowCount();
+
+    QSqlRecord rec = model.record();
+    rec.setValue(0, 4);
+    rec.setValue(1, QString("bill"));
+    rec.setValue(2, 4);
+    QVERIFY_SQL(model, insertRecord(4, rec));
+
+    QVERIFY_SQL(model, removeRow(5));
+    QVERIFY_SQL(model, submitAll());
+    QCOMPARE(model.rowCount(), 5);
 }
 
 QTEST_MAIN(tst_QSqlTableModel)

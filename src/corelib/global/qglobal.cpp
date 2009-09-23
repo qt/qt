@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -75,6 +75,11 @@
 #if defined(Q_OS_SYMBIAN)
 #include <e32def.h>
 #include <e32debug.h>
+#include <f32file.h>
+# include "private/qcore_symbian_p.h"
+
+_LIT(qt_S60Filter, "Series60v?.*.sis");
+_LIT(qt_S60SystemInstallDir, "z:\\system\\install\\");
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -408,13 +413,13 @@ QT_BEGIN_NAMESPACE
 /*!
     \headerfile <QtGlobal>
     \title Global Qt Declarations
-    \ingroup classlists
+    \ingroup funclists
 
-    \brief The <QtGlobal> header provides basic declarations and
-    is included by all other Qt headers.
+    \brief The <QtGlobal> header file includes the fundamental global
+    declarations. It is included by most other Qt header files.
 
-    The declarations include \l {types}, \l functions and
-    \l macros.
+    The global declarations include \l{types}, \l{functions} and
+    \l{macros}.
 
     The type definitions are partly convenience definitions for basic
     types (some of which guarantee certain bit-sizes on all platforms
@@ -1169,9 +1174,9 @@ bool qSharedBuild()
     QSysInfo::symbianVersion() function gives the version of the
     system on which the application is run.
 
-    \value SV_9_2 Symbian OS 9.2
-    \value SV_9_3 Symbian OS 9.3
-    \value SV_9_4 Symbian OS 9.4
+    \value SV_9_2 Symbian OS v9.2
+    \value SV_9_3 Symbian OS v9.3
+    \value SV_9_4 Symbian OS v9.4
     \value SV_Unknown An unknown and currently unsupported platform
 
     \sa S60Version, WinVersion, MacVersion
@@ -1189,6 +1194,7 @@ bool qSharedBuild()
     \value SV_S60_3_2 S60 3rd Edition Feature Pack 2
     \value SV_S60_5_0 S60 5th Edition
     \value SV_S60_Unknown An unknown and currently unsupported platform
+    \omitvalue SV_S60_None
 
     \sa SymbianVersion, WinVersion, MacVersion
 */
@@ -1785,28 +1791,31 @@ QSysInfo::S60Version QSysInfo::s60Version()
     if (cachedS60Version != -1)
         return cachedS60Version;
 
-    QDir dir(QLatin1String("z:\\system\\install"));
-    QStringList filters;
-    filters << QLatin1String("Series60v?.*.sis");
-    dir.setNameFilters(filters);
-
-    QStringList names = dir.entryList(QDir::NoFilter, QDir::Name | QDir::Reversed | QDir::IgnoreCase);
-    if (names.size() == 0)
-        return cachedS60Version = SV_S60_Unknown;
-
-    int major, minor;
-    major = names[0][9].toAscii() - '0';
-    minor = names[0][11].toAscii() - '0';
-    if (major == 3) {
-        if (minor == 1) {
-            return cachedS60Version = SV_S60_3_1;
-        } else if (minor == 2) {
-            return cachedS60Version = SV_S60_3_2;
+    // Use pure Symbian code, because if done using QDir, there will be a call back
+    // to this method, resulting doing this expensive operation twice before the cache kicks in.
+    // Pure Symbian code also makes this method ~10x faster, speeding up the application launch.
+    RFs rfs = qt_s60GetRFs();
+    TFindFile fileFinder(rfs);
+    CDir* contents;
+    TInt err = fileFinder.FindWildByDir(qt_S60Filter, qt_S60SystemInstallDir, contents);
+    if (err == KErrNone) {
+        err = contents->Sort(EDescending|ESortByName);
+        if (err == KErrNone) {
+            TInt major = (*contents)[0].iName[9] - '0';
+            TInt minor = (*contents)[0].iName[11] - '0';
+            if (major == 3) {
+                if (minor == 1) {
+                    return cachedS60Version = SV_S60_3_1;
+                } else if (minor == 2) {
+                    return cachedS60Version = SV_S60_3_2;
+                }
+            } else if (major == 5) {
+                if (minor == 0) {
+                    return cachedS60Version = SV_S60_5_0;
+                }
+            }
         }
-    } else if (major == 5) {
-        if (minor == 0) {
-            return cachedS60Version = SV_S60_5_0;
-        }
+        delete contents;
     }
 
     return cachedS60Version = SV_S60_Unknown;
@@ -1903,12 +1912,12 @@ QSysInfo::SymbianVersion QSysInfo::symbianVersion()
 */
 
 /*!
-    T *q_check_ptr(T *pointer)
+    \fn T *q_check_ptr(T *pointer)
     \relates <QtGlobal>
 
-	Users Q_CHECK_PTR on \a pointer, then returns \a pointer.
+    Users Q_CHECK_PTR on \a pointer, then returns \a pointer.
 
-	This can be used as an inline version of Q_CHECK_PTR.
+    This can be used as an inline version of Q_CHECK_PTR.
 */
 
 /*!
@@ -2056,7 +2065,7 @@ QString qt_error_string(int errorCode)
                       NULL,
                       errorCode,
                       MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                      string,
+                      (LPWSTR)&string,
                       0,
                       NULL);
         ret = QString::fromWCharArray(string);
@@ -2189,7 +2198,8 @@ void qt_message_output(QtMsgType msgType, const char *buf)
         TPtrC8 ptr(reinterpret_cast<const TUint8*>(buf));
         TInt len = Min(tmp.MaxLength(), ptr.Length());
         tmp.Copy(ptr.Left(len));
-        User::Panic(tmp, 0); // Panic the current thread
+        // Panic the current thread. We don't use real panic codes, so 0 has no special meaning.
+        User::Panic(tmp, 0);
 #elif (defined(Q_OS_UNIX) || defined(Q_CC_MINGW))
         abort(); // trap; generates core dump
 #else
@@ -2668,6 +2678,8 @@ int qrand()
     \reentrant
     \since 4.6
 
+    \brief The qtTrId function finds and returns a translated string.
+
     Returns a translated string identified by \a id.
     If no matching string is found, the id itself is returned. This
     should not happen under normal conditions.
@@ -2705,7 +2717,8 @@ int qrand()
     \relates <QtGlobal>
     \since 4.6
 
-    Marks \a id for dynamic translation.
+    \brief The QT_TRID_NOOP macro marks an id for dynamic translation.
+    
     The only purpose of this macro is to provide an anchor for attaching
     meta data like to qtTrId().
 

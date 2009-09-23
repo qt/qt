@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -482,7 +482,7 @@ bool QX11PaintEngine::begin(QPaintDevice *pdev)
             d->picture = (::Picture)w->x11PictureHandle();
     } else if (pdev->devType() == QInternal::Pixmap) {
         const QPixmap *pm = static_cast<const QPixmap *>(pdev);
-        QX11PixmapData *data = static_cast<QX11PixmapData*>(pm->data);
+        QX11PixmapData *data = static_cast<QX11PixmapData*>(pm->data.data());
         if (X11->use_xrender && data->depth() != 32 && data->x11_mask)
             data->convertToARGB32();
         d->picture = (::Picture)static_cast<const QPixmap *>(pdev)->x11PictureHandle();
@@ -1365,7 +1365,7 @@ void QX11PaintEngine::updateBrush(const QBrush &brush, const QPointF &origin)
                 XRenderPictureAttributes attrs;
                 attrs.repeat = true;
                 XRenderChangePicture(d->dpy, d->brush_pm.x11PictureHandle(), CPRepeat, &attrs);
-                QX11PixmapData *data = static_cast<QX11PixmapData*>(d->brush_pm.data);
+                QX11PixmapData *data = static_cast<QX11PixmapData*>(d->brush_pm.data.data());
                 if (data->mask_picture)
                     XRenderChangePicture(d->dpy, data->mask_picture, CPRepeat, &attrs);
             }
@@ -1402,13 +1402,13 @@ void QX11PaintEngine::updateBrush(const QBrush &brush, const QPointF &origin)
             mask |= GCTile;
 #ifndef QT_NO_XRENDER
             if (d->pdev_depth == 32 && d->brush_pm.depth() != 32) {
-                QX11PixmapData *brushData = static_cast<QX11PixmapData*>(d->brush_pm.data);
+                QX11PixmapData *brushData = static_cast<QX11PixmapData*>(d->brush_pm.data.data());
                 brushData->convertToARGB32();
             }
 #endif
             vals.tile = (d->brush_pm.depth() == d->pdev_depth
                          ? d->brush_pm.handle()
-                         : static_cast<QX11PixmapData*>(d->brush_pm.data)->x11ConvertToDefaultDepth());
+                         : static_cast<QX11PixmapData*>(d->brush_pm.data.data())->x11ConvertToDefaultDepth());
             s = FillTiled;
 #if !defined(QT_NO_XRENDER)
             d->current_brush = d->cbrush.texture().x11PictureHandle();
@@ -1915,7 +1915,7 @@ void QX11PaintEngine::drawPixmap(const QRectF &r, const QPixmap &px, const QRect
     QPixmap::x11SetDefaultScreen(pixmap.x11Info().screen());
 
 #ifndef QT_NO_XRENDER
-    ::Picture src_pict = static_cast<QX11PixmapData*>(pixmap.data)->picture;
+    ::Picture src_pict = static_cast<QX11PixmapData*>(pixmap.data.data())->picture;
     if (src_pict && d->picture) {
         const int pDepth = pixmap.depth();
         if (pDepth == 1 && (d->has_alpha_pen)) {
@@ -1934,7 +1934,7 @@ void QX11PaintEngine::drawPixmap(const QRectF &r, const QPixmap &px, const QRect
     bool mono_dst = d->pdev_depth == 1;
     bool restore_clip = false;
 
-    if (static_cast<QX11PixmapData*>(pixmap.data)->x11_mask) { // pixmap has a mask
+    if (static_cast<QX11PixmapData*>(pixmap.data.data())->x11_mask) { // pixmap has a mask
         QBitmap comb(sw, sh);
         GC cgc = XCreateGC(d->dpy, comb.handle(), 0, 0);
         XSetForeground(d->dpy, cgc, 0);
@@ -1951,7 +1951,7 @@ void QX11PaintEngine::drawPixmap(const QRectF &r, const QPixmap &px, const QRect
         XSetFillStyle(d->dpy, cgc, FillOpaqueStippled);
         XSetTSOrigin(d->dpy, cgc, -sx, -sy);
         XSetStipple(d->dpy, cgc,
-                    static_cast<QX11PixmapData*>(pixmap.data)->x11_mask);
+                    static_cast<QX11PixmapData*>(pixmap.data.data())->x11_mask);
         XFillRectangle(d->dpy, comb.handle(), cgc, 0, 0, sw, sh);
         XFreeGC(d->dpy, cgc);
 
@@ -1994,8 +1994,8 @@ void QX11PaintEngine::drawPixmap(const QRectF &r, const QPixmap &px, const QRect
 
     if (d->pdev->devType() == QInternal::Pixmap) {
         const QPixmap *px = static_cast<const QPixmap*>(d->pdev);
-        Pixmap src_mask = static_cast<QX11PixmapData*>(pixmap.data)->x11_mask;
-        Pixmap dst_mask = static_cast<QX11PixmapData*>(px->data)->x11_mask;
+        Pixmap src_mask = static_cast<QX11PixmapData*>(pixmap.data.data())->x11_mask;
+        Pixmap dst_mask = static_cast<QX11PixmapData*>(px->data.data())->x11_mask;
         if (dst_mask) {
             GC cgc = XCreateGC(d->dpy, dst_mask, 0, 0);
             if (src_mask) { // copy src mask into dst mask
@@ -2214,7 +2214,7 @@ void QX11PaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, co
 #endif
     } else
 #endif // !QT_NO_XRENDER
-        if (pixmap.depth() > 1 && !static_cast<QX11PixmapData*>(pixmap.data)->x11_mask) {
+        if (pixmap.depth() > 1 && !static_cast<QX11PixmapData*>(pixmap.data.data())->x11_mask) {
             XSetTile(d->dpy, d->gc, pixmap.handle());
             XSetFillStyle(d->dpy, d->gc, FillTiled);
             XSetTSOrigin(d->dpy, d->gc, x-sx, y-sy);
@@ -2459,15 +2459,23 @@ void QX11PaintEngine::drawFreetype(const QPointF &p, const QTextItemInt &ti)
     XRectangle rects[rectcount];
     int num_rects = 0;
 
+    QPoint delta(qRound(d->matrix.dx()), qRound(d->matrix.dy()));
+    QRect clip(d->polygonClipper.boundingRect());
     for (int i=0; i < path.elementCount(); i+=5) {
         int x = qRound(path.elementAt(i).x);
         int y = qRound(path.elementAt(i).y);
         int w = qRound(path.elementAt(i+1).x) - x;
         int h = qRound(path.elementAt(i+2).y) - y;
-        rects[num_rects].x = x + qRound(d->matrix.dx());
-        rects[num_rects].y = y + qRound(d->matrix.dy());
-        rects[num_rects].width = w;
-        rects[num_rects].height = h;
+
+        QRect rect = QRect(x + delta.x(), y + delta.y(), w, h);
+        rect = rect.intersected(clip);
+        if (rect.isEmpty())
+            continue;
+
+        rects[num_rects].x = short(rect.x());
+        rects[num_rects].y = short(rect.y());
+        rects[num_rects].width = ushort(rect.width());
+        rects[num_rects].height = ushort(rect.height());
         ++num_rects;
         if (num_rects == rectcount) {
             XFillRectangles(d->dpy, d->hd, d->gc, rects, num_rects);

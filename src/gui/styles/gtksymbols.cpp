@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -194,6 +194,7 @@ Ptr_gdk_x11_drawable_get_xdisplay QGtk::gdk_x11_drawable_get_xdisplay = 0;
 
 Ptr_gconf_client_get_default QGtk::gconf_client_get_default = 0;
 Ptr_gconf_client_get_string QGtk::gconf_client_get_string = 0;
+Ptr_gconf_client_get_bool QGtk::gconf_client_get_bool = 0;
 
 static QString classPath(GtkWidget *widget)
 {
@@ -210,7 +211,8 @@ static QString classPath(GtkWidget *widget)
 
 static void resolveGtk()
 {
-    QLibrary libgtk(QLS("gtk-x11-2.0"));
+    // enforce the "0" suffix, so we'll open libgtk-x11-2.0.so.0
+    QLibrary libgtk(QLS("gtk-x11-2.0"), 0, 0);
     QGtk::gtk_init = (Ptr_gtk_init)libgtk.resolve("gtk_init");
     QGtk::gtk_window_new = (Ptr_gtk_window_new)libgtk.resolve("gtk_window_new");
     QGtk::gtk_style_attach = (Ptr_gtk_style_attach)libgtk.resolve("gtk_style_attach");
@@ -336,6 +338,7 @@ static bool resolveGConf()
     if (!QGtk::gconf_client_get_default) {
         QGtk::gconf_client_get_default = (Ptr_gconf_client_get_default)QLibrary::resolve(QLS("gconf-2"), 4, "gconf_client_get_default");
         QGtk::gconf_client_get_string =  (Ptr_gconf_client_get_string)QLibrary::resolve(QLS("gconf-2"), 4, "gconf_client_get_string");
+        QGtk::gconf_client_get_bool =  (Ptr_gconf_client_get_bool)QLibrary::resolve(QLS("gconf-2"), 4, "gconf_client_get_bool");
     }
     return (QGtk::gconf_client_get_default !=0);
 }
@@ -356,6 +359,23 @@ QString QGtk::getGConfString(const QString &value, const QString &fallback)
         }
         g_object_unref(client);
         if (err)
+            g_error_free (err);
+    }
+    return retVal;
+}
+
+bool QGtk::getGConfBool(const QString &key, bool fallback)
+{
+    bool retVal = fallback;
+    if (resolveGConf()) {
+        g_type_init();
+        GConfClient* client = QGtk::gconf_client_get_default();
+        GError *err = 0;
+        bool result = QGtk::gconf_client_get_bool(client, qPrintable(key), &err);
+        g_object_unref(client);
+        if (!err)
+            retVal = result;
+        else
             g_error_free (err);
     }
     return retVal;
@@ -404,27 +424,32 @@ static void init_gtk_window()
     static QString themeName;
     if (!gtkWidgetMap()->contains(QLS("GtkWindow")) && themeName.isEmpty()) {
         themeName = getThemeName();
-        // Due to namespace conflicts with Qt3 and obvious recursion with Qt4,
-        // we cannot support the GTK_Qt Gtk engine
-        if (!(themeName.isEmpty() || themeName == QLS("Qt") || themeName == QLS("Qt4"))) {
-            resolveGtk();
-            if (QGtk::gtk_init) {
-                // Gtk will set the Qt error handler so we have to reset it afterwards
-                x11ErrorHandler qt_x_errhandler = XSetErrorHandler(0);
-                QGtk::gtk_init (NULL, NULL);
-                XSetErrorHandler(qt_x_errhandler);
 
-                GtkWidget* gtkWindow = QGtk::gtk_window_new(GTK_WINDOW_POPUP);
-                QGtk::gtk_widget_realize(gtkWindow);
-                if (displayDepth == -1)
-                    displayDepth = QGtk::gdk_drawable_get_depth(gtkWindow->window);
-                gtkWidgetMap()->insert(QLS("GtkWindow"), gtkWindow);
-            }
-            else {
-                qWarning("QGtkStyle could not resolve GTK. Make sure you have installed the proper libraries.");
-            }
-        } else {
+        if (themeName.isEmpty()) {
+            qWarning("QGtkStyle was unable to detect the current GTK+ theme.");
+            return;
+        } else if (themeName == QLS("Qt") || themeName == QLS("Qt4")) {
+            // Due to namespace conflicts with Qt3 and obvious recursion with Qt4,
+            // we cannot support the GTK_Qt Gtk engine
             qWarning("QGtkStyle cannot be used together with the GTK_Qt engine.");
+            return;
+        }
+
+        resolveGtk();
+
+        if (QGtk::gtk_init) {
+            // Gtk will set the Qt error handler so we have to reset it afterwards
+            x11ErrorHandler qt_x_errhandler = XSetErrorHandler(0);
+            QGtk::gtk_init (NULL, NULL);
+            XSetErrorHandler(qt_x_errhandler);
+
+            GtkWidget* gtkWindow = QGtk::gtk_window_new(GTK_WINDOW_POPUP);
+            QGtk::gtk_widget_realize(gtkWindow);
+            if (displayDepth == -1)
+                displayDepth = QGtk::gdk_drawable_get_depth(gtkWindow->window);
+            gtkWidgetMap()->insert(QLS("GtkWindow"), gtkWindow);
+        } else {
+            qWarning("QGtkStyle could not resolve GTK. Make sure you have installed the proper libraries.");
         }
     }
 }
@@ -642,7 +667,7 @@ GtkStyle* QGtk::gtkStyle(const QString &path)
     return 0;
 }
 
-static void update_toolbar_style(GtkWidget *gtkToolBar, GParamSpec *pspec, gpointer user_data)
+static void update_toolbar_style(GtkWidget *gtkToolBar, GParamSpec *, gpointer)
 {
     GtkToolbarStyle toolbar_style = GTK_TOOLBAR_ICONS;
     g_object_get(gtkToolBar, "toolbar-style", &toolbar_style, NULL);

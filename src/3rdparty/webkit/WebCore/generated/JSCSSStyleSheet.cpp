@@ -76,6 +76,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSCSSStyleSheetPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -90,6 +91,11 @@ const ClassInfo JSCSSStyleSheetConstructor::s_info = { "CSSStyleSheetConstructor
 bool JSCSSStyleSheetConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCSSStyleSheetConstructor, DOMObject>(exec, &JSCSSStyleSheetConstructorTable, this, propertyName, slot);
+}
+
+bool JSCSSStyleSheetConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCSSStyleSheetConstructor, DOMObject>(exec, &JSCSSStyleSheetConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -122,6 +128,11 @@ bool JSCSSStyleSheetPrototype::getOwnPropertySlot(ExecState* exec, const Identif
     return getStaticFunctionSlot<JSObject>(exec, &JSCSSStyleSheetPrototypeTable, this, propertyName, slot);
 }
 
+bool JSCSSStyleSheetPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSCSSStyleSheetPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSCSSStyleSheet::s_info = { "CSSStyleSheet", &JSStyleSheet::s_info, &JSCSSStyleSheetTable, 0 };
 
 JSCSSStyleSheet::JSCSSStyleSheet(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSStyleSheet> impl)
@@ -137,6 +148,11 @@ JSObject* JSCSSStyleSheet::createPrototype(ExecState* exec, JSGlobalObject* glob
 bool JSCSSStyleSheet::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCSSStyleSheet, Base>(exec, &JSCSSStyleSheetTable, this, propertyName, slot);
+}
+
+bool JSCSSStyleSheet::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCSSStyleSheet, Base>(exec, &JSCSSStyleSheetTable, this, propertyName, descriptor);
 }
 
 JSValue jsCSSStyleSheetOwnerRule(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -176,7 +192,7 @@ JSValue JSCSSStyleSheet::getConstructor(ExecState* exec, JSGlobalObject* globalO
 JSValue JSC_HOST_CALL jsCSSStyleSheetPrototypeFunctionInsertRule(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCSSStyleSheet::s_info))
+    if (!thisValue.inherits(&JSCSSStyleSheet::s_info))
         return throwError(exec, TypeError);
     JSCSSStyleSheet* castedThisObj = static_cast<JSCSSStyleSheet*>(asObject(thisValue));
     CSSStyleSheet* imp = static_cast<CSSStyleSheet*>(castedThisObj->impl());
@@ -193,7 +209,7 @@ JSValue JSC_HOST_CALL jsCSSStyleSheetPrototypeFunctionInsertRule(ExecState* exec
 JSValue JSC_HOST_CALL jsCSSStyleSheetPrototypeFunctionDeleteRule(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCSSStyleSheet::s_info))
+    if (!thisValue.inherits(&JSCSSStyleSheet::s_info))
         return throwError(exec, TypeError);
     JSCSSStyleSheet* castedThisObj = static_cast<JSCSSStyleSheet*>(asObject(thisValue));
     CSSStyleSheet* imp = static_cast<CSSStyleSheet*>(castedThisObj->impl());
@@ -208,7 +224,7 @@ JSValue JSC_HOST_CALL jsCSSStyleSheetPrototypeFunctionDeleteRule(ExecState* exec
 JSValue JSC_HOST_CALL jsCSSStyleSheetPrototypeFunctionAddRule(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCSSStyleSheet::s_info))
+    if (!thisValue.inherits(&JSCSSStyleSheet::s_info))
         return throwError(exec, TypeError);
     JSCSSStyleSheet* castedThisObj = static_cast<JSCSSStyleSheet*>(asObject(thisValue));
     CSSStyleSheet* imp = static_cast<CSSStyleSheet*>(castedThisObj->impl());
@@ -235,7 +251,7 @@ JSValue JSC_HOST_CALL jsCSSStyleSheetPrototypeFunctionAddRule(ExecState* exec, J
 JSValue JSC_HOST_CALL jsCSSStyleSheetPrototypeFunctionRemoveRule(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCSSStyleSheet::s_info))
+    if (!thisValue.inherits(&JSCSSStyleSheet::s_info))
         return throwError(exec, TypeError);
     JSCSSStyleSheet* castedThisObj = static_cast<JSCSSStyleSheet*>(asObject(thisValue));
     CSSStyleSheet* imp = static_cast<CSSStyleSheet*>(castedThisObj->impl());

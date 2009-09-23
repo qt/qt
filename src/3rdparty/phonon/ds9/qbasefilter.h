@@ -22,7 +22,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QtCore/QString>
 #include <QtCore/QList>
-#include <QtCore/QReadWriteLock>
+#include <QtCore/QMutex>
 
 #include <dshow.h>
 
@@ -127,7 +127,7 @@ namespace Phonon
             IFilterGraph *m_graph;
             FILTER_STATE m_state;
             QList<QPin *> m_pins;
-            mutable QReadWriteLock m_lock;
+            mutable QMutex m_mutex;
         };
     }
 }

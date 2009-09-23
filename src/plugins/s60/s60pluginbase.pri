@@ -3,7 +3,8 @@
 include(../../qpluginbase.pri)
 
 CONFIG  -= plugin
-MMP_RULES -= EXPORTUNFROZEN
+
+MMP_RULES += NOEXPORTLIBRARY
 
 defBlock = \
     "$${LITERAL_HASH}ifdef WINSCW" \

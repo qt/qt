@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -132,7 +132,7 @@ QRect QMenuBarPrivate::menuRect(bool extVisible) const
     result.adjust(hmargin, 0, -hmargin, 0);
 
     if (extVisible) {
-        if (q->layoutDirection() == Qt::RightToLeft)
+        if (q->isRightToLeft())
             result.setLeft(result.left() + extension->sizeHint().width());
         else
             result.setWidth(result.width() - extension->sizeHint().width());
@@ -140,7 +140,7 @@ QRect QMenuBarPrivate::menuRect(bool extVisible) const
 
     if (leftWidget && leftWidget->isVisible()) {
         QSize sz = leftWidget->sizeHint();
-        if (q->layoutDirection() == Qt::RightToLeft)
+        if (q->isRightToLeft())
             result.setRight(result.right() - sz.width());
         else
             result.setLeft(result.left() + sz.width());
@@ -148,7 +148,7 @@ QRect QMenuBarPrivate::menuRect(bool extVisible) const
 
     if (rightWidget && rightWidget->isVisible()) {
         QSize sz = rightWidget->sizeHint();
-        if (q->layoutDirection() == Qt::RightToLeft)
+        if (q->isRightToLeft())
             result.setLeft(result.left() + sz.width());
         else
             result.setRight(result.right() - sz.width());
@@ -245,7 +245,7 @@ void QMenuBarPrivate::updateGeometries()
         pop->addActions(hiddenActions);
 
         int vmargin = q->style()->pixelMetric(QStyle::PM_MenuBarVMargin, 0, q);
-        int x = q->layoutDirection() == Qt::RightToLeft
+        int x = q->isRightToLeft()
                 ? menuRect.left() - extension->sizeHint().width() + 1
                 : menuRect.right();
         extension->setGeometry(x, vmargin, extension->sizeHint().width(), menuRect.height() - vmargin*2);
@@ -1072,16 +1072,10 @@ void QMenuBar::paintEvent(QPaintEvent *e)
 */
 void QMenuBar::setVisible(bool visible)
 {
-#if defined(Q_WS_MAC) || defined(Q_OS_WINCE)
+#if defined(Q_WS_MAC) || defined(Q_OS_WINCE) || defined(Q_WS_S60)
     if (isNativeMenuBar())
         return;
 #endif
-#ifdef Q_WS_S60
-    Q_D(QMenuBar);
-    if(d->symbian_menubar)
-        return;
-#endif
-
     QWidget::setVisible(visible);
 }
 
@@ -1094,6 +1088,8 @@ void QMenuBar::mousePressEvent(QMouseEvent *e)
     if(e->button() != Qt::LeftButton)
         return;
 
+    d->mouseDown = true;
+
     QAction *action = d->actionAt(e->pos());
     if (!action || !d->isVisible(action)) {
         d->setCurrentAction(0);
@@ -1103,8 +1099,6 @@ void QMenuBar::mousePressEvent(QMouseEvent *e)
 #endif
         return;
     }
-
-    d->mouseDown = true;
 
     if(d->currentAction == action && d->popupState) {
         if(QMenu *menu = d->activeMenu) {
@@ -1252,9 +1246,10 @@ void QMenuBar::keyPressEvent(QKeyEvent *e)
 void QMenuBar::mouseMoveEvent(QMouseEvent *e)
 {
     Q_D(QMenuBar);
-    d->mouseDown = e->buttons() & Qt::LeftButton;
-    QAction *action = d->actionAt(e->pos());
+    if (!(e->buttons() & Qt::LeftButton))
+        d->mouseDown = false;
     bool popupState = d->popupState || d->mouseDown;
+    QAction *action = d->actionAt(e->pos());
     if ((action && d->isVisible(action)) || !popupState)
         d->setCurrentAction(action, popupState);
 }
@@ -1277,10 +1272,12 @@ void QMenuBar::actionEvent(QActionEvent *e)
 {
     Q_D(QMenuBar);
     d->itemsDirty = true;
-#if defined (Q_WS_MAC) || defined(Q_OS_WINCE)
+#if defined (Q_WS_MAC) || defined(Q_OS_WINCE) || defined(Q_WS_S60)
     if (isNativeMenuBar()) {
 #ifdef Q_WS_MAC
         QMenuBarPrivate::QMacMenuBarPrivate *nativeMenuBar = d->mac_menubar;
+#elif defined(Q_WS_S60)
+        QMenuBarPrivate::QSymbianMenuBarPrivate *nativeMenuBar = d->symbian_menubar;
 #else
         QMenuBarPrivate::QWceMenuBarPrivate *nativeMenuBar = d->wce_menubar;
 #endif
@@ -1292,16 +1289,6 @@ void QMenuBar::actionEvent(QActionEvent *e)
             nativeMenuBar->removeAction(e->action());
         else if(e->type() == QEvent::ActionChanged)
             nativeMenuBar->syncAction(e->action());
-    }
-#endif
-#ifdef Q_WS_S60
-    if(d->symbian_menubar) {
-        if(e->type() == QEvent::ActionAdded)
-            d->symbian_menubar->addAction(e->action(), d->symbian_menubar->findAction(e->before()));
-        else if(e->type() == QEvent::ActionRemoved)
-            d->symbian_menubar->removeAction(e->action());
-        else if(e->type() == QEvent::ActionChanged)
-            d->symbian_menubar->syncAction(e->action());
     }
 #endif
 
@@ -1695,6 +1682,7 @@ QSize QMenuBar::sizeHint() const
 
     ensurePolished();
     QSize ret(0, 0);
+    const_cast<QMenuBarPrivate*>(d)->updateGeometries();
     const int hmargin = style()->pixelMetric(QStyle::PM_MenuBarHMargin, 0, this);
     const int vmargin = style()->pixelMetric(QStyle::PM_MenuBarVMargin, 0, this);
     int fw = style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, 0, this);
@@ -1750,6 +1738,7 @@ int QMenuBar::heightForWidth(int) const
     const bool as_gui_menubar = true;
 #endif
 
+    const_cast<QMenuBarPrivate*>(d)->updateGeometries();
     int height = 0;
     const int vmargin = style()->pixelMetric(QStyle::PM_MenuBarVMargin, 0, this);
     int fw = style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, 0, this);

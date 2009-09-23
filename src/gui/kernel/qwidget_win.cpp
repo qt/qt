@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -535,7 +535,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 {
     Q_D(QWidget);
     if (!isWindow() && parentWidget())
-        parentWidget()->d_func()->invalidateBuffer(geometry());
+        parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
     d->deactivateWidgetCleanup();
     if (testAttribute(Qt::WA_WState_Created)) {
         setAttribute(Qt::WA_WState_Created, false);
@@ -601,7 +601,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     Q_Q(QWidget);
     bool wasCreated = q->testAttribute(Qt::WA_WState_Created);
     if (q->isVisible() && q->parentWidget() && parent != q->parentWidget())
-        q->parentWidget()->d_func()->invalidateBuffer(q->geometry());
+        q->parentWidget()->d_func()->invalidateBuffer(effectiveRectFor(q->geometry()));
 
     WId old_winid = data.winid;
     // hide and reparent our own window away. Otherwise we might get
@@ -722,8 +722,6 @@ QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 
 void QWidgetPrivate::updateSystemBackground() {}
 
-extern void qt_win_set_cursor(QWidget *, bool); // qapplication_win.cpp
-
 #ifndef QT_NO_CURSOR
 void QWidgetPrivate::setCursor_sys(const QCursor &cursor)
 {
@@ -749,25 +747,6 @@ void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
     SetWindowText(q->internalWinId(), (wchar_t*)caption.utf16());
 }
 
-/*
-  Create an icon mask the way Windows wants it using CreateBitmap.
-*/
-
-HBITMAP qt_createIconMask(const QBitmap &bitmap)
-{
-    QImage bm = bitmap.toImage().convertToFormat(QImage::Format_Mono);
-    int w = bm.width();
-    int h = bm.height();
-    int bpl = ((w+15)/16)*2;                        // bpl, 16 bit alignment
-    uchar *bits = new uchar[bpl*h];
-    bm.invertPixels();
-    for (int y=0; y<h; y++)
-        memcpy(bits+y*bpl, bm.scanLine(y), bpl);
-    HBITMAP hbm = CreateBitmap(w, h, 1, 1, bits);
-    delete [] bits;
-    return hbm;
-}
-
 HICON qt_createIcon(QIcon icon, int xSize, int ySize, QPixmap **cache)
 {
     HICON result = 0;
@@ -777,27 +756,12 @@ HICON qt_createIcon(QIcon icon, int xSize, int ySize, QPixmap **cache)
         if (pm.isNull())
             return 0;
 
-        QBitmap mask = pm.mask();
-        if (mask.isNull()) {
-            mask = QBitmap(pm.size());
-            mask.fill(Qt::color1);
-        }
-
-        HBITMAP im = qt_createIconMask(mask);
-        ICONINFO ii;
-        ii.fIcon    = true;
-        ii.hbmMask  = im;
-        ii.hbmColor = pm.toWinHBITMAP(QPixmap::Alpha);
-        ii.xHotspot = 0;
-        ii.yHotspot = 0;
-        result = CreateIconIndirect(&ii);
+        result = pm.toWinHICON();
 
         if (cache) {
             delete *cache;
             *cache = new QPixmap(pm);;
         }
-        DeleteObject(ii.hbmColor);
-        DeleteObject(im);
     }
     return result;
 }
@@ -2062,21 +2026,21 @@ void QWidgetPrivate::registerTouchWindow()
 void QWidgetPrivate::winSetupGestures()
 {
     Q_Q(QWidget);
-    if (!q)
-        return;
-    q->setAttribute(Qt::WA_DontCreateNativeAncestors);
-    q->setAttribute(Qt::WA_NativeWindow);
-    if (!q->isVisible())
+    if (!q || !q->isVisible())
         return;
     QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
+    QApplicationPrivate::WidgetStandardGesturesMap::const_iterator it =
+            qAppPriv->widgetGestures.find(q);
+    if (it == qAppPriv->widgetGestures.end())
+        return;
+    const QStandardGestures &gestures = it.value();
+    WId winid = q->effectiveWinId();
+
     bool needh = false;
     bool needv = false;
     bool singleFingerPanEnabled = false;
-    QStandardGestures gestures = qAppPriv->widgetGestures[q];
-    WId winid = 0;
 
-    if (QAbstractScrollArea *asa = qobject_cast<QAbstractScrollArea*>(q)) {
-        winid = asa->viewport()->winId();
+    if (QAbstractScrollArea *asa = qobject_cast<QAbstractScrollArea*>(q->parent())) {
         QScrollBar *hbar = asa->horizontalScrollBar();
         QScrollBar *vbar = asa->verticalScrollBar();
         Qt::ScrollBarPolicy hbarpolicy = asa->horizontalScrollBarPolicy();
@@ -2086,10 +2050,8 @@ void QWidgetPrivate::winSetupGestures()
         needv = (vbarpolicy == Qt::ScrollBarAlwaysOn ||
                  (vbarpolicy == Qt::ScrollBarAsNeeded && vbar->minimum() < vbar->maximum()));
         singleFingerPanEnabled = asa->d_func()->singleFingerPanEnabled;
-    } else {
-        winid = q->winId();
     }
-    if (qAppPriv->SetGestureConfig) {
+    if (winid && qAppPriv->SetGestureConfig) {
         GESTURECONFIG gc[3];
         memset(gc, 0, sizeof(gc));
         gc[0].dwID = GID_PAN;
@@ -2118,7 +2080,6 @@ void QWidgetPrivate::winSetupGestures()
         else
             gc[2].dwBlock = GC_ROTATE;
 
-        Q_ASSERT(winid);
         qAppPriv->SetGestureConfig(winid, 0, sizeof(gc)/sizeof(gc[0]), gc, sizeof(gc[0]));
     }
 }

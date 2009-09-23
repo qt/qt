@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -188,13 +188,35 @@ void tst_QSqlRecord::clear()
     QVERIFY( !rec->contains( fields[0]->name() ) );
 }
 
+void tst_QSqlRecord::clearValues_data()
+{
+    QTest::addColumn<QString>("prefix");
+    QTest::addColumn<QString>("sep");
+    QTest::addColumn<int>("ival");
+    QTest::addColumn<QString>("sval");
+    QTest::addColumn<double>("dval");
+    QTest::addColumn<int>("bval");
+
+    QTest::newRow( "data0" ) << QString::fromLatin1("tablename") << QString::fromLatin1(",") << 10
+                          << QString::fromLatin1("Trond K.") << 2222.231234441 << 0;
+    QTest::newRow( "data1" ) << QString::fromLatin1("mytable") << QString::fromLatin1(".") << 12
+                          << QString::fromLatin1("Josten") << 544444444444423232.32334441 << 1;
+    QTest::newRow( "data2" ) << QString::fromLatin1("tabby") << QString::fromLatin1("-") << 12
+                          << QString::fromLatin1("Odvin") << 899129389283.32334441 << 1;
+    QTest::newRow( "data3" ) << QString::fromLatin1("per") << QString::fromLatin1("00") << 12
+                          << QString::fromLatin1("Brge") << 29382939182.99999919 << 0;
+}
+
 void tst_QSqlRecord::clearValues()
 {
+    int i;
     QFETCH( int, ival );
     QFETCH( QString, sval );
     QFETCH( double, dval );
     QFETCH( int, bval );
-    delete rec;
+
+    if(rec)
+        delete rec;
 
     rec = new QSqlRecord();
     rec->append( QSqlField( "string", QVariant::String ) );
@@ -220,6 +242,23 @@ void tst_QSqlRecord::clearValues()
     QCOMPARE( rec->position( "double" ), 2 );
     QCOMPARE( rec->position( "bool" ), 3 );
 #endif
+    for ( i = 0; i < 4; ++i )
+        rec->setNull( i );
+
+    rec->setValue( 0, sval );
+    rec->setValue( 1, ival );
+    rec->setValue( 2, dval );
+    rec->setValue( 3, QVariant(bval) );
+    QVERIFY( rec->value( 0 ) == sval );
+    QVERIFY( rec->value( 1 ) == ival );
+    QVERIFY( rec->value( 2 ) == dval );
+    QVERIFY( rec->value( 3 ) == QVariant(bval) );
+
+    rec->clearValues();
+
+    for ( i = 0; i < 4; ++i )
+        QVERIFY( rec->isNull( i ) );
+
 }
 
 void tst_QSqlRecord::contains()
@@ -432,6 +471,11 @@ void tst_QSqlRecord::setNull()
     isNull();
 }
 
+void tst_QSqlRecord::setValue_data()
+{
+    clearValues_data();
+}
+
 void tst_QSqlRecord::setValue()
 {
     int i;
@@ -500,6 +544,11 @@ void tst_QSqlRecord::setValue()
 }
 
 #ifdef QT3_SUPPORT
+void tst_QSqlRecord::toString_data()
+{
+    clearValues_data( t );
+}
+
 void tst_QSqlRecord::toString()
 {
     createTestRecord();
@@ -521,6 +570,11 @@ void tst_QSqlRecord::toString()
     QCOMPARE( rec->toString( prefix, sep ), result );
 }
 
+void tst_QSqlRecord::toStringList_data()
+{
+    clearValues_data( t );
+}
+
 void tst_QSqlRecord::toStringList()
 {
     createTestRecord();
@@ -539,15 +593,6 @@ void tst_QSqlRecord::toStringList()
     QCOMPARE(rec->toStringList( prefix ), result);
 }
 
-void tst_QSqlRecord::toString_data()
-{
-    clearValues_data( t );
-}
-
-void tst_QSqlRecord::toStringList_data()
-{
-    clearValues_data( t );
-}
 #endif // QT3_SUPPORT
 
 void tst_QSqlRecord::value()
@@ -557,30 +602,6 @@ void tst_QSqlRecord::value()
     rec2.append( QSqlField( "string", QVariant::String ) );
     rec2.setValue( "string", "Harry" );
     QVERIFY( rec2.value( "string" ) == "Harry" );
-}
-
-void tst_QSqlRecord::setValue_data()
-{
-    clearValues_data();
-}
-
-void tst_QSqlRecord::clearValues_data()
-{
-    QTest::addColumn<QString>("prefix");
-    QTest::addColumn<QString>("sep");
-    QTest::addColumn<int>("ival");
-    QTest::addColumn<QString>("sval");
-    QTest::addColumn<double>("dval");
-    QTest::addColumn<int>("bval");
-
-    QTest::newRow( "data0" ) << QString::fromLatin1("tablename") << QString::fromLatin1(",") << 10
-                          << QString::fromLatin1("Trond K.") << 2222.231234441 << 0;
-    QTest::newRow( "data1" ) << QString::fromLatin1("mytable") << QString::fromLatin1(".") << 12
-                          << QString::fromLatin1("Josten") << 544444444444423232.32334441 << 1;
-    QTest::newRow( "data2" ) << QString::fromLatin1("tabby") << QString::fromLatin1("-") << 12
-                          << QString::fromLatin1("Odvin") << 899129389283.32334441 << 1;
-    QTest::newRow( "data3" ) << QString::fromLatin1("per") << QString::fromLatin1("00") << 12
-                          << QString::fromLatin1("Brge") << 29382939182.99999919 << 0;
 }
 
 QTEST_MAIN(tst_QSqlRecord)

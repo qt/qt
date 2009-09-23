@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -346,6 +346,10 @@ Q_GUI_EXPORT void qt_x11_enforce_cursor(QWidget * w)
     qt_x11_enforce_cursor(w, false);
 }
 
+static Bool checkForConfigureAndExpose(Display *, XEvent *e, XPointer)
+{
+    return e->type == ConfigureNotify || e->type == Expose;
+}
 
 Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
 {
@@ -355,18 +359,42 @@ Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
     XEvent ev;
     QTime t;
     t.start();
+    static const int maximumWaitTime = 2000;
     if (!w->testAttribute(Qt::WA_WState_Created))
         return;
-    while (!XCheckTypedWindowEvent(X11->display, w->effectiveWinId(), ReparentNotify, &ev)) {
-        if (XCheckTypedWindowEvent(X11->display, w->effectiveWinId(), MapNotify, &ev))
-            break;
-        if (t.elapsed() > 500)
-            return; // give up, no event available
+
+    if (!(w->windowFlags() & Qt::X11BypassWindowManagerHint)) {
+        // if the window is not override-redirect, then the window manager
+        // will reparent us to the frame decoration window.
+        while (!XCheckTypedWindowEvent(X11->display, w->effectiveWinId(), ReparentNotify, &ev)) {
+            if (t.elapsed() > maximumWaitTime)
+                return;
+            qApp->syncX(); // non-busy wait
+        }
+    }
+
+    while (!XCheckTypedWindowEvent(X11->display, w->effectiveWinId(), MapNotify, &ev)) {
+        if (t.elapsed() > maximumWaitTime)
+            return;
         qApp->syncX(); // non-busy wait
     }
+
     qApp->x11ProcessEvent(&ev);
-    if (XCheckTypedWindowEvent(X11->display, w->effectiveWinId(), ConfigureNotify, &ev))
-        qApp->x11ProcessEvent(&ev);
+
+    // ok, seems like the window manager successfully reparented us, we'll wait
+    // for the first paint event to arrive, while handling ConfigureNotify in
+    // the arrival order
+    while(1)
+    {
+        if (XCheckIfEvent(X11->display, &ev, checkForConfigureAndExpose, 0)) {
+            qApp->x11ProcessEvent(&ev);
+            if (ev.type == Expose)
+                return;
+        }
+        if (t.elapsed() > maximumWaitTime)
+            return;
+        qApp->syncX(); // non-busy wait
+    }
 }
 
 void qt_change_net_wm_state(const QWidget* w, bool set, Atom one, Atom two = 0)
@@ -971,7 +999,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 {
     Q_D(QWidget);
     if (!isWindow() && parentWidget())
-        parentWidget()->d_func()->invalidateBuffer(geometry());
+        parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
     d->deactivateWidgetCleanup();
     if (testAttribute(Qt::WA_WState_Created)) {
         setAttribute(Qt::WA_WState_Created, false);
@@ -1054,7 +1082,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     QTLWExtra *topData = maybeTopData();
     bool wasCreated = q->testAttribute(Qt::WA_WState_Created);
     if (q->isVisible() && q->parentWidget() && parent != q->parentWidget())
-        q->parentWidget()->d_func()->invalidateBuffer(q->geometry());
+        q->parentWidget()->d_func()->invalidateBuffer(effectiveRectFor(q->geometry()));
     extern void qPRCreate(const QWidget *, Window);
 #ifndef QT_NO_CURSOR
     QCursor oldcurs;
@@ -1280,7 +1308,7 @@ void QWidgetPrivate::updateSystemBackground()
     else if (brush.style() == Qt::TexturePattern) {
         extern QPixmap qt_toX11Pixmap(const QPixmap &pixmap); // qpixmap_x11.cpp
         XSetWindowBackgroundPixmap(X11->display, q->internalWinId(),
-                                   static_cast<QX11PixmapData*>(qt_toX11Pixmap(brush.texture()).data)->x11ConvertToDefaultDepth());
+                                   static_cast<QX11PixmapData*>(qt_toX11Pixmap(brush.texture()).data.data())->x11ConvertToDefaultDepth());
     } else
         XSetWindowBackground(X11->display, q->internalWinId(),
                              QColormap::instance(xinfo.screen()).pixel(brush.color()));
@@ -1426,7 +1454,7 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
                 // violates the ICCCM), since this works on all DEs known to Qt
                 if (!forceReset || !topData->iconPixmap)
                     topData->iconPixmap = new QPixmap(qt_toX11Pixmap(icon.pixmap(QSize(64,64))));
-                pixmap_handle = static_cast<QX11PixmapData*>(topData->iconPixmap->data)->x11ConvertToDefaultDepth();
+                pixmap_handle = static_cast<QX11PixmapData*>(topData->iconPixmap->data.data())->x11ConvertToDefaultDepth();
             }
         }
     }

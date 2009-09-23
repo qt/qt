@@ -36,6 +36,7 @@ public:
     JSDOMWindow(PassRefPtr<JSC::Structure>, PassRefPtr<DOMWindow>, JSDOMWindowShell*);
     virtual ~JSDOMWindow();
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
@@ -45,10 +46,11 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::ImplementsHasInstance | JSC::NeedsThisConversion));
     }
 
-    virtual void mark();
+    virtual void markChildren(JSC::MarkStack&);
 
     virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier&);
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
+    virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
     virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&, unsigned& attributes) const;
     virtual void defineGetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction);
     virtual void defineSetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* setterFunction);
@@ -63,11 +65,21 @@ public:
     JSC::JSValue crypto(JSC::ExecState*) const;
     JSC::JSValue image(JSC::ExecState*) const;
     JSC::JSValue option(JSC::ExecState*) const;
+    JSC::JSValue canvasArrayBuffer(JSC::ExecState*) const;
+    JSC::JSValue canvasByteArray(JSC::ExecState*) const;
+    JSC::JSValue canvasUnsignedByteArray(JSC::ExecState*) const;
+    JSC::JSValue canvasShortArray(JSC::ExecState*) const;
+    JSC::JSValue canvasUnsignedShortArray(JSC::ExecState*) const;
+    JSC::JSValue canvasIntArray(JSC::ExecState*) const;
+    JSC::JSValue canvasUnsignedIntArray(JSC::ExecState*) const;
+    JSC::JSValue canvasFloatArray(JSC::ExecState*) const;
     JSC::JSValue webKitCSSMatrix(JSC::ExecState*) const;
     JSC::JSValue webKitPoint(JSC::ExecState*) const;
+    JSC::JSValue eventSource(JSC::ExecState*) const;
     JSC::JSValue xmlHttpRequest(JSC::ExecState*) const;
     JSC::JSValue messageChannel(JSC::ExecState*) const;
     JSC::JSValue worker(JSC::ExecState*) const;
+    JSC::JSValue sharedWorker(JSC::ExecState*) const;
     JSC::JSValue audio(JSC::ExecState*) const;
 
     // Custom functions
@@ -95,6 +107,7 @@ public:
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
@@ -213,6 +226,7 @@ void setJSDOMWindowParent(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowTop(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowTop(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowDocument(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsDOMWindowMedia(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsDOMWindowDevicePixelRatio(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowDevicePixelRatio(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowApplicationCache(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
@@ -262,8 +276,12 @@ JSC::JSValue jsDOMWindowOnerror(JSC::ExecState*, const JSC::Identifier&, const J
 void setJSDOMWindowOnerror(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowOnfocus(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowOnfocus(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowOnhashchange(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowOnhashchange(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowOninput(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowOninput(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowOninvalid(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowOninvalid(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowOnkeydown(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowOnkeydown(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowOnkeypress(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
@@ -296,6 +314,10 @@ JSC::JSValue jsDOMWindowOnoffline(JSC::ExecState*, const JSC::Identifier&, const
 void setJSDOMWindowOnoffline(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowOnonline(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowOnonline(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowOnpagehide(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowOnpagehide(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowOnpageshow(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowOnpageshow(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowOnpause(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowOnpause(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowOnplay(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
@@ -554,8 +576,26 @@ JSC::JSValue jsDOMWindowOptionConstructor(JSC::ExecState*, const JSC::Identifier
 void setJSDOMWindowOptionConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowCanvasRenderingContext2DConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowCanvasRenderingContext2DConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowCanvasRenderingContext3DConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowCanvasRenderingContext3DConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowTextMetricsConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowTextMetricsConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowCanvasArrayBufferConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowCanvasArrayBufferConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowCanvasByteArrayConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowCanvasByteArrayConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowCanvasUnsignedByteArrayConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowCanvasUnsignedByteArrayConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowCanvasShortArrayConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowCanvasShortArrayConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowCanvasUnsignedShortArrayConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowCanvasUnsignedShortArrayConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowCanvasIntArrayConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowCanvasIntArrayConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowCanvasUnsignedIntArrayConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowCanvasUnsignedIntArrayConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowCanvasFloatArrayConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowCanvasFloatArrayConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowEventConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowEventConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowKeyboardEventConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
@@ -566,6 +606,8 @@ JSC::JSValue jsDOMWindowMutationEventConstructor(JSC::ExecState*, const JSC::Ide
 void setJSDOMWindowMutationEventConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowOverflowEventConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowOverflowEventConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowPageTransitionEventConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowPageTransitionEventConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowProgressEventConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowProgressEventConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowTextEventConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
@@ -602,6 +644,8 @@ JSC::JSValue jsDOMWindowRangeConstructor(JSC::ExecState*, const JSC::Identifier&
 void setJSDOMWindowRangeConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowRangeExceptionConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowRangeExceptionConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowEventSourceConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowEventSourceConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowXMLDocumentConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowXMLDocumentConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowDOMParserConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
@@ -620,6 +664,8 @@ JSC::JSValue jsDOMWindowMessageChannelConstructor(JSC::ExecState*, const JSC::Id
 void setJSDOMWindowMessageChannelConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowWorkerConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowWorkerConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowSharedWorkerConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowSharedWorkerConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowPluginConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowPluginConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowPluginArrayConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

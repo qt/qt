@@ -70,6 +70,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLTableCaptionElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -84,6 +85,11 @@ const ClassInfo JSHTMLTableCaptionElementConstructor::s_info = { "HTMLTableCapti
 bool JSHTMLTableCaptionElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLTableCaptionElementConstructor, DOMObject>(exec, &JSHTMLTableCaptionElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLTableCaptionElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLTableCaptionElementConstructor, DOMObject>(exec, &JSHTMLTableCaptionElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -124,6 +130,11 @@ bool JSHTMLTableCaptionElement::getOwnPropertySlot(ExecState* exec, const Identi
     return getStaticValueSlot<JSHTMLTableCaptionElement, Base>(exec, &JSHTMLTableCaptionElementTable, this, propertyName, slot);
 }
 
+bool JSHTMLTableCaptionElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLTableCaptionElement, Base>(exec, &JSHTMLTableCaptionElementTable, this, propertyName, descriptor);
+}
+
 JSValue jsHTMLTableCaptionElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSHTMLTableCaptionElement* castedThis = static_cast<JSHTMLTableCaptionElement*>(asObject(slot.slotBase()));
@@ -155,7 +166,7 @@ JSValue JSHTMLTableCaptionElement::getConstructor(ExecState* exec, JSGlobalObjec
 
 HTMLTableCaptionElement* toHTMLTableCaptionElement(JSC::JSValue value)
 {
-    return value.isObject(&JSHTMLTableCaptionElement::s_info) ? static_cast<JSHTMLTableCaptionElement*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSHTMLTableCaptionElement::s_info) ? static_cast<JSHTMLTableCaptionElement*>(asObject(value))->impl() : 0;
 }
 
 }

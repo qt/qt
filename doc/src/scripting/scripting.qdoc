@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1223,44 +1223,6 @@
   We create a temporary execution context, create a local variable
   for it, evaluate the script, and finally restore the old context.
   \endlist
-
-  \section2 Nested Functions and the Scope Chain
-
-  This is an advanced topic; feel free to skip it.
-
-  A nested function can be used to "capture" the execution context in which a
-  nested function object is created; this is typically referred to as creating
-  a \e closure. When, at some later time, the nested function is invoked, it
-  can access the variables that were created when the enclosing function was
-  invoked. This can perhaps best be illustrated through a small example:
-
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 70
-
-  The \c{counter()} function initializes a local variable to zero,
-  and returns a nested function. The nested function increments
-  the "outer" variable and returns its new value. The variable
-  persists over function calls, as shown in the following example:
-
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 71
-
-  The \c{counter()} function can be implemented as a native function, too
-  \mdash or rather, as a pair of native functions: One for the outer and
-  one for the inner. The definition of the outer function is as follows:
-
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 72
-
-  The function creates a local variable and initializes it to zero.
-  Then it wraps the inner native function, and sets the scope of
-  the resulting function object to be the activation object associated
-  with this (the outer) function call. The inner function accesses
-  the "outer" activation through the scope of the callee:
-
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 73
-
-  It is also possible to have a hybrid approach, where the outer function
-  is a native function and the inner function is defined by a script:
-
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 74
 
   \section2 Property Getters and Setters
 

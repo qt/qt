@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -156,16 +156,7 @@ static void construct(QVariant::Private *x, const void *copy)
         x->data.b = copy ? *static_cast<const bool *>(copy) : false;
         break;
     case QVariant::Double:
-#if defined(Q_CC_RVCT)
-        // Using trinary operator with 64bit constants crashes when ran on Symbian device
-        if (copy){
-            x->data.d = *static_cast<const double*>(copy);
-        } else {
-            x->data.d = 0.0;
-        }
-#else
         x->data.d = copy ? *static_cast<const double*>(copy) : 0.0;
-#endif
         break;
     case QMetaType::Float:
         x->data.f = copy ? *static_cast<const float*>(copy) : 0.0f;
@@ -174,37 +165,22 @@ static void construct(QVariant::Private *x, const void *copy)
         x->data.o = copy ? *static_cast<QObject *const*>(copy) : 0;
         break;
     case QVariant::LongLong:
-#if defined(Q_CC_RVCT)
-        // Using trinary operator with 64bit constants crashes when ran on Symbian device
-        if (copy){
-            x->data.ll = *static_cast<const qlonglong *>(copy);
-        } else {
-            x->data.ll = Q_INT64_C(0);
-        }
-#else
         x->data.ll = copy ? *static_cast<const qlonglong *>(copy) : Q_INT64_C(0);
-#endif
         break;
     case QVariant::ULongLong:
-#if defined(Q_CC_RVCT)
-        // Using trinary operator with 64bit constants crashes when ran on Symbian device
-        if (copy){
-            x->data.ull = *static_cast<const qulonglong *>(copy);
-        } else {
-            x->data.ull = Q_UINT64_C(0);
-        }
-#else
         x->data.ull = copy ? *static_cast<const qulonglong *>(copy) : Q_UINT64_C(0);
-#endif
         break;
     case QVariant::Invalid:
     case QVariant::UserType:
         break;
     default:
-        x->is_shared = true;
-        x->data.shared = new QVariant::PrivateShared(QMetaType::construct(x->type, copy));
-        if (!x->data.shared->ptr)
+        void *ptr = QMetaType::construct(x->type, copy);
+        if (!ptr) {
             x->type = QVariant::Invalid;
+        } else {
+            x->is_shared = true;
+            x->data.shared = new QVariant::PrivateShared(ptr);
+        }
         break;
     }
     x->is_null = !copy;
@@ -483,15 +459,17 @@ static bool compare(const QVariant::Private *a, const QVariant::Private *b)
     if (!QMetaType::isRegistered(a->type))
         qFatal("QVariant::compare: type %d unknown to QVariant.", a->type);
 
+    const void *a_ptr = a->is_shared ? a->data.shared->ptr : &(a->data.ptr);
+    const void *b_ptr = b->is_shared ? b->data.shared->ptr : &(b->data.ptr);
+
     /* The reason we cannot place this test in a case branch above for the types
      * QMetaType::VoidStar, QMetaType::QObjectStar and so forth, is that it wouldn't include
      * user defined pointer types. */
     const char *const typeName = QMetaType::typeName(a->type);
     if (typeName[qstrlen(typeName) - 1] == '*')
-        return *static_cast<void **>(a->data.shared->ptr) ==
-               *static_cast<void **>(b->data.shared->ptr);
+        return *static_cast<void *const *>(a_ptr) == *static_cast<void *const *>(b_ptr);
 
-    return a->data.shared->ptr == b->data.shared->ptr;
+    return a_ptr == b_ptr;
 }
 
 /*!
@@ -1398,7 +1376,7 @@ void QVariant::create(int type, const void *copy)
 
 QVariant::~QVariant()
 {
-    if (d.type > Char && d.type != QMetaType::Float && d.type != QMetaType::QObjectStar && (!d.is_shared || !d.data.shared->ref.deref()))
+    if ((d.is_shared && !d.data.shared->ref.deref()) || (!d.is_shared && d.type > Char && d.type < UserType))
         handler->clear(&d);
 }
 
@@ -1414,7 +1392,7 @@ QVariant::QVariant(const QVariant &p)
 {
     if (d.is_shared) {
         d.data.shared->ref.ref();
-    } else if (p.d.type > Char && p.d.type != QMetaType::Float && p.d.type != QMetaType::QObjectStar) {
+    } else if (p.d.type > Char && p.d.type < QVariant::UserType) {
         handler->construct(&d, p.constData());
         d.is_null = p.d.is_null;
     }
@@ -1611,6 +1589,7 @@ QVariant::QVariant(const char *val)
   \fn QVariant::QVariant(float val)
 
     Constructs a new variant with a floating point value, \a val.
+    \since 4.6
 */
 
 /*!
@@ -1654,6 +1633,22 @@ QVariant::QVariant(Type type)
 { create(type, 0); }
 QVariant::QVariant(int typeOrUserType, const void *copy)
 { create(typeOrUserType, copy); d.is_null = false; }
+
+/*! \internal
+    flags is true if it is a pointer type
+ */
+QVariant::QVariant(int typeOrUserType, const void *copy, uint flags)
+{
+    if (flags) { //type is a pointer type
+        d.type = typeOrUserType;
+        d.data.ptr = *reinterpret_cast<void *const*>(copy);
+        d.is_null = false;
+    } else {
+        create(typeOrUserType, copy);
+        d.is_null = false;
+    }
+}
+
 QVariant::QVariant(int val)
 { d.is_null = false; d.type = Int; d.data.i = val; }
 QVariant::QVariant(uint val)
@@ -1770,7 +1765,7 @@ QVariant& QVariant::operator=(const QVariant &variant)
     if (variant.d.is_shared) {
         variant.d.data.shared->ref.ref();
         d = variant.d;
-    } else if (variant.d.type > Char && variant.d.type != QMetaType::Float && variant.d.type != QMetaType::QObjectStar) {
+    } else if (variant.d.type > Char && variant.d.type < UserType) {
         d.type = variant.d.type;
         handler->construct(&d, variant.constData());
         d.is_null = variant.d.is_null;
@@ -1824,7 +1819,7 @@ const char *QVariant::typeName() const
 */
 void QVariant::clear()
 {
-    if (!d.is_shared || !d.data.shared->ref.deref())
+    if ((d.is_shared && !d.data.shared->ref.deref()) || (!d.is_shared && d.type < UserType && d.type > Char))
         handler->clear(&d);
     d.type = Invalid;
     d.is_null = true;
@@ -2494,7 +2489,7 @@ double QVariant::toDouble(bool *ok) const
 */
 float QVariant::toFloat(bool *ok) const
 {
-    return qNumVariantToHelper<float>(d, handler, ok, d.data.d);
+    return qNumVariantToHelper<float>(d, handler, ok, d.data.f);
 }
 
 /*!
@@ -2511,7 +2506,7 @@ float QVariant::toFloat(bool *ok) const
 */
 qreal QVariant::toReal(bool *ok) const
 {
-    return qNumVariantToHelper<qreal>(d, handler, ok, d.data.d);
+    return qNumVariantToHelper<qreal>(d, handler, ok, d.data.real);
 }
 
 /*!

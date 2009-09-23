@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -61,7 +61,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include <qaccessible.h>
 #endif
-#include <private/qactiontokeyeventmapper_p.h>
+#include <private/qsoftkeymanager_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,6 +69,7 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
     :   model(QAbstractItemModelPrivate::staticEmptyModel()),
         itemDelegate(0),
         selectionModel(0),
+        ctrlDragSelectionFlag(QItemSelectionModel::NoUpdate),
         selectionMode(QAbstractItemView::ExtendedSelection),
         selectionBehavior(QAbstractItemView::SelectItems),
         currentlyCommittingEditor(0),
@@ -86,6 +87,9 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         dragDropMode(QAbstractItemView::NoDragDrop),
         overwrite(false),
         dropIndicatorPosition(QAbstractItemView::OnItem),
+#endif
+#ifdef QT_SOFTKEYS_ENABLED
+        doneSoftKey(0),
 #endif
         autoScroll(true),
         autoScrollMargin(16),
@@ -127,6 +131,10 @@ void QAbstractItemViewPrivate::init()
     doDelayedItemsLayout();
 
     q->setAttribute(Qt::WA_InputMethodEnabled);
+
+#ifdef QT_SOFTKEYS_ENABLED
+    doneSoftKey = QSoftKeyManager::createKeyedAction(QSoftKeyManager::DoneSoftKey, Qt::Key_Back, q);
+#endif
 }
 
 void QAbstractItemViewPrivate::checkMouseMove(const QPersistentModelIndex &index)
@@ -176,7 +184,45 @@ void QAbstractItemViewPrivate::checkMouseMove(const QPersistentModelIndex &index
     slots mechanism, enabling subclasses to be kept up-to-date with
     changes to their models.  This class provides standard support for
     keyboard and mouse navigation, viewport scrolling, item editing,
-    and selections.
+    and selections. The keyboard navigation implements this
+    functionality:
+
+    \table
+        \header
+            \o Keys
+            \o Functionality
+        \row
+            \o Arrow keys
+            \o Changes the current item and selects it.
+        \row
+            \o Ctrl+Arrow keys
+            \o Changes the current item but does not select it.
+        \row
+            \o Shift+Arrow keys
+            \o Changes the current item and selects it. The previously
+               selected item(s) is not deselected.
+        \row
+            \o Ctr+Space
+            \o Toggles selection of the current item.
+        \row
+            \o Tab/Backtab
+            \o Changes the current item to the next/previous item.
+        \row
+            \o Home/End
+            \o Selects the first/last item in the model.
+        \row
+            \o Page up/Page down
+            \o Scrolls the rows shown up/down by the number of
+               visible rows in the view.
+        \row
+            \o Ctrl+A
+            \o Selects all items in the model.
+    \endtable
+
+    Note that the above table assumes that the
+    \l{selectionMode}{selection mode} allows the operations. For
+    instance, you cannot select items if the selection mode is
+    QAbstractItemView::NoSelection.
 
     The QAbstractItemView class is one of the \l{Model/View Classes}
     and is part of Qt's \l{Model/View Programming}{model/view framework}.
@@ -908,7 +954,9 @@ QAbstractItemView::SelectionBehavior QAbstractItemView::selectionBehavior() cons
 
 /*!
     Sets the current item to be the item at \a index.
-    Depending on the current selection mode, the item may also be selected.
+
+    Unless the current selection mode is
+    \l{QAbstractItemView::}{NoSelection}, the item is also be selected.
     Note that this function also updates the starting position for any
     new selections the user performs.
 
@@ -954,6 +1002,7 @@ QModelIndex QAbstractItemView::currentIndex() const
 void QAbstractItemView::reset()
 {
     Q_D(QAbstractItemView);
+    d->delayedReset.stop(); //make sure we stop the timer
     QList<QEditorInfo>::const_iterator it = d->editors.constBegin();
     for (; it != d->editors.constEnd(); ++it)
         d->releaseEditor(it->editor);
@@ -1534,8 +1583,7 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
     QPoint offset = d->offset();
     if ((command & QItemSelectionModel::Current) == 0)
         d->pressedPosition = pos + offset;
-
-    if (d->pressedPosition == QPoint(-1, -1))
+    else if (!indexAt(d->pressedPosition).isValid())
         d->pressedPosition = visualRect(currentIndex()).center() + offset;
 
     if (edit(index, NoEditTriggers, event))
@@ -1549,6 +1597,11 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
         d->selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
         d->autoScroll = autoScroll;
         QRect rect(d->pressedPosition - offset, pos);
+        if (command.testFlag(QItemSelectionModel::Toggle)) {
+            command &= ~QItemSelectionModel::Toggle;
+            d->ctrlDragSelectionFlag = d->selectionModel->isSelected(index) ? QItemSelectionModel::Deselect : QItemSelectionModel::Select;
+            command |= d->ctrlDragSelectionFlag;
+        }
         setSelection(rect, command);
 
         // signal handlers may change the model
@@ -1619,6 +1672,10 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
     if ((event->buttons() & Qt::LeftButton) && d->selectionAllowed(index) && d->selectionModel) {
         setState(DragSelectingState);
         QItemSelectionModel::SelectionFlags command = selectionCommand(index, event);
+        if (command.testFlag(QItemSelectionModel::Toggle)) {
+            command &= ~QItemSelectionModel::Toggle;
+            command |= d->ctrlDragSelectionFlag;
+        }
 
         // Do the normalize ourselves, since QRect::normalized() is flawed
         QRect selectionRect = QRect(topLeft, bottomRight);
@@ -1659,8 +1716,11 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
     EditTrigger trigger = (selectedClicked ? SelectedClicked : NoEditTriggers);
     bool edited = edit(index, trigger, event);
 
-    if (d->selectionModel)
-        d->selectionModel->select(index, selectionCommand(index, event));
+    d->ctrlDragSelectionFlag = QItemSelectionModel::NoUpdate;
+
+    //in the case the user presses on no item we might decide to clear the selection
+    if (d->selectionModel && !index.isValid())
+        d->selectionModel->select(QModelIndex(), selectionCommand(index, event));
 
     setState(NoState);
 
@@ -2011,14 +2071,18 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         if (QApplication::keypadNavigationEnabled()) {
             if (!hasEditFocus()) {
                 setEditFocus(true);
-                QActionToKeyEventMapper::addSoftKey(QAction::BackSoftKey, Qt::Key_Back, this);
+#ifdef QT_SOFTKEYS_ENABLED
+                addAction(d->doneSoftKey);
+#endif
                 return;
             }
         }
         break;
     case Qt::Key_Back:
         if (QApplication::keypadNavigationEnabled() && hasEditFocus()) {
-            QActionToKeyEventMapper::removeSoftkey(this);
+#ifdef QT_SOFTKEYS_ENABLED
+            removeAction(d->doneSoftKey);
+#endif
             setEditFocus(false);
         } else {
             event->ignore();
@@ -2089,8 +2153,8 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
             // note that we don't check if the new current index is enabled because moveCursor() makes sure it is
             if (command & QItemSelectionModel::Current) {
                 d->selectionModel->setCurrentIndex(newCurrent, QItemSelectionModel::NoUpdate);
-                if (d->pressedPosition == QPoint(-1, -1))
-                    d->pressedPosition = visualRect(oldCurrent).center();
+                if (!indexAt(d->pressedPosition).isValid())
+                    d->pressedPosition = visualRect(oldCurrent).center() + d->offset();
                 QRect rect(d->pressedPosition - d->offset(), visualRect(newCurrent).center());
                 setSelection(rect, command);
             } else {
@@ -2113,6 +2177,12 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
 #endif
     case Qt::Key_Left:
     case Qt::Key_Right:
+#ifdef QT_KEYPAD_NAVIGATION
+        if (QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional) {
+            event->accept(); // don't change horizontal focus in directional mode
+            break;
+        }
+#endif // QT_KEYPAD_NAVIGATION
     case Qt::Key_Home:
     case Qt::Key_End:
     case Qt::Key_PageUp:
@@ -2209,7 +2279,9 @@ void QAbstractItemView::timerEvent(QTimerEvent *event)
     Q_D(QAbstractItemView);
     if (event->timerId() == d->fetchMoreTimer.timerId())
         d->fetchMore();
-    if (event->timerId() == d->autoScrollTimer.timerId())
+    else if (event->timerId() == d->delayedReset.timerId())
+        reset();
+    else if (event->timerId() == d->autoScrollTimer.timerId())
         doAutoScroll();
     else if (event->timerId() == d->updateTimer.timerId())
         d->updateDirtyRegion();
@@ -3133,9 +3205,8 @@ void QAbstractItemViewPrivate::_q_columnsInserted(const QModelIndex &, int, int)
 */
 void QAbstractItemViewPrivate::_q_modelDestroyed()
 {
-    Q_Q(QAbstractItemView);
     model = QAbstractItemModelPrivate::staticEmptyModel();
-    QMetaObject::invokeMethod(q, "reset", Qt::QueuedConnection);
+    doDelayedReset();
 }
 
 /*!
@@ -3382,11 +3453,7 @@ QPoint QAbstractItemView::dirtyRegionOffset() const
 */
 void QAbstractItemView::startAutoScroll()
 {
-    Q_D(QAbstractItemView);
-    // ### it would be nice to make this into a style hint one day
-    int scrollInterval = (verticalScrollMode() == QAbstractItemView::ScrollPerItem) ? 150 : 50;
-    d->autoScrollTimer.start(scrollInterval, this);
-    d->autoScrollCount = 0;
+    d_func()->startAutoScroll();
 }
 
 /*!
@@ -3394,9 +3461,7 @@ void QAbstractItemView::startAutoScroll()
 */
 void QAbstractItemView::stopAutoScroll()
 {
-    Q_D(QAbstractItemView);
-    d->autoScrollTimer.stop();
-    d->autoScrollCount = 0;
+    d_func()->stopAutoScroll();
 }
 
 /*!

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -65,6 +65,9 @@ QT_BEGIN_NAMESPACE
 extern OSWindowRef qt_mac_window_for(const QWidget *); // qwidget_mac.cpp
 QT_END_NAMESPACE
 #endif
+#ifdef QT_SOFTKEYS_ENABLED
+#include <private/qsoftkeymanager_p.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -77,6 +80,9 @@ public:
 #ifdef Q_WS_MAC
             , useHIToolBar(false)
 #endif
+#ifdef QT_SOFTKEYS_ENABLED
+            , menuBarAction(0)
+#endif
 #if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_CURSOR)
             , hasOldCursor(false) , cursorAdjusted(false)
 #endif
@@ -87,6 +93,9 @@ public:
     Qt::ToolButtonStyle toolButtonStyle;
 #ifdef Q_WS_MAC
     bool useHIToolBar;
+#endif
+#ifdef QT_SOFTKEYS_ENABLED
+    QAction *menuBarAction;
 #endif
     void init();
     QList<int> hoverSeparator;
@@ -108,6 +117,10 @@ void QMainWindowPrivate::init()
     const int metric = q->style()->pixelMetric(QStyle::PM_ToolBarIconSize, 0, q);
     iconSize = QSize(metric, metric);
     q->setAttribute(Qt::WA_Hover);
+#ifdef QT_SOFTKEYS_ENABLED
+    menuBarAction = QSoftKeyManager::createAction(QSoftKeyManager::MenuSoftKey, q);
+    menuBarAction->setObjectName("_q_menuSoftKeyAction");
+#endif
 }
 
 /*
@@ -479,11 +492,13 @@ void QMainWindow::setMenuBar(QMenuBar *menuBar)
         oldMenuBar->deleteLater();
     }
     d->layout->setMenuBar(menuBar);
-    if (menuBar) {
-        QAction* menu = new QAction(QString::fromLatin1("Options"), this);
-        menu->setSoftKeyRole(QAction::MenuSoftKey);
-        setSoftKey(menu);
-    }
+
+#ifdef QT_SOFTKEYS_ENABLED
+    if (menuBar)
+        addAction(d->menuBarAction);
+    else
+        removeAction(d->menuBarAction);
+#endif
 }
 
 /*!
@@ -1032,6 +1047,8 @@ void QMainWindow::addDockWidget(Qt::DockWidgetArea area, QDockWidget *dockwidget
     Restores the state of \a dockwidget if it is created after the call
     to restoreState(). Returns true if the state was restored; otherwise
     returns false.
+
+    \sa restoreState(), saveState()
 */
 
 bool QMainWindow::restoreDockWidget(QDockWidget *dockwidget)
@@ -1163,6 +1180,11 @@ Qt::DockWidgetArea QMainWindow::dockWidgetArea(QDockWidget *dockwidget) const
     To restore the saved state, pass the return value and \a version
     number to restoreState().
 
+    To save the geometry when the window closes, you can
+    implement a close event like this:
+
+    \snippet doc/src/snippets/code/src_gui_widgets_qmainwindow.cpp 0
+
     \sa restoreState(), QWidget::saveGeometry(), QWidget::restoreGeometry()
 */
 QByteArray QMainWindow::saveState(int version) const
@@ -1182,7 +1204,13 @@ QByteArray QMainWindow::saveState(int version) const
     unchanged, and this function returns \c false; otherwise, the state
     is restored, and this function returns \c true.
 
-    \sa saveState(), QWidget::saveGeometry(), QWidget::restoreGeometry()
+    To restore geometry saved using QSettings, you can use code like
+    this:
+
+    \snippet doc/src/snippets/code/src_gui_widgets_qmainwindow.cpp 1
+
+    \sa saveState(), QWidget::saveGeometry(),
+    QWidget::restoreGeometry(), restoreDockWidget()
 */
 bool QMainWindow::restoreState(const QByteArray &state, int version)
 {
@@ -1398,16 +1426,6 @@ bool QMainWindow::event(QEvent *event)
                d->hasOldCursor = testAttribute(Qt::WA_SetCursor);
            }
            break;
-#endif
-#ifndef QT_NO_MENUBAR
-        case QEvent::WindowActivate:
-            if (d->layout->menuBar()) {
-                // ### TODO: This is evil, there is no need to create a new action every time
-                QAction* menu = new QAction(QString::fromLatin1("Options"), this);
-                menu->setSoftKeyRole(QAction::MenuSoftKey);
-                setSoftKey(menu);
-            }
-            break;
 #endif
         default:
             break;

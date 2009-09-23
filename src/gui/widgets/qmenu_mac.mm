@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -607,6 +607,13 @@ static inline void syncNSMenuItemVisiblity(NSMenuItem *menuItem, bool actionVisi
     [menuItem setHidden:!actionVisibility];
 }
 
+static inline void syncNSMenuItemEnabled(NSMenuItem *menuItem, bool enabled)
+{
+    [menuItem setEnabled:NO];
+    [menuItem setEnabled:YES];
+    [menuItem setEnabled:enabled];
+}
+
 static inline void syncMenuBarItemsVisiblity(const QMenuBarPrivate::QMacMenuBarPrivate *mac_menubar)
 {
     const QList<QMacMenuAction *> &menubarActions = mac_menubar->actionItems;
@@ -659,12 +666,12 @@ void qt_mac_set_modal_state_helper_recursive(OSMenuRef menu, OSMenuRef merge, bo
                 // The item should follow what the QAction has.
                 if ([item tag]) {
                     QAction *action = reinterpret_cast<QAction *>([item tag]);
-                    [item setEnabled:action->isEnabled()];
+                     syncNSMenuItemEnabled(item, action->isEnabled());
                  } else {
-                     [item setEnabled:YES];
+                     syncNSMenuItemEnabled(item, YES);
                  }
             } else {
-                [item setEnabled:NO];
+                syncNSMenuItemEnabled(item, NO);
             }
         }
     }
@@ -728,6 +735,9 @@ bool qt_mac_menubar_is_open()
 
 void qt_mac_clear_menubar()
 {
+    if (QApplication::testAttribute(Qt::AA_MacPluginApplication))
+        return;
+
 #ifndef QT_MAC_USE_COCOA
     MenuRef clear_menu = 0;
     if (CreateNewMenu(0, 0, &clear_menu) == noErr) {
@@ -1361,7 +1371,7 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
     if (!action->action->icon().isNull()
             && action->action->isIconVisibleInMenu()) {
         data.iconType = kMenuIconRefType;
-        data.iconHandle = (Handle)qt_mac_create_iconref(action->action->icon().pixmap(22, QIcon::Normal));
+        data.iconHandle = (Handle)qt_mac_create_iconref(action->action->icon().pixmap(16, QIcon::Normal));
     } else {
         data.iconType = kMenuNoIcon;
     }
@@ -1400,7 +1410,7 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
     // Cocoa icon
     NSImage *nsimage = 0;
     if (!action->action->icon().isNull() && action->action->isIconVisibleInMenu()) {
-        nsimage = static_cast<NSImage *>(qt_mac_create_nsimage(action->action->icon().pixmap(22, QIcon::Normal)));
+        nsimage = static_cast<NSImage *>(qt_mac_create_nsimage(action->action->icon().pixmap(16, QIcon::Normal)));
     }
     [item setImage:nsimage];
     [nsimage release];
@@ -1414,7 +1424,15 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
         GetMenuItemProperty(action->menu, 0, kMenuCreatorQt, kMenuPropertyQWidget, sizeof(caused), 0, &caused);
         SetMenuItemProperty(data.submenuHandle, 0, kMenuCreatorQt, kMenuPropertyCausedQWidget, sizeof(caused), &caused);
 #else
-        [item setSubmenu:static_cast<NSMenu *>(action->action->menu()->macMenu())];
+        NSMenu *subMenu  = static_cast<NSMenu *>(action->action->menu()->macMenu());
+        if ([subMenu supermenu] != nil) {
+            // The menu is already a sub-menu of another one. Cocoa will throw an exception,
+            // in such cases. For the time being, a new QMenu with same set of actions is the
+            // only workaround.
+            action->action->setEnabled(false);
+        } else {
+            [item setSubmenu:subMenu];
+        }
 #endif
     } else { //respect some other items
 #ifndef QT_MAC_USE_COCOA
@@ -1700,7 +1718,10 @@ QMenuBarPrivate::QMacMenuBarPrivate::syncAction(QMacMenuAction *action)
             GetMenuItemProperty(action->menu, 0, kMenuCreatorQt, kMenuPropertyQWidget, sizeof(caused), 0, &caused);
             SetMenuItemProperty(submenu, 0, kMenuCreatorQt, kMenuPropertyCausedQWidget, sizeof(caused), &caused);
 #else
-            [item setSubmenu:submenu];
+            if ([submenu supermenu] != nil)
+                return;
+            else
+                [item setSubmenu:submenu];
 #endif
         }
 #ifndef QT_MAC_USE_COCOA
@@ -1754,14 +1775,16 @@ void
 QMenuBarPrivate::macCreateMenuBar(QWidget *parent)
 {
     Q_Q(QMenuBar);
-    static int checkEnv = -1;
+    static int dontUseNativeMenuBar = -1;
     // We call the isNativeMenuBar function here
-    // becasue that will make sure that local overrides
+    // because that will make sure that local overrides
     // are dealt with correctly.
     bool qt_mac_no_native_menubar = !q->isNativeMenuBar();
-    if (qt_mac_no_native_menubar == false && checkEnv < 0) {
-        checkEnv = !qgetenv("QT_MAC_NO_NATIVE_MENUBAR").isEmpty();
-        QApplication::instance()->setAttribute(Qt::AA_DontUseNativeMenuBar, checkEnv);
+    if (qt_mac_no_native_menubar == false && dontUseNativeMenuBar < 0) {
+        bool isPlugin = QApplication::testAttribute(Qt::AA_MacPluginApplication);
+        bool environmentSaysNo = !qgetenv("QT_MAC_NO_NATIVE_MENUBAR").isEmpty();
+        dontUseNativeMenuBar = isPlugin || environmentSaysNo;
+        QApplication::instance()->setAttribute(Qt::AA_DontUseNativeMenuBar, dontUseNativeMenuBar);
         qt_mac_no_native_menubar = !q->isNativeMenuBar();
     }
     if (!qt_mac_no_native_menubar) {

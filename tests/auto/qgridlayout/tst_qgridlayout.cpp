@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,6 +50,8 @@
 
 #include <QtGui/QWindowsStyle>
 #include <QStyleFactory>
+
+#include "../../shared/util.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=gui/kernel/qlayout.cpp gui/kernel/qlayout.h
@@ -788,8 +790,8 @@ void tst_QGridLayout::minMaxSize_data()
     QTest::addColumn<QSize>("fixedSize");
     //input and expected output
     QTest::addColumn<SizeInfoList>("sizeinfos");
-    
-    QTest::newRow("3x1 grid, extend to minimumSize") << QString() << 3 << 1 
+
+    QTest::newRow("3x1 grid, extend to minimumSize") << QString() << 3 << 1
                 << int(QSizePolicy::Minimum) << QSize(152, 50) << (SizeInfoList()
                 << SizeInfo(QRect(10, 10, 43, 30), QSize( 75, 75), QSize(0,0))
                 << SizeInfo(QRect(10 + 45, 10, 43, 30), QSize(75, 75), QSize( 0, 0))
@@ -917,13 +919,14 @@ void tst_QGridLayout::minMaxSize()
 #if defined(Q_WS_X11)
         qt_x11_wait_for_window_manager(m_toplevel);     // wait for the show
 #endif
+        QTest::qWait(20);
         m_toplevel->adjustSize();
-        QTest::qWait(200);                              // wait for the implicit adjustSize
+        QTest::qWait(20);                              // wait for the implicit adjustSize
         // If the following fails we might have to wait longer.
         // If that does not help there is likely a problem with the implicit adjustSize in show()
         if (!fixedSize.isValid()) {
             // Note that this can fail if the desktop has large fonts on windows.
-            QCOMPARE(m_toplevel->size(), m_toplevel->sizeHint());
+            QTRY_COMPARE(m_toplevel->size(), m_toplevel->sizeHint());
         }
         // We are relying on the order here...
         for (int pi = 0; pi < sizehinters.count(); ++pi) {

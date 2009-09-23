@@ -30,6 +30,7 @@
 #include "config.h"
 #include "ResourceLoader.h"
 
+#include "ApplicationCacheHost.h"
 #include "DocumentLoader.h"
 #include "Frame.h"
 #include "FrameLoader.h"
@@ -93,8 +94,9 @@ void ResourceLoader::releaseResources()
 
     if (m_handle) {
         // Clear out the ResourceHandle's client so that it doesn't try to call
-        // us back after we release it.
-        m_handle->setClient(0);
+        // us back after we release it, unless it has been replaced by someone else.
+        if (m_handle->client() == this)
+            m_handle->setClient(0);
         m_handle = 0;
     }
 
@@ -119,7 +121,7 @@ bool ResourceLoader::load(const ResourceRequest& r)
         return true;
     
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
-    if (m_documentLoader->scheduleApplicationCacheLoad(this, clientRequest, r.url()))
+    if (m_documentLoader->applicationCacheHost()->maybeLoadResource(this, clientRequest, r.url()))
         return true;
 #endif
 
@@ -189,17 +191,6 @@ void ResourceLoader::clearResourceData()
     if (m_resourceData)
         m_resourceData->clear();
 }
-
-#if ENABLE(OFFLINE_WEB_APPLICATIONS)
-bool ResourceLoader::scheduleLoadFallbackResourceFromApplicationCache(ApplicationCache* cache)
-{
-    if (documentLoader()->scheduleLoadFallbackResourceFromApplicationCache(this, m_request, cache)) {
-        handle()->cancel();
-        return true;
-    }
-    return false;
-}
-#endif
 
 void ResourceLoader::willSendRequest(ResourceRequest& request, const ResourceResponse& redirectResponse)
 {
@@ -382,10 +373,8 @@ ResourceError ResourceLoader::cannotShowURLError()
 void ResourceLoader::willSendRequest(ResourceHandle*, ResourceRequest& request, const ResourceResponse& redirectResponse)
 {
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
-    if (!redirectResponse.isNull() && !protocolHostAndPortAreEqual(request.url(), redirectResponse.url())) {
-        if (scheduleLoadFallbackResourceFromApplicationCache())
-            return;
-    }
+    if (documentLoader()->applicationCacheHost()->maybeLoadFallbackForRedirect(this, request, redirectResponse))
+        return;
 #endif
     willSendRequest(request, redirectResponse);
 }
@@ -398,10 +387,8 @@ void ResourceLoader::didSendData(ResourceHandle*, unsigned long long bytesSent, 
 void ResourceLoader::didReceiveResponse(ResourceHandle*, const ResourceResponse& response)
 {
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
-    if (response.httpStatusCode() / 100 == 4 || response.httpStatusCode() / 100 == 5) {
-        if (scheduleLoadFallbackResourceFromApplicationCache())
-            return;
-    }
+    if (documentLoader()->applicationCacheHost()->maybeLoadFallbackForResponse(this, response))
+        return;
 #endif
     didReceiveResponse(response);
 }
@@ -419,10 +406,8 @@ void ResourceLoader::didFinishLoading(ResourceHandle*)
 void ResourceLoader::didFail(ResourceHandle*, const ResourceError& error)
 {
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
-    if (!error.isCancellation()) {
-        if (documentLoader()->scheduleLoadFallbackResourceFromApplicationCache(this, m_request))
-            return;
-    }
+    if (documentLoader()->applicationCacheHost()->maybeLoadFallbackForError(this, error))
+        return;
 #endif
     didFail(error);
 }
