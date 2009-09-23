@@ -1536,12 +1536,14 @@ QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba, QTextCodec *defaultCo
     if (!c) {
         QByteArray header = ba.left(512).toLower();
         if ((pos = header.indexOf("http-equiv=")) != -1) {
-            pos = header.indexOf("charset=", pos) + int(strlen("charset="));
-            if (pos != -1) {
-                int pos2 = header.indexOf('\"', pos+1);
-                QByteArray cs = header.mid(pos, pos2-pos);
-                //            qDebug("found charset: %s", cs.data());
-                c = QTextCodec::codecForName(cs);
+            if ((pos = header.lastIndexOf("meta ", pos)) != -1) {
+                pos = header.indexOf("charset=", pos) + int(strlen("charset="));
+                if (pos != -1) {
+                    int pos2 = header.indexOf('\"', pos+1);
+                    QByteArray cs = header.mid(pos, pos2-pos);
+                    //            qDebug("found charset: %s", cs.data());
+                    c = QTextCodec::codecForName(cs);
+                }
             }
         }
     }
