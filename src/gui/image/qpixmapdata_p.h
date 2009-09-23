@@ -56,10 +56,6 @@
 #include <QtGui/qpixmap.h>
 #include <QtCore/qatomic.h>
 
-#if defined(Q_OS_SYMBIAN)
-class RSgImage;
-#endif
-
 QT_BEGIN_NAMESPACE
 
 class Q_GUI_EXPORT QPixmapData
@@ -70,6 +66,12 @@ public:
         // Must match QPixmap::Type
         PixmapType, BitmapType
     };
+#if defined(Q_OS_SYMBIAN)
+    enum NativeType {
+        FbsBitmap,
+        SgImage
+    };
+#endif
     enum ClassId { RasterClass, X11Class, MacClass, DirectFBClass,
                    OpenGLClass, OpenVGClass, CustomClass = 1024 };
 
@@ -114,8 +116,8 @@ public:
     inline bool isNull() const { return is_null; }
 
 #if defined(Q_OS_SYMBIAN)
-    virtual RSgImage* toRSgImage();
-    virtual void fromRSgImage(RSgImage* rsgImage);
+    virtual void* toNativeType(NativeType type);
+    virtual void fromNativeType(void* pixmap, NativeType type);
 #endif
 
 protected:
@@ -129,6 +131,7 @@ private:
     friend class QPixmap;
     friend class QGLContextPrivate;
     friend class QX11PixmapData;
+    friend class QS60PixmapData;
     friend class QGLTextureCache; //Needs to check the reference count
     friend class QExplicitlySharedDataPointer<QPixmapData>;
 

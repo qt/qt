@@ -66,17 +66,17 @@ class QSymbianBitmapDataAccess;
 class QSymbianFbsHeapLock
 {
 public:
-    
+
     enum LockAction {
         Unlock
     };
-    
+
     explicit QSymbianFbsHeapLock(LockAction a);
     ~QSymbianFbsHeapLock();
-    void relock();	
-    
+    void relock();
+
 private:
-    
+
     LockAction action;
     bool wasLocked;
 };
@@ -102,13 +102,16 @@ public:
     void beginDataAccess();
     void endDataAccess(bool readOnly=false) const;
 
+    void* toNativeType(NativeType type);
+    void fromNativeType(void* pixmap, NativeType type);
+
 private:
-	void release();
-	void fromSymbianBitmap(CFbsBitmap* bitmap);
-	bool initSymbianBitmapContext();
+    void release();
+    void fromSymbianBitmap(CFbsBitmap* bitmap);
+    bool initSymbianBitmapContext();
 
     QSymbianBitmapDataAccess *symbianBitmapDataAccess;
-    
+
     CFbsBitmap *cfbsBitmap;
     CFbsBitmapDevice *bitmapDevice;
     CBitmapContext *bitmapContext;
