@@ -39,77 +39,60 @@
 **
 ****************************************************************************/
 
-// INCLUDE FILES
+#include "qs60mainappui.h"
+#include "qs60maindocument.h"
+
 #include <exception>
-#include "qs60mainappui_p.h"
-#include "qs60maindocument_p.h"
 
 QT_BEGIN_NAMESPACE
 
-// ============================ MEMBER FUNCTIONS ===============================
+/*!
+ * \class QS60MainDocument
+ * \obsolete
+ * \since 4.6
+ * \brief Helper class for S60 migration
+ *
+ * The QS60MainDocument provides a helper class for use in migrating from existing S60 based
+ * applications to Qt based applications. It is used in the exact same way as the
+ * \c CAknDocument class from Symbian, but internally provides extensions used by Qt.
+ *
+ * When modifying old S60 applications that rely on implementing functions in \c CAknDocument,
+ * the class should be modified to inherit from this class instead of \c CAknDocument. Then the
+ * application can choose to override only certain functions.
+ *
+ * For more information on \c CAknDocument, please see the S60 documentation.
+ *
+ * Unlike other Qt classes, QS60MainDocument behaves like an S60 class, and can throw Symbian
+ * leaves.
+ *
+ * \sa QS60MainApplication, QS60MainAppUi
+ */
 
-// -----------------------------------------------------------------------------
-// QS60MainDocument::NewL()
-// Two-phased constructor.
-// -----------------------------------------------------------------------------
-//
-QS60MainDocument* QS60MainDocument::NewL(CEikApplication& aApp)
-{
-    QS60MainDocument* self = NewLC(aApp);
-    CleanupStack::Pop(self);
-    return self;
-}
-
-// -----------------------------------------------------------------------------
-// QS60MainDocument::NewLC()
-// Two-phased constructor.
-// -----------------------------------------------------------------------------
-//
-QS60MainDocument* QS60MainDocument::NewLC(CEikApplication& aApp)
-{
-    QS60MainDocument* self = new(ELeave) QS60MainDocument(aApp);
-    CleanupStack::PushL(self);
-    self->ConstructL();
-    return self;
-}
-
-// -----------------------------------------------------------------------------
-// QS60MainDocument::ConstructL()
-// Symbian 2nd phase constructor can leave.
-// -----------------------------------------------------------------------------
-//
-void QS60MainDocument::ConstructL()
+/*!
+ * \brief Constructs an instance of QS60MainDocument.
+ *
+ * \a mainApplication should contain a pointer to a QS60MainApplication instance.
+ */
+QS60MainDocument::QS60MainDocument(CEikApplication& mainApplication)
+    : CAknDocument(mainApplication)
 {
     // No implementation required
 }
 
-// -----------------------------------------------------------------------------
-// QS60MainDocument::QS60MainDocument()
-// C++ default constructor can NOT contain any code, that might leave.
-// -----------------------------------------------------------------------------
-//
-QS60MainDocument::QS60MainDocument(CEikApplication& aApp)
-        : CAknDocument(aApp)
-{
-    // No implementation required
-}
-
-// ---------------------------------------------------------------------------
-// QS60MainDocument::~QS60MainDocument()
-// Destructor.
-// ---------------------------------------------------------------------------
-//
+/*!
+ * \brief Destroys the QS60MainDocument.
+ */
 QS60MainDocument::~QS60MainDocument()
 {
     // No implementation required
 }
 
-// ---------------------------------------------------------------------------
-// QS60MainDocument::CreateAppUiL()
-// Constructs CreateAppUi.
-// ---------------------------------------------------------------------------
-//
-CEikAppUi* QS60MainDocument::CreateAppUiL()
+/*!
+ * \brief Creates an instance of QS60MainAppUi.
+ *
+ * \sa QS60MainAppUi
+ */
+CEikAppUi *QS60MainDocument::CreateAppUiL()
 {
     // Create the application user interface, and return a pointer to it;
     // the framework takes ownership of this object
@@ -117,5 +100,3 @@ CEikAppUi* QS60MainDocument::CreateAppUiL()
 }
 
 QT_END_NAMESPACE
-
-// End of File
