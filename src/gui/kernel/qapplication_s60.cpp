@@ -368,6 +368,7 @@ void QSymbianControl::HandleLongTapEventL( const TPoint& aPenEventLocation, cons
     m_previousEventLongTap = true;
 }
 
+#ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
 void QSymbianControl::translateAdvancedPointerEvent(const TAdvancedPointerEvent *event)
 {
     QApplicationPrivate *d = QApplicationPrivate::instance();
@@ -427,9 +428,11 @@ void QSymbianControl::translateAdvancedPointerEvent(const TAdvancedPointerEvent 
                                                 QTouchEvent::TouchScreen,
                                                 d->appAllTouchPoints);
 }
+#endif
 
 void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
 {
+#ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
     if (pEvent.IsAdvancedPointerEvent()) {
         const TAdvancedPointerEvent *advancedPointerEvent = pEvent.AdvancedPointerEvent();
         translateAdvancedPointerEvent(advancedPointerEvent);
@@ -438,6 +441,7 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
             return;
         }
     }
+#endif
 
     m_longTapDetector->PointerEventL(pEvent);
     QT_TRYCATCH_LEAVING(HandlePointerEvent(pEvent));
@@ -1551,8 +1555,10 @@ TUint QApplicationPrivate::resolveS60ScanCode(TInt scanCode, TUint keysym)
 
 void QApplicationPrivate::initializeMultitouch_sys()
 {
+#ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
     if (HAL::Get(HALData::EPointer3DMaxPressure, maxTouchPressure) != KErrNone)
         maxTouchPressure = KMaxTInt;
+#endif
 }
 
 void QApplicationPrivate::cleanupMultitouch_sys()

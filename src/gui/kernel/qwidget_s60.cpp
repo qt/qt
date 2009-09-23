@@ -805,11 +805,13 @@ void QWidgetPrivate::setMask_sys(const QRegion& /* region */)
 
 void QWidgetPrivate::registerTouchWindow()
 {
+#ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
     Q_Q(QWidget);
     if (q->testAttribute(Qt::WA_WState_Created) && q->windowType() != Qt::Desktop) {
         RWindow *rwindow = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
         rwindow->EnableAdvancedPointers();
     }
+#endif
 }
 
 int QWidget::metric(PaintDeviceMetric m) const
