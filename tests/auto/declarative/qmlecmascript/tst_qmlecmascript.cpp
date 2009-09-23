@@ -8,6 +8,12 @@
 #include <QtCore/qdir.h>
 #include "testtypes.h"
 
+/*
+This test covers evaluation of ECMAScript expressions and bindings from within
+QML.  This does not include static QML language issues.
+
+Static QML language issues are covered in qmllanguage
+*/
 inline QUrl TEST_FILE(const QString &filename)
 {
     QFileInfo fileInfo(__FILE__);
@@ -19,11 +25,11 @@ inline QUrl TEST_FILE(const char *filename)
     return TEST_FILE(QLatin1String(filename));
 }
 
-class tst_qmlbindengine : public QObject
+class tst_qmlecmascript : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlbindengine() {}
+    tst_qmlecmascript() {}
 
 private slots:
     void idShortcutInvalidates();
@@ -45,7 +51,7 @@ private:
     QmlEngine engine;
 };
 
-void tst_qmlbindengine::idShortcutInvalidates()
+void tst_qmlecmascript::idShortcutInvalidates()
 {
     {
         QmlComponent component(&engine, TEST_FILE("idShortcutInvalidates.qml"));
@@ -66,7 +72,7 @@ void tst_qmlbindengine::idShortcutInvalidates()
     }
 }
 
-void tst_qmlbindengine::boolPropertiesEvaluateAsBool()
+void tst_qmlecmascript::boolPropertiesEvaluateAsBool()
 {
     {
         QmlComponent component(&engine, TEST_FILE("boolPropertiesEvaluateAsBool.1.qml"));
@@ -82,7 +88,7 @@ void tst_qmlbindengine::boolPropertiesEvaluateAsBool()
     }
 }
 
-void tst_qmlbindengine::signalAssignment()
+void tst_qmlecmascript::signalAssignment()
 {
     {
         QmlComponent component(&engine, TEST_FILE("signalAssignment.1.qml"));
@@ -103,7 +109,7 @@ void tst_qmlbindengine::signalAssignment()
     }
 }
 
-void tst_qmlbindengine::methods()
+void tst_qmlecmascript::methods()
 {
     {
         QmlComponent component(&engine, TEST_FILE("methods.1.qml"));
@@ -128,7 +134,7 @@ void tst_qmlbindengine::methods()
     }
 }
 
-void tst_qmlbindengine::bindingLoop()
+void tst_qmlecmascript::bindingLoop()
 {
     QmlComponent component(&engine, TEST_FILE("bindingLoop.qml"));
     QTest::ignoreMessage(QtWarningMsg, "QML MyQmlObject (unknown location): Binding loop detected for property \"stringProperty\" ");
@@ -136,7 +142,7 @@ void tst_qmlbindengine::bindingLoop()
     QVERIFY(object != 0);
 }
 
-void tst_qmlbindengine::basicExpressions_data()
+void tst_qmlecmascript::basicExpressions_data()
 {
     QTest::addColumn<QString>("expression");
     QTest::addColumn<QVariant>("result");
@@ -162,7 +168,7 @@ void tst_qmlbindengine::basicExpressions_data()
     QTest::newRow("Context property override default object property") << "millipedeLegs" << QVariant(100) << true;
 }
 
-void tst_qmlbindengine::basicExpressions()
+void tst_qmlecmascript::basicExpressions()
 {
     QFETCH(QString, expression);
     QFETCH(QVariant, result);
@@ -197,7 +203,7 @@ void tst_qmlbindengine::basicExpressions()
 }
 
 Q_DECLARE_METATYPE(QList<QObject *>);
-void tst_qmlbindengine::arrayExpressions()
+void tst_qmlecmascript::arrayExpressions()
 {
     QObject obj1;
     QObject obj2;
@@ -220,7 +226,7 @@ void tst_qmlbindengine::arrayExpressions()
 }
 
 // Tests that modifying a context property will reevaluate expressions
-void tst_qmlbindengine::contextPropertiesTriggerReeval()
+void tst_qmlecmascript::contextPropertiesTriggerReeval()
 {
     QmlContext context(engine.rootContext());
     MyQmlObject object1;
@@ -282,7 +288,7 @@ void tst_qmlbindengine::contextPropertiesTriggerReeval()
 
 }
 
-void tst_qmlbindengine::objectPropertiesTriggerReeval()
+void tst_qmlecmascript::objectPropertiesTriggerReeval()
 {
     QmlContext context(engine.rootContext());
     MyQmlObject object1;
@@ -336,7 +342,7 @@ void tst_qmlbindengine::objectPropertiesTriggerReeval()
     }
 }
 
-void tst_qmlbindengine::deferredProperties()
+void tst_qmlecmascript::deferredProperties()
 {
     QmlComponent component(&engine, TEST_FILE("deferredProperties.qml"));
     MyDeferredObject *object = 
@@ -353,7 +359,7 @@ void tst_qmlbindengine::deferredProperties()
     QVERIFY(qmlObject != 0);
 }
 
-void tst_qmlbindengine::extensionObjects()
+void tst_qmlecmascript::extensionObjects()
 {
     QmlComponent component(&engine, TEST_FILE("extensionObjects.qml"));
     MyExtendedObject *object = 
@@ -368,7 +374,7 @@ void tst_qmlbindengine::extensionObjects()
     QCOMPARE(object->baseProperty(), 92);
 }
 
-void tst_qmlbindengine::enums()
+void tst_qmlecmascript::enums()
 {
     QmlComponent component(&engine, TEST_FILE("enums.1.qml"));
     QObject *object = component.create();
@@ -386,7 +392,7 @@ void tst_qmlbindengine::enums()
     QCOMPARE(object->property("j").toInt(), 19);
 }
 
-void tst_qmlbindengine::valueTypeFunctions()
+void tst_qmlecmascript::valueTypeFunctions()
 {
     QmlComponent component(&engine, TEST_FILE("valueTypeFunctions.qml"));
     MyTypeObject *obj = qobject_cast<MyTypeObject*>(component.create());
@@ -396,6 +402,6 @@ void tst_qmlbindengine::valueTypeFunctions()
 }
 
 
-QTEST_MAIN(tst_qmlbindengine)
+QTEST_MAIN(tst_qmlecmascript)
 
-#include "tst_qmlbindengine.moc"
+#include "tst_qmlecmascript.moc"
