@@ -61,9 +61,12 @@ QT_BEGIN_NAMESPACE
 
 class QmlEngine;
 class QmlContext;
+class QmlWatcher;
 class QDataStream;
+
 class QmlEngineDebugServer : public QmlDebugService
 {
+    Q_OBJECT
 public:
     QmlEngineDebugServer(QObject * = 0);
 
@@ -74,6 +77,7 @@ public:
         QString objectName;
         QString objectType;
         int objectId;
+        int contextId;
     };
 
     struct QmlObjectProperty {
@@ -90,6 +94,9 @@ public:
 protected:
     virtual void messageReceived(const QByteArray &);
 
+private Q_SLOTS:
+    void propertyChanged(int id, int objectId, const QByteArray &property, const QVariant &value);
+
 private:
     void buildObjectList(QDataStream &, QmlContext *);
     void buildObjectDump(QDataStream &, QObject *, bool);
@@ -97,6 +104,7 @@ private:
     QmlObjectProperty propertyData(QObject *, int);
 
     static QList<QmlEngine *> m_engines;
+    QmlWatcher *m_watch;
 };
 Q_DECLARATIVE_EXPORT QDataStream &operator<<(QDataStream &, const QmlEngineDebugServer::QmlObjectData &);
 Q_DECLARATIVE_EXPORT QDataStream &operator>>(QDataStream &, QmlEngineDebugServer::QmlObjectData &);

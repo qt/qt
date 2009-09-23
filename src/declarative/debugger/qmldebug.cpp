@@ -36,6 +36,8 @@ public:
     QHash<int, QmlDebugEnginesQuery *> enginesQuery;
     QHash<int, QmlDebugRootContextQuery *> rootContextQuery;
     QHash<int, QmlDebugObjectQuery *> objectQuery;
+
+    QHash<int, QmlDebugWatch *> watched;
 };
 
 QmlEngineDebugClient::QmlEngineDebugClient(QmlDebugConnection *client,
@@ -91,6 +93,7 @@ void QmlEngineDebugPrivate::decode(QDataStream &ds, QmlDebugObjectReference &o,
     o.m_source.m_url = data.url;
     o.m_source.m_lineNumber = data.lineNumber;
     o.m_source.m_columnNumber = data.columnNumber;
+    o.m_contextDebugId = data.contextId;
 
     if (simple)
         return;
@@ -104,6 +107,7 @@ void QmlEngineDebugPrivate::decode(QDataStream &ds, QmlDebugObjectReference &o,
         QmlDebugPropertyReference prop;
         prop.m_name = data.name;
         prop.m_binding = data.binding;
+        prop.m_objectDebugId = o.m_debugId;
         if (data.type == QmlEngineDebugServer::QmlObjectProperty::Basic)
             prop.m_value = data.value;
         else if (data.type == QmlEngineDebugServer::QmlObjectProperty::Object) {
@@ -144,6 +148,7 @@ void QmlEngineDebugPrivate::decode(QDataStream &ds, QmlDebugContextReference &c)
         QmlDebugObjectReference obj;
         decode(ds, obj, true);
 
+        obj.m_contextDebugId = c.m_debugId;
         c.m_objects << obj;
     }
 }
@@ -154,6 +159,8 @@ void QmlEngineDebugPrivate::message(const QByteArray &data)
 
     QByteArray type;
     ds >> type;
+
+    //qDebug() << "QmlEngineDebugPrivate::message()" << type;
 
     if (type == "LIST_ENGINES_R") {
         int queryId;
@@ -204,6 +211,47 @@ void QmlEngineDebugPrivate::message(const QByteArray &data)
 
         query->m_client = 0;
         query->setState(QmlDebugQuery::Completed);
+    } else if (type == "WATCH_PROPERTY_R") {
+        int queryId;
+        bool ok;
+        ds >> queryId >> ok;
+
+        QmlDebugWatch *watch = watched.value(queryId);
+        if (!watch)
+            return;
+
+        watch->setState(ok ? QmlDebugWatch::Active : QmlDebugWatch::Inactive);
+    } else if (type == "WATCH_OBJECT_R") {
+        int queryId;
+        bool ok;
+        ds >> queryId >> ok;
+
+        QmlDebugWatch *watch = watched.value(queryId);
+        if (!watch)
+            return;
+
+        watch->setState(ok ? QmlDebugWatch::Active : QmlDebugWatch::Inactive);
+    } else if (type == "WATCH_EXPR_OBJECT_R") {
+        int queryId;
+        bool ok;
+        ds >> queryId >> ok;
+
+        QmlDebugWatch *watch = watched.value(queryId);
+        if (!watch)
+            return;
+
+        watch->setState(ok ? QmlDebugWatch::Active : QmlDebugWatch::Inactive);
+    } else if (type == "UPDATE_WATCH") {
+        int queryId;
+        int debugId;
+        QByteArray name;
+        QVariant value;
+        ds >> queryId >> debugId >> name >> value;
+
+        QmlDebugWatch *watch = watched.value(queryId);
+        if (!watch)
+            return;
+        emit watch->valueChanged(name, value);
     }
 }
 
@@ -212,10 +260,27 @@ QmlEngineDebug::QmlEngineDebug(QmlDebugConnection *client, QObject *parent)
 {
 }
 
-QmlDebugWatch *QmlEngineDebug::addWatch(const QmlDebugPropertyReference &, QObject *)
+QmlDebugPropertyWatch *QmlEngineDebug::addWatch(const QmlDebugPropertyReference &property, QObject *parent)
 {
-    qWarning("QmlEngineDebug::addWatch(): Not implemented");
-    return 0;
+    Q_D(QmlEngineDebug);
+
+    QmlDebugPropertyWatch *watch = new QmlDebugPropertyWatch(parent);
+    if (d->client->isConnected()) {
+        //query->m_client = this;
+        int queryId = d->getId();
+        watch->m_queryId = queryId;
+        watch->m_objectDebugId = property.objectDebugId();
+        d->watched.insert(queryId, watch);
+
+        QByteArray message;
+        QDataStream ds(&message, QIODevice::WriteOnly);
+        ds << QByteArray("WATCH_PROPERTY") << queryId << property.objectDebugId() << property.name().toLatin1();
+        d->client->sendMessage(message);
+    } else {
+        watch->m_state = QmlDebugWatch::Dead;
+    }
+
+    return watch;
 }
 
 QmlDebugWatch *QmlEngineDebug::addWatch(const QmlDebugContextReference &, const QString &, QObject *)
@@ -224,22 +289,66 @@ QmlDebugWatch *QmlEngineDebug::addWatch(const QmlDebugContextReference &, const 
     return 0;
 }
 
-QmlDebugWatch *QmlEngineDebug::addWatch(const QmlDebugObjectReference &, const QString &, QObject *)
+QmlDebugObjectExpressionWatch *QmlEngineDebug::addWatch(const QmlDebugObjectReference &object, const QString &expr, QObject *parent)
 {
-    qWarning("QmlEngineDebug::addWatch(): Not implemented");
-    return 0;
+    Q_D(QmlEngineDebug);
+    QmlDebugObjectExpressionWatch *watch = new QmlDebugObjectExpressionWatch(parent);
+    if (d->client->isConnected()) {
+        int queryId = d->getId();
+        watch->m_queryId = queryId;
+        watch->m_objectDebugId = object.debugId();
+        d->watched.insert(queryId, watch);
+
+        QByteArray message;
+        QDataStream ds(&message, QIODevice::WriteOnly);
+        ds << QByteArray("WATCH_EXPR_OBJECT") << queryId << object.debugId() << expr;
+        d->client->sendMessage(message);
+    } else {
+        watch->m_state = QmlDebugWatch::Dead;
+    }
+    return watch;
 }
 
-QmlDebugWatch *QmlEngineDebug::addWatch(const QmlDebugObjectReference &, QObject *)
+QmlDebugWatch *QmlEngineDebug::addWatch(const QmlDebugObjectReference &object, QObject *parent)
 {
-    qWarning("QmlEngineDebug::addWatch(): Not implemented");
-    return 0;
+    Q_D(QmlEngineDebug);
+
+    QmlDebugWatch *watch = new QmlDebugWatch(parent);
+    if (d->client->isConnected()) {
+        int queryId = d->getId();
+        watch->m_queryId = queryId;
+        watch->m_objectDebugId = object.debugId();
+        d->watched.insert(queryId, watch);
+
+        QByteArray message;
+        QDataStream ds(&message, QIODevice::WriteOnly);
+        ds << QByteArray("WATCH_OBJECT") << queryId << object.debugId();
+        d->client->sendMessage(message);
+    } else {
+        watch->m_state = QmlDebugWatch::Dead;
+    }
+
+    return watch;
 }
 
 QmlDebugWatch *QmlEngineDebug::addWatch(const QmlDebugFileReference &, QObject *)
 {
     qWarning("QmlEngineDebug::addWatch(): Not implemented");
     return 0;
+}
+
+void QmlEngineDebug::removeWatch(QmlDebugWatch *watch)
+{
+    Q_D(QmlEngineDebug);
+
+    d->watched.remove(watch->queryId());
+
+    if (d->client->isConnected()) {
+        QByteArray message;
+        QDataStream ds(&message, QIODevice::WriteOnly);
+        ds << QByteArray("NO_WATCH") << watch->queryId();
+        d->client->sendMessage(message);
+    }
 }
 
 QmlDebugEnginesQuery *QmlEngineDebug::queryAvailableEngines(QObject *parent)
@@ -331,6 +440,56 @@ QmlDebugObjectQuery *QmlEngineDebug::queryObjectRecursive(const QmlDebugObjectRe
 
     return query;
 }
+
+QmlDebugWatch::QmlDebugWatch(QObject *parent)
+: QObject(parent), m_state(Waiting), m_queryId(-1), m_objectDebugId(-1)
+{
+}
+
+int QmlDebugWatch::queryId() const
+{
+    return m_queryId;
+}
+
+int QmlDebugWatch::objectDebugId() const
+{
+    return m_objectDebugId;
+}
+
+QmlDebugWatch::State QmlDebugWatch::state() const
+{
+    return m_state;
+}
+
+void QmlDebugWatch::setState(State s)
+{
+    if (m_state == s)
+        return;
+    m_state = s;
+    emit stateChanged(m_state);
+}
+
+QmlDebugPropertyWatch::QmlDebugPropertyWatch(QObject *parent)
+    : QmlDebugWatch(parent)
+{
+}
+
+QString QmlDebugPropertyWatch::name() const
+{
+    return m_name;
+}
+
+
+QmlDebugObjectExpressionWatch::QmlDebugObjectExpressionWatch(QObject *parent)
+    : QmlDebugWatch(parent)
+{
+}
+
+QString QmlDebugObjectExpressionWatch::expression() const
+{
+    return m_expr;
+}
+
 
 QmlDebugQuery::QmlDebugQuery(QObject *parent)
 : QObject(parent), m_state(Waiting)
@@ -436,18 +595,19 @@ QString QmlDebugEngineReference::name() const
 }
 
 QmlDebugObjectReference::QmlDebugObjectReference()
-: m_debugId(-1)
+: m_debugId(-1), m_contextDebugId(-1)
 {
 }
 
 QmlDebugObjectReference::QmlDebugObjectReference(int debugId)
-: m_debugId(debugId)
+: m_debugId(debugId), m_contextDebugId(-1)
 {
 }
 
 QmlDebugObjectReference::QmlDebugObjectReference(const QmlDebugObjectReference &o)
-: m_debugId(o.m_debugId), m_class(o.m_class), m_name(o.m_name), 
-  m_source(o.m_source), m_properties(o.m_properties), m_children(o.m_children)
+: m_debugId(o.m_debugId), m_class(o.m_class), m_name(o.m_name),
+  m_source(o.m_source), m_contextDebugId(o.m_contextDebugId),
+  m_properties(o.m_properties), m_children(o.m_children)
 {
 }
 
@@ -455,8 +615,8 @@ QmlDebugObjectReference &
 QmlDebugObjectReference::operator=(const QmlDebugObjectReference &o)
 {
     m_debugId = o.m_debugId; m_class = o.m_class; m_name = o.m_name; 
-    m_source = o.m_source; m_properties = o.m_properties; 
-    m_children = o.m_children;
+    m_source = o.m_source; m_contextDebugId = o.m_contextDebugId;
+    m_properties = o.m_properties; m_children = o.m_children;
     return *this;
 }
 
@@ -478,6 +638,11 @@ QString QmlDebugObjectReference::name() const
 QmlDebugFileReference QmlDebugObjectReference::source() const
 {
     return m_source;
+}
+
+int QmlDebugObjectReference::contextDebugId() const
+{
+    return m_contextDebugId;
 }
 
 QList<QmlDebugPropertyReference> QmlDebugObjectReference::properties() const
@@ -574,18 +739,24 @@ void QmlDebugFileReference::setColumnNumber(int c)
 }
 
 QmlDebugPropertyReference::QmlDebugPropertyReference()
+: m_objectDebugId(-1)
 {
 }
 
 QmlDebugPropertyReference::QmlDebugPropertyReference(const QmlDebugPropertyReference &o)
-: m_name(o.m_name), m_value(o.m_value), m_binding(o.m_binding)
+: m_objectDebugId(o.m_objectDebugId), m_name(o.m_name), m_value(o.m_value), m_binding(o.m_binding)
 {
 }
 
 QmlDebugPropertyReference &QmlDebugPropertyReference::operator=(const QmlDebugPropertyReference &o)
 {
-    m_name = o.m_name; m_value = o.m_value; m_binding = o.m_binding;
+    m_objectDebugId = o.m_objectDebugId; m_name = o.m_name; m_value = o.m_value; m_binding = o.m_binding;
     return *this;
+}
+
+int QmlDebugPropertyReference::objectDebugId() const
+{
+    return m_objectDebugId;
 }
 
 QString QmlDebugPropertyReference::name() const
