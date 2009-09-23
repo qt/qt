@@ -625,7 +625,9 @@ void QFxTextInput::drawContents(QPainter *p, const QRect &r)
             flags |= QLineControl::DrawSelections;
     }
 
-    d->control->draw(p, QPoint(0,0), r, flags);
+    QPoint offset = QPoint(0,0);
+    QRect clipRect = r;
+    d->control->draw(p, offset, clipRect, flags);
 
     p->restore();
 }
@@ -674,7 +676,7 @@ void QFxTextInputPrivate::init()
                q, SLOT(updateRect()));//TODO: Only update rect between pos's
     q->connect(control, SIGNAL(selectionChanged()),
                q, SLOT(updateRect()));//TODO: Only update rect in selection
-    //Note that above TODOs are waiting, pending getting the updateRect working right
+    //Note that above TODOs probably aren't that big a savings
     q->updateSize();
     oldValidity = control->hasAcceptableInput();
     lastSelectionStart = 0;
@@ -730,11 +732,10 @@ void QFxTextInput::q_textChanged()
 
 void QFxTextInput::updateRect(const QRect &r)
 {
-    //### Only update that rect.
     if(r == QRect())
         clearCache();
-    //else
-        //dirtyCache(r);//Not working yet
+    else
+        dirtyCache(r);
     update();
 }
 
@@ -744,12 +745,12 @@ void QFxTextInput::updateSize(bool needsRedraw)
     int w = width();
     int h = height();
     setImplicitHeight(d->control->height());
-    //d->control->width() is width of the line, not of the text
-    //And naturalTextWidth() is the text, not including the cursor
     int cursorWidth = d->control->cursorWidth();
     if(d->cursorItem)
         cursorWidth = d->cursorItem->width();
-    setImplicitWidth(d->control->naturalTextWidth()+2+cursorWidth);
+    //### Is QFontMetrics too slow?
+    QFontMetricsF fm(d->font);
+    setImplicitWidth(fm.width(d->control->displayText())+cursorWidth);
     setContentsSize(QSize(width(), height()));//Repaints if changed
     if(w==width() && h==height() && needsRedraw){
         clearCache();
