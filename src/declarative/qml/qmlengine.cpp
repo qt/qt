@@ -730,7 +730,7 @@ void QmlDeclarativeData::destroyed(QObject *object)
 
 bool QmlDeclarativeData::hasBindingBit(int bit) const
 {
-    if (bindingBitsSize >= bit) 
+    if (bindingBitsSize > bit) 
         return bindingBits[bit / 32] & (1 << (bit % 32));
     else
         return false;
@@ -738,13 +738,13 @@ bool QmlDeclarativeData::hasBindingBit(int bit) const
 
 void QmlDeclarativeData::clearBindingBit(int bit)
 {
-    if (bindingBitsSize >= bit) 
+    if (bindingBitsSize > bit) 
         bindingBits[bit / 32] &= ~(1 << (bit % 32));
 }
 
 void QmlDeclarativeData::setBindingBit(QObject *obj, int bit)
 {
-    if (bindingBitsSize < bit) {
+    if (bindingBitsSize <= bit) {
         int props = obj->metaObject()->propertyCount();
         Q_ASSERT(bit < props);
 
@@ -1255,7 +1255,8 @@ QmlTypeNameScriptClass::queryProperty(const QScriptValue &scriptObject,
         } else {
             // Must be an attached property
             this->object = qmlAttachedPropertiesObjectById(bridge.type->index(), bridge.object);
-            Q_ASSERT(this->object);
+            if (!this->object)
+                return 0;
             return ep->queryObject(strName, id, this->object);
         }
     }

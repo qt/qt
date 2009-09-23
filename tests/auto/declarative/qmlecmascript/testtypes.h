@@ -73,7 +73,7 @@ public slots:
     void setString(const QString &s) { m_string = s; }
 
 private:
-    friend class tst_qmlbindengine;
+    friend class tst_qmlecmascript;
     bool m_methodCalled;
     bool m_methodIntCalled;
 

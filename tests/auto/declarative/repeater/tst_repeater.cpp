@@ -24,6 +24,11 @@ tst_QFxRepeater::tst_QFxRepeater()
 {
 }
 
+/*
+The Repeater element creates children at its own position in its parent's
+stacking order.  In this test we insert a repeater between two other Text
+elements to test this.
+*/
 void tst_QFxRepeater::stringList()
 {
     QmlView *canvas = createView(SRCDIR "/data/repeater.qml");
@@ -46,12 +51,27 @@ void tst_QFxRepeater::stringList()
     QFxItem *container = findItem<QFxItem>(canvas->root(), "container");
     QVERIFY(container != 0);
 
-    QCOMPARE(container->childItems().count(), data.count() + 1);
+    QCOMPARE(container->childItems().count(), data.count() + 3);
 
-    for (int i = 1; i < container->childItems().count(); ++i) {
-        QFxText *name = qobject_cast<QFxText*>(container->childItems().at(i));
-        QVERIFY(name != 0);
-        QCOMPARE(name->text(), data.at(i-1));
+    for (int i = 0; i < container->childItems().count(); ++i) {
+
+        if (i == 0) {
+            QFxText *name = qobject_cast<QFxText*>(container->childItems().at(i));
+            QVERIFY(name != 0);
+            QCOMPARE(name->text(), QLatin1String("Zero"));
+        } else if (i == 1) {
+            // The repeater itself
+            continue;
+        } else if (i == container->childItems().count() - 1) {
+            QFxText *name = qobject_cast<QFxText*>(container->childItems().at(i));
+            QVERIFY(name != 0);
+            QCOMPARE(name->text(), QLatin1String("Last"));
+        } else {
+            QFxText *name = qobject_cast<QFxText*>(container->childItems().at(i));
+            QVERIFY(name != 0);
+            QCOMPARE(name->text(), data.at(i-2));
+        }
+
     }
 
     delete canvas;

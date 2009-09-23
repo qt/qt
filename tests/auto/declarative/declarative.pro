@@ -9,13 +9,12 @@ SUBDIRS += datetimeformatter \
            qfxtextedit \
            simplecanvasitem \
            repeater \
-           qmlparser \
-           qmlbindengine \
+           qmllanguage \
+           qmlecmascript \
            qmlmetaproperty \
            qmllist \
            qmllistaccessor \
-           visual\
-           qmlengine
+           visual
 
 # Tests which should run in Pulse
 PULSE_TESTS = $$SUBDIRS

@@ -37,7 +37,7 @@ Rectangle {
             ]
         }
     }
-    // Specify a highlight with custom movement.  Note that autoHighlight
+    // Specify a highlight with custom movement.  Note that highlightFollowsCurrentItem
     // is set to false in the ListView so that we can control how the
     // highlight moves to the current item.
     Component {
@@ -51,7 +51,7 @@ Rectangle {
         id: List1
         width: 200; height: parent.height
         model: MyPetsModel; delegate: PetDelegate
-        highlight: PetHighlight; autoHighlight: false
+        highlight: PetHighlight; highlightFollowsCurrentItem: false
         focus: true
     }
 }
