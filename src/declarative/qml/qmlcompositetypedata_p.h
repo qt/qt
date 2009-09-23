@@ -60,11 +60,11 @@ QT_BEGIN_NAMESPACE
 
 class QmlCompositeTypeData : public QmlRefCount
 {
-public
+public:
     QmlCompositeTypeData();
     virtual ~QmlCompositeTypeData();
 
-    enum Status { 
+    enum Status {
         Invalid,
         Complete,
         Error,
@@ -84,8 +84,8 @@ public
 
     QList<QmlCompositeTypeData *> dependants;
 
-    // Return a QmlComponent if the QmlCompositeTypeData is not in the Waiting 
-    // state.  The QmlComponent is owned by the QmlCompositeTypeData, so a 
+    // Return a QmlComponent if the QmlCompositeTypeData is not in the Waiting
+    // state.  The QmlComponent is owned by the QmlCompositeTypeData, so a
     // reference should be kept to keep the QmlComponent alive.
     QmlComponent *toComponent(QmlEngine *);
     // Return a QmlCompiledData if possible, or 0 if an error
@@ -102,7 +102,7 @@ public
 
     QList<TypeReference> types;
 
-    // Add or remove p as a waiter.  When the QmlCompositeTypeData becomes 
+    // Add or remove p as a waiter.  When the QmlCompositeTypeData becomes
     // ready, the QmlComponentPrivate::typeDataReady() method will be invoked on
     // p.  The waiter is automatically removed when the typeDataReady() method
     // is invoked, so there is no need to call remWaiter() in this case.
