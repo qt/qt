@@ -345,7 +345,7 @@ void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
 }
 #elif defined(Q_OS_SYMBIAN) && defined (QT_NO_DEBUG)
 // no implementation in release builds, but keep the symbol present
-void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
+void QCoreApplicationPrivate::checkReceiverThread(QObject * /* receiver */)
 {
 }
 #endif
