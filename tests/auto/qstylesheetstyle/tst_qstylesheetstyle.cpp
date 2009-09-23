@@ -974,10 +974,11 @@ void tst_QStyleSheetStyle::background()
 void tst_QStyleSheetStyle::tabAlignement()
 {
     QTabWidget tabWidget;
-    tabWidget.show();
-    QTest::qWait(50);
     tabWidget.addTab(new QLabel("tab1"),"tab1");
     tabWidget.resize(QSize(400,400));
+    tabWidget.show();
+    QTest::qWaitForWindowShown(&tabWidget);
+    QTest::qWait(50);
     QTabBar *bar = qFindChild<QTabBar*>(&tabWidget);
     QVERIFY(bar);
     //check the tab is on the right
