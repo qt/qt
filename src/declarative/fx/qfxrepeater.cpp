@@ -282,14 +282,26 @@ void QFxRepeater::regenerate()
     if (!d->model || !d->model->count() || !d->model->isValid() || !parentItem() || !isComponentComplete())
         return;
 
-    if (d->model) {
-        for (int ii = 0; ii < count(); ++ii) {
-            QFxItem *item = d->model->item(ii);
-            if (item) {
-                item->setParent(parentItem());
-                d->deletables << item;
-            }
+    //In order to do the insertion like the examples, we have to be at the
+    //same point in the childItems() list. Temporary measure until we think of something better
+    int pos = parentItem()->childItems().indexOf(this);
+    Q_ASSERT(pos != -1);
+    QList<QGraphicsItem*> otherChildren;
+    for (int ii = pos+1; ii < parentItem()->childItems().count(); ii++){
+        QGraphicsItem* otherChild = parentItem()->childItems()[ii];
+        otherChildren << otherChild;
+        otherChild->setParentItem(0);
+    }
+
+    for (int ii = 0; ii < count(); ++ii) {
+        QFxItem *item = d->model->item(ii);
+        if (item) {
+            item->setParent(parentItem());
+            d->deletables << item;
         }
     }
+
+    foreach(QGraphicsItem* other, otherChildren)
+        other->setParentItem(parentItem());
 }
 QT_END_NAMESPACE

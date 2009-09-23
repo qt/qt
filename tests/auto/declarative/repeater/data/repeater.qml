@@ -6,6 +6,9 @@ Rectangle {
     width: 240
     height: 320
     color: "white"
+    Text {
+        text: "Zero"
+    }
     Repeater {
         id: repeater
         objectName: "repeater"
@@ -18,5 +21,8 @@ Rectangle {
                 text: modelData
             }
         }
+    }
+    Text {
+        text: "Last"
     }
 }
