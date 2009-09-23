@@ -645,12 +645,10 @@ void QmlCompiler::compileTree(Object *tree)
 
     output->imports = unit->imports;
 
-    if (tree->metatype) {
-        static_cast<QMetaObject &>(output->root) = *tree->metaObject();
+    Q_ASSERT(tree->metatype);
+    static_cast<QMetaObject &>(output->root) = *tree->metaObject();
+    if (!tree->metadata.isEmpty())
         QmlEnginePrivate::get(engine)->registerCompositeType(output);
-    } else {
-        static_cast<QMetaObject &>(output->root) = *output->types.at(tree->type).metaObject();
-    }
 }
 
 bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
