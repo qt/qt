@@ -211,7 +211,8 @@ static QString classPath(GtkWidget *widget)
 
 static void resolveGtk()
 {
-    QLibrary libgtk(QLS("gtk-x11-2.0"));
+    // enforce the "0" suffix, so we'll open libgtk-x11-2.0.so.0
+    QLibrary libgtk(QLS("gtk-x11-2.0"), 0, 0);
     QGtk::gtk_init = (Ptr_gtk_init)libgtk.resolve("gtk_init");
     QGtk::gtk_window_new = (Ptr_gtk_window_new)libgtk.resolve("gtk_window_new");
     QGtk::gtk_style_attach = (Ptr_gtk_style_attach)libgtk.resolve("gtk_style_attach");
