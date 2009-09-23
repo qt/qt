@@ -48,6 +48,7 @@ private slots:
     void valueTypeFunctions();
     void constantsOverrideBindings();
     void outerBindingOverridesInnerBinding();
+    void nonExistantAttachedObject();
 
 private:
     QmlEngine engine;
@@ -378,6 +379,8 @@ void tst_qmlecmascript::extensionObjects()
 
 void tst_qmlecmascript::enums()
 {
+    // Existant enums
+    {
     QmlComponent component(&engine, TEST_FILE("enums.1.qml"));
     QObject *object = component.create();
     QVERIFY(object != 0);
@@ -392,6 +395,15 @@ void tst_qmlecmascript::enums()
     QCOMPARE(object->property("h").toInt(), 3);
     QCOMPARE(object->property("i").toInt(), 19);
     QCOMPARE(object->property("j").toInt(), 19);
+    }
+    // Non-existant enums
+    {
+    QmlComponent component(&engine, TEST_FILE("enums.2.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("a").toInt(), 0);
+    QCOMPARE(object->property("b").toInt(), 0);
+    }
 }
 
 void tst_qmlecmascript::valueTypeFunctions()
@@ -480,6 +492,18 @@ void tst_qmlecmascript::outerBindingOverridesInnerBinding()
     QCOMPARE(object->property("c1").toInt(), 9);
     QCOMPARE(object->property("c2").toInt(), 8);
     QCOMPARE(object->property("c3").toInt(), 8);
+}
+
+/*
+Access a non-existant attached object.  
+
+Tests for a regression where this used to crash.
+*/
+void tst_qmlecmascript::nonExistantAttachedObject()
+{
+    QmlComponent component(&engine, TEST_FILE("nonExistantAttachedObject.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
 }
 
 QTEST_MAIN(tst_qmlecmascript)
