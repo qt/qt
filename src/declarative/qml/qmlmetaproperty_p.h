@@ -85,15 +85,17 @@ class QmlMetaPropertyPrivate
 {
 public:
     QmlMetaPropertyPrivate()
-        : context(0), coreIdx(-1), valueTypeIdx(-1), valueTypeId(0),
+        : q(0), context(0), coreIdx(-1), valueTypeIdx(-1), valueTypeId(0),
           type(QmlMetaProperty::Invalid), attachedFunc(-1), 
           object(0), propType(-1), category(QmlMetaProperty::Unknown) {}
     QmlMetaPropertyPrivate(const QmlMetaPropertyPrivate &other)
-        : name(other.name), signal(other.signal), context(other.context), 
+        : q(0), name(other.name), signal(other.signal), context(other.context), 
           coreIdx(other.coreIdx), valueTypeIdx(other.valueTypeIdx), 
           valueTypeId(other.valueTypeId), type(other.type), 
           attachedFunc(other.attachedFunc), object(other.object), 
           propType(other.propType), category(other.category) {}
+
+    QmlMetaProperty *q;
 
     QString name;
     QMetaMethod signal;
