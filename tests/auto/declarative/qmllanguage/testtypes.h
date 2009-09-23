@@ -104,7 +104,7 @@ signals:
     void basicParameterizedSignal(int parameter);
 
 private:
-    friend class tst_qmlparser;
+    friend class tst_qmllanguage;
     int m_value;
     MyInterface *m_interface;
     MyQmlObject *m_qmlobject;
