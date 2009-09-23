@@ -98,6 +98,7 @@ protected:
 struct GPostEventSource;
 struct GSocketNotifierSource;
 struct GTimerSource;
+struct GIdleTimerSource;
 
 class Q_CORE_EXPORT QEventDispatcherGlibPrivate : public QAbstractEventDispatcherPrivate
 {
@@ -108,6 +109,7 @@ public:
     GPostEventSource *postEventSource;
     GSocketNotifierSource *socketNotifierSource;
     GTimerSource *timerSource;
+    GIdleTimerSource *idleTimerSource;
 };
 
 QT_END_NAMESPACE
