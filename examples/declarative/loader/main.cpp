@@ -11,12 +11,12 @@
 #include <QmlContext>
 #include <QmlComponent>
 #include <QmlEngine>
-#include <qfxview.h>
+#include <qmlview.h>
 #include <QDebug>
 #include <QNetworkDiskCache>
 #include <QNetworkAccessManager>
 
-QFxView *canvas = 0;
+QmlView *canvas = 0;
 
 class Logger : public QWidget
 {
@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
 
     QObject::connect(Logger::instance(), SIGNAL(textChanged()), launcher, SIGNAL(logUpdated()));
 
-    canvas = new QFxView;
+    canvas = new QmlView;
     canvas->setFocusPolicy(Qt::StrongFocus);
     canvas->engine()->setNetworkAccessManager(new ConfiguredNetworkAccessManager);
 

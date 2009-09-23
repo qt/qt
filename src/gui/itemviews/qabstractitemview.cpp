@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -69,6 +69,7 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
     :   model(QAbstractItemModelPrivate::staticEmptyModel()),
         itemDelegate(0),
         selectionModel(0),
+        ctrlDragSelectionFlag(QItemSelectionModel::NoUpdate),
         selectionMode(QAbstractItemView::ExtendedSelection),
         selectionBehavior(QAbstractItemView::SelectItems),
         currentlyCommittingEditor(0),
@@ -176,7 +177,45 @@ void QAbstractItemViewPrivate::checkMouseMove(const QPersistentModelIndex &index
     slots mechanism, enabling subclasses to be kept up-to-date with
     changes to their models.  This class provides standard support for
     keyboard and mouse navigation, viewport scrolling, item editing,
-    and selections.
+    and selections. The keyboard navigation implements this
+    functionality:
+
+    \table
+        \header
+            \o Keys
+            \o Functionality
+        \row
+            \o Arrow keys
+            \o Changes the current item and selects it.
+        \row
+            \o Ctrl+Arrow keys
+            \o Changes the current item but does not select it.
+        \row
+            \o Shift+Arrow keys
+            \o Changes the current item and selects it. The previously
+               selected item(s) is not deselected.
+        \row
+            \o Ctr+Space
+            \o Toggles selection of the current item.
+        \row
+            \o Tab/Backtab
+            \o Changes the current item to the next/previous item.
+        \row
+            \o Home/End
+            \o Selects the first/last item in the model.
+        \row
+            \o Page up/Page down
+            \o Scrolls the rows shown up/down by the number of
+               visible rows in the view.
+        \row
+            \o Ctrl+A
+            \o Selects all items in the model.
+    \endtable
+
+    Note that the above table assumes that the
+    \l{selectionMode}{selection mode} allows the operations. For
+    instance, you cannot select items if the selection mode is
+    QAbstractItemView::NoSelection.
 
     The QAbstractItemView class is one of the \l{Model/View Classes}
     and is part of Qt's \l{Model/View Programming}{model/view framework}.
@@ -1551,6 +1590,11 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
         d->selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
         d->autoScroll = autoScroll;
         QRect rect(d->pressedPosition - offset, pos);
+        if (command.testFlag(QItemSelectionModel::Toggle)) {
+            command &= ~QItemSelectionModel::Toggle;
+            d->ctrlDragSelectionFlag = d->selectionModel->isSelected(index) ? QItemSelectionModel::Deselect : QItemSelectionModel::Select;
+            command |= d->ctrlDragSelectionFlag;
+        }
         setSelection(rect, command);
 
         // signal handlers may change the model
@@ -1621,6 +1665,10 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
     if ((event->buttons() & Qt::LeftButton) && d->selectionAllowed(index) && d->selectionModel) {
         setState(DragSelectingState);
         QItemSelectionModel::SelectionFlags command = selectionCommand(index, event);
+        if (command.testFlag(QItemSelectionModel::Toggle)) {
+            command &= ~QItemSelectionModel::Toggle;
+            command |= d->ctrlDragSelectionFlag;
+        }
 
         // Do the normalize ourselves, since QRect::normalized() is flawed
         QRect selectionRect = QRect(topLeft, bottomRight);
@@ -1660,6 +1708,8 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
     bool selectedClicked = click && (event->button() & Qt::LeftButton) && d->pressedAlreadySelected;
     EditTrigger trigger = (selectedClicked ? SelectedClicked : NoEditTriggers);
     bool edited = edit(index, trigger, event);
+
+    d->ctrlDragSelectionFlag = QItemSelectionModel::NoUpdate;
 
     //in the case the user presses on no item we might decide to clear the selection
     if (d->selectionModel && !index.isValid())

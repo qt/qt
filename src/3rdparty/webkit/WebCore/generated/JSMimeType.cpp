@@ -75,6 +75,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSMimeTypePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -89,6 +90,11 @@ const ClassInfo JSMimeTypeConstructor::s_info = { "MimeTypeConstructor", 0, &JSM
 bool JSMimeTypeConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSMimeTypeConstructor, DOMObject>(exec, &JSMimeTypeConstructorTable, this, propertyName, slot);
+}
+
+bool JSMimeTypeConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSMimeTypeConstructor, DOMObject>(exec, &JSMimeTypeConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -133,6 +139,11 @@ JSObject* JSMimeType::createPrototype(ExecState* exec, JSGlobalObject* globalObj
 bool JSMimeType::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSMimeType, Base>(exec, &JSMimeTypeTable, this, propertyName, slot);
+}
+
+bool JSMimeType::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSMimeType, Base>(exec, &JSMimeTypeTable, this, propertyName, descriptor);
 }
 
 JSValue jsMimeTypeType(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -183,7 +194,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, MimeTyp
 }
 MimeType* toMimeType(JSC::JSValue value)
 {
-    return value.isObject(&JSMimeType::s_info) ? static_cast<JSMimeType*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSMimeType::s_info) ? static_cast<JSMimeType*>(asObject(value))->impl() : 0;
 }
 
 }

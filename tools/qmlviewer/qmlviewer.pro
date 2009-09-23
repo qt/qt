@@ -14,10 +14,12 @@ contains(QT_CONFIG, opengl) {
 
 # Input
 HEADERS += qmlviewer.h \
-    proxysettings.h
+           proxysettings.h \
+           qfxtester.h 
 SOURCES += main.cpp \
-    qmlviewer.cpp \
-    proxysettings.cpp
+           qmlviewer.cpp \
+           proxysettings.cpp \
+           qfxtester.cpp
 FORMS = recopts.ui \
     proxysettings.ui
 include($$QT_SOURCE_TREE/tools/shared/deviceskin/deviceskin.pri)

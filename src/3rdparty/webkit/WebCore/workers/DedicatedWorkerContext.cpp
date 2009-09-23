@@ -34,56 +34,48 @@
 
 #include "DedicatedWorkerContext.h"
 
+#include "DedicatedWorkerThread.h"
 #include "DOMWindow.h"
 #include "MessageEvent.h"
 #include "WorkerObjectProxy.h"
-#include "WorkerThread.h"
 
 namespace WebCore {
 
-DedicatedWorkerContext::DedicatedWorkerContext(const KURL& url, const String& userAgent, WorkerThread* thread)
+DedicatedWorkerContext::DedicatedWorkerContext(const KURL& url, const String& userAgent, DedicatedWorkerThread* thread)
     : WorkerContext(url, userAgent, thread)
 {
 }
 
-DedicatedWorkerContext::~DedicatedWorkerContext()
+// FIXME: remove this when we update the ObjC bindings (bug #28774).
+void DedicatedWorkerContext::postMessage(const String& message, MessagePort* port, ExceptionCode& ec)
 {
-    ASSERT(currentThread() == thread()->threadID());
-    // Notify parent worker we are going away. This can free the WorkerThread object, so do not access it after this.
-    thread()->workerObjectProxy().workerContextDestroyed();
-}
-
-void DedicatedWorkerContext::reportException(const String& errorMessage, int lineNumber, const String& sourceURL)
-{
-    bool errorHandled = false;
-    if (onerror())
-        errorHandled = onerror()->reportError(errorMessage, sourceURL, lineNumber);
-
-    if (!errorHandled)
-        thread()->workerObjectProxy().postExceptionToWorkerObject(errorMessage, lineNumber, sourceURL);
+    MessagePortArray ports;
+    if (port)
+        ports.append(port);
+    postMessage(message, &ports, ec);
 }
 
 void DedicatedWorkerContext::postMessage(const String& message, ExceptionCode& ec)
 {
-    postMessage(message, 0, ec);
+    postMessage(message, static_cast<MessagePortArray*>(0), ec);
 }
 
-void DedicatedWorkerContext::postMessage(const String& message, MessagePort* port, ExceptionCode& ec)
+void DedicatedWorkerContext::postMessage(const String& message, const MessagePortArray* ports, ExceptionCode& ec)
 {
     if (isClosing())
         return;
     // Disentangle the port in preparation for sending it to the remote context.
-    OwnPtr<MessagePortChannel> channel = port ? port->disentangle(ec) : 0;
+    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(ports, ec);
     if (ec)
         return;
-    thread()->workerObjectProxy().postMessageToWorkerObject(message, channel.release());
+    thread()->workerObjectProxy().postMessageToWorkerObject(message, channels.release());
 }
 
-void DedicatedWorkerContext::dispatchMessage(const String& message, PassRefPtr<MessagePort> port)
+void DedicatedWorkerContext::dispatchMessage(const String& message, PassOwnPtr<MessagePortArray> ports)
 {
     // Since close() stops the thread event loop, this should not ever get called while closing.
     ASSERT(!isClosing());
-    RefPtr<Event> evt = MessageEvent::create(message, "", "", 0, port);
+    RefPtr<Event> evt = MessageEvent::create(message, "", "", 0, ports);
 
     if (m_onmessageListener.get()) {
         evt->setTarget(this);
@@ -94,6 +86,17 @@ void DedicatedWorkerContext::dispatchMessage(const String& message, PassRefPtr<M
     ExceptionCode ec = 0;
     dispatchEvent(evt.release(), ec);
     ASSERT(!ec);
+}
+
+void DedicatedWorkerContext::importScripts(const Vector<String>& urls, const String& callerURL, int callerLine, ExceptionCode& ec)
+{
+    Base::importScripts(urls, callerURL, callerLine, ec);
+    thread()->workerObjectProxy().reportPendingActivity(hasPendingActivity());
+}
+
+DedicatedWorkerThread* DedicatedWorkerContext::thread()
+{
+    return static_cast<DedicatedWorkerThread*>(Base::thread());
 }
 
 } // namespace WebCore

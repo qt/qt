@@ -48,6 +48,10 @@ static void setNeedsReapplyStylesInAllFrames(Page* page)
 bool Settings::gShouldPaintNativeControls = true;
 #endif
 
+#if PLATFORM(WIN) || (PLATFORM(WIN_OS) && PLATFORM(WX))
+bool Settings::gShouldUseHighResolutionTimers = true;
+#endif
+
 Settings::Settings(Page* page)
     : m_page(page)
     , m_editableLinkBehavior(EditableLinkDefaultBehavior)
@@ -98,7 +102,8 @@ Settings::Settings(Page* page)
     , m_usesEncodingDetector(false)
     , m_allowScriptsToCloseWindows(false)
     , m_editingBehavior(
-#if PLATFORM(MAC)
+#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && PLATFORM(DARWIN))
+        // (PLATFORM(MAC) is always false in Chromium, hence the extra condition.)
         EditingMacBehavior
 #else
         EditingWindowsBehavior
@@ -273,7 +278,6 @@ void Settings::setUserStyleSheetLocation(const KURL& userStyleSheetLocation)
     m_userStyleSheetLocation = userStyleSheetLocation;
 
     m_page->userStyleSheetLocationChanged();
-    setNeedsReapplyStylesInAllFrames(m_page);
 }
 
 void Settings::setShouldPrintBackgrounds(bool shouldPrintBackgrounds)
@@ -492,5 +496,12 @@ void Settings::setAcceleratedCompositingEnabled(bool enabled)
     m_acceleratedCompositingEnabled = enabled;
     setNeedsReapplyStylesInAllFrames(m_page);
 }
+
+#if PLATFORM(WIN) || (PLATFORM(WIN_OS) && PLATFORM(WX))
+void Settings::setShouldUseHighResolutionTimers(bool shouldUseHighResolutionTimers)
+{
+    gShouldUseHighResolutionTimers = shouldUseHighResolutionTimers;
+}
+#endif
 
 } // namespace WebCore

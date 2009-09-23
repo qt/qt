@@ -1,6 +1,6 @@
 #include <QtTest/QtTest>
 #include <qlistmodelinterface.h>
-#include <qfxview.h>
+#include <qmlview.h>
 #include <qfxrepeater.h>
 #include <qfxtext.h>
 #include <qmlcontext.h>
@@ -15,7 +15,7 @@ private slots:
     void stringList();
 
 private:
-    QFxView *createView(const QString &filename);
+    QmlView *createView(const QString &filename);
     template<typename T>
     T *findItem(QObject *parent, const QString &id);
 };
@@ -26,7 +26,7 @@ tst_QFxRepeater::tst_QFxRepeater()
 
 void tst_QFxRepeater::stringList()
 {
-    QFxView *canvas = createView(SRCDIR "/data/repeater.qml");
+    QmlView *canvas = createView(SRCDIR "/data/repeater.qml");
 
     QStringList data;
     data << "One";
@@ -58,9 +58,9 @@ void tst_QFxRepeater::stringList()
 }
 
 
-QFxView *tst_QFxRepeater::createView(const QString &filename)
+QmlView *tst_QFxRepeater::createView(const QString &filename)
 {
-    QFxView *canvas = new QFxView(0);
+    QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
 
     QFile file(filename);

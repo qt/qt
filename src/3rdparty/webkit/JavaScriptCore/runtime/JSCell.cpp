@@ -90,16 +90,6 @@ bool JSCell::getUInt32(uint32_t&) const
     return false;
 }
 
-bool JSCell::getTruncatedInt32(int32_t&) const
-{
-    return false;
-}
-
-bool JSCell::getTruncatedUInt32(uint32_t&) const
-{
-    return false;
-}
-
 bool JSCell::getString(UString&stringValue) const
 {
     if (!isString())
@@ -115,7 +105,7 @@ UString JSCell::getString() const
 
 JSObject* JSCell::getObject()
 {
-    return isObject() ? static_cast<JSObject*>(this) : 0;
+    return isObject() ? asObject(this) : 0;
 }
 
 const JSObject* JSCell::getObject() const
@@ -167,14 +157,14 @@ void JSCell::put(ExecState* exec, unsigned identifier, JSValue value)
     toObject(exec)->put(exec, identifier, value);
 }
 
-bool JSCell::deleteProperty(ExecState* exec, const Identifier& identifier, bool checkDontDelete)
+bool JSCell::deleteProperty(ExecState* exec, const Identifier& identifier)
 {
-    return toObject(exec)->deleteProperty(exec, identifier, checkDontDelete);
+    return toObject(exec)->deleteProperty(exec, identifier);
 }
 
-bool JSCell::deleteProperty(ExecState* exec, unsigned identifier, bool checkDontDelete)
+bool JSCell::deleteProperty(ExecState* exec, unsigned identifier)
 {
-    return toObject(exec)->deleteProperty(exec, identifier, checkDontDelete);
+    return toObject(exec)->deleteProperty(exec, identifier);
 }
 
 JSObject* JSCell::toThisObject(ExecState* exec) const
@@ -205,6 +195,42 @@ JSValue JSCell::getJSNumber()
 bool JSCell::isGetterSetter() const
 {
     return false;
+}
+
+JSValue JSCell::toPrimitive(ExecState*, PreferredPrimitiveType) const
+{
+    ASSERT_NOT_REACHED();
+    return JSValue();
+}
+
+bool JSCell::getPrimitiveNumber(ExecState*, double&, JSValue&)
+{
+    ASSERT_NOT_REACHED();
+    return false;
+}
+
+bool JSCell::toBoolean(ExecState*) const
+{
+    ASSERT_NOT_REACHED();
+    return false;
+}
+
+double JSCell::toNumber(ExecState*) const
+{
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+UString JSCell::toString(ExecState*) const
+{
+    ASSERT_NOT_REACHED();
+    return UString();
+}
+
+JSObject* JSCell::toObject(ExecState*) const
+{
+    ASSERT_NOT_REACHED();
+    return 0;
 }
 
 } // namespace JSC

@@ -71,6 +71,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLOptGroupElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -85,6 +86,11 @@ const ClassInfo JSHTMLOptGroupElementConstructor::s_info = { "HTMLOptGroupElemen
 bool JSHTMLOptGroupElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLOptGroupElementConstructor, DOMObject>(exec, &JSHTMLOptGroupElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLOptGroupElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLOptGroupElementConstructor, DOMObject>(exec, &JSHTMLOptGroupElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -123,6 +129,11 @@ JSObject* JSHTMLOptGroupElement::createPrototype(ExecState* exec, JSGlobalObject
 bool JSHTMLOptGroupElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLOptGroupElement, Base>(exec, &JSHTMLOptGroupElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLOptGroupElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLOptGroupElement, Base>(exec, &JSHTMLOptGroupElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLOptGroupElementDisabled(ExecState* exec, const Identifier&, const PropertySlot& slot)

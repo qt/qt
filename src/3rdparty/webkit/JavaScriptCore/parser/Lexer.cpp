@@ -59,7 +59,6 @@ static const UChar byteOrderMark = 0xFEFF;
 Lexer::Lexer(JSGlobalData* globalData)
     : m_isReparsing(false)
     , m_globalData(globalData)
-    , m_startColumnNumberCorrection(0)
     , m_keywordTable(JSC::mainTable)
 {
     m_buffer8.reserveInitialCapacity(initialReadBufferCapacity);
@@ -142,8 +141,10 @@ ALWAYS_INLINE void Lexer::shift4()
     m_code += 4;
 }
 
-void Lexer::setCode(const SourceCode& source)
+void Lexer::setCode(const SourceCode& source, ParserArena& arena)
 {
+    m_arena = &arena.identifierArena();
+
     m_lineNumber = source.firstLine();
     m_delimited = false;
     m_lastToken = -1;
@@ -202,14 +203,12 @@ void Lexer::shiftLineTerminator()
     else
         shift1();
 
-    m_startColumnNumberCorrection = currentOffset();
     ++m_lineNumber;
 }
 
-ALWAYS_INLINE Identifier* Lexer::makeIdentifier(const UChar* characters, size_t length)
+ALWAYS_INLINE const Identifier* Lexer::makeIdentifier(const UChar* characters, size_t length)
 {
-    m_identifiers.append(Identifier(m_globalData, characters, length));
-    return &m_identifiers.last();
+    return &m_arena->makeIdentifier(m_globalData, characters, length);
 }
 
 inline bool Lexer::lastTokenWasRestrKeyword() const
@@ -295,15 +294,11 @@ start:
     int startOffset = currentOffset();
 
     if (m_current == -1) {
-#ifndef QT_BUILD_SCRIPT_LIB /* the parser takes cate about automatic semicolon.
-                              this might add incorrect semicolons */
-        //m_delimited and m_isReparsing are now useless
         if (!m_terminator && !m_delimited && !m_isReparsing) {
             // automatic semicolon insertion if program incomplete
             token = ';';
             goto doneSemicolon;
         }
-#endif
         return 0;
     }
 
@@ -899,11 +894,11 @@ doneString:
     // Fall through into returnToken.
 
 returnToken: {
-    llocp->first_line = m_lineNumber;
-    llocp->last_line = m_lineNumber;
-
-    llocp->first_column = startOffset - m_startColumnNumberCorrection;
-    llocp->last_column = currentOffset() - m_startColumnNumberCorrection;
+    int lineNumber = m_lineNumber;
+    llocp->first_line = lineNumber;
+    llocp->last_line = lineNumber;
+    llocp->first_column = startOffset;
+    llocp->last_column = currentOffset();
 
     m_lastToken = token;
     return token;
@@ -914,48 +909,110 @@ returnError:
     return -1;
 }
 
-bool Lexer::scanRegExp()
+bool Lexer::scanRegExp(const Identifier*& pattern, const Identifier*& flags, UChar patternPrefix)
 {
     ASSERT(m_buffer16.isEmpty());
 
     bool lastWasEscape = false;
     bool inBrackets = false;
 
+    if (patternPrefix) {
+        ASSERT(!isLineTerminator(patternPrefix));
+        ASSERT(patternPrefix != '/');
+        ASSERT(patternPrefix != '[');
+        record16(patternPrefix);
+    }
+
     while (true) {
-        if (isLineTerminator(m_current) || m_current == -1)
-            return false;
-        if (m_current != '/' || lastWasEscape || inBrackets) {
-            // keep track of '[' and ']'
-            if (!lastWasEscape) {
-                if (m_current == '[' && !inBrackets)
-                    inBrackets = true;
-                if (m_current == ']' && inBrackets)
-                    inBrackets = false;
-            }
-            record16(m_current);
-            lastWasEscape = !lastWasEscape && m_current == '\\';
-        } else { // end of regexp
-            m_pattern = UString(m_buffer16);
+        int current = m_current;
+
+        if (isLineTerminator(current) || current == -1) {
             m_buffer16.resize(0);
-            shift1();
+            return false;
+        }
+
+        shift1();
+
+        if (current == '/' && !lastWasEscape && !inBrackets)
+            break;
+
+        record16(current);
+
+        if (lastWasEscape) {
+            lastWasEscape = false;
+            continue;
+        }
+
+        switch (current) {
+        case '[':
+            inBrackets = true;
+            break;
+        case ']':
+            inBrackets = false;
+            break;
+        case '\\':
+            lastWasEscape = true;
             break;
         }
-        shift1();
     }
+
+    pattern = makeIdentifier(m_buffer16.data(), m_buffer16.size());
+    m_buffer16.resize(0);
 
     while (isIdentPart(m_current)) {
         record16(m_current);
         shift1();
     }
-    m_flags = UString(m_buffer16);
+
+    flags = makeIdentifier(m_buffer16.data(), m_buffer16.size());
     m_buffer16.resize(0);
+
+    return true;
+}
+
+bool Lexer::skipRegExp()
+{
+    bool lastWasEscape = false;
+    bool inBrackets = false;
+
+    while (true) {
+        int current = m_current;
+
+        if (isLineTerminator(current) || current == -1)
+            return false;
+
+        shift1();
+
+        if (current == '/' && !lastWasEscape && !inBrackets)
+            break;
+
+        if (lastWasEscape) {
+            lastWasEscape = false;
+            continue;
+        }
+
+        switch (current) {
+        case '[':
+            inBrackets = true;
+            break;
+        case ']':
+            inBrackets = false;
+            break;
+        case '\\':
+            lastWasEscape = true;
+            break;
+        }
+    }
+
+    while (isIdentPart(m_current))
+        shift1();
 
     return true;
 }
 
 void Lexer::clear()
 {
-    m_identifiers.clear();
+    m_arena = 0;
     m_codeWithoutBOMs.clear();
 
     Vector<char> newBuffer8;
@@ -967,9 +1024,6 @@ void Lexer::clear()
     m_buffer16.swap(newBuffer16);
 
     m_isReparsing = false;
-
-    m_pattern = UString();
-    m_flags = UString();
 }
 
 SourceCode Lexer::sourceCode(int openBrace, int closeBrace, int firstLine)

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -216,6 +216,8 @@ void QGLEngineSharedShaders::shaderDestroyed(QObject *shader)
 QGLShader *QGLEngineSharedShaders::compileNamedShader(ShaderName name, QGLShader::ShaderType type)
 {
     Q_ASSERT(name != CustomImageSrcFragmentShader);
+    Q_ASSERT(name < InvalidShaderName);
+
     if (compiledShaders[name])
         return compiledShaders[name];
 
@@ -280,7 +282,8 @@ QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineS
 
     // We have to bind the vertex attribute names before the program is linked:
     cached.program->bindAttributeLocation("vertexCoordsArray", QT_VERTEX_COORDS_ATTR);
-    cached.program->bindAttributeLocation("textureCoordArray", QT_TEXTURE_COORDS_ATTR);
+    if (cached.useTextureCoords)
+        cached.program->bindAttributeLocation("textureCoordArray", QT_TEXTURE_COORDS_ATTR);
 
     cached.program->link();
     if (!cached.program->isLinked()) {
@@ -329,7 +332,6 @@ QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
       srcPixelType(Qt::NoBrush),
       useGlobalOpacity(false),
       maskType(NoMask),
-      useTextureCoords(false),
       compositionMode(QPainter::CompositionMode_SourceOver),
       customSrcStage(0),
       currentShaderProg(0),
@@ -401,15 +403,6 @@ void QGLEngineShaderManager::setSrcPixelType(PixelSrcType type)
         return;
 
     srcPixelType = type;
-    shaderProgNeedsChanging = true; //###
-}
-
-void QGLEngineShaderManager::setTextureCoordsEnabled(bool enabled)
-{
-    if (useTextureCoords == enabled)
-        return;
-
-    useTextureCoords = enabled;
     shaderProgNeedsChanging = true; //###
 }
 
@@ -490,13 +483,7 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
     QGLEngineShaderProg requiredProgram;
     requiredProgram.program = 0;
 
-    // Choose vertex shader main function
-    QGLEngineSharedShaders::ShaderName mainVertexShaderName = QGLEngineSharedShaders::InvalidShaderName;
-    if (useTextureCoords)
-        mainVertexShaderName = QGLEngineSharedShaders::MainWithTexCoordsVertexShader;
-    else
-        mainVertexShaderName = QGLEngineSharedShaders::MainVertexShader;
-    requiredProgram.mainVertexShader = sharedShaders->compileNamedShader(mainVertexShaderName, QGLShader::PartialVertexShader);
+    bool texCoords = false;
 
     // Choose vertex shader shader position function (which typically also sets
     // varyings) and the source pixel (srcPixel) fragment shader function:
@@ -514,19 +501,22 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
     else switch (srcPixelType) {
         default:
         case Qt::NoBrush:
-            qCritical("QGLEngineShaderManager::useCorrectShaderProg() - I'm scared, Qt::NoBrush style is set");
+            qFatal("QGLEngineShaderManager::useCorrectShaderProg() - Qt::NoBrush style is set");
             break;
         case QGLEngineShaderManager::ImageSrc:
             srcPixelFragShaderName = QGLEngineSharedShaders::ImageSrcFragmentShader;
             positionVertexShaderName = QGLEngineSharedShaders::PositionOnlyVertexShader;
+            texCoords = true;
             break;
         case QGLEngineShaderManager::NonPremultipliedImageSrc:
             srcPixelFragShaderName = QGLEngineSharedShaders::NonPremultipliedImageSrcFragmentShader;
             positionVertexShaderName = QGLEngineSharedShaders::PositionOnlyVertexShader;
+            texCoords = true;
             break;
         case QGLEngineShaderManager::PatternSrc:
             srcPixelFragShaderName = QGLEngineSharedShaders::ImageSrcWithPatternFragmentShader;
             positionVertexShaderName = QGLEngineSharedShaders::PositionOnlyVertexShader;
+            texCoords = true;
             break;
         case QGLEngineShaderManager::TextureSrcWithPattern:
             srcPixelFragShaderName = QGLEngineSharedShaders::TextureBrushSrcWithPatternFragmentShader;
@@ -594,14 +584,16 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
 
     if (hasMask) {
         QGLEngineSharedShaders::ShaderName maskShaderName = QGLEngineSharedShaders::InvalidShaderName;
-        if (maskType == PixelMask)
+        if (maskType == PixelMask) {
             maskShaderName = QGLEngineSharedShaders::MaskFragmentShader;
-        else if (maskType == SubPixelMask)
+            texCoords = true;
+        } else if (maskType == SubPixelMask) {
             maskShaderName = QGLEngineSharedShaders::RgbMaskFragmentShader;
-        else if (maskType == SubPixelWithGammaMask)
+        } else if (maskType == SubPixelWithGammaMask) {
             maskShaderName = QGLEngineSharedShaders::RgbMaskWithGammaFragmentShader;
-        else
+        } else {
             qCritical("QGLEngineShaderManager::useCorrectShaderProg() - Unknown mask type");
+        }
 
         requiredProgram.maskFragShader = sharedShaders->compileNamedShader(maskShaderName, QGLShader::PartialFragmentShader);
     } else {
@@ -651,6 +643,16 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
     } else {
         requiredProgram.compositionFragShader = 0;
     }
+
+        // Choose vertex shader main function
+    QGLEngineSharedShaders::ShaderName mainVertexShaderName = QGLEngineSharedShaders::InvalidShaderName;
+    if (texCoords)
+        mainVertexShaderName = QGLEngineSharedShaders::MainWithTexCoordsVertexShader;
+    else
+        mainVertexShaderName = QGLEngineSharedShaders::MainVertexShader;
+    requiredProgram.mainVertexShader = sharedShaders->compileNamedShader(mainVertexShaderName, QGLShader::PartialVertexShader);
+    requiredProgram.useTextureCoords = texCoords;
+
 
     // At this point, requiredProgram is fully populated so try to find the program in the cache
     currentShaderProg = sharedShaders->findProgramInCache(requiredProgram);

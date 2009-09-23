@@ -43,6 +43,7 @@
 #include "config.h"
 #endif
 
+#include "qmljsglobal_p.h"
 #include "qmljsengine_p.h"
 #include "qmljslexer_p.h"
 #include "qmljsgrammar_p.h"
@@ -52,7 +53,7 @@
 #include <stdio.h>
 #include <string.h>
 
-QT_BEGIN_NAMESPACE
+QT_QML_BEGIN_NAMESPACE
 
 extern double qstrtod(const char *s00, char const **se, bool *ok);
 
@@ -1147,6 +1148,6 @@ void Lexer::syncProhibitAutomaticSemicolon()
     }
 }
 
-QT_END_NAMESPACE
+QT_QML_END_NAMESPACE
 
 

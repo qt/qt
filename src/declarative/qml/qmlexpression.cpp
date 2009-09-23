@@ -212,7 +212,7 @@ QVariant QmlExpressionPrivate::evalSSE()
     return rv;
 }
 
-QVariant QmlExpressionPrivate::evalQtScript()
+QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope)
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::BindValueQt> perfqt;
@@ -223,6 +223,9 @@ QVariant QmlExpressionPrivate::evalQtScript()
 
     if (me)
        ctxtPriv->defaultObjects.insert(ctxtPriv->highPriorityCount, me);
+    if (secondaryScope)
+       ctxtPriv->defaultObjects.insert(ctxtPriv->highPriorityCount, 
+                                       secondaryScope);
 
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
@@ -262,6 +265,8 @@ QVariant QmlExpressionPrivate::evalQtScript()
     }
 
     if (me)
+        ctxtPriv->defaultObjects.removeAt(ctxtPriv->highPriorityCount);
+    if (secondaryScope)
         ctxtPriv->defaultObjects.removeAt(ctxtPriv->highPriorityCount);
 
     QVariant rv;
@@ -306,6 +311,45 @@ QVariant QmlExpressionPrivate::evalQtScript()
     return rv;
 }
 
+QVariant QmlExpressionPrivate::value(QObject *secondaryScope)
+{
+    Q_Q(QmlExpression);
+
+    QVariant rv;
+    if (!q->engine() || (!sse.isValid() && expression.isEmpty()))
+        return rv;
+
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+    QFxPerfTimer<QFxPerf::BindValue> perf;
+#endif
+
+    QmlEnginePrivate *ep = QmlEnginePrivate::get(q->engine());
+
+    QmlExpression *lastCurrentExpression = ep->currentExpression;
+    QPODVector<QmlEnginePrivate::CapturedProperty> lastCapturedProperties;
+    ep->capturedProperties.copyAndClear(lastCapturedProperties);
+
+    ep->currentExpression = q;
+
+    if (sse.isValid()) {
+        rv = evalSSE();
+    } else {
+        rv = evalQtScript(secondaryScope);
+    }
+
+    ep->currentExpression = lastCurrentExpression;
+
+    if ((!q->trackChange() || !ep->capturedProperties.count()) && guardList) {
+        clearGuards();
+    } else if(q->trackChange()) {
+        updateGuards(ep->capturedProperties);
+    }
+
+    lastCapturedProperties.copyAndClear(ep->capturedProperties);
+
+    return rv;
+}
+
 /*!
     Returns the value of the expression, or an invalid QVariant if the
     expression is invalid or has an error.
@@ -313,40 +357,7 @@ QVariant QmlExpressionPrivate::evalQtScript()
 QVariant QmlExpression::value()
 {
     Q_D(QmlExpression);
-
-    QVariant rv;
-    if (!engine() || (!d->sse.isValid() && d->expression.isEmpty()))
-        return rv;
-
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::BindValue> perf;
-#endif
-
-    QmlEnginePrivate *ep = QmlEnginePrivate::get(engine());
-
-    QmlExpression *lastCurrentExpression = ep->currentExpression;
-    QPODVector<QmlEnginePrivate::CapturedProperty> lastCapturedProperties;
-    ep->capturedProperties.copyAndClear(lastCapturedProperties);
-
-    ep->currentExpression = this;
-
-    if (d->sse.isValid()) {
-        rv = d->evalSSE();
-    } else {
-        rv = d->evalQtScript();
-    }
-
-    ep->currentExpression = lastCurrentExpression;
-
-    if ((!trackChange() || !ep->capturedProperties.count()) && d->guardList) {
-        d->clearGuards();
-    } else if(trackChange()) {
-        d->updateGuards(ep->capturedProperties);
-    }
-
-    lastCapturedProperties.copyAndClear(ep->capturedProperties);
-
-    return rv;
+    return d->value();
 }
 
 /*!

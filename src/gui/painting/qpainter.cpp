@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -475,7 +475,8 @@ void QPainterPrivate::draw_helper(const QPainterPath &originalPath, DrawOperatio
     p.end();
 
     q->save();
-    q->resetMatrix();
+    state->matrix = QTransform();
+    state->dirtyFlags |= QPaintEngine::DirtyTransform;
     updateState(state);
     engine->drawImage(absPathRect,
                  image,
@@ -1316,7 +1317,8 @@ void QPainterPrivate::updateState(QPainterState *newState)
     Another workaround is to convert the paths to polygons first and then draw the
     polygons instead.
 
-    \sa QPaintDevice, QPaintEngine, {QtSvg Module}, {Basic Drawing Example}
+    \sa QPaintDevice, QPaintEngine, {QtSvg Module}, {Basic Drawing Example},
+        {Drawing Utility Functions}
 */
 
 /*!
@@ -1894,8 +1896,13 @@ QPaintEngine *QPainter::paintEngine() const
 
 /*!
     Flushes the painting pipeline and prepares for the user issuing
-    native painting commands. Must be followed by a call to
-    endNativePainting().
+    commands directly to the underlying graphics context. Must be
+    followed by a call to endNativePainting().
+
+    Here is an example that shows intermixing of painter commands
+    and raw OpenGL commands:
+
+    \snippet doc/src/snippets/code/src_gui_painting_qpainter.cpp 21
 
     \sa endNativePainting()
 */
@@ -4031,7 +4038,6 @@ const QFont &QPainter::font() const
 
     \sa drawRect(), QPen
 */
-// FALCON: Should we add a specialized method in QPaintEngineEx?
 void QPainter::drawRoundedRect(const QRectF &rect, qreal xRadius, qreal yRadius, Qt::SizeMode mode)
 {
 #ifdef QT_DEBUG_DRAW
@@ -4049,61 +4055,7 @@ void QPainter::drawRoundedRect(const QRectF &rect, qreal xRadius, qreal yRadius,
     }
 
     if (d->extended) {
-        QPainterPath::ElementType types[] = {
-            QPainterPath::MoveToElement,
-            QPainterPath::LineToElement,
-            QPainterPath::CurveToElement,
-            QPainterPath::CurveToDataElement,
-            QPainterPath::CurveToDataElement,
-            QPainterPath::LineToElement,
-            QPainterPath::CurveToElement,
-            QPainterPath::CurveToDataElement,
-            QPainterPath::CurveToDataElement,
-            QPainterPath::LineToElement,
-            QPainterPath::CurveToElement,
-            QPainterPath::CurveToDataElement,
-            QPainterPath::CurveToDataElement,
-            QPainterPath::LineToElement,
-            QPainterPath::CurveToElement,
-            QPainterPath::CurveToDataElement,
-            QPainterPath::CurveToDataElement
-        };
-
-        qreal x1 = rect.left();
-        qreal x2 = rect.right();
-        qreal y1 = rect.top();
-        qreal y2 = rect.bottom();
-
-        if (mode == Qt::RelativeSize) {
-            xRadius = xRadius * rect.width() / 200.;
-            yRadius = yRadius * rect.height() / 200.;
-        }
-
-        xRadius = qMin(xRadius, rect.width() / 2);
-        yRadius = qMin(yRadius, rect.height() / 2);
-
-        qreal pts[] = {
-            x1 + xRadius, y1,                   // MoveTo
-            x2 - xRadius, y1,                   // LineTo
-            x2 - (1 - KAPPA) * xRadius, y1,     // CurveTo
-            x2, y1 + (1 - KAPPA) * yRadius,
-            x2, y1 + yRadius,
-            x2, y2 - yRadius,                   // LineTo
-            x2, y2 - (1 - KAPPA) * yRadius,     // CurveTo
-            x2 - (1 - KAPPA) * xRadius, y2,
-            x2 - xRadius, y2,
-            x1 + xRadius, y2,                   // LineTo
-            x1 + (1 - KAPPA) * xRadius, y2,           // CurveTo
-            x1, y2 - (1 - KAPPA) * yRadius,
-            x1, y2 - yRadius,
-            x1, y1 + yRadius,                   // LineTo
-            x1, y1 + KAPPA * yRadius,           // CurveTo
-            x1 + (1 - KAPPA) * xRadius, y1,
-            x1 + xRadius, y1
-        };
-
-        QVectorPath path(pts, 17, types);
-        d->extended->draw(path);
+        d->extended->drawRoundedRect(rect, xRadius, yRadius, mode);
         return;
     }
 
@@ -4145,23 +4097,7 @@ void QPainter::drawRoundedRect(const QRectF &rect, qreal xRadius, qreal yRadius,
 */
 void QPainter::drawRoundRect(const QRectF &r, int xRnd, int yRnd)
 {
-#ifdef QT_DEBUG_DRAW
-    if (qt_show_painter_debug_output)
-        printf("QPainter::drawRoundRectangle(), [%.2f,%.2f,%.2f,%.2f]\n", r.x(), r.y(), r.width(), r.height());
-#endif
-    Q_D(QPainter);
-
-    if (!d->engine)
-        return;
-
-    if(xRnd <= 0 || yRnd <= 0) {             // draw normal rectangle
-        drawRect(r);
-        return;
-    }
-
-    QPainterPath path;
-    path.addRoundRect(r, xRnd, yRnd);
-    drawPath(path);
+    drawRoundedRect(r, xRnd, yRnd, Qt::RelativeSize);
 }
 
 
@@ -7528,7 +7464,11 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
     bool hidemnmemonic = (tf & Qt::TextHideMnemonic);
 
     Qt::LayoutDirection layout_direction;
-    if(option)
+    if (tf & Qt::TextForceLeftToRight)
+        layout_direction = Qt::LeftToRight;
+    else if (tf & Qt::TextForceRightToLeft)
+        layout_direction = Qt::RightToLeft;
+    else if (option)
         layout_direction = option->textDirection();
     else if (painter)
         layout_direction = painter->layoutDirection();
@@ -7556,7 +7496,6 @@ start_lengthVariant:
     bool hasMoreLengthVariants = false;
     // compatible behaviour to the old implementation. Replace
     // tabs by spaces
-    bool has_tab = false;
     int old_offset = offset;
     for (; offset < text.length(); offset++) {
         QChar chr = text.at(offset);
@@ -7572,7 +7511,6 @@ start_lengthVariant:
             } else if (!tabarraylen && !tabstops) {
                 tabstops = qRound(fm.width(QLatin1Char('x'))*8);
             }
-            has_tab = true;
         } else if (chr == QChar(ushort(0x9c))) {
             // string with multiple length variants
             hasMoreLengthVariants = true;

@@ -52,6 +52,7 @@ public:
     virtual IntSize naturalSize() const = 0;
 
     virtual bool hasVideo() const = 0;
+    virtual bool hasAudio() const = 0;
 
     virtual void setVisible(bool) = 0;
 
@@ -76,7 +77,7 @@ public:
     virtual MediaPlayer::ReadyState readyState() const = 0;
 
     virtual float maxTimeSeekable() const = 0;
-    virtual float maxTimeBuffered() const = 0;
+    virtual PassRefPtr<TimeRanges> buffered() const = 0;
 
     virtual int dataRate() const = 0;
 

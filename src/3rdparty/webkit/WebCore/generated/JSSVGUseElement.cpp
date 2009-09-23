@@ -117,6 +117,11 @@ bool JSSVGUseElementPrototype::getOwnPropertySlot(ExecState* exec, const Identif
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGUseElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGUseElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGUseElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGUseElement::s_info = { "SVGUseElement", &JSSVGElement::s_info, &JSSVGUseElementTable, 0 };
 
 JSSVGUseElement::JSSVGUseElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGUseElement> impl)
@@ -132,6 +137,11 @@ JSObject* JSSVGUseElement::createPrototype(ExecState* exec, JSGlobalObject* glob
 bool JSSVGUseElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGUseElement, Base>(exec, &JSSVGUseElementTable, this, propertyName, slot);
+}
+
+bool JSSVGUseElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGUseElement, Base>(exec, &JSSVGUseElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGUseElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -306,7 +316,7 @@ void setJSSVGUseElementXmlspace(ExecState* exec, JSObject* thisObject, JSValue v
 JSValue JSC_HOST_CALL jsSVGUseElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGUseElement::s_info))
+    if (!thisValue.inherits(&JSSVGUseElement::s_info))
         return throwError(exec, TypeError);
     JSSVGUseElement* castedThisObj = static_cast<JSSVGUseElement*>(asObject(thisValue));
     SVGUseElement* imp = static_cast<SVGUseElement*>(castedThisObj->impl());
@@ -320,7 +330,7 @@ JSValue JSC_HOST_CALL jsSVGUseElementPrototypeFunctionHasExtension(ExecState* ex
 JSValue JSC_HOST_CALL jsSVGUseElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGUseElement::s_info))
+    if (!thisValue.inherits(&JSSVGUseElement::s_info))
         return throwError(exec, TypeError);
     JSSVGUseElement* castedThisObj = static_cast<JSSVGUseElement*>(asObject(thisValue));
     SVGUseElement* imp = static_cast<SVGUseElement*>(castedThisObj->impl());
@@ -334,7 +344,7 @@ JSValue JSC_HOST_CALL jsSVGUseElementPrototypeFunctionGetPresentationAttribute(E
 JSValue JSC_HOST_CALL jsSVGUseElementPrototypeFunctionGetBBox(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGUseElement::s_info))
+    if (!thisValue.inherits(&JSSVGUseElement::s_info))
         return throwError(exec, TypeError);
     JSSVGUseElement* castedThisObj = static_cast<JSSVGUseElement*>(asObject(thisValue));
     SVGUseElement* imp = static_cast<SVGUseElement*>(castedThisObj->impl());
@@ -347,7 +357,7 @@ JSValue JSC_HOST_CALL jsSVGUseElementPrototypeFunctionGetBBox(ExecState* exec, J
 JSValue JSC_HOST_CALL jsSVGUseElementPrototypeFunctionGetCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGUseElement::s_info))
+    if (!thisValue.inherits(&JSSVGUseElement::s_info))
         return throwError(exec, TypeError);
     JSSVGUseElement* castedThisObj = static_cast<JSSVGUseElement*>(asObject(thisValue));
     SVGUseElement* imp = static_cast<SVGUseElement*>(castedThisObj->impl());
@@ -360,7 +370,7 @@ JSValue JSC_HOST_CALL jsSVGUseElementPrototypeFunctionGetCTM(ExecState* exec, JS
 JSValue JSC_HOST_CALL jsSVGUseElementPrototypeFunctionGetScreenCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGUseElement::s_info))
+    if (!thisValue.inherits(&JSSVGUseElement::s_info))
         return throwError(exec, TypeError);
     JSSVGUseElement* castedThisObj = static_cast<JSSVGUseElement*>(asObject(thisValue));
     SVGUseElement* imp = static_cast<SVGUseElement*>(castedThisObj->impl());
@@ -373,7 +383,7 @@ JSValue JSC_HOST_CALL jsSVGUseElementPrototypeFunctionGetScreenCTM(ExecState* ex
 JSValue JSC_HOST_CALL jsSVGUseElementPrototypeFunctionGetTransformToElement(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGUseElement::s_info))
+    if (!thisValue.inherits(&JSSVGUseElement::s_info))
         return throwError(exec, TypeError);
     JSSVGUseElement* castedThisObj = static_cast<JSSVGUseElement*>(asObject(thisValue));
     SVGUseElement* imp = static_cast<SVGUseElement*>(castedThisObj->impl());

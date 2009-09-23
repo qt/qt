@@ -35,12 +35,12 @@
 #include <QtCore/QString>
 
 class QWebPage;
+class QWebView;
 
 namespace WebCore {
     class Node;
     class Page;
     class String;
-    class InspectorClientWebPage;
 
     class InspectorClientQt : public InspectorClient {
     public:
@@ -56,7 +56,6 @@ namespace WebCore {
 
         virtual void showWindow();
         virtual void closeWindow();
-        virtual bool windowVisible();
 
         virtual void attachWindow();
         virtual void detachWindow();
@@ -71,10 +70,12 @@ namespace WebCore {
         virtual void storeSetting(const String& key, const InspectorController::Setting&);
         virtual void removeSetting(const String& key);
 
+        virtual void inspectorWindowObjectCleared();
+
     private:
         void updateWindowTitle();
         QWebPage* m_inspectedWebPage;
-        OwnPtr<InspectorClientWebPage> m_webPage;
+        OwnPtr<QWebView> m_inspectorView;
         QString m_inspectedURL;
     };
 }

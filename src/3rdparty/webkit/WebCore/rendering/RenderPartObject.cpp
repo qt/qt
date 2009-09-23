@@ -33,8 +33,8 @@
 #include "HTMLParamElement.h"
 #include "MIMETypeRegistry.h"
 #include "Page.h"
-#include "PluginData.h"
 #include "RenderView.h"
+#include "RenderWidgetProtector.h"
 #include "Text.h"
 
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
@@ -72,7 +72,7 @@ static bool isURLAllowed(Document* doc, const String& url)
     KURL completeURL = doc->completeURL(url);
     bool foundSelfReference = false;
     for (Frame* frame = doc->frame(); frame; frame = frame->tree()->parent()) {
-        if (equalIgnoringRef(frame->loader()->url(), completeURL)) {
+        if (equalIgnoringFragmentIdentifier(frame->loader()->url(), completeURL)) {
             if (foundSelfReference)
                 return false;
             foundSelfReference = true;
@@ -90,25 +90,12 @@ static ClassIdToTypeMap* createClassIdToTypeMap()
     map->add("clsid:CFCDAA03-8BE4-11CF-B84B-0020AFBBCCFA", "audio/x-pn-realaudio-plugin");
     map->add("clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B", "video/quicktime");
     map->add("clsid:166B1BCA-3F9C-11CF-8075-444553540000", "application/x-director");
-#if ENABLE(ACTIVEX_TYPE_CONVERSION_WMPLAYER)
     map->add("clsid:6BF52A52-394A-11D3-B153-00C04F79FAA6", "application/x-mplayer2");
     map->add("clsid:22D6F312-B0F6-11D0-94AB-0080C74C7E95", "application/x-mplayer2");
-#endif
     return map;
 }
 
-static const String& activeXType()
-{
-    DEFINE_STATIC_LOCAL(String, activeXType, ("application/x-oleobject"));
-    return activeXType;
-}
-
-static inline bool havePlugin(const PluginData* pluginData, const String& type)
-{
-    return pluginData && !type.isEmpty() && pluginData->supportsMimeType(type);
-}
-
-static String serviceTypeForClassId(const String& classId, const PluginData* pluginData)
+static String serviceTypeForClassId(const String& classId)
 {
     // Return early if classId is empty (since we won't do anything below).
     // Furthermore, if classId is null, calling get() below will crash.
@@ -116,30 +103,7 @@ static String serviceTypeForClassId(const String& classId, const PluginData* plu
         return String();
 
     static ClassIdToTypeMap* map = createClassIdToTypeMap();
-    String type = map->get(classId);
-
-    // If we do have a plug-in that supports generic ActiveX content and don't have a plug-in
-    // for the MIME type we came up with, ignore the MIME type we came up with and just use
-    // the ActiveX type.
-    if (havePlugin(pluginData, activeXType()) && !havePlugin(pluginData, type))
-        return activeXType();
-
-    return type;
-}
-
-static inline bool shouldUseEmbedDescendant(HTMLObjectElement* objectElement, const PluginData* pluginData)
-{
-#if PLATFORM(MAC)
-    UNUSED_PARAM(objectElement);
-    UNUSED_PARAM(pluginData);
-    // On Mac, we always want to use the embed descendant.
-    return true;
-#else
-    // If we have both an <object> and <embed>, we always want to use the <embed> except when we have
-    // an ActiveX plug-in and plan to use it.
-    return !(havePlugin(pluginData, activeXType())
-        && serviceTypeForClassId(objectElement->classId(), pluginData) == activeXType());
-#endif
+    return map->get(classId);
 }
 
 static void mapDataParamToSrc(Vector<String>* paramNames, Vector<String>* paramValues)
@@ -168,6 +132,12 @@ void RenderPartObject::updateWidget(bool onlyCreateNonNetscapePlugins)
     Vector<String> paramValues;
     Frame* frame = frameView()->frame();
 
+    // The calls to FrameLoader::requestObject within this function can result in a plug-in being initialized.
+    // This can run cause arbitrary JavaScript to run and may result in this RenderObject being detached from
+    // the render tree and destroyed, causing a crash like <rdar://problem/6954546>.  By extending our lifetime
+    // artifically to ensure that we remain alive for the duration of plug-in initialization.
+    RenderWidgetProtector protector(this);
+
     if (node()->hasTagName(objectTag)) {
         HTMLObjectElement* o = static_cast<HTMLObjectElement*>(node());
 
@@ -177,17 +147,14 @@ void RenderPartObject::updateWidget(bool onlyCreateNonNetscapePlugins)
 
         // Check for a child EMBED tag.
         HTMLEmbedElement* embed = 0;
-        const PluginData* pluginData = frame->page()->pluginData();
-        if (shouldUseEmbedDescendant(o, pluginData)) {
-            for (Node* child = o->firstChild(); child; ) {
-                if (child->hasTagName(embedTag)) {
-                    embed = static_cast<HTMLEmbedElement*>(child);
-                    break;
-                } else if (child->hasTagName(objectTag))
-                    child = child->nextSibling();         // Don't descend into nested OBJECT tags
-                else
-                    child = child->traverseNextNode(o);   // Otherwise descend (EMBEDs may be inside COMMENT tags)
-            }
+        for (Node* child = o->firstChild(); child; ) {
+            if (child->hasTagName(embedTag)) {
+                embed = static_cast<HTMLEmbedElement*>(child);
+                break;
+            } else if (child->hasTagName(objectTag))
+                child = child->nextSibling();         // Don't descend into nested OBJECT tags
+            else
+                child = child->traverseNextNode(o);   // Otherwise descend (EMBEDs may be inside COMMENT tags)
         }
 
         // Use the attributes from the EMBED tag instead of the OBJECT tag including WIDTH and HEIGHT.
@@ -260,7 +227,7 @@ void RenderPartObject::updateWidget(bool onlyCreateNonNetscapePlugins)
 
         // If we still don't have a type, try to map from a specific CLASSID to a type.
         if (serviceType.isEmpty())
-            serviceType = serviceTypeForClassId(o->classId(), pluginData);
+            serviceType = serviceTypeForClassId(o->classId());
 
         if (!isURLAllowed(document(), url))
             return;
@@ -282,7 +249,7 @@ void RenderPartObject::updateWidget(bool onlyCreateNonNetscapePlugins)
                 return;
         }
 
-        bool success = frame->loader()->requestObject(this, url, AtomicString(o->name()), serviceType, paramNames, paramValues);
+        bool success = frame->loader()->requestObject(this, url, o->getAttribute(nameAttr), serviceType, paramNames, paramValues);
         if (!success && m_hasFallbackContent)
             o->renderFallbackContent();
     } else if (node()->hasTagName(embedTag)) {
@@ -350,9 +317,11 @@ void RenderPartObject::layout()
 
     calcWidth();
     calcHeight();
-    adjustOverflowForBoxShadowAndReflect();
 
     RenderPart::layout();
+
+    m_overflow.clear();
+    addShadowOverflow();
 
     if (!widget() && frameView())
         frameView()->addWidgetToUpdate(this);

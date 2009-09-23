@@ -42,34 +42,18 @@
 #include "qfxrepeater.h"
 #include "qfxrepeater_p.h"
 #include "qmllistaccessor.h"
+#include "qfxvisualitemmodel.h"
 #include <qlistmodelinterface.h>
 
 
 QT_BEGIN_NAMESPACE
 QFxRepeaterPrivate::QFxRepeaterPrivate()
-: component(0), count(0)
+: model(0), ownModel(false)
 {
 }
 
 QFxRepeaterPrivate::~QFxRepeaterPrivate()
 {
-}
-
-QFxItem *QFxRepeaterPrivate::addItem(QmlContext *ctxt, QFxItem *lastItem)
-{
-    Q_UNUSED(lastItem)
-    Q_Q(QFxRepeater);
-    QObject *nobj = component->create(ctxt);
-    QFxItem *item = qobject_cast<QFxItem *>(nobj);
-    if (item) {
-        item->setParent(q->parentItem());
-//        item->stackUnder(lastItem);
-        deletables << nobj;
-    } else {
-        delete nobj;
-    }
-
-    return item;
 }
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Repeater,QFxRepeater)
@@ -78,15 +62,15 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Repeater,QFxRepeater)
     \qmlclass Repeater
     \inherits Item
 
-    \brief The Repeater item allows you to repeat a component based on a data source.
+    \brief The Repeater item allows you to repeat a component based on a model.
 
     The Repeater item is used when you want to create a large number of
-    similar items.  For each entry in the data source, an item is instantiated
-    in a context seeded with data from the data source.  If the repeater will
+    similar items.  For each entry in the model, an item is instantiated
+    in a context seeded with data from the model.  If the repeater will
     be instantiating a large number of instances, it may be more efficient to
     use one of Qt Declarative's \l {xmlViews}{view items}.
 
-    The data source may be either an object list, a string list or a Qt model.
+    The model may be either an object list, a string list, a number or a Qt model.
     In each case, the data element and the index is exposed to each instantiated
     component.  The index is always exposed as an accessible \c index property.
     In the case of an object or string list, the data element (of type string
@@ -147,7 +131,7 @@ QFxRepeater::~QFxRepeater()
 
     The model providing data for the repeater.
 
-    The model may be either an object list, a string list or a Qt model.
+    The model may be either an object list, a string list, a number or a Qt model.
     In each case, the data element and the index is exposed to each instantiated
     component.  The index is always exposed as an accessible \c index property.
     In the case of an object or string list, the data element (of type string
@@ -166,11 +150,47 @@ QVariant QFxRepeater::model() const
     return d->dataSource;
 }
 
-void QFxRepeater::setModel(const QVariant &v)
+void QFxRepeater::setModel(const QVariant &model)
 {
     Q_D(QFxRepeater);
-    d->dataSource = v;
-    regenerate();
+    clear();
+    /*
+    if (d->model) {
+        disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
+        disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
+        disconnect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
+        disconnect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
+        disconnect(d->model, SIGNAL(destroyingItem(QFxItem*)), this, SLOT(destroyingItem(QFxItem*)));
+    }
+    */
+    d->dataSource = model;
+    QObject *object = qvariant_cast<QObject*>(model);
+    QFxVisualModel *vim = 0;
+    if (object && (vim = qobject_cast<QFxVisualModel *>(object))) {
+        if (d->ownModel) {
+            delete d->model;
+            d->ownModel = false;
+        }
+        d->model = vim;
+    } else {
+        if (!d->ownModel) {
+            d->model = new QFxVisualDataModel(qmlContext(this));
+            d->ownModel = true;
+        }
+        if (QFxVisualDataModel *dataModel = qobject_cast<QFxVisualDataModel*>(d->model))
+            dataModel->setModel(model);
+    }
+    if (d->model) {
+        /*
+        connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
+        connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
+        connect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
+        connect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
+        connect(d->model, SIGNAL(destroyingItem(QFxItem*)), this, SLOT(destroyingItem(QFxItem*)));
+        */
+        regenerate();
+        emit countChanged();
+    }
 }
 
 /*!
@@ -182,14 +202,25 @@ void QFxRepeater::setModel(const QVariant &v)
 QmlComponent *QFxRepeater::delegate() const
 {
     Q_D(const QFxRepeater);
-    return d->component;
+    if (d->model) {
+        if (QFxVisualDataModel *dataModel = qobject_cast<QFxVisualDataModel*>(d->model))
+            return dataModel->delegate();
+    }
+
+    return 0;
 }
 
-void QFxRepeater::setDelegate(QmlComponent *_c)
+void QFxRepeater::setDelegate(QmlComponent *delegate)
 {
     Q_D(QFxRepeater);
-    d->component = _c;
-    regenerate();
+    if (!d->ownModel) {
+        d->model = new QFxVisualDataModel(qmlContext(this));
+        d->ownModel = true;
+    }
+    if (QFxVisualDataModel *dataModel = qobject_cast<QFxVisualDataModel*>(d->model)) {
+        dataModel->setDelegate(delegate);
+        regenerate();
+    }
 }
 
 /*!
@@ -200,7 +231,9 @@ void QFxRepeater::setDelegate(QmlComponent *_c)
 int QFxRepeater::count() const
 {
     Q_D(const QFxRepeater);
-    return d->count;
+    if (d->model)
+        return d->model->count();
+    return 0;
 }
 
 
@@ -227,6 +260,16 @@ QVariant QFxRepeater::itemChange(GraphicsItemChange change,
     return rv;
 }
 
+void QFxRepeater::clear()
+{
+    Q_D(QFxRepeater);
+    if (d->model) {
+        foreach (QFxItem *item, d->deletables)
+            d->model->release(item);
+    }
+    d->deletables.clear();
+}
+
 /*!
     \internal
  */
@@ -234,152 +277,19 @@ void QFxRepeater::regenerate()
 {
     Q_D(QFxRepeater);
 
-    qDeleteAll(d->deletables);
-    d->deletables.clear();
-    if (!d->component || !parentItem() || !isComponentComplete())
+    clear();
+
+    if (!d->model || !d->model->count() || !d->model->isValid() || !parentItem() || !isComponentComplete())
         return;
 
-    QFxItem *lastItem = this;
-
-    int count = 0;
-
-    if (d->dataSource.type() == QVariant::StringList) {
-        QStringList sl = qvariant_cast<QStringList>(d->dataSource);
-
-        count = sl.size();
-        for (int ii = 0; ii < count; ++ii) {
-            QmlContext *ctxt = new QmlContext(qmlContext(this), this);
-            d->deletables << ctxt;
-
-            ctxt->setContextProperty(QLatin1String("index"), ii);
-            ctxt->setContextProperty(QLatin1String("modelData"), sl.at(ii));
-
-            if (QFxItem *item = d->addItem(ctxt, lastItem))
-                lastItem = item;
-        }
-    } else if (d->dataSource.type() == QMetaType::QVariantList) {
-        QVariantList sl = qvariant_cast<QVariantList>(d->dataSource);
-
-        count = sl.size();
-        for (int ii = 0; ii < count; ++ii) {
-            QmlContext *ctxt = new QmlContext(qmlContext(this), this);
-            d->deletables << ctxt;
-
-            ctxt->setContextProperty(QLatin1String("index"), ii);
-            ctxt->setContextProperty(QLatin1String("modelData"), sl.at(ii));
-
-            if (QFxItem *item = d->addItem(ctxt, lastItem))
-                lastItem = item;
-        }
-    } else if (QmlMetaType::isList(d->dataSource)) {
-        count = QmlMetaType::listCount(d->dataSource);
-        if (count <= 0)
-            return;
-
-        for (int ii = 0; ii < count; ++ii) {
-            QVariant v = QmlMetaType::listAt(d->dataSource, ii);
-            QObject *o = QmlMetaType::toQObject(v);
-
-            QmlContext *ctxt = new QmlContext(qmlContext(this), this);
-            d->deletables << ctxt;
-
-            ctxt->setContextProperty(QLatin1String("index"), ii);
-            ctxt->setContextProperty(QLatin1String("modelData"), o);
-
-            if (QFxItem *item = d->addItem(ctxt, lastItem))
-                lastItem = item;
-        }
-    } else if (QListModelInterface *model = qobject_cast<QListModelInterface*>(d->dataSource.value<QObject*>())) {
-        count = model->count();
-        if (count <= 0)
-            return;
-
-        for (int ii = 0; ii < count; ++ii) {
-            QmlContext *ctxt = new QmlContext(qmlContext(this), this);
-            d->deletables << ctxt;
-
-            ctxt->setContextProperty(QLatin1String("index"), ii);
-
-            QList<int> roles = model->roles();
-            QHash<int,QVariant> data = model->data(ii,roles);
-            for (int j = 0; j < roles.size(); ++j) {
-                ctxt->setContextProperty(model->toString(roles.at(j)), data.value(roles.at(j)));
+    if (d->model) {
+        for (int ii = 0; ii < count(); ++ii) {
+            QFxItem *item = d->model->item(ii);
+            if (item) {
+                item->setParent(parentItem());
+                d->deletables << item;
             }
-
-            //for compatability with other lists, assign data if there is only a single role
-            if (roles.size() == 1)
-                ctxt->setContextProperty(QLatin1String("modelData"), data.value(roles.at(0)));
-
-            if (QFxItem *item = d->addItem(ctxt, lastItem))
-                lastItem = item;
-        }
-    } else if (QAbstractItemModel *model = qobject_cast<QAbstractItemModel*>(d->dataSource.value<QObject*>())) {
-        count = model->rowCount();
-        if (count <= 0)
-            return;
-
-        for (int ii = 0; ii < count; ++ii) {
-            QmlContext *ctxt = new QmlContext(qmlContext(this), this);
-            d->deletables << ctxt;
-
-            ctxt->setContextProperty(QLatin1String("index"), ii);
-
-            QList<int> roles;
-            QStringList roleNames;
-            QHash<int,QVariant> data;
-            for (QHash<int,QByteArray>::const_iterator it = model->roleNames().begin();
-                    it != model->roleNames().end(); ++it) {
-                roles.append(it.key());
-                roleNames.append(QLatin1String(*it));
-            }
-
-            QModelIndex index = model->index(ii, 0);
-            for (int j = 0; j < roles.size(); ++j) {
-                ctxt->setContextProperty(roleNames.at(j), model->data(index, roles.at(j)));
-            }
-
-            //for compatability with other lists, assign data if there is only a single role
-            if (roles.size() == 1)
-                ctxt->setContextProperty(QLatin1String("modelData"), data.value(roles.at(0)));
-
-            if (QFxItem *item = d->addItem(ctxt, lastItem))
-                lastItem = item;
-        }
-    } else if (QObject *object = d->dataSource.value<QObject*>()) {
-        // A single object (i.e. list of size 1).
-        // Properties are the roles (excluding objectName).
-        QmlContext *ctxt = new QmlContext(qmlContext(this), this);
-        d->deletables << ctxt;
-
-        ctxt->setContextProperty(QLatin1String("index"), QVariant(0));
-        count = object->metaObject()->propertyCount();
-        for (int ii = 1; ii < count; ++ii) {
-            const QMetaProperty &prop = object->metaObject()->property(ii);
-            ctxt->setContextProperty(QLatin1String(prop.name()), prop.read(object));
-        }
-
-        //for compatability with other lists, assign data if there is only a single role (excluding objectName)
-        if (count == 2) {
-            const QMetaProperty &prop = object->metaObject()->property(1);
-            ctxt->setContextProperty(QLatin1String("modelData"), prop.read(object));
-        }
-
-        d->addItem(ctxt, lastItem);
-
-    } else if (d->dataSource.canConvert(QVariant::Int)){
-
-        count = qvariant_cast<int>(d->dataSource);
-
-        for (int ii = 0; ii < count; ++ii) {
-            QmlContext *ctxt = new QmlContext(qmlContext(this), this);
-            d->deletables << ctxt;
-
-            ctxt->setContextProperty(QLatin1String("index"), ii);
-
-           if (QFxItem *item = d->addItem(ctxt, lastItem))
-                lastItem = item;
         }
     }
-    d->count = count;
 }
 QT_END_NAMESPACE

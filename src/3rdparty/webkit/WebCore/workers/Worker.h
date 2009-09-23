@@ -34,6 +34,7 @@
 #include "AtomicStringHash.h"
 #include "EventListener.h"
 #include "EventTarget.h"
+#include "MessagePort.h"
 #include "WorkerScriptLoaderClient.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassRefPtr.h>
@@ -51,17 +52,19 @@ namespace WebCore {
 
     class Worker : public AbstractWorker, private WorkerScriptLoaderClient {
     public:
-        static PassRefPtr<Worker> create(const String& url, ScriptExecutionContext* context) { return adoptRef(new Worker(url, context)); }
+        static PassRefPtr<Worker> create(const String& url, ScriptExecutionContext* context, ExceptionCode& ec) { return adoptRef(new Worker(url, context, ec)); }
         ~Worker();
 
         virtual Worker* toWorker() { return this; }
 
         void postMessage(const String&, ExceptionCode&);
-        void postMessage(const String&, MessagePort*, ExceptionCode&);
+        void postMessage(const String&, const MessagePortArray*, ExceptionCode&);
+        // FIXME: remove this when we update the ObjC bindings (bug #28774).
+        void postMessage(const String& message, MessagePort*, ExceptionCode&);
 
         void terminate();
 
-        void dispatchMessage(const String&, PassRefPtr<MessagePort>);
+        void dispatchMessage(const String&, PassOwnPtr<MessagePortArray>);
         void dispatchErrorEvent();
 
         virtual bool canSuspend() const;
@@ -72,7 +75,7 @@ namespace WebCore {
         EventListener* onmessage() const { return m_onMessageListener.get(); }
 
     private:
-        Worker(const String&, ScriptExecutionContext*);
+        Worker(const String&, ScriptExecutionContext*, ExceptionCode&);
 
         virtual void notifyFinished();
 

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -125,7 +125,7 @@ static qulonglong qstrtoull(const char *nptr, const char **endptr, register int 
 #if defined(Q_CC_MWERKS) && defined(Q_OS_WIN32)
 inline bool isascii(int c)
 {
-	return (c >= 0 && c <=127);
+        return (c >= 0 && c <=127);
 }
 #endif
 
@@ -1149,6 +1149,23 @@ static QLocale::MeasurementSystem macMeasurementSystem()
     }
 }
 
+static void getMacPreferredLanguageAndCountry(QString *language, QString *country)
+{
+    QCFType<CFArrayRef> languages = (CFArrayRef)CFPreferencesCopyValue(
+             CFSTR("AppleLanguages"),
+             kCFPreferencesAnyApplication,
+             kCFPreferencesCurrentUser,
+             kCFPreferencesAnyHost);
+    if (CFArrayGetCount(languages) > 0) {
+        QCFType<CFLocaleRef> locale = CFLocaleCreate(kCFAllocatorDefault,
+                                                     CFStringRef(CFArrayGetValueAtIndex(languages, 0)));
+        if (language)
+            *language = QCFString::toQString(CFStringRef(CFLocaleGetValue(locale, kCFLocaleLanguageCode)));
+        if (country)
+            *country = QCFString::toQString(CFStringRef(CFLocaleGetValue(locale, kCFLocaleCountryCode)));
+    }
+}
+
 QLocale QSystemLocale::fallbackLocale() const
 {
     return QLocale(QString::fromUtf8(getMacLocaleName().constData()));
@@ -1193,9 +1210,19 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
     case NegativeSign:
     case PositiveSign:
     case ZeroDigit:
-    case LanguageId:
-    case CountryId:
         break;
+    case LanguageId:
+    case CountryId: {
+        QString preferredLanguage;
+        QString preferredCountry;
+        getMacPreferredLanguageAndCountry(&preferredLanguage, &preferredCountry);
+        QLocale::Language languageCode = (preferredLanguage.isEmpty() ? QLocale::C : codeToLanguage(preferredLanguage.data()));
+        QLocale::Country countryCode = (preferredCountry.isEmpty() ? QLocale::AnyCountry : codeToCountry(preferredCountry.data()));
+        const QLocalePrivate *d = findLocale(languageCode, countryCode);
+        if (type == LanguageId)
+            return (QLocale::Language)d->languageId();
+        return (QLocale::Country)d->countryId();
+    }
 
     case MeasurementSystem:
         return QVariant(static_cast<int>(macMeasurementSystem()));
@@ -7181,8 +7208,8 @@ Q_CORE_EXPORT double qstrtod(const char *s00, const char **se, bool *ok)
     double ret = strtod((char*)s00, (char**)se);
     if (ok) {
       if((ret == 0.0l && errno == ERANGE)
-	 || ret == HUGE_VAL || ret == -HUGE_VAL)
-	*ok = false;
+         || ret == HUGE_VAL || ret == -HUGE_VAL)
+        *ok = false;
       else
         *ok = true; // the result will be that we don't report underflow in this case
     }

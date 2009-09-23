@@ -38,13 +38,10 @@
 
 namespace WebCore {
 
-    class ApplicationCache;
-    class ApplicationCacheGroup;
-    class ApplicationCacheResource;
+    class ApplicationCacheHost;
     class Archive;
     class ArchiveResource;
     class ArchiveResourceCollection;
-    class CachedPage;
     class Frame;
     class FrameLoader;
     class MainResourceLoader;
@@ -172,10 +169,6 @@ namespace WebCore {
         bool didCreateGlobalHistoryEntry() const { return m_didCreateGlobalHistoryEntry; }
         void setDidCreateGlobalHistoryEntry(bool didCreateGlobalHistoryEntry) { m_didCreateGlobalHistoryEntry = didCreateGlobalHistoryEntry; }
         
-        void loadFromCachedPage(PassRefPtr<CachedPage>);
-        void setLoadingFromCachedPage(bool loading) { m_loadingFromCachedPage = loading; }
-        bool isLoadingFromCachedPage() const { return m_loadingFromCachedPage; }
-        
         void setDefersLoading(bool);
 
         bool startLoadingMainResource(unsigned long identifier);
@@ -207,18 +200,7 @@ namespace WebCore {
         void takeMemoryCacheLoadsForClientNotification(Vector<String>& loads);
 
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
-        bool scheduleApplicationCacheLoad(ResourceLoader*, const ResourceRequest&, const KURL& originalURL);
-        bool scheduleLoadFallbackResourceFromApplicationCache(ResourceLoader*, const ResourceRequest&, ApplicationCache* = 0);
-        bool shouldLoadResourceFromApplicationCache(const ResourceRequest&, ApplicationCacheResource*&);
-        bool getApplicationCacheFallbackResource(const ResourceRequest&, ApplicationCacheResource*&, ApplicationCache* = 0);
-        
-        void setCandidateApplicationCacheGroup(ApplicationCacheGroup* group);
-        ApplicationCacheGroup* candidateApplicationCacheGroup() const { return m_candidateApplicationCacheGroup; }
-        
-        void setApplicationCache(PassRefPtr<ApplicationCache> applicationCache);
-        ApplicationCache* applicationCache() const { return m_applicationCache.get(); }
-
-        ApplicationCache* mainResourceApplicationCache() const;
+        ApplicationCacheHost* applicationCacheHost() const { return m_applicationCacheHost.get(); }
 #endif
 
     protected:
@@ -273,7 +255,6 @@ namespace WebCore {
         bool m_gotFirstByte;
         bool m_primaryLoadComplete;
         bool m_isClientRedirect;
-        bool m_loadingFromCachedPage;
 
         String m_pageTitle;
 
@@ -306,16 +287,9 @@ namespace WebCore {
         String m_clientRedirectSourceForHistory;
         bool m_didCreateGlobalHistoryEntry;
 
-#if ENABLE(OFFLINE_WEB_APPLICATIONS)  
-        // The application cache that the document loader is associated with (if any).
-        RefPtr<ApplicationCache> m_applicationCache;
-        
-        // Before an application cache has finished loading, this will be the candidate application
-        // group that the document loader is associated with.
-        ApplicationCacheGroup* m_candidateApplicationCacheGroup;
-        
-        // Once the main resource has finished loading, this is the application cache it was loaded from (if any).
-        RefPtr<ApplicationCache> m_mainResourceApplicationCache;
+#if ENABLE(OFFLINE_WEB_APPLICATIONS)
+        friend class ApplicationCacheHost;  // for substitute resource delivery
+        OwnPtr<ApplicationCacheHost> m_applicationCacheHost;
 #endif
     };
 

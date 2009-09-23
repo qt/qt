@@ -108,7 +108,7 @@ public:
       widthValid(false), heightValid(false),
       _componentComplete(true), _keepMouse(false),
       smooth(false), keyHandler(0),
-      width(0), height(0)
+      width(0), height(0), implicitWidth(0), implicitHeight(0)
     {}
     ~QFxItemPrivate()
     { delete _anchors; }
@@ -213,6 +213,8 @@ public:
 
     qreal width;
     qreal height;
+    qreal implicitWidth;
+    qreal implicitHeight;
 
     QPointF computeTransformOrigin() const;
 
@@ -224,8 +226,18 @@ public:
         q->geometryChanged(QRectF(this->pos.x(), this->pos.y(), width, height), oldGeometry);
     }
 
-    // Inherited from QGraphcisItemPrivate
-    virtual void focusedInScopeChanged();
+    // Reimplemented from QGraphicsItemPrivate
+    virtual void subFocusItemChange()
+    {
+        emit q_func()->wantsFocusChanged();
+    }
+
+    static int consistentTime;
+    static QTime currentTime();
+    static void Q_DECLARATIVE_EXPORT setConsistentTime(int t);
+    static void start(QTime &);
+    static int elapsed(QTime &);
+    static int restart(QTime &);
 };
 
 QT_END_NAMESPACE

@@ -73,6 +73,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSWebKitAnimationEventPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -87,6 +88,11 @@ const ClassInfo JSWebKitAnimationEventConstructor::s_info = { "WebKitAnimationEv
 bool JSWebKitAnimationEventConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSWebKitAnimationEventConstructor, DOMObject>(exec, &JSWebKitAnimationEventConstructorTable, this, propertyName, slot);
+}
+
+bool JSWebKitAnimationEventConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSWebKitAnimationEventConstructor, DOMObject>(exec, &JSWebKitAnimationEventConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -116,6 +122,11 @@ bool JSWebKitAnimationEventPrototype::getOwnPropertySlot(ExecState* exec, const 
     return getStaticFunctionSlot<JSObject>(exec, &JSWebKitAnimationEventPrototypeTable, this, propertyName, slot);
 }
 
+bool JSWebKitAnimationEventPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSWebKitAnimationEventPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSWebKitAnimationEvent::s_info = { "WebKitAnimationEvent", &JSEvent::s_info, &JSWebKitAnimationEventTable, 0 };
 
 JSWebKitAnimationEvent::JSWebKitAnimationEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebKitAnimationEvent> impl)
@@ -131,6 +142,11 @@ JSObject* JSWebKitAnimationEvent::createPrototype(ExecState* exec, JSGlobalObjec
 bool JSWebKitAnimationEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSWebKitAnimationEvent, Base>(exec, &JSWebKitAnimationEventTable, this, propertyName, slot);
+}
+
+bool JSWebKitAnimationEvent::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSWebKitAnimationEvent, Base>(exec, &JSWebKitAnimationEventTable, this, propertyName, descriptor);
 }
 
 JSValue jsWebKitAnimationEventAnimationName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -162,7 +178,7 @@ JSValue JSWebKitAnimationEvent::getConstructor(ExecState* exec, JSGlobalObject* 
 JSValue JSC_HOST_CALL jsWebKitAnimationEventPrototypeFunctionInitWebKitAnimationEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSWebKitAnimationEvent::s_info))
+    if (!thisValue.inherits(&JSWebKitAnimationEvent::s_info))
         return throwError(exec, TypeError);
     JSWebKitAnimationEvent* castedThisObj = static_cast<JSWebKitAnimationEvent*>(asObject(thisValue));
     WebKitAnimationEvent* imp = static_cast<WebKitAnimationEvent*>(castedThisObj->impl());

@@ -65,7 +65,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,BorderImage,QFxBorderImage)
 /*!
     \internal
     \class QFxBorderImage BorderImage
-    \brief The QFxBorderImage class provides an image item that you can add to a QFxView.
+    \brief The QFxBorderImage class provides an image item that you can add to a QmlView.
 */
 
 QFxBorderImage::QFxBorderImage(QFxItem *parent)
@@ -386,11 +386,9 @@ void QFxBorderImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidge
     if (d->smooth)
         p->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
 
-    QPixmap pix = d->pix;
-
     QMargins margins(border()->top(), border()->left(), border()->bottom(), border()->right());
     QTileRules rules((Qt::TileRule)d->horizontalTileMode, (Qt::TileRule)d->verticalTileMode);
-    qDrawBorderPixmap(p, QRect(0, 0, (int)d->width, (int)d->height), margins, pix, pix.rect(), margins, rules);
+    qDrawBorderPixmap(p, QRect(0, 0, (int)d->width, (int)d->height), margins, d->pix, d->pix.rect(), margins, rules);
     if (d->smooth) {
         p->setRenderHint(QPainter::Antialiasing, oldAA);
         p->setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);

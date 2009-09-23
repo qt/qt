@@ -26,15 +26,21 @@
 #ifndef CookieJar_h
 #define CookieJar_h
 
+#include <wtf/Vector.h>
+
 namespace WebCore {
 
+    class Document;
     class KURL;
     class String;
-    class Document;
+
+    struct Cookie;
 
     String cookies(const Document*, const KURL&);
     void setCookies(Document*, const KURL&, const String&);
     bool cookiesEnabled(const Document*);
+    bool getRawCookies(const Document*, const KURL&, Vector<Cookie>&);
+    void deleteCookie(const Document*, const KURL&, const String&);
 
 }
 

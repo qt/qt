@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -820,7 +820,6 @@ namespace QT_NAMESPACE {}
 #  define Q_WS_WIN
 #endif
 
-
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
@@ -1081,10 +1080,10 @@ inline int qRound(qreal d)
 
 #if defined(QT_NO_FPU) || defined(QT_ARCH_ARM) || defined(QT_ARCH_WINDOWSCE) || defined(QT_ARCH_SYMBIAN)
 inline qint64 qRound64(double d)
-{ return d >= 0.0 ? qint64(d + 0.5) : qint64(d - qint64(d-1) + 0.5) + qint64(d-1); }
+{ return d >= 0.0 ? qint64(d + 0.5) : qint64(d - qreal(qint64(d-1)) + 0.5) + qint64(d-1); }
 #else
 inline qint64 qRound64(qreal d)
-{ return d >= 0.0 ? qint64(d + 0.5) : qint64(d - qint64(d-1) + 0.5) + qint64(d-1); }
+{ return d >= 0.0 ? qint64(d + 0.5) : qint64(d - qreal(qint64(d-1)) + 0.5) + qint64(d-1); }
 #endif
 
 template <typename T>
@@ -2393,6 +2392,15 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 #endif
 
 #if defined(Q_OS_SYMBIAN)
+
+#ifdef SYMBIAN_GRAPHICS_USE_GCE
+//RWsPointerCursor is fixed, so don't use low performance sprites
+#define Q_SYMBIAN_FIXED_POINTER_CURSORS
+#define Q_SYMBIAN_HAS_EXTENDED_BITMAP_TYPE
+//enabling new graphics resources
+#define QT_SYMBIAN_SUPPORTS_SGIMAGE
+#endif
+
 
 //Symbian does not support data imports from a DLL
 #define Q_NO_DATA_RELOCATION

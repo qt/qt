@@ -42,6 +42,7 @@
 #include "qmlboundsignal_p.h"
 #include "private/qmetaobjectbuilder_p.h"
 #include "private/qmlengine_p.h"
+#include "private/qmlexpression_p.h"
 #include "private/qmlcontext_p.h"
 #include <qfxglobal.h>
 #include <qmlmetatype.h>
@@ -51,41 +52,135 @@
 
 QT_BEGIN_NAMESPACE
 
-int QmlBoundSignal::evaluateIdx = -1;
-QmlBoundSignal::QmlBoundSignal(QmlContext *ctxt, const QString &val, QObject *me, int idx, QObject *parent)
-: QmlExpression(ctxt, val, me), _idx(idx)
+class QmlBoundSignalParameters : public QObject
+{
+Q_OBJECT
+public:
+    QmlBoundSignalParameters(const QMetaMethod &, QObject * = 0);
+    ~QmlBoundSignalParameters();
+
+    void setValues(void **);
+    void clearValues();
+
+private:
+    friend class MetaObject;
+    int metaCall(QMetaObject::Call, int _id, void **);
+    struct MetaObject : public QAbstractDynamicMetaObject {
+        MetaObject(QmlBoundSignalParameters *b)
+            : parent(b) {}
+
+        int metaCall(QMetaObject::Call c, int id, void **a) { 
+            return parent->metaCall(c, id, a);
+        }
+        QmlBoundSignalParameters *parent;
+    };
+
+    int *types;
+    void **values;
+    QMetaObject *myMetaObject;
+};
+
+static int evaluateIdx = -1;
+
+QmlAbstractBoundSignal::QmlAbstractBoundSignal(QObject *parent)
+: QObject(parent)
+{
+}
+
+QmlAbstractBoundSignal::~QmlAbstractBoundSignal()
+{
+}
+
+QmlBoundSignal::QmlBoundSignal(QObject *scope, const QMetaMethod &signal, 
+                               QObject *parent)
+: m_expression(0), m_idx(signal.methodIndex()), m_params(0)
 {
     // A cached evaluation of the QmlExpression::value() slot index.
     //
     // This is thread safe.  Although it may be updated by two threads, they
     // will both set it to the same value - so the worst thing that can happen
     // is that they both do the work to figure it out.  Boo hoo.
-    if (evaluateIdx == -1) evaluateIdx = QmlExpression::staticMetaObject.indexOfMethod("value()");
+    if (evaluateIdx == -1) evaluateIdx = metaObject()->methodCount();
 
-    setTrackChange(false);
     QFx_setParent_noEvent(this, parent);
-    QMetaObject::connect(me, _idx, this, evaluateIdx);
+    QMetaObject::connect(scope, m_idx, this, evaluateIdx);
+
+    if (!signal.parameterTypes().isEmpty())
+        m_params = new QmlBoundSignalParameters(signal, this);
 }
 
-QmlBoundSignalProxy::QmlBoundSignalProxy(QmlContext *ctxt, const QString &val, QObject *me, int idx, QObject *parent)
-: QmlBoundSignal(ctxt, val, me, idx, parent) 
+QmlBoundSignal::QmlBoundSignal(QmlContext *ctxt, const QString &val, 
+                               QObject *scope, const QMetaMethod &signal,
+                               QObject *parent)
+: m_expression(0), m_idx(signal.methodIndex()), m_params(0)
 {
-    QMetaMethod signal = me->metaObject()->method(idx);
+    // A cached evaluation of the QmlExpression::value() slot index.
+    //
+    // This is thread safe.  Although it may be updated by two threads, they
+    // will both set it to the same value - so the worst thing that can happen
+    // is that they both do the work to figure it out.  Boo hoo.
+    if (evaluateIdx == -1) evaluateIdx = metaObject()->methodCount();
 
-    params = new QmlBoundSignalParameters(signal, this);
+    QFx_setParent_noEvent(this, parent);
+    QMetaObject::connect(scope, m_idx, this, evaluateIdx);
 
-    ctxt->d_func()->addDefaultObject(params, QmlContextPrivate::HighPriority);
+    m_expression = new QmlExpression(ctxt, val, scope);
+    m_expression->setTrackChange(false);
+
+    if (!signal.parameterTypes().isEmpty())
+        m_params = new QmlBoundSignalParameters(signal, this);
 }
 
-int QmlBoundSignalProxy::qt_metacall(QMetaObject::Call c, int id, void **a)
+QmlBoundSignal::~QmlBoundSignal()
+{
+    delete m_expression;
+    m_expression = 0;
+}
+
+int QmlBoundSignal::index() const 
+{ 
+    return m_idx; 
+}
+
+/*!
+    Returns the signal expression.
+*/
+QmlExpression *QmlBoundSignal::expression() const
+{
+    return m_expression;
+}
+
+/*!
+    Sets the signal expression to \a e.  Returns the current signal expression,
+    or null if there is no signal expression.
+
+    The QmlBoundSignal instance takes ownership of \a e.  The caller is 
+    assumes ownership of the returned QmlExpression.
+*/
+QmlExpression *QmlBoundSignal::setExpression(QmlExpression *e)
+{
+    QmlExpression *rv = m_expression;
+    m_expression = e;
+    if (m_expression) m_expression->setTrackChange(false);
+    return rv;
+}
+
+QmlBoundSignal *QmlBoundSignal::cast(QObject *o)
+{
+    QmlAbstractBoundSignal *s = qobject_cast<QmlAbstractBoundSignal*>(o);
+    return static_cast<QmlBoundSignal *>(s);
+}
+
+int QmlBoundSignal::qt_metacall(QMetaObject::Call c, int id, void **a)
 {
     if (c == QMetaObject::InvokeMetaMethod && id == evaluateIdx) {
-        params->setValues(a);
-        value();
-        params->clearValues();
+        if (m_params) m_params->setValues(a);
+        if (m_expression)
+            QmlExpressionPrivate::get(m_expression)->value(m_params);
+        if (m_params) m_params->clearValues();
         return -1;
     } else {
-        return QmlBoundSignal::qt_metacall(c, id, a);
+        return QObject::qt_metacall(c, id, a);
     }
 }
 
@@ -157,3 +252,5 @@ int QmlBoundSignalParameters::metaCall(QMetaObject::Call c, int id, void **a)
 }
 
 QT_END_NAMESPACE
+
+#include "qmlboundsignal.moc"

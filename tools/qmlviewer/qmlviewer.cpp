@@ -11,7 +11,7 @@
 **
 ****************************************************************************/
 
-#include <qfxview.h>
+#include <qmlview.h>
 #include "ui_recopts.h"
 
 #include "qmlviewer.h"
@@ -19,8 +19,8 @@
 #include <QtDeclarative/qmlengine.h>
 #include "qml.h"
 #include <private/qperformancelog_p.h>
-#include <QAbstractAnimation>
 #include <private/qabstractanimation_p.h>
+#include <QAbstractAnimation>
 #include "deviceskin.h"
 
 #include <QSettings>
@@ -50,6 +50,8 @@
 #ifdef GL_SUPPORTED
 #include <QGLWidget>
 #endif
+
+#include <qfxtester.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -251,7 +253,8 @@ QString QmlViewer::getVideoFileName()
 
 
 QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
-    : QWidget(parent, flags), frame_stream(0), scaleSkin(true), mb(0)
+    : QWidget(parent, flags), frame_stream(0), scaleSkin(true), mb(0), m_scriptOptions(0),
+      tester(0)
 {
     devicemode = false;
     skin = 0;
@@ -283,7 +286,7 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     if (!(flags & Qt::FramelessWindowHint))
         createMenu(menuBar(),0);
 
-    canvas = new QFxView(this);
+    canvas = new QmlView(this);
     canvas->setAttribute(Qt::WA_OpaquePaintEvent);
     canvas->setAttribute(Qt::WA_NoSystemBackground);
     canvas->setContentResizable(!skin || !scaleSkin);
@@ -291,6 +294,7 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     canvas->setFocus();
 
     QObject::connect(canvas, SIGNAL(sceneResized(QSize)), this, SLOT(sceneResized(QSize)));
+    QObject::connect(canvas, SIGNAL(errors(QList<QmlError>)), this, SLOT(executeErrors()));
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->setMargin(0);
@@ -344,7 +348,7 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     connect(snapshotAction, SIGNAL(triggered()), this, SLOT(takeSnapShot()));
     recordMenu->addAction(snapshotAction);
 
-    recordAction = new QAction(tr("Start Recording &Video\tF2"), parent);
+    recordAction = new QAction(tr("Start Recording &Video\tF9"), parent);
     connect(recordAction, SIGNAL(triggered()), this, SLOT(toggleRecordingWithSelection()));
     recordMenu->addAction(recordAction);
 
@@ -566,7 +570,7 @@ void QmlViewer::toggleRecording()
         return;
     }
     bool recording = !recordTimer.isRunning();
-    recordAction->setText(recording ? tr("&Stop Recording Video\tF2") : tr("&Start Recording Video\tF2"));
+    recordAction->setText(recording ? tr("&Stop Recording Video\tF9") : tr("&Start Recording Video\tF9"));
     setRecording(recording);
 }
 
@@ -589,9 +593,17 @@ void QmlViewer::open()
     }
 }
 
+void QmlViewer::executeErrors()
+{
+    if (tester) tester->executefailure();
+}
+
 void QmlViewer::openQml(const QString& fileName)
 {
     setWindowTitle(tr("%1 - Qt Declarative UI Viewer").arg(fileName));
+
+    if (!m_script.isEmpty()) 
+        tester = new QFxTester(m_script, m_scriptOptions, canvas);
 
     canvas->reset();
 
@@ -617,6 +629,7 @@ void QmlViewer::openQml(const QString& fileName)
                 foreach (const QmlError &error, errors) {
                     qWarning() << error;
                 }
+                if (tester) tester->executefailure();
             }
 
             if (dummyData) {
@@ -762,17 +775,19 @@ void QmlViewer::keyPressEvent(QKeyEvent *event)
         exit(0);
     else if (event->key() == Qt::Key_F1 || (event->key() == Qt::Key_1 && devicemode)) {
         qDebug() << "F1 - help\n"
-                 << "F2 - toggle video recording\n"
+                 << "F2 - save test script\n"
                  << "F3 - take PNG snapshot\n"
                  << "F4 - show items and state\n"
                  << "F5 - reload QML\n"
                  << "F6 - show object tree\n"
                  << "F7 - show timing\n"
                  << "F8 - show performance (if available)\n"
+                 << "F9 - toggle video recording\n"
                  << "device keys: 0=quit, 1..8=F1..F8"
                 ;
-    } else if (event->key() == Qt::Key_F2 || (event->key() == Qt::Key_2 && devicemode)) {
-        toggleRecording();
+    } else if (event->key() == Qt::Key_F2 || (event->key() == Qt::Key_3 && devicemode)) {
+        if (tester && m_scriptOptions & Record)
+            tester->save(m_script);
     } else if (event->key() == Qt::Key_F3 || (event->key() == Qt::Key_3 && devicemode)) {
         takeSnapShot();
     } else if (event->key() == Qt::Key_F5 || (event->key() == Qt::Key_5 && devicemode)) {
@@ -780,6 +795,8 @@ void QmlViewer::keyPressEvent(QKeyEvent *event)
     } else if (event->key() == Qt::Key_F8 || (event->key() == Qt::Key_8 && devicemode)) {
         QPerformanceLog::displayData();
         QPerformanceLog::clear();
+    } else if (event->key() == Qt::Key_F9 || (event->key() == Qt::Key_9 && devicemode)) {
+        toggleRecording();
     }
 
     QWidget::keyPressEvent(event);
@@ -1051,7 +1068,6 @@ void QmlViewer::setUseGL(bool useGL)
     }
 #endif
 }
-
 QT_END_NAMESPACE
 
 #include "qmlviewer.moc"

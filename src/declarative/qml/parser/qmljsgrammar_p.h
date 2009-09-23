@@ -2,6 +2,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -21,10 +22,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -59,18 +59,19 @@ class QmlJSGrammar
 public:
   enum {
     EOF_SYMBOL = 0,
-    REDUCE_HERE = 95,
-    SHIFT_THERE = 94,
+    REDUCE_HERE = 96,
+    SHIFT_THERE = 95,
     T_AND = 1,
     T_AND_AND = 2,
     T_AND_EQ = 3,
-    T_AS = 90,
+    T_AS = 91,
     T_AUTOMATIC_SEMICOLON = 62,
     T_BREAK = 4,
     T_CASE = 5,
     T_CATCH = 6,
     T_COLON = 7,
     T_COMMA = 8,
+    T_COMMENT = 88,
     T_CONST = 84,
     T_CONTINUE = 9,
     T_DEBUGGER = 85,
@@ -85,9 +86,9 @@ public:
     T_EQ_EQ = 18,
     T_EQ_EQ_EQ = 19,
     T_FALSE = 83,
-    T_FEED_JS_EXPRESSION = 93,
-    T_FEED_JS_STATEMENT = 92,
-    T_FEED_UI_PROGRAM = 91,
+    T_FEED_JS_EXPRESSION = 94,
+    T_FEED_JS_STATEMENT = 93,
+    T_FEED_UI_PROGRAM = 92,
     T_FINALLY = 20,
     T_FOR = 21,
     T_FUNCTION = 22,
@@ -99,7 +100,7 @@ public:
     T_GT_GT_GT_EQ = 28,
     T_IDENTIFIER = 29,
     T_IF = 30,
-    T_IMPORT = 89,
+    T_IMPORT = 90,
     T_IN = 31,
     T_INSTANCEOF = 32,
     T_LBRACE = 33,
@@ -126,7 +127,7 @@ public:
     T_PLUS_EQ = 52,
     T_PLUS_PLUS = 53,
     T_PROPERTY = 66,
-    T_PUBLIC = 88,
+    T_PUBLIC = 89,
     T_QUESTION = 54,
     T_RBRACE = 55,
     T_RBRACKET = 56,
@@ -155,15 +156,15 @@ public:
     T_XOR = 79,
     T_XOR_EQ = 80,
 
-    ACCEPT_STATE = 621,
-    RULE_COUNT = 337,
-    STATE_COUNT = 622,
-    TERMINAL_COUNT = 96,
+    ACCEPT_STATE = 628,
+    RULE_COUNT = 339,
+    STATE_COUNT = 629,
+    TERMINAL_COUNT = 97,
     NON_TERMINAL_COUNT = 105,
 
-    GOTO_INDEX_OFFSET = 622,
-    GOTO_INFO_OFFSET = 2376,
-    GOTO_CHECK_OFFSET = 2376
+    GOTO_INDEX_OFFSET = 629,
+    GOTO_INFO_OFFSET = 2539,
+    GOTO_CHECK_OFFSET = 2539
   };
 
   static const char  *const spell [];

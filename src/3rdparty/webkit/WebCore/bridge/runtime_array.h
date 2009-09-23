@@ -37,11 +37,12 @@ public:
     
     virtual bool getOwnPropertySlot(ExecState *, const Identifier&, PropertySlot&);
     virtual bool getOwnPropertySlot(ExecState *, unsigned, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState *, const Identifier&, PropertyDescriptor&);
     virtual void put(ExecState*, const Identifier& propertyName, JSValue, PutPropertySlot&);
     virtual void put(ExecState*, unsigned propertyName, JSValue);
     
-    virtual bool deleteProperty(ExecState *exec, const Identifier &propertyName, bool checkDontDelete = true);
-    virtual bool deleteProperty(ExecState *exec, unsigned propertyName, bool checkDontDelete = true);
+    virtual bool deleteProperty(ExecState *exec, const Identifier &propertyName);
+    virtual bool deleteProperty(ExecState *exec, unsigned propertyName);
     
     virtual const ClassInfo *classInfo() const { return &s_info; }
     

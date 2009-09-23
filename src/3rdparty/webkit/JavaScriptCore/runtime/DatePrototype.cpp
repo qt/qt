@@ -198,8 +198,8 @@ static JSCell* formatLocaleDate(ExecState* exec, const GregorianDateTime& gdt, L
 {
 #if HAVE(LANGINFO_H)
     static const nl_item formats[] = { D_T_FMT, D_FMT, T_FMT };
-#elif PLATFORM(WINCE) && !PLATFORM(QT)
-    // strftime() we are using does not support #
+#elif (PLATFORM(WINCE) && !PLATFORM(QT)) || PLATFORM(SYMBIAN)
+     // strftime() does not support '#' on WinCE or Symbian
     static const char* const formatStrings[] = { "%c", "%x", "%X" };
 #else
     static const char* const formatStrings[] = { "%#c", "%#x", "%X" };
@@ -407,11 +407,17 @@ bool DatePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& proper
     return getStaticFunctionSlot<JSObject>(exec, ExecState::dateTable(exec), this, propertyName, slot);
 }
 
+
+bool DatePrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, ExecState::dateTable(exec), this, propertyName, descriptor);
+}
+
 // Functions
 
 JSValue JSC_HOST_CALL dateProtoFuncToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     const bool utc = false;
@@ -428,7 +434,7 @@ JSValue JSC_HOST_CALL dateProtoFuncToString(ExecState* exec, JSObject*, JSValue 
 
 JSValue JSC_HOST_CALL dateProtoFuncToUTCString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     const bool utc = true;
@@ -445,7 +451,7 @@ JSValue JSC_HOST_CALL dateProtoFuncToUTCString(ExecState* exec, JSObject*, JSVal
 
 JSValue JSC_HOST_CALL dateProtoFuncToISOString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
     
     const bool utc = true;
@@ -457,17 +463,17 @@ JSValue JSC_HOST_CALL dateProtoFuncToISOString(ExecState* exec, JSObject*, JSVal
     
     GregorianDateTime t;
     thisDateObj->msToGregorianDateTime(milli, utc, t);
-    // Maximum amount of space we need in buffer: 6 (max. digits in year) + 2 * 5 (2 characters each for month, day, hour, minute, second)
-    // 6 for formatting and one for null termination = 23.  We add one extra character to allow us to force null termination.
-    char buffer[24];
-    snprintf(buffer, sizeof(buffer) - 1, "%04d-%02d-%02dT%02d:%02d:%02dZ", 1900 + t.year, t.month + 1, t.monthDay, t.hour, t.minute, t.second);
+    // Maximum amount of space we need in buffer: 6 (max. digits in year) + 2 * 5 (2 characters each for month, day, hour, minute, second) + 4 (. + 3 digits for milliseconds)
+    // 6 for formatting and one for null termination = 27.  We add one extra character to allow us to force null termination.
+    char buffer[28];
+    snprintf(buffer, sizeof(buffer) - 1, "%04d-%02d-%02dT%02d:%02d:%02d.%03dZ", 1900 + t.year, t.month + 1, t.monthDay, t.hour, t.minute, t.second, static_cast<int>(fmod(milli, 1000)));
     buffer[sizeof(buffer) - 1] = 0;
     return jsNontrivialString(exec, buffer);
 }
 
 JSValue JSC_HOST_CALL dateProtoFuncToDateString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     const bool utc = false;
@@ -484,7 +490,7 @@ JSValue JSC_HOST_CALL dateProtoFuncToDateString(ExecState* exec, JSObject*, JSVa
 
 JSValue JSC_HOST_CALL dateProtoFuncToTimeString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     const bool utc = false;
@@ -501,7 +507,7 @@ JSValue JSC_HOST_CALL dateProtoFuncToTimeString(ExecState* exec, JSObject*, JSVa
 
 JSValue JSC_HOST_CALL dateProtoFuncToLocaleString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     DateInstance* thisDateObj = asDateInstance(thisValue); 
@@ -514,7 +520,7 @@ JSValue JSC_HOST_CALL dateProtoFuncToLocaleString(ExecState* exec, JSObject*, JS
 
 JSValue JSC_HOST_CALL dateProtoFuncToLocaleDateString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     DateInstance* thisDateObj = asDateInstance(thisValue); 
@@ -527,7 +533,7 @@ JSValue JSC_HOST_CALL dateProtoFuncToLocaleDateString(ExecState* exec, JSObject*
 
 JSValue JSC_HOST_CALL dateProtoFuncToLocaleTimeString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     DateInstance* thisDateObj = asDateInstance(thisValue); 
@@ -540,7 +546,7 @@ JSValue JSC_HOST_CALL dateProtoFuncToLocaleTimeString(ExecState* exec, JSObject*
 
 JSValue JSC_HOST_CALL dateProtoFuncGetTime(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     DateInstance* thisDateObj = asDateInstance(thisValue); 
@@ -553,7 +559,7 @@ JSValue JSC_HOST_CALL dateProtoFuncGetTime(ExecState* exec, JSObject*, JSValue t
 
 JSValue JSC_HOST_CALL dateProtoFuncGetFullYear(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     const bool utc = false;
@@ -570,7 +576,7 @@ JSValue JSC_HOST_CALL dateProtoFuncGetFullYear(ExecState* exec, JSObject*, JSVal
 
 JSValue JSC_HOST_CALL dateProtoFuncGetUTCFullYear(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     const bool utc = true;
@@ -587,7 +593,7 @@ JSValue JSC_HOST_CALL dateProtoFuncGetUTCFullYear(ExecState* exec, JSObject*, JS
 
 JSValue JSC_HOST_CALL dateProtoFuncToGMTString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     const bool utc = true;
@@ -604,7 +610,7 @@ JSValue JSC_HOST_CALL dateProtoFuncToGMTString(ExecState* exec, JSObject*, JSVal
 
 JSValue JSC_HOST_CALL dateProtoFuncGetMonth(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     const bool utc = false;
@@ -621,7 +627,7 @@ JSValue JSC_HOST_CALL dateProtoFuncGetMonth(ExecState* exec, JSObject*, JSValue 
 
 JSValue JSC_HOST_CALL dateProtoFuncGetUTCMonth(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     const bool utc = true;
@@ -638,7 +644,7 @@ JSValue JSC_HOST_CALL dateProtoFuncGetUTCMonth(ExecState* exec, JSObject*, JSVal
 
 JSValue JSC_HOST_CALL dateProtoFuncGetDate(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     const bool utc = false;
@@ -655,7 +661,7 @@ JSValue JSC_HOST_CALL dateProtoFuncGetDate(ExecState* exec, JSObject*, JSValue t
 
 JSValue JSC_HOST_CALL dateProtoFuncGetUTCDate(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     const bool utc = true;
@@ -672,7 +678,7 @@ JSValue JSC_HOST_CALL dateProtoFuncGetUTCDate(ExecState* exec, JSObject*, JSValu
 
 JSValue JSC_HOST_CALL dateProtoFuncGetDay(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     const bool utc = false;
@@ -689,7 +695,7 @@ JSValue JSC_HOST_CALL dateProtoFuncGetDay(ExecState* exec, JSObject*, JSValue th
 
 JSValue JSC_HOST_CALL dateProtoFuncGetUTCDay(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     const bool utc = true;
@@ -706,7 +712,7 @@ JSValue JSC_HOST_CALL dateProtoFuncGetUTCDay(ExecState* exec, JSObject*, JSValue
 
 JSValue JSC_HOST_CALL dateProtoFuncGetHours(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     const bool utc = false;
@@ -723,7 +729,7 @@ JSValue JSC_HOST_CALL dateProtoFuncGetHours(ExecState* exec, JSObject*, JSValue 
 
 JSValue JSC_HOST_CALL dateProtoFuncGetUTCHours(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     const bool utc = true;
@@ -740,7 +746,7 @@ JSValue JSC_HOST_CALL dateProtoFuncGetUTCHours(ExecState* exec, JSObject*, JSVal
 
 JSValue JSC_HOST_CALL dateProtoFuncGetMinutes(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     const bool utc = false;
@@ -757,7 +763,7 @@ JSValue JSC_HOST_CALL dateProtoFuncGetMinutes(ExecState* exec, JSObject*, JSValu
 
 JSValue JSC_HOST_CALL dateProtoFuncGetUTCMinutes(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     const bool utc = true;
@@ -774,7 +780,7 @@ JSValue JSC_HOST_CALL dateProtoFuncGetUTCMinutes(ExecState* exec, JSObject*, JSV
 
 JSValue JSC_HOST_CALL dateProtoFuncGetSeconds(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     const bool utc = false;
@@ -791,7 +797,7 @@ JSValue JSC_HOST_CALL dateProtoFuncGetSeconds(ExecState* exec, JSObject*, JSValu
 
 JSValue JSC_HOST_CALL dateProtoFuncGetUTCSeconds(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     const bool utc = true;
@@ -808,7 +814,7 @@ JSValue JSC_HOST_CALL dateProtoFuncGetUTCSeconds(ExecState* exec, JSObject*, JSV
 
 JSValue JSC_HOST_CALL dateProtoFuncGetMilliSeconds(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     DateInstance* thisDateObj = asDateInstance(thisValue); 
@@ -823,7 +829,7 @@ JSValue JSC_HOST_CALL dateProtoFuncGetMilliSeconds(ExecState* exec, JSObject*, J
 
 JSValue JSC_HOST_CALL dateProtoFuncGetUTCMilliseconds(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     DateInstance* thisDateObj = asDateInstance(thisValue); 
@@ -838,7 +844,7 @@ JSValue JSC_HOST_CALL dateProtoFuncGetUTCMilliseconds(ExecState* exec, JSObject*
 
 JSValue JSC_HOST_CALL dateProtoFuncGetTimezoneOffset(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     const bool utc = false;
@@ -855,7 +861,7 @@ JSValue JSC_HOST_CALL dateProtoFuncGetTimezoneOffset(ExecState* exec, JSObject*,
 
 JSValue JSC_HOST_CALL dateProtoFuncSetTime(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     DateInstance* thisDateObj = asDateInstance(thisValue); 
@@ -868,7 +874,7 @@ JSValue JSC_HOST_CALL dateProtoFuncSetTime(ExecState* exec, JSObject*, JSValue t
 
 static JSValue setNewValueFromTimeArgs(ExecState* exec, JSValue thisValue, const ArgList& args, int numArgsToUse, bool inputIsUTC)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     DateInstance* thisDateObj = asDateInstance(thisValue);
@@ -899,7 +905,7 @@ static JSValue setNewValueFromTimeArgs(ExecState* exec, JSValue thisValue, const
 
 static JSValue setNewValueFromDateArgs(ExecState* exec, JSValue thisValue, const ArgList& args, int numArgsToUse, bool inputIsUTC)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     DateInstance* thisDateObj = asDateInstance(thisValue);
@@ -1020,7 +1026,7 @@ JSValue JSC_HOST_CALL dateProtoFuncSetUTCFullYear(ExecState* exec, JSObject*, JS
 
 JSValue JSC_HOST_CALL dateProtoFuncSetYear(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     const bool utc = false;
@@ -1062,7 +1068,7 @@ JSValue JSC_HOST_CALL dateProtoFuncSetYear(ExecState* exec, JSObject*, JSValue t
 
 JSValue JSC_HOST_CALL dateProtoFuncGetYear(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&DateInstance::info))
+    if (!thisValue.inherits(&DateInstance::info))
         return throwError(exec, TypeError);
 
     const bool utc = false;

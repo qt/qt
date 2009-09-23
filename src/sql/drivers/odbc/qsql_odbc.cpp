@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -882,6 +882,11 @@ bool QODBCResult::reset (const QString& query)
         return false;
     }
 
+    SQLINTEGER isScrollable, bufferLength;
+    r = SQLGetStmtAttr(d->hStmt, SQL_ATTR_CURSOR_SCROLLABLE, &isScrollable, SQL_IS_INTEGER, &bufferLength);
+    if(r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO)
+        setForwardOnly(isScrollable==SQL_NONSCROLLABLE);
+
     SQLSMALLINT count;
     SQLNumResultCols(d->hStmt, &count);
     if (count) {
@@ -1499,6 +1504,11 @@ bool QODBCResult::exec()
                      "Unable to execute statement"), QSqlError::StatementError, d));
         return false;
     }
+
+    SQLINTEGER isScrollable, bufferLength;
+    r = SQLGetStmtAttr(d->hStmt, SQL_ATTR_CURSOR_SCROLLABLE, &isScrollable, SQL_IS_INTEGER, &bufferLength);
+    if(r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO)
+        setForwardOnly(isScrollable==SQL_NONSCROLLABLE);
 
     SQLSMALLINT count;
     SQLNumResultCols(d->hStmt, &count);

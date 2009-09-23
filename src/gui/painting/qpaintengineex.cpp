@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -280,6 +280,29 @@ static QPainterPath::ElementType qpaintengineex_rect4_types_32[] = {
     QPainterPath::MoveToElement, QPainterPath::LineToElement, QPainterPath::LineToElement, QPainterPath::LineToElement, // 32
 };
 
+
+static QPainterPath::ElementType qpaintengineex_roundedrect_types[] = {
+    QPainterPath::MoveToElement,
+    QPainterPath::LineToElement,
+    QPainterPath::CurveToElement,
+    QPainterPath::CurveToDataElement,
+    QPainterPath::CurveToDataElement,
+    QPainterPath::LineToElement,
+    QPainterPath::CurveToElement,
+    QPainterPath::CurveToDataElement,
+    QPainterPath::CurveToDataElement,
+    QPainterPath::LineToElement,
+    QPainterPath::CurveToElement,
+    QPainterPath::CurveToDataElement,
+    QPainterPath::CurveToDataElement,
+    QPainterPath::LineToElement,
+    QPainterPath::CurveToElement,
+    QPainterPath::CurveToDataElement,
+    QPainterPath::CurveToDataElement
+};
+
+
+
 static void qpaintengineex_moveTo(qreal x, qreal y, void *data) {
     ((StrokeHandler *) data)->pts.add(x);
     ((StrokeHandler *) data)->pts.add(y);
@@ -535,8 +558,13 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 
 void QPaintEngineEx::draw(const QVectorPath &path)
 {
-    fill(path, state()->brush);
-    stroke(path, state()->pen);
+    const QBrush &brush = state()->brush;
+    if (qbrush_style(brush) != Qt::NoBrush)
+        fill(path, brush);
+
+    const QPen &pen = state()->pen;
+    if (qpen_style(pen) != Qt::NoPen && qbrush_style(qpen_brush(pen)) != Qt::NoBrush)
+        stroke(path, pen);
 }
 
 
@@ -673,6 +701,49 @@ void QPaintEngineEx::drawRects(const QRectF *rects, int rectCount)
         draw(vp);
     }
 }
+
+
+void QPaintEngineEx::drawRoundedRect(const QRectF &rect, qreal xRadius, qreal yRadius,
+                                     Qt::SizeMode mode)
+{
+    qreal x1 = rect.left();
+    qreal x2 = rect.right();
+    qreal y1 = rect.top();
+    qreal y2 = rect.bottom();
+
+    if (mode == Qt::RelativeSize) {
+        xRadius = xRadius * rect.width() / 200.;
+        yRadius = yRadius * rect.height() / 200.;
+    }
+
+    xRadius = qMin(xRadius, rect.width() / 2);
+    yRadius = qMin(yRadius, rect.height() / 2);
+
+    qreal pts[] = {
+        x1 + xRadius, y1,                   // MoveTo
+        x2 - xRadius, y1,                   // LineTo
+        x2 - (1 - KAPPA) * xRadius, y1,     // CurveTo
+        x2, y1 + (1 - KAPPA) * yRadius,
+        x2, y1 + yRadius,
+        x2, y2 - yRadius,                   // LineTo
+        x2, y2 - (1 - KAPPA) * yRadius,     // CurveTo
+        x2 - (1 - KAPPA) * xRadius, y2,
+        x2 - xRadius, y2,
+        x1 + xRadius, y2,                   // LineTo
+        x1 + (1 - KAPPA) * xRadius, y2,           // CurveTo
+        x1, y2 - (1 - KAPPA) * yRadius,
+        x1, y2 - yRadius,
+        x1, y1 + yRadius,                   // LineTo
+        x1, y1 + KAPPA * yRadius,           // CurveTo
+        x1 + (1 - KAPPA) * xRadius, y1,
+        x1 + xRadius, y1
+    };
+
+    QVectorPath path(pts, 17, qpaintengineex_roundedrect_types);
+    draw(path);
+}
+
+
 
 void QPaintEngineEx::drawLines(const QLine *lines, int lineCount)
 {

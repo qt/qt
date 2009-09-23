@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -99,11 +99,13 @@ class Q_CORE_EXPORT QObjectPrivate : public QObjectData
 public:
     struct ExtraData
     {
+        ExtraData() : objectGuards(0) {}
 #ifndef QT_NO_USERDATA
         QVector<QObjectUserData *> userData;
 #endif
         QList<QByteArray> propertyNames;
         QList<QVariant> propertyValues;
+        QGuard<QObject> *objectGuards; //linked list handle of QGuards
     };
 
     struct Connection
@@ -192,12 +194,13 @@ public:
 #endif
 
     QList<QPointer<QObject> > eventFilters;
-    QObject *currentChildBeingDeleted;
+    union {
+        QObject *currentChildBeingDeleted;
+        QDeclarativeData *declarativeData; //extra data used by the DeclarativeUI project.
+    };
 
     // these objects are all used to indicate that a QObject was deleted
     // plus QPointer, which keeps a separate list
-    QDeclarativeData *declarativeData;
-    QGuard<QObject> *objectGuards;
     QAtomicPointer<QtSharedPointer::ExternalRefCountData> sharedRefcount;
     int *deleteWatch;
 };
@@ -211,9 +214,12 @@ inline void q_guard_addGuard(QGuard<QObject> *g)
         return;
     }
 
-    g->next = p->objectGuards;
-    p->objectGuards = g;
-    g->prev = &p->objectGuards;
+    if (!p->extraData)
+        p->extraData = new QObjectPrivate::ExtraData;
+
+    g->next = p->extraData->objectGuards;
+    p->extraData->objectGuards = g;
+    g->prev = &p->extraData->objectGuards;
     if (g->next)
         g->next->prev = &g->next;
 }

@@ -41,6 +41,7 @@
 
 #include "qfxtextinput.h"
 #include "qfxtextinput_p.h"
+#include "qmlinfo.h"
 #include <QValidator>
 #include <QApplication>
 #include <QFontMetrics>
@@ -130,9 +131,7 @@ void QFxTextInput::setFont(const QFont &font)
         d->cursorItem->setHeight(QFontMetrics(d->font).height());
         moveCursor();
     }
-    //updateSize();
-    updateAll();//TODO: Only necessary updates
-    update();
+    updateSize();
 }
 
 /*!
@@ -171,7 +170,9 @@ void QFxTextInput::setSelectionColor(const QColor &color)
         return;
 
     d->selectionColor = color;
-    //TODO: implement
+    QPalette p = d->control->palette();
+    p.setColor(QPalette::Highlight, d->selectionColor);
+    d->control->setPalette(p);
 }
 
 /*!
@@ -192,7 +193,9 @@ void QFxTextInput::setSelectedTextColor(const QColor &color)
         return;
 
     d->selectedTextColor = color;
-    //TODO: implement
+    QPalette p = d->control->palette();
+    p.setColor(QPalette::HighlightedText, d->selectedTextColor);
+    d->control->setPalette(p);
 }
 
 /*!
@@ -267,7 +270,7 @@ void QFxTextInput::setCursorVisible(bool on)
         return;
     d->cursorVisible = on;
     d->control->setCursorBlinkPeriod(on?QApplication::cursorFlashTime():0);
-    updateAll();//TODO: Only update cursor rect
+    //d->control should emit the cursor update regions
 }
 
 /*!
@@ -485,8 +488,6 @@ QmlComponent* QFxTextInput::cursorDelegate() const
 void QFxTextInput::setCursorDelegate(QmlComponent* c)
 {
     Q_D(QFxTextInput);
-    if(d->cursorComponent)
-        delete d->cursorComponent;
     d->cursorComponent = c;
     d->startCreatingCursor();
 }
@@ -507,14 +508,20 @@ void QFxTextInputPrivate::startCreatingCursor()
         q->connect(cursorComponent, SIGNAL(statusChanged(int)),
                 q, SLOT(createCursor()));
     }else{//isError
-        qWarning() << "You could really use the error checking for QFxTextInput. We'll implement it soon.";//TODO:better error handling
+        qmlInfo(q) << "Could not load cursor delegate";
+        qWarning() << cursorComponent->errors();
     }
 }
 
 void QFxTextInput::createCursor()
 {
     Q_D(QFxTextInput);
-    //Handle isError too
+    if(d->cursorComponent->isError()){
+        qmlInfo(this) << "Could not load cursor delegate";
+        qWarning() << d->cursorComponent->errors();
+        return;
+    }
+
     if(!d->cursorComponent->isReady())
         return;
 
@@ -522,7 +529,8 @@ void QFxTextInput::createCursor()
         delete d->cursorItem;
     d->cursorItem = qobject_cast<QFxItem*>(d->cursorComponent->create());
     if(!d->cursorItem){
-        qWarning() << "You could really use the error reporting for QFxTextInput. We'll implement it soon.";//TODO:better error handling
+        qmlInfo(this) << "Could not instantiate cursor delegate";
+        //The failed instantiation should print its own error messages
         return;
     }
 
@@ -583,14 +591,17 @@ bool QFxTextInput::event(QEvent* ev)
 {
     Q_D(QFxTextInput);
     //Anything we don't deal with ourselves, pass to the control
+    bool handled = false;
     switch(ev->type()){
         case QEvent::KeyPress:
         case QEvent::GraphicsSceneMousePress:
             break;
         default:
-            return d->control->processEvent(ev);
+            handled = d->control->processEvent(ev);
     }
-    return false;
+    if(!handled)
+        return QFxPaintedItem::event(ev);
+    return true;
 }
 
 void QFxTextInput::geometryChanged(const QRectF &newGeometry,
@@ -610,10 +621,13 @@ void QFxTextInput::drawContents(QPainter *p, const QRect &r)
     int flags = QLineControl::DrawText;
     if(!isReadOnly() && d->cursorVisible && !d->cursorItem)
         flags |= QLineControl::DrawCursor;
-    if (d->control->hasSelectedText())
+    if (d->control->hasSelectedText()){
             flags |= QLineControl::DrawSelections;
+    }
 
-    d->control->draw(p, QPoint(0,0), r, flags);
+    QPoint offset = QPoint(0,0);
+    QRect clipRect = r;
+    d->control->draw(p, offset, clipRect, flags);
 
     p->restore();
 }
@@ -656,13 +670,13 @@ void QFxTextInputPrivate::init()
                q, SLOT(q_textChanged()));
     q->connect(control, SIGNAL(accepted()),
                q, SIGNAL(accepted()));
-    q->connect(control, SIGNAL(updateNeeded(const QRect &)),
-               //        q, SLOT(dirtyCache(const QRect &)));
-               q, SLOT(updateAll()));
+    q->connect(control, SIGNAL(updateNeeded(QRect)),
+               q, SLOT(updateRect(QRect)));
     q->connect(control, SIGNAL(cursorPositionChanged(int,int)),
-               q, SLOT(updateAll()));
+               q, SLOT(updateRect()));//TODO: Only update rect between pos's
     q->connect(control, SIGNAL(selectionChanged()),
-               q, SLOT(updateAll()));
+               q, SLOT(updateRect()));//TODO: Only update rect in selection
+    //Note that above TODOs probably aren't that big a savings
     q->updateSize();
     oldValidity = control->hasAcceptableInput();
     lastSelectionStart = 0;
@@ -708,7 +722,7 @@ void QFxTextInput::selectionChanged()
 void QFxTextInput::q_textChanged()
 {
     Q_D(QFxTextInput);
-    updateAll();
+    updateSize();
     emit textChanged();
     if(hasAcceptableInput() != d->oldValidity){
         d->oldValidity = hasAcceptableInput();
@@ -716,23 +730,32 @@ void QFxTextInput::q_textChanged()
     }
 }
 
-//### Please replace this function with proper updating
-void QFxTextInput::updateAll()
+void QFxTextInput::updateRect(const QRect &r)
 {
-    clearCache();
-    updateSize();
+    if(r == QRect())
+        clearCache();
+    else
+        dirtyCache(r);
     update();
 }
 
-void QFxTextInput::updateSize()
+void QFxTextInput::updateSize(bool needsRedraw)
 {
     Q_D(QFxTextInput);
+    int w = width();
+    int h = height();
     setImplicitHeight(d->control->height());
-    //d->control->width() is max width, not current width
-    QFontMetrics fm = QFontMetrics(d->font);
-    setImplicitWidth(fm.width(d->control->text())+1);
-    //setImplicitWidth(d->control->naturalWidth());//### This fn should be coming into 4.6 shortly, and might be faster
-    setContentsSize(QSize(width(), height()));
+    int cursorWidth = d->control->cursorWidth();
+    if(d->cursorItem)
+        cursorWidth = d->cursorItem->width();
+    //### Is QFontMetrics too slow?
+    QFontMetricsF fm(d->font);
+    setImplicitWidth(fm.width(d->control->displayText())+cursorWidth);
+    setContentsSize(QSize(width(), height()));//Repaints if changed
+    if(w==width() && h==height() && needsRedraw){
+        clearCache();
+        update();
+    }
 }
 
 QT_END_NAMESPACE

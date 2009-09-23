@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -418,13 +418,12 @@ void QPixmapConvolutionFilter::draw(QPainter *painter, const QPointF &p, const Q
         return;
 
     QPixmapFilter *filter = painter->paintEngine() && painter->paintEngine()->isExtended() ?
-        static_cast<QPaintEngineEx *>(painter->paintEngine())->createPixmapFilter(type()) : 0;
+        static_cast<QPaintEngineEx *>(painter->paintEngine())->pixmapFilter(type(), this) : 0;
     QPixmapConvolutionFilter *convolutionFilter = static_cast<QPixmapConvolutionFilter*>(filter);
     if (convolutionFilter) {
         convolutionFilter->setConvolutionKernel(d->convolutionKernel, d->kernelWidth, d->kernelHeight);
         convolutionFilter->d_func()->convoluteAlpha = d->convoluteAlpha;
         convolutionFilter->draw(painter, p, src, srcRect);
-        delete convolutionFilter;
         return;
     }
 
@@ -669,13 +668,12 @@ void QPixmapBlurFilter::draw(QPainter *painter, const QPointF &p, const QPixmap 
     }
 
     QPixmapFilter *filter = painter->paintEngine() && painter->paintEngine()->isExtended() ?
-        static_cast<QPaintEngineEx *>(painter->paintEngine())->createPixmapFilter(type()) : 0;
+        static_cast<QPaintEngineEx *>(painter->paintEngine())->pixmapFilter(type(), this) : 0;
     QPixmapBlurFilter *blurFilter = static_cast<QPixmapBlurFilter*>(filter);
     if (blurFilter) {
         blurFilter->setRadius(d->radius);
         blurFilter->setQuality(d->quality);
         blurFilter->draw(painter, p, src, srcRect);
-        delete blurFilter;
         return;
     }
 
@@ -759,6 +757,10 @@ class QPixmapColorizeFilterPrivate : public QPixmapFilterPrivate
     Q_DECLARE_PUBLIC(QPixmapColorizeFilter)
 public:
     QColor color;
+    qreal strength;
+    quint32 opaque : 1;
+    quint32 alphaBlend : 1;
+    quint32 padding : 30;
 };
 
 /*!
@@ -771,7 +773,11 @@ public:
 QPixmapColorizeFilter::QPixmapColorizeFilter(QObject *parent)
     : QPixmapFilter(*new QPixmapColorizeFilterPrivate, ColorizeFilter, parent)
 {
-    d_func()->color = QColor(0, 0, 192);
+    Q_D(QPixmapColorizeFilter);
+    d->color = QColor(0, 0, 192);
+    d->strength = qreal(1);
+    d->opaque = true;
+    d->alphaBlend = false;
 }
 
 /*!
@@ -797,22 +803,52 @@ void QPixmapColorizeFilter::setColor(const QColor &color)
 }
 
 /*!
+    Gets the strength of the colorize filter, 1.0 means full colorized while
+    0.0 equals to no filtering at all.
+
+    \internal
+*/
+qreal QPixmapColorizeFilter::strength() const
+{
+    Q_D(const QPixmapColorizeFilter);
+    return d->strength;
+}
+
+/*!
+    Sets the strength of the colorize filter to \a strength.
+
+    \internal
+*/
+void QPixmapColorizeFilter::setStrength(qreal strength)
+{
+    Q_D(QPixmapColorizeFilter);
+    d->strength = qBound(qreal(0), strength, qreal(1));
+    d->opaque = !qFuzzyIsNull(d->strength);
+    d->alphaBlend = !qFuzzyIsNull(d->strength - 1);
+}
+
+/*!
     \internal
 */
 void QPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const QPixmap &src, const QRectF &srcRect) const
 {
     Q_D(const QPixmapColorizeFilter);
     QPixmapFilter *filter = painter->paintEngine() && painter->paintEngine()->isExtended() ?
-        static_cast<QPaintEngineEx *>(painter->paintEngine())->createPixmapFilter(type()) : 0;
+        static_cast<QPaintEngineEx *>(painter->paintEngine())->pixmapFilter(type(), this) : 0;
     QPixmapColorizeFilter *colorizeFilter = static_cast<QPixmapColorizeFilter*>(filter);
     if (colorizeFilter) {
         colorizeFilter->setColor(d->color);
+        colorizeFilter->setStrength(d->strength);
         colorizeFilter->draw(painter, dest, src, srcRect);
-        delete colorizeFilter;
         return;
     }
 
     // falling back to raster implementation
+
+    if (!d->opaque) {
+        painter->drawPixmap(dest, src, srcRect);
+        return;
+    }
 
     QImage srcImage;
     QImage destImage;
@@ -835,6 +871,16 @@ void QPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const Q
     destPainter.setCompositionMode(QPainter::CompositionMode_Screen);
     destPainter.fillRect(srcImage.rect(), d->color);
     destPainter.end();
+
+    if (d->alphaBlend) {
+        // alpha blending srcImage and destImage
+        QImage buffer = srcImage;
+        QPainter bufPainter(&buffer);
+        bufPainter.setOpacity(d->strength);
+        bufPainter.drawImage(0, 0, destImage);
+        bufPainter.end();
+        destImage = buffer;
+    }
 
     if (srcImage.hasAlphaChannel())
         destImage.setAlphaChannel(srcImage.alphaChannel());

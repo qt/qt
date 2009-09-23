@@ -14,7 +14,7 @@ public:
     tst_qmlparser() {
         QmlMetaType::registerCustomStringConverter(qMetaTypeId<MyCustomVariantType>(), myCustomVariantTypeConverter);
         QFileInfo fileInfo(__FILE__);
-        engine.addImportPath(fileInfo.absoluteDir().filePath(QLatin1String("lib")));
+        engine.addImportPath(fileInfo.absoluteDir().filePath(QLatin1String("data/lib")));
     }
 
 private slots:
@@ -74,7 +74,7 @@ private:
         QVERIFY(!component.isError()); \
         QVERIFY(component.errors().isEmpty()); \
     } else { \
-        QFile file(errorfile); \
+        QFile file(QLatin1String("data/") + QLatin1String(errorfile)); \
         QVERIFY(file.open(QIODevice::ReadOnly)); \
         QByteArray data = file.readAll(); \
         QList<QByteArray> expected = data.split('\n'); \
@@ -96,7 +96,7 @@ private:
 inline QUrl TEST_FILE(const QString &filename)
 {
     QFileInfo fileInfo(__FILE__);
-    return QUrl::fromLocalFile(fileInfo.absoluteDir().filePath(filename));
+    return QUrl::fromLocalFile(fileInfo.absoluteDir().filePath(QLatin1String("data/") + filename));
 }
 
 inline QUrl TEST_FILE(const char *filename)
@@ -160,6 +160,8 @@ void tst_qmlparser::errors_data()
     QTest::newRow("finalOverride") << "finalOverride.qml" << "finalOverride.errors.txt" << false;
 
     QTest::newRow("importNamespaceConflict") << "importNamespaceConflict.qml" << "importNamespaceConflict.errors.txt" << false;
+    QTest::newRow("importVersionMissing (builtin)") << "importVersionMissingBuiltIn.qml" << "importVersionMissingBuiltIn.errors.txt" << false;
+    QTest::newRow("importVersionMissing (installed)") << "importVersionMissingInstalled.qml" << "importVersionMissingInstalled.errors.txt" << false;
 
     QTest::newRow("customParserIdNotAllowed") << "customParserIdNotAllowed.qml" << "customParserIdNotAllowed.errors.txt" << false;
 }
@@ -374,6 +376,8 @@ void tst_qmlparser::assignSignal()
     QVERIFY(object != 0);
     QTest::ignoreMessage(QtWarningMsg, "MyQmlObject::basicSlot");
     emit object->basicSignal();
+    QTest::ignoreMessage(QtWarningMsg, "MyQmlObject::basicSlot(9)");
+    emit object->basicParameterizedSignal(9);
 }
 
 // Tests the creation and assignment of dynamic properties

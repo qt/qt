@@ -76,6 +76,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLScriptElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -90,6 +91,11 @@ const ClassInfo JSHTMLScriptElementConstructor::s_info = { "HTMLScriptElementCon
 bool JSHTMLScriptElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLScriptElementConstructor, DOMObject>(exec, &JSHTMLScriptElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLScriptElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLScriptElementConstructor, DOMObject>(exec, &JSHTMLScriptElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -128,6 +134,11 @@ JSObject* JSHTMLScriptElement::createPrototype(ExecState* exec, JSGlobalObject* 
 bool JSHTMLScriptElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLScriptElement, Base>(exec, &JSHTMLScriptElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLScriptElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLScriptElement, Base>(exec, &JSHTMLScriptElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLScriptElementText(ExecState* exec, const Identifier&, const PropertySlot& slot)

@@ -73,6 +73,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLMetaElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -87,6 +88,11 @@ const ClassInfo JSHTMLMetaElementConstructor::s_info = { "HTMLMetaElementConstru
 bool JSHTMLMetaElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLMetaElementConstructor, DOMObject>(exec, &JSHTMLMetaElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLMetaElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLMetaElementConstructor, DOMObject>(exec, &JSHTMLMetaElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -125,6 +131,11 @@ JSObject* JSHTMLMetaElement::createPrototype(ExecState* exec, JSGlobalObject* gl
 bool JSHTMLMetaElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLMetaElement, Base>(exec, &JSHTMLMetaElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLMetaElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLMetaElement, Base>(exec, &JSHTMLMetaElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLMetaElementContent(ExecState* exec, const Identifier&, const PropertySlot& slot)

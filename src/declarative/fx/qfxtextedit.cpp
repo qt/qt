@@ -84,7 +84,7 @@ TextEdit {
     \qmlclass TextEdit
     \ingroup group_coreitems
 
-    \brief The QFxTextEdit class provides an editable formatted text item that you can add to a QFxView.
+    \brief The QFxTextEdit class provides an editable formatted text item that you can add to a QmlView.
 
     It can display both plain and rich text.
 
@@ -455,7 +455,6 @@ void QFxTextEdit::setCursorDelegate(QmlComponent* c)
 {
     Q_D(QFxTextEdit);
     if(d->cursorComponent){
-        delete d->cursorComponent;
         if(d->cursor){
             disconnect(d->control, SIGNAL(cursorPositionChanged()),
                     this, SLOT(moveCursorDelegate()));
@@ -1044,18 +1043,18 @@ void QFxTextEdit::updateSize()
                 yoff = dy/2;
         }
         setBaselineOffset(fm.ascent() + yoff + d->textMargin);
-        if (!widthValid()) {
-            int newWidth = (int)d->document->idealWidth();
-            d->document->setTextWidth(newWidth); // ### QTextDoc> Alignment will not work unless textWidth is set
-            setImplicitWidth(newWidth);
-        }
-        if (!heightValid()) {
-            if (d->text.isEmpty()) {
-                setImplicitHeight(fm.height());
-            } else {
-                setImplicitHeight((int)d->document->size().height());
-            }
-        }
+
+        //### need to comfirm cost of always setting these
+        int newWidth = (int)d->document->idealWidth();
+        d->document->setTextWidth(newWidth); // ### QTextDoc> Alignment will not work unless textWidth is set. Does Text need this line as well?
+        int cursorWidth = 1;
+        if(d->cursor)
+            cursorWidth = d->cursor->width();
+        newWidth += cursorWidth;
+        newWidth += 3;// ### Need a better way of ensuring cursor is in width
+        setImplicitWidth(newWidth);
+        setImplicitHeight(d->text.isEmpty() ? fm.height() : (int)d->document->size().height());
+
         setContentsSize(QSize(width(), height()));
     } else {
         d->dirty = true;

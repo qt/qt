@@ -56,7 +56,7 @@
 #include "qmlstate.h"
 #include "qlistmodelinterface.h"
 
-#include "qfxview.h"
+#include "qmlview.h"
 #include "qmlstategroup.h"
 
 #include "qfxitem_p.h"
@@ -262,6 +262,8 @@ void QFxContents::calcHeight()
     QList<QGraphicsItem *> children = m_item->childItems();
     for (int i = 0; i < children.count(); ++i) {
         QFxItem *child = qobject_cast<QFxItem *>(children.at(i));
+        if(!child)//### Should this be ignoring non-QFxItem graphicsobjects?
+            continue;
         qreal y = child->y();
         if (y + child->height() > bottom)
             bottom = y + child->height();
@@ -288,6 +290,8 @@ void QFxContents::calcWidth()
     QList<QGraphicsItem *> children = m_item->childItems();
     for (int i = 0; i < children.count(); ++i) {
         QFxItem *child = qobject_cast<QFxItem *>(children.at(i));
+        if(!child)//### Should this be ignoring non-QFxItem graphicsobjects?
+            continue;
         qreal x = child->x();
         if (x + child->width() > right)
             right = x + child->width();
@@ -309,6 +313,8 @@ void QFxContents::setItem(QFxItem *item)
     QList<QGraphicsItem *> children = m_item->childItems();
     for (int i = 0; i < children.count(); ++i) {
         QFxItem *child = qobject_cast<QFxItem *>(children.at(i));
+        if(!child)//### Should this be ignoring non-QFxItem graphicsobjects?
+            continue;
         connect(child, SIGNAL(heightChanged()), this, SLOT(calcHeight()));
         connect(child, SIGNAL(yChanged()), this, SLOT(calcHeight()));
         connect(child, SIGNAL(widthChanged()), this, SLOT(calcWidth()));
@@ -1210,7 +1216,7 @@ QFxKeysAttached *QFxKeysAttached::qmlAttachedProperties(QObject *obj)
 
 /*!
     \class QFxItem Item
-    \brief The QFxItem class is a generic QFxView item. It is the base class for all other view items.
+    \brief The QFxItem class is a generic QmlView item. It is the base class for all other view items.
 
     \qmltext
     All visual items in Qt Declarative inherit from QFxItem.  Although QFxItem
@@ -2575,7 +2581,7 @@ bool QFxItem::sceneEvent(QEvent *event)
 
     if (event->type() == QEvent::FocusIn ||
         event->type() == QEvent::FocusOut) {
-        activeFocusChanged(hasActiveFocus());
+        focusChanged(hasFocus());
     }
 
     return rv;
@@ -2688,9 +2694,23 @@ void QFxItem::setWidth(qreal w)
                     QRectF(x(), y(), oldWidth, height()));
 }
 
+void QFxItem::resetWidth()
+{
+    Q_D(QFxItem);
+    d->widthValid = false;
+    setImplicitWidth(implicitWidth());
+}
+
+qreal QFxItem::implicitWidth() const
+{
+    Q_D(const QFxItem);
+    return d->implicitWidth;
+}
+
 void QFxItem::setImplicitWidth(qreal w)
 {
     Q_D(QFxItem);
+    d->implicitWidth = w;
     if (d->width == w || widthValid())
         return;
 
@@ -2733,9 +2753,23 @@ void QFxItem::setHeight(qreal h)
                     QRectF(x(), y(), width(), oldHeight));
 }
 
+void QFxItem::resetHeight()
+{
+    Q_D(QFxItem);
+    d->heightValid = false;
+    setImplicitHeight(implicitHeight());
+}
+
+qreal QFxItem::implicitHeight() const
+{
+    Q_D(const QFxItem);
+    return d->implicitHeight;
+}
+
 void QFxItem::setImplicitHeight(qreal h)
 {
     Q_D(QFxItem);
+    d->implicitHeight = h;
     if (d->height == h || heightValid())
         return;
 
@@ -2756,37 +2790,31 @@ bool QFxItem::heightValid() const
 }
 
 /*!
-  \qmlproperty bool Item::focus
-  This property indicates whether the item has has an active focus request. Set this
-  property to true to request active focus.
-*/
+  \qmlproperty bool Item::wantsFocus
 
+  This property indicates whether the item has has an active focus request.
+*/
+bool QFxItem::wantsFocus() const
+{
+    return focusItem() != 0;
+}
+
+/*!
+  \qmlproperty bool Item::focus
+  This property indicates whether the item has keyboard input focus. Set this
+  property to true to request focus.
+*/
 bool QFxItem::hasFocus() const
 {
-    Q_D(const QFxItem);
-    return d->itemIsFocusedInScope;
+    return QGraphicsItem::hasFocus();
 }
 
 void QFxItem::setFocus(bool focus)
 {
-    if (focus) QGraphicsItem::setFocus(Qt::OtherFocusReason);
-    else QGraphicsItem::clearFocus();
-}
-
-void QFxItemPrivate::focusedInScopeChanged()
-{
-    Q_Q(QFxItem);
-    q->focusChanged(q->hasFocus());
-}
-
-/*!
-  \qmlproperty bool Item::activeFocus
-  This property indicates whether the item has the active focus.
-*/
-
-bool QFxItem::hasActiveFocus() const
-{
-    return QGraphicsItem::hasFocus();
+    if (focus)
+        QGraphicsItem::setFocus(Qt::OtherFocusReason);
+    else
+        QGraphicsItem::clearFocus();
 }
 
 /*!
@@ -2816,6 +2844,43 @@ QDebug operator<<(QDebug debug, QFxItem *item)
           << ", geometry =" << QRectF(item->pos(), QSizeF(item->width(), item->height()))
           << ", z =" << item->zValue() << ")";
     return debug;
+}
+
+int QFxItemPrivate::consistentTime = -1;
+void QFxItemPrivate::setConsistentTime(int t) 
+{ 
+    consistentTime = t; 
+}
+
+QTime QFxItemPrivate::currentTime()
+{
+    if (consistentTime == -1)
+        return QTime::currentTime();
+    else 
+        return QTime(0, 0).addMSecs(consistentTime);
+}
+
+void QFxItemPrivate::start(QTime &t)
+{
+    t = currentTime();
+}
+
+int QFxItemPrivate::elapsed(QTime &t)
+{
+    int n = t.msecsTo(currentTime());
+    if (n < 0)                                // passed midnight
+        n += 86400 * 1000;
+    return n;
+}
+
+int QFxItemPrivate::restart(QTime &t)
+{
+    QTime time = currentTime();
+    int n = t.msecsTo(time);
+    if (n < 0)                                // passed midnight
+        n += 86400*1000;
+    t = time;
+    return n;
 }
 
 QT_END_NAMESPACE

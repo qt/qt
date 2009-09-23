@@ -53,6 +53,7 @@
 #include <QPointF>
 #include <QSizeF>
 #include <QRectF>
+#include <QAtomicInt>
 #include <private/qmlstringconverters_p.h>
 #include <private/qmlengine_p.h>
 #include <qmlengine.h>
@@ -644,11 +645,12 @@ void QmlCompiler::compileTree(Object *tree)
 
     output->imports = unit->imports;
 
-    if (tree->metatype)
+    if (tree->metatype) {
         static_cast<QMetaObject &>(output->root) = *tree->metaObject();
-    else
+        QmlEnginePrivate::get(engine)->registerCompositeType(output);
+    } else {
         static_cast<QMetaObject &>(output->root) = *output->types.at(tree->type).metaObject();
-
+    }
 }
 
 bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
@@ -1260,7 +1262,7 @@ bool QmlCompiler::buildProperty(QmlParser::Property *prop,
 
         COMPILE_CHECK(buildGroupedProperty(prop, obj, ctxt));
 
-    } else if (QmlMetaType::isQmlList(prop->type) ||
+    } else if (QmlEnginePrivate::get(engine)->isQmlList(prop->type) ||
                QmlMetaType::isList(prop->type)) {
 
         COMPILE_CHECK(buildListProperty(prop, obj, ctxt));
@@ -1306,12 +1308,15 @@ QmlCompiler::buildPropertyInNamespace(QmlEnginePrivate::ImportedNamespace *ns,
 
         COMPILE_CHECK(buildAttachedProperty(prop, obj, ctxt));
     }
+
+    return true;
 }
 
 void QmlCompiler::genValueProperty(QmlParser::Property *prop,
                                    QmlParser::Object *obj)
 {
-    if (QmlMetaType::isQmlList(prop->type) || QmlMetaType::isList(prop->type)) {
+    if (QmlEnginePrivate::get(engine)->isQmlList(prop->type) || 
+        QmlMetaType::isList(prop->type)) {
         genListProperty(prop, obj);
     } else {
         genPropertyAssignment(prop, obj);
@@ -1325,10 +1330,10 @@ void QmlCompiler::genListProperty(QmlParser::Property *prop,
     QmlInstruction::Type storeType;
     int listType;
 
-    if (QmlMetaType::isQmlList(prop->type)) {
+    if (QmlEnginePrivate::get(engine)->isQmlList(prop->type)) {
         fetchType = QmlInstruction::FetchQmlList;
         storeType = QmlInstruction::StoreObjectQmlList;
-        listType = QmlMetaType::qmlListType(prop->type);
+        listType = QmlEnginePrivate::get(engine)->qmlListType(prop->type);
     } else {
         fetchType = QmlInstruction::FetchQList;
         storeType = QmlInstruction::StoreObjectQList;
@@ -1541,7 +1546,7 @@ bool QmlCompiler::buildGroupedProperty(QmlParser::Property *prop,
     Q_ASSERT(prop->type != 0);
     Q_ASSERT(prop->index != -1);
 
-    if (prop->type < QVariant::UserType) {
+    if (prop->type < (int)QVariant::UserType) {
         QmlEnginePrivate *ep =
             static_cast<QmlEnginePrivate *>(QObjectPrivate::get(engine));
         if (ep->valueTypes[prop->type]) {
@@ -1554,7 +1559,8 @@ bool QmlCompiler::buildGroupedProperty(QmlParser::Property *prop,
 
     } else {
         // Load the nested property's meta type
-        prop->value->metatype = QmlMetaType::metaObjectForType(prop->type);
+        prop->value->metatype = 
+            QmlEnginePrivate::get(engine)->metaObjectForType(prop->type);
         if (!prop->value->metatype)
             COMPILE_EXCEPTION(prop, "Cannot nest non-QObject property" <<
                                     prop->name);
@@ -1627,14 +1633,14 @@ bool QmlCompiler::buildListProperty(QmlParser::Property *prop,
                                     const BindingContext &ctxt)
 {
     Q_ASSERT(QmlMetaType::isList(prop->type) ||
-             QmlMetaType::isQmlList(prop->type));
+             QmlEnginePrivate::get(engine)->isQmlList(prop->type));
 
     int t = prop->type;
 
     obj->addValueProperty(prop);
 
-    if (QmlMetaType::isQmlList(t)) {
-        int listType = QmlMetaType::qmlListType(t);
+    if (QmlEnginePrivate::get(engine)->isQmlList(t)) {
+        int listType = QmlEnginePrivate::get(engine)->qmlListType(t);
         bool listTypeIsInterface = QmlMetaType::isInterface(listType);
 
         for (int ii = 0; ii < prop->values.count(); ++ii) {
@@ -1768,7 +1774,7 @@ bool QmlCompiler::buildPropertyObjectAssignment(QmlParser::Property *prop,
         // actual property type before we applied any extensions that might
         // effect the properties on the type, but don't effect assignability
         const QMetaObject *propertyMetaObject =
-            QmlMetaType::rawMetaObjectForType(prop->type);
+            QmlEnginePrivate::get(engine)->rawMetaObjectForType(prop->type);
 
         // Will be true if the assgned type inherits propertyMetaObject
         bool isAssignable = false;
@@ -1902,8 +1908,13 @@ bool QmlCompiler::mergeDynamicMetaProperties(QmlParser::Object *obj)
     return true;
 }
 
+static QAtomicInt classIndexCounter;
+
 bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
 {
+    Q_ASSERT(obj);
+    Q_ASSERT(obj->metatype);
+
     if (obj->dynamicProperties.isEmpty() &&
         obj->dynamicSignals.isEmpty() &&
         obj->dynamicSlots.isEmpty())
@@ -1913,9 +1924,13 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
 
     QByteArray dynamicData(sizeof(QmlVMEMetaData), (char)0);
 
+    QByteArray newClassName = obj->metatype->className();
+    newClassName.append("_QML_");
+    int idx = classIndexCounter.fetchAndAddRelaxed(1);
+    newClassName.append(QByteArray::number(idx));
+
     QMetaObjectBuilder builder;
-    if (obj->metatype)
-        builder.setClassName(QByteArray(obj->metatype->className()) + "_QML");
+    builder.setClassName(newClassName);
     builder.setFlags(QMetaObjectBuilder::DynamicMetaObject);
 
     bool hasAlias = false;
@@ -1937,10 +1952,45 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
 
         QByteArray type;
         int propertyType = 0;
+        bool readonly = false;
         switch(p.type) {
         case Object::DynamicProperty::Alias:
             hasAlias = true;
             continue;
+            break;
+        case Object::DynamicProperty::CustomList:
+        case Object::DynamicProperty::Custom:
+            {
+                QByteArray customTypeName;
+                QmlType *qmltype = 0;
+                QUrl url;
+                QmlEnginePrivate *priv = QmlEnginePrivate::get(engine);
+                if (!priv->resolveType(unit->imports, p.customType, &qmltype, 
+                                       &url, 0, 0, 0)) 
+                    COMPILE_EXCEPTION(&p, "Invalid property type");
+
+                if (!qmltype) {
+                    QmlCompositeTypeData *tdata = priv->typeManager.get(url);
+                    Q_ASSERT(tdata);
+                    Q_ASSERT(tdata->status == QmlCompositeTypeData::Complete);
+
+                    QmlCompiledData *data = tdata->toCompiledComponent(engine);
+                    customTypeName = data->root.className();
+                } else {
+                    customTypeName = qmltype->typeName();
+                }
+
+                if (p.type == Object::DynamicProperty::Custom) {
+                    type = customTypeName + "*";
+                    propertyType = QMetaType::QObjectStar;
+                } else {
+                    readonly = true;
+                    type = "QmlList<";
+                    type.append(customTypeName);
+                    type.append("*>*");
+                    propertyType = qMetaTypeId<QmlList<QObject*>* >();
+                }
+            }
             break;
         case Object::DynamicProperty::Variant:
             propertyType = -1;
@@ -1981,7 +2031,10 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
         dynamicData.append((char *)&propertyData, sizeof(propertyData));
 
         builder.addSignal(p.name + "Changed()");
-        builder.addProperty(p.name, type, ii).setScriptable(true);
+        QMetaPropertyBuilder propBuilder = 
+            builder.addProperty(p.name, type, ii);
+        propBuilder.setScriptable(true);
+        propBuilder.setWritable(!readonly);
     }
 
     if (mode == ResolveAliases) {
@@ -2251,7 +2304,8 @@ bool QmlCompiler::completeComponentBuild()
 */
 bool QmlCompiler::canCoerce(int to, QmlParser::Object *from)
 {
-    const QMetaObject *toMo = QmlMetaType::rawMetaObjectForType(to);
+    const QMetaObject *toMo = 
+        QmlEnginePrivate::get(engine)->rawMetaObjectForType(to);
     const QMetaObject *fromMo = from->metaObject();
 
     while (fromMo) {
@@ -2268,8 +2322,10 @@ bool QmlCompiler::canCoerce(int to, QmlParser::Object *from)
 */
 bool QmlCompiler::canCoerce(int to, int from)
 {
-    const QMetaObject *toMo = QmlMetaType::rawMetaObjectForType(to);
-    const QMetaObject *fromMo = QmlMetaType::rawMetaObjectForType(from);
+    const QMetaObject *toMo = 
+        QmlEnginePrivate::get(engine)->rawMetaObjectForType(to);
+    const QMetaObject *fromMo = 
+        QmlEnginePrivate::get(engine)->rawMetaObjectForType(from);
 
     while (fromMo) {
         if (fromMo == toMo)

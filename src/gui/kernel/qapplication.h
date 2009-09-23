@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -272,8 +272,10 @@ public:
     static bool quitOnLastWindowClosed();
 
 #ifdef QT_KEYPAD_NAVIGATION
-    static void setKeypadNavigationEnabled(bool);
+    static Q_DECL_DEPRECATED void setKeypadNavigationEnabled(bool);
     static bool keypadNavigationEnabled();
+    static void setNavigationMode(Qt::NavigationMode mode);
+    static Qt::NavigationMode navigationMode();
 #endif
 
 Q_SIGNALS:
@@ -337,7 +339,7 @@ public:
     static inline QT3_SUPPORT const QColor &winStyleHighlightColor()
         { return palette().color(QPalette::Active, QPalette::Highlight); }
     static inline QT3_SUPPORT void setPalette(const QPalette &pal, bool, const char* className = 0)
-        { setPalette(pal, className); };
+        { setPalette(pal, className); }
     static inline QT3_SUPPORT void setFont(const QFont &font, bool, const char* className = 0)
         { setFont(font, className); }
 

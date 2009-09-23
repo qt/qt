@@ -13,6 +13,8 @@
 #include <QPushButton>
 #include <QLineEdit>
 #include <QCheckBox>
+#include <QSpinBox>
+#include <QLabel>
 
 QT_BEGIN_NAMESPACE
 
@@ -25,7 +27,8 @@ public:
     void setPosition(int);
 
 public slots:
-    void addSample(int, int, int, int, bool);
+    void addSample(int, int, int, bool);
+    void setResolutionForHeight(int);
 
 protected:
     virtual void paintEvent(QPaintEvent *);
@@ -39,7 +42,7 @@ private:
     void drawSample(QPainter *, int, const QRect &);
     void drawTime(QPainter *, const QRect &);
     struct Sample { 
-        int sample[4];
+        int sample[3];
         bool isBreak;
     };
     QList<Sample> _samples;
@@ -95,14 +98,13 @@ void QLineGraph::updateScrollbar()
     ignoreScroll = false;
 }
 
-void QLineGraph::addSample(int a, int b, int c, int d, bool isBreak)
+void QLineGraph::addSample(int a, int b, int d, bool isBreak)
 {
     Sample s;
     s.isBreak = isBreak;
     s.sample[0] = a;
     s.sample[1] = b;
-    s.sample[2] = c;
-    s.sample[3] = d;
+    s.sample[2] = d;
     _samples << s;
     updateScrollbar();
     update();
@@ -128,7 +130,7 @@ void QLineGraph::drawTime(QPainter *p, const QRect &rect)
     int t = 0;
 
     for(int ii = first; ii <= last; ++ii) {
-        int sampleTime = _samples.at(ii).sample[3] / 1000;
+        int sampleTime = _samples.at(ii).sample[2] / 1000;
         if(sampleTime != t) {
 
             int xEnd = rect.left() + scaleX * (ii - first);
@@ -136,7 +138,7 @@ void QLineGraph::drawTime(QPainter *p, const QRect &rect)
 
             QRect text(xEnd - 30, rect.bottom() + 10, 60, 30);
 
-            p->drawText(text, Qt::AlignHCenter | Qt::AlignTop, QString::number(_samples.at(ii).sample[3]));
+            p->drawText(text, Qt::AlignHCenter | Qt::AlignTop, QString::number(_samples.at(ii).sample[2]));
 
             t = sampleTime;
         }
@@ -154,7 +156,7 @@ void QLineGraph::drawSample(QPainter *p, int s, const QRect &rect)
         first = qMax(0, _samples.count() - samplesPerWidth - 1);
     int last = qMin(_samples.count() - 1, first + samplesPerWidth);
 
-    qreal scaleY = rect.height() / resolutionForHeight;
+    qreal scaleY = qreal(rect.height()) / resolutionForHeight;
     qreal scaleX = qreal(rect.width()) / qreal(samplesPerWidth);
 
     int xEnd;
@@ -188,9 +190,6 @@ void QLineGraph::paintEvent(QPaintEvent *)
     p.setBrush(QColor("pink"));
     drawSample(&p, 1, r);
 
-    p.setBrush(QColor("green"));
-    drawSample(&p, 2, r);
-
     p.setBrush(Qt::NoBrush);
     p.drawRect(r);
 
@@ -209,6 +208,12 @@ void QLineGraph::paintEvent(QPaintEvent *)
     drawTime(&p, r);
 }
 
+void QLineGraph::setResolutionForHeight(int resolution)
+{
+    resolutionForHeight = resolution;
+    update();
+}
+
 class CanvasFrameRatePlugin : public QmlDebugClient
 {
 Q_OBJECT
@@ -216,19 +221,18 @@ public:
     CanvasFrameRatePlugin(QmlDebugConnection *client);
 
 signals:
-    void sample(int, int, int, int, bool);
+    void sample(int, int, int, bool);
 
 protected:
     virtual void messageReceived(const QByteArray &);
 
 private:
-    int la;
     int lb;
     int ld;
 };
 
 CanvasFrameRatePlugin::CanvasFrameRatePlugin(QmlDebugConnection *client)
-: QmlDebugClient(QLatin1String("CanvasFrameRate"), client), la(-1)
+: QmlDebugClient(QLatin1String("CanvasFrameRate"), client), lb(-1)
 {
 }
 
@@ -237,13 +241,12 @@ void CanvasFrameRatePlugin::messageReceived(const QByteArray &data)
     QByteArray rwData = data;
     QDataStream stream(&rwData, QIODevice::ReadOnly);
 
-    int a; int b; int c; int d; bool isBreak;
-    stream >> a >> b >> c >> d >> isBreak;
+    int b; int c; int d; bool isBreak;
+    stream >> b >> c >> d >> isBreak;
 
-    if (la != -1) 
-        emit sample(c, lb, la, ld, isBreak);
+    if (lb != -1)
+        emit sample(c, lb, ld, isBreak);
 
-    la = a;
     lb = b;
     ld = d;
 }
@@ -262,7 +265,18 @@ CanvasFrameRate::CanvasFrameRate(QmlDebugConnection *client, QWidget *parent)
     layout->addWidget(m_tabs);
 
     QHBoxLayout *bottom = new QHBoxLayout;
+    bottom->setSpacing(5);
     layout->addLayout(bottom);
+
+    QLabel *label = new QLabel("Resolution", this);
+    bottom->addWidget(label);
+
+    m_spin = new QSpinBox(this);
+    m_spin->setRange(50,200);
+    m_spin->setValue(50);
+    m_spin->setSuffix("ms");
+    bottom->addWidget(m_spin);
+
     bottom->addStretch(2);
 
     QCheckBox *check = new QCheckBox("Enable", this);
@@ -281,15 +295,16 @@ void CanvasFrameRate::newTab()
 {
     if (m_tabs->count()) {
         QWidget *w = m_tabs->widget(m_tabs->count() - 1);
-        QObject::disconnect(m_plugin, SIGNAL(sample(int,int,int,int,bool)), 
-                            w, SLOT(addSample(int,int,int,int,bool)));
+        QObject::disconnect(m_plugin, SIGNAL(sample(int,int,int,bool)),
+                            w, SLOT(addSample(int,int,int,bool)));
     }
 
     int id = m_tabs->count();
 
     QLineGraph *graph = new QLineGraph(this);
-    QObject::connect(m_plugin, SIGNAL(sample(int,int,int,int,bool)), 
-                     graph, SLOT(addSample(int,int,int,int,bool)));
+    QObject::connect(m_plugin, SIGNAL(sample(int,int,int,bool)),
+                     graph, SLOT(addSample(int,int,int,bool)));
+    QObject::connect(m_spin, SIGNAL(valueChanged(int)), graph, SLOT(setResolutionForHeight(int)));
 
     QString name = QLatin1String("Graph ") + QString::number(id);
     m_tabs->addTab(graph, name);

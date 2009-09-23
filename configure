@@ -2,6 +2,7 @@
 #############################################################################
 ##
 ## Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+## All rights reserved.
 ## Contact: Nokia Corporation (qt-info@nokia.com)
 ##
 ## This file is the build configuration utility of the Qt Toolkit.
@@ -21,10 +22,9 @@
 ## ensure the GNU Lesser General Public License version 2.1 requirements
 ## will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 ##
-## In addition, as a special exception, Nokia gives you certain
-## additional rights.  These rights are described in the Nokia Qt LGPL
-## Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-## package.
+## In addition, as a special exception, Nokia gives you certain additional
+## rights.  These rights are described in the Nokia Qt LGPL Exception
+## version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 ##
 ## If you have questions regarding the use of this file, please contact
 ## Nokia at qt-info@nokia.com.
@@ -3767,7 +3767,7 @@ Qt for Embedded Linux only:
                           proper license for this switch to work.
                           Example values for <arch>: arm mips x86 generic
 
-    -armfpa ............. Target platform is uses the ARM-FPA floating point format.
+    -armfpa ............. Target platform uses the ARM-FPA floating point format.
     -no-armfpa .......... Target platform does not use the ARM-FPA floating point format.
 
                           The floating point format is usually autodetected by configure. Use this
@@ -4879,9 +4879,9 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
         CFG_EGL=yes
         CFG_EGL_GLES_INCLUDES=yes
     fi
-    if ( [ "$CFG_OPENGL" = "es1" ] || [ "$CFG_OPENGL" = "es1cl" ] || [ "$CFG_OPENGL" = "es2" ] ) && [ "$CFG_EGL" != "yes" ] && [ "$PLATFORM_X11" = "yes" ]; then
+    if ( [ "$CFG_OPENGL" = "es1" ] || [ "$CFG_OPENGL" = "es1cl" ] || [ "$CFG_OPENGL" = "es2" ] ) && [ "$CFG_EGL" != "yes" ]; then
         echo "The EGL functionality test failed!"
-        echo " EGL is required for OpenGL ES on X11 to manage contexts & surfaces."
+        echo " EGL is required for OpenGL ES to manage contexts & surfaces."
         echo " You might need to modify the include and library search paths by editing"
         echo " QMAKE_INCDIR_EGL, QMAKE_LIBDIR_EGL and QMAKE_LIBS_EGL in"
         echo " ${XQMAKESPEC}."
@@ -5874,7 +5874,6 @@ case "$PLATFORM,$CFG_MAC_COCOA" in
     macx*,yes)
 	# Cocoa
 	QMakeVar set QMAKE_MACOSX_DEPLOYMENT_TARGET 10.5
-	CFG_QT3SUPPORT="no"
 	;;
     macx*,no)
 	# gcc, Carbon

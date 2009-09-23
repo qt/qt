@@ -603,7 +603,6 @@ QFxParticles::QFxParticles(QFxItem *parent)
 {
     Q_D(QFxParticles);
     d->init();
-    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 QFxParticles::QFxParticles(QFxParticlesPrivate &dd, QFxItem *parent)
@@ -611,7 +610,6 @@ QFxParticles::QFxParticles(QFxParticlesPrivate &dd, QFxItem *parent)
 {
     Q_D(QFxParticles);
     d->init();
-    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 QFxParticles::~QFxParticles()

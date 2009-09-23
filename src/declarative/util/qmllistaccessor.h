@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
+class QmlEngine;
 class Q_DECLARATIVE_EXPORT QmlListAccessor
 {
 public:
@@ -57,7 +58,7 @@ public:
     virtual ~QmlListAccessor();
 
     QVariant list() const;
-    void setList(const QVariant &);
+    void setList(const QVariant &, QmlEngine * = 0);
 
     bool isValid() const;
 
@@ -69,9 +70,11 @@ public:
     virtual void removeAt(int);
     virtual void clear();
 
+    enum Type { Invalid, StringList, VariantList, QmlList, QList, Instance, Integer };
+    Type type() const { return m_type; }
+
 private:
-    enum Type { Invalid, StringList, VariantList, QmlList, QList, Instance };
-    Type type;
+    Type m_type;
     QVariant d;
 };
 

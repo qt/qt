@@ -87,6 +87,11 @@ bool JSSVGPathSegLinetoHorizontalAbs::getOwnPropertySlot(ExecState* exec, const 
     return getStaticValueSlot<JSSVGPathSegLinetoHorizontalAbs, Base>(exec, &JSSVGPathSegLinetoHorizontalAbsTable, this, propertyName, slot);
 }
 
+bool JSSVGPathSegLinetoHorizontalAbs::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGPathSegLinetoHorizontalAbs, Base>(exec, &JSSVGPathSegLinetoHorizontalAbsTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGPathSegLinetoHorizontalAbsX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGPathSegLinetoHorizontalAbs* castedThis = static_cast<JSSVGPathSegLinetoHorizontalAbs*>(asObject(slot.slotBase()));

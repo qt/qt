@@ -39,8 +39,8 @@ namespace WebCore {
 #if ENABLE(SVG)
 static inline bool isSVGCursorIdentifier(const String& url)
 {
-    KURL kurl(url);
-    return kurl.hasRef();
+    KURL kurl(ParsedURLString, url);
+    return kurl.hasFragmentIdentifier();
 }
 
 static inline SVGCursorElement* resourceReferencedByCursorElement(const String& fragmentId, Document* document)

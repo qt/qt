@@ -88,8 +88,8 @@ void PluginTokenizer::createDocumentStructure()
     m_embedElement->setAttribute(heightAttr, "100%");
     
     m_embedElement->setAttribute(nameAttr, "plugin");
-    m_embedElement->setSrc(m_doc->url().string());
-    m_embedElement->setType(m_doc->frame()->loader()->responseMIMEType());
+    m_embedElement->setAttribute(srcAttr, m_doc->url().string());
+    m_embedElement->setAttribute(typeAttr, m_doc->frame()->loader()->responseMIMEType());
     
     body->appendChild(embedElement, ec);    
 }
@@ -106,12 +106,12 @@ bool PluginTokenizer::writeRawData(const char*, int)
         Settings* settings = frame->settings();
         if (settings && settings->arePluginsEnabled()) {
             m_doc->updateLayout();
-        
-            if (RenderWidget* renderer = static_cast<RenderWidget*>(m_embedElement->renderer())) {
+
+            if (RenderWidget* renderer = toRenderWidget(m_embedElement->renderer())) {
                 frame->loader()->client()->redirectDataToPlugin(renderer->widget());
                 frame->loader()->activeDocumentLoader()->mainResourceLoader()->setShouldBufferData(false);
             }
-        
+
             finish();
         }
     }

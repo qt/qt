@@ -68,6 +68,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLMarqueeElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -82,6 +83,11 @@ const ClassInfo JSHTMLMarqueeElementConstructor::s_info = { "HTMLMarqueeElementC
 bool JSHTMLMarqueeElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLMarqueeElementConstructor, DOMObject>(exec, &JSHTMLMarqueeElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLMarqueeElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLMarqueeElementConstructor, DOMObject>(exec, &JSHTMLMarqueeElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -112,6 +118,11 @@ bool JSHTMLMarqueeElementPrototype::getOwnPropertySlot(ExecState* exec, const Id
     return getStaticFunctionSlot<JSObject>(exec, &JSHTMLMarqueeElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSHTMLMarqueeElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSHTMLMarqueeElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSHTMLMarqueeElement::s_info = { "HTMLMarqueeElement", &JSHTMLElement::s_info, &JSHTMLMarqueeElementTable, 0 };
 
 JSHTMLMarqueeElement::JSHTMLMarqueeElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLMarqueeElement> impl)
@@ -129,6 +140,11 @@ bool JSHTMLMarqueeElement::getOwnPropertySlot(ExecState* exec, const Identifier&
     return getStaticValueSlot<JSHTMLMarqueeElement, Base>(exec, &JSHTMLMarqueeElementTable, this, propertyName, slot);
 }
 
+bool JSHTMLMarqueeElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLMarqueeElement, Base>(exec, &JSHTMLMarqueeElementTable, this, propertyName, descriptor);
+}
+
 JSValue jsHTMLMarqueeElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSHTMLMarqueeElement* domObject = static_cast<JSHTMLMarqueeElement*>(asObject(slot.slotBase()));
@@ -142,7 +158,7 @@ JSValue JSHTMLMarqueeElement::getConstructor(ExecState* exec, JSGlobalObject* gl
 JSValue JSC_HOST_CALL jsHTMLMarqueeElementPrototypeFunctionStart(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLMarqueeElement::s_info))
+    if (!thisValue.inherits(&JSHTMLMarqueeElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLMarqueeElement* castedThisObj = static_cast<JSHTMLMarqueeElement*>(asObject(thisValue));
     HTMLMarqueeElement* imp = static_cast<HTMLMarqueeElement*>(castedThisObj->impl());
@@ -154,7 +170,7 @@ JSValue JSC_HOST_CALL jsHTMLMarqueeElementPrototypeFunctionStart(ExecState* exec
 JSValue JSC_HOST_CALL jsHTMLMarqueeElementPrototypeFunctionStop(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLMarqueeElement::s_info))
+    if (!thisValue.inherits(&JSHTMLMarqueeElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLMarqueeElement* castedThisObj = static_cast<JSHTMLMarqueeElement*>(asObject(thisValue));
     HTMLMarqueeElement* imp = static_cast<HTMLMarqueeElement*>(castedThisObj->impl());

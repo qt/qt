@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -589,6 +589,10 @@ If you are using pre-built binaries, follow the instructions
         To configure Qt for S60, do:
 
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 23
+        to build the tools using MinGW, and the libraries using abld.
+        or
+        \snippet doc/src/snippets/code/doc_src_installation.qdoc 31
+        to build the tools using MinGW, and the libraries using sbsv2.
 
         For other options, type \c{configure -help} to get a list of all available
         options.
@@ -957,6 +961,7 @@ If you are using pre-built binaries, follow the instructions
 
     Qt for S60 requires the following software installed on your development PC:
     \list
+        \o \l{http://www.mingw.org/}{MinGW 3.4.5 or higher}, or another windows compiler to build the tools.
         \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/carbide_cpp/}{Carbide.c++ v2.0.0 or higher}           
            \list
            \o \bold{Note:} It may be necessary to update the Carbide compiler.
@@ -966,7 +971,7 @@ If you are using pre-built binaries, follow the instructions
         \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/S60SDK/}{S60 Platform SDK 3rd Edition FP1 or higher}
         \o \l{http://www.forum.nokia.com/main/resources/technologies/openc_cpp/}{Open C/C++ v1.6.0 or higher}. 
            Install this to all S60 SDKs you plan to use Qt with.
-        \o Building Qt libraries requires \l{http://www.arm.com/products/DevTools/RVCT.html}{RVCT} 2.2 [build 616] or later,
+        \o Building Qt libraries requires \l{http://www.arm.com/products/DevTools/RVCT.html}{RVCT} 2.2 [build 686] or later,
            which is not available free of charge. 
     \endlist
 

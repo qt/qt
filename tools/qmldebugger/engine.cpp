@@ -308,7 +308,7 @@ EnginePane::EnginePane(QmlDebugConnection *client, QWidget *parent)
     enginesFile.open(QFile::ReadOnly);
     Q_ASSERT(enginesFile.isOpen());
 
-    m_engineView = new QFxView(this);
+    m_engineView = new QmlView(this);
     m_engineView->rootContext()->setContextProperty("engines", qVariantFromValue(&m_engineItems));
     m_engineView->setContentResizable(true);
     m_engineView->setQml(enginesFile.readAll());

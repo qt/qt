@@ -75,6 +75,7 @@ private:
     friend class QmlMetaProperty;
     friend class QmlVME;
 
+    QObject *m_object;
     QmlAbstractBinding **m_mePtr;
     QmlAbstractBinding **m_prevBinding;
     QmlAbstractBinding  *m_nextBinding;

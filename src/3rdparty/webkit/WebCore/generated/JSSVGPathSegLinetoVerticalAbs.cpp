@@ -87,6 +87,11 @@ bool JSSVGPathSegLinetoVerticalAbs::getOwnPropertySlot(ExecState* exec, const Id
     return getStaticValueSlot<JSSVGPathSegLinetoVerticalAbs, Base>(exec, &JSSVGPathSegLinetoVerticalAbsTable, this, propertyName, slot);
 }
 
+bool JSSVGPathSegLinetoVerticalAbs::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGPathSegLinetoVerticalAbs, Base>(exec, &JSSVGPathSegLinetoVerticalAbsTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGPathSegLinetoVerticalAbsY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGPathSegLinetoVerticalAbs* castedThis = static_cast<JSSVGPathSegLinetoVerticalAbs*>(asObject(slot.slotBase()));

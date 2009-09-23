@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -77,9 +77,12 @@ private slots:
     void glFBOUseInGLWidget();
     void glPBufferRendering();
     void glWidgetReparent();
+    void glWidgetRenderPixmap();
     void stackedFBOs();
     void colormap();
     void fboFormat();
+
+    void testDontCrashOnDanglingResources();
 };
 
 tst_QGL::tst_QGL()
@@ -680,8 +683,16 @@ void tst_QGL::openGLVersionCheck()
     // However, the complicated parts are in openGLVersionFlags(const QString &versionString)
     // tested above
 
+#if defined(QT_OPENGL_ES_1)
+    QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Common_Version_1_0);
+#elif defined(QT_OPENGL_ES_1_CL)
+    QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_CommonLite_Version_1_0);
+#elif defined(QT_OPENGL_ES_2)
+    QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0);
+#else
     QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_1_1);
-#endif
+#endif //defined(QT_OPENGL_ES_1)
+#endif //QT_BUILD_INTERNAL
 }
 
 class UnclippedWidget : public QWidget
@@ -956,6 +967,11 @@ void tst_QGL::multipleFBOInterleavedRendering()
     QVERIFY(fbo2Painter.begin(fbo2));
     QVERIFY(fbo3Painter.begin(fbo3));
 
+    // Confirm we're using the GL2 engine, as interleaved rendering isn't supported
+    // on the GL1 engine:
+    if (fbo1Painter.paintEngine()->type() != QPaintEngine::OpenGL2)
+        QSKIP("Interleaved GL rendering requires OpenGL 2.0 or higher", SkipSingle);
+
     QPainterPath intersectingPath;
     intersectingPath.moveTo(0, 0);
     intersectingPath.lineTo(100, 0);
@@ -1156,6 +1172,35 @@ void tst_QGL::glWidgetReparent()
 
     delete widget;
 }
+
+class RenderPixmapWidget : public QGLWidget
+{
+protected:
+    void initializeGL() {
+        // Set some gl state:
+        glClearColor(1.0, 0.0, 0.0, 1.0);
+    }
+
+    void paintGL() {
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+};
+
+void tst_QGL::glWidgetRenderPixmap()
+{
+    RenderPixmapWidget *w = new RenderPixmapWidget;
+
+    QPixmap pm = w->renderPixmap(100, 100, false);
+
+    delete w;
+
+    QImage fb = pm.toImage().convertToFormat(QImage::Format_RGB32);
+    QImage reference(fb.size(), QImage::Format_RGB32);
+    reference.fill(0xffff0000);
+
+    QCOMPARE(fb, reference);
+}
+
 
 // When using multiple FBOs at the same time, unbinding one FBO should re-bind the
 // previous. I.e. It should be possible to have a stack of FBOs where pop'ing there
@@ -1481,6 +1526,17 @@ void tst_QGL::fboFormat()
     format4c.setInternalTextureFormat(DEFAULT_FORMAT);
     QVERIFY(!(format1c == format4c));
     QVERIFY(format1c != format4c);
+}
+
+void tst_QGL::testDontCrashOnDanglingResources()
+{
+    // We have a number of Q_GLOBAL_STATICS inside the QtOpenGL
+    // library. This test is verify that we don't crash as a result of
+    // them calling into libgl on application shutdown.
+    QWidget *widget = new UnclippedWidget();
+    widget->show();
+    qApp->processEvents();
+    widget->hide();
 }
 
 QTEST_MAIN(tst_QGL)

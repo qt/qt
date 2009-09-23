@@ -175,15 +175,17 @@ QmlFontLoader::Status QmlFontLoader::status() const
 void QmlFontLoader::replyFinished()
 {
     Q_D(QmlFontLoader);
-    if (!d->reply->error()) {
-        QByteArray ba = d->reply->readAll();
-        d->addFontToDatabase(ba);
-    } else {
-	d->status = Error;
-        emit statusChanged();
+    if (d->reply) {
+        if (!d->reply->error()) {
+            QByteArray ba = d->reply->readAll();
+            d->addFontToDatabase(ba);
+        } else {
+            d->status = Error;
+            emit statusChanged();
+        }
+        d->reply->deleteLater();
+        d->reply = 0;
     }
-    d->reply->deleteLater();
-    d->reply = 0;
 }
 
 void QmlFontLoaderPrivate::addFontToDatabase(const QByteArray &ba)

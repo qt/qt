@@ -92,6 +92,11 @@ bool JSSVGTextPositioningElement::getOwnPropertySlot(ExecState* exec, const Iden
     return getStaticValueSlot<JSSVGTextPositioningElement, Base>(exec, &JSSVGTextPositioningElementTable, this, propertyName, slot);
 }
 
+bool JSSVGTextPositioningElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGTextPositioningElement, Base>(exec, &JSSVGTextPositioningElementTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGTextPositioningElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGTextPositioningElement* castedThis = static_cast<JSSVGTextPositioningElement*>(asObject(slot.slotBase()));

@@ -91,6 +91,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSSVGGradientElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -105,6 +106,11 @@ const ClassInfo JSSVGGradientElementConstructor::s_info = { "SVGGradientElementC
 bool JSSVGGradientElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGGradientElementConstructor, DOMObject>(exec, &JSSVGGradientElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGGradientElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGGradientElementConstructor, DOMObject>(exec, &JSSVGGradientElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -138,6 +144,11 @@ bool JSSVGGradientElementPrototype::getOwnPropertySlot(ExecState* exec, const Id
     return getStaticPropertySlot<JSSVGGradientElementPrototype, JSObject>(exec, &JSSVGGradientElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGGradientElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticPropertyDescriptor<JSSVGGradientElementPrototype, JSObject>(exec, &JSSVGGradientElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGGradientElement::s_info = { "SVGGradientElement", &JSSVGElement::s_info, &JSSVGGradientElementTable, 0 };
 
 JSSVGGradientElement::JSSVGGradientElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGGradientElement> impl)
@@ -153,6 +164,11 @@ JSObject* JSSVGGradientElement::createPrototype(ExecState* exec, JSGlobalObject*
 bool JSSVGGradientElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGGradientElement, Base>(exec, &JSSVGGradientElementTable, this, propertyName, slot);
+}
+
+bool JSSVGGradientElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGGradientElement, Base>(exec, &JSSVGGradientElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGGradientElementGradientUnits(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -230,7 +246,7 @@ JSValue JSSVGGradientElement::getConstructor(ExecState* exec, JSGlobalObject* gl
 JSValue JSC_HOST_CALL jsSVGGradientElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGGradientElement::s_info))
+    if (!thisValue.inherits(&JSSVGGradientElement::s_info))
         return throwError(exec, TypeError);
     JSSVGGradientElement* castedThisObj = static_cast<JSSVGGradientElement*>(asObject(thisValue));
     SVGGradientElement* imp = static_cast<SVGGradientElement*>(castedThisObj->impl());

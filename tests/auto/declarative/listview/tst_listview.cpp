@@ -1,6 +1,6 @@
 #include <QtTest/QtTest>
 #include <qlistmodelinterface.h>
-#include <qfxview.h>
+#include <qmlview.h>
 #include <qfxlistview.h>
 #include <qfxtext.h>
 #include <qmlcontext.h>
@@ -31,7 +31,7 @@ private:
     template <class T> void changed();
     template <class T> void inserted();
     template <class T> void removed();
-    QFxView *createView(const QString &filename);
+    QmlView *createView(const QString &filename);
     template<typename T>
     T *findItem(QFxItem *parent, const QString &id, int index=0);
 };
@@ -169,7 +169,7 @@ tst_QFxListView::tst_QFxListView()
 template <class T>
 void tst_QFxListView::items()
 {
-    QFxView *canvas = createView(SRCDIR "/data/listview.qml");
+    QmlView *canvas = createView(SRCDIR "/data/listview.qml");
 
     T model;
     model.addItem("Fred", "12345");
@@ -205,7 +205,7 @@ void tst_QFxListView::items()
 template <class T>
 void tst_QFxListView::changed()
 {
-    QFxView *canvas = createView(SRCDIR "/data/listview.qml");
+    QmlView *canvas = createView(SRCDIR "/data/listview.qml");
 
     T model;
     model.addItem("Fred", "12345");
@@ -238,7 +238,7 @@ void tst_QFxListView::changed()
 template <class T>
 void tst_QFxListView::inserted()
 {
-    QFxView *canvas = createView(SRCDIR "/data/listview.qml");
+    QmlView *canvas = createView(SRCDIR "/data/listview.qml");
 
     T model;
     model.addItem("Fred", "12345");
@@ -305,7 +305,7 @@ void tst_QFxListView::inserted()
 template <class T>
 void tst_QFxListView::removed()
 {
-    QFxView *canvas = createView(SRCDIR "/data/listview.qml");
+    QmlView *canvas = createView(SRCDIR "/data/listview.qml");
 
     T model;
     for (int i = 0; i < 30; i++)
@@ -438,9 +438,9 @@ void tst_QFxListView::qAbstractItemModel_removed()
     removed<TestModel2>();
 }
 
-QFxView *tst_QFxListView::createView(const QString &filename)
+QmlView *tst_QFxListView::createView(const QString &filename)
 {
-    QFxView *canvas = new QFxView(0);
+    QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
 
     QFile file(filename);

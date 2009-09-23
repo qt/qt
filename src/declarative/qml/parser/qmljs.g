@@ -212,15 +212,15 @@
 #ifndef QMLJSPARSER_P_H
 #define QMLJSPARSER_P_H
 
+#include "qmljsglobal_p.h"
 #include "qmljsgrammar_p.h"
 #include "qmljsast_p.h"
 #include "qmljsengine_p.h"
 
 #include <QtCore/QList>
+#include <QtCore/QString>
 
-QT_BEGIN_NAMESPACE
-
-class QString;
+QT_QML_BEGIN_NAMESPACE
 
 namespace QmlJS {
 
@@ -388,7 +388,7 @@ protected:
 
 using namespace QmlJS;
 
-QT_BEGIN_NAMESPACE
+QT_QML_BEGIN_NAMESPACE
 
 void Parser::reallocateStack()
 {
@@ -846,6 +846,21 @@ case $rule_number: {
     node->typeToken = loc(2);
     node->identifierToken = loc(2);
     node->semicolonToken = loc(3);
+    sym(1).Node = node;
+}   break;
+./
+
+UiObjectMember: T_PROPERTY T_IDENTIFIER T_LT UiPropertyType T_GT T_IDENTIFIER T_AUTOMATIC_SEMICOLON ;
+UiObjectMember: T_PROPERTY T_IDENTIFIER T_LT UiPropertyType T_GT T_IDENTIFIER T_SEMICOLON ;
+/.
+case $rule_number: {
+    AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), sym(4).sval, sym(6).sval);
+    node->typeModifier = sym(2).sval;
+    node->propertyToken = loc(1);
+    node->typeModifierToken = loc(2);
+    node->typeToken = loc(4);
+    node->identifierToken = loc(6);
+    node->semicolonToken = loc(7);
     sym(1).Node = node;
 }   break;
 ./
@@ -3022,12 +3037,12 @@ PropertyNameAndValueListOpt: PropertyNameAndValueList ;
     return false;
 }
 
-QT_END_NAMESPACE
+QT_QML_END_NAMESPACE
 
 
 ./
 /:
-QT_END_NAMESPACE
+QT_QML_END_NAMESPACE
 
 
 

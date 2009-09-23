@@ -64,6 +64,11 @@ bool JSXPathNSResolverPrototype::getOwnPropertySlot(ExecState* exec, const Ident
     return getStaticFunctionSlot<JSObject>(exec, &JSXPathNSResolverPrototypeTable, this, propertyName, slot);
 }
 
+bool JSXPathNSResolverPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSXPathNSResolverPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSXPathNSResolver::s_info = { "XPathNSResolver", 0, 0, 0 };
 
 JSXPathNSResolver::JSXPathNSResolver(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XPathNSResolver> impl)
@@ -85,7 +90,7 @@ JSObject* JSXPathNSResolver::createPrototype(ExecState* exec, JSGlobalObject* gl
 JSValue JSC_HOST_CALL jsXPathNSResolverPrototypeFunctionLookupNamespaceURI(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSXPathNSResolver::s_info))
+    if (!thisValue.inherits(&JSXPathNSResolver::s_info))
         return throwError(exec, TypeError);
     JSXPathNSResolver* castedThisObj = static_cast<JSXPathNSResolver*>(asObject(thisValue));
     XPathNSResolver* imp = static_cast<XPathNSResolver*>(castedThisObj->impl());
@@ -102,7 +107,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, XPathNS
 }
 XPathNSResolver* toXPathNSResolver(JSC::JSValue value)
 {
-    return value.isObject(&JSXPathNSResolver::s_info) ? static_cast<JSXPathNSResolver*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSXPathNSResolver::s_info) ? static_cast<JSXPathNSResolver*>(asObject(value))->impl() : 0;
 }
 
 }

@@ -23,8 +23,10 @@
 #include "config.h"
 #include "HTMLHtmlElement.h"
 
-#include "ApplicationCacheGroup.h"
+#include "ApplicationCacheHost.h"
 #include "Document.h"
+#include "DocumentLoader.h"
+#include "Frame.h"
 #include "HTMLNames.h"
 
 namespace WebCore {
@@ -68,12 +70,19 @@ void HTMLHtmlElement::insertedIntoDocument()
     if (!document()->frame())
         return;
 
+    DocumentLoader* documentLoader = document()->frame()->loader()->documentLoader();
+    if (!documentLoader)
+        return;
+
     // Check the manifest attribute
+    // FIXME: Revisit this when we get a clarification from whatwg on how to handle empty
+    // manifest attributes. As spec'd, and coded here, the system will initiate an update
+    // passing in the document url as the manifest url. That's not a good thing.
     AtomicString manifest = getAttribute(manifestAttr);
     if (manifest.isNull())
-        ApplicationCacheGroup::selectCacheWithoutManifestURL(document()->frame());
+        documentLoader->applicationCacheHost()->selectCacheWithoutManifest();
     else
-        ApplicationCacheGroup::selectCache(document()->frame(), document()->completeURL(manifest));
+        documentLoader->applicationCacheHost()->selectCacheWithManifest(document()->completeURL(manifest));
 }
 #endif
 

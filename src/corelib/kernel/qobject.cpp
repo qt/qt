@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -129,7 +129,7 @@ QObjectData::~QObjectData() {}
 QDeclarativeData::~QDeclarativeData() {}
 
 QObjectPrivate::QObjectPrivate(int version)
-    : threadData(0), connectionLists(0), senders(0), currentSender(0), currentChildBeingDeleted(0), declarativeData(0), objectGuards(0)
+    : threadData(0), connectionLists(0), senders(0), currentSender(0), currentChildBeingDeleted(0)
 {
     if (version != QObjectPrivateVersion)
         qFatal("Cannot mix incompatible Qt libraries");
@@ -496,18 +496,14 @@ void QMetaObject::changeGuard(QObject **ptr, QObject *o)
 void QObjectPrivate::clearGuards(QObject *object)
 {
     QObjectPrivate *priv = QObjectPrivate::get(object);
-    QGuard<QObject> *guard = priv->objectGuards;
+    QGuard<QObject> *guard = priv->extraData ? priv->extraData->objectGuards : 0;
     while (guard) {
-        guard->o = 0;
+        QGuard<QObject> *g = guard;
         guard = guard->next;
-    }
-    while (priv->objectGuards) {
-        guard = priv->objectGuards;
-        guard->prev = 0;
-        if (guard->next) guard->next->prev = &priv->objectGuards;
-        priv->objectGuards = guard->next;
-        guard->next = 0;
-        guard->objectDestroyed(object);
+        g->o = 0;
+        g->prev = 0;
+        g->next = 0;
+        g->objectDestroyed(object);
     }
 
     if (!priv->hasGuards)
@@ -3711,7 +3707,7 @@ void QObject::dumpObjectInfo()
                     offsetToNextMetaObject = signalOffset;
                     computeOffsets(mo, &signalOffset, &methodOffset);
                 }
-                offset = offset - signalOffset + methodOffset;
+                offset = methodOffset - signalOffset;
             }
             const QMetaMethod signal = metaObject()->method(signal_index + offset);
             qDebug("        signal: %s", signal.signature());

@@ -81,8 +81,15 @@ void Widget::setFocus()
 void Widget::setCursor(const Cursor& cursor)
 {
 #ifndef QT_NO_CURSOR
-    if (QWidget* widget = root()->hostWindow()->platformWindow())
-        QCoreApplication::postEvent(widget, new SetCursorEvent(cursor.impl()));
+    QWidget* widget = root()->hostWindow()->platformWindow();
+
+    if (!widget)
+        return;
+
+    if (!cursor.impl().bitmap() && widget->cursor().shape() == cursor.impl().shape())
+        return;
+
+    widget->setProperty("WebCoreCursor", cursor.impl());
 #endif
 }
 

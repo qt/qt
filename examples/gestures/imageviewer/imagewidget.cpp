@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -71,8 +71,12 @@ ImageWidget::ImageWidget(QWidget *parent)
     connect(pinchGesture, SIGNAL(cancelled()), this, SLOT(pinchTriggered()));
     connect(pinchGesture, SIGNAL(triggered()), this, SLOT(pinchTriggered()));
 
+//! [construct swipe gesture]
     QGesture *swipeGesture = new QSwipeGesture(this);
+//! [construct swipe gesture]
+//! [connect swipe gesture]
     connect(swipeGesture, SIGNAL(triggered()), this, SLOT(swipeTriggered()));
+//! [connect swipe gesture]
 }
 
 void ImageWidget::paintEvent(QPaintEvent*)
@@ -130,12 +134,15 @@ void ImageWidget::pinchTriggered()
     update();
 }
 
+//! [swipe slot start]
 void ImageWidget::swipeTriggered()
 {
     QSwipeGesture *pg = qobject_cast<QSwipeGesture*>(sender());
+//! [swipe slot start]
     qDebug() << (int) pg->horizontalDirection();
     qDebug() << pg->swipeAngle();
 
+//! [swipe slot finish]
     if (pg->horizontalDirection() == QSwipeGesture::Left
             || pg->verticalDirection() == QSwipeGesture::Up)
         goPrevImage();
@@ -143,6 +150,7 @@ void ImageWidget::swipeTriggered()
         goNextImage();
     update();
 }
+//! [swipe slot finish]
 
 void ImageWidget::resizeEvent(QResizeEvent*)
 {
@@ -245,5 +253,3 @@ void ImageWidget::goToImage(int index)
         nextImage = QImage();
     update();
 }
-
-#include "moc_imagewidget.cpp"

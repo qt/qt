@@ -264,7 +264,11 @@ public:
     QList<QByteArray> classInfoNames;
     QList<QByteArray> classInfoValues;
     QList<QMetaEnumBuilderPrivate> enumerators;
+#ifdef Q_NO_DATA_RELOCATION
+    QList<QMetaObjectAccessor> relatedMetaObjects;
+#else
     QList<const QMetaObject *> relatedMetaObjects;
+#endif
     int flags;
 };
 
@@ -688,7 +692,11 @@ int QMetaObjectBuilder::addClassInfo(const QByteArray& name, const QByteArray& v
     \sa relatedMetaObjectCount(), relatedMetaObject()
     \sa removeRelatedMetaObject()
 */
+#ifdef Q_NO_DATA_RELOCATION
+int QMetaObjectBuilder::addRelatedMetaObject(const QMetaObjectAccessor &meta)
+#else
 int QMetaObjectBuilder::addRelatedMetaObject(const QMetaObject *meta)
+#endif
 {
     Q_ASSERT(meta);
     int index = d->relatedMetaObjects.size();
@@ -761,10 +769,15 @@ void QMetaObjectBuilder::addMetaObject
     }
 
     if ((members & RelatedMetaObjects) != 0) {
+#ifdef Q_NO_DATA_RELOCATION
+        const QMetaObjectAccessor *objects = 0;
+#else
         const QMetaObject **objects;
         if (priv(prototype->d.data)->revision < 2) {
             objects = (const QMetaObject **)(prototype->d.extradata);
-        } else {
+        } else
+#endif
+        {
             const QMetaObjectExtraData *extra = (const QMetaObjectExtraData *)(prototype->d.extradata);
             if (extra)
                 objects = extra->objects;
@@ -855,7 +868,11 @@ QMetaEnumBuilder QMetaObjectBuilder::enumerator(int index) const
 const QMetaObject *QMetaObjectBuilder::relatedMetaObject(int index) const
 {
     if (index >= 0 && index < d->relatedMetaObjects.size())
+#ifdef Q_NO_DATA_RELOCATION
+        return &((*(d->relatedMetaObjects[index]))());
+#else
         return d->relatedMetaObjects[index];
+#endif
     else
         return 0;
 }
@@ -1390,8 +1407,13 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
             reinterpret_cast<QMetaObjectExtraData *>(buf + size);
         size += sizeof(QMetaObjectExtraData);
         ALIGN(size, QMetaObject *);
+#ifdef Q_NO_DATA_RELOCATION
+        QMetaObjectAccessor *objects =
+            reinterpret_cast<QMetaObjectAccessor *>(buf + size);
+#else
         const QMetaObject **objects =
             reinterpret_cast<const QMetaObject **>(buf + size);
+#endif
         if (buf) {
             if (d->relatedMetaObjects.size() > 0) {
                 extra->objects = objects;
@@ -1588,10 +1610,14 @@ void QMetaObjectBuilder::serialize(QDataStream& stream) const
     }
 
     // Write the related meta objects.
+#ifdef Q_NO_DATA_RELOCATION
+    //### What do we do here?
+#else
     for (index = 0; index < d->relatedMetaObjects.size(); ++index) {
         const QMetaObject *meta = d->relatedMetaObjects[index];
         stream << QByteArray(meta->className());
     }
+#endif
 
     // Add an extra empty QByteArray for additional data in future versions.
     // This should help maintain backwards compatibility, allowing older
@@ -1764,6 +1790,9 @@ void QMetaObjectBuilder::deserialize
     }
 
     // Read the related meta objects.
+#ifdef Q_NO_DATA_RELOCATION
+    //### What do we do here
+#else
     for (index = 0; index < relatedMetaObjectCount; ++index) {
         if (stream.status() != QDataStream::Ok)
             return;
@@ -1775,6 +1804,7 @@ void QMetaObjectBuilder::deserialize
         }
         addRelatedMetaObject(cl);
     }
+#endif
 
     // Read the extra data block, which is reserved for future use.
     stream >> name;

@@ -44,10 +44,13 @@
 #include <qmlmetatype.h>
 #include <QtCore/qdebug.h>
 
+// ### Remove me
+#include <private/qmlengine_p.h>
+
 QT_BEGIN_NAMESPACE
 
 QmlListAccessor::QmlListAccessor()
-: type(Invalid)
+: m_type(Invalid)
 {
 }
 
@@ -60,36 +63,44 @@ QVariant QmlListAccessor::list() const
     return d;
 }
 
-void QmlListAccessor::setList(const QVariant &v)
+void QmlListAccessor::setList(const QVariant &v, QmlEngine *engine)
 {
     d = v;
 
+    QmlEnginePrivate *enginePrivate = engine?QmlEnginePrivate::get(engine):0;
+
     if (!d.isValid()) {
-        type = Invalid;
+        m_type = Invalid;
     } else if (d.type() == QVariant::StringList) {
-        type = StringList;
+        m_type = StringList;
     } else if (d.type() == QMetaType::QVariantList) {
-        type = VariantList;
+        m_type = VariantList;
+    } else if (d.canConvert(QVariant::Int)) {
+        qDebug() << "integer";
+        m_type = Integer;
     } else if (d.type() != QVariant::UserType) {
-        type = Instance;
-    } else if (QmlMetaType::isObject(d.userType())) {
+        m_type = Instance;
+    } else if ((!enginePrivate && QmlMetaType::isObject(d.userType())) ||
+               (enginePrivate && enginePrivate->isObject(d.userType()))) {
         QObject *data = 0;
         data = *(QObject **)v.constData();
         d = QVariant::fromValue(data);
-        type = Instance;
-    } else if (QmlMetaType::isQmlList(d.userType())) {
-        type = QmlList;
+        m_type = Instance;
+    } else if ((!enginePrivate && QmlMetaType::isQmlList(d.userType())) ||
+               (enginePrivate && enginePrivate->isQmlList(d.userType()))) {
+        m_type = QmlList;
     } else if (QmlMetaType::isList(d.userType())) {
-        type = QList;
+        qDebug() << "list";
+        m_type = QList;
     } else {
-        type = Invalid;
+        m_type = Invalid;
         d = QVariant();
     }
 }
 
 int QmlListAccessor::count() const
 {
-    switch(type) {
+    switch(m_type) {
     case Invalid:
         return 0;
     case StringList:
@@ -105,6 +116,8 @@ int QmlListAccessor::count() const
         return QmlMetaType::listCount(d);
     case Instance:
         return 1;
+    case Integer:
+        return d.toInt();
     }
 
     return 0;
@@ -113,7 +126,7 @@ int QmlListAccessor::count() const
 QVariant QmlListAccessor::at(int idx) const
 {
     Q_ASSERT(idx >= 0 && idx < count());
-    switch(type) {
+    switch(m_type) {
     case Invalid:
         return QVariant();
     case StringList:
@@ -131,6 +144,8 @@ QVariant QmlListAccessor::at(int idx) const
         return QmlMetaType::listAt(d, idx);
     case Instance:
         return d;
+    case Integer:
+        return QVariant();
     }
 
     return QVariant();
@@ -138,7 +153,7 @@ QVariant QmlListAccessor::at(int idx) const
 
 void QmlListAccessor::append(const QVariant &value)
 {
-    switch(type) {
+    switch(m_type) {
     case Invalid:
         break;
     case StringList:
@@ -162,6 +177,7 @@ void QmlListAccessor::append(const QVariant &value)
         QmlMetaType::append(d, value);
         break;
     case Instance:
+    case Integer:
         //do nothing
         break;
     }
@@ -169,7 +185,7 @@ void QmlListAccessor::append(const QVariant &value)
 
 void QmlListAccessor::insert(int index, const QVariant &value)
 {
-    switch(type) {
+    switch(m_type) {
     case Invalid:
         break;
     case StringList:
@@ -198,12 +214,14 @@ void QmlListAccessor::insert(int index, const QVariant &value)
         if (index == 0)
             setList(value);
         break;
+    case Integer:
+        break;
     }
 }
 
 void QmlListAccessor::removeAt(int index)
 {
-    switch(type) {
+    switch(m_type) {
     case Invalid:
         break;
     case StringList:
@@ -227,12 +245,14 @@ void QmlListAccessor::removeAt(int index)
         if (index == 0)
             setList(QVariant());
         break;
+    case Integer:
+        break;
     }
 }
 
 void QmlListAccessor::clear()
 {
-    switch(type) {
+    switch(m_type) {
     case Invalid:
         break;
     case StringList:
@@ -254,12 +274,14 @@ void QmlListAccessor::clear()
         //XXX what should we do here?
         setList(QVariant());
         break;
+    case Integer:
+        d = 0;
     }
 }
 
 bool QmlListAccessor::isValid() const
 {
-    return type != Invalid;
+    return m_type != Invalid;
 }
 
 QT_END_NAMESPACE

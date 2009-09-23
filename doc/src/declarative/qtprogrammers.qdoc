@@ -20,7 +20,7 @@ QML provides direct access to the following concepts from Qt:
  \o QAction - the \l {basicqmlaction}{action} type
  \o QObject signals and slots - available as functions to call in JavaScript
  \o QObject properties - available as variables in JavaScript
- \o QWidget - QFxView is a QML-displaying widget
+ \o QWidget - QmlView is a QML-displaying widget
  \o Qt models - used directly in data binding (QAbstractItemModel and next generation QListModelInterface)
 \endlist
 

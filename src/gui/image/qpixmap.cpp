@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -1557,8 +1557,8 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     premultiplied alpha format. If the image has an alpha channel, and
     if the system allows, the preferred format is premultiplied alpha.
     Note also that QPixmap, unlike QImage, may be hardware dependent.
-    On X11 and Mac, a QPixmap is stored on the server side while a
-    QImage is stored on the client side (on Windows, these two classes
+    On X11, Mac and Symbian, a QPixmap is stored on the server side while
+    a QImage is stored on the client side (on Windows, these two classes
     have an equivalent internal representation, i.e. both QImage and
     QPixmap are stored on the client side and don't use any GDI
     resources).
@@ -1577,7 +1577,8 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     screen. Alternatively, if no manipulation is desired, the image
     file can be loaded directly into a QPixmap. On Windows, the
     QPixmap class also supports conversion between \c HBITMAP and
-    QPixmap.
+    QPixmap. On Symbian, the QPixmap class also supports conversion
+    between CFbsBitmap and QPixmap.
 
     QPixmap provides a collection of functions that can be used to
     obtain a variety of information about the pixmap. In addition,
@@ -1682,6 +1683,12 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     returns the HBITMAP handle. The fromWinHBITMAP() function returns
     a QPixmap that is equivalent to the given bitmap which has the
     specified format.
+    
+    In addition, on Symbian, the QPixmap class supports conversion to
+    and from CFbsBitmap: the toSymbianCFbsBitmap() function creates
+    CFbsBitmap equivalent to the QPixmap, based on given mode and returns 
+    a CFbsBitmap object. The fromSymbianCFbsBitmap() function returns a 
+    QPixmap that is equivalent to the given bitmap and given mode.
 
     \section1 Pixmap Transformations
 

@@ -21,22 +21,19 @@
 #ifndef JSCanvasRenderingContext2D_h
 #define JSCanvasRenderingContext2D_h
 
-#include "DOMObjectWithSVGContext.h"
-#include "JSDOMBinding.h"
-#include <runtime/JSGlobalObject.h>
-#include <runtime/ObjectPrototype.h>
+#include "JSCanvasRenderingContext.h"
 
 namespace WebCore {
 
 class CanvasRenderingContext2D;
 
-class JSCanvasRenderingContext2D : public DOMObjectWithGlobalPointer {
-    typedef DOMObjectWithGlobalPointer Base;
+class JSCanvasRenderingContext2D : public JSCanvasRenderingContext {
+    typedef JSCanvasRenderingContext Base;
 public:
     JSCanvasRenderingContext2D(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CanvasRenderingContext2D>);
-    virtual ~JSCanvasRenderingContext2D();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
@@ -65,14 +62,8 @@ public:
     JSC::JSValue setShadow(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue createPattern(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue putImageData(JSC::ExecState*, const JSC::ArgList&);
-    CanvasRenderingContext2D* impl() const { return m_impl.get(); }
-
-private:
-    RefPtr<CanvasRenderingContext2D> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, CanvasRenderingContext2D*);
-CanvasRenderingContext2D* toCanvasRenderingContext2D(JSC::JSValue);
 
 class JSCanvasRenderingContext2DPrototype : public JSC::JSObject {
     typedef JSC::JSObject Base;
@@ -81,9 +72,10 @@ public:
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
     JSCanvasRenderingContext2DPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
@@ -136,7 +128,6 @@ JSC::JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionGetImageDa
 JSC::JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionPutImageData(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValue jsCanvasRenderingContext2DCanvas(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsCanvasRenderingContext2DGlobalAlpha(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSCanvasRenderingContext2DGlobalAlpha(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsCanvasRenderingContext2DGlobalCompositeOperation(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

@@ -34,8 +34,8 @@
 #include "Frame.h"
 #include "FrameView.h"
 #include "GraphicsLayer.h"
-#include "HitTestRequest.h"
 #include "HitTestResult.h"
+#include "HTMLCanvasElement.h"
 #include "Page.h"
 #include "RenderLayerBacking.h"
 #include "RenderVideo.h"
@@ -92,7 +92,6 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView* renderView)
 RenderLayerCompositor::~RenderLayerCompositor()
 {
     ASSERT(!m_rootLayerAttached);
-    delete m_rootPlatformLayer;
 }
 
 void RenderLayerCompositor::enableCompositingMode(bool enable /* = true */)
@@ -124,22 +123,18 @@ void RenderLayerCompositor::cacheAcceleratedCompositingEnabledFlag()
 
 void RenderLayerCompositor::setCompositingLayersNeedRebuild(bool needRebuild)
 {
-    if (inCompositingMode()) {
-        if (!m_compositingLayersNeedRebuild && needRebuild)
-            scheduleViewUpdate();
-
+    if (inCompositingMode())
         m_compositingLayersNeedRebuild = needRebuild;
-    }
 }
 
-void RenderLayerCompositor::scheduleViewUpdate()
+void RenderLayerCompositor::scheduleSync()
 {
     Frame* frame = m_renderView->frameView()->frame();
     Page* page = frame ? frame->page() : 0;
     if (!page)
         return;
 
-    page->chrome()->client()->scheduleViewUpdate();
+    page->chrome()->client()->scheduleCompositingLayerSync();
 }
 
 void RenderLayerCompositor::updateCompositingLayers(RenderLayer* updateRoot)
@@ -236,7 +231,7 @@ bool RenderLayerCompositor::updateBacking(RenderLayer* layer, CompositingChangeR
 #if ENABLE(VIDEO)
     if (layerChanged && layer->renderer()->isVideo()) {
         // If it's a video, give the media player a chance to hook up to the layer.
-        RenderVideo* video = static_cast<RenderVideo*>(layer->renderer());
+        RenderVideo* video = toRenderVideo(layer->renderer());
         video->acceleratedRenderingStateChanged();
     }
 #endif
@@ -257,6 +252,10 @@ bool RenderLayerCompositor::updateLayerCompositingState(RenderLayer* layer, Comp
 
 void RenderLayerCompositor::repaintOnCompositingChange(RenderLayer* layer)
 {
+    // If the renderer is not attached yet, no need to repaint.
+    if (!layer->renderer()->parent())
+        return;
+
     RenderBoxModelObject* repaintContainer = layer->renderer()->containerForRepaint();
     if (!repaintContainer)
         repaintContainer = m_renderView;
@@ -287,6 +286,13 @@ IntRect RenderLayerCompositor::calculateCompositedBounds(const RenderLayer* laye
         return boundingBoxRect;
     }
 
+    if (RenderLayer* reflection = layer->reflectionLayer()) {
+        if (!reflection->isComposited()) {
+            IntRect childUnionBounds = calculateCompositedBounds(reflection, layer);
+            unionBounds.unite(childUnionBounds);
+        }
+    }
+    
     ASSERT(layer->isStackingContext() || (!layer->m_posZOrderList || layer->m_posZOrderList->size() == 0));
 
     if (Vector<RenderLayer*>* negZOrderList = layer->negZOrderList()) {
@@ -503,8 +509,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* layer, O
     // If we have a software transform, and we have layers under us, we need to also
     // be composited. Also, if we have opacity < 1, then we need to be a layer so that
     // the child layers are opaque, then rendered with opacity on this layer.
-    if (childState.m_subtreeIsCompositing &&
-        (layer->renderer()->hasTransform() || layer->renderer()->style()->opacity() < 1)) {
+    if (childState.m_subtreeIsCompositing && requiresCompositingWhenDescendantsAreCompositing(layer->renderer())) {
         layer->setMustOverlapCompositedLayers(true);
         if (overlapMap)
             addToOverlapMap(*overlapMap, layer, absBounds, haveComputedBounds);
@@ -573,7 +578,7 @@ bool RenderLayerCompositor::canAccelerateVideoRendering(RenderVideo* o) const
 {
     // FIXME: ideally we need to look at all ancestors for mask or video. But for now,
     // just bail on the obvious cases.
-    if (o->hasMask() || o->hasReflection() || !m_hasAcceleratedCompositing)
+    if (o->hasReflection() || !m_hasAcceleratedCompositing)
         return false;
 
     return o->supportsAcceleratedRendering();
@@ -631,12 +636,12 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, stru
             }
         }
 
-        if (updateHierarchy && layerBacking && layerBacking->contentsLayer()) {
-            // we only have a contents layer if we have an m_layer
-            layerBacking->contentsLayer()->removeFromParent();
-
-            GraphicsLayer* hostingLayer = layerBacking->clippingLayer() ? layerBacking->clippingLayer() : layerBacking->graphicsLayer();
-            hostingLayer->addChild(layerBacking->contentsLayer());
+        if (updateHierarchy && layerBacking && layerBacking->foregroundLayer()) {
+            layerBacking->foregroundLayer()->removeFromParent();
+            
+            // The foreground layer has to be correctly sorted with child layers, so needs to become a child of the clipping layer.
+            GraphicsLayer* hostingLayer = layerBacking->parentForSublayers();
+            hostingLayer->addChild(layerBacking->foregroundLayer());
         }
     }
 
@@ -759,7 +764,7 @@ RenderLayer* RenderLayerCompositor::rootRenderLayer() const
 
 GraphicsLayer* RenderLayerCompositor::rootPlatformLayer() const
 {
-    return m_rootPlatformLayer;
+    return m_rootPlatformLayer.get();
 }
 
 void RenderLayerCompositor::didMoveOnscreen()
@@ -772,7 +777,7 @@ void RenderLayerCompositor::didMoveOnscreen()
     if (!page)
         return;
 
-    page->chrome()->client()->attachRootGraphicsLayer(frame, m_rootPlatformLayer);
+    page->chrome()->client()->attachRootGraphicsLayer(frame, m_rootPlatformLayer.get());
     m_rootLayerAttached = true;
 }
 
@@ -793,7 +798,7 @@ void RenderLayerCompositor::willMoveOffscreen()
 void RenderLayerCompositor::updateRootLayerPosition()
 {
     if (m_rootPlatformLayer)
-        m_rootPlatformLayer->setSize(FloatSize(m_renderView->overflowWidth(), m_renderView->overflowHeight()));
+        m_rootPlatformLayer->setSize(FloatSize(m_renderView->rightLayoutOverflow(), m_renderView->bottomLayoutOverflow()));
 }
 
 void RenderLayerCompositor::didStartAcceleratedAnimation()
@@ -821,11 +826,12 @@ bool RenderLayerCompositor::needsToBeComposited(const RenderLayer* layer) const
 // Use needsToBeComposited() to determine if a RL actually needs a compositing layer.
 // static
 bool RenderLayerCompositor::requiresCompositingLayer(const RenderLayer* layer) const
-{
+{    
     // The root layer always has a compositing layer, but it may not have backing.
     return (inCompositingMode() && layer->isRootLayer()) ||
              requiresCompositingForTransform(layer->renderer()) ||
              requiresCompositingForVideo(layer->renderer()) ||
+             requiresCompositingForCanvas(layer->renderer()) ||
              layer->renderer()->style()->backfaceVisibility() == BackfaceVisibilityHidden ||
              clipsCompositingDescendants(layer) ||
              requiresCompositingForAnimation(layer->renderer());
@@ -890,9 +896,22 @@ bool RenderLayerCompositor::requiresCompositingForVideo(RenderObject* renderer) 
 {
 #if ENABLE(VIDEO)
     if (renderer->isVideo()) {
-        RenderVideo* video = static_cast<RenderVideo*>(renderer);
+        RenderVideo* video = toRenderVideo(renderer);
         return canAccelerateVideoRendering(video);
     }
+#endif
+    return false;
+}
+
+bool RenderLayerCompositor::requiresCompositingForCanvas(RenderObject* renderer) const
+{
+#if ENABLE(3D_CANVAS)    
+    if (renderer->isCanvas()) {
+        HTMLCanvasElement* canvas = static_cast<HTMLCanvasElement*>(renderer->node());
+        return canvas->is3D();
+    }
+#else
+    UNUSED_PARAM(renderer);
 #endif
     return false;
 }
@@ -904,6 +923,11 @@ bool RenderLayerCompositor::requiresCompositingForAnimation(RenderObject* render
             || animController->isAnimatingPropertyOnRenderer(renderer, CSSPropertyWebkitTransform);
     }
     return false;
+}
+
+bool RenderLayerCompositor::requiresCompositingWhenDescendantsAreCompositing(RenderObject* renderer) const
+{
+    return renderer->hasTransform() || renderer->isTransparent() || renderer->hasMask();
 }
 
 // If an element has negative z-index children, those children render in front of the 
@@ -919,8 +943,8 @@ void RenderLayerCompositor::ensureRootPlatformLayer()
     if (m_rootPlatformLayer)
         return;
 
-    m_rootPlatformLayer = GraphicsLayer::createGraphicsLayer(0);
-    m_rootPlatformLayer->setSize(FloatSize(m_renderView->overflowWidth(), m_renderView->overflowHeight()));
+    m_rootPlatformLayer = GraphicsLayer::create(0);
+    m_rootPlatformLayer->setSize(FloatSize(m_renderView->rightLayoutOverflow(), m_renderView->bottomLayoutOverflow()));
     m_rootPlatformLayer->setPosition(FloatPoint(0, 0));
     // The root layer does flipping if we need it on this platform.
     m_rootPlatformLayer->setGeometryOrientation(GraphicsLayer::compositingCoordinatesOrientation());
@@ -937,7 +961,6 @@ void RenderLayerCompositor::destroyRootPlatformLayer()
         return;
 
     willMoveOffscreen();
-    delete m_rootPlatformLayer;
     m_rootPlatformLayer = 0;
 }
 

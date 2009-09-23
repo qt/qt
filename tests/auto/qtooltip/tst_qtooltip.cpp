@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -42,6 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <qtooltip.h>
+#include "../../shared/util.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -132,20 +133,24 @@ void tst_QToolTip::task183679()
 void tst_QToolTip::setPalette()
 {
     //the previous test may still have a tooltip pending for deletion
-    QTest::qWait(100);
     QVERIFY(!QToolTip::isVisible());
 
     QToolTip::showText(QPoint(), "tool tip text", 0);
-    QTest::qWait(100);
+
+    QTRY_VERIFY(QToolTip::isVisible());
 
     QWidget *toolTip = 0;
     foreach (QWidget *widget, QApplication::topLevelWidgets()) {
-        if (widget->windowType() == Qt::ToolTip) {
+        if (widget->windowType() == Qt::ToolTip
+            && widget->objectName() == QLatin1String("qtooltip_label"))
+        {
             toolTip = widget;
             break;
         }
     }
+
     QVERIFY(toolTip);
+    QTRY_VERIFY(toolTip->isVisible());
 
     const QPalette oldPalette = toolTip->palette();
     QPalette newPalette = oldPalette;

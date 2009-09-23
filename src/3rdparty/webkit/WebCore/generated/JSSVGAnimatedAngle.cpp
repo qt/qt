@@ -94,6 +94,11 @@ bool JSSVGAnimatedAngle::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticValueSlot<JSSVGAnimatedAngle, Base>(exec, &JSSVGAnimatedAngleTable, this, propertyName, slot);
 }
 
+bool JSSVGAnimatedAngle::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGAnimatedAngle, Base>(exec, &JSSVGAnimatedAngleTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGAnimatedAngleBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGAnimatedAngle* castedThis = static_cast<JSSVGAnimatedAngle*>(asObject(slot.slotBase()));
@@ -116,7 +121,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAnim
 }
 SVGAnimatedAngle* toSVGAnimatedAngle(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGAnimatedAngle::s_info) ? static_cast<JSSVGAnimatedAngle*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGAnimatedAngle::s_info) ? static_cast<JSSVGAnimatedAngle*>(asObject(value))->impl() : 0;
 }
 
 }

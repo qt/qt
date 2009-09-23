@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -42,13 +42,11 @@ class WebCoreTextMarker;
 
 namespace WebCore {
 
+    class Node;
+    class Page;
     class RenderObject;
     class String;
     class VisiblePosition;
-    class AccessibilityObject;
-    class Node;
-    
-    typedef unsigned AXID;
 
     struct TextMarkerData  {
         AXID axID;
@@ -61,7 +59,9 @@ namespace WebCore {
     public:
         AXObjectCache();
         ~AXObjectCache();
-        
+
+        static AccessibilityObject* focusedUIElementForPage(const Page*);
+
         // to be used with render objects
         AccessibilityObject* getOrCreate(RenderObject*);
         
@@ -76,16 +76,13 @@ namespace WebCore {
 
         void detachWrapper(AccessibilityObject*);
         void attachWrapper(AccessibilityObject*);
-        void postNotification(RenderObject*, const String&, bool postToElement);
-        void postPlatformNotification(AccessibilityObject*, const String&);
         void childrenChanged(RenderObject*);
         void selectedChildrenChanged(RenderObject*);
         void handleActiveDescendantChanged(RenderObject*);
         void handleAriaRoleChanged(RenderObject*);
-        void handleFocusedUIElementChanged();
-#if PLATFORM(GTK)
-        void handleFocusedUIElementChangedWithRenderers(RenderObject*, RenderObject*);
-#endif
+        void handleFocusedUIElementChanged(RenderObject* oldFocusedRenderer, RenderObject* newFocusedRenderer);
+        void handleScrolledToAnchor(const Node* anchorNode);
+
         static void enableAccessibility() { gAccessibilityEnabled = true; }
         static void enableEnhancedUserInterfaceAccessibility() { gAccessibilityEnhancedUserInterfaceEnabled = true; }
         
@@ -94,6 +91,28 @@ namespace WebCore {
 
         void removeAXID(AccessibilityObject*);
         bool isIDinUse(AXID id) const { return m_idsInUse.contains(id); }
+        AXID platformGenerateAXID() const;
+        AccessibilityObject* objectFromAXID(AXID id) const { return m_objects.get(id).get(); }
+
+        // Text marker utilities.
+        static void textMarkerDataForVisiblePosition(TextMarkerData&, const VisiblePosition&);
+        static VisiblePosition visiblePositionForTextMarkerData(TextMarkerData&);
+
+        enum AXNotification {
+            AXCheckedStateChanged,
+            AXFocusedUIElementChanged,
+            AXLayoutComplete,
+            AXLoadComplete,
+            AXSelectedChildrenChanged,
+            AXSelectedTextChanged,
+            AXValueChanged,
+            AXScrolledToAnchor,
+        };
+        
+        void postNotification(RenderObject*, AXNotification, bool postToElement);
+
+    protected:
+        void postPlatformNotification(AccessibilityObject*, AXNotification);
 
     private:
         HashMap<AXID, RefPtr<AccessibilityObject> > m_objects;
@@ -104,7 +123,7 @@ namespace WebCore {
         HashSet<AXID> m_idsInUse;
         
         Timer<AXObjectCache> m_notificationPostTimer;
-        Vector<pair<AccessibilityObject*, const String> > m_notificationsToPost;
+        Vector<pair<RefPtr<AccessibilityObject>, AXNotification> > m_notificationsToPost;
         void notificationPostTimerFired(Timer<AXObjectCache>*);
         
         AXID getAXID(AccessibilityObject*);
@@ -114,15 +133,13 @@ namespace WebCore {
 #if !HAVE(ACCESSIBILITY)
     inline void AXObjectCache::handleActiveDescendantChanged(RenderObject*) { }
     inline void AXObjectCache::handleAriaRoleChanged(RenderObject*) { }
-    inline void AXObjectCache::handleFocusedUIElementChanged() { }
     inline void AXObjectCache::detachWrapper(AccessibilityObject*) { }
     inline void AXObjectCache::attachWrapper(AccessibilityObject*) { }
     inline void AXObjectCache::selectedChildrenChanged(RenderObject*) { }
-    inline void AXObjectCache::postNotification(RenderObject*, const String&, bool postToElement) { }
-    inline void AXObjectCache::postPlatformNotification(AccessibilityObject*, const String&) { }
-#if PLATFORM(GTK)
-    inline void AXObjectCache::handleFocusedUIElementChangedWithRenderers(RenderObject*, RenderObject*) { }
-#endif
+    inline void AXObjectCache::postNotification(RenderObject*, AXNotification, bool postToElement) { }
+    inline void AXObjectCache::postPlatformNotification(AccessibilityObject*, AXNotification) { }
+    inline void AXObjectCache::handleFocusedUIElementChanged(RenderObject*, RenderObject*) { }
+    inline void AXObjectCache::handleScrolledToAnchor(const Node*) { }
 #endif
 
 }

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -260,12 +260,24 @@ static const char* const qglslPositionWithTextureBrushVertexShader = "\
 static const char* const qglslAffinePositionWithTextureBrushVertexShader
                  = qglslPositionWithTextureBrushVertexShader;
 
+#if defined(QT_OPENGL_ES_2)
+// OpenGL ES does not support GL_REPEAT wrap modes for NPOT textures. So instead,
+// we emulate GL_REPEAT by only taking the fractional part of the texture coords.
+// TODO: Special case POT textures which don't need this emulation
+static const char* const qglslTextureBrushSrcFragmentShader = "\
+    varying highp   vec2      brushTextureCoords; \
+    uniform lowp    sampler2D brushTexture; \
+    lowp vec4 srcPixel() { \
+        return texture2D(brushTexture, fract(brushTextureCoords)); \
+    }";
+#else
 static const char* const qglslTextureBrushSrcFragmentShader = "\
     varying highp   vec2      brushTextureCoords; \
     uniform lowp    sampler2D brushTexture; \
     lowp vec4 srcPixel() { \
         return texture2D(brushTexture, brushTextureCoords); \
     }";
+#endif
 
 static const char* const qglslTextureBrushSrcWithPatternFragmentShader = "\
     varying highp   vec2      brushTextureCoords; \

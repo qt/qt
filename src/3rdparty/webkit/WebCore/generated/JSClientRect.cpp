@@ -74,6 +74,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSClientRectPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -88,6 +89,11 @@ const ClassInfo JSClientRectConstructor::s_info = { "ClientRectConstructor", 0, 
 bool JSClientRectConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSClientRectConstructor, DOMObject>(exec, &JSClientRectConstructorTable, this, propertyName, slot);
+}
+
+bool JSClientRectConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSClientRectConstructor, DOMObject>(exec, &JSClientRectConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -132,6 +138,11 @@ JSObject* JSClientRect::createPrototype(ExecState* exec, JSGlobalObject* globalO
 bool JSClientRect::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSClientRect, Base>(exec, &JSClientRectTable, this, propertyName, slot);
+}
+
+bool JSClientRect::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSClientRect, Base>(exec, &JSClientRectTable, this, propertyName, descriptor);
 }
 
 JSValue jsClientRectTop(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -198,7 +209,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, ClientR
 }
 ClientRect* toClientRect(JSC::JSValue value)
 {
-    return value.isObject(&JSClientRect::s_info) ? static_cast<JSClientRect*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSClientRect::s_info) ? static_cast<JSClientRect*>(asObject(value))->impl() : 0;
 }
 
 }

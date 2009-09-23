@@ -193,9 +193,9 @@ IntRect RenderTableCell::clippedOverflowRectForRepaint(RenderBoxModelObject* rep
             right = max(right, below->borderHalfRight(true));
         }
     }
-    left = max(left, -overflowLeft(false));
-    top = max(top, -overflowTop(false));
-    IntRect r(-left, - top, left + max(width() + right, overflowWidth(false)), top + max(height() + bottom, overflowHeight(false)));
+    left = max(left, -leftVisibleOverflow());
+    top = max(top, -topVisibleOverflow());
+    IntRect r(-left, - top, left + max(width() + right, rightVisibleOverflow()), top + max(height() + bottom, bottomVisibleOverflow()));
 
     if (RenderView* v = view()) {
         // FIXME: layoutDelta needs to be applied in parts before/after transforms and
@@ -550,7 +550,7 @@ CollapsedBorderValue RenderTableCell::collapsedBottomBorder() const
     
     // Now check row groups.
     RenderTableSection* currSection = section();
-    if (row() + rowSpan() >= static_cast<RenderTableSection*>(currSection)->numRows()) {
+    if (row() + rowSpan() >= currSection->numRows()) {
         // (5) Our row group's bottom border.
         result = compareBorders(result, CollapsedBorderValue(&currSection->style()->borderBottom(), BROWGROUP));
         if (!result.exists())

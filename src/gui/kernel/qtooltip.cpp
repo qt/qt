@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -290,8 +290,8 @@ void QTipLabel::timerEvent(QTimerEvent *e)
             // Fade out tip on mac (makes it invisible).
             // The tip will not be deleted until a new tip is shown.
 
-			// DRSWAT - Cocoa
-			macWindowFade(qt_mac_window_for(this));
+                        // DRSWAT - Cocoa
+                        macWindowFade(qt_mac_window_for(this));
             QTipLabel::instance->fadingOut = true; // will never be false again.
         }
         else
@@ -431,7 +431,7 @@ bool QTipLabel::tipChanged(const QPoint &pos, const QString &text, QObject *o)
 
 void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, const QRect &rect)
 {
-    if (QTipLabel::instance){ // a tip does already exist
+    if (QTipLabel::instance && QTipLabel::instance->isVisible()){ // a tip does already exist
         if (text.isEmpty()){ // empty text means hide current tip
             QTipLabel::instance->hideTip();
             return;

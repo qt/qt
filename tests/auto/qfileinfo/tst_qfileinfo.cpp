@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -411,10 +411,14 @@ void tst_QFileInfo::absolutePath_data()
     QString drivePrefix;
 #if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
     drivePrefix = QDir::currentPath().left(2);
+    QString nonCurrentDrivePrefix =
+        drivePrefix.left(1).compare("X", Qt::CaseInsensitive) == 0 ? QString("Y:") : QString("X:");
 
     // Make sure drive-relative paths return correct absolute paths (task 255326)
-    QTest::newRow("c:my.dll") << "c:my.dll" << QDir::currentPath() << "my.dll";
-    QTest::newRow("x:my.dll") << "x:my.dll" << "X:/" << "my.dll";
+    QTest::newRow("<current drive>:my.dll") << drivePrefix + "my.dll" << QDir::currentPath() << "my.dll";
+    QTest::newRow("<not current drive>:my.dll") << nonCurrentDrivePrefix + "my.dll"
+                                                << nonCurrentDrivePrefix + "/"
+                                                << "my.dll";
 #endif
     QTest::newRow("0") << "/machine/share/dir1/" << drivePrefix + "/machine/share/dir1" << "";
     QTest::newRow("1") << "/machine/share/dir1" << drivePrefix + "/machine/share" << "dir1";
@@ -450,13 +454,19 @@ void tst_QFileInfo::absFilePath_data()
     QTest::newRow("relativeFileInSubDir") << "temp/tmp.txt" << QDir::currentPath() + "/" + "temp/tmp.txt";
 #if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
     QString curr = QDir::currentPath();
+
     curr.remove(0, 2);   // Make it a absolute path with no drive specifier: \depot\qt-4.2\tests\auto\qfileinfo
     QTest::newRow(".")            << curr << QDir::currentPath();
     QTest::newRow("absFilePath") << "c:\\home\\andy\\tmp.txt" << "C:/home/andy/tmp.txt";
 
     // Make sure drive-relative paths return correct absolute paths (task 255326)
-    QTest::newRow("c:my.dll") << "c:temp/my.dll" << QDir::currentPath() + "/temp/my.dll";
-    QTest::newRow("x:my.dll") << "x:temp/my.dll" << "X:/temp/my.dll";
+    QString drivePrefix = QDir::currentPath().left(2);
+    QString nonCurrentDrivePrefix =
+        drivePrefix.left(1).compare("X", Qt::CaseInsensitive) == 0 ? QString("Y:") : QString("X:");
+
+    QTest::newRow("<current drive>:my.dll") << drivePrefix + "temp/my.dll" << QDir::currentPath() + "/temp/my.dll";
+    QTest::newRow("<not current drive>:my.dll") << nonCurrentDrivePrefix + "temp/my.dll"
+                                                << nonCurrentDrivePrefix + "/temp/my.dll";
 #else
     QTest::newRow("absFilePath") << "/home/andy/tmp.txt" << "/home/andy/tmp.txt";
 #endif

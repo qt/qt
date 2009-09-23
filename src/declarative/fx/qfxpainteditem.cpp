@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QFxPaintedItem
-    \brief The QFxPaintedItem class is an abstract base class for QFxView items that want cached painting.
+    \brief The QFxPaintedItem class is an abstract base class for QmlView items that want cached painting.
     \ingroup group_coreitems
 
     This is a convenience class for implementing items that paint their contents
@@ -101,7 +101,7 @@ void QFxPaintedItem::dirtyCache(const QRect& rect)
         QFxPaintedItemPrivate::ImageCacheItem *c = d->imagecache[i];
         QRect isect = (c->area & rect) | c->dirty;
         if (isect == c->area && !inpaint) {
-            d->imagecache.removeAt(i);
+            delete d->imagecache.takeAt(i);
         } else {
             c->dirty = isect;
             ++i;
@@ -231,6 +231,7 @@ void QFxPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidge
                     QPainter qp(&d->imagecache[i]->image);
                     qp.setRenderHints(QPainter::HighQualityAntialiasing | QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform, d->smooth);
                     qp.translate(-area.x(), -area.y());
+                    qp.eraseRect(d->imagecache[i]->dirty);
                     if (d->fillColor.isValid())
                         qp.fillRect(d->imagecache[i]->dirty,d->fillColor);
                     qp.setClipRect(d->imagecache[i]->dirty);

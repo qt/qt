@@ -1,10 +1,17 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Copyright (C) 2003-2006 Ben van Klinken and the CLucene Team.
+** All rights reserved.
 **
-** This file is part of the QCLucene library and is distributable under
-** the terms of the LGPL license as specified in the license.txt file.
+** Portion Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+**
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this file.
+** Please review the following information to ensure the GNU Lesser General
+** Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ****************************************************************************/
 
@@ -23,7 +30,7 @@ QCLuceneFieldPrivate::QCLuceneFieldPrivate()
     field = 0;
     deleteCLuceneField = true;
 }
-    
+
 QCLuceneFieldPrivate::QCLuceneFieldPrivate(const QCLuceneFieldPrivate &other)
     : QSharedData()
 {
@@ -51,7 +58,7 @@ QCLuceneField::QCLuceneField(const QString &name, const QString &value, int conf
 {
     TCHAR* fieldName = QStringToTChar(name);
     TCHAR* fieldValue = QStringToTChar(value);
-    
+
     d->field = new lucene::document::Field(fieldName, fieldValue, configs);
 
     delete [] fieldName;
@@ -67,7 +74,7 @@ QCLuceneField::QCLuceneField(const QString &name, QCLuceneReader *reader,
 
     reader->d->deleteCLuceneReader = false; // clucene takes ownership
     d->field = new lucene::document::Field(fieldName, reader->d->reader, configs);
-    
+
     delete [] fieldName;
 }
 

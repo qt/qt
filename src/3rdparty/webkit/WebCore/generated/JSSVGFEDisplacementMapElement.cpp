@@ -97,6 +97,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSSVGFEDisplacementMapElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -111,6 +112,11 @@ const ClassInfo JSSVGFEDisplacementMapElementConstructor::s_info = { "SVGFEDispl
 bool JSSVGFEDisplacementMapElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGFEDisplacementMapElementConstructor, DOMObject>(exec, &JSSVGFEDisplacementMapElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGFEDisplacementMapElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFEDisplacementMapElementConstructor, DOMObject>(exec, &JSSVGFEDisplacementMapElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -145,6 +151,11 @@ bool JSSVGFEDisplacementMapElementPrototype::getOwnPropertySlot(ExecState* exec,
     return getStaticPropertySlot<JSSVGFEDisplacementMapElementPrototype, JSObject>(exec, &JSSVGFEDisplacementMapElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGFEDisplacementMapElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticPropertyDescriptor<JSSVGFEDisplacementMapElementPrototype, JSObject>(exec, &JSSVGFEDisplacementMapElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGFEDisplacementMapElement::s_info = { "SVGFEDisplacementMapElement", &JSSVGElement::s_info, &JSSVGFEDisplacementMapElementTable, 0 };
 
 JSSVGFEDisplacementMapElement::JSSVGFEDisplacementMapElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEDisplacementMapElement> impl)
@@ -160,6 +171,11 @@ JSObject* JSSVGFEDisplacementMapElement::createPrototype(ExecState* exec, JSGlob
 bool JSSVGFEDisplacementMapElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGFEDisplacementMapElement, Base>(exec, &JSSVGFEDisplacementMapElementTable, this, propertyName, slot);
+}
+
+bool JSSVGFEDisplacementMapElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFEDisplacementMapElement, Base>(exec, &JSSVGFEDisplacementMapElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGFEDisplacementMapElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -282,7 +298,7 @@ JSValue JSSVGFEDisplacementMapElement::getConstructor(ExecState* exec, JSGlobalO
 JSValue JSC_HOST_CALL jsSVGFEDisplacementMapElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGFEDisplacementMapElement::s_info))
+    if (!thisValue.inherits(&JSSVGFEDisplacementMapElement::s_info))
         return throwError(exec, TypeError);
     JSSVGFEDisplacementMapElement* castedThisObj = static_cast<JSSVGFEDisplacementMapElement*>(asObject(thisValue));
     SVGFEDisplacementMapElement* imp = static_cast<SVGFEDisplacementMapElement*>(castedThisObj->impl());

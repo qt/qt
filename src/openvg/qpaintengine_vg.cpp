@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenVG module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -210,6 +210,11 @@ public:
     QVGFontCache fontCache;
     QVGFontEngineCleaner *fontEngineCleaner;
 #endif
+
+    QScopedPointer<QPixmapFilter> convolutionFilter;
+    QScopedPointer<QPixmapFilter> colorizeFilter;
+    QScopedPointer<QPixmapFilter> dropShadowFilter;
+    QScopedPointer<QPixmapFilter> blurFilter;
 
     // Ensure that the path transform is properly set in the VG context
     // before we perform a vgDrawPath() operation.
@@ -3110,20 +3115,34 @@ void QVGPaintEngine::endNativePainting()
     vgSetPaint(d->brushPaint, VG_FILL_PATH);
 }
 
-QPixmapFilter *QVGPaintEngine::createPixmapFilter(int type) const
+QPixmapFilter *QVGPaintEngine::pixmapFilter(int type, const QPixmapFilter *prototype)
 {
 #if !defined(QT_SHIVAVG)
-    if (type == QPixmapFilter::ConvolutionFilter)
-        return new QVGPixmapConvolutionFilter;
-    else if (type == QPixmapFilter::ColorizeFilter)
-        return new QVGPixmapColorizeFilter;
-    else if (type == QPixmapFilter::DropShadowFilter)
-        return new QVGPixmapDropShadowFilter;
-    else if (type == QPixmapFilter::BlurFilter)
-        return new QVGPixmapBlurFilter;
-    else
+    Q_D(QVGPaintEngine);
+    switch (type) {
+        case QPixmapFilter::ConvolutionFilter:
+            if (!d->convolutionFilter)
+                d->convolutionFilter.reset(new QVGPixmapConvolutionFilter);
+            return d->convolutionFilter.data();
+        case QPixmapFilter::ColorizeFilter:
+            // Strength parameter does not work with current implementation.
+            if ((static_cast<const QPixmapColorizeFilter *>(prototype))->strength() != 1.0f)
+                break;
+            if (!d->colorizeFilter)
+                d->colorizeFilter.reset(new QVGPixmapColorizeFilter);
+            return d->colorizeFilter.data();
+        case QPixmapFilter::DropShadowFilter:
+            if (!d->dropShadowFilter)
+                d->dropShadowFilter.reset(new QVGPixmapDropShadowFilter);
+            return d->dropShadowFilter.data();
+        case QPixmapFilter::BlurFilter:
+            if (!d->blurFilter)
+                d->blurFilter.reset(new QVGPixmapBlurFilter);
+            return d->blurFilter.data();
+        default: break;
+    }
 #endif
-        return QPaintEngineEx::createPixmapFilter(type);
+    return QPaintEngineEx::pixmapFilter(type, prototype);
 }
 
 void QVGPaintEngine::restoreState(QPaintEngine::DirtyFlags dirty)

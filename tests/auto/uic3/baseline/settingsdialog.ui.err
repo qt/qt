@@ -1,1 +1,1 @@
-uic3: property `paletteBackgroundColor' for widget `colorButton' of type `QToolButton' is not supported. Line: 161 Column: 75
+uic3: property `paletteBackgroundColor' for widget `colorButton' of type `QToolButton' is not supported. Line: 169 Column: 75

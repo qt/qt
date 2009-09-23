@@ -153,6 +153,7 @@ QmlParser::Object::DynamicProperty::DynamicProperty()
 QmlParser::Object::DynamicProperty::DynamicProperty(const DynamicProperty &o)
 : isDefaultProperty(o.isDefaultProperty),
   type(o.type),
+  customType(o.customType),
   name(o.name),
   defaultValue(o.defaultValue),
   location(o.location)

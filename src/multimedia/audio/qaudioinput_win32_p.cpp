@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtMultimedia module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -73,6 +73,7 @@ QAudioInputPrivate::QAudioInputPrivate(const QByteArray &device, const QAudioFor
     audioSource = 0;
     pullMode = true;
     resuming = false;
+    finished = false;
 
     connect(this,SIGNAL(processMore()),SLOT(deviceReady()));
 
@@ -81,7 +82,7 @@ QAudioInputPrivate::QAudioInputPrivate(const QByteArray &device, const QAudioFor
 
 QAudioInputPrivate::~QAudioInputPrivate()
 {
-    close();
+    stop();
     DeleteCriticalSection(&waveInCriticalSection);
 }
 
@@ -104,10 +105,13 @@ void CALLBACK QAudioInputPrivate::waveInProc( HWAVEIN hWaveIn, UINT uMsg,
             EnterCriticalSection(&waveInCriticalSection);
             if(qAudio->waveFreeBlockCount > 0)
                 qAudio->waveFreeBlockCount--;
-            LeaveCriticalSection(&waveInCriticalSection);
             qAudio->feedback();
+            LeaveCriticalSection(&waveInCriticalSection);
             break;
         case WIM_CLOSE:
+            EnterCriticalSection(&waveInCriticalSection);
+            qAudio->finished = true;
+            LeaveCriticalSection(&waveInCriticalSection);
             break;
         default:
             return;
@@ -198,8 +202,6 @@ void QAudioInputPrivate::stop()
     if(deviceState == QAudio::StopState)
         return;
 
-    deviceState = QAudio::StopState;
-
     close();
     emit stateChanged(deviceState);
 }
@@ -218,6 +220,11 @@ bool QAudioInputPrivate::open()
     } else {
         period_size = buffer_size/5;
     }
+#ifdef Q_OS_WINCE
+    // For wince reduce size to 40ms for buffer size and 20ms period
+    buffer_size = settings.frequency()*settings.channels()*(settings.sampleSize()/8)*0.04;
+    period_size = buffer_size/2;
+#endif
     timeStamp.restart();
     wfx.nSamplesPerSec = settings.frequency();
     wfx.wBitsPerSample = settings.sampleSize();
@@ -238,7 +245,7 @@ bool QAudioInputPrivate::open()
 	    == MMSYSERR_NOERROR) {
 	    QString tmp;
 	    tmp = QString::fromUtf16((const unsigned short*)wic.szPname);
-	    if(tmp.compare(tr(m_device)) == 0) {
+	    if(tmp.compare(QLatin1String(m_device)) == 0) {
 	        devId = ii;
 		break;
 	    }
@@ -256,7 +263,19 @@ bool QAudioInputPrivate::open()
         return false;
     }
     waveBlocks = allocateBlocks(period_size, buffer_size/period_size);
+
+    if(waveBlocks == 0) {
+        errorState = QAudio::OpenError;
+        deviceState = QAudio::StopState;
+        emit stateChanged(deviceState);
+        qWarning("QAudioInput: failed to allocate blocks. open failed");
+        return false;
+    }
+
+    EnterCriticalSection(&waveInCriticalSection);
     waveFreeBlockCount = buffer_size/period_size;
+    LeaveCriticalSection(&waveInCriticalSection);
+
     waveCurrentBlock = 0;
 
     for(int i=0; i<buffer_size/period_size; i++) {
@@ -286,18 +305,26 @@ bool QAudioInputPrivate::open()
 
 void QAudioInputPrivate::close()
 {
-    deviceState = QAudio::StopState;
-    int delay = (buffer_size-bytesReady())*1000/(settings.frequency()
-                  *settings.channels()*(settings.sampleSize()/8));
-    waveInReset(hWaveIn);
-    Sleep(delay+10);
+    if(deviceState == QAudio::StopState)
+        return;
 
+    waveInReset(hWaveIn);
+    waveInClose(hWaveIn);
+    deviceState = QAudio::StopState;
+
+    int count = 0;
+    while(!finished && count < 100) {
+        count++;
+        Sleep(10);
+    }
+
+    EnterCriticalSection(&waveInCriticalSection);
     for(int i=0; i<waveFreeBlockCount; i++) {
         if(waveBlocks[i].dwFlags & WHDR_PREPARED)
             waveInUnprepareHeader(hWaveIn,&waveBlocks[i],sizeof(WAVEHDR));
     }
+    LeaveCriticalSection(&waveInCriticalSection);
     freeBlocks(waveBlocks);
-    waveInClose(hWaveIn);
 }
 
 int QAudioInputPrivate::bytesReady() const
@@ -384,6 +411,7 @@ qint64 QAudioInputPrivate::read(char* data, qint64 len)
             header = 0;
         p+=l;
 
+        EnterCriticalSection(&waveInCriticalSection);
         if(!pullMode) {
 	    if(l+period_size > len && waveFreeBlockCount == buffer_size/period_size)
 	        done = true;
@@ -391,6 +419,8 @@ qint64 QAudioInputPrivate::read(char* data, qint64 len)
 	    if(waveFreeBlockCount == buffer_size/period_size)
 	        done = true;
 	}
+        LeaveCriticalSection(&waveInCriticalSection);
+
 	written+=l;
     }
 #ifdef DEBUG_AUDIO
@@ -413,7 +443,10 @@ void QAudioInputPrivate::resume()
                 return;
             }
         }
+        EnterCriticalSection(&waveInCriticalSection);
         waveFreeBlockCount = buffer_size/period_size;
+        LeaveCriticalSection(&waveInCriticalSection);
+
         waveCurrentBlock = 0;
         header = 0;
 	resuming = true;
@@ -466,7 +499,7 @@ void QAudioInputPrivate::feedback()
 {
 #ifdef DEBUG_AUDIO
     QTime now(QTime::currentTime());
-    qDebug()<<now.second()<<"s "<<now.msec()<<"ms :feedback() INPUT";
+    qDebug()<<now.second()<<"s "<<now.msec()<<"ms :feedback() INPUT "<<this;
 #endif
     bytesAvailable = bytesReady();
 

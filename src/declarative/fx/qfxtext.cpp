@@ -84,7 +84,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Text,QFxText)
     \qmlclass Text
     \ingroup group_coreitems
 
-    \brief The QFxText class provides a formatted text item that you can add to a QFxView.
+    \brief The QFxText class provides a formatted text item that you can add to a QmlView.
 
     Text was designed for read-only text; it does not allow for any text editing.
     It can display both plain and rich text. For example:
@@ -467,8 +467,12 @@ void QFxTextPrivate::updateSize()
     Q_Q(QFxText);
     if (q->isComponentComplete()) {
         QFontMetrics fm(font);
-        int dy = q->height();
+        if (text.isEmpty()) {
+            q->setImplicitHeight(fm.height());
+            return;
+        }
 
+        int dy = q->height();
         QString tmp;
         QSize size(0, 0);
 
@@ -513,17 +517,9 @@ void QFxTextPrivate::updateSize()
         }
         q->setBaselineOffset(fm.ascent() + yoff);
 
-        if (!q->widthValid()) {
-            int newWidth = (richText ? (int)doc->idealWidth() : size.width());
-            q->setImplicitWidth(newWidth);
-        }
-        if (!q->heightValid()) {
-            if (richText) {
-                q->setImplicitHeight((int)doc->size().height());
-            } else {
-                q->setImplicitHeight(size.height());
-            }
-        }
+        //### need to comfirm cost of always setting these for richText
+        q->setImplicitWidth(richText ? (int)doc->idealWidth() : size.width());
+        q->setImplicitHeight(richText ? (int)doc->size().height() : size.height());
     } else {
         dirty = true;
     }
@@ -754,7 +750,7 @@ void QFxText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 
     if (needClip) {
         p->save();
-        p->setClipRect(boundingRect());
+        p->setClipRect(boundingRect(), Qt::IntersectClip);
     }
     p->drawPixmap(x, y, d->imgCache);
     if (needClip)

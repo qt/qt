@@ -43,6 +43,19 @@ RenderHTMLCanvas::RenderHTMLCanvas(HTMLCanvasElement* element)
     view()->frameView()->setIsVisuallyNonEmpty();
 }
 
+bool RenderHTMLCanvas::requiresLayer() const
+{
+    if (RenderReplaced::requiresLayer())
+        return true;
+    
+#if ENABLE(3D_CANVAS)
+    HTMLCanvasElement* canvas = static_cast<HTMLCanvasElement*>(node());
+    return canvas && canvas->is3D();
+#else
+    return false;
+#endif
+}
+
 void RenderHTMLCanvas::paintReplaced(PaintInfo& paintInfo, int tx, int ty)
 {
     IntRect rect = contentBoxRect();
@@ -55,10 +68,13 @@ void RenderHTMLCanvas::canvasSizeChanged()
     IntSize canvasSize = static_cast<HTMLCanvasElement*>(node())->size();
     IntSize zoomedSize(canvasSize.width() * style()->effectiveZoom(), canvasSize.height() * style()->effectiveZoom());
 
-    if (canvasSize == intrinsicSize())
+    if (zoomedSize == intrinsicSize())
         return;
 
-    setIntrinsicSize(canvasSize);
+    setIntrinsicSize(zoomedSize);
+
+    if (!parent())
+        return;
 
     if (!prefWidthsDirty())
         setPrefWidthsDirty(true);

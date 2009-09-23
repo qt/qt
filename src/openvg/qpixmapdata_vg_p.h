@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenVG module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -56,7 +56,10 @@
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <private/qvg_p.h>
 #if !defined(QT_NO_EGL)
-#include <QtGui/private/qegl_p.h>
+#endif
+
+#if defined(Q_OS_SYMBIAN)
+class RSGImage;
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -91,8 +94,17 @@ public:
 
     QSize size() const { return QSize(w, h); }
 
+#if defined(Q_OS_SYMBIAN)
+    RSgImage* toRSgImage();
+    void fromRSgImage(RSgImage* sgImage);
+#endif
+
 protected:
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
+
+#if defined(Q_OS_SYMBIAN)
+    void cleanup();
+#endif
 
 private:
     VGImage vgImage;

@@ -59,6 +59,10 @@ QT_END_NAMESPACE
 class wxKeyEvent;
 #endif
 
+#if PLATFORM(HAIKU)
+class BMessage;
+#endif
+
 namespace WebCore {
 
     class PlatformKeyboardEvent {
@@ -81,7 +85,7 @@ namespace WebCore {
             AltKey = 1 << 0,
             CtrlKey = 1 << 1,
             MetaKey = 1 << 2,
-            ShiftKey = 1 << 3
+            ShiftKey = 1 << 3,
         };
 
         Type type() const { return m_type; }
@@ -146,6 +150,10 @@ namespace WebCore {
 
 #if PLATFORM(WX)
         PlatformKeyboardEvent(wxKeyEvent&);
+#endif
+
+#if PLATFORM(HAIKU)
+        PlatformKeyboardEvent(BMessage*);
 #endif
 
 #if PLATFORM(WIN) || PLATFORM(CHROMIUM)

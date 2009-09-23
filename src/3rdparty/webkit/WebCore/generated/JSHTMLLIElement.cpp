@@ -72,6 +72,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLLIElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -86,6 +87,11 @@ const ClassInfo JSHTMLLIElementConstructor::s_info = { "HTMLLIElementConstructor
 bool JSHTMLLIElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLLIElementConstructor, DOMObject>(exec, &JSHTMLLIElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLLIElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLLIElementConstructor, DOMObject>(exec, &JSHTMLLIElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -124,6 +130,11 @@ JSObject* JSHTMLLIElement::createPrototype(ExecState* exec, JSGlobalObject* glob
 bool JSHTMLLIElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLLIElement, Base>(exec, &JSHTMLLIElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLLIElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLLIElement, Base>(exec, &JSHTMLLIElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLLIElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)

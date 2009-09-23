@@ -53,18 +53,19 @@ static JSC_CONST_HASHTABLE HashTable JSDatabaseTable =
 
 /* Hash table for prototype */
 
-static const HashTableValue JSDatabasePrototypeTableValues[3] =
+static const HashTableValue JSDatabasePrototypeTableValues[4] =
 {
     { "changeVersion", DontDelete|Function, (intptr_t)jsDatabasePrototypeFunctionChangeVersion, (intptr_t)5 },
     { "transaction", DontDelete|Function, (intptr_t)jsDatabasePrototypeFunctionTransaction, (intptr_t)3 },
+    { "readTransaction", DontDelete|Function, (intptr_t)jsDatabasePrototypeFunctionReadTransaction, (intptr_t)3 },
     { 0, 0, 0, 0 }
 };
 
 static JSC_CONST_HASHTABLE HashTable JSDatabasePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 1, JSDatabasePrototypeTableValues, 0 };
+    { 3, JSDatabasePrototypeTableValues, 0 };
 #else
-    { 4, 3, JSDatabasePrototypeTableValues, 0 };
+    { 8, 7, JSDatabasePrototypeTableValues, 0 };
 #endif
 
 const ClassInfo JSDatabasePrototype::s_info = { "DatabasePrototype", 0, &JSDatabasePrototypeTable, 0 };
@@ -77,6 +78,11 @@ JSObject* JSDatabasePrototype::self(ExecState* exec, JSGlobalObject* globalObjec
 bool JSDatabasePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticFunctionSlot<JSObject>(exec, &JSDatabasePrototypeTable, this, propertyName, slot);
+}
+
+bool JSDatabasePrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSDatabasePrototypeTable, this, propertyName, descriptor);
 }
 
 const ClassInfo JSDatabase::s_info = { "Database", 0, &JSDatabaseTable, 0 };
@@ -102,6 +108,11 @@ bool JSDatabase::getOwnPropertySlot(ExecState* exec, const Identifier& propertyN
     return getStaticValueSlot<JSDatabase, Base>(exec, &JSDatabaseTable, this, propertyName, slot);
 }
 
+bool JSDatabase::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSDatabase, Base>(exec, &JSDatabaseTable, this, propertyName, descriptor);
+}
+
 JSValue jsDatabaseVersion(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSDatabase* castedThis = static_cast<JSDatabase*>(asObject(slot.slotBase()));
@@ -113,7 +124,7 @@ JSValue jsDatabaseVersion(ExecState* exec, const Identifier&, const PropertySlot
 JSValue JSC_HOST_CALL jsDatabasePrototypeFunctionChangeVersion(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDatabase::s_info))
+    if (!thisValue.inherits(&JSDatabase::s_info))
         return throwError(exec, TypeError);
     JSDatabase* castedThisObj = static_cast<JSDatabase*>(asObject(thisValue));
     return castedThisObj->changeVersion(exec, args);
@@ -122,10 +133,19 @@ JSValue JSC_HOST_CALL jsDatabasePrototypeFunctionChangeVersion(ExecState* exec, 
 JSValue JSC_HOST_CALL jsDatabasePrototypeFunctionTransaction(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDatabase::s_info))
+    if (!thisValue.inherits(&JSDatabase::s_info))
         return throwError(exec, TypeError);
     JSDatabase* castedThisObj = static_cast<JSDatabase*>(asObject(thisValue));
     return castedThisObj->transaction(exec, args);
+}
+
+JSValue JSC_HOST_CALL jsDatabasePrototypeFunctionReadTransaction(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSDatabase::s_info))
+        return throwError(exec, TypeError);
+    JSDatabase* castedThisObj = static_cast<JSDatabase*>(asObject(thisValue));
+    return castedThisObj->readTransaction(exec, args);
 }
 
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Database* object)
@@ -134,7 +154,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Databas
 }
 Database* toDatabase(JSC::JSValue value)
 {
-    return value.isObject(&JSDatabase::s_info) ? static_cast<JSDatabase*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSDatabase::s_info) ? static_cast<JSDatabase*>(asObject(value))->impl() : 0;
 }
 
 }

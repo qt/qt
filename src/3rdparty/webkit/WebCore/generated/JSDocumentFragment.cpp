@@ -73,6 +73,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSDocumentFragmentPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -87,6 +88,11 @@ const ClassInfo JSDocumentFragmentConstructor::s_info = { "DocumentFragmentConst
 bool JSDocumentFragmentConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSDocumentFragmentConstructor, DOMObject>(exec, &JSDocumentFragmentConstructorTable, this, propertyName, slot);
+}
+
+bool JSDocumentFragmentConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSDocumentFragmentConstructor, DOMObject>(exec, &JSDocumentFragmentConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -117,6 +123,11 @@ bool JSDocumentFragmentPrototype::getOwnPropertySlot(ExecState* exec, const Iden
     return getStaticFunctionSlot<JSObject>(exec, &JSDocumentFragmentPrototypeTable, this, propertyName, slot);
 }
 
+bool JSDocumentFragmentPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSDocumentFragmentPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSDocumentFragment::s_info = { "DocumentFragment", &JSNode::s_info, &JSDocumentFragmentTable, 0 };
 
 JSDocumentFragment::JSDocumentFragment(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DocumentFragment> impl)
@@ -134,6 +145,11 @@ bool JSDocumentFragment::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticValueSlot<JSDocumentFragment, Base>(exec, &JSDocumentFragmentTable, this, propertyName, slot);
 }
 
+bool JSDocumentFragment::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSDocumentFragment, Base>(exec, &JSDocumentFragmentTable, this, propertyName, descriptor);
+}
+
 JSValue jsDocumentFragmentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSDocumentFragment* domObject = static_cast<JSDocumentFragment*>(asObject(slot.slotBase()));
@@ -147,7 +163,7 @@ JSValue JSDocumentFragment::getConstructor(ExecState* exec, JSGlobalObject* glob
 JSValue JSC_HOST_CALL jsDocumentFragmentPrototypeFunctionQuerySelector(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocumentFragment::s_info))
+    if (!thisValue.inherits(&JSDocumentFragment::s_info))
         return throwError(exec, TypeError);
     JSDocumentFragment* castedThisObj = static_cast<JSDocumentFragment*>(asObject(thisValue));
     DocumentFragment* imp = static_cast<DocumentFragment*>(castedThisObj->impl());
@@ -163,7 +179,7 @@ JSValue JSC_HOST_CALL jsDocumentFragmentPrototypeFunctionQuerySelector(ExecState
 JSValue JSC_HOST_CALL jsDocumentFragmentPrototypeFunctionQuerySelectorAll(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDocumentFragment::s_info))
+    if (!thisValue.inherits(&JSDocumentFragment::s_info))
         return throwError(exec, TypeError);
     JSDocumentFragment* castedThisObj = static_cast<JSDocumentFragment*>(asObject(thisValue));
     DocumentFragment* imp = static_cast<DocumentFragment*>(castedThisObj->impl());

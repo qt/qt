@@ -1,7 +1,7 @@
 /*
  *  Copyright (C) 1999-2001 Harri Porten (porten@kde.org)
  *  Copyright (C) 2001 Peter Kelly (pmk@post.com)
- *  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ *  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -25,6 +25,8 @@
 
 #include "JSCell.h"
 
+#include "CallFrame.h"
+
 namespace JSC {
 
     class JSObject;
@@ -33,29 +35,25 @@ namespace JSC {
     // for a property.
     class GetterSetter : public JSCell {
     public:
-        GetterSetter()
-            : JSCell(0)
+        GetterSetter(ExecState* exec)
+            : JSCell(exec->globalData().getterSetterStructure.get())
             , m_getter(0)
             , m_setter(0)
         {
         }
 
-        virtual void mark();
+        virtual void markChildren(MarkStack&);
 
         JSObject* getter() const { return m_getter; }
         void setGetter(JSObject* getter) { m_getter = getter; }
         JSObject* setter() const { return m_setter; }
         void setSetter(JSObject* setter) { m_setter = setter; }
-
+        static PassRefPtr<Structure> createStructure(JSValue prototype)
+        {
+            return Structure::create(prototype, TypeInfo(GetterSetterType));
+        }
     private:
         virtual bool isGetterSetter() const;
-
-        virtual JSValue toPrimitive(ExecState*, PreferredPrimitiveType) const;
-        virtual bool getPrimitiveNumber(ExecState*, double& number, JSValue& value);
-        virtual bool toBoolean(ExecState*) const;
-        virtual double toNumber(ExecState*) const;
-        virtual UString toString(ExecState*) const;
-        virtual JSObject* toObject(ExecState*) const;
 
         JSObject* m_getter;
         JSObject* m_setter;  

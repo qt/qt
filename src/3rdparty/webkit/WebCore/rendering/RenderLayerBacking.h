@@ -63,21 +63,23 @@ public:
     // Update contents and clipping structure.
     void updateInternalHierarchy(); // make private
     
-    GraphicsLayer* graphicsLayer() const { return m_graphicsLayer; }
+    GraphicsLayer* graphicsLayer() const { return m_graphicsLayer.get(); }
 
     // Layer to clip children
     bool hasClippingLayer() const { return m_clippingLayer != 0; }
-    GraphicsLayer* clippingLayer() const { return m_clippingLayer; }
+    GraphicsLayer* clippingLayer() const { return m_clippingLayer.get(); }
 
     // Layer to get clipped by ancestor
     bool hasAncestorClippingLayer() const { return m_ancestorClippingLayer != 0; }
-    GraphicsLayer* ancestorClippingLayer() const { return m_ancestorClippingLayer; }
+    GraphicsLayer* ancestorClippingLayer() const { return m_ancestorClippingLayer.get(); }
 
-    bool hasContentsLayer() const { return m_contentsLayer != 0; }
-    GraphicsLayer* contentsLayer() const { return m_contentsLayer; }
+    bool hasContentsLayer() const { return m_foregroundLayer != 0; }
+    GraphicsLayer* foregroundLayer() const { return m_foregroundLayer.get(); }
     
-    GraphicsLayer* parentForSublayers() const { return m_clippingLayer ? m_clippingLayer : m_graphicsLayer; }
-    GraphicsLayer* childForSuperlayers() const { return m_ancestorClippingLayer ? m_ancestorClippingLayer : m_graphicsLayer; }
+    bool hasMaskLayer() const { return m_maskLayer != 0; }
+
+    GraphicsLayer* parentForSublayers() const { return m_clippingLayer ? m_clippingLayer.get() : m_graphicsLayer.get(); }
+    GraphicsLayer* childForSuperlayers() const { return m_ancestorClippingLayer ? m_ancestorClippingLayer.get() : m_graphicsLayer.get(); }
 
     // RenderLayers with backing normally short-circuit paintLayer() because
     // their content is rendered via callbacks from GraphicsLayer. However, the document
@@ -97,10 +99,11 @@ public:
     // Interface to start, finish, suspend and resume animations and transitions
     bool startAnimation(double beginTime, const Animation* anim, const KeyframeList& keyframes);
     bool startTransition(double beginTime, int property, const RenderStyle* fromStyle, const RenderStyle* toStyle);
-    void animationFinished(const String& name, int index, bool reset);
+    void animationFinished(const String& name);
+    void animationPaused(const String& name);
     void transitionFinished(int property);
 
-    void suspendAnimations();
+    void suspendAnimations(double time = 0);
     void resumeAnimations();
 
     IntRect compositedBounds() const;
@@ -111,10 +114,11 @@ public:
 
     // GraphicsLayerClient interface
     virtual void notifyAnimationStarted(const GraphicsLayer*, double startTime);
+    virtual void notifySyncRequired(const GraphicsLayer*);
 
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& clip);
 
-    virtual IntRect contentsBox(const GraphicsLayer*);
+    IntRect contentsBox() const;
     
 private:
     void createGraphicsLayer();
@@ -124,9 +128,12 @@ private:
     RenderLayerCompositor* compositor() const { return m_owningLayer->compositor(); }
 
     bool updateClippingLayers(bool needsAncestorClip, bool needsDescendantClip);
-    bool updateContentsLayer(bool needsContentsLayer);
+    bool updateForegroundLayer(bool needsForegroundLayer);
+    bool updateMaskLayer(bool needsMaskLayer);
 
-    IntSize contentOffsetInCompostingLayer();
+    GraphicsLayerPaintingPhase paintingPhaseForPrimaryLayer() const;
+    
+    IntSize contentOffsetInCompostingLayer() const;
     // Result is transform origin in pixels.
     FloatPoint3D computeTransformOrigin(const IntRect& borderBox) const;
     // Result is perspective origin in pixels.
@@ -160,10 +167,11 @@ private:
 private:
     RenderLayer* m_owningLayer;
 
-    GraphicsLayer* m_ancestorClippingLayer; // only used if we are clipped by an ancestor which is not a stacking context
-    GraphicsLayer* m_graphicsLayer;
-    GraphicsLayer* m_contentsLayer;         // only used in cases where we need to draw the foreground separately
-    GraphicsLayer* m_clippingLayer;         // only used if we have clipping on a stacking context, with compositing children
+    OwnPtr<GraphicsLayer> m_ancestorClippingLayer; // only used if we are clipped by an ancestor which is not a stacking context
+    OwnPtr<GraphicsLayer> m_graphicsLayer;
+    OwnPtr<GraphicsLayer> m_foregroundLayer;       // only used in cases where we need to draw the foreground separately
+    OwnPtr<GraphicsLayer> m_clippingLayer;         // only used if we have clipping on a stacking context, with compositing children
+    OwnPtr<GraphicsLayer> m_maskLayer;             // only used if we have a mask
 
     IntRect m_compositedBounds;
 

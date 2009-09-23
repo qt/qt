@@ -82,6 +82,13 @@
 #include <private/qmlenginedebug_p.h>
 #include <private/qmlstringconverters_p.h>
 #include <private/qmlxmlhttprequest_p.h>
+#include <private/qmlsqldatabase_p.h>
+
+#ifdef Q_OS_WIN // for %APPDATA%
+#include "qt_windows.h"
+#include "qlibrary.h"
+#define CSIDL_APPDATA		0x001a	// <username>\Application Data
+#endif
 
 Q_DECLARE_METATYPE(QmlMetaProperty)
 Q_DECLARE_METATYPE(QList<QObject *>);
@@ -107,10 +114,49 @@ QScriptValue desktopOpenUrl(QScriptContext *ctxt, QScriptEngine *e)
     return e->newVariant(QVariant(ret));
 }
 
+// XXX Something like this should be exported by Qt.
+static QString userLocalDataPath(const QString& app)
+{
+    QString result;
+
+#ifdef Q_OS_WIN
+#ifndef Q_OS_WINCE
+    QLibrary library(QLatin1String("shell32"));
+#else
+    QLibrary library(QLatin1String("coredll"));
+#endif // Q_OS_WINCE
+    typedef BOOL (WINAPI*GetSpecialFolderPath)(HWND, LPWSTR, int, BOOL);
+    GetSpecialFolderPath SHGetSpecialFolderPath = (GetSpecialFolderPath)library.resolve("SHGetSpecialFolderPathW");
+    if (SHGetSpecialFolderPath) {
+        wchar_t path[MAX_PATH];
+        SHGetSpecialFolderPath(0, path, CSIDL_APPDATA, FALSE);
+        result = QString::fromWCharArray(path);
+    }
+#endif // Q_OS_WIN
+
+#ifdef Q_OS_MAC
+    result = QLatin1String(qgetenv("HOME"));
+    result += "/Library/Application Support";
+#else
+    if (result.isEmpty()) {
+        // Fallback: UNIX style
+        result = QLatin1String(qgetenv("XDG_DATA_HOME"));
+        if (result.isEmpty()) {
+            result = QLatin1String(qgetenv("HOME"));
+            result += QLatin1String("/.local/share");
+        }
+    }
+#endif
+
+    result += QLatin1Char('/');
+    result += app;
+    return result;
+}
+
 QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 : rootContext(0), currentExpression(0),
   isDebugging(false), contextClass(0), objectClass(0), valueTypeClass(0),
-  nodeListClass(0), namedNodeMapClass(0), scriptEngine(this), rootComponent(0),
+  nodeListClass(0), namedNodeMapClass(0), sqlQueryClass(0), scriptEngine(this), rootComponent(0),
   networkAccessManager(0), typeManager(e), uniqueId(1)
 {
     QScriptValue qtObject =
@@ -120,7 +166,9 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
     qtObject.setProperty(QLatin1String("DesktopServices"), desktopObject);
     scriptEngine.globalObject().setProperty(QLatin1String("Qt"), qtObject);
 
+    offlineStoragePath = userLocalDataPath(QLatin1String("Nokia/Qt/QML/OfflineStorage"));
     qt_add_qmlxmlhttprequest(&scriptEngine);
+    qt_add_qmlsqldatabase(&scriptEngine);
 
     //types
     qtObject.setProperty(QLatin1String("rgba"), scriptEngine.newFunction(QmlEnginePrivate::rgba, 4));
@@ -154,11 +202,15 @@ QmlEnginePrivate::~QmlEnginePrivate()
     nodeListClass = 0;
     delete namedNodeMapClass;
     namedNodeMapClass = 0;
+    delete sqlQueryClass;
+    sqlQueryClass = 0;
 
     for(int ii = 0; ii < bindValues.count(); ++ii)
         clear(bindValues[ii]);
     for(int ii = 0; ii < parserStatus.count(); ++ii)
         clear(parserStatus[ii]);
+    for(QHash<int, QmlCompiledData*>::ConstIterator iter = m_compositeTypes.constBegin(); iter != m_compositeTypes.constEnd(); ++iter)
+        (*iter)->release();
 }
 
 void QmlEnginePrivate::clear(SimpleList<QmlAbstractBinding> &bvs)
@@ -198,8 +250,6 @@ void QmlEnginePrivate::init()
             scriptEngine.newFunction(QmlEnginePrivate::createQmlObject, 1));
     scriptEngine.globalObject().setProperty(QLatin1String("createComponent"),
             scriptEngine.newFunction(QmlEnginePrivate::createComponent, 1));
-    scriptEngine.globalObject().setProperty(QLatin1String("vector"),
-            scriptEngine.newFunction(QmlEnginePrivate::vector, 3));
 
     if (QCoreApplication::instance()->thread() == q->thread() &&
         QmlEngineDebugServer::isDebuggingEnabled()) {
@@ -648,7 +698,9 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool cre
 }
 
 QmlDeclarativeData::QmlDeclarativeData(QmlContext *ctxt)
-: context(ctxt), bindings(0), deferredComponent(0), attachedProperties(0)
+: context(ctxt), bindings(0), bindingBitsSize(0), bindingBits(0), 
+  outerContext(0), lineNumber(0), columnNumber(0), deferredComponent(0), 
+  deferredIdx(0), attachedProperties(0)
 {
 }
 
@@ -670,7 +722,45 @@ void QmlDeclarativeData::destroyed(QObject *object)
         binding = next;
     }
 
+    if (bindingBits)
+        free(bindingBits);
+
     delete this;
+}
+
+bool QmlDeclarativeData::hasBindingBit(int bit) const
+{
+    if (bindingBitsSize >= bit) 
+        return bindingBits[bit / 32] & (1 << (bit % 32));
+    else
+        return false;
+}
+
+void QmlDeclarativeData::clearBindingBit(int bit)
+{
+    if (bindingBitsSize >= bit) 
+        bindingBits[bit / 32] &= ~(1 << (bit % 32));
+}
+
+void QmlDeclarativeData::setBindingBit(QObject *obj, int bit)
+{
+    if (bindingBitsSize < bit) {
+        int props = obj->metaObject()->propertyCount();
+        Q_ASSERT(bit < props);
+
+        int arraySize = (props + 31) / 32;
+        int oldArraySize = bindingBitsSize / 32;
+
+        bindingBits = (quint32 *)realloc(bindingBits, 
+                                         arraySize * sizeof(quint32));
+        memset(bindingBits + oldArraySize, 
+               sizeof(quint32) * (arraySize - oldArraySize),
+               0x00);
+
+        bindingBitsSize = arraySize * 32;
+    }
+
+    bindingBits[bit / 32] |= (1 << (bit % 32));
 }
 
 /*!
@@ -1468,8 +1558,9 @@ public:
             bool found = false;
             foreach (QString p, importPath) {
                 QString dir = p+QLatin1Char('/')+url;
-                if (QFile::exists(dir+QLatin1String("/qmldir"))) {
-                    url = QLatin1String("file://")+dir;
+                QFileInfo fi(dir+QLatin1String("/qmldir"));
+                if (fi.isFile()) {
+                    url = QUrl::fromLocalFile(fi.absolutePath()).toString();
                     found = true;
                     break;
                 }
@@ -1596,6 +1687,32 @@ void QmlEngine::addImportPath(const QString& path)
 }
 
 /*!
+  \property QmlEngine::offlineStoragePath
+  \brief the directory for storing offline user data
+
+  Returns the directory where SQL and other offline
+  storage is placed.
+
+  QFxWebView and the SQL databases created with openDatabase()
+  are stored here.
+
+  The default is Nokia/Qt/QML/Databases/ in the platform-standard
+  user application data directory.
+*/
+void QmlEngine::setOfflineStoragePath(const QString& dir)
+{
+    Q_D(QmlEngine);
+    d->offlineStoragePath = dir;
+}
+
+QString QmlEngine::offlineStoragePath() const
+{
+    Q_D(const QmlEngine);
+    return d->offlineStoragePath;
+}
+
+
+/*!
   \internal
 
   Adds information to \a imports such that subsequent calls to resolveType()
@@ -1668,6 +1785,77 @@ bool QmlEnginePrivate::resolveType(const Imports& imports, const QByteArray& typ
 void QmlEnginePrivate::resolveTypeInNamespace(ImportedNamespace* ns, const QByteArray& type, QmlType** type_return, QUrl* url_return, int *vmaj, int *vmin ) const
 {
     ns->find(type,vmaj,vmin,type_return,url_return);
+}
+
+static void voidptr_destructor(void *v)
+{
+    void **ptr = (void **)v;
+    delete ptr;
+}
+
+static void *voidptr_constructor(const void *v)
+{
+    if (!v) {
+        return new void*;
+    } else {
+        return new void*(*(void **)v);
+    }
+}
+
+void QmlEnginePrivate::registerCompositeType(QmlCompiledData *data)
+{
+    QByteArray name = data->root.className();
+
+    QByteArray ptr = name + "*";
+    QByteArray lst = "QmlList<" + ptr + ">*";
+
+    int ptr_type = QMetaType::registerType(ptr.constData(), voidptr_destructor,
+                                           voidptr_constructor);
+    int lst_type = QMetaType::registerType(lst.constData(), voidptr_destructor,
+                                           voidptr_constructor);
+
+    m_qmlLists.insert(lst_type, ptr_type);
+    m_compositeTypes.insert(ptr_type, data);
+    data->addref();
+}
+
+bool QmlEnginePrivate::isQmlList(int t) const
+{
+    return m_qmlLists.contains(t) || QmlMetaType::isQmlList(t);
+}
+
+bool QmlEnginePrivate::isObject(int t)
+{
+    return m_compositeTypes.contains(t) || QmlMetaType::isObject(t);
+}
+
+int QmlEnginePrivate::qmlListType(int t) const
+{
+    QHash<int, int>::ConstIterator iter = m_qmlLists.find(t);
+    if (iter != m_qmlLists.end())
+        return *iter;
+    else
+        return QmlMetaType::qmlListType(t);
+}
+
+const QMetaObject *QmlEnginePrivate::rawMetaObjectForType(int t) const
+{
+    QHash<int, QmlCompiledData*>::ConstIterator iter = m_compositeTypes.find(t);
+    if (iter != m_compositeTypes.end()) {
+        return &(*iter)->root;
+    } else {
+        return QmlMetaType::rawMetaObjectForType(t);
+    }
+}
+
+const QMetaObject *QmlEnginePrivate::metaObjectForType(int t) const
+{
+    QHash<int, QmlCompiledData*>::ConstIterator iter = m_compositeTypes.find(t);
+    if (iter != m_compositeTypes.end()) {
+        return &(*iter)->root;
+    } else {
+        return QmlMetaType::metaObjectForType(t);
+    }
 }
 
 QT_END_NAMESPACE

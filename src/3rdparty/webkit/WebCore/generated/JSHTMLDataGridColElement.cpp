@@ -78,6 +78,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLDataGridColElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -92,6 +93,11 @@ const ClassInfo JSHTMLDataGridColElementConstructor::s_info = { "HTMLDataGridCol
 bool JSHTMLDataGridColElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLDataGridColElementConstructor, DOMObject>(exec, &JSHTMLDataGridColElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLDataGridColElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLDataGridColElementConstructor, DOMObject>(exec, &JSHTMLDataGridColElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -130,6 +136,11 @@ JSObject* JSHTMLDataGridColElement::createPrototype(ExecState* exec, JSGlobalObj
 bool JSHTMLDataGridColElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLDataGridColElement, Base>(exec, &JSHTMLDataGridColElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLDataGridColElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLDataGridColElement, Base>(exec, &JSHTMLDataGridColElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLDataGridColElementLabel(ExecState* exec, const Identifier&, const PropertySlot& slot)

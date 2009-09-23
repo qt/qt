@@ -76,6 +76,11 @@ bool JSHTMLOptionsCollectionPrototype::getOwnPropertySlot(ExecState* exec, const
     return getStaticFunctionSlot<JSObject>(exec, &JSHTMLOptionsCollectionPrototypeTable, this, propertyName, slot);
 }
 
+bool JSHTMLOptionsCollectionPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSHTMLOptionsCollectionPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSHTMLOptionsCollection::s_info = { "HTMLOptionsCollection", &JSHTMLCollection::s_info, &JSHTMLOptionsCollectionTable, 0 };
 
 JSHTMLOptionsCollection::JSHTMLOptionsCollection(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLOptionsCollection> impl)
@@ -91,6 +96,11 @@ JSObject* JSHTMLOptionsCollection::createPrototype(ExecState* exec, JSGlobalObje
 bool JSHTMLOptionsCollection::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLOptionsCollection, Base>(exec, &JSHTMLOptionsCollectionTable, this, propertyName, slot);
+}
+
+bool JSHTMLOptionsCollection::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLOptionsCollection, Base>(exec, &JSHTMLOptionsCollectionTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLOptionsCollectionSelectedIndex(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -138,7 +148,7 @@ void setJSHTMLOptionsCollectionLength(ExecState* exec, JSObject* thisObject, JSV
 JSValue JSC_HOST_CALL jsHTMLOptionsCollectionPrototypeFunctionAdd(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLOptionsCollection::s_info))
+    if (!thisValue.inherits(&JSHTMLOptionsCollection::s_info))
         return throwError(exec, TypeError);
     JSHTMLOptionsCollection* castedThisObj = static_cast<JSHTMLOptionsCollection*>(asObject(thisValue));
     return castedThisObj->add(exec, args);
@@ -147,7 +157,7 @@ JSValue JSC_HOST_CALL jsHTMLOptionsCollectionPrototypeFunctionAdd(ExecState* exe
 JSValue JSC_HOST_CALL jsHTMLOptionsCollectionPrototypeFunctionRemove(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLOptionsCollection::s_info))
+    if (!thisValue.inherits(&JSHTMLOptionsCollection::s_info))
         return throwError(exec, TypeError);
     JSHTMLOptionsCollection* castedThisObj = static_cast<JSHTMLOptionsCollection*>(asObject(thisValue));
     return castedThisObj->remove(exec, args);
@@ -155,7 +165,7 @@ JSValue JSC_HOST_CALL jsHTMLOptionsCollectionPrototypeFunctionRemove(ExecState* 
 
 HTMLOptionsCollection* toHTMLOptionsCollection(JSC::JSValue value)
 {
-    return value.isObject(&JSHTMLOptionsCollection::s_info) ? static_cast<JSHTMLOptionsCollection*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSHTMLOptionsCollection::s_info) ? static_cast<JSHTMLOptionsCollection*>(asObject(value))->impl() : 0;
 }
 
 }

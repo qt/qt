@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -202,7 +202,7 @@ public:
         inline iterator &operator-=(int j) { i-=j; return *this; }
         inline iterator operator+(int j) const { return iterator(i+j); }
         inline iterator operator-(int j) const { return iterator(i-j); }
-        inline int operator-(iterator j) const { return i - j.i; }
+        inline int operator-(iterator j) const { return int(i - j.i); }
     };
     friend class iterator;
 
@@ -420,7 +420,7 @@ Q_INLINE_TEMPLATE QList<T> &QList<T>::operator=(const QList<T> &l)
 template <typename T>
 inline typename QList<T>::iterator QList<T>::insert(iterator before, const T &t)
 {
-    int iBefore = before.i - reinterpret_cast<Node *>(p.begin());
+    int iBefore = int(before.i - reinterpret_cast<Node *>(p.begin()));
     Node *n = reinterpret_cast<Node *>(p.insert(iBefore));
     QT_TRY {
         node_construct(n, t);
@@ -706,7 +706,7 @@ Q_OUTOFLINE_TEMPLATE QList<T> &QList<T>::operator+=(const QList<T> &l)
         node_copy(n, reinterpret_cast<Node *>(p.end()), reinterpret_cast<Node *>(l.p.begin()));
     } QT_CATCH(...) {
         // restore the old end
-        d->end -= (reinterpret_cast<Node *>(p.end()) - n);
+        d->end -= int(reinterpret_cast<Node *>(p.end()) - n);
         QT_RETHROW;
     }
     return *this;
@@ -728,7 +728,7 @@ Q_OUTOFLINE_TEMPLATE int QList<T>::indexOf(const T &t, int from) const
         Node *e = reinterpret_cast<Node *>(p.end());
         while (++n != e)
             if (n->t() == t)
-                return n - reinterpret_cast<Node *>(p.begin());
+                return int(n - reinterpret_cast<Node *>(p.begin()));
     }
     return -1;
 }

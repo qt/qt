@@ -58,56 +58,37 @@
 
 QT_BEGIN_NAMESPACE
 
-class QmlBoundSignal : public QmlExpression
+class QmlAbstractBoundSignal : public QObject
 {
-Q_OBJECT
+    Q_OBJECT
 public:
-    QmlBoundSignal(QmlContext *, const QString &, QObject *me, int idx, QObject *parent);
-
-    int index() const { return _idx; }
-protected:
-    static int evaluateIdx;
-private:
-    int _idx;
+    QmlAbstractBoundSignal(QObject *parent = 0);
+    virtual ~QmlAbstractBoundSignal() = 0;
 };
 
-class QmlBoundSignalParameters : public QObject
-{
-Q_OBJECT
-public:
-    QmlBoundSignalParameters(const QMetaMethod &, QObject * = 0);
-    ~QmlBoundSignalParameters();
-
-    void setValues(void **);
-    void clearValues();
-
-private:
-    friend class MetaObject;
-    int metaCall(QMetaObject::Call, int _id, void **);
-    struct MetaObject : public QAbstractDynamicMetaObject {
-        MetaObject(QmlBoundSignalParameters *b)
-            : parent(b) {}
-
-        int metaCall(QMetaObject::Call c, int id, void **a) { 
-            return parent->metaCall(c, id, a);
-        }
-        QmlBoundSignalParameters *parent;
-    };
-
-    int *types;
-    void **values;
-    QMetaObject *myMetaObject;
-};
-
-class QmlBoundSignalProxy : public QmlBoundSignal
+class QmlBoundSignalParameters;
+class QmlBoundSignal : public QmlAbstractBoundSignal
 {
 public:
-    QmlBoundSignalProxy(QmlContext *, const QString &, QObject *me, int idx, QObject *parent);
+    QmlBoundSignal(QObject *scope, const QMetaMethod &signal, QObject *parent);
+    QmlBoundSignal(QmlContext *ctxt, const QString &val, QObject *scope, 
+                   const QMetaMethod &signal, QObject *parent);
+    virtual ~QmlBoundSignal();
+
+    int index() const;
+
+    QmlExpression *expression() const;
+    QmlExpression *setExpression(QmlExpression *);
+
+    static QmlBoundSignal *cast(QObject *);
 
 protected:
     virtual int qt_metacall(QMetaObject::Call c, int id, void **a);
+
 private:
-    QmlBoundSignalParameters *params;
+    QmlExpression *m_expression;
+    int m_idx;
+    QmlBoundSignalParameters *m_params;
 };
 
 QT_END_NAMESPACE

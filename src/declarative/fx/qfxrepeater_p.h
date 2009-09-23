@@ -61,6 +61,7 @@
 QT_BEGIN_NAMESPACE
 
 class QmlContext;
+class QFxVisualModel;
 class QFxRepeaterPrivate : public QFxItemPrivate
 {
     Q_DECLARE_PUBLIC(QFxRepeater)
@@ -69,13 +70,11 @@ public:
     QFxRepeaterPrivate();
     ~QFxRepeaterPrivate();
 
-    QFxItem *addItem(QmlContext *ctxt, QFxItem *lastItem);
-
+    QFxVisualModel *model;
     QVariant dataSource;
-    QmlComponent *component;
-    int count;
+    bool ownModel;
 
-    QList<QPointer<QObject> > deletables;
+    QList<QPointer<QFxItem> > deletables;
 };
 
 QT_END_NAMESPACE
