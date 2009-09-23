@@ -1635,11 +1635,18 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
         qreal min, max;
         feasible = solveMinMax(trunkConstraints, trunkPath, &min, &max);
 
-        // Solve for preferred. The objective function is calculated from the constraints
-        // and variables internally.
-        feasible &= solvePreferred(trunkConstraints);
-
         if (feasible) {
+            // Solve for preferred. The objective function is calculated from the constraints
+            // and variables internally.
+            solvePreferred(trunkConstraints);
+
+            // remove sizeHintConstraints from trunkConstraints
+            trunkConstraints = parts[0];
+
+            // Solve for expanding. The objective function and the constraints from items
+            // are calculated internally.
+            solveExpanding(trunkConstraints);
+
             // Propagate the new sizes down the simplified graph, ie. tell the
             // group anchors to set their children anchors sizes.
 
@@ -1649,23 +1656,23 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
             for (int i = 0; i < trunkVariables.count(); ++i)
                 trunkVariables.at(i)->updateChildrenSizes();
 
-            // Calculate and set the preferred size for the layout from the edge sizes that
-            // were calculated above.
+            // Calculate and set the preferred and expanding sizes for the layout,
+            // from the edge sizes that were calculated above.
             qreal pref(0.0);
+            qreal expanding(0.0);
             foreach (const AnchorData *ad, trunkPath.positives) {
                 pref += ad->sizeAtPreferred;
+                expanding += ad->sizeAtExpanding;
             }
             foreach (const AnchorData *ad, trunkPath.negatives) {
                 pref -= ad->sizeAtPreferred;
+                expanding -= ad->sizeAtExpanding;
             }
+
             sizeHints[orientation][Qt::MinimumSize] = min;
             sizeHints[orientation][Qt::PreferredSize] = pref;
             sizeHints[orientation][Qt::MaximumSize] = max;
-
-            // XXX implement Expanding simplex
-            for (int i = 0; i < trunkVariables.count(); ++i)
-                trunkVariables.at(i)->sizeAtExpanding = trunkVariables.at(i)->sizeAtPreferred;
-            sizeAtExpanding[orientation] = pref;
+            sizeAtExpanding[orientation] = expanding;
         }
     } else {
 #if 0
@@ -2313,6 +2320,75 @@ bool QGraphicsAnchorLayoutPrivate::solvePreferred(QList<QSimplexConstraint *> co
     qDeleteAll(preferredVariables);
 
     return feasible;
+}
+
+void QGraphicsAnchorLayoutPrivate::solveExpanding(QList<QSimplexConstraint *> constraints)
+{
+    QList<AnchorData *> variables = getVariables(constraints);
+    QList<QSimplexConstraint *> itemConstraints;
+    QSimplexConstraint *objective = new QSimplexConstraint;
+
+    // Use all items that belong to trunk to:
+    //  - add solveExpanding-specific item constraints
+    //  - create the objective function
+    for (int i = 0; i < variables.size(); ++i) {
+        AnchorData *ad = variables[i];
+        if (ad->isExpanding) {
+            // Add constraint to lock expanding anchor in its sizeAtMaximum
+            QSimplexConstraint *itemC = new QSimplexConstraint;
+            itemC->ratio = QSimplexConstraint::Equal;
+            itemC->variables.insert(ad, 1.0);
+            itemC->constant = ad->sizeAtMaximum;
+            itemConstraints << itemC;
+        } else {
+            // Add constraints to lock anchor between their sizeAtPreferred and sizeAtMaximum
+            QSimplexConstraint *itemC = new QSimplexConstraint;
+            itemC->ratio = QSimplexConstraint::MoreOrEqual;
+            itemC->variables.insert(ad, 1.0);
+            itemC->constant = qMin(ad->sizeAtPreferred, ad->sizeAtMaximum);
+            itemConstraints << itemC;
+
+            itemC = new QSimplexConstraint;
+            itemC->ratio = QSimplexConstraint::LessOrEqual;
+            itemC->variables.insert(ad, 1.0);
+            itemC->constant = qMax(ad->sizeAtPreferred, ad->sizeAtMaximum);
+            itemConstraints << itemC;
+
+            // Add anchor to objective function
+            if (ad->sizeAtPreferred < ad->sizeAtMaximum) {
+                // Try to shrink this variable towards its sizeAtPreferred value
+                objective->variables.insert(ad, 1.0);
+            } else {
+                // Try to grow this variable towards its sizeAtPreferred value
+                objective->variables.insert(ad, -1.0);
+            }
+        }
+    }
+
+    // Solve
+    if (objective->variables.size() == variables.size()) {
+        // If no anchors are expanding, we don't need to run the simplex
+        // Set all variables to their preferred size
+        for (int i = 0; i < variables.size(); ++i) {
+            variables[i]->sizeAtExpanding = variables[i]->sizeAtPreferred;
+        }
+    } else {
+        // Run simplex
+        QSimplex simplex;
+        bool feasible = simplex.setConstraints(constraints + itemConstraints);
+        Q_ASSERT(feasible);
+
+        simplex.setObjective(objective);
+        simplex.solveMin();
+
+        // Collect results
+        for (int i = 0; i < variables.size(); ++i) {
+            variables[i]->sizeAtExpanding = variables[i]->result;
+        }
+    }
+
+    delete objective;
+    qDeleteAll(itemConstraints);
 }
 
 /*!

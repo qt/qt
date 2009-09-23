@@ -495,6 +495,7 @@ public:
     bool solveMinMax(QList<QSimplexConstraint *> constraints,
                      GraphPath path, qreal *min, qreal *max);
     bool solvePreferred(QList<QSimplexConstraint *> constraints);
+    void solveExpanding(QList<QSimplexConstraint *> constraints);
     bool hasConflicts() const;
 
 #ifdef QT_DEBUG
