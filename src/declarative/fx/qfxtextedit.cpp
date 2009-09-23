@@ -1047,6 +1047,11 @@ void QFxTextEdit::updateSize()
         //### need to comfirm cost of always setting these
         int newWidth = (int)d->document->idealWidth();
         d->document->setTextWidth(newWidth); // ### QTextDoc> Alignment will not work unless textWidth is set. Does Text need this line as well?
+        int cursorWidth = 1;
+        if(d->cursor)
+            cursorWidth = d->cursor->width();
+        newWidth += cursorWidth;
+        newWidth += 3;// ### Need a better way of ensuring cursor is in width
         setImplicitWidth(newWidth);
         setImplicitHeight(d->text.isEmpty() ? fm.height() : (int)d->document->size().height());
 
