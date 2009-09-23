@@ -2000,7 +2000,7 @@ void tst_QWidget::showMaximized()
         QWidget widget;
         widget.setGeometry(0, 0, 10, 10);
         widget.showMaximized();
-        QVERIFY(widget.size().width() > 20 && widget.size().height() > 20);
+        QTRY_VERIFY(widget.size().width() > 20 && widget.size().height() > 20);
     }
 
 #ifdef QT3_SUPPORT
