@@ -1379,7 +1379,7 @@ void tst_Q3Table::dateTimeEdit()
     TimeTableItem *ti = new TimeTableItem(testWidget);
     testWidget->setItem(0, 0, ti);
     testWidget->show();
-    QTest::qWaitForWindowShown(&testWidget);
+    QTest::qWaitForWindowShown(testWidget);
 #ifdef WAITS
     QTest::qWait(50);
 #endif
