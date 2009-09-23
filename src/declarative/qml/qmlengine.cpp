@@ -250,8 +250,6 @@ void QmlEnginePrivate::init()
             scriptEngine.newFunction(QmlEnginePrivate::createQmlObject, 1));
     scriptEngine.globalObject().setProperty(QLatin1String("createComponent"),
             scriptEngine.newFunction(QmlEnginePrivate::createComponent, 1));
-    scriptEngine.globalObject().setProperty(QLatin1String("vector"),
-            scriptEngine.newFunction(QmlEnginePrivate::vector, 3));
 
     if (QCoreApplication::instance()->thread() == q->thread() &&
         QmlEngineDebugServer::isDebuggingEnabled()) {
