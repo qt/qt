@@ -76,8 +76,10 @@ namespace QTest
 #if defined(Q_WS_X11)
         qt_x11_wait_for_window_manager(window);
 #elif defined(Q_WS_QWS)
+        Q_UNUSED(window);
         qWait(100);
 #else
+        Q_UNUSED(window);
         qWait(50);
 #endif
         return true;
