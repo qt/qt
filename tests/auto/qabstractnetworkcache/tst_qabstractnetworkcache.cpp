@@ -83,12 +83,8 @@ public:
         : QNetworkDiskCache(parent)
         , gotData(false)
     {
-#ifdef Q_OS_SYMBIAN
-        QString location = QLatin1String("./cache/");
-#else
         QString location = QDesktopServices::storageLocation(QDesktopServices::CacheLocation)
                                     + QLatin1String("/qnetworkdiskcache/");
-#endif
         setCacheDirectory(location);
         clear();
     }
