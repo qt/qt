@@ -154,7 +154,7 @@ public:
 void tst_QApplication::sendEventsOnProcessEvents()
 {
     int argc = 0;
-    QApplication app(argc, 0);
+    QApplication app(argc, 0, QApplication::GuiServer);
 
     EventSpy spy;
     app.installEventFilter(&spy);
