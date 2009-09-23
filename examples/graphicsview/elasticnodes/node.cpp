@@ -53,7 +53,7 @@ Node::Node(GraphWidget *graphWidget)
 {
     setFlag(ItemIsMovable);
     setCacheMode(DeviceCoordinateCache);
-    setZValue(1);
+    setZValue(-1);
 }
 
 void Node::addEdge(Edge *edge)
