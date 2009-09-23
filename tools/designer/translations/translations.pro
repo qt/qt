@@ -130,10 +130,12 @@ HEADERS += ../../shared/findwidget/abstractfindwidget.h \
            ../../shared/findwidget/itemviewfindwidget.h \
            ../../shared/findwidget/texteditfindwidget.h
 
-TRANSLATIONS=$$[QT_INSTALL_TRANSLATIONS]/designer_de.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/designer_ja.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/designer_pl.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/designer_ru.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/designer_sl.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/designer_zh_CN.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/designer_zh_TW.ts
+TR_DIR = $$PWD/../../../translations
+TRANSLATIONS = \
+    $$TR_DIR/designer_de.ts \
+    $$TR_DIR/designer_ja.ts \
+    $$TR_DIR/designer_pl.ts \
+    $$TR_DIR/designer_ru.ts \
+    $$TR_DIR/designer_sl.ts \
+    $$TR_DIR/designer_zh_CN.ts \
+    $$TR_DIR/designer_zh_TW.ts

@@ -40,10 +40,12 @@ HEADERS += ../tools/assistant/aboutdialog.h \
            ../tools/assistant/searchwidget.h \
            ../tools/assistant/topicchooser.h \
 
-TRANSLATIONS=$$[QT_INSTALL_TRANSLATIONS]/assistant_de.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/assistant_ja.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/assistant_pl.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/assistant_ru.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/assistant_zh_CN.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/assistant_zh_TW.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/assistant_da.ts
+TR_DIR = $$PWD/../../../translations
+TRANSLATIONS = \
+    $$TR_DIR/assistant_da.ts \
+    $$TR_DIR/assistant_de.ts \
+    $$TR_DIR/assistant_ja.ts \
+    $$TR_DIR/assistant_pl.ts \
+    $$TR_DIR/assistant_ru.ts \
+    $$TR_DIR/assistant_zh_CN.ts \
+    $$TR_DIR/assistant_zh_TW.ts

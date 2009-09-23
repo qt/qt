@@ -41,10 +41,10 @@ ts-qt.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
                                     svg \
                                     xml \
                                     xmlpatterns \
-                                -ts $$prependAll($$[QT_INSTALL_TRANSLATIONS]/qt_,$$QT_TS,.ts))
+                                -ts $$prependAll($$QT_SOURCE_TREE/translations/qt_,$$QT_TS,.ts))
 ts-qt.depends = sub-tools
 
-qm-qt.commands = $$LRELEASE $$prependAll($$[QT_INSTALL_TRANSLATIONS]/qt_,$$QT_TS,.ts)
+qm-qt.commands = $$LRELEASE $$prependAll($$QT_SOURCE_TREE/translations/qt_,$$QT_TS,.ts)
 qm-qt.depends = sub-tools
 
 ###### Designer
