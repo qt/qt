@@ -149,8 +149,13 @@ for(QTLIB, $$list($$lower($$unique(QT)))) {
    else:isEqual(QTLIB, scripttools):qlib = QtScriptTools
    else:isEqual(QTLIB, testlib):qlib = QtTest
    else:isEqual(QTLIB, dbus):qlib = QtDBus
-   else:isEqual(QTLIB, phonon):qlib = phonon
    else:isEqual(QTLIB, webkit):qlib = QtWebKit
+   else:isEqual(QTLIB, phonon) {
+       qlib = phonon
+       INCLUDEPATH += $$QMAKE_INCDIR_QT/phonon_compat/phonon
+       INCLUDEPATH += $$QMAKE_INCDIR_QT/phonon_compat
+       INCLUDEPATH += $$QMAKE_INCDIR_QT/phonon/Phonon
+   } else:isEqual(QTLIB, webkit):qlib = QtWebKit
    else:message("Unknown QT: $$QTLIB"):qlib =
    !isEmpty(qlib) {
       target_qt:isEqual(TARGET, qlib) {
