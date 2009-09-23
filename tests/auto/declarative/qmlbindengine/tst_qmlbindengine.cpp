@@ -11,7 +11,7 @@
 inline QUrl TEST_FILE(const QString &filename)
 {
     QFileInfo fileInfo(__FILE__);
-    return QUrl::fromLocalFile(fileInfo.absoluteDir().filePath(filename));
+    return QUrl::fromLocalFile(fileInfo.absoluteDir().filePath("data/" + filename));
 }
 
 inline QUrl TEST_FILE(const char *filename)
