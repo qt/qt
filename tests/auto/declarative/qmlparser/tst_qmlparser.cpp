@@ -14,7 +14,7 @@ public:
     tst_qmlparser() {
         QmlMetaType::registerCustomStringConverter(qMetaTypeId<MyCustomVariantType>(), myCustomVariantTypeConverter);
         QFileInfo fileInfo(__FILE__);
-        engine.addImportPath(fileInfo.absoluteDir().filePath(QLatin1String("lib")));
+        engine.addImportPath(fileInfo.absoluteDir().filePath(QLatin1String("data/lib")));
     }
 
 private slots:
@@ -74,7 +74,7 @@ private:
         QVERIFY(!component.isError()); \
         QVERIFY(component.errors().isEmpty()); \
     } else { \
-        QFile file(errorfile); \
+        QFile file(QLatin1String("data/") + QLatin1String(errorfile)); \
         QVERIFY(file.open(QIODevice::ReadOnly)); \
         QByteArray data = file.readAll(); \
         QList<QByteArray> expected = data.split('\n'); \
@@ -96,7 +96,7 @@ private:
 inline QUrl TEST_FILE(const QString &filename)
 {
     QFileInfo fileInfo(__FILE__);
-    return QUrl::fromLocalFile(fileInfo.absoluteDir().filePath(filename));
+    return QUrl::fromLocalFile(fileInfo.absoluteDir().filePath(QLatin1String("data/") + filename));
 }
 
 inline QUrl TEST_FILE(const char *filename)
