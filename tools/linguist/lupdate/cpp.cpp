@@ -175,7 +175,7 @@ class CppFiles {
 
 public:
     static const ParseResults *getResults(const QString &cleanFile);
-    static void setResults(const QString &cleanFile, ParseResults *results);
+    static void setResults(const QString &cleanFile, const ParseResults *results);
     static const Translator *getTranslator(const QString &cleanFile);
     static void setTranslator(const QString &cleanFile, const Translator *results);
     static bool isBlacklisted(const QString &cleanFile);
@@ -1188,9 +1188,8 @@ const ParseResults *CppFiles::getResults(const QString &cleanFile)
     return parsedFiles().value(cleanFile);
 }
 
-void CppFiles::setResults(const QString &cleanFile, ParseResults *results)
+void CppFiles::setResults(const QString &cleanFile, const ParseResults *results)
 {
-    results->fileId = nextFileId++;
     parsedFiles().insert(cleanFile, results);
 }
 
@@ -2055,14 +2054,28 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
 const ParseResults *CppParser::recordResults(bool isHeader)
 {
     if (tor) {
-        if (tor->messageCount())
+        if (tor->messageCount()) {
             CppFiles::setTranslator(yyFileName, tor);
-        else
+        } else {
             delete tor;
+            tor = 0;
+        }
     }
     if (isHeader) {
-        CppFiles::setResults(yyFileName, results);
-        return results;
+        const ParseResults *pr;
+        if (!tor && results->includes.count() == 1
+            && results->rootNamespace.children.isEmpty()
+            && results->rootNamespace.aliases.isEmpty()
+            && results->rootNamespace.usings.isEmpty()) {
+            // This is a forwarding header. Slash it.
+            pr = *results->includes.begin();
+            delete results;
+        } else {
+            results->fileId = nextFileId++;
+            pr = results;
+        }
+        CppFiles::setResults(yyFileName, pr);
+        return pr;
     } else {
         delete results;
         return 0;
