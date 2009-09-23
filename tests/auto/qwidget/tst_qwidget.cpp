@@ -4897,6 +4897,11 @@ void tst_QWidget::setWindowGeometry_data()
 
 void tst_QWidget::setWindowGeometry()
 {
+#ifdef Q_WS_X11
+    //Since WindowManager operation are all assync, and we have no way to know if the window
+    // manager has finished playing with the window geometry, this test can't be reliable.
+    QSKIP("Window Manager behaviour are too random for this test", SkipAll);
+#endif
     QFETCH(QList<QRect>, rects);
     QFETCH(int, windowFlags);
     QRect rect = rects.takeFirst();
@@ -5044,6 +5049,11 @@ void tst_QWidget::windowMoveResize_data()
 
 void tst_QWidget::windowMoveResize()
 {
+#ifdef Q_WS_X11
+    //Since WindowManager operation are all assync, and we have no way to know if the window
+    // manager has finished playing with the window geometry, this test can't be reliable.
+    QSKIP("Window Manager behaviour are too random for this test", SkipAll);
+#endif
 #ifdef Q_OS_IRIX
     QSKIP("4DWM issues on IRIX makes this test fail", SkipAll);
 #endif
