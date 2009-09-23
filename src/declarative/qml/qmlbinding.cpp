@@ -131,7 +131,7 @@ void QmlBinding::update()
                 value = qVariantFromValue(QmlStringConverters::vector3DFromString(value.toString()));
             }
 
-            d->property.write(value);
+            d->property.write(value, QmlMetaProperty::Binding);
         }
 
         d->updating = false;
@@ -180,7 +180,7 @@ QString QmlBinding::expression() const
 }
 
 QmlAbstractBinding::QmlAbstractBinding()
-: m_mePtr(0), m_prevBinding(0), m_nextBinding(0)
+: m_object(0), m_mePtr(0), m_prevBinding(0), m_nextBinding(0)
 {
 }
 
@@ -193,24 +193,35 @@ QmlAbstractBinding::~QmlAbstractBinding()
 
 void QmlAbstractBinding::addToObject(QObject *object)
 {
+    Q_ASSERT(object);
+
     removeFromObject();
 
-    if (object) {
-        QmlDeclarativeData *data = QmlDeclarativeData::get(object, true);
-        m_nextBinding = data->bindings;
-        if (m_nextBinding) m_nextBinding->m_prevBinding = &m_nextBinding;
-        m_prevBinding = &data->bindings;
-        data->bindings = this;
-    }
+    Q_ASSERT(!m_prevBinding);
+
+    QmlDeclarativeData *data = QmlDeclarativeData::get(object, true);
+    m_nextBinding = data->bindings;
+    if (m_nextBinding) m_nextBinding->m_prevBinding = &m_nextBinding;
+    m_prevBinding = &data->bindings;
+    data->bindings = this;
+    m_object = object;
+
+    data->setBindingBit(m_object, propertyIndex());
 }
 
 void QmlAbstractBinding::removeFromObject()
 {
     if (m_prevBinding) {
+        Q_ASSERT(m_object);
+
         *m_prevBinding = m_nextBinding;
         if (m_nextBinding) m_nextBinding->m_prevBinding = m_prevBinding;
         m_prevBinding = 0;
         m_nextBinding = 0;
+
+        QmlDeclarativeData *data = QmlDeclarativeData::get(m_object, false);
+        if (data) data->clearBindingBit(propertyIndex());
+        m_object = 0;
     }
 }
 
