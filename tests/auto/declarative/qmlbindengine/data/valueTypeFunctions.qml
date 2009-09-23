@@ -1,4 +1,4 @@
-import Test 1.0
+import Qt.test 1.0
 
 MyTypeObject {
     rectProperty: Qt.rect(0,0,100,100)

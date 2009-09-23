@@ -39,6 +39,7 @@ private slots:
     void deferredProperties();
     void extensionObjects();
     void enums();
+    void valueTypeFunctions();
 
 private:
     QmlEngine engine;
@@ -384,6 +385,16 @@ void tst_qmlbindengine::enums()
     QCOMPARE(object->property("i").toInt(), 19);
     QCOMPARE(object->property("j").toInt(), 19);
 }
+
+void tst_qmlbindengine::valueTypeFunctions()
+{
+    QmlComponent component(&engine, TEST_FILE("valueTypeFunctions.qml"));
+    MyTypeObject *obj = qobject_cast<MyTypeObject*>(component.create());
+    QVERIFY(obj != 0);
+    QCOMPARE(obj->rectProperty(), QRect(0,0,100,100));
+    QCOMPARE(obj->rectFProperty(), QRectF(0,0.5,100,99.5));
+}
+
 
 QTEST_MAIN(tst_qmlbindengine)
 
