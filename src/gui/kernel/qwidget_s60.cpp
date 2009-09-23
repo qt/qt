@@ -82,8 +82,6 @@ static bool isEqual(const QList<QAction*>& a, const QList<QAction*>& b)
     return true;
 }
 
-<<<<<<< HEAD:src/gui/kernel/qwidget_s60.cpp
-
 void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
 {
 #ifdef Q_WS_S60
