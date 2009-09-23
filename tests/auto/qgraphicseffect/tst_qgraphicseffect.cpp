@@ -48,6 +48,8 @@
 #include <QtGui/qgraphicsitem.h>
 #include <QtGui/qstyleoption.h>
 
+#include "../../shared/util.h"
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -261,10 +263,8 @@ void tst_QGraphicsEffect::draw()
 
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_VERIFY(item->numRepaints > 0);
     item->reset();
 
     // Make sure installing the effect triggers a repaint.
@@ -361,10 +361,8 @@ void tst_QGraphicsEffect::opacity()
 
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_VERIFY(effect->numRepaints > 0);
     QCOMPARE(effect->m_opacity, qreal(0.5));
 }
 
