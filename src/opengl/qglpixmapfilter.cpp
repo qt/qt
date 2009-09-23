@@ -102,7 +102,7 @@ private:
 class QGLPixmapBlurFilter : public QGLCustomShaderStage, public QGLPixmapFilter<QPixmapBlurFilter>
 {
 public:
-    QGLPixmapBlurFilter(Qt::TransformationMode quality);
+    QGLPixmapBlurFilter(QPixmapBlurFilter::BlurHint hint);
 
     void setUniforms(QGLShaderProgram *program);
 
@@ -117,7 +117,7 @@ private:
 
     mutable bool m_haveCached;
     mutable int m_cachedRadius;
-    mutable Qt::TransformationMode m_quality;
+    mutable QPixmapBlurFilter::BlurHint m_hint;
 };
 
 extern QGLWidget *qt_gl_share_widget();
@@ -133,13 +133,13 @@ QPixmapFilter *QGL2PaintEngineEx::pixmapFilter(int type, const QPixmapFilter *pr
 
     case QPixmapFilter::BlurFilter: {
         const QPixmapBlurFilter *proto = static_cast<const QPixmapBlurFilter *>(prototype);
-        if (proto->quality() == Qt::FastTransformation || proto->radius() <= 5) {
+        if (proto->blurHint() == QPixmapBlurFilter::PerformanceHint || proto->radius() <= 5) {
             if (!d->fastBlurFilter)
-                d->fastBlurFilter.reset(new QGLPixmapBlurFilter(Qt::FastTransformation));
+                d->fastBlurFilter.reset(new QGLPixmapBlurFilter(QPixmapBlurFilter::PerformanceHint));
             return d->fastBlurFilter.data();
         }
         if (!d->blurFilter)
-            d->blurFilter.reset(new QGLPixmapBlurFilter(Qt::SmoothTransformation));
+            d->blurFilter.reset(new QGLPixmapBlurFilter(QPixmapBlurFilter::QualityHint));
         return d->blurFilter.data();
         }
 
@@ -328,12 +328,12 @@ static const char *qt_gl_blur_filter_fast =
     "    return color * (1.0 / float(samples));"
     "}";
 
-QGLPixmapBlurFilter::QGLPixmapBlurFilter(Qt::TransformationMode quality)
+QGLPixmapBlurFilter::QGLPixmapBlurFilter(QPixmapBlurFilter::BlurHint hint)
     : m_haveCached(false)
     , m_cachedRadius(5)
-    , m_quality(quality)
+    , m_hint(hint)
 {
-    if (quality == Qt::FastTransformation) {
+    if (hint == PerformanceHint) {
         QGLPixmapBlurFilter *filter = const_cast<QGLPixmapBlurFilter *>(this);
         filter->setSource(qt_gl_blur_filter_fast);
         m_haveCached = true;
@@ -345,7 +345,7 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
     QGLPixmapBlurFilter *filter = const_cast<QGLPixmapBlurFilter *>(this);
 
     int radius = this->radius();
-    if (!m_haveCached || (m_quality == Qt::SmoothTransformation && radius != m_cachedRadius)) {
+    if (!m_haveCached || (m_hint == QualityHint && radius != m_cachedRadius)) {
         // Only regenerate the shader from source if parameters have changed.
         m_haveCached = true;
         m_cachedRadius = radius;
@@ -407,7 +407,7 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
 
 void QGLPixmapBlurFilter::setUniforms(QGLShaderProgram *program)
 {
-    if (m_quality == Qt::SmoothTransformation) {
+    if (m_hint == QualityHint) {
         if (m_horizontalBlur)
             program->setUniformValue("delta", 1.0 / m_textureSize.width(), 0.0);
         else
