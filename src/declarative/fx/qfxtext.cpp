@@ -750,7 +750,7 @@ void QFxText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 
     if (needClip) {
         p->save();
-        p->setClipRect(boundingRect());
+        p->setClipRect(boundingRect(), Qt::IntersectClip);
     }
     p->drawPixmap(x, y, d->imgCache);
     if (needClip)
