@@ -78,6 +78,7 @@ public:
 
 protected:
     QGraphicsLayout(QGraphicsLayoutPrivate &, QGraphicsLayoutItem *);
+    void addChildLayoutItem(QGraphicsLayoutItem *layoutItem);
 
 private:
     Q_DISABLE_COPY(QGraphicsLayout)
