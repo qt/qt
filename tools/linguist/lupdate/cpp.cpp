@@ -1056,10 +1056,7 @@ QSet<QString> &CppFiles::blacklistedFiles()
 
 const ParseResults *CppFiles::getResults(const QString &cleanFile)
 {
-    ParseResultHash::ConstIterator it = parsedFiles().find(cleanFile);
-    if (it == parsedFiles().constEnd())
-        return 0;
-    return *it;
+    return parsedFiles().value(cleanFile);
 }
 
 void CppFiles::setResults(const QString &cleanFile, const ParseResults *results)
