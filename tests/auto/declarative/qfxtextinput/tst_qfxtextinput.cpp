@@ -93,7 +93,7 @@ void tst_qfxtextinput::width()
     {
         QFont f;
         QFontMetrics fm(f);
-        int metricWidth = fm.size(Qt::TextExpandTabs && Qt::TextShowMnemonic, standard.at(i)).width();
+        int metricWidth = fm.width(standard.at(i));
 
         QString componentStr = "import Qt 4.6\nTextInput { text: \"" + standard.at(i) + "\" }";
         QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
@@ -268,43 +268,36 @@ void tst_qfxtextinput::selection()
 
 void tst_qfxtextinput::maxLength()
 {
-    QmlView *canvas = createView(SRCDIR "/data/navigation.qml");
-    canvas->execute();
-    canvas->show();
-
-    QVERIFY(canvas->root() != 0);
-
-    QFxItem *input = qobject_cast<QFxItem *>(qvariant_cast<QObject *>(canvas->root()->property("myInput")));
-
-    QVERIFY(input != 0);
-    //TODO: Me
+    QString componentStr = "import Qt 4.6\nTextInput {  maximumLength: 10; }";
+    QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
+    QFxTextInput *textinputObject = qobject_cast<QFxTextInput*>(textinputComponent.create());
+    QVERIFY(textinputObject != 0);
+    QVERIFY(textinputObject->text().isEmpty());
+    foreach(const QString &str, standard){
+        QVERIFY(textinputObject->text().length() <= 10);
+        textinputObject->setText(str);
+        QVERIFY(textinputObject->text().length() <= 10);
+    }
+    //TODO: Simulated keypress input adding 11 chars at a time
 }
 
 void tst_qfxtextinput::masks()
 {
-    QmlView *canvas = createView(SRCDIR "/data/navigation.qml");
-    canvas->execute();
-    canvas->show();
+    QString componentStr = "import Qt 4.6\nTextInput {  maximumLength: 10; }";
+    QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
+    QFxTextInput *textinputObject = qobject_cast<QFxTextInput*>(textinputComponent.create());
+    QVERIFY(textinputObject != 0);
 
-    QVERIFY(canvas->root() != 0);
-
-    QFxItem *input = qobject_cast<QFxItem *>(qvariant_cast<QObject *>(canvas->root()->property("myInput")));
-
-    QVERIFY(input != 0);
     //TODO: Me
 }
 
 void tst_qfxtextinput::validators()
 {
-    QmlView *canvas = createView(SRCDIR "/data/navigation.qml");
-    canvas->execute();
-    canvas->show();
+    QString componentStr = "import Qt 4.6\nTextInput {  maximumLength: 10; }";
+    QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
+    QFxTextInput *textinputObject = qobject_cast<QFxTextInput*>(textinputComponent.create());
+    QVERIFY(textinputObject != 0);
 
-    QVERIFY(canvas->root() != 0);
-
-    QFxItem *input = qobject_cast<QFxItem *>(qvariant_cast<QObject *>(canvas->root()->property("myInput")));
-
-    QVERIFY(input != 0);
     //TODO: Me
 }
 
@@ -336,7 +329,7 @@ void tst_qfxtextinput::navigation()
 
 void tst_qfxtextinput::cursorDelegate()
 {
-    //TODO:Get the QFxTextInput test passing first
+    //TODO:Get the QFxTextEdit test passing first
 }
 
 void tst_qfxtextinput::simulateKey(QmlView *view, int key)
