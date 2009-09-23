@@ -120,6 +120,10 @@ struct Namespace {
             classDef(this),
             hasTrFunctions(false), complained(false)
     {}
+    ~Namespace()
+    {
+        qDeleteAll(children);
+    }
 
     QHash<HashString, Namespace *> children;
     QHash<HashString, NamespaceList> aliases;
@@ -159,30 +163,27 @@ private:
 };
 
 struct ParseResults {
-
-    ParseResults()
-    {
-        tor = 0;
-    }
-
     int fileId;
     Namespace rootNamespace;
-    Translator *tor;
     QSet<const ParseResults *> includes;
 };
 
 typedef QHash<QString, const ParseResults *> ParseResultHash;
+typedef QHash<QString, const Translator *> TranslatorHash;
 
 class CppFiles {
 
 public:
     static const ParseResults *getResults(const QString &cleanFile);
     static void setResults(const QString &cleanFile, ParseResults *results);
+    static const Translator *getTranslator(const QString &cleanFile);
+    static void setTranslator(const QString &cleanFile, const Translator *results);
     static bool isBlacklisted(const QString &cleanFile);
     static void setBlacklisted(const QString &cleanFile);
 
 private:
     static ParseResultHash &parsedFiles();
+    static TranslatorHash &translatedFiles();
     static QSet<QString> &blacklistedFiles();
 };
 
@@ -192,10 +193,10 @@ public:
     CppParser(ParseResults *results = 0);
     void setInput(const QString &in);
     void setInput(QTextStream &ts, const QString &fileName);
-    void setTranslator(Translator *tor) { results->tor = tor; }
+    void setTranslator(Translator *_tor) { tor = _tor; }
     void parse(const QString &initialContext, ConversionData &cd, QSet<QString> &inclusions);
     void parseInternal(ConversionData &cd, QSet<QString> &inclusions);
-    ParseResults *getResults() const { return results; }
+    const ParseResults *recordResults(bool isHeader);
     void deleteResults() { delete results; }
 
     struct SavedState {
@@ -311,6 +312,7 @@ private:
     QString prospectiveContext;
     QString pendingContext;
     ParseResults *results;
+    Translator *tor;
     bool directInclude;
 
     SavedState savedState;
@@ -320,6 +322,7 @@ private:
 
 CppParser::CppParser(ParseResults *_results)
 {
+    tor = 0;
     if (_results) {
         results = _results;
         directInclude = true;
@@ -1166,6 +1169,13 @@ ParseResultHash &CppFiles::parsedFiles()
     return parsed;
 }
 
+TranslatorHash &CppFiles::translatedFiles()
+{
+    static TranslatorHash tors;
+
+    return tors;
+}
+
 QSet<QString> &CppFiles::blacklistedFiles()
 {
     static QSet<QString> blacklisted;
@@ -1184,6 +1194,16 @@ void CppFiles::setResults(const QString &cleanFile, ParseResults *results)
     parsedFiles().insert(cleanFile, results);
 }
 
+const Translator *CppFiles::getTranslator(const QString &cleanFile)
+{
+    return translatedFiles().value(cleanFile);
+}
+
+void CppFiles::setTranslator(const QString &cleanFile, const Translator *tor)
+{
+    translatedFiles().insert(cleanFile, tor);
+}
+
 bool CppFiles::isBlacklisted(const QString &cleanFile)
 {
     return blacklistedFiles().contains(cleanFile);
@@ -1192,6 +1212,12 @@ bool CppFiles::isBlacklisted(const QString &cleanFile)
 void CppFiles::setBlacklisted(const QString &cleanFile)
 {
     blacklistedFiles().insert(cleanFile);
+}
+
+static bool isHeader(const QString &name)
+{
+    QString fileExt = QFileInfo(name).suffix();
+    return fileExt.isEmpty() || fileExt.startsWith(QLatin1Char('h'), Qt::CaseInsensitive);
 }
 
 void CppParser::processInclude(const QString &file, ConversionData &cd,
@@ -1212,17 +1238,15 @@ void CppParser::processInclude(const QString &file, ConversionData &cd,
     bool isIndirect = false;
     if (namespaces.count() == 1 && functionContext.count() == 1
         && functionContextUnresolved.isEmpty() && pendingContext.isEmpty()
-        && !CppFiles::isBlacklisted(cleanFile)) {
-        QString fileExt = QFileInfo(cleanFile).suffix();
-        if (fileExt.isEmpty() || fileExt.startsWith(QLatin1Char('h'), Qt::CaseInsensitive)) {
+        && !CppFiles::isBlacklisted(cleanFile)
+        && isHeader(cleanFile)) {
 
-            if (const ParseResults *res = CppFiles::getResults(cleanFile)) {
-                results->includes.insert(res);
-                return;
-            }
-
-            isIndirect = true;
+        if (const ParseResults *res = CppFiles::getResults(cleanFile)) {
+            results->includes.insert(res);
+            return;
         }
+
+        isIndirect = true;
     }
 
     QFile f(cleanFile);
@@ -1247,8 +1271,7 @@ void CppParser::processInclude(const QString &file, ConversionData &cd,
             }
         parser.setInput(ts, cleanFile);
         parser.parse(cd.m_defaultContext, cd, inclusions);
-        CppFiles::setResults(cleanFile, parser.results);
-        results->includes.insert(parser.results);
+        results->includes.insert(parser.recordResults(true));
     } else {
         CppParser parser(results);
         parser.namespaces = namespaces;
@@ -1434,14 +1457,14 @@ void CppParser::recordMessage(
     msg.setExtras(extra);
     if ((utf8 || yyForceUtf8) && !yyCodecIsUtf8 && msg.needs8Bit())
         msg.setUtf8(true);
-    results->tor->append(msg);
+    tor->append(msg);
 }
 
 void CppParser::parse(const QString &initialContext, ConversionData &cd,
                       QSet<QString> &inclusions)
 {
-    if (results->tor)
-        yyCodecIsUtf8 = (results->tor->codecName() == "UTF-8");
+    if (tor)
+        yyCodecIsUtf8 = (tor->codecName() == "UTF-8");
 
     namespaces << HashString();
     functionContext = namespaces;
@@ -1657,7 +1680,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
             break;
         case Tok_tr:
         case Tok_trUtf8:
-            if (!results->tor)
+            if (!tor)
                 goto case_default;
             if (!sourcetext.isEmpty())
                 qWarning("%s:%d: //%% cannot be used with tr() / QT_TR_NOOP(). Ignoring\n",
@@ -1770,7 +1793,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
             break;
         case Tok_translateUtf8:
         case Tok_translate:
-            if (!results->tor)
+            if (!tor)
                 goto case_default;
             if (!sourcetext.isEmpty())
                 qWarning("%s:%d: //%% cannot be used with translate() / QT_TRANSLATE_NOOP(). Ignoring\n",
@@ -1825,7 +1848,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
             extra.clear();
             break;
         case Tok_trid:
-            if (!results->tor)
+            if (!tor)
                 goto case_default;
             if (sourcetext.isEmpty()) {
                 yyTok = getToken();
@@ -1871,7 +1894,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
             }
             break;
         case Tok_Comment:
-            if (!results->tor)
+            if (!tor)
                 goto case_default;
             if (yyWord.startsWith(QLatin1Char(':'))) {
                 yyWord.remove(0, 1);
@@ -1944,7 +1967,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                         recordMessage(yyLineNo, context, QString(), comment, extracomment,
                                       QString(), TranslatorMessage::ExtraData(), false, false);
                         extracomment.clear();
-                        results->tor->setExtras(extra);
+                        tor->setExtras(extra);
                         extra.clear();
                     }
                 }
@@ -2029,6 +2052,23 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                  qPrintable(yyFileName), yyParenLineNo);
 }
 
+const ParseResults *CppParser::recordResults(bool isHeader)
+{
+    if (tor) {
+        if (tor->messageCount())
+            CppFiles::setTranslator(yyFileName, tor);
+        else
+            delete tor;
+    }
+    if (isHeader) {
+        CppFiles::setResults(yyFileName, results);
+        return results;
+    } else {
+        delete results;
+        return 0;
+    }
+}
+
 /*
   Fetches tr() calls in C++ code in UI files (inside "<function>"
   tag). This mechanism is obsolete.
@@ -2073,12 +2113,12 @@ void loadCPP(Translator &translator, const QStringList &filenames, ConversionDat
         parser.setTranslator(tor);
         QSet<QString> inclusions;
         parser.parse(cd.m_defaultContext, cd, inclusions);
-        CppFiles::setResults(filename, parser.getResults());
+        parser.recordResults(isHeader(filename));
     }
 
     foreach (const QString &filename, filenames)
         if (!CppFiles::isBlacklisted(filename))
-            if (Translator *tor = CppFiles::getResults(filename)->tor)
+            if (const Translator *tor = CppFiles::getTranslator(filename))
                 foreach (const TranslatorMessage &msg, tor->messages())
                     translator.extend(msg);
 }
