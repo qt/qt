@@ -125,7 +125,7 @@ int QParallelAnimationGroup::duration() const
 /*!
     \reimp
 */
-void QParallelAnimationGroup::updateCurrentTime(int)
+void QParallelAnimationGroup::updateCurrentTime()
 {
     Q_D(QParallelAnimationGroup);
     if (d->animations.isEmpty())
