@@ -621,12 +621,21 @@ void QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
     QMatrix m = painter->matrix();
     bool complexXForm = m.m11() != 1.0 || m.m22() != 1.0 || m.m12() != 0.0 || m.m21() != 0.0;
 
+    bool translucentToplevel = false;
+    QPaintDevice *pdev = painter->device();
+    if (pdev->devType() == QInternal::Widget) {
+        QWidget *win = ((QWidget *) pdev)->window();
+        translucentToplevel = win->testAttribute(Qt::WA_TranslucentBackground);
+    }
+
     bool useFallback = painter->paintEngine()->getDC() == 0
                        || painter->opacity() != 1.0
                        || themeData.rotate
                        || complexXForm
                        || themeData.mirrorVertically
-                       || (themeData.mirrorHorizontally && pDrawThemeBackgroundEx == 0);
+                       || (themeData.mirrorHorizontally && pDrawThemeBackgroundEx == 0)
+                       || translucentToplevel;
+
     if (!useFallback)
         drawBackgroundDirectly(themeData);
     else
