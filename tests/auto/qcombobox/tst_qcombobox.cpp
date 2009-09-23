@@ -77,6 +77,9 @@
 #include <qabstractitemview.h>
 #include "../../shared/util.h"
 #include <qstyleditemdelegate.h>
+#ifndef QT_NO_STYLE_WINDOWS
+#include <qwindowsstyle.h>
+#endif
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -2140,7 +2143,7 @@ void tst_QComboBox::task247863_keyBoardSelection()
   combo.addItem( QLatin1String("222"));
   combo.show();
   QApplication::setActiveWindow(&combo);
-  QTRY_COMPARE(QApplication::activeWindow(), &combo);
+  QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&combo));
 
   QSignalSpy spy(&combo, SIGNAL(activated(const QString &)));
   qApp->setEffectEnabled(Qt::UI_AnimateCombo, false);
@@ -2161,7 +2164,7 @@ void tst_QComboBox::task220195_keyBoardSelection2()
     combo.addItem( QLatin1String("foo3"));
     combo.show();
     QApplication::setActiveWindow(&combo);
-    QTRY_COMPARE(QApplication::activeWindow(), &combo);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&combo));
 
     combo.setCurrentIndex(-1);
     QVERIFY(combo.currentText().isNull());
@@ -2353,6 +2356,9 @@ void tst_QComboBox::subControlRectsWithOffset()
 
 void tst_QComboBox::task260974_menuItemRectangleForComboBoxPopup()
 {
+#ifdef QT_NO_STYLE_WINDOWS
+    QSKIP("test depends on windows style", QTest::SkipAll);
+#else
     class TestStyle: public QWindowsStyle
     {
     public:
@@ -2385,6 +2391,7 @@ void tst_QComboBox::task260974_menuItemRectangleForComboBoxPopup()
 
         QTRY_VERIFY(style.discoveredRect.width() <= comboBox.width());
     }
+#endif
 }
 
 QTEST_MAIN(tst_QComboBox)
