@@ -7,6 +7,8 @@
 
 class QmlDebugConnection;
 class QmlDebugWatch;
+class QmlDebugPropertyWatch;
+class QmlDebugObjectExpressionWatch;
 class QmlDebugEnginesQuery;
 class QmlDebugRootContextQuery;
 class QmlDebugObjectQuery;
@@ -22,16 +24,18 @@ Q_OBJECT
 public:
     QmlEngineDebug(QmlDebugConnection *, QObject * = 0);
 
-    QmlDebugWatch *addWatch(const QmlDebugPropertyReference &, 
+    QmlDebugPropertyWatch *addWatch(const QmlDebugPropertyReference &,
                             QObject *parent = 0);
     QmlDebugWatch *addWatch(const QmlDebugContextReference &, const QString &,
                             QObject *parent = 0);
-    QmlDebugWatch *addWatch(const QmlDebugObjectReference &, const QString &,
+    QmlDebugObjectExpressionWatch *addWatch(const QmlDebugObjectReference &, const QString &,
                             QObject *parent = 0);
     QmlDebugWatch *addWatch(const QmlDebugObjectReference &,
                             QObject *parent = 0);
     QmlDebugWatch *addWatch(const QmlDebugFileReference &,
                             QObject *parent = 0);
+
+    void removeWatch(QmlDebugWatch *watch);
 
     QmlDebugEnginesQuery *queryAvailableEngines(QObject *parent = 0);
     QmlDebugRootContextQuery *queryRootContexts(const QmlDebugEngineReference &,
@@ -51,13 +55,56 @@ Q_OBJECT
 public:
     enum State { Waiting, Active, Inactive, Dead };
 
+    QmlDebugWatch(QObject *);
+
+    int queryId() const;
+    int objectDebugId() const;
     State state() const;
 
 signals:
     void stateChanged(State);
-    void objectChanged(int, const QmlDebugObjectReference &);
-    void valueChanged(int, const QVariant &);
+    //void objectChanged(int, const QmlDebugObjectReference &);
+    //void valueChanged(int, const QVariant &);
+
+    // Server sends value as string if it is a user-type variant
+    void valueChanged(const QByteArray &name, const QVariant &value);
+
+private:
+    friend class QmlEngineDebug;
+    friend class QmlEngineDebugPrivate;
+    void setState(State);
+    State m_state;
+    int m_queryId;
+    int m_objectDebugId;
 };
+
+class Q_DECLARATIVE_EXPORT QmlDebugPropertyWatch : public QmlDebugWatch
+{
+    Q_OBJECT
+public:
+    QmlDebugPropertyWatch(QObject *parent);
+
+    QString name() const;
+
+private:
+    friend class QmlEngineDebug;
+    QString m_name;
+};
+
+class Q_DECLARATIVE_EXPORT QmlDebugObjectExpressionWatch : public QmlDebugWatch
+{
+    Q_OBJECT
+public:
+    QmlDebugObjectExpressionWatch(QObject *parent);
+
+    QString expression() const;
+
+private:
+    friend class QmlEngineDebug;
+    QString m_expr;
+    int m_debugId;
+};
+
 
 class Q_DECLARATIVE_EXPORT QmlDebugQuery : public QObject
 {
@@ -134,6 +181,7 @@ public:
     QString name() const;
 
     QmlDebugFileReference source() const;
+    int contextDebugId() const;
 
     QList<QmlDebugPropertyReference> properties() const;
     QList<QmlDebugObjectReference> children() const;
@@ -144,6 +192,7 @@ private:
     QString m_class;
     QString m_name;
     QmlDebugFileReference m_source;
+    int m_contextDebugId;
     QList<QmlDebugPropertyReference> m_properties;
     QList<QmlDebugObjectReference> m_children;
 };
@@ -176,12 +225,14 @@ public:
     QmlDebugPropertyReference(const QmlDebugPropertyReference &);
     QmlDebugPropertyReference &operator=(const QmlDebugPropertyReference &);
 
+    int objectDebugId() const;
     QString name() const;
     QVariant value() const;
     QString binding() const;
 
 private:
     friend class QmlEngineDebugPrivate;
+    int m_objectDebugId;
     QString m_name;
     QVariant m_value;
     QString m_binding;
