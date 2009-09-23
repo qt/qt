@@ -307,6 +307,8 @@ bool QToolBarPrivate::mouseReleaseEvent(QMouseEvent*)
         return true;
     } else {
 #ifdef Q_WS_MAC
+        if (!macWindowDragging)
+            return false;
         macWindowDragging = false;
         macWindowDragPressPosition = QPoint();
         return true;

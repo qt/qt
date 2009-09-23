@@ -1977,11 +1977,14 @@ void tst_QComboBox::task190351_layout()
         list->addItem(QLatin1String("list") + QString::number(i));
 
     listCombo.show();
+    QTest::qWaitForWindowShown(&listCombo);
     QTRY_VERIFY(listCombo.isVisible());
     listCombo.setCurrentIndex(70);
     listCombo.showPopup();
     QTRY_VERIFY(listCombo.view());
+    QTest::qWaitForWindowShown(listCombo.view());
     QTRY_VERIFY(listCombo.view()->isVisible());
+    QApplication::processEvents();
 
 #ifdef QT_BUILD_INTERNAL
     QFrame *container = qFindChild<QComboBoxPrivateContainer *>(&listCombo);

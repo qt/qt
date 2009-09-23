@@ -2253,7 +2253,7 @@ void tst_QScriptValue::getSetScriptClass()
         QVERIFY(obj.isVariant());
         QCOMPARE(obj.scriptClass(), (QScriptClass*)0);
         obj.setScriptClass(&testClass);
-        QCOMPARE(obj.scriptClass(), &testClass);
+        QCOMPARE(obj.scriptClass(), (QScriptClass*)&testClass);
         QVERIFY(obj.isObject());
         QVERIFY(!obj.isVariant());
         QVERIFY(!obj.toVariant().isValid());
@@ -2263,7 +2263,7 @@ void tst_QScriptValue::getSetScriptClass()
         QVERIFY(obj.isQObject());
         QCOMPARE(obj.scriptClass(), (QScriptClass*)0);
         obj.setScriptClass(&testClass);
-        QCOMPARE(obj.scriptClass(), &testClass);
+        QCOMPARE(obj.scriptClass(), (QScriptClass*)&testClass);
         QVERIFY(obj.isObject());
         QVERIFY(!obj.isQObject());
         QVERIFY(obj.toQObject() == 0);

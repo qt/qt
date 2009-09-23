@@ -12,9 +12,10 @@ include $(FLMHOME)/metaflm.mk
 STORE_BUILD_TARGET:=$(call sanitise,TSTORE_BUILD_$(PLATFORM_PATH)_$(CFG_PATH)_$(EXTENSION_ROOT))
 CACHE_FILENAME:=$(EXTENSION_ROOT)/.make.cache
 
-VISUAL_CFG:=RELEASE
-ifeq "$(CFG_PATH)" "UDEB"
+ifeq "$(CFG_PATH)" "udeb"
 VISUAL_CFG:=DEBUG
+else
+VISUAL_CFG:=RELEASE
 endif
 
 define qmake_store_build

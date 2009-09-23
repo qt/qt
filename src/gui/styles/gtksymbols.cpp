@@ -423,27 +423,32 @@ static void init_gtk_window()
     static QString themeName;
     if (!gtkWidgetMap()->contains(QLS("GtkWindow")) && themeName.isEmpty()) {
         themeName = getThemeName();
-        // Due to namespace conflicts with Qt3 and obvious recursion with Qt4,
-        // we cannot support the GTK_Qt Gtk engine
-        if (!(themeName.isEmpty() || themeName == QLS("Qt") || themeName == QLS("Qt4"))) {
-            resolveGtk();
-            if (QGtk::gtk_init) {
-                // Gtk will set the Qt error handler so we have to reset it afterwards
-                x11ErrorHandler qt_x_errhandler = XSetErrorHandler(0);
-                QGtk::gtk_init (NULL, NULL);
-                XSetErrorHandler(qt_x_errhandler);
 
-                GtkWidget* gtkWindow = QGtk::gtk_window_new(GTK_WINDOW_POPUP);
-                QGtk::gtk_widget_realize(gtkWindow);
-                if (displayDepth == -1)
-                    displayDepth = QGtk::gdk_drawable_get_depth(gtkWindow->window);
-                gtkWidgetMap()->insert(QLS("GtkWindow"), gtkWindow);
-            }
-            else {
-                qWarning("QGtkStyle could not resolve GTK. Make sure you have installed the proper libraries.");
-            }
-        } else {
+        if (themeName.isEmpty()) {
+            qWarning("QGtkStyle was unable to detect the current GTK+ theme.");
+            return;
+        } else if (themeName == QLS("Qt") || themeName == QLS("Qt4")) {
+            // Due to namespace conflicts with Qt3 and obvious recursion with Qt4,
+            // we cannot support the GTK_Qt Gtk engine
             qWarning("QGtkStyle cannot be used together with the GTK_Qt engine.");
+            return;
+        }
+
+        resolveGtk();
+
+        if (QGtk::gtk_init) {
+            // Gtk will set the Qt error handler so we have to reset it afterwards
+            x11ErrorHandler qt_x_errhandler = XSetErrorHandler(0);
+            QGtk::gtk_init (NULL, NULL);
+            XSetErrorHandler(qt_x_errhandler);
+
+            GtkWidget* gtkWindow = QGtk::gtk_window_new(GTK_WINDOW_POPUP);
+            QGtk::gtk_widget_realize(gtkWindow);
+            if (displayDepth == -1)
+                displayDepth = QGtk::gdk_drawable_get_depth(gtkWindow->window);
+            gtkWidgetMap()->insert(QLS("GtkWindow"), gtkWindow);
+        } else {
+            qWarning("QGtkStyle could not resolve GTK. Make sure you have installed the proper libraries.");
         }
     }
 }

@@ -6736,10 +6736,10 @@ void tst_QGraphicsItem::updateCachedItemAfterMove()
     scene.addItem(tester);
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QTest::qWaitForWindowShown(&view);
+
     QTest::qWait(125);
+    QTRY_VERIFY(tester->repaints > 0);
     tester->repaints = 0;
 
     // Move the item, should not cause repaints
@@ -8299,7 +8299,7 @@ void tst_QGraphicsItem::focusScope()
     QVERIFY(!scope2->focusScopeItem());
     scope3->setParentItem(scope2);
     QCOMPARE(scope2->focusScopeItem(), (QGraphicsItem *)scope3);
-    QCOMPARE(scope2->focusItem(), (QGraphicsItem *)scope3);
+    QCOMPARE(scope2->focusItem(), (QGraphicsItem *)scope2);
 
     QGraphicsRectItem *scope1 = new QGraphicsRectItem;
     scope1->setData(0, "scope1");
@@ -8308,9 +8308,9 @@ void tst_QGraphicsItem::focusScope()
     QVERIFY(!scope1->focusScopeItem());
     scope2->setParentItem(scope1);
 
-    QCOMPARE(scope1->focusItem(), (QGraphicsItem *)scope3);
-    QCOMPARE(scope2->focusItem(), (QGraphicsItem *)scope3);
-    QCOMPARE(scope3->focusItem(), (QGraphicsItem *)scope3);
+    QCOMPARE(scope1->focusItem(), (QGraphicsItem *)scope1);
+    QCOMPARE(scope2->focusItem(), (QGraphicsItem *)0);
+    QCOMPARE(scope3->focusItem(), (QGraphicsItem *)0);
     QCOMPARE(scope1->focusScopeItem(), (QGraphicsItem *)scope2);
     QCOMPARE(scope2->focusScopeItem(), (QGraphicsItem *)scope3);
     QCOMPARE(scope3->focusScopeItem(), (QGraphicsItem *)0);
@@ -8361,11 +8361,11 @@ void tst_QGraphicsItem::focusScope()
     rect5->setFocus();
     rect5->setParentItem(rect4);
     QCOMPARE(scope3->focusScopeItem(), (QGraphicsItem *)rect5);
-    QVERIFY(rect5->hasFocus());
+    QVERIFY(!rect5->hasFocus());
 
     rect4->setParentItem(0);
     QCOMPARE(scope3->focusScopeItem(), (QGraphicsItem *)0);
-    QVERIFY(!scope3->hasFocus());
+    QVERIFY(scope3->hasFocus());
 
     QGraphicsRectItem *rectA = new QGraphicsRectItem;
     QGraphicsRectItem *scopeA = new QGraphicsRectItem(rectA);
@@ -8376,7 +8376,7 @@ void tst_QGraphicsItem::focusScope()
     scopeB->setFocus();
 
     scene.addItem(rectA);
-    QVERIFY(rect5->hasFocus());
+    QVERIFY(!rect5->hasFocus());
     QVERIFY(!scopeB->hasFocus());
 
     scopeA->setFocus();

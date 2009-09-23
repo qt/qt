@@ -806,6 +806,7 @@ void tst_QMenu::task258920_mouseBorder()
     QAction *action = menu.addAction("test");
 
     menu.popup(QApplication::desktop()->availableGeometry().center());
+    QTest::qWaitForWindowShown(&menu);
     QTest::qWait(100);
     QRect actionRect = menu.actionGeometry(action);
     QTest::mouseMove(&menu, actionRect.center());

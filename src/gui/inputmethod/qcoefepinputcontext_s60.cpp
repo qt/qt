@@ -98,7 +98,9 @@ QCoeFepInputContext::~QCoeFepInputContext()
 
 void QCoeFepInputContext::reset()
 {
-    CCoeEnv::Static()->Fep()->CancelTransaction();
+    CCoeFep* fep = CCoeEnv::Static()->Fep();
+    if (fep)
+        fep->CancelTransaction();
 }
 
 void QCoeFepInputContext::ReportAknEdStateEvent(MAknEdStateObserver::EAknEdwinStateEvent aEventType)
@@ -626,7 +628,9 @@ void QCoeFepInputContext::commitCurrentString(bool triggeredBySymbian)
     m_isEditing = false;
 
     if (!triggeredBySymbian) {
-        CCoeEnv::Static()->Fep()->CancelTransaction();
+        CCoeFep* fep = CCoeEnv::Static()->Fep();
+        if (fep)
+            fep->CancelTransaction();
     }
 }
 

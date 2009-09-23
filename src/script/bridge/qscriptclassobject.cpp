@@ -77,6 +77,7 @@ QScriptClass *ClassObjectDelegate::scriptClass() const
 
 void ClassObjectDelegate::setScriptClass(QScriptClass *scriptClass)
 {
+    Q_ASSERT(scriptClass != 0);
     m_scriptClass = scriptClass;
 }
 
@@ -90,12 +91,13 @@ bool ClassObjectDelegate::getOwnPropertySlot(QScriptObject* object,
                                              const JSC::Identifier &propertyName,
                                              JSC::PropertySlot &slot)
 {
+    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
+    QScript::SaveFrameHelper saveFrame(engine, exec);
     // for compatibility with the old back-end, normal JS properties
     // are queried first.
     if (QScriptObjectDelegate::getOwnPropertySlot(object, exec, propertyName, slot))
         return true;
 
-    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
     QScriptString scriptName;
     QScriptStringPrivate scriptName_d(engine, propertyName, QScriptStringPrivate::StackAllocated);
@@ -116,6 +118,7 @@ void ClassObjectDelegate::put(QScriptObject* object, JSC::ExecState *exec,
                               JSC::JSValue value, JSC::PutPropertySlot &slot)
 {
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
+    QScript::SaveFrameHelper saveFrame(engine, exec);
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
     QScriptString scriptName;
     QScriptStringPrivate scriptName_d(engine, propertyName, QScriptStringPrivate::StackAllocated);
@@ -136,6 +139,7 @@ bool ClassObjectDelegate::deleteProperty(QScriptObject* object, JSC::ExecState *
 {
     // ### avoid duplication of put()
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
+    QScript::SaveFrameHelper saveFrame(engine, exec);
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
     QScriptString scriptName;
     QScriptStringPrivate scriptName_d(engine, propertyName, QScriptStringPrivate::StackAllocated);
@@ -157,6 +161,7 @@ bool ClassObjectDelegate::getPropertyAttributes(const QScriptObject* object, JSC
                                                 unsigned &attribs) const
 {
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
+    QScript::SaveFrameHelper saveFrame(engine, exec);
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
     QScriptString scriptName;
     QScriptStringPrivate scriptName_d(engine, propertyName, QScriptStringPrivate::StackAllocated);
@@ -188,6 +193,7 @@ void ClassObjectDelegate::getPropertyNames(QScriptObject* object, JSC::ExecState
                                            unsigned listedAttributes)
 {
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
+    QScript::SaveFrameHelper saveFrame(engine, exec);
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
     QScriptClassPropertyIterator *it = m_scriptClass->newIterator(scriptObject);
     if (it != 0) {
@@ -267,6 +273,7 @@ bool ClassObjectDelegate::hasInstance(QScriptObject* object, JSC::ExecState *exe
         return QScriptObjectDelegate::hasInstance(object, exec, value, proto);
     QScriptValueList args;
     QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
+    QScript::SaveFrameHelper saveFrame(eng_p, exec);
     args << eng_p->scriptValueFromJSCValue(object) << eng_p->scriptValueFromJSCValue(value);
     QVariant result = scriptClass()->extension(QScriptClass::HasInstance, qVariantFromValue(args));
     return result.toBool();

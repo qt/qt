@@ -182,7 +182,7 @@ public:
     void fill(const QVectorPath &path);
     void drawOutline(const QVectorPath& path);
     void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque, bool pattern = false);
-    void drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti);
+    void drawCachedGlyphs(const QPointF &p, QFontEngineGlyphCache::Type glyphType, const QTextItemInt &ti);
 
     void drawVertexArrays(QGL2PEXVertexArray& vertexArray, GLenum primitive);
         // ^ draws whatever is in the vertex array

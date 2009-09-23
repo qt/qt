@@ -320,6 +320,7 @@ void tst_QHttpNetworkConnection::put()
 
     QByteArray array = data.toLatin1();
     QNonContiguousByteDevice *bd = QNonContiguousByteDeviceFactory::create(&array);
+    bd->setParent(this);
     request.setUploadByteDevice(bd);
 
     finishedCalled = false;
@@ -411,6 +412,7 @@ void tst_QHttpNetworkConnection::post()
 
     QByteArray array = data.toLatin1();
     QNonContiguousByteDevice *bd = QNonContiguousByteDeviceFactory::create(&array);
+    bd->setParent(this);
     request.setUploadByteDevice(bd);
 
     QHttpNetworkReply *reply = connection.sendRequest(request);

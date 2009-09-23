@@ -1295,9 +1295,7 @@ void tst_QGraphicsProxyWidget::paintEvent()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QTest::qWaitForWindowShown(&view);
 
     SubQGraphicsProxyWidget proxy;
 
@@ -1306,9 +1304,8 @@ void tst_QGraphicsProxyWidget::paintEvent()
     //this bug prevents the widget from being updated
 
     w->show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(w);
-#endif
+    QTest::qWaitForWindowShown(w);
+
     QTest::qWait(100);
 
     proxy.setWidget(w);
@@ -2719,9 +2716,7 @@ void tst_QGraphicsProxyWidget::windowOpacity()
     QGraphicsProxyWidget *proxy = scene.addWidget(widget);
     proxy->setCacheMode(QGraphicsItem::ItemCoordinateCache);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QTest::qWaitForWindowShown(&view);
     QApplication::sendPostedEvents();
     QTest::qWait(100);
 

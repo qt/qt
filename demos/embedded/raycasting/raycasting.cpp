@@ -254,6 +254,7 @@ protected:
 
     void paintEvent(QPaintEvent *event) {
         QPainter p(this);
+        p.setCompositionMode(QPainter::CompositionMode_Source);
         p.drawImage(event->rect(), buffer, event->rect());
     }
 

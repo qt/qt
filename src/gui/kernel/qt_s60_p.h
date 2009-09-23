@@ -101,11 +101,11 @@ public:
     int virtualMouseAccel;
     int virtualMouseMaxAccel;
 #ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
-    bool brokenPointerCursors;
+    int brokenPointerCursors : 1;
 #endif
-    bool hasTouchscreen;
-    bool mouseInteractionEnabled;
-    bool virtualMouseRequired;
+    int hasTouchscreen : 1;
+    int mouseInteractionEnabled : 1;
+    int virtualMouseRequired : 1;
     int qtOwnsS60Environment : 1;
     static inline void updateScreenSize();
 	static inline RWsSession& wsSession();

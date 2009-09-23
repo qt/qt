@@ -222,7 +222,7 @@ static void rebuildMenu()
 }
 
 #ifdef Q_WS_S60
-Q_GUI_EXPORT void qt_symbian_show_toplevel( CEikMenuPane* menuPane)
+void qt_symbian_show_toplevel( CEikMenuPane* menuPane)
 {
     if (!menuExists())
         return;
@@ -231,7 +231,7 @@ Q_GUI_EXPORT void qt_symbian_show_toplevel( CEikMenuPane* menuPane)
         QT_TRAP_THROWING(menuPane->AddMenuItemL(symbianMenus.at(i)->menuItemData));
 }
 
-Q_GUI_EXPORT void qt_symbian_show_submenu( CEikMenuPane* menuPane, int id)
+void qt_symbian_show_submenu( CEikMenuPane* menuPane, int id)
 {
     SymbianMenuItem* menu = qt_symbian_find_menu(id, symbianMenus);
     if (menu) {

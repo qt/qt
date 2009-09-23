@@ -1201,6 +1201,7 @@ void tst_Q3Table::editCheck()
 
     EditCheckQ3Table table(10, 10, 0);
     table.show();
+    QTest::qWaitForWindowShown(&table);
     table.setCurrentCell(0, 0);
 #ifdef WAITS
     QTest::qWait(50);
@@ -1378,6 +1379,7 @@ void tst_Q3Table::dateTimeEdit()
     TimeTableItem *ti = new TimeTableItem(testWidget);
     testWidget->setItem(0, 0, ti);
     testWidget->show();
+    QTest::qWaitForWindowShown(&testWidget);
 #ifdef WAITS
     QTest::qWait(50);
 #endif
