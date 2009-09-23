@@ -49,7 +49,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 class QmlDebugServicePrivate;
-class QmlDebugService : public QObject
+class Q_DECLARATIVE_EXPORT QmlDebugService : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlDebugService)

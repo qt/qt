@@ -53,6 +53,7 @@ QT_MODULE(Declarative)
 
 class QObject;
 class QmlAbstractBinding;
+class QmlExpression;
 class QStringList;
 class QVariant;
 struct QMetaObject;
@@ -87,6 +88,8 @@ public:
 
     QVariant read() const;
     void write(const QVariant &) const;
+    enum WriteSource { Animation, Binding, Other };
+    void write(const QVariant &, WriteSource) const;
 
     bool hasChangedNotifier() const;
     bool needsChangedNotifier() const;
@@ -124,6 +127,9 @@ public:
 
     QmlAbstractBinding *binding() const;
     QmlAbstractBinding *setBinding(QmlAbstractBinding *) const;
+
+    QmlExpression *signalExpression() const;
+    QmlExpression *setSignalExpression(QmlExpression *) const;
 
     static QmlMetaProperty createProperty(QObject *, const QString &);
 

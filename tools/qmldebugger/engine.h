@@ -2,6 +2,7 @@
 #define ENGINE_H
 
 #include <QWidget>
+#include <QtCore/qpointer.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmlview.h>
@@ -10,11 +11,20 @@
 QT_BEGIN_NAMESPACE
 
 class QmlDebugConnection;
+class QmlDebugPropertyReference;
+class QmlDebugWatch;
+class QmlObjectTree;
 class EngineClientPlugin;
+class WatchTableModel;
 class QLineEdit;
+class QModelIndex;
 class QTreeWidget;
 class QTreeWidgetItem;
+class QTabWidget;
 class QTableWidget;
+class QTableView;
+class QTableWidgetItem;
+
 class EnginePane : public QWidget
 {
 Q_OBJECT
@@ -36,11 +46,18 @@ private slots:
 
     void itemClicked(QTreeWidgetItem *);
     void showProperties();
+    void addExpressionWatch(int debugId, const QString &expr);
+
+    void valueChanged(const QByteArray &property, const QVariant &value);
+
+    void propertyDoubleClicked(QTableWidgetItem *);
+    void watchedItemActivated(const QModelIndex &index);
 
 private:
     void dump(const QmlDebugContextReference &, int);
     void dump(const QmlDebugObjectReference &, int);
     void buildTree(const QmlDebugObjectReference &, QTreeWidgetItem *parent);
+    bool togglePropertyWatch(const QmlDebugObjectReference &object, const QmlDebugPropertyReference &property);
 
     QmlEngineDebug m_client;
     QmlDebugEnginesQuery *m_engines;
@@ -48,11 +65,17 @@ private:
     QmlDebugObjectQuery *m_object;
 
     QLineEdit *m_text;
-    QTreeWidget *m_objTree;
+    QmlObjectTree *m_objTree;
+    QTabWidget *m_tabs;
     QTableWidget *m_propTable;
+    QTableView *m_watchTable;
 
     QmlView *m_engineView;
     QList<QObject *> m_engineItems;
+
+    QmlDebugWatch *m_watchedObject;
+    WatchTableModel *m_watchTableModel;
+    QHash< QPair<int, QString>, QPointer<QmlDebugWatch> > m_watchedProps;
 };
 
 QT_END_NAMESPACE

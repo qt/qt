@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLBOUNDSIGNAL_P_H
-#define QMLBOUNDSIGNAL_P_H
+#ifndef QMLWATCHER_P_H
+#define QMLWATCHER_P_H
 
 //
 //  W A R N I N G
@@ -53,44 +53,41 @@
 // We mean it.
 //
 
-#include <QtDeclarative/qmlexpression.h>
-#include <private/qobject_p.h>
+#include <QtCore/qobject.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qpair.h>
+#include <QtCore/qhash.h>
+#include <QtCore/qset.h>
+#include <QtCore/qpointer.h>
 
 QT_BEGIN_NAMESPACE
 
-class QmlAbstractBoundSignal : public QObject
+class QmlWatchProxy;
+class QmlExpression;
+class QmlContext;
+
+class QmlWatcher : public QObject
 {
     Q_OBJECT
 public:
-    QmlAbstractBoundSignal(QObject *parent = 0);
-    virtual ~QmlAbstractBoundSignal() = 0;
-};
+    QmlWatcher(QObject * = 0);
 
-class QmlBoundSignalParameters;
-class QmlBoundSignal : public QmlAbstractBoundSignal
-{
-public:
-    QmlBoundSignal(QObject *scope, const QMetaMethod &signal, QObject *parent);
-    QmlBoundSignal(QmlContext *ctxt, const QString &val, QObject *scope, 
-                   const QMetaMethod &signal, QObject *parent);
-    virtual ~QmlBoundSignal();
+    bool addWatch(int id, quint32 objectId);
+    bool addWatch(int id, quint32 objectId, const QByteArray &property);
+    bool addWatch(int id, quint32 objectId, const QString &expr);
 
-    int index() const;
+    void removeWatch(int id);
 
-    QmlExpression *expression() const;
-    QmlExpression *setExpression(QmlExpression *);
-
-    static QmlBoundSignal *cast(QObject *);
-
-protected:
-    virtual int qt_metacall(QMetaObject::Call c, int id, void **a);
+Q_SIGNALS:
+    void propertyChanged(int id, int objectId, const QByteArray &property, const QVariant &value);
 
 private:
-    QmlExpression *m_expression;
-    int m_idx;
-    QmlBoundSignalParameters *m_params;
+    friend class QmlWatchProxy;
+    void addPropertyWatch(int id, QObject *object, quint32 objectId, const QMetaProperty &property);
+
+    QHash<int, QList<QPointer<QmlWatchProxy> > > m_proxies;
 };
 
 QT_END_NAMESPACE
 
-#endif // QMLBOUNDSIGNAL_P_H
+#endif // QMLWATCHER_P_H

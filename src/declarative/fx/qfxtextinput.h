@@ -184,13 +184,13 @@ public Q_SLOTS:
     void selectAll();
 
 private Q_SLOTS:
-    void updateSize();
+    void updateSize(bool needsRedraw = true);
     void q_textChanged();
     void selectionChanged();
-    void updateAll();
     void createCursor();
     void moveCursor();
     void cursorPosChanged();
+    void updateRect(const QRect &r = QRect());
 
 private:
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxTextInput);

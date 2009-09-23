@@ -531,6 +531,9 @@ QmlAbstractBinding *QmlMetaProperty::binding() const
     if (!data) 
         return 0;
 
+    if (!data->hasBindingBit(d->coreIdx))
+        return 0;
+
     QmlAbstractBinding *binding = data->bindings;
     while (binding) {
         // ### This wont work for value types
@@ -547,6 +550,9 @@ QmlAbstractBinding *QmlMetaProperty::binding() const
 
     \a newBinding will be enabled, and the returned binding (if any) will be
     disabled.
+
+    Ownership of \a newBinding transfers to QML.  Ownership of the return value
+    is assumed by the caller.
 */
 QmlAbstractBinding *
 QmlMetaProperty::setBinding(QmlAbstractBinding *newBinding) const
@@ -556,25 +562,80 @@ QmlMetaProperty::setBinding(QmlAbstractBinding *newBinding) const
 
     QmlDeclarativeData *data = QmlDeclarativeData::get(d->object, true);
 
-    QmlAbstractBinding *binding = data->bindings;
-    while (binding) {
-        // ### This wont work for value types
-        if (binding->propertyIndex() == d->coreIdx) {
-            binding->setEnabled(false);
+    if (data->hasBindingBit(d->coreIdx)) {
+        QmlAbstractBinding *binding = data->bindings;
+        while (binding) {
+            // ### This wont work for value types
+            if (binding->propertyIndex() == d->coreIdx) {
+                binding->setEnabled(false);
 
-            if (newBinding) 
-                newBinding->setEnabled(true);
+                if (newBinding) 
+                    newBinding->setEnabled(true);
 
-            return binding; // ### QmlAbstractBinding;
+                return binding; // ### QmlAbstractBinding;
+            }
+
+            binding = binding->m_nextBinding;
         }
-
-        binding = binding->m_nextBinding;
-    }
+    } 
 
     if (newBinding)
         newBinding->setEnabled(true);
 
     return 0;
+}
+
+/*!
+    Returns the expression associated with this signal property, or 0 if no 
+    signal expression exists.
+*/
+QmlExpression *QmlMetaProperty::signalExpression() const
+{
+    if (!(type() & SignalProperty))
+        return 0;
+
+    const QObjectList &children = d->object->children();
+    
+    for (int ii = 0; ii < children.count(); ++ii) {
+        QObject *child = children.at(ii);
+
+        QmlBoundSignal *signal = QmlBoundSignal::cast(child);
+        if (signal && signal->index() == coreIndex()) 
+            return signal->expression();
+    }
+
+    return 0;
+}
+
+/*!
+    Set the signal expression associated with this signal property to \a expr.
+    Returns the existing signal expression (if any), otherwise 0.
+
+    Ownership of \a expr transfers to QML.  Ownership of the return value is
+    assumed by the caller.
+*/
+QmlExpression *QmlMetaProperty::setSignalExpression(QmlExpression *expr) const
+{
+    if (!(type() & SignalProperty))
+        return 0;
+
+    const QObjectList &children = d->object->children();
+    
+    for (int ii = 0; ii < children.count(); ++ii) {
+        QObject *child = children.at(ii);
+
+        QmlBoundSignal *signal = QmlBoundSignal::cast(child);
+        if (signal && signal->index() == coreIndex()) 
+            return signal->setExpression(expr);
+    }
+
+    if (expr) {
+        QmlBoundSignal *signal = new QmlBoundSignal(d->object, d->signal, 
+                                                    d->object);
+        return signal->setExpression(expr);
+    } else {
+        return 0;
+    }
 }
 
 void QmlMetaPropertyPrivate::findSignalInt(QObject *obj, const QString &name)
@@ -617,9 +678,9 @@ QVariant QmlMetaProperty::read() const
         const QObjectList &children = object()->children();
 
         for (int ii = 0; ii < children.count(); ++ii) {
-            QmlBoundSignal *sig = qobject_cast<QmlBoundSignal *>(children.at(ii));
+            QmlBoundSignal *sig = QmlBoundSignal::cast(children.at(ii));
             if (sig && sig->index() == d->coreIdx) 
-                return sig->expression();
+                return sig->expression()->expression();
         }
     } else if (type() & Property) {
         if (type() & Attached) {
@@ -653,13 +714,13 @@ void QmlMetaPropertyPrivate::writeSignalProperty(const QVariant &value)
     const QObjectList &children = object->children();
 
     for (int ii = 0; ii < children.count(); ++ii) {
-        QmlBoundSignal *sig = qobject_cast<QmlBoundSignal *>(children.at(ii));
+        QmlBoundSignal *sig = QmlBoundSignal::cast(children.at(ii));
         if (sig && sig->index() == coreIdx) {
             if (expr.isEmpty()) {
                 sig->disconnect();
                 sig->deleteLater();
             } else {
-                sig->setExpression(expr);
+                sig->expression()->setExpression(expr);
             }
             return;
         }
@@ -667,11 +728,12 @@ void QmlMetaPropertyPrivate::writeSignalProperty(const QVariant &value)
 
     if (!expr.isEmpty()) {
         // XXX scope
-        (void *)new QmlBoundSignal(qmlContext(object), expr, object, coreIdx, object);
+        (void *)new QmlBoundSignal(qmlContext(object), expr, object, signal, object);
     }
 }
 
-void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value)
+void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value,
+                                                QmlMetaProperty::WriteSource source)
 {
     QObject *object = this->object;
     int coreIdx = this->coreIdx;
@@ -931,6 +993,11 @@ void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value)
 */
 void QmlMetaProperty::write(const QVariant &value) const
 {
+    write(value, Other);
+}
+
+void QmlMetaProperty::write(const QVariant &value, WriteSource source) const
+{
     if (!d->object)
         return;
 
@@ -940,7 +1007,7 @@ void QmlMetaProperty::write(const QVariant &value) const
 
     } else if (d->coreIdx != -1) {
 
-        d->writeValueProperty(value);
+        d->writeValueProperty(value, source);
 
     }
 }
