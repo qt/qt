@@ -273,6 +273,7 @@ public:
     QScopedPointer<QPixmapFilter> convolutionFilter;
     QScopedPointer<QPixmapFilter> colorizeFilter;
     QScopedPointer<QPixmapFilter> blurFilter;
+    QScopedPointer<QPixmapFilter> fastBlurFilter;
 };
 
 QT_END_NAMESPACE
