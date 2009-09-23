@@ -141,7 +141,8 @@ void tst_qmlecmascript::methods()
 void tst_qmlecmascript::bindingLoop()
 {
     QmlComponent component(&engine, TEST_FILE("bindingLoop.qml"));
-    QTest::ignoreMessage(QtWarningMsg, "QML MyQmlObject (unknown location): Binding loop detected for property \"stringProperty\" ");
+    QString warning = "QML MyQmlObject (" + component.url().toString() + ":9:9) Binding loop detected for property \"stringProperty\" ";
+    QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData());
     QObject *object = component.create();
     QVERIFY(object != 0);
 }
