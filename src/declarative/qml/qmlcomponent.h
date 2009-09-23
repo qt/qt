@@ -106,7 +106,7 @@ private:
     QmlComponent(QmlEngine *, QmlCompiledData *, int, int, QObject *parent);
 
     friend class QmlVME;
-    friend struct QmlCompositeTypeData;
+    friend class QmlCompositeTypeData;
 };
 
 QT_END_NAMESPACE

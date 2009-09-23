@@ -58,8 +58,9 @@
 
 QT_BEGIN_NAMESPACE
 
-struct QmlCompositeTypeData : public QmlRefCount
+class QmlCompositeTypeData : public QmlRefCount
 {
+public
     QmlCompositeTypeData();
     virtual ~QmlCompositeTypeData();
 
