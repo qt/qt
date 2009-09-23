@@ -9232,9 +9232,10 @@ void tst_QWidget::activateWindow()
     mainwindow->setCentralWidget(label);
     mainwindow->setVisible(true);
     mainwindow->activateWindow();
+    QTest::qWaitForWindowShown(&mainWindow);
     qApp->processEvents();
 
-    QVERIFY(mainwindow->isActiveWindow());
+    QTRY_VERIFY(mainwindow->isActiveWindow());
 
     // Create second mainwindow and set it active
     QMainWindow* mainwindow2 = new QMainWindow();
@@ -9244,16 +9245,16 @@ void tst_QWidget::activateWindow()
     mainwindow2->activateWindow();
     qApp->processEvents();
 
-    QVERIFY(!mainwindow->isActiveWindow());
-    QVERIFY(mainwindow2->isActiveWindow());
+    QTRY_VERIFY(!mainwindow->isActiveWindow());
+    QTRY_VERIFY(mainwindow2->isActiveWindow());
 
     // Revert first mainwindow back to visible active
     mainwindow->setVisible(true);
     mainwindow->activateWindow();
     qApp->processEvents();
 
-    QVERIFY(mainwindow->isActiveWindow());
-    QVERIFY(!mainwindow2->isActiveWindow());
+    QTRY_VERIFY(mainwindow->isActiveWindow());
+    QTRY_VERIFY(!mainwindow2->isActiveWindow());
 }
 
 #ifdef Q_OS_SYMBIAN
