@@ -2796,10 +2796,12 @@ void tst_QWidget::raise()
     QTest::qWait(50);
 
     UpdateWidget *onTop = new UpdateWidget(&topLevel);
+    onTop->reset();
     onTop->resize(topLevel.size());
     onTop->setAutoFillBackground(true);
     onTop->show();
     QTest::qWait(50);
+    QTRY_VERIFY(onTop->numPaintEvents > 0);
     onTop->reset();
 
     // Reset all the children.
@@ -3072,7 +3074,7 @@ void tst_QWidget::saveRestoreGeometry()
         widget.resize(size);
         widget.show();
         QTest::qWaitForWindowShown(&widget);
-        QTest::qWait(10);
+        QApplication::processEvents();
 
         QTRY_COMPARE(widget.pos(), position);
         QCOMPARE(widget.size(), size);
@@ -3099,7 +3101,7 @@ void tst_QWidget::saveRestoreGeometry()
         QVERIFY(widget.restoreGeometry(savedGeometry));
         widget.show();
         QTest::qWaitForWindowShown(&widget);
-        QTest::qWait(10);
+        QApplication::processEvents();
 
         QTRY_COMPARE(widget.pos(), position);
         QCOMPARE(widget.size(), size);
@@ -3114,7 +3116,8 @@ void tst_QWidget::saveRestoreGeometry()
         widget.resize(size);
         widget.show();
         QTest::qWaitForWindowShown(&widget);
-        QTest::qWait(10);
+        QTest::qWait(100);
+        QTRY_COMPARE(widget.geometry().size(), size);
 
         QRect geom;
 
@@ -3122,56 +3125,67 @@ void tst_QWidget::saveRestoreGeometry()
         savedGeometry = widget.saveGeometry();
         geom = widget.geometry();
         widget.setWindowState(widget.windowState() | Qt::WindowFullScreen);
-        QTest::qWait(10);
         QTRY_VERIFY((widget.windowState() & Qt::WindowFullScreen));
+        QTest::qWait(100);
         QVERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(10);
+        QTest::qWait(20);
+        QTRY_VERIFY(!(widget.windowState() & Qt::WindowFullScreen));
         QTRY_COMPARE(widget.geometry(), geom);
-        QVERIFY(!(widget.windowState() & Qt::WindowFullScreen));
 
         //Restore to full screen
         widget.setWindowState(widget.windowState() | Qt::WindowFullScreen);
-        QTest::qWait(10);
+        QTest::qWait(20);
         QTRY_VERIFY((widget.windowState() & Qt::WindowFullScreen));
+        QTest::qWait(200);
         savedGeometry = widget.saveGeometry();
         geom = widget.geometry();
         widget.setWindowState(widget.windowState() ^ Qt::WindowFullScreen);
-        QTest::qWait(10);
-        QTRY_VERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(10);
+        QTest::qWait(20);
+        QTRY_VERIFY(!(widget.windowState() & Qt::WindowFullScreen));
+        QTest::qWait(200);
+        QVERIFY(widget.restoreGeometry(savedGeometry));
+        QTest::qWait(20);
+        QTRY_VERIFY((widget.windowState() & Qt::WindowFullScreen));
         QTRY_COMPARE(widget.geometry(), geom);
         QVERIFY((widget.windowState() & Qt::WindowFullScreen));
         widget.setWindowState(widget.windowState() ^ Qt::WindowFullScreen);
-        QTest::qWait(10);
+        QTest::qWait(20);
+        QTRY_VERIFY(!(widget.windowState() & Qt::WindowFullScreen));
+        QTest::qWait(20);
 
         //Restore from Maximised
         widget.move(position);
         widget.resize(size);
-        QTest::qWait(10);
+        QTest::qWait(20);
+        QTRY_COMPARE(widget.size(), size);
+        QTest::qWait(100);
         savedGeometry = widget.saveGeometry();
         geom = widget.geometry();
         widget.setWindowState(widget.windowState() | Qt::WindowMaximized);
-        QTest::qWait(10);
+        QTest::qWait(20);
         QTRY_VERIFY((widget.windowState() & Qt::WindowMaximized));
-        QVERIFY(widget.geometry() != geom);
+        QTRY_VERIFY(widget.geometry() != geom);
         QVERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(10);
-        QCOMPARE(widget.geometry(), geom);
+        QTest::qWait(20);
+        QTRY_COMPARE(widget.geometry(), geom);
 
         QVERIFY(!(widget.windowState() & Qt::WindowMaximized));
 
         //Restore to maximised
         widget.setWindowState(widget.windowState() | Qt::WindowMaximized);
-        QTest::qWait(10);
+        QTest::qWait(20);
         QTRY_VERIFY((widget.windowState() & Qt::WindowMaximized));
+        QTest::qWait(100);
         geom = widget.geometry();
         savedGeometry = widget.saveGeometry();
         widget.setWindowState(widget.windowState() ^ Qt::WindowMaximized);
-        QTest::qWait(10);
-        QTRY_VERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(10);
+        QTest::qWait(20);
+        QTRY_VERIFY(!(widget.windowState() & Qt::WindowMaximized));
+        QTest::qWait(20);
+        QVERIFY(widget.restoreGeometry(savedGeometry));
+        QTest::qWait(20);
+        QTRY_VERIFY((widget.windowState() & Qt::WindowMaximized));
         QTRY_COMPARE(widget.geometry(), geom);
-        QVERIFY((widget.windowState() & Qt::WindowMaximized));
     }
 }
 
@@ -7431,8 +7445,10 @@ void tst_QWidget::updateWhileMinimized()
    // Filter out activation change and focus events to avoid update() calls in QWidget.
     widget.updateOnActivationChangeAndFocusIn = false;
     widget.show();
+    widget.reset();
     QTest::qWaitForWindowShown(&widget);
     QApplication::processEvents();
+    QTRY_VERIFY(widget.numPaintEvents > 0);
 
     // Minimize window.
     widget.showMinimized();
