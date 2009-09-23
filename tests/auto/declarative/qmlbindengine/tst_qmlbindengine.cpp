@@ -47,7 +47,7 @@ private:
 void tst_qmlbindengine::idShortcutInvalidates()
 {
     {
-        QmlComponent component(&engine, TEST_FILE("idShortcutInvalidates.txt"));
+        QmlComponent component(&engine, TEST_FILE("idShortcutInvalidates.qml"));
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QVERIFY(object->objectProperty() != 0);
@@ -56,7 +56,7 @@ void tst_qmlbindengine::idShortcutInvalidates()
     }
 
     {
-        QmlComponent component(&engine, TEST_FILE("idShortcutInvalidates.1.txt"));
+        QmlComponent component(&engine, TEST_FILE("idShortcutInvalidates.1.qml"));
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QVERIFY(object->objectProperty() != 0);
@@ -68,13 +68,13 @@ void tst_qmlbindengine::idShortcutInvalidates()
 void tst_qmlbindengine::boolPropertiesEvaluateAsBool()
 {
     {
-        QmlComponent component(&engine, TEST_FILE("boolPropertiesEvaluateAsBool.1.txt"));
+        QmlComponent component(&engine, TEST_FILE("boolPropertiesEvaluateAsBool.1.qml"));
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QCOMPARE(object->stringProperty(), QLatin1String("pass"));
     }
     {
-        QmlComponent component(&engine, TEST_FILE("boolPropertiesEvaluateAsBool.2.txt"));
+        QmlComponent component(&engine, TEST_FILE("boolPropertiesEvaluateAsBool.2.qml"));
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QCOMPARE(object->stringProperty(), QLatin1String("pass"));
@@ -84,7 +84,7 @@ void tst_qmlbindengine::boolPropertiesEvaluateAsBool()
 void tst_qmlbindengine::signalAssignment()
 {
     {
-        QmlComponent component(&engine, TEST_FILE("signalAssignment.1.txt"));
+        QmlComponent component(&engine, TEST_FILE("signalAssignment.1.qml"));
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QCOMPARE(object->string(), QString());
@@ -93,7 +93,7 @@ void tst_qmlbindengine::signalAssignment()
     }
 
     {
-        QmlComponent component(&engine, TEST_FILE("signalAssignment.2.txt"));
+        QmlComponent component(&engine, TEST_FILE("signalAssignment.2.qml"));
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QCOMPARE(object->string(), QString());
@@ -105,7 +105,7 @@ void tst_qmlbindengine::signalAssignment()
 void tst_qmlbindengine::methods()
 {
     {
-        QmlComponent component(&engine, TEST_FILE("methods.1.txt"));
+        QmlComponent component(&engine, TEST_FILE("methods.1.qml"));
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QCOMPARE(object->methodCalled(), false);
@@ -116,7 +116,7 @@ void tst_qmlbindengine::methods()
     }
 
     {
-        QmlComponent component(&engine, TEST_FILE("methods.2.txt"));
+        QmlComponent component(&engine, TEST_FILE("methods.2.qml"));
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QCOMPARE(object->methodCalled(), false);
@@ -129,7 +129,7 @@ void tst_qmlbindengine::methods()
 
 void tst_qmlbindengine::bindingLoop()
 {
-    QmlComponent component(&engine, TEST_FILE("bindingLoop.txt"));
+    QmlComponent component(&engine, TEST_FILE("bindingLoop.qml"));
     QTest::ignoreMessage(QtWarningMsg, "QML MyQmlObject (unknown location): Binding loop detected for property \"stringProperty\" ");
     QObject *object = component.create();
     QVERIFY(object != 0);
@@ -337,7 +337,7 @@ void tst_qmlbindengine::objectPropertiesTriggerReeval()
 
 void tst_qmlbindengine::deferredProperties()
 {
-    QmlComponent component(&engine, TEST_FILE("deferredProperties.txt"));
+    QmlComponent component(&engine, TEST_FILE("deferredProperties.qml"));
     MyDeferredObject *object = 
         qobject_cast<MyDeferredObject *>(component.create());
     QVERIFY(object != 0);
@@ -354,7 +354,7 @@ void tst_qmlbindengine::deferredProperties()
 
 void tst_qmlbindengine::extensionObjects()
 {
-    QmlComponent component(&engine, TEST_FILE("extensionObjects.txt"));
+    QmlComponent component(&engine, TEST_FILE("extensionObjects.qml"));
     MyExtendedObject *object = 
         qobject_cast<MyExtendedObject *>(component.create());
     QVERIFY(object != 0);
