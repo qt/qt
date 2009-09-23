@@ -117,37 +117,37 @@ void tst_QAudioOutput::notifyInterval()
 void tst_QAudioOutput::pullFile()
 {
     if(available) {
-        QFile filename(SRCDIR "4.wav");
-        QVERIFY(filename.exists());
-        filename.open(QIODevice::ReadOnly);
+        QFile file(SRCDIR "4.wav");
+        QVERIFY(file.exists());
+        file.open(QIODevice::ReadOnly);
 
         QSignalSpy readSignal(audio, SIGNAL(notify()));
         audio->setNotifyInterval(100);
-        audio->start(&filename);
+        audio->start(&file);
 
         QTestEventLoop::instance().enterLoop(1);
+        QCOMPARE(audio->totalTime(), qint64(692250));
         // 4.wav is a little less than 700ms, so notify should fire 6 times!
         QVERIFY(readSignal.count() >= 6);
-        QVERIFY(audio->totalTime() == 692250);
 
         audio->stop();
-        filename.close();
+        file.close();
     }
 }
 
 void tst_QAudioOutput::pushFile()
 {
     if(available) {
-        QFile filename(SRCDIR "4.wav");
-        QVERIFY(filename.exists());
-        filename.open(QIODevice::ReadOnly);
+        QFile file(SRCDIR "4.wav");
+        QVERIFY(file.exists());
+        file.open(QIODevice::ReadOnly);
 
-        const qint64 fileSize = filename.size();
+        const qint64 fileSize = file.size();
 
         QIODevice* feed = audio->start(0);
 
         char* buffer = new char[fileSize];
-        filename.read(buffer, fileSize);
+        file.read(buffer, fileSize);
 
         qint64 counter=0;
         qint64 written=0;
@@ -162,7 +162,7 @@ void tst_QAudioOutput::pushFile()
         QVERIFY(audio->totalTime() == 692250);
 
         audio->stop();
-        filename.close();
+        file.close();
         delete [] buffer;
         delete audio;
     }
