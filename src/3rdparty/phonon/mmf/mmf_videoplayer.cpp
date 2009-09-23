@@ -23,7 +23,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <coemain.h>    // For CCoeEnv
 #include <coecntrl.h>
 
-#include "videoplayer.h"
+#include "mmf_videoplayer.h"
 #include "utils.h"
 
 #ifdef _DEBUG

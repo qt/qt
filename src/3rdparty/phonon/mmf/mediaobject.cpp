@@ -22,7 +22,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "dummyplayer.h"
 #include "utils.h"
 #include "utils.h"
-#include "videoplayer.h"
+#include "mmf_videoplayer.h"
 #include "videowidget.h"
 
 #include "mediaobject.h"

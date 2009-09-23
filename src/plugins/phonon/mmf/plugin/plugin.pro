@@ -38,7 +38,7 @@ HEADERS +=                                           \
            $$PHONON_MMF_DIR/utils.h                  \
            $$PHONON_MMF_DIR/videooutput.h            \
            $$PHONON_MMF_DIR/videooutputobserver.h    \
-           $$PHONON_MMF_DIR/videoplayer.h            \
+           $$PHONON_MMF_DIR/mmf_videoplayer.h        \
            $$PHONON_MMF_DIR/videowidget.h            \
            $$PHONON_MMF_DIR/volumeobserver.h
 
@@ -57,7 +57,7 @@ SOURCES +=                                           \
            $$PHONON_MMF_DIR/mediaobject.cpp          \
            $$PHONON_MMF_DIR/utils.cpp                \
            $$PHONON_MMF_DIR/videooutput.cpp          \
-           $$PHONON_MMF_DIR/videoplayer.cpp          \
+           $$PHONON_MMF_DIR/mmf_videoplayer.cpp      \
            $$PHONON_MMF_DIR/videowidget.cpp
 
 debug {
