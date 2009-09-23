@@ -180,4 +180,4 @@ void QmlWatcher::addPropertyWatch(int id, QObject *object, quint32 debugId, cons
 
 QT_END_NAMESPACE
 
-#include "qmlwatch.moc"
+#include "qmlwatcher.moc"
