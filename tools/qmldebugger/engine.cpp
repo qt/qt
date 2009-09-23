@@ -20,6 +20,7 @@
 
 QT_BEGIN_NAMESPACE
 
+
 class QmlObjectTree : public QTreeWidget
 {
     Q_OBJECT
@@ -101,11 +102,12 @@ public:
     WatchTableModel(QObject *parent = 0);
 
     void addWatch(QmlDebugWatch *watch, const QString &title);
-    QmlDebugWatch *removeWatch(QmlDebugWatch *watch);
+    void removeWatch(QmlDebugWatch *watch);
 
     void updateWatch(QmlDebugWatch *watch, const QVariant &value);
 
-    QmlDebugWatch *watchFromIndex(const QModelIndex &index) const;
+    QmlDebugWatch *findWatch(int column) const;
+    QmlDebugWatch *findWatch(int objectDebugId, const QString &property) const;
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
@@ -120,6 +122,7 @@ private:
     {
         QString title;
         bool hasFirstValue;
+        QString property;
         QPointer<QmlDebugWatch> watch;
     };
 
@@ -140,23 +143,28 @@ WatchTableModel::WatchTableModel(QObject *parent)
 
 void WatchTableModel::addWatch(QmlDebugWatch *watch, const QString &title)
 {
+    QString property;
+    if (qobject_cast<QmlDebugPropertyWatch *>(watch))
+        property = qobject_cast<QmlDebugPropertyWatch *>(watch)->name();
+
     int col = columnCount(QModelIndex());
     beginInsertColumns(QModelIndex(), col, col);
 
     WatchedEntity e;
     e.title = title;
     e.hasFirstValue = false;
+    e.property = property;
     e.watch = watch;
     m_columns.append(e);
 
     endInsertColumns();
 }
 
-QmlDebugWatch *WatchTableModel::removeWatch(QmlDebugWatch *watch)
+void WatchTableModel::removeWatch(QmlDebugWatch *watch)
 {
     int column = columnForWatch(watch);
     if (column == -1)
-        return 0;
+        return;
 
     WatchedEntity entity = m_columns.takeAt(column);
 
@@ -171,8 +179,6 @@ QmlDebugWatch *WatchTableModel::removeWatch(QmlDebugWatch *watch)
     }
 
     reset();
-
-    return entity.watch;
 }
 
 void WatchTableModel::updateWatch(QmlDebugWatch *watch, const QVariant &value)
@@ -189,10 +195,21 @@ void WatchTableModel::updateWatch(QmlDebugWatch *watch, const QVariant &value)
     }
 }
 
-QmlDebugWatch *WatchTableModel::watchFromIndex(const QModelIndex &index) const
+QmlDebugWatch *WatchTableModel::findWatch(int column) const
 {
-    if (index.isValid() && index.column() < m_columns.count())
-        return m_columns.at(index.column()).watch;
+    if (column < m_columns.count())
+        return m_columns.at(column).watch;
+    return 0;
+}
+
+QmlDebugWatch *WatchTableModel::findWatch(int objectDebugId, const QString &property) const
+{
+    for (int i=0; i<m_columns.count(); i++) {
+        if (m_columns[i].watch->objectDebugId() == objectDebugId
+                && m_columns[i].property == property) {
+            return m_columns[i].watch;
+        }
+    }
     return 0;
 }
 
@@ -278,6 +295,40 @@ void WatchTableModel::addValue(int column, const QVariant &value)
 }
 
 
+class WatchTableView : public QTableView
+{
+    Q_OBJECT
+public:
+    WatchTableView(QWidget *parent);
+
+signals:
+    void stopWatching(int column);
+
+protected:
+    void mousePressEvent(QMouseEvent *me);
+};
+
+WatchTableView::WatchTableView(QWidget *parent)
+    : QTableView(parent)
+{
+}
+
+void WatchTableView::mousePressEvent(QMouseEvent *me)
+{
+    QTableView::mousePressEvent(me);
+    if (me->button()  == Qt::RightButton && me->type() == QEvent::MouseButtonPress) {
+        int col = columnAt(me->x());
+        if (col >= 0) {
+            QAction action(tr("Stop watching"), 0);
+            QList<QAction *> actions;
+            actions << &action;
+            if (QMenu::exec(actions, me->globalPos()))
+                emit stopWatching(col);
+        }
+    } 
+}
+
+
 class DebuggerEngineItem : public QObject
 {
     Q_OBJECT
@@ -346,10 +397,12 @@ EnginePane::EnginePane(QmlDebugConnection *client, QWidget *parent)
     m_propTable->setHorizontalHeaderLabels(QStringList() << "name" << "value");
 
     m_watchTableModel = new WatchTableModel(this);
-    m_watchTable = new QTableView(this);
+    m_watchTable = new WatchTableView(this);
     m_watchTable->setModel(m_watchTableModel);
     QObject::connect(m_watchTable, SIGNAL(activated(QModelIndex)),
                      this, SLOT(watchedItemActivated(QModelIndex)));
+    QObject::connect(m_watchTable, SIGNAL(stopWatching(int)),
+                     this, SLOT(stopWatching(int)));
 
     m_tabs = new QTabWidget(this);
     m_tabs->addTab(m_propTable, tr("Properties"));
@@ -464,16 +517,14 @@ void EnginePane::propertyDoubleClicked(QTableWidgetItem *item)
 
 bool EnginePane::togglePropertyWatch(const QmlDebugObjectReference &object, const QmlDebugPropertyReference &property)
 {
-    QPair<int, QString> objProperty(object.debugId(), property.name());
-
-    if (m_watchedProps.contains(objProperty)) {
-        QmlDebugWatch *watch = m_watchedProps.take(objProperty);
+    QmlDebugWatch *watch = m_watchTableModel->findWatch(object.debugId(), property.name());
+    if (watch) {
         m_watchTableModel->removeWatch(watch);
+        m_client.removeWatch(watch);
         delete watch;
         return false;
     } else {
         QmlDebugWatch *watch = m_client.addWatch(property, this);
-        m_watchedProps.insert(objProperty, watch);
         QObject::connect(watch, SIGNAL(valueChanged(QByteArray,QVariant)),
                         this, SLOT(valueChanged(QByteArray,QVariant)));
         QString desc = property.name()
@@ -487,9 +538,32 @@ bool EnginePane::togglePropertyWatch(const QmlDebugObjectReference &object, cons
     }
 }
 
+void EnginePane::stopWatching(int column)
+{
+    QmlDebugWatch *watch = m_watchTableModel->findWatch(column);
+    if (watch) {
+        if (m_object && m_object->object().debugId() == watch->objectDebugId()
+                && qobject_cast<QmlDebugPropertyWatch *>(watch)) {
+            QString property = qobject_cast<QmlDebugPropertyWatch *>(watch)->name();
+            QTableWidgetItem *item;
+            for (int row=0; row<m_propTable->rowCount(); row++) {
+                item = m_propTable->item(row, 0);
+                if (item->text() == property) {
+                    item->setForeground(QBrush());
+                    break;
+                }
+            }
+        }
+
+        m_watchTableModel->removeWatch(watch);
+        m_client.removeWatch(watch);
+        delete watch;
+    }
+}
+
 void EnginePane::watchedItemActivated(const QModelIndex &index)
 {
-    QmlDebugWatch *watch = m_watchTableModel->watchFromIndex(index);
+    QmlDebugWatch *watch = m_watchTableModel->findWatch(index.column());
     if (!watch)
         return;
     QTreeWidgetItem *item = m_objTree->findItemByObjectId(watch->objectDebugId());
