@@ -7,14 +7,20 @@
 #include <QtCore/qdir.h>
 #include "testtypes.h"
 
-class tst_qmlparser : public QObject
+/*
+This test case covers QML language issues.  This covers everything that does 
+involve evaluating ECMAScript expressions and bindings.
+
+Evaluation of expressions and bindings is covered in qmlecmascript
+*/
+class tst_qmllanguage : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlparser() {
+    tst_qmllanguage() {
         QmlMetaType::registerCustomStringConverter(qMetaTypeId<MyCustomVariantType>(), myCustomVariantTypeConverter);
         QFileInfo fileInfo(__FILE__);
-        engine.addImportPath(fileInfo.absoluteDir().filePath(QLatin1String("lib")));
+        engine.addImportPath(fileInfo.absoluteDir().filePath(QLatin1String("data/lib")));
     }
 
 private slots:
@@ -74,7 +80,7 @@ private:
         QVERIFY(!component.isError()); \
         QVERIFY(component.errors().isEmpty()); \
     } else { \
-        QFile file(errorfile); \
+        QFile file(QLatin1String("data/") + QLatin1String(errorfile)); \
         QVERIFY(file.open(QIODevice::ReadOnly)); \
         QByteArray data = file.readAll(); \
         QList<QByteArray> expected = data.split('\n'); \
@@ -96,7 +102,7 @@ private:
 inline QUrl TEST_FILE(const QString &filename)
 {
     QFileInfo fileInfo(__FILE__);
-    return QUrl::fromLocalFile(fileInfo.absoluteDir().filePath(filename));
+    return QUrl::fromLocalFile(fileInfo.absoluteDir().filePath(QLatin1String("data/") + filename));
 }
 
 inline QUrl TEST_FILE(const char *filename)
@@ -104,7 +110,7 @@ inline QUrl TEST_FILE(const char *filename)
     return TEST_FILE(QLatin1String(filename));
 }
 
-void tst_qmlparser::errors_data()
+void tst_qmllanguage::errors_data()
 {
     QTest::addColumn<QString>("file");
     QTest::addColumn<QString>("errorFile");
@@ -166,7 +172,7 @@ void tst_qmlparser::errors_data()
     QTest::newRow("customParserIdNotAllowed") << "customParserIdNotAllowed.qml" << "customParserIdNotAllowed.errors.txt" << false;
 }
 
-void tst_qmlparser::errors()
+void tst_qmllanguage::errors()
 {
     QFETCH(QString, file);
     QFETCH(QString, errorFile);
@@ -182,7 +188,7 @@ void tst_qmlparser::errors()
     VERIFY_ERRORS(errorFile.toLatin1().constData());
 }
 
-void tst_qmlparser::simpleObject()
+void tst_qmllanguage::simpleObject()
 {
     QmlComponent component(&engine, TEST_FILE("simpleObject.qml"));
     VERIFY_ERRORS(0);
@@ -190,7 +196,7 @@ void tst_qmlparser::simpleObject()
     QVERIFY(object != 0);
 }
 
-void tst_qmlparser::simpleContainer()
+void tst_qmllanguage::simpleContainer()
 {
     QmlComponent component(&engine, TEST_FILE("simpleContainer.qml"));
     VERIFY_ERRORS(0);
@@ -199,7 +205,7 @@ void tst_qmlparser::simpleContainer()
     QCOMPARE(container->children()->count(),2);
 }
 
-void tst_qmlparser::interfaceProperty()
+void tst_qmllanguage::interfaceProperty()
 {
     QmlComponent component(&engine, TEST_FILE("interfaceProperty.qml"));
     VERIFY_ERRORS(0);
@@ -209,7 +215,7 @@ void tst_qmlparser::interfaceProperty()
     QVERIFY(object->interface()->id == 913);
 }
 
-void tst_qmlparser::interfaceQmlList()
+void tst_qmllanguage::interfaceQmlList()
 {
     QmlComponent component(&engine, TEST_FILE("interfaceQmlList.qml"));
     VERIFY_ERRORS(0);
@@ -220,7 +226,7 @@ void tst_qmlparser::interfaceQmlList()
         QVERIFY(container->qmllistAccessor().at(ii)->id == 913);
 }
 
-void tst_qmlparser::interfaceQList()
+void tst_qmllanguage::interfaceQList()
 {
     QmlComponent component(&engine, TEST_FILE("interfaceQList.qml"));
     VERIFY_ERRORS(0);
@@ -231,7 +237,7 @@ void tst_qmlparser::interfaceQList()
         QVERIFY(container->qlistInterfaces()->at(ii)->id == 913);
 }
 
-void tst_qmlparser::assignObjectToSignal()
+void tst_qmllanguage::assignObjectToSignal()
 {
     QmlComponent component(&engine, TEST_FILE("assignObjectToSignal.qml"));
     VERIFY_ERRORS(0);
@@ -241,7 +247,7 @@ void tst_qmlparser::assignObjectToSignal()
     emit object->basicSignal();
 }
 
-void tst_qmlparser::assignObjectToVariant()
+void tst_qmllanguage::assignObjectToVariant()
 {
     QmlComponent component(&engine, TEST_FILE("assignObjectToVariant.qml"));
     VERIFY_ERRORS(0);
@@ -251,7 +257,7 @@ void tst_qmlparser::assignObjectToVariant()
     QVERIFY(v.userType() == qMetaTypeId<QObject *>());
 }
 
-void tst_qmlparser::assignLiteralSignalProperty()
+void tst_qmllanguage::assignLiteralSignalProperty()
 {
     QmlComponent component(&engine, TEST_FILE("assignLiteralSignalProperty.qml"));
     VERIFY_ERRORS(0);
@@ -261,7 +267,7 @@ void tst_qmlparser::assignLiteralSignalProperty()
 }
 
 // Test is an external component can be loaded and assigned (to a qlist)
-void tst_qmlparser::assignQmlComponent()
+void tst_qmllanguage::assignQmlComponent()
 {
     QmlComponent component(&engine, TEST_FILE("assignQmlComponent.qml"));
     VERIFY_ERRORS(0);
@@ -274,7 +280,7 @@ void tst_qmlparser::assignQmlComponent()
 }
 
 // Test literal assignment to all the basic types 
-void tst_qmlparser::assignBasicTypes()
+void tst_qmllanguage::assignBasicTypes()
 {
     QmlComponent component(&engine, TEST_FILE("assignBasicTypes.qml"));
     VERIFY_ERRORS(0);
@@ -306,7 +312,7 @@ void tst_qmlparser::assignBasicTypes()
 }
 
 // Test edge case type assignments
-void tst_qmlparser::assignTypeExtremes()
+void tst_qmllanguage::assignTypeExtremes()
 {
     QmlComponent component(&engine, TEST_FILE("assignTypeExtremes.qml"));
     VERIFY_ERRORS(0);
@@ -317,7 +323,7 @@ void tst_qmlparser::assignTypeExtremes()
 }
 
 // Tests that custom parser types can be instantiated
-void tst_qmlparser::customParserTypes()
+void tst_qmllanguage::customParserTypes()
 {
     QmlComponent component(&engine, TEST_FILE("customParserTypes.qml"));
     VERIFY_ERRORS(0);
@@ -327,7 +333,7 @@ void tst_qmlparser::customParserTypes()
 }
 
 // Tests that the root item can be a custom component
-void tst_qmlparser::rootAsQmlComponent()
+void tst_qmllanguage::rootAsQmlComponent()
 {
     QmlComponent component(&engine, TEST_FILE("rootAsQmlComponent.qml"));
     VERIFY_ERRORS(0);
@@ -338,7 +344,7 @@ void tst_qmlparser::rootAsQmlComponent()
 }
 
 // Tests that components can be specified inline
-void tst_qmlparser::inlineQmlComponents()
+void tst_qmllanguage::inlineQmlComponents()
 {
     QmlComponent component(&engine, TEST_FILE("inlineQmlComponents.qml"));
     VERIFY_ERRORS(0);
@@ -353,7 +359,7 @@ void tst_qmlparser::inlineQmlComponents()
 }
 
 // Tests that types that have an id property have it set
-void tst_qmlparser::idProperty()
+void tst_qmllanguage::idProperty()
 {
     QmlComponent component(&engine, TEST_FILE("idProperty.qml"));
     VERIFY_ERRORS(0);
@@ -368,7 +374,7 @@ void tst_qmlparser::idProperty()
 }
 
 // Tests that signals can be assigned to
-void tst_qmlparser::assignSignal()
+void tst_qmllanguage::assignSignal()
 {
     QmlComponent component(&engine, TEST_FILE("assignSignal.qml"));
     VERIFY_ERRORS(0);
@@ -381,7 +387,7 @@ void tst_qmlparser::assignSignal()
 }
 
 // Tests the creation and assignment of dynamic properties
-void tst_qmlparser::dynamicProperties()
+void tst_qmllanguage::dynamicProperties()
 {
     QmlComponent component(&engine, TEST_FILE("dynamicProperties.qml"));
     VERIFY_ERRORS(0);
@@ -399,7 +405,7 @@ void tst_qmlparser::dynamicProperties()
 }
 
 // Tests the declaration of dynamic signals and slots
-void tst_qmlparser::dynamicSignalsAndSlots()
+void tst_qmllanguage::dynamicSignalsAndSlots()
 {
     QmlComponent component(&engine, TEST_FILE("dynamicSignalsAndSlots.qml"));
     VERIFY_ERRORS(0);
@@ -411,7 +417,7 @@ void tst_qmlparser::dynamicSignalsAndSlots()
     QVERIFY(object->metaObject()->indexOfMethod("slot2()") != -1);
 }
 
-void tst_qmlparser::simpleBindings()
+void tst_qmllanguage::simpleBindings()
 {
     QmlComponent component(&engine, TEST_FILE("simpleBindings.qml"));
     VERIFY_ERRORS(0);
@@ -424,7 +430,7 @@ void tst_qmlparser::simpleBindings()
     QCOMPARE(object->property("objectProperty"), QVariant::fromValue(object));
 }
 
-void tst_qmlparser::autoComponentCreation()
+void tst_qmllanguage::autoComponentCreation()
 {
     QmlComponent component(&engine, TEST_FILE("autoComponentCreation.qml"));
     VERIFY_ERRORS(0);
@@ -436,7 +442,7 @@ void tst_qmlparser::autoComponentCreation()
     QCOMPARE(child->realProperty(), qreal(9));
 }
 
-void tst_qmlparser::propertyValueSource()
+void tst_qmllanguage::propertyValueSource()
 {
     QmlComponent component(&engine, TEST_FILE("propertyValueSource.qml"));
     VERIFY_ERRORS(0);
@@ -459,7 +465,7 @@ void tst_qmlparser::propertyValueSource()
     QCOMPARE(valueSource->prop.name(), QString(QLatin1String("intProperty")));
 }
 
-void tst_qmlparser::attachedProperties()
+void tst_qmllanguage::attachedProperties()
 {
     QmlComponent component(&engine, TEST_FILE("attachedProperties.qml"));
     VERIFY_ERRORS(0);
@@ -471,7 +477,7 @@ void tst_qmlparser::attachedProperties()
 }
 
 // Tests non-static object properties
-void tst_qmlparser::dynamicObjects()
+void tst_qmllanguage::dynamicObjects()
 {
     QmlComponent component(&engine, TEST_FILE("dynamicObject.1.qml"));
     VERIFY_ERRORS(0);
@@ -480,7 +486,7 @@ void tst_qmlparser::dynamicObjects()
 }
 
 // Tests the registration of custom variant string converters
-void tst_qmlparser::customVariantTypes()
+void tst_qmllanguage::customVariantTypes()
 {
     QmlComponent component(&engine, TEST_FILE("customVariantTypes.qml"));
     VERIFY_ERRORS(0);
@@ -489,7 +495,7 @@ void tst_qmlparser::customVariantTypes()
     QCOMPARE(object->customType().a, 10);
 }
 
-void tst_qmlparser::valueTypes()
+void tst_qmllanguage::valueTypes()
 {
     QmlComponent component(&engine, TEST_FILE("valueTypes.qml"));
     VERIFY_ERRORS(0);
@@ -515,7 +521,7 @@ void tst_qmlparser::valueTypes()
     QCOMPARE(p2.read(), QVariant(13));
 }
 
-void tst_qmlparser::cppnamespace()
+void tst_qmllanguage::cppnamespace()
 {
     QmlComponent component(&engine, TEST_FILE("cppnamespace.qml"));
     VERIFY_ERRORS(0);
@@ -524,7 +530,7 @@ void tst_qmlparser::cppnamespace()
     delete object;
 }
 
-void tst_qmlparser::aliasProperties()
+void tst_qmllanguage::aliasProperties()
 {
     // Simple "int" alias
     {
@@ -607,7 +613,7 @@ public:
 };
 
 // Check that first child of qml is of given type. Empty type insists on error.
-void tst_qmlparser::testType(const QString& qml, const QString& type)
+void tst_qmllanguage::testType(const QString& qml, const QString& type)
 {
     QmlComponent component(&engine, qml.toUtf8(), TEST_FILE("empty.qml")); // just a file for relative local imports
 
@@ -630,7 +636,7 @@ QML_DEFINE_TYPE(com.nokia.Test, 1, 8, 9, Test, TestType2)
 QML_DEFINE_TYPE(com.nokia.Test, 1, 12, 13, Test, TestType2)
 QML_DEFINE_TYPE(com.nokia.Test, 1, 9, 11, OldTest, TestType)
 
-void tst_qmlparser::importsBuiltin_data()
+void tst_qmllanguage::importsBuiltin_data()
 {
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QString>("type");
@@ -726,14 +732,14 @@ void tst_qmlparser::importsBuiltin_data()
         << "";
 }
 
-void tst_qmlparser::importsBuiltin()
+void tst_qmllanguage::importsBuiltin()
 {
     QFETCH(QString, qml);
     QFETCH(QString, type);
     testType(qml,type);
 }
 
-void tst_qmlparser::importsLocal_data()
+void tst_qmllanguage::importsLocal_data()
 {
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QString>("type");
@@ -758,14 +764,14 @@ void tst_qmlparser::importsLocal_data()
         << "TestType";
 }
 
-void tst_qmlparser::importsLocal()
+void tst_qmllanguage::importsLocal()
 {
     QFETCH(QString, qml);
     QFETCH(QString, type);
     testType(qml,type);
 }
 
-void tst_qmlparser::importsInstalled_data()
+void tst_qmllanguage::importsInstalled_data()
 {
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QString>("type");
@@ -781,7 +787,7 @@ void tst_qmlparser::importsInstalled_data()
         << "QFxText";
 }
 
-void tst_qmlparser::importsInstalled()
+void tst_qmllanguage::importsInstalled()
 {
     QFETCH(QString, qml);
     QFETCH(QString, type);
@@ -789,7 +795,7 @@ void tst_qmlparser::importsInstalled()
 }
 
 
-void tst_qmlparser::importsOrder_data()
+void tst_qmllanguage::importsOrder_data()
 {
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QString>("type");
@@ -840,18 +846,18 @@ void tst_qmlparser::importsOrder_data()
         << "QFxImage";
 }
 
-void tst_qmlparser::importsOrder()
+void tst_qmllanguage::importsOrder()
 {
     QFETCH(QString, qml);
     QFETCH(QString, type);
     testType(qml,type);
 }
 
-void tst_qmlparser::crash1()
+void tst_qmllanguage::crash1()
 {
     QmlComponent component(&engine, "Component {}");
 }
 
-QTEST_MAIN(tst_qmlparser)
+QTEST_MAIN(tst_qmllanguage)
 
-#include "tst_qmlparser.moc"
+#include "tst_qmllanguage.moc"

@@ -250,8 +250,6 @@ void QmlEnginePrivate::init()
             scriptEngine.newFunction(QmlEnginePrivate::createQmlObject, 1));
     scriptEngine.globalObject().setProperty(QLatin1String("createComponent"),
             scriptEngine.newFunction(QmlEnginePrivate::createComponent, 1));
-    scriptEngine.globalObject().setProperty(QLatin1String("vector"),
-            scriptEngine.newFunction(QmlEnginePrivate::vector, 3));
 
     if (QCoreApplication::instance()->thread() == q->thread() &&
         QmlEngineDebugServer::isDebuggingEnabled()) {
@@ -700,7 +698,8 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool cre
 }
 
 QmlDeclarativeData::QmlDeclarativeData(QmlContext *ctxt)
-: context(ctxt), bindings(0), outerContext(0), lineNumber(0), columnNumber(0), deferredComponent(0),
+: context(ctxt), bindings(0), bindingBitsSize(0), bindingBits(0), 
+  outerContext(0), lineNumber(0), columnNumber(0), deferredComponent(0), 
   deferredIdx(0), attachedProperties(0)
 {
 }
@@ -723,7 +722,45 @@ void QmlDeclarativeData::destroyed(QObject *object)
         binding = next;
     }
 
+    if (bindingBits)
+        free(bindingBits);
+
     delete this;
+}
+
+bool QmlDeclarativeData::hasBindingBit(int bit) const
+{
+    if (bindingBitsSize > bit) 
+        return bindingBits[bit / 32] & (1 << (bit % 32));
+    else
+        return false;
+}
+
+void QmlDeclarativeData::clearBindingBit(int bit)
+{
+    if (bindingBitsSize > bit) 
+        bindingBits[bit / 32] &= ~(1 << (bit % 32));
+}
+
+void QmlDeclarativeData::setBindingBit(QObject *obj, int bit)
+{
+    if (bindingBitsSize <= bit) {
+        int props = obj->metaObject()->propertyCount();
+        Q_ASSERT(bit < props);
+
+        int arraySize = (props + 31) / 32;
+        int oldArraySize = bindingBitsSize / 32;
+
+        bindingBits = (quint32 *)realloc(bindingBits, 
+                                         arraySize * sizeof(quint32));
+        memset(bindingBits + oldArraySize, 
+               sizeof(quint32) * (arraySize - oldArraySize),
+               0x00);
+
+        bindingBitsSize = arraySize * 32;
+    }
+
+    bindingBits[bit / 32] |= (1 << (bit % 32));
 }
 
 /*!

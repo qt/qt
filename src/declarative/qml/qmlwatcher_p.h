@@ -39,50 +39,55 @@
 **
 ****************************************************************************/
 
-#ifndef QMLDEBUGSERVICE_H
-#define QMLDEBUGSERVICE_H
+#ifndef QMLWATCHER_P_H
+#define QMLWATCHER_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
 #include <QtCore/qobject.h>
-
-QT_BEGIN_HEADER
+#include <QtCore/qlist.h>
+#include <QtCore/qpair.h>
+#include <QtCore/qhash.h>
+#include <QtCore/qset.h>
+#include <QtCore/qpointer.h>
 
 QT_BEGIN_NAMESPACE
 
-class QmlDebugServicePrivate;
-class Q_DECLARATIVE_EXPORT QmlDebugService : public QObject
+class QmlWatchProxy;
+class QmlExpression;
+class QmlContext;
+
+class QmlWatcher : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlDebugService)
-    Q_DISABLE_COPY(QmlDebugService)
 public:
-    QmlDebugService(const QString &, QObject *parent = 0);
+    QmlWatcher(QObject * = 0);
 
-    QString name() const;
+    bool addWatch(int id, quint32 objectId);
+    bool addWatch(int id, quint32 objectId, const QByteArray &property);
+    bool addWatch(int id, quint32 objectId, const QString &expr);
 
-    bool isEnabled() const;
+    void removeWatch(int id);
 
-    void sendMessage(const QByteArray &);
-
-    static int idForObject(QObject *);
-    static QObject *objectForId(int);
-
-
-    static bool isDebuggingEnabled();
-    static QString objectToString(QObject *obj);
-
-    static void waitForClients();
-
-protected:
-    virtual void enabledChanged(bool);
-    virtual void messageReceived(const QByteArray &);
+Q_SIGNALS:
+    void propertyChanged(int id, int objectId, const QByteArray &property, const QVariant &value);
 
 private:
-    friend class QmlDebugServer;
+    friend class QmlWatchProxy;
+    void addPropertyWatch(int id, QObject *object, quint32 objectId, const QMetaProperty &property);
+
+    QHash<int, QList<QPointer<QmlWatchProxy> > > m_proxies;
 };
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QMLDEBUGSERVICE_H
-
+#endif // QMLWATCHER_P_H

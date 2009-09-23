@@ -48,20 +48,24 @@
 #include <qmlmetaproperty.h>
 #include <qmlbinding.h>
 #include "qmlcontext_p.h"
+#include "qmlwatcher_p.h"
 
 QT_BEGIN_NAMESPACE
 
 QList<QmlEngine *> QmlEngineDebugServer::m_engines;
 QmlEngineDebugServer::QmlEngineDebugServer(QObject *parent)
-: QmlDebugService(QLatin1String("QmlEngine"), parent)
+: QmlDebugService(QLatin1String("QmlEngine"), parent),
+  m_watch(new QmlWatcher(this))
 {
+    QObject::connect(m_watch, SIGNAL(propertyChanged(int,int,QByteArray,QVariant)),
+                     this, SLOT(propertyChanged(int,int,QByteArray,QVariant)));
 }
 
 QDataStream &operator<<(QDataStream &ds, 
                         const QmlEngineDebugServer::QmlObjectData &data)
 {
     ds << data.url << data.lineNumber << data.columnNumber << data.objectName
-       << data.objectType << data.objectId;
+       << data.objectType << data.objectId << data.contextId;
     return ds;
 }
 
@@ -69,7 +73,7 @@ QDataStream &operator>>(QDataStream &ds,
                         QmlEngineDebugServer::QmlObjectData &data)
 {
     ds >> data.url >> data.lineNumber >> data.columnNumber >> data.objectName
-       >> data.objectType >> data.objectId;
+       >> data.objectType >> data.objectId >> data.contextId;
     return ds;
 }
 
@@ -196,6 +200,7 @@ QmlEngineDebugServer::objectData(QObject *object)
     rv.objectName = object->objectName();
     rv.objectType = object->metaObject()->className();
     rv.objectId = QmlDebugService::idForObject(object);
+    rv.contextId = QmlDebugService::idForObject(qmlContext(object));
 
     return rv;
 }
@@ -206,6 +211,8 @@ void QmlEngineDebugServer::messageReceived(const QByteArray &message)
 
     QByteArray type;
     ds >> type;
+
+    //qDebug() << "QmlEngineDebugServer::messageReceived()" << type;
 
     if (type == "LIST_ENGINES") {
         int queryId;
@@ -259,7 +266,76 @@ void QmlEngineDebugServer::messageReceived(const QByteArray &message)
             buildObjectDump(rs, object, recurse);
 
         sendMessage(reply);
+    } else if (type == "WATCH_OBJECT") {
+        int queryId;
+        int objectId;
+
+        ds >> queryId >> objectId;
+        bool ok = m_watch->addWatch(queryId, objectId);
+
+        QByteArray reply;
+        QDataStream rs(&reply, QIODevice::WriteOnly);
+        rs << QByteArray("WATCH_OBJECT_R") << queryId << objectId << ok;
+
+        sendMessage(reply);
+    } else if (type == "WATCH_PROPERTY") {
+        int queryId;
+        int objectId;
+        QByteArray property;
+
+        ds >> queryId >> objectId >> property;
+        bool ok = m_watch->addWatch(queryId, objectId, property);
+
+        QByteArray reply;
+        QDataStream rs(&reply, QIODevice::WriteOnly);
+        rs << QByteArray("WATCH_PROPERTY_R") << queryId << ok;
+
+        sendMessage(reply);
+    } else if (type == "WATCH_EXPR_OBJECT") {
+        int queryId;
+        int debugId;
+        QString expr;
+
+        ds >> queryId >> debugId >> expr;
+        bool ok = m_watch->addWatch(queryId, debugId, expr);
+
+        QByteArray reply;
+        QDataStream rs(&reply, QIODevice::WriteOnly);
+        rs << QByteArray("WATCH_EXPR_OBJECT_R") << queryId << ok;
+
+        sendMessage(reply);
+    } else if (type == "NO_WATCH") {
+        int queryId;
+
+        ds >> queryId;
+        m_watch->removeWatch(queryId);
     }
+}
+
+void QmlEngineDebugServer::propertyChanged(int id, int objectId, const QByteArray &property, const QVariant &value)
+{
+    QByteArray reply;
+    QVariant v;
+    QDataStream rs(&reply, QIODevice::WriteOnly);
+
+    if (value.type() == QVariant::UserType) {
+        QObject *o = QmlMetaType::toQObject(value);
+        if (o) {
+            QString objectName = o->objectName();
+            if (objectName.isEmpty())
+                objectName = QLatin1String("<unnamed>");
+            v = QLatin1String(o->metaObject()->className()) +
+                    QLatin1String(": ") + objectName;
+        }
+        if (v.isNull())
+            v = value.toString();
+    } else {
+        v = value;
+    }
+
+    rs << QByteArray("UPDATE_WATCH") << id << objectId << property << v;
+
+    sendMessage(reply);
 }
 
 void QmlEngineDebugServer::addEngine(QmlEngine *engine)

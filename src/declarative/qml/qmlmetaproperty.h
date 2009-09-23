@@ -88,6 +88,8 @@ public:
 
     QVariant read() const;
     void write(const QVariant &) const;
+    enum WriteSource { Animation, Binding, Other };
+    void write(const QVariant &, WriteSource) const;
 
     bool hasChangedNotifier() const;
     bool needsChangedNotifier() const;

@@ -531,6 +531,9 @@ QmlAbstractBinding *QmlMetaProperty::binding() const
     if (!data) 
         return 0;
 
+    if (!data->hasBindingBit(d->coreIdx))
+        return 0;
+
     QmlAbstractBinding *binding = data->bindings;
     while (binding) {
         // ### This wont work for value types
@@ -559,20 +562,22 @@ QmlMetaProperty::setBinding(QmlAbstractBinding *newBinding) const
 
     QmlDeclarativeData *data = QmlDeclarativeData::get(d->object, true);
 
-    QmlAbstractBinding *binding = data->bindings;
-    while (binding) {
-        // ### This wont work for value types
-        if (binding->propertyIndex() == d->coreIdx) {
-            binding->setEnabled(false);
+    if (data->hasBindingBit(d->coreIdx)) {
+        QmlAbstractBinding *binding = data->bindings;
+        while (binding) {
+            // ### This wont work for value types
+            if (binding->propertyIndex() == d->coreIdx) {
+                binding->setEnabled(false);
 
-            if (newBinding) 
-                newBinding->setEnabled(true);
+                if (newBinding) 
+                    newBinding->setEnabled(true);
 
-            return binding; // ### QmlAbstractBinding;
+                return binding; // ### QmlAbstractBinding;
+            }
+
+            binding = binding->m_nextBinding;
         }
-
-        binding = binding->m_nextBinding;
-    }
+    } 
 
     if (newBinding)
         newBinding->setEnabled(true);
@@ -727,7 +732,8 @@ void QmlMetaPropertyPrivate::writeSignalProperty(const QVariant &value)
     }
 }
 
-void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value)
+void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value,
+                                                QmlMetaProperty::WriteSource source)
 {
     QObject *object = this->object;
     int coreIdx = this->coreIdx;
@@ -987,6 +993,11 @@ void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value)
 */
 void QmlMetaProperty::write(const QVariant &value) const
 {
+    write(value, Other);
+}
+
+void QmlMetaProperty::write(const QVariant &value, WriteSource source) const
+{
     if (!d->object)
         return;
 
@@ -996,7 +1007,7 @@ void QmlMetaProperty::write(const QVariant &value) const
 
     } else if (d->coreIdx != -1) {
 
-        d->writeValueProperty(value);
+        d->writeValueProperty(value, source);
 
     }
 }

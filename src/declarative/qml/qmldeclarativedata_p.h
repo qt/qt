@@ -70,6 +70,12 @@ public:
     QmlContext *context;
     QmlAbstractBinding *bindings;
 
+    int bindingBitsSize;
+    quint32 *bindingBits; 
+    bool hasBindingBit(int) const;
+    void clearBindingBit(int);
+    void setBindingBit(QObject *obj, int);
+
     QmlContext *outerContext; // Can't this be found from context?
     ushort lineNumber;
     ushort columnNumber;
