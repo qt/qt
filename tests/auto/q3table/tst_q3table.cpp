@@ -51,6 +51,8 @@
 #include <q3table.h>
 #include <qlayout.h>
 
+#include "../../shared/util.h"
+
 #define WAITS 1
 #ifdef WAITS
 #endif
@@ -499,6 +501,8 @@ void tst_Q3Table::pageUpDownNavigation()
 
 void tst_Q3Table::simpleKeyboardNavigation()
 {
+    QApplication::setActiveWindow(testWidget);
+    QTRY_COMPARE(QApplication::activeWindow(), testWidget);
     QWidget *w;
 
     // Test for task #24726
