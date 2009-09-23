@@ -1039,7 +1039,10 @@ void tst_QFiledialog::focus()
     QNonNativeFileDialog fd;
     fd.setDirectory(QDir::currentPath());
     fd.show();
+    QApplication::setActiveWindow(&fd);
+    QTest::qWaitForWindowShown(&fd);
     QTRY_COMPARE(fd.isVisible(), true);
+    QTRY_COMPARE(QApplication::activeWindow(), &fd);
     qApp->processEvents();
 
     // make sure the tests work with focus follows mouse

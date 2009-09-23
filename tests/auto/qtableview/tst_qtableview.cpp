@@ -2908,11 +2908,11 @@ void tst_QTableView::tabFocus()
     QLineEdit *edit = new QLineEdit(&window);
 
     window.show();
+    QApplication::setActiveWindow(&window);
     QTest::qWaitForWindowShown(&window);
     window.setFocus();
     QTest::qWait(100);
     window.activateWindow();
-    QApplication::setActiveWindow(&window);
     QTest::qWait(100);
 
     qApp->processEvents();
