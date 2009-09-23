@@ -299,6 +299,9 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         destroyw->ControlEnv()->AppUi()->RemoveFromStack(destroyw);
         CBase::Delete(destroyw);
     }
+
+    if (q->testAttribute(Qt::WA_AcceptTouchEvents))
+        registerTouchWindow();
 }
 
 
@@ -798,6 +801,15 @@ QWindowSurface *QWidgetPrivate::createDefaultWindowSurface_sys()
 void QWidgetPrivate::setMask_sys(const QRegion& /* region */)
 {
 
+}
+
+void QWidgetPrivate::registerTouchWindow()
+{
+    Q_Q(QWidget);
+    if (q->testAttribute(Qt::WA_WState_Created) && q->windowType() != Qt::Desktop) {
+        RWindow *rwindow = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
+        rwindow->EnableAdvancedPointers();
+    }
 }
 
 int QWidget::metric(PaintDeviceMetric m) const

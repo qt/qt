@@ -95,6 +95,7 @@ private slots:
     void embeddedFonts();
     void opaquePaintEvent_data();
     void opaquePaintEvent();
+    void complexWidgetFocus();
     void task188195_baseBackground();
     void task232085_spinBoxLineEditBg();
 
@@ -1445,6 +1446,54 @@ void tst_QStyleSheetStyle::opaquePaintEvent()
     QCOMPARE(cl.testAttribute(Qt::WA_OpaquePaintEvent), !transparent);
     QCOMPARE(cl.testAttribute(Qt::WA_StyledBackground), styled);
     QCOMPARE(cl.autoFillBackground(), !styled );
+}
+
+void tst_QStyleSheetStyle::complexWidgetFocus()
+{
+    // This test is a simplified version of the focusColors() test above.
+
+    // Tests if colors can be changed by altering the focus of the widget.
+    // To avoid messy pixel-by-pixel comparison, we assume that the goal
+    // is reached if at least ten pixels of the right color can be found in
+    // the image.
+    // For this reason, we use unusual and extremely ugly colors! :-)
+
+    QDialog frame;
+    frame.setStyleSheet("*:focus { background: black; color: black } "
+                        "QSpinBox::up-arrow:focus, QSpinBox::down-arrow:focus { width: 7px; height: 7px; background: #ff0084 } "
+                        "QComboBox::down-arrow:focus { width: 7px; height: 7px; background: #ff0084 }"
+                        "QSlider::handle:horizontal:focus { width: 7px; height: 7px; background: #ff0084 } ");
+
+    QList<QWidget *> widgets;
+    widgets << new QSpinBox;
+    widgets << new QComboBox;
+    widgets << new QSlider(Qt::Horizontal);
+
+    QLayout* layout = new QGridLayout;
+    layout->addWidget(new QLineEdit); // Avoids initial focus.
+    foreach (QWidget *widget, widgets)
+        layout->addWidget(widget);
+    frame.setLayout(layout);
+
+    frame.show();
+    QTest::qWaitForWindowShown(&frame);
+    QApplication::setActiveWindow(&frame);
+    foreach (QWidget *widget, widgets) {
+        widget->setFocus();
+        QApplication::processEvents();
+
+        QImage image(frame.width(), frame.height(), QImage::Format_ARGB32);
+        frame.render(&image);
+        if (image.depth() < 24) {
+            QSKIP("Test doesn't support color depth < 24", SkipAll);
+        }
+
+        QVERIFY2(testForColors(image, QColor(0xff, 0x00, 0x84)),
+                (QString::fromLatin1(widget->metaObject()->className())
+                + " did not contain text color #ff0084, using style "
+                + QString::fromLatin1(qApp->style()->metaObject()->className()))
+                .toLocal8Bit().constData());
+    }
 }
 
 void tst_QStyleSheetStyle::task188195_baseBackground()

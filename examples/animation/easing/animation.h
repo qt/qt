@@ -68,7 +68,7 @@ public:
         m_path = QPainterPath();
     }
 
-    void updateCurrentTime(int msecs)
+    void updateCurrentTime()
     {
         if (m_pathType == CirclePath) {
             if (m_path.isEmpty()) {
@@ -90,7 +90,7 @@ public:
             updateCurrentValue(pt);
             emit valueChanged(pt);
         } else {
-            QPropertyAnimation::updateCurrentTime(msecs);
+            QPropertyAnimation::updateCurrentTime();
         }
     }
 

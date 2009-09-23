@@ -224,14 +224,15 @@ QImage* QPixmapData::buffer()
 }
 
 #if defined(Q_OS_SYMBIAN)
-RSgImage* QPixmapData::toRSgImage()
+void* QPixmapData::toNativeType(NativeType /* type */)
 {
     return 0;
 }
 
-void QPixmapData::fromRSgImage(RSgImage* rsgImage)
+void QPixmapData::fromNativeType(void* /* pixmap */, NativeType /* typre */)
 {
     return;
 }
 #endif
+
 QT_END_NAMESPACE

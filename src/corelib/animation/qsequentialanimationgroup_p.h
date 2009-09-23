@@ -79,7 +79,7 @@ public:
     };
 
     int animationActualTotalDuration(int index) const;
-    AnimationIndex indexForTime(int msecs) const;
+    AnimationIndex indexForCurrentTime() const;
 
     void setCurrentAnimation(int index, bool intermediate = false);
     void activateCurrentAnimation(bool intermediate = false);
