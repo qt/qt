@@ -1969,7 +1969,7 @@ void loadCPP(Translator &translator, const QStringList &filenames, ConversionDat
         CppFiles::setResults(filename, parser.getResults());
     }
 
-    foreach (const QString filename, filenames)
+    foreach (const QString &filename, filenames)
         if (!CppFiles::isBlacklisted(filename))
             if (Translator *tor = CppFiles::getResults(filename)->tor)
                 foreach (const TranslatorMessage &msg, tor->messages())
