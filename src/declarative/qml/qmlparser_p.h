@@ -130,6 +130,9 @@ namespace QmlParser
         int idIndex;
         // Custom parsed data
         QByteArray custom;
+        // Bit mask of the properties assigned bindings
+        QByteArray bindingBitmask; 
+        void setBindingBit(int);
         // Returns the metaobject for this type, or 0 if not available.  
         // Internally selectd between the metatype and extObject variables
         const QMetaObject *metaObject() const;

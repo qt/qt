@@ -161,7 +161,7 @@ QmlCompiledData::~QmlCompiledData()
     }
 }
 
-QObject *QmlCompiledData::TypeReference::createInstance(QmlContext *ctxt) const
+QObject *QmlCompiledData::TypeReference::createInstance(QmlContext *ctxt, const QBitField &bindings) const
 {
     if (type) {
         QObject *rv = type->create();
@@ -170,7 +170,7 @@ QObject *QmlCompiledData::TypeReference::createInstance(QmlContext *ctxt) const
         return rv;
     } else {
         Q_ASSERT(component);
-        return component->create(ctxt);
+        return QmlComponentPrivate::get(component)->create(ctxt, bindings);
     } 
 }
 

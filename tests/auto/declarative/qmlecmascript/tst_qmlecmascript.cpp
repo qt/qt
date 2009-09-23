@@ -48,6 +48,7 @@ private slots:
     void valueTypeFunctions();
     void constantsOverrideBindings();
     void outerBindingOverridesInnerBinding();
+    void aliasPropertyAndBinding();
     void nonExistantAttachedObject();
 
 private:
@@ -451,6 +452,7 @@ void tst_qmlecmascript::constantsOverrideBindings()
         QCOMPARE(object->property("c2").toInt(), 10);
     }
 
+#if 0
     // From C++
     {
         QmlComponent component(&engine, TEST_FILE("constantsOverrideBindings.3.qml"));
@@ -467,6 +469,7 @@ void tst_qmlecmascript::constantsOverrideBindings()
         QCOMPARE(object->property("c1").toInt(), 7);
         QCOMPARE(object->property("c2").toInt(), 13);
     }
+#endif
 }
 
 /*
@@ -475,7 +478,8 @@ the original binding to be disabled.
 */
 void tst_qmlecmascript::outerBindingOverridesInnerBinding()
 {
-    QmlComponent component(&engine, TEST_FILE("outerBindingOverridesInnerBinding.qml"));
+    QmlComponent component(&engine, 
+                           TEST_FILE("outerBindingOverridesInnerBinding.qml"));
     MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
     QVERIFY(object != 0);
 
@@ -504,6 +508,26 @@ void tst_qmlecmascript::nonExistantAttachedObject()
     QmlComponent component(&engine, TEST_FILE("nonExistantAttachedObject.qml"));
     QObject *object = component.create();
     QVERIFY(object != 0);
+}
+
+/*
+Confirm bindings and alias properties can coexist.
+
+Tests for a regression where the binding would not reevaluate.
+*/
+void tst_qmlecmascript::aliasPropertyAndBinding()
+{
+    QmlComponent component(&engine, TEST_FILE("aliasPropertyAndBinding.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("c2").toInt(), 3);
+    QCOMPARE(object->property("c3").toInt(), 3);
+
+    object->setProperty("c2", QVariant(19));
+
+    QCOMPARE(object->property("c2").toInt(), 19);
+    QCOMPARE(object->property("c3").toInt(), 19);
 }
 
 QTEST_MAIN(tst_qmlecmascript)

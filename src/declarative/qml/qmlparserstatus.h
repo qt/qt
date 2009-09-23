@@ -62,6 +62,7 @@ public:
 private:
     friend class QmlVME;
     friend class QmlComponent;
+    friend class QmlComponentPrivate;
     friend class QmlEnginePrivate;
     QmlParserStatus **d;
 };

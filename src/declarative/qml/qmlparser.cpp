@@ -84,6 +84,15 @@ QmlParser::Object::~Object()
         if (prop.defaultValue) prop.defaultValue->release();
 }
 
+void Object::setBindingBit(int b)
+{
+    while (bindingBitmask.size() < 4 * (1 + b / 32))
+        bindingBitmask.append(char(0));
+
+    quint32 *bits = (quint32 *)bindingBitmask.data();
+    bits[b / 32] |= (1 << (b % 32));
+}
+
 const QMetaObject *Object::metaObject() const
 {
     if (!metadata.isEmpty() && metatype)

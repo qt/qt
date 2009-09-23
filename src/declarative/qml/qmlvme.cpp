@@ -100,14 +100,16 @@ struct ListInstance
     QmlPrivate::ListInterface *qmlListInterface;
 };
 
-QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledData *comp, int start, int count)
+QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledData *comp, 
+                     int start, int count, 
+                     const QBitField &bindingSkipList)
 {
     QStack<QObject *> stack;
 
     if (start == -1) start = 0;
     if (count == -1) count = comp->bytecode.count();
 
-    return run(stack, ctxt, comp, start, count);
+    return run(stack, ctxt, comp, start, count, bindingSkipList);
 }
 
 void QmlVME::runDeferred(QObject *object)
@@ -124,10 +126,14 @@ void QmlVME::runDeferred(QObject *object)
     QStack<QObject *> stack;
     stack.push(object);
 
-    run(stack, ctxt, comp, start, count);
+    run(stack, ctxt, comp, start, count, QBitField());
 }
 
-QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData *comp, int start, int count)
+QBitField bindingSkipList;
+QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, 
+                     QmlCompiledData *comp, 
+                     int start, int count, 
+                     const QBitField &bindingSkipList)
 {
     Q_ASSERT(comp);
     Q_ASSERT(ctxt);
@@ -166,7 +172,17 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
 
         case QmlInstruction::CreateObject:
             {
-                QObject *o = types.at(instr.create.type).createInstance(ctxt);
+                QBitField bindings;
+                if (instr.create.bindingBits != -1) {
+                    const QByteArray &bits = datas.at(instr.create.bindingBits);
+                    bindings = QBitField((const quint32*)bits.constData(),
+                                         bits.size() * 8);
+                }
+                if (stack.isEmpty())
+                    bindings = bindings.united(bindingSkipList);
+
+                QObject *o = 
+                    types.at(instr.create.type).createInstance(ctxt, bindings);
                 if (!o) {
                     if(types.at(instr.create.type).component)
                         vmeErrors << types.at(instr.create.type).component->errors();
@@ -562,6 +578,11 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
                 QmlMetaProperty mp;
                 mp.restore(instr.assignBinding.property, target, ctxt);
 
+                int coreIndex = mp.coreIndex();
+
+                if (stack.count() == 1 && bindingSkipList.testBit(coreIndex))  
+                    break;
+
                 QmlBinding *bind = new QmlBinding((void *)datas.at(instr.assignBinding.value).constData(), comp, context, ctxt, 0);
                 bindValues.append(bind);
                 bind->m_mePtr = &bindValues.values[bindValues.count - 1];
@@ -572,6 +593,10 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
 
         case QmlInstruction::StoreIdOptBinding:
             {
+                int coreIndex = instr.assignIdOptBinding.property;
+                if (stack.count() == 1 && bindingSkipList.testBit(coreIndex)) 
+                    break;
+
                 QObject *target = stack.top();
 
                 QmlBinding_Id *bind = 
@@ -585,6 +610,10 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
 
         case QmlInstruction::StoreObjPropBinding:
             {
+                int coreIndex = instr.assignObjPropBinding.property;
+                if (stack.count() == 1 && bindingSkipList.testBit(coreIndex)) 
+                    break;
+
                 QObject *target = stack.top();
                 QObject *context = 
                     stack.at(stack.count() - 1 - instr.assignObjPropBinding.context);
