@@ -1459,16 +1459,15 @@ void tst_QStyleSheetStyle::complexWidgetFocus()
     // For this reason, we use unusual and extremely ugly colors! :-)
 
     QDialog frame;
-    // We only want to test the buttons colors.
     frame.setStyleSheet("*:focus { background: black; color: black } "
-                        "QSpinBox::up-button:focus, QSpinBox::down-button:focus { width: 15px; height: 15px; background: #e8ff66; color: #ff0084 } "
                         "QSpinBox::up-arrow:focus, QSpinBox::down-arrow:focus { width: 7px; height: 7px; background: #ff0084 } "
-                        "QComboBox::drop-down:focus { background: #e8ff66; color: #ff0084 } "
-                        "QComboBox::down-arrow:focus { width: 7px; height: 7px; background: #ff0084; color: #e8ff66 }");
+                        "QComboBox::down-arrow:focus { width: 7px; height: 7px; background: #ff0084 }"
+                        "QSlider::handle:horizontal:focus { width: 7px; height: 7px; background: #ff0084 } ");
 
     QList<QWidget *> widgets;
     widgets << new QSpinBox;
     widgets << new QComboBox;
+    widgets << new QSlider(Qt::Horizontal);
 
     QLayout* layout = new QGridLayout;
     layout->addWidget(new QLineEdit); // Avoids initial focus.
@@ -1489,11 +1488,6 @@ void tst_QStyleSheetStyle::complexWidgetFocus()
             QSKIP("Test doesn't support color depth < 24", SkipAll);
         }
 
-        QVERIFY2(testForColors(image, QColor(0xe8, 0xff, 0x66)),
-                (QString::fromLatin1(widget->metaObject()->className())
-                + " did not contain background color #e8ff66, using style "
-                + QString::fromLatin1(qApp->style()->metaObject()->className()))
-                .toLocal8Bit().constData());
         QVERIFY2(testForColors(image, QColor(0xff, 0x00, 0x84)),
                 (QString::fromLatin1(widget->metaObject()->className())
                 + " did not contain text color #ff0084, using style "
