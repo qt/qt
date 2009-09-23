@@ -78,7 +78,7 @@
 QT_BEGIN_NAMESPACE
 
 // Application internal HandleResourceChangeL events,
-// system evens seems to start with 0x10
+// system events seems to start with 0x10
 const TInt KInternalStatusPaneChange = 0x50000000;
 
 class QS60Data
