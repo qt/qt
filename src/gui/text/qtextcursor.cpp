@@ -92,8 +92,12 @@ QTextCursorPrivate::AdjustResult QTextCursorPrivate::adjustPosition(int position
 {
     QTextCursorPrivate::AdjustResult result = QTextCursorPrivate::CursorMoved;
     // not(!) <= , so that inserting text adjusts the cursor correctly
-    if (position < positionOfChange ||
-        (position == positionOfChange && op == QTextUndoCommand::KeepCursor)) {
+    if (position < positionOfChange
+        || (position == positionOfChange
+            && (op == QTextUndoCommand::KeepCursor
+                || anchor < position)
+            )
+         ) {
         result = CursorUnchanged;
     } else {
         if (charsAddedOrRemoved < 0 && position < positionOfChange - charsAddedOrRemoved)
