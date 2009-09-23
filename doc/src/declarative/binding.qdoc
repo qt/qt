@@ -86,7 +86,7 @@ void setBrightness(int b)
 
 Next, make an instance of this class visible to the QML bind engine:
 \code
-QFxView *view = new QFxView;
+QmlView *view = new QmlView;
 view->setUrl("MyUI.qml");
 
 MyScreen *screen = new MyScreen;

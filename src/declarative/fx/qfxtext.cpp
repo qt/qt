@@ -84,7 +84,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Text,QFxText)
     \qmlclass Text
     \ingroup group_coreitems
 
-    \brief The QFxText class provides a formatted text item that you can add to a QFxView.
+    \brief The QFxText class provides a formatted text item that you can add to a QmlView.
 
     Text was designed for read-only text; it does not allow for any text editing.
     It can display both plain and rich text. For example:
@@ -750,7 +750,7 @@ void QFxText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 
     if (needClip) {
         p->save();
-        p->setClipRect(boundingRect());
+        p->setClipRect(boundingRect(), Qt::IntersectClip);
     }
     p->drawPixmap(x, y, d->imgCache);
     if (needClip)

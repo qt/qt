@@ -44,7 +44,7 @@ function initBoard()
     for(xIdx=0; xIdx<maxX; xIdx++){
         for(yIdx=0; yIdx<maxY; yIdx++){
             board[index(xIdx,yIdx)] = null;
-            startCreatingBlock(xIdx,yIdx);
+            createBlock(xIdx,yIdx);
         }
     }
     timer = new Date();
@@ -170,22 +170,15 @@ function floodMoveCheck(xIdx, yIdx, type)
            floodMoveCheck(xIdx, yIdx - 1, board[index(xIdx,yIdx)].type);
 }
 
-//If the component isn't ready, then the signal doesn't include the game x,y
-//So we store any x,y sent that we couldn't create at the time, and use those
-//if we are triggered by the signal.
-var waitStack = new Array(maxIndex);
-var waitTop = -1;
+function createBlock(xIdx,yIdx){
+    if(component==null)
+        component = createComponent(tileSrc);
 
-function finishCreatingBlock(xIdx,yIdx){
+    // Note that we don't wait for the component to become ready. This will
+    // only work if the block QML is a local file. Otherwise the component will
+    // not be ready immediately. There is a statusChanged signal on the
+    // component you could use if you want to wait to load remote files.
     if(component.isReady){
-        if(xIdx == undefined){
-            //Called without arguments, create a previously stored (xIdx,yIdx)
-            if(waitTop == -1)
-                return;//Don't have a previously stored (xIdx,yIdx)
-            xIdx = waitStack[waitTop] % maxX;
-            yIdx = Math.floor(waitStack[waitTop] / maxX);
-            waitTop -= 1;
-        }
         dynamicObject = component.createObject();
         if(dynamicObject == null){
             print("error creating block");
@@ -201,30 +194,12 @@ function finishCreatingBlock(xIdx,yIdx){
         dynamicObject.height = tileSize;
         dynamicObject.spawned = true;
         board[index(xIdx,yIdx)] = dynamicObject;
-        return true;
-    }else if(component.isError){
-        print("error creating block");
+    }else{//isError or isLoading
+        print("error loading block component");
         print(component.errorsString());
-    }else{
-        //It isn't ready, but we'll be called again when it is.
-        //So store the requested (xIdx,yIdx) for later use
-        waitTop += 1;
-        waitStack[waitTop] = index(xIdx,yIdx);
+        return false;
     }
-    return false;
-}
-
-function startCreatingBlock(xIdx,yIdx){
-    if(component!=null){
-        finishCreatingBlock(xIdx,yIdx);
-        return;
-    }
-
-    component = createComponent(tileSrc);
-    if(finishCreatingBlock(xIdx,yIdx))
-        return;
-    component.statusChanged.connect(finishCreatingBlock());
-    return;
+    return true;
 }
 
 function sendHighScore(name) {

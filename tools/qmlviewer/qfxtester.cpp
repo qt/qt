@@ -14,7 +14,7 @@
 #include <qfxtester.h>
 #include <QDebug>
 #include <QApplication>
-#include <QFxView>
+#include <qmlview.h>
 #include <QFile>
 #include <QmlComponent>
 #include <QCryptographicHash>
@@ -29,7 +29,7 @@ QML_DEFINE_TYPE(Qt.VisualTest, 4, 6, (QT_VERSION&0x00ff00)>>8, Mouse, QFxVisualT
 QML_DEFINE_TYPE(Qt.VisualTest, 4, 6, (QT_VERSION&0x00ff00)>>8, Key, QFxVisualTestKey);
 
 QFxTester::QFxTester(const QString &script, QmlViewer::ScriptOptions opts, 
-                     QFxView *parent)
+                     QmlView *parent)
 : QAbstractAnimation(parent), m_view(parent), filterEvents(true), options(opts), 
   testscript(0), hasFailed(false)
 {

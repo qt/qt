@@ -7,6 +7,7 @@ QT_BEGIN_NAMESPACE
 
 class QmlDebugConnection;
 class QTabWidget;
+class QSpinBox;
 class CanvasFrameRate : public QWidget
 {
     Q_OBJECT
@@ -19,6 +20,7 @@ private slots:
 
 private:
     QTabWidget *m_tabs;
+    QSpinBox *m_spin;
     QObject *m_plugin;
 };
 

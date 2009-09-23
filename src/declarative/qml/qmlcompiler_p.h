@@ -231,9 +231,9 @@ private:
     int componentTypeRef();
 
     static int findSignalByName(const QMetaObject *, const QByteArray &name);
-    static bool canCoerce(int to, QmlParser::Object *from);
-    static bool canCoerce(int to, int from);
     static QmlType *toQmlType(QmlParser::Object *from);
+    bool canCoerce(int to, QmlParser::Object *from);
+    bool canCoerce(int to, int from);
 
     QStringList deferredProperties(QmlParser::Object *);
 

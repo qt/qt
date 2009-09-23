@@ -242,6 +242,15 @@ public:
                                 int *version_major, int *version_minor ) const;
 
 
+    void registerCompositeType(QmlCompiledData *);
+    bool isQmlList(int) const;
+    bool isObject(int);
+    int qmlListType(int) const;
+    const QMetaObject *rawMetaObjectForType(int) const;
+    const QMetaObject *metaObjectForType(int) const;
+    QHash<int, int> m_qmlLists;
+    QHash<int, QmlCompiledData *> m_compositeTypes;
+
     static QScriptValue qmlScriptObject(QObject*, QmlEngine*);
     static QScriptValue createComponent(QScriptContext*, QScriptEngine*);
     static QScriptValue createQmlObject(QScriptContext*, QScriptEngine*);

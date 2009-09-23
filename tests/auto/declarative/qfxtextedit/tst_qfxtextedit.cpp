@@ -424,10 +424,10 @@ void tst_qfxtextedit::selection()
     QVERIFY(textEditObject->selectedText().size() == 10);
 }
 
-#include <QFxView>
+#include <QmlView>
 void tst_qfxtextedit::cursorDelegate()
 {
-    QFxView* view = new QFxView(0);
+    QmlView* view = new QmlView(0);
     view->show();
     view->setUrl(QUrl("data/cursorTest.qml"));
     view->execute();

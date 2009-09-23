@@ -537,11 +537,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
                 QMetaMethod signal = 
                     target->metaObject()->method(instr.storeSignal.signalIndex);
 
-                if (signal.parameterTypes().isEmpty()) {
-                    (void *)new QmlBoundSignal(ctxt, primitives.at(instr.storeSignal.value), target, instr.storeSignal.signalIndex, target);
-                } else {
-                    (void *)new QmlBoundSignalProxy(new QmlContext(ctxt, target, true), primitives.at(instr.storeSignal.value), target, instr.storeSignal.signalIndex, target);
-                }
+                (void *)new QmlBoundSignal(ctxt, primitives.at(instr.storeSignal.value), target, signal, target);
             }
             break;
 

@@ -56,7 +56,7 @@
 #include "private/qperformancelog_p.h"
 #include "private/qfxperf_p.h"
 
-#include "qfxview.h"
+#include "qmlview.h"
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmldebug.h>
@@ -67,11 +67,11 @@ QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(frameRateDebug, QML_SHOW_FRAMERATE)
 
-class QFxViewDebugServer;
+class QmlViewDebugServer;
 class FrameBreakAnimation : public QAbstractAnimation
 {
 public:
-    FrameBreakAnimation(QFxViewDebugServer *s)
+    FrameBreakAnimation(QmlViewDebugServer *s)
     : QAbstractAnimation((QObject*)s), server(s)
     {
         start();
@@ -81,13 +81,13 @@ public:
     virtual void updateCurrentTime(int msecs);
 
 private:
-    QFxViewDebugServer *server;
+    QmlViewDebugServer *server;
 };
 
-class QFxViewDebugServer : public QmlDebugService
+class QmlViewDebugServer : public QmlDebugService
 {
 public:
-    QFxViewDebugServer(QObject *parent = 0) : QmlDebugService(QLatin1String("CanvasFrameRate"), parent), breaks(0)
+    QmlViewDebugServer(QObject *parent = 0) : QmlDebugService(QLatin1String("CanvasFrameRate"), parent), breaks(0)
     {
         timer.start();
         new FrameBreakAnimation(this);
@@ -103,7 +103,7 @@ public:
         int e = timer.elapsed();
         QByteArray data;
         QDataStream ds(&data, QIODevice::WriteOnly);
-        ds << (int)pe << (int)pe << (int)tbf << (int)e
+        ds << (int)pe << (int)tbf << (int)e
            << (bool)isFrameBreak;
         sendMessage(data);
     }
@@ -115,7 +115,7 @@ private:
     int breaks;
 };
 
-Q_GLOBAL_STATIC(QFxViewDebugServer, qfxViewDebugServer);
+Q_GLOBAL_STATIC(QmlViewDebugServer, qfxViewDebugServer);
 
 void FrameBreakAnimation::updateCurrentTime(int msecs)
 {
@@ -129,13 +129,13 @@ static QVariant stringToKeySequence(const QString &str)
     return QVariant::fromValue(QKeySequence(str));
 }
 
-class QFxViewPrivate
+class QmlViewPrivate
 {
 public:
-    QFxViewPrivate(QFxView *w)
+    QmlViewPrivate(QmlView *w)
         : q(w), root(0), component(0), resizable(false) {}
 
-    QFxView *q;
+    QmlView *q;
     QFxItem *root;
 
     QUrl source;
@@ -155,16 +155,16 @@ public:
 };
 
 /*!
-    \class QFxView
-    \brief The QFxView class provides a widget for displaying a Qt Declarative user interface.
+    \class QmlView
+    \brief The QmlView class provides a widget for displaying a Qt Declarative user interface.
 
-    QFxView currently provides a minimal interface for displaying QML
+    QmlView currently provides a minimal interface for displaying QML
     files, and connecting between QML and C++ Qt objects.
 
     Typical usage:
     \code
     ...
-    QFxView *view = new QFxView(this);
+    QmlView *view = new QmlView(this);
     vbox->addWidget(view);
 
     QUrl url(fileName);
@@ -176,18 +176,18 @@ public:
 */
 
 /*!
-  \fn QFxView::QFxView(QWidget *parent)
+  \fn QmlView::QmlView(QWidget *parent)
   
-  Constructs a QFxView with the given \a parent.
+  Constructs a QmlView with the given \a parent.
 */
-QFxView::QFxView(QWidget *parent)
-: QGraphicsView(parent), d(new QFxViewPrivate(this))
+QmlView::QmlView(QWidget *parent)
+: QGraphicsView(parent), d(new QmlViewPrivate(this))
 {
     setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
     d->init();
 }
 
-void QFxViewPrivate::init()
+void QmlViewPrivate::init()
 {
     // XXX: These need to be put in a central location for this kind of thing
     QmlMetaType::registerCustomStringConverter(QVariant::KeySequence, &stringToKeySequence);
@@ -218,7 +218,7 @@ void QFxViewPrivate::init()
 
   \sa clearItems()
  */
-QFxView::~QFxView()
+QmlView::~QmlView()
 {
     clearItems();
     delete d; d = 0;
@@ -228,7 +228,7 @@ QFxView::~QFxView()
   Sets the source to the \a url. The QML string is set to
   empty.
  */
-void QFxView::setUrl(const QUrl& url)
+void QmlView::setUrl(const QUrl& url)
 {
     d->source = url;
     d->qml = QString();
@@ -238,7 +238,7 @@ void QFxView::setUrl(const QUrl& url)
   Sets the source to the URL from the \a filename, and sets
   the QML string to \a qml.
  */
-void QFxView::setQml(const QString &qml, const QString &filename)
+void QmlView::setQml(const QString &qml, const QString &filename)
 {
     d->source = QUrl::fromLocalFile(filename);
     d->qml = qml;
@@ -247,7 +247,7 @@ void QFxView::setQml(const QString &qml, const QString &filename)
 /*!
   Returns the QML string.
  */
-QString QFxView::qml() const
+QString QmlView::qml() const
 {
     return d->qml;
 }
@@ -256,7 +256,7 @@ QString QFxView::qml() const
   Returns a pointer to the QmlEngine used for instantiating
   QML Components.
  */
-QmlEngine* QFxView::engine()
+QmlEngine* QmlView::engine()
 {
     return &d->engine;
 }
@@ -268,7 +268,7 @@ QmlEngine* QFxView::engine()
   arranged hierarchically and this hierarchy is managed by the
   QmlEngine.
  */
-QmlContext* QFxView::rootContext()
+QmlContext* QmlView::rootContext()
 {
     return d->engine.rootContext();
 }
@@ -276,7 +276,7 @@ QmlContext* QFxView::rootContext()
 /*!
   Displays the Qt Declarative user interface.
 */
-void QFxView::execute()
+void QmlView::execute()
 {
     if (d->qml.isEmpty()) {
         d->component = new QmlComponent(&d->engine, d->source, this);
@@ -295,7 +295,7 @@ void QFxView::execute()
 /*!
   \internal
  */
-void QFxView::continueExecute()
+void QmlView::continueExecute()
 {
     disconnect(d->component, SIGNAL(statusChanged(QmlComponent::Status)), this, SLOT(continueExecute()));
 
@@ -366,18 +366,18 @@ void QFxView::continueExecute()
     }
 }
 
-/*! \fn void QFxView::sceneResized(QSize size)
+/*! \fn void QmlView::sceneResized(QSize size)
   This signal is emitted when the view is resized to \a size.
  */
 
-/*! \fn void QFxView::errors(const QList<QmlError> &errors)
+/*! \fn void QmlView::errors(const QList<QmlError> &errors)
   This signal is emitted when the qml loaded contains \a errors.
  */
 
 /*!
   \internal
  */
-void QFxView::sizeChanged()
+void QmlView::sizeChanged()
 {
     // delay, so we catch both width and height changing.
     d->resizetimer.start(0,this);
@@ -387,7 +387,7 @@ void QFxView::sizeChanged()
   If the \l {QTimerEvent} {timer event} \a e is this
   view's resize timer, sceneResized() is emitted.
  */
-void QFxView::timerEvent(QTimerEvent* e)
+void QmlView::timerEvent(QTimerEvent* e)
 {
     if (!e || e->timerId() == d->resizetimer.timerId()) {
         if (d->root) {
@@ -403,7 +403,7 @@ void QFxView::timerEvent(QTimerEvent* e)
 
 // modelled on QScrollArea::widgetResizable
 /*!
-    \property QFxView::contentResizable
+    \property QmlView::contentResizable
     \brief whether the view should resize the canvas contents
 
     If this property is set to false (the default), the view
@@ -416,7 +416,7 @@ void QFxView::timerEvent(QTimerEvent* e)
     is the initial size of the root item.
 */
 
-void QFxView::setContentResizable(bool on)
+void QmlView::setContentResizable(bool on)
 {
     if (d->resizable != on) {
         d->resizable = on;
@@ -432,7 +432,7 @@ void QFxView::setContentResizable(bool on)
     }
 }
 
-bool QFxView::contentResizable() const
+bool QmlView::contentResizable() const
 {
     return d->resizable;
 }
@@ -441,7 +441,7 @@ bool QFxView::contentResizable() const
 /*!
     The size hint is the size of the root item.
 */
-QSize QFxView::sizeHint() const
+QSize QmlView::sizeHint() const
 {
     if (d->root) {
         if (d->initialSize.width() <= 0)
@@ -458,7 +458,7 @@ QSize QFxView::sizeHint() const
   \a parent item is provided, it becomes the new item's
   parent. \a parent should be in this view's item hierarchy.
  */
-QFxItem* QFxView::addItem(const QString &qml, QFxItem* parent)
+QFxItem* QmlView::addItem(const QString &qml, QFxItem* parent)
 {
     if (!d->root)
         return 0;
@@ -500,7 +500,7 @@ QFxItem* QFxView::addItem(const QString &qml, QFxItem* parent)
   Deletes the view's \l {QFxItem} {items} and the \l {QmlEngine}
   {QML engine's} Component cache.
  */
-void QFxView::reset()
+void QmlView::reset()
 {
     clearItems();
     d->engine.clearComponentCache();
@@ -510,7 +510,7 @@ void QFxView::reset()
 /*!
   Deletes the view's \l {QFxItem} {items}.
  */
-void QFxView::clearItems()
+void QmlView::clearItems()
 {
     if (!d->root)
         return;
@@ -521,7 +521,7 @@ void QFxView::clearItems()
 /*!
   Returns the view's root \l {QFxItem} {item}.
  */
-QFxItem *QFxView::root() const
+QFxItem *QmlView::root() const
 {
     return d->root;
 }
@@ -530,7 +530,7 @@ QFxItem *QFxView::root() const
   This function handles the \l {QResizeEvent} {resize event}
   \a e.
  */
-void QFxView::resizeEvent(QResizeEvent *e)
+void QmlView::resizeEvent(QResizeEvent *e)
 {
     if (d->resizable && d->root) {
         d->root->setWidth(width());
@@ -543,34 +543,34 @@ void QFxView::resizeEvent(QResizeEvent *e)
 /*!
     \reimp
 */
-void QFxView::paintEvent(QPaintEvent *event)
+void QmlView::paintEvent(QPaintEvent *event)
 {
     int time = 0;
-    if (frameRateDebug() || QFxViewDebugServer::isDebuggingEnabled())
+    if (frameRateDebug() || QmlViewDebugServer::isDebuggingEnabled())
         time = d->frameTimer.restart();
     QGraphicsView::paintEvent(event);
-    if (QFxViewDebugServer::isDebuggingEnabled())
+    if (QmlViewDebugServer::isDebuggingEnabled())
         qfxViewDebugServer()->addTiming(d->frameTimer.elapsed(), time);
     if (frameRateDebug())
         qDebug() << "paintEvent:" << d->frameTimer.elapsed() << "time since last frame:" << time;
 }
 
-/*! \fn void QFxView::focusInEvent(QFocusEvent *e)
+/*! \fn void QmlView::focusInEvent(QFocusEvent *e)
   This virtual function does nothing with the event \a e
   in this class.
  */
-void QFxView::focusInEvent(QFocusEvent *e)
+void QmlView::focusInEvent(QFocusEvent *e)
 {
     // Do nothing (do not call QWidget::update())
     QGraphicsView::focusInEvent(e);
 }
 
 
-/*! \fn void QFxView::focusOutEvent(QFocusEvent *e)
+/*! \fn void QmlView::focusOutEvent(QFocusEvent *e)
   This virtual function does nothing with the event \a e
   in this class.
  */
-void QFxView::focusOutEvent(QFocusEvent *e)
+void QmlView::focusOutEvent(QFocusEvent *e)
 {
     // Do nothing (do not call QWidget::update())
     QGraphicsView::focusOutEvent(e);

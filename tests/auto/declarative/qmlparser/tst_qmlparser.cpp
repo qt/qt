@@ -160,6 +160,8 @@ void tst_qmlparser::errors_data()
     QTest::newRow("finalOverride") << "finalOverride.qml" << "finalOverride.errors.txt" << false;
 
     QTest::newRow("importNamespaceConflict") << "importNamespaceConflict.qml" << "importNamespaceConflict.errors.txt" << false;
+    QTest::newRow("importVersionMissing (builtin)") << "importVersionMissingBuiltIn.qml" << "importVersionMissingBuiltIn.errors.txt" << false;
+    QTest::newRow("importVersionMissing (installed)") << "importVersionMissingInstalled.qml" << "importVersionMissingInstalled.errors.txt" << false;
 
     QTest::newRow("customParserIdNotAllowed") << "customParserIdNotAllowed.qml" << "customParserIdNotAllowed.errors.txt" << false;
 }
@@ -374,6 +376,8 @@ void tst_qmlparser::assignSignal()
     QVERIFY(object != 0);
     QTest::ignoreMessage(QtWarningMsg, "MyQmlObject::basicSlot");
     emit object->basicSignal();
+    QTest::ignoreMessage(QtWarningMsg, "MyQmlObject::basicSlot(9)");
+    emit object->basicParameterizedSignal(9);
 }
 
 // Tests the creation and assignment of dynamic properties
