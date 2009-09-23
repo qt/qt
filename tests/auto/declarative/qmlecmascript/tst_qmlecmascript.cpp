@@ -46,6 +46,9 @@ private slots:
     void extensionObjects();
     void enums();
     void valueTypeFunctions();
+    void constantsOverrideBindings();
+    void outerBindingOverridesInnerBinding();
+    void nonExistantAttachedObject();
 
 private:
     QmlEngine engine;
@@ -376,6 +379,8 @@ void tst_qmlecmascript::extensionObjects()
 
 void tst_qmlecmascript::enums()
 {
+    // Existant enums
+    {
     QmlComponent component(&engine, TEST_FILE("enums.1.qml"));
     QObject *object = component.create();
     QVERIFY(object != 0);
@@ -390,6 +395,15 @@ void tst_qmlecmascript::enums()
     QCOMPARE(object->property("h").toInt(), 3);
     QCOMPARE(object->property("i").toInt(), 19);
     QCOMPARE(object->property("j").toInt(), 19);
+    }
+    // Non-existant enums
+    {
+    QmlComponent component(&engine, TEST_FILE("enums.2.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("a").toInt(), 0);
+    QCOMPARE(object->property("b").toInt(), 0);
+    }
 }
 
 void tst_qmlecmascript::valueTypeFunctions()
@@ -401,6 +415,96 @@ void tst_qmlecmascript::valueTypeFunctions()
     QCOMPARE(obj->rectFProperty(), QRectF(0,0.5,100,99.5));
 }
 
+/* 
+Tests that writing a constant to a property with a binding on it disables the
+binding.
+*/
+void tst_qmlecmascript::constantsOverrideBindings()
+{
+    // From ECMAScript
+    {
+        QmlComponent component(&engine, TEST_FILE("constantsOverrideBindings.1.qml"));
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("c2").toInt(), 0);
+        object->setProperty("c1", QVariant(9));
+        QCOMPARE(object->property("c2").toInt(), 9);
+
+        emit object->basicSignal();
+
+        QCOMPARE(object->property("c2").toInt(), 13);
+        object->setProperty("c1", QVariant(8));
+        QCOMPARE(object->property("c2").toInt(), 13);
+    }
+
+    // During construction
+    {
+        QmlComponent component(&engine, TEST_FILE("constantsOverrideBindings.2.qml"));
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("c1").toInt(), 0);
+        QCOMPARE(object->property("c2").toInt(), 10);
+        object->setProperty("c1", QVariant(9));
+        QCOMPARE(object->property("c1").toInt(), 9);
+        QCOMPARE(object->property("c2").toInt(), 10);
+    }
+
+    // From C++
+    {
+        QmlComponent component(&engine, TEST_FILE("constantsOverrideBindings.3.qml"));
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("c2").toInt(), 0);
+        object->setProperty("c1", QVariant(9));
+        QCOMPARE(object->property("c2").toInt(), 9);
+
+        object->setProperty("c2", QVariant(13));
+        QCOMPARE(object->property("c2").toInt(), 13);
+        object->setProperty("c1", QVariant(7));
+        QCOMPARE(object->property("c1").toInt(), 7);
+        QCOMPARE(object->property("c2").toInt(), 13);
+    }
+}
+
+/*
+Tests that assigning a binding to a property that already has a binding causes
+the original binding to be disabled.
+*/
+void tst_qmlecmascript::outerBindingOverridesInnerBinding()
+{
+    QmlComponent component(&engine, TEST_FILE("outerBindingOverridesInnerBinding.qml"));
+    MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("c1").toInt(), 0);
+    QCOMPARE(object->property("c2").toInt(), 0);
+    QCOMPARE(object->property("c3").toInt(), 0);
+
+    object->setProperty("c1", QVariant(9));
+    QCOMPARE(object->property("c1").toInt(), 9);
+    QCOMPARE(object->property("c2").toInt(), 0);
+    QCOMPARE(object->property("c3").toInt(), 0);
+
+    object->setProperty("c3", QVariant(8));
+    QCOMPARE(object->property("c1").toInt(), 9);
+    QCOMPARE(object->property("c2").toInt(), 8);
+    QCOMPARE(object->property("c3").toInt(), 8);
+}
+
+/*
+Access a non-existant attached object.  
+
+Tests for a regression where this used to crash.
+*/
+void tst_qmlecmascript::nonExistantAttachedObject()
+{
+    QmlComponent component(&engine, TEST_FILE("nonExistantAttachedObject.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+}
 
 QTEST_MAIN(tst_qmlecmascript)
 

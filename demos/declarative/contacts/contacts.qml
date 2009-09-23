@@ -224,7 +224,7 @@ Rectangle {
                 }
             }
         ]
-        autoHighlight: true
+        highlightFollowsCurrentItem: true
         focus: false
     }
     FocusScope {
@@ -291,7 +291,7 @@ Rectangle {
         ]
     }
     focus: contacts.mode != 'new'
-    forwardTo: { contacts.mode == "list" ? [searchBarWrapper, contactListView] : [contactListView]}
+    Keys.forwardTo: { contacts.mode == "list" ? [searchBarWrapper, contactListView] : [contactListView]}
     states: [
         State {
             name: "editNewState"

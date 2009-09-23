@@ -1255,7 +1255,8 @@ QmlTypeNameScriptClass::queryProperty(const QScriptValue &scriptObject,
         } else {
             // Must be an attached property
             this->object = qmlAttachedPropertiesObjectById(bridge.type->index(), bridge.object);
-            Q_ASSERT(this->object);
+            if (!this->object)
+                return 0;
             return ep->queryObject(strName, id, this->object);
         }
     }

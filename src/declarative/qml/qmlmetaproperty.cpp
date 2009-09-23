@@ -119,6 +119,7 @@ QmlMetaObjectCache::property(const QString &name, const QMetaObject *metaObject)
 QmlMetaProperty::QmlMetaProperty()
 : d(new QmlMetaPropertyPrivate)
 {
+    d->q = this;
 }
 
 /*!
@@ -134,7 +135,9 @@ QmlMetaProperty::~QmlMetaProperty()
     default property, an invalid QmlMetaProperty will be created.
  */
 QmlMetaProperty::QmlMetaProperty(QObject *obj)
+: d(new QmlMetaPropertyPrivate)
 {
+    d->q = this;
     d->initDefault(obj);
 }
 
@@ -146,6 +149,7 @@ QmlMetaProperty::QmlMetaProperty(QObject *obj)
 QmlMetaProperty::QmlMetaProperty(QObject *obj, QmlContext *ctxt)
 : d(new QmlMetaPropertyPrivate)
 {
+    d->q = this;
     d->context = ctxt;
     d->initDefault(obj);
 }
@@ -175,6 +179,7 @@ void QmlMetaPropertyPrivate::initDefault(QObject *obj)
 QmlMetaProperty::QmlMetaProperty(QObject *obj, int idx, QmlContext *ctxt)
 : d(new QmlMetaPropertyPrivate)
 {
+    d->q = this;
     d->context = ctxt;
     d->object = obj;
     d->type = Property;
@@ -191,6 +196,7 @@ QmlMetaProperty::QmlMetaProperty(QObject *obj, int idx, QmlContext *ctxt)
 QmlMetaProperty::QmlMetaProperty(QObject *obj, const QString &name)
 : d(new QmlMetaPropertyPrivate)
 {
+    d->q = this;
     d->initProperty(obj, name);
 }
 
@@ -201,6 +207,7 @@ QmlMetaProperty::QmlMetaProperty(QObject *obj, const QString &name)
 QmlMetaProperty::QmlMetaProperty(QObject *obj, const QString &name, QmlContext *ctxt)
 : d(new QmlMetaPropertyPrivate)
 {
+    d->q = this;
     d->context = ctxt;
     d->initProperty(obj, name);
 }
@@ -276,6 +283,7 @@ void QmlMetaPropertyPrivate::initProperty(QObject *obj, const QString &name)
 QmlMetaProperty::QmlMetaProperty(const QmlMetaProperty &other)
 : d(new QmlMetaPropertyPrivate(*other.d))
 {
+    d->q = this;
 }
 
 /*!
@@ -560,9 +568,10 @@ QmlMetaProperty::setBinding(QmlAbstractBinding *newBinding) const
     if (!isProperty() || (type() & Attached) || !d->object)
         return 0;
 
-    QmlDeclarativeData *data = QmlDeclarativeData::get(d->object, true);
+    QmlDeclarativeData *data = 
+        QmlDeclarativeData::get(d->object, 0 != newBinding);
 
-    if (data->hasBindingBit(d->coreIdx)) {
+    if (data && data->hasBindingBit(d->coreIdx)) {
         QmlAbstractBinding *binding = data->bindings;
         while (binding) {
             // ### This wont work for value types
@@ -584,7 +593,6 @@ QmlMetaProperty::setBinding(QmlAbstractBinding *newBinding) const
 
     return 0;
 }
-
 /*!
     Returns the expression associated with this signal property, or 0 if no 
     signal expression exists.
@@ -742,6 +750,10 @@ void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value,
     QObject *writeBackObj = 0;
     int writeBackIdx = -1;
     bool deleteWriteBack = false;
+
+    // Remove any existing bindings on this property
+    if (source != QmlMetaProperty::Binding) 
+        delete q->setBinding(0);
 
     if (type & QmlMetaProperty::ValueTypeProperty) {
         QmlEnginePrivate *ep = context?static_cast<QmlEnginePrivate *>(QObjectPrivate::get(context->engine())):0;
