@@ -270,6 +270,7 @@ QmlDebugPropertyWatch *QmlEngineDebug::addWatch(const QmlDebugPropertyReference 
         int queryId = d->getId();
         watch->m_queryId = queryId;
         watch->m_objectDebugId = property.objectDebugId();
+        watch->m_name = property.name();
         d->watched.insert(queryId, watch);
 
         QByteArray message;
@@ -297,6 +298,7 @@ QmlDebugObjectExpressionWatch *QmlEngineDebug::addWatch(const QmlDebugObjectRefe
         int queryId = d->getId();
         watch->m_queryId = queryId;
         watch->m_objectDebugId = object.debugId();
+        watch->m_expr = expr;
         d->watched.insert(queryId, watch);
 
         QByteArray message;

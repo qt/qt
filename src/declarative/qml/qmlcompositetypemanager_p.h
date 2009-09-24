@@ -66,7 +66,7 @@ class QmlComponentPrivate;
 class QmlComponent;
 class QmlDomDocument;
 
-struct QmlCompositeTypeData;
+class QmlCompositeTypeData;
 
 class QmlCompositeTypeManager : public QObject
 {
