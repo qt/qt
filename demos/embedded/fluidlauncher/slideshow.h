@@ -53,7 +53,7 @@ class SlideShow : public QWidget
     Q_PROPERTY(int slideInterval READ slideInterval WRITE setSlideInterval)
 
 public:
-    SlideShow();
+    SlideShow(QWidget* parent = 0);
     ~SlideShow();
     void addImage(QString filename);
     void addImageDir(QString dirName);
