@@ -738,6 +738,8 @@ void QSymbianControl::Draw(const TRect& r) const
         return;
 
     if (engine->type() == QPaintEngine::Raster) {
+        CWindowGc &gc = SystemGc();
+
         if(qwidget->d_func()->extraData()->disableBlit) {
 
             QS60WindowSurface *s60Surface = static_cast<QS60WindowSurface *>(qwidget->windowSurface());
@@ -766,7 +768,6 @@ void QSymbianControl::Draw(const TRect& r) const
             }
 #endif
 
-            CWindowGc &gc = SystemGc();
             if (qwidget->d_func()->isOpaque)
                 gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
         }
