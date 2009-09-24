@@ -68,7 +68,7 @@ struct TScreenInfo
     TDisplayMode displayMode;
 };
 
-void getScreenInfoL(TScreenInfo& info)
+static void getScreenInfoL(TScreenInfo& info)
 {
     info.displayMode = CEikonEnv::Static()->ScreenDevice()->DisplayMode();
 
