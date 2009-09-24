@@ -92,12 +92,16 @@ public:
     bool createSurface(QPaintDevice *device, const QEglProperties *properties = 0);
     bool recreateSurface(QPaintDevice *device);
     void destroySurface();
+    void destroySurface(EGLSurface surface);
 
     void destroy();
 
     bool makeCurrent();
+    bool makeCurrent(EGLSurface surface);
     bool doneCurrent();
+    bool lazyDoneCurrent();
     bool swapBuffers();
+    bool swapBuffers(EGLSurface surface);
 
     void waitNative();
     void waitClient();
@@ -131,11 +135,14 @@ private:
     EGLContext ctx;
     EGLSurface surf;
     EGLConfig cfg;
+    EGLSurface currentSurface;
     bool share;
     bool current;
-    void *reserved;     // For extension data in future versions.
 
     static EGLDisplay getDisplay(QPaintDevice *device);
+
+    static QEglContext *currentContext(QEgl::API api);
+    static void setCurrentContext(QEgl::API api, QEglContext *context);
 };
 
 QT_END_NAMESPACE

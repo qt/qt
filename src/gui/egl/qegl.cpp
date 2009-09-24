@@ -47,21 +47,33 @@
 
 QT_BEGIN_NAMESPACE
 
+// Current GL and VG contexts.  These are used to determine if
+// we can avoid an eglMakeCurrent() after a call to lazyDoneCurrent().
+// If a background thread modifies the value, the worst that will
+// happen is a redundant eglMakeCurrent() in the foreground thread.
+static QEglContext * volatile currentGLContext = 0;
+static QEglContext * volatile currentVGContext = 0;
+
 QEglContext::QEglContext()
     : apiType(QEgl::OpenGL)
     , dpy(EGL_NO_DISPLAY)
     , ctx(EGL_NO_CONTEXT)
     , surf(EGL_NO_SURFACE)
     , cfg(0)
+    , currentSurface(EGL_NO_SURFACE)
     , share(false)
     , current(false)
-    , reserved(0)
 {
 }
 
 QEglContext::~QEglContext()
 {
     destroy();
+
+    if (currentGLContext == this)
+        currentGLContext = 0;
+    if (currentVGContext == this)
+        currentVGContext = 0;
 }
 
 bool QEglContext::isValid() const
@@ -210,6 +222,19 @@ void QEglContext::destroySurface()
     }
 }
 
+// Destroy an EGL surface object.  If it was current on this context
+// then call doneCurrent() for it first.
+void QEglContext::destroySurface(EGLSurface surface)
+{
+    if (surface != EGL_NO_SURFACE) {
+        if (surface == currentSurface)
+            doneCurrent();
+        eglDestroySurface(dpy, surface);
+        if (surf == surface)
+            surf = EGL_NO_SURFACE;
+    }
+}
+
 // Destroy the context.  Note: this does not destroy the surface.
 void QEglContext::destroy()
 {
@@ -224,14 +249,28 @@ void QEglContext::destroy()
 
 bool QEglContext::makeCurrent()
 {
+    return makeCurrent(surf);
+}
+
+bool QEglContext::makeCurrent(EGLSurface surface)
+{
     if (ctx == EGL_NO_CONTEXT) {
         qWarning() << "QEglContext::makeCurrent(): Cannot make invalid context current";
         return false;
     }
 
-    current = true;
+    // If lazyDoneCurrent() was called on the surface, then we may be able
+    // to assume that it is still current within the thread.
+    if (surface == currentSurface && currentContext(apiType) == this) {
+        current = true;
+        return true;
+    }
 
-    bool ok = eglMakeCurrent(dpy, surf, surf, ctx);
+    current = true;
+    currentSurface = surface;
+    setCurrentContext(apiType, this);
+
+    bool ok = eglMakeCurrent(dpy, surface, surface, ctx);
     if (!ok)
         qWarning() << "QEglContext::makeCurrent():" << errorString(eglGetError());
     return ok;
@@ -245,6 +284,8 @@ bool QEglContext::doneCurrent()
         return false;
 
     current = false;
+    currentSurface = EGL_NO_SURFACE;
+    setCurrentContext(apiType, 0);
 
     // We need to select the correct API before calling eglMakeCurrent()
     // with EGL_NO_CONTEXT because threads can have both OpenGL and OpenVG
@@ -264,12 +305,34 @@ bool QEglContext::doneCurrent()
     return ok;
 }
 
+// Act as though doneCurrent() was called, but keep the context
+// and the surface active for the moment.  This allows makeCurrent()
+// to skip a call to eglMakeCurrent() if we are using the same
+// surface as the last set of painting operations.  We leave the
+// currentContext() pointer as-is for now.
+bool QEglContext::lazyDoneCurrent()
+{
+    current = false;
+    return true;
+}
+
 bool QEglContext::swapBuffers()
 {
     if(ctx == EGL_NO_CONTEXT)
         return false;
 
     bool ok = eglSwapBuffers(dpy, surf);
+    if (!ok)
+        qWarning() << "QEglContext::swapBuffers():" << errorString(eglGetError());
+    return ok;
+}
+
+bool QEglContext::swapBuffers(EGLSurface surface)
+{
+    if(ctx == EGL_NO_CONTEXT)
+        return false;
+
+    bool ok = eglSwapBuffers(dpy, surface);
     if (!ok)
         qWarning() << "QEglContext::swapBuffers():" << errorString(eglGetError());
     return ok;
@@ -409,6 +472,22 @@ QString QEglContext::extensions()
 bool QEglContext::hasExtension(const char* extensionName)
 {
     return extensions().contains(QLatin1String(extensionName));
+}
+
+QEglContext *QEglContext::currentContext(QEgl::API api)
+{
+    if (api == QEgl::OpenGL)
+        return currentGLContext;
+    else
+        return currentVGContext;
+}
+
+void QEglContext::setCurrentContext(QEgl::API api, QEglContext *context)
+{
+    if (api == QEgl::OpenGL)
+        currentGLContext = context;
+    else
+        currentVGContext = context;
 }
 
 QT_END_NAMESPACE
