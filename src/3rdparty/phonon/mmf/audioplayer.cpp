@@ -93,12 +93,19 @@ void MMF::AudioPlayer::doSeek(qint64 ms)
 
 int MMF::AudioPlayer::setDeviceVolume(int mmfVolume)
 {
-    /* In SDK 3.1, this function is void. */
+    /* In SDK 3.1, SetVolume() returns void. If we're compiling against
+     * 3.1, we handle it with ifdefs. However, if we compile against a later
+     * SDK but are _running_ against 3.1, we avoid returning from an undefined
+     * stack by doing a runtime check of the SDK version. */
 #if !defined(__SERIES60_31__)
-    return m_player->SetVolume(mmfVolume);
-#else
-    m_player->SetVolume(mmfVolume);
-    return KErrNone;
+    const int err = m_player->SetVolume(mmfVolume);
+    if (QSysInfo::s60Version() > QSysInfo::SV_S60_3_1)
+        return err;
+    else
+        return KErrNone;
+ #else
+     m_player->SetVolume(mmfVolume);
+     return KErrNone;
 #endif
 }
 
