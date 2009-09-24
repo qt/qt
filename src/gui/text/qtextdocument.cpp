@@ -1096,8 +1096,10 @@ void QTextDocument::setPlainText(const QString &text)
     Q_D(QTextDocument);
     bool previousState = d->isUndoRedoEnabled();
     d->enableUndoRedo(false);
+    d->beginEditBlock();
     d->clear();
     QTextCursor(this).insertText(text);
+    d->endEditBlock();
     d->enableUndoRedo(previousState);
 }
 
@@ -1123,8 +1125,10 @@ void QTextDocument::setHtml(const QString &html)
     Q_D(QTextDocument);
     bool previousState = d->isUndoRedoEnabled();
     d->enableUndoRedo(false);
+    d->beginEditBlock();
     d->clear();
     QTextHtmlImporter(this, html, QTextHtmlImporter::ImportToDocument).import();
+    d->endEditBlock();
     d->enableUndoRedo(previousState);
 }
 
