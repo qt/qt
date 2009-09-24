@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     color: "lightSteelBlue"
     width: 600
     height: 300
@@ -39,10 +39,10 @@ Rect {
         id: Flick
         anchors.fill: parent
         viewportWidth: Lay.width
-        HorizontalLayout {
+        Row {
             id: Lay
             Repeater {
-                dataSource: List
+                model: List
                 Component {
                     Day {
                         day: name

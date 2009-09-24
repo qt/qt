@@ -156,11 +156,12 @@ class QFxTester : public QAbstractAnimation
 {
 public:
     QFxTester(const QString &script, QmlViewer::ScriptOptions options, QmlView *parent);
+    ~QFxTester();
 
     virtual int duration() const;
 
-    void run(const QString &);
-    void save(const QString &);
+    void run();
+    void save();
 
     void executefailure();
 protected:
@@ -168,6 +169,8 @@ protected:
     virtual bool eventFilter(QObject *, QEvent *);
 
 private:
+    QString m_script;
+
     void imagefailure();
     void complete();
 
@@ -221,6 +224,7 @@ private:
     int testscriptidx;
     QFxVisualTest *testscript;
 
+    bool hasCompleted;
     bool hasFailed;
 };
 
