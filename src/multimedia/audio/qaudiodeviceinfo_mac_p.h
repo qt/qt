@@ -62,14 +62,14 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QAudioDeviceInfoPrivate : public QAbstractAudioDeviceInfo
+class QAudioDeviceInfoInternal : public QAbstractAudioDeviceInfo
 {
 public:
     AudioDeviceID   deviceId;
     QString         name;
     QAudio::Mode   mode;
 
-    QAudioDeviceInfoPrivate(QByteArray const& handle, QAudio::Mode mode);
+    QAudioDeviceInfoInternal(QByteArray const& handle, QAudio::Mode mode);
 
     bool isFormatSupported(const QAudioFormat& format) const;
     QAudioFormat preferredFormat() const;

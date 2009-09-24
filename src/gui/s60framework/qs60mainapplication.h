@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtMultimedia module of the Qt Toolkit.
+** This file is part of the Symbian application wrapper of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,56 +39,41 @@
 **
 ****************************************************************************/
 
-#ifndef QAUDIODEVICEID_H
-#define QAUDIODEVICEID_H
+#ifndef QS60MAINAPPLICATION_H
+#define QS60MAINAPPLICATION_H
 
-#include <QtCore/qshareddata.h>
-#include <QtCore/qmetatype.h>
+#include <qglobal.h>
 
+#ifdef Q_WS_S60
+
+#include <aknapp.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Multimedia)
+QT_MODULE(Gui)
 
-
-class QAudioDeviceFactory;
-class QAudioDeviceIdPrivate;
-
-class Q_MULTIMEDIA_EXPORT QAudioDeviceId
+class Q_GUI_EXPORT QS60MainApplication : public CAknApplication
 {
-    friend class QAudioDeviceFactory;
-    friend Q_MULTIMEDIA_EXPORT QDataStream &operator<<(QDataStream&, const QAudioDeviceId&);
-    friend Q_MULTIMEDIA_EXPORT QDataStream &operator>>(QDataStream&, QAudioDeviceId&);
-
 public:
-    QAudioDeviceId();
-    QAudioDeviceId(const QAudioDeviceId &other);
-    ~QAudioDeviceId();
+    QS60MainApplication();
+    // The virtuals are for qdoc.
+    virtual ~QS60MainApplication();
 
-    QAudioDeviceId& operator=(const QAudioDeviceId &other);
-    bool operator==(const QAudioDeviceId &id) const;
-    bool operator!=(const QAudioDeviceId &id) const;
+    virtual TUid AppDllUid() const;
 
-    bool isNull() const;
+    virtual TFileName ResourceFileName() const;
 
-private:
-    QAudioDeviceId(QAudioDeviceIdPrivate *data);
+protected:
 
-    QSharedDataPointer<QAudioDeviceIdPrivate> d;
+    virtual CApaDocument *CreateDocumentL();
 };
-
-#ifndef QT_NO_DATASTREAM
-Q_MULTIMEDIA_EXPORT QDataStream &operator<<(QDataStream&, const QAudioDeviceId&);
-Q_MULTIMEDIA_EXPORT QDataStream &operator>>(QDataStream&, QAudioDeviceId&);
-#endif
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-Q_DECLARE_METATYPE(QAudioDeviceId)
+#endif // Q_WS_S60
 
-
-#endif  // QAUDIODEVICEID_H
+#endif // QS60MAINAPPLICATION_H

@@ -368,8 +368,81 @@ void QSymbianControl::HandleLongTapEventL( const TPoint& aPenEventLocation, cons
     m_previousEventLongTap = true;
 }
 
+#ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+void QSymbianControl::translateAdvancedPointerEvent(const TAdvancedPointerEvent *event)
+{
+    QApplicationPrivate *d = QApplicationPrivate::instance();
+
+    QRect screenGeometry = qApp->desktop()->screenGeometry(qwidget);
+
+    while (d->appAllTouchPoints.count() <= event->PointerNumber())
+        d->appAllTouchPoints.append(QTouchEvent::TouchPoint(d->appAllTouchPoints.count()));
+
+    Qt::TouchPointStates allStates = 0;
+    for (int i = 0; i < d->appAllTouchPoints.count(); ++i) {
+        QTouchEvent::TouchPoint &touchPoint = d->appAllTouchPoints[i];
+
+        if (touchPoint.id() == event->PointerNumber()) {
+            Qt::TouchPointStates state;
+            switch (event->iType) {
+            case TPointerEvent::EButton1Down:
+            case TPointerEvent::EEnterHighPressure:
+                state = Qt::TouchPointPressed;
+                break;
+            case TPointerEvent::EButton1Up:
+            case TPointerEvent::EExitCloseProximity:
+                state = Qt::TouchPointReleased;
+                break;
+            case TPointerEvent::EDrag:
+                state = Qt::TouchPointMoved;
+                break;
+            default:
+                // how likely is this to happen?
+                state = Qt::TouchPointStationary;
+                break;
+            }
+            if (event->PointerNumber() == 0)
+                state |= Qt::TouchPointPrimary;
+            touchPoint.setState(state);
+
+            QPointF screenPos = QPointF(event->iPosition.iX, event->iPosition.iY);
+            touchPoint.setScreenPos(screenPos);
+            touchPoint.setNormalizedPos(QPointF(screenPos.x() / screenGeometry.width(),
+                                                screenPos.y() / screenGeometry.height()));
+
+            touchPoint.setPressure(event->Pressure() / qreal(d->maxTouchPressure));
+        } else if (touchPoint.state() != Qt::TouchPointReleased) {
+            // all other active touch points should be marked as stationary
+            touchPoint.setState(Qt::TouchPointStationary);
+        }
+
+        allStates |= touchPoint.state();
+    }
+
+    if ((allStates & Qt::TouchPointStateMask) == Qt::TouchPointReleased) {
+        // all touch points released
+        d->appAllTouchPoints.clear();
+    }
+
+    QApplicationPrivate::translateRawTouchEvent(qwidget,
+                                                QTouchEvent::TouchScreen,
+                                                d->appAllTouchPoints);
+}
+#endif
+
 void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
 {
+#ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+    if (pEvent.IsAdvancedPointerEvent()) {
+        const TAdvancedPointerEvent *advancedPointerEvent = pEvent.AdvancedPointerEvent();
+        translateAdvancedPointerEvent(advancedPointerEvent);
+        if (advancedPointerEvent->PointerNumber() != 0) {
+            // only send mouse events for the first touch point
+            return;
+        }
+    }
+#endif
+
     m_longTapDetector->PointerEventL(pEvent);
     QT_TRYCATCH_LEAVING(HandlePointerEvent(pEvent));
 }
@@ -817,11 +890,50 @@ TTypeUid::Ptr QSymbianControl::MopSupplyObject(TTypeUid id)
     return CCoeControl::MopSupplyObject(id);
 }
 
+/*!
+    \typedef QApplication::QS60MainApplicationFactory
+
+    This is a typedef for a pointer to a function with the following
+    signature:
+
+    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 47
+
+    \sa QApplication::QApplication(QApplication::QS60MainApplicationFactory, int &, char **)
+*/
+
+/*!
+    \since 4.6
+
+    Creates an application using the application factory given in
+    \a factory, and using \a argc command line arguments in \a argv.
+    \a factory can be leaving, but the error will be converted to a
+    standard exception.
+
+    This function is only available on S60.
+*/
+QApplication::QApplication(QApplication::QS60MainApplicationFactory factory, int &argc, char **argv)
+    : QCoreApplication(*new QApplicationPrivate(argc, argv, GuiClient))
+{
+    Q_D(QApplication);
+    S60->s60ApplicationFactory = factory;
+    d->construct();
+}
+
+QApplication::QApplication(QApplication::QS60MainApplicationFactory factory, int &argc, char **argv, int _internal)
+    : QCoreApplication(*new QApplicationPrivate(argc, argv, GuiClient))
+{
+    Q_D(QApplication);
+    S60->s60ApplicationFactory = factory;
+    d->construct();
+    QApplicationPrivate::app_compile_version = _internal;
+}
+
 void qt_init(QApplicationPrivate * /* priv */, int)
 {
     if (!CCoeEnv::Static()) {
         // The S60 framework has not been initalized. We need to do it.
-        TApaApplicationFactory factory(NewApplication);
+        TApaApplicationFactory factory(S60->s60ApplicationFactory ?
+                S60->s60ApplicationFactory : newS60Application);
         CApaCommandLine* commandLine = 0;
         TInt err = CApaCommandLine::GetCommandLineFromProcessEnvironment(commandLine);
         // After this construction, CEikonEnv will be available from CEikonEnv::Static().
@@ -1441,9 +1553,14 @@ TUint QApplicationPrivate::resolveS60ScanCode(TInt scanCode, TUint keysym)
     }
 }
 
-
 void QApplicationPrivate::initializeMultitouch_sys()
-{ }
+{
+#ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+    if (HAL::Get(HALData::EPointer3DMaxPressure, maxTouchPressure) != KErrNone)
+        maxTouchPressure = KMaxTInt;
+#endif
+}
+
 void QApplicationPrivate::cleanupMultitouch_sys()
 { }
 

@@ -1434,7 +1434,8 @@ void tst_QHeaderView::focusPolicy()
 
     widget.show();
     widget.setFocus(Qt::OtherFocusReason);
-    QTest::qWait(100);
+    QApplication::setActiveWindow(&widget);
+    QTest::qWaitForWindowShown(&widget);
     widget.activateWindow();
     QTest::qWait(100);
 

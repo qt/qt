@@ -3030,6 +3030,8 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
                 ar.adjust(2, 2, -2, -2);
                 if (opt->state & State_Enabled)
                     flags |= State_Enabled;
+                if (opt->state & State_HasFocus)
+                    flags |= State_HasFocus;
 
                 if (sunkenArrow)
                     flags |= State_Sunken;

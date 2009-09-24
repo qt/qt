@@ -85,7 +85,6 @@ void QVGWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoin
 void QVGWindowSurface::setGeometry(const QRect &rect)
 {
     QWindowSurface::setGeometry(rect);
-    d_ptr->ensureContext(window());
 }
 
 bool QVGWindowSurface::scroll(const QRegion &area, int dx, int dy)

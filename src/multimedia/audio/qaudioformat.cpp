@@ -286,7 +286,7 @@ int QAudioFormat::sampleSize() const
    \sa QAudioDeviceInfo::supportedCodecs()
 */
 
-void QAudioFormat::setCodec(QString codec)
+void QAudioFormat::setCodec(const QString &codec)
 {
     d->codec = codec;
 }

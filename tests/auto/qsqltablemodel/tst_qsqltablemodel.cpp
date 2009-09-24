@@ -1037,8 +1037,6 @@ void tst_QSqlTableModel::insertBeforeDelete()
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
     QVERIFY_SQL(model, select());
 
-    qDebug() << model.rowCount();
-
     QSqlRecord rec = model.record();
     rec.setValue(0, 4);
     rec.setValue(1, QString("bill"));

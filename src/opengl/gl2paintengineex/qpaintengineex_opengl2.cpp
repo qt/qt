@@ -297,7 +297,7 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph)
         for (int y = 0; y < maskHeight; ++y) {
             uchar *src = (uchar *) mask.scanLine(y);
             for (int x = 0; x < maskWidth; ++x)
-                src[x] = -src[x];
+                src[x] = -src[x]; // convert 0 and 1 into 0 and 255
         }
      }
 

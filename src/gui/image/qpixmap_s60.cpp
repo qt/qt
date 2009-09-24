@@ -297,231 +297,55 @@ QPixmap QPixmap::grabWindow(WId winId, int x, int y, int w, int h)
 }
 
 /*!
-    \enum QPixmap::ConversionMode
-
-    \bold{Symbian only:} This enum defines how the conversion between \c
-    CFbsBitmap and QPixmap is performed.
-
-    \warning This enum is only available on Symbian.
-
-    \value CopyData Copied CFbsBitmap data.
-
-    \value DuplicateHandle Duplicates CFbsBitmap handle. This also means
-	that pixmap data will be explicitly shared.
-
-    \sa fromSymbianCFbsBitmap(), toSymbianCFbsBitmap()
-*/
-
-
-/*!
-    \fn CFbsBitmap *QPixmap::toSymbianCFbsBitmap(ConversionMode mode)
+    \fn CFbsBitmap *QPixmap::toSymbianCFbsBitmap()
     \since 4.6
 
-    Creates \c CFbsBitmap that is equivalent to the QPixmap, based on
-    the given \a mode. If the creation then this function returns 0.
+    Creates a \c CFbsBitmap that is equivalent to the QPixmap. Internally this
+    function will try to duplicate the handle instead of copying the data,
+    however in scenarios where this is not possible the data will be copied.
+    If the creation fails or the pixmap is null, then this function returns 0.
 
     It is the caller's responsibility to release the \c CFbsBitmap data
     after use either by deleting the bitmap or calling \c Reset().
 
-    \warning On S60 3.1 and S60 3.2 conversion mode will always be CopyData
-			 if QPixmap pixels have alpha values.
+    \warning On S60 3.1 and S60 3.2, semi-transparent pixmaps are always copied
+             and not duplicated.
     \warning This function is only available on Symbian OS.
 
     \sa fromSymbianCFbsBitmap()
 */
-CFbsBitmap *QPixmap::toSymbianCFbsBitmap(ConversionMode mode) const
+CFbsBitmap *QPixmap::toSymbianCFbsBitmap() const
 {
-    QS60PixmapData *s60data = static_cast<QS60PixmapData *>(data.data());
-
-    if (isNull() || !s60data->cfbsBitmap)
+    QPixmapData *data = pixmapData();
+    if (data->isNull())
         return 0;
 
-    bool convertToArgb32 = false;
-
-    QSysInfo::SymbianVersion symbianVersion = QSysInfo::symbianVersion();
-    if (symbianVersion == QSysInfo::SV_9_2 || symbianVersion == QSysInfo::SV_9_3) {
-        // Convert argb32_premultiplied to argb32 since Symbian 9.2 and Symbian 9.3 do
-        // not support premultipied format.
-
-        if (s60data->image.format() == QImage::Format_ARGB32_Premultiplied) {
-            mode = CopyData;
-            convertToArgb32 = true;
-        }
-    }
-
-    CFbsBitmap *bitmap = 0;
-
-    TDisplayMode displayMode = s60data->cfbsBitmap->DisplayMode();
-
-    if(displayMode == EGray2) {
-		//Symbian thinks set pixels are white/transparent, Qt thinks they are foreground/solid
-		//So invert mono bitmaps so that masks work correctly.
-		s60data->image.invertPixels();
-		mode = CopyData;
-	}
-
-    if (mode == CopyData) {
-        QImage source;
-
-        if (convertToArgb32) {
-            source = s60data->image.convertToFormat(QImage::Format_ARGB32);
-            displayMode = EColor16MA;
-        } else {
-            source = s60data->image;
-        }
-
-        CFbsBitmap *newBitmap = createSymbianCFbsBitmap(TSize(source.width(), source.height()), displayMode);
-        const uchar *sptr = source.bits();
-        s60data->symbianBitmapDataAccess->beginDataAccess(newBitmap);
-
-        uchar *dptr = (uchar*)newBitmap->DataAddress();
-        Mem::Copy(dptr, sptr, source.numBytes());
-
-        s60data->symbianBitmapDataAccess->endDataAccess(newBitmap);
-
-        bitmap = newBitmap;
-    } else {
-
-        QT_TRAP_THROWING(bitmap = new (ELeave) CFbsBitmap);
-
-        TInt err = bitmap->Duplicate(s60data->cfbsBitmap->Handle());
-        if (err != KErrNone) {
-            qWarning("Could not duplicate CFbsBitmap");
-            delete bitmap;
-            bitmap = 0;
-        }
-    }
-
-    if(displayMode == EGray2) {
-		// restore pixels
-		s60data->image.invertPixels();
-	}
-
-    return bitmap;
+    return reinterpret_cast<CFbsBitmap*>(data->toNativeType(QPixmapData::FbsBitmap));
 }
 
 /*!
-    \fn QPixmap QPixmap::fromSymbianCFbsBitmap(CFbsBitmap *bitmap, ConversionMode mode)
+    \fn QPixmap QPixmap::fromSymbianCFbsBitmap(CFbsBitmap *bitmap)
     \since 4.6
 
-    Creates a QPixmap from native \c CFbsBitmap \a bitmap. The conversion
-    is based on the specified \a mode. Conversion mode is always QPixmap::CopyData
-    if given \a bitmap does not have display mode of TDisplayMode::EGray2,
-    \c TDisplayMode::EColor16MU or \c TDisplayMode::EColor16MAP.
-
+    Creates a QPixmap from a \c CFbsBitmap \a bitmap. Internally this function
+    will try to duplicate the bitmap handle instead of copying the data, however
+    in scenarios where this is not possible the data will be copied.
+    To be sure that QPixmap does not modify your original instance, you should
+    make a copy of your \c CFbsBitmap before calling this function.
     If the CFbsBitmap is not valid this function will return a null QPixmap.
 
     \warning This function is only available on Symbian OS.
 
     \sa toSymbianCFbsBitmap(), {QPixmap#Pixmap Conversion}{Pixmap Conversion}
 */
-QPixmap QPixmap::fromSymbianCFbsBitmap(CFbsBitmap *bitmap, ConversionMode mode)
+QPixmap QPixmap::fromSymbianCFbsBitmap(CFbsBitmap *bitmap)
 {
-    if (bitmap) {
+    if (!bitmap)
+        return QPixmap();
 
-        bool deleteSourceBitmap = false;
-
-#ifdef Q_SYMBIAN_HAS_EXTENDED_BITMAP_TYPE
-
-        // Rasterize extended bitmaps
-
-        TUid extendedBitmapType = bitmap->ExtendedBitmapType();
-        if (extendedBitmapType != KNullUid) {
-            CFbsBitmap *rasterBitmap = createSymbianCFbsBitmap(bitmap->SizeInPixels(), EColor16MA);
-
-            CFbsBitmapDevice *rasterBitmapDev = 0;
-            QT_TRAP_THROWING(rasterBitmapDev = CFbsBitmapDevice::NewL(rasterBitmap));
-
-            CFbsBitGc *rasterBitmapGc = 0;
-            TInt err = rasterBitmapDev->CreateContext(rasterBitmapGc);
-            if (err != KErrNone) {
-                delete rasterBitmap;
-                delete rasterBitmapDev;
-                rasterBitmapDev = 0;
-                return QPixmap();
-            }
-
-            rasterBitmapGc->BitBlt(TPoint( 0, 0), bitmap);
-
-            bitmap = rasterBitmap;
-
-            delete rasterBitmapDev;
-            delete rasterBitmapGc;
-
-            rasterBitmapDev = 0;
-            rasterBitmapGc = 0;
-
-            deleteSourceBitmap = true;
-        }
-#endif
-
-
-        deleteSourceBitmap = bitmap->IsCompressedInRAM();
-        CFbsBitmap *sourceBitmap = uncompress(bitmap);
-
-        TDisplayMode displayMode = sourceBitmap->DisplayMode();
-        QImage::Format format = qt_TDisplayMode2Format(displayMode);
-
-        QImage::Format opaqueFormat = QNativeImage::systemFormat();
-        QImage::Format alphaFormat = QImage::Format_ARGB32_Premultiplied;
-
-        if (format != opaqueFormat && format != alphaFormat && format != QImage::Format_MonoLSB)
-			mode = CopyData;
-
-
-        QPixmapData::PixelType type = (format!=QImage::Format_MonoLSB)
-							? QPixmapData::PixmapType
-							: QPixmapData::BitmapType;
-
-        QS60PixmapData *pixmapData = 0;
-
-        if (mode == CopyData) {
-
-			TSize size = sourceBitmap->SizeInPixels();
-
-            QSymbianBitmapDataAccess da;
-            da.beginDataAccess(sourceBitmap);
-            uchar *bytes = (uchar*)sourceBitmap->DataAddress();
-            QImage img = QImage(bytes, size.iWidth, size.iHeight, format);
-            da.endDataAccess(sourceBitmap);
-
-            pixmapData = new QS60PixmapData(type);
-            pixmapData->fromImage(img, Qt::AutoColor);
-
-            if(deleteSourceBitmap)
-				delete sourceBitmap;
-
-            if(displayMode == EGray2) {
-				//Symbian thinks set pixels are white/transparent, Qt thinks they are foreground/solid
-				//So invert mono bitmaps so that masks work correctly.
-				pixmapData->image.invertPixels();
-			}
-        } else {
-            CFbsBitmap* duplicate = 0;
-            QT_TRAP_THROWING(duplicate = new (ELeave) CFbsBitmap);
-
-            TInt err = duplicate->Duplicate(sourceBitmap->Handle());
-            if (err != KErrNone) {
-                qWarning("Could not duplicate CFbsBitmap");
-
-                if(deleteSourceBitmap)
-                    delete sourceBitmap;
-
-                delete duplicate;
-                return QPixmap();
-            }
-
-            pixmapData = new QS60PixmapData(type);
-            pixmapData->fromSymbianBitmap(duplicate);
-
-            if(deleteSourceBitmap)
-                delete sourceBitmap;
-        }
-
-        return QPixmap(pixmapData);
-    }
-
-    return QPixmap();
+    QPixmap pixmap;
+    pixmap.pixmapData()->fromNativeType(reinterpret_cast<void*>(bitmap), QPixmapData::FbsBitmap);
+    return pixmap;
 }
 
 QS60PixmapData::QS60PixmapData(PixelType type) : QRasterPixmapData(type),
@@ -921,7 +745,7 @@ QPixmap QPixmap::fromSymbianRSgImage(RSgImage *sgImage)
         return QPixmap();
 
     QPixmap pixmap;
-    pixmap.pixmapData()->fromRSgImage(sgImage);
+    pixmap.pixmapData()->fromNativeType(reinterpret_cast<void*>(sgImage), QPixmapData::SgImage);
 
     return pixmap;
 }
@@ -949,9 +773,193 @@ RSgImage *QPixmap::toSymbianRSgImage() const
     if (isNull())
         return 0;
 
-    RSgImage *sgImage = pixmapData()->toRSgImage();
+    RSgImage *sgImage = reinterpret_cast<RSgImage*>(pixmapData()->toNativeType(QPixmapData::SgImage));
 
     return sgImage;
+}
+
+void* QS60PixmapData::toNativeType(NativeType type)
+{
+    if (type == QPixmapData::SgImage) {
+        return 0;
+    } else if (type == QPixmapData::FbsBitmap) {
+
+        if (isNull() || !cfbsBitmap)
+            return 0;
+
+        bool convertToArgb32 = false;
+        bool needsCopy = false;
+
+        QSysInfo::SymbianVersion symbianVersion = QSysInfo::symbianVersion();
+        if (symbianVersion == QSysInfo::SV_9_2 || symbianVersion == QSysInfo::SV_9_3) {
+            // Convert argb32_premultiplied to argb32 since Symbian 9.2 and Symbian 9.3 do
+            // not support premultipied format.
+
+            if (image.format() == QImage::Format_ARGB32_Premultiplied) {
+                needsCopy = true;
+                convertToArgb32 = true;
+            }
+        }
+
+        CFbsBitmap *bitmap = 0;
+
+        TDisplayMode displayMode = cfbsBitmap->DisplayMode();
+
+        if(displayMode == EGray2) {
+            //Symbian thinks set pixels are white/transparent, Qt thinks they are foreground/solid
+            //So invert mono bitmaps so that masks work correctly.
+            image.invertPixels();
+            needsCopy = true;
+        }
+
+        if (needsCopy) {
+            QImage source;
+
+            if (convertToArgb32) {
+                source = image.convertToFormat(QImage::Format_ARGB32);
+                displayMode = EColor16MA;
+            } else {
+                source = image;
+            }
+
+            CFbsBitmap *newBitmap = createSymbianCFbsBitmap(TSize(source.width(), source.height()), displayMode);
+            const uchar *sptr = source.bits();
+            symbianBitmapDataAccess->beginDataAccess(newBitmap);
+
+            uchar *dptr = (uchar*)newBitmap->DataAddress();
+            Mem::Copy(dptr, sptr, source.numBytes());
+
+            symbianBitmapDataAccess->endDataAccess(newBitmap);
+
+            bitmap = newBitmap;
+        } else {
+
+            QT_TRAP_THROWING(bitmap = new (ELeave) CFbsBitmap);
+
+            TInt err = bitmap->Duplicate(cfbsBitmap->Handle());
+            if (err != KErrNone) {
+                qWarning("Could not duplicate CFbsBitmap");
+                delete bitmap;
+                bitmap = 0;
+            }
+        }
+
+        if(displayMode == EGray2) {
+            // restore pixels
+            image.invertPixels();
+        }
+
+        return reinterpret_cast<void*>(bitmap);
+
+    }
+
+    return 0;
+}
+
+void QS60PixmapData::fromNativeType(void* pixmap, NativeType nativeType)
+{
+    if (nativeType == QPixmapData::SgImage) {
+        return;
+    } else if (nativeType == QPixmapData::FbsBitmap && pixmap) {
+
+        CFbsBitmap *bitmap = reinterpret_cast<CFbsBitmap*>(pixmap);
+
+        bool deleteSourceBitmap = false;
+        bool needsCopy = false;
+
+#ifdef Q_SYMBIAN_HAS_EXTENDED_BITMAP_TYPE
+
+        // Rasterize extended bitmaps
+
+        TUid extendedBitmapType = bitmap->ExtendedBitmapType();
+        if (extendedBitmapType != KNullUid) {
+            CFbsBitmap *rasterBitmap = createSymbianCFbsBitmap(bitmap->SizeInPixels(), EColor16MA);
+
+            CFbsBitmapDevice *rasterBitmapDev = 0;
+            QT_TRAP_THROWING(rasterBitmapDev = CFbsBitmapDevice::NewL(rasterBitmap));
+
+            CFbsBitGc *rasterBitmapGc = 0;
+            TInt err = rasterBitmapDev->CreateContext(rasterBitmapGc);
+            if (err != KErrNone) {
+                delete rasterBitmap;
+                delete rasterBitmapDev;
+                rasterBitmapDev = 0;
+                return;
+            }
+
+            rasterBitmapGc->BitBlt(TPoint( 0, 0), bitmap);
+
+            bitmap = rasterBitmap;
+
+            delete rasterBitmapDev;
+            delete rasterBitmapGc;
+
+            rasterBitmapDev = 0;
+            rasterBitmapGc = 0;
+
+            deleteSourceBitmap = true;
+        }
+#endif
+
+
+        deleteSourceBitmap = bitmap->IsCompressedInRAM();
+        CFbsBitmap *sourceBitmap = uncompress(bitmap);
+
+        TDisplayMode displayMode = sourceBitmap->DisplayMode();
+        QImage::Format format = qt_TDisplayMode2Format(displayMode);
+
+        QImage::Format opaqueFormat = QNativeImage::systemFormat();
+        QImage::Format alphaFormat = QImage::Format_ARGB32_Premultiplied;
+
+        if (format != opaqueFormat && format != alphaFormat && format != QImage::Format_MonoLSB)
+            needsCopy = true;
+
+
+        type = (format != QImage::Format_MonoLSB)
+                    ? QPixmapData::PixmapType
+                    : QPixmapData::BitmapType;
+
+        if (needsCopy) {
+
+            TSize size = sourceBitmap->SizeInPixels();
+
+            QSymbianBitmapDataAccess da;
+            da.beginDataAccess(sourceBitmap);
+            uchar *bytes = (uchar*)sourceBitmap->DataAddress();
+            QImage img = QImage(bytes, size.iWidth, size.iHeight, format);
+            da.endDataAccess(sourceBitmap);
+
+            fromImage(img, Qt::AutoColor);
+
+            if(deleteSourceBitmap)
+                delete sourceBitmap;
+
+            if(displayMode == EGray2) {
+                //Symbian thinks set pixels are white/transparent, Qt thinks they are foreground/solid
+                //So invert mono bitmaps so that masks work correctly.
+                image.invertPixels();
+            }
+        } else {
+            CFbsBitmap* duplicate = 0;
+            QT_TRAP_THROWING(duplicate = new (ELeave) CFbsBitmap);
+
+            TInt err = duplicate->Duplicate(sourceBitmap->Handle());
+            if (err != KErrNone) {
+                qWarning("Could not duplicate CFbsBitmap");
+
+                if(deleteSourceBitmap)
+                    delete sourceBitmap;
+
+                delete duplicate;
+                return;
+            }
+
+            fromSymbianBitmap(duplicate);
+
+            if(deleteSourceBitmap)
+                delete sourceBitmap;
+        }
+    }
 }
 
 QT_END_NAMESPACE

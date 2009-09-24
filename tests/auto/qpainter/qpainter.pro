@@ -9,7 +9,7 @@ wince*|symbian*: {
 
 wince* {
     DEFINES += SRCDIR=\\\".\\\"
-} !symbian {
+} else:!symbian {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }
 

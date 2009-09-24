@@ -460,6 +460,8 @@ QIODevice* QAudioOutputPrivate::start(QIODevice* device)
     if (stateCode == QAudio::ActiveState)
         audioThreadStart();
 
+    emit stateChanged(stateCode);
+
     return op;
 }
 

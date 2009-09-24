@@ -895,7 +895,8 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
                 (void) jpeg_finish_decompress(&cinfo);
             }
 #ifndef QT_NO_IMAGE_SMOOTHSCALE
-        } else if (scaledSize.isValid()) {
+        } else if (scaledSize.isValid() && scaledSize != QSize(cinfo.output_width, cinfo.output_height)
+            && quality >= HIGH_QUALITY_THRESHOLD) {
 
             jpegSmoothScaler scaler(&cinfo, QString().sprintf("Scale( %d, %d, ScaleFree )",
                                                               scaledSize.width(),
@@ -946,6 +947,9 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
                 outImage->setDotsPerMeterX(int(100. * cinfo.X_density));
                 outImage->setDotsPerMeterY(int(100. * cinfo.Y_density));
             }
+
+            if (scaledSize.isValid() && scaledSize != QSize(cinfo.output_width, cinfo.output_height))
+                *outImage = outImage->scaled(scaledSize, Qt::IgnoreAspectRatio, Qt::FastTransformation);
         }
     }
 

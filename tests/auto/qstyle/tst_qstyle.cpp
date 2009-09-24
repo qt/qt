@@ -219,7 +219,7 @@ void tst_QStyle::testStyleFactory()
 
     foreach (QString styleName , keys) {
         QStyle *style = QStyleFactory::create(styleName);
-        QVERIFY(style != 0);
+        QVERIFY2(style != 0, qPrintable(QString::fromLatin1("Fail to load style '%1'").arg(styleName)));
         delete style;
     }
 }

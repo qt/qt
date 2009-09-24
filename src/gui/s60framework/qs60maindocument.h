@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtMultimedia module of the Qt Toolkit.
+** This file is part of the Symbian application wrapper of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,44 +39,42 @@
 **
 ****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of other Qt classes.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#ifndef QS60MAINDOCUMENT_H
+#define QS60MAINDOCUMENT_H
 
-#ifndef QAUDIODEVICEIDPRIVATE_H
-#define QAUDIODEVICEIDPRIVATE_H
+#include <qglobal.h>
 
-#include <QtCore/qstring.h>
-#include <QtCore/qbytearray.h>
-#include <QtCore/qshareddata.h>
+#ifdef Q_WS_S60
+
+#include <akndoc.h>
+
+class CEikApplication;
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Multimedia)
+QT_MODULE(Gui)
 
+class QS60MainAppUi;
 
-class QAudioDeviceIdPrivate : public QSharedData
+class Q_GUI_EXPORT QS60MainDocument : public CAknDocument
 {
 public:
-    QAudioDeviceIdPrivate(QString const& k, int m, QByteArray const& h);
 
-    QString     key;
-    int         mode;
-    QByteArray  handle;
+    QS60MainDocument(CEikApplication &mainApplication);
+    // The virtuals are for qdoc.
+    virtual ~QS60MainDocument();
+
+public:
+
+    virtual CEikAppUi *CreateAppUiL();
 };
-
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif  // QAUDIODEVICEIDPRIVATE_H
+#endif // Q_WS_S60
+
+#endif // QS60MAINDOCUMENT_H

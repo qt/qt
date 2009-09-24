@@ -112,13 +112,14 @@ void tst_QToolTip::task183679()
 
     Widget_task183679 widget;
     widget.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&widget);
-#endif
+    QApplication::setActiveWindow(&widget);
+    QTest::qWaitForWindowShown(&widget);
+    QTest::qWait(30);
+
 
     widget.showDelayedToolTip(100);
     QTest::qWait(300);
-    QVERIFY(QToolTip::isVisible());
+    QTRY_VERIFY(QToolTip::isVisible());
 
     QTest::keyPress(&widget, key);
 

@@ -3,7 +3,7 @@ SOURCES  += tst_qlabel.cpp
 
 wince*:{
     DEFINES += SRCDIR=\\\"\\\"
-} !symbian {
+} else:!symbian {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 

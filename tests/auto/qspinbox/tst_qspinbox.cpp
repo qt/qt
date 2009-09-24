@@ -752,8 +752,8 @@ void tst_QSpinBox::editingFinished()
 
     testFocusWidget->show();
     QApplication::setActiveWindow(testFocusWidget);
+    QTest::qWaitForWindowShown(testFocusWidget);
     box->activateWindow();
-    QTest::qWait(100);//qApp->processEvents();
     box->setFocus();
 
     QTRY_COMPARE(qApp->focusWidget(), box);

@@ -97,6 +97,7 @@ void tst_Q3TextBrowser::setFont()
 {
     QFont f("Courier", 6);
     testWidget->setFont(f);
+    f = f.resolve(testWidget->font());
     QVERIFY(testWidget->font() == f);
 }
 

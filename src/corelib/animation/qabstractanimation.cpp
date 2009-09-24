@@ -81,12 +81,12 @@
     QAbstractAnimation provides pure virtual functions used by
     subclasses to track the progress of the animation: duration() and
     updateCurrentTime(). The duration() function lets you report a
-    duration for the animation (as discussed above). The current time
-    is delivered by the animation framework through calls to
-    updateCurrentTime(). By reimplementing this function, you can
-    track the animation progress. Note that neither the interval
-    between calls nor the number of calls to this function are
-    defined; though, it will normally be 60 updates per second.
+    duration for the animation (as discussed above). The animation
+    framework calls updateCurrentTime() when current time has changed.
+    By reimplementing this function, you can track the animation 
+    progress. Note that neither the interval between calls nor the
+    number of calls to this function are defined; though, it will
+    normally be 60 updates per second.
 
     By reimplementing updateState(), you can track the animation's
     state changes, which is particularly useful for animations that
@@ -604,7 +604,7 @@ void QAbstractAnimation::setCurrentTime(int msecs)
         }
     }
 
-    updateCurrentTime(msecs);
+    updateCurrentTime();
     if (d->currentLoop != oldLoop)
         emit currentLoopChanged(d->currentLoop);
 
@@ -705,10 +705,10 @@ bool QAbstractAnimation::event(QEvent *event)
 }
 
 /*!
-    \fn virtual void QAbstractAnimation::updateCurrentTime(int msecs) = 0;
+    \fn virtual void QAbstractAnimation::updateCurrentTime() = 0;
 
     This pure virtual function is called every time the animation's current
-    time changes. The \a msecs argument is the current time.
+    time changes.
 
     \sa updateState()
 */

@@ -440,7 +440,9 @@ void tst_QMenu::overrideMenuAction()
 	m->addAction(aQuit);
 
 	w.show();
+    QApplication::setActiveWindow(&w);
     w.setFocus();
+    QTest::qWaitForWindowShown(&w);
     QTRY_VERIFY(w.hasFocus());
 
 	//test of the action inside the menu

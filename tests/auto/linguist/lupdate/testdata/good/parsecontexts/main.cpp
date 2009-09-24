@@ -262,6 +262,15 @@ QString C2::foo()
 }
 
 
+namespace Fooish {
+    Q_DECLARE_TR_FUNCTIONS(Bears::And::Spiders)
+}
+
+void Fooish::bar()
+{
+    return tr("whatever the context", "Bears::And::Spiders");
+}
+
 
 int main(int /*argc*/, char ** /*argv*/) {
     return 0;

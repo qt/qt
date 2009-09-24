@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
     You can construct an audio input with the system's
     \l{QAudioDeviceInfo::defaultInputDevice()}{default audio input
     device}. It is also possible to create QAudioInput with a
-    specific QAudioDeviceId. When you create the audio input, you
+    specific QAudioDeviceInfo. When you create the audio input, you
     should also send in the QAudioFormat to be used for the recording
     (see the QAudioFormat class description for details).
 
@@ -69,7 +69,7 @@ QT_BEGIN_NAMESPACE
 
     QAudioInput lets you record audio with an audio input device. The
     default constructor of this class will use the systems default
-    audio device, but you can also specify a QAudioDeviceId for a
+    audio device, but you can also specify a QAudioDeviceInfo for a
     specific device. You also need to pass in the QAudioFormat in
     which you wish to record.
 
@@ -154,14 +154,14 @@ QAudioInput::QAudioInput(const QAudioFormat &format, QObject *parent):
 
 /*!
     Construct a new audio input and attach it to \a parent.
-    The \a id of the audio input device is used with the input
+    The device referenced by \a audioDevice is used with the input
     \a format parameters.
 */
 
-QAudioInput::QAudioInput(const QAudioDeviceId &id, const QAudioFormat &format, QObject *parent):
+QAudioInput::QAudioInput(const QAudioDeviceInfo &audioDevice, const QAudioFormat &format, QObject *parent):
     QObject(parent)
 {
-    d = QAudioDeviceFactory::createInputDevice(id, format);
+    d = QAudioDeviceFactory::createInputDevice(audioDevice, format);
     connect(d, SIGNAL(notify()), SIGNAL(notify()));
     connect(d, SIGNAL(stateChanged(QAudio::State)), SIGNAL(stateChanged(QAudio::State)));
 }

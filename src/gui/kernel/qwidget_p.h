@@ -693,6 +693,7 @@ public:
     static QWidget *keyboardGrabber;
     void s60UpdateIsOpaque();
     void reparentChildren();
+    void registerTouchWindow();
 #endif
 
 };

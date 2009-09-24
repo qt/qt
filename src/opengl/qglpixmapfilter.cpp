@@ -102,7 +102,7 @@ private:
 class QGLPixmapBlurFilter : public QGLCustomShaderStage, public QGLPixmapFilter<QPixmapBlurFilter>
 {
 public:
-    QGLPixmapBlurFilter();
+    QGLPixmapBlurFilter(Qt::TransformationMode quality);
 
     void setUniforms(QGLShaderProgram *program);
 
@@ -110,15 +110,14 @@ protected:
     bool processGL(QPainter *painter, const QPointF &pos, const QPixmap &src, const QRectF &srcRect) const;
 
 private:
-    static QByteArray generateBlurShader(int radius, bool gaussianBlur);
+    static QByteArray generateGaussianShader(int radius);
 
     mutable QSize m_textureSize;
-
     mutable bool m_horizontalBlur;
 
     mutable bool m_haveCached;
     mutable int m_cachedRadius;
-    mutable Qt::TransformationMode m_cachedQuality;
+    mutable Qt::TransformationMode m_quality;
 };
 
 extern QGLWidget *qt_gl_share_widget();
@@ -132,10 +131,17 @@ QPixmapFilter *QGL2PaintEngineEx::pixmapFilter(int type, const QPixmapFilter *pr
             d->colorizeFilter.reset(new QGLPixmapColorizeFilter);
         return d->colorizeFilter.data();
 
-    case QPixmapFilter::BlurFilter:
+    case QPixmapFilter::BlurFilter: {
+        const QPixmapBlurFilter *proto = static_cast<const QPixmapBlurFilter *>(prototype);
+        if (proto->quality() == Qt::FastTransformation || proto->radius() <= 5) {
+            if (!d->fastBlurFilter)
+                d->fastBlurFilter.reset(new QGLPixmapBlurFilter(Qt::FastTransformation));
+            return d->fastBlurFilter.data();
+        }
         if (!d->blurFilter)
-            d->blurFilter.reset(new QGLPixmapBlurFilter);
+            d->blurFilter.reset(new QGLPixmapBlurFilter(Qt::SmoothTransformation));
         return d->blurFilter.data();
+        }
 
     case QPixmapFilter::ConvolutionFilter:
         if (!d->convolutionFilter)
@@ -309,10 +315,29 @@ bool QGLPixmapConvolutionFilter::processGL(QPainter *, const QPointF &pos, const
     return true;
 }
 
-QGLPixmapBlurFilter::QGLPixmapBlurFilter()
-    : m_haveCached(false), m_cachedRadius(5),
-      m_cachedQuality(Qt::FastTransformation)
+static const char *qt_gl_blur_filter_fast =
+    "const int samples = 9;"
+    "uniform mediump vec2 delta;"
+    "lowp vec4 customShader(lowp sampler2D src, highp vec2 srcCoords) {"
+    "    mediump vec4 color = vec4(0.0, 0.0, 0.0, 0.0);"
+    "    mediump float offset = (float(samples) - 1.0) / 2.0;"
+    "    for (int i = 0; i < samples; i++) {"
+    "        mediump vec2 coord = srcCoords + delta * (offset - float(i)) / offset;"
+    "        color += texture2D(src, coord);"
+    "    }"
+    "    return color * (1.0 / float(samples));"
+    "}";
+
+QGLPixmapBlurFilter::QGLPixmapBlurFilter(Qt::TransformationMode quality)
+    : m_haveCached(false)
+    , m_cachedRadius(5)
+    , m_quality(quality)
 {
+    if (quality == Qt::FastTransformation) {
+        QGLPixmapBlurFilter *filter = const_cast<QGLPixmapBlurFilter *>(this);
+        filter->setSource(qt_gl_blur_filter_fast);
+        m_haveCached = true;
+    }
 }
 
 bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const QPixmap &src, const QRectF &) const
@@ -320,15 +345,11 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
     QGLPixmapBlurFilter *filter = const_cast<QGLPixmapBlurFilter *>(this);
 
     int radius = this->radius();
-    Qt::TransformationMode quality = this->quality();
-
-    if (!m_haveCached || radius != m_cachedRadius ||
-            quality != m_cachedQuality) {
+    if (!m_haveCached || (m_quality == Qt::SmoothTransformation && radius != m_cachedRadius)) {
         // Only regenerate the shader from source if parameters have changed.
         m_haveCached = true;
         m_cachedRadius = radius;
-        m_cachedQuality = quality;
-        filter->setSource(generateBlurShader(radius, quality == Qt::SmoothTransformation));
+        filter->setSource(generateGaussianShader(radius));
     }
 
     QGLFramebufferObjectFormat format;
@@ -386,12 +407,21 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
 
 void QGLPixmapBlurFilter::setUniforms(QGLShaderProgram *program)
 {
-    program->setUniformValue("invTextureSize", 1.0 / m_textureSize.width(), 1.0 / m_textureSize.height());
+    if (m_quality == Qt::SmoothTransformation) {
+        if (m_horizontalBlur)
+            program->setUniformValue("delta", 1.0 / m_textureSize.width(), 0.0);
+        else
+            program->setUniformValue("delta", 0.0, 1.0 / m_textureSize.height());
+    } else {
+        // 1.4 is chosen to most closely match the blurriness of the gaussian blur
+        // at low radii
+        qreal blur = radius() / 1.4f;
 
-    if (m_horizontalBlur)
-        program->setUniformValue("delta", 1.0, 0.0);
-    else
-        program->setUniformValue("delta", 0.0, 1.0);
+        if (m_horizontalBlur)
+            program->setUniformValue("delta", blur / m_textureSize.width(), 0.0);
+        else
+            program->setUniformValue("delta", 0.0, blur / m_textureSize.height());
+    }
 }
 
 static inline qreal gaussian(qreal dx, qreal sigma)
@@ -399,68 +429,46 @@ static inline qreal gaussian(qreal dx, qreal sigma)
     return exp(-dx * dx / (2 * sigma * sigma)) / (Q_2PI * sigma * sigma);
 }
 
-QByteArray QGLPixmapBlurFilter::generateBlurShader(int radius, bool gaussianBlur)
+QByteArray QGLPixmapBlurFilter::generateGaussianShader(int radius)
 {
     Q_ASSERT(radius >= 1);
 
     QByteArray source;
     source.reserve(1000);
 
-    source.append("uniform highp vec2      invTextureSize;\n");
-
-    bool separateXY = true;
-    bool clip = false;
-
-    if (separateXY) {
-        source.append("uniform highp vec2      delta;\n");
-
-        if (clip)
-            source.append("uniform highp vec2      clip;\n");
-    } else if (clip) {
-        source.append("uniform highp vec4      clip;\n");
-    }
-
+    source.append("uniform highp vec2      delta;\n");
     source.append("lowp vec4 customShader(lowp sampler2D src, highp vec2 srcCoords) {\n");
 
     QVector<qreal> sampleOffsets;
     QVector<qreal> weights;
 
-    if (gaussianBlur) {
-        QVector<qreal> gaussianComponents;
+    QVector<qreal> gaussianComponents;
 
-        qreal sigma = radius / 1.65;
+    qreal sigma = radius / 1.65;
 
-        qreal sum = 0;
-        for (int i = -radius; i <= radius; ++i) {
-            float value = gaussian(i, sigma);
-            gaussianComponents << value;
-            sum += value;
-        }
+    qreal sum = 0;
+    for (int i = -radius; i <= radius; ++i) {
+        float value = gaussian(i, sigma);
+        gaussianComponents << value;
+        sum += value;
+    }
 
-        // normalize
-        for (int i = 0; i < gaussianComponents.size(); ++i)
-            gaussianComponents[i] /= sum;
+    // normalize
+    for (int i = 0; i < gaussianComponents.size(); ++i)
+        gaussianComponents[i] /= sum;
 
-        for (int i = 0; i < gaussianComponents.size() - 1; i += 2) {
-            qreal weight = gaussianComponents.at(i) + gaussianComponents.at(i + 1);
-            qreal offset = i - radius + gaussianComponents.at(i + 1) / weight;
+    for (int i = 0; i < gaussianComponents.size() - 1; i += 2) {
+        qreal weight = gaussianComponents.at(i) + gaussianComponents.at(i + 1);
+        qreal offset = i - radius + gaussianComponents.at(i + 1) / weight;
 
-            sampleOffsets << offset;
-            weights << weight;
-        }
+        sampleOffsets << offset;
+        weights << weight;
+    }
 
-        // odd size ?
-        if (gaussianComponents.size() & 1) {
-            sampleOffsets << radius;
-            weights << gaussianComponents.last();
-        }
-    } else {
-        for (int i = 0; i < radius; ++i) {
-            sampleOffsets << 2 * i - radius + 0.5;
-            weights << qreal(1);
-        }
+    // odd size ?
+    if (gaussianComponents.size() & 1) {
         sampleOffsets << radius;
-        weights << qreal(0.5);
+        weights << gaussianComponents.last();
     }
 
     int currentVariable = 1;
@@ -468,88 +476,36 @@ QByteArray QGLPixmapBlurFilter::generateBlurShader(int radius, bool gaussianBlur
     source.append("    mediump vec2 coord;\n");
 
     qreal weightSum = 0;
-    if (separateXY) {
-        source.append("    mediump float c;\n");
-        for (int i = 0; i < sampleOffsets.size(); ++i) {
-            qreal delta = sampleOffsets.at(i);
+    source.append("    mediump float c;\n");
+    for (int i = 0; i < sampleOffsets.size(); ++i) {
+        qreal delta = sampleOffsets.at(i);
 
-            ++currentVariable;
+        ++currentVariable;
 
-            QByteArray coordinate = "srcCoords";
-            if (delta != qreal(0)) {
-                coordinate.append(" + invTextureSize * delta * float(");
-                coordinate.append(QByteArray::number(delta));
-                coordinate.append(")");
-            }
-
-            source.append("    coord = ");
-            source.append(coordinate);
-            source.append(";\n");
-
-            if (clip) {
-                source.append("    c = dot(coord, delta);\n");
-                source.append("    if (c > clip.x && c < clip.y)\n    ");
-            }
-
-            source.append("    sample += texture2D(src, coord)");
-
-            weightSum += weights.at(i);
-            if (weights.at(i) != qreal(1)) {
-                source.append(" * float(");
-                source.append(QByteArray::number(weights.at(i)));
-                source.append(");\n");
-            } else {
-                source.append(";\n");
-            }
+        QByteArray coordinate = "srcCoords";
+        if (delta != qreal(0)) {
+            coordinate.append(" + delta * float(");
+            coordinate.append(QByteArray::number(delta));
+            coordinate.append(")");
         }
-    } else {
-        for (int y = 0; y < sampleOffsets.size(); ++y) {
-            for (int x = 0; x < sampleOffsets.size(); ++x) {
-                QByteArray coordinate = "srcCoords";
 
-                qreal dx = sampleOffsets.at(x);
-                qreal dy = sampleOffsets.at(y);
+        source.append("    coord = ");
+        source.append(coordinate);
+        source.append(";\n");
 
-                if (dx != qreal(0) || dy != qreal(0)) {
-                    coordinate.append(" + invTextureSize * vec2(float(");
-                    coordinate.append(QByteArray::number(dx));
-                    coordinate.append("), float(");
-                    coordinate.append(QByteArray::number(dy));
-                    coordinate.append("))");
-                }
+        source.append("    sample += texture2D(src, coord)");
 
-                source.append("    coord = ");
-                source.append(coordinate);
-                source.append(";\n");
-
-                if (clip)
-                    source.append("    if (coord.x > clip.x && coord.x < clip.y && coord.y > clip.z && coord.y < clip.w)\n    ");
-
-                source.append("    sample += texture2D(src, coord)");
-
-                ++currentVariable;
-
-                weightSum += weights.at(x) * weights.at(y);
-                if ((weights.at(x) != qreal(1) || weights.at(y) != qreal(1))) {
-                    source.append(" * float(");
-                    source.append(QByteArray::number(weights.at(x) * weights.at(y)));
-                    source.append(");\n");
-                } else {
-                    source.append(";\n");
-                }
-            }
+        weightSum += weights.at(i);
+        if (weights.at(i) != qreal(1)) {
+            source.append(" * float(");
+            source.append(QByteArray::number(weights.at(i)));
+            source.append(");\n");
+        } else {
+            source.append(";\n");
         }
     }
 
     source.append("    return ");
-    if (!gaussianBlur) {
-        source.append("float(");
-        if (separateXY)
-            source.append(QByteArray::number(1 / weightSum));
-        else
-            source.append(QByteArray::number(1 / weightSum));
-        source.append(") * ");
-    }
     source.append("sample;\n");
     source.append("}\n");
 

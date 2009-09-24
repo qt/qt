@@ -487,6 +487,9 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     timer.start(3000);
     eventLoop.exec();
     QCOMPARE(fileChangedSpy.count(), 0);
+#ifdef Q_OS_WINCE
+    QEXPECT_FAIL("poller", "Directory does not get updated on file removal(See #137910)", Abort);
+#endif
 #if defined(Q_OS_SYMBIAN) && defined(Q_CC_RVCT)
     // Since native watcher is always used in real devices, this poller issue is irrelevant
     // Symbian file system does not change modification time on a directory when a file inside is changed
