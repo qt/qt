@@ -378,6 +378,8 @@ QPaintDevice *QGLWindowSurface::paintDevice()
     if (d_ptr->ctx)
         return &d_ptr->glDevice;
 
+    QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
+    ctx->makeCurrent();
     return d_ptr->fbo;
 }
 
