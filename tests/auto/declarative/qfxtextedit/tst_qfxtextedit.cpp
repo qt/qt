@@ -6,6 +6,9 @@
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qfxtextedit.h>
 #include <QFontMetrics>
+#include <QLibraryInfo>
+#include <QProcess>
+#include <QDir>
 
 class tst_qfxtextedit : public QObject
 
@@ -28,6 +31,8 @@ private slots:
 
     void cursorDelegate();
 
+    void visualTests_data();
+    void visualTests();
 private:
     QStringList standard;
     QStringList richText;
@@ -41,6 +46,7 @@ private:
     QStringList colorStrings;
 
     QmlEngine engine;
+    QString qmlviewerBinary;
 };
 
 tst_qfxtextedit::tst_qfxtextedit()
@@ -84,6 +90,16 @@ tst_qfxtextedit::tst_qfxtextedit()
                  // << "#AA0011DD"
                  // << "#00F16B11";
                  // 
+
+    QString binaries = QLibraryInfo::location(QLibraryInfo::BinariesPath);
+
+#if defined(Q_WS_MAC)
+    qmlviewerBinary = QDir(binaries).absoluteFilePath("qmlviewer.app/Contents/MacOS/qmlviewer");
+#elif defined(Q_WS_WIN)
+    qmlviewerBinary = QDir(binaries).absoluteFilePath("qmlviewer.exe");
+#else
+    qmlviewerBinary = QDir(binaries).absoluteFilePath("qmlviewer");
+#endif
 }
 
 void tst_qfxtextedit::text()
@@ -450,6 +466,31 @@ void tst_qfxtextedit::cursorDelegate()
     //Test Delegate gets deleted
     textEditObject->setCursorDelegate(0);
     QVERIFY(!textEditObject->findChild<QFxItem*>("cursorInstance"));
+}
+
+void tst_qfxtextedit::visualTests_data()
+{
+    QTest::addColumn<QString>("qmlFile");
+    QTest::addColumn<QString>("scriptFile");
+    QTest::newRow("basic") << "data/basic.qml" << "data/basic-test";
+    QTest::newRow("colorful") << "data/colorful.qml" << "data/colorful-test";
+    QTest::newRow("QT-669") << "data/QT-669.qml" << "data/QT-669-test";
+}
+
+void tst_qfxtextedit::visualTests()
+{
+    QFETCH(QString, qmlFile);
+    QFETCH(QString, scriptFile);
+
+    QStringList arguments;
+    arguments << "-script" << scriptFile
+              << "-scriptopts" << "play,exitoncomplete,exitonfailure" 
+              << qmlFile;
+    QProcess p;
+    p.start(qmlviewerBinary, arguments);
+    QVERIFY(p.waitForFinished());
+    QCOMPARE(p.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(p.exitCode(), 0);
 }
 
 QTEST_MAIN(tst_qfxtextedit)
