@@ -139,7 +139,7 @@ public:
 
 public:
     QSymbianControl(QWidget *w);
-    void ConstructL(bool isWindowOwning = false, bool desktop = false);
+    void ConstructL(bool topLevel = false, bool desktop = false);
     ~QSymbianControl();
     void HandleResourceChange(int resourceType);
     void HandlePointerEventL(const TPointerEvent& aPointerEvent);
