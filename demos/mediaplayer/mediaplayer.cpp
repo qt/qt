@@ -152,9 +152,6 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
             m_AudioOutput(Phonon::VideoCategory),
             m_videoWidget(new MediaVideoWidget(this))
 {
-    m_videoWindow.setObjectName("videoWindow");
-    m_videoWidget->setObjectName("videoWidget");
-
     setWindowTitle(tr("Media Player"));
     setContextMenuPolicy(Qt::CustomContextMenu);
     m_videoWidget->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -162,7 +159,6 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     QSize buttonSize(34, 28);
 
     QPushButton *openButton = new QPushButton(this);
-    openButton->setObjectName("openButton");
 
     openButton->setIcon(style()->standardIcon(QStyle::SP_DialogOpenButton));
     QPalette bpal;
@@ -173,25 +169,20 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     openButton->setPalette(bpal);
 
     rewindButton = new QPushButton(this);
-    rewindButton->setObjectName("rewindButton");
     rewindButton->setIcon(style()->standardIcon(QStyle::SP_MediaSkipBackward));
 
     forwardButton = new QPushButton(this);
-    forwardButton->setObjectName("forwardButton");
     forwardButton->setIcon(style()->standardIcon(QStyle::SP_MediaSkipForward));
     forwardButton->setEnabled(false);
 
     playButton = new QPushButton(this);
-    playButton->setObjectName("playButton");
     playIcon = style()->standardIcon(QStyle::SP_MediaPlay);
     pauseIcon = style()->standardIcon(QStyle::SP_MediaPause);
     playButton->setIcon(playIcon);
 
     slider = new Phonon::SeekSlider(this);
-    slider->setObjectName("slider");
     slider->setMediaObject(&m_MediaObject);
     volume = new Phonon::VolumeSlider(&m_AudioOutput);
-    volume->setObjectName("volume");
  
     QVBoxLayout *vLayout = new QVBoxLayout(this);
     vLayout->setContentsMargins(8, 8, 8, 8);    
@@ -199,7 +190,6 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     QHBoxLayout *layout = new QHBoxLayout();
 
     info = new QLabel(this);
-    info->setObjectName("info");
     info->setMinimumHeight(70);
     info->setAcceptDrops(false);
     info->setMargin(2);
@@ -237,11 +227,8 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     buttonPanelLayout->addLayout(layout);
     
     timeLabel = new QLabel(this);
-    timeLabel->setObjectName("timeLabel");
     progressLabel = new QLabel(this);
-    progressLabel->setObjectName("progressLabel");
     QWidget *sliderPanel = new QWidget(this);
-    sliderPanel->setObjectName("sliderPanel");
     QHBoxLayout *sliderLayout = new QHBoxLayout();
     sliderLayout->addWidget(slider);
     sliderLayout->addWidget(timeLabel);    
@@ -264,7 +251,6 @@ MediaPlayer::MediaPlayer(const QString &filePath) :
     // forwardButton->setStyle(flatButtonStyle);
  #endif
     QWidget *buttonPanelWidget = new QWidget(this);
-    buttonPanelWidget->setObjectName("buttonPanelWidget");
     buttonPanelWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed); 
     buttonPanelWidget->setLayout(buttonPanelLayout);    
     vLayout->addWidget(buttonPanelWidget);
