@@ -82,9 +82,14 @@ void tst_sql::testQml_data()
     QTest::addColumn<QString>("jsfile"); // The input file
     QTest::addColumn<QString>("result"); // The required output from the js test() function
     QTest::addColumn<int>("databases");  // The number of databases that should have been created
+    QTest::addColumn<bool>("qmlextension"); // Things WebKit can't do
 
-    QTest::newRow("basic creation")     << "data/test1.js" << "passed" << 1;
-    QTest::newRow("basic select")     << "data/test2.js" << "passed" << 1;
+    QTest::newRow("creation") << "data/1-creation.js" << "passed" << 1 << false;
+    QTest::newRow("selection") << "data/2-selection.js" << "passed" << 1 << false;
+    QTest::newRow("iteration-item-function") << "data/3-iteration-item-function.js" << "passed" << 1 << false;
+    QTest::newRow("iteration-index") << "data/4-iteration-index.js" << "passed" << 1 << true;
+    QTest::newRow("iteration-iterator") << "data/5-iteration-iterator.js" << "passed" << 1 << true;
+    QTest::newRow("iteration-efficient") << "data/6-iteration-efficient.js" << "passed" << 1 << true;
 }
 
 void tst_sql::validateAgainstWebkit_data()
@@ -102,6 +107,10 @@ void tst_sql::validateAgainstWebkit()
     QFETCH(QString, jsfile);
     QFETCH(QString, result);
     QFETCH(int, databases);
+    QFETCH(bool, qmlextension);
+
+    if (qmlextension) // WebKit can't do it (yet?)
+        return;
 
     QFile f(jsfile);
     QVERIFY(f.open(QIODevice::ReadOnly));
