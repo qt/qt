@@ -209,6 +209,6 @@ EXPORTS
 	_ZN16QSvgTinyDocument13addNamedStyleERK7QStringP21QSvgFillStyleProperty @ 208 NONAME
 	_ZNK16QSvgTinyDocument10namedStyleERK7QString @ 209 NONAME
 	_ZNK16QSvgTinyDocument9namedNodeERK7QString @ 210 NONAME
-	_ZTI21QSvgFillStyleProperty @ 211 NONAME ; #<TI>#
-	_ZTV21QSvgFillStyleProperty @ 212 NONAME ; #<VT>#
+	_ZTI21QSvgFillStyleProperty @ 211 NONAME ABSENT; #<TI># 
+	_ZTV21QSvgFillStyleProperty @ 212 NONAME ABSENT; #<VT># 
 
