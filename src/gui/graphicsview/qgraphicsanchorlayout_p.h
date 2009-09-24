@@ -149,33 +149,15 @@ struct AnchorData : public QSimplexVariable {
         Sequential,
         Parallel
     };
-    AnchorData(qreal minimumSize, qreal preferredSize, qreal maximumSize)
-        : QSimplexVariable(), from(0), to(0),
-          minSize(minimumSize), prefSize(preferredSize),
-          maxSize(maximumSize), sizeAtMinimum(preferredSize),
-          sizeAtPreferred(preferredSize), sizeAtExpanding(preferredSize),
-          sizeAtMaximum(preferredSize),
-          graphicsAnchor(0),
-          skipInPreferred(0), type(Normal), hasSize(true),
-          isLayoutAnchor(false) {}
-
-    AnchorData(qreal size)
-        : QSimplexVariable(), from(0), to(0),
-          minSize(size), prefSize(size), maxSize(size),
-          sizeAtMinimum(size), sizeAtPreferred(size), sizeAtExpanding(size),
-          sizeAtMaximum(size),
-          graphicsAnchor(0),
-          skipInPreferred(0), type(Normal), hasSize(true),
-          isLayoutAnchor(false) {}
 
     AnchorData()
         : QSimplexVariable(), from(0), to(0),
-          minSize(0), prefSize(0), maxSize(0),
-          sizeAtMinimum(0), sizeAtPreferred(0), sizeAtExpanding(0),
-          sizeAtMaximum(0),
-          graphicsAnchor(0),
-          skipInPreferred(0), type(Normal), hasSize(false),
-          isLayoutAnchor(false) {}
+          minSize(0), prefSize(0), expSize(0), maxSize(0),
+          sizeAtMinimum(0), sizeAtPreferred(0),
+          sizeAtExpanding(0), sizeAtMaximum(0),
+          graphicsAnchor(0), skipInPreferred(0),
+          type(Normal), hasSize(true), isLayoutAnchor(false),
+          isExpanding(false) {}
 
     virtual void updateChildrenSizes() {}
     virtual void refreshSizeHints(qreal effectiveSpacing);
@@ -192,6 +174,7 @@ struct AnchorData : public QSimplexVariable {
     {
         minSize = size;
         prefSize = size;
+        expSize = size;
         maxSize = size;
         sizeAtMinimum = size;
         sizeAtPreferred = size;
@@ -215,6 +198,7 @@ struct AnchorData : public QSimplexVariable {
     // size.
     qreal minSize;
     qreal prefSize;
+    qreal expSize;
     qreal maxSize;
 
     // These attributes define which sizes should that anchor be in when the
@@ -231,17 +215,6 @@ struct AnchorData : public QSimplexVariable {
     uint hasSize : 1;         // if false, get size from style.
     uint isLayoutAnchor : 1;  // if this anchor is connected to a layout 'edge'
     uint isExpanding : 1;     // if true, expands before other anchors
-
-protected:
-    AnchorData(Type type, qreal size = 0)
-        : QSimplexVariable(), from(0), to(0),
-          minSize(size), prefSize(size),
-          maxSize(size), sizeAtMinimum(size),
-          sizeAtPreferred(size), sizeAtExpanding(size),
-          sizeAtMaximum(size),
-          graphicsAnchor(0),
-          skipInPreferred(0), type(type), hasSize(true),
-          isLayoutAnchor(false) {}
 };
 
 #ifdef QT_DEBUG
@@ -253,8 +226,10 @@ inline QString AnchorData::toString() const
 
 struct SequentialAnchorData : public AnchorData
 {
-    SequentialAnchorData() : AnchorData(AnchorData::Sequential)
+    SequentialAnchorData() : AnchorData()
     {
+        type = AnchorData::Sequential;
+        hasSize = true;
 #ifdef QT_DEBUG
         name = QLatin1String("SequentialAnchorData");
 #endif
@@ -278,9 +253,11 @@ struct SequentialAnchorData : public AnchorData
 struct ParallelAnchorData : public AnchorData
 {
     ParallelAnchorData(AnchorData *first, AnchorData *second)
-        : AnchorData(AnchorData::Parallel),
-        firstEdge(first), secondEdge(second)
+        : AnchorData(), firstEdge(first), secondEdge(second)
     {
+        type = AnchorData::Parallel;
+        hasSize = true;
+
         // ### Those asserts force that both child anchors have the same direction,
         // but can't we simplify a pair of anchors in opposite directions?
         Q_ASSERT(first->from == second->from);

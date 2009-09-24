@@ -94,8 +94,6 @@ qreal QGraphicsAnchorPrivate::spacing() const
 
 void AnchorData::refreshSizeHints(qreal effectiveSpacing)
 {
-    isExpanding = 0;
-
     if (!isLayoutAnchor && (from->m_item == to->m_item)) {
         QGraphicsLayoutItem *item = from->m_item;
 
@@ -140,15 +138,20 @@ void AnchorData::refreshSizeHints(qreal effectiveSpacing)
         if (policy & QSizePolicy::IgnoreFlag)
             prefSize = minSize;
 
-        if (policy & QSizePolicy::ExpandFlag)
-            isExpanding = 1;
-
         bool hasCenter = (from->m_edge == centerEdge || to->m_edge == centerEdge);
 
         if (hasCenter) {
             minSize /= 2;
             prefSize /= 2;
             maxSize /= 2;
+        }
+
+        if (policy & QSizePolicy::ExpandFlag) {
+            isExpanding = 1;
+            expSize = maxSize;
+        } else {
+            isExpanding = 0;
+            expSize = prefSize;
         }
 
         // Set the anchor effective sizes to preferred.
@@ -167,7 +170,10 @@ void AnchorData::refreshSizeHints(qreal effectiveSpacing)
         // Anchor has no size defined, use given default information
         minSize = effectiveSpacing;
         prefSize = effectiveSpacing;
+        expSize = effectiveSpacing;
         maxSize = effectiveSpacing;
+
+        isExpanding = 0;
 
         sizeAtMinimum = prefSize;
         sizeAtPreferred = prefSize;
@@ -830,9 +836,10 @@ void QGraphicsAnchorLayoutPrivate::createLayoutEdges()
     QGraphicsLayoutItem *layout = q;
 
     // Horizontal
-    AnchorData *data = new AnchorData(0, 0, QWIDGETSIZE_MAX);
+    AnchorData *data = new AnchorData;
     addAnchor_helper(layout, Qt::AnchorLeft, layout,
-              Qt::AnchorRight, data);
+                     Qt::AnchorRight, data);
+    data->maxSize = QWIDGETSIZE_MAX;
     data->skipInPreferred = 1;
 
     // Set the Layout Left edge as the root of the horizontal graph.
@@ -840,9 +847,10 @@ void QGraphicsAnchorLayoutPrivate::createLayoutEdges()
     graph[Horizontal].setRootVertex(v);
 
     // Vertical
-    data = new AnchorData(0, 0, QWIDGETSIZE_MAX);
+    data = new AnchorData;
     addAnchor_helper(layout, Qt::AnchorTop, layout,
-              Qt::AnchorBottom, data);
+                     Qt::AnchorBottom, data);
+    data->maxSize = QWIDGETSIZE_MAX;
     data->skipInPreferred = 1;
 
     // Set the Layout Top edge as the root of the vertical graph.
@@ -869,19 +877,15 @@ void QGraphicsAnchorLayoutPrivate::createItemEdges(QGraphicsLayoutItem *item)
 
     items.append(item);
 
-    QSizeF minSize = item->effectiveSizeHint(Qt::MinimumSize);
-    QSizeF prefSize = item->effectiveSizeHint(Qt::PreferredSize);
-    QSizeF maxSize = item->effectiveSizeHint(Qt::MaximumSize);
+    // Create horizontal and vertical internal anchors for the item and
+    // refresh its size hint / policy values.
+    AnchorData *data = new AnchorData;
+    addAnchor_helper(item, Qt::AnchorLeft, item, Qt::AnchorRight, data);
+    data->refreshSizeHints(0); // 0 = effectiveSpacing, will not be used
 
-    // Horizontal
-    AnchorData *data = new AnchorData(minSize.width(), prefSize.width(), maxSize.width());
-    addAnchor_helper(item, Qt::AnchorLeft, item,
-              Qt::AnchorRight, data);
-
-    // Vertical
-    data = new AnchorData(minSize.height(), prefSize.height(), maxSize.height());
-    addAnchor_helper(item, Qt::AnchorTop, item,
-              Qt::AnchorBottom, data);
+    data = new AnchorData;
+    addAnchor_helper(item, Qt::AnchorTop, item, Qt::AnchorBottom, data);
+    data->refreshSizeHints(0); // 0 = effectiveSpacing, will not be used
 }
 
 /*!
@@ -934,20 +938,17 @@ void QGraphicsAnchorLayoutPrivate::createCenterAnchors(
     Q_ASSERT(first && last);
 
     // Create new anchors
-    AnchorData *oldData = graph[orientation].edgeData(first, last);
-
-    qreal minimumSize = oldData->minSize / 2;
-    qreal preferredSize = oldData->prefSize / 2;
-    qreal maximumSize = oldData->maxSize / 2;
-
     QSimplexConstraint *c = new QSimplexConstraint;
-    AnchorData *data = new AnchorData(minimumSize, preferredSize, maximumSize);
+
+    AnchorData *data = new AnchorData;
     c->variables.insert(data, 1.0);
     addAnchor_helper(item, firstEdge, item, centerEdge, data);
+    data->refreshSizeHints(0);
 
-    data = new AnchorData(minimumSize, preferredSize, maximumSize);
+    data = new AnchorData;
     c->variables.insert(data, -1.0);
     addAnchor_helper(item, centerEdge, item, lastEdge, data);
+    data->refreshSizeHints(0);
 
     itemCenterConstraints[orientation].append(c);
 
@@ -1008,14 +1009,9 @@ void QGraphicsAnchorLayoutPrivate::removeCenterAnchors(
 
     if (substitute) {
         // Create the new anchor that should substitute the left-center-right anchors.
-        AnchorData *oldData = g.edgeData(first, center);
-
-        qreal minimumSize = oldData->minSize * 2;
-        qreal preferredSize = oldData->prefSize * 2;
-        qreal maximumSize = oldData->maxSize * 2;
-
-        AnchorData *data = new AnchorData(minimumSize, preferredSize, maximumSize);
+        AnchorData *data = new AnchorData;
         addAnchor_helper(item, firstEdge, item, lastEdge, data);
+        data->refreshSizeHints(0);
 
         // Remove old anchors
         removeAnchor_helper(first, center);
@@ -1133,7 +1129,7 @@ QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *fi
     // Use heuristics to find out what the user meant with this anchor.
     correctEdgeDirection(firstItem, firstEdge, secondItem, secondEdge);
 
-    AnchorData *data;
+    AnchorData *data = new AnchorData;
     if (!spacing) {
         // If firstItem or secondItem is the layout itself, the spacing will default to 0.
         // Otherwise, the following matrix is used (questionmark means that the spacing
@@ -1143,22 +1139,25 @@ QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *fi
         //  Left    0       0       ?
         //  HCenter 0       0       0
         //  Right   ?       0       0
-        if (firstItem != q
-            && secondItem != q
-            && pickEdge(firstEdge, Horizontal) != Qt::AnchorHorizontalCenter
-            && oppositeEdge(firstEdge) == secondEdge) {
-            data = new AnchorData;      // ask the style later
+        if (firstItem == q
+            || secondItem == q
+            || pickEdge(firstEdge, Horizontal) == Qt::AnchorHorizontalCenter
+            || oppositeEdge(firstEdge) != secondEdge) {
+            data->setFixedSize(0);
         } else {
-            data = new AnchorData(0);   // spacing should be 0
+            data->unsetSize();
         }
         addAnchor_helper(firstItem, firstEdge, secondItem, secondEdge, data);
+
     } else if (*spacing >= 0) {
-        data = new AnchorData(*spacing);
+        data->setFixedSize(*spacing);
         addAnchor_helper(firstItem, firstEdge, secondItem, secondEdge, data);
+
     } else {
-        data = new AnchorData(-*spacing);
+        data->setFixedSize(-*spacing);
         addAnchor_helper(secondItem, secondEdge, firstItem, firstEdge, data);
     }
+
     return acquireGraphicsAnchor(data);
 }
 
