@@ -176,6 +176,8 @@ public:
     void _q_emitItemChanged(const QModelIndex &topLeft,
                             const QModelIndex &bottomRight);
 
+    void decodeDataRecursive(QDataStream &stream, QStandardItem *item);
+
     QVector<QStandardItem*> columnHeaderItems;
     QVector<QStandardItem*> rowHeaderItems;
     QScopedPointer<QStandardItem> root;

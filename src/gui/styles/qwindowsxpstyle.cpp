@@ -3299,17 +3299,6 @@ int QWindowsXPStyle::pixelMetric(PixelMetric pm, const QStyleOption *option, con
         }
         break;
 
-    case PM_MenuButtonIndicator:
-        {
-            XPThemeData theme(widget, 0, QLatin1String("TOOLBAR"), TP_SPLITBUTTONDROPDOWN);
-            if (theme.isValid()) {
-                SIZE size;
-                pGetThemePartSize(theme.handle(), 0, theme.partId, theme.stateId, 0, TS_TRUE, &size);
-                res = size.cx;
-            }
-        }
-        break;
-
     case PM_TitleBarHeight:
         {
 #ifdef QT3_SUPPORT
