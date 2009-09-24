@@ -985,7 +985,7 @@ bool QTextDocument::isRedoAvailable() const
 int QTextDocument::revision() const
 {
     Q_D(const QTextDocument);
-    return d->undoState;
+    return d->revision;
 }
 
 
