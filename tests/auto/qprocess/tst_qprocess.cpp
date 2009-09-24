@@ -1874,7 +1874,6 @@ void tst_QProcess::setEnvironment()
 
         QCOMPARE(process.readAll(), value.toLocal8Bit());
     }
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1887,7 +1886,6 @@ void tst_QProcess::setProcessEnvironment()
 {
 #if !defined (Q_OS_WINCE)
     // there is no concept of system variables on Windows CE as there is no console
-
     // make sure our environment variables are correct
     QVERIFY(qgetenv("tst_QProcess").isEmpty());
     QVERIFY(!qgetenv("PATH").isEmpty());
@@ -1917,6 +1915,7 @@ void tst_QProcess::setProcessEnvironment()
 
         QCOMPARE(process.readAll(), value.toLocal8Bit());
     }
+#endif
 }
 //-----------------------------------------------------------------------------
 void tst_QProcess::systemEnvironment()
@@ -2388,3 +2387,4 @@ void tst_QProcess::invalidProgramString()
 QTEST_MAIN(tst_QProcess)
 #include "tst_qprocess.moc"
 #endif
+
