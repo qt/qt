@@ -705,7 +705,7 @@ void QWidgetPrivate::lower_sys()
     if (q->internalWinId())
         q->internalWinId()->DrawableWindow()->SetOrdinalPosition(-1);
 
-    if(!q->isWindow())
+    if (!q->isWindow())
         invalidateBuffer(q->rect());
 }
 
@@ -725,7 +725,7 @@ void QWidgetPrivate::stackUnder_sys(QWidget* w)
         thisWindow->SetOrdinalPosition(otherWindow->OrdinalPosition() + 1);
     }
 
-    if(!q->isWindow() || !w->internalWinId())
+    if (!q->isWindow() || !w->internalWinId())
         invalidateBuffer(q->rect());
 }
 
