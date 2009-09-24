@@ -1359,7 +1359,6 @@ void tst_QGraphicsAnchorLayout::expandingSequence()
     QSizeF layoutExpandedSize(pref.width() + max.width(), layoutMinimumSize.height());
     p.resize(layoutExpandedSize);
 
-    QEXPECT_FAIL("", "Support for QSizePolicy::ExpandFlag not yet available", Abort);
     QCOMPARE(a->geometry().size(), pref);
     QCOMPARE(b->geometry().size(), max);
 
@@ -1409,7 +1408,6 @@ void tst_QGraphicsAnchorLayout::expandingSequenceFairDistribution()
                                      layoutMinimumSize.height());
     p.resize(layoutPartialExpandedSize);
 
-    QEXPECT_FAIL("", "Support for QSizePolicy::ExpandFlag not yet available", Abort);
     QCOMPARE(a->geometry().size(), pref);
     QCOMPARE(b->geometry().size(), pref + QSizeF(10, 0));
     QCOMPARE(c->geometry().size(), pref);
@@ -1443,6 +1441,7 @@ void tst_QGraphicsAnchorLayout::expandingSequenceFairDistribution()
 
     QSizeF newLayoutPartialExpandedSize((4 * pref.width()) + 75,
                                         layoutMinimumSize.height());
+    p.resize(newLayoutPartialExpandedSize);
 
     QCOMPARE(a->geometry().size(), pref);
     QCOMPARE(b->geometry().size(), pref + QSizeF(25, 0));
@@ -1454,11 +1453,12 @@ void tst_QGraphicsAnchorLayout::expandingParallel()
 {
     QSizeF min(10, 10);
     QSizeF pref(50, 10);
-    QSizeF max(100, 50);
+    QSizeF max(100, 10);
+    QSizeF max2(100, 50);
 
     QGraphicsWidget *a = createItem(min, pref, max, "a");
     QGraphicsWidget *b = createItem(min, pref, max, "b");
-    QGraphicsWidget *c = createItem(min, pref, max, "c");
+    QGraphicsWidget *c = createItem(min, pref, max2, "c");
 
     b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
@@ -1492,10 +1492,9 @@ void tst_QGraphicsAnchorLayout::expandingParallel()
     QSizeF layoutExpandedSize(pref.width() + max.width(), layoutMinimumSize.height());
     p.resize(layoutExpandedSize);
 
-    QEXPECT_FAIL("", "Support for QSizePolicy::ExpandFlag not yet available", Abort);
     QCOMPARE(a->geometry().size(), max);
     QCOMPARE(b->geometry().size(), max);
-    QCOMPARE(c->geometry().size(), pref);
+    QCOMPARE(c->geometry().size(), QSizeF(pref.width(), 20));
 
     QSizeF layoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
     QCOMPARE(layoutMaximumSize.width(), qreal(200));
@@ -1511,12 +1510,12 @@ void tst_QGraphicsAnchorLayout::expandingParallel()
     QSizeF newLayoutMinimumSize = l->effectiveSizeHint(Qt::MinimumSize);
     QCOMPARE(newLayoutMinimumSize.width(), qreal(30));
 
-    QSizeF newLayoutExpandedSize(pref.width() + max.width(), layoutMinimumSize.height());
+    QSizeF newLayoutExpandedSize = layoutExpandedSize + QSizeF(100, 0);
     p.resize(newLayoutExpandedSize);
 
-    QCOMPARE(a->geometry().size(), max);
+    QCOMPARE(a->geometry().size(), max + QSizeF(100, 0));
     QCOMPARE(b->geometry().size(), max);
-    QCOMPARE(c->geometry().size(), pref);
+    QCOMPARE(c->geometry().size(), QSizeF(pref.width(), 20));
 
     QSizeF newLayoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
     QCOMPARE(newLayoutMaximumSize.width(), qreal(300));
