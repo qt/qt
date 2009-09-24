@@ -101,15 +101,15 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &)
     /*
       There are up to four different coordinate systems here:
       Qt coordinate system for this widget.
-      X coordinate system for this widget (relative to wrect).
+      Symbian coordinate system for this widget (relative to wrect).
       Qt coordinate system for parent
-      X coordinate system for parent (relative to parent's wrect).
+      Symbian coordinate system for parent (relative to parent's wrect).
      */
 
     QRect validRange(-XCOORD_MAX,-XCOORD_MAX, 2*XCOORD_MAX, 2*XCOORD_MAX);
     QRect wrectRange(-WRECT_MAX,-WRECT_MAX, 2*WRECT_MAX, 2*WRECT_MAX);
     QRect wrect;
-    //xrect is the X geometry of my widget. (starts out in parent's Qt coord sys, and ends up in parent's X coord sys)
+    //xrect is the Symbian geometry of my widget. (starts out in parent's Qt coord sys, and ends up in parent's Symbian coord sys)
     QRect xrect = data.crect;
 
     const QWidget *const parent = q->parentWidget();
