@@ -83,19 +83,19 @@ static bool isEqual(const QList<QAction*>& a, const QList<QAction*>& b)
 }
 
 void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &)
-{    
+{
     // Note: based on x11 implementation
-    
+
     static const int XCOORD_MAX = 16383;
     static const int WRECT_MAX = 16383;
-    
+
     Q_Q(QWidget);
-    
+
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::setWSGeometry [" << this << "]"
                 << "q" << q;
 #endif
-    
+
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
 
     /*
@@ -141,14 +141,14 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &)
                 xrect = data.wrect;
                 xrect.translate(data.crect.topLeft());
                 if (data.winid) {
-                    
+
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::setWSGeometry [" << this << "] (1)"
                 << "control" << data.winid
                 << "SetExtent" << xrect.x() << ',' << xrect.y()
                 << xrect.width() << 'x' << xrect.height();
 #endif
-                    
+
                     data.winid->SetExtent(TPoint(xrect.x(), xrect.y()), TSize(xrect.width(), xrect.height()));
                     data.winid->DrawNow();
                 }
@@ -174,13 +174,13 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &)
         q->setAttribute(Qt::WA_OutsideWSRange, outsideRange);
         if (outsideRange) {
             if (data.winid) {
-                
+
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::setWSGeometry [" << this << "] (2)"
                 << "control" << data.winid
                 << "SetVisible(EFalse)";
 #endif
-    
+
                 data.winid->DrawableWindow()->SetVisible(EFalse);
             }
             q->setAttribute(Qt::WA_Mapped, false);
@@ -203,13 +203,13 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &)
         if (object->isWidgetType()) {
             QWidget *w = static_cast<QWidget *>(object);
             if (!w->isWindow() && w->testAttribute(Qt::WA_WState_Created)) {
-                
+
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::setWSGeometry [" << this << "] (3)"
                 << "control" << data.winid
                 << "child" << w->d_func();
 #endif
-                
+
                 w->d_func()->setWSGeometry(jump);
             }
         }
@@ -221,27 +221,27 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &)
         // than moving mapped windows
         if (!parent->internalWinId())
             xrect.translate(parent->mapTo(q->nativeParentWidget(), QPoint(0, 0)));
-        
+
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::setWSGeometry [" << this << "] (4)"
                 << "control" << data.winid
                 << "SetExtent" << xrect.x() << ',' << xrect.y()
                 << xrect.width() << 'x' << xrect.height();
 #endif
-    
+
         data.winid->SetExtent(TPoint(xrect.x(), xrect.y()), TSize(xrect.width(), xrect.height()));
         if(!jump) {
-            
+
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::setWSGeometry [" << this << "] (5)"
                 << "control" << data.winid
                 << "DrawNow";
 #endif
-    
+
             data.winid->DrawNow();
         }
     }
-    
+
     //to avoid flicker, we have to show children after the helper widget has moved
     if (jump) {
         for (int i = 0; i < children.size(); ++i) {
@@ -251,13 +251,13 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &)
                 if (!w->testAttribute(Qt::WA_OutsideWSRange) && !w->testAttribute(Qt::WA_Mapped) && !w->isHidden()) {
                     w->setAttribute(Qt::WA_Mapped);
                     if (w->internalWinId()) {
-                        
+
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::setWSGeometry [" << this << "] (6)"
                 << "control" << data.winid
                 << "SetVisible(ETrue)";
 #endif
-    
+
                         w->data->winid->DrawableWindow()->SetVisible(ETrue);
                     }
                 }
@@ -266,26 +266,26 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &)
     }
 
     if  (jump && data.winid) {
-        
-#ifdef DEBUG_QWIDGET    
+
+#ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::setWSGeometry [" << this << "] (7)"
                 << "control" << data.winid
                 << "DrawNow" << wrect.width() << 'x' << wrect.height();
 #endif
-    
+
         data.winid->DrawNow(TRect(0, 0, wrect.width(), wrect.height()));
     }
-    
+
     if (mapWindow and !dontShow) {
         q->setAttribute(Qt::WA_Mapped);
         if (q->internalWinId()) {
-            
+
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::setWSGeometry [" << this << "] (8)"
                 << "control" << data.winid
                 << "SetVisible(ETrue)";
 #endif
-    
+
             q->internalWinId()->DrawableWindow()->SetVisible(ETrue);
         }
     }
@@ -294,13 +294,13 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &)
 void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
 {
     Q_Q(QWidget);
-    
+
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::setGeometry_sys [" << this << "]"
                 << "q" << q
                 << x << ',' << y << w << 'x' << h << isMove;
 #endif
-    
+
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
 
     if ((q->windowType() == Qt::Desktop))
@@ -335,12 +335,12 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
         if (w == 0 || h == 0) {
             q->setAttribute(Qt::WA_OutsideWSRange, true);
             if (q->isVisible() && q->testAttribute(Qt::WA_Mapped)) {
-                
+
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::setGeometry_sys [" << this << "] (1)"
                 << "hide";
 #endif
-    
+
                 hide_sys();
             }
             data.crect = QRect(x, y, w, h);
@@ -352,7 +352,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     qDebug()    << "QWidgetPrivate::setGeometry_sys [" << this << "] (2)"
                 << "SetRect, show";
 #endif
-            
+
             // put the window in its place and show it
             q->internalWinId()->SetRect(TRect(TPoint(x, y), TSize(w, h)));
             data.crect.setRect(x, y, w, h);
@@ -361,12 +361,12 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
         } else {
             QRect r = QRect(x, y, w, h);
             data.crect = r;
-            
+
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::setGeometry_sys [" << this << "] (3)"
                 << "SetRect";
 #endif
-            
+
             q->internalWinId()->SetRect(TRect(TPoint(x, y), TSize(w, h)));
             topData()->normalGeometry = data.crect;
         }
@@ -390,13 +390,13 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
                 tlwExtra->inTopLevelResize = true;
         }
         if (q->testAttribute(Qt::WA_WState_Created)) {
-            
+
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::setGeometry_sys [" << this << "] (4)"
                 << "setWSGeometry";
 #endif
-            
-            setWSGeometry();   
+
+            setWSGeometry();
         }
     }
 
@@ -505,7 +505,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
                 stackingFlags = ECoeStackFlagStandard;
             }
             QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control, ECoeStackPriorityDefault, stackingFlags));
-            
+
             RDrawableWindow *const drawableWindow = control->DrawableWindow();
             // Request mouse move events.
             drawableWindow->PointerFilter(EPointerFilterEnterExit
@@ -516,7 +516,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
                 RWindow *const window = static_cast<RWindow *>(drawableWindow);
                 const TDisplayMode displayMode = static_cast<TDisplayMode>(window->SetRequiredDisplayMode(EColor16MA));
                 if (window->SetTransparencyAlphaChannel() == KErrNone)
-                	window->SetBackgroundColor(TRgb(255, 255, 255, 0));
+                    window->SetBackgroundColor(TRgb(255, 255, 255, 0));
             }
         }
 
@@ -537,7 +537,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
             stackingFlags = ECoeStackFlagStandard;
         }
         QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control, ECoeStackPriorityDefault, stackingFlags));
-        
+
         q->setAttribute(Qt::WA_WState_Created);
         int x, y, w, h;
         data.crect.getRect(&x, &y, &w, &h);
@@ -590,7 +590,7 @@ void QWidgetPrivate::show_sys()
         id->MakeVisible(true);
         
         if(q->isWindow())
-        	id->SetFocus(true);
+            id->SetFocus(true);
 
         // Force setting of the icon after window is made visible,
         // this is needed even WA_SetWindowIcon is not set, as in that case we need
@@ -605,24 +605,24 @@ void QWidgetPrivate::show_sys()
 void QWidgetPrivate::hide_sys()
 {
     Q_Q(QWidget);
-    
+
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::hide_sys [" << this << "]"
                 << "q" << q;
 #endif
-    
+
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
     deactivateWidgetCleanup();
     WId id = q->internalWinId();
-    
+
     if (id) {
-        
+
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::show_sys [" << this << "]"
                 << "id" << id
                 << "MakeVisible(false)";
 #endif
-        
+
         if(id->IsFocused()) // Avoid unnecessary calls to FocusChanged()
             id->SetFocus(false);
         id->MakeVisible(false);
@@ -647,13 +647,13 @@ void QWidgetPrivate::handleSymbianDeferredFocusChanged()
 {
     Q_Q(QWidget);
     WId control = q->internalWinId();
-    
+
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::handleSymbianDeferredFocusChanged [" << this << "]"
                 << "q" << q
                 << "control" << control;
 #endif
-    
+
     if (!control) {
         // This could happen if the widget was reparented, while the focuschange
         // was in the event queue.
@@ -681,30 +681,30 @@ void QWidgetPrivate::handleSymbianDeferredFocusChanged()
 void QWidgetPrivate::raise_sys()
 {
     Q_Q(QWidget);
-    
+
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::raise_sys [" << this << "]"
                 << "q" << q;
 #endif
-    
+
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
     if (q->internalWinId())
-    	q->internalWinId()->DrawableWindow()->SetOrdinalPosition(0);
+        q->internalWinId()->DrawableWindow()->SetOrdinalPosition(0);
 }
 
 void QWidgetPrivate::lower_sys()
 {
     Q_Q(QWidget);
-    
+
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::lower_sys [" << this << "]"
                 << "q" << q;
 #endif
-    
+
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
     if (q->internalWinId())
         q->internalWinId()->DrawableWindow()->SetOrdinalPosition(-1);
-  
+
     if(!q->isWindow())
         invalidateBuffer(q->rect());
 }
@@ -718,13 +718,13 @@ void QWidgetPrivate::stackUnder_sys(QWidget* w)
 {
     Q_Q(QWidget);
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
-    
+
     if (q->internalWinId() && w->internalWinId()) {
         RDrawableWindow *const thisWindow = q->internalWinId()->DrawableWindow();
         RDrawableWindow *const otherWindow = w->internalWinId()->DrawableWindow();
         thisWindow->SetOrdinalPosition(otherWindow->OrdinalPosition() + 1);
     }
-    
+
     if(!q->isWindow() || !w->internalWinId())
         invalidateBuffer(q->rect());
 }
@@ -732,12 +732,12 @@ void QWidgetPrivate::stackUnder_sys(QWidget* w)
 void QWidgetPrivate::reparentChildren()
 {
     Q_Q(QWidget);
-    
+
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::reparentChildren [" << this << "]"
                 << "q" << q;
 #endif
-    
+
     QObjectList chlist = q->children();
     for (int i = 0; i < chlist.size(); ++i) { // reparent children
         QObject *obj = chlist.at(i);
@@ -768,14 +768,14 @@ void QWidgetPrivate::reparentChildren()
 void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
 {
     Q_Q(QWidget);
-    
+
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::setParent_sys [" << this << "]"
                 << "q" << q
                 << "parent" << parent
                 << "f" << f;
 #endif
-    
+
     bool wasCreated = q->testAttribute(Qt::WA_WState_Created);
 
     if (q->isVisible() && q->parentWidget() && parent != q->parentWidget())
@@ -838,7 +838,7 @@ void QWidgetPrivate::setConstraints_sys()
 void QWidgetPrivate::s60UpdateIsOpaque()
 {
     Q_Q(QWidget);
-    
+
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidgetPrivate::s60UpdateIsOpaque [" << this << "]"
                 << "q" << q;
@@ -851,13 +851,13 @@ void QWidgetPrivate::s60UpdateIsOpaque()
         return;
 
     RWindow *const window = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
-    
+
     if (!isOpaque) {
         const TDisplayMode displayMode = static_cast<TDisplayMode>(window->SetRequiredDisplayMode(EColor16MA));
         if (window->SetTransparencyAlphaChannel() == KErrNone)
-        	window->SetBackgroundColor(TRgb(255, 255, 255, 0));
+            window->SetBackgroundColor(TRgb(255, 255, 255, 0));
     } else
-    	window->SetTransparentRegion(TRegionFix<1>());
+        window->SetTransparentRegion(TRegionFix<1>());
 }
 
 CFbsBitmap* qt_pixmapToNativeBitmap(QPixmap pixmap, bool invert)
@@ -1089,8 +1089,8 @@ void QWidgetPrivate::deleteTLSysExtra()
 
 void QWidgetPrivate::createSysExtra()
 {
-	extra->activated = 0;
-	extra->disableBlit = 0;
+    extra->activated = 0;
+    extra->disableBlit = 0;
 }
 
 void QWidgetPrivate::deleteSysExtra()
@@ -1225,12 +1225,12 @@ QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 void QWidget::setWindowState(Qt::WindowStates newstate)
 {
     Q_D(QWidget);
-    
+
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidget::setWindowState [" << this << "]"
                 << "newstate" << newstate;
 #endif
-    
+
     Qt::WindowStates oldstate = windowState();
     if (oldstate == newstate)
         return;
@@ -1478,11 +1478,11 @@ void QWidget::releaseMouse()
 void QWidget::activateWindow()
 {
     Q_D(QWidget);
-    
+
 #ifdef DEBUG_QWIDGET
     qDebug()    << "QWidget::activateWindow [" << this << "]";
 #endif
-    
+
     QWidget *tlw = window();
     if (tlw->isVisible()) {
         window()->createWinId();

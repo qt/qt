@@ -327,12 +327,12 @@ QSymbianControl::QSymbianControl(QWidget *w)
 void QSymbianControl::ConstructL(bool topLevel, bool desktop)
 {
     if (!desktop)
-    {        
+    {
         if (topLevel or !qwidget->parentWidget())
             CreateWindowL(S60->windowGroup());
         else
             /**
-             * TODO: in order to avoid creating windows for all ancestors of 
+             * TODO: in order to avoid creating windows for all ancestors of
              * this widget up to the root window, the parameter passed to
              * CreateWindowL should be
              * qwidget->parentWidget()->effectiveWinId().  However, if we do
@@ -340,11 +340,11 @@ void QSymbianControl::ConstructL(bool topLevel, bool desktop)
              * is created for a widget between this one and the root window.
              */
             CreateWindowL(qwidget->parentWidget()->winId());
-        
+
         // Necessary in order to be able to track the activation status of
         // the control's window
         qwidget->d_func()->createExtra();
-        
+
 #ifdef DEBUG_QSYMBIANCONTROL
         qDebug()    << "QSymbianControl::ConstructL [" << this
                     << "] widget" << qwidget
@@ -354,7 +354,7 @@ void QSymbianControl::ConstructL(bool topLevel, bool desktop)
                     << "Window.ClientHandle" << reinterpret_cast<const void*>(DrawableWindow()->ClientHandle())
                     << "WindowGroupId" << DrawableWindow()->WindowGroupId();
 #endif
-        
+
         SetFocusing(true);
         m_longTapDetector = QLongTapTimer::NewL(this);
     }
@@ -722,7 +722,7 @@ void QSymbianControl::Draw(const TRect& r) const
 {
     QWindowSurface *surface = qwidget->windowSurface();
     QPaintEngine *engine = surface ? surface->paintDevice()->paintEngine() : NULL;
-    
+
 #ifdef DEBUG_QSYMBIANCONTROL
     qDebug()    << "QSymbianControl::Draw [" << this << "]"
                 << "rect " << r.iTl.iX << ',' << r.iTl.iY
@@ -733,50 +733,50 @@ void QSymbianControl::Draw(const TRect& r) const
                 << "opaque" << (qwidget->d_func()->isOpaque)
                 << "disableBlit" << (qwidget->d_func()->extraData()->disableBlit);
 #endif
-    
+
     if (!engine)
         return;
-    
+
     if (engine->type() == QPaintEngine::Raster) {
         QS60WindowSurface *s60Surface = static_cast<QS60WindowSurface *>(qwidget->windowSurface());
         CFbsBitmap *bitmap = s60Surface->symbianBitmap();
-        
+
 #ifdef DEBUG_QSYMBIANCONTROL
         const TDisplayMode displayMode = bitmap->DisplayMode();
-		qDebug()    << "QSymbianControl::Draw [" << this << "]"
-					<< "mode " << displayMode;
-		
-		const TUint32 *address = bitmap->DataAddress();
-		const int bitmapWidth = bitmap->SizeInPixels().iWidth;
-		const int bitmapHeight = bitmap->SizeInPixels().iHeight;
-		
-		for(int i=0; i<10 and i*10<bitmapWidth and i*10<bitmapHeight; ++i) {
-			const int coord = i*10;
-			const TUint32 *ptr = address + (coord * bitmapWidth) + coord;
-			const TUint32 pixel = *ptr;
-			qDebug()    << "    " << i*10 << " : " << ptr << pixel;
-		}
-		
-		for(int i=0; i<10 and i*10<bitmapWidth and i*10<bitmapHeight; ++i) {
-			TRgb color;
-			bitmap->GetPixel(color, TPoint(i*10, i*10));
-			qDebug()    << "    " << i*10 << " : " << color.Red() << color.Green() << color.Blue() << color.Alpha();
-		}
+        qDebug()    << "QSymbianControl::Draw [" << this << "]"
+                    << "mode " << displayMode;
+
+        const TUint32 *address = bitmap->DataAddress();
+        const int bitmapWidth = bitmap->SizeInPixels().iWidth;
+        const int bitmapHeight = bitmap->SizeInPixels().iHeight;
+
+        for(int i=0; i<10 and i*10<bitmapWidth and i*10<bitmapHeight; ++i) {
+            const int coord = i*10;
+            const TUint32 *ptr = address + (coord * bitmapWidth) + coord;
+            const TUint32 pixel = *ptr;
+            qDebug()    << "    " << i*10 << " : " << ptr << pixel;
+        }
+
+        for(int i=0; i<10 and i*10<bitmapWidth and i*10<bitmapHeight; ++i) {
+            TRgb color;
+            bitmap->GetPixel(color, TPoint(i*10, i*10));
+            qDebug()    << "    " << i*10 << " : " << color.Red() << color.Green() << color.Blue() << color.Alpha();
+        }
 #endif
-        
+
         CWindowGc &gc = SystemGc();
         if (qwidget->d_func()->isOpaque)
             gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
-        
+
         if(!qwidget->d_func()->extraData()->disableBlit)
-        	gc.BitBlt(r.iTl, bitmap, r);
+            gc.BitBlt(r.iTl, bitmap, r);
     } else {
         surface->flush(qwidget, QRegion(qt_TRect2QRect(r)), QPoint());
     }
 }
 
 void QSymbianControl::SizeChanged()
-{   
+{
     CCoeControl::SizeChanged();
 
     QSize oldSize = qwidget->size();
@@ -787,7 +787,7 @@ void QSymbianControl::SizeChanged()
                 << oldSize.width() << 'x' << oldSize.height()
                 << "-" << newSize.width() << 'x' << newSize.height();
 #endif
-    
+
     if (oldSize != newSize) {
         QRect cr = qwidget->geometry();
         cr.setSize(newSize);
@@ -813,13 +813,13 @@ void QSymbianControl::PositionChanged()
 
     QPoint oldPos = qwidget->geometry().topLeft();
     QPoint newPos(Position().iX, Position().iY);
-    
+
 #ifdef DEBUG_QSYMBIANCONTROL
     qDebug()    << "QSymbianControl::SizeChanged [" << this << "]"
                 << oldPos.x() << ',' << oldPos.y()
                 << "-" << newPos.x() << ',' << newPos.y();
 #endif
-    
+
     if (oldPos != newPos) {
         QRect cr = qwidget->geometry();
         cr.moveTopLeft(newPos);

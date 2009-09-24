@@ -171,7 +171,7 @@ private:
     TKeyResponse sendKeyEvent(QWidget *widget, QKeyEvent *keyEvent);
     bool sendMouseEvent(QWidget *widget, QMouseEvent *mEvent);
     void HandleLongTapEventL( const TPoint& aPenEventLocation, const TPoint& aPenEventScreenLocation );
-    
+
 private:
     QWidget *qwidget;
     bool m_ignoreFocusChanged;
