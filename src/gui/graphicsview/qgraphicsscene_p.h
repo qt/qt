@@ -111,6 +111,9 @@ public:
     QList<QGraphicsItem *> unpolishedItems;
     QList<QGraphicsItem *> topLevelItems;
     bool needSortTopLevelItems;
+    bool holesInTopLevelSiblingIndex;
+    bool topLevelSequentialOrdering;
+
     QMap<QGraphicsItem *, QPointF> movingItemsInitialPositions;
     void registerTopLevelItem(QGraphicsItem *item);
     void unregisterTopLevelItem(QGraphicsItem *item);
@@ -254,6 +257,8 @@ public:
             needSortTopLevelItems = false;
         }
     }
+
+    void ensureSequentialTopLevelSiblingIndexes();
 
     QStyle *style;
     QFont font;
