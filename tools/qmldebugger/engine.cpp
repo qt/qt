@@ -14,6 +14,7 @@
 #include <QMenu>
 #include <QInputDialog>
 #include <QFile>
+#include <QHeaderView>
 #include <QPointer>
 #include <private/qmlenginedebug_p.h>
 #include <QtDeclarative/qmlcomponent.h>
@@ -97,31 +98,38 @@ void QmlObjectTree::mousePressEvent(QMouseEvent *me)
 }
 
 
-
-class WatchTableView : public QTableView
+class WatchTableHeaderView : public QHeaderView
 {
     Q_OBJECT
 public:
-    WatchTableView(QWidget *parent);
+    WatchTableHeaderView(QTableView *parent);
 
 signals:
     void stopWatching(int column);
 
 protected:
     void mousePressEvent(QMouseEvent *me);
+
+private:
+    QTableView *m_table;
 };
 
-WatchTableView::WatchTableView(QWidget *parent)
-    : QTableView(parent)
+WatchTableHeaderView::WatchTableHeaderView(QTableView *parent)
+    : QHeaderView(Qt::Horizontal, parent), m_table(parent)
 {
+    QObject::connect(this, SIGNAL(sectionClicked(int)),
+                     m_table, SLOT(selectColumn(int)));
+    setClickable(true);
 }
 
-void WatchTableView::mousePressEvent(QMouseEvent *me)
+void WatchTableHeaderView::mousePressEvent(QMouseEvent *me)
 {
-    QTableView::mousePressEvent(me);
-    if (me->button()  == Qt::RightButton && me->type() == QEvent::MouseButtonPress) {
-        int col = columnAt(me->x());
+    QHeaderView::mousePressEvent(me);
+
+    if (me->button() == Qt::RightButton && me->type() == QEvent::MouseButtonPress) {
+        int col = logicalIndexAt(me->pos());
         if (col >= 0) {
+            m_table->selectColumn(col);
             QAction action(tr("Stop watching"), 0);
             QList<QAction *> actions;
             actions << &action;
@@ -193,20 +201,22 @@ EnginePane::EnginePane(QmlDebugConnection *client, QWidget *parent)
     hbox->addWidget(m_objTree);
 
     m_propView = new PropertyView(this);
-    connect(m_propView, SIGNAL(propertyDoubleClicked(QmlDebugPropertyReference)),
-            this, SLOT(propertyDoubleClicked(QmlDebugPropertyReference)));
+    connect(m_propView, SIGNAL(propertyActivated(QmlDebugPropertyReference)),
+            this, SLOT(propertyActivated(QmlDebugPropertyReference)));
 
     m_watchTableModel = new WatchTableModel(this);
-    m_watchTable = new WatchTableView(this);
+    m_watchTable = new QTableView(this);
     m_watchTable->setModel(m_watchTableModel);
     QObject::connect(m_watchTable, SIGNAL(activated(QModelIndex)),
                      this, SLOT(watchedItemActivated(QModelIndex)));
-    QObject::connect(m_watchTable, SIGNAL(stopWatching(int)),
+    WatchTableHeaderView *header = new WatchTableHeaderView(m_watchTable);
+    m_watchTable->setHorizontalHeader(header);
+    QObject::connect(header, SIGNAL(stopWatching(int)),
                      this, SLOT(stopWatching(int)));
 
     m_tabs = new QTabWidget(this);
     m_tabs->addTab(m_propView, tr("Properties"));
-    m_tabs->addTab(m_watchTable, tr("Watching"));
+    m_tabs->addTab(m_watchTable, tr("Watched"));
 
     hbox->addWidget(m_tabs);
     hbox->setStretchFactor(m_tabs, 2);
@@ -278,7 +288,7 @@ void EnginePane::valueChanged(const QByteArray &propertyName, const QVariant &va
     }
 }
 
-void EnginePane::propertyDoubleClicked(const QmlDebugPropertyReference &property)
+void EnginePane::propertyActivated(const QmlDebugPropertyReference &property)
 {
     PropertyView *view = qobject_cast<PropertyView*>(sender());
     if (!view)
@@ -331,6 +341,7 @@ void EnginePane::watchedItemActivated(const QModelIndex &index)
     QTreeWidgetItem *item = m_objTree->findItemByObjectId(watch->objectDebugId());
     if (item) {
         m_objTree->setCurrentItem(item);
+        m_objTree->scrollToItem(item);
         item->setExpanded(true);
     }
 }

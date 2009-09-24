@@ -25,10 +25,10 @@ public:
     void clear();
 
 signals:
-    void propertyDoubleClicked(const QmlDebugPropertyReference &property);
+    void propertyActivated(const QmlDebugPropertyReference &property);
 
 private slots:
-    void itemDoubleClicked(QTreeWidgetItem *);
+    void itemActivated(QTreeWidgetItem *);
 
 private:
     QmlDebugObjectReference m_object;

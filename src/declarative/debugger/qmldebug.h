@@ -229,6 +229,7 @@ public:
     QString name() const;
     QVariant value() const;
     QString binding() const;
+    bool hasNotifySignal() const;
 
 private:
     friend class QmlEngineDebugPrivate;
@@ -236,6 +237,7 @@ private:
     QString m_name;
     QVariant m_value;
     QString m_binding;
+    bool m_hasNotifySignal;
 };
 
 

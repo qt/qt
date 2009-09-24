@@ -16,8 +16,8 @@ PropertyView::PropertyView(QWidget *parent)
     m_tree = new QTreeWidget(this);
     m_tree->setExpandsOnDoubleClick(false);
     m_tree->setHeaderLabels(QStringList() << tr("Property") << tr("Value"));
-    QObject::connect(m_tree, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)),
-                     this, SLOT(itemDoubleClicked(QTreeWidgetItem *)));
+    QObject::connect(m_tree, SIGNAL(itemActivated(QTreeWidgetItem *, int)),
+                     this, SLOT(itemActivated(QTreeWidgetItem *)));
 
     m_tree->setColumnCount(2);
 
@@ -55,11 +55,12 @@ void PropertyView::setObject(const QmlDebugObjectReference &object)
         const QmlDebugPropertyReference &p = properties[i];
 
         PropertyViewItem *item = new PropertyViewItem(m_tree);
-        item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
-        item->setCheckState(0, Qt::Unchecked);
         item->property = p;
 
         item->setText(0, p.name());
+        item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+        if (!p.hasNotifySignal())
+            item->setForeground(0, Qt::lightGray);
 
         if (!p.binding().isEmpty()) {
             PropertyViewItem *binding = new PropertyViewItem(item);
@@ -96,20 +97,19 @@ void PropertyView::setPropertyIsWatched(const QString &name, bool watched)
 {
     for (int i=0; i<m_tree->topLevelItemCount(); i++) {
         PropertyViewItem *item = static_cast<PropertyViewItem *>(m_tree->topLevelItem(i));
-        if (item->property.name() == name) {
-            if (watched)
-                item->setCheckState(0, Qt::Checked);
-            else
-                item->setCheckState(0, Qt::Unchecked);
+        if (item->property.name() == name && item->property.hasNotifySignal()) {
+            QFont font = m_tree->font();
+            font.setBold(watched);
+            item->setFont(0, font);
         }
     }
 }
 
-void PropertyView::itemDoubleClicked(QTreeWidgetItem *i)
+void PropertyView::itemActivated(QTreeWidgetItem *i)
 {
     PropertyViewItem *item = static_cast<PropertyViewItem *>(i);
-    if (!item->property.name().isEmpty())
-        emit propertyDoubleClicked(item->property);
+    if (!item->property.name().isEmpty() && item->property.hasNotifySignal())
+        emit propertyActivated(item->property);
 }
 
 QT_END_NAMESPACE

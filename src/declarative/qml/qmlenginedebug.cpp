@@ -80,7 +80,7 @@ QDataStream &operator>>(QDataStream &ds,
 QDataStream &operator<<(QDataStream &ds, 
                         const QmlEngineDebugServer::QmlObjectProperty &data)
 {
-    ds << (int)data.type << data.name << data.value << data.binding;
+    ds << (int)data.type << data.name << data.value << data.binding << data.hasNotifySignal;
     return ds;
 }
 
@@ -88,7 +88,7 @@ QDataStream &operator>>(QDataStream &ds,
                         QmlEngineDebugServer::QmlObjectProperty &data)
 {
     int type;
-    ds >> type >> data.name >> data.value >> data.binding;
+    ds >> type >> data.name >> data.value >> data.binding >> data.hasNotifySignal;
     data.type = (QmlEngineDebugServer::QmlObjectProperty::Type)type;
     return ds;
 }
@@ -102,6 +102,7 @@ QmlEngineDebugServer::propertyData(QObject *obj, int propIdx)
 
     rv.type = QmlObjectProperty::Unknown;
     rv.name = prop.name();
+    rv.hasNotifySignal = prop.hasNotifySignal();
     QmlAbstractBinding *binding = QmlMetaProperty(obj, rv.name).binding();
     if (binding)
         rv.binding = binding->expression();
