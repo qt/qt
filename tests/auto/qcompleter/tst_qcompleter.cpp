@@ -1011,7 +1011,7 @@ void tst_QCompleter::multipleWidgets()
     QWidget window;
     window.show();
     QApplication::setActiveWindow(&window);
-    QApplicaion::qWaitForWindowShown(&window);
+    QTest::qWaitForWindowShown(&window);
     QTRY_VERIFY(qApp->activeWindow() == &window);
 
     QFocusEvent focusIn(QEvent::FocusIn);

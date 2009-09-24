@@ -55,10 +55,10 @@ public:
     int duration() const { return -1; /* not time driven */ }
 
 protected:
-    void updateCurrentTime(int msecs)
+    void updateCurrentTime()
     {
-        QPropertyAnimation::updateCurrentTime(msecs);
-        if (msecs >= QPropertyAnimation::duration())
+        QPropertyAnimation::updateCurrentTime();
+        if (currentTime() >= QPropertyAnimation::duration() || currentLoop() >= 1)
             stop();
     }
 };
@@ -239,7 +239,7 @@ void tst_QPropertyAnimation::statesAndSignals()
 {
     QFETCH(bool, uncontrolled);
     QPropertyAnimation *anim;
-    if (uncontrolled) 
+    if (uncontrolled)
         anim = new UncontrolledAnimation;
     else
         anim = new DummyPropertyAnimation;
