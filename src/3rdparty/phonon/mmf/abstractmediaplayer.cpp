@@ -76,7 +76,6 @@ void MMF::AbstractMediaPlayer::play()
 
     switch (m_state) {
     case GroundState:
-        // Is this the correct error?  Really we want 'NotReadyError'
         m_error = NormalError;
         changeState(ErrorState);
         break;
