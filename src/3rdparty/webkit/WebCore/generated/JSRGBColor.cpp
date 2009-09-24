@@ -125,7 +125,7 @@ JSRGBColor::JSRGBColor(PassRefPtr<Structure> structure, JSDOMGlobalObject* globa
 
 JSRGBColor::~JSRGBColor()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSRGBColor::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

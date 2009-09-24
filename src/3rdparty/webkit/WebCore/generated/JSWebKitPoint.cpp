@@ -78,7 +78,7 @@ JSWebKitPoint::JSWebKitPoint(PassRefPtr<Structure> structure, JSDOMGlobalObject*
 
 JSWebKitPoint::~JSWebKitPoint()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSWebKitPoint::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

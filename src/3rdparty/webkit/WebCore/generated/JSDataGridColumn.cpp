@@ -154,7 +154,7 @@ JSDataGridColumn::JSDataGridColumn(PassRefPtr<Structure> structure, JSDOMGlobalO
 
 JSDataGridColumn::~JSDataGridColumn()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSDataGridColumn::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

@@ -126,7 +126,7 @@ JSRect::JSRect(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject,
 
 JSRect::~JSRect()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSRect::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

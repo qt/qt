@@ -35,6 +35,7 @@
 #include "JSWorkerLocation.h"
 #include "JSWorkerNavigator.h"
 #include "JSXMLHttpRequest.h"
+#include "RegisteredEventListener.h"
 #include "WorkerContext.h"
 #include "WorkerLocation.h"
 #include "WorkerNavigator.h"
@@ -123,6 +124,12 @@ const ClassInfo JSWorkerContext::s_info = { "WorkerContext", &JSWorkerContextBas
 JSWorkerContext::JSWorkerContext(PassRefPtr<Structure> structure, PassRefPtr<WorkerContext> impl)
     : JSWorkerContextBase(structure, impl)
 {
+}
+
+JSWorkerContext::~JSWorkerContext()
+{
+    impl()->invalidateEventListeners();
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 bool JSWorkerContext::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

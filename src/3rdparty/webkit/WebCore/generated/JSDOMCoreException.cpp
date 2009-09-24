@@ -182,7 +182,7 @@ JSDOMCoreException::JSDOMCoreException(PassRefPtr<Structure> structure, JSDOMGlo
 
 JSDOMCoreException::~JSDOMCoreException()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSDOMCoreException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

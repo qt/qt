@@ -119,7 +119,7 @@ JSDOMSelection::JSDOMSelection(PassRefPtr<Structure> structure, JSDOMGlobalObjec
 
 JSDOMSelection::~JSDOMSelection()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSDOMSelection::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

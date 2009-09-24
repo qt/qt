@@ -73,7 +73,7 @@ JSVoidCallback::JSVoidCallback(PassRefPtr<Structure> structure, JSDOMGlobalObjec
 
 JSVoidCallback::~JSVoidCallback()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSVoidCallback::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

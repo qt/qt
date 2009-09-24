@@ -50,10 +50,11 @@ public:
 
     virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier&);
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
+    virtual bool defineOwnProperty(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&, bool shouldThrow);
     virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
     virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&, unsigned& attributes) const;
-    virtual void defineGetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction);
-    virtual void defineSetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* setterFunction);
+    virtual void defineGetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction, unsigned attributes);
+    virtual void defineSetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* setterFunction, unsigned attributes);
     virtual JSC::JSValue lookupGetter(JSC::ExecState*, const JSC::Identifier& propertyName);
     virtual JSC::JSValue lookupSetter(JSC::ExecState*, const JSC::Identifier& propertyName);
 
@@ -80,6 +81,7 @@ public:
     JSC::JSValue messageChannel(JSC::ExecState*) const;
     JSC::JSValue worker(JSC::ExecState*) const;
     JSC::JSValue sharedWorker(JSC::ExecState*) const;
+    JSC::JSValue webSocket(JSC::ExecState*) const;
     JSC::JSValue audio(JSC::ExecState*) const;
 
     // Custom functions
@@ -666,6 +668,8 @@ JSC::JSValue jsDOMWindowWorkerConstructor(JSC::ExecState*, const JSC::Identifier
 void setJSDOMWindowWorkerConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowSharedWorkerConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowSharedWorkerConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowWebSocketConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowWebSocketConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowPluginConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowPluginConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowPluginArrayConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

@@ -138,7 +138,7 @@ JSStyleSheetList::JSStyleSheetList(PassRefPtr<Structure> structure, JSDOMGlobalO
 
 JSStyleSheetList::~JSStyleSheetList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSStyleSheetList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

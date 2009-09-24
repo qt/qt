@@ -148,7 +148,7 @@ JSDataGridColumnList::JSDataGridColumnList(PassRefPtr<Structure> structure, JSDO
 
 JSDataGridColumnList::~JSDataGridColumnList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSDataGridColumnList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

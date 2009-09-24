@@ -153,7 +153,7 @@ JSSVGAngle::JSSVGAngle(PassRefPtr<Structure> structure, JSDOMGlobalObject* globa
 
 JSSVGAngle::~JSSVGAngle()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGAngle::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

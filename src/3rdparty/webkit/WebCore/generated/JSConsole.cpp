@@ -104,7 +104,7 @@ JSConsole::JSConsole(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalO
 
 JSConsole::~JSConsole()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSConsole::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

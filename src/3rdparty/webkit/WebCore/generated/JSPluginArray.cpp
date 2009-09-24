@@ -140,7 +140,7 @@ JSPluginArray::JSPluginArray(PassRefPtr<Structure> structure, JSDOMGlobalObject*
 
 JSPluginArray::~JSPluginArray()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSPluginArray::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

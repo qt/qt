@@ -139,7 +139,7 @@ JSSVGUnitTypes::JSSVGUnitTypes(PassRefPtr<Structure> structure, JSDOMGlobalObjec
 
 JSSVGUnitTypes::~JSSVGUnitTypes()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGUnitTypes::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
