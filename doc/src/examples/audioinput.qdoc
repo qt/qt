@@ -49,6 +49,6 @@
     Qt provides the QAudioInput class to enable audio functionality within
     a standard application user interface.
 
-    This example uses a fast-fourier transform on the input audio from the microphone
+    This example calculates the maximum linear value of the input audio from the microphone
     and displays the output.
 */

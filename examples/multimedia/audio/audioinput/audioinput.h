@@ -48,42 +48,25 @@
 
 #include <qaudioinput.h>
 
-#define BUFFER_SIZE_LOG 9
-#define BUFFER_SIZE (1 << BUFFER_SIZE_LOG)
-
-struct _struct_fft_state {
-    float real[BUFFER_SIZE];
-    float imag[BUFFER_SIZE];
-};
-typedef _struct_fft_state   fft_state;
-typedef short int           sound_sample;
-
-class Spectrum : public QIODevice
+class AudioInfo : public QIODevice
 {
     Q_OBJECT
 public:
-    Spectrum(QObject* parent, QAudioInput* device, float* out);
-    ~Spectrum();
+    AudioInfo(QObject* parent, QAudioInput* device);
+    ~AudioInfo();
 
     void start();
     void stop();
+
+    int LinearMax();
 
     qint64 readData(char *data, qint64 maxlen);
     qint64 writeData(const char *data, qint64 len);
 
     QAudioInput*   input;
-    float*         output;
-    fft_state*     fftState;
 
-    unsigned int bitReverse[BUFFER_SIZE];
-    float        sintable[BUFFER_SIZE / 2];
-    float        costable[BUFFER_SIZE / 2];
-
-    void prepFFT (const sound_sample *input, float *re, float *im);
-    void calcFFT (float *re, float *im);
-    void outputFFT (const float *re, const float *im);
-    int  reverseBits (unsigned int initial);
-    void performFFT (const sound_sample *input);
+private:
+    int m_maxValue;
 
 signals:
     void update();
@@ -97,16 +80,14 @@ class RenderArea : public QWidget
 public:
     RenderArea(QWidget *parent = 0);
 
-    void spectrum(float* output, int size);
+    void setLevel(int value);
 
 protected:
     void paintEvent(QPaintEvent *event);
 
 private:
+    int level;
     QPixmap pixmap;
-
-    float*  samples;
-    int     sampleSize;
 };
 
 class InputTest : public QMainWindow
@@ -119,7 +100,7 @@ public:
     QAudioDeviceInfo device;
     QAudioFormat   format;
     QAudioInput*   audioInput;
-    Spectrum*      spec;
+    AudioInfo*     audioinfo;
     QIODevice*     input;
     RenderArea*    canvas;
 
@@ -130,7 +111,6 @@ public:
     QComboBox*     deviceBox;
 
     char*          buffer;
-    float*         output;
 
 private slots:
     void refreshDisplay();

@@ -42,7 +42,6 @@
 #include <math.h>
 
 #define BUFFER_SIZE 32768
-#define SECONDS 3
 
 #include <QObject>
 #include <QMainWindow>
@@ -76,7 +75,6 @@ public:
 
 private:
     int putShort(char *t, unsigned int value);
-    int putLong(char *t, unsigned int value);
     int fillData(char *start, int frequency, int seconds);
 };
 

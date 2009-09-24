@@ -50,46 +50,31 @@
 #include <QAudioInput>
 #include "audioinput.h"
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+#define BUFFER_SIZE 4096
 
-Spectrum::Spectrum(QObject* parent, QAudioInput* device, float* out)
+AudioInfo::AudioInfo(QObject* parent, QAudioInput* device)
     :QIODevice( parent )
 {
     input = device;
-    output = out;
 
-    unsigned int i;
-
-    // Allocate sample buffer and initialize sin and cos lookup tables
-    fftState = (fft_state *) malloc (sizeof(fft_state));
-
-    for(i = 0; i < BUFFER_SIZE; i++) {
-        bitReverse[i] = reverseBits(i);
-    }
-    for(i = 0; i < BUFFER_SIZE / 2; i++) {
-        float j = 2 * M_PI * i / BUFFER_SIZE;
-        costable[i] = cos(j);
-        sintable[i] = sin(j);
-    }
+    m_maxValue = 0;
 }
 
-Spectrum::~Spectrum()
+AudioInfo::~AudioInfo()
 {
 }
 
-void Spectrum::start()
+void AudioInfo::start()
 {
     open(QIODevice::WriteOnly);
 }
 
-void Spectrum::stop()
+void AudioInfo::stop()
 {
     close();
 }
 
-qint64 Spectrum::readData(char *data, qint64 maxlen)
+qint64 AudioInfo::readData(char *data, qint64 maxlen)
 {
     Q_UNUSED(data)
     Q_UNUSED(maxlen)
@@ -97,97 +82,39 @@ qint64 Spectrum::readData(char *data, qint64 maxlen)
     return 0;
 }
 
-qint64 Spectrum::writeData(const char *data, qint64 len)
+qint64 AudioInfo::writeData(const char *data, qint64 len)
 {
-    performFFT((sound_sample*)data);
+    int samples = len/2; // 2 bytes per sample
+    int maxAmp = 32768; // max for S16 samples
+    bool clipping = false;
+
+    m_maxValue = 0;
+
+    qint16* s = (qint16*)data;
+
+    // sample format is S16LE, only!
+
+    for(int i=0;i<samples;i++) {
+        qint16 sample = *s;
+        s++;
+        if(abs(sample) > m_maxValue) m_maxValue = abs(sample);
+    }
+    // check for clipping
+    if(m_maxValue>=(maxAmp-1)) clipping = true;
+
+    float value = ((float)m_maxValue/(float)maxAmp);
+    if(clipping) m_maxValue = 100;
+    else m_maxValue = (int)(value*100);
+
     emit update();
 
     return len;
 }
 
-int Spectrum::reverseBits(unsigned int initial) {
-    // BIT-REVERSE-COPY(a,A)
-
-    unsigned int reversed = 0, loop;
-    for(loop = 0; loop < BUFFER_SIZE_LOG; loop++) {
-        reversed <<= 1;
-        reversed += (initial & 1);
-        initial >>= 1;
-    }
-    return reversed;
+int AudioInfo::LinearMax()
+{
+    return m_maxValue;
 }
-
-void Spectrum::performFFT(const sound_sample *input) {
-    /* Convert to reverse bit order for FFT */
-    prepFFT(input, fftState->real, fftState->imag);
-
-    /* Calculate FFT */
-    calcFFT(fftState->real, fftState->imag);
-
-    /* Convert FFT to intensities */
-    outputFFT(fftState->real, fftState->imag);
-}
-
-void Spectrum::prepFFT(const sound_sample *input, float * re, float * im) {
-    unsigned int i;
-    float *realptr = re;
-    float *imagptr = im;
-
-    /* Get input, in reverse bit order */
-    for(i = 0; i < BUFFER_SIZE; i++) {
-        *realptr++ = input[bitReverse[i]];
-        *imagptr++ = 0;
-    }
-}
-
-void Spectrum::calcFFT(float * re, float * im) {
-    unsigned int i, j, k;
-    unsigned int exchanges;
-    float fact_real, fact_imag;
-    float tmp_real, tmp_imag;
-    unsigned int factfact;
-
-    /* Set up some variables to reduce calculation in the loops */
-    exchanges = 1;
-    factfact = BUFFER_SIZE / 2;
-
-    /* divide and conquer method */
-    for(i = BUFFER_SIZE_LOG; i != 0; i--) {
-        for(j = 0; j != exchanges; j++) {
-            fact_real = costable[j * factfact];
-            fact_imag = sintable[j * factfact];
-            for(k = j; k < BUFFER_SIZE; k += exchanges << 1) {
-                int k1 = k + exchanges;
-                tmp_real = fact_real * re[k1] - fact_imag * im[k1];
-                tmp_imag = fact_real * im[k1] + fact_imag * re[k1];
-                re[k1] = re[k] - tmp_real;
-                im[k1] = im[k] - tmp_imag;
-                re[k]  += tmp_real;
-                im[k]  += tmp_imag;
-            }
-        }
-        exchanges <<= 1;
-        factfact >>= 1;
-    }
-}
-
-void Spectrum::outputFFT(const float * re, const float * im) {
-    const float *realptr   = re;
-    const float *imagptr   = im;
-    float       *outputptr = output;
-
-    float *endptr    = output + BUFFER_SIZE / 2;
-
-    /* Convert FFT to intensities */
-
-    while(outputptr <= endptr) {
-        *outputptr = (*realptr * *realptr) + (*imagptr * *imagptr);
-        outputptr++; realptr++; imagptr++;
-    }
-    *output /= 4;
-    *endptr /= 4;
-}
-
 
 RenderArea::RenderArea(QWidget *parent)
     : QWidget(parent)
@@ -195,8 +122,7 @@ RenderArea::RenderArea(QWidget *parent)
     setBackgroundRole(QPalette::Base);
     setAutoFillBackground(true);
 
-    samples = 0;
-    sampleSize = 0;
+    level = 0;
     setMinimumHeight(30);
     setMinimumWidth(200);
 }
@@ -205,38 +131,32 @@ void RenderArea::paintEvent(QPaintEvent * /* event */)
 {
     QPainter painter(this);
 
-    if(sampleSize == 0)
+    painter.setPen(Qt::black);
+    painter.drawRect(QRect(painter.viewport().left()+10, painter.viewport().top()+10,
+                painter.viewport().right()-20, painter.viewport().bottom()-20));
+
+    if(level == 0)
         return;
 
     painter.setPen(Qt::red);
-    int max = 0;
-    for(int i=0;i<sampleSize;i++) {
-        int m = (int)(sqrt(samples[i])/32768);
-        if(m > max)
-            max = m;
-    }
-    int x1,y1,x2,y2;
 
+    int pos = ((painter.viewport().right()-20)-(painter.viewport().left()+11))*level/100;
+    int x1,y1,x2,y2;
     for(int i=0;i<10;i++) {
         x1 = painter.viewport().left()+11;
         y1 = painter.viewport().top()+10+i;
-        x2 = painter.viewport().right()-20-max;
+        x2 = painter.viewport().left()+20+pos;
         y2 = painter.viewport().top()+10+i;
         if(x2 < painter.viewport().left()+10)
             x2 = painter.viewport().left()+10;
 
         painter.drawLine(QPoint(x1,y1),QPoint(x2,y2));
     }
-
-    painter.setPen(Qt::black);
-    painter.drawRect(QRect(painter.viewport().left()+10, painter.viewport().top()+10,
-                painter.viewport().right()-20, painter.viewport().bottom()-20));
 }
 
-void RenderArea::spectrum(float* output, int size)
+void RenderArea::setLevel(int value)
 {
-    samples = output;
-    sampleSize = size;
+    level = value;
     repaint();
 }
 
@@ -271,25 +191,25 @@ InputTest::InputTest()
     setCentralWidget(window);
     window->show();
 
-    buffer = new char[BUFFER_SIZE*10];
-    output = new float[1024];
+    buffer = new char[BUFFER_SIZE];
 
     pullMode = true;
 
+    // AudioInfo class only supports mono S16LE samples!
     format.setFrequency(8000);
     format.setChannels(1);
-    format.setSampleSize(8);
-    format.setSampleType(QAudioFormat::UnSignedInt);
+    format.setSampleSize(16);
+    format.setSampleType(QAudioFormat::SignedInt);
     format.setByteOrder(QAudioFormat::LittleEndian);
     format.setCodec("audio/pcm");
 
     audioInput = new QAudioInput(format,this);
     connect(audioInput,SIGNAL(notify()),SLOT(status()));
     connect(audioInput,SIGNAL(stateChanged(QAudio::State)),SLOT(state(QAudio::State)));
-    spec  = new Spectrum(this,audioInput,output);
-    connect(spec,SIGNAL(update()),SLOT(refreshDisplay()));
-    spec->start();
-    audioInput->start(spec);
+    audioinfo  = new AudioInfo(this,audioInput);
+    connect(audioinfo,SIGNAL(update()),SLOT(refreshDisplay()));
+    audioinfo->start();
+    audioInput->start(audioinfo);
 }
 
 InputTest::~InputTest() {}
@@ -304,11 +224,11 @@ void InputTest::readMore()
     if(!audioInput)
         return;
     qint64 len = audioInput->bytesReady();
-    if(len > BUFFER_SIZE*10)
-        len = BUFFER_SIZE*10;
+    if(len > 4096)
+        len = 4096;
     qint64 l = input->read(buffer,len);
     if(l > 0) {
-        spec->write(buffer,l);
+        audioinfo->write(buffer,l);
     }
 }
 
@@ -317,15 +237,15 @@ void InputTest::toggleMode()
     // Change bewteen pull and push modes
     audioInput->stop();
 
-    if(pullMode) {
-        button->setText(tr("Click for Push Mode"));
+    if (pullMode) {
+        button->setText(tr("Click for Pull Mode"));
         input = audioInput->start(0);
         connect(input,SIGNAL(readyRead()),SLOT(readMore()));
         pullMode = false;
     } else {
-        button->setText(tr("Click for Pull Mode"));
+        button->setText(tr("Click for Push Mode"));
         pullMode = true;
-        audioInput->start(spec);
+        audioInput->start(audioinfo);
     }
 }
 
@@ -356,13 +276,13 @@ void InputTest::state(QAudio::State state)
 
 void InputTest::refreshDisplay()
 {
-    canvas->spectrum(output,256);
+    canvas->setLevel(audioinfo->LinearMax());
     canvas->repaint();
 }
 
 void InputTest::deviceChanged(int idx)
 {
-    spec->stop();
+    audioinfo->stop();
     audioInput->stop();
     audioInput->disconnect(this);
     delete audioInput;
@@ -371,6 +291,6 @@ void InputTest::deviceChanged(int idx)
     audioInput = new QAudioInput(device, format, this);
     connect(audioInput,SIGNAL(notify()),SLOT(status()));
     connect(audioInput,SIGNAL(stateChanged(QAudio::State)),SLOT(state(QAudio::State)));
-    spec->start();
-    audioInput->start(spec);
+    audioinfo->start();
+    audioInput->start(audioinfo);
 }
