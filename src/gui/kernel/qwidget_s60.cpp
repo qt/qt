@@ -1216,9 +1216,10 @@ QPoint QWidget::mapToGlobal(const QPoint &pos) const
         return pos + tp;
     }
 
-    // This is the native window case. Consider using CCoeControl::PositionRelativeToScreen()
-    // if we decide to go with CCoeControl
-    return QPoint();
+    // Native window case
+    const TPoint widgetScreenOffset = internalWinId()->PositionRelativeToScreen();
+    const QPoint globalPos = QPoint(widgetScreenOffset.iX, widgetScreenOffset.iY) + pos;
+    return globalPos;
 }
 
 QPoint QWidget::mapFromGlobal(const QPoint &pos) const
@@ -1232,8 +1233,10 @@ QPoint QWidget::mapFromGlobal(const QPoint &pos) const
         return pos - tp;
     }
 
-    // ### TODO native window
-    return QPoint();
+    // Native window case
+	const TPoint widgetScreenOffset = internalWinId()->PositionRelativeToScreen();
+	const QPoint widgetPos = pos - QPoint(widgetScreenOffset.iX, widgetScreenOffset.iY);
+	return widgetPos;
 }
 
 void QWidget::setWindowState(Qt::WindowStates newstate)
