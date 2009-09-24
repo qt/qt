@@ -2101,9 +2101,11 @@ void tst_QComboBox::task248169_popupWithMinimalSize()
 
     QComboBox comboBox;
     comboBox.addItems(initialContent);
-    comboBox.view()->setMinimumWidth(500);
     QDesktopWidget desktop;
-    comboBox.setGeometry(desktop.availableGeometry().width() - 200, 100, 200, 100);
+    QRect desktopSize = desktop.availableGeometry();
+    comboBox.view()->setMinimumWidth(desktopSize.width() - 1);
+
+    comboBox.setGeometry(desktopSize.width() - (desktopSize.width() / 4), (desktopSize.width() / 4), (desktopSize.width() / 2), (desktopSize.width() / 4));
 
     comboBox.show();
     QTest::qWait(100);
