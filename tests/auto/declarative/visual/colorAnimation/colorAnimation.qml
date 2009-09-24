@@ -1,20 +1,20 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     id: mainrect
     width: 200; height: 200
     state: "first"
     states: [
         State {
             name: "first"
-            SetProperties {
+            PropertyChanges {
                 target: mainrect
                 color: "red"
             }
         },
         State {
             name: "second"
-            SetProperties {
+            PropertyChanges {
                 target: mainrect
                 color: "blue"
             }
@@ -22,8 +22,8 @@ Rect {
     ]
     transitions: [
         Transition {
-            fromState: "first"
-            toState: "second"
+            from: "first"
+            to: "second"
             reversible: true
             SequentialAnimation {
                 ColorAnimation {

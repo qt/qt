@@ -12,15 +12,8 @@ Text {
                 tx.executeSql('INSERT INTO Greeting VALUES(?, ?)', [ 'hello', 'world' ]);
                 tx.executeSql('SELECT * FROM Greeting', [],
                     function(tx, rs) {
-                        /* Inefficient HTML5-compatible way
                         for(var i = 0; i < rs.rows.length; i++) {
-                            r += rs.rows[i][0] + ", " + rs.rows[i][1] + "\n"
-                        }
-                        */
-                        /* Efficient way: forward only, not "length" query */
-                        rs.rows.forwardOnly = true;
-                        for(var i = 0; rs.rows[i]; i++) {
-                            r += rs.rows[i][0] + ", " + rs.rows[i][1] + "\n"
+                            r += rs.rows.item(i).salutation + ", " + rs.rows.item(i).salutee + "\n"
                         }
                     },
                     function(tx, error) {
