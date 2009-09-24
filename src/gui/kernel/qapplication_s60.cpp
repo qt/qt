@@ -738,13 +738,11 @@ void QSymbianControl::Draw(const TRect& r) const
         return;
 
     if (engine->type() == QPaintEngine::Raster) {
+        QS60WindowSurface *s60Surface = static_cast<QS60WindowSurface *>(qwidget->windowSurface());
+        CFbsBitmap *bitmap = s60Surface->symbianBitmap();
         CWindowGc &gc = SystemGc();
 
         if(qwidget->d_func()->extraData()->disableBlit) {
-
-            QS60WindowSurface *s60Surface = static_cast<QS60WindowSurface *>(qwidget->windowSurface());
-            CFbsBitmap *bitmap = s60Surface->symbianBitmap();
-
 #ifdef DEBUG_QSYMBIANCONTROL
             const TDisplayMode displayMode = bitmap->DisplayMode();
             qDebug()    << "QSymbianControl::Draw [" << this << "]"
