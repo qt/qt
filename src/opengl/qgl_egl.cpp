@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <QtOpenGL/qgl.h>
+#include "qgl_p.h"
 #include "qgl_egl_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -126,6 +127,57 @@ void qt_egl_update_format(const QEglContext& context, QGLFormat& format)
     // have errored out because the attribute is not applicable
     // to the surface type.  Such errors don't matter.
     context.clearError();
+}
+
+void QGLContext::reset()
+{
+    Q_D(QGLContext);
+    if (!d->valid)
+        return;
+    d->cleanup();
+    doneCurrent();
+    if (d->eglContext) {
+        delete d->eglContext;
+        d->eglContext = 0;
+    }
+    d->eglSurface = EGL_NO_SURFACE; // XXX - probably need to destroy surface
+    d->crWin = false;
+    d->sharing = false;
+    d->valid = false;
+    d->transpColor = QColor();
+    d->initDone = false;
+    qgl_share_reg()->removeShare(this);
+}
+
+void QGLContext::makeCurrent()
+{
+    Q_D(QGLContext);
+    if (!d->valid || !d->eglContext || d->eglSurface == EGL_NO_SURFACE) {
+        qWarning("QGLContext::makeCurrent(): Cannot make invalid context current");
+        return;
+    }
+
+    if (d->eglContext->makeCurrent(d->eglSurface))
+        QGLContextPrivate::setCurrentContext(this);
+}
+
+void QGLContext::doneCurrent()
+{
+    Q_D(QGLContext);
+    if (d->eglContext)
+        d->eglContext->doneCurrent();
+
+    QGLContextPrivate::setCurrentContext(0);
+}
+
+
+void QGLContext::swapBuffers() const
+{
+    Q_D(const QGLContext);
+    if (!d->valid || !d->eglContext)
+        return;
+
+    d->eglContext->swapBuffers(d->eglSurface);
 }
 
 QT_END_NAMESPACE

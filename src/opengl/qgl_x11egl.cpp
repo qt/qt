@@ -119,56 +119,6 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
 }
 
 
-void QGLContext::reset()
-{
-    Q_D(QGLContext);
-    if (!d->valid)
-        return;
-    d->cleanup();
-    doneCurrent();
-    if (d->eglContext) {
-        delete d->eglContext;
-        d->eglContext = 0;
-    }
-    d->crWin = false;
-    d->sharing = false;
-    d->valid = false;
-    d->transpColor = QColor();
-    d->initDone = false;
-    qgl_share_reg()->removeShare(this);
-}
-
-void QGLContext::makeCurrent()
-{
-    Q_D(QGLContext);
-    if(!d->valid || !d->eglContext) {
-        qWarning("QGLContext::makeCurrent(): Cannot make invalid context current");
-        return;
-    }
-
-    if (d->eglContext->makeCurrent())
-        QGLContextPrivate::setCurrentContext(this);
-}
-
-void QGLContext::doneCurrent()
-{
-    Q_D(QGLContext);
-    if (d->eglContext)
-        d->eglContext->doneCurrent();
-
-    QGLContextPrivate::setCurrentContext(0);
-}
-
-
-void QGLContext::swapBuffers() const
-{
-    Q_D(const QGLContext);
-    if(!d->valid || !d->eglContext)
-        return;
-
-    d->eglContext->swapBuffers();
-}
-
 QColor QGLContext::overlayTransparentColor() const
 {
     return QColor(0, 0, 0);                // Invalid color
@@ -412,11 +362,13 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
 
 
     // Create the EGL surface to draw into.
-    if (!d->glcx->d_func()->eglContext->createSurface(this)) {
-        delete d->glcx->d_func()->eglContext;
-        d->glcx->d_func()->eglContext = 0;
+    QGLContextPrivate *ctxpriv = d->glcx->d_func();
+    if (!ctxpriv->eglContext->createSurface(this)) {
+        delete ctxpriv->eglContext;
+        ctxpriv->eglContext = 0;
         return;
     }
+    ctxpriv->eglSurface = ctxpriv->eglContext->surface();
 
     d->eglSurfaceWindowId = w; // Remember the window id we created the surface for
 
@@ -485,6 +437,7 @@ void QGLWidgetPrivate::recreateEglSurface(bool force)
         // The window id has changed so we need to re-create the EGL surface
         if (!glcx->d_func()->eglContext->recreateSurface(q))
             qWarning("Error creating EGL window surface: 0x%x", eglGetError());
+        glcx->d_func()->eglSurface = glcx->d_func()->eglContext->surface();
 
         eglSurfaceWindowId = currentId;
     }

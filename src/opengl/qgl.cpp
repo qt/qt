@@ -1430,6 +1430,7 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
 #endif
 #if defined(QT_OPENGL_ES)
     eglContext = 0;
+    eglSurface = EGL_NO_SURFACE;
 #endif
     fbo = 0;
     crWin = false;

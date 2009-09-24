@@ -228,60 +228,11 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         d->eglContext = 0;
         return false;
     }
+    d->eglSurface = d->eglContext->surface();
 
     return true;
 }
 
-
-void QGLContext::reset()
-{
-    Q_D(QGLContext);
-    if (!d->valid)
-        return;
-    d->cleanup();
-    doneCurrent();
-    if (d->eglContext) {
-        delete d->eglContext;
-        d->eglContext = 0;
-    }
-    d->crWin = false;
-    d->sharing = false;
-    d->valid = false;
-    d->transpColor = QColor();
-    d->initDone = false;
-    qgl_share_reg()->removeShare(this);
-}
-
-void QGLContext::makeCurrent()
-{
-    Q_D(QGLContext);
-    if(!d->valid || !d->eglContext) {
-        qWarning("QGLContext::makeCurrent(): Cannot make invalid context current");
-        return;
-    }
-
-    if (d->eglContext->makeCurrent())
-        QGLContextPrivate::setCurrentContext(this);
-}
-
-void QGLContext::doneCurrent()
-{
-    Q_D(QGLContext);
-    if (d->eglContext)
-        d->eglContext->doneCurrent();
-
-    QGLContextPrivate::setCurrentContext(0);
-}
-
-
-void QGLContext::swapBuffers() const
-{
-    Q_D(const QGLContext);
-    if(!d->valid || !d->eglContext)
-        return;
-
-    d->eglContext->swapBuffers();
-}
 
 QColor QGLContext::overlayTransparentColor() const
 {

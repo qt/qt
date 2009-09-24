@@ -183,6 +183,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         d->eglContext = 0;
         return false;
     }
+    d->eglSurface = d->eglContext->surface();
 
     return true;
 
@@ -412,66 +413,6 @@ void QGLCmap::setEntry(int idx, QRgb color, uint flags, quint8 context)
 const QRgb* QGLCmap::colors() const
 {
     return d->colorArray.data();
-}
-
-
-void QGLContext::reset()
-{       
-    Q_D(QGLContext);
-    if (!d->valid)
-        return;
-    d->cleanup();
-    doneCurrent();
-    if (d->eglContext) {
-        delete d->eglContext;
-        d->eglContext = 0;
-    }
-    d->crWin = false;
-    d->sharing = false;
-    d->valid = false;
-    d->transpColor = QColor();
-    d->initDone = false;
-    qgl_share_reg()->removeShare(this);
-}
-
-
-//
-// NOTE: In a multi-threaded environment, each thread has a current
-// context. If we want to make this code thread-safe, we probably
-// have to use TLS (thread local storage) for keeping current contexts.
-//
-
-void QGLContext::makeCurrent()
-{
-
-    Q_D(QGLContext);
-    if(!d->valid || !d->eglContext) {
-        qWarning("QGLContext::makeCurrent(): Cannot make invalid context current");
-        return;
-    }
-
-    if (d->eglContext->makeCurrent())
-        QGLContextPrivate::setCurrentContext(this);
-}
-
-
-void QGLContext::doneCurrent()
-{
-
-    Q_D(QGLContext);
-    if (d->eglContext)
-        d->eglContext->doneCurrent();
-
-    QGLContextPrivate::setCurrentContext(0);
-}
-
-void QGLContext::swapBuffers() const
-{
-    Q_D(const QGLContext);
-    if(!d->valid || !d->eglContext)
-        return;
-
-    d->eglContext->swapBuffers();
 }
 
 
