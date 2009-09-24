@@ -1,35 +1,31 @@
 import Qt 4.6
 
-Rect {
-    width: contents.width
-    height: contents.height
-    VerticalLayout {
+Rectangle {
+    width: childrenRect.width
+    height: childrenRect.height
+    Column {
         width: 80
-        height: Text.height*4
+        height: MyText.height*4
         Text {
             elide: "ElideLeft"
             text: "aaa bbb ccc ddd eee fff"
             width: 80
-            color: "white"
-            id: Text
+            id: MyText
         }
         Text {
             elide: "ElideMiddle"
             text: "aaa bbb ccc ddd eee fff"
             width: 80
-            color: "white"
         }
         Text {
             elide: "ElideRight"
             text: "aaa bbb ccc ddd eee fff"
             width: 80
-            color: "white"
         }
         Text {
             elide: "ElideNone"
             text: "aaa bbb ccc ddd eee fff"
             width: 80
-            color: "white"
         }
     }
 }

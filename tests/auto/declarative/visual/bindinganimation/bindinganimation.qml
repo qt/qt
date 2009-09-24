@@ -1,12 +1,12 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     color: "blue"
     width: 320
     height: 240
     id: Page
-    Rect {
-        id: MyRect
+    Rectangle {
+        id: MyRectangle
         width: 100
         height: 100
         color: "red"
@@ -15,11 +15,11 @@ Rect {
     states: [
         State {
             name: "hello"
-            SetProperties {
-                target: MyRect
+            PropertyChanges {
+                target: MyRectangle
                 x: 100
             }
-            SetProperties {
+            PropertyChanges {
                 target: MyMouseRegion
                 onClicked: "Page.currentState = ''"
             }

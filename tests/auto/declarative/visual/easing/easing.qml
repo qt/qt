@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     id: item
     width: 600
     height: layout.height
@@ -9,7 +9,7 @@ Rect {
         ListModel {
             id: easingtypes
             ListElement {
-                type: "easeNone"
+                type: "easeLinear"
             }
             ListElement {
                 type: "easeInQuad"
@@ -133,12 +133,12 @@ Rect {
             }
         }
     ]
-    VerticalLayout {
+    Column {
         id: layout
         anchors.left: item.left
         anchors.right: item.right
         Repeater {
-            dataSource: easingtypes
+            model: easingtypes
             Component {
                 Text {
                     id: text
@@ -150,7 +150,7 @@ Rect {
                         State {
                             name: "from"
                             when: !mouse.pressed
-                            SetProperties {
+                            PropertyChanges {
                                 target: text
                                 x: 0
                             }
@@ -158,7 +158,7 @@ Rect {
                         State {
                             name: "to"
                             when: mouse.pressed
-                            SetProperties {
+                            PropertyChanges {
                                 target: text
                                 x: item.width-100
                             }
@@ -166,8 +166,8 @@ Rect {
                     ]
                     transitions: [
                         Transition {
-                            fromState: "*"
-                            toState: "to"
+                            from: "*"
+                            to: "to"
                             reversible: true
                             NumberAnimation {
                                 properties: "x"
