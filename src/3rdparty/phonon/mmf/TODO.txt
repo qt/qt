@@ -3,21 +3,6 @@ TODO list for MMF Phonon backend
 
 The following items are in rough order of priority.
 
-
-* Review the latest changes for making video visible on target.  In particular, the temporary hack in qmediaplayer (setting the Qt::WA_TranslucentBackground attribute on the top-level widget, so that the CFbsBitmap used as the window surface is created with a display mode of EColor16MA) needs to be replaced with a change in QtGui.  Some possiblilities are as follows:
-1. Change the QS60WindowSurface constructor so that *all* window surfaces are 16MA.  This has some drawbacks:
-	- It causes application backgrounds to be transparent, because CFbsBitmap data (including the alpha channel) gets zero-initialized.  This may require the alpha values in the bitmap to be set to 255.
-	- Blitting of RGB32 and ABGR Qt pixmaps to a 16MA surface is slower than blitting to 16MU.  This could be alleviated by modifying the software blitting routines.
-2. Add a function in QS60WindowSurface, e.g. setAlphaValue(const QRegion& region, int value), allowing the client to set alpha values in the bitmap.  Assuming that WSERV will transfer these values, when blitting a 16MU source, this would allow the video to be visible, and avoid the performance penalties of option (1).  We would then call this from VideoOutput::paintEvent.
-
-* On-target testing
-1. Ensure that Phonon front- and back-end libraries are included in the SIS file.
-2. Add musicplayer.exe and mediaplayer.exe to the FluidLauncher
-3. Ensure that both apps can be launched, and that we can somehow get trace output from the MMF backend onto the PC for analysis.
-
-* Trace for on-target testing
-Do we need to connect up the TRACE_* macros to another logging output (e.g. file / Flogger / UTrace etc)?
-
 * Implement audio effects
 
 * Support for network streaming playback
@@ -34,8 +19,6 @@ Compare video frame rate obtained using default S60 media player and Qt demo app
 
 * Implement MMF::Backend::disconnectNodes
 This should probably be left for now, particularly until audio effects have been implemented.  This is because the node connection mechanism may need to be refactored slightly once we start building up longer graphs (e.g. MediaObject -> Effect -> Effect -> AudioOutput).
-
-* Before merging, ensure the UID3 is properly allocated, see the .pro file.
 
 * Metadata is not implemented.
 
