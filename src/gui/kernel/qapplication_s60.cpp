@@ -324,11 +324,11 @@ QSymbianControl::QSymbianControl(QWidget *w)
 {
 }
 
-void QSymbianControl::ConstructL(bool topLevel, bool desktop)
+void QSymbianControl::ConstructL(bool isWindowOwning, bool desktop)
 {
     if (!desktop)
     {
-        if (topLevel or !qwidget->parentWidget())
+        if (isWindowOwning or !qwidget->parentWidget())
             CreateWindowL(S60->windowGroup());
         else
             /**
@@ -348,7 +348,7 @@ void QSymbianControl::ConstructL(bool topLevel, bool desktop)
 #ifdef DEBUG_QSYMBIANCONTROL
         qDebug()    << "QSymbianControl::ConstructL [" << this
                     << "] widget" << qwidget
-                    << "topLevel" << topLevel
+                    << "isWindowOwning" << isWindowOwning
                     << "parentWidget" << qwidget->parentWidget()
                     << "OwnsWindow" << OwnsWindow()
                     << "Window.ClientHandle" << reinterpret_cast<const void*>(DrawableWindow()->ClientHandle())

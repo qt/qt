@@ -74,8 +74,6 @@
 #include <eikspane.h>               // CEikStatusPane
 #endif
 
-#include <fbs.h> // for CFbsBitmap
-
 QT_BEGIN_NAMESPACE
 
 // Application internal HandleResourceChangeL events,
@@ -134,8 +132,6 @@ public:
 };
 class QLongTapTimer;
 
-class CFbsBitmap;
-
 class QSymbianControl : public CCoeControl, public QAbstractLongTapObserver
 {
 public:
@@ -143,7 +139,7 @@ public:
 
 public:
     QSymbianControl(QWidget *w);
-    void ConstructL(bool topLevel = false, bool desktop = false);
+    void ConstructL(bool isWindowOwning = false, bool desktop = false);
     ~QSymbianControl();
     void HandleResourceChange(int resourceType);
     void HandlePointerEventL(const TPointerEvent& aPointerEvent);
