@@ -267,9 +267,9 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
         break;
     }
 
-    AbstractPlayer* newPlayer = NULL;
+    AbstractPlayer* newPlayer = 0;
 
-    // Construct newPlayer using oldPlayer (if not NULL) in order to copy
+    // Construct newPlayer using oldPlayer (if not 0) in order to copy
     // parameters (volume, prefinishMark, transitionTime) which may have
     // been set on oldPlayer.
 

@@ -40,9 +40,9 @@ using namespace Phonon::MMF;
 //-----------------------------------------------------------------------------
 
 MMF::VideoPlayer::VideoPlayer()
-        :   m_wsSession(NULL)
-        ,   m_screenDevice(NULL)
-        ,   m_window(NULL)
+        :   m_wsSession(0)
+        ,   m_screenDevice(0)
+        ,   m_window(0)
         ,   m_totalTime(0)
         ,   m_mmfOutputChangePending(false)
 {
@@ -51,9 +51,9 @@ MMF::VideoPlayer::VideoPlayer()
 
 MMF::VideoPlayer::VideoPlayer(const AbstractPlayer& player)
         :   AbstractMediaPlayer(player)
-        ,   m_wsSession(NULL)
-        ,   m_screenDevice(NULL)
-        ,   m_window(NULL)
+        ,   m_wsSession(0)
+        ,   m_screenDevice(0)
+        ,   m_window(0)
         ,   m_totalTime(0)
         ,   m_mmfOutputChangePending(false)
 {
@@ -66,7 +66,7 @@ void MMF::VideoPlayer::construct()
     TRACE_ENTRY_0();
 
     if (!m_videoOutput) {
-        m_dummyVideoOutput.reset(new VideoOutput(NULL));
+        m_dummyVideoOutput.reset(new VideoOutput(0));
     }
 
     videoOutput().setObserver(this);
@@ -382,7 +382,7 @@ void MMF::VideoPlayer::videoOutputChanged()
 
     // Lazily construct a dummy output if needed here
     if (!m_videoOutput and m_dummyVideoOutput.isNull()) {
-        m_dummyVideoOutput.reset(new VideoOutput(NULL));
+        m_dummyVideoOutput.reset(new VideoOutput(0));
     }
 
     videoOutput().setObserver(this);

@@ -42,7 +42,7 @@ using namespace Phonon::MMF;
 
 MMF::VideoOutput::VideoOutput(QWidget* parent)
         :   QWidget(parent)
-        ,   m_observer(NULL)
+        ,   m_observer(0)
 {
     TRACE_CONTEXT(VideoOutput::VideoOutput, EVideoInternal);
     TRACE_ENTRY("parent 0x%08x", parent);

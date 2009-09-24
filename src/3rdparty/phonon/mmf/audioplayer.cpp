@@ -30,14 +30,14 @@ using namespace Phonon::MMF;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::AudioPlayer::AudioPlayer() : m_player(NULL)
+MMF::AudioPlayer::AudioPlayer() : m_player(0)
 {
     construct();
 }
 
 MMF::AudioPlayer::AudioPlayer(const AbstractPlayer& player)
         : AbstractMediaPlayer(player)
-        , m_player(NULL)
+        , m_player(0)
 {
     construct();
 }

@@ -56,7 +56,7 @@ QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const
     TRACE_CONTEXT(Backend::createObject, EBackend);
     TRACE_ENTRY("class %d", c);
 
-    QObject* result = NULL;
+    QObject* result = 0;
 
     switch (c) {
     case AudioOutputClass:

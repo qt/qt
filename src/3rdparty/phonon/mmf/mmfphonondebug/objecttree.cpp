@@ -26,7 +26,7 @@ namespace ObjectTree
 {
 
 DepthFirstConstIterator::DepthFirstConstIterator()
-    :   m_pointee(NULL)
+    :   m_pointee(0)
 {
     
 }
@@ -72,7 +72,7 @@ void DepthFirstConstIterator::backtrack()
     }
     else {      
         // Reached end of search
-        m_pointee = NULL;
+        m_pointee = 0;
     }
 }
 

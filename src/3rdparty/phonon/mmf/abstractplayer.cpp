@@ -30,7 +30,7 @@ using namespace Phonon::MMF;
 //-----------------------------------------------------------------------------
 
 MMF::AbstractPlayer::AbstractPlayer()
-        :   m_videoOutput(NULL)
+        :   m_videoOutput(0)
         ,   m_tickInterval(DefaultTickInterval)
         ,   m_transitionTime(0)
         ,   m_prefinishMark(0)

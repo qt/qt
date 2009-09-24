@@ -36,7 +36,7 @@ using namespace Phonon::MMF;
 
 MMF::AudioOutput::AudioOutput(Backend *, QObject *parent) : MediaNode(parent)
         , m_volume(InitialVolume)
-        , m_observer(NULL)
+        , m_observer(0)
 {
 
 }

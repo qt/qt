@@ -278,7 +278,7 @@ void QVisitorPrivate::setIndent(unsigned indent)
 void QVisitorPrivate::visitNode(const QObject& object)
 {       
     QObject* const objectParent = object.parent();
-    Node* const nodeParent = objectParent ? findNode(objectParent) : NULL;
+    Node* const nodeParent = objectParent ? findNode(objectParent) : 0;
 
     // Create a new node and store in scoped pointer for exception safety
     Node* node = new Node;
@@ -309,13 +309,13 @@ void QVisitorPrivate::visitComplete()
     QList<bool> branches;
     static const bool isLastChild = true;
     dumpRecursive(*m_root, branches, isLastChild);
-    m_root.reset(NULL);
+    m_root.reset(0);
 }
 
 QVisitorPrivate::Node* QVisitorPrivate::findNode(const QObject* object) const
 {
     Hash::const_iterator i = m_hash.find(object);
-    return (m_hash.end() == i) ? NULL : *i;
+    return (m_hash.end() == i) ? 0 : *i;
 }
 
 QByteArray QVisitorPrivate::branchBuffer
@@ -390,7 +390,7 @@ void QVisitorPrivate::dumpNode
         // No annotations - just dump the object pointer
         const bool isNodeLine = true;
         QByteArray buffer = branchBuffer(branches, isNodeLine, isLastChild);
-        qDebug() << NULL; // TODO
+        qDebug() << 0; // TODO
     }
     else {
         // Dump annotations
