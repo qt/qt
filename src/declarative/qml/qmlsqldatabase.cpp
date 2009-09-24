@@ -46,6 +46,7 @@
 #include <QtScript/qscriptvalueiterator.h>
 #include <QtScript/qscriptcontext.h>
 #include <QtScript/qscriptengine.h>
+#include <QtScript/qscriptclasspropertyiterator.h>
 #include <QtSql/qsqldatabase.h>
 #include <QtSql/qsqlquery.h>
 #include <QtSql/qsqlerror.h>
@@ -62,12 +63,14 @@
 Q_DECLARE_METATYPE(QSqlDatabase)
 Q_DECLARE_METATYPE(QSqlQuery)
 
+class QmlSqlQueryScriptClassPropertyIterator;
+
 class QmlSqlQueryScriptClass: public QScriptClass {
 public:
     QmlSqlQueryScriptClass(QScriptEngine *engine) : QScriptClass(engine)
     {
         str_length = engine->toStringHandle(QLatin1String("length"));
-        str_forwardOnly = engine->toStringHandle(QLatin1String("forwardOnly")); // not in HTML5 (optimization)
+        str_forwardOnly = engine->toStringHandle(QLatin1String("forwardOnly")); // not in HTML5 (an optimization)
     }
 
     QueryFlags queryProperty(const QScriptValue &object,
@@ -112,12 +115,11 @@ public:
         } else if (name == str_forwardOnly) {
             return query.isForwardOnly();
         } else {
-            if (query.at() == id || query.seek(id)) { // Qt 4.6 doesn't optimize at()==id
+            if ((uint)query.at() == id || query.seek(id)) { // Qt 4.6 doesn't optimize seek(at())
                 QSqlRecord r = query.record();
-                QScriptValue row = engine()->newArray(r.count());
+                QScriptValue row = engine()->newObject();
                 for (int j=0; j<r.count(); ++j) {
-                    // XXX only strings
-                    row.setProperty(j, QScriptValue(engine(),r.value(j).toString()));
+                    row.setProperty(r.fieldName(j), QScriptValue(engine(),r.value(j).toString())); // XXX only strings
                 }
                 return row;
             }
@@ -134,10 +136,107 @@ public:
         }
     }
 
+    QScriptValue::PropertyFlags propertyFlags(const QScriptValue &/*object*/, const QScriptString &name, uint /*id*/)
+    {
+        if (name == str_length) {
+            return QScriptValue::Undeletable
+                | QScriptValue::SkipInEnumeration;
+        }
+        return QScriptValue::Undeletable;
+    }
+
+    QScriptClassPropertyIterator *newIterator(const QScriptValue &object);
+
 private:
     QScriptString str_length;
     QScriptString str_forwardOnly;
 };
+
+class QmlSqlQueryScriptClassPropertyIterator : public QScriptClassPropertyIterator
+{
+public:
+    QmlSqlQueryScriptClassPropertyIterator(const QScriptValue &object)
+        : QScriptClassPropertyIterator(object)
+    {
+        toFront();
+    }
+
+    ~QmlSqlQueryScriptClassPropertyIterator()
+    {
+    }
+
+    bool hasNext() const
+    {
+        QSqlQuery query = qscriptvalue_cast<QSqlQuery>(object().data());
+        return query.at() == m_index || query.seek(m_index); // Qt 4.6 doesn't optimize seek(at())
+    }
+
+    void next()
+    {
+        m_last = m_index;
+        ++m_index;
+    }
+
+    bool hasPrevious() const
+    {
+        return (m_index > 0);
+    }
+
+    void previous()
+    {
+        --m_index;
+        m_last = m_index;
+    }
+
+    void toFront()
+    {
+        m_index = 0;
+        m_last = -1;
+    }
+
+    void toBack()
+    {
+        QSqlQuery query = qscriptvalue_cast<QSqlQuery>(object().data());
+        m_index = query.size();
+        m_last = -1;
+    }
+
+    QScriptString name() const
+    {
+        return object().engine()->toStringHandle(QString::number(m_last));
+    }
+
+    uint id() const
+    {
+        return m_last;
+    }
+
+private:
+    int m_index;
+    int m_last;
+};
+
+QScriptClassPropertyIterator *QmlSqlQueryScriptClass::newIterator(const QScriptValue &object)
+{
+    return new QmlSqlQueryScriptClassPropertyIterator(object);
+}
+
+
+
+static QScriptValue qmlsqldatabase_item(QScriptContext *context, QScriptEngine *engine)
+{
+    QSqlQuery query = qscriptvalue_cast<QSqlQuery>(context->thisObject().data());
+    int i = context->argument(0).toNumber();
+    if (query.at() == i || query.seek(i)) { // Qt 4.6 doesn't optimize seek(at())
+        QSqlRecord r = query.record();
+        QScriptValue row = engine->newObject();
+        for (int j=0; j<r.count(); ++j) {
+            row.setProperty(r.fieldName(j), QScriptValue(engine,r.value(j).toString()));
+        }
+        return row;
+    }
+    return engine->undefinedValue();
+}
 
 static QScriptValue qmlsqldatabase_executeSql(QScriptContext *context, QScriptEngine *engine)
 {
@@ -163,6 +262,7 @@ static QScriptValue qmlsqldatabase_executeSql(QScriptContext *context, QScriptEn
                 QmlEnginePrivate::get(engine)->sqlQueryClass= new QmlSqlQueryScriptClass(engine);
             QScriptValue rows = engine->newObject(QmlEnginePrivate::get(engine)->sqlQueryClass);
             rows.setData(engine->newVariant(qVariantFromValue(query)));
+            rows.setProperty(QLatin1String("item"), engine->newFunction(qmlsqldatabase_item,1), QScriptValue::SkipInEnumeration);
             rs.setProperty(QLatin1String("rows"),rows);
             rs.setProperty(QLatin1String("rowsAffected"),query.numRowsAffected());
             rs.setProperty(QLatin1String("insertId"),query.lastInsertId().toString()); // XXX only string
@@ -234,7 +334,7 @@ static QScriptValue qmlsqldatabase_open(QScriptContext *context, QScriptEngine *
         database = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"), dbid);
     }
     if (!database.isOpen()) {
-        QString basename = QmlEnginePrivate::get(engine)->offlineStoragePath + "/Databases/";
+        QString basename = QmlEnginePrivate::get(engine)->offlineStoragePath + QLatin1String("/Databases/");
         QDir().mkpath(basename);
         basename += dbid;
         database.setDatabaseName(basename+QLatin1String(".sqllite"));
@@ -256,4 +356,10 @@ void qt_add_qmlsqldatabase(QScriptEngine *engine)
     QScriptValue openDatabase = engine->newFunction(qmlsqldatabase_open, 4);
     engine->globalObject().setProperty(QLatin1String("openDatabase"), openDatabase);
 }
+
+/*
+HTML5 "spec" says "rs.rows[n]", but WebKit only impelments "rs.rows.item(n)". We do both (and property iterator).
+We add a "forwardOnly" property that stops Qt caching results (code promises to only go forward
+through the data.
+*/
 
