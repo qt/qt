@@ -91,6 +91,8 @@ void tst_sql::verifyAgainstWebKit()
     QWebPageWithJavaScriptConsoleMessages webpage;
     QDir().mkpath(tmpdir);
     webpage.settings()->setOfflineStoragePath(tmpdir);
+    webpage.settings()->setAttribute(QWebSettings::OfflineStorageDatabaseEnabled, true);
+
     webpage.mainFrame()->evaluateJavaScript(js);
     QTest::qWait(200); // WebKit db access is asynchronous
     QTRY_COMPARE(webpage.mainFrame()->evaluateJavaScript("test()").toString(),result);

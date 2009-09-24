@@ -1,5 +1,4 @@
-var db;
-db = openDatabase("QmlTestDB", "", "Test database from Qt autotests", 1000000);
+var db = openDatabase("QmlTestDB", "", "Test database from Qt autotests", 1000000);
 var r="testerror";
 
 // Asynchronous in WebKit, so must wait before calling test()  
