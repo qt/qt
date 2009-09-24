@@ -57,7 +57,6 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qlist.h>
 
-#include <QtMultimedia/qaudiodeviceid.h>
 #include <QtMultimedia/qaudiodeviceinfo.h>
 
 QT_BEGIN_HEADER
@@ -68,28 +67,26 @@ QT_MODULE(Multimedia)
 
 class QAbstractAudioInput;
 class QAbstractAudioOutput;
-
+class QAbstractAudioDeviceInfo;
 
 class QAudioDeviceFactory
 {
 public:
-    static QList<QAudioDeviceId> deviceList(QAudio::Mode mode);
+    static QList<QAudioDeviceInfo> deviceList(QAudio::Mode mode);
 
-    static QAudioDeviceId defaultInputDevice();
-    static QAudioDeviceId defaultOutputDevice();
+    static QAudioDeviceInfo defaultInputDevice();
+    static QAudioDeviceInfo defaultOutputDevice();
 
-    static QAbstractAudioDeviceInfo* audioDeviceInfo(QAudioDeviceId const &device);
+    static QAbstractAudioDeviceInfo* audioDeviceInfo(const QString &realm, const QByteArray &handle, QAudio::Mode mode);
 
     static QAbstractAudioInput* createDefaultInputDevice(QAudioFormat const &format);
     static QAbstractAudioOutput* createDefaultOutputDevice(QAudioFormat const &format);
 
-    static QAbstractAudioInput* createInputDevice(QAudioDeviceId const &device, QAudioFormat const &format);
-    static QAbstractAudioOutput* createOutputDevice(QAudioDeviceId const &device, QAudioFormat const &format);
+    static QAbstractAudioInput* createInputDevice(QAudioDeviceInfo const &device, QAudioFormat const &format);
+    static QAbstractAudioOutput* createOutputDevice(QAudioDeviceInfo const &device, QAudioFormat const &format);
 
     static QAbstractAudioInput* createNullInput();
     static QAbstractAudioOutput* createNullOutput();
-
-    static QAudioDeviceId createDeviceId(QString const& key, int mode, QByteArray const& handle);
 };
 
 QT_END_NAMESPACE

@@ -116,7 +116,7 @@ public:
     InputTest();
     ~InputTest();
 
-    QAudioDeviceId device;
+    QAudioDeviceInfo device;
     QAudioFormat   format;
     QAudioInput*   audioInput;
     Spectrum*      spec;

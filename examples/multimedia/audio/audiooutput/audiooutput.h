@@ -87,7 +87,7 @@ public:
     AudioTest();
     ~AudioTest();
 
-    QAudioDeviceId  device;
+    QAudioDeviceInfo  device;
     Generator*        gen;
     QAudioOutput*     audioOutput;
     QIODevice*        output;

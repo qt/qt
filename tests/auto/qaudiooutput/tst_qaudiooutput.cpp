@@ -78,7 +78,7 @@ void tst_QAudioOutput::initTestCase()
     format.setSampleType(QAudioFormat::UnSignedInt);
 
     // Only perform tests if audio output device exists!
-    QList<QAudioDeviceId> devices = QAudioDeviceInfo::deviceList(QAudio::AudioOutput);
+    QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::deviceList(QAudio::AudioOutput);
     if(devices.size() > 0)
         available = true;
     else {

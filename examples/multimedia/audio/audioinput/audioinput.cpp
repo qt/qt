@@ -250,9 +250,9 @@ InputTest::InputTest()
     layout->addWidget(canvas);
 
     deviceBox = new QComboBox(this);
-    QList<QAudioDeviceId> devices = QAudioDeviceInfo::deviceList(QAudio::AudioInput);
+    QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::deviceList(QAudio::AudioInput);
     for(int i = 0; i < devices.size(); ++i) {
-        deviceBox->addItem(QAudioDeviceInfo(devices.at(i)).deviceName(), qVariantFromValue(devices.at(i)));
+        deviceBox->addItem(devices.at(i).deviceName(), qVariantFromValue(devices.at(i)));
     }
     connect(deviceBox,SIGNAL(activated(int)),SLOT(deviceChanged(int)));
     layout->addWidget(deviceBox);
@@ -367,7 +367,7 @@ void InputTest::deviceChanged(int idx)
     audioInput->disconnect(this);
     delete audioInput;
 
-    device = deviceBox->itemData(idx).value<QAudioDeviceId>();
+    device = deviceBox->itemData(idx).value<QAudioDeviceInfo>();
     audioInput = new QAudioInput(device, format, this);
     connect(audioInput,SIGNAL(notify()),SLOT(status()));
     connect(audioInput,SIGNAL(stateChanged(QAudio::State)),SLOT(state(QAudio::State)));

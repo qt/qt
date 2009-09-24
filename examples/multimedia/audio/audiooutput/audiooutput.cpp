@@ -142,10 +142,8 @@ AudioTest::AudioTest()
     QVBoxLayout* layout = new QVBoxLayout;
 
     deviceBox = new QComboBox(this);
-    QList<QAudioDeviceId> devices = QAudioDeviceInfo::deviceList(QAudio::AudioOutput);
-    for(int i = 0; i < devices.size(); ++i) {
-        deviceBox->addItem(QAudioDeviceInfo(devices.at(i)).deviceName(), qVariantFromValue(devices.at(i)));
-    }
+    foreach (const QAudioDeviceInfo &deviceInfo, QAudioDeviceInfo::deviceList(QAudio::AudioOutput))
+        deviceBox->addItem(deviceInfo.deviceName(), qVariantFromValue(deviceInfo));
     connect(deviceBox,SIGNAL(activated(int)),SLOT(deviceChanged(int)));
     layout->addWidget(deviceBox);
 
@@ -200,7 +198,7 @@ void AudioTest::deviceChanged(int idx)
     audioOutput->disconnect(this);
     delete audioOutput;
 
-    device = deviceBox->itemData(idx).value<QAudioDeviceId>();
+    device = deviceBox->itemData(idx).value<QAudioDeviceInfo>();
     audioOutput = new QAudioOutput(device,settings,this);
     connect(audioOutput,SIGNAL(notify()),SLOT(status()));
     connect(audioOutput,SIGNAL(stateChanged(QAudio::State)),SLOT(state(QAudio::State)));

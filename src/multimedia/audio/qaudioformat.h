@@ -82,7 +82,7 @@ public:
     void setSampleSize(int sampleSize);
     int sampleSize() const;
 
-    void setCodec(QString codec);
+    void setCodec(const QString &codec);
     QString codec() const;
 
     void setByteOrder(QAudioFormat::Endian byteOrder);

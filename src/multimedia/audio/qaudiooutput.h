@@ -48,7 +48,7 @@
 
 #include <QtMultimedia/qaudio.h>
 #include <QtMultimedia/qaudioformat.h>
-#include <QtMultimedia/qaudiodeviceid.h>
+#include <QtMultimedia/qaudiodeviceinfo.h>
 
 
 QT_BEGIN_HEADER
@@ -66,7 +66,7 @@ class Q_MULTIMEDIA_EXPORT QAudioOutput : public QObject
 
 public:
     explicit QAudioOutput(const QAudioFormat &format = QAudioFormat(), QObject *parent = 0);
-    explicit QAudioOutput(const QAudioDeviceId &id, const QAudioFormat &format = QAudioFormat(), QObject *parent = 0);
+    explicit QAudioOutput(const QAudioDeviceInfo &audioDeviceInfo, const QAudioFormat &format = QAudioFormat(), QObject *parent = 0);
     ~QAudioOutput();
 
     QAudioFormat format() const;

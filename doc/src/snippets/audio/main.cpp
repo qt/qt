@@ -98,8 +98,7 @@ private:
 //![2]
         format.setSampleType(QAudioFormat::SignedInt);
 
-        QAudioDeviceId id = QAudioDeviceInfo::defaultOutputDevice();
-        QAudioDeviceInfo info(id);
+        QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
 
         if (!info.isFormatSupported(format))
             format = info.nearestFormat(format);
