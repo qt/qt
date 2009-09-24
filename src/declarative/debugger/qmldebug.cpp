@@ -343,6 +343,7 @@ void QmlEngineDebug::removeWatch(QmlDebugWatch *watch)
 {
     Q_D(QmlEngineDebug);
 
+    watch->setState(QmlDebugWatch::Inactive);
     d->watched.remove(watch->queryId());
 
     if (d->client->isConnected()) {

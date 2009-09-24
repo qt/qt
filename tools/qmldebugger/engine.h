@@ -15,6 +15,7 @@ class QmlDebugPropertyReference;
 class QmlDebugWatch;
 class QmlObjectTree;
 class EngineClientPlugin;
+class PropertyView;
 class WatchTableModel;
 class WatchTableView;
 class QLineEdit;
@@ -51,7 +52,8 @@ private slots:
 
     void valueChanged(const QByteArray &property, const QVariant &value);
 
-    void propertyDoubleClicked(QTableWidgetItem *);
+    void propertyDoubleClicked(const QmlDebugPropertyReference &property);
+    void propertyWatchStateChanged();
     void watchedItemActivated(const QModelIndex &index);
     void stopWatching(int column);
 
@@ -59,7 +61,6 @@ private:
     void dump(const QmlDebugContextReference &, int);
     void dump(const QmlDebugObjectReference &, int);
     void buildTree(const QmlDebugObjectReference &, QTreeWidgetItem *parent);
-    bool togglePropertyWatch(const QmlDebugObjectReference &object, const QmlDebugPropertyReference &property);
 
     QmlEngineDebug m_client;
     QmlDebugEnginesQuery *m_engines;
@@ -69,7 +70,7 @@ private:
     QLineEdit *m_text;
     QmlObjectTree *m_objTree;
     QTabWidget *m_tabs;
-    QTableWidget *m_propTable;
+    PropertyView *m_propView;
     WatchTableView *m_watchTable;
 
     QmlView *m_engineView;
