@@ -46,7 +46,7 @@ Backend::Backend(QObject *parent)   : QObject(parent)
     setProperty("backendName",    QLatin1String("MMF"));
     setProperty("backendComment", QLatin1String("Backend using Symbian Multimedia Framework (MMF)"));
     setProperty("backendVersion", QLatin1String("0.1"));
-    setProperty("backendWebsite", QLatin1String("http://www.qtsoftware.com/"));
+    setProperty("backendWebsite", QLatin1String("http://qt.nokia.com/"));
 
     TRACE_EXIT_0();
 }
