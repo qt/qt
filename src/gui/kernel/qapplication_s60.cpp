@@ -738,38 +738,41 @@ void QSymbianControl::Draw(const TRect& r) const
         return;
 
     if (engine->type() == QPaintEngine::Raster) {
-        QS60WindowSurface *s60Surface = static_cast<QS60WindowSurface *>(qwidget->windowSurface());
-        CFbsBitmap *bitmap = s60Surface->symbianBitmap();
+        if(qwidget->d_func()->extraData()->disableBlit) {
+
+            QS60WindowSurface *s60Surface = static_cast<QS60WindowSurface *>(qwidget->windowSurface());
+            CFbsBitmap *bitmap = s60Surface->symbianBitmap();
 
 #ifdef DEBUG_QSYMBIANCONTROL
-        const TDisplayMode displayMode = bitmap->DisplayMode();
-        qDebug()    << "QSymbianControl::Draw [" << this << "]"
-                    << "mode " << displayMode;
+            const TDisplayMode displayMode = bitmap->DisplayMode();
+            qDebug()    << "QSymbianControl::Draw [" << this << "]"
+                        << "mode " << displayMode;
 
-        const TUint32 *address = bitmap->DataAddress();
-        const int bitmapWidth = bitmap->SizeInPixels().iWidth;
-        const int bitmapHeight = bitmap->SizeInPixels().iHeight;
+            const TUint32 *address = bitmap->DataAddress();
+            const int bitmapWidth = bitmap->SizeInPixels().iWidth;
+            const int bitmapHeight = bitmap->SizeInPixels().iHeight;
 
-        for(int i=0; i<10 and i*10<bitmapWidth and i*10<bitmapHeight; ++i) {
-            const int coord = i*10;
-            const TUint32 *ptr = address + (coord * bitmapWidth) + coord;
-            const TUint32 pixel = *ptr;
-            qDebug()    << "    " << i*10 << " : " << ptr << pixel;
-        }
+            for(int i=0; i<10 and i*10<bitmapWidth and i*10<bitmapHeight; ++i) {
+                const int coord = i*10;
+                const TUint32 *ptr = address + (coord * bitmapWidth) + coord;
+                const TUint32 pixel = *ptr;
+                qDebug()    << "    " << i*10 << " : " << ptr << pixel;
+            }
 
-        for(int i=0; i<10 and i*10<bitmapWidth and i*10<bitmapHeight; ++i) {
-            TRgb color;
-            bitmap->GetPixel(color, TPoint(i*10, i*10));
-            qDebug()    << "    " << i*10 << " : " << color.Red() << color.Green() << color.Blue() << color.Alpha();
-        }
+            for(int i=0; i<10 and i*10<bitmapWidth and i*10<bitmapHeight; ++i) {
+                TRgb color;
+                bitmap->GetPixel(color, TPoint(i*10, i*10));
+                qDebug()    << "    " << i*10 << " : " << color.Red() << color.Green() << color.Blue() << color.Alpha();
+            }
 #endif
 
-        CWindowGc &gc = SystemGc();
-        if (qwidget->d_func()->isOpaque)
-            gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
-
-        if(!qwidget->d_func()->extraData()->disableBlit)
+            CWindowGc &gc = SystemGc();
+            if (qwidget->d_func()->isOpaque)
+                gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
+        }
+        else
             gc.BitBlt(r.iTl, bitmap, r);
+
     } else {
         surface->flush(qwidget, QRegion(qt_TRect2QRect(r)), QPoint());
     }
