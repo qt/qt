@@ -161,10 +161,8 @@ public:
 #endif
 
 #if defined(Q_OS_SYMBIAN)
-    enum ConversionMode { CopyData, DuplicateHandle  };
-
-    CFbsBitmap *toSymbianCFbsBitmap(ConversionMode mode = DuplicateHandle) const;
-    static QPixmap fromSymbianCFbsBitmap(CFbsBitmap *bitmap, ConversionMode mode = DuplicateHandle);
+    CFbsBitmap *toSymbianCFbsBitmap() const;
+    static QPixmap fromSymbianCFbsBitmap(CFbsBitmap *bitmap);
     RSgImage* toSymbianRSgImage() const;
     static QPixmap fromSymbianRSgImage(RSgImage *sgImage);
 #endif

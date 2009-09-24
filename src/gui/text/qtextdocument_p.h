@@ -201,10 +201,9 @@ public:
     inline void undo() { undoRedo(true); }
     inline void redo() { undoRedo(false); }
     void appendUndoItem(QAbstractUndoItem *);
-    inline void beginEditBlock() { editBlock++; }
+    inline void beginEditBlock() { if (0 == editBlock++) ++revision; }
     void joinPreviousEditBlock();
     void endEditBlock();
-    inline void beginEdit() { inEdit = true; }
     void finishEdit();
     inline bool isInEditBlock() const { return editBlock; }
     void enableUndoRedo(bool enable);
@@ -306,6 +305,7 @@ private:
     QVector<QTextUndoCommand> undoStack;
     bool undoEnabled;
     int undoState;
+    int revision;
     // position in undo stack of the last setModified(false) call
     int modifiedState;
     bool modified;
@@ -340,7 +340,6 @@ public:
     int maximumBlockCount;
     uint needsEnsureMaximumBlockCount : 1;
     uint inContentsChange : 1;
-    uint inEdit : 1; // between beginEdit() and finishEdit()
     QSizeF pageSize;
     QString title;
     QString url;

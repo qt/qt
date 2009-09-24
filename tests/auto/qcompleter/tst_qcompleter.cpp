@@ -1011,6 +1011,7 @@ void tst_QCompleter::multipleWidgets()
     QWidget window;
     window.show();
     QApplication::setActiveWindow(&window);
+    QTest::qWaitForWindowShown(&window);
     QTRY_VERIFY(qApp->activeWindow() == &window);
 
     QFocusEvent focusIn(QEvent::FocusIn);
@@ -1022,9 +1023,6 @@ void tst_QCompleter::multipleWidgets()
     comboBox->setFocus();
     comboBox->show();
     window.activateWindow();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&window);
-#endif
     QApplication::setActiveWindow(&window);
     QTest::qWait(50);
     QTRY_VERIFY(qApp->focusWidget() == comboBox);

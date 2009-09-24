@@ -4,3 +4,5 @@ EXPORTS
 	_Z28defaultGetLongDateFormatSpecR15TExtendedLocale @ 3 NONAME
 	_Z29defaultGetShortDateFormatSpecR15TExtendedLocale @ 4 NONAME
 	_Z22localizedDirectoryNameR7QString @ 5 NONAME
+	_Z11systemDriveR3RFs @ 6 NONAME
+

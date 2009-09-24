@@ -35,11 +35,11 @@ namespace JSC {
 
         virtual bool getOwnPropertySlot(ExecState*, const Identifier& propertyName, PropertySlot&);
         virtual bool getOwnPropertySlot(ExecState*, unsigned propertyName, PropertySlot&);
+        virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
 
         virtual void put(ExecState* exec, const Identifier& propertyName, JSValue, PutPropertySlot&);
         virtual bool deleteProperty(ExecState*, const Identifier& propertyName, bool checkDontDelete = true);
-        virtual void getPropertyNames(ExecState*, PropertyNameArray&, unsigned listedAttributes = Structure::Prototype);
-        virtual bool getPropertyAttributes(ExecState*, const Identifier& propertyName, unsigned& attributes) const;
+        virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, bool includeNonEnumerable = false);
 
         virtual const ClassInfo* classInfo() const { return &info; }
         static const JS_EXPORTDATA ClassInfo info;
@@ -53,11 +53,6 @@ namespace JSC {
 
     protected:
         StringObject(PassRefPtr<Structure>, JSString*);
-
-    private:
-        virtual UString toString(ExecState*) const;
-        virtual UString toThisString(ExecState*) const;
-        virtual JSString* toThisJSString(ExecState*);
   };
 
     StringObject* asStringObject(JSValue);

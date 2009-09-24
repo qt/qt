@@ -111,6 +111,11 @@ private:
     QMutex *mtx;
 };
 
+#ifdef Q_OS_SYMBIAN
+typedef TDriveNumber (*SystemDriveFunc)(RFs&);
+static SystemDriveFunc PtrGetSystemDrive=0;
+#endif
+
 #if defined(Q_WS_WIN) || defined(Q_WS_MAC)
 extern QString qAppFileName();
 #endif
@@ -345,7 +350,7 @@ void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
 }
 #elif defined(Q_OS_SYMBIAN) && defined (QT_NO_DEBUG)
 // no implementation in release builds, but keep the symbol present
-void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
+void QCoreApplicationPrivate::checkReceiverThread(QObject * /* receiver */)
 {
 }
 #endif
@@ -1820,8 +1825,11 @@ QString QCoreApplication::applicationDirPath()
         }
         if (err != KErrNone || (driveInfo.iDriveAtt & KDriveAttRom) || (driveInfo.iMediaAtt
             & KMediaAttWriteProtected)) {
-            driveChar = fs.GetSystemDriveChar();
-            drive = fs.GetSystemDrive();
+            if(!PtrGetSystemDrive)
+                PtrGetSystemDrive = reinterpret_cast<SystemDriveFunc>(qt_resolveS60PluginFunc(S60Plugin_GetSystemDrive));
+            Q_ASSERT(PtrGetSystemDrive);
+            drive = PtrGetSystemDrive(fs);
+            fs.DriveToChar(drive, driveChar);
         }
 
         qDriveChar = QChar(QLatin1Char(driveChar)).toUpper();

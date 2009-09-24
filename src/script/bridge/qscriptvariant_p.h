@@ -68,12 +68,12 @@ public:
     QVariantDelegate(const QVariant &value);
     ~QVariantDelegate();
 
+    virtual bool compareToObject(QScriptObject*, JSC::ExecState*, JSC::JSObject*);
+
     QVariant &value();
     void setValue(const QVariant &value);
 
     Type type() const;
-
-    bool compareToObject(QScriptObject*, JSC::ExecState*, JSC::JSObject*);
 
 private:
     QVariant m_value;

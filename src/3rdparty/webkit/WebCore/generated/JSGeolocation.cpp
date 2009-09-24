@@ -92,7 +92,7 @@ JSGeolocation::JSGeolocation(PassRefPtr<Structure> structure, JSDOMGlobalObject*
 
 JSGeolocation::~JSGeolocation()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSGeolocation::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

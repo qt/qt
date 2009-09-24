@@ -39,6 +39,7 @@
 #include "CookieJar.h"
 #include "Document.h"
 #include "DocumentLoader.h"
+#include "DOMWindow.h"
 #include "Element.h"
 #include "FloatConversion.h"
 #include "FloatQuad.h"
@@ -643,6 +644,10 @@ void InspectorController::populateScriptObjects()
     if (!m_frontend)
         return;
 
+    // Initialize dom agent and reset injected script state first.
+    if (m_domAgent->setDocument(m_inspectedPage->mainFrame()->document()))
+        resetInjectedScript();
+
     ResourcesMap::iterator resourcesEnd = m_resources.end();
     for (ResourcesMap::iterator it = m_resources.begin(); it != resourcesEnd; ++it)
         it->second->createScriptObject(m_frontend.get());
@@ -662,8 +667,6 @@ void InspectorController::populateScriptObjects()
         (*it)->bind(m_frontend.get());
 #endif
 
-    if (m_domAgent->setDocument(m_inspectedPage->mainFrame()->document()))
-        resetInjectedScript();
     m_frontend->populateInterface();
 }
 
@@ -731,6 +734,9 @@ void InspectorController::didCommitLoad(DocumentLoader* loader)
         m_currentUserInitiatedProfileNumber = 1;
         m_nextUserInitiatedProfileNumber = 1;
 #endif
+        // resetScriptObjects should be called before database and DOM storage
+        // resources are cleared so that it has a chance to unbind them.
+        resetScriptObjects();
 #if ENABLE(DATABASE)
         m_databaseResources.clear();
 #endif
@@ -739,8 +745,6 @@ void InspectorController::didCommitLoad(DocumentLoader* loader)
 #endif
 
         if (m_frontend) {
-            resetScriptObjects();
-
             if (!loader->frameLoader()->isLoadingFromCachedPage()) {
                 ASSERT(m_mainResource && m_mainResource->isSameLoader(loader));
                 // We don't add the main resource until its load is committed. This is
@@ -1107,6 +1111,86 @@ void InspectorController::didUseDOMStorage(StorageArea* storageArea, bool isLoca
     m_domStorageResources.add(resource);
     if (m_frontend)
         resource->bind(m_frontend.get());
+}
+
+void InspectorController::selectDOMStorage(Storage* storage)
+{
+    ASSERT(storage);
+    if (!m_frontend)
+        return;
+
+    Frame* frame = storage->frame();
+    bool isLocalStorage = (frame->domWindow()->localStorage() == storage);
+    int storageResourceId = 0;
+    DOMStorageResourcesSet::iterator domStorageEnd = m_domStorageResources.end();
+    for (DOMStorageResourcesSet::iterator it = m_domStorageResources.begin(); it != domStorageEnd; ++it) {
+        if ((*it)->isSameHostAndType(frame, isLocalStorage)) {
+            storageResourceId = (*it)->id();
+            break;
+        }
+    }
+    if (storageResourceId)
+        m_frontend->selectDOMStorage(storageResourceId);
+}
+
+void InspectorController::getDOMStorageEntries(int callId, int storageId)
+{
+    if (!m_frontend)
+        return;
+
+    ScriptArray jsonArray = m_frontend->newScriptArray();
+    InspectorDOMStorageResource* storageResource = getDOMStorageResourceForId(storageId);
+    if (storageResource) {
+        storageResource->startReportingChangesToFrontend();
+        Storage* domStorage = storageResource->domStorage();
+        for (unsigned i = 0; i < domStorage->length(); ++i) {
+            String name(domStorage->key(i));
+            String value(domStorage->getItem(name));
+            ScriptArray entry = m_frontend->newScriptArray();
+            entry.set(0, name);
+            entry.set(1, value);
+            jsonArray.set(i, entry);
+        }
+    }
+    m_frontend->didGetDOMStorageEntries(callId, jsonArray);
+}
+
+void InspectorController::setDOMStorageItem(long callId, long storageId, const String& key, const String& value)
+{
+    if (!m_frontend)
+        return;
+
+    bool success = false;
+    InspectorDOMStorageResource* storageResource = getDOMStorageResourceForId(storageId);
+    if (storageResource) {
+        ExceptionCode exception = 0;
+        storageResource->domStorage()->setItem(key, value, exception);
+        success = (exception == 0);
+    }
+    m_frontend->didSetDOMStorageItem(callId, success);
+}
+
+void InspectorController::removeDOMStorageItem(long callId, long storageId, const String& key)
+{
+    if (!m_frontend)
+        return;
+
+    bool success = false;
+    InspectorDOMStorageResource* storageResource = getDOMStorageResourceForId(storageId);
+    if (storageResource) {
+        storageResource->domStorage()->removeItem(key);
+        success = true;
+    }
+    m_frontend->didRemoveDOMStorageItem(callId, success);
+}
+
+InspectorDOMStorageResource* InspectorController::getDOMStorageResourceForId(int storageId)
+{
+    DOMStorageResourcesSet::iterator domStorageEnd = m_domStorageResources.end();
+    for (DOMStorageResourcesSet::iterator it = m_domStorageResources.begin(); it != domStorageEnd; ++it)
+        if ((*it)->id() == storageId)
+            return it->get();
+    return 0;
 }
 #endif
 
@@ -1531,18 +1615,17 @@ InspectorController::SpecialPanels InspectorController::specialPanelForJSName(co
 
 ScriptValue InspectorController::wrapObject(const ScriptValue& quarantinedObject)
 {
+    ScriptFunctionCall function(m_scriptState, m_injectedScriptObj, "createProxyObject");
+    function.appendArgument(quarantinedObject);
     if (quarantinedObject.isObject()) {
         long id = m_lastBoundObjectId++;
         String objectId = String::format("object#%ld", id);
         m_idToConsoleObject.set(objectId, quarantinedObject);
 
-        ScriptFunctionCall function(m_scriptState, m_injectedScriptObj, "createProxyObject");
-        function.appendArgument(quarantinedObject);
         function.appendArgument(objectId);
-        ScriptValue wrapper = function.call();
-        return wrapper;
     }
-    return quarantinedObject;
+    ScriptValue wrapper = function.call();
+    return wrapper;
 }
 
 ScriptValue InspectorController::unwrapObject(const String& objectId)

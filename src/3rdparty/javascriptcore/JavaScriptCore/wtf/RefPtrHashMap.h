@@ -42,7 +42,7 @@ namespace WTF {
     };
 
     template<typename T, typename MappedArg, typename HashArg, typename KeyTraitsArg, typename MappedTraitsArg>
-    class RefPtrHashMap {
+    class RefPtrHashMap : public FastAllocBase {
     private:
         typedef KeyTraitsArg KeyTraits;
         typedef MappedTraitsArg MappedTraits;

@@ -29,50 +29,55 @@
 
 #include <wtf/Platform.h>
 
-#if ENABLE(ASSEMBLER) && PLATFORM(ARM)
+#if ENABLE(ASSEMBLER) && PLATFORM(ARM_TRADITIONAL)
 
 #include "AssemblerBufferWithConstantPool.h"
 #include <wtf/Assertions.h>
 namespace JSC {
 
-typedef uint32_t ARMWord;
+    typedef uint32_t ARMWord;
 
-namespace ARM {
-    typedef enum {
-        r0 = 0,
-        r1,
-        r2,
-        r3,
-        S0 = r3,
-        r4,
-        r5,
-        r6,
-        r7,
-        r8,
-        S1 = r8,
-        r9,
-        r10,
-        r11,
-        r12,
-        r13,
-        sp = r13,
-        r14,
-        lr = r14,
-        r15,
-        pc = r15
-    } RegisterID;
+    namespace ARMRegisters {
+        typedef enum {
+            r0 = 0,
+            r1,
+            r2,
+            r3,
+            S0 = r3,
+            r4,
+            r5,
+            r6,
+            r7,
+            r8,
+            S1 = r8,
+            r9,
+            r10,
+            r11,
+            r12,
+            r13,
+            sp = r13,
+            r14,
+            lr = r14,
+            r15,
+            pc = r15
+        } RegisterID;
 
-    typedef enum {
-        fp0 //FIXME
-    } FPRegisterID;
-} // namespace ARM
+        typedef enum {
+            d0,
+            d1,
+            d2,
+            d3,
+            SD0 = d3
+        } FPRegisterID;
+
+    } // namespace ARMRegisters
 
     class ARMAssembler {
     public:
-        typedef ARM::RegisterID RegisterID;
-        typedef ARM::FPRegisterID FPRegisterID;
+        typedef ARMRegisters::RegisterID RegisterID;
+        typedef ARMRegisters::FPRegisterID FPRegisterID;
         typedef AssemblerBufferWithConstantPool<2048, 4, 4, ARMAssembler> ARMBuffer;
-        typedef WTF::SegmentedVector<int, 64> Jumps;
+        typedef SegmentedVector<int, 64> Jumps;
 
         ARMAssembler() { }
 
@@ -115,13 +120,21 @@ namespace ARM {
             MVN = (0xf << 21),
             MUL = 0x00000090,
             MULL = 0x00c00090,
+            FADDD = 0x0e300b00,
+            FSUBD = 0x0e300b40,
+            FMULD = 0x0e200b00,
+            FCMPD = 0x0eb40b40,
             DTR = 0x05000000,
             LDRH = 0x00100090,
             STRH = 0x00000090,
             STMDB = 0x09200000,
             LDMIA = 0x08b00000,
+            FDTR = 0x0d000b00,
             B = 0x0a000000,
             BL = 0x0b000000,
+            FMSR = 0x0e000a10,
+            FSITOD = 0x0eb80bc0,
+            FMSTAT = 0x0ef1fa10,
 #if ARM_ARCH_VERSION >= 5
             CLZ = 0x016f0f10,
             BKPT = 0xe120070,
@@ -167,20 +180,16 @@ namespace ARM {
         public:
             JmpSrc()
                 : m_offset(-1)
-                , m_latePatch(false)
             {
             }
 
-            void enableLatePatch() { m_latePatch = true; }
         private:
             JmpSrc(int offset)
                 : m_offset(offset)
-                , m_latePatch(false)
             {
             }
 
-            int m_offset : 31;
-            int m_latePatch : 1;
+            int m_offset;
         };
 
         class JmpDst {
@@ -321,12 +330,12 @@ namespace ARM {
 
         void mov_r(int rd, ARMWord op2, Condition cc = AL)
         {
-            emitInst(static_cast<ARMWord>(cc) | MOV, rd, ARM::r0, op2);
+            emitInst(static_cast<ARMWord>(cc) | MOV, rd, ARMRegisters::r0, op2);
         }
 
         void movs_r(int rd, ARMWord op2, Condition cc = AL)
         {
-            emitInst(static_cast<ARMWord>(cc) | MOV | SET_CC, rd, ARM::r0, op2);
+            emitInst(static_cast<ARMWord>(cc) | MOV | SET_CC, rd, ARMRegisters::r0, op2);
         }
 
         void bic_r(int rd, int rn, ARMWord op2, Condition cc = AL)
@@ -341,12 +350,12 @@ namespace ARM {
 
         void mvn_r(int rd, ARMWord op2, Condition cc = AL)
         {
-            emitInst(static_cast<ARMWord>(cc) | MVN, rd, ARM::r0, op2);
+            emitInst(static_cast<ARMWord>(cc) | MVN, rd, ARMRegisters::r0, op2);
         }
 
         void mvns_r(int rd, ARMWord op2, Condition cc = AL)
         {
-            emitInst(static_cast<ARMWord>(cc) | MVN | SET_CC, rd, ARM::r0, op2);
+            emitInst(static_cast<ARMWord>(cc) | MVN | SET_CC, rd, ARMRegisters::r0, op2);
         }
 
         void mul_r(int rd, int rn, int rm, Condition cc = AL)
@@ -364,14 +373,34 @@ namespace ARM {
             m_buffer.putInt(static_cast<ARMWord>(cc) | MULL | RN(rdhi) | RD(rdlo) | RS(rn) | RM(rm));
         }
 
+        void faddd_r(int dd, int dn, int dm, Condition cc = AL)
+        {
+            emitInst(static_cast<ARMWord>(cc) | FADDD, dd, dn, dm);
+        }
+
+        void fsubd_r(int dd, int dn, int dm, Condition cc = AL)
+        {
+            emitInst(static_cast<ARMWord>(cc) | FSUBD, dd, dn, dm);
+        }
+
+        void fmuld_r(int dd, int dn, int dm, Condition cc = AL)
+        {
+            emitInst(static_cast<ARMWord>(cc) | FMULD, dd, dn, dm);
+        }
+
+        void fcmpd_r(int dd, int dm, Condition cc = AL)
+        {
+            emitInst(static_cast<ARMWord>(cc) | FCMPD, dd, 0, dm);
+        }
+
         void ldr_imm(int rd, ARMWord imm, Condition cc = AL)
         {
-            m_buffer.putIntWithConstantInt(static_cast<ARMWord>(cc) | DTR | DT_LOAD | DT_UP | RN(ARM::pc) | RD(rd), imm, true);
+            m_buffer.putIntWithConstantInt(static_cast<ARMWord>(cc) | DTR | DT_LOAD | DT_UP | RN(ARMRegisters::pc) | RD(rd), imm, true);
         }
 
         void ldr_un_imm(int rd, ARMWord imm, Condition cc = AL)
         {
-            m_buffer.putIntWithConstantInt(static_cast<ARMWord>(cc) | DTR | DT_LOAD | DT_UP | RN(ARM::pc) | RD(rd), imm);
+            m_buffer.putIntWithConstantInt(static_cast<ARMWord>(cc) | DTR | DT_LOAD | DT_UP | RN(ARMRegisters::pc) | RD(rd), imm);
         }
 
         void dtr_u(bool isLoad, int rd, int rb, ARMWord op2, Condition cc = AL)
@@ -414,26 +443,53 @@ namespace ARM {
             emitInst(static_cast<ARMWord>(cc) | STRH | HDT_UH | DT_UP | DT_PRE, rd, rn, rm);
         }
 
+        void fdtr_u(bool isLoad, int rd, int rb, ARMWord op2, Condition cc = AL)
+        {
+            ASSERT(op2 <= 0xff);
+            emitInst(static_cast<ARMWord>(cc) | FDTR | DT_UP | (isLoad ? DT_LOAD : 0), rd, rb, op2);
+        }
+
+        void fdtr_d(bool isLoad, int rd, int rb, ARMWord op2, Condition cc = AL)
+        {
+            ASSERT(op2 <= 0xff);
+            emitInst(static_cast<ARMWord>(cc) | FDTR | (isLoad ? DT_LOAD : 0), rd, rb, op2);
+        }
+
         void push_r(int reg, Condition cc = AL)
         {
             ASSERT(ARMWord(reg) <= 0xf);
-            m_buffer.putInt(cc | DTR | DT_WB | RN(ARM::sp) | RD(reg) | 0x4);
+            m_buffer.putInt(cc | DTR | DT_WB | RN(ARMRegisters::sp) | RD(reg) | 0x4);
         }
 
         void pop_r(int reg, Condition cc = AL)
         {
             ASSERT(ARMWord(reg) <= 0xf);
-            m_buffer.putInt(cc | (DTR ^ DT_PRE) | DT_LOAD | DT_UP | RN(ARM::sp) | RD(reg) | 0x4);
+            m_buffer.putInt(cc | (DTR ^ DT_PRE) | DT_LOAD | DT_UP | RN(ARMRegisters::sp) | RD(reg) | 0x4);
         }
 
         inline void poke_r(int reg, Condition cc = AL)
         {
-            dtr_d(false, ARM::sp, 0, reg, cc);
+            dtr_d(false, ARMRegisters::sp, 0, reg, cc);
         }
 
         inline void peek_r(int reg, Condition cc = AL)
         {
-            dtr_u(true, reg, ARM::sp, 0, cc);
+            dtr_u(true, reg, ARMRegisters::sp, 0, cc);
+        }
+
+        void fmsr_r(int dd, int rn, Condition cc = AL)
+        {
+            emitInst(static_cast<ARMWord>(cc) | FMSR, rn, dd, 0);
+        }
+
+        void fsitod_r(int dd, int dm, Condition cc = AL)
+        {
+            emitInst(static_cast<ARMWord>(cc) | FSITOD, dd, 0, dm);
+        }
+
+        void fmstat(Condition cc = AL)
+        {
+            m_buffer.putInt(static_cast<ARMWord>(cc) | FMSTAT);
         }
 
 #if ARM_ARCH_VERSION >= 5
@@ -449,49 +505,49 @@ namespace ARM {
             m_buffer.putInt(BKPT | ((value & 0xff0) << 4) | (value & 0xf));
 #else
             // Cannot access to Zero memory address
-            dtr_dr(true, ARM::S0, ARM::S0, ARM::S0);
+            dtr_dr(true, ARMRegisters::S0, ARMRegisters::S0, ARMRegisters::S0);
 #endif
         }
 
         static ARMWord lsl(int reg, ARMWord value)
         {
-            ASSERT(reg <= ARM::pc);
+            ASSERT(reg <= ARMRegisters::pc);
             ASSERT(value <= 0x1f);
             return reg | (value << 7) | 0x00;
         }
 
         static ARMWord lsr(int reg, ARMWord value)
         {
-            ASSERT(reg <= ARM::pc);
+            ASSERT(reg <= ARMRegisters::pc);
             ASSERT(value <= 0x1f);
             return reg | (value << 7) | 0x20;
         }
 
         static ARMWord asr(int reg, ARMWord value)
         {
-            ASSERT(reg <= ARM::pc);
+            ASSERT(reg <= ARMRegisters::pc);
             ASSERT(value <= 0x1f);
             return reg | (value << 7) | 0x40;
         }
 
         static ARMWord lsl_r(int reg, int shiftReg)
         {
-            ASSERT(reg <= ARM::pc);
-            ASSERT(shiftReg <= ARM::pc);
+            ASSERT(reg <= ARMRegisters::pc);
+            ASSERT(shiftReg <= ARMRegisters::pc);
             return reg | (shiftReg << 8) | 0x10;
         }
 
         static ARMWord lsr_r(int reg, int shiftReg)
         {
-            ASSERT(reg <= ARM::pc);
-            ASSERT(shiftReg <= ARM::pc);
+            ASSERT(reg <= ARMRegisters::pc);
+            ASSERT(shiftReg <= ARMRegisters::pc);
             return reg | (shiftReg << 8) | 0x30;
         }
 
         static ARMWord asr_r(int reg, int shiftReg)
         {
-            ASSERT(reg <= ARM::pc);
-            ASSERT(shiftReg <= ARM::pc);
+            ASSERT(reg <= ARMRegisters::pc);
+            ASSERT(shiftReg <= ARMRegisters::pc);
             return reg | (shiftReg << 8) | 0x50;
         }
 
@@ -507,6 +563,11 @@ namespace ARM {
             m_buffer.ensureSpace(insnSpace, constSpace);
         }
 
+        int sizeOfConstantPool()
+        {
+            return m_buffer.sizeOfConstantPool();
+        }
+
         JmpDst label()
         {
             return JmpDst(m_buffer.size());
@@ -515,16 +576,17 @@ namespace ARM {
         JmpDst align(int alignment)
         {
             while (!m_buffer.isAligned(alignment))
-                mov_r(ARM::r0, ARM::r0);
+                mov_r(ARMRegisters::r0, ARMRegisters::r0);
 
             return label();
         }
 
-        JmpSrc jmp(Condition cc = AL)
+        JmpSrc jmp(Condition cc = AL, int useConstantPool = 0)
         {
-            int s = size();
-            ldr_un_imm(ARM::pc, 0xffffffff, cc);
-            m_jumps.append(s);
+            ensureSpace(sizeof(ARMWord), sizeof(ARMWord));
+            int s = m_buffer.uncheckedSize();
+            ldr_un_imm(ARMRegisters::pc, 0xffffffff, cc);
+            m_jumps.append(s | (useConstantPool & 0x1));
             return JmpSrc(s);
         }
 
@@ -533,7 +595,7 @@ namespace ARM {
         // Patching helpers
 
         static ARMWord* getLdrImmAddress(ARMWord* insn, uint32_t* constPool = 0);
-        static void linkBranch(void* code, JmpSrc from, void* to);
+        static void linkBranch(void* code, JmpSrc from, void* to, int useConstantPool = 0);
 
         static void patchPointerInternal(intptr_t from, void* to)
         {
@@ -600,7 +662,7 @@ namespace ARM {
 
         static void linkCall(void* code, JmpSrc from, void* to)
         {
-            linkBranch(code, from, to);
+            linkBranch(code, from, to, true);
         }
 
         static void relinkCall(void* from, void* to)
@@ -653,6 +715,7 @@ namespace ARM {
 
         void dataTransfer32(bool isLoad, RegisterID srcDst, RegisterID base, int32_t offset);
         void baseIndexTransfer32(bool isLoad, RegisterID srcDst, RegisterID base, RegisterID index, int scale, int32_t offset);
+        void doubleTransfer(bool isLoad, FPRegisterID srcDst, RegisterID base, int32_t offset);
 
         // Constant pool hnadlers
 
@@ -666,25 +729,25 @@ namespace ARM {
     private:
         ARMWord RM(int reg)
         {
-            ASSERT(reg <= ARM::pc);
+            ASSERT(reg <= ARMRegisters::pc);
             return reg;
         }
 
         ARMWord RS(int reg)
         {
-            ASSERT(reg <= ARM::pc);
+            ASSERT(reg <= ARMRegisters::pc);
             return reg << 8;
         }
 
         ARMWord RD(int reg)
         {
-            ASSERT(reg <= ARM::pc);
+            ASSERT(reg <= ARMRegisters::pc);
             return reg << 12;
         }
 
         ARMWord RN(int reg)
         {
-            ASSERT(reg <= ARM::pc);
+            ASSERT(reg <= ARMRegisters::pc);
             return reg << 16;
         }
 
@@ -701,6 +764,6 @@ namespace ARM {
 
 } // namespace JSC
 
-#endif // ENABLE(ASSEMBLER) && PLATFORM(ARM)
+#endif // ENABLE(ASSEMBLER) && PLATFORM(ARM_TRADITIONAL)
 
 #endif // ARMAssembler_h

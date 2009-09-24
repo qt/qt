@@ -68,13 +68,13 @@ QT_BEGIN_NAMESPACE
 const unsigned int MAX_SAMPLE_RATES = 5;
 const unsigned int SAMPLE_RATES[] = { 8000, 11025, 22050, 44100, 48000 };
 
-class QAudioDeviceInfoPrivate : public QAbstractAudioDeviceInfo
+class QAudioDeviceInfoInternal : public QAbstractAudioDeviceInfo
 {
     Q_OBJECT
 
 public:
-    QAudioDeviceInfoPrivate(QByteArray dev,QAudio::Mode mode);
-    ~QAudioDeviceInfoPrivate();
+    QAudioDeviceInfoInternal(QByteArray dev,QAudio::Mode mode);
+    ~QAudioDeviceInfoInternal();
 
     bool open();
     void close();

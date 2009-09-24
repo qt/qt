@@ -2451,23 +2451,32 @@
     \enum Qt::InputMethodHint
 
     \value ImhNone                   No hints.
+
+    Flags that alter the behavior:
+
     \value ImhHiddenText             Characters should be hidden, as is typically used when entering passwords.
                                      This is automatically set when setting QLineEdit::echoMode to \c Password.
-    \value ImhDigitsOnly             Only number input is allowed.
-    \value ImhUppercaseOnly          Only upper case letter input is allowed.
-    \value ImhLowercaseOnly          Only lower case letter input is allowed.
     \value ImhNoAutoUppercase        The input method should not try to automatically switch to upper case
                                      when a sentence ends.
     \value ImhPreferNumbers          Numbers are preferred (but not required).
     \value ImhPreferUppercase        Upper case letters are preferred (but not required).
     \value ImhPreferLowercase        Lower case letters are preferred (but not required).
     \value ImhNoPredictiveText       Do not use predictive text (i.e. dictionary lookup) while typing.
+
+    Flags that restrict input (exclusive flags):
+
+    \value ImhDigitsOnly             Only digits are allowed.
+    \value ImhFormattedNumbersOnly   Only number input is allowed. This includes decimal point and minus sign.
+    \value ImhUppercaseOnly          Only upper case letter input is allowed.
+    \value ImhLowercaseOnly          Only lower case letter input is allowed.
     \value ImhDialableCharactersOnly Only characters suitable for phone dialling are allowed.
+    \value ImhEmailCharactersOnly    Only characters suitable for email addresses are allowed.
 
-    \omitvalue ImhFormattedNumbersOnly
-    \omitvalue ImhExclusiveInputMask
+    Masks:
 
-    \note If several flags ending with \c Only are ORed together, the resulting character set will
+    \value ImhExclusiveInputMask     This mask yields nonzero if any of the exclusive flags are used.
+
+    \note If several exclusive flags are ORed together, the resulting character set will
           consist of the union of the specified sets. For instance specifying \c ImhNumbersOnly and
           \c ImhUppercaseOnly would yield a set consisting of numbers and uppercase letters.
 

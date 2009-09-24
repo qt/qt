@@ -20,6 +20,7 @@
 #include "config.h"
 #include "qwebhistory.h"
 #include "qwebhistory_p.h"
+#include "qwebframe_p.h"
 
 #include "PlatformString.h"
 #include "Image.h"
@@ -267,6 +268,8 @@ void QWebHistory::clear()
     lst->setCapacity(capacity);   //revert capacity
     lst->addItem(current.get());  //insert old current item
     lst->goToItem(current.get()); //and set it as current again
+
+    d->page()->updateNavigationActions();
 }
 
 /*!
@@ -353,9 +356,11 @@ bool QWebHistory::canGoForward() const
 */
 void QWebHistory::back()
 {
-    d->lst->goBack();
-    WebCore::Page* page = d->lst->page();
-    page->goToItem(currentItem().d->item, WebCore::FrameLoadTypeIndexedBackForward);
+    if (canGoBack()) {
+        d->lst->goBack();
+        WebCore::Page* page = d->lst->page();
+        page->goToItem(currentItem().d->item, WebCore::FrameLoadTypeIndexedBackForward);
+    }
 }
 
 /*!
@@ -366,9 +371,11 @@ void QWebHistory::back()
 */
 void QWebHistory::forward()
 {
-    d->lst->goForward();
-    WebCore::Page* page = d->lst->page();
-    page->goToItem(currentItem().d->item, WebCore::FrameLoadTypeIndexedBackForward);
+    if (canGoForward()) {
+        d->lst->goForward();
+        WebCore::Page* page = d->lst->page();
+        page->goToItem(currentItem().d->item, WebCore::FrameLoadTypeIndexedBackForward);
+    }
 }
 
 /*!
@@ -516,6 +523,8 @@ bool QWebHistory::restoreState(const QByteArray& buffer)
     default: {} // result is false;
     }
 
+    d->page()->updateNavigationActions();
+
     return result;
 };
 
@@ -597,4 +606,7 @@ QDataStream& operator>>(QDataStream& stream, QWebHistory& history)
     return stream;
 }
 
-
+QWebPagePrivate* QWebHistoryPrivate::page()
+{
+    return QWebFramePrivate::kit(lst->page()->mainFrame())->page()->handle();
+}

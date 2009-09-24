@@ -1759,7 +1759,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QWidget *w, const QStyleOption *o
             QStyle::SubControl subControl = knownPseudoElements[pseudoElement].subControl;
 
             if (!(complex->activeSubControls & subControl))
-                state = QStyle::State(state & (QStyle::State_Enabled | QStyle::State_Horizontal));
+                state &= (QStyle::State_Enabled | QStyle::State_Horizontal | QStyle::State_HasFocus);
         }
 
         switch (pseudoElement) {
@@ -3136,19 +3136,25 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             rule.drawRule(p, opt->rect);
 
-            QRenderRule subRule = renderRule(w, opt, PseudoElement_SliderGroove);
-            if (!subRule.hasDrawable()) {
-                baseStyle()->drawComplexControl(cc, slider, p, w);
-                return;
+            QRenderRule grooveSubRule = renderRule(w, opt, PseudoElement_SliderGroove);
+            QRenderRule handleSubRule = renderRule(w, opt, PseudoElement_SliderHandle);
+            if (!grooveSubRule.hasDrawable()) {
+                QStyleOptionSlider slOpt(*slider);
+                bool handleHasRule = handleSubRule.hasDrawable();
+                // If the style specifies a different handler rule, draw the groove without the handler.
+                if (handleHasRule)
+                    slOpt.subControls &= ~SC_SliderHandle;
+                baseStyle()->drawComplexControl(cc, &slOpt, p, w);
+                if (!handleHasRule)
+                    return;
             }
 
             QRect gr = subControlRect(cc, opt, SC_SliderGroove, w);
             if (slider->subControls & SC_SliderGroove) {
-                subRule.drawRule(p, gr);
+                grooveSubRule.drawRule(p, gr);
             }
 
             if (slider->subControls & SC_SliderHandle) {
-                QRenderRule subRule = renderRule(w, opt, PseudoElement_SliderHandle);
                 QRect hr = subControlRect(cc, opt, SC_SliderHandle, w);
 
                 QRenderRule subRule1 = renderRule(w, opt, PseudoElement_SliderSubPage);
@@ -3169,7 +3175,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                     subRule2.drawRule(p, r);
                 }
 
-                subRule.drawRule(p, subRule.boxRect(hr, Margin));
+                handleSubRule.drawRule(p, grooveSubRule.boxRect(hr, Margin));
             }
 
             if (slider->subControls & SC_SliderTickmarks) {

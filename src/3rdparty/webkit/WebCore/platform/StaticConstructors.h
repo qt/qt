@@ -56,7 +56,7 @@
 #if COMPILER(MSVC7)
 #define DEFINE_GLOBAL(type, name) \
     const type name;
-#elif COMPILER(WINSCW)
+#elif PLATFORM(SYMBIAN)
 #define DEFINE_GLOBAL(type, name, arg...) \
     const type name;
 #else
@@ -70,7 +70,7 @@
 #if COMPILER(MSVC7)
 #define DEFINE_GLOBAL(type, name) \
     void * name[(sizeof(type) + sizeof(void *) - 1) / sizeof(void *)];
-#elif COMPILER(WINSCW)
+#elif PLATFORM(SYMBIAN)
 #define DEFINE_GLOBAL(type, name, arg...) \
     void * name[(sizeof(type) + sizeof(void *) - 1) / sizeof(void *)];
 #else

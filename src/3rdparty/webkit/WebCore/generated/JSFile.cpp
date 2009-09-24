@@ -125,7 +125,7 @@ JSFile::JSFile(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject,
 
 JSFile::~JSFile()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSFile::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

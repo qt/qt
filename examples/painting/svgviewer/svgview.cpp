@@ -62,6 +62,7 @@ SvgView::SvgView(QWidget *parent)
     setScene(new QGraphicsScene(this));
     setTransformationAnchor(AnchorUnderMouse);
     setDragMode(ScrollHandDrag);
+    setViewportUpdateMode(FullViewportUpdate);
 
     // Prepare background check-board pattern
     QPixmap tilePixmap(64, 64);

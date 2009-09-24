@@ -169,7 +169,7 @@ NEVER_INLINE bool Interpreter::resolveGlobal(CallFrame* callFrame, Instruction* 
     PropertySlot slot(globalObject);
     if (globalObject->getPropertySlot(callFrame, ident, slot)) {
         JSValue result = slot.getValue(callFrame, ident);
-        if (slot.isCacheable() && !globalObject->structure()->isDictionary() && slot.slotBase() == globalObject) {
+        if (slot.isCacheable() && !globalObject->structure()->isUncacheableDictionary() && slot.slotBase() == globalObject) {
             if (vPC[4].u.structure)
                 vPC[4].u.structure->deref();
             globalObject->structure()->ref();
@@ -953,7 +953,7 @@ NEVER_INLINE void Interpreter::tryCachePutByID(CallFrame* callFrame, CodeBlock* 
     JSCell* baseCell = asCell(baseValue);
     Structure* structure = baseCell->structure();
 
-    if (structure->isDictionary()) {
+    if (structure->isUncacheableDictionary()) {
         vPC[0] = getOpcode(op_put_by_id_generic);
         return;
     }
@@ -988,6 +988,10 @@ NEVER_INLINE void Interpreter::tryCachePutByID(CallFrame* callFrame, CodeBlock* 
 
     // Structure transition, cache transition info
     if (slot.type() == PutPropertySlot::NewProperty) {
+        if (structure->isDictionary()) {
+            vPC[0] = getOpcode(op_put_by_id_generic);
+            return;
+        }
         vPC[0] = getOpcode(op_put_by_id_transition);
         vPC[4] = structure->previousID();
         vPC[5] = structure;
@@ -1040,7 +1044,7 @@ NEVER_INLINE void Interpreter::tryCacheGetByID(CallFrame* callFrame, CodeBlock* 
 
     Structure* structure = asCell(baseValue)->structure();
 
-    if (structure->isDictionary()) {
+    if (structure->isUncacheableDictionary()) {
         vPC[0] = getOpcode(op_get_by_id_generic);
         return;
     }
@@ -3731,7 +3735,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
         JSObject* baseObj = asObject(callFrame->r(base).jsValue());
         Identifier& ident = callFrame->codeBlock()->identifier(property);
         ASSERT(callFrame->r(function).jsValue().isObject());
-        baseObj->defineSetter(callFrame, ident, asObject(callFrame->r(function).jsValue()));
+        baseObj->defineSetter(callFrame, ident, asObject(callFrame->r(function).jsValue()), 0);
 
         ++vPC;
         NEXT_INSTRUCTION();

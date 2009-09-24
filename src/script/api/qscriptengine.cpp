@@ -348,7 +348,7 @@ struct GlobalClientData : public JSC::JSGlobalData::ClientData
     GlobalClientData(QScriptEnginePrivate *e)
         : engine(e) {}
     virtual ~GlobalClientData() {}
-    virtual void mark() { engine->mark(); }
+    virtual void mark(JSC::MarkStack& markStack) { engine->mark(markStack); }
 
     QScriptEnginePrivate *engine;
 };
@@ -381,6 +381,65 @@ private:
     bool m_shouldProcessEvents;
     bool m_shouldAbortEvaluation;
 };
+
+/*Helper class. Main purpose is to give debugger feedback about unloading and loading scripts.
+  It keeps pointer to JSGlobalObject assuming that it is always the same - there is no way to update
+  this data. Class is internal and used as an implementation detail in and only in QScriptEngine::evaluate.*/
+class UStringSourceProviderWithFeedback: public JSC::UStringSourceProvider
+{
+public:
+
+    static PassRefPtr<UStringSourceProviderWithFeedback> create(const JSC::UString& source, const JSC::UString& url, int lineNumber, QScriptEnginePrivate* engine)
+    {
+        return adoptRef(new UStringSourceProviderWithFeedback(source, url, lineNumber, engine));
+    }
+
+    /* Destruction means that there is no more copies of script so create scriptUnload event
+       and unregister script in QScriptEnginePrivate::loadedScripts */
+    virtual ~UStringSourceProviderWithFeedback()
+    {
+        if (m_ptr) {
+            if (JSC::Debugger* debugger = this->debugger())
+                debugger->scriptUnload(asID());
+            m_ptr->loadedScripts.remove(this);
+        }
+    }
+
+    /* set internal QScriptEnginePrivate pointer to null and create unloadScript event, should be called
+       only if QScriptEnginePrivate is about to be  destroyed.*/
+    void disconnectFromEngine()
+    {        
+        if (JSC::Debugger* debugger = this->debugger())
+            debugger->scriptUnload(asID());
+        m_ptr = 0;
+    }
+
+protected:
+    UStringSourceProviderWithFeedback(const JSC::UString& source, const JSC::UString& url, int lineNumber, QScriptEnginePrivate* engine)
+            : UStringSourceProvider(source, url),
+            m_ptr(engine)
+    {
+        if (JSC::Debugger* debugger = this->debugger())
+            debugger->scriptLoad(asID(), source, url, lineNumber);
+        if (m_ptr)
+            m_ptr->loadedScripts.insert(this);
+    }
+
+    JSC::Debugger* debugger()
+    {
+        //if m_ptr is null it mean that QScriptEnginePrivate was destroyed and scriptUnload was called
+        //else m_ptr is stable and we can use it as normal pointer without hesitation
+        if(!m_ptr)
+            return 0; //we are in ~QScriptEnginePrivate
+        else
+            return m_ptr->originalGlobalObject()->debugger(); //QScriptEnginePrivate is still alive
+    }
+
+    //trace global object and debugger instance
+    QScriptEnginePrivate* m_ptr;
+};
+
+
 
 static int toDigit(char c)
 {
@@ -840,8 +899,16 @@ QScriptEnginePrivate::QScriptEnginePrivate()
 
 QScriptEnginePrivate::~QScriptEnginePrivate()
 {
+    //disconnect all loadedScripts and generate all jsc::debugger::scriptUnload events
+    QSet<QScript::UStringSourceProviderWithFeedback*>::const_iterator i = loadedScripts.constBegin();
+    while(i!=loadedScripts.constEnd()) {
+        (*i)->disconnectFromEngine();
+        i++;
+    }
+
     while (!ownedAgents.isEmpty())
         delete ownedAgents.takeFirst();
+
     detachAllRegisteredScriptValues();
     detachAllRegisteredScriptStrings();
     qDeleteAll(m_qobjectData);
@@ -1115,27 +1182,25 @@ void QScriptEnginePrivate::setContextFlags(JSC::ExecState *exec, uint flags)
 }
 
 
-void QScriptEnginePrivate::mark()
+void QScriptEnginePrivate::mark(JSC::MarkStack& markStack)
 {
-    if (!originalGlobalObject()->marked())
-        originalGlobalObject()->mark();
-    if (!globalObject()->marked())
-        globalObject()->mark();
-    if (originalGlobalObjectProxy && !originalGlobalObjectProxy->marked())
-        originalGlobalObjectProxy->mark();
+    markStack.append(originalGlobalObject());
+    markStack.append(globalObject());
+    if (originalGlobalObjectProxy)
+        markStack.append(originalGlobalObjectProxy);
 
-    if (qobjectPrototype && !qobjectPrototype->marked())
-        qobjectPrototype->mark();
-    if (qmetaobjectPrototype && !qmetaobjectPrototype->marked())
-        qmetaobjectPrototype->mark();
-    if (variantPrototype && !variantPrototype->marked())
-        variantPrototype->mark();
+    if (qobjectPrototype)
+        markStack.append(qobjectPrototype);
+    if (qmetaobjectPrototype)
+        markStack.append(qmetaobjectPrototype);
+    if (variantPrototype)
+        markStack.append(variantPrototype);
 
     {
         QScriptValuePrivate *it;
         for (it = registeredScriptValues; it != 0; it = it->next) {
-            if (it->isJSC() && !it->jscValue.marked())
-                it->jscValue.mark();
+            if (it->isJSC())
+                markStack.append(it->jscValue);
         }
     }
 
@@ -1144,7 +1209,7 @@ void QScriptEnginePrivate::mark()
         QHash<QObject*, QScript::QObjectData*>::const_iterator it;
         for (it = m_qobjectData.constBegin(); it != m_qobjectData.constEnd(); ++it) {
             QScript::QObjectData *qdata = it.value();
-            qdata->mark();
+            qdata->mark(markStack);
         }
     }
 #endif
@@ -1152,8 +1217,8 @@ void QScriptEnginePrivate::mark()
     {
         QHash<int, QScriptTypeInfo*>::const_iterator it;
         for (it = m_typeInfos.constBegin(); it != m_typeInfos.constEnd(); ++it) {
-            if ((*it)->prototype && !(*it)->prototype.marked())
-                (*it)->prototype.mark();
+            if ((*it)->prototype)
+                markStack.append((*it)->prototype);
         }
     }
 }
@@ -2137,6 +2202,7 @@ QScriptSyntaxCheckResult QScriptEnginePrivate::checkSyntax(const QString &progra
 
   \sa canEvaluate(), hasUncaughtException(), isEvaluating(), abortEvaluation()
 */
+
 QScriptValue QScriptEngine::evaluate(const QString &program, const QString &fileName, int lineNumber)
 {
     Q_D(QScriptEngine);
@@ -2145,41 +2211,40 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     QBoolBlocker inEval(d->inEval, true);
     currentContext()->activationObject(); //force the creation of a context for native function;
 
+    JSC::Debugger* debugger = d->originalGlobalObject()->debugger();
+
     JSC::UString jscProgram = program;
     JSC::UString jscFileName = fileName;
     JSC::ExecState* exec = d->currentFrame;
-    JSC::SourceCode source = JSC::makeSource(jscProgram, jscFileName, lineNumber);
+    WTF::PassRefPtr<QScript::UStringSourceProviderWithFeedback> provider
+            = QScript::UStringSourceProviderWithFeedback::create(jscProgram, jscFileName, lineNumber, d);
+    intptr_t sourceId = provider->asID();
+    JSC::SourceCode source(provider, lineNumber); //after construction of SourceCode provider variable will be null.
 
-    intptr_t sourceId = source.provider()->asID();
-    JSC::Debugger* debugger = d->originalGlobalObject()->debugger();
-    exec->globalData().scriptpool->startEvaluating(source);
     if (debugger)
         debugger->evaluateStart(sourceId);
 
     exec->clearException();
     JSC::DynamicGlobalObjectScope dynamicGlobalObjectScope(exec, exec->scopeChain()->globalObject());
 
-    int errorLine;
-    JSC::UString errorMessage;
-    WTF::RefPtr<JSC::EvalNode> evalNode = exec->globalData().parser->parse<JSC::EvalNode>(exec, exec->dynamicGlobalObject()->debugger(), source, &errorLine, &errorMessage);
-    if (!evalNode) {
-        JSC::JSValue exceptionValue = JSC::Error::create(exec, JSC::SyntaxError, errorMessage, errorLine, source.provider()->asID(), 0);
-        exec->setException(exceptionValue);
+    JSC::EvalExecutable executable(source);
+    JSC::JSObject* error = executable.compile(exec, exec->scopeChain());
+    if (error) {
+        exec->setException(error);
 
         if (debugger) {
-            debugger->exceptionThrow(JSC::DebuggerCallFrame(exec, exceptionValue), sourceId, false);
-            debugger->evaluateStop(exceptionValue, sourceId);
+            debugger->exceptionThrow(JSC::DebuggerCallFrame(exec, error), sourceId, false);
+            debugger->evaluateStop(error, sourceId);
         }
-        exec->globalData().scriptpool->stopEvaluating(source);
 
-        return d->scriptValueFromJSCValue(exceptionValue);
+        return d->scriptValueFromJSCValue(error);
     }
 
     JSC::JSValue thisValue = d->thisForContext(exec);
     JSC::JSObject* thisObject = (!thisValue || thisValue.isUndefinedOrNull()) ? exec->dynamicGlobalObject() : thisValue.toObject(exec);
     JSC::JSValue exceptionValue;
     d->timeoutChecker()->setShouldAbort(false);
-    JSC::JSValue result = exec->interpreter()->execute(evalNode.get(), exec, thisObject, exec->scopeChain(), &exceptionValue);
+    JSC::JSValue result = exec->interpreter()->execute(&executable, exec, thisObject, exec->scopeChain(), &exceptionValue);
 
     if (d->timeoutChecker()->shouldAbort()) {
         if (d->abortResult.isError())
@@ -2187,7 +2252,6 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
 
         if (debugger)
             debugger->evaluateStop(d->scriptValueToJSCValue(d->abortResult), sourceId);
-        exec->globalData().scriptpool->stopEvaluating(source);
 
         return d->abortResult;
     }
@@ -2197,14 +2261,12 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
 
         if (debugger)
             debugger->evaluateStop(exceptionValue, sourceId);
-        exec->globalData().scriptpool->stopEvaluating(source);
 
         return d->scriptValueFromJSCValue(exceptionValue);
     }
 
     if (debugger)
         debugger->evaluateStop(result, sourceId);
-    exec->globalData().scriptpool->stopEvaluating(source);
 
     Q_ASSERT(!exec->hadException());
     return d->scriptValueFromJSCValue(result);

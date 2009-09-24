@@ -46,6 +46,7 @@
 #include <qlist.h>
 #include <qstringlist.h>
 #include <qwidget.h>
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -230,6 +231,9 @@ bool QMultiScreen::connect(const QString &displaySpec)
     QStringList specs = dSpec.split(QLatin1Char(' '), QString::SkipEmptyParts);
     foreach (QString spec, specs) {
         const int id = getDisplayId(spec);
+        if (spec.startsWith("vnc:", Qt::CaseInsensitive)) {
+            spec.append(":noDisablePainting");
+        }
         const QPoint offset = filterDisplayOffset(spec);
         QScreen *s = qt_get_screen(id, spec.toLatin1().constData());
         s->setOffset(offset);

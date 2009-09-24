@@ -41,7 +41,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLTextAreaElement);
 
 /* Hash table */
 
-static const HashTableValue JSHTMLTextAreaElementTableValues[20] =
+static const HashTableValue JSHTMLTextAreaElementTableValues[21] =
 {
     { "defaultValue", DontDelete, (intptr_t)jsHTMLTextAreaElementDefaultValue, (intptr_t)setJSHTMLTextAreaElementDefaultValue },
     { "form", DontDelete|ReadOnly, (intptr_t)jsHTMLTextAreaElementForm, (intptr_t)0 },
@@ -50,6 +50,7 @@ static const HashTableValue JSHTMLTextAreaElementTableValues[20] =
     { "cols", DontDelete, (intptr_t)jsHTMLTextAreaElementCols, (intptr_t)setJSHTMLTextAreaElementCols },
     { "disabled", DontDelete, (intptr_t)jsHTMLTextAreaElementDisabled, (intptr_t)setJSHTMLTextAreaElementDisabled },
     { "autofocus", DontDelete, (intptr_t)jsHTMLTextAreaElementAutofocus, (intptr_t)setJSHTMLTextAreaElementAutofocus },
+    { "maxLength", DontDelete, (intptr_t)jsHTMLTextAreaElementMaxLength, (intptr_t)setJSHTMLTextAreaElementMaxLength },
     { "name", DontDelete, (intptr_t)jsHTMLTextAreaElementName, (intptr_t)setJSHTMLTextAreaElementName },
     { "placeholder", DontDelete, (intptr_t)jsHTMLTextAreaElementPlaceholder, (intptr_t)setJSHTMLTextAreaElementPlaceholder },
     { "readOnly", DontDelete, (intptr_t)jsHTMLTextAreaElementReadOnly, (intptr_t)setJSHTMLTextAreaElementReadOnly },
@@ -229,6 +230,14 @@ JSValue jsHTMLTextAreaElementAutofocus(ExecState* exec, const Identifier&, const
     return jsBoolean(imp->autofocus());
 }
 
+JSValue jsHTMLTextAreaElementMaxLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSHTMLTextAreaElement* castedThis = static_cast<JSHTMLTextAreaElement*>(asObject(slot.slotBase()));
+    UNUSED_PARAM(exec);
+    HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(castedThis->impl());
+    return jsNumber(exec, imp->maxLength());
+}
+
 JSValue jsHTMLTextAreaElementName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSHTMLTextAreaElement* castedThis = static_cast<JSHTMLTextAreaElement*>(asObject(slot.slotBase()));
@@ -355,6 +364,12 @@ void setJSHTMLTextAreaElementAutofocus(ExecState* exec, JSObject* thisObject, JS
 {
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(thisObject)->impl());
     imp->setAutofocus(value.toBoolean(exec));
+}
+
+void setJSHTMLTextAreaElementMaxLength(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(thisObject)->impl());
+    imp->setMaxLength(value.toInt32(exec));
 }
 
 void setJSHTMLTextAreaElementName(ExecState* exec, JSObject* thisObject, JSValue value)

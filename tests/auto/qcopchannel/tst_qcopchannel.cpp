@@ -49,6 +49,7 @@
 
 #include <QCopChannel>
 #include <QProcess>
+#include "../../shared/util.h"
 
 class tst_QCopChannel : public QObject
 {
@@ -110,7 +111,7 @@ void tst_QCopChannel::sendreceivemp()
 
     testSend(channelName, "msg", "data");
     QApplication::processEvents();
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
 
     QList<QVariant> args = spy.takeFirst();
     QCOMPARE(args.at(0).toString(), QString("msg"));
@@ -134,7 +135,7 @@ void tst_QCopChannel::sendreceivesp()
     QCOMPARE(spy.count(), 0);
     QCopChannel::send(channelName, "msg", "data");
     QApplication::processEvents();
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
 
     QList<QVariant> args = spy.takeFirst();
     QCOMPARE(args.at(0).toString(), QString("msg"));

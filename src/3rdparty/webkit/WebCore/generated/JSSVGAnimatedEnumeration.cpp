@@ -80,7 +80,7 @@ JSSVGAnimatedEnumeration::JSSVGAnimatedEnumeration(PassRefPtr<Structure> structu
 
 JSSVGAnimatedEnumeration::~JSSVGAnimatedEnumeration()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGAnimatedEnumeration::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

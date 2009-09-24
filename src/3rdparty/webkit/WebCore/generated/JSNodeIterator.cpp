@@ -145,7 +145,7 @@ JSNodeIterator::JSNodeIterator(PassRefPtr<Structure> structure, JSDOMGlobalObjec
 
 JSNodeIterator::~JSNodeIterator()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSNodeIterator::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

@@ -64,7 +64,7 @@ private:
     double m_nextFireTime;
 };
 
-class WorkerRunLoop::Task : public RefCounted<Task> {
+class WorkerRunLoop::Task : public RefCounted<WorkerRunLoop::Task> {
 public:
     static PassRefPtr<Task> create(PassRefPtr<ScriptExecutionContext::Task> task, const String& mode)
     {

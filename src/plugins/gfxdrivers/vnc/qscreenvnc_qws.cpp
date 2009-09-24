@@ -195,8 +195,11 @@ void QVNCClientCursor::write() const
 
 QVNCScreenPrivate::QVNCScreenPrivate(QVNCScreen *parent)
     : dpiX(72), dpiY(72), doOnScreenSurface(false), refreshRate(25),
-      vncServer(0), q_ptr(parent)
+      vncServer(0), q_ptr(parent), noDisablePainting(false)
 {
+#ifdef QT_BUILD_INTERNAL
+    noDisablePainting = (qgetenv("QT_VNC_NO_DISABLEPAINTING").toInt() <=0);
+#endif
 #ifndef QT_NO_QWS_SIGNALHANDLER
     QWSSignalHandler::instance()->addObject(this);
 #endif
@@ -615,7 +618,7 @@ void QVNCServer::newConnection()
     client->write(proto, 12);
     state = Protocol;
 
-    if (!qvnc_screen->screen())
+    if (!qvnc_screen->screen() && !qvnc_screen->d_ptr->noDisablePainting)
         QWSServer::instance()->enablePainting(true);
 }
 
@@ -2001,7 +2004,7 @@ void QVNCServer::discardClient()
     delete qvnc_cursor;
     qvnc_cursor = 0;
 #endif
-    if (!qvnc_screen->screen())
+    if (!qvnc_screen->screen() && !qvnc_screen->d_ptr->noDisablePainting)
         QWSServer::instance()->enablePainting(false);
 }
 
@@ -2184,6 +2187,9 @@ bool QVNCScreen::connect(const QString &displaySpec)
             d_ptr->dpiY = (dpiY > 0 ? dpiY : dpiX);
         }
 
+        if (args.contains(QLatin1String("noDisablePainting")))
+            d_ptr->noDisablePainting = true;
+
         QWSServer::setDefaultMouse("None");
         QWSServer::setDefaultKeyboard("None");
 
@@ -2273,11 +2279,9 @@ bool QVNCScreen::initDevice()
     if (QProxyScreen::screen())
         return ok;
 
-#ifdef QT_BUILD_INTERNAL
-    if (qgetenv("QT_VNC_NO_DISABLEPAINTING").toInt() <= 0)
-#endif
-    // No need to do painting while there's no clients attached
-    QWSServer::instance()->enablePainting(false);
+    // Disable painting if there is only 1 display and nothing is attached to the VNC server
+    if (!d_ptr->noDisablePainting)
+        QWSServer::instance()->enablePainting(false);
 
     return true;
 }

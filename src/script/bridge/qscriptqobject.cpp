@@ -99,11 +99,12 @@ struct QObjectConnection
         return (s == slot);
     }
 
-    void mark()
+    void mark(JSC::MarkStack& markStack)
     {
-        if (senderWrapper && !senderWrapper.marked()) {
+        // ### need to find out if senderWrapper is marked
+        if (senderWrapper) {
             // see if the sender should be marked or not
-            Q_ASSERT(senderWrapper.isObject(&QScriptObject::info));
+            Q_ASSERT(senderWrapper.inherits(&QScriptObject::info));
             QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(senderWrapper));
             QScriptObjectDelegate *delegate = scriptObject->delegate();
             Q_ASSERT(delegate && (delegate->type() == QScriptObjectDelegate::QtObject));
@@ -111,15 +112,17 @@ struct QObjectConnection
             if ((inst->ownership() == QScriptEngine::ScriptOwnership)
                 || ((inst->ownership() == QScriptEngine::AutoOwnership)
                     && inst->value() && !inst->value()->parent())) {
-                senderWrapper = JSC::JSValue();
+                // #### don't mark if not marked otherwise
+                //senderWrapper = JSC::JSValue();
+                markStack.append(senderWrapper);
             } else {
-                senderWrapper.mark();
+                markStack.append(senderWrapper);
             }
         }
-        if (receiver && !receiver.marked())
-            receiver.mark();
-        if (slot && !slot.marked())
-            slot.mark();
+        if (receiver)
+            markStack.append(receiver);
+        if (slot)
+            markStack.append(slot);
     }
 };
 
@@ -154,7 +157,7 @@ public:
 
     void execute(int slotIndex, void **argv);
 
-    void mark();
+    void mark(JSC::MarkStack&);
 
 private:
     QScriptEnginePrivate *engine;
@@ -264,12 +267,11 @@ JSC::CallType QtFunction::getCallData(JSC::CallData &callData)
     return JSC::CallTypeHost;
 }
 
-void QtFunction::mark()
+void QtFunction::markChildren(JSC::MarkStack& markStack)
 {
-    Q_ASSERT(!marked());
-    if (data->object && !data->object.marked())
-        data->object.mark();
-    JSC::InternalFunction::mark();
+    if (data->object)
+        markStack.append(data->object);
+    JSC::InternalFunction::markChildren(markStack);
 }
 
 QScriptObject *QtFunction::wrapperObject() const
@@ -988,7 +990,7 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
 JSC::JSValue QtFunction::execute(JSC::ExecState *exec, JSC::JSValue thisValue,
                                  const JSC::ArgList &scriptArgs)
 {
-    Q_ASSERT(data->object.isObject(&QScriptObject::info));
+    Q_ASSERT(data->object.inherits(&QScriptObject::info));
     QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(data->object));
     QScriptObjectDelegate *delegate = scriptObject->delegate();
     Q_ASSERT(delegate && (delegate->type() == QScriptObjectDelegate::QtObject));
@@ -999,7 +1001,7 @@ JSC::JSValue QtFunction::execute(JSC::ExecState *exec, JSC::JSValue thisValue,
     const QMetaObject *meta = qobj->metaObject();
     QObject *thisQObject = 0;
     thisValue = engine->toUsableValue(thisValue);
-    if (thisValue.isObject(&QScriptObject::info)) {
+    if (thisValue.inherits(&QScriptObject::info)) {
         delegate = static_cast<QScriptObject*>(JSC::asObject(thisValue))->delegate();
         if (delegate && (delegate->type() == QScriptObjectDelegate::QtObject))
             thisQObject = static_cast<QScript::QObjectDelegate*>(delegate)->value();
@@ -1511,9 +1513,9 @@ bool QObjectDelegate::getPropertyAttributes(const QScriptObject *object,
     return QScriptObjectDelegate::getPropertyAttributes(object, exec, propertyName, attributes);
 }
 
-void QObjectDelegate::getPropertyNames(QScriptObject *object, JSC::ExecState *exec,
-                                       JSC::PropertyNameArray &propertyNames,
-                                       unsigned listedAttributes)
+void QObjectDelegate::getOwnPropertyNames(QScriptObject *object, JSC::ExecState *exec,
+                                          JSC::PropertyNameArray &propertyNames,
+                                          bool includeNonEnumerable)
 {
     QObject *qobject = data->value;
     if (!qobject) {
@@ -1557,24 +1559,24 @@ void QObjectDelegate::getPropertyNames(QScriptObject *object, JSC::ExecState *ex
         }
     }
 
-    QScriptObjectDelegate::getPropertyNames(object, exec, propertyNames, listedAttributes);
+    QScriptObjectDelegate::getOwnPropertyNames(object, exec, propertyNames, includeNonEnumerable);
 }
 
-void QObjectDelegate::mark(QScriptObject *object)
+void QObjectDelegate::markChildren(QScriptObject *object, JSC::MarkStack& markStack)
 {
     QHash<QByteArray, JSC::JSValue>::const_iterator it;
     for (it = data->cachedMembers.constBegin(); it != data->cachedMembers.constEnd(); ++it) {
         JSC::JSValue val = it.value();
-        if (val && !val.marked())
-            val.mark();
+        if (val)
+            markStack.append(val);
     }
 
-    QScriptObjectDelegate::mark(object);
+    QScriptObjectDelegate::markChildren(object, markStack);
 }
 
 bool QObjectDelegate::compareToObject(QScriptObject *, JSC::ExecState *exec, JSC::JSObject *o2)
 {
-    if(!o2->inherits(&QScriptObject::info))
+    if (!o2->inherits(&QScriptObject::info))
         return false;
     QScriptObject *object = static_cast<QScriptObject*>(o2);
     QScriptObjectDelegate *delegate = object->delegate();
@@ -1583,13 +1585,12 @@ bool QObjectDelegate::compareToObject(QScriptObject *, JSC::ExecState *exec, JSC
     return value() == static_cast<QObjectDelegate *>(delegate)->value();
 }
 
-
 static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChild(JSC::ExecState *exec, JSC::JSObject*,
                                                             JSC::JSValue thisValue, const JSC::ArgList &args)
 {
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     thisValue = engine->toUsableValue(thisValue);
-    if (!thisValue.isObject(&QScriptObject::info))
+    if (!thisValue.inherits(&QScriptObject::info))
         return throwError(exec, JSC::TypeError, "this object is not a QObject");
     QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(thisValue));
     QScriptObjectDelegate *delegate = scriptObject->delegate();
@@ -1610,7 +1611,7 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChildren(JSC::ExecState *e
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     thisValue = engine->toUsableValue(thisValue);
     // extract the QObject
-    if (!thisValue.isObject(&QScriptObject::info))
+    if (!thisValue.inherits(&QScriptObject::info))
         return throwError(exec, JSC::TypeError, "this object is not a QObject");
     QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(thisValue));
     QScriptObjectDelegate *delegate = scriptObject->delegate();
@@ -1622,7 +1623,7 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChildren(JSC::ExecState *e
     QList<QObject *> children;
     if (args.size() != 0) {
         const JSC::JSValue arg = args.at(0);
-        if (arg.isObject(&JSC::RegExpObject::info)) {
+        if (arg.inherits(&JSC::RegExpObject::info)) {
             const QObjectList allChildren= obj->children();
 
             JSC::RegExpObject *const regexp = JSC::asRegExpObject(arg);
@@ -1662,7 +1663,7 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncToString(JSC::ExecState *exec,
 {
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     thisValue = engine->toUsableValue(thisValue);
-    if (!thisValue.isObject(&QScriptObject::info))
+    if (!thisValue.inherits(&QScriptObject::info))
         return JSC::jsUndefined();
     QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(thisValue));
     QScriptObjectDelegate *delegate = scriptObject->delegate();
@@ -1807,7 +1808,9 @@ bool QMetaObjectWrapperObject::getPropertyAttributes(JSC::ExecState *exec,
     return JSC::JSObject::getPropertyAttributes(exec, propertyName, attributes);
 }
 
-void QMetaObjectWrapperObject::getPropertyNames(JSC::ExecState *exec, JSC::PropertyNameArray &propertyNames, unsigned listedAttributes)
+void QMetaObjectWrapperObject::getOwnPropertyNames(JSC::ExecState *exec,
+                                                   JSC::PropertyNameArray &propertyNames,
+                                                   bool includeNonEnumerable)
 {
     const QMetaObject *meta = data->value;
     if (!meta)
@@ -1817,17 +1820,16 @@ void QMetaObjectWrapperObject::getPropertyNames(JSC::ExecState *exec, JSC::Prope
         for (int j = 0; j < e.keyCount(); ++j)
             propertyNames.add(JSC::Identifier(exec, e.key(j)));
     }
-    JSC::JSObject::getPropertyNames(exec, propertyNames, listedAttributes);
+    JSC::JSObject::getOwnPropertyNames(exec, propertyNames, includeNonEnumerable);
 }
 
-void QMetaObjectWrapperObject::mark()
+void QMetaObjectWrapperObject::markChildren(JSC::MarkStack& markStack)
 {
-    Q_ASSERT(!marked());
-    if (data->ctor && !data->ctor.marked())
-        data->ctor.mark();
-    if (data->prototype && !data->prototype.marked())
-        data->prototype.mark();
-    JSC::JSObject::mark();
+    if (data->ctor)
+        markStack.append(data->ctor);
+    if (data->prototype)
+        markStack.append(data->prototype);
+    JSC::JSObject::markChildren(markStack);
 }
 
 JSC::CallType QMetaObjectWrapperObject::getCallData(JSC::CallData& callData)
@@ -1883,12 +1885,12 @@ JSC::JSValue QMetaObjectWrapperObject::execute(JSC::ExecState *exec,
         JSC::CallType callType = data->ctor.getCallData(callData);
         Q_UNUSED(callType);
         Q_ASSERT_X(callType == JSC::CallTypeHost, Q_FUNC_INFO, "script constructors not supported");
-        if (data->ctor.isObject(&FunctionWithArgWrapper::info)) {
+        if (data->ctor.inherits(&FunctionWithArgWrapper::info)) {
             FunctionWithArgWrapper *wrapper = static_cast<FunctionWithArgWrapper*>(JSC::asObject(data->ctor));
             QScriptValue result = wrapper->function()(ctx, QScriptEnginePrivate::get(eng_p), wrapper->arg());
             return eng_p->scriptValueToJSCValue(result);
         } else {
-            Q_ASSERT(data->ctor.isObject(&FunctionWrapper::info));
+            Q_ASSERT(data->ctor.inherits(&FunctionWrapper::info));
             FunctionWrapper *wrapper = static_cast<FunctionWrapper*>(JSC::asObject(data->ctor));
             QScriptValue result = wrapper->function()(ctx, QScriptEnginePrivate::get(eng_p));
             return eng_p->scriptValueToJSCValue(result);
@@ -1899,7 +1901,7 @@ JSC::JSValue QMetaObjectWrapperObject::execute(JSC::ExecState *exec,
             JSC::JSValue result = callQtMethod(exec, QMetaMethod::Constructor, /*thisQObject=*/0,
                                                args, meta, meta->constructorCount()-1, /*maybeOverloaded=*/true);
             if (!exec->hadException()) {
-                Q_ASSERT(result && result.isObject(&QScriptObject::info));
+                Q_ASSERT(result && result.inherits(&QScriptObject::info));
                 QScriptObject *object = static_cast<QScriptObject*>(JSC::asObject(result));
                 QScript::QObjectDelegate *delegate = static_cast<QScript::QObjectDelegate*>(object->delegate());
                 delegate->setOwnership(QScriptEngine::AutoOwnership);
@@ -1926,7 +1928,7 @@ static JSC::JSValue JSC_HOST_CALL qmetaobjectProtoFuncClassName(
 {
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     thisValue = engine->toUsableValue(thisValue);
-    if (!thisValue.isObject(&QMetaObjectWrapperObject::info))
+    if (!thisValue.inherits(&QMetaObjectWrapperObject::info))
         return throwError(exec, JSC::TypeError, "this object is not a QMetaObject");
     const QMetaObject *meta = static_cast<QMetaObjectWrapperObject*>(JSC::asObject(thisValue))->value();
     return JSC::jsString(exec, meta->className());
@@ -2060,7 +2062,7 @@ void QObjectConnectionManager::execute(int slotIndex, void **argv)
     JSC::ArgList jscArgs(argsVector.data(), argsVector.size());
 
     JSC::JSValue senderObject;
-    if (senderWrapper && senderWrapper.isObject(&QScriptObject::info)) // ### check if it's actually a QObject wrapper
+    if (senderWrapper && senderWrapper.inherits(&QScriptObject::info)) // ### check if it's actually a QObject wrapper
         senderObject = senderWrapper;
     else {
         QScriptEngine::QObjectWrapOptions opt = QScriptEngine::PreferExistingWrapperObject;
@@ -2093,12 +2095,12 @@ QObjectConnectionManager::~QObjectConnectionManager()
 {
 }
 
-void QObjectConnectionManager::mark()
+void QObjectConnectionManager::mark(JSC::MarkStack& markStack)
 {
     for (int i = 0; i < connections.size(); ++i) {
         QVector<QObjectConnection> &cs = connections[i];
         for (int j = 0; j < cs.size(); ++j)
-            cs[j].mark();
+            cs[j].mark(markStack);
     }
 }
 
@@ -2162,19 +2164,18 @@ QObjectData::~QObjectData()
     }
 }
 
-void QObjectData::mark()
+void QObjectData::mark(JSC::MarkStack& markStack)
 {
     if (connectionManager)
-        connectionManager->mark();
+        connectionManager->mark(markStack);
     {
         QList<QScript::QObjectWrapperInfo>::iterator it;
         for (it = wrappers.begin(); it != wrappers.end(); ) {
             const QScript::QObjectWrapperInfo &info = *it;
-            if (info.object->marked()) {
-                ++it;
-            } else {
-                it = wrappers.erase(it);
-            }
+            // ### don't mark if there are no other references.
+            // we need something like isMarked()
+            markStack.append(info.object);
+            ++it;
         }
     }
 }

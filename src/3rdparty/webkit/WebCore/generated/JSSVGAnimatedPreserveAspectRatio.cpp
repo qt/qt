@@ -81,7 +81,7 @@ JSSVGAnimatedPreserveAspectRatio::JSSVGAnimatedPreserveAspectRatio(PassRefPtr<St
 
 JSSVGAnimatedPreserveAspectRatio::~JSSVGAnimatedPreserveAspectRatio()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGAnimatedPreserveAspectRatio::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

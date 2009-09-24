@@ -169,8 +169,7 @@ contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
 }
 
 # Web Socket support.
-# FIXME: Enable once platform code is landed.
-# !contains(DEFINES, ENABLE_WEB_SOCKETS=.): DEFINES += ENABLE_WEB_SOCKETS=1
+!contains(DEFINES, ENABLE_WEB_SOCKETS=.): DEFINES += ENABLE_WEB_SOCKETS=1
 
 DEFINES += WTF_USE_JAVASCRIPTCORE_BINDINGS=1 WTF_CHANGES=1
 
@@ -714,7 +713,6 @@ SOURCES += \
     bindings/js/JSInspectorCallbackWrapper.cpp \
     bindings/js/JSLocationCustom.cpp \
     bindings/js/JSNamedNodeMapCustom.cpp \
-    bindings/js/JSNamedNodesCollection.cpp  \
     bindings/js/JSNavigatorCustom.cpp  \
     bindings/js/JSNodeCustom.cpp \
     bindings/js/JSNodeFilterCondition.cpp \
@@ -1392,7 +1390,6 @@ HEADERS += \
     bindings/js/JSLazyEventListener.h \
     bindings/js/JSLocationCustom.h \
     bindings/js/JSMessageChannelConstructor.h \
-    bindings/js/JSNamedNodesCollection.h \
     bindings/js/JSNodeFilterCondition.h \
     bindings/js/JSOptionConstructor.h \
     bindings/js/JSPluginElementFunctions.h \
@@ -1904,6 +1901,7 @@ HEADERS += \
     platform/network/ResourceRequestBase.h \
     platform/network/ResourceResponseBase.h \
     platform/qt/ClipboardQt.h \
+    platform/qt/QWebPageClient.h \
     platform/qt/QWebPopup.h \
     platform/qt/RenderThemeQt.h \
     platform/qt/ScrollbarThemeQt.h \
@@ -2637,7 +2635,6 @@ contains(DEFINES, ENABLE_SHARED_WORKERS=1) {
 
     SOURCES += \
         bindings/js/JSSharedWorkerConstructor.cpp \
-        bindings/js/JSSharedWorkerContextCustom.cpp \
         bindings/js/JSSharedWorkerCustom.cpp \
         workers/DefaultSharedWorkerRepository.cpp \
         workers/SharedWorker.cpp \
@@ -3103,6 +3100,20 @@ SOURCES += \
     loader/appcache/DOMApplicationCache.cpp \
     loader/appcache/ManifestParser.cpp \
     bindings/js/JSDOMApplicationCacheCustom.cpp
+}
+
+contains(DEFINES, ENABLE_WEB_SOCKETS=1) {
+    FEATURE_DEFINES_JAVASCRIPT += ENABLE_WEB_SOCKETS=1
+
+SOURCES += \
+    websockets/WebSocket.cpp \
+    websockets/WebSocketChannel.cpp \
+    websockets/WebSocketHandshake.cpp \
+    platform/network/SocketStreamErrorBase.cpp \
+    platform/network/SocketStreamHandleBase.cpp \
+    platform/network/qt/SocketStreamHandleSoup.cpp \
+    bindings/js/JSWebSocketCustom.cpp \
+    bindings/js/JSWebSocketConstructor.cpp
 }
 
 # GENERATOR 1: IDL compiler

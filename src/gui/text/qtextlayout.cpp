@@ -1813,7 +1813,7 @@ void QTextLine::layout_helper(int maxGlyphs)
                 glyph_t glyph = glyphs.glyphs[logClusters[pos - 1]];
                 glyph_metrics_t gi = fontEngine->boundingBox(glyph);
                 if (gi.isValid())
-                    lbh.rightBearing = -qRound(gi.xoff - gi.x - gi.width);
+                    lbh.rightBearing = qMax(QFixed(), -(gi.xoff - gi.x - gi.width));
             }
 
             if ((sb_or_ws|breakany) && lbh.checkFullOtherwiseExtend(line)) {

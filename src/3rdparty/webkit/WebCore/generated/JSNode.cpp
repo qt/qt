@@ -217,8 +217,8 @@ JSNode::JSNode(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject,
 
 JSNode::~JSNode()
 {
-    invalidateEventListeners(m_impl->eventListeners());
-    forgetDOMNode(m_impl->document(), m_impl.get());
+    impl()->invalidateEventListeners();
+    forgetDOMNode(impl()->document(), impl());
 }
 
 JSObject* JSNode::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

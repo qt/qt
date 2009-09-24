@@ -226,8 +226,11 @@
 #endif
 
 /* PLATFORM(ARM) */
+#define PLATFORM_ARM_ARCH(N) (PLATFORM(ARM) && ARM_ARCH_VERSION >= N)
+
 #if   defined(arm) \
-   || defined(__arm__)
+   || defined(__arm__) \
+   || defined(__MARM__)
 #define WTF_PLATFORM_ARM 1
 #if defined(__ARMEB__)
 #define WTF_PLATFORM_BIG_ENDIAN 1
@@ -241,22 +244,35 @@
 #endif
 #if defined(__ARM_ARCH_5__) || defined(__ARM_ARCH_5T__) \
         || defined(__ARM_ARCH_5E__) || defined(__ARM_ARCH_5TE__) \
-        || defined(__ARM_ARCH_5TEJ__)
+        || defined(__ARM_ARCH_5TEJ__) || defined(__MARM_ARMV5__)
 #undef ARM_ARCH_VERSION
 #define ARM_ARCH_VERSION 5
 #endif
 #if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) \
      || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) \
-     || defined(__ARM_ARCH_6ZK__)
+     || defined(__ARM_ARCH_6ZK__) || defined(__ARMV6__)
 #undef ARM_ARCH_VERSION
 #define ARM_ARCH_VERSION 6
 #endif
-#if defined(__ARM_ARCH_7A__)
+#if defined(__ARM_ARCH_7A__) || defined(__ARMV7__)
 #undef ARM_ARCH_VERSION
 #define ARM_ARCH_VERSION 7
 #endif
+/* Defines two pseudo-platforms for ARM and Thumb-2 instruction set. */
+#if !defined(WTF_PLATFORM_ARM_TRADITIONAL) && !defined(WTF_PLATFORM_ARM_THUMB2)
+#  if defined(thumb2) || defined(__thumb2__)
+#    define WTF_PLATFORM_ARM_TRADITIONAL 0
+#    define WTF_PLATFORM_ARM_THUMB2 1
+#  elif PLATFORM_ARM_ARCH(4) || PLATFORM_ARM_ARCH(5)
+#    define WTF_PLATFORM_ARM_TRADITIONAL 1
+#    define WTF_PLATFORM_ARM_THUMB2 0
+#  else
+#    error "Not supported ARM architecture"
+#  endif
+#elif PLATFORM(ARM_TRADITIONAL) && PLATFORM(ARM_THUMB2) /* Sanity Check */
+#  error "Cannot use both of WTF_PLATFORM_ARM_TRADITIONAL and WTF_PLATFORM_ARM_THUMB2 platforms"
+#endif // !defined(ARM_TRADITIONAL) && !defined(ARM_THUMB2)
 #endif /* ARM */
-#define PLATFORM_ARM_ARCH(N) (PLATFORM(ARM) && ARM_ARCH_VERSION >= N)
 
 /* PLATFORM(X86) */
 #if   defined(__i386__) \
@@ -392,6 +408,9 @@
 #if PLATFORM(MAC) && !PLATFORM(IPHONE)
 #define WTF_PLATFORM_CF 1
 #define WTF_USE_PTHREADS 1
+#if !defined(BUILDING_ON_LEOPARD) && !defined(BUILDING_ON_TIGER) && defined(__x86_64__)
+#define WTF_USE_PLUGIN_HOST_PROCESS 1
+#endif
 #if !defined(ENABLE_MAC_JAVA_BRIDGE)
 #define ENABLE_MAC_JAVA_BRIDGE 1
 #endif
@@ -400,7 +419,7 @@
 #endif
 #define HAVE_READLINE 1
 #define HAVE_RUNLOOP_TIMER 1
-#endif
+#endif // PLATFORM(MAC) && !PLATFORM(IPHONE)
 
 #if PLATFORM(CHROMIUM) && PLATFORM(DARWIN)
 #define WTF_PLATFORM_CF 1
@@ -408,18 +427,19 @@
 #endif
 
 #if PLATFORM(IPHONE)
-#define WTF_PLATFORM_CF 1
-#define WTF_USE_PTHREADS 1
 #define ENABLE_CONTEXT_MENUS 0
 #define ENABLE_DRAG_SUPPORT 0
 #define ENABLE_FTPDIR 1
+#define ENABLE_GEOLOCATION 1
+#define ENABLE_ICONDATABASE 0
 #define ENABLE_INSPECTOR 0
 #define ENABLE_MAC_JAVA_BRIDGE 0
-#define ENABLE_ICONDATABASE 0
-#define ENABLE_GEOLOCATION 1
 #define ENABLE_NETSCAPE_PLUGIN_API 0
-#define HAVE_READLINE 1
+#define ENABLE_ORIENTATION_EVENTS 1
 #define ENABLE_REPAINT_THROTTLING 1
+#define HAVE_READLINE 1
+#define WTF_PLATFORM_CF 1
+#define WTF_USE_PTHREADS 1
 #endif
 
 #if PLATFORM(WIN)
@@ -579,6 +599,14 @@
 #define ENABLE_NETSCAPE_PLUGIN_API 1
 #endif
 
+#if !defined(WTF_USE_PLUGIN_HOST_PROCESS)
+#define WTF_USE_PLUGIN_HOST_PROCESS 0
+#endif
+
+#if !defined(ENABLE_ORIENTATION_EVENTS)
+#define ENABLE_ORIENTATION_EVENTS 0
+#endif
+
 #if !defined(ENABLE_OPCODE_STATS)
 #define ENABLE_OPCODE_STATS 0
 #endif
@@ -637,7 +665,7 @@ on MinGW. See https://bugs.webkit.org/show_bug.cgi?id=29268 */
 #elif PLATFORM(X86) && PLATFORM(MAC)
     #define ENABLE_JIT 1
     #define WTF_USE_JIT_STUB_ARGUMENT_VA_LIST 1
-#elif PLATFORM_ARM_ARCH(7) && PLATFORM(IPHONE)
+#elif PLATFORM(ARM_THUMB2) && PLATFORM(IPHONE)
     /* Under development, temporarily disabled until 16Mb link range limit in assembler is fixed. */
     #define ENABLE_JIT 0
     #define ENABLE_JIT_OPTIMIZE_NATIVE_CALL 0
@@ -656,8 +684,11 @@ on MinGW. See https://bugs.webkit.org/show_bug.cgi?id=29268 */
 #elif PLATFORM(X86) && PLATFORM(LINUX) && GCC_VERSION >= 40100
     #define ENABLE_JIT 1
     #define WTF_USE_JIT_STUB_ARGUMENT_VA_LIST 1
-#elif PLATFORM(ARM) && !PLATFORM_ARM_ARCH(7) && PLATFORM(LINUX)
+#elif PLATFORM(ARM_TRADITIONAL) && PLATFORM(LINUX)
     #define ENABLE_JIT 1
+    #if PLATFORM(ARM_THUMB2)
+        #define ENABLE_JIT_OPTIMIZE_NATIVE_CALL 0
+    #endif
 #endif
 #endif /* PLATFORM(QT) */
 
@@ -703,7 +734,7 @@ on MinGW. See https://bugs.webkit.org/show_bug.cgi?id=29268 */
 #if (PLATFORM(X86) && PLATFORM(MAC)) \
  || (PLATFORM(X86_64) && PLATFORM(MAC)) \
  /* Under development, temporarily disabled until 16Mb link range limit in assembler is fixed. */ \
- || (PLATFORM_ARM_ARCH(7) && PLATFORM(IPHONE) && 0) \
+ || (PLATFORM(ARM_THUMB2) && PLATFORM(IPHONE) && 0) \
  || (PLATFORM(X86) && PLATFORM(WIN))
 #define ENABLE_YARR 1
 #define ENABLE_YARR_JIT 1
@@ -713,7 +744,7 @@ on MinGW. See https://bugs.webkit.org/show_bug.cgi?id=29268 */
 #if (PLATFORM(X86) && PLATFORM(WIN_OS) && COMPILER(MINGW) && GCC_VERSION >= 40100) \
  || (PLATFORM(X86) && PLATFORM(WIN_OS) && COMPILER(MSVC)) \
  || (PLATFORM(X86) && PLATFORM(LINUX) && GCC_VERSION >= 40100) \
- || (PLATFORM(ARM) && !PLATFORM_ARM_ARCH(7) && PLATFORM(LINUX))
+ || (PLATFORM(ARM_TRADITIONAL) && PLATFORM(LINUX))
 #define ENABLE_YARR 1
 #define ENABLE_YARR_JIT 1
 #endif

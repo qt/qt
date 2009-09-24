@@ -2304,8 +2304,8 @@ void tst_QWidget::showMinimizedKeepsFocus()
         QCOMPARE(qApp->focusWidget(), static_cast<QWidget*>(0));
 
         window.showMinimized();
-        QTest::qWait(100);
-        QVERIFY(window.isMinimized());
+        QTest::qWait(30);
+        QTRY_VERIFY(window.isMinimized());
 #ifdef Q_WS_QWS
         QEXPECT_FAIL("", "QWS does not implement showMinimized()", Continue);
 #endif
@@ -2796,10 +2796,12 @@ void tst_QWidget::raise()
     QTest::qWait(50);
 
     UpdateWidget *onTop = new UpdateWidget(&topLevel);
+    onTop->reset();
     onTop->resize(topLevel.size());
     onTop->setAutoFillBackground(true);
     onTop->show();
     QTest::qWait(50);
+    QTRY_VERIFY(onTop->numPaintEvents > 0);
     onTop->reset();
 
     // Reset all the children.
@@ -2933,7 +2935,7 @@ void tst_QWidget::stackUnder()
         if (expectedPaintEvents == 1 && child->numPaintEvents == 2)
             QEXPECT_FAIL(0, "Mac and Windows issues double repaints for Z-Order change", Continue);
 #endif
-        QCOMPARE(child->numPaintEvents, expectedPaintEvents);
+        QTRY_COMPARE(child->numPaintEvents, expectedPaintEvents);
         QCOMPARE(child->numZOrderChangeEvents, 0);
         child->reset();
     }
@@ -3072,7 +3074,7 @@ void tst_QWidget::saveRestoreGeometry()
         widget.resize(size);
         widget.show();
         QTest::qWaitForWindowShown(&widget);
-        QTest::qWait(10);
+        QApplication::processEvents();
 
         QTRY_COMPARE(widget.pos(), position);
         QCOMPARE(widget.size(), size);
@@ -3099,7 +3101,7 @@ void tst_QWidget::saveRestoreGeometry()
         QVERIFY(widget.restoreGeometry(savedGeometry));
         widget.show();
         QTest::qWaitForWindowShown(&widget);
-        QTest::qWait(10);
+        QApplication::processEvents();
 
         QTRY_COMPARE(widget.pos(), position);
         QCOMPARE(widget.size(), size);
@@ -3114,7 +3116,8 @@ void tst_QWidget::saveRestoreGeometry()
         widget.resize(size);
         widget.show();
         QTest::qWaitForWindowShown(&widget);
-        QTest::qWait(10);
+        QTest::qWait(100);
+        QTRY_COMPARE(widget.geometry().size(), size);
 
         QRect geom;
 
@@ -3122,56 +3125,68 @@ void tst_QWidget::saveRestoreGeometry()
         savedGeometry = widget.saveGeometry();
         geom = widget.geometry();
         widget.setWindowState(widget.windowState() | Qt::WindowFullScreen);
-        QTest::qWait(10);
         QTRY_VERIFY((widget.windowState() & Qt::WindowFullScreen));
+        QTest::qWait(100);
         QVERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(10);
+        QTest::qWait(20);
+        QTRY_VERIFY(!(widget.windowState() & Qt::WindowFullScreen));
         QTRY_COMPARE(widget.geometry(), geom);
-        QVERIFY(!(widget.windowState() & Qt::WindowFullScreen));
 
         //Restore to full screen
         widget.setWindowState(widget.windowState() | Qt::WindowFullScreen);
-        QTest::qWait(10);
+        QTest::qWait(20);
         QTRY_VERIFY((widget.windowState() & Qt::WindowFullScreen));
+        QTest::qWait(200);
         savedGeometry = widget.saveGeometry();
         geom = widget.geometry();
         widget.setWindowState(widget.windowState() ^ Qt::WindowFullScreen);
-        QTest::qWait(10);
-        QTRY_VERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(10);
+        QTest::qWait(20);
+        QTRY_VERIFY(!(widget.windowState() & Qt::WindowFullScreen));
+        QTest::qWait(200);
+        QVERIFY(widget.restoreGeometry(savedGeometry));
+        QTest::qWait(20);
+        QTRY_VERIFY((widget.windowState() & Qt::WindowFullScreen));
         QTRY_COMPARE(widget.geometry(), geom);
         QVERIFY((widget.windowState() & Qt::WindowFullScreen));
         widget.setWindowState(widget.windowState() ^ Qt::WindowFullScreen);
-        QTest::qWait(10);
+        QTest::qWait(20);
+        QTRY_VERIFY(!(widget.windowState() & Qt::WindowFullScreen));
+        QTest::qWait(20);
 
         //Restore from Maximised
         widget.move(position);
         widget.resize(size);
-        QTest::qWait(10);
+        QTest::qWait(20);
+        QTRY_COMPARE(widget.size(), size);
+        QTest::qWait(200);
         savedGeometry = widget.saveGeometry();
         geom = widget.geometry();
         widget.setWindowState(widget.windowState() | Qt::WindowMaximized);
-        QTest::qWait(10);
+        QTest::qWait(20);
         QTRY_VERIFY((widget.windowState() & Qt::WindowMaximized));
-        QVERIFY(widget.geometry() != geom);
+        QTRY_VERIFY(widget.geometry() != geom);
+        QTest::qWait(100);
         QVERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(10);
-        QCOMPARE(widget.geometry(), geom);
+        QTest::qWait(20);
+        QTRY_COMPARE(widget.geometry(), geom);
 
         QVERIFY(!(widget.windowState() & Qt::WindowMaximized));
 
         //Restore to maximised
         widget.setWindowState(widget.windowState() | Qt::WindowMaximized);
-        QTest::qWait(10);
+        QTest::qWait(20);
         QTRY_VERIFY((widget.windowState() & Qt::WindowMaximized));
+        QTest::qWait(200);
         geom = widget.geometry();
         savedGeometry = widget.saveGeometry();
         widget.setWindowState(widget.windowState() ^ Qt::WindowMaximized);
-        QTest::qWait(10);
-        QTRY_VERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(10);
+        QTest::qWait(20);
+        QTRY_VERIFY(!(widget.windowState() & Qt::WindowMaximized));
+        QTest::qWait(200);
+        QVERIFY(widget.restoreGeometry(savedGeometry));
+        QTest::qWait(20);
+        QTRY_VERIFY((widget.windowState() & Qt::WindowMaximized));
         QTRY_COMPARE(widget.geometry(), geom);
-        QVERIFY((widget.windowState() & Qt::WindowMaximized));
     }
 }
 
@@ -3231,8 +3246,8 @@ void tst_QWidget::restoreVersion1Geometry()
     QTest::qWait(100);
 
     if (expectedWindowState == Qt::WindowNoState) {
-        QCOMPARE(widget.pos(), expectedPosition);
-        QCOMPARE(widget.size(), expectedSize);
+        QTRY_COMPARE(widget.pos(), expectedPosition);
+        QTRY_COMPARE(widget.size(), expectedSize);
     }
 
     widget.showNormal();
@@ -4883,6 +4898,11 @@ void tst_QWidget::setWindowGeometry_data()
 
 void tst_QWidget::setWindowGeometry()
 {
+#ifdef Q_WS_X11
+    //Since WindowManager operation are all assync, and we have no way to know if the window
+    // manager has finished playing with the window geometry, this test can't be reliable.
+    QSKIP("Window Manager behaviour are too random for this test", SkipAll);
+#endif
     QFETCH(QList<QRect>, rects);
     QFETCH(int, windowFlags);
     QRect rect = rects.takeFirst();
@@ -5030,6 +5050,11 @@ void tst_QWidget::windowMoveResize_data()
 
 void tst_QWidget::windowMoveResize()
 {
+#ifdef Q_WS_X11
+    //Since WindowManager operation are all assync, and we have no way to know if the window
+    // manager has finished playing with the window geometry, this test can't be reliable.
+    QSKIP("Window Manager behaviour are too random for this test", SkipAll);
+#endif
 #ifdef Q_OS_IRIX
     QSKIP("4DWM issues on IRIX makes this test fail", SkipAll);
 #endif
@@ -5253,14 +5278,19 @@ public:
     const QRegion r = QRegion(region);                                  \
     for (int i = 0; i < r.rects().size(); ++i) {                        \
         const QRect rect = r.rects().at(i);                             \
-        const QPixmap pixmap = QPixmap::grabWindow(QDesktopWidget().winId(), \
+        for (int t = 0; t < 5; t++) {                                   \
+            const QPixmap pixmap = QPixmap::grabWindow(QDesktopWidget().winId(), \
                                                    rect.left(), rect.top(), \
                                                    rect.width(), rect.height()); \
-        QCOMPARE(pixmap.size(), rect.size());                           \
-        QPixmap expectedPixmap(pixmap); /* ensure equal formats */      \
-        expectedPixmap.fill(color);                                     \
-        QCOMPARE(pixmap.toImage().pixel(0,0), QColor(color).rgb());     \
-        QCOMPARE(pixmap, expectedPixmap);                               \
+            QCOMPARE(pixmap.size(), rect.size());                       \
+            QPixmap expectedPixmap(pixmap); /* ensure equal formats */  \
+            expectedPixmap.fill(color);                                 \
+            if (pixmap.toImage().pixel(0,0) != QColor(color).rgb() && t < 4 ) \
+            { QTest::qWait(200); continue; }                            \
+            QCOMPARE(pixmap.toImage().pixel(0,0), QColor(color).rgb()); \
+            QCOMPARE(pixmap, expectedPixmap);                           \
+            break;                                                      \
+        }                                                               \
     }                                                                   \
 }
 
@@ -5300,8 +5330,8 @@ void tst_QWidget::moveChild()
 #ifdef QT_MAC_USE_COCOA
     QEXPECT_FAIL(0, "Cocoa compositor paints the entire content view, even when opaque", Continue);
 #endif
-    QCOMPARE(parent.r, QRegion(parent.rect()) - child.geometry());
-    QCOMPARE(child.r, QRegion(child.rect()));
+    QTRY_COMPARE(parent.r, QRegion(parent.rect()) - child.geometry());
+    QTRY_COMPARE(child.r, QRegion(child.rect()));
     VERIFY_COLOR(child.geometry().translated(tlwOffset),
                  child.color);
     VERIFY_COLOR(QRegion(parent.geometry()) - child.geometry().translated(tlwOffset),
@@ -5316,7 +5346,7 @@ void tst_QWidget::moveChild()
     QPoint pos = child.pos() + offset;
     child.move(pos);
     QTest::qWait(100);
-    QCOMPARE(pos, child.pos());
+    QTRY_COMPARE(pos, child.pos());
 
     QCOMPARE(parent.r, QRegion(oldGeometry) - child.geometry());
 #if !defined(Q_WS_MAC)
@@ -7365,8 +7395,8 @@ void tst_QWidget::repaintWhenChildDeleted()
 #endif
     w.show();
     QTest::qWaitForWindowShown(&w);
-    QTest::qWait(30);
-    QCOMPARE(w.r, QRegion(w.rect()));
+    QTest::qWait(10);
+    QTRY_COMPARE(w.r, QRegion(w.rect()));
     w.r = QRegion();
 
     {
@@ -7374,13 +7404,13 @@ void tst_QWidget::repaintWhenChildDeleted()
         ColorWidget child(&w, Qt::blue);
         child.setGeometry(10, 10, 10, 10);
         child.show();
-        QTest::qWait(100);
-        QCOMPARE(child.r, QRegion(child.rect()));
+        QTest::qWait(10);
+        QTRY_COMPARE(child.r, QRegion(child.rect()));
         w.r = QRegion();
     }
 
-    QTest::qWait(100);
-    QCOMPARE(w.r, QRegion(10, 10, 10, 10));
+    QTest::qWait(10);
+    QTRY_COMPARE(w.r, QRegion(10, 10, 10, 10));
 }
 
 // task 175114
@@ -7432,8 +7462,10 @@ void tst_QWidget::updateWhileMinimized()
    // Filter out activation change and focus events to avoid update() calls in QWidget.
     widget.updateOnActivationChangeAndFocusIn = false;
     widget.show();
+    widget.reset();
     QTest::qWaitForWindowShown(&widget);
     QApplication::processEvents();
+    QTRY_VERIFY(widget.numPaintEvents > 0);
 
     // Minimize window.
     widget.showMinimized();
@@ -8045,10 +8077,8 @@ void tst_QWidget::resizeInPaintEvent()
     QWidget window;
     UpdateWidget widget(&window);
     window.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&window);
-#endif
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(&window);
+    QTRY_VERIFY(widget.numPaintEvents > 0);
 
     widget.reset();
     QCOMPARE(widget.numPaintEvents, 0);
@@ -8060,9 +8090,9 @@ void tst_QWidget::resizeInPaintEvent()
     QCOMPARE(widget.numPaintEvents, 1);
     widget.numPaintEvents = 0;
 
-    QTest::qWait(100);
+    QTest::qWait(10);
     // Make sure the resize triggers another update.
-    QCOMPARE(widget.numPaintEvents, 1);
+    QTRY_COMPARE(widget.numPaintEvents, 1);
 }
 #endif
 
@@ -8572,8 +8602,7 @@ void tst_QWidget::setClearAndResizeMask()
     topLevel.resize(150, 150);
     topLevel.show();
     QTest::qWaitForWindowShown(&topLevel);
-    QTest::qWait(40);
-
+    QTRY_VERIFY(topLevel.numPaintEvents > 0);
     topLevel.reset();
 
     // Mask top-level widget
@@ -8590,20 +8619,20 @@ void tst_QWidget::setClearAndResizeMask()
     // Clear top-level mask
     topLevel.clearMask();
     QCOMPARE(topLevel.mask(), QRegion());
-    QTest::qWait(100);
+    QTest::qWait(10);
     QRegion outsideOldMask(topLevel.rect());
     outsideOldMask -= topLevelMask;
 #if defined(Q_WS_WIN) || defined(Q_WS_X11) // We don't control what's happening on other platforms.
     // and ensure that the top-level gets an update for the area outside the old mask.
     QTRY_VERIFY(topLevel.numPaintEvents > 0);
-    QCOMPARE(topLevel.paintedRegion, outsideOldMask);
+    QTRY_COMPARE(topLevel.paintedRegion, outsideOldMask);
 #endif
 
     UpdateWidget child(&topLevel);
     child.setAutoFillBackground(true); // NB! Opaque child.
     child.resize(100, 100);
     child.show();
-    QTest::qWait(50);
+    QTest::qWait(10);
 
     child.reset();
     topLevel.reset();
@@ -8631,10 +8660,10 @@ void tst_QWidget::setClearAndResizeMask()
 
     // Clear child widget mask
     child.clearMask();
-    QCOMPARE(child.mask(), QRegion());
-    QTest::qWait(50);
+    QTRY_COMPARE(child.mask(), QRegion());
+    QTest::qWait(10);
     // and ensure that that the child widget gets an update for the area outside the old mask.
-    QCOMPARE(child.numPaintEvents, 1);
+    QTRY_COMPARE(child.numPaintEvents, 1);
     outsideOldMask = child.rect();
 #ifndef Q_WS_MAC
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
@@ -8649,10 +8678,10 @@ void tst_QWidget::setClearAndResizeMask()
 
     // Mask child widget with a mask that is bigger than the rect
     child.setMask(QRegion(0, 0, 1000, 1000));
-    QTest::qWait(50);
+    QTest::qWait(10);
 #ifdef Q_WS_MAC
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
-    QCOMPARE(child.numPaintEvents, 1);
+    QTRY_COMPARE(child.numPaintEvents, 1);
 #else
     // and ensure that we don't get any updates at all.
     QCOMPARE(child.numPaintEvents, 0);
@@ -8661,10 +8690,10 @@ void tst_QWidget::setClearAndResizeMask()
 
     // ...and the same applies when clearing the mask.
     child.clearMask();
-    QTest::qWait(50);
+    QTest::qWait(10);
 #ifdef Q_WS_MAC
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
-    QVERIFY(child.numPaintEvents > 0);
+    QTRY_VERIFY(child.numPaintEvents > 0);
 #else
     QCOMPARE(child.numPaintEvents, 0);
 #endif
@@ -8727,10 +8756,9 @@ void tst_QWidget::maskedUpdate()
     grandChild.setMask(grandChildMask);
 
     topLevel.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&topLevel);
-#endif
-    QTest::qWait(200);
+    QTest::qWaitForWindowShown(&topLevel);
+    QTRY_VERIFY(topLevel.numPaintEvents > 0);
+
 
 #define RESET_WIDGETS \
     topLevel.reset(); \
@@ -8748,29 +8776,29 @@ void tst_QWidget::maskedUpdate()
     // TopLevel update.
     RESET_WIDGETS;
     topLevel.update();
-    QTest::qWait(100);
+    QTest::qWait(10);
 
-    QCOMPARE(topLevel.paintedRegion, topLevelMask);
-    QCOMPARE(child.paintedRegion, childMask);
-    QCOMPARE(grandChild.paintedRegion, grandChildMask);
+    QTRY_COMPARE(topLevel.paintedRegion, topLevelMask);
+    QTRY_COMPARE(child.paintedRegion, childMask);
+    QTRY_COMPARE(grandChild.paintedRegion, grandChildMask);
 
     // Child update.
     RESET_WIDGETS;
     child.update();
-    QTest::qWait(100);
+    QTest::qWait(10);
 
-    QCOMPARE(topLevel.paintedRegion, childMask.translated(child.pos()));
-    QCOMPARE(child.paintedRegion, childMask);
-    QCOMPARE(grandChild.paintedRegion, grandChildMask);
+    QTRY_COMPARE(topLevel.paintedRegion, childMask.translated(child.pos()));
+    QTRY_COMPARE(child.paintedRegion, childMask);
+    QTRY_COMPARE(grandChild.paintedRegion, grandChildMask);
 
     // GrandChild update.
     RESET_WIDGETS;
     grandChild.update();
-    QTest::qWait(100);
+    QTest::qWait(10);
 
-    QCOMPARE(topLevel.paintedRegion, grandChildMask.translated(grandChild.mapTo(&topLevel, QPoint())));
-    QCOMPARE(child.paintedRegion, grandChildMask.translated(grandChild.pos()));
-    QCOMPARE(grandChild.paintedRegion, grandChildMask);
+    QTRY_COMPARE(topLevel.paintedRegion, grandChildMask.translated(grandChild.mapTo(&topLevel, QPoint())));
+    QTRY_COMPARE(child.paintedRegion, grandChildMask.translated(grandChild.pos()));
+    QTRY_COMPARE(grandChild.paintedRegion, grandChildMask);
 
     topLevel.setAttribute(Qt::WA_OpaquePaintEvent);
     child.setAttribute(Qt::WA_OpaquePaintEvent);
@@ -8782,41 +8810,41 @@ void tst_QWidget::maskedUpdate()
     // TopLevel update.
     RESET_WIDGETS;
     topLevel.update();
-    QTest::qWait(100);
+    QTest::qWait(10);
 
     QRegion expectedTopLevelUpdate = topLevelMask;
     expectedTopLevelUpdate -= childMask.translated(child.pos()); // Subtract opaque children.
-    QCOMPARE(topLevel.paintedRegion, expectedTopLevelUpdate);
-    QCOMPARE(child.paintedRegion, QRegion());
-    QCOMPARE(grandChild.paintedRegion, QRegion());
+    QTRY_COMPARE(topLevel.paintedRegion, expectedTopLevelUpdate);
+    QTRY_COMPARE(child.paintedRegion, QRegion());
+    QTRY_COMPARE(grandChild.paintedRegion, QRegion());
 
     // Child update.
     RESET_WIDGETS;
     child.update();
-    QTest::qWait(100);
+    QTest::qWait(10);
 
-    QCOMPARE(topLevel.paintedRegion, QRegion());
+    QTRY_COMPARE(topLevel.paintedRegion, QRegion());
     QRegion expectedChildUpdate = childMask;
     expectedChildUpdate -= grandChildMask.translated(grandChild.pos()); // Subtract oapque children.
-    QCOMPARE(child.paintedRegion, expectedChildUpdate);
-    QCOMPARE(grandChild.paintedRegion, QRegion());
+    QTRY_COMPARE(child.paintedRegion, expectedChildUpdate);
+    QTRY_COMPARE(grandChild.paintedRegion, QRegion());
 
     // GrandChild update.
     RESET_WIDGETS;
     grandChild.update();
-    QTest::qWait(100);
+    QTest::qWait(10);
 
-    QCOMPARE(topLevel.paintedRegion, QRegion());
-    QCOMPARE(child.paintedRegion, QRegion());
-    QCOMPARE(grandChild.paintedRegion, grandChildMask);
+    QTRY_COMPARE(topLevel.paintedRegion, QRegion());
+    QTRY_COMPARE(child.paintedRegion, QRegion());
+    QTRY_COMPARE(grandChild.paintedRegion, grandChildMask);
 
     // GrandChild update.
     CLEAR_MASK(grandChild);
     grandChild.update();
-    QTest::qWait(100);
+    QTest::qWait(10);
 
-    QCOMPARE(topLevel.paintedRegion, QRegion());
-    QCOMPARE(child.paintedRegion, QRegion());
+    QTRY_COMPARE(topLevel.paintedRegion, QRegion());
+    QTRY_COMPARE(child.paintedRegion, QRegion());
     QRegion expectedGrandChildUpdate = grandChild.rect();
     // Clip with parent's mask.
     expectedGrandChildUpdate &= childMask.translated(-grandChild.pos());
@@ -8825,36 +8853,36 @@ void tst_QWidget::maskedUpdate()
     // GrandChild update.
     CLEAR_MASK(child);
     grandChild.update();
-    QTest::qWait(100);
+    QTest::qWait(10);
 
-    QCOMPARE(topLevel.paintedRegion, QRegion());
-    QCOMPARE(child.paintedRegion, QRegion());
+    QTRY_COMPARE(topLevel.paintedRegion, QRegion());
+    QTRY_COMPARE(child.paintedRegion, QRegion());
     expectedGrandChildUpdate = grandChild.rect();
     // Clip with parent's mask.
     expectedGrandChildUpdate &= topLevelMask.translated(-grandChild.mapTo(&topLevel, QPoint()));
-    QCOMPARE(grandChild.paintedRegion, expectedGrandChildUpdate);
+    QTRY_COMPARE(grandChild.paintedRegion, expectedGrandChildUpdate);
 
     // Child update.
     RESET_WIDGETS;
     child.update();
-    QTest::qWait(100);
+    QTest::qWait(10);
 
-    QCOMPARE(topLevel.paintedRegion, QRegion());
+    QTRY_COMPARE(topLevel.paintedRegion, QRegion());
     expectedChildUpdate = child.rect();
     // Clip with parent's mask.
     expectedChildUpdate &= topLevelMask.translated(-child.pos());
     expectedChildUpdate -= grandChild.geometry(); // Subtract opaque children.
-    QCOMPARE(child.paintedRegion, expectedChildUpdate);
-    QCOMPARE(grandChild.paintedRegion, QRegion());
+    QTRY_COMPARE(child.paintedRegion, expectedChildUpdate);
+    QTRY_COMPARE(grandChild.paintedRegion, QRegion());
 
     // GrandChild update.
     CLEAR_MASK(topLevel);
     grandChild.update();
-    QTest::qWait(100);
+    QTest::qWait(10);
 
-    QCOMPARE(topLevel.paintedRegion, QRegion());
-    QCOMPARE(child.paintedRegion, QRegion());
-    QCOMPARE(grandChild.paintedRegion, QRegion(grandChild.rect())); // Full update.
+    QTRY_COMPARE(topLevel.paintedRegion, QRegion());
+    QTRY_COMPARE(child.paintedRegion, QRegion());
+    QTRY_COMPARE(grandChild.paintedRegion, QRegion(grandChild.rect())); // Full update.
 }
 
 #if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS)
@@ -9139,16 +9167,15 @@ void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 
     main.show();
     QTest::qWaitForWindowShown(&main);
-    QTest::qWait(10);
+    QTest::qWait(50);
     QCursor::setPos(main.pos()); //get the cursor out of the picture
     QTest::qWait(50);
-    QPixmap pixmap = QPixmap::grabWindow(main.winId());
 
     QPixmap correct(main.size());
     correct.fill(Qt::green);
 
     QRect center(100, 100, 200, 200); // to avoid the decorations
-    QCOMPARE(pixmap.toImage().copy(center), correct.toImage().copy(center));
+    QTRY_COMPARE(QPixmap::grabWindow(main.winId()).toImage().copy(center), correct.toImage().copy(center));
 }
 
 void tst_QWidget::inputFocus_task257832()
@@ -9207,9 +9234,10 @@ void tst_QWidget::activateWindow()
     mainwindow->setCentralWidget(label);
     mainwindow->setVisible(true);
     mainwindow->activateWindow();
+    QTest::qWaitForWindowShown(mainwindow);
     qApp->processEvents();
 
-    QVERIFY(mainwindow->isActiveWindow());
+    QTRY_VERIFY(mainwindow->isActiveWindow());
 
     // Create second mainwindow and set it active
     QMainWindow* mainwindow2 = new QMainWindow();
@@ -9219,16 +9247,16 @@ void tst_QWidget::activateWindow()
     mainwindow2->activateWindow();
     qApp->processEvents();
 
-    QVERIFY(!mainwindow->isActiveWindow());
-    QVERIFY(mainwindow2->isActiveWindow());
+    QTRY_VERIFY(!mainwindow->isActiveWindow());
+    QTRY_VERIFY(mainwindow2->isActiveWindow());
 
     // Revert first mainwindow back to visible active
     mainwindow->setVisible(true);
     mainwindow->activateWindow();
     qApp->processEvents();
 
-    QVERIFY(mainwindow->isActiveWindow());
-    QVERIFY(!mainwindow2->isActiveWindow());
+    QTRY_VERIFY(mainwindow->isActiveWindow());
+    QTRY_VERIFY(!mainwindow2->isActiveWindow());
 }
 
 #ifdef Q_OS_SYMBIAN

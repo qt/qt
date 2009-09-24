@@ -79,7 +79,7 @@ JSXPathNSResolver::JSXPathNSResolver(PassRefPtr<Structure> structure, JSDOMGloba
 
 JSXPathNSResolver::~JSXPathNSResolver()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSXPathNSResolver::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

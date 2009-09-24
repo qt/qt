@@ -322,6 +322,7 @@ extern const WebCore::QualifiedName onmouseupAttr;
 extern const WebCore::QualifiedName onmousewheelAttr;
 extern const WebCore::QualifiedName onofflineAttr;
 extern const WebCore::QualifiedName ononlineAttr;
+extern const WebCore::QualifiedName onorientationchangeAttr;
 extern const WebCore::QualifiedName onpagehideAttr;
 extern const WebCore::QualifiedName onpageshowAttr;
 extern const WebCore::QualifiedName onpasteAttr;

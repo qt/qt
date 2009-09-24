@@ -440,7 +440,9 @@ void tst_QMenu::overrideMenuAction()
 	m->addAction(aQuit);
 
 	w.show();
+    QApplication::setActiveWindow(&w);
     w.setFocus();
+    QTest::qWaitForWindowShown(&w);
     QTRY_VERIFY(w.hasFocus());
 
 	//test of the action inside the menu
@@ -674,7 +676,7 @@ void tst_QMenu::task242454_sizeHint()
     QMenu menu;
     QString s = QLatin1String("foo\nfoo\nfoo\nfoo");
     menu.addAction(s);
-    QVERIFY(menu.sizeHint().width() > menu.fontMetrics().width(s));
+    QVERIFY(menu.sizeHint().width() > menu.fontMetrics().boundingRect(QRect(), Qt::TextSingleLine, s).width());
 }
 
 

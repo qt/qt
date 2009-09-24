@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
     You can construct an audio output with the system's
     \l{QAudioDeviceInfo::defaultOutputDevice()}{default audio output
     device}. It is also possible to create QAudioOutput with a
-    specific QAudioDeviceId. When you create the audio output, you
+    specific QAudioDeviceInfo. When you create the audio output, you
     should also send in the QAudioFormat to be used for the playback
     (see the QAudioFormat class description for details).
 
@@ -155,14 +155,14 @@ QAudioOutput::QAudioOutput(const QAudioFormat &format, QObject *parent):
 
 /*!
     Construct a new audio output and attach it to \a parent.
-    The \a id of the audio output device is used with the output
+    The device referenced by \a audioDevice is used with the output
     \a format parameters.
 */
 
-QAudioOutput::QAudioOutput(const QAudioDeviceId &id, const QAudioFormat &format, QObject *parent):
+QAudioOutput::QAudioOutput(const QAudioDeviceInfo &audioDevice, const QAudioFormat &format, QObject *parent):
     QObject(parent)
 {
-    d = QAudioDeviceFactory::createOutputDevice(id, format);
+    d = QAudioDeviceFactory::createOutputDevice(audioDevice, format);
     connect(d, SIGNAL(notify()), SIGNAL(notify()));
     connect(d, SIGNAL(stateChanged(QAudio::State)), SIGNAL(stateChanged(QAudio::State)));
 }

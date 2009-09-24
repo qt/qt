@@ -173,7 +173,7 @@ public:
     struct Imm32 {
         explicit Imm32(int32_t value)
             : m_value(value)
-#if PLATFORM_ARM_ARCH(7)
+#if PLATFORM(ARM)
             , m_isPointer(false)
 #endif
         {
@@ -182,7 +182,7 @@ public:
 #if !PLATFORM(X86_64)
         explicit Imm32(ImmPtr ptr)
             : m_value(ptr.asIntptr())
-#if PLATFORM_ARM_ARCH(7)
+#if PLATFORM(ARM)
             , m_isPointer(true)
 #endif
         {
@@ -190,7 +190,7 @@ public:
 #endif
 
         int32_t m_value;
-#if PLATFORM_ARM_ARCH(7)
+#if PLATFORM(ARM)
         // We rely on being able to regenerate code to recover exception handling
         // information.  Since ARMv7 supports 16-bit immediates there is a danger
         // that if pointer values change the layout of the generated code will change.
@@ -320,11 +320,6 @@ public:
             return Call(jump.m_jmp, Linkable);
         }
 
-        void enableLatePatch()
-        {
-            m_jmp.enableLatePatch();
-        }
-
         JmpSrc m_jmp;
     private:
         Flags m_flags;
@@ -361,11 +356,6 @@ public:
             masm->m_assembler.linkJump(m_jmp, label.m_label);
         }
 
-        void enableLatePatch()
-        {
-            m_jmp.enableLatePatch();
-        }
-
     private:
         JmpSrc m_jmp;
     };
@@ -378,6 +368,8 @@ public:
         friend class LinkBuffer;
 
     public:
+        typedef Vector<Jump, 16> JumpVector;
+
         void link(AbstractMacroAssembler<AssemblerType>* masm)
         {
             size_t size = m_jumps.size();
@@ -408,9 +400,11 @@ public:
         {
             return !m_jumps.size();
         }
+        
+        const JumpVector& jumps() { return m_jumps; }
 
     private:
-        Vector<Jump, 16> m_jumps;
+        JumpVector m_jumps;
     };
 
 

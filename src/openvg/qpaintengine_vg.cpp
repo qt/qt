@@ -566,10 +566,10 @@ VGPath QVGPaintEnginePrivate::vectorPathToVGPath(const QVectorPath& path)
             case QPainterPath::LineToElement:
                 segments.append(VG_LINE_TO_ABS); break;
 
-            case QPainterPath::CurveToElement: break;
-
-            case QPainterPath::CurveToDataElement:
+            case QPainterPath::CurveToElement:
                 segments.append(VG_CUBIC_TO_ABS); break;
+
+            case QPainterPath::CurveToDataElement: break;
 
             }
         }

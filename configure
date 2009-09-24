@@ -2919,7 +2919,7 @@ elif [ "$CFG_PRECOMPILE" = "yes" ] && [ `echo "$CFG_MAC_ARCHS" | wc -w` -gt 1 ];
 fi
 
 #auto-detect DWARF2 on the mac
-if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_DWARF2" == "auto" ]; then
+if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_DWARF2" = "auto" ]; then
     if "$mactests/dwarf2.test" "$TEST_COMPILER" "$OPT_VERBOSE" "$mactests" ; then
         CFG_MAC_DWARF2=no
     else
@@ -2928,7 +2928,7 @@ if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_DWARF2" == "auto" ]; then
 fi
 
 # auto-detect support for -Xarch on the mac
-if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_XARCH" == "auto" ]; then
+if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_XARCH" = "auto" ]; then
     if "$mactests/xarch.test" "$TEST_COMPILER" "$OPT_VERBOSE" "$mactests" ; then
         CFG_MAC_XARCH=no
     else
@@ -5739,7 +5739,7 @@ if [ "$CFG_OPENVG" != "no" ]; then
             CFG_OPENVG=no
         fi
     fi
-    if [ "$CFG_OPENVG" == "yes" ] && "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/shivavg" "ShivaVG" $L_FLAGS $I_FLAGS $l_FLAGS $CONFIG_ARG; then
+    if [ "$CFG_OPENVG" = "yes" ] && "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/shivavg" "ShivaVG" $L_FLAGS $I_FLAGS $l_FLAGS $CONFIG_ARG; then
         CFG_OPENVG_SHIVA=yes
     fi
 fi
@@ -5814,13 +5814,13 @@ fi
 # Carbon builds: 32 bit x86/ppc.
 # For "-cocoa" builds on snow leopard : compiler default (64-bit).
 # For "-cocoa" builds on leopard : compiler default (32-bit).
-if [ "$PLATFORM_MAC" = "yes" ]  && [ "$CFG_MAC_ARCHS" == "" ]; then
+if [ "$PLATFORM_MAC" = "yes" ]  && [ "$CFG_MAC_ARCHS" = "" ]; then
     source "$mactests/defaultarch.test" "$TEST_COMPILER" "$OPT_VERBOSE" "$mactests"
 
 	if [ "$CFG_MAC_COCOA" != "yes" ]; then
-		if [ "$QT_MAC_DEFAULT_ARCH" == "x86_64" ]; then
+		if [ "$QT_MAC_DEFAULT_ARCH" = "x86_64" ]; then
 			CFG_MAC_ARCHS=" x86"
-		elif [ "$QT_MAC_DEFAULT_ARCH" == "ppc64" ]; then
+		elif [ "$QT_MAC_DEFAULT_ARCH" = "ppc64" ]; then
 			CFG_MAC_ARCHS=" ppc"
 		else
 			CFG_MAC_ARCHS=" $QT_MAC_DEFAULT_ARCH"
@@ -5829,7 +5829,7 @@ if [ "$PLATFORM_MAC" = "yes" ]  && [ "$CFG_MAC_ARCHS" == "" ]; then
 		CFG_MAC_ARCHS=" $QT_MAC_DEFAULT_ARCH"
     fi
 
-    [ "$OPT_VERBOSE" == "yes" ] && echo "Setting Mac architechture to$CFG_MAC_ARCHS."
+    [ "$OPT_VERBOSE" = "yes" ] && echo "Setting Mac architechture to$CFG_MAC_ARCHS."
 fi
 
 # enable cocoa and/or carbon on Mac
@@ -7197,7 +7197,7 @@ EOF
 *) ;;
 esac
 
-if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_DWARF2" == "no" ]  && [ "$CFG_WEBKIT" = "yes" ] && [ "$CFG_DEBUG_RELEASE" == "yes" ]; then
+if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_DWARF2" = "no" ]  && [ "$CFG_WEBKIT" = "yes" ] && [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
     cat <<EOF
         WARNING: DWARF2 debug symbols are not enabled. Linking webkit
         in debug mode will run out of memory on systems with 2GB or less.

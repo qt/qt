@@ -52,7 +52,7 @@
 
 #include <QtMultimedia/qaudio.h>
 #include <QtMultimedia/qaudioformat.h>
-#include <QtMultimedia/qaudiodeviceid.h>
+
 
 QT_BEGIN_HEADER
 
@@ -60,16 +60,21 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Multimedia)
 
+class QAudioDeviceFactory;
 
-class QAbstractAudioDeviceInfo;
-
-class Q_MULTIMEDIA_EXPORT QAudioDeviceInfo : public QObject
+class QAudioDeviceInfoPrivate;
+class Q_MULTIMEDIA_EXPORT QAudioDeviceInfo
 {
-    Q_OBJECT
+    friend class QAudioDeviceFactory;
 
 public:
-    explicit QAudioDeviceInfo(const QAudioDeviceId &id, QObject *parent = 0);
+    QAudioDeviceInfo();
+    QAudioDeviceInfo(const QAudioDeviceInfo& other);
     ~QAudioDeviceInfo();
+
+    QAudioDeviceInfo& operator=(const QAudioDeviceInfo& other);
+
+    bool isNull() const;
 
     QString deviceName() const;
 
@@ -84,19 +89,24 @@ public:
     QList<QAudioFormat::Endian> supportedByteOrders() const;
     QList<QAudioFormat::SampleType> supportedSampleTypes() const;
 
-    static QAudioDeviceId defaultInputDevice();
-    static QAudioDeviceId defaultOutputDevice();
+    static QAudioDeviceInfo defaultInputDevice();
+    static QAudioDeviceInfo defaultOutputDevice();
 
-    static QList<QAudioDeviceId> deviceList(QAudio::Mode mode);
+    static QList<QAudioDeviceInfo> deviceList(QAudio::Mode mode);
 
 private:
-    Q_DISABLE_COPY(QAudioDeviceInfo)
+    QAudioDeviceInfo(const QString &realm, const QByteArray &handle, QAudio::Mode mode);
+    QString realm() const;
+    QByteArray handle() const;
+    QAudio::Mode mode() const;
 
-    QAbstractAudioDeviceInfo* d;
+    QSharedDataPointer<QAudioDeviceInfoPrivate> d;
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+Q_DECLARE_METATYPE(QAudioDeviceInfo)
 
 #endif // QAUDIODEVICEINFO_H

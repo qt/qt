@@ -80,8 +80,6 @@ AudioTest::AudioTest( QMainWindow *parent, Qt::WFlags f )
     connect(sampleTypesBox,SIGNAL(activated(int)),SLOT(sampleTypeChanged(int)));
     connect(endianBox,SIGNAL(activated(int)),SLOT(endianChanged(int)));
 
-    device = 0;
-
     modeBox->setCurrentIndex(0);
     modeChanged(0);
     deviceBox->setCurrentIndex(0);
@@ -98,8 +96,8 @@ void AudioTest::test()
     logOutput->clear();
     logOutput->append("NOTE: an invalid codec audio/test exists for testing, to get a fail condition.");
 
-    if(device) {
-        if(device->isFormatSupported(settings)) {
+    if (!deviceInfo.isNull()) {
+        if (deviceInfo.isFormatSupported(settings)) {
             logOutput->append("Success");
             nearestFreq->setText("");
             nearestChannel->setText("");
@@ -108,7 +106,7 @@ void AudioTest::test()
             nearestSampleType->setText("");
             nearestEndian->setText("");
         } else {
-            QAudioFormat nearest = device->nearestFormat(settings);
+            QAudioFormat nearest = deviceInfo.nearestFormat(settings);
             logOutput->append(tr("Failed"));
             nearestFreq->setText(QString("%1").arg(nearest.frequency()));
             nearestChannel->setText(QString("%1").arg(nearest.channels()));
@@ -150,40 +148,34 @@ void AudioTest::modeChanged(int idx)
         mode=QAudio::AudioOutput;
 
     deviceBox->clear();
-    QList<QAudioDeviceId> devices = QAudioDeviceInfo::deviceList(mode);
-    for(int i = 0; i < devices.size(); ++i) {
-        deviceBox->addItem(QAudioDeviceInfo(devices.at(i)).deviceName(), qVariantFromValue(devices.at(i)));
-    }
+    foreach (const QAudioDeviceInfo &deviceInfo, QAudioDeviceInfo::deviceList(mode))
+        deviceBox->addItem(deviceInfo.deviceName(), qVariantFromValue(deviceInfo));
 }
 
 void AudioTest::deviceChanged(int idx)
 {
-    delete device;
-    device = 0;
-
     if (deviceBox->count() == 0)
         return;
 
     // device has changed
-    deviceHandle = deviceBox->itemData(idx).value<QAudioDeviceId>();
-    device = new QAudioDeviceInfo(deviceHandle, this);
+    deviceInfo = deviceBox->itemData(idx).value<QAudioDeviceInfo>();
 
     frequencyBox->clear();
-    QList<int> freqz = device->supportedFrequencies();
+    QList<int> freqz = deviceInfo.supportedFrequencies();
     for(int i = 0; i < freqz.size(); ++i)
         frequencyBox->addItem(QString("%1").arg(freqz.at(i)));
     if(freqz.size())
         settings.setFrequency(freqz.at(0));
 
     channelsBox->clear();
-    QList<int> chz = device->supportedChannels();
+    QList<int> chz = deviceInfo.supportedChannels();
     for(int i = 0; i < chz.size(); ++i)
         channelsBox->addItem(QString("%1").arg(chz.at(i)));
     if(chz.size())
         settings.setChannels(chz.at(0));
 
     codecsBox->clear();
-    QStringList codecz = device->supportedCodecs();
+    QStringList codecz = deviceInfo.supportedCodecs();
     for(int i = 0; i < codecz.size(); ++i)
         codecsBox->addItem(QString("%1").arg(codecz.at(i)));
     if(codecz.size())
@@ -192,14 +184,14 @@ void AudioTest::deviceChanged(int idx)
     codecsBox->addItem("audio/test");
 
     sampleSizesBox->clear();
-    QList<int> sampleSizez = device->supportedSampleSizes();
+    QList<int> sampleSizez = deviceInfo.supportedSampleSizes();
     for(int i = 0; i < sampleSizez.size(); ++i)
         sampleSizesBox->addItem(QString("%1").arg(sampleSizez.at(i)));
     if(sampleSizez.size())
         settings.setSampleSize(sampleSizez.at(0));
 
     sampleTypesBox->clear();
-    QList<QAudioFormat::SampleType> sampleTypez = device->supportedSampleTypes();
+    QList<QAudioFormat::SampleType> sampleTypez = deviceInfo.supportedSampleTypes();
     for(int i = 0; i < sampleTypez.size(); ++i) {
         switch(sampleTypez.at(i)) {
             case QAudioFormat::SignedInt:
@@ -219,7 +211,7 @@ void AudioTest::deviceChanged(int idx)
     }
 
     endianBox->clear();
-    QList<QAudioFormat::Endian> endianz = device->supportedByteOrders();
+    QList<QAudioFormat::Endian> endianz = deviceInfo.supportedByteOrders();
     for(int i = 0; i < endianz.size(); ++i) {
         switch(endianz.at(i)) {
             case QAudioFormat::LittleEndian:

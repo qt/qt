@@ -88,11 +88,13 @@ public:
                                 bool checkDontDelete = true);
     virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
                                        unsigned&) const;
-    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, unsigned listedAttributes = JSC::Structure::Prototype);
-    virtual void mark();
+    virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&,
+                                     bool includeNonEnumerable = false);
+    virtual void markChildren(JSC::MarkStack& markStack);
     virtual JSC::CallType getCallData(JSC::CallData&);
     virtual JSC::ConstructType getConstructData(JSC::ConstructData&);
     virtual bool hasInstance(JSC::ExecState*, JSC::JSValue value, JSC::JSValue proto);
+    virtual bool compareToObject(JSC::ExecState*, JSC::JSObject*);
 
     virtual const JSC::ClassInfo* classInfo() const { return &info; }
     static const JSC::ClassInfo info;
@@ -107,8 +109,6 @@ public:
 
     QScriptObjectDelegate *delegate() const;
     void setDelegate(QScriptObjectDelegate *delegate);
-
-    virtual bool compareToObject(JSC::ExecState*, JSC::JSObject*);
 
 protected:
     Data *d;
@@ -145,14 +145,13 @@ public:
                                 bool checkDontDelete = true);
     virtual bool getPropertyAttributes(const QScriptObject*, JSC::ExecState*,
                                        const JSC::Identifier&, unsigned&) const;
-    virtual void getPropertyNames(QScriptObject*, JSC::ExecState*, JSC::PropertyNameArray&,
-                                  unsigned listedAttributes = JSC::Structure::Prototype);
-    virtual void mark(QScriptObject*);
+    virtual void getOwnPropertyNames(QScriptObject*, JSC::ExecState*, JSC::PropertyNameArray&,
+                                     bool includeNonEnumerable = false);
+    virtual void markChildren(QScriptObject*, JSC::MarkStack& markStack);
     virtual JSC::CallType getCallData(QScriptObject*, JSC::CallData&);
     virtual JSC::ConstructType getConstructData(QScriptObject*, JSC::ConstructData&);
     virtual bool hasInstance(QScriptObject*, JSC::ExecState*,
                              JSC::JSValue value, JSC::JSValue proto);
-
     virtual bool compareToObject(QScriptObject*, JSC::ExecState*, JSC::JSObject*);
 
 private:

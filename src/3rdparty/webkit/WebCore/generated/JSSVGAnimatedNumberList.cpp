@@ -81,7 +81,7 @@ JSSVGAnimatedNumberList::JSSVGAnimatedNumberList(PassRefPtr<Structure> structure
 
 JSSVGAnimatedNumberList::~JSSVGAnimatedNumberList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGAnimatedNumberList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

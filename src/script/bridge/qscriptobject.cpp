@@ -136,13 +136,14 @@ bool QScriptObject::getPropertyAttributes(JSC::ExecState* exec, const JSC::Ident
     return d->delegate->getPropertyAttributes(this, exec, propertyName, attributes);
 }
 
-void QScriptObject::getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames, unsigned listedAttributes)
+void QScriptObject::getOwnPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames,
+                                        bool includeNonEnumerable)
 {
     if (!d || !d->delegate) {
-        JSC::JSObject::getPropertyNames(exec, propertyNames, listedAttributes);
+        JSC::JSObject::getOwnPropertyNames(exec, propertyNames, includeNonEnumerable);
         return;
     }
-    d->delegate->getPropertyNames(this, exec, propertyNames, listedAttributes);
+    d->delegate->getOwnPropertyNames(this, exec, propertyNames, includeNonEnumerable);
 }
 
 bool QScriptObject::compareToObject(JSC::ExecState* exec, JSC::JSObject *other)
@@ -153,22 +154,20 @@ bool QScriptObject::compareToObject(JSC::ExecState* exec, JSC::JSObject *other)
     return d->delegate->compareToObject(this, exec, other);
 }
 
-
-void QScriptObject::mark()
+void QScriptObject::markChildren(JSC::MarkStack& markStack)
 {
-    Q_ASSERT(!marked());
     if (!d)
         d = new Data();
     if (d->isMarking)
         return;
     QBoolBlocker markBlocker(d->isMarking, true);
-    if (d && d->data && !d->data.marked())
-        d->data.mark();
+    if (d && d->data)
+        markStack.append(d->data);
     if (!d || !d->delegate) {
-        JSC::JSObject::mark();
+        JSC::JSObject::markChildren(markStack);
         return;
     }
-    d->delegate->mark(this);
+    d->delegate->markChildren(this, markStack);
 }
 
 JSC::CallType QScriptObject::getCallData(JSC::CallData &data)
@@ -235,17 +234,17 @@ bool QScriptObjectDelegate::getPropertyAttributes(const QScriptObject* object,
     return object->JSC::JSObject::getPropertyAttributes(exec, propertyName, attributes);
 }
 
-void QScriptObjectDelegate::getPropertyNames(QScriptObject* object, JSC::ExecState* exec,
-                                             JSC::PropertyNameArray& propertyNames,
-                                             unsigned listedAttributes)
+void QScriptObjectDelegate::getOwnPropertyNames(QScriptObject* object, JSC::ExecState* exec,
+                                                JSC::PropertyNameArray& propertyNames,
+                                                bool includeNonEnumerable)
 {
-    object->JSC::JSObject::getPropertyNames(exec, propertyNames, listedAttributes);
+    object->JSC::JSObject::getOwnPropertyNames(exec, propertyNames, includeNonEnumerable);
 }
 
-void QScriptObjectDelegate::mark(QScriptObject* object)
+void QScriptObjectDelegate::markChildren(QScriptObject* object, JSC::MarkStack& markStack)
 {
-    if (!object->marked())
-        object->JSC::JSObject::mark();
+    // ### should this call the virtual function instead??
+    object->JSC::JSObject::markChildren(markStack);
 }
 
 JSC::CallType QScriptObjectDelegate::getCallData(QScriptObject* object, JSC::CallData& data)

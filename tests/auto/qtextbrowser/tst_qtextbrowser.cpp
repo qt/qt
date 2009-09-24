@@ -63,10 +63,8 @@ class TestBrowser : public QTextBrowser
 public:
     inline TestBrowser() : htmlLoadAttempts(0) {
         show();
-#ifdef Q_WS_X11
-        qt_x11_wait_for_window_manager(this);
-#endif
         QApplication::setActiveWindow(this);
+        QTest::qWaitForWindowShown(this);
         activateWindow();
         setFocus();
         QTest::qWait(50);

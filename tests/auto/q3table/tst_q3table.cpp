@@ -51,6 +51,8 @@
 #include <q3table.h>
 #include <qlayout.h>
 
+#include "../../shared/util.h"
+
 #define WAITS 1
 #ifdef WAITS
 #endif
@@ -499,6 +501,8 @@ void tst_Q3Table::pageUpDownNavigation()
 
 void tst_Q3Table::simpleKeyboardNavigation()
 {
+    QApplication::setActiveWindow(testWidget);
+    QTRY_COMPARE(QApplication::activeWindow(), testWidget);
     QWidget *w;
 
     // Test for task #24726
@@ -519,6 +523,7 @@ void tst_Q3Table::simpleKeyboardNavigation()
 
     // After the first keyevent, the table starts editing the item
     w = testWidget->cellWidget(0, 0);
+    QVERIFY(w);
 
 #ifdef WAITS
     QTest::qWait(50);
@@ -1201,12 +1206,17 @@ void tst_Q3Table::editCheck()
 
     EditCheckQ3Table table(10, 10, 0);
     table.show();
+    QApplication::setActiveWindow(&table);
     QTest::qWaitForWindowShown(&table);
+    QTRY_COMPARE(QApplication::activeWindow(), &table);
     table.setCurrentCell(0, 0);
 #ifdef WAITS
     QTest::qWait(50);
 #endif
     QTest::keyClick(table.viewport(), Qt::Key_T);
+#ifdef WAITS
+    QTest::qWait(50);
+#endif
     // After the first keyevent, the table starts editing the item
     QLineEdit *le = qFindChild<QLineEdit *>(testWidget->viewport(), "qt_lineeditor");
 #ifdef WAITS
@@ -1333,6 +1343,9 @@ void tst_Q3Table::valueChanged()
     testWidget->setItem(0, 0, ti);
     connect(testWidget,SIGNAL(valueChanged(int,int)),this,SLOT(onValueChanged(int,int)));
     testWidget->show();
+    QApplication::setActiveWindow(testWidget);
+    QTest::qWaitForWindowShown(testWidget);
+    QTRY_COMPARE(QApplication::activeWindow(), testWidget);
 #ifdef WAITS
     QTest::qWait(50);
 #endif
@@ -1340,6 +1353,7 @@ void tst_Q3Table::valueChanged()
 #ifdef WAITS
     QTest::qWait(50);
 #endif
+    QTRY_VERIFY(qApp->focusWidget());
     QTest::keyClick(qApp->focusWidget(), Qt::Key_Enter);
 #ifdef WAITS
     QTest::qWait(50);
@@ -1379,7 +1393,9 @@ void tst_Q3Table::dateTimeEdit()
     TimeTableItem *ti = new TimeTableItem(testWidget);
     testWidget->setItem(0, 0, ti);
     testWidget->show();
+    QApplication::setActiveWindow(testWidget);
     QTest::qWaitForWindowShown(testWidget);
+    QTRY_COMPARE(QApplication::activeWindow(), testWidget);
 #ifdef WAITS
     QTest::qWait(50);
 #endif
@@ -1387,6 +1403,7 @@ void tst_Q3Table::dateTimeEdit()
 #ifdef WAITS
     QTest::qWait(50);
 #endif
+    QTRY_VERIFY(qApp->focusWidget());
     QTest::keyClick(qApp->focusWidget(), Qt::Key_Enter);
 #ifdef WAITS
     QTest::qWait(50);

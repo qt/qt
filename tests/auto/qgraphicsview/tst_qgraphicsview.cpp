@@ -55,8 +55,13 @@
 #if !defined(QT_NO_STYLE_MOTIF)
 #include <QtGui/QMotifStyle>
 #endif
-#include <QtGui/QPainterPath>
+#if !defined(QT_NO_STYLE_WINDOWS)
+#include <QtGui/QWindowsStyle>
+#endif
+#if !defined(QT_NO_STYLE_PLASTIQUE)
 #include <QtGui/QPlastiqueStyle>
+#endif
+#include <QtGui/QPainterPath>
 #include <QtGui/QRubberBand>
 #include <QtGui/QScrollBar>
 #include <QtGui/QStyleOption>
@@ -65,7 +70,6 @@
 #include <QtGui/QPushButton>
 #include <QtGui/QInputContext>
 #include <private/qgraphicsview_p.h>
-
 #include "../../shared/util.h"
 
 //TESTED_CLASS=
@@ -1875,7 +1879,7 @@ void tst_QGraphicsView::sendEvent()
     QTest::qWaitForWindowShown(&view);
     QApplication::setActiveWindow(&view);
     QTest::qWait(20);
-    QTRY_COMPARE(QApplication::activeWindow(), &view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
     item->setFocus();
 
@@ -1943,7 +1947,7 @@ void tst_QGraphicsView::wheelEvent()
     QTest::qWaitForWindowShown(&view);
     QApplication::setActiveWindow(&view);
     QTest::qWait(20);
-    QTRY_COMPARE(QApplication::activeWindow(), &view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
 
     // Send a wheel event with horizontal orientation.
@@ -2679,7 +2683,7 @@ void tst_QGraphicsView::task172231_untransformableItems()
     view.show();
     QTest::qWaitForWindowShown(&view);
     QApplication::setActiveWindow(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), &view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
     QRectF origExposedRect = text->exposedRect;
 
@@ -3030,7 +3034,13 @@ void tst_QGraphicsView::scrollAfterResize_data()
     QTest::addColumn<QTransform>("x2");
     QTest::addColumn<QTransform>("x3");
 
+#if !defined(QT_NO_STYLE_PLASTIQUE)
     QPlastiqueStyle style;
+#elif !defined(QT_NO_STYLE_WINDOWS)
+    QWindowsStyle style;
+#else
+    QCommonStyle style;
+#endif
 
     int frameWidth = style.pixelMetric(QStyle::PM_DefaultFrameWidth);
     int extent = style.pixelMetric(QStyle::PM_ScrollBarExtent);
@@ -3055,7 +3065,13 @@ void tst_QGraphicsView::scrollAfterResize()
     QFETCH(QTransform, x2);
     QFETCH(QTransform, x3);
 
+#if !defined(QT_NO_STYLE_PLASTIQUE)
     QPlastiqueStyle style;
+#elif !defined(QT_NO_STYLE_WINDOWS)
+    QWindowsStyle style;
+#else
+    QCommonStyle style;
+#endif
     QGraphicsView view;
     view.setStyle(&style);
     if (reverse)
@@ -3434,7 +3450,7 @@ void tst_QGraphicsView::update()
 
     QApplication::setActiveWindow(&view);
     QTest::qWait(50);
-    QTRY_COMPARE(QApplication::activeWindow(), &view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
     const QRect viewportRect = view.viewport()->rect();
     QCOMPARE(viewportRect, QRect(0, 0, 200, 200));
@@ -3468,7 +3484,7 @@ void tst_QGraphicsView::inputMethodSensitivity()
     view.show();
     QTest::qWaitForWindowShown(&view);
     QApplication::setActiveWindow(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), &view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
     QGraphicsRectItem *item = new QGraphicsRectItem;
 
@@ -3557,7 +3573,7 @@ void tst_QGraphicsView::inputContextReset()
     view.show();
     QTest::qWaitForWindowShown(&view);
     QApplication::setActiveWindow(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), &view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
     QGraphicsItem *item1 = new QGraphicsRectItem;
     item1->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemAcceptsInputMethod);

@@ -185,7 +185,7 @@ JSRange::JSRange(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObjec
 
 JSRange::~JSRange()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSRange::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

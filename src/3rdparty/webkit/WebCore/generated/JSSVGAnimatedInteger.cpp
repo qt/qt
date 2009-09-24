@@ -80,7 +80,7 @@ JSSVGAnimatedInteger::JSSVGAnimatedInteger(PassRefPtr<Structure> structure, JSDO
 
 JSSVGAnimatedInteger::~JSSVGAnimatedInteger()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGAnimatedInteger::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
