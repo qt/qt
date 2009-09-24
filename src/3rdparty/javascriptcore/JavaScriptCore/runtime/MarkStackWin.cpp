@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -20,21 +20,34 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-provider JavaScriptCore
-{
-    probe gc__begin();
-    probe gc__marked();
-    probe gc__end(int, int);
-    
-    probe profile__will_execute(int, char*, char*, int);
-    probe profile__did_execute(int, char*, char*, int);
-};
+#include "config.h"
 
-#pragma D attributes Unstable/Unstable/Common provider JavaScriptCore provider
-#pragma D attributes Private/Private/Unknown provider JavaScriptCore module
-#pragma D attributes Private/Private/Unknown provider JavaScriptCore function
-#pragma D attributes Unstable/Unstable/Common provider JavaScriptCore name
-#pragma D attributes Unstable/Unstable/Common provider JavaScriptCore args
+
+#include "MarkStack.h"
+
+#include "windows.h"
+
+namespace JSC {
+
+void MarkStack::initializePagesize()
+{
+    SYSTEM_INFO system_info;
+    GetSystemInfo(&system_info);
+    MarkStack::s_pageSize = system_info.dwPageSize;
+}
+
+void* MarkStack::allocateStack(size_t size)
+{
+    return VirtualAlloc(0, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+}
+void MarkStack::releaseStack(void* addr, size_t)
+{
+    // According to http://msdn.microsoft.com/en-us/library/aa366892(VS.85).aspx,
+    // dwSize must be 0 if dwFreeType is MEM_RELEASE.
+    VirtualFree(addr, 0, MEM_RELEASE);
+}
+
+}

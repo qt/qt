@@ -25,7 +25,7 @@
 #include "JSObject.h"
 
 namespace JSC {
-    
+
     // This class is used as a base for classes such as String,
     // Number, Boolean and Date which are wrappers for primitive types.
     class JSWrapperObject : public JSObject {
@@ -35,23 +35,31 @@ namespace JSC {
     public:
         JSValue internalValue() const { return m_internalValue; }
         void setInternalValue(JSValue);
-        
-        virtual void mark();
-        
+
+        static PassRefPtr<Structure> createStructure(JSValue prototype) 
+        { 
+            return Structure::create(prototype, TypeInfo(ObjectType, HasStandardGetOwnPropertySlot | HasDefaultGetPropertyNames | HasDefaultMark));
+        }
+
     private:
+        virtual void markChildren(MarkStack&);
+        
         JSValue m_internalValue;
     };
-    
+
     inline JSWrapperObject::JSWrapperObject(PassRefPtr<Structure> structure)
         : JSObject(structure)
     {
+        addAnonymousSlots(1);
+        putAnonymousValue(0, jsNull());
     }
-    
+
     inline void JSWrapperObject::setInternalValue(JSValue value)
     {
         ASSERT(value);
         ASSERT(!value.isObject());
         m_internalValue = value;
+        putAnonymousValue(0, value);
     }
 
 } // namespace JSC

@@ -110,7 +110,7 @@ public:
         JSC::ExecState *exec = eng_p->globalExec();
         JSC::PropertyNameArray propertyNamesArray(exec);
         propertyNamesArray.setShouldCache(false);
-        JSC::asObject(QScriptValuePrivate::get(object)->jscValue)->getPropertyNames(exec, propertyNamesArray, JSC::Structure::NonEnumerable);
+        JSC::asObject(QScriptValuePrivate::get(object)->jscValue)->getOwnPropertyNames(exec, propertyNamesArray, /*includeNonEnumerable=*/true);
 
         JSC::PropertyNameArray::const_iterator propertyNamesIt = propertyNamesArray.begin();
         for(; propertyNamesIt != propertyNamesArray.end(); ++propertyNamesIt) {

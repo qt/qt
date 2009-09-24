@@ -438,7 +438,6 @@ void tst_QScriptEngineAgent::scriptLoadAndUnload()
 
         code = "bar = foo(); foo = null";
         eng.evaluate(code);
-        QEXPECT_FAIL("","ScriptUnload event occur in different places than in old backend", Abort);
         QCOMPARE(spy->count(), 3);
 
         QCOMPARE(spy->at(1).type, ScriptEngineEvent::ScriptLoad);

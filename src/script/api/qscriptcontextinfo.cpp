@@ -202,12 +202,11 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
         functionName = JSC::asInternalFunction(callee)->name(&frame->globalData());
     if (callee && callee->inherits(&JSC::JSFunction::info)) {
         functionType = QScriptContextInfo::ScriptFunction;
-        JSC::FunctionBodyNode *body = JSC::asFunction(callee)->body();
-        functionStartLineNumber = body->firstLine();
+        JSC::FunctionExecutable *body = JSC::asFunction(callee)->jsExecutable();
+        functionStartLineNumber = body->lineNo();
         functionEndLineNumber = body->lastLine();
-        const JSC::Identifier* params = body->parameters();
         for (size_t i = 0; i < body->parameterCount(); ++i)
-            parameterNames.append(params[i].ustring());
+            parameterNames.append(body->parameterName(i));
         // ### get the function name from the AST
     } else if (callee && callee->inherits(&QScript::QtFunction::info)) {
         functionType = QScriptContextInfo::QtFunction;

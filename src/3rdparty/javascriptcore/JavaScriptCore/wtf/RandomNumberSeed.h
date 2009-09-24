@@ -42,7 +42,6 @@
 extern "C" {
 void init_by_array(unsigned long init_key[],int key_length);
 }
-#include <ce_time.h>
 #endif
 
 // Internal JavaScriptCore usage only

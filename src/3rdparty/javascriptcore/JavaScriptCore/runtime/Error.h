@@ -59,6 +59,7 @@ namespace JSC {
     JSObject* throwError(ExecState*, ErrorType, const UString& message);
     JSObject* throwError(ExecState*, ErrorType, const char* message);
     JSObject* throwError(ExecState*, ErrorType);
+    JSObject* throwError(ExecState*, JSObject*);
 
 #ifdef QT_BUILD_SCRIPT_LIB
 #  define JSC_ERROR_FILENAME_PROPERTYNAME "fileName"
