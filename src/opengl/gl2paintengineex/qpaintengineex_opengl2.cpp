@@ -1645,7 +1645,9 @@ void QGL2PaintEngineExPrivate::updateDepthScissorTest()
     else
         glDisable(GL_DEPTH_TEST);
 
-#ifndef QT_GL_NO_SCISSOR_TEST
+#ifdef QT_GL_NO_SCISSOR_TEST
+    currentScissorBounds = QRect(0, 0, width, height);
+#else
     QRect bounds = q->state()->rectangleClip;
     if (!q->state()->clipEnabled) {
         if (use_system_clip)
