@@ -24,6 +24,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "mediaobject.h"
 
+#include "videorenderer_evr.h"
 #include "videorenderer_vmr9.h"
 #include "videorenderer_soft.h"
 
@@ -349,13 +350,20 @@ namespace Phonon
             int index = graphIndex * 2 + type;
             if (m_renderers[index] == 0 && autoCreate) {
                 AbstractVideoRenderer *renderer = 0;
-				if (type == Native) {
-                    renderer = new VideoRendererVMR9(m_widget);
+                if (type == Native) {
+                    renderer = new VideoRendererEVR(m_widget);
                     if (renderer->getFilter() == 0) {
-                        //instanciating the renderer might fail with error VFW_E_DDRAW_CAPS_NOT_SUITABLE (0x80040273)
-                        m_noNativeRendererSupported = true;
                         delete renderer;
                         renderer = 0;
+                    }
+                    if (renderer == 0) {
+                        renderer = new VideoRendererVMR9(m_widget);
+                        if (renderer->getFilter() == 0) {
+                            //instanciating the renderer might fail with error VFW_E_DDRAW_CAPS_NOT_SUITABLE (0x80040273)
+                            m_noNativeRendererSupported = true;
+                            delete renderer;
+                            renderer = 0;
+                        }
                     }
                 }
 

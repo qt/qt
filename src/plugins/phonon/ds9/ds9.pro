@@ -3,7 +3,7 @@ QT += phonon
 win32:!wince*:contains(QT_CONFIG,opengl):LIBS += -lopengl32
 win32:!wince*:LIBS += -lgdi32
 win32-msvc2005:DEFINES += _CRT_SECURE_NO_WARNINGS
-LIBS += -lstrmiids -ldmoguids -luuid -lmsdmo -lole32 -loleaut32
+LIBS += -lstrmiids -ldmoguids -luuid -lmsdmo -lole32 -loleaut32 -lMfuuid -lStrmiids
 TARGET = phonon_ds9
 
 DEFINES += PHONON_MAKE_QT_ONLY_BACKEND
@@ -23,6 +23,7 @@ HEADERS += \
            $$PHONON_DS9_DIR/videowidget.h \
            $$PHONON_DS9_DIR/videorenderer_soft.h \
            $$PHONON_DS9_DIR/videorenderer_vmr9.h \
+           $$PHONON_DS9_DIR/videorenderer_evr.h \
            $$PHONON_DS9_DIR/volumeeffect.h \
            $$PHONON_DS9_DIR/qbasefilter.h \
            $$PHONON_DS9_DIR/qpin.h \
@@ -46,6 +47,7 @@ SOURCES += \
            $$PHONON_DS9_DIR/videowidget.cpp \
            $$PHONON_DS9_DIR/videorenderer_soft.cpp \
            $$PHONON_DS9_DIR/videorenderer_vmr9.cpp \
+           $$PHONON_DS9_DIR/videorenderer_evr.cpp \
            $$PHONON_DS9_DIR/volumeeffect.cpp \
            $$PHONON_DS9_DIR/qbasefilter.cpp \
            $$PHONON_DS9_DIR/qpin.cpp \
