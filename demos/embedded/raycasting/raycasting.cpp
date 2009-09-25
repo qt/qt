@@ -285,6 +285,8 @@ protected:
         QPainter p(this);
         p.setCompositionMode(QPainter::CompositionMode_Source);
 
+        p.drawImage(event->rect(), buffer, event->rect());
+
         if (touchDevice && event->rect().intersects(trackPad)) {
             p.fillRect(trackPad, Qt::white);
             p.setPen(QPen(QColor(224, 224, 224), 6));
@@ -306,10 +308,8 @@ protected:
                 p.drawPolygon(poly);
                 p.translate(0, rad - 20);
             }
-            p.resetTransform();
         }
 
-        p.drawImage(event->rect(), buffer, event->rect());
         p.end();
     }
 
