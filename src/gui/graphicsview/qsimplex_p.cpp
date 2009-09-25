@@ -333,23 +333,21 @@ void QSimplex::clearColumns(int first, int last)
 
 void QSimplex::dumpMatrix()
 {
-    printf("---- Simplex Matrix ----\n");
+    qDebug("---- Simplex Matrix ----\n");
 
-    printf("       ");
+    QString str(QLatin1String("       "));
     for (int j = 0; j < columns; ++j)
-        printf("  <% 2d >", j);
-    printf("\n");
-
+        str += QString::fromAscii("  <%1 >").arg(j, 2);
+    qDebug("%s", qPrintable(str));
     for (int i = 0; i < rows; ++i) {
-        printf("Row %2d:", i);
+        str = QString::fromAscii("Row %1:").arg(i, 2);
 
         qreal *row = matrix + i * columns;
-        for (int j = 0; j < columns; ++j) {
-            printf("  % 2.2f", row[j]);
-        }
-        printf("\n");
+        for (int j = 0; j < columns; ++j)
+            str += QString::fromAscii("%1").arg(row[j], 7, 'f', 2);
+        qDebug("%s", qPrintable(str));
     }
-    printf("------------------------\n\n");
+    qDebug("------------------------\n");
 }
 
 void QSimplex::combineRows(int toIndex, int fromIndex, qreal factor)
@@ -474,7 +472,7 @@ bool QSimplex::iterate()
     setValueAt(pivotRow, 0, pivotColumn);
 
     //    dumpMatrix();
-    //    printf("------------ end of iteration --------------\n");
+    //    qDebug("------------ end of iteration --------------\n");
     return true;
 }
 
