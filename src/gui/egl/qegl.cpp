@@ -60,7 +60,6 @@ QEglContext::QEglContext()
     , ctx(EGL_NO_CONTEXT)
     , cfg(0)
     , currentSurface(EGL_NO_SURFACE)
-    , share(false)
     , current(false)
 {
 }
@@ -78,11 +77,6 @@ QEglContext::~QEglContext()
 bool QEglContext::isValid() const
 {
     return (ctx != EGL_NO_CONTEXT);
-}
-
-bool QEglContext::isSharing() const
-{
-    return share;
 }
 
 bool QEglContext::isCurrent() const
@@ -159,7 +153,7 @@ bool QEglContext::chooseConfig
 }
 
 // Create the EGLContext.
-bool QEglContext::createContext(QEglContext *shareContext)
+bool QEglContext::createContext(QEglContext *shareContext, const QEglProperties *properties)
 {
     // We need to select the correct API before calling eglCreateContext().
 #ifdef EGL_OPENGL_ES_API
@@ -173,6 +167,8 @@ bool QEglContext::createContext(QEglContext *shareContext)
 
     // Create a new context for the configuration.
     QEglProperties contextProps;
+    if (properties)
+        contextProps = *properties;
 #if defined(QT_OPENGL_ES_2)
     if (apiType == QEgl::OpenGL)
         contextProps.setValue(EGL_CONTEXT_CLIENT_VERSION, 2);
@@ -193,7 +189,6 @@ bool QEglContext::createContext(QEglContext *shareContext)
             return false;
         }
     }
-    share = (shareContext != 0);
     return true;
 }
 
@@ -216,7 +211,6 @@ void QEglContext::destroy()
     dpy = EGL_NO_DISPLAY;
     ctx = EGL_NO_CONTEXT;
     cfg = 0;
-    share = false;
 }
 
 bool QEglContext::makeCurrent(EGLSurface surface)

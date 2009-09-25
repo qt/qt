@@ -80,7 +80,6 @@ public:
     ~QEglContext();
 
     bool isValid() const;
-    bool isSharing() const;
     bool isCurrent() const;
 
     QEgl::API api() const { return apiType; }
@@ -88,7 +87,7 @@ public:
 
     bool openDisplay(QPaintDevice *device);
     bool chooseConfig(const QEglProperties& properties, QEgl::PixelFormatMatch match = QEgl::ExactPixelFormat);
-    bool createContext(QEglContext *shareContext = 0);
+    bool createContext(QEglContext *shareContext = 0, const QEglProperties *properties = 0);
     EGLSurface createSurface(QPaintDevice *device, const QEglProperties *properties = 0);
     void destroySurface(EGLSurface surface);
 
@@ -109,8 +108,12 @@ public:
     static QString errorString(EGLint code);
 
     EGLDisplay display() const { return dpy; }
+
     EGLContext context() const { return ctx; }
+    void setContext(EGLContext context) { ctx = context; }
+
     EGLConfig config() const { return cfg; }
+    void setConfig(EGLConfig config) { cfg = config; }
 
     QEglProperties configProperties(EGLConfig cfg = 0) const;
 
@@ -127,7 +130,6 @@ private:
     EGLContext ctx;
     EGLConfig cfg;
     EGLSurface currentSurface;
-    bool share;
     bool current;
 
     static EGLDisplay getDisplay(QPaintDevice *device);
