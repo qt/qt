@@ -1318,15 +1318,6 @@ protected slots:
 
 private:
     int exitCode;
-#ifdef Q_OS_SYMBIAN
-    enum
-    {
-        /**
-         * The maximum stack size.
-         */
-        SymbianStackSize = 0x14000
-    };
-#endif
 };
 
 //-----------------------------------------------------------------------------
@@ -1334,9 +1325,6 @@ void tst_QProcess::processInAThread()
 {
     for (int i = 0; i < 10; ++i) {
         TestThread thread;
-#if defined(Q_OS_SYMBIAN)
-        thread.setStackSize(SymbianStackSize);
-#endif
         thread.start();
         QVERIFY(thread.wait(10000));
         QCOMPARE(thread.code(), 0);
@@ -1359,10 +1347,6 @@ void tst_QProcess::processesInMultipleThreads()
         thread1.serial = serialCounter++;
         thread2.serial = serialCounter++;
         thread3.serial = serialCounter++;
-
-        thread1.setStackSize(SymbianStackSize);
-        thread2.setStackSize(SymbianStackSize);
-        thread3.setStackSize(SymbianStackSize);
 #endif
         thread1.start();
         thread2.start();
