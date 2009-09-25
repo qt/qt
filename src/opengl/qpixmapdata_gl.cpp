@@ -384,8 +384,20 @@ void QGLPixmapData::fill(const QColor &color)
         m_hasFillColor = true;
         m_fillColor = color;
     } else {
-        QImage image = fillImage(color);
-        fromImage(image, 0);
+
+        if (m_source.isNull()) {
+            m_fillColor = color;
+            m_hasFillColor = true;
+
+        } else if (m_source.depth() == 32) {
+            m_source.fill(PREMUL(color.rgba()));
+
+        } else if (m_source.depth() == 1) {
+            if (color == Qt::color1)
+                m_source.fill(1);
+            else
+                m_source.fill(0);
+        }
     }
 }
 
@@ -399,15 +411,11 @@ QImage QGLPixmapData::fillImage(const QColor &color) const
     QImage img;
     if (pixelType() == BitmapType) {
         img = QImage(w, h, QImage::Format_MonoLSB);
-        img.setNumColors(2);
-        img.setColor(0, QColor(Qt::color0).rgba());
-        img.setColor(1, QColor(Qt::color1).rgba());
 
-        int gray = qGray(color.rgba());
-        if (qAbs(255 - gray) < gray)
-            img.fill(0);
-        else
+        if (color == Qt::color1)
             img.fill(1);
+        else
+            img.fill(0);
     } else {
         img = QImage(w, h,
                 m_hasAlpha
