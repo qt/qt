@@ -156,8 +156,7 @@ struct AnchorData : public QSimplexVariable {
           sizeAtMinimum(0), sizeAtPreferred(0),
           sizeAtExpanding(0), sizeAtMaximum(0),
           graphicsAnchor(0), skipInPreferred(0),
-          type(Normal), hasSize(true), isLayoutAnchor(false),
-          isExpanding(false) {}
+          type(Normal), hasSize(true), isLayoutAnchor(false) {}
 
     virtual void updateChildrenSizes() {}
     virtual void refreshSizeHints(qreal effectiveSpacing);
@@ -214,7 +213,6 @@ struct AnchorData : public QSimplexVariable {
     uint type : 2;            // either Normal, Sequential or Parallel
     uint hasSize : 1;         // if false, get size from style.
     uint isLayoutAnchor : 1;  // if this anchor is connected to a layout 'edge'
-    uint isExpanding : 1;     // if true, expands before other anchors
 };
 
 #ifdef QT_DEBUG

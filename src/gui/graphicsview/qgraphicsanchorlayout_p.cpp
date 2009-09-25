@@ -146,15 +146,11 @@ void AnchorData::refreshSizeHints(qreal effectiveSpacing)
             maxSize /= 2;
         }
 
-        // ###
-        expSize = prefSize;
-        // if (policy & QSizePolicy::ExpandFlag) {
-        //     isExpanding = 1;
-        //     expSize = maxSize;
-        // } else {
-        //     isExpanding = 0;
-        //     expSize = prefSize;
-        // }
+        if (policy & QSizePolicy::ExpandFlag) {
+            expSize = maxSize;
+        } else {
+            expSize = prefSize;
+        }
 
         // Set the anchor effective sizes to preferred.
         //
@@ -175,8 +171,6 @@ void AnchorData::refreshSizeHints(qreal effectiveSpacing)
         expSize = effectiveSpacing;
         maxSize = effectiveSpacing;
 
-        isExpanding = 0;
-
         sizeAtMinimum = prefSize;
         sizeAtPreferred = prefSize;
         sizeAtExpanding = prefSize;
@@ -188,8 +182,8 @@ void ParallelAnchorData::updateChildrenSizes()
 {
     firstEdge->sizeAtMinimum = secondEdge->sizeAtMinimum = sizeAtMinimum;
     firstEdge->sizeAtPreferred = secondEdge->sizeAtPreferred = sizeAtPreferred;
+    firstEdge->sizeAtExpanding = secondEdge->sizeAtExpanding = sizeAtExpanding;
     firstEdge->sizeAtMaximum = secondEdge->sizeAtMaximum = sizeAtMaximum;
-    firstEdge->sizeAtExpanding = secondEdge->sizeAtExpanding = sizeAtPreferred;
 
     firstEdge->updateChildrenSizes();
     secondEdge->updateChildrenSizes();
@@ -215,11 +209,11 @@ void ParallelAnchorData::refreshSizeHints_helper(qreal effectiveSpacing,
     minSize = qMax(firstEdge->minSize, secondEdge->minSize);
     maxSize = qMin(firstEdge->maxSize, secondEdge->maxSize);
 
-    prefSize = qMax(firstEdge->prefSize, secondEdge->prefSize);
-    prefSize = qMin(prefSize, maxSize);
+    expSize = qMax(firstEdge->expSize, secondEdge->expSize);
+    expSize = qMin(expSize, maxSize);
 
-    // ###
-    expSize = prefSize;
+    prefSize = qMax(firstEdge->prefSize, secondEdge->prefSize);
+    prefSize = qMin(prefSize, expSize);
 
     // See comment in AnchorData::refreshSizeHints() about sizeAt* values
     sizeAtMinimum = prefSize;
@@ -260,6 +254,21 @@ static qreal getFactor(qreal value, qreal min, qreal pref, qreal max)
     }
 }
 
+static qreal getExpandingFactor(const qreal &expSize, const qreal &sizeAtPreferred,
+                                const qreal &sizeAtExpanding, const qreal &sizeAtMaximum)
+{
+    const qreal lower = qMin(sizeAtPreferred, sizeAtMaximum);
+    const qreal upper = qMax(sizeAtPreferred, sizeAtMaximum);
+    const qreal boundedExpSize = qBound(lower, expSize, upper);
+
+    const qreal bandSize = sizeAtMaximum - boundedExpSize;
+    if (bandSize == 0) {
+        return 0;
+    } else {
+        return (sizeAtExpanding - boundedExpSize) / bandSize;
+    }
+}
+
 void SequentialAnchorData::updateChildrenSizes()
 {
     // ### REMOVE ME
@@ -269,15 +278,18 @@ void SequentialAnchorData::updateChildrenSizes()
     Q_ASSERT(sizeAtMinimum < maxSize || qFuzzyCompare(sizeAtMinimum, maxSize));
     Q_ASSERT(sizeAtPreferred > minSize || qFuzzyCompare(sizeAtPreferred, minSize));
     Q_ASSERT(sizeAtPreferred < maxSize || qFuzzyCompare(sizeAtPreferred, maxSize));
+    Q_ASSERT(sizeAtExpanding > minSize || qFuzzyCompare(sizeAtExpanding, minSize));
+    Q_ASSERT(sizeAtExpanding < maxSize || qFuzzyCompare(sizeAtExpanding, maxSize));
     Q_ASSERT(sizeAtMaximum > minSize || qFuzzyCompare(sizeAtMaximum, minSize));
     Q_ASSERT(sizeAtMaximum < maxSize || qFuzzyCompare(sizeAtMaximum, maxSize));
 
     // Band here refers if the value is in the Minimum To Preferred
     // band (the lower band) or the Preferred To Maximum (the upper band).
 
-    qreal minFactor = getFactor(sizeAtMinimum, minSize, prefSize, maxSize);
-    qreal prefFactor = getFactor(sizeAtPreferred, minSize, prefSize, maxSize);
-    qreal maxFactor = getFactor(sizeAtMaximum, minSize, prefSize, maxSize);
+    const qreal minFactor = getFactor(sizeAtMinimum, minSize, prefSize, maxSize);
+    const qreal prefFactor = getFactor(sizeAtPreferred, minSize, prefSize, maxSize);
+    const qreal maxFactor = getFactor(sizeAtMaximum, minSize, prefSize, maxSize);
+    const qreal expFactor = getExpandingFactor(expSize, sizeAtPreferred, sizeAtExpanding, sizeAtMaximum);
 
     for (int i = 0; i < m_edges.count(); ++i) {
         AnchorData *e = m_edges.at(i);
@@ -291,8 +303,10 @@ void SequentialAnchorData::updateChildrenSizes()
         bandSize = maxFactor > 0 ? e->maxSize - e->prefSize : e->prefSize - e->minSize;
         e->sizeAtMaximum = e->prefSize + bandSize * maxFactor;
 
-        // ###
-        e->sizeAtExpanding = e->sizeAtPreferred;
+        const qreal lower = qMin(e->sizeAtPreferred, e->sizeAtMaximum);
+        const qreal upper = qMax(e->sizeAtPreferred, e->sizeAtMaximum);
+        const qreal edgeBoundedExpSize = qBound(lower, e->expSize, upper);
+        e->sizeAtExpanding = edgeBoundedExpSize + expFactor * (e->sizeAtMaximum - edgeBoundedExpSize);
 
         e->updateChildrenSizes();
     }
@@ -323,9 +337,6 @@ void SequentialAnchorData::refreshSizeHints_helper(qreal effectiveSpacing,
         expSize += edge->expSize;
         maxSize += edge->maxSize;
     }
-
-    // ###
-    expSize = prefSize;
 
     // See comment in AnchorData::refreshSizeHints() about sizeAt* values
     sizeAtMinimum = prefSize;
