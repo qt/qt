@@ -251,7 +251,9 @@ public:
 
     QScriptDebugger *debugger;
     QScriptEngineDebuggerFrontend *frontend;
+#ifndef QT_NO_MAINWINDOW
     QMainWindow *standardWindow;
+#endif
     bool autoShow;
 
     static QtScriptDebuggerResourceInitializer resourceInitializer;
@@ -294,7 +296,9 @@ QScriptEngineDebuggerPrivate::QScriptEngineDebuggerPrivate()
 {
     debugger = 0;
     frontend = 0;
+#ifndef QT_NO_MAINWINDOW
     standardWindow = 0;
+#endif
     autoShow = true;
 }
 
@@ -302,6 +306,7 @@ QScriptEngineDebuggerPrivate::~QScriptEngineDebuggerPrivate()
 {
     delete debugger;
     delete frontend;
+#ifndef QT_NO_MAINWINDOW
     if (standardWindow) {
         QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
         QByteArray geometry = standardWindow->saveGeometry();
@@ -311,14 +316,17 @@ QScriptEngineDebuggerPrivate::~QScriptEngineDebuggerPrivate()
         if (standardWindow->parent() == 0)
             delete standardWindow;
     }
+#endif
 }
 
+#ifndef QT_NO_MAINWINDOW
 void QScriptEngineDebuggerPrivate::_q_showStandardWindow()
 {
     Q_Q(QScriptEngineDebugger);
     (void)q->standardWindow(); // ensure it's created
     standardWindow->show();
 }
+#endif
 
 void QScriptEngineDebuggerPrivate::createDebugger()
 {
@@ -499,6 +507,7 @@ void QScriptEngineDebugger::setAutoShowStandardWindow(bool autoShow)
 
   \sa createStandardMenu(), createStandardToolBar()
 */
+#ifndef QT_NO_MAINWINDOW
 QMainWindow *QScriptEngineDebugger::standardWindow() const
 {
     Q_D(const QScriptEngineDebugger);
@@ -602,6 +611,7 @@ QMainWindow *QScriptEngineDebugger::standardWindow() const
     const_cast<QScriptEngineDebuggerPrivate*>(d)->standardWindow = win;
     return win;
 }
+#endif // QT_NO_MAINWINDOW
 
 /*!
   Creates a standard debugger menu with the given \a parent.
@@ -622,12 +632,14 @@ QMenu *QScriptEngineDebugger::createStandardMenu(QWidget *parent)
 
   \sa createStandardMenu()
 */
+#ifndef QT_NO_TOOLBAR
 QToolBar *QScriptEngineDebugger::createStandardToolBar(QWidget *parent)
 {
     Q_D(QScriptEngineDebugger);
     d->createDebugger();
     return d->debugger->createStandardToolBar(parent, this);
 }
+#endif
 
 /*!
     \fn QScriptEngineDebugger::evaluationSuspended()
