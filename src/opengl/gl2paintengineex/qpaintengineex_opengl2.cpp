@@ -85,6 +85,8 @@
 
 QT_BEGIN_NAMESPACE
 
+//#define QT_GL_NO_SCISSOR_TEST
+
 static const GLuint QT_BRUSH_TEXTURE_UNIT       = 0;
 static const GLuint QT_IMAGE_TEXTURE_UNIT       = 0; //Can be the same as brush texture unit
 static const GLuint QT_MASK_TEXTURE_UNIT        = 1;
@@ -1533,6 +1535,7 @@ void QGL2PaintEngineExPrivate::updateDepthScissorTest()
     else
         glDisable(GL_DEPTH_TEST);
 
+#ifndef QT_GL_NO_SCISSOR_TEST
     QRect bounds = q->state()->rectangleClip;
     if (!q->state()->clipEnabled) {
         if (use_system_clip)
@@ -1554,6 +1557,7 @@ void QGL2PaintEngineExPrivate::updateDepthScissorTest()
         glEnable(GL_SCISSOR_TEST);
         setScissor(bounds);
     }
+#endif
 }
 
 void QGL2PaintEngineExPrivate::setScissor(const QRect &rect)
@@ -1650,6 +1654,7 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
         }
     }
 
+#ifndef QT_GL_NO_SCISSOR_TEST
     if (!path.isEmpty() && op == Qt::IntersectClip && (path.shape() == QVectorPath::RectangleHint)) {
         const QPointF* const points = reinterpret_cast<const QPointF*>(path.points());
         QRectF rect(points[0], points[2]);
@@ -1660,6 +1665,7 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
             return;
         }
     }
+#endif
 
     const QRect pathRect = state()->matrix.mapRect(path.controlPointRect()).toAlignedRect();
 
@@ -1684,6 +1690,7 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
         state()->depthTestEnabled = true;
         break;
     case Qt::UniteClip: {
+#ifndef QT_GL_NO_SCISSOR_TEST
         if (state()->rectangleClip.isValid()) {
             ++state()->maxDepth;
 
@@ -1709,7 +1716,8 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
             // first clear the depth buffer in the extended region
             d->writeClip(qtVectorPathForPath(state()->matrix.inverted().map(extendPath)), 0);
         }
-
+#endif
+        glDepthFunc(GL_ALWAYS);
         // now write the clip path
         d->writeClip(path, state()->maxDepth);
         state()->canRestoreClip = false;
@@ -1760,29 +1768,33 @@ void QGL2PaintEngineExPrivate::systemStateChanged()
     updateDepthScissorTest();
 
     if (use_system_clip) {
+#ifndef QT_GL_NO_SCISSOR_TEST
         if (systemClip.numRects() == 1) {
             if (q->state()->rectangleClip == QRect(0, 0, width, height)) {
                 use_system_clip = false;
-                return;
+            } else {
+                simpleShaderDepthUniformDirty = true;
+                depthUniformDirty = true;
             }
-        } else {
-            q->state()->needsDepthBufferClear = false;
-
-            glDepthMask(true);
-
-            glClearDepth(0);
-            glClear(GL_DEPTH_BUFFER_BIT);
-
-            QPainterPath path;
-            path.addRegion(systemClip);
-
-            glDepthFunc(GL_ALWAYS);
-            writeClip(qtVectorPathForPath(q->state()->matrix.inverted().map(path)), 2);
-            glDepthFunc(GL_LESS);
-
-            glEnable(GL_DEPTH_TEST);
-            q->state()->depthTestEnabled = true;
+            return;
         }
+#endif
+        q->state()->needsDepthBufferClear = false;
+
+        glDepthMask(true);
+
+        glClearDepth(0);
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        QPainterPath path;
+        path.addRegion(systemClip);
+
+        glDepthFunc(GL_ALWAYS);
+        writeClip(qtVectorPathForPath(q->state()->matrix.inverted().map(path)), 2);
+        glDepthFunc(GL_LESS);
+
+        glEnable(GL_DEPTH_TEST);
+        q->state()->depthTestEnabled = true;
 
         simpleShaderDepthUniformDirty = true;
         depthUniformDirty = true;
