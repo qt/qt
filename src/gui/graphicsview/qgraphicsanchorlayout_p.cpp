@@ -2319,40 +2319,97 @@ bool QGraphicsAnchorLayoutPrivate::solvePreferred(QList<QSimplexConstraint *> co
     return feasible;
 }
 
+/*! Calculate the "expanding" keyframe
+
+  This new keyframe sits between the already existing sizeAtPreferred and
+  sizeAtMaximum keyframes. Its goal is to modify the interpolation between
+  the latter as to respect the "expanding" size policy of some anchors.
+
+  Previously all items would be subject to a linear interpolation between
+  sizeAtPreferred and sizeAtMaximum values. This will change now, the
+  expanding anchors will change their size before the others. To calculate
+  this keyframe we use the following logic:
+
+  1) Ask each anchor for their desired expanding size (ad->expSize), this
+  value depends on the anchor expanding property in the following way:
+
+  - Expanding anchors want to grow towards their maximum size
+  - Non-expanding anchors want to remain at their preferred size.
+  - Composite anchors want to grow towards somewhere between their
+  preferred sizes. (*)
+
+  2) Clamp their desired values to the value they assume in the neighbour
+  keyframes (sizeAtPreferred and sizeAtExpanding)
+
+  3) Run simplex with a setup that ensures the following:
+
+    a. Anchors will change their value from their sizeAtPreferred towards
+       their sizeAtMaximum as much as required to ensure that ALL anchors
+       reach their respective "desired" expanding sizes.
+
+    b. No anchors will change their value beyond what is NEEDED to satisfy
+       the requirement above.
+
+  The final result is that, at the "expanding" keyframe expanding anchors
+  will grow and take with them all anchors that are parallel to them.
+  However, non-expanding anchors will remain at their preferred size unless
+  they are forced to grow by a parallel expanding anchor.
+
+  Note: For anchors where the sizeAtPreferred is bigger than sizeAtPreferred,
+        the visual effect when the layout grows from its preferred size is
+        the following: Expanding anchors will keep their size while non
+        expanding ones will shrink. Only after non-expanding anchors have
+        shrinked all the way, the expanding anchors will start to shrink too.
+*/
 void QGraphicsAnchorLayoutPrivate::solveExpanding(QList<QSimplexConstraint *> constraints)
 {
     QList<AnchorData *> variables = getVariables(constraints);
     QList<QSimplexConstraint *> itemConstraints;
     QSimplexConstraint *objective = new QSimplexConstraint;
+    bool hasExpanding = false;
 
-    // Use all items that belong to trunk to:
-    //  - add solveExpanding-specific item constraints
-    //  - create the objective function
+    // Construct the simplex constraints and objective
     for (int i = 0; i < variables.size(); ++i) {
+        // For each anchor
         AnchorData *ad = variables[i];
-        if (ad->isExpanding) {
-            // Add constraint to lock expanding anchor in its sizeAtMaximum
+
+        // Clamp the desired expanding size
+        qreal upperBoundary = qMax(ad->sizeAtPreferred, ad->sizeAtMaximum);
+        qreal lowerBoundary = qMin(ad->sizeAtPreferred, ad->sizeAtMaximum);
+        qreal boundedExpSize = qBound(lowerBoundary, ad->expSize, upperBoundary);
+
+        // Expanding anchors are those that want to move from their preferred size
+        if (boundedExpSize != ad->sizeAtPreferred)
+            hasExpanding = true;
+
+        // Lock anchor between boundedExpSize and sizeAtMaximum (ensure 3.a)
+        if (boundedExpSize == ad->sizeAtMaximum) {
+            // The interval has only one possible value, we can use an "Equal"
+            // constraint and don't need to add this variable to the objective.
             QSimplexConstraint *itemC = new QSimplexConstraint;
             itemC->ratio = QSimplexConstraint::Equal;
             itemC->variables.insert(ad, 1.0);
-            itemC->constant = ad->sizeAtMaximum;
+            itemC->constant = boundedExpSize;
             itemConstraints << itemC;
         } else {
-            // Add constraints to lock anchor between their sizeAtPreferred and sizeAtMaximum
+            // Add MoreOrEqual and LessOrEqual constraints.
             QSimplexConstraint *itemC = new QSimplexConstraint;
             itemC->ratio = QSimplexConstraint::MoreOrEqual;
             itemC->variables.insert(ad, 1.0);
-            itemC->constant = qMin(ad->sizeAtPreferred, ad->sizeAtMaximum);
+            itemC->constant = qMin(boundedExpSize, ad->sizeAtMaximum);
             itemConstraints << itemC;
 
             itemC = new QSimplexConstraint;
             itemC->ratio = QSimplexConstraint::LessOrEqual;
             itemC->variables.insert(ad, 1.0);
-            itemC->constant = qMax(ad->sizeAtPreferred, ad->sizeAtMaximum);
+            itemC->constant = qMax(boundedExpSize, ad->sizeAtMaximum);
             itemConstraints << itemC;
 
-            // Add anchor to objective function
-            if (ad->sizeAtPreferred < ad->sizeAtMaximum) {
+            // Create objective to avoid the anchos from moving away from
+            // the preferred size more than the needed amount. (ensure 3.b)
+            // The objective function is the distance between sizeAtPreferred
+            // and sizeAtExpanding, it will be minimized.
+            if (ad->sizeAtExpanding < ad->sizeAtMaximum) {
                 // Try to shrink this variable towards its sizeAtPreferred value
                 objective->variables.insert(ad, 1.0);
             } else {
@@ -2363,7 +2420,7 @@ void QGraphicsAnchorLayoutPrivate::solveExpanding(QList<QSimplexConstraint *> co
     }
 
     // Solve
-    if (objective->variables.size() == variables.size()) {
+    if (hasExpanding == false) {
         // If no anchors are expanding, we don't need to run the simplex
         // Set all variables to their preferred size
         for (int i = 0; i < variables.size(); ++i) {
@@ -2372,9 +2429,12 @@ void QGraphicsAnchorLayoutPrivate::solveExpanding(QList<QSimplexConstraint *> co
     } else {
         // Run simplex
         QSimplex simplex;
+
+        // Satisfy expanding (3.a)
         bool feasible = simplex.setConstraints(constraints + itemConstraints);
         Q_ASSERT(feasible);
 
+        // Reduce damage (3.b)
         simplex.setObjective(objective);
         simplex.solveMin();
 
