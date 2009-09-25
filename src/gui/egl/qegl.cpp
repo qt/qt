@@ -58,7 +58,6 @@ QEglContext::QEglContext()
     : apiType(QEgl::OpenGL)
     , dpy(EGL_NO_DISPLAY)
     , ctx(EGL_NO_CONTEXT)
-    , surf(EGL_NO_SURFACE)
     , cfg(0)
     , currentSurface(EGL_NO_SURFACE)
     , share(false)
@@ -198,30 +197,6 @@ bool QEglContext::createContext(QEglContext *shareContext)
     return true;
 }
 
-// Recreate the surface for a paint device because the native id has changed.
-bool QEglContext::recreateSurface(QPaintDevice *device)
-{
-    // Bail out if the surface has not been created for the first time yet.
-    if (surf == EGL_NO_SURFACE)
-        return true;
-
-    // Destroy the old surface.
-    eglDestroySurface(dpy, surf);
-    surf = EGL_NO_SURFACE;
-
-    // Create a new one.
-    return createSurface(device);
-}
-
-// Destroy the EGL surface object.
-void QEglContext::destroySurface()
-{
-    if (surf != EGL_NO_SURFACE) {
-        eglDestroySurface(dpy, surf);
-        surf = EGL_NO_SURFACE;
-    }
-}
-
 // Destroy an EGL surface object.  If it was current on this context
 // then call doneCurrent() for it first.
 void QEglContext::destroySurface(EGLSurface surface)
@@ -230,8 +205,6 @@ void QEglContext::destroySurface(EGLSurface surface)
         if (surface == currentSurface)
             doneCurrent();
         eglDestroySurface(dpy, surface);
-        if (surf == surface)
-            surf = EGL_NO_SURFACE;
     }
 }
 
@@ -242,14 +215,8 @@ void QEglContext::destroy()
         eglDestroyContext(dpy, ctx);
     dpy = EGL_NO_DISPLAY;
     ctx = EGL_NO_CONTEXT;
-    surf = EGL_NO_SURFACE;
     cfg = 0;
     share = false;
-}
-
-bool QEglContext::makeCurrent()
-{
-    return makeCurrent(surf);
 }
 
 bool QEglContext::makeCurrent(EGLSurface surface)
@@ -316,17 +283,6 @@ bool QEglContext::lazyDoneCurrent()
     return true;
 }
 
-bool QEglContext::swapBuffers()
-{
-    if(ctx == EGL_NO_CONTEXT)
-        return false;
-
-    bool ok = eglSwapBuffers(dpy, surf);
-    if (!ok)
-        qWarning() << "QEglContext::swapBuffers():" << errorString(eglGetError());
-    return ok;
-}
-
 bool QEglContext::swapBuffers(EGLSurface surface)
 {
     if(ctx == EGL_NO_CONTEXT)
@@ -366,15 +322,6 @@ void QEglContext::waitClient()
         eglWaitClient();
     }
 #endif
-}
-
-// Query the actual size of the EGL surface.
-QSize QEglContext::surfaceSize() const
-{
-    int w, h;
-    eglQuerySurface(dpy, surf, EGL_WIDTH, &w);
-    eglQuerySurface(dpy, surf, EGL_HEIGHT, &h);
-    return QSize(w, h);
 }
 
 // Query the value of a configuration attribute.

@@ -117,17 +117,17 @@ void qt_egl_add_platform_config(QEglProperties& props, QPaintDevice *device)
         props.setPixelFormat(glScreen->pixelFormat());
 }
 
-static bool qt_egl_create_surface
+static EGLSurface qt_egl_create_surface
     (QEglContext *context, QPaintDevice *device,
      const QEglProperties *properties = 0)
 {
     // Get the screen surface functions, which are used to create native ids.
     QGLScreen *glScreen = glScreenForDevice(device);
     if (!glScreen)
-        return false;
+        return EGL_NO_SURFACE;
     QGLScreenSurfaceFunctions *funcs = glScreen->surfaceFunctions();
     if (!funcs)
-        return false;
+        return EGL_NO_SURFACE;
 
     // Create the native drawable for the paint device.
     int devType = device->devType();
@@ -143,7 +143,7 @@ static bool qt_egl_create_surface
     }
     if (!ok) {
         qWarning("QEglContext::createSurface(): Cannot create the native EGL drawable");
-        return false;
+        return EGL_NO_SURFACE;
     }
 
     // Create the EGL surface to draw into, based on the native drawable.
@@ -160,12 +160,9 @@ static bool qt_egl_create_surface
         surf = eglCreatePixmapSurface
             (context->display(), context->config(), pixmapDrawable, props);
     }
-    if (surf == EGL_NO_SURFACE) {
+    if (surf == EGL_NO_SURFACE)
         qWarning("QEglContext::createSurface(): Unable to create EGL surface, error = 0x%x", eglGetError());
-        return false;
-    }
-    context->setSurface(surf);
-    return true;
+    return surf;
 }
 
 bool QGLContext::chooseContext(const QGLContext* shareContext)
@@ -223,12 +220,12 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     // Create the EGL surface to draw into.  We cannot use
     // QEglContext::createSurface() because it does not have
     // access to the QGLScreen.
-    if (!qt_egl_create_surface(d->eglContext, device())) {
+    d->eglSurface = qt_egl_create_surface(d->eglContext, device());
+    if (d->eglSurface == EGL_NO_SURFACE) {
         delete d->eglContext;
         d->eglContext = 0;
         return false;
     }
-    d->eglSurface = d->eglContext->surface();
 
     return true;
 }

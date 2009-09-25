@@ -363,12 +363,12 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
 
     // Create the EGL surface to draw into.
     QGLContextPrivate *ctxpriv = d->glcx->d_func();
-    if (!ctxpriv->eglContext->createSurface(this)) {
+    ctxpriv->eglSurface = ctxpriv->eglContext->createSurface(this);
+    if (ctxpriv->eglSurface == EGL_NO_SURFACE) {
         delete ctxpriv->eglContext;
         ctxpriv->eglContext = 0;
         return;
     }
-    ctxpriv->eglSurface = ctxpriv->eglContext->surface();
 
     d->eglSurfaceWindowId = w; // Remember the window id we created the surface for
 
@@ -435,9 +435,14 @@ void QGLWidgetPrivate::recreateEglSurface(bool force)
 
     if ( force || (currentId != eglSurfaceWindowId) ) {
         // The window id has changed so we need to re-create the EGL surface
-        if (!glcx->d_func()->eglContext->recreateSurface(q))
+        QEglContext *ctx = glcx->d_func()->eglContext;
+        EGLSurface surface = glcx->d_func()->eglSurface;
+        if (surface != EGL_NO_SURFACE)
+            ctx->destroySurface(surface); // Will force doneCurrent() if nec.
+        surface = ctx->createSurface(q);
+        if (surface == EGL_NO_SURFACE)
             qWarning("Error creating EGL window surface: 0x%x", eglGetError());
-        glcx->d_func()->eglSurface = glcx->d_func()->eglContext->surface();
+        glcx->d_func()->eglSurface = surface;
 
         eglSurfaceWindowId = currentId;
     }

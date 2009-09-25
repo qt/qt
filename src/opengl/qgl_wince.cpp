@@ -178,12 +178,12 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
 #endif
 
     // Create the EGL surface to draw into.
-    if (!d->eglContext->createSurface(device())) {
+    d->eglSurface = d->eglContext->createSurface(device());
+    if (d->eglSurface == EGL_NO_SURFACE) {
         delete d->eglContext;
         d->eglContext = 0;
         return false;
     }
-    d->eglSurface = d->eglContext->surface();
 
     return true;
 

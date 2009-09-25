@@ -89,24 +89,18 @@ public:
     bool openDisplay(QPaintDevice *device);
     bool chooseConfig(const QEglProperties& properties, QEgl::PixelFormatMatch match = QEgl::ExactPixelFormat);
     bool createContext(QEglContext *shareContext = 0);
-    bool createSurface(QPaintDevice *device, const QEglProperties *properties = 0);
-    bool recreateSurface(QPaintDevice *device);
-    void destroySurface();
+    EGLSurface createSurface(QPaintDevice *device, const QEglProperties *properties = 0);
     void destroySurface(EGLSurface surface);
 
     void destroy();
 
-    bool makeCurrent();
     bool makeCurrent(EGLSurface surface);
     bool doneCurrent();
     bool lazyDoneCurrent();
-    bool swapBuffers();
     bool swapBuffers(EGLSurface surface);
 
     void waitNative();
     void waitClient();
-
-    QSize surfaceSize() const;
 
     bool configAttrib(int name, EGLint *value) const;
 
@@ -116,8 +110,6 @@ public:
 
     EGLDisplay display() const { return dpy; }
     EGLContext context() const { return ctx; }
-    EGLSurface surface() const { return surf; }
-    void setSurface(EGLSurface surface) { surf = surface; }
     EGLConfig config() const { return cfg; }
 
     QEglProperties configProperties(EGLConfig cfg = 0) const;
@@ -133,7 +125,6 @@ private:
     QEgl::API apiType;
     EGLDisplay dpy;
     EGLContext ctx;
-    EGLSurface surf;
     EGLConfig cfg;
     EGLSurface currentSurface;
     bool share;
