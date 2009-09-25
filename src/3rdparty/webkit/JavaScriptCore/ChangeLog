@@ -1,3 +1,532 @@
+2009-09-23  Geoffrey Garen  <ggaren@apple.com>
+
+        A piece of my last patch that I forgot.
+
+        * wtf/HashCountedSet.h:
+        (WTF::::clear): Added HashCountedSet::clear.
+
+2009-09-24  Gabor Loki  <loki@inf.u-szeged.hu>
+
+        Reviewed by Gavin Barraclough.
+
+        Avoid __clear_cache built-in function if DISABLE_BUILTIN_CLEAR_CACHE define is set
+        https://bugs.webkit.org/show_bug.cgi?id=28886
+
+        There are some GCC packages (for example GCC-2006q3 from CodeSourcery)
+        which contain __clear_cache built-in function only for C while the C++
+        version of __clear_cache is missing on ARM architectures.
+
+        Fixed a small bug in the inline assembly of cacheFlush function on
+        ARM_TRADITIONAL.
+
+        * jit/ExecutableAllocator.h:
+        (JSC::ExecutableAllocator::cacheFlush):
+
+2009-09-23  Geoffrey Garen  <ggaren@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        Added the ability to swap vectors with inline capacities, so you can
+        store a vector with inline capacity in a hash table.
+
+        * wtf/Vector.h:
+        (WTF::swap):
+        (WTF::VectorBuffer::swap):
+
+2009-09-23  David Kilzer  <ddkilzer@apple.com>
+
+        Move definition of USE(PLUGIN_HOST_PROCESS) from WebKitPrefix.h to Platform.h
+
+        Reviewed by Mark Rowe.
+
+        * wtf/Platform.h: Define WTF_USE_PLUGIN_HOST_PROCESS to 1 when
+        building on 64-bit SnowLeopard.  Define to 0 elsewhere.
+
+2009-09-22  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Geoff Garen.
+
+        Code sampling builds are broken.
+        https://bugs.webkit.org/show_bug.cgi?id=29662
+
+        Fix build.
+
+        * bytecode/EvalCodeCache.h:
+        (JSC::EvalCodeCache::get):
+        * bytecode/SamplingTool.cpp:
+        (JSC::ScriptSampleRecord::sample):
+        (JSC::SamplingTool::doRun):
+        (JSC::SamplingTool::notifyOfScope):
+        (JSC::compareScriptSampleRecords):
+        (JSC::SamplingTool::dump):
+        * bytecode/SamplingTool.h:
+        (JSC::ScriptSampleRecord::ScriptSampleRecord):
+        (JSC::ScriptSampleRecord::~ScriptSampleRecord):
+        (JSC::SamplingTool::SamplingTool):
+        * bytecompiler/BytecodeGenerator.cpp:
+        (JSC::BytecodeGenerator::BytecodeGenerator):
+        (JSC::BytecodeGenerator::emitNewFunction):
+        (JSC::BytecodeGenerator::emitNewFunctionExpression):
+        * bytecompiler/BytecodeGenerator.h:
+        (JSC::BytecodeGenerator::makeFunction):
+        * debugger/Debugger.cpp:
+        (JSC::evaluateInGlobalCallFrame):
+        * debugger/DebuggerCallFrame.cpp:
+        (JSC::DebuggerCallFrame::evaluate):
+        * parser/Nodes.cpp:
+        (JSC::ScopeNode::ScopeNode):
+        * runtime/Completion.cpp:
+        (JSC::checkSyntax):
+        (JSC::evaluate):
+        * runtime/Executable.cpp:
+        (JSC::FunctionExecutable::fromGlobalCode):
+        * runtime/Executable.h:
+        (JSC::ScriptExecutable::ScriptExecutable):
+        (JSC::EvalExecutable::EvalExecutable):
+        (JSC::EvalExecutable::create):
+        (JSC::ProgramExecutable::ProgramExecutable):
+        (JSC::FunctionExecutable::create):
+        (JSC::FunctionExecutable::FunctionExecutable):
+        * runtime/JSGlobalObjectFunctions.cpp:
+        (JSC::globalFuncEval):
+
+2009-09-22  Darin Adler  <darin@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        * wtf/Forward.h: Added PassOwnPtr.
+
+2009-09-22  Yaar Schnitman  <yaar@chromium.org>
+
+        Reviewed by David Levin.
+
+        Ported chromium.org's javascriptcore.gyp for the webkit chromium port.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29617
+
+        * JavaScriptCore.gyp/JavaScriptCore.gyp: Added.
+
+2009-09-22  Thiago Macieira  <thiago.macieira@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Fix compilation with WINSCW: no varargs macros
+
+        Disable variadic arguments for WINSCW just like we do
+        for MSVC7.
+
+        * wtf/Assertions.h:
+
+2009-09-22  Kent Hansen  <khansen@trolltech.com>
+
+        Reviewed by Simon Hausmann.
+
+        Disable variadic macros on MSVC7.
+
+        This was originally added in r26589 but not extended
+        when LOG_DISABLED/ASSERT_DISABLED was introduced.
+
+        * wtf/Assertions.h:
+
+2009-09-22  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Unreviewed build fix for Windows CE < 5
+
+        Define WINCEBASIC to disable the IsDebuggerPresent() code in
+        wtf/Assertions.cpp.
+
+        * JavaScriptCore.pri:
+
+2009-09-22  Joerg Bornemann  <joerg.bornemann@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Fix major memory leak in JavaScriptCore RegisterFile on Windows CE
+
+        https://bugs.webkit.org/show_bug.cgi?id=29367
+
+        On Widows CE we must decommit all committed pages before we release
+        them. See VirtualFree documentation.
+        Desktop Windows behaves much smoother in this situation.
+
+        * interpreter/RegisterFile.cpp:
+        (JSC::RegisterFile::~RegisterFile):
+
+2009-09-21  Greg Bolsinga  <bolsinga@apple.com>
+
+        Reviewed by Simon Fraser & Sam Weinig.
+
+        Add ENABLE(ORIENTATION_EVENTS)
+        https://bugs.webkit.org/show_bug.cgi?id=29508
+
+        * wtf/Platform.h: Also sort PLATFORM(IPHONE) #defines.
+
+2009-09-21  Jedrzej Nowacki  <jedrzej.nowacki@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        [Fix] SourceCode's uninitialized member
+        
+        Potential source of crashes and bugs was fixed. Default constructor
+        didn't initialized m_provider member.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29364
+
+        * parser/SourceCode.h:
+        (JSC::SourceCode::SourceCode):
+
+2009-09-21  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Geoff Garen.
+
+        REGRESSION (r48582): Crash in StructureStubInfo::initPutByIdTransition when reloading trac.webkit.org
+        https://bugs.webkit.org/show_bug.cgi?id=29599
+
+        It is unsafe to attempt to cache new property transitions on
+        dictionaries of any type.
+
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::tryCachePutByID):
+        * jit/JITStubs.cpp:
+        (JSC::JITThunks::tryCachePutByID):
+
+2009-09-21  Oliver Hunt  <oliver@apple.com>
+
+        RS=Maciej Stachowiak.
+
+        Re-land SNES fix with corrected assertion.
+
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::resolveGlobal):
+        (JSC::Interpreter::tryCachePutByID):
+        (JSC::Interpreter::tryCacheGetByID):
+        * jit/JITStubs.cpp:
+        (JSC::JITThunks::tryCachePutByID):
+        (JSC::JITThunks::tryCacheGetByID):
+        (JSC::DEFINE_STUB_FUNCTION):
+        * runtime/BatchedTransitionOptimizer.h:
+        (JSC::BatchedTransitionOptimizer::BatchedTransitionOptimizer):
+        * runtime/JSObject.cpp:
+        (JSC::JSObject::removeDirect):
+        * runtime/Structure.cpp:
+        (JSC::Structure::Structure):
+        (JSC::Structure::getEnumerablePropertyNames):
+        (JSC::Structure::despecifyDictionaryFunction):
+        (JSC::Structure::addPropertyTransitionToExistingStructure):
+        (JSC::Structure::addPropertyTransition):
+        (JSC::Structure::removePropertyTransition):
+        (JSC::Structure::toDictionaryTransition):
+        (JSC::Structure::toCacheableDictionaryTransition):
+        (JSC::Structure::toUncacheableDictionaryTransition):
+        (JSC::Structure::fromDictionaryTransition):
+        (JSC::Structure::removePropertyWithoutTransition):
+        * runtime/Structure.h:
+        (JSC::Structure::isDictionary):
+        (JSC::Structure::isUncacheableDictionary):
+        (JSC::Structure::):
+        * runtime/StructureChain.cpp:
+        (JSC::StructureChain::isCacheable):
+
+2009-09-21  Adam Roben  <aroben@apple.com>
+
+        Revert r48573, as it caused many assertion failures
+
+        * interpreter/Interpreter.cpp:
+        * jit/JITStubs.cpp:
+        * runtime/BatchedTransitionOptimizer.h:
+        * runtime/JSObject.cpp:
+        * runtime/Structure.cpp:
+        * runtime/Structure.h:
+        * runtime/StructureChain.cpp:
+
+2009-09-21  Gustavo Noronha Silva  <gustavo.noronha@collabora.co.uk>
+
+        Unreviewed make dist build fix. Missing files.
+
+        * GNUmakefile.am:
+
+2009-09-19  Gavin Barraclough  <barraclough@apple.com>
+
+        Reviewed by Sam 'Cabin Boy' Weinig.
+
+        Fix stack alignment with ARM THUMB2 JIT.
+        https://bugs.webkit.org/show_bug.cgi?id=29526
+        
+        Stack is currently being decremented by 0x3c, bump this to 0x40 to make this a
+        multiple of 16 bytes.
+
+        * jit/JITStubs.cpp:
+        (JSC::JITThunks::JITThunks):
+        * jit/JITStubs.h:
+
+2009-09-20  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Maciej Stachowiak.
+
+        SNES is too slow
+        https://bugs.webkit.org/show_bug.cgi?id=29534
+
+        The problem was that the emulator used multiple classes with
+        more properties than our dictionary cutoff allowed, this resulted
+        in more or less all critical logic inside the emulator requiring
+        uncached property access.
+
+        Rather than simply bumping the dictionary cutoff, this patch
+        recognises that there are two ways to create a "dictionary"
+        structure.  Either by adding a large number of properties, or
+        by removing a property.  In the case of adding properties we
+        know all the existing properties will maintain their existing
+        offsets, so we could cache access to those properties, if we
+        know they won't be removed.
+
+        To make this possible, this patch adds the logic required to
+        distinguish a dictionary created by addition from one created
+        by removal.  With this logic in place we can now cache access
+        to objects with large numbers of properties.
+
+        SNES performance improved by more than 6x.
+
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::resolveGlobal):
+        (JSC::Interpreter::tryCachePutByID):
+        (JSC::Interpreter::tryCacheGetByID):
+        * jit/JITStubs.cpp:
+        (JSC::JITThunks::tryCachePutByID):
+        (JSC::JITThunks::tryCacheGetByID):
+        (JSC::DEFINE_STUB_FUNCTION):
+        * runtime/BatchedTransitionOptimizer.h:
+        (JSC::BatchedTransitionOptimizer::BatchedTransitionOptimizer):
+        * runtime/JSObject.cpp:
+        (JSC::JSObject::removeDirect):
+        * runtime/Structure.cpp:
+        (JSC::Structure::Structure):
+        (JSC::Structure::getEnumerablePropertyNames):
+        (JSC::Structure::despecifyDictionaryFunction):
+        (JSC::Structure::addPropertyTransitionToExistingStructure):
+        (JSC::Structure::addPropertyTransition):
+        (JSC::Structure::removePropertyTransition):
+        (JSC::Structure::toDictionaryTransition):
+        (JSC::Structure::toCacheableDictionaryTransition):
+        (JSC::Structure::toUncacheableDictionaryTransition):
+        (JSC::Structure::fromDictionaryTransition):
+        (JSC::Structure::removePropertyWithoutTransition):
+        * runtime/Structure.h:
+        (JSC::Structure::isDictionary):
+        (JSC::Structure::isUncacheableDictionary):
+        (JSC::Structure::):
+        * runtime/StructureChain.cpp:
+        (JSC::StructureChain::isCacheable):
+
+2009-09-19  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Maciej Stachowiak.
+
+        Implement ES5 Object.create function
+        https://bugs.webkit.org/show_bug.cgi?id=29524
+
+        Implement Object.create.  Very simple patch, effectively Object.defineProperties
+        only creating the target object itself.
+
+        * runtime/CommonIdentifiers.h:
+        * runtime/ObjectConstructor.cpp:
+        (JSC::ObjectConstructor::ObjectConstructor):
+        (JSC::objectConstructorCreate):
+
+2009-09-19  Dan Bernstein  <mitz@apple.com>
+
+        Fix clean debug builds.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore_debug.def:
+
+2009-09-19  Joerg Bornemann  <joerg.bornemann@nokia.com>
+
+        Reviewed by George Staikos.
+
+        QtWebKit Windows CE compile fix
+
+        https://bugs.webkit.org/show_bug.cgi?id=29379
+
+        There is no _aligned_alloc or _aligned_free on Windows CE.
+        We just use the Windows code that was there before and use VirtualAlloc.
+        But that also means that the BLOCK_SIZE must be 64K as this function
+        allocates on 64K boundaries.
+
+        * runtime/Collector.cpp:
+        (JSC::Heap::allocateBlock):
+        (JSC::Heap::freeBlock):
+        * runtime/Collector.h:
+
+2009-09-19  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        Implement ES5 Object.defineProperties function
+        https://bugs.webkit.org/show_bug.cgi?id=29522
+
+        Implement Object.defineProperties.  Fairly simple patch, simply makes use of
+        existing functionality used for defineProperty.
+
+        * runtime/CommonIdentifiers.h:
+        * runtime/ObjectConstructor.cpp:
+        (JSC::ObjectConstructor::ObjectConstructor):
+        (JSC::defineProperties):
+        (JSC::objectConstructorDefineProperties):
+
+2009-09-19  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by NOBODY (Build fix).
+
+        Windows build fix part2
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.def:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore_debug.def:
+
+2009-09-19  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by NOBODY (Buildfix).
+
+        Windows build fix part 1.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.def:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore_debug.def:
+
+2009-09-18  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Geoff Garen.
+
+        Implement ES5 Object.defineProperty function
+        https://bugs.webkit.org/show_bug.cgi?id=29503
+
+        Implement Object.defineProperty.  This requires adding the API to
+        ObjectConstructor, along with a helper function that implements the
+        ES5 internal [[ToPropertyDescriptor]] function.  It then adds
+        JSObject::defineOwnProperty that implements the appropriate ES5 semantics.
+        Currently defineOwnProperty uses a delete followed by a put to redefine
+        attributes of a property, clearly this is less efficient than it could be
+        but we can improve this if it needs to be possible in future.
+
+        * JavaScriptCore.exp:
+        * debugger/DebuggerActivation.cpp:
+        (JSC::DebuggerActivation::defineGetter):
+        (JSC::DebuggerActivation::defineSetter):
+        * debugger/DebuggerActivation.h:
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::privateExecute):
+        * jit/JITStubs.cpp:
+          Update defineGetter/Setter calls
+        * runtime/CommonIdentifiers.h:
+        * runtime/JSArray.cpp:
+        (JSC::JSArray::getOwnPropertySlot):
+        * runtime/JSGlobalObject.cpp:
+        (JSC::JSGlobalObject::defineGetter):
+        (JSC::JSGlobalObject::defineSetter):
+        * runtime/JSGlobalObject.h:
+        * runtime/JSObject.cpp:
+        (JSC::JSObject::defineGetter):
+        (JSC::JSObject::defineSetter):
+        (JSC::putDescriptor):
+        (JSC::JSObject::defineOwnProperty):
+        * runtime/JSObject.h:
+        * runtime/ObjectConstructor.cpp:
+        (JSC::ObjectConstructor::ObjectConstructor):
+        (JSC::objectConstructorGetOwnPropertyDescriptor):
+        (JSC::toPropertyDescriptor):
+        (JSC::objectConstructorDefineProperty):
+        * runtime/ObjectPrototype.cpp:
+        (JSC::objectProtoFuncDefineGetter):
+        (JSC::objectProtoFuncDefineSetter):
+        * runtime/PropertyDescriptor.cpp:
+        (JSC::PropertyDescriptor::writable):
+        (JSC::PropertyDescriptor::enumerable):
+        (JSC::PropertyDescriptor::configurable):
+        (JSC::PropertyDescriptor::isDataDescriptor):
+        (JSC::PropertyDescriptor::isGenericDescriptor):
+        (JSC::PropertyDescriptor::isAccessorDescriptor):
+        (JSC::PropertyDescriptor::getter):
+        (JSC::PropertyDescriptor::setter):
+        (JSC::PropertyDescriptor::setDescriptor):
+        (JSC::PropertyDescriptor::setAccessorDescriptor):
+        (JSC::PropertyDescriptor::setWritable):
+        (JSC::PropertyDescriptor::setEnumerable):
+        (JSC::PropertyDescriptor::setConfigurable):
+        (JSC::PropertyDescriptor::setSetter):
+        (JSC::PropertyDescriptor::setGetter):
+        (JSC::PropertyDescriptor::equalTo):
+        (JSC::PropertyDescriptor::attributesEqual):
+        (JSC::PropertyDescriptor::attributesWithOverride):
+        * runtime/PropertyDescriptor.h:
+        (JSC::PropertyDescriptor::PropertyDescriptor):
+        (JSC::PropertyDescriptor::value):
+        (JSC::PropertyDescriptor::setValue):
+        (JSC::PropertyDescriptor::isEmpty):
+        (JSC::PropertyDescriptor::writablePresent):
+        (JSC::PropertyDescriptor::enumerablePresent):
+        (JSC::PropertyDescriptor::configurablePresent):
+        (JSC::PropertyDescriptor::setterPresent):
+        (JSC::PropertyDescriptor::getterPresent):
+        (JSC::PropertyDescriptor::operator==):
+        (JSC::PropertyDescriptor::):
+
+2009-09-18  Gabor Loki  <loki@inf.u-szeged.hu>
+
+        Reviewed by Gavin Barraclough.
+
+        Build fix to enable ARM_THUMB2 on Linux
+        https://bugs.webkit.org/show_bug.cgi?id=
+
+        * jit/ExecutableAllocator.h:
+        (JSC::ExecutableAllocator::cacheFlush):
+        * jit/JITStubs.cpp:
+        * wtf/Platform.h:
+
+2009-09-18  Gabor Loki  <loki@inf.u-szeged.hu>
+
+        Reviewed by Gavin Barraclough.
+
+        Defines two pseudo-platforms for ARM and Thumb-2 instruction set.
+        https://bugs.webkit.org/show_bug.cgi?id=29122
+
+        Introduces WTF_PLATFORM_ARM_TRADITIONAL and WTF_PLATFORM_ARM_THUMB2
+        macros on ARM platforms. The PLATFORM(ARM_THUMB2) should be used
+        when Thumb-2 instruction set is the required target. The
+        PLATFORM(ARM_TRADITIONAL) is for generic ARM instruction set. In
+        case where the code is common the PLATFORM(ARM) have to be used.
+
+        * assembler/ARMAssembler.cpp:
+        * assembler/ARMAssembler.h:
+        * assembler/ARMv7Assembler.h:
+        * assembler/MacroAssembler.h:
+        * assembler/MacroAssemblerARM.cpp:
+        * assembler/MacroAssemblerARM.h:
+        * assembler/MacroAssemblerCodeRef.h:
+        (JSC::MacroAssemblerCodePtr::MacroAssemblerCodePtr):
+        * jit/ExecutableAllocator.h:
+        * jit/JIT.h:
+        * jit/JITInlineMethods.h:
+        (JSC::JIT::beginUninterruptedSequence):
+        (JSC::JIT::preserveReturnAddressAfterCall):
+        (JSC::JIT::restoreReturnAddressBeforeReturn):
+        (JSC::JIT::restoreArgumentReference):
+        (JSC::JIT::restoreArgumentReferenceForTrampoline):
+        * jit/JITOpcodes.cpp:
+        * jit/JITStubs.cpp:
+        (JSC::JITThunks::JITThunks):
+        * jit/JITStubs.h:
+        * wtf/Platform.h:
+        * yarr/RegexJIT.cpp:
+        (JSC::Yarr::RegexGenerator::generateEnter):
+
+2009-09-18  Joerg Bornemann  <joerg.bornemann@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Fix the Qt/Windows CE build.
+
+        * JavaScriptCore.pri: Build the ce_time.cpp functions from
+        within Qt externally.
+        * wtf/DateMath.cpp: Removed unnecessary Qt #ifdef, for the
+        Qt build these functions are no external, too.
+
 2009-09-17  Janne Koskinen  <janne.p.koskinen@digia.com>
 
         Reviewed by Simon Hausmann.

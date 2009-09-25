@@ -50,10 +50,9 @@ win32-* {
     }
 }
 
-win32-msvc*: INCLUDEPATH += $$PWD/os-win32
 wince* {
-    INCLUDEPATH += $$PWD/os-win32
     SOURCES += $$QT_SOURCE_TREE/src/3rdparty/ce-compat/ce_time.cpp
+    DEFINES += WINCEBASIC
 }
 
 include(pcre/pcre.pri)

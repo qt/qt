@@ -224,18 +224,27 @@ class Q_GUI_EXPORT QGraphicsBlurEffect: public QGraphicsEffect
 {
     Q_OBJECT
     Q_PROPERTY(int blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
+    Q_PROPERTY(BlurHint blurHint READ blurHint WRITE setBlurHint NOTIFY blurHintChanged)
 public:
+    enum BlurHint {
+        PerformanceHint,
+        QualityHint
+    };
+
     QGraphicsBlurEffect(QObject *parent = 0);
     ~QGraphicsBlurEffect();
 
     QRectF boundingRectFor(const QRectF &rect) const;
     int blurRadius() const;
+    BlurHint blurHint() const;
 
 public Q_SLOTS:
     void setBlurRadius(int blurRadius);
+    void setBlurHint(BlurHint blurHint);
 
 Q_SIGNALS:
     void blurRadiusChanged(int blurRadius);
+    void blurHintChanged(BlurHint blurHint);
 
 protected:
     void draw(QPainter *painter, QGraphicsEffectSource *source);

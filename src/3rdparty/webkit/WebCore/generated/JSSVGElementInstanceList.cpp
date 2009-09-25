@@ -94,7 +94,7 @@ JSSVGElementInstanceList::JSSVGElementInstanceList(PassRefPtr<Structure> structu
 
 JSSVGElementInstanceList::~JSSVGElementInstanceList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGElementInstanceList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

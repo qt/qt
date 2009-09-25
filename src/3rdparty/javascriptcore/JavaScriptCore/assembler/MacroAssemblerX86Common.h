@@ -57,13 +57,14 @@ public:
 
     enum DoubleCondition {
         DoubleEqual = X86Assembler::ConditionE,
+        DoubleNotEqual = X86Assembler::ConditionNE,
         DoubleGreaterThan = X86Assembler::ConditionA,
         DoubleGreaterThanOrEqual = X86Assembler::ConditionAE,
         DoubleLessThan = X86Assembler::ConditionB,
         DoubleLessThanOrEqual = X86Assembler::ConditionBE,
     };
 
-    static const RegisterID stackPointerRegister = X86::esp;
+    static const RegisterID stackPointerRegister = X86Registers::esp;
 
     // Integer arithmetic operations:
     //
@@ -91,6 +92,11 @@ public:
     {
         m_assembler.addl_mr(src.offset, src.base, dest);
     }
+
+    void add32(RegisterID src, Address dest)
+    {
+        m_assembler.addl_rm(src, dest.offset, dest.base);
+    }
     
     void and32(RegisterID src, RegisterID dest)
     {
@@ -100,6 +106,16 @@ public:
     void and32(Imm32 imm, RegisterID dest)
     {
         m_assembler.andl_ir(imm.m_value, dest);
+    }
+
+    void and32(RegisterID src, Address dest)
+    {
+        m_assembler.andl_rm(src, dest.offset, dest.base);
+    }
+
+    void and32(Address src, RegisterID dest)
+    {
+        m_assembler.andl_mr(src.offset, src.base, dest);
     }
 
     void and32(Imm32 imm, Address address)
@@ -116,20 +132,20 @@ public:
     {
         // On x86 we can only shift by ecx; if asked to shift by another register we'll
         // need rejig the shift amount into ecx first, and restore the registers afterwards.
-        if (shift_amount != X86::ecx) {
-            swap(shift_amount, X86::ecx);
+        if (shift_amount != X86Registers::ecx) {
+            swap(shift_amount, X86Registers::ecx);
 
             // E.g. transform "shll %eax, %eax" -> "xchgl %eax, %ecx; shll %ecx, %ecx; xchgl %eax, %ecx"
             if (dest == shift_amount)
-                m_assembler.shll_CLr(X86::ecx);
+                m_assembler.shll_CLr(X86Registers::ecx);
             // E.g. transform "shll %eax, %ecx" -> "xchgl %eax, %ecx; shll %ecx, %eax; xchgl %eax, %ecx"
-            else if (dest == X86::ecx)
+            else if (dest == X86Registers::ecx)
                 m_assembler.shll_CLr(shift_amount);
             // E.g. transform "shll %eax, %ebx" -> "xchgl %eax, %ecx; shll %ecx, %ebx; xchgl %eax, %ecx"
             else
                 m_assembler.shll_CLr(dest);
         
-            swap(shift_amount, X86::ecx);
+            swap(shift_amount, X86Registers::ecx);
         } else
             m_assembler.shll_CLr(dest);
     }
@@ -138,15 +154,35 @@ public:
     {
         m_assembler.imull_rr(src, dest);
     }
+
+    void mul32(Address src, RegisterID dest)
+    {
+        m_assembler.imull_mr(src.offset, src.base, dest);
+    }
     
     void mul32(Imm32 imm, RegisterID src, RegisterID dest)
     {
         m_assembler.imull_i32r(src, imm.m_value, dest);
     }
-    
+
+    void neg32(RegisterID srcDest)
+    {
+        m_assembler.negl_r(srcDest);
+    }
+
+    void neg32(Address srcDest)
+    {
+        m_assembler.negl_m(srcDest.offset, srcDest.base);
+    }
+
     void not32(RegisterID srcDest)
     {
         m_assembler.notl_r(srcDest);
+    }
+
+    void not32(Address srcDest)
+    {
+        m_assembler.notl_m(srcDest.offset, srcDest.base);
     }
     
     void or32(RegisterID src, RegisterID dest)
@@ -159,6 +195,16 @@ public:
         m_assembler.orl_ir(imm.m_value, dest);
     }
 
+    void or32(RegisterID src, Address dest)
+    {
+        m_assembler.orl_rm(src, dest.offset, dest.base);
+    }
+
+    void or32(Address src, RegisterID dest)
+    {
+        m_assembler.orl_mr(src.offset, src.base, dest);
+    }
+
     void or32(Imm32 imm, Address address)
     {
         m_assembler.orl_im(imm.m_value, address.offset, address.base);
@@ -168,20 +214,20 @@ public:
     {
         // On x86 we can only shift by ecx; if asked to shift by another register we'll
         // need rejig the shift amount into ecx first, and restore the registers afterwards.
-        if (shift_amount != X86::ecx) {
-            swap(shift_amount, X86::ecx);
+        if (shift_amount != X86Registers::ecx) {
+            swap(shift_amount, X86Registers::ecx);
 
             // E.g. transform "shll %eax, %eax" -> "xchgl %eax, %ecx; shll %ecx, %ecx; xchgl %eax, %ecx"
             if (dest == shift_amount)
-                m_assembler.sarl_CLr(X86::ecx);
+                m_assembler.sarl_CLr(X86Registers::ecx);
             // E.g. transform "shll %eax, %ecx" -> "xchgl %eax, %ecx; shll %ecx, %eax; xchgl %eax, %ecx"
-            else if (dest == X86::ecx)
+            else if (dest == X86Registers::ecx)
                 m_assembler.sarl_CLr(shift_amount);
             // E.g. transform "shll %eax, %ebx" -> "xchgl %eax, %ecx; shll %ecx, %ebx; xchgl %eax, %ecx"
             else
                 m_assembler.sarl_CLr(dest);
         
-            swap(shift_amount, X86::ecx);
+            swap(shift_amount, X86Registers::ecx);
         } else
             m_assembler.sarl_CLr(dest);
     }
@@ -211,14 +257,35 @@ public:
         m_assembler.subl_mr(src.offset, src.base, dest);
     }
 
+    void sub32(RegisterID src, Address dest)
+    {
+        m_assembler.subl_rm(src, dest.offset, dest.base);
+    }
+
+
     void xor32(RegisterID src, RegisterID dest)
     {
         m_assembler.xorl_rr(src, dest);
     }
 
-    void xor32(Imm32 imm, RegisterID srcDest)
+    void xor32(Imm32 imm, Address dest)
     {
-        m_assembler.xorl_ir(imm.m_value, srcDest);
+        m_assembler.xorl_im(imm.m_value, dest.offset, dest.base);
+    }
+
+    void xor32(Imm32 imm, RegisterID dest)
+    {
+        m_assembler.xorl_ir(imm.m_value, dest);
+    }
+
+    void xor32(RegisterID src, Address dest)
+    {
+        m_assembler.xorl_rm(src, dest.offset, dest.base);
+    }
+
+    void xor32(Address src, RegisterID dest)
+    {
+        m_assembler.xorl_mr(src.offset, src.base, dest);
     }
     
 
@@ -300,6 +367,18 @@ public:
         m_assembler.addsd_mr(src.offset, src.base, dest);
     }
 
+    void divDouble(FPRegisterID src, FPRegisterID dest)
+    {
+        ASSERT(isSSE2Present());
+        m_assembler.divsd_rr(src, dest);
+    }
+
+    void divDouble(Address src, FPRegisterID dest)
+    {
+        ASSERT(isSSE2Present());
+        m_assembler.divsd_mr(src.offset, src.base, dest);
+    }
+
     void subDouble(FPRegisterID src, FPRegisterID dest)
     {
         ASSERT(isSSE2Present());
@@ -330,10 +409,21 @@ public:
         m_assembler.cvtsi2sd_rr(src, dest);
     }
 
+    void convertInt32ToDouble(Address src, FPRegisterID dest)
+    {
+        m_assembler.cvtsi2sd_mr(src.offset, src.base, dest);
+    }
+
     Jump branchDouble(DoubleCondition cond, FPRegisterID left, FPRegisterID right)
     {
         ASSERT(isSSE2Present());
         m_assembler.ucomisd_rr(right, left);
+        return Jump(m_assembler.jCC(x86Condition(cond)));
+    }
+
+    Jump branchDouble(DoubleCondition cond, FPRegisterID left, Address right)
+    {
+        m_assembler.ucomisd_mr(right.offset, right.base, left);
         return Jump(m_assembler.jCC(x86Condition(cond)));
     }
 
@@ -346,6 +436,12 @@ public:
         ASSERT(isSSE2Present());
         m_assembler.cvttsd2si_rr(src, dest);
         return branch32(Equal, dest, Imm32(0x80000000));
+    }
+
+    void zeroDouble(FPRegisterID srcDest)
+    {
+        ASSERT(isSSE2Present());
+        m_assembler.xorpd_rr(srcDest, srcDest);
     }
 
 
@@ -397,15 +493,13 @@ public:
     {
         // Note: on 64-bit this is is a full register move; perhaps it would be
         // useful to have separate move32 & movePtr, with move32 zero extending?
-        m_assembler.movq_rr(src, dest);
+        if (src != dest)
+            m_assembler.movq_rr(src, dest);
     }
 
     void move(ImmPtr imm, RegisterID dest)
     {
-        if (CAN_SIGN_EXTEND_U32_64(imm.asIntptr()))
-            m_assembler.movl_i32r(static_cast<int32_t>(imm.asIntptr()), dest);
-        else
-            m_assembler.movq_i64r(imm.asIntptr(), dest);
+        m_assembler.movq_i64r(imm.asIntptr(), dest);
     }
 
     void swap(RegisterID reg1, RegisterID reg2)
@@ -605,9 +699,37 @@ public:
         return Jump(m_assembler.jCC(x86Condition(cond)));
     }
     
+    Jump branchAdd32(Condition cond, Imm32 src, Address dest)
+    {
+        ASSERT((cond == Overflow) || (cond == Zero) || (cond == NonZero));
+        add32(src, dest);
+        return Jump(m_assembler.jCC(x86Condition(cond)));
+    }
+
+    Jump branchAdd32(Condition cond, RegisterID src, Address dest)
+    {
+        ASSERT((cond == Overflow) || (cond == Zero) || (cond == NonZero));
+        add32(src, dest);
+        return Jump(m_assembler.jCC(x86Condition(cond)));
+    }
+
+    Jump branchAdd32(Condition cond, Address src, RegisterID dest)
+    {
+        ASSERT((cond == Overflow) || (cond == Zero) || (cond == NonZero));
+        add32(src, dest);
+        return Jump(m_assembler.jCC(x86Condition(cond)));
+    }
+
     Jump branchMul32(Condition cond, RegisterID src, RegisterID dest)
     {
         ASSERT(cond == Overflow);
+        mul32(src, dest);
+        return Jump(m_assembler.jCC(x86Condition(cond)));
+    }
+
+    Jump branchMul32(Condition cond, Address src, RegisterID dest)
+    {
+        ASSERT((cond == Overflow) || (cond == Zero) || (cond == NonZero));
         mul32(src, dest);
         return Jump(m_assembler.jCC(x86Condition(cond)));
     }
@@ -632,7 +754,35 @@ public:
         sub32(imm, dest);
         return Jump(m_assembler.jCC(x86Condition(cond)));
     }
-    
+
+    Jump branchSub32(Condition cond, Imm32 imm, Address dest)
+    {
+        ASSERT((cond == Overflow) || (cond == Zero) || (cond == NonZero));
+        sub32(imm, dest);
+        return Jump(m_assembler.jCC(x86Condition(cond)));
+    }
+
+    Jump branchSub32(Condition cond, RegisterID src, Address dest)
+    {
+        ASSERT((cond == Overflow) || (cond == Zero) || (cond == NonZero));
+        sub32(src, dest);
+        return Jump(m_assembler.jCC(x86Condition(cond)));
+    }
+
+    Jump branchSub32(Condition cond, Address src, RegisterID dest)
+    {
+        ASSERT((cond == Overflow) || (cond == Zero) || (cond == NonZero));
+        sub32(src, dest);
+        return Jump(m_assembler.jCC(x86Condition(cond)));
+    }
+
+    Jump branchOr32(Condition cond, RegisterID src, RegisterID dest)
+    {
+        ASSERT((cond == Signed) || (cond == Zero) || (cond == NonZero));
+        or32(src, dest);
+        return Jump(m_assembler.jCC(x86Condition(cond)));
+    }
+
 
     // Miscellaneous operations:
 
@@ -661,6 +811,27 @@ public:
         m_assembler.ret();
     }
 
+    void set8(Condition cond, RegisterID left, RegisterID right, RegisterID dest)
+    {
+        m_assembler.cmpl_rr(right, left);
+        m_assembler.setCC_r(x86Condition(cond), dest);
+    }
+
+    void set8(Condition cond, Address left, RegisterID right, RegisterID dest)
+    {
+        m_assembler.cmpl_mr(left.offset, left.base, right);
+        m_assembler.setCC_r(x86Condition(cond), dest);
+    }
+
+    void set8(Condition cond, RegisterID left, Imm32 right, RegisterID dest)
+    {
+        if (((cond == Equal) || (cond == NotEqual)) && !right.m_value)
+            m_assembler.testl_rr(left, left);
+        else
+            m_assembler.cmpl_ir(right.m_value, left);
+        m_assembler.setCC_r(x86Condition(cond), dest);
+    }
+
     void set32(Condition cond, RegisterID left, RegisterID right, RegisterID dest)
     {
         m_assembler.cmpl_rr(right, left);
@@ -682,6 +853,16 @@ public:
     // The mask should be optional... paerhaps the argument order should be
     // dest-src, operations always have a dest? ... possibly not true, considering
     // asm ops like test, or pseudo ops like pop().
+
+    void setTest8(Condition cond, Address address, Imm32 mask, RegisterID dest)
+    {
+        if (mask.m_value == -1)
+            m_assembler.cmpl_im(0, address.offset, address.base);
+        else
+            m_assembler.testl_i32m(mask.m_value, address.offset, address.base);
+        m_assembler.setCC_r(x86Condition(cond), dest);
+    }
+
     void setTest32(Condition cond, Address address, Imm32 mask, RegisterID dest)
     {
         if (mask.m_value == -1)

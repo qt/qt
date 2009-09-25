@@ -81,15 +81,6 @@ Q_OPENVG_EXPORT void qt_vg_destroy_context(QEglContext *context);
 // destroy VGImage objects when there is no other surface available.
 Q_OPENVG_EXPORT EGLSurface qt_vg_shared_surface(void);
 
-// Make a context current with a specific surface.
-Q_OPENVG_EXPORT void qt_vg_make_current(QEglContext *context, EGLSurface surface);
-
-// Make a context uncurrent.
-Q_OPENVG_EXPORT void qt_vg_done_current(QEglContext *context, bool force = false);
-
-// Destroy a surface that was previously associated with a context.
-Q_OPENVG_EXPORT void qt_vg_destroy_surface(QEglContext *context, EGLSurface surface);
-
 // Convert the configuration format in a context to a VG or QImage format.
 Q_OPENVG_EXPORT VGImageFormat qt_vg_config_to_vg_format(QEglContext *context);
 Q_OPENVG_EXPORT QImage::Format qt_vg_config_to_image_format(QEglContext *context);

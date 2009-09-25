@@ -148,7 +148,7 @@ JSTreeWalker::JSTreeWalker(PassRefPtr<Structure> structure, JSDOMGlobalObject* g
 
 JSTreeWalker::~JSTreeWalker()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSTreeWalker::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

@@ -9,7 +9,6 @@ contains(TEMPLATE, ".*lib"):{
 
 mac {
     QMAKE_LFLAGS += $$QMAKE_LFLAGS_STATIC_LIB
-    CONFIG += hide_symbols
 }
 
 symbian {

@@ -34,13 +34,8 @@ namespace WTF {
         ListRefPtr(const RefPtr<T>& o) : RefPtr<T>(o) {}
         // see comment in PassRefPtr.h for why this takes const reference
         template <typename U> ListRefPtr(const PassRefPtr<U>& o) : RefPtr<T>(o) {}
-
-        ~ListRefPtr()
-        {
-            RefPtr<T> reaper = this->release();
-            while (reaper && reaper->hasOneRef())
-                reaper = reaper->releaseNext(); // implicitly protects reaper->next, then derefs reaper
-        }
+        
+        ~ListRefPtr();
         
         ListRefPtr& operator=(T* optr) { RefPtr<T>::operator=(optr); return *this; }
         ListRefPtr& operator=(const RefPtr<T>& o) { RefPtr<T>::operator=(o); return *this; }
@@ -48,6 +43,17 @@ namespace WTF {
         template <typename U> ListRefPtr& operator=(const RefPtr<U>& o) { RefPtr<T>::operator=(o); return *this; }
         template <typename U> ListRefPtr& operator=(const PassRefPtr<U>& o) { RefPtr<T>::operator=(o); return *this; }
     };
+
+    template <typename T> 
+#if !COMPILER(WINSCW)
+    inline
+#endif
+    ListRefPtr<T>::~ListRefPtr()
+    {
+        RefPtr<T> reaper = this->release();
+        while (reaper && reaper->hasOneRef())
+            reaper = reaper->releaseNext(); // implicitly protects reaper->next, then derefs reaper
+    }
 
     template <typename T> inline T* getPtr(const ListRefPtr<T>& p)
     {

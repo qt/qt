@@ -50,7 +50,7 @@ namespace WTF {
 
         ~RefPtr() { T* ptr = m_ptr; derefIfNotNull(ptr); }
         
-        template <typename U> RefPtr(const RefPtr<U>& o) : m_ptr(o.get()) { if (T* ptr = m_ptr) ptr->ref(); }
+        template <typename U> RefPtr(const RefPtr<U>& o) : m_ptr(static_cast<T*>(o.get())) { if (T* ptr = static_cast<T*>(m_ptr)) ptr->ref(); }
         
         T* get() const { return m_ptr; }
         

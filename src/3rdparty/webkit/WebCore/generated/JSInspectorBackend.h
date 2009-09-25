@@ -155,6 +155,9 @@ JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionPushNodePathToFron
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionAddNodesToSearchResult(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSelectDatabase(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSelectDOMStorage(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetDOMStorageEntries(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSetDOMStorageItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionRemoveDOMStorageItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
 JSC::JSValue jsInspectorBackendConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

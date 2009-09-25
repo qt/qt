@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2009 Google Inc.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,23 +29,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#ifndef SocketStreamHandle_h
+#define SocketStreamHandle_h
 
-#if ENABLE(SHARED_WORKERS)
+#include "SocketStreamHandleBase.h"
 
-#include "JSSharedWorkerContext.h"
-
-using namespace JSC;
+#include <wtf/PassRefPtr.h>
+#include <wtf/RefCounted.h>
 
 namespace WebCore {
 
-void JSSharedWorkerContext::markChildren(MarkStack& markStack)
-{
-    Base::markChildren(markStack);
+    class AuthenticationChallenge;
+    class Credential;
+    class SocketStreamHandleClient;
 
-    markIfNotNull(markStack, impl()->onconnect());
-}
+    class SocketStreamHandle : public RefCounted<SocketStreamHandle>, public SocketStreamHandleBase {
+    public:
+        static PassRefPtr<SocketStreamHandle> create(const KURL& url, SocketStreamHandleClient* client) { return adoptRef(new SocketStreamHandle(url, client)); }
 
-} // namespace WebCore
+        virtual ~SocketStreamHandle();
 
-#endif // ENABLE(SHARED_WORKERS)
+    protected:
+        virtual int platformSend(const char* data, int length);
+        virtual void platformClose();
+
+    private:
+        SocketStreamHandle(const KURL&, SocketStreamHandleClient*);
+
+        // No authentication for streams per se, but proxy may ask for credentials.
+        void didReceiveAuthenticationChallenge(const AuthenticationChallenge&);
+        void receivedCredential(const AuthenticationChallenge&, const Credential&);
+        void receivedRequestToContinueWithoutCredential(const AuthenticationChallenge&);
+        void receivedCancellation(const AuthenticationChallenge&);
+    };
+
+}  // namespace WebCore
+
+#endif  // SocketStreamHandle_h

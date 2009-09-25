@@ -76,7 +76,7 @@ JSBarInfo::JSBarInfo(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalO
 
 JSBarInfo::~JSBarInfo()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSBarInfo::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

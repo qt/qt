@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,10 +10,10 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY APPLE INC. ``AS IS'' AND ANY
+ * THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER, INC. ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE INC. OR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE COMPUTER, INC. OR
  * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -23,18 +23,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-provider JavaScriptCore
-{
-    probe gc__begin();
-    probe gc__marked();
-    probe gc__end(int, int);
-    
-    probe profile__will_execute(int, char*, char*, int);
-    probe profile__did_execute(int, char*, char*, int);
+#ifndef QWebPageClient_h
+#define QWebPageClient_h
+
+#include <QRect>
+
+class QWebPageClient {
+public:
+    virtual void scroll(int dx, int dy, const QRect&) = 0;
+    virtual void update(const QRect&) = 0;
+
+    inline void resetCursor()
+    {
+        if (!cursor().bitmap() && cursor().shape() == m_lastCursor.shape())
+            return;
+        updateCursor(m_lastCursor);
+    }
+
+    inline void setCursor(const QCursor& cursor)
+    {
+        m_lastCursor = cursor;
+        if (!cursor.bitmap() && cursor.shape() == this->cursor().shape())
+            return;
+        updateCursor(cursor);
+    }
+
+    virtual int screenNumber() const = 0;
+    virtual WId winId() const = 0;
+
+protected:
+    virtual QCursor cursor() const = 0;
+    virtual void updateCursor(const QCursor& cursor) = 0;
+
+private:
+    QCursor m_lastCursor;
 };
 
-#pragma D attributes Unstable/Unstable/Common provider JavaScriptCore provider
-#pragma D attributes Private/Private/Unknown provider JavaScriptCore module
-#pragma D attributes Private/Private/Unknown provider JavaScriptCore function
-#pragma D attributes Unstable/Unstable/Common provider JavaScriptCore name
-#pragma D attributes Unstable/Unstable/Common provider JavaScriptCore args
+#endif

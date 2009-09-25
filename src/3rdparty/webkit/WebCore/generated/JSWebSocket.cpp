@@ -29,6 +29,7 @@
 #include "JSDOMGlobalObject.h"
 #include "JSEventListener.h"
 #include "KURL.h"
+#include "RegisteredEventListener.h"
 #include "WebSocket.h"
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
@@ -115,7 +116,14 @@ JSWebSocket::JSWebSocket(PassRefPtr<Structure> structure, JSDOMGlobalObject* glo
 
 JSWebSocket::~JSWebSocket()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    impl()->invalidateEventListeners();
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+}
+
+void JSWebSocket::markChildren(MarkStack& markStack)
+{
+    Base::markChildren(markStack);
+    impl()->markEventListeners(markStack);
 }
 
 JSObject* JSWebSocket::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

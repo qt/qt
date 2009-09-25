@@ -3617,7 +3617,7 @@ void QWidgetPrivate::raise_sys()
     QMacCocoaAutoReleasePool pool;
     if (isRealWindow()) {
         // Calling orderFront shows the window on Cocoa too.
-        if (!q->testAttribute(Qt::WA_DontShowOnScreen)) {
+        if (!q->testAttribute(Qt::WA_DontShowOnScreen) && q->isVisible()) {
             [qt_mac_window_for(q) orderFront:qt_mac_window_for(q)];
         }
         if (qt_mac_raise_process) { //we get to be the active process now

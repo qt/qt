@@ -295,6 +295,7 @@ public:
 #endif
 #if defined(QT_OPENGL_ES)
     QEglContext *eglContext;
+    EGLSurface eglSurface;
 #elif defined(Q_WS_X11) || defined(Q_WS_MAC)
     void* cx;
 #endif

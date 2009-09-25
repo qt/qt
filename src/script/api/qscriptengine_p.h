@@ -100,6 +100,8 @@ namespace QScript
     //some conversion helper functions
     QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec);
     bool isFunction(JSC::JSValue value);
+
+    class UStringSourceProviderWithFeedback;
 }
 
 class QScriptEnginePrivate
@@ -160,7 +162,7 @@ public:
                                 JSC::JSObject *callee, bool calledAsConstructor = false);
     void popContext();
 
-    void mark();
+    void mark(JSC::MarkStack& markStack);
     bool isCollecting() const;
     void collectGarbage();
 
@@ -255,6 +257,8 @@ public:
 
     QSet<QString> importedExtensions;
     QSet<QString> extensionsBeingImported;
+    
+    QSet<QScript::UStringSourceProviderWithFeedback*> loadedScripts;
 
 #ifndef QT_NO_QOBJECT
     QHash<QObject*, QScript::QObjectData*> m_qobjectData;

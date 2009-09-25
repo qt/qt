@@ -38,6 +38,9 @@
 #include <QUrl>
 #include <QEvent>
 
+#if defined (__SYMBIAN32__)
+#include <phonon/path.h>
+#endif
 #include <audiooutput.h>
 #include <mediaobject.h>
 #include <videowidget.h>

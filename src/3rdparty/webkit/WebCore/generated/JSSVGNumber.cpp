@@ -79,7 +79,7 @@ JSSVGNumber::JSSVGNumber(PassRefPtr<Structure> structure, JSDOMGlobalObject* glo
 
 JSSVGNumber::~JSSVGNumber()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGNumber::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

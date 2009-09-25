@@ -144,14 +144,21 @@ void macStartIntercept(SEL originalSel, SEL fakeSel, Class baseClass, Class prox
 #endif
     {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+        // The following code replaces the _implementation_ for the selector we want to hack
+        // (originalSel) with the implementation found in proxyClass. Then it creates
+        // a new 'backup' method inside baseClass containing the old, original,
+        // implementation (fakeSel). You can let the proxy implementation of originalSel
+        // call fakeSel if needed (similar approach to calling a super class implementation).
+        // fakeSel must also be implemented in proxyClass, as the signature is used
+        // as template for the method one we add into baseClass.
+        // NB: You will typically never create any instances of proxyClass; we use it
+        // only for stealing its contents and put it into baseClass. 
         Method originalMethod = class_getInstanceMethod(baseClass, originalSel);
         Method newMethod = class_getInstanceMethod(proxyClass, originalSel);
         Method fakeMethod = class_getInstanceMethod(proxyClass, fakeSel);
 
-        IMP originalCtorImp = method_setImplementation(originalMethod,
-                                                       method_getImplementation(newMethod));
-        class_addMethod(baseClass, fakeSel, originalCtorImp,
-                        method_getTypeEncoding(fakeMethod));
+        IMP originalImp = method_setImplementation(originalMethod, method_getImplementation(newMethod));
+        class_addMethod(baseClass, fakeSel, originalImp, method_getTypeEncoding(fakeMethod));
 #endif
     }
 }

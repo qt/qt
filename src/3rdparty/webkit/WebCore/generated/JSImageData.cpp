@@ -123,7 +123,7 @@ JSImageData::JSImageData(PassRefPtr<Structure> structure, JSDOMGlobalObject* glo
 
 JSImageData::~JSImageData()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSImageData::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

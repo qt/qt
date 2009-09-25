@@ -138,7 +138,7 @@ JSFileList::JSFileList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globa
 
 JSFileList::~JSFileList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSFileList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

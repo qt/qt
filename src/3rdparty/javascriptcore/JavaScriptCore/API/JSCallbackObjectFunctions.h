@@ -318,11 +318,12 @@ bool JSCallbackObject<Base>::hasInstance(ExecState* exec, JSValue value, JSValue
     
     for (JSClassRef jsClass = classRef(); jsClass; jsClass = jsClass->parentClass) {
         if (JSObjectHasInstanceCallback hasInstance = jsClass->hasInstance) {
+            JSValueRef valueRef = toRef(exec, value);
             JSValueRef exception = 0;
             bool result;
             {
                 JSLock::DropAllLocks dropAllLocks(exec);
-                result = hasInstance(execRef, thisRef, toRef(exec, value), &exception);
+                result = hasInstance(execRef, thisRef, valueRef, &exception);
             }
             exec->setException(toJS(exec, exception));
             return result;
@@ -372,7 +373,7 @@ JSValue JSCallbackObject<Base>::call(ExecState* exec, JSObject* functionObject, 
 }
 
 template <class Base>
-void JSCallbackObject<Base>::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
+void JSCallbackObject<Base>::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
 {
     JSContextRef execRef = toRef(exec);
     JSObjectRef thisRef = toRef(this);
@@ -380,7 +381,7 @@ void JSCallbackObject<Base>::getPropertyNames(ExecState* exec, PropertyNameArray
     for (JSClassRef jsClass = classRef(); jsClass; jsClass = jsClass->parentClass) {
         if (JSObjectGetPropertyNamesCallback getPropertyNames = jsClass->getPropertyNames) {
             JSLock::DropAllLocks dropAllLocks(exec);
-            getPropertyNames(execRef, thisRef, toRef(&propertyNames), listedAttributes);
+            getPropertyNames(execRef, thisRef, toRef(&propertyNames));
         }
         
         if (OpaqueJSClassStaticValuesTable* staticValues = jsClass->staticValues(exec)) {
@@ -406,7 +407,7 @@ void JSCallbackObject<Base>::getPropertyNames(ExecState* exec, PropertyNameArray
         }
     }
     
-    Base::getPropertyNames(exec, propertyNames, listedAttributes);
+    Base::getOwnPropertyNames(exec, propertyNames, includeNonEnumerable);
 }
 
 template <class Base>
@@ -428,11 +429,13 @@ double JSCallbackObject<Base>::toNumber(ExecState* exec) const
                 JSLock::DropAllLocks dropAllLocks(exec);
                 value = convertToType(ctx, thisRef, kJSTypeNumber, &exception);
             }
-            exec->setException(toJS(exec, exception));
-            if (value) {
-                double dValue;
-                return toJS(exec, value).getNumber(dValue) ? dValue : NaN;
+            if (exception) {
+                exec->setException(toJS(exec, exception));
+                return 0;
             }
+
+            double dValue;
+            return toJS(exec, value).getNumber(dValue) ? dValue : NaN;
         }
             
     return Base::toNumber(exec);
@@ -452,11 +455,11 @@ UString JSCallbackObject<Base>::toString(ExecState* exec) const
                 JSLock::DropAllLocks dropAllLocks(exec);
                 value = convertToType(ctx, thisRef, kJSTypeString, &exception);
             }
-            exec->setException(toJS(exec, exception));
-            if (value)
-                return toJS(exec, value).getString();
-            if (exception)
+            if (exception) {
+                exec->setException(toJS(exec, exception));
                 return "";
+            }
+            return toJS(exec, value).getString();
         }
             
     return Base::toString(exec);

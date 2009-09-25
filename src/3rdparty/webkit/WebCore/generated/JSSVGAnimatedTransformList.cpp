@@ -81,7 +81,7 @@ JSSVGAnimatedTransformList::JSSVGAnimatedTransformList(PassRefPtr<Structure> str
 
 JSSVGAnimatedTransformList::~JSSVGAnimatedTransformList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGAnimatedTransformList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

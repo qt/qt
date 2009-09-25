@@ -153,7 +153,7 @@ JSSVGElementInstance::JSSVGElementInstance(PassRefPtr<Structure> structure, JSDO
 
 JSSVGElementInstance::~JSSVGElementInstance()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGElementInstance::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

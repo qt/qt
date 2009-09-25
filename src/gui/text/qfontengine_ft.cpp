@@ -1856,7 +1856,7 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g)
 
 QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, int margin, const QTransform &t)
 {
-    if (t.type() != QTransform::TxTranslate)
+    if (t.type() > QTransform::TxTranslate)
         return QFontEngine::alphaRGBMapForGlyph(g, margin, t);
 
     lockFace();

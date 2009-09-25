@@ -188,9 +188,9 @@ bool ClassObjectDelegate::getPropertyAttributes(const QScriptObject* object, JSC
     return QScriptObjectDelegate::getPropertyAttributes(object, exec, propertyName, attribs);
 }
 
-void ClassObjectDelegate::getPropertyNames(QScriptObject* object, JSC::ExecState *exec,
-                                           JSC::PropertyNameArray &propertyNames,
-                                           unsigned listedAttributes)
+void ClassObjectDelegate::getOwnPropertyNames(QScriptObject* object, JSC::ExecState *exec,
+                                              JSC::PropertyNameArray &propertyNames,
+                                              bool includeNonEnumerable)
 {
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScript::SaveFrameHelper saveFrame(engine, exec);
@@ -204,7 +204,7 @@ void ClassObjectDelegate::getPropertyNames(QScriptObject* object, JSC::ExecState
         }
         delete it;
     }
-    QScriptObjectDelegate::getPropertyNames(object, exec, propertyNames, listedAttributes);
+    QScriptObjectDelegate::getOwnPropertyNames(object, exec, propertyNames, includeNonEnumerable);
 }
 
 JSC::CallType ClassObjectDelegate::getCallData(QScriptObject*, JSC::CallData &callData)

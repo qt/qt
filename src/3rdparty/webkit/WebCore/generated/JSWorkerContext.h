@@ -33,6 +33,7 @@ class JSWorkerContext : public JSWorkerContextBase {
     typedef JSWorkerContextBase Base;
 public:
     JSWorkerContext(PassRefPtr<JSC::Structure>, PassRefPtr<WorkerContext>);
+    virtual ~JSWorkerContext();
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
     bool getOwnPropertySlotDelegate(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);

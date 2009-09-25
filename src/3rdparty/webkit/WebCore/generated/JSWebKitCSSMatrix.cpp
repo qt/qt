@@ -120,7 +120,7 @@ JSWebKitCSSMatrix::JSWebKitCSSMatrix(PassRefPtr<Structure> structure, JSDOMGloba
 
 JSWebKitCSSMatrix::~JSWebKitCSSMatrix()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSWebKitCSSMatrix::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

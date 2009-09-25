@@ -3519,6 +3519,11 @@ void HtmlGenerator::findAllClasses(const InnerNode *node)
  */
 void HtmlGenerator::findAllSince(const InnerNode *node, QString version)
 {
+    const QRegExp versionSeparator("[\\-\\.]");
+    const int minorIndex = version.indexOf(versionSeparator);
+    const int patchIndex = version.indexOf(versionSeparator, minorIndex+1);
+    version = version.left(patchIndex);
+
     NodeList::const_iterator c = node->childNodes().constBegin();
     while (c != node->childNodes().constEnd()) {
         if (((*c)->access() != Node::Private) && ((*c)->since() == version)) {

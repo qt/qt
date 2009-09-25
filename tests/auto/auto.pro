@@ -278,7 +278,7 @@ SUBDIRS += \
            qsocks5socketengine \
            qsortfilterproxymodel \
            qsound \
-           qaudiodeviceid \
+           qaudiodeviceinfo \
            qaudioformat \
            qaudiooutput \
            qaudioinput \

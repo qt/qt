@@ -106,7 +106,7 @@ void QNotifyChangeEvent::DoCancel()
 }
 
 QSymbianFileSystemWatcherEngine::QSymbianFileSystemWatcherEngine() :
-        watcherStarted(false)
+        errorCode(KErrNone), watcherStarted(false)
 {
     moveToThread(this);
 }

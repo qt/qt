@@ -82,6 +82,8 @@ JSC::JSValue jsHTMLTextAreaElementDisabled(JSC::ExecState*, const JSC::Identifie
 void setJSHTMLTextAreaElementDisabled(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLTextAreaElementAutofocus(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSHTMLTextAreaElementAutofocus(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLTextAreaElementMaxLength(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLTextAreaElementMaxLength(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLTextAreaElementName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSHTMLTextAreaElementName(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLTextAreaElementPlaceholder(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

@@ -164,7 +164,7 @@ JSSVGPreserveAspectRatio::JSSVGPreserveAspectRatio(PassRefPtr<Structure> structu
 
 JSSVGPreserveAspectRatio::~JSSVGPreserveAspectRatio()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGPreserveAspectRatio::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

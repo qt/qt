@@ -144,7 +144,7 @@ JSPlugin::JSPlugin(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObj
 
 JSPlugin::~JSPlugin()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSPlugin::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

@@ -61,7 +61,7 @@ JSCanvasPattern::JSCanvasPattern(PassRefPtr<Structure> structure, JSDOMGlobalObj
 
 JSCanvasPattern::~JSCanvasPattern()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSCanvasPattern::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
