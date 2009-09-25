@@ -95,6 +95,7 @@ private slots:
     void evaluate();
     void nestedEvaluate();
     void uncaughtException();
+    void errorMessage_QT679();
     void valueConversion();
     void importExtension();
     void infiniteRecursion();
@@ -1623,6 +1624,16 @@ void tst_QScriptEngine::uncaughtException()
             QVERIFY(!eng.hasUncaughtException());
         }
     }
+}
+
+void tst_QScriptEngine::errorMessage_QT679()
+{
+    QScriptEngine engine;
+    engine.globalObject().setProperty("foo", 15);
+    QScriptValue error = engine.evaluate("'hello world';\nfoo.bar.blah");
+    QVERIFY(error.isError());
+    QEXPECT_FAIL("", "Task QT-679: the error message always contains the first line of the script, even if the error was on a different line", Continue);
+    QCOMPARE(error.toString(), QString::fromLatin1("TypeError: Result of expression 'foo.bar' [undefined] is not an object."));
 }
 
 struct Foo {

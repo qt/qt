@@ -515,7 +515,9 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     timer.start(3000);
     eventLoop.exec();
     QCOMPARE(fileChangedSpy.count(), 0);
-    QCOMPARE(dirChangedSpy.count(), 1);
+    // polling watcher has generated separate events for content and time change
+    // on Symbian emulator, so allow possibility of 2 events
+    QVERIFY(dirChangedSpy.count() == 1 || dirChangedSpy.count() == 2);
 
     QVERIFY(QDir().rmdir("testDir"));
 }

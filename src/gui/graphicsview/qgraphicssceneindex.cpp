@@ -265,12 +265,13 @@ bool QGraphicsSceneIndexPrivate::itemCollidesWithPath(const QGraphicsItem *item,
 
 /*!
     \internal
+    This function returns the items in ascending order.
 */
 void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QRectF exposeRect,
                                                         QGraphicsSceneIndexIntersector *intersector,
                                                         QList<QGraphicsItem *> *items,
                                                         const QTransform &viewTransform,
-                                                        Qt::ItemSelectionMode mode, Qt::SortOrder order,
+                                                        Qt::ItemSelectionMode mode,
                                                         qreal parentOpacity) const
 {
     Q_ASSERT(item);
@@ -326,7 +327,7 @@ void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QRe
             if (itemIsFullyTransparent && !(child->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity))
                 continue;
             recursive_items_helper(child, exposeRect, intersector, items, viewTransform,
-                                   mode, order, opacity);
+                                   mode, opacity);
         }
     }
 
@@ -343,7 +344,7 @@ void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QRe
             if (itemIsFullyTransparent && !(child->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity))
                 continue;
             recursive_items_helper(child, exposeRect, intersector, items, viewTransform,
-                                   mode, order, opacity);
+                                   mode, opacity);
         }
     }
 }

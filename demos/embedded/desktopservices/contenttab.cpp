@@ -145,9 +145,20 @@ void ContentTab::handleErrorInOpen(QListWidgetItem *item)
 // NEW SLOTS
 void ContentTab::openItem(QListWidgetItem *item)
 {
-    bool ret = QDesktopServices::openUrl(itemUrl(item));
-    if (!ret)
-        handleErrorInOpen(item);
+#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
+    // Opening music files doesn't work in Symbian emulator and in some SDKs freezes the
+    // emulator entirely, so prevent it.
+    QStringList nameFilters = m_ContentDir.nameFilters();
+    if (nameFilters.contains("*.mp3")) {
+        QMessageBox::warning(this, tr("Operation Failed"), tr("Action not supported in emulator."),
+                             QMessageBox::Close);
+    } else
+#endif
+    {
+        bool ret = QDesktopServices::openUrl(itemUrl(item));
+        if (!ret)
+            handleErrorInOpen(item);
+    }
 }
 
 
