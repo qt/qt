@@ -5,6 +5,12 @@ include(../src/src.pri)
 win32: CONFIG += console
 mac:CONFIG -= app_bundle
 
+wince*|symbian {
+    DEFINES	+= SRCDIR=\\\"\\\"
+} else {
+    DEFINES	+= SRCDIR=\\\"$$PWD\\\"
+}
+
 DESTDIR = ./
 
 DEFINES	+= QSHAREDMEMORY_DEBUG
