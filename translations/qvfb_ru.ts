@@ -88,32 +88,32 @@
     <message>
         <location line="+21"/>
         <source>176x220 &quot;SmartPhone&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>176x220 &quot;SmartPhone&quot;</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>240x320 &quot;PDA&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>240x320 &quot;PDA&quot;</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>320x240 &quot;TV&quot; / &quot;QVGA&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>320x240 &quot;TV&quot; / &quot;QVGA&quot;</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>640x480 &quot;VGA&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>640x480 &quot;VGA&quot;</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>800x600</source>
-        <translation type="unfinished"></translation>
+        <translation>800x600</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>1024x768</source>
-        <translation type="unfinished"></translation>
+        <translation>1024x768</translation>
     </message>
     <message>
         <location line="+30"/>
@@ -188,6 +188,7 @@
     <message>
         <location line="+10"/>
         <source>Emulate touch screen (no mouse move)</source>
+        <translatorcomment>указателя?</translatorcomment>
         <translation>Эмулировать тачскрин (без перемещения мыши)</translation>
     </message>
     <message>
@@ -198,7 +199,7 @@
     <message>
         <location line="+26"/>
         <source>&lt;p&gt;Note that any applications using the virtual framebuffer will be terminated if you change the Size or Depth &lt;i&gt;above&lt;/i&gt;. You may freely modify the Gamma &lt;i&gt;below&lt;/i&gt;.</source>
-        <translation>&lt;p&gt;Имейте в виду, что любая программа будет завершена, если изменится размер или глубина экрана. Параметр Гамма можно менять свободно.</translation>
+        <translation>&lt;p&gt;Имейте в виду, что программы, использующие фрэймбуфер, будут завершены, если изменится &lt;i&gt;размер&lt;/i&gt; и/или &lt;i&gt;глубина&lt;/i&gt; экрана.</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -216,7 +217,7 @@
         <location line="+14"/>
         <location line="+496"/>
         <source>1.0</source>
-        <translation type="unfinished"></translation>
+        <translation>1.0</translation>
     </message>
     <message>
         <location line="-999"/>
@@ -241,12 +242,12 @@
     <message>
         <location line="+43"/>
         <source>&amp;OK</source>
-        <translation>&amp;Готово</translation>
+        <translation>&amp;ОК</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>&amp;Cancel</source>
-        <translation>&amp;Отмена</translation>
+        <translation>От&amp;мена</translation>
     </message>
 </context>
 <context>
