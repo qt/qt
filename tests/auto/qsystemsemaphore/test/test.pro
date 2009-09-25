@@ -18,6 +18,7 @@ win32 {
 RESOURCES += ../files.qrc
 
 wince*: {
+requires(contains(QT_CONFIG,script))
 # this test calls lackey, which then again depends on QtScript.
 # let's add it here so that it gets deployed easily
 QT += script
@@ -28,6 +29,7 @@ DEPLOYMENT += lackey
 }
 
 symbian: {
+requires(contains(QT_CONFIG,script))
 # this test calls lackey, which then again depends on QtScript.
 # let's add it here so that it gets deployed easily
 QT += script
