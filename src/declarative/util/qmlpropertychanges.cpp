@@ -340,7 +340,7 @@ QmlPropertyChanges::ActionList QmlPropertyChanges::actions()
 
     for (int ii = 0; ii < d->signalReplacements.count(); ++ii) {
 
-        QmlReplaceSignalHandler *handler = signalReplacements.at(ii);
+        QmlReplaceSignalHandler *handler = d->signalReplacements.at(ii);
 
         if (handler->property.isValid()) {
             Action a;
