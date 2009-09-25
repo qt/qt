@@ -112,11 +112,6 @@ void qt_egl_add_platform_config(QEglProperties& props, QPaintDevice *device)
 }
 
 
-bool QGLFormat::hasOpenGL()
-{
-    return true;
-}
-
 static bool opengl32dll = false;
 
 bool QGLFormat::hasOpenGLOverlays()
@@ -416,23 +411,6 @@ const QRgb* QGLCmap::colors() const
 }
 
 
-QColor QGLContext::overlayTransparentColor() const
-{
-    return d_func()->transpColor;
-}
-
-
-void QGLContext::generateFontDisplayLists(const QFont & fnt, int listBase)
-{
-    Q_UNUSED(fnt);
-    Q_UNUSED(listBase);
-}
-
-void *QGLContext::getProcAddress(const QString &proc) const
-{
-    return (void*)eglGetProcAddress(reinterpret_cast<const char *>(proc.toLatin1().data()));
-}
-
 /*****************************************************************************
   QGLWidget Win32/WGL-specific code
  *****************************************************************************/
@@ -508,12 +486,6 @@ bool QGLWidget::event(QEvent *e)
     }
 
     return QWidget::event(e);
-}
-
-
-void QGLWidget::setMouseTracking(bool enable)
-{
-    QWidget::setMouseTracking(enable);
 }
 
 
@@ -615,11 +587,6 @@ void QGLWidget::setContext(QGLContext *context,
         show();
 }
 
-
-bool QGLWidgetPrivate::renderCxPm(QPixmap*)
-{
-    return false;
-}
 
 void QGLWidgetPrivate::cleanupColormaps()
 {

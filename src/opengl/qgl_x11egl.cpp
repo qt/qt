@@ -51,11 +51,6 @@
 
 QT_BEGIN_NAMESPACE
 
-bool QGLFormat::hasOpenGL()
-{
-    return true;
-}
-
 bool QGLFormat::hasOpenGLOverlays()
 {
     return false;
@@ -117,36 +112,6 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
 
     return true;
 }
-
-
-QColor QGLContext::overlayTransparentColor() const
-{
-    return QColor(0, 0, 0);                // Invalid color
-}
-
-uint QGLContext::colorIndex(const QColor &c) const
-{
-    //### color index doesn't work on egl
-    Q_UNUSED(c);
-    return 0;
-}
-
-void QGLContext::generateFontDisplayLists(const QFont & fnt, int listBase)
-{
-    Q_UNUSED(fnt);
-    Q_UNUSED(listBase);
-}
-
-void *QGLContext::getProcAddress(const QString &proc) const
-{
-    return (void*)eglGetProcAddress(reinterpret_cast<const char *>(proc.toLatin1().data()));
-}
-
-void QGLWidget::setMouseTracking(bool enable)
-{
-    QWidget::setMouseTracking(enable);
-}
-
 
 void QGLWidget::resizeEvent(QResizeEvent *)
 {
@@ -389,11 +354,6 @@ void QGLWidgetPrivate::init(QGLContext *context, const QGLWidget* shareWidget)
         //no overlay
         qWarning("QtOpenGL ES doesn't currently support overlays");
     }
-}
-
-bool QGLWidgetPrivate::renderCxPm(QPixmap*)
-{
-    return false;
 }
 
 void QGLWidgetPrivate::cleanupColormaps()

@@ -129,6 +129,11 @@ void qt_egl_update_format(const QEglContext& context, QGLFormat& format)
     context.clearError();
 }
 
+bool QGLFormat::hasOpenGL()
+{
+    return true;
+}
+
 void QGLContext::reset()
 {
     Q_D(QGLContext);
@@ -178,6 +183,38 @@ void QGLContext::swapBuffers() const
         return;
 
     d->eglContext->swapBuffers(d->eglSurface);
+}
+
+void QGLWidget::setMouseTracking(bool enable)
+{
+    QWidget::setMouseTracking(enable);
+}
+
+QColor QGLContext::overlayTransparentColor() const
+{
+    return d_func()->transpColor;
+}
+
+uint QGLContext::colorIndex(const QColor &c) const
+{
+    Q_UNUSED(c);
+    return 0;
+}
+
+void QGLContext::generateFontDisplayLists(const QFont & fnt, int listBase)
+{
+    Q_UNUSED(fnt);
+    Q_UNUSED(listBase);
+}
+
+void *QGLContext::getProcAddress(const QString &proc) const
+{
+    return (void*)eglGetProcAddress(reinterpret_cast<const char *>(proc.toLatin1().data()));
+}
+
+bool QGLWidgetPrivate::renderCxPm(QPixmap*)
+{
+    return false;
 }
 
 QT_END_NAMESPACE

@@ -87,12 +87,6 @@ static QGLScreen *glScreenForDevice(QPaintDevice *device)
  *****************************************************************************/
 //#define DEBUG_OPENGL_REGION_UPDATE
 
-bool QGLFormat::hasOpenGL()
-{
-    return true;
-}
-
-
 bool QGLFormat::hasOpenGLOverlays()
 {
     QGLScreen *glScreen = glScreenForDevice(0);
@@ -231,37 +225,9 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
 }
 
 
-QColor QGLContext::overlayTransparentColor() const
-{
-    return QColor(0, 0, 0);                // Invalid color
-}
-
-uint QGLContext::colorIndex(const QColor &c) const
-{
-    //### color index doesn't work on egl
-    Q_UNUSED(c);
-    return 0;
-}
-
-void QGLContext::generateFontDisplayLists(const QFont & fnt, int listBase)
-{
-    Q_UNUSED(fnt);
-    Q_UNUSED(listBase);
-}
-
-void *QGLContext::getProcAddress(const QString &proc) const
-{
-    return (void*)eglGetProcAddress(reinterpret_cast<const char *>(proc.toLatin1().data()));
-}
-
 bool QGLWidget::event(QEvent *e)
 {
     return QWidget::event(e);
-}
-
-void QGLWidget::setMouseTracking(bool enable)
-{
-    QWidget::setMouseTracking(enable);
 }
 
 
@@ -326,11 +292,6 @@ void QGLWidgetPrivate::init(QGLContext *context, const QGLWidget* shareWidget)
         //no overlay
         qWarning("QtOpenGL ES doesn't currently support overlays");
     }
-}
-
-bool QGLWidgetPrivate::renderCxPm(QPixmap*)
-{
-    return false;
 }
 
 void QGLWidgetPrivate::cleanupColormaps()
