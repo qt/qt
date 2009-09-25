@@ -31,6 +31,7 @@ Q3SUBDIRS += \
            q3hbox \
            q3header \
            q3iconview \
+           q3listbox \
            q3listview \
            q3listviewitemiterator \
            q3mainwindow \
@@ -196,7 +197,6 @@ SUBDIRS += \
            qline \
            qlineedit \
            qlist \
-           q3listbox \
            qlistview \
            qlistwidget \
            qlocale \
