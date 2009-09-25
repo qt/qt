@@ -208,6 +208,17 @@ QLibraryInfo::buildKey()
 }
 
 /*!
+    \since 4.6
+    Returns the installation date for this build of Qt. The install date will
+    usually be the last time that Qt sources were configured.
+*/
+QDate
+QLibraryInfo::buildDate()
+{
+    return QDate::fromString(QString::fromLatin1(qt_configure_installation + 12), Qt::ISODate);
+}
+
+/*!
   Returns the location specified by \a loc.
 
 */
