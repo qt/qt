@@ -151,7 +151,7 @@
 <context>
     <name>CentralWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+238"/>
+        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+237"/>
         <source>Add new page</source>
         <translation>Открыть новую страницу</translation>
     </message>
@@ -161,7 +161,7 @@
         <translation>Закрыть текущую страницу</translation>
     </message>
     <message>
-        <location line="+312"/>
+        <location line="+291"/>
         <source>Print Document</source>
         <translation>Печать документа</translation>
     </message>
@@ -226,7 +226,7 @@
 <context>
     <name>FindWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-955"/>
+        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-934"/>
         <source>Previous</source>
         <translation>Предыдущее</translation>
     </message>
@@ -340,13 +340,13 @@
 <context>
     <name>InstallDialog</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/installdialog.ui" line="+13"/>
         <location filename="../tools/assistant/tools/assistant/installdialog.cpp" line="+76"/>
+        <location filename="../tools/assistant/tools/assistant/installdialog.ui" line="+13"/>
         <source>Install Documentation</source>
         <translation>Установка документации</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/tools/assistant/installdialog.cpp" line="+30"/>
+        <location line="+30"/>
         <source>Downloading documentation info...</source>
         <translation>Загрузка информации о документации...</translation>
     </message>
@@ -440,32 +440,32 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/mainwindow.cpp" line="+110"/>
-        <location line="+391"/>
+        <location filename="../tools/assistant/tools/assistant/mainwindow.cpp" line="+108"/>
+        <location line="+384"/>
         <source>Index</source>
         <translation>Указатель</translation>
     </message>
     <message>
-        <location line="-385"/>
-        <location line="+383"/>
+        <location line="-378"/>
+        <location line="+376"/>
         <source>Contents</source>
         <translation>Содержание</translation>
     </message>
     <message>
-        <location line="-378"/>
-        <location line="+382"/>
+        <location line="-371"/>
+        <location line="+375"/>
         <source>Bookmarks</source>
         <translation>Закладки</translation>
     </message>
     <message>
-        <location line="-370"/>
+        <location line="-363"/>
         <location line="+215"/>
-        <location line="+512"/>
+        <location line="+497"/>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
     </message>
     <message>
-        <location line="-544"/>
+        <location line="-529"/>
         <location line="+5"/>
         <source>Unfiltered</source>
         <translation>Без фильтрации</translation>
@@ -496,7 +496,7 @@
         <translation>&amp;Печать...</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+6"/>
         <source>New &amp;Tab</source>
         <translation>Новая &amp;вкладка</translation>
     </message>
@@ -511,7 +511,12 @@
         <translation>В&amp;ыход</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+1"/>
+        <source>CTRL+Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>&amp;Edit</source>
         <translation>&amp;Правка</translation>
     </message>
@@ -521,12 +526,12 @@
         <translation>&amp;Копировать выделенный текст</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+6"/>
         <source>&amp;Find in Text...</source>
         <translation>П&amp;оиск в тексте...</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+5"/>
         <source>Find &amp;Next</source>
         <translation>Найти &amp;следующее</translation>
     </message>
@@ -551,17 +556,17 @@
         <translation>У&amp;величить</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+5"/>
         <source>Zoom &amp;out</source>
         <translation>У&amp;меньшить</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+5"/>
         <source>Normal &amp;Size</source>
         <translation>Нормальный р&amp;азмер</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+3"/>
         <source>Ctrl+0</source>
         <translation type="unfinished"></translation>
     </message>
@@ -616,12 +621,12 @@
         <translation>&amp;Вперёд</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+5"/>
         <source>Sync with Table of Contents</source>
         <translation>Синхронизировать с оглавлением</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+6"/>
         <source>Next Page</source>
         <translation>Следующая страница</translation>
     </message>
@@ -666,7 +671,7 @@
         <translation>О программе...</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+3"/>
         <source>Navigation Toolbar</source>
         <translation>Панель навигации</translation>
     </message>
@@ -721,7 +726,7 @@
         <translation>Не удалось найти элемент, связанный с содержанием.</translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location line="+78"/>
         <source>About %1</source>
         <translation>О %1</translation>
     </message>
@@ -734,7 +739,7 @@
 <context>
     <name>PreferencesDialog</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/preferencesdialog.cpp" line="+259"/>
+        <location filename="../tools/assistant/tools/assistant/preferencesdialog.cpp" line="+256"/>
         <location line="+43"/>
         <source>Add Documentation</source>
         <translation>Добавить документацию</translation>
@@ -775,7 +780,7 @@
         <translation>Удалить</translation>
     </message>
     <message>
-        <location line="+88"/>
+        <location line="+86"/>
         <source>Use custom settings</source>
         <translation>Использовать индивидуальные настройки</translation>
     </message>
@@ -859,44 +864,19 @@
         <translation>Параметры</translation>
     </message>
     <message>
-        <location line="+74"/>
+        <location line="+6"/>
         <source>Homepage</source>
         <translation>Стартовая страница</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+26"/>
         <source>Current Page</source>
         <translation>Текущая страница</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+7"/>
         <source>Restore to default</source>
         <translation>Страница по умолчанию</translation>
-    </message>
-    <message>
-        <location line="-97"/>
-        <source>On help start:</source>
-        <translation>При запуске:</translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Show my home page</source>
-        <translation>Отобразить стартовую страницу</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Show a blank page</source>
-        <translation>Отобразить пустую страницу</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Show my tabs from last session</source>
-        <translation>Восстановить предыдущую сессиию</translation>
-    </message>
-    <message>
-        <location line="+66"/>
-        <source>Blank Page</source>
-        <translation>Пустая страница</translation>
     </message>
 </context>
 <context>
@@ -964,7 +944,7 @@
         <translation>Qt Assistant</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/tools/assistant/main.cpp" line="+217"/>
+        <location filename="../tools/assistant/tools/assistant/main.cpp" line="+203"/>
         <source>Could not register documentation file
 %1
 
@@ -1013,7 +993,7 @@ Reason:
 <context>
     <name>RemoteControl</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/remotecontrol.cpp" line="+163"/>
+        <location filename="../tools/assistant/tools/assistant/remotecontrol.cpp" line="+157"/>
         <source>Debugging Remote Control</source>
         <translation>Отладочное удалённое управление</translation>
     </message>
