@@ -164,6 +164,10 @@ private slots:
     void span();
     void spans();
     void spans_data();
+    void spansAfterRowInsertion();
+    void spansAfterColumnInsertion();
+    void spansAfterRowRemoval();
+    void spansAfterColumnRemoval();
 
     void checkHeaderReset();
     void checkHeaderMinSize();
@@ -268,6 +272,28 @@ public:
         return QVariant();
     }
 
+    bool insertRows(int start, int count, const QModelIndex &parent = QModelIndex())
+    {
+        if (start < 0 || start > row_count)
+            return false;
+
+        beginInsertRows(parent, start, start + count - 1);
+        row_count += count;
+        endInsertRows();
+        return true;
+    }
+
+    bool removeRows(int start, int count, const QModelIndex &parent = QModelIndex())
+    {
+        if (start < 0 || start >= row_count || row_count < count)
+            return false;
+
+        beginRemoveRows(parent, start, start + count - 1);
+        row_count -= count;
+        endRemoveRows();
+        return true;
+    }
+
     void removeLastRow()
     {
         beginRemoveRows(QModelIndex(), row_count - 1, row_count - 1);
@@ -280,6 +306,28 @@ public:
         beginRemoveRows(QModelIndex(), 0, row_count - 1);
         row_count = 0;
         endRemoveRows();
+    }
+
+    bool insertColumns(int start, int count, const QModelIndex &parent = QModelIndex())
+    {
+        if (start < 0 || start > column_count)
+            return false;
+
+        beginInsertColumns(parent, start, start + count - 1);
+        column_count += count;
+        endInsertColumns();
+        return true;
+    }
+
+    bool removeColumns(int start, int count, const QModelIndex &parent = QModelIndex())
+    {
+        if (start < 0 || start >= column_count || column_count < count)
+            return false;
+
+        beginRemoveColumns(parent, start, start + count - 1);
+        column_count -= count;
+        endRemoveColumns();
+        return true;
     }
 
     void removeLastColumn()
@@ -2608,7 +2656,7 @@ void tst_QTableView::span_data()
       << -1 << -1
       << 6 << 6
       << 3 << 3
-      << 3 << 3
+      << 2 << 3
       << true;
 
 }
@@ -2795,6 +2843,149 @@ void tst_QTableView::spans()
 
     QCOMPARE(view.columnSpan(pos.x(), pos.y()), expectedColumnSpan);
     QCOMPARE(view.rowSpan(pos.x(), pos.y()), expectedRowSpan);
+}
+
+void tst_QTableView::spansAfterRowInsertion()
+{
+    QtTestTableModel model(10, 10);
+    QtTestTableView view;
+    view.setModel(&model);
+    view.setSpan(3, 3, 3, 3);
+    view.show();
+    QTest::qWait(50);
+
+    // Insertion before the span only shifts the span.
+    view.model()->insertRows(0, 2);
+    QCOMPARE(view.rowSpan(3, 3), 1);
+    QCOMPARE(view.columnSpan(3, 3), 1);
+    QCOMPARE(view.rowSpan(5, 3), 3);
+    QCOMPARE(view.columnSpan(5, 3), 3);
+
+    // Insertion happens before the given row, so it only shifts the span also.
+    view.model()->insertRows(5, 2);
+    QCOMPARE(view.rowSpan(5, 3), 1);
+    QCOMPARE(view.columnSpan(5, 3), 1);
+    QCOMPARE(view.rowSpan(7, 3), 3);
+    QCOMPARE(view.columnSpan(7, 3), 3);
+
+    // Insertion inside the span expands it.
+    view.model()->insertRows(8, 2);
+    QCOMPARE(view.rowSpan(7, 3), 5);
+    QCOMPARE(view.columnSpan(7, 3), 3);
+
+    // Insertion after the span does nothing to it.
+    view.model()->insertRows(12, 2);
+    QCOMPARE(view.rowSpan(7, 3), 5);
+    QCOMPARE(view.columnSpan(7, 3), 3);
+}
+
+void tst_QTableView::spansAfterColumnInsertion()
+{
+    QtTestTableModel model(10, 10);
+    QtTestTableView view;
+    view.setModel(&model);
+    view.setSpan(3, 3, 3, 3);
+    view.show();
+    QTest::qWait(50);
+
+    // Insertion before the span only shifts the span.
+    view.model()->insertColumns(0, 2);
+    QCOMPARE(view.rowSpan(3, 3), 1);
+    QCOMPARE(view.columnSpan(3, 3), 1);
+    QCOMPARE(view.rowSpan(3, 5), 3);
+    QCOMPARE(view.columnSpan(3, 5), 3);
+
+    // Insertion happens before the given column, so it only shifts the span also.
+    view.model()->insertColumns(5, 2);
+    QCOMPARE(view.rowSpan(3, 5), 1);
+    QCOMPARE(view.columnSpan(3, 5), 1);
+    QCOMPARE(view.rowSpan(3, 7), 3);
+    QCOMPARE(view.columnSpan(3, 7), 3);
+
+    // Insertion inside the span expands it.
+    view.model()->insertColumns(8, 2);
+    QCOMPARE(view.rowSpan(3, 7), 3);
+    QCOMPARE(view.columnSpan(3, 7), 5);
+
+    // Insertion after the span does nothing to it.
+    view.model()->insertColumns(12, 2);
+    QCOMPARE(view.rowSpan(3, 7), 3);
+    QCOMPARE(view.columnSpan(3, 7), 5);
+}
+
+void tst_QTableView::spansAfterRowRemoval()
+{
+    QtTestTableModel model(10, 10);
+    QtTestTableView view;
+    view.setModel(&model);
+
+    QList<QRect> spans;
+    spans << QRect(0, 1, 1, 2)
+          << QRect(1, 2, 1, 2)
+          << QRect(2, 2, 1, 5)
+          << QRect(2, 8, 1, 2)
+          << QRect(3, 4, 1, 2)
+          << QRect(4, 4, 1, 4)
+          << QRect(5, 6, 1, 3)
+          << QRect(6, 7, 1, 3);
+    foreach (QRect span, spans)
+        view.setSpan(span.top(), span.left(), span.height(), span.width());
+
+    view.show();
+    QTest::qWait(100);
+    view.model()->removeRows(3, 3);
+
+    QList<QRect> expectedSpans;
+    expectedSpans << QRect(0, 1, 1, 2)
+          << QRect(1, 2, 1, 1)
+          << QRect(2, 2, 1, 2)
+          << QRect(2, 5, 1, 2)
+          << QRect(3, 4, 1, 1)
+          << QRect(4, 3, 1, 2)
+          << QRect(5, 3, 1, 3)
+          << QRect(6, 4, 1, 3);
+    foreach (QRect span, expectedSpans) {
+        QCOMPARE(view.columnSpan(span.top(), span.left()), span.width());
+        QCOMPARE(view.rowSpan(span.top(), span.left()), span.height());
+    }
+}
+
+void tst_QTableView::spansAfterColumnRemoval()
+{
+    QtTestTableModel model(10, 10);
+    QtTestTableView view;
+    view.setModel(&model);
+
+    // Same set as above just swapping columns and rows.
+    QList<QRect> spans;
+    spans << QRect(0, 1, 1, 2)
+          << QRect(1, 2, 1, 2)
+          << QRect(2, 2, 1, 5)
+          << QRect(2, 8, 1, 2)
+          << QRect(3, 4, 1, 2)
+          << QRect(4, 4, 1, 4)
+          << QRect(5, 6, 1, 3)
+          << QRect(6, 7, 1, 3);
+    foreach (QRect span, spans)
+        view.setSpan(span.left(), span.top(), span.width(), span.height());
+
+    view.show();
+    QTest::qWait(100);
+    view.model()->removeColumns(3, 3);
+
+    QList<QRect> expectedSpans;
+    expectedSpans << QRect(0, 1, 1, 2)
+          << QRect(1, 2, 1, 1)
+          << QRect(2, 2, 1, 2)
+          << QRect(2, 5, 1, 2)
+          << QRect(3, 4, 1, 1)
+          << QRect(4, 3, 1, 2)
+          << QRect(5, 3, 1, 3)
+          << QRect(6, 4, 1, 3);
+    foreach (QRect span, expectedSpans) {
+        QCOMPARE(view.columnSpan(span.left(), span.top()), span.height());
+        QCOMPARE(view.rowSpan(span.left(), span.top()), span.width());
+    }
 }
 
 class Model : public QAbstractTableModel {
