@@ -529,7 +529,7 @@ sub findFiles {
         } else {
             ($dir =~ /\/$/) || ($dir .= "/");
         }
-        foreach $file ( readdir(D) ) {
+        foreach $file ( sort readdir(D) ) {
             next if ( $file  =~ /^\.\.?$/ );
             $p = $file;
             ($file =~ /$match/) && (push @files, $p);
