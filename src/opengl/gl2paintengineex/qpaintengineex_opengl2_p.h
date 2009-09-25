@@ -82,11 +82,11 @@ public:
     QOpenGL2PaintEngineState();
     ~QOpenGL2PaintEngineState();
 
-    bool needsDepthBufferClear;
+    bool needsClipBufferClear;
 
-    bool depthTestEnabled;
+    bool clipTestEnabled;
     bool scissorTestEnabled;
-    uint currentDepth;
+    uint currentClip;
 
     bool canRestoreClip;
     QRect rectangleClip;
@@ -223,7 +223,7 @@ public:
 
     QRegion dirtyStencilRegion;
     QRect currentScissorBounds;
-    uint maxDepth;
+    uint maxClip;
 
     const QBrush*    currentBrush; // May not be the state's brush!
 
@@ -240,10 +240,10 @@ public:
 
     QGLEngineShaderManager* shaderManager;
 
-    void writeClip(const QVectorPath &path, uint depth);
-    void updateDepthScissorTest();
+    void writeClip(const QVectorPath &path, uint value);
+    void updateClipScissorTest();
     void setScissor(const QRect &rect);
-    void regenerateDepthClip();
+    void regenerateClip();
     void systemStateChanged();
     uint use_system_clip : 1;
 
