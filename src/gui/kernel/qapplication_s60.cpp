@@ -480,7 +480,7 @@ void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
             alienWidget = qwidget;
         S60->mousePressTarget = alienWidget;
     }
-    
+
     alienWidget = S60->mousePressTarget;
 
     if (alienWidget != S60->lastPointerEventTarget)
@@ -600,7 +600,7 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
             if (keyCode >= Qt::Key_Left && keyCode <= Qt::Key_Down || keyCode == Qt::Key_Select) {
                 /*Explanation about virtualMouseAccel:
                  Tapping an arrow key allows precise pixel positioning
-                 Holding an arrow key down, acceleration is applied to allow cursor 
+                 Holding an arrow key down, acceleration is applied to allow cursor
                  to be quickly moved to another part of the screen by key repeats.
                  */
                 if (S60->virtualMouseLastKey == keyCode) {
@@ -668,7 +668,7 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
             }
         }
 #endif
-        
+
         Qt::KeyboardModifiers mods = mapToQtModifiers(keyEvent.iModifiers);
         QKeyEventEx qKeyEvent(type == EEventKeyUp ? QEvent::KeyRelease : QEvent::KeyPress, keyCode,
                 mods, qt_keymapper_private()->translateKeyEvent(keyCode, mods),
@@ -993,13 +993,13 @@ void qt_init(QApplicationPrivate * /* priv */, int)
         S60->hasTouchscreen = true;
         S60->virtualMouseRequired = false;
     }
-    
+
     if (touch) {
         QApplicationPrivate::navigationMode = Qt::NavigationModeNone;
     } else {
         QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadDirectional;
     }
-    
+
 #ifndef QT_NO_CURSOR
     //Check if window server pointer cursors are supported or not
 #ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
@@ -1063,7 +1063,7 @@ void qt_cleanup()
     // it dies.
     delete QApplicationPrivate::inputContext;
     QApplicationPrivate::inputContext = 0;
-    
+
     //Change mouse pointer back
     S60->wsSession().SetPointerCursorMode(EPointerCursorNone);
 
@@ -1383,7 +1383,8 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
             } else if ((visChangedEvent->iFlags & TWsVisibilityChangedEvent::EPartiallyVisible)
                        && !w->d_func()->maybeBackingStore()) {
                 w->d_func()->topData()->backingStore = new QWidgetBackingStore(w);
-                w->update();
+                w->d_func()->invalidateBuffer(w->rect());
+                w->repaint();
             }
             return 1;
         }
@@ -1599,7 +1600,7 @@ void QApplicationPrivate::setNavigationMode(Qt::NavigationMode mode)
     const bool isCursorOn = (mode == Qt::NavigationModeCursorAuto
         && !S60->hasTouchscreen)
         || mode == Qt::NavigationModeCursorForceVisible;
-    
+
     if (!wasCursorOn && isCursorOn) {
         //Show the cursor, when changing from another mode to cursor mode
         qt_symbian_set_cursor_visible(true);
@@ -1629,7 +1630,7 @@ void QApplication::restoreOverrideCursor()
     if (qApp->d_func()->cursor_list.isEmpty())
         return;
     qApp->d_func()->cursor_list.removeFirst();
-    
+
     if (!qApp->d_func()->cursor_list.isEmpty()) {
         qt_symbian_setGlobalCursor(qApp->d_func()->cursor_list.first());
     }
