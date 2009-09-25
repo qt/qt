@@ -71,7 +71,8 @@ public:
             , angle(0.5)
             , playerPos(1.5, 1.5)
             , angleDelta(0)
-            , moveDelta(0) {
+            , moveDelta(0)
+            , touchDevice(false) {
 
         // http://www.areyep.com/RIPandMCS-TextureLibrary.html
         textureImg.load(":/textures.png");
@@ -83,6 +84,7 @@ public:
         watch.start();
         ticker.start(25, this);
         setAttribute(Qt::WA_OpaquePaintEvent, true);
+        setMouseTracking(false);
     }
 
     void updatePlayer() {
@@ -114,10 +116,12 @@ public:
     void render() {
 
         // setup the screen surface
-        if (buffer.size() != size())
-            buffer = QImage(size(), QImage::Format_ARGB32);
+        if (buffer.size() != bufferSize)
+            buffer = QImage(bufferSize, QImage::Format_ARGB32);
         int bufw = buffer.width();
         int bufh = buffer.height();
+        if (bufw <= 0 || bufh <= 0)
+            return;
 
         // we intentionally cheat here, to avoid detach
         const uchar *ptr = buffer.bits();
@@ -241,10 +245,35 @@ public:
                 *pixel2 = qRgb(96, 96, 96);
         }
 
-        update();
+        update(QRect(QPoint(0, 0), bufferSize));
     }
 
 protected:
+
+    void resizeEvent(QResizeEvent*) {
+#if defined(Q_OS_SYMBIAN)
+        // FIXME: use HAL
+        if (width() > 480 || height() > 480)
+            touchDevice = true;
+#else
+        touchDevice = false;
+#endif
+        if (touchDevice) {
+            if (width() < height()) {
+                trackPad = QRect(0, height() / 2, width(), height() / 2);
+                centerPad = QPoint(width() / 2, height() * 3 / 4);
+                bufferSize = QSize(width(), height() / 2);
+            } else {
+                trackPad = QRect(width() / 2, 0, width() / 2, height());
+                centerPad = QPoint(width() * 3 / 4, height() / 2);
+                bufferSize = QSize(width() / 2, height());
+            }
+        } else {
+            trackPad = QRect();
+            bufferSize = size();
+        }
+        update();
+   }
 
     void timerEvent(QTimerEvent*) {
         updatePlayer();
@@ -255,7 +284,33 @@ protected:
     void paintEvent(QPaintEvent *event) {
         QPainter p(this);
         p.setCompositionMode(QPainter::CompositionMode_Source);
+
+        if (touchDevice && event->rect().intersects(trackPad)) {
+            p.fillRect(trackPad, Qt::white);
+            p.setPen(QPen(QColor(224, 224, 224), 6));
+            int rad = qMin(trackPad.width(), trackPad.height()) * 0.3;
+            p.drawEllipse(centerPad, rad, rad);
+
+            p.setPen(Qt::NoPen);
+            p.setBrush(Qt::gray);
+
+            QPolygon poly;
+            poly << QPoint(-30, 0);
+            poly << QPoint(0, -40);
+            poly << QPoint(30, 0);
+
+            p.translate(centerPad);
+            for (int i = 0; i < 4; ++i) {
+                p.rotate(90);
+                p.translate(0, 20 - rad);
+                p.drawPolygon(poly);
+                p.translate(0, rad - 20);
+            }
+            p.resetTransform();
+        }
+
         p.drawImage(event->rect(), buffer, event->rect());
+        p.end();
     }
 
     void keyPressEvent(QKeyEvent *event) {
@@ -282,6 +337,25 @@ protected:
             moveDelta = (moveDelta < 0) ? 0 : moveDelta;
     }
 
+    void mousePressEvent(QMouseEvent *event) {
+        qreal dx = centerPad.x() - event->pos().x();
+        qreal dy = centerPad.y() - event->pos().y();
+        angleDelta = dx * 2 * M_PI / width();
+        moveDelta = dy * 10 / height();
+    }
+
+    void mouseMoveEvent(QMouseEvent *event) {
+        qreal dx = centerPad.x() - event->pos().x();
+        qreal dy = centerPad.y() - event->pos().y();
+        angleDelta = dx * 2 * M_PI / width();
+        moveDelta = dy * 10 / height();
+    }
+
+    void mouseReleaseEvent(QMouseEvent*) {
+        angleDelta = 0;
+        moveDelta = 0;
+    }
+
 private:
     QTime watch;
     QBasicTimer ticker;
@@ -292,6 +366,10 @@ private:
     qreal moveDelta;
     QImage textureImg;
     int textureCount;
+    bool touchDevice;
+    QRect trackPad;
+    QPoint centerPad;
+    QSize bufferSize;
 };
 
 int main(int argc, char **argv)
