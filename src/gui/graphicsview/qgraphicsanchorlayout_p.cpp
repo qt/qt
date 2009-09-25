@@ -146,13 +146,15 @@ void AnchorData::refreshSizeHints(qreal effectiveSpacing)
             maxSize /= 2;
         }
 
-        if (policy & QSizePolicy::ExpandFlag) {
-            isExpanding = 1;
-            expSize = maxSize;
-        } else {
-            isExpanding = 0;
-            expSize = prefSize;
-        }
+        // ###
+        expSize = prefSize;
+        // if (policy & QSizePolicy::ExpandFlag) {
+        //     isExpanding = 1;
+        //     expSize = maxSize;
+        // } else {
+        //     isExpanding = 0;
+        //     expSize = prefSize;
+        // }
 
         // Set the anchor effective sizes to preferred.
         //
@@ -187,6 +189,7 @@ void ParallelAnchorData::updateChildrenSizes()
     firstEdge->sizeAtMinimum = secondEdge->sizeAtMinimum = sizeAtMinimum;
     firstEdge->sizeAtPreferred = secondEdge->sizeAtPreferred = sizeAtPreferred;
     firstEdge->sizeAtMaximum = secondEdge->sizeAtMaximum = sizeAtMaximum;
+    firstEdge->sizeAtExpanding = secondEdge->sizeAtExpanding = sizeAtPreferred;
 
     firstEdge->updateChildrenSizes();
     secondEdge->updateChildrenSizes();
@@ -194,9 +197,16 @@ void ParallelAnchorData::updateChildrenSizes()
 
 void ParallelAnchorData::refreshSizeHints(qreal effectiveSpacing)
 {
-    // First refresh children information
-    firstEdge->refreshSizeHints(effectiveSpacing);
-    secondEdge->refreshSizeHints(effectiveSpacing);
+    refreshSizeHints_helper(effectiveSpacing);
+}
+
+void ParallelAnchorData::refreshSizeHints_helper(qreal effectiveSpacing,
+                                                 bool refreshChildren)
+{
+    if (refreshChildren) {
+        firstEdge->refreshSizeHints(effectiveSpacing);
+        secondEdge->refreshSizeHints(effectiveSpacing);
+    }
 
     // ### should we warn if the parallel connection is invalid?
     // e.g. 1-2-3 with 10-20-30, the minimum of the latter is
@@ -208,9 +218,13 @@ void ParallelAnchorData::refreshSizeHints(qreal effectiveSpacing)
     prefSize = qMax(firstEdge->prefSize, secondEdge->prefSize);
     prefSize = qMin(prefSize, maxSize);
 
+    // ###
+    expSize = prefSize;
+
     // See comment in AnchorData::refreshSizeHints() about sizeAt* values
     sizeAtMinimum = prefSize;
     sizeAtPreferred = prefSize;
+    sizeAtExpanding = prefSize;
     sizeAtMaximum = prefSize;
 }
 
@@ -277,30 +291,46 @@ void SequentialAnchorData::updateChildrenSizes()
         bandSize = maxFactor > 0 ? e->maxSize - e->prefSize : e->prefSize - e->minSize;
         e->sizeAtMaximum = e->prefSize + bandSize * maxFactor;
 
+        // ###
+        e->sizeAtExpanding = e->sizeAtPreferred;
+
         e->updateChildrenSizes();
     }
 }
 
 void SequentialAnchorData::refreshSizeHints(qreal effectiveSpacing)
 {
+    refreshSizeHints_helper(effectiveSpacing);
+}
+
+void SequentialAnchorData::refreshSizeHints_helper(qreal effectiveSpacing,
+                                                   bool refreshChildren)
+{
     minSize = 0;
     prefSize = 0;
+    expSize = 0;
     maxSize = 0;
 
     for (int i = 0; i < m_edges.count(); ++i) {
         AnchorData *edge = m_edges.at(i);
 
-        // First refresh children information
-        edge->refreshSizeHints(effectiveSpacing);
+        // If it's the case refresh children information first
+        if (refreshChildren)
+            edge->refreshSizeHints(effectiveSpacing);
 
         minSize += edge->minSize;
         prefSize += edge->prefSize;
+        expSize += edge->expSize;
         maxSize += edge->maxSize;
     }
+
+    // ###
+    expSize = prefSize;
 
     // See comment in AnchorData::refreshSizeHints() about sizeAt* values
     sizeAtMinimum = prefSize;
     sizeAtPreferred = prefSize;
+    sizeAtExpanding = prefSize;
     sizeAtMaximum = prefSize;
 }
 
@@ -441,38 +471,20 @@ static bool simplifySequentialChunk(Graph<AnchorVertex, AnchorData> *graph,
     qDebug("simplifying [%s] to [%s - %s]", qPrintable(strPath), qPrintable(before->toString()), qPrintable(after->toString()));
 #endif
 
-    qreal min = 0;
-    qreal pref = 0;
-    qreal max = 0;
-
     SequentialAnchorData *sequence = new SequentialAnchorData;
     AnchorVertex *prev = before;
     AnchorData *data;
     for (i = 0; i <= vertices.count(); ++i) {
         AnchorVertex *next = (i < vertices.count()) ? vertices.at(i) : after;
         data = graph->takeEdge(prev, next);
-        min += data->minSize;
-        pref += data->prefSize;
-        max = checkAdd(max, data->maxSize);
         sequence->m_edges.append(data);
         prev = next;
     }
-
-    // insert new
-    sequence->minSize = min;
-    sequence->prefSize = pref;
-    sequence->maxSize = max;
-
-    // Unless these values are overhidden by the simplex solver later-on,
-    // anchors will keep their own preferred size.
-    sequence->sizeAtMinimum = pref;
-    sequence->sizeAtPreferred = pref;
-    sequence->sizeAtMaximum = pref;
-
     sequence->setVertices(vertices);
-
     sequence->from = before;
     sequence->to = after;
+
+    sequence->refreshSizeHints_helper(0, false);
 
     // data here is the last edge in the sequence
     // ### this seems to be here for supporting reverse order sequences,
@@ -488,25 +500,11 @@ static bool simplifySequentialChunk(Graph<AnchorVertex, AnchorData> *graph,
 
     AnchorData *newAnchor = sequence;
     if (AnchorData *oldAnchor = graph->takeEdge(before, after)) {
-        newAnchor = new ParallelAnchorData(oldAnchor, sequence);
-
-        newAnchor->isLayoutAnchor = (oldAnchor->isLayoutAnchor
+        ParallelAnchorData *parallel = new ParallelAnchorData(oldAnchor, sequence);
+        parallel->isLayoutAnchor = (oldAnchor->isLayoutAnchor
                                      || sequence->isLayoutAnchor);
-
-        min = qMax(oldAnchor->minSize, sequence->minSize);
-        max = qMin(oldAnchor->maxSize, sequence->maxSize);
-
-        pref = qMax(oldAnchor->prefSize, sequence->prefSize);
-        pref = qMin(pref, max);
-
-        newAnchor->minSize = min;
-        newAnchor->prefSize = pref;
-        newAnchor->maxSize = max;
-
-        // Same as above, by default, keep preferred size.
-        newAnchor->sizeAtMinimum = pref;
-        newAnchor->sizeAtPreferred = pref;
-        newAnchor->sizeAtMaximum = pref;
+        parallel->refreshSizeHints_helper(0, false);
+        newAnchor = parallel;
     }
     graph->createEdge(before, after, newAnchor);
 
@@ -1687,7 +1685,7 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
         AnchorData *ad = trunkPath.positives.toList()[0];
         ad->sizeAtMinimum = ad->minSize;
         ad->sizeAtPreferred = ad->prefSize;
-        ad->sizeAtExpanding = ad->prefSize;
+        ad->sizeAtExpanding = ad->expSize;
         ad->sizeAtMaximum = ad->maxSize;
 
         // Propagate
@@ -1696,7 +1694,7 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
         sizeHints[orientation][Qt::MinimumSize] = ad->sizeAtMinimum;
         sizeHints[orientation][Qt::PreferredSize] = ad->sizeAtPreferred;
         sizeHints[orientation][Qt::MaximumSize] = ad->sizeAtMaximum;
-        sizeAtExpanding[orientation] = ad->sizeAtPreferred;
+        sizeAtExpanding[orientation] = ad->sizeAtExpanding;
     }
 
     // Delete the constraints, we won't use them anymore.

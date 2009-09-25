@@ -238,6 +238,8 @@ struct SequentialAnchorData : public AnchorData
     virtual void updateChildrenSizes();
     virtual void refreshSizeHints(qreal effectiveSpacing);
 
+    void refreshSizeHints_helper(qreal effectiveSpacing, bool refreshChildren = true);
+
     void setVertices(const QVector<AnchorVertex*> &vertices)
     {
         m_children = vertices;
@@ -271,6 +273,8 @@ struct ParallelAnchorData : public AnchorData
 
     virtual void updateChildrenSizes();
     virtual void refreshSizeHints(qreal effectiveSpacing);
+
+    void refreshSizeHints_helper(qreal effectiveSpacing, bool refreshChildren = true);
 
     AnchorData* firstEdge;
     AnchorData* secondEdge;
