@@ -1802,10 +1802,8 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
         state()->depthTestEnabled = true;
         break;
     case Qt::UniteClip: {
-#ifndef QT_GL_NO_SCISSOR_TEST
+        ++d->maxDepth;
         if (state()->rectangleClip.isValid()) {
-            d->maxDepth;
-
             QPainterPath path;
             path.addRect(state()->rectangleClip);
 
@@ -1813,6 +1811,7 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
             d->writeClip(qtVectorPathForPath(state()->matrix.inverted().map(path)), d->maxDepth);
         }
 
+#ifndef QT_GL_NO_SCISSOR_TEST
         QRect oldRectangleClip = state()->rectangleClip;
 
         state()->rectangleClip = state()->rectangleClip.united(pathRect);
