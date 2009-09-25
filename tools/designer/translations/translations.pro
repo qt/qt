@@ -133,7 +133,7 @@ HEADERS += ../../shared/findwidget/abstractfindwidget.h \
 TRANSLATIONS=$$[QT_INSTALL_TRANSLATIONS]/designer_de.ts \
              $$[QT_INSTALL_TRANSLATIONS]/designer_ja.ts \
              $$[QT_INSTALL_TRANSLATIONS]/designer_pl.ts \
+             $$[QT_INSTALL_TRANSLATIONS]/designer_ru.ts \
              $$[QT_INSTALL_TRANSLATIONS]/designer_zh_CN.ts \
              $$[QT_INSTALL_TRANSLATIONS]/designer_zh_TW.ts \
              $$[QT_INSTALL_TRANSLATIONS]/designer_untranslated.ts
-

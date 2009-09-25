@@ -50,7 +50,7 @@
 #include "slideshow.h"
 #include "demoapplication.h"
 
-class FluidLauncher : public QObject
+class FluidLauncher : public QStackedWidget
 {
     Q_OBJECT
 
@@ -64,6 +64,9 @@ public slots:
     void resetInputTimeout();
     void inputTimedout();
     void demoFinished();
+
+protected:
+    void changeEvent(QEvent *event);
 
 private:
     PictureFlow* pictureFlowWidget;
