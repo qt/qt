@@ -708,10 +708,10 @@ void tst_QGraphicsLinearLayout::itemAt_visualOrder()
     QGraphicsWidget *w2 = new QGraphicsWidget;
     l->insertItem(2, w2);
 
-    QCOMPARE(l->itemAt(0), w0);
-    QCOMPARE(l->itemAt(1), w1);
-    QCOMPARE(l->itemAt(2), w2);
-    QCOMPARE(l->itemAt(3), w3);
+    QCOMPARE(l->itemAt(0), static_cast<QGraphicsLayoutItem*>(w0));
+    QCOMPARE(l->itemAt(1), static_cast<QGraphicsLayoutItem*>(w1));
+    QCOMPARE(l->itemAt(2), static_cast<QGraphicsLayoutItem*>(w2));
+    QCOMPARE(l->itemAt(3), static_cast<QGraphicsLayoutItem*>(w3));
 }
 
 void tst_QGraphicsLinearLayout::orientation_data()
