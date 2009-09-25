@@ -72,6 +72,7 @@ private slots:
     void expandingSequence();
     void expandingSequenceFairDistribution();
     void expandingParallel();
+    void floatConflict();
 };
 
 class RectWidget : public QGraphicsWidget
@@ -158,7 +159,17 @@ void tst_QGraphicsAnchorLayout::simple()
 
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->setContentsMargins(0, 0, 0, 0);
+
+    // Horizontal
+    l->addAnchor(w1, Qt::AnchorLeft, l, Qt::AnchorLeft);
     l->addAnchor(w1, Qt::AnchorRight, w2, Qt::AnchorLeft);
+    l->addAnchor(w2, Qt::AnchorRight, l, Qt::AnchorRight);
+
+    // Vertical
+    l->addAnchor(w1, Qt::AnchorTop, l, Qt::AnchorTop);
+    l->addAnchor(w2, Qt::AnchorTop, l, Qt::AnchorTop);
+    l->addAnchor(w1, Qt::AnchorBottom, l, Qt::AnchorBottom);
+    l->addAnchor(w2, Qt::AnchorBottom, l, Qt::AnchorBottom);
 
     QGraphicsWidget p;
     p.setLayout(l);
@@ -1152,11 +1163,21 @@ void tst_QGraphicsAnchorLayout::delete_anchor()
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->setSpacing(0);
     l->setContentsMargins(0, 0, 0, 0);
+
+    // Horizontal
     l->addAnchor(l, Qt::AnchorLeft, w1, Qt::AnchorLeft);
     l->addAnchor(w1, Qt::AnchorRight, w2, Qt::AnchorLeft);
     l->addAnchor(w2, Qt::AnchorRight, l, Qt::AnchorRight);
     l->addAnchor(w1, Qt::AnchorRight, w3, Qt::AnchorLeft);
     l->addAnchor(w3, Qt::AnchorRight, l, Qt::AnchorRight);
+
+    // Vertical
+    l->addAnchor(w1, Qt::AnchorTop, l, Qt::AnchorTop);
+    l->addAnchor(w1, Qt::AnchorBottom, l, Qt::AnchorBottom);
+    l->addAnchor(w2, Qt::AnchorTop, l, Qt::AnchorTop);
+    l->addAnchor(w2, Qt::AnchorBottom, l, Qt::AnchorBottom);
+    l->addAnchor(w3, Qt::AnchorTop, l, Qt::AnchorTop);
+    l->addAnchor(w3, Qt::AnchorBottom, l, Qt::AnchorBottom);
 
     QGraphicsAnchor *anchor = l->anchor(w3, Qt::AnchorRight, l, Qt::AnchorRight);
     anchor->setSpacing(10);
@@ -1519,6 +1540,54 @@ void tst_QGraphicsAnchorLayout::expandingParallel()
 
     QSizeF newLayoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
     QCOMPARE(newLayoutMaximumSize.width(), qreal(300));
+}
+
+void tst_QGraphicsAnchorLayout::floatConflict()
+{
+    QGraphicsWidget *a = createItem(QSizeF(80,10), QSizeF(90,10), QSizeF(100,10), "a");
+    QGraphicsWidget *b = createItem(QSizeF(80,10), QSizeF(90,10), QSizeF(100,10), "b");
+
+    QGraphicsAnchorLayout *l;
+    QGraphicsWidget *p = new QGraphicsWidget(0, Qt::Window);
+
+    l = new QGraphicsAnchorLayout;
+    l->setContentsMargins(0, 0, 0, 0);
+
+    p->setLayout(l);
+
+    // horizontal
+    // with this anchor we have two floating items
+    setAnchor(l, a, Qt::AnchorRight, b, Qt::AnchorLeft);
+
+    // Just checking if the layout is handling well the removal of floating items
+    delete l->anchor(a, Qt::AnchorRight, b, Qt::AnchorLeft);
+    QCOMPARE(l->count(), 0);
+    QCOMPARE(layoutHasConflict(l), false);
+
+    // setting back the same anchor
+    setAnchor(l, a, Qt::AnchorRight, b, Qt::AnchorLeft);
+
+    // We don't support floating items but they should be counted as if they are in the layout
+    QCOMPARE(l->count(), 2);
+    // Although, we have an invalid situation
+    QCOMPARE(layoutHasConflict(l), true);
+
+    // Semi-floats are supported
+    setAnchor(l, a, Qt::AnchorLeft, l, Qt::AnchorLeft);
+    QCOMPARE(l->count(), 2);
+
+    // Vertically the layout has floating items. Therefore, we have a conflict
+    QCOMPARE(layoutHasConflict(l), true);
+
+    // No more floating items
+    setAnchor(l, b, Qt::AnchorRight, l, Qt::AnchorRight);
+    setAnchor(l, a, Qt::AnchorTop, l, Qt::AnchorTop);
+    setAnchor(l, a, Qt::AnchorBottom, l, Qt::AnchorBottom);
+    setAnchor(l, b, Qt::AnchorTop, l, Qt::AnchorTop);
+    setAnchor(l, b, Qt::AnchorBottom, l, Qt::AnchorBottom);
+    QCOMPARE(layoutHasConflict(l), false);
+
+    delete p;
 }
 
 QTEST_MAIN(tst_QGraphicsAnchorLayout)
