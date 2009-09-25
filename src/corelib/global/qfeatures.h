@@ -847,7 +847,7 @@
 #endif
 
 // QPrintPreviewDialog
-#if !defined(QT_NO_PRINTPREVIEWDIALOG) && (defined(QT_NO_PRINTPREVIEWWIDGET) || defined(QT_NO_PRINTDIALOG))
+#if !defined(QT_NO_PRINTPREVIEWDIALOG) && (defined(QT_NO_PRINTPREVIEWWIDGET) || defined(QT_NO_PRINTDIALOG) || defined(QT_NO_MAINWINDOW))
 #define QT_NO_PRINTPREVIEWDIALOG
 #endif
 
