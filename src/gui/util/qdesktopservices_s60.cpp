@@ -70,7 +70,6 @@ QT_BEGIN_NAMESPACE
 
 _LIT(KCacheSubDir, "Cache\\");
 _LIT(KSysBin, "\\Sys\\Bin\\");
-_LIT(KTempDir, "\\System\\Temp\\");
 _LIT(KBrowserPrefix, "4 " );
 _LIT(KFontsDir, "z:\\resource\\Fonts\\");
 const TUid KUidBrowser = { 0x10008D39 };
@@ -381,9 +380,7 @@ QString QDesktopServices::storageLocation(StandardLocation type)
 #endif
         break;
     case TempLocation:
-        path.Append(writableExeDrive().Name());
-        path.Append(KTempDir);
-        //return QDir::tempPath(); break;
+        return QDir::tempPath(); 
         break;
     case HomeLocation:
         path.Append(writableDataRoot());
