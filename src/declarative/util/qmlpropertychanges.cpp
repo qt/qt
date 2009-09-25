@@ -80,6 +80,43 @@ QT_BEGIN_NAMESPACE
     This property holds the object that the properties to change belong to
 */
 
+class QmlReplaceSignalHandler : public ActionEvent
+{
+public:
+    QmlReplaceSignalHandler() : expression(0), reverseExpression(0), ownedExpression(0) {}
+    ~QmlReplaceSignalHandler() {
+        delete ownedExpression;
+    }
+
+    virtual QString typeName() const { return QLatin1String("ReplaceSignalHandler"); }
+
+    QmlMetaProperty property;
+    QmlExpression *expression;
+    QmlExpression *reverseExpression;
+    QmlExpression *ownedExpression;
+
+    virtual void execute() {
+        reverseExpression = property.setSignalExpression(expression);
+        ownedExpression = reverseExpression;
+    }
+
+    virtual bool isReversable() { return true; }
+    virtual void reverse() {
+        ownedExpression = property.setSignalExpression(reverseExpression);
+    }
+
+    virtual bool override(ActionEvent*other) {
+        if (other == this)
+            return true;
+        if (other->typeName() != typeName())
+            return false;
+        if (static_cast<QmlReplaceSignalHandler*>(other)->property == property)
+            return true;
+        return false;
+    }
+};
+
+
 class QmlPropertyChangesPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlPropertyChanges)
@@ -97,6 +134,7 @@ public:
 
     QList<QPair<QByteArray, QVariant> > properties;
     QList<QPair<QByteArray, QmlExpression *> > expressions;
+    QList<QmlReplaceSignalHandler*> signalReplacements;
 
     QmlMetaProperty property(const QByteArray &);
 };
@@ -193,13 +231,15 @@ void QmlPropertyChangesPrivate::decode()
 
         if (isScript) {
             QmlMetaProperty prop = property(name);      //### can we avoid or reuse?
-            if (prop.type() != QmlMetaProperty::SignalProperty) {  //binding
-                QmlExpression *expression = new QmlExpression(qmlContext(q), data.toString(), object);
-                expression->setTrackChange(false);
+            QmlExpression *expression = new QmlExpression(qmlContext(q), data.toString(), object);
+            expression->setTrackChange(false);
+            if (prop.type() == QmlMetaProperty::SignalProperty) {
+                QmlReplaceSignalHandler *handler = new QmlReplaceSignalHandler;
+                handler->property = prop;
+                handler->expression = expression;
+                signalReplacements << handler;
+            } else
                 expressions << qMakePair(name, expression);
-            } else {
-                properties << qMakePair(name, data);    //same as non-script
-            }
         } else {
             properties << qMakePair(name, data);
         }
@@ -228,6 +268,9 @@ QmlPropertyChanges::~QmlPropertyChanges()
     Q_D(QmlPropertyChanges);
     for(int ii = 0; ii < d->expressions.count(); ++ii)
         delete d->expressions.at(ii).second;
+    for(int ii = 0; ii < d->signalReplacements.count(); ++ii)
+        delete d->signalReplacements.at(ii);
+
 }
 
 QObject *QmlPropertyChanges::object() const
@@ -291,6 +334,17 @@ QmlPropertyChanges::ActionList QmlPropertyChanges::actions()
                 (a.toValue.type() == QVariant::String || a.toValue.type() == QVariant::ByteArray) && !a.toValue.isNull())
                 a.toValue.setValue(qmlContext(this)->resolvedUrl(QUrl(a.toValue.toString())));
 
+            list << a;
+        }
+    }
+
+    for (int ii = 0; ii < d->signalReplacements.count(); ++ii) {
+
+        QmlReplaceSignalHandler *handler = signalReplacements.at(ii);
+
+        if (handler->property.isValid()) {
+            Action a;
+            a.event = handler;
             list << a;
         }
     }
