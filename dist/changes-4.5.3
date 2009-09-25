@@ -53,7 +53,16 @@ Qt for Windows
 
 Qt for Mac OS X
 ---------------
+[252088] Drag and drop events will now consider the WA_TransparentForMouseEvents 
+         in Cocoa port.
+[255428] Fixed an an issue when Calling QWidget::raise() on hidden windows making
+         them visible in Cocoa port.
+[256269] Window resize events  triggered from QWidget::adjustSize() will now
+         be sent as non-spontaneous event in the Cocoa port.
+[258822] Fixed a crash when inserting the same menu twice in a menubar in Cocoa port.
 
+-        Fixed the wizard background images for Snow Leopard.
+         
 
 Qt for Embedded Linux
 ---------------------
