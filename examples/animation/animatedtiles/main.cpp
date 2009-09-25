@@ -228,51 +228,25 @@ int main(int argc, char **argv)
     QAbstractTransition *trans = rootState->addTransition(ellipseButton, SIGNAL(pressed()), ellipseState);
     trans->addAnimation(group);
 
-    group = new QParallelAnimationGroup;
-    for (int i = 0; i < items.count(); ++i) {
-        QPropertyAnimation *anim = new QPropertyAnimation(items[i], "pos");
-        anim->setDuration(750 + i * 25);
-        anim->setEasingCurve(QEasingCurve::InOutBack);
-        group->addAnimation(anim);
-    }
     trans = rootState->addTransition(figure8Button, SIGNAL(pressed()), figure8State);
     trans->addAnimation(group);
 
-    group = new QParallelAnimationGroup;
-    for (int i = 0; i < items.count(); ++i) {
-        QPropertyAnimation *anim = new QPropertyAnimation(items[i], "pos");
-        anim->setDuration(750 + i * 25);
-        anim->setEasingCurve(QEasingCurve::InOutBack);
-        group->addAnimation(anim);
-    }
     trans = rootState->addTransition(randomButton, SIGNAL(pressed()), randomState);
     trans->addAnimation(group);
 
-    group = new QParallelAnimationGroup;
-    for (int i = 0; i < items.count(); ++i) {
-        QPropertyAnimation *anim = new QPropertyAnimation(items[i], "pos");
-        anim->setDuration(750 + i * 25);
-        anim->setEasingCurve(QEasingCurve::InOutBack);
-        group->addAnimation(anim);
-    }
     trans = rootState->addTransition(tiledButton, SIGNAL(pressed()), tiledState);
     trans->addAnimation(group);
 
-    group = new QParallelAnimationGroup;
-    for (int i = 0; i < items.count(); ++i) {
-        QPropertyAnimation *anim = new QPropertyAnimation(items[i], "pos");
-        anim->setDuration(750 + i * 25);
-        anim->setEasingCurve(QEasingCurve::InOutBack);
-        group->addAnimation(anim);
-    }
     trans = rootState->addTransition(centeredButton, SIGNAL(pressed()), centeredState);
     trans->addAnimation(group);
 
-    states.start();
     QTimer timer;
     timer.start(125);
     timer.setSingleShot(true);
-    rootState->addTransition(&timer, SIGNAL(timeout()), ellipseState);
+    trans = rootState->addTransition(&timer, SIGNAL(timeout()), ellipseState);
+    trans->addAnimation(group);
+
+    states.start();
 
 #ifdef QT_KEYPAD_NAVIGATION
     QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);
