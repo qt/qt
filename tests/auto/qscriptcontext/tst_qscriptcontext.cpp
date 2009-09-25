@@ -944,6 +944,16 @@ void tst_QScriptContext::inheritActivationAndThisObject()
         QVERIFY(ret.isNumber());
         QCOMPARE(ret.toInt32(), 123);
     }
+
+    // QT-2219
+    {
+        eng.globalObject().setProperty("a", 123);
+        QScriptValue ret = eng.evaluate("(function() { myEval('var a = 456'); return a; })()");
+        QVERIFY(ret.isNumber());
+        QCOMPARE(ret.toInt32(), 456);
+        QEXPECT_FAIL("", "QT-2219: Wrong activation object is returned from native function's parent context", Continue);
+        QVERIFY(eng.globalObject().property("a").strictlyEquals(123));
+    }
 }
 
 static QScriptValue parentContextToString(QScriptContext *ctx, QScriptEngine *)
