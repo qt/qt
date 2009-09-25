@@ -83,16 +83,13 @@ public:
     ~QOpenGL2PaintEngineState();
 
     bool needsDepthBufferClear;
-    qreal depthBufferClearValue;
 
     bool depthTestEnabled;
     bool scissorTestEnabled;
-    uint maxDepth;
     uint currentDepth;
 
     bool canRestoreClip;
     QRect rectangleClip;
-    bool hasRectangleClip;
 };
 
 class Q_OPENGL_EXPORT QGL2PaintEngineEx : public QPaintEngineEx
@@ -226,6 +223,7 @@ public:
 
     QRegion dirtyStencilRegion;
     QRect currentScissorBounds;
+    uint maxDepth;
 
     const QBrush*    currentBrush; // May not be the state's brush!
 
