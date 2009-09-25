@@ -96,14 +96,15 @@ public:
     QmlExpression *ownedExpression;
 
     virtual void execute() {
-        reverseExpression = property.setSignalExpression(expression);
-        ownedExpression = reverseExpression;
+        ownedExpression = property.setSignalExpression(expression);
     }
 
     virtual bool isReversable() { return true; }
     virtual void reverse() {
         ownedExpression = property.setSignalExpression(reverseExpression);
     }
+
+    virtual void saveOriginals() { reverseExpression = property.signalExpression(); }
 
     virtual bool override(ActionEvent*other) {
         if (other == this)
