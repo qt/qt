@@ -1648,9 +1648,9 @@ void tst_QMdiSubWindow::resizeTimer()
     QMdiArea mdiArea;
     QMdiSubWindow *subWindow = mdiArea.addSubWindow(new QWidget);
     mdiArea.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
+    QTest::qWaitForWindowShown(&mdiArea);
+    QTest::qWait(250);
+
 
     EventSpy timerEventSpy(subWindow, QEvent::Timer);
     QCOMPARE(timerEventSpy.count(), 0);
