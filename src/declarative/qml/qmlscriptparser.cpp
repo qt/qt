@@ -769,6 +769,13 @@ bool ProcessAST::visit(AST::UiSourceElement *node)
         } else if (AST::VariableStatement *varStmt = AST::cast<AST::VariableStatement *>(node->sourceElement)) {
             // ignore variable declarations
             line = varStmt->declarationKindToken.startLine;
+
+            QmlError error;
+            error.setDescription(QCoreApplication::translate("QmlParser", "Variable declarations not allow in inline Script blocks"));
+            error.setLine(node->firstSourceLocation().startLine);
+            error.setColumn(node->firstSourceLocation().startColumn);
+            _parser->_errors << error;
+            return false;
         }
 
         Value *value = new Value;
