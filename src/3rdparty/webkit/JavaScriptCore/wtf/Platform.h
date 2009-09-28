@@ -238,7 +238,8 @@
 #define WTF_PLATFORM_MIDDLE_ENDIAN 1
 #endif
 #define ARM_ARCH_VERSION 3
-#if defined(__ARM_ARCH_4__) || defined(__ARM_ARCH_4T__)
+#if defined(__ARM_ARCH_4__) || defined(__ARM_ARCH_4T__) || defined(ARMV4I) \
+    || defined(_ARMV4I_) || defined(armv4i)
 #undef ARM_ARCH_VERSION
 #define ARM_ARCH_VERSION 4
 #endif

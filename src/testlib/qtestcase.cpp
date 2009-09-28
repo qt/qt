@@ -734,7 +734,7 @@ QT_BEGIN_NAMESPACE
     \sa QTest::qSleep()
 */
 
-/*! \fn void QTest::qWaitForWindowManager(QWidget *window)
+/*! \fn void QTest::qWaitForWindowShown(QWidget *window)
 
     Waits until the window is shown in the screen. This is mainly useful for
     asynchronous systems like X11, where a window will be mapped to screen some
@@ -1517,10 +1517,14 @@ FatalSignalHandler::FatalSignalHandler()
 
     for (int i = 0; fatalSignals[i]; ++i) {
         sigaction(fatalSignals[i], &act, &oldact);
+#ifndef Q_WS_QWS
         // Don't overwrite any non-default handlers
+        // however, we need to replace the default QWS handlers
         if (oldact.sa_flags & SA_SIGINFO || oldact.sa_handler != SIG_DFL) {
             sigaction(fatalSignals[i], &oldact, 0);
-        } else {
+        } else
+#endif
+        {
             sigaddset(&handledSignals, fatalSignals[i]);
         }
     }

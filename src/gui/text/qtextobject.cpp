@@ -1370,7 +1370,7 @@ int QTextBlock::firstLineNumber() const
 
 Sets the line count to \a count.
 
-/sa lineCount()
+\sa lineCount()
 */
 void QTextBlock::setLineCount(int count)
 {
