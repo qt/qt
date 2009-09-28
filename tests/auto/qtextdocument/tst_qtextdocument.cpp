@@ -1787,21 +1787,17 @@ void tst_QTextDocument::cursorPositionChangedOnSetText()
 {
     CursorPosSignalSpy spy(doc);
 
-    cursor = QTextCursor();
+    // doc has one QTextCursor stored in the
+    // cursor member variable, thus the signal
+    // gets emitted once.
 
     doc->setPlainText("Foo\nBar\nBaz\nBlub\nBlah");
 
-    // the signal should still be emitted once for the QTextCursor that
-    // QTextDocument::setPlainText creates temporarily. But the signal
-    // should not be emitted more often.
     QCOMPARE(spy.calls, 1);
 
     spy.calls = 0;
     doc->setHtml("<p>Foo<p>Bar<p>Baz<p>Blah");
 
-    // the signal should still be emitted once for the QTextCursor that
-    // QTextDocument::setPlainText creates temporarily. But the signal
-    // should not be emitted more often.
     QCOMPARE(spy.calls, 1);
 }
 
