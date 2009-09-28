@@ -259,9 +259,11 @@ void EnginePane::showProperties()
     }
 
     QmlDebugWatch *watch = m_client.addWatch(obj, this);
-    m_watchedObject = watch;
-    QObject::connect(watch, SIGNAL(valueChanged(QByteArray,QVariant)),
-                     this, SLOT(valueChanged(QByteArray,QVariant)));
+    if (watch->state() != QmlDebugWatch::Dead) {
+        m_watchedObject = watch;
+        QObject::connect(watch, SIGNAL(valueChanged(QByteArray,QVariant)),
+                        this, SLOT(valueChanged(QByteArray,QVariant)));
+    }
 
     delete m_object; m_object = 0;
 }
@@ -270,10 +272,12 @@ void EnginePane::addExpressionWatch(int debugId, const QString &expr)
 {
     QmlDebugWatch *watch = m_client.addWatch(QmlDebugObjectReference(debugId), expr, this);
 
-    QObject::connect(watch, SIGNAL(valueChanged(QByteArray,QVariant)),
-                    this, SLOT(valueChanged(QByteArray,QVariant)));
-    m_watchTableModel->addWatch(watch, expr);
-    m_watchTable->resizeColumnsToContents();
+    if (watch->state() != QmlDebugWatch::Dead) {
+        QObject::connect(watch, SIGNAL(valueChanged(QByteArray,QVariant)),
+                        this, SLOT(valueChanged(QByteArray,QVariant)));
+        m_watchTableModel->addWatch(watch, expr);
+        m_watchTable->resizeColumnsToContents();
+    }
 }
 
 void EnginePane::valueChanged(const QByteArray &propertyName, const QVariant &value)
@@ -297,22 +301,24 @@ void EnginePane::propertyActivated(const QmlDebugPropertyReference &property)
     QmlDebugObjectReference object = view->object();
     QmlDebugWatch *watch = m_watchTableModel->findWatch(object.debugId(), property.name());
     if (watch) {
-        m_watchTableModel->removeWatch(watch);
         m_client.removeWatch(watch);
         delete watch;
+        watch = 0;
     } else {
         QmlDebugWatch *watch = m_client.addWatch(property, this);
-        QObject::connect(watch, SIGNAL(stateChanged(State)),
-                        this, SLOT(propertyWatchStateChanged()));
-        QObject::connect(watch, SIGNAL(valueChanged(QByteArray,QVariant)),
-                        this, SLOT(valueChanged(QByteArray,QVariant)));
-        QString desc = property.name()
-                + QLatin1String(" on\n")
-                + object.className()
-                + QLatin1String(": ")
-                + (object.name().isEmpty() ? QLatin1String("<unnamed>") : object.name());
-        m_watchTableModel->addWatch(watch, desc);
-        m_watchTable->resizeColumnsToContents();
+        if (watch->state() != QmlDebugWatch::Dead) {
+            QObject::connect(watch, SIGNAL(stateChanged(State)),
+                            this, SLOT(propertyWatchStateChanged()));
+            QObject::connect(watch, SIGNAL(valueChanged(QByteArray,QVariant)),
+                            this, SLOT(valueChanged(QByteArray,QVariant)));
+            QString desc = property.name()
+                    + QLatin1String(" on\n")
+                    + object.className()
+                    + QLatin1String(": ")
+                    + (object.name().isEmpty() ? QLatin1String("<unnamed>") : object.name());
+            m_watchTableModel->addWatch(watch, desc);
+            m_watchTable->resizeColumnsToContents();
+        }
     }
 }
 
@@ -327,9 +333,9 @@ void EnginePane::stopWatching(int column)
 {
     QmlDebugWatch *watch = m_watchTableModel->findWatch(column);
     if (watch) {
-        m_watchTableModel->removeWatch(watch);
         m_client.removeWatch(watch);
         delete watch;
+        watch = 0;
     }
 }
 

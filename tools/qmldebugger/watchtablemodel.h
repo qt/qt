@@ -17,8 +17,6 @@ public:
     WatchTableModel(QObject *parent = 0);
 
     void addWatch(QmlDebugWatch *watch, const QString &title);
-    void removeWatch(QmlDebugWatch *watch);
-
     void updateWatch(QmlDebugWatch *watch, const QVariant &value);
 
     QmlDebugWatch *findWatch(int column) const;
@@ -29,9 +27,13 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
+private slots:
+    void watchStateChanged();
+
 private:
     int columnForWatch(QmlDebugWatch *watch) const;
     void addValue(int column, const QVariant &value);
+    void removeWatch(QmlDebugWatch *watch);
 
     struct WatchedEntity
     {

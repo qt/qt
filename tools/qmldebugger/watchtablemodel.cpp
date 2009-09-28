@@ -18,6 +18,9 @@ void WatchTableModel::addWatch(QmlDebugWatch *watch, const QString &title)
     if (qobject_cast<QmlDebugPropertyWatch *>(watch))
         property = qobject_cast<QmlDebugPropertyWatch *>(watch)->name();
 
+    // Watch will be automatically removed when its state is Inactive
+    QObject::connect(watch, SIGNAL(stateChanged(State)), SLOT(watchStateChanged()));
+
     int col = columnCount(QModelIndex());
     beginInsertColumns(QModelIndex(), col, col);
 
@@ -140,6 +143,13 @@ QVariant WatchTableModel::data(const QModelIndex &idx, int role) const
     } else {
         return QVariant();
     }
+}
+
+void WatchTableModel::watchStateChanged()
+{
+    QmlDebugWatch *watch = qobject_cast<QmlDebugWatch*>(sender());
+    if (watch && watch->state() == QmlDebugWatch::Inactive)
+        removeWatch(watch);
 }
 
 int WatchTableModel::columnForWatch(QmlDebugWatch *watch) const
