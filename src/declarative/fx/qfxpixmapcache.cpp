@@ -111,6 +111,7 @@ static bool readImage(QIODevice *dev, QPixmap *pixmap)
             *pixmap = QPixmap::fromImage(img);
             return true;
         } else {
+            qWarning() << imgio.errorString();
             return false;
         }
     }
