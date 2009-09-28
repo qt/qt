@@ -150,7 +150,6 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &)
 #endif
 
                     data.winid->SetExtent(TPoint(xrect.x(), xrect.y()), TSize(xrect.width(), xrect.height()));
-                    data.winid->DrawNow();
                 }
                 return;
             }
@@ -242,40 +241,6 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &)
         }
     }
 
-    //to avoid flicker, we have to show children after the helper widget has moved
-    if (jump) {
-        for (int i = 0; i < children.size(); ++i) {
-            QObject *object = children.at(i);
-            if (object->isWidgetType()) {
-                QWidget *w = static_cast<QWidget *>(object);
-                if (!w->testAttribute(Qt::WA_OutsideWSRange) && !w->testAttribute(Qt::WA_Mapped) && !w->isHidden()) {
-                    w->setAttribute(Qt::WA_Mapped);
-                    if (w->internalWinId()) {
-
-#ifdef DEBUG_QWIDGET
-    qDebug()    << "QWidgetPrivate::setWSGeometry [" << this << "] (6)"
-                << "control" << data.winid
-                << "SetVisible(ETrue)";
-#endif
-
-                        w->data->winid->DrawableWindow()->SetVisible(ETrue);
-                    }
-                }
-            }
-        }
-    }
-
-    if  (jump && data.winid) {
-
-#ifdef DEBUG_QWIDGET
-    qDebug()    << "QWidgetPrivate::setWSGeometry [" << this << "] (7)"
-                << "control" << data.winid
-                << "DrawNow" << wrect.width() << 'x' << wrect.height();
-#endif
-
-        data.winid->DrawNow(TRect(0, 0, wrect.width(), wrect.height()));
-    }
-
     if (mapWindow and !dontShow) {
         q->setAttribute(Qt::WA_Mapped);
         if (q->internalWinId()) {
@@ -288,6 +253,18 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &)
 
             q->internalWinId()->DrawableWindow()->SetVisible(ETrue);
         }
+    }
+
+    if  (jump && data.winid) {
+
+#ifdef DEBUG_QWIDGET
+    qDebug()    << "QWidgetPrivate::setWSGeometry [" << this << "] (7)"
+                << "control" << data.winid
+                << "DrawNow" << wrect.width() << 'x' << wrect.height();
+#endif
+
+        RWindow *const window = static_cast<RWindow *>(data.winid->DrawableWindow());
+        window->Invalidate(TRect(0, 0, wrect.width(), wrect.height()));
     }
 }
 
