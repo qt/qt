@@ -120,6 +120,29 @@ private:
     friend class QScriptEnginePrivate;
 };
 
+class QScriptProgramPrivate;
+class Q_SCRIPT_EXPORT QScriptProgram
+{
+public:
+    QScriptProgram();
+    QScriptProgram(const QScriptProgram &);
+    ~QScriptProgram();
+
+    QScriptProgram &operator=(const QScriptProgram &);
+
+    bool isNull() const;
+
+    bool hasSyntaxError() const;
+    QScriptValue syntaxError() const;
+
+    QString programSource() const;
+
+private:
+    friend class QScriptEngine;
+    QScriptProgramPrivate *d;
+};
+
+class QScriptCode;
 class Q_SCRIPT_EXPORT QScriptEngine
 #ifndef QT_NO_QOBJECT
     : public QObject
@@ -163,6 +186,9 @@ public:
 
     bool canEvaluate(const QString &program) const;
     static QScriptSyntaxCheckResult checkSyntax(const QString &program);
+
+    QScriptProgram compile(const QString &program, const QString &fileName = QString(), int lineNumber = 1);
+    QScriptValue evaluate(const QScriptProgram &);
 
     QScriptValue evaluate(const QString &program, const QString &fileName = QString(), int lineNumber = 1);
 
