@@ -33,6 +33,16 @@ Third party components
 *                          Library                                         *
 ****************************************************************************
 
+- QDirIterator
+    * [258230] Fixed inconsistencies in value returned from
+      QDirIterator::next().
+
+- QDoubleSpinBox
+    * [255019] Fixed a crash when using large value for decimals.
+
+- QTemporaryFile
+    * [260165] Fixed a bug where temporary files would be left behind when
+      copying a file to a non-existing directory.
 
 ****************************************************************************
 *                          Database Drivers                                *
@@ -58,6 +68,10 @@ Third party components
 
 Qt for Linux/X11
 ----------------
+
+- Fixed a bug where an empty KDEDIRS variable would bring /share into the icon
+  search path.
+- [KDE 191759] Plasma spinning in endless loop.
 
 
 Qt for Windows
