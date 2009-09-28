@@ -1156,7 +1156,7 @@ static void getMacPreferredLanguageAndCountry(QString *language, QString *countr
              kCFPreferencesAnyApplication,
              kCFPreferencesCurrentUser,
              kCFPreferencesAnyHost);
-    if (CFArrayGetCount(languages) > 0) {
+    if (languages && CFArrayGetCount(languages) > 0) {
         QCFType<CFLocaleRef> locale = CFLocaleCreate(kCFAllocatorDefault,
                                                      CFStringRef(CFArrayGetValueAtIndex(languages, 0)));
         if (language)
