@@ -3033,7 +3033,11 @@ void Configure::generateConfigfiles()
         tmpStream.setDevice(&tmpFile2);
         tmpStream << "/* Licensed */" << endl
                   << "static const char qt_configure_licensee_str          [512 + 12] = \"qt_lcnsuser=" << licenseInfo["LICENSEE"] << "\";" << endl
-                  << "static const char qt_configure_licensed_products_str [512 + 12] = \"qt_lcnsprod=" << dictionary["EDITION"] << "\";" << endl;
+                  << "static const char qt_configure_licensed_products_str [512 + 12] = \"qt_lcnsprod=" << dictionary["EDITION"] << "\";" << endl
+                  << endl
+                  << "/* Build date */" << endl
+                  << "static const char qt_configure_installation          [11 + 12] = \"" << QDate::currentDate().toString(Qt::ISODate) << "\";" << endl
+                  << endl;
         if(!dictionary[ "QT_HOST_PREFIX" ].isNull())
             tmpStream << "#if !defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE)" << endl;
         tmpStream << "static const char qt_configure_prefix_path_str       [512 + 12] = \"qt_prfxpath=" << QString(dictionary["QT_INSTALL_PREFIX"]).replace( "\\", "\\\\" ) << "\";" << endl
@@ -3086,6 +3090,24 @@ void Configure::generateConfigfiles()
         QFile::remove( outName );
         tmpFile2.copy(outName);
         tmpFile2.close();
+    }
+
+    QTemporaryFile tmpFile3;
+    if (tmpFile3.open()) {
+        tmpStream.setDevice(&tmpFile3);
+        tmpStream << "/* Evaluation license key */" << endl
+                  << "static const char qt_eval_key_data              [512 + 12] = \"" << licenseInfo["LICENSEKEYEXT"] << "\";" << endl;
+
+        tmpStream.flush();
+        tmpFile3.flush();
+
+        outName = buildPath + "/src/corelib/global/qconfig_eval.cpp";
+        ::SetFileAttributes((wchar_t*)outName.utf16(), FILE_ATTRIBUTE_NORMAL );
+        QFile::remove( outName );
+
+        if (dictionary["EDITION"] == "Evaluation" || qmakeDefines.contains("QT_EVAL"))
+            tmpFile3.copy(outName);
+        tmpFile3.close();
     }
 }
 #endif
