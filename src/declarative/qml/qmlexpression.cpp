@@ -45,6 +45,7 @@
 #include "qmlcontext_p.h"
 #include "qmlrewrite_p.h"
 #include "QtCore/qdebug.h"
+#include "qmlcompiler_p.h"
 
 Q_DECLARE_METATYPE(QList<QObject *>);
 
@@ -74,8 +75,26 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc,
     if (*data == BasicScriptEngineData) {
         sse.load((const char *)(data + 1), rc);
     } else {
-        expression = QString::fromRawData((QChar *)(data + 2), data[1]);
+        QmlCompiledData *dd = (QmlCompiledData *)rc;
+
         expressionRewritten = true;
+        expression = QString::fromRawData((QChar *)(data + 3), data[2]);
+
+        int progIdx = *(data + 1);
+        QmlEngine *engine = ctxt->engine();
+        QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
+        if (!dd->programs.at(progIdx)) {
+            dd->programs[progIdx] = new QScriptProgram(scriptEngine->compile(expression));
+        }
+
+        QmlContextPrivate *ctxtPriv = ctxt->d_func();
+        QScriptContext *scriptContext = scriptEngine->pushContext();
+        for (int i = ctxtPriv->scopeChain.size() - 1; i > -1; --i)
+            scriptContext->pushScope(ctxtPriv->scopeChain.at(i));
+
+        expressionFunction = scriptEngine->evaluate(*dd->programs[progIdx]);
+        expressionFunctionValid = true;
+        scriptEngine->popContext();
     }
 
     QmlAbstractExpression::setContext(ctxt);

@@ -69,6 +69,7 @@ class QmlEngine;
 class QmlComponent;
 class QmlContext;
 
+class QScriptProgram;
 class QmlCompiledData : public QmlRefCount
 {
 public:
@@ -106,6 +107,7 @@ public:
     QList<QByteArray> datas;
     QList<QmlParser::Location> locations;
     QList<QmlInstruction> bytecode;
+    QList<QScriptProgram *> programs;
 
     void dumpInstructions();
 private:
@@ -253,12 +255,10 @@ private:
     struct ComponentCompileState
     {
         ComponentCompileState() 
-            : parserStatusCount(0), savedObjects(0), 
-              pushedProperties(0), root(0) {}
+            : parserStatusCount(0), pushedProperties(0), root(0) {}
         QHash<QString, QmlParser::Object *> ids;
         QHash<int, QmlParser::Object *> idIndexes;
         int parserStatusCount;
-        int savedObjects;
         int pushedProperties;
 
         QHash<QmlParser::Value *, BindingReference> bindings;

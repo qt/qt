@@ -2296,7 +2296,10 @@ bool QmlCompiler::completeComponentBuild()
             expression = rewriteBinding(expression);
 
             quint32 length = expression.length();
+            quint32 pc = output->programs.length();
+            output->programs.append(0);
             binding.compiledData =
+                QByteArray((const char *)&pc, sizeof(quint32)) +
                 QByteArray((const char *)&length, sizeof(quint32)) +
                 QByteArray((const char *)expression.constData(), 
                            expression.length() * sizeof(QChar));

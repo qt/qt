@@ -159,6 +159,8 @@ QmlCompiledData::~QmlCompiledData()
         if (types.at(ii).ref)
             types.at(ii).ref->release();
     }
+
+    qDeleteAll(programs);
 }
 
 QObject *QmlCompiledData::TypeReference::createInstance(QmlContext *ctxt, const QBitField &bindings) const
