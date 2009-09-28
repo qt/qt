@@ -568,6 +568,19 @@ static QScriptValue custom_call(QScriptContext *ctx, QScriptEngine *)
     return ctx->argumentsObject().property(0).call(QScriptValue(), QScriptValueList() << ctx->argumentsObject().property(1));
 }
 
+static QScriptValue native_recurse(QScriptContext *ctx, QScriptEngine *eng)
+{
+    QScriptValue func = ctx->argumentsObject().property(0);
+    QScriptValue n = ctx->argumentsObject().property(1);
+
+    if(n.toUInt32() <= 1) {
+        return func.call(QScriptValue(), QScriptValueList());
+    } else {
+        return eng->evaluate("native_recurse").call(QScriptValue(),
+                                                    QScriptValueList() << func << QScriptValue(n.toUInt32() - 1));
+    }
+}
+
 void tst_QScriptContext::backtrace_data()
 {
     QTest::addColumn<QString>("code");
@@ -749,6 +762,58 @@ void tst_QScriptContext::backtrace_data()
 
         QTest::newRow("calls with closures") << source << expected;
     }
+
+    {
+        QLatin1String func( "function js_bt() {\n"
+            "    return bt();\n"
+            "}");
+
+        QString source = QString::fromLatin1("\n"
+            "%1\n"
+            "function f() {\n"
+            "    return native_recurse(js_bt, 12);\n"
+            "}\n"
+            "f();\n").arg(func);
+
+        QStringList expected;
+        expected << "<native>() at -1" << "js_bt() at testfile:3";
+        for(int n = 1; n <= 12; n++) {
+            expected << QString::fromLatin1("<native>(%1, %2) at -1")
+                .arg(func).arg(n);
+        }
+        expected << "f() at testfile:6";
+        expected << "<global>() at testfile:8";
+
+        QTest::newRow("native recursive") << source << expected;
+    }
+
+    {
+        QString source = QString::fromLatin1("\n"
+            "function finish() {\n"
+            "    return bt();\n"
+            "}\n"
+            "function rec(n) {\n"
+            "    if(n <= 1)\n"
+            "        return finish();\n"
+            "    else\n"
+            "        return rec (n - 1);\n"
+            "}\n"
+            "function f() {\n"
+            "    return rec(12);\n"
+            "}\n"
+            "f();\n");
+
+        QStringList expected;
+        expected << "<native>() at -1" << "finish() at testfile:3";
+        for(int n = 1; n <= 12; n++) {
+            expected << QString::fromLatin1("rec(n = %1) at testfile:%2")
+                .arg(n).arg((n==1) ? 7 : 9);
+        }
+        expected << "f() at testfile:12";
+        expected << "<global>() at testfile:14";
+
+        QTest::newRow("js recursive") << source << expected;
+    }
 }
 
 
@@ -761,6 +826,7 @@ void tst_QScriptContext::backtrace()
     eng.globalObject().setProperty("bt", eng.newFunction(getBacktrace));
     eng.globalObject().setProperty("custom_eval", eng.newFunction(custom_eval));
     eng.globalObject().setProperty("custom_call", eng.newFunction(custom_call));
+    eng.globalObject().setProperty("native_recurse", eng.newFunction(native_recurse));
 
     QString fileName = "testfile";
     QScriptValue ret = eng.evaluate(code, fileName);
