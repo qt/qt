@@ -1756,11 +1756,11 @@ void tst_QWidget::setTabOrder()
 
     container.show();
     container.activateWindow();
+    qApp->setActiveWindow(&container);
 #ifdef Q_WS_X11
     QTest::qWaitForWindowShown(&container);
     QTest::qWait(50);
 #endif
-    qApp->setActiveWindow(&container);
 
     QTest::qWait(100);
 
@@ -2316,8 +2316,9 @@ void tst_QWidget::showMinimizedKeepsFocus()
         QTRY_COMPARE(qApp->focusWidget(), static_cast<QWidget*>(0));
 
         window.showNormal();
-        QTest::qWait(30);
         qApp->setActiveWindow(&window);
+        QTest::qWaitForWindowShown(&window);
+        QTest::qWait(30);
 #ifdef Q_WS_MAC
         if (!macHasAccessToWindowsServer())
             QEXPECT_FAIL("", "When not having WindowServer access, we lose focus.", Continue);
@@ -3116,7 +3117,7 @@ void tst_QWidget::saveRestoreGeometry()
         widget.resize(size);
         widget.show();
         QTest::qWaitForWindowShown(&widget);
-        QTest::qWait(100);
+        QTest::qWait(200);
         QTRY_COMPARE(widget.geometry().size(), size);
 
         QRect geom;
@@ -3126,15 +3127,15 @@ void tst_QWidget::saveRestoreGeometry()
         geom = widget.geometry();
         widget.setWindowState(widget.windowState() | Qt::WindowFullScreen);
         QTRY_VERIFY((widget.windowState() & Qt::WindowFullScreen));
-        QTest::qWait(100);
+        QTest::qWait(200);
         QVERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(20);
+        QTest::qWait(120);
         QTRY_VERIFY(!(widget.windowState() & Qt::WindowFullScreen));
         QTRY_COMPARE(widget.geometry(), geom);
 
         //Restore to full screen
         widget.setWindowState(widget.windowState() | Qt::WindowFullScreen);
-        QTest::qWait(20);
+        QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowFullScreen));
         QTest::qWait(200);
         savedGeometry = widget.saveGeometry();
@@ -3165,7 +3166,7 @@ void tst_QWidget::saveRestoreGeometry()
         QTest::qWait(20);
         QTRY_VERIFY((widget.windowState() & Qt::WindowMaximized));
         QTRY_VERIFY(widget.geometry() != geom);
-        QTest::qWait(100);
+        QTest::qWait(200);
         QVERIFY(widget.restoreGeometry(savedGeometry));
         QTest::qWait(20);
         QTRY_COMPARE(widget.geometry(), geom);
@@ -5388,7 +5389,7 @@ void tst_QWidget::showAndMoveChild()
     child.move(desktopDimensions.width()/2, desktopDimensions.height()/2);
     qApp->processEvents();
 
-    verifyColor(child.geometry().translated(tlwOffset), Qt::blue); 
+    verifyColor(child.geometry().translated(tlwOffset), Qt::blue);
     verifyColor(QRegion(parent.geometry()) - child.geometry().translated(tlwOffset), Qt::red);
 }
 
@@ -6407,7 +6408,7 @@ void tst_QWidget::render()
 
     qApp->processEvents();
     qApp->sendPostedEvents();
-    QTest::qWait(100);
+    QTest::qWait(250);
 
     QImage sourceImage = QPixmap::grabWidget(&source).toImage();
     qApp->processEvents();
@@ -6513,6 +6514,7 @@ void tst_QWidget::renderInvisible()
     dummyFocusWidget.show();
     QTest::qWaitForWindowShown(&dummyFocusWidget);
     qApp->processEvents();
+    QTest::qWait(100);
 
     // Create normal reference image.
     const QSize calendarSize = calendar->size();
@@ -9152,38 +9154,38 @@ void tst_QWidget::destroyBackingStore()
 
 void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 {
-    QWidget main;
+    QApplication::setOverrideCursor(Qt::BlankCursor); //keep the cursor out of screen grabs
+    QWidget main(0,0,Qt::FramelessWindowHint); //don't get confused by the size of the window frame
     QPalette palette;
     palette.setColor(QPalette::Window, Qt::red);
     main.setPalette(palette);
+
     QDesktopWidget desktop;
     QRect desktopDimensions = desktop.availableGeometry(&main);
-    main.setGeometry(desktopDimensions);
+    QSize mainSize(400, 400);
+    mainSize = mainSize.boundedTo(desktopDimensions.size());
+    main.resize(mainSize);
 
     QWidget *offsetWidget = new QWidget(&main);
-    offsetWidget->setGeometry(0, -14600, desktopDimensions.width(), 15000);
+    offsetWidget->setGeometry(0, -(15000 - mainSize.height()), mainSize.width(), 15000);
 
     // big widget is too big for the coordinates, it must be limited by wrect
     // if wrect is not at the right position because of offsetWidget, bigwidget
     // is not painted correctly
     QWidget *bigWidget = new QWidget(offsetWidget);
-
-    bigWidget->setGeometry(0, 0, desktopDimensions.width(), 50000);
+    bigWidget->setGeometry(0, 0, mainSize.width(), 50000);
     palette.setColor(QPalette::Window, Qt::green);
     bigWidget->setPalette(palette);
     bigWidget->setAutoFillBackground(true);
 
     main.show();
     QTest::qWaitForWindowShown(&main);
-    QTest::qWait(50);
-    QCursor::setPos(main.pos()); //get the cursor out of the picture
-    QTest::qWait(50);
 
     QPixmap correct(main.size());
     correct.fill(Qt::green);
 
-    QRect center(desktopDimensions.width()/4,desktopDimensions.width()/4, desktopDimensions.width()/2, desktopDimensions.width()/2); // to avoid the decorations
-    QTRY_COMPARE(QPixmap::grabWindow(main.winId()).toImage().copy(center), correct.toImage().copy(center));
+    QTRY_COMPARE(QPixmap::grabWindow(main.winId()).toImage(), correct.toImage());
+    QApplication::restoreOverrideCursor();
 }
 
 void tst_QWidget::inputFocus_task257832()

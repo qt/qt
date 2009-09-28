@@ -4056,6 +4056,8 @@
     You can test for any other platform-compiler combination as long as a
     specification exists for it in the \c mkspecs directory.
 
+    The scope \c unix is true for the Symbian platform.
+
     \section1 Variables
 
     Many of the variables used in project files are special variables that

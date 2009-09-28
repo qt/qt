@@ -1777,7 +1777,7 @@ DEFINE_STUB_FUNCTION(JSObject*, op_construct_JSConstruct)
     else
         structure = constructor->scope().node()->globalObject()->emptyObjectStructure();
 #ifdef QT_BUILD_SCRIPT_LIB
-    return new (stackFrame.globalData) QScriptObject(structure);
+    return new (stackFrame.globalData) QT_PREPEND_NAMESPACE(QScriptObject)(structure);
 #else
     return new (stackFrame.globalData) JSObject(structure);
 #endif
@@ -3108,4 +3108,4 @@ DEFINE_STUB_FUNCTION(EncodedJSValue, vm_throw)
 
 } // namespace JSC
 
-#endif // ENABLE(JIT)
+ #endif // ENABLE(JIT)

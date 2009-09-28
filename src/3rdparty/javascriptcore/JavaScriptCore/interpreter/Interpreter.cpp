@@ -3469,7 +3469,8 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
                 structure = callDataScopeChain->globalObject()->emptyObjectStructure();
 #ifdef QT_BUILD_SCRIPT_LIB
             // ### world-class hack
-            QScriptObject* newObject = new (globalData) QScriptObject(structure);
+            QT_PREPEND_NAMESPACE(QScriptObject)* newObject
+                = new (globalData) QT_PREPEND_NAMESPACE(QScriptObject)(structure);
 #else
             JSObject* newObject = new (globalData) JSObject(structure);
 #endif

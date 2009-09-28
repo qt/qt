@@ -98,13 +98,13 @@ public:
     {
         if (!QSignalTransition::eventTest(e))
             return false;
-        QSignalEvent *se = static_cast<QSignalEvent*>(e);
+        QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(e);
         return se->arguments().at(0).toInt() > 1;
     }
 
     virtual void onTransition(QEvent *e)
     {
-        QSignalEvent *se = static_cast<QSignalEvent*>(e);
+        QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(e);
         int x = se->arguments().at(0).toInt();
         int fac = m_fact->property("fac").toInt();
         m_fact->setProperty("fac",  x * fac);
@@ -128,7 +128,7 @@ public:
     {
         if (!QSignalTransition::eventTest(e))
             return false;
-        QSignalEvent *se = static_cast<QSignalEvent*>(e);
+        QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(e);
         return se->arguments().at(0).toInt() <= 1;
     }
 
