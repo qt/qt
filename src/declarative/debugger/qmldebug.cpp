@@ -105,9 +105,10 @@ void QmlEngineDebugPrivate::decode(QDataStream &ds, QmlDebugObjectReference &o,
         QmlEngineDebugServer::QmlObjectProperty data;
         ds >> data;
         QmlDebugPropertyReference prop;
+        prop.m_objectDebugId = o.m_debugId;
         prop.m_name = data.name;
         prop.m_binding = data.binding;
-        prop.m_objectDebugId = o.m_debugId;
+        prop.m_hasNotifySignal = data.hasNotifySignal;
         if (data.type == QmlEngineDebugServer::QmlObjectProperty::Basic)
             prop.m_value = data.value;
         else if (data.type == QmlEngineDebugServer::QmlObjectProperty::Object) {
@@ -343,6 +344,7 @@ void QmlEngineDebug::removeWatch(QmlDebugWatch *watch)
 {
     Q_D(QmlEngineDebug);
 
+    watch->setState(QmlDebugWatch::Inactive);
     d->watched.remove(watch->queryId());
 
     if (d->client->isConnected()) {
@@ -741,18 +743,18 @@ void QmlDebugFileReference::setColumnNumber(int c)
 }
 
 QmlDebugPropertyReference::QmlDebugPropertyReference()
-: m_objectDebugId(-1)
+: m_objectDebugId(-1), m_hasNotifySignal(false)
 {
 }
 
 QmlDebugPropertyReference::QmlDebugPropertyReference(const QmlDebugPropertyReference &o)
-: m_objectDebugId(o.m_objectDebugId), m_name(o.m_name), m_value(o.m_value), m_binding(o.m_binding)
+: m_objectDebugId(o.m_objectDebugId), m_name(o.m_name), m_value(o.m_value), m_binding(o.m_binding), m_hasNotifySignal(o.m_hasNotifySignal)
 {
 }
 
 QmlDebugPropertyReference &QmlDebugPropertyReference::operator=(const QmlDebugPropertyReference &o)
 {
-    m_objectDebugId = o.m_objectDebugId; m_name = o.m_name; m_value = o.m_value; m_binding = o.m_binding;
+    m_objectDebugId = o.m_objectDebugId; m_name = o.m_name; m_value = o.m_value; m_binding = o.m_binding; m_hasNotifySignal = o.m_hasNotifySignal;
     return *this;
 }
 
@@ -774,4 +776,9 @@ QVariant QmlDebugPropertyReference::value() const
 QString QmlDebugPropertyReference::binding() const
 {
     return m_binding;
+}
+
+bool QmlDebugPropertyReference::hasNotifySignal() const
+{
+    return m_hasNotifySignal;
 }

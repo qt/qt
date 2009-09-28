@@ -86,6 +86,7 @@ public:
         QString name;
         QVariant value;
         QString binding;
+        bool hasNotifySignal;
     };
 
     static void addEngine(QmlEngine *);
