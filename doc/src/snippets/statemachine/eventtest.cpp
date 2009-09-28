@@ -52,7 +52,7 @@ protected:
     bool eventTest(QEvent *event)
     {
         if (event->type() == QEvent::Wrapped) {
-            QEvent *wrappedEvent = static_cast<QWrappedEvent *>(event)->event();
+            QEvent *wrappedEvent = static_cast<QStateMachine::WrappedEvent *>(event)->event();
             if (wrappedEvent->type() == QEvent::KeyPress) {
                 QKeyEvent *keyEvent = static_cast<QKeyEvent *>(wrappedEvent);
                 // Do your event test

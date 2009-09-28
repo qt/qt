@@ -54,7 +54,6 @@
 #include <QtGui/QGraphicsView>
 #include <QtCore/QStateMachine>
 #include <QtGui/QKeyEventTransition>
-#include <QtCore/QSignalEvent>
 #include <QtCore/QFinalState>
 
 PlayState::PlayState(GraphicsScene *scene, QState *parent)
@@ -295,7 +294,7 @@ bool UpdateScoreTransition::eventTest(QEvent *event)
     if (!QSignalTransition::eventTest(event))
         return false;
     else {
-        QSignalEvent *se = static_cast<QSignalEvent*>(event);
+        QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(event);
         game->score += se->arguments().at(0).toInt();
         scene->progressItem->setScore(game->score);
         return true;
@@ -315,7 +314,7 @@ bool WinTransition::eventTest(QEvent *event)
     if (!QSignalTransition::eventTest(event))
         return false;
     else {
-        QSignalEvent *se = static_cast<QSignalEvent*>(event);
+        QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(event);
         game->score += se->arguments().at(0).toInt();
         scene->progressItem->setScore(game->score);
         return true;

@@ -44,7 +44,6 @@
 #ifndef QT_NO_STATEMACHINE
 
 #include "qsignaltransition_p.h"
-#include "qsignalevent.h"
 #include "qstate.h"
 #include "qstate_p.h"
 #include "qstatemachine.h"
@@ -68,7 +67,7 @@ QT_BEGIN_NAMESPACE
 
   You can subclass QSignalTransition and reimplement eventTest() to make a
   signal transition conditional; the event object passed to eventTest() will
-  be a QSignalEvent object. Example:
+  be a QStateMachine::SignalEvent object. Example:
 
   \code
   class CheckedTransition : public QSignalTransition
@@ -80,7 +79,7 @@ QT_BEGIN_NAMESPACE
       bool eventTest(QEvent *e) const {
           if (!QSignalTransition::eventTest(e))
               return false;
-          QSignalEvent *se = static_cast<QSignalEvent*>(e);
+          QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(e);
           return (se->arguments().at(0).toInt() == Qt::Checked);
       }
   };
@@ -212,9 +211,9 @@ void QSignalTransition::setSignal(const QByteArray &signal)
 /*!
   \reimp
 
-  The \a event is a QSignalEvent object.  The default implementation returns
-  true if the event's sender and signal index match this transition, and
-  returns false otherwise.
+  The default implementation returns true if the \a event is a
+  QStateMachine::SignalEvent object and the event's sender and signal index
+  match this transition, and returns false otherwise.
 */
 bool QSignalTransition::eventTest(QEvent *event)
 {
@@ -222,7 +221,7 @@ bool QSignalTransition::eventTest(QEvent *event)
     if (event->type() == QEvent::Signal) {
         if (d->signalIndex == -1)
             return false;
-        QSignalEvent *se = static_cast<QSignalEvent*>(event);
+        QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(event);
         return (se->sender() == d->sender)
             && (se->signalIndex() == d->signalIndex);
     }
@@ -250,7 +249,7 @@ void QSignalTransitionPrivate::callOnTransition(QEvent *e)
     Q_Q(QSignalTransition);
 
     if (e->type() == QEvent::Signal) {
-        QSignalEvent *se = static_cast<QSignalEvent *>(e);
+        QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent *>(e);
         int savedSignalIndex = se->m_signalIndex;
         se->m_signalIndex = originalSignalIndex;
         q->onTransition(e);
