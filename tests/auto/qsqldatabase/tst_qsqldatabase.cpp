@@ -1705,8 +1705,6 @@ void tst_QSqlDatabase::precisionPolicy()
     QEXPECT_FAIL("QOCI", "Oracle fails here, to retrieve next", Continue);
     QVERIFY_SQL(q, exec(query));
     QVERIFY_SQL(q, next());
-    if(db.driverName().startsWith("QSQLITE"))
-        QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
     QCOMPARE(q.value(0).type(), QVariant::LongLong);
 
     QSql::NumericalPrecisionPolicy oldPrecision= db.numericalPrecisionPolicy();
@@ -1715,8 +1713,6 @@ void tst_QSqlDatabase::precisionPolicy()
     q2.exec(QString("SELECT num FROM %1 WHERE id = 2").arg(tableName));
     QVERIFY_SQL(q2, exec(query));
     QVERIFY_SQL(q2, next());
-    if(db.driverName().startsWith("QSQLITE"))
-        QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
     QCOMPARE(q2.value(0).type(), QVariant::LongLong);
     db.setNumericalPrecisionPolicy(oldPrecision);
 }

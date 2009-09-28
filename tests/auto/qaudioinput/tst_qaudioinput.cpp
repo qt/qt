@@ -56,6 +56,7 @@ public:
 private slots:
     void initTestCase();
     void settings();
+    void buffers();
     void notifyInterval();
     void pullFile();
 
@@ -90,6 +91,7 @@ void tst_QAudioInput::initTestCase()
 void tst_QAudioInput::settings()
 {
     if(available) {
+        // Confirm the setting we added in the init function.
         QAudioFormat f = audio->format();
 
         QVERIFY(format.channels() == f.channels());
@@ -98,6 +100,18 @@ void tst_QAudioInput::settings()
         QVERIFY(format.codec() == f.codec());
         QVERIFY(format.byteOrder() == f.byteOrder());
         QVERIFY(format.sampleType() == f.sampleType());
+    }
+}
+
+void tst_QAudioInput::buffers()
+{
+    if(available) {
+        // Should always have a buffer size greater than zero.
+        int store = audio->bufferSize();
+        audio->setBufferSize(4096);
+        QVERIFY(audio->bufferSize() > 0);
+        audio->setBufferSize(store);
+        QVERIFY(audio->bufferSize() == store);
     }
 }
 
@@ -120,14 +134,32 @@ void tst_QAudioInput::pullFile()
         filename.open( QIODevice::WriteOnly | QIODevice::Truncate );
 
         QSignalSpy readSignal(audio, SIGNAL(notify()));
-        audio->start(&filename);
+        QSignalSpy stateSignal(audio, SIGNAL(stateChanged(QAudio::State)));
 
+        // Always have default states, before start
+        QVERIFY(audio->state() == QAudio::StopState);
+        QVERIFY(audio->error() == QAudio::NoError);
+
+        audio->start(&filename);
+        QTest::qWait(20);
+        // Check state and periodSize() are valid non-zero values.
+        QVERIFY(audio->state() == QAudio::ActiveState);
+        QVERIFY(audio->error() == QAudio::NoError);
+        QVERIFY(audio->periodSize() > 0);
+        QVERIFY(stateSignal.count() == 1); // State changed to QAudio::ActiveState
+
+        // Wait until finished...
         QTest::qWait(5000);
 
         QVERIFY(readSignal.count() > 0);
         QVERIFY(audio->totalTime() > 0);
 
         audio->stop();
+        QTest::qWait(20);
+        QVERIFY(audio->state() == QAudio::StopState);
+        // Can only check to make sure we got at least 1 more signal, but can be more.
+        QVERIFY(stateSignal.count() > 1);
+
         filename.close();
     }
 }
