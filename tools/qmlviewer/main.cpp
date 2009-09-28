@@ -26,6 +26,7 @@ void usage()
     qWarning(" options:");
     qWarning("  -v, -version ............................. display version");
     qWarning("  -frameless ............................... run with no window frame");
+    qWarning("  -maximized................................ run maximized");
     qWarning("  -fullscreen............................... run fullscreen");
     qWarning("  -skin <qvfbskindir> ...................... run with a skin window frame");
     qWarning("                                             \"list\" for a list of built-ins");
@@ -104,12 +105,15 @@ int main(int argc, char ** argv)
     QString translationFile;
     bool useGL = false;
     bool fullScreen = false;
+    bool maximized = false;
 
     for (int i = 1; i < argc; ++i) {
         bool lastArg = (i == argc - 1);
         QString arg = argv[i];
         if (arg == "-frameless") {
             frameless = true;
+        } else if (arg == "-maximized") {
+            maximized = true;
         } else if (arg == "-fullscreen") {
             fullScreen = true;
         } else if (arg == "-skin") {
@@ -243,11 +247,13 @@ int main(int argc, char ** argv)
     viewer.setRecordDither(dither);
     if (recordargs.count())
         viewer.setRecordArgs(recordargs);
+    if (fullScreen && maximized)
+        qWarning() << "Both -fullscreen and -maximized specified. Using -fullscreen.";
     if (!fileName.isEmpty()) {
         viewer.openQml(fileName);
-        fullScreen ? viewer.showFullScreen() : viewer.show();
+        fullScreen ? viewer.showFullScreen() : maximized ? viewer.showMaximized() : viewer.show();
     } else {
-        fullScreen ? viewer.showFullScreen() : viewer.show();
+        fullScreen ? viewer.showFullScreen() : maximized ? viewer.showMaximized() : viewer.show();
         viewer.open();
     }
     viewer.raise();
