@@ -1895,6 +1895,8 @@ QPaintEngine *QPainter::paintEngine() const
 }
 
 /*!
+    \since 4.6
+
     Flushes the painting pipeline and prepares for the user issuing
     commands directly to the underlying graphics context. Must be
     followed by a call to endNativePainting().
@@ -1919,6 +1921,8 @@ void QPainter::beginNativePainting()
 }
 
 /*!
+    \since 4.6
+
     Restores the painter after manually issuing native painting commands.
     Lets the painter restore any native state that it relies on before
     calling any other painter commands.

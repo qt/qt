@@ -1305,6 +1305,7 @@ void QApplication::beep()
 
 /*!
     \warning This function is only available on Symbian.
+    \since 4.6
 
     This function processes an individual Symbian window server
     \a event. It returns 1 if the event was handled, 0 if
@@ -1427,6 +1428,7 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
 
 /*!
   \warning This virtual function is only available on Symbian.
+  \since 4.6
 
   If you create an application that inherits QApplication and reimplement
   this function, you get direct access to events that the are received
@@ -1444,6 +1446,7 @@ bool QApplication::s60EventFilter(TWsEvent * /* aEvent */)
 
 /*!
   \warning This function is only available on Symbian.
+  \since 4.6
 
   Handles \a{command}s which are typically handled by
   CAknAppUi::HandleCommandL(). Qts Ui integration into Symbian is
@@ -1475,6 +1478,7 @@ void QApplication::symbianHandleCommand(int command)
 
 /*!
   \warning This function is only available on Symbian.
+  \since 4.6
 
   Handles the resource change specified by \a type.
 

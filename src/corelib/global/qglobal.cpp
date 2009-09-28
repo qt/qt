@@ -1066,6 +1066,7 @@ bool qSharedBuild()
 
 /*!
     \fn QSysInfo::SymbianVersion QSysInfo::symbianVersion()
+    \since 4.6
 
     Returns the version of the Symbian operating system on which the
     application is run (Symbian only).
@@ -1073,6 +1074,7 @@ bool qSharedBuild()
 
 /*!
     \fn QSysInfo::S60Version QSysInfo::s60Version()
+    \since 4.6
 
     Returns the version of the S60 SDK system on which the
     application is run (S60 only).

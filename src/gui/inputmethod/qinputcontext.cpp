@@ -469,6 +469,8 @@ bool QInputContext::x11FilterEvent(QWidget * /*keywidget*/, XEvent * /*event*/)
 
 #ifdef Q_WS_S60
 /*!
+    \since 4.6
+
     This function may be overridden only if input method is depending
     on Symbian and you need raw TWsEvent. Otherwise, this function must not.
 

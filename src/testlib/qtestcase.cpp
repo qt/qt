@@ -735,6 +735,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*! \fn void QTest::qWaitForWindowShown(QWidget *window)
+    \since 4.6
 
     Waits until the \a window is shown in the screen. This is mainly useful for
     asynchronous systems like X11, where a window will be mapped to screen some

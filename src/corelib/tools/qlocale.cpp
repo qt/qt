@@ -637,7 +637,8 @@ static QString winSystemPMText()
 }
 
 /*!
-  Returns the fallback locale obtained from the system.
+    \since 4.6
+    Returns the fallback locale obtained from the system.
  */
 QLocale QSystemLocale::fallbackLocale() const
 {
@@ -1283,6 +1284,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant /* in */) const
 #elif !defined(Q_OS_SYMBIAN)
 
 /*!
+    \since 4.6
+
     Returns a fallback locale, that will get used for everything that
     is not explicitly overridden by the system locale.
 */
