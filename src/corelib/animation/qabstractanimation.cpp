@@ -201,7 +201,6 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
         animationsToStart.clear();
         if (animations.isEmpty()) {
             animationTimer.stop();
-            time = QTime();
         } else if (!animationTimer.isActive()) {
             animationTimer.start(timingInterval, this);
             lastTick = 0;
