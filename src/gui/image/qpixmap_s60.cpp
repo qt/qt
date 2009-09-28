@@ -725,7 +725,7 @@ void QS60PixmapData::endDataAccess(bool readOnly) const
 /*!
   \since 4.6
 
-  Returns a QPixmap that wraps given \c RSgImage \a graphics resource.
+  Returns a QPixmap that wraps given \a sgImage graphics resource.
   The data should be valid even when original RSgImage handle has been
   closed.
 
