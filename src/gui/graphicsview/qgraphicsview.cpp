@@ -2229,7 +2229,7 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::itemsInArea(const QPainterPath &pat
 
     // First build a (potentially large) list of all items in the vicinity
     // that might be untransformable.
-    QList<QGraphicsItem *> allCandidates = scene->d_func()->estimateItemsInRect(adjustedRect);
+    QList<QGraphicsItem *> allCandidates = scene->d_func()->items_helper(adjustedRect, mode, Qt::AscendingOrder);
 
     // Then find the minimal list of items that are inside \a path, and
     // convert it to a set.
