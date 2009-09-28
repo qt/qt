@@ -606,6 +606,8 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
 #else
     // OpenGL/ES 2.0 version of the fbo blit.
     else if (d_ptr->fbo) {
+        Q_UNUSED(target);
+
         GLuint texture = d_ptr->fbo->texture();
 
         glDisable(GL_DEPTH_TEST);
