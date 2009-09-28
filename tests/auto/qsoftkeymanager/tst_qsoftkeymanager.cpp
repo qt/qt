@@ -42,6 +42,8 @@
 #include <QtTest/QtTest>
 
 #include "qevent.h"
+#include "qdialog.h"
+#include "qdialogbuttonbox.h"
 #include "private/qsoftkeymanager_p.h"
 
 class tst_QSoftKeyManager : public QObject
@@ -59,6 +61,7 @@ public slots:
     void cleanup();
 private slots:
     void updateSoftKeysCompressed();
+    void handleCommand();
 };
 
 class EventListener : public QObject
@@ -131,6 +134,39 @@ void tst_QSoftKeyManager::updateSoftKeysCompressed()
     QApplication::processEvents();
 
     QVERIFY(listener.numUpdateSoftKeys == 1);
+}
+
+/*
+    This tests that when the S60 environment sends us a command
+    that it actually gets mapped to the correct action.
+*/
+void tst_QSoftKeyManager::handleCommand()
+{
+    QDialog w;
+    QDialogButtonBox *buttons = new QDialogButtonBox(
+            QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
+            Qt::Horizontal,
+            &w);
+
+    w.show();
+    QApplication::processEvents();
+
+    QCOMPARE(w.actions().count(), 2);
+
+    QSignalSpy spy0(w.actions()[0], SIGNAL(triggered()));
+    QSignalSpy spy1(w.actions()[1], SIGNAL(triggered()));
+
+    // These should work eventually, but do not yet
+//    QTest::keyPress(&w, Qt::Key_Context1);
+//    QTest::keyPress(&w, Qt::Key_Context2);
+
+    qApp->symbianHandleCommand(6000);
+    qApp->symbianHandleCommand(6001);
+
+    QApplication::processEvents();
+
+    QCOMPARE(spy0.count(), 1);
+    QCOMPARE(spy1.count(), 1);
 }
 
 
