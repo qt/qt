@@ -435,7 +435,7 @@ void Interpreter::dumpRegisters(CallFrame* callFrame)
     printf("[ReturnPC]                 | %10p | %p \n", it, (*it).vPC()); ++it;
     printf("[ReturnValueRegister]      | %10p | %d \n", it, (*it).i()); ++it;
     printf("[ArgumentCount]            | %10p | %d \n", it, (*it).i()); ++it;
-    printf("[Callee]                   | %10p | %p \n", it, (*it).function()); ++it;
+    printf("[Callee]                   | %10p | %p \n", it, (*it).object()); ++it;
     printf("[OptionalCalleeArguments]  | %10p | %p \n", it, (*it).arguments()); ++it;
     printf("-----------------------------------------------------------------------------\n");
 
@@ -3113,7 +3113,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
                 exceptionValue = createStackOverflowError(callFrame);
                 goto vm_throw;
             }
-            ASSERT(!callFrame->callee()->isHostFunction());
+            ASSERT(!asFunction(callFrame->callee())->isHostFunction());
             int32_t expectedParams = static_cast<JSFunction*>(callFrame->callee())->jsExecutable()->parameterCount();
             int32_t inplaceArgs = min(argCount, expectedParams);
             int32_t i = 0;

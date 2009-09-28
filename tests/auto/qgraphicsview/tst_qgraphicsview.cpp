@@ -224,6 +224,8 @@ private slots:
     void task253415_reconnectUpdateSceneOnSceneChanged();
     void task255529_transformationAnchorMouseAndViewportMargins();
     void task259503_scrollingArtifacts();
+    void QTBUG_4151_clipAndIgnore_data();
+    void QTBUG_4151_clipAndIgnore();
 };
 
 void tst_QGraphicsView::initTestCase()
@@ -3731,6 +3733,51 @@ void tst_QGraphicsView::task259503_scrollingArtifacts()
     view.itSTimeToTest = true;
     card.setPos(200, 300);
     QTest::qWait(10);
+}
+
+void tst_QGraphicsView::QTBUG_4151_clipAndIgnore_data()
+{
+    QTest::addColumn<bool>("clip");
+    QTest::addColumn<bool>("ignoreTransformations");
+    QTest::addColumn<int>("numItems");
+
+    QTest::newRow("none") << false << false << 3;
+    QTest::newRow("clip") << true << false << 3;
+    QTest::newRow("ignore") << false << true << 3;
+    QTest::newRow("clip+ignore") << true << true << 3;
+}
+
+void tst_QGraphicsView::QTBUG_4151_clipAndIgnore()
+{
+    QFETCH(bool, clip);
+    QFETCH(bool, ignoreTransformations);
+    QFETCH(int, numItems);
+
+    QGraphicsScene scene;
+
+    QGraphicsRectItem *parent = new QGraphicsRectItem(QRectF(0, 0, 50, 50), 0);
+    QGraphicsRectItem *child = new QGraphicsRectItem(QRectF(-10, -10, 40, 40), parent);
+    QGraphicsRectItem *ignore = new QGraphicsRectItem(QRectF(60, 60, 50, 50), 0);
+
+    if (clip)
+        parent->setFlags(QGraphicsItem::ItemClipsChildrenToShape);
+    if (ignoreTransformations)
+        ignore->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+
+    parent->setBrush(Qt::red);
+    child->setBrush(QColor(0, 0, 255, 128));
+    ignore->setBrush(Qt::green);
+
+    scene.addItem(parent);
+    scene.addItem(ignore);
+
+    QGraphicsView view(&scene);
+    view.setFrameStyle(0);
+    view.resize(75, 75);
+    view.show();
+    QTRY_COMPARE(QApplication::activeWindow(), (QWidget *)&view);
+
+    QCOMPARE(view.items(view.rect()).size(), numItems);
 }
 
 QTEST_MAIN(tst_QGraphicsView)

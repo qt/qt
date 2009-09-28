@@ -432,6 +432,9 @@ void QNetmaskAddress::setPrefixLength(QAbstractSocket::NetworkLayerProtocol prot
     using isIPv4Address() or isIPv6Address(), and retrieved with
     toIPv4Address(), toIPv6Address(), or toString().
 
+    \note Please note that QHostAddress does not do DNS lookups.
+    QHostInfo is needed for that.
+
     The class also supports common predefined addresses: \l Null, \l
     LocalHost, \l LocalHostIPv6, \l Broadcast, and \l Any.
 

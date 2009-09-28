@@ -67,6 +67,7 @@ const uchar qt_pixmap_bit_mask[] = { 0x01, 0x02, 0x04, 0x08,
 /*!
     \class QSymbianFbsClient
     \since 4.6
+    \internal
 
     Symbian Font And Bitmap server client that is
     used to lock the global bitmap heap. Only used in
@@ -147,6 +148,7 @@ void QSymbianFbsHeapLock::relock()
 /*!
     \class QSymbianBitmapDataAccess
     \since 4.6
+    \internal
 
     Data access class that is used to locks/unlocks pixel data
     when drawing or modifying CFbsBitmap pixel data.
@@ -725,7 +727,7 @@ void QS60PixmapData::endDataAccess(bool readOnly) const
 /*!
   \since 4.6
 
-  Returns a QPixmap that wraps given \c RSgImage \a graphics resource.
+  Returns a QPixmap that wraps given \a sgImage graphics resource.
   The data should be valid even when original RSgImage handle has been
   closed.
 
