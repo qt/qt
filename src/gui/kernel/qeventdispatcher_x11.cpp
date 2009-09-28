@@ -105,7 +105,7 @@ bool QEventDispatcherX11::processEvents(QEventLoop::ProcessEventsFlags flags)
                         // _qt_scrolldone protocols, queue all other
                         // client messages
                         if (event.xclient.format == 32) {
-                            if (event.xclient.message_type == ATOM(WM_PROTOCOLS) ||
+                            if (event.xclient.message_type == ATOM(WM_PROTOCOLS) &&
                                 (Atom) event.xclient.data.l[0] == ATOM(WM_TAKE_FOCUS)) {
                                 break;
                             } else if (event.xclient.message_type == ATOM(_QT_SCROLL_DONE)) {
