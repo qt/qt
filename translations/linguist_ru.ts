@@ -12,7 +12,7 @@
 <context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1357"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1355"/>
         <source>Qt Linguist</source>
         <translation>Qt Linguist</translation>
     </message>
@@ -87,12 +87,12 @@
     <message>
         <location line="+37"/>
         <source>Searching, please wait...</source>
-        <translation>Идёт поиск, ждите...</translation>
+        <translation>Идёт поиск, ожидайте...</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>&amp;Cancel</source>
-        <translation>&amp;Отмена</translation>
+        <translation>От&amp;мена</translation>
     </message>
     <message>
         <location line="+42"/>
@@ -289,7 +289,7 @@ Will assume a single universal form.</source>
 <context>
     <name>LRelease</name>
     <message numerus="yes">
-        <location filename="../tools/linguist/shared/qm.cpp" line="+732"/>
+        <location filename="../tools/linguist/shared/qm.cpp" line="+733"/>
         <source>    Generated %n translation(s) (%1 finished and %2 unfinished)
 </source>
         <translation>
@@ -318,7 +318,7 @@ Will assume a single universal form.</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1315"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1313"/>
         <source></source>
         <comment>This is the application&apos;s main window.</comment>
         <translatorcomment>Основное окно программы.</translatorcomment>
@@ -433,13 +433,13 @@ Skip loading the first named file?</source>
     </message>
     <message>
         <location line="+15"/>
-        <location line="+1164"/>
+        <location line="+1162"/>
         <location filename="../tools/linguist/linguist/mainwindow.ui" line="+246"/>
         <source>Release</source>
-        <translation>Компиляция</translation>
+        <translation>Скомпилировать</translation>
     </message>
     <message>
-        <location line="-1163"/>
+        <location line="-1161"/>
         <source>Qt message files for released applications (*.qm)
 All files (*)</source>
         <translation>Скомпилированные файлы перевода для приложений Qt (*.qm)
@@ -503,7 +503,7 @@ All files (*)</source>
     <message>
         <location line="+17"/>
         <location line="+278"/>
-        <location line="+40"/>
+        <location line="+38"/>
         <location line="+24"/>
         <location line="+22"/>
         <location line="+516"/>
@@ -515,7 +515,7 @@ All files (*)</source>
         <translation>Qt Linguist</translation>
     </message>
     <message>
-        <location line="-1204"/>
+        <location line="-1202"/>
         <location line="+102"/>
         <source>Cannot find the string &apos;%1&apos;.</source>
         <translation>Не удалось найти строку &apos;%1&apos;.</translation>
@@ -616,11 +616,11 @@ All files (*)</source>
     </message>
     <message>
         <location line="+6"/>
-        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;/p&gt;</source>
-        <translation type="unfinished"></translation>
+        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</source>
+        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist - инструмент для добавления переводов в приложения на основе Qt.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Корпорация Nokia и/или её дочерние подразделения.</translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+39"/>
         <source>Do you want to save the modified files?</source>
         <translation>Желаете сохранить изменённые файлы?</translation>
     </message>
@@ -1103,7 +1103,7 @@ All files (*)</source>
     <message>
         <location line="+8"/>
         <source>&amp;Prev Unfinished</source>
-        <translation>&amp;Пред. незавершённый</translation>
+        <translation>&amp;Предыдущий незавершённый</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -1123,7 +1123,7 @@ All files (*)</source>
     <message>
         <location line="+8"/>
         <source>&amp;Next Unfinished</source>
-        <translation>&amp;След. незавершённый</translation>
+        <translation>&amp;Следующий незавершённый</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -1148,7 +1148,7 @@ All files (*)</source>
     <message>
         <location line="+3"/>
         <source>Move to previous item.</source>
-        <translation>Предыдущий перевод.</translation>
+        <translation>Перейти к предыдущему переводу.</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -1591,7 +1591,6 @@ Line: %2</source>
         <location filename="../tools/linguist/linguist/messageeditor.cpp" line="-545"/>
         <source></source>
         <comment>This is the right panel of the main window.</comment>
-        <translatorcomment>Правая панель главного окна</translatorcomment>
         <translation></translation>
     </message>
 </context>
@@ -1748,7 +1747,7 @@ Line: %2</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1806"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1804"/>
         <source>Translation files (%1);;</source>
         <translation>Файлы перевода (%1);;</translation>
     </message>
@@ -1769,7 +1768,7 @@ Line: %2</source>
         <translation>Qt Linguist</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/po.cpp" line="+651"/>
+        <location filename="../tools/linguist/shared/po.cpp" line="+652"/>
         <source>GNU Gettext localization files</source>
         <translation>Файлы локализации GNU Gettext</translation>
     </message>
@@ -1799,7 +1798,7 @@ Line: %2</source>
         <translation>Исходные файлы перевода Qt (последний формат)</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/xliff.cpp" line="+817"/>
+        <location filename="../tools/linguist/shared/xliff.cpp" line="+815"/>
         <source>XLIFF localization files</source>
         <translation>Файлы локализации XLIFF</translation>
     </message>
@@ -1821,12 +1820,12 @@ Line: %2</source>
     <message>
         <location filename="../tools/linguist/shared/ui.cpp" line="+213"/>
         <source>Qt Designer form files</source>
-        <translation>Формы Qt Designer</translation>
+        <translation>Файлы форм Qt Designer</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Qt Jambi form files</source>
-        <translation>Формы Qt Jambi</translation>
+        <translation>Файлы форм Qt Jambi</translation>
     </message>
 </context>
 <context>

@@ -172,7 +172,7 @@
         <translation>безымянная вкладка</translation>
     </message>
     <message>
-        <location line="+91"/>
+        <location line="+93"/>
         <source>Add New Page</source>
         <translation>Открыть новую страницу</translation>
     </message>
@@ -226,7 +226,7 @@
 <context>
     <name>FindWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-932"/>
+        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-934"/>
         <source>Previous</source>
         <translation>Предыдущее</translation>
     </message>
@@ -266,17 +266,17 @@
     <message>
         <location line="+3"/>
         <source>&amp;Family</source>
-        <translation>Се&amp;мейство</translation>
+        <translation>&amp;Шрифт</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>&amp;Style</source>
-        <translation>&amp;Стиль</translation>
+        <translation>&amp;Начертание</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>&amp;Point size</source>
-        <translation>&amp;Размер в точках</translation>
+        <translation>&amp;Размер</translation>
     </message>
 </context>
 <context>
@@ -340,7 +340,7 @@
 <context>
     <name>InstallDialog</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/installdialog.cpp" line="+75"/>
+        <location filename="../tools/assistant/tools/assistant/installdialog.cpp" line="+76"/>
         <location filename="../tools/assistant/tools/assistant/installdialog.ui" line="+13"/>
         <source>Install Documentation</source>
         <translation>Установка документации</translation>
@@ -460,12 +460,12 @@
     <message>
         <location line="-363"/>
         <location line="+215"/>
-        <location line="+500"/>
+        <location line="+497"/>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
     </message>
     <message>
-        <location line="-532"/>
+        <location line="-529"/>
         <location line="+5"/>
         <source>Unfiltered</source>
         <translation>Без фильтрации</translation>
@@ -473,7 +473,7 @@
     <message>
         <location line="+21"/>
         <source>Looking for Qt Documentation...</source>
-        <translation>Поиск документации по Qt...</translation>
+        <translation>Поиск документации Qt...</translation>
     </message>
     <message>
         <location line="+84"/>
@@ -623,7 +623,7 @@
     <message>
         <location line="+5"/>
         <source>Sync with Table of Contents</source>
-        <translation>Синхронизировать с содержанием</translation>
+        <translation>Синхронизировать с оглавлением</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -726,7 +726,7 @@
         <translation>Не удалось найти элемент, связанный с содержанием.</translation>
     </message>
     <message>
-        <location line="+81"/>
+        <location line="+78"/>
         <source>About %1</source>
         <translation>О %1</translation>
     </message>
@@ -866,7 +866,7 @@
     <message>
         <location line="+6"/>
         <source>Homepage</source>
-        <translation>Домашная страница</translation>
+        <translation>Стартовая страница</translation>
     </message>
     <message>
         <location line="+26"/>
