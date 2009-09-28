@@ -660,6 +660,8 @@ public:
         int dmy_pf = ChoosePixelFormat(dmy_pdc, &dmy_pfd);
         SetPixelFormat(dmy_pdc, dmy_pf, &dmy_pfd);
         dmy_rc = wglCreateContext(dmy_pdc);
+        old_dc = wglGetCurrentDC();
+        old_context = wglGetCurrentContext();
         wglMakeCurrent(dmy_pdc, dmy_rc);
     }
 
@@ -668,10 +670,14 @@ public:
         wglDeleteContext(dmy_rc);
         ReleaseDC(dmy_id, dmy_pdc);
         DestroyWindow(dmy_id);
+        if (old_dc && old_context)
+            wglMakeCurrent(old_dc, old_context);
     }
 
     HDC dmy_pdc;
     HGLRC dmy_rc;
+    HDC old_dc;
+    HGLRC old_context;
     WId dmy_id;
 };
 

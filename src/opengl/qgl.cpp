@@ -1245,11 +1245,11 @@ QGLFormat::OpenGLVersionFlags QGLFormat::openGLVersionFlags()
         if (cachedDefault) {
             return defaultVersionFlags;
         } else {
-            cachedDefault = true;
             if (!hasOpenGL())
                 return defaultVersionFlags;
             dummy = new QGLWidget;
             dummy->makeCurrent(); // glGetString() needs a current context
+            cachedDefault = true;
         }
     }
 
