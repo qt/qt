@@ -58,6 +58,7 @@ public:
 private slots:
     void initTestCase();
     void settings();
+    void buffers();
     void notifyInterval();
     void pullFile();
     void pushFile();
@@ -91,6 +92,7 @@ void tst_QAudioOutput::initTestCase()
 void tst_QAudioOutput::settings()
 {
     if(available) {
+        // Confirm the setting we added in the init function.
         QAudioFormat f = audio->format();
 
         QVERIFY(format.channels() == f.channels());
@@ -99,6 +101,18 @@ void tst_QAudioOutput::settings()
         QVERIFY(format.codec() == f.codec());
         QVERIFY(format.byteOrder() == f.byteOrder());
         QVERIFY(format.sampleType() == f.sampleType());
+    }
+}
+
+void tst_QAudioOutput::buffers()
+{
+    if(available) {
+        // Should always have a buffer size greater than zero.
+        int store = audio->bufferSize();
+        audio->setBufferSize(4096);
+        QVERIFY(audio->bufferSize() > 0);
+        audio->setBufferSize(store);
+        QVERIFY(audio->bufferSize() == store);
     }
 }
 
@@ -122,15 +136,33 @@ void tst_QAudioOutput::pullFile()
         file.open(QIODevice::ReadOnly);
 
         QSignalSpy readSignal(audio, SIGNAL(notify()));
+        QSignalSpy stateSignal(audio, SIGNAL(stateChanged(QAudio::State)));
         audio->setNotifyInterval(100);
-        audio->start(&file);
 
+        // Always have default states, before start
+        QVERIFY(audio->state() == QAudio::StopState);
+        QVERIFY(audio->error() == QAudio::NoError);
+
+        audio->start(&file);
+        QTest::qWait(20); // wait 20ms
+        // Check state, bytesFree() and periodSize() are valid non-zero values.
+        QVERIFY(audio->state() == QAudio::ActiveState);
+        QVERIFY(audio->error() == QAudio::NoError);
+        QVERIFY(audio->periodSize() > 0);
+        QVERIFY(stateSignal.count() == 1); // State changed to QAudio::ActiveState
+
+        // Wait until finished...
         QTestEventLoop::instance().enterLoop(1);
         QCOMPARE(audio->totalTime(), qint64(692250));
         // 4.wav is a little less than 700ms, so notify should fire 6 times!
         QVERIFY(readSignal.count() >= 6);
 
         audio->stop();
+        QTest::qWait(20); // wait 20ms
+        QVERIFY(audio->state() == QAudio::StopState);
+        // Can only check to make sure we got at least 1 more signal, but can be more.
+        QVERIFY(stateSignal.count() > 1);
+
         file.close();
     }
 }
