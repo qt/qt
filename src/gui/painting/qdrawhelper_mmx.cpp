@@ -128,7 +128,7 @@ void qt_blend_rgb32_on_rgb32_mmx(uchar *destPixels, int dbpl,
     }
 }
 
+QT_END_NAMESPACE
 
 #endif // QT_HAVE_MMX
 
-QT_END_NAMESPACE
