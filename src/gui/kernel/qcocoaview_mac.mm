@@ -64,9 +64,9 @@
 #include <qdebug.h>
 
 @interface NSEvent (DeviceDelta)
-  - (float)deviceDeltaX;
-  - (float)deviceDeltaY;
-  - (float)deviceDeltaZ;
+  - (CGFloat)deviceDeltaX;
+  - (CGFloat)deviceDeltaY;
+  - (CGFloat)deviceDeltaZ;
 @end
 
 QT_BEGIN_NAMESPACE
