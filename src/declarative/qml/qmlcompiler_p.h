@@ -191,6 +191,7 @@ private:
                               const BindingContext &ctxt);
     bool buildValueTypeProperty(QObject *type, 
                                 QmlParser::Object *obj, 
+                                QmlParser::Object *baseObj,
                                 const BindingContext &ctxt);
     bool buildListProperty(QmlParser::Property *prop,
                            QmlParser::Object *obj,
@@ -209,7 +210,7 @@ private:
     bool doesPropertyExist(QmlParser::Property *prop, QmlParser::Object *obj);
     bool testLiteralAssignment(const QMetaProperty &prop, 
                                QmlParser::Value *value);
-    enum DynamicMetaMode { IgnoreAliases, ResolveAliases };
+    enum DynamicMetaMode { IgnoreAliases, ResolveAliases, ForceCreation };
     bool mergeDynamicMetaProperties(QmlParser::Object *obj);
     bool buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode);
     bool checkDynamicMeta(QmlParser::Object *obj);

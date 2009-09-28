@@ -43,6 +43,7 @@
 #define QMLBEHAVIOR_H
 
 #include <QtDeclarative/qmlpropertyvaluesource.h>
+#include <QtDeclarative/qmlpropertyvalueinterceptor.h>
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qmlstate.h>
 
@@ -54,32 +55,23 @@ QT_MODULE(Declarative)
 
 class QmlAbstractAnimation;
 class QmlBehaviorPrivate;
-class Q_DECLARATIVE_EXPORT QmlBehavior : public QObject, public QmlPropertyValueSource
+class Q_DECLARATIVE_EXPORT QmlBehavior : public QObject, public QmlPropertyValueInterceptor
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlBehavior)
 
-    Q_PROPERTY(QVariant from READ fromValue WRITE setFromValue)
-    Q_PROPERTY(QVariant to READ toValue WRITE setToValue)
-    Q_CLASSINFO("DefaultProperty", "operations")
-    Q_PROPERTY(QmlList<QmlAbstractAnimation *>* operations READ operations)
+    Q_CLASSINFO("DefaultProperty", "animation")
+    Q_PROPERTY(QmlAbstractAnimation *animation READ animation WRITE setAnimation)
 
 public:
     QmlBehavior(QObject *parent=0);
     ~QmlBehavior();
 
-    QVariant fromValue() const;
-    void setFromValue(const QVariant &);
-    QVariant toValue() const;
-    void setToValue(const QVariant &);
     virtual void setTarget(const QmlMetaProperty &);
+    virtual void write(const QVariant &value);
 
-    QmlList<QmlAbstractAnimation *>* operations();
-
-    static bool _ignore;
-
-private Q_SLOTS:
-    void propertyValueChanged();
+    QmlAbstractAnimation *animation();
+    void setAnimation(QmlAbstractAnimation *);
 };
 
 QT_END_NAMESPACE

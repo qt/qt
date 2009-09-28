@@ -273,6 +273,8 @@ namespace QmlParser
             PropertyBinding,
             // This is used as a QmlPropertyValueSource assignment
             ValueSource,
+            // This is used as a QmlPropertyValueInterceptor assignment
+            ValueInterceptor,
             // This is used as a property QObject assignment
             CreatedObject,
             // This is used as a signal object assignment

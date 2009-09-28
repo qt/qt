@@ -559,17 +559,17 @@ QmlAbstractBinding *QmlMetaProperty::binding() const
     is assumed by the caller.
 */
 QmlAbstractBinding *
-QmlMetaProperty::setBinding(QmlAbstractBinding *newBinding) const
+QmlMetaProperty::setBinding(QmlAbstractBinding *newBinding, QmlMetaProperty::WriteFlags flags) const
 {
     if (!isProperty() || (type() & Attached) || !d->object)
         return 0;
 
-    return d->setBinding(d->object, d->core, newBinding);
+    return d->setBinding(d->object, d->core, newBinding, flags);
 }
 
 QmlAbstractBinding *
 QmlMetaPropertyPrivate::setBinding(QObject *object, const QmlPropertyCache::Data &core, 
-                                   QmlAbstractBinding *newBinding)
+                                   QmlAbstractBinding *newBinding, QmlMetaProperty::WriteFlags flags)
 {
     QmlDeclarativeData *data = QmlDeclarativeData::get(object, 0 != newBinding);
 
@@ -581,7 +581,7 @@ QmlMetaPropertyPrivate::setBinding(QObject *object, const QmlPropertyCache::Data
                 binding->setEnabled(false);
 
                 if (newBinding) 
-                    newBinding->setEnabled(true);
+                    newBinding->setEnabled(true, flags);
 
                 return binding; // ### QmlAbstractBinding;
             }
@@ -591,7 +591,7 @@ QmlMetaPropertyPrivate::setBinding(QObject *object, const QmlPropertyCache::Data
     } 
 
     if (newBinding)
-        newBinding->setEnabled(true);
+        newBinding->setEnabled(true, flags);
 
     return 0;
 }
@@ -752,11 +752,52 @@ QVariant QmlMetaPropertyPrivate::readValueProperty()
     }
 }
 
+//###
+//writeEnumProperty MIRRORS the relelvant bit of QMetaProperty::write AND MUST BE KEPT IN SYNC!
+//###
+bool QmlMetaPropertyPrivate::writeEnumProperty(const QMetaProperty &prop, int idx, QObject *object, const QVariant &value, int flags)
+{
+    if (!object || !prop.isWritable())
+        return false;
+
+    QVariant v = value;
+    uint t = QVariant::Invalid;
+    if (prop.isEnumType()) {
+        QMetaEnum menum = prop.enumerator();
+        if (v.type() == QVariant::String
+#ifdef QT3_SUPPORT
+            || v.type() == QVariant::CString
+#endif
+            ) {
+            if (prop.isFlagType())
+                v = QVariant(menum.keysToValue(value.toByteArray()));
+            else
+                v = QVariant(menum.keyToValue(value.toByteArray()));
+        } else if (v.type() != QVariant::Int && v.type() != QVariant::UInt) {
+            int enumMetaTypeId = QMetaType::type(QByteArray(menum.scope()) + "::" + menum.name());
+            if ((enumMetaTypeId == 0) || (v.userType() != enumMetaTypeId) || !v.constData())
+                return false;
+            v = QVariant(*reinterpret_cast<const int *>(v.constData()));
+        }
+        v.convert(QVariant::Int);
+    }
+
+    // the status variable is changed by qt_metacall to indicate what it did
+    // this feature is currently only used by QtDBus and should not be depended
+    // upon. Don't change it without looking into QDBusAbstractInterface first
+    // -1 (unchanged): normal qt_metacall, result stored in argv[0]
+    // changed: result stored directly in value, return the value of status
+    int status = -1;
+    void *argv[] = { v.data(), &v, &status, &flags };
+    QMetaObject::metacall(object, QMetaObject::WriteProperty, idx, argv);
+    return status;
+}
+
 void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value,
-                                                QmlMetaProperty::WriteSource source)
+                                                QmlMetaProperty::WriteFlags flags)
 {
     // Remove any existing bindings on this property
-    if (source != QmlMetaProperty::Binding) 
+    if (!(flags & QmlMetaProperty::DontRemoveBinding))
         delete q->setBinding(0);
 
     uint type = q->type();
@@ -776,22 +817,23 @@ void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value,
         QmlPropertyCache::Data data = core;
         data.coreIndex = valueTypeCoreIdx;
         data.propType = valueTypePropType;
-        write(writeBack, data, value, context);
+        write(writeBack, data, value, context, flags);
 
-        writeBack->write(object, core.coreIndex);
+        writeBack->write(object, core.coreIndex, flags);
         if (!ep) delete writeBack;
 
     } else {
 
-        write(object, core, value, context);
+        write(object, core, value, context, flags);
 
     }
 }
 
 void QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data &property, 
-                                   const QVariant &value, QmlContext *context)
+                                   const QVariant &value, QmlContext *context, QmlMetaProperty::WriteFlags flags)
 {
     int coreIdx = property.coreIndex;
+    int status = -1;    //for dbus
 
     if (property.flags & QmlPropertyCache::Data::IsEnumType) {
         QMetaProperty prop = object->metaObject()->property(property.coreIndex);
@@ -803,7 +845,7 @@ void QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
             if (qFuzzyCompare(fractional, (double)0.0))
                 v.convert(QVariant::Int);
         }
-        prop.write(object, v);
+        writeEnumProperty(prop, coreIdx, object, v, flags);
 
         return;
     }
@@ -836,14 +878,12 @@ void QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
 
     } else if (vt == t) {
 
-        void *a[1];
-        a[0] = (void *)value.constData();
+        void *a[] = { (void *)value.constData(), 0, &status, &flags };
         QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, a);
 
     } else if (qMetaTypeId<QVariant>() == t) {
 
-        void *a[1];
-        a[0] = (void *)&value;
+        void *a[] = { (void *)&value, 0, &status, &flags };
         QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, a);
 
     } else if (property.flags & QmlPropertyCache::Data::IsQObjectDerived) {
@@ -867,7 +907,7 @@ void QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
 
         if (valMo || !o) {
 
-            void *args[] = { &o, 0 };
+            void *args[] = { &o, 0, &status, &flags };
             QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, 
                                   args);
 
@@ -933,16 +973,14 @@ void QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
 
         QVariant v = value;
         if (v.convert((QVariant::Type)t)) {
-            void *a[1];
-            a[0] = (void *)v.constData();
+            void *a[] = { (void *)v.constData(), 0, &status, &flags};
             QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, a);
         } else if ((uint)t >= QVariant::UserType && vt == QVariant::String) {
             QmlMetaType::StringConverter con = QmlMetaType::customStringConverter(t);
             if (con) {
                 QVariant v = con(value.toString());
                 if (v.userType() == t) {
-                    void *a[1];
-                    a[0] = (void *)v.constData();
+                    void *a[] = { (void *)v.constData(), 0, &status, &flags};
                     QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, a);
                 }
             }
@@ -955,10 +993,10 @@ void QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
 */
 void QmlMetaProperty::write(const QVariant &value) const
 {
-    write(value, Other);
+    write(value, 0);
 }
 
-void QmlMetaProperty::write(const QVariant &value, WriteSource source) const
+void QmlMetaProperty::write(const QVariant &value, QmlMetaProperty::WriteFlags flags) const
 {
     if (!d->object)
         return;
@@ -969,7 +1007,7 @@ void QmlMetaProperty::write(const QVariant &value, WriteSource source) const
 
     } else if (d->core.isValid()) {
 
-        d->writeValueProperty(value, source);
+        d->writeValueProperty(value, flags);
 
     }
 }
