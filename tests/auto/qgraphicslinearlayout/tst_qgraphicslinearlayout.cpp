@@ -143,9 +143,11 @@ public:
 // It is only called once.
 void tst_QGraphicsLinearLayout::initTestCase()
 {
-#ifndef Q_WS_S60
     // since the style will influence the results, we have to ensure
     // that the tests are run using the same style on all platforms
+#ifdef Q_WS_S60
+    QApplication::setStyle(new QWindowsStyle);    
+#else
     QApplication::setStyle(new QPlastiqueStyle);
 #endif
 }
