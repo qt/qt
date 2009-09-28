@@ -838,13 +838,13 @@ void QSymbianControl::Draw(const TRect& r) const
                 qDebug()    << "    " << i*10 << " : " << color.Red() << color.Green() << color.Blue() << color.Alpha();
             }
 #endif
-
+        }
+        else {
             if (qwidget->d_func()->isOpaque)
                 gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
-        }
-        else
-            gc.BitBlt(r.iTl, bitmap, r);
 
+            gc.BitBlt(r.iTl, bitmap, r);
+	}
     } else {
         surface->flush(qwidget, QRegion(qt_TRect2QRect(r)), QPoint());
     }
