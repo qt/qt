@@ -785,9 +785,9 @@ void QmlViewer::keyPressEvent(QKeyEvent *event)
                  << "F9 - toggle video recording\n"
                  << "device keys: 0=quit, 1..8=F1..F8"
                 ;
-    } else if (event->key() == Qt::Key_F2 || (event->key() == Qt::Key_3 && devicemode)) {
+    } else if (event->key() == Qt::Key_F2 || (event->key() == Qt::Key_2 && devicemode)) {
         if (tester && m_scriptOptions & Record)
-            tester->save(m_script);
+            tester->save();
     } else if (event->key() == Qt::Key_F3 || (event->key() == Qt::Key_3 && devicemode)) {
         takeSnapShot();
     } else if (event->key() == Qt::Key_F5 || (event->key() == Qt::Key_5 && devicemode)) {

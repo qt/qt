@@ -231,9 +231,17 @@ void QFxPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidge
                     QPainter qp(&d->imagecache[i]->image);
                     qp.setRenderHints(QPainter::HighQualityAntialiasing | QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform, d->smooth);
                     qp.translate(-area.x(), -area.y());
-                    qp.eraseRect(d->imagecache[i]->dirty);
-                    if (d->fillColor.isValid())
-                        qp.fillRect(d->imagecache[i]->dirty,d->fillColor);
+                    if (d->fillColor.isValid()){
+                        if(d->fillColor.alpha() < 255){
+                            // ### Might not work outside of raster paintengine
+                            QPainter::CompositionMode prev = qp.compositionMode();
+                            qp.setCompositionMode(QPainter::CompositionMode_Source);
+                            qp.fillRect(d->imagecache[i]->dirty,d->fillColor);
+                            qp.setCompositionMode(prev);
+                        }else{
+                            qp.fillRect(d->imagecache[i]->dirty,d->fillColor);
+                        }
+                    }
                     qp.setClipRect(d->imagecache[i]->dirty);
                     drawContents(&qp, d->imagecache[i]->dirty);
                     d->imagecache[i]->dirty = QRect();

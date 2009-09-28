@@ -340,6 +340,8 @@ void QmlView::continueExecute()
                 d->initialSize.setWidth(d->root->width());
             if (d->initialSize.height() <= 0 && d->root->height() > 0)
                 d->initialSize.setHeight(d->root->height());
+            resize(d->initialSize);
+
             if (d->resizable) {
                 d->root->setWidth(width());
                 d->root->setHeight(height());

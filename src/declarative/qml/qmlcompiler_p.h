@@ -61,6 +61,7 @@
 #include <private/qmlcompositetypemanager_p.h>
 #include <private/qmlparser_p.h>
 #include <private/qmlengine_p.h>
+#include <private/qbitfield_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -88,7 +89,7 @@ public:
         QmlComponent *component;
 
         QmlRefCount *ref;
-        QObject *createInstance(QmlContext *) const;
+        QObject *createInstance(QmlContext *, const QBitField &) const;
         const QMetaObject *metaObject() const;
     };
     QList<TypeReference> types;

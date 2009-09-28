@@ -90,6 +90,7 @@ private:
     friend class QmlContextScriptClass;
     friend class QmlObjectScriptClass;
     friend class QmlComponent;
+    friend class QmlComponentPrivate;
     friend class QmlScriptPrivate;
     friend class QmlBoundSignalProxy;
     QmlContext(QmlContext *parent, QObject *objParent, bool);

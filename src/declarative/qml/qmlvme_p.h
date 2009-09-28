@@ -56,6 +56,7 @@
 #include <QtCore/QString>
 #include <QtCore/QStack>
 #include <QtDeclarative/qmlerror.h>
+#include <private/qbitfield_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -70,14 +71,17 @@ class QmlVME
 public:
     QmlVME();
 
-    QObject *run(QmlContext *, QmlCompiledData *, int start = -1, int count = -1);
+    QObject *run(QmlContext *, QmlCompiledData *, 
+                 int start = -1, int count = -1, 
+                 const QBitField & = QBitField());
     void runDeferred(QObject *);
 
     bool isError() const;
     QList<QmlError> errors() const;
 
 private:
-    QObject *run(QStack<QObject *> &, QmlContext *, QmlCompiledData *, int start, int count);
+    QObject *run(QStack<QObject *> &, QmlContext *, QmlCompiledData *, 
+                 int start, int count, const QBitField &);
     QList<QmlError> vmeErrors;
 };
 

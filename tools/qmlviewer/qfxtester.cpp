@@ -17,6 +17,7 @@
 #include <qmlview.h>
 #include <QFile>
 #include <QmlComponent>
+#include <QDir>
 #include <QCryptographicHash>
 #include <private/qabstractanimation_p.h>
 #include <private/qfxitem_p.h>
@@ -30,15 +31,23 @@ QML_DEFINE_TYPE(Qt.VisualTest, 4, 6, (QT_VERSION&0x00ff00)>>8, Key, QFxVisualTes
 
 QFxTester::QFxTester(const QString &script, QmlViewer::ScriptOptions opts, 
                      QmlView *parent)
-: QAbstractAnimation(parent), m_view(parent), filterEvents(true), options(opts), 
-  testscript(0), hasFailed(false)
+: QAbstractAnimation(parent), m_script(script), m_view(parent), filterEvents(true), options(opts), 
+  testscript(0), hasCompleted(false), hasFailed(false)
 {
     parent->viewport()->installEventFilter(this);
     parent->installEventFilter(this);
     QUnifiedTimer::instance()->setConsistentTiming(true);
     if (options & QmlViewer::Play)
-        this->run(script);
+        this->run();
     start();
+}
+
+QFxTester::~QFxTester()
+{
+    if (!hasFailed && 
+        options & QmlViewer::Record && 
+        options & QmlViewer::SaveOnExit)
+        save();
 }
 
 int QFxTester::duration() const
@@ -109,22 +118,32 @@ void QFxTester::imagefailure()
 
 void QFxTester::complete()
 {
+    if (hasCompleted)
+        return;
+    hasCompleted = true;
     if (options & QmlViewer::ExitOnComplete)
         QApplication::exit(hasFailed?-1:0);
+    else if (options & QmlViewer::Play)
+        qWarning("Script playback complete");
 }
 
-void QFxTester::run(const QString &name)
+void QFxTester::run()
 {
-    QmlComponent c(m_view->engine(), name + QLatin1String(".qml"));
+    QmlComponent c(m_view->engine(), m_script + QLatin1String(".qml"));
 
     testscript = qobject_cast<QFxVisualTest *>(c.create());
     if (testscript) testscript->setParent(this);
+    else executefailure();
     testscriptidx = 0;
 }
 
-void QFxTester::save(const QString &name)
+void QFxTester::save()
 {
-    QFile file(name + QLatin1String(".qml"));
+    QString filename = m_script + QLatin1String(".qml");
+    QDir saveDir = QFileInfo(filename).absoluteDir();
+    saveDir.mkpath(".");
+
+    QFile file(filename);
     file.open(QIODevice::WriteOnly);
     QTextStream ts(&file);
 
@@ -132,6 +151,8 @@ void QFxTester::save(const QString &name)
     ts << "VisualTest {\n";
 
     int imgCount = 0;
+    QList<KeyEvent> keyevents = m_savedKeyEvents;
+    QList<MouseEvent> mouseevents = m_savedMouseEvents;
     for (int ii = 0; ii < m_savedFrameEvents.count(); ++ii) {
         const FrameEvent &fe = m_savedFrameEvents.at(ii);
         ts << "    Frame {\n";
@@ -139,15 +160,15 @@ void QFxTester::save(const QString &name)
         if (!fe.hash.isEmpty()) {
             ts << "        hash: \"" << fe.hash.toHex() << "\"\n";
         } else if (!fe.image.isNull()) {
-            QString filename = name + "." + QString::number(imgCount++) + ".png";
+            QString filename = m_script + "." + QString::number(imgCount++) + ".png";
             fe.image.save(filename);
             ts << "        image: \"" << filename << "\"\n";
         }
         ts << "    }\n";
 
-        while (!m_savedMouseEvents.isEmpty() && 
-               m_savedMouseEvents.first().msec == fe.msec) {
-            MouseEvent me = m_savedMouseEvents.takeFirst();
+        while (!mouseevents.isEmpty() && 
+               mouseevents.first().msec == fe.msec) {
+            MouseEvent me = mouseevents.takeFirst();
 
             ts << "    Mouse {\n";
             ts << "        type: " << me.type << "\n";
@@ -160,9 +181,9 @@ void QFxTester::save(const QString &name)
             ts << "    }\n";
         }
 
-        while (!m_savedKeyEvents.isEmpty() &&
-               m_savedKeyEvents.first().msec == fe.msec) {
-            KeyEvent ke = m_savedKeyEvents.takeFirst();
+        while (!keyevents.isEmpty() &&
+               keyevents.first().msec == fe.msec) {
+            KeyEvent ke = keyevents.takeFirst();
 
             ts << "    Key {\n";
             ts << "        type: " << ke.type << "\n";
@@ -176,7 +197,6 @@ void QFxTester::save(const QString &name)
             ts << "    }\n";
         }
     }
-    m_savedFrameEvents.clear();
 
     ts << "}\n";
     file.close();
@@ -279,20 +299,30 @@ void QFxTester::updateCurrentTime(int msec)
             QPoint globalPos = m_view->mapToGlobal(QPoint(0, 0)) + pos;
             QMouseEvent event((QEvent::Type)mouse->type(), pos, globalPos, (Qt::MouseButton)mouse->button(), (Qt::MouseButtons)mouse->buttons(), (Qt::KeyboardModifiers)mouse->modifiers());
 
+            MouseEvent me(&event);
+            me.msec = msec;
             if (!mouse->sendToViewport()) {
                 QCoreApplication::sendEvent(m_view, &event);
+                me.destination = View;
             } else {
                 QCoreApplication::sendEvent(m_view->viewport(), &event);
+                me.destination = ViewPort;
             }
+            m_savedMouseEvents.append(me);
         } else if (QFxVisualTestKey *key = qobject_cast<QFxVisualTestKey *>(event)) {
 
             QKeyEvent event((QEvent::Type)key->type(), key->key(), (Qt::KeyboardModifiers)key->modifiers(), QString::fromUtf8(QByteArray::fromHex(key->text().toUtf8())), key->autorep(), key->count());
 
+            KeyEvent ke(&event);
+            ke.msec = msec;
             if (!key->sendToViewport()) {
                 QCoreApplication::sendEvent(m_view, &event);
+                ke.destination = View;
             } else {
                 QCoreApplication::sendEvent(m_view->viewport(), &event);
+                ke.destination = ViewPort;
             }
+            m_savedKeyEvents.append(ke);
         } 
         testscriptidx++;
     }

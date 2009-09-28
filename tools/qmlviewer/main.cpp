@@ -60,8 +60,9 @@ void scriptOptsUsage()
     qWarning("  testimages ............................... compare images on playback");
     qWarning("  exitoncomplete ........................... cleanly exit the viewer on script completion");
     qWarning("  exitonfailure ............................ immediately exit the viewer on script failure");
+    qWarning("  saveonexit ............................... save recording on viewer exit");
     qWarning(" ");
-    qWarning(" One of record or play must be specified.");
+    qWarning(" One of record, play or both must be specified.");
     exit(1);
 }
 
@@ -190,10 +191,8 @@ int main(int argc, char ** argv)
             if (option == QLatin1String("help")) {
                 scriptOptsUsage();
             } else if (option == QLatin1String("play")) {
-                if (scriptOptions & QmlViewer::Record) scriptOptsUsage();
                 scriptOptions |= QmlViewer::Play;
             } else if (option == QLatin1String("record")) {
-                if (scriptOptions & QmlViewer::Play) scriptOptsUsage();
                 scriptOptions |= QmlViewer::Record;
             } else if (option == QLatin1String("testimages")) {
                 scriptOptions |= QmlViewer::TestImages;
@@ -201,6 +200,8 @@ int main(int argc, char ** argv)
                 scriptOptions |= QmlViewer::ExitOnComplete;
             } else if (option == QLatin1String("exitonfailure")) {
                 scriptOptions |= QmlViewer::ExitOnFailure;
+            } else if (option == QLatin1String("saveonexit")) {
+                scriptOptions |= QmlViewer::SaveOnExit;
             } else {
                 scriptOptsUsage();
             }

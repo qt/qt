@@ -645,12 +645,10 @@ void QmlCompiler::compileTree(Object *tree)
 
     output->imports = unit->imports;
 
-    if (tree->metatype) {
-        static_cast<QMetaObject &>(output->root) = *tree->metaObject();
+    Q_ASSERT(tree->metatype);
+    static_cast<QMetaObject &>(output->root) = *tree->metaObject();
+    if (!tree->metadata.isEmpty())
         QmlEnginePrivate::get(engine)->registerCompositeType(output);
-    } else {
-        static_cast<QMetaObject &>(output->root) = *output->types.at(tree->type).metaObject();
-    }
 }
 
 bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
@@ -791,6 +789,15 @@ void QmlCompiler::genObject(QmlParser::Object *obj)
     if (!obj->custom.isEmpty())
         create.create.data = output->indexForByteArray(obj->custom);
     create.create.type = obj->type;
+    if (!output->types.at(create.create.type).type && 
+        !obj->bindingBitmask.isEmpty()) {
+        while (obj->bindingBitmask.size() % 4)
+            obj->bindingBitmask.append(char(0));
+        create.create.bindingBits = 
+            output->indexForByteArray(obj->bindingBitmask);
+    } else {
+        create.create.bindingBits = -1;
+    }
     output->bytecode << create;
 
     // Setup the synthesized meta object if necessary
@@ -1235,6 +1242,9 @@ bool QmlCompiler::buildProperty(QmlParser::Property *prop,
             prop->type = t;
         }
     }
+
+    if (prop->index != -1) 
+        prop->parent->setBindingBit(prop->index);
 
     if (!prop->isDefault && prop->name == "id" && !ctxt.isSubContext()) {
 
@@ -2032,7 +2042,7 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
 
         builder.addSignal(p.name + "Changed()");
         QMetaPropertyBuilder propBuilder = 
-            builder.addProperty(p.name, type, ii);
+            builder.addProperty(p.name, type, builder.methodCount() - 1);
         propBuilder.setScriptable(true);
         propBuilder.setWritable(!readonly);
     }
@@ -2157,7 +2167,10 @@ bool QmlCompiler::compileAlias(QMetaObjectBuilder &builder,
     data.append((const char *)&propIdx, sizeof(propIdx));
 
     builder.addSignal(prop.name + "Changed()");
-    builder.addProperty(prop.name, aliasProperty.typeName(), builder.methodCount() - 1);
+    QMetaPropertyBuilder propBuilder = 
+        builder.addProperty(prop.name, aliasProperty.typeName(), 
+                            builder.methodCount() - 1);
+    propBuilder.setScriptable(true);
     return true;
 }
 

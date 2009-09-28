@@ -170,6 +170,7 @@ public:
         struct {
             int type;
             int data;
+            int bindingBits;
             ushort column;
         } create;
         struct {

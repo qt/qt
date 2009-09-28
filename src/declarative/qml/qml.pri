@@ -80,6 +80,7 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmlenginedebug_p.h \
     qml/qmlrewrite_p.h \
     qml/qpodvector_p.h \
+    qml/qbitfield_p.h \
     qml/qmlvaluetype_p.h \
     qml/qmlbindingoptimizations_p.h \
     qml/qmlxmlhttprequest_p.h \

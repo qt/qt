@@ -90,12 +90,12 @@ public:
     virtual void execute();
     virtual bool isReversable();
     virtual void reverse();
+    virtual void saveOriginals() {}
 
     //virtual bool hasExtraActions();
     virtual QList<Action> extraActions();
 
     virtual bool changesBindings();
-    virtual void saveForwardBindings() {}
     virtual void clearForwardBindings();
     virtual void clearReverseBindings();
     virtual bool override(ActionEvent*other);

@@ -1053,6 +1053,7 @@ void QFxTextEdit::updateSize()
         newWidth += cursorWidth;
         if(!d->document->isEmpty())
             newWidth += 3;// ### Need a better way of accounting for space between char and cursor
+        // ### Setting the implicitWidth triggers another updateSize(), and unless there are bindings nothing has changed.
         setImplicitWidth(newWidth);
         setImplicitHeight(d->text.isEmpty() ? fm.height() : (int)d->document->size().height());
 

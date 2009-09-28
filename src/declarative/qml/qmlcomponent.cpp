@@ -437,15 +437,22 @@ QObject *QmlComponent::create(QmlContext *context)
 {
     Q_D(QmlComponent);
 
-    if (!context)
-        context = d->engine->rootContext();
+    return d->create(context, QBitField());
+}
 
-    if (context->engine() != d->engine) {
+QObject *QmlComponentPrivate::create(QmlContext *context, 
+                                     const QBitField &bindings)
+{
+    QObject *create(QmlContext *context, const QBitField &);
+    if (!context)
+        context = engine->rootContext();
+
+    if (context->engine() != engine) {
         qWarning("QmlComponent::create(): Must create component in context from the same QmlEngine");
         return 0;
     }
 
-    QObject *rv = beginCreate(context);
+    QObject *rv = beginCreate(context, bindings);
     completeCreate();
     return rv;
 }
@@ -476,51 +483,57 @@ QObject *QmlComponent::create(QmlContext *context)
 QObject *QmlComponent::beginCreate(QmlContext *context)
 {
     Q_D(QmlComponent);
+    return d->beginCreate(context, QBitField());
+}
 
+QObject *
+QmlComponentPrivate::beginCreate(QmlContext *context, const QBitField &bindings)
+{
+    Q_Q(QmlComponent);
     if (!context) {
         qWarning("QmlComponent::beginCreate(): Cannot create a component in a null context");
         return 0;
     }
 
-    if (context->engine() != d->engine) {
+    if (context->engine() != engine) {
         qWarning("QmlComponent::beginCreate(): Must create component in context from the same QmlEngine");
         return 0;
     }
 
-    if (d->completePending) {
+    if (completePending) {
         qWarning("QmlComponent: Cannot create new component instance before completing the previous");
         return 0;
     }
 
-    if (!isReady()) {
+    if (!q->isReady()) {
         qWarning("QmlComponent: Component is not ready");
         return 0;
     }
 
-    if (!QmlEnginePrivate::get(d->engine)->rootComponent)
-        QmlEnginePrivate::get(d->engine)->rootComponent = this;
+    if (!QmlEnginePrivate::get(engine)->rootComponent)
+        QmlEnginePrivate::get(engine)->rootComponent = q;
 
     QmlContextPrivate *contextPriv = 
         static_cast<QmlContextPrivate *>(QObjectPrivate::get(context));
     QmlContext *ctxt = new QmlContext(context, 0, true);
-    static_cast<QmlContextPrivate*>(ctxt->d_func())->url = d->cc->url;
-    static_cast<QmlContextPrivate*>(ctxt->d_func())->imports = d->cc->imports;
+    static_cast<QmlContextPrivate*>(ctxt->d_func())->url = cc->url;
+    static_cast<QmlContextPrivate*>(ctxt->d_func())->imports = cc->imports;
 
     QmlVME vme;
-    QObject *rv = vme.run(ctxt, d->cc, d->start, d->count);
+    QObject *rv = vme.run(ctxt, cc, start, count, bindings);
 
     if (vme.isError()) 
-        d->errors = vme.errors();
+        errors = vme.errors();
 
-    QmlEnginePrivate *ep = QmlEnginePrivate::get(d->engine);
-    if (ep->rootComponent == this) {
+    QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
+    if (ep->rootComponent == q) {
         ep->rootComponent = 0;
 
-        d->bindValues = ep->bindValues;
-        d->parserStatus = ep->parserStatus;
+        bindValues = ep->bindValues;
+        parserStatus = ep->parserStatus;
         ep->bindValues.clear();
         ep->parserStatus.clear();
-        d->completePending = true;
+        completePending = true;
     }
 
     if (rv) {
@@ -544,14 +557,19 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
 void QmlComponent::completeCreate()
 {
     Q_D(QmlComponent);
-    if (d->completePending) {
+    d->completeCreate();
+}
+
+void QmlComponentPrivate::completeCreate()
+{
+    if (completePending) {
         {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
             QFxPerfTimer<QFxPerf::BindInit> bi;
 #endif
-            for (int ii = 0; ii < d->bindValues.count(); ++ii) {
+            for (int ii = 0; ii < bindValues.count(); ++ii) {
                 QmlEnginePrivate::SimpleList<QmlAbstractBinding> bv = 
-                    d->bindValues.at(ii);
+                    bindValues.at(ii);
                 for (int jj = 0; jj < bv.count; ++jj) {
                     if(bv.at(jj)) 
                         bv.at(jj)->setEnabled(true);
@@ -560,9 +578,9 @@ void QmlComponent::completeCreate()
             }
         }
 
-        for (int ii = 0; ii < d->parserStatus.count(); ++ii) {
+        for (int ii = 0; ii < parserStatus.count(); ++ii) {
             QmlEnginePrivate::SimpleList<QmlParserStatus> ps = 
-                d->parserStatus.at(ii);
+                parserStatus.at(ii);
 
             for (int jj = 0; jj < ps.count; ++jj) {
                 QmlParserStatus *status = ps.at(jj);
@@ -574,9 +592,9 @@ void QmlComponent::completeCreate()
             QmlEnginePrivate::clear(ps);
         }
 
-        d->bindValues.clear();
-        d->parserStatus.clear();
-        d->completePending = false;
+        bindValues.clear();
+        parserStatus.clear();
+        completePending = false;
     }
 }
 

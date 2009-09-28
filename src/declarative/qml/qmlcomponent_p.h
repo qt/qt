@@ -59,6 +59,7 @@
 #include <private/qobject_p.h>
 #include <private/qmlengine_p.h>
 #include <private/qmlcompositetypemanager_p.h>
+#include <private/qbitfield_p.h>
 #include <QtDeclarative/qmlerror.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qml.h>
@@ -75,6 +76,11 @@ class QmlComponentPrivate : public QObjectPrivate
         
 public:
     QmlComponentPrivate() : typeData(0), progress(0.), start(-1), count(-1), cc(0), completePending(false), engine(0) {}
+
+
+    QObject *create(QmlContext *context, const QBitField &);
+    QObject *beginCreate(QmlContext *, const QBitField &);
+    void completeCreate();
 
     QmlCompositeTypeData *typeData;
     void typeDataReady();
@@ -98,6 +104,10 @@ public:
     QmlEngine *engine;
 
     void clear();
+
+    static QmlComponentPrivate *get(QmlComponent *c) {
+        return static_cast<QmlComponentPrivate *>(QObjectPrivate::get(c));
+    }
 };
 
 QT_END_NAMESPACE

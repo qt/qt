@@ -557,7 +557,7 @@ bool QmlAnchorChanges::changesBindings()
     return true;
 }
 
-void QmlAnchorChanges::saveForwardBindings()
+void QmlAnchorChanges::saveOriginals()
 {
     Q_D(QmlAnchorChanges);
     d->origLeft = d->target->anchors()->left();
