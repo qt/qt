@@ -271,6 +271,7 @@ QT_BEGIN_NAMESPACE
     \omitvalue CocoaRequestModal
     \omitvalue Signal
     \omitvalue SymbianDeferredFocusChanged
+    \omitvalue UpdateSoftKeys
     \omitvalue NativeGesture
 */
 
