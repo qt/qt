@@ -44,6 +44,7 @@
 //#include <private/qtextengine_p.h>
 #include <private/qfontengine_p.h>
 #include <private/qemulationpaintengine_p.h>
+#include <private/qimage_p.h>
 
 #include <QDebug>
 
@@ -892,6 +893,12 @@ void QPaintBufferEngine::drawPixmap(const QPointF &pos, const QPixmap &pm)
         buffer->updateBoundingRect(QRectF(pos, pm.size()));
 }
 
+static inline QImage qpaintbuffer_storable_image(const QImage &src)
+{
+    QImageData *d = const_cast<QImage &>(src).data_ptr();
+    return d->own_data ? src : src.copy();
+}
+
 void QPaintBufferEngine::drawImage(const QRectF &r, const QImage &image, const QRectF &sr,
                                    Qt::ImageConversionFlags /*flags */)
 {
@@ -899,7 +906,8 @@ void QPaintBufferEngine::drawImage(const QRectF &r, const QImage &image, const Q
     qDebug() << "QPaintBufferEngine: drawImage: src/dest rects " << r << sr;
 #endif
     QPaintBufferCommand *cmd =
-        buffer->addCommand(QPaintBufferPrivate::Cmd_DrawPixmapRect, QVariant(image));
+        buffer->addCommand(QPaintBufferPrivate::Cmd_DrawImageRect,
+                           QVariant(qpaintbuffer_storable_image(image)));
     cmd->extra = buffer->addData((qreal *) &r, 4);
     buffer->addData((qreal *) &sr, 4);
     // ### flags...
@@ -913,7 +921,8 @@ void QPaintBufferEngine::drawImage(const QPointF &pos, const QImage &image)
     qDebug() << "QPaintBufferEngine: drawImage: pos:" << pos;
 #endif
     QPaintBufferCommand *cmd =
-        buffer->addCommand(QPaintBufferPrivate::Cmd_DrawImagePos, QVariant(image));
+        buffer->addCommand(QPaintBufferPrivate::Cmd_DrawImagePos,
+                           QVariant(qpaintbuffer_storable_image(image)));
     cmd->extra = buffer->addData((qreal *) &pos, 2);
     if (buffer->calculateBoundingRect)
         buffer->updateBoundingRect(QRectF(pos, image.size()));
