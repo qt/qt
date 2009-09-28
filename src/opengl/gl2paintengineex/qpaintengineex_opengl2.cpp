@@ -758,6 +758,8 @@ void QGL2PaintEngineEx::beginNativePainting()
 
     glMatrixMode(GL_MODELVIEW);
     glLoadMatrixf(&mv_matrix[0][0]);
+#else
+    Q_UNUSED(ctx);
 #endif
 
     d->lastTexture = GLuint(-1);
@@ -1207,7 +1209,9 @@ void QGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, const 
     ensureActive();
     d->transferMode(ImageDrawingMode);
 
+#ifndef QT_OPENGL_ES_2
     QGLContext *ctx = d->ctx;
+#endif
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     glBindTexture(GL_TEXTURE_2D, textureId);
 
