@@ -10,15 +10,16 @@ PHONON_MMF_DIR = $$QT_SOURCE_TREE/src/3rdparty/phonon/mmf
 
 phonon_mmf_audio_drm {
     LIBS += -lDrmAudioPlayUtility
-
     DEFINES += QT_PHONON_MMF_AUDIO_DRM
 } else {
     LIBS += -lmediaclientaudio
 }
 
-# In the internal 5th SDK, DrmAudioSamplePlayer.h is placed in this folder, as
-# opposed to the public, where it is placed in epoc32/include. In some cases
-# it's needed for other headers as well.
+# This is necessary because both epoc32/include and Phonon contain videoplayer.h.
+# By making /epoc32/include the first SYSTEMINCLUDE, we ensure that
+# '#include <videoplayer.h>' picks up the Symbian header, as intended.
+PREPEND_INCLUDEPATH = /epoc32/include
+
 INCLUDEPATH += $$MW_LAYER_SYSTEMINCLUDE
 
 HEADERS +=                                           \
@@ -72,10 +73,6 @@ LIBS += -lws32              # For RWindow
 LIBS += -lefsrv             # For file server
 LIBS += -lapgrfx -lapmime   # For recognizer
 
-# *** Temporary hack, necessitated by
-# inline QSymbianControl::setTransparentBlit
-LIBS += -lfbscli
-
 # These are for effects.
 LIBS += -lAudioEqualizerEffect -lBassBoostEffect -lDistanceAttenuationEffect -lDopplerBase -lEffectBase -lEnvironmentalReverbEffect -lListenerDopplerEffect -lListenerLocationEffect -lListenerOrientationEffect -lLocationBase -lLoudnessEffect -lOrientationBase -lSourceDopplerEffect -lSourceLocationEffect -lSourceOrientationEffect -lStereoWideningEffect
 
@@ -86,10 +83,6 @@ target.path = $$[QT_INSTALL_PLUGINS]/phonon_backend
 INSTALLS += target
 
 include(../../../qpluginbase.pri)
-
-# We need this to be able to resolve ambiguity for VideoPlayer.h. Phonon and
-# the SDK has the header.
-INCLUDEPATH *= /epoc32
 
 TARGET.UID3=0x2001E629
 

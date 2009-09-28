@@ -19,7 +19,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_VIDEOPLAYER_H
 #define PHONON_MMF_VIDEOPLAYER_H
 
-#include <include/videoplayer.h>
+#include <videoplayer.h> // from epoc32/include
 
 #include "abstractmediaplayer.h"
 #include "videooutput.h"
