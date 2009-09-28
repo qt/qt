@@ -94,8 +94,32 @@ struct QSimplexConstraint
 
     QPair<QSimplexVariable *, qreal> helper;
     QSimplexVariable * artificial;
-};
 
+    #ifdef QT_DEBUG
+    bool isSatisfied() {
+        qreal leftHandSide(0);
+
+        QHash<QSimplexVariable *, qreal>::const_iterator iter;
+        for (iter = variables.constBegin(); iter != variables.constEnd(); ++iter) {
+            leftHandSide += iter.value() * iter.key()->result;
+        }
+
+        Q_ASSERT(constant > 0 || qFuzzyCompare(1, 1 + constant));
+
+        if (qFuzzyCompare(1000 + leftHandSide, 1000 + constant))
+            return true;
+
+        switch (ratio) {
+        case LessOrEqual:
+            return leftHandSide < constant;
+        case MoreOrEqual:
+            return leftHandSide > constant;
+        default:
+            return false;
+        }
+    }
+    #endif
+};
 
 class QSimplex
 {
