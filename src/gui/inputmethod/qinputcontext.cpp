@@ -295,7 +295,7 @@ void QInputContext::sendEvent(const QInputMethodEvent &event)
     The \a event parameter is the event that was sent to the editor
     widget. The event type is QEvent::MouseButtonPress,
     QEvent::MouseButtonRelease, QEvent::MouseButtonDblClick or
-    QEvent::MouseButtonMove. The event's button and state indicate
+    QEvent::MouseMove. The event's button and state indicate
     the kind of operation that was performed.
 */
 void QInputContext::mouseHandler(int /*x*/, QMouseEvent *event)
