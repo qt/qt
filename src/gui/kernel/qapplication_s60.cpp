@@ -1458,11 +1458,17 @@ bool QApplication::s60EventFilter(TWsEvent * /* aEvent */)
 void QApplication::symbianHandleCommand(int command)
 {
     switch (command) {
-    case EEikCmdExit:
 #ifdef Q_WS_S60
-    case EAknSoftkeyExit:
+    case EAknSoftkeyExit: {
+        QCloseEvent ev;
+        QApplication::sendSpontaneousEvent(this, &ev);
+        if (ev.isAccepted())
+            quit();
+        break;
+    }
 #endif
-        exit();
+    case EEikCmdExit:
+        quit();
         break;
     default:
         bool handled = QSoftKeyManager::handleCommand(command);
