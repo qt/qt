@@ -417,18 +417,18 @@ void tst_QEasingCurve::valueForProgress()
 
         // the least significant digit it is still subject to rounding errors
         qreal error = easeConv - ex;
+        qreal errorbound = 0.00001;                
 #ifdef Q_OS_WINCE
         // exception values for WINCE(this test should be rewritten, as it only freezes the status quo of QEasingCurve
         // The failing (2) values are explicitly excepted here:
         // The source values for the comparison table should remain untruncated double and the
         // error bound checking function dynamic. Also the source values should come from a "trusted" source and not
         // from QEasingCurve itself.        
-        qreal errorbound = 0.00001;        
         if ((type == int(QEasingCurve::InOutBounce) && (i == 8 || i == 6) ) || (type == int(QEasingCurve::OutExpo) && i == 2))
-            errorbound = 0.0002;
-#endif        // accept the potential rounding error in the least significant digit
-
-        QVERIFY(error <= errorbound );
+            errorbound = 0.0002;         
+#endif 
+       // accept the potential rounding error in the least significant digit
+        QVERIFY(error <= errorbound );          
     }
 #endif
 }
