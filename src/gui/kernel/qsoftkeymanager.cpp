@@ -247,9 +247,15 @@ bool QSoftKeyManager::handleCommand(int command)
     if (command >= s60CommandStart && QSoftKeyManagerPrivate::softKeySource) {
         int index = command - s60CommandStart;
         const QList<QAction*>& softKeys = QSoftKeyManagerPrivate::softKeySource->actions();
-        if (index < softKeys.count()) {
-            softKeys.at(index)->activate(QAction::Trigger);
-            return true;
+        for (int i = 0, j = 0; i < softKeys.count(); ++i) {
+            QAction *action = softKeys.at(i);
+            if (action->softKeyRole() != QAction::NoSoftKey) {
+                if (j == index) {
+                    action->activate(QAction::Trigger);
+                    return true;
+                }
+                j++;
+            }
         }
     }
 

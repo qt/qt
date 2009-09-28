@@ -10145,7 +10145,8 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
                "QWidgetPrivate::high_attributes[] too small to contain all attributes in WidgetAttribute");
 
 #ifdef Q_WS_WIN
-    if (attribute == Qt::WA_PaintOnScreen && on) {
+    // ### Don't use PaintOnScreen+paintEngine() to do native painting in 5.0
+    if (attribute == Qt::WA_PaintOnScreen && on && !inherits("QGLWidget")) {
         // see qwidget_win.cpp, ::paintEngine for details
         paintEngine();
         if (d->noPaintOnScreen)

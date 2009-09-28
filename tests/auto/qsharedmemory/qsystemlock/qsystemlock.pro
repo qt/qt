@@ -5,9 +5,9 @@ include(../src/src.pri)
 win32: CONFIG += console
 mac:CONFIG -= app_bundle
 
-wince*|symbian {
+wince* {
     DEFINES	+= SRCDIR=\\\"\\\"
-} else {
+} else:!symbian {
     DEFINES	+= SRCDIR=\\\"$$PWD\\\"
 }
 

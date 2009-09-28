@@ -57,6 +57,8 @@
 # define SRCDIR ""
 #endif
 
+#include "../../shared/util.h"
+
 class Widget : public QWidget
 {
 public:
@@ -102,11 +104,11 @@ private slots:
     void eventPropagation_data();
     void eventPropagation();
     void focusPolicy();
-    
+
     void task190318_sizes();
 
     void sizeHint();
-    
+
     void task226479_movieResize();
     void emptyPixmap();
 
@@ -413,16 +415,17 @@ void tst_QLabel::task226479_movieResize()
                 paintedRegion += e->region();
                 QLabel::paintEvent(e);
             }
-            
+
         public:
             QRegion paintedRegion;
     };
-    
+
     Label label;
     label.resize(350,350);
     label.show();
     QMovie *movie = new QMovie( &label );
     label.setMovie(movie);
+    QTest::qWaitForWindowShown(&label);
     movie->setFileName(SRCDIR "red.png");
     movie->start();
     QTest::qWait(50);
@@ -431,8 +434,8 @@ void tst_QLabel::task226479_movieResize()
     movie->setFileName(SRCDIR "green.png");
     movie->start();
     QTest::qWait(50);
-    
-    QCOMPARE(label.paintedRegion , QRegion(label.rect()) );
+
+    QTRY_COMPARE(label.paintedRegion , QRegion(label.rect()) );
 }
 
 void tst_QLabel::emptyPixmap()

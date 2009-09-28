@@ -1754,7 +1754,7 @@ protected:
     bool eventTest(QEvent *e) {
         if (!QSignalTransition::eventTest(e))
             return false;
-        QSignalEvent *se = static_cast<QSignalEvent*>(e);
+        QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(e);
         const_cast<TestSignalTransition*>(this)->m_args = se->arguments();
         return true;
     }
@@ -3954,7 +3954,7 @@ public:
     void onTransition(QEvent *e)
     {
         QSignalTransition::onTransition(e);
-        QSignalEvent *se = static_cast<QSignalEvent*>(e);
+        QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(e);
         eventSignalIndex = se->signalIndex();
     }
 
