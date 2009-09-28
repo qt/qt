@@ -101,6 +101,7 @@ void qt_blend_color_argb_mmx3dnow(int count, const QSpan *spans, void *userData)
                                                  (CompositionFunctionSolid*)qt_functionForModeSolid_MMX3DNOW);
 }
 
+QT_END_NAMESPACE
+
 #endif // QT_HAVE_3DNOW
 
-QT_END_NAMESPACE
