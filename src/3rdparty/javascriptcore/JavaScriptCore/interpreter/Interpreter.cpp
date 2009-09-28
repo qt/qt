@@ -3071,8 +3071,11 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
         if (callType == CallTypeHost) {
             ScopeChainNode* scopeChain = callFrame->scopeChain();
             CallFrame* newCallFrame = CallFrame::create(callFrame->registers() + registerOffset);
+#ifdef QT_BUILD_SCRIPT_LIB //we need the returnValue to be 0 as it is used as flags
+            newCallFrame->init(0, vPC + 5, scopeChain, callFrame, 0, argCount, asObject(v));
+#else
             newCallFrame->init(0, vPC + 5, scopeChain, callFrame, dst, argCount, asObject(v));
-
+#endif
             Register* thisRegister = newCallFrame->registers() - RegisterFile::CallFrameHeaderSize - argCount;
             ArgList args(thisRegister + 1, argCount - 1);
 
@@ -3225,7 +3228,12 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
         if (callType == CallTypeHost) {
             ScopeChainNode* scopeChain = callFrame->scopeChain();
             CallFrame* newCallFrame = CallFrame::create(callFrame->registers() + registerOffset);
+#ifdef QT_BUILD_SCRIPT_LIB //we need the returnValue to be 0 as it is used as flags
+            newCallFrame->init(0, vPC + 5, scopeChain, callFrame, 0, argCount, asObject(v));
+#else
             newCallFrame->init(0, vPC + 5, scopeChain, callFrame, dst, argCount, asObject(v));
+#endif
+
             
             Register* thisRegister = newCallFrame->registers() - RegisterFile::CallFrameHeaderSize - argCount;
             ArgList args(thisRegister + 1, argCount - 1);
@@ -3501,7 +3509,11 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
             ScopeChainNode* scopeChain = callFrame->scopeChain();
 
             CallFrame* newCallFrame = CallFrame::create(callFrame->registers() + registerOffset);
+#ifdef QT_BUILD_SCRIPT_LIB //we need the returnValue to be 0 as it is used as flags
+            newCallFrame->init(0, vPC + 7, scopeChain, callFrame, 0, argCount, asObject(v));
+#else
             newCallFrame->init(0, vPC + 7, scopeChain, callFrame, dst, argCount, asObject(v));
+#endif
 
             JSValue returnValue;
             {

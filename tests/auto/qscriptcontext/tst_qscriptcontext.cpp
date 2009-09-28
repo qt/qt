@@ -724,6 +724,31 @@ void tst_QScriptContext::backtrace_data()
 
         QTest::newRow("call native") << source << expected;
     }
+
+    {
+        QLatin1String func( "function f1() {\n"
+            "    eval('var q = 4');\n"
+            "    return custom_call(bt, 22);\n"
+            "}");
+
+        QString source = QString::fromLatin1("\n"
+            "function f2() {\n"
+            "    func = %1\n"
+            "    return custom_call(func, 12);\n"
+            "}\n"
+            "f2();\n").arg(func);
+
+        QStringList expected;
+        expected << "<native>(22) at -1"
+            << "<native>(function () {\n    [native code]\n}, 22) at -1"
+            << "f1(12) at testfile:5"
+            << QString::fromLatin1("<native>(%1, 12) at -1").arg(func)
+            << "f2() at testfile:7"
+            << "<global>() at testfile:9";
+
+
+        QTest::newRow("calls with closures") << source << expected;
+    }
 }
 
 
