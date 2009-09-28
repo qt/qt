@@ -145,6 +145,7 @@ private slots:
     void task224497_fltMax();
 
     void task221221();
+    void task255471_decimalsValidation();
 
 public slots:
     void valueChangedHelper(const QString &);
@@ -668,7 +669,7 @@ void tst_QDoubleSpinBox::valueFromTextAndValidate_data()
     QTest::addColumn<int>("language");
     QTest::addColumn<QString>("expectedText"); // if empty we don't check
 
-    QTest::newRow("data0") << QString("2.2") << Invalid << 3.0 << 5.0 << (int)QLocale::C << QString();
+    QTest::newRow("data0") << QString("2.2") << Intermediate << 3.0 << 5.0 << (int)QLocale::C << QString();
     QTest::newRow("data1") << QString() << Intermediate << 0.0 << 100.0 << (int)QLocale::C << QString();
     QTest::newRow("data2") << QString("asd") << Invalid << 0.0 << 100.0 << (int)QLocale::C << QString();
     QTest::newRow("data3") << QString("2.2") << Acceptable << 0.0 << 100.0 << (int)QLocale::C << QString();
@@ -685,20 +686,20 @@ void tst_QDoubleSpinBox::valueFromTextAndValidate_data()
     QTest::newRow("data14") << QString("1, ") << Acceptable << 0.0 << 100.0 << (int)QLocale::Norwegian << QString("1,");
     QTest::newRow("data15") << QString("1, ") << Invalid << 0.0 << 100.0 << (int)QLocale::C << QString();
     QTest::newRow("data16") << QString("2") << Intermediate << 100.0 << 102.0 << (int)QLocale::C << QString();
-    QTest::newRow("data17") << QString("22.0") << Invalid << 100.0 << 102.0 << (int)QLocale::C << QString();
+    QTest::newRow("data17") << QString("22.0") << Intermediate << 100.0 << 102.0 << (int)QLocale::C << QString();
     QTest::newRow("data18") << QString("12.0") << Intermediate << 100.0 << 102.0 << (int)QLocale::C << QString();
-    QTest::newRow("data19") << QString("12.2") << Invalid << 100. << 102.0 << (int)QLocale::C << QString();
-    QTest::newRow("data20") << QString("21.") << Invalid << 100.0 << 102.0 << (int)QLocale::C << QString();
-    QTest::newRow("data21") << QString("-21.") << Invalid << -102.0 << -100.0 << (int)QLocale::C << QString();
+    QTest::newRow("data19") << QString("12.2") << Intermediate << 100. << 102.0 << (int)QLocale::C << QString();
+    QTest::newRow("data20") << QString("21.") << Intermediate << 100.0 << 102.0 << (int)QLocale::C << QString();
+    QTest::newRow("data21") << QString("-21.") << Intermediate << -102.0 << -100.0 << (int)QLocale::C << QString();
     QTest::newRow("data22") << QString("-12.") << Intermediate << -102.0 << -100.0 << (int)QLocale::C << QString();
-    QTest::newRow("data23") << QString("-11.11") << Invalid << -102.0 << -101.2 << (int)QLocale::C << QString();
+    QTest::newRow("data23") << QString("-11.11") << Intermediate << -102.0 << -101.2 << (int)QLocale::C << QString();
     QTest::newRow("data24") << QString("-11.4") << Intermediate << -102.0 << -101.3 << (int)QLocale::C << QString();
     QTest::newRow("data25") << QString("11.400") << Invalid << 0.0 << 100.0 << (int)QLocale::C << QString();
     QTest::newRow("data26") << QString(".4") << Intermediate << 0.45 << 0.5 << (int)QLocale::C << QString();
     QTest::newRow("data27") << QString("+.4") << Intermediate << 0.45 << 0.5 << (int)QLocale::C << QString();
     QTest::newRow("data28") << QString("-.4") << Intermediate << -0.5 << -0.45 << (int)QLocale::C << QString();
     QTest::newRow("data29") << QString(".4") << Intermediate << 1.0 << 2.4 << (int)QLocale::C << QString();
-    QTest::newRow("data30") << QString("-.4") << Invalid << -2.3 << -1.9 << (int)QLocale::C << QString();
+    QTest::newRow("data30") << QString("-.4") << Intermediate << -2.3 << -1.9 << (int)QLocale::C << QString();
     QTest::newRow("data31") << QString("-42") << Invalid << -2.43 << -1.0 << (int)QLocale::C << QString();
     QTest::newRow("data32") << QString("-4") << Invalid << -1.4 << -1.0 << (int)QLocale::C << QString();
     QTest::newRow("data33") << QString("-42") << Invalid << -1.4 << -1.0 << (int)QLocale::C << QString();
@@ -712,7 +713,7 @@ void tst_QDoubleSpinBox::valueFromTextAndValidate_data()
     QTest::newRow("data41") << QString("103.") << Invalid << -102.0 << 11.0 << (int)QLocale::C << QString();
     QTest::newRow("data42") << QString("122") << Invalid << 10.0 << 12.2 << (int)QLocale::C << QString();
     QTest::newRow("data43") << QString("-2.2") << Intermediate << -12.2 << -3.2 << (int)QLocale::C << QString();
-    QTest::newRow("data44") << QString("-2.20") << Invalid << -12.1 << -3.2 << (int)QLocale::C << QString();
+    QTest::newRow("data44") << QString("-2.20") << Intermediate << -12.1 << -3.2 << (int)QLocale::C << QString();
     QTest::newRow("data45") << QString("200,2") << Invalid << 0.0 << 1000.0 << (int)QLocale::C << QString();
     QTest::newRow("data46") << QString("200,2") << Acceptable << 0.0 << 1000.0 << (int)QLocale::German << QString();
     QTest::newRow("data47") << QString("2.2") << Acceptable << 0.0 << 1000.0 << (int)QLocale::C << QString();
@@ -1006,6 +1007,31 @@ void tst_QDoubleSpinBox::task221221()
 #endif
     QVERIFY(spin.isVisible());
     QCOMPARE(spin.text(), QLatin1String("1"));
+}
+
+void tst_QDoubleSpinBox::task255471_decimalsValidation()
+{
+    // QDoubleSpinBox shouldn't crash with large numbers of decimals. Even if
+    // the results are useless ;-)
+    for (int i = 0; i < 32; ++i)
+    {
+        QDoubleSpinBox spinBox;
+        spinBox.setDecimals(i);
+        spinBox.setMinimum(0.3);
+        spinBox.setMaximum(12);
+
+        spinBox.show();
+        QTRY_VERIFY(spinBox.isVisible());
+        spinBox.setFocus();
+        QTRY_VERIFY(spinBox.hasFocus());
+
+        QTest::keyPress(&spinBox, Qt::Key_Right);
+        QTest::keyPress(&spinBox, Qt::Key_Right);
+        QTest::keyPress(&spinBox, Qt::Key_Delete);
+
+        // Don't crash!
+        QTest::keyPress(&spinBox, Qt::Key_2);
+    }
 }
 
 
