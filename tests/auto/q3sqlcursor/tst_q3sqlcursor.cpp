@@ -644,7 +644,7 @@ void tst_Q3SqlCursor::select()
     }
 
 #ifdef QT_DEBUG
-    // for people too stupid to read docs we had to insert this debugging message.
+    // Ignore debugging message advising users of a potential pitfall.
     QTest::ignoreMessage(QtDebugMsg, "Q3SqlCursor::setValue(): This will not affect actual database values. Use primeInsert(), primeUpdate() or primeDelete().");
 #endif
     cur4.setValue( "id", 1 );
