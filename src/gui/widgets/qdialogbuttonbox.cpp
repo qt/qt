@@ -593,6 +593,7 @@ QAction* QDialogButtonBoxPrivate::createSoftKey(QAbstractButton *button, QDialog
     }
     QObject::connect(action, SIGNAL(triggered()), button, SIGNAL(clicked()));
     action->setSoftKeyRole(softkeyRole);
+    action->setEnabled(button->isEnabled());
     return action;
 }
 #endif

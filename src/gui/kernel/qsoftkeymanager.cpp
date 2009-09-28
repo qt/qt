@@ -125,6 +125,7 @@ QAction *QSoftKeyManager::createAction(StandardSoftKey standardKey, QWidget *act
         break;
     }
     action->setSoftKeyRole(softKeyRole);
+    action->setEnabled(actionWidget->isEnabled());
     return action;
 }
 
@@ -251,8 +252,10 @@ bool QSoftKeyManager::handleCommand(int command)
             QAction *action = softKeys.at(i);
             if (action->softKeyRole() != QAction::NoSoftKey) {
                 if (j == index) {
-                    action->activate(QAction::Trigger);
-                    return true;
+                    if (action->isEnabled()) {
+                        action->activate(QAction::Trigger);
+                        return true;
+                    }
                 }
                 j++;
             }

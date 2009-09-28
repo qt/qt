@@ -62,6 +62,7 @@ public slots:
 private slots:
     void updateSoftKeysCompressed();
     void handleCommand();
+    void checkSoftkeyEnableStates();
 };
 
 class EventListener : public QObject
@@ -167,6 +168,23 @@ void tst_QSoftKeyManager::handleCommand()
 
     QCOMPARE(spy0.count(), 1);
     QCOMPARE(spy1.count(), 1);
+}
+
+/*
+    This tests that softkey enable state follows the state of widget that owns the action
+    to which the softkey is related to.
+*/
+void tst_QSoftKeyManager::checkSoftkeyEnableStates()
+{
+    QWidget w1, w2;
+    w1.setEnabled(false);
+    w2.setEnabled(true);
+
+    QAction *disabledAction = QSoftKeyManager::createAction(QSoftKeyManager::OkSoftKey, &w1);
+    QAction *enabledAction = QSoftKeyManager::createAction(QSoftKeyManager::OkSoftKey, &w2);
+
+    QVERIFY(disabledAction->isEnabled()==false);
+    QVERIFY(enabledAction->isEnabled()==true);
 }
 
 
