@@ -240,6 +240,7 @@ public:
 
     QGLEngineShaderManager* shaderManager;
 
+    void clearClip(uint value);
     void writeClip(const QVectorPath &path, uint value);
     void updateClipScissorTest();
     void setScissor(const QRect &rect);
