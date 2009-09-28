@@ -345,9 +345,9 @@ QList<QTextOption::Tab> QTextOption::tabs() const
 
     This enum holds the different types of tabulator
 
-    \value LeftTab,     A left-tab
-    \value RightTab,    A right-tab
-    \value CenterTab,   A centered-tab
+    \value LeftTab      A left-tab
+    \value RightTab     A right-tab
+    \value CenterTab    A centered-tab
     \value DelimiterTab A tab stopping at a certain delimiter-character
 */
 
