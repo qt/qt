@@ -47,8 +47,7 @@ defineTest(qtAddLibrary) {
     }
     symbian*:isEqual(LIB_NAME, QtGui) {
         # Needed for #include <QtGui> because qs60mainapplication.h includes aknapp.h
-        INCLUDEPATH -= $$MW_LAYER_SYSTEMINCLUDE
-        INCLUDEPATH = $$MW_LAYER_SYSTEMINCLUDE $$INCLUDEPATH
+        INCLUDEPATH *= $$MW_LAYER_SYSTEMINCLUDE
     }
     isEmpty(LINKAGE) {
        CONFIG(debug, debug|release) {
