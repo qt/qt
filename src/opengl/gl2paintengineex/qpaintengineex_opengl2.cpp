@@ -1699,25 +1699,30 @@ void QGL2PaintEngineEx::clipEnabledChanged()
     }
 }
 
+void QGL2PaintEngineExPrivate::clearClip(uint value)
+{
+    glDepthMask(true);
+    glClearDepth(rawDepth(value));
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glDepthMask(false);
+
+    q->state()->needsClipBufferClear = false;
+}
+
 void QGL2PaintEngineExPrivate::writeClip(const QVectorPath &path, uint value)
 {
     transferMode(BrushDrawingMode);
 
     if (matrixDirty)
         updateMatrix();
-    if (q->state()->needsClipBufferClear) {
-        glDepthMask(true);
-        glClearDepth(rawDepth(1));
-        glClear(GL_DEPTH_BUFFER_BIT);
-        q->state()->needsClipBufferClear = false;
-    }
-
-    glDepthMask(false);
+    if (q->state()->needsClipBufferClear)
+        clearClip(1);
 
     if (path.isEmpty())
         return;
 
     glDisable(GL_BLEND);
+    glDepthMask(false);
 
     vertexCoordinateArray.clear();
     vertexCoordinateArray.addPath(path, inverseScale);
@@ -1890,12 +1895,7 @@ void QGL2PaintEngineExPrivate::systemStateChanged()
             return;
         }
 #endif
-        q->state()->needsClipBufferClear = false;
-
-        glDepthMask(true);
-
-        glClearDepth(0);
-        glClear(GL_DEPTH_BUFFER_BIT);
+        clearClip(0);
 
         QPainterPath path;
         path.addRegion(systemClip);
