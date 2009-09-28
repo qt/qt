@@ -49,6 +49,8 @@
 
 //#define QPAINTBUFFER_DEBUG_DRAW
 
+QT_BEGIN_NAMESPACE
+
 extern int qt_defaultDpiX();
 extern int qt_defaultDpiY();
 extern void qt_format_text(const QFont &font,
@@ -1740,7 +1742,9 @@ struct QPaintBufferCacheEntry
     QVariant::Type type;
     quint64 cacheKey;
 };
+QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QPaintBufferCacheEntry)
+QT_BEGIN_NAMESPACE
 
 QDataStream &operator<<(QDataStream &stream, const QPaintBufferCacheEntry &entry)
 {
@@ -1832,3 +1836,4 @@ QDataStream &operator>>(QDataStream &stream, QPaintBuffer &buffer)
     return stream;
 }
 
+QT_END_NAMESPACE
