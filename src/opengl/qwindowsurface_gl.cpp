@@ -86,6 +86,10 @@
 #include "qgl_cl_p.h"
 #endif
 
+#ifdef QT_OPENGL_ES
+#include <private/qegl_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 //
@@ -326,6 +330,10 @@ QGLWindowSurface::~QGLWindowSurface()
 
 void QGLWindowSurface::deleted(QObject *object)
 {
+    // Make sure that the fbo is destroyed before destroying its context.
+    delete d_ptr->fbo;
+    d_ptr->fbo = 0;
+
     QWidget *widget = qobject_cast<QWidget *>(object);
     if (widget) {
         QWidgetPrivate *widgetPrivate = widget->d_func();
@@ -351,6 +359,17 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
 
     QGLContext *ctx = new QGLContext(surfaceFormat, widget);
     ctx->create(qt_gl_share_widget()->context());
+
+#if defined(Q_WS_X11) && defined(QT_OPENGL_ES)
+    // Create the EGL surface to draw into.  QGLContext::chooseContext()
+    // does not do this for X11/EGL, but does do it for other platforms.
+    // This probably belongs in qgl_x11egl.cpp.
+    QGLContextPrivate *ctxpriv = ctx->d_func();
+    ctxpriv->eglSurface = ctxpriv->eglContext->createSurface(widget);
+    if (ctxpriv->eglSurface == EGL_NO_SURFACE) {
+        qWarning() << "hijackWindow() could not create EGL surface";
+    }
+#endif
 
     widgetPrivate->extraData()->glContext = ctx;
 
@@ -584,6 +603,42 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
         if (d_ptr->fbo)
             d_ptr->fbo->bind();
     }
+#else
+    // OpenGL/ES 2.0 version of the fbo blit.
+    else if (d_ptr->fbo) {
+        GLuint texture = d_ptr->fbo->texture();
+
+        glDisable(GL_DEPTH_TEST);
+
+        if (d_ptr->fbo->isBound())
+            d_ptr->fbo->release();
+
+        glViewport(0, 0, size.width(), size.height());
+
+        QGLShaderProgram *blitProgram =
+            QGLEngineSharedShaders::shadersForContext(ctx)->blitProgram();
+        blitProgram->enable();
+        blitProgram->setUniformValue("imageTexture", 0 /*QT_IMAGE_TEXTURE_UNIT*/);
+
+        // The shader manager's blit program does not multiply the
+        // vertices by the pmv matrix, so we need to do the effect
+        // of the orthographic projection here ourselves.
+        QRectF r;
+        qreal w = size.width() ? size.width() : 1.0f;
+        qreal h = size.height() ? size.height() : 1.0f;
+        r.setLeft((rect.left() / w) * 2.0f - 1.0f);
+        if (rect.right() == (size.width() - 1))
+            r.setRight(1.0f);
+        else
+            r.setRight((rect.right() / w) * 2.0f - 1.0f);
+        r.setBottom((rect.top() / h) * 2.0f - 1.0f);
+        if (rect.bottom() == (size.height() - 1))
+            r.setTop(1.0f);
+        else
+            r.setTop((rect.bottom() / w) * 2.0f - 1.0f);
+
+        drawTexture(r, texture, window()->size(), br);
+    }
 #endif
 
     if (ctx->format().doubleBuffer())
@@ -635,9 +690,6 @@ void QGLWindowSurface::updateGeometry() {
 
     if (d_ptr->destructive_swap_buffers
         && (QGLExtensions::glExtensions & QGLExtensions::FramebufferObject)
-#ifdef QT_OPENGL_ES_2
-        && (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit)
-#endif
         && (d_ptr->fbo || !d_ptr->tried_fbo)
         && qt_gl_preferGL2Engine())
     {
@@ -805,10 +857,23 @@ static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize,
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-#endif
 
     glDisable(target);
     glBindTexture(target, 0);
+#else
+    glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexArray);
+    glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, texCoordArray);
+
+    glBindTexture(target, tex_id);
+
+    glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
+    glEnableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
+    glDisableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
+
+    glBindTexture(target, 0);
+#endif
 }
 
 QImage *QGLWindowSurface::buffer(const QWidget *widget)
