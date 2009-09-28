@@ -125,7 +125,7 @@ int QParallelAnimationGroup::duration() const
 /*!
     \reimp
 */
-void QParallelAnimationGroup::updateCurrentTime()
+void QParallelAnimationGroup::updateCurrentTime(int currentTime)
 {
     Q_D(QParallelAnimationGroup);
     if (d->animations.isEmpty())
@@ -148,7 +148,7 @@ void QParallelAnimationGroup::updateCurrentTime()
         }
     }
 
-    bool timeFwd = ((d->currentLoop == d->lastLoop && d->currentTime >= d->lastCurrentTime)
+    bool timeFwd = ((d->currentLoop == d->lastLoop && currentTime >= d->lastCurrentTime)
                    || d->currentLoop > d->lastLoop);
 #ifdef QANIMATION_DEBUG
     qDebug("QParallellAnimationGroup %5d: setCurrentTime(%d), loop:%d, last:%d, timeFwd:%d, lastcurrent:%d, %d",
@@ -160,7 +160,7 @@ void QParallelAnimationGroup::updateCurrentTime()
         const int dura = animation->totalDuration();
         if (dura == -1 && d->isUncontrolledAnimationFinished(animation))
             continue;
-        if (dura == -1 || (d->currentTime <= dura && dura != 0)
+        if (dura == -1 || (currentTime <= dura && dura != 0)
             || (dura == 0 && d->currentLoop != d->lastLoop)) {
             switch (state()) {
             case Running:
@@ -177,18 +177,18 @@ void QParallelAnimationGroup::updateCurrentTime()
 
         if (dura <= 0) {
             if (dura == -1)
-                animation->setCurrentTime(d->currentTime);
+                animation->setCurrentTime(currentTime);
             continue;
         }
 
         if ((timeFwd && d->lastCurrentTime <= dura)
             || (!timeFwd && d->currentTime <= dura))
-                animation->setCurrentTime(d->currentTime);
-        if (d->currentTime > dura)
+                animation->setCurrentTime(currentTime);
+        if (currentTime > dura)
             animation->stop();
     }
     d->lastLoop = d->currentLoop;
-    d->lastCurrentTime = d->currentTime;
+    d->lastCurrentTime = currentTime;
 }
 
 /*!

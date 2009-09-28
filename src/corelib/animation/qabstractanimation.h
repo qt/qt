@@ -119,7 +119,7 @@ protected:
     QAbstractAnimation(QAbstractAnimationPrivate &dd, QObject *parent = 0);
     bool event(QEvent *event);
 
-    virtual void updateCurrentTime() = 0;
+    virtual void updateCurrentTime(int currentTime) = 0;
     virtual void updateState(QAbstractAnimation::State oldState, QAbstractAnimation::State newState);
     virtual void updateDirection(QAbstractAnimation::Direction direction);
 

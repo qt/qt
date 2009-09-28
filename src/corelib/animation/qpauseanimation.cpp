@@ -141,7 +141,7 @@ bool QPauseAnimation::event(QEvent *e)
 /*!
     \reimp
  */
-void QPauseAnimation::updateCurrentTime()
+void QPauseAnimation::updateCurrentTime(int)
 {
 }
 
