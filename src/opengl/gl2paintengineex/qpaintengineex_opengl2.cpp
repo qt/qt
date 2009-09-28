@@ -1566,8 +1566,6 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     if (!d->inRenderText) {
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_SCISSOR_TEST);
-        glDepthFunc(GL_LEQUAL);
-        glDepthMask(false);
     }
 
 #if !defined(QT_OPENGL_ES_2)
@@ -1631,8 +1629,6 @@ void QGL2PaintEngineEx::ensureActive()
     if (d->needsSync) {
         d->transferMode(BrushDrawingMode);
         glViewport(0, 0, d->width, d->height);
-        glDepthMask(false);
-        glDepthFunc(GL_LEQUAL);
         d->needsSync = false;
         setState(state());
     }
@@ -1714,17 +1710,22 @@ void QGL2PaintEngineExPrivate::writeClip(const QVectorPath &path, uint value)
         glClearDepth(rawDepth(1));
         glClear(GL_DEPTH_BUFFER_BIT);
         q->state()->needsClipBufferClear = false;
-        glDepthMask(false);
     }
+
+    glDepthMask(false);
 
     if (path.isEmpty())
         return;
 
     glDisable(GL_BLEND);
-    glDepthMask(false);
 
     vertexCoordinateArray.clear();
     vertexCoordinateArray.addPath(path, inverseScale);
+
+    if (q->state()->clipTestEnabled)
+        glDepthFunc(GL_LEQUAL);
+    else
+        glDepthFunc(GL_ALWAYS);
 
     glDepthMask(GL_FALSE);
     fillStencilWithVertexArray(vertexCoordinateArray, path.hasWindingFill());
@@ -1746,6 +1747,7 @@ void QGL2PaintEngineExPrivate::writeClip(const QVectorPath &path, uint value)
     composite(vertexCoordinateArray.boundingRect());
     glDisable(GL_STENCIL_TEST);
 
+    glDepthFunc(GL_LEQUAL);
     glStencilMask(0);
 
     glColorMask(true, true, true, true);
@@ -1812,6 +1814,7 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
             d->writeClip(qtVectorPathForPath(state()->matrix.inverted().map(path)), d->maxClip);
         }
 
+        state()->clipTestEnabled = false;
 #ifndef QT_GL_NO_SCISSOR_TEST
         QRect oldRectangleClip = state()->rectangleClip;
 
@@ -1820,7 +1823,6 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
 
         QRegion extendRegion = QRegion(state()->rectangleClip) - oldRectangleClip;
 
-        glDepthFunc(GL_ALWAYS);
         if (!extendRegion.isEmpty()) {
             QPainterPath extendPath;
             extendPath.addRegion(extendRegion);
@@ -1829,7 +1831,6 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
             d->writeClip(qtVectorPathForPath(state()->matrix.inverted().map(extendPath)), 0);
         }
 #endif
-        glDepthFunc(GL_ALWAYS);
         // now write the clip path
         d->writeClip(path, d->maxClip);
         state()->canRestoreClip = false;
@@ -1841,9 +1842,7 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
         break;
     }
 
-    glDepthFunc(GL_LEQUAL);
     if (state()->clipTestEnabled) {
-        glEnable(GL_DEPTH_TEST);
         d->simpleShaderDepthUniformDirty = true;
         d->depthUniformDirty = true;
     }
@@ -1901,11 +1900,8 @@ void QGL2PaintEngineExPrivate::systemStateChanged()
         QPainterPath path;
         path.addRegion(systemClip);
 
-        glDepthFunc(GL_ALWAYS);
         writeClip(qtVectorPathForPath(q->state()->matrix.inverted().map(path)), 1);
-        glDepthFunc(GL_LEQUAL);
 
-        glEnable(GL_DEPTH_TEST);
         q->state()->clipTestEnabled = true;
 
         simpleShaderDepthUniformDirty = true;
@@ -1943,7 +1939,6 @@ void QGL2PaintEngineEx::setState(QPainterState *new_state)
 
     if (old_state && old_state != s && old_state->canRestoreClip) {
         d->updateClipScissorTest();
-        glDepthMask(false);
         glDepthFunc(GL_LEQUAL);
     } else {
         d->regenerateClip();
