@@ -37,7 +37,20 @@ Third party components
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************
-
+- [QT-353] (ODBC) Fixed issue of forward only datasets failing when not 
+   explicitly set so.
+- [222678] Fixed QSqlTableModel: trying to delete the wrong row.
+- (Interbase) Fixed crash when calling numRows on unknown query type.
+- Fixed several database autotests.
+- Fixed determination of end of odbc string on deficient driver.
+- Fixed formatting of date strings in psql driver.
+- Fixed mysql queries automatically getting prepared. Now have to explicitly
+   prepare them if you want that functionality.
+- Fixed failure when QSqlTableModel has null fields to update.
+- Fixed missing isnan/isinf on some platforms (needed for postgres driver)
+- Fixed ::record for dialect 3 named tables in interbase/firebird.
+- Fixed invalid length for numeric fields in oracle.
+- (ODBC) Fixed non-unicode strings should be strings, not bytearrays.
 
 ****************************************************************************
 *                      Platform Specific Changes                           *
