@@ -52,6 +52,18 @@ Third party components
       HTTP request.
     * [256630] Fix usage of QProgressDialog together with QNetworkReply.
 
+- QPainter
+    * [254105] Fixed potential segmentation fault when setting empty clip
+      rectangle.
+    * [256549] Fixed inconsistent behavior between paint engines when
+      setting an IntersectClip after doing setClipping(false).
+    * [254407] Fixed rendering issue with outline drawing using
+      projective transforms.
+    * [258776] Fixed rounding bug in drawImage().
+
+- QPainterPath
+    * [251909] Fixed bug in QPainterPath::united() / simplified().
+
 - QSslCertificate
     * [256066] Fix loading of a PEM when the length was a multiple of 64.
 
