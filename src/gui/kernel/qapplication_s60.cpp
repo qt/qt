@@ -77,10 +77,6 @@
 #include <hal.h>
 #include <hal_data.h>
 
-#ifdef DEBUG_QSYMBIANCONTROL
-#include <QDebug>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 #if defined(QT_DEBUG)
@@ -344,16 +340,6 @@ void QSymbianControl::ConstructL(bool isWindowOwning, bool desktop)
         // Necessary in order to be able to track the activation status of
         // the control's window
         qwidget->d_func()->createExtra();
-
-#ifdef DEBUG_QSYMBIANCONTROL
-        qDebug()    << "QSymbianControl::ConstructL [" << this
-                    << "] widget" << qwidget
-                    << "isWindowOwning" << isWindowOwning
-                    << "parentWidget" << qwidget->parentWidget()
-                    << "OwnsWindow" << OwnsWindow()
-                    << "Window.ClientHandle" << reinterpret_cast<const void*>(DrawableWindow()->ClientHandle())
-                    << "WindowGroupId" << DrawableWindow()->WindowGroupId();
-#endif
 
         SetFocusing(true);
         m_longTapDetector = QLongTapTimer::NewL(this);
@@ -796,17 +782,6 @@ void QSymbianControl::Draw(const TRect& r) const
     QWindowSurface *surface = qwidget->windowSurface();
     QPaintEngine *engine = surface ? surface->paintDevice()->paintEngine() : NULL;
 
-#ifdef DEBUG_QSYMBIANCONTROL
-    qDebug()    << "QSymbianControl::Draw [" << this << "]"
-                << "rect " << r.iTl.iX << ',' << r.iTl.iY
-                << '-' << r.iBr.iX << ',' << r.iBr.iY
-                << "surface" << surface
-                << "engine" << engine
-                << "raster" << (engine ? engine->type() == QPaintEngine::Raster : false)
-                << "opaque" << (qwidget->d_func()->isOpaque)
-                << "disableBlit" << (qwidget->d_func()->extraData()->disableBlit);
-#endif
-
     if (!engine)
         return;
 
@@ -815,34 +790,9 @@ void QSymbianControl::Draw(const TRect& r) const
         CFbsBitmap *bitmap = s60Surface->symbianBitmap();
         CWindowGc &gc = SystemGc();
 
-        if(qwidget->d_func()->extraData()->disableBlit) {
-#ifdef DEBUG_QSYMBIANCONTROL
-            const TDisplayMode displayMode = bitmap->DisplayMode();
-            qDebug()    << "QSymbianControl::Draw [" << this << "]"
-                        << "mode " << displayMode;
-
-            const TUint32 *address = bitmap->DataAddress();
-            const int bitmapWidth = bitmap->SizeInPixels().iWidth;
-            const int bitmapHeight = bitmap->SizeInPixels().iHeight;
-
-            for(int i=0; i<10 and i*10<bitmapWidth and i*10<bitmapHeight; ++i) {
-                const int coord = i*10;
-                const TUint32 *ptr = address + (coord * bitmapWidth) + coord;
-                const TUint32 pixel = *ptr;
-                qDebug()    << "    " << i*10 << " : " << ptr << pixel;
-            }
-
-            for(int i=0; i<10 and i*10<bitmapWidth and i*10<bitmapHeight; ++i) {
-                TRgb color;
-                bitmap->GetPixel(color, TPoint(i*10, i*10));
-                qDebug()    << "    " << i*10 << " : " << color.Red() << color.Green() << color.Blue() << color.Alpha();
-            }
-#endif
-        }
-        else {
+        if(!qwidget->d_func()->extraData()->disableBlit) {
             if (qwidget->d_func()->isOpaque)
                 gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
-
             gc.BitBlt(r.iTl, bitmap, r);
 	}
     } else {
@@ -856,12 +806,6 @@ void QSymbianControl::SizeChanged()
 
     QSize oldSize = qwidget->size();
     QSize newSize(Size().iWidth, Size().iHeight);
-
-#ifdef DEBUG_QSYMBIANCONTROL
-    qDebug()    << "QSymbianControl::SizeChanged [" << this << "]"
-                << oldSize.width() << 'x' << oldSize.height()
-                << "-" << newSize.width() << 'x' << newSize.height();
-#endif
 
     if (oldSize != newSize) {
         QRect cr = qwidget->geometry();
@@ -888,12 +832,6 @@ void QSymbianControl::PositionChanged()
 
     QPoint oldPos = qwidget->geometry().topLeft();
     QPoint newPos(Position().iX, Position().iY);
-
-#ifdef DEBUG_QSYMBIANCONTROL
-    qDebug()    << "QSymbianControl::SizeChanged [" << this << "]"
-                << oldPos.x() << ',' << oldPos.y()
-                << "-" << newPos.x() << ',' << newPos.y();
-#endif
 
     if (oldPos != newPos) {
         QRect cr = qwidget->geometry();
