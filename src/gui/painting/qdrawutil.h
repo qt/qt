@@ -158,6 +158,18 @@ inline void qDrawBorderPixmap(QPainter *painter,
     qDrawBorderPixmap(painter, target, margins, pixmap, pixmap.rect(), margins);
 }
 
+struct QDrawPixmapsData
+{
+    QPointF point;
+    QRectF source;
+    qreal scaleX;
+    qreal scaleY;
+    qreal rotation;
+    qreal opacity;
+};
+
+Q_GUI_EXPORT void qDrawPixmaps(QPainter *painter, const QDrawPixmapsData *drawingData, int dataCount, const QPixmap &pixmap);
+
 QT_END_NAMESPACE
 
 QT_END_HEADER

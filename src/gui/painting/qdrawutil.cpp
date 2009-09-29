@@ -45,6 +45,7 @@
 #include "qapplication.h"
 #include "qpainter.h"
 #include "qpalette.h"
+#include <private/qpaintengineex_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1348,6 +1349,60 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
             }
             break;
         }
+    }
+}
+
+/*!
+    \struct QDrawPixmapsData
+    \since 4.6
+    \internal
+
+    This structure is used with the qDrawPixmaps() function.
+
+    QPointF point:  Specifies the center of the target rectangle.
+    QRectF source:  Specifies the source rectangle in the pixmap passed into the qDrawPixmaps() call.
+    qreal scaleX:   Specifies the horizontal scale of the target rectangle.
+    qreal scaleY:   Specifies the vertical scale of the target rectangle.
+    qreal rotation: Specifies the rotation of the target rectangle in degrees.
+                    The target rectangle is rotated after scaling.
+    qreal opacity:  Specifies the opacity of the rectangle.
+*/
+
+/*!
+    \internal
+    \since 4.6
+
+    This function is used to draw \a pixmap, or a sub-rectangle of \a pixmap, at multiple positions
+    with different scale, rotation and opacity on \a painter. \a drawingData is an array of \a
+    dataCount elements specifying the parameters used to draw each pixmap instance.
+    This can be used for example to implement a particle system.
+*/
+void qDrawPixmaps(QPainter *painter, const QDrawPixmapsData *drawingData, int dataCount, const QPixmap &pixmap)
+{
+    QPaintEngine *engine = painter->paintEngine();
+    if (!engine)
+        return;
+
+    if (engine->isExtended()) {
+        static_cast<QPaintEngineEx *>(engine)->drawPixmaps(drawingData, dataCount, pixmap);
+    } else {
+        qreal oldOpacity = painter->opacity();
+        QTransform oldTransform = painter->transform();
+
+        for (int i = 0; i < dataCount; ++i) {
+            QTransform transform = oldTransform;
+            transform.translate(drawingData[i].point.x(), drawingData[i].point.y());
+            transform.rotate(drawingData[i].rotation);
+            painter->setOpacity(oldOpacity * drawingData[i].opacity);
+            painter->setTransform(transform);
+
+            qreal w = drawingData[i].scaleX * drawingData[i].source.width();
+            qreal h = drawingData[i].scaleY * drawingData[i].source.height();
+            painter->drawPixmap(QRectF(-0.5 * w, -0.5 * h, w, h), pixmap, drawingData[i].source);
+        }
+
+        painter->setOpacity(oldOpacity);
+        painter->setTransform(oldTransform);
     }
 }
 

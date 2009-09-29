@@ -70,7 +70,7 @@ QT_MODULE(Gui)
 class QPainterState;
 class QPaintEngineExPrivate;
 struct StrokeHandler;
-
+struct QDrawPixmapsData;
 
 struct QIntRect {
     int x1, y1, x2, y2;
@@ -132,8 +132,6 @@ public:
 
     qreal pts[8];
 };
-
-
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug Q_GUI_EXPORT &operator<<(QDebug &, const QVectorPath &path);
@@ -197,6 +195,8 @@ public:
     virtual void drawImage(const QPointF &pos, const QImage &image);
 
     virtual void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s);
+
+    virtual void drawPixmaps(const QDrawPixmapsData *drawingData, int dataCount, const QPixmap &pixmap);
 
     virtual void updateState(const QPaintEngineState &state);
 
