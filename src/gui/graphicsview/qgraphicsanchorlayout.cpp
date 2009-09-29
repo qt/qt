@@ -306,18 +306,6 @@ void QGraphicsAnchorLayout::addAnchors(QGraphicsLayoutItem *firstItem,
 }
 
 /*!
-    Returns true if there are no arrangement that satisfies all constraints.
-    Otherwise returns false.
-
-    \sa addAnchor()
-*/
-bool QGraphicsAnchorLayout::hasConflicts() const
-{
-    Q_D(const QGraphicsAnchorLayout);
-    return d->hasConflicts();
-}
-
-/*!
     Sets the default horizontal spacing for the anchor layout to \a spacing.
 
     \sa horizontalSpacing(), setVerticalSpacing(), setSpacing()
