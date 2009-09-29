@@ -59,6 +59,8 @@ class QAbstractAnimationPrivate;
 class Q_CORE_EXPORT QAbstractAnimation : public QObject
 {
     Q_OBJECT
+    Q_ENUMS(State)
+    Q_ENUMS(Direction)
     Q_PROPERTY(State state READ state NOTIFY stateChanged)
     Q_PROPERTY(int loopCount READ loopCount WRITE setLoopCount)
     Q_PROPERTY(int currentTime READ currentTime WRITE setCurrentTime)
