@@ -1265,11 +1265,13 @@ void QStateMachinePrivate::_q_process()
         break;
     case Finished:
         state = NotRunning;
+        cancelAllDelayedEvents();
         unregisterAllTransitions();
         emit q->finished();
         break;
     case Stopped:
         state = NotRunning;
+        cancelAllDelayedEvents();
         unregisterAllTransitions();
         emit q->stopped();
         break;
@@ -1289,6 +1291,19 @@ void QStateMachinePrivate::processEvents(EventProcessingMode processingMode)
         QMetaObject::invokeMethod(q_func(), "_q_process", Qt::QueuedConnection);
         break;
     }
+}
+
+void QStateMachinePrivate::cancelAllDelayedEvents()
+{
+    Q_Q(QStateMachine);
+    QHash<int, QEvent*>::const_iterator it;
+    for (it = delayedEvents.constBegin(); it != delayedEvents.constEnd(); ++it) {
+        int id = it.key();
+        QEvent *e = it.value();
+        q->killTimer(id);
+        delete e;
+    }
+    delayedEvents.clear();
 }
 
 namespace {
@@ -1946,6 +1961,11 @@ bool QStateMachine::event(QEvent *e)
     if (e->type() == QEvent::Timer) {
         QTimerEvent *te = static_cast<QTimerEvent*>(e);
         int tid = te->timerId();
+        if (d->state != QStateMachinePrivate::Running) {
+            // This event has been cancelled already
+            Q_ASSERT(!d->delayedEvents.contains(tid));
+            return true;
+        }
         QEvent *ee = d->delayedEvents.take(tid);
         if (ee != 0) {
             killTimer(tid);

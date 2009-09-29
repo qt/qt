@@ -160,6 +160,7 @@ public:
     void handleTransitionSignal(QObject *sender, int signalIndex,
                                 void **args);    
     void processEvents(EventProcessingMode processingMode);
+    void cancelAllDelayedEvents();
     
 #ifndef QT_NO_PROPERTIES
     typedef QPair<QObject *, QByteArray> RestorableId;
