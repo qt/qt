@@ -339,6 +339,40 @@ private:
     Q_DISABLE_COPY(QGraphicsOpacityEffect)
 };
 
+class QGraphicsBloomEffectPrivate;
+class Q_GUI_EXPORT QGraphicsBloomEffect: public QGraphicsEffect
+{
+    Q_OBJECT
+    Q_PROPERTY(int blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
+    Q_PROPERTY(int brightness READ brightness WRITE setBrightness NOTIFY brightnessChanged)
+    Q_PROPERTY(qreal strength READ strength WRITE setStrength NOTIFY strengthChanged)
+public:
+    QGraphicsBloomEffect(QObject *parent = 0);
+    ~QGraphicsBloomEffect();
+
+    QRectF boundingRectFor(const QRectF &rect) const;
+    int blurRadius() const;
+    int brightness() const;
+    qreal strength() const;
+
+public Q_SLOTS:
+    void setBlurRadius(int blurRadius);
+    void setBrightness(int brightness);
+    void setStrength(qreal strength);
+
+Q_SIGNALS:
+    void blurRadiusChanged(int blurRadius);
+    void brightnessChanged(int brightness);
+    void strengthChanged(qreal strength);
+
+protected:
+    void draw(QPainter *painter, QGraphicsEffectSource *source);
+
+private:
+    Q_DECLARE_PRIVATE(QGraphicsBloomEffect)
+    Q_DISABLE_COPY(QGraphicsBloomEffect)
+};
+
 QT_END_NAMESPACE
 
 QT_END_HEADER
