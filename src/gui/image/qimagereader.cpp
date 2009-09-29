@@ -696,14 +696,17 @@ bool QImageReader::autoDetectImageFormat() const
 
 
 /*!
-    Specifies that the image reader should decide which plugin to use
-    solely based on the contents in the datastream.
+    If \a ignored is set to true, then the image reader will ignore
+    specified formats or file extensions and decide which plugin to
+    use only based on the contents in the datastream.
 
     Setting this flag means that all image plugins gets loaded. Each
     plugin will read the first bytes in the image data and decide if
-    the plugin is compatible or not. The flag is set to \a ignored.
+    the plugin is compatible or not.
 
-    This also disables auto detecting image format.
+    This also disables auto detecting the image format.
+
+    \sa decideFormatFromContent()
 */
 
 void QImageReader::setDecideFormatFromContent(bool ignored)
@@ -713,8 +716,11 @@ void QImageReader::setDecideFormatFromContent(bool ignored)
 
 
 /*!
-    Returns wether the image reader should decide which plugin to use
-    sloley based on the contents of the datastream
+    Returns whether the image reader should decide which plugin to use
+    only based on the contents of the datastream rather than on the file
+    extension.
+
+    \sa setDecideFormatFromContent()
 */
 
 bool QImageReader::decideFormatFromContent() const

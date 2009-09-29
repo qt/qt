@@ -12,4 +12,5 @@ symbian: {
     dummyDeploy.sources = tst_qfilesystemmodel.cpp
     dummyDeploy.path = .
     DEPLOYMENT += dummyDeploy
+    LIBS += -lefsrv
 }

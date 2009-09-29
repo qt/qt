@@ -47,7 +47,9 @@
 
 #include "qsystemlock.h"
 #include "private/qsharedmemory_p.h"
+#ifndef Q_OS_WINCE
 #include <sys/types.h>
+#endif
 
 #define MAX_LOCKS 64
 

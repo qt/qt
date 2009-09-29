@@ -1061,7 +1061,10 @@ void tst_QSharedPointer::constCorrectness()
 
         ptr = cptr;
         QSharedPointer<Data> other = qSharedPointerCast<Data>(cptr);
+
+#ifndef QT_NO_DYNAMIC_CAST
         other = qSharedPointerDynamicCast<Data>(cptr);
+#endif
 
         QCOMPARE(cptr.data(), aData);
         QCOMPARE(cptr.operator->(), aData);

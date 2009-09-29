@@ -43,6 +43,7 @@
 #include <QtGui/QStyle>
 #include <QtGui/QLayout>
 #include <QtGui/QDialog>
+#include <QtGui/QAction>
 #include <qdialogbuttonbox.h>
 #include <limits.h>
 
@@ -721,15 +722,28 @@ void tst_QDialogButtonBox::testS60SoftKeys()
     QDialogButtonBox buttonBox(&dialog);
     buttonBox.setStandardButtons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     dialog.show();
-    QList<QAction*> softKeys = dialog.softKeys();
-    QCOMPARE( softKeys.count(), 2);
+    
+    int softkeyCount = 0;
+    QList<QAction *> actions = dialog.actions();
+    foreach (QAction *action, actions) {
+        if (action->softKeyRole() != QAction::NoSoftKey)
+            softkeyCount++;
+    }
+    QCOMPARE( softkeyCount, 2);
 
     QDialog dialog2(0);
     QDialogButtonBox buttonBox2(&dialog2);
     buttonBox2.setStandardButtons(QDialogButtonBox::Cancel);
     dialog2.show();
-    softKeys = dialog2.softKeys();
-    QCOMPARE( softKeys.count(), 1);
+
+    int softkeyCount2 = 0;
+    QList<QAction *> actions2 = dialog2.actions();
+    foreach (QAction *action, actions2) {
+        if (action->softKeyRole() != QAction::NoSoftKey)
+            softkeyCount2++;
+    }
+    QCOMPARE( softkeyCount2, 1);
+    
 #else
     QSKIP("S60-specific test", SkipAll );
 #endif

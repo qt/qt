@@ -578,8 +578,8 @@
     primitives for matrix multiplication, vectors, quaternions
     (client-side), and API for vertex and fragment shaders, GLSL/ES.
     Future research will, among other things include stencils,
-scissors, vertex buffers and arrays, texture manipulation, and
-        geometry shaders.
+    scissors, vertex buffers and arrays, texture manipulation, and
+    geometry shaders.
 
     \section1 Performance Optimizations
 
@@ -784,7 +784,7 @@ scissors, vertex buffers and arrays, texture manipulation, and
     these settings when you edit forms.
 
     More information about these improvements can be found in the
-    \l{What's New in Qt Designer 4.5} overview.
+    \l{What's New in Qt Designer 4.6} overview.
 
     \section1 Qt Linguist Improvements
 

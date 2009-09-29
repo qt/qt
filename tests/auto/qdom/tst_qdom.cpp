@@ -130,6 +130,8 @@ private slots:
     void setContentWhitespace() const;
     void setContentWhitespace_data() const;
 
+    void taskQTBUG4595_dontAssertWhenDocumentSpecifiesUnknownEncoding() const;
+
     void cleanupTestCase() const;
 
 private:
@@ -1895,6 +1897,19 @@ void tst_QDom::setContentWhitespace_data() const
     QTest::newRow("") << QString::fromLatin1("\t\t<?xml version='1.0' ?><e/>")      << false;
     QTest::newRow("") << QString::fromLatin1("\t\t\t<?xml version='1.0' ?><e/>")    << false;
     QTest::newRow("") << QString::fromLatin1("\t\t\t\t<?xml version='1.0' ?><e/>")  << false;
+}
+
+void tst_QDom::taskQTBUG4595_dontAssertWhenDocumentSpecifiesUnknownEncoding() const
+{
+    QString xmlWithUnknownEncoding("<?xml version='1.0' encoding='unknown-encoding'?>"
+                                   "<foo>"
+                                   " <bar>How will this sentence be handled?</bar>"
+                                   "</foo>");
+    QDomDocument d;
+    QVERIFY(d.setContent(xmlWithUnknownEncoding));
+
+    QString dontAssert = d.toString(); // this should not assert
+    QVERIFY(true);
 }
 
 QTEST_MAIN(tst_QDom)

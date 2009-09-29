@@ -542,7 +542,7 @@ static bool simplifySequentialChunk(Graph<AnchorVertex, AnchorData> *graph,
 void QGraphicsAnchorLayoutPrivate::simplifyGraph(Orientation orientation)
 {
     static bool noSimplification = !qgetenv("QT_ANCHORLAYOUT_NO_SIMPLIFICATION").isEmpty();
-    if (noSimplification)
+    if (noSimplification || items.isEmpty())
         return;
 
     if (graphSimplified[orientation])

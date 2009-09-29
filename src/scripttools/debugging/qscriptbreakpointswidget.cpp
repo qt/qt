@@ -306,13 +306,17 @@ QScriptBreakpointsWidget::QScriptBreakpointsWidget(QWidget *parent)
     QObject::connect(d->deleteBreakpointAction, SIGNAL(triggered()),
                      this, SLOT(_q_deleteBreakpoint()));
 
+#ifndef QT_NO_TOOLBAR
     QToolBar *toolBar = new QToolBar();
     toolBar->addAction(newBreakpointAction);
     toolBar->addAction(d->deleteBreakpointAction);
+#endif
 
     QVBoxLayout *vbox = new QVBoxLayout(this);
     vbox->setMargin(0);
+#ifndef QT_NO_TOOLBAR
     vbox->addWidget(toolBar);
+#endif
     vbox->addWidget(d->newBreakpointWidget);
     vbox->addWidget(d->view);
 }

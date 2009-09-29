@@ -379,6 +379,10 @@ void tst_QParallelAnimationGroup::updateChildrenWithRunningGroup()
 
 void tst_QParallelAnimationGroup::deleteChildrenWithRunningGroup()
 {
+#if defined(Q_OS_SYMBIAN)
+    // give the Symbian app start event queue time to clear
+    QTest::qWait(1000);
+#endif
     // test if children can be activated when their group is stopped
     QParallelAnimationGroup group;
 

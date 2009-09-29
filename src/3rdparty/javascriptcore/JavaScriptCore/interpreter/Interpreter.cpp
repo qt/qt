@@ -435,7 +435,7 @@ void Interpreter::dumpRegisters(CallFrame* callFrame)
     printf("[ReturnPC]                 | %10p | %p \n", it, (*it).vPC()); ++it;
     printf("[ReturnValueRegister]      | %10p | %d \n", it, (*it).i()); ++it;
     printf("[ArgumentCount]            | %10p | %d \n", it, (*it).i()); ++it;
-    printf("[Callee]                   | %10p | %p \n", it, (*it).function()); ++it;
+    printf("[Callee]                   | %10p | %p \n", it, (*it).object()); ++it;
     printf("[OptionalCalleeArguments]  | %10p | %p \n", it, (*it).arguments()); ++it;
     printf("-----------------------------------------------------------------------------\n");
 
@@ -885,13 +885,21 @@ JSValue Interpreter::execute(EvalExecutable* eval, CallFrame* callFrame, JSObjec
     }
 
     Register* oldEnd = m_registerFile.end();
+#ifdef  QT_BUILD_SCRIPT_LIB //with QtScript, we do not necesserly start from scratch
+    Register* newEnd = oldEnd + globalRegisterOffset + codeBlock->m_numCalleeRegisters;
+#else
     Register* newEnd = m_registerFile.start() + globalRegisterOffset + codeBlock->m_numCalleeRegisters;
+#endif
     if (!m_registerFile.grow(newEnd)) {
         *exception = createStackOverflowError(callFrame);
         return jsNull();
     }
 
+#ifdef QT_BUILD_SCRIPT_LIB //with QtScript, we do not necesserly start from scratch
+    CallFrame* newCallFrame = CallFrame::create(oldEnd + globalRegisterOffset);
+#else
     CallFrame* newCallFrame = CallFrame::create(m_registerFile.start() + globalRegisterOffset);
+#endif
 
     // a 0 codeBlock indicates a built-in caller
     newCallFrame->r(codeBlock->thisRegister()) = JSValue(thisObj);
@@ -3071,8 +3079,11 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
         if (callType == CallTypeHost) {
             ScopeChainNode* scopeChain = callFrame->scopeChain();
             CallFrame* newCallFrame = CallFrame::create(callFrame->registers() + registerOffset);
+#ifdef QT_BUILD_SCRIPT_LIB //we need the returnValue to be 0 as it is used as flags
+            newCallFrame->init(0, vPC + 5, scopeChain, callFrame, 0, argCount, asObject(v));
+#else
             newCallFrame->init(0, vPC + 5, scopeChain, callFrame, dst, argCount, asObject(v));
-
+#endif
             Register* thisRegister = newCallFrame->registers() - RegisterFile::CallFrameHeaderSize - argCount;
             ArgList args(thisRegister + 1, argCount - 1);
 
@@ -3113,7 +3124,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
                 exceptionValue = createStackOverflowError(callFrame);
                 goto vm_throw;
             }
-            ASSERT(!callFrame->callee()->isHostFunction());
+            ASSERT(!asFunction(callFrame->callee())->isHostFunction());
             int32_t expectedParams = static_cast<JSFunction*>(callFrame->callee())->jsExecutable()->parameterCount();
             int32_t inplaceArgs = min(argCount, expectedParams);
             int32_t i = 0;
@@ -3225,7 +3236,12 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
         if (callType == CallTypeHost) {
             ScopeChainNode* scopeChain = callFrame->scopeChain();
             CallFrame* newCallFrame = CallFrame::create(callFrame->registers() + registerOffset);
+#ifdef QT_BUILD_SCRIPT_LIB //we need the returnValue to be 0 as it is used as flags
+            newCallFrame->init(0, vPC + 5, scopeChain, callFrame, 0, argCount, asObject(v));
+#else
             newCallFrame->init(0, vPC + 5, scopeChain, callFrame, dst, argCount, asObject(v));
+#endif
+
             
             Register* thisRegister = newCallFrame->registers() - RegisterFile::CallFrameHeaderSize - argCount;
             ArgList args(thisRegister + 1, argCount - 1);
@@ -3469,7 +3485,8 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
                 structure = callDataScopeChain->globalObject()->emptyObjectStructure();
 #ifdef QT_BUILD_SCRIPT_LIB
             // ### world-class hack
-            QScriptObject* newObject = new (globalData) QScriptObject(structure);
+            QT_PREPEND_NAMESPACE(QScriptObject)* newObject
+                = new (globalData) QT_PREPEND_NAMESPACE(QScriptObject)(structure);
 #else
             JSObject* newObject = new (globalData) JSObject(structure);
 #endif
@@ -3500,7 +3517,11 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
             ScopeChainNode* scopeChain = callFrame->scopeChain();
 
             CallFrame* newCallFrame = CallFrame::create(callFrame->registers() + registerOffset);
+#ifdef QT_BUILD_SCRIPT_LIB //we need the returnValue to be 0 as it is used as flags
+            newCallFrame->init(0, vPC + 7, scopeChain, callFrame, 0, argCount, asObject(v));
+#else
             newCallFrame->init(0, vPC + 7, scopeChain, callFrame, dst, argCount, asObject(v));
+#endif
 
             JSValue returnValue;
             {

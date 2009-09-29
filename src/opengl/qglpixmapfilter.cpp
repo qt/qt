@@ -79,6 +79,8 @@ protected:
     bool processGL(QPainter *painter, const QPointF &pos, const QPixmap &pixmap, const QRectF &srcRect) const;
 };
 
+#ifndef QT_OPENGL_ES_2
+
 class QGLPixmapConvolutionFilter: public QGLPixmapFilter<QPixmapConvolutionFilter>
 {
 public:
@@ -98,6 +100,8 @@ private:
     mutable int m_kernelWidth;
     mutable int m_kernelHeight;
 };
+
+#endif
 
 class QGLPixmapBlurFilter : public QGLCustomShaderStage, public QGLPixmapFilter<QPixmapBlurFilter>
 {
@@ -143,22 +147,25 @@ QPixmapFilter *QGL2PaintEngineEx::pixmapFilter(int type, const QPixmapFilter *pr
         return d->blurFilter.data();
         }
 
+#ifndef QT_OPENGL_ES_2
     case QPixmapFilter::ConvolutionFilter:
         if (!d->convolutionFilter)
             d->convolutionFilter.reset(new QGLPixmapConvolutionFilter);
         return d->convolutionFilter.data();
+#endif
 
     default: break;
     }
     return QPaintEngineEx::pixmapFilter(type, prototype);
 }
 
+#ifndef QT_OPENGL_ES_2  // XXX: needs to be ported
+
 extern void qt_add_rect_to_array(const QRectF &r, q_vertexType *array);
 extern void qt_add_texcoords_to_array(qreal x1, qreal y1, qreal x2, qreal y2, q_vertexType *array);
 
 static void qgl_drawTexture(const QRectF &rect, int tx_width, int tx_height, const QRectF & src)
 {
-#ifndef QT_OPENGL_ES_2  // XXX: needs to be ported
 #ifndef QT_OPENGL_ES
     glPushAttrib(GL_CURRENT_BIT);
 #endif
@@ -187,8 +194,9 @@ static void qgl_drawTexture(const QRectF &rect, int tx_width, int tx_height, con
 #ifndef QT_OPENGL_ES
     glPopAttrib();
 #endif
-#endif
 }
+
+#endif // !QT_OPENGL_ES_2
 
 static const char *qt_gl_colorize_filter =
         "uniform lowp vec4 colorizeColor;"
@@ -222,6 +230,8 @@ void QGLPixmapColorizeFilter::setUniforms(QGLShaderProgram *program)
     program->setUniformValue("colorizeColor", color());
     program->setUniformValue("colorizeStrength", float(strength()));
 }
+
+#ifndef QT_OPENGL_ES_2
 
 // generates convolution filter code for arbitrary sized kernel
 QByteArray QGLPixmapConvolutionFilter::generateConvolutionShader() const {
@@ -314,6 +324,8 @@ bool QGLPixmapConvolutionFilter::processGL(QPainter *, const QPointF &pos, const
     m_program->disable();
     return true;
 }
+
+#endif // !QT_OPENGL_ES_2
 
 static const char *qt_gl_blur_filter_fast =
     "const int samples = 9;"

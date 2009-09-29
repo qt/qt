@@ -53,7 +53,9 @@ QT_MODULE(ScriptTools)
 class QAction;
 class QScriptEngine;
 class QWidget;
+#ifndef QT_NO_MAINWINDOW
 class QMainWindow;
+#endif
 class QMenu;
 class QToolBar;
 
@@ -106,7 +108,9 @@ public:
     bool autoShowStandardWindow() const;
     void setAutoShowStandardWindow(bool autoShow);
 
+#ifndef QT_NO_MAINWINDOW
     QMainWindow *standardWindow() const;
+#endif
     QToolBar *createStandardToolBar(QWidget *parent = 0);
     QMenu *createStandardMenu(QWidget *parent = 0);
 

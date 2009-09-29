@@ -55,10 +55,10 @@ public:
     int duration() const { return -1; /* not time driven */ }
 
 protected:
-    void updateCurrentTime()
+    void updateCurrentTime(int currentTime)
     {
-        QPropertyAnimation::updateCurrentTime();
-        if (currentTime() >= QPropertyAnimation::duration() || currentLoop() >= 1)
+        QPropertyAnimation::updateCurrentTime(currentTime);
+        if (currentTime >= QPropertyAnimation::duration() || currentLoop() >= 1)
             stop();
     }
 };

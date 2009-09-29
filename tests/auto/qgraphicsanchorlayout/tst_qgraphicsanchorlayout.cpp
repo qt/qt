@@ -154,6 +154,8 @@ void tst_QGraphicsAnchorLayout::simple()
     QGraphicsWidget p;
     p.setLayout(l);
 
+    QVERIFY(l->hasConflicts() == false);
+
     QCOMPARE(l->count(), 2);
 }
 
@@ -183,6 +185,8 @@ void tst_QGraphicsAnchorLayout::simple_center()
     setAnchor(l, b, Qt::AnchorBottom, c, Qt::AnchorTop, 0);
     setAnchor(l, c, Qt::AnchorBottom, l, Qt::AnchorBottom, 0);
 
+    QVERIFY(l->hasConflicts() == false);
+
     QCOMPARE(l->count(), 3);
 
     QGraphicsWidget *p = new QGraphicsWidget(0, Qt::Window);
@@ -193,6 +197,8 @@ void tst_QGraphicsAnchorLayout::simple_center()
 
     QSizeF layoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
     QCOMPARE(layoutMaximumSize, QSizeF(200, 20));
+
+    delete p;
 }
 
 void tst_QGraphicsAnchorLayout::simple_semifloat()
@@ -228,6 +234,8 @@ void tst_QGraphicsAnchorLayout::simple_semifloat()
     setAnchor(l, a, Qt::AnchorBottom, l, Qt::AnchorBottom, 0);
     setAnchor(l, b, Qt::AnchorBottom, l, Qt::AnchorBottom, 0);
 
+    QVERIFY(l->hasConflicts() == false);
+
     QCOMPARE(l->count(), 4);
 
     QGraphicsWidget *p = new QGraphicsWidget(0, Qt::Window);
@@ -240,6 +248,8 @@ void tst_QGraphicsAnchorLayout::simple_semifloat()
 
     QSizeF layoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
     QCOMPARE(layoutMaximumSize, QSizeF(200, 20));
+
+    delete p;
 }
 
 void tst_QGraphicsAnchorLayout::layoutDirection()
@@ -286,6 +296,10 @@ void tst_QGraphicsAnchorLayout::layoutDirection()
     view->show();
 
     QCOMPARE(checkReverseDirection(p), true);
+    QVERIFY(l->hasConflicts() == false);
+
+    delete p;
+    delete view;
 }
 
 void tst_QGraphicsAnchorLayout::diagonal()
@@ -325,6 +339,8 @@ void tst_QGraphicsAnchorLayout::diagonal()
     l->addAnchor(b, Qt::AnchorRight, l, Qt::AnchorRight);
     l->addAnchor(e, Qt::AnchorRight, l, Qt::AnchorRight);
     l->addAnchor(d, Qt::AnchorRight, e, Qt::AnchorLeft);
+
+    QVERIFY(l->hasConflicts() == false);
 
     QCOMPARE(l->count(), 5);
 
@@ -373,6 +389,9 @@ void tst_QGraphicsAnchorLayout::diagonal()
     QCOMPARE(p.size(), testA);
 
     QCOMPARE(checkReverseDirection(&p), true);
+
+    c->setMinimumWidth(300);
+    QVERIFY(l->hasConflicts());
 }
 
 void tst_QGraphicsAnchorLayout::parallel()
@@ -465,6 +484,8 @@ void tst_QGraphicsAnchorLayout::parallel()
     QCOMPARE(e->geometry(), QRectF(375, 400, 175, 100));
     QCOMPARE(f->geometry(), QRectF(550, 500, 200, 100));
     QCOMPARE(p.size(), layoutMaximumSize);
+
+    QVERIFY(l->hasConflicts() == false);
 }
 
 void tst_QGraphicsAnchorLayout::parallel2()
@@ -489,6 +510,7 @@ void tst_QGraphicsAnchorLayout::parallel2()
     l->addAnchor(l, Qt::AnchorLeft, b, Qt::AnchorLeft);
     l->addAnchor(b, Qt::AnchorRight, a, Qt::AnchorRight);
 
+    QVERIFY(l->hasConflicts() == false);
     QCOMPARE(l->count(), 2);
 
     QGraphicsWidget p;
@@ -570,6 +592,8 @@ void tst_QGraphicsAnchorLayout::snake()
     QCOMPARE(b->geometry(), QRectF(90.0, 100.0, 10.0, 100.0));
     QCOMPARE(c->geometry(), QRectF(90.0, 200.0, 100.0, 100.0));
     QCOMPARE(p.size(), layoutMaximumSize);
+
+    QVERIFY(l->hasConflicts() == false);
 }
 
 void tst_QGraphicsAnchorLayout::snakeOppositeDirections()
@@ -603,6 +627,7 @@ void tst_QGraphicsAnchorLayout::snakeOppositeDirections()
 
     l->addAnchor(c, Qt::AnchorRight, l, Qt::AnchorRight);
 
+    QVERIFY(l->hasConflicts() == false);
     QCOMPARE(l->count(), 3);
 
     QGraphicsWidget p;
@@ -706,6 +731,8 @@ void tst_QGraphicsAnchorLayout::fairDistribution()
     QCOMPARE(c->geometry(), QRectF(200.0, 200.0, 100.0, 100.0));
     QCOMPARE(d->geometry(), QRectF(0.0, 300.0, 300.0, 100.0));
     QCOMPARE(p.size(), layoutMaximumSize);
+
+    QVERIFY(l->hasConflicts() == false);
 }
 
 void tst_QGraphicsAnchorLayout::fairDistributionOppositeDirections()
@@ -782,6 +809,8 @@ void tst_QGraphicsAnchorLayout::fairDistributionOppositeDirections()
     QCOMPARE(a->size(), d->size());
     QCOMPARE(e->size().width(), 4 * a->size().width());
     QCOMPARE(p.size(), layoutMaximumSize);
+
+    QVERIFY(l->hasConflicts() == false);
 }
 
 void tst_QGraphicsAnchorLayout::proportionalPreferred()
@@ -844,6 +873,8 @@ void tst_QGraphicsAnchorLayout::proportionalPreferred()
     QCOMPARE(a->size().width(), 10 * factor);
     QCOMPARE(c->size().width(), 14 * factor);
     QCOMPARE(p.size(), QSizeF(12, 400));
+
+    QVERIFY(l->hasConflicts() == false);
 }
 
 void tst_QGraphicsAnchorLayout::example()
@@ -897,6 +928,7 @@ void tst_QGraphicsAnchorLayout::example()
     l->addAnchor(l, Qt::AnchorLeft, g, Qt::AnchorLeft);
     l->addAnchor(f, Qt::AnchorRight, g, Qt::AnchorRight);
 
+    QVERIFY(l->hasConflicts() == false);
     QCOMPARE(l->count(), 7);
 
     QGraphicsWidget p;
@@ -985,6 +1017,10 @@ void tst_QGraphicsAnchorLayout::setSpacing()
     QCOMPARE(b->geometry(), QRectF(24, 0, 20, 20));
     QCOMPARE(c->geometry(), QRectF(0, 20, 44, 20));
 
+    QVERIFY(l->hasConflicts() == false);
+
+    delete p;
+    delete view;
 }
 
 /*!
@@ -1067,6 +1103,8 @@ void tst_QGraphicsAnchorLayout::hardComplexS60()
     QSizeF layoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
     QCOMPARE(layoutMaximumSize, QSizeF(240, 40));
 
+    QVERIFY(l->hasConflicts() == false);
+    delete p;
 }
 
 void tst_QGraphicsAnchorLayout::stability()
@@ -1128,6 +1166,7 @@ void tst_QGraphicsAnchorLayout::delete_anchor()
     QGraphicsWidget *p = new QGraphicsWidget;
     p->setLayout(l);
 
+    QVERIFY(l->hasConflicts() == false);
     QCOMPARE(l->count(), 3);
 
     scene.addItem(p);
@@ -1277,10 +1316,10 @@ void tst_QGraphicsAnchorLayout::conflicts()
     a->setMinimumSize(QSizeF(29,10));
     QCOMPARE(l->hasConflicts(), false);
 
-    // It will currently fail if we uncomment this:
-    //QEXPECT_FAIL("", "The constraints are just within their bounds in order to be feasible", Continue);
-    //a->setMinimumSize(QSizeF(30,10));
-    //QCOMPARE(l->hasConflicts(), false);
+    a->setMinimumSize(QSizeF(30,10));
+    QCOMPARE(l->hasConflicts(), false);
+
+    delete p;
 }
 
 QTEST_MAIN(tst_QGraphicsAnchorLayout)

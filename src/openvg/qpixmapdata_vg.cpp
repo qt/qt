@@ -82,12 +82,11 @@ QVGPixmapData::~QVGPixmapData()
             // We don't currently have a widget surface active, but we
             // need a surface to make the context current.  So use the
             // shared pbuffer surface instead.
-            qt_vg_make_current(context, qt_vg_shared_surface());
+            context->makeCurrent(qt_vg_shared_surface());
             vgDestroyImage(vgImage);
             if (vgImageOpacity != VG_INVALID_HANDLE)
                 vgDestroyImage(vgImageOpacity);
-            qt_vg_done_current(context);
-            context->setSurface(EGL_NO_SURFACE);
+            context->lazyDoneCurrent();
         }
 #else
         vgDestroyImage(vgImage);

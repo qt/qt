@@ -1185,6 +1185,8 @@ bool QGLFramebufferObject::isBound() const
 
     Returns true if the OpenGL \c{GL_EXT_framebuffer_blit} extension
     is present on this system; otherwise returns false.
+
+    \sa blitFramebuffer()
 */
 bool QGLFramebufferObject::hasOpenGLFramebufferBlit()
 {
@@ -1202,14 +1204,15 @@ bool QGLFramebufferObject::hasOpenGLFramebufferBlit()
     instead of a framebuffer object as source or target respectively.
 
     The \a buffers parameter should be a mask consisting of any combination of
-    COLOR_BUFFER_BIT, DEPTH_BUFFER_BIT, and STENCIL_BUFFER_BIT. Any buffer type
-    that is not present both in the source and target buffers is ignored.
+    \c GL_COLOR_BUFFER_BIT, \c GL_DEPTH_BUFFER_BIT, and
+    \c GL_STENCIL_BUFFER_BIT.  Any buffer type that is not present both
+    in the source and target buffers is ignored.
 
     The \a sourceRect and \a targetRect rectangles may have different sizes;
-    in this case \a buffers should not contain DEPTH_BUFFER_BIT or
-    STENCIL_BUFFER_BIT. The \a filter parameter should be set to GL_LINEAR or
-    GL_NEAREST, and specifies whether linear or nearest interpolation should
-    be used when scaling is performed.
+    in this case \a buffers should not contain \c GL_DEPTH_BUFFER_BIT or
+    \c GL_STENCIL_BUFFER_BIT. The \a filter parameter should be set to
+    \c GL_LINEAR or \c GL_NEAREST, and specifies whether linear or nearest
+    interpolation should be used when scaling is performed.
 
     If \a source equals \a target a copy is performed within the same buffer.
     Results are undefined if the source and target rectangles overlap and
@@ -1220,6 +1223,8 @@ bool QGLFramebufferObject::hasOpenGLFramebufferBlit()
 
     This function will have no effect unless hasOpenGLFramebufferBlit() returns
     true.
+
+    \sa hasOpenGLFramebufferBlit()
 */
 void QGLFramebufferObject::blitFramebuffer(QGLFramebufferObject *target, const QRect &targetRect,
                                            QGLFramebufferObject *source, const QRect &sourceRect,

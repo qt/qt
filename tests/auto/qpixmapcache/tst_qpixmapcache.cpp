@@ -171,7 +171,7 @@ void tst_QPixmapCache::setCacheLimit()
     QPixmapCache::setCacheLimit(0);
     QPixmapCache::setCacheLimit(1000);
     QPixmapCache::Key key2 = QPixmapCache::insert(*p1);
-    QCOMPARE(getPrivate(key2)->key, 2);
+    QCOMPARE(getPrivate(key2)->key, 1);
     QVERIFY(QPixmapCache::find(key, &p2) == 0);
     QVERIFY(QPixmapCache::find(key2, &p2) != 0);
     QCOMPARE(p2, *p1);
@@ -200,7 +200,7 @@ void tst_QPixmapCache::find()
 {
     QPixmap p1(10, 10);
     p1.fill(Qt::red);
-    QPixmapCache::insert("P1", p1);
+    QVERIFY(QPixmapCache::insert("P1", p1));
 
     QPixmap p2;
     QVERIFY(QPixmapCache::find("P1", p2));
@@ -222,13 +222,13 @@ void tst_QPixmapCache::find()
     QCOMPARE(p1, p2);
 
     QPixmapCache::clear();
+    QPixmapCache::setCacheLimit(128);
 
     key = QPixmapCache::insert(p1);
 
     //The int part of the API
-    // make sure it doesn't explode
     QList<QPixmapCache::Key> keys;
-    for (int i = 0; i < 40000; ++i)
+    for (int i = 0; i < 4000; ++i)
         QPixmapCache::insert(p1);
 
     //at that time the first key has been erase because no more place in the cache
@@ -293,8 +293,6 @@ void tst_QPixmapCache::insert()
     estimatedNum = (1024 * QPixmapCache::cacheLimit())
                        / ((p1.width() * p1.height() * p1.depth()) / 8);
     QVERIFY(num <= estimatedNum);
-    QPixmapCache::insert(p3);
-
 }
 
 void tst_QPixmapCache::replace()
@@ -307,13 +305,16 @@ void tst_QPixmapCache::replace()
     p2.fill(Qt::yellow);
 
     QPixmapCache::Key key = QPixmapCache::insert(p1);
+    QCOMPARE(getPrivate(key)->isValid, true);
 
     QPixmap p3;
     QVERIFY(QPixmapCache::find(key, &p3) == 1);
 
-    QPixmapCache::replace(key,p2);
+    QPixmapCache::replace(key, p2);
 
     QVERIFY(QPixmapCache::find(key, &p3) == 1);
+    QCOMPARE(getPrivate(key)->isValid, true);
+    QCOMPARE(getPrivate(key)->key, 1);
 
     QCOMPARE(p3.width(), 10);
     QCOMPARE(p3.height(), 10);
@@ -392,11 +393,8 @@ void tst_QPixmapCache::clear()
     QPixmap p1(10, 10);
     p1.fill(Qt::red);
 
-#ifdef Q_OS_WINCE
-    const int numberOfKeys = 10000;
-#else
-    const int numberOfKeys = 20000;
-#endif
+    const int numberOfKeys = 40000;
+
     for (int i = 0; i < numberOfKeys; ++i)
         QVERIFY(QPixmapCache::find("x" + QString::number(i)) == 0);
 

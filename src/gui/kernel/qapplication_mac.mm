@@ -960,7 +960,18 @@ struct QMacAppleEventTypeSpec {
     { kCoreEventClass, kAEQuitApplication },
     { kCoreEventClass, kAEOpenDocuments }
 };
+
 #ifndef QT_MAC_USE_COCOA
+
+#if (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5)
+enum
+{
+    kEventMouseScroll                          = 11,
+    kEventParamMouseWheelSmoothVerticalDelta   = 'saxy',
+    kEventParamMouseWheelSmoothHorizontalDelta = 'saxx',
+};
+#endif
+
 /* watched events */
 static EventTypeSpec app_events[] = {
     { kEventClassQt, kEventQtRequestWindowChange },
@@ -972,6 +983,7 @@ static EventTypeSpec app_events[] = {
     { kEventClassWindow, kEventWindowActivated },
     { kEventClassWindow, kEventWindowDeactivated },
 
+    { kEventClassMouse, kEventMouseScroll },
     { kEventClassMouse, kEventMouseWheelMoved },
     { kEventClassMouse, kEventMouseDown },
     { kEventClassMouse, kEventMouseUp },
@@ -1639,6 +1651,7 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
         case kEventMouseDown: edesc = "MouseButtonPress"; break;
         case kEventMouseUp: edesc = "MouseButtonRelease"; break;
         case kEventMouseDragged: case kEventMouseMoved: edesc = "MouseMove"; break;
+        case kEventMouseScroll: edesc = "MouseWheelScroll"; break;
         case kEventMouseWheelMoved: edesc = "MouseWheelMove"; break;
         }
         if(ekind == kEventMouseDown || ekind == kEventMouseUp)
@@ -1659,12 +1672,43 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
                               sizeof(mac_buttons), 0, &mac_buttons);
             buttons = qt_mac_get_buttons(mac_buttons);
         }
-        int wheel_delta=0;
-        if(ekind == kEventMouseWheelMoved) {
-            int mdelt = 0;
-            GetEventParameter(event, kEventParamMouseWheelDelta, typeSInt32, 0,
+
+        int wheel_deltaX = 0;
+        int wheel_deltaY = 0;
+        static EventRef compatibilityEvent = 0;
+
+        if (ekind == kEventMouseScroll) {
+            // kEventMouseScroll is the new way of dealing with mouse wheel
+            // events (kEventMouseWheelMoved was the old). kEventMouseScroll results
+            // in much smoother scrolling when using Mighty Mouse or TrackPad. For
+            // compatibility with older applications, carbon will also send us
+            // kEventMouseWheelMoved events if we dont eat this event
+            // (actually two events; one for horizontal and one for vertical).
+            // As a results of this, and to make sure we dont't receive duplicate events,
+            // we try to detect when this happend by checking the 'compatibilityEvent'. 
+            SInt32 mdelt = 0;
+            GetEventParameter(event, kEventParamMouseWheelSmoothHorizontalDelta, typeSInt32, 0,
                               sizeof(mdelt), 0, &mdelt);
-            wheel_delta = mdelt * 120;
+            wheel_deltaX = mdelt;
+            GetEventParameter(event, kEventParamMouseWheelSmoothVerticalDelta, typeSInt32, 0,
+                              sizeof(mdelt), 0, &mdelt);
+            wheel_deltaY = mdelt;
+            GetEventParameter(event, kEventParamEventRef, typeEventRef, 0,
+                              sizeof(compatibilityEvent), 0, &compatibilityEvent);
+        } else if (ekind == kEventMouseWheelMoved) {
+            if (event != compatibilityEvent) {
+                compatibilityEvent = 0;
+                int mdelt = 0;
+                GetEventParameter(event, kEventParamMouseWheelDelta, typeSInt32, 0,
+                        sizeof(mdelt), 0, &mdelt);
+                EventMouseWheelAxis axis;
+                GetEventParameter(event, kEventParamMouseWheelAxis, typeMouseWheelAxis, 0,
+                        sizeof(axis), 0, &axis);
+                if (axis == kEventMouseWheelAxisX)
+                    wheel_deltaX = mdelt * 120;
+                else
+                    wheel_deltaY = mdelt * 120;
+            }
         }
 
         Qt::MouseButton button = Qt::NoButton;
@@ -2054,20 +2098,29 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
                 qt_mac_dblclick.last_button = button;
                 qt_mac_dblclick.last_time = GetEventTime(event);
             }
-            if(wheel_delta) {
-                EventMouseWheelAxis axis;
-                GetEventParameter(event, kEventParamMouseWheelAxis, typeMouseWheelAxis, 0,
-                                  sizeof(axis), 0, &axis);
-                QWheelEvent qwe(plocal, p, wheel_delta, buttons, modifiers,
-                                axis == kEventMouseWheelAxisX ? Qt::Horizontal : Qt::Vertical);
-                QApplication::sendSpontaneousEvent(widget, &qwe);
-                if(!qwe.isAccepted() && QApplicationPrivate::focus_widget && QApplicationPrivate::focus_widget != widget) {
-                    QWheelEvent qwe2(QApplicationPrivate::focus_widget->mapFromGlobal(p), p,
-                                     wheel_delta, buttons, modifiers,
-                                     axis == kEventMouseWheelAxisX ? Qt::Horizontal : Qt::Vertical);
-                    QApplication::sendSpontaneousEvent(QApplicationPrivate::focus_widget, &qwe2);
-                    if(!qwe2.isAccepted())
-                        handled_event = false;
+
+            if (wheel_deltaX || wheel_deltaY) {
+                if (wheel_deltaX) {
+                    QWheelEvent qwe(plocal, p, wheel_deltaX, buttons, modifiers, Qt::Horizontal);
+                    QApplication::sendSpontaneousEvent(widget, &qwe);
+                    if (!qwe.isAccepted() && QApplicationPrivate::focus_widget && QApplicationPrivate::focus_widget != widget) {
+                        QWheelEvent qwe2(QApplicationPrivate::focus_widget->mapFromGlobal(p), p,
+                                wheel_deltaX, buttons, modifiers, Qt::Horizontal);
+                        QApplication::sendSpontaneousEvent(QApplicationPrivate::focus_widget, &qwe2);
+                        if (!qwe2.isAccepted())
+                            handled_event = false;
+                    }
+                }
+                if (wheel_deltaY) {
+                    QWheelEvent qwe(plocal, p, wheel_deltaY, buttons, modifiers, Qt::Vertical);
+                    QApplication::sendSpontaneousEvent(widget, &qwe);
+                    if (!qwe.isAccepted() && QApplicationPrivate::focus_widget && QApplicationPrivate::focus_widget != widget) {
+                        QWheelEvent qwe2(QApplicationPrivate::focus_widget->mapFromGlobal(p), p,
+                                wheel_deltaY, buttons, modifiers, Qt::Vertical);
+                        QApplication::sendSpontaneousEvent(QApplicationPrivate::focus_widget, &qwe2);
+                        if (!qwe2.isAccepted())
+                            handled_event = false;
+                    }
                 }
             } else {
 #ifdef QMAC_SPEAK_TO_ME
@@ -2130,7 +2183,7 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
                    plocal.x(), plocal.y(), event_desc, (QWidget*)widget,
                    widget ? widget->objectName().toLocal8Bit().constData() : "*Unknown*",
                    widget ? widget->metaObject()->className() : "*Unknown*",
-                   button, (int)buttons, (int)modifiers, wheel_delta);
+                   button, (int)buttons, (int)modifiers, wheel_deltaX);
 #endif
         } else {
             handled_event = false;

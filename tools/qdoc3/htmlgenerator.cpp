@@ -1494,7 +1494,7 @@ void HtmlGenerator::generateHeader(const QString& title,
     if ((project != "Qtopia") && (project != "Qt Extended")) {
         shortVersion = project + " " + shortVersion + ": ";
         if (node && !node->doc().location().isEmpty())
-            out() << "<!-- " << node->doc().location().filePath() << " -->\n";
+            out() << "<!-- " << node->doc().location().fileName() << " -->\n";
 
         shortVersion = tre->version();
         if (shortVersion.count(QChar('.')) == 2)

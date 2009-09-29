@@ -291,9 +291,9 @@ QAbstractTransition *QState::addTransition(QAbstractTransition *transition)
     }
 
     transition->setParent(this);
-    const QList<QPointer<QAbstractState> > &targets = QAbstractTransitionPrivate::get(transition)->targetStates;
+    const QList<QWeakPointer<QAbstractState> > &targets = QAbstractTransitionPrivate::get(transition)->targetStates;
     for (int i = 0; i < targets.size(); ++i) {
-        QAbstractState *t = targets.at(i);
+        QAbstractState *t = targets.at(i).data();
         if (!t) {
             qWarning("QState::addTransition: cannot add transition to null state");
             return 0;

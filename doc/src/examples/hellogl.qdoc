@@ -203,14 +203,14 @@
     This class encapsulates the OpenGL geometry data which will be rendered
     in the basic 3D scene.
 
-    \snippet examples/opengl/hellogl/qtlogo.h 0
+    \snippet examples/opengl/shared/qtlogo.h 0
 
     The geometry is divided into a list of parts which may be rendered in
     different ways.  The data itself is contained in a Geometry structure that
     includes the vertices, their lighting normals and index values which
     point into the vertices, grouping them into faces.
 
-    \snippet examples/opengl/hellogl/qtlogo.cpp 0
+    \snippet examples/opengl/shared/qtlogo.cpp 0
 
     The data in the Geometry class is stored in QVector<QVector3D> members
     which are convenient for use with OpenGL because they expose raw
@@ -218,7 +218,7 @@
     are included for adding new vertex data, either with smooth normals, or
     facetted normals; and for enabling the geometry ready for rendering.
 
-    \snippet examples/opengl/hellogl/qtlogo.cpp 1
+    \snippet examples/opengl/shared/qtlogo.cpp 1
 
     The higher level Patch class has methods for accumulating the geometry
     one face at a time, and treating collections of faces or "patches" with
@@ -226,14 +226,14 @@
     may be added as triangles or quads, at the OpenGL level all data is
     treated as triangles for compatibility with OpenGL/ES.
 
-    \snippet examples/opengl/hellogl/qtlogo.cpp 2
+    \snippet examples/opengl/shared/qtlogo.cpp 2
 
     Drawing a Patch is simply acheived by applying any transformation,
     and material effect, then drawing the data using the index range for
     the patch.  The model-view matrix is saved and then restored so that
     any transformation does not affect other parts of the scene.
 
-    \snippet examples/opengl/hellogl/qtlogo.cpp 3
+    \snippet examples/opengl/shared/qtlogo.cpp 3
 
     The geometry is built once on construction of the QtLogo, and it is
     paramaterized on a number of divisions - which controls how "chunky" the
@@ -245,7 +245,7 @@
     details) which only exist during the build phase, to assemble the parts
     of the scene.
 
-    \snippet examples/opengl/hellogl/qtlogo.cpp 4
+    \snippet examples/opengl/shared/qtlogo.cpp 4
 
     Finally the complete QtLogo scene is simply drawn by enabling the data arrays
     and then iterating over the parts, calling draw() on each one.

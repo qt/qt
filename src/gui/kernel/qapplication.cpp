@@ -68,6 +68,9 @@
 #include "private/qstylesheetstyle_p.h"
 #include "private/qstyle_p.h"
 #include "qmessagebox.h"
+#include "qlineedit.h"
+#include "qlistview.h"
+#include "qtextedit.h"
 #include <QtGui/qgraphicsproxywidget.h>
 
 #include "qinputcontext.h"
@@ -93,6 +96,10 @@
 #include "qwidget_p.h"
 
 #include "qapplication.h"
+
+#ifndef QT_NO_LIBRARY
+#include "qlibrary.h"
+#endif
 
 #ifdef Q_WS_WINCE
 #include "qdatetime.h"
@@ -454,6 +461,7 @@ bool QApplicationPrivate::animate_tooltip = false;
 bool QApplicationPrivate::fade_tooltip = false;
 bool QApplicationPrivate::animate_toolbox = false;
 bool QApplicationPrivate::widgetCount = false;
+bool QApplicationPrivate::load_testability = false;
 #if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
 bool QApplicationPrivate::inSizeMove = false;
 #endif
@@ -560,6 +568,8 @@ void QApplicationPrivate::process_cmdline()
             QApplication::setLayoutDirection(Qt::RightToLeft);
         } else if (qstrcmp(arg, "-widgetcount") == 0) {
             widgetCount = true;
+        } else if (qstrcmp(arg, "-testability") == 0) {
+            load_testability = true;
         } else if (arg == "-graphicssystem" && i < argc-1) {
             graphics_system_name = QString::fromLocal8Bit(argv[++i]);
         } else {
@@ -761,6 +771,23 @@ void QApplicationPrivate::construct(
 #ifdef QT_EVAL
     extern void qt_gui_eval_init(uint);
     qt_gui_eval_init(application_type);
+#endif
+
+#ifndef QT_NO_LIBRARY
+    if(load_testability) {
+        QLibrary testLib(QLatin1String("qttestability"));
+        if (testLib.load()) {
+            typedef void (*TasInitialize)(void);
+            TasInitialize initFunction = (TasInitialize)testLib.resolve("qt_testability_init");
+            if (initFunction) {
+                initFunction();
+            } else {
+                qCritical("Library qttestability resolve failed!");
+            }
+        } else {
+            qCritical("Library qttestability load failed!");
+        }
+    }
 #endif
 }
 
@@ -2487,8 +2514,6 @@ void QApplication::setActiveWindow(QWidget* act)
 */
 QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool next)
 {
-    uint focus_flag = qt_tab_all_widgets ? Qt::TabFocus : Qt::StrongFocus;
-
     QWidget *f = toplevel->focusWidget();
     if (!f)
         f = toplevel;
@@ -2496,11 +2521,22 @@ QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool 
     QWidget *w = f;
     QWidget *test = f->d_func()->focus_next;
     while (test && test != f) {
-        if ((test->focusPolicy() & focus_flag) == focus_flag
+        if ((test->focusPolicy() & Qt::TabFocus)
             && !(test->d_func()->extra && test->d_func()->extra->focus_proxy)
             && test->isVisibleTo(toplevel) && test->isEnabled()
             && !(w->windowType() == Qt::SubWindow && !w->isAncestorOf(test))
-            && (toplevel->windowType() != Qt::SubWindow || toplevel->isAncestorOf(test))) {
+            && (toplevel->windowType() != Qt::SubWindow || toplevel->isAncestorOf(test))
+            && (qt_tab_all_widgets
+#ifndef QT_NO_LINEEDIT
+                || qobject_cast<QLineEdit*>(test)
+#endif
+#ifndef QT_NO_TEXTEDIT
+                || qobject_cast<QTextEdit*>(test)
+#endif
+#ifndef QT_NO_ITEMVIEWS
+                || qobject_cast<QListView*>(test)
+#endif
+                )) {
             w = test;
             if (next)
                 break;

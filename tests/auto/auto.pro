@@ -11,14 +11,7 @@ TEMPLATE = subdirs
            moc \
            uic \
            uic3
-
-SUBDIRS += \
-           collections \
-           exceptionsafety \
-           mediaobject \
-#           mediaobject_wince_ds9 \   This is Windows CE only (we test the second phonon backend ds9 here)
-           modeltest \
-           networkselftest \
+Q3SUBDIRS += \
            q3accel \
            q3action \
            q3actiongroup \
@@ -38,6 +31,7 @@ SUBDIRS += \
            q3hbox \
            q3header \
            q3iconview \
+           q3listbox \
            q3listview \
            q3listviewitemiterator \
            q3mainwindow \
@@ -64,7 +58,15 @@ SUBDIRS += \
            q3toolbar \
            q3urloperator \
            q3valuelist \
-           q3valuevector \
+           q3valuevector
+
+SUBDIRS += \
+           collections \
+           exceptionsafety \
+           mediaobject \
+#           mediaobject_wince_ds9 \   This is Windows CE only (we test the second phonon backend ds9 here)
+           modeltest \
+           networkselftest \
            qabstractbutton \
            qabstractitemmodel \
            qabstractitemview \
@@ -195,7 +197,6 @@ SUBDIRS += \
            qline \
            qlineedit \
            qlist \
-           q3listbox \
            qlistview \
            qlistwidget \
            qlocale \
@@ -397,6 +398,8 @@ SUBDIRS += \
            symbols \
            qrand \
            utf8
+           
+!wince*:SUBDIRS += $$Q3SUBDIRS
 
 contains(QT_CONFIG, OdfWriter):SUBDIRS += qzip qtextodfwriter
 mac: {
@@ -404,7 +407,8 @@ mac: {
                macplist \
                qaccessibility_mac
 }
-embedded: {
+
+embedded:!wince* {
     SUBDIRS += qcopchannel \
                qdirectpainter \
                qmultiscreen

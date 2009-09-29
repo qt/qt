@@ -80,7 +80,6 @@ public:
     ~QEglContext();
 
     bool isValid() const;
-    bool isSharing() const;
     bool isCurrent() const;
 
     QEgl::API api() const { return apiType; }
@@ -88,21 +87,19 @@ public:
 
     bool openDisplay(QPaintDevice *device);
     bool chooseConfig(const QEglProperties& properties, QEgl::PixelFormatMatch match = QEgl::ExactPixelFormat);
-    bool createContext(QEglContext *shareContext = 0);
-    bool createSurface(QPaintDevice *device, const QEglProperties *properties = 0);
-    bool recreateSurface(QPaintDevice *device);
-    void destroySurface();
+    bool createContext(QEglContext *shareContext = 0, const QEglProperties *properties = 0);
+    EGLSurface createSurface(QPaintDevice *device, const QEglProperties *properties = 0);
+    void destroySurface(EGLSurface surface);
 
     void destroy();
 
-    bool makeCurrent();
+    bool makeCurrent(EGLSurface surface);
     bool doneCurrent();
-    bool swapBuffers();
+    bool lazyDoneCurrent();
+    bool swapBuffers(EGLSurface surface);
 
     void waitNative();
     void waitClient();
-
-    QSize surfaceSize() const;
 
     bool configAttrib(int name, EGLint *value) const;
 
@@ -111,10 +108,12 @@ public:
     static QString errorString(EGLint code);
 
     EGLDisplay display() const { return dpy; }
+
     EGLContext context() const { return ctx; }
-    EGLSurface surface() const { return surf; }
-    void setSurface(EGLSurface surface) { surf = surface; }
+    void setContext(EGLContext context) { ctx = context; }
+
     EGLConfig config() const { return cfg; }
+    void setConfig(EGLConfig config) { cfg = config; }
 
     QEglProperties configProperties(EGLConfig cfg = 0) const;
 
@@ -129,13 +128,14 @@ private:
     QEgl::API apiType;
     EGLDisplay dpy;
     EGLContext ctx;
-    EGLSurface surf;
     EGLConfig cfg;
-    bool share;
+    EGLSurface currentSurface;
     bool current;
-    void *reserved;     // For extension data in future versions.
 
     static EGLDisplay getDisplay(QPaintDevice *device);
+
+    static QEglContext *currentContext(QEgl::API api);
+    static void setCurrentContext(QEgl::API api, QEglContext *context);
 };
 
 QT_END_NAMESPACE

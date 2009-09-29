@@ -691,6 +691,8 @@ void QColor::setHsv(int h, int s, int v, int a)
 }
 
 /*!
+    \since 4.6
+
     Sets the contents pointed to by \a h, \a s, \a l, and \a a, to the hue,
     saturation, lightness, and alpha-channel (transparency) components of the
     color's HSL value.
@@ -719,6 +721,8 @@ void QColor::getHslF(qreal *h, qreal *s, qreal *l, qreal *a) const
 }
 
 /*!
+    \since 4.6
+
     Sets the contents pointed to by \a h, \a s, \a l, and \a a, to the hue,
     saturation, lightness, and alpha-channel (transparency) components of the
     color's HSL value.
@@ -747,6 +751,8 @@ void QColor::getHsl(int *h, int *s, int *l, int *a) const
 }
 
 /*!
+    \since 4.6
+
     Sets a HSL color lightness; \a h is the hue, \a s is the saturation, \a l is
     the lightness and \a a is the alpha component of the HSL color.
 
@@ -773,6 +779,8 @@ void QColor::setHslF(qreal h, qreal s, qreal l, qreal a)
 }
 
 /*!
+    \since 4.6
+
     Sets a HSL color value; \a h is the hue, \a s is the saturation, \a l is
     the lightness and \a a is the alpha component of the HSL color.
 
@@ -1332,6 +1340,8 @@ qreal QColor::valueF() const
 }
 
 /*!
+    \since 4.6
+
     Returns the hue color component of this color.
 
     \sa getHslF(), getHsl()
@@ -1344,6 +1354,8 @@ int QColor::hslHue() const
 }
 
 /*!
+    \since 4.6
+
     Returns the saturation color component of this color.
 
     \sa saturationF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color
@@ -1357,6 +1369,8 @@ int QColor::hslSaturation() const
 }
 
 /*!
+    \since 4.6
+
     Returns the lightness color component of this color.
 
     \sa lightnessF(), getHsl()
@@ -1369,6 +1383,8 @@ int QColor::lightness() const
 }
 
 /*!
+    \since 4.6
+
     Returns the hue color component of this color.
 
     \sa hue(), getHslF()
@@ -1381,6 +1397,8 @@ qreal QColor::hslHueF() const
 }
 
 /*!
+    \since 4.6
+
     Returns the saturation color component of this color.
 
     \sa saturationF() getHslF()
@@ -1393,6 +1411,8 @@ qreal QColor::hslSaturationF() const
 }
 
 /*!
+    \since 4.6
+
     Returns the lightness color component of this color.
 
     \sa value() getHslF()
@@ -1979,6 +1999,8 @@ QColor QColor::fromHsvF(qreal h, qreal s, qreal v, qreal a)
 }
 
 /*!
+    \since 4.6
+
     Static convenience function that returns a QColor constructed from the HSV
     color values, \a h (hue), \a s (saturation), \a l (lightness), and \a a
     (alpha-channel, i.e. transparency).
@@ -2010,6 +2032,7 @@ QColor QColor::fromHsl(int h, int s, int l, int a)
 
 /*!
     \overload
+    \since 4.6
 
     Static convenience function that returns a QColor constructed from the HSV
     color values, \a h (hue), \a s (saturation), \a l (lightness), and \a a

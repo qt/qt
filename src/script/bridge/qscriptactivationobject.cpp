@@ -46,7 +46,7 @@
 
 namespace JSC
 {
-    ASSERT_CLASS_FITS_IN_CELL(QScript::QScriptActivationObject);
+    ASSERT_CLASS_FITS_IN_CELL(QT_PREPEND_NAMESPACE(QScript::QScriptActivationObject));
 }
 
 QT_BEGIN_NAMESPACE
