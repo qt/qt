@@ -148,6 +148,7 @@ JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetChildNodes(JSC:
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSetAttribute(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionRemoveAttribute(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSetTextNodeValue(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionCopyNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionNodeForId(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionWrapObject(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionUnwrapObject(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);

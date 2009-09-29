@@ -43,7 +43,8 @@
 #include <QtTest/QtTest>
 #include <QTest>
 #include <QMetaType>
-#include <QGraphicsAnchorLayout>
+#include <QtGui/qgraphicsanchorlayout.h>
+#include <private/qgraphicsanchorlayout_p.h>
 
 #define TEST_COMPLEX_CASES
 
@@ -60,7 +61,7 @@ public:
 
     bool isValid()
     {
-        return !hasConflicts();
+        return !QGraphicsAnchorLayoutPrivate::get(this)->hasConflicts();
     }
 
     void setAnchor(

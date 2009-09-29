@@ -2360,11 +2360,9 @@ JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, JSC::JSV
         JSC::Register *oldEnd = interp->registerFile().end();
         int argc = args.size() + 1; //add "this"
         JSC::Register *newEnd = oldEnd + argc + JSC::RegisterFile::CallFrameHeaderSize;
-        //Without + argc + JSC::RegisterFile::CallFrameHeaderSize, it crashes.
-        //It seems that JSC is not consistant with the way the callframe is crated
-        if (!interp->registerFile().grow(newEnd + argc + JSC::RegisterFile::CallFrameHeaderSize))
+        if (!interp->registerFile().grow(newEnd))
             return 0; //### Stack overflow
-        newCallFrame = JSC::CallFrame::create(newEnd);
+        newCallFrame = JSC::CallFrame::create(oldEnd);
         newCallFrame[0] = thisObject;
         int dst = 0;
         JSC::ArgList::const_iterator it;

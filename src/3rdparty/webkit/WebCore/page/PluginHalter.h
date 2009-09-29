@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2009 Apple Inc. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,10 +10,10 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER, INC. ``AS IS'' AND ANY
+ * THIS SOFTWARE IS PROVIDED BY APPLE INC. ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE COMPUTER, INC. OR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE INC. OR
  * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -23,39 +23,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#include "config.h"
-#include "JSNamedNodeMap.h"
+#ifndef PluginHalter_h
+#define PluginHalter_h
 
-#include "JSNode.h"
-
-#include "Element.h"
-#include "NamedNodeMap.h"
-
-using namespace JSC;
+#include "Timer.h"
+#include <wtf/HashMap.h>
 
 namespace WebCore {
 
-bool JSNamedNodeMap::canGetItemsForName(ExecState*, NamedNodeMap* impl, const Identifier& propertyName)
-{
-    return impl->getNamedItem(propertyName);
-}
+class HaltablePlugin;
+class PluginHalterClient;
 
-JSValue JSNamedNodeMap::nameGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot& slot)
-{
-    JSNamedNodeMap* thisObj = static_cast<JSNamedNodeMap*>(asObject(slot.slotBase()));
-    return toJS(exec, thisObj->impl()->getNamedItem(propertyName));
-}
+class PluginHalter {
+public:
+    PluginHalter(PluginHalterClient*);
 
-void JSNamedNodeMap::markChildren(MarkStack& markStack)
-{
-    Base::markChildren(markStack);
+    void didStartPlugin(HaltablePlugin*);
+    void didStopPlugin(HaltablePlugin*);
 
-    // Mark the element so that this will work to access the attribute even if the last
-    // other reference goes away.
-    if (Element* element = impl()->element()) {
-        if (JSNode* wrapper = getCachedDOMNodeWrapper(element->document(), element))
-            markStack.append(wrapper);
-    }
-}
+    void setPluginAllowedRunTime(unsigned runTime) { m_pluginAllowedRunTime = runTime; }
+
+private:
+    void timerFired(Timer<PluginHalter>*);
+    void startTimerIfNecessary();
+
+    PluginHalterClient* m_client;
+    Timer<PluginHalter> m_timer;
+    unsigned m_pluginAllowedRunTime;
+    double m_oldestStartTime;
+    HashMap<HaltablePlugin*, double> m_plugins;
+};
 
 } // namespace WebCore
+
+#endif // PluginHalter_h

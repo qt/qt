@@ -1,3 +1,99 @@
+2009-09-28  Andre Poenitz  <andre.poenitz@trolltech.com>
+
+        Reviewed by Simon Hausmann.
+
+        Compile fix with namespaced Qt.
+
+        * Api/qwebinspector_p.h:
+
+2009-09-27  Joe Ligman  <joseph.ligman@mindspring.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Adding API setFocus and hasFocus to QWebElement. This API is needed for
+        clients that want to check/set the focus node of the document.
+        https://bugs.webkit.org/show_bug.cgi?id=29682
+
+        * Api/qwebelement.cpp:
+        (QWebElement::hasFocus):
+        (QWebElement::setFocus):
+        * Api/qwebelement.h:
+        * tests/qwebelement/tst_qwebelement.cpp:
+        (tst_QWebElement::hasSetFocus):
+
+2009-09-25  Csaba Osztrogonac  <oszi@inf.u-szeged.hu>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Make tst_qwebframe work if Qt built without SSL support
+        https://bugs.webkit.org/show_bug.cgi?id=29735
+
+        * tests/qwebframe/tst_qwebframe.cpp: Missing #ifndef blocks added.
+
+2009-09-24  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Update QWebElement API to remove script related methods.
+        QWebElement::evaluateScript is the only one kept, these are
+        removed to postpone most of the QtWebKit<->JavaScript API design
+        after 4.6.
+        https://bugs.webkit.org/show_bug.cgi?id=29708
+
+        * Api/qwebelement.cpp:
+        * Api/qwebelement.h:
+        Methods removed:
+        - QWebElement::callFunction
+        - QWebElement::functions
+        - QWebElement::scriptableProperty
+        - QWebElement::setScriptableProperty
+        - QWebElement::scriptableProperties
+        * tests/qwebelement/tst_qwebelement.cpp:
+        (tst_QWebElement::evaluateScript):
+
+2009-09-25  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Rename QWebElement::evaluateScript
+        to QWebElement::evaluateJavaScript.
+        https://bugs.webkit.org/show_bug.cgi?id=29709
+
+        * Api/qwebelement.cpp:
+        (QWebElement::evaluateJavaScript):
+        * Api/qwebelement.h:
+        * tests/qwebelement/tst_qwebelement.cpp:
+        (tst_QWebElement::evaluateJavaScript):
+
+2009-09-25  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Update the stypeProperty API of QWebElement.
+        https://bugs.webkit.org/show_bug.cgi?id=29711
+
+        * Api/qwebelement.cpp:
+        (QWebElement::styleProperty):
+        - Merge the stypeProperty and the computedStyleProperty methods
+        - Remove the default value for the style resolving enum
+        - Rename ResolveRule to StyleResolveStrategy
+        (QWebElement::setStyleProperty):
+        - Remove the priority argument since it is possible to control the
+          behaviour by adding !important or removing in the value.
+        * Api/qwebelement.h:
+        * tests/qwebelement/tst_qwebelement.cpp:
+        (tst_QWebElement::style):
+        (tst_QWebElement::computedStyle):
+        * tests/qwebframe/tst_qwebframe.cpp:
+
+2009-09-24  Jon Honeycutt  <jhoneycutt@apple.com>
+
+        Reviewed by Alice Liu.
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::QWebPagePrivate):
+        Pass 0 for new Page constructor argument.
+
 2009-09-24  Martin Smith  <msmith@trolltech.com>
 
         Reviewed by Simon Hausmann.

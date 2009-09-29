@@ -1941,7 +1941,8 @@ CSSStyleSheet* Document::pageUserSheet()
         return 0;
     
     // Parse the sheet and cache it.
-    m_pageUserSheet = CSSStyleSheet::create(this);
+    m_pageUserSheet = CSSStyleSheet::create(this, settings()->userStyleSheetLocation());
+    m_pageUserSheet->setIsUserStyleSheet(true);
     m_pageUserSheet->parseString(userSheetText, !inCompatMode());
     return m_pageUserSheet.get();
 }
@@ -1973,7 +1974,8 @@ const Vector<RefPtr<CSSStyleSheet> >* Document::pageGroupUserSheets() const
         const UserStyleSheetVector* sheets = it->second;
         for (unsigned i = 0; i < sheets->size(); ++i) {
             const UserStyleSheet* sheet = sheets->at(i).get();
-            RefPtr<CSSStyleSheet> parsedSheet = CSSStyleSheet::create(const_cast<Document*>(this));
+            RefPtr<CSSStyleSheet> parsedSheet = CSSStyleSheet::create(const_cast<Document*>(this), sheet->url());
+            parsedSheet->setIsUserStyleSheet(true);
             parsedSheet->parseString(sheet->source(), !inCompatMode());
             if (!m_pageGroupUserSheets)
                 m_pageGroupUserSheets.set(new Vector<RefPtr<CSSStyleSheet> >);
@@ -3011,7 +3013,7 @@ String Document::domain() const
     return securityOrigin()->domain();
 }
 
-void Document::setDomain(const String& newDomain)
+void Document::setDomain(const String& newDomain, ExceptionCode& ec)
 {
     // Both NS and IE specify that changing the domain is only allowed when
     // the new domain is a suffix of the old domain.
@@ -3034,19 +3036,25 @@ void Document::setDomain(const String& newDomain)
     int oldLength = domain().length();
     int newLength = newDomain.length();
     // e.g. newDomain = webkit.org (10) and domain() = www.webkit.org (14)
-    if (newLength >= oldLength)
+    if (newLength >= oldLength) {
+        ec = SECURITY_ERR;
         return;
+    }
 
     String test = domain();
     // Check that it's a subdomain, not e.g. "ebkit.org"
-    if (test[oldLength - newLength - 1] != '.')
+    if (test[oldLength - newLength - 1] != '.') {
+        ec = SECURITY_ERR;
         return;
+    }
 
     // Now test is "webkit.org" from domain()
     // and we check that it's the same thing as newDomain
     test.remove(0, oldLength - newLength);
-    if (test != newDomain)
+    if (test != newDomain) {
+        ec = SECURITY_ERR;
         return;
+    }
 
     securityOrigin()->setDomainFromDOM(newDomain);
     if (m_frame)

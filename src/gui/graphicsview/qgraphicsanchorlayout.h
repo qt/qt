@@ -93,7 +93,6 @@ public:
                     QGraphicsLayoutItem *secondItem,
                     Qt::Orientations orientations = Qt::Horizontal | Qt::Vertical);
 
-    bool hasConflicts() const;
     void setHorizontalSpacing(qreal spacing);
     void setVerticalSpacing(qreal spacing);
     void setSpacing(qreal spacing);

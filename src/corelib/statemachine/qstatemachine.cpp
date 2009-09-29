@@ -804,6 +804,14 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
         }
 
         if (hasValidEndValue) {
+            if (anim->state() == QAbstractAnimation::Running) {
+                // The animation is still running. This can happen if the
+                // animation is a group, and one of its children just finished,
+                // and that caused a state to emit its polished() signal, and
+                // that triggered a transition in the machine.
+                // Just stop the animation so it is correctly restarted again.
+                anim->stop();
+            }
             anim->start();
         }
     }
@@ -1268,12 +1276,19 @@ void QStateMachinePrivate::_q_process()
     }
 }
 
-void QStateMachinePrivate::scheduleProcess()
+void QStateMachinePrivate::processEvents(EventProcessingMode processingMode)
 {
     if ((state != Running) || processing || processingScheduled)
         return;
-    processingScheduled = true;
-    QMetaObject::invokeMethod(q_func(), "_q_process", Qt::QueuedConnection);
+    switch (processingMode) {
+    case DirectProcessing:
+        _q_process();
+        break;
+    case QueuedProcessing:
+        processingScheduled = true;
+        QMetaObject::invokeMethod(q_func(), "_q_process", Qt::QueuedConnection);
+        break;
+    }
 }
 
 namespace {
@@ -1335,7 +1350,7 @@ void QStateMachinePrivate::goToState(QAbstractState *targetState)
         trans->setTargetState(targetState);
     }
 
-    scheduleProcess();
+    processEvents(QueuedProcessing);
 }
 
 void QStateMachinePrivate::registerTransitions(QAbstractState *state)
@@ -1512,6 +1527,15 @@ void QStateMachinePrivate::unregisterEventTransition(QEventTransition *transitio
     }
     QEventTransitionPrivate::get(transition)->registered = false;
 }
+
+void QStateMachinePrivate::handleFilteredEvent(QObject *watched, QEvent *event)
+{
+    Q_ASSERT(qobjectEvents.contains(watched));
+    if (qobjectEvents[watched].contains(event->type())) {
+        internalEventQueue.append(new QStateMachine::WrappedEvent(watched, handler->cloneEvent(event)));
+        processEvents(DirectProcessing);
+    }
+}
 #endif
 
 void QStateMachinePrivate::handleTransitionSignal(QObject *sender, int signalIndex,
@@ -1533,7 +1557,7 @@ void QStateMachinePrivate::handleTransitionSignal(QObject *sender, int signalInd
              << ", signal =" << sender->metaObject()->method(signalIndex).signature() << ')';
 #endif
     internalEventQueue.append(new QStateMachine::SignalEvent(sender, signalIndex, vargs));
-    scheduleProcess();
+    processEvents(DirectProcessing);
 }
 
 /*!
@@ -1768,7 +1792,7 @@ void QStateMachine::stop()
         break;
     case QStateMachinePrivate::Running:
         d->stop = true;
-        d->scheduleProcess();
+        d->processEvents(QStateMachinePrivate::QueuedProcessing);
         break;
     }
 }
@@ -1798,7 +1822,7 @@ void QStateMachine::postEvent(QEvent *event, int delay)
         d->delayedEvents[tid] = event;
     } else {
         d->externalEventQueue.append(event);
-        d->scheduleProcess();
+        d->processEvents(QStateMachinePrivate::QueuedProcessing);
     }
 }
 
@@ -1814,7 +1838,7 @@ void QStateMachine::postInternalEvent(QEvent *event)
     qDebug() << this << ": posting internal event" << event;
 #endif
     d->internalEventQueue.append(event);
-    d->scheduleProcess();
+    d->processEvents(QStateMachinePrivate::QueuedProcessing);
 }
 
 /*!
@@ -1862,7 +1886,7 @@ bool QStateMachine::event(QEvent *e)
             killTimer(tid);
             QEvent *ee = d->delayedEvents.take(tid);
             d->externalEventQueue.append(ee);
-            d->scheduleProcess();
+            d->processEvents(QStateMachinePrivate::DirectProcessing);
             return true;
         }
     }
@@ -1876,9 +1900,7 @@ bool QStateMachine::event(QEvent *e)
 bool QStateMachine::eventFilter(QObject *watched, QEvent *event)
 {
     Q_D(QStateMachine);
-    Q_ASSERT(d->qobjectEvents.contains(watched));
-    if (d->qobjectEvents[watched].contains(event->type()))
-        postEvent(new QStateMachine::WrappedEvent(watched, d->handler->cloneEvent(event)));
+    d->handleFilteredEvent(watched, event);
     return false;
 }
 #endif

@@ -95,16 +95,6 @@ public:
     It is possible to replace the contents of child elements using
     setPlainText() and setInnerXml(). To replace the element itself and its
     contents, use setOuterXml().
-
-    In the JavaScript DOM interfaces, elements can have additional functions
-    depending on their type. For example, an HTML form element can be triggered
-    to submit the entire form to the web server using the submit() function. A
-    list of these special functions can be obtained in QWebElement using
-    functions(); they can be invoked using callFunction().
-
-    Similarly, element specific properties can be obtained using
-    scriptableProperties() and read or written using scriptableProperty() or
-    setScriptableProperty().
 */
 
 /*!
@@ -473,6 +463,33 @@ bool QWebElement::hasAttributes() const
 }
 
 /*!
+    Returns true if the element has keyboard input focus; otherwise, returns false
+
+    \sa setFocus()
+*/
+bool QWebElement::hasFocus() const
+{
+    if (!m_element)
+        return false;
+    if (m_element->document())
+        return m_element == m_element->document()->focusedNode();
+    return false;
+}
+
+/*!
+    Gives keyboard input focus to this element
+
+    \sa hasFocus()
+*/
+void QWebElement::setFocus()
+{
+    if (!m_element)
+        return;
+    if (m_element->document() && m_element->isFocusable())
+        m_element->document()->setFocusedNode(m_element);
+}
+
+/*!
     Returns the geometry of this element, relative to its containing frame.
 
     \sa tagName()
@@ -673,41 +690,10 @@ static bool setupScriptContext(WebCore::Element* element, JSC::JSValue& thisValu
 }
 
 
-static bool setupScriptObject(WebCore::Element* element, ScriptObject& object, ScriptState*& state, ScriptController*& scriptController)
-{
-    if (!element)
-        return false;
-
-    Document* document = element->document();
-    if (!document)
-        return false;
-
-    Frame* frame = document->frame();
-    if (!frame)
-        return false;
-
-    scriptController = frame->script();
-
-    state = scriptController->globalObject()->globalExec();
-
-    JSC::JSValue thisValue = toJS(state, element);
-    if (!thisValue)
-        return false;
-
-    JSC::JSObject* thisObject = thisValue.toObject(state);
-    if (!thisObject)
-        return false;
-
-    object = ScriptObject(state, thisObject);
-    return true;
-}
-
 /*!
     Executes \a scriptSource with this element as \c this object.
-
-    \sa callFunction()
 */
-QVariant QWebElement::evaluateScript(const QString& scriptSource)
+QVariant QWebElement::evaluateJavaScript(const QString& scriptSource)
 {
     if (scriptSource.isEmpty())
         return QVariant();
@@ -734,256 +720,25 @@ QVariant QWebElement::evaluateScript(const QString& scriptSource)
 }
 
 /*!
-    Calls the function with the given \a name and \a arguments.
-
-    The underlying DOM element that QWebElement wraps may have dedicated
-    functions, depending on its type. For example, a form element can have the
-    \c submit function, that would submit the form to the destination specified
-    in the HTML.
-
-    \sa functions()
-*/
-QVariant QWebElement::callFunction(const QString &name, const QVariantList &arguments)
-{
-    ScriptState* state = 0;
-    ScriptObject thisObject;
-    ScriptController* scriptController = 0;
-
-    if (!setupScriptObject(m_element, thisObject, state, scriptController))
-        return QVariant();
-
-    ScriptFunctionCall functionCall(state, thisObject, name);
-
-    for (QVariantList::ConstIterator it = arguments.constBegin(), end = arguments.constEnd();
-         it != end; ++it)
-        functionCall.appendArgument(JSC::Bindings::convertQVariantToValue(state, scriptController->bindingRootObject(), *it));
-
-    bool hadException = false;
-    ScriptValue result = functionCall.call(hadException);
-    if (hadException)
-        return QVariant();
-
-    int distance = 0;
-    return JSC::Bindings::convertValueToQVariant(state, result.jsValue(), QMetaType::Void, &distance);
-}
-
-/*!
-    Returns a list of function names this element supports.
-
-    The function names returned are the same functions callable from the DOM
-    element's JavaScript binding.
-
-    \sa callFunction()
-*/
-QStringList QWebElement::functions() const
-{
-    ScriptState* state = 0;
-    ScriptObject thisObject;
-    ScriptController* scriptController = 0;
-
-    if (!setupScriptObject(m_element, thisObject, state, scriptController))
-        return QStringList();
-
-    JSC::JSObject* object = thisObject.jsObject();
-    if (!object)
-        return QStringList();
-
-    QStringList names;
-
-    // Enumerate the contents of the object
-    JSC::PropertyNameArray properties(state);
-    object->getPropertyNames(state, properties);
-    for (JSC::PropertyNameArray::const_iterator it = properties.begin();
-         it != properties.end(); ++it) {
-
-        JSC::JSValue property = object->get(state, *it);
-        if (!property)
-            continue;
-
-        JSC::JSObject* function = property.toObject(state);
-        if (!function)
-            continue;
-
-        JSC::CallData callData;
-        JSC::CallType callType = function->getCallData(callData);
-        if (callType == JSC::CallTypeNone)
-            continue;
-
-        JSC::UString ustring = (*it).ustring();
-        names << QString::fromUtf16((const ushort*)ustring.rep()->data(), ustring.size());
-    }
-
-    if (state->hadException())
-        state->clearException();
-
-    return names;
-}
-
-/*!
-    Returns the value of the element's \a name property. If no such property
-    exists, an invalid QVariant is returned.
-
-    The return value's property has the same value as the corresponding
-    property in the element's JavaScript binding with the same name.
-
-    Information about all available properties is provided through
-    scriptProperties().
-
-    \sa setScriptableProperty(), scriptableProperties()
-*/
-QVariant QWebElement::scriptableProperty(const QString &name) const
-{
-    ScriptState* state = 0;
-    ScriptObject thisObject;
-    ScriptController *scriptController = 0;
-
-    if (!setupScriptObject(m_element, thisObject, state, scriptController))
-        return QVariant();
-
-    String wcName(name);
-    JSC::JSValue property = thisObject.jsObject()->get(state, JSC::Identifier(state, wcName));
-
-    // ###
-    if (state->hadException())
-        state->clearException();
-
-    int distance = 0;
-    return JSC::Bindings::convertValueToQVariant(state, property, QMetaType::Void, &distance);
-}
-
-/*!
-    Sets the value of the element's \a name property to \a value.
-
-    Information about all available properties is provided through
-    scriptProperties().
-
-    Setting the property will affect the corresponding property in the
-    element's JavaScript binding with the same name.
-
-    \sa scriptableProperty(), scriptableProperties()
-*/
-void QWebElement::setScriptableProperty(const QString &name, const QVariant &value)
-{
-    ScriptState* state = 0;
-    ScriptObject thisObject;
-    ScriptController* scriptController = 0;
-
-    if (!setupScriptObject(m_element, thisObject, state, scriptController))
-        return;
-
-    JSC::JSValue jsValue = JSC::Bindings::convertQVariantToValue(state, scriptController->bindingRootObject(), value);
-    if (!jsValue)
-        return;
-
-    String wcName(name);
-    JSC::PutPropertySlot slot;
-    thisObject.jsObject()->put(state, JSC::Identifier(state, wcName), jsValue, slot);
-    if (state->hadException())
-        state->clearException();
-}
-
-/*!
-    Returns a list of property names this element supports.
-
-    The function names returned are the same properties that are accessible
-    from the DOM element's JavaScript binding.
-
-    \sa setScriptableProperty(), scriptableProperty()
-*/
-QStringList QWebElement::scriptableProperties() const
-{
-    if (!m_element)
-        return QStringList();
-
-    Document* document = m_element->document();
-    if (!document)
-        return QStringList();
-
-    Frame* frame = document->frame();
-    if (!frame)
-        return QStringList();
-
-    ScriptController* script = frame->script();
-    JSC::ExecState* exec = script->globalObject()->globalExec();
-
-    JSC::JSValue thisValue = toJS(exec, m_element);
-    if (!thisValue)
-        return QStringList();
-
-    JSC::JSObject* object = thisValue.toObject(exec);
-    if (!object)
-        return QStringList();
-
-    QStringList names;
-
-    // Enumerate the contents of the object
-    JSC::PropertyNameArray properties(exec);
-    object->getPropertyNames(exec, properties);
-    for (JSC::PropertyNameArray::const_iterator it = properties.begin();
-         it != properties.end(); ++it) {
-
-        JSC::JSValue property = object->get(exec, *it);
-        if (!property)
-            continue;
-
-        JSC::JSObject* function = property.toObject(exec);
-        if (!function)
-            continue;
-
-        JSC::CallData callData;
-        JSC::CallType callType = function->getCallData(callData);
-        if (callType != JSC::CallTypeNone)
-            continue;
-
-        JSC::UString ustring = (*it).ustring();
-        names << QString::fromUtf16((const ushort*)ustring.rep()->data(), ustring.size());
-    }
-
-    if (exec->hadException())
-        exec->clearException();
-
-    return names;
-}
-
-/*!
-    \enum QWebElement::ResolveRule
-    \since 4.6
+    \enum QWebElement::StyleResolveStrategy
 
     This enum describes how QWebElement's styleProperty resolves the given
     property name.
 
-    \value IgnoreCascadingStyles Return the property value as it is defined in
+    \value InlineStyle Return the property value as it is defined in
            the element, without respecting style inheritance and other CSS
            rules.
-    \value RespectCascadingStyles The property's value is determined using the
+    \value CascadedStyle The property's value is determined using the
            inheritance and importance rules defined in the document's
            stylesheet.
+    \value ComputedStyle The property's value is the absolute value
+           of the style property resolved from the environment.
 */
 
 /*!
-    \enum QWebElement::StylePriority
-    \since 4.6
-
-    This enum describes the priority newly set CSS properties should have when
-    set using QWebElement::setStyleProperty().
-
-    \value NormalStylePriority Define the property without important priority
-           even if "!important" is explicitly set in \a value.
-    \value DeclaredStylePriority Define the property respecting the priority
-           specified in \a value.
-    \value ImportantStylePriority Define the property to have an important
-           priority. This is equal to appending "!important" to the value.
-*/
-
-/*!
-    Returns the value of the style with the given \a name. If a style with
-    \a name does not exist, an empty string is returned.
-
-    If \a rule is IgnoreCascadingStyles, the value defined inside the element
-    (inline in CSS terminology) is returned.
-
-    if \a rule is RespectCascadingStyles, the actual style applied to the
-    element is returned.
+    Returns the value of the style with the given \a name using the specified
+    \a strategy. If a style with \a name does not exist, an empty string is
+    returned.
 
     In CSS, the cascading part depends on which CSS rule has priority and is
     thus applied. Generally, the last defined rule has priority. Thus, an
@@ -997,7 +752,8 @@ QStringList QWebElement::scriptableProperties() const
 
     \sa setStyleProperty()
 */
-QString QWebElement::styleProperty(const QString &name, ResolveRule rule) const
+
+QString QWebElement::styleProperty(const QString &name, StyleResolveStrategy strategy) const
 {
     if (!m_element || !m_element->isStyledElement())
         return QString();
@@ -1009,10 +765,10 @@ QString QWebElement::styleProperty(const QString &name, ResolveRule rule) const
 
     CSSStyleDeclaration* style = static_cast<StyledElement*>(m_element)->style();
 
-    if (rule == IgnoreCascadingStyles)
+    if (strategy == InlineStyle)
         return style->getPropertyValue(propID);
 
-    if (rule == RespectCascadingStyles) {
+    if (strategy == CascadedStyle) {
         if (style->getPropertyPriority(propID))
             return style->getPropertyValue(propID);
 
@@ -1040,33 +796,33 @@ QString QWebElement::styleProperty(const QString &name, ResolveRule rule) const
         return style->getPropertyValue(propID);
     }
 
+    if (strategy == ComputedStyle) {
+        if (!m_element || !m_element->isStyledElement())
+            return QString();
+
+        int propID = cssPropertyID(name);
+
+        RefPtr<CSSComputedStyleDeclaration> style = computedStyle(m_element);
+        if (!propID || !style)
+            return QString();
+
+        return style->getPropertyValue(propID);
+    }
+
     return QString();
 }
 
 /*!
-    Sets the value of the style with the given \a name to \a value.
+    Sets the value of the inline style with the given \a name to \a value.
 
     Setting a value, does not necessarily mean that it will become the applied
     value, due to the fact that the style property's value might have been set
-    earlier with priority in external or embedded style declarations.
+    earlier with a higher priority in external or embedded style declarations.
 
-    In order to ensure that the value will be applied, ImportantStylePriority
-    should be used as \a priority.
-
-    Following the CSS syntax for property values, this is equal to appending
+    In order to ensure that the value will be applied, you may have to append
     "!important" to the value.
-
-    This syntax is supported when using DeclaredStylePriority as \a priority.
-
-    Using NormalStylePriority as \a priority, the property will have normal
-    priority, and any "!important" declaration will be ignored. On the other
-    hand, using ImportantStylePriority sets the important priority even when
-    it is not explicitly passed in \a value.
-
-    By using DeclaredStylePriority as \a priority the property will respect the
-    priority specified in \a value.
 */
-void QWebElement::setStyleProperty(const QString &name, const QString &value, StylePriority priority)
+void QWebElement::setStyleProperty(const QString &name, const QString &value)
 {
     if (!m_element || !m_element->isStyledElement())
         return;
@@ -1077,43 +833,7 @@ void QWebElement::setStyleProperty(const QString &name, const QString &value, St
         return;
 
     ExceptionCode exception = 0;
-
-    const QRegExp hasImportantTest(QLatin1String("!\\s*important"));
-    int index = value.indexOf(hasImportantTest);
-
-    QString newValue = (index != -1) ? value.left(index - 1) : value;
-
-    switch (priority) {
-    case NormalStylePriority:
-        style->setProperty(name, newValue, "", exception);
-        break;
-    case DeclaredStylePriority:
-        style->setProperty(name, newValue, (index != -1) ? "important" : "", exception);
-        break;
-    case ImportantStylePriority:
-        style->setProperty(name, newValue, "important", exception);
-        break;
-    default:
-        break;
-    }
-}
-
-/*!
-    Returns the computed value for style with the given \a name. If a style
-    with \a name does not exist, an empty string is returned.
-*/
-QString QWebElement::computedStyleProperty(const QString &name) const
-{
-    if (!m_element || !m_element->isStyledElement())
-        return QString();
-
-    int propID = cssPropertyID(name);
-
-    RefPtr<CSSComputedStyleDeclaration> style = computedStyle(m_element);
-    if (!propID || !style)
-        return QString();
-
-    return style->getPropertyValue(propID);
+    style->setProperty(name, value, exception);
 }
 
 /*!

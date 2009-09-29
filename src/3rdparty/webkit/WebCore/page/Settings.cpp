@@ -61,6 +61,7 @@ Settings::Settings(Page* page)
     , m_defaultFontSize(0)
     , m_defaultFixedFontSize(0)
     , m_maximumDecodedImageSize(numeric_limits<size_t>::max())
+    , m_pluginAllowedRunTime(numeric_limits<unsigned>::max())
     , m_isJavaEnabled(false)
     , m_loadsImagesAutomatically(false)
     , m_privateBrowsingEnabled(false)
@@ -114,6 +115,8 @@ Settings::Settings(Page* page)
     , m_downloadableBinaryFontsEnabled(true)
     , m_xssAuditorEnabled(false)
     , m_acceleratedCompositingEnabled(true)
+    , m_experimentalNotificationsEnabled(false)
+    , m_pluginHalterEnabled(false)
 {
     // A Frame may not have been created yet, so we initialize the AtomicString 
     // hash before trying to use it.
@@ -495,6 +498,27 @@ void Settings::setAcceleratedCompositingEnabled(bool enabled)
         
     m_acceleratedCompositingEnabled = enabled;
     setNeedsReapplyStylesInAllFrames(m_page);
+}
+
+void Settings::setExperimentalNotificationsEnabled(bool enabled)
+{
+    m_experimentalNotificationsEnabled = enabled;
+}
+
+void Settings::setPluginHalterEnabled(bool enabled)
+{
+    if (m_pluginHalterEnabled == enabled)
+        return;
+
+    m_pluginHalterEnabled = enabled;
+
+    m_page->pluginHalterEnabledStateChanged();
+}
+
+void Settings::setPluginAllowedRunTime(unsigned runTime)
+{
+    m_pluginAllowedRunTime = runTime;
+    m_page->pluginAllowedRunTimeChanged();
 }
 
 #if PLATFORM(WIN) || (PLATFORM(WIN_OS) && PLATFORM(WX))
