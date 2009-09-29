@@ -650,7 +650,7 @@
     \section1 MIPSpro (IRIX)
 
     \bold{IRIX is an unsupported platform. See the \l{Supported Platforms} page
-    and Qt's Software's online \l{Platform Support Policy} page for details.}
+    and Qt's online \l{Platform Support Policy} page for details.}
 
     Qt 4.4.x requires MIPSpro version 7.4.2m.
 
