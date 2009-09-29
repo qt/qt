@@ -2068,22 +2068,35 @@ void QGraphicsAnchorLayoutPrivate::setItemsGeometries(const QRectF &geom)
     right = geom.right() - right;
 
     foreach (QGraphicsLayoutItem *item, items) {
-        firstH = internalVertex(item, Qt::AnchorLeft);
-        secondH = internalVertex(item, Qt::AnchorRight);
-        firstV = internalVertex(item, Qt::AnchorTop);
-        secondV = internalVertex(item, Qt::AnchorBottom);
-
         QRectF newGeom;
-        newGeom.setTop(top + firstV->distance);
-        newGeom.setBottom(top + secondV->distance);
+        QSizeF itemPreferredSize = item->effectiveSizeHint(Qt::PreferredSize);
+        if (m_nonFloatItems[Horizontal].contains(item)) {
+            firstH = internalVertex(item, Qt::AnchorLeft);
+            secondH = internalVertex(item, Qt::AnchorRight);
 
-        if (visualDir == Qt::LeftToRight) {
-            newGeom.setLeft(left + firstH->distance);
-            newGeom.setRight(left + secondH->distance);
+            if (visualDir == Qt::LeftToRight) {
+                newGeom.setLeft(left + firstH->distance);
+                newGeom.setRight(left + secondH->distance);
+            } else {
+                newGeom.setLeft(right - secondH->distance);
+                newGeom.setRight(right - firstH->distance);
+            }
         } else {
-            newGeom.setLeft(right - secondH->distance);
-            newGeom.setRight(right - firstH->distance);
+            newGeom.setLeft(0);
+            newGeom.setRight(itemPreferredSize.width());
         }
+
+        if (m_nonFloatItems[Vertical].contains(item)) {
+            firstV = internalVertex(item, Qt::AnchorTop);
+            secondV = internalVertex(item, Qt::AnchorBottom);
+
+            newGeom.setTop(top + firstV->distance);
+            newGeom.setBottom(top + secondV->distance);
+        } else {
+            newGeom.setTop(0);
+            newGeom.setBottom(itemPreferredSize.height());
+        }
+
         item->setGeometry(newGeom);
     }
 }
