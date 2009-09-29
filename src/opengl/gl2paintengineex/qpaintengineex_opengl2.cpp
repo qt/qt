@@ -912,13 +912,6 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
 
 void QGL2PaintEngineExPrivate::fillStencilWithVertexArray(QGL2PEXVertexArray& vertexArray, bool useWindingFill)
 {
-#ifndef QT_OPENGL_ES_2
-    if (inRenderText) {
-        glPushAttrib(GL_ENABLE_BIT);
-        glDisable(GL_DEPTH_TEST);
-    }
-#endif
-
 //     qDebug("QGL2PaintEngineExPrivate::fillStencilWithVertexArray()");
     glStencilMask(0xffff); // Enable stencil writes
 
@@ -942,6 +935,13 @@ void QGL2PaintEngineExPrivate::fillStencilWithVertexArray(QGL2PEXVertexArray& ve
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // Disable color writes
     useSimpleShader();
     glEnable(GL_STENCIL_TEST); // For some reason, this has to happen _after_ the simple shader is use()'d
+
+#ifndef QT_OPENGL_ES_2
+    if (inRenderText) {
+        glPushAttrib(GL_ENABLE_BIT);
+        glDisable(GL_DEPTH_TEST);
+    }
+#endif
 
     if (useWindingFill) {
         if (q->state()->clipTestEnabled) {
@@ -1330,6 +1330,9 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
     QFontEngineGlyphCache::Type glyphType = ti.fontEngine->glyphFormat >= 0
                                             ? QFontEngineGlyphCache::Type(ti.fontEngine->glyphFormat)
                                             : d->glyphCacheType;
+
+    if (d->inRenderText)
+        glyphType = QFontEngineGlyphCache::Raster_A8;
 
     if (glyphType == QFontEngineGlyphCache::Raster_RGBMask
         && state()->composition_mode != QPainter::CompositionMode_Source
