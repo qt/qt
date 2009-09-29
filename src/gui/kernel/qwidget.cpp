@@ -8336,12 +8336,6 @@ bool QWidget::event(QEvent *event)
         (void) QApplication::sendEvent(this, &mouseEvent);
         break;
     }
-    case QEvent::SymbianDeferredFocusChanged: {
-#ifdef Q_OS_SYMBIAN
-        d->handleSymbianDeferredFocusChanged();
-#endif
-        break;
-    }
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();
