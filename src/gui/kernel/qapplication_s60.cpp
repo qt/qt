@@ -1457,6 +1457,7 @@ bool QApplication::s60EventFilter(TWsEvent * /* aEvent */)
 */
 void QApplication::symbianHandleCommand(int command)
 {
+    QScopedLoopLevelCounter counter(d_func()->threadData);
     switch (command) {
 #ifdef Q_WS_S60
     case EAknSoftkeyExit: {
