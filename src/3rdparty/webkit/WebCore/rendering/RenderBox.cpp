@@ -400,14 +400,21 @@ int RenderBox::horizontalScrollbarHeight() const
     return includeHorizontalScrollbarSize() ? layer()->horizontalScrollbarHeight() : 0;
 }
 
-bool RenderBox::scroll(ScrollDirection direction, ScrollGranularity granularity, float multiplier)
+bool RenderBox::scroll(ScrollDirection direction, ScrollGranularity granularity, float multiplier, Node** stopNode)
 {
     RenderLayer* l = layer();
-    if (l && l->scroll(direction, granularity, multiplier))
+    if (l && l->scroll(direction, granularity, multiplier)) {
+        if (stopNode)
+            *stopNode = node();
         return true;
+    }
+
+    if (stopNode && *stopNode && *stopNode == node())
+        return true;
+
     RenderBlock* b = containingBlock();
     if (b && !b->isRenderView())
-        return b->scroll(direction, granularity, multiplier);
+        return b->scroll(direction, granularity, multiplier, stopNode);
     return false;
 }
 
@@ -2449,7 +2456,7 @@ void RenderBox::calcAbsoluteHorizontalReplaced()
     // positioned, inline containing block because right now, it is using the xPos
     // of the first line box when really it should use the last line box.  When
     // this is fixed elsewhere, this block should be removed.
-    if (containerBlock->isInline() && containerBlock->style()->direction() == RTL) {
+    if (containerBlock->isRenderInline() && containerBlock->style()->direction() == RTL) {
         const RenderInline* flow = toRenderInline(containerBlock);
         InlineFlowBox* firstLine = flow->firstLineBox();
         InlineFlowBox* lastLine = flow->lastLineBox();

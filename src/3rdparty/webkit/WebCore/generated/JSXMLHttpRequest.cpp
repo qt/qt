@@ -31,6 +31,7 @@
 #include "JSEventListener.h"
 #include "JSXMLHttpRequestUpload.h"
 #include "KURL.h"
+#include "RegisteredEventListener.h"
 #include "XMLHttpRequest.h"
 #include "XMLHttpRequestUpload.h"
 #include <runtime/Error.h>
@@ -135,7 +136,8 @@ JSXMLHttpRequest::JSXMLHttpRequest(PassRefPtr<Structure> structure, JSDOMGlobalO
 
 JSXMLHttpRequest::~JSXMLHttpRequest()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    impl()->invalidateEventListeners();
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSXMLHttpRequest::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

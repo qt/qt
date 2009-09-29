@@ -95,7 +95,9 @@ private slots:
     void embeddedFonts();
     void opaquePaintEvent_data();
     void opaquePaintEvent();
+    void complexWidgetFocus();
     void task188195_baseBackground();
+    void task232085_spinBoxLineEditBg();
 
     //at the end because it mess with the style.
     void widgetStyle();
@@ -972,10 +974,11 @@ void tst_QStyleSheetStyle::background()
 void tst_QStyleSheetStyle::tabAlignement()
 {
     QTabWidget tabWidget;
-    tabWidget.show();
-    QTest::qWait(50);
     tabWidget.addTab(new QLabel("tab1"),"tab1");
     tabWidget.resize(QSize(400,400));
+    tabWidget.show();
+    QTest::qWaitForWindowShown(&tabWidget);
+    QTest::qWait(50);
     QTabBar *bar = qFindChild<QTabBar*>(&tabWidget);
     QVERIFY(bar);
     //check the tab is on the right
@@ -1446,6 +1449,54 @@ void tst_QStyleSheetStyle::opaquePaintEvent()
     QCOMPARE(cl.autoFillBackground(), !styled );
 }
 
+void tst_QStyleSheetStyle::complexWidgetFocus()
+{
+    // This test is a simplified version of the focusColors() test above.
+
+    // Tests if colors can be changed by altering the focus of the widget.
+    // To avoid messy pixel-by-pixel comparison, we assume that the goal
+    // is reached if at least ten pixels of the right color can be found in
+    // the image.
+    // For this reason, we use unusual and extremely ugly colors! :-)
+
+    QDialog frame;
+    frame.setStyleSheet("*:focus { background: black; color: black } "
+                        "QSpinBox::up-arrow:focus, QSpinBox::down-arrow:focus { width: 7px; height: 7px; background: #ff0084 } "
+                        "QComboBox::down-arrow:focus { width: 7px; height: 7px; background: #ff0084 }"
+                        "QSlider::handle:horizontal:focus { width: 7px; height: 7px; background: #ff0084 } ");
+
+    QList<QWidget *> widgets;
+    widgets << new QSpinBox;
+    widgets << new QComboBox;
+    widgets << new QSlider(Qt::Horizontal);
+
+    QLayout* layout = new QGridLayout;
+    layout->addWidget(new QLineEdit); // Avoids initial focus.
+    foreach (QWidget *widget, widgets)
+        layout->addWidget(widget);
+    frame.setLayout(layout);
+
+    frame.show();
+    QTest::qWaitForWindowShown(&frame);
+    QApplication::setActiveWindow(&frame);
+    foreach (QWidget *widget, widgets) {
+        widget->setFocus();
+        QApplication::processEvents();
+
+        QImage image(frame.width(), frame.height(), QImage::Format_ARGB32);
+        frame.render(&image);
+        if (image.depth() < 24) {
+            QSKIP("Test doesn't support color depth < 24", SkipAll);
+        }
+
+        QVERIFY2(testForColors(image, QColor(0xff, 0x00, 0x84)),
+                (QString::fromLatin1(widget->metaObject()->className())
+                + " did not contain text color #ff0084, using style "
+                + QString::fromLatin1(qApp->style()->metaObject()->className()))
+                .toLocal8Bit().constData());
+    }
+}
+
 void tst_QStyleSheetStyle::task188195_baseBackground()
 {
     QTreeView tree;
@@ -1466,6 +1517,56 @@ void tst_QStyleSheetStyle::task188195_baseBackground()
     tree.render(&image);
     QVERIFY(testForColors(image, tree.palette().base().color()));
     QVERIFY(!testForColors(image, QColor(0xab, 0x12, 0x51)));
+}
+
+void tst_QStyleSheetStyle::task232085_spinBoxLineEditBg()
+{
+    // This test is a simplified version of the focusColors() test above.
+
+    // Tests if colors can be changed by altering the focus of the widget.
+    // To avoid messy pixel-by-pixel comparison, we assume that the goal
+    // is reached if at least ten pixels of the right color can be found in
+    // the image.
+    // For this reason, we use unusual and extremely ugly colors! :-)
+
+    QSpinBox *spinbox = new QSpinBox;
+    spinbox->setValue(8888);
+
+    QDialog frame;
+    QLayout* layout = new QGridLayout;
+
+    QLineEdit* dummy = new QLineEdit; // Avoids initial focus.
+
+    // We only want to test the line edit colors.
+    spinbox->setStyleSheet("QSpinBox:focus { background: #e8ff66; color: #ff0084 } "
+                           "QSpinBox::up-button, QSpinBox::down-button { background: black; }");
+
+    layout->addWidget(dummy);
+    layout->addWidget(spinbox);
+    frame.setLayout(layout);
+
+    frame.show();
+    QTest::qWaitForWindowShown(&frame);
+    QApplication::setActiveWindow(&frame);
+    spinbox->setFocus();
+    QApplication::processEvents();
+
+    QImage image(frame.width(), frame.height(), QImage::Format_ARGB32);
+    frame.render(&image);
+    if (image.depth() < 24) {
+        QSKIP("Test doesn't support color depth < 24", SkipAll);
+    }
+
+    QVERIFY2(testForColors(image, QColor(0xe8, 0xff, 0x66)),
+            (QString::fromLatin1(spinbox->metaObject()->className())
+            + " did not contain background color #e8ff66, using style "
+            + QString::fromLatin1(qApp->style()->metaObject()->className()))
+            .toLocal8Bit().constData());
+    QVERIFY2(testForColors(image, QColor(0xff, 0x00, 0x84)),
+            (QString::fromLatin1(spinbox->metaObject()->className())
+            + " did not contain text color #ff0084, using style "
+            + QString::fromLatin1(qApp->style()->metaObject()->className()))
+            .toLocal8Bit().constData());
 }
 
 QTEST_MAIN(tst_QStyleSheetStyle)

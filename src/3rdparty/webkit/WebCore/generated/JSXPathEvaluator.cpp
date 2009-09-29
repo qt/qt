@@ -155,7 +155,7 @@ JSXPathEvaluator::JSXPathEvaluator(PassRefPtr<Structure> structure, JSDOMGlobalO
 
 JSXPathEvaluator::~JSXPathEvaluator()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSXPathEvaluator::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

@@ -96,7 +96,7 @@ bool JSInspectorBackendConstructor::getOwnPropertyDescriptor(ExecState* exec, co
 
 /* Hash table for prototype */
 
-static const HashTableValue JSInspectorBackendPrototypeTableValues[66] =
+static const HashTableValue JSInspectorBackendPrototypeTableValues[70] =
 {
     { "hideDOMNodeHighlight", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionHideDOMNodeHighlight, (intptr_t)0 },
     { "highlightDOMNode", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionHighlightDOMNode, (intptr_t)1 },
@@ -156,6 +156,7 @@ static const HashTableValue JSInspectorBackendPrototypeTableValues[66] =
     { "setAttribute", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionSetAttribute, (intptr_t)4 },
     { "removeAttribute", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionRemoveAttribute, (intptr_t)3 },
     { "setTextNodeValue", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionSetTextNodeValue, (intptr_t)3 },
+    { "copyNode", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionCopyNode, (intptr_t)1 },
     { "nodeForId", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionNodeForId, (intptr_t)1 },
     { "wrapObject", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionWrapObject, (intptr_t)1 },
     { "unwrapObject", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionUnwrapObject, (intptr_t)1 },
@@ -163,6 +164,9 @@ static const HashTableValue JSInspectorBackendPrototypeTableValues[66] =
     { "addNodesToSearchResult", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionAddNodesToSearchResult, (intptr_t)1 },
     { "selectDatabase", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionSelectDatabase, (intptr_t)1 },
     { "selectDOMStorage", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionSelectDOMStorage, (intptr_t)1 },
+    { "getDOMStorageEntries", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionGetDOMStorageEntries, (intptr_t)2 },
+    { "setDOMStorageItem", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionSetDOMStorageItem, (intptr_t)4 },
+    { "removeDOMStorageItem", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionRemoveDOMStorageItem, (intptr_t)3 },
     { 0, 0, 0, 0 }
 };
 
@@ -200,7 +204,7 @@ JSInspectorBackend::JSInspectorBackend(PassRefPtr<Structure> structure, JSDOMGlo
 
 JSInspectorBackend::~JSInspectorBackend()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSInspectorBackend::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -952,6 +956,19 @@ JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSetTextNodeValue(ExecSt
     return jsUndefined();
 }
 
+JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionCopyNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSInspectorBackend::s_info))
+        return throwError(exec, TypeError);
+    JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
+    InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
+    int nodeId = args.at(0).toInt32(exec);
+
+    imp->copyNode(nodeId);
+    return jsUndefined();
+}
+
 JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionNodeForId(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
@@ -1017,6 +1034,51 @@ JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSelectDOMStorage(ExecSt
         return throwError(exec, TypeError);
     JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
     return castedThisObj->selectDOMStorage(exec, args);
+}
+
+JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetDOMStorageEntries(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSInspectorBackend::s_info))
+        return throwError(exec, TypeError);
+    JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
+    InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
+    int callId = args.at(0).toInt32(exec);
+    int storageId = args.at(1).toInt32(exec);
+
+    imp->getDOMStorageEntries(callId, storageId);
+    return jsUndefined();
+}
+
+JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSetDOMStorageItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSInspectorBackend::s_info))
+        return throwError(exec, TypeError);
+    JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
+    InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
+    int callId = args.at(0).toInt32(exec);
+    int storageId = args.at(1).toInt32(exec);
+    const UString& key = args.at(2).toString(exec);
+    const UString& value = args.at(3).toString(exec);
+
+    imp->setDOMStorageItem(callId, storageId, key, value);
+    return jsUndefined();
+}
+
+JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionRemoveDOMStorageItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSInspectorBackend::s_info))
+        return throwError(exec, TypeError);
+    JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
+    InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
+    int callId = args.at(0).toInt32(exec);
+    int storageId = args.at(1).toInt32(exec);
+    const UString& key = args.at(2).toString(exec);
+
+    imp->removeDOMStorageItem(callId, storageId, key);
+    return jsUndefined();
 }
 
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, InspectorBackend* object)

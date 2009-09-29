@@ -88,7 +88,7 @@ public:
 
     QGraphicsScene *scene() const;
 
-    virtual QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const  = 0;
+    virtual QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::DescendingOrder) const  = 0;
     virtual QList<QGraphicsItem *> items(const QPointF &pos, Qt::ItemSelectionMode mode,
                                          Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
     virtual QList<QGraphicsItem *> items(const QRectF &rect, Qt::ItemSelectionMode mode,
@@ -138,7 +138,7 @@ public:
     void recursive_items_helper(QGraphicsItem *item, QRectF exposeRect,
                                 QGraphicsSceneIndexIntersector *intersector, QList<QGraphicsItem *> *items,
                                 const QTransform &viewTransform,
-                                Qt::ItemSelectionMode mode, Qt::SortOrder order, qreal parentOpacity = 1.0) const;
+                                Qt::ItemSelectionMode mode, qreal parentOpacity = 1.0) const;
     inline void items_helper(const QRectF &rect, QGraphicsSceneIndexIntersector *intersector,
                              QList<QGraphicsItem *> *items, const QTransform &viewTransform,
                              Qt::ItemSelectionMode mode, Qt::SortOrder order) const;
@@ -154,10 +154,10 @@ inline void QGraphicsSceneIndexPrivate::items_helper(const QRectF &rect, QGraphi
                                                      Qt::ItemSelectionMode mode, Qt::SortOrder order) const
 {
     Q_Q(const QGraphicsSceneIndex);
-    const QList<QGraphicsItem *> tli = q->estimateTopLevelItems(rect, Qt::DescendingOrder);
+    const QList<QGraphicsItem *> tli = q->estimateTopLevelItems(rect, Qt::AscendingOrder);
     for (int i = 0; i < tli.size(); ++i)
-        recursive_items_helper(tli.at(i), rect, intersector, items, viewTransform, mode, order);
-    if (order == Qt::AscendingOrder) {
+        recursive_items_helper(tli.at(i), rect, intersector, items, viewTransform, mode);
+    if (order == Qt::DescendingOrder) {
         const int n = items->size();
         for (int i = 0; i < n / 2; ++i)
             items->swap(i, n - i - 1);

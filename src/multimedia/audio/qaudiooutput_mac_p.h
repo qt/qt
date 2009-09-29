@@ -145,10 +145,6 @@ public:
     void startTimers();
     void stopTimers();
 
-signals:
-    void stateChanged(QAudio::State);
-    void notify();
-
 private slots:
     void deviceStopped();
     void inputReady();

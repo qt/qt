@@ -1162,6 +1162,8 @@
     \relates QSharedPointer
     \since 4.6
 
+    \brief The qSharedPointerObjectCast function is for casting a shared pointer.
+    
     Returns a shared pointer to the pointer held by \a other, using a
     \l qobject_cast() to type \tt X to obtain an internal pointer of the
     appropriate type. If the \tt qobject_cast fails, the object
@@ -1179,6 +1181,8 @@
     \relates QSharedPointer
     \relates QWeakPointer
     \since 4.6
+
+    \brief The qSharedPointerObjectCast function is for casting a shared pointer.
 
     Returns a shared pointer to the pointer held by \a other, using a
     \l qobject_cast() to type \tt X to obtain an internal pointer of the

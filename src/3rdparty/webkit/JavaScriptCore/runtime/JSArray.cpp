@@ -223,7 +223,7 @@ bool JSArray::getOwnPropertySlot(ExecState* exec, unsigned i, PropertySlot& slot
         }
     }
 
-    return false;
+    return JSObject::getOwnPropertySlot(exec, Identifier::from(exec, i), slot);
 }
 
 bool JSArray::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -1065,27 +1065,5 @@ void JSArray::checkConsistency(ConsistencyCheckType type)
 }
 
 #endif
-
-JSArray* constructEmptyArray(ExecState* exec)
-{
-    return new (exec) JSArray(exec->lexicalGlobalObject()->arrayStructure());
-}
-
-JSArray* constructEmptyArray(ExecState* exec, unsigned initialLength)
-{
-    return new (exec) JSArray(exec->lexicalGlobalObject()->arrayStructure(), initialLength);
-}
-
-JSArray* constructArray(ExecState* exec, JSValue singleItemValue)
-{
-    MarkedArgumentBuffer values;
-    values.append(singleItemValue);
-    return new (exec) JSArray(exec->lexicalGlobalObject()->arrayStructure(), values);
-}
-
-JSArray* constructArray(ExecState* exec, const ArgList& values)
-{
-    return new (exec) JSArray(exec->lexicalGlobalObject()->arrayStructure(), values);
-}
 
 } // namespace JSC

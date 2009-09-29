@@ -87,7 +87,7 @@ JSMessageChannel::JSMessageChannel(PassRefPtr<Structure> structure, JSDOMGlobalO
 
 JSMessageChannel::~JSMessageChannel()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSMessageChannel::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

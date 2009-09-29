@@ -94,6 +94,7 @@ public:
     virtual void drawPolygon(const QPoint *points, int pointCount, PolygonDrawMode mode);
     virtual void drawTextItem(const QPointF &p, const QTextItem &textItem);
     virtual void fill(const QVectorPath &path, const QBrush &brush);
+    virtual void drawRoundedRect(const QRectF &rect, qreal xrad, qreal yrad, Qt::SizeMode mode);
 
     virtual void clipEnabledChanged();
     virtual void penChanged();

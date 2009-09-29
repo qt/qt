@@ -29,6 +29,7 @@
 #include "JSEventListener.h"
 #include "MessagePort.h"
 #include "PlatformString.h"
+#include "RegisteredEventListener.h"
 #include <runtime/Error.h>
 #include <wtf/GetPtr.h>
 
@@ -153,7 +154,8 @@ JSMessagePort::JSMessagePort(PassRefPtr<Structure> structure, JSDOMGlobalObject*
 
 JSMessagePort::~JSMessagePort()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    impl()->invalidateEventListeners();
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSMessagePort::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

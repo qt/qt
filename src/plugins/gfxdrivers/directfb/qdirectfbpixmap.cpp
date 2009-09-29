@@ -288,7 +288,7 @@ bool QDirectFBPixmapData::fromDataBufferDescription(const DFBDataBufferDescripti
 void QDirectFBPixmapData::fromImage(const QImage &img,
                                     Qt::ImageConversionFlags flags)
 {
-    if (img.depth() == 1) {
+    if (img.depth() == 1 || img.format() == QImage::Format_RGB32) {
         fromImage(img.convertToFormat(screen->alphaPixmapFormat()), flags);
         return;
     }
@@ -308,6 +308,8 @@ void QDirectFBPixmapData::fromImage(const QImage &img,
     if (flags != Qt::AutoColor) {
         image = img.convertToFormat(imageFormat, flags);
         flags = Qt::AutoColor;
+    } else if (img.format() == QImage::Format_RGB32) {
+        image = img.convertToFormat(imageFormat, flags);
     } else {
         image = img;
     }
@@ -332,6 +334,7 @@ void QDirectFBPixmapData::fromImage(const QImage &img,
     } else {
         dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_NOFX);
     }
+
     dfbSurface->Blit(dfbSurface, imageSurface, 0, 0, 0);
     imageSurface->Release(imageSurface);
 

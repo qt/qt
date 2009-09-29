@@ -1275,7 +1275,7 @@ QPrinter::ColorMode QPrinter::colorMode() const
   buffering up the copies and in those cases the application must make an
   explicit call to the print code for each copy.
 
-  \sa setNumCopies()
+  \sa setNumCopies(), actualNumCopies()
 */
 
 int QPrinter::numCopies() const
@@ -1286,13 +1286,15 @@ int QPrinter::numCopies() const
 
 
 /*!
+    \since 4.6
+
     Returns the number of copies that will be printed. The default
     value is 1.
 
     This function always returns the actual value specified in the print
     dialog or using setNumCopies().
 
-    \sa setNumCopies(), numCopies();
+    \sa setNumCopies(), numCopies()
 */
 int QPrinter::actualNumCopies() const
 {

@@ -67,9 +67,9 @@ static Color disabledTextColor(const Color& textColor, const Color& backgroundCo
     return disabledColor;
 }
 
-RenderTextControl::RenderTextControl(Node* node)
+RenderTextControl::RenderTextControl(Node* node, bool placeholderVisible)
     : RenderBlock(node)
-    , m_placeholderVisible(false)
+    , m_placeholderVisible(placeholderVisible)
     , m_edited(false)
     , m_userEdited(false)
 {
@@ -501,7 +501,7 @@ void RenderTextControl::selectionChanged(bool userTriggered)
 
     if (Frame* frame = document()->frame()) {
         if (frame->selection()->isRange() && userTriggered)
-            node()->dispatchEvent(eventNames().selectEvent, true, false);
+            node()->dispatchEvent(Event::create(eventNames().selectEvent, true, false));
     }
 }
 

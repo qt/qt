@@ -1072,16 +1072,10 @@ void QMenuBar::paintEvent(QPaintEvent *e)
 */
 void QMenuBar::setVisible(bool visible)
 {
-#if defined(Q_WS_MAC) || defined(Q_OS_WINCE)
+#if defined(Q_WS_MAC) || defined(Q_OS_WINCE) || defined(Q_WS_S60)
     if (isNativeMenuBar())
         return;
 #endif
-#ifdef Q_WS_S60
-    Q_D(QMenuBar);
-    if(d->symbian_menubar)
-        return;
-#endif
-
     QWidget::setVisible(visible);
 }
 
@@ -1278,10 +1272,12 @@ void QMenuBar::actionEvent(QActionEvent *e)
 {
     Q_D(QMenuBar);
     d->itemsDirty = true;
-#if defined (Q_WS_MAC) || defined(Q_OS_WINCE)
+#if defined (Q_WS_MAC) || defined(Q_OS_WINCE) || defined(Q_WS_S60)
     if (isNativeMenuBar()) {
 #ifdef Q_WS_MAC
         QMenuBarPrivate::QMacMenuBarPrivate *nativeMenuBar = d->mac_menubar;
+#elif defined(Q_WS_S60)
+        QMenuBarPrivate::QSymbianMenuBarPrivate *nativeMenuBar = d->symbian_menubar;
 #else
         QMenuBarPrivate::QWceMenuBarPrivate *nativeMenuBar = d->wce_menubar;
 #endif
@@ -1293,16 +1289,6 @@ void QMenuBar::actionEvent(QActionEvent *e)
             nativeMenuBar->removeAction(e->action());
         else if(e->type() == QEvent::ActionChanged)
             nativeMenuBar->syncAction(e->action());
-    }
-#endif
-#ifdef Q_WS_S60
-    if(d->symbian_menubar) {
-        if(e->type() == QEvent::ActionAdded)
-            d->symbian_menubar->addAction(e->action(), d->symbian_menubar->findAction(e->before()));
-        else if(e->type() == QEvent::ActionRemoved)
-            d->symbian_menubar->removeAction(e->action());
-        else if(e->type() == QEvent::ActionChanged)
-            d->symbian_menubar->syncAction(e->action());
     }
 #endif
 

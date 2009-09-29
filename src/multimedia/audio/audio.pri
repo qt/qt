@@ -5,9 +5,7 @@ HEADERS += $$PWD/qaudio.h \
            $$PWD/qaudiodeviceinfo.h \
            $$PWD/qaudioengineplugin.h \
            $$PWD/qaudioengine.h \
-           $$PWD/qaudiodevicefactory_p.h \
-           $$PWD/qaudiodeviceid.h \
-           $$PWD/qaudiodeviceid_p.h
+           $$PWD/qaudiodevicefactory_p.h
 
 
 SOURCES += $$PWD/qaudio.cpp \
@@ -17,8 +15,7 @@ SOURCES += $$PWD/qaudio.cpp \
            $$PWD/qaudioinput.cpp \
            $$PWD/qaudioengineplugin.cpp \
            $$PWD/qaudioengine.cpp \
-           $$PWD/qaudiodevicefactory.cpp \
-           $$PWD/qaudiodeviceid.cpp
+           $$PWD/qaudiodevicefactory.cpp
 
 mac {
     HEADERS +=  $$PWD/qaudioinput_mac_p.h \

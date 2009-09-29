@@ -27,6 +27,7 @@
 
 #include "ChromeClient.h"
 #include "Document.h"
+#include "Event.h"
 #include "EventHandler.h"
 #include "EventNames.h"
 #include "Frame.h"
@@ -38,6 +39,7 @@
 #include "MappedAttribute.h"
 #include "Page.h"
 #include "RenderBox.h"
+#include "RenderTextControl.h"
 #include "RenderTheme.h"
 #include "ValidityState.h"
 
@@ -186,7 +188,7 @@ void HTMLFormControlElement::setName(const AtomicString &value)
 
 void HTMLFormControlElement::dispatchFormControlChangeEvent()
 {
-    dispatchEvent(eventNames().changeEvent, true, false);
+    dispatchEvent(Event::create(eventNames().changeEvent, true, false));
 }
 
 bool HTMLFormControlElement::disabled() const
@@ -282,7 +284,7 @@ bool HTMLFormControlElement::willValidate() const
 bool HTMLFormControlElement::checkValidity()
 {
     if (willValidate() && !isValidFormControlElement()) {
-        dispatchEvent(EventNames().invalidEvent, false, true);
+        dispatchEvent(Event::create(EventNames().invalidEvent, false, true));
         return false;
     }
 
@@ -365,6 +367,45 @@ void HTMLFormControlElementWithState::finishParsingChildren()
         if (doc->takeStateForFormElement(name().impl(), type().impl(), state))
             restoreFormControlState(state);
     }
+}
+
+HTMLTextFormControlElement::HTMLTextFormControlElement(const QualifiedName& tagName, Document* doc, HTMLFormElement* form)
+    : HTMLFormControlElementWithState(tagName, doc, form)
+{
+}
+
+HTMLTextFormControlElement::~HTMLTextFormControlElement()
+{
+}
+
+void HTMLTextFormControlElement::dispatchFocusEvent()
+{
+    if (supportsPlaceholder())
+        updatePlaceholderVisibility(false);
+    handleFocusEvent();
+    HTMLFormControlElementWithState::dispatchFocusEvent();
+}
+
+void HTMLTextFormControlElement::dispatchBlurEvent()
+{
+    if (supportsPlaceholder())
+        updatePlaceholderVisibility(false);
+    handleBlurEvent();
+    HTMLFormControlElementWithState::dispatchBlurEvent();
+}
+
+bool HTMLTextFormControlElement::placeholderShouldBeVisible() const
+{
+    return supportsPlaceholder()
+        && isEmptyValue()
+        && document()->focusedNode() != this
+        && !getAttribute(placeholderAttr).isEmpty();
+}
+
+void HTMLTextFormControlElement::updatePlaceholderVisibility(bool placeholderValueChanged)
+{
+    if (supportsPlaceholder() && renderer())
+        toRenderTextControl(renderer())->updatePlaceholderVisibility(placeholderShouldBeVisible(), placeholderValueChanged);
 }
 
 } // namespace Webcore

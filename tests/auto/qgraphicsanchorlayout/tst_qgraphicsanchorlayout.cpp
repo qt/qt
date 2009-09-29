@@ -40,9 +40,10 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#include <qgraphicsanchorlayout.h>
-#include <qgraphicswidget.h>
-#include <qgraphicsproxywidget.h>
+#include <QtGui/qgraphicsanchorlayout.h>
+#include <private/qgraphicsanchorlayout_p.h>
+#include <QtGui/qgraphicswidget.h>
+#include <QtGui/qgraphicsproxywidget.h>
 #include <QtGui/qgraphicsview.h>
 
 class tst_QGraphicsAnchorLayout : public QObject {
@@ -64,6 +65,7 @@ private slots:
     void example();
     void setSpacing();
     void hardComplexS60();
+    void stability();
     void delete_anchor();
     void conflicts();
     void sizePolicy();
@@ -141,6 +143,11 @@ static bool checkReverseDirection(QGraphicsWidget *w)
     return true;
 }
 
+static bool layoutHasConflict(QGraphicsAnchorLayout *l)
+{
+    return QGraphicsAnchorLayoutPrivate::get(l)->hasConflicts();
+}
+
 void tst_QGraphicsAnchorLayout::simple()
 {
     QGraphicsWidget *w1 = createItem();
@@ -192,6 +199,8 @@ void tst_QGraphicsAnchorLayout::simple_center()
 
     QSizeF layoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
     QCOMPARE(layoutMaximumSize, QSizeF(200, 20));
+
+    delete p;
 }
 
 void tst_QGraphicsAnchorLayout::simple_semifloat()
@@ -239,6 +248,8 @@ void tst_QGraphicsAnchorLayout::simple_semifloat()
 
     QSizeF layoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
     QCOMPARE(layoutMaximumSize, QSizeF(200, 20));
+
+    delete p;
 }
 
 void tst_QGraphicsAnchorLayout::layoutDirection()
@@ -285,6 +296,9 @@ void tst_QGraphicsAnchorLayout::layoutDirection()
     view->show();
 
     QCOMPARE(checkReverseDirection(p), true);
+
+    delete p;
+    delete view;
 }
 
 void tst_QGraphicsAnchorLayout::diagonal()
@@ -372,6 +386,9 @@ void tst_QGraphicsAnchorLayout::diagonal()
     QCOMPARE(p.size(), testA);
 
     QCOMPARE(checkReverseDirection(&p), true);
+
+    c->setMinimumWidth(300);
+    QVERIFY(layoutHasConflict(l));
 }
 
 void tst_QGraphicsAnchorLayout::parallel()
@@ -984,12 +1001,30 @@ void tst_QGraphicsAnchorLayout::setSpacing()
     QCOMPARE(b->geometry(), QRectF(24, 0, 20, 20));
     QCOMPARE(c->geometry(), QRectF(0, 20, 44, 20));
 
+    delete p;
+    delete view;
 }
 
-void tst_QGraphicsAnchorLayout::hardComplexS60()
+/*!
+    Taken from "hard" complex case, found at
+    https://cwiki.nokia.com/S60QTUI/AnchorLayoutComplexCases
+
+    This layout has a special property, since it has two possible solutions for its minimum size.
+
+    For instance, when it is in its minimum size - the layout have two possible solutions:
+    1. c.width == 10, e.width == 10 and g.width == 10
+       (all others have width 0)
+    2. d.width == 10 and g.width == 10
+       (all others have width 0)
+
+    It also has several solutions for preferred size.
+*/
+static QGraphicsAnchorLayout *createAmbiguousS60Layout()
 {
-    // Test for "hard" complex case, taken from wiki
-    // https://cwiki.nokia.com/S60QTUI/AnchorLayoutComplexCases
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+    l->setContentsMargins(0, 0, 0, 0);
+    l->setSpacing(0);
+
     QSizeF min(0, 10);
     QSizeF pref(50, 10);
     QSizeF max(100, 10);
@@ -1001,9 +1036,6 @@ void tst_QGraphicsAnchorLayout::hardComplexS60()
     QGraphicsWidget *e = createItem(min, pref, max, "e");
     QGraphicsWidget *f = createItem(min, pref, max, "f");
     QGraphicsWidget *g = createItem(min, pref, max, "g");
-
-    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
-    l->setContentsMargins(0, 0, 0, 0);
 
     //<!-- Trunk -->
     setAnchor(l, l, Qt::AnchorLeft, a, Qt::AnchorLeft, 10);
@@ -1034,7 +1066,12 @@ void tst_QGraphicsAnchorLayout::hardComplexS60()
     setAnchor(l, a, Qt::AnchorBottom, d, Qt::AnchorBottom, 0);
     setAnchor(l, f, Qt::AnchorBottom, g, Qt::AnchorTop, 0);
     setAnchor(l, g, Qt::AnchorBottom, l, Qt::AnchorBottom, 0);
+    return l;
+}
 
+void tst_QGraphicsAnchorLayout::hardComplexS60()
+{
+    QGraphicsAnchorLayout *l = createAmbiguousS60Layout();
     QCOMPARE(l->count(), 7);
 
     QGraphicsWidget *p = new QGraphicsWidget(0, Qt::Window);
@@ -1048,6 +1085,41 @@ void tst_QGraphicsAnchorLayout::hardComplexS60()
     QSizeF layoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
     QCOMPARE(layoutMaximumSize, QSizeF(240, 40));
 
+    delete p;
+}
+
+void tst_QGraphicsAnchorLayout::stability()
+{
+    QVector<QRectF> geometries;
+    geometries.resize(7);
+    QGraphicsWidget *p = new QGraphicsWidget(0, Qt::Window);
+    bool sameAsPreviousArrangement = true;
+    // it usually fails after 3-4 iterations
+    for (int pass = 0; pass < 20 && sameAsPreviousArrangement; ++pass) {
+        // In case we need to "scramble" the heap allocator to provoke this bug.
+        //static const int primes[] = {2, 3, 5, 13, 89, 233, 1597, 28657, 514229}; // fibo primes
+        //const int primeCount = sizeof(primes)/sizeof(int);
+        //int alloc = primes[pass % primeCount] + pass;
+        //void *mem = qMalloc(alloc);
+        //qFree(mem);
+        QGraphicsAnchorLayout *l = createAmbiguousS60Layout();
+        p->setLayout(l);
+        QSizeF layoutMinimumSize = l->effectiveSizeHint(Qt::MinimumSize);
+        l->setGeometry(QRectF(QPointF(0,0), layoutMinimumSize));
+        QApplication::processEvents();
+        for (int i = l->count() - 1; i >=0 && sameAsPreviousArrangement; --i) {
+            QRectF geom = l->itemAt(i)->geometry();
+            if (pass != 0) {
+                sameAsPreviousArrangement = (geometries[i] == geom);
+            }
+            geometries[i] = geom;
+        }
+        p->setLayout(0);    // uninstalls and deletes the layout
+        QApplication::processEvents();
+    }
+    delete p;
+    QEXPECT_FAIL("", "The layout have several solutions, but which solution it picks is not stable", Continue);
+    QCOMPARE(sameAsPreviousArrangement, true);
 }
 
 void tst_QGraphicsAnchorLayout::delete_anchor()
@@ -1189,6 +1261,12 @@ void tst_QGraphicsAnchorLayout::sizePolicy()
     delete view;
 }
 
+/*!
+    \internal
+
+    Uses private API. (We have decided to pull hasConflicts() out of the API). However, it also
+    tests some tight conditions (almost-in-conflict) that we really want to test.
+*/
 void tst_QGraphicsAnchorLayout::conflicts()
 {
     QGraphicsWidget *a = createItem(QSizeF(80,10), QSizeF(90,10), QSizeF(100,10), "a");
@@ -1219,15 +1297,15 @@ void tst_QGraphicsAnchorLayout::conflicts()
 
     p->setLayout(l);
 
-    QCOMPARE(l->hasConflicts(), true);
+    QCOMPARE(layoutHasConflict(l), true);
 
     a->setMinimumSize(QSizeF(29,10));
-    QCOMPARE(l->hasConflicts(), false);
+    QCOMPARE(layoutHasConflict(l), false);
 
-    // It will currently fail if we uncomment this:
-    //QEXPECT_FAIL("", "The constraints are just within their bounds in order to be feasible", Continue);
-    //a->setMinimumSize(QSizeF(30,10));
-    //QCOMPARE(l->hasConflicts(), false);
+    a->setMinimumSize(QSizeF(30,10));
+    QCOMPARE(layoutHasConflict(l), false);
+
+    delete p;
 }
 
 QTEST_MAIN(tst_QGraphicsAnchorLayout)

@@ -149,7 +149,10 @@ public:
     };
 
     HBITMAP toWinHBITMAP(HBitmapFormat format = NoAlpha) const;
+    HICON toWinHICON() const;
+
     static QPixmap fromWinHBITMAP(HBITMAP hbitmap, HBitmapFormat format = NoAlpha);
+    static QPixmap fromWinHICON(HICON hicon);
 #endif
 
 #if defined(Q_WS_MAC)
@@ -158,10 +161,8 @@ public:
 #endif
 
 #if defined(Q_OS_SYMBIAN)
-    enum ConversionMode { CopyData, DuplicateHandle  };
-
-    CFbsBitmap *toSymbianCFbsBitmap(ConversionMode mode = DuplicateHandle) const;
-    static QPixmap fromSymbianCFbsBitmap(CFbsBitmap *bitmap, ConversionMode mode = DuplicateHandle);
+    CFbsBitmap *toSymbianCFbsBitmap() const;
+    static QPixmap fromSymbianCFbsBitmap(CFbsBitmap *bitmap);
     RSgImage* toSymbianRSgImage() const;
     static QPixmap fromSymbianRSgImage(RSgImage *sgImage);
 #endif
@@ -269,7 +270,7 @@ private:
     friend class QWidgetPrivate;
     friend class QRasterPaintEngine;
     friend class QRasterBuffer;
-    friend class QDetachedPixmap;
+    friend class QPixmapCacheEntry;
 #if !defined(QT_NO_DATASTREAM)
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QPixmap &);
 #endif

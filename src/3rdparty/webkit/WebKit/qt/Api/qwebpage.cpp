@@ -256,6 +256,7 @@ static inline Qt::DropAction dragOpToDropAction(unsigned actions)
 
 QWebPagePrivate::QWebPagePrivate(QWebPage *qq)
     : q(qq)
+    , client(0)
     , view(0)
     , inspectorFrontend(0)
     , inspector(0)
@@ -270,7 +271,7 @@ QWebPagePrivate::QWebPagePrivate(QWebPage *qq)
     contextMenuClient = new ContextMenuClientQt();
     editorClient = new EditorClientQt(q);
     page = new Page(chromeClient, contextMenuClient, editorClient,
-                    new DragClientQt(q), new InspectorClientQt(q));
+                    new DragClientQt(q), new InspectorClientQt(q), 0);
 
     // ### should be configurable
     page->settings()->setDefaultTextEncodingName("iso-8859-1");
@@ -1490,9 +1491,11 @@ QWebPage::QWebPage(QObject *parent)
 */
 QWebPage::~QWebPage()
 {
-    FrameLoader *loader = d->mainFrame->d->frame->loader();
-    if (loader)
-        loader->detachFromParent();
+    if (d->mainFrame) {
+        FrameLoader *loader = d->mainFrame->d->frame->loader();
+        if (loader)
+            loader->detachFromParent();
+    }
     if (d->inspector)
         d->inspector->setPage(0);
     delete d;
@@ -1519,6 +1522,7 @@ QWebFrame *QWebPage::mainFrame() const
 */
 QWebFrame *QWebPage::currentFrame() const
 {
+    d->createMainFrame();
     return static_cast<WebCore::FrameLoaderClientQt *>(d->page->focusController()->focusedOrMainFrame()->loader()->client())->webFrame();
 }
 
@@ -1544,6 +1548,7 @@ QWebFrame* QWebPage::frameAt(const QPoint& pos) const
 */
 QWebHistory *QWebPage::history() const
 {
+    d->createMainFrame();
     return &d->history;
 }
 
@@ -1554,8 +1559,10 @@ QWebHistory *QWebPage::history() const
 */
 void QWebPage::setView(QWidget *view)
 {
-    d->view = view;
-    setViewportSize(view ? view->size() : QSize(0, 0));
+    if (d->view != view) {
+        d->view = view;
+        setViewportSize(view ? view->size() : QSize(0, 0));
+    }
 }
 
 /*!
@@ -2909,9 +2916,11 @@ QString QWebPage::userAgentForUrl(const QUrl& url) const
         case QSysInfo::WV_VISTA:
             ver = "Windows NT 6.0";
             break;
+#if QT_VERSION > 0x040500
         case QSysInfo::WV_WINDOWS7:
             ver = "Windows NT 6.1";
             break;
+#endif
         case QSysInfo::WV_CE:
             ver = "Windows CE";
             break;

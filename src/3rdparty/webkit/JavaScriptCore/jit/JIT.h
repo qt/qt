@@ -226,7 +226,7 @@ namespace JSC {
         static const FPRegisterID fpRegT0 = X86Registers::xmm0;
         static const FPRegisterID fpRegT1 = X86Registers::xmm1;
         static const FPRegisterID fpRegT2 = X86Registers::xmm2;
-#elif PLATFORM_ARM_ARCH(7)
+#elif PLATFORM(ARM_THUMB2)
         static const RegisterID returnValueRegister = ARMRegisters::r0;
         static const RegisterID cachedResultRegister = ARMRegisters::r0;
         static const RegisterID firstArgumentRegister = ARMRegisters::r0;
@@ -242,7 +242,7 @@ namespace JSC {
         static const FPRegisterID fpRegT0 = ARMRegisters::d0;
         static const FPRegisterID fpRegT1 = ARMRegisters::d1;
         static const FPRegisterID fpRegT2 = ARMRegisters::d2;
-#elif PLATFORM(ARM)
+#elif PLATFORM(ARM_TRADITIONAL)
         static const RegisterID returnValueRegister = ARMRegisters::r0;
         static const RegisterID cachedResultRegister = ARMRegisters::r0;
         static const RegisterID firstArgumentRegister = ARMRegisters::r0;
@@ -379,14 +379,18 @@ namespace JSC {
 
         enum CompileOpStrictEqType { OpStrictEq, OpNStrictEq };
         void compileOpStrictEq(Instruction* instruction, CompileOpStrictEqType type);
+        bool isOperandConstantImmediateDouble(unsigned src);
+        
+        void emitLoadDouble(unsigned index, FPRegisterID value);
+        void emitLoadInt32ToDouble(unsigned index, FPRegisterID value);
+
+        Address addressFor(unsigned index, RegisterID base = callFrameRegister);
 
 #if USE(JSVALUE32_64)
         Address tagFor(unsigned index, RegisterID base = callFrameRegister);
         Address payloadFor(unsigned index, RegisterID base = callFrameRegister);
-        Address addressFor(unsigned index, RegisterID base = callFrameRegister);
 
         bool getOperandConstantImmediateInt(unsigned op1, unsigned op2, unsigned& op, int32_t& constant);
-        bool isOperandConstantImmediateDouble(unsigned src);
 
         void emitLoadTag(unsigned index, RegisterID tag);
         void emitLoadPayload(unsigned index, RegisterID payload);
@@ -394,8 +398,6 @@ namespace JSC {
         void emitLoad(const JSValue& v, RegisterID tag, RegisterID payload);
         void emitLoad(unsigned index, RegisterID tag, RegisterID payload, RegisterID base = callFrameRegister);
         void emitLoad2(unsigned index1, RegisterID tag1, RegisterID payload1, unsigned index2, RegisterID tag2, RegisterID payload2);
-        void emitLoadDouble(unsigned index, FPRegisterID value);
-        void emitLoadInt32ToDouble(unsigned index, FPRegisterID value);
 
         void emitStore(unsigned index, RegisterID tag, RegisterID payload, RegisterID base = callFrameRegister);
         void emitStore(unsigned index, const JSValue constant, RegisterID base = callFrameRegister);
@@ -499,6 +501,7 @@ namespace JSC {
         JIT::Jump emitJumpIfNotImmediateInteger(RegisterID);
         JIT::Jump emitJumpIfNotImmediateIntegers(RegisterID, RegisterID, RegisterID);
         void emitJumpSlowCaseIfNotImmediateInteger(RegisterID);
+        void emitJumpSlowCaseIfNotImmediateNumber(RegisterID);
         void emitJumpSlowCaseIfNotImmediateIntegers(RegisterID, RegisterID, RegisterID);
 
 #if !USE(JSVALUE64)
@@ -571,7 +574,7 @@ namespace JSC {
         static const int patchOffsetMethodCheckProtoObj = 11;
         static const int patchOffsetMethodCheckProtoStruct = 18;
         static const int patchOffsetMethodCheckPutFunction = 29;
-#elif PLATFORM_ARM_ARCH(7)
+#elif PLATFORM(ARM_THUMB2)
         // These architecture specific value are used to enable patching - see comment on op_put_by_id.
         static const int patchOffsetPutByIdStructure = 10;
         static const int patchOffsetPutByIdExternalLoad = 20;
@@ -594,7 +597,7 @@ namespace JSC {
         static const int patchOffsetMethodCheckProtoObj = 18;
         static const int patchOffsetMethodCheckProtoStruct = 28;
         static const int patchOffsetMethodCheckPutFunction = 46;
-#elif PLATFORM(ARM)
+#elif PLATFORM(ARM_TRADITIONAL)
         // These architecture specific value are used to enable patching - see comment on op_put_by_id.
         static const int patchOffsetPutByIdStructure = 4;
         static const int patchOffsetPutByIdExternalLoad = 16;
@@ -620,7 +623,7 @@ namespace JSC {
 #endif
 #endif // USE(JSVALUE32_64)
 
-#if PLATFORM(ARM) && !PLATFORM_ARM_ARCH(7)
+#if PLATFORM(ARM_TRADITIONAL)
         // sequenceOpCall
         static const int sequenceOpCallInstructionSpace = 12;
         static const int sequenceOpCallConstantSpace = 2;

@@ -113,6 +113,7 @@ contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
 !contains(DEFINES, ENABLE_DOM_STORAGE=.): DEFINES += ENABLE_DOM_STORAGE=1
 !contains(DEFINES, ENABLE_ICONDATABASE=.): DEFINES += ENABLE_ICONDATABASE=1
 !contains(DEFINES, ENABLE_CHANNEL_MESSAGING=.): DEFINES += ENABLE_CHANNEL_MESSAGING=1
+!contains(DEFINES, ENABLE_ORIENTATION_EVENTS=.): DEFINES += ENABLE_ORIENTATION_EVENTS=0
 
 # turn on SQLITE support if any of the dependent features are turned on
 !contains(DEFINES, ENABLE_SQLITE=.) {
@@ -169,8 +170,7 @@ contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
 }
 
 # Web Socket support.
-# FIXME: Enable once platform code is landed.
-# !contains(DEFINES, ENABLE_WEB_SOCKETS=.): DEFINES += ENABLE_WEB_SOCKETS=1
+!contains(DEFINES, ENABLE_WEB_SOCKETS=.): DEFINES += ENABLE_WEB_SOCKETS=1
 
 DEFINES += WTF_USE_JAVASCRIPTCORE_BINDINGS=1 WTF_CHANGES=1
 
@@ -714,7 +714,6 @@ SOURCES += \
     bindings/js/JSInspectorCallbackWrapper.cpp \
     bindings/js/JSLocationCustom.cpp \
     bindings/js/JSNamedNodeMapCustom.cpp \
-    bindings/js/JSNamedNodesCollection.cpp  \
     bindings/js/JSNavigatorCustom.cpp  \
     bindings/js/JSNodeCustom.cpp \
     bindings/js/JSNodeFilterCondition.cpp \
@@ -1139,6 +1138,7 @@ SOURCES += \
     page/Page.cpp \
     page/PageGroup.cpp \
     page/PageGroupLoadDeferrer.cpp \
+    page/PluginHalter.cpp \
     page/PrintContext.cpp \
     page/SecurityOrigin.cpp \
     page/Screen.cpp \
@@ -1392,7 +1392,6 @@ HEADERS += \
     bindings/js/JSLazyEventListener.h \
     bindings/js/JSLocationCustom.h \
     bindings/js/JSMessageChannelConstructor.h \
-    bindings/js/JSNamedNodesCollection.h \
     bindings/js/JSNodeFilterCondition.h \
     bindings/js/JSOptionConstructor.h \
     bindings/js/JSPluginElementFunctions.h \
@@ -1814,6 +1813,7 @@ HEADERS += \
     page/FrameView.h \
     page/Geolocation.h \
     page/Geoposition.h \
+    page/HaltablePlugin.h \
     page/History.h \
     page/Location.h \
     page/MouseEventWithHitTestResults.h \
@@ -1822,6 +1822,8 @@ HEADERS += \
     page/PageGroup.h \
     page/PageGroupLoadDeferrer.h \
     page/Page.h \
+    page/PluginHalter.h \
+    page/PluginHalterClient.h \
     page/PrintContext.h \
     page/Screen.h \
     page/SecurityOrigin.h \
@@ -1904,6 +1906,7 @@ HEADERS += \
     platform/network/ResourceRequestBase.h \
     platform/network/ResourceResponseBase.h \
     platform/qt/ClipboardQt.h \
+    platform/qt/QWebPageClient.h \
     platform/qt/QWebPopup.h \
     platform/qt/RenderThemeQt.h \
     platform/qt/ScrollbarThemeQt.h \
@@ -2484,6 +2487,10 @@ contains(DEFINES, ENABLE_CHANNEL_MESSAGING=1) {
     FEATURE_DEFINES_JAVASCRIPT += ENABLE_CHANNEL_MESSAGING=1
 }
 
+contains(DEFINES, ENABLE_ORIENTATION_EVENTS=1) {
+    FEATURE_DEFINES_JAVASCRIPT += ENABLE_ORIENTATION_EVENTS=1
+}
+
 contains(DEFINES, ENABLE_DASHBOARD_SUPPORT=0) {
     DASHBOARDSUPPORTCSSPROPERTIES -= $$PWD/css/DashboardSupportCSSPropertyNames.in
 }
@@ -2637,7 +2644,6 @@ contains(DEFINES, ENABLE_SHARED_WORKERS=1) {
 
     SOURCES += \
         bindings/js/JSSharedWorkerConstructor.cpp \
-        bindings/js/JSSharedWorkerContextCustom.cpp \
         bindings/js/JSSharedWorkerCustom.cpp \
         workers/DefaultSharedWorkerRepository.cpp \
         workers/SharedWorker.cpp \
@@ -3103,6 +3109,20 @@ SOURCES += \
     loader/appcache/DOMApplicationCache.cpp \
     loader/appcache/ManifestParser.cpp \
     bindings/js/JSDOMApplicationCacheCustom.cpp
+}
+
+contains(DEFINES, ENABLE_WEB_SOCKETS=1) {
+    FEATURE_DEFINES_JAVASCRIPT += ENABLE_WEB_SOCKETS=1
+
+SOURCES += \
+    websockets/WebSocket.cpp \
+    websockets/WebSocketChannel.cpp \
+    websockets/WebSocketHandshake.cpp \
+    platform/network/SocketStreamErrorBase.cpp \
+    platform/network/SocketStreamHandleBase.cpp \
+    platform/network/qt/SocketStreamHandleSoup.cpp \
+    bindings/js/JSWebSocketCustom.cpp \
+    bindings/js/JSWebSocketConstructor.cpp
 }
 
 # GENERATOR 1: IDL compiler

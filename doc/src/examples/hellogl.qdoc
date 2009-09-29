@@ -65,7 +65,8 @@
     \snippet examples/opengl/hellogl/glwidget.h 0
 
     We use a destructor to ensure that any OpenGL-specific data structures
-    are deleted when the widget is no longer needed.
+    are deleted when the widget is no longer needed (although in this case nothing
+    needs cleaning up).
 
     \snippet examples/opengl/hellogl/glwidget.h 1
 
@@ -84,8 +85,8 @@
 
     The rest of the class contains utility functions and variables that are
     used to construct and hold orientation information for the scene. The
-    \c object variable will be used to hold an identifier for an OpenGL
-    display list.
+    \c logo variable will be used to hold a pointer to the QtLogo object which
+    contains all the geometry.
 
     \section1 GLWidget Class Implementation
 
@@ -95,8 +96,9 @@
 
     \section2 Widget Construction and Sizing
 
-    The constructor provides default rotation angles for the scene, initializes
-    the variable used for the display list, and sets up some colors for later use.
+    The constructor provides default rotation angles for the scene, sets
+    the pointer to the QtLogo object to null, and sets up some colors for
+    later use.
 
     \snippet examples/opengl/hellogl/glwidget.cpp 0
 
@@ -105,7 +107,7 @@
 
     \snippet examples/opengl/hellogl/glwidget.cpp 1
 
-    The destructor ensures that the display list is deleted properly.
+    In this case nothing requires cleaning up.
 
     We provide size hint functions to ensure that the widget is shown at a
     reasonable size:
@@ -139,9 +141,9 @@
     \snippet examples/opengl/hellogl/glwidget.cpp 6
 
     In this example, we reimplement the function to set the background color,
-    create a display list containing information about the object we want to
+    create a QtLogo object instance which will contain all the geometry to
     display, and set up the rendering process to use a particular shading model
-    and rendering flags:
+    and rendering flags.
 
     \section2 Resizing the Viewport
 
@@ -172,8 +174,8 @@
 
     In this example, we clear the widget using the background color that
     we defined in the \l{QGLWidget::initializeGL()}{initializeGL()} function,
-    set up the frame of reference for the object we want to display, and call
-    the display list containing the rendering commands for the object.
+    set up the frame of reference for the geometry we want to display, and
+    call the draw method of the QtLogo object to render the scene.
 
     \section2 Mouse Handling
 
@@ -196,12 +198,57 @@
     cursor to rotate the object, the cursor's position is updated every time
     a move event is received.
 
-    \section2 Utility Functions
+    \section1 QtLogo Class
 
-    We have omitted the utility functions, \c makeObject(), \c quad(),
-    \c extrude(), and \c normalizeAngle() from our discussion. These can be
-    viewed in the quoted source for \c glwidget.cpp via the link at the
-    start of this document.
+    This class encapsulates the OpenGL geometry data which will be rendered
+    in the basic 3D scene.
+
+    \snippet examples/opengl/shared/qtlogo.h 0
+
+    The geometry is divided into a list of parts which may be rendered in
+    different ways.  The data itself is contained in a Geometry structure that
+    includes the vertices, their lighting normals and index values which
+    point into the vertices, grouping them into faces.
+
+    \snippet examples/opengl/shared/qtlogo.cpp 0
+
+    The data in the Geometry class is stored in QVector<QVector3D> members
+    which are convenient for use with OpenGL because they expose raw
+    contiguous floating point values via the constData() method.  Methods
+    are included for adding new vertex data, either with smooth normals, or
+    facetted normals; and for enabling the geometry ready for rendering.
+
+    \snippet examples/opengl/shared/qtlogo.cpp 1
+
+    The higher level Patch class has methods for accumulating the geometry
+    one face at a time, and treating collections of faces or "patches" with
+    transformations, applying different colors or smoothing.  Although faces
+    may be added as triangles or quads, at the OpenGL level all data is
+    treated as triangles for compatibility with OpenGL/ES.
+
+    \snippet examples/opengl/shared/qtlogo.cpp 2
+
+    Drawing a Patch is simply acheived by applying any transformation,
+    and material effect, then drawing the data using the index range for
+    the patch.  The model-view matrix is saved and then restored so that
+    any transformation does not affect other parts of the scene.
+
+    \snippet examples/opengl/shared/qtlogo.cpp 3
+
+    The geometry is built once on construction of the QtLogo, and it is
+    paramaterized on a number of divisions - which controls how "chunky" the
+    curved section of the logo looks - and on a scale, so larger and smaller
+    QtLogo objects can be created without having to use OpenGL scaling
+    (which would force normal recalculation).
+
+    The building process is done by helper classes (read the source for full
+    details) which only exist during the build phase, to assemble the parts
+    of the scene.
+
+    \snippet examples/opengl/shared/qtlogo.cpp 4
+
+    Finally the complete QtLogo scene is simply drawn by enabling the data arrays
+    and then iterating over the parts, calling draw() on each one.
 
     \section1 Window Class Definition
 

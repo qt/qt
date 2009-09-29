@@ -225,9 +225,9 @@
     \row    \o \l{Qt3Support}   \o Qt 3 support classes
     \row    \o \l{QAxContainer} \o ActiveQt client extension
     \row    \o \l{QAxServer}    \o ActiveQt server extension
-    \row    \o \l{QtHelp}       \o Classes for integrating online documentation in applications 
+    \row    \o \l{QtAssistant}  \o Classes for launching Qt Assistant
     \row    \o \l{QtDesigner}   \o Classes for extending and embedding Qt Designer
-    \row    \o \l{QtUiTools}    \o Classes for dynamic GUI generation
+    \row    \o \l{QtUiTools}       \o Classes for dynamic GUI generation
     \row    \o \l{QtTest}       \o Tool classes for unit testing
     \endtable
 
@@ -457,16 +457,16 @@
 */
 
 /*!
-    \page qt4-7-intro.html
-    \title What's New in Qt 4.7
+    \page qt4-6-intro.html
+    \title What's New in Qt 4.6
 
-    Qt 4.7 provides many improvements and enhancements over the
+    Qt 4.6 provides many improvements and enhancements over the
     previous releases in the Qt 4 series. This document covers the
     most important features in this release, separated by category.
 
-    A comprehensive list of changes between Qt 4.6 and Qt 4.7 is
-    included in the \c changes-4.7.0 file
-    \l{http://qt.nokia.com/developer/changes/changes-4.7.0}{available
+    A comprehensive list of changes between Qt 4.5 and Qt 4.6 is
+    included in the \c changes-4.6.0 file
+    \l{http://qt.nokia.com/developer/changes/changes-4.6.0}{available
     online}. A \l{Known Issues in %VERSION%}{list of known issues}
     for this release is also available.
 
@@ -481,13 +481,349 @@
 
     \tableofcontents
 
-    \section1 New Feature 1
+    \section1 Animation Framework
 
-    Describe New Feature 1.
+    The animation framework helps build highly animated,
+    high-performance GUIs without the hassle of managing complex
+    structures, timers, and easing curves, not to mention the large
+    state graphs that all animated GUIs tend to be full of.
+
+    The framework makes it easy to animate \l{QObject}s, including
+    QWidgets, by allowing Qt properties to be animated. It also allows
+    creating custom animations and interpolation functions. Graphics
+    views are not left out--one can animate \l{QGraphicsWidget}s,
+    which inherits from QObject (and thereby enables properties).
+
+    Animations are controlled using easing curves and can be grouped
+    together. This enables animations of arbitrary complexity.
+
+    The API is easy to grasp with functions such as start(), stop(),
+    pause(), and currentTime(). Here is an image from one of the
+    examples that come with the framework:
+
+    \image whatsnewanimatedtiles.png
+
+    The animation framework also plugs into the new Qt Statemachine by
+    allowing an animation to be played when transitions are triggered.
+    The state machine framework is introduced in 4.6 and is described
+    below.
+
+    \section1 State Machine Framework
+
+    The state machine framework provides a robust state chart
+    implementation based on Harel statecharts and SCXML. Qt's API lets
+    you construct such state graphs and execute them. The key benefits
+    of a state machine are:
+
+    \list
+        \o Simplify complex application semantics.
+        \o Use of states to reduce code bloat.
+        \o Use states to improve maintainability. 
+        \o Makes event-driven programming robust and more
+           reusable.
+    \endlist
+
+    It is especially the last item here that makes using a state
+    machine worthwhile. A key characteristic of event-driven systems
+    (such as Qt applications) is that behavior often depends not only
+    on the last or current event, but also the events that preceded
+    it. With statecharts, this information is easy to express.
+
+    The framework fits neatly into Qt by allowing transitions to
+    trigger on signals and \l{QEvent}s. By inserting animations into
+    the state machine, it is also easier to use the framework for
+    animating GUIs, for instance.
+
+    \section1 Multi-touch & Gestures
+
+    The new multi-touch and gestures support enables user interaction
+    with more than one finger, and combines sequential touch inputs to
+    a 'gesture'.
+
+    \image gestures.png
+
+    The main benefits of this new functionality are:
+
+    \list
+        \o Allow users to interact with applications in better ways.
+        \o Simplify finger-based interaction with UI components.
+        \o Allowing common basic gestures and multi-touch
+           gestures.
+        \o Enable extensibility.
+    \endlist
+
+    \section1 DOM access API
+
+    Web pages and XML both have very complex document object models.
+    The W3C selector API provides a very simple way to access and
+    manipulate such structures. This API makes it intuitive to access
+    DOM, helps reuse CSS selector knowledge, and gives little
+    maintenance or footprint overhead.
+
+    \code
+        QWebElement document = frame->documentElement();
+        QList<QWebElement> allSpans = document.findAll("span");
+        QList<QWebElement> introSpans = document.findAll("p.intro span");
+    \endcode
+
+    \section1 Qt3D enablers
+
+    As more of Qt, and more of the applications built on Qt go 3D,
+    API's should be provided to simplify this. Mainly, the new API
+    aims to make it more easy to create 3D applications with OpenGL.
+    It will also unify the Qt OpenGL codebase, and enable
+    cross-platform 3D codebase.
+
+    The main features of the Qt3D enablers are currently: Math
+    primitives for matrix multiplication, vectors, quaternions
+    (client-side), and API for vertex and fragment shaders, GLSL/ES.
+    Future research will, among other things include stencils,
+    scissors, vertex buffers and arrays, texture manipulation, and
+    geometry shaders.
+
+    \section1 Performance Optimizations
+
+    As always, Qt continuously strive to optimize its performance.
+    For this release, we have:
+
+    \list
+        \o Rewritten the QGraphicsView rendering algorithm.
+        \o Made QPixmapCache support efficient Key datastructure.
+        \o Reduced overhead in QNetworkAccessManager.
+        \o Added the QContiguousCache class, which provides efficient caching of
+           contiguous data.
+        \o Removed Win9x support.
+    \endlist
+
+    \section1 Multimedia Audio Services
+
+    Qt 4.6 comes with new classes for handling audio. These classes
+    provide low-level access to the system's audio system. By
+    specifying the audio format (QAudioFormat) and supplying audio
+    data through a QIODevice, you get direct access to the
+    functionality of the sound device. The API also comes with
+    functions to query audio devices for which audio formats they
+    support.
+
+    \section1 Classes and Functions Introduced in 4.6
+
+    Links to class, function, and macro documentation.
+
+    \section2 Classes
+
+    Classes introduced in Qt 4.6.
+
+    \sincelist classes
+
+    \section2 Functions & Macros
+
+    Fuctions and macros introduced in Qt 4.6.
+
+    \sincelist functions
+
+*/
+
+/*
+    \page qt4-5-intro.html
+    \title What's New in Qt 4.5
+
+    Qt 4.5 provides many improvements and enhancements over the previous releases
+    in the Qt 4 series. This document covers the most important features in this
+    release, separated by category.
+
+    A comprehensive list of changes between Qt 4.4 and Qt 4.5 is included
+    in the \c changes-4.5.0 file
+    \l{http://qt.nokia.com/developer/changes/changes-4.5.0}{available online}.
+    A \l{Known Issues in %VERSION%}{list of known issues} for this release is also
+    available.
+
+    Changes between this release and the previous release are provided
+    in the \c{changes-%VERSION%} file (also
+    \l{http://qt.nokia.com/developer/changes/changes-%VERSION%}{available online}).
+
+    A list of other Qt 4 features can be found on the
+    \bold{\l{What's New in Qt 4}} page.
+
+    \bold{Highlights}
+
+    \tableofcontents
+
+    \section1 Qt WebKit Integration
+
+    \image webkit-netscape-plugin.png
+
+    The WebKit browser engine included with Qt has been upgraded to the latest
+    upstream (trunk) version of WebKit, bringing the latest features and
+    improvements to Qt applications. These include:
+
+    \list
+    \o Support for full page zooming, with appropriate rescaling of images and fonts.
+    \o The CSS-based transformation and animation features provided by a WebKit
+    extension.
+    \o Performance improvements due to faster JavaScript engine and optimized
+    page loading.
+    \endlist
+
+    Standards compatibility improvements include provision for the Netscape plugin
+    API, allowing most Netscape plugins to be used in-process, support for HTML 5
+    audio and video elements using Qt's Phonon integration, and
+    \l{Web Application Support}{facilities for client-side storage of Web content}.
+
+    \section1 Performance Improvements
+
+    The introduction of the QtBenchLib performance benchmarking library enables
+    performance benchmarking and regression testing. Core parts of Qt itself have
+    undergone focused re-engineering for improved graphics performance, including
+    paint engine and text rendering improvements, Graphics View and style sheet
+    performance improvements.
+
+    The X11 paint engine now uses XSHM (the X shared memory extension), resulting
+    in reduced overhead for painting operations.
+
+    A new OpenGL ES 2.0-based paint engine complements the existing OpenGL paint
+    engine, but with a focus on embedded devices.
+
+    Qt now features a pluggable graphics system, making it possible for users
+    and developers to select raster, OpenGL or native graphics systems to take
+    into account the specific needs of their applications and get the best
+    performance out of them.
+
+    \section1 Mac OS X Cocoa Support
+
+    \image mac-cocoa.png
+
+    Qt for Mac OS X has been substantially rewritten to use Apple's Cocoa API,
+    enabling Qt applications to be deployed on 64-bit Macintosh hardware.
+    In addition, the new QMacCocoaViewContainer and QMacNativeWidget classes
+    provide integration with Cocoa's own features and controls.
+
+    For many applications, a simple recompilation is all that is required
+    to produce an executable for 64-bit systems. Applications that use
+    specific features may require a few changes first.
+
+    \section1 Windows CE Feature Parity
+
+    Qt for Windows CE has been updated to bring features of Qt 4.4 and Qt 4.5
+    to the Windows CE platform, including:
+
+    \list
+    \o Phonon Multimedia Framework, using a Direct-Show based backend for audio
+    and video playback and a Simple WaveOut backend for devices without DirectShow.
+    \o The inclusion of Qt WebKit integration features previously unavailable for
+    Qt 4.4 on Windows CE.
+    \endlist
+
+    Support on all Windows CE platforms; recommended for WinCE 6 and higher.
+
+    The inclusion of these features enables developers to easily integrate Web and
+    multimedia content into Qt applications on Windows CE Standard Edition while
+    retaining full cross-platform compatibility with other Qt platforms.
+
+    \section1 XML Transformations with XSLT
+
+    The QtXmlPatterns module has been extended to cover XSLT, a transformation language
+    for XML documents. A common application of this is the transformation of XML data
+    into human-readable formats for reporting purposes.
+
+    XSLT makes it simple to reformat XML content without changing data structures,
+    removes the need for an intermediate DOM layer for presentation, and enables
+    rapid solutions to be created; for example, creating reports as HTML or PDF.
+
+    \section1 Qt Script Debugger
+
+    \image qtscript-debugger-small.png
+
+    Developers using Qt Script in their applications can take advantage of
+    the new \l{Qt Script Debugger Manual}{Qt Script Debugger} to provide
+    error reporting for scripts, and to let users track down bugs in their
+    own scripts.
+
+    Many standard features of GUI debugging tools are present, allowing the
+    developer to step through running script code, inspect variables,
+    automatically catch exceptions, and set conditional breakpoints.
+
+    \section1 OpenDocument File Format Support
+
+    Qt 4.5 includes support for writing rich text documents as OpenDocument files via
+    the newly-introduced QTextDocumentWriter class. This provides an generic mechanism
+    for file export that can be used to introduce support for additional formats in
+    future releases.
+
+    \section1 Improved Network Proxy Support
+
+    Qt's networking classes have been updated with
+    \l{QtNetwork Module#Support for Network Proxies}{improved proxy support}.
+    This includes improved integration with system proxy settings and the added
+    ability to handle non-trivial proxy cases.
+
+    \section1 Qt Designer Improvements
+
+    \image designer-screenshot-small.png
+
+    Qt Designer 4.5 boasts some improvements on usability, for example:
+
+    \list
+    \o  \bold{Icon Mode} for the widget box which substantially reduces
+        scrolling.
+    \o  \bold{Morphing Widgets} which lets you morph similar widget types,
+        e.g., a QWidget to a QFrame, types via the context menu's
+        \e{Morph into} entry.
+    \o  \bold{Filters} for the \gui{Property Editor} that lets you find
+        properties or widgets quickly.
+    \o  \bold{Find option} for the \gui{Object Inspector} that performs an
+        incremental search on the form's widgets. Also, the objects' layout
+        state is displayed here with using an icon on the left. Broken
+        layouts are represented with the same icon used for the
+        \e{Break Layout} action.
+    \endlist
+
+    In addition, Qt Designer now features an \gui{Embedded Design} tab that can
+    be found in the \gui Preferences dialog. Within this tab, you can define
+    embedded device profiles. These profiles contains screen settings, e.g.,
+    display resolution, default font and default style. Qt Designer will use
+    these settings when you edit forms.
+
+    More information about these improvements can be found in the
+    \l{What's New in Qt Designer 4.6} overview.
+
+    \section1 Qt Linguist Improvements
+
+    Qt Linguist can now load and edit multiple translation files simultaneously.
+
+    Support for XML Localization Interchange File Format (XLIFF) files, previously added
+    to the \c lupdate tool in Qt 4.3, has been improved and extended to the rest of the
+    Qt Linguist toolchain. This enables files stored in Qt's TS translation format to
+    be exported for use with other tools.
+
+    The GNU Gettext PO format, which is commonly used in Open Source projects,
+    is now supported by Qt Linguist.
+
+    Support for a new way to annotate messages, using comments in the source code,
+    has been added to the toolchain. See the QObject::tr() documentation for a detailed
+    description and examples.
+
+    The new \c lconvert filter tool facilitates conversion between file formats and
+    can be used to perform other transformations on collections of translatable strings.
+
+    \section1 Graphics Enhancements
+
+    In addition to the performance improvements in this release, a number of graphics
+    enhancements extend support for existing features to more platforms and expand Qt's
+    core set of features with successful add-ons.
+
+    Widget style sheets can now be used on Mac OS X, making this approach to theming
+    and styling viable for truly cross-platform applications.
+
+    Support for ARGB top-level widgets, previously available as a separate solution,
+    is now provided as an integral part of Qt. This makes it possible to create windows
+    with translucent regions on systems with the appropriate support from the user's
+    window system. See the \l{QWidget#Creating Translucent Windows}{Creating Translucent
+    Windows} section of the QWidget documentation for details of this feature.
 
 
-    \section1 New Feature 2
+    \image gtk-style-screenshot.png
 
-    Describe New Feature 2.
-
+    Improved GTK+ integration provided by the QGtkStyle class improves the look and feel
+    of Qt applications in GNOME and other GTK-based environments. The screenshot above
+    illustrates this clearly.
 */

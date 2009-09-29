@@ -374,6 +374,11 @@ void QWin32PrintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem
             convertToText = false;
             break;
         }
+
+        if (ti.logClusters[i] != i) {
+            convertToText = false;
+            break;
+        }
     }
 
     COLORREF cf = RGB(qRed(brushColor), qGreen(brushColor), qBlue(brushColor));

@@ -1214,7 +1214,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 alignment |= Qt::TextHideMnemonic;
 
             //The rect adjustment is a workaround for the menu not really filling its background.
-            XPThemeData theme(widget, painter, QLatin1String("MENU"), MENU_BARBACKGROUND, 0, option->rect.adjusted(-1, 1 , 2, 1));
+            XPThemeData theme(widget, painter, QLatin1String("MENU"), MENU_BARBACKGROUND, 0, option->rect.adjusted(-1, 0, 2, 1));
             d->drawBackground(theme);
 
             int stateId = MBI_NORMAL;

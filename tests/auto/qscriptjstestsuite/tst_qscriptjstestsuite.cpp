@@ -640,6 +640,7 @@ tst_Suite::tst_Suite()
     addExpectedFailure("ecma_3/Unicode/regress-352044-01.js", "issues with Unicode escape sequences in JavaScript source code", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/Unicode/uc-001.js", "Unicode format-control character test (Category Cf.)", willFixInNextReleaseMessage);
 
+    addFileExclusion(".+/15\\.9\\.2\\..+", "unstable on slow machines");
     addFileExclusion(".+/15\\.9\\.5\\..+", "too slooow");
     addFileExclusion("regress-130451.js", "asserts");
     addFileExclusion("regress-322135-01.js", "asserts");
@@ -679,6 +680,9 @@ tst_Suite::tst_Suite()
     addExpectedFailure("ecma_3/RegExp/regress-311414.js", "RegExp captured tail match should be O(N) BigO 2 < 2", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 7", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 26", willFixInNextReleaseMessage);
+
+    addExpectedFailure("ecma/Expressions/11.4.7-02.js", "-(-2147483648) == 2147483648", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/TypeConversion/9.3.1-3.js", "- -\"0x80000000\"", willFixInNextReleaseMessage);
 
     static const char klass[] = "tst_QScriptJsTestSuite";
 

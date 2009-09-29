@@ -48,6 +48,8 @@
 #include <qtimer.h>
 #include <QStyleFactory>
 
+#include "../../shared/util.h"
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -167,12 +169,13 @@ void tst_QProgressBar::format()
     bar.setRange(0, 10);
     bar.setValue(1);
     bar.show();
+    QTest::qWaitForWindowShown(&bar);
 
-    QTest::qWait(2000);
+    QTest::qWait(20);
     bar.repainted = false;
     bar.setFormat("%v of %m (%p%)");
-    QTest::qWait(2000);
-    QVERIFY(bar.repainted);
+    QTest::qWait(20);
+    QTRY_VERIFY(bar.repainted);
     bar.repainted = false;
     bar.setFormat("%v of %m (%p%)");
     qApp->processEvents();
@@ -197,15 +200,14 @@ void tst_QProgressBar::setValueRepaint()
     pbar.setMaximum(10);
     pbar.setFormat("%v");
     pbar.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&pbar);
-#endif
+    QTest::qWaitForWindowShown(&pbar);
+
     QApplication::processEvents();
     for (int i = pbar.minimum(); i < pbar.maximum(); ++i) {
         pbar.repainted = false;
         pbar.setValue(i);
-        QTest::qWait(500);
-        QVERIFY(pbar.repainted);
+        QTest::qWait(50);
+        QTRY_VERIFY(pbar.repainted);
     }
 }
 

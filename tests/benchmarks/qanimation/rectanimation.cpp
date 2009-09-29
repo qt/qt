@@ -73,9 +73,9 @@ int RectAnimation::duration() const
 }
 
 
-void RectAnimation::updateCurrentTime(int msecs)
+void RectAnimation::updateCurrentTime(int currentTime)
 {
-    qreal progress = m_easing.valueForProgress( qreal(msecs) / qreal(m_dura) );
+    qreal progress = m_easing.valueForProgress( currentTime / qreal(m_dura) );
     QRect now;
     now.setCoords(interpolateInteger(m_start.left(), m_end.left(), progress),
                   interpolateInteger(m_start.top(), m_end.top(), progress),

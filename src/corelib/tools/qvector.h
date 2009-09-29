@@ -373,9 +373,9 @@ QVector<T> &QVector<T>::operator=(const QVector<T> &v)
 template <typename T>
 inline QVectorData *QVector<T>::malloc(int aalloc)
 {
-    QVectorData *data = static_cast<QVectorData *>(qMalloc(sizeOfTypedData() + (aalloc - 1) * sizeof(T)));
-    Q_CHECK_PTR(data);
-    return data;
+    QVectorData *vectordata = static_cast<QVectorData *>(qMalloc(sizeOfTypedData() + (aalloc - 1) * sizeof(T)));
+    Q_CHECK_PTR(vectordata);
+    return vectordata;
 }
 
 template <typename T>

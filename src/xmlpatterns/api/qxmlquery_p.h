@@ -54,7 +54,6 @@
 
 #include <QAbstractMessageHandler>
 #include <QAbstractUriResolver>
-#include <QCoreApplication>
 #include <QPointer>
 #include <QSourceLocation>
 #include <QUrl>

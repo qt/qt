@@ -138,6 +138,7 @@ public:
     void setAttribute(long callId, long elementId, const String& name, const String& value);
     void removeAttribute(long callId, long elementId, const String& name);
     void setTextNodeValue(long callId, long nodeId, const String& value);
+    void copyNode(long nodeId);
 
     // Generic code called from custom implementations.
     void highlight(long nodeId);
@@ -151,6 +152,9 @@ public:
 #endif
 #if ENABLE(DOM_STORAGE)
     void selectDOMStorage(Storage* storage);
+    void getDOMStorageEntries(long callId, long storageId);
+    void setDOMStorageItem(long callId, long storageId, const String& key, const String& value);
+    void removeDOMStorageItem(long callId, long storageId, const String& key);
 #endif
 
 private:

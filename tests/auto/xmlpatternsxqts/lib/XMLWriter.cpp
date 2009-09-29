@@ -311,7 +311,7 @@ public:
                               d->errorString = d->device()->errorString(); \
                               return false; \
                           } \
-                          else
+                          else do {} while (false)
 
 XMLWriter::XMLWriter(QIODevice *outStream) : d(new Private(outStream))
 {

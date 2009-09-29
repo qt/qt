@@ -3297,7 +3297,7 @@ void tst_QNetworkReply::uploadPerformance()
       connect(&reader, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
       QTimer::singleShot(5000, &generator, SLOT(stop()));
 
-      QTestEventLoop::instance().enterLoop(10);
+      QTestEventLoop::instance().enterLoop(30);
       QCOMPARE(reply->error(), QNetworkReply::NoError);
       QVERIFY(!QTestEventLoop::instance().timeout());
 }

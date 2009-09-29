@@ -1430,6 +1430,7 @@ public:
         ImhUppercaseOnly = 0x40000,
         ImhLowercaseOnly = 0x80000,
         ImhDialableCharactersOnly = 0x100000,
+        ImhEmailCharactersOnly = 0x200000,
 
         ImhExclusiveInputMask = 0xffff0000
     };

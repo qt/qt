@@ -53,7 +53,7 @@
     yet also behaves like any other standard Qt widget with support for
     signals and slots, properties, and Qt's action system.
 
-    Usually, QGLWidget is subclassed to display a pure 3D scene; the
+    Usually, QGLWidget is subclassed to display a pure 3D scene.  The
     developer reimplements \l{QGLWidget::initializeGL()}{initializeGL()}
     to initialize any required resources, \l{QGLWidget::resizeGL()}{resizeGL()}
     to set up the projection and viewport, and
@@ -83,7 +83,7 @@
     \snippet examples/opengl/overpainting/glwidget.h 4
 
     As usual, the widget uses \l{QGLWidget::initializeGL()}{initializeGL()}
-    to set up objects for our scene and perform other OpenGL initialization tasks.
+    to set up geometry for our scene and perform OpenGL initialization tasks.
     The \l{QGLWidget::resizeGL()}{resizeGL()} function is used to ensure that
     the 3D graphics in the scene are transformed correctly to the 2D viewport
     displayed in the widget.
@@ -100,7 +100,7 @@
     \c animationTimer to update the widget; the \c createBubbles() function
     initializes the \c bubbles list with instances of a helper class used to
     draw the animation; the \c drawInstructions() function is responsible for
-    a semi-transparent messages that is also overpainted onto the OpenGL scene.
+    a semi-transparent message that is also overpainted onto the OpenGL scene.
 
     \section1 GLWidget Class Implementation
 
@@ -119,8 +119,9 @@
 
     \snippet examples/opengl/overpainting/glwidget.cpp 1
 
-    The \c initializeGL() function is fairly minimal, only setting up the display
-    list used in the scene.
+    The \c initializeGL() function is fairly minimal, only setting up the QtLogo
+    object used in the scene.  See the \l{Hello GL Example}{Hello GL} example
+    for details of the QtLogo class.
 
     \snippet examples/opengl/overpainting/glwidget.cpp 2
 
@@ -159,7 +160,7 @@
 
     \snippet examples/opengl/overpainting/glwidget.cpp 7
 
-    Once the list containing the object has been executed, the GL
+    Once the QtLogo object's draw method has been executed, the GL
     states we changed and the matrix stack needs to be restored to its
     original state at the start of this function before we can begin
     overpainting:
@@ -175,6 +176,12 @@
 
     When QPainter::end() is called, suitable OpenGL-specific calls are made to
     write the scene, and its additional contents, onto the widget.
+
+    With \l{QGLWidget::paintGL()}{paintGL()} the
+    \l{QGLWidget::swapBuffers()}{swapBuffers()} call is done for us.  But an explicit
+    call to swapBuffers() is still not required because in the
+    \l{QWidget::paintEvent()}{paintEvent()} method the QPainter on the OpenGL
+    widget takes care of this for us.
 
     The implementation of the \l{QGLWidget::resizeGL()}{resizeGL()} function
     sets up the dimensions of the viewport and defines a projection

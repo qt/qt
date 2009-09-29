@@ -58,6 +58,7 @@ static bool hasBoxDecorationsWithBackgroundImage(const RenderStyle*);
 RenderLayerBacking::RenderLayerBacking(RenderLayer* layer)
     : m_owningLayer(layer)
     , m_hasDirectlyCompositedContent(false)
+    , m_artificiallyInflatedBounds(false)
 {
     createGraphicsLayer();
 }
@@ -123,6 +124,30 @@ void RenderLayerBacking::updateLayerTransform()
     m_graphicsLayer->setTransform(t);
 }
 
+static bool hasNonZeroTransformOrigin(const RenderObject* renderer)
+{
+    RenderStyle* style = renderer->style();
+    return (style->transformOriginX().type() == Fixed && style->transformOriginX().value())
+        || (style->transformOriginY().type() == Fixed && style->transformOriginY().value());
+}
+
+void RenderLayerBacking::updateCompositedBounds()
+{
+    IntRect layerBounds = compositor()->calculateCompositedBounds(m_owningLayer, m_owningLayer);
+
+    // If the element has a transform-origin that has fixed lengths, and the renderer has zero size,
+    // then we need to ensure that the compositing layer has non-zero size so that we can apply
+    // the transform-origin via the GraphicsLayer anchorPoint (which is expressed as a fractional value).
+    if (layerBounds.isEmpty() && hasNonZeroTransformOrigin(renderer())) {
+        layerBounds.setWidth(1);
+        layerBounds.setHeight(1);
+        m_artificiallyInflatedBounds = true;
+    } else
+        m_artificiallyInflatedBounds = false;
+
+    setCompositedBounds(layerBounds);
+}
+
 void RenderLayerBacking::updateAfterLayout(UpdateDepth updateDepth)
 {
     RenderLayerCompositor* layerCompositor = compositor();
@@ -134,7 +159,7 @@ void RenderLayerBacking::updateAfterLayout(UpdateDepth updateDepth)
         //
         // The solution is to update compositing children of this layer here,
         // via updateCompositingChildrenGeometry().
-        setCompositedBounds(layerCompositor->calculateCompositedBounds(m_owningLayer, m_owningLayer));
+        updateCompositedBounds();
         layerCompositor->updateCompositingDescendantGeometry(m_owningLayer, m_owningLayer, updateDepth);
         
         if (!m_owningLayer->parent()) {
@@ -232,10 +257,7 @@ void RenderLayerBacking::updateGraphicsLayerGeometry()
         // Call calculateRects to get the backgroundRect which is what is used to clip the contents of this
         // layer. Note that we call it with temporaryClipRects = true because normally when computing clip rects
         // for a compositing layer, rootLayer is the layer itself.
-        ClipRects parentRects;
-        m_owningLayer->parentClipRects(compAncestor, parentRects, true);
-        IntRect parentClipRect = parentRects.overflowClipRect();
-        
+        IntRect parentClipRect = m_owningLayer->backgroundClipRect(compAncestor, true);
         m_ancestorClippingLayer->setPosition(FloatPoint() + (parentClipRect.location() - graphicsLayerParentLocation));
         m_ancestorClippingLayer->setSize(parentClipRect.size());
 
@@ -327,7 +349,7 @@ void RenderLayerBacking::updateGraphicsLayerGeometry()
 
     m_graphicsLayer->setContentsRect(contentsBox());
     if (!m_hasDirectlyCompositedContent)
-        m_graphicsLayer->setDrawsContent(!isSimpleContainerCompositingLayer() && !paintingGoesToWindow());
+        m_graphicsLayer->setDrawsContent(!isSimpleContainerCompositingLayer() && !paintingGoesToWindow() && !m_artificiallyInflatedBounds);
 }
 
 void RenderLayerBacking::updateInternalHierarchy()
@@ -1059,7 +1081,8 @@ bool RenderLayerBacking::startTransition(double beginTime, int property, const R
             KeyframeValueList opacityVector(AnimatedPropertyOpacity);
             opacityVector.insert(new FloatAnimationValue(0, compositingOpacity(fromStyle->opacity())));
             opacityVector.insert(new FloatAnimationValue(1, compositingOpacity(toStyle->opacity())));
-            if (m_graphicsLayer->addAnimation(opacityVector, toRenderBox(renderer())->borderBoxRect().size(), opacityAnim, String(), beginTime))
+            // The boxSize param is only used for transform animations (which can only run on RenderBoxes), so we pass an empty size here.
+            if (m_graphicsLayer->addAnimation(opacityVector, IntSize(), opacityAnim, String(), beginTime))
                 didAnimate = true;
         }
     }

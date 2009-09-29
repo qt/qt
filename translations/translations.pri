@@ -30,11 +30,13 @@ ts-qt.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
                                     activeqt \
                                     corelib \
                                     gui \
+                                    multimedia \
                                     network \
                                     opengl \
                                     plugins \
                                     qt3support \
                                     script \
+                                    scripttools \
                                     sql \
                                     svg \
                                     xml \

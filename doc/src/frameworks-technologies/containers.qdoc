@@ -267,7 +267,10 @@
 
     Iterators provide a uniform means to access items in a container.
     Qt's container classes provide two types of iterators: Java-style
-    iterators and STL-style iterators.
+    iterators and STL-style iterators. Iterators of both types are
+    invalidated when the data in the container is modified or detached
+    from \l{Implicit Sharing}{implicitly shared copies} due to a call
+    to a non-const member function.
 
     \section2 Java-Style Iterators
 

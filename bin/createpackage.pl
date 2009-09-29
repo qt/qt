@@ -146,9 +146,9 @@ my $signed_sis_name = $pkgoutputbasename.".sis";
 my $scriptpath = dirname(__FILE__);
 my $certtext = $certificate;
 my $certpath = $scriptpath;
-$certpath =~ s-^(.*[^\\])$-$1\\-o;      # ensure path ends with a backslash
-$certpath = $certpath."../";            # certificates are one step up in hierarcy
-$certpath =~ s-/-\\-go;	                # for those working with UNIX shells
+$certpath =~ s-^(.*[^\\])$-$1\\-o;          # ensure path ends with a backslash
+$certpath =~ s-/-\\-go;                     # for those working with UNIX shells
+$certpath =~ s-bin\\$-src\\s60installs\\-;  # certificates are one step up in hierarcy
 
 # Check some pre-conditions and print error messages if needed
 unless (length($templatepkg) && length($platform) && length($target)) {

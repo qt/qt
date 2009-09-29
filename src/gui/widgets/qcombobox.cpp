@@ -63,8 +63,8 @@
 #include <private/qcombobox_p.h>
 #include <private/qabstractitemmodel_p.h>
 #include <private/qabstractscrollarea_p.h>
+#include <private/qsoftkeymanager_p.h>
 #include <qdebug.h>
-#include <private/qactiontokeyeventmapper_p.h>
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
 #endif
@@ -402,6 +402,13 @@ QComboBoxPrivateContainer::QComboBoxPrivateContainer(QAbstractItemView *itemView
     layout->setSpacing(0);
     layout->setMargin(0);
 
+#ifdef QT_SOFTKEYS_ENABLED
+    selectAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::SelectSoftKey, Qt::Key_Select, itemView);
+    cancelAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::CancelSoftKey, Qt::Key_Escape, itemView);
+    addAction(selectAction);
+    addAction(cancelAction);
+#endif
+
     // set item view
     setItemView(itemView);
 
@@ -564,6 +571,11 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
             this, SLOT(setCurrentIndex(QModelIndex)));
     connect(view, SIGNAL(destroyed()),
             this, SLOT(viewDestroyed()));
+
+#ifdef QT_SOFTKEYS_ENABLED
+    selectAction->setParent(itemView);
+    cancelAction->setParent(itemView);
+#endif
 }
 
 /*!
@@ -629,9 +641,6 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
         case Qt::Key_Select:
 #endif
             if (view->currentIndex().isValid() && (view->currentIndex().flags() & Qt::ItemIsEnabled) ) {
-#ifdef QT_KEYPAD_NAVIGATION
-                QActionToKeyEventMapper::removeSoftkey(this);
-#endif
                 combo->hidePopup();
                 emit itemSelected(view->currentIndex());
             }
@@ -642,10 +651,6 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
             // fall through
         case Qt::Key_F4:
         case Qt::Key_Escape:
-#ifdef QT_KEYPAD_NAVIGATION
-        case Qt::Key_Back:
-            QActionToKeyEventMapper::removeSoftkey(this);
-#endif
             combo->hidePopup();
             return true;
         default:
@@ -2477,7 +2482,6 @@ void QComboBox::showPopup()
 #ifdef QT_KEYPAD_NAVIGATION
     if (QApplication::keypadNavigationEnabled())
         view()->setEditFocus(true);
-    QActionToKeyEventMapper::addSoftKey(QAction::CancelSoftKey, Qt::Key_Back, view());
 #endif
 }
 

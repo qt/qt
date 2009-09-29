@@ -1245,11 +1245,11 @@ QGLFormat::OpenGLVersionFlags QGLFormat::openGLVersionFlags()
         if (cachedDefault) {
             return defaultVersionFlags;
         } else {
-            cachedDefault = true;
             if (!hasOpenGL())
                 return defaultVersionFlags;
             dummy = new QGLWidget;
             dummy->makeCurrent(); // glGetString() needs a current context
+            cachedDefault = true;
         }
     }
 
@@ -1430,6 +1430,7 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
 #endif
 #if defined(QT_OPENGL_ES)
     eglContext = 0;
+    eglSurface = EGL_NO_SURFACE;
 #endif
     fbo = 0;
     crWin = false;
@@ -1623,9 +1624,8 @@ void QGLTextureCache::pixmapCleanupHook(QPixmap* pixmap)
     }
 #if defined(Q_WS_X11)
     QPixmapData *pd = pixmap->data_ptr().data();
-    // Only need to delete the gl surface if the pixmap is about to be deleted
-    if (pd->ref == 0)
-        QGLContextPrivate::destroyGlSurfaceForPixmap(pd);
+    Q_ASSERT(pd->ref == 1); // Make sure reference counting isn't broken
+    QGLContextPrivate::destroyGlSurfaceForPixmap(pd);
 #endif
 }
 
@@ -2513,6 +2513,8 @@ void qt_add_texcoords_to_array(qreal x1, qreal y1, qreal x2, qreal y2, q_vertexT
     array[7] = f2vt(y2);
 }
 
+#if !defined(QT_OPENGL_ES_2)
+
 static void qDrawTextureRect(const QRectF &target, GLint textureWidth, GLint textureHeight, GLenum textureTarget)
 {
     q_vertexType tx = f2vt(1);
@@ -2541,7 +2543,6 @@ static void qDrawTextureRect(const QRectF &target, GLint textureWidth, GLint tex
     q_vertexType vertexArray[4*2];
     qt_add_rect_to_array(target, vertexArray);
 
-#if !defined(QT_OPENGL_ES_2)
     glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray);
     glTexCoordPointer(2, q_vertexTypeEnum, 0, texCoordArray);
 
@@ -2551,8 +2552,9 @@ static void qDrawTextureRect(const QRectF &target, GLint textureWidth, GLint tex
 
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-#endif
 }
+
+#endif // !QT_OPENGL_ES_2
 
 /*!
     \since 4.4
@@ -2560,9 +2562,12 @@ static void qDrawTextureRect(const QRectF &target, GLint textureWidth, GLint tex
     Draws the given texture, \a textureId, to the given target rectangle,
     \a target, in OpenGL model space. The \a textureTarget should be a 2D
     texture target.
+
+    \note This function is not supported under OpenGL/ES 2.0.
 */
 void QGLContext::drawTexture(const QRectF &target, GLuint textureId, GLenum textureTarget)
 {
+#ifndef QT_OPENGL_ES_2
 #ifdef QT_OPENGL_ES
     if (textureTarget != GL_TEXTURE_2D) {
         qWarning("QGLContext::drawTexture(): texture target must be GL_TEXTURE_2D on OpenGL ES");
@@ -2586,6 +2591,12 @@ void QGLContext::drawTexture(const QRectF &target, GLuint textureId, GLenum text
         glDisable(textureTarget);
     glBindTexture(textureTarget, oldTexture);
 #endif
+#else
+    Q_UNUSED(target);
+    Q_UNUSED(textureId);
+    Q_UNUSED(textureTarget);
+    qWarning("drawTexture(const QRectF &target, GLuint textureId, GLenum textureTarget) not supported with OpenGL ES/2.0");
+#endif
 }
 
 #ifdef Q_MAC_COMPAT_GL_FUNCTIONS
@@ -2601,6 +2612,8 @@ void QGLContext::drawTexture(const QRectF &target, QMacCompatGLuint textureId, Q
 
     Draws the given texture at the given \a point in OpenGL model
     space. The \a textureTarget should be a 2D texture target.
+
+    \note This function is not supported under OpenGL/ES.
 */
 void QGLContext::drawTexture(const QPointF &point, GLuint textureId, GLenum textureTarget)
 {

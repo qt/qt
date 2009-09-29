@@ -1502,7 +1502,17 @@ QTransform QMatrix4x4::toTransform(qreal distanceToPlane) const
 
     Maps \a point by multiplying this matrix by \a point.
 
-    \sa mapRect()
+    \sa mapRect(), mapVector()
+*/
+
+/*!
+    \fn QVector3D QMatrix4x4::mapVector(const QVector3D& vector) const
+
+    Maps \a vector by multiplying the top 3x3 portion of this matrix
+    by \a vector.  The translation and projection components of
+    this matrix are ignored.
+
+    \sa map()
 */
 
 #endif

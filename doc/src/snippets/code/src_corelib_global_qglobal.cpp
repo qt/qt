@@ -529,3 +529,6 @@ class MyClass : public QObject
 		qFuzzyCompare(1 + 0.0, 1 + 1.0e-200); // This will return true
 //! [46]
 
+//! [47]
+CApaApplication *myApplicationFactory();
+//! [47]

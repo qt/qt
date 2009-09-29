@@ -5,7 +5,7 @@ die() {
     exit 1
 }
 
-default_tag="qtwebkit-4.6-snapshot-18092009"
+default_tag="qtwebkit-4.6-snapshot-29092009-2"
 
 if [ $# -eq 0 ]; then
     tag="$default_tag"
@@ -42,7 +42,7 @@ excluded_directories="$excluded_directories JavaScriptCore/JavaScriptCore.xcodep
 excluded_directories="$excluded_directories JavaScriptCore/tests"
 excluded_directories="$excluded_directories JavaScriptCore/API/tests"
 excluded_directories="$excluded_directories JavaScriptCore/JavaScriptCore.vcproj"
-excluded_directories="$excluded_directories JavaScriptCore/JavaScriptCore.pro"
+excluded_directories="$excluded_directories JavaScriptCore/JavaScriptCore.gyp"
 excluded_directories="$excluded_directories JavaScriptCore/wtf/wx"
 excluded_directories="$excluded_directories JavaScriptCore/wtf/gtk"
 excluded_directories="$excluded_directories JavaScriptCore/wtf/mac"
@@ -51,9 +51,12 @@ excluded_directories="$excluded_directories JavaScriptCore/wtf/chromium"
 excluded_directories="$excluded_directories JavaScriptCore/wtf/haiku"
 
 excluded_directories="$excluded_directories WebCore/WebCore.vcproj"
+excluded_directories="$excluded_directories WebCore/WebCore.gyp"
 excluded_directories="$excluded_directories WebCore/DerivedSources.make"
 excluded_directories="$excluded_directories WebCore/GNUmakefile.am"
 excluded_directories="$excluded_directories WebCore/WebCore.base.exp"
+excluded_directories="$excluded_directories WebCore/WebCore.PluginHostProcess.exp"
+excluded_directories="$excluded_directories WebCore/WebCore.OrientationEvents.exp"
 excluded_directories="$excluded_directories WebCore/WebCore.xcodeproj"
 excluded_directories="$excluded_directories WebCore/Configurations"
 
@@ -145,6 +148,7 @@ excluded_directories="$excluded_directories WebKit/win"
 excluded_directories="$excluded_directories WebKit/wx"
 excluded_directories="$excluded_directories WebKit/cf"
 excluded_directories="$excluded_directories WebKit/haiku"
+excluded_directories="$excluded_directories WebKit/chromium"
 
 excluded_directories="$excluded_directories WebKit/English.lproj WebKit/WebKit.xcodeproj"
 excluded_directories="$excluded_directories WebCore/English.lproj"
@@ -193,6 +197,9 @@ files_to_remove="$files_to_remove WebKit.pro"
 
 files_to_remove="$files_to_remove WebKit/qt/QtLauncher/QtLauncher.pro"
 files_to_remove="$files_to_remove WebKit/qt/QtLauncher/main.cpp"
+
+files_to_remove="$files_to_remove WebKit/qt/QGVLauncher/QGVLauncher.pro"
+files_to_remove="$files_to_remove WebKit/qt/QGVLauncher/main.cpp"
 
 files_to_remove="$files_to_remove JavaScriptCore/AllInOneFile.cpp"
 files_to_remove="$files_to_remove JavaScriptCore/JavaScriptCoreSources.bkl"

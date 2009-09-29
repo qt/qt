@@ -145,7 +145,7 @@ JSDOMImplementation::JSDOMImplementation(PassRefPtr<Structure> structure, JSDOMG
 
 JSDOMImplementation::~JSDOMImplementation()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSDOMImplementation::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

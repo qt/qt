@@ -120,6 +120,13 @@ void TimeoutChecker::reset()
     m_timeExecuting = 0;
 }
 
+void TimeoutChecker::copyTimeoutValues(TimeoutChecker* other)
+{
+    m_timeoutInterval = other->m_timeoutInterval;
+    m_startCount = other->m_startCount;
+    m_intervalBetweenChecks = other->m_intervalBetweenChecks;
+}
+
 bool TimeoutChecker::didTimeOut(ExecState* exec)
 {
     unsigned currentTime = getCPUTime();

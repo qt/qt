@@ -419,6 +419,26 @@ void QGraphicsLayout::widgetEvent(QEvent *e)
     \sa itemAt(), count()
 */
 
+/*!
+    \since 4.6
+
+    This function is a convenience function provided for custom layouts, and will go through
+    all items in the layout and reparent their graphics items to the closest QGraphicsWidget
+    ancestor of the layout.
+
+    If \a layoutItem is already in a different layout, it will be removed  from that layout.
+
+    If custom layouts want special behaviour they can ignore to use this function, and implement
+    their own behaviour.
+
+    \sa graphicsItem()
+ */
+void QGraphicsLayout::addChildLayoutItem(QGraphicsLayoutItem *layoutItem)
+{
+    Q_D(QGraphicsLayout);
+    d->addChildLayoutItem(layoutItem);
+}
+
 QT_END_NAMESPACE
 
 #endif //QT_NO_GRAPHICSVIEW

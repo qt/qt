@@ -61,8 +61,8 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Gui)
 
 #ifdef Q_WS_S60
-    IMPORT_C void qt_symbian_show_toplevel(CEikMenuPane* menuPane);
-    IMPORT_C void qt_symbian_show_submenu(CEikMenuPane* menuPane, int id);
+void qt_symbian_show_toplevel(CEikMenuPane* menuPane);
+void qt_symbian_show_submenu(CEikMenuPane* menuPane, int id);
 #endif // Q_WS_S60
 
 #ifndef QT_NO_MENU

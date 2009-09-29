@@ -45,12 +45,17 @@
 #include <math.h>
 
 #include "glwidget.h"
+#include "qtlogo.h"
+
+#ifndef GL_MULTISAMPLE
+#define GL_MULTISAMPLE  0x809D
+#endif
 
 //! [0]
 GLWidget::GLWidget(QWidget *parent)
-    : QGLWidget(parent)
+    : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
 {
-    object = 0;
+    logo = 0;
     xRot = 0;
     yRot = 0;
     zRot = 0;
@@ -63,8 +68,6 @@ GLWidget::GLWidget(QWidget *parent)
 //! [1]
 GLWidget::~GLWidget()
 {
-    makeCurrent();
-    glDeleteLists(object, 1);
 }
 //! [1]
 
@@ -83,10 +86,18 @@ QSize GLWidget::sizeHint() const
 }
 //! [4]
 
+static void qNormalizeAngle(int &angle)
+{
+    while (angle < 0)
+        angle += 360 * 16;
+    while (angle > 360 * 16)
+        angle -= 360 * 16;
+}
+
 //! [5]
 void GLWidget::setXRotation(int angle)
 {
-    normalizeAngle(&angle);
+    qNormalizeAngle(angle);
     if (angle != xRot) {
         xRot = angle;
         emit xRotationChanged(angle);
@@ -97,7 +108,7 @@ void GLWidget::setXRotation(int angle)
 
 void GLWidget::setYRotation(int angle)
 {
-    normalizeAngle(&angle);
+    qNormalizeAngle(angle);
     if (angle != yRot) {
         yRot = angle;
         emit yRotationChanged(angle);
@@ -107,7 +118,7 @@ void GLWidget::setYRotation(int angle)
 
 void GLWidget::setZRotation(int angle)
 {
-    normalizeAngle(&angle);
+    qNormalizeAngle(angle);
     if (angle != zRot) {
         zRot = angle;
         emit zRotationChanged(angle);
@@ -119,10 +130,18 @@ void GLWidget::setZRotation(int angle)
 void GLWidget::initializeGL()
 {
     qglClearColor(qtPurple.dark());
-    object = makeObject();
-    glShadeModel(GL_FLAT);
+
+    logo = new QtLogo(this, 64);
+    logo->setColor(qtGreen.dark());
+
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+    glShadeModel(GL_SMOOTH);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_MULTISAMPLE);
+    static GLfloat lightPosition[4] = { 0.5, 5.0, 7.0, 1.0 };
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 }
 //! [6]
 
@@ -135,7 +154,7 @@ void GLWidget::paintGL()
     glRotated(xRot / 16.0, 1.0, 0.0, 0.0);
     glRotated(yRot / 16.0, 0.0, 1.0, 0.0);
     glRotated(zRot / 16.0, 0.0, 0.0, 1.0);
-    glCallList(object);
+    logo->draw();
 }
 //! [7]
 
@@ -147,7 +166,7 @@ void GLWidget::resizeGL(int width, int height)
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(-0.5, +0.5, +0.5, -0.5, 4.0, 15.0);
+    glOrtho(-0.5, +0.5, -0.5, +0.5, 4.0, 15.0);
     glMatrixMode(GL_MODELVIEW);
 }
 //! [8]
@@ -175,92 +194,3 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
     lastPos = event->pos();
 }
 //! [10]
-
-GLuint GLWidget::makeObject()
-{
-    GLuint list = glGenLists(1);
-    glNewList(list, GL_COMPILE);
-
-    glBegin(GL_QUADS);
-
-    GLdouble x1 = +0.06;
-    GLdouble y1 = -0.14;
-    GLdouble x2 = +0.14;
-    GLdouble y2 = -0.06;
-    GLdouble x3 = +0.08;
-    GLdouble y3 = +0.00;
-    GLdouble x4 = +0.30;
-    GLdouble y4 = +0.22;
-
-    quad(x1, y1, x2, y2, y2, x2, y1, x1);
-    quad(x3, y3, x4, y4, y4, x4, y3, x3);
-
-    extrude(x1, y1, x2, y2);
-    extrude(x2, y2, y2, x2);
-    extrude(y2, x2, y1, x1);
-    extrude(y1, x1, x1, y1);
-    extrude(x3, y3, x4, y4);
-    extrude(x4, y4, y4, x4);
-    extrude(y4, x4, y3, x3);
-
-    const double Pi = 3.14159265358979323846;
-    const int NumSectors = 200;
-
-    for (int i = 0; i < NumSectors; ++i) {
-        double angle1 = (i * 2 * Pi) / NumSectors;
-        GLdouble x5 = 0.30 * sin(angle1);
-        GLdouble y5 = 0.30 * cos(angle1);
-        GLdouble x6 = 0.20 * sin(angle1);
-        GLdouble y6 = 0.20 * cos(angle1);
-
-        double angle2 = ((i + 1) * 2 * Pi) / NumSectors;
-        GLdouble x7 = 0.20 * sin(angle2);
-        GLdouble y7 = 0.20 * cos(angle2);
-        GLdouble x8 = 0.30 * sin(angle2);
-        GLdouble y8 = 0.30 * cos(angle2);
-
-        quad(x5, y5, x6, y6, x7, y7, x8, y8);
-
-        extrude(x6, y6, x7, y7);
-        extrude(x8, y8, x5, y5);
-    }
-
-    glEnd();
-
-    glEndList();
-    return list;
-}
-
-void GLWidget::quad(GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y2,
-                    GLdouble x3, GLdouble y3, GLdouble x4, GLdouble y4)
-{
-    qglColor(qtGreen);
-
-    glVertex3d(x1, y1, -0.05);
-    glVertex3d(x2, y2, -0.05);
-    glVertex3d(x3, y3, -0.05);
-    glVertex3d(x4, y4, -0.05);
-
-    glVertex3d(x4, y4, +0.05);
-    glVertex3d(x3, y3, +0.05);
-    glVertex3d(x2, y2, +0.05);
-    glVertex3d(x1, y1, +0.05);
-}
-
-void GLWidget::extrude(GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y2)
-{
-    qglColor(qtGreen.dark(250 + int(100 * x1)));
-
-    glVertex3d(x1, y1, +0.05);
-    glVertex3d(x2, y2, +0.05);
-    glVertex3d(x2, y2, -0.05);
-    glVertex3d(x1, y1, -0.05);
-}
-
-void GLWidget::normalizeAngle(int *angle)
-{
-    while (*angle < 0)
-        *angle += 360 * 16;
-    while (*angle > 360 * 16)
-        *angle -= 360 * 16;
-}

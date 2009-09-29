@@ -144,7 +144,7 @@ JSStorage::JSStorage(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalO
 
 JSStorage::~JSStorage()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSStorage::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

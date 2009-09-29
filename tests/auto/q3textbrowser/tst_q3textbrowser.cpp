@@ -84,9 +84,7 @@ void tst_Q3TextBrowser::initTestCase()
     testWidget->move(QApplication::desktop()->availableGeometry().topLeft()+QPoint(5, 5));
 
     testWidget->show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(testWidget);
-#endif
+    QTest::qWaitForWindowShown(testWidget);
     qApp->processEvents();
 }
 
@@ -99,6 +97,7 @@ void tst_Q3TextBrowser::setFont()
 {
     QFont f("Courier", 6);
     testWidget->setFont(f);
+    f = f.resolve(testWidget->font());
     QVERIFY(testWidget->font() == f);
 }
 

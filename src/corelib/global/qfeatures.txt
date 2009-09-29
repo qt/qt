@@ -612,7 +612,7 @@ SeeAlso: ???
 Feature: PRINTPREVIEWDIALOG
 Description: Provides a dialog for previewing and configuring page layouts for printer output.
 Section: Dialogs
-Requires: PRINTPREVIEWWIDGET PRINTDIALOG
+Requires: PRINTPREVIEWWIDGET PRINTDIALOG MAINWINDOW
 Name: QPrintPreviewDialog
 SeeAlso: ???
 

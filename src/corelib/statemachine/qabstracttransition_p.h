@@ -56,7 +56,7 @@
 #include <private/qobject_p.h>
 
 #include <QtCore/qlist.h>
-#include <QtCore/qpointer.h>
+#include <QtCore/qsharedpointer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -80,7 +80,7 @@ public:
     QStateMachine *machine() const;
     void emitTriggered();
 
-    QList<QPointer<QAbstractState> > targetStates;
+    QList<QWeakPointer<QAbstractState> > targetStates;
 
 #ifndef QT_NO_ANIMATION
     QList<QAbstractAnimation*> animations;

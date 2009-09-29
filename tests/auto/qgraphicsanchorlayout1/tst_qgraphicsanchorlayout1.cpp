@@ -43,7 +43,8 @@
 #include <QtTest/QtTest>
 #include <QTest>
 #include <QMetaType>
-#include <QGraphicsAnchorLayout>
+#include <QtGui/qgraphicsanchorlayout.h>
+#include <private/qgraphicsanchorlayout_p.h>
 
 #define TEST_COMPLEX_CASES
 
@@ -58,10 +59,9 @@ public:
         setSpacing( 0 );
     }
 
-    // ###: Remove me when isValid() is supported
     bool isValid()
     {
-        return true;
+        return !QGraphicsAnchorLayoutPrivate::get(this)->hasConflicts();
     }
 
     void setAnchor(
@@ -463,9 +463,6 @@ void tst_QGraphicsAnchorLayout1::testAddAndRemoveAnchor()
 
 void tst_QGraphicsAnchorLayout1::testIsValid()
 {
-    // ###: REMOVE ME
-    return;
-
     // Empty, valid
     {
     QGraphicsWidget *widget = new QGraphicsWidget;

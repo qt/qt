@@ -1045,7 +1045,9 @@ void setJSDocumentTitle(ExecState* exec, JSObject* thisObject, JSValue value)
 void setJSDocumentDomain(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    imp->setDomain(valueToStringWithNullCheck(exec, value));
+    ExceptionCode ec = 0;
+    imp->setDomain(valueToStringWithNullCheck(exec, value), ec);
+    setDOMException(exec, ec);
 }
 
 void setJSDocumentCookie(ExecState* exec, JSObject* thisObject, JSValue value)

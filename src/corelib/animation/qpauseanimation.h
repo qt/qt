@@ -68,7 +68,7 @@ public:
 
 protected:
     bool event(QEvent *e);
-    void updateCurrentTime(int msecs);
+    void updateCurrentTime(int);
 
 private:
     Q_DISABLE_COPY(QPauseAnimation)

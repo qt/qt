@@ -61,8 +61,6 @@ QT_BEGIN_NAMESPACE
 #  define QSBDEBUG if (false) qDebug
 #endif
 
-static bool isIntermediateValueHelper(qint64 num, qint64 minimum, qint64 maximum, qint64 *match = 0);
-
 class QSpinBoxPrivate : public QAbstractSpinBoxPrivate
 {
     Q_DECLARE_PUBLIC(QSpinBox)
@@ -74,7 +72,6 @@ public:
     virtual QString textFromValue(const QVariant &n) const;
     QVariant validateAndInterpret(QString &input, int &pos,
                                   QValidator::State &state) const;
-    bool isIntermediateValue(const QString &str) const;
     QChar thousand;
 
     inline void init() {
@@ -90,7 +87,6 @@ class QDoubleSpinBoxPrivate : public QAbstractSpinBoxPrivate
 public:
     QDoubleSpinBoxPrivate(QWidget *parent = 0);
     void emitSignals(EmitPolicy ep, const QVariant &);
-    bool isIntermediateValue(const QString &str) const;
 
     virtual QVariant valueFromText(const QString &n) const;
     virtual QString textFromValue(const QVariant &n) const;
@@ -991,51 +987,6 @@ QVariant QSpinBoxPrivate::valueFromText(const QString &text) const
 
 
 /*!
-  \internal
-
-  Return true if str can become a number which is between minimum and
-  maximum or false if this is not possible.
-*/
-
-bool QSpinBoxPrivate::isIntermediateValue(const QString &str) const
-{
-    const int num = locale.toInt(str, 0, 10);
-    const int min = minimum.toInt();
-    const int max = maximum.toInt();
-
-    int numDigits = 0;
-    int digits[10];
-    int tmp = num;
-    if (tmp == 0) {
-        numDigits = 1;
-        digits[0] = 0;
-    } else {
-        tmp = num;
-        for (int i=0; tmp != 0; ++i) {
-            digits[numDigits++] = qAbs(tmp % 10);
-            tmp /= 10;
-        }
-    }
-
-    int failures = 0;
-    for (int number=min; /*number<=max*/; ++number) {
-        tmp = number;
-        for (int i=0; tmp != 0;) {
-            if (digits[i] == qAbs(tmp % 10)) {
-                if (++i == numDigits)
-                    return true;
-            }
-            tmp /= 10;
-        }
-        if (failures++ == 500000) //upper bound
-            return true;
-        if (number == max) // needed for INT_MAX
-            break;
-    }
-    return false;
-}
-
-/*!
     \internal Multi purpose function that parses input, sets state to
     the appropriate state and returns the value it will be interpreted
     as.
@@ -1089,9 +1040,8 @@ QVariant QSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
                 state = QValidator::Invalid;
                 QSBDEBUG() << __FILE__ << __LINE__<< "state is set to Invalid";
             } else {
-                state = isIntermediateValue(copy) ? QValidator::Intermediate : QValidator::Invalid;
-                QSBDEBUG() << __FILE__ << __LINE__<< "state is set to "
-                           << (state == QValidator::Intermediate ? "Intermediate" : "Acceptable");
+                state = QValidator::Intermediate;
+                QSBDEBUG() << __FILE__ << __LINE__<< "state is set to Intermediate";
             }
         }
     }
@@ -1150,105 +1100,6 @@ void QDoubleSpinBoxPrivate::emitSignals(EmitPolicy ep, const QVariant &old)
     }
 }
 
-
-bool QDoubleSpinBoxPrivate::isIntermediateValue(const QString &str) const
-{
-    QSBDEBUG() << "input is" << str << minimum << maximum;
-    qint64 dec = 1;
-    for (int i=0; i<decimals; ++i)
-        dec *= 10;
-
-    const QLatin1Char dot('.');
-
-    // I know QString::number() uses CLocale so I use dot
-    const QString minstr = QString::number(minimum.toDouble(), 'f', decimals);
-    bool ok;
-    qint64 min_left = minstr.left(minstr.indexOf(dot)).toLongLong(&ok);
-    if (!ok)
-        return false;
-    qint64 min_right = minstr.mid(minstr.indexOf(dot) + 1).toLongLong();
-
-    const QString maxstr = QString::number(maximum.toDouble(), 'f', decimals);
-    qint64 max_left = maxstr.left(maxstr.indexOf(dot)).toLongLong(&ok);
-    if (!ok)
-        return true;
-    qint64 max_right = maxstr.mid(maxstr.indexOf(dot) + 1).toLongLong();
-
-    const int dotindex = str.indexOf(delimiter);
-    const bool negative = maximum.toDouble() < 0;
-    qint64 left = 0, right = 0;
-    bool doleft = true;
-    bool doright = true;
-    if (dotindex == -1) {
-        left = str.toLongLong();
-        doright = false;
-    } else if (dotindex == 0 || (dotindex == 1 && str.at(0) == QLatin1Char('+'))) {
-        if (negative) {
-            QSBDEBUG() << __FILE__ << __LINE__ << "returns false";
-            return false;
-        }
-        doleft = false;
-        right = str.mid(dotindex + 1).toLongLong();
-    } else if (dotindex == 1 && str.at(0) == QLatin1Char('-')) {
-        if (!negative) {
-            QSBDEBUG() << __FILE__ << __LINE__ << "returns false";
-            return false;
-        }
-        doleft = false;
-        right = str.mid(dotindex + 1).toLongLong();
-    } else {
-        left = str.left(dotindex).toLongLong();
-        if (dotindex == str.size() - 1) {
-            doright = false;
-        } else {
-            right = str.mid(dotindex + 1).toLongLong();
-        }
-    }
-    if ((left >= 0 && max_left < 0 && !str.startsWith(QLatin1Char('-'))) || (left < 0 && min_left >= 0)) {
-        QSBDEBUG("returns false 0");
-        return false;
-    }
-
-    qint64 match = min_left;
-    if (doleft && !isIntermediateValueHelper(left, min_left, max_left, &match)) {
-        QSBDEBUG() << __FILE__ << __LINE__ << "returns false";
-        return false;
-    }
-    if (doright) {
-        QSBDEBUG() << "match" << match << "min_left" << min_left << "max_left" << max_left;
-        if (!doleft) {
-            if (min_left == max_left) {
-                const bool ret = isIntermediateValueHelper(qAbs(left),
-                                                           negative ? max_right : min_right,
-                                                           negative ? min_right : max_right);
-                QSBDEBUG() << __FILE__ << __LINE__ << "returns" << ret;
-                return ret;
-            } else if (qAbs(max_left - min_left) == 1) {
-                const bool ret = isIntermediateValueHelper(qAbs(left), min_right, negative ? 0 : dec)
-                                 || isIntermediateValueHelper(qAbs(left), negative ? dec : 0, max_right);
-                QSBDEBUG() << __FILE__ << __LINE__ << "returns" << ret;
-                return ret;
-            } else {
-                const bool ret = isIntermediateValueHelper(qAbs(left), 0, dec);
-                QSBDEBUG() << __FILE__ << __LINE__ << "returns" << ret;
-                return ret;
-            }
-        }
-        if (match != min_left) {
-            min_right = negative ? dec : 0;
-        }
-        if (match != max_left) {
-            max_right = negative ? 0 : dec;
-        }
-        qint64 tmpl = negative ? max_right : min_right;
-        qint64 tmpr = negative ? min_right : max_right;
-        const bool ret = isIntermediateValueHelper(right, tmpl, tmpr);
-        QSBDEBUG() << __FILE__ << __LINE__ << "returns" << ret;
-        return ret;
-    }
-    QSBDEBUG() << __FILE__ << __LINE__ << "returns true";
-    return true;
-}
 
 /*!
     \internal
@@ -1415,9 +1266,8 @@ QVariant QDoubleSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
                 state = QValidator::Invalid;
                 QSBDEBUG() << __FILE__ << __LINE__<< "state is set to Invalid";
             } else {
-                state = isIntermediateValue(copy) ? QValidator::Intermediate : QValidator::Invalid;
-                QSBDEBUG() << __FILE__ << __LINE__<< "state is set to "
-                           << (state == QValidator::Intermediate ? "Intermediate" : "Acceptable");
+                state = QValidator::Intermediate;
+                QSBDEBUG() << __FILE__ << __LINE__<< "state is set to Intermediate";
             }
         }
     }
@@ -1474,62 +1324,6 @@ QString QDoubleSpinBoxPrivate::textFromValue(const QVariant &f) const
 
     Use minimum() instead.
 */
-
-/*!
-    \internal Returns whether \a str is a string which value cannot be
-    parsed but still might turn into something valid.
-*/
-
-static bool isIntermediateValueHelper(qint64 num, qint64 min, qint64 max, qint64 *match)
-{
-    QSBDEBUG() << num << min << max;
-
-    if (num >= min && num <= max) {
-        if (match)
-            *match = num;
-        QSBDEBUG("returns true 0");
-        return true;
-    }
-    qint64 tmp = num;
-
-    int numDigits = 0;
-    int digits[10];
-    if (tmp == 0) {
-        numDigits = 1;
-        digits[0] = 0;
-    } else {
-        tmp = qAbs(num);
-        for (int i=0; tmp > 0; ++i) {
-            digits[numDigits++] = tmp % 10;
-            tmp /= 10;
-        }
-    }
-
-    int failures = 0;
-    qint64 number;
-    for (number=max; number>=min; --number) {
-        tmp = qAbs(number);
-        for (int i=0; tmp > 0;) {
-            if (digits[i] == (tmp % 10)) {
-                if (++i == numDigits) {
-                    if (match)
-                        *match = number;
-                    QSBDEBUG("returns true 1");
-                    return true;
-                }
-            }
-            tmp /= 10;
-        }
-        if (failures++ == 500000) { //upper bound
-            if (match)
-                *match = num;
-            QSBDEBUG("returns true 2");
-            return true;
-        }
-    }
-    QSBDEBUG("returns false");
-    return false;
-}
 
 /*! \reimp */
 bool QSpinBox::event(QEvent *event)

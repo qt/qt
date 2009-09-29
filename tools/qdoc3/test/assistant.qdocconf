@@ -31,7 +31,7 @@ qhp.Assistant.subprojects.examples.sortPages = true
 
 language                = Cpp
 
-sources                 = $QT_SOURCE_TREE/doc/src/assistant-manual.qdoc \
+sources                 = $QT_SOURCE_TREE/doc/src/development/assistant-manual.qdoc \
                           $QT_SOURCE_TREE/doc/src/examples/simpletextviewer.qdoc
 
 sources.fileextensions  = "*.cpp *.qdoc"

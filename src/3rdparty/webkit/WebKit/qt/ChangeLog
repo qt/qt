@@ -1,3 +1,316 @@
+2009-09-28  Andre Poenitz  <andre.poenitz@trolltech.com>
+
+        Reviewed by Simon Hausmann.
+
+        Compile fix with namespaced Qt.
+
+        * Api/qwebinspector_p.h:
+
+2009-09-27  Joe Ligman  <joseph.ligman@mindspring.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Adding API setFocus and hasFocus to QWebElement. This API is needed for
+        clients that want to check/set the focus node of the document.
+        https://bugs.webkit.org/show_bug.cgi?id=29682
+
+        * Api/qwebelement.cpp:
+        (QWebElement::hasFocus):
+        (QWebElement::setFocus):
+        * Api/qwebelement.h:
+        * tests/qwebelement/tst_qwebelement.cpp:
+        (tst_QWebElement::hasSetFocus):
+
+2009-09-25  Csaba Osztrogonac  <oszi@inf.u-szeged.hu>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Make tst_qwebframe work if Qt built without SSL support
+        https://bugs.webkit.org/show_bug.cgi?id=29735
+
+        * tests/qwebframe/tst_qwebframe.cpp: Missing #ifndef blocks added.
+
+2009-09-24  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Update QWebElement API to remove script related methods.
+        QWebElement::evaluateScript is the only one kept, these are
+        removed to postpone most of the QtWebKit<->JavaScript API design
+        after 4.6.
+        https://bugs.webkit.org/show_bug.cgi?id=29708
+
+        * Api/qwebelement.cpp:
+        * Api/qwebelement.h:
+        Methods removed:
+        - QWebElement::callFunction
+        - QWebElement::functions
+        - QWebElement::scriptableProperty
+        - QWebElement::setScriptableProperty
+        - QWebElement::scriptableProperties
+        * tests/qwebelement/tst_qwebelement.cpp:
+        (tst_QWebElement::evaluateScript):
+
+2009-09-25  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Rename QWebElement::evaluateScript
+        to QWebElement::evaluateJavaScript.
+        https://bugs.webkit.org/show_bug.cgi?id=29709
+
+        * Api/qwebelement.cpp:
+        (QWebElement::evaluateJavaScript):
+        * Api/qwebelement.h:
+        * tests/qwebelement/tst_qwebelement.cpp:
+        (tst_QWebElement::evaluateJavaScript):
+
+2009-09-25  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Update the stypeProperty API of QWebElement.
+        https://bugs.webkit.org/show_bug.cgi?id=29711
+
+        * Api/qwebelement.cpp:
+        (QWebElement::styleProperty):
+        - Merge the stypeProperty and the computedStyleProperty methods
+        - Remove the default value for the style resolving enum
+        - Rename ResolveRule to StyleResolveStrategy
+        (QWebElement::setStyleProperty):
+        - Remove the priority argument since it is possible to control the
+          behaviour by adding !important or removing in the value.
+        * Api/qwebelement.h:
+        * tests/qwebelement/tst_qwebelement.cpp:
+        (tst_QWebElement::style):
+        (tst_QWebElement::computedStyle):
+        * tests/qwebframe/tst_qwebframe.cpp:
+
+2009-09-24  Jon Honeycutt  <jhoneycutt@apple.com>
+
+        Reviewed by Alice Liu.
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::QWebPagePrivate):
+        Pass 0 for new Page constructor argument.
+
+2009-09-24  Martin Smith  <msmith@trolltech.com>
+
+        Reviewed by Simon Hausmann.
+
+        qdoc: Added \brief texts to all the since 4.6 functions.
+
+        * Api/qwebhistory.cpp:
+
+2009-09-23  J-P Nurmi  <jpnurmi@gmail.com>
+
+        Reviewed by Simon Hausmann.
+
+        Prevent QWebPage::setView() from changing the viewport size on the fly
+        in case the view doesn't actually change. QWebPage::setView() is
+        called upon every QWebGraphicsItem::hoverMoveEvent(), which forced
+        the viewport size to be equal to the size of the whole graphics view.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29676
+
+        * Api/qwebpage.cpp:
+        (QWebPage::setView):
+
+2009-09-23  Jedrzej Nowacki  <jedrzej.nowacki@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Crash fix in QWebHistory back and forward methods.
+        
+        QWebHistory::back() and QWebHistory::forward() were crashing on
+        ASSERT in WebCore::BackForwardList. The methods should check
+        canGoBack() and canGoForward() at the beginning.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29675
+
+        * Api/qwebhistory.cpp:
+        (QWebHistory::back):
+        (QWebHistory::forward):
+
+2009-09-23  Jedrzej Nowacki  <jedrzej.nowacki@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Bug fix. QWebHistory should call QWebPage::updateNavigationActions
+        
+        In QWebHistory's methods that change item count or current item call
+        to QWebPage::updateNavigationActions should be executed.
+        QWebHistory::clear() and QWebHistory::restorState() were changed.
+        New helper method, QWebPagePrivate accesor, were created in
+        QWebHistoryPrivate class.
+        Two autotest were developed.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29246
+
+        * Api/qwebhistory.cpp:
+        (QWebHistory::clear):
+        (QWebHistory::restoreState):
+        (QWebHistoryPrivate::page):
+        * Api/qwebhistory_p.h:
+        * tests/qwebhistory/tst_qwebhistory.cpp:
+        (tst_QWebHistory::saveAndRestore_1):
+        (tst_QWebHistory::clear):
+
+2009-09-23  Norbert Leser  <norbert.leser@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Need to guard QX11Info include with Q_WS_X11.
+        That class may not be available (in QT 4.5 for Symbian, for instance).
+        Completes fixes in r48627 and r48604.
+
+        * Api/qwebgraphicsitem.cpp:
+        * Api/qwebview.cpp:
+
+2009-09-22  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Add default timeout while waiting for signals in QWebPage auto
+        tests.
+        https://bugs.webkit.org/show_bug.cgi?id=29637
+
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (waitForSignal):
+
+2009-09-22  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reivewed by Simon Hausmann.
+
+        Fix the Qt/Mac build after r48604 (Implement new QWebPageClient class)
+
+        There's no QWidget::x11Info() on Mac, and setPlatformPluginWidget()
+        takes a QWidget*, not a QWebPageClient*
+
+        * Api/qwebgraphicsitem.cpp:
+        (QWebGraphicsItemPrivate::screenNumber):
+        * Api/qwebview.cpp:
+        (QWebViewPrivate::screenNumber):
+
+2009-09-21  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        For Qt, platformPageClient() will now return a class derived from
+        the QWebPageClient, so the patch adapts our Qt hooks to go though
+        this class and not depend on the QWebView.
+
+        * Api/qwebgraphicsitem.cpp:
+        (QWebGraphicsItemPrivate::scroll):
+        (QWebGraphicsItemPrivate::update):
+        (QWebGraphicsItemPrivate::cursor):
+        (QWebGraphicsItemPrivate::updateCursor):
+        (QWebGraphicsItemPrivate::screenNumber):
+        (QWebGraphicsItemPrivate::winId):
+        (QWebGraphicsItem::event):
+        (QWebGraphicsItem::setPage):
+        * Api/qwebgraphicsitem.h:
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::QWebPagePrivate):
+        * Api/qwebpage_p.h:
+        * Api/qwebview.cpp:
+        (QWebViewPrivate::scroll):
+        (QWebViewPrivate::update):
+        (QWebViewPrivate::cursor):
+        (QWebViewPrivate::updateCursor):
+        (QWebViewPrivate::screenNumber):
+        (QWebViewPrivate::winId):
+        (QWebView::setPage):
+        (QWebView::event):
+        * WebCoreSupport/ChromeClientQt.cpp:
+        (WebCore::ChromeClientQt::repaint):
+        (WebCore::ChromeClientQt::scroll):
+        (WebCore::ChromeClientQt::platformPageClient):
+
+2009-09-21  Yael Aharon  <yael.aharon@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29609
+        Build fix for windows when using Qt 4.5.0.
+
+        * Api/qwebpage.cpp:
+        (QWebPage::userAgentForUrl):
+
+2009-09-19  Benjamin Poulain  <benjamin.poulain@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29345
+        The tests of QWebFrame did not use QTRY_VERIFY for
+        tests involving the event loop.
+
+        * tests/qwebframe/tst_qwebframe.cpp:
+        * tests/util.h: Added. Copy of tests/shared/util.h of Qt
+
+2009-09-19  Jakub Wieczorek  <faw217@gmail.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Add an autotest stub for QWebGraphicsItem.
+
+        It just calls all the functions and makes sure they don't crash.
+
+        * tests/qwebgraphicsitem/qwebgraphicsitem.pro: Added.
+        * tests/qwebgraphicsitem/tst_qwebgraphicsitem.cpp: Added.
+        (tst_QWebGraphicsItem::qwebgraphicsitem):
+        * tests/tests.pro:
+
+2009-09-18  Norbert Leser  <norbert.leser@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        Corrected the Symbian specific UID3 values to be assigned
+        from the "unprotected" pool that permits self-signing of
+        those test and demo executables. (Added new UID3 values
+        where they were missing for new components.)
+
+        * QGVLauncher/QGVLauncher.pro:
+        * QtLauncher/QtLauncher.pro:
+        * tests/benchmarks/loading/tst_loading.pro:
+        * tests/benchmarks/painting/tst_painting.pro:
+        * tests/qwebelement/qwebelement.pro:
+        * tests/qwebframe/qwebframe.pro:
+        * tests/qwebhistory/qwebhistory.pro:
+        * tests/qwebhistoryinterface/qwebhistoryinterface.pro:
+        * tests/qwebpage/qwebpage.pro:
+        * tests/qwebplugindatabase/qwebplugindatabase.pro:
+        * tests/qwebview/qwebview.pro:
+
+2009-09-17  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        Make PlatformWindow return something else than PlatformWidget
+        https://bugs.webkit.org/show_bug.cgi?id=29085
+
+        Reflect the rename of platformWindow and it's return type.
+
+        * WebCoreSupport/ChromeClientQt.cpp:
+        (WebCore::ChromeClientQt::platformPageClient):
+        * WebCoreSupport/ChromeClientQt.h:
+
+2009-09-18  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Add persistence support for configuration options in the
+        inspector.
+
+        * Api/qwebinspector.cpp:
+        * QtLauncher/main.cpp:
+        (main):
+        * WebCoreSupport/InspectorClientQt.cpp:
+        (WebCore::InspectorClientQt::populateSetting):
+        (WebCore::InspectorClientQt::storeSetting):
+        (WebCore::variantToSetting):
+        (WebCore::settingToVariant):
+
 2009-09-18  Simon Hausmann  <simon.hausmann@nokia.com>
 
         Reviewed by Ariya Hidayat.
@@ -19,6 +332,34 @@
         (ConsolePage::ConsolePage):
         (ConsolePage::javaScriptConsoleMessage):
         (tst_QWebPage::consoleOutput):
+
+2009-09-17  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        Improve documentation for Page Cache.
+
+        * Api/qwebsettings.cpp:
+
+2009-09-17  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Update QWebSettings::setUserStyleSheetUrl() docs and test
+
+        https://bugs.webkit.org/show_bug.cgi?id=29081
+
+        The documentation now specifies that the URL has to be a local file
+        or a a data-URL (with utf-8 and base64-encoded data), as these are the
+        only two schemes that the current code path accepts.
+
+        The auto-test has been updated to reflect this limitation.
+
+        At a later point we should concider adding API for the new way of
+        doing both user defined stylesheets and scripts.
+
+        * Api/qwebsettings.cpp:
+        * tests/qwebpage/tst_qwebpage.cpp:
 
 2009-09-17  Janne Koskinen  <janne.p.koskinen@digia.com>
 

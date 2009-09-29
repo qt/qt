@@ -55,10 +55,10 @@ public:
     int duration() const { return -1; /* not time driven */ }
 
 protected:
-    void updateCurrentTime(int msecs)
+    void updateCurrentTime(int currentTime)
     {
-        QPropertyAnimation::updateCurrentTime(msecs);
-        if (msecs >= QPropertyAnimation::duration())
+        QPropertyAnimation::updateCurrentTime(currentTime);
+        if (currentTime >= QPropertyAnimation::duration() || currentLoop() >= 1)
             stop();
     }
 };
@@ -74,6 +74,20 @@ public:
 private:
     qreal m_x;
 };
+
+class DummyPropertyAnimation : public QPropertyAnimation
+{
+public:
+    DummyPropertyAnimation(QObject *parent = 0) : QPropertyAnimation(parent)
+    {
+        setTargetObject(&o);
+        this->setPropertyName("x");
+        setEndValue(100);
+    }
+
+    MyObject o;
+};
+
 
 class tst_QPropertyAnimation : public QObject
 {
@@ -224,7 +238,11 @@ void tst_QPropertyAnimation::statesAndSignals_data()
 void tst_QPropertyAnimation::statesAndSignals()
 {
     QFETCH(bool, uncontrolled);
-    QPropertyAnimation *anim = uncontrolled ? new UncontrolledAnimation : new QPropertyAnimation;
+    QPropertyAnimation *anim;
+    if (uncontrolled)
+        anim = new UncontrolledAnimation;
+    else
+        anim = new DummyPropertyAnimation;
     anim->setDuration(100);
 
     QSignalSpy finishedSpy(anim, SIGNAL(finished()));
@@ -833,7 +851,7 @@ void tst_QPropertyAnimation::setStartEndValues()
 
 void tst_QPropertyAnimation::zeroDurationStart()
 {
-    QPropertyAnimation anim;
+    DummyPropertyAnimation anim;
     QSignalSpy spy(&anim, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
     anim.setDuration(0);
     QCOMPARE(anim.state(), QAbstractAnimation::Stopped);

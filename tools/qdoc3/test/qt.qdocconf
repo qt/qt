@@ -113,3 +113,5 @@ imagedirs               = $QTDIR/doc/src/images \
 outputdir               = $QTDIR/doc/html
 tagfile                 = $QTDIR/doc/html/qt.tags
 base                    = file:$QTDIR/doc/html
+
+HTML.generatemacrefs    = "true"

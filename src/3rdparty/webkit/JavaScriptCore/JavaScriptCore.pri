@@ -50,11 +50,9 @@ win32-* {
     }
 }
 
-win32-msvc*: INCLUDEPATH += $$PWD/os-win32
 wince* {
-    INCLUDEPATH += $$PWD/os-wince
-    INCLUDEPATH += $$PWD/os-win32
-    SOURCES += $$PWD/os-wince/ce_time.cpp
+    SOURCES += $$QT_SOURCE_TREE/src/3rdparty/ce-compat/ce_time.cpp
+    DEFINES += WINCEBASIC
 }
 
 include(pcre/pcre.pri)
@@ -130,12 +128,16 @@ SOURCES += \
     yarr/RegexJIT.cpp \
     interpreter/RegisterFile.cpp
 
-win32-*|wince* {
-    SOURCES += jit/ExecutableAllocatorWin.cpp \
-               runtime/MarkStackWin.cpp
+symbian {
+    SOURCES += runtime/MarkStackSymbian.cpp
 } else {
-    SOURCES += jit/ExecutableAllocatorPosix.cpp \
-               runtime/MarkStackPosix.cpp
+    win32-*|wince* {
+        SOURCES += jit/ExecutableAllocatorWin.cpp \
+                  runtime/MarkStackWin.cpp
+    } else {
+        SOURCES += jit/ExecutableAllocatorPosix.cpp \
+                  runtime/MarkStackPosix.cpp
+    }
 }
 
 # AllInOneFile.cpp helps gcc analize and optimize code

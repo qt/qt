@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+//! [main.cpp body]
 #include <QtGui>
 
 // Include header files for application components.
@@ -53,3 +54,4 @@ int main(int argc, char *argv[])
 
     return app.exec();
 }
+//! [main.cpp body]

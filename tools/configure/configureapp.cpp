@@ -1164,7 +1164,7 @@ void Configure::parseCmdLine()
     dictionary["QTBUILDINSTRUCTION"] = dictionary["MAKE"];
     if (dictionary.contains("XQMAKESPEC")) {
         if (dictionary["XQMAKESPEC"].startsWith("symbian")) {
-            dictionary["QTBUILDINSTRUCTION"] = dictionary["MAKE"] + QString(" debug-winscw|debug-armv5|release-armv5");
+            dictionary["QTBUILDINSTRUCTION"] = QString("make debug-winscw|debug-armv5|release-armv5");
         } else if (dictionary["XQMAKESPEC"].startsWith("wince")) {
             dictionary["QTBUILDINSTRUCTION"] =
                 QString("setcepaths.bat ") + dictionary["XQMAKESPEC"] + QString(" && ") + dictionary["MAKE"];
@@ -2025,9 +2025,9 @@ bool Configure::checkAvailability(const QString &part)
             if (!findFile("msdmo.lib")) cout << "msdmo.lib not found" << endl;
             if (!findFile("d3d9.h")) cout << "d3d9.h not found" << endl;
         }
-    } else if (part == "MULTIMEDIA") {
+    } else if (part == "MULTIMEDIA" || part == "SCRIPT" || part == "SCRIPTTOOLS") {
         available = true;
-    } else if (part == "WEBKIT" || part == "SCRIPT" || part == "SCRIPTTOOLS") {
+    } else if (part == "WEBKIT") {
         available = (dictionary.value("QMAKESPEC") == "win32-msvc2005") || (dictionary.value("QMAKESPEC") == "win32-msvc2008") || (dictionary.value("QMAKESPEC") == "win32-g++");
     }
 

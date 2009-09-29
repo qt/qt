@@ -34,7 +34,6 @@
 #include "RenderTextControlSingleLine.h"
 #include "SelectionController.h"
 #include "TextIterator.h"
-#include "TextBreakIterator.h"
 
 #if ENABLE(WML)
 #include "WMLInputElement.h"
@@ -57,8 +56,6 @@ void InputElement::dispatchFocusEvent(InputElement* inputElement, Element* eleme
     if (!inputElement->isTextField())
         return;
 
-    updatePlaceholderVisibility(inputElement, element);
-
     Document* document = element->document();
     if (inputElement->isPasswordField() && document->frame())
         document->setUseSecureKeyboardEntryWhenActive(true);
@@ -74,27 +71,10 @@ void InputElement::dispatchBlurEvent(InputElement* inputElement, Element* elemen
     if (!frame)
         return;
 
-    updatePlaceholderVisibility(inputElement, element);
-
     if (inputElement->isPasswordField())
         document->setUseSecureKeyboardEntryWhenActive(false);
 
     frame->textFieldDidEndEditing(element);
-}
-
-bool InputElement::placeholderShouldBeVisible(const InputElement* inputElement, const Element* element)
-{
-    return inputElement->value().isEmpty()
-        && element->document()->focusedNode() != element
-        && !inputElement->placeholder().isEmpty();
-}
-
-void InputElement::updatePlaceholderVisibility(InputElement* inputElement, Element* element, bool placeholderValueChanged)
-{
-    ASSERT(inputElement->isTextField());
-    bool placeholderVisible = inputElement->placeholderShouldBeVisible();
-    if (element->renderer())
-        toRenderTextControlSingleLine(element->renderer())->updatePlaceholderVisibility(placeholderVisible, placeholderValueChanged);
 }
 
 void InputElement::updateFocusAppearance(InputElementData& data, InputElement* inputElement, Element* element, bool restorePreviousSelection)
@@ -139,10 +119,7 @@ void InputElement::aboutToUnload(InputElement* inputElement, Element* element)
 void InputElement::setValueFromRenderer(InputElementData& data, InputElement* inputElement, Element* element, const String& value)
 {
     // Renderer and our event handler are responsible for sanitizing values.
-    ASSERT(value == inputElement->sanitizeValue(value) || inputElement->sanitizeValue(value).isEmpty());
-
-    if (inputElement->isTextField())
-        updatePlaceholderVisibility(inputElement, element);
+    ASSERT_UNUSED(inputElement, value == inputElement->sanitizeValue(value) || inputElement->sanitizeValue(value).isEmpty());
 
     // Workaround for bug where trailing \n is included in the result of textContent.
     // The assert macro above may also be simplified to:  value == constrainValue(value)
@@ -154,26 +131,8 @@ void InputElement::setValueFromRenderer(InputElementData& data, InputElement* in
 
     element->setFormControlValueMatchesRenderer(true);
 
-    // Fire the "input" DOM event
-    element->dispatchEvent(eventNames().inputEvent, true, false);
+    element->dispatchEvent(Event::create(eventNames().inputEvent, true, false));
     notifyFormStateChanged(element);
-}
-
-static int numCharactersInGraphemeClusters(StringImpl* s, int numGraphemeClusters)
-{
-    if (!s)
-        return 0;
-
-    TextBreakIterator* it = characterBreakIterator(s->characters(), s->length());
-    if (!it)
-        return 0;
-
-    for (int i = 0; i < numGraphemeClusters; ++i) {
-        if (textBreakNext(it) == TextBreakDone)
-            return s->length();
-    }
-
-    return textBreakCurrent(it);
 }
 
 String InputElement::sanitizeValue(const InputElement* inputElement, const String& proposedValue)
@@ -191,36 +150,15 @@ String InputElement::sanitizeUserInputValue(const InputElement* inputElement, co
     string.replace('\r', ' ');
     string.replace('\n', ' ');
 
-    StringImpl* s = string.impl();
-    int newLength = numCharactersInGraphemeClusters(s, maxLength);
-    for (int i = 0; i < newLength; ++i) {
-        const UChar& current = (*s)[i];
+    unsigned newLength = string.numCharactersInGraphemeClusters(maxLength);
+    for (unsigned i = 0; i < newLength; ++i) {
+        const UChar current = string[i];
         if (current < ' ' && current != '\t') {
             newLength = i;
             break;
         }
     }
-
-    if (newLength < static_cast<int>(string.length()))
-        return string.left(newLength);
-
-    return string;
-}
-
-static int numGraphemeClusters(StringImpl* s)
-{
-    if (!s)
-        return 0;
-
-    TextBreakIterator* it = characterBreakIterator(s->characters(), s->length());
-    if (!it)
-        return 0;
-
-    int num = 0;
-    while (textBreakNext(it) != TextBreakDone)
-        ++num;
-
-    return num;
+    return string.left(newLength);
 }
 
 void InputElement::handleBeforeTextInsertedEvent(InputElementData& data, InputElement* inputElement, Element* element, Event* event)
@@ -231,15 +169,16 @@ void InputElement::handleBeforeTextInsertedEvent(InputElementData& data, InputEl
     // We use RenderTextControlSingleLine::text() instead of InputElement::value()
     // because they can be mismatched by sanitizeValue() in
     // RenderTextControlSingleLine::subtreeHasChanged() in some cases.
-    int oldLength = numGraphemeClusters(toRenderTextControlSingleLine(element->renderer())->text().impl());
+    unsigned oldLength = toRenderTextControlSingleLine(element->renderer())->text().numGraphemeClusters();
 
     // selection() may be a pre-edit text.
-    int selectionLength = numGraphemeClusters(plainText(element->document()->frame()->selection()->selection().toNormalizedRange().get()).impl());
+    unsigned selectionLength = plainText(element->document()->frame()->selection()->selection().toNormalizedRange().get()).numGraphemeClusters();
     ASSERT(oldLength >= selectionLength);
 
     // Selected characters will be removed by the next text event.
-    int baseLength = oldLength - selectionLength;
-    int appendableLength = data.maxLength() - baseLength;
+    unsigned baseLength = oldLength - selectionLength;
+    unsigned maxLength = static_cast<unsigned>(data.maxLength()); // maxLength() can never be negative.
+    unsigned appendableLength = maxLength > baseLength ? maxLength - baseLength : 0;
 
     // Truncate the inserted text to avoid violating the maxLength and other constraints.
     BeforeTextInsertedEvent* textEvent = static_cast<BeforeTextInsertedEvent*>(event);

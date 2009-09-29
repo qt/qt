@@ -51,11 +51,6 @@
 
 QT_BEGIN_NAMESPACE
 
-bool QGLFormat::hasOpenGL()
-{
-    return true;
-}
-
 bool QGLFormat::hasOpenGLOverlays()
 {
     return false;
@@ -117,86 +112,6 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
 
     return true;
 }
-
-
-void QGLContext::reset()
-{
-    Q_D(QGLContext);
-    if (!d->valid)
-        return;
-    d->cleanup();
-    doneCurrent();
-    if (d->eglContext) {
-        delete d->eglContext;
-        d->eglContext = 0;
-    }
-    d->crWin = false;
-    d->sharing = false;
-    d->valid = false;
-    d->transpColor = QColor();
-    d->initDone = false;
-    qgl_share_reg()->removeShare(this);
-}
-
-void QGLContext::makeCurrent()
-{
-    Q_D(QGLContext);
-    if(!d->valid || !d->eglContext) {
-        qWarning("QGLContext::makeCurrent(): Cannot make invalid context current");
-        return;
-    }
-
-    if (d->eglContext->makeCurrent())
-        QGLContextPrivate::setCurrentContext(this);
-}
-
-void QGLContext::doneCurrent()
-{
-    Q_D(QGLContext);
-    if (d->eglContext)
-        d->eglContext->doneCurrent();
-
-    QGLContextPrivate::setCurrentContext(0);
-}
-
-
-void QGLContext::swapBuffers() const
-{
-    Q_D(const QGLContext);
-    if(!d->valid || !d->eglContext)
-        return;
-
-    d->eglContext->swapBuffers();
-}
-
-QColor QGLContext::overlayTransparentColor() const
-{
-    return QColor(0, 0, 0);                // Invalid color
-}
-
-uint QGLContext::colorIndex(const QColor &c) const
-{
-    //### color index doesn't work on egl
-    Q_UNUSED(c);
-    return 0;
-}
-
-void QGLContext::generateFontDisplayLists(const QFont & fnt, int listBase)
-{
-    Q_UNUSED(fnt);
-    Q_UNUSED(listBase);
-}
-
-void *QGLContext::getProcAddress(const QString &proc) const
-{
-    return (void*)eglGetProcAddress(reinterpret_cast<const char *>(proc.toLatin1().data()));
-}
-
-void QGLWidget::setMouseTracking(bool enable)
-{
-    QWidget::setMouseTracking(enable);
-}
-
 
 void QGLWidget::resizeEvent(QResizeEvent *)
 {
@@ -412,9 +327,11 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
 
 
     // Create the EGL surface to draw into.
-    if (!d->glcx->d_func()->eglContext->createSurface(this)) {
-        delete d->glcx->d_func()->eglContext;
-        d->glcx->d_func()->eglContext = 0;
+    QGLContextPrivate *ctxpriv = d->glcx->d_func();
+    ctxpriv->eglSurface = ctxpriv->eglContext->createSurface(this);
+    if (ctxpriv->eglSurface == EGL_NO_SURFACE) {
+        delete ctxpriv->eglContext;
+        ctxpriv->eglContext = 0;
         return;
     }
 
@@ -437,11 +354,6 @@ void QGLWidgetPrivate::init(QGLContext *context, const QGLWidget* shareWidget)
         //no overlay
         qWarning("QtOpenGL ES doesn't currently support overlays");
     }
-}
-
-bool QGLWidgetPrivate::renderCxPm(QPixmap*)
-{
-    return false;
 }
 
 void QGLWidgetPrivate::cleanupColormaps()
@@ -483,8 +395,14 @@ void QGLWidgetPrivate::recreateEglSurface(bool force)
 
     if ( force || (currentId != eglSurfaceWindowId) ) {
         // The window id has changed so we need to re-create the EGL surface
-        if (!glcx->d_func()->eglContext->recreateSurface(q))
+        QEglContext *ctx = glcx->d_func()->eglContext;
+        EGLSurface surface = glcx->d_func()->eglSurface;
+        if (surface != EGL_NO_SURFACE)
+            ctx->destroySurface(surface); // Will force doneCurrent() if nec.
+        surface = ctx->createSurface(q);
+        if (surface == EGL_NO_SURFACE)
             qWarning("Error creating EGL window surface: 0x%x", eglGetError());
+        glcx->d_func()->eglSurface = surface;
 
         eglSurfaceWindowId = currentId;
     }

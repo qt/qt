@@ -452,6 +452,7 @@ public:
     static bool fade_tooltip;
     static bool animate_toolbox;
     static bool widgetCount; // Coupled with -widgetcount switch
+    static bool load_testability; // Coupled with -testability switch
 #ifdef Q_WS_MAC
     static bool native_modal_dialog_active;
 #endif
@@ -574,6 +575,11 @@ public:
     bool readRX71MultiTouchEvents(int deviceNumber);
     void fakeMouseEventFromRX71TouchEvent();
     void _q_readRX71MultiTouchEvents();
+#endif
+
+#if defined(Q_WS_S60)
+    int maxTouchPressure;
+    QList<QTouchEvent::TouchPoint> appAllTouchPoints;
 #endif
 
 private:

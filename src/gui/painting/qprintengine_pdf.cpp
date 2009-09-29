@@ -935,7 +935,7 @@ void QPdfEnginePrivate::writeInfo()
             "/Title (%s)\n"
 //            "/Author (%s)\n"
             "/Creator (%s)\n"
-            "/Producer (Qt " QT_VERSION_STR " (C) 1992-$THISYEAR$ Nokia Corporation and/or its subsidiary(-ies))\n",
+            "/Producer (Qt " QT_VERSION_STR " (C) 2009 Nokia Corporation and/or its subsidiary(-ies))\n",
             title.toUtf8().constData(),
 //            author.toUtf8().constData(),
             creator.toUtf8().constData());

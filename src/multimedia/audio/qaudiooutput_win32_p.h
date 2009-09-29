@@ -104,10 +104,6 @@ private slots:
     void feedback();
     bool deviceReady();
 
-signals:
-    void stateChanged(QAudio::State);
-    void notify();
-
 private:
     QByteArray m_device;
     bool resuming;

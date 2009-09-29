@@ -135,11 +135,11 @@ void tst_Q3PopupMenu::task177490_highlighted()
 
     QTest::mouseMove(&menu1, QPoint(x, y1));
     QTest::mouseMove(&menu1, QPoint(x, y1 + 1));
-    QTest::qWait(100);
+    QTest::qWait(1000);
 
     QTest::mouseMove(&menu1, QPoint(x, y2));
     QTest::mouseMove(&menu1, QPoint(x, y2 + 1));
-    QTest::qWait(100);
+    QTest::qWait(1000);
 
     QCOMPARE(spy.count(), 2); // one per menu item
 }

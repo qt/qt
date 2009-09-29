@@ -48,21 +48,42 @@
 #include <s60main.rsg>
 #include <avkon.rsg>
 
-#include "qs60mainappui_p.h"
+#include "qs60mainappui.h"
 #include <QtGui/qapplication.h>
 #include <QtGui/qmenu.h>
 #include <QtGui/private/qt_s60_p.h>
 
 QT_BEGIN_NAMESPACE
 
-// ============================ MEMBER FUNCTIONS ===============================
+/*!
+ * \class QS60MainAppUi
+ * \obsolete
+ * \since 4.6
+ * \brief Helper class for S60 migration
+ *
+ * The QS60MainAppUi provides a helper class for use in migrating from existing S60 based
+ * applications to Qt based applications. It is used in the exact same way as the
+ * \c CAknAppUi class from Symbian, but internally provides extensions used by Qt.
+ *
+ * When modifying old S60 applications that rely on implementing functions in \c CAknAppUi,
+ * the class should be modified to inherit from this class instead of \c CAknAppUi. Then the
+ * application can choose to override only certain functions.
+ *
+ * For more information on \c CAknAppUi, please see the S60 documentation.
+ *
+ * Unlike other Qt classes, QS60MainAppUi behaves like an S60 class, and can throw Symbian
+ * leaves.
+ *
+ * \sa QS60MainDocument, QS60MainApplication
+ */
 
-
-// -----------------------------------------------------------------------------
-// QS60MainAppUi::ConstructL()
-// Symbian 2nd phase constructor can leave.
-// -----------------------------------------------------------------------------
-//
+/*!
+ * \brief Second phase Symbian constructor.
+ *
+ * Constructs all the elements of the class that can cause a leave to happen.
+ *
+ * If you override this function, you should call the base class implementation as well.
+ */
 void QS60MainAppUi::ConstructL()
 {
     // Cone's heap and handle checks on app destruction are not suitable for Qt apps, as many
@@ -80,104 +101,142 @@ void QS60MainAppUi::ConstructL()
     nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
 }
 
-// -----------------------------------------------------------------------------
-// QS60MainAppUi::QS60MainAppUi()
-// C++ default constructor can NOT contain any code, that might leave.
-// -----------------------------------------------------------------------------
-//
+/*!
+ * \brief Contructs an instance of QS60MainAppUi.
+ */
 QS60MainAppUi::QS60MainAppUi()
 {
     // No implementation required
 }
 
-// -----------------------------------------------------------------------------
-// QS60MainAppUi::~QS60MainAppUi()
-// Destructor.
-// -----------------------------------------------------------------------------
-//
+/*!
+ * \brief Destroys the QS60MainAppUi.
+ */
 QS60MainAppUi::~QS60MainAppUi()
 {
 }
 
-// -----------------------------------------------------------------------------
-// QS60MainAppUi::HandleCommandL()
-// Takes care of command handling.
-// -----------------------------------------------------------------------------
-//
-void QS60MainAppUi::HandleCommandL(TInt aCommand)
+/*!
+ * \brief Handles commands produced by the S60 framework.
+ *
+ * \a command holds the ID of the command to handle, and is S60 specific.
+ *
+ * If you override this function, you should call the base class implementation if you do not
+ * handle the command.
+ */
+void QS60MainAppUi::HandleCommandL(TInt command)
 {
     if (qApp)
-        qApp->symbianHandleCommand(aCommand);
+        QT_TRYCATCH_LEAVING(qApp->symbianHandleCommand(command));
 }
 
-// -----------------------------------------------------------------------------
-// QS60MainAppUi::HandleResourceChangeL()
-// Takes care of event handling.
-// -----------------------------------------------------------------------------
-//
-void QS60MainAppUi::HandleResourceChangeL(TInt aType)
+/*!
+ * \brief Handles a resource change in the S60 framework.
+ *
+ * Resource changes include layout switches. \a type holds the type of resource change that
+ * occurred.
+ *
+ * If you override this function, you should call the base class implementation if you do not
+ * handle the resource change.
+ */
+void QS60MainAppUi::HandleResourceChangeL(TInt type)
 {
-    CAknAppUi::HandleResourceChangeL(aType);
+    CAknAppUi::HandleResourceChangeL(type);
 
     if (qApp)
-        qApp->symbianResourceChange(aType);
+        QT_TRYCATCH_LEAVING(qApp->symbianResourceChange(type));
 }
 
-void QS60MainAppUi::HandleWsEventL(const TWsEvent& aEvent, CCoeControl *control)
+/*!
+ * \brief Handles raw window server events.
+ *
+ * The event type and information is passed in \a event, while the receiving control is passed in
+ * \a destination.
+ *
+ * If you override this function, you should call the base class implementation if you do not
+ * handle the event.
+ */
+void QS60MainAppUi::HandleWsEventL(const TWsEvent& event, CCoeControl *destination)
 {
     int result = 0;
     if (qApp)
         QT_TRYCATCH_LEAVING(
-            result = qApp->s60ProcessEvent(const_cast<TWsEvent*>(&aEvent))
+            result = qApp->s60ProcessEvent(const_cast<TWsEvent*>(&event))
         );
 
     if (result <= 0)
-        CAknAppUi::HandleWsEventL(aEvent, control);
+        CAknAppUi::HandleWsEventL(event, destination);
 }
 
 
-// -----------------------------------------------------------------------------
-//  Called by the framework when the application status pane
-//  size is changed.  Passes the new client rectangle to the
-//  AppView
-// -----------------------------------------------------------------------------
-//
+/*!
+ * \brief Handles changes to the status pane size.
+ *
+ * Called by the framework when the application status pane size is changed.
+ *
+ * If you override this function, you should call the base class implementation if you do not
+ * handle the size change.
+ */
 void QS60MainAppUi::HandleStatusPaneSizeChange()
 {
-    HandleResourceChangeL(KInternalStatusPaneChange);
+    TRAP_IGNORE(HandleResourceChangeL(KInternalStatusPaneChange));
     HandleStackedControlsResourceChange(KInternalStatusPaneChange);
 }
 
-void QS60MainAppUi::DynInitMenuBarL(TInt, CEikMenuBar *)
+/*!
+ * \brief Dynamically initializes a menu bar.
+ *
+ * The resource associated with the menu is given in \a resourceId, and the actual menu bar is
+ * passed in \a menuBar.
+ *
+ * If you override this function, you should call the base class implementation as well.
+ */
+void QS60MainAppUi::DynInitMenuBarL(TInt /* resourceId */, CEikMenuBar * /* menuBar */)
 {
 }
 
-void QS60MainAppUi::DynInitMenuPaneL(TInt aResourceId, CEikMenuPane *aMenuPane)
+/*!
+ * \brief Dynamically initializes a menu pane.
+ *
+ * The resource associated with the menu is given in \a resourceId, and the actual menu pane is
+ * passed in \a menuPane.
+ *
+ * If you override this function, you should call the base class implementation as well.
+ */
+void QS60MainAppUi::DynInitMenuPaneL(TInt resourceId, CEikMenuPane *menuPane)
 {
-    if (aResourceId == R_QT_WRAPPERAPP_MENU) {
-        if (aMenuPane->NumberOfItemsInPane() <= 1)
-            qt_symbian_show_toplevel(aMenuPane);
+    if (resourceId == R_QT_WRAPPERAPP_MENU) {
+        if (menuPane->NumberOfItemsInPane() <= 1)
+            QT_TRYCATCH_LEAVING(qt_symbian_show_toplevel(menuPane));
 
-    } else if (aResourceId != R_AVKON_MENUPANE_FEP_DEFAULT && aResourceId != R_AVKON_MENUPANE_EDITTEXT_DEFAULT && aResourceId != R_AVKON_MENUPANE_LANGUAGE_DEFAULT) {
-        qt_symbian_show_submenu(aMenuPane, aResourceId);
+    } else if (resourceId != R_AVKON_MENUPANE_FEP_DEFAULT
+            && resourceId != R_AVKON_MENUPANE_EDITTEXT_DEFAULT
+            && resourceId != R_AVKON_MENUPANE_LANGUAGE_DEFAULT) {
+        QT_TRYCATCH_LEAVING(qt_symbian_show_submenu(menuPane, resourceId));
     }
 }
 
-void QS60MainAppUi::RestoreMenuL(CCoeControl* aMenuWindow, TInt aMenuId, TMenuType aMenuType)
+/*!
+ * \brief Restores a menu window.
+ *
+ * The menu window to restore is given in \a menuWindow. The resource ID and type of menu is given
+ * in \a resourceId and \a menuType, respectively.
+ *
+ * If you override this function, you should call the base class implementation as well.
+ */
+void QS60MainAppUi::RestoreMenuL(CCoeControl* menuWindow, TInt resourceId, TMenuType menuType)
 {
-    if ((aMenuId == R_QT_WRAPPERAPP_MENUBAR) || (aMenuId == R_AVKON_MENUPANE_FEP_DEFAULT)) {
+    if ((resourceId == R_QT_WRAPPERAPP_MENUBAR) || (resourceId == R_AVKON_MENUPANE_FEP_DEFAULT)) {
         TResourceReader reader;
-        iCoeEnv->CreateResourceReaderLC(reader, aMenuId);
-        aMenuWindow->ConstructFromResourceL(reader);
+        iCoeEnv->CreateResourceReaderLC(reader, resourceId);
+        menuWindow->ConstructFromResourceL(reader);
         CleanupStack::PopAndDestroy();
     }
 
-    if (aMenuType == EMenuPane)
-        DynInitMenuPaneL(aMenuId, (CEikMenuPane*)aMenuWindow);
+    if (menuType == EMenuPane)
+        DynInitMenuPaneL(resourceId, (CEikMenuPane*)menuWindow);
     else
-        DynInitMenuBarL(aMenuId, (CEikMenuBar*)aMenuWindow);
+        DynInitMenuBarL(resourceId, (CEikMenuBar*)menuWindow);
 }
 
 QT_END_NAMESPACE
-
-// End of File

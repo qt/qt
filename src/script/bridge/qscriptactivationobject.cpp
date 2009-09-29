@@ -46,7 +46,7 @@
 
 namespace JSC
 {
-    ASSERT_CLASS_FITS_IN_CELL(QScript::QScriptActivationObject);
+    ASSERT_CLASS_FITS_IN_CELL(QT_PREPEND_NAMESPACE(QScript::QScriptActivationObject));
 }
 
 QT_BEGIN_NAMESPACE
@@ -88,13 +88,13 @@ bool QScriptActivationObject::getPropertyAttributes(JSC::ExecState* exec, const 
     return JSC::JSVariableObject::getPropertyAttributes(exec, propertyName, attributes);
 }
 
-void QScriptActivationObject::getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames, unsigned listedAttributes)
+void QScriptActivationObject::getOwnPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames, bool includeNonEnumerable)
 {
     if (d_ptr()->delegate != 0) {
-        d_ptr()->delegate->getPropertyNames(exec, propertyNames, listedAttributes);
+        d_ptr()->delegate->getOwnPropertyNames(exec, propertyNames, includeNonEnumerable);
         return;
     }
-    return JSC::JSVariableObject::getPropertyNames(exec, propertyNames, listedAttributes);
+    return JSC::JSVariableObject::getOwnPropertyNames(exec, propertyNames, includeNonEnumerable);
 }
 
 void QScriptActivationObject::putWithAttributes(JSC::ExecState *exec, const JSC::Identifier &propertyName, JSC::JSValue value, unsigned attributes)

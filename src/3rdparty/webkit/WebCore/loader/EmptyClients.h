@@ -39,6 +39,7 @@
 #include "FormState.h"
 #include "FrameLoaderClient.h"
 #include "InspectorClient.h"
+#include "PluginHalterClient.h"
 #include "ResourceError.h"
 #include "SharedBuffer.h"
 
@@ -120,7 +121,7 @@ public:
     virtual void scroll(const IntSize&, const IntRect&, const IntRect&) { }
     virtual IntPoint screenToWindow(const IntPoint& p) const { return p; }
     virtual IntRect windowToScreen(const IntRect& r) const { return r; }
-    virtual PlatformWidget platformWindow() const { return 0; }
+    virtual PlatformPageClient platformPageClient() const { return 0; }
     virtual void contentsSizeChanged(Frame*, const IntSize&) const { }
 
     virtual void scrollbarsModeDidChange() const { }
@@ -481,6 +482,12 @@ public:
     virtual void removeSetting(const String&) { }
 
     virtual void inspectorWindowObjectCleared() { }
+};
+
+class EmptyPluginHalterClient : public PluginHalterClient
+{
+public:
+    virtual bool shouldHaltPlugin(Node*) const { return false; }
 };
 
 }

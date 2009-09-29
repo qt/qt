@@ -70,10 +70,10 @@ InspectorDOMAgent::~InspectorDOMAgent()
     setDocument(0);
 }
 
-bool InspectorDOMAgent::setDocument(Document* doc)
+void InspectorDOMAgent::setDocument(Document* doc)
 {
     if (doc == mainFrameDocument())
-        return false;
+        return;
     discardBindings();
 
     ListHashSet<RefPtr<Document> > copy = m_documents;
@@ -88,7 +88,6 @@ bool InspectorDOMAgent::setDocument(Document* doc)
             pushDocumentToFrontend();
         }
     }
-    return true;
 }
 
 void InspectorDOMAgent::releaseDanglingNodes()
@@ -123,7 +122,7 @@ void InspectorDOMAgent::stopListening(Document* doc)
     m_documents.remove(doc);
 }
 
-void InspectorDOMAgent::handleEvent(Event* event, bool)
+void InspectorDOMAgent::handleEvent(Event* event)
 {
     AtomicString type = event->type();
     Node* node = event->target()->toNode();

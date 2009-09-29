@@ -145,7 +145,7 @@ JSXPathException::JSXPathException(PassRefPtr<Structure> structure, JSDOMGlobalO
 
 JSXPathException::~JSXPathException()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSXPathException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

@@ -93,7 +93,7 @@ JSWorkerNavigator::JSWorkerNavigator(PassRefPtr<Structure> structure, JSDOMGloba
 
 JSWorkerNavigator::~JSWorkerNavigator()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSWorkerNavigator::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

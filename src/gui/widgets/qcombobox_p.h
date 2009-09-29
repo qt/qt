@@ -78,6 +78,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QAction;
+
 class QComboBoxListView : public QListView
 {
     Q_OBJECT
@@ -253,6 +255,10 @@ private:
     QAbstractItemView *view;
     QComboBoxPrivateScroller *top;
     QComboBoxPrivateScroller *bottom;
+#ifdef QT_SOFTKEYS_ENABLED
+    QAction *selectAction;
+    QAction *cancelAction;
+#endif
 };
 
 class QComboMenuDelegate : public QAbstractItemDelegate

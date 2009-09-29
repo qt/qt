@@ -30,7 +30,7 @@
 
 #include <wtf/Platform.h>
 
-#if ENABLE(ASSEMBLER) && PLATFORM(ARM) && !PLATFORM_ARM_ARCH(7)
+#if ENABLE(ASSEMBLER) && PLATFORM(ARM_TRADITIONAL)
 
 #include "ARMAssembler.h"
 #include "AbstractMacroAssembler.h"
@@ -198,6 +198,15 @@ public:
         m_assembler.baseIndexTransfer32(true, dest, address.base, address.index, static_cast<int>(address.scale), address.offset);
     }
 
+#if defined(ARM_REQUIRE_NATURAL_ALIGNMENT) && ARM_REQUIRE_NATURAL_ALIGNMENT
+    void load32WithUnalignedHalfWords(BaseIndex address, RegisterID dest);
+#else
+    void load32WithUnalignedHalfWords(BaseIndex address, RegisterID dest)
+    {
+        load32(address, dest);
+    }
+#endif
+
     DataLabel32 load32WithAddressOffsetPatch(Address address, RegisterID dest)
     {
         DataLabel32 dataLabel(this);
@@ -361,6 +370,12 @@ public:
     Jump branch32(Condition cond, BaseIndex left, Imm32 right)
     {
         load32(left, ARMRegisters::S1);
+        return branch32(cond, ARMRegisters::S1, right);
+    }
+
+    Jump branch32WithUnalignedHalfWords(Condition cond, BaseIndex left, Imm32 right)
+    {
+        load32WithUnalignedHalfWords(left, ARMRegisters::S1);
         return branch32(cond, ARMRegisters::S1, right);
     }
 
@@ -797,6 +812,6 @@ private:
 
 }
 
-#endif // ENABLE(ASSEMBLER) && PLATFORM(ARM) && !PLATFORM_ARM_ARCH(7)
+#endif // ENABLE(ASSEMBLER) && PLATFORM(ARM_TRADITIONAL)
 
 #endif // MacroAssemblerARM_h

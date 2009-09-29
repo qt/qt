@@ -260,9 +260,17 @@ void tst_QMenu::onStatusMessageChanged(const QString &s)
 void
 tst_QMenu::addActionsAndClear()
 {
-    QCOMPARE(menus[0]->actions().count(), 0);
+#ifdef QT_SOFTKEYS_ENABLED
+    // Softkeys add extra "Select" and "Back" actions to menu by default.
+    // Two first actions will be Select and Back when softkeys are enabled
+    int numSoftkeyActions = 2;
+#else
+    int numSoftkeyActions = 0;
+#endif
+
+    QCOMPARE(menus[0]->actions().count(), 0 + numSoftkeyActions);
     createActions();
-    QCOMPARE(menus[0]->actions().count(), 8);
+    QCOMPARE(menus[0]->actions().count(), 8 + numSoftkeyActions);
     menus[0]->clear();
     QCOMPARE(menus[0]->actions().count(), 0);
 }
@@ -440,7 +448,9 @@ void tst_QMenu::overrideMenuAction()
 	m->addAction(aQuit);
 
 	w.show();
+    QApplication::setActiveWindow(&w);
     w.setFocus();
+    QTest::qWaitForWindowShown(&w);
     QTRY_VERIFY(w.hasFocus());
 
 	//test of the action inside the menu
@@ -674,7 +684,7 @@ void tst_QMenu::task242454_sizeHint()
     QMenu menu;
     QString s = QLatin1String("foo\nfoo\nfoo\nfoo");
     menu.addAction(s);
-    QVERIFY(menu.sizeHint().width() > menu.fontMetrics().width(s));
+    QVERIFY(menu.sizeHint().width() > menu.fontMetrics().boundingRect(QRect(), Qt::TextSingleLine, s).width());
 }
 
 
@@ -806,6 +816,7 @@ void tst_QMenu::task258920_mouseBorder()
     QAction *action = menu.addAction("test");
 
     menu.popup(QApplication::desktop()->availableGeometry().center());
+    QTest::qWaitForWindowShown(&menu);
     QTest::qWait(100);
     QRect actionRect = menu.actionGeometry(action);
     QTest::mouseMove(&menu, actionRect.center());

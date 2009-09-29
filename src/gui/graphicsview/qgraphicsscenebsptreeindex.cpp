@@ -480,23 +480,23 @@ void QGraphicsSceneBspTreeIndexPrivate::sortItems(QList<QGraphicsItem *> *itemLi
         return;
 
     if (onlyTopLevelItems) {
-        if (order == Qt::AscendingOrder)
+        if (order == Qt::DescendingOrder)
             qSort(itemList->begin(), itemList->end(), qt_closestLeaf);
-        else if (order == Qt::DescendingOrder)
+        else if (order == Qt::AscendingOrder)
             qSort(itemList->begin(), itemList->end(), qt_notclosestLeaf);
         return;
     }
 
     if (sortCacheEnabled) {
-        if (order == Qt::AscendingOrder) {
+        if (order == Qt::DescendingOrder) {
             qSort(itemList->begin(), itemList->end(), closestItemFirst_withCache);
-        } else if (order == Qt::DescendingOrder) {
+        } else if (order == Qt::AscendingOrder) {
             qSort(itemList->begin(), itemList->end(), closestItemLast_withCache);
         }
     } else {
-        if (order == Qt::AscendingOrder) {
+        if (order == Qt::DescendingOrder) {
             qSort(itemList->begin(), itemList->end(), closestItemFirst_withoutCache);
-        } else if (order == Qt::DescendingOrder) {
+        } else if (order == Qt::AscendingOrder) {
             qSort(itemList->begin(), itemList->end(), closestItemLast_withoutCache);
         }
     }
@@ -605,7 +605,7 @@ QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::estimateTopLevelItems(const Q
 }
 
 /*!
-    \fn QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::items(Qt::SortOrder order = Qt::AscendingOrder) const;
+    \fn QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::items(Qt::SortOrder order = Qt::DescendingOrder) const;
 
     Return all items in the BSP index and sort them using \a order.
 */

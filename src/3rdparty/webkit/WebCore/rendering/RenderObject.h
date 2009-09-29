@@ -305,6 +305,7 @@ public:
     virtual bool isRenderPath() const { return false; }
     virtual bool isSVGText() const { return false; }
     virtual bool isSVGImage() const { return false; }
+    virtual bool isSVGForeignObject() const { return false; }
 
     // Per SVG 1.1 objectBoundingBox ignores clipping, masking, filter effects, opacity and stroke-width.
     // This is used for all computation of objectBoundingBox relative units and by SVGLocateable::getBBox().
@@ -982,6 +983,42 @@ inline void makeMatrixRenderable(TransformationMatrix& matrix, bool has3DRenderi
     if (!has3DRendering)
         matrix.makeAffine();
 #endif
+}
+
+inline int adjustForAbsoluteZoom(int value, RenderObject* renderer)
+{
+    float zoomFactor = renderer->style()->effectiveZoom();
+    if (zoomFactor == 1)
+        return value;
+    // Needed because computeLengthInt truncates (rather than rounds) when scaling up.
+    if (zoomFactor > 1)
+        value++;
+    return static_cast<int>(value / zoomFactor);
+}
+
+inline void adjustIntRectForAbsoluteZoom(IntRect& rect, RenderObject* renderer)
+{
+    rect.setX(adjustForAbsoluteZoom(rect.x(), renderer));
+    rect.setY(adjustForAbsoluteZoom(rect.y(), renderer));
+    rect.setWidth(adjustForAbsoluteZoom(rect.width(), renderer));
+    rect.setHeight(adjustForAbsoluteZoom(rect.height(), renderer));
+}
+
+inline FloatPoint adjustFloatPointForAbsoluteZoom(const FloatPoint& point, RenderObject* renderer)
+{
+    // The result here is in floats, so we don't need the truncation hack from the integer version above.
+    float zoomFactor = renderer->style()->effectiveZoom();
+    if (zoomFactor == 1)
+        return point;
+    return FloatPoint(point.x() / zoomFactor, point.y() / zoomFactor);
+}
+
+inline void adjustFloatQuadForAbsoluteZoom(FloatQuad& quad, RenderObject* renderer)
+{
+    quad.setP1(adjustFloatPointForAbsoluteZoom(quad.p1(), renderer));
+    quad.setP2(adjustFloatPointForAbsoluteZoom(quad.p2(), renderer));
+    quad.setP3(adjustFloatPointForAbsoluteZoom(quad.p3(), renderer));
+    quad.setP4(adjustFloatPointForAbsoluteZoom(quad.p4(), renderer));
 }
 
 } // namespace WebCore

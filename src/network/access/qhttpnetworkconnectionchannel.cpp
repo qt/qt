@@ -542,6 +542,7 @@ void QHttpNetworkConnectionChannel::allDone()
         if (resendCurrent || reply->d_func()->isConnectionCloseEnabled() || socket->state() != QAbstractSocket::ConnectedState) {
             // move the pipelined ones back to the main queue
             requeueCurrentlyPipelinedRequests();
+            close();
         } else {
             // there were requests pipelined in and we can continue
             HttpMessagePair messagePair = alreadyPipelinedRequests.takeFirst();
@@ -601,7 +602,6 @@ void QHttpNetworkConnectionChannel::requeueCurrentlyPipelinedRequests()
         connection->d_func()->requeueRequest(alreadyPipelinedRequests.at(i));
     alreadyPipelinedRequests.clear();
 
-    close();
     QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
 }
 
@@ -758,6 +758,7 @@ void QHttpNetworkConnectionChannel::_q_disconnected()
     state = QHttpNetworkConnectionChannel::IdleState;
 
     requeueCurrentlyPipelinedRequests();
+    close();
 }
 
 

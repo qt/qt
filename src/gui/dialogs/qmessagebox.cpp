@@ -310,6 +310,15 @@ void QMessageBoxPrivate::updateSize()
             }
             width = hardLimit;
         }
+#ifdef Q_WS_S60
+        // in S60 portait messageBoxes should always occupy maximum width
+        if (QApplication::desktop()->size().height() > QApplication::desktop()->size().width()){
+            width = hardLimit;
+        } else {
+            // in landscape the messageBoxes should be of same width as in portrait
+            width = qMin(QApplication::desktop()->size().height(), hardLimit);
+        }
+#endif
     }
 
     if (informativeLabel) {

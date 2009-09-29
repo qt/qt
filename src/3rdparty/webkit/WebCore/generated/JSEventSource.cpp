@@ -32,6 +32,7 @@
 #include "JSEvent.h"
 #include "JSEventListener.h"
 #include "KURL.h"
+#include "RegisteredEventListener.h"
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/JSString.h>
@@ -118,7 +119,14 @@ JSEventSource::JSEventSource(PassRefPtr<Structure> structure, JSDOMGlobalObject*
 
 JSEventSource::~JSEventSource()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    impl()->invalidateEventListeners();
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+}
+
+void JSEventSource::markChildren(MarkStack& markStack)
+{
+    Base::markChildren(markStack);
+    impl()->markEventListeners(markStack);
 }
 
 JSObject* JSEventSource::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
