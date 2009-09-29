@@ -1339,13 +1339,19 @@ qreal QFxListView::maxXExtent() const
 void QFxListView::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QFxListView);
+    QFxFlickable::keyPressEvent(event);
+    if (event->isAccepted())
+        return;
+
     if (d->model && d->model->count() && d->interactive) {
         if ((d->orient == Qt::Horizontal && event->key() == Qt::Key_Left)
                     || (d->orient == Qt::Vertical && event->key() == Qt::Key_Up)) {
             if (currentIndex() > 0 || (d->wrap && !event->isAutoRepeat())) {
                 d->moveReason = QFxListViewPrivate::Key;
-                int index = currentIndex()-1;
-                d->updateCurrent(index >= 0 ? index : d->model->count()-1);
+                decrementCurrentIndex();
+                event->accept();
+                return;
+            } else if (d->wrap) {
                 event->accept();
                 return;
             }
@@ -1353,8 +1359,10 @@ void QFxListView::keyPressEvent(QKeyEvent *event)
                     || (d->orient == Qt::Vertical && event->key() == Qt::Key_Down)) {
             if (currentIndex() < d->model->count() - 1 || (d->wrap && !event->isAutoRepeat())) {
                 d->moveReason = QFxListViewPrivate::Key;
-                int index = currentIndex()+1;
-                d->updateCurrent(index < d->model->count() ? index : 0);
+                incrementCurrentIndex();
+                event->accept();
+                return;
+            } else if (d->wrap) {
                 event->accept();
                 return;
             }
@@ -1362,7 +1370,24 @@ void QFxListView::keyPressEvent(QKeyEvent *event)
     }
     d->moveReason = QFxListViewPrivate::Other;
     event->ignore();
-    QFxFlickable::keyPressEvent(event);
+}
+
+void QFxListView::incrementCurrentIndex()
+{
+    Q_D(QFxListView);
+    if (currentIndex() < d->model->count() - 1 || d->wrap) {
+        int index = currentIndex()+1;
+        d->updateCurrent(index < d->model->count() ? index : 0);
+    }
+}
+
+void QFxListView::decrementCurrentIndex()
+{
+    Q_D(QFxListView);
+    if (currentIndex() > 0 || d->wrap) {
+        int index = currentIndex()-1;
+        d->updateCurrent(index >= 0 ? index : d->model->count()-1);
+    }
 }
 
 void QFxListView::componentComplete()
