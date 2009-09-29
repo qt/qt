@@ -52,6 +52,18 @@ Third party components
       HTTP request.
     * [256630] Fix usage of QProgressDialog together with QNetworkReply.
 
+- QPainter
+    * [254105] Fixed potential segmentation fault when setting empty clip
+      rectangle.
+    * [256549] Fixed inconsistent behavior between paint engines when
+      setting an IntersectClip after doing setClipping(false).
+    * [254407] Fixed rendering issue with outline drawing using
+      projective transforms.
+    * [258776] Fixed rounding bug in drawImage().
+
+- QPainterPath
+    * [251909] Fixed bug in QPainterPath::united() / simplified().
+
 - QSslCertificate
     * [256066] Fix loading of a PEM when the length was a multiple of 64.
 
@@ -62,7 +74,7 @@ Third party components
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************
-- [QT-353] (ODBC) Fixed issue of forward only datasets failing when not 
+- [QT-353] (ODBC) Fixed issue of forward only datasets failing when not
    explicitly set so.
 - [222678] Fixed QSqlTableModel: trying to delete the wrong row.
 - (Interbase) Fixed crash when calling numRows on unknown query type.
@@ -95,7 +107,7 @@ Qt for Windows
 
 Qt for Mac OS X
 ---------------
-[252088] Drag and drop events will now consider the WA_TransparentForMouseEvents 
+[252088] Drag and drop events will now consider the WA_TransparentForMouseEvents
          in Cocoa port.
 [255428] Fixed an an issue when Calling QWidget::raise() on hidden windows making
          them visible in Cocoa port.
@@ -104,7 +116,7 @@ Qt for Mac OS X
 [258822] Fixed a crash when inserting the same menu twice in a menubar in Cocoa port.
 
 -        Fixed the wizard background images for Snow Leopard.
-         
+
 
 Qt for Embedded Linux
 ---------------------
@@ -166,6 +178,17 @@ Qt for Windows CE
 ****************************************************************************
 *                          Plugins                                         *
 ****************************************************************************
+
+- DirectFB
+    * Make autorepeat work for DirectFB keyboard driver
+    * Fix a crash when resizing windows
+    * Fix an off by one when flipping surfaces that could lead to artifacts
+    * Make painting operations with QRegion clips go to DirectFB rather than
+      Raster (when possible)
+    * Make porter duff operations work for blits
+    * Various optimizations
+    * Handle more operations in hw
+
 
 
 ****************************************************************************
