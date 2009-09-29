@@ -120,6 +120,7 @@ private slots:
     void assignPropertyWithAnimation();
     void postEvent();
     void cancelDelayedEvent();
+    void postDelayedEventAndStop();
     void stateFinished();
     void parallelStates();
     void parallelRootState();
@@ -1636,6 +1637,44 @@ void tst_QStateMachine::cancelDelayedEvent()
     QTRY_COMPARE(finishedSpy.count(), 1);
     QCOMPARE(machine.configuration().size(), 1);
     QVERIFY(machine.configuration().contains(s2));
+}
+
+void tst_QStateMachine::postDelayedEventAndStop()
+{
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    QFinalState *s2 = new QFinalState(&machine);
+    s1->addTransition(new StringTransition("a", s2));
+    machine.setInitialState(s1);
+
+    QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    machine.start();
+    QTRY_COMPARE(startedSpy.count(), 1);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s1));
+
+    int id1 = machine.postDelayedEvent(new StringEvent("a"), 0);
+    QVERIFY(id1 != -1);
+    QSignalSpy stoppedSpy(&machine, SIGNAL(stopped()));
+    machine.stop();
+    QTRY_COMPARE(stoppedSpy.count(), 1);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s1));
+
+    machine.start();
+    QTRY_COMPARE(startedSpy.count(), 2);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s1));
+
+    int id2 = machine.postDelayedEvent(new StringEvent("a"), 1000);
+    QVERIFY(id2 != -1);
+    machine.stop();
+    QTRY_COMPARE(stoppedSpy.count(), 2);
+    machine.start();
+    QTRY_COMPARE(startedSpy.count(), 3);
+    QTestEventLoop::instance().enterLoop(2);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s1));
 }
 
 void tst_QStateMachine::stateFinished()
