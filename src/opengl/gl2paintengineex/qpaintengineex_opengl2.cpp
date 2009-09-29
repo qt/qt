@@ -1224,6 +1224,7 @@ void QGL2PaintEngineEx::opacityChanged()
 {
 //    qDebug("QGL2PaintEngineEx::opacityChanged()");
     Q_D(QGL2PaintEngineEx);
+    state()->opacityChanged = true;
 
     Q_ASSERT(d->shaderManager);
     d->brushUniformsDirty = true;
@@ -1234,11 +1235,14 @@ void QGL2PaintEngineEx::compositionModeChanged()
 {
 //     qDebug("QGL2PaintEngineEx::compositionModeChanged()");
     Q_D(QGL2PaintEngineEx);
+    state()->compositionModeChanged = true;
     d->compositionModeDirty = true;
 }
 
 void QGL2PaintEngineEx::renderHintsChanged()
 {
+    state()->renderHintsChanged = true;
+
 #if !defined(QT_OPENGL_ES_2)
     if ((state()->renderHints & QPainter::Antialiasing)
         || (state()->renderHints & QPainter::HighQualityAntialiasing))
@@ -1257,6 +1261,7 @@ void QGL2PaintEngineEx::transformChanged()
 {
     Q_D(QGL2PaintEngineEx);
     d->matrixDirty = true;
+    state()->matrixChanged = true;
 }
 
 
@@ -1713,6 +1718,7 @@ void QGL2PaintEngineEx::ensureActive()
         d->transferMode(BrushDrawingMode);
         glViewport(0, 0, d->width, d->height);
         d->needsSync = false;
+        d->shaderManager->setDirty();
         setState(state());
     }
 }
@@ -1768,6 +1774,8 @@ void QGL2PaintEngineExPrivate::setScissor(const QRect &rect)
 void QGL2PaintEngineEx::clipEnabledChanged()
 {
     Q_D(QGL2PaintEngineEx);
+
+    state()->clipChanged = true;
 
     if (painter()->hasClipping())
         d->regenerateClip();
@@ -1850,6 +1858,8 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
 {
 //     qDebug("QGL2PaintEngineEx::clip()");
     Q_D(QGL2PaintEngineEx);
+
+    state()->clipChanged = true;
 
     ensureActive();
 
@@ -1947,6 +1957,8 @@ void QGL2PaintEngineExPrivate::systemStateChanged()
 {
     Q_Q(QGL2PaintEngineEx);
 
+    q->state()->clipChanged = true;
+
     if (systemClip.isEmpty()) {
         use_system_clip = false;
     } else {
@@ -2005,21 +2017,28 @@ void QGL2PaintEngineEx::setState(QPainterState *new_state)
         return;
     }
 
-    renderHintsChanged();
+    if (old_state == s || s->renderHintsChanged)
+        renderHintsChanged();
 
-    d->matrixDirty = true;
-    d->compositionModeDirty = true;
-    d->simpleShaderMatrixUniformDirty = true;
-    d->shaderMatrixUniformDirty = true;
-    d->opacityUniformDirty = true;
+    if (old_state == s || s->matrixChanged) {
+        d->matrixDirty = true;
+        d->simpleShaderMatrixUniformDirty = true;
+        d->shaderMatrixUniformDirty = true;
+    }
 
-    d->shaderManager->setDirty();
+    if (old_state == s || s->compositionModeChanged)
+        d->compositionModeDirty = true;
 
-    if (old_state && old_state != s && old_state->canRestoreClip) {
-        d->updateClipScissorTest();
-        glDepthFunc(GL_LEQUAL);
-    } else {
-        d->regenerateClip();
+    if (old_state == s || s->opacityChanged)
+        d->opacityUniformDirty = true;
+
+    if (old_state == s || s->clipChanged) {
+        if (old_state && old_state != s && old_state->canRestoreClip) {
+            d->updateClipScissorTest();
+            glDepthFunc(GL_LEQUAL);
+        } else {
+            d->regenerateClip();
+        }
     }
 }
 
@@ -2036,6 +2055,12 @@ QPainterState *QGL2PaintEngineEx::createState(QPainterState *orig) const
     else
         s = new QOpenGL2PaintEngineState(*static_cast<QOpenGL2PaintEngineState *>(orig));
 
+    s->matrixChanged = false;
+    s->compositionModeChanged = false;
+    s->opacityChanged = false;
+    s->renderHintsChanged = false;
+    s->clipChanged = false;
+
     d->last_created_state = s;
     return s;
 }
@@ -2051,7 +2076,6 @@ QOpenGL2PaintEngineState::QOpenGL2PaintEngineState(QOpenGL2PaintEngineState &oth
 {
     needsClipBufferClear = other.needsClipBufferClear;
     clipTestEnabled = other.clipTestEnabled;
-    scissorTestEnabled = other.scissorTestEnabled;
     currentClip = other.currentClip;
     canRestoreClip = other.canRestoreClip;
     rectangleClip = other.rectangleClip;
