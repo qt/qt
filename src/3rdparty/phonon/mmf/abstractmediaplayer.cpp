@@ -41,7 +41,6 @@ const int       NullMaxVolume = -1;
 MMF::AbstractMediaPlayer::AbstractMediaPlayer() :
             m_playPending(false)
         ,   m_tickTimer(new QTimer(this))
-        ,   m_volume(InitialVolume)
         ,   m_mmfMaxVolume(NullMaxVolume)
 {
     connect(m_tickTimer.data(), SIGNAL(timeout()), this, SLOT(tick()));
@@ -51,7 +50,6 @@ MMF::AbstractMediaPlayer::AbstractMediaPlayer(const AbstractPlayer& player) :
         AbstractPlayer(player)
         ,   m_playPending(false)
         ,   m_tickTimer(new QTimer(this))
-        ,   m_volume(InitialVolume)
         ,   m_mmfMaxVolume(NullMaxVolume)
 {
     connect(m_tickTimer.data(), SIGNAL(timeout()), this, SLOT(tick()));
@@ -296,7 +294,7 @@ void MMF::AbstractMediaPlayer::volumeChanged(qreal volume)
     TRACE_CONTEXT(AbstractMediaPlayer::volumeChanged, EAudioInternal);
     TRACE_ENTRY("state %d", privateState());
 
-    m_volume = volume;
+    AbstractPlayer::volumeChanged(volume);
     doVolumeChanged();
 
     TRACE_EXIT_0();
@@ -373,17 +371,21 @@ void MMF::AbstractMediaPlayer::changeState(PrivateState newState)
 
     setState(newState);
 
-    // Check whether play() was called while clip was being loaded.  If so,
-    // playback should be started now
     if (
-        LoadingState == oldPhononState
-        and StoppedState == newPhononState
-        and m_playPending
-    ) {
-        TRACE_0("play was called while loading; starting playback now");
-        m_playPending = false;
-        play();
-    }
+		LoadingState == oldPhononState
+		and StoppedState == newPhononState
+	) {
+		// Ensure initial volume is set on MMF API before starting playback
+		doVolumeChanged();
+	
+		// Check whether play() was called while clip was being loaded.  If so,
+	    // playback should be started now
+	    if (m_playPending) {
+	        TRACE_0("play was called while loading; starting playback now");
+	        m_playPending = false;
+	        play();
+	    }
+	}
 
     TRACE_EXIT_0();
 }

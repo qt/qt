@@ -85,6 +85,9 @@ public:
     virtual void setFileSource(const Phonon::MediaSource&, RFile&) = 0;
     virtual void setNextSource(const Phonon::MediaSource &) = 0;
 
+    // VolumeObserver
+    virtual void volumeChanged(qreal volume);
+    
     void setVideoOutput(VideoOutput* videoOutput);
 
     /**
@@ -143,7 +146,9 @@ private:
 protected:
     // Not owned
     VideoOutput*                m_videoOutput;
-
+    
+    qreal						m_volume;
+    
 private:
     PrivateState                m_state;
     Phonon::ErrorType           m_error;

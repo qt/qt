@@ -34,6 +34,7 @@ MMF::AbstractPlayer::AbstractPlayer()
         :   m_videoOutput(0)
         ,   m_state(GroundState)
         ,   m_error(NoError)
+        ,   m_volume(InitialVolume)
         ,   m_tickInterval(DefaultTickInterval)
         ,   m_transitionTime(0)
         ,   m_prefinishMark(0)
@@ -45,6 +46,7 @@ MMF::AbstractPlayer::AbstractPlayer(const AbstractPlayer& player)
         :   m_videoOutput(player.m_videoOutput)
         ,   m_state(GroundState)
         ,   m_error(NoError)
+        ,   m_volume(player.m_volume)
         ,   m_tickInterval(player.tickInterval())
         ,   m_transitionTime(player.transitionTime())
         ,   m_prefinishMark(player.prefinishMark())
@@ -85,6 +87,16 @@ qint32 MMF::AbstractPlayer::transitionTime() const
 void MMF::AbstractPlayer::setTransitionTime(qint32 time)
 {
     m_transitionTime = time;
+}
+
+
+//-----------------------------------------------------------------------------
+// VolumeObserver
+//-----------------------------------------------------------------------------
+
+void MMF::AbstractPlayer::volumeChanged(qreal volume)
+{
+    m_volume = volume;
 }
 
 

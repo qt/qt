@@ -104,7 +104,6 @@ private:
 
     QScopedPointer<QTimer>      m_tickTimer;
 
-    qreal                       m_volume;
     int                         m_mmfMaxVolume;
 
     MediaSource                 m_source;
