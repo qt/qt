@@ -78,78 +78,6 @@ static bool isEqual(const QList<QAction*>& a, const QList<QAction*>& b)
     return true;
 }
 
-
-void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
-{
-#ifdef Q_WS_S60
-    Q_Q(QWidget);
-    if (QApplication::focusWidget() && q!=QApplication::focusWidget()) {
-        QList<QAction *> old = QApplication::focusWidget()->softKeys();
-        if (isEqual(old, softkeys ))
-            return;
-    }
-    CEikButtonGroupContainer* nativeContainer = S60->buttonGroupContainer();
-    QT_TRAP_THROWING(nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS));
-
-    int position = -1;
-    int command;
-    bool needsExitButton = true;
-
-    for (int index = 0; index < softkeys.count(); index++) {
-        const QAction* softKeyAction = softkeys.at(index);
-        switch (softKeyAction->softKeyRole()) {
-        // Positive Actions go on LSK
-        case QAction::OptionsSoftKey:
-        case QAction::MenuSoftKey:
-        case QAction::ContextMenuSoftKey:
-            command = EAknSoftkeyOptions; //Calls DynInitMenuPane in AppUI
-            position = 0;
-            break;
-        case QAction::SelectSoftKey:
-        case QAction::PreviousSoftKey:
-        case QAction::OkSoftKey:
-        case QAction::EditSoftKey:
-        case QAction::ViewSoftKey:
-        case QAction::EndEditSoftKey:
-        case QAction::FinishSoftKey:
-            command = SOFTKEYSTART + index;
-            position = 0;
-            break;
-        // Negative Actions on the RSK
-        case QAction::BackSoftKey:
-        case QAction::NextSoftKey:
-        case QAction::CancelSoftKey:
-        case QAction::BackSpaceSoftKey:
-        case QAction::RevertEditSoftKey:
-        case QAction::DeselectSoftKey:
-            needsExitButton = false;
-            command = SOFTKEYSTART + index;
-            position = 2;
-            break;
-        case QAction::ExitSoftKey:
-            needsExitButton = false;
-            command = EAknSoftkeyExit; //Calls HandleCommand in AppUI
-            position = 2;
-            break;
-        default:
-            break;
-        }
-
-        if (position != -1) {
-            TPtrC text = qt_QString2TPtrC(softKeyAction->text());
-            QT_TRAP_THROWING(nativeContainer->SetCommandL(position, command, text));
-        }
-    }
-
-    if (needsExitButton)
-        QT_TRAP_THROWING(nativeContainer->SetCommandL(2, EAknSoftkeyExit, qt_QString2TPtrC(QObject::tr("Exit"))));
-
-    nativeContainer->DrawDeferred(); // 3.1 needs an extra invitation
-#else
-    Q_UNUSED(softkeys)
-#endif
-}
-
 void QWidgetPrivate::setWSGeometry(bool /* dontShow */, const QRect & /* rect */)
 {
 
@@ -371,6 +299,9 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         destroyw->ControlEnv()->AppUi()->RemoveFromStack(destroyw);
         CBase::Delete(destroyw);
     }
+
+    if (q->testAttribute(Qt::WA_AcceptTouchEvents))
+        registerTouchWindow();
 }
 
 
@@ -870,6 +801,17 @@ QWindowSurface *QWidgetPrivate::createDefaultWindowSurface_sys()
 void QWidgetPrivate::setMask_sys(const QRegion& /* region */)
 {
 
+}
+
+void QWidgetPrivate::registerTouchWindow()
+{
+#ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+    Q_Q(QWidget);
+    if (q->testAttribute(Qt::WA_WState_Created) && q->windowType() != Qt::Desktop) {
+        RWindow *rwindow = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
+        rwindow->EnableAdvancedPointers();
+    }
+#endif
 }
 
 int QWidget::metric(PaintDeviceMetric m) const

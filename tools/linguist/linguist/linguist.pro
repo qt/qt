@@ -81,9 +81,6 @@ PROJECTNAME = Qt \
     Linguist
 target.path = $$[QT_INSTALL_BINS]
 INSTALLS += target
-linguisttranslations.files = *.qm
-linguisttranslations.path = $$[QT_INSTALL_TRANSLATIONS]
-INSTALLS += linguisttranslations
 phrasebooks.path = $$[QT_INSTALL_DATA]/phrasebooks
 
 # ## will this work on windows?

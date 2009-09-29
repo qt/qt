@@ -61,6 +61,14 @@ WebInspector.ConsoleView = function(drawer)
     // Will hold the list of filter elements
     this.filterBarElement = document.getElementById("console-filter");
     
+    function createDividerElement() {
+        var dividerElement = document.createElement("div");
+        
+        dividerElement.addStyleClass("divider");
+        
+        this.filterBarElement.appendChild(dividerElement);
+    }
+    
     function createFilterElement(category) {
         var categoryElement = document.createElement("li");
         categoryElement.category = category;
@@ -77,6 +85,9 @@ WebInspector.ConsoleView = function(drawer)
     }
     
     this.allElement = createFilterElement.call(this, "All");
+    
+    createDividerElement.call(this);
+    
     this.errorElement = createFilterElement.call(this, "Errors");
     this.warningElement = createFilterElement.call(this, "Warnings");
     this.logElement = createFilterElement.call(this, "Logs");
@@ -291,24 +302,10 @@ WebInspector.ConsoleView.prototype = {
             }
         }
 
-        function parsingCallback(result, isException)
-        {
-            if (!isException)
-                result = JSON.parse(result);
-            reportCompletions(result, isException);
-        }
-
-        this.evalInInspectedWindow(
-            "(function() {" +
-                "var props = {};" +
-                "for (var prop in (" + expressionString + ")) props[prop] = true;" +
-                ((!dotNotation && !bracketNotation) ?
-                "for (var prop in window._inspectorCommandLineAPI)" +
-                    "if (prop.charAt(0) !== '_') props[prop] = true;"
-                : "") +
-                "return JSON.stringify(props);" +
-            "})()",
-            parsingCallback);
+        var includeInspectorCommandLineAPI = (!dotNotation && !bracketNotation);
+        if (WebInspector.panels.scripts && WebInspector.panels.scripts.paused)
+            var callFrameId = WebInspector.panels.scripts.selectedCallFrameId();
+        InjectedScriptAccess.getCompletions(expressionString, includeInspectorCommandLineAPI, callFrameId, reportCompletions);
     },
 
     _reportCompletions: function(bestMatchOnly, completionsReadyCallback, dotNotation, bracketNotation, prefix, result, isException) {
@@ -611,7 +608,7 @@ WebInspector.ConsoleMessage.prototype = {
                 this.formattedMessage = span;
                 break;
             case WebInspector.ConsoleMessage.MessageType.Object:
-                this.formattedMessage = this._format(["%O", args[0]]);
+                this.formattedMessage = this._format([WebInspector.ObjectProxy.wrapPrimitiveValue("%O"), args[0]]);
                 break;
             default:
                 this.formattedMessage = this._format(args);
@@ -644,7 +641,7 @@ WebInspector.ConsoleMessage.prototype = {
             return WebInspector.console._format(obj, true);
         }
 
-        if (typeof parameters[0] === "string") {
+        if (Object.proxyType(parameters[0]) === "string") {
             var formatters = {}
             for (var i in String.standardFormatters)
                 formatters[i] = String.standardFormatters[i];
@@ -665,7 +662,7 @@ WebInspector.ConsoleMessage.prototype = {
                 return a;
             }
 
-            var result = String.format(parameters[0], parameters.slice(1), formatters, formattedResult, append);
+            var result = String.format(parameters[0].description, parameters.slice(1), formatters, formattedResult, append);
             formattedResult = result.formattedResult;
             parameters = result.unusedSubstitutions;
             if (parameters.length)
@@ -673,8 +670,8 @@ WebInspector.ConsoleMessage.prototype = {
         }
 
         for (var i = 0; i < parameters.length; ++i) {
-            if (typeof parameters[i] === "string")
-                formattedResult.appendChild(WebInspector.linkifyStringAsFragment(parameters[i]));
+            if (Object.proxyType(parameters[i]) === "string")
+                formattedResult.appendChild(WebInspector.linkifyStringAsFragment(parameters[i].description));
             else
                 formattedResult.appendChild(formatForConsole(parameters[i]));
 
@@ -916,7 +913,7 @@ WebInspector.ConsoleTextMessage.prototype.__proto__ = WebInspector.ConsoleMessag
 WebInspector.ConsoleCommandResult = function(result, exception, originatingCommand)
 {
     var level = (exception ? WebInspector.ConsoleMessage.MessageLevel.Error : WebInspector.ConsoleMessage.MessageLevel.Log);
-    var message = (exception ? String(result) : result);
+    var message = result;
     var line = (exception ? result.line : -1);
     var url = (exception ? result.sourceURL : null);
 

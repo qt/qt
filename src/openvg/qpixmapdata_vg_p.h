@@ -95,8 +95,8 @@ public:
     QSize size() const { return QSize(w, h); }
 
 #if defined(Q_OS_SYMBIAN)
-    RSgImage* toRSgImage();
-    void fromRSgImage(RSgImage* sgImage);
+    void* toNativeType(NativeType type);
+    void fromNativeType(void* pixmap, NativeType type);
 #endif
 
 protected:

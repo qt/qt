@@ -63,6 +63,7 @@
 #include <QtGui/QApplication>
 #include <QtGui/QToolBar>
 #include <QtGui/QMainWindow>
+#include <QtGui/QMenuBar>
 
 QT_BEGIN_NAMESPACE
 
@@ -611,9 +612,15 @@ QDesignerPropertySheet::QDesignerPropertySheet(QObject *object, QObject *parent)
         createFakeProperty(QLatin1String("dragEnabled"));
         // windowModality is visible only for the main container, in which case the form windows enables it on loading
         setVisible(createFakeProperty(QLatin1String("windowModality")), false);
-        if (qobject_cast<const QToolBar *>(d->m_object)) // prevent toolbars from being dragged off
+        if (qobject_cast<const QToolBar *>(d->m_object)) { // prevent toolbars from being dragged off
             createFakeProperty(QLatin1String("floatable"), QVariant(true));
-
+        } else {
+            if (qobject_cast<const QMenuBar *>(d->m_object)) {
+                // Keep the menu bar editable in the form even if a native menu bar is used.
+                const bool nativeMenuBarDefault = !qApp->testAttribute(Qt::AA_DontUseNativeMenuBar);
+                createFakeProperty(QLatin1String("nativeMenuBar"), QVariant(nativeMenuBarDefault));
+            }
+        }
         if (d->m_canHaveLayoutAttributes) {
             static const QString layoutGroup = QLatin1String("Layout");
             const char* fakeLayoutProperties[] = {

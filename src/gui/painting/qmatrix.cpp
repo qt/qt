@@ -1209,6 +1209,9 @@ QDebug operator<<(QDebug dbg, const QMatrix &m)
     \relates QMatrix
     \since 4.6
 
+    \brief The qFuzzyCompare function is for comparing two matrices
+    using a fuzziness factor.
+    
     Returns true if \a m1 and \a m2 are equal, allowing for a small
     fuzziness factor for floating-point comparisons; false otherwise.
 */

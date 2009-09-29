@@ -68,6 +68,13 @@ extern bool qt_wince_is_high_dpi();  //defined in qguifunctions_wince.cpp
 #include "qguifunctions_wince.h"
 #endif
 
+#if defined(QT_SOFTKEYS_ENABLED)
+#include <qaction.h>
+#ifdef Q_WS_S60
+#include "private/qt_s60_p.h"
+#endif
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QErrorMessagePrivate : public QDialogPrivate
@@ -78,6 +85,9 @@ public:
     QCheckBox * again;
     QTextEdit * errors;
     QLabel * icon;
+#ifdef QT_SOFTKEYS_ENABLED
+    QAction *okAction;
+#endif
     QQueue<QPair<QString, QString> > pending;
     QSet<QString> doNotShow;
     QSet<QString> doNotShowType;
@@ -124,8 +134,15 @@ QSize QErrorMessageTextView::sizeHint() const
     else
       return QSize(300, 100);
 #else
+
+#ifdef Q_WS_S60
+    const int smallerDimension = qMin(S60->screenHeightInPixels, S60->screenWidthInPixels);
+    // In S60 layout data, error messages seem to be one third of the screen height (in portrait) minus two.
+    return QSize(smallerDimension, smallerDimension/3-2);
+#else
     return QSize(250, 75);
-#endif
+#endif //Q_WS_S60
+#endif //Q_WS_WINCE
 }
 
 /*!
@@ -228,6 +245,12 @@ QErrorMessage::QErrorMessage(QWidget * parent)
     Q_D(QErrorMessage);
     QGridLayout * grid = new QGridLayout(this);
     d->icon = new QLabel(this);
+#ifdef QT_SOFTKEYS_ENABLED
+    d->okAction = new QAction(this);
+    d->okAction->setSoftKeyRole(QAction::PositiveSoftKey);
+    connect(d->okAction, SIGNAL(triggered()), this, SLOT(accept()));
+    addAction(d->okAction);
+#endif
 #ifndef QT_NO_MESSAGEBOX
     d->icon->setPixmap(QMessageBox::standardIcon(QMessageBox::Information));
     d->icon->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
@@ -239,7 +262,8 @@ QErrorMessage::QErrorMessage(QWidget * parent)
     d->again->setChecked(true);
     grid->addWidget(d->again, 1, 1, Qt::AlignTop);
     d->ok = new QPushButton(this);
-#ifdef Q_WS_WINCE
+
+#if defined(Q_WS_WINCE) || defined(Q_WS_S60)
     d->ok->setFixedSize(0,0);
 #endif
     connect(d->ok, SIGNAL(clicked()), this, SLOT(accept()));
@@ -372,7 +396,6 @@ void QErrorMessage::showMessage(const QString &message, const QString &type)
         show();
 }
 
-
 /*!
     \reimp
 */
@@ -389,6 +412,9 @@ void QErrorMessagePrivate::retranslateStrings()
 {
     again->setText(QErrorMessage::tr("&Show this message again"));
     ok->setText(QErrorMessage::tr("&OK"));
+#ifdef QT_SOFTKEYS_ENABLED
+    okAction->setText(ok->text());
+#endif
 }
 
 /*!

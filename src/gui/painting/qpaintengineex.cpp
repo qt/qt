@@ -416,8 +416,8 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
     if (d->stroker.capStyle() == Qt::RoundCap || d->stroker.joinStyle() == Qt::RoundJoin)
         flags |= QVectorPath::CurvedShapeHint;
 
-    qreal txscale = 1;
-    if (!(pen.isCosmetic() || (qt_scaleForTransform(state()->matrix, &txscale) && txscale != 1))) {
+    // ### Perspective Xforms are currently not supported...
+    if (!pen.isCosmetic()) {
         // We include cosmetic pens in this case to avoid having to
         // change the current transform. Normal transformed,
         // non-cosmetic pens will be transformed as part of fill
@@ -474,8 +474,6 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
                                flags);
         fill(strokePath, pen.brush());
     } else {
-        const qreal strokeWidth = d->stroker.strokeWidth();
-        d->stroker.setStrokeWidth(strokeWidth * txscale);
         // For cosmetic pens we need a bit of trickery... We to process xform the input points
         if (state()->matrix.type() >= QTransform::TxProject) {
             QPainterPath painterPath = state()->matrix.map(path.convertToPainterPath());
@@ -535,7 +533,6 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
             d->activeStroker->end();
         }
 
-        d->stroker.setStrokeWidth(strokeWidth);
         QVectorPath strokePath(d->strokeHandler->pts.data(),
                                d->strokeHandler->types.size(),
                                d->strokeHandler->types.data(),

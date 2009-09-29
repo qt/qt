@@ -191,10 +191,10 @@
 
     \section2 Rectangles, lines, and points
 
-    Rectangles and lines use cached VGPath objects to try to accelerate
-    drawing operations.  vgModifyPathCoords() is used to modify the
-    co-ordinates in the cached VGPath object each time fillRect(),
-    drawRects(), or drawLines() is called.
+    Rectangles, lines, and rounded rectangles use cached VGPath objects
+    to try to accelerate drawing operations.  vgModifyPathCoords() is used
+    to modify the co-ordinates in the cached VGPath object each time
+    fillRect(), drawRects(), drawLines(), or drawRoundedRect() is called.
 
     If the engine does not implement vgModifyPathCoords() properly, then the
     QVG_NO_MODIFY_PATH define can be set to disable path caching.  This will

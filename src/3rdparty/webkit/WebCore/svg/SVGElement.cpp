@@ -190,18 +190,17 @@ bool SVGElement::haveLoadedRequiredResources()
     return true;
 }
 
-static bool hasLoadListener(SVGElement* node)
+static bool hasLoadListener(Node* node)
 {
-    Node* currentNode = node;
-    while (currentNode && currentNode->isElementNode()) {
-        const RegisteredEventListenerVector& listeners = static_cast<Element*>(currentNode)->eventListeners();
-        size_t size = listeners.size();
-        for (size_t i = 0; i < size; ++i) {
-            const RegisteredEventListener& r = *listeners[i];
-            if (r.eventType() == eventNames().loadEvent && r.useCapture() || currentNode == node)
+    if (node->hasEventListeners(eventNames().loadEvent))
+        return true;
+
+    for (node = node->parentNode(); node && node->isElementNode(); node = node->parentNode()) {
+        const EventListenerVector& entry = node->getEventListeners(eventNames().loadEvent);
+        for (size_t i = 0; i < entry.size(); ++i) {
+            if (entry[i].useCapture)
                 return true;
         }
-        currentNode = currentNode->parentNode();
     }
 
     return false;
@@ -219,7 +218,7 @@ void SVGElement::sendSVGLoadEventIfPossible(bool sendParentLoadEvents)
             event->setTarget(currentTarget);
             currentTarget->dispatchGenericEvent(event.release());
         }
-        currentTarget = (parent && parent->isSVGElement()) ? static_pointer_cast<SVGElement>(parent) : 0;
+        currentTarget = (parent && parent->isSVGElement()) ? static_pointer_cast<SVGElement>(parent) : RefPtr<SVGElement> (0);
     }
 }
 

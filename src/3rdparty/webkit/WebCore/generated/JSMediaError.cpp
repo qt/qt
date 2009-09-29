@@ -143,7 +143,7 @@ JSMediaError::JSMediaError(PassRefPtr<Structure> structure, JSDOMGlobalObject* g
 
 JSMediaError::~JSMediaError()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSMediaError::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

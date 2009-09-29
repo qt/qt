@@ -1,7 +1,7 @@
 /*
  *  Copyright (C) 1999-2002 Harri Porten (porten@kde.org)
  *  Copyright (C) 2001 Peter Kelly (pmk@post.com)
- *  Copyright (C) 2004, 2007, 2008 Apple Inc. All rights reserved.
+ *  Copyright (C) 2004, 2007, 2008, 2009 Apple Inc. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -28,52 +28,14 @@
 
 namespace JSC {
 
-void GetterSetter::mark()
+void GetterSetter::markChildren(MarkStack& markStack)
 {
-    JSCell::mark();
+    JSCell::markChildren(markStack);
 
-    if (m_getter && !m_getter->marked())
-        m_getter->mark();
-    if (m_setter && !m_setter->marked())
-        m_setter->mark();
-}
-
-JSValue GetterSetter::toPrimitive(ExecState*, PreferredPrimitiveType) const
-{
-    ASSERT_NOT_REACHED();
-    return jsNull();
-}
-
-bool GetterSetter::getPrimitiveNumber(ExecState*, double& number, JSValue& value)
-{
-    ASSERT_NOT_REACHED();
-    number = 0;
-    value = JSValue();
-    return true;
-}
-
-bool GetterSetter::toBoolean(ExecState*) const
-{
-    ASSERT_NOT_REACHED();
-    return false;
-}
-
-double GetterSetter::toNumber(ExecState*) const
-{
-    ASSERT_NOT_REACHED();
-    return 0.0;
-}
-
-UString GetterSetter::toString(ExecState*) const
-{
-    ASSERT_NOT_REACHED();
-    return UString::null();
-}
-
-JSObject* GetterSetter::toObject(ExecState* exec) const
-{
-    ASSERT_NOT_REACHED();
-    return jsNull().toObject(exec);
+    if (m_getter)
+        markStack.append(m_getter);
+    if (m_setter)
+        markStack.append(m_setter);
 }
 
 bool GetterSetter::isGetterSetter() const

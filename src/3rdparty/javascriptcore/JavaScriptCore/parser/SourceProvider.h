@@ -70,7 +70,11 @@ namespace JSC {
         const UChar* data() const { return m_source.data(); }
         int length() const { return m_source.size(); }
 
+#ifdef QT_BUILD_SCRIPT_LIB
+    protected:
+#else
     private:
+#endif
         UStringSourceProvider(const UString& source, const UString& url)
             : SourceProvider(url)
             , m_source(source)

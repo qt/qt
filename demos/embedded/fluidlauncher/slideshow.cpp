@@ -83,7 +83,8 @@ void SlideShowPrivate::showNextSlide()
 
 
 
-SlideShow::SlideShow()
+SlideShow::SlideShow(QWidget* parent) :
+    QWidget(parent)
 {
     d = new SlideShowPrivate;
 
@@ -125,7 +126,6 @@ void SlideShow::clearImages()
 
 void SlideShow::startShow()
 {
-    showFullScreen();
     d->interSlideTimer.start(d->slideInterval, this);
     d->showNextSlide();
     update();
@@ -134,7 +134,6 @@ void SlideShow::startShow()
 
 void SlideShow::stopShow()
 {
-    hide();
     d->interSlideTimer.stop();
 }
 

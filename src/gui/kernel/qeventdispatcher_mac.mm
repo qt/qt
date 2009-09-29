@@ -909,6 +909,21 @@ QEventDispatcherMac::QEventDispatcherMac(QObject *parent)
                                                  QEventDispatcherMacPrivate::waitingObserverCallback,
                                                  &observerContext);
     CFRunLoopAddObserver(mainRunLoop(), d->waitingObserver, kCFRunLoopCommonModes);
+
+    /* The first cycle in the loop adds the source and the events of the source
+       are not processed.
+       We use an observer to process the posted events for the first
+       execution of the loop. */
+    CFRunLoopObserverContext firstTimeObserverContext;
+    bzero(&firstTimeObserverContext, sizeof(CFRunLoopObserverContext));
+    firstTimeObserverContext.info = d;
+    d->firstTimeObserver = CFRunLoopObserverCreate(kCFAllocatorDefault,
+                                                   kCFRunLoopEntry,
+                                                   /* repeats = */ false,
+                                                   0,
+                                                   QEventDispatcherMacPrivate::firstLoopEntry,
+                                                   &firstTimeObserverContext);
+    CFRunLoopAddObserver(mainRunLoop(), d->firstTimeObserver, kCFRunLoopCommonModes);
 }
 
 void QEventDispatcherMacPrivate::waitingObserverCallback(CFRunLoopObserverRef,
@@ -925,9 +940,8 @@ Boolean QEventDispatcherMacPrivate::postedEventSourceEqualCallback(const void *i
     return info1 == info2;
 }
 
-void QEventDispatcherMacPrivate::postedEventsSourcePerformCallback(void *info)
+inline static void processPostedEvents(QEventDispatcherMacPrivate *const d, const bool blockSendPostedEvents)
 {
-    QEventDispatcherMacPrivate *d = static_cast<QEventDispatcherMacPrivate *>(info);
     if (blockSendPostedEvents) {
         CFRunLoopSourceSignal(d->postedEventsSource);
     } else {
@@ -936,6 +950,20 @@ void QEventDispatcherMacPrivate::postedEventsSourcePerformCallback(void *info)
             QApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
         }
     }
+}
+
+void QEventDispatcherMacPrivate::firstLoopEntry(CFRunLoopObserverRef ref,
+                                                CFRunLoopActivity activity,
+                                                void *info)
+{
+    Q_UNUSED(ref);
+    Q_UNUSED(activity);
+    processPostedEvents(static_cast<QEventDispatcherMacPrivate *>(info), blockSendPostedEvents);
+}
+
+void QEventDispatcherMacPrivate::postedEventsSourcePerformCallback(void *info)
+{
+    processPostedEvents(static_cast<QEventDispatcherMacPrivate *>(info), blockSendPostedEvents);
 }
 
 void QEventDispatcherMac::interrupt()
@@ -996,6 +1024,9 @@ QEventDispatcherMac::~QEventDispatcherMac()
 
     CFRunLoopObserverInvalidate(d->waitingObserver);
     CFRelease(d->waitingObserver);
+
+    CFRunLoopObserverInvalidate(d->firstTimeObserver);
+    CFRelease(d->firstTimeObserver);
 }
 
 /////////////////////////////////////////////////////////////////////////////

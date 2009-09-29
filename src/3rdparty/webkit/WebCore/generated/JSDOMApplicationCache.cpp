@@ -31,6 +31,7 @@
 #include "JSDOMGlobalObject.h"
 #include "JSEvent.h"
 #include "JSEventListener.h"
+#include "RegisteredEventListener.h"
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <wtf/GetPtr.h>
@@ -116,7 +117,14 @@ JSDOMApplicationCache::JSDOMApplicationCache(PassRefPtr<Structure> structure, JS
 
 JSDOMApplicationCache::~JSDOMApplicationCache()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    impl()->invalidateEventListeners();
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+}
+
+void JSDOMApplicationCache::markChildren(MarkStack& markStack)
+{
+    Base::markChildren(markStack);
+    impl()->markEventListeners(markStack);
 }
 
 JSObject* JSDOMApplicationCache::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

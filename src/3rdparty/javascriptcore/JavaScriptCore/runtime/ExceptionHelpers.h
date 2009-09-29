@@ -29,20 +29,19 @@
 #ifndef ExceptionHelpers_h
 #define ExceptionHelpers_h
 
-#include "JSImmediate.h"
 
 namespace JSC {
 
     class CodeBlock;
     class ExecState;
     class Identifier;
-    class Instruction;
     class JSGlobalData;
     class JSNotAnObjectErrorStub;
     class JSObject;
     class JSValue;
     class Node;
-
+    struct Instruction;
+    
     JSValue createInterruptedExecutionException(JSGlobalData*);
     JSValue createStackOverflowError(ExecState*);
     JSValue createUndefinedVariableError(ExecState*, const Identifier&, unsigned bytecodeOffset, CodeBlock*);

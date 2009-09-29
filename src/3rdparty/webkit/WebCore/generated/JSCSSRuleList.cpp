@@ -137,7 +137,7 @@ JSCSSRuleList::JSCSSRuleList(PassRefPtr<Structure> structure, JSDOMGlobalObject*
 
 JSCSSRuleList::~JSCSSRuleList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSCSSRuleList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

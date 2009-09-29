@@ -94,7 +94,7 @@ void JSDOMWindow::markChildren(MarkStack& markStack)
 {
     Base::markChildren(markStack);
 
-    markEventListeners(markStack, impl()->eventListeners());
+    impl()->markEventListeners(markStack);
 
     JSGlobalData& globalData = *Heap::heap(this)->globalData();
 
@@ -488,7 +488,7 @@ bool JSDOMWindow::getPropertyAttributes(ExecState* exec, const Identifier& prope
     return Base::getPropertyAttributes(exec, propertyName, attributes);
 }
 
-void JSDOMWindow::defineGetter(ExecState* exec, const Identifier& propertyName, JSObject* getterFunction)
+void JSDOMWindow::defineGetter(ExecState* exec, const Identifier& propertyName, JSObject* getterFunction, unsigned attributes)
 {
     // Only allow defining getters by frames in the same origin.
     if (!allowsAccessFrom(exec))
@@ -498,15 +498,23 @@ void JSDOMWindow::defineGetter(ExecState* exec, const Identifier& propertyName, 
     if (propertyName == "location")
         return;
 
-    Base::defineGetter(exec, propertyName, getterFunction);
+    Base::defineGetter(exec, propertyName, getterFunction, attributes);
 }
 
-void JSDOMWindow::defineSetter(ExecState* exec, const Identifier& propertyName, JSObject* setterFunction)
+void JSDOMWindow::defineSetter(ExecState* exec, const Identifier& propertyName, JSObject* setterFunction, unsigned attributes)
 {
     // Only allow defining setters by frames in the same origin.
     if (!allowsAccessFrom(exec))
         return;
-    Base::defineSetter(exec, propertyName, setterFunction);
+    Base::defineSetter(exec, propertyName, setterFunction, attributes);
+}
+
+bool JSDOMWindow::defineOwnProperty(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::PropertyDescriptor& descriptor, bool shouldThrow)
+{
+    // Only allow defining properties in this way by frames in the same origin, as it allows setters to be introduced.
+    if (!allowsAccessFrom(exec))
+        return false;
+    return Base::defineOwnProperty(exec, propertyName, descriptor, shouldThrow);
 }
 
 JSValue JSDOMWindow::lookupGetter(ExecState* exec, const Identifier& propertyName)
@@ -572,11 +580,11 @@ void JSDOMWindow::setLocation(ExecState* exec, JSValue value)
     Frame* frame = impl()->frame();
     ASSERT(frame);
 
-    if (!shouldAllowNavigation(exec, frame))
-        return;
-
     KURL url = completeURL(exec, value.toString(exec));
     if (url.isNull())
+        return;
+
+    if (!shouldAllowNavigation(exec, frame))
         return;
 
     if (!protocolIsJavaScript(url) || allowsAccessFrom(exec)) {
@@ -773,6 +781,10 @@ static Frame* createWindow(ExecState* exec, Frame* lexicalFrame, Frame* dynamicF
 
 JSValue JSDOMWindow::open(ExecState* exec, const ArgList& args)
 {
+    String urlString = valueToStringWithUndefinedOrNullCheck(exec, args.at(0));
+    AtomicString frameName = args.at(1).isUndefinedOrNull() ? "_blank" : AtomicString(args.at(1).toString(exec));
+    WindowFeatures windowFeatures(valueToStringWithUndefinedOrNullCheck(exec, args.at(2)));
+
     Frame* frame = impl()->frame();
     if (!frame)
         return jsUndefined();
@@ -784,9 +796,6 @@ JSValue JSDOMWindow::open(ExecState* exec, const ArgList& args)
         return jsUndefined();
 
     Page* page = frame->page();
-
-    String urlString = valueToStringWithUndefinedOrNullCheck(exec, args.at(0));
-    AtomicString frameName = args.at(1).isUndefinedOrNull() ? "_blank" : AtomicString(args.at(1).toString(exec));
 
     // Because FrameTree::find() returns true for empty strings, we must check for empty framenames.
     // Otherwise, illegitimate window.open() calls with no name will pass right through the popup blocker.
@@ -805,12 +814,12 @@ JSValue JSDOMWindow::open(ExecState* exec, const ArgList& args)
         topOrParent = true;
     }
     if (topOrParent) {
-        if (!shouldAllowNavigation(exec, frame))
-            return jsUndefined();
-
         String completedURL;
         if (!urlString.isEmpty())
             completedURL = completeURL(exec, urlString).string();
+
+        if (!shouldAllowNavigation(exec, frame))
+            return jsUndefined();
 
         const JSDOMWindow* targetedWindow = toJSDOMWindow(frame);
         if (!completedURL.isEmpty() && (!protocolIsJavaScript(completedURL) || (targetedWindow && targetedWindow->allowsAccessFrom(exec)))) {
@@ -827,7 +836,6 @@ JSValue JSDOMWindow::open(ExecState* exec, const ArgList& args)
     }
 
     // In the case of a named frame or a new window, we'll use the createWindow() helper
-    WindowFeatures windowFeatures(valueToStringWithUndefinedOrNullCheck(exec, args.at(2)));
     FloatRect windowRect(windowFeatures.xSet ? windowFeatures.x : 0, windowFeatures.ySet ? windowFeatures.y : 0,
                          windowFeatures.widthSet ? windowFeatures.width : 0, windowFeatures.heightSet ? windowFeatures.height : 0);
     DOMWindow::adjustWindowRect(screenAvailableRect(page ? page->mainFrame()->view() : 0), windowRect, windowRect);
@@ -847,6 +855,10 @@ JSValue JSDOMWindow::open(ExecState* exec, const ArgList& args)
 
 JSValue JSDOMWindow::showModalDialog(ExecState* exec, const ArgList& args)
 {
+    String url = valueToStringWithUndefinedOrNullCheck(exec, args.at(0));
+    JSValue dialogArgs = args.at(1);
+    String featureArgs = valueToStringWithUndefinedOrNullCheck(exec, args.at(2));
+
     Frame* frame = impl()->frame();
     if (!frame)
         return jsUndefined();
@@ -859,10 +871,6 @@ JSValue JSDOMWindow::showModalDialog(ExecState* exec, const ArgList& args)
 
     if (!DOMWindow::canShowModalDialogNow(frame) || !DOMWindow::allowPopUp(dynamicFrame))
         return jsUndefined();
-
-    String url = valueToStringWithUndefinedOrNullCheck(exec, args.at(0));
-    JSValue dialogArgs = args.at(1);
-    String featureArgs = valueToStringWithUndefinedOrNullCheck(exec, args.at(2));
 
     HashMap<String, String> features;
     DOMWindow::parseModalDialogFeatures(featureArgs, features);

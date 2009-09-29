@@ -602,16 +602,15 @@ template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE void QMap<Key, T>::freeData(QMapData *x)
 {
     if (QTypeInfo<Key>::isComplex || QTypeInfo<T>::isComplex) {
-        QMapData::Node *y = reinterpret_cast<QMapData::Node *>(x);
-        QMapData::Node *cur = y;
-        QMapData::Node *next = cur->forward[0];
-        while (next != y) {
+        QMapData *cur = x;
+        QMapData *next = cur->forward[0];
+        while (next != x) {
             cur = next;
             next = cur->forward[0];
 #if defined(_MSC_VER) && (_MSC_VER >= 1300)
 #pragma warning(disable:4189)
 #endif
-            Node *concreteNode = concrete(cur);
+            Node *concreteNode = concrete(reinterpret_cast<QMapData::Node *>(cur));
             concreteNode->key.~Key();
             concreteNode->value.~T();
 #if defined(_MSC_VER) && (_MSC_VER >= 1300)

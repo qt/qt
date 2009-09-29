@@ -59,6 +59,7 @@
 #include "private/qwindowsurface_s60_p.h"
 #include "qpaintengine.h"
 #include "private/qmenubar_p.h"
+#include "private/qsoftkeymanager_p.h"
 
 #include "apgwgnam.h" // For CApaWindowGroupName
 #include <MdaAudioTonePlayer.h>     // For CMdaAudioToneUtility
@@ -367,8 +368,81 @@ void QSymbianControl::HandleLongTapEventL( const TPoint& aPenEventLocation, cons
     m_previousEventLongTap = true;
 }
 
+#ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+void QSymbianControl::translateAdvancedPointerEvent(const TAdvancedPointerEvent *event)
+{
+    QApplicationPrivate *d = QApplicationPrivate::instance();
+
+    QRect screenGeometry = qApp->desktop()->screenGeometry(qwidget);
+
+    while (d->appAllTouchPoints.count() <= event->PointerNumber())
+        d->appAllTouchPoints.append(QTouchEvent::TouchPoint(d->appAllTouchPoints.count()));
+
+    Qt::TouchPointStates allStates = 0;
+    for (int i = 0; i < d->appAllTouchPoints.count(); ++i) {
+        QTouchEvent::TouchPoint &touchPoint = d->appAllTouchPoints[i];
+
+        if (touchPoint.id() == event->PointerNumber()) {
+            Qt::TouchPointStates state;
+            switch (event->iType) {
+            case TPointerEvent::EButton1Down:
+            case TPointerEvent::EEnterHighPressure:
+                state = Qt::TouchPointPressed;
+                break;
+            case TPointerEvent::EButton1Up:
+            case TPointerEvent::EExitCloseProximity:
+                state = Qt::TouchPointReleased;
+                break;
+            case TPointerEvent::EDrag:
+                state = Qt::TouchPointMoved;
+                break;
+            default:
+                // how likely is this to happen?
+                state = Qt::TouchPointStationary;
+                break;
+            }
+            if (event->PointerNumber() == 0)
+                state |= Qt::TouchPointPrimary;
+            touchPoint.setState(state);
+
+            QPointF screenPos = QPointF(event->iPosition.iX, event->iPosition.iY);
+            touchPoint.setScreenPos(screenPos);
+            touchPoint.setNormalizedPos(QPointF(screenPos.x() / screenGeometry.width(),
+                                                screenPos.y() / screenGeometry.height()));
+
+            touchPoint.setPressure(event->Pressure() / qreal(d->maxTouchPressure));
+        } else if (touchPoint.state() != Qt::TouchPointReleased) {
+            // all other active touch points should be marked as stationary
+            touchPoint.setState(Qt::TouchPointStationary);
+        }
+
+        allStates |= touchPoint.state();
+    }
+
+    if ((allStates & Qt::TouchPointStateMask) == Qt::TouchPointReleased) {
+        // all touch points released
+        d->appAllTouchPoints.clear();
+    }
+
+    QApplicationPrivate::translateRawTouchEvent(qwidget,
+                                                QTouchEvent::TouchScreen,
+                                                d->appAllTouchPoints);
+}
+#endif
+
 void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
 {
+#ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+    if (pEvent.IsAdvancedPointerEvent()) {
+        const TAdvancedPointerEvent *advancedPointerEvent = pEvent.AdvancedPointerEvent();
+        translateAdvancedPointerEvent(advancedPointerEvent);
+        if (advancedPointerEvent->PointerNumber() != 0) {
+            // only send mouse events for the first touch point
+            return;
+        }
+    }
+#endif
+
     m_longTapDetector->PointerEventL(pEvent);
     QT_TRYCATCH_LEAVING(HandlePointerEvent(pEvent));
 }
@@ -406,7 +480,7 @@ void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
             alienWidget = qwidget;
         S60->mousePressTarget = alienWidget;
     }
-    
+
     alienWidget = S60->mousePressTarget;
 
     if (alienWidget != S60->lastPointerEventTarget)
@@ -526,7 +600,7 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
             if (keyCode >= Qt::Key_Left && keyCode <= Qt::Key_Down || keyCode == Qt::Key_Select) {
                 /*Explanation about virtualMouseAccel:
                  Tapping an arrow key allows precise pixel positioning
-                 Holding an arrow key down, acceleration is applied to allow cursor 
+                 Holding an arrow key down, acceleration is applied to allow cursor
                  to be quickly moved to another part of the screen by key repeats.
                  */
                 if (S60->virtualMouseLastKey == keyCode) {
@@ -594,7 +668,7 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
             }
         }
 #endif
-        
+
         Qt::KeyboardModifiers mods = mapToQtModifiers(keyEvent.iModifiers);
         QKeyEventEx qKeyEvent(type == EEventKeyUp ? QEvent::KeyRelease : QEvent::KeyPress, keyCode,
                 mods, qt_keymapper_private()->translateKeyEvent(keyCode, mods),
@@ -816,11 +890,50 @@ TTypeUid::Ptr QSymbianControl::MopSupplyObject(TTypeUid id)
     return CCoeControl::MopSupplyObject(id);
 }
 
+/*!
+    \typedef QApplication::QS60MainApplicationFactory
+
+    This is a typedef for a pointer to a function with the following
+    signature:
+
+    \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 47
+
+    \sa QApplication::QApplication(QApplication::QS60MainApplicationFactory, int &, char **)
+*/
+
+/*!
+    \since 4.6
+
+    Creates an application using the application factory given in
+    \a factory, and using \a argc command line arguments in \a argv.
+    \a factory can be leaving, but the error will be converted to a
+    standard exception.
+
+    This function is only available on S60.
+*/
+QApplication::QApplication(QApplication::QS60MainApplicationFactory factory, int &argc, char **argv)
+    : QCoreApplication(*new QApplicationPrivate(argc, argv, GuiClient))
+{
+    Q_D(QApplication);
+    S60->s60ApplicationFactory = factory;
+    d->construct();
+}
+
+QApplication::QApplication(QApplication::QS60MainApplicationFactory factory, int &argc, char **argv, int _internal)
+    : QCoreApplication(*new QApplicationPrivate(argc, argv, GuiClient))
+{
+    Q_D(QApplication);
+    S60->s60ApplicationFactory = factory;
+    d->construct();
+    QApplicationPrivate::app_compile_version = _internal;
+}
+
 void qt_init(QApplicationPrivate * /* priv */, int)
 {
     if (!CCoeEnv::Static()) {
         // The S60 framework has not been initalized. We need to do it.
-        TApaApplicationFactory factory(NewApplication);
+        TApaApplicationFactory factory(S60->s60ApplicationFactory ?
+                S60->s60ApplicationFactory : newS60Application);
         CApaCommandLine* commandLine = 0;
         TInt err = CApaCommandLine::GetCommandLineFromProcessEnvironment(commandLine);
         // After this construction, CEikonEnv will be available from CEikonEnv::Static().
@@ -880,13 +993,13 @@ void qt_init(QApplicationPrivate * /* priv */, int)
         S60->hasTouchscreen = true;
         S60->virtualMouseRequired = false;
     }
-    
+
     if (touch) {
         QApplicationPrivate::navigationMode = Qt::NavigationModeNone;
     } else {
         QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadDirectional;
     }
-    
+
 #ifndef QT_NO_CURSOR
     //Check if window server pointer cursors are supported or not
 #ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
@@ -950,7 +1063,7 @@ void qt_cleanup()
     // it dies.
     delete QApplicationPrivate::inputContext;
     QApplicationPrivate::inputContext = 0;
-    
+
     //Change mouse pointer back
     S60->wsSession().SetPointerCursorMode(EPointerCursorNone);
 
@@ -1192,6 +1305,7 @@ void QApplication::beep()
 
 /*!
     \warning This function is only available on Symbian.
+    \since 4.6
 
     This function processes an individual Symbian window server
     \a event. It returns 1 if the event was handled, 0 if
@@ -1270,7 +1384,8 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
             } else if ((visChangedEvent->iFlags & TWsVisibilityChangedEvent::EPartiallyVisible)
                        && !w->d_func()->maybeBackingStore()) {
                 w->d_func()->topData()->backingStore = new QWidgetBackingStore(w);
-                w->update();
+                w->d_func()->invalidateBuffer(w->rect());
+                w->repaint();
             }
             return 1;
         }
@@ -1313,6 +1428,7 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
 
 /*!
   \warning This virtual function is only available on Symbian.
+  \since 4.6
 
   If you create an application that inherits QApplication and reimplement
   this function, you get direct access to events that the are received
@@ -1330,6 +1446,7 @@ bool QApplication::s60EventFilter(TWsEvent * /* aEvent */)
 
 /*!
   \warning This function is only available on Symbian.
+  \since 4.6
 
   Handles \a{command}s which are typically handled by
   CAknAppUi::HandleCommandL(). Qts Ui integration into Symbian is
@@ -1348,17 +1465,12 @@ void QApplication::symbianHandleCommand(int command)
         exit();
         break;
     default:
-        if (command >= SOFTKEYSTART && command <= SOFTKEYEND) {
-            int index= command-SOFTKEYSTART;
-            QWidget *focused = QApplication::focusWidget();
-            QWidget *softKeySource = focused ? focused : QApplication::activeWindow();
-            const QList<QAction*>& softKeys = softKeySource->softKeys();
-            Q_ASSERT(index < softKeys.count());
-            softKeys.at(index)->activate(QAction::Trigger);
-        }
+        bool handled = QSoftKeyManager::handleCommand(command);
 #ifdef Q_WS_S60
-        else
+        if (!handled)
             QMenuBarPrivate::symbianCommands(command);
+#else
+        Q_UNUSED(handled);
 #endif
         break;
     }
@@ -1366,6 +1478,7 @@ void QApplication::symbianHandleCommand(int command)
 
 /*!
   \warning This function is only available on Symbian.
+  \since 4.6
 
   Handles the resource change specified by \a type.
 
@@ -1445,9 +1558,14 @@ TUint QApplicationPrivate::resolveS60ScanCode(TInt scanCode, TUint keysym)
     }
 }
 
-
 void QApplicationPrivate::initializeMultitouch_sys()
-{ }
+{
+#ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+    if (HAL::Get(HALData::EPointer3DMaxPressure, maxTouchPressure) != KErrNone)
+        maxTouchPressure = KMaxTInt;
+#endif
+}
+
 void QApplicationPrivate::cleanupMultitouch_sys()
 { }
 
@@ -1486,7 +1604,7 @@ void QApplicationPrivate::setNavigationMode(Qt::NavigationMode mode)
     const bool isCursorOn = (mode == Qt::NavigationModeCursorAuto
         && !S60->hasTouchscreen)
         || mode == Qt::NavigationModeCursorForceVisible;
-    
+
     if (!wasCursorOn && isCursorOn) {
         //Show the cursor, when changing from another mode to cursor mode
         qt_symbian_set_cursor_visible(true);
@@ -1516,7 +1634,7 @@ void QApplication::restoreOverrideCursor()
     if (qApp->d_func()->cursor_list.isEmpty())
         return;
     qApp->d_func()->cursor_list.removeFirst();
-    
+
     if (!qApp->d_func()->cursor_list.isEmpty()) {
         qt_symbian_setGlobalCursor(qApp->d_func()->cursor_list.first());
     }

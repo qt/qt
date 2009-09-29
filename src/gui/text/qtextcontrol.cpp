@@ -271,7 +271,9 @@ bool QTextControlPrivate::cursorMoveKeyEvent(QKeyEvent *e)
     }
 #ifdef QT_KEYPAD_NAVIGATION
     else if (QApplication::keypadNavigationEnabled()
-        && (e->key() == Qt::Key_Up || e->key() == Qt::Key_Down)) {
+        && ((e->key() == Qt::Key_Up || e->key() == Qt::Key_Down)
+        || QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional
+        && (e->key() == Qt::Key_Left || e->key() == Qt::Key_Right))) {
         return false;
     }
 #endif

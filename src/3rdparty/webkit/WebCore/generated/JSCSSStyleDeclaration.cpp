@@ -151,7 +151,7 @@ JSCSSStyleDeclaration::JSCSSStyleDeclaration(PassRefPtr<Structure> structure, JS
 
 JSCSSStyleDeclaration::~JSCSSStyleDeclaration()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSCSSStyleDeclaration::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

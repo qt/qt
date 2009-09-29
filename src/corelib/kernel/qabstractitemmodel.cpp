@@ -1226,6 +1226,9 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
 /*!
     \fn bool QAbstractItemModel::insertRow(int row, const QModelIndex &parent)
 
+    \note The base class implementation of this function does nothing and
+    returns false.
+
     Inserts a single row before the given \a row in the child items of the
     \a parent specified.
 
@@ -1834,6 +1837,9 @@ void QAbstractItemModel::setSupportedDragActions(Qt::DropActions actions)
 }
 
 /*!
+    \note The base class implementation of this function does nothing and
+    returns false.
+
     On models that support this, inserts \a count rows into the model before
     the given \a row. Items in the new row will be children of the item
     represented by the \a parent model index.
@@ -1849,11 +1855,11 @@ void QAbstractItemModel::setSupportedDragActions(Qt::DropActions actions)
     Returns true if the rows were successfully inserted; otherwise returns
     false.
 
-    The base class implementation does nothing and returns false.
-
     If you implement your own model, you can reimplement this function if you
     want to support insertions. Alternatively, you can provide your own API for
-    altering the data.
+    altering the data. In either case, you will need to call
+    beginInsertRows() and endInsertRows() to notify other components that the
+    model has changed.
 
     \sa insertColumns(), removeRows(), beginInsertRows(), endInsertRows()
 */

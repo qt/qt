@@ -146,6 +146,7 @@ void QGLPixelBufferPrivate::common_init(const QSize &size, const QGLFormat &form
         qctx->d_func()->vi = 0;
 #elif defined(QT_OPENGL_ES)
         qctx->d_func()->eglContext = ctx;
+        qctx->d_func()->eglSurface = pbuf;
 #endif
     }
 }

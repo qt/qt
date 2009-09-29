@@ -46,46 +46,65 @@
     \ingroup advanced
     \ingroup desktop
 
-    QApplication::desktop() function should be used to get an instance
-    of the QDesktopWidget.
-
     Systems with more than one graphics card and monitor can manage the
     physical screen space available either as multiple desktops, or as a
-    large virtual desktop, which usually has the size of the bounding
-    rectangle of all the screens (see virtualDesktop). For an
-    application, one of the available screens is the primary screen, i.e.
-    the screen where the main widget resides (see primaryScreen). All
-    windows opened in the context of the application should be
-    constrained to the boundaries of the primary screen; for example,
-    it would be inconvenient if a dialog box popped up on a different
-    screen, or split over two screens.
+    large virtual desktop.
 
-    The QDesktopWidget provides information about the geometry of the
-    available screens with screenGeometry(). The number of screens
-    available is returned by screenCount, and the screenCountChanged
-    signal is emitted when screens are added or removed during runtime.
+    This class provides information about the user's desktop, such as its
+    total size, number of screens, the geometry of each screen, and whether
+    they are configured as separate desktops or a single virtual desktop.
+
+    Widgets provided by Qt use this class to place tooltips, menus and
+    dialog boxes on the correct screen for their parent or application
+    widgets. Applications can use this class to obtain information that
+    can be used to save window positions, or to place child widgets and
+    dialogs on one particular screen.
+
+    \section1 Obtaining a Desktop Widget
+
+    The QApplication::desktop() function is used to get an instance of
+    QDesktopWidget.
+
+    The widget's screenGeometry() function provides information about the
+    geometry of the available screens with. The number of screens
+    available is returned by screenCount, and the screenCountChanged()
+    signal is emitted when screens are added or removed.
     The screen number that a particular point or widget is located in
     is returned by screenNumber().
 
-    Widgets provided by Qt use this class, for example, to place
-    tooltips, menus and dialog boxes according to the parent or
-    application widget. Applications can use this class to save window
-    positions, or to place child widgets and dialogs on one particular
-    screen.
+    \section1 Screen Geometry
 
-    \img qdesktopwidget.png Managing Multiple Screens
+    To obtain the dimensions of a particular screen, call the screenGeometry()
+    function. On some desktop environments, not all of the screen is
+    available for applications to use; for example, an application dock or
+    menu bar may take up some space. Use the availableGeometry() function
+    to obtain the available area for applications.
 
-    In the illustration above, Application One's primary screen is
-    screen 0, and App Two's primary screen is screen 1.
-
-    \target multiple screens note
-    \note QDesktopWidget inherits the QWidget properties, width() and
+    QDesktopWidget also inherits the QWidget properties, width() and
     height(), which specify the size of the desktop. However, for
     desktops with multiple screens, the size of the desktop is the union
     of all the screen sizes, so width() and height() should \e not be
     used for computing the size of a widget to be placed on one of the
-    screens. The correct width and height values are obtained using
-    availableGeometry() or screenGeometry() for a particular screen.
+    screens.
+
+    On systems that are configured to use the available screens as a
+    single, large virtual desktop, the virtualDesktop property will be
+    set to true. In this case, the widget's size is usually the size of
+    the bounding rectangle of all the screens.
+
+    \section1 Use of the Primary Screen
+
+    For an application, the screen where the main widget resides is the
+    primary screen. This is stored in the primaryScreen property.
+    All windows opened in the context of the application should be
+    constrained to the boundaries of the primary screen; for example,
+    it would be inconvenient if a dialog box popped up on a different
+    screen, or split over two screens.
+
+    \image qdesktopwidget.png Managing Multiple Screens
+
+    In the illustration above, Application One's primary screen is
+    screen 0, and App Two's primary screen is screen 1.
 
     \sa QApplication, QApplication::desktop(), QX11Info::appRootWindow()
 */

@@ -451,6 +451,7 @@ DEFINE_GLOBAL(QualifiedName, onmouseupAttr, nullAtom, "onmouseup", xhtmlNamespac
 DEFINE_GLOBAL(QualifiedName, onmousewheelAttr, nullAtom, "onmousewheel", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onofflineAttr, nullAtom, "onoffline", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, ononlineAttr, nullAtom, "ononline", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onorientationchangeAttr, nullAtom, "onorientationchange", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onpagehideAttr, nullAtom, "onpagehide", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onpageshowAttr, nullAtom, "onpageshow", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onpasteAttr, nullAtom, "onpaste", xhtmlNamespaceURI);
@@ -702,6 +703,7 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&onmousewheelAttr,
         (WebCore::QualifiedName*)&onofflineAttr,
         (WebCore::QualifiedName*)&ononlineAttr,
+        (WebCore::QualifiedName*)&onorientationchangeAttr,
         (WebCore::QualifiedName*)&onpagehideAttr,
         (WebCore::QualifiedName*)&onpageshowAttr,
         (WebCore::QualifiedName*)&onpasteAttr,
@@ -786,7 +788,7 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&widthAttr,
         (WebCore::QualifiedName*)&wrapAttr,
     };
-    *size = 246;
+    *size = 247;
     return HTMLAttr;
 }
 
@@ -1206,6 +1208,7 @@ void init()
     const char *onmousewheelAttrString = "onmousewheel";
     const char *onofflineAttrString = "onoffline";
     const char *ononlineAttrString = "ononline";
+    const char *onorientationchangeAttrString = "onorientationchange";
     const char *onpagehideAttrString = "onpagehide";
     const char *onpageshowAttrString = "onpageshow";
     const char *onpasteAttrString = "onpaste";
@@ -1452,6 +1455,7 @@ void init()
     new ((void*)&onmousewheelAttr) QualifiedName(nullAtom, onmousewheelAttrString, nullAtom);
     new ((void*)&onofflineAttr) QualifiedName(nullAtom, onofflineAttrString, nullAtom);
     new ((void*)&ononlineAttr) QualifiedName(nullAtom, ononlineAttrString, nullAtom);
+    new ((void*)&onorientationchangeAttr) QualifiedName(nullAtom, onorientationchangeAttrString, nullAtom);
     new ((void*)&onpagehideAttr) QualifiedName(nullAtom, onpagehideAttrString, nullAtom);
     new ((void*)&onpageshowAttr) QualifiedName(nullAtom, onpageshowAttrString, nullAtom);
     new ((void*)&onpasteAttr) QualifiedName(nullAtom, onpasteAttrString, nullAtom);

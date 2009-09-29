@@ -46,6 +46,8 @@
 #include <qaction.h>
 #include <qapplication.h>
 #include <QToolButton>
+#include <q3action.h>
+#include <qmenu.h>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -70,6 +72,7 @@ public slots:
 
 private slots:
     void toggled();
+    void actionGroupPopup();
 
     // task-specific tests below me
     void task182657();
@@ -132,6 +135,57 @@ void tst_Q3ToolBar::toggled()
     action->setChecked(!action->isChecked());
     QCOMPARE(spy2.count(), 1);
 
+}
+
+class MenuEventFilter : public QObject
+{
+public:
+    MenuEventFilter(QObject *parent = 0) : QObject(parent), menuShown(false) {}
+    bool wasMenuShown() const { return menuShown; }
+    void setMenuShown(bool b) { menuShown = b; }
+protected:
+    bool eventFilter(QObject *o, QEvent *e)
+    {
+        if (e->type() == QEvent::Show) {
+            menuShown = true;
+            QTimer::singleShot(0, o, SLOT(hide()));
+        }
+        return false;
+    }
+private:
+    bool menuShown;
+};
+
+void tst_Q3ToolBar::actionGroupPopup()
+{
+    Q3ActionGroup* ag = new Q3ActionGroup(testWidget);
+    ag->setText("Group");
+    ag->setUsesDropDown(true);
+    ag->setExclusive(false);
+    Q3Action *a = new Q3Action(QIcon(), "ActionA", QKeySequence(), ag);
+    a->setToggleAction(true);
+    Q3Action *b = new Q3Action(QIcon(), "ActionB", QKeySequence(), ag);
+    b->setToggleAction(true);
+    ag->addTo(testWidget);
+    QTest::qWait(100);
+#ifndef NOFINDCHILDRENMETHOD
+    QList<QToolButton *> list = testWidget->findChildren<QToolButton *>();
+#else
+    QList<QToolButton *> list = qFindChildren<QToolButton *>(testWidget, QString());
+#endif
+    QToolButton *tb = 0;
+    for (int i=0;i<list.size();i++) {
+        if (list.at(i)->menu()) {
+            tb = list.at(i);
+            break;
+        }
+    }
+    MenuEventFilter mef;
+    tb->menu()->installEventFilter(&mef);
+    QTest::mouseClick(tb, Qt::LeftButton, 0, QPoint(5,5));
+    QVERIFY(!mef.wasMenuShown());
+    QTest::mouseClick(tb, Qt::LeftButton, 0, QPoint(tb->rect().right() - 5, tb->rect().bottom() - 5));
+    QVERIFY(mef.wasMenuShown());
 }
 
 class Q3MainWindow_task182657 : public Q3MainWindow

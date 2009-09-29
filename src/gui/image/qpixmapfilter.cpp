@@ -489,7 +489,7 @@ void QPixmapConvolutionFilter::draw(QPainter *painter, const QPointF &p, const Q
     which is applied when \l{QPixmapFilter::}{draw()} is called.
 
     The filter lets you specialize the radius of the blur as well
-    as the quality.
+    as hint as to whether to prefer performance or quality.
 
     By default, the blur effect is produced by applying an exponential
     filter generated from the specified blurRadius().  Paint engines
@@ -504,10 +504,10 @@ void QPixmapConvolutionFilter::draw(QPainter *painter, const QPointF &p, const Q
 class QPixmapBlurFilterPrivate : public QPixmapFilterPrivate
 {
 public:
-    QPixmapBlurFilterPrivate() : radius(5), quality(Qt::FastTransformation) {}
+    QPixmapBlurFilterPrivate() : radius(5), hint(QPixmapBlurFilter::PerformanceHint) {}
 
     int radius;
-    Qt::TransformationMode quality;
+    QPixmapBlurFilter::BlurHint hint;
 };
 
 
@@ -553,29 +553,29 @@ int QPixmapBlurFilter::radius() const
 }
 
 /*!
-    Setting the quality to FastTransformation causes the implementation
+    Setting the blur hint to PerformanceHint causes the implementation
     to trade off visual quality to blur the image faster.  Setting the
-    quality to SmoothTransformation causes the implementation to improve
+    blur hint to QualityHint causes the implementation to improve
     visual quality at the expense of speed.  The implementation is free
     to ignore this value if it only has a single blur algorithm.
 
     \internal
 */
-void QPixmapBlurFilter::setQuality(Qt::TransformationMode quality)
+void QPixmapBlurFilter::setBlurHint(QPixmapBlurFilter::BlurHint hint)
 {
     Q_D(QPixmapBlurFilter);
-    d->quality = quality;
+    d->hint = hint;
 }
 
 /*!
-    Gets the quality of the blur filter.
+    Gets the blur hint of the blur filter.
 
     \internal
 */
-Qt::TransformationMode QPixmapBlurFilter::quality() const
+QPixmapBlurFilter::BlurHint QPixmapBlurFilter::blurHint() const
 {
     Q_D(const QPixmapBlurFilter);
-    return d->quality;
+    return d->hint;
 }
 
 /*!
@@ -672,7 +672,7 @@ void QPixmapBlurFilter::draw(QPainter *painter, const QPointF &p, const QPixmap 
     QPixmapBlurFilter *blurFilter = static_cast<QPixmapBlurFilter*>(filter);
     if (blurFilter) {
         blurFilter->setRadius(d->radius);
-        blurFilter->setQuality(d->quality);
+        blurFilter->setBlurHint(d->hint);
         blurFilter->draw(painter, p, src, srcRect);
         return;
     }

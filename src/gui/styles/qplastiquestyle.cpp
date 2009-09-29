@@ -1056,7 +1056,8 @@ void QPlastiqueStylePrivate::drawPartialFrame(QPainter *painter, const QStyleOpt
     frameOpt.rect.adjust(reverse ? -2 : 0, 0, reverse ? 0 : 2, 0);
     frameOpt.lineWidth = q->pixelMetric(QStyle::PM_DefaultFrameWidth);
     frameOpt.midLineWidth = 0;
-    frameOpt.state |= QStyle::State_Sunken;
+    frameOpt.state = option->state | QStyle::State_Sunken;
+    frameOpt.palette = option->palette;
     q->drawPrimitive(QStyle::PE_PanelLineEdit, &frameOpt, painter, widget);
     painter->restore();
 

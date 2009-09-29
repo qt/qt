@@ -37,9 +37,7 @@
 
 #include <time.h>       /* For nanosleep() */
 
-#if !PLATFORM(WIN_OS)
 #include <sched.h>      /* For sched_yield() */
-#endif
 
 #if HAVE(STDINT_H)
 #include <stdint.h>
@@ -136,11 +134,7 @@ struct TCMalloc_SpinLock {
 #define SPINLOCK_INITIALIZER { 0 }
 
 static void TCMalloc_SlowLock(volatile unsigned int* lockword) {
-#if !PLATFORM(WIN_OS)
   sched_yield();        // Yield immediately since fast path failed
-#else
-  SwitchToThread();
-#endif
   while (true) {
     int r;
 #if COMPILER(GCC)

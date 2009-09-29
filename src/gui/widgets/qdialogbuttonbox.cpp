@@ -49,6 +49,11 @@
 
 #include "qdialogbuttonbox.h"
 
+#ifdef QT_SOFTKEYS_ENABLED
+#include <QtGui/qaction.h>
+#endif
+
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -263,6 +268,9 @@ public:
 
     QList<QAbstractButton *> buttonLists[QDialogButtonBox::NRoles];
     QHash<QPushButton *, QDialogButtonBox::StandardButton> standardButtonHash;
+#ifdef QT_SOFTKEYS_ENABLED
+    QHash<QAbstractButton *, QAction *> softKeyActions;
+#endif
 
     Qt::Orientation orientation;
     QDialogButtonBox::ButtonLayout layoutPolicy;
@@ -282,6 +290,9 @@ public:
     void addButtonsToLayout(const QList<QAbstractButton *> &buttonList, bool reverse);
     void retranslateStrings();
     const char *standardButtonText(QDialogButtonBox::StandardButton sbutton) const;
+#ifdef QT_SOFTKEYS_ENABLED
+    QAction *createSoftKey(QAbstractButton *button, QDialogButtonBox::ButtonRole role);
+#endif
 };
 
 QDialogButtonBoxPrivate::QDialogButtonBoxPrivate(Qt::Orientation orient)
@@ -457,6 +468,18 @@ void QDialogButtonBoxPrivate::layoutButtons()
 
     if (center)
         buttonLayout->addStretch();
+
+#ifdef QT_SOFTKEYS_ENABLED
+    QWidget *dialog = 0;
+    QWidget *p = q;
+    while (p && !p->isWindow()) {
+        p = p->parentWidget();
+        if (dialog = qobject_cast<QDialog *>(p))
+            break;
+    }
+    if (dialog)
+        q->setFixedSize(0, 0);
+#endif
 }
 
 QPushButton *QDialogButtonBoxPrivate::createButton(QDialogButtonBox::StandardButton sbutton,
@@ -536,9 +559,44 @@ void QDialogButtonBoxPrivate::addButton(QAbstractButton *button, QDialogButtonBo
     QObject::connect(button, SIGNAL(clicked()), q, SLOT(_q_handleButtonClicked()));
     QObject::connect(button, SIGNAL(destroyed()), q, SLOT(_q_handleButtonDestroyed()));
     buttonLists[role].append(button);
+#ifdef QT_SOFTKEYS_ENABLED
+    softKeyActions.insert(button, createSoftKey(button, role));
+#endif
     if (doLayout)
         layoutButtons();
 }
+
+#ifdef QT_SOFTKEYS_ENABLED
+QAction* QDialogButtonBoxPrivate::createSoftKey(QAbstractButton *button, QDialogButtonBox::ButtonRole role)
+{
+    Q_Q(QDialogButtonBox);
+    QAction::SoftKeyRole softkeyRole;
+
+    QAction *action = new QAction(button->text(), q);
+
+    switch (role) {
+    case ApplyRole:
+    case AcceptRole:
+    case YesRole:
+    case ActionRole:
+    case HelpRole:
+        softkeyRole = QAction::PositiveSoftKey;
+        break;
+    case RejectRole:
+    case DestructiveRole:
+    case NoRole:
+    case ResetRole:
+        softkeyRole = QAction::NegativeSoftKey;
+        break;
+    default:
+        break;
+    }
+    QObject::connect(action, SIGNAL(triggered()), button, SIGNAL(clicked()));
+    action->setSoftKeyRole(softkeyRole);
+    action->setEnabled(button->isEnabled());
+    return action;
+}
+#endif
 
 void QDialogButtonBoxPrivate::createStandardButtons(QDialogButtonBox::StandardButtons buttons)
 {
@@ -631,6 +689,11 @@ void QDialogButtonBoxPrivate::retranslateStrings()
         if (buttonText) {
             QPushButton *button = it.key();
             button->setText(QDialogButtonBox::tr(buttonText));
+#ifdef QT_SOFTKEYS_ENABLED
+            QAction *action = softKeyActions.value(button, 0);
+            if (action)
+                action->setText(button->text());
+#endif
         }
         ++it;
     }
@@ -900,6 +963,13 @@ void QDialogButtonBox::removeButton(QAbstractButton *button)
             }
         }
     }
+#ifdef QT_SOFTKEYS_ENABLED
+    QAction *action = d->softKeyActions.value(button, 0);
+    if (action) {
+        d->softKeyActions.remove(button);
+        delete action;
+    }
+#endif
     if (!d->internalRemove)
         button->setParent(0);
 }
@@ -1125,6 +1195,12 @@ bool QDialogButtonBox::event(QEvent *event)
         }
         if (!hasDefault && firstAcceptButton)
             firstAcceptButton->setDefault(true);
+#ifdef QT_SOFTKEYS_ENABLED
+        if (dialog)
+            dialog->addActions(d->softKeyActions.values());
+        else
+            addActions(d->softKeyActions.values());
+#endif
     }else if (event->type() == QEvent::LanguageChange) {
         d->retranslateStrings();
     }

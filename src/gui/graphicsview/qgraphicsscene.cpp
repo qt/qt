@@ -283,6 +283,8 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       processDirtyItemsEmitted(false),
       selectionChanging(0),
       needSortTopLevelItems(true),
+      holesInTopLevelSiblingIndex(false),
+      topLevelSequentialOrdering(true),
       stickyFocus(false),
       hasFocus(false),
       focusItem(0),
@@ -379,24 +381,36 @@ void QGraphicsScenePrivate::_q_emitUpdated()
 
 /*!
     \internal
+
+    ### This function is almost identical to QGraphicsItemPrivate::addChild().
 */
 void QGraphicsScenePrivate::registerTopLevelItem(QGraphicsItem *item)
 {
-    needSortTopLevelItems = true;
+    item->d_ptr->ensureSequentialSiblingIndex();
+    needSortTopLevelItems = true; // ### maybe false
     item->d_ptr->siblingIndex = topLevelItems.size();
     topLevelItems.append(item);
 }
 
 /*!
     \internal
+
+    ### This function is almost identical to QGraphicsItemPrivate::removeChild().
 */
 void QGraphicsScenePrivate::unregisterTopLevelItem(QGraphicsItem *item)
 {
-    topLevelItems.removeOne(item);
+    if (!holesInTopLevelSiblingIndex)
+        holesInTopLevelSiblingIndex = item->d_ptr->siblingIndex != topLevelItems.size() - 1;
+    if (topLevelSequentialOrdering && !holesInTopLevelSiblingIndex)
+        topLevelItems.removeAt(item->d_ptr->siblingIndex);
+    else
+        topLevelItems.removeOne(item);
     // NB! Do not use topLevelItems.removeAt(item->d_ptr->siblingIndex) because
     // the item is not guaranteed to be at the index after the list is sorted
     // (see ensureSortedTopLevelItems()).
     item->d_ptr->siblingIndex = -1;
+    if (topLevelSequentialOrdering)
+        topLevelSequentialOrdering = !holesInTopLevelSiblingIndex;
 }
 
 /*!
@@ -925,19 +939,19 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::itemsAtPosition(const QPoint &scre
     Q_Q(const QGraphicsScene);
     QGraphicsView *view = widget ? qobject_cast<QGraphicsView *>(widget->parentWidget()) : 0;
     if (!view)
-        return q->items(scenePos, Qt::IntersectsItemShape, Qt::AscendingOrder, QTransform());
+        return q->items(scenePos, Qt::IntersectsItemShape, Qt::DescendingOrder, QTransform());
 
     const QRectF pointRect(QPointF(widget->mapFromGlobal(screenPos)), QSizeF(1, 1));
     if (!view->isTransformed())
-        return q->items(pointRect, Qt::IntersectsItemShape, Qt::AscendingOrder);
+        return q->items(pointRect, Qt::IntersectsItemShape, Qt::DescendingOrder);
 
     const QTransform viewTransform = view->viewportTransform();
     if (viewTransform.type() <= QTransform::TxScale) {
         return q->items(viewTransform.inverted().mapRect(pointRect), Qt::IntersectsItemShape,
-                        Qt::AscendingOrder, viewTransform);
+                        Qt::DescendingOrder, viewTransform);
     }
     return q->items(viewTransform.inverted().map(pointRect), Qt::IntersectsItemShape,
-                    Qt::AscendingOrder, viewTransform);
+                    Qt::DescendingOrder, viewTransform);
 }
 
 /*!
@@ -1233,6 +1247,29 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
             // happened.
             q->clearSelection();
         }
+    }
+}
+
+/*!
+    \internal
+
+    Ensures that the list of toplevels is sorted by insertion order, and that
+    the siblingIndexes are packed (no gaps), and start at 0.
+
+    ### This function is almost identical to
+    QGraphicsItemPrivate::ensureSequentialSiblingIndex().
+*/
+void QGraphicsScenePrivate::ensureSequentialTopLevelSiblingIndexes()
+{
+    if (!topLevelSequentialOrdering) {
+        qSort(topLevelItems.begin(), topLevelItems.end(), QGraphicsItemPrivate::insertionOrder);
+        topLevelSequentialOrdering = true;
+        needSortTopLevelItems = 1;
+    }
+    if (holesInTopLevelSiblingIndex) {
+        holesInTopLevelSiblingIndex = 0;
+        for (int i = 0; i < topLevelItems.size(); ++i)
+            topLevelItems[i]->d_ptr->siblingIndex = i;
     }
 }
 
@@ -1584,7 +1621,7 @@ void QGraphicsScene::setItemIndexMethod(ItemIndexMethod method)
 
     d->indexMethod = method;
 
-    QList<QGraphicsItem *> oldItems = d->index->items(Qt::AscendingOrder);
+    QList<QGraphicsItem *> oldItems = d->index->items(Qt::DescendingOrder);
     delete d->index;
     if (method == BspTreeIndex)
         d->index = new QGraphicsSceneBspTreeIndex(this);
@@ -1693,7 +1730,7 @@ QRectF QGraphicsScene::itemsBoundingRect() const
 QList<QGraphicsItem *> QGraphicsScene::items() const
 {
     Q_D(const QGraphicsScene);
-    return d->index->items(Qt::AscendingOrder);
+    return d->index->items(Qt::DescendingOrder);
 }
 
 /*!
@@ -1724,7 +1761,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(Qt::SortOrder order) const
 QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos) const
 {
     Q_D(const QGraphicsScene);
-    return d->index->items(pos, Qt::IntersectsItemShape, Qt::AscendingOrder);
+    return d->index->items(pos, Qt::IntersectsItemShape, Qt::DescendingOrder);
 }
 
 /*!
@@ -1746,7 +1783,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos) const
 QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rectangle, Qt::ItemSelectionMode mode) const
 {
     Q_D(const QGraphicsScene);
-    return d->index->items(rectangle, mode, Qt::AscendingOrder);
+    return d->index->items(rectangle, mode, Qt::DescendingOrder);
 }
 
 /*!
@@ -1794,7 +1831,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rectangle, Qt::ItemSe
 QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemSelectionMode mode) const
 {
     Q_D(const QGraphicsScene);
-    return d->index->items(polygon, mode, Qt::AscendingOrder);
+    return d->index->items(polygon, mode, Qt::DescendingOrder);
 }
 
 /*!
@@ -1816,7 +1853,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemS
 QList<QGraphicsItem *> QGraphicsScene::items(const QPainterPath &path, Qt::ItemSelectionMode mode) const
 {
     Q_D(const QGraphicsScene);
-    return d->index->items(path, mode, Qt::AscendingOrder);
+    return d->index->items(path, mode, Qt::DescendingOrder);
 }
 
 /*!
@@ -1928,7 +1965,7 @@ QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
 
     // Does not support ItemIgnoresTransformations.
     QList<QGraphicsItem *> tmp;
-    foreach (QGraphicsItem *itemInVicinity, d->index->estimateItems(item->sceneBoundingRect(), Qt::AscendingOrder)) {
+    foreach (QGraphicsItem *itemInVicinity, d->index->estimateItems(item->sceneBoundingRect(), Qt::DescendingOrder)) {
         if (item != itemInVicinity && item->collidesWithItem(itemInVicinity, mode))
             tmp << itemInVicinity;
     }
@@ -1972,7 +2009,7 @@ QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position) const
 QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position, const QTransform &deviceTransform) const
 {
     QList<QGraphicsItem *> itemsAtPoint = items(position, Qt::IntersectsItemShape,
-                                                Qt::AscendingOrder, deviceTransform);
+                                                Qt::DescendingOrder, deviceTransform);
     return itemsAtPoint.isEmpty() ? 0 : itemsAtPoint.first();
 }
 
@@ -2127,7 +2164,7 @@ void QGraphicsScene::setSelectionArea(const QPainterPath &path, Qt::ItemSelectio
     bool changed = false;
 
     // Set all items in path to selected.
-    foreach (QGraphicsItem *item, items(path, mode, Qt::AscendingOrder, deviceTransform)) {
+    foreach (QGraphicsItem *item, items(path, mode, Qt::DescendingOrder, deviceTransform)) {
         if (item->flags() & QGraphicsItem::ItemIsSelectable) {
             if (!item->isSelected())
                 changed = true;
@@ -2434,17 +2471,8 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
 
     // Ensure that newly added items that have subfocus set, gain
     // focus automatically if there isn't a focus item already.
-    if (!d->focusItem) {
-        if (item->focusItem() == item && item != d->lastFocusItem) {
-            QGraphicsItem *fi = item->focusItem() ? item->focusItem() : item->focusScopeItem();
-            if (fi) {
-                QGraphicsItem *fsi;
-                while ((fsi = fi->focusScopeItem()) && fsi->isVisible())
-                    fi = fsi;
-                fi->setFocus();
-            }
-        }
-    }
+    if (!d->focusItem && item != d->lastFocusItem && item->focusItem() == item)
+        item->focusItem()->setFocus();
 
     d->updateInputMethodSensitivityInViews();
 }
@@ -4380,7 +4408,7 @@ void QGraphicsScenePrivate::drawItems(QPainter *painter, const QTransform *const
         if (viewTransform)
             exposedSceneRect = viewTransform->inverted().mapRect(exposedSceneRect);
     }
-    const QList<QGraphicsItem *> tli = index->estimateTopLevelItems(exposedSceneRect, Qt::DescendingOrder);
+    const QList<QGraphicsItem *> tli = index->estimateTopLevelItems(exposedSceneRect, Qt::AscendingOrder);
     for (int i = 0; i < tli.size(); ++i)
         drawSubtreeRecursive(tli.at(i), painter, viewTransform, exposedRegion, widget);
 }

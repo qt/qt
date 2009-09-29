@@ -476,7 +476,9 @@ sub GenerateHeader
     my $parentClassName = GetParentClassName($dataNode);
     my $conditional = $dataNode->extendedAttributes->{"Conditional"};
     my $needsSVGContext = IsSVGTypeNeedingContextParameter($interfaceName);
-
+    my $eventTarget = $dataNode->extendedAttributes->{"EventTarget"};
+    my $needsMarkChildren = $dataNode->extendedAttributes->{"CustomMarkFunction"} || $dataNode->extendedAttributes->{"EventTarget"};
+    
     # - Add default header template
     @headerContentHeader = split("\r", $headerTemplate);
 
@@ -548,7 +550,7 @@ sub GenerateHeader
     }
 
     # Destructor
-    push(@headerContent, "    virtual ~$className();\n") if (!$hasParent or $interfaceName eq "Document" or $interfaceName eq "DOMWindow");
+    push(@headerContent, "    virtual ~$className();\n") if (!$hasParent or $eventTarget or $interfaceName eq "Document" or $interfaceName eq "DOMWindow");
 
     # Prototype
     push(@headerContent, "    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);\n") unless ($dataNode->extendedAttributes->{"ExtendsDOMGlobalObject"});
@@ -613,8 +615,8 @@ sub GenerateHeader
             "    }\n\n");
     }
 
-    # Custom mark function
-    push(@headerContent, "    virtual void markChildren(JSC::MarkStack&);\n\n") if $dataNode->extendedAttributes->{"CustomMarkFunction"};
+    # markChildren function
+    push(@headerContent, "    virtual void markChildren(JSC::MarkStack&);\n\n") if $needsMarkChildren;
 
     # Custom pushEventHandlerScope function
     push(@headerContent, "    virtual void pushEventHandlerScope(JSC::ExecState*, JSC::ScopeChain&) const;\n\n") if $dataNode->extendedAttributes->{"CustomPushEventHandlerScope"};
@@ -627,6 +629,10 @@ sub GenerateHeader
 
     # Custom getPropertyNames function exists on DOMWindow
     push(@headerContent, "    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);\n") if $interfaceName eq "DOMWindow";
+
+    # Custom defineProperty function exists on DOMWindow
+    push(@headerContent, "    virtual bool defineOwnProperty(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&, bool shouldThrow);\n") if $interfaceName eq "DOMWindow";
+
     # Custom getOwnPropertyNames function
     push(@headerContent, "    virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);\n") if ($dataNode->extendedAttributes->{"CustomGetPropertyNames"} || $dataNode->extendedAttributes->{"HasIndexGetter"} || $dataNode->extendedAttributes->{"HasCustomIndexGetter"} || $dataNode->extendedAttributes->{"HasNumericIndexGetter"});    
 
@@ -634,10 +640,10 @@ sub GenerateHeader
     push(@headerContent, "    virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&, unsigned& attributes) const;\n") if $dataNode->extendedAttributes->{"CustomGetPropertyAttributes"};
 
     # Custom defineGetter function
-    push(@headerContent, "    virtual void defineGetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction);\n") if $dataNode->extendedAttributes->{"CustomDefineGetter"};
+    push(@headerContent, "    virtual void defineGetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction, unsigned attributes);\n") if $dataNode->extendedAttributes->{"CustomDefineGetter"};
 
     # Custom defineSetter function
-    push(@headerContent, "    virtual void defineSetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* setterFunction);\n") if $dataNode->extendedAttributes->{"CustomDefineSetter"};
+    push(@headerContent, "    virtual void defineSetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* setterFunction, unsigned attributes);\n") if $dataNode->extendedAttributes->{"CustomDefineSetter"};
 
     # Custom lookupGetter function
     push(@headerContent, "    virtual JSC::JSValue lookupGetter(JSC::ExecState*, const JSC::Identifier& propertyName);\n") if $dataNode->extendedAttributes->{"CustomLookupGetter"};
@@ -785,7 +791,7 @@ sub GenerateHeader
         push(@headerContent,
             "    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)\n" .
             "    {\n" .
-            "        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType" . ($dataNode->extendedAttributes->{"CustomMarkFunction"} ? "" : ", JSC::HasDefaultMark") . "));\n" .
+            "        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType" . ($needsMarkChildren ? "" : ", JSC::HasDefaultMark") . "));\n" .
             "    }\n");
     } elsif ($dataNode->extendedAttributes->{"CustomMarkFunction"}) {
         push(@headerContent,
@@ -800,7 +806,7 @@ sub GenerateHeader
     }
 
     # Custom defineGetter function
-    push(@headerContent, "    virtual void defineGetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction);\n") if $dataNode->extendedAttributes->{"CustomPrototypeDefineGetter"};
+    push(@headerContent, "    virtual void defineGetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction, unsigned attributes);\n") if $dataNode->extendedAttributes->{"CustomPrototypeDefineGetter"};
 
     push(@headerContent, "    ${className}Prototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }\n");
 
@@ -864,6 +870,8 @@ sub GenerateImplementation
     my $parentClassName = GetParentClassName($dataNode);
     my $conditional = $dataNode->extendedAttributes->{"Conditional"};
     my $visibleClassName = GetVisibleClassName($interfaceName);
+    my $eventTarget = $dataNode->extendedAttributes->{"EventTarget"};
+    my $needsMarkChildren = $dataNode->extendedAttributes->{"CustomMarkFunction"} || $dataNode->extendedAttributes->{"EventTarget"};
 
     # - Add default header template
     @implContentHeader = split("\r", $headerTemplate);
@@ -1149,17 +1157,17 @@ sub GenerateImplementation
     push(@implContent, "}\n\n");
 
     # Destructor
-    if (!$hasParent || $interfaceName eq "DOMWindow") {
+    if (!$hasParent || $eventTarget) {
         push(@implContent, "${className}::~$className()\n");
         push(@implContent, "{\n");
 
+        if ($eventTarget) {
+            $implIncludes{"RegisteredEventListener.h"} = 1;
+            push(@implContent, "    impl()->invalidateEventListeners();\n");
+        }
+
         if ($interfaceName eq "Node") {
-             $implIncludes{"RegisteredEventListener.h"} = 1;
-             push(@implContent, "    invalidateEventListeners(m_impl->eventListeners());\n");
-             push(@implContent, "    forgetDOMNode(m_impl->document(), m_impl.get());\n");
-        } elsif ($interfaceName eq "DOMWindow") {
-             $implIncludes{"RegisteredEventListener.h"} = 1;
-             push(@implContent, "    invalidateEventListeners(impl()->eventListeners());\n");
+             push(@implContent, "    forgetDOMNode(impl()->document(), impl());\n");
         } else {
             if ($podType) {
                 my $animatedType = $implClassName;
@@ -1170,7 +1178,7 @@ sub GenerateImplementation
                     push(@implContent, "    JSSVGDynamicPODTypeWrapperCache<$podType, $animatedType>::forgetWrapper(m_impl.get());\n");
                 }
             }
-            push(@implContent, "    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());\n");
+            push(@implContent, "    forgetDOMObject(*Heap::heap(this)->globalData(), impl());\n");
         }
 
         push(@implContent, "}\n\n");
@@ -1181,6 +1189,14 @@ sub GenerateImplementation
     if ($interfaceName eq "Document") {
         push(@implContent, "${className}::~$className()\n");
         push(@implContent, "{\n    forgetDOMObject(*Heap::heap(this)->globalData(), static_cast<${implClassName}*>(impl()));\n}\n\n");
+    }
+
+    if ($needsMarkChildren && !$dataNode->extendedAttributes->{"CustomMarkFunction"}) {
+        push(@implContent, "void ${className}::markChildren(MarkStack& markStack)\n");
+        push(@implContent, "{\n");
+        push(@implContent, "    Base::markChildren(markStack);\n");
+        push(@implContent, "    impl()->markEventListeners(markStack);\n");
+        push(@implContent, "}\n\n");
     }
 
     if (!$dataNode->extendedAttributes->{"ExtendsDOMGlobalObject"}) {

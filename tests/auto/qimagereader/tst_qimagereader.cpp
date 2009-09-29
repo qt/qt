@@ -816,9 +816,7 @@ void tst_QImageReader::readFromDevice()
 {
     QFETCH(QString, fileName);
     QFETCH(QByteArray, format);
-    #ifdef Q_OS_SYMBIAN
-    QSKIP("Symbian local sockets are not working", SkipAll);
-    #endif
+
     QImage expectedImage(prefix + fileName, format);
 
     QFile file(prefix + fileName);

@@ -576,6 +576,11 @@ public:
     void _q_readRX71MultiTouchEvents();
 #endif
 
+#if defined(Q_WS_S60)
+    int maxTouchPressure;
+    QList<QTouchEvent::TouchPoint> appAllTouchPoints;
+#endif
+
 private:
 #ifdef Q_WS_QWS
     QMap<const QScreen*, QRect> maxWindowRects;

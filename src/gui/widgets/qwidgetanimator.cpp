@@ -60,7 +60,9 @@ void QWidgetAnimator::abort(QWidget *w)
     QPropertyAnimation *anim = *it;
     m_animation_map.erase(it);
     anim->stop();
+#ifndef QT_NO_MAINWINDOW
     m_mainWindowLayout->animationFinished(w);
+#endif
 #else
     Q_UNUSED(w); //there is no animation to abort
 #endif //QT_NO_ANIMATION

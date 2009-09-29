@@ -74,7 +74,7 @@ JSCanvasGradient::JSCanvasGradient(PassRefPtr<Structure> structure, JSDOMGlobalO
 
 JSCanvasGradient::~JSCanvasGradient()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSCanvasGradient::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

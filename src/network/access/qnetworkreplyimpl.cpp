@@ -573,6 +573,8 @@ QNetworkReplyImpl::~QNetworkReplyImpl()
     Q_D(QNetworkReplyImpl);
     if (d->isCachingEnabled())
         d->networkCache()->remove(url());
+    if (d->outgoingDataBuffer)
+        delete d->outgoingDataBuffer;
 }
 
 void QNetworkReplyImpl::abort()

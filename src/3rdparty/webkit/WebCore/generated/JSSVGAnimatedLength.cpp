@@ -80,7 +80,7 @@ JSSVGAnimatedLength::JSSVGAnimatedLength(PassRefPtr<Structure> structure, JSDOMG
 
 JSSVGAnimatedLength::~JSSVGAnimatedLength()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGAnimatedLength::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

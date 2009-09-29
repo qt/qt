@@ -84,7 +84,7 @@ JSSQLResultSet::JSSQLResultSet(PassRefPtr<Structure> structure, JSDOMGlobalObjec
 
 JSSQLResultSet::~JSSQLResultSet()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSQLResultSet::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

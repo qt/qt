@@ -2204,11 +2204,13 @@ QStringList QProcess::systemEnvironment()
 /*!
     \since 4.6
 
-    Returns the environment of the calling process as a QProcessEnvironment.
+    \brief The systemEnvironment function returns the environment of
+    the calling process.
 
-    This function does not cache the system environment. Therefore, it's
-    possible to obtain an updated version of the environment if low-level C
-    library functions like \tt setenv ot \tt putenv have been called.
+    It is returned as a QProcessEnvironment. This function does not
+    cache the system environment. Therefore, it's possible to obtain
+    an updated version of the environment if low-level C library
+    functions like \tt setenv ot \tt putenv have been called.
 
     However, note that repeated calls to this function will recreate the
     QProcessEnvironment object, which is a non-trivial operation.

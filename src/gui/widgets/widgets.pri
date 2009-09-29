@@ -81,8 +81,7 @@ HEADERS += \
         widgets/qtoolbararealayout_p.h \
         widgets/qplaintextedit.h \
         widgets/qplaintextedit_p.h \
-        widgets/qprintpreviewwidget.h \
-        widgets/qactiontokeyeventmapper_p.h
+        widgets/qprintpreviewwidget.h
 SOURCES += \
         widgets/qabstractbutton.cpp \
         widgets/qabstractslider.cpp \
@@ -143,8 +142,7 @@ SOURCES += \
         widgets/qwidgetanimator.cpp \
         widgets/qtoolbararealayout.cpp \
         widgets/qplaintextedit.cpp \
-        widgets/qprintpreviewwidget.cpp \
-        widgets/qactiontokeyeventmapper.cpp
+        widgets/qprintpreviewwidget.cpp
 
 !embedded:mac {
     HEADERS += widgets/qmacnativewidget_mac.h \

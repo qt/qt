@@ -81,12 +81,12 @@
     QAbstractAnimation provides pure virtual functions used by
     subclasses to track the progress of the animation: duration() and
     updateCurrentTime(). The duration() function lets you report a
-    duration for the animation (as discussed above). The current time
-    is delivered by the animation framework through calls to
-    updateCurrentTime(). By reimplementing this function, you can
-    track the animation progress. Note that neither the interval
-    between calls nor the number of calls to this function are
-    defined; though, it will normally be 60 updates per second.
+    duration for the animation (as discussed above). The animation
+    framework calls updateCurrentTime() when current time has changed.
+    By reimplementing this function, you can track the animation 
+    progress. Note that neither the interval between calls nor the
+    number of calls to this function are defined; though, it will
+    normally be 60 updates per second.
 
     By reimplementing updateState(), you can track the animation's
     state changes, which is particularly useful for animations that
@@ -194,12 +194,6 @@ QUnifiedTimer *QUnifiedTimer::instance()
 
 void QUnifiedTimer::timerEvent(QTimerEvent *event)
 {
-    //this is simply the time we last received a tick
-    const int oldLastTick = lastTick;
-    if (time.isValid())
-        lastTick = consistentTiming ? oldLastTick + timingInterval : time.elapsed();
-
-
     if (event->timerId() == startStopAnimationTimer.timerId()) {
         startStopAnimationTimer.stop();
         //we transfer the waiting animations into the "really running" state
@@ -207,21 +201,28 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
         animationsToStart.clear();
         if (animations.isEmpty()) {
             animationTimer.stop();
-            time = QTime();
         } else if (!animationTimer.isActive()) {
             animationTimer.start(timingInterval, this);
             lastTick = 0;
             time.start();
         }
     } else if (event->timerId() == animationTimer.timerId()) {
-        const int delta = lastTick - oldLastTick;
-        for (currentAnimationIdx = 0; currentAnimationIdx < animations.count(); ++currentAnimationIdx) {
-            QAbstractAnimation *animation = animations.at(currentAnimationIdx);
-            int elapsed = QAbstractAnimationPrivate::get(animation)->totalCurrentTime
-                + (animation->direction() == QAbstractAnimation::Forward ? delta : -delta);
-            animation->setCurrentTime(elapsed);
+        //this is simply the time we last received a tick
+        const int oldLastTick = lastTick;
+        lastTick = consistentTiming ? oldLastTick + timingInterval : time.elapsed();
+
+        //we make sure we only call update time if the time has actually changed
+        //it might happen in some cases that the time doesn't change because events are delayed
+        //when the CPU load is high
+        if (const int delta = lastTick - oldLastTick) {
+            for (currentAnimationIdx = 0; currentAnimationIdx < animations.count(); ++currentAnimationIdx) {
+                QAbstractAnimation *animation = animations.at(currentAnimationIdx);
+                int elapsed = QAbstractAnimationPrivate::get(animation)->totalCurrentTime
+                    + (animation->direction() == QAbstractAnimation::Forward ? delta : -delta);
+                animation->setCurrentTime(elapsed);
+            }
+            currentAnimationIdx = 0;
         }
-        currentAnimationIdx = 0;
     }
 }
 
@@ -600,7 +601,7 @@ void QAbstractAnimation::setCurrentTime(int msecs)
         }
     }
 
-    updateCurrentTime(msecs);
+    updateCurrentTime(d->currentTime);
     if (d->currentLoop != oldLoop)
         emit currentLoopChanged(d->currentLoop);
 
@@ -701,10 +702,10 @@ bool QAbstractAnimation::event(QEvent *event)
 }
 
 /*!
-    \fn virtual void QAbstractAnimation::updateCurrentTime(int msecs) = 0;
+    \fn virtual void QAbstractAnimation::updateCurrentTime(int currentTime) = 0;
 
     This pure virtual function is called every time the animation's current
-    time changes. The \a msecs argument is the current time.
+    time changes.
 
     \sa updateState()
 */

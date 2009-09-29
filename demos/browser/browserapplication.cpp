@@ -248,6 +248,8 @@ void BrowserApplication::loadSettings()
     QUrl url = settings.value(QLatin1String("userStyleSheet")).toUrl();
     defaultSettings->setUserStyleSheetUrl(url);
 
+    defaultSettings->setAttribute(QWebSettings::DnsPrefetchEnabled, true);
+
     settings.endGroup();
 }
 

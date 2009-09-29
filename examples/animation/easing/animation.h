@@ -68,7 +68,7 @@ public:
         m_path = QPainterPath();
     }
 
-    void updateCurrentTime(int msecs)
+    void updateCurrentTime(int currentTime)
     {
         if (m_pathType == CirclePath) {
             if (m_path.isEmpty()) {
@@ -78,7 +78,7 @@ public:
                 m_path.addEllipse(QRectF(from, to));
             }
             int dura = duration();
-            const qreal progress = ((dura == 0) ? 1 : ((((currentTime() - 1) % dura) + 1) / qreal(dura)));
+            const qreal progress = ((dura == 0) ? 1 : ((((currentTime - 1) % dura) + 1) / qreal(dura)));
 
             qreal easedProgress = easingCurve().valueForProgress(progress);
             if (easedProgress > 1.0) {
@@ -90,7 +90,7 @@ public:
             updateCurrentValue(pt);
             emit valueChanged(pt);
         } else {
-            QPropertyAnimation::updateCurrentTime(msecs);
+            QPropertyAnimation::updateCurrentTime(currentTime);
         }
     }
 

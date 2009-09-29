@@ -871,7 +871,9 @@ void QToolButtonPrivate::_q_buttonPressed()
     Q_Q(QToolButton);
     if (!hasMenu())
         return; // no menu to show
-    if (delay > 0 && !popupTimer.isActive() && popupMode == QToolButton::DelayedPopup)
+    if (popupMode == QToolButton::MenuButtonPopup)
+        return;
+    else if (delay > 0 && !popupTimer.isActive() && popupMode == QToolButton::DelayedPopup)
         popupTimer.start(delay, q);
     else if (delay == 0 || popupMode == QToolButton::InstantPopup)
         q->showMenu();

@@ -9,6 +9,8 @@ DESTDIR = ./
 win32: CONFIG += console
 mac:CONFIG -= app_bundle
 
+requires(contains(QT_CONFIG,script))
+
 DEFINES	+= QSHAREDMEMORY_DEBUG
 DEFINES	+= QSYSTEMSEMAPHORE_DEBUG
 

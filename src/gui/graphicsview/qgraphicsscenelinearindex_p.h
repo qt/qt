@@ -76,7 +76,7 @@ public:
     QGraphicsSceneLinearIndex(QGraphicsScene *scene = 0) : QGraphicsSceneIndex(scene)
     { }
 
-    QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const
+    QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::DescendingOrder) const
     { Q_UNUSED(order); return m_items; }
 
     virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order) const

@@ -133,7 +133,7 @@ JSStyleSheet::JSStyleSheet(PassRefPtr<Structure> structure, JSDOMGlobalObject* g
 
 JSStyleSheet::~JSStyleSheet()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSStyleSheet::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

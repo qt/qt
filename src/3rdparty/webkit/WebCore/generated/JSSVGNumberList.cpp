@@ -99,7 +99,7 @@ JSSVGNumberList::JSSVGNumberList(PassRefPtr<Structure> structure, JSDOMGlobalObj
 
 JSSVGNumberList::~JSSVGNumberList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGNumberList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

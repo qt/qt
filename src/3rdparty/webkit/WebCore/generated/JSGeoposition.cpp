@@ -80,7 +80,7 @@ JSGeoposition::JSGeoposition(PassRefPtr<Structure> structure, JSDOMGlobalObject*
 
 JSGeoposition::~JSGeoposition()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSGeoposition::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

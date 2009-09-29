@@ -198,18 +198,17 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
 
     // Get the others informations:
     JSC::JSObject *callee = frame->callee();
-    if (callee && callee->isObject(&JSC::InternalFunction::info))
+    if (callee && callee->inherits(&JSC::InternalFunction::info))
         functionName = JSC::asInternalFunction(callee)->name(&frame->globalData());
-    if (callee && callee->isObject(&JSC::JSFunction::info)) {
+    if (callee && callee->inherits(&JSC::JSFunction::info)) {
         functionType = QScriptContextInfo::ScriptFunction;
-        JSC::FunctionBodyNode *body = JSC::asFunction(callee)->body();
-        functionStartLineNumber = body->firstLine();
+        JSC::FunctionExecutable *body = JSC::asFunction(callee)->jsExecutable();
+        functionStartLineNumber = body->lineNo();
         functionEndLineNumber = body->lastLine();
-        const JSC::Identifier* params = body->parameters();
         for (size_t i = 0; i < body->parameterCount(); ++i)
-            parameterNames.append(params[i].ustring());
+            parameterNames.append(body->parameterName(i));
         // ### get the function name from the AST
-    } else if (callee && callee->isObject(&QScript::QtFunction::info)) {
+    } else if (callee && callee->inherits(&QScript::QtFunction::info)) {
         functionType = QScriptContextInfo::QtFunction;
         // ### the slot can be overloaded -- need to get the particular overload from the context
         functionMetaIndex = static_cast<QScript::QtFunction*>(callee)->initialIndex();
@@ -221,7 +220,7 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
                 parameterNames.append(QLatin1String(formals.at(i)));
         }
     }
-    else if (callee && callee->isObject(&QScript::QtPropertyFunction::info)) {
+    else if (callee && callee->inherits(&QScript::QtPropertyFunction::info)) {
         functionType = QScriptContextInfo::QtPropertyFunction;
         functionMetaIndex = static_cast<QScript::QtPropertyFunction*>(callee)->propertyIndex();
     }

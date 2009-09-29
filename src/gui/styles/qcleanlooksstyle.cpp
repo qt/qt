@@ -517,13 +517,13 @@ static void qt_cleanlooks_draw_buttongradient(QPainter *painter, const QRect &re
             gradient->setStops(bgBrush.gradient()->stops());
         else {
             int size = horizontal ? rect.width() : rect.height() ;
-            if (size < 1)
-                size = 1;
-            float edge = 4.0/(float)size;
-            gradient->setColorAt(0, gradientStart);
-            gradient->setColorAt(edge, gradientMid.lighter(104));
-            gradient->setColorAt(1.0 - edge, gradientMid.darker(100));
-            gradient->setColorAt(1.0, gradientStop);
+            if (size > 4) {
+                float edge = 4.0/(float)size;
+                gradient->setColorAt(0, gradientStart);
+                gradient->setColorAt(edge, gradientMid.lighter(104));
+                gradient->setColorAt(1.0 - edge, gradientMid.darker(100));
+                gradient->setColorAt(1.0, gradientStop);
+            }
         }
         painter->fillRect(rect, *gradient);
         delete gradient;

@@ -362,6 +362,9 @@ QT_BEGIN_NAMESPACE
 
     \relates QTest
 
+    \brief The QBENCHMARK_ONCE macro is for measuring performance of a
+    code block by running it once.
+
     This macro is used to measure the performance of code within a test.
     The code to be benchmarked is contained within a code block following
     this macro.
@@ -729,6 +732,17 @@ QT_BEGIN_NAMESPACE
     maximum of about 12.5 seconds.
 
     \sa QTest::qSleep()
+*/
+
+/*! \fn void QTest::qWaitForWindowShown(QWidget *window)
+    \since 4.6
+
+    Waits until the \a window is shown in the screen. This is mainly useful for
+    asynchronous systems like X11, where a window will be mapped to screen some
+    time after being asked to show itself on the screen.
+
+    Example:
+    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 24
 */
 
 /*!
@@ -1504,10 +1518,14 @@ FatalSignalHandler::FatalSignalHandler()
 
     for (int i = 0; fatalSignals[i]; ++i) {
         sigaction(fatalSignals[i], &act, &oldact);
+#ifndef Q_WS_QWS
         // Don't overwrite any non-default handlers
+        // however, we need to replace the default QWS handlers
         if (oldact.sa_flags & SA_SIGINFO || oldact.sa_handler != SIG_DFL) {
             sigaction(fatalSignals[i], &oldact, 0);
-        } else {
+        } else
+#endif
+        {
             sigaddset(&handledSignals, fatalSignals[i]);
         }
     }

@@ -399,10 +399,10 @@ void tst_QFocusEvent::checkReason_ActiveWindow()
     QDialog* d = new QDialog( testFocusWidget );
     d->show();
     d->activateWindow(); // ### CDE
-    // wait 1 secs to give some visible feedback
-    QTest::qWait(1000);
+    QApplication::setActiveWindow(d);
+    QTest::qWaitForWindowShown(d);
 
-    QVERIFY(childFocusWidgetOne->focusOutEventRecieved);
+    QTRY_VERIFY(childFocusWidgetOne->focusOutEventRecieved);
     QVERIFY(childFocusWidgetOne->focusOutEventLostFocus);
 
     QVERIFY( !childFocusWidgetOne->focusInEventRecieved );
@@ -411,12 +411,12 @@ void tst_QFocusEvent::checkReason_ActiveWindow()
     QVERIFY( !childFocusWidgetOne->hasFocus() );
 
     d->hide();
-    QTest::qWait(1000);
+    QTest::qWait(100);
 
 #if defined(Q_OS_IRIX)
     QEXPECT_FAIL("", "IRIX requires explicit activateWindow(), so this test does not make any sense.", Abort);
 #endif
-    QVERIFY(childFocusWidgetOne->focusInEventRecieved);
+    QTRY_VERIFY(childFocusWidgetOne->focusInEventRecieved);
     QVERIFY(childFocusWidgetOne->focusInEventGotFocus);
 
     QVERIFY( childFocusWidgetOne->hasFocus() );

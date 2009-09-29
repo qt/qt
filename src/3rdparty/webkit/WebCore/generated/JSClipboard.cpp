@@ -142,7 +142,7 @@ JSClipboard::JSClipboard(PassRefPtr<Structure> structure, JSDOMGlobalObject* glo
 
 JSClipboard::~JSClipboard()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSClipboard::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

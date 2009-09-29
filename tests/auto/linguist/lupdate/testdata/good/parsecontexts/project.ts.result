@@ -102,6 +102,15 @@
     </message>
 </context>
 <context>
+    <name>Bears::And::Spiders</name>
+    <message>
+        <location filename="main.cpp" line="271"/>
+        <source>whatever the context</source>
+        <comment>Bears::And::Spiders</comment>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>C1</name>
     <message>
         <location filename="main.cpp" line="230"/>

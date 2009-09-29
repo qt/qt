@@ -54,6 +54,10 @@ FluidLauncher::FluidLauncher(QStringList* args)
     slideShowWidget = new SlideShow();
     inputTimer = new QTimer();
 
+    addWidget(pictureFlowWidget);
+    addWidget(slideShowWidget);
+    setCurrentWidget(pictureFlowWidget);
+
     QRect screen_size = QApplication::desktop()->screenGeometry();
 
     QObject::connect(pictureFlowWidget, SIGNAL(itemActivated(int)), this, SLOT(launchApplication(int)));
@@ -80,7 +84,7 @@ FluidLauncher::FluidLauncher(QStringList* args)
     if (success) {
       populatePictureFlow();
 
-      pictureFlowWidget->showFullScreen();
+      showFullScreen();
       inputTimer->start();
     } else {
         pictureFlowWidget->setAttribute(Qt::WA_DeleteOnClose, true);
@@ -222,7 +226,6 @@ void FluidLauncher::launchApplication(int index)
     }
 
     inputTimer->stop();
-    pictureFlowWidget->hide();
 
     QObject::connect(demoList[index], SIGNAL(demoFinished()), this, SLOT(demoFinished()));
 
@@ -234,6 +237,7 @@ void FluidLauncher::switchToLauncher()
 {
     slideShowWidget->stopShow();
     inputTimer->start();
+    setCurrentWidget(pictureFlowWidget);
 }
 
 
@@ -253,11 +257,28 @@ void FluidLauncher::switchToSlideshow()
 {
     inputTimer->stop();
     slideShowWidget->startShow();
+    setCurrentWidget(slideShowWidget);
 }
 
 void FluidLauncher::demoFinished()
 {
-    pictureFlowWidget->showFullScreen();
+    setCurrentWidget(pictureFlowWidget);
     inputTimer->start();
 }
 
+void FluidLauncher::changeEvent(QEvent* event)
+{
+    if (event->type() == QEvent::ActivationChange) {
+        if (isActiveWindow()) {
+            if(currentWidget() == pictureFlowWidget) {
+                resetInputTimeout();
+            } else {
+                slideShowWidget->startShow();
+            }
+        } else {
+            inputTimer->stop();
+            slideShowWidget->stopShow();
+        }
+    }
+    QStackedWidget::changeEvent(event);
+}

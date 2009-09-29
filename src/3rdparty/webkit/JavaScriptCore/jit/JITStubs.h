@@ -129,7 +129,7 @@ namespace JSC {
 #if COMPILER(MSVC)
 #pragma pack(pop)
 #endif // COMPILER(MSVC)
-#elif PLATFORM_ARM_ARCH(7)
+#elif PLATFORM(ARM_THUMB2)
     struct JITStackFrame {
         void* reserved; // Unused
         JITStubArg args[6];
@@ -149,13 +149,15 @@ namespace JSC {
         CallFrame* callFrame;
         JSValue* exception;
 
+        void* padding2;
+
         // These arguments passed on the stack.
         Profiler** enabledProfilerReference;
         JSGlobalData* globalData;
         
         ReturnAddressPtr* returnAddressSlot() { return &thunkReturnAddress; }
     };
-#elif PLATFORM(ARM)
+#elif PLATFORM(ARM_TRADITIONAL)
     struct JITStackFrame {
         JITStubArg padding; // Unused
         JITStubArg args[7];

@@ -100,6 +100,8 @@ namespace QScript
     //some conversion helper functions
     QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec);
     bool isFunction(JSC::JSValue value);
+
+    class UStringSourceProviderWithFeedback;
 }
 
 class QScriptEnginePrivate
@@ -154,12 +156,13 @@ public:
     JSC::ExecState *globalExec() const;
     JSC::JSValue toUsableValue(JSC::JSValue value);
     static JSC::JSValue thisForContext(JSC::ExecState *frame);
+    static JSC::Register *thisRegisterForFrame(JSC::ExecState *frame);
 
     JSC::CallFrame *pushContext(JSC::CallFrame *exec, JSC::JSValue thisObject, const JSC::ArgList& args,
                                 JSC::JSObject *callee, bool calledAsConstructor = false);
     void popContext();
 
-    void mark();
+    void mark(JSC::MarkStack& markStack);
     bool isCollecting() const;
     void collectGarbage();
 
@@ -167,7 +170,8 @@ public:
     enum ContextFlags {
         NativeContext = 1,
         CalledAsConstructorContext = 2,
-        HasScopeContext = 4
+        HasScopeContext = 4, // Specifies that the is a QScriptActivationObject
+        ShouldRestoreCallFrame = 8
     };
     static uint contextFlags(JSC::ExecState *);
     static void setContextFlags(JSC::ExecState *, uint);
@@ -254,6 +258,8 @@ public:
 
     QSet<QString> importedExtensions;
     QSet<QString> extensionsBeingImported;
+    
+    QSet<QScript::UStringSourceProviderWithFeedback*> loadedScripts;
 
 #ifndef QT_NO_QOBJECT
     QHash<QObject*, QScript::QObjectData*> m_qobjectData;
@@ -263,6 +269,29 @@ public:
     QScriptEngine *q_ptr;
 #endif
 };
+
+namespace QScript
+{
+
+class SaveFrameHelper
+{
+public:
+    SaveFrameHelper(QScriptEnginePrivate *eng,
+                    JSC::ExecState *newFrame)
+        : engine(eng), oldFrame(eng->currentFrame)
+    {
+        eng->currentFrame = newFrame;
+    }
+    ~SaveFrameHelper()
+    {
+        engine->currentFrame = oldFrame;
+    }
+private:
+    QScriptEnginePrivate *engine;
+    JSC::ExecState *oldFrame;
+};
+
+} // namespace QScript
 
 inline QScriptValuePrivate *QScriptEnginePrivate::allocateScriptValuePrivate(size_t size)
 {

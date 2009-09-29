@@ -20,6 +20,7 @@
 #include "config.h"
 #include "qwebhistory.h"
 #include "qwebhistory_p.h"
+#include "qwebframe_p.h"
 
 #include "PlatformString.h"
 #include "Image.h"
@@ -267,6 +268,8 @@ void QWebHistory::clear()
     lst->setCapacity(capacity);   //revert capacity
     lst->addItem(current.get());  //insert old current item
     lst->goToItem(current.get()); //and set it as current again
+
+    d->page()->updateNavigationActions();
 }
 
 /*!
@@ -353,9 +356,11 @@ bool QWebHistory::canGoForward() const
 */
 void QWebHistory::back()
 {
-    d->lst->goBack();
-    WebCore::Page* page = d->lst->page();
-    page->goToItem(currentItem().d->item, WebCore::FrameLoadTypeIndexedBackForward);
+    if (canGoBack()) {
+        d->lst->goBack();
+        WebCore::Page* page = d->lst->page();
+        page->goToItem(currentItem().d->item, WebCore::FrameLoadTypeIndexedBackForward);
+    }
 }
 
 /*!
@@ -366,9 +371,11 @@ void QWebHistory::back()
 */
 void QWebHistory::forward()
 {
-    d->lst->goForward();
-    WebCore::Page* page = d->lst->page();
-    page->goToItem(currentItem().d->item, WebCore::FrameLoadTypeIndexedBackForward);
+    if (canGoForward()) {
+        d->lst->goForward();
+        WebCore::Page* page = d->lst->page();
+        page->goToItem(currentItem().d->item, WebCore::FrameLoadTypeIndexedBackForward);
+    }
 }
 
 /*!
@@ -516,6 +523,8 @@ bool QWebHistory::restoreState(const QByteArray& buffer)
     default: {} // result is false;
     }
 
+    d->page()->updateNavigationActions();
+
     return result;
 };
 
@@ -561,8 +570,11 @@ QByteArray QWebHistory::saveState(HistoryStateVersion version) const
   \fn QDataStream& operator<<(QDataStream& stream, const QWebHistory& history)
   \relates QWebHistory
 
-  Saves the given \a history into the specified \a stream. This is a convenience function
-  and is equivalent to calling the saveState() method.
+  \brief The operator<< function streams a history into a data stream.
+
+  It saves the \a history into the specified \a stream. This is a
+  convenience function and is equivalent to calling the saveState()
+  method.
 
   \sa QWebHistory::saveState()
 */
@@ -576,6 +588,8 @@ QDataStream& operator<<(QDataStream& stream, const QWebHistory& history)
   \fn QDataStream& operator>>(QDataStream& stream, QWebHistory& history)
   \relates QWebHistory
   \since 4.6
+
+  \brief The operator>> function loads a history from a data stream.
 
   Loads a QWebHistory from the specified \a stream into the given \a history.
   This is a convenience function and it is equivalent to calling the restoreState()
@@ -592,4 +606,7 @@ QDataStream& operator>>(QDataStream& stream, QWebHistory& history)
     return stream;
 }
 
-
+QWebPagePrivate* QWebHistoryPrivate::page()
+{
+    return QWebFramePrivate::kit(lst->page()->mainFrame())->page()->handle();
+}

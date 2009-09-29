@@ -139,7 +139,8 @@ void QX11WindowSurface::setGeometry(const QRect &rect)
     QWindowSurface::setGeometry(rect);
 
     const QSize size = rect.size();
-    if (d_ptr->device.size() == size)
+
+    if (d_ptr->device.size() == size || size.width() <= 0 || size.height() <= 0)
         return;
 #ifndef QT_NO_XRENDER
     if (d_ptr->translucentBackground) {
@@ -183,10 +184,14 @@ void QX11WindowSurface::setGeometry(const QRect &rect)
         }
     }
 
-    if (gc)
+    if (gc) {
         XFreeGC(X11->display, gc);
-    gc = XCreateGC(X11->display, d_ptr->device.handle(), 0, 0);
-    XSetGraphicsExposures(X11->display, gc, False);
+        gc = 0;
+    }
+    if (!d_ptr->device.isNull()) {
+        gc = XCreateGC(X11->display, d_ptr->device.handle(), 0, 0);
+        XSetGraphicsExposures(X11->display, gc, False);
+    }
 }
 
 bool QX11WindowSurface::scroll(const QRegion &area, int dx, int dy)

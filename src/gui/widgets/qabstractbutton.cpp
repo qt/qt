@@ -1172,7 +1172,10 @@ void QAbstractButton::keyPressEvent(QKeyEvent *e)
     case Qt::Key_Right:
     case Qt::Key_Down:
 #ifdef QT_KEYPAD_NAVIGATION
-        if (QApplication::keypadNavigationEnabled() && (e->key() == Qt::Key_Left || e->key() == Qt::Key_Right)) {
+        if ((QApplication::keypadNavigationEnabled()
+                && (e->key() == Qt::Key_Left || e->key() == Qt::Key_Right))
+                || (!QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional
+                || (e->key() == Qt::Key_Up || e->key() == Qt::Key_Down))) {
             e->ignore();
             return;
         }

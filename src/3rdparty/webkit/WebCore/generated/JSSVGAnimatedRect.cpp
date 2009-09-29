@@ -81,7 +81,7 @@ JSSVGAnimatedRect::JSSVGAnimatedRect(PassRefPtr<Structure> structure, JSDOMGloba
 
 JSSVGAnimatedRect::~JSSVGAnimatedRect()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGAnimatedRect::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

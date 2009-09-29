@@ -105,9 +105,11 @@ public:
     virtual bool getPropertyAttributes(const QScriptObject*, JSC::ExecState*,
                                        const JSC::Identifier&,
                                        unsigned&) const;
-    virtual void getPropertyNames(QScriptObject*, JSC::ExecState*, JSC::PropertyNameArray&,
-                                  unsigned listedAttributes = JSC::Structure::Prototype);
-    virtual void mark(QScriptObject*);
+    virtual void getOwnPropertyNames(QScriptObject*, JSC::ExecState*,
+                                     JSC::PropertyNameArray&,
+                                     bool includeNonEnumerable = false);
+    virtual void markChildren(QScriptObject*, JSC::MarkStack& markStack);
+    virtual bool compareToObject(QScriptObject*, JSC::ExecState*, JSC::JSObject*);
 
     inline QObject *value() const { return data->value; }
     inline void setValue(QObject* value) { data->value = value; }
@@ -179,7 +181,7 @@ public:
                          QScriptEngine::ValueOwnership ownership,
                          const QScriptEngine::QObjectWrapOptions &options);
 
-    void mark();
+    void mark(JSC::MarkStack&);
 
 private:
     QScriptEnginePrivate *engine;
@@ -206,7 +208,7 @@ public:
     virtual ~QtFunction();
 
     virtual JSC::CallType getCallData(JSC::CallData&);
-    virtual void mark();
+    virtual void markChildren(JSC::MarkStack&);
 
     virtual const JSC::ClassInfo* classInfo() const { return &info; }
     static const JSC::ClassInfo info;
@@ -295,9 +297,9 @@ public:
                                 bool checkDontDelete = true);
     virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
                                        unsigned&) const;
-    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&,
-                                  unsigned listedAttributes = JSC::Structure::Prototype);
-    virtual void mark();
+    virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&,
+                                     bool includeNonEnumerable = false);
+    virtual void markChildren(JSC::MarkStack& markStack);
 
     virtual JSC::CallType getCallData(JSC::CallData&);
     virtual JSC::ConstructType getConstructData(JSC::ConstructData&);

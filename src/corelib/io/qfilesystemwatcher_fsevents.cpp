@@ -223,6 +223,11 @@ QStringList QFSEventsFileSystemWatcherEngine::addPaths(const QStringList &paths,
             }
         }
     }
+
+    if (!pathsToWatch && failedToAdd.size() == paths.size()) {
+        return failedToAdd;
+    }
+
     if (CFArrayGetCount(tmpArray) > 0) {
         if (pathsToWatch) {
             CFArrayAppendArray(tmpArray, pathsToWatch, CFRangeMake(0, CFArrayGetCount(pathsToWatch)));
@@ -230,6 +235,7 @@ QStringList QFSEventsFileSystemWatcherEngine::addPaths(const QStringList &paths,
         }
         pathsToWatch = CFArrayCreateCopy(kCFAllocatorDefault, tmpArray);
     }
+
     FSEventStreamContext context = { 0, this, 0, 0, 0 };
     fsStream = FSEventStreamCreate(kCFAllocatorDefault,
                                    QFSEventsFileSystemWatcherEngine::fseventsCallback,

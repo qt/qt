@@ -49,7 +49,7 @@ namespace JSC {
         virtual void putWithAttributes(ExecState*, const Identifier&, JSValue, unsigned attributes) = 0;
 
         virtual bool deleteProperty(ExecState*, const Identifier&, bool checkDontDelete = true);
-        virtual void getPropertyNames(ExecState*, PropertyNameArray&, unsigned listedAttributes = Structure::Prototype);
+        virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, bool includeNonEnumerable = false);
         
         virtual bool isVariableObject() const;
         virtual bool isDynamicScope() const = 0;
@@ -58,6 +58,11 @@ namespace JSC {
 
         Register& registerAt(int index) const { return d->registers[index]; }
 
+        static PassRefPtr<Structure> createStructure(JSValue prototype)
+        {
+            return Structure::create(prototype, TypeInfo(ObjectType, HasStandardGetOwnPropertySlot | HasDefaultMark));
+        }
+        
     protected:
         // Subclasses of JSVariableObject can subclass this struct to add data
         // without increasing their own size (since there's a hard limit on the
@@ -89,6 +94,7 @@ namespace JSC {
         void setRegisters(Register* r, Register* registerArray);
 
         bool symbolTableGet(const Identifier&, PropertySlot&);
+        bool symbolTableGet(const Identifier&, PropertyDescriptor&);
         bool symbolTableGet(const Identifier&, PropertySlot&, bool& slotIsWriteable);
         bool symbolTablePut(const Identifier&, JSValue);
         bool symbolTablePutWithAttributes(const Identifier&, JSValue, unsigned attributes);

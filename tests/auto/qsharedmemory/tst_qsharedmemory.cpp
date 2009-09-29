@@ -737,11 +737,12 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
 #endif
     QProcess producer;
     producer.setProcessChannelMode(QProcess::ForwardedChannels);
-    producer.start("./lackey/lackey", arguments);
+    producer.start( QFileInfo("./lackey/lackey.exe").absoluteFilePath(), arguments);
     producer.waitForStarted();
     QVERIFY(producer.error() != QProcess::FailedToStart);
 
     QList<QProcess*> consumers;
+    unsigned int failedProcesses = 0;
     for (int i = 0; i < processes; ++i) {
 #ifndef Q_OS_WINCE
         QStringList arguments = QStringList() << SRCDIR  "lackey/scripts/consumer.js";
@@ -750,8 +751,12 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
 #endif
         QProcess *p = new QProcess;
         p->setProcessChannelMode(QProcess::ForwardedChannels);
-        consumers.append(p);
         p->start("./lackey/lackey", arguments);
+
+        if (p->waitForStarted(2000))
+            consumers.append(p);
+        else
+            ++failedProcesses;
     }
 
     producer.waitForFinished(5000);
@@ -768,6 +773,7 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
         delete consumers.takeFirst();
     }
     QCOMPARE(consumerFailed, false);
+    QCOMPARE(failedProcesses, unsigned int (0));
 }
 
 QTEST_MAIN(tst_QSharedMemory)

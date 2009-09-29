@@ -67,7 +67,7 @@ static JSValue JSC_HOST_CALL arrayProtoFuncLastIndexOf(ExecState*, JSObject*, JS
 
 namespace JSC {
 
-static inline bool isNumericCompareFunction(CallType callType, const CallData& callData)
+static inline bool isNumericCompareFunction(ExecState* exec, CallType callType, const CallData& callData)
 {
     if (callType != CallTypeJS)
         return false;
@@ -75,10 +75,10 @@ static inline bool isNumericCompareFunction(CallType callType, const CallData& c
 #if ENABLE(JIT)
     // If the JIT is enabled then we need to preserve the invariant that every
     // function with a CodeBlock also has JIT code.
-    callData.js.functionBody->jitCode(callData.js.scopeChain);
-    CodeBlock& codeBlock = callData.js.functionBody->generatedBytecode();
+    callData.js.functionExecutable->jitCode(exec, callData.js.scopeChain);
+    CodeBlock& codeBlock = callData.js.functionExecutable->generatedBytecode();
 #else
-    CodeBlock& codeBlock = callData.js.functionBody->bytecode(callData.js.scopeChain);
+    CodeBlock& codeBlock = callData.js.functionExecutable->bytecode(exec, callData.js.scopeChain);
 #endif
 
     return codeBlock.isNumericCompareFunction();
@@ -125,6 +125,11 @@ bool ArrayPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& prope
     return getStaticFunctionSlot<JSArray>(exec, ExecState::arrayTable(exec), this, propertyName, slot);
 }
 
+bool ArrayPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSArray>(exec, ExecState::arrayTable(exec), this, propertyName, descriptor);
+}
+
 // ------------------------------ Array Functions ----------------------------
 
 // Helper function
@@ -144,7 +149,7 @@ static void putProperty(ExecState* exec, JSObject* obj, const Identifier& proper
 
 JSValue JSC_HOST_CALL arrayProtoFuncToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&JSArray::info))
+    if (!thisValue.inherits(&JSArray::info))
         return throwError(exec, TypeError);
     JSObject* thisObj = asArray(thisValue);
 
@@ -190,7 +195,7 @@ JSValue JSC_HOST_CALL arrayProtoFuncToString(ExecState* exec, JSObject*, JSValue
 
 JSValue JSC_HOST_CALL arrayProtoFuncToLocaleString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue.isObject(&JSArray::info))
+    if (!thisValue.inherits(&JSArray::info))
         return throwError(exec, TypeError);
     JSObject* thisObj = asArray(thisValue);
 
@@ -298,7 +303,7 @@ JSValue JSC_HOST_CALL arrayProtoFuncConcat(ExecState* exec, JSObject*, JSValue t
     ArgList::const_iterator it = args.begin();
     ArgList::const_iterator end = args.end();
     while (1) {
-        if (curArg.isObject(&JSArray::info)) {
+        if (curArg.inherits(&JSArray::info)) {
             unsigned length = curArg.get(exec, exec->propertyNames().length).toUInt32(exec);
             JSObject* curObject = curArg.toObject(exec);
             for (unsigned k = 0; k < length; ++k) {
@@ -456,7 +461,7 @@ JSValue JSC_HOST_CALL arrayProtoFuncSort(ExecState* exec, JSObject*, JSValue thi
     CallType callType = function.getCallData(callData);
 
     if (thisObj->classInfo() == &JSArray::info) {
-        if (isNumericCompareFunction(callType, callData))
+        if (isNumericCompareFunction(exec, callType, callData))
             asArray(thisObj)->sortNumeric(exec, function, callType, callData);
         else if (callType != CallTypeNone)
             asArray(thisObj)->sort(exec, function, callType, callData);

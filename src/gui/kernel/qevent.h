@@ -70,7 +70,7 @@ public:
     QInputEvent(Type type, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
     ~QInputEvent();
     inline Qt::KeyboardModifiers modifiers() const { return modState; }
-    inline void setModifiers(Qt::KeyboardModifiers modifiers) { modState = modifiers; }
+    inline void setModifiers(Qt::KeyboardModifiers amodifiers) { modState = amodifiers; }
 protected:
     Qt::KeyboardModifiers modState;
 };
@@ -805,10 +805,10 @@ public:
     inline const QList<QTouchEvent::TouchPoint> &touchPoints() const { return _touchPoints; }
 
     // internal
-    inline void setWidget(QWidget *widget) { _widget = widget; }
-    inline void setDeviceType(DeviceType deviceType) { _deviceType = deviceType; }
+    inline void setWidget(QWidget *awidget) { _widget = awidget; }
+    inline void setDeviceType(DeviceType adeviceType) { _deviceType = adeviceType; }
     inline void setTouchPointStates(Qt::TouchPointStates touchPointStates) { _touchPointStates = touchPointStates; }
-    inline void setTouchPoints(const QList<QTouchEvent::TouchPoint> &touchPoints) { _touchPoints = touchPoints; }
+    inline void setTouchPoints(const QList<QTouchEvent::TouchPoint> &atouchPoints) { _touchPoints = atouchPoints; }
 
 protected:
     QWidget *_widget;

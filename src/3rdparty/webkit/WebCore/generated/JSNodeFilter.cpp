@@ -164,7 +164,7 @@ JSNodeFilter::JSNodeFilter(PassRefPtr<Structure> structure, JSDOMGlobalObject* g
 
 JSNodeFilter::~JSNodeFilter()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSNodeFilter::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

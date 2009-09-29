@@ -286,16 +286,12 @@ JSValue JSC_HOST_CALL globalFuncEval(ExecState* exec, JSObject* function, JSValu
     if (JSValue parsedObject = preparser.tryLiteralParse())
         return parsedObject;
 
-    int errLine;
-    UString errMsg;
+    EvalExecutable eval(makeSource(s));
+    JSObject* error = eval.compile(exec, static_cast<JSGlobalObject*>(unwrappedObject)->globalScopeChain().node());
+    if (error)
+        return throwError(exec, error);
 
-    SourceCode source = makeSource(s);
-    RefPtr<EvalNode> evalNode = exec->globalData().parser->parse<EvalNode>(exec, exec->dynamicGlobalObject()->debugger(), source, &errLine, &errMsg);
-
-    if (!evalNode)
-        return throwError(exec, SyntaxError, errMsg, errLine, source.provider()->asID(), NULL);
-
-    return exec->interpreter()->execute(evalNode.get(), exec, thisObject, static_cast<JSGlobalObject*>(unwrappedObject)->globalScopeChain().node(), exec->exceptionSlot());
+    return exec->interpreter()->execute(&eval, exec, thisObject, static_cast<JSGlobalObject*>(unwrappedObject)->globalScopeChain().node(), exec->exceptionSlot());
 }
 
 JSValue JSC_HOST_CALL globalFuncParseInt(ExecState* exec, JSObject*, JSValue, const ArgList& args)
@@ -303,14 +299,18 @@ JSValue JSC_HOST_CALL globalFuncParseInt(ExecState* exec, JSObject*, JSValue, co
     JSValue value = args.at(0);
     int32_t radix = args.at(1).toInt32(exec);
 
-    if (value.isNumber() && (radix == 0 || radix == 10)) {
-        if (value.isInt32Fast())
-            return value;
-        double d = value.uncheckedGetNumber();
+    if (radix != 0 && radix != 10)
+        return jsNumber(exec, parseInt(value.toString(exec), radix));
+
+    if (value.isInt32())
+        return value;
+
+    if (value.isDouble()) {
+        double d = value.asDouble();
         if (isfinite(d))
             return jsNumber(exec, (d > 0) ? floor(d) : ceil(d));
         if (isnan(d) || isinf(d))
-            return jsNaN(&exec->globalData());
+            return jsNaN(exec);
         return jsNumber(exec, 0);
     }
 

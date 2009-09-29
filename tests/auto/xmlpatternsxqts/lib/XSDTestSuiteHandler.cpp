@@ -871,7 +871,7 @@ bool XSDTestSuiteHandler::startElement(const QString &namespaceURI,
     return true;
 }
 
-bool XSDTestSuiteHandler::endElement(const QString &namespaceURI,
+bool XSDTestSuiteHandler::endElement(const QString &/*namespaceURI*/,
                                       const QString &localName,
                                       const QString &/*qName*/)
 {

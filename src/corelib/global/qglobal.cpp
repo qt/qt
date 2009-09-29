@@ -1066,6 +1066,7 @@ bool qSharedBuild()
 
 /*!
     \fn QSysInfo::SymbianVersion QSysInfo::symbianVersion()
+    \since 4.6
 
     Returns the version of the Symbian operating system on which the
     application is run (Symbian only).
@@ -1073,6 +1074,7 @@ bool qSharedBuild()
 
 /*!
     \fn QSysInfo::S60Version QSysInfo::s60Version()
+    \since 4.6
 
     Returns the version of the S60 SDK system on which the
     application is run (S60 only).
@@ -1769,25 +1771,6 @@ static QSysInfo::S60Version cachedS60Version = QSysInfo::S60Version(-1);
 
 QSysInfo::S60Version QSysInfo::s60Version()
 {
-#  ifdef Q_CC_NOKIAX86
-    // For emulator builds. Emulators don't support the trick we use to figure
-    // out which SDK we are running under, so simply hardcode it there.
-#   if defined(__SERIES60_31__)
-    return SV_S60_3_1;
-
-#   elif defined(__S60_32__)
-    return SV_S60_3_2;
-
-#   elif defined(__S60_50__)
-    return SV_S60_5_0;
-
-#   else
-    return SV_S60_Unknown;
-
-#   endif
-
-#  else
-    // For hardware builds.
     if (cachedS60Version != -1)
         return cachedS60Version;
 
@@ -1818,6 +1801,19 @@ QSysInfo::S60Version QSysInfo::s60Version()
         delete contents;
     }
 
+#  ifdef Q_CC_NOKIAX86
+    // Some emulator environments may not contain the version specific .sis files, so
+    // simply hardcode the version on those environments.
+#   if defined(__SERIES60_31__)
+    return cachedS60Version = SV_S60_3_1;
+#   elif defined(__S60_32__)
+    return cachedS60Version = SV_S60_3_2;
+#   elif defined(__S60_50__)
+    return cachedS60Version = SV_S60_5_0;
+#   else
+    return cachedS60Version = SV_S60_Unknown;
+#   endif
+#  else
     return cachedS60Version = SV_S60_Unknown;
 #  endif
 }
@@ -2678,6 +2674,8 @@ int qrand()
     \reentrant
     \since 4.6
 
+    \brief The qtTrId function finds and returns a translated string.
+
     Returns a translated string identified by \a id.
     If no matching string is found, the id itself is returned. This
     should not happen under normal conditions.
@@ -2715,7 +2713,8 @@ int qrand()
     \relates <QtGlobal>
     \since 4.6
 
-    Marks \a id for dynamic translation.
+    \brief The QT_TRID_NOOP macro marks an id for dynamic translation.
+
     The only purpose of this macro is to provide an anchor for attaching
     meta data like to qtTrId().
 

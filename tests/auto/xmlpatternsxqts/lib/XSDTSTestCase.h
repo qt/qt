@@ -115,7 +115,7 @@ namespace QPatternistSDK
         void setName(const QString &name);
         void setSchemaUri(const QUrl &uri);
         void setInstanceUri(const QUrl &uri);
-        void setTestCasePath(const QUrl &uri) {}
+        void setTestCasePath(const QUrl & /* uri */) {}
         void setContextItemSource(const QUrl &uri);
         void addBaseLine(TestBaseLine *lines);
 

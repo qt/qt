@@ -3063,14 +3063,14 @@ QRect QGtkStyle::subControlRect(ComplexControl control, const QStyleOptionComple
             if (!arrowWidget)
                 return QCleanlooksStyle::subControlRect(control, option, subControl, widget);
 
-            QRect buttonRect(arrowWidget->allocation.x, arrowWidget->allocation.y,
+            QRect buttonRect(option->rect.left() + arrowWidget->allocation.x,
+                             option->rect.top() + arrowWidget->allocation.y,
                              arrowWidget->allocation.width, arrowWidget->allocation.height);
 
             switch (subControl) {
 
             case SC_ComboBoxArrow: // Note: this indicates the arrowbutton for editable combos
                 rect = buttonRect;
-
                 break;
 
             case SC_ComboBoxEditField: {

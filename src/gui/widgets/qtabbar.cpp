@@ -1100,7 +1100,7 @@ QVariant QTabBar::tabData(int index) const
 }
 
 /*!
-    Returns the visual rectangle of the of the tab at position \a
+    Returns the visual rectangle of the tab at position \a
     index, or a null rectangle if \a index is out of range.
 */
 QRect QTabBar::tabRect(int index) const

@@ -68,7 +68,7 @@ public:
     GlobalObject();
     virtual ~GlobalObject();
     virtual JSC::UString className() const { return "global"; }
-    virtual void mark();
+    virtual void markChildren(JSC::MarkStack&);
     virtual bool getOwnPropertySlot(JSC::ExecState*,
                                     const JSC::Identifier& propertyName,
                                     JSC::PropertySlot&);
@@ -81,10 +81,10 @@ public:
                                 bool checkDontDelete = true);
     virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
                                        unsigned&) const;
-    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&,
-                                  unsigned listedAttributes = JSC::Structure::Prototype);
-    virtual void defineGetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction);
-    virtual void defineSetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* setterFunction);
+    virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&,
+                                     bool includeNonEnumerable = false);
+    virtual void defineGetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction, unsigned attributes = 0);
+    virtual void defineSetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* setterFunction, unsigned attributes = 0);
     virtual JSC::JSValue lookupGetter(JSC::ExecState*, const JSC::Identifier& propertyName);
     virtual JSC::JSValue lookupSetter(JSC::ExecState*, const JSC::Identifier& propertyName);
 
@@ -103,12 +103,10 @@ public:
     {}
     virtual JSC::UString className() const
     { return originalGlobalObject->className(); }
-    virtual void mark()
+    virtual void markChildren(JSC::MarkStack& markStack)
     {
-        Q_ASSERT(!marked());
-        if (!originalGlobalObject->marked())
-            originalGlobalObject->JSC::JSGlobalObject::mark();
-        JSC::JSObject::mark();
+        markStack.append(originalGlobalObject);
+        JSC::JSObject::markChildren(markStack);
     }
     virtual bool getOwnPropertySlot(JSC::ExecState* exec,
                                     const JSC::Identifier& propertyName,
@@ -125,13 +123,12 @@ public:
     virtual bool getPropertyAttributes(JSC::ExecState* exec, const JSC::Identifier& propertyName,
                                        unsigned& attributes) const
     { return originalGlobalObject->JSC::JSGlobalObject::getPropertyAttributes(exec, propertyName, attributes); }
-    virtual void getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames,
-                                  unsigned listedAttributes = JSC::Structure::Prototype)
-    { originalGlobalObject->JSC::JSGlobalObject::getPropertyNames(exec, propertyNames, listedAttributes); }
-    virtual void defineGetter(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction)
-    { originalGlobalObject->JSC::JSGlobalObject::defineGetter(exec, propertyName, getterFunction); }
-    virtual void defineSetter(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::JSObject* setterFunction)
-    { originalGlobalObject->JSC::JSGlobalObject::defineSetter(exec, propertyName, setterFunction); }
+    virtual void getOwnPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames, bool includeNonEnumerable = false)
+    { originalGlobalObject->JSC::JSGlobalObject::getOwnPropertyNames(exec, propertyNames, includeNonEnumerable); }
+    virtual void defineGetter(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction, unsigned attributes)
+    { originalGlobalObject->JSC::JSGlobalObject::defineGetter(exec, propertyName, getterFunction, attributes); }
+    virtual void defineSetter(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::JSObject* setterFunction, unsigned attributes)
+    { originalGlobalObject->JSC::JSGlobalObject::defineSetter(exec, propertyName, setterFunction, attributes); }
     virtual JSC::JSValue lookupGetter(JSC::ExecState* exec, const JSC::Identifier& propertyName)
     { return originalGlobalObject->JSC::JSGlobalObject::lookupGetter(exec, propertyName); }
     virtual JSC::JSValue lookupSetter(JSC::ExecState* exec, const JSC::Identifier& propertyName)

@@ -259,6 +259,8 @@ public:
 #endif
 
     QVNCScreen *q_ptr;
+
+    bool noDisablePainting;
 };
 
 class QRfbEncoder

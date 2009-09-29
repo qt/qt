@@ -143,7 +143,7 @@ JSHTMLCollection::JSHTMLCollection(PassRefPtr<Structure> structure, JSDOMGlobalO
 
 JSHTMLCollection::~JSHTMLCollection()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSHTMLCollection::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

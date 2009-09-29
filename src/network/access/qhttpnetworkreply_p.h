@@ -213,6 +213,7 @@ public:
     QByteArray fragment; // used for header, status, chunk header etc, not for reply data
     bool chunkedTransferEncoding;
     bool connectionCloseEnabled;
+    bool forceConnectionCloseEnabled;
     qint64 currentChunkSize;
     qint64 currentChunkRead;
     QPointer<QHttpNetworkConnection> connection;

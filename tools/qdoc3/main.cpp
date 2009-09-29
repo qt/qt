@@ -336,7 +336,6 @@ static void processQdocconfFile(const QString &fileName)
     /*
       Generate the XML tag file, if it was requested.
      */
-
     QString tagFile = config.getString(CONFIG_TAGFILE);
     if (!tagFile.isEmpty())
         tree->generateTagFile(tagFile);

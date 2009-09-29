@@ -39,11 +39,12 @@
 
 namespace JSC {
 
-    class MarkedArgumentBuffer;
     class CollectorBlock;
     class JSCell;
     class JSGlobalData;
     class JSValue;
+    class MarkedArgumentBuffer;
+    class MarkStack;
 
     enum OperationInProgress { NoOperation, Allocation, Collection };
     enum HeapType { PrimaryHeap, NumberHeap };
@@ -100,6 +101,7 @@ namespace JSC {
         void unprotect(JSValue);
 
         static Heap* heap(JSValue); // 0 for immediate values
+        static Heap* heap(JSCell*);
 
         size_t globalObjectCount();
         size_t protectedObjectCount();
@@ -111,7 +113,7 @@ namespace JSC {
         static bool isCellMarked(const JSCell*);
         static void markCell(JSCell*);
 
-        void markConservatively(void* start, void* end);
+        void markConservatively(MarkStack&, void* start, void* end);
 
         HashSet<MarkedArgumentBuffer*>& markListSet() { if (!m_markListSet) m_markListSet = new HashSet<MarkedArgumentBuffer*>; return *m_markListSet; }
 
@@ -132,12 +134,17 @@ namespace JSC {
         Heap(JSGlobalData*);
         ~Heap();
 
+        template <HeapType heapType> NEVER_INLINE CollectorBlock* allocateBlock();
+        template <HeapType heapType> NEVER_INLINE void freeBlock(size_t);
+        NEVER_INLINE void freeBlock(CollectorBlock*);
+        void freeBlocks(CollectorHeap*);
+
         void recordExtraCost(size_t);
-        void markProtectedObjects();
-        void markCurrentThreadConservatively();
-        void markCurrentThreadConservativelyInternal();
-        void markOtherThreadConservatively(Thread*);
-        void markStackObjectsConservatively();
+        void markProtectedObjects(MarkStack&);
+        void markCurrentThreadConservatively(MarkStack&);
+        void markCurrentThreadConservativelyInternal(MarkStack&);
+        void markOtherThreadConservatively(MarkStack&, Thread*);
+        void markStackObjectsConservatively(MarkStack&);
 
         typedef HashCountedSet<JSCell*> ProtectCountSet;
 
@@ -167,9 +174,18 @@ namespace JSC {
     template<size_t bytesPerWord> struct CellSize;
 
     // cell size needs to be a power of two for certain optimizations in collector.cpp
-    template<> struct CellSize<sizeof(uint32_t)> { static const size_t m_value = 32; }; // 32-bit
-    template<> struct CellSize<sizeof(uint64_t)> { static const size_t m_value = 64; }; // 64-bit
-    const size_t BLOCK_SIZE = 16 * 4096; // 64k
+#if USE(JSVALUE32)
+    template<> struct CellSize<sizeof(uint32_t)> { static const size_t m_value = 32; };
+#else
+    template<> struct CellSize<sizeof(uint32_t)> { static const size_t m_value = 64; };
+#endif
+    template<> struct CellSize<sizeof(uint64_t)> { static const size_t m_value = 64; };
+
+#if PLATFORM(WINCE)
+    const size_t BLOCK_SIZE = 64 * 1024; // 64k
+#else
+    const size_t BLOCK_SIZE = 64 * 4096; // 256k
+#endif
 
     // derived constants
     const size_t BLOCK_OFFSET_MASK = BLOCK_SIZE - 1;

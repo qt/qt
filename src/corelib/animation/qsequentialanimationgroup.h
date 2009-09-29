@@ -77,7 +77,7 @@ protected:
     QSequentialAnimationGroup(QSequentialAnimationGroupPrivate &dd, QObject *parent);
     bool event(QEvent *event);
 
-    void updateCurrentTime(int msecs);
+    void updateCurrentTime(int);
     void updateState(QAbstractAnimation::State oldState, QAbstractAnimation::State newState);
     void updateDirection(QAbstractAnimation::Direction direction);
 
