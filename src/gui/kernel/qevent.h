@@ -807,7 +807,7 @@ public:
     // internal
     inline void setWidget(QWidget *awidget) { _widget = awidget; }
     inline void setDeviceType(DeviceType adeviceType) { _deviceType = adeviceType; }
-    inline void setTouchPointStates(Qt::TouchPointStates touchPointStates) { _touchPointStates = touchPointStates; }
+    inline void setTouchPointStates(Qt::TouchPointStates aTouchPointStates) { _touchPointStates = aTouchPointStates; }
     inline void setTouchPoints(const QList<QTouchEvent::TouchPoint> &atouchPoints) { _touchPoints = atouchPoints; }
 
 protected:

@@ -1587,6 +1587,18 @@ QStateMachine::~QStateMachine()
 {
 }
 
+/*!
+  \enum QStateMachine::EventPriority
+
+  This enum type specifies the priority of an event posted to the state
+  machine using postEvent().
+
+  Events of high priority are processed before events of normal priority.
+
+  \value NormalPriority The event has normal priority.
+  \value HighPriority The event has high priority.
+*/
+
 /*! \enum QStateMachine::Error 
 
     This enum type defines errors that can occur in the state machine at run time. When the state
@@ -1798,47 +1810,99 @@ void QStateMachine::stop()
 }
 
 /*!
-  Posts the given \a event for processing by this state machine, with a delay
-  of \a delay milliseconds.
+  Posts the given \a event of the given \a priority for processing by this
+  state machine.
 
   This function returns immediately. The event is added to the state machine's
   event queue. Events are processed in the order posted. The state machine
   takes ownership of the event and deletes it once it has been processed.
 
   You can only post events when the state machine is running.
+
+  \sa postDelayedEvent()
 */
-void QStateMachine::postEvent(QEvent *event, int delay)
+void QStateMachine::postEvent(QEvent *event, EventPriority priority)
 {
     Q_D(QStateMachine);
     if (d->state != QStateMachinePrivate::Running) {
         qWarning("QStateMachine::postEvent: cannot post event when the state machine is not running");
         return;
     }
-#ifdef QSTATEMACHINE_DEBUG
-    qDebug() << this << ": posting external event" << event << "with delay" << delay;
-#endif
-    if (delay) {
-        int tid = startTimer(delay);
-        d->delayedEvents[tid] = event;
-    } else {
-        d->externalEventQueue.append(event);
-        d->processEvents(QStateMachinePrivate::QueuedProcessing);
+    if (!event) {
+        qWarning("QStateMachine::postEvent: cannot post null event");
+        return;
     }
+#ifdef QSTATEMACHINE_DEBUG
+    qDebug() << this << ": posting event" << event;
+#endif
+    switch (priority) {
+    case NormalPriority:
+        d->externalEventQueue.append(event);
+        break;
+    case HighPriority:
+        d->internalEventQueue.append(event);
+        break;
+    }
+    d->processEvents(QStateMachinePrivate::QueuedProcessing);
 }
 
 /*!
-  \internal
+  Posts the given \a event for processing by this state machine, with the
+  given \a delay in milliseconds. Returns an identifier associated with the
+  delayed event, or -1 if the event could not be posted.
 
-  Posts the given internal \a event for processing by this state machine.
+  This function returns immediately. When the delay has expired, the event
+  will be added to the state machine's event queue for processing. The state
+  machine takes ownership of the event and deletes it once it has been
+  processed.
+
+  You can only post events when the state machine is running.
+
+  \sa cancelDelayedEvent(), postEvent()
 */
-void QStateMachine::postInternalEvent(QEvent *event)
+int QStateMachine::postDelayedEvent(QEvent *event, int delay)
 {
     Q_D(QStateMachine);
+    if (d->state != QStateMachinePrivate::Running) {
+        qWarning("QStateMachine::postDelayedEvent: cannot post event when the state machine is not running");
+        return -1;
+    }
+    if (!event) {
+        qWarning("QStateMachine::postDelayedEvent: cannot post null event");
+        return -1;
+    }
+    if (delay < 0) {
+        qWarning("QStateMachine::postDelayedEvent: delay cannot be negative");
+        return -1;
+    }
 #ifdef QSTATEMACHINE_DEBUG
-    qDebug() << this << ": posting internal event" << event;
+    qDebug() << this << ": posting event" << event << "with delay" << delay;
 #endif
-    d->internalEventQueue.append(event);
-    d->processEvents(QStateMachinePrivate::QueuedProcessing);
+    int tid = startTimer(delay);
+    d->delayedEvents[tid] = event;
+    return tid;
+}
+
+/*!
+  Cancels the delayed event identified by the given \a id. The id should be a
+  value returned by a call to postDelayedEvent(). Returns true if the event
+  was successfully cancelled, otherwise returns false.
+
+  \sa postDelayedEvent()
+*/
+bool QStateMachine::cancelDelayedEvent(int id)
+{
+    Q_D(QStateMachine);
+    if (d->state != QStateMachinePrivate::Running) {
+        qWarning("QStateMachine::cancelDelayedEvent: the machine is not running");
+        return false;
+    }
+    QEvent *e = d->delayedEvents.take(id);
+    if (!e)
+        return false;
+    killTimer(id);
+    delete e;
+    return true;
 }
 
 /*!
@@ -1882,9 +1946,9 @@ bool QStateMachine::event(QEvent *e)
     if (e->type() == QEvent::Timer) {
         QTimerEvent *te = static_cast<QTimerEvent*>(e);
         int tid = te->timerId();
-        if (d->delayedEvents.contains(tid)) {
+        QEvent *ee = d->delayedEvents.take(tid);
+        if (ee != 0) {
             killTimer(tid);
-            QEvent *ee = d->delayedEvents.take(tid);
             d->externalEventQueue.append(ee);
             d->processEvents(QStateMachinePrivate::DirectProcessing);
             return true;

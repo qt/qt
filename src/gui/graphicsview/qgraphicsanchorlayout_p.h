@@ -343,7 +343,7 @@ public:
 
   QGraphicsAnchorLayout private methods and attributes.
 */
-class QGraphicsAnchorLayoutPrivate : public QGraphicsLayoutPrivate
+class Q_AUTOTEST_EXPORT QGraphicsAnchorLayoutPrivate : public QGraphicsLayoutPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsAnchorLayout)
 
@@ -369,6 +369,11 @@ public:
     };
 
     QGraphicsAnchorLayoutPrivate();
+
+    static QGraphicsAnchorLayoutPrivate *get(QGraphicsAnchorLayout *q)
+    {
+        return q ? q->d_func() : 0;
+    }
 
     static Qt::AnchorPoint oppositeEdge(
         Qt::AnchorPoint edge);

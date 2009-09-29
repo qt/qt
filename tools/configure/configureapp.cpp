@@ -2025,9 +2025,9 @@ bool Configure::checkAvailability(const QString &part)
             if (!findFile("msdmo.lib")) cout << "msdmo.lib not found" << endl;
             if (!findFile("d3d9.h")) cout << "d3d9.h not found" << endl;
         }
-    } else if (part == "MULTIMEDIA") {
+    } else if (part == "MULTIMEDIA" || part == "SCRIPT" || part == "SCRIPTTOOLS") {
         available = true;
-    } else if (part == "WEBKIT" || part == "SCRIPT" || part == "SCRIPTTOOLS") {
+    } else if (part == "WEBKIT") {
         available = (dictionary.value("QMAKESPEC") == "win32-msvc2005") || (dictionary.value("QMAKESPEC") == "win32-msvc2008") || (dictionary.value("QMAKESPEC") == "win32-g++");
     }
 
