@@ -304,69 +304,69 @@ bool QAudioOutputPrivate::open()
     err = snd_pcm_hw_params_any( handle, hwparams );
     if ( err < 0 ) {
         fatal = true;
-        errMessage = QString(tr("QAudioOutput: snd_pcm_hw_params_any: err = %1")).arg(err);
+        errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params_any: err = %1").arg(err);
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params_set_rate_resample( handle, hwparams, 1 );
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioOutput: snd_pcm_hw_params_set_rate_resample: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params_set_rate_resample: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params_set_access( handle, hwparams, access );
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioOutput: snd_pcm_hw_params_set_access: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params_set_access: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = setFormat();
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioOutput: snd_pcm_hw_params_set_format: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params_set_format: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params_set_channels( handle, hwparams, (unsigned int)settings.channels() );
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioOutput: snd_pcm_hw_params_set_channels: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params_set_channels: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params_set_rate_near( handle, hwparams, &freakuency, 0 );
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioOutput: snd_pcm_hw_params_set_rate_near: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params_set_rate_near: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params_set_buffer_time_near(handle, hwparams, &buffer_time, &dir);
         if ( err < 0 ) {
             fatal = true;
-                errMessage = QString(tr("QAudioOutput: snd_pcm_hw_params_set_buffer_time_near: err = %1")).arg(err);
+                errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params_set_buffer_time_near: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params_set_period_time_near(handle, hwparams, &period_time, &dir);
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioOutput: snd_pcm_hw_params_set_period_time_near: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params_set_period_time_near: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params_set_periods_near(handle, hwparams, &chunks, &dir);
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioOutput: snd_pcm_hw_params_set_periods_near: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params_set_periods_near: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params(handle, hwparams);
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioOutput: snd_pcm_hw_params: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params: err = %1").arg(err);
         }
     }
     if( err < 0) {
