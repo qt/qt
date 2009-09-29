@@ -184,14 +184,6 @@ EnginePane::EnginePane(QmlDebugConnection *client, QWidget *parent)
 
     layout->addWidget(m_engineView);
 
-
-    m_text = new QLineEdit(this);
-    layout->addWidget(m_text);
-
-    QPushButton *query = new QPushButton("Fetch object", this);
-    QObject::connect(query, SIGNAL(clicked()), this, SLOT(fetchClicked()));
-    layout->addWidget(query);
-
     QSplitter *splitter = new QSplitter;
 
     m_objTree = new QmlObjectTree(this);
@@ -455,12 +447,6 @@ void EnginePane::enginesChanged()
                                                 engines.at(ii).debugId());
 
     m_engineView->rootContext()->setContextProperty("engines", qVariantFromValue(&m_engineItems));
-}
-
-void EnginePane::fetchClicked()
-{
-    int id = m_text->text().toInt();
-    fetchObject(id);
 }
 
 void EnginePane::fetchObject(int id)
