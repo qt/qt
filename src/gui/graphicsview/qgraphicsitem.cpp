@@ -3121,6 +3121,9 @@ QPointF QGraphicsItem::pos() const
 */
 void QGraphicsItem::setX(qreal x)
 {
+    if (d_ptr->inDestructor)
+        return;
+
     d_ptr->setPosHelper(QPointF(x, d_ptr->pos.y()));
 }
 
@@ -3142,6 +3145,9 @@ void QGraphicsItem::setX(qreal x)
 */
 void QGraphicsItem::setY(qreal y)
 {
+    if (d_ptr->inDestructor)
+        return;
+
     d_ptr->setPosHelper(QPointF(d_ptr->pos.x(), y));
 }
 
@@ -3164,6 +3170,7 @@ QPointF QGraphicsItem::scenePos() const
 void QGraphicsItemPrivate::setPosHelper(const QPointF &pos)
 {
     Q_Q(QGraphicsItem);
+
     inSetPosHelper = 1;
     updateCachedClipPathFromSetPosHelper(pos);
     if (scene)
@@ -3205,6 +3212,9 @@ void QGraphicsItemPrivate::setTransformHelper(const QTransform &transform)
 void QGraphicsItem::setPos(const QPointF &pos)
 {
     if (d_ptr->pos == pos)
+        return;
+
+    if (d_ptr->inDestructor)
         return;
 
     // Update and repositition.
