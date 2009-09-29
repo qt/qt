@@ -1630,7 +1630,9 @@ void tst_QListView::task254449_draggingItemToNegativeCoordinates()
     } delegate;
     list.setItemDelegate(&delegate);
 
-    QTest::qWait(200); //makes sure the layout is done
+    delegate.numPaints = 0;
+    QTest::qWaitForWindowShown(&list); //makes sure the layout is done
+    QTRY_VERIFY(delegate.numPaints > 0);
 
     const QPoint topLeft(-6, 0);
     list.setPositionForIndex(topLeft, index);
