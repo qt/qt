@@ -51,6 +51,10 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
+QT_BEGIN_NAMESPACE
+extern bool qt_script_isJITEnabled();
+QT_END_NAMESPACE
+
 class tst_QScriptValue : public QObject
 {
     Q_OBJECT
@@ -2886,7 +2890,8 @@ void tst_QScriptValue::equals()
     {
         QScriptValue ret = compareFun.call(QScriptValue(), QScriptValueList() << qobj1 << qobj2);
         QVERIFY(ret.isBool());
-        QEXPECT_FAIL("", "In JSC back-end, == on QObject wrappers doesn't work", Continue);
+        if (QT_PREPEND_NAMESPACE(qt_script_isJITEnabled()))
+            QEXPECT_FAIL("", "With JIT enabled, == on QObject wrappers doesn't work", Continue);
         QVERIFY(ret.toBool());
         ret = compareFun.call(QScriptValue(), QScriptValueList() << qobj1 << qobj3);
         QVERIFY(ret.isBool());
@@ -2906,7 +2911,8 @@ void tst_QScriptValue::equals()
         {
             QScriptValue ret = compareFun.call(QScriptValue(), QScriptValueList() << var1 << var2);
             QVERIFY(ret.isBool());
-            QEXPECT_FAIL("", "In JSC back-end, == on QVariant wrappers doesn't work", Continue);
+            if (QT_PREPEND_NAMESPACE(qt_script_isJITEnabled()))
+                QEXPECT_FAIL("", "With JIT enabled, == on QVariant wrappers doesn't work", Continue);
             QVERIFY(ret.toBool());
         }
     }
