@@ -57,6 +57,7 @@ FluidLauncher::FluidLauncher(QStringList* args)
     addWidget(pictureFlowWidget);
     addWidget(slideShowWidget);
     setCurrentWidget(pictureFlowWidget);
+    pictureFlowWidget->setFocus();
 
     QRect screen_size = QApplication::desktop()->screenGeometry();
 
