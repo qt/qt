@@ -1,4 +1,4 @@
-include(../src/src.pri)
+#include(../src/src.pri)
 
 QT = core script network
 
