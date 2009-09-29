@@ -1841,6 +1841,11 @@ void QGraphicsAnchorLayoutPrivate::findPaths(Orientation orientation)
             queue.enqueue(qMakePair(pair.second, v));
         }
     }
+
+    // We will walk through every reachable items (non-float) and mark them
+    // by keeping their references on m_nonFloatItems. With this we can easily
+    // identify non-float and float items.
+    identifyNonFloatItems(visited, orientation);
 }
 
 /*!
@@ -1996,6 +2001,46 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
     }
 
     return result;
+}
+
+/*!
+ \internal
+
+  Use all visited Anchors on findPaths() so we can identify non-float Items.
+*/
+void QGraphicsAnchorLayoutPrivate::identifyNonFloatItems(QSet<AnchorData *> visited, Orientation orientation)
+{
+    m_nonFloatItems[orientation].clear();
+
+    foreach (const AnchorData *ad, visited)
+        identifyNonFloatItems_helper(ad, orientation);
+}
+
+/*!
+ \internal
+
+  Given an anchor, if it is an internal anchor and Normal we must mark it's item as non-float.
+  If the anchor is Sequential or Parallel, we must iterate on its children recursively until we reach
+  internal anchors (items).
+*/
+void QGraphicsAnchorLayoutPrivate::identifyNonFloatItems_helper(const AnchorData *ad, Orientation orientation)
+{
+    Q_Q(QGraphicsAnchorLayout);
+
+    switch(ad->type) {
+    case AnchorData::Normal:
+        if (ad->from->m_item == ad->to->m_item && ad->to->m_item != q)
+            m_nonFloatItems[orientation].insert(ad->to->m_item);
+        break;
+    case AnchorData::Sequential:
+        foreach (const AnchorData *d, static_cast<const SequentialAnchorData *>(ad)->m_edges)
+            identifyNonFloatItems_helper(d, orientation);
+        break;
+    case AnchorData::Parallel:
+        identifyNonFloatItems_helper(static_cast<const ParallelAnchorData *>(ad)->firstEdge, orientation);
+        identifyNonFloatItems_helper(static_cast<const ParallelAnchorData *>(ad)->secondEdge, orientation);
+        break;
+    }
 }
 
 /*!
@@ -2491,7 +2536,11 @@ bool QGraphicsAnchorLayoutPrivate::hasConflicts() const
 {
     QGraphicsAnchorLayoutPrivate *that = const_cast<QGraphicsAnchorLayoutPrivate*>(this);
     that->calculateGraphs();
-    return graphHasConflicts[0] || graphHasConflicts[1];
+
+    bool floatConflict = (m_nonFloatItems[0].size() < items.size())
+                         || (m_nonFloatItems[1].size() < items.size());
+
+    return graphHasConflicts[0] || graphHasConflicts[1] || floatConflict;
 }
 
 #ifdef QT_DEBUG
