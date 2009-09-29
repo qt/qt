@@ -588,6 +588,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 bind->m_mePtr = &bindValues.values[bindValues.count - 1];
                 bind->setTarget(mp);
                 bind->addToObject(target);
+                bind->setSourceLocation(comp->url, instr.line);
             }
             break;
 
