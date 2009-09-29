@@ -960,7 +960,18 @@ struct QMacAppleEventTypeSpec {
     { kCoreEventClass, kAEQuitApplication },
     { kCoreEventClass, kAEOpenDocuments }
 };
+
 #ifndef QT_MAC_USE_COCOA
+
+#if (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5)
+enum
+{
+    kEventMouseScroll                          = 11,
+    kEventParamMouseWheelSmoothVerticalDelta   = 'saxy',
+    kEventParamMouseWheelSmoothHorizontalDelta = 'saxx',
+};
+#endif
+
 /* watched events */
 static EventTypeSpec app_events[] = {
     { kEventClassQt, kEventQtRequestWindowChange },
