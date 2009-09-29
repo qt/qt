@@ -2001,6 +2001,10 @@ void tst_QSqlDatabase::odbc_bindBoolean()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
+    if (tst_Databases::isMySQL(db)) {
+        QSKIP("MySql has inconsistent behaviour of bit field type across versions.", SkipSingle);
+        return;
+    }
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("CREATE TABLE " + qTableName("qtestBindBool") + "(id int, boolvalue bit)"));
 
