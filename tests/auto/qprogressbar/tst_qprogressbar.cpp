@@ -175,7 +175,7 @@ void tst_QProgressBar::format()
     bar.repainted = false;
     bar.setFormat("%v of %m (%p%)");
     QTest::qWait(20);
-    QVERIFY(bar.repainted);
+    QTRY_VERIFY(bar.repainted);
     bar.repainted = false;
     bar.setFormat("%v of %m (%p%)");
     qApp->processEvents();
