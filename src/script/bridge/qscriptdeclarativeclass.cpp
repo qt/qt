@@ -70,8 +70,8 @@ void QScriptDeclarativeClass::initPersistentIdentifier(void **d, Identifier *i, 
         static_cast<QScriptEnginePrivate *>(QObjectPrivate::get(d_ptr->engine)); 
     JSC::ExecState* exec = p->currentFrame;
 
-    new (*d) JSC::Identifier(exec, (UChar *)str.constData(), str.size());
-    *i = (Identifier)((JSC::Identifier *)*d)->ustring().rep();
+    new (d) JSC::Identifier(exec, (UChar *)str.constData(), str.size());
+    *i = (Identifier)((JSC::Identifier *)d)->ustring().rep();
 }
 
 void QScriptDeclarativeClass::initPersistentIdentifier(void **d, Identifier *i, const Identifier &id)
@@ -80,7 +80,7 @@ void QScriptDeclarativeClass::initPersistentIdentifier(void **d, Identifier *i, 
         static_cast<QScriptEnginePrivate *>(QObjectPrivate::get(d_ptr->engine)); 
     JSC::ExecState* exec = p->currentFrame;
 
-    new (*d) JSC::Identifier(exec, (JSC::UString::Rep *)id);
+    new (d) JSC::Identifier(exec, (JSC::UString::Rep *)id);
     *i = id;
 }
 
