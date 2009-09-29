@@ -86,6 +86,9 @@ public:
     virtual void setFileSource(const Phonon::MediaSource&, RFile&) = 0;
     virtual void setNextSource(const Phonon::MediaSource &) = 0;
 
+    // VolumeObserver
+    virtual void volumeChanged(qreal volume);
+    
     void setVideoOutput(VideoOutput* videoOutput);
 
 Q_SIGNALS:
@@ -105,7 +108,9 @@ private:
 protected:
     // Not owned
     VideoOutput*                m_videoOutput;
-
+    
+    qreal						m_volume;
+    
 private:
     qint32                      m_tickInterval;
     qint32                      m_transitionTime;
