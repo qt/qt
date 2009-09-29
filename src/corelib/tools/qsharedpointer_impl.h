@@ -478,7 +478,7 @@ public:
     { BaseClass::internalSet(other.d, other.value); return *this; }
 
     inline void swap(QSharedPointer &other)
-    { internalSwap(other); }
+    { QSharedPointer<T>::internalSwap(other); }
 
     template <class X>
     QSharedPointer<X> staticCast() const

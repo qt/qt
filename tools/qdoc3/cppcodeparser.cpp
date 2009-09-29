@@ -47,6 +47,7 @@
 #include <qfile.h>
 
 #include <stdio.h>
+#include <errno.h>
 
 #include "codechunk.h"
 #include "config.h"
@@ -281,7 +282,7 @@ void CppCodeParser::parseSourceFile(const Location& location,
 {
     FILE *in = fopen(QFile::encodeName(filePath), "r");
     if (!in) {
-        location.error(tr("Cannot open C++ source file '%1'").arg(filePath));
+        location.error(tr("Cannot open C++ source file '%1' (%2)").arg(filePath).arg(strerror(errno)));
         return;
     }
 

@@ -295,7 +295,7 @@ void QInputContext::sendEvent(const QInputMethodEvent &event)
     The \a event parameter is the event that was sent to the editor
     widget. The event type is QEvent::MouseButtonPress,
     QEvent::MouseButtonRelease, QEvent::MouseButtonDblClick or
-    QEvent::MouseButtonMove. The event's button and state indicate
+    QEvent::MouseMove. The event's button and state indicate
     the kind of operation that was performed.
 */
 void QInputContext::mouseHandler(int /*x*/, QMouseEvent *event)
@@ -469,6 +469,8 @@ bool QInputContext::x11FilterEvent(QWidget * /*keywidget*/, XEvent * /*event*/)
 
 #ifdef Q_WS_S60
 /*!
+    \since 4.6
+
     This function may be overridden only if input method is depending
     on Symbian and you need raw TWsEvent. Otherwise, this function must not.
 

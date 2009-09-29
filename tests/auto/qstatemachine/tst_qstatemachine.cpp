@@ -176,6 +176,7 @@ private slots:
     void twoAnimatedTransitions();
     void playAnimationTwice();
     void nestedTargetStateForAnimation();
+    void polishedSignalTransitionsReuseAnimationGroup();
     void animatedGlobalRestoreProperty();
     void specificTargetValueOfAnimation();
 
@@ -1742,11 +1743,18 @@ class TestSignalTransition : public QSignalTransition
 {
 public:
     TestSignalTransition(QState *sourceState = 0)
-        : QSignalTransition(sourceState) {}
+        : QSignalTransition(sourceState), m_sender(0)
+    {}
     TestSignalTransition(QObject *sender, const char *signal,
                          QAbstractState *target)
-        : QSignalTransition(sender, signal)
+        : QSignalTransition(sender, signal), m_sender(0)
     { setTargetState(target); }
+    QObject *senderReceived() const {
+        return m_sender;
+    }
+    int signalIndexReceived() const {
+        return m_signalIndex;
+    }
     QVariantList argumentsReceived() const {
         return m_args;
     }
@@ -1754,11 +1762,15 @@ protected:
     bool eventTest(QEvent *e) {
         if (!QSignalTransition::eventTest(e))
             return false;
-        QSignalEvent *se = static_cast<QSignalEvent*>(e);
-        const_cast<TestSignalTransition*>(this)->m_args = se->arguments();
+        QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(e);
+        m_sender = se->sender();
+        m_signalIndex = se->signalIndex();
+        m_args = se->arguments();
         return true;
     }
 private:
+    QObject *m_sender;
+    int m_signalIndex;
     QVariantList m_args;
 };
 
@@ -1870,6 +1882,8 @@ void tst_QStateMachine::signalTransitions()
         emitter.emitSignalWithIntArg(123);
 
         QTRY_COMPARE(finishedSpy.count(), 1);
+        QCOMPARE(trans->senderReceived(), (QObject*)&emitter);
+        QCOMPARE(trans->signalIndexReceived(), emitter.metaObject()->indexOfSignal("signalWithIntArg(int)"));
         QCOMPARE(trans->argumentsReceived().size(), 1);
         QCOMPARE(trans->argumentsReceived().at(0).toInt(), 123);
     }
@@ -1890,6 +1904,8 @@ void tst_QStateMachine::signalTransitions()
         emitter.emitSignalWithStringArg(testString);
 
         QTRY_COMPARE(finishedSpy.count(), 1);
+        QCOMPARE(trans->senderReceived(), (QObject*)&emitter);
+        QCOMPARE(trans->signalIndexReceived(), emitter.metaObject()->indexOfSignal("signalWithStringArg(QString)"));
         QCOMPARE(trans->argumentsReceived().size(), 1);
         QCOMPARE(trans->argumentsReceived().at(0).toString(), testString);
     }
@@ -2027,6 +2043,38 @@ void tst_QStateMachine::signalTransitions()
         QTRY_COMPARE(finishedSpy.count(), 1);
     }
 }
+
+class TestEventTransition : public QEventTransition
+{
+public:
+    TestEventTransition(QState *sourceState = 0)
+        : QEventTransition(sourceState),
+          m_eventSource(0), m_eventType(QEvent::None)
+    {}
+    TestEventTransition(QObject *object, QEvent::Type type,
+                        QAbstractState *target)
+        : QEventTransition(object, type),
+          m_eventSource(0), m_eventType(QEvent::None)
+    { setTargetState(target); }
+    QObject *eventSourceReceived() const {
+        return m_eventSource;
+    }
+    QEvent::Type eventTypeReceived() const {
+        return m_eventType;
+    }
+protected:
+    bool eventTest(QEvent *e) {
+        if (!QEventTransition::eventTest(e))
+            return false;
+        QStateMachine::WrappedEvent *we = static_cast<QStateMachine::WrappedEvent*>(e);
+        m_eventSource = we->object();
+        m_eventType = we->event()->type();
+        return true;
+    }
+private:
+    QObject *m_eventSource;
+    QEvent::Type m_eventType;
+};
 
 void tst_QStateMachine::eventTransitions()
 {
@@ -2273,6 +2321,30 @@ void tst_QStateMachine::eventTransitions()
         machine.start();
         QTest::ignoreMessage(QtWarningMsg, "QObject event transitions are not supported for custom types");
         QTRY_COMPARE(startedSpy.count(), 1);
+    }
+    // custom transition
+    {
+        QStateMachine machine;
+        QState *s0 = new QState(&machine);
+        QFinalState *s1 = new QFinalState(&machine);
+
+        TestEventTransition *trans = new TestEventTransition(&button, QEvent::MouseButtonPress, s1);
+        s0->addTransition(trans);
+        QCOMPARE(trans->eventSourceReceived(), (QObject*)0);
+        QCOMPARE(trans->eventTypeReceived(), QEvent::None);
+
+        QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        machine.setInitialState(s0);
+        machine.start();
+        QCoreApplication::processEvents();
+
+        QTest::mousePress(&button, Qt::LeftButton);
+        QCoreApplication::processEvents();
+
+        QTRY_COMPARE(finishedSpy.count(), 1);
+
+        QCOMPARE(trans->eventSourceReceived(), (QObject*)&button);
+        QCOMPARE(trans->eventTypeReceived(), QEvent::MouseButtonPress);
     }
 }
 
@@ -3042,6 +3114,38 @@ void tst_QStateMachine::nestedTargetStateForAnimation()
     QCOMPARE(object->property("foo").toDouble(), 2.0);
     QCOMPARE(object->property("bar").toDouble(), 10.0);
     QCOMPARE(counter.counter, 2);
+}
+
+void tst_QStateMachine::polishedSignalTransitionsReuseAnimationGroup()
+{
+    QStateMachine machine;
+    QObject *object = new QObject(&machine);
+    object->setProperty("foo", 0);
+
+    QState *s1 = new QState(&machine);
+    s1->assignProperty(object, "foo", 123);
+    QState *s2 = new QState(&machine);
+    s2->assignProperty(object, "foo", 456);
+    QState *s3 = new QState(&machine);
+    s3->assignProperty(object, "foo", 789);
+    QFinalState *s4 = new QFinalState(&machine);
+
+    QParallelAnimationGroup animationGroup;
+    animationGroup.addAnimation(new QPropertyAnimation(object, "foo"));
+    QSignalSpy animationFinishedSpy(&animationGroup, SIGNAL(finished()));
+    s1->addTransition(s1, SIGNAL(polished()), s2)->addAnimation(&animationGroup);
+    s2->addTransition(s2, SIGNAL(polished()), s3)->addAnimation(&animationGroup);
+    s3->addTransition(s3, SIGNAL(polished()), s4);
+
+    machine.setInitialState(s1);
+    QSignalSpy machineFinishedSpy(&machine, SIGNAL(finished()));
+    machine.start();
+    QTRY_COMPARE(machineFinishedSpy.count(), 1);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s4));
+    QCOMPARE(object->property("foo").toInt(), 789);
+
+    QCOMPARE(animationFinishedSpy.count(), 2);
 }
 
 void tst_QStateMachine::animatedGlobalRestoreProperty()
@@ -3954,7 +4058,7 @@ public:
     void onTransition(QEvent *e)
     {
         QSignalTransition::onTransition(e);
-        QSignalEvent *se = static_cast<QSignalEvent*>(e);
+        QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(e);
         eventSignalIndex = se->signalIndex();
     }
 

@@ -104,6 +104,8 @@ QDesignerMenuBar::QDesignerMenuBar(QWidget *parent)  :
     setContextMenuPolicy(Qt::DefaultContextMenu);
 
     setAcceptDrops(true); // ### fake
+    // Fake property: Keep the menu bar editable in the form even if a native menu bar is used.
+    setNativeMenuBar(false);
 
     m_addMenu->setText(tr("Type Here"));
     addAction(m_addMenu);

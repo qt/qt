@@ -678,7 +678,8 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
                         || (msg.message >= WM_MOUSEFIRST
                             && msg.message <= WM_MOUSELAST)
                         || msg.message == WM_MOUSEWHEEL
-                        || msg.message == WM_MOUSEHWHEEL)) {
+                        || msg.message == WM_MOUSEHWHEEL
+                        || msg.message == WM_CLOSE)) {
                     // queue user input events for later processing
                     haveMessage = false;
                     d->queuedUserInputEvents.append(msg);

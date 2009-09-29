@@ -194,12 +194,6 @@ QUnifiedTimer *QUnifiedTimer::instance()
 
 void QUnifiedTimer::timerEvent(QTimerEvent *event)
 {
-    //this is simply the time we last received a tick
-    const int oldLastTick = lastTick;
-    if (time.isValid())
-        lastTick = consistentTiming ? oldLastTick + timingInterval : time.elapsed();
-
-
     if (event->timerId() == startStopAnimationTimer.timerId()) {
         startStopAnimationTimer.stop();
         //we transfer the waiting animations into the "really running" state
@@ -207,13 +201,16 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
         animationsToStart.clear();
         if (animations.isEmpty()) {
             animationTimer.stop();
-            time = QTime();
         } else if (!animationTimer.isActive()) {
             animationTimer.start(timingInterval, this);
             lastTick = 0;
             time.start();
         }
     } else if (event->timerId() == animationTimer.timerId()) {
+        //this is simply the time we last received a tick
+        const int oldLastTick = lastTick;
+        lastTick = consistentTiming ? oldLastTick + timingInterval : time.elapsed();
+
         //we make sure we only call update time if the time has actually changed
         //it might happen in some cases that the time doesn't change because events are delayed
         //when the CPU load is high
@@ -604,7 +601,7 @@ void QAbstractAnimation::setCurrentTime(int msecs)
         }
     }
 
-    updateCurrentTime();
+    updateCurrentTime(d->currentTime);
     if (d->currentLoop != oldLoop)
         emit currentLoopChanged(d->currentLoop);
 
@@ -705,10 +702,10 @@ bool QAbstractAnimation::event(QEvent *event)
 }
 
 /*!
-    \fn virtual void QAbstractAnimation::updateCurrentTime() = 0;
+    \fn virtual void QAbstractAnimation::updateCurrentTime(int currentTime) = 0;
 
-    This pure virtual function is called every time the animation's current
-    time changes.
+    This pure virtual function is called every time the animation's
+    \a currentTime changes.
 
     \sa updateState()
 */

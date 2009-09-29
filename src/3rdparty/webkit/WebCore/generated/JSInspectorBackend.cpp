@@ -96,7 +96,7 @@ bool JSInspectorBackendConstructor::getOwnPropertyDescriptor(ExecState* exec, co
 
 /* Hash table for prototype */
 
-static const HashTableValue JSInspectorBackendPrototypeTableValues[69] =
+static const HashTableValue JSInspectorBackendPrototypeTableValues[70] =
 {
     { "hideDOMNodeHighlight", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionHideDOMNodeHighlight, (intptr_t)0 },
     { "highlightDOMNode", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionHighlightDOMNode, (intptr_t)1 },
@@ -156,6 +156,7 @@ static const HashTableValue JSInspectorBackendPrototypeTableValues[69] =
     { "setAttribute", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionSetAttribute, (intptr_t)4 },
     { "removeAttribute", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionRemoveAttribute, (intptr_t)3 },
     { "setTextNodeValue", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionSetTextNodeValue, (intptr_t)3 },
+    { "copyNode", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionCopyNode, (intptr_t)1 },
     { "nodeForId", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionNodeForId, (intptr_t)1 },
     { "wrapObject", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionWrapObject, (intptr_t)1 },
     { "unwrapObject", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionUnwrapObject, (intptr_t)1 },
@@ -952,6 +953,19 @@ JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSetTextNodeValue(ExecSt
     const UString& value = args.at(2).toString(exec);
 
     imp->setTextNodeValue(callId, nodeId, value);
+    return jsUndefined();
+}
+
+JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionCopyNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSInspectorBackend::s_info))
+        return throwError(exec, TypeError);
+    JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
+    InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
+    int nodeId = args.at(0).toInt32(exec);
+
+    imp->copyNode(nodeId);
     return jsUndefined();
 }
 

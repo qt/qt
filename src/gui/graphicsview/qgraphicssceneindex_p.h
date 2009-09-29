@@ -138,7 +138,7 @@ public:
     void recursive_items_helper(QGraphicsItem *item, QRectF exposeRect,
                                 QGraphicsSceneIndexIntersector *intersector, QList<QGraphicsItem *> *items,
                                 const QTransform &viewTransform,
-                                Qt::ItemSelectionMode mode, Qt::SortOrder order, qreal parentOpacity = 1.0) const;
+                                Qt::ItemSelectionMode mode, qreal parentOpacity = 1.0) const;
     inline void items_helper(const QRectF &rect, QGraphicsSceneIndexIntersector *intersector,
                              QList<QGraphicsItem *> *items, const QTransform &viewTransform,
                              Qt::ItemSelectionMode mode, Qt::SortOrder order) const;
@@ -156,7 +156,7 @@ inline void QGraphicsSceneIndexPrivate::items_helper(const QRectF &rect, QGraphi
     Q_Q(const QGraphicsSceneIndex);
     const QList<QGraphicsItem *> tli = q->estimateTopLevelItems(rect, Qt::AscendingOrder);
     for (int i = 0; i < tli.size(); ++i)
-        recursive_items_helper(tli.at(i), rect, intersector, items, viewTransform, mode, order);
+        recursive_items_helper(tli.at(i), rect, intersector, items, viewTransform, mode);
     if (order == Qt::DescendingOrder) {
         const int n = items->size();
         for (int i = 0; i < n / 2; ++i)

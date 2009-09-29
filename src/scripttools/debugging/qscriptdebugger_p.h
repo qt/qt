@@ -71,7 +71,9 @@ class QScriptDebuggerWidgetFactoryInterface;
 class QAction;
 class QEvent;
 class QMenu;
+#ifndef QT_NO_TOOLBAR
 class QToolBar;
+#endif
 
 class QScriptDebuggerPrivate;
 class Q_AUTOTEST_EXPORT QScriptDebugger : public QObject
@@ -168,8 +170,9 @@ public:
     QAction *clearErrorLogAction(QObject *parent) const;
 
     QMenu *createStandardMenu(QWidget *widgetParent, QObject *actionParent);
+#ifndef QT_NO_TOOLBAR
     QToolBar *createStandardToolBar(QWidget *widgetParent, QObject *actionParent);
-
+#endif
     bool eventFilter(QObject *, QEvent *e);
 
     bool isInteractive() const;

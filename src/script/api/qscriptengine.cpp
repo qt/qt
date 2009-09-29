@@ -2353,7 +2353,7 @@ JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, JSC::JSV
     //build a frame
     JSC::CallFrame *newCallFrame = exec;
     if (callee == 0 //called from  public QScriptEngine::pushContext
-        || exec->returnPC() == 0 || (contextFlags(exec) & NativeContext)  //called from native-native call
+        || exec->returnPC() == 0 || (contextFlags(exec) & NativeContext) //called from native-native call
         || (exec->codeBlock() && exec->callee() != callee)) { //the interpreter did not build a frame for us.
         //We need to check if the Interpreter might have already created a frame for function called from JS.
         JSC::Interpreter *interp = exec->interpreter();
@@ -2369,7 +2369,7 @@ JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, JSC::JSV
         for (it = args.begin(); it != args.end(); ++it)
             newCallFrame[++dst] = *it;
         newCallFrame += argc + JSC::RegisterFile::CallFrameHeaderSize;
-        newCallFrame->init(0, /*vPC=*/0, exec->scopeChain(), exec, flags, argc, callee);
+        newCallFrame->init(0, /*vPC=*/0, exec->scopeChain(), exec, flags | ShouldRestoreCallFrame, argc, callee);
     } else {
         setContextFlags(newCallFrame, flags);
 #if ENABLE(JIT)
@@ -2411,18 +2411,19 @@ void QScriptEngine::popContext()
  */
 void QScriptEnginePrivate::popContext()
 {
-    bool hasScope = contextFlags(currentFrame) & HasScopeContext;
-    if (currentFrame->returnPC() == 0) { //normal case
+    uint flags = contextFlags(currentFrame);
+    bool hasScope = flags & HasScopeContext;
+    if (flags & ShouldRestoreCallFrame) { //normal case
         JSC::RegisterFile &registerFile = currentFrame->interpreter()->registerFile();
         JSC::Register *const newEnd = currentFrame->registers() - JSC::RegisterFile::CallFrameHeaderSize - currentFrame->argumentCount();
         if (hasScope)
             currentFrame->scopeChain()->pop()->deref();
-        currentFrame = currentFrame->callerFrame();
         registerFile.shrink(newEnd);
     } else if(hasScope) { //the stack frame was created by the Interpreter, we don't need to rewind it.
         currentFrame->setScopeChain(currentFrame->scopeChain()->pop());
         currentFrame->scopeChain()->deref();
     }
+    currentFrame = currentFrame->callerFrame();
 }
 
 /*!

@@ -656,7 +656,7 @@ QVariant QVariantAnimation::interpolated(const QVariant &from, const QVariant &t
 /*!
     \reimp
  */
-void QVariantAnimation::updateCurrentTime()
+void QVariantAnimation::updateCurrentTime(int)
 {
     d_func()->recalculateCurrentInterval();
 }

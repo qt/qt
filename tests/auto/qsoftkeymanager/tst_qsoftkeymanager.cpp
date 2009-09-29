@@ -42,6 +42,8 @@
 #include <QtTest/QtTest>
 
 #include "qevent.h"
+#include "qdialog.h"
+#include "qdialogbuttonbox.h"
 #include "private/qsoftkeymanager_p.h"
 
 class tst_QSoftKeyManager : public QObject
@@ -59,6 +61,8 @@ public slots:
     void cleanup();
 private slots:
     void updateSoftKeysCompressed();
+    void handleCommand();
+    void checkSoftkeyEnableStates();
 };
 
 class EventListener : public QObject
@@ -131,6 +135,56 @@ void tst_QSoftKeyManager::updateSoftKeysCompressed()
     QApplication::processEvents();
 
     QVERIFY(listener.numUpdateSoftKeys == 1);
+}
+
+/*
+    This tests that when the S60 environment sends us a command
+    that it actually gets mapped to the correct action.
+*/
+void tst_QSoftKeyManager::handleCommand()
+{
+    QDialog w;
+    QDialogButtonBox *buttons = new QDialogButtonBox(
+            QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
+            Qt::Horizontal,
+            &w);
+
+    w.show();
+    QApplication::processEvents();
+
+    QCOMPARE(w.actions().count(), 2);
+
+    QSignalSpy spy0(w.actions()[0], SIGNAL(triggered()));
+    QSignalSpy spy1(w.actions()[1], SIGNAL(triggered()));
+
+    // These should work eventually, but do not yet
+//    QTest::keyPress(&w, Qt::Key_Context1);
+//    QTest::keyPress(&w, Qt::Key_Context2);
+
+    qApp->symbianHandleCommand(6000);
+    qApp->symbianHandleCommand(6001);
+
+    QApplication::processEvents();
+
+    QCOMPARE(spy0.count(), 1);
+    QCOMPARE(spy1.count(), 1);
+}
+
+/*
+    This tests that softkey enable state follows the state of widget that owns the action
+    to which the softkey is related to.
+*/
+void tst_QSoftKeyManager::checkSoftkeyEnableStates()
+{
+    QWidget w1, w2;
+    w1.setEnabled(false);
+    w2.setEnabled(true);
+
+    QAction *disabledAction = QSoftKeyManager::createAction(QSoftKeyManager::OkSoftKey, &w1);
+    QAction *enabledAction = QSoftKeyManager::createAction(QSoftKeyManager::OkSoftKey, &w2);
+
+    QVERIFY(disabledAction->isEnabled()==false);
+    QVERIFY(enabledAction->isEnabled()==true);
 }
 
 

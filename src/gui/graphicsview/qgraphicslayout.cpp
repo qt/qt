@@ -420,6 +420,8 @@ void QGraphicsLayout::widgetEvent(QEvent *e)
 */
 
 /*!
+    \since 4.6
+
     This function is a convenience function provided for custom layouts, and will go through
     all items in the layout and reparent their graphics items to the closest QGraphicsWidget
     ancestor of the layout.

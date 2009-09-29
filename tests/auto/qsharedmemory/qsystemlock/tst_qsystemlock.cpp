@@ -46,6 +46,13 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+// And underlying Open C have application private dir in default search path
+#define SRCDIR ""
+#endif
+
+
 #define EXISTING_SHARE "existing"
 
 class tst_QSystemLock : public QObject
@@ -195,26 +202,35 @@ void tst_QSystemLock::processes()
 
     QStringList scripts;
     for (int i = 0; i < readOnly; ++i)
-        scripts.append("../lackey/scripts/systemlock_read.js");
+        scripts.append(QFileInfo(SRCDIR "lackey/scripts/ systemlock_read.js").absoluteFilePath() );
     for (int i = 0; i < readWrite; ++i)
-        scripts.append("../lackey/scripts/systemlock_readwrite.js");
+        scripts.append(QFileInfo(SRCDIR "lackey/scripts/systemlock_readwrite.js").absoluteFilePath());
 
     QList<QProcess*> consumers;
+    unsigned int failedProcesses = 0;
     for (int i = 0; i < scripts.count(); ++i) {
+
         QStringList arguments = QStringList() << scripts.at(i);
         QProcess *p = new QProcess;
         p->setProcessChannelMode(QProcess::ForwardedChannels);
-        consumers.append(p);
-	p->start("../lackey/lackey", arguments);
+        
+        p->start(QFileInfo(SRCDIR "lackey/lackey").absoluteFilePath(), arguments);
+        // test, if the process could be started.
+
+        if (p->waitForStarted(2000))
+            consumers.append(p);
+        else
+            ++failedProcesses;
     }
 
     while (!consumers.isEmpty()) {
         consumers.first()->waitForFinished(3000);
-	consumers.first()->kill();
+        consumers.first()->kill();
         QCOMPARE(consumers.first()->exitStatus(), QProcess::NormalExit);
         QCOMPARE(consumers.first()->exitCode(), 0);
         delete consumers.takeFirst();
     }
+    QCOMPARE(failedProcesses, (unsigned int)(0));
 }
 
 QTEST_MAIN(tst_QSystemLock)

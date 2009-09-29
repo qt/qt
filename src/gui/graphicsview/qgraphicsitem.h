@@ -302,6 +302,7 @@ public:
     // Stacking order
     qreal zValue() const;
     void setZValue(qreal z);
+    void stackBefore(const QGraphicsItem *sibling);
 
     // Hit test
     virtual QRectF boundingRect() const = 0;

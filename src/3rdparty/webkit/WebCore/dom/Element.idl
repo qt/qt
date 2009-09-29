@@ -111,6 +111,10 @@ module core {
             raises(DOMException);
 
 #if !defined(LANGUAGE_COM) || !LANGUAGE_COM
+        // WebKit extension, pending specification.
+        boolean webkitMatchesSelector(in DOMString selectors)
+            raises(DOMException);
+
         // ElementTraversal API
         readonly attribute Element firstElementChild;
         readonly attribute Element lastElementChild;

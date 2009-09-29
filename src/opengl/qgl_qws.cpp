@@ -87,12 +87,6 @@ static QGLScreen *glScreenForDevice(QPaintDevice *device)
  *****************************************************************************/
 //#define DEBUG_OPENGL_REGION_UPDATE
 
-bool QGLFormat::hasOpenGL()
-{
-    return true;
-}
-
-
 bool QGLFormat::hasOpenGLOverlays()
 {
     QGLScreen *glScreen = glScreenForDevice(0);
@@ -117,17 +111,17 @@ void qt_egl_add_platform_config(QEglProperties& props, QPaintDevice *device)
         props.setPixelFormat(glScreen->pixelFormat());
 }
 
-static bool qt_egl_create_surface
+static EGLSurface qt_egl_create_surface
     (QEglContext *context, QPaintDevice *device,
      const QEglProperties *properties = 0)
 {
     // Get the screen surface functions, which are used to create native ids.
     QGLScreen *glScreen = glScreenForDevice(device);
     if (!glScreen)
-        return false;
+        return EGL_NO_SURFACE;
     QGLScreenSurfaceFunctions *funcs = glScreen->surfaceFunctions();
     if (!funcs)
-        return false;
+        return EGL_NO_SURFACE;
 
     // Create the native drawable for the paint device.
     int devType = device->devType();
@@ -143,7 +137,7 @@ static bool qt_egl_create_surface
     }
     if (!ok) {
         qWarning("QEglContext::createSurface(): Cannot create the native EGL drawable");
-        return false;
+        return EGL_NO_SURFACE;
     }
 
     // Create the EGL surface to draw into, based on the native drawable.
@@ -160,12 +154,9 @@ static bool qt_egl_create_surface
         surf = eglCreatePixmapSurface
             (context->display(), context->config(), pixmapDrawable, props);
     }
-    if (surf == EGL_NO_SURFACE) {
+    if (surf == EGL_NO_SURFACE)
         qWarning("QEglContext::createSurface(): Unable to create EGL surface, error = 0x%x", eglGetError());
-        return false;
-    }
-    context->setSurface(surf);
-    return true;
+    return surf;
 }
 
 bool QGLContext::chooseContext(const QGLContext* shareContext)
@@ -223,7 +214,8 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     // Create the EGL surface to draw into.  We cannot use
     // QEglContext::createSurface() because it does not have
     // access to the QGLScreen.
-    if (!qt_egl_create_surface(d->eglContext, device())) {
+    d->eglSurface = qt_egl_create_surface(d->eglContext, device());
+    if (d->eglSurface == EGL_NO_SURFACE) {
         delete d->eglContext;
         d->eglContext = 0;
         return false;
@@ -233,87 +225,9 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
 }
 
 
-void QGLContext::reset()
-{
-    Q_D(QGLContext);
-    if (!d->valid)
-        return;
-    d->cleanup();
-    doneCurrent();
-    if (d->eglContext) {
-        delete d->eglContext;
-        d->eglContext = 0;
-    }
-    d->crWin = false;
-    d->sharing = false;
-    d->valid = false;
-    d->transpColor = QColor();
-    d->initDone = false;
-    qgl_share_reg()->removeShare(this);
-}
-
-void QGLContext::makeCurrent()
-{
-    Q_D(QGLContext);
-    if(!d->valid || !d->eglContext) {
-        qWarning("QGLContext::makeCurrent(): Cannot make invalid context current");
-        return;
-    }
-
-    if (d->eglContext->makeCurrent())
-        QGLContextPrivate::setCurrentContext(this);
-}
-
-void QGLContext::doneCurrent()
-{
-    Q_D(QGLContext);
-    if (d->eglContext)
-        d->eglContext->doneCurrent();
-
-    QGLContextPrivate::setCurrentContext(0);
-}
-
-
-void QGLContext::swapBuffers() const
-{
-    Q_D(const QGLContext);
-    if(!d->valid || !d->eglContext)
-        return;
-
-    d->eglContext->swapBuffers();
-}
-
-QColor QGLContext::overlayTransparentColor() const
-{
-    return QColor(0, 0, 0);                // Invalid color
-}
-
-uint QGLContext::colorIndex(const QColor &c) const
-{
-    //### color index doesn't work on egl
-    Q_UNUSED(c);
-    return 0;
-}
-
-void QGLContext::generateFontDisplayLists(const QFont & fnt, int listBase)
-{
-    Q_UNUSED(fnt);
-    Q_UNUSED(listBase);
-}
-
-void *QGLContext::getProcAddress(const QString &proc) const
-{
-    return (void*)eglGetProcAddress(reinterpret_cast<const char *>(proc.toLatin1().data()));
-}
-
 bool QGLWidget::event(QEvent *e)
 {
     return QWidget::event(e);
-}
-
-void QGLWidget::setMouseTracking(bool enable)
-{
-    QWidget::setMouseTracking(enable);
 }
 
 
@@ -378,11 +292,6 @@ void QGLWidgetPrivate::init(QGLContext *context, const QGLWidget* shareWidget)
         //no overlay
         qWarning("QtOpenGL ES doesn't currently support overlays");
     }
-}
-
-bool QGLWidgetPrivate::renderCxPm(QPixmap*)
-{
-    return false;
 }
 
 void QGLWidgetPrivate::cleanupColormaps()

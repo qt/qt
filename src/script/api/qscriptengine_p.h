@@ -170,7 +170,8 @@ public:
     enum ContextFlags {
         NativeContext = 1,
         CalledAsConstructorContext = 2,
-        HasScopeContext = 4
+        HasScopeContext = 4, // Specifies that the is a QScriptActivationObject
+        ShouldRestoreCallFrame = 8
     };
     static uint contextFlags(JSC::ExecState *);
     static void setContextFlags(JSC::ExecState *, uint);

@@ -184,7 +184,7 @@ QAudioInput::~QAudioInput()
     Passing a QIODevice allows the data to be transfered without any extra code.
     All that is required is to open the QIODevice.
 
-    /sa QIODevice
+    \sa QIODevice
 */
 
 QIODevice* QAudioInput::start(QIODevice* device)

@@ -3299,7 +3299,7 @@ EXPORTS
 	_ZN15QPauseAnimation11qt_metacastEPKc @ 3298 NONAME
 	_ZN15QPauseAnimation11setDurationEi @ 3299 NONAME
 	_ZN15QPauseAnimation16staticMetaObjectE @ 3300 NONAME DATA 16
-	_ZN15QPauseAnimation17updateCurrentTimeEi @ 3301 NONAME
+	_ZN15QPauseAnimation17updateCurrentTimeEi @ 3301 NONAME ABSENT
 	_ZN15QPauseAnimation5eventEP6QEvent @ 3302 NONAME
 	_ZN15QPauseAnimationC1EP7QObject @ 3303 NONAME
 	_ZN15QPauseAnimationC1EiP7QObject @ 3304 NONAME
@@ -3361,7 +3361,7 @@ EXPORTS
 	_ZN17QVariantAnimation13setStartValueERK8QVariant @ 3360 NONAME
 	_ZN17QVariantAnimation14setEasingCurveERK12QEasingCurve @ 3361 NONAME
 	_ZN17QVariantAnimation16staticMetaObjectE @ 3362 NONAME DATA 16
-	_ZN17QVariantAnimation17updateCurrentTimeEi @ 3363 NONAME
+	_ZN17QVariantAnimation17updateCurrentTimeEi @ 3363 NONAME ABSENT
 	_ZN17QVariantAnimation20registerInterpolatorEPF8QVariantPKvS2_fEi @ 3364 NONAME
 	_ZN17QVariantAnimation5eventEP6QEvent @ 3365 NONAME
 	_ZN17QVariantAnimationC2EP7QObject @ 3366 NONAME
@@ -3470,7 +3470,7 @@ EXPORTS
 	_ZN23QParallelAnimationGroup11updateStateEN18QAbstractAnimation5StateES1_ @ 3469 NONAME
 	_ZN23QParallelAnimationGroup15updateDirectionEN18QAbstractAnimation9DirectionE @ 3470 NONAME
 	_ZN23QParallelAnimationGroup16staticMetaObjectE @ 3471 NONAME DATA 16
-	_ZN23QParallelAnimationGroup17updateCurrentTimeEi @ 3472 NONAME
+	_ZN23QParallelAnimationGroup17updateCurrentTimeEi @ 3472 NONAME ABSENT
 	_ZN23QParallelAnimationGroup5eventEP6QEvent @ 3473 NONAME
 	_ZN23QParallelAnimationGroupC1EP7QObject @ 3474 NONAME
 	_ZN23QParallelAnimationGroupC1ER30QParallelAnimationGroupPrivateP7QObject @ 3475 NONAME
@@ -3498,7 +3498,7 @@ EXPORTS
 	_ZN25QSequentialAnimationGroup13insertPauseAtEii @ 3497 NONAME
 	_ZN25QSequentialAnimationGroup15updateDirectionEN18QAbstractAnimation9DirectionE @ 3498 NONAME
 	_ZN25QSequentialAnimationGroup16staticMetaObjectE @ 3499 NONAME DATA 16
-	_ZN25QSequentialAnimationGroup17updateCurrentTimeEi @ 3500 NONAME
+	_ZN25QSequentialAnimationGroup17updateCurrentTimeEi @ 3500 NONAME ABSENT
 	_ZN25QSequentialAnimationGroup23currentAnimationChangedEP18QAbstractAnimation @ 3501 NONAME
 	_ZN25QSequentialAnimationGroup5eventEP6QEvent @ 3502 NONAME
 	_ZN25QSequentialAnimationGroup8addPauseEi @ 3503 NONAME
@@ -3789,35 +3789,39 @@ EXPORTS
 	_ZN9QMimeData19getStaticMetaObjectEv @ 3788 NONAME
 	_ZN9QSettings19getStaticMetaObjectEv @ 3789 NONAME
 	_ZN9QTimeLine19getStaticMetaObjectEv @ 3790 NONAME
-	_ZTI13QUnifiedTimer @ 3791 NONAME ; #<TI>#
-	_ZTI14QProcessActive @ 3792 NONAME ; #<TI>#
-	_ZTI18QNotifyChangeEvent @ 3793 NONAME ; #<TI>#
-	_ZTI20QEasingCurveFunction @ 3794 NONAME ; #<TI>#
-	_ZTI21QFactoryLoaderPrivate @ 3795 NONAME ; #<TI>#
-	_ZTI21QSignalEventGenerator @ 3796 NONAME ; #<TI>#
-	_ZTI22QAnimationGroupPrivate @ 3797 NONAME ; #<TI>#
-	_ZTI23QProcessManagerMediator @ 3798 NONAME ; #<TI>#
-	_ZTI24QSignalTransitionPrivate @ 3799 NONAME ; #<TI>#
-	_ZTI27QByteDeviceWrappingIoDevice @ 3800 NONAME ; #<TI>#
-	_ZTI32QSequentialAnimationGroupPrivate @ 3801 NONAME ; #<TI>#
-	_ZTI34QNonContiguousByteDeviceBufferImpl @ 3802 NONAME ; #<TI>#
-	_ZTI36QNonContiguousByteDeviceIoDeviceImpl @ 3803 NONAME ; #<TI>#
-	_ZTI37QNonContiguousByteDeviceByteArrayImpl @ 3804 NONAME ; #<TI>#
-	_ZTI38QNonContiguousByteDeviceRingBufferImpl @ 3805 NONAME ; #<TI>#
-	_ZTV13QUnifiedTimer @ 3806 NONAME ; #<VT>#
-	_ZTV14QProcessActive @ 3807 NONAME ; #<VT>#
-	_ZTV18QNotifyChangeEvent @ 3808 NONAME ; #<VT>#
-	_ZTV20QEasingCurveFunction @ 3809 NONAME ; #<VT>#
-	_ZTV21QFactoryLoaderPrivate @ 3810 NONAME ; #<VT>#
-	_ZTV21QSignalEventGenerator @ 3811 NONAME ; #<VT>#
-	_ZTV22QAnimationGroupPrivate @ 3812 NONAME ; #<VT>#
-	_ZTV23QProcessManagerMediator @ 3813 NONAME ; #<VT>#
-	_ZTV24QSignalTransitionPrivate @ 3814 NONAME ; #<VT>#
-	_ZTV27QByteDeviceWrappingIoDevice @ 3815 NONAME ; #<VT>#
-	_ZTV32QSequentialAnimationGroupPrivate @ 3816 NONAME ; #<VT>#
-	_ZTV34QNonContiguousByteDeviceBufferImpl @ 3817 NONAME ; #<VT>#
-	_ZTV36QNonContiguousByteDeviceIoDeviceImpl @ 3818 NONAME ; #<VT>#
-	_ZTV37QNonContiguousByteDeviceByteArrayImpl @ 3819 NONAME ; #<VT>#
-	_ZTV38QNonContiguousByteDeviceRingBufferImpl @ 3820 NONAME ; #<VT>#
+	_ZTI13QUnifiedTimer @ 3791 NONAME ABSENT ; #<TI>#
+	_ZTI14QProcessActive @ 3792 NONAME ABSENT ; #<TI>#
+	_ZTI18QNotifyChangeEvent @ 3793 NONAME ABSENT ; #<TI>#
+	_ZTI20QEasingCurveFunction @ 3794 NONAME ABSENT ; #<TI>#
+	_ZTI21QFactoryLoaderPrivate @ 3795 NONAME ABSENT ; #<TI>#
+	_ZTI21QSignalEventGenerator @ 3796 NONAME ABSENT ; #<TI>#
+	_ZTI22QAnimationGroupPrivate @ 3797 NONAME ABSENT ; #<TI>#
+	_ZTI23QProcessManagerMediator @ 3798 NONAME ABSENT ; #<TI>#
+	_ZTI24QSignalTransitionPrivate @ 3799 NONAME ABSENT ; #<TI>#
+	_ZTI27QByteDeviceWrappingIoDevice @ 3800 NONAME ABSENT ; #<TI>#
+	_ZTI32QSequentialAnimationGroupPrivate @ 3801 NONAME ABSENT ; #<TI>#
+	_ZTI34QNonContiguousByteDeviceBufferImpl @ 3802 NONAME ABSENT ; #<TI>#
+	_ZTI36QNonContiguousByteDeviceIoDeviceImpl @ 3803 NONAME ABSENT ; #<TI>#
+	_ZTI37QNonContiguousByteDeviceByteArrayImpl @ 3804 NONAME ABSENT ; #<TI>#
+	_ZTI38QNonContiguousByteDeviceRingBufferImpl @ 3805 NONAME ABSENT ; #<TI>#
+	_ZTV13QUnifiedTimer @ 3806 NONAME ABSENT ; #<VT>#
+	_ZTV14QProcessActive @ 3807 NONAME ABSENT ; #<VT>#
+	_ZTV18QNotifyChangeEvent @ 3808 NONAME ABSENT ; #<VT>#
+	_ZTV20QEasingCurveFunction @ 3809 NONAME ABSENT ; #<VT>#
+	_ZTV21QFactoryLoaderPrivate @ 3810 NONAME ABSENT ; #<VT>#
+	_ZTV21QSignalEventGenerator @ 3811 NONAME ABSENT ; #<VT>#
+	_ZTV22QAnimationGroupPrivate @ 3812 NONAME ABSENT ; #<VT>#
+	_ZTV23QProcessManagerMediator @ 3813 NONAME ABSENT ; #<VT>#
+	_ZTV24QSignalTransitionPrivate @ 3814 NONAME ABSENT ; #<VT>#
+	_ZTV27QByteDeviceWrappingIoDevice @ 3815 NONAME ABSENT ; #<VT>#
+	_ZTV32QSequentialAnimationGroupPrivate @ 3816 NONAME ABSENT ; #<VT>#
+	_ZTV34QNonContiguousByteDeviceBufferImpl @ 3817 NONAME ABSENT ; #<VT>#
+	_ZTV36QNonContiguousByteDeviceIoDeviceImpl @ 3818 NONAME ABSENT ; #<VT>#
+	_ZTV37QNonContiguousByteDeviceByteArrayImpl @ 3819 NONAME ABSENT ; #<VT>#
+	_ZTV38QNonContiguousByteDeviceRingBufferImpl @ 3820 NONAME ABSENT ; #<VT>#
 	_Zls6QDebugRK8QMargins @ 3821 NONAME
+	_ZN15QPauseAnimation17updateCurrentTimeEv @ 3822 NONAME
+	_ZN17QVariantAnimation17updateCurrentTimeEv @ 3823 NONAME
+	_ZN23QParallelAnimationGroup17updateCurrentTimeEv @ 3824 NONAME
+	_ZN25QSequentialAnimationGroup17updateCurrentTimeEv @ 3825 NONAME
 

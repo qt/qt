@@ -171,7 +171,7 @@ bool JSElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Ident
 
 /* Hash table for prototype */
 
-static const HashTableValue JSElementPrototypeTableValues[28] =
+static const HashTableValue JSElementPrototypeTableValues[29] =
 {
     { "getAttribute", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionGetAttribute, (intptr_t)1 },
     { "setAttribute", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionSetAttribute, (intptr_t)2 },
@@ -198,6 +198,7 @@ static const HashTableValue JSElementPrototypeTableValues[28] =
     { "getElementsByClassName", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionGetElementsByClassName, (intptr_t)1 },
     { "querySelector", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionQuerySelector, (intptr_t)1 },
     { "querySelectorAll", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionQuerySelectorAll, (intptr_t)1 },
+    { "webkitMatchesSelector", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionWebkitMatchesSelector, (intptr_t)1 },
     { "getClientRects", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionGetClientRects, (intptr_t)0 },
     { "getBoundingClientRect", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionGetBoundingClientRect, (intptr_t)0 },
     { 0, 0, 0, 0 }
@@ -1629,6 +1630,22 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionQuerySelectorAll(ExecState* exec
 
 
     JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->querySelectorAll(selectors, ec)));
+    setDOMException(exec, ec);
+    return result;
+}
+
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionWebkitMatchesSelector(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSElement::s_info))
+        return throwError(exec, TypeError);
+    JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
+    Element* imp = static_cast<Element*>(castedThisObj->impl());
+    ExceptionCode ec = 0;
+    const UString& selectors = args.at(0).toString(exec);
+
+
+    JSC::JSValue result = jsBoolean(imp->webkitMatchesSelector(selectors, ec));
     setDOMException(exec, ec);
     return result;
 }

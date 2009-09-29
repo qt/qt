@@ -1826,9 +1826,7 @@
     \value TabFocus  the widget accepts focus by tabbing.
     \value ClickFocus  the widget accepts focus by clicking.
     \value StrongFocus  the widget accepts focus by both tabbing
-                    and clicking. On Mac OS X this will also
-                    be indicate that the widget accepts tab focus
-                    when in 'Text/List focus mode'.
+                    and clicking.
     \value WheelFocus  like Qt::StrongFocus plus the widget accepts
                     focus by using the mouse wheel.
     \value NoFocus  the widget does not accept focus.

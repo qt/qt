@@ -304,13 +304,42 @@
   For parallel state groups, the QState::finished() signal is emitted when \e
   all the child states have entered final states.
 
+  \section1 Targetless Transitions
+
+  A transition need not have a target state. A transition without a target can
+  be triggered the same way as any other transition; the difference is that
+  when a targetless transition is triggered, it doesn't cause any state
+  changes. This allows you to react to a signal or event when your machine is
+  in a certain state, without having to leave that state. Example:
+
+  \code
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+
+    QPushButton button;
+    QSignalTransition *trans = new QSignalTransition(&button, SIGNAL(clicked()));
+    s1->addTransition(trans);
+
+    QMessageBox msgBox;
+    msgBox.setText("The button was clicked; carry on.");
+    QObject::connect(trans, SIGNAL(triggered()), &msgBox, SLOT(exec()));
+
+    machine.setInitialState(s1);
+  \endcode
+
+  The message box will be displayed each time the button is clicked, but the
+  state machine will remain in its current state (s1). If the target state
+  were explicitly set to s1, however, s1 would be exited and re-entered each
+  time (e.g. the QAbstractState::entered() and QAbstractState::exited()
+  signals would be emitted).
+
   \section1 Events, Transitions and Guards
 
   A QStateMachine runs its own event loop. For signal transitions
   (QSignalTransition objects), QStateMachine automatically posts a
-  QSignalEvent to itself when it intercepts the corresponding signal;
-  similarly, for QObject event transitions (QEventTransition objects) a
-  QWrappedEvent is posted.
+  QStateMachine::SignalEvent to itself when it intercepts the corresponding
+  signal; similarly, for QObject event transitions (QEventTransition objects)
+  a QStateMachine::WrappedEvent is posted.
 
   You can post your own events to the state machine using
   QStateMachine::postEvent().

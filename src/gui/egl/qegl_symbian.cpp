@@ -48,7 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 
-bool QEglContext::createSurface(QPaintDevice *device, const QEglProperties *properties)
+EGLSurface QEglContext::createSurface(QPaintDevice *device, const QEglProperties *properties)
 {
     // Create the native drawable for the paint device.
     int devType = device->devType();
@@ -67,7 +67,7 @@ bool QEglContext::createSurface(QPaintDevice *device, const QEglProperties *prop
     }
     if (!ok) {
         qWarning("QEglContext::createSurface(): Cannot create the native EGL drawable");
-        return false;
+        return EGL_NO_SURFACE;
     }
 
     // Create the EGL surface to draw into, based on the native drawable.
@@ -76,15 +76,14 @@ bool QEglContext::createSurface(QPaintDevice *device, const QEglProperties *prop
         props = properties->properties();
     else
         props = 0;
+    EGLSurface surf;
     if (devType == QInternal::Widget)
         surf = eglCreateWindowSurface(dpy, cfg, windowDrawable, 0);
     else
         surf = eglCreatePixmapSurface(dpy, cfg, pixmapDrawable, 0);
-    if (surf == EGL_NO_SURFACE) {
+    if (surf == EGL_NO_SURFACE)
         qWarning("QEglContext::createSurface(): Unable to create EGL surface, error = 0x%x", eglGetError());
-        return false;
-    }
-    return true;
+    return surf;
 }
 
 EGLDisplay QEglContext::getDisplay(QPaintDevice *device)

@@ -70,6 +70,12 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
+#if defined(Q_OS_SYMBIAN)
+# define STRINGIFY(x) #x
+# define TOSTRING(x) STRINGIFY(x)
+# define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"
+#endif
+
 class QNonNativeFileDialog : public QFileDialog
 {
     Q_OBJECT
@@ -1042,7 +1048,7 @@ void tst_QFiledialog::focus()
     QApplication::setActiveWindow(&fd);
     QTest::qWaitForWindowShown(&fd);
     QTRY_COMPARE(fd.isVisible(), true);
-    QTRY_COMPARE(QApplication::activeWindow(), &fd);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
     qApp->processEvents();
 
     // make sure the tests work with focus follows mouse

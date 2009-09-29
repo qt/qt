@@ -50,7 +50,6 @@
 #include "qabstracttransition_p.h"
 #include "qsignaltransition.h"
 #include "qsignaltransition_p.h"
-#include "qsignalevent.h"
 #include "qsignaleventgenerator_p.h"
 #include "qabstractstate.h"
 #include "qabstractstate_p.h"
@@ -63,7 +62,6 @@
 #ifndef QT_NO_STATEMACHINE_EVENTFILTER
 #include "qeventtransition.h"
 #include "qeventtransition_p.h"
-#include "qwrappedevent.h"
 #endif
 
 #ifndef QT_NO_ANIMATION
@@ -806,6 +804,14 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
         }
 
         if (hasValidEndValue) {
+            if (anim->state() == QAbstractAnimation::Running) {
+                // The animation is still running. This can happen if the
+                // animation is a group, and one of its children just finished,
+                // and that caused a state to emit its polished() signal, and
+                // that triggered a transition in the machine.
+                // Just stop the animation so it is correctly restarted again.
+                anim->stop();
+            }
             anim->start();
         }
     }
@@ -1270,12 +1276,19 @@ void QStateMachinePrivate::_q_process()
     }
 }
 
-void QStateMachinePrivate::scheduleProcess()
+void QStateMachinePrivate::processEvents(EventProcessingMode processingMode)
 {
     if ((state != Running) || processing || processingScheduled)
         return;
-    processingScheduled = true;
-    QMetaObject::invokeMethod(q_func(), "_q_process", Qt::QueuedConnection);
+    switch (processingMode) {
+    case DirectProcessing:
+        _q_process();
+        break;
+    case QueuedProcessing:
+        processingScheduled = true;
+        QMetaObject::invokeMethod(q_func(), "_q_process", Qt::QueuedConnection);
+        break;
+    }
 }
 
 namespace {
@@ -1337,7 +1350,7 @@ void QStateMachinePrivate::goToState(QAbstractState *targetState)
         trans->setTargetState(targetState);
     }
 
-    scheduleProcess();
+    processEvents(QueuedProcessing);
 }
 
 void QStateMachinePrivate::registerTransitions(QAbstractState *state)
@@ -1514,6 +1527,15 @@ void QStateMachinePrivate::unregisterEventTransition(QEventTransition *transitio
     }
     QEventTransitionPrivate::get(transition)->registered = false;
 }
+
+void QStateMachinePrivate::handleFilteredEvent(QObject *watched, QEvent *event)
+{
+    Q_ASSERT(qobjectEvents.contains(watched));
+    if (qobjectEvents[watched].contains(event->type())) {
+        internalEventQueue.append(new QStateMachine::WrappedEvent(watched, handler->cloneEvent(event)));
+        processEvents(DirectProcessing);
+    }
+}
 #endif
 
 void QStateMachinePrivate::handleTransitionSignal(QObject *sender, int signalIndex,
@@ -1534,8 +1556,8 @@ void QStateMachinePrivate::handleTransitionSignal(QObject *sender, int signalInd
     qDebug() << q_func() << ": sending signal event ( sender =" << sender
              << ", signal =" << sender->metaObject()->method(signalIndex).signature() << ')';
 #endif
-    internalEventQueue.append(new QSignalEvent(sender, signalIndex, vargs));
-    scheduleProcess();
+    internalEventQueue.append(new QStateMachine::SignalEvent(sender, signalIndex, vargs));
+    processEvents(DirectProcessing);
 }
 
 /*!
@@ -1770,7 +1792,7 @@ void QStateMachine::stop()
         break;
     case QStateMachinePrivate::Running:
         d->stop = true;
-        d->scheduleProcess();
+        d->processEvents(QStateMachinePrivate::QueuedProcessing);
         break;
     }
 }
@@ -1800,7 +1822,7 @@ void QStateMachine::postEvent(QEvent *event, int delay)
         d->delayedEvents[tid] = event;
     } else {
         d->externalEventQueue.append(event);
-        d->scheduleProcess();
+        d->processEvents(QStateMachinePrivate::QueuedProcessing);
     }
 }
 
@@ -1816,7 +1838,7 @@ void QStateMachine::postInternalEvent(QEvent *event)
     qDebug() << this << ": posting internal event" << event;
 #endif
     d->internalEventQueue.append(event);
-    d->scheduleProcess();
+    d->processEvents(QStateMachinePrivate::QueuedProcessing);
 }
 
 /*!
@@ -1864,7 +1886,7 @@ bool QStateMachine::event(QEvent *e)
             killTimer(tid);
             QEvent *ee = d->delayedEvents.take(tid);
             d->externalEventQueue.append(ee);
-            d->scheduleProcess();
+            d->processEvents(QStateMachinePrivate::DirectProcessing);
             return true;
         }
     }
@@ -1878,9 +1900,7 @@ bool QStateMachine::event(QEvent *e)
 bool QStateMachine::eventFilter(QObject *watched, QEvent *event)
 {
     Q_D(QStateMachine);
-    Q_ASSERT(d->qobjectEvents.contains(watched));
-    if (d->qobjectEvents[watched].contains(event->type()))
-        postEvent(new QWrappedEvent(watched, d->handler->cloneEvent(event)));
+    d->handleFilteredEvent(watched, event);
     return false;
 }
 #endif
@@ -2076,16 +2096,16 @@ QSignalEventGenerator::QSignalEventGenerator(QStateMachine *parent)
 }
 
 /*!
-  \class QSignalEvent
+  \class QStateMachine::SignalEvent
 
-  \brief The QSignalEvent class represents a Qt signal event.
+  \brief The SignalEvent class represents a Qt signal event.
 
   \since 4.6
   \ingroup statemachine
 
   A signal event is generated by a QStateMachine in response to a Qt
   signal. The QSignalTransition class provides a transition associated with a
-  signal event. QSignalEvent is part of \l{The State Machine Framework}.
+  signal event. QStateMachine::SignalEvent is part of \l{The State Machine Framework}.
 
   The sender() function returns the object that generated the signal. The
   signalIndex() function returns the index of the signal. The arguments()
@@ -2097,25 +2117,25 @@ QSignalEventGenerator::QSignalEventGenerator(QStateMachine *parent)
 /*!
   \internal
 
-  Constructs a new QSignalEvent object with the given \a sender, \a
+  Constructs a new SignalEvent object with the given \a sender, \a
   signalIndex and \a arguments.
 */
-QSignalEvent::QSignalEvent(QObject *sender, int signalIndex,
-                           const QList<QVariant> &arguments)
+QStateMachine::SignalEvent::SignalEvent(QObject *sender, int signalIndex,
+                                        const QList<QVariant> &arguments)
     : QEvent(QEvent::Signal), m_sender(sender),
       m_signalIndex(signalIndex), m_arguments(arguments)
 {
 }
 
 /*!
-  Destroys this QSignalEvent.
+  Destroys this SignalEvent.
 */
-QSignalEvent::~QSignalEvent()
+QStateMachine::SignalEvent::~SignalEvent()
 {
 }
 
 /*!
-  \fn QSignalEvent::sender() const
+  \fn QStateMachine::SignalEvent::sender() const
 
   Returns the object that emitted the signal.
 
@@ -2123,7 +2143,7 @@ QSignalEvent::~QSignalEvent()
 */
 
 /*!
-  \fn QSignalEvent::signalIndex() const
+  \fn QStateMachine::SignalEvent::signalIndex() const
 
   Returns the index of the signal.
 
@@ -2131,23 +2151,24 @@ QSignalEvent::~QSignalEvent()
 */
 
 /*!
-  \fn QSignalEvent::arguments() const
+  \fn QStateMachine::SignalEvent::arguments() const
 
   Returns the arguments of the signal.
 */
 
 
 /*!
-  \class QWrappedEvent
+  \class QStateMachine::WrappedEvent
 
-  \brief The QWrappedEvent class holds a clone of an event associated with a QObject.
+  \brief The WrappedEvent class holds a clone of an event associated with a QObject.
 
   \since 4.6
   \ingroup statemachine
 
   A wrapped event is generated by a QStateMachine in response to a Qt
   event. The QEventTransition class provides a transition associated with a
-  such an event. QWrappedEvent is part of \l{The State Machine Framework}.
+  such an event. QStateMachine::WrappedEvent is part of \l{The State Machine
+  Framework}.
 
   The object() function returns the object that generated the event. The
   event() function returns a clone of the original event.
@@ -2158,32 +2179,32 @@ QSignalEvent::~QSignalEvent()
 /*!
   \internal
 
-  Constructs a new QWrappedEvent object with the given \a object
+  Constructs a new WrappedEvent object with the given \a object
   and \a event.
 
-  The QWrappedEvent object takes ownership of \a event.
+  The WrappedEvent object takes ownership of \a event.
 */
-QWrappedEvent::QWrappedEvent(QObject *object, QEvent *event)
+QStateMachine::WrappedEvent::WrappedEvent(QObject *object, QEvent *event)
     : QEvent(QEvent::Wrapped), m_object(object), m_event(event)
 {
 }
 
 /*!
-  Destroys this QWrappedEvent.
+  Destroys this WrappedEvent.
 */
-QWrappedEvent::~QWrappedEvent()
+QStateMachine::WrappedEvent::~WrappedEvent()
 {
     delete m_event;
 }
 
 /*!
-  \fn QWrappedEvent::object() const
+  \fn QStateMachine::WrappedEvent::object() const
 
   Returns the object that the event is associated with.
 */
 
 /*!
-  \fn QWrappedEvent::event() const
+  \fn QStateMachine::WrappedEvent::event() const
 
   Returns a clone of the original event.
 */

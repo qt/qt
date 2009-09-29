@@ -2339,6 +2339,7 @@ void tst_QTableView::scrollTo()
     // resizing to this size will ensure that there can ONLY_BE_ONE_CELL inside the view.
     QSize forcedSize(columnWidth * 2, rowHeight * 2);
     view.resize(forcedSize);
+    QTest::qWaitForWindowShown(&view);
     QTest::qWait(0);
     QTRY_COMPARE(view.size(), forcedSize);
 

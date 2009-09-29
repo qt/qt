@@ -283,6 +283,8 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       processDirtyItemsEmitted(false),
       selectionChanging(0),
       needSortTopLevelItems(true),
+      holesInTopLevelSiblingIndex(false),
+      topLevelSequentialOrdering(true),
       stickyFocus(false),
       hasFocus(false),
       focusItem(0),
@@ -379,24 +381,36 @@ void QGraphicsScenePrivate::_q_emitUpdated()
 
 /*!
     \internal
+
+    ### This function is almost identical to QGraphicsItemPrivate::addChild().
 */
 void QGraphicsScenePrivate::registerTopLevelItem(QGraphicsItem *item)
 {
-    needSortTopLevelItems = true;
+    item->d_ptr->ensureSequentialSiblingIndex();
+    needSortTopLevelItems = true; // ### maybe false
     item->d_ptr->siblingIndex = topLevelItems.size();
     topLevelItems.append(item);
 }
 
 /*!
     \internal
+
+    ### This function is almost identical to QGraphicsItemPrivate::removeChild().
 */
 void QGraphicsScenePrivate::unregisterTopLevelItem(QGraphicsItem *item)
 {
-    topLevelItems.removeOne(item);
+    if (!holesInTopLevelSiblingIndex)
+        holesInTopLevelSiblingIndex = item->d_ptr->siblingIndex != topLevelItems.size() - 1;
+    if (topLevelSequentialOrdering && !holesInTopLevelSiblingIndex)
+        topLevelItems.removeAt(item->d_ptr->siblingIndex);
+    else
+        topLevelItems.removeOne(item);
     // NB! Do not use topLevelItems.removeAt(item->d_ptr->siblingIndex) because
     // the item is not guaranteed to be at the index after the list is sorted
     // (see ensureSortedTopLevelItems()).
     item->d_ptr->siblingIndex = -1;
+    if (topLevelSequentialOrdering)
+        topLevelSequentialOrdering = !holesInTopLevelSiblingIndex;
 }
 
 /*!
@@ -1233,6 +1247,29 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
             // happened.
             q->clearSelection();
         }
+    }
+}
+
+/*!
+    \internal
+
+    Ensures that the list of toplevels is sorted by insertion order, and that
+    the siblingIndexes are packed (no gaps), and start at 0.
+
+    ### This function is almost identical to
+    QGraphicsItemPrivate::ensureSequentialSiblingIndex().
+*/
+void QGraphicsScenePrivate::ensureSequentialTopLevelSiblingIndexes()
+{
+    if (!topLevelSequentialOrdering) {
+        qSort(topLevelItems.begin(), topLevelItems.end(), QGraphicsItemPrivate::insertionOrder);
+        topLevelSequentialOrdering = true;
+        needSortTopLevelItems = 1;
+    }
+    if (holesInTopLevelSiblingIndex) {
+        holesInTopLevelSiblingIndex = 0;
+        for (int i = 0; i < topLevelItems.size(); ++i)
+            topLevelItems[i]->d_ptr->siblingIndex = i;
     }
 }
 
