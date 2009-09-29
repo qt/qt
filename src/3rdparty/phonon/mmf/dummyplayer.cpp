@@ -133,6 +133,9 @@ void MMF::DummyPlayer::doSetTickInterval(qint32)
 
 }
 
+void MMF::DummyPlayer::changeState(PrivateState)
+{
+}
 
 QT_END_NAMESPACE
 

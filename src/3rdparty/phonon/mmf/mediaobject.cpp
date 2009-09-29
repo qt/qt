@@ -28,6 +28,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "mediaobject.h"
 
 #include <QDir>
+#include <QUrl>
 
 QT_BEGIN_NAMESPACE
 
@@ -233,6 +234,8 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
     const bool oldPlayerHasVideo = oldPlayer->hasVideo();
     const bool oldPlayerSeekable = oldPlayer->isSeekable();
 
+    Phonon::ErrorType error = NoError;
+
     // Determine media type
     switch (source.type()) {
     case MediaSource::LocalFile:
@@ -240,26 +243,22 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
         break;
 
     case MediaSource::Url:
-        // TODO: support detection of media type from HTTP streams
-        TRACE_0("Network streaming not supported yet");
-        /*
-         * TODO: handle error
-         *
-            m_error = NormalError;
-            changeState(ErrorState);
-         */
+        const QUrl url(source.url());
+
+        if (url.scheme() == QLatin1String("file")) {
+            mediaType = fileMediaType(url.toLocalFile());
+        }
+        else {
+            TRACE_0("Network streaming not supported yet");
+            error = NormalError;
+        }
         break;
 
     case MediaSource::Invalid:
     case MediaSource::Disc:
     case MediaSource::Stream:
         TRACE_0("Unsupported media type");
-        /*
-         * TODO: handle error
-         *
-            m_error = NormalError;
-            changeState(ErrorState);
-         */
+        error = NormalError;
         break;
 
     case MediaSource::Empty:
@@ -281,12 +280,8 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
         } else {
             newPlayer = new DummyPlayer();
         }
-        /*
-         * TODO: handle error?
-         *
-            m_error = NormalError;
-            changeState(ErrorState);
-         */
+
+        newPlayer->setError(NormalError);
         break;
 
     case MediaTypeAudio:
@@ -320,6 +315,11 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
     connect(m_player.data(), SIGNAL(stateChanged(Phonon::State, Phonon::State)), SIGNAL(stateChanged(Phonon::State, Phonon::State)));
     connect(m_player.data(), SIGNAL(finished()), SIGNAL(finished()));
     connect(m_player.data(), SIGNAL(tick(qint64)), SIGNAL(tick(qint64)));
+
+    if (error != NoError ) {
+        newPlayer = new DummyPlayer();
+        newPlayer->setError(error);
+    }
 
     TRACE_EXIT_0();
 }

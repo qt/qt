@@ -18,6 +18,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "abstractplayer.h"
 #include "defs.h"
+#include "utils.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -31,6 +32,8 @@ using namespace Phonon::MMF;
 
 MMF::AbstractPlayer::AbstractPlayer()
         :   m_videoOutput(0)
+        ,   m_state(GroundState)
+        ,   m_error(NoError)
         ,   m_tickInterval(DefaultTickInterval)
         ,   m_transitionTime(0)
         ,   m_prefinishMark(0)
@@ -40,6 +43,8 @@ MMF::AbstractPlayer::AbstractPlayer()
 
 MMF::AbstractPlayer::AbstractPlayer(const AbstractPlayer& player)
         :   m_videoOutput(player.m_videoOutput)
+        ,   m_state(GroundState)
+        ,   m_error(NoError)
         ,   m_tickInterval(player.tickInterval())
         ,   m_transitionTime(player.transitionTime())
         ,   m_prefinishMark(player.prefinishMark())
@@ -98,6 +103,60 @@ void MMF::AbstractPlayer::videoOutputChanged()
     // Default behaviour is empty - overridden by VideoPlayer
 }
 
+void MMF::AbstractPlayer::setError(Phonon::ErrorType error)
+{
+    TRACE_CONTEXT(AbstractPlayer::setError, EAudioInternal);
+    TRACE_ENTRY("state %d error %d", m_state, error);
+
+    m_error = error;
+    changeState(ErrorState);
+
+    TRACE_EXIT_0();
+}
+
+Phonon::ErrorType MMF::AbstractPlayer::errorType() const
+{
+    const Phonon::ErrorType result = (ErrorState == m_state)
+                                     ? errorType() : NoError;
+    return result;
+}
+
+QString MMF::AbstractPlayer::errorString() const
+{
+    // TODO: put in proper error strings
+    QString result;
+    return result;
+}
+
+Phonon::State MMF::AbstractPlayer::phononState() const
+{
+    return phononState(m_state);
+}
+
+Phonon::State MMF::AbstractPlayer::phononState(PrivateState state)
+{
+    const Phonon::State phononState =
+        GroundState == state
+        ?    Phonon::LoadingState
+        :    static_cast<Phonon::State>(state);
+
+    return phononState;
+}
+
+AbstractPlayer::PrivateState AbstractPlayer::privateState() const
+{
+    return m_state;
+}
+
+Phonon::State MMF::AbstractPlayer::state() const
+{
+    return phononState(m_state);
+}
+
+void MMF::AbstractPlayer::setState(PrivateState newState)
+{
+    m_state = newState;
+}
 
 QT_END_NAMESPACE
 

@@ -68,6 +68,8 @@ public:
     // AbstractPlayer
     virtual void doSetTickInterval(qint32 interval);
 
+protected:
+    virtual void changeState(PrivateState newState);
 };
 }
 }
