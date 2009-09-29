@@ -74,6 +74,9 @@ public:
     void removeClass(const QString& name);
     void toggleClass(const QString& name);
 
+    bool hasFocus() const;
+    void setFocus();
+
     QRect geometry() const;
 
     QString tagName() const;
@@ -120,22 +123,15 @@ public:
     void removeFromDocument();
     void removeChildren();
 
-    QVariant evaluateScript(const QString& scriptSource);
+    QVariant evaluateJavaScript(const QString& scriptSource);
 
-    QVariant callFunction(const QString& functionName, const QVariantList& arguments = QVariantList());
-    QStringList functions() const;
-
-    QVariant scriptableProperty(const QString& name) const;
-    void setScriptableProperty(const QString& name, const QVariant& value);
-    QStringList scriptableProperties() const;
-
-    enum ResolveRule { IgnoreCascadingStyles, RespectCascadingStyles };
-    QString styleProperty(const QString& name, ResolveRule = IgnoreCascadingStyles) const;
-
-    enum StylePriority { NormalStylePriority, DeclaredStylePriority, ImportantStylePriority };
-    void setStyleProperty(const QString& name, const QString& value, StylePriority = DeclaredStylePriority);
-
-    QString computedStyleProperty(const QString& name) const;
+    enum StyleResolveStrategy {
+         InlineStyle,
+         CascadedStyle,
+         ComputedStyle,
+    };
+    QString styleProperty(const QString& name, StyleResolveStrategy strategy) const;
+    void setStyleProperty(const QString& name, const QString& value);
 
 private:
     explicit QWebElement(WebCore::Element*);

@@ -1031,6 +1031,10 @@ QStringList CppParser::stringListifySegments(const QList<HashString> &segments)
 }
 
 struct QualifyOneData {
+    QualifyOneData(const NamespaceList &ns, int nsc, const HashString &seg, NamespaceList *rslvd)
+        : namespaces(ns), nsCount(nsc), segment(seg), resolved(rslvd)
+    {}
+
     const NamespaceList &namespaces;
     int nsCount;
     const HashString &segment;
@@ -1069,7 +1073,7 @@ bool CppParser::qualifyOneCallbackUsing(const Namespace *ns, void *context) cons
 bool CppParser::qualifyOne(const NamespaceList &namespaces, int nsCnt, const HashString &segment,
                            NamespaceList *resolved) const
 {
-    QualifyOneData data = { namespaces, nsCnt, segment, resolved, QSet<HashStringList>() };
+    QualifyOneData data(namespaces, nsCnt, segment, resolved);
 
     if (visitNamespace(namespaces, nsCnt, &CppParser::qualifyOneCallbackOwn, &data))
         return true;

@@ -21,7 +21,11 @@
 #include "config.h"
 #include "JSRange.h"
 
+#include "ClientRect.h"
+#include "ClientRectList.h"
 #include "DocumentFragment.h"
+#include "JSClientRect.h"
+#include "JSClientRectList.h"
 #include "JSDocumentFragment.h"
 #include "JSNode.h"
 #include "JSRange.h"
@@ -114,7 +118,7 @@ bool JSRangeConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identif
 
 /* Hash table for prototype */
 
-static const HashTableValue JSRangePrototypeTableValues[33] =
+static const HashTableValue JSRangePrototypeTableValues[35] =
 {
     { "START_TO_START", DontDelete|ReadOnly, (intptr_t)jsRangeSTART_TO_START, (intptr_t)0 },
     { "START_TO_END", DontDelete|ReadOnly, (intptr_t)jsRangeSTART_TO_END, (intptr_t)0 },
@@ -142,6 +146,8 @@ static const HashTableValue JSRangePrototypeTableValues[33] =
     { "cloneRange", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionCloneRange, (intptr_t)0 },
     { "toString", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionToString, (intptr_t)0 },
     { "detach", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionDetach, (intptr_t)0 },
+    { "getClientRects", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionGetClientRects, (intptr_t)0 },
+    { "getBoundingClientRect", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionGetBoundingClientRect, (intptr_t)0 },
     { "createContextualFragment", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionCreateContextualFragment, (intptr_t)1 },
     { "intersectsNode", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionIntersectsNode, (intptr_t)1 },
     { "compareNode", DontDelete|Function, (intptr_t)jsRangePrototypeFunctionCompareNode, (intptr_t)1 },
@@ -155,7 +161,7 @@ static JSC_CONST_HASHTABLE HashTable JSRangePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSRangePrototypeTableValues, 0 };
 #else
-    { 72, 63, JSRangePrototypeTableValues, 0 };
+    { 132, 127, JSRangePrototypeTableValues, 0 };
 #endif
 
 const ClassInfo JSRangePrototype::s_info = { "RangePrototype", 0, &JSRangePrototypeTable, 0 };
@@ -543,6 +549,32 @@ JSValue JSC_HOST_CALL jsRangePrototypeFunctionDetach(ExecState* exec, JSObject*,
     imp->detach(ec);
     setDOMException(exec, ec);
     return jsUndefined();
+}
+
+JSValue JSC_HOST_CALL jsRangePrototypeFunctionGetClientRects(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSRange::s_info))
+        return throwError(exec, TypeError);
+    JSRange* castedThisObj = static_cast<JSRange*>(asObject(thisValue));
+    Range* imp = static_cast<Range*>(castedThisObj->impl());
+
+
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getClientRects()));
+    return result;
+}
+
+JSValue JSC_HOST_CALL jsRangePrototypeFunctionGetBoundingClientRect(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSRange::s_info))
+        return throwError(exec, TypeError);
+    JSRange* castedThisObj = static_cast<JSRange*>(asObject(thisValue));
+    Range* imp = static_cast<Range*>(castedThisObj->impl());
+
+
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getBoundingClientRect()));
+    return result;
 }
 
 JSValue JSC_HOST_CALL jsRangePrototypeFunctionCreateContextualFragment(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

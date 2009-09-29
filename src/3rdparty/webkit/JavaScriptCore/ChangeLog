@@ -1,3 +1,252 @@
+2009-09-28  Joerg Bornemann  <joerg.bornemann@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Add ARM version detection for Windows CE.
+
+        * wtf/Platform.h:
+
+2009-09-26  Yongjun Zhang  <yongjun.zhang@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Add MarkStackSymbian.cpp to build JavascriptCore for Symbian.
+
+        Re-use Windows shrinkAllocation implementation because Symbian doesn't
+        support releasing part of memory region.
+        
+        Use fastMalloc and fastFree to implement allocateStack and releaseStack
+        for Symbian port.
+
+        * JavaScriptCore.pri:
+        * runtime/MarkStack.h:
+        (JSC::MarkStack::MarkStackArray::shrinkAllocation):
+        * runtime/MarkStackSymbian.cpp: Added.
+        (JSC::MarkStack::initializePagesize):
+        (JSC::MarkStack::allocateStack):
+        (JSC::MarkStack::releaseStack):
+
+2009-09-25  Gabor Loki  <loki@inf.u-szeged.hu>
+
+        Reviewed by Gavin Barraclough.
+
+        Fix unaligned data access in YARR_JIT on ARMv5 and below.
+        https://bugs.webkit.org/show_bug.cgi?id=29695
+
+        On ARMv5 and below all data access should be naturally aligned.
+        In the YARR_JIT there is a case when character pairs are
+        loaded from the input string, but this data access is not
+        naturally aligned. This fix introduces load32WithUnalignedHalfWords
+        and branch32WithUnalignedHalfWords functions which contain
+        naturally aligned memory loads - half word loads - on ARMv5 and below.
+
+        * assembler/MacroAssemblerARM.cpp:
+        (JSC::MacroAssemblerARM::load32WithUnalignedHalfWords):
+        * assembler/MacroAssemblerARM.h:
+        (JSC::MacroAssemblerARM::load32WithUnalignedHalfWords):
+        (JSC::MacroAssemblerARM::branch32WithUnalignedHalfWords):
+        * assembler/MacroAssemblerARMv7.h:
+        (JSC::MacroAssemblerARMv7::load32WithUnalignedHalfWords):
+        (JSC::MacroAssemblerARMv7::branch32):
+        (JSC::MacroAssemblerARMv7::branch32WithUnalignedHalfWords):
+        * assembler/MacroAssemblerX86Common.h:
+        (JSC::MacroAssemblerX86Common::load32WithUnalignedHalfWords):
+        (JSC::MacroAssemblerX86Common::branch32WithUnalignedHalfWords):
+        * wtf/Platform.h:
+        * yarr/RegexJIT.cpp:
+        (JSC::Yarr::RegexGenerator::generatePatternCharacterPair):
+
+2009-09-25  Jeremy Orlow  <jorlow@chromium.org>
+
+        This is breaking Chromium try bots, so I'm counting this as a build fix.
+
+        Add more svn:ignore exceptions.  On different platforms, these files are
+        generated with different case for JavaScriptCore.  Also there are some
+        wtf project files that get built apparently.
+
+        * JavaScriptCore.gyp: Changed property svn:ignore.
+
+2009-09-25  Ada Chan  <adachan@apple.com>
+
+        Build fix.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.def:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore_debug.def:
+
+2009-09-25  Geoffrey Garen  <ggaren@apple.com>
+
+        Reviewed by Darin Adler.
+
+        Inlined some object creation code, including lexicalGlobalObject access
+        https://bugs.webkit.org/show_bug.cgi?id=29750
+        
+        SunSpider says 0.5% faster.
+        
+        0.8% speedup on bench-alloc-nonretained.js.
+        2.5% speedup on v8-splay.js.
+
+        * interpreter/CachedCall.h:
+        (JSC::CachedCall::CachedCall):
+        * interpreter/CallFrame.h:
+        (JSC::ExecState::lexicalGlobalObject):
+        (JSC::ExecState::globalThisValue):
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::dumpRegisters):
+        (JSC::Interpreter::execute):
+        (JSC::Interpreter::privateExecute):
+        * jit/JITStubs.cpp:
+        (JSC::DEFINE_STUB_FUNCTION):
+        * runtime/FunctionConstructor.cpp:
+        (JSC::constructFunction):
+        * runtime/ScopeChain.cpp:
+        (JSC::ScopeChainNode::print):
+        * runtime/ScopeChain.h:
+        (JSC::ScopeChainNode::ScopeChainNode):
+        (JSC::ScopeChainNode::~ScopeChainNode):
+        (JSC::ScopeChainNode::push):
+        (JSC::ScopeChain::ScopeChain):
+        (JSC::ScopeChain::globalObject): Added a globalObject data member to ScopeChainNode.
+        Replaced accessor function for globalObject() with data member. Replaced
+        globalThisObject() accessor with direct access to globalThis, to match.
+
+        * runtime/JSGlobalObject.cpp:
+        (JSC::JSGlobalObject::init):
+        * runtime/JSGlobalObject.h: Inlined array and object construction.
+
+2009-09-25  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Gavin Barraclough.
+
+        Add ARM version detection rules for Symbian
+        https://bugs.webkit.org/show_bug.cgi?id=29715
+
+        * wtf/Platform.h:
+
+2009-09-24  Xan Lopez  <xlopez@igalia.com>
+
+        Reviewed by Mark "Do It!" Rowe.
+
+        Some GCC versions don't like C++-style comments in preprocessor
+        directives, change to C-style to shut them up.
+
+        * wtf/Platform.h:
+
+2009-09-24  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Gavin Barraclough.
+
+        Division is needlessly slow in 64-bit
+        https://bugs.webkit.org/show_bug.cgi?id=29723
+
+        Add codegen for op_div on x86-64
+
+        * jit/JIT.cpp:
+        (JSC::JIT::privateCompileMainPass):
+        (JSC::JIT::privateCompileSlowCases):
+        * jit/JIT.h:
+        * jit/JITArithmetic.cpp:
+        (JSC::JIT::compileBinaryArithOpSlowCase):
+        (JSC::JIT::emit_op_div):
+        (JSC::JIT::emitSlow_op_div):
+        * jit/JITInlineMethods.h:
+        (JSC::JIT::isOperandConstantImmediateDouble):
+        (JSC::JIT::addressFor):
+        (JSC::JIT::emitLoadDouble):
+        (JSC::JIT::emitLoadInt32ToDouble):
+        (JSC::JIT::emitJumpSlowCaseIfNotImmediateNumber):
+
+2009-09-24  Jeremy Orlow  <jorlow@chromium.org>
+
+        Reviewed by Dimitri Glazkov.
+
+        Add GYP generated files to svn:ignore
+        https://bugs.webkit.org/show_bug.cgi?id=29724
+
+        Adding the following files to the svn:ignore list (all in the
+        JavaScriptCore/JavaScriptCore.gyp directory)
+
+        JavaScriptCore.xcodeproj
+        JavaScriptCore.sln
+        JavaScriptCore.vcproj
+        JavaScriptCore_Debug.rules
+        JavaScriptCore_Release.rules
+        JavaScriptCore_Release - no tcmalloc.rules
+        JavaScriptCore_Purify.rules
+        JavaScriptCore.mk
+        JavaScriptCore_Debug_rules.mk
+        JavaScriptCore_Release_rules.mk
+        JavaScriptCore_Release - no tcmalloc_rules.mk
+        JavaScriptCore_Purify_rules.mk
+        JavaScriptCore.scons
+        JavaScriptCore_main.scons
+
+        * JavaScriptCore.gyp: Changed property svn:ignore.
+
+2009-09-24  Yong Li  <yong.li@torchmobile.com>
+
+        Reviewed by Adam Barth.
+
+        Replace platform-dependent code with WTF::currentTime()
+        https://bugs.webkit.org/show_bug.cgi?id=29148
+
+        * jsc.cpp:
+        (StopWatch::start):
+        (StopWatch::stop):
+        (StopWatch::getElapsedMS):
+        * runtime/TimeoutChecker.cpp:
+        (JSC::getCPUTime):
+
+2009-09-24  Mark Rowe  <mrowe@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        <rdar://problem/7215058> FastMalloc scavenging thread should be named
+
+        * wtf/FastMalloc.cpp:
+        (WTF::TCMalloc_PageHeap::scavengerThread): Set the thread name.
+        * wtf/Platform.h: Move the knowledge of whether pthread_setname_np exists to here as HAVE(PTHREAD_SETNAME_NP).
+        * wtf/ThreadingPthreads.cpp:
+        (WTF::setThreadNameInternal): Use HAVE(PTHREAD_SETNAME_NP).
+
+2009-09-24  Geoffrey Garen  <ggaren@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        Renamed clear to removeAll, as suggested by Darin Adler.
+
+        * wtf/HashCountedSet.h:
+        (WTF::::removeAll):
+
+2009-09-24  Mark Rowe  <mrowe@apple.com>
+
+        Reviewed by Gavin Barraclough.
+
+        Fix FastMalloc to build with assertions enabled.
+
+        * wtf/FastMalloc.cpp:
+        (WTF::TCMalloc_Central_FreeList::ReleaseToSpans):
+        * wtf/TCSpinLock.h:
+        (TCMalloc_SpinLock::IsHeld):
+
+2009-09-24  Geoffrey Garen  <ggaren@apple.com>
+
+        Suggested by Darin Adler.
+
+        Removed some unnecessary parameter names.
+
+        * wtf/HashCountedSet.h:
+
+2009-09-24  Janne Koskinen  <janne.p.koskinen@digia.com>
+
+        Reviewed by Simon Hausmann.
+
+        On Windows JSChar is typedef'ed to wchar_t.
+
+        When building with WINSCW for Symbian we need to do the
+        same typedef.
+
+        * API/JSStringRef.h:
+
 2009-09-23  Geoffrey Garen  <ggaren@apple.com>
 
         A piece of my last patch that I forgot.

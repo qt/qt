@@ -84,18 +84,23 @@ WebInspector.WatchExpressionsSection.prototype = {
     {
         function appendResult(expression, watchIndex, result, exception)
         {
-            // The null check catches some other cases, like null itself, and NaN
-            if ((typeof result !== "object") || (result == null))
-                result = new WebInspector.ObjectProxy(null, [], 0, String(result), false);
+            if (exception) {
+                // Exception results are not wrappers, but text messages.
+                result = WebInspector.ObjectProxy.wrapPrimitiveValue(result);
+            } else if (result.type === "string") {
+                // Evaluation result is intentionally not abbreviated. However, we'd like to distinguish between null and "null"
+                result.description = "\"" + result.description + "\"";
+            }
 
             var property = new WebInspector.ObjectPropertyProxy(expression, result);
             property.watchIndex = watchIndex;
+            property.isException = exception;
 
             // For newly added, empty expressions, set description to "",
             // since otherwise you get DOMWindow
             if (property.name === WebInspector.WatchExpressionsSection.NewWatchExpression) 
                 property.value.description = "";
-            
+
             // To clarify what's going on here: 
             // In the outer function, we calculate the number of properties
             // that we're going to be updating, and set that in the
@@ -217,6 +222,9 @@ WebInspector.WatchExpressionTreeElement.prototype = {
     update: function()
     {
         WebInspector.ObjectPropertyTreeElement.prototype.update.call(this);
+
+        if (this.property.isException)
+            this.valueElement.addStyleClass("watch-expressions-error-level");
 
         var deleteButton = document.createElement("input");
         deleteButton.type = "button";
