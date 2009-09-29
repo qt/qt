@@ -1,4 +1,6 @@
 #include <qtest.h>
+#include "../../../shared/util.h"
+#include <QFile>
 #include <QTextDocument>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcontext.h>
@@ -6,6 +8,7 @@
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qfxtextedit.h>
 #include <QFontMetrics>
+#include <QmlView>
 
 class tst_qfxtextedit : public QObject
 
@@ -27,8 +30,12 @@ private slots:
     void selection();
 
     void cursorDelegate();
+    void navigation();
 
 private:
+    void simulateKey(QmlView *, int key);
+    QmlView *createView(const QString &filename);
+
     QStringList standard;
     QStringList richText;
 
@@ -424,7 +431,6 @@ void tst_qfxtextedit::selection()
     QVERIFY(textEditObject->selectedText().size() == 10);
 }
 
-#include <QmlView>
 void tst_qfxtextedit::cursorDelegate()
 {
     QmlView* view = new QmlView(0);
@@ -451,6 +457,54 @@ void tst_qfxtextedit::cursorDelegate()
     textEditObject->setCursorDelegate(0);
     QVERIFY(!textEditObject->findChild<QFxItem*>("cursorInstance"));
 }
+
+/*
+TextEdit element should only handle left/right keys until the cursor reaches
+the extent of the text, then they should ignore the keys.
+*/
+void tst_qfxtextedit::navigation()
+{
+    QmlView *canvas = createView(SRCDIR "/data/navigation.qml");
+    canvas->execute();
+    canvas->show();
+
+    QVERIFY(canvas->root() != 0);
+
+    QFxItem *input = qobject_cast<QFxItem *>(qvariant_cast<QObject *>(canvas->root()->property("myInput")));
+
+    QVERIFY(input != 0);
+    QTRY_VERIFY(input->hasFocus() == true);
+    simulateKey(canvas, Qt::Key_Left);
+    QVERIFY(input->hasFocus() == false);
+    simulateKey(canvas, Qt::Key_Right);
+    QVERIFY(input->hasFocus() == true);
+    simulateKey(canvas, Qt::Key_Right);
+    QVERIFY(input->hasFocus() == false);
+    simulateKey(canvas, Qt::Key_Left);
+    QVERIFY(input->hasFocus() == true);
+}
+
+void tst_qfxtextedit::simulateKey(QmlView *view, int key)
+{
+    QKeyEvent press(QKeyEvent::KeyPress, key, 0);
+    QKeyEvent release(QKeyEvent::KeyRelease, key, 0);
+
+    QApplication::sendEvent(view, &press);
+    QApplication::sendEvent(view, &release);
+}
+
+QmlView *tst_qfxtextedit::createView(const QString &filename)
+{
+    QmlView *canvas = new QmlView(0);
+
+    QFile file(filename);
+    file.open(QFile::ReadOnly);
+    QString xml = file.readAll();
+    canvas->setQml(xml, filename);
+
+    return canvas;
+}
+
 
 QTEST_MAIN(tst_qfxtextedit)
 
