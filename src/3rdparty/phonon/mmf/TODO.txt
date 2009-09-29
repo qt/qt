@@ -3,9 +3,6 @@ TODO list for MMF Phonon backend
 
 The following items are in rough order of priority.
 
-* Seeking does not work for video playback
-Do we need to pause/stop the CVideoPlayerUtility before calling SetPositionL?  This is inconsistent with CMdaAudioPlayerUtility, but may be necessary - needs to be tested on target.
-
 * Activating full-screen video playback in qmediaplayer causes the app to crash
 This may be symptomatic of more general problems with re-sizing / re-positioning video while playing.
 
