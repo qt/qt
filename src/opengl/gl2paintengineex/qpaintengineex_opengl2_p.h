@@ -82,13 +82,16 @@ public:
     QOpenGL2PaintEngineState();
     ~QOpenGL2PaintEngineState();
 
-    bool needsClipBufferClear;
+    uint needsClipBufferClear : 1;
+    uint clipTestEnabled : 1;
+    uint canRestoreClip : 1;
+    uint matrixChanged : 1;
+    uint compositionModeChanged : 1;
+    uint opacityChanged : 1;
+    uint renderHintsChanged : 1;
+    uint clipChanged : 1;
+    uint currentClip : 8;
 
-    bool clipTestEnabled;
-    bool scissorTestEnabled;
-    uint currentClip;
-
-    bool canRestoreClip;
     QRect rectangleClip;
 };
 
