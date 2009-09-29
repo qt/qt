@@ -119,6 +119,7 @@ private slots:
     void assignProperty();
     void assignPropertyWithAnimation();
     void postEvent();
+    void cancelDelayedEvent();
     void stateFinished();
     void parallelStates();
     void parallelRootState();
@@ -1543,8 +1544,8 @@ private:
 class StringEventPoster : public QState
 {
 public:
-    StringEventPoster(QStateMachine *machine, const QString &value, QState *parent = 0)
-        : QState(parent), m_machine(machine), m_value(value), m_delay(0) {}
+    StringEventPoster(const QString &value, QState *parent = 0)
+        : QState(parent), m_value(value), m_delay(-1) {}
 
     void setString(const QString &value)
         { m_value = value; }
@@ -1554,12 +1555,14 @@ public:
 protected:
     virtual void onEntry(QEvent *)
     {
-        m_machine->postEvent(new StringEvent(m_value), m_delay);
+        if (m_delay == -1)
+            machine()->postEvent(new StringEvent(m_value));
+        else
+            machine()->postDelayedEvent(new StringEvent(m_value), m_delay);
     }
     virtual void onExit(QEvent *) {}
 
 private:
-    QStateMachine *m_machine;
     QString m_value;
     int m_delay;
 };
@@ -1573,7 +1576,7 @@ void tst_QStateMachine::postEvent()
             QTest::ignoreMessage(QtWarningMsg, "QStateMachine::postEvent: cannot post event when the state machine is not running");
             machine.postEvent(&e);
         }
-        StringEventPoster *s1 = new StringEventPoster(&machine, "a");
+        StringEventPoster *s1 = new StringEventPoster("a");
         if (x == 1)
             s1->setDelay(100);
         QFinalState *s2 = new QFinalState;
@@ -1597,6 +1600,42 @@ void tst_QStateMachine::postEvent()
         QCOMPARE(machine.configuration().size(), 1);
         QVERIFY(machine.configuration().contains(s3));
     }
+}
+
+void tst_QStateMachine::cancelDelayedEvent()
+{
+    QStateMachine machine;
+    QTest::ignoreMessage(QtWarningMsg, "QStateMachine::cancelDelayedEvent: the machine is not running");
+    QVERIFY(!machine.cancelDelayedEvent(-1));
+
+    QState *s1 = new QState(&machine);
+    QFinalState *s2 = new QFinalState(&machine);
+    s1->addTransition(new StringTransition("a", s2));
+    machine.setInitialState(s1);
+
+    QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    machine.start();
+    QTRY_COMPARE(startedSpy.count(), 1);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s1));
+
+    int id1 = machine.postDelayedEvent(new StringEvent("c"), 50000);
+    QVERIFY(id1 != -1);
+    int id2 = machine.postDelayedEvent(new StringEvent("b"), 25000);
+    QVERIFY(id2 != -1);
+    QVERIFY(id2 != id1);
+    int id3 = machine.postDelayedEvent(new StringEvent("a"), 100);
+    QVERIFY(id3 != -1);
+    QVERIFY(id3 != id2);
+    QVERIFY(machine.cancelDelayedEvent(id1));
+    QVERIFY(!machine.cancelDelayedEvent(id1));
+    QVERIFY(machine.cancelDelayedEvent(id2));
+    QVERIFY(!machine.cancelDelayedEvent(id2));
+
+    QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    QTRY_COMPARE(finishedSpy.count(), 1);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s2));
 }
 
 void tst_QStateMachine::stateFinished()

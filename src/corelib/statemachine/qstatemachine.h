@@ -102,6 +102,11 @@ public:
         QEvent *m_event;
     };
 
+    enum EventPriority {
+        NormalPriority,
+        HighPriority
+    };
+
     enum RestorePolicy {
         DoNotRestoreProperties,
         RestoreProperties
@@ -138,7 +143,9 @@ public:
     QStateMachine::RestorePolicy globalRestorePolicy() const;
     void setGlobalRestorePolicy(QStateMachine::RestorePolicy restorePolicy);
 
-    void postEvent(QEvent *event, int delay = 0);
+    void postEvent(QEvent *event, EventPriority priority = NormalPriority);
+    int postDelayedEvent(QEvent *event, int delay);
+    bool cancelDelayedEvent(int id);
 
     QSet<QAbstractState*> configuration() const;
 
@@ -157,8 +164,6 @@ Q_SIGNALS:
 protected:
     void onEntry(QEvent *event);
     void onExit(QEvent *event);
-
-    void postInternalEvent(QEvent *event);
 
     virtual void beginSelectTransitions(QEvent *event);
     virtual void endSelectTransitions(QEvent *event);
