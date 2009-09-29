@@ -113,6 +113,7 @@ contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
 !contains(DEFINES, ENABLE_DOM_STORAGE=.): DEFINES += ENABLE_DOM_STORAGE=1
 !contains(DEFINES, ENABLE_ICONDATABASE=.): DEFINES += ENABLE_ICONDATABASE=1
 !contains(DEFINES, ENABLE_CHANNEL_MESSAGING=.): DEFINES += ENABLE_CHANNEL_MESSAGING=1
+!contains(DEFINES, ENABLE_ORIENTATION_EVENTS=.): DEFINES += ENABLE_ORIENTATION_EVENTS=0
 
 # turn on SQLITE support if any of the dependent features are turned on
 !contains(DEFINES, ENABLE_SQLITE=.) {
@@ -1137,6 +1138,7 @@ SOURCES += \
     page/Page.cpp \
     page/PageGroup.cpp \
     page/PageGroupLoadDeferrer.cpp \
+    page/PluginHalter.cpp \
     page/PrintContext.cpp \
     page/SecurityOrigin.cpp \
     page/Screen.cpp \
@@ -1811,6 +1813,7 @@ HEADERS += \
     page/FrameView.h \
     page/Geolocation.h \
     page/Geoposition.h \
+    page/HaltablePlugin.h \
     page/History.h \
     page/Location.h \
     page/MouseEventWithHitTestResults.h \
@@ -1819,6 +1822,8 @@ HEADERS += \
     page/PageGroup.h \
     page/PageGroupLoadDeferrer.h \
     page/Page.h \
+    page/PluginHalter.h \
+    page/PluginHalterClient.h \
     page/PrintContext.h \
     page/Screen.h \
     page/SecurityOrigin.h \
@@ -2480,6 +2485,10 @@ contains(DEFINES, ENABLE_NETSCAPE_PLUGIN_API=1) {
 
 contains(DEFINES, ENABLE_CHANNEL_MESSAGING=1) {
     FEATURE_DEFINES_JAVASCRIPT += ENABLE_CHANNEL_MESSAGING=1
+}
+
+contains(DEFINES, ENABLE_ORIENTATION_EVENTS=1) {
+    FEATURE_DEFINES_JAVASCRIPT += ENABLE_ORIENTATION_EVENTS=1
 }
 
 contains(DEFINES, ENABLE_DASHBOARD_SUPPORT=0) {

@@ -271,7 +271,7 @@ QWebPagePrivate::QWebPagePrivate(QWebPage *qq)
     contextMenuClient = new ContextMenuClientQt();
     editorClient = new EditorClientQt(q);
     page = new Page(chromeClient, contextMenuClient, editorClient,
-                    new DragClientQt(q), new InspectorClientQt(q));
+                    new DragClientQt(q), new InspectorClientQt(q), 0);
 
     // ### should be configurable
     page->settings()->setDefaultTextEncodingName("iso-8859-1");
@@ -1491,11 +1491,9 @@ QWebPage::QWebPage(QObject *parent)
 */
 QWebPage::~QWebPage()
 {
-    if (d->mainFrame) {
-        FrameLoader *loader = d->mainFrame->d->frame->loader();
-        if (loader)
-            loader->detachFromParent();
-    }
+    FrameLoader *loader = d->mainFrame->d->frame->loader();
+    if (loader)
+        loader->detachFromParent();
     if (d->inspector)
         d->inspector->setPage(0);
     delete d;
@@ -1522,7 +1520,6 @@ QWebFrame *QWebPage::mainFrame() const
 */
 QWebFrame *QWebPage::currentFrame() const
 {
-    d->createMainFrame();
     return static_cast<WebCore::FrameLoaderClientQt *>(d->page->focusController()->focusedOrMainFrame()->loader()->client())->webFrame();
 }
 
@@ -1548,7 +1545,6 @@ QWebFrame* QWebPage::frameAt(const QPoint& pos) const
 */
 QWebHistory *QWebPage::history() const
 {
-    d->createMainFrame();
     return &d->history;
 }
 

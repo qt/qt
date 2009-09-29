@@ -229,8 +229,7 @@
 #define PLATFORM_ARM_ARCH(N) (PLATFORM(ARM) && ARM_ARCH_VERSION >= N)
 
 #if   defined(arm) \
-   || defined(__arm__) \
-   || defined(__MARM__)
+   || defined(__arm__)
 #define WTF_PLATFORM_ARM 1
 #if defined(__ARMEB__)
 #define WTF_PLATFORM_BIG_ENDIAN 1
@@ -238,8 +237,8 @@
 #define WTF_PLATFORM_MIDDLE_ENDIAN 1
 #endif
 #define ARM_ARCH_VERSION 3
-#if defined(__ARM_ARCH_4__) || defined(__ARM_ARCH_4T__) || defined(ARMV4I) \
-    || defined(_ARMV4I_) || defined(armv4i)
+#if defined(__ARM_ARCH_4__) || defined(__ARM_ARCH_4T__) || defined(__MARM_ARMV4__) \
+    || defined(_ARMV4I_)
 #undef ARM_ARCH_VERSION
 #define ARM_ARCH_VERSION 4
 #endif
@@ -255,16 +254,20 @@
 #undef ARM_ARCH_VERSION
 #define ARM_ARCH_VERSION 6
 #endif
-#if defined(__ARM_ARCH_7A__) || defined(__ARMV7__)
+#if defined(__ARM_ARCH_7A__)
 #undef ARM_ARCH_VERSION
 #define ARM_ARCH_VERSION 7
+#endif
+/* On ARMv5 and below the natural alignment is required. */
+#if !defined(ARM_REQUIRE_NATURAL_ALIGNMENT) && ARM_ARCH_VERSION <= 5
+#define ARM_REQUIRE_NATURAL_ALIGNMENT 1
 #endif
 /* Defines two pseudo-platforms for ARM and Thumb-2 instruction set. */
 #if !defined(WTF_PLATFORM_ARM_TRADITIONAL) && !defined(WTF_PLATFORM_ARM_THUMB2)
 #  if defined(thumb2) || defined(__thumb2__)
 #    define WTF_PLATFORM_ARM_TRADITIONAL 0
 #    define WTF_PLATFORM_ARM_THUMB2 1
-#  elif PLATFORM_ARM_ARCH(4) || PLATFORM_ARM_ARCH(5)
+#  elif PLATFORM_ARM_ARCH(4)
 #    define WTF_PLATFORM_ARM_TRADITIONAL 1
 #    define WTF_PLATFORM_ARM_THUMB2 0
 #  else
@@ -420,7 +423,7 @@
 #endif
 #define HAVE_READLINE 1
 #define HAVE_RUNLOOP_TIMER 1
-#endif // PLATFORM(MAC) && !PLATFORM(IPHONE)
+#endif /* PLATFORM(MAC) && !PLATFORM(IPHONE) */
 
 #if PLATFORM(CHROMIUM) && PLATFORM(DARWIN)
 #define WTF_PLATFORM_CF 1
@@ -497,6 +500,7 @@
 #if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD) && !PLATFORM(IPHONE)
 #define HAVE_MADV_FREE_REUSE 1
 #define HAVE_MADV_FREE 1
+#define HAVE_PTHREAD_SETNAME_NP 1
 #endif
 
 #if PLATFORM(IPHONE)
