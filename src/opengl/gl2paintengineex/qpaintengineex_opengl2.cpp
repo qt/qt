@@ -898,11 +898,14 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
 
         prepareForDraw(currentBrush->isOpaque());
 
-#ifndef QT_OPENGL_ES_2
         if (inRenderText)
-            shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::Depth), zValueForRenderText());
-#endif
+            prepareDepthRangeForRenderText();
+
         composite(vertexCoordinateArray.boundingRect());
+
+        if (inRenderText)
+            restoreDepthRangeForRenderText();
+
         glStencilMask(0);
 
         updateClipScissorTest();
@@ -1138,7 +1141,7 @@ void QGL2PaintEngineExPrivate::drawVertexArrays(QGL2PEXVertexArray& vertexArray,
     glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
 }
 
-float QGL2PaintEngineExPrivate::zValueForRenderText() const
+void QGL2PaintEngineExPrivate::prepareDepthRangeForRenderText()
 {
 #ifndef QT_OPENGL_ES_2
     // Get the z translation value from the model view matrix and
@@ -1146,9 +1149,19 @@ float QGL2PaintEngineExPrivate::zValueForRenderText() const
     // and z-far = 1, which is used in QGLWidget::renderText()
     GLdouble model[4][4];
     glGetDoublev(GL_MODELVIEW_MATRIX, &model[0][0]);
-    return -2 * model[3][2] - 1;
-#else
-    return 0;
+    float deviceZ = -2 * model[3][2] - 1;
+
+    glGetFloatv(GL_DEPTH_RANGE, depthRange);
+    float windowZ = depthRange[0] + (deviceZ + 1) * 0.5 * (depthRange[1] - depthRange[0]);
+
+    glDepthRange(windowZ, windowZ);
+#endif
+}
+
+void QGL2PaintEngineExPrivate::restoreDepthRangeForRenderText()
+{
+#ifndef QT_OPENGL_ES_2
+    glDepthRange(depthRange[0], depthRange[1]);
 #endif
 }
 
@@ -1406,6 +1419,9 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGly
     QBrush pensBrush = q->state()->pen.brush();
     setBrush(&pensBrush);
 
+    if (inRenderText)
+        prepareDepthRangeForRenderText();
+
     if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
 
         // Subpixel antialiasing without gamma correction
@@ -1458,10 +1474,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGly
             glBindTexture(GL_TEXTURE_2D, cache->texture());
             updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
 
-#ifndef QT_OPENGL_ES_2
-            if (inRenderText)
-                shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::Depth), zValueForRenderText());
-#endif
             shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
             glDrawArrays(GL_TRIANGLES, 0, 6 * glyphs.size());
 
@@ -1492,12 +1504,11 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGly
     glBindTexture(GL_TEXTURE_2D, cache->texture());
     updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
 
-#ifndef QT_OPENGL_ES_2
-    if (inRenderText)
-        shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::Depth), zValueForRenderText());
-#endif
     shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
     glDrawArrays(GL_TRIANGLES, 0, 6 * glyphs.size());
+
+    if (inRenderText)
+        restoreDepthRangeForRenderText();
 }
 
 void QGL2PaintEngineEx::drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints)

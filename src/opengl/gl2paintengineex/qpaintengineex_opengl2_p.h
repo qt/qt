@@ -197,7 +197,8 @@ public:
 
     inline void useSimpleShader();
 
-    float zValueForRenderText() const;
+    void prepareDepthRangeForRenderText();
+    void restoreDepthRangeForRenderText();
 
     static QGLEngineShaderManager* shaderManagerForEngine(QGL2PaintEngineEx *engine) { return engine->d_func()->shaderManager; }
 
@@ -257,6 +258,8 @@ public:
 
     bool needsSync;
     bool inRenderText;
+
+    GLfloat depthRange[2];
 
     float textureInvertedY;
 
