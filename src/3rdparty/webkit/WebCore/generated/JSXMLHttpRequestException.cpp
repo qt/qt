@@ -150,7 +150,7 @@ JSXMLHttpRequestException::JSXMLHttpRequestException(PassRefPtr<Structure> struc
 
 JSXMLHttpRequestException::~JSXMLHttpRequestException()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSXMLHttpRequestException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

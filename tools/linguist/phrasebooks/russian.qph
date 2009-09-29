@@ -201,10 +201,6 @@
     <target>разделить выбранные элементы</target>
 </phrase>
 <phrase>
-    <source>dock</source>
-    <target>док</target>
-</phrase>
-<phrase>
     <source>document</source>
     <target>документ</target>
 </phrase>
@@ -302,7 +298,7 @@
 </phrase>
 <phrase>
     <source>font style</source>
-    <target>стиль шрифта</target>
+    <target>начертание</target>
 </phrase>
 <phrase>
     <source>function key</source>
@@ -510,7 +506,7 @@
 </phrase>
 <phrase>
     <source>OK</source>
-    <target>Готово</target>
+    <target>ОК</target>
 </phrase>
 <phrase>
     <source>OLE</source>
@@ -1038,10 +1034,6 @@
 </phrase>
 <phrase>
     <source>OK</source>
-    <target>Выбрать</target>
-</phrase>
-<phrase>
-    <source>OK</source>
     <target>Закрыть</target>
 </phrase>
 <phrase>
@@ -1091,5 +1083,85 @@
 <phrase>
     <source>Checkable</source>
     <target>Переключаемое</target>
+</phrase>
+<phrase>
+    <source>Style</source>
+    <target>Начертание</target>
+</phrase>
+<phrase>
+    <source>Point size</source>
+    <target>Размер</target>
+</phrase>
+<phrase>
+    <source>Family</source>
+    <target>Шрифт</target>
+</phrase>
+<phrase>
+    <source>Writing system</source>
+    <target>Система письма</target>
+</phrase>
+<phrase>
+    <source>OK</source>
+    <target>Удалить</target>
+</phrase>
+<phrase>
+    <source>Style</source>
+    <target>Стиль</target>
+</phrase>
+<phrase>
+    <source>Edit</source>
+    <target>Изменить</target>
+</phrase>
+<phrase>
+    <source>Invalid</source>
+    <target>Некорректный</target>
+</phrase>
+<phrase>
+    <source>Invalid</source>
+    <target>Некорректная</target>
+</phrase>
+<phrase>
+    <source>Invalid</source>
+    <target>Некорректное</target>
+</phrase>
+<phrase>
+    <source>tag</source>
+    <target>тэг</target>
+</phrase>
+<phrase>
+    <source>tab order</source>
+    <target>порядок обхода</target>
+</phrase>
+<phrase>
+    <source>Ascending</source>
+    <target>По возрастанию</target>
+</phrase>
+<phrase>
+    <source>Descending</source>
+    <target>По убыванию</target>
+</phrase>
+<phrase>
+    <source>Reset</source>
+    <target>Сбросить</target>
+</phrase>
+<phrase>
+    <source>Sort order</source>
+    <target>Порядок сортировки</target>
+</phrase>
+<phrase>
+    <source>Appearance</source>
+    <target>Внешний вид</target>
+</phrase>
+<phrase>
+    <source>View</source>
+    <target>Просмотр</target>
+</phrase>
+<phrase>
+    <source>Actions</source>
+    <target>Действия</target>
+</phrase>
+<phrase>
+    <source>Table of Contents</source>
+    <target>Оглавление</target>
 </phrase>
 </QPH>

@@ -147,6 +147,8 @@ private slots:
     void task244408_wordUnderCursor_data();
     void task244408_wordUnderCursor();
 
+    void adjustCursorsOnInsert();
+
 private:
     int blockCount();
 
@@ -1656,6 +1658,98 @@ void tst_QTextCursor::task244408_wordUnderCursor()
     cursor.movePosition(QTextCursor::End);
     cursor.select(QTextCursor::WordUnderCursor);
     QCOMPARE(cursor.selectedText(), expected);
+}
+
+void tst_QTextCursor::adjustCursorsOnInsert()
+{
+    cursor.insertText("Some text before ");
+    int posBefore = cursor.position();
+    cursor.insertText("selected text");
+    int posAfter = cursor.position();
+    cursor.insertText(" some text afterwards");
+
+    QTextCursor selection = cursor;
+    selection.setPosition(posBefore);
+    selection.setPosition(posAfter, QTextCursor::KeepAnchor);
+
+    cursor.setPosition(posBefore-1);
+    cursor.insertText(QLatin1String("x"));
+    QCOMPARE(selection.anchor(), posBefore+1);
+    QCOMPARE(selection.position(), posAfter+1);
+    doc->undo();
+
+    cursor.setPosition(posBefore);
+    cursor.insertText(QLatin1String("x"));
+    QCOMPARE(selection.anchor(), posBefore+1);
+    QCOMPARE(selection.position(), posAfter+1);
+    doc->undo();
+
+    cursor.setPosition(posBefore+1);
+    cursor.insertText(QLatin1String("x"));
+    QCOMPARE(selection.anchor(), posBefore);
+    QCOMPARE(selection.position(), posAfter+1);
+    doc->undo();
+
+    cursor.setPosition(posAfter-1);
+    cursor.insertText(QLatin1String("x"));
+    QCOMPARE(selection.anchor(), posBefore);
+    QCOMPARE(selection.position(), posAfter+1);
+    doc->undo();
+
+    cursor.setPosition(posAfter);
+    cursor.insertText(QLatin1String("x"));
+    QCOMPARE(selection.anchor(), posBefore);
+    QCOMPARE(selection.position(), posAfter);
+    doc->undo();
+
+    cursor.setPosition(posAfter+1);
+    cursor.insertText(QLatin1String("x"));
+    QCOMPARE(selection.anchor(), posBefore);
+    QCOMPARE(selection.position(), posAfter);
+    doc->undo();
+
+    selection.setPosition(posAfter);
+    selection.setPosition(posBefore, QTextCursor::KeepAnchor);
+
+    cursor.setPosition(posBefore-1);
+    cursor.insertText(QLatin1String("x"));
+    QCOMPARE(selection.position(), posBefore+1);
+    QCOMPARE(selection.anchor(), posAfter+1);
+    doc->undo();
+
+    cursor.setPosition(posBefore);
+    cursor.insertText(QLatin1String("x"));
+    QCOMPARE(selection.position(), posBefore+1);
+    QCOMPARE(selection.anchor(), posAfter+1);
+    doc->undo();
+
+    cursor.setPosition(posBefore+1);
+    cursor.insertText(QLatin1String("x"));
+    QCOMPARE(selection.position(), posBefore);
+    QCOMPARE(selection.anchor(), posAfter+1);
+    doc->undo();
+
+    cursor.setPosition(posAfter-1);
+    cursor.insertText(QLatin1String("x"));
+    QCOMPARE(selection.position(), posBefore);
+    QCOMPARE(selection.anchor(), posAfter+1);
+    doc->undo();
+
+    cursor.setPosition(posAfter);
+    cursor.insertText(QLatin1String("x"));
+    QCOMPARE(selection.position(), posBefore);
+    QCOMPARE(selection.anchor(), posAfter+1);
+    doc->undo();
+
+    cursor.setPosition(posAfter+1);
+    cursor.insertText(QLatin1String("x"));
+    QCOMPARE(selection.position(), posBefore);
+    QCOMPARE(selection.anchor(), posAfter);
+    doc->undo();
+
+
+
+
 }
 
 QTEST_MAIN(tst_QTextCursor)

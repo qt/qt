@@ -31,6 +31,7 @@
 #include "JSDOMGlobalObject.h"
 #include "JSEvent.h"
 #include "JSEventListener.h"
+#include "RegisteredEventListener.h"
 #include <runtime/Error.h>
 #include <wtf/GetPtr.h>
 
@@ -144,7 +145,14 @@ JSAbstractWorker::JSAbstractWorker(PassRefPtr<Structure> structure, JSDOMGlobalO
 
 JSAbstractWorker::~JSAbstractWorker()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    impl()->invalidateEventListeners();
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+}
+
+void JSAbstractWorker::markChildren(MarkStack& markStack)
+{
+    Base::markChildren(markStack);
+    impl()->markEventListeners(markStack);
 }
 
 JSObject* JSAbstractWorker::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

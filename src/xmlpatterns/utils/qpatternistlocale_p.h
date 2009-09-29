@@ -66,9 +66,6 @@ QT_BEGIN_NAMESPACE
  * @file
  * @short Contains functions used for formatting arguments, such as keywords and paths,
  * in translated strings.
- *
- * This file was originally called qpatternistlocale_p.h. However, it broke build on MS
- * Windows, because it override the locale.h system header.
  */
 
 namespace QPatternist

@@ -103,7 +103,7 @@ JSSVGTransformList::JSSVGTransformList(PassRefPtr<Structure> structure, JSDOMGlo
 
 JSSVGTransformList::~JSSVGTransformList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGTransformList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

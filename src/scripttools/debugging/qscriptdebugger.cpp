@@ -1927,6 +1927,7 @@ QMenu *QScriptDebugger::createStandardMenu(QWidget *widgetParent, QObject *actio
     return menu;
 }
 
+#ifndef QT_NO_TOOLBAR
 QToolBar *QScriptDebugger::createStandardToolBar(QWidget *widgetParent, QObject *actionParent)
 {
     QToolBar *tb = new QToolBar(widgetParent);
@@ -1942,6 +1943,7 @@ QToolBar *QScriptDebugger::createStandardToolBar(QWidget *widgetParent, QObject 
     tb->addAction(action(FindInScriptAction, actionParent));
     return tb;
 }
+#endif
 
 bool QScriptDebugger::isInteractive() const
 {

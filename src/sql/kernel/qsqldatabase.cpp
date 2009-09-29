@@ -1228,6 +1228,7 @@ QSqlRecord QSqlDatabase::record(const QString& tablename) const
     \i CLIENT_NO_SCHEMA
     \i CLIENT_INTERACTIVE
     \i UNIX_SOCKET
+    \i MYSQL_OPT_RECONNECT
     \endlist
 
     \i

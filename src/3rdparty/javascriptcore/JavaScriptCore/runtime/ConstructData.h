@@ -33,7 +33,7 @@ namespace JSC {
 
     class ArgList;
     class ExecState;
-    class FunctionBodyNode;
+    class FunctionExecutable;
     class JSObject;
     class JSValue;
     class ScopeChainNode;
@@ -84,7 +84,7 @@ namespace JSC {
 #endif
         } native;
         struct {
-            FunctionBodyNode* functionBody;
+            FunctionExecutable* functionExecutable;
             ScopeChainNode* scopeChain;
         } js;
     };

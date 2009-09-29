@@ -165,6 +165,7 @@ public:
     QPointF map(const QPointF& point) const;
 #ifndef QT_NO_VECTOR3D
     QVector3D map(const QVector3D& point) const;
+    QVector3D mapVector(const QVector3D& vector) const;
 #endif
 #ifndef QT_NO_VECTOR4D
     QVector4D map(const QVector4D& point) const;
@@ -938,6 +939,27 @@ inline QPointF QMatrix4x4::map(const QPointF& point) const
 inline QVector3D QMatrix4x4::map(const QVector3D& point) const
 {
     return *this * point;
+}
+
+inline QVector3D QMatrix4x4::mapVector(const QVector3D& vector) const
+{
+    if (flagBits == Identity || flagBits == Translation) {
+        return vector;
+    } else if (flagBits == Scale || flagBits == (Translation | Scale)) {
+        return QVector3D(vector.x() * m[0][0],
+                         vector.y() * m[1][1],
+                         vector.z() * m[2][2]);
+    } else {
+        return QVector3D(vector.x() * m[0][0] +
+                         vector.y() * m[1][0] +
+                         vector.z() * m[2][0],
+                         vector.x() * m[0][1] +
+                         vector.y() * m[1][1] +
+                         vector.z() * m[2][1],
+                         vector.x() * m[0][2] +
+                         vector.y() * m[1][2] +
+                         vector.z() * m[2][2]);
+    }
 }
 
 #endif

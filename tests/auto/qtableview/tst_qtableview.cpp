@@ -586,13 +586,13 @@ void tst_QTableView::keyboardNavigation()
     QTableView view;
     view.setModel(&model);
 
-    view.show();
     view.setTabKeyNavigation(tabKeyNavigation);
-
     QModelIndex index = model.index(rowCount - 1, columnCount - 1);
     view.setCurrentIndex(index);
 
-    QApplication::processEvents();
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    qApp->setActiveWindow(&view);
 
     int row = rowCount - 1;
     int column = columnCount - 1;
@@ -2339,6 +2339,7 @@ void tst_QTableView::scrollTo()
     // resizing to this size will ensure that there can ONLY_BE_ONE_CELL inside the view.
     QSize forcedSize(columnWidth * 2, rowHeight * 2);
     view.resize(forcedSize);
+    QTest::qWaitForWindowShown(&view);
     QTest::qWait(0);
     QTRY_COMPARE(view.size(), forcedSize);
 
@@ -2908,14 +2909,11 @@ void tst_QTableView::tabFocus()
     QLineEdit *edit = new QLineEdit(&window);
 
     window.show();
-//wait for window manager:
-#ifdef Q_WS_QWS
-    qApp->processEvents();
-#endif
+    QApplication::setActiveWindow(&window);
+    QTest::qWaitForWindowShown(&window);
     window.setFocus();
     QTest::qWait(100);
     window.activateWindow();
-    QApplication::setActiveWindow(&window);
     QTest::qWait(100);
 
     qApp->processEvents();
@@ -3051,7 +3049,7 @@ void tst_QTableView::selectionSignal()
     view.setModel(&model);
     view.resize(200, 200);
     view.show();
-    WAIT_FOR_CONDITION(view.isVisible(), true);
+    QTest::qWaitForWindowShown(&view);
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.visualRect(model.index(2, 0)).center());
 }
 
@@ -3084,10 +3082,7 @@ void tst_QTableView::task173773_updateVerticalHeader()
     view.setModel(&proxyModel);
     view.setSortingEnabled(true);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(&view);
 
     view.sortByColumn(0, Qt::AscendingOrder);
     QTest::qWait(100);
@@ -3152,7 +3147,7 @@ void tst_QTableView::task240266_veryBigColumn()
     table.setColumnWidth(1, 100); //normal column
     table.setColumnWidth(2, 9000); //very big column
     table.show();
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(&table);
 
     //some styles change the scroll mode in their polish
     table.setHorizontalScrollMode(QAbstractItemView::ScrollPerItem);
@@ -3287,7 +3282,7 @@ void tst_QTableView::task259308_scrollVerticalHeaderSwappedSections()
     tv.verticalHeader()->swapSections(0, model.rowCount() - 1);
     tv.setCurrentIndex(model.index(model.rowCount() - 1, 0));
 
-    QTest::qWait(60);
+    QTest::qWaitForWindowShown(&tv);
     QTest::keyClick(&tv, Qt::Key_PageUp);   // PageUp won't scroll when at top
     QTRY_COMPARE(tv.rowAt(0), tv.verticalHeader()->logicalIndex(0));
 

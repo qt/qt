@@ -621,12 +621,21 @@ void QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
     QMatrix m = painter->matrix();
     bool complexXForm = m.m11() != 1.0 || m.m22() != 1.0 || m.m12() != 0.0 || m.m21() != 0.0;
 
+    bool translucentToplevel = false;
+    QPaintDevice *pdev = painter->device();
+    if (pdev->devType() == QInternal::Widget) {
+        QWidget *win = ((QWidget *) pdev)->window();
+        translucentToplevel = win->testAttribute(Qt::WA_TranslucentBackground);
+    }
+
     bool useFallback = painter->paintEngine()->getDC() == 0
                        || painter->opacity() != 1.0
                        || themeData.rotate
                        || complexXForm
                        || themeData.mirrorVertically
-                       || (themeData.mirrorHorizontally && pDrawThemeBackgroundEx == 0);
+                       || (themeData.mirrorHorizontally && pDrawThemeBackgroundEx == 0)
+                       || translucentToplevel;
+
     if (!useFallback)
         drawBackgroundDirectly(themeData);
     else
@@ -3286,17 +3295,6 @@ int QWindowsXPStyle::pixelMetric(PixelMetric pm, const QStyleOption *option, con
                 SIZE size;
                 pGetThemePartSize(theme.handle(), 0, theme.partId, theme.stateId, 0, TS_TRUE, &size);
                 res = size.cy;
-            }
-        }
-        break;
-
-    case PM_MenuButtonIndicator:
-        {
-            XPThemeData theme(widget, 0, QLatin1String("TOOLBAR"), TP_SPLITBUTTONDROPDOWN);
-            if (theme.isValid()) {
-                SIZE size;
-                pGetThemePartSize(theme.handle(), 0, theme.partId, theme.stateId, 0, TS_TRUE, &size);
-                res = size.cx;
             }
         }
         break;

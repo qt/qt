@@ -92,7 +92,8 @@ namespace JSC {
             {
                 // Guard against integer overflow
                 if (size < (std::numeric_limits<size_t>::max() / sizeof(UChar))) {
-                    if (void * buf = tryFastMalloc(size * sizeof(UChar)))
+                    void* buf = 0;
+                    if (tryFastMalloc(size * sizeof(UChar)).getValue(buf))
                         return adoptRef(new BaseString(static_cast<UChar*>(buf), 0, size));
                 }
                 return adoptRef(new BaseString(0, 0, 0));
@@ -257,9 +258,7 @@ namespace JSC {
         }
 
         static UString from(int);
-#if PLATFORM(WIN_OS) && PLATFORM(X86_64) && COMPILER(MSVC)
-        static UString from(int64_t i);
-#endif
+        static UString from(long long);
         static UString from(unsigned int);
         static UString from(long);
         static UString from(double);
@@ -289,8 +288,6 @@ namespace JSC {
         UString& append(UChar);
         UString& append(char c) { return append(static_cast<UChar>(static_cast<unsigned char>(c))); }
         UString& append(const UChar*, int size);
-        UString& appendNumeric(int);
-        UString& appendNumeric(double);
 
         bool getCString(CStringBuffer&) const;
 

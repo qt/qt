@@ -46,7 +46,7 @@
 #include <QtGui>
 #ifdef Q_OS_WINCE_WM
 #include <windows.h>
-#include <ddhelper.h>
+#include "ddhelper.h"
 #endif
 
 
@@ -57,6 +57,8 @@ class tst_WindowsMobile : public QObject
 public:
     tst_WindowsMobile()
     {
+       qApp->setCursorFlashTime (24 * 3600 * 1000); // once a day
+       // qApp->setCursorFlashTime (INT_MAX);
 #ifdef Q_OS_WINCE_WM
         q_initDD();
 #endif
@@ -123,11 +125,20 @@ void compareScreenshots(const QString &image1, const QString &image2)
     QImage screenShot(image1);
     QImage original(image2);
 
-    //ignore the clock
+    // cut away the title bar before comparing
+    QDesktopWidget desktop;
+    QRect desktopFrameRect  = desktop.frameGeometry();
+    QRect desktopClientRect = desktop.availableGeometry();
+
     QPainter p1(&screenShot);
     QPainter p2(&original);
-    p1.fillRect(310, 6, 400, 34, Qt::black);
-    p2.fillRect(310, 6, 400, 34, Qt::black);
+
+    //screenShot.save("scr1.png", "PNG");    
+    p1.fillRect(0, 0, desktopFrameRect.width(), desktopClientRect.y(), Qt::black);
+    p2.fillRect(0, 0, desktopFrameRect.width(), desktopClientRect.y(), Qt::black);
+
+    //screenShot.save("scr2.png", "PNG");
+    //original.save("orig1.png", "PNG");
 
     QVERIFY(original == screenShot);
 }

@@ -59,6 +59,8 @@
 #include <private/qtextengine_p.h>
 #include <QDebug>
 
+QT_BEGIN_NAMESPACE
+
 class QPaintBufferPrivate;
 class QPaintBufferPlayback;
 
@@ -439,5 +441,7 @@ private:
     Cache m_cache;
     FreeFunc free;
 };
+
+QT_END_NAMESPACE
 
 #endif // QPAINTBUFFER_P_H

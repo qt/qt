@@ -87,7 +87,11 @@
 #include "BindingURI.h"
 #endif
 
+#ifdef __WINS__
+#define compareEqual(t, u)              ((t) == (u))
+#else
 template<typename T, typename U> inline bool compareEqual(const T& t, const U& u) { return t == static_cast<T>(u); }
+#endif
 
 #define SET_VAR(group, variable, value) \
     if (!compareEqual(group->variable, value)) \
@@ -434,7 +438,6 @@ public:
     const Font& font() const { return inherited->font; }
     const FontDescription& fontDescription() const { return inherited->font.fontDescription(); }
     int fontSize() const { return inherited->font.pixelSize(); }
-    FontSmoothing fontSmoothing() const { return inherited->font.fontDescription().fontSmoothing(); }
 
     const Color& color() const { return inherited->color; }
     Length textIndent() const { return inherited->indent; }

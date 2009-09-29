@@ -206,7 +206,10 @@ QVector3D::QVector3D(const QVector4D& vector)
 */
 QVector3D QVector3D::normalized() const
 {
-    qreal len = lengthSquared();
+    // Need some extra precision if the length is very small.
+    double len = double(xp) * double(xp) +
+                 double(yp) * double(yp) +
+                 double(zp) * double(zp);
     if (qFuzzyIsNull(len - 1.0f))
         return *this;
     else if (!qFuzzyIsNull(len))
@@ -223,7 +226,10 @@ QVector3D QVector3D::normalized() const
 */
 void QVector3D::normalize()
 {
-    qreal len = lengthSquared();
+    // Need some extra precision if the length is very small.
+    double len = double(xp) * double(xp) +
+                 double(yp) * double(yp) +
+                 double(zp) * double(zp);
     if (qFuzzyIsNull(len - 1.0f) || qFuzzyIsNull(len))
         return;
 

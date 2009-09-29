@@ -44,6 +44,7 @@
 
 #include <QtCore/qstate.h>
 
+#include <QtCore/qcoreevent.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qset.h>
@@ -55,8 +56,6 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Core)
 
 #ifndef QT_NO_STATEMACHINE
-
-class QEvent;
 
 class QStateMachinePrivate;
 class QAbstractAnimation;
@@ -70,6 +69,39 @@ class Q_CORE_EXPORT QStateMachine : public QState
     Q_PROPERTY(bool animationsEnabled READ animationsEnabled WRITE setAnimationsEnabled)
 #endif
 public:
+    class SignalEvent : public QEvent
+    {
+    public:
+        SignalEvent(QObject *sender, int signalIndex,
+                     const QList<QVariant> &arguments);
+        ~SignalEvent();
+
+        inline QObject *sender() const { return m_sender; }
+        inline int signalIndex() const { return m_signalIndex; }
+        inline QList<QVariant> arguments() const { return m_arguments; }
+
+    private:
+        QObject *m_sender;
+        int m_signalIndex;
+        QList<QVariant> m_arguments;
+
+        friend class QSignalTransitionPrivate;
+    };
+
+    class WrappedEvent : public QEvent
+    {
+    public:
+        WrappedEvent(QObject *object, QEvent *event);
+        ~WrappedEvent();
+
+        inline QObject *object() const { return m_object; }
+        inline QEvent *event() const { return m_event; }
+
+    private:
+        QObject *m_object;
+        QEvent *m_event;
+    };
+
     enum RestorePolicy {
         DoNotRestoreProperties,
         RestoreProperties

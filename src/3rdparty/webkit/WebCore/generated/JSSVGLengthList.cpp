@@ -100,7 +100,7 @@ JSSVGLengthList::JSSVGLengthList(PassRefPtr<Structure> structure, JSDOMGlobalObj
 
 JSSVGLengthList::~JSSVGLengthList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGLengthList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

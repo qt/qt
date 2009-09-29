@@ -64,7 +64,7 @@ public:
     virtual bool eventTest(QEvent *e)
     {
         if (QSignalTransition::eventTest(e)) {
-            QVariant key = static_cast<QSignalEvent*>(e)->arguments().at(0);
+            QVariant key = static_cast<QStateMachine::SignalEvent*>(e)->arguments().at(0);
             return (key.toInt() == int(m_key));
         } 
 

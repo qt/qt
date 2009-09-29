@@ -112,3 +112,5 @@ imagedirs               = $QT_SOURCE_TREE/doc/src/images \
 outputdir               = $QT_BUILD_TREE/doc/html
 tagfile                 = $QT_BUILD_TREE/doc/html/qt.tags
 base                    = file:$QT_BUILD_TREE/doc/html
+
+HTML.generatemacrefs    = "true"

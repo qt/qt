@@ -80,7 +80,7 @@
 
     A typical \c main() function, written in \c{main.cpp}, looks like this:
 
-    \quotefile doc/src/snippets/widgets-tutorial/template.cpp
+    \snippet doc/src/snippets/widgets-tutorial/template.cpp main.cpp body
 
     We first construct a QApplication object which is configured using any
     arguments passed in from the command line. After any widgets have been

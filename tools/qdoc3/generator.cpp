@@ -562,24 +562,21 @@ void Generator::generateModuleWarning(const ClassNode *classe,
     QString module = classe->moduleName();
     if (!module.isEmpty()) {
         Text text;
-        if (Tokenizer::isTrue("defined(consoleedition)")
-                && !editionModuleMap["Console"].contains(module)) {
+        if (!editionModuleMap["Console"].contains(module)) {
             text << Atom::ParaLeft
                  << Atom(Atom::FormattingLeft, ATOM_FORMATTING_BOLD)
                  << "This class is not part of the Qt Console Edition."
                  << Atom(Atom::FormattingRight, ATOM_FORMATTING_BOLD)
                  << Atom::ParaRight;
         }
-        else if (Tokenizer::isTrue("defined(desktoplightedition)")
-                && !editionModuleMap["DesktopLight"].contains(module)) {
+        else if (!editionModuleMap["DesktopLight"].contains(module)) {
             text << Atom::ParaLeft
                  << Atom(Atom::FormattingLeft, ATOM_FORMATTING_BOLD)
                  << "This class is not part of the Qt Desktop Light Edition."
                  << Atom(Atom::FormattingRight, ATOM_FORMATTING_BOLD)
                  << Atom::ParaRight;
         }
-        else if (module == "Qt3Support" &&
-                 Tokenizer::isTrue("defined(opensourceedition)")) {
+        else if (module == "Qt3Support") {
             text << Atom::ParaLeft
                  << Atom(Atom::FormattingLeft, ATOM_FORMATTING_BOLD)
                  << "Note to Qt Desktop Light Edition users:"

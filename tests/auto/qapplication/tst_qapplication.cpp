@@ -84,6 +84,7 @@ public slots:
     void init();
     void cleanup();
 private slots:
+    void sendEventsOnProcessEvents(); // this must be the first test
     void getSetCheck();
     void staticSetup();
 
@@ -136,6 +137,32 @@ private slots:
 
     void touchEventPropagation();
 };
+
+class EventSpy : public QObject
+{
+   Q_OBJECT
+
+public:
+    QList<int> recordedEvents;
+    bool eventFilter(QObject *, QEvent *event)
+    {
+        recordedEvents.append(event->type());
+        return false;
+    }
+};
+
+void tst_QApplication::sendEventsOnProcessEvents()
+{
+    int argc = 0;
+    QApplication app(argc, 0, QApplication::GuiServer);
+
+    EventSpy spy;
+    app.installEventFilter(&spy);
+
+    QCoreApplication::postEvent(&app,  new QEvent(QEvent::Type(QEvent::User + 1)));
+    QCoreApplication::processEvents();
+    QVERIFY(spy.recordedEvents.contains(QEvent::User + 1));
+}
 
 class MyInputContext : public QInputContext
 {
@@ -1148,15 +1175,15 @@ void DeleteLaterWidget::runTest()
     connect(w, SIGNAL(destroyed()), this, SLOT(childDeleted()));
 
     w->deleteLater();
-    Q_ASSERT(!child_deleted);
+    QVERIFY(!child_deleted);
 
     QDialog dlg;
     QTimer::singleShot(500, &dlg, SLOT(reject()));
     dlg.exec();
 
-    Q_ASSERT(!child_deleted);
+    QVERIFY(!child_deleted);
     app->processEvents();
-    Q_ASSERT(!child_deleted);
+    QVERIFY(!child_deleted);
 
     QTimer::singleShot(500, this, SLOT(checkDeleteLater()));
 
@@ -1167,7 +1194,7 @@ void DeleteLaterWidget::runTest()
 
 void DeleteLaterWidget::checkDeleteLater()
 {
-    Q_ASSERT(child_deleted);
+    QVERIFY(child_deleted);
 
     close();
 }

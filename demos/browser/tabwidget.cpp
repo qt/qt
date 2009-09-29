@@ -560,10 +560,13 @@ void TabWidget::closeTab(int index)
         }
         hasFocus = tab->hasFocus();
 
-        m_recentlyClosedTabsAction->setEnabled(true);
-        m_recentlyClosedTabs.prepend(tab->url());
-        if (m_recentlyClosedTabs.size() >= TabWidget::m_recentlyClosedTabsSize)
-            m_recentlyClosedTabs.removeLast();
+        QWebSettings *globalSettings = QWebSettings::globalSettings();
+        if (!globalSettings->testAttribute(QWebSettings::PrivateBrowsingEnabled)) {
+            m_recentlyClosedTabsAction->setEnabled(true);
+            m_recentlyClosedTabs.prepend(tab->url());
+            if (m_recentlyClosedTabs.size() >= TabWidget::m_recentlyClosedTabsSize)
+                m_recentlyClosedTabs.removeLast();
+        }
     }
     QWidget *lineEdit = m_lineEdits->widget(index);
     m_lineEdits->removeWidget(lineEdit);

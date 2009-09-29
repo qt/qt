@@ -86,10 +86,7 @@ QT_END_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
-// This declspec needs to be explicit. RVCT has a bug which prevents embedded
-// assembler functions from being exported (normally all functions are
-// exported, and Q_CORE_EXPORT resolves to nothing).
-__declspec(dllexport) __asm char q_atomic_swp(volatile char *ptr, char newval)
+Q_CORE_EXPORT __asm char q_atomic_swp(volatile char *ptr, char newval)
 {
     add r2, pc, #0
     bx r2
@@ -100,7 +97,7 @@ __declspec(dllexport) __asm char q_atomic_swp(volatile char *ptr, char newval)
     thumb
 }
 
-__declspec(dllexport) __asm int QBasicAtomicInt::fetchAndStoreOrdered(int newValue)
+Q_CORE_EXPORT __asm int QBasicAtomicInt::fetchAndStoreOrdered(int newValue)
 {
     add r2, pc, #0
     bx r2

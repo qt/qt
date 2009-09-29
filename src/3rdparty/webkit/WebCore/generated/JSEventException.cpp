@@ -148,7 +148,7 @@ JSEventException::JSEventException(PassRefPtr<Structure> structure, JSDOMGlobalO
 
 JSEventException::~JSEventException()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSEventException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

@@ -85,9 +85,6 @@
 #if defined(Q_OS_SYMBIAN)
 class RDrawableWindow;
 class CCoeControl;
-// The following 2 defines may only be needed for s60. To be seen.
-const int SOFTKEYSTART=5000;
-const int SOFTKEYEND=5004;
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -252,11 +249,17 @@ public:
         CloseWithSpontaneousEvent
     };
 
+    enum Direction {
+        DirectionNorth = 0x01,
+        DirectionEast = 0x10,
+        DirectionSouth = 0x02,
+        DirectionWest = 0x20
+    };
+
     // Functions.
     explicit QWidgetPrivate(int version = QObjectPrivateVersion);
     ~QWidgetPrivate();
 
-    void setSoftKeys_sys(const QList<QAction*> &softkeys);
     QWExtra *extraData() const;
     QTLWExtra *topData() const;
     QTLWExtra *maybeTopData() const;
@@ -398,6 +401,11 @@ public:
     void updateFrameStrut();
     QRect frameStrut() const;
 
+#ifdef QT_KEYPAD_NAVIGATION
+    static bool navigateToDirection(Direction direction);
+    static QWidget *widgetInNavigationDirection(Direction direction);
+#endif
+
     void setWindowIconText_sys(const QString &cap);
     void setWindowIconText_helper(const QString &cap);
     void setWindowTitle_sys(const QString &cap);
@@ -505,7 +513,6 @@ public:
     QWidget *focus_next;
     QWidget *focus_prev;
     QWidget *focus_child;
-    QList<QAction*> softKeys;
     QLayout *layout;
     QRegion *needsFlush;
     QPaintDevice *redirectDev;
@@ -686,6 +693,7 @@ public:
     static QWidget *keyboardGrabber;
     void s60UpdateIsOpaque();
     void reparentChildren();
+    void registerTouchWindow();
 #endif
 
 };

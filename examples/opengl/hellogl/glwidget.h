@@ -44,6 +44,8 @@
 
 #include <QGLWidget>
 
+class QtLogo;
+
 //! [0]
 class GLWidget : public QGLWidget
 {
@@ -80,13 +82,7 @@ protected:
 
 //! [3]
 private:
-    GLuint makeObject();
-    void quad(GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y2,
-              GLdouble x3, GLdouble y3, GLdouble x4, GLdouble y4);
-    void extrude(GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y2);
-    void normalizeAngle(int *angle);
-
-    GLuint object;
+    QtLogo *logo;
     int xRot;
     int yRot;
     int zRot;

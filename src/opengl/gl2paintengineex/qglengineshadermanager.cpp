@@ -134,7 +134,8 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
         code[ShockingPinkSrcFragmentShader] = qglslShockingPinkSrcFragmentShader;
 
         code[MaskFragmentShader] = qglslMaskFragmentShader;
-        code[RgbMaskFragmentShader] = ""; //###
+        code[RgbMaskFragmentShaderPass1] = qglslRgbMaskFragmentShaderPass1;
+        code[RgbMaskFragmentShaderPass2] = qglslRgbMaskFragmentShaderPass2;
         code[RgbMaskWithGammaFragmentShader] = ""; //###
 
         code[MultiplyCompositionModeFragmentShader] = ""; //###
@@ -587,10 +588,15 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
         if (maskType == PixelMask) {
             maskShaderName = QGLEngineSharedShaders::MaskFragmentShader;
             texCoords = true;
-        } else if (maskType == SubPixelMask) {
-            maskShaderName = QGLEngineSharedShaders::RgbMaskFragmentShader;
+        } else if (maskType == SubPixelMaskPass1) {
+            maskShaderName = QGLEngineSharedShaders::RgbMaskFragmentShaderPass1;
+            texCoords = true;
+        } else if (maskType == SubPixelMaskPass2) {
+            maskShaderName = QGLEngineSharedShaders::RgbMaskFragmentShaderPass2;
+            texCoords = true;
         } else if (maskType == SubPixelWithGammaMask) {
             maskShaderName = QGLEngineSharedShaders::RgbMaskWithGammaFragmentShader;
+            texCoords = true;
         } else {
             qCritical("QGLEngineShaderManager::useCorrectShaderProg() - Unknown mask type");
         }

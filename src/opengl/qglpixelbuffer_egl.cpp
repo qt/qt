@@ -135,7 +135,6 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
         qWarning() << "QGLPixelBufferPrivate::init(): Unable to create EGL pbuffer surface:" << QEglContext::errorString(eglGetError());
         return false;
     }
-    ctx->setSurface(pbuf);
 
     // Create a new context for the configuration.
     QEglContext *shareContext = 0;
@@ -163,7 +162,7 @@ bool QGLPixelBuffer::bindToDynamicTexture(GLuint texture_id)
     if (d->invalid || d->textureFormat == EGL_NONE || !d->ctx)
         return false;
     glBindTexture(GL_TEXTURE_2D, texture_id);
-    return eglBindTexImage(d->ctx->display(), d->ctx->surface(), EGL_BACK_BUFFER);
+    return eglBindTexImage(d->ctx->display(), d->pbuf, EGL_BACK_BUFFER);
 #else
     Q_UNUSED(texture_id);
     return false;
@@ -176,7 +175,7 @@ void QGLPixelBuffer::releaseFromDynamicTexture()
     Q_D(QGLPixelBuffer);
     if (d->invalid || d->textureFormat == EGL_NONE || !d->ctx)
         return;
-    eglReleaseTexImage(d->ctx->display(), d->ctx->surface(), EGL_BACK_BUFFER);
+    eglReleaseTexImage(d->ctx->display(), d->pbuf, EGL_BACK_BUFFER);
 #endif
 }
 

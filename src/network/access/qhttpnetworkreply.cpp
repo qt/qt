@@ -198,6 +198,7 @@ QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
       majorVersion(0), minorVersion(0), bodyLength(0), contentRead(0), totalProgress(0),
       chunkedTransferEncoding(false),
       connectionCloseEnabled(true),
+      forceConnectionCloseEnabled(false),
       currentChunkSize(0), currentChunkRead(0), connection(0), initInflate(false),
       autoDecompress(false), responseData(), requestIsPrepared(false)
       ,pipeliningUsed(false)
@@ -564,7 +565,7 @@ bool QHttpNetworkReplyPrivate::isChunked()
 
 bool QHttpNetworkReplyPrivate::isConnectionCloseEnabled()
 {
-    return connectionCloseEnabled;
+    return connectionCloseEnabled || forceConnectionCloseEnabled;
 }
 
 // note this function can only be used for non-chunked, non-compressed with

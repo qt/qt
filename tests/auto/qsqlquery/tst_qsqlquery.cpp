@@ -2352,7 +2352,7 @@ void tst_QSqlQuery::sqlite_finish()
         QString tableName = qTableName( "qtest_lockedtable" );
         QSqlQuery q( db );
 
-        tst_Databases::safeDropTable( db2, tableName );
+        tst_Databases::safeDropTable( db, tableName );
         q.exec( "CREATE TABLE " + tableName + " (pk_id INTEGER PRIMARY KEY, whatever TEXT)" );
         q.exec( "INSERT INTO " + tableName + " values(1, 'whatever')" );
         q.exec( "INSERT INTO " + tableName + " values(2, 'whatever more')" );
@@ -2371,7 +2371,7 @@ void tst_QSqlQuery::sqlite_finish()
         QVERIFY_SQL( q2, exec( "DELETE FROM " + tableName + " WHERE pk_id=2" ) );
         QCOMPARE( q2.numRowsAffected(), 1 );
 
-        tst_Databases::safeDropTable( db2, tableName );
+        tst_Databases::safeDropTable( db, tableName );
     }
 
     QSqlDatabase::removeDatabase( "sqlite_finish_sqlite" );

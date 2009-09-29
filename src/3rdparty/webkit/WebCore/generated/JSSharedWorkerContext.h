@@ -45,8 +45,6 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    virtual void markChildren(JSC::MarkStack&);
-
     SharedWorkerContext* impl() const
     {
         return static_cast<SharedWorkerContext*>(Base::impl());
@@ -61,10 +59,6 @@ public:
     void* operator new(size_t, JSC::JSGlobalData*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
-    {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
-    }
     JSSharedWorkerContextPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 

@@ -182,11 +182,11 @@ void JSLocation::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propert
     Base::getOwnPropertyNames(exec, propertyNames);
 }
 
-void JSLocation::defineGetter(ExecState* exec, const Identifier& propertyName, JSObject* getterFunction)
+void JSLocation::defineGetter(ExecState* exec, const Identifier& propertyName, JSObject* getterFunction, unsigned attributes)
 {
     if (propertyName == exec->propertyNames().toString || propertyName == exec->propertyNames().valueOf)
         return;
-    Base::defineGetter(exec, propertyName, getterFunction);
+    Base::defineGetter(exec, propertyName, getterFunction, attributes);
 }
 
 static void navigateIfAllowed(ExecState* exec, Frame* frame, const KURL& url, bool lockHistory, bool lockBackForwardList)
@@ -204,11 +204,11 @@ void JSLocation::setHref(ExecState* exec, JSValue value)
     Frame* frame = impl()->frame();
     ASSERT(frame);
 
-    if (!shouldAllowNavigation(exec, frame))
-        return;
-
     KURL url = completeURL(exec, value.toString(exec));
     if (url.isNull())
+        return;
+
+    if (!shouldAllowNavigation(exec, frame))
         return;
 
     navigateIfAllowed(exec, frame, url, !frame->script()->anyPageIsProcessingUserGesture(), false);
@@ -308,11 +308,11 @@ JSValue JSLocation::replace(ExecState* exec, const ArgList& args)
     if (!frame)
         return jsUndefined();
 
-    if (!shouldAllowNavigation(exec, frame))
-        return jsUndefined();
-
     KURL url = completeURL(exec, args.at(0).toString(exec));
     if (url.isNull())
+        return jsUndefined();
+
+    if (!shouldAllowNavigation(exec, frame))
         return jsUndefined();
 
     navigateIfAllowed(exec, frame, url, true, true);
@@ -336,11 +336,11 @@ JSValue JSLocation::assign(ExecState* exec, const ArgList& args)
     if (!frame)
         return jsUndefined();
 
-    if (!shouldAllowNavigation(exec, frame))
-        return jsUndefined();
-
     KURL url = completeURL(exec, args.at(0).toString(exec));
     if (url.isNull())
+        return jsUndefined();
+
+    if (!shouldAllowNavigation(exec, frame))
         return jsUndefined();
 
     // We want a new history item if this JS was called via a user gesture
@@ -362,11 +362,11 @@ bool JSLocationPrototype::putDelegate(ExecState* exec, const Identifier& propert
     return (propertyName == exec->propertyNames().toString || propertyName == exec->propertyNames().valueOf);
 }
 
-void JSLocationPrototype::defineGetter(ExecState* exec, const Identifier& propertyName, JSObject* getterFunction)
+void JSLocationPrototype::defineGetter(ExecState* exec, const Identifier& propertyName, JSObject* getterFunction, unsigned attributes)
 {
     if (propertyName == exec->propertyNames().toString || propertyName == exec->propertyNames().valueOf)
         return;
-    Base::defineGetter(exec, propertyName, getterFunction);
+    Base::defineGetter(exec, propertyName, getterFunction, attributes);
 }
 
 } // namespace WebCore

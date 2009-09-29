@@ -143,6 +143,7 @@ QString Atom::UPPERROMAN_    ("upperroman");
   \value SectionHeadingRight
   \value SidebarLeft
   \value SidebarRight
+  \value SinceList
   \value String
   \value TableLeft
   \value TableRight
@@ -220,6 +221,7 @@ static const struct {
     { "SectionHeadingRight", Atom::SectionHeadingRight },
     { "SidebarLeft", Atom::SidebarLeft },
     { "SidebarRight", Atom::SidebarRight },
+    { "SinceList", Atom::SinceList },
     { "SnippetCommand", Atom::SnippetCommand },
     { "SnippetIdentifier", Atom::SnippetIdentifier },
     { "SnippetLocation", Atom::SnippetLocation },

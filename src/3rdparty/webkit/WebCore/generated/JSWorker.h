@@ -46,8 +46,6 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    virtual void markChildren(JSC::MarkStack&);
-
 
     // Custom functions
     JSC::JSValue postMessage(JSC::ExecState*, const JSC::ArgList&);
@@ -70,7 +68,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
     JSWorkerPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };

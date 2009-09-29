@@ -101,7 +101,7 @@ JSJavaScriptCallFrame::JSJavaScriptCallFrame(PassRefPtr<Structure> structure, JS
 
 JSJavaScriptCallFrame::~JSJavaScriptCallFrame()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSJavaScriptCallFrame::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

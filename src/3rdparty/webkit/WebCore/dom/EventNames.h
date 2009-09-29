@@ -45,6 +45,7 @@ namespace WebCore {
     macro(copy) \
     macro(cut) \
     macro(dblclick) \
+    macro(display) \
     macro(downloading) \
     macro(drag) \
     macro(dragend) \
@@ -135,6 +136,8 @@ namespace WebCore {
     macro(webkitAnimationIteration) \
     \
     macro(webkitTransitionEnd) \
+    \
+    macro(orientationchange) \
     \
 // end of DOM_EVENT_NAMES_FOR_EACH
 

@@ -259,6 +259,10 @@ private:
 
     void drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti);
 
+#if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
+    void drawGlyphsS60(const QPointF &p, const QTextItemInt &ti);
+#endif // Q_OS_SYMBIAN && QT_NO_FREETYPE
+
     inline void ensureBrush(const QBrush &brush) {
         if (!qbrush_fast_equals(state()->lastBrush, brush) || state()->fillFlags)
             updateBrush(brush);

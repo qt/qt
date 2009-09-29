@@ -61,6 +61,7 @@
 #include "QtGui/qimage.h"
 #include "QtGui/qevent.h"
 #include "qpointer.h"
+#include "qapplication.h"
 #include <w32std.h>
 #include <coecntrl.h>
 #include <eikenv.h>
@@ -77,7 +78,7 @@
 QT_BEGIN_NAMESPACE
 
 // Application internal HandleResourceChangeL events,
-// system evens seems to start with 0x10
+// system events seems to start with 0x10
 const TInt KInternalStatusPaneChange = 0x50000000;
 
 class QS60Data
@@ -101,12 +102,13 @@ public:
     int virtualMouseAccel;
     int virtualMouseMaxAccel;
 #ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
-    bool brokenPointerCursors;
+    int brokenPointerCursors : 1;
 #endif
-    bool hasTouchscreen;
-    bool mouseInteractionEnabled;
-    bool virtualMouseRequired;
+    int hasTouchscreen : 1;
+    int mouseInteractionEnabled : 1;
+    int virtualMouseRequired : 1;
     int qtOwnsS60Environment : 1;
+    QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
     static inline void updateScreenSize();
 	static inline RWsSession& wsSession();
     static inline RWindowGroup& windowGroup();
@@ -167,6 +169,9 @@ private:
     TKeyResponse sendKeyEvent(QWidget *widget, QKeyEvent *keyEvent);
     bool sendMouseEvent(QWidget *widget, QMouseEvent *mEvent);
     void HandleLongTapEventL( const TPoint& aPenEventLocation, const TPoint& aPenEventScreenLocation );
+#ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
+    void translateAdvancedPointerEvent(const TAdvancedPointerEvent *event);
+#endif
 
 private:
     QWidget *qwidget;

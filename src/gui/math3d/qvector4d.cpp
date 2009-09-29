@@ -255,7 +255,11 @@ qreal QVector4D::lengthSquared() const
 */
 QVector4D QVector4D::normalized() const
 {
-    qreal len = lengthSquared();
+    // Need some extra precision if the length is very small.
+    double len = double(xp) * double(xp) +
+                 double(yp) * double(yp) +
+                 double(zp) * double(zp) +
+                 double(wp) * double(wp);
     if (qFuzzyIsNull(len - 1.0f))
         return *this;
     else if (!qFuzzyIsNull(len))
@@ -272,7 +276,11 @@ QVector4D QVector4D::normalized() const
 */
 void QVector4D::normalize()
 {
-    qreal len = lengthSquared();
+    // Need some extra precision if the length is very small.
+    double len = double(xp) * double(xp) +
+                 double(yp) * double(yp) +
+                 double(zp) * double(zp) +
+                 double(wp) * double(wp);
     if (qFuzzyIsNull(len - 1.0f) || qFuzzyIsNull(len))
         return;
 

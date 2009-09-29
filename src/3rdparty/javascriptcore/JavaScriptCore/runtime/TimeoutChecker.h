@@ -59,6 +59,7 @@ namespace JSC {
         }
 
         void reset();
+        void copyTimeoutValues(TimeoutChecker* other);
 
         virtual bool didTimeOut(ExecState*);
 

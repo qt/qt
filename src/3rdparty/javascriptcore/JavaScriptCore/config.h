@@ -25,6 +25,7 @@
 
 #include <wtf/Platform.h>
 
+#if !defined(JS_EXPORTDATA)
 #if PLATFORM(WIN_OS) && !defined(BUILDING_WX__) && !COMPILER(GCC)
 #if defined(BUILDING_JavaScriptCore) || defined(BUILDING_WTF)
 #define JS_EXPORTDATA __declspec(dllexport)
@@ -33,6 +34,7 @@
 #endif
 #else
 #define JS_EXPORTDATA
+#endif
 #endif
 
 #if PLATFORM(WIN_OS)

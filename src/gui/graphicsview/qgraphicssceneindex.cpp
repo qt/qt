@@ -265,12 +265,13 @@ bool QGraphicsSceneIndexPrivate::itemCollidesWithPath(const QGraphicsItem *item,
 
 /*!
     \internal
+    This function returns the items in ascending order.
 */
 void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QRectF exposeRect,
                                                         QGraphicsSceneIndexIntersector *intersector,
                                                         QList<QGraphicsItem *> *items,
                                                         const QTransform &viewTransform,
-                                                        Qt::ItemSelectionMode mode, Qt::SortOrder order,
+                                                        Qt::ItemSelectionMode mode,
                                                         qreal parentOpacity) const
 {
     Q_ASSERT(item);
@@ -326,7 +327,7 @@ void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QRe
             if (itemIsFullyTransparent && !(child->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity))
                 continue;
             recursive_items_helper(child, exposeRect, intersector, items, viewTransform,
-                                   mode, order, opacity);
+                                   mode, opacity);
         }
     }
 
@@ -343,7 +344,7 @@ void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QRe
             if (itemIsFullyTransparent && !(child->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity))
                 continue;
             recursive_items_helper(child, exposeRect, intersector, items, viewTransform,
-                                   mode, order, opacity);
+                                   mode, opacity);
         }
     }
 }
@@ -542,7 +543,7 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::estimateTopLevelItems(const QRectF &
     Q_UNUSED(rect);
     QGraphicsScenePrivate *scened = d->scene->d_func();
     scened->ensureSortedTopLevelItems();
-    if (order == Qt::AscendingOrder) {
+    if (order == Qt::DescendingOrder) {
         QList<QGraphicsItem *> sorted;
         for (int i = scened->topLevelItems.size() - 1; i >= 0; --i)
             sorted << scened->topLevelItems.at(i);
@@ -552,7 +553,7 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::estimateTopLevelItems(const QRectF &
 }
 
 /*!
-    \fn QList<QGraphicsItem *> QGraphicsSceneIndex::items(Qt::SortOrder order = Qt::AscendingOrder) const
+    \fn QList<QGraphicsItem *> QGraphicsSceneIndex::items(Qt::SortOrder order = Qt::DescendingOrder) const
     
     This pure virtual function all items in the index and sort them using
     \a order.

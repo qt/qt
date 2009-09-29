@@ -108,7 +108,7 @@ JSNavigator::JSNavigator(PassRefPtr<Structure> structure, JSDOMGlobalObject* glo
 
 JSNavigator::~JSNavigator()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSNavigator::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

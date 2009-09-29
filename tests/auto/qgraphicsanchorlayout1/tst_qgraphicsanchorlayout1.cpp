@@ -58,10 +58,9 @@ public:
         setSpacing( 0 );
     }
 
-    // ###: Remove me when isValid() is supported
     bool isValid()
     {
-        return true;
+        return !hasConflicts();
     }
 
     void setAnchor(
@@ -463,9 +462,6 @@ void tst_QGraphicsAnchorLayout1::testAddAndRemoveAnchor()
 
 void tst_QGraphicsAnchorLayout1::testIsValid()
 {
-    // ###: REMOVE ME
-    return;
-
     // Empty, valid
     {
     QGraphicsWidget *widget = new QGraphicsWidget;

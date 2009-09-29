@@ -168,6 +168,7 @@ private slots:
 
     void characterAt();
     void revisions();
+    void revisionWithUndoCompressionAndUndo();
 
     void testUndoCommandAdded();
 
@@ -1786,21 +1787,17 @@ void tst_QTextDocument::cursorPositionChangedOnSetText()
 {
     CursorPosSignalSpy spy(doc);
 
-    cursor = QTextCursor();
+    // doc has one QTextCursor stored in the
+    // cursor member variable, thus the signal
+    // gets emitted once.
 
     doc->setPlainText("Foo\nBar\nBaz\nBlub\nBlah");
 
-    // the signal should still be emitted once for the QTextCursor that
-    // QTextDocument::setPlainText creates temporarily. But the signal
-    // should not be emitted more often.
     QCOMPARE(spy.calls, 1);
 
     spy.calls = 0;
     doc->setHtml("<p>Foo<p>Bar<p>Baz<p>Blah");
 
-    // the signal should still be emitted once for the QTextCursor that
-    // QTextDocument::setPlainText creates temporarily. But the signal
-    // should not be emitted more often.
     QCOMPARE(spy.calls, 1);
 }
 
@@ -2497,6 +2494,44 @@ void tst_QTextDocument::revisions()
     cursor.insertBlock(); // we are the block start
     QCOMPARE(cursor.block().previous().revision(), 6);
     QCOMPARE(cursor.block().revision(), 5);
+}
+
+void tst_QTextDocument::revisionWithUndoCompressionAndUndo()
+{
+    QTextDocument doc;
+    QTextCursor cursor(&doc);
+    cursor.insertText("This is the beginning of it all.");
+    QCOMPARE(doc.firstBlock().revision(), 1);
+    QCOMPARE(doc.revision(), 1);
+    cursor.insertBlock();
+    QCOMPARE(doc.revision(), 2);
+    cursor.insertText("this");
+    QCOMPARE(doc.revision(), 3);
+    cursor.insertText("is");
+    QCOMPARE(doc.revision(), 4);
+    cursor.insertText("compressed");
+    QCOMPARE(doc.revision(), 5);
+    doc.undo();
+    QCOMPARE(doc.revision(), 6);
+    QCOMPARE(doc.toPlainText(), QString("This is the beginning of it all.\n"))  ;
+    cursor.setPosition(0);
+    QCOMPARE(doc.firstBlock().revision(), 1);
+    cursor.insertText("Very beginnig");
+    QCOMPARE(doc.firstBlock().revision(), 7);
+    doc.undo();
+    QCOMPARE(doc.revision(), 8);
+    QCOMPARE(doc.firstBlock().revision(), 1);
+
+    cursor.beginEditBlock();
+    cursor.insertText("Hello");
+    cursor.insertBlock();
+    cursor.insertText("world");
+    cursor.endEditBlock();
+    QCOMPARE(doc.revision(), 9);
+    doc.undo();
+    QCOMPARE(doc.revision(), 10);
+
+
 }
 
 void tst_QTextDocument::testUndoCommandAdded()

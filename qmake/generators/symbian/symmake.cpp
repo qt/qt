@@ -933,7 +933,7 @@ void SymbianMakefileGenerator::writeMmpFileCapabilityPart(QTextStream& t)
 
 void SymbianMakefileGenerator::writeMmpFileCompilerOptionPart(QTextStream& t)
 {
-    QString cw, armcc;
+    QString cw, armcc, gcce;
 
     if (0 != project->values("QMAKE_CXXFLAGS.CW").size()) {
         cw.append(project->values("QMAKE_CXXFLAGS.CW").join(" "));
@@ -943,6 +943,11 @@ void SymbianMakefileGenerator::writeMmpFileCompilerOptionPart(QTextStream& t)
     if (0 != project->values("QMAKE_CXXFLAGS.ARMCC").size()) {
         armcc.append(project->values("QMAKE_CXXFLAGS.ARMCC").join(" "));
         armcc.append(" ");
+    }
+
+    if (0 != project->values("QMAKE_CXXFLAGS.GCCE").size()) {
+        gcce.append(project->values("QMAKE_CXXFLAGS.GCCE").join(" "));
+        gcce.append(" ");
     }
 
     if (0 != project->values("QMAKE_CFLAGS.CW").size()) {
@@ -955,11 +960,18 @@ void SymbianMakefileGenerator::writeMmpFileCompilerOptionPart(QTextStream& t)
         armcc.append(" ");
     }
 
+    if (0 != project->values("QMAKE_CFLAGS.GCCE").size()) {
+        gcce.append(project->values("QMAKE_CXXFLAGS.GCCE").join(" "));
+        gcce.append(" ");
+    }
+
     if (0 != project->values("QMAKE_CXXFLAGS").size()) {
         cw.append(project->values("QMAKE_CXXFLAGS").join(" "));
         cw.append(" ");
         armcc.append(project->values("QMAKE_CXXFLAGS").join(" "));
         armcc.append(" ");
+        gcce.append(project->values("QMAKE_CXXFLAGS").join(" "));
+        gcce.append(" ");
     }
 
     if (0 != project->values("QMAKE_CFLAGS").size()) {
@@ -967,17 +979,23 @@ void SymbianMakefileGenerator::writeMmpFileCompilerOptionPart(QTextStream& t)
         cw.append(" ");
         armcc.append(project->values("QMAKE_CFLAGS").join(" "));
         armcc.append(" ");
+        gcce.append(project->values("QMAKE_CFLAGS").join(" "));
+        gcce.append(" ");
     }
 
     if (!cw.isEmpty() && cw[cw.size()-1] == ' ')
         cw.chop(1);
     if (!armcc.isEmpty() && armcc[armcc.size()-1] == ' ')
         armcc.chop(1);
+    if (!gcce.isEmpty() && gcce[gcce.size()-1] == ' ')
+        gcce.chop(1);
 
     if (!cw.isEmpty())
-        t << "OPTION" << '\t' << " CW " << cw <<  endl;
+        t << "OPTION CW " << cw <<  endl;
     if (!armcc.isEmpty())
-        t << "OPTION" << '\t' << " ARMCC " << armcc <<  endl;
+        t << "OPTION ARMCC " << armcc <<  endl;
+    if (!gcce.isEmpty())
+        t << "OPTION GCCE " << gcce <<  endl;
 
     t <<  endl;
 }

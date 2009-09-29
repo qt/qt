@@ -376,6 +376,9 @@ public:
 
     void flush(bool all = false)
     {
+        if (m_device == 0)
+            return;
+
         const int used = m_buffer->used();
         const int readSize = all ? used : used - (used % m_maxPeriodSize);
 
@@ -722,6 +725,10 @@ QIODevice* QAudioInputPrivate::start(QIODevice* device)
     totalFrames = 0;
 
     audioThreadStart();
+
+    stateCode = QAudio::ActiveState;
+    errorCode = QAudio::NoError;
+    emit stateChanged(stateCode);
 
     return op;
 }

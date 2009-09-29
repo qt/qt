@@ -308,9 +308,9 @@
 
   A QStateMachine runs its own event loop. For signal transitions
   (QSignalTransition objects), QStateMachine automatically posts a
-  QSignalEvent to itself when it intercepts the corresponding signal;
-  similarly, for QObject event transitions (QEventTransition objects) a
-  QWrappedEvent is posted.
+  QStateMachine::SignalEvent to itself when it intercepts the corresponding
+  signal; similarly, for QObject event transitions (QEventTransition objects)
+  a QStateMachine::WrappedEvent is posted.
 
   You can post your own events to the state machine using
   QStateMachine::postEvent().

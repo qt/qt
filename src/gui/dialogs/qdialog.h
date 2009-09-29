@@ -107,7 +107,7 @@ public Q_SLOTS:
 protected:
     QDialog(QDialogPrivate &, QWidget *parent, Qt::WindowFlags f = 0);
 
-#ifdef Q_WS_WINCE
+#if defined(Q_WS_WINCE) || defined(Q_WS_S60)
     bool event(QEvent *e);
 #endif
     void keyPressEvent(QKeyEvent *);
@@ -119,10 +119,14 @@ protected:
 #endif
     bool eventFilter(QObject *, QEvent *);
     void adjustPosition(QWidget*);
-
 private:
     Q_DECLARE_PRIVATE(QDialog)
     Q_DISABLE_COPY(QDialog)
+
+#if defined(Q_WS_S60)
+    bool s60AdjustedPosition();
+#endif
+
 
 #ifdef Q_WS_WINCE_WM
     Q_PRIVATE_SLOT(d_func(), void _q_doneAction())

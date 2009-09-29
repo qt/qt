@@ -982,12 +982,10 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
         QGraphicsItem *p = newParent;
         while (p) {
             if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
-                // ### We really want the parent's focus scope item to point
-                // to this item's focusItem...
-                if (q_ptr->flags() & QGraphicsItem::ItemIsFocusScope)
-                    p->d_ptr->focusScopeItem = q_ptr;
-                else
-                    p->d_ptr->focusScopeItem = subFocusItem ? subFocusItem : parentFocusScopeItem;
+                p->d_ptr->focusScopeItem = subFocusItem ? subFocusItem : parentFocusScopeItem;
+                // ### The below line might not make sense...
+                if (subFocusItem)
+                    subFocusItem->d_ptr->clearSubFocus();
                 break;
             }
             p = p->d_ptr->parent;
@@ -1481,6 +1479,7 @@ QList<QGraphicsItem *> QGraphicsItem::children() const
 */
 QList<QGraphicsItem *> QGraphicsItem::childItems() const
 {
+    const_cast<QGraphicsItem *>(this)->d_ptr->ensureSortedChildren();
     return d_ptr->children;
 }
 
@@ -2812,15 +2811,12 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
     if (scene && scene->focusItem() == f)
         return;
 
-    // Update the child focus chain.
-    setSubFocus();
-
     // Update focus scope item ptr.
     QGraphicsItem *p = parent;
     while (p) {
         if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
             p->d_ptr->focusScopeItem = q_ptr;
-            if (!q_ptr->isActive())
+            if (!q_ptr->isActive() || !p->focusItem())
                 return;
             break;
         }
@@ -2830,9 +2826,10 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
     if (climb) {
         while (f->d_ptr->focusScopeItem && f->d_ptr->focusScopeItem->isVisible())
             f = f->d_ptr->focusScopeItem;
-        if (f != q_ptr)
-            f->d_ptr->setSubFocus();
     }
+
+    // Update the child focus chain.
+    f->d_ptr->setSubFocus();
 
     // Update the scene's focus item.
     if (scene) {
@@ -2858,13 +2855,15 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
 void QGraphicsItem::clearFocus()
 {
     // Pass focus to the closest parent focus scope.
-    QGraphicsItem *p = d_ptr->parent;
-    while (p) {
-        if (p->flags() & ItemIsFocusScope) {
-            p->d_ptr->setFocusHelper(Qt::OtherFocusReason, /* climb = */ false);
-            return;
+    if (!d_ptr->inDestructor) {
+        QGraphicsItem *p = d_ptr->parent;
+        while (p) {
+            if (p->flags() & ItemIsFocusScope) {
+                p->d_ptr->setFocusHelper(Qt::OtherFocusReason, /* climb = */ false);
+                return;
+            }
+            p = p->d_ptr->parent;
         }
-        p = p->d_ptr->parent;
     }
 
     // Invisible items with focus must explicitly clear subfocus.
@@ -4050,6 +4049,82 @@ void QGraphicsItem::setZValue(qreal z)
 }
 
 /*!
+    \internal
+
+    Ensures that the list of children is sorted by insertion order, and that
+    the siblingIndexes are packed (no gaps), and start at 0.
+
+    ### This function is almost identical to
+    QGraphicsScenePrivate::ensureSequentialTopLevelSiblingIndexes().
+*/
+void QGraphicsItemPrivate::ensureSequentialSiblingIndex()
+{
+    if (!sequentialOrdering) {
+        qSort(children.begin(), children.end(), insertionOrder);
+        sequentialOrdering = 1;
+        needSortChildren = 1;
+    }
+    if (holesInSiblingIndex) {
+        holesInSiblingIndex = 0;
+        for (int i = 0; i < children.size(); ++i)
+            children[i]->d_ptr->siblingIndex = i;
+    }
+}
+
+/*!
+    \since 4.6
+
+    Stacks this item before \a sibling, which must be a sibling item (i.e., the
+    two items must share the same parent item, or must both be toplevel items).
+    The \a sibling must have the same Z value as this item, otherwise calling
+    this function will have no effect.
+
+    By default, all items are stacked by insertion order (i.e., the first item
+    you add is drawn before the next item you add). If two items' Z values are
+    different, then the item with the highest Z value is drawn on top. When the
+    Z values are the same, the insertion order will decide the stacking order.
+
+    \sa setZValue(), ItemStacksBehindParent
+*/
+void QGraphicsItem::stackBefore(const QGraphicsItem *sibling)
+{
+    if (sibling == this)
+        return;
+    if (!sibling || d_ptr->parent != sibling->parentItem()) {
+        qWarning("QGraphicsItem::stackUnder: cannot stack under %p, which must be a sibling", sibling);
+        return;
+    }
+    QList<QGraphicsItem *> *siblings = d_ptr->parent
+                                       ? &d_ptr->parent->d_ptr->children
+                                       : (d_ptr->scene ? &d_ptr->scene->d_func()->topLevelItems : 0);
+    if (!siblings) {
+        qWarning("QGraphicsItem::stackUnder: cannot stack under %p, which must be a sibling", sibling);
+        return;
+    }
+
+    // First, make sure that the sibling indexes have no holes. This also
+    // marks the children list for sorting.
+    if (d_ptr->parent)
+        d_ptr->parent->d_ptr->ensureSequentialSiblingIndex();
+    else
+        d_ptr->scene->d_func()->ensureSequentialTopLevelSiblingIndexes();
+
+    // Only move items with the same Z value, and that need moving.
+    int siblingIndex = sibling->d_ptr->siblingIndex;
+    int myIndex = d_ptr->siblingIndex;
+    if (myIndex >= siblingIndex && d_ptr->z == sibling->d_ptr->z) {
+        siblings->move(myIndex, siblingIndex);
+        // Fixup the insertion ordering.
+        for (int i = 0; i < siblings->size(); ++i) {
+            int &index = siblings->at(i)->d_ptr->siblingIndex;
+            if (i != siblingIndex && index >= siblingIndex && index <= myIndex)
+                ++index;
+        }
+        d_ptr->siblingIndex = siblingIndex;
+    }
+}
+
+/*!
     Returns the bounding rect of this item's descendants (i.e., its
     children, their children, etc.) in local coordinates. The
     rectangle will contain all descendants after they have been mapped
@@ -4755,20 +4830,36 @@ void QGraphicsItemPrivate::resolveDepth()
 
 /*!
     \internal
+
+    ### This function is almost identical to
+    QGraphicsScenePrivate::registerTopLevelItem().
 */
 void QGraphicsItemPrivate::addChild(QGraphicsItem *child)
 {
-    needSortChildren = 1;
+    // Remove all holes from the sibling index list. Now the max index
+    // number is equal to the size of the children list.
+    ensureSequentialSiblingIndex();
+    needSortChildren = 1; // ### maybe 0
     child->d_ptr->siblingIndex = children.size();
     children.append(child);
 }
 
 /*!
     \internal
+
+    ### This function is almost identical to
+    QGraphicsScenePrivate::unregisterTopLevelItem().
 */
 void QGraphicsItemPrivate::removeChild(QGraphicsItem *child)
 {
-    children.removeOne(child);
+    // When removing elements in the middle of the children list,
+    // there will be a "gap" in the list of sibling indexes (0,1,3,4).
+    if (!holesInSiblingIndex)
+        holesInSiblingIndex = child->d_ptr->siblingIndex != children.size() - 1;
+    if (sequentialOrdering && !holesInSiblingIndex)
+        children.removeAt(child->d_ptr->siblingIndex);
+    else
+        children.removeOne(child);
     // NB! Do not use children.removeAt(child->d_ptr->siblingIndex) because
     // the child is not guaranteed to be at the index after the list is sorted.
     // (see ensureSortedChildren()).
@@ -5075,46 +5166,6 @@ void QGraphicsItem::update(const QRectF &rect)
 }
 
 /*!
-    \internal
-
-    Scrolls \a rect in \a pix by \a dx, \a dy.
-
-    ### This can be done much more efficiently by using XCopyArea on X11 with
-    the same dst and src, and through moving pixels in the raster engine. It
-    can probably also be done much better on the other paint engines.
-*/
-void _q_scrollPixmap(QPixmap *pix, const QRect &rect, int dx, int dy)
-{
-#if 0
-    QPainter painter(pix);
-    painter.setClipRect(rect);
-    painter.drawPixmap(rect.translated(dx, dy), *pix, rect);
-    painter.end();
-#elif defined Q_WS_X11
-    GC gc = XCreateGC(X11->display, pix->handle(), 0, 0);
-
-    XRectangle xrect;
-    xrect.x = rect.x();
-    xrect.y = rect.y();
-    xrect.width = rect.width();
-    xrect.height = rect.height();
-    XSetClipRectangles(X11->display, gc, 0, 0, &xrect, 1, YXBanded);
-
-    XCopyArea(X11->display, pix->handle(), pix->handle(), gc,
-              rect.x(), rect.y(), rect.width(), rect.height(),
-              rect.x()+dx, rect.y()+dy);
-    XFreeGC(X11->display, gc);
-#else
-    QPixmap newPix = *pix;
-    QPainter painter(&newPix);
-    painter.setClipRect(rect);
-    painter.drawPixmap(rect.translated(dx, dy), *pix, rect);
-    painter.end();
-    *pix = newPix;
-#endif
-}
-
-/*!
     \since 4.4
     Scrolls the contents of \a rect by \a dx, \a dy. If \a rect is a null rect
     (the default), the item's bounding rect is scrolled.
@@ -5154,7 +5205,7 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
                 QRectF br = boundingRect().adjusted(-adjust, -adjust, adjust, adjust);
                 QRect irect = rect.toRect().translated(-br.x(), -br.y());
 
-                _q_scrollPixmap(&pix, irect, dx, dy);
+                pix.scroll(dx, dy, irect);
 
                 QPixmapCache::replace(c->key, pix);
 
@@ -6993,10 +7044,12 @@ void QGraphicsItem::prepareGeometryChange()
     if (d_ptr->inSetPosHelper)
         return;
 
-    if (d_ptr->flags & ItemClipsChildrenToShape)
+    if (d_ptr->flags & ItemClipsChildrenToShape
+        || d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren) {
         d_ptr->invalidateCachedClipPathRecursively();
-    else
+    } else {
         d_ptr->invalidateCachedClipPath();
+    }
 }
 
 /*!

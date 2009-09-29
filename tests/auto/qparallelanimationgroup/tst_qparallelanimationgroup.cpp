@@ -157,6 +157,7 @@ public:
         : QPropertyAnimation(target, propertyName, parent), id(0)
     {
         setDuration(250);
+        setEndValue(0);
     }
 
     int duration() const { return -1; /* not time driven */ }

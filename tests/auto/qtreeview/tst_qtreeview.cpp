@@ -906,7 +906,7 @@ void tst_QTreeView::iconSize()
 
     view.show();
     view.update();
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(&view);
     QTRY_VERIFY(view.repainted);
     QCOMPARE(view.iconSize(), QSize());
 
@@ -3055,7 +3055,7 @@ void tst_QTreeView::task216717_updateChildren()
             bool refreshed;
     } tree;
     tree.show();
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(&tree);
     tree.refreshed = false;
     QTreeWidgetItem *parent = new QTreeWidgetItem(QStringList() << "parent");
     tree.addTopLevelItem(parent);
@@ -3344,7 +3344,7 @@ void tst_QTreeView::task246536_scrollbarsNotWorking()
     QStandardItemModel model;
     tree.setModel(&model);
     tree.show();
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(&tree);
     QList<QStandardItem *> items;
     for(int i=0; i<100; ++i){
         items << new QStandardItem(QString::fromLatin1("item %1").arg(i));
@@ -3399,7 +3399,7 @@ void tst_QTreeView::task239271_addRowsWithFirstColumnHidden()
 
     view.hideColumn(0);
     view.show();
-    QTest::qWait(200);
+    QTest::qWaitForWindowShown(&view);
     delegate.paintedIndexes.clear();
     QStandardItem sub1("sub1"), sub11("sub11");
     root0.appendRow(QList<QStandardItem*>() << &sub1 << &sub11);

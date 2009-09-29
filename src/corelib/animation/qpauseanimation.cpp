@@ -141,9 +141,8 @@ bool QPauseAnimation::event(QEvent *e)
 /*!
     \reimp
  */
-void QPauseAnimation::updateCurrentTime(int msecs)
+void QPauseAnimation::updateCurrentTime(int)
 {
-    Q_UNUSED(msecs);
 }
 
 

@@ -68,6 +68,9 @@
 #include "private/qstylesheetstyle_p.h"
 #include "private/qstyle_p.h"
 #include "qmessagebox.h"
+#include "qlineedit.h"
+#include "qlistview.h"
+#include "qtextedit.h"
 #include <QtGui/qgraphicsproxywidget.h>
 
 #include "qinputcontext.h"
@@ -1160,6 +1163,7 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
           || event->type() == QEvent::Resize
           || event->type() == QEvent::Move
           || event->type() == QEvent::LanguageChange
+          || event->type() == QEvent::UpdateSoftKeys
           || event->type() == QEvent::InputMethod)) {
         for (int i = 0; i < postedEvents->size(); ++i) {
             const QPostEvent &cur = postedEvents->at(i);
@@ -1176,6 +1180,8 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
             } else if (cur.event->type() == QEvent::Move) {
                 ((QMoveEvent *)(cur.event))->p = ((QMoveEvent *)event)->p;
             } else if (cur.event->type() == QEvent::LanguageChange) {
+                ;
+            } else if (cur.event->type() == QEvent::UpdateSoftKeys) {
                 ;
             } else if ( cur.event->type() == QEvent::InputMethod ) {
                 *(QInputMethodEvent *)(cur.event) = *(QInputMethodEvent *)event;
@@ -2484,8 +2490,6 @@ void QApplication::setActiveWindow(QWidget* act)
 */
 QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool next)
 {
-    uint focus_flag = qt_tab_all_widgets ? Qt::TabFocus : Qt::StrongFocus;
-
     QWidget *f = toplevel->focusWidget();
     if (!f)
         f = toplevel;
@@ -2493,11 +2497,22 @@ QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool 
     QWidget *w = f;
     QWidget *test = f->d_func()->focus_next;
     while (test && test != f) {
-        if ((test->focusPolicy() & focus_flag) == focus_flag
+        if ((test->focusPolicy() & Qt::TabFocus)
             && !(test->d_func()->extra && test->d_func()->extra->focus_proxy)
             && test->isVisibleTo(toplevel) && test->isEnabled()
             && !(w->windowType() == Qt::SubWindow && !w->isAncestorOf(test))
-            && (toplevel->windowType() != Qt::SubWindow || toplevel->isAncestorOf(test))) {
+            && (toplevel->windowType() != Qt::SubWindow || toplevel->isAncestorOf(test))
+            && (qt_tab_all_widgets
+#ifndef QT_NO_LINEEDIT
+                || qobject_cast<QLineEdit*>(test)
+#endif
+#ifndef QT_NO_TEXTEDIT
+                || qobject_cast<QTextEdit*>(test)
+#endif
+#ifndef QT_NO_ITEMVIEWS
+                || qobject_cast<QListView*>(test)
+#endif
+                )) {
             w = test;
             if (next)
                 break;
@@ -4781,13 +4796,13 @@ void QApplicationPrivate::emitLastWindowClosed()
     \note On Windows CE this feature is disabled by default for touch device
           mkspecs. To enable keypad navigation, build Qt with
           QT_KEYPAD_NAVIGATION defined.
-          
+
     \note On Symbian, setting the mode to Qt::NavigationModeCursorAuto will enable a
           virtual mouse cursor on non touchscreen devices, which is controlled
           by the cursor keys if there is no analog pointer device.
           On other platforms and on touchscreen devices, it has the same
           meaning as Qt::NavigationModeNone.
-          
+
     \since 4.6
 
     \sa keypadNavigationEnabled()
@@ -4810,10 +4825,10 @@ void QApplication::setNavigationMode(Qt::NavigationMode mode)
     \note On Windows CE this feature is disabled by default for touch device
           mkspecs. To enable keypad navigation, build Qt with
           QT_KEYPAD_NAVIGATION defined.
-          
+
     \note On Symbian, the default mode is Qt::NavigationModeNone for touch
           devices, and Qt::NavigationModeKeypadDirectional.
-          
+
     \since 4.6
 
     \sa keypadNavigationEnabled()
@@ -4829,12 +4844,11 @@ Qt::NavigationMode QApplication::navigationMode()
 
     This feature is available in Qt for Embedded Linux, Symbian and Windows CE
     only.
-    
 
     \note On Windows CE this feature is disabled by default for touch device
           mkspecs. To enable keypad navigation, build Qt with
           QT_KEYPAD_NAVIGATION defined.
-          
+
     \deprecated
 
     \sa setNavigationMode()
@@ -4846,7 +4860,7 @@ void QApplication::setKeypadNavigationEnabled(bool enable)
         QApplication::setNavigationMode(Qt::NavigationModeKeypadDirectional);
 #else
         QApplication::setNavigationMode(Qt::NavigationModeKeypadTabOrder);
-#endif  
+#endif
     }
     else {
         QApplication::setNavigationMode(Qt::NavigationModeNone);
@@ -4863,7 +4877,7 @@ void QApplication::setKeypadNavigationEnabled(bool enable)
     \note On Windows CE this feature is disabled by default for touch device
           mkspecs. To enable keypad navigation, build Qt with
           QT_KEYPAD_NAVIGATION defined.
-          
+
     \deprecated
 
     \sa navigationMode()

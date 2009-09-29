@@ -134,6 +134,7 @@ src_declarative.target = sub-declarative
       src_plugins.depends += src_dbus
       src_phonon.depends +=  src_dbus
    }
+   contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2): src_plugins.depends += src_opengl
 }
 
 !symbian {

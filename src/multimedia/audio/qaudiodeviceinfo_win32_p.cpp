@@ -74,23 +74,23 @@ QT_BEGIN_NAMESPACE
 #endif
 
 
-QAudioDeviceInfoPrivate::QAudioDeviceInfoPrivate(QByteArray dev, QAudio::Mode mode)
+QAudioDeviceInfoInternal::QAudioDeviceInfoInternal(QByteArray dev, QAudio::Mode mode)
 {
     device = QLatin1String(dev);
     this->mode = mode;
 }
 
-QAudioDeviceInfoPrivate::~QAudioDeviceInfoPrivate()
+QAudioDeviceInfoInternal::~QAudioDeviceInfoInternal()
 {
     close();
 }
 
-bool QAudioDeviceInfoPrivate::isFormatSupported(const QAudioFormat& format) const
+bool QAudioDeviceInfoInternal::isFormatSupported(const QAudioFormat& format) const
 {
     return testSettings(format);
 }
 
-QAudioFormat QAudioDeviceInfoPrivate::preferredFormat() const
+QAudioFormat QAudioDeviceInfoInternal::preferredFormat() const
 {
     QAudioFormat nearest;
     if(mode == QAudio::AudioOutput) {
@@ -110,7 +110,7 @@ QAudioFormat QAudioDeviceInfoPrivate::preferredFormat() const
     return nearest;
 }
 
-QAudioFormat QAudioDeviceInfoPrivate::nearestFormat(const QAudioFormat& format) const
+QAudioFormat QAudioDeviceInfoInternal::nearestFormat(const QAudioFormat& format) const
 {
     if(testSettings(format))
         return format;
@@ -118,58 +118,58 @@ QAudioFormat QAudioDeviceInfoPrivate::nearestFormat(const QAudioFormat& format) 
         return preferredFormat();
 }
 
-QString QAudioDeviceInfoPrivate::deviceName() const
+QString QAudioDeviceInfoInternal::deviceName() const
 {
     return device;
 }
 
-QStringList QAudioDeviceInfoPrivate::codecList()
+QStringList QAudioDeviceInfoInternal::codecList()
 {
     updateLists();
     return codecz;
 }
 
-QList<int> QAudioDeviceInfoPrivate::frequencyList()
+QList<int> QAudioDeviceInfoInternal::frequencyList()
 {
     updateLists();
     return freqz;
 }
 
-QList<int> QAudioDeviceInfoPrivate::channelsList()
+QList<int> QAudioDeviceInfoInternal::channelsList()
 {
     updateLists();
     return channelz;
 }
 
-QList<int> QAudioDeviceInfoPrivate::sampleSizeList()
+QList<int> QAudioDeviceInfoInternal::sampleSizeList()
 {
     updateLists();
     return sizez;
 }
 
-QList<QAudioFormat::Endian> QAudioDeviceInfoPrivate::byteOrderList()
+QList<QAudioFormat::Endian> QAudioDeviceInfoInternal::byteOrderList()
 {
     updateLists();
     return byteOrderz;
 }
 
-QList<QAudioFormat::SampleType> QAudioDeviceInfoPrivate::sampleTypeList()
+QList<QAudioFormat::SampleType> QAudioDeviceInfoInternal::sampleTypeList()
 {
     updateLists();
     return typez;
 }
 
 
-bool QAudioDeviceInfoPrivate::open()
+bool QAudioDeviceInfoInternal::open()
 {
     return true;
 }
 
-void QAudioDeviceInfoPrivate::close()
+void QAudioDeviceInfoInternal::close()
 {
 }
 
-bool QAudioDeviceInfoPrivate::testSettings(const QAudioFormat& format) const
+bool QAudioDeviceInfoInternal::testSettings(const QAudioFormat& format) const
 {
     // Set nearest to closest settings that do work.
     // See if what is in settings will work (return value).
@@ -199,7 +199,7 @@ bool QAudioDeviceInfoPrivate::testSettings(const QAudioFormat& format) const
     return false;
 }
 
-void QAudioDeviceInfoPrivate::updateLists()
+void QAudioDeviceInfoInternal::updateLists()
 {
     // redo all lists based on current settings
     bool base = false;
@@ -333,7 +333,7 @@ void QAudioDeviceInfoPrivate::updateLists()
     }
 }
 
-QList<QByteArray> QAudioDeviceInfoPrivate::deviceList(QAudio::Mode mode)
+QList<QByteArray> QAudioDeviceInfoInternal::deviceList(QAudio::Mode mode)
 {
     Q_UNUSED(mode)
 
@@ -367,12 +367,12 @@ QList<QByteArray> QAudioDeviceInfoPrivate::deviceList(QAudio::Mode mode)
     return devices;
 }
 
-QByteArray QAudioDeviceInfoPrivate::defaultOutputDevice()
+QByteArray QAudioDeviceInfoInternal::defaultOutputDevice()
 {
     return QByteArray("default");
 }
 
-QByteArray QAudioDeviceInfoPrivate::defaultInputDevice()
+QByteArray QAudioDeviceInfoInternal::defaultInputDevice()
 {
     return QByteArray("default");
 }

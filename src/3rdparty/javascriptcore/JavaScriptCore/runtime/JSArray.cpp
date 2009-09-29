@@ -1,6 +1,6 @@
 /*
  *  Copyright (C) 1999-2000 Harri Porten (porten@kde.org)
- *  Copyright (C) 2003, 2007, 2008 Apple Inc. All rights reserved.
+ *  Copyright (C) 2003, 2007, 2008, 2009 Apple Inc. All rights reserved.
  *  Copyright (C) 2003 Peter Kelly (pmk@post.com)
  *  Copyright (C) 2006 Alexey Proskuryakov (ap@nypop.com)
  *
@@ -25,6 +25,8 @@
 
 #include "ArrayPrototype.h"
 #include "CachedCall.h"
+#include "Error.h"
+#include "Executable.h"
 #include "PropertyNameArray.h"
 #include <wtf/AVLTree.h>
 #include <wtf/Assertions.h>
@@ -134,9 +136,9 @@ JSArray::JSArray(PassRefPtr<Structure> structure)
     unsigned initialCapacity = 0;
 
     m_storage = static_cast<ArrayStorage*>(fastZeroedMalloc(storageSize(initialCapacity)));
-    m_fastAccessCutoff = 0;
     m_storage->m_vectorLength = initialCapacity;
-    m_storage->m_length = 0;
+
+    m_fastAccessCutoff = 0;
 
     checkConsistency();
 }
@@ -146,40 +148,45 @@ JSArray::JSArray(PassRefPtr<Structure> structure, unsigned initialLength)
 {
     unsigned initialCapacity = min(initialLength, MIN_SPARSE_ARRAY_INDEX);
 
-    m_storage = static_cast<ArrayStorage*>(fastZeroedMalloc(storageSize(initialCapacity)));
-    m_fastAccessCutoff = 0;
-    m_storage->m_vectorLength = initialCapacity;
+    m_storage = static_cast<ArrayStorage*>(fastMalloc(storageSize(initialCapacity)));
     m_storage->m_length = initialLength;
+    m_storage->m_vectorLength = initialCapacity;
+    m_storage->m_numValuesInVector = 0;
+    m_storage->m_sparseValueMap = 0;
+    m_storage->lazyCreationData = 0;
 
-    Heap::heap(this)->reportExtraMemoryCost(initialCapacity * sizeof(JSValue));
+    JSValue* vector = m_storage->m_vector;
+    for (size_t i = 0; i < initialCapacity; ++i)
+        vector[i] = JSValue();
+
+    m_fastAccessCutoff = 0;
 
     checkConsistency();
+
+    Heap::heap(this)->reportExtraMemoryCost(initialCapacity * sizeof(JSValue));
 }
 
 JSArray::JSArray(PassRefPtr<Structure> structure, const ArgList& list)
     : JSObject(structure)
 {
-    unsigned length = list.size();
+    unsigned initialCapacity = list.size();
 
-    m_fastAccessCutoff = length;
-
-    ArrayStorage* storage = static_cast<ArrayStorage*>(fastMalloc(storageSize(length)));
-
-    storage->m_vectorLength = length;
-    storage->m_numValuesInVector = length;
-    storage->m_sparseValueMap = 0;
-    storage->m_length = length;
+    m_storage = static_cast<ArrayStorage*>(fastMalloc(storageSize(initialCapacity)));
+    m_storage->m_length = initialCapacity;
+    m_storage->m_vectorLength = initialCapacity;
+    m_storage->m_numValuesInVector = initialCapacity;
+    m_storage->m_sparseValueMap = 0;
 
     size_t i = 0;
     ArgList::const_iterator end = list.end();
     for (ArgList::const_iterator it = list.begin(); it != end; ++it, ++i)
-        storage->m_vector[i] = *it;
+        m_storage->m_vector[i] = *it;
 
-    m_storage = storage;
-
-    Heap::heap(this)->reportExtraMemoryCost(storageSize(length));
+    m_fastAccessCutoff = initialCapacity;
 
     checkConsistency();
+
+    Heap::heap(this)->reportExtraMemoryCost(storageSize(initialCapacity));
 }
 
 JSArray::~JSArray()
@@ -216,7 +223,7 @@ bool JSArray::getOwnPropertySlot(ExecState* exec, unsigned i, PropertySlot& slot
         }
     }
 
-    return false;
+    return JSObject::getOwnPropertySlot(exec, Identifier::from(exec, i), slot);
 }
 
 bool JSArray::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -232,6 +239,37 @@ bool JSArray::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName
         return JSArray::getOwnPropertySlot(exec, i, slot);
 
     return JSObject::getOwnPropertySlot(exec, propertyName, slot);
+}
+
+bool JSArray::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    if (propertyName == exec->propertyNames().length) {
+        descriptor.setDescriptor(jsNumber(exec, length()), DontDelete | DontEnum);
+        return true;
+    }
+    
+    bool isArrayIndex;
+    unsigned i = propertyName.toArrayIndex(&isArrayIndex);
+    if (isArrayIndex) {
+        if (i >= m_storage->m_length)
+            return false;
+        if (i < m_storage->m_vectorLength) {
+            JSValue value = m_storage->m_vector[i];
+            if (value) {
+                descriptor.setDescriptor(value, 0);
+                return true;
+            }
+        } else if (SparseArrayValueMap* map = m_storage->m_sparseValueMap) {
+            if (i >= MIN_SPARSE_ARRAY_INDEX) {
+                SparseArrayValueMap::iterator it = map->find(i);
+                if (it != map->end()) {
+                    descriptor.setDescriptor(it->second, 0);
+                    return true;
+                }
+            }
+        }
+    }
+    return JSObject::getOwnPropertyDescriptor(exec, propertyName, descriptor);
 }
 
 // ECMA 15.4.5.1
@@ -343,8 +381,7 @@ NEVER_INLINE void JSArray::putSlowCase(ExecState* exec, unsigned i, JSValue valu
         }
     }
 
-    storage = static_cast<ArrayStorage*>(tryFastRealloc(storage, storageSize(newVectorLength)));
-    if (!storage) {
+    if (!tryFastRealloc(storage, storageSize(newVectorLength)).getValue(storage)) {
         throwOutOfMemoryError(exec);
         return;
     }
@@ -427,7 +464,7 @@ bool JSArray::deleteProperty(ExecState* exec, unsigned i, bool checkDontDelete)
     return false;
 }
 
-void JSArray::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
+void JSArray::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, bool includeNonEnumerable)
 {
     // FIXME: Filling PropertyNameArray with an identifier for every integer
     // is incredibly inefficient for large arrays. We need a different approach,
@@ -447,7 +484,7 @@ void JSArray::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames
             propertyNames.add(Identifier::from(exec, it->first));
     }
 
-    JSObject::getPropertyNames(exec, propertyNames, listedAttributes);
+    JSObject::getOwnPropertyNames(exec, propertyNames, includeNonEnumerable);
 }
 
 bool JSArray::increaseVectorLength(unsigned newLength)
@@ -462,8 +499,7 @@ bool JSArray::increaseVectorLength(unsigned newLength)
     ASSERT(newLength <= MAX_STORAGE_VECTOR_INDEX);
     unsigned newVectorLength = increasedVectorLength(newLength);
 
-    storage = static_cast<ArrayStorage*>(tryFastRealloc(storage, storageSize(newVectorLength)));
-    if (!storage)
+    if (!tryFastRealloc(storage, storageSize(newVectorLength)).getValue(storage))
         return false;
 
     Heap::heap(this)->reportExtraMemoryCost(storageSize(newVectorLength) - storageSize(vectorLength));
@@ -596,27 +632,9 @@ void JSArray::push(ExecState* exec, JSValue value)
     putSlowCase(exec, m_storage->m_length++, value);
 }
 
-void JSArray::mark()
+void JSArray::markChildren(MarkStack& markStack)
 {
-    JSObject::mark();
-
-    ArrayStorage* storage = m_storage;
-
-    unsigned usedVectorLength = min(storage->m_length, storage->m_vectorLength);
-    for (unsigned i = 0; i < usedVectorLength; ++i) {
-        JSValue value = storage->m_vector[i];
-        if (value && !value.marked())
-            value.mark();
-    }
-
-    if (SparseArrayValueMap* map = storage->m_sparseValueMap) {
-        SparseArrayValueMap::iterator end = map->end();
-        for (SparseArrayValueMap::iterator it = map->begin(); it != end; ++it) {
-            JSValue value = it->second;
-            if (!value.marked())
-                value.mark();
-        }
-    }
+    markChildrenDirect(markStack);
 }
 
 static int compareNumbersForQSort(const void* a, const void* b)

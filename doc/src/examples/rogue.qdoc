@@ -194,7 +194,7 @@
 
     \snippet examples/statemachine/rogue/movementtransition.h 1
 
-    The KeyPress events come wrapped in \l{QWrappedEvent}s. \c event
+    The KeyPress events come wrapped in \l{QStateMachine::WrappedEvent}s. \c event
     must be confirmed to be a wrapped event because Qt uses other
     events internally. After that, it is simply a matter of checking
     which key has been pressed.

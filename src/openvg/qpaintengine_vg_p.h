@@ -108,6 +108,8 @@ public:
     void fillRect(const QRectF &rect, const QBrush &brush);
     void fillRect(const QRectF &rect, const QColor &color);
 
+    void drawRoundedRect(const QRectF &rect, qreal xrad, qreal yrad, Qt::SizeMode mode);
+
     void drawRects(const QRect *rects, int rectCount);
     void drawRects(const QRectF *rects, int rectCount);
 

@@ -3776,7 +3776,7 @@ QTouchEvent::~QTouchEvent()
 */
 
 /*! \class QTouchEvent::TouchPoint
-    \brief The QTouchEvent::TouchPoint class provides information about a touch point in a QTouchEvent.
+    \brief The TouchPoint class provides information about a touch point in a QTouchEvent.
     \since 4.6
 */
 

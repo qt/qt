@@ -62,8 +62,8 @@ public:
 protected:
     bool eventTest(QEvent *event) {
         if (event->type() == QEvent::Wrapped &&
-            static_cast<QWrappedEvent *>(event)->event()->type() == QEvent::KeyPress) {
-            QEvent *wrappedEvent = static_cast<QWrappedEvent *>(event)->event();
+            static_cast<QStateMachine::WrappedEvent *>(event)->event()->type() == QEvent::KeyPress) {
+            QEvent *wrappedEvent = static_cast<QStateMachine::WrappedEvent *>(event)->event();
 
             QKeyEvent *keyEvent = static_cast<QKeyEvent *>(wrappedEvent);
             int key = keyEvent->key();
@@ -78,7 +78,7 @@ protected:
 //![2]
     void onTransition(QEvent *event) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(
-            static_cast<QWrappedEvent *>(event)->event());
+            static_cast<QStateMachine::WrappedEvent *>(event)->event());
 
         int key = keyEvent->key();
         switch (key) {

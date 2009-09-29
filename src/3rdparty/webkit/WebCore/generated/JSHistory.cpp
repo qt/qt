@@ -92,7 +92,7 @@ JSHistory::JSHistory(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalO
 
 JSHistory::~JSHistory()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSHistory::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

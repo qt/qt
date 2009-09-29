@@ -227,6 +227,7 @@ public:
 
     virtual void recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlags flags) const;
     virtual QImage alphaMapForGlyph(glyph_t);
+    virtual QImage alphaRGBMapForGlyph(glyph_t, int margin, const QTransform &t);
     virtual void removeGlyphFromCache(glyph_t glyph);
 
     virtual int glyphCount() const;

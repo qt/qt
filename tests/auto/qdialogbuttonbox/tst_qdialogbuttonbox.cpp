@@ -43,6 +43,7 @@
 #include <QtGui/QStyle>
 #include <QtGui/QLayout>
 #include <QtGui/QDialog>
+#include <QtGui/QAction>
 #include <qdialogbuttonbox.h>
 #include <limits.h>
 
@@ -109,6 +110,7 @@ private slots:
     void testSignalOrder();
     void testDefaultButton_data();
     void testDefaultButton();
+    void testS60SoftKeys();
 
     void task191642_default();
 private:
@@ -711,6 +713,40 @@ void tst_QDialogButtonBox::testDefaultButton_data()
     QTest::newRow("second accept explicit after add") << 0 << 1 << 1;
     QTest::newRow("third accept explicit befare add") << 1 << 2 << 2;
     QTest::newRow("third accept explicit after add") << 0 << 2 << 2;
+}
+
+void tst_QDialogButtonBox::testS60SoftKeys()
+{
+#ifdef Q_WS_S60
+    QDialog dialog(0);
+    QDialogButtonBox buttonBox(&dialog);
+    buttonBox.setStandardButtons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    dialog.show();
+    
+    int softkeyCount = 0;
+    QList<QAction *> actions = dialog.actions();
+    foreach (QAction *action, actions) {
+        if (action->softKeyRole() != QAction::NoSoftKey)
+            softkeyCount++;
+    }
+    QCOMPARE( softkeyCount, 2);
+
+    QDialog dialog2(0);
+    QDialogButtonBox buttonBox2(&dialog2);
+    buttonBox2.setStandardButtons(QDialogButtonBox::Cancel);
+    dialog2.show();
+
+    int softkeyCount2 = 0;
+    QList<QAction *> actions2 = dialog2.actions();
+    foreach (QAction *action, actions2) {
+        if (action->softKeyRole() != QAction::NoSoftKey)
+            softkeyCount2++;
+    }
+    QCOMPARE( softkeyCount2, 1);
+    
+#else
+    QSKIP("S60-specific test", SkipAll );
+#endif
 }
 
 void tst_QDialogButtonBox::testDefaultButton()

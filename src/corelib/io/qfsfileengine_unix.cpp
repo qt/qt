@@ -899,7 +899,7 @@ QString QFSFileEngine::fileName(FileName file) const
         // Clean up the path
         bool isDir = ret.endsWith(slashChar);
         ret = QDir::cleanPath(ret);
-        if (isDir)
+        if (isDir && !ret.endsWith(slashChar))
             ret += slashChar;
 
         if (file == AbsolutePathName) {

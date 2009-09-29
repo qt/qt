@@ -2399,6 +2399,7 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 #define Q_SYMBIAN_HAS_EXTENDED_BITMAP_TYPE
 //enabling new graphics resources
 #define QT_SYMBIAN_SUPPORTS_SGIMAGE
+#define QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
 #endif
 
 

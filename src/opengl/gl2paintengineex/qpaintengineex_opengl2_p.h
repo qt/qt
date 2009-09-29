@@ -60,6 +60,7 @@
 #include <private/qgl2pexvertexarray_p.h>
 #include <private/qglpaintdevice_p.h>
 #include <private/qglpixmapfilter_p.h>
+#include <private/qfontengine_p.h>
 
 enum EngineMode {
     ImageDrawingMode,
@@ -181,7 +182,7 @@ public:
     void fill(const QVectorPath &path);
     void drawOutline(const QVectorPath& path);
     void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque, bool pattern = false);
-    void drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti);
+    void drawCachedGlyphs(const QPointF &p, QFontEngineGlyphCache::Type glyphType, const QTextItemInt &ti);
 
     void drawVertexArrays(QGL2PEXVertexArray& vertexArray, GLenum primitive);
         // ^ draws whatever is in the vertex array
@@ -205,6 +206,7 @@ public:
     int width, height;
     QGLContext *ctx;
     EngineMode mode;
+    QFontEngineGlyphCache::Type glyphCacheType;
 
     mutable QOpenGL2PaintEngineState *last_created_state;
 
@@ -215,10 +217,12 @@ public:
     bool brushUniformsDirty;
     bool simpleShaderMatrixUniformDirty;
     bool shaderMatrixUniformDirty;
-    bool stencilBufferDirty;
     bool depthUniformDirty;
     bool simpleShaderDepthUniformDirty;
     bool opacityUniformDirty;
+
+    QRegion dirtyStencilRegion;
+    QRect currentScissorBounds;
 
     const QBrush*    currentBrush; // May not be the state's brush!
 
@@ -269,6 +273,7 @@ public:
     QScopedPointer<QPixmapFilter> convolutionFilter;
     QScopedPointer<QPixmapFilter> colorizeFilter;
     QScopedPointer<QPixmapFilter> blurFilter;
+    QScopedPointer<QPixmapFilter> fastBlurFilter;
 };
 
 QT_END_NAMESPACE

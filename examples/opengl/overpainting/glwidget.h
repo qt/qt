@@ -50,6 +50,7 @@
 #include <QTimer>
 
 class Bubble;
+class QtLogo;
 QT_BEGIN_NAMESPACE
 class QPaintEvent;
 class QWidget;
@@ -88,27 +89,24 @@ private slots:
     void animate();
 
 private:
-    GLuint makeObject();
     void createBubbles(int number);
     void drawInstructions(QPainter *painter);
 //! [1]
-    void extrude(GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y2);
-    void normalizeAngle(int *angle);
-    void quad(GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y2,
-              GLdouble x3, GLdouble y3, GLdouble x4, GLdouble y4);
     void setupViewport(int width, int height);
+
+    QColor qtGreen;
+    QColor qtPurple;
 
     GLuint object;
     int xRot;
     int yRot;
     int zRot;
     QPoint lastPos;
-    QColor qtGreen;
-    QColor qtPurple;
 //! [4]
+    QtLogo *logo;
     QList<Bubble*> bubbles;
     QTimer animationTimer;
-};
 //! [4]
+};
 
 #endif

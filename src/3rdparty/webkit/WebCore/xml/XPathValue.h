@@ -66,8 +66,11 @@ namespace WebCore {
             Value(Node* value) : m_type(NodeSetValue), m_bool(false), m_number(0), m_data(ValueData::create()) { m_data->m_nodeSet.append(value); }
 
             // This is needed to safely implement constructing from bool - with normal function overloading, any pointer type would match.
+#if COMPILER(WINSCW)
+            Value(bool);
+#else
             template<typename T> Value(T);
-
+#endif
             static const struct AdoptTag {} adopt;
             Value(NodeSet& value, const AdoptTag&) : m_type(NodeSetValue), m_bool(false), m_number(0),  m_data(ValueData::create()) { value.swap(m_data->m_nodeSet); }
 
@@ -80,7 +83,12 @@ namespace WebCore {
 
             const NodeSet& toNodeSet() const;
             NodeSet& modifiableNodeSet();
+#if COMPILER(WINSCW)
+            // FIXME --nl-- Symbian WINSCW compiler complains with 'ambiguous access to overloaded function' (double, unsigned long, unsigned int)
+            unsigned int toBoolean() const;
+#else
             bool toBoolean() const;
+#endif
             double toNumber() const;
             String toString() const;
 
@@ -90,8 +98,9 @@ namespace WebCore {
             double m_number;
             RefPtr<ValueData> m_data;
         };
-
+#if !COMPILER(WINSCW)
         template<>
+#endif
         inline Value::Value(bool value)
             : m_type(BooleanValue)
             , m_bool(value)

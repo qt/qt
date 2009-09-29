@@ -60,8 +60,7 @@ public:
     AudioTest( QMainWindow *parent = 0, Qt::WFlags f = 0 );
     virtual ~AudioTest();
 
-    QAudioDeviceId deviceHandle;
-    QAudioDeviceInfo*  device;
+    QAudioDeviceInfo  deviceInfo;
     QAudioFormat settings;
     QAudio::Mode mode;
 

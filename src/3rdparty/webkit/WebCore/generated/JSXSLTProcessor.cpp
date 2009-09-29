@@ -86,7 +86,7 @@ JSXSLTProcessor::JSXSLTProcessor(PassRefPtr<Structure> structure, JSDOMGlobalObj
 
 JSXSLTProcessor::~JSXSLTProcessor()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSXSLTProcessor::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

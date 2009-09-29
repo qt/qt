@@ -38,6 +38,10 @@
 #include <sys/mman.h>
 #endif
 
+#if PLATFORM(SYMBIAN)
+#include <e32std.h>
+#endif
+
 #define JIT_ALLOCATOR_PAGE_SIZE (ExecutableAllocator::pageSize)
 #define JIT_ALLOCATOR_LARGE_ALLOC_SIZE (ExecutableAllocator::pageSize * 4)
 
@@ -176,30 +180,35 @@ public:
     static void cacheFlush(void*, size_t)
     {
     }
-#elif PLATFORM_ARM_ARCH(7) && PLATFORM(IPHONE)
+#elif PLATFORM(ARM_THUMB2) && PLATFORM(IPHONE)
     static void cacheFlush(void* code, size_t size)
     {
         sys_dcache_flush(code, size);
         sys_icache_invalidate(code, size);
     }
-#elif PLATFORM(ARM)
+#elif PLATFORM(SYMBIAN)
     static void cacheFlush(void* code, size_t size)
     {
-    #if COMPILER(GCC) && (GCC_VERSION >= 30406)
-        __clear_cache(reinterpret_cast<char*>(code), reinterpret_cast<char*>(code) + size);
-    #else
-        const int syscall = 0xf0002;
-        __asm __volatile (
-               "mov     r0, %0\n"
-               "mov     r1, %1\n"
-               "mov     r7, %2\n"
-               "mov     r2, #0x0\n"
-               "swi     0x00000000\n"
-           :
-           :   "r" (code), "r" (reinterpret_cast<char*>(code) + size), "r" (syscall)
-           :   "r0", "r1", "r7");
-    #endif // COMPILER(GCC) && (GCC_VERSION >= 30406)
+        User::IMB_Range(code, static_cast<char*>(code) + size);
     }
+#elif PLATFORM(ARM_TRADITIONAL) && PLATFORM(LINUX)
+    static void cacheFlush(void* code, size_t size)
+    {
+        asm volatile (
+            "push    {r7}\n"
+            "mov     r0, %0\n"
+            "mov     r1, %1\n"
+            "mov     r7, #0xf0000\n"
+            "add     r7, r7, #0x2\n"
+            "mov     r2, #0x0\n"
+            "svc     0x0\n"
+            "pop     {r7}\n"
+            :
+            : "r" (code), "r" (reinterpret_cast<char*>(code) + size)
+            : "r0", "r1");
+    }
+#else
+    #error "The cacheFlush support is missing on this platform."
 #endif
 
 private:

@@ -119,11 +119,12 @@ public:
 
     Type type() const;
 
+    void getCharacterData(glyph_t glyph, TOpenFontCharMetrics& metrics, const TUint8*& bitmap, TSize& bitmapSize) const;
+
 private:
     friend class QFontPrivate;
 
     QFixed glyphAdvance(HB_Glyph glyph) const;
-    void getCharacterData(glyph_t glyph, TOpenFontCharMetrics& metrics, const TUint8*& bitmap, TSize& bitmapSize) const;
 
     CFbsBitmap *m_textRenderBitmap;
     CFbsBitmapDevice *m_textRenderBitmapDevice;

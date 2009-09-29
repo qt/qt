@@ -294,14 +294,15 @@ public:
 
     QPointF transformOriginPoint() const;
     void setTransformOriginPoint(const QPointF &origin);
-    inline void setTransformOriginPoint(qreal x, qreal y)
-    { setTransformOriginPoint(QPointF(x,y)); }
+    inline void setTransformOriginPoint(qreal ax, qreal ay)
+    { setTransformOriginPoint(QPointF(ax,ay)); }
 
     virtual void advance(int phase);
 
     // Stacking order
     qreal zValue() const;
     void setZValue(qreal z);
+    void stackBefore(const QGraphicsItem *sibling);
 
     // Hit test
     virtual QRectF boundingRect() const = 0;

@@ -111,6 +111,11 @@ private:
     QMutex *mtx;
 };
 
+#ifdef Q_OS_SYMBIAN
+typedef TDriveNumber (*SystemDriveFunc)(RFs&);
+static SystemDriveFunc PtrGetSystemDrive=0;
+#endif
+
 #if defined(Q_WS_WIN) || defined(Q_WS_MAC)
 extern QString qAppFileName();
 #endif
@@ -345,7 +350,7 @@ void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
 }
 #elif defined(Q_OS_SYMBIAN) && defined (QT_NO_DEBUG)
 // no implementation in release builds, but keep the symbol present
-void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
+void QCoreApplicationPrivate::checkReceiverThread(QObject * /* receiver */)
 {
 }
 #endif
@@ -364,7 +369,7 @@ void QCoreApplicationPrivate::appendApplicationPathToLibraryPaths()
     QString app_location( QCoreApplication::applicationFilePath() );
     app_location.truncate(app_location.lastIndexOf(QLatin1Char('/')));
     app_location = QDir(app_location).canonicalPath();
-    if (app_location !=  QLibraryInfo::location(QLibraryInfo::PluginsPath) && QFile::exists(app_location) && !app_libpaths->contains(app_location))
+    if (QFile::exists(app_location) && !app_libpaths->contains(app_location))
 # endif
         app_libpaths->append(app_location);
 #endif
@@ -1788,6 +1793,8 @@ bool QCoreApplicationPrivate::isTranslatorInstalled(QTranslator *translator)
 
     In Symbian this function will return the application private directory,
     not the path to executable itself, as those are always in \c {/sys/bin}.
+    If the application is in a read only drive, i.e. ROM, then the private path
+    on the system drive will be returned.
 
     \sa applicationFilePath()
 */
@@ -1803,42 +1810,42 @@ QString QCoreApplication::applicationDirPath()
 #if defined(Q_OS_SYMBIAN)
     {
         QString appPath;
-        RProcess proc;
-        TInt err = proc.Open(proc.Id());
+        RFs& fs = qt_s60GetRFs();
+        TChar driveChar;
+        QChar qDriveChar;
+        driveChar = (RProcess().FileName())[0];
+
+        //Check if the process is installed in a read only drive (typically ROM),
+        //and use the system drive (typically C:) if so.
+        TInt drive;
+        TDriveInfo driveInfo;
+        TInt err = fs.CharToDrive(driveChar, drive);
         if (err == KErrNone) {
-            QChar driveChar;
-#if defined(Q_CC_NOKIAX86)
-            // In emulator, always resolve the private dir on C-drive
-            driveChar = QLatin1Char('C');
-#else
-            driveChar = QLatin1Char((proc.FileName())[0]);
-#endif
-            proc.Close();
-
-            driveChar = driveChar.toUpper();
-
-            TFileName privatePath;
-            RFs& fs = qt_s60GetRFs();
-            fs.PrivatePath(privatePath);
-            appPath = qt_TDesC2QString(privatePath);
-            appPath.prepend(QLatin1Char(':')).prepend(driveChar);
-
-            // Create the appPath if it doesn't exist. Non-existing appPath will cause
-            // Platform Security violations later on if the app doesn't have AllFiles capability.
-            // Can't create appPath for ROM unfortunately, so applications meant for
-            // ROM should always deploy something to their private dir to ensure appPath exists,
-            // if the PlatSec violations are an issue.
-            char driveDiff = QLatin1Char('Z').toLatin1() - driveChar.toLatin1();
-            TInt driveId = EDriveZ - static_cast<TInt>(driveDiff);
-            if (driveId != EDriveZ) {
-                TInt err = fs.CreatePrivatePath(driveId);
-                if (err != KErrNone)
-                    qWarning("QCoreApplication::applicationDirPath: Failed to create private path.");
-            }
+            err = fs.Drive(driveInfo, drive);
+        }
+        if (err != KErrNone || (driveInfo.iDriveAtt & KDriveAttRom) || (driveInfo.iMediaAtt
+            & KMediaAttWriteProtected)) {
+            if(!PtrGetSystemDrive)
+                PtrGetSystemDrive = reinterpret_cast<SystemDriveFunc>(qt_resolveS60PluginFunc(S60Plugin_GetSystemDrive));
+            Q_ASSERT(PtrGetSystemDrive);
+            drive = PtrGetSystemDrive(fs);
+            fs.DriveToChar(drive, driveChar);
         }
 
-        QFileInfo fi(appPath);
-        d->cachedApplicationDirPath = fi.exists() ? fi.canonicalFilePath() : QString();
+        qDriveChar = QChar(QLatin1Char(driveChar)).toUpper();
+
+        TFileName privatePath;
+        fs.PrivatePath(privatePath);
+        appPath = qt_TDesC2QString(privatePath);
+        appPath.prepend(QLatin1Char(':')).prepend(qDriveChar);
+
+        // Create the appPath if it doesn't exist. Non-existing appPath will cause
+        // Platform Security violations later on if the app doesn't have AllFiles capability.
+        err = fs.CreatePrivatePath(drive);
+        if (err != KErrNone)
+            qWarning("QCoreApplication::applicationDirPath: Failed to create private path.");
+
+        d->cachedApplicationDirPath = QFileInfo(appPath).path();
     }
 #else
         d->cachedApplicationDirPath = QFileInfo(applicationFilePath()).path();

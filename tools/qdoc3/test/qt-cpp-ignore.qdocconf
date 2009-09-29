@@ -26,6 +26,7 @@ Cpp.ignoretokens        = QAXFACTORY_EXPORT \
                           QT_WIDGET_PLUGIN_EXPORT \
                           Q_COMPAT_EXPORT \
                           Q_CORE_EXPORT \
+                          Q_CORE_EXPORT_INLINE \
                           Q_EXPLICIT \
                           Q_EXPORT \
                           Q_EXPORT_CODECS_CN \

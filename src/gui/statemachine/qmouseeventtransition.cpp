@@ -44,7 +44,7 @@
 #ifndef QT_NO_STATEMACHINE
 
 #include "qbasicmouseeventtransition_p.h"
-#include <QtCore/qwrappedevent.h>
+#include <QtCore/qstatemachine.h>
 #include <QtGui/qpainterpath.h>
 #include <private/qeventtransition_p.h>
 
@@ -188,7 +188,7 @@ bool QMouseEventTransition::eventTest(QEvent *event)
     Q_D(const QMouseEventTransition);
     if (!QEventTransition::eventTest(event))
         return false;
-    QWrappedEvent *we = static_cast<QWrappedEvent*>(event);
+    QStateMachine::WrappedEvent *we = static_cast<QStateMachine::WrappedEvent*>(event);
     d->transition->setEventType(we->event()->type());
     return QAbstractTransitionPrivate::get(d->transition)->callEventTest(we->event());
 }

@@ -639,9 +639,7 @@ void tst_QMdiArea::changeWindowTitle()
     mw->setCentralWidget( ws );
     mw->menuBar();
     mw->show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(mw);
-#endif
+    QTest::qWaitForWindowShown(mw);
 
     QWidget *widget = new QWidget( ws );
     widget->setWindowTitle( wc );
@@ -655,22 +653,17 @@ void tst_QMdiArea::changeWindowTitle()
     widget->setWindowState(Qt::WindowMaximized);
 #endif
 #if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
-    QCOMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc) );
+    QTRY_COMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc) );
 #endif
 
     mw->hide();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(mw);
-#endif
     qApp->processEvents();
     mw->show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(mw);
-#endif
     qApp->processEvents();
+    QTest::qWaitForWindowShown(mw);
 
 #if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
-    QCOMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc) );
+    QTRY_COMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc) );
 #endif
 
 #ifdef USE_SHOW
@@ -688,7 +681,7 @@ void tst_QMdiArea::changeWindowTitle()
 #endif
     qApp->processEvents();
 #if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
-    QCOMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc) );
+    QTRY_COMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc) );
     widget->setWindowTitle( wc2 );
     QCOMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc2) );
     mw->setWindowTitle( mwc2 );
@@ -1697,11 +1690,8 @@ void tst_QMdiArea::tileSubWindows()
     workspace.setActiveSubWindow(windows.at(5));
     workspace.resize(workspace.size() - QSize(10, 10));
     workspace.setActiveSubWindow(0);
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&workspace);
-#endif
     QTest::qWait(250); // delayed re-arrange of minimized windows
-    QCOMPARE(workspace.viewport()->childrenRect(), workspace.viewport()->rect());
+    QTRY_COMPARE(workspace.viewport()->childrenRect(), workspace.viewport()->rect());
 
     // Add another window and verify that the views are not tiled anymore.
     workspace.addSubWindow(new QPushButton(QLatin1String("I'd like to mess up tiled views")))->show();
@@ -1732,9 +1722,6 @@ void tst_QMdiArea::tileSubWindows()
     // Verify that we try to resize the area such that all sub-windows are visible.
     // It's important that tiled windows are NOT overlapping.
     workspace.resize(350, 150);
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&workspace);
-#endif
     qApp->processEvents();
     QTRY_COMPARE(workspace.size(), QSize(350, 150));
 
@@ -1761,13 +1748,10 @@ void tst_QMdiArea::tileSubWindows()
 #ifdef Q_OS_WINCE
     QSKIP("Not fixed yet! See task 197453", SkipAll);
 #endif
-    QCOMPARE(workspace.viewport()->rect().size(), expectedViewportSize);
+    QTRY_COMPARE(workspace.viewport()->rect().size(), expectedViewportSize);
 
     // Not enough space for all sub-windows to be visible -> provide scroll bars.
     workspace.resize(150, 150);
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&workspace);
-#endif
     qApp->processEvents();
     QTRY_COMPARE(workspace.size(), QSize(150, 150));
 

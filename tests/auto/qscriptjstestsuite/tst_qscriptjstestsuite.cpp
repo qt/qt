@@ -680,6 +680,9 @@ tst_Suite::tst_Suite()
     addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 7", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 26", willFixInNextReleaseMessage);
 
+    addExpectedFailure("ecma/Expressions/11.4.7-02.js", "-(-2147483648) == 2147483648", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/TypeConversion/9.3.1-3.js", "- -\"0x80000000\"", willFixInNextReleaseMessage);
+
     static const char klass[] = "tst_QScriptJsTestSuite";
 
     QVector<uint> *data = qt_meta_data_tst_Suite();

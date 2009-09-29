@@ -64,10 +64,10 @@ typedef struct OpaqueJSValue* JSObjectRef;
 
 /* JavaScript symbol exports */
 
-#undef JS_EXPORT
+#if !defined(JS_EXPORT)
 #if defined(BUILDING_WX__)
     #define JS_EXPORT
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) && !defined(__CC_ARM) && !defined(__ARMCC__)
     #define JS_EXPORT __attribute__((visibility("default")))
 #elif defined(_WIN32_WCE)
     #if defined(JS_BUILDING_JS)
@@ -89,6 +89,7 @@ typedef struct OpaqueJSValue* JSObjectRef;
     #endif
 #else
     #define JS_EXPORT
+#endif
 #endif
 
 #ifdef __cplusplus
