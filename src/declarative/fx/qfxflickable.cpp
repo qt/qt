@@ -744,12 +744,19 @@ void QFxFlickablePrivate::captureDelayedPress(QGraphicsSceneMouseEvent *event)
         if (event->buttons() & i) {
             Qt::MouseButton button = Qt::MouseButton(i);
             delayedPressEvent->setButtonDownPos(button, event->buttonDownPos(button));
+            delayedPressEvent->setButtonDownScenePos(button, event->buttonDownScenePos(button));
+            delayedPressEvent->setButtonDownScreenPos(button, event->buttonDownScreenPos(button));
         }
     }
-    delayedPressEvent->setScenePos(event->scenePos());
-    delayedPressEvent->setLastScenePos(event->lastScenePos());
+    delayedPressEvent->setButtons(event->buttons());
+    delayedPressEvent->setButton(event->button());
     delayedPressEvent->setPos(event->pos());
+    delayedPressEvent->setScenePos(event->scenePos());
+    delayedPressEvent->setScreenPos(event->screenPos());
     delayedPressEvent->setLastPos(event->lastPos());
+    delayedPressEvent->setLastScenePos(event->lastScenePos());
+    delayedPressEvent->setLastScreenPos(event->lastScreenPos());
+    delayedPressEvent->setModifiers(event->modifiers());
     delayedPressTimer.start(pressDelay, q);
 }
 
