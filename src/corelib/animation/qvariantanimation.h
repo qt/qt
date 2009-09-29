@@ -102,7 +102,7 @@ protected:
     QVariantAnimation(QVariantAnimationPrivate &dd, QObject *parent = 0);
     bool event(QEvent *event);
 
-    void updateCurrentTime();
+    void updateCurrentTime(int);
     void updateState(QAbstractAnimation::State oldState, QAbstractAnimation::State newState);
 
     virtual void updateCurrentValue(const QVariant &value) = 0;

@@ -1,7 +1,6 @@
 TEMPLATE = subdirs
 
 SUBDIRS = \
-          testBatFiles \
           testProcessCrash \
           testProcessEcho \
           testProcessEcho2 \

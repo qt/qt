@@ -68,7 +68,7 @@ protected:
 inline bool matchString(const char *extensionString, const char *subString)
 {
     int subStringLength = strlen(subString);
-    return (strncmp(extensionString, subString, subStringLength) == 0) 
+    return (strncmp(extensionString, subString, subStringLength) == 0)
         && ((extensionString[subStringLength] == ' ') || (extensionString[subStringLength] == '\0'));
 }
 
@@ -137,11 +137,12 @@ int main(int argc, char **argv)
         "This demo can be GPU and CPU intensive and may\n"
         "work poorly or not at all on your system.");
 
+    widget->makeCurrent(); // The current context must be set before calling Scene's constructor
+    Scene scene(1024, 768, maxTextureSize);
     GraphicsView view;
     view.setViewport(widget);
     view.setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-    widget->makeCurrent(); // The current context must be set before calling Scene's constructor
-    view.setScene(new Scene(1024, 768, maxTextureSize));
+    view.setScene(&scene);
     view.show();
 
     return app.exec();

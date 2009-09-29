@@ -653,21 +653,21 @@ void tst_QSpinBox::valueFromTextAndValidate_data()
     QTest::addColumn<int>("maxi");
     QTest::addColumn<QString>("expectedText"); // if empty we don't check
 
-    QTest::newRow("data0") << QString("2") << Invalid << 3 << 5 << QString();
+    QTest::newRow("data0") << QString("2") << Intermediate << 3 << 5 << QString();
     QTest::newRow("data1") << QString() << Intermediate << 0 << 100 << QString();
     QTest::newRow("data2") << QString("asd") << Invalid << 0 << 100 << QString();
     QTest::newRow("data3") << QString("2") << Acceptable << 0 << 100 << QString();
     QTest::newRow("data4") << QString() << Intermediate << 0 << 1 << QString();
     QTest::newRow("data5") << QString() << Invalid << 0 << 0 << QString();
     QTest::newRow("data5") << QString("5") << Intermediate << 2004 << 2005 << QString();
-    QTest::newRow("data6") << QString("50") << Invalid << 2004 << 2005 << QString();
+    QTest::newRow("data6") << QString("50") << Intermediate << 2004 << 2005 << QString();
     QTest::newRow("data7") << QString("205") << Intermediate << 2004 << 2005 << QString();
     QTest::newRow("data8") << QString("2005") << Acceptable << 2004 << 2005 << QString();
-    QTest::newRow("data9") << QString("3") << Invalid << 2004 << 2005 << QString();
+    QTest::newRow("data9") << QString("3") << Intermediate << 2004 << 2005 << QString();
     QTest::newRow("data10") << QString("-") << Intermediate << -20 << -10 << QString();
     QTest::newRow("data11") << QString("-1") << Intermediate << -20 << -10 << QString();
     QTest::newRow("data12") << QString("-5") << Intermediate << -20 << -10 << QString();
-    QTest::newRow("data13") << QString("-5") << Invalid << -20 << -16 << QString();
+    QTest::newRow("data13") << QString("-5") << Intermediate << -20 << -16 << QString();
     QTest::newRow("data14") << QString("-2") << Intermediate << -20 << -16 << QString();
     QTest::newRow("data15") << QString("2") << Invalid << -20 << -16 << QString();
     QTest::newRow("data16") << QString() << Intermediate << -20 << -16 << QString();

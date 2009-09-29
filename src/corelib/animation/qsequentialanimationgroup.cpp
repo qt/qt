@@ -334,7 +334,7 @@ int QSequentialAnimationGroup::duration() const
 /*!
     \reimp
 */
-void QSequentialAnimationGroup::updateCurrentTime()
+void QSequentialAnimationGroup::updateCurrentTime(int currentTime)
 {
     Q_D(QSequentialAnimationGroup);
     if (!d->currentAnimation)
@@ -359,7 +359,7 @@ void QSequentialAnimationGroup::updateCurrentTime()
 
     d->setCurrentAnimation(newAnimationIndex.index);
 
-    const int newCurrentTime = d->currentTime - newAnimationIndex.timeOffset;
+    const int newCurrentTime = currentTime - newAnimationIndex.timeOffset;
 
     if (d->currentAnimation) {
         d->currentAnimation->setCurrentTime(newCurrentTime);

@@ -129,7 +129,7 @@ public Q_SLOTS:
                 // since the context holding the texture is shared, and
                 // about to be destroyed, we have to transfer ownership
                 // of the texture to one of the share contexts
-                ctx = const_cast<QGLContext *>(shares.at(0));
+                ctx = const_cast<QGLContext *>((ctx == shares.at(0)) ? shares.at(1) : shares.at(0));
             }
         }
     }

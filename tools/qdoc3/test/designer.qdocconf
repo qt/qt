@@ -31,7 +31,7 @@ qhp.Designer.subprojects.examples.sortPages = true
 
 language                = Cpp
 
-sources                 = $QT_SOURCE_TREE/doc/src/designer-manual.qdoc \
+sources                 = $QT_SOURCE_TREE/doc/src/development/designer-manual.qdoc \
                           $QT_SOURCE_TREE/doc/src/examples/calculatorbuilder.qdoc \
                           $QT_SOURCE_TREE/doc/src/examples/calculatorform.qdoc \
                           $QT_SOURCE_TREE/doc/src/examples/customwidgetplugin.qdoc \

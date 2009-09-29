@@ -44,7 +44,7 @@
 #ifndef QT_NO_STATEMACHINE
 
 #include "qbasickeyeventtransition_p.h"
-#include <QtCore/qwrappedevent.h>
+#include <QtCore/qstatemachine.h>
 #include <private/qeventtransition_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -160,7 +160,7 @@ bool QKeyEventTransition::eventTest(QEvent *event)
     Q_D(const QKeyEventTransition);
     if (!QEventTransition::eventTest(event))
         return false;
-    QWrappedEvent *we = static_cast<QWrappedEvent*>(event);
+    QStateMachine::WrappedEvent *we = static_cast<QStateMachine::WrappedEvent*>(event);
     d->transition->setEventType(we->event()->type());
     return QAbstractTransitionPrivate::get(d->transition)->callEventTest(we->event());
 }
