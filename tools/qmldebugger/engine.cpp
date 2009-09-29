@@ -8,6 +8,7 @@
 #include <QLineEdit>
 #include <QTreeWidget>
 #include <QTableWidget>
+#include <QSplitter>
 #include <QTabWidget>
 #include <QMouseEvent>
 #include <QAction>
@@ -183,22 +184,13 @@ EnginePane::EnginePane(QmlDebugConnection *client, QWidget *parent)
 
     layout->addWidget(m_engineView);
 
-
-    m_text = new QLineEdit(this);
-    layout->addWidget(m_text);
-
-    QPushButton *query = new QPushButton("Fetch object", this);
-    QObject::connect(query, SIGNAL(clicked()), this, SLOT(fetchClicked()));
-    layout->addWidget(query);
-
-    QHBoxLayout *hbox = new QHBoxLayout;
-    hbox->setContentsMargins(0, 0, 0, 0);
+    QSplitter *splitter = new QSplitter;
 
     m_objTree = new QmlObjectTree(this);
     m_objTree->setHeaderHidden(true);
     connect(m_objTree, SIGNAL(itemClicked(QTreeWidgetItem *, int)), this, SLOT(itemClicked(QTreeWidgetItem *)));
     connect(m_objTree, SIGNAL(addExpressionWatch(int,QString)), this, SLOT(addExpressionWatch(int,QString)));
-    hbox->addWidget(m_objTree);
+    splitter->addWidget(m_objTree);
 
     m_propView = new PropertyView(this);
     connect(m_propView, SIGNAL(propertyActivated(QmlDebugPropertyReference)),
@@ -218,10 +210,9 @@ EnginePane::EnginePane(QmlDebugConnection *client, QWidget *parent)
     m_tabs->addTab(m_propView, tr("Properties"));
     m_tabs->addTab(m_watchTable, tr("Watched"));
 
-    hbox->addWidget(m_tabs);
-    hbox->setStretchFactor(m_tabs, 2);
-
-    layout->addLayout(hbox);
+    splitter->addWidget(m_tabs);
+    splitter->setStretchFactor(1, 2);
+    layout->addWidget(splitter);
 }
 
 void EnginePane::engineSelected(int id)
@@ -456,12 +447,6 @@ void EnginePane::enginesChanged()
                                                 engines.at(ii).debugId());
 
     m_engineView->rootContext()->setContextProperty("engines", qVariantFromValue(&m_engineItems));
-}
-
-void EnginePane::fetchClicked()
-{
-    int id = m_text->text().toInt();
-    fetchObject(id);
 }
 
 void EnginePane::fetchObject(int id)

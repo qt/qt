@@ -318,8 +318,8 @@ void QmlEngineDebugServer::propertyChanged(int id, int objectId, const QByteArra
     QByteArray reply;
     QVariant v;
     QDataStream rs(&reply, QIODevice::WriteOnly);
-
-    if (value.type() == QVariant::UserType) {
+    
+    if (value.type() == QVariant::UserType || QmlMetaType::isObject(value.userType())) {
         QObject *o = QmlMetaType::toQObject(value);
         if (o) {
             QString objectName = o->objectName();

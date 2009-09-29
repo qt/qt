@@ -39,7 +39,6 @@ private slots:
     void queryContext(int);
     void contextChanged();
 
-    void fetchClicked();
     void fetchObject(int);
     void objectFetched();
 
@@ -66,7 +65,6 @@ private:
     QmlDebugRootContextQuery *m_context;
     QmlDebugObjectQuery *m_object;
 
-    QLineEdit *m_text;
     QmlObjectTree *m_objTree;
     QTabWidget *m_tabs;
     PropertyView *m_propView;
