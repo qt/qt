@@ -67,15 +67,15 @@ void FormExtractor::submit()
     QWebElement femaleGender = frame->findFirstElement("#genderFemale");
     QWebElement updates = frame->findFirstElement("#updates");
 
-    ui.firstNameEdit->setText(firstName.evaluateJavaScript("this.value").toString());
-    ui.lastNameEdit->setText(lastName.evaluateJavaScript("this.value").toString());
+    ui.firstNameEdit->setText(firstName.evaluateScript("this.value").toString());
+    ui.lastNameEdit->setText(lastName.evaluateScript("this.value").toString());
 
-    if (maleGender.evaluateJavaScript("this.checked").toBool())
-        ui.genderEdit->setText(maleGender.evaluateJavaScript("this.value").toString());
-    else if (femaleGender.evaluateJavaScript("this.checked").toBool())
-        ui.genderEdit->setText(femaleGender.evaluateJavaScript("this.value").toString());
+    if (maleGender.evaluateScript("this.checked").toBool())
+        ui.genderEdit->setText(maleGender.evaluateScript("this.value").toString());
+    else if (femaleGender.evaluateScript("this.checked").toBool())
+        ui.genderEdit->setText(femaleGender.evaluateScript("this.value").toString());
 
-    if (updates.evaluateJavaScript("this.checked").toBool())
+    if (updates.evaluateScript("this.checked").toBool())
         ui.updatesEdit->setText("Yes");
     else
         ui.updatesEdit->setText("No");
