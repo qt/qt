@@ -62,7 +62,6 @@
 
 #include "../../shared/util.h"
 
-
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -307,6 +306,7 @@ private slots:
     void task240400_clickOnTextItem();
     void task243707_addChildBeforeParent();
     void task197802_childrenVisibility();
+    void QTBUG_4233_updateCachedWithSceneRect();
 
 private:
     QList<QGraphicsItem *> paintedItems;
@@ -8461,6 +8461,35 @@ void tst_QGraphicsItem::stackBefore()
     QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child3 << child1 << child4));
     child4->setZValue(0);
     QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child4 << child3 << child1));
+}
+
+void tst_QGraphicsItem::QTBUG_4233_updateCachedWithSceneRect()
+{
+    EventTester *tester = new EventTester;
+    tester->setCacheMode(QGraphicsItem::ItemCoordinateCache);
+
+    QGraphicsScene scene;
+    scene.addItem(tester);
+    scene.setSceneRect(-100, -100, 200, 200); // contains the tester item
+
+    QGraphicsView view(&scene);
+    view.show();
+    QTRY_COMPARE(QApplication::activeWindow(), (QWidget *)&view);
+
+    QCOMPARE(tester->repaints, 1);
+
+    scene.update(); // triggers "updateAll" optimization
+    qApp->processEvents();
+    qApp->processEvents(); // in 4.6 only one processEvents is necessary
+
+    QCOMPARE(tester->repaints, 1);
+
+    scene.update(); // triggers "updateAll" optimization
+    tester->update();
+    qApp->processEvents();
+    qApp->processEvents(); // in 4.6 only one processEvents is necessary
+
+    QCOMPARE(tester->repaints, 2);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)
