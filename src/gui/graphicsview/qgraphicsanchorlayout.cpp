@@ -80,6 +80,24 @@
     PM_LayoutHorizontalSpacing (or PM_LayoutVerticalSpacing for vertical anchors).
 */
 
+/*!
+    \class QGraphicsAnchor
+    \brief The QGraphicsAnchor class represents an anchor between two items in a
+           QGraphicsAnchorLayout.
+    \since 4.6
+    \ingroup appearance
+    \ingroup geomanagement
+    \ingroup graphicsview-api
+
+    The graphics anchor provides an API that enables you to query and manipulate the
+    properties an anchor has. When an anchor is added to the layout with
+    QGraphicsAnchorLayout::addAnchor(), a QGraphicsAnchor instance is returned where the properties
+    are initialized to their default values. The properties can then be further changed, and they
+    will be picked up the next time the layout is activated.
+
+    \sa QGraphicsAnchorLayout::anchor()
+
+*/
 #include "qgraphicsanchorlayout_p.h"
 
 QT_BEGIN_NAMESPACE
