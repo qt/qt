@@ -1063,56 +1063,56 @@ As a reward you can try out the QDial, below.</string>
         <item>
          <widget class="QPushButton" name="m_buttonGetOpenFileName">
           <property name="text">
-           <string>QFileDialog::getOpenFileName()</string>
+           <string>getOpenFileName()</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="m_buttonGetSaveFileName">
           <property name="text">
-           <string>QFileDialog::getSaveFileName()</string>
+           <string>getSaveFileName()</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="m_buttonGetExistingDirectory">
           <property name="text">
-           <string>QFileDialog::getExistingDirectory()</string>
+           <string>getExistingDirectory()</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="m_buttonGetColor">
           <property name="text">
-           <string>QColorDialog::getColor()</string>
+           <string>getColor()</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="m_buttonGetFont">
           <property name="text">
-           <string>QFontDialog::getFont()</string>
+           <string>getFont()</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="m_buttonQuestion">
           <property name="text">
-           <string>QMessageBox::question()</string>
+           <string>question()</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="m_buttonAboutQt">
           <property name="text">
-           <string>QMessageBox::aboutQt()</string>
+           <string>aboutQt()</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="m_buttonGetItem">
           <property name="text">
-           <string>QInputDialog::getItem()</string>
+           <string>getItem()</string>
           </property>
          </widget>
         </item>
