@@ -5,7 +5,7 @@ Rectangle {
     width: 800
     height: 600
 
-    Keys.onDigit9Pressed: print("Success - Root")
+    Keys.onDigit9Pressed: print("Error - Root")
 
     FocusScope {
         id: MyScope
@@ -54,7 +54,7 @@ Rectangle {
         KeyNavigation.down: Item3
     }
 
-    Text { x:100; y:170; text: "There should be no blue borders, or red squares.\nPressing \"9\" should print a success message.\nArrow keys should have no effect." }
+    Text { x:100; y:170; text: "There should be no blue borders, or red squares.\nPressing \"9\" should do nothing.\nArrow keys should have no effect." }
 
     Rectangle {
         id: Item3
