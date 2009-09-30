@@ -180,8 +180,9 @@ EnginePane::EnginePane(QmlDebugConnection *client, QWidget *parent)
     QObject::connect(m_engineView->root(), SIGNAL(engineClicked(int)),
                      this, SLOT(engineSelected(int)));
     QObject::connect(m_engineView->root(), SIGNAL(refreshEngines()),
-                     this, SLOT(queryEngines()));
+                     this, SLOT(refreshEngines()));
 
+    m_engineView->setVisible(false);
     layout->addWidget(m_engineView);
 
     QSplitter *splitter = new QSplitter;
@@ -421,10 +422,15 @@ void EnginePane::buildTree(const QmlDebugObjectReference &obj, QTreeWidgetItem *
         buildTree(obj.children().at(ii), item);
 }
 
-void EnginePane::queryEngines()
+void EnginePane::refreshEngines()
 {
     if (m_engines)
         return;
+
+    QList<QmlDebugWatch *> watches = m_watchTableModel->watches();
+    for (int i=0; i<watches.count(); i++)
+        m_client.removeWatch(watches[i]);
+    qDeleteAll(watches);
 
     m_engines = m_client.queryAvailableEngines(this);
     if (!m_engines->isWaiting())
@@ -442,11 +448,18 @@ void EnginePane::enginesChanged()
     QList<QmlDebugEngineReference> engines = m_engines->engines();
     delete m_engines; m_engines = 0;
 
+    if (engines.isEmpty())
+        qWarning("qmldebugger: no engines found!");
+
     for (int ii = 0; ii < engines.count(); ++ii)
         m_engineItems << new DebuggerEngineItem(engines.at(ii).name(),
                                                 engines.at(ii).debugId());
 
     m_engineView->rootContext()->setContextProperty("engines", qVariantFromValue(&m_engineItems));
+
+    m_engineView->setVisible(m_engineItems.count() > 1);
+    if (m_engineItems.count() == 1)
+        engineSelected(qobject_cast<DebuggerEngineItem*>(m_engineItems.at(0))->engineId());
 }
 
 void EnginePane::fetchObject(int id)

@@ -7,6 +7,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qdatastream.h>
+#include <QtCore/qtimer.h>
 #include "canvasframerate.h"
 #include "engine.h"
 #include <QVBoxLayout>
@@ -35,6 +36,8 @@ private:
     QSpinBox *m_port;
     QPushButton *m_connectButton;
     QPushButton *m_disconnectButton;
+
+    EnginePane *m_enginePane;
 };
 
 Shell::Shell(QWidget *parent)
@@ -74,8 +77,8 @@ Shell::Shell(QWidget *parent)
     CanvasFrameRate *cfr = new CanvasFrameRate(&client, this);
     tabs->addTab(cfr, tr("Frame Rate"));
 
-    EnginePane *ep = new EnginePane(&client, this);
-    tabs->addTab(ep, tr("QML Engine"));
+    m_enginePane = new EnginePane(&client, this);
+    tabs->addTab(m_enginePane, tr("QML Engine"));
 
     QObject::connect(&client, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(connectionStateChanged()));
     connectionStateChanged();
@@ -104,6 +107,8 @@ void Shell::connectionStateChanged()
         m_connectionState->setText(tr("Connected"));
         m_connectButton->setEnabled(false);
         m_disconnectButton->setEnabled(true);
+
+        QTimer::singleShot(0, m_enginePane, SLOT(refreshEngines()));
         break;
     case QAbstractSocket::ClosingState:
         m_connectionState->setText(tr("Closing"));
