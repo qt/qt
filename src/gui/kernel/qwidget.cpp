@@ -11454,6 +11454,10 @@ QWidget *QWidgetPrivate::widgetInNavigationDirection(Direction direction)
     QWidget *targetWidget = 0;
     int shortestDistance = INT_MAX;
     foreach(QWidget *targetCandidate, QApplication::allWidgets()) {
+    
+        if (targetCandidate->focusProxy()) //skip if focus proxy set
+            continue;
+
         const QRect targetCandidateRect = targetCandidate->rect().translated(targetCandidate->mapToGlobal(QPoint()));
         if (       targetCandidate != sourceWidget
                 && targetCandidate->focusPolicy() & Qt::TabFocus
