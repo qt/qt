@@ -1372,6 +1372,12 @@ void QFxListView::keyPressEvent(QKeyEvent *event)
     event->ignore();
 }
 
+/*!
+    \qmlmethod ListView::incrementCurrentIndex
+
+    Increments the current index.  The current index will wrap
+    if keyNavigationWraps is true and it is currently at the end.
+*/
 void QFxListView::incrementCurrentIndex()
 {
     Q_D(QFxListView);
@@ -1381,6 +1387,12 @@ void QFxListView::incrementCurrentIndex()
     }
 }
 
+/*!
+    \qmlmethod ListView::decrementCurrentIndex
+
+    Decrements the current index.  The current index will wrap
+    if keyNavigationWraps is true and it is currently at the beginning.
+*/
 void QFxListView::decrementCurrentIndex()
 {
     Q_D(QFxListView);

@@ -112,6 +112,12 @@ public:
 
     static QFxGridViewAttached *qmlAttachedProperties(QObject *);
 
+public Q_SLOTS:
+    void moveCurrentIndexUp();
+    void moveCurrentIndexDown();
+    void moveCurrentIndexLeft();
+    void moveCurrentIndexRight();
+
 Q_SIGNALS:
     void countChanged();
     void currentIndexChanged();

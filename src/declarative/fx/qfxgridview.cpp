@@ -593,11 +593,11 @@ void QFxGridViewPrivate::createHighlight()
                 highlight = new FxGridItem(item, q);
                 highlightXAnimator = new QmlEaseFollow(q);
                 highlightXAnimator->setTarget(QmlMetaProperty(highlight->item, QLatin1String("x")));
-                highlightXAnimator->setVelocity(400);
+                highlightXAnimator->setDuration(150);
                 highlightXAnimator->setEnabled(autoHighlight);
                 highlightYAnimator = new QmlEaseFollow(q);
                 highlightYAnimator->setTarget(QmlMetaProperty(highlight->item, QLatin1String("y")));
-                highlightYAnimator->setVelocity(400);
+                highlightYAnimator->setDuration(150);
                 highlightYAnimator->setEnabled(autoHighlight);
             } else {
                 delete highlightContext;
@@ -1064,54 +1064,134 @@ qreal QFxGridView::maxXExtent() const
     Q_D(const QFxGridView);
     if (d->flow == QFxGridView::LeftToRight)
         return QFxFlickable::maxXExtent();
-    return -(d->endPosition() - height());
+    return -(d->endPosition() - width());
 }
 
 void QFxGridView::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QFxGridView);
+    QFxFlickable::keyPressEvent(event);
+    if (event->isAccepted())
+        return;
+
     if (d->model && d->model->count() && d->interactive) {
-        if ((d->flow == QFxGridView::LeftToRight && event->key() == Qt::Key_Up)
-            || (d->flow == QFxGridView::TopToBottom && event->key() == Qt::Key_Left)) {
-            if (currentIndex() >= d->columns || d->wrap) {
-                d->moveReason = QFxGridViewPrivate::Key;
-                int index = currentIndex() - d->columns;
-                setCurrentIndex(index >= 0 ? index : d->model->count()-1);
-                event->accept();
-                return;
-            }
-        } else if ((d->flow == QFxGridView::LeftToRight && event->key() == Qt::Key_Down)
-                || (d->flow == QFxGridView::TopToBottom && event->key() == Qt::Key_Right)) {
-            if (currentIndex() < d->model->count() - d->columns || d->wrap) {
-                d->moveReason = QFxGridViewPrivate::Key;
-                int index = currentIndex()+d->columns;
-                setCurrentIndex(index < d->model->count() ? index : 0);
-                event->accept();
-                return;
-            }
-        } else if ((d->flow == QFxGridView::LeftToRight && event->key() == Qt::Key_Left)
-                || (d->flow == QFxGridView::TopToBottom && event->key() == Qt::Key_Up)) {
-            if (currentIndex() > 0 || d->wrap) {
-                d->moveReason = QFxGridViewPrivate::Key;
-                int index = currentIndex() - 1;
-                setCurrentIndex(index >= 0 ? index : d->model->count()-1);
-                event->accept();
-                return;
-            }
-        } else if ((d->flow == QFxGridView::LeftToRight && event->key() == Qt::Key_Right)
-                || (d->flow == QFxGridView::TopToBottom && event->key() == Qt::Key_Down)) {
-            if (currentIndex() < d->model->count() - 1 || d->wrap) {
-                d->moveReason = QFxGridViewPrivate::Key;
-                int index = currentIndex() + 1;
-                setCurrentIndex(index < d->model->count() ? index : 0);
-                event->accept();
-                return;
-            }
+        d->moveReason = QFxGridViewPrivate::Key;
+        int oldCurrent = currentIndex();
+        switch (event->key()) {
+        case Qt::Key_Up:
+            moveCurrentIndexUp();
+            break;
+        case Qt::Key_Down:
+            moveCurrentIndexDown();
+            break;
+        case Qt::Key_Left:
+            moveCurrentIndexLeft();
+            break;
+        case Qt::Key_Right:
+            moveCurrentIndexRight();
+            break;
+        default:
+            break;
+        }
+        if (oldCurrent != currentIndex()) {
+            event->accept();
+            return;
         }
     }
     d->moveReason = QFxGridViewPrivate::Other;
     event->ignore();
-    QFxFlickable::keyPressEvent(event);
+}
+
+/*!
+    \qmlmethod GridView::moveCurrentIndexUp
+
+    Move the currentIndex up one item in the view.
+    The current index will wrap if keyNavigationWraps is true and it
+    is currently at the end.
+*/
+void QFxGridView::moveCurrentIndexUp()
+{
+    Q_D(QFxGridView);
+    if (d->flow == QFxGridView::LeftToRight) {
+        if (currentIndex() >= d->columns || d->wrap) {
+            int index = currentIndex() - d->columns;
+            setCurrentIndex(index >= 0 ? index : d->model->count()-1);
+        }
+    } else {
+        if (currentIndex() > 0 || d->wrap) {
+            int index = currentIndex() - 1;
+            setCurrentIndex(index >= 0 ? index : d->model->count()-1);
+        }
+    }
+}
+
+/*!
+    \qmlmethod GridView::moveCurrentIndexDown
+
+    Move the currentIndex down one item in the view.
+    The current index will wrap if keyNavigationWraps is true and it
+    is currently at the end.
+*/
+void QFxGridView::moveCurrentIndexDown()
+{
+    Q_D(QFxGridView);
+    if (d->flow == QFxGridView::LeftToRight) {
+        if (currentIndex() < d->model->count() - d->columns || d->wrap) {
+            int index = currentIndex()+d->columns;
+            setCurrentIndex(index < d->model->count() ? index : 0);
+        }
+    } else {
+        if (currentIndex() < d->model->count() - 1 || d->wrap) {
+            int index = currentIndex() + 1;
+            setCurrentIndex(index < d->model->count() ? index : 0);
+        }
+    }
+}
+
+/*!
+    \qmlmethod GridView::moveCurrentIndexLeft
+
+    Move the currentIndex left one item in the view.
+    The current index will wrap if keyNavigationWraps is true and it
+    is currently at the end.
+*/
+void QFxGridView::moveCurrentIndexLeft()
+{
+    Q_D(QFxGridView);
+    if (d->flow == QFxGridView::LeftToRight) {
+        if (currentIndex() > 0 || d->wrap) {
+            int index = currentIndex() - 1;
+            setCurrentIndex(index >= 0 ? index : d->model->count()-1);
+        }
+    } else {
+        if (currentIndex() >= d->columns || d->wrap) {
+            int index = currentIndex() - d->columns;
+            setCurrentIndex(index >= 0 ? index : d->model->count()-1);
+        }
+    }
+}
+
+/*!
+    \qmlmethod GridView::moveCurrentIndexRight
+
+    Move the currentIndex right one item in the view.
+    The current index will wrap if keyNavigationWraps is true and it
+    is currently at the end.
+*/
+void QFxGridView::moveCurrentIndexRight()
+{
+    Q_D(QFxGridView);
+    if (d->flow == QFxGridView::LeftToRight) {
+        if (currentIndex() < d->model->count() - 1 || d->wrap) {
+            int index = currentIndex() + 1;
+            setCurrentIndex(index < d->model->count() ? index : 0);
+        }
+    } else {
+        if (currentIndex() < d->model->count() - d->columns || d->wrap) {
+            int index = currentIndex()+d->columns;
+            setCurrentIndex(index < d->model->count() ? index : 0);
+        }
+    }
 }
 
 void QFxGridView::componentComplete()
