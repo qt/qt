@@ -67,6 +67,8 @@ PlayState::PlayState(GraphicsScene *scene, QState *parent)
 
 PlayState::~PlayState()
 {
+    if (machine)
+        delete machine;
 }
 
 void PlayState::onEntry(QEvent *)
@@ -74,13 +76,15 @@ void PlayState::onEntry(QEvent *)
     //We are now playing?
     if (machine) {
         machine->stop();
+        //we hide the information
+        scene->textInformationItem->hide();
         scene->clearScene();
         currentLevel = 0;
         score = 0;
         delete machine;
     }
 
-    machine = new QStateMachine(this);
+    machine = new QStateMachine;
 
     //This state is when player is playing
     LevelState *levelState = new LevelState(scene, this, machine);

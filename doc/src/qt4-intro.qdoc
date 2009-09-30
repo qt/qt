@@ -605,21 +605,12 @@
     functions to query audio devices for which audio formats they
     support.
 
-    \section1 Classes and Functions Introduced in 4.6
+    \section1 Classes, functions, and other items introduced in 4.6
 
-    Links to class, function, and macro documentation.
+    Links to classes, function, and other items that were added in
+    4.6.
 
-    \section2 Classes
-
-    Classes introduced in Qt 4.6.
-
-    \sincelist classes
-
-    \section2 Functions & Macros
-
-    Fuctions and macros introduced in Qt 4.6.
-
-    \sincelist functions
+    \sincelist 4.6
 
 */
 

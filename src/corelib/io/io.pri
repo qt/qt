@@ -5,6 +5,7 @@ HEADERS +=  \
         io/qabstractfileengine_p.h \
         io/qbuffer.h \
         io/qdatastream.h \
+        io/qdatastream_p.h \
         io/qdebug.h \
         io/qdir.h \
         io/qdiriterator.h \

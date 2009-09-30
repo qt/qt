@@ -53,29 +53,57 @@ public:
     {
         ui->setupUi(this);
 
-        connect(ui->m_actionLayoutVerticalSimple, SIGNAL(triggered()), &m_layoutSignalMapper, SLOT(map()));
-        m_layoutSignalMapper.setMapping(ui->m_actionLayoutVerticalSimple, ui->m_pageVerticalSimple);
-        connect(ui->m_actionLayoutVerticalComplex, SIGNAL(triggered()), &m_layoutSignalMapper, SLOT(map()));
-        m_layoutSignalMapper.setMapping(ui->m_actionLayoutVerticalComplex, ui->m_pageVerticalComplex);
-        connect(ui->m_actionLayoutTwoDimensional, SIGNAL(triggered()), &m_layoutSignalMapper, SLOT(map()));
-        m_layoutSignalMapper.setMapping(ui->m_actionLayoutTwoDimensional, ui->m_pageTwoDimensional);
-        connect(ui->m_actionLayoutSliderMagic, SIGNAL(triggered()), &m_layoutSignalMapper, SLOT(map()));
-        m_layoutSignalMapper.setMapping(ui->m_actionLayoutSliderMagic, ui->m_pageSliderMagic);
-        connect(ui->m_actionLayoutChaos, SIGNAL(triggered()), &m_layoutSignalMapper, SLOT(map()));
-        m_layoutSignalMapper.setMapping(ui->m_actionLayoutChaos, ui->m_pageChaos);
+        const struct {
+            QObject *action;
+            QWidget *page;
+        } layoutMappings[] = {
+            {ui->m_actionLayoutVerticalSimple,  ui->m_pageVerticalSimple},
+            {ui->m_actionLayoutVerticalComplex, ui->m_pageVerticalComplex},
+            {ui->m_actionLayoutTwoDimensional,  ui->m_pageTwoDimensional},
+            {ui->m_actionLayoutSliderMagic,     ui->m_pageSliderMagic},
+            {ui->m_actionLayoutChaos,           ui->m_pageChaos},
+            {ui->m_actionLayoutDialogs,         ui->m_pageDialogs}
+        };
+        for (int i = 0; i < int(sizeof layoutMappings / sizeof layoutMappings[0]); ++i) {
+            connect(layoutMappings[i].action, SIGNAL(triggered()), &m_layoutSignalMapper, SLOT(map()));
+            m_layoutSignalMapper.setMapping(layoutMappings[i].action, layoutMappings[i].page);
+        }
         connect(&m_layoutSignalMapper, SIGNAL(mapped(QWidget*)), ui->m_stackWidget, SLOT(setCurrentWidget(QWidget*)));
 
-        connect(ui->m_actionModeNone, SIGNAL(triggered()), &m_modeSignalMapper, SLOT(map()));
-        m_modeSignalMapper.setMapping(ui->m_actionModeNone, int(Qt::NavigationModeNone));
-        connect(ui->m_actionModeKeypadTabOrder, SIGNAL(triggered()), &m_modeSignalMapper, SLOT(map()));
-        m_modeSignalMapper.setMapping(ui->m_actionModeKeypadTabOrder, int(Qt::NavigationModeKeypadTabOrder));
-        connect(ui->m_actionModeKeypadDirectional, SIGNAL(triggered()), &m_modeSignalMapper, SLOT(map()));
-        m_modeSignalMapper.setMapping(ui->m_actionModeKeypadDirectional, int(Qt::NavigationModeKeypadDirectional));
-        connect(ui->m_actionModeCursorAuto, SIGNAL(triggered()), &m_modeSignalMapper, SLOT(map()));
-        m_modeSignalMapper.setMapping(ui->m_actionModeCursorAuto, int(Qt::NavigationModeCursorAuto));
-        connect(ui->m_actionModeCursorForceVisible, SIGNAL(triggered()), &m_modeSignalMapper, SLOT(map()));
-        m_modeSignalMapper.setMapping(ui->m_actionModeCursorForceVisible, int(Qt::NavigationModeCursorForceVisible));
+        const struct {
+            QObject *action;
+            Qt::NavigationMode mode;
+        } modeMappings[] = {
+            {ui->m_actionModeNone,                  Qt::NavigationModeNone},
+            {ui->m_actionModeKeypadTabOrder,        Qt::NavigationModeKeypadTabOrder},
+            {ui->m_actionModeKeypadDirectional,     Qt::NavigationModeKeypadDirectional},
+            {ui->m_actionModeCursorAuto,            Qt::NavigationModeCursorAuto},
+            {ui->m_actionModeCursorForceVisible,    Qt::NavigationModeCursorForceVisible}
+        };
+        for (int i = 0; i < int(sizeof modeMappings / sizeof modeMappings[0]); ++i) {
+            connect(modeMappings[i].action, SIGNAL(triggered()), &m_modeSignalMapper, SLOT(map()));
+            m_modeSignalMapper.setMapping(modeMappings[i].action, int(modeMappings[i].mode));
+        }
         connect(&m_modeSignalMapper, SIGNAL(mapped(int)), SLOT(setNavigationMode(int)));
+
+        const struct {
+            QObject *button;
+            Dialog dialog;
+        } openDialogMappings[] = {
+            {ui->m_buttonGetOpenFileName,       DialogGetOpenFileName},
+            {ui->m_buttonGetSaveFileName,       DialogGetSaveFileName},
+            {ui->m_buttonGetExistingDirectory,  DialogGetExistingDirectory},
+            {ui->m_buttonGetColor,              DialogGetColor},
+            {ui->m_buttonGetFont,               DialogGetFont},
+            {ui->m_buttonQuestion,              DialogQuestion},
+            {ui->m_buttonAboutQt,               DialogAboutQt},
+            {ui->m_buttonGetItem,               DialogGetItem}
+        };
+        for (int i = 0; i < int(sizeof openDialogMappings / sizeof openDialogMappings[0]); ++i) {
+            connect(openDialogMappings[i].button, SIGNAL(clicked()), &m_dialogSignalMapper, SLOT(map()));
+            m_dialogSignalMapper.setMapping(openDialogMappings[i].button, int(openDialogMappings[i].dialog));
+        }
+        connect(&m_dialogSignalMapper, SIGNAL(mapped(int)), SLOT(openDialog(int)));
     }
 
     ~KeypadNavigation()
@@ -83,16 +111,60 @@ public:
         delete ui;
     }
 
-public slots:
+protected slots:
     void setNavigationMode(int mode)
     {
         QApplication::setNavigationMode(Qt::NavigationMode(mode));
     }
 
+    void openDialog(int dialog)
+    {
+        switch (Dialog(dialog)) {
+            case DialogGetOpenFileName:
+                QFileDialog::getOpenFileName(this, QLatin1String("getOpenFileName"));
+                break;
+            case DialogGetSaveFileName:
+                QFileDialog::getSaveFileName(this, QLatin1String("getSaveFileName"));
+                break;
+            case DialogGetExistingDirectory:
+                QFileDialog::getExistingDirectory(this, QLatin1String("getExistingDirectory"));
+                break;
+            case DialogGetColor:
+                QColorDialog::getColor(QColor(Qt::green), this, QLatin1String("getColor"));
+                break;
+            case DialogGetFont:
+                QFontDialog::getFont(0, this);
+                break;
+            case DialogQuestion:
+                QMessageBox::question(this, QLatin1String("question"), QLatin1String("¿Hola, que tal?"));
+                break;
+            case DialogAboutQt:
+                QMessageBox::aboutQt(this);
+                break;
+            case DialogGetItem:
+                QInputDialog::getItem(this, QLatin1String("getItem"), QLatin1String("Choose a color"), QColor::colorNames());
+                break;
+            default:
+            break;
+        }
+    }
+
 private:
+    enum Dialog {
+        DialogGetOpenFileName,
+        DialogGetSaveFileName,
+        DialogGetExistingDirectory,
+        DialogGetColor,
+        DialogGetFont,
+        DialogQuestion,
+        DialogAboutQt,
+        DialogGetItem
+    };
+
     Ui_KeypadNavigation *ui;
     QSignalMapper m_layoutSignalMapper;
     QSignalMapper m_modeSignalMapper;
+    QSignalMapper m_dialogSignalMapper;
 };
 
 int main(int argc, char *argv[])

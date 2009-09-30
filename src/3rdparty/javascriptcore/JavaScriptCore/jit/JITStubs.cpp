@@ -2429,8 +2429,13 @@ DEFINE_STUB_FUNCTION(int, op_eq)
         goto start;
     }
 
-    if (src2.isObject())
-        return asObject(cell1) == asObject(src2);
+    if (src2.isObject()) {
+        return asObject(cell1) == asObject(src2)
+#ifdef QT_BUILD_SCRIPT_LIB
+            || asObject(cell1)->compareToObject(stackFrame.callFrame, asObject(src2))
+#endif
+            ;
+    }
     src1 = asObject(cell1)->toPrimitive(stackFrame.callFrame);
     CHECK_FOR_EXCEPTION();
     goto start;

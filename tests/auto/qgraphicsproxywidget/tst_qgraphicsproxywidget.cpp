@@ -783,11 +783,9 @@ void tst_QGraphicsProxyWidget::focusNextPrevChild()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
     QApplication::setActiveWindow(&view);
-    QTest::qWait(250);
+    QTest::qWaitForWindowShown(&view);
+    QApplication::processEvents();
     QTRY_COMPARE(QApplication::activeWindow(), &view);
     if (hasScene) {
         scene.addItem(proxy);
@@ -832,13 +830,11 @@ void tst_QGraphicsProxyWidget::focusOutEvent()
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     scene.addItem(proxy);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
     QApplication::setActiveWindow(&view);
     view.activateWindow();
     view.setFocus();
-    QTest::qWait(125);
+    QTest::qWaitForWindowShown(&view);
+    QApplication::processEvents();
     QTRY_VERIFY(view.isVisible());
     QTRY_COMPARE(QApplication::activeWindow(), &view);
 
@@ -856,11 +852,10 @@ void tst_QGraphicsProxyWidget::focusOutEvent()
     if (!call) {
         QWidget *other = new QLineEdit(&view);
         other->show();
-        QTest::qWait(125);
+        QApplication::processEvents();
         QTRY_VERIFY(other->isVisible());
         other->setFocus();
         QTRY_VERIFY(other->hasFocus());
-        QTest::qWait(125);
         qApp->processEvents();
         QTRY_COMPARE(proxy->hasFocus(), false);
         QVERIFY(proxy->focusOut);
@@ -992,7 +987,7 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
 
     // in
     QTest::mouseMove(&view, QPoint(50, 50));
-    QTest::qWait(250);
+    QTest::qWait(25);
     QTRY_COMPARE(widget->testAttribute(Qt::WA_UnderMouse), hasWidget ? true : false);
     // ### this attribute isn't supported
     QCOMPARE(widget->enterCount, hasWidget ? 1 : 0);
@@ -1002,7 +997,7 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
 
     // out
     QTest::mouseMove(&view, QPoint(10, 10));
-    QTest::qWait(250);
+    QTest::qWait(25);
     // QTRY_COMPARE(widget->testAttribute(Qt::WA_UnderMouse), false);
     // ### this attribute isn't supported
     QCOMPARE(widget->leaveCount, hasWidget ? 1 : 0);
@@ -1067,14 +1062,14 @@ void tst_QGraphicsProxyWidget::hoverMoveEvent()
 
     // in
     QTest::mouseMove(&view, QPoint(50, 50));
-    QTest::qWait(125);
+    QTest::qWait(12);
 
     if (mouseDown)
         QTest::mousePress(view.viewport(), Qt::LeftButton);
 
     // move a little bit
     QTest::mouseMove(&view, QPoint(60, 60));
-    QTest::qWait(125);
+    QTest::qWait(12);
     QTRY_COMPARE(widget->hoverEnter, (hasWidget && hoverEnabled) ? 1 : 0);
     QCOMPARE(widget->moveCount, (hasWidget && mouseTracking) || (hasWidget && mouseDown) ? 1 : 0);
 
@@ -1098,11 +1093,9 @@ void tst_QGraphicsProxyWidget::keyPressEvent()
     QGraphicsView view(&scene);
     view.show();
     view.viewport()->setFocus();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
     QApplication::setActiveWindow(&view);
-    QTest::qWait(250);
+    QTest::qWaitForWindowShown(&view);
+    QApplication::processEvents();
     QTRY_COMPARE(QApplication::activeWindow(), &view);
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
@@ -1142,11 +1135,8 @@ void tst_QGraphicsProxyWidget::keyReleaseEvent()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
     QApplication::setActiveWindow(&view);
-    QTest::qWait(250);
+    QTest::qWaitForWindowShown(&view);
     QTRY_COMPARE(QApplication::activeWindow(), &view);
 
 
@@ -1190,7 +1180,7 @@ void tst_QGraphicsProxyWidget::mouseDoubleClickEvent()
     view.show();
 
     QApplication::setActiveWindow(&view);
-    QTest::qWait(250);
+    QTest::qWaitForWindowShown(&view);
     QTRY_COMPARE(QApplication::activeWindow(), &view);
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
@@ -1234,7 +1224,7 @@ void tst_QGraphicsProxyWidget::mousePressReleaseEvent()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-    QTest::qWait(125);
+    QTest::qWaitForWindowShown(&view);
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     proxy->setFlag(QGraphicsItem::ItemIsFocusable, true); // ### remove me!!!
@@ -1305,19 +1295,18 @@ void tst_QGraphicsProxyWidget::paintEvent()
 
     w->show();
     QTest::qWaitForWindowShown(w);
-
-    QTest::qWait(100);
+    QApplication::processEvents();
 
     proxy.setWidget(w);
     scene.addItem(&proxy);
 
     //make sure we flush all the paint events
-    QTest::qWait(250);
+    QApplication::processEvents();
     QTRY_VERIFY(proxy.paintCount > 1);
     proxy.paintCount = 0;
 
     w->update();
-    QTest::qWait(100);
+    QApplication::processEvents();
     QTRY_COMPARE(proxy.paintCount, 1); //the widget should have been painted now
 }
 
@@ -1711,24 +1700,21 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleWidget()
     window.setLayout(layout);
 
     window.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&window);
-#endif
     QApplication::setActiveWindow(&window);
     window.activateWindow();
-    QTest::qWait(125);
+    QTest::qWaitForWindowShown(&window);
 
     leftDial->setFocus();
-    QTest::qWait(125);
+    QApplication::processEvents();
     QTRY_VERIFY(leftDial->hasFocus());
 
     EventSpy eventSpy(edit);
 
     // Tab into line edit
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
-    QVERIFY(!leftDial->hasFocus());
-    QVERIFY(view->hasFocus());
+    QApplication::processEvents();
+    QTRY_VERIFY(!leftDial->hasFocus());
+    QTRY_VERIFY(view->hasFocus());
     QVERIFY(view->viewport()->hasFocus());
     QVERIFY(scene.hasFocus());
     QVERIFY(editProxy->hasFocus());
@@ -1738,22 +1724,22 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleWidget()
 
     // Tab into right dial
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
-    QVERIFY(!view->hasFocus());
+    QApplication::processEvents();
+    QTRY_VERIFY(!view->hasFocus());
     QVERIFY(!view->viewport()->hasFocus());
     QVERIFY(!scene.hasFocus());
     QVERIFY(!editProxy->hasFocus());
     QVERIFY(!edit->hasFocus());
-    QVERIFY(rightDial->hasFocus());
+    QTRY_VERIFY(rightDial->hasFocus());
     QCOMPARE(eventSpy.counts[QEvent::FocusIn], 1);
     QCOMPARE(eventSpy.counts[QEvent::FocusOut], 1);
 
     // Backtab into line edit
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
-    QVERIFY(view->hasFocus());
+    QApplication::processEvents();
+    QTRY_VERIFY(view->hasFocus());
     QVERIFY(view->viewport()->hasFocus());
-    QVERIFY(scene.hasFocus());
+    QTRY_VERIFY(scene.hasFocus());
     QVERIFY(editProxy->hasFocus());
     QVERIFY(edit->hasFocus());
     QVERIFY(!rightDial->hasFocus());
@@ -1762,13 +1748,13 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleWidget()
 
     // Backtab into left dial
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
-    QVERIFY(!view->hasFocus());
+    QApplication::processEvents();
+    QTRY_VERIFY(!view->hasFocus());
     QVERIFY(!view->viewport()->hasFocus());
     QVERIFY(!scene.hasFocus());
     QVERIFY(!editProxy->hasFocus());
     QVERIFY(!edit->hasFocus());
-    QVERIFY(leftDial->hasFocus());
+    QTRY_VERIFY(leftDial->hasFocus());
     QCOMPARE(eventSpy.counts[QEvent::FocusIn], 2);
     QCOMPARE(eventSpy.counts[QEvent::FocusOut], 2);
 }
@@ -1796,14 +1782,12 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleTwoWidgets()
     window.setLayout(layout);
 
     window.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&window);
-#endif
     QApplication::setActiveWindow(&window);
     window.activateWindow();
+    QTest::qWaitForWindowShown(&window);
 
     leftDial->setFocus();
-    QTest::qWait(125);
+    QApplication::processEvents();
     QTRY_VERIFY(leftDial->hasFocus());
 
     EventSpy eventSpy(edit);
@@ -1811,7 +1795,7 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleTwoWidgets()
 
     // Tab into line edit
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!leftDial->hasFocus());
     QVERIFY(view->hasFocus());
     QVERIFY(view->viewport()->hasFocus());
@@ -1823,7 +1807,7 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleTwoWidgets()
 
     // Tab into second line edit
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(view->hasFocus());
     QVERIFY(view->viewport()->hasFocus());
     QVERIFY(scene.hasFocus());
@@ -1838,7 +1822,7 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleTwoWidgets()
 
     // Tab into right dial
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!view->hasFocus());
     QVERIFY(!view->viewport()->hasFocus());
     QVERIFY(!scene.hasFocus());
@@ -1854,7 +1838,7 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleTwoWidgets()
 
     // Backtab into line edit 2
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(view->hasFocus());
     QVERIFY(view->viewport()->hasFocus());
     QVERIFY(scene.hasFocus());
@@ -1870,7 +1854,7 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleTwoWidgets()
 
     // Backtab into line edit 1
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(view->hasFocus());
     QVERIFY(view->viewport()->hasFocus());
     QVERIFY(scene.hasFocus());
@@ -1886,7 +1870,7 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleTwoWidgets()
 
     // Backtab into left dial
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!view->hasFocus());
     QVERIFY(!view->viewport()->hasFocus());
     QVERIFY(!scene.hasFocus());
@@ -1929,15 +1913,12 @@ void tst_QGraphicsProxyWidget::tabFocus_complexWidget()
     window.setLayout(layout);
 
     window.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&window);
-#endif
     QApplication::setActiveWindow(&window);
     window.activateWindow();
-    QTest::qWait(125);
+    QTest::qWaitForWindowShown(&window);
 
     leftDial->setFocus();
-    QTest::qWait(125);
+    QApplication::processEvents();
     QTRY_VERIFY(leftDial->hasFocus());
 
     EventSpy eventSpy(edit1);
@@ -1946,7 +1927,7 @@ void tst_QGraphicsProxyWidget::tabFocus_complexWidget()
 
     // Tab into group box
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!leftDial->hasFocus());
     QVERIFY(view->hasFocus());
     QVERIFY(view->viewport()->hasFocus());
@@ -1956,7 +1937,7 @@ void tst_QGraphicsProxyWidget::tabFocus_complexWidget()
 
     // Tab into line edit
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     edit1->hasFocus();
     QVERIFY(!box->hasFocus());
     QCOMPARE(eventSpy.counts[QEvent::FocusIn], 1);
@@ -1964,7 +1945,7 @@ void tst_QGraphicsProxyWidget::tabFocus_complexWidget()
 
     // Tab into line edit 2
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     edit2->hasFocus();
     QVERIFY(!edit1->hasFocus());
     QCOMPARE(eventSpy.counts[QEvent::FocusIn], 1);
@@ -1974,7 +1955,7 @@ void tst_QGraphicsProxyWidget::tabFocus_complexWidget()
 
     // Tab into right dial
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!edit2->hasFocus());
     rightDial->hasFocus();
     QCOMPARE(eventSpy2.counts[QEvent::FocusIn], 1);
@@ -1982,7 +1963,7 @@ void tst_QGraphicsProxyWidget::tabFocus_complexWidget()
 
     // Backtab into line edit 2
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!rightDial->hasFocus());
     edit2->hasFocus();
     QCOMPARE(eventSpy2.counts[QEvent::FocusIn], 2);
@@ -1990,7 +1971,7 @@ void tst_QGraphicsProxyWidget::tabFocus_complexWidget()
 
     // Backtab into line edit 1
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!edit2->hasFocus());
     edit1->hasFocus();
     QCOMPARE(eventSpy2.counts[QEvent::FocusOut], 2);
@@ -1998,14 +1979,14 @@ void tst_QGraphicsProxyWidget::tabFocus_complexWidget()
 
     // Backtab into line box
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!edit1->hasFocus());
     box->hasFocus();
     QCOMPARE(eventSpy.counts[QEvent::FocusOut], 2);
 
     // Backtab into left dial
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!box->hasFocus());
     leftDial->hasFocus();
 }
@@ -2063,16 +2044,13 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
     window.setLayout(layout);
 
     window.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&window);
-#endif
     QApplication::setActiveWindow(&window);
     window.activateWindow();
-    QTest::qWait(125);
+    QTest::qWaitForWindowShown(&window);
     QTRY_COMPARE(QApplication::activeWindow(), &window);
 
     leftDial->setFocus();
-    QTest::qWait(125);
+    QApplication::processEvents();
     QTRY_VERIFY(leftDial->hasFocus());
 
     EventSpy eventSpy(edit1);
@@ -2083,7 +2061,7 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
 
     // Tab into group box
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!leftDial->hasFocus());
     QVERIFY(view->hasFocus());
     QVERIFY(view->viewport()->hasFocus());
@@ -2093,7 +2071,7 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
 
     // Tab into line edit
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     edit1->hasFocus();
     QVERIFY(!box->hasFocus());
     QCOMPARE(eventSpy.counts[QEvent::FocusIn], 1);
@@ -2101,7 +2079,7 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
 
     // Tab into line edit 2
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     edit2->hasFocus();
     QVERIFY(!edit1->hasFocus());
     QCOMPARE(eventSpy.counts[QEvent::FocusIn], 1);
@@ -2109,13 +2087,13 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
 
     // Tab into right box
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!edit2->hasFocus());
     box_2->hasFocus();
 
     // Tab into right top line edit
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!box_2->hasFocus());
     edit1_2->hasFocus();
     QCOMPARE(eventSpy1_2.counts[QEvent::FocusIn], 1);
@@ -2123,7 +2101,7 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
 
     // Tab into right bottom line edit
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!edit1_2->hasFocus());
     edit2_2->hasFocus();
     QCOMPARE(eventSpy1_2.counts[QEvent::FocusIn], 1);
@@ -2133,50 +2111,50 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
 
     // Tab into right dial
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!edit2->hasFocus());
     rightDial->hasFocus();
     QCOMPARE(eventSpy2_2.counts[QEvent::FocusOut], 1);
 
     // Backtab into line edit 2
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!rightDial->hasFocus());
     edit2_2->hasFocus();
 
     // Backtab into line edit 1
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!edit2_2->hasFocus());
     edit1_2->hasFocus();
 
     // Backtab into line box
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!edit1_2->hasFocus());
     box_2->hasFocus();
 
     // Backtab into line edit 2
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!rightDial->hasFocus());
     edit2->hasFocus();
 
     // Backtab into line edit 1
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!edit2->hasFocus());
     edit1->hasFocus();
 
     // Backtab into line box
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!edit1->hasFocus());
     box->hasFocus();
 
     // Backtab into left dial
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!box->hasFocus());
     leftDial->hasFocus();
 }
@@ -2200,16 +2178,13 @@ void tst_QGraphicsProxyWidget::setFocus_simpleWidget()
     window.setLayout(layout);
 
     window.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&window);
-#endif
     QApplication::setActiveWindow(&window);
     window.activateWindow();
-    QTest::qWait(125);
+    QTest::qWaitForWindowShown(&window);
     QTRY_COMPARE(QApplication::activeWindow(), &window);
 
     leftDial->setFocus();
-    QTest::qWait(125);
+    QApplication::processEvents();
     QTRY_VERIFY(leftDial->hasFocus());
 
     EventSpy eventSpy(edit);
@@ -2273,16 +2248,13 @@ void tst_QGraphicsProxyWidget::setFocus_simpleTwoWidgets()
     window.setLayout(layout);
 
     window.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&window);
-#endif
     QApplication::setActiveWindow(&window);
     window.activateWindow();
-    QTest::qWait(125);
+    QTest::qWaitForWindowShown(&window);
     QTRY_COMPARE(QApplication::activeWindow(), &window);
 
     leftDial->setFocus();
-    QTest::qWait(125);
+    QApplication::processEvents();
     QTRY_VERIFY(leftDial->hasFocus());
 
     EventSpy eventSpy(edit);
@@ -2353,16 +2325,13 @@ void tst_QGraphicsProxyWidget::setFocus_complexTwoWidgets()
     window.setLayout(layout);
 
     window.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&window);
-#endif
     QApplication::setActiveWindow(&window);
     window.activateWindow();
-    QTest::qWait(125);
+    QTest::qWaitForWindowShown(&window);
     QTRY_COMPARE(QApplication::activeWindow(), &window);
 
     leftDial->setFocus();
-    QTest::qWait(125);
+    QApplication::processEvents();
     QTRY_VERIFY(leftDial->hasFocus());
 
     EventSpy eventSpy(edit1);
@@ -2377,7 +2346,7 @@ void tst_QGraphicsProxyWidget::setFocus_complexTwoWidgets()
     QCOMPARE(eventSpy.counts[QEvent::FocusIn], 0);
 
     edit1->setFocus();
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(scene.hasFocus());
     QVERIFY(edit1->hasFocus());
     QVERIFY(!box->hasFocus());
@@ -2385,7 +2354,7 @@ void tst_QGraphicsProxyWidget::setFocus_complexTwoWidgets()
     QCOMPARE(eventSpyBox.counts[QEvent::FocusIn], 0);
 
     edit2_2->setFocus();
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!edit1->hasFocus());
     QVERIFY(!box_2->hasFocus());
     QVERIFY(edit2_2->hasFocus());
@@ -2396,7 +2365,7 @@ void tst_QGraphicsProxyWidget::setFocus_complexTwoWidgets()
     QCOMPARE(eventSpyBox_2.counts[QEvent::FocusIn], 0);
 
     box->setFocus();
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(!edit2_2->hasFocus());
     QVERIFY(!edit1->hasFocus());
     QVERIFY(box->hasFocus());
@@ -2410,7 +2379,7 @@ void tst_QGraphicsProxyWidget::setFocus_complexTwoWidgets()
     QCOMPARE(eventSpyBox_2.counts[QEvent::FocusOut], 0);
 
     edit2_2->setFocus();
-    QTest::qWait(125);
+    QApplication::processEvents();
     QVERIFY(edit2_2->hasFocus());
     QVERIFY(!edit1->hasFocus());
     QVERIFY(!box->hasFocus());
@@ -2447,12 +2416,14 @@ void tst_QGraphicsProxyWidget::popup_basic()
     QCOMPARE(box->pos(), QPoint());
     QCOMPARE(proxy->pos(), QPointF());
 
+    QTest::qWaitForWindowShown(&view);
     QTest::qWait(125);
+    QApplication::processEvents();
 
     QTest::mousePress(view.viewport(), Qt::LeftButton, 0,
 		      view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
 
-    QTest::qWait(125);
+    QTest::qWait(12);
 
     QCOMPARE(box->pos(), QPoint());
 
@@ -2467,8 +2438,8 @@ void tst_QGraphicsProxyWidget::popup_basic()
         QSKIP("Does not work due to SH_Combobox_Popup", SkipAll);
     QCOMPARE(child->widget()->parent(), static_cast<QObject*>(box));
 
-    QTest::qWait(125);
-    QCOMPARE(proxy->pos(), QPointF(box->pos()));
+    QTest::qWait(12);
+    QTRY_COMPARE(proxy->pos(), QPointF(box->pos()));
     QCOMPARE(child->x(), qreal(box->x()));
     QCOMPARE(child->y(), qreal(box->rect().bottom()));
 #ifndef Q_OS_WIN
@@ -2478,7 +2449,7 @@ void tst_QGraphicsProxyWidget::popup_basic()
     QCOMPARE(child->widget()->y(), box->rect().bottom());
     QCOMPARE(child->geometry().toRect(), child->widget()->geometry());
 #endif
-    QTest::qWait(125);
+    QTest::qWait(12);
 }
 
 void tst_QGraphicsProxyWidget::popup_subwidget()
@@ -2544,7 +2515,8 @@ void tst_QGraphicsProxyWidget::changingCursor_basic()
     proxy->setWidget(widget);
     proxy->show();
     scene.addItem(proxy);
-    QTest::qWait(125);
+    QTest::qWaitForWindowShown(&view);
+    QApplication::processEvents();
 
     // in
     QTest::mouseMove(view.viewport(), view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
@@ -2653,7 +2625,8 @@ void tst_QGraphicsProxyWidget::childPos()
 
     for (int i = 0; i < 2; ++i) {
         box->showPopup();
-        QTest::qWait(50);
+        QApplication::processEvents();
+        QApplication::processEvents();
 
         QWidget *menu = 0;
         foreach (QObject *child, box->children()) {
@@ -2718,7 +2691,7 @@ void tst_QGraphicsProxyWidget::windowOpacity()
     view.show();
     QTest::qWaitForWindowShown(&view);
     QApplication::sendPostedEvents();
-    QTest::qWait(100);
+    QTest::qWait(50);
 
     qRegisterMetaType<QList<QRectF> >("QList<QRectF>");
     QSignalSpy signalSpy(&scene, SIGNAL(changed(const QList<QRectF> &)));
@@ -2727,7 +2700,7 @@ void tst_QGraphicsProxyWidget::windowOpacity()
     QVERIFY(widget->isVisible());
 
     widget->setWindowOpacity(0.5);
-    QTest::qWait(100);
+    QApplication::processEvents();
 
     // Make sure setWindowOpacity triggers an update on the scene,
     // and not on the widget or the proxy itself. The entire proxy needs an update
@@ -2738,8 +2711,8 @@ void tst_QGraphicsProxyWidget::windowOpacity()
 #ifdef Q_WS_X11
     paints = !X11->use_xrender;
 #endif
-    QCOMPARE(eventSpy.counts[QEvent::UpdateRequest], 0);
-    QCOMPARE(eventSpy.counts[QEvent::Paint], paints);
+    QTRY_COMPARE(eventSpy.counts[QEvent::UpdateRequest], 0);
+    QTRY_COMPARE(eventSpy.counts[QEvent::Paint], paints);
 
     QCOMPARE(signalSpy.count(), 1);
     const QList<QVariant> arguments = signalSpy.takeFirst();
@@ -2920,7 +2893,8 @@ void tst_QGraphicsProxyWidget::dontCrashWhenDie()
 {
     MainWidget *w = new MainWidget();
     w->show();
-    QTest::qWait(200);
+    QTest::qWaitForWindowShown(w);
+    QTest::qWait(100);
     QTest::mouseMove(w->view->viewport(), w->view->mapFromScene(w->widget->mapToScene(w->widget->boundingRect().center())));
     delete w->item;
 }

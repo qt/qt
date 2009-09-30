@@ -109,6 +109,7 @@ private:
     int bytesAvailable;
     int intervalTime;
     QTime timeStamp;
+    qint64 elapsedTimeOffset;
     QTime timeStampOpened;
     qint64 totalTimeValue;
     bool pullMode;

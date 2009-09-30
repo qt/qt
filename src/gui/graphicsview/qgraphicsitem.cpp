@@ -5140,14 +5140,8 @@ void QGraphicsItem::update(const QRectF &rect)
     } while ((item = item->d_ptr->parent));
 
     if (CacheMode(d_ptr->cacheMode) != NoCache) {
-        QGraphicsItemCache *cache = d_ptr->extraItemCache();
-        if (d_ptr->discardUpdateRequest(/* ignoreVisibleBit = */ false,
-                                        /* ignoreClipping = */ false,
-                                        /* ignoreDirtyBit = */ true)) {
-            return;
-        }
-
         // Invalidate cache.
+        QGraphicsItemCache *cache = d_ptr->extraItemCache();
         if (!cache->allExposed) {
             if (rect.isNull()) {
                 cache->allExposed = true;
@@ -5160,6 +5154,9 @@ void QGraphicsItem::update(const QRectF &rect)
         if (d_ptr->fullUpdatePending)
             return;
     }
+
+    if (d_ptr->discardUpdateRequest())
+        return;
 
     if (d_ptr->scene)
         d_ptr->scene->d_func()->markDirty(this, rect);
