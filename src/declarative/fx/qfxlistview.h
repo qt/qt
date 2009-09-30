@@ -50,9 +50,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-//### incrementCurrentIndex(), decrementCurrentIndex() slots
-//### default Keys.OnUp/DownPressed handler
-
 
 class QFxVisualModel;
 class QFxListViewAttached;
@@ -130,6 +127,10 @@ public:
     QString currentSection() const;
 
     static QFxListViewAttached *qmlAttachedProperties(QObject *);
+
+public Q_SLOTS:
+    void incrementCurrentIndex();
+    void decrementCurrentIndex();
 
 Q_SIGNALS:
     void countChanged();
