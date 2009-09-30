@@ -3902,7 +3902,13 @@ void tst_QNetworkReply::httpConnectionCount()
             break;
     }
 
+#ifdef Q_OS_SYMBIAN
+    // see in qhttpnetworkconnection.cpp
+    // hardcoded defaultChannelCount = 3
+    QCOMPARE(pendingConnectionCount, 3);
+#else
     QCOMPARE(pendingConnectionCount, 6);
+#endif
 }
 
 #ifndef QT_NO_OPENSSL
