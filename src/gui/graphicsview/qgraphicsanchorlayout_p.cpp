@@ -92,77 +92,91 @@ qreal QGraphicsAnchorPrivate::spacing() const
 }
 
 
+static void sizeHintsFromItem(QGraphicsLayoutItem *item,
+                             const QGraphicsAnchorLayoutPrivate::Orientation orient,
+                             qreal *minSize, qreal *prefSize,
+                             qreal *expSize, qreal *maxSize)
+{
+    QSizePolicy::Policy policy;
+    qreal minSizeHint;
+    qreal prefSizeHint;
+    qreal maxSizeHint;
+
+    if (orient == QGraphicsAnchorLayoutPrivate::Horizontal) {
+        policy = item->sizePolicy().horizontalPolicy();
+        minSizeHint = item->effectiveSizeHint(Qt::MinimumSize).width();
+        prefSizeHint = item->effectiveSizeHint(Qt::PreferredSize).width();
+        maxSizeHint = item->effectiveSizeHint(Qt::MaximumSize).width();
+    } else {
+        policy = item->sizePolicy().verticalPolicy();
+        minSizeHint = item->effectiveSizeHint(Qt::MinimumSize).height();
+        prefSizeHint = item->effectiveSizeHint(Qt::PreferredSize).height();
+        maxSizeHint = item->effectiveSizeHint(Qt::MaximumSize).height();
+    }
+
+    // minSize, prefSize and maxSize are initialized
+    // with item's preferred Size: this is QSizePolicy::Fixed.
+    //
+    // Then we check each flag to find the resultant QSizePolicy,
+    // according to the following table:
+    //
+    //      constant               value
+    // QSizePolicy::Fixed            0
+    // QSizePolicy::Minimum       GrowFlag
+    // QSizePolicy::Maximum       ShrinkFlag
+    // QSizePolicy::Preferred     GrowFlag | ShrinkFlag
+    // QSizePolicy::Ignored       GrowFlag | ShrinkFlag | IgnoreFlag
+
+    if (policy & QSizePolicy::ShrinkFlag)
+        *minSize = minSizeHint;
+    else
+        *minSize = prefSizeHint;
+
+    if (policy & QSizePolicy::GrowFlag)
+        *maxSize = maxSizeHint;
+    else
+        *maxSize = prefSizeHint;
+
+    // Note that these two initializations are affected by the previous flags
+    if (policy & QSizePolicy::IgnoreFlag)
+        *prefSize = *maxSize;
+    else
+        *prefSize = prefSizeHint;
+
+    if (policy & QSizePolicy::ExpandFlag)
+        *expSize = *maxSize;
+    else
+        *expSize = *prefSize;
+}
+
 void AnchorData::refreshSizeHints(qreal effectiveSpacing)
 {
-    if (!isLayoutAnchor && (from->m_item == to->m_item)) {
-        QGraphicsLayoutItem *item = from->m_item;
+    const bool isInternalAnchor = from->m_item == to->m_item;
 
-        const QGraphicsAnchorLayoutPrivate::Orientation orient = QGraphicsAnchorLayoutPrivate::edgeOrientation(from->m_edge);
-        const Qt::AnchorPoint centerEdge = QGraphicsAnchorLayoutPrivate::pickEdge(Qt::AnchorHorizontalCenter, orient);
+    if (isInternalAnchor) {
+        const QGraphicsAnchorLayoutPrivate::Orientation orient =
+            QGraphicsAnchorLayoutPrivate::edgeOrientation(from->m_edge);
 
-        QSizePolicy::Policy policy;
-        qreal minSizeHint, prefSizeHint, maxSizeHint;
-        if (orient == QGraphicsAnchorLayoutPrivate::Horizontal) {
-            policy = item->sizePolicy().horizontalPolicy();
-            minSizeHint = item->effectiveSizeHint(Qt::MinimumSize).width();
-            prefSizeHint = item->effectiveSizeHint(Qt::PreferredSize).width();
-            maxSizeHint = item->effectiveSizeHint(Qt::MaximumSize).width();
+        if (isLayoutAnchor) {
+            minSize = 0;
+            prefSize = 0;
+            expSize = 0;
+            maxSize = QWIDGETSIZE_MAX;
         } else {
-            policy = item->sizePolicy().verticalPolicy();
-            minSizeHint = item->effectiveSizeHint(Qt::MinimumSize).height();
-            prefSizeHint = item->effectiveSizeHint(Qt::PreferredSize).height();
-            maxSizeHint = item->effectiveSizeHint(Qt::MaximumSize).height();
+            QGraphicsLayoutItem *item = from->m_item;
+            sizeHintsFromItem(item, orient, &minSize, &prefSize, &expSize, &maxSize);
         }
-        // minSize, prefSize and maxSize are initialized
-        // with item's preferred Size: this is QSizePolicy::Fixed.
-        //
-        // Then we check each flag to find the resultant QSizePolicy,
-        // according to the following table:
-        //
-        //      constant               value
-        // QSizePolicy::Fixed            0
-        // QSizePolicy::Minimum       GrowFlag
-        // QSizePolicy::Maximum       ShrinkFlag
-        // QSizePolicy::Preferred     GrowFlag | ShrinkFlag
-        // QSizePolicy::Ignored       GrowFlag | ShrinkFlag | IgnoreFlag
-        prefSize = prefSizeHint;
-        minSize = prefSize;
-        maxSize = prefSize;
 
-        if (policy & QSizePolicy::GrowFlag)
-            maxSize = maxSizeHint;
-
-        if (policy & QSizePolicy::ShrinkFlag)
-            minSize = minSizeHint;
-
-        if (policy & QSizePolicy::IgnoreFlag)
-            prefSize = minSize;
-
+        const Qt::AnchorPoint centerEdge =
+            QGraphicsAnchorLayoutPrivate::pickEdge(Qt::AnchorHorizontalCenter, orient);
         bool hasCenter = (from->m_edge == centerEdge || to->m_edge == centerEdge);
 
         if (hasCenter) {
             minSize /= 2;
             prefSize /= 2;
+            expSize /= 2;
             maxSize /= 2;
         }
-
-        if (policy & QSizePolicy::ExpandFlag) {
-            expSize = maxSize;
-        } else {
-            expSize = prefSize;
-        }
-
-        // Set the anchor effective sizes to preferred.
-        //
-        // Note: The idea here is that all items should remain at their
-        // preferred size unless where that's impossible.  In cases where
-        // the item is subject to restrictions (anchored to the layout
-        // edges, for instance), the simplex solver will be run to
-        // recalculate and override the values we set here.
-        sizeAtMinimum = prefSize;
-        sizeAtPreferred = prefSize;
-        sizeAtExpanding = prefSize;
-        sizeAtMaximum = prefSize;
 
     } else if (!hasSize) {
         // Anchor has no size defined, use given default information
@@ -170,12 +184,19 @@ void AnchorData::refreshSizeHints(qreal effectiveSpacing)
         prefSize = effectiveSpacing;
         expSize = effectiveSpacing;
         maxSize = effectiveSpacing;
-
-        sizeAtMinimum = prefSize;
-        sizeAtPreferred = prefSize;
-        sizeAtExpanding = prefSize;
-        sizeAtMaximum = prefSize;
     }
+
+    // Set the anchor effective sizes to preferred.
+    //
+    // Note: The idea here is that all items should remain at their
+    // preferred size unless where that's impossible.  In cases where
+    // the item is subject to restrictions (anchored to the layout
+    // edges, for instance), the simplex solver will be run to
+    // recalculate and override the values we set here.
+    sizeAtMinimum = prefSize;
+    sizeAtPreferred = prefSize;
+    sizeAtExpanding = prefSize;
+    sizeAtMaximum = prefSize;
 }
 
 void ParallelAnchorData::updateChildrenSizes()

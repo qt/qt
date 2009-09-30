@@ -1271,7 +1271,7 @@ void tst_QGraphicsAnchorLayout::sizePolicy()
     w1->adjustSize();
 
     QCOMPARE(l->effectiveSizeHint(Qt::MinimumSize), QSizeF(0, 0));
-    QCOMPARE(l->effectiveSizeHint(Qt::PreferredSize), QSizeF(0, 0));
+    QCOMPARE(l->effectiveSizeHint(Qt::PreferredSize), QSizeF(100, 100));
     QCOMPARE(l->effectiveSizeHint(Qt::MaximumSize), QSizeF(100, 100));
 
     delete p;
