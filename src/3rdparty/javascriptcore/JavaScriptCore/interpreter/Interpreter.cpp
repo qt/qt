@@ -3084,6 +3084,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
 #else
             newCallFrame->init(0, vPC + 5, scopeChain, callFrame, dst, argCount, asObject(v));
 #endif
+
             Register* thisRegister = newCallFrame->registers() - RegisterFile::CallFrameHeaderSize - argCount;
             ArgList args(thisRegister + 1, argCount - 1);
 
@@ -3242,7 +3243,6 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
             newCallFrame->init(0, vPC + 5, scopeChain, callFrame, dst, argCount, asObject(v));
 #endif
 
-            
             Register* thisRegister = newCallFrame->registers() - RegisterFile::CallFrameHeaderSize - argCount;
             ArgList args(thisRegister + 1, argCount - 1);
             
