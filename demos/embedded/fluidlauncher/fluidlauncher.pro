@@ -96,6 +96,11 @@ symbian {
         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/lightmaps_reg.rsc \
         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/flightinfo_reg.rsc
 
+    contains(QT_CONFIG, phonon) {
+        reg_resource.sources += $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/qmediaplayer_reg.rsc
+    }
+
+
     reg_resource.path = $$REG_RESOURCE_IMPORT_DIR
 
     resource.sources = \
@@ -136,6 +141,11 @@ symbian {
         reg_resource.sources += $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/anomaly_reg.rsc
         resource.sources += $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/anomaly.rsc
     }
+
+    contains(QT_CONFIG, phonon) {
+        resource.sources += $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/qmediaplayer.rsc
+    }
+
     contains(QT_CONFIG, script) {
         executables.sources += context2d.exe    
         reg_resource.sources += $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/context2d_reg.rsc

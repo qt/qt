@@ -520,43 +520,43 @@ QMainWindow *QScriptEngineDebugger::standardWindow() const
     QMainWindow *win = new QMainWindow();
     QDockWidget *scriptsDock = new QDockWidget(win);
     scriptsDock->setObjectName(QLatin1String("qtscriptdebugger_scriptsDockWidget"));
-    scriptsDock->setWindowTitle(QObject::tr("Loaded Scripts"));
+    scriptsDock->setWindowTitle(tr("Loaded Scripts"));
     scriptsDock->setWidget(widget(ScriptsWidget));
     win->addDockWidget(Qt::LeftDockWidgetArea, scriptsDock);
 
     QDockWidget *breakpointsDock = new QDockWidget(win);
     breakpointsDock->setObjectName(QLatin1String("qtscriptdebugger_breakpointsDockWidget"));
-    breakpointsDock->setWindowTitle(QObject::tr("Breakpoints"));
+    breakpointsDock->setWindowTitle(tr("Breakpoints"));
     breakpointsDock->setWidget(widget(BreakpointsWidget));
     win->addDockWidget(Qt::LeftDockWidgetArea, breakpointsDock);
 
     QDockWidget *stackDock = new QDockWidget(win);
     stackDock->setObjectName(QLatin1String("qtscriptdebugger_stackDockWidget"));
-    stackDock->setWindowTitle(QObject::tr("Stack"));
+    stackDock->setWindowTitle(tr("Stack"));
     stackDock->setWidget(widget(StackWidget));
     win->addDockWidget(Qt::RightDockWidgetArea, stackDock);
 
     QDockWidget *localsDock = new QDockWidget(win);
     localsDock->setObjectName(QLatin1String("qtscriptdebugger_localsDockWidget"));
-    localsDock->setWindowTitle(QObject::tr("Locals"));
+    localsDock->setWindowTitle(tr("Locals"));
     localsDock->setWidget(widget(LocalsWidget));
     win->addDockWidget(Qt::RightDockWidgetArea, localsDock);
 
     QDockWidget *consoleDock = new QDockWidget(win);
     consoleDock->setObjectName(QLatin1String("qtscriptdebugger_consoleDockWidget"));
-    consoleDock->setWindowTitle(QObject::tr("Console"));
+    consoleDock->setWindowTitle(tr("Console"));
     consoleDock->setWidget(widget(ConsoleWidget));
     win->addDockWidget(Qt::BottomDockWidgetArea, consoleDock);
 
     QDockWidget *debugOutputDock = new QDockWidget(win);
     debugOutputDock->setObjectName(QLatin1String("qtscriptdebugger_debugOutputDockWidget"));
-    debugOutputDock->setWindowTitle(QObject::tr("Debug Output"));
+    debugOutputDock->setWindowTitle(tr("Debug Output"));
     debugOutputDock->setWidget(widget(DebugOutputWidget));
     win->addDockWidget(Qt::BottomDockWidgetArea, debugOutputDock);
 
     QDockWidget *errorLogDock = new QDockWidget(win);
     errorLogDock->setObjectName(QLatin1String("qtscriptdebugger_errorLogDockWidget"));
-    errorLogDock->setWindowTitle(QObject::tr("Error Log"));
+    errorLogDock->setWindowTitle(tr("Error Log"));
     errorLogDock->setWidget(widget(ErrorLogWidget));
     win->addDockWidget(Qt::BottomDockWidgetArea, errorLogDock);
 
@@ -568,14 +568,14 @@ QMainWindow *QScriptEngineDebugger::standardWindow() const
 #ifndef QT_NO_MENUBAR
     win->menuBar()->addMenu(that->createStandardMenu(win));
 
-    QMenu *editMenu = win->menuBar()->addMenu(QObject::tr("Search"));
+    QMenu *editMenu = win->menuBar()->addMenu(tr("Search"));
     editMenu->addAction(action(FindInScriptAction));
     editMenu->addAction(action(FindNextInScriptAction));
     editMenu->addAction(action(FindPreviousInScriptAction));
     editMenu->addSeparator();
     editMenu->addAction(action(GoToLineAction));
 
-    QMenu *viewMenu = win->menuBar()->addMenu(QObject::tr("View"));
+    QMenu *viewMenu = win->menuBar()->addMenu(tr("View"));
     viewMenu->addAction(scriptsDock->toggleViewAction());
     viewMenu->addAction(breakpointsDock->toggleViewAction());
     viewMenu->addAction(stackDock->toggleViewAction());
@@ -593,7 +593,7 @@ QMainWindow *QScriptEngineDebugger::standardWindow() const
     widget(CodeFinderWidget)->hide();
     win->setCentralWidget(central);
 
-    win->setWindowTitle(QObject::tr("Qt Script Debugger"));
+    win->setWindowTitle(tr("Qt Script Debugger"));
     win->setUnifiedTitleAndToolBarOnMac(true);
 
     QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));

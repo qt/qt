@@ -1606,6 +1606,9 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun,
 }
 
 #ifndef QT_NO_REGEXP
+
+extern QString qt_regexp_toCanonical(const QString &, QRegExp::PatternSyntax);
+
 /*!
   Creates a QtScript object of class RegExp with the given
   \a regexp.
@@ -1620,7 +1623,6 @@ QScriptValue QScriptEngine::newRegExp(const QRegExp &regexp)
     JSC::ArgList args(buf, sizeof(buf));
 
     //convert the pattern to a ECMAScript pattern
-    extern QString qt_regexp_toCanonical(const QString &, QRegExp::PatternSyntax);
     QString pattern = qt_regexp_toCanonical(regexp.pattern(), regexp.patternSyntax());
     if (regexp.isMinimal()) {
         QString ecmaPattern;

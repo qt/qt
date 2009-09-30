@@ -1249,7 +1249,7 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
         dbg << dev << "of type" << dev->devType();
     }
 
-    dbg << QString("transformationType 0x%1").arg(transformationType, 3, 16, QLatin1Char('0'))
+    dbg << QString::fromLatin1("transformationType 0x%1").arg(transformationType, 3, 16, QLatin1Char('0'))
         << "simplePen" << simplePen
         << "clipType" << clipType
         << "compositionModeStatus" << compositionModeStatus;

@@ -160,9 +160,9 @@ inline qreal QVector3D::x() const { return qreal(xp); }
 inline qreal QVector3D::y() const { return qreal(yp); }
 inline qreal QVector3D::z() const { return qreal(zp); }
 
-inline void QVector3D::setX(qreal x) { xp = x; }
-inline void QVector3D::setY(qreal y) { yp = y; }
-inline void QVector3D::setZ(qreal z) { zp = z; }
+inline void QVector3D::setX(qreal aX) { xp = aX; }
+inline void QVector3D::setY(qreal aY) { yp = aY; }
+inline void QVector3D::setZ(qreal aZ) { zp = aZ; }
 
 inline QVector3D &QVector3D::operator+=(const QVector3D &vector)
 {

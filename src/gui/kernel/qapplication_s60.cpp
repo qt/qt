@@ -320,13 +320,26 @@ QSymbianControl::QSymbianControl(QWidget *w)
 {
 }
 
-void QSymbianControl::ConstructL(bool topLevel, bool desktop)
+void QSymbianControl::ConstructL(bool isWindowOwning, bool desktop)
 {
     if (!desktop)
     {
-        if (topLevel) {
+        if (isWindowOwning or !qwidget->parentWidget())
             CreateWindowL(S60->windowGroup());
-        }
+        else
+            /**
+             * TODO: in order to avoid creating windows for all ancestors of
+             * this widget up to the root window, the parameter passed to
+             * CreateWindowL should be
+             * qwidget->parentWidget()->effectiveWinId().  However, if we do
+             * this, then we need to take care of re-parenting when a window
+             * is created for a widget between this one and the root window.
+             */
+            CreateWindowL(qwidget->parentWidget()->winId());
+
+        // Necessary in order to be able to track the activation status of
+        // the control's window
+        qwidget->d_func()->createExtra();
 
         SetFocusing(true);
         m_longTapDetector = QLongTapTimer::NewL(this);
@@ -767,19 +780,21 @@ TCoeInputCapabilities QSymbianControl::InputCapabilities() const
 void QSymbianControl::Draw(const TRect& r) const
 {
     QWindowSurface *surface = qwidget->windowSurface();
-    if (!surface)
-        return;
+    QPaintEngine *engine = surface ? surface->paintDevice()->paintEngine() : NULL;
 
-    QPaintEngine *engine = surface->paintDevice()->paintEngine();
     if (!engine)
         return;
+
     if (engine->type() == QPaintEngine::Raster) {
         QS60WindowSurface *s60Surface = static_cast<QS60WindowSurface *>(qwidget->windowSurface());
         CFbsBitmap *bitmap = s60Surface->symbianBitmap();
         CWindowGc &gc = SystemGc();
-        if (qwidget->d_func()->isOpaque)
-            gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
-        gc.BitBlt(r.iTl, bitmap, r);
+
+        if(!qwidget->d_func()->extraData()->disableBlit) {
+            if (qwidget->d_func()->isOpaque)
+                gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
+            gc.BitBlt(r.iTl, bitmap, r);
+	}
     } else {
         surface->flush(qwidget, QRegion(qt_TRect2QRect(r)), QPoint());
     }
@@ -1236,14 +1251,14 @@ QWidget * QApplication::topLevelAt(QPoint const& point)
             if (widget->geometry().adjusted(0,0,1,1).contains(point)) {
                 // At this point we know there is a Qt widget under the point.
                 // Now we need to make sure it is the top most in the z-order.
-                RDrawableWindow* rw = widget->d_func()->topData()->rwindow;
-                int z = rw->OrdinalPosition();
+                RDrawableWindow *const window = widget->effectiveWinId()->DrawableWindow();
+                int z = window->OrdinalPosition();
                 if (z < lowestZ) {
                     lowestZ = z;
                     found = widget;
                 }
             }
-            }
+        }
     }
     return found;
 }
@@ -1457,6 +1472,7 @@ bool QApplication::s60EventFilter(TWsEvent * /* aEvent */)
 */
 void QApplication::symbianHandleCommand(int command)
 {
+    QScopedLoopLevelCounter counter(d_func()->threadData);
     switch (command) {
 #ifdef Q_WS_S60
     case EAknSoftkeyExit: {

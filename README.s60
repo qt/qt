@@ -5,16 +5,16 @@ this pre-release you can make advanced graphical applications and
 utilize TCP/IP connections. More specifically, these modules are now
 available for S60:
 
-QtCore    - http://doc.trolltech.com/4.5/qtcore.html
-QtGui     - http://doc.trolltech.com/4.5/qtgui.html
-QtNetwork - http://doc.trolltech.com/4.5/qtnetwork.html
-QtScript  - http://doc.trolltech.com/4.5/qtscript.html
-QtSql     - http://doc.trolltech.com/4.5/qtsql.html
-QtSvg     - http://doc.trolltech.com/4.5/qtsvg.html
-QtTest    - http://doc.trolltech.com/4.5/qttest.html
-QtWebKit  - http://doc.trolltech.com/4.5/qtwebkit.html
-QtXml     - http://doc.trolltech.com/4.5/qtxml.html
-Phonon    - http://doc.trolltech.com/4.5/phonon-module.html
+QtCore    - http://doc.trolltech.com/4.6/qtcore.html
+QtGui     - http://doc.trolltech.com/4.6/qtgui.html
+QtNetwork - http://doc.trolltech.com/4.6/qtnetwork.html
+QtScript  - http://doc.trolltech.com/4.6/qtscript.html
+QtSql     - http://doc.trolltech.com/4.6/qtsql.html
+QtSvg     - http://doc.trolltech.com/4.6/qtsvg.html
+QtTest    - http://doc.trolltech.com/4.6/qttest.html
+QtWebKit  - http://doc.trolltech.com/4.6/qtwebkit.html
+QtXml     - http://doc.trolltech.com/4.6/qtxml.html
+Phonon    - http://doc.trolltech.com/4.6/phonon-module.html
 
 INSTALLING Qt
 
@@ -23,7 +23,7 @@ Follow the instructions in the INSTALL file.
 REFERENCE DOCUMENTATION
 
 The Qt reference documentation is available locally in Qt's doc/html
-directory or at http://doc.trolltech.com/4.5/index.html
+directory or at http://doc.trolltech.com/4.6/index.html
 
 SUPPORTED PLATFORMS
 
@@ -67,7 +67,7 @@ such a program can be created with some minor changes to one of the
 many example programs in Qt's examples directory.
 
 
-                   INSTALLING Qt/S60 Version %VERSION%
+                   INSTALLING Qt for S60 Version %VERSION%
 
 1.  Install needed IDE and SDKs
 
@@ -86,7 +86,10 @@ many example programs in Qt's examples directory.
     - Open C/C++ v1.6.0 or higher. Install this to all S60 SDKs you plan to use Qt with:
       http://www.forum.nokia.com/main/resources/technologies/openc_cpp/
     
-    - Building Qt libraries for real device requires RVCT 2.2 [build 616] or later:
+    - Building Qt tools requires a windows compiler, e.g. MinGW 3.4.5 or higher.
+      http://www.mingw.org/
+    
+    - Building Qt libraries for real device requires RVCT 2.2 [build 686] or later:
       http://www.arm.com/products/DevTools/RVCT.html
     
     Make sure you have the following packages installed on any device you want to use to
@@ -132,21 +135,21 @@ many example programs in Qt's examples directory.
     To configure Qt for S60, do:
 
         cd \Qt\%VERSION%
-        configure -platform win32-mwc -xplatform symbian-abld
+        configure -platform win32-g++ -xplatform symbian-abld
 
     For other options, type "configure -help" to get a list of all available
     options.
 
 5.  Build Qt
 
-    To build Qt for the device, type:
-
-        make release-armv5
- 
     To build Qt for the emulator, type:
 
         make debug-winscw
 
+    To build Qt for the device, type:
+
+        make release-armv5
+ 
     Congratulations, Qt is now ready to use.
 
 6.  Running Qt demos
@@ -156,7 +159,7 @@ many example programs in Qt's examples directory.
     a real device, you first have to install the Qt libraries on the device:
 
         cd src\s60installs
-        createpackage -i qt_libs_armv5_urel.pkg <certificate file> <certificate key file>
+        createpackage -i Qt_for_S60_template.pkg release-armv5 <certificate file> <certificate key file>
 
     Note: You will need to supply certificate that allows installation of 
           binaries with "All -Tcb" capability to your device.
@@ -164,9 +167,9 @@ many example programs in Qt's examples directory.
     Similarly, install fluidlauncher to the device:
 
         cd embedded\fluidlauncher
-        createpackage -i fluidlauncher_armv5_urel.pkg
+        createpackage -i fluidlauncher_template.pkg release-armv5
 
-    This will create a self-signed fluidlauncher_armv5_urel.sisx and install it to your device.
+    This will create a self-signed fluidlauncher_release-armv5.sis and install it to your device.
 
     To run the demos on the emulator simply navigate to the directory of the demo and run:
 

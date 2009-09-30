@@ -3023,20 +3023,6 @@ void QVGFontGlyphCache::cacheGlyphs
         VGImage vgImage = VG_INVALID_HANDLE;
         metrics = ti.fontEngine->boundingBox(glyph);
         if (!scaledImage.isNull()) {  // Not a space character
-            // The QPF implementation of alphaMapForGlyph() uses the color
-            // RGBA = (value, value, value, 255) instead of the color
-            // RGBA = (0, 0, 0, value) that the other font engines use.
-            // We modify the image colors to rectify this situation.
-            QFontEngine::Type type = ti.fontEngine->type();
-            if (type == QFontEngine::QPF1 || type == QFontEngine::QPF2) {
-                if (scaledImage.format() == QImage::Format_Indexed8) {
-                    for (int i = 0; i < 256; ++i)
-                        scaledImage.setColor(i, qRgba(0, 0, 0, i));
-                } else if (scaledImage.format() == QImage::Format_Mono) {
-                    scaledImage.setColor(0, qRgba(0, 0, 0, 0));
-                    scaledImage.setColor(1, qRgba(0, 0, 0, 255));
-                }
-            }
             if (scaledImage.format() == QImage::Format_Indexed8) {
                 vgImage = vgCreateImage(VG_A_8, scaledImage.width(), scaledImage.height(), VG_IMAGE_QUALITY_FASTER);
                 vgImageSubData(vgImage, scaledImage.bits(), scaledImage.bytesPerLine(), VG_A_8, 0, 0, scaledImage.width(), scaledImage.height());
