@@ -46,7 +46,6 @@
 #define DO_PROPERTYMAP_CONSTENCY_CHECK 0
 #endif
 
-using namespace std;
 using namespace WTF;
 
 namespace JSC {
