@@ -175,8 +175,8 @@ public:
         } create;
         struct {
             int data;
-            int slotData;
             int aliasData;
+            int propertyCache;
         } storeMeta;
         struct {
             int value;

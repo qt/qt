@@ -62,6 +62,7 @@
 #include <private/qmlparser_p.h>
 #include <private/qmlengine_p.h>
 #include <private/qbitfield_p.h>
+#include <private/qmlpropertycache_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -99,6 +100,7 @@ public:
         int index;
         int type;
     };
+
     QAbstractDynamicMetaObject root;
     QList<QString> primitives;
     QList<float> floatData;
@@ -108,6 +110,7 @@ public:
     QList<QmlParser::Location> locations;
     QList<QmlInstruction> bytecode;
     QList<QScriptProgram *> programs;
+    QList<QmlPropertyCache *> propertyCaches;
 
     void dumpInstructions();
 private:

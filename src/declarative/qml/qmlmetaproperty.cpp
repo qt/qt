@@ -58,56 +58,6 @@ Q_DECLARE_METATYPE(QList<QObject *>);
 
 QT_BEGIN_NAMESPACE
 
-QmlMetaObjectCache::QmlMetaObjectCache()
-: propertyCache(0)
-{
-}
-
-void QmlMetaObjectCache::init(const QMetaObject *metaObject)
-{
-    if (propertyCache || !metaObject)
-        return;
-
-    int propCount = metaObject->propertyCount();
-
-    propertyCache = new Data[propCount];
-    for (int ii = 0; ii < propCount; ++ii) {
-        QMetaProperty p = metaObject->property(ii);
-        propertyCache[ii].propType = p.userType();
-        propertyCache[ii].coreIndex = ii;
-        propertyCache[ii].name = QLatin1String(p.name());
-
-        propertyNameCache.insert(propertyCache[ii].name, ii);
-    }
-}
-
-QmlMetaObjectCache::~QmlMetaObjectCache()
-{
-    delete [] propertyCache;
-}
-
-QmlMetaObjectCache::Data *
-QmlMetaObjectCache::property(int index, const QMetaObject *metaObject)
-{
-    init(metaObject);
-
-    return propertyCache + index;
-}
-
-QmlMetaObjectCache::Data *
-QmlMetaObjectCache::property(const QString &name, const QMetaObject *metaObject)
-{
-    init(metaObject);
-
-    QHash<QString, int>::ConstIterator iter = propertyNameCache.find(name);
-
-    if (iter != propertyNameCache.end()) {
-        return propertyCache + *iter;
-    } else {
-        return 0;
-    }
-}
-
 /*!
     \class QmlMetaProperty
     \brief The QmlMetaProperty class abstracts accessing QML properties.
@@ -258,11 +208,17 @@ void QmlMetaPropertyPrivate::initProperty(QObject *obj, const QString &name)
     } 
 
     // Property
-    QmlMetaObjectCache *cache = QmlEnginePrivate::cache(enginePrivate, obj);
+    QmlPropertyCache *cache = 0;
+    QmlDeclarativeData *ddata = QmlDeclarativeData::get(obj);
+    if (ddata)
+        cache = ddata->propertyCache;
+    if (!cache)
+        cache = enginePrivate?enginePrivate->cache(obj):0;
+
     if (cache) {
-        QmlMetaObjectCache::Data *data = 
-            cache->property(name, obj->metaObject());
-        if (data) {
+        QmlPropertyCache::Data *data = cache->property(name);
+
+        if (data && !data->isFunction) {
             type = QmlMetaProperty::Property;
             propType = data->propType;
             coreIdx = data->coreIndex;
@@ -272,7 +228,7 @@ void QmlMetaPropertyPrivate::initProperty(QObject *obj, const QString &name)
         QMetaProperty p = QmlMetaType::property(obj, name.toUtf8().constData());
         propType = p.userType();
         coreIdx = p.propertyIndex();
-        if (p.name())
+        if (p.name()) 
             type = QmlMetaProperty::Property;
     }
 }
@@ -1186,13 +1142,12 @@ void QmlMetaProperty::restore(quint32 id, QObject *obj, QmlContext *ctxt)
 
     } else if (d->type & Property) {
 
-        QmlMetaObjectCache *cache = QmlEnginePrivate::cache(enginePrivate, obj);
+        QmlPropertyCache *cache = enginePrivate?enginePrivate->cache(obj):0;
 
         d->coreIdx = id;
 
         if (cache) {
-            QmlMetaObjectCache::Data *data = 
-                cache->property(id, obj->metaObject());
+            QmlPropertyCache::Data *data = cache->property(id);
             d->propType = data->propType;
             d->name = data->name;
         } else {

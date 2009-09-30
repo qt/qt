@@ -647,7 +647,7 @@ void QmlCompiler::compileTree(Object *tree)
 
     Q_ASSERT(tree->metatype);
     static_cast<QMetaObject &>(output->root) = *tree->metaObject();
-    if (!tree->metadata.isEmpty())
+    if (!tree->metadata.isEmpty()) 
         QmlEnginePrivate::get(engine)->registerCompositeType(output);
 }
 
@@ -807,7 +807,9 @@ void QmlCompiler::genObject(QmlParser::Object *obj)
         meta.line = -1;
         meta.storeMeta.data = output->indexForByteArray(obj->metadata);
         meta.storeMeta.aliasData = output->indexForByteArray(obj->synthdata);
-        meta.storeMeta.slotData = -1;
+        meta.storeMeta.propertyCache = output->propertyCaches.count();
+        // ### Surely the creation of this property cache could be more efficient
+        output->propertyCaches << QmlPropertyCache::create(engine, obj->metaObject());
         output->bytecode << meta;
     }
 

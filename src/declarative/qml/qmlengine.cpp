@@ -41,11 +41,12 @@
 
 #undef QT3_SUPPORT // don't want it here - it just causes bugs (which is why we removed it)
 
-#include <QMetaProperty>
+#include <QtCore/qmetaobject.h>
 #include <private/qmlengine_p.h>
 #include <private/qmlcontext_p.h>
 #include <private/qobject_p.h>
 #include <private/qmlcompiler_p.h>
+#include <private/qscriptdeclarativeclass_p.h>
 
 #ifdef QT_SCRIPTTOOLS_LIB
 #include <QScriptEngineDebugger>
@@ -192,6 +193,8 @@ QmlEnginePrivate::~QmlEnginePrivate()
     contextClass = 0;
     delete objectClass;
     objectClass = 0;
+    delete objectClass2;
+    objectClass2 = 0;
     delete valueTypeClass;
     valueTypeClass = 0;
     delete typeNameClass;
@@ -211,6 +214,9 @@ QmlEnginePrivate::~QmlEnginePrivate()
         clear(parserStatus[ii]);
     for(QHash<int, QmlCompiledData*>::ConstIterator iter = m_compositeTypes.constBegin(); iter != m_compositeTypes.constEnd(); ++iter)
         (*iter)->release();
+    for(QHash<const QMetaObject *, QmlPropertyCache *>::Iterator iter = propertyCache.begin(); iter != propertyCache.end(); ++iter)
+        (*iter)->release();
+
 }
 
 void QmlEnginePrivate::clear(SimpleList<QmlAbstractBinding> &bvs)
@@ -236,6 +242,7 @@ void QmlEnginePrivate::init()
     scriptEngine.installTranslatorFunctions();
     contextClass = new QmlContextScriptClass(q);
     objectClass = new QmlObjectScriptClass(q);
+    objectClass2 = new QScriptDeclarativeClass(&scriptEngine);
     valueTypeClass = new QmlValueTypeScriptClass(q);
     typeNameClass = new QmlTypeNameScriptClass(q);
     rootContext = new QmlContext(q,true);
@@ -700,7 +707,7 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool cre
 QmlDeclarativeData::QmlDeclarativeData(QmlContext *ctxt)
 : context(ctxt), bindings(0), bindingBitsSize(0), bindingBits(0), 
   outerContext(0), lineNumber(0), columnNumber(0), deferredComponent(0), 
-  deferredIdx(0), attachedProperties(0)
+  deferredIdx(0), attachedProperties(0), propertyCache(0)
 {
 }
 
@@ -724,6 +731,9 @@ void QmlDeclarativeData::destroyed(QObject *object)
 
     if (bindingBits)
         free(bindingBits);
+
+    if (propertyCache)
+        propertyCache->release();
 
     delete this;
 }

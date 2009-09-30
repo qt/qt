@@ -143,6 +143,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
     const QList<QmlCompiledData::CustomTypeData> &customTypeData = comp->customTypeData;
     const QList<int> &intData = comp->intData;
     const QList<float> &floatData = comp->floatData;
+    const QList<QmlPropertyCache *> &propertyCaches = comp->propertyCaches;
 
 
     QmlEnginePrivate::SimpleList<QmlAbstractBinding> bindValues;
@@ -259,9 +260,15 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 const QByteArray &metadata = datas.at(instr.storeMeta.data);
                 QMetaObjectBuilder::fromRelocatableData(&mo, 0, metadata);
 
-                const QmlVMEMetaData *data = (const QmlVMEMetaData *)datas.at(instr.storeMeta.aliasData).constData();
+                const QmlVMEMetaData *data = 
+                    (const QmlVMEMetaData *)datas.at(instr.storeMeta.aliasData).constData();
 
                 (void)new QmlVMEMetaObject(target, &mo, data, comp);
+
+                QmlDeclarativeData *ddata = QmlDeclarativeData::get(target, true);
+                if (ddata->propertyCache) ddata->propertyCache->release();
+                ddata->propertyCache = propertyCaches.at(instr.storeMeta.propertyCache);
+                ddata->propertyCache->addref();
             }
             break;
 

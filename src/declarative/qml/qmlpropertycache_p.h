@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLMETAPROPERTY_P_H
-#define QMLMETAPROPERTY_P_H
+#ifndef QMLPROPERTYCACHE_P_H
+#define QMLPROPERTYCACHE_P_H
 
 //
 //  W A R N I N G
@@ -53,57 +53,48 @@
 // We mean it.
 //
 
-#include "qmlmetaproperty.h"
-#include "private/qobject_p.h"
+#include <private/qmlrefcount_p.h>
+#include <private/qscriptdeclarativeclass_p.h>
+#include <QtCore/qvector.h>
 
 QT_BEGIN_NAMESPACE
 
-class QmlContext;
-class QmlMetaPropertyPrivate
+class QmlEngine;
+class QMetaProperty;
+class QmlPropertyCache : public QmlRefCount
 {
 public:
-    QmlMetaPropertyPrivate()
-        : q(0), context(0), coreIdx(-1), valueTypeIdx(-1), valueTypeId(0),
-          type(QmlMetaProperty::Invalid), attachedFunc(-1), 
-          object(0), propType(-1), category(QmlMetaProperty::Unknown) {}
-    QmlMetaPropertyPrivate(const QmlMetaPropertyPrivate &other)
-        : q(0), name(other.name), signal(other.signal), context(other.context), 
-          coreIdx(other.coreIdx), valueTypeIdx(other.valueTypeIdx), 
-          valueTypeId(other.valueTypeId), type(other.type), 
-          attachedFunc(other.attachedFunc), object(other.object), 
-          propType(other.propType), category(other.category) {}
+    QmlPropertyCache();
+    virtual ~QmlPropertyCache();
 
-    QmlMetaProperty *q;
+    struct Data : public QmlRefCount {
+        Data() : isFunction(false) {}
 
-    QString name;
-    QMetaMethod signal;
-    QmlContext *context;
-    int coreIdx;
-    int valueTypeIdx;
-    int valueTypeId;
-    uint type;
-    int attachedFunc;
-    QGuard<QObject> object;
-    int propType;
+        bool isFunction;
+        int propType;
+        int coreIndex;
+        QString name;
+    };
 
-    mutable QmlMetaProperty::PropertyCategory category;
+    static QmlPropertyCache *create(QmlEngine *, const QMetaObject *);
 
-    void initProperty(QObject *obj, const QString &name);
-    void initDefault(QObject *obj);
+    Data *property(const QScriptDeclarativeClass::Identifier &id) const { 
+        return identifierCache.value(id);
+    }
 
-    QObject *attachedObject() const;
-    void findSignalInt(QObject *, const QString &);
+    Data *property(const QString &) const;
+    Data *property(int) const;
 
-    int propertyType() const;
-    QmlMetaProperty::PropertyCategory propertyCategory() const;
+private:
+    typedef QVector<QScriptDeclarativeClass::PersistentIdentifier<Data> *> IndexCache;
+    typedef QHash<QString, QScriptDeclarativeClass::PersistentIdentifier<Data> *> StringCache;
+    typedef QHash<QScriptDeclarativeClass::Identifier, QScriptDeclarativeClass::PersistentIdentifier<Data> *> IdentifierCache;
 
-    void writeSignalProperty(const QVariant &);
-    void writeValueProperty(const QVariant &, QmlMetaProperty::WriteSource);
-
-    static quint32 saveValueType(int, int);
-    static quint32 saveProperty(int);
+    IndexCache indexCache;
+    StringCache stringCache;
+    IdentifierCache identifierCache;
 };
 
 QT_END_NAMESPACE
 
-#endif // QMLMETAPROPERTY_P_H
+#endif // QMLPROPERTYCACHE_P_H

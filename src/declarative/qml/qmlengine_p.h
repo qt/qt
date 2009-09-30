@@ -72,6 +72,7 @@
 #include <QtDeclarative/qmlexpression.h>
 #include <QtScript/qscriptengine.h>
 #include <private/qmlmetaproperty_p.h>
+#include <private/qmlpropertycache_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -88,6 +89,7 @@ class QScriptEngineDebugger;
 class QNetworkReply;
 class QNetworkAccessManager;
 class QmlAbstractBinding;
+class QScriptDeclarativeClass;
 
 class QmlEnginePrivate : public QObjectPrivate
 {
@@ -149,6 +151,7 @@ public:
     } resolveData;
     QmlContextScriptClass *contextClass;
     QmlObjectScriptClass *objectClass;
+    QScriptDeclarativeClass *objectClass2;
     QmlValueTypeScriptClass *valueTypeClass;
     QmlTypeNameScriptClass *typeNameClass;
     // Used by DOM Core 3 API
@@ -212,10 +215,17 @@ public:
     // ### Fixme
     typedef QHash<QPair<const QMetaObject *, QString>, bool> FunctionCache;
     FunctionCache functionCache;
-    QHash<const QMetaObject *, QmlMetaObjectCache> propertyCache;
-    static QmlMetaObjectCache *cache(QmlEnginePrivate *priv, QObject *obj) { 
-        if (!priv || !obj || QObjectPrivate::get(obj)->metaObject) return 0; 
-        return &priv->propertyCache[obj->metaObject()];
+    QHash<const QMetaObject *, QmlPropertyCache *> propertyCache;
+    QmlPropertyCache *cache(QObject *obj) { 
+        Q_Q(QmlEngine);
+        if (!obj || QObjectPrivate::get(obj)->metaObject) return 0;
+        const QMetaObject *mo = obj->metaObject();
+        QmlPropertyCache *rv = propertyCache.value(mo);
+        if (!rv) {
+            rv = QmlPropertyCache::create(q, mo);
+            propertyCache.insert(mo, rv);
+        }
+        return rv;
     }
 
     struct Imports {

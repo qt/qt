@@ -160,6 +160,9 @@ QmlCompiledData::~QmlCompiledData()
             types.at(ii).ref->release();
     }
 
+    for (int ii = 0; ii < propertyCaches.count(); ++ii) 
+        propertyCaches.at(ii)->release();
+
     qDeleteAll(programs);
 }
 
