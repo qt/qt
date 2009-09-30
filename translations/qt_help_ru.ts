@@ -233,17 +233,17 @@
     <message>
         <location line="+80"/>
         <source>Insert contents...</source>
-        <translation>Добавление содержания...</translation>
+        <translation>Добавление оглавления...</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Cannot insert contents!</source>
-        <translation>Не удалось добавить содержание!</translation>
+        <translation>Не удалось добавить оглавление!</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Cannot register contents!</source>
-        <translation>Не удалось зарегистрировать содержание!</translation>
+        <translation>Не удалось зарегистрировать оглавление!</translation>
     </message>
 </context>
 <context>

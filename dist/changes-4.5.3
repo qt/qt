@@ -30,6 +30,19 @@ information about a particular change.
 - QDoubleSpinBox
     * [255019] Fixed a crash when using large value for decimals.
 
+- QFileDialog
+    * [None] Fix a bug when activating HideNameFilterDetails on Windows filedialog.
+    * [258084] QFileDialog static functions doesn't honor the DontUseNativeDialog flag.
+
+- QGraphicsItem
+    * [258956] Fix ancestor flags that are not correctly update when reparenting.
+
+- QGraphicsView
+    * [258356] Fix the hand scrolling in QGraphicsView that will stop unexpectedly.
+
+- QGraphicsWidget
+    * [257232] Fix regression in clip path calculation for QGraphicsWidget.
+
 - QInputDialog
     * [255502] Fixed bug in getDouble().
 
@@ -86,6 +99,8 @@ Qt for Linux/X11
 - Fixed a bug where an empty KDEDIRS variable would bring /share into the icon
   search path.
 - [KDE 191759] Plasma spinning in endless loop.
+- QClipboard can copy/paste on all screens in a multiscreen configuration.
+- Fixed a bug that prevented QClipboard to work after some time.
 
 
 Qt for Mac OS X
@@ -101,10 +116,13 @@ Qt for Mac OS X
 - Fixed the wizard background images for Snow Leopard.
 
 
+Qt for Windows
+-----------------
+- [250188] Fixed size windows will show the maximize button if asked explicitely.
+
 Qt for Windows CE
 -----------------
 - [260702] Fixed restoring of minimized Windows.
-
 
 ****************************************************************************
 *                          Plugins                                         *
