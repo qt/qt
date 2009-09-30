@@ -147,7 +147,7 @@ protected:
     // Not owned
     VideoOutput*                m_videoOutput;
     
-    qreal						m_volume;
+    qreal                       m_volume;
     
 private:
     PrivateState                m_state;

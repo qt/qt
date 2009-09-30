@@ -243,14 +243,15 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
         break;
 
     case MediaSource::Url:
-        const QUrl url(source.url());
-
-        if (url.scheme() == QLatin1String("file")) {
-            mediaType = fileMediaType(url.toLocalFile());
-        }
-        else {
-            TRACE_0("Network streaming not supported yet");
-            error = NormalError;
+        {
+            const QUrl url(source.url());
+            if (url.scheme() == QLatin1String("file")) {
+                mediaType = fileMediaType(url.toLocalFile());
+            }
+            else {
+                TRACE_0("Network streaming not supported yet");
+                error = NormalError;
+            }
         }
         break;
 
