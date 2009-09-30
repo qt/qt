@@ -9156,7 +9156,7 @@ void tst_QWidget::destroyBackingStore()
 void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 {
     QApplication::setOverrideCursor(Qt::BlankCursor); //keep the cursor out of screen grabs
-    QWidget main(0,0,Qt::FramelessWindowHint); //don't get confused by the size of the window frame
+    QWidget main(0,Qt::FramelessWindowHint); //don't get confused by the size of the window frame
     QPalette palette;
     palette.setColor(QPalette::Window, Qt::red);
     main.setPalette(palette);
