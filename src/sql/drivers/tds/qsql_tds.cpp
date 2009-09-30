@@ -754,7 +754,9 @@ QString QTDSDriver::formatValue(const QSqlField &field,
         r = QLatin1String("NULL");
     else if (field.type() == QVariant::DateTime) {
         if (field.value().toDateTime().isValid()){
-            r = field.value().toDateTime().toString(QLatin1String("'yyyyMMdd hh:mm:ss'"));
+            r = field.value().toDateTime().toString(QLatin1String("yyyyMMdd hh:mm:ss"));
+            r.prepend(QLatin1String("'"));
+            r.append(QLatin1String("'"));
         } else
             r = QLatin1String("NULL");
     } else if (field.type() == QVariant::ByteArray) {
@@ -803,6 +805,17 @@ QSqlIndex QTDSDriver::primaryIndex(const QString& tablename) const
         idx.setName(t.value(0).toString().simplified());
     }
     return idx;
+}
+
+QString QTDSDriver::escapeIdentifier(const QString &identifier, IdentifierType type) const
+{
+    QString res = identifier;
+    if(!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('"')) && !identifier.endsWith(QLatin1Char('"')) ) {
+        res.replace(QLatin1Char('"'), QLatin1String("\"\""));
+        res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
+        res.replace(QLatin1Char('.'), QLatin1String("\".\""));
+    }
+    return res;
 }
 
 QT_END_NAMESPACE

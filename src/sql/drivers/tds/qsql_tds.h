@@ -116,6 +116,8 @@ public:
                          bool trimStrings) const;
     QVariant handle() const;
 
+    QString escapeIdentifier(const QString &identifier, IdentifierType type) const;
+
 protected:
     bool beginTransaction();
     bool commitTransaction();

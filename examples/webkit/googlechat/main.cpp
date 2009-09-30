@@ -43,9 +43,24 @@
 #include <QNetworkProxyFactory>
 #include "googlechat.h"
 
+#ifndef QT_NO_OPENSSL
+#include <QSslSocket>
+#endif
+
 int main(int argc, char * argv[])
 {
     QApplication app(argc, argv);
+
+#ifndef QT_NO_OPENSSL
+    if (!QSslSocket::supportsSsl()) {
+#endif
+        QMessageBox::information(0, "Google Talk client",
+                                 "Your system does not support SSL, "
+                                 "which is required to run this example.");
+        return -1;
+#ifndef QT_NO_OPENSSL
+    }
+#endif
 
     QNetworkProxyFactory::setUseSystemConfigurationEnabled(true);
 

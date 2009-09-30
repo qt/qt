@@ -76,9 +76,11 @@ class Node
         Target,
         QmlProperty,
         QmlSignal,
-        QmlMethod
+        QmlMethod,
+        LastType
 #else
-        Target 
+        Target,
+        LastType
 #endif
     };
 
@@ -173,10 +175,13 @@ class Node
 
     virtual QString fileBase() const;
 
+    static QString typeName(int i) { return typeNames[i]; }
+
  protected:
     Node(Type type, InnerNode *parent, const QString& name);
 
  private:
+    static QString typeNames[];
 #ifdef Q_WS_WIN
     Type typ;
     Access acc;
