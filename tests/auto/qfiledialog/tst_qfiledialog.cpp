@@ -2175,7 +2175,7 @@ void tst_QFiledialog::QTBUG4419_lineEditSelectAll()
     QTRY_COMPARE(fd.isVisible(), true);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
 
-    QTest::qWait(500);
+    QTest::qWait(250);
     QLineEdit *lineEdit = qFindChild<QLineEdit*>(&fd, "fileNameEdit");
 
     QCOMPARE(tempPath + QChar('/') + lineEdit->text(), t->fileName());
