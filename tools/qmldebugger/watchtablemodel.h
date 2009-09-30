@@ -22,6 +22,8 @@ public:
     QmlDebugWatch *findWatch(int column) const;
     QmlDebugWatch *findWatch(int objectDebugId, const QString &property) const;
 
+    QList<QmlDebugWatch *> watches() const;
+
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
