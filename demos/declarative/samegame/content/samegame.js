@@ -38,6 +38,7 @@ function initBoard()
     scoreName.forceClose();
     dialog.forceClose();
 
+    var a = new Date();
     //Initialize Board
     board = new Array(maxIndex);
     gameCanvas.score = 0;
@@ -48,6 +49,8 @@ function initBoard()
         }
     }
     timer = new Date();
+
+    print(timer.valueOf() - a.valueOf());
 }
 
 var fillFound;//Set after a floodFill call to the number of tiles found

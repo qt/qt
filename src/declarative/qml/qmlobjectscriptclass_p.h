@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLPROPERTYCACHE_P_H
-#define QMLPROPERTYCACHE_P_H
+#ifndef QMLOBJECTSCRIPTCLASS_P_H
+#define QMLOBJECTSCRIPTCLASS_P_H
 
 //
 //  W A R N I N G
@@ -53,65 +53,46 @@
 // We mean it.
 //
 
-#include <private/qmlrefcount_p.h>
+#include <QtScript/qscriptclass.h>
 #include <private/qscriptdeclarativeclass_p.h>
-#include <QtCore/qvector.h>
+#include <private/qmlpropertycache_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QmlEngine;
-class QMetaProperty;
-class QmlPropertyCache : public QmlRefCount
+class QmlObjectScriptClass : public QScriptDeclarativeClass
 {
 public:
-    QmlPropertyCache();
-    virtual ~QmlPropertyCache();
+    QmlObjectScriptClass(QmlEngine *);
+    ~QmlObjectScriptClass();
 
-    struct Data {
-        inline Data(); 
+    QScriptValue newQObject(QObject *);
+    QObject *toQObject(const QScriptValue &) const;
 
-        enum Flag { IsFunction = 0x00000001, 
-                    IsQObjectDerived = 0x00000002,
-                    IsConstant = 0x00000004 };
-        Q_DECLARE_FLAGS(Flags, Flag)
-                        
-        Flags flags;
-        int propType;
-        int coreIndex;
-        int notifyIndex;
-        QString name;
-    };
+    QScriptClass::QueryFlags queryProperty(QObject *, const Identifier &, 
+                                           QScriptClass::QueryFlags flags);
+    QScriptValue property(QObject *, const Identifier &);
+    void setProperty(QObject *, const Identifier &name, const QScriptValue &);
 
-    static QmlPropertyCache *create(QmlEngine *, const QMetaObject *);
+protected:
+    virtual QScriptClass::QueryFlags queryProperty(const Object &, const Identifier &, 
+                                                   QScriptClass::QueryFlags flags);
 
-    inline Data *property(const QScriptDeclarativeClass::Identifier &id) const;
-    Data *property(const QString &) const;
-    Data *property(int) const;
+    virtual QScriptValue property(const Object &, const Identifier &);
+    virtual void setProperty(const Object &, const Identifier &name, const QScriptValue &);
+    virtual QObject *toQObject(const Object &, bool *ok = 0);
+    virtual void destroyed(const Object &);
 
 private:
-    struct RData : public Data, public QmlRefCount {};
-
-    typedef QVector<QScriptDeclarativeClass::PersistentIdentifier<RData> *> IndexCache;
-    typedef QHash<QString, QScriptDeclarativeClass::PersistentIdentifier<RData> *> StringCache;
-    typedef QHash<QScriptDeclarativeClass::Identifier, QScriptDeclarativeClass::PersistentIdentifier<RData> *> IdentifierCache;
-
-    IndexCache indexCache;
-    StringCache stringCache;
-    IdentifierCache identifierCache;
+    uint m_id;
+    QmlPropertyCache::Data *lastData;
+    struct Dummy {};
+    PersistentIdentifier<Dummy> *m_destroyId;
+    QScriptValue m_destroy;
+    QmlEngine *engine;
 };
-Q_DECLARE_OPERATORS_FOR_FLAGS(QmlPropertyCache::Data::Flags);
-  
-QmlPropertyCache::Data::Data()
-: flags(0), propType(0), coreIndex(-1), notifyIndex(-1) 
-{
-}
-
-QmlPropertyCache::Data *
-QmlPropertyCache::property(const QScriptDeclarativeClass::Identifier &id) const 
-{
-    return identifierCache.value(id);
-}
 
 QT_END_NAMESPACE
 
-#endif // QMLPROPERTYCACHE_P_H
+#endif // QMLOBJECTSCRIPTCLASS_P_H
+

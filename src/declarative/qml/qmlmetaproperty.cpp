@@ -218,7 +218,7 @@ void QmlMetaPropertyPrivate::initProperty(QObject *obj, const QString &name)
     if (cache) {
         QmlPropertyCache::Data *data = cache->property(name);
 
-        if (data && !data->isFunction) {
+        if (data && !(data->flags & QmlPropertyCache::Data::IsFunction)) {
             type = QmlMetaProperty::Property;
             propType = data->propType;
             coreIdx = data->coreIndex;

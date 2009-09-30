@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLPROPERTYCACHE_P_H
-#define QMLPROPERTYCACHE_P_H
+#ifndef QMLINTEGERCACHE_P_H
+#define QMLINTEGERCACHE_P_H
 
 //
 //  W A R N I N G
@@ -55,63 +55,49 @@
 
 #include <private/qmlrefcount_p.h>
 #include <private/qscriptdeclarativeclass_p.h>
-#include <QtCore/qvector.h>
+#include <QtCore/qhash.h>
 
 QT_BEGIN_NAMESPACE
 
+class QmlType;
 class QmlEngine;
-class QMetaProperty;
-class QmlPropertyCache : public QmlRefCount
+class QmlIntegerCache : public QmlRefCount
 {
 public:
-    QmlPropertyCache();
-    virtual ~QmlPropertyCache();
+    QmlIntegerCache(QmlEngine *);
+    virtual ~QmlIntegerCache();
 
+    inline int count() const;
+    void add(const QString &, int);
+    int value(const QString &);
+    inline int value(const QScriptDeclarativeClass::Identifier &id) const;
+
+    static QmlIntegerCache *createForEnums(QmlType *, QmlEngine *);
+private:
     struct Data {
-        inline Data(); 
-
-        enum Flag { IsFunction = 0x00000001, 
-                    IsQObjectDerived = 0x00000002,
-                    IsConstant = 0x00000004 };
-        Q_DECLARE_FLAGS(Flags, Flag)
-                        
-        Flags flags;
-        int propType;
-        int coreIndex;
-        int notifyIndex;
-        QString name;
+        int value;
     };
 
-    static QmlPropertyCache *create(QmlEngine *, const QMetaObject *);
+    typedef QHash<QString, QScriptDeclarativeClass::PersistentIdentifier<Data> *> StringCache;
+    typedef QHash<QScriptDeclarativeClass::Identifier, QScriptDeclarativeClass::PersistentIdentifier<Data> *> IdentifierCache;
 
-    inline Data *property(const QScriptDeclarativeClass::Identifier &id) const;
-    Data *property(const QString &) const;
-    Data *property(int) const;
-
-private:
-    struct RData : public Data, public QmlRefCount {};
-
-    typedef QVector<QScriptDeclarativeClass::PersistentIdentifier<RData> *> IndexCache;
-    typedef QHash<QString, QScriptDeclarativeClass::PersistentIdentifier<RData> *> StringCache;
-    typedef QHash<QScriptDeclarativeClass::Identifier, QScriptDeclarativeClass::PersistentIdentifier<RData> *> IdentifierCache;
-
-    IndexCache indexCache;
     StringCache stringCache;
     IdentifierCache identifierCache;
+    QmlEngine *engine;
 };
-Q_DECLARE_OPERATORS_FOR_FLAGS(QmlPropertyCache::Data::Flags);
-  
-QmlPropertyCache::Data::Data()
-: flags(0), propType(0), coreIndex(-1), notifyIndex(-1) 
+
+int QmlIntegerCache::value(const QScriptDeclarativeClass::Identifier &id) const
 {
+    Data *d = identifierCache.value(id);
+    return d?d->value:-1;
 }
 
-QmlPropertyCache::Data *
-QmlPropertyCache::property(const QScriptDeclarativeClass::Identifier &id) const 
+int QmlIntegerCache::count() const 
 {
-    return identifierCache.value(id);
+    return stringCache.count();
 }
 
 QT_END_NAMESPACE
 
-#endif // QMLPROPERTYCACHE_P_H
+#endif // QMLINTEGERCACHE_P_H
+

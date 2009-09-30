@@ -166,8 +166,8 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 if (instr.init.parserStatusSize)
                     parserStatus = QmlEnginePrivate::SimpleList<QmlParserStatus>(instr.init.parserStatusSize);
 
-                if (instr.init.idSize)
-                    cp->setIdPropertyCount(instr.init.idSize);
+                if (instr.init.contextCache != -1) 
+                    cp->setIdPropertyData(comp->contextCaches.at(instr.init.contextCache));
             }
             break;
 

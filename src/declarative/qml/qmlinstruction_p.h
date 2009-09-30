@@ -165,7 +165,7 @@ public:
         struct {
             int bindingsSize;
             int parserStatusSize;
-            int idSize;
+            int contextCache;
         } init;
         struct {
             int type;

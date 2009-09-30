@@ -61,6 +61,7 @@
 #include <QtCore/qset.h>
 #include <private/qguard_p.h>
 #include <private/qmlengine_p.h>
+#include <private/qmlintegercache_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -82,7 +83,8 @@ public:
     QmlEngine *engine;
     bool isInternal;
 
-    QHash<QString, int> propertyNames;
+    QmlIntegerCache *propertyNames;
+//    QHash<QString, int> propertyNames;
     QList<QVariant> propertyValues;
     int notifyIndex;
 
@@ -125,8 +127,12 @@ public:
     ContextGuard *idValues;
     int idValueCount;
     void setIdProperty(const QString &, int, QObject *);
-    void setIdPropertyCount(int);
+    void setIdPropertyData(QmlIntegerCache *);
     void destroyed(ContextGuard *);
+
+    static QmlContextPrivate *get(QmlContext *context) {
+        return static_cast<QmlContextPrivate *>(QObjectPrivate::get(context));
+    }
 
     // Only used for debugging
     QList<QPointer<QObject> > instances;

@@ -42,6 +42,8 @@
 #include "qmlpropertycache_p.h"
 #include "qmlengine_p.h"
 
+QT_BEGIN_NAMESPACE
+
 QmlPropertyCache::QmlPropertyCache()
 {
 }
@@ -78,11 +80,18 @@ QmlPropertyCache *QmlPropertyCache::create(QmlEngine *engine, const QMetaObject 
         QMetaProperty p = metaObject->property(ii);
         QString propName = QLatin1String(p.name());
 
-        QScriptDeclarativeClass::PersistentIdentifier<Data> *data = 
-            enginePriv->objectClass2->createPersistentIdentifier<Data>(propName);
+        QScriptDeclarativeClass::PersistentIdentifier<RData> *data = 
+            enginePriv->objectClass->createPersistentIdentifier<RData>(propName);
+
         data->propType = p.userType();
         data->coreIndex = ii;
+        data->notifyIndex = p.notifySignalIndex();
         data->name = propName;
+
+        if (p.isConstant())
+            data->flags |= Data::IsConstant;
+        if (QmlMetaType::isObject(data->propType))
+            data->flags |= Data::IsQObjectDerived;
 
         cache->indexCache[ii] = data;
 
@@ -107,14 +116,14 @@ QmlPropertyCache *QmlPropertyCache::create(QmlEngine *engine, const QMetaObject 
         if (cache->stringCache.contains(methodName))
             continue;
 
-        QScriptDeclarativeClass::PersistentIdentifier<Data> *data = 
-            enginePriv->objectClass2->createPersistentIdentifier<Data>(methodName);
+        QScriptDeclarativeClass::PersistentIdentifier<RData> *data = 
+            enginePriv->objectClass->createPersistentIdentifier<RData>(methodName);
         cache->stringCache.insert(methodName, data);
         cache->identifierCache.insert(data->identifier, data);
         data->addref();
         data->addref();
 
-        data->isFunction = true;
+        data->flags |= Data::IsFunction;
     }
 
     return cache;
@@ -135,3 +144,4 @@ QmlPropertyCache::property(const QString &str) const
     return stringCache.value(str);
 }
 
+QT_END_NAMESPACE

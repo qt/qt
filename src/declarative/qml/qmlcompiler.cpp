@@ -633,7 +633,7 @@ void QmlCompiler::compileTree(Object *tree)
     init.line = 0;
     init.init.bindingsSize = compileState.bindings.count();
     init.init.parserStatusSize = compileState.parserStatusCount;
-    init.init.idSize = compileState.ids.count();
+    init.init.contextCache = genContextCache();
     output->bytecode << init;
 
     genObject(tree);
@@ -964,7 +964,7 @@ void QmlCompiler::genComponent(QmlParser::Object *obj)
     init.type = QmlInstruction::Init;
     init.init.bindingsSize = compileState.bindings.count();
     init.init.parserStatusSize = compileState.parserStatusCount;
-    init.init.idSize = compileState.ids.count();
+    init.init.contextCache = genContextCache();
     init.line = obj->location.start.line;
     output->bytecode << init;
 
@@ -2261,6 +2261,22 @@ void QmlCompiler::genBindingAssignment(QmlParser::Value *binding,
     }
 
     output->bytecode << store;
+}
+
+int QmlCompiler::genContextCache()
+{
+    if (compileState.ids.count() == 0)
+        return -1;
+
+    QmlIntegerCache *cache = new QmlIntegerCache(engine);
+
+    for (QHash<QString, QmlParser::Object *>::ConstIterator iter = compileState.ids.begin();
+         iter != compileState.ids.end();
+         ++iter) 
+        cache->add(iter.key(), (*iter)->idIndex);
+
+    output->contextCaches.append(cache);
+    return output->contextCaches.count() - 1;
 }
 
 bool QmlCompiler::completeComponentBuild()

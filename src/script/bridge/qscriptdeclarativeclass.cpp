@@ -46,6 +46,7 @@
 #include <QtScript/qscriptengine.h>
 #include <private/qscriptengine_p.h>
 #include <private/qscriptvalue_p.h>
+#include <private/qscriptqobject_p.h>
 #include <QtCore/qstringlist.h>
 
 QT_BEGIN_NAMESPACE
@@ -217,5 +218,17 @@ QStringList QScriptDeclarativeClass::propertyNames(const Object &object)
 void QScriptDeclarativeClass::destroyed(const Object &object)
 {
     Q_UNUSED(object);
+}
+
+QObject *QScriptDeclarativeClass::toQObject(const Object &, bool *ok)
+{
+    if (ok) *ok = false;
+    return 0;
+}
+
+QVariant QScriptDeclarativeClass::toVariant(const Object &, bool *ok)
+{
+    if (ok) *ok = false;
+    return QVariant();
 }
 

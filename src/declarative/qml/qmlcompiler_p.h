@@ -63,6 +63,7 @@
 #include <private/qmlengine_p.h>
 #include <private/qbitfield_p.h>
 #include <private/qmlpropertycache_p.h>
+#include <private/qmlintegercache_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -111,6 +112,7 @@ public:
     QList<QmlInstruction> bytecode;
     QList<QScriptProgram *> programs;
     QList<QmlPropertyCache *> propertyCaches;
+    QList<QmlIntegerCache *> contextCaches;
 
     void dumpInstructions();
 private:
@@ -232,7 +234,7 @@ private:
                               QmlParser::Property *prop, 
                               QmlParser::Object *obj,
                               QmlParser::Property *valueTypeProperty = 0);
-
+    int genContextCache();
 
     int componentTypeRef();
 

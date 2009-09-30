@@ -35,7 +35,10 @@ SOURCES += qml/qmlparser.cpp \
     qml/qmlsqldatabase.cpp \
     qml/qmetaobjectbuilder.cpp \
     qml/qmlwatcher.cpp \
-    qml/qmlpropertycache.cpp 
+    qml/qmlpropertycache.cpp \
+    qml/qmlintegercache.cpp \
+    qml/qmlobjectscriptclass.cpp \
+    qml/qmlcontextscriptclass.cpp
 
 HEADERS += qml/qmlparser_p.h \
     qml/qmlinstruction_p.h \
@@ -88,7 +91,10 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmlsqldatabase_p.h \
     qml/qmetaobjectbuilder_p.h \
     qml/qmlwatcher_p.h \
-    qml/qmlpropertycache_p.h
+    qml/qmlpropertycache_p.h \
+    qml/qmlintegercache_p.h \
+    qml/qmlobjectscriptclass_p.h \
+    qml/qmlcontextscriptclass_p.h
 
 # for qtscript debugger
 contains(QT_CONFIG, scripttools):QT += scripttools

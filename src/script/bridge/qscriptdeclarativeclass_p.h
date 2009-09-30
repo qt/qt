@@ -112,6 +112,8 @@ public:
 
     virtual QStringList propertyNames(const Object &);
 
+    virtual QObject *toQObject(const Object &, bool *ok = 0);
+    virtual QVariant toVariant(const Object &, bool *ok = 0);
     virtual void destroyed(const Object &);
 
     static void destroyPersistentIdentifier(void **);
