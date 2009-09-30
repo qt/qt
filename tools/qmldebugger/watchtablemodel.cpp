@@ -87,6 +87,14 @@ QmlDebugWatch *WatchTableModel::findWatch(int objectDebugId, const QString &prop
     return 0;
 }
 
+QList<QmlDebugWatch *> WatchTableModel::watches() const
+{
+    QList<QmlDebugWatch *> watches;
+    for (int i=0; i<m_columns.count(); i++)
+        watches << m_columns[i].watch;
+    return watches;
+}
+
 int WatchTableModel::rowCount(const QModelIndex &) const
 {
     return m_values.count();

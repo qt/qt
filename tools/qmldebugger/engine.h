@@ -32,8 +32,10 @@ Q_OBJECT
 public:
     EnginePane(QmlDebugConnection *, QWidget *parent = 0);
 
+public slots:
+    void refreshEngines();
+
 private slots:
-    void queryEngines();
     void enginesChanged();
 
     void queryContext(int);
