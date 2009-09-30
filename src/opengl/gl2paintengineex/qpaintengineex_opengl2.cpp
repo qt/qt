@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -85,10 +85,16 @@
 
 QT_BEGIN_NAMESPACE
 
+//#define QT_GL_NO_SCISSOR_TEST
+
 static const GLuint QT_BRUSH_TEXTURE_UNIT       = 0;
 static const GLuint QT_IMAGE_TEXTURE_UNIT       = 0; //Can be the same as brush texture unit
 static const GLuint QT_MASK_TEXTURE_UNIT        = 1;
 static const GLuint QT_BACKGROUND_TEXTURE_UNIT  = 2;
+
+#ifdef Q_WS_WIN
+extern Q_GUI_EXPORT bool qt_cleartype_enabled;
+#endif
 
 class QGLTextureGlyphCache : public QObject, public QTextureGlyphCache
 {
@@ -100,6 +106,7 @@ public:
     virtual void createTextureData(int width, int height);
     virtual void resizeTextureData(int width, int height);
     virtual void fillTexture(const Coord &c, glyph_t glyph);
+    virtual int glyphMargin() const;
 
     inline GLuint texture() const { return m_texture; }
 
@@ -122,7 +129,7 @@ public Q_SLOTS:
                 // since the context holding the texture is shared, and
                 // about to be destroyed, we have to transfer ownership
                 // of the texture to one of the share contexts
-                ctx = const_cast<QGLContext *>(shares.at(0));
+                ctx = const_cast<QGLContext *>((ctx == shares.at(0)) ? shares.at(1) : shares.at(0));
             }
         }
     }
@@ -284,13 +291,22 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph)
 {
     QImage mask = textureMapForGlyph(glyph);
+    const int maskWidth = mask.width();
+    const int maskHeight = mask.height();
 
-    const uint maskWidth = mask.width();
-    const uint maskHeight = mask.height();
+    if (mask.format() == QImage::Format_Mono) {
+        mask = mask.convertToFormat(QImage::Format_Indexed8);
+        for (int y = 0; y < maskHeight; ++y) {
+            uchar *src = (uchar *) mask.scanLine(y);
+            for (int x = 0; x < maskWidth; ++x)
+                src[x] = -src[x]; // convert 0 and 1 into 0 and 255
+        }
+     }
+
 
     glBindTexture(GL_TEXTURE_2D, m_texture);
     if (mask.format() == QImage::Format_RGB32) {
-        glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, m_height - c.y, maskWidth, maskHeight, GL_BGRA, GL_UNSIGNED_BYTE, mask.bits());
+        glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_BGRA, GL_UNSIGNED_BYTE, mask.bits());
     } else {
 #ifdef QT_OPENGL_ES2
         glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_ALPHA, GL_UNSIGNED_BYTE, mask.bits());
@@ -304,10 +320,21 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph)
         // by converting it to a format with four bytes per pixel. Another is to copy one line at a
         // time.
 
-        for (uint i = 0; i < maskHeight; ++i)
+        for (int i = 0; i < maskHeight; ++i)
             glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y + i, maskWidth, 1, GL_ALPHA, GL_UNSIGNED_BYTE, mask.scanLine(i));
 #endif
     }
+}
+
+int QGLTextureGlyphCache::glyphMargin() const
+{
+#if defined(Q_WS_MAC)
+    return 2;
+#elif defined (Q_WS_X11)
+    return 0;
+#else
+    return m_type == QFontEngineGlyphCache::Raster_RGBMask ? 2 : 0;
+#endif
 }
 
 extern QImage qt_imageForBrush(int brushStyle, bool invert);
@@ -423,8 +450,9 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         const QPixmap& texPixmap = currentBrush->texture();
 
         glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
-        ctx->d_func()->bindTexture(texPixmap, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
+        QGLTexture *tex = ctx->d_func()->bindTexture(texPixmap, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
+        textureInvertedY = tex->options & QGLContext::InvertedYBindOption ? -1 : 1;
     }
     brushTextureDirty = false;
 }
@@ -517,7 +545,7 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
                 shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::PatternColor), col);
             }
 
-            QSizeF invertedTextureSize( 1.0 / texPixmap.width(), 1.0 / texPixmap.height() );
+            QSizeF invertedTextureSize(1.0 / texPixmap.width(), 1.0 * textureInvertedY / texPixmap.height());
             shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::InvertedTextureSize), invertedTextureSize);
 
             QVector2D halfViewportSize(width*0.5, height*0.5);
@@ -542,46 +570,59 @@ void QGL2PaintEngineExPrivate::updateMatrix()
 {
 //     qDebug("QGL2PaintEngineExPrivate::updateMatrix()");
 
-    // We setup the Projection matrix to be the equivilant of glOrtho(0, w, h, 0, -1, 1):
-    GLfloat P[4][4] = {
-        {2.0/width,  0.0,        0.0, -1.0},
-        {0.0,       -2.0/height, 0.0,  1.0},
-        {0.0,        0.0,       -1.0,  0.0},
-        {0.0,        0.0,        0.0,  1.0}
-    };
+    // We set up the 4x4 transformation matrix on the vertex shaders to
+    // be the equivalent of glOrtho(0, w, h, 0, -1, 1) * transform:
+    //
+    // | 2/width     0     0 -1 |   | m11  m21  0   dx |
+    // |   0    -2/height  0  1 |   | m12  m22  0   dy |
+    // |   0         0    -1  0 | * |  0    0   1   0  |
+    // |   0         0     0  1 |   | m13  m23  0  m33 |
+    //
+    // We expand out the multiplication to save the cost of a full 4x4
+    // matrix multiplication as most of the components are trivial.
 
     const QTransform& transform = q->state()->matrix;
 
     if (mode == TextDrawingMode) {
         // Text drawing mode is only used for non-scaling transforms
-        for (int row = 0; row < 4; ++row)
-            for (int col = 0; col < 4; ++col)
-                pmvMatrix[col][row] = P[row][col];
-
-        pmvMatrix[3][0] += P[0][0] * qRound(transform.dx());
-        pmvMatrix[3][1] += P[1][1] * qRound(transform.dy());
+        pmvMatrix[0][0] = 2.0 / width;
+        pmvMatrix[0][1] = 0.0;
+        pmvMatrix[0][2] = 0.0;
+        pmvMatrix[0][3] = 0.0;
+        pmvMatrix[1][0] = 0.0;
+        pmvMatrix[1][1] = -2.0 / height;
+        pmvMatrix[1][2] = 0.0;
+        pmvMatrix[1][3] = 0.0;
+        pmvMatrix[2][0] = 0.0;
+        pmvMatrix[2][1] = 0.0;
+        pmvMatrix[2][2] = -1.0;
+        pmvMatrix[2][3] = 0.0;
+        pmvMatrix[3][0] = pmvMatrix[0][0] * qRound(transform.dx()) - 1.0;
+        pmvMatrix[3][1] = pmvMatrix[1][1] * qRound(transform.dy()) + 1.0;
+        pmvMatrix[3][2] = 0.0;
+        pmvMatrix[3][3] = 1.0;
 
         inverseScale = 1;
     } else {
-        // Use the (3x3) transform for the Model~View matrix:
-        GLfloat MV[4][4] = {
-            {transform.m11(), transform.m21(), 0.0, transform.dx()},
-            {transform.m12(), transform.m22(), 0.0, transform.dy()},
-            {0.0,             0.0,             1.0, 0.0},
-            {transform.m13(), transform.m23(), 0.0, transform.m33()}
-        };
+        qreal wfactor = 2.0 / width;
+        qreal hfactor = -2.0 / height;
 
-        // NOTE: OpenGL ES works with column-major matrices, so when we multiply the matrices,
-        //       we also transpose them ready for GL.
-        for (int row = 0; row < 4; ++row) {
-            for (int col = 0; col < 4; ++col) {
-                pmvMatrix[col][row] = 0.0;
-
-                // P[row][n] is 0.0 for n < row
-                for (int n = row; n < 4; ++n)
-                    pmvMatrix[col][row] += P[row][n] * MV[n][col];
-            }
-        }
+        pmvMatrix[0][0] = wfactor * transform.m11() - transform.m13();
+        pmvMatrix[0][1] = hfactor * transform.m12() + transform.m13();
+        pmvMatrix[0][2] = 0.0;
+        pmvMatrix[0][3] = transform.m13();
+        pmvMatrix[1][0] = wfactor * transform.m21() - transform.m23();
+        pmvMatrix[1][1] = hfactor * transform.m22() + transform.m23();
+        pmvMatrix[1][2] = 0.0;
+        pmvMatrix[1][3] = transform.m23();
+        pmvMatrix[2][0] = 0.0;
+        pmvMatrix[2][1] = 0.0;
+        pmvMatrix[2][2] = -1.0;
+        pmvMatrix[2][3] = 0.0;
+        pmvMatrix[3][0] = wfactor * transform.dx() - transform.m33();
+        pmvMatrix[3][1] = hfactor * transform.dy() + transform.m33();
+        pmvMatrix[3][2] = 0.0;
+        pmvMatrix[3][3] = transform.m33();
 
         // 1/10000 == 0.0001, so we have good enough res to cover curves
         // that span the entire widget...
@@ -667,7 +708,6 @@ void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& s
 {
     // Setup for texture drawing
     shaderManager->setSrcPixelType(pattern ? QGLEngineShaderManager::PatternSrc : QGLEngineShaderManager::ImageSrc);
-    shaderManager->setTextureCoordsEnabled(true);
     if (prepareForDraw(opaque))
         shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::ImageTexture), QT_IMAGE_TEXTURE_UNIT);
 
@@ -710,7 +750,7 @@ void QGL2PaintEngineEx::beginNativePainting()
         {  mtx.dx(),  mtx.dy(),     0, mtx.m33() }
     };
 
-    const QSize sz = d->drawable.size();
+    const QSize sz = d->device->size();
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -718,9 +758,12 @@ void QGL2PaintEngineEx::beginNativePainting()
 
     glMatrixMode(GL_MODELVIEW);
     glLoadMatrixf(&mv_matrix[0][0]);
+#else
+    Q_UNUSED(ctx);
 #endif
 
     d->lastTexture = GLuint(-1);
+    d->dirtyStencilRegion = QRect(0, 0, d->width, d->height);
     d->resetGLState();
 
     d->needsSync = true;
@@ -865,12 +908,12 @@ void QGL2PaintEngineExPrivate::fillStencilWithVertexArray(QGL2PEXVertexArray& ve
 //     qDebug("QGL2PaintEngineExPrivate::fillStencilWithVertexArray()");
     glStencilMask(0xFFFF); // Enable stencil writes
 
-    if (stencilBufferDirty) {
+    if (dirtyStencilRegion.intersects(currentScissorBounds)) {
         // Clear the stencil buffer to zeros
         glDisable(GL_STENCIL_TEST);
         glClearStencil(0); // Clear to zero
         glClear(GL_STENCIL_BUFFER_BIT);
-        stencilBufferDirty = false;
+        dirtyStencilRegion -= currentScissorBounds;
     }
 
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // Disable color writes
@@ -1038,60 +1081,45 @@ void QGL2PaintEngineEx::fill(const QVectorPath &path, const QBrush &brush)
 {
     Q_D(QGL2PaintEngineEx);
 
-    if (brush.style() == Qt::NoBrush)
+    if (qbrush_style(brush) == Qt::NoBrush)
         return;
     if (!d->inRenderText)
         ensureActive();
     d->setBrush(&brush);
     d->fill(path);
-    d->setBrush(&(state()->brush)); // reset back to the state's brush
 }
 
 void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 {
     Q_D(QGL2PaintEngineEx);
 
-    if (pen.style() == Qt::NoPen)
+    Qt::PenStyle penStyle = qpen_style(pen);
+    const QBrush &penBrush = qpen_brush(pen);
+    if (penStyle == Qt::NoPen || qbrush_style(penBrush) == Qt::NoBrush)
         return;
 
     ensureActive();
 
-    if ( (pen.isCosmetic() && (pen.style() == Qt::SolidLine)) && (pen.widthF() < 2.5f) )
+    qreal penWidth = qpen_widthf(pen);
+    if ( (pen.isCosmetic() && (penStyle == Qt::SolidLine)) && (penWidth < 2.5f) )
     {
         // We only handle solid, cosmetic pens with a width of 1 pixel
         const QBrush& brush = pen.brush();
         d->setBrush(&brush);
 
-        if (pen.widthF() < 0.01f)
+        if (penWidth < 0.01f)
             glLineWidth(1.0);
         else
-            glLineWidth(pen.widthF());
+            glLineWidth(penWidth);
 
         d->drawOutline(path);
-        d->setBrush(&(state()->brush));
     } else
         return QPaintEngineEx::stroke(path, pen);
 }
 
-void QGL2PaintEngineEx::penChanged()
-{
-//    qDebug("QGL2PaintEngineEx::penChanged() not implemented!");
-}
-
-
-void QGL2PaintEngineEx::brushChanged()
-{
-//    qDebug("QGL2PaintEngineEx::brushChanged()");
-    Q_D(QGL2PaintEngineEx);
-    d->setBrush(&(state()->brush));
-}
-
-void QGL2PaintEngineEx::brushOriginChanged()
-{
-//    qDebug("QGL2PaintEngineEx::brushOriginChanged()");
-    Q_D(QGL2PaintEngineEx);
-    d->brushUniformsDirty = true;
-}
+void QGL2PaintEngineEx::penChanged() { }
+void QGL2PaintEngineEx::brushChanged() { }
+void QGL2PaintEngineEx::brushOriginChanged() { }
 
 void QGL2PaintEngineEx::opacityChanged()
 {
@@ -1181,7 +1209,9 @@ void QGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, const 
     ensureActive();
     d->transferMode(ImageDrawingMode);
 
+#ifndef QT_OPENGL_ES_2
     QGLContext *ctx = d->ctx;
+#endif
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     glBindTexture(GL_TEXTURE_2D, textureId);
 
@@ -1211,15 +1241,27 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
     if (ti.fontEngine->fontDef.pixelSize * qSqrt(s->matrix.determinant()) >= 64)
         drawCached = false;
 
+    QFontEngineGlyphCache::Type glyphType = ti.fontEngine->glyphFormat >= 0
+                                            ? QFontEngineGlyphCache::Type(ti.fontEngine->glyphFormat)
+                                            : d->glyphCacheType;
+
+    if (glyphType == QFontEngineGlyphCache::Raster_RGBMask
+        && state()->composition_mode != QPainter::CompositionMode_Source
+        && state()->composition_mode != QPainter::CompositionMode_SourceOver)
+    {
+        drawCached = false;
+    }
+
     if (drawCached) {
-        d->drawCachedGlyphs(p, ti);
+        d->drawCachedGlyphs(p, glyphType, ti);
         return;
     }
 
     QPaintEngineEx::drawTextItem(p, ti);
 }
 
-void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti)
+void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGlyphCache::Type glyphType,
+                                                const QTextItemInt &ti)
 {
     Q_Q(QGL2PaintEngineEx);
     QOpenGL2PaintEngineState *s = q->state();
@@ -1229,13 +1271,10 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
     QTransform matrix = QTransform::fromTranslate(p.x(), p.y());
     ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
 
-    QFontEngineGlyphCache::Type glyphType = ti.fontEngine->glyphFormat >= 0
-        ? QFontEngineGlyphCache::Type(ti.fontEngine->glyphFormat)
-        : QFontEngineGlyphCache::Raster_A8;
-
     QGLTextureGlyphCache *cache =
         (QGLTextureGlyphCache *) ti.fontEngine->glyphCache(ctx, s->matrix);
-    if (!cache) {
+
+    if (!cache || cache->cacheType() != glyphType) {
         cache = new QGLTextureGlyphCache(ctx, glyphType, s->matrix);
         ti.fontEngine->setGlyphCache(ctx, cache);
     }
@@ -1249,13 +1288,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
     if (inRenderText)
         transferMode(BrushDrawingMode);
     transferMode(TextDrawingMode);
-
-    if (glyphType == QFontEngineGlyphCache::Raster_A8)
-        shaderManager->setMaskType(QGLEngineShaderManager::PixelMask);
-    else if (glyphType == QFontEngineGlyphCache::Raster_RGBMask)
-        shaderManager->setMaskType(QGLEngineShaderManager::SubPixelMask);
-    //### TODO: Gamma correction
-    shaderManager->setTextureCoordsEnabled(true);
 
     int margin = cache->glyphMargin();
 
@@ -1277,30 +1309,106 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
         textureCoordinateArray.addRect(QRectF(c.x*dx, c.y*dy, c.w * dx, c.h * dy));
     }
 
-    glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
-    glBindTexture(GL_TEXTURE_2D, cache->texture());
-    updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
-
-    QBrush pensBrush = q->state()->pen.brush();
-    setBrush(&pensBrush);
-
-    prepareForDraw(false); // Text always causes src pixels to be transparent
-
-#ifndef QT_OPENGL_ES_2
-    if (inRenderText)
-        shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::Depth), zValueForRenderText());
-#endif
-
-    shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
-
     if (vertexCoordinateArray.data() != oldVertexCoordinateDataPtr)
         glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray.data());
     if (textureCoordinateArray.data() != oldTextureCoordinateDataPtr)
         glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray.data());
 
-    glDrawArrays(GL_TRIANGLES, 0, 6 * glyphs.size());
+    QBrush pensBrush = q->state()->pen.brush();
+    setBrush(&pensBrush);
 
-    setBrush(&(q->state()->brush)); //###
+    if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
+
+        // Subpixel antialiasing without gamma correction
+
+        QPainter::CompositionMode compMode = q->state()->composition_mode;
+        Q_ASSERT(compMode == QPainter::CompositionMode_Source
+            || compMode == QPainter::CompositionMode_SourceOver);
+
+        shaderManager->setMaskType(QGLEngineShaderManager::SubPixelMaskPass1);
+
+        if (pensBrush.style() == Qt::SolidPattern) {
+            // Solid patterns can get away with only one pass.
+            QColor c = pensBrush.color();
+            qreal oldOpacity = q->state()->opacity;
+            if (compMode == QPainter::CompositionMode_Source) {
+                c = premultiplyColor(c, q->state()->opacity);
+                q->state()->opacity = 1;
+                opacityUniformDirty = true;
+            }
+
+            compositionModeDirty = false; // I can handle this myself, thank you very much
+            prepareForDraw(false); // Text always causes src pixels to be transparent
+
+            // prepareForDraw() have set the opacity on the current shader, so the opacity state can now be reset.
+            if (compMode == QPainter::CompositionMode_Source) {
+                q->state()->opacity = oldOpacity;
+                opacityUniformDirty = true;
+            }
+
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_CONSTANT_COLOR, GL_ONE_MINUS_SRC_COLOR);
+            glBlendColor(c.redF(), c.greenF(), c.blueF(), c.alphaF());
+        } else {
+            // Other brush styles need two passes.
+
+            qreal oldOpacity = q->state()->opacity;
+            if (compMode == QPainter::CompositionMode_Source) {
+                q->state()->opacity = 1;
+                opacityUniformDirty = true;
+                pensBrush = Qt::white;
+                setBrush(&pensBrush);
+            }
+
+            compositionModeDirty = false; // I can handle this myself, thank you very much
+            prepareForDraw(false); // Text always causes src pixels to be transparent
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
+
+            glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
+            glBindTexture(GL_TEXTURE_2D, cache->texture());
+            updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
+
+#ifndef QT_OPENGL_ES_2
+            if (inRenderText)
+                shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::Depth), zValueForRenderText());
+#endif
+            shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
+            glDrawArrays(GL_TRIANGLES, 0, 6 * glyphs.size());
+
+            shaderManager->setMaskType(QGLEngineShaderManager::SubPixelMaskPass2);
+
+            if (compMode == QPainter::CompositionMode_Source) {
+                q->state()->opacity = oldOpacity;
+                opacityUniformDirty = true;
+                pensBrush = q->state()->pen.brush();
+                setBrush(&pensBrush);
+            }
+
+            compositionModeDirty = false;
+            prepareForDraw(false); // Text always causes src pixels to be transparent
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_ONE, GL_ONE);
+        }
+        compositionModeDirty = true;
+    } else {
+        // Greyscale/mono glyphs
+
+        shaderManager->setMaskType(QGLEngineShaderManager::PixelMask);
+        prepareForDraw(false); // Text always causes src pixels to be transparent
+    }
+    //### TODO: Gamma correction
+
+    glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
+    glBindTexture(GL_TEXTURE_2D, cache->texture());
+    updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
+
+#ifndef QT_OPENGL_ES_2
+    if (inRenderText)
+        shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::Depth), zValueForRenderText());
+#endif
+    shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
+    glDrawArrays(GL_TRIANGLES, 0, 6 * glyphs.size());
 }
 
 bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
@@ -1308,44 +1416,45 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     Q_D(QGL2PaintEngineEx);
 
 //     qDebug("QGL2PaintEngineEx::begin()");
-    d->drawable.setDevice(pdev);
-    d->ctx = d->drawable.context();
+    if (pdev->devType() == QInternal::OpenGL)
+        d->device = static_cast<QGLPaintDevice*>(pdev);
+    else
+        d->device = QGLPaintDevice::getDevice(pdev);
 
-    if (d->ctx->d_ptr->active_engine) {
-        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(d->ctx->d_ptr->active_engine);
-        QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr.data());
-        p->transferMode(BrushDrawingMode);
-        p->drawable.doneCurrent();
-    }
+    if (!d->device)
+        return false;
 
+    d->ctx = d->device->context();
     d->ctx->d_ptr->active_engine = this;
-    d->last_created_state = 0;
 
-    d->drawable.makeCurrent();
-    QSize sz = d->drawable.size();
+    const QSize sz = d->device->size();
     d->width = sz.width();
     d->height = sz.height();
+    d->last_created_state = 0;
     d->mode = BrushDrawingMode;
-
-#if !defined(QT_OPENGL_ES_2)
-    qt_resolve_version_2_0_functions(d->ctx);
-#endif
-
-    d->shaderManager = new QGLEngineShaderManager(d->ctx);
-
-    glViewport(0, 0, d->width, d->height);
-
     d->brushTextureDirty = true;
     d->brushUniformsDirty = true;
     d->matrixDirty = true;
     d->compositionModeDirty = true;
-    d->stencilBufferDirty = true;
     d->simpleShaderDepthUniformDirty = true;
     d->depthUniformDirty = true;
     d->opacityUniformDirty = true;
-    d->needsSync = false;
-
+    d->needsSync = true;
     d->use_system_clip = !systemClip().isEmpty();
+
+    d->dirtyStencilRegion = QRect(0, 0, d->width, d->height);
+
+    // Calling begin paint should make the correct context current. So, any
+    // code which calls into GL or otherwise needs a current context *must*
+    // go after beginPaint:
+    d->device->beginPaint();
+
+#if !defined(QT_OPENGL_ES_2)
+    bool success = qt_resolve_version_2_0_functions(d->ctx);
+    Q_ASSERT(success);
+#endif
+
+    d->shaderManager = new QGLEngineShaderManager(d->ctx);
 
     if (!d->inRenderText) {
         glDisable(GL_DEPTH_TEST);
@@ -1358,30 +1467,18 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     glDisable(GL_MULTISAMPLE);
 #endif
 
-    QGLPixmapData *source = d->drawable.copyOnBegin();
-    if (d->drawable.context()->d_func()->clear_on_painter_begin && d->drawable.autoFillBackground()) {
-        if (d->drawable.hasTransparentBackground())
-            glClearColor(0.0, 0.0, 0.0, 0.0);
-        else {
-            const QColor &c = d->drawable.backgroundColor();
-            float alpha = c.alphaF();
-            glClearColor(c.redF() * alpha, c.greenF() * alpha, c.blueF() * alpha, alpha);
-        }
-        glClear(GL_COLOR_BUFFER_BIT);
-    } else if (source) {
-        QGLContext *ctx = d->ctx;
+    d->glyphCacheType = QFontEngineGlyphCache::Raster_A8;
 
-        d->transferMode(ImageDrawingMode);
-
-        glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
-        source->bind(false);
-
-        QRect rect(0, 0, source->width(), source->height());
-        d->updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
-        d->drawTexture(QRectF(rect), QRectF(rect), rect.size(), true);
+#if !defined(QT_OPENGL_ES_2)
+    if (!d->device->format().alpha()
+#if defined(Q_WS_WIN)
+        && qt_cleartype_enabled
+#endif
+       ) {
+        d->glyphCacheType = QFontEngineGlyphCache::Raster_RGBMask;
     }
+#endif
 
-    d->systemStateChanged();
     return true;
 }
 
@@ -1389,19 +1486,11 @@ bool QGL2PaintEngineEx::end()
 {
     Q_D(QGL2PaintEngineEx);
     QGLContext *ctx = d->ctx;
-    if (ctx->d_ptr->active_engine != this) {
-        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(ctx->d_ptr->active_engine);
-        if (engine && engine->isActive()) {
-            QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr.data());
-            p->transferMode(BrushDrawingMode);
-            p->drawable.doneCurrent();
-        }
-        d->drawable.makeCurrent();
-    }
 
     glUseProgram(0);
     d->transferMode(BrushDrawingMode);
-    d->drawable.swapBuffers();
+    d->device->endPaint();
+
 #if defined(Q_WS_X11)
     // On some (probably all) drivers, deleting an X pixmap which has been bound to a texture
     // before calling glFinish/swapBuffers renders garbage. Presumably this is because X deletes
@@ -1410,7 +1499,6 @@ bool QGL2PaintEngineEx::end()
     // them here, after swapBuffers, where they can be safely deleted.
     ctx->d_func()->boundPixmaps.clear();
 #endif
-    d->drawable.doneCurrent();
     d->ctx->d_ptr->active_engine = 0;
 
     d->resetGLState();
@@ -1427,27 +1515,19 @@ void QGL2PaintEngineEx::ensureActive()
     QGLContext *ctx = d->ctx;
 
     if (isActive() && ctx->d_ptr->active_engine != this) {
-        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(ctx->d_ptr->active_engine);
-        if (engine && engine->isActive()) {
-            QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr.data());
-            p->transferMode(BrushDrawingMode);
-            p->drawable.doneCurrent();
-        }
-        d->drawable.context()->makeCurrent();
-        d->drawable.makeCurrent();
-
         ctx->d_ptr->active_engine = this;
         d->needsSync = true;
-    } else {
-        d->drawable.context()->makeCurrent();
     }
 
+    d->device->ensureActiveTarget();
+
     if (d->needsSync) {
+        d->transferMode(BrushDrawingMode);
         glViewport(0, 0, d->width, d->height);
         glDepthMask(false);
         glDepthFunc(GL_LESS);
-        setState(state());
         d->needsSync = false;
+        setState(state());
     }
 }
 
@@ -1459,20 +1539,29 @@ void QGL2PaintEngineExPrivate::updateDepthScissorTest()
     else
         glDisable(GL_DEPTH_TEST);
 
-    if (q->state()->scissorTestEnabled) {
-        QRect bounds = q->state()->rectangleClip;
-        if (bounds.isNull() || !q->painter()->hasClipping()) {
-            if (use_system_clip)
-                bounds = systemClip.boundingRect();
-            else
-                bounds = QRect(0, 0, width, height);
-        }
+#ifndef QT_GL_NO_SCISSOR_TEST
+    QRect bounds = q->state()->rectangleClip;
+    if (!q->state()->clipEnabled) {
+        if (use_system_clip)
+            bounds = systemClip.boundingRect();
+        else
+            bounds = QRect(0, 0, width, height);
+    } else {
+        if (use_system_clip)
+            bounds = bounds.intersected(systemClip.boundingRect());
+        else
+            bounds = bounds.intersected(QRect(0, 0, width, height));
+    }
 
+    currentScissorBounds = bounds;
+
+    if (bounds == QRect(0, 0, width, height)) {
+        glDisable(GL_SCISSOR_TEST);
+    } else {
         glEnable(GL_SCISSOR_TEST);
         setScissor(bounds);
-    } else {
-        glDisable(GL_SCISSOR_TEST);
     }
+#endif
 }
 
 void QGL2PaintEngineExPrivate::setScissor(const QRect &rect)
@@ -1511,7 +1600,6 @@ void QGL2PaintEngineExPrivate::writeClip(const QVectorPath &path, uint depth)
 
     if (matrixDirty)
         updateMatrix();
-
     if (q->state()->needsDepthBufferClear) {
         glDepthMask(true);
         glClearDepth(rawDepth(2));
@@ -1560,88 +1648,88 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
 //     qDebug("QGL2PaintEngineEx::clip()");
     Q_D(QGL2PaintEngineEx);
 
-    if (op == Qt::ReplaceClip && !d->hasClipOperations())
-        op = Qt::IntersectClip;
+    ensureActive();
 
+    if (op == Qt::ReplaceClip) {
+        op = Qt::IntersectClip;
+        if (d->hasClipOperations()) {
+            d->systemStateChanged();
+            state()->canRestoreClip = false;
+        }
+    }
+
+#ifndef QT_GL_NO_SCISSOR_TEST
     if (!path.isEmpty() && op == Qt::IntersectClip && (path.shape() == QVectorPath::RectangleHint)) {
         const QPointF* const points = reinterpret_cast<const QPointF*>(path.points());
         QRectF rect(points[0], points[2]);
 
         if (state()->matrix.type() <= QTransform::TxScale) {
-            rect = state()->matrix.mapRect(rect);
-
-            if ((d->use_system_clip && rect.contains(d->systemClip.boundingRect()))
-                || rect.contains(QRect(0, 0, d->width, d->height)))
-                return;
-
-            if (state()->rectangleClip.isValid()) {
-                state()->rectangleClip = state()->rectangleClip.intersected(rect.toRect());
-
-                state()->hasRectangleClip = true;
-                state()->scissorTestEnabled = true;
-
-                glEnable(GL_SCISSOR_TEST);
-                d->setScissor(state()->rectangleClip);
-
-                return;
-            }
+            state()->rectangleClip = state()->rectangleClip.intersected(state()->matrix.mapRect(rect).toRect());
+            d->updateDepthScissorTest();
+            return;
         }
     }
+#endif
 
-    if (!state()->hasRectangleClip)
-        state()->rectangleClip = QRect();
-
-    if (state()->rectangleClip.isValid() && op != Qt::NoClip && op != Qt::ReplaceClip) {
-        QPainterPath path;
-        path.addRect(state()->rectangleClip);
-
-        state()->rectangleClip = QRect();
-        d->updateDepthScissorTest();
-
-        glDepthFunc(GL_ALWAYS);
-
-        state()->maxDepth = 4;
-        d->writeClip(qtVectorPathForPath(path), state()->maxDepth);
-        state()->currentDepth = 3;
-        state()->depthTestEnabled = true;
-
-        glDepthFunc(GL_LESS);
-        glEnable(GL_DEPTH_TEST);
-    }
+    const QRect pathRect = state()->matrix.mapRect(path.controlPointRect()).toAlignedRect();
 
     switch (op) {
     case Qt::NoClip:
         if (d->use_system_clip) {
-            glEnable(GL_DEPTH_TEST);
             state()->depthTestEnabled = true;
             state()->currentDepth = 0;
         } else {
-            glDisable(GL_DEPTH_TEST);
             state()->depthTestEnabled = false;
         }
+        state()->rectangleClip = QRect(0, 0, d->width, d->height);
         state()->canRestoreClip = false;
+        d->updateDepthScissorTest();
         break;
     case Qt::IntersectClip:
+        state()->rectangleClip = state()->rectangleClip.intersected(pathRect);
+        d->updateDepthScissorTest();
         ++state()->maxDepth;
         d->writeClip(path, state()->maxDepth);
         state()->currentDepth = state()->maxDepth - 1;
         state()->depthTestEnabled = true;
         break;
-    case Qt::ReplaceClip:
-        d->systemStateChanged();
-        state()->rectangleClip = QRect();
-        state()->maxDepth = 4;
+    case Qt::UniteClip: {
+#ifndef QT_GL_NO_SCISSOR_TEST
+        if (state()->rectangleClip.isValid()) {
+            ++state()->maxDepth;
+
+            QPainterPath path;
+            path.addRect(state()->rectangleClip);
+
+            // flush the existing clip rectangle to the depth buffer
+            d->writeClip(qtVectorPathForPath(state()->matrix.inverted().map(path)), state()->maxDepth);
+        }
+
+        QRect oldRectangleClip = state()->rectangleClip;
+
+        state()->rectangleClip = state()->rectangleClip.united(pathRect);
+        d->updateDepthScissorTest();
+
+        QRegion extendRegion = QRegion(state()->rectangleClip) - oldRectangleClip;
+
         glDepthFunc(GL_ALWAYS);
+        if (!extendRegion.isEmpty()) {
+            QPainterPath extendPath;
+            extendPath.addRegion(extendRegion);
+
+            // first clear the depth buffer in the extended region
+            d->writeClip(qtVectorPathForPath(state()->matrix.inverted().map(extendPath)), 0);
+        }
+#endif
+        glDepthFunc(GL_ALWAYS);
+        // now write the clip path
         d->writeClip(path, state()->maxDepth);
-        state()->currentDepth = 3;
         state()->canRestoreClip = false;
+        state()->currentDepth = state()->maxDepth - 1;
         state()->depthTestEnabled = true;
         break;
-    case Qt::UniteClip:
-        glDepthFunc(GL_ALWAYS);
-        d->writeClip(path, state()->maxDepth);
-        state()->canRestoreClip = false;
-        state()->depthTestEnabled = true;
+        }
+    default:
         break;
     }
 
@@ -1674,61 +1762,44 @@ void QGL2PaintEngineExPrivate::systemStateChanged()
         }
     }
 
-    glDisable(GL_DEPTH_TEST);
     q->state()->depthTestEnabled = false;
-    q->state()->scissorTestEnabled = false;
     q->state()->needsDepthBufferClear = true;
-    q->state()->hasRectangleClip = false;
-
-    glDisable(GL_SCISSOR_TEST);
 
     q->state()->currentDepth = 1;
     q->state()->maxDepth = 4;
 
-    q->state()->rectangleClip = QRect(0, 0, width, height);
+    q->state()->rectangleClip = use_system_clip ? systemClip.boundingRect() : QRect(0, 0, width, height);
+    updateDepthScissorTest();
 
     if (use_system_clip) {
+#ifndef QT_GL_NO_SCISSOR_TEST
         if (systemClip.numRects() == 1) {
-            QRect bounds = systemClip.boundingRect();
-            if (bounds == QRect(0, 0, width, height)) {
+            if (q->state()->rectangleClip == QRect(0, 0, width, height)) {
                 use_system_clip = false;
-                return;
+            } else {
+                simpleShaderDepthUniformDirty = true;
+                depthUniformDirty = true;
             }
-
-            q->state()->rectangleClip = bounds;
-            q->state()->scissorTestEnabled = true;
-            updateDepthScissorTest();
-        } else {
-            q->state()->rectangleClip = QRect();
-            q->state()->scissorTestEnabled = true;
-            updateDepthScissorTest();
-
-            QTransform transform = q->state()->matrix;
-            q->state()->matrix = QTransform();
-            q->transformChanged();
-
-            q->state()->needsDepthBufferClear = false;
-
-            glDepthMask(true);
-
-            glClearDepth(0);
-            glClear(GL_DEPTH_BUFFER_BIT);
-
-            QPainterPath path;
-            path.addRegion(systemClip);
-
-            glDepthFunc(GL_ALWAYS);
-            writeClip(qtVectorPathForPath(path), 2);
-            glDepthFunc(GL_LESS);
-
-            glEnable(GL_DEPTH_TEST);
-            q->state()->depthTestEnabled = true;
-
-            q->state()->matrix = transform;
-            q->transformChanged();
+            return;
         }
+#endif
+        q->state()->needsDepthBufferClear = false;
 
-        q->state()->currentDepth = 1;
+        glDepthMask(true);
+
+        glClearDepth(0);
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        QPainterPath path;
+        path.addRegion(systemClip);
+
+        glDepthFunc(GL_ALWAYS);
+        writeClip(qtVectorPathForPath(q->state()->matrix.inverted().map(path)), 2);
+        glDepthFunc(GL_LESS);
+
+        glEnable(GL_DEPTH_TEST);
+        q->state()->depthTestEnabled = true;
+
         simpleShaderDepthUniformDirty = true;
         depthUniformDirty = true;
     }
@@ -1754,8 +1825,6 @@ void QGL2PaintEngineEx::setState(QPainterState *new_state)
 
     d->matrixDirty = true;
     d->compositionModeDirty = true;
-    d->brushTextureDirty = true;
-    d->brushUniformsDirty = true;
     d->simpleShaderDepthUniformDirty = true;
     d->depthUniformDirty = true;
     d->simpleShaderMatrixUniformDirty = true;
@@ -1777,6 +1846,9 @@ void QGL2PaintEngineEx::setState(QPainterState *new_state)
 QPainterState *QGL2PaintEngineEx::createState(QPainterState *orig) const
 {
     Q_D(const QGL2PaintEngineEx);
+
+    if (orig)
+        const_cast<QGL2PaintEngineEx *>(this)->ensureActive();
 
     QOpenGL2PaintEngineState *s;
     if (!orig)
@@ -1804,30 +1876,19 @@ QOpenGL2PaintEngineState::QOpenGL2PaintEngineState(QOpenGL2PaintEngineState &oth
     maxDepth = other.maxDepth;
     canRestoreClip = other.canRestoreClip;
     rectangleClip = other.rectangleClip;
-    hasRectangleClip = other.hasRectangleClip;
 }
 
 QOpenGL2PaintEngineState::QOpenGL2PaintEngineState()
 {
     needsDepthBufferClear = true;
     depthTestEnabled = false;
-    scissorTestEnabled = false;
     currentDepth = 1;
     maxDepth = 4;
     canRestoreClip = true;
-    hasRectangleClip = false;
 }
 
 QOpenGL2PaintEngineState::~QOpenGL2PaintEngineState()
 {
-}
-
-QPixmapFilter *QGL2PaintEngineEx::createPixmapFilter(int type) const
-{
-    const QGLContext *ctx = QGLContext::currentContext();
-    if (ctx)
-        return ctx->d_func()->createPixmapFilter(type);
-    return 0;
 }
 
 QT_END_NAMESPACE

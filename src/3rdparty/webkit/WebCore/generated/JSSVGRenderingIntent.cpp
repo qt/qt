@@ -76,6 +76,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSSVGRenderingIntentPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -90,6 +91,11 @@ const ClassInfo JSSVGRenderingIntentConstructor::s_info = { "SVGRenderingIntentC
 bool JSSVGRenderingIntentConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGRenderingIntentConstructor, DOMObject>(exec, &JSSVGRenderingIntentConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGRenderingIntentConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGRenderingIntentConstructor, DOMObject>(exec, &JSSVGRenderingIntentConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -124,6 +130,11 @@ bool JSSVGRenderingIntentPrototype::getOwnPropertySlot(ExecState* exec, const Id
     return getStaticValueSlot<JSSVGRenderingIntentPrototype, JSObject>(exec, &JSSVGRenderingIntentPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGRenderingIntentPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGRenderingIntentPrototype, JSObject>(exec, &JSSVGRenderingIntentPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGRenderingIntent::s_info = { "SVGRenderingIntent", 0, &JSSVGRenderingIntentTable, 0 };
 
 JSSVGRenderingIntent::JSSVGRenderingIntent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGRenderingIntent> impl, SVGElement* context)
@@ -134,7 +145,7 @@ JSSVGRenderingIntent::JSSVGRenderingIntent(PassRefPtr<Structure> structure, JSDO
 
 JSSVGRenderingIntent::~JSSVGRenderingIntent()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGRenderingIntent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -145,6 +156,11 @@ JSObject* JSSVGRenderingIntent::createPrototype(ExecState* exec, JSGlobalObject*
 bool JSSVGRenderingIntent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGRenderingIntent, Base>(exec, &JSSVGRenderingIntentTable, this, propertyName, slot);
+}
+
+bool JSSVGRenderingIntent::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGRenderingIntent, Base>(exec, &JSSVGRenderingIntentTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGRenderingIntentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -195,7 +211,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGRend
 }
 SVGRenderingIntent* toSVGRenderingIntent(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGRenderingIntent::s_info) ? static_cast<JSSVGRenderingIntent*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGRenderingIntent::s_info) ? static_cast<JSSVGRenderingIntent*>(asObject(value))->impl() : 0;
 }
 
 }

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -611,9 +611,13 @@ void tst_QDirModel::task196768_sorting()
     QString path = SRCDIR;
 
     QDirModel model;
+
+    /* QDirModel has a bug if we show the content of the subdirectory inside a hidden directory
+       and we don't add QDir::Hidden. But as QDirModel is deprecated, we decided not to fix it. */
+    model.setFilter(QDir::AllEntries | QDir::Hidden | QDir::AllDirs);
+
     QTreeView view;
     QPersistentModelIndex index = model.index(path);
-
     view.setModel(&model);
     QModelIndex index2 = model.index(path);
     QCOMPARE(index.data(), index2.data());

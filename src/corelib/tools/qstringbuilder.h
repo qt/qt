@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -198,6 +198,17 @@ template <int N> struct QConcatenable<char[N]>
     }
 };
 
+template <int N> struct QConcatenable<const char[N]>
+{
+    typedef const char type[N];
+    static int size(const char[N]) { return N - 1; }
+    static inline void appendTo(const char a[N], QChar *&out)
+    {
+        for (int i = 0; i < N - 1; ++i)
+            *out++ = QLatin1Char(a[i]);
+    }
+};
+
 template <> struct QConcatenable<const char *>
 {
     typedef char const *type;
@@ -241,7 +252,7 @@ template <typename A, typename B>
 QStringBuilder<typename QConcatenable<A>::type, typename QConcatenable<B>::type>
 operator%(const A &a, const B &b)
 {
-   return QStringBuilder<A, B>(a, b);
+   return QStringBuilder<typename QConcatenable<A>::type, typename QConcatenable<B>::type>(a, b);
 }
 
 #ifdef QT_USE_FAST_OPERATOR_PLUS
@@ -249,7 +260,7 @@ template <typename A, typename B>
 QStringBuilder<typename QConcatenable<A>::type, typename QConcatenable<B>::type>
 operator+(const A &a, const B &b)
 {
-   return QStringBuilder<A, B>(a, b);
+   return QStringBuilder<typename QConcatenable<A>::type, typename QConcatenable<B>::type>(a, b);
 }
 #endif
 

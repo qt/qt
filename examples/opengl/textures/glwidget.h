@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -42,7 +42,10 @@
 #ifndef GLWIDGET_H
 #define GLWIDGET_H
 
+#include <QtGui>
 #include <QGLWidget>
+
+class QGLShaderProgram;
 
 class GLWidget : public QGLWidget
 {
@@ -69,16 +72,19 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event);
 
 private:
-    GLuint makeObject();
+    void makeObject();
 
     QColor clearColor;
     QPoint lastPos;
     int xRot;
     int yRot;
     int zRot;
-
-    static GLuint sharedObject;
-    static int refCount;
+    GLuint textures[6];
+    QVector<QVector3D> vertices;
+    QVector<QVector2D> texCoords;
+#ifdef QT_OPENGL_ES_2
+    QGLShaderProgram *program;
+#endif
 };
 
 #endif

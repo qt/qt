@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -49,7 +49,7 @@
 
 QT_BEGIN_NAMESPACE
 
-bool QEglContext::createSurface(QPaintDevice *device, const QEglProperties *properties)
+EGLSurface QEglContext::createSurface(QPaintDevice *device, const QEglProperties *properties)
 {
     // Create the native drawable for the paint device.
     int devType = device->devType();
@@ -67,7 +67,7 @@ bool QEglContext::createSurface(QPaintDevice *device, const QEglProperties *prop
     }
     if (!ok) {
         qWarning("QEglContext::createSurface(): Cannot create the native EGL drawable");
-        return false;
+        return EGL_NO_SURFACE;
     }
 
     // Create the EGL surface to draw into, based on the native drawable.
@@ -76,15 +76,15 @@ bool QEglContext::createSurface(QPaintDevice *device, const QEglProperties *prop
         props = properties->properties();
     else
         props = 0;
+    EGLSurface surf;
     if (devType == QInternal::Widget)
         surf = eglCreateWindowSurface(dpy, cfg, windowDrawable, props);
     else
         surf = eglCreatePixmapSurface(dpy, cfg, pixmapDrawable, props);
     if (surf == EGL_NO_SURFACE) {
         qWarning("QEglContext::createSurface(): Unable to create EGL surface, error = 0x%x", eglGetError());
-        return false;
     }
-    return true;
+    return surf;
 }
 
 EGLDisplay QEglContext::getDisplay(QPaintDevice *device)

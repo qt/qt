@@ -76,6 +76,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSXMLHttpRequestExceptionPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -90,6 +91,11 @@ const ClassInfo JSXMLHttpRequestExceptionConstructor::s_info = { "XMLHttpRequest
 bool JSXMLHttpRequestExceptionConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSXMLHttpRequestExceptionConstructor, DOMObject>(exec, &JSXMLHttpRequestExceptionConstructorTable, this, propertyName, slot);
+}
+
+bool JSXMLHttpRequestExceptionConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSXMLHttpRequestExceptionConstructor, DOMObject>(exec, &JSXMLHttpRequestExceptionConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -125,6 +131,11 @@ bool JSXMLHttpRequestExceptionPrototype::getOwnPropertySlot(ExecState* exec, con
     return getStaticPropertySlot<JSXMLHttpRequestExceptionPrototype, JSObject>(exec, getJSXMLHttpRequestExceptionPrototypeTable(exec), this, propertyName, slot);
 }
 
+bool JSXMLHttpRequestExceptionPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticPropertyDescriptor<JSXMLHttpRequestExceptionPrototype, JSObject>(exec, getJSXMLHttpRequestExceptionPrototypeTable(exec), this, propertyName, descriptor);
+}
+
 static const HashTable* getJSXMLHttpRequestExceptionTable(ExecState* exec)
 {
     return getHashTableForGlobalData(exec->globalData(), &JSXMLHttpRequestExceptionTable);
@@ -139,7 +150,7 @@ JSXMLHttpRequestException::JSXMLHttpRequestException(PassRefPtr<Structure> struc
 
 JSXMLHttpRequestException::~JSXMLHttpRequestException()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSXMLHttpRequestException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -150,6 +161,11 @@ JSObject* JSXMLHttpRequestException::createPrototype(ExecState* exec, JSGlobalOb
 bool JSXMLHttpRequestException::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSXMLHttpRequestException, Base>(exec, getJSXMLHttpRequestExceptionTable(exec), this, propertyName, slot);
+}
+
+bool JSXMLHttpRequestException::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSXMLHttpRequestException, Base>(exec, getJSXMLHttpRequestExceptionTable(exec), this, propertyName, descriptor);
 }
 
 JSValue jsXMLHttpRequestExceptionCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -189,7 +205,7 @@ JSValue JSXMLHttpRequestException::getConstructor(ExecState* exec, JSGlobalObjec
 JSValue JSC_HOST_CALL jsXMLHttpRequestExceptionPrototypeFunctionToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSXMLHttpRequestException::s_info))
+    if (!thisValue.inherits(&JSXMLHttpRequestException::s_info))
         return throwError(exec, TypeError);
     JSXMLHttpRequestException* castedThisObj = static_cast<JSXMLHttpRequestException*>(asObject(thisValue));
     XMLHttpRequestException* imp = static_cast<XMLHttpRequestException*>(castedThisObj->impl());
@@ -217,7 +233,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, XMLHttp
 }
 XMLHttpRequestException* toXMLHttpRequestException(JSC::JSValue value)
 {
-    return value.isObject(&JSXMLHttpRequestException::s_info) ? static_cast<JSXMLHttpRequestException*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSXMLHttpRequestException::s_info) ? static_cast<JSXMLHttpRequestException*>(asObject(value))->impl() : 0;
 }
 
 }

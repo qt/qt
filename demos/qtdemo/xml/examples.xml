@@ -16,7 +16,7 @@
     <example filename="embeddeddialogs" name="Embedded Dialogs" />
     <example filename="interview" name="Interview" />
     <example filename="browser" name="Browser" />
-    <example filename="mediaplayer" name="Media Player" />
+    <example filename="qmediaplayer" name="Media Player" />
     <example filename="boxes" name="Boxes" />
     <example filename="sub-attaq" name="Sub-attaq" />
   </demos>
@@ -25,7 +25,7 @@
     <example filename="appchooser" name="Appchooser" />
     <example filename="easing" name="Easing Curves" />
     <example filename="moveblocks" name="Moving Blocks" />
-    <example filename="states" name="UI States" />
+    <example filename="states" name="States" />
     <example filename="stickman" name="Stickman" />
   </category>
   <category dirname="qtconcurrent" name="Concurrent Programming">

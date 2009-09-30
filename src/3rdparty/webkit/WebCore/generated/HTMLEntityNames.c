@@ -1,5 +1,5 @@
 /* ANSI-C code produced by gperf version 3.0.3 */
-/* Command-line: gperf -a -L ANSI-C -C -G -c -o -t --key-positions='*' -N findEntity -D -s 2  */
+/* Command-line: gperf -a -L ANSI-C -C -G -c -o -t --includes --key-positions='*' -N findEntity -D -s 2  */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
       && ('%' == 37) && ('&' == 38) && ('\'' == 39) && ('(' == 40) \
@@ -59,6 +59,7 @@ struct Entity {
     const char *name;
     int code;
 };
+#include <string.h>
 
 #define TOTAL_KEYWORDS 262
 #define MIN_WORD_LENGTH 2

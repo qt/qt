@@ -26,6 +26,7 @@
 #include "config.h"
 #include "HTMLTextAreaElement.h"
 
+#include "BeforeTextInsertedEvent.h"
 #include "ChromeClient.h"
 #include "CSSValueKeywords.h"
 #include "Document.h"
@@ -35,12 +36,14 @@
 #include "FormDataList.h"
 #include "Frame.h"
 #include "HTMLNames.h"
+#include "InputElement.h"
 #include "MappedAttribute.h"
 #include "Page.h"
 #include "RenderStyle.h"
 #include "RenderTextControlMultiLine.h"
 #include "ScriptEventListener.h"
 #include "Text.h"
+#include "TextIterator.h"
 #include "VisibleSelection.h"
 #include <wtf/StdLibExtras.h>
 
@@ -60,7 +63,7 @@ static inline void notifyFormStateChanged(const HTMLTextAreaElement* element)
 }
 
 HTMLTextAreaElement::HTMLTextAreaElement(const QualifiedName& tagName, Document* document, HTMLFormElement* form)
-    : HTMLFormControlElementWithState(tagName, document, form)
+    : HTMLTextFormControlElement(tagName, document, form)
     , m_rows(defaultRows)
     , m_cols(defaultCols)
     , m_wrap(SoftWrap)
@@ -192,6 +195,8 @@ void HTMLTextAreaElement::parseMappedAttribute(MappedAttribute* attr)
     } else if (attr->name() == alignAttr) {
         // Don't map 'align' attribute.  This matches what Firefox, Opera and IE do.
         // See http://bugs.webkit.org/show_bug.cgi?id=7075
+    } else if (attr->name() == placeholderAttr) {
+        updatePlaceholderVisibility(true);
     } else if (attr->name() == onfocusAttr)
         setAttributeEventListener(eventNames().focusEvent, createAttributeEventListener(this, attr));
     else if (attr->name() == onblurAttr)
@@ -206,7 +211,7 @@ void HTMLTextAreaElement::parseMappedAttribute(MappedAttribute* attr)
 
 RenderObject* HTMLTextAreaElement::createRenderer(RenderArena* arena, RenderStyle*)
 {
-    return new (arena) RenderTextControlMultiLine(this);
+    return new (arena) RenderTextControlMultiLine(this, placeholderShouldBeVisible());
 }
 
 bool HTMLTextAreaElement::appendFormData(FormDataList& encoding, bool)
@@ -267,9 +272,33 @@ void HTMLTextAreaElement::updateFocusAppearance(bool restorePreviousSelection)
 void HTMLTextAreaElement::defaultEventHandler(Event* event)
 {
     if (renderer() && (event->isMouseEvent() || event->isDragEvent() || event->isWheelEvent() || event->type() == eventNames().blurEvent))
-        static_cast<RenderTextControlMultiLine*>(renderer())->forwardEvent(event);
+        toRenderTextControlMultiLine(renderer())->forwardEvent(event);
+    else if (renderer() && event->isBeforeTextInsertedEvent())
+        handleBeforeTextInsertedEvent(static_cast<BeforeTextInsertedEvent*>(event));
 
     HTMLFormControlElementWithState::defaultEventHandler(event);
+}
+
+void HTMLTextAreaElement::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent* event) const
+{
+    ASSERT(event);
+    ASSERT(renderer());
+    bool ok;
+    unsigned maxLength = getAttribute(maxlengthAttr).string().toUInt(&ok);
+    if (!ok)
+        return;
+
+    unsigned currentLength = toRenderTextControl(renderer())->text().numGraphemeClusters();
+    unsigned selectionLength = plainText(document()->frame()->selection()->selection().toNormalizedRange().get()).numGraphemeClusters();
+    ASSERT(currentLength >= selectionLength);
+    unsigned baseLength = currentLength - selectionLength;
+    unsigned appendableLength = maxLength > baseLength ? maxLength - baseLength : 0;
+    event->setText(sanitizeUserInputValue(event->text(), appendableLength));
+}
+
+String HTMLTextAreaElement::sanitizeUserInputValue(const String& proposedValue, unsigned maxLength)
+{
+    return proposedValue.left(proposedValue.numCharactersInGraphemeClusters(maxLength));
 }
 
 void HTMLTextAreaElement::rendererWillBeDestroyed()
@@ -309,6 +338,7 @@ void HTMLTextAreaElement::setValue(const String& value)
 
     m_value = normalizedValue;
     setFormControlValueMatchesRenderer(true);
+    updatePlaceholderVisibility(false);
     if (inDocument())
         document()->updateStyleIfNeeded();
     if (renderer())
@@ -369,6 +399,16 @@ void HTMLTextAreaElement::setDefaultValue(const String& defaultValue)
     insertBefore(document()->createTextNode(value), firstChild(), ec);
 
     setValue(value);
+}
+
+unsigned HTMLTextAreaElement::maxLength() const
+{
+    return getAttribute(maxlengthAttr).string().toUInt();
+}
+
+void HTMLTextAreaElement::setMaxLength(unsigned newValue)
+{
+    setAttribute(maxlengthAttr, String::number(newValue));
 }
 
 void HTMLTextAreaElement::accessKeyAction(bool)

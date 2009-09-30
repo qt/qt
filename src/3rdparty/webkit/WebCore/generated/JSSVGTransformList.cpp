@@ -88,6 +88,11 @@ bool JSSVGTransformListPrototype::getOwnPropertySlot(ExecState* exec, const Iden
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGTransformListPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGTransformListPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGTransformListPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGTransformList::s_info = { "SVGTransformList", 0, &JSSVGTransformListTable, 0 };
 
 JSSVGTransformList::JSSVGTransformList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTransformList> impl, SVGElement* context)
@@ -98,7 +103,7 @@ JSSVGTransformList::JSSVGTransformList(PassRefPtr<Structure> structure, JSDOMGlo
 
 JSSVGTransformList::~JSSVGTransformList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGTransformList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -109,6 +114,11 @@ JSObject* JSSVGTransformList::createPrototype(ExecState* exec, JSGlobalObject* g
 bool JSSVGTransformList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGTransformList, Base>(exec, &JSSVGTransformListTable, this, propertyName, slot);
+}
+
+bool JSSVGTransformList::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGTransformList, Base>(exec, &JSSVGTransformListTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGTransformListNumberOfItems(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -122,7 +132,7 @@ JSValue jsSVGTransformListNumberOfItems(ExecState* exec, const Identifier&, cons
 JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionClear(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGTransformList::s_info))
+    if (!thisValue.inherits(&JSSVGTransformList::s_info))
         return throwError(exec, TypeError);
     JSSVGTransformList* castedThisObj = static_cast<JSSVGTransformList*>(asObject(thisValue));
     return castedThisObj->clear(exec, args);
@@ -131,7 +141,7 @@ JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionClear(ExecState* exec, 
 JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionInitialize(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGTransformList::s_info))
+    if (!thisValue.inherits(&JSSVGTransformList::s_info))
         return throwError(exec, TypeError);
     JSSVGTransformList* castedThisObj = static_cast<JSSVGTransformList*>(asObject(thisValue));
     return castedThisObj->initialize(exec, args);
@@ -140,7 +150,7 @@ JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionInitialize(ExecState* e
 JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionGetItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGTransformList::s_info))
+    if (!thisValue.inherits(&JSSVGTransformList::s_info))
         return throwError(exec, TypeError);
     JSSVGTransformList* castedThisObj = static_cast<JSSVGTransformList*>(asObject(thisValue));
     return castedThisObj->getItem(exec, args);
@@ -149,7 +159,7 @@ JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionGetItem(ExecState* exec
 JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionInsertItemBefore(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGTransformList::s_info))
+    if (!thisValue.inherits(&JSSVGTransformList::s_info))
         return throwError(exec, TypeError);
     JSSVGTransformList* castedThisObj = static_cast<JSSVGTransformList*>(asObject(thisValue));
     return castedThisObj->insertItemBefore(exec, args);
@@ -158,7 +168,7 @@ JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionInsertItemBefore(ExecSt
 JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionReplaceItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGTransformList::s_info))
+    if (!thisValue.inherits(&JSSVGTransformList::s_info))
         return throwError(exec, TypeError);
     JSSVGTransformList* castedThisObj = static_cast<JSSVGTransformList*>(asObject(thisValue));
     return castedThisObj->replaceItem(exec, args);
@@ -167,7 +177,7 @@ JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionReplaceItem(ExecState* 
 JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionRemoveItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGTransformList::s_info))
+    if (!thisValue.inherits(&JSSVGTransformList::s_info))
         return throwError(exec, TypeError);
     JSSVGTransformList* castedThisObj = static_cast<JSSVGTransformList*>(asObject(thisValue));
     return castedThisObj->removeItem(exec, args);
@@ -176,7 +186,7 @@ JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionRemoveItem(ExecState* e
 JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionAppendItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGTransformList::s_info))
+    if (!thisValue.inherits(&JSSVGTransformList::s_info))
         return throwError(exec, TypeError);
     JSSVGTransformList* castedThisObj = static_cast<JSSVGTransformList*>(asObject(thisValue));
     return castedThisObj->appendItem(exec, args);
@@ -185,7 +195,7 @@ JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionAppendItem(ExecState* e
 JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionCreateSVGTransformFromMatrix(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGTransformList::s_info))
+    if (!thisValue.inherits(&JSSVGTransformList::s_info))
         return throwError(exec, TypeError);
     JSSVGTransformList* castedThisObj = static_cast<JSSVGTransformList*>(asObject(thisValue));
     SVGTransformList* imp = static_cast<SVGTransformList*>(castedThisObj->impl());
@@ -199,7 +209,7 @@ JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionCreateSVGTransformFromM
 JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionConsolidate(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGTransformList::s_info))
+    if (!thisValue.inherits(&JSSVGTransformList::s_info))
         return throwError(exec, TypeError);
     JSSVGTransformList* castedThisObj = static_cast<JSSVGTransformList*>(asObject(thisValue));
     SVGTransformList* imp = static_cast<SVGTransformList*>(castedThisObj->impl());
@@ -215,7 +225,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGTran
 }
 SVGTransformList* toSVGTransformList(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGTransformList::s_info) ? static_cast<JSSVGTransformList*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGTransformList::s_info) ? static_cast<JSSVGTransformList*>(asObject(value))->impl() : 0;
 }
 
 }

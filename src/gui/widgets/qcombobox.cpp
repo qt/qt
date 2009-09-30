@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -63,8 +63,8 @@
 #include <private/qcombobox_p.h>
 #include <private/qabstractitemmodel_p.h>
 #include <private/qabstractscrollarea_p.h>
+#include <private/qsoftkeymanager_p.h>
 #include <qdebug.h>
-#include <private/qactiontokeyeventmapper_p.h>
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
 #endif
@@ -402,6 +402,13 @@ QComboBoxPrivateContainer::QComboBoxPrivateContainer(QAbstractItemView *itemView
     layout->setSpacing(0);
     layout->setMargin(0);
 
+#ifdef QT_SOFTKEYS_ENABLED
+    selectAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::SelectSoftKey, Qt::Key_Select, this);
+    cancelAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::CancelSoftKey, Qt::Key_Escape, this);
+    addAction(selectAction);
+    addAction(cancelAction);
+#endif
+
     // set item view
     setItemView(itemView);
 
@@ -527,6 +534,7 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
                    this, SLOT(setCurrentIndex(QModelIndex)));
         disconnect(view, SIGNAL(destroyed()),
                    this, SLOT(viewDestroyed()));
+
         delete view;
         view = 0;
     }
@@ -629,9 +637,6 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
         case Qt::Key_Select:
 #endif
             if (view->currentIndex().isValid() && (view->currentIndex().flags() & Qt::ItemIsEnabled) ) {
-#ifdef QT_KEYPAD_NAVIGATION
-                QActionToKeyEventMapper::removeSoftkey(this);
-#endif
                 combo->hidePopup();
                 emit itemSelected(view->currentIndex());
             }
@@ -642,10 +647,6 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
             // fall through
         case Qt::Key_F4:
         case Qt::Key_Escape:
-#ifdef QT_KEYPAD_NAVIGATION
-        case Qt::Key_Back:
-            QActionToKeyEventMapper::removeSoftkey(this);
-#endif
             combo->hidePopup();
             return true;
         default:
@@ -2477,7 +2478,6 @@ void QComboBox::showPopup()
 #ifdef QT_KEYPAD_NAVIGATION
     if (QApplication::keypadNavigationEnabled())
         view()->setEditFocus(true);
-    QActionToKeyEventMapper::addSoftKey(QAction::CancelSoftKey, Qt::Key_Back, view());
 #endif
 }
 

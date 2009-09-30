@@ -46,7 +46,8 @@ HEADERS += \
 	kernel/qgesture.h \
 	kernel/qgesture_p.h \
 	kernel/qstandardgestures.h \
-	kernel/qstandardgestures_p.h
+        kernel/qstandardgestures_p.h \
+        kernel/qsoftkeymanager_p.h
 
 SOURCES += \
 	kernel/qaction.cpp \
@@ -77,7 +78,8 @@ SOURCES += \
 	kernel/qwidgetaction.cpp \
 	kernel/qkeymapper.cpp \
 	kernel/qgesture.cpp \
-	kernel/qstandardgestures.cpp
+        kernel/qstandardgestures.cpp \
+        kernel/qsoftkeymanager.cpp
 
 win32 {
 	DEFINES += QT_NO_DIRECTDRAW

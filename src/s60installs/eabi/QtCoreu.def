@@ -2066,7 +2066,7 @@ EXPORTS
 	_ZNK13QFSFileEngine12isSequentialEv @ 2065 NONAME
 	_ZNK13QFSFileEngine13caseSensitiveEv @ 2066 NONAME
 	_ZNK13QFSFileEngine14isRelativePathEv @ 2067 NONAME
-	_ZNK13QFSFileEngine15fileNameSymbianEN19QAbstractFileEngine8FileNameE @ 2068 NONAME
+	_ZNK13QFSFileEngine15fileNameSymbianEN19QAbstractFileEngine8FileNameE @ 2068 NONAME ABSENT
 	_ZNK13QFSFileEngine17supportsExtensionEN19QAbstractFileEngine9ExtensionE @ 2069 NONAME
 	_ZNK13QFSFileEngine3posEv @ 2070 NONAME
 	_ZNK13QFSFileEngine4sizeEv @ 2071 NONAME
@@ -3299,7 +3299,7 @@ EXPORTS
 	_ZN15QPauseAnimation11qt_metacastEPKc @ 3298 NONAME
 	_ZN15QPauseAnimation11setDurationEi @ 3299 NONAME
 	_ZN15QPauseAnimation16staticMetaObjectE @ 3300 NONAME DATA 16
-	_ZN15QPauseAnimation17updateCurrentTimeEi @ 3301 NONAME
+	_ZN15QPauseAnimation17updateCurrentTimeEi @ 3301 NONAME ABSENT
 	_ZN15QPauseAnimation5eventEP6QEvent @ 3302 NONAME
 	_ZN15QPauseAnimationC1EP7QObject @ 3303 NONAME
 	_ZN15QPauseAnimationC1EiP7QObject @ 3304 NONAME
@@ -3361,7 +3361,7 @@ EXPORTS
 	_ZN17QVariantAnimation13setStartValueERK8QVariant @ 3360 NONAME
 	_ZN17QVariantAnimation14setEasingCurveERK12QEasingCurve @ 3361 NONAME
 	_ZN17QVariantAnimation16staticMetaObjectE @ 3362 NONAME DATA 16
-	_ZN17QVariantAnimation17updateCurrentTimeEi @ 3363 NONAME
+	_ZN17QVariantAnimation17updateCurrentTimeEi @ 3363 NONAME ABSENT
 	_ZN17QVariantAnimation20registerInterpolatorEPF8QVariantPKvS2_fEi @ 3364 NONAME
 	_ZN17QVariantAnimation5eventEP6QEvent @ 3365 NONAME
 	_ZN17QVariantAnimationC2EP7QObject @ 3366 NONAME
@@ -3470,7 +3470,7 @@ EXPORTS
 	_ZN23QParallelAnimationGroup11updateStateEN18QAbstractAnimation5StateES1_ @ 3469 NONAME
 	_ZN23QParallelAnimationGroup15updateDirectionEN18QAbstractAnimation9DirectionE @ 3470 NONAME
 	_ZN23QParallelAnimationGroup16staticMetaObjectE @ 3471 NONAME DATA 16
-	_ZN23QParallelAnimationGroup17updateCurrentTimeEi @ 3472 NONAME
+	_ZN23QParallelAnimationGroup17updateCurrentTimeEi @ 3472 NONAME ABSENT
 	_ZN23QParallelAnimationGroup5eventEP6QEvent @ 3473 NONAME
 	_ZN23QParallelAnimationGroupC1EP7QObject @ 3474 NONAME
 	_ZN23QParallelAnimationGroupC1ER30QParallelAnimationGroupPrivateP7QObject @ 3475 NONAME
@@ -3498,7 +3498,7 @@ EXPORTS
 	_ZN25QSequentialAnimationGroup13insertPauseAtEii @ 3497 NONAME
 	_ZN25QSequentialAnimationGroup15updateDirectionEN18QAbstractAnimation9DirectionE @ 3498 NONAME
 	_ZN25QSequentialAnimationGroup16staticMetaObjectE @ 3499 NONAME DATA 16
-	_ZN25QSequentialAnimationGroup17updateCurrentTimeEi @ 3500 NONAME
+	_ZN25QSequentialAnimationGroup17updateCurrentTimeEi @ 3500 NONAME ABSENT
 	_ZN25QSequentialAnimationGroup23currentAnimationChangedEP18QAbstractAnimation @ 3501 NONAME
 	_ZN25QSequentialAnimationGroup5eventEP6QEvent @ 3502 NONAME
 	_ZN25QSequentialAnimationGroup8addPauseEi @ 3503 NONAME
@@ -3723,4 +3723,105 @@ EXPORTS
 	_ZNK19QProcessEnvironment8containsERK7QString @ 3722 NONAME
 	_ZNK19QProcessEnvironmenteqERKS_ @ 3723 NONAME
 	_ZNK8QProcess18processEnvironmentEv @ 3724 NONAME
+	_Z20qt_symbianLocaleNamei @ 3725 NONAME
+	_ZN10QByteArray6insertEiPKci @ 3726 NONAME
+	_ZN10QByteArray7prependEPKci @ 3727 NONAME
+	_ZN10QEventLoop19getStaticMetaObjectEv @ 3728 NONAME
+	_ZN11QFinalState19getStaticMetaObjectEv @ 3729 NONAME
+	_ZN11QThreadPool19getStaticMetaObjectEv @ 3730 NONAME
+	_ZN11QTranslator19getStaticMetaObjectEv @ 3731 NONAME
+	_ZN12QEasingCurve19getStaticMetaObjectEv @ 3732 NONAME
+	_ZN13QHistoryState19getStaticMetaObjectEv @ 3733 NONAME
+	_ZN13QPluginLoader19getStaticMetaObjectEv @ 3734 NONAME
+	_ZN13QSharedMemory19getStaticMetaObjectEv @ 3735 NONAME
+	_ZN13QSignalMapper19getStaticMetaObjectEv @ 3736 NONAME
+	_ZN13QStateMachine19getStaticMetaObjectEv @ 3737 NONAME
+	_ZN14QAbstractState19getStaticMetaObjectEv @ 3738 NONAME
+	_ZN14QFactoryLoader19getStaticMetaObjectEv @ 3739 NONAME
+	_ZN14QTemporaryFile19getStaticMetaObjectEv @ 3740 NONAME
+	_ZN15QAnimationGroup19getStaticMetaObjectEv @ 3741 NONAME
+	_ZN15QPauseAnimation19getStaticMetaObjectEv @ 3742 NONAME
+	_ZN15QSocketNotifier19getStaticMetaObjectEv @ 3743 NONAME
+	_ZN16QCoreApplication19getStaticMetaObjectEv @ 3744 NONAME
+	_ZN16QEventTransition19getStaticMetaObjectEv @ 3745 NONAME
+	_ZN16QTextCodecPlugin19getStaticMetaObjectEv @ 3746 NONAME
+	_ZN17QSignalTransition19getStaticMetaObjectEv @ 3747 NONAME
+	_ZN17QVariantAnimation19getStaticMetaObjectEv @ 3748 NONAME
+	_ZN18QAbstractAnimation19getStaticMetaObjectEv @ 3749 NONAME
+	_ZN18QAbstractItemModel11endMoveRowsEv @ 3750 NONAME
+	_ZN18QAbstractItemModel12columnsMovedERK11QModelIndexiiS2_i @ 3751 NONAME
+	_ZN18QAbstractItemModel13beginMoveRowsERK11QModelIndexiiS2_i @ 3752 NONAME
+	_ZN18QAbstractItemModel13endResetModelEv @ 3753 NONAME
+	_ZN18QAbstractItemModel14endMoveColumnsEv @ 3754 NONAME
+	_ZN18QAbstractItemModel15beginResetModelEv @ 3755 NONAME
+	_ZN18QAbstractItemModel16beginMoveColumnsERK11QModelIndexiiS2_i @ 3756 NONAME
+	_ZN18QAbstractItemModel18rowsAboutToBeMovedERK11QModelIndexiiS2_i @ 3757 NONAME
+	_ZN18QAbstractItemModel19getStaticMetaObjectEv @ 3758 NONAME
+	_ZN18QAbstractItemModel21columnsAboutToBeMovedERK11QModelIndexiiS2_i @ 3759 NONAME
+	_ZN18QAbstractItemModel9rowsMovedERK11QModelIndexiiS2_i @ 3760 NONAME
+	_ZN18QAbstractListModel19getStaticMetaObjectEv @ 3761 NONAME
+	_ZN18QFileSystemWatcher19getStaticMetaObjectEv @ 3762 NONAME
+	_ZN18QPropertyAnimation19getStaticMetaObjectEv @ 3763 NONAME
+	_ZN19QAbstractTableModel19getStaticMetaObjectEv @ 3764 NONAME
+	_ZN19QAbstractTransition19getStaticMetaObjectEv @ 3765 NONAME
+	_ZN21QObjectCleanupHandler19getStaticMetaObjectEv @ 3766 NONAME
+	_ZN23QParallelAnimationGroup19getStaticMetaObjectEv @ 3767 NONAME
+	_ZN24QAbstractEventDispatcher19getStaticMetaObjectEv @ 3768 NONAME
+	_ZN24QNonContiguousByteDevice19getStaticMetaObjectEv @ 3769 NONAME
+	_ZN25QAbstractItemModelPrivate10itemsMovedERK11QModelIndexiiS2_iN2Qt11OrientationE @ 3770 NONAME
+	_ZN25QAbstractItemModelPrivate19itemsAboutToBeMovedERK11QModelIndexiiS2_iN2Qt11OrientationE @ 3771 NONAME
+	_ZN25QAbstractItemModelPrivate21movePersistentIndexesE7QVectorIP25QPersistentModelIndexDataEiRK11QModelIndexN2Qt11OrientationE @ 3772 NONAME
+	_ZN25QAbstractItemModelPrivate9allowMoveERK11QModelIndexiiS2_iN2Qt11OrientationE @ 3773 NONAME
+	_ZN25QSequentialAnimationGroup19getStaticMetaObjectEv @ 3774 NONAME
+	_ZN5QFile19getStaticMetaObjectEv @ 3775 NONAME
+	_ZN6QEvent19getStaticMetaObjectEv @ 3776 NONAME
+	_ZN6QState19getStaticMetaObjectEv @ 3777 NONAME
+	_ZN6QTimer19getStaticMetaObjectEv @ 3778 NONAME
+	_ZN7QBuffer19getStaticMetaObjectEv @ 3779 NONAME
+	_ZN7QLocale19getStaticMetaObjectEv @ 3780 NONAME
+	_ZN7QObject19getStaticMetaObjectEv @ 3781 NONAME
+	_ZN7QThread19getStaticMetaObjectEv @ 3782 NONAME
+	_ZN8QLibrary19getStaticMetaObjectEv @ 3783 NONAME
+	_ZN8QProcess19getStaticMetaObjectEv @ 3784 NONAME
+	_ZN9QIODevice19getStaticMetaObjectEv @ 3785 NONAME
+	_ZN9QListData7append2ERKS_ @ 3786 NONAME
+	_ZN9QListData7detach3Ev @ 3787 NONAME
+	_ZN9QMimeData19getStaticMetaObjectEv @ 3788 NONAME
+	_ZN9QSettings19getStaticMetaObjectEv @ 3789 NONAME
+	_ZN9QTimeLine19getStaticMetaObjectEv @ 3790 NONAME
+	_ZTI13QUnifiedTimer @ 3791 NONAME ABSENT ; #<TI>#
+	_ZTI14QProcessActive @ 3792 NONAME ABSENT ; #<TI>#
+	_ZTI18QNotifyChangeEvent @ 3793 NONAME ABSENT ; #<TI>#
+	_ZTI20QEasingCurveFunction @ 3794 NONAME ABSENT ; #<TI>#
+	_ZTI21QFactoryLoaderPrivate @ 3795 NONAME ABSENT ; #<TI>#
+	_ZTI21QSignalEventGenerator @ 3796 NONAME ABSENT ; #<TI>#
+	_ZTI22QAnimationGroupPrivate @ 3797 NONAME ABSENT ; #<TI>#
+	_ZTI23QProcessManagerMediator @ 3798 NONAME ABSENT ; #<TI>#
+	_ZTI24QSignalTransitionPrivate @ 3799 NONAME ABSENT ; #<TI>#
+	_ZTI27QByteDeviceWrappingIoDevice @ 3800 NONAME ABSENT ; #<TI>#
+	_ZTI32QSequentialAnimationGroupPrivate @ 3801 NONAME ABSENT ; #<TI>#
+	_ZTI34QNonContiguousByteDeviceBufferImpl @ 3802 NONAME ABSENT ; #<TI>#
+	_ZTI36QNonContiguousByteDeviceIoDeviceImpl @ 3803 NONAME ABSENT ; #<TI>#
+	_ZTI37QNonContiguousByteDeviceByteArrayImpl @ 3804 NONAME ABSENT ; #<TI>#
+	_ZTI38QNonContiguousByteDeviceRingBufferImpl @ 3805 NONAME ABSENT ; #<TI>#
+	_ZTV13QUnifiedTimer @ 3806 NONAME ABSENT ; #<VT>#
+	_ZTV14QProcessActive @ 3807 NONAME ABSENT ; #<VT>#
+	_ZTV18QNotifyChangeEvent @ 3808 NONAME ABSENT ; #<VT>#
+	_ZTV20QEasingCurveFunction @ 3809 NONAME ABSENT ; #<VT>#
+	_ZTV21QFactoryLoaderPrivate @ 3810 NONAME ABSENT ; #<VT>#
+	_ZTV21QSignalEventGenerator @ 3811 NONAME ABSENT ; #<VT>#
+	_ZTV22QAnimationGroupPrivate @ 3812 NONAME ABSENT ; #<VT>#
+	_ZTV23QProcessManagerMediator @ 3813 NONAME ABSENT ; #<VT>#
+	_ZTV24QSignalTransitionPrivate @ 3814 NONAME ABSENT ; #<VT>#
+	_ZTV27QByteDeviceWrappingIoDevice @ 3815 NONAME ABSENT ; #<VT>#
+	_ZTV32QSequentialAnimationGroupPrivate @ 3816 NONAME ABSENT ; #<VT>#
+	_ZTV34QNonContiguousByteDeviceBufferImpl @ 3817 NONAME ABSENT ; #<VT>#
+	_ZTV36QNonContiguousByteDeviceIoDeviceImpl @ 3818 NONAME ABSENT ; #<VT>#
+	_ZTV37QNonContiguousByteDeviceByteArrayImpl @ 3819 NONAME ABSENT ; #<VT>#
+	_ZTV38QNonContiguousByteDeviceRingBufferImpl @ 3820 NONAME ABSENT ; #<VT>#
+	_Zls6QDebugRK8QMargins @ 3821 NONAME
+	_ZN15QPauseAnimation17updateCurrentTimeEv @ 3822 NONAME
+	_ZN17QVariantAnimation17updateCurrentTimeEv @ 3823 NONAME
+	_ZN23QParallelAnimationGroup17updateCurrentTimeEv @ 3824 NONAME
+	_ZN25QSequentialAnimationGroup17updateCurrentTimeEv @ 3825 NONAME
 

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -100,6 +100,9 @@ private slots:
 
     void task240325();
 
+    void stylesheetFont_data();
+    void stylesheetFont();
+
     void toHtml_data();
     void toHtml();
     void toHtml2();
@@ -165,6 +168,7 @@ private slots:
 
     void characterAt();
     void revisions();
+    void revisionWithUndoCompressionAndUndo();
 
     void testUndoCommandAdded();
 
@@ -569,6 +573,63 @@ void tst_QTextDocument::task240325()
             QCOMPARE(text, QString::fromLatin1("Foobar"));
         }
     }
+}
+
+void tst_QTextDocument::stylesheetFont_data()
+{    
+    QTest::addColumn<QString>("stylesheet");
+    QTest::addColumn<QFont>("font");
+
+    {
+        QFont font;
+        font.setBold(true);
+        font.setPixelSize(64);
+
+        QTest::newRow("Regular font specification")
+                 << "font-size: 64px; font-weight: bold;"
+                 << font;
+    }
+
+
+    {
+        QFont font;
+        font.setBold(true);
+        font.setPixelSize(64);
+
+        QTest::newRow("Shorthand font specification")
+                << "font: normal bold 64px Arial;"
+                << font;
+    }
+
+}
+
+void tst_QTextDocument::stylesheetFont()
+{
+    QFETCH(QString, stylesheet);
+    QFETCH(QFont, font);
+
+    QString html = QString::fromLatin1("<html>"
+                                       "<body>"
+                                       "<div style=\"%1\" >"
+                                       "Foobar"
+                                       "</div>"
+                                       "</body>"
+                                       "</html>").arg(stylesheet);
+
+    qDebug() << html;
+    doc->setHtml(html);
+    QCOMPARE(doc->blockCount(), 1);
+
+    // First and only block
+    QTextBlock block = doc->firstBlock();
+
+    QString text = block.text();
+    QCOMPARE(text, QString::fromLatin1("Foobar"));
+
+    QFont actualFont = block.charFormat().font();
+
+    QCOMPARE(actualFont.bold(), font.bold());
+    QCOMPARE(actualFont.pixelSize(), font.pixelSize());
 }
 
 void tst_QTextDocument::noundo_moreIsModified()
@@ -1458,7 +1519,6 @@ void tst_QTextDocument::toHtml_data()
         QTest::newRow("list-ul-margin") << QTextDocumentFragment(&doc)
                                         << QString("EMPTYBLOCK") +
                                            QString("<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li DEFAULTBLOCKSTYLE>Blah</li></ul>");
-
     }
 }
 
@@ -1727,21 +1787,17 @@ void tst_QTextDocument::cursorPositionChangedOnSetText()
 {
     CursorPosSignalSpy spy(doc);
 
-    cursor = QTextCursor();
+    // doc has one QTextCursor stored in the
+    // cursor member variable, thus the signal
+    // gets emitted once.
 
     doc->setPlainText("Foo\nBar\nBaz\nBlub\nBlah");
 
-    // the signal should still be emitted once for the QTextCursor that
-    // QTextDocument::setPlainText creates temporarily. But the signal
-    // should not be emitted more often.
     QCOMPARE(spy.calls, 1);
 
     spy.calls = 0;
     doc->setHtml("<p>Foo<p>Bar<p>Baz<p>Blah");
 
-    // the signal should still be emitted once for the QTextCursor that
-    // QTextDocument::setPlainText creates temporarily. But the signal
-    // should not be emitted more often.
     QCOMPARE(spy.calls, 1);
 }
 
@@ -2438,6 +2494,44 @@ void tst_QTextDocument::revisions()
     cursor.insertBlock(); // we are the block start
     QCOMPARE(cursor.block().previous().revision(), 6);
     QCOMPARE(cursor.block().revision(), 5);
+}
+
+void tst_QTextDocument::revisionWithUndoCompressionAndUndo()
+{
+    QTextDocument doc;
+    QTextCursor cursor(&doc);
+    cursor.insertText("This is the beginning of it all.");
+    QCOMPARE(doc.firstBlock().revision(), 1);
+    QCOMPARE(doc.revision(), 1);
+    cursor.insertBlock();
+    QCOMPARE(doc.revision(), 2);
+    cursor.insertText("this");
+    QCOMPARE(doc.revision(), 3);
+    cursor.insertText("is");
+    QCOMPARE(doc.revision(), 4);
+    cursor.insertText("compressed");
+    QCOMPARE(doc.revision(), 5);
+    doc.undo();
+    QCOMPARE(doc.revision(), 6);
+    QCOMPARE(doc.toPlainText(), QString("This is the beginning of it all.\n"))  ;
+    cursor.setPosition(0);
+    QCOMPARE(doc.firstBlock().revision(), 1);
+    cursor.insertText("Very beginnig");
+    QCOMPARE(doc.firstBlock().revision(), 7);
+    doc.undo();
+    QCOMPARE(doc.revision(), 8);
+    QCOMPARE(doc.firstBlock().revision(), 1);
+
+    cursor.beginEditBlock();
+    cursor.insertText("Hello");
+    cursor.insertBlock();
+    cursor.insertText("world");
+    cursor.endEditBlock();
+    QCOMPARE(doc.revision(), 9);
+    doc.undo();
+    QCOMPARE(doc.revision(), 10);
+
+
 }
 
 void tst_QTextDocument::testUndoCommandAdded()

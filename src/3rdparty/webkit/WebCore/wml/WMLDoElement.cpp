@@ -70,14 +70,17 @@ void WMLDoElement::defaultEventHandler(Event* event)
 
     if (m_type == "accept" || m_type == "options") {
         if (m_task)
-            m_task->executeTask(event);
+            m_task->executeTask();
     } else if (m_type == "prev") {
-        WMLPageState* pageState = wmlPageStateForDocument(document());
+        ASSERT(document()->isWMLDocument());
+        WMLDocument* document = static_cast<WMLDocument*>(this->document());
+
+        WMLPageState* pageState = wmlPageStateForDocument(document);
         if (!pageState)
             return;
-
+    
         // Stop the timer of the current card if it is active
-        if (WMLCardElement* card = pageState->activeCard()) {
+        if (WMLCardElement* card = document->activeCard()) {
             if (WMLTimerElement* eventTimer = card->eventTimer())
                 eventTimer->stop();
         }
@@ -113,13 +116,23 @@ void WMLDoElement::insertedIntoDocument()
         m_name = m_type;
 
     Node* parent = parentNode();
-    ASSERT(parent);
-
     if (!parent || !parent->isWMLElement())
         return;
 
     if (WMLEventHandlingElement* eventHandlingElement = toWMLEventHandlingElement(static_cast<WMLElement*>(parent)))
         eventHandlingElement->registerDoElement(this, document());
+}
+
+void WMLDoElement::removedFromDocument()
+{
+    Node* parent = parentNode();
+
+    if (parent  && parent->isWMLElement()) {
+        if (WMLEventHandlingElement* eventHandlingElement = toWMLEventHandlingElement(static_cast<WMLElement*>(parent)))
+            eventHandlingElement->deregisterDoElement(this);
+    }
+
+    WMLElement::removedFromDocument();
 }
 
 void WMLDoElement::attach()
@@ -152,6 +165,18 @@ void WMLDoElement::recalcStyle(StyleChange change)
 
     if (renderer())
         renderer()->updateFromElement();
+}
+
+void WMLDoElement::registerTask(WMLTaskElement* task)
+{
+    ASSERT(!m_task);
+    m_task = task;
+}
+
+void WMLDoElement::deregisterTask(WMLTaskElement* task)
+{
+    ASSERT_UNUSED(task, m_task == task);
+    m_task = 0;
 }
 
 String WMLDoElement::label() const

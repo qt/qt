@@ -64,7 +64,7 @@ private:
     double m_nextFireTime;
 };
 
-class WorkerRunLoop::Task : public RefCounted<Task> {
+class WorkerRunLoop::Task : public RefCounted<WorkerRunLoop::Task> {
 public:
     static PassRefPtr<Task> create(PassRefPtr<ScriptExecutionContext::Task> task, const String& mode)
     {
@@ -172,6 +172,10 @@ MessageQueueWaitResult WorkerRunLoop::runInMode(WorkerContext* context, const Mo
     double absoluteTime = (predicate.isDefaultMode() && m_sharedTimer->isActive()) ? m_sharedTimer->fireTime() : MessageQueue<RefPtr<Task> >::infiniteTime();
     RefPtr<Task> task;
     MessageQueueWaitResult result = m_messageQueue.waitForMessageFilteredWithTimeout(task, predicate, absoluteTime);
+
+    // If the context is closing, don't dispatch any further tasks (per section 4.1.1 of the Web Workers spec).
+    if (context->isClosing())
+        return result;
 
     switch (result) {
     case MessageQueueTerminated:

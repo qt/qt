@@ -2,6 +2,7 @@
 #############################################################################
 ##
 ## Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+## All rights reserved.
 ## Contact: Nokia Corporation (qt-info@nokia.com)
 ##
 ## This file is part of the test suite of the Qt Toolkit.
@@ -21,10 +22,9 @@
 ## ensure the GNU Lesser General Public License version 2.1 requirements
 ## will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 ##
-## In addition, as a special exception, Nokia gives you certain
-## additional rights.  These rights are described in the Nokia Qt LGPL
-## Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-## package.
+## In addition, as a special exception, Nokia gives you certain additional
+## rights.  These rights are described in the Nokia Qt LGPL Exception
+## version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 ##
 ## If you have questions regarding the use of this file, please contact
 ## Nokia at qt-info@nokia.com.
@@ -49,8 +49,14 @@
 # will show them.
 #
 
-open FL, "$ENV{QTDIR}/src/corelib/global/qfeatures.txt"
-    or die "Cannot open $ENV{QTDIR}/src/corelib/global/qfeatures.txt";
+if ($ENV{QTSRCDIR} ne '') {
+    $qtbase=$ENV{QTSRCDIR};
+} else {
+    $qtbase=$ENV{QTDIR};
+}
+
+open FL, "$qtbase/src/corelib/global/qfeatures.txt"
+    or die "Cannot open $qtbase/src/corelib/global/qfeatures.txt";
 
 while (<FL>) {
     if ( /^Feature: (\S*)/ ) {
@@ -120,18 +126,19 @@ for $macro ( @macros ) {
     }
 }
 
-open OUT, ">$ENV{QTDIR}/src/corelib/global/qfeatures.h"
-    or die "Cannot open $ENV{QTDIR}/src/corelib/global/qfeatures.h for writing";
+open OUT, ">$qtbase/src/corelib/global/qfeatures.h"
+    or die "Cannot open $qtbase/src/corelib/global/qfeatures.h for writing";
 
 print OUT
 '/****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Nokia Corporation (qt-info\@nokia.com)
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
-** \$QT_BEGIN_LICENSE:LGPL\$
+** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
@@ -146,13 +153,12 @@ print OUT
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info\@nokia.com.
+** Nokia at qt-info@nokia.com.
 **
 **
 **
@@ -161,7 +167,7 @@ print OUT
 **
 **
 **
-** \$QT_END_LICENSE\$
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 

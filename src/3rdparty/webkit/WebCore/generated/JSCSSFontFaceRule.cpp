@@ -71,6 +71,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSCSSFontFaceRulePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -85,6 +86,11 @@ const ClassInfo JSCSSFontFaceRuleConstructor::s_info = { "CSSFontFaceRuleConstru
 bool JSCSSFontFaceRuleConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCSSFontFaceRuleConstructor, DOMObject>(exec, &JSCSSFontFaceRuleConstructorTable, this, propertyName, slot);
+}
+
+bool JSCSSFontFaceRuleConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCSSFontFaceRuleConstructor, DOMObject>(exec, &JSCSSFontFaceRuleConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -123,6 +129,11 @@ JSObject* JSCSSFontFaceRule::createPrototype(ExecState* exec, JSGlobalObject* gl
 bool JSCSSFontFaceRule::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCSSFontFaceRule, Base>(exec, &JSCSSFontFaceRuleTable, this, propertyName, slot);
+}
+
+bool JSCSSFontFaceRule::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCSSFontFaceRule, Base>(exec, &JSCSSFontFaceRuleTable, this, propertyName, descriptor);
 }
 
 JSValue jsCSSFontFaceRuleStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -77,6 +77,9 @@
 #include <qabstractitemview.h>
 #include "../../shared/util.h"
 #include <qstyleditemdelegate.h>
+#ifndef QT_NO_STYLE_WINDOWS
+#include <qwindowsstyle.h>
+#endif
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -147,6 +150,7 @@ private slots:
     void task253944_itemDelegateIsReset();
     void subControlRectsWithOffset_data();
     void subControlRectsWithOffset();
+    void task260974_menuItemRectangleForComboBoxPopup();
 
 protected slots:
     void onEditTextChanged( const QString &newString );
@@ -742,7 +746,7 @@ void tst_QComboBox::virtualAutocompletion()
     // We need to set the keyboard input interval to a higher value
     // as the processEvent() call takes too much time, so it restarts
     // the keyboard search then
-#if defined(QT_ARCH_ARM) || defined(QT_ARCH_MIPS)
+#if defined(QT_ARCH_ARM) || defined(QT_ARCH_MIPS) || defined(QT_ARCH_SYMBIAN)
     int oldInterval = QApplication::keyboardInputInterval();
     QApplication::setKeyboardInputInterval(1500);
 #endif
@@ -778,7 +782,7 @@ void tst_QComboBox::virtualAutocompletion()
     QApplication::sendEvent(testWidget, &kr2);
     qApp->processEvents(); // Process events to trigger autocompletion
     QTRY_COMPARE(testWidget->currentIndex(), 3);
-#if defined(QT_ARCH_ARM) || defined(QT_ARCH_MIPS)
+#if defined(QT_ARCH_ARM) || defined(QT_ARCH_MIPS) || defined(QT_ARCH_SYMBIAN)
     QApplication::setKeyboardInputInterval(oldInterval);
 #endif
 }
@@ -879,12 +883,12 @@ void tst_QComboBox::hide()
 {
     testWidget->addItem("foo");
     testWidget->showPopup();
-    QTest::qWait(500); //allow combobox effect to complete
-    QVERIFY(testWidget->view());
-    QVERIFY(testWidget->view()->isVisible());
+    //allow combobox effect to complete
+    QTRY_VERIFY(testWidget->view());
+    QTRY_VERIFY(testWidget->view()->isVisible());
     testWidget->hidePopup();
-    QTest::qWait(500); //allow combobox effect to complete
-    QVERIFY(!testWidget->view()->isVisible());
+    //allow combobox effect to complete
+    QTRY_VERIFY(!testWidget->view()->isVisible());
     testWidget->hide();
     QVERIFY(!testWidget->isVisible());
 }
@@ -1919,9 +1923,11 @@ void tst_QComboBox::itemListPosition()
     combo.move(screen.width()-combo.sizeHint().width(), 0); //puts the combo to the top-right corner
 
     combo.show();
-    QTest::qWait(100); //wait because the window manager can move the window if there is a right panel
+    //wait because the window manager can move the window if there is a right panel
+    QTRY_VERIFY(combo.isVisible());
     combo.showPopup();
-    QTest::qWait(100);
+    QTRY_VERIFY(combo.view());
+    QTRY_VERIFY(combo.view()->isVisible());
 
 #if defined(Q_WS_S60)
     // Assuming that QtS60 style is used, here. But other ones would certainly also fail
@@ -1974,10 +1980,14 @@ void tst_QComboBox::task190351_layout()
         list->addItem(QLatin1String("list") + QString::number(i));
 
     listCombo.show();
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(&listCombo);
+    QTRY_VERIFY(listCombo.isVisible());
     listCombo.setCurrentIndex(70);
     listCombo.showPopup();
-    QTest::qWait(100);
+    QTRY_VERIFY(listCombo.view());
+    QTest::qWaitForWindowShown(listCombo.view());
+    QTRY_VERIFY(listCombo.view()->isVisible());
+    QApplication::processEvents();
 
 #ifdef QT_BUILD_INTERNAL
     QFrame *container = qFindChild<QComboBoxPrivateContainer *>(&listCombo);
@@ -2049,9 +2059,10 @@ void tst_QComboBox::task191329_size()
     tableCombo.setModel(&model);
 
     tableCombo.show();
-    QTest::qWait(100);
+    QTRY_VERIFY(tableCombo.isVisible());
     tableCombo.showPopup();
-    QTest::qWait(100);
+    QTRY_VERIFY(tableCombo.view());
+    QTRY_VERIFY(tableCombo.view()->isVisible());
 
 #ifdef QT_BUILD_INTERNAL
     QFrame *container = qFindChild<QComboBoxPrivateContainer *>(&tableCombo);
@@ -2081,11 +2092,10 @@ void tst_QComboBox::task190205_setModelAdjustToContents()
     box.addItems(initialContent);
     box.show();
 
-    QTest::qWait(100); //wait needed in order to get the combo initial size
+    //wait needed in order to get the combo initial size
+    QTRY_VERIFY(box.isVisible());
 
     box.setModel(new QStringListModel(finalContent));
-
-    QTest::qWait(500); //wait needed in order to resize the combo
 
     QComboBox correctBox;
     correctBox.addItems(finalContent);
@@ -2108,19 +2118,24 @@ void tst_QComboBox::task248169_popupWithMinimalSize()
 
     QComboBox comboBox;
     comboBox.addItems(initialContent);
-    comboBox.view()->setMinimumWidth(500);
     QDesktopWidget desktop;
-    comboBox.setGeometry(desktop.availableGeometry().width() - 200, 100, 200, 100);
+    QRect desktopSize = desktop.availableGeometry();
+    comboBox.view()->setMinimumWidth(desktopSize.width() / 2);
+
+    comboBox.setGeometry(desktopSize.width() - (desktopSize.width() / 4), (desktopSize.width() / 4), (desktopSize.width() / 2), (desktopSize.width() / 4));
 
     comboBox.show();
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(&comboBox);
+    QTRY_VERIFY(comboBox.isVisible());
     comboBox.showPopup();
-    QTest::qWait(100);
+    QTRY_VERIFY(comboBox.view());
+    QTest::qWaitForWindowShown(comboBox.view());
+    QTRY_VERIFY(comboBox.view()->isVisible());
 
 #ifdef QT_BUILD_INTERNAL
     QFrame *container = qFindChild<QComboBoxPrivateContainer *>(&comboBox);
     QVERIFY(container);
-    QVERIFY(desktop.screenGeometry(container).contains(container->geometry()));
+    QTRY_VERIFY(desktop.screenGeometry(container).contains(container->geometry()));
 #endif
 }
 
@@ -2132,7 +2147,7 @@ void tst_QComboBox::task247863_keyBoardSelection()
   combo.addItem( QLatin1String("222"));
   combo.show();
   QApplication::setActiveWindow(&combo);
-  QTest::qWait(100);
+  QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&combo));
 
   QSignalSpy spy(&combo, SIGNAL(activated(const QString &)));
   qApp->setEffectEnabled(Qt::UI_AnimateCombo, false);
@@ -2153,7 +2168,7 @@ void tst_QComboBox::task220195_keyBoardSelection2()
     combo.addItem( QLatin1String("foo3"));
     combo.show();
     QApplication::setActiveWindow(&combo);
-    QTest::qWait(100);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&combo));
 
     combo.setCurrentIndex(-1);
     QVERIFY(combo.currentText().isNull());
@@ -2233,9 +2248,11 @@ void tst_QComboBox::noScrollbar()
         comboBox.addItems(initialContent);
         comboBox.show();
         comboBox.resize(200, comboBox.height());
-        QTest::qWait(100);
+        QTRY_VERIFY(comboBox.isVisible());
         comboBox.showPopup();
-        QTest::qWait(100);
+        QTRY_VERIFY(comboBox.view());
+        QTRY_VERIFY(comboBox.view()->isVisible());
+
         QVERIFY(!comboBox.view()->horizontalScrollBar()->isVisible());
         QVERIFY(!comboBox.view()->verticalScrollBar()->isVisible());
     }
@@ -2246,10 +2263,12 @@ void tst_QComboBox::noScrollbar()
         comboBox.setModel(table->model());
         comboBox.setView(table);
         comboBox.show();
-        QTest::qWait(100);
+        QTRY_VERIFY(comboBox.isVisible());
         comboBox.resize(200, comboBox.height());
         comboBox.showPopup();
-        QTest::qWait(100);
+        QTRY_VERIFY(comboBox.view());
+        QTRY_VERIFY(comboBox.view()->isVisible());
+
         QVERIFY(!comboBox.view()->horizontalScrollBar()->isVisible());
         QVERIFY(!comboBox.view()->verticalScrollBar()->isVisible());
     }
@@ -2337,6 +2356,46 @@ void tst_QComboBox::subControlRectsWithOffset()
     QCOMPARE(arrowRect, arrowRectWithOffset.translated(-offset));
     QCOMPARE(listboxRect, listboxRectWithOffset.translated(-offset));
 
+}
+
+void tst_QComboBox::task260974_menuItemRectangleForComboBoxPopup()
+{
+#ifdef QT_NO_STYLE_WINDOWS
+    QSKIP("test depends on windows style", QTest::SkipAll);
+#else
+    class TestStyle: public QWindowsStyle
+    {
+    public:
+        int styleHint(StyleHint hint, const QStyleOption *option, const QWidget *widget, QStyleHintReturn *ret) const
+        {
+            if (hint == SH_ComboBox_Popup) return 1;
+            else return QCommonStyle::styleHint(hint, option, widget, ret);
+        }
+
+        void drawControl(ControlElement element, const QStyleOption *option, QPainter *, const QWidget *) const
+        {
+            if (element == CE_MenuItem)
+                discoveredRect = option->rect;
+        }
+
+        mutable QRect discoveredRect;
+    } style;
+
+
+    {
+        QComboBox comboBox;
+        comboBox.setStyle(&style);
+        comboBox.addItem("Item 1");
+
+        comboBox.show();
+        QTRY_VERIFY(comboBox.isVisible());
+        comboBox.showPopup();
+        QTRY_VERIFY(comboBox.view());
+        QTRY_VERIFY(comboBox.view()->isVisible());
+
+        QTRY_VERIFY(style.discoveredRect.width() <= comboBox.width());
+    }
+#endif
 }
 
 QTEST_MAIN(tst_QComboBox)

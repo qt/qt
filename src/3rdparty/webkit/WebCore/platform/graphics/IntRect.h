@@ -33,7 +33,7 @@
 typedef struct CGRect CGRect;
 #endif
 
-#if PLATFORM(MAC)
+#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && PLATFORM(DARWIN))
 #ifdef NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
 typedef struct CGRect NSRect;
 #else
@@ -49,6 +49,8 @@ class QRect;
 QT_END_NAMESPACE
 #elif PLATFORM(GTK)
 typedef struct _GdkRectangle GdkRectangle;
+#elif PLATFORM(HAIKU)
+class BRect;
 #endif
 
 #if PLATFORM(WX)
@@ -144,6 +146,9 @@ public:
 #elif PLATFORM(GTK)
     IntRect(const GdkRectangle&);
     operator GdkRectangle() const;
+#elif PLATFORM(HAIKU)
+    explicit IntRect(const BRect&);
+    operator BRect() const;
 #endif
 
 #if PLATFORM(CG)
@@ -156,7 +161,8 @@ public:
     operator SkIRect() const;
 #endif
 
-#if PLATFORM(MAC) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
+#if (PLATFORM(MAC) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)) \
+        || (PLATFORM(CHROMIUM) && PLATFORM(DARWIN))
     operator NSRect() const;
 #endif
 
@@ -193,7 +199,8 @@ inline bool operator!=(const IntRect& a, const IntRect& b)
 IntRect enclosingIntRect(const CGRect&);
 #endif
 
-#if PLATFORM(MAC) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
+#if (PLATFORM(MAC) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)) \
+        || (PLATFORM(CHROMIUM) && PLATFORM(DARWIN))
 IntRect enclosingIntRect(const NSRect&);
 #endif
 

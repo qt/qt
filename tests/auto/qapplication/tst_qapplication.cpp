@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -84,6 +84,7 @@ public slots:
     void init();
     void cleanup();
 private slots:
+    void sendEventsOnProcessEvents(); // this must be the first test
     void getSetCheck();
     void staticSetup();
 
@@ -136,6 +137,32 @@ private slots:
 
     void touchEventPropagation();
 };
+
+class EventSpy : public QObject
+{
+   Q_OBJECT
+
+public:
+    QList<int> recordedEvents;
+    bool eventFilter(QObject *, QEvent *event)
+    {
+        recordedEvents.append(event->type());
+        return false;
+    }
+};
+
+void tst_QApplication::sendEventsOnProcessEvents()
+{
+    int argc = 0;
+    QApplication app(argc, 0, QApplication::GuiServer);
+
+    EventSpy spy;
+    app.installEventFilter(&spy);
+
+    QCoreApplication::postEvent(&app,  new QEvent(QEvent::Type(QEvent::User + 1)));
+    QCoreApplication::processEvents();
+    QVERIFY(spy.recordedEvents.contains(QEvent::User + 1));
+}
 
 class MyInputContext : public QInputContext
 {
@@ -1148,15 +1175,15 @@ void DeleteLaterWidget::runTest()
     connect(w, SIGNAL(destroyed()), this, SLOT(childDeleted()));
 
     w->deleteLater();
-    Q_ASSERT(!child_deleted);
+    QVERIFY(!child_deleted);
 
     QDialog dlg;
     QTimer::singleShot(500, &dlg, SLOT(reject()));
     dlg.exec();
 
-    Q_ASSERT(!child_deleted);
+    QVERIFY(!child_deleted);
     app->processEvents();
-    Q_ASSERT(!child_deleted);
+    QVERIFY(!child_deleted);
 
     QTimer::singleShot(500, this, SLOT(checkDeleteLater()));
 
@@ -1167,7 +1194,7 @@ void DeleteLaterWidget::runTest()
 
 void DeleteLaterWidget::checkDeleteLater()
 {
-    Q_ASSERT(child_deleted);
+    QVERIFY(child_deleted);
 
     close();
 }

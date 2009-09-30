@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -330,6 +330,62 @@ static void find_trans_colors()
 /*****************************************************************************
   QGLFormat UNIX/GLX-specific code
  *****************************************************************************/
+
+void* qglx_getProcAddress(const char* procName)
+{
+    // On systems where the GL driver is pluggable (like Mesa), we have to use
+    // the glXGetProcAddressARB extension to resolve other function pointers as
+    // the symbols wont be in the GL library, but rather in a plugin loaded by
+    // the GL library.
+    typedef void* (*qt_glXGetProcAddressARB)(const char *);
+    static qt_glXGetProcAddressARB glXGetProcAddressARB = 0;
+    static bool triedResolvingGlxGetProcAddress = false;
+    if (!triedResolvingGlxGetProcAddress) {
+        triedResolvingGlxGetProcAddress = true;
+        QString glxExt = QLatin1String(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS));
+        if (glxExt.contains(QLatin1String("GLX_ARB_get_proc_address"))) {
+#if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)
+            void *handle = dlopen(NULL, RTLD_LAZY);
+            if (handle) {
+                glXGetProcAddressARB = (qt_glXGetProcAddressARB) dlsym(handle, "glXGetProcAddressARB");
+                dlclose(handle);
+            }
+            if (!glXGetProcAddressARB)
+#endif
+            {
+#if !defined(QT_NO_LIBRARY)
+                extern const QString qt_gl_library_name();
+                QLibrary lib(qt_gl_library_name());
+                glXGetProcAddressARB = (qt_glXGetProcAddressARB) lib.resolve("glXGetProcAddressARB");
+#endif
+            }
+        }
+    }
+
+    void *procAddress = 0;
+    if (glXGetProcAddressARB)
+        procAddress = glXGetProcAddressARB(procName);
+
+    // If glXGetProcAddress didn't work, try looking the symbol up in the GL library
+#if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)
+    if (!procAddress) {
+        void *handle = dlopen(NULL, RTLD_LAZY);
+        if (handle) {
+            procAddress = dlsym(handle, procName);
+            dlclose(handle);
+        }
+    }
+#endif
+#if !defined(QT_NO_LIBRARY)
+    if (!procAddress) {
+        extern const QString qt_gl_library_name();
+        QLibrary lib(qt_gl_library_name());
+        procAddress = lib.resolve(procName);
+    }
+#endif
+
+    return procAddress;
+}
 
 bool QGLFormat::hasOpenGL()
 {
@@ -791,22 +847,15 @@ void QGLContext::makeCurrent()
     if (!ok)
         qWarning("QGLContext::makeCurrent(): Failed.");
 
-    if (ok) {
-        if (!qgl_context_storage.hasLocalData() && QThread::currentThread())
-            qgl_context_storage.setLocalData(new QGLThreadContext);
-        if (qgl_context_storage.hasLocalData())
-            qgl_context_storage.localData()->context = this;
-        currentCtx = this;
-    }
+    if (ok)
+        QGLContextPrivate::setCurrentContext(this);
 }
 
 void QGLContext::doneCurrent()
 {
     Q_D(QGLContext);
     glXMakeCurrent(qt_x11Info(d->paintDevice)->display(), 0, 0);
-    if (qgl_context_storage.hasLocalData())
-        qgl_context_storage.localData()->context = 0;
-    currentCtx = 0;
+    QGLContextPrivate::setCurrentContext(0);
 }
 
 
@@ -826,23 +875,8 @@ void QGLContext::swapBuffers() const
             if (!resolved) {
                 QString glxExt = QLatin1String(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS));
                 if (glxExt.contains(QLatin1String("GLX_SGI_video_sync"))) {
-#if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)
-                    void *handle = dlopen(NULL, RTLD_LAZY);
-                    if (handle) {
-                        glXGetVideoSyncSGI = (qt_glXGetVideoSyncSGI) dlsym(handle, "glXGetVideoSyncSGI");
-                        glXWaitVideoSyncSGI = (qt_glXWaitVideoSyncSGI) dlsym(handle, "glXWaitVideoSyncSGI");
-                        dlclose(handle);
-                    }
-                    if (!glXGetVideoSyncSGI)
-#endif
-                    {
-#if !defined(QT_NO_LIBRARY)
-                        extern const QString qt_gl_library_name();
-                        QLibrary lib(qt_gl_library_name());
-                        glXGetVideoSyncSGI = (qt_glXGetVideoSyncSGI) lib.resolve("glXGetVideoSyncSGI");
-                        glXWaitVideoSyncSGI = (qt_glXWaitVideoSyncSGI) lib.resolve("glXWaitVideoSyncSGI");
-#endif
-                    }
+                    glXGetVideoSyncSGI =  (qt_glXGetVideoSyncSGI)qglx_getProcAddress("glXGetVideoSyncSGI");
+                    glXWaitVideoSyncSGI = (qt_glXWaitVideoSyncSGI)qglx_getProcAddress("glXWaitVideoSyncSGI");
                 }
                 resolved = true;
             }
@@ -1308,7 +1342,6 @@ void QGLWidget::setContext(QGLContext *context,
     QGLContext* oldcx = d->glcx;
     d->glcx = context;
 
-
     if (parentWidget()) {
         // force creation of delay-created widgets
         parentWidget()->winId();
@@ -1576,21 +1609,8 @@ bool qt_resolveTextureFromPixmap()
 
         QString glxExt = QLatin1String(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS));
         if (glxExt.contains(QLatin1String("GLX_EXT_texture_from_pixmap"))) {
-#if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)
-            void *handle = dlopen(NULL, RTLD_LAZY);
-            if (handle) {
-                glXBindTexImageEXT = (qt_glXBindTexImageEXT) dlsym(handle, "glXBindTexImageEXT");
-                glXReleaseTexImageEXT = (qt_glXReleaseTexImageEXT) dlsym(handle, "glXReleaseTexImageEXT");
-                dlclose(handle);
-            }
-            if (!glXBindTexImageEXT)
-#endif
-            {
-                extern const QString qt_gl_library_name();
-                QLibrary lib(qt_gl_library_name());
-                glXBindTexImageEXT = (qt_glXBindTexImageEXT) lib.resolve("glXBindTexImageEXT");
-                glXReleaseTexImageEXT = (qt_glXReleaseTexImageEXT) lib.resolve("glXReleaseTexImageEXT");
-            }
+            glXBindTexImageEXT = (qt_glXBindTexImageEXT) qglx_getProcAddress("glXBindTexImageEXT");
+            glXReleaseTexImageEXT = (qt_glXReleaseTexImageEXT) qglx_getProcAddress("glXReleaseTexImageEXT");
         }
     }
 

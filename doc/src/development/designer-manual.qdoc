@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -61,8 +61,8 @@
     \l{Getting To Know Qt Designer} document. For a quick tutorial on how to
     use \QD, refer to \l{A Quick Start to Qt Designer}.
 
-    Qt Designer 4.5 boasts a long list of improvements. For a detailed list of
-    what is new, refer \l{What's New in Qt Designer 4.5}.
+    Qt Designer 4.6 boasts a long list of improvements. For a detailed list of
+    what is new, refer \l{What's New in Qt Designer 4.6}.
 
     \image designer-multiple-screenshot.png
 
@@ -110,124 +110,6 @@
 
     \list
     \i \l{Implementation of the Recursive Shadow Casting Algorithm in Qt Designer}
-    \endlist
-*/
-
-
-
-/*!
-    \page designer-whats-new.html
-    \contentspage {Qt Designer Manual}{Contents}
-
-
-    \title What's New in Qt Designer 4.5
-
-    \section1 General Changes
-
-
-    \table
-        \header
-            \i  Widget Filter Box
-            \i  Widget Morphing
-            \i  Disambiguation Field
-        \row
-            \i  \inlineimage designer-widget-filter.png
-            \i  \inlineimage designer-widget-morph.png
-            \i  \inlineimage designer-disambiguation.png
-    \endtable
-
-    \list 1
-        \i  Displaying only icons in the \gui{Widget Box}: It is now possible
-            for the \gui{Widget Box} to display icons only. Simply select
-            \gui{Icon View} from the context menu.
-        \i  Filter for \gui{Widget Box}: A filter is now provided to quickly
-            locate the widget you need. If you use a particular widget
-            frequently, you can always add it to the
-            \l{Getting to Know Qt Designer#WidgetBox}{scratch pad}.
-        \i  Support for QButtonGroup: It is available via the context
-            menu of a selection of QAbstractButton objects.
-        \i  Improved support for item widgets: The item widgets' (e.g.,
-            QListWidget, QTableWidget, and QTreeWidget) contents dialogs have
-            been improved. You can now add translation comments and also modify
-            the header properties.
-        \i  Widget morphing: A widget can now be morphed from one type to
-            another with its layout and properties preserved. To begin, click
-            on your widget and select \gui{Morph into} from the context menu.
-        \i  Disambiguation field: The property editor now shows this extra
-            field under the \gui{accessibleDescription} property. This field
-            has been introduced to aid translators in the case of two source
-            texts being the same but used for different purposes. For example,
-            a dialog could have two \gui{Add} buttons for two different
-            reasons. \note To maintain compatibility, comments in UI files
-            created prior to Qt 4.5 will be listed in the \gui{Disambiguation}
-            field.
-    \endlist
-
-
-
-    \section1 Improved Shortcuts for the Editing Mode
-
-    \list
-        \i  The \key{Shift+Click} key combination now selects the ancestor for
-            nested layouts. This iterates from one ancestor to the other.
-
-        \i  The \key{Ctrl} key is now used to toggle and copy drag. Previously
-            this was done with the \key{Shift} key but is now changed to
-            conform to standards.
-
-        \i  The left mouse button does rubber band selection for form windows;
-            the middle mouse button does rubber band selection everywhere.
-    \endlist
-
-
-    \section1 Layouts
-    \list
-        \i  It is now possible to switch a widget's layout without breaking it
-            first. Simply select the existing layout and change it to another
-            type using the context menu or the layout buttons on the toolbar.
-
-        \i  To quickly populate a \gui{Form Layout}, you can now use the
-            \gui{Add form layout row...} item available in the context menu or
-            double-click on the red layout.
-    \endlist
-
-
-    \section1 Support for Embedded Design
-
-    \table
-        \header
-            \i  Comboboxes to Select a Device Profile
-        \row
-            \i  \inlineimage designer-embedded-preview.png
-    \endtable
-
-    It is now possible to specify embedded device profiles, e.g., Style, Font,
-    Screen DPI, resolution, default font, etc., in \gui{Preferences}. These
-    settings will affect the \gui{Form Editor}. The profiles will also be
-    visible with \gui{Preview}.
-
-
-    \section1 Related Classes
-
-    \list
-        \i  QUiLoader \mdash forms loaded with this class will now react to
-            QEvent::LanguageChange if QUiLoader::setLanguageChangeEnabled() or
-            QUiLoader::isLanguageChangeEnabled() is set to true.
-
-        \i  QDesignerCustomWidgetInterface \mdash the
-            \l{QDesignerCustomWidgetInterface::}{domXml()} function now has new
-            attributes for its \c{<ui>} element. These attributes are
-            \c{language} and \c{displayname}. The \c{language} element can be
-            one of the following "", "c++", "jambi". If this element is
-            specified, it must match the language in which Designer is running.
-            Otherwise, this element will not be available. The \c{displayname}
-            element represents the name that will be displayed in the
-            \gui{Widget Box}. Previously this was hardcoded to be the class
-            name.
-
-        \i  QWizard \mdash QWizard's page now has a string \c{id} attribute that
-            can be used to fill in enumeration values to be used by the
-            \c{uic}. However, this attribute has no effect on QUiLoader.
     \endlist
 */
 
@@ -1520,26 +1402,34 @@
 
 
     \target CreatingAMenu
-    \table
-        \row
-            \i  \inlineimage designer-creating-menu1.png
-            \i  \inlineimage designer-creating-menu2.png
-            \i  \bold{Creating a Menu}
+    \raw HTML
+    <div style="float: left; margin-right: 2em">
+    \endraw
+    \inlineimage designer-creating-menu1.png
+    \inlineimage designer-creating-menu2.png
+    \br
+    \inlineimage designer-creating-menu3.png
+    \inlineimage designer-creating-menu4.png
+    \raw HTML
+    </div>
+    \endraw
 
-        Double-click the placeholder item to begin editing. The menu text,
-        displayed using a line edit, can be modified.
+    \section2 Creating a Menu
 
-        \row
-            \i  \inlineimage designer-creating-menu3.png
-            \i  \inlineimage designer-creating-menu4.png
-            \i  Insert the required text for the new menu. Inserting an
-                ampersand character (&) causes the letter following it to be
-                used as a mnemonic for the menu.
+    Double-click the placeholder item to begin editing. The menu text,
+    displayed using a line edit, can be modified.
 
-        Press \key Return or \key Enter to accept the new text, or press
-        \key Escape to reject it. You can undo the editing operation later if
-        required.
-    \endtable
+    Insert the required text for the new menu. Inserting an
+    ampersand character (&) causes the letter following it to be
+    used as a mnemonic for the menu.
+
+    Press \key Return or \key Enter to accept the new text, or press
+    \key Escape to reject it. You can undo the editing operation later if
+    required.
+
+    \raw HTML
+    <div style="clear: both" />
+    \endraw
 
     Menus can also be rearranged in the menu bar simply by dragging and
     dropping them in the preferred location. A vertical red line indicates the
@@ -1550,31 +1440,39 @@
     navigating the menu structure in the usual way.
 
     \target CreatingAMenuEntry
-    \table
-        \row
-            \i  \inlineimage designer-creating-menu-entry1.png
-            \i  \inlineimage designer-creating-menu-entry2.png
-            \i  \bold{Creating a Menu Entry}
+    \raw HTML
+    <div style="float: right; margin-left: 2em">
+    \endraw
+    \inlineimage designer-creating-menu-entry1.png
+    \inlineimage designer-creating-menu-entry2.png
+    \br
+    \inlineimage designer-creating-menu-entry3.png
+    \inlineimage designer-creating-menu-entry4.png
+    \raw HTML
+    </div>
+    \endraw
 
-        Double-click the \gui{new action} placeholder to begin editing, or
-        double-click \gui{new separator} to insert a new separator line after
-        the last entry in the menu.
+    \section2 Creating a Menu Entry
 
-        The menu entry's text is displayed using a line edit, and can be
-        modified.
+    Double-click the \gui{Type Here} placeholder to begin editing, or
+    double-click \gui{Add Separator} to insert a new separator line after
+    the last entry in the menu.
 
-        \row
-            \i  \inlineimage designer-creating-menu-entry3.png
-            \i  \inlineimage designer-creating-menu-entry4.png
-            \i  Insert the required text for the new entry, optionally using
-                the ampersand character (&) to mark the letter to use as a
-                mnemonic for the entry.
+    The menu entry's text is displayed using a line edit, and can be
+    modified.
 
-        Press \key Return or \key Enter to accept the new text, or press
-        \key Escape to reject it. The action created for this menu entry will
-        be accessible via the \l{#TheActionEditor}{Action Editor}, and any
-        associated keyboard shortcut can be set there.
-    \endtable
+    Insert the required text for the new entry, optionally using
+    the ampersand character (&) to mark the letter to use as a
+    mnemonic for the entry.
+
+    Press \key Return or \key Enter to accept the new text, or press
+    \key Escape to reject it. The action created for this menu entry will
+    be accessible via the \l{#TheActionEditor}{Action Editor}, and any
+    associated keyboard shortcut can be set there.
+
+    \raw HTML
+    <div style="clear: both" />
+    \endraw
 
     Just like with menus, entries can be moved around simply by dragging and
     dropping them in the preferred location. When an entry is dragged over a
@@ -1582,53 +1480,91 @@
     menu entries are based on actions, they can also be dropped onto toolbars,
     where they will be displayed as toolbar buttons.
 
-
     \section1 Toolbars
 
+    \raw HTML
+    <div style="float: left; margin-right: 2em">
+    \endraw
+    \inlineimage designer-creating-toolbar.png
+    \raw HTML
+    </div>
+    \endraw
 
-    ### SCREENSHOT
+    \section2 Creating and Removing a Toolbar
 
-    Toolbars ared added to a main window in a similar way to the menu bar:
+    Toolbars are added to a main window in a similar way to the menu bar:
     Select the \gui{Add Tool Bar} option from the form's context menu.
     Alternatively, if there is an existing toolbar in the main window, you can
     click the arrow on its right end to create a new toolbar.
 
-    Toolbar buttons are created using the action system to populate each
-    toolbar, rather than by using specific button widgets from the widget box.
-    Since actions can be represented by menu entries and toolbar buttons, they
-    can be moved between menus and toolbars. To share an action between a menu
-    and a toolbar, drag its icon from the \l{#TheActionEditor}{Action Editor}
-    to the toolbar rather than from the menu where its entry is located.
+    Toolbars are removed from the form via an entry in the toolbar's context
+    menu.
 
-    New actions for menus and toolbars can be created in the
-    \l{#TheActionEditor}{Action Editor}.
+    \raw HTML
+    <div style="clear: both" />
+    \endraw
 
+    \section2 Adding and Removing Toolbar Buttons
+
+    Toolbar buttons are created as actions in the
+    \l{#TheActionEditor}{Action Editor} and dragged onto the toolbar.
+    Since actions can be represented by menu entries and toolbar buttons,
+    they can be moved between menus and toolbars.
+
+    \raw HTML
+    <div style="float: right; margin-left: 2em">
+    \endraw
+    \inlineimage designer-adding-toolbar-action.png
+    \inlineimage designer-removing-toolbar-action.png
+    \raw HTML
+    </div>
+    \endraw
+
+    To share an action between a menu and a toolbar, drag its icon from the
+    action editor to the toolbar rather than from the menu where its entry is
+    located. See \l{#Adding an Action}{Adding an Action} for more information
+    about this process.
+
+    Toolbar buttons are removed via the toolbar's context menu.
+
+    \raw HTML
+    <div style="clear: both" />
+    \endraw
 
     \section1 Actions
 
     With the menu bar and the toolbars in place, it's time to populate them
-    with action: \QD provides an action editor to simplify the creation and
-    management of actions.
-
+    with actions. New actions for both menus and toolbars are created in the
+    action editor window, simplifying the creation and management of actions.
 
     \target TheActionEditor
-    \table
-        \row
-            \i  \inlineimage designer-action-editor.png
-            \i  \bold{The Action Editor}
+    \raw HTML
+    <div style="float: left; margin-right: 2em">
+    \endraw
+    \inlineimage designer-action-editor.png
+    \raw HTML
+    </div>
+    \endraw
 
-        Enable the action editor by opening the \gui Tools menu, and switching
-        on the \gui{Action Editor} option.
+    \section2 The Action Editor
 
-        The action editor allows you to create \gui New actions and \gui Delete
-        actions. It also provides a search function, \gui Filter, using the
-        action's text.
+    Enable the action editor by opening the \gui Tools menu, and switching
+    on the \gui{Action Editor} option.
 
-        \QD's action editor can be viewed in the classic \gui{Icon View} and
-        \gui{Detailed View}. The screenshot below shows the action editor in
-        \gui{Detailed View}. You can also copy and paste actions between menus,
-        toolbars and forms.
-    \endtable
+    The action editor allows you to create \gui New actions and \gui Delete
+    actions. It also provides a search function, \gui Filter, using the
+    action's text.
+
+    \QD's action editor can be viewed in the classic \gui{Icon View} and
+    \gui{Detailed View}. The screenshot below shows the action editor in
+    \gui{Detailed View}. You can also copy and paste actions between menus,
+    toolbars and forms.
+
+    \raw HTML
+    <div style="clear: both" />
+    \endraw
+
+    \section2 Creating an Action
 
     To create an action, use the action editor's \gui New button, which will
     then pop up an input dialog. Provide the new action with a \gui Text --
@@ -1641,23 +1577,33 @@
 
     Once the action is created, it can be used wherever actions are applicable.
 
+    \raw HTML
+    <div style="clear: left" />
+    \endraw
 
     \target AddingAnAction
-    \table
-        \row
-            \i  \inlineimage designer-adding-menu-action.png
-            \i  \inlineimage designer-adding-toolbar-action.png
-            \i  \bold{Adding an Action}
+    \raw HTML
+    <div style="float: right; margin-left: 2em">
+    \endraw
+    \inlineimage designer-adding-menu-action.png
+    \inlineimage designer-adding-toolbar-action.png
+    \raw HTML
+    </div>
+    \endraw
 
-        To add an action to a menu or a toolbar, simply press the left mouse
-        button over the action in the action editor, and drag it to the
-        preferred location.
+    \section2 Adding an Action
 
-        \QD provides highlighted guide lines that tell you where the action
-        will be added. Release the mouse button to add the action when you have
-        found the right spot.
-    \endtable
+    To add an action to a menu or a toolbar, simply press the left mouse
+    button over the action in the action editor, and drag it to the
+    preferred location.
 
+    \QD provides highlighted guide lines that tell you where the action
+    will be added. Release the mouse button to add the action when you have
+    found the right spot.
+
+    \raw HTML
+    <div style="clear: right" />
+    \endraw
 
     \section1 Dock Widgets
 
@@ -1668,21 +1614,35 @@
     and choose an appropriate value for its \gui{dockWidgetArea} property.
 
     \target AddingADockWidget
-    \table
-        \row
-            \i  \inlineimage designer-adding-dockwidget.png
-            \i  \bold{Adding a Dock Widget}
 
-        To add a dock widget, simply drag one from the \gui Containers section
-        of the widget box, and drop it onto the main form area. Just like other
-        widgets, its properties can be modified with the \gui{Property Editor}.
+    \raw HTML
+    <div style="float: left; margin-right: 2em">
+    \endraw
+    \inlineimage designer-adding-dockwidget.png
+    \raw HTML
+    </div>
+    \endraw
 
-        Dock widgets can be optionally floated as indpendent tool windows.
-        Hence, it is useful to give them window titles by setting their
-        \gui{windowTitle} property. This also helps to identify them on the
-        form.
+    \section2 Adding a Dock Widget
 
-    \endtable
+    To add a dock widget to a form, drag one from the \gui Containers section
+    of the widget box, and drop it onto the main form area. Do not add the
+    dock widget to an existing layout. Instead, open the \gui{Property Editor}
+    and enable the \gui{docked} property to place it in a dock area.
+
+    Note that it is sometimes easier to configure a dock widget if it is added
+    to a form before a layout is applied to the central widget. For example,
+    it is possible to undock it and resize it, making it more convenient to
+    add child widgets.
+
+    Dock widgets can be optionally floated as independent tool windows.
+    Hence, it is useful to give them window titles by setting their
+    \l{QDockWidget::}{windowTitle} property. This also helps to identify them on the
+    form.
+
+    \raw HTML
+    <div style="clear: both" />
+    \endraw
 */
 
 

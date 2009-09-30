@@ -255,11 +255,11 @@ EXPORTS
 	_ZN14QNetworkCookie9setDomainERK7QString @ 254 NONAME
 	_ZN14QNetworkCookie9setSecureEb @ 255 NONAME
 	_ZN14QNetworkCookieC1ERK10QByteArray @ 256 NONAME ABSENT
-	_ZN14QNetworkCookieC1ERK10QByteArrayS2_ @ 257 NONAME ABSENT
+	_ZN14QNetworkCookieC1ERK10QByteArrayS2_ @ 257 NONAME 
 	_ZN14QNetworkCookieC1ERKS_ @ 258 NONAME
 	_ZN14QNetworkCookieC1Ev @ 259 NONAME ABSENT
 	_ZN14QNetworkCookieC2ERK10QByteArray @ 260 NONAME ABSENT
-	_ZN14QNetworkCookieC2ERK10QByteArrayS2_ @ 261 NONAME ABSENT
+	_ZN14QNetworkCookieC2ERK10QByteArrayS2_ @ 261 NONAME 
 	_ZN14QNetworkCookieC2ERKS_ @ 262 NONAME
 	_ZN14QNetworkCookieC2Ev @ 263 NONAME ABSENT
 	_ZN14QNetworkCookieD1Ev @ 264 NONAME
@@ -1364,4 +1364,34 @@ EXPORTS
 	_ZNK13QNetworkReply9isRunningEv @ 1363 NONAME
 	_ZNK17QHttpNetworkReply23bytesAvailableNextBlockEv @ 1364 NONAME
 	_ZNK19QHttpNetworkRequest16uploadByteDeviceEv @ 1365 NONAME
+	_ZN10QSslSocket19getStaticMetaObjectEv @ 1366 NONAME
+	_ZN10QTcpServer19getStaticMetaObjectEv @ 1367 NONAME
+	_ZN10QTcpSocket19getStaticMetaObjectEv @ 1368 NONAME
+	_ZN10QUdpSocket19getStaticMetaObjectEv @ 1369 NONAME
+	_ZN12QLocalServer19getStaticMetaObjectEv @ 1370 NONAME
+	_ZN12QLocalSocket19getStaticMetaObjectEv @ 1371 NONAME
+	_ZN13QNetworkReply19getStaticMetaObjectEv @ 1372 NONAME
+	_ZN15QAbstractSocket19getStaticMetaObjectEv @ 1373 NONAME
+	_ZN17QHttpNetworkReply19getStaticMetaObjectEv @ 1374 NONAME
+	_ZN17QHttpSocketEngine19getStaticMetaObjectEv @ 1375 NONAME
+	_ZN17QNetworkCookieJar19getStaticMetaObjectEv @ 1376 NONAME
+	_ZN17QNetworkDiskCache19getStaticMetaObjectEv @ 1377 NONAME
+	_ZN19QHttpNetworkRequest20setPipeliningAllowedEb @ 1378 NONAME
+	_ZN19QNativeSocketEngine19getStaticMetaObjectEv @ 1379 NONAME
+	_ZN19QSocks5SocketEngine19getStaticMetaObjectEv @ 1380 NONAME
+	_ZN20QNetworkProxyFactory32setUseSystemConfigurationEnabledEb @ 1381 NONAME
+	_ZN21QAbstractNetworkCache19getStaticMetaObjectEv @ 1382 NONAME
+	_ZN21QAbstractSocketEngine19getStaticMetaObjectEv @ 1383 NONAME
+	_ZN21QNetworkAccessManager19getStaticMetaObjectEv @ 1384 NONAME
+	_ZN22QHttpNetworkConnection19getStaticMetaObjectEv @ 1385 NONAME
+	_ZN22QHttpNetworkConnectionC1EtRK7QStringtbP7QObject @ 1386 NONAME
+	_ZN22QHttpNetworkConnectionC2EtRK7QStringtbP7QObject @ 1387 NONAME
+	_ZN4QFtp19getStaticMetaObjectEv @ 1388 NONAME
+	_ZN5QHttp19getStaticMetaObjectEv @ 1389 NONAME
+	_ZNK17QHttpNetworkReply16isPipeliningUsedEv @ 1390 NONAME
+	_ZNK19QHttpNetworkRequest19isPipeliningAllowedEv @ 1391 NONAME
+	_ZTI24QNetworkReplyImplPrivate @ 1392 NONAME ABSENT; #<TI># 
+	_ZTI29QHttpNetworkConnectionChannel @ 1393 NONAME ABSENT; #<TI># 
+	_ZTV24QNetworkReplyImplPrivate @ 1394 NONAME ABSENT; #<VT>#
+	_ZTV29QHttpNetworkConnectionChannel @ 1395 NONAME ABSENT; #<VT># 
 

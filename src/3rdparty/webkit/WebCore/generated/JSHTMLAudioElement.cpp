@@ -70,6 +70,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLAudioElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -84,6 +85,11 @@ const ClassInfo JSHTMLAudioElementConstructor::s_info = { "HTMLAudioElementConst
 bool JSHTMLAudioElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLAudioElementConstructor, DOMObject>(exec, &JSHTMLAudioElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLAudioElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLAudioElementConstructor, DOMObject>(exec, &JSHTMLAudioElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -122,6 +128,11 @@ JSObject* JSHTMLAudioElement::createPrototype(ExecState* exec, JSGlobalObject* g
 bool JSHTMLAudioElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLAudioElement, Base>(exec, &JSHTMLAudioElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLAudioElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLAudioElement, Base>(exec, &JSHTMLAudioElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLAudioElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

@@ -95,6 +95,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSSVGPathSegPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -109,6 +110,11 @@ const ClassInfo JSSVGPathSegConstructor::s_info = { "SVGPathSegConstructor", 0, 
 bool JSSVGPathSegConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGPathSegConstructor, DOMObject>(exec, &JSSVGPathSegConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGPathSegConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGPathSegConstructor, DOMObject>(exec, &JSSVGPathSegConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -157,6 +163,11 @@ bool JSSVGPathSegPrototype::getOwnPropertySlot(ExecState* exec, const Identifier
     return getStaticValueSlot<JSSVGPathSegPrototype, JSObject>(exec, &JSSVGPathSegPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGPathSegPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGPathSegPrototype, JSObject>(exec, &JSSVGPathSegPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGPathSeg::s_info = { "SVGPathSeg", 0, &JSSVGPathSegTable, 0 };
 
 JSSVGPathSeg::JSSVGPathSeg(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSeg> impl, SVGElement* context)
@@ -167,7 +178,7 @@ JSSVGPathSeg::JSSVGPathSeg(PassRefPtr<Structure> structure, JSDOMGlobalObject* g
 
 JSSVGPathSeg::~JSSVGPathSeg()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGPathSeg::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -178,6 +189,11 @@ JSObject* JSSVGPathSeg::createPrototype(ExecState* exec, JSGlobalObject* globalO
 bool JSSVGPathSeg::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGPathSeg, Base>(exec, &JSSVGPathSegTable, this, propertyName, slot);
+}
+
+bool JSSVGPathSeg::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGPathSeg, Base>(exec, &JSSVGPathSegTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGPathSegPathSegType(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -310,7 +326,7 @@ JSValue jsSVGPathSegPATHSEG_CURVETO_QUADRATIC_SMOOTH_REL(ExecState* exec, const 
 
 SVGPathSeg* toSVGPathSeg(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGPathSeg::s_info) ? static_cast<JSSVGPathSeg*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGPathSeg::s_info) ? static_cast<JSSVGPathSeg*>(asObject(value))->impl() : 0;
 }
 
 }

@@ -88,6 +88,11 @@ bool JSSVGPathSegMovetoRel::getOwnPropertySlot(ExecState* exec, const Identifier
     return getStaticValueSlot<JSSVGPathSegMovetoRel, Base>(exec, &JSSVGPathSegMovetoRelTable, this, propertyName, slot);
 }
 
+bool JSSVGPathSegMovetoRel::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGPathSegMovetoRel, Base>(exec, &JSSVGPathSegMovetoRelTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGPathSegMovetoRelX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGPathSegMovetoRel* castedThis = static_cast<JSSVGPathSegMovetoRel*>(asObject(slot.slotBase()));

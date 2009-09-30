@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -85,9 +85,6 @@
 #if defined(Q_OS_SYMBIAN)
 class RDrawableWindow;
 class CCoeControl;
-// The following 2 defines may only be needed for s60. To be seen.
-const int SOFTKEYSTART=5000;
-const int SOFTKEYEND=5004;
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -172,9 +169,6 @@ struct QTLWExtra {
 #ifndef QT_NO_QWS_MANAGER
     QWSManager *qwsManager;
 #endif
-#elif defined(Q_OS_SYMBIAN) // <--------------------------------------------------------- SYMBIAN
-    uint activated : 1; // RWindowBase::Activated has been called
-    RDrawableWindow *rwindow;
 #endif
 };
 
@@ -227,6 +221,15 @@ struct QWExtra {
     QImage maskBits;
     CGImageRef imageMask;
 #endif
+#elif defined(Q_OS_SYMBIAN) // <----------------------------------------------------- Symbian
+    uint activated : 1; // RWindowBase::Activated has been called
+
+    // If set, QSymbianControl::Draw does not blit this widget
+    // This is to allow, for use cases such as video, widgets which, from the Qt point
+    // of view, are just placeholders in the scene.  For these widgets, any necessary
+    // drawing to the UI framebuffer is done by the relevant Symbian subsystem.  For
+    // video rendering, this would be an MMF controller, or MDF post-processor.
+    uint disableBlit : 1;
 #endif
 };
 
@@ -252,11 +255,17 @@ public:
         CloseWithSpontaneousEvent
     };
 
+    enum Direction {
+        DirectionNorth = 0x01,
+        DirectionEast = 0x10,
+        DirectionSouth = 0x02,
+        DirectionWest = 0x20
+    };
+
     // Functions.
     explicit QWidgetPrivate(int version = QObjectPrivateVersion);
     ~QWidgetPrivate();
 
-    void setSoftKeys_sys(const QList<QAction*> &softkeys);
     QWExtra *extraData() const;
     QTLWExtra *topData() const;
     QTLWExtra *maybeTopData() const;
@@ -285,6 +294,7 @@ public:
     void setMask_sys(const QRegion &);
 #ifdef Q_OS_SYMBIAN
     void handleSymbianDeferredFocusChanged();
+    void setSoftKeys_sys(const QList<QAction*> &softkeys);
 #endif
 
     void raise_sys();
@@ -398,6 +408,11 @@ public:
     void updateFrameStrut();
     QRect frameStrut() const;
 
+#ifdef QT_KEYPAD_NAVIGATION
+    static bool navigateToDirection(Direction direction);
+    static QWidget *widgetInNavigationDirection(Direction direction);
+#endif
+
     void setWindowIconText_sys(const QString &cap);
     void setWindowIconText_helper(const QString &cap);
     void setWindowTitle_sys(const QString &cap);
@@ -505,7 +520,6 @@ public:
     QWidget *focus_next;
     QWidget *focus_prev;
     QWidget *focus_child;
-    QList<QAction*> softKeys;
     QLayout *layout;
     QRegion *needsFlush;
     QPaintDevice *redirectDev;
@@ -692,6 +706,7 @@ public:
     static QWidget *keyboardGrabber;
     void s60UpdateIsOpaque();
     void reparentChildren();
+    void registerTouchWindow();
 #endif
 
 };

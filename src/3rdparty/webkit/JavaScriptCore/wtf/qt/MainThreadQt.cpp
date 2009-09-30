@@ -37,8 +37,6 @@
 
 namespace WTF {
 
-QT_USE_NAMESPACE
-
 class MainThreadInvoker : public QObject {
     Q_OBJECT
 public:

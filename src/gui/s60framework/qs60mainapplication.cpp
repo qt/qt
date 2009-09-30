@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Symbian application wrapper of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -41,53 +41,86 @@
 
 // INCLUDE FILES
 #include <exception>
-#include "qs60maindocument_p.h"
+#include "qs60maindocument.h"
 #include "qs60mainapplication_p.h"
+#include "qs60mainapplication.h"
 #include <bautils.h>
 #include <coemain.h>
 
 QT_BEGIN_NAMESPACE
 
 /**
- * factory function to create the QtS60Main application class
+ * factory function to create the QS60Main application class
  */
-CApaApplication* NewApplication()
+CApaApplication *newS60Application()
 {
     return new QS60MainApplication;
 }
 
-// ============================ MEMBER FUNCTIONS ===============================
-
-
 _LIT(KQtWrapperResourceFile, "\\resource\\apps\\s60main.rsc");
 
-// -----------------------------------------------------------------------------
-// QS60MainApplication::CreateDocumentL()
-// Creates CApaDocument object
-// -----------------------------------------------------------------------------
-//
-CApaDocument* QS60MainApplication::CreateDocumentL()
+/*!
+ * \class QS60MainApplication
+ * \obsolete
+ * \since 4.6
+ * \brief Helper class for S60 migration
+ *
+ * The QS60MainApplication provides a helper class for use in migrating from existing S60 based
+ * applications to Qt based applications. It is used in the exact same way as the
+ * \c CAknApplication class from Symbian, but internally provides extensions used by Qt.
+ *
+ * When modifying old S60 applications that rely on implementing functions in \c CAknApplication,
+ * the class should be modified to inherit from this class instead of \c CAknApplication. Then the
+ * application can choose to override only certain functions. To make Qt use the custom application
+ * objects, pass a factory function to
+ * QApplication::QApplication(QApplication::QS60MainApplicationFactory, int &, char **).
+ *
+ * For more information on \c CAknApplication, please see the S60 documentation.
+ *
+ * Unlike other Qt classes, QS60MainApplication behaves like an S60 class, and can throw Symbian
+ * leaves.
+ *
+ * \sa QS60MainDocument, QS60MainAppUi, QApplication::QApplication(QApplication::QS60MainApplicationFactory, int &, char **)
+ */
+
+/*!
+ * \brief Contructs an instance of QS60MainApplication.
+ */
+QS60MainApplication::QS60MainApplication()
 {
-    // Create an QtS60Main document, and return a pointer to it
-    return (static_cast<CApaDocument*>(QS60MainDocument::NewL(*this)));
 }
 
-// -----------------------------------------------------------------------------
-// QS60MainApplication::AppDllUid()
-// Returns application UID
-// -----------------------------------------------------------------------------
-//
+/*!
+ * \brief Destroys the QS60MainApplication.
+ */
+QS60MainApplication::~QS60MainApplication()
+{
+}
+
+/*!
+ * \brief Creates an instance of QS60MainDocument.
+ *
+ * \sa QS60MainDocument
+ */
+CApaDocument *QS60MainApplication::CreateDocumentL()
+{
+    // Create an QtS60Main document, and return a pointer to it
+    return new (ELeave) QS60MainDocument(*this);
+}
+
+
+/*!
+ * \brief Returns the UID of the application.
+ */
 TUid QS60MainApplication::AppDllUid() const
 {
     // Return the UID for the QtS60Main application
-    return ProcessUid();
+    return RProcess().SecureId().operator TUid();
 }
 
-// -----------------------------------------------------------------------------
-// QS60MainApplication::ResourceFileName()
-// Returns application resource filename
-// -----------------------------------------------------------------------------
-//
+/*!
+ * \brief Returns the resource file name.
+ */
 TFileName QS60MainApplication::ResourceFileName() const
 {
     TFindFile finder(iCoeEnv->FsSession());
@@ -98,5 +131,3 @@ TFileName QS60MainApplication::ResourceFileName() const
 }
 
 QT_END_NAMESPACE
-
-// End of File

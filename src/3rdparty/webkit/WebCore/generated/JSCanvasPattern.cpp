@@ -61,7 +61,7 @@ JSCanvasPattern::JSCanvasPattern(PassRefPtr<Structure> structure, JSDOMGlobalObj
 
 JSCanvasPattern::~JSCanvasPattern()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSCanvasPattern::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -75,7 +75,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, CanvasP
 }
 CanvasPattern* toCanvasPattern(JSC::JSValue value)
 {
-    return value.isObject(&JSCanvasPattern::s_info) ? static_cast<JSCanvasPattern*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSCanvasPattern::s_info) ? static_cast<JSCanvasPattern*>(asObject(value))->impl() : 0;
 }
 
 }

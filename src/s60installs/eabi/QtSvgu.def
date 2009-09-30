@@ -202,4 +202,13 @@ EXPORTS
 	_ZThn8_N16QGraphicsSvgItem5paintEP8QPainterPK24QStyleOptionGraphicsItemP7QWidget @ 201 NONAME
 	_ZThn8_NK16QGraphicsSvgItem12boundingRectEv @ 202 NONAME
 	_ZThn8_NK16QGraphicsSvgItem4typeEv @ 203 NONAME
+	_ZN10QSvgWidget19getStaticMetaObjectEv @ 204 NONAME
+	_ZN12QSvgRenderer19getStaticMetaObjectEv @ 205 NONAME
+	_ZN16QGraphicsSvgItem19getStaticMetaObjectEv @ 206 NONAME
+	_ZN16QSvgTinyDocument12addNamedNodeERK7QStringP8QSvgNode @ 207 NONAME
+	_ZN16QSvgTinyDocument13addNamedStyleERK7QStringP21QSvgFillStyleProperty @ 208 NONAME
+	_ZNK16QSvgTinyDocument10namedStyleERK7QString @ 209 NONAME
+	_ZNK16QSvgTinyDocument9namedNodeERK7QString @ 210 NONAME
+	_ZTI21QSvgFillStyleProperty @ 211 NONAME ABSENT; #<TI># 
+	_ZTV21QSvgFillStyleProperty @ 212 NONAME ABSENT; #<VT># 
 

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -346,6 +346,10 @@ Q_GUI_EXPORT void qt_x11_enforce_cursor(QWidget * w)
     qt_x11_enforce_cursor(w, false);
 }
 
+static Bool checkForConfigureAndExpose(Display *, XEvent *e, XPointer)
+{
+    return e->type == ConfigureNotify || e->type == Expose;
+}
 
 Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
 {
@@ -355,18 +359,42 @@ Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
     XEvent ev;
     QTime t;
     t.start();
+    static const int maximumWaitTime = 2000;
     if (!w->testAttribute(Qt::WA_WState_Created))
         return;
-    while (!XCheckTypedWindowEvent(X11->display, w->effectiveWinId(), ReparentNotify, &ev)) {
-        if (XCheckTypedWindowEvent(X11->display, w->effectiveWinId(), MapNotify, &ev))
-            break;
-        if (t.elapsed() > 500)
-            return; // give up, no event available
+
+    if (!(w->windowFlags() & Qt::X11BypassWindowManagerHint)) {
+        // if the window is not override-redirect, then the window manager
+        // will reparent us to the frame decoration window.
+        while (!XCheckTypedWindowEvent(X11->display, w->effectiveWinId(), ReparentNotify, &ev)) {
+            if (t.elapsed() > maximumWaitTime)
+                return;
+            qApp->syncX(); // non-busy wait
+        }
+    }
+
+    while (!XCheckTypedWindowEvent(X11->display, w->effectiveWinId(), MapNotify, &ev)) {
+        if (t.elapsed() > maximumWaitTime)
+            return;
         qApp->syncX(); // non-busy wait
     }
+
     qApp->x11ProcessEvent(&ev);
-    if (XCheckTypedWindowEvent(X11->display, w->effectiveWinId(), ConfigureNotify, &ev))
-        qApp->x11ProcessEvent(&ev);
+
+    // ok, seems like the window manager successfully reparented us, we'll wait
+    // for the first paint event to arrive, while handling ConfigureNotify in
+    // the arrival order
+    while(1)
+    {
+        if (XCheckIfEvent(X11->display, &ev, checkForConfigureAndExpose, 0)) {
+            qApp->x11ProcessEvent(&ev);
+            if (ev.type == Expose)
+                return;
+        }
+        if (t.elapsed() > maximumWaitTime)
+            return;
+        qApp->syncX(); // non-busy wait
+    }
 }
 
 void qt_change_net_wm_state(const QWidget* w, bool set, Atom one, Atom two = 0)

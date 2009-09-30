@@ -2,7 +2,8 @@ TEMPLATE      = \
               subdirs
 SUBDIRS       = \
               blurpicker \
-              lighting
+              lighting \
+              fademessage
 
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2):SUBDIRS += customshader
 

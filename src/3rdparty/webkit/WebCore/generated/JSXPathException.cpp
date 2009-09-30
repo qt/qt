@@ -79,6 +79,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSXPathExceptionPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -93,6 +94,11 @@ const ClassInfo JSXPathExceptionConstructor::s_info = { "XPathExceptionConstruct
 bool JSXPathExceptionConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSXPathExceptionConstructor, DOMObject>(exec, &JSXPathExceptionConstructorTable, this, propertyName, slot);
+}
+
+bool JSXPathExceptionConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSXPathExceptionConstructor, DOMObject>(exec, &JSXPathExceptionConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -124,6 +130,11 @@ bool JSXPathExceptionPrototype::getOwnPropertySlot(ExecState* exec, const Identi
     return getStaticPropertySlot<JSXPathExceptionPrototype, JSObject>(exec, &JSXPathExceptionPrototypeTable, this, propertyName, slot);
 }
 
+bool JSXPathExceptionPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticPropertyDescriptor<JSXPathExceptionPrototype, JSObject>(exec, &JSXPathExceptionPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSXPathException::s_info = { "XPathException", 0, &JSXPathExceptionTable, 0 };
 
 JSXPathException::JSXPathException(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XPathException> impl)
@@ -134,7 +145,7 @@ JSXPathException::JSXPathException(PassRefPtr<Structure> structure, JSDOMGlobalO
 
 JSXPathException::~JSXPathException()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSXPathException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -145,6 +156,11 @@ JSObject* JSXPathException::createPrototype(ExecState* exec, JSGlobalObject* glo
 bool JSXPathException::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSXPathException, Base>(exec, &JSXPathExceptionTable, this, propertyName, slot);
+}
+
+bool JSXPathException::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSXPathException, Base>(exec, &JSXPathExceptionTable, this, propertyName, descriptor);
 }
 
 JSValue jsXPathExceptionCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -184,7 +200,7 @@ JSValue JSXPathException::getConstructor(ExecState* exec, JSGlobalObject* global
 JSValue JSC_HOST_CALL jsXPathExceptionPrototypeFunctionToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSXPathException::s_info))
+    if (!thisValue.inherits(&JSXPathException::s_info))
         return throwError(exec, TypeError);
     JSXPathException* castedThisObj = static_cast<JSXPathException*>(asObject(thisValue));
     XPathException* imp = static_cast<XPathException*>(castedThisObj->impl());
@@ -212,7 +228,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, XPathEx
 }
 XPathException* toXPathException(JSC::JSValue value)
 {
-    return value.isObject(&JSXPathException::s_info) ? static_cast<JSXPathException*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSXPathException::s_info) ? static_cast<JSXPathException*>(asObject(value))->impl() : 0;
 }
 
 }

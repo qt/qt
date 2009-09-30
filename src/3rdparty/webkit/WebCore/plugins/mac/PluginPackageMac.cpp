@@ -246,9 +246,6 @@ bool PluginPackage::fetchInfo()
 
 bool PluginPackage::isPluginBlacklisted()
 {
-    if (name() == "Silverlight Plug-In" || name().startsWith("QuickTime Plug-in"))
-        return true;
-
     return false;
 }
 

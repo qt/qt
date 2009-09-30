@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -211,7 +211,8 @@ static QString classPath(GtkWidget *widget)
 
 static void resolveGtk()
 {
-    QLibrary libgtk(QLS("gtk-x11-2.0"));
+    // enforce the "0" suffix, so we'll open libgtk-x11-2.0.so.0
+    QLibrary libgtk(QLS("gtk-x11-2.0"), 0, 0);
     QGtk::gtk_init = (Ptr_gtk_init)libgtk.resolve("gtk_init");
     QGtk::gtk_window_new = (Ptr_gtk_window_new)libgtk.resolve("gtk_window_new");
     QGtk::gtk_style_attach = (Ptr_gtk_style_attach)libgtk.resolve("gtk_style_attach");
@@ -423,27 +424,32 @@ static void init_gtk_window()
     static QString themeName;
     if (!gtkWidgetMap()->contains(QLS("GtkWindow")) && themeName.isEmpty()) {
         themeName = getThemeName();
-        // Due to namespace conflicts with Qt3 and obvious recursion with Qt4,
-        // we cannot support the GTK_Qt Gtk engine
-        if (!(themeName.isEmpty() || themeName == QLS("Qt") || themeName == QLS("Qt4"))) {
-            resolveGtk();
-            if (QGtk::gtk_init) {
-                // Gtk will set the Qt error handler so we have to reset it afterwards
-                x11ErrorHandler qt_x_errhandler = XSetErrorHandler(0);
-                QGtk::gtk_init (NULL, NULL);
-                XSetErrorHandler(qt_x_errhandler);
 
-                GtkWidget* gtkWindow = QGtk::gtk_window_new(GTK_WINDOW_POPUP);
-                QGtk::gtk_widget_realize(gtkWindow);
-                if (displayDepth == -1)
-                    displayDepth = QGtk::gdk_drawable_get_depth(gtkWindow->window);
-                gtkWidgetMap()->insert(QLS("GtkWindow"), gtkWindow);
-            }
-            else {
-                qWarning("QGtkStyle could not resolve GTK. Make sure you have installed the proper libraries.");
-            }
-        } else {
+        if (themeName.isEmpty()) {
+            qWarning("QGtkStyle was unable to detect the current GTK+ theme.");
+            return;
+        } else if (themeName == QLS("Qt") || themeName == QLS("Qt4")) {
+            // Due to namespace conflicts with Qt3 and obvious recursion with Qt4,
+            // we cannot support the GTK_Qt Gtk engine
             qWarning("QGtkStyle cannot be used together with the GTK_Qt engine.");
+            return;
+        }
+
+        resolveGtk();
+
+        if (QGtk::gtk_init) {
+            // Gtk will set the Qt error handler so we have to reset it afterwards
+            x11ErrorHandler qt_x_errhandler = XSetErrorHandler(0);
+            QGtk::gtk_init (NULL, NULL);
+            XSetErrorHandler(qt_x_errhandler);
+
+            GtkWidget* gtkWindow = QGtk::gtk_window_new(GTK_WINDOW_POPUP);
+            QGtk::gtk_widget_realize(gtkWindow);
+            if (displayDepth == -1)
+                displayDepth = QGtk::gdk_drawable_get_depth(gtkWindow->window);
+            gtkWidgetMap()->insert(QLS("GtkWindow"), gtkWindow);
+        } else {
+            qWarning("QGtkStyle could not resolve GTK. Make sure you have installed the proper libraries.");
         }
     }
 }

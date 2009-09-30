@@ -3,7 +3,7 @@
  * (C) 2000 Gunnstein Lye (gunnstein@netcom.no)
  * (C) 2000 Frederik Holljen (frederik.holljen@hig.no)
  * (C) 2001 Peter Kelly (pmk@post.com)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -26,13 +26,17 @@
 #include "RangeException.h"
 
 #include "CString.h"
+#include "ClientRect.h"
+#include "ClientRectList.h"
 #include "DocumentFragment.h"
+#include "FrameView.h"
 #include "HTMLElement.h"
 #include "NodeWithIndex.h"
 #include "ProcessingInstruction.h"
 #include "Text.h"
 #include "TextIterator.h"
 #include "VisiblePosition.h"
+#include "htmlediting.h"
 #include "markup.h"
 #include "visible_units.h"
 #include <stdio.h>
@@ -586,7 +590,7 @@ PassRefPtr<DocumentFragment> Range::processContents(ActionType action, Exception
 
     RefPtr<DocumentFragment> fragment;
     if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS)
-        fragment = new DocumentFragment(m_ownerDocument.get());
+        fragment = DocumentFragment::create(m_ownerDocument.get());
     
     ec = 0;
     if (collapsed(ec))
@@ -1798,4 +1802,111 @@ void Range::textNodeSplit(Text* oldNode)
     boundaryTextNodesSplit(m_end, oldNode);
 }
 
+void Range::expand(const String& unit, ExceptionCode& ec)
+{
+    VisiblePosition start(startPosition());
+    VisiblePosition end(endPosition());
+    if (unit == "word") {
+        start = startOfWord(start);
+        end = endOfWord(end);
+    } else if (unit == "sentence") {
+        start = startOfSentence(start);
+        end = endOfSentence(end);
+    } else if (unit == "block") {
+        start = startOfParagraph(start);
+        end = endOfParagraph(end);
+    } else if (unit == "document") {
+        start = startOfDocument(start);
+        end = endOfDocument(end);
+    } else
+        return;
+    setStart(start.deepEquivalent().containerNode(), start.deepEquivalent().computeOffsetInContainerNode(), ec);
+    setEnd(end.deepEquivalent().containerNode(), end.deepEquivalent().computeOffsetInContainerNode(), ec);
 }
+
+PassRefPtr<ClientRectList> Range::getClientRects() const
+{
+    if (!m_start.container())
+        return 0;
+
+    m_ownerDocument->updateLayoutIgnorePendingStylesheets();
+
+    Vector<FloatQuad> quads;
+    getBorderAndTextQuads(quads);
+
+    return ClientRectList::create(quads);
+}
+
+PassRefPtr<ClientRect> Range::getBoundingClientRect() const
+{
+    if (!m_start.container())
+        return 0;
+
+    m_ownerDocument->updateLayoutIgnorePendingStylesheets();
+
+    Vector<FloatQuad> quads;
+    getBorderAndTextQuads(quads);
+
+    if (quads.isEmpty())
+        return ClientRect::create();
+
+    IntRect result;
+    for (size_t i = 0; i < quads.size(); ++i)
+        result.unite(quads[i].enclosingBoundingBox());
+
+    return ClientRect::create(result);
+}
+
+static void adjustFloatQuadsForScrollAndAbsoluteZoom(Vector<FloatQuad>& quads, Document* document, RenderObject* renderer)
+{
+    FrameView* view = document->view();
+    if (!view)
+        return;
+
+    IntRect visibleContentRect = view->visibleContentRect();
+    for (size_t i = 0; i < quads.size(); ++i) {
+        quads[i].move(-visibleContentRect.x(), -visibleContentRect.y());
+        adjustFloatQuadForAbsoluteZoom(quads[i], renderer);
+    }
+}
+
+void Range::getBorderAndTextQuads(Vector<FloatQuad>& quads) const
+{
+    Node* startContainer = m_start.container();
+    Node* endContainer = m_end.container();
+    Node* stopNode = pastLastNode();
+
+    HashSet<Node*> nodeSet;
+    for (Node* node = firstNode(); node != stopNode; node = node->traverseNextNode()) {
+        if (node->isElementNode())
+            nodeSet.add(node);
+    }
+
+    for (Node* node = firstNode(); node != stopNode; node = node->traverseNextNode()) {
+        if (node->isElementNode()) {
+            if (!nodeSet.contains(node->parentNode())) {
+                if (RenderBoxModelObject* renderBoxModelObject = static_cast<Element*>(node)->renderBoxModelObject()) {
+                    Vector<FloatQuad> elementQuads;
+                    renderBoxModelObject->absoluteQuads(elementQuads);
+                    adjustFloatQuadsForScrollAndAbsoluteZoom(elementQuads, m_ownerDocument.get(), renderBoxModelObject);
+
+                    quads.append(elementQuads);
+                }
+            }
+        } else if (node->isTextNode()) {
+            if (RenderObject* renderer = static_cast<Text*>(node)->renderer()) {
+                RenderText* renderText = toRenderText(renderer);
+                int startOffset = (node == startContainer) ? m_start.offset() : 0;
+                int endOffset = (node == endContainer) ? m_end.offset() : INT_MAX;
+                
+                Vector<FloatQuad> textQuads;
+                renderText->absoluteQuadsForRange(textQuads, startOffset, endOffset);
+                adjustFloatQuadsForScrollAndAbsoluteZoom(textQuads, m_ownerDocument.get(), renderText);
+
+                quads.append(textQuads);
+            }
+        }
+    }
+}
+
+} // namespace WebCore

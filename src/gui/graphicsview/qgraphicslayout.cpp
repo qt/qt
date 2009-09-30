@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -418,6 +418,26 @@ void QGraphicsLayout::widgetEvent(QEvent *e)
 
     \sa itemAt(), count()
 */
+
+/*!
+    \since 4.6
+
+    This function is a convenience function provided for custom layouts, and will go through
+    all items in the layout and reparent their graphics items to the closest QGraphicsWidget
+    ancestor of the layout.
+
+    If \a layoutItem is already in a different layout, it will be removed  from that layout.
+
+    If custom layouts want special behaviour they can ignore to use this function, and implement
+    their own behaviour.
+
+    \sa graphicsItem()
+ */
+void QGraphicsLayout::addChildLayoutItem(QGraphicsLayoutItem *layoutItem)
+{
+    Q_D(QGraphicsLayout);
+    d->addChildLayoutItem(layoutItem);
+}
 
 QT_END_NAMESPACE
 

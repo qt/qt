@@ -53,7 +53,7 @@ void PrintContext::computePageRects(const FloatRect& printRect, float headerHeig
     if (!m_frame->document() || !m_frame->view() || !m_frame->document()->renderer())
         return;
 
-    RenderView* root = static_cast<RenderView*>(m_frame->document()->renderer());
+    RenderView* root = toRenderView(m_frame->document()->renderer());
 
     if (!root) {
         LOG_ERROR("document to be printed has no renderer");
@@ -67,7 +67,7 @@ void PrintContext::computePageRects(const FloatRect& printRect, float headerHeig
 
     float ratio = printRect.height() / printRect.width();
 
-    float pageWidth  = (float)root->overflowWidth();
+    float pageWidth  = (float)root->rightLayoutOverflow();
     float pageHeight = pageWidth * ratio;
     outPageHeight = pageHeight;   // this is the height of the page adjusted by margins
     pageHeight -= headerHeight + footerHeight;

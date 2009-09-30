@@ -1,6 +1,7 @@
 /*
  * (C) 1999 Lars Knoll (knoll@kde.org)
  * Copyright (C) 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2007-2009 Torch Mobile, Inc.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -24,6 +25,7 @@
 #include "CString.h"
 #include "FloatConversion.h"
 #include "StringBuffer.h"
+#include "TextBreakIterator.h"
 #include "TextEncoding.h"
 #include <wtf/dtoa.h>
 #include <limits>
@@ -353,6 +355,29 @@ String String::format(const char *format, ...)
     va_end(args);
 
     return buffer;
+
+#elif PLATFORM(WINCE)
+    va_list args;
+    va_start(args, format);
+
+    Vector<char, 256> buffer;
+
+    int bufferSize = 256;
+    buffer.resize(bufferSize);
+    for (;;) {
+        int written = vsnprintf(buffer.data(), bufferSize, format, args);
+        va_end(args);
+
+        if (written == 0)
+            return String("");
+        if (written > 0)
+            return StringImpl::create(buffer.data(), written);
+        
+        bufferSize <<= 1;
+        buffer.resize(bufferSize);
+        va_start(args, format);
+    }
+
 #else
     va_list args;
     va_start(args, format);
@@ -895,6 +920,31 @@ PassRefPtr<SharedBuffer> utf8Buffer(const String& string)
 
     buffer.shrink(p - buffer.data());
     return SharedBuffer::adoptVector(buffer);
+}
+
+unsigned String::numGraphemeClusters() const
+{
+    TextBreakIterator* it = characterBreakIterator(characters(), length());
+    if (!it)
+        return length();
+
+    unsigned num = 0;
+    while (textBreakNext(it) != TextBreakDone)
+        ++num;
+    return num;
+}
+
+unsigned String::numCharactersInGraphemeClusters(unsigned numGraphemeClusters) const
+{
+    TextBreakIterator* it = characterBreakIterator(characters(), length());
+    if (!it)
+        return min(length(), numGraphemeClusters);
+
+    for (unsigned i = 0; i < numGraphemeClusters; ++i) {
+        if (textBreakNext(it) == TextBreakDone)
+            return length();
+    }
+    return textBreakCurrent(it);
 }
 
 } // namespace WebCore

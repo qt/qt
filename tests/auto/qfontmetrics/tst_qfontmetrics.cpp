@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -72,6 +72,7 @@ private slots:
     void veryNarrowElidedText();
     void averageCharWidth();
     void elidedMultiLength();
+    void bearingIncludedInBoundingRect();
 };
 
 tst_QFontMetrics::tst_QFontMetrics()
@@ -180,7 +181,7 @@ void tst_QFontMetrics::elidedText()
     QFETCH(QString, text);
     QFontMetrics fm(font);
     int w = fm.width(text);
-    QString newtext = fm.elidedText(text,Qt::ElideRight,w, 0);
+    QString newtext = fm.elidedText(text,Qt::ElideRight,w+1, 0);
     QCOMPARE(text,newtext); // should not elide
     newtext = fm.elidedText(text,Qt::ElideRight,w-1, 0);
     QVERIFY(text != newtext); // should elide
@@ -210,12 +211,12 @@ void tst_QFontMetrics::elidedMultiLength()
     QString text1_short = "Shorter";
     QString text1_small = "small";
     QFontMetrics fm = QFontMetrics(QFont());
-    int width_long = fm.width(text1_long);
+    int width_long = fm.size(0, text1_long).width();
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, 8000), text1_long);
-    QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_long), text1_long);
+    QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_long + 1), text1_long);
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_long - 1), text1_short);
-    int width_short = fm.width(text1_short);
-    QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_short), text1_short);
+    int width_short = fm.size(0, text1_short).width();
+    QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_short + 1), text1_short);
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_short - 1), text1_small);
 
     // Not even wide enough for "small" - should use ellipsis
@@ -224,6 +225,17 @@ void tst_QFontMetrics::elidedMultiLength()
     int width_small = fm.width(text1_el);
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_small + 1), text1_el);
 
+}
+
+void tst_QFontMetrics::bearingIncludedInBoundingRect()
+{
+    QFont font;
+    font.setItalic(true);
+    QRect brectItalic = QFontMetrics(font).boundingRect("ITALIC");
+    font.setItalic(false);
+    QRect brectNormal = QFontMetrics(font).boundingRect("ITALIC");
+
+    QVERIFY(brectItalic.width() > brectNormal.width());
 }
 
 QTEST_MAIN(tst_QFontMetrics)

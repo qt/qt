@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -100,6 +100,22 @@ void qgl_cleanup_glyph_cache(QGLContext *) {}
 
 extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
 
+
+QGLContext* QGLPBufferGLPaintDevice::context() const
+{
+    return pbuf->d_func()->qctx;
+}
+
+void QGLPBufferGLPaintDevice::endPaint() {
+    glFlush();
+    QGLPaintDevice::endPaint();
+}
+
+void QGLPBufferGLPaintDevice::setPBuffer(QGLPixelBuffer* pb)
+{
+    pbuf = pb;
+}
+
 void QGLPixelBufferPrivate::common_init(const QSize &size, const QGLFormat &format, QGLWidget *shareWidget)
 {
     Q_Q(QGLPixelBuffer);
@@ -115,6 +131,7 @@ void QGLPixelBufferPrivate::common_init(const QSize &size, const QGLFormat &form
             shareWidget->d_func()->glcx->d_func()->sharing = true;
         }
 
+        glDevice.setPBuffer(q);
         qctx->d_func()->paintDevice = q;
         qctx->d_func()->valid = true;
 #if defined(Q_WS_WIN) && !defined(QT_OPENGL_ES)
@@ -129,6 +146,7 @@ void QGLPixelBufferPrivate::common_init(const QSize &size, const QGLFormat &form
         qctx->d_func()->vi = 0;
 #elif defined(QT_OPENGL_ES)
         qctx->d_func()->eglContext = ctx;
+        qctx->d_func()->eglSurface = pbuf;
 #endif
     }
 }
@@ -385,7 +403,7 @@ QPaintEngine *QGLPixelBuffer::paintEngine() const
 #elif defined(QT_OPENGL_ES_2)
     return qt_buffer_2_engine();
 #else
-    if (d_ptr->qctx->d_func()->internal_context || qt_gl_preferGL2Engine())
+    if (qt_gl_preferGL2Engine())
         return qt_buffer_2_engine();
     else
         return qt_buffer_engine();

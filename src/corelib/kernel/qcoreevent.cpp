@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -192,6 +192,7 @@ QT_BEGIN_NAMESPACE
     \value ShortcutOverride                 Key press in child, for overriding shortcut key handling (QKeyEvent).
     \value Show                             Widget was shown on screen (QShowEvent).
     \value ShowToParent                     A child widget has been shown.
+    \value Signal                           A signal delivered to a state machine (QStateMachine::SignalEvent).
     \value SockAct                          Socket activated, used to implement QSocketNotifier.
     \value StatusTip                        A status tip is requested (QStatusTipEvent).
     \value StyleChange                      Widget's style has been changed.
@@ -220,7 +221,7 @@ QT_BEGIN_NAMESPACE
     \value WindowStateChange                The \l{QWidget::windowState()}{window's state} (minimized, maximized or full-screen) has changed (QWindowStateChangeEvent).
     \value WindowTitleChange                The window title has changed.
     \value WindowUnblocked                  The window is unblocked after a modal dialog exited.
-    \value Wrapped                          The event is a wrapper for, i.e., contains, another event (QWrappedEvent).
+    \value Wrapped                          The event is a wrapper for, i.e., contains, another event (QStateMachine::WrappedEvent).
     \value ZOrderChange                     The widget's z-order has changed. This event is never sent to top level windows.
     \value KeyboardLayoutChange             The keyboard layout has changed.
     \value DynamicPropertyChange            A dynamic property was added, changed or removed from the object.
@@ -269,8 +270,8 @@ QT_BEGIN_NAMESPACE
     \omitvalue NetworkReplyUpdated
     \omitvalue FutureCallOut
     \omitvalue CocoaRequestModal
-    \omitvalue Signal
     \omitvalue SymbianDeferredFocusChanged
+    \omitvalue UpdateSoftKeys
     \omitvalue NativeGesture
 */
 

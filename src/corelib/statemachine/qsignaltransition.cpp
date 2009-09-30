@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -44,7 +44,6 @@
 #ifndef QT_NO_STATEMACHINE
 
 #include "qsignaltransition_p.h"
-#include "qsignalevent.h"
 #include "qstate.h"
 #include "qstate_p.h"
 #include "qstatemachine.h"
@@ -68,7 +67,7 @@ QT_BEGIN_NAMESPACE
 
   You can subclass QSignalTransition and reimplement eventTest() to make a
   signal transition conditional; the event object passed to eventTest() will
-  be a QSignalEvent object. Example:
+  be a QStateMachine::SignalEvent object. Example:
 
   \code
   class CheckedTransition : public QSignalTransition
@@ -80,7 +79,7 @@ QT_BEGIN_NAMESPACE
       bool eventTest(QEvent *e) const {
           if (!QSignalTransition::eventTest(e))
               return false;
-          QSignalEvent *se = static_cast<QSignalEvent*>(e);
+          QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(e);
           return (se->arguments().at(0).toInt() == Qt::Checked);
       }
   };
@@ -212,9 +211,9 @@ void QSignalTransition::setSignal(const QByteArray &signal)
 /*!
   \reimp
 
-  The \a event is a QSignalEvent object.  The default implementation returns
-  true if the event's sender and signal index match this transition, and
-  returns false otherwise.
+  The default implementation returns true if the \a event is a
+  QStateMachine::SignalEvent object and the event's sender and signal index
+  match this transition, and returns false otherwise.
 */
 bool QSignalTransition::eventTest(QEvent *event)
 {
@@ -222,7 +221,7 @@ bool QSignalTransition::eventTest(QEvent *event)
     if (event->type() == QEvent::Signal) {
         if (d->signalIndex == -1)
             return false;
-        QSignalEvent *se = static_cast<QSignalEvent*>(event);
+        QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(event);
         return (se->sender() == d->sender)
             && (se->signalIndex() == d->signalIndex);
     }
@@ -250,7 +249,7 @@ void QSignalTransitionPrivate::callOnTransition(QEvent *e)
     Q_Q(QSignalTransition);
 
     if (e->type() == QEvent::Signal) {
-        QSignalEvent *se = static_cast<QSignalEvent *>(e);
+        QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent *>(e);
         int savedSignalIndex = se->m_signalIndex;
         se->m_signalIndex = originalSignalIndex;
         q->onTransition(e);

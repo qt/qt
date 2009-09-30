@@ -1,6 +1,7 @@
 TARGET     = QtScript
 QPRO_PWD   = $$PWD
 QT         = core
+DEFINES   += JSC=QTJSC jscyyparse=qtjscyyparse jscyylex=qtjscyylex jscyyerror=qtjscyyerror
 DEFINES   += QT_BUILD_SCRIPT_LIB
 DEFINES   += QT_NO_USING_NAMESPACE
 DEFINES   += QLALR_NO_QSCRIPTGRAMMAR_DEBUG_INFO
@@ -10,8 +11,7 @@ unix:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
 include(../qbase.pri)
 
-# Disable a few warnings on Windows.
-win32-msvc*: QMAKE_CXXFLAGS += -wd4291 -wd4344 -wd4503 -wd4800 -wd4819 -wd4996 -wd4396 -wd4099
+CONFIG += building-libs
 
 # FIXME: shared the statically built JavaScriptCore
 
@@ -19,16 +19,17 @@ win32-msvc*: QMAKE_CXXFLAGS += -wd4291 -wd4344 -wd4503 -wd4800 -wd4819 -wd4996 -
 # fall back to src/3rdparty otherwise
 WEBKITDIR = $$(WEBKITDIR)
 isEmpty(WEBKITDIR) {
-    WEBKITDIR = $$PWD/../3rdparty/webkit
-
-    # FIXME: not needed once JSCBISON works
-    # TODO: or leave it like this since the generated file is available anyway?
-    SOURCES += $$WEBKITDIR/JavaScriptCore/generated/Grammar.cpp
+    WEBKITDIR = $$PWD/../3rdparty/javascriptcore
+    GENERATED_SOURCES_DIR = generated
 } else {
-    CONFIG += building-libs
+    message(using external WebKit from $$WEBKITDIR)
     CONFIG -= QTDIR_build
-    include($$WEBKITDIR/WebKit.pri)
 }
+include($$WEBKITDIR/WebKit.pri)
+
+# Disable a few warnings on Windows.
+# These are in addition to the ones disabled in WebKit.pri
+win32-msvc*: QMAKE_CXXFLAGS += -wd4396 -wd4099
 
 # Windows CE-specific stuff copied from WebCore.pro
 # ### Should rather be in JavaScriptCore.pri?
@@ -36,15 +37,6 @@ wince* {
     INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/os-wince
     INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/os-win32
     LIBS += -lmmtimer
-}
-
-# avoid warnings when parsing JavaScriptCore.pri
-# (we don't care about generating files, we already have them generated)
-defineTest(addExtraCompiler) {
-    return(true)
-}
-defineTest(addExtraCompilerWithHeader) {
-    return(true)
 }
 
 include($$WEBKITDIR/JavaScriptCore/JavaScriptCore.pri)
@@ -65,10 +57,9 @@ INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/bytecode
 INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/assembler
 INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/generated
 
-DEFINES += BUILDING_QT__=1
-DEFINES += USE_SYSTEM_MALLOC
-DEFINES += WTF_USE_JAVASCRIPTCORE_BINDINGS=1
-DEFINES += WTF_CHANGES=1
+# This line copied from WebCore.pro
+DEFINES += WTF_USE_JAVASCRIPTCORE_BINDINGS=1 WTF_CHANGES=1
+
 DEFINES += NDEBUG
 
 INCLUDEPATH += $$PWD

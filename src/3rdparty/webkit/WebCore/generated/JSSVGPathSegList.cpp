@@ -84,6 +84,11 @@ bool JSSVGPathSegListPrototype::getOwnPropertySlot(ExecState* exec, const Identi
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGPathSegListPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGPathSegListPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGPathSegListPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGPathSegList::s_info = { "SVGPathSegList", 0, &JSSVGPathSegListTable, 0 };
 
 JSSVGPathSegList::JSSVGPathSegList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegList> impl, SVGElement* context)
@@ -94,7 +99,7 @@ JSSVGPathSegList::JSSVGPathSegList(PassRefPtr<Structure> structure, JSDOMGlobalO
 
 JSSVGPathSegList::~JSSVGPathSegList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGPathSegList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -105,6 +110,11 @@ JSObject* JSSVGPathSegList::createPrototype(ExecState* exec, JSGlobalObject* glo
 bool JSSVGPathSegList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGPathSegList, Base>(exec, &JSSVGPathSegListTable, this, propertyName, slot);
+}
+
+bool JSSVGPathSegList::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGPathSegList, Base>(exec, &JSSVGPathSegListTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGPathSegListNumberOfItems(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -118,7 +128,7 @@ JSValue jsSVGPathSegListNumberOfItems(ExecState* exec, const Identifier&, const 
 JSValue JSC_HOST_CALL jsSVGPathSegListPrototypeFunctionClear(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGPathSegList::s_info))
+    if (!thisValue.inherits(&JSSVGPathSegList::s_info))
         return throwError(exec, TypeError);
     JSSVGPathSegList* castedThisObj = static_cast<JSSVGPathSegList*>(asObject(thisValue));
     return castedThisObj->clear(exec, args);
@@ -127,7 +137,7 @@ JSValue JSC_HOST_CALL jsSVGPathSegListPrototypeFunctionClear(ExecState* exec, JS
 JSValue JSC_HOST_CALL jsSVGPathSegListPrototypeFunctionInitialize(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGPathSegList::s_info))
+    if (!thisValue.inherits(&JSSVGPathSegList::s_info))
         return throwError(exec, TypeError);
     JSSVGPathSegList* castedThisObj = static_cast<JSSVGPathSegList*>(asObject(thisValue));
     return castedThisObj->initialize(exec, args);
@@ -136,7 +146,7 @@ JSValue JSC_HOST_CALL jsSVGPathSegListPrototypeFunctionInitialize(ExecState* exe
 JSValue JSC_HOST_CALL jsSVGPathSegListPrototypeFunctionGetItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGPathSegList::s_info))
+    if (!thisValue.inherits(&JSSVGPathSegList::s_info))
         return throwError(exec, TypeError);
     JSSVGPathSegList* castedThisObj = static_cast<JSSVGPathSegList*>(asObject(thisValue));
     return castedThisObj->getItem(exec, args);
@@ -145,7 +155,7 @@ JSValue JSC_HOST_CALL jsSVGPathSegListPrototypeFunctionGetItem(ExecState* exec, 
 JSValue JSC_HOST_CALL jsSVGPathSegListPrototypeFunctionInsertItemBefore(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGPathSegList::s_info))
+    if (!thisValue.inherits(&JSSVGPathSegList::s_info))
         return throwError(exec, TypeError);
     JSSVGPathSegList* castedThisObj = static_cast<JSSVGPathSegList*>(asObject(thisValue));
     return castedThisObj->insertItemBefore(exec, args);
@@ -154,7 +164,7 @@ JSValue JSC_HOST_CALL jsSVGPathSegListPrototypeFunctionInsertItemBefore(ExecStat
 JSValue JSC_HOST_CALL jsSVGPathSegListPrototypeFunctionReplaceItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGPathSegList::s_info))
+    if (!thisValue.inherits(&JSSVGPathSegList::s_info))
         return throwError(exec, TypeError);
     JSSVGPathSegList* castedThisObj = static_cast<JSSVGPathSegList*>(asObject(thisValue));
     return castedThisObj->replaceItem(exec, args);
@@ -163,7 +173,7 @@ JSValue JSC_HOST_CALL jsSVGPathSegListPrototypeFunctionReplaceItem(ExecState* ex
 JSValue JSC_HOST_CALL jsSVGPathSegListPrototypeFunctionRemoveItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGPathSegList::s_info))
+    if (!thisValue.inherits(&JSSVGPathSegList::s_info))
         return throwError(exec, TypeError);
     JSSVGPathSegList* castedThisObj = static_cast<JSSVGPathSegList*>(asObject(thisValue));
     return castedThisObj->removeItem(exec, args);
@@ -172,7 +182,7 @@ JSValue JSC_HOST_CALL jsSVGPathSegListPrototypeFunctionRemoveItem(ExecState* exe
 JSValue JSC_HOST_CALL jsSVGPathSegListPrototypeFunctionAppendItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGPathSegList::s_info))
+    if (!thisValue.inherits(&JSSVGPathSegList::s_info))
         return throwError(exec, TypeError);
     JSSVGPathSegList* castedThisObj = static_cast<JSSVGPathSegList*>(asObject(thisValue));
     return castedThisObj->appendItem(exec, args);
@@ -184,7 +194,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGPath
 }
 SVGPathSegList* toSVGPathSegList(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGPathSegList::s_info) ? static_cast<JSSVGPathSegList*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGPathSegList::s_info) ? static_cast<JSSVGPathSegList*>(asObject(value))->impl() : 0;
 }
 
 }

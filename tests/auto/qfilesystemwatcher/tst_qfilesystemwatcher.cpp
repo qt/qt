@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -76,6 +76,8 @@ private slots:
 
     void watchFileAndItsDirectory_data() { basicTest_data(); }
     void watchFileAndItsDirectory();
+
+    void nonExistingFile();
 
     void cleanup();
 private:
@@ -316,9 +318,6 @@ void tst_QFileSystemWatcher::watchDirectory()
 
 #ifdef Q_OS_WINCE
     QEXPECT_FAIL("poller", "Directory does not get updated on file removal(See #137910)", Abort);
-#elif defined(Q_OS_SYMBIAN) && defined(Q_CC_RVCT)
-    // Since native watcher is always used in real devices, this poller issue is irrelevant
-    QEXPECT_FAIL("poller", "Poller doesn't detect directory removal in RVCT builds", Abort);
 #endif
     QCOMPARE(changedSpy.count(), 2);
     QCOMPARE(changedSpy.at(0).count(), 1);
@@ -485,10 +484,8 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     timer.start(3000);
     eventLoop.exec();
     QCOMPARE(fileChangedSpy.count(), 0);
-#if defined(Q_OS_SYMBIAN) && defined(Q_CC_RVCT)
-    // Since native watcher is always used in real devices, this poller issue is irrelevant
-    // Symbian file system does not change modification time on a directory when a file inside is changed
-    QEXPECT_FAIL("poller", "Poller doesn't detect directory changes in RVCT builds", Abort);
+#ifdef Q_OS_WINCE
+    QEXPECT_FAIL("poller", "Directory does not get updated on file removal(See #137910)", Abort);
 #endif
     QCOMPARE(dirChangedSpy.count(), 1);
 
@@ -510,7 +507,9 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     timer.start(3000);
     eventLoop.exec();
     QCOMPARE(fileChangedSpy.count(), 0);
-    QCOMPARE(dirChangedSpy.count(), 1);
+    // polling watcher has generated separate events for content and time change
+    // on Symbian emulator, so allow possibility of 2 events
+    QVERIFY(dirChangedSpy.count() == 1 || dirChangedSpy.count() == 2);
 
     QVERIFY(QDir().rmdir("testDir"));
 }
@@ -523,6 +522,14 @@ void tst_QFileSystemWatcher::cleanup()
     QFile::remove(testFileName);
     QFile::remove(secondFileName);
     QDir().rmdir("testDir");
+}
+
+void tst_QFileSystemWatcher::nonExistingFile()
+{
+    // Don't crash...
+    QFileSystemWatcher watcher;
+    watcher.addPath("file_that_does_not_exist.txt");
+    QVERIFY(true);
 }
 
 QTEST_MAIN(tst_QFileSystemWatcher)

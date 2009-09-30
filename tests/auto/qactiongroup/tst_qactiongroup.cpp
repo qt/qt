@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -226,6 +226,14 @@ void tst_QActionGroup::separators()
 
     mw.show();
 
+#ifdef QT_SOFTKEYS_ENABLED
+    // Softkeys add extra "Select" and "Back" actions to menu by default.
+    // Two first actions will be Select and Back when softkeys are enabled
+    int numSoftkeyActions = 2;
+#else
+    int numSoftkeyActions = 0;
+#endif
+
     QAction *action = new QAction(&actGroup);
     action->setText("test one");
 
@@ -237,13 +245,13 @@ void tst_QActionGroup::separators()
     while (it.hasNext())
         menu.addAction(it.next());
 
-    QCOMPARE((int)menu.actions().size(), 2);
+    QCOMPARE((int)menu.actions().size(), 2 + numSoftkeyActions);
 
     it = QListIterator<QAction*>(actGroup.actions());
     while (it.hasNext())
         menu.removeAction(it.next());
 
-    QCOMPARE((int)menu.actions().size(), 0);
+    QCOMPARE((int)menu.actions().size(), 0 + numSoftkeyActions);
 
     action = new QAction(&actGroup);
     action->setText("test two");
@@ -252,7 +260,7 @@ void tst_QActionGroup::separators()
     while (it.hasNext())
         menu.addAction(it.next());
 
-    QCOMPARE((int)menu.actions().size(), 3);
+    QCOMPARE((int)menu.actions().size(), 3 + numSoftkeyActions);
 }
 
 void tst_QActionGroup::testActionInTwoQActionGroup()

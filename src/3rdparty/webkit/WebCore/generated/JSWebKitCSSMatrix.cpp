@@ -105,6 +105,11 @@ bool JSWebKitCSSMatrixPrototype::getOwnPropertySlot(ExecState* exec, const Ident
     return getStaticFunctionSlot<JSObject>(exec, &JSWebKitCSSMatrixPrototypeTable, this, propertyName, slot);
 }
 
+bool JSWebKitCSSMatrixPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSWebKitCSSMatrixPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSWebKitCSSMatrix::s_info = { "WebKitCSSMatrix", 0, &JSWebKitCSSMatrixTable, 0 };
 
 JSWebKitCSSMatrix::JSWebKitCSSMatrix(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebKitCSSMatrix> impl)
@@ -115,7 +120,7 @@ JSWebKitCSSMatrix::JSWebKitCSSMatrix(PassRefPtr<Structure> structure, JSDOMGloba
 
 JSWebKitCSSMatrix::~JSWebKitCSSMatrix()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSWebKitCSSMatrix::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -126,6 +131,11 @@ JSObject* JSWebKitCSSMatrix::createPrototype(ExecState* exec, JSGlobalObject* gl
 bool JSWebKitCSSMatrix::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSWebKitCSSMatrix, Base>(exec, &JSWebKitCSSMatrixTable, this, propertyName, slot);
+}
+
+bool JSWebKitCSSMatrix::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSWebKitCSSMatrix, Base>(exec, &JSWebKitCSSMatrixTable, this, propertyName, descriptor);
 }
 
 JSValue jsWebKitCSSMatrixA(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -444,7 +454,7 @@ void setJSWebKitCSSMatrixM44(ExecState* exec, JSObject* thisObject, JSValue valu
 JSValue JSC_HOST_CALL jsWebKitCSSMatrixPrototypeFunctionSetMatrixValue(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSWebKitCSSMatrix::s_info))
+    if (!thisValue.inherits(&JSWebKitCSSMatrix::s_info))
         return throwError(exec, TypeError);
     JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(asObject(thisValue));
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
@@ -459,7 +469,7 @@ JSValue JSC_HOST_CALL jsWebKitCSSMatrixPrototypeFunctionSetMatrixValue(ExecState
 JSValue JSC_HOST_CALL jsWebKitCSSMatrixPrototypeFunctionMultiply(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSWebKitCSSMatrix::s_info))
+    if (!thisValue.inherits(&JSWebKitCSSMatrix::s_info))
         return throwError(exec, TypeError);
     JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(asObject(thisValue));
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
@@ -473,7 +483,7 @@ JSValue JSC_HOST_CALL jsWebKitCSSMatrixPrototypeFunctionMultiply(ExecState* exec
 JSValue JSC_HOST_CALL jsWebKitCSSMatrixPrototypeFunctionInverse(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSWebKitCSSMatrix::s_info))
+    if (!thisValue.inherits(&JSWebKitCSSMatrix::s_info))
         return throwError(exec, TypeError);
     JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(asObject(thisValue));
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
@@ -488,7 +498,7 @@ JSValue JSC_HOST_CALL jsWebKitCSSMatrixPrototypeFunctionInverse(ExecState* exec,
 JSValue JSC_HOST_CALL jsWebKitCSSMatrixPrototypeFunctionTranslate(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSWebKitCSSMatrix::s_info))
+    if (!thisValue.inherits(&JSWebKitCSSMatrix::s_info))
         return throwError(exec, TypeError);
     JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(asObject(thisValue));
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
@@ -504,7 +514,7 @@ JSValue JSC_HOST_CALL jsWebKitCSSMatrixPrototypeFunctionTranslate(ExecState* exe
 JSValue JSC_HOST_CALL jsWebKitCSSMatrixPrototypeFunctionScale(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSWebKitCSSMatrix::s_info))
+    if (!thisValue.inherits(&JSWebKitCSSMatrix::s_info))
         return throwError(exec, TypeError);
     JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(asObject(thisValue));
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
@@ -520,7 +530,7 @@ JSValue JSC_HOST_CALL jsWebKitCSSMatrixPrototypeFunctionScale(ExecState* exec, J
 JSValue JSC_HOST_CALL jsWebKitCSSMatrixPrototypeFunctionRotate(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSWebKitCSSMatrix::s_info))
+    if (!thisValue.inherits(&JSWebKitCSSMatrix::s_info))
         return throwError(exec, TypeError);
     JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(asObject(thisValue));
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
@@ -536,7 +546,7 @@ JSValue JSC_HOST_CALL jsWebKitCSSMatrixPrototypeFunctionRotate(ExecState* exec, 
 JSValue JSC_HOST_CALL jsWebKitCSSMatrixPrototypeFunctionRotateAxisAngle(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSWebKitCSSMatrix::s_info))
+    if (!thisValue.inherits(&JSWebKitCSSMatrix::s_info))
         return throwError(exec, TypeError);
     JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(asObject(thisValue));
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
@@ -553,7 +563,7 @@ JSValue JSC_HOST_CALL jsWebKitCSSMatrixPrototypeFunctionRotateAxisAngle(ExecStat
 JSValue JSC_HOST_CALL jsWebKitCSSMatrixPrototypeFunctionToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSWebKitCSSMatrix::s_info))
+    if (!thisValue.inherits(&JSWebKitCSSMatrix::s_info))
         return throwError(exec, TypeError);
     JSWebKitCSSMatrix* castedThisObj = static_cast<JSWebKitCSSMatrix*>(asObject(thisValue));
     WebKitCSSMatrix* imp = static_cast<WebKitCSSMatrix*>(castedThisObj->impl());
@@ -569,7 +579,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, WebKitC
 }
 WebKitCSSMatrix* toWebKitCSSMatrix(JSC::JSValue value)
 {
-    return value.isObject(&JSWebKitCSSMatrix::s_info) ? static_cast<JSWebKitCSSMatrix*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSWebKitCSSMatrix::s_info) ? static_cast<JSWebKitCSSMatrix*>(asObject(value))->impl() : 0;
 }
 
 }

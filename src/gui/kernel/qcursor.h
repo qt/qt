@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -72,12 +72,18 @@ private:
 
 #ifndef QT_NO_CURSOR
 
-struct QCursorData;
+class QCursorData;
 class QBitmap;
 class QPixmap;
 
 #if defined(Q_WS_MAC)
 void qt_mac_set_cursor(const QCursor *c, const QPoint &p);
+#endif
+#if defined(Q_OS_SYMBIAN)
+extern void qt_symbian_show_pointer_sprite();
+extern void qt_symbian_hide_pointer_sprite();
+extern void qt_symbian_set_pointer_sprite(const QCursor& cursor);
+extern void qt_symbian_move_cursor_sprite();
 #endif
 
 class Q_GUI_EXPORT QCursor
@@ -103,7 +109,7 @@ public:
     static QPoint pos();
     static void setPos(int x, int y);
     inline static void setPos(const QPoint &p) { setPos(p.x(), p.y()); }
-
+    
 #ifdef qdoc
     HCURSOR_or_HANDLE handle() const;
     QCursor(HCURSOR cursor);
@@ -122,6 +128,8 @@ public:
     Qt::HANDLE handle() const;
 #elif defined(Q_WS_QWS) || defined(Q_WS_LITE)
     int handle() const;
+#elif defined(Q_OS_SYMBIAN)
+    Qt::HANDLE handle() const;
 #endif
 #endif
 
@@ -130,6 +138,12 @@ private:
 #if defined(Q_WS_MAC)
     friend void *qt_mac_nsCursorForQCursor(const QCursor &c);
     friend void qt_mac_set_cursor(const QCursor *c, const QPoint &p);
+#endif
+#if defined(Q_OS_SYMBIAN)
+    friend void qt_symbian_show_pointer_sprite();
+    friend void qt_symbian_hide_pointer_sprite();
+    friend void qt_symbian_set_pointer_sprite(const QCursor& cursor);
+    friend void qt_symbian_move_cursor_sprite();
 #endif
 };
 

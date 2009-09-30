@@ -96,6 +96,11 @@ bool JSSVGFEImageElementPrototype::getOwnPropertySlot(ExecState* exec, const Ide
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGFEImageElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGFEImageElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGFEImageElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGFEImageElement::s_info = { "SVGFEImageElement", &JSSVGElement::s_info, &JSSVGFEImageElementTable, 0 };
 
 JSSVGFEImageElement::JSSVGFEImageElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEImageElement> impl)
@@ -111,6 +116,11 @@ JSObject* JSSVGFEImageElement::createPrototype(ExecState* exec, JSGlobalObject* 
 bool JSSVGFEImageElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGFEImageElement, Base>(exec, &JSSVGFEImageElementTable, this, propertyName, slot);
+}
+
+bool JSSVGFEImageElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFEImageElement, Base>(exec, &JSSVGFEImageElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGFEImageElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -229,7 +239,7 @@ void setJSSVGFEImageElementXmlspace(ExecState* exec, JSObject* thisObject, JSVal
 JSValue JSC_HOST_CALL jsSVGFEImageElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGFEImageElement::s_info))
+    if (!thisValue.inherits(&JSSVGFEImageElement::s_info))
         return throwError(exec, TypeError);
     JSSVGFEImageElement* castedThisObj = static_cast<JSSVGFEImageElement*>(asObject(thisValue));
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(castedThisObj->impl());

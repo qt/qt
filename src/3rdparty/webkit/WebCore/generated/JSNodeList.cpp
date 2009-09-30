@@ -75,6 +75,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSNodeListPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -89,6 +90,11 @@ const ClassInfo JSNodeListConstructor::s_info = { "NodeListConstructor", 0, &JSN
 bool JSNodeListConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSNodeListConstructor, DOMObject>(exec, &JSNodeListConstructorTable, this, propertyName, slot);
+}
+
+bool JSNodeListConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSNodeListConstructor, DOMObject>(exec, &JSNodeListConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -118,6 +124,11 @@ bool JSNodeListPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& 
     return getStaticFunctionSlot<JSObject>(exec, &JSNodeListPrototypeTable, this, propertyName, slot);
 }
 
+bool JSNodeListPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSNodeListPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSNodeList::s_info = { "NodeList", 0, &JSNodeListTable, 0 };
 
 JSNodeList::JSNodeList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<NodeList> impl)
@@ -128,7 +139,7 @@ JSNodeList::JSNodeList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globa
 
 JSNodeList::~JSNodeList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSNodeList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -156,6 +167,32 @@ bool JSNodeList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyN
     return getStaticValueSlot<JSNodeList, Base>(exec, &JSNodeListTable, this, propertyName, slot);
 }
 
+bool JSNodeList::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    const HashEntry* entry = JSNodeListTable.entry(exec, propertyName);
+    if (entry) {
+        PropertySlot slot;
+        slot.setCustom(this, entry->propertyGetter());
+        descriptor.setDescriptor(slot.getValue(exec, propertyName), entry->attributes());
+        return true;
+    }
+    bool ok;
+    unsigned index = propertyName.toUInt32(&ok, false);
+    if (ok && index < static_cast<NodeList*>(impl())->length()) {
+        PropertySlot slot;
+        slot.setCustomIndex(this, index, indexGetter);
+        descriptor.setDescriptor(slot.getValue(exec, propertyName), DontDelete | ReadOnly);
+        return true;
+    }
+    if (canGetItemsForName(exec, static_cast<NodeList*>(impl()), propertyName)) {
+        PropertySlot slot;
+        slot.setCustom(this, nameGetter);
+        descriptor.setDescriptor(slot.getValue(exec, propertyName), ReadOnly | DontDelete | DontEnum);
+        return true;
+    }
+    return getStaticValueDescriptor<JSNodeList, Base>(exec, &JSNodeListTable, this, propertyName, descriptor);
+}
+
 bool JSNodeList::getOwnPropertySlot(ExecState* exec, unsigned propertyName, PropertySlot& slot)
 {
     if (propertyName < static_cast<NodeList*>(impl())->length()) {
@@ -178,11 +215,11 @@ JSValue jsNodeListConstructor(ExecState* exec, const Identifier&, const Property
     JSNodeList* domObject = static_cast<JSNodeList*>(asObject(slot.slotBase()));
     return JSNodeList::getConstructor(exec, domObject->globalObject());
 }
-void JSNodeList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
+void JSNodeList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
 {
     for (unsigned i = 0; i < static_cast<NodeList*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getPropertyNames(exec, propertyNames, listedAttributes);
+     Base::getOwnPropertyNames(exec, propertyNames);
 }
 
 JSValue JSNodeList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -193,7 +230,7 @@ JSValue JSNodeList::getConstructor(ExecState* exec, JSGlobalObject* globalObject
 JSValue JSC_HOST_CALL jsNodeListPrototypeFunctionItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSNodeList::s_info))
+    if (!thisValue.inherits(&JSNodeList::s_info))
         return throwError(exec, TypeError);
     JSNodeList* castedThisObj = static_cast<JSNodeList*>(asObject(thisValue));
     NodeList* imp = static_cast<NodeList*>(castedThisObj->impl());
@@ -220,7 +257,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, NodeLis
 }
 NodeList* toNodeList(JSC::JSValue value)
 {
-    return value.isObject(&JSNodeList::s_info) ? static_cast<JSNodeList*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSNodeList::s_info) ? static_cast<JSNodeList*>(asObject(value))->impl() : 0;
 }
 
 }

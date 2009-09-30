@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -50,18 +50,19 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+#define SECONDS     1
+#define FREQ        600
+#define SYSTEM_FREQ 44100
+
 Generator::Generator(QObject *parent)
     :QIODevice( parent )
 {
     finished = false;
-    buffer = new char[SECONDS*44100*4+1000];
+    buffer = new char[SECONDS*SYSTEM_FREQ*4+1000];
     t=buffer;
-    len=fillData(t+4,450,SECONDS); /* left channel, 450Hz sine */
-    len+=fillData(t+6,452,SECONDS); /* right channel, 452Hz sine */
-    putLong(t,len);
-    putLong(buffer+4,len+8+16+8);
+    len=fillData(t,FREQ,SECONDS); /* mono FREQHz sine */
     pos   = 0;
-    total = len+8+16+8;
+    total = len;
 }
 
 Generator::~Generator()
@@ -86,21 +87,12 @@ int Generator::putShort(char *t, unsigned int value)
     return 2;
 }
 
-int Generator::putLong(char *t, unsigned int value)
-{
-    *(unsigned char *)(t++)=value&255;
-    *(unsigned char *)(t++)=(value/256)&255;
-    *(unsigned char *)(t++)=(value/(256*256))&255;
-    *(unsigned char *)(t)=(value/(256*256*256))&255;
-    return 4;
-}
-
 int Generator::fillData(char *start, int frequency, int seconds)
 {
     int i, len=0;
     int value;
-    for(i=0; i<seconds*44100; i++) {
-        value=(int)(32767.0*sin(2.0*M_PI*((double)(i))*(double)(frequency)/44100.0));
+    for(i=0; i<seconds*SYSTEM_FREQ; i++) {
+        value=(int)(32767.0*sin(2.0*M_PI*((double)(i))*(double)(frequency)/SYSTEM_FREQ));
         putShort(start, value);
         start += 4;
         len+=2;
@@ -114,14 +106,14 @@ qint64 Generator::readData(char *data, qint64 maxlen)
     if(len > 16384)
         len = 16384;
 
-    if(len < (SECONDS*44100*4+1000)-pos) {
+    if(len < (SECONDS*SYSTEM_FREQ*2)-pos) {
         // Normal
         memcpy(data,t+pos,len);
         pos+=len;
         return len;
     } else {
         // Whats left and reset to start
-        qint64 left = (SECONDS*44100*4+1000)-pos;
+        qint64 left = (SECONDS*SYSTEM_FREQ*2)-pos;
         memcpy(data,t+pos,left);
         pos=0;
         return left;
@@ -142,10 +134,8 @@ AudioTest::AudioTest()
     QVBoxLayout* layout = new QVBoxLayout;
 
     deviceBox = new QComboBox(this);
-    QList<QAudioDeviceId> devices = QAudioDeviceInfo::deviceList(QAudio::AudioOutput);
-    for(int i = 0; i < devices.size(); ++i) {
-        deviceBox->addItem(QAudioDeviceInfo(devices.at(i)).deviceName(), qVariantFromValue(devices.at(i)));
-    }
+    foreach (const QAudioDeviceInfo &deviceInfo, QAudioDeviceInfo::deviceList(QAudio::AudioOutput))
+        deviceBox->addItem(deviceInfo.deviceName(), qVariantFromValue(deviceInfo));
     connect(deviceBox,SIGNAL(activated(int)),SLOT(deviceChanged(int)));
     layout->addWidget(deviceBox);
 
@@ -174,8 +164,8 @@ AudioTest::AudioTest()
 
     gen->start();
 
-    settings.setFrequency(44100);
-    settings.setChannels(2);
+    settings.setFrequency(SYSTEM_FREQ);
+    settings.setChannels(1);
     settings.setSampleSize(16);
     settings.setCodec("audio/pcm");
     settings.setByteOrder(QAudioFormat::LittleEndian);
@@ -200,7 +190,7 @@ void AudioTest::deviceChanged(int idx)
     audioOutput->disconnect(this);
     delete audioOutput;
 
-    device = deviceBox->itemData(idx).value<QAudioDeviceId>();
+    device = deviceBox->itemData(idx).value<QAudioDeviceInfo>();
     audioOutput = new QAudioOutput(device,settings,this);
     connect(audioOutput,SIGNAL(notify()),SLOT(status()));
     connect(audioOutput,SIGNAL(stateChanged(QAudio::State)),SLOT(state(QAudio::State)));

@@ -36,7 +36,7 @@
 typedef struct CGPoint CGPoint;
 #endif
 
-#if PLATFORM(MAC)
+#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && PLATFORM(DARWIN))
 #ifdef NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
 typedef struct CGPoint NSPoint;
 #else
@@ -49,6 +49,10 @@ typedef struct _NSPoint NSPoint;
 QT_BEGIN_NAMESPACE
 class QPointF;
 QT_END_NAMESPACE
+#endif
+
+#if PLATFORM(HAIKU)
+class BPoint;
 #endif
 
 #if PLATFORM(SKIA)
@@ -80,7 +84,8 @@ public:
     operator CGPoint() const;
 #endif
 
-#if PLATFORM(MAC) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
+#if (PLATFORM(MAC) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)) \
+        || (PLATFORM(CHROMIUM) && PLATFORM(DARWIN))
     FloatPoint(const NSPoint&);
     operator NSPoint() const;
 #endif
@@ -88,6 +93,11 @@ public:
 #if PLATFORM(QT)
     FloatPoint(const QPointF&);
     operator QPointF() const;
+#endif
+
+#if PLATFORM(HAIKU)
+    FloatPoint(const BPoint&);
+    operator BPoint() const;
 #endif
 
 #if PLATFORM(SKIA)

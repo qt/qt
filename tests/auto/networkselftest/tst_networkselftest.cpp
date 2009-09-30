@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -41,6 +41,14 @@
 
 #include <QtTest/QtTest>
 #include <QtNetwork/QtNetwork>
+
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+// Current path (C:\private\<UID>) contains only ascii chars
+//#define SRCDIR QDir::currentPath()
+#define SRCDIR "."
+#endif
+
 #include "../network-settings.h"
 
 class tst_NetworkSelfTest: public QObject
@@ -57,6 +65,7 @@ private slots:
     void serverReachability();
     void remotePortsOpen_data();
     void remotePortsOpen();
+    void fileLineEndingTest();
 
     // specific protocol tests
     void ftpServer();
@@ -390,6 +399,31 @@ void tst_NetworkSelfTest::remotePortsOpen()
             QFAIL(QString("Error connecting to server on port %1: %2").arg(portNumber).arg(socket.errorString()).toLocal8Bit());
     }
     QVERIFY(socket.state() == QAbstractSocket::ConnectedState);
+}
+
+
+void tst_NetworkSelfTest::fileLineEndingTest()
+{
+    QString referenceName = SRCDIR "/rfc3252.txt";
+    long long expectedReferenceSize = 25962;
+
+    QString lineEndingType("LF");
+
+    QFile reference(referenceName);
+    QVERIFY(reference.open(QIODevice::ReadOnly));
+    QByteArray byteLine = reference.readLine();
+    if(byteLine.endsWith("\r\n"))
+        lineEndingType = "CRLF";
+    else if(byteLine.endsWith("\r"))
+        lineEndingType = "CR";
+
+    QString referenceAsTextData;
+    QFile referenceAsText(referenceName);
+    QVERIFY(referenceAsText.open(QIODevice::ReadOnly));
+    referenceAsTextData = referenceAsText.readAll();
+
+    QVERIFY2(expectedReferenceSize == referenceAsTextData.length(), QString("Reference file %1 has %2 as line ending and file size not matching - Git checkout issue !?!").arg(referenceName, lineEndingType).toLocal8Bit());
+    QVERIFY2(!lineEndingType.compare("LF"), QString("Reference file %1 has %2 as line ending - Git checkout issue !?!").arg(referenceName, lineEndingType).toLocal8Bit());
 }
 
 static QList<Chat> ftpChat()

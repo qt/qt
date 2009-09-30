@@ -81,6 +81,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLLinkElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -95,6 +96,11 @@ const ClassInfo JSHTMLLinkElementConstructor::s_info = { "HTMLLinkElementConstru
 bool JSHTMLLinkElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLLinkElementConstructor, DOMObject>(exec, &JSHTMLLinkElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLLinkElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLLinkElementConstructor, DOMObject>(exec, &JSHTMLLinkElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -133,6 +139,11 @@ JSObject* JSHTMLLinkElement::createPrototype(ExecState* exec, JSGlobalObject* gl
 bool JSHTMLLinkElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLLinkElement, Base>(exec, &JSHTMLLinkElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLLinkElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLLinkElement, Base>(exec, &JSHTMLLinkElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLLinkElementDisabled(ExecState* exec, const Identifier&, const PropertySlot& slot)

@@ -80,6 +80,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSXPathEvaluatorPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -103,6 +104,11 @@ const ClassInfo JSXPathEvaluatorConstructor::s_info = { "XPathEvaluatorConstruct
 bool JSXPathEvaluatorConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSXPathEvaluatorConstructor, DOMObject>(exec, &JSXPathEvaluatorConstructorTable, this, propertyName, slot);
+}
+
+bool JSXPathEvaluatorConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSXPathEvaluatorConstructor, DOMObject>(exec, &JSXPathEvaluatorConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -134,6 +140,11 @@ bool JSXPathEvaluatorPrototype::getOwnPropertySlot(ExecState* exec, const Identi
     return getStaticFunctionSlot<JSObject>(exec, &JSXPathEvaluatorPrototypeTable, this, propertyName, slot);
 }
 
+bool JSXPathEvaluatorPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSXPathEvaluatorPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSXPathEvaluator::s_info = { "XPathEvaluator", 0, &JSXPathEvaluatorTable, 0 };
 
 JSXPathEvaluator::JSXPathEvaluator(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XPathEvaluator> impl)
@@ -144,7 +155,7 @@ JSXPathEvaluator::JSXPathEvaluator(PassRefPtr<Structure> structure, JSDOMGlobalO
 
 JSXPathEvaluator::~JSXPathEvaluator()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSXPathEvaluator::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -155,6 +166,11 @@ JSObject* JSXPathEvaluator::createPrototype(ExecState* exec, JSGlobalObject* glo
 bool JSXPathEvaluator::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSXPathEvaluator, Base>(exec, &JSXPathEvaluatorTable, this, propertyName, slot);
+}
+
+bool JSXPathEvaluator::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSXPathEvaluator, Base>(exec, &JSXPathEvaluatorTable, this, propertyName, descriptor);
 }
 
 JSValue jsXPathEvaluatorConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -170,7 +186,7 @@ JSValue JSXPathEvaluator::getConstructor(ExecState* exec, JSGlobalObject* global
 JSValue JSC_HOST_CALL jsXPathEvaluatorPrototypeFunctionCreateExpression(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSXPathEvaluator::s_info))
+    if (!thisValue.inherits(&JSXPathEvaluator::s_info))
         return throwError(exec, TypeError);
     JSXPathEvaluator* castedThisObj = static_cast<JSXPathEvaluator*>(asObject(thisValue));
     XPathEvaluator* imp = static_cast<XPathEvaluator*>(castedThisObj->impl());
@@ -194,7 +210,7 @@ JSValue JSC_HOST_CALL jsXPathEvaluatorPrototypeFunctionCreateExpression(ExecStat
 JSValue JSC_HOST_CALL jsXPathEvaluatorPrototypeFunctionCreateNSResolver(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSXPathEvaluator::s_info))
+    if (!thisValue.inherits(&JSXPathEvaluator::s_info))
         return throwError(exec, TypeError);
     JSXPathEvaluator* castedThisObj = static_cast<JSXPathEvaluator*>(asObject(thisValue));
     XPathEvaluator* imp = static_cast<XPathEvaluator*>(castedThisObj->impl());
@@ -208,7 +224,7 @@ JSValue JSC_HOST_CALL jsXPathEvaluatorPrototypeFunctionCreateNSResolver(ExecStat
 JSValue JSC_HOST_CALL jsXPathEvaluatorPrototypeFunctionEvaluate(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSXPathEvaluator::s_info))
+    if (!thisValue.inherits(&JSXPathEvaluator::s_info))
         return throwError(exec, TypeError);
     JSXPathEvaluator* castedThisObj = static_cast<JSXPathEvaluator*>(asObject(thisValue));
     XPathEvaluator* imp = static_cast<XPathEvaluator*>(castedThisObj->impl());
@@ -238,7 +254,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, XPathEv
 }
 XPathEvaluator* toXPathEvaluator(JSC::JSValue value)
 {
-    return value.isObject(&JSXPathEvaluator::s_info) ? static_cast<JSXPathEvaluator*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSXPathEvaluator::s_info) ? static_cast<JSXPathEvaluator*>(asObject(value))->impl() : 0;
 }
 
 }

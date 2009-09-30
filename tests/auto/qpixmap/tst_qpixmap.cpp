@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -134,6 +134,11 @@ private slots:
     void toWinHBITMAP();
     void fromWinHBITMAP_data();
     void fromWinHBITMAP();
+
+    void toWinHICON_data();
+    void toWinHICON();
+    void fromWinHICON_data();
+    void fromWinHICON();
 #endif
 
 #if defined(Q_WS_S60)
@@ -939,13 +944,13 @@ void tst_QPixmap::fromWinHBITMAP()
     HDC display_dc = GetDC(0);
     HDC bitmap_dc = CreateCompatibleDC(display_dc);
     HBITMAP bitmap = CreateCompatibleBitmap(display_dc, 100, 100);
-    HBITMAP null_bitmap = (HBITMAP) SelectObject(bitmap_dc, bitmap);
+    SelectObject(bitmap_dc, bitmap);
 
     SelectObject(bitmap_dc, GetStockObject(NULL_PEN));
     HGDIOBJ old_brush = SelectObject(bitmap_dc, CreateSolidBrush(RGB(red, green, blue)));
     Rectangle(bitmap_dc, 0, 0, 100, 100);
 
-#ifdef Q_OS_WINCE //the device context has to be deleted before ::fromWinHBITMAP()
+#ifdef Q_OS_WINCE //the device context has to be deleted before QPixmap::fromWinHBITMAP()
     DeleteDC(bitmap_dc);
 #endif
     QPixmap pixmap = QPixmap::fromWinHBITMAP(bitmap);
@@ -966,7 +971,111 @@ void tst_QPixmap::fromWinHBITMAP()
     ReleaseDC(0, display_dc);
 }
 
-#endif
+static void compareImages(const QImage &image1, const QImage &image2)
+{
+    QCOMPARE(image1.width(), image2.width());
+    QCOMPARE(image1.height(), image2.height());
+    QCOMPARE(image1.format(), image2.format());
+
+    static const int fuzz = 1;
+
+    for (int y = 0; y < image1.height(); y++)
+    {
+        for (int x = 0; x < image2.width(); x++)
+        {
+            QRgb p1 = image1.pixel(x, y);
+            QRgb p2 = image2.pixel(x, y);
+
+            bool pixelMatches = 
+                qAbs(qRed(p1) - qRed(p2)) <= fuzz
+                && qAbs(qGreen(p1) - qGreen(p2)) <= fuzz
+                && qAbs(qBlue(p1) - qBlue(p2)) <= fuzz
+                && qAbs(qAlpha(p1) - qAlpha(p2)) <= fuzz;
+
+            QVERIFY(pixelMatches);
+        }
+    }
+}
+
+void tst_QPixmap::toWinHICON_data()
+{
+    QTest::addColumn<QString>("image");
+    QTest::addColumn<int>("width");
+    QTest::addColumn<int>("height");
+
+    const QString prefix = QLatin1String(SRCDIR) + "/convertFromToHICON";
+
+    QTest::newRow("32bpp_16x16") << prefix + QLatin1String("/icon_32bpp") << 16 << 16;
+    QTest::newRow("32bpp_32x32") << prefix + QLatin1String("/icon_32bpp") << 32 << 32;
+    QTest::newRow("32bpp_48x48") << prefix + QLatin1String("/icon_32bpp") << 48 << 48;
+    QTest::newRow("32bpp_256x256") << prefix + QLatin1String("/icon_32bpp") << 256 << 256;
+
+    QTest::newRow("8bpp_16x16") << prefix + QLatin1String("/icon_8bpp") << 16 << 16;
+    QTest::newRow("8bpp_32x32") << prefix + QLatin1String("/icon_8bpp") << 32 << 32;
+    QTest::newRow("8bpp_48x48") << prefix + QLatin1String("/icon_8bpp") << 48 << 48;
+}
+
+void tst_QPixmap::toWinHICON()
+{
+    QFETCH(int, width);
+    QFETCH(int, height);
+    QFETCH(QString, image);
+
+    QPixmap empty(width, height);
+    empty.fill(Qt::transparent);
+
+    HDC display_dc = GetDC(0);
+    HDC bitmap_dc = CreateCompatibleDC(display_dc);
+    HBITMAP bitmap = empty.toWinHBITMAP(QPixmap::Alpha);
+    SelectObject(bitmap_dc, bitmap);
+
+    QImage imageFromFile(image + QString(QLatin1String("_%1x%2.png")).arg(width).arg(height));
+    imageFromFile = imageFromFile.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+
+    HICON icon = QPixmap::fromImage(imageFromFile).toWinHICON();
+
+    DrawIconEx(bitmap_dc, 0, 0, icon, width, height, 0, 0, DI_NORMAL);
+
+    DestroyIcon(icon);
+    DeleteDC(bitmap_dc);
+
+    QImage imageFromHICON = QPixmap::fromWinHBITMAP(bitmap, QPixmap::Alpha).toImage();
+
+    ReleaseDC(0, display_dc);
+
+    // fuzzy comparison must be used, as the pixel values change slightly during conversion
+    // between QImage::Format_ARGB32 and QImage::Format_ARGB32_Premultiplied, or elsewhere
+
+    // QVERIFY(imageFromHICON == imageFromFile);
+    compareImages(imageFromHICON, imageFromFile);
+}
+
+void tst_QPixmap::fromWinHICON_data()
+{
+    toWinHICON_data();
+}
+
+void tst_QPixmap::fromWinHICON()
+{
+    QFETCH(int, width);
+    QFETCH(int, height);
+    QFETCH(QString, image);
+
+    HICON icon = (HICON)LoadImage(0, (wchar_t*)(image + QLatin1String(".ico")).utf16(), IMAGE_ICON, width, height, LR_LOADFROMFILE);
+    QImage imageFromHICON = QPixmap::fromWinHICON(icon).toImage();
+    DestroyIcon(icon);
+
+    QImage imageFromFile(image + QString(QLatin1String("_%1x%2.png")).arg(width).arg(height));
+    imageFromFile = imageFromFile.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+
+    // fuzzy comparison must be used, as the pixel values change slightly during conversion
+    // between QImage::Format_ARGB32 and QImage::Format_ARGB32_Premultiplied, or elsewhere
+
+    // QVERIFY(imageFromHICON == imageFromFile);
+    compareImages(imageFromHICON, imageFromFile);
+}
+
+#endif // Q_WS_WIN
 
 #if defined(Q_WS_S60)
 Q_DECLARE_METATYPE(TDisplayMode)

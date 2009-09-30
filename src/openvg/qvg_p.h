@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenVG module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -80,15 +80,6 @@ Q_OPENVG_EXPORT void qt_vg_destroy_context(QEglContext *context);
 // Return the shared pbuffer surface that can be made current to
 // destroy VGImage objects when there is no other surface available.
 Q_OPENVG_EXPORT EGLSurface qt_vg_shared_surface(void);
-
-// Make a context current with a specific surface.
-Q_OPENVG_EXPORT void qt_vg_make_current(QEglContext *context, EGLSurface surface);
-
-// Make a context uncurrent.
-Q_OPENVG_EXPORT void qt_vg_done_current(QEglContext *context, bool force = false);
-
-// Destroy a surface that was previously associated with a context.
-Q_OPENVG_EXPORT void qt_vg_destroy_surface(QEglContext *context, EGLSurface surface);
 
 // Convert the configuration format in a context to a VG or QImage format.
 Q_OPENVG_EXPORT VGImageFormat qt_vg_config_to_vg_format(QEglContext *context);

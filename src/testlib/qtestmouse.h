@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#if !defined(QTESTMOUSE_H) && defined(QT_GUI_LIB)
+#if !defined(QTESTMOUSE_H)
 #define QTESTMOUSE_H
 
 #if 0
@@ -117,7 +117,7 @@ namespace QTest
             static const char *mouseActionNames[] =
                 { "MousePress", "MouseRelease", "MouseClick", "MouseDClick", "MouseMove" };
             QString warning = QString::fromLatin1("Mouse event \"%1\" not accepted by receiving widget");
-            QTest::qWarn(warning.arg(mouseActionNames[static_cast<int>(action)]).toAscii().data());
+            QTest::qWarn(warning.arg(QString::fromLatin1(mouseActionNames[static_cast<int>(action)])).toAscii().data());
         }
 
     }

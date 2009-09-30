@@ -103,6 +103,11 @@ bool JSSVGMaskElementPrototype::getOwnPropertySlot(ExecState* exec, const Identi
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGMaskElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGMaskElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGMaskElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGMaskElement::s_info = { "SVGMaskElement", &JSSVGElement::s_info, &JSSVGMaskElementTable, 0 };
 
 JSSVGMaskElement::JSSVGMaskElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGMaskElement> impl)
@@ -118,6 +123,11 @@ JSObject* JSSVGMaskElement::createPrototype(ExecState* exec, JSGlobalObject* glo
 bool JSSVGMaskElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGMaskElement, Base>(exec, &JSSVGMaskElementTable, this, propertyName, slot);
+}
+
+bool JSSVGMaskElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGMaskElement, Base>(exec, &JSSVGMaskElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGMaskElementMaskUnits(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -260,7 +270,7 @@ void setJSSVGMaskElementXmlspace(ExecState* exec, JSObject* thisObject, JSValue 
 JSValue JSC_HOST_CALL jsSVGMaskElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGMaskElement::s_info))
+    if (!thisValue.inherits(&JSSVGMaskElement::s_info))
         return throwError(exec, TypeError);
     JSSVGMaskElement* castedThisObj = static_cast<JSSVGMaskElement*>(asObject(thisValue));
     SVGMaskElement* imp = static_cast<SVGMaskElement*>(castedThisObj->impl());
@@ -274,7 +284,7 @@ JSValue JSC_HOST_CALL jsSVGMaskElementPrototypeFunctionHasExtension(ExecState* e
 JSValue JSC_HOST_CALL jsSVGMaskElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGMaskElement::s_info))
+    if (!thisValue.inherits(&JSSVGMaskElement::s_info))
         return throwError(exec, TypeError);
     JSSVGMaskElement* castedThisObj = static_cast<JSSVGMaskElement*>(asObject(thisValue));
     SVGMaskElement* imp = static_cast<SVGMaskElement*>(castedThisObj->impl());

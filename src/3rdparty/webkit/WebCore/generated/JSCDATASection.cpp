@@ -67,6 +67,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSCDATASectionPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -81,6 +82,11 @@ const ClassInfo JSCDATASectionConstructor::s_info = { "CDATASectionConstructor",
 bool JSCDATASectionConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCDATASectionConstructor, DOMObject>(exec, &JSCDATASectionConstructorTable, this, propertyName, slot);
+}
+
+bool JSCDATASectionConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCDATASectionConstructor, DOMObject>(exec, &JSCDATASectionConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -119,6 +125,11 @@ JSObject* JSCDATASection::createPrototype(ExecState* exec, JSGlobalObject* globa
 bool JSCDATASection::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCDATASection, Base>(exec, &JSCDATASectionTable, this, propertyName, slot);
+}
+
+bool JSCDATASection::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCDATASection, Base>(exec, &JSCDATASectionTable, this, propertyName, descriptor);
 }
 
 JSValue jsCDATASectionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

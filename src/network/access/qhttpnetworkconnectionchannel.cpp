@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -542,6 +542,7 @@ void QHttpNetworkConnectionChannel::allDone()
         if (resendCurrent || reply->d_func()->isConnectionCloseEnabled() || socket->state() != QAbstractSocket::ConnectedState) {
             // move the pipelined ones back to the main queue
             requeueCurrentlyPipelinedRequests();
+            close();
         } else {
             // there were requests pipelined in and we can continue
             HttpMessagePair messagePair = alreadyPipelinedRequests.takeFirst();
@@ -601,7 +602,6 @@ void QHttpNetworkConnectionChannel::requeueCurrentlyPipelinedRequests()
         connection->d_func()->requeueRequest(alreadyPipelinedRequests.at(i));
     alreadyPipelinedRequests.clear();
 
-    close();
     QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
 }
 
@@ -758,6 +758,7 @@ void QHttpNetworkConnectionChannel::_q_disconnected()
     state = QHttpNetworkConnectionChannel::IdleState;
 
     requeueCurrentlyPipelinedRequests();
+    close();
 }
 
 

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -706,10 +706,11 @@ void QS60StylePrivate::setThemePalette(QPalette *palette) const
     palette->setColor(QPalette::AlternateBase, Qt::transparent);
     palette->setBrush(QPalette::Base, Qt::transparent);
     // set button and tooltipbase based on pixel colors
-    const QColor buttonColor = this->colorFromFrameGraphics(SF_ButtonNormal);
-    palette->setColor(QPalette::Button, buttonColor );
-    const QColor toolTipColor = this->colorFromFrameGraphics(SF_ToolTip);
-    palette->setColor(QPalette::ToolTipBase, toolTipColor );
+// After natitive pixmap support, colorFromFrameGraphics caused reproducable crashes on some setups.
+//    const QColor buttonColor = colorFromFrameGraphics(SF_ButtonNormal);
+//    palette->setColor(QPalette::Button, buttonColor);
+//    const QColor toolTipColor = colorFromFrameGraphics(SF_ToolTip);
+//    palette->setColor(QPalette::ToolTipBase, toolTipColor);
     palette->setColor(QPalette::Light, palette->color(QPalette::Button).lighter());
     palette->setColor(QPalette::Dark, palette->color(QPalette::Button).darker());
     palette->setColor(QPalette::Midlight, palette->color(QPalette::Button).lighter(125));
@@ -2396,8 +2397,6 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
             // lets use spinbox frame here as well, as no combobox specific value available.
             const int frameThickness = cmb->frame ? pixelMetric(PM_SpinBoxFrameWidth, cmb, widget) : 0;
             const int buttonWidth = QS60StylePrivate::pixelMetric(QStyle::PM_ButtonIconSize);
-            const int xposMod = (cmb->rect.x()) + width - buttonMargin - buttonWidth;
-            const int ypos = cmb->rect.y();
 
             QSize buttonSize;
             buttonSize.setHeight(qMax(8, (cmb->rect.height()>>1) - frameThickness)); //minimum of 8 pixels
@@ -2405,15 +2404,18 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
             buttonSize = buttonSize.expandedTo(QApplication::globalStrut());
             switch (scontrol) {
                 case SC_ComboBoxArrow:
-                    ret.setRect(xposMod, ypos + buttonMargin, buttonWidth, height - 2*buttonMargin);
+                    ret.setRect(
+                        ret.x() + ret.width() - buttonMargin - buttonWidth,
+                        ret.y() + buttonMargin, 
+                        buttonWidth, 
+                        height - 2*buttonMargin);
                     break;
                 case SC_ComboBoxEditField: {
-                    const int withFrameX = cmb->rect.x() + cmb->rect.width() - frameThickness - buttonSize.width();
-                    ret = QRect(
-                        frameThickness,
-                        frameThickness,
-                        withFrameX - frameThickness,
-                        cmb->rect.height() - 2*frameThickness);
+                    ret.setRect(
+                        ret.x() + frameThickness,
+                        ret.y() + frameThickness,
+                        ret.width() - 2*frameThickness - buttonSize.width(),
+                        ret.height() - 2*frameThickness);
                     }
                 break;
             default:

@@ -83,11 +83,11 @@ JSObject* Error::create(ExecState* exec, ErrorType type, const UString& message,
     JSObject* error = construct(exec, constructor, constructType, constructData, args);
 
     if (lineNumber != -1)
-        error->putWithAttributes(exec, Identifier(exec, JSC_ERROR_LINENUMBER_PROPERTYNAME), jsNumber(exec, lineNumber), ReadOnly | DontDelete);
+        error->putWithAttributes(exec, Identifier(exec, "line"), jsNumber(exec, lineNumber), ReadOnly | DontDelete);
     if (sourceID != -1)
         error->putWithAttributes(exec, Identifier(exec, "sourceId"), jsNumber(exec, sourceID), ReadOnly | DontDelete);
     if (!sourceURL.isNull())
-        error->putWithAttributes(exec, Identifier(exec, JSC_ERROR_FILENAME_PROPERTYNAME), jsString(exec, sourceURL), ReadOnly | DontDelete);
+        error->putWithAttributes(exec, Identifier(exec, "sourceURL"), jsString(exec, sourceURL), ReadOnly | DontDelete);
 
     return error;
 }
@@ -95,6 +95,12 @@ JSObject* Error::create(ExecState* exec, ErrorType type, const UString& message,
 JSObject* Error::create(ExecState* exec, ErrorType type, const char* message)
 {
     return create(exec, type, message, -1, -1, NULL);
+}
+
+JSObject* throwError(ExecState* exec, JSObject* error)
+{
+    exec->setException(error);
+    return error;
 }
 
 JSObject* throwError(ExecState* exec, ErrorType type)

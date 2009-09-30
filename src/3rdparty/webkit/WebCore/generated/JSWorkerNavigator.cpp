@@ -93,7 +93,7 @@ JSWorkerNavigator::JSWorkerNavigator(PassRefPtr<Structure> structure, JSDOMGloba
 
 JSWorkerNavigator::~JSWorkerNavigator()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSWorkerNavigator::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -104,6 +104,11 @@ JSObject* JSWorkerNavigator::createPrototype(ExecState* exec, JSGlobalObject* gl
 bool JSWorkerNavigator::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSWorkerNavigator, Base>(exec, getJSWorkerNavigatorTable(exec), this, propertyName, slot);
+}
+
+bool JSWorkerNavigator::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSWorkerNavigator, Base>(exec, getJSWorkerNavigatorTable(exec), this, propertyName, descriptor);
 }
 
 JSValue jsWorkerNavigatorAppName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -152,7 +157,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, WorkerN
 }
 WorkerNavigator* toWorkerNavigator(JSC::JSValue value)
 {
-    return value.isObject(&JSWorkerNavigator::s_info) ? static_cast<JSWorkerNavigator*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSWorkerNavigator::s_info) ? static_cast<JSWorkerNavigator*>(asObject(value))->impl() : 0;
 }
 
 }

@@ -76,7 +76,7 @@ JSBarInfo::JSBarInfo(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalO
 
 JSBarInfo::~JSBarInfo()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSBarInfo::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -87,6 +87,11 @@ JSObject* JSBarInfo::createPrototype(ExecState* exec, JSGlobalObject* globalObje
 bool JSBarInfo::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSBarInfo, Base>(exec, &JSBarInfoTable, this, propertyName, slot);
+}
+
+bool JSBarInfo::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSBarInfo, Base>(exec, &JSBarInfoTable, this, propertyName, descriptor);
 }
 
 JSValue jsBarInfoVisible(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -103,7 +108,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, BarInfo
 }
 BarInfo* toBarInfo(JSC::JSValue value)
 {
-    return value.isObject(&JSBarInfo::s_info) ? static_cast<JSBarInfo*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSBarInfo::s_info) ? static_cast<JSBarInfo*>(asObject(value))->impl() : 0;
 }
 
 }

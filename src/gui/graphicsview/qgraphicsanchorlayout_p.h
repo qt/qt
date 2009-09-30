@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -54,6 +54,7 @@
 //
 
 #include <QGraphicsWidget>
+#include <private/qobject_p.h>
 
 #include "qgraphicslayout_p.h"
 #include "qgraphicsanchorlayout.h"
@@ -153,6 +154,7 @@ struct AnchorData : public QSimplexVariable {
           minSize(minimumSize), prefSize(preferredSize),
           maxSize(maximumSize), sizeAtMinimum(preferredSize),
           sizeAtPreferred(preferredSize), sizeAtMaximum(preferredSize),
+          graphicsAnchor(0),
           skipInPreferred(0), type(Normal), hasSize(true),
           isLayoutAnchor(false) {}
 
@@ -160,6 +162,7 @@ struct AnchorData : public QSimplexVariable {
         : QSimplexVariable(), from(0), to(0),
           minSize(size), prefSize(size), maxSize(size),
           sizeAtMinimum(size), sizeAtPreferred(size), sizeAtMaximum(size),
+          graphicsAnchor(0),
           skipInPreferred(0), type(Normal), hasSize(true),
           isLayoutAnchor(false) {}
 
@@ -167,6 +170,7 @@ struct AnchorData : public QSimplexVariable {
         : QSimplexVariable(), from(0), to(0),
           minSize(0), prefSize(0), maxSize(0),
           sizeAtMinimum(0), sizeAtPreferred(0), sizeAtMaximum(0),
+          graphicsAnchor(0),
           skipInPreferred(0), type(Normal), hasSize(false),
           isLayoutAnchor(false) {}
 
@@ -215,6 +219,7 @@ struct AnchorData : public QSimplexVariable {
     qreal sizeAtMinimum;
     qreal sizeAtPreferred;
     qreal sizeAtMaximum;
+    QGraphicsAnchor *graphicsAnchor;
 
     uint skipInPreferred : 1;
     uint type : 2;            // either Normal, Sequential or Parallel
@@ -226,6 +231,7 @@ protected:
           minSize(size), prefSize(size),
           maxSize(size), sizeAtMinimum(size),
           sizeAtPreferred(size), sizeAtMaximum(size),
+          graphicsAnchor(0),
           skipInPreferred(0), type(type), hasSize(true),
           isLayoutAnchor(false) {}
 };
@@ -309,13 +315,35 @@ public:
     QSet<AnchorData *> negatives;
 };
 
+class QGraphicsAnchorLayoutPrivate;
+/*!
+    \internal
+*/
+class QGraphicsAnchorPrivate : public QObjectPrivate
+{
+    Q_DECLARE_PUBLIC(QGraphicsAnchor)
+
+public:
+    explicit QGraphicsAnchorPrivate(int version = QObjectPrivateVersion);
+    ~QGraphicsAnchorPrivate();
+
+    void setSpacing(qreal value);
+    void unsetSpacing();
+    qreal spacing() const;
+
+    QGraphicsAnchorLayoutPrivate *layoutPrivate;
+    AnchorData *data;
+};
+
+
+
 
 /*!
   \internal
 
   QGraphicsAnchorLayout private methods and attributes.
 */
-class QGraphicsAnchorLayoutPrivate : public QGraphicsLayoutPrivate
+class Q_AUTOTEST_EXPORT QGraphicsAnchorLayoutPrivate : public QGraphicsLayoutPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsAnchorLayout)
 
@@ -342,6 +370,11 @@ public:
 
     QGraphicsAnchorLayoutPrivate();
 
+    static QGraphicsAnchorLayoutPrivate *get(QGraphicsAnchorLayout *q)
+    {
+        return q ? q->d_func() : 0;
+    }
+
     static Qt::AnchorPoint oppositeEdge(
         Qt::AnchorPoint edge);
 
@@ -365,35 +398,37 @@ public:
     void removeCenterAnchors(QGraphicsLayoutItem *item, Qt::AnchorPoint centerEdge, bool substitute = true);
     void removeCenterConstraints(QGraphicsLayoutItem *item, Orientation orientation);
 
-    // helper function used by the 4 API functions
-    void anchor(QGraphicsLayoutItem *firstItem,
-                Qt::AnchorPoint firstEdge,
-                QGraphicsLayoutItem *secondItem,
-                Qt::AnchorPoint secondEdge,
-                qreal *spacing = 0);
+    QGraphicsAnchor *acquireGraphicsAnchor(AnchorData *data)
+    {
+        Q_Q(QGraphicsAnchorLayout);
+        if (!data->graphicsAnchor) {
+            data->graphicsAnchor = new QGraphicsAnchor(q);
+            data->graphicsAnchor->d_func()->data = data;
+        }
+        return data->graphicsAnchor;
+    }
 
-    // Anchor Manipulation methods
-    void addAnchor(QGraphicsLayoutItem *firstItem,
+    // function used by the 4 API functions
+    QGraphicsAnchor *addAnchor(QGraphicsLayoutItem *firstItem,
+                            Qt::AnchorPoint firstEdge,
+                            QGraphicsLayoutItem *secondItem,
+                            Qt::AnchorPoint secondEdge,
+                            qreal *spacing = 0);
+
+    // Helper for Anchor Manipulation methods
+    void addAnchor_helper(QGraphicsLayoutItem *firstItem,
                    Qt::AnchorPoint firstEdge,
                    QGraphicsLayoutItem *secondItem,
                    Qt::AnchorPoint secondEdge,
                    AnchorData *data);
 
-    void removeAnchor(QGraphicsLayoutItem *firstItem,
-                      Qt::AnchorPoint firstEdge,
-                      QGraphicsLayoutItem *secondItem,
-                      Qt::AnchorPoint secondEdge);
+    QGraphicsAnchor *getAnchor(QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
+                               QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge);
 
-    bool setAnchorSize(const QGraphicsLayoutItem *firstItem,
-                       Qt::AnchorPoint firstEdge,
-                       const QGraphicsLayoutItem *secondItem,
-                       Qt::AnchorPoint secondEdge,
-                       const qreal *anchorSize);
-
-    bool anchorSize(const QGraphicsLayoutItem *firstItem,
-                    Qt::AnchorPoint firstEdge,
-                    const QGraphicsLayoutItem *secondItem,
-                    Qt::AnchorPoint secondEdge,
+    void removeAnchor(AnchorVertex *firstVertex, AnchorVertex *secondVertex);
+    void removeAnchor_helper(AnchorVertex *v1, AnchorVertex *v2);
+    void setAnchorSize(AnchorData *data, const qreal *anchorSize);
+    void anchorSize(const AnchorData *data,
                     qreal *minSize = 0,
                     qreal *prefSize = 0,
                     qreal *maxSize = 0) const;
@@ -437,7 +472,7 @@ public:
     void removeInternalVertex(QGraphicsLayoutItem *item, Qt::AnchorPoint edge);
 
     // Geometry interpolation methods
-    void setItemsGeometries();
+    void setItemsGeometries(const QRectF &geom);
 
     void calculateVertexPositions(Orientation orientation);
     void setupEdgesInterpolation(Orientation orientation);
@@ -448,9 +483,10 @@ public:
                                   Orientation orientation);
 
     // Linear Programming solver methods
-    QPair<qreal, qreal> solveMinMax(QList<QSimplexConstraint *> constraints,
-                                    GraphPath path);
-    void solvePreferred(QList<QSimplexConstraint *> constraints);
+    bool solveMinMax(QList<QSimplexConstraint *> constraints,
+                     GraphPath path, qreal *min, qreal *max);
+    bool solvePreferred(QList<QSimplexConstraint *> constraints);
+    bool hasConflicts() const;
 
 #ifdef QT_DEBUG
     void dumpGraph();
@@ -484,6 +520,7 @@ public:
 
     // ###
     bool graphSimplified[2];
+    bool graphHasConflicts[2];
 
     uint calculateGraphCacheDirty : 1;
 };

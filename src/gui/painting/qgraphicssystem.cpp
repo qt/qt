@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -44,7 +44,7 @@
 #ifdef Q_WS_X11
 # include <private/qpixmap_x11_p.h>
 #endif
-#if defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_WIN)
 # include <private/qpixmap_raster_p.h>
 #endif
 #ifdef Q_WS_MAC
@@ -52,6 +52,9 @@
 #endif
 #ifdef Q_WS_LITE
 # include <private/qpixmap_raster_p.h>
+#endif
+#ifdef Q_WS_S60
+# include <private/qpixmap_s60_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -67,12 +70,14 @@ QPixmapData *QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixelType typ
 #endif
 #if defined(Q_WS_X11)
     return new QX11PixmapData(type);
-#elif defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
+#elif defined(Q_WS_WIN)
     return new QRasterPixmapData(type);
 #elif defined(Q_WS_MAC)
     return new QMacPixmapData(type);
 #elif defined(Q_WS_LITE)
     return new QRasterPixmapData(type);
+#elif defined(Q_WS_S60)
+    return new QS60PixmapData(type);
 #elif !defined(Q_WS_QWS)
 #error QGraphicsSystem::createDefaultPixmapData() not implemented
 #endif

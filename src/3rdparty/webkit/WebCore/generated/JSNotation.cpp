@@ -70,6 +70,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSNotationPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -84,6 +85,11 @@ const ClassInfo JSNotationConstructor::s_info = { "NotationConstructor", 0, &JSN
 bool JSNotationConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSNotationConstructor, DOMObject>(exec, &JSNotationConstructorTable, this, propertyName, slot);
+}
+
+bool JSNotationConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSNotationConstructor, DOMObject>(exec, &JSNotationConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -122,6 +128,11 @@ JSObject* JSNotation::createPrototype(ExecState* exec, JSGlobalObject* globalObj
 bool JSNotation::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSNotation, Base>(exec, &JSNotationTable, this, propertyName, slot);
+}
+
+bool JSNotation::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSNotation, Base>(exec, &JSNotationTable, this, propertyName, descriptor);
 }
 
 JSValue jsNotationPublicId(ExecState* exec, const Identifier&, const PropertySlot& slot)

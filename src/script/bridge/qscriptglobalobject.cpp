@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtScript module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -68,12 +68,11 @@ GlobalObject::~GlobalObject()
 {
 }
 
-void GlobalObject::mark()
+void GlobalObject::markChildren(JSC::MarkStack& markStack)
 {
-    Q_ASSERT(!marked());
-    JSC::JSGlobalObject::mark();
-    if (customGlobalObject && !customGlobalObject->marked())
-        customGlobalObject->mark();
+    JSC::JSGlobalObject::markChildren(markStack);
+    if (customGlobalObject)
+        markStack.append(customGlobalObject);
 }
 
 bool GlobalObject::getOwnPropertySlot(JSC::ExecState* exec,
@@ -125,28 +124,29 @@ bool GlobalObject::getPropertyAttributes(JSC::ExecState* exec, const JSC::Identi
     return JSC::JSGlobalObject::getPropertyAttributes(exec, propertyName, attributes);
 }
 
-void GlobalObject::getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames, unsigned listedAttributes)
+void GlobalObject::getOwnPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames,
+                                       bool includeNonEnumerable)
 {
     if (customGlobalObject)
-        customGlobalObject->getPropertyNames(exec, propertyNames, listedAttributes);
+        customGlobalObject->getOwnPropertyNames(exec, propertyNames, includeNonEnumerable);
     else
-        JSC::JSGlobalObject::getPropertyNames(exec, propertyNames, listedAttributes);
+        JSC::JSGlobalObject::getOwnPropertyNames(exec, propertyNames, includeNonEnumerable);
 }
 
-void GlobalObject::defineGetter(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction)
+void GlobalObject::defineGetter(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction, unsigned attributes)
 {
     if (customGlobalObject)
-        customGlobalObject->defineGetter(exec, propertyName, getterFunction);
+        customGlobalObject->defineGetter(exec, propertyName, getterFunction, attributes);
     else
-        JSC::JSGlobalObject::defineGetter(exec, propertyName, getterFunction);
+        JSC::JSGlobalObject::defineGetter(exec, propertyName, getterFunction, attributes);
 }
 
-void GlobalObject::defineSetter(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::JSObject* setterFunction)
+void GlobalObject::defineSetter(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::JSObject* setterFunction, unsigned attributes)
 {
     if (customGlobalObject)
-        customGlobalObject->defineSetter(exec, propertyName, setterFunction);
+        customGlobalObject->defineSetter(exec, propertyName, setterFunction, attributes);
     else
-        JSC::JSGlobalObject::defineSetter(exec, propertyName, setterFunction);
+        JSC::JSGlobalObject::defineSetter(exec, propertyName, setterFunction, attributes);
 }
 
 JSC::JSValue GlobalObject::lookupGetter(JSC::ExecState* exec, const JSC::Identifier& propertyName)

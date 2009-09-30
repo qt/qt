@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -1424,7 +1424,15 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
         GetMenuItemProperty(action->menu, 0, kMenuCreatorQt, kMenuPropertyQWidget, sizeof(caused), 0, &caused);
         SetMenuItemProperty(data.submenuHandle, 0, kMenuCreatorQt, kMenuPropertyCausedQWidget, sizeof(caused), &caused);
 #else
-        [item setSubmenu:static_cast<NSMenu *>(action->action->menu()->macMenu())];
+        NSMenu *subMenu  = static_cast<NSMenu *>(action->action->menu()->macMenu());
+        if ([subMenu supermenu] != nil) {
+            // The menu is already a sub-menu of another one. Cocoa will throw an exception,
+            // in such cases. For the time being, a new QMenu with same set of actions is the
+            // only workaround.
+            action->action->setEnabled(false);
+        } else {
+            [item setSubmenu:subMenu];
+        }
 #endif
     } else { //respect some other items
 #ifndef QT_MAC_USE_COCOA
@@ -1710,7 +1718,10 @@ QMenuBarPrivate::QMacMenuBarPrivate::syncAction(QMacMenuAction *action)
             GetMenuItemProperty(action->menu, 0, kMenuCreatorQt, kMenuPropertyQWidget, sizeof(caused), 0, &caused);
             SetMenuItemProperty(submenu, 0, kMenuCreatorQt, kMenuPropertyCausedQWidget, sizeof(caused), &caused);
 #else
-            [item setSubmenu:submenu];
+            if ([submenu supermenu] != nil)
+                return;
+            else
+                [item setSubmenu:submenu];
 #endif
         }
 #ifndef QT_MAC_USE_COCOA

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -573,6 +573,8 @@ QNetworkReplyImpl::~QNetworkReplyImpl()
     Q_D(QNetworkReplyImpl);
     if (d->isCachingEnabled())
         d->networkCache()->remove(url());
+    if (d->outgoingDataBuffer)
+        delete d->outgoingDataBuffer;
 }
 
 void QNetworkReplyImpl::abort()
@@ -582,10 +584,6 @@ void QNetworkReplyImpl::abort()
         return;
 
     // stop both upload and download
-    if (d->backend) {
-        d->backend->deleteLater();
-        d->backend = 0;
-    }
     if (d->outgoingData)
         disconnect(d->outgoingData, 0, this, 0);
     if (d->copyDevice)
@@ -599,6 +597,12 @@ void QNetworkReplyImpl::abort()
         d->finished();
     }
     d->state = QNetworkReplyImplPrivate::Aborted;
+
+    // finished may access the backend
+    if (d->backend) {
+        d->backend->deleteLater();
+        d->backend = 0;
+    }
 }
 
 void QNetworkReplyImpl::close()

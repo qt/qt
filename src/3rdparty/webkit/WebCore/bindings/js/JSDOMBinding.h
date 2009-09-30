@@ -1,6 +1,6 @@
 /*
  *  Copyright (C) 1999-2001 Harri Porten (porten@kde.org)
- *  Copyright (C) 2003, 2004, 2005, 2006, 2008 Apple Inc. All rights reserved.
+ *  Copyright (C) 2003, 2004, 2005, 2006, 2008, 2009 Apple Inc. All rights reserved.
  *  Copyright (C) 2007 Samuel Weinig <sam@webkit.org>
  *  Copyright (C) 2009 Google, Inc. All rights reserved.
  *
@@ -26,7 +26,6 @@
 #include "Document.h" // For DOMConstructorWithDocument
 #include <runtime/Completion.h>
 #include <runtime/Lookup.h>
-#include <runtime/JSFunction.h>
 #include <wtf/Noncopyable.h>
 
 namespace JSC {
@@ -56,12 +55,14 @@ namespace WebCore {
         {
         }
 
+        virtual bool defineOwnProperty(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&, bool);
+
 #ifndef NDEBUG
         virtual ~DOMObject();
 #endif
     };
 
-    // FIXME: This class should colapse into DOMObject once all DOMObjects are
+    // FIXME: This class should collapse into DOMObject once all DOMObjects are
     // updated to store a globalObject pointer.
     class DOMObjectWithGlobalPointer : public DOMObject {
     public:
@@ -71,6 +72,11 @@ namespace WebCore {
         {
             // FIXME: Should never be 0, but can be due to bug 27640.
             return m_globalObject->scriptExecutionContext();
+        }
+
+        static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
+        {
+            return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasStandardGetOwnPropertySlot));
         }
 
     protected:
@@ -83,13 +89,12 @@ namespace WebCore {
             // needing to reach through the frame to get to the Document*.  See bug 27640.
             // ASSERT(globalObject->scriptExecutionContext());
         }
-        virtual ~DOMObjectWithGlobalPointer() {}
+        virtual ~DOMObjectWithGlobalPointer() { }
 
-        void mark()
+        void markChildren(JSC::MarkStack& markStack)
         {
-            DOMObject::mark();
-            if (!m_globalObject->marked())
-                m_globalObject->mark();
+            DOMObject::markChildren(markStack);
+            markStack.append(m_globalObject);
         }
 
     private:
@@ -137,9 +142,9 @@ namespace WebCore {
     void forgetDOMNode(Document*, Node*);
     void forgetAllDOMNodesForDocument(Document*);
     void updateDOMNodeDocument(Node*, Document* oldDocument, Document* newDocument);
-    void markDOMNodesForDocument(Document*);
-    void markActiveObjectsForContext(JSC::JSGlobalData&, ScriptExecutionContext*);
-    void markDOMObjectWrapper(JSC::JSGlobalData& globalData, void* object);
+    void markDOMNodesForDocument(JSC::MarkStack&, Document*);
+    void markActiveObjectsForContext(JSC::MarkStack&, JSC::JSGlobalData&, ScriptExecutionContext*);
+    void markDOMObjectWrapper(JSC::MarkStack&, JSC::JSGlobalData& globalData, void* object);
 
     JSC::Structure* getCachedDOMStructure(JSDOMGlobalObject*, const JSC::ClassInfo*);
     JSC::Structure* cacheDOMStructure(JSDOMGlobalObject*, PassRefPtr<JSC::Structure>, const JSC::ClassInfo*);
@@ -277,6 +282,9 @@ namespace WebCore {
     {
         return toJS(exec, globalObject, ptr.get());
     }
+
+    // Validates that the passed object is a sequence type per section 4.1.13 of the WebIDL spec.
+    JSC::JSObject* toJSSequence(JSC::ExecState*, JSC::JSValue, unsigned&);
 
     bool checkNodeSecurity(JSC::ExecState*, Node*);
 

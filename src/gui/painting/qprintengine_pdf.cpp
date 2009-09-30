@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -935,7 +935,7 @@ void QPdfEnginePrivate::writeInfo()
             "/Title (%s)\n"
 //            "/Author (%s)\n"
             "/Creator (%s)\n"
-            "/Producer (Qt " QT_VERSION_STR " (C) 1992-$THISYEAR$ Nokia Corporation and/or its subsidiary(-ies))\n",
+            "/Producer (Qt " QT_VERSION_STR " (C) 2009 Nokia Corporation and/or its subsidiary(-ies))\n",
             title.toUtf8().constData(),
 //            author.toUtf8().constData(),
             creator.toUtf8().constData());

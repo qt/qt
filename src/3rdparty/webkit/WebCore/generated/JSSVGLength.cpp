@@ -89,6 +89,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSSVGLengthPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -103,6 +104,11 @@ const ClassInfo JSSVGLengthConstructor::s_info = { "SVGLengthConstructor", 0, &J
 bool JSSVGLengthConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGLengthConstructor, DOMObject>(exec, &JSSVGLengthConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGLengthConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGLengthConstructor, DOMObject>(exec, &JSSVGLengthConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -144,6 +150,11 @@ bool JSSVGLengthPrototype::getOwnPropertySlot(ExecState* exec, const Identifier&
     return getStaticPropertySlot<JSSVGLengthPrototype, JSObject>(exec, &JSSVGLengthPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGLengthPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticPropertyDescriptor<JSSVGLengthPrototype, JSObject>(exec, &JSSVGLengthPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGLength::s_info = { "SVGLength", 0, &JSSVGLengthTable, 0 };
 
 JSSVGLength::JSSVGLength(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JSSVGPODTypeWrapper<SVGLength> > impl, SVGElement* context)
@@ -155,7 +166,7 @@ JSSVGLength::JSSVGLength(PassRefPtr<Structure> structure, JSDOMGlobalObject* glo
 JSSVGLength::~JSSVGLength()
 {
     JSSVGDynamicPODTypeWrapperCache<SVGLength, SVGAnimatedLength>::forgetWrapper(m_impl.get());
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGLength::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -166,6 +177,11 @@ JSObject* JSSVGLength::createPrototype(ExecState* exec, JSGlobalObject* globalOb
 bool JSSVGLength::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGLength, Base>(exec, &JSSVGLengthTable, this, propertyName, slot);
+}
+
+bool JSSVGLength::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGLength, Base>(exec, &JSSVGLengthTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGLengthUnitType(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -237,7 +253,7 @@ JSValue JSSVGLength::getConstructor(ExecState* exec, JSGlobalObject* globalObjec
 JSValue JSC_HOST_CALL jsSVGLengthPrototypeFunctionNewValueSpecifiedUnits(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGLength::s_info))
+    if (!thisValue.inherits(&JSSVGLength::s_info))
         return throwError(exec, TypeError);
     JSSVGLength* castedThisObj = static_cast<JSSVGLength*>(asObject(thisValue));
     JSSVGPODTypeWrapper<SVGLength>* wrapper = castedThisObj->impl();
@@ -253,7 +269,7 @@ JSValue JSC_HOST_CALL jsSVGLengthPrototypeFunctionNewValueSpecifiedUnits(ExecSta
 JSValue JSC_HOST_CALL jsSVGLengthPrototypeFunctionConvertToSpecifiedUnits(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGLength::s_info))
+    if (!thisValue.inherits(&JSSVGLength::s_info))
         return throwError(exec, TypeError);
     JSSVGLength* castedThisObj = static_cast<JSSVGLength*>(asObject(thisValue));
     return castedThisObj->convertToSpecifiedUnits(exec, args);
@@ -322,7 +338,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, JSSVGPO
 }
 SVGLength toSVGLength(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGLength::s_info) ? (SVGLength) *static_cast<JSSVGLength*>(asObject(value))->impl() : SVGLength();
+    return value.inherits(&JSSVGLength::s_info) ? (SVGLength) *static_cast<JSSVGLength*>(asObject(value))->impl() : SVGLength();
 }
 
 }

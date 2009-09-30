@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -62,6 +62,8 @@
 #include <QTextEdit>
 #include <QPlainTextEdit>
 #include <QDialog>
+
+#include "../../shared/util.h"
 
 Q_DECLARE_METATYPE(QAbstractItemDelegate::EndEditHint)
 
@@ -473,7 +475,7 @@ void tst_QItemDelegate::font()
     QApplication::sendPostedEvents(); //glib workaround
 #endif
 
-    QCOMPARE(delegate->displayText, item->text());
+    QTRY_COMPARE(delegate->displayText, item->text());
     if (properties.contains("italic")) {
         QCOMPARE(delegate->displayFont.italic(), item->font().italic());
     }
@@ -862,6 +864,8 @@ void tst_QItemDelegate::decoration()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&table);
 #endif
+    QApplication::setActiveWindow(&table);
+    QTRY_COMPARE(QApplication::activeWindow(), &table);
 
     QVariant value;
     switch ((QVariant::Type)type) {
@@ -896,11 +900,8 @@ void tst_QItemDelegate::decoration()
     item->setSelected(true);
 
     QApplication::processEvents();
-#ifdef Q_WS_QWS
-    QApplication::sendPostedEvents(); //glib workaround
-#endif
 
-    QCOMPARE(delegate.decorationRect.size(), expected);
+    QTRY_COMPARE(delegate.decorationRect.size(), expected);
 }
 
 void tst_QItemDelegate::editorEvent_data()
@@ -1155,19 +1156,16 @@ void tst_QItemDelegate::task257859_finalizeEdit()
     view.edit(index);
     QTest::qWait(30);
 
-    QList<QWidget*> lineEditors = qFindChildren<QWidget *>(view.viewport());
+    QList<QLineEdit *> lineEditors = qFindChildren<QLineEdit *>(view.viewport());
     QCOMPARE(lineEditors.count(), 1);
 
     QPointer<QWidget> editor = lineEditors.at(0);
     QCOMPARE(editor->hasFocus(), true);
 
     QDialog dialog;
-    QTimer::singleShot(100, &dialog, SLOT(close()));
+    QTimer::singleShot(500, &dialog, SLOT(close()));
     dialog.exec();
-
-    QTest::qWait(100);
-
-    QVERIFY(!editor);
+    QTRY_VERIFY(!editor);
 }
 
 

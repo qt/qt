@@ -39,6 +39,7 @@ module window {
         CustomNativeConverter,
         CustomPutFunction,
         ExtendsDOMGlobalObject,
+        EventTarget,
         GenerateNativeConverter,
         LegacyParent=JSDOMWindowBase
     ] DOMWindow {
@@ -55,7 +56,7 @@ module window {
         attribute [Replaceable] Navigator clientInformation;
         attribute [DoNotCheckDomainSecurity, JSCCustom, V8CustomSetter, V8DisallowShadowing] Location location;
 
-        attribute [Replaceable, CustomGetter] Event event;
+        attribute [Replaceable, CustomGetter, V8CustomSetter] Event event;
 
         readonly attribute [Custom] Crypto crypto;
 
@@ -74,7 +75,7 @@ module window {
                                 in DOMString name,
                                 in [Optional] DOMString options);
 
-        [Custom] DOMObject showModalDialog(in DOMString url, 
+        [Custom] DOMObject showModalDialog(in DOMString url,
                                            in [Optional] DOMObject dialogArgs,
                                            in [Optional] DOMString featureArgs);
 
@@ -139,6 +140,9 @@ module window {
         // DOM Level 2 AbstractView Interface
         readonly attribute Document document;
 
+        // CSSOM View Module
+        readonly attribute Media media;
+
         // DOM Level 2 Style Interface
         CSSStyleDeclaration getComputedStyle(in Element element,
                                              in DOMString pseudoElement);
@@ -163,12 +167,28 @@ module window {
         readonly attribute Storage sessionStorage;
         readonly attribute Storage localStorage;
 #endif
+#if defined(ENABLE_NOTIFICATIONS) && ENABLE_NOTIFICATIONS
+        readonly attribute NotificationCenter webkitNotifications;
+#endif
+
+#if defined(ENABLE_ORIENTATION_EVENTS) && ENABLE_ORIENTATION_EVENTS
+        // This is the interface orientation in degrees. Some examples are:
+        //  0 is straight up; -90 is when the device is rotated 90 clockwise;
+        //  90 is when rotated counter clockwise.
+        readonly attribute long orientation;
+#endif
 
                  attribute [Replaceable] Console console;
 
         // cross-document messaging
+#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
+        [DoNotCheckDomainSecurity, Custom] void postMessage(in DOMString message, in [Optional] Array messagePorts, in DOMString targetOrigin)
+            raises(DOMException);
+#else
+        // There's no good way to expose an array via the ObjC bindings, so for now just allow passing in a single port.
         [DoNotCheckDomainSecurity, Custom] void postMessage(in DOMString message, in [Optional] MessagePort messagePort, in DOMString targetOrigin)
             raises(DOMException);
+#endif
 
         // Timers
         [Custom] long setTimeout(in TimeoutHandler handler, in long timeout);
@@ -208,7 +228,9 @@ module window {
         attribute EventListener onended;
         attribute EventListener onerror;
         attribute EventListener onfocus;
+        attribute EventListener onhashchange;
         attribute EventListener oninput;
+        attribute EventListener oninvalid;
         attribute EventListener onkeydown;
         attribute EventListener onkeypress;
         attribute EventListener onkeyup;
@@ -225,6 +247,8 @@ module window {
         attribute EventListener onmousewheel;
         attribute EventListener onoffline;
         attribute EventListener ononline;
+        attribute EventListener onpagehide;
+        attribute EventListener onpageshow;
         attribute EventListener onpause;
         attribute EventListener onplay;
         attribute EventListener onplaying;
@@ -249,8 +273,6 @@ module window {
         // attribute EventListener onbeforeprint;
         // attribute EventListener onformchange;
         // attribute EventListener onforminput;
-        // attribute EventListener onhashchange;
-        // attribute EventListener oninvalid;
         // attribute EventListener onpopstate;
         // attribute EventListener onreadystatechange;
         // attribute EventListener onredo;
@@ -264,6 +286,9 @@ module window {
         attribute EventListener onwebkitanimationiteration;
         attribute EventListener onwebkitanimationstart;
         attribute EventListener onwebkittransitionend;
+#if defined(ENABLE_ORIENTATION_EVENTS) && ENABLE_ORIENTATION_EVENTS
+        attribute EventListener onorientationchange;
+#endif
 
         // EventTarget interface
         [Custom] void addEventListener(in DOMString type,
@@ -406,13 +431,24 @@ module window {
         attribute [CustomGetter] HTMLOptionElementConstructor Option; // Usable with new operator
 
         attribute CanvasRenderingContext2DConstructor CanvasRenderingContext2D;
+        attribute [Conditional=3D_CANVAS] CanvasRenderingContext3DConstructor CanvasRenderingContext3D;
         attribute TextMetricsConstructor TextMetrics;
+
+        attribute [CustomGetter,Conditional=3D_CANVAS] CanvasArrayBufferConstructor CanvasArrayBuffer; // Usable with new operator
+        attribute [CustomGetter,Conditional=3D_CANVAS] CanvasByteArrayConstructor CanvasByteArray; // Usable with new operator
+        attribute [CustomGetter,Conditional=3D_CANVAS] CanvasUnsignedByteArrayConstructor CanvasUnsignedByteArray; // Usable with new operator
+        attribute [CustomGetter,Conditional=3D_CANVAS] CanvasShortArrayConstructor CanvasShortArray; // Usable with new operator
+        attribute [CustomGetter,Conditional=3D_CANVAS] CanvasUnsignedShortArrayConstructor CanvasUnsignedShortArray; // Usable with new operator
+        attribute [CustomGetter,Conditional=3D_CANVAS] CanvasIntArrayConstructor CanvasIntArray; // Usable with new operator
+        attribute [CustomGetter,Conditional=3D_CANVAS] CanvasUnsignedIntArrayConstructor CanvasUnsignedIntArray; // Usable with new operator
+        attribute [CustomGetter,Conditional=3D_CANVAS] CanvasFloatArrayConstructor CanvasFloatArray; // Usable with new operator
 
         attribute EventConstructor Event;
         attribute KeyboardEventConstructor KeyboardEvent;
         attribute MouseEventConstructor MouseEvent;
         attribute MutationEventConstructor MutationEvent;
         attribute OverflowEventConstructor OverflowEvent;
+        attribute PageTransitionEventConstructor PageTransitionEvent;
         attribute ProgressEventConstructor ProgressEvent;
         attribute TextEventConstructor TextEvent;
         attribute UIEventConstructor UIEvent;
@@ -437,6 +473,10 @@ module window {
         attribute NodeFilterConstructor NodeFilter;
         attribute RangeConstructor Range;
         attribute RangeExceptionConstructor RangeException;
+
+#if ENABLE_EVENTSOURCE
+        attribute [JSCCustomGetter] EventSourceConstructor EventSource; // Usable with new the operator
+#endif
 
         // Mozilla has a separate XMLDocument object for XML documents. 
         // We just use Document for this.
@@ -464,6 +504,10 @@ module window {
 
 #if defined(ENABLE_SHARED_WORKERS) && ENABLE_SHARED_WORKERS
         attribute [JSCCustomGetter] SharedWorkerConstructor SharedWorker; // Usable with the new operator
+#endif
+
+#if defined(ENABLE_WEB_SOCKETS) && ENABLE_WEB_SOCKETS
+        attribute [JSCCustomGetter] WebSocketConstructor WebSocket; // Usable with the new operator
 #endif
 
         attribute PluginConstructor Plugin;

@@ -12,3 +12,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/anchorlayout
 INSTALLS += target sources
 
 TARGET = anchorlayout_example
+CONFIG+=console

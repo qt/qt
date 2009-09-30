@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Linguist of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -62,23 +62,14 @@ static void printOut(const QString & out)
 }
 
 static void recursiveFileInfoList(const QDir &dir,
-    const QStringList &nameFilters, QDir::Filters filter, bool recursive,
+    const QSet<QString> &nameFilters, QDir::Filters filter,
     QFileInfoList *fileinfolist)
 {
-    if (recursive)
-        filter |= QDir::AllDirs;
-    QFileInfoList entries = dir.entryInfoList(nameFilters, filter);
-
-    QFileInfoList::iterator it;
-    for (it = entries.begin(); it != entries.end(); ++it) {
-        QString fname = it->fileName();
-        if (fname != QLatin1String(".") && fname != QLatin1String("..")) {
-            if (it->isDir())
-                recursiveFileInfoList(QDir(it->absoluteFilePath()), nameFilters, filter, recursive, fileinfolist);
-            else
-                fileinfolist->append(*it);
-        }
-    }
+    foreach (const QFileInfo &fi, dir.entryInfoList(filter))
+        if (fi.isDir())
+            recursiveFileInfoList(QDir(fi.absoluteFilePath()), nameFilters, filter, fileinfolist);
+        else if (nameFilters.contains(fi.suffix()))
+            fileinfolist->append(fi);
 }
 
 static void printUsage()
@@ -243,7 +234,7 @@ int main(int argc, char **argv)
     bool recursiveScan = true;
 
     QString extensions = m_defaultExtensions;
-    QStringList extensionsNameFilters;
+    QSet<QString> extensionsNameFilters;
 
     for (int  i = 1; i < argc; ++i) {
         if (args.at(i) == QLatin1String("-ts"))
@@ -418,15 +409,15 @@ int main(int argc, char **argv)
                     foreach (QString ext, extensions.split(QLatin1Char(','))) {
                         ext = ext.trimmed();
                         if (ext.startsWith(QLatin1Char('.')))
-                            ext.remove(0,1);
-                        ext.insert(0, QLatin1String("*."));
-                        extensionsNameFilters << ext;
+                            ext.remove(0, 1);
+                        extensionsNameFilters.insert(ext);
                     }
                 }
                 QDir::Filters filters = QDir::Files | QDir::NoSymLinks;
+                if (recursiveScan)
+                    filters |= QDir::AllDirs | QDir::NoDotAndDotDot;
                 QFileInfoList fileinfolist;
-                recursiveFileInfoList(dir, extensionsNameFilters, filters,
-                    recursiveScan, &fileinfolist);
+                recursiveFileInfoList(dir, extensionsNameFilters, filters, &fileinfolist);
                 int scanRootLen = dir.absolutePath().length();
                 foreach (const QFileInfo &fi, fileinfolist) {
                     QString fn = QDir::cleanPath(fi.absoluteFilePath());

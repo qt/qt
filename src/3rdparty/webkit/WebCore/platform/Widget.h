@@ -65,8 +65,20 @@ class wxWindow;
 typedef wxWindow* PlatformWidget;
 #endif
 
+#if PLATFORM(HAIKU)
+class BView;
+typedef BView* PlatformWidget;
+#endif
+
 #if PLATFORM(CHROMIUM)
 #include "PlatformWidget.h"
+#endif
+
+#if PLATFORM(QT)
+class QWebPageClient;
+typedef QWebPageClient* PlatformPageClient;
+#else
+typedef PlatformWidget PlatformPageClient;
 #endif
 
 #include "IntPoint.h"

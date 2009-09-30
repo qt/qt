@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenVG module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -43,6 +43,13 @@
 #include "qpaintengine_vg_p.h"
 #include <QtGui/private/qdrawhelper_p.h>
 #include "qvg_p.h"
+
+#ifdef QT_SYMBIAN_SUPPORTS_SGIMAGE
+#include <graphics/sgimage.h>
+typedef EGLImageKHR (*pfnEglCreateImageKHR)(EGLDisplay, EGLContext, EGLenum, EGLClientBuffer, EGLint*);
+typedef EGLBoolean (*pfnEglDestroyImageKHR)(EGLDisplay, EGLImageKHR);
+typedef VGImage (*pfnVgCreateEGLImageTargetKHR)(VGeglImageKHR);
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -75,12 +82,11 @@ QVGPixmapData::~QVGPixmapData()
             // We don't currently have a widget surface active, but we
             // need a surface to make the context current.  So use the
             // shared pbuffer surface instead.
-            qt_vg_make_current(context, qt_vg_shared_surface());
+            context->makeCurrent(qt_vg_shared_surface());
             vgDestroyImage(vgImage);
             if (vgImageOpacity != VG_INVALID_HANDLE)
                 vgDestroyImage(vgImageOpacity);
-            qt_vg_done_current(context);
-            context->setSurface(EGL_NO_SURFACE);
+            context->lazyDoneCurrent();
         }
 #else
         vgDestroyImage(vgImage);
@@ -365,5 +371,188 @@ Q_OPENVG_EXPORT VGImage qPixmapToVGImage(const QPixmap& pixmap)
     }
     return VG_INVALID_HANDLE;
 }
+
+#if defined(Q_OS_SYMBIAN)
+void QVGPixmapData::cleanup()
+{
+    is_null = w = h = 0;
+    recreate = false;
+    source = QImage();
+}
+
+void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
+{
+#if defined(QT_SYMBIAN_SUPPORTS_SGIMAGE) && !defined(QT_NO_EGL)
+    if (type == QPixmapData::SgImage && pixmap) {
+        RSgImage *sgImage = reinterpret_cast<RSgImage*>(pixmap);
+        // when "0" used as argument then
+        // default display, context are used
+        if (!context)
+            context = qt_vg_create_context(0);
+
+        if (vgImage != VG_INVALID_HANDLE) {
+            vgDestroyImage(vgImage);
+            vgImage = VG_INVALID_HANDLE;
+        }
+        if (vgImageOpacity != VG_INVALID_HANDLE) {
+            vgDestroyImage(vgImageOpacity);
+            vgImageOpacity = VG_INVALID_HANDLE;
+        }
+
+        TInt err = 0;
+
+        err = SgDriver::Open();
+        if(err != KErrNone) {
+            cleanup();
+            return;
+        }
+
+        if(sgImage->IsNull()) {
+            cleanup();
+            SgDriver::Close();
+            return;
+        }
+
+        TSgImageInfo sgImageInfo;
+        err = sgImage->GetInfo(sgImageInfo);
+        if(err != KErrNone) {
+            cleanup();
+            SgDriver::Close();
+            return;
+        }
+
+        pfnEglCreateImageKHR eglCreateImageKHR = (pfnEglCreateImageKHR) eglGetProcAddress("eglCreateImageKHR");
+        pfnEglDestroyImageKHR eglDestroyImageKHR = (pfnEglDestroyImageKHR) eglGetProcAddress("eglDestroyImageKHR");
+        pfnVgCreateEGLImageTargetKHR vgCreateEGLImageTargetKHR = (pfnVgCreateEGLImageTargetKHR) eglGetProcAddress("vgCreateEGLImageTargetKHR");
+
+        if(eglGetError() != EGL_SUCCESS || !eglCreateImageKHR || !eglDestroyImageKHR || !vgCreateEGLImageTargetKHR) {
+            cleanup();
+            SgDriver::Close();
+            return;
+        }
+
+        const EGLint KEglImageAttribs[] = {EGL_IMAGE_PRESERVED_SYMBIAN, EGL_TRUE, EGL_NONE};
+        EGLImageKHR eglImage = eglCreateImageKHR(context->display(),
+                EGL_NO_CONTEXT,
+                EGL_NATIVE_PIXMAP_KHR,
+                (EGLClientBuffer)sgImage,
+                (EGLint*)KEglImageAttribs);
+
+        if(eglGetError() != EGL_SUCCESS) {
+            cleanup();
+            SgDriver::Close();
+            return;
+        }
+
+        vgImage = vgCreateEGLImageTargetKHR(eglImage);
+        if(vgGetError() != VG_NO_ERROR) {
+            cleanup();
+            eglDestroyImageKHR(context->display(), eglImage);
+            SgDriver::Close();
+            return;
+        }
+
+        w = sgImageInfo.iSizeInPixels.iWidth;
+        h = sgImageInfo.iSizeInPixels.iHeight;
+        d = 32; // We always use ARGB_Premultiplied for VG pixmaps.
+        is_null = (w <= 0 || h <= 0);
+        source = QImage();
+        recreate = false;
+        setSerialNumber(++qt_vg_pixmap_serial);
+        // release stuff
+        eglDestroyImageKHR(context->display(), eglImage);
+        SgDriver::Close();
+    } else if (type == QPixmapData::FbsBitmap) {
+
+    }
+#else
+    Q_UNUSED(pixmap);
+    Q_UNUSED(type);
+#endif
+}
+
+void* QVGPixmapData::toNativeType(NativeType type)
+{
+#if defined(QT_SYMBIAN_SUPPORTS_SGIMAGE) && !defined(QT_NO_EGL)
+    if (type == QPixmapData::SgImage) {
+        toVGImage();
+
+        if(!isValid() || vgImage == VG_INVALID_HANDLE)
+            return 0;
+
+        TInt err = 0;
+
+        err = SgDriver::Open();
+        if(err != KErrNone)
+            return 0;
+
+        TSgImageInfo sgInfo;
+        sgInfo.iPixelFormat = EUidPixelFormatARGB_8888_PRE;
+        sgInfo.iSizeInPixels.SetSize(w, h);
+        sgInfo.iUsage = ESgUsageOpenVgImage | ESgUsageOpenVgTarget;
+        sgInfo.iShareable = ETrue;
+        sgInfo.iCpuAccess = ESgCpuAccessNone;
+        sgInfo.iScreenId = KSgScreenIdMain; //KSgScreenIdAny;
+        sgInfo.iUserAttributes = NULL;
+        sgInfo.iUserAttributeCount = 0;
+
+        RSgImage *sgImage = q_check_ptr(new RSgImage());
+        err = sgImage->Create(sgInfo, NULL, NULL);
+        if(err != KErrNone) {
+            SgDriver::Close();
+            return 0;
+        }
+
+        pfnEglCreateImageKHR eglCreateImageKHR = (pfnEglCreateImageKHR) eglGetProcAddress("eglCreateImageKHR");
+        pfnEglDestroyImageKHR eglDestroyImageKHR = (pfnEglDestroyImageKHR) eglGetProcAddress("eglDestroyImageKHR");
+        pfnVgCreateEGLImageTargetKHR vgCreateEGLImageTargetKHR = (pfnVgCreateEGLImageTargetKHR) eglGetProcAddress("vgCreateEGLImageTargetKHR");
+
+        if(eglGetError() != EGL_SUCCESS || !eglCreateImageKHR || !eglDestroyImageKHR || !vgCreateEGLImageTargetKHR) {
+            SgDriver::Close();
+            return 0;
+        }
+
+        const EGLint KEglImageAttribs[] = {EGL_IMAGE_PRESERVED_SYMBIAN, EGL_TRUE, EGL_NONE};
+        EGLImageKHR eglImage = eglCreateImageKHR(context->display(),
+                EGL_NO_CONTEXT,
+                EGL_NATIVE_PIXMAP_KHR,
+                (EGLClientBuffer)sgImage,
+                (EGLint*)KEglImageAttribs);
+        if(eglGetError() != EGL_SUCCESS) {
+            sgImage->Close();
+            SgDriver::Close();
+            return 0;
+        }
+
+        VGImage dstVgImage = vgCreateEGLImageTargetKHR(eglImage);
+        if(vgGetError() != VG_NO_ERROR) {
+            eglDestroyImageKHR(context->display(), eglImage);
+            sgImage->Close();
+            SgDriver::Close();
+            return 0;
+        }
+
+        vgCopyImage(dstVgImage, 0, 0,
+                vgImage, 0, 0,
+                w, h, VG_FALSE);
+
+        if(vgGetError() != VG_NO_ERROR) {
+            sgImage->Close();
+            sgImage = 0;
+        }
+        // release stuff
+        vgDestroyImage(dstVgImage);
+        eglDestroyImageKHR(context->display(), eglImage);
+        SgDriver::Close();
+        return reinterpret_cast<void*>(sgImage);
+    } else if (type == QPixmapData::FbsBitmap) {
+        return 0;
+    }
+#else
+    Q_UNUSED(type);
+    return 0;
+#endif
+}
+#endif //Q_OS_SYMBIAN
 
 QT_END_NAMESPACE

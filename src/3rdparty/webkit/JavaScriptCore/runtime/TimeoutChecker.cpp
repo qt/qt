@@ -35,18 +35,10 @@
 
 #if PLATFORM(DARWIN)
 #include <mach/mach.h>
-#endif
-
-#if HAVE(SYS_TIME_H)
-#include <sys/time.h>
-#endif
-
-#if PLATFORM(WIN_OS)
+#elif PLATFORM(WIN_OS)
 #include <windows.h>
-#endif
-
-#if PLATFORM(QT)
-#include <QDateTime>
+#else
+#include "CurrentTime.h"
 #endif
 
 using namespace std;
@@ -56,8 +48,8 @@ namespace JSC {
 // Number of ticks before the first timeout check is done.
 static const int ticksUntilFirstCheck = 1024;
 
-// Default number of milliseconds between each timeout check.
-static const int defaultIntervalBetweenChecks = 1000;
+// Number of milliseconds between each timeout check.
+static const int intervalBetweenChecks = 1000;
 
 // Returns the time the current thread has spent executing, in milliseconds.
 static inline unsigned getCPUTime()
@@ -75,14 +67,6 @@ static inline unsigned getCPUTime()
     time += info.system_time.seconds * 1000 + info.system_time.microseconds / 1000;
     
     return time;
-#elif HAVE(SYS_TIME_H)
-    // FIXME: This should probably use getrusage with the RUSAGE_THREAD flag.
-    struct timeval tv;
-    gettimeofday(&tv, 0);
-    return tv.tv_sec * 1000 + tv.tv_usec / 1000;
-#elif PLATFORM(QT)
-    QDateTime t = QDateTime::currentDateTime();
-    return t.toTime_t() * 1000 + t.time().msec();
 #elif PLATFORM(WIN_OS)
     union {
         FILETIME fileTime;
@@ -97,20 +81,16 @@ static inline unsigned getCPUTime()
     
     return userTime.fileTimeAsLong / 10000 + kernelTime.fileTimeAsLong / 10000;
 #else
-#error Platform does not have getCurrentTime function
+    // FIXME: We should return the time the current thread has spent executing.
+    return currentTime() * 1000;
 #endif
 }
 
 TimeoutChecker::TimeoutChecker()
     : m_timeoutInterval(0)
     , m_startCount(0)
-    , m_intervalBetweenChecks(defaultIntervalBetweenChecks)
 {
     reset();
-}
-
-TimeoutChecker::~TimeoutChecker()
-{
 }
 
 void TimeoutChecker::reset()
@@ -140,7 +120,7 @@ bool TimeoutChecker::didTimeOut(ExecState* exec)
     
     // Adjust the tick threshold so we get the next checkTimeout call in the
     // interval specified in intervalBetweenChecks.
-    m_ticksUntilNextCheck = static_cast<unsigned>((static_cast<float>(m_intervalBetweenChecks) / timeDiff) * m_ticksUntilNextCheck);
+    m_ticksUntilNextCheck = static_cast<unsigned>((static_cast<float>(intervalBetweenChecks) / timeDiff) * m_ticksUntilNextCheck);
     // If the new threshold is 0 reset it to the default threshold. This can happen if the timeDiff is higher than the
     // preferred script check time interval.
     if (m_ticksUntilNextCheck == 0)

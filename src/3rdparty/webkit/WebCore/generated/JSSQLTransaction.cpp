@@ -61,6 +61,11 @@ bool JSSQLTransactionPrototype::getOwnPropertySlot(ExecState* exec, const Identi
     return getStaticFunctionSlot<JSObject>(exec, &JSSQLTransactionPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSQLTransactionPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSQLTransactionPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSQLTransaction::s_info = { "SQLTransaction", 0, 0, 0 };
 
 JSSQLTransaction::JSSQLTransaction(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SQLTransaction> impl)
@@ -71,7 +76,7 @@ JSSQLTransaction::JSSQLTransaction(PassRefPtr<Structure> structure, JSDOMGlobalO
 
 JSSQLTransaction::~JSSQLTransaction()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSQLTransaction::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -82,7 +87,7 @@ JSObject* JSSQLTransaction::createPrototype(ExecState* exec, JSGlobalObject* glo
 JSValue JSC_HOST_CALL jsSQLTransactionPrototypeFunctionExecuteSql(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSQLTransaction::s_info))
+    if (!thisValue.inherits(&JSSQLTransaction::s_info))
         return throwError(exec, TypeError);
     JSSQLTransaction* castedThisObj = static_cast<JSSQLTransaction*>(asObject(thisValue));
     return castedThisObj->executeSql(exec, args);
@@ -94,7 +99,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SQLTran
 }
 SQLTransaction* toSQLTransaction(JSC::JSValue value)
 {
-    return value.isObject(&JSSQLTransaction::s_info) ? static_cast<JSSQLTransaction*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSQLTransaction::s_info) ? static_cast<JSSQLTransaction*>(asObject(value))->impl() : 0;
 }
 
 }

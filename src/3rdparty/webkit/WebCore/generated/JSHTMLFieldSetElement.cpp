@@ -26,6 +26,7 @@
 #include "JSHTMLFormElement.h"
 #include "JSValidityState.h"
 #include "ValidityState.h"
+#include <runtime/Error.h>
 #include <wtf/GetPtr.h>
 
 using namespace JSC;
@@ -74,6 +75,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLFieldSetElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -90,18 +92,25 @@ bool JSHTMLFieldSetElementConstructor::getOwnPropertySlot(ExecState* exec, const
     return getStaticValueSlot<JSHTMLFieldSetElementConstructor, DOMObject>(exec, &JSHTMLFieldSetElementConstructorTable, this, propertyName, slot);
 }
 
+bool JSHTMLFieldSetElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLFieldSetElementConstructor, DOMObject>(exec, &JSHTMLFieldSetElementConstructorTable, this, propertyName, descriptor);
+}
+
 /* Hash table for prototype */
 
-static const HashTableValue JSHTMLFieldSetElementPrototypeTableValues[1] =
+static const HashTableValue JSHTMLFieldSetElementPrototypeTableValues[3] =
 {
+    { "checkValidity", DontDelete|Function, (intptr_t)jsHTMLFieldSetElementPrototypeFunctionCheckValidity, (intptr_t)0 },
+    { "setCustomValidity", DontDelete|Function, (intptr_t)jsHTMLFieldSetElementPrototypeFunctionSetCustomValidity, (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
 static JSC_CONST_HASHTABLE HashTable JSHTMLFieldSetElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 0, JSHTMLFieldSetElementPrototypeTableValues, 0 };
+    { 1, JSHTMLFieldSetElementPrototypeTableValues, 0 };
 #else
-    { 1, 0, JSHTMLFieldSetElementPrototypeTableValues, 0 };
+    { 4, 3, JSHTMLFieldSetElementPrototypeTableValues, 0 };
 #endif
 
 const ClassInfo JSHTMLFieldSetElementPrototype::s_info = { "HTMLFieldSetElementPrototype", 0, &JSHTMLFieldSetElementPrototypeTable, 0 };
@@ -109,6 +118,16 @@ const ClassInfo JSHTMLFieldSetElementPrototype::s_info = { "HTMLFieldSetElementP
 JSObject* JSHTMLFieldSetElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
     return getDOMPrototype<JSHTMLFieldSetElement>(exec, globalObject);
+}
+
+bool JSHTMLFieldSetElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticFunctionSlot<JSObject>(exec, &JSHTMLFieldSetElementPrototypeTable, this, propertyName, slot);
+}
+
+bool JSHTMLFieldSetElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSHTMLFieldSetElementPrototypeTable, this, propertyName, descriptor);
 }
 
 const ClassInfo JSHTMLFieldSetElement::s_info = { "HTMLFieldSetElement", &JSHTMLElement::s_info, &JSHTMLFieldSetElementTable, 0 };
@@ -126,6 +145,11 @@ JSObject* JSHTMLFieldSetElement::createPrototype(ExecState* exec, JSGlobalObject
 bool JSHTMLFieldSetElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLFieldSetElement, Base>(exec, &JSHTMLFieldSetElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLFieldSetElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLFieldSetElement, Base>(exec, &JSHTMLFieldSetElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLFieldSetElementForm(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -160,6 +184,32 @@ JSValue jsHTMLFieldSetElementConstructor(ExecState* exec, const Identifier&, con
 JSValue JSHTMLFieldSetElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
     return getDOMConstructor<JSHTMLFieldSetElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
+}
+
+JSValue JSC_HOST_CALL jsHTMLFieldSetElementPrototypeFunctionCheckValidity(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSHTMLFieldSetElement::s_info))
+        return throwError(exec, TypeError);
+    JSHTMLFieldSetElement* castedThisObj = static_cast<JSHTMLFieldSetElement*>(asObject(thisValue));
+    HTMLFieldSetElement* imp = static_cast<HTMLFieldSetElement*>(castedThisObj->impl());
+
+
+    JSC::JSValue result = jsBoolean(imp->checkValidity());
+    return result;
+}
+
+JSValue JSC_HOST_CALL jsHTMLFieldSetElementPrototypeFunctionSetCustomValidity(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSHTMLFieldSetElement::s_info))
+        return throwError(exec, TypeError);
+    JSHTMLFieldSetElement* castedThisObj = static_cast<JSHTMLFieldSetElement*>(asObject(thisValue));
+    HTMLFieldSetElement* imp = static_cast<HTMLFieldSetElement*>(castedThisObj->impl());
+    const UString& error = valueToStringWithUndefinedOrNullCheck(exec, args.at(0));
+
+    imp->setCustomValidity(error);
+    return jsUndefined();
 }
 
 

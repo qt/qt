@@ -85,6 +85,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSDataGridColumnPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -99,6 +100,11 @@ const ClassInfo JSDataGridColumnConstructor::s_info = { "DataGridColumnConstruct
 bool JSDataGridColumnConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSDataGridColumnConstructor, DOMObject>(exec, &JSDataGridColumnConstructorTable, this, propertyName, slot);
+}
+
+bool JSDataGridColumnConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSDataGridColumnConstructor, DOMObject>(exec, &JSDataGridColumnConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -133,6 +139,11 @@ bool JSDataGridColumnPrototype::getOwnPropertySlot(ExecState* exec, const Identi
     return getStaticValueSlot<JSDataGridColumnPrototype, JSObject>(exec, &JSDataGridColumnPrototypeTable, this, propertyName, slot);
 }
 
+bool JSDataGridColumnPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSDataGridColumnPrototype, JSObject>(exec, &JSDataGridColumnPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSDataGridColumn::s_info = { "DataGridColumn", 0, &JSDataGridColumnTable, 0 };
 
 JSDataGridColumn::JSDataGridColumn(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DataGridColumn> impl)
@@ -143,7 +154,7 @@ JSDataGridColumn::JSDataGridColumn(PassRefPtr<Structure> structure, JSDOMGlobalO
 
 JSDataGridColumn::~JSDataGridColumn()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSDataGridColumn::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -154,6 +165,11 @@ JSObject* JSDataGridColumn::createPrototype(ExecState* exec, JSGlobalObject* glo
 bool JSDataGridColumn::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSDataGridColumn, Base>(exec, &JSDataGridColumnTable, this, propertyName, slot);
+}
+
+bool JSDataGridColumn::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSDataGridColumn, Base>(exec, &JSDataGridColumnTable, this, propertyName, descriptor);
 }
 
 JSValue jsDataGridColumnId(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -293,7 +309,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, DataGri
 }
 DataGridColumn* toDataGridColumn(JSC::JSValue value)
 {
-    return value.isObject(&JSDataGridColumn::s_info) ? static_cast<JSDataGridColumn*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSDataGridColumn::s_info) ? static_cast<JSDataGridColumn*>(asObject(value))->impl() : 0;
 }
 
 }

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <QtOpenGL/qgl.h>
+#include "qgl_p.h"
 #include "qgl_egl_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -126,6 +127,96 @@ void qt_egl_update_format(const QEglContext& context, QGLFormat& format)
     // have errored out because the attribute is not applicable
     // to the surface type.  Such errors don't matter.
     context.clearError();
+}
+
+bool QGLFormat::hasOpenGL()
+{
+    return true;
+}
+
+void QGLContext::reset()
+{
+    Q_D(QGLContext);
+    if (!d->valid)
+        return;
+    d->cleanup();
+    doneCurrent();
+    if (d->eglContext) {
+        if (d->eglSurface != EGL_NO_SURFACE)
+            eglDestroySurface(d->eglContext->display(), d->eglSurface);
+        delete d->eglContext;
+    }
+    d->eglContext = 0;
+    d->eglSurface = EGL_NO_SURFACE;
+    d->crWin = false;
+    d->sharing = false;
+    d->valid = false;
+    d->transpColor = QColor();
+    d->initDone = false;
+    qgl_share_reg()->removeShare(this);
+}
+
+void QGLContext::makeCurrent()
+{
+    Q_D(QGLContext);
+    if (!d->valid || !d->eglContext || d->eglSurface == EGL_NO_SURFACE) {
+        qWarning("QGLContext::makeCurrent(): Cannot make invalid context current");
+        return;
+    }
+
+    if (d->eglContext->makeCurrent(d->eglSurface))
+        QGLContextPrivate::setCurrentContext(this);
+}
+
+void QGLContext::doneCurrent()
+{
+    Q_D(QGLContext);
+    if (d->eglContext)
+        d->eglContext->doneCurrent();
+
+    QGLContextPrivate::setCurrentContext(0);
+}
+
+
+void QGLContext::swapBuffers() const
+{
+    Q_D(const QGLContext);
+    if (!d->valid || !d->eglContext)
+        return;
+
+    d->eglContext->swapBuffers(d->eglSurface);
+}
+
+void QGLWidget::setMouseTracking(bool enable)
+{
+    QWidget::setMouseTracking(enable);
+}
+
+QColor QGLContext::overlayTransparentColor() const
+{
+    return d_func()->transpColor;
+}
+
+uint QGLContext::colorIndex(const QColor &c) const
+{
+    Q_UNUSED(c);
+    return 0;
+}
+
+void QGLContext::generateFontDisplayLists(const QFont & fnt, int listBase)
+{
+    Q_UNUSED(fnt);
+    Q_UNUSED(listBase);
+}
+
+void *QGLContext::getProcAddress(const QString &proc) const
+{
+    return (void*)eglGetProcAddress(reinterpret_cast<const char *>(proc.toLatin1().data()));
+}
+
+bool QGLWidgetPrivate::renderCxPm(QPixmap*)
+{
+    return false;
 }
 
 QT_END_NAMESPACE

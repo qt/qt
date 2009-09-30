@@ -25,7 +25,9 @@
 #ifndef FrameView_h
 #define FrameView_h
 
+#include "Frame.h"
 #include "IntSize.h"
+#include "Page.h"
 #include "RenderLayer.h"
 #include "ScrollView.h"
 #include <wtf/Forward.h>
@@ -37,6 +39,7 @@ class Color;
 class Event;
 class Frame;
 class FrameViewPrivate;
+class InspectorTimelineAgent;
 class IntRect;
 class Node;
 class PlatformMouseEvent;
@@ -69,8 +72,6 @@ public:
     void setMarginWidth(int);
     void setMarginHeight(int);
 
-    virtual void setCanHaveScrollbars(bool);
-
     virtual PassRefPtr<Scrollbar> createScrollbar(ScrollbarOrientation);
 
     virtual void setContentsSize(const IntSize&);
@@ -99,6 +100,9 @@ public:
     // content rendered via the normal painting path.
     void setNeedsOneShotDrawingSynchronization();
 #endif
+    // Only used with accelerated compositing, but outside the #ifdef to make linkage easier.
+    // Returns true if the sync was completed.
+    bool syncCompositingStateRecursive();
 
     void didMoveOnscreen();
     void willMoveOffscreen();
@@ -119,8 +123,6 @@ public:
     void setShouldUpdateWhileOffscreen(bool);
 
     void adjustViewSize();
-    void initScrollbars();
-    void updateDefaultScrollbarState();
     
     virtual IntRect windowClipRect(bool clipToContents = true) const;
     IntRect windowClipRectForLayer(const RenderLayer*, bool clipToLayerContents) const;
@@ -129,6 +131,7 @@ public:
 
     virtual void scrollRectIntoViewRecursively(const IntRect&);
     virtual void setScrollPosition(const IntPoint&);
+    void scrollPositionChanged();
 
     String mediaType() const;
     void setMediaType(const String&);
@@ -171,6 +174,7 @@ public:
     static double currentPaintTimeStamp() { return sCurrentPaintTimeStamp; } // returns 0 if not painting
     
     void layoutIfNeededRecursive();
+    void flushDeferredRepaints();
 
     void setIsVisuallyNonEmpty() { m_isVisuallyNonEmpty = true; }
 
@@ -186,6 +190,9 @@ public:
     virtual IntRect convertToRenderer(const RenderObject*, const IntRect&) const;
     virtual IntPoint convertFromRenderer(const RenderObject*, const IntPoint&) const;
     virtual IntPoint convertToRenderer(const RenderObject*, const IntPoint&) const;
+
+    bool isFrameViewScrollCorner(RenderScrollbarPart* scrollCorner) const { return m_scrollCorner == scrollCorner; }
+    void invalidateScrollCorner();
 
 private:
     FrameView(Frame*);
@@ -229,7 +236,16 @@ private:
 
     bool updateWidgets();
     void scrollToAnchor();
+
+#if ENABLE(INSPECTOR)
+    InspectorTimelineAgent* inspectorTimelineAgent() const;
+#endif
     
+    bool hasCustomScrollbars() const;
+
+    virtual void updateScrollCorner();
+    virtual void paintScrollCorner(GraphicsContext*, const IntRect& cornerRect);
+
     static double sCurrentPaintTimeStamp; // used for detecting decoded resource thrash in the cache
 
     IntSize m_size;
@@ -239,8 +255,6 @@ private:
 
     bool m_doFullRepaint;
     
-    ScrollbarMode m_vmode;
-    ScrollbarMode m_hmode;
     bool m_useSlowRepaints;
     bool m_isOverlapped;
     bool m_contentIsOpaque;
@@ -260,7 +274,6 @@ private:
     bool m_firstLayoutCallbackPending;
 
     bool m_firstLayout;
-    bool m_needToInitScrollbars;
     bool m_isTransparent;
     Color m_baseBackgroundColor;
     IntSize m_lastLayoutSize;
@@ -299,7 +312,17 @@ private:
     bool m_firstVisuallyNonEmptyLayoutCallbackPending;
 
     RefPtr<Node> m_maintainScrollPositionAnchor;
+
+    // Renderer to hold our custom scroll corner.
+    RenderScrollbarPart* m_scrollCorner;
 };
+
+#if ENABLE(INSPECTOR)
+inline InspectorTimelineAgent* FrameView::inspectorTimelineAgent() const
+{
+    return m_frame->page() ? m_frame->page()->inspectorTimelineAgent() : 0;
+}
+#endif
 
 } // namespace WebCore
 

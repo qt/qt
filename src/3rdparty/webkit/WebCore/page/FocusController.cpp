@@ -36,6 +36,7 @@
 #include "Event.h"
 #include "EventHandler.h"
 #include "EventNames.h"
+#include "ExceptionCode.h"
 #include "Frame.h"
 #include "FrameView.h"
 #include "FrameTree.h"
@@ -54,6 +55,18 @@
 namespace WebCore {
 
 using namespace HTMLNames;
+
+static inline void dispatchEventsOnWindowAndFocusedNode(Document* document, bool focused)
+{
+    // If we have a focused node we should dispatch blur on it before we blur the window.
+    // If we have a focused node we should dispatch focus on it after we focus the window.
+    // https://bugs.webkit.org/show_bug.cgi?id=27105
+    if (!focused && document->focusedNode())
+        document->focusedNode()->dispatchBlurEvent();
+    document->dispatchWindowEvent(Event::create(focused ? eventNames().focusEvent : eventNames().blurEvent, false, false));
+    if (focused && document->focusedNode())
+        document->focusedNode()->dispatchFocusEvent();
+}
 
 FocusController::FocusController(Page* page)
     : m_page(page)
@@ -75,12 +88,12 @@ void FocusController::setFocusedFrame(PassRefPtr<Frame> frame)
     // Now that the frame is updated, fire events and update the selection focused states of both frames.
     if (oldFrame && oldFrame->view()) {
         oldFrame->selection()->setFocused(false);
-        oldFrame->document()->dispatchWindowEvent(eventNames().blurEvent, false, false);
+        oldFrame->document()->dispatchWindowEvent(Event::create(eventNames().blurEvent, false, false));
     }
 
     if (newFrame && newFrame->view() && isFocused()) {
         newFrame->selection()->setFocused(true);
-        newFrame->document()->dispatchWindowEvent(eventNames().focusEvent, false, false);
+        newFrame->document()->dispatchWindowEvent(Event::create(eventNames().focusEvent, false, false));
     }
 }
 
@@ -100,7 +113,7 @@ void FocusController::setFocused(bool focused)
     
     if (m_focusedFrame && m_focusedFrame->view()) {
         m_focusedFrame->selection()->setFocused(focused);
-        m_focusedFrame->document()->dispatchWindowEvent(focused ? eventNames().focusEvent : eventNames().blurEvent, false, false);
+        dispatchEventsOnWindowAndFocusedNode(m_focusedFrame->document(), focused);
     }
 }
 
@@ -145,6 +158,8 @@ bool FocusController::advanceFocus(FocusDirection direction, KeyboardEvent* even
 
     if (caretBrowsing && !currentNode)
         currentNode = frame->selection()->start().node();
+
+    document->updateLayoutIgnorePendingStylesheets();
 
     Node* node = (direction == FocusDirectionForward)
         ? document->nextFocusableNode(currentNode, event)
@@ -341,7 +356,7 @@ void FocusController::setActive(bool active)
     focusedOrMainFrame()->selection()->pageActivationChanged();
     
     if (m_focusedFrame && isFocused())
-        m_focusedFrame->document()->dispatchWindowEvent(active ? eventNames().focusEvent : eventNames().blurEvent, false, false);
+        dispatchEventsOnWindowAndFocusedNode(m_focusedFrame->document(), active);
 }
 
 } // namespace WebCore

@@ -80,7 +80,7 @@ JSSVGAnimatedInteger::JSSVGAnimatedInteger(PassRefPtr<Structure> structure, JSDO
 
 JSSVGAnimatedInteger::~JSSVGAnimatedInteger()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGAnimatedInteger::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -91,6 +91,11 @@ JSObject* JSSVGAnimatedInteger::createPrototype(ExecState* exec, JSGlobalObject*
 bool JSSVGAnimatedInteger::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGAnimatedInteger, Base>(exec, &JSSVGAnimatedIntegerTable, this, propertyName, slot);
+}
+
+bool JSSVGAnimatedInteger::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGAnimatedInteger, Base>(exec, &JSSVGAnimatedIntegerTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGAnimatedIntegerBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -128,7 +133,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAnim
 }
 SVGAnimatedInteger* toSVGAnimatedInteger(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGAnimatedInteger::s_info) ? static_cast<JSSVGAnimatedInteger*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGAnimatedInteger::s_info) ? static_cast<JSSVGAnimatedInteger*>(asObject(value))->impl() : 0;
 }
 
 }

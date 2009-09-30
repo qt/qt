@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -93,6 +93,8 @@ static _glXMakeContextCurrent qt_glXMakeContextCurrent = 0;
 #define glXGetFBConfigAttrib qt_glXGetFBConfigAttrib
 #define glXMakeContextCurrent qt_glXMakeContextCurrent
 
+extern void* qglx_getProcAddress(const char* procName); // in qgl_x11.cpp
+
 static bool qt_resolve_pbuffer_extensions()
 {
     static int resolved = false;
@@ -101,31 +103,12 @@ static bool qt_resolve_pbuffer_extensions()
     else if (resolved)
         return false;
 
-#if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)
-    void *handle = dlopen(NULL, RTLD_LAZY);
-    if (handle) {
-        qt_glXChooseFBConfig = (_glXChooseFBConfig) dlsym(handle, "glXChooseFBConfig");
-        qt_glXCreateNewContext = (_glXCreateNewContext) dlsym(handle, "glXCreateNewContext");
-        qt_glXCreatePbuffer = (_glXCreatePbuffer) dlsym(handle, "glXCreatePbuffer");
-        qt_glXDestroyPbuffer = (_glXDestroyPbuffer) dlsym(handle, "glXDestroyPbuffer");
-        qt_glXGetFBConfigAttrib = (_glXGetFBConfigAttrib) dlsym(handle, "glXGetFBConfigAttrib");
-        qt_glXMakeContextCurrent = (_glXMakeContextCurrent) dlsym(handle, "glXMakeContextCurrent");
-        dlclose(handle);
-    }
-    if (!qt_glXChooseFBConfig)
-#endif
-    {
-#if !defined(QT_NO_LIBRARY)
-        extern const QString qt_gl_library_name();
-        QLibrary gl(qt_gl_library_name());
-        qt_glXChooseFBConfig = (_glXChooseFBConfig) gl.resolve("glXChooseFBConfig");
-        qt_glXCreateNewContext = (_glXCreateNewContext) gl.resolve("glXCreateNewContext");
-        qt_glXCreatePbuffer = (_glXCreatePbuffer) gl.resolve("glXCreatePbuffer");
-        qt_glXDestroyPbuffer = (_glXDestroyPbuffer) gl.resolve("glXDestroyPbuffer");
-        qt_glXGetFBConfigAttrib = (_glXGetFBConfigAttrib) gl.resolve("glXGetFBConfigAttrib");
-        qt_glXMakeContextCurrent = (_glXMakeContextCurrent) gl.resolve("glXMakeContextCurrent");
-#endif
-    }
+    qt_glXChooseFBConfig = (_glXChooseFBConfig) qglx_getProcAddress("glXChooseFBConfig");
+    qt_glXCreateNewContext = (_glXCreateNewContext) qglx_getProcAddress("glXCreateNewContext");
+    qt_glXCreatePbuffer = (_glXCreatePbuffer) qglx_getProcAddress("glXCreatePbuffer");
+    qt_glXDestroyPbuffer = (_glXDestroyPbuffer) qglx_getProcAddress("glXDestroyPbuffer");
+    qt_glXGetFBConfigAttrib = (_glXGetFBConfigAttrib) qglx_getProcAddress("glXGetFBConfigAttrib");
+    qt_glXMakeContextCurrent = (_glXMakeContextCurrent) qglx_getProcAddress("glXMakeContextCurrent");
 
     resolved = qt_glXMakeContextCurrent ? true : false;
     return resolved;

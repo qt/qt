@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtMultimedia module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -57,6 +57,8 @@ QT_BEGIN_NAMESPACE
 
 //#define DEBUG_AUDIO 1
 
+static const int minimumIntervalTime = 50;
+
 QAudioOutputPrivate::QAudioOutputPrivate(const QByteArray &device, const QAudioFormat& audioFormat):
     settings(audioFormat)
 {
@@ -81,7 +83,7 @@ QAudioOutputPrivate::QAudioOutputPrivate(const QByteArray &device, const QAudioF
     resuming = false;
     opened = false;
 
-    QStringList list1 = QString(tr(device)).split(tr(":"));
+    QStringList list1 = QString(QLatin1String(device)).split(QLatin1String(":"));
     m_device = QByteArray(list1.at(0).toLocal8Bit().constData());
 
     timer = new QTimer(this);
@@ -271,15 +273,16 @@ bool QAudioOutputPrivate::open()
     qDebug()<<now.second()<<"s "<<now.msec()<<"ms :open()";
 #endif
     timeStamp.restart();
+    elapsedTimeOffset = 0;
 
     int dir;
     int err=-1;
     int count=0;
     unsigned int freakuency=settings.frequency();
 
-    QString dev = tr(m_device.constData());
-    if(!dev.contains(tr("default"))) {
-        dev = QString(tr("default:CARD=%1")).arg(tr(m_device.constData()));
+    QString dev = QLatin1String(m_device.constData());
+    if(!dev.contains(QLatin1String("default"))) {
+        dev = QString(QLatin1String("default:CARD=%1")).arg(QLatin1String(m_device.constData()));
     }
     // Step 1: try and open the device
     while((count < 5) && (err < 0)) {
@@ -304,69 +307,69 @@ bool QAudioOutputPrivate::open()
     err = snd_pcm_hw_params_any( handle, hwparams );
     if ( err < 0 ) {
         fatal = true;
-        errMessage = QString(tr("QAudioOutput: snd_pcm_hw_params_any: err = %1")).arg(err);
+        errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params_any: err = %1").arg(err);
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params_set_rate_resample( handle, hwparams, 1 );
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioOutput: snd_pcm_hw_params_set_rate_resample: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params_set_rate_resample: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params_set_access( handle, hwparams, access );
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioOutput: snd_pcm_hw_params_set_access: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params_set_access: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = setFormat();
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioOutput: snd_pcm_hw_params_set_format: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params_set_format: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params_set_channels( handle, hwparams, (unsigned int)settings.channels() );
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioOutput: snd_pcm_hw_params_set_channels: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params_set_channels: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params_set_rate_near( handle, hwparams, &freakuency, 0 );
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioOutput: snd_pcm_hw_params_set_rate_near: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params_set_rate_near: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params_set_buffer_time_near(handle, hwparams, &buffer_time, &dir);
         if ( err < 0 ) {
             fatal = true;
-                errMessage = QString(tr("QAudioOutput: snd_pcm_hw_params_set_buffer_time_near: err = %1")).arg(err);
+                errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params_set_buffer_time_near: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params_set_period_time_near(handle, hwparams, &period_time, &dir);
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioOutput: snd_pcm_hw_params_set_period_time_near: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params_set_period_time_near: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params_set_periods_near(handle, hwparams, &chunks, &dir);
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioOutput: snd_pcm_hw_params_set_periods_near: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params_set_periods_near: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params(handle, hwparams);
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioOutput: snd_pcm_hw_params: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params: err = %1").arg(err);
         }
     }
     if( err < 0) {
@@ -404,6 +407,8 @@ bool QAudioOutputPrivate::open()
     // Step 6: Start audio processing
     timer->start(period_time/1000);
 
+    timeStamp.restart();
+    elapsedTimeOffset = 0;
     errorState  = QAudio::NoError;
     totalTimeValue = 0;
     opened = true;
@@ -500,7 +505,10 @@ int QAudioOutputPrivate::bufferSize() const
 
 void QAudioOutputPrivate::setNotifyInterval(int ms)
 {
-    intervalTime = ms;
+    if(ms >= minimumIntervalTime)
+        intervalTime = ms;
+    else
+        intervalTime = minimumIntervalTime;
 }
 
 int QAudioOutputPrivate::notifyInterval() const
@@ -629,8 +637,9 @@ bool QAudioOutputPrivate::deviceReady()
     if(deviceState != QAudio::ActiveState)
         return true;
 
-    if(timeStamp.elapsed() > intervalTime && intervalTime > 50) {
+    if((timeStamp.elapsed() + elapsedTimeOffset) > intervalTime) {
         emit notify();
+        elapsedTimeOffset = timeStamp.elapsed() + elapsedTimeOffset - intervalTime;
         timeStamp.restart();
     }
     return true;

@@ -24,6 +24,7 @@
 
 #include "BytecodeGenerator.h"
 #include "Completion.h"
+#include "CurrentTime.h"
 #include "InitializeThreading.h"
 #include "JSArray.h"
 #include "JSFunction.h"
@@ -118,53 +119,23 @@ public:
     long getElapsedMS(); // call stop() first
 
 private:
-#if PLATFORM(QT)
-    uint m_startTime;
-    uint m_stopTime;
-#elif PLATFORM(WIN_OS)
-    DWORD m_startTime;
-    DWORD m_stopTime;
-#else
-    // Windows does not have timeval, disabling this class for now (bug 7399)
-    timeval m_startTime;
-    timeval m_stopTime;
-#endif
+    double m_startTime;
+    double m_stopTime;
 };
 
 void StopWatch::start()
 {
-#if PLATFORM(QT)
-    QDateTime t = QDateTime::currentDateTime();
-    m_startTime = t.toTime_t() * 1000 + t.time().msec();
-#elif PLATFORM(WIN_OS)
-    m_startTime = timeGetTime();
-#else
-    gettimeofday(&m_startTime, 0);
-#endif
+    m_startTime = currentTime();
 }
 
 void StopWatch::stop()
 {
-#if PLATFORM(QT)
-    QDateTime t = QDateTime::currentDateTime();
-    m_stopTime = t.toTime_t() * 1000 + t.time().msec();
-#elif PLATFORM(WIN_OS)
-    m_stopTime = timeGetTime();
-#else
-    gettimeofday(&m_stopTime, 0);
-#endif
+    m_stopTime = currentTime();
 }
 
 long StopWatch::getElapsedMS()
 {
-#if PLATFORM(WIN_OS) || PLATFORM(QT)
-    return m_stopTime - m_startTime;
-#else
-    timeval elapsedTime;
-    timersub(&m_stopTime, &m_startTime, &elapsedTime);
-
-    return elapsedTime.tv_sec * 1000 + lroundf(elapsedTime.tv_usec / 1000.0f);
-#endif
+    return static_cast<long>((m_stopTime - m_startTime) * 1000);
 }
 
 class GlobalObject : public JSGlobalObject {
@@ -443,14 +414,12 @@ static bool runWithScripts(GlobalObject* globalObject, const Vector<Script>& scr
     return success;
 }
 
-static
-#if !HAVE(READLINE)
-NO_RETURN
-#endif
-void runInteractive(GlobalObject* globalObject)
+#define RUNNING_FROM_XCODE 0
+
+static void runInteractive(GlobalObject* globalObject)
 {
     while (true) {
-#if HAVE(READLINE)
+#if HAVE(READLINE) && !RUNNING_FROM_XCODE
         char* line = readline(interactivePrompt);
         if (!line)
             break;
@@ -459,7 +428,7 @@ void runInteractive(GlobalObject* globalObject)
         Completion completion = evaluate(globalObject->globalExec(), globalObject->globalScopeChain(), makeSource(line, interpreterName));
         free(line);
 #else
-        puts(interactivePrompt);
+        printf("%s", interactivePrompt);
         Vector<char, 256> line;
         int c;
         while ((c = getchar()) != EOF) {
@@ -468,6 +437,8 @@ void runInteractive(GlobalObject* globalObject)
                 break;
             line.append(c);
         }
+        if (line.isEmpty())
+            break;
         line.append('\0');
         Completion completion = evaluate(globalObject->globalExec(), globalObject->globalScopeChain(), makeSource(line.data(), interpreterName));
 #endif

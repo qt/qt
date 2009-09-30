@@ -79,6 +79,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLTableSectionElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -93,6 +94,11 @@ const ClassInfo JSHTMLTableSectionElementConstructor::s_info = { "HTMLTableSecti
 bool JSHTMLTableSectionElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLTableSectionElementConstructor, DOMObject>(exec, &JSHTMLTableSectionElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLTableSectionElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLTableSectionElementConstructor, DOMObject>(exec, &JSHTMLTableSectionElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -123,6 +129,11 @@ bool JSHTMLTableSectionElementPrototype::getOwnPropertySlot(ExecState* exec, con
     return getStaticFunctionSlot<JSObject>(exec, &JSHTMLTableSectionElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSHTMLTableSectionElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSHTMLTableSectionElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSHTMLTableSectionElement::s_info = { "HTMLTableSectionElement", &JSHTMLElement::s_info, &JSHTMLTableSectionElementTable, 0 };
 
 JSHTMLTableSectionElement::JSHTMLTableSectionElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLTableSectionElement> impl)
@@ -138,6 +149,11 @@ JSObject* JSHTMLTableSectionElement::createPrototype(ExecState* exec, JSGlobalOb
 bool JSHTMLTableSectionElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLTableSectionElement, Base>(exec, &JSHTMLTableSectionElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLTableSectionElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLTableSectionElement, Base>(exec, &JSHTMLTableSectionElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLTableSectionElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -222,7 +238,7 @@ JSValue JSHTMLTableSectionElement::getConstructor(ExecState* exec, JSGlobalObjec
 JSValue JSC_HOST_CALL jsHTMLTableSectionElementPrototypeFunctionInsertRow(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLTableSectionElement::s_info))
+    if (!thisValue.inherits(&JSHTMLTableSectionElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLTableSectionElement* castedThisObj = static_cast<JSHTMLTableSectionElement*>(asObject(thisValue));
     HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(castedThisObj->impl());
@@ -238,7 +254,7 @@ JSValue JSC_HOST_CALL jsHTMLTableSectionElementPrototypeFunctionInsertRow(ExecSt
 JSValue JSC_HOST_CALL jsHTMLTableSectionElementPrototypeFunctionDeleteRow(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLTableSectionElement::s_info))
+    if (!thisValue.inherits(&JSHTMLTableSectionElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLTableSectionElement* castedThisObj = static_cast<JSHTMLTableSectionElement*>(asObject(thisValue));
     HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(castedThisObj->impl());
@@ -252,7 +268,7 @@ JSValue JSC_HOST_CALL jsHTMLTableSectionElementPrototypeFunctionDeleteRow(ExecSt
 
 HTMLTableSectionElement* toHTMLTableSectionElement(JSC::JSValue value)
 {
-    return value.isObject(&JSHTMLTableSectionElement::s_info) ? static_cast<JSHTMLTableSectionElement*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSHTMLTableSectionElement::s_info) ? static_cast<JSHTMLTableSectionElement*>(asObject(value))->impl() : 0;
 }
 
 }

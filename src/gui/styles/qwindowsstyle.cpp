@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -41,7 +41,6 @@
 
 #include "qwindowsstyle.h"
 #include "qwindowsstyle_p.h"
-#include <private/qpixmapdata_p.h>
 #include <private/qstylehelper_p.h>
 
 #if !defined(QT_NO_STYLE_WINDOWS) || defined(QT_PLUGIN)
@@ -927,6 +926,26 @@ static const char *const question_xpm[] = {
 
 #endif //QT_NO_IMAGEFORMAT_XPM
 
+#ifdef Q_OS_WIN
+static QPixmap loadIconFromShell32( int resourceId, int size )
+{
+#ifdef Q_OS_WINCE
+    HMODULE hmod = LoadLibrary(L"ceshell.dll");
+#else
+    HMODULE hmod = LoadLibrary(L"shell32.dll");
+#endif
+    if( hmod ) {
+        HICON iconHandle = (HICON)LoadImage(hmod, MAKEINTRESOURCE(resourceId), IMAGE_ICON, size, size, 0);
+        if( iconHandle ) {
+            QPixmap iconpixmap = QPixmap::fromWinHICON( iconHandle );
+            DestroyIcon(iconHandle);
+            return iconpixmap;
+        }
+    }
+    return QPixmap();
+}
+#endif
+
 /*!
  \reimp
  */
@@ -1016,28 +1035,28 @@ QPixmap QWindowsStyle::standardPixmap(StandardPixmap standardPixmap, const QStyl
     case SP_MessageBoxInformation:
         {
             HICON iconHandle = LoadIcon(NULL, IDI_INFORMATION);
-            desktopIcon = convertHIconToPixmap( iconHandle );
+            desktopIcon = QPixmap::fromWinHICON( iconHandle );
             DestroyIcon(iconHandle);
             break;
         }
     case SP_MessageBoxWarning:
         {
             HICON iconHandle = LoadIcon(NULL, IDI_WARNING);
-            desktopIcon = convertHIconToPixmap( iconHandle );
+            desktopIcon = QPixmap::fromWinHICON( iconHandle );
             DestroyIcon(iconHandle);
             break;
         }
     case SP_MessageBoxCritical:
         {
             HICON iconHandle = LoadIcon(NULL, IDI_ERROR);
-            desktopIcon = convertHIconToPixmap( iconHandle );
+            desktopIcon = QPixmap::fromWinHICON( iconHandle );
             DestroyIcon(iconHandle);
             break;
         }
     case SP_MessageBoxQuestion:
         {
             HICON iconHandle = LoadIcon(NULL, IDI_QUESTION);
-            desktopIcon = convertHIconToPixmap( iconHandle );
+            desktopIcon = QPixmap::fromWinHICON( iconHandle );
             DestroyIcon(iconHandle);
             break;
         }
@@ -1052,7 +1071,7 @@ QPixmap QWindowsStyle::standardPixmap(StandardPixmap standardPixmap, const QStyl
                 memset(&iconInfo, 0, sizeof(iconInfo));
                 iconInfo.cbSize = sizeof(iconInfo);
                 if (pSHGetStockIconInfo(_SIID_SHIELD, _SHGFI_ICON | _SHGFI_SMALLICON, &iconInfo) == S_OK) {
-                    pixmap = convertHIconToPixmap(iconInfo.hIcon);
+                    pixmap = QPixmap::fromWinHICON(iconInfo.hIcon);
                     DestroyIcon(iconInfo.hIcon);
                     return pixmap;
                 }
@@ -1205,6 +1224,9 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
 #endif
     case SH_ItemView_ArrowKeysNavigateIntoChildren:
         ret = true;
+        break;
+    case SH_DialogButtonBox_ButtonsHaveIcons:
+        ret = 0;
         break;
     default:
         ret = QCommonStyle::styleHint(hint, opt, widget, returnData);
@@ -1767,8 +1789,6 @@ case PE_FrameDockWidget:
 #endif // QT_NO_PROGRESSBAR
 
     case PE_FrameTabWidget: {
-        QRect rect = opt->rect;
-        QPalette pal = opt->palette;
         qDrawWinButton(p, opt->rect, opt->palette, false, 0);
         break;
     }
@@ -3010,6 +3030,8 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
                 ar.adjust(2, 2, -2, -2);
                 if (opt->state & State_Enabled)
                     flags |= State_Enabled;
+                if (opt->state & State_HasFocus)
+                    flags |= State_HasFocus;
 
                 if (sunkenArrow)
                     flags |= State_Sunken;
@@ -3345,7 +3367,7 @@ QIcon QWindowsStyle::standardIconImplementation(StandardPixmap standardIcon, con
                 memset(&iconInfo, 0, sizeof(iconInfo));
                 iconInfo.cbSize = sizeof(iconInfo);
                 if (pSHGetStockIconInfo(_SIID_SHIELD, _SHGFI_ICON | _SHGFI_LARGEICON, &iconInfo) == S_OK) {
-                    icon.addPixmap(convertHIconToPixmap(iconInfo.hIcon));
+                    icon.addPixmap(QPixmap::fromWinHICON(iconInfo.hIcon));
                     DestroyIcon(iconInfo.hIcon);
                 }
             }

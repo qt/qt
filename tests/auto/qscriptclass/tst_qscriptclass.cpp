@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -625,6 +625,7 @@ void tst_QScriptClass::getAndSetProperty()
     QScriptValue obj2 = eng.newObject(&cls);
     QScriptString foo = eng.toStringHandle("foo");
     QScriptString bar = eng.toStringHandle("bar");
+    QScriptValue num(&eng, 123);
 
     // should behave just like normal
     for (int x = 0; x < 2; ++x) {
@@ -644,7 +645,6 @@ void tst_QScriptClass::getAndSetProperty()
 
             // write property
             cls.clearReceivedArgs();
-            QScriptValue num(&eng, 123);
             o.setProperty(s, num);
             QVERIFY(cls.lastQueryPropertyObject().strictlyEquals(o));
             QVERIFY(cls.lastQueryPropertyName() == s);
@@ -712,6 +712,16 @@ void tst_QScriptClass::getAndSetProperty()
         QVERIFY(cls.lastPropertyName() == foo2);
         QCOMPARE(cls.lastPropertyId(), foo2Id);
     }
+
+    // remove script class; normal properties should remain
+    obj1.setScriptClass(0);
+    QCOMPARE(obj1.scriptClass(), (QScriptClass*)0);
+    QVERIFY(obj1.property(foo).equals(num));
+    QVERIFY(obj1.property(bar).equals(num));
+    obj1.setProperty(foo, QScriptValue());
+    QVERIFY(!obj1.property(foo).isValid());
+    obj1.setProperty(bar, QScriptValue());
+    QVERIFY(!obj1.property(bar).isValid());
 }
 
 void tst_QScriptClass::enumerate()

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -43,9 +43,9 @@
 #include "qtextengine_p.h"
 #include "qglobal.h"
 #include <private/qapplication_p.h>
-#include <private/qwindowsurface_s60_p.h>
 #include "qimage.h"
 #include "qt_s60_p.h"
+#include "qpixmap_s60_p.h"
 
 #include <e32base.h>
 #include <e32std.h>
@@ -74,7 +74,7 @@ QByteArray QFontEngineS60Extensions::getSfntTable(uint tag) const
     Q_ASSERT(m_trueTypeExtension->HasTrueTypeTable(tag));
     TInt error = KErrNone;
     TInt tableByteLength = 0;
-    TAny *table = m_trueTypeExtension->GetTrueTypeTable(error, tag, &tableByteLength);
+    TAny *table = q_check_ptr(m_trueTypeExtension->GetTrueTypeTable(error, tag, &tableByteLength));
     QByteArray result(static_cast<const char*>(table), tableByteLength);
     m_trueTypeExtension->ReleaseTrueTypeTable(table);
     return result;
@@ -136,7 +136,9 @@ QFontEngineS60::QFontEngineS60(const QFontDef &request, const QFontEngineS60Exte
     QFontEngine::fontDef = request;
     m_fontSizeInPixels = (request.pixelSize >= 0)?
         request.pixelSize:pointsToPixels(request.pointSize);
-    QS60WindowSurface::unlockBitmapHeap();
+        
+    QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
+    
     m_textRenderBitmap = q_check_ptr(new CFbsBitmap());	// CBase derived object needs check on new
     const TSize bitmapSize(1, 1); // It is just a dummy bitmap that I need to keep the font alive (or maybe not)
     qt_symbian_throwIfError(m_textRenderBitmap->Create(bitmapSize, EGray256));
@@ -151,12 +153,14 @@ QFontEngineS60::QFontEngineS60(const QFontDef &request, const QFontEngineS60Exte
     const TInt errorCode = m_textRenderBitmapDevice->GetNearestFontInPixels(m_font, fontSpec);
     Q_ASSERT(errorCode == 0);
     m_textRenderBitmapGc->UseFont(m_font);
-    QS60WindowSurface::lockBitmapHeap();
+    
+    lock.relock();
 }
 
 QFontEngineS60::~QFontEngineS60()
 {
-    QS60WindowSurface::unlockBitmapHeap();
+    QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
+    
     m_textRenderBitmapGc->DiscardFont();
     delete m_textRenderBitmapGc;
     m_textRenderBitmapGc = NULL;
@@ -165,7 +169,8 @@ QFontEngineS60::~QFontEngineS60()
     m_textRenderBitmapDevice = NULL;
     delete m_textRenderBitmap;
     m_textRenderBitmap = NULL;
-    QS60WindowSurface::lockBitmapHeap();
+    
+    lock.relock();
 }
 
 bool QFontEngineS60::stringToCMap(const QChar *characters, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const

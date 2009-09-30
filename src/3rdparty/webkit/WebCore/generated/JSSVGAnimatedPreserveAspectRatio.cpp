@@ -81,7 +81,7 @@ JSSVGAnimatedPreserveAspectRatio::JSSVGAnimatedPreserveAspectRatio(PassRefPtr<St
 
 JSSVGAnimatedPreserveAspectRatio::~JSSVGAnimatedPreserveAspectRatio()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGAnimatedPreserveAspectRatio::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -92,6 +92,11 @@ JSObject* JSSVGAnimatedPreserveAspectRatio::createPrototype(ExecState* exec, JSG
 bool JSSVGAnimatedPreserveAspectRatio::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGAnimatedPreserveAspectRatio, Base>(exec, &JSSVGAnimatedPreserveAspectRatioTable, this, propertyName, slot);
+}
+
+bool JSSVGAnimatedPreserveAspectRatio::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGAnimatedPreserveAspectRatio, Base>(exec, &JSSVGAnimatedPreserveAspectRatioTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGAnimatedPreserveAspectRatioBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -116,7 +121,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAnim
 }
 SVGAnimatedPreserveAspectRatio* toSVGAnimatedPreserveAspectRatio(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGAnimatedPreserveAspectRatio::s_info) ? static_cast<JSSVGAnimatedPreserveAspectRatio*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGAnimatedPreserveAspectRatio::s_info) ? static_cast<JSSVGAnimatedPreserveAspectRatio*>(asObject(value))->impl() : 0;
 }
 
 }

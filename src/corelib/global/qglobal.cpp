@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -75,6 +75,11 @@
 #if defined(Q_OS_SYMBIAN)
 #include <e32def.h>
 #include <e32debug.h>
+#include <f32file.h>
+# include "private/qcore_symbian_p.h"
+
+_LIT(qt_S60Filter, "Series60v?.*.sis");
+_LIT(qt_S60SystemInstallDir, "z:\\system\\install\\");
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -1061,6 +1066,7 @@ bool qSharedBuild()
 
 /*!
     \fn QSysInfo::SymbianVersion QSysInfo::symbianVersion()
+    \since 4.6
 
     Returns the version of the Symbian operating system on which the
     application is run (Symbian only).
@@ -1068,6 +1074,7 @@ bool qSharedBuild()
 
 /*!
     \fn QSysInfo::S60Version QSysInfo::s60Version()
+    \since 4.6
 
     Returns the version of the S60 SDK system on which the
     application is run (S60 only).
@@ -1773,52 +1780,49 @@ static QSysInfo::S60Version cachedS60Version = QSysInfo::S60Version(-1);
 
 QSysInfo::S60Version QSysInfo::s60Version()
 {
-#  ifdef Q_CC_NOKIAX86
-    // For emulator builds. Emulators don't support the trick we use to figure
-    // out which SDK we are running under, so simply hardcode it there.
-#   if defined(__SERIES60_31__)
-    return SV_S60_3_1;
-
-#   elif defined(__S60_32__)
-    return SV_S60_3_2;
-
-#   elif defined(__S60_50__)
-    return SV_S60_5_0;
-
-#   else
-    return SV_S60_Unknown;
-
-#   endif
-
-#  else
-    // For hardware builds.
     if (cachedS60Version != -1)
         return cachedS60Version;
 
-    QDir dir(QLatin1String("z:\\system\\install"));
-    QStringList filters;
-    filters << QLatin1String("Series60v?.*.sis");
-    dir.setNameFilters(filters);
-
-    QStringList names = dir.entryList(QDir::NoFilter, QDir::Name | QDir::Reversed | QDir::IgnoreCase);
-    if (names.size() == 0)
-        return cachedS60Version = SV_S60_Unknown;
-
-    int major, minor;
-    major = names[0][9].toAscii() - '0';
-    minor = names[0][11].toAscii() - '0';
-    if (major == 3) {
-        if (minor == 1) {
-            return cachedS60Version = SV_S60_3_1;
-        } else if (minor == 2) {
-            return cachedS60Version = SV_S60_3_2;
+    // Use pure Symbian code, because if done using QDir, there will be a call back
+    // to this method, resulting doing this expensive operation twice before the cache kicks in.
+    // Pure Symbian code also makes this method ~10x faster, speeding up the application launch.
+    RFs rfs = qt_s60GetRFs();
+    TFindFile fileFinder(rfs);
+    CDir* contents;
+    TInt err = fileFinder.FindWildByDir(qt_S60Filter, qt_S60SystemInstallDir, contents);
+    if (err == KErrNone) {
+        err = contents->Sort(EDescending|ESortByName);
+        if (err == KErrNone) {
+            TInt major = (*contents)[0].iName[9] - '0';
+            TInt minor = (*contents)[0].iName[11] - '0';
+            if (major == 3) {
+                if (minor == 1) {
+                    return cachedS60Version = SV_S60_3_1;
+                } else if (minor == 2) {
+                    return cachedS60Version = SV_S60_3_2;
+                }
+            } else if (major == 5) {
+                if (minor == 0) {
+                    return cachedS60Version = SV_S60_5_0;
+                }
+            }
         }
-    } else if (major == 5) {
-        if (minor == 0) {
-            return cachedS60Version = SV_S60_5_0;
-        }
+        delete contents;
     }
 
+#  ifdef Q_CC_NOKIAX86
+    // Some emulator environments may not contain the version specific .sis files, so
+    // simply hardcode the version on those environments.
+#   if defined(__SERIES60_31__)
+    return cachedS60Version = SV_S60_3_1;
+#   elif defined(__S60_32__)
+    return cachedS60Version = SV_S60_3_2;
+#   elif defined(__S60_50__)
+    return cachedS60Version = SV_S60_5_0;
+#   else
+    return cachedS60Version = SV_S60_Unknown;
+#   endif
+#  else
     return cachedS60Version = SV_S60_Unknown;
 #  endif
 }
@@ -2066,7 +2070,7 @@ QString qt_error_string(int errorCode)
                       NULL,
                       errorCode,
                       MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                      string,
+                      (LPWSTR)&string,
                       0,
                       NULL);
         ret = QString::fromWCharArray(string);
@@ -2679,6 +2683,8 @@ int qrand()
     \reentrant
     \since 4.6
 
+    \brief The qtTrId function finds and returns a translated string.
+
     Returns a translated string identified by \a id.
     If no matching string is found, the id itself is returned. This
     should not happen under normal conditions.
@@ -2716,7 +2722,8 @@ int qrand()
     \relates <QtGlobal>
     \since 4.6
 
-    Marks \a id for dynamic translation.
+    \brief The QT_TRID_NOOP macro marks an id for dynamic translation.
+
     The only purpose of this macro is to provide an anchor for attaching
     meta data like to qtTrId().
 

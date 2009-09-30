@@ -29,14 +29,18 @@
 #ifndef SecurityOrigin_h
 #define SecurityOrigin_h
 
+#include <wtf/HashSet.h>
 #include <wtf/RefCounted.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/Threading.h>
 
 #include "PlatformString.h"
+#include "StringHash.h"
 
 namespace WebCore {
 
+    typedef HashSet<String, CaseFoldingHash> URLSchemesMap;
+    
     class KURL;
     
     class SecurityOrigin : public ThreadSafeShared<SecurityOrigin> {
@@ -71,6 +75,11 @@ namespace WebCore {
         // the given URL.  For example, call this function before issuing
         // XMLHttpRequests.
         bool canRequest(const KURL&) const;
+
+        // Returns true if drawing an image from this URL taints a canvas from
+        // this security origin.  For example, call this function before
+        // drawing an image onto an HTML canvas element with the drawImage API.
+        bool taintsCanvas(const KURL&) const;
 
         // Returns true if this SecurityOrigin can load local resources, such
         // as images, iframes, and style sheets, and can link to local URLs.
@@ -129,11 +138,18 @@ namespace WebCore {
         bool isSameSchemeHostPort(const SecurityOrigin*) const;
 
         static void registerURLSchemeAsLocal(const String&);
+        static void removeURLSchemeRegisteredAsLocal(const String&);
+        static const URLSchemesMap& localURLSchemes();
         static bool shouldTreatURLAsLocal(const String&);
         static bool shouldTreatURLSchemeAsLocal(const String&);
 
         static void registerURLSchemeAsNoAccess(const String&);
         static bool shouldTreatURLSchemeAsNoAccess(const String&);
+
+        static void whiteListAccessFromOrigin(const SecurityOrigin& sourceOrigin, const String& destinationProtocol, const String& destinationDomains, bool allowDestinationSubdomains);
+        static void resetOriginAccessWhiteLists();
+
+        static bool isDefaultPortForProtocol(unsigned short port, const String& protocol);
 
     private:
         explicit SecurityOrigin(const KURL&);

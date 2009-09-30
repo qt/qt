@@ -87,7 +87,7 @@ JSMessageChannel::JSMessageChannel(PassRefPtr<Structure> structure, JSDOMGlobalO
 
 JSMessageChannel::~JSMessageChannel()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSMessageChannel::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -98,6 +98,11 @@ JSObject* JSMessageChannel::createPrototype(ExecState* exec, JSGlobalObject* glo
 bool JSMessageChannel::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSMessageChannel, Base>(exec, getJSMessageChannelTable(exec), this, propertyName, slot);
+}
+
+bool JSMessageChannel::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSMessageChannel, Base>(exec, getJSMessageChannelTable(exec), this, propertyName, descriptor);
 }
 
 JSValue jsMessageChannelPort1(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -122,7 +127,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Message
 }
 MessageChannel* toMessageChannel(JSC::JSValue value)
 {
-    return value.isObject(&JSMessageChannel::s_info) ? static_cast<JSMessageChannel*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSMessageChannel::s_info) ? static_cast<JSMessageChannel*>(asObject(value))->impl() : 0;
 }
 
 }

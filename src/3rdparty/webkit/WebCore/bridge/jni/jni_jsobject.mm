@@ -29,19 +29,18 @@
 #if ENABLE(MAC_JAVA_BRIDGE)
 
 #include "Frame.h"
+#include "ScriptController.h"
+#include "StringSourceProvider.h"
 #include "WebCoreFrameView.h"
 #include "jni_runtime.h"
 #include "jni_utility.h"
-#include "ScriptController.h"
 #include "runtime_object.h"
 #include "runtime_root.h"
 #include <interpreter/CallFrame.h>
+#include <runtime/Completion.h>
 #include <runtime/JSGlobalObject.h>
 #include <runtime/JSLock.h>
-#include <runtime/Completion.h>
-#include <runtime/Completion.h>
 #include <wtf/Assertions.h>
-#include <parser/SourceProvider.h>
 
 using WebCore::Frame;
 
@@ -302,9 +301,9 @@ jobject JavaJSObject::call(jstring methodName, jobjectArray args) const
     // Call the function object.
     MarkedArgumentBuffer argList;
     getListFromJArray(exec, args, argList);
-    rootObject->globalObject()->globalData()->timeoutChecker->start();
+    rootObject->globalObject()->globalData()->timeoutChecker.start();
     JSValue result = JSC::call(exec, function, callType, callData, _imp, argList);
-    rootObject->globalObject()->globalData()->timeoutChecker->stop();
+    rootObject->globalObject()->globalData()->timeoutChecker.stop();
 
     return convertValueToJObject(result);
 }
@@ -321,9 +320,9 @@ jobject JavaJSObject::eval(jstring script) const
     if (!rootObject)
         return 0;
 
-    rootObject->globalObject()->globalData()->timeoutChecker->start();
+    rootObject->globalObject()->globalData()->timeoutChecker.start();
     Completion completion = JSC::evaluate(rootObject->globalObject()->globalExec(), rootObject->globalObject()->globalScopeChain(), makeSource(JavaString(script)));
-    rootObject->globalObject()->globalData()->timeoutChecker->stop();
+    rootObject->globalObject()->globalData()->timeoutChecker.stop();
     ComplType type = completion.complType();
     
     if (type == Normal) {

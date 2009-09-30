@@ -73,6 +73,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSRectPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -87,6 +88,11 @@ const ClassInfo JSRectConstructor::s_info = { "RectConstructor", 0, &JSRectConst
 bool JSRectConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSRectConstructor, DOMObject>(exec, &JSRectConstructorTable, this, propertyName, slot);
+}
+
+bool JSRectConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSRectConstructor, DOMObject>(exec, &JSRectConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -120,7 +126,7 @@ JSRect::JSRect(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject,
 
 JSRect::~JSRect()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSRect::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -131,6 +137,11 @@ JSObject* JSRect::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 bool JSRect::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSRect, Base>(exec, &JSRectTable, this, propertyName, slot);
+}
+
+bool JSRect::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSRect, Base>(exec, &JSRectTable, this, propertyName, descriptor);
 }
 
 JSValue jsRectTop(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -181,7 +192,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Rect* o
 }
 Rect* toRect(JSC::JSValue value)
 {
-    return value.isObject(&JSRect::s_info) ? static_cast<JSRect*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSRect::s_info) ? static_cast<JSRect*>(asObject(value))->impl() : 0;
 }
 
 }

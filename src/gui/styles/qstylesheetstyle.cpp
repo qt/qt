@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -84,6 +84,7 @@
 #include "qdrawutil.h"
 
 #include <limits.h>
+#include <QtGui/qtoolbar.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1130,10 +1131,10 @@ void QRenderRule::drawBorderImage(QPainter *p, const QRect& rect)
     const QStyleSheetBorderImageData *borderImageData = border()->borderImage();
     const int *targetBorders = border()->borders;
     const int *sourceBorders = borderImageData->cuts;
-    QMargins sourceMargins(sourceBorders[TopEdge], sourceBorders[LeftEdge],
-                           sourceBorders[BottomEdge], sourceBorders[RightEdge]);
-    QMargins targetMargins(targetBorders[TopEdge], targetBorders[LeftEdge],
-                           targetBorders[BottomEdge], targetBorders[RightEdge]);
+    QMargins sourceMargins(sourceBorders[LeftEdge], sourceBorders[TopEdge],
+                           sourceBorders[RightEdge], sourceBorders[BottomEdge]);
+    QMargins targetMargins(targetBorders[LeftEdge], targetBorders[TopEdge],
+                           targetBorders[RightEdge], targetBorders[BottomEdge]);
 
     bool wasSmoothPixmapTransform = p->renderHints() & QPainter::SmoothPixmapTransform;
     p->setRenderHint(QPainter::SmoothPixmapTransform);
@@ -1758,7 +1759,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QWidget *w, const QStyleOption *o
             QStyle::SubControl subControl = knownPseudoElements[pseudoElement].subControl;
 
             if (!(complex->activeSubControls & subControl))
-                state = QStyle::State(state & (QStyle::State_Enabled | QStyle::State_Horizontal));
+                state &= (QStyle::State_Enabled | QStyle::State_Horizontal | QStyle::State_HasFocus);
         }
 
         switch (pseudoElement) {
@@ -2013,7 +2014,10 @@ QRenderRule QStyleSheetStyle::renderRule(const QWidget *w, const QStyleOption *o
             }
         } else
 #endif
-        { } // required for the above ifdef'ery
+        if (const QFrame *frm = qobject_cast<const QFrame *>(w)) {
+            if (frm->lineWidth() == 0)
+                extraClass |= PseudoClass_Frameless;
+        }
     }
 
     return renderRule(w, pseudoElement, pseudoClass(state) | extraClass);
@@ -2899,6 +2903,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
         if (const QStyleOptionSpinBox *spin = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
             QStyleOptionSpinBox spinOpt(*spin);
             rule.configurePalette(&spinOpt.palette, QPalette::ButtonText, QPalette::Button);
+            rule.configurePalette(&spinOpt.palette, QPalette::Text, QPalette::Base);
             spinOpt.rect = rule.borderRect(opt->rect);
             bool customUp = true, customDown = true;
             QRenderRule upRule = renderRule(w, opt, PseudoElement_SpinBoxUpButton);
@@ -3131,19 +3136,25 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             rule.drawRule(p, opt->rect);
 
-            QRenderRule subRule = renderRule(w, opt, PseudoElement_SliderGroove);
-            if (!subRule.hasDrawable()) {
-                baseStyle()->drawComplexControl(cc, slider, p, w);
-                return;
+            QRenderRule grooveSubRule = renderRule(w, opt, PseudoElement_SliderGroove);
+            QRenderRule handleSubRule = renderRule(w, opt, PseudoElement_SliderHandle);
+            if (!grooveSubRule.hasDrawable()) {
+                QStyleOptionSlider slOpt(*slider);
+                bool handleHasRule = handleSubRule.hasDrawable();
+                // If the style specifies a different handler rule, draw the groove without the handler.
+                if (handleHasRule)
+                    slOpt.subControls &= ~SC_SliderHandle;
+                baseStyle()->drawComplexControl(cc, &slOpt, p, w);
+                if (!handleHasRule)
+                    return;
             }
 
             QRect gr = subControlRect(cc, opt, SC_SliderGroove, w);
             if (slider->subControls & SC_SliderGroove) {
-                subRule.drawRule(p, gr);
+                grooveSubRule.drawRule(p, gr);
             }
 
             if (slider->subControls & SC_SliderHandle) {
-                QRenderRule subRule = renderRule(w, opt, PseudoElement_SliderHandle);
                 QRect hr = subControlRect(cc, opt, SC_SliderHandle, w);
 
                 QRenderRule subRule1 = renderRule(w, opt, PseudoElement_SliderSubPage);
@@ -3164,7 +3175,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                     subRule2.drawRule(p, r);
                 }
 
-                subRule.drawRule(p, subRule.boxRect(hr, Margin));
+                handleSubRule.drawRule(p, grooveSubRule.boxRect(hr, Margin));
             }
 
             if (slider->subControls & SC_SliderTickmarks) {
@@ -4165,6 +4176,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
                 QRenderRule spinboxRule = renderRule(w->parentWidget(), opt);
                 if (!spinboxRule.hasNativeBorder() || !spinboxRule.baseStyleCanDraw())
                     return;
+                rule = spinboxRule;
             }
 #endif
             if (rule.hasNativeBorder()) {

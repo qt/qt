@@ -21,6 +21,7 @@
 #include "config.h"
 #include "Page.h"
 
+#include "Base64.h"
 #include "CSSStyleSelector.h"
 #include "Chrome.h"
 #include "ChromeClient.h"
@@ -28,22 +29,27 @@
 #include "ContextMenuController.h"
 #include "DOMWindow.h"
 #include "DragController.h"
+#include "ExceptionCode.h"
 #include "EditorClient.h"
 #include "EventNames.h"
+#include "Event.h"
 #include "FileSystem.h"
 #include "FocusController.h"
 #include "Frame.h"
 #include "FrameLoader.h"
+#include "FrameLoaderClient.h"
 #include "FrameTree.h"
 #include "FrameView.h"
 #include "HTMLElement.h"
 #include "HistoryItem.h"
 #include "InspectorController.h"
+#include "InspectorTimelineAgent.h"
 #include "Logging.h"
 #include "Navigator.h"
 #include "NetworkStateNotifier.h"
 #include "PageGroup.h"
 #include "PluginData.h"
+#include "PluginHalter.h"
 #include "ProgressTracker.h"
 #include "RenderWidget.h"
 #include "RenderTheme.h"
@@ -91,16 +97,22 @@ static void networkStateChanged()
 
     AtomicString eventName = networkStateNotifier().onLine() ? eventNames().onlineEvent : eventNames().offlineEvent;
     for (unsigned i = 0; i < frames.size(); i++)
-        frames[i]->document()->dispatchWindowEvent(eventName, false, false);
+        frames[i]->document()->dispatchWindowEvent(Event::create(eventName, false, false));
 }
 
-Page::Page(ChromeClient* chromeClient, ContextMenuClient* contextMenuClient, EditorClient* editorClient, DragClient* dragClient, InspectorClient* inspectorClient)
+Page::Page(ChromeClient* chromeClient, ContextMenuClient* contextMenuClient, EditorClient* editorClient, DragClient* dragClient, InspectorClient* inspectorClient, PluginHalterClient* pluginHalterClient)
     : m_chrome(new Chrome(this, chromeClient))
     , m_dragCaretController(new SelectionController(0, true))
+#if ENABLE(DRAG_SUPPORT)
     , m_dragController(new DragController(this, dragClient))
+#endif
     , m_focusController(new FocusController(this))
+#if ENABLE(CONTEXT_MENUS)
     , m_contextMenuController(new ContextMenuController(this, contextMenuClient))
+#endif
+#if ENABLE(INSPECTOR)
     , m_inspectorController(new InspectorController(this, inspectorClient))
+#endif
     , m_settings(new Settings(this))
     , m_progress(new ProgressTracker)
     , m_backForwardList(BackForwardList::create(this))
@@ -114,14 +126,27 @@ Page::Page(ChromeClient* chromeClient, ContextMenuClient* contextMenuClient, Edi
     , m_areMemoryCacheClientCallsEnabled(true)
     , m_mediaVolume(1)
     , m_javaScriptURLsAreAllowed(true)
+#if ENABLE(INSPECTOR)
     , m_parentInspectorController(0)
+#endif
     , m_didLoadUserStyleSheet(false)
     , m_userStyleSheetModificationTime(0)
     , m_group(0)
     , m_debugger(0)
     , m_customHTMLTokenizerTimeDelay(-1)
     , m_customHTMLTokenizerChunkSize(-1)
+    , m_canStartPlugins(true)
+    , m_pluginHalterClient(pluginHalterClient)
 {
+#if !ENABLE(CONTEXT_MENUS)
+    UNUSED_PARAM(contextMenuClient);
+#endif
+#if !ENABLE(DRAG_SUPPORT)
+    UNUSED_PARAM(dragClient);
+#endif
+#if !ENABLE(INSPECTOR)
+    UNUSED_PARAM(inspectorClient);
+#endif
     if (!allPages) {
         allPages = new HashSet<Page*>;
         
@@ -130,6 +155,8 @@ Page::Page(ChromeClient* chromeClient, ContextMenuClient* contextMenuClient, Edi
 
     ASSERT(!allPages->contains(this));
     allPages->add(this);
+
+    pluginHalterEnabledStateChanged();
 
 #if ENABLE(JAVASCRIPT_DEBUGGER)
     JavaScriptDebugServer::shared().pageCreated(this);
@@ -150,9 +177,11 @@ Page::~Page()
         frame->pageDestroyed();
 
     m_editorClient->pageDestroyed();
+#if ENABLE(INSPECTOR)
     if (m_parentInspectorController)
         m_parentInspectorController->pageDestroyed();
     m_inspectorController->inspectedPageDestroyed();
+#endif
 
     m_backForwardList->close();
 
@@ -211,7 +240,7 @@ void Page::goToItem(HistoryItem* item, FrameLoadType type)
     const KURL& currentURL = m_mainFrame->loader()->url();
     const KURL& newURL = item->url();
 
-    if (newURL.hasRef() && equalIgnoringRef(currentURL, newURL))
+    if (newURL.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(currentURL, newURL))
         databasePolicy = DatabasePolicyContinue;
 #endif
     m_mainFrame->loader()->stopAllLoaders(databasePolicy);
@@ -296,6 +325,19 @@ PluginData* Page::pluginData() const
     if (!m_pluginData)
         m_pluginData = PluginData::create(this);
     return m_pluginData.get();
+}
+
+void Page::addUnstartedPlugin(PluginView* view)
+{
+    ASSERT(!m_canStartPlugins);
+    m_unstartedPlugins.add(view);
+}
+
+void Page::removeUnstartedPlugin(PluginView* view)
+{
+    ASSERT(!m_canStartPlugins);
+    ASSERT(m_unstartedPlugins.contains(view));
+    m_unstartedPlugins.remove(view);
 }
 
 static Frame* incrementFrame(Frame* curr, bool forward, bool wrapFlag)
@@ -424,26 +466,43 @@ void Page::willMoveOffscreen()
 
 void Page::userStyleSheetLocationChanged()
 {
-#if !FRAME_LOADS_USER_STYLESHEET
-    // FIXME: We should provide a way to load other types of URLs than just
-    // file: (e.g., http:, data:).
-    if (m_settings->userStyleSheetLocation().isLocalFile())
-        m_userStyleSheetPath = m_settings->userStyleSheetLocation().fileSystemPath();
+    // FIXME: Eventually we will move to a model of just being handed the sheet
+    // text instead of loading the URL ourselves.
+    KURL url = m_settings->userStyleSheetLocation();
+    if (url.isLocalFile())
+        m_userStyleSheetPath = url.fileSystemPath();
     else
         m_userStyleSheetPath = String();
 
     m_didLoadUserStyleSheet = false;
     m_userStyleSheet = String();
     m_userStyleSheetModificationTime = 0;
-#endif
+    
+    // Data URLs with base64-encoded UTF-8 style sheets are common. We can process them
+    // synchronously and avoid using a loader. 
+    if (url.protocolIs("data") && url.string().startsWith("data:text/css;charset=utf-8;base64,")) {
+        m_didLoadUserStyleSheet = true;
+        
+        const unsigned prefixLength = 35;
+        Vector<char> encodedData(url.string().length() - prefixLength);
+        for (unsigned i = prefixLength; i < url.string().length(); ++i)
+            encodedData[i - prefixLength] = static_cast<char>(url.string()[i]);
+
+        Vector<char> styleSheetAsUTF8;
+        if (base64Decode(encodedData, styleSheetAsUTF8))
+            m_userStyleSheet = String::fromUTF8(styleSheetAsUTF8.data());
+    }
+    
+    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext()) {
+        if (frame->document())
+            frame->document()->clearPageUserSheet();
+    }
 }
 
 const String& Page::userStyleSheet() const
 {
-    if (m_userStyleSheetPath.isEmpty()) {
-        ASSERT(m_userStyleSheet.isEmpty());
+    if (m_userStyleSheetPath.isEmpty())
         return m_userStyleSheet;
-    }
 
     time_t modTime;
     if (!getFileModificationTime(m_userStyleSheetPath, modTime)) {
@@ -499,7 +558,9 @@ void Page::removeAllVisitedLinks()
 void Page::allVisitedStateChanged(PageGroup* group)
 {
     ASSERT(group);
-    ASSERT(allPages);
+    if (!allPages)
+        return;
+
     HashSet<Page*>::iterator pagesEnd = allPages->end();
     for (HashSet<Page*>::iterator it = allPages->begin(); it != pagesEnd; ++it) {
         Page* page = *it;
@@ -515,7 +576,9 @@ void Page::allVisitedStateChanged(PageGroup* group)
 void Page::visitedStateChanged(PageGroup* group, LinkHash visitedLinkHash)
 {
     ASSERT(group);
-    ASSERT(allPages);
+    if (!allPages)
+        return;
+
     HashSet<Page*>::iterator pagesEnd = allPages->end();
     for (HashSet<Page*>::iterator it = allPages->begin(); it != pagesEnd; ++it) {
         Page* page = *it;
@@ -611,6 +674,41 @@ void Page::setJavaScriptURLsAreAllowed(bool areAllowed)
 bool Page::javaScriptURLsAreAllowed() const
 {
     return m_javaScriptURLsAreAllowed;
+}
+
+#if ENABLE(INSPECTOR)
+InspectorTimelineAgent* Page::inspectorTimelineAgent() const
+{
+    return m_inspectorController->timelineAgent();
+}
+#endif
+
+void Page::pluginHalterEnabledStateChanged()
+{
+    if (m_settings->pluginHalterEnabled()) {
+        ASSERT(!m_pluginHalter);
+        m_pluginHalter.set(new PluginHalter(m_pluginHalterClient));
+        m_pluginHalter->setPluginAllowedRunTime(m_settings->pluginAllowedRunTime());
+    } else
+        m_pluginHalter = 0;
+}
+
+void Page::pluginAllowedRunTimeChanged()
+{
+    if (m_pluginHalter)
+        m_pluginHalter->setPluginAllowedRunTime(m_settings->pluginAllowedRunTime());
+}
+
+void Page::didStartPlugin(HaltablePlugin* obj)
+{
+    if (m_pluginHalter)
+        m_pluginHalter->didStartPlugin(obj);
+}
+
+void Page::didStopPlugin(HaltablePlugin* obj)
+{
+    if (m_pluginHalter)
+        m_pluginHalter->didStopPlugin(obj);
 }
 
 } // namespace WebCore

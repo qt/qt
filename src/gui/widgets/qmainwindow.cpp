@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -65,6 +65,9 @@ QT_BEGIN_NAMESPACE
 extern OSWindowRef qt_mac_window_for(const QWidget *); // qwidget_mac.cpp
 QT_END_NAMESPACE
 #endif
+#ifdef QT_SOFTKEYS_ENABLED
+#include <private/qsoftkeymanager_p.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -77,6 +80,9 @@ public:
 #ifdef Q_WS_MAC
             , useHIToolBar(false)
 #endif
+#ifdef QT_SOFTKEYS_ENABLED
+            , menuBarAction(0)
+#endif
 #if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_CURSOR)
             , hasOldCursor(false) , cursorAdjusted(false)
 #endif
@@ -87,6 +93,9 @@ public:
     Qt::ToolButtonStyle toolButtonStyle;
 #ifdef Q_WS_MAC
     bool useHIToolBar;
+#endif
+#ifdef QT_SOFTKEYS_ENABLED
+    QAction *menuBarAction;
 #endif
     void init();
     QList<int> hoverSeparator;
@@ -108,6 +117,10 @@ void QMainWindowPrivate::init()
     const int metric = q->style()->pixelMetric(QStyle::PM_ToolBarIconSize, 0, q);
     iconSize = QSize(metric, metric);
     q->setAttribute(Qt::WA_Hover);
+#ifdef QT_SOFTKEYS_ENABLED
+    menuBarAction = QSoftKeyManager::createAction(QSoftKeyManager::MenuSoftKey, q);
+    menuBarAction->setObjectName("_q_menuSoftKeyAction");
+#endif
 }
 
 /*
@@ -479,11 +492,13 @@ void QMainWindow::setMenuBar(QMenuBar *menuBar)
         oldMenuBar->deleteLater();
     }
     d->layout->setMenuBar(menuBar);
-    if (menuBar) {
-        QAction* menu = new QAction(QString::fromLatin1("Options"), this);
-        menu->setSoftKeyRole(QAction::MenuSoftKey);
-        setSoftKey(menu);
-    }
+
+#ifdef QT_SOFTKEYS_ENABLED
+    if (menuBar)
+        addAction(d->menuBarAction);
+    else
+        removeAction(d->menuBarAction);
+#endif
 }
 
 /*!
@@ -1411,16 +1426,6 @@ bool QMainWindow::event(QEvent *event)
                d->hasOldCursor = testAttribute(Qt::WA_SetCursor);
            }
            break;
-#endif
-#ifndef QT_NO_MENUBAR
-        case QEvent::WindowActivate:
-            if (d->layout->menuBar()) {
-                // ### TODO: This is evil, there is no need to create a new action every time
-                QAction* menu = new QAction(QString::fromLatin1("Options"), this);
-                menu->setSoftKeyRole(QAction::MenuSoftKey);
-                setSoftKey(menu);
-            }
-            break;
 #endif
         default:
             break;

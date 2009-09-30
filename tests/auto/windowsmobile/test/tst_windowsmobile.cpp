@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -46,7 +46,7 @@
 #include <QtGui>
 #ifdef Q_OS_WINCE_WM
 #include <windows.h>
-#include <ddhelper.h>
+#include "ddhelper.h"
 #endif
 
 
@@ -57,6 +57,8 @@ class tst_WindowsMobile : public QObject
 public:
     tst_WindowsMobile()
     {
+       qApp->setCursorFlashTime (24 * 3600 * 1000); // once a day
+       // qApp->setCursorFlashTime (INT_MAX);
 #ifdef Q_OS_WINCE_WM
         q_initDD();
 #endif
@@ -123,11 +125,20 @@ void compareScreenshots(const QString &image1, const QString &image2)
     QImage screenShot(image1);
     QImage original(image2);
 
-    //ignore the clock
+    // cut away the title bar before comparing
+    QDesktopWidget desktop;
+    QRect desktopFrameRect  = desktop.frameGeometry();
+    QRect desktopClientRect = desktop.availableGeometry();
+
     QPainter p1(&screenShot);
     QPainter p2(&original);
-    p1.fillRect(310, 6, 400, 34, Qt::black);
-    p2.fillRect(310, 6, 400, 34, Qt::black);
+
+    //screenShot.save("scr1.png", "PNG");    
+    p1.fillRect(0, 0, desktopFrameRect.width(), desktopClientRect.y(), Qt::black);
+    p2.fillRect(0, 0, desktopFrameRect.width(), desktopClientRect.y(), Qt::black);
+
+    //screenShot.save("scr2.png", "PNG");
+    //original.save("orig1.png", "PNG");
 
     QVERIFY(original == screenShot);
 }

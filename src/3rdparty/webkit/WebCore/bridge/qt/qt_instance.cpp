@@ -43,30 +43,21 @@ namespace Bindings {
 typedef QMultiHash<void*, QtInstance*> QObjectInstanceMap;
 static QObjectInstanceMap cachedInstances;
 
-// Cache JSObjects
-typedef QHash<QtInstance*, JSObject*> InstanceJSObjectMap;
-static InstanceJSObjectMap cachedObjects;
-
 // Derived RuntimeObject
 class QtRuntimeObjectImp : public RuntimeObjectImp {
 public:
     QtRuntimeObjectImp(ExecState*, PassRefPtr<Instance>);
-    ~QtRuntimeObjectImp();
-    virtual void invalidate();
 
     static const ClassInfo s_info;
 
-    virtual void mark()
+    virtual void markChildren(MarkStack& markStack)
     {
+        RuntimeObjectImp::markChildren(markStack);
         QtInstance* instance = static_cast<QtInstance*>(getInternalInstance());
         if (instance)
-            instance->mark();
-        RuntimeObjectImp::mark();
+            instance->markAggregate(markStack);
     }
 
-protected:
-    void removeFromCache();
-        
 private:
     virtual const ClassInfo* classInfo() const { return &s_info; }
 };
@@ -76,25 +67,6 @@ const ClassInfo QtRuntimeObjectImp::s_info = { "QtRuntimeObject", &RuntimeObject
 QtRuntimeObjectImp::QtRuntimeObjectImp(ExecState* exec, PassRefPtr<Instance> instance)
     : RuntimeObjectImp(exec, WebCore::deprecatedGetDOMStructure<QtRuntimeObjectImp>(exec), instance)
 {
-}
-
-QtRuntimeObjectImp::~QtRuntimeObjectImp()
-{
-    removeFromCache();
-}
-
-void QtRuntimeObjectImp::invalidate()
-{
-    removeFromCache();
-    RuntimeObjectImp::invalidate();
-}
-
-void QtRuntimeObjectImp::removeFromCache()
-{
-    JSLock lock(SilenceAssertionsOnly);
-    QtInstance* key = cachedObjects.key(this);
-    if (key)
-        cachedObjects.remove(key);
 }
 
 // QtInstance
@@ -112,7 +84,6 @@ QtInstance::~QtInstance()
 {
     JSLock lock(SilenceAssertionsOnly);
 
-    cachedObjects.remove(this);
     cachedInstances.remove(m_hashkey);
 
     // clean up (unprotect from gc) the JSValues we've created
@@ -190,25 +161,19 @@ Class* QtInstance::getClass() const
     return m_class;
 }
 
-RuntimeObjectImp* QtInstance::createRuntimeObject(ExecState* exec)
+RuntimeObjectImp* QtInstance::newRuntimeObject(ExecState* exec)
 {
     JSLock lock(SilenceAssertionsOnly);
-    RuntimeObjectImp* ret = static_cast<RuntimeObjectImp*>(cachedObjects.value(this));
-    if (!ret) {
-        ret = new (exec) QtRuntimeObjectImp(exec, this);
-        cachedObjects.insert(this, ret);
-        ret = static_cast<RuntimeObjectImp*>(cachedObjects.value(this));
-    }
-    return ret;
+    return new (exec) QtRuntimeObjectImp(exec, this);
 }
 
-void QtInstance::mark()
+void QtInstance::markAggregate(MarkStack& markStack)
 {
-    if (m_defaultMethod && !m_defaultMethod->marked())
-        m_defaultMethod->mark();
+    if (m_defaultMethod)
+        markStack.append(m_defaultMethod);
     foreach(JSObject* val, m_methods.values()) {
-        if (val && !val->marked())
-            val->mark();
+        if (val)
+            markStack.append(val);
     }
 }
 
@@ -222,7 +187,7 @@ void QtInstance::end()
     // Do nothing.
 }
 
-void QtInstance::getPropertyNames(ExecState* exec, PropertyNameArray& array, unsigned listedAttributes)
+void QtInstance::getPropertyNames(ExecState* exec, PropertyNameArray& array)
 {
     // This is the enumerable properties, so put:
     // properties

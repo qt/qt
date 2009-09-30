@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -190,6 +190,9 @@ void QDirModelPrivate::invalidate()
 
     \ingroup model-view
 
+    \note The usage of QDirModel is not recommended anymore. The
+    QFileSystemModel class is a more performant alternative.
+
     This class provides access to the local filesystem, providing functions
     for renaming and removing files and directories, and for creating new
     directories. In the simplest case, it can be used with a suitable display
@@ -228,10 +231,7 @@ void QDirModelPrivate::invalidate()
 
     \note QDirModel requires an instance of a GUI application.
 
-    \note The usage of QDirModel is not recommended anymore. The
-    QFileSystemModel class is a more performant alternative.
-
-    \sa nameFilters(), setFilter(), filter(), QListView, QTreeView, QFileSystemModel
+    \sa nameFilters(), setFilter(), filter(), QListView, QTreeView, QFileSystemModel,
     {Dir View Example}, {Model Classes}
 */
 

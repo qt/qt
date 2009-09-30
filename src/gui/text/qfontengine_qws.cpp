@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -381,6 +381,8 @@ class QFontEngineQPF1Data
 public:
     QPFFontMetrics fm;
     QPFGlyphTree *tree;
+    void *mmapStart;
+    size_t mmapLength;
 };
 
 
@@ -410,6 +412,8 @@ QFontEngineQPF1::QFontEngineQPF1(const QFontDef&, const QString &fn)
     QT_CLOSE(f);
 
     d = new QFontEngineQPF1Data;
+    d->mmapStart = data;
+    d->mmapLength = st.st_size;
     memcpy(reinterpret_cast<char*>(&d->fm),data,sizeof(d->fm));
 
     data += sizeof(d->fm);
@@ -431,6 +435,8 @@ QFontEngineQPF1::QFontEngineQPF1(const QFontDef&, const QString &fn)
 
 QFontEngineQPF1::~QFontEngineQPF1()
 {
+    if (d->mmapStart)
+        munmap(d->mmapStart, d->mmapLength);
     delete d->tree;
     delete d;
 }
@@ -522,10 +528,12 @@ QImage QFontEngineQPF1::alphaMapForGlyph(glyph_t g)
     QImage image;
     if (mono) {
         image = QImage((glyph->metrics->width+7)&~7, glyph->metrics->height, QImage::Format_Mono);
+        image.setColor(0, qRgba(0, 0, 0, 0));
+        image.setColor(1, qRgba(0, 0, 0, 255));
     } else {
         image = QImage(glyph->metrics->width, glyph->metrics->height, QImage::Format_Indexed8);
         for (int j=0; j<256; ++j)
-            image.setColor(j, 0xff000000 | j | (j<<8) | (j<<16));
+            image.setColor(j, qRgba(0, 0, 0, j));
     }
     for (int i=0; i<glyph->metrics->height; ++i) {
         memcpy(image.scanLine(i), bits, glyph->metrics->linestep);

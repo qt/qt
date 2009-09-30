@@ -50,7 +50,7 @@ WebInspector.ProfileDataGridNode.prototype = {
     {
         function formatMilliseconds(time)
         {
-            return Number.secondsToString(time / 1000, WebInspector.UIString.bind(WebInspector), true);
+            return Number.secondsToString(time / 1000, WebInspector.UIString.bind(WebInspector), !Preferences.samplingCPUProfiler);
         }
 
         var data = {};
@@ -153,8 +153,11 @@ WebInspector.ProfileDataGridNode.prototype = {
 
                 // If the grid node is collapsed, then don't sort children (save operation for later).
                 // If the grid node has the same sorting as previously, then there is no point in sorting it again.
-                if (!force && !gridNode.expanded || gridNode.lastComparator === comparator)
+                if (!force && !gridNode.expanded || gridNode.lastComparator === comparator) {
+                    if (gridNode.children.length)
+                        gridNode.shouldRefreshChildren = true;
                     continue;
+                }
 
                 gridNode.lastComparator = comparator;
 

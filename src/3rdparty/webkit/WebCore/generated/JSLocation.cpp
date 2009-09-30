@@ -86,6 +86,11 @@ bool JSLocationPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& 
     return getStaticFunctionSlot<JSObject>(exec, &JSLocationPrototypeTable, this, propertyName, slot);
 }
 
+bool JSLocationPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSLocationPrototypeTable, this, propertyName, descriptor);
+}
+
 void JSLocationPrototype::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     if (putDelegate(exec, propertyName, value, slot))
@@ -103,7 +108,7 @@ JSLocation::JSLocation(PassRefPtr<Structure> structure, JSDOMGlobalObject* globa
 
 JSLocation::~JSLocation()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSLocation::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -116,6 +121,13 @@ bool JSLocation::getOwnPropertySlot(ExecState* exec, const Identifier& propertyN
     if (getOwnPropertySlotDelegate(exec, propertyName, slot))
         return true;
     return getStaticValueSlot<JSLocation, Base>(exec, &JSLocationTable, this, propertyName, slot);
+}
+
+bool JSLocation::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    if (getOwnPropertyDescriptorDelegate(exec, propertyName, descriptor))
+        return true;
+    return getStaticValueDescriptor<JSLocation, Base>(exec, &JSLocationTable, this, propertyName, descriptor);
 }
 
 JSValue jsLocationHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -232,7 +244,7 @@ void setJSLocationHash(ExecState* exec, JSObject* thisObject, JSValue value)
 JSValue JSC_HOST_CALL jsLocationPrototypeFunctionAssign(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSLocation::s_info))
+    if (!thisValue.inherits(&JSLocation::s_info))
         return throwError(exec, TypeError);
     JSLocation* castedThisObj = static_cast<JSLocation*>(asObject(thisValue));
     return castedThisObj->assign(exec, args);
@@ -241,7 +253,7 @@ JSValue JSC_HOST_CALL jsLocationPrototypeFunctionAssign(ExecState* exec, JSObjec
 JSValue JSC_HOST_CALL jsLocationPrototypeFunctionReplace(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSLocation::s_info))
+    if (!thisValue.inherits(&JSLocation::s_info))
         return throwError(exec, TypeError);
     JSLocation* castedThisObj = static_cast<JSLocation*>(asObject(thisValue));
     return castedThisObj->replace(exec, args);
@@ -250,7 +262,7 @@ JSValue JSC_HOST_CALL jsLocationPrototypeFunctionReplace(ExecState* exec, JSObje
 JSValue JSC_HOST_CALL jsLocationPrototypeFunctionReload(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSLocation::s_info))
+    if (!thisValue.inherits(&JSLocation::s_info))
         return throwError(exec, TypeError);
     JSLocation* castedThisObj = static_cast<JSLocation*>(asObject(thisValue));
     return castedThisObj->reload(exec, args);
@@ -259,7 +271,7 @@ JSValue JSC_HOST_CALL jsLocationPrototypeFunctionReload(ExecState* exec, JSObjec
 JSValue JSC_HOST_CALL jsLocationPrototypeFunctionToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSLocation::s_info))
+    if (!thisValue.inherits(&JSLocation::s_info))
         return throwError(exec, TypeError);
     JSLocation* castedThisObj = static_cast<JSLocation*>(asObject(thisValue));
     return castedThisObj->toString(exec, args);
@@ -271,7 +283,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Locatio
 }
 Location* toLocation(JSC::JSValue value)
 {
-    return value.isObject(&JSLocation::s_info) ? static_cast<JSLocation*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSLocation::s_info) ? static_cast<JSLocation*>(asObject(value))->impl() : 0;
 }
 
 }

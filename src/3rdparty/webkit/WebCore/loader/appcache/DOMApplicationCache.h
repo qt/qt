@@ -28,9 +28,11 @@
 
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
 
+#include "ApplicationCacheHost.h"
 #include "AtomicStringHash.h"
-#include "EventTarget.h"
 #include "EventListener.h"
+#include "EventNames.h"
+#include "EventTarget.h"
 #include <wtf/HashMap.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -38,100 +40,55 @@
 
 namespace WebCore {
 
-class ApplicationCache;
 class AtomicStringImpl;
 class Frame;
 class KURL;
 class String;
-    
+
 class DOMApplicationCache : public RefCounted<DOMApplicationCache>, public EventTarget {
 public:
     static PassRefPtr<DOMApplicationCache> create(Frame* frame) { return adoptRef(new DOMApplicationCache(frame)); }
+    ~DOMApplicationCache() { ASSERT(!m_frame); }
+
     void disconnectFrame();
 
-    enum Status {
-        UNCACHED = 0,
-        IDLE = 1,
-        CHECKING = 2,
-        DOWNLOADING = 3,
-        UPDATEREADY = 4,
-        OBSOLETE = 5
-    };
-
     unsigned short status() const;
-    
     void update(ExceptionCode&);
     void swapCache(ExceptionCode&);
-    
-    virtual void addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture);
-    virtual void removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture);
-    virtual bool dispatchEvent(PassRefPtr<Event>, ExceptionCode&);
-    
-    typedef Vector<RefPtr<EventListener> > ListenerVector;
-    typedef HashMap<AtomicString, ListenerVector> EventListenersMap;
-    EventListenersMap& eventListeners() { return m_eventListeners; }
+
+    // EventTarget impl
 
     using RefCounted<DOMApplicationCache>::ref;
     using RefCounted<DOMApplicationCache>::deref;
 
-    void setOnchecking(PassRefPtr<EventListener> eventListener) { m_onCheckingListener = eventListener; }
-    EventListener* onchecking() const { return m_onCheckingListener.get(); }
+    // Explicitly named attribute event listener helpers
 
-    void setOnerror(PassRefPtr<EventListener> eventListener) { m_onErrorListener = eventListener; }
-    EventListener* onerror() const { return m_onErrorListener.get(); }
-
-    void setOnnoupdate(PassRefPtr<EventListener> eventListener) { m_onNoUpdateListener = eventListener; }
-    EventListener* onnoupdate() const { return m_onNoUpdateListener.get(); }
-
-    void setOndownloading(PassRefPtr<EventListener> eventListener) { m_onDownloadingListener = eventListener; }
-    EventListener* ondownloading() const { return m_onDownloadingListener.get(); }
-    
-    void setOnprogress(PassRefPtr<EventListener> eventListener) { m_onProgressListener = eventListener; }
-    EventListener* onprogress() const { return m_onProgressListener.get(); }
-
-    void setOnupdateready(PassRefPtr<EventListener> eventListener) { m_onUpdateReadyListener = eventListener; }
-    EventListener* onupdateready() const { return m_onUpdateReadyListener.get(); }
-
-    void setOncached(PassRefPtr<EventListener> eventListener) { m_onCachedListener = eventListener; }
-    EventListener* oncached() const { return m_onCachedListener.get(); }
-
-    void setOnobsolete(PassRefPtr<EventListener> eventListener) { m_onObsoleteListener = eventListener; }
-    EventListener* onobsolete() const { return m_onObsoleteListener.get(); }
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(checking);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(noupdate);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(downloading);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(updateready);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(cached);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(obsolete);
 
     virtual ScriptExecutionContext* scriptExecutionContext() const;
     DOMApplicationCache* toDOMApplicationCache() { return this; }
 
-    void callCheckingListener();
-    void callErrorListener();    
-    void callNoUpdateListener();    
-    void callDownloadingListener();
-    void callProgressListener();
-    void callUpdateReadyListener();
-    void callCachedListener();
-    void callObsoleteListener();
-    
+    static const AtomicString& toEventType(ApplicationCacheHost::EventID id);
+
 private:
     DOMApplicationCache(Frame*);
-    void callListener(const AtomicString& eventType, EventListener*);
-    
+
     virtual void refEventTarget() { ref(); }
     virtual void derefEventTarget() { deref(); }
+    virtual EventTargetData* eventTargetData();
+    virtual EventTargetData* ensureEventTargetData();
 
-    ApplicationCache* associatedCache() const;
-    bool swapCache();
-    
-    RefPtr<EventListener> m_onCheckingListener;
-    RefPtr<EventListener> m_onErrorListener;
-    RefPtr<EventListener> m_onNoUpdateListener;
-    RefPtr<EventListener> m_onDownloadingListener;
-    RefPtr<EventListener> m_onProgressListener;
-    RefPtr<EventListener> m_onUpdateReadyListener;
-    RefPtr<EventListener> m_onCachedListener;
-    RefPtr<EventListener> m_onObsoleteListener;
-    
-    EventListenersMap m_eventListeners;
+    ApplicationCacheHost* applicationCacheHost() const;
 
     Frame* m_frame;
+    EventTargetData m_eventTargetData;
 };
 
 } // namespace WebCore

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -48,10 +48,17 @@
 
 #define WSEGL_UNUSED(x) (void)x;
 
+// If the PVR2D version is not specified, then assume MBX-style headers.
+// If the version is defined, then we assume that we have SGX-style headers.
+#if !defined(PVR2D_REV_MAJOR)
+#define WSEGL_CAP_WINDOWS_USE_HW_SYNC WSEGL_CAP_WINDOWS_USE_MBX_SYNC
+#define WSEGL_CAP_PIXMAPS_USE_HW_SYNC WSEGL_CAP_PIXMAPS_USE_MBX_SYNC
+#endif
+
 /* Capability information for the display */
 static WSEGLCaps const wseglDisplayCaps[] = {
-    {WSEGL_CAP_WINDOWS_USE_MBX_SYNC, 1},
-    {WSEGL_CAP_PIXMAPS_USE_MBX_SYNC, 1},
+    {WSEGL_CAP_WINDOWS_USE_HW_SYNC, 1},
+    {WSEGL_CAP_PIXMAPS_USE_HW_SYNC, 1},
     {WSEGL_NO_CAPS, 0}
 };
 

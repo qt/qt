@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtScript module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -105,9 +105,11 @@ public:
     virtual bool getPropertyAttributes(const QScriptObject*, JSC::ExecState*,
                                        const JSC::Identifier&,
                                        unsigned&) const;
-    virtual void getPropertyNames(QScriptObject*, JSC::ExecState*, JSC::PropertyNameArray&,
-                                  unsigned listedAttributes = JSC::Structure::Prototype);
-    virtual void mark(QScriptObject*);
+    virtual void getOwnPropertyNames(QScriptObject*, JSC::ExecState*,
+                                     JSC::PropertyNameArray&,
+                                     bool includeNonEnumerable = false);
+    virtual void markChildren(QScriptObject*, JSC::MarkStack& markStack);
+    virtual bool compareToObject(QScriptObject*, JSC::ExecState*, JSC::JSObject*);
 
     inline QObject *value() const { return data->value; }
     inline void setValue(QObject* value) { data->value = value; }
@@ -179,7 +181,7 @@ public:
                          QScriptEngine::ValueOwnership ownership,
                          const QScriptEngine::QObjectWrapOptions &options);
 
-    void mark();
+    void mark(JSC::MarkStack&);
 
 private:
     QScriptEnginePrivate *engine;
@@ -206,7 +208,7 @@ public:
     virtual ~QtFunction();
 
     virtual JSC::CallType getCallData(JSC::CallData&);
-    virtual void mark();
+    virtual void markChildren(JSC::MarkStack&);
 
     virtual const JSC::ClassInfo* classInfo() const { return &info; }
     static const JSC::ClassInfo info;
@@ -295,9 +297,9 @@ public:
                                 bool checkDontDelete = true);
     virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
                                        unsigned&) const;
-    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&,
-                                  unsigned listedAttributes = JSC::Structure::Prototype);
-    virtual void mark();
+    virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&,
+                                     bool includeNonEnumerable = false);
+    virtual void markChildren(JSC::MarkStack& markStack);
 
     virtual JSC::CallType getCallData(JSC::CallData&);
     virtual JSC::ConstructType getConstructData(JSC::ConstructData&);

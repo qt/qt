@@ -56,6 +56,10 @@ QT_END_NAMESPACE
 class wxString;
 #endif
 
+#if PLATFORM(HAIKU)
+class BString;
+#endif
+
 namespace WebCore {
 
 class CString;
@@ -229,6 +233,11 @@ public:
     operator wxString() const;
 #endif
 
+#if PLATFORM(HAIKU)
+    String(const BString&);
+    operator BString() const;
+#endif
+
 #ifndef NDEBUG
     Vector<char> ascii() const;
 #endif
@@ -244,6 +253,14 @@ public:
     
     // Determines the writing direction using the Unicode Bidi Algorithm rules P2 and P3.
     WTF::Unicode::Direction defaultWritingDirection() const { return m_impl ? m_impl->defaultWritingDirection() : WTF::Unicode::LeftToRight; }
+
+    // Counts the number of grapheme clusters. A surrogate pair or a sequence
+    // of a non-combining character and following combining characters is
+    // counted as 1 grapheme cluster.
+    unsigned numGraphemeClusters() const;
+    // Returns the number of characters which will be less than or equal to
+    // the specified grapheme cluster length.
+    unsigned numCharactersInGraphemeClusters(unsigned) const;
 
 private:
     RefPtr<StringImpl> m_impl;
@@ -271,6 +288,8 @@ inline bool operator!=(const char* a, const String& b) { return !equal(a, b.impl
 inline bool equalIgnoringCase(const String& a, const String& b) { return equalIgnoringCase(a.impl(), b.impl()); }
 inline bool equalIgnoringCase(const String& a, const char* b) { return equalIgnoringCase(a.impl(), b); }
 inline bool equalIgnoringCase(const char* a, const String& b) { return equalIgnoringCase(a, b.impl()); }
+
+inline bool equalIgnoringNullity(const String& a, const String& b) { return equalIgnoringNullity(a.impl(), b.impl()); }
 
 inline bool operator!(const String& str) { return str.isNull(); }
 

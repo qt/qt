@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -50,11 +50,14 @@
 #include "qevent.h"
 #include "qpainter.h"
 #include "qdnd_p.h"
+#include "qt_s60_p.h"
 
 #include <COECNTRL.H>
 // pointer cursor
 #include <w32std.h>
 #include <gdi.h>
+#include <QCursor>
+
 QT_BEGIN_NAMESPACE
 //### artistic impression of Symbians default DnD cursor ?
 
@@ -89,82 +92,24 @@ static bool qt_symbian_dnd_dragging = false;
 
 static Qt::KeyboardModifiers oldstate;
 
-class QShapedPixmapWidget
-{
-public:
-    QShapedPixmapWidget(RWsSession aWsSession,RWindowTreeNode* aNode)
-    {
-     sprite = RWsSprite(aWsSession);
-     cursorSprite.iBitmap = 0;
-     cursorSprite.iMaskBitmap = 0;
-     cursorSprite.iInvertMask = EFalse;
-     cursorSprite.iOffset = TPoint(0,0);
-     cursorSprite.iInterval = TTimeIntervalMicroSeconds32(0);
-     cursorSprite.iDrawMode = CGraphicsContext::EDrawModePEN;
-     sprite.Construct(*aNode,TPoint(0,0), ESpriteNoShadows | ESpriteNoChildClip);
-     sprite.AppendMember(cursorSprite);
-     sprite.Activate();
-    }
-    ~QShapedPixmapWidget()
-    {
-        sprite.Close();
-        cursorSprite.iBitmap = 0;
-        delete cursorBitmap;
-        cursorBitmap = 0; //redundant...
-    }
-    void disableCursor()
-    {
-        cursorSprite.iBitmap = 0;
-        sprite.UpdateMember(0,cursorSprite);
-    }
-    void enableCursor()
-    {
-        cursorSprite.iBitmap = cursorBitmap;
-        sprite.UpdateMember(0,cursorSprite);
-    }
-    void setPixmap(QPixmap pm)
-    {
-        //### heaplock centralized.
-        QImage temp = pm.toImage();
-        QSize size = pm.size();
-        temp.bits();
-        CFbsBitmap *curbm = q_check_ptr(new CFbsBitmap());		// CBase derived object needs check on new
-        curbm->Create(TSize(size.width(),size.height()),EColor16MA);
-        curbm->LockHeap(ETrue);
-        memcpy((uchar*)curbm->DataAddress(),temp.bits(),temp.numBytes());
-        curbm->UnlockHeap(ETrue);
-        delete cursorSprite.iBitmap;
-        cursorSprite.iBitmap = curbm;
-        cursorBitmap = curbm;
-        sprite.UpdateMember(0,cursorSprite);
-    }
-    CFbsBitmap *cursorBitmap;
-    RWsPointerCursor pointerCursor;
-    RWsSprite sprite;
-    TSpriteMember cursorSprite;
-
-};
-
-
-static QShapedPixmapWidget *qt_symbian_dnd_deco = 0;
-
 void QDragManager::updatePixmap()
 {
-    if (qt_symbian_dnd_deco) {
-        QPixmap pm;
-        QPoint pm_hot(default_pm_hotx,default_pm_hoty);
-        if (drag_object) {
-            pm = drag_object->pixmap();
-            if (!pm.isNull())
-                pm_hot = drag_object->hotSpot();
-        }
-        if (pm.isNull()) {
-            if (!defaultPm)
-                defaultPm = new QPixmap(default_pm);
-            pm = *defaultPm;
-        }
-        qt_symbian_dnd_deco->setPixmap(pm);
+    QPixmap pm;
+    QPoint pm_hot(default_pm_hotx,default_pm_hoty);
+    if (drag_object) {
+        pm = drag_object->pixmap();
+        if (!pm.isNull())
+            pm_hot = drag_object->hotSpot();
     }
+    if (pm.isNull()) {
+        if (!defaultPm)
+            defaultPm = new QPixmap(default_pm);
+        pm = *defaultPm;
+    }
+#ifndef QT_NO_CURSOR
+    QCursor cursor(pm, pm_hot.x(), pm_hot.y());
+    overrideCursor = cursor;
+#endif
 }
 
 void QDragManager::timerEvent(QTimerEvent *) { }
@@ -174,6 +119,16 @@ void QDragManager::move(const QPoint&) {
 
 void QDragManager::updateCursor()
 {
+#ifndef QT_NO_CURSOR
+    QCursor cursor = willDrop ? overrideCursor : Qt::ForbiddenCursor;
+    if (!restoreCursor) {
+        QApplication::setOverrideCursor(cursor);
+        restoreCursor = true;
+    }
+    else {
+        QApplication::changeOverrideCursor(cursor);
+    }
+#endif
 }
 
 
@@ -210,20 +165,19 @@ bool QDragManager::eventFilter(QObject *o, QEvent *e)
                 // map the Coords relative to the window.
                 if (!cw)
                     return true;
-                TPoint windowPos = cw->effectiveWinId()->PositionRelativeToScreen();
-                qt_symbian_dnd_deco->sprite.SetPosition(TPoint(me->globalX()- windowPos.iX,me->globalY()- windowPos.iY));
 
                 while (cw && !cw->acceptDrops() && !cw->isWindow())
                     cw = cw->parentWidget();
 
+                bool oldWillDrop = willDrop;
                 if (object->target() != cw) {
                     if (object->target()) {
                         QDragLeaveEvent dle;
                         QApplication::sendEvent(object->target(), &dle);
                         willDrop = false;
                         global_accepted_action = Qt::IgnoreAction;
-                        updateCursor();
-                        restoreCursor = true;
+                        if (oldWillDrop != willDrop)
+                            updateCursor();
                         object->d_func()->target = 0;
                     }
                     if (cw && cw->acceptDrops()) {
@@ -233,8 +187,8 @@ bool QDragManager::eventFilter(QObject *o, QEvent *e)
                         QApplication::sendEvent(object->target(), &dee);
                         willDrop = dee.isAccepted() && dee.dropAction() != Qt::IgnoreAction;
                         global_accepted_action = willDrop ? dee.dropAction() : Qt::IgnoreAction;
-                        updateCursor();
-                        restoreCursor = true;
+                        if (oldWillDrop != willDrop)
+                            updateCursor();
                     }
                 } else if (cw) {
                     QDragMoveEvent dme(cw->mapFromGlobal(me->globalPos()), possible_actions, dropData,
@@ -246,8 +200,10 @@ bool QDragManager::eventFilter(QObject *o, QEvent *e)
                     QApplication::sendEvent(cw, &dme);
                     willDrop = dme.isAccepted();
                     global_accepted_action = willDrop ? dme.dropAction() : Qt::IgnoreAction;
-                    updatePixmap();
-                    updateCursor();
+                    if (oldWillDrop != willDrop) {
+                        updatePixmap();
+                        updateCursor();
+                    }
                 }
                 if (global_accepted_action != prevAction)
                     emitActionChanged(global_accepted_action);
@@ -258,11 +214,13 @@ bool QDragManager::eventFilter(QObject *o, QEvent *e)
         case QEvent::MouseButtonRelease:
         {
             qApp->removeEventFilter(this);
+#ifndef QT_NO_CURSOR
             if (restoreCursor) {
-                qt_symbian_dnd_deco->disableCursor();
+                QApplication::restoreOverrideCursor();
                 willDrop = false;
                 restoreCursor = false;
             }
+#endif
             if (object && object->target()) {
 
                 QMouseEvent *me = (QMouseEvent *)e;
@@ -305,23 +263,17 @@ Qt::DropAction QDragManager::drag(QDrag *o)
     }
 
     object = drag_object = o;
-    RWsSession winSession = o->source()->effectiveWinId()->ControlEnv()->WsSession();
-    Q_ASSERT(!qt_symbian_dnd_deco);
-    qt_symbian_dnd_deco = new QShapedPixmapWidget(winSession, o->source()->effectiveWinId()->DrawableWindow());
 
     oldstate = Qt::NoModifier; // #### Should use state that caused the drag
     willDrop = false;
     updatePixmap();
     updateCursor();
-    restoreCursor = true;
+
+#ifndef QT_NO_CURSOR
+    qt_symbian_set_cursor_visible(true); //force cursor on even for touch phone
+#endif
 
     object->d_func()->target = 0;
-    TPoint windowPos = source()->effectiveWinId()->PositionRelativeToScreen();
-    qt_symbian_dnd_deco->sprite.SetPosition(TPoint(QCursor::pos().x()- windowPos.iX ,QCursor::pos().y() - windowPos.iY));
-
-    QPoint hotspot = drag_object->hotSpot();
-    qt_symbian_dnd_deco->cursorSprite.iOffset = TPoint(- hotspot.x(),- hotspot.y());
-    qt_symbian_dnd_deco->sprite.UpdateMember(0,qt_symbian_dnd_deco->cursorSprite);
 
     qApp->installEventFilter(this);
 
@@ -334,10 +286,12 @@ Qt::DropAction QDragManager::drag(QDrag *o)
     delete eventLoop;
     eventLoop = 0;
 
-    delete qt_symbian_dnd_deco;
-    qt_symbian_dnd_deco = 0;
+#ifndef QT_NO_CURSOR
+    qt_symbian_set_cursor_visible(false);
+    
+    overrideCursor = QCursor(); //deref the cursor data
     qt_symbian_dnd_dragging = false;
-
+#endif
 
     return global_accepted_action;
 }
@@ -358,8 +312,12 @@ void QDragManager::cancel(bool deleteSource)
         drag_object = object = 0;
     }
 
-    delete qt_symbian_dnd_deco;
-    qt_symbian_dnd_deco = 0;
+#ifndef QT_NO_CURSOR
+    if (restoreCursor) {
+        QApplication::restoreOverrideCursor();
+        restoreCursor = false;
+    }
+#endif
 
     global_accepted_action = Qt::IgnoreAction;
 }
@@ -367,6 +325,12 @@ void QDragManager::cancel(bool deleteSource)
 
 void QDragManager::drop()
 {
+#ifndef QT_NO_CURSOR
+    if (restoreCursor) {
+        QApplication::restoreOverrideCursor();
+        restoreCursor = false;
+    }
+#endif
 }
 
 QVariant QDropData::retrieveData_sys(const QString &mimetype, QVariant::Type type) const

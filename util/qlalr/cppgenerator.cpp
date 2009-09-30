@@ -1,9 +1,10 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QLALR project on Qt Labs.
+** This file is part of the utils of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -52,6 +52,7 @@ QString CppGenerator::trollCopyrightHeader() const
     "/****************************************************************************\n"
     "**\n"
     "** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).\n"
+    "** All rights reserved.\n"
     "** Contact: Nokia Corporation (qt-info@nokia.com)\n"
     "**\n"
     "** This file is part of the QtCore module of the Qt Toolkit.\n"
@@ -71,10 +72,9 @@ QString CppGenerator::trollCopyrightHeader() const
     "** ensure the GNU Lesser General Public License version 2.1 requirements\n"
     "** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.\n"
     "**\n"
-    "** In addition, as a special exception, Nokia gives you certain\n"
-    "** additional rights.  These rights are described in the Nokia Qt LGPL\n"
-    "** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this\n"
-    "** package.\n"
+    "** In addition, as a special exception, Nokia gives you certain additional\n"
+    "** rights.  These rights are described in the Nokia Qt LGPL Exception\n"
+    "** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.\n"
     "**\n"
     "** If you have questions regarding the use of this file, please contact\n"
     "** Nokia at qt-info@nokia.com.\n"

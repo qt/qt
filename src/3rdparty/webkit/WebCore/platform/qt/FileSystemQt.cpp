@@ -81,7 +81,7 @@ bool makeAllDirectories(const String& path)
 
 String pathByAppendingComponent(const String& path, const String& component)
 {
-    return QDir(path).filePath(component);
+    return QDir::toNativeSeparators(QDir(path).filePath(component));
 }
 
 String homeDirectoryPath()
@@ -117,7 +117,9 @@ Vector<String> listDirectory(const String& path, const String& filter)
 
 CString openTemporaryFile(const char* prefix, PlatformFileHandle& handle)
 {
-    QFile *temp = new QTemporaryFile(QLatin1String(prefix));
+    QTemporaryFile* tempFile = new QTemporaryFile(QLatin1String(prefix));
+    tempFile->setAutoRemove(false);
+    QFile* temp = tempFile;
     if (temp->open(QIODevice::ReadWrite)) {
         handle = temp;
         return String(temp->fileName()).utf8();

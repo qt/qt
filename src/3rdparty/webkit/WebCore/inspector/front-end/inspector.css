@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2006, 2007, 2008 Apple Inc.  All rights reserved.
+ * Copyright (C) 2009 Anthony Ricaud <rik@webkit.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -91,6 +92,10 @@ body.attached #toolbar {
     border-top: 1px solid rgb(100, 100, 100);
     cursor: row-resize;
     padding-left: 0;
+}
+
+body.attached.platform-qt #toolbar {
+    cursor: auto;
 }
 
 body.attached.inactive #toolbar {
@@ -198,8 +203,8 @@ body.attached #search-results-matches {
     background-image: url(Images/scriptsIcon.png);
 }
 
-.toolbar-item.databases .toolbar-icon {
-    background-image: url(Images/databasesIcon.png);
+.toolbar-item.storage .toolbar-icon {
+    background-image: url(Images/storageIcon.png);
 }
 
 .toolbar-item.profiles .toolbar-icon {
@@ -225,6 +230,10 @@ body.attached #search-results-matches {
 }
 
 body.detached .toolbar-item.close {
+    display: none;
+}
+
+body.attached.platform-qt .toolbar-item.close {
     display: none;
 }
 
@@ -259,7 +268,7 @@ body.attached #main {
     right: 0;
 }
 
-body.console-visible #main-status-bar {
+body.drawer-visible #main-status-bar {
     height: 24px;
     background-image: url(Images/statusbarResizerVertical.png), url(Images/statusbarBackground.png);
     background-repeat: no-repeat, repeat-x;
@@ -267,11 +276,11 @@ body.console-visible #main-status-bar {
     cursor: row-resize;
 }
 
-body.console-visible #main-status-bar * {
+body.drawer-visible #main-status-bar * {
     cursor: default;
 }
 
-body.console-visible #main-panels {
+body.drawer-visible #main-panels {
     bottom: 24px;
 }
 
@@ -306,14 +315,39 @@ body.console-visible #main-panels {
     z-index: 200;
 }
 
+.glyph {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    z-index: 1;
+}
+
+.glyph.shadow {
+    top: 1px;
+    background-color: white !important;
+    z-index: 0;
+}
+
 button.status-bar-item {
+    position: relative;
     width: 32px;
     background-image: url(Images/statusbarButtons.png);
     background-position: 0 0;
 }
 
 button.status-bar-item:active {
-    background-position: 32px 0;
+    background-position: 32px 0 !important;
+}
+
+button.status-bar-item .glyph.shadow {
+    background-color: rgba(255, 255, 255, 0.33) !important;
+}
+
+button.status-bar-item.toggled-on .glyph {
+    background-color: rgb(66, 129, 235);
 }
 
 button.status-bar-item:disabled {
@@ -338,47 +372,35 @@ select.status-bar-item:active {
     -webkit-border-image: url(Images/statusbarMenuButtonSelected.png) 0 17 0 2;
 }
 
-#dock-status-bar-item {
-    background-image: url(Images/dockButtons.png);
+#dock-status-bar-item .glyph {
+    -webkit-mask-image: url(Images/undockButtonGlyph.png);
 }
 
-body.attached #dock-status-bar-item:active {
-    background-position: 32px 0;
+body.detached #dock-status-bar-item .glyph {
+    -webkit-mask-image: url(Images/dockButtonGlyph.png);
 }
 
-body.detached #dock-status-bar-item {
-    background-position: 0 24px;
+body.platform-qt #dock-status-bar-item {
+    display: none
 }
 
-body.detached #dock-status-bar-item.toggled-on:active {
-    background-position: 32px 24px;
+#console-status-bar-item .glyph {
+    -webkit-mask-image: url(Images/consoleButtonGlyph.png);
 }
 
-#console-status-bar-item {
-    background-image: url(Images/consoleButtons.png);
+#clear-console-status-bar-item .glyph {
+    -webkit-mask-image: url(Images/clearConsoleButtonGlyph.png);
 }
 
-#console-status-bar-item:active {
-    background-position: 32px 0;
+#changes-status-bar-item .glyph {
+    -webkit-mask-image: url(Images/consoleButtonGlyph.png); /* TODO: Needs Image for Changes Toggle Button */
 }
 
-#console-status-bar-item.toggled-on {
-    background-position: 0 24px;
+#clear-changes-status-bar-item .glyph {
+    -webkit-mask-image: url(Images/clearConsoleButtonGlyph.png);
 }
 
-#console-status-bar-item.toggled-on:active {
-    background-position: 32px 24px;
-}
-
-#clear-console-status-bar-item {
-    background-image: url(Images/clearConsoleButtons.png);
-}
-
-#clear-console-status-bar-item:active {
-    background-position: 32px 0;
-}
-
-#error-warning-count {
+#count-items {
     position: absolute;
     right: 16px;
     top: 0;
@@ -388,8 +410,20 @@ body.detached #dock-status-bar-item.toggled-on:active {
     height: 19px;
 }
 
-#error-warning-count:hover {
+#changes-count, #error-warning-count {
+    display: inline;
+}
+
+#error-warning-count:hover, #changes-count:hover {
     border-bottom: 1px solid rgb(96, 96, 96);
+}
+
+#style-changes-count::before {
+    content: url(Images/styleIcon.png); /* TODO: Needs Image for Style Changes Icon */
+    width: 10px;
+    height: 10px;
+    vertical-align: -1px;
+    margin-right: 2px;
 }
 
 #error-count::before {
@@ -399,8 +433,8 @@ body.detached #dock-status-bar-item.toggled-on:active {
     vertical-align: -1px;
     margin-right: 2px;
 }
-
-#error-count + #warning-count {
+    
+#changes-count + #error-warning-count, #error-count + #warning-count {
     margin-left: 6px;
 }
 
@@ -412,7 +446,7 @@ body.detached #dock-status-bar-item.toggled-on:active {
     margin-right: 2px;
 }
 
-#console {
+#drawer {
     display: none;
     position: absolute;
     bottom: 0;
@@ -425,11 +459,11 @@ body.detached #dock-status-bar-item.toggled-on:active {
     background-position: bottom;
 }
 
-body.console-visible #console {
+body.drawer-visible #drawer {
     display: block;
 }
 
-#console-status-bar {
+#drawer-status-bar {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -521,7 +555,7 @@ body.console-visible #console {
     padding-left: 6px;
 }
 
-.repeated-message.console-error-level::before, .repeated-message.console-warning-level:before {
+.repeated-message.console-error-level::before, .repeated-message.console-warning-level:before, .repeated-message.console-debug-level:before {
     visibility: hidden;
 }
 
@@ -550,6 +584,14 @@ body.console-visible #console {
 
 .console-error-level .console-message-text {
     color: red;
+}
+
+.console-debug-level .console-message-text {
+    color: blue;
+}
+
+.console-debug-level::before {
+    background-image: url(Images/searchSmallBrightBlue.png);
 }
 
 .console-error-level::before {
@@ -751,6 +793,10 @@ body.console-visible #console {
     margin-right: 100px;
 }
 
+.resource-view-headers .outline-disclosure .raw-form-data {
+    white-space:pre-wrap;
+}
+
 .resource-view .resource-view-content {
     position: absolute;
     top: 0;
@@ -808,13 +854,21 @@ body.console-visible #console {
     -webkit-user-select: text;
 }
 
-.resource-view.image img {
+.resource-view.image img.resource-image-view {
     max-width: 100%;
     max-height: 1000px;
     background-image: url(Images/checker.png);
     -webkit-box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.5);
     -webkit-user-select: text;
     -webkit-user-drag: auto;
+}
+
+.resource-url {
+    vertical-align: middle;
+}
+
+.resource-status-image {
+    vertical-align: middle;
 }
 
 .resource-view.image .title {
@@ -1172,6 +1226,10 @@ body.inactive .placard.selected {
     margin-bottom: 1px;
 }
 
+.watch-expressions-buttons-container {
+    text-align: center;
+}
+
 .section .header {
     padding: 2px 8px 4px 18px;
     border-top: 1px solid rgb(145, 160, 192);
@@ -1180,6 +1238,10 @@ body.inactive .placard.selected {
     white-space: nowrap;
     -webkit-background-origin: padding;
     -webkit-background-clip: padding;
+}
+
+.section.no-affect .header {
+    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(167, 167, 167)), to(rgb(123, 123, 123)))
 }
 
 .section .header::before {
@@ -1191,6 +1253,10 @@ body.inactive .placard.selected {
     content: url(Images/treeRightTriangleWhite.png);
 }
 
+.section.blank-section .header::before {
+    display: none;
+}
+
 .section.expanded .header::before {
     content: url(Images/treeDownTriangleWhite.png);
 }
@@ -1200,6 +1266,10 @@ body.inactive .placard.selected {
     font-weight: bold;
     word-wrap: break-word;
     white-space: normal;
+}
+
+.section .header .title.blank-title {
+    font-style: italic;
 }
 
 .section .header label {
@@ -1239,6 +1309,15 @@ body.inactive .placard.selected {
     padding: 2px 6px 3px;
     list-style: none;
     background-color: white;
+    min-height: 18px;
+}
+
+.section.no-affect .properties li {
+    opacity: 0.5;
+}
+
+.section.no-affect .properties li.editing {
+    opacity: 1.0;
 }
 
 .section.expanded .properties {
@@ -1317,8 +1396,21 @@ body.inactive .placard.selected {
     text-overflow: clip;
 }
 
-li.editing .swatch, li.editing .enabled-button {
+li.editing .swatch, li.editing .enabled-button,  li.editing-sub-part .delete-button {
     display: none !important;
+}
+
+.watch-expressions > li.editing-sub-part .name {
+    display: block; 
+    width: 100%;
+}
+
+.watch-expressions > li.editing-sub-part .value, .watch-expressions > li.editing-sub-part .separator  {
+    display: none;
+}
+
+.watch-expressions-error-level {
+    color: red;
 }
 
 .section .properties li.editing-sub-part {
@@ -1354,6 +1446,17 @@ li.editing .swatch, li.editing .enabled-button {
     z-index: 1;
 }
 
+/* FIXME: need a better icon (comment in bug 27514) */
+.section .properties .delete-button {
+    width: 10px;
+    height: 10px;
+    background-image: url(Images/errorIcon.png);
+    background-position: 0 0;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    border: 0 none transparent;
+}
+
 .section:hover .properties .enabled-button {
     display: block;
 }
@@ -1385,11 +1488,16 @@ li.editing .swatch, li.editing .enabled-button {
 .swatch {
     display: inline-block;
     vertical-align: baseline;
-    margin-left: 4px;
+    margin-left: 1px;
+    margin-right: 2px;
     margin-bottom: -1px;
     width: 1em;
     height: 1em;
-    border: 1px solid rgb(180, 180, 180);
+    border: 1px solid rgba(128, 128, 128, 0.6);
+}
+
+.swatch:hover {
+    border: 1px solid rgba(64, 64, 64, 0.8);
 }
 
 .pane:not(.expanded) + .pane, .pane:first-of-type {
@@ -1428,6 +1536,34 @@ li.editing .swatch, li.editing .enabled-button {
 
 .pane.expanded > .title::before {
     content: url(Images/disclosureTriangleSmallDownBlack.png);
+}
+
+.pane > .title > select {
+    display: none;
+    float: right;
+    width: 23px;
+    height: 17px;
+    color: transparent;
+    background-color: transparent;
+    border: none;
+    background-image: url(Images/paneSettingsButtons.png);
+    background-repeat: no-repeat;
+    margin: 1px 0 0 0;
+    padding: 0;
+    -webkit-border-radius: 0;
+    -webkit-appearance: none;
+}
+
+.pane.expanded:hover > .title > select {
+    display: inline-block;
+}
+
+.pane > .title > select:hover {
+    background-position: -23px 0px;
+}
+
+.pane > .title > select:active {
+    background-position: -46px 0px;
 }
 
 .pane > .body {
@@ -1579,8 +1715,16 @@ body.inactive .sidebar {
     content: url(Images/databaseTable.png);
 }
 
-.domstorage-sidebar-tree-item .icon {
-    content: url(Images/domStorage.png);
+.domstorage-sidebar-tree-item.local-storage .icon {
+    content: url(Images/localStorage.png);
+}
+
+.domstorage-sidebar-tree-item.session-storage .icon {
+    content: url(Images/sessionStorage.png);
+}
+
+.cookie-sidebar-tree-item .icon {
+    content: url(Images/cookie.png);
 }
 
 #storage-views {
@@ -1742,6 +1886,14 @@ body.inactive .sidebar {
     overflow: hidden;
 }
 
+.data-grid .centered div {
+    text-align: center;
+}
+
+.data-grid .right div {
+    text-align: right;
+}
+
 .data-grid th.sortable div {
     position: relative;
 }
@@ -1822,6 +1974,15 @@ body.inactive .data-grid th.sort-ascending, body.inactive .data-grid th.sort-des
 
 .data-grid tr:not(.parent) td.disclosure {
     text-indent: 10px;
+}
+
+.data-grid-resizer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    z-index: 500;
+    cursor: col-resize;
 }
 
 .storage-view.query {
@@ -2031,36 +2192,16 @@ body.inactive .panel-enabler-view button, .panel-enabler-view button:disabled {
     content: url(Images/profilesSilhouette.png);
 }
 
-button.enable-toggle-status-bar-item {
-    background-image: url(Images/enableButtons.png);
+button.enable-toggle-status-bar-item .glyph {
+    -webkit-mask-image: url(Images/enableOutlineButtonGlyph.png);
 }
 
-button.enable-toggle-status-bar-item:active {
-    background-position: 32px 0;
+button.enable-toggle-status-bar-item.toggled-on .glyph {
+    -webkit-mask-image: url(Images/enableSolidButtonGlyph.png);
 }
 
-button.enable-toggle-status-bar-item.toggled-on {
-    background-position: 0 24px;
-}
-
-button.enable-toggle-status-bar-item.toggled-on:active {
-    background-position: 32px 24px;
-}
-
-#scripts-pause-on-exceptions-status-bar-item {
-    background-image: url(Images/pauseOnExceptionButtons.png);
-}
-
-#scripts-pause-on-exceptions-status-bar-item:active {
-    background-position: 32px 0;
-}
-
-#scripts-pause-on-exceptions-status-bar-item.toggled-on {
-    background-position: 0 24px;
-}
-
-#scripts-pause-on-exceptions-status-bar-item.toggled-on:active {
-    background-position: 32px 24px;
+.scripts-pause-on-exceptions-status-bar-item .glyph {
+    -webkit-mask-image: url(Images/pauseOnExceptionButtonGlyph.png);
 }
 
 #scripts-status-bar {
@@ -2177,25 +2318,72 @@ button.enable-toggle-status-bar-item.toggled-on:active {
     overflow: auto;
 }
 
-#resources-larger-resources-status-bar-item {
-    background-image: url(Images/largerResourcesButtons.png);
+.resources-larger-resources-status-bar-item .glyph {
+    -webkit-mask-image: url(Images/largerResourcesButtonGlyph.png);
 }
 
-#resources-larger-resources-status-bar-item:active {
-    background-position: 32px 0;
+#resources-filter {
+    height: 24px;
+    padding: 2px 10px 0;
+    background: -webkit-gradient(linear, left top, left bottom, from(rgb(233, 233, 233)), to(rgb(207, 207, 207)));
+    border-bottom: 1px solid rgb(177, 177, 177);
+    overflow: hidden;
 }
 
-#resources-larger-resources-status-bar-item.toggled-on {
-    background-position: 0 24px;
+#console-filter {
+    height: 24px;
+    padding: 2px 10px 0;
+    overflow: hidden;
 }
 
-#resources-larger-resources-status-bar-item.toggled-on:active {
-    background-position: 32px 24px;
+#resources-filter li, #console-filter li {
+    display: inline-block;
+    margin: 1px 1px 0 0;
+    padding: 0 6px 3px;
+    font-size: 12px;
+    line-height: 12px;
+    font-weight: bold;
+    color: rgb(40, 40, 40);
+    border: 1px solid transparent;
+    border-bottom: 0;
+    background: transparent;
+    -webkit-border-radius: 8px;
+    text-shadow: rgba(255, 255, 255, 0.5) 1px 1px 0;
+}
+
+#console-filter div.divider {
+    margin-left: 5px;
+    margin-right: 5px;
+    /* Only want a border-left here because border on both sides
+    made the divider too thick */
+    border-left: 1px solid gray;
+    display: inline;
+}
+
+#resources-filter li.selected, #resources-filter li:hover, #resources-filter li:active,
+#console-filter li.selected, #console-filter li:hover, #console-filter li:active {
+    color: white;
+    text-shadow: rgb(80, 80, 80) 1px 1px 1px;
+    background: rgba(20, 20, 20, 0.4);
+    border-color: rgba(20, 20, 20, 0.2);
+    -webkit-box-shadow: 0 1px 0px rgba(255, 255, 255, 0.5);
+}
+
+#resources-filter li:hover,
+#console-filter li:hover {
+    background: rgba(20, 20, 20, 0.4);
+    border-color: transparent;
+    -webkit-box-shadow: none;
+}
+
+#resources-filter li:active,
+#console-filter li:active {
+    background: rgba(20, 20, 20, 0.6);
 }
 
 #resources-container {
     position: absolute;
-    top: 0;
+    top: 24px;
     left: 0;
     bottom: 0;
     right: 0;
@@ -2255,36 +2443,36 @@ button.enable-toggle-status-bar-item.toggled-on:active {
     -webkit-background-clip: padding;
 }
 
-#resources-graph-legend {
+.summary-graph-legend {
     margin-top: -10px;
     padding-left: 15px;
 }
 
-.resources-graph-legend-item {
+.summary-graph-legend-item {
     display: inline-block;
     font-weight: bold;
     margin-right: 15px;
     vertical-align: top;
 }
 
-.resources-graph-legend-item.total {
+.summary-graph-legend-item.total {
     margin-left: 10px;
 }
 
-.resources-graph-legend-label {
+.summary-graph-legend-label {
     display: inline-block;
     text-align: left;
 }
 
-.resources-graph-legend-header {
+.summary-graph-legend-header {
     font-size: 12px;
 }
 
-.resources-graph-legend-value {
+.summary-graph-legend-value {
     font-size: 10px;
 }
 
-.resources-graph-legend-swatch {
+.summary-graph-legend-swatch {
     vertical-align: top;
     margin-top: 1px;
     margin-right: 3px;
@@ -2400,6 +2588,32 @@ button.enable-toggle-status-bar-item.toggled-on:active {
     -webkit-border-image: url(Images/timelinePillGray.png) 6 7 6 7;
 }
 
+.resources-category-documents, .resources-category-stylesheets, .resources-category-images,
+.resources-category-scripts, .resources-category-xhr, .resources-category-fonts, .resources-category-other {
+    display: none;
+}
+
+.filter-all .resources-category-documents, .filter-documents .resources-category-documents,
+.filter-all .resources-category-stylesheets, .filter-stylesheets .resources-category-stylesheets,
+.filter-all .resources-category-images, .filter-images .resources-category-images,
+.filter-all .resources-category-scripts, .filter-scripts .resources-category-scripts,
+.filter-all .resources-category-xhr, .filter-xhr .resources-category-xhr,
+.filter-all .resources-category-fonts, .filter-fonts .resources-category-fonts,
+.filter-all .resources-category-other, .filter-other .resources-category-other,
+.resource-sidebar-tree-item.selected {
+    display: list-item;
+}
+
+.console-warning-level, .console-error-level, .console-log-level {
+    display: none;
+}
+
+.filter-all .console-warning-level, .filter-warnings .console-warning-level,
+.filter-all .console-error-level, .filter-errors .console-error-level,
+.filter-all .console-log-level, .filter-logs .console-log-level {
+    display: block;
+}
+
 .resources-graph-bar.waiting {
     opacity: 0.35;
 }
@@ -2503,7 +2717,7 @@ button.enable-toggle-status-bar-item.toggled-on:active {
 
 #resource-views {
     position: absolute;
-    top: 0;
+    top: 24px;
     right: 0;
     left: 200px;
     bottom: 0;
@@ -2521,6 +2735,10 @@ button.enable-toggle-status-bar-item.toggled-on:active {
     width: 5px;
     z-index: 500;
     cursor: col-resize;
+}
+
+.resources .sidebar-resizer-vertical {
+    top: 24px;
 }
 
 .sidebar-tree, .sidebar-tree .children {
@@ -2889,6 +3107,10 @@ body.inactive .sidebar-tree-item.selected {
     content: url(Images/resourceDocumentIconSmall.png);
 }
 
+.bubble.debug, .console-debug-level .bubble {
+    background-color: rgb(0, 0, 255) !important;
+}
+
 .bubble.warning, .console-warning-level .bubble {
     background-color: rgb(232, 164, 0) !important;
 }
@@ -3009,84 +3231,45 @@ body.inactive .sidebar-tree-item.selected .bubble.search-matches {
     color: white;
 }
 
-#record-profile-status-bar-item {
-    background-image: url(Images/recordButtons.png);
+button.enable-toggle-status-bar-item .glyph {
 }
 
-#record-profile-status-bar-item:active {
-    background-position: 32px 0;
+.record-profile-status-bar-item .glyph {
+    -webkit-mask-image: url(Images/recordButtonGlyph.png);
 }
 
-#record-profile-status-bar-item.toggled-on {
-    background-position: 0 24px;
+.record-profile-status-bar-item.toggled-on .glyph {
+    -webkit-mask-image: url(Images/recordToggledButtonGlyph.png);
+    background-color: rgb(216, 0, 0) !important;
 }
 
-#record-profile-status-bar-item.toggled-on:active {
-    background-position: 32px 24px;
+/* FIXME: should have its own glyph. */
+.heap-snapshot-status-bar-item .glyph {
+    -webkit-mask-image: url(Images/focusButtonGlyph.png);
 }
 
-#node-search-status-bar-item {
-    background-image: url(Images/nodeSearchButtons.png);
+.node-search-status-bar-item .glyph {
+    -webkit-mask-image: url(Images/nodeSearchButtonGlyph.png);
 }
 
-#node-search-status-bar-item:active {
-    background-position: 32px 0;
+.percent-time-status-bar-item .glyph {
+    -webkit-mask-image: url(Images/percentButtonGlyph.png);
 }
 
-#node-search-status-bar-item.toggled-on {
-    background-position: 0 24px;
+.focus-profile-node-status-bar-item .glyph {
+    -webkit-mask-image: url(Images/focusButtonGlyph.png);
 }
 
-#node-search-status-bar-item.toggled-on:active {
-    background-position: 32px 24px;
+.exclude-profile-node-status-bar-item .glyph {
+    -webkit-mask-image: url(Images/excludeButtonGlyph.png);
 }
 
-.percent-time-status-bar-item {
-    background-image: url(Images/percentButtons.png) !important;
+.reset-profile-status-bar-item .glyph {
+    -webkit-mask-image: url(Images/reloadButtonGlyph.png);
 }
 
-.percent-time-status-bar-item:active {
-    background-position: 32px 0;
-}
-
-.percent-time-status-bar-item.toggled-on {
-    background-position: 0 24px;
-}
-
-.percent-time-status-bar-item.toggled-on:active {
-    background-position: 32px 24px;
-}
-
-.focus-profile-node-status-bar-item {
-    background-image: url(Images/focusButtons.png) !important;
-}
-
-.focus-profile-node-status-bar-item:active {
-    background-position: 32px 0;
-}
-
-.exclude-profile-node-status-bar-item {
-    background-image: url(Images/excludeButtons.png) !important;
-}
-
-.exclude-profile-node-status-bar-item:active {
-    background-position: 32px 0;
-}
-
-.reset-profile-status-bar-item {
-    background-image: url(Images/reloadButtons.png) !important;
-}
-
-.reset-profile-status-bar-item:active {
-    background-position: 32px 0;
-}
-
-.delete-storage-status-bar-item {
-    background-image: url(Images/excludeButtons.png) !important;
-}
-
-.delete-storage-status-bar-item:active {
-    background-position: 32px 0;
+.delete-storage-status-bar-item .glyph {
+    -webkit-mask-image: url(Images/excludeButtonGlyph.png);
 }
 
 #storage-view-status-bar-items {
@@ -3099,12 +3282,8 @@ body.inactive .sidebar-tree-item.selected .bubble.search-matches {
     margin-left: -1px;
 }
 
-.refresh-storage-status-bar-item {
-    background-image: url(Images/reloadButtons.png) !important;
-}
-
-.refresh-storage-status-bar-item:active {
-    background-position: 32px 0;
+.refresh-storage-status-bar-item .glyph {
+    -webkit-mask-image: url(Images/reloadButtonGlyph.png);
 }
 
 #storage-view-status-bar-items {

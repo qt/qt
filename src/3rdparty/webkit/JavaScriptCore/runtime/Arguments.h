@@ -1,6 +1,6 @@
 /*
  *  Copyright (C) 1999-2000 Harri Porten (porten@kde.org)
- *  Copyright (C) 2003, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ *  Copyright (C) 2003, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  *  Copyright (C) 2007 Cameron Zwarich (cwzwarich@uwaterloo.ca)
  *  Copyright (C) 2007 Maks Orlovich
  *
@@ -28,6 +28,8 @@
 #include "JSFunction.h"
 #include "JSGlobalObject.h"
 #include "Interpreter.h"
+#include "ObjectConstructor.h"
+#include "PrototypeFunction.h"
 
 namespace JSC {
 
@@ -45,7 +47,7 @@ namespace JSC {
         OwnArrayPtr<bool> deletedArguments;
         Register extraArgumentsFixedBuffer[4];
 
-        JSObject* callee;
+        JSFunction* callee;
         bool overrodeLength : 1;
         bool overrodeCallee : 1;
     };
@@ -61,7 +63,7 @@ namespace JSC {
 
         static const ClassInfo info;
 
-        virtual void mark();
+        virtual void markChildren(MarkStack&);
 
         void fillArgList(ExecState*, MarkedArgumentBuffer&);
 
@@ -87,14 +89,14 @@ namespace JSC {
         }
 
     private:
-        void getArgumentsData(CallFrame*, JSObject*&, ptrdiff_t& firstParameterIndex, Register*& argv, int& argc);
+        void getArgumentsData(CallFrame*, JSFunction*&, ptrdiff_t& firstParameterIndex, Register*& argv, int& argc);
         virtual bool getOwnPropertySlot(ExecState*, const Identifier& propertyName, PropertySlot&);
         virtual bool getOwnPropertySlot(ExecState*, unsigned propertyName, PropertySlot&);
+        virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
         virtual void put(ExecState*, const Identifier& propertyName, JSValue, PutPropertySlot&);
         virtual void put(ExecState*, unsigned propertyName, JSValue, PutPropertySlot&);
-        virtual bool deleteProperty(ExecState*, const Identifier& propertyName, bool checkDontDelete = true);
-        virtual bool deleteProperty(ExecState*, unsigned propertyName, bool checkDontDelete = true);
-        virtual bool getPropertyAttributes(ExecState*, const Identifier& propertyName, unsigned& attributes) const;
+        virtual bool deleteProperty(ExecState*, const Identifier& propertyName);
+        virtual bool deleteProperty(ExecState*, unsigned propertyName);
 
         virtual const ClassInfo* classInfo() const { return &info; }
 
@@ -111,42 +113,33 @@ namespace JSC {
         return static_cast<Arguments*>(asObject(value));
     }
 
-    ALWAYS_INLINE void Arguments::getArgumentsData(CallFrame* callFrame, JSObject*& callee, ptrdiff_t& firstParameterIndex, Register*& argv, int& argc)
+    ALWAYS_INLINE void Arguments::getArgumentsData(CallFrame* callFrame, JSFunction*& function, ptrdiff_t& firstParameterIndex, Register*& argv, int& argc)
     {
-        callee = callFrame->callee();
+        function = callFrame->callee();
 
-        int numParameters;
-        if (callee->isObject(&JSFunction::info)) {
-            CodeBlock* codeBlock =  &JSC::asFunction(callee)->body()->generatedBytecode();
-            numParameters = codeBlock->m_numParameters;
-        } else {
-            numParameters = 0;
-        }
+        int numParameters = function->jsExecutable()->parameterCount();
         argc = callFrame->argumentCount();
 
         if (argc <= numParameters)
-            argv = callFrame->registers() - RegisterFile::CallFrameHeaderSize - numParameters + 1; // + 1 to skip "this"
+            argv = callFrame->registers() - RegisterFile::CallFrameHeaderSize - numParameters;
         else
-            argv = callFrame->registers() - RegisterFile::CallFrameHeaderSize - numParameters - argc + 1; // + 1 to skip "this"
+            argv = callFrame->registers() - RegisterFile::CallFrameHeaderSize - numParameters - argc;
 
         argc -= 1; // - 1 to skip "this"
-        firstParameterIndex = -RegisterFile::CallFrameHeaderSize - numParameters + 1; // + 1 to skip "this"
+        firstParameterIndex = -RegisterFile::CallFrameHeaderSize - numParameters;
     }
 
     inline Arguments::Arguments(CallFrame* callFrame)
         : JSObject(callFrame->lexicalGlobalObject()->argumentsStructure())
         , d(new ArgumentsData)
     {
-        JSObject* callee;
+        JSFunction* callee;
         ptrdiff_t firstParameterIndex;
         Register* argv;
         int numArguments;
         getArgumentsData(callFrame, callee, firstParameterIndex, argv, numArguments);
 
-        if (callee->isObject(&JSFunction::info))
-            d->numParameters = JSC::asFunction(callee)->body()->parameterCount();
-        else
-            d->numParameters = 0;
+        d->numParameters = callee->jsExecutable()->parameterCount();
         d->firstParameterIndex = firstParameterIndex;
         d->numArguments = numArguments;
 
@@ -177,8 +170,7 @@ namespace JSC {
         : JSObject(callFrame->lexicalGlobalObject()->argumentsStructure())
         , d(new ArgumentsData)
     {
-        if (callFrame->callee() && callFrame->callee()->isObject(&JSC::JSFunction::info))
-            ASSERT(!asFunction(callFrame->callee())->body()->parameterCount());
+        ASSERT(!callFrame->callee()->jsExecutable()->parameterCount());
 
         unsigned numArguments = callFrame->argumentCount() - 1;
 
@@ -193,8 +185,6 @@ namespace JSC {
             extraArguments = d->extraArgumentsFixedBuffer;
 
         Register* argv = callFrame->registers() - RegisterFile::CallFrameHeaderSize - numArguments - 1;
-        if (callFrame->callee() && !callFrame->callee()->isObject(&JSC::JSFunction::info))
-            ++argv; // ### off-by-one issue with native functions
         for (unsigned i = 0; i < numArguments; ++i)
             extraArguments[i] = argv[i];
 
@@ -226,8 +216,8 @@ namespace JSC {
     {
         ASSERT(!d()->registerArray);
 
-        size_t numParametersMinusThis = d()->functionBody->generatedBytecode().m_numParameters - 1;
-        size_t numVars = d()->functionBody->generatedBytecode().m_numVars;
+        size_t numParametersMinusThis = d()->functionExecutable->generatedBytecode().m_numParameters - 1;
+        size_t numVars = d()->functionExecutable->generatedBytecode().m_numVars;
         size_t numLocals = numVars + numParametersMinusThis;
 
         if (!numLocals)
@@ -241,6 +231,14 @@ namespace JSC {
         if (arguments && !arguments->isTornOff())
             static_cast<Arguments*>(arguments)->setActivation(this);
     }
+
+    ALWAYS_INLINE Arguments* Register::arguments() const
+    {
+        if (jsValue() == JSValue())
+            return 0;
+        return asArguments(jsValue());
+    }
+    
 
 } // namespace JSC
 

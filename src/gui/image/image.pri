@@ -24,7 +24,7 @@ HEADERS += \
         image/qpixmap.h \
         image/qpixmap_raster_p.h \
         image/qpixmapcache.h \
-	image/qpixmapcache_p.h \
+        image/qpixmapcache_p.h \
         image/qpixmapdata_p.h \
         image/qpixmapdatafactory_p.h \
         image/qpixmapfilter_p.h \
@@ -73,6 +73,7 @@ x11 {
     SOURCES += image/qpixmap_mac.cpp
 }
 symbian {
+    HEADERS += image/qpixmap_s60_p.h
     SOURCES += image/qpixmap_s60.cpp
 }
 

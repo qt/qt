@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -44,6 +44,7 @@
 
 #include <QtCore/qstate.h>
 
+#include <QtCore/qcoreevent.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qset.h>
@@ -55,8 +56,6 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Core)
 
 #ifndef QT_NO_STATEMACHINE
-
-class QEvent;
 
 class QStateMachinePrivate;
 class QAbstractAnimation;
@@ -70,6 +69,44 @@ class Q_CORE_EXPORT QStateMachine : public QState
     Q_PROPERTY(bool animationsEnabled READ animationsEnabled WRITE setAnimationsEnabled)
 #endif
 public:
+    class SignalEvent : public QEvent
+    {
+    public:
+        SignalEvent(QObject *sender, int signalIndex,
+                     const QList<QVariant> &arguments);
+        ~SignalEvent();
+
+        inline QObject *sender() const { return m_sender; }
+        inline int signalIndex() const { return m_signalIndex; }
+        inline QList<QVariant> arguments() const { return m_arguments; }
+
+    private:
+        QObject *m_sender;
+        int m_signalIndex;
+        QList<QVariant> m_arguments;
+
+        friend class QSignalTransitionPrivate;
+    };
+
+    class WrappedEvent : public QEvent
+    {
+    public:
+        WrappedEvent(QObject *object, QEvent *event);
+        ~WrappedEvent();
+
+        inline QObject *object() const { return m_object; }
+        inline QEvent *event() const { return m_event; }
+
+    private:
+        QObject *m_object;
+        QEvent *m_event;
+    };
+
+    enum EventPriority {
+        NormalPriority,
+        HighPriority
+    };
+
     enum RestorePolicy {
         DoNotRestoreProperties,
         RestoreProperties
@@ -106,7 +143,9 @@ public:
     QStateMachine::RestorePolicy globalRestorePolicy() const;
     void setGlobalRestorePolicy(QStateMachine::RestorePolicy restorePolicy);
 
-    void postEvent(QEvent *event, int delay = 0);
+    void postEvent(QEvent *event, EventPriority priority = NormalPriority);
+    int postDelayedEvent(QEvent *event, int delay);
+    bool cancelDelayedEvent(int id);
 
     QSet<QAbstractState*> configuration() const;
 
@@ -125,8 +164,6 @@ Q_SIGNALS:
 protected:
     void onEntry(QEvent *event);
     void onExit(QEvent *event);
-
-    void postInternalEvent(QEvent *event);
 
     virtual void beginSelectTransitions(QEvent *event);
     virtual void endSelectTransitions(QEvent *event);

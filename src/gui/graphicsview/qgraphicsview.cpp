@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -971,7 +971,7 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
         *allItems = true;
 
         // All items are guaranteed within the exposed region.
-        return scene->items(Qt::DescendingOrder);
+        return scene->items(Qt::AscendingOrder);
     }
 
     // Step 2) If the expose region is a simple rect and the view is only
@@ -981,7 +981,7 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
     if (simpleRectLookup) {
         return scene->items(exposedRegionSceneBounds,
                             Qt::IntersectsItemBoundingRect,
-                            Qt::DescendingOrder, viewTransform);
+                            Qt::AscendingOrder, viewTransform);
     }
 
     // If the region is complex or the view has a complex transform, adjust
@@ -993,7 +993,7 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
 
     const QPainterPath exposedScenePath(q->mapToScene(qt_regionToPath(adjustedRegion)));
     return scene->items(exposedScenePath, Qt::IntersectsItemBoundingRect,
-                        Qt::DescendingOrder, viewTransform);
+                        Qt::AscendingOrder, viewTransform);
 }
 
 /*!
@@ -1537,6 +1537,9 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
     }
 
     d->updateInputMethodSensitivity();
+
+    if (d->scene && hasFocus())
+        d->scene->setFocus();
 }
 
 /*!
@@ -2052,13 +2055,13 @@ QList<QGraphicsItem *> QGraphicsView::items(const QPoint &pos) const
         QTransform xinv = viewportTransform().inverted();
         return d->scene->items(xinv.mapRect(QRectF(pos.x(), pos.y(), 1, 1)),
                                Qt::IntersectsItemShape,
-                               Qt::AscendingOrder,
+                               Qt::DescendingOrder,
                                viewportTransform());
     }
     // Use the polygon version
     return d->scene->items(mapToScene(pos.x(), pos.y(), 1, 1),
                            Qt::IntersectsItemShape,
-                           Qt::AscendingOrder,
+                           Qt::DescendingOrder,
                            viewportTransform());
 }
 
@@ -2086,7 +2089,7 @@ QList<QGraphicsItem *> QGraphicsView::items(const QRect &rect, Qt::ItemSelection
     Q_D(const QGraphicsView);
     if (!d->scene)
         return QList<QGraphicsItem *>();
-    return d->scene->items(mapToScene(rect), mode, Qt::AscendingOrder, viewportTransform());
+    return d->scene->items(mapToScene(rect), mode, Qt::DescendingOrder, viewportTransform());
 }
 
 /*!
@@ -2114,7 +2117,7 @@ QList<QGraphicsItem *> QGraphicsView::items(const QPolygon &polygon, Qt::ItemSel
     Q_D(const QGraphicsView);
     if (!d->scene)
         return QList<QGraphicsItem *>();
-    return d->scene->items(mapToScene(polygon), mode, Qt::AscendingOrder, viewportTransform());
+    return d->scene->items(mapToScene(polygon), mode, Qt::DescendingOrder, viewportTransform());
 }
 
 /*!
@@ -2134,7 +2137,7 @@ QList<QGraphicsItem *> QGraphicsView::items(const QPainterPath &path, Qt::ItemSe
     Q_D(const QGraphicsView);
     if (!d->scene)
         return QList<QGraphicsItem *>();
-    return d->scene->items(mapToScene(path), mode, Qt::AscendingOrder, viewportTransform());
+    return d->scene->items(mapToScene(path), mode, Qt::DescendingOrder, viewportTransform());
 }
 
 /*!
@@ -2607,7 +2610,6 @@ bool QGraphicsView::event(QEvent *event)
 bool QGraphicsView::viewportEvent(QEvent *event)
 {
     Q_D(QGraphicsView);
-
     if (!d->scene)
         return QAbstractScrollArea::viewportEvent(event);
 

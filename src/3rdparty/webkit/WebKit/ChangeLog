@@ -1,3 +1,358 @@
+2009-09-26  David Kilzer  <ddkilzer@apple.com>
+
+        Part 2 of 2: <http://webkit.org/b/29753> DerivedSources.make broken for non-Mac targets
+
+        Reviewed by Darin Adler.
+
+        Fix ENABLE_ORIENTATION_EVENTS for non-Mac platforms.
+
+        * chromium/features.gypi: Added 'ENABLE_ORIENTATION_EVENTS=0' to
+        disable this feature by default.
+
+2009-09-22  Yaar Schnitman  <yaar@chromium.org>
+
+        Reviewed by David Levin.
+
+        Create chromium directory and ported chromium.org's features.gypi for 
+        the webkit chromium port.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29617
+
+        * chromium/features.gypi: Added.
+
+2009-09-21  Dan Bernstein  <mitz@apple.com>
+
+        Reviewed by Anders Carlsson.
+
+        <rdar://problem/4137135> iFrame with PDF not being handled correctly on
+        usps.com
+        https://bugs.webkit.org/show_bug.cgi?id=4151
+
+        * WebKit.xcodeproj/project.pbxproj: Added WebPDFDocumentExtras.{h,mm}
+        and WebJSPDFDoc.{h,mm} and changed WebPDFRepresentation to
+        Objective-C++.
+
+2009-09-07  Steve Block  <steveblock@google.com>
+
+        Reviewed by Adam Barth.
+
+        Adds a mock Geolocation service. This will be used to provide predictable behavior of the
+        Geolocation API for use in LayoutTests. Later changes will integrate the the mock
+        Geolocation service with DumpRenderTree.
+        https://bugs.webkit.org/show_bug.cgi?id=28264
+
+        * WebKit.xcodeproj/project.pbxproj: Modified. Adds WebGeolocationMock.
+
+2009-09-03  John Sullivan  <sullivan@apple.com>
+
+        Reviewed by Adam Roben
+
+        * StringsNotToBeLocalized.txt:
+        Brought this file up to date.
+
+2009-08-31  Mark Rowe  <mrowe@apple.com>
+
+        Rubber-stamped by Beth Dakin.
+
+        Remove WebViewEditingContextMenu.nib and WebViewEditingContextMenuOld.nib.
+        We stopped using these back in r18592 when we switched over to context menus
+        driven by WebCore.
+
+        * English.lproj/WebViewEditingContextMenu.nib/classes.nib: Removed.
+        * English.lproj/WebViewEditingContextMenu.nib/info.nib: Removed.
+        * English.lproj/WebViewEditingContextMenu.nib/objects.nib: Removed.
+        * English.lproj/WebViewEditingContextMenuOld.nib/classes.nib: Removed.
+        * English.lproj/WebViewEditingContextMenuOld.nib/info.nib: Removed.
+        * English.lproj/WebViewEditingContextMenuOld.nib/objects.nib: Removed.
+        * WebKit.xcodeproj/project.pbxproj:
+
+2009-08-28  Chris Fleizach  <cfleizach@apple.com>
+
+        Reviewed by John Sullivan.
+
+        update-webkit-localizable-strings script can no longer complete
+        https://bugs.webkit.org/show_bug.cgi?id=28792
+
+        * English.lproj/Localizable.strings:
+
+2009-08-27  John Sullivan  <sullivan@apple.com>
+
+        * StringsNotToBeLocalized.txt:
+        Brought up to date, other than the problem mentioned in https://bugs.webkit.org/show_bug.cgi?id=28792
+
+2009-08-25  Eric Carlson  <eric.carlson@apple.com>
+
+        Reviewed by Oliver Hunt.
+
+        <video> and <audio> controller should be accessible
+        https://bugs.webkit.org/show_bug.cgi?id=28081
+
+        Add localized strings for media controller accessiblility.
+
+        * English.lproj/Localizable.strings:
+
+2009-08-20  Chris Fleizach  <cfleizach@apple.com>
+
+        Reviewed by Darin Adler.
+
+        Enable various "grouping" ARIA roles
+        https://bugs.webkit.org/show_bug.cgi?id=28486
+
+        * English.lproj/Localizable.strings:
+
+2009-08-18  Drew Wilson  <atwilson@google.com>
+
+        Reviewed by Eric Seidel.
+
+        Need to extend DumpRenderTree to expose number of worker threads.
+        https://bugs.webkit.org/show_bug.cgi?id=28292
+
+        * WebKit.xcodeproj/project.pbxproj:
+        Added WebWorkersPrivate APIs to mac WebKit to expose workerThreadCount() for DumpRenderTree.
+
+2009-08-06  Mark Rowe  <mrowe@apple.com>
+
+        Rubber-stamped by Sam Weinig.
+
+        Add explicit dependencies for our build verification scripts to ensure that they always run after linking has completed.
+
+        * WebKit.xcodeproj/project.pbxproj:
+
+2009-08-06  Mark Rowe  <mrowe@apple.com>
+
+        Bring a little order to our otherwise out of control lives.
+
+        * WebKit.xcodeproj/project.pbxproj:
+
+2009-08-06  Mark Rowe  <mrowe@apple.com>
+
+        Build fix.
+
+        Don't attempt to build a file that Anders just deleted.
+
+        * WebKit.xcodeproj/project.pbxproj:
+
+2009-07-29  David Kilzer  <ddkilzer@apple.com>
+
+        <http://webkit.org/b/27788> Don't export WebPluginController.h as a private header
+
+        Reviewed by Mark Rowe.
+
+        WebPluginController.h includes WebPluginContainerCheck.h, which
+        is not a private header.  Since WebPluginController.h doesn't
+        appear to be used anywhere, remove its private header status.
+
+        * WebKit.xcodeproj/project.pbxproj: Remove private header
+        attribute from WebPluginController.h.
+
+2009-07-28  Maxime Simon  <simon.maxime@gmail.com>
+
+        Reviewed by David Levin.
+
+        Added FrameLoaderClient for Haiku WebCore support.
+        https://bugs.webkit.org/show_bug.cgi?id=26952
+
+        * haiku/WebCoreSupport/FrameLoaderClientHaiku.cpp: Added.
+        (WebCore::FrameLoaderClientHaiku::FrameLoaderClientHaiku):
+        (WebCore::FrameLoaderClientHaiku::setFrame):
+        (WebCore::FrameLoaderClientHaiku::setWebView):
+        (WebCore::FrameLoaderClientHaiku::detachFrameLoader):
+        (WebCore::FrameLoaderClientHaiku::hasWebView):
+        (WebCore::FrameLoaderClientHaiku::hasBackForwardList):
+        (WebCore::FrameLoaderClientHaiku::resetBackForwardList):
+        (WebCore::FrameLoaderClientHaiku::provisionalItemIsTarget):
+        (WebCore::FrameLoaderClientHaiku::makeRepresentation):
+        (WebCore::FrameLoaderClientHaiku::forceLayout):
+        (WebCore::FrameLoaderClientHaiku::forceLayoutForNonHTML):
+        (WebCore::FrameLoaderClientHaiku::updateHistoryForCommit):
+        (WebCore::FrameLoaderClientHaiku::updateHistoryForBackForwardNavigation):
+        (WebCore::FrameLoaderClientHaiku::updateHistoryForReload):
+        (WebCore::FrameLoaderClientHaiku::updateHistoryForStandardLoad):
+        (WebCore::FrameLoaderClientHaiku::updateHistoryForInternalLoad):
+        (WebCore::FrameLoaderClientHaiku::updateHistoryAfterClientRedirect):
+        (WebCore::FrameLoaderClientHaiku::setCopiesOnScroll):
+        (WebCore::FrameLoaderClientHaiku::tokenForLoadErrorReset):
+        (WebCore::FrameLoaderClientHaiku::resetAfterLoadError):
+        (WebCore::FrameLoaderClientHaiku::doNotResetAfterLoadError):
+        (WebCore::FrameLoaderClientHaiku::willCloseDocument):
+        (WebCore::FrameLoaderClientHaiku::detachedFromParent2):
+        (WebCore::FrameLoaderClientHaiku::detachedFromParent3):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidHandleOnloadEvents):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidReceiveServerRedirectForProvisionalLoad):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidCancelClientRedirect):
+        (WebCore::FrameLoaderClientHaiku::dispatchWillPerformClientRedirect):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidChangeLocationWithinPage):
+        (WebCore::FrameLoaderClientHaiku::dispatchWillClose):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidStartProvisionalLoad):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidReceiveTitle):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidCommitLoad):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidFinishDocumentLoad):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidFinishLoad):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidFirstLayout):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidFirstVisuallyNonEmptyLayout):
+        (WebCore::FrameLoaderClientHaiku::dispatchShow):
+        (WebCore::FrameLoaderClientHaiku::cancelPolicyCheck):
+        (WebCore::FrameLoaderClientHaiku::dispatchWillSubmitForm):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidLoadMainResource):
+        (WebCore::FrameLoaderClientHaiku::revertToProvisionalState):
+        (WebCore::FrameLoaderClientHaiku::postProgressStartedNotification):
+        (WebCore::FrameLoaderClientHaiku::postProgressEstimateChangedNotification):
+        (WebCore::FrameLoaderClientHaiku::postProgressFinishedNotification):
+        (WebCore::FrameLoaderClientHaiku::progressStarted):
+        (WebCore::FrameLoaderClientHaiku::progressCompleted):
+        (WebCore::FrameLoaderClientHaiku::setMainFrameDocumentReady):
+        (WebCore::FrameLoaderClientHaiku::willChangeTitle):
+        (WebCore::FrameLoaderClientHaiku::didChangeTitle):
+        (WebCore::FrameLoaderClientHaiku::finishedLoading):
+        (WebCore::FrameLoaderClientHaiku::canShowMIMEType):
+        (WebCore::FrameLoaderClientHaiku::representationExistsForURLScheme):
+        (WebCore::FrameLoaderClientHaiku::generatedMIMETypeForURLScheme):
+        (WebCore::FrameLoaderClientHaiku::frameLoadCompleted):
+        (WebCore::FrameLoaderClientHaiku::saveViewStateToItem):
+        (WebCore::FrameLoaderClientHaiku::restoreViewState):
+        (WebCore::FrameLoaderClientHaiku::restoreScrollPositionAndViewState):
+        (WebCore::FrameLoaderClientHaiku::provisionalLoadStarted):
+        (WebCore::FrameLoaderClientHaiku::shouldTreatURLAsSameAsCurrent):
+        (WebCore::FrameLoaderClientHaiku::addHistoryItemForFragmentScroll):
+        (WebCore::FrameLoaderClientHaiku::didFinishLoad):
+        (WebCore::FrameLoaderClientHaiku::prepareForDataSourceReplacement):
+        (WebCore::FrameLoaderClientHaiku::setTitle):
+        (WebCore::FrameLoaderClientHaiku::userAgent):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidReceiveIcon):
+        (WebCore::FrameLoaderClientHaiku::frameLoaderDestroyed):
+        (WebCore::FrameLoaderClientHaiku::canHandleRequest):
+        (WebCore::FrameLoaderClientHaiku::partClearedInBegin):
+        (WebCore::FrameLoaderClientHaiku::updateGlobalHistory):
+        (WebCore::FrameLoaderClientHaiku::updateGlobalHistoryRedirectLinks):
+        (WebCore::FrameLoaderClientHaiku::shouldGoToHistoryItem):
+        (WebCore::FrameLoaderClientHaiku::saveScrollPositionAndViewStateToItem):
+        (WebCore::FrameLoaderClientHaiku::canCachePage):
+        (WebCore::FrameLoaderClientHaiku::setMainDocumentError):
+        (WebCore::FrameLoaderClientHaiku::committedLoad):
+        (WebCore::FrameLoaderClientHaiku::cancelledError):
+        (WebCore::FrameLoaderClientHaiku::blockedError):
+        (WebCore::FrameLoaderClientHaiku::cannotShowURLError):
+        (WebCore::FrameLoaderClientHaiku::interruptForPolicyChangeError):
+        (WebCore::FrameLoaderClientHaiku::cannotShowMIMETypeError):
+        (WebCore::FrameLoaderClientHaiku::fileDoesNotExistError):
+        (WebCore::FrameLoaderClientHaiku::shouldFallBack):
+        (WebCore::FrameLoaderClientHaiku::createDocumentLoader):
+        (WebCore::FrameLoaderClientHaiku::download):
+        (WebCore::FrameLoaderClientHaiku::assignIdentifierToInitialRequest):
+        (WebCore::FrameLoaderClientHaiku::dispatchWillSendRequest):
+        (WebCore::FrameLoaderClientHaiku::shouldUseCredentialStorage):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidReceiveAuthenticationChallenge):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidCancelAuthenticationChallenge):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidReceiveResponse):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidReceiveContentLength):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidFinishLoading):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidFailLoading):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidLoadResourceFromMemoryCache):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidLoadResourceByXMLHttpRequest):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidFailProvisionalLoad):
+        (WebCore::FrameLoaderClientHaiku::dispatchDidFailLoad):
+        (WebCore::FrameLoaderClientHaiku::dispatchCreatePage):
+        (WebCore::FrameLoaderClientHaiku::dispatchDecidePolicyForMIMEType):
+        (WebCore::FrameLoaderClientHaiku::dispatchDecidePolicyForNewWindowAction):
+        (WebCore::FrameLoaderClientHaiku::dispatchDecidePolicyForNavigationAction):
+        (WebCore::FrameLoaderClientHaiku::dispatchUnableToImplementPolicy):
+        (WebCore::FrameLoaderClientHaiku::startDownload):
+        (WebCore::FrameLoaderClientHaiku::createFrame):
+        (WebCore::FrameLoaderClientHaiku::objectContentType):
+        (WebCore::FrameLoaderClientHaiku::createPlugin):
+        (WebCore::FrameLoaderClientHaiku::redirectDataToPlugin):
+        (WebCore::FrameLoaderClientHaiku::pluginWillHandleLoadError):
+        (WebCore::FrameLoaderClientHaiku::createJavaAppletWidget):
+        (WebCore::FrameLoaderClientHaiku::overrideMediaType):
+        (WebCore::FrameLoaderClientHaiku::windowObjectCleared):
+        (WebCore::FrameLoaderClientHaiku::documentElementAvailable):
+        (WebCore::FrameLoaderClientHaiku::didPerformFirstNavigation):
+        (WebCore::FrameLoaderClientHaiku::registerForIconNotification):
+        (WebCore::FrameLoaderClientHaiku::savePlatformDataToCachedFrame):
+        (WebCore::FrameLoaderClientHaiku::transitionToCommittedFromCachedFrame):
+        (WebCore::FrameLoaderClientHaiku::transitionToCommittedForNewPage):
+        * haiku/WebCoreSupport/FrameLoaderClientHaiku.h: Added.
+        (WebCore::FrameLoaderClientHaiku::~FrameLoaderClientHaiku):
+
+2009-07-28  Maxime Simon  <simon.maxime@gmail.com>
+
+        Reviewed by David Levin.
+
+        Added ChromeClient for Haiku WebCore support.
+        https://bugs.webkit.org/show_bug.cgi?id=26952
+
+        * haiku/WebCoreSupport/ChromeClientHaiku.cpp: Added.
+        (WebCore::ChromeClientHaiku::ChromeClientHaiku):
+        (WebCore::ChromeClientHaiku::~ChromeClientHaiku):
+        (WebCore::ChromeClientHaiku::chromeDestroyed):
+        (WebCore::ChromeClientHaiku::setWindowRect):
+        (WebCore::ChromeClientHaiku::windowRect):
+        (WebCore::ChromeClientHaiku::pageRect):
+        (WebCore::ChromeClientHaiku::scaleFactor):
+        (WebCore::ChromeClientHaiku::focus):
+        (WebCore::ChromeClientHaiku::unfocus):
+        (WebCore::ChromeClientHaiku::canTakeFocus):
+        (WebCore::ChromeClientHaiku::takeFocus):
+        (WebCore::ChromeClientHaiku::createWindow):
+        (WebCore::ChromeClientHaiku::createModalDialog):
+        (WebCore::ChromeClientHaiku::show):
+        (WebCore::ChromeClientHaiku::canRunModal):
+        (WebCore::ChromeClientHaiku::runModal):
+        (WebCore::ChromeClientHaiku::setToolbarsVisible):
+        (WebCore::ChromeClientHaiku::toolbarsVisible):
+        (WebCore::ChromeClientHaiku::setStatusbarVisible):
+        (WebCore::ChromeClientHaiku::statusbarVisible):
+        (WebCore::ChromeClientHaiku::setScrollbarsVisible):
+        (WebCore::ChromeClientHaiku::scrollbarsVisible):
+        (WebCore::ChromeClientHaiku::setMenubarVisible):
+        (WebCore::ChromeClientHaiku::menubarVisible):
+        (WebCore::ChromeClientHaiku::setResizable):
+        (WebCore::ChromeClientHaiku::addMessageToConsole):
+        (WebCore::ChromeClientHaiku::canRunBeforeUnloadConfirmPanel):
+        (WebCore::ChromeClientHaiku::runBeforeUnloadConfirmPanel):
+        (WebCore::ChromeClientHaiku::closeWindowSoon):
+        (WebCore::ChromeClientHaiku::runJavaScriptAlert):
+        (WebCore::ChromeClientHaiku::runJavaScriptConfirm):
+        (WebCore::ChromeClientHaiku::runJavaScriptPrompt):
+        (WebCore::ChromeClientHaiku::setStatusbarText):
+        (WebCore::ChromeClientHaiku::shouldInterruptJavaScript):
+        (WebCore::ChromeClientHaiku::tabsToLinks):
+        (WebCore::ChromeClientHaiku::windowResizerRect):
+        (WebCore::ChromeClientHaiku::repaint):
+        (WebCore::ChromeClientHaiku::scroll):
+        (WebCore::ChromeClientHaiku::screenToWindow):
+        (WebCore::ChromeClientHaiku::windowToScreen):
+        (WebCore::ChromeClientHaiku::platformWindow):
+        (WebCore::ChromeClientHaiku::contentsSizeChanged):
+        (WebCore::ChromeClientHaiku::scrollRectIntoView):
+        (WebCore::ChromeClientHaiku::addToDirtyRegion):
+        (WebCore::ChromeClientHaiku::scrollBackingStore):
+        (WebCore::ChromeClientHaiku::updateBackingStore):
+        (WebCore::ChromeClientHaiku::mouseDidMoveOverElement):
+        (WebCore::ChromeClientHaiku::setToolTip):
+        (WebCore::ChromeClientHaiku::print):
+        (WebCore::ChromeClientHaiku::exceededDatabaseQuota):
+        (WebCore::ChromeClientWx::reachedMaxAppCacheSize):
+        (WebCore::ChromeClientHaiku::requestGeolocationPermissionForFrame):
+        (WebCore::ChromeClientHaiku::runOpenPanel):
+        (WebCore::ChromeClientHaiku::setCursor):
+        (WebCore::ChromeClientHaiku::formStateDidChange):
+        (WebCore::ChromeClientHaiku::createHTMLParserQuirks):
+        * haiku/WebCoreSupport/ChromeClientHaiku.h: Added.
+
+2009-07-28  Robert Hogan  <robert@roberthogan.net>
+
+        Reviewed by Simon Hausmann.
+
+        Add WebKit version API to Qt.
+
+        Get the current version of WebKit from WebKit/mac/Configurations/Version.xcconfig
+        at compile time and make it available to webkit ports through WebKitVersion.h.
+
+        https://bugs.webkit.org/show_bug.cgi?id=27158
+
+        * scripts/generate-webkitversion.pl: Added
+
 2009-07-24  Andrei Popescu  <andreip@google.com>
 
         ApplicationCache should have size limit

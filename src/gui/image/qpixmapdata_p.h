@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -66,6 +66,12 @@ public:
         // Must match QPixmap::Type
         PixmapType, BitmapType
     };
+#if defined(Q_OS_SYMBIAN)
+    enum NativeType {
+        FbsBitmap,
+        SgImage
+    };
+#endif
     enum ClassId { RasterClass, X11Class, MacClass, DirectFBClass,
                    OpenGLClass, OpenVGClass, CustomClass = 1024 };
 
@@ -109,6 +115,11 @@ public:
     inline int depth() const { return d; }
     inline bool isNull() const { return is_null; }
 
+#if defined(Q_OS_SYMBIAN)
+    virtual void* toNativeType(NativeType type);
+    virtual void fromNativeType(void* pixmap, NativeType type);
+#endif
+
 protected:
     void setSerialNumber(int serNo);
     int w;
@@ -120,6 +131,7 @@ private:
     friend class QPixmap;
     friend class QGLContextPrivate;
     friend class QX11PixmapData;
+    friend class QS60PixmapData;
     friend class QGLTextureCache; //Needs to check the reference count
     friend class QExplicitlySharedDataPointer<QPixmapData>;
 
@@ -131,15 +143,6 @@ private:
     int ser_no;
     uint is_cached;
 };
-
-#ifdef Q_WS_WIN
-#ifndef Q_WS_WINCE
-QPixmap convertHIconToPixmap( const HICON icon);
-#else
-QPixmap convertHIconToPixmap( const HICON icon, bool large = false);
-#endif
-QPixmap loadIconFromShell32( int resourceId, int size );
-#endif
 
 #  define QT_XFORM_TYPE_MSBFIRST 0
 #  define QT_XFORM_TYPE_LSBFIRST 1

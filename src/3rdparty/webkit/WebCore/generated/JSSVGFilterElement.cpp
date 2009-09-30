@@ -102,6 +102,11 @@ bool JSSVGFilterElementPrototype::getOwnPropertySlot(ExecState* exec, const Iden
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGFilterElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGFilterElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGFilterElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGFilterElement::s_info = { "SVGFilterElement", &JSSVGElement::s_info, &JSSVGFilterElementTable, 0 };
 
 JSSVGFilterElement::JSSVGFilterElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFilterElement> impl)
@@ -117,6 +122,11 @@ JSObject* JSSVGFilterElement::createPrototype(ExecState* exec, JSGlobalObject* g
 bool JSSVGFilterElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGFilterElement, Base>(exec, &JSSVGFilterElementTable, this, propertyName, slot);
+}
+
+bool JSSVGFilterElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFilterElement, Base>(exec, &JSSVGFilterElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGFilterElementFilterUnits(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -262,7 +272,7 @@ void setJSSVGFilterElementXmlspace(ExecState* exec, JSObject* thisObject, JSValu
 JSValue JSC_HOST_CALL jsSVGFilterElementPrototypeFunctionSetFilterRes(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGFilterElement::s_info))
+    if (!thisValue.inherits(&JSSVGFilterElement::s_info))
         return throwError(exec, TypeError);
     JSSVGFilterElement* castedThisObj = static_cast<JSSVGFilterElement*>(asObject(thisValue));
     SVGFilterElement* imp = static_cast<SVGFilterElement*>(castedThisObj->impl());
@@ -276,7 +286,7 @@ JSValue JSC_HOST_CALL jsSVGFilterElementPrototypeFunctionSetFilterRes(ExecState*
 JSValue JSC_HOST_CALL jsSVGFilterElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGFilterElement::s_info))
+    if (!thisValue.inherits(&JSSVGFilterElement::s_info))
         return throwError(exec, TypeError);
     JSSVGFilterElement* castedThisObj = static_cast<JSSVGFilterElement*>(asObject(thisValue));
     SVGFilterElement* imp = static_cast<SVGFilterElement*>(castedThisObj->impl());

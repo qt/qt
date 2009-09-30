@@ -37,6 +37,7 @@ public:
     virtual ~JSInspectorBackend();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
@@ -57,6 +58,12 @@ public:
     JSC::JSValue wrapCallback(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue currentCallFrame(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue profiles(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue nodeForId(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue wrapObject(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue unwrapObject(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue pushNodePathToFrontend(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue selectDatabase(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue selectDOMStorage(JSC::ExecState*, const JSC::ArgList&);
     InspectorBackend* impl() const { return m_impl.get(); }
 
 private:
@@ -73,9 +80,10 @@ public:
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
     JSInspectorBackendPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
@@ -103,6 +111,9 @@ JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionInspectedWindow(JS
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionLocalizedStringsURL(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionHiddenPanels(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionPlatform(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionEnableTimeline(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDisableTimeline(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionTimelineEnabled(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionMoveByUnrestricted(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSetAttachedWindowHeight(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionWrapCallback(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
@@ -110,10 +121,13 @@ JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionResourceTrackingEn
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionEnableResourceTracking(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDisableResourceTracking(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionStoreLastActivePanel(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetCookies(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDeleteCookie(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDebuggerEnabled(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionEnableDebugger(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDisableDebugger(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionAddBreakpoint(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionUpdateBreakpoint(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionRemoveBreakpoint(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionPauseInDebugger(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionResumeDebugger(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
@@ -129,6 +143,22 @@ JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDisableProfiler(JS
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionStartProfiling(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionStopProfiling(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionProfiles(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDispatchOnInjectedScript(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetChildNodes(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSetAttribute(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionRemoveAttribute(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSetTextNodeValue(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionCopyNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionNodeForId(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionWrapObject(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionUnwrapObject(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionPushNodePathToFrontend(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionAddNodesToSearchResult(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSelectDatabase(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSelectDOMStorage(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetDOMStorageEntries(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSetDOMStorageItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionRemoveDOMStorageItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
 JSC::JSValue jsInspectorBackendConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

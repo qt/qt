@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -38,11 +38,12 @@ DebuggerActivation::DebuggerActivation(JSObject* activation)
     m_activation = static_cast<JSActivation*>(activation);
 }
 
-void DebuggerActivation::mark()
+void DebuggerActivation::markChildren(MarkStack& markStack)
 {
-    JSObject::mark();
-    if (m_activation && !m_activation->marked())
-        m_activation->mark();
+    JSObject::markChildren(markStack);
+
+    if (m_activation)
+        markStack.append(m_activation);
 }
 
 UString DebuggerActivation::className() const
@@ -65,14 +66,14 @@ void DebuggerActivation::putWithAttributes(ExecState* exec, const Identifier& pr
     m_activation->putWithAttributes(exec, propertyName, value, attributes);
 }
 
-bool DebuggerActivation::deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete)
+bool DebuggerActivation::deleteProperty(ExecState* exec, const Identifier& propertyName)
 {
-    return m_activation->deleteProperty(exec, propertyName, checkDontDelete);
+    return m_activation->deleteProperty(exec, propertyName);
 }
 
-void DebuggerActivation::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
+void DebuggerActivation::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
 {
-    m_activation->getPropertyNames(exec, propertyNames, listedAttributes);
+    m_activation->getPropertyNames(exec, propertyNames);
 }
 
 bool DebuggerActivation::getPropertyAttributes(JSC::ExecState* exec, const Identifier& propertyName, unsigned& attributes) const
@@ -80,14 +81,14 @@ bool DebuggerActivation::getPropertyAttributes(JSC::ExecState* exec, const Ident
     return m_activation->getPropertyAttributes(exec, propertyName, attributes);
 }
 
-void DebuggerActivation::defineGetter(ExecState* exec, const Identifier& propertyName, JSObject* getterFunction)
+void DebuggerActivation::defineGetter(ExecState* exec, const Identifier& propertyName, JSObject* getterFunction, unsigned attributes)
 {
-    m_activation->defineGetter(exec, propertyName, getterFunction);
+    m_activation->defineGetter(exec, propertyName, getterFunction, attributes);
 }
 
-void DebuggerActivation::defineSetter(ExecState* exec, const Identifier& propertyName, JSObject* setterFunction)
+void DebuggerActivation::defineSetter(ExecState* exec, const Identifier& propertyName, JSObject* setterFunction, unsigned attributes)
 {
-    m_activation->defineSetter(exec, propertyName, setterFunction);
+    m_activation->defineSetter(exec, propertyName, setterFunction, attributes);
 }
 
 JSValue DebuggerActivation::lookupGetter(ExecState* exec, const Identifier& propertyName)

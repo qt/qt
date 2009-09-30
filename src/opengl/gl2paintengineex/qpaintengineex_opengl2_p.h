@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -58,6 +58,9 @@
 #include <private/qpaintengineex_p.h>
 #include <private/qglengineshadermanager_p.h>
 #include <private/qgl2pexvertexarray_p.h>
+#include <private/qglpaintdevice_p.h>
+#include <private/qglpixmapfilter_p.h>
+#include <private/qfontengine_p.h>
 
 enum EngineMode {
     ImageDrawingMode,
@@ -139,7 +142,7 @@ public:
 
     const QGLContext* context();
 
-    QPixmapFilter *createPixmapFilter(int type) const;
+    QPixmapFilter *pixmapFilter(int type, const QPixmapFilter *prototype);
 
     void setRenderTextActive(bool);
 
@@ -179,7 +182,7 @@ public:
     void fill(const QVectorPath &path);
     void drawOutline(const QVectorPath& path);
     void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque, bool pattern = false);
-    void drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti);
+    void drawCachedGlyphs(const QPointF &p, QFontEngineGlyphCache::Type glyphType, const QTextItemInt &ti);
 
     void drawVertexArrays(QGL2PEXVertexArray& vertexArray, GLenum primitive);
         // ^ draws whatever is in the vertex array
@@ -199,10 +202,11 @@ public:
     static QGLEngineShaderManager* shaderManagerForEngine(QGL2PaintEngineEx *engine) { return engine->d_func()->shaderManager; }
 
     QGL2PaintEngineEx* q;
-    QGLDrawable drawable;
+    QGLPaintDevice* device;
     int width, height;
     QGLContext *ctx;
     EngineMode mode;
+    QFontEngineGlyphCache::Type glyphCacheType;
 
     mutable QOpenGL2PaintEngineState *last_created_state;
 
@@ -213,10 +217,12 @@ public:
     bool brushUniformsDirty;
     bool simpleShaderMatrixUniformDirty;
     bool shaderMatrixUniformDirty;
-    bool stencilBufferDirty;
     bool depthUniformDirty;
     bool simpleShaderDepthUniformDirty;
     bool opacityUniformDirty;
+
+    QRegion dirtyStencilRegion;
+    QRect currentScissorBounds;
 
     const QBrush*    currentBrush; // May not be the state's brush!
 
@@ -261,6 +267,13 @@ public:
 
     bool needsSync;
     bool inRenderText;
+
+    float textureInvertedY;
+
+    QScopedPointer<QPixmapFilter> convolutionFilter;
+    QScopedPointer<QPixmapFilter> colorizeFilter;
+    QScopedPointer<QPixmapFilter> blurFilter;
+    QScopedPointer<QPixmapFilter> fastBlurFilter;
 };
 
 QT_END_NAMESPACE

@@ -83,6 +83,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSStorageEventPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -97,6 +98,11 @@ const ClassInfo JSStorageEventConstructor::s_info = { "StorageEventConstructor",
 bool JSStorageEventConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSStorageEventConstructor, DOMObject>(exec, &JSStorageEventConstructorTable, this, propertyName, slot);
+}
+
+bool JSStorageEventConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSStorageEventConstructor, DOMObject>(exec, &JSStorageEventConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -126,6 +132,11 @@ bool JSStorageEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifi
     return getStaticFunctionSlot<JSObject>(exec, &JSStorageEventPrototypeTable, this, propertyName, slot);
 }
 
+bool JSStorageEventPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSStorageEventPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSStorageEvent::s_info = { "StorageEvent", &JSEvent::s_info, &JSStorageEventTable, 0 };
 
 JSStorageEvent::JSStorageEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<StorageEvent> impl)
@@ -141,6 +152,11 @@ JSObject* JSStorageEvent::createPrototype(ExecState* exec, JSGlobalObject* globa
 bool JSStorageEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSStorageEvent, Base>(exec, &JSStorageEventTable, this, propertyName, slot);
+}
+
+bool JSStorageEvent::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSStorageEvent, Base>(exec, &JSStorageEventTable, this, propertyName, descriptor);
 }
 
 JSValue jsStorageEventKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -204,7 +220,7 @@ JSValue JSStorageEvent::getConstructor(ExecState* exec, JSGlobalObject* globalOb
 JSValue JSC_HOST_CALL jsStorageEventPrototypeFunctionInitStorageEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSStorageEvent::s_info))
+    if (!thisValue.inherits(&JSStorageEvent::s_info))
         return throwError(exec, TypeError);
     JSStorageEvent* castedThisObj = static_cast<JSStorageEvent*>(asObject(thisValue));
     StorageEvent* imp = static_cast<StorageEvent*>(castedThisObj->impl());

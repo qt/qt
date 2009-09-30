@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef StorageMap_h
@@ -42,7 +42,7 @@ namespace WebCore {
         static PassRefPtr<StorageMap> create();
 
         unsigned length() const;
-        bool key(unsigned index, String& key) const;
+        String key(unsigned index) const;
         String getItem(const String&) const;
         PassRefPtr<StorageMap> setItem(const String& key, const String& value, String& oldValue);
         PassRefPtr<StorageMap> removeItem(const String&, String& oldValue);

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -41,7 +41,7 @@
 
 #include "qfont.h"
 #include "qt_s60_p.h"
-#include <private/qwindowsurface_s60_p.h>
+#include "qpixmap_s60_p.h"
 #include "qmutex.h"
 
 QT_BEGIN_NAMESPACE
@@ -57,14 +57,17 @@ QString QFont::lastResortFamily() const
     QMutexLocker locker(lastResortFamilyMutex());
     static QString family;
     if (family.isEmpty()) {
-        QS60WindowSurface::unlockBitmapHeap();
+        
+        QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
+        
         CFont *font;
         const TInt err = S60->screenDevice()->GetNearestFontInTwips(font, TFontSpec());
         Q_ASSERT(err == KErrNone);
         const TFontSpec spec = font->FontSpecInTwips();
         family = QString((const QChar *)spec.iTypeface.iName.Ptr(), spec.iTypeface.iName.Length());
         S60->screenDevice()->ReleaseFont(font);
-        QS60WindowSurface::lockBitmapHeap();
+        
+        lock.relock();
     }
     return family;
 #else

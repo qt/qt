@@ -37,6 +37,7 @@
 #include "JSDOMWindowCustom.h"
 #include "JSSharedWorker.h"
 #include "SharedWorker.h"
+#include <runtime/Error.h>
 
 using namespace JSC;
 
@@ -45,30 +46,35 @@ namespace WebCore {
 const ClassInfo JSSharedWorkerConstructor::s_info = { "SharedWorkerConstructor", 0, 0, 0 };
 
 JSSharedWorkerConstructor::JSSharedWorkerConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
-    : DOMConstructorObject(JSSharedWorkerConstructor::createStructure(globalObject->objectPrototype()))
+    : DOMConstructorObject(JSSharedWorkerConstructor::createStructure(globalObject->objectPrototype()), globalObject)
 {
     putDirect(exec->propertyNames().prototype, JSSharedWorkerPrototype::self(exec, globalObject), None);
     // Host functions have a length property describing the number of expected arguments.
     putDirect(exec->propertyNames().length, jsNumber(exec, 2), ReadOnly|DontDelete|DontEnum);
 }
 
-static JSObject* constructSharedWorker(ExecState* exec, JSObject*, const ArgList& args)
+static JSObject* constructSharedWorker(ExecState* exec, JSObject* constructor, const ArgList& args)
 {
-    if (args.size() < 2)
+    JSSharedWorkerConstructor* jsConstructor = static_cast<JSSharedWorkerConstructor*>(constructor);
+
+    if (args.size() < 1)
         return throwError(exec, SyntaxError, "Not enough arguments");
 
     UString scriptURL = args.at(0).toString(exec);
-    UString name = args.at(1).toString(exec);
+    UString name;
+    if (args.size() > 1)
+        name = args.at(1).toString(exec);
+
     if (exec->hadException())
         return 0;
 
-    ScriptExecutionContext* context = static_cast<JSDOMGlobalObject*>(exec->dynamicGlobalObject())->scriptExecutionContext();
+    // FIXME: We need to use both the dynamic scope and the lexical scope (dynamic scope for resolving the worker URL)
+    DOMWindow* window = asJSDOMWindow(exec->lexicalGlobalObject())->impl();
     ExceptionCode ec = 0;
-    RefPtr<SharedWorker> worker = SharedWorker::create(scriptURL, name, context, ec);
+    RefPtr<SharedWorker> worker = SharedWorker::create(scriptURL, name, window->document(), ec);
     setDOMException(exec, ec);
 
-    // FIXME: toJS() creates an object whose prototype is derived from lexicalGlobalScope, which is incorrect (Bug 27088)
-    return asObject(toJS(exec, worker.release()));
+    return asObject(toJS(exec, jsConstructor->globalObject(), worker.release()));
 }
 
 ConstructType JSSharedWorkerConstructor::getConstructData(ConstructData& constructData)

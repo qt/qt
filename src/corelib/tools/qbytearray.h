@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -372,6 +372,7 @@ private:
 
     friend class QByteRef;
     friend class QString;
+    friend Q_CORE_EXPORT QByteArray qUncompress(const uchar *data, int nbytes);
 public:
     typedef Data * DataPtr;
     inline DataPtr &data_ptr() { return d; }
@@ -441,10 +442,10 @@ class Q_CORE_EXPORT QByteRef {
 public:
 #ifdef Q_COMPILER_MANGLES_RETURN_TYPE
     inline operator const char() const
-        { return i < a.d->size ? a.d->data[i] : 0; }
+        { return i < a.d->size ? a.d->data[i] : char(0); }
 #else
     inline operator char() const
-        { return i < a.d->size ? a.d->data[i] : 0; }
+        { return i < a.d->size ? a.d->data[i] : char(0); }
 #endif
     inline QByteRef &operator=(char c)
         { if (i >= a.d->size) a.expand(i); else a.detach();

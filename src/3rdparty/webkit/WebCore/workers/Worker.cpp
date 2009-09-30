@@ -41,7 +41,6 @@
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "MessageEvent.h"
-#include "SecurityOrigin.h"
 #include "TextEncoding.h"
 #include "WorkerContextProxy.h"
 #include "WorkerScriptLoader.h"
@@ -50,12 +49,16 @@
 
 namespace WebCore {
 
-Worker::Worker(const String& url, ScriptExecutionContext* context)
+Worker::Worker(const String& url, ScriptExecutionContext* context, ExceptionCode& ec)
     : AbstractWorker(context)
     , m_contextProxy(WorkerContextProxy::create(this))
 {
+    KURL scriptURL = resolveURL(url, ec);
+    if (ec)
+        return;
+
     m_scriptLoader = new WorkerScriptLoader();
-    m_scriptLoader->loadAsynchronously(scriptExecutionContext(), url, CompleteURL, DenyCrossOriginLoad, this);
+    m_scriptLoader->loadAsynchronously(scriptExecutionContext(), scriptURL, DenyCrossOriginRequests, this);
     setPendingActivity(this);  // The worker context does not exist while loading, so we must ensure that the worker object is not collected, as well as its event listeners.
 }
 
@@ -66,18 +69,27 @@ Worker::~Worker()
     m_contextProxy->workerObjectDestroyed();
 }
 
-void Worker::postMessage(const String& message, ExceptionCode& ec)
+// FIXME: remove this when we update the ObjC bindings (bug #28774).
+void Worker::postMessage(const String& message, MessagePort* port, ExceptionCode& ec)
 {
-    postMessage(message, 0, ec);
+    MessagePortArray ports;
+    if (port)
+        ports.append(port);
+    postMessage(message, &ports, ec);
 }
 
-void Worker::postMessage(const String& message, MessagePort* messagePort, ExceptionCode& ec)
+void Worker::postMessage(const String& message, ExceptionCode& ec)
+{
+    postMessage(message, static_cast<MessagePortArray*>(0), ec);
+}
+
+void Worker::postMessage(const String& message, const MessagePortArray* ports, ExceptionCode& ec)
 {
     // Disentangle the port in preparation for sending it to the remote context.
-    OwnPtr<MessagePortChannel> channel = messagePort ? messagePort->disentangle(ec) : PassOwnPtr<MessagePortChannel>(0);
+    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(ports, ec);
     if (ec)
         return;
-    m_contextProxy->postMessageToWorkerContext(message, channel.release());
+    m_contextProxy->postMessageToWorkerContext(message, channels.release());
 }
 
 void Worker::terminate()
@@ -104,28 +116,13 @@ bool Worker::hasPendingActivity() const
 void Worker::notifyFinished()
 {
     if (m_scriptLoader->failed())
-        dispatchLoadErrorEvent();
+        dispatchEvent(Event::create(eventNames().errorEvent, false, true));
     else
         m_contextProxy->startWorkerContext(m_scriptLoader->url(), scriptExecutionContext()->userAgent(m_scriptLoader->url()), m_scriptLoader->script());
 
     m_scriptLoader = 0;
 
     unsetPendingActivity(this);
-}
-
-void Worker::dispatchMessage(const String& message, PassRefPtr<MessagePort> port)
-{
-    RefPtr<Event> evt = MessageEvent::create(message, "", "", 0, port);
-
-    if (m_onMessageListener.get()) {
-        evt->setTarget(this);
-        evt->setCurrentTarget(this);
-        m_onMessageListener->handleEvent(evt.get(), false);
-    }
-
-    ExceptionCode ec = 0;
-    dispatchEvent(evt.release(), ec);
-    ASSERT(!ec);
 }
 
 } // namespace WebCore

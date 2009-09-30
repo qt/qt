@@ -70,6 +70,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSXMLHttpRequestProgressEventPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -84,6 +85,11 @@ const ClassInfo JSXMLHttpRequestProgressEventConstructor::s_info = { "XMLHttpReq
 bool JSXMLHttpRequestProgressEventConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSXMLHttpRequestProgressEventConstructor, DOMObject>(exec, &JSXMLHttpRequestProgressEventConstructorTable, this, propertyName, slot);
+}
+
+bool JSXMLHttpRequestProgressEventConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSXMLHttpRequestProgressEventConstructor, DOMObject>(exec, &JSXMLHttpRequestProgressEventConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -130,6 +136,11 @@ JSObject* JSXMLHttpRequestProgressEvent::createPrototype(ExecState* exec, JSGlob
 bool JSXMLHttpRequestProgressEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSXMLHttpRequestProgressEvent, Base>(exec, getJSXMLHttpRequestProgressEventTable(exec), this, propertyName, slot);
+}
+
+bool JSXMLHttpRequestProgressEvent::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSXMLHttpRequestProgressEvent, Base>(exec, getJSXMLHttpRequestProgressEventTable(exec), this, propertyName, descriptor);
 }
 
 JSValue jsXMLHttpRequestProgressEventPosition(ExecState* exec, const Identifier&, const PropertySlot& slot)

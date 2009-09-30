@@ -29,9 +29,9 @@
 
 #include "AtomicStringHash.h"
 #include "EventListener.h"
+#include "EventNames.h"
 #include "EventTarget.h"
 #include "MessagePortChannel.h"
-
 #include <wtf/HashMap.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
@@ -44,8 +44,12 @@ namespace WebCore {
     class AtomicStringImpl;
     class Event;
     class Frame;
+    class MessagePort;
     class ScriptExecutionContext;
     class String;
+
+    // The overwhelmingly common case is sending a single port, so handle that efficiently with an inline buffer of size 1.
+    typedef Vector<RefPtr<MessagePort>, 1> MessagePortArray;
 
     class MessagePort : public RefCounted<MessagePort>, public EventTarget {
     public:
@@ -53,12 +57,24 @@ namespace WebCore {
         ~MessagePort();
 
         void postMessage(const String& message, ExceptionCode&);
+        void postMessage(const String& message, const MessagePortArray*, ExceptionCode&);
+        // FIXME: remove this when we update the ObjC bindings (bug #28774).
         void postMessage(const String& message, MessagePort*, ExceptionCode&);
+
         void start();
         void close();
 
         void entangle(PassOwnPtr<MessagePortChannel>);
         PassOwnPtr<MessagePortChannel> disentangle(ExceptionCode&);
+
+        // Disentangle an array of ports, returning the entangled channels.
+        // Per section 8.3.3 of the HTML5 spec, generates an INVALID_STATE_ERR exception if any of the passed ports are null or not entangled.
+        // Returns 0 if there is an exception, or if the passed-in array is 0/empty.
+        static PassOwnPtr<MessagePortChannelArray> disentanglePorts(const MessagePortArray*, ExceptionCode&);
+
+        // Entangles an array of channels, returning an array of MessagePorts in matching order.
+        // Returns 0 if the passed array is 0/empty.
+        static PassOwnPtr<MessagePortArray> entanglePorts(ScriptExecutionContext&, PassOwnPtr<MessagePortChannelArray>);
 
         void messageAvailable();
         bool started() const { return m_started; }
@@ -71,21 +87,17 @@ namespace WebCore {
 
         void dispatchMessages();
 
-        virtual void addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture);
-        virtual void removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture);
-        virtual bool dispatchEvent(PassRefPtr<Event>, ExceptionCode&);
-
-        typedef Vector<RefPtr<EventListener> > ListenerVector;
-        typedef HashMap<AtomicString, ListenerVector> EventListenersMap;
-        EventListenersMap& eventListeners() { return m_eventListeners; }
-
         using RefCounted<MessagePort>::ref;
         using RefCounted<MessagePort>::deref;
 
         bool hasPendingActivity();
 
-        void setOnmessage(PassRefPtr<EventListener>);
-        EventListener* onmessage() const { return m_onMessageListener.get(); }
+        void setOnmessage(PassRefPtr<EventListener> listener)
+        {
+            setAttributeEventListener(eventNames().messageEvent, listener);
+            start();
+        }
+        EventListener* onmessage() { return getAttributeEventListener(eventNames().messageEvent); }
 
         // Returns null if there is no entangled port, or if the entangled port is run by a different thread.
         // Returns null otherwise.
@@ -98,16 +110,15 @@ namespace WebCore {
 
         virtual void refEventTarget() { ref(); }
         virtual void derefEventTarget() { deref(); }
+        virtual EventTargetData* eventTargetData();
+        virtual EventTargetData* ensureEventTargetData();
 
         OwnPtr<MessagePortChannel> m_entangledChannel;
 
         bool m_started;
 
         ScriptExecutionContext* m_scriptExecutionContext;
-
-        RefPtr<EventListener> m_onMessageListener;
-
-        EventListenersMap m_eventListeners;
+        EventTargetData m_eventTargetData;
     };
 
 } // namespace WebCore

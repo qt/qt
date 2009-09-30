@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -67,15 +67,15 @@ void FormExtractor::submit()
     QWebElement femaleGender = frame->findFirstElement("#genderFemale");
     QWebElement updates = frame->findFirstElement("#updates");
 
-    ui.firstNameEdit->setText(firstName.scriptableProperty("value").toString());
-    ui.lastNameEdit->setText(lastName.scriptableProperty("value").toString());
+    ui.firstNameEdit->setText(firstName.evaluateJavaScript("this.value").toString());
+    ui.lastNameEdit->setText(lastName.evaluateJavaScript("this.value").toString());
 
-    if (maleGender.scriptableProperty("checked").toBool())
-        ui.genderEdit->setText(maleGender.scriptableProperty("value").toString());
-    else if (femaleGender.scriptableProperty("checked").toBool())
-        ui.genderEdit->setText(femaleGender.scriptableProperty("value").toString());
+    if (maleGender.evaluateJavaScript("this.checked").toBool())
+        ui.genderEdit->setText(maleGender.evaluateJavaScript("this.value").toString());
+    else if (femaleGender.evaluateJavaScript("this.checked").toBool())
+        ui.genderEdit->setText(femaleGender.evaluateJavaScript("this.value").toString());
 
-    if (updates.scriptableProperty("checked").toBool())
+    if (updates.evaluateJavaScript("this.checked").toBool())
         ui.updatesEdit->setText("Yes");
     else
         ui.updatesEdit->setText("No");

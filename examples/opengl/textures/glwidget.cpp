@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -42,12 +42,7 @@
 #include <QtGui>
 #include <QtOpenGL>
 
-#include <math.h>
-
 #include "glwidget.h"
-
-GLuint GLWidget::sharedObject = 0;
-int GLWidget::refCount = 0;
 
 GLWidget::GLWidget(QWidget *parent, QGLWidget *shareWidget)
     : QGLWidget(parent, shareWidget)
@@ -56,14 +51,13 @@ GLWidget::GLWidget(QWidget *parent, QGLWidget *shareWidget)
     xRot = 0;
     yRot = 0;
     zRot = 0;
+#ifdef QT_OPENGL_ES_2
+    program = 0;
+#endif
 }
 
 GLWidget::~GLWidget()
 {
-    if (--refCount == 0) {
-        makeCurrent();
-        glDeleteLists(sharedObject, 1);
-    }
 }
 
 QSize GLWidget::minimumSizeHint() const
@@ -92,25 +86,94 @@ void GLWidget::setClearColor(const QColor &color)
 
 void GLWidget::initializeGL()
 {
-    if (!sharedObject)
-        sharedObject = makeObject();
-    ++refCount;
+    makeObject();
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+#ifndef QT_OPENGL_ES_2
     glEnable(GL_TEXTURE_2D);
+#endif
+
+#ifdef QT_OPENGL_ES_2
+
+#define PROGRAM_VERTEX_ATTRIBUTE 0
+#define PROGRAM_TEXCOORD_ATTRIBUTE 1
+
+    QGLShader *vshader = new QGLShader(QGLShader::VertexShader, this);
+    const char *vsrc =
+        "attribute highp vec4 vertex;\n"
+        "attribute mediump vec4 texCoord;\n"
+        "varying mediump vec4 texc;\n"
+        "uniform mediump mat4 matrix;\n"
+        "void main(void)\n"
+        "{\n"
+        "    gl_Position = matrix * vertex;\n"
+        "    texc = texCoord;\n"
+        "}\n";
+    vshader->compile(vsrc);
+
+    QGLShader *fshader = new QGLShader(QGLShader::FragmentShader, this);
+    const char *fsrc =
+        "uniform sampler2D texture;\n"
+        "varying mediump vec4 texc;\n"
+        "void main(void)\n"
+        "{\n"
+        "    gl_FragColor = texture2D(texture, texc.st);\n"
+        "}\n";
+    fshader->compile(fsrc);
+
+    program = new QGLShaderProgram(this);
+    program->addShader(vshader);
+    program->addShader(fshader);
+    program->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
+    program->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
+    program->link();
+
+    program->enable();
+    program->setUniformValue("texture", 0);
+
+#endif
 }
 
 void GLWidget::paintGL()
 {
     qglClearColor(clearColor);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+#if !defined(QT_OPENGL_ES_2)
+
     glLoadIdentity();
-    glTranslated(0.0, 0.0, -10.0);
-    glRotated(xRot / 16.0, 1.0, 0.0, 0.0);
-    glRotated(yRot / 16.0, 0.0, 1.0, 0.0);
-    glRotated(zRot / 16.0, 0.0, 0.0, 1.0);
-    glCallList(sharedObject);
+    glTranslatef(0.0f, 0.0f, -10.0f);
+    glRotatef(xRot / 16.0f, 1.0f, 0.0f, 0.0f);
+    glRotatef(yRot / 16.0f, 0.0f, 1.0f, 0.0f);
+    glRotatef(zRot / 16.0f, 0.0f, 0.0f, 1.0f);
+
+    glVertexPointer(3, GL_FLOAT, 0, vertices.constData());
+    glTexCoordPointer(2, GL_FLOAT, 0, texCoords.constData());
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+#else
+
+    QMatrix4x4 m;
+    m.ortho(-0.5f, +0.5f, +0.5f, -0.5f, 4.0f, 15.0f);
+    m.translate(0.0f, 0.0f, -10.0f);
+    m.rotate(xRot / 16.0f, 1.0f, 0.0f, 0.0f);
+    m.rotate(yRot / 16.0f, 0.0f, 1.0f, 0.0f);
+    m.rotate(zRot / 16.0f, 0.0f, 0.0f, 1.0f);
+
+    program->setUniformValue("matrix", m);
+    program->setAttributeArray
+        (PROGRAM_VERTEX_ATTRIBUTE, vertices.constData());
+    program->setAttributeArray
+        (PROGRAM_TEXCOORD_ATTRIBUTE, texCoords.constData());
+
+#endif
+
+    for (int i = 0; i < 6; ++i) {
+        glBindTexture(GL_TEXTURE_2D, textures[i]);
+        glDrawArrays(GL_TRIANGLE_FAN, i * 4, 4);
+    }
 }
 
 void GLWidget::resizeGL(int width, int height)
@@ -118,10 +181,16 @@ void GLWidget::resizeGL(int width, int height)
     int side = qMin(width, height);
     glViewport((width - side) / 2, (height - side) / 2, side, side);
 
+#if !defined(QT_OPENGL_ES_2)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
+#ifndef QT_OPENGL_ES
     glOrtho(-0.5, +0.5, +0.5, -0.5, 4.0, 15.0);
+#else
+    glOrthof(-0.5, +0.5, +0.5, -0.5, 4.0, 15.0);
+#endif
     glMatrixMode(GL_MODELVIEW);
+#endif
 }
 
 void GLWidget::mousePressEvent(QMouseEvent *event)
@@ -147,7 +216,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent * /* event */)
     emit clicked();
 }
 
-GLuint GLWidget::makeObject()
+void GLWidget::makeObject()
 {
     static const int coords[6][4][3] = {
         { { +1, -1, -1 }, { -1, -1, -1 }, { -1, +1, -1 }, { +1, +1, -1 } },
@@ -158,25 +227,18 @@ GLuint GLWidget::makeObject()
         { { -1, -1, +1 }, { +1, -1, +1 }, { +1, +1, +1 }, { -1, +1, +1 } }
     };
 
-
-    GLuint textures[6];
-    for (int j=0; j < 6; ++j)
-        textures[j] = bindTexture(QPixmap(QString(":/images/side%1.png").arg(j + 1)),
-                                  GL_TEXTURE_2D);
-
-    GLuint list = glGenLists(1);
-    glNewList(list, GL_COMPILE);
-    for (int i = 0; i < 6; ++i) {
-        glBindTexture(GL_TEXTURE_2D, textures[i]);
-        glBegin(GL_QUADS);
-        for (int j = 0; j < 4; ++j) {
-            glTexCoord2d(j == 0 || j == 3, j == 0 || j == 1);
-            glVertex3d(0.2 * coords[i][j][0], 0.2 * coords[i][j][1],
-                       0.2 * coords[i][j][2]);
-        }
-        glEnd();
+    for (int j=0; j < 6; ++j) {
+        textures[j] = bindTexture
+            (QPixmap(QString(":/images/side%1.png").arg(j + 1)), GL_TEXTURE_2D);
     }
 
-    glEndList();
-    return list;
+    for (int i = 0; i < 6; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            texCoords.append
+                (QVector2D(j == 0 || j == 3, j == 0 || j == 1));
+            vertices.append
+                (QVector3D(0.2 * coords[i][j][0], 0.2 * coords[i][j][1],
+                           0.2 * coords[i][j][2]));
+        }
+    }
 }

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -125,7 +125,7 @@ int QParallelAnimationGroup::duration() const
 /*!
     \reimp
 */
-void QParallelAnimationGroup::updateCurrentTime(int)
+void QParallelAnimationGroup::updateCurrentTime(int currentTime)
 {
     Q_D(QParallelAnimationGroup);
     if (d->animations.isEmpty())
@@ -148,7 +148,7 @@ void QParallelAnimationGroup::updateCurrentTime(int)
         }
     }
 
-    bool timeFwd = ((d->currentLoop == d->lastLoop && d->currentTime >= d->lastCurrentTime)
+    bool timeFwd = ((d->currentLoop == d->lastLoop && currentTime >= d->lastCurrentTime)
                    || d->currentLoop > d->lastLoop);
 #ifdef QANIMATION_DEBUG
     qDebug("QParallellAnimationGroup %5d: setCurrentTime(%d), loop:%d, last:%d, timeFwd:%d, lastcurrent:%d, %d",
@@ -160,7 +160,7 @@ void QParallelAnimationGroup::updateCurrentTime(int)
         const int dura = animation->totalDuration();
         if (dura == -1 && d->isUncontrolledAnimationFinished(animation))
             continue;
-        if (dura == -1 || (d->currentTime <= dura && dura != 0)
+        if (dura == -1 || (currentTime <= dura && dura != 0)
             || (dura == 0 && d->currentLoop != d->lastLoop)) {
             switch (state()) {
             case Running:
@@ -177,18 +177,18 @@ void QParallelAnimationGroup::updateCurrentTime(int)
 
         if (dura <= 0) {
             if (dura == -1)
-                animation->setCurrentTime(d->currentTime);
+                animation->setCurrentTime(currentTime);
             continue;
         }
 
         if ((timeFwd && d->lastCurrentTime <= dura)
             || (!timeFwd && d->currentTime <= dura))
-                animation->setCurrentTime(d->currentTime);
-        if (d->currentTime > dura)
+                animation->setCurrentTime(currentTime);
+        if (currentTime > dura)
             animation->stop();
     }
     d->lastLoop = d->currentLoop;
-    d->lastCurrentTime = d->currentTime;
+    d->lastCurrentTime = currentTime;
 }
 
 /*!

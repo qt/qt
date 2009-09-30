@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtMultimedia module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -134,7 +134,8 @@ public:
     through functions in QAudioDeviceInfo. This class also lets you
     query available parameter values for a device, so that you can set
     the parameters yourself. See the QAudioDeviceInfo class
-    description for details.
+    description for details. You need to know the format of the audio
+    streams you wish to play. Qt does not set up formats for you.
 */
 
 /*!
@@ -285,7 +286,7 @@ int QAudioFormat::sampleSize() const
    \sa QAudioDeviceInfo::supportedCodecs()
 */
 
-void QAudioFormat::setCodec(QString codec)
+void QAudioFormat::setCodec(const QString &codec)
 {
     d->codec = codec;
 }

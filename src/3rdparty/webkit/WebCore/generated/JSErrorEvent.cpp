@@ -77,6 +77,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSErrorEventPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -91,6 +92,11 @@ const ClassInfo JSErrorEventConstructor::s_info = { "ErrorEventConstructor", 0, 
 bool JSErrorEventConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSErrorEventConstructor, DOMObject>(exec, &JSErrorEventConstructorTable, this, propertyName, slot);
+}
+
+bool JSErrorEventConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSErrorEventConstructor, DOMObject>(exec, &JSErrorEventConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -124,6 +130,11 @@ bool JSErrorEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier
     return getStaticFunctionSlot<JSObject>(exec, getJSErrorEventPrototypeTable(exec), this, propertyName, slot);
 }
 
+bool JSErrorEventPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, getJSErrorEventPrototypeTable(exec), this, propertyName, descriptor);
+}
+
 static const HashTable* getJSErrorEventTable(ExecState* exec)
 {
     return getHashTableForGlobalData(exec->globalData(), &JSErrorEventTable);
@@ -143,6 +154,11 @@ JSObject* JSErrorEvent::createPrototype(ExecState* exec, JSGlobalObject* globalO
 bool JSErrorEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSErrorEvent, Base>(exec, getJSErrorEventTable(exec), this, propertyName, slot);
+}
+
+bool JSErrorEvent::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSErrorEvent, Base>(exec, getJSErrorEventTable(exec), this, propertyName, descriptor);
 }
 
 JSValue jsErrorEventMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -182,7 +198,7 @@ JSValue JSErrorEvent::getConstructor(ExecState* exec, JSGlobalObject* globalObje
 JSValue JSC_HOST_CALL jsErrorEventPrototypeFunctionInitErrorEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSErrorEvent::s_info))
+    if (!thisValue.inherits(&JSErrorEvent::s_info))
         return throwError(exec, TypeError);
     JSErrorEvent* castedThisObj = static_cast<JSErrorEvent*>(asObject(thisValue));
     ErrorEvent* imp = static_cast<ErrorEvent*>(castedThisObj->impl());

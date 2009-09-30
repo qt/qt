@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -129,6 +129,7 @@ public:
         itemDepth(-1),
         focusProxy(0),
         subFocusItem(0),
+        focusScopeItem(0),
         imHints(Qt::ImhNone),
         acceptedMouseButtons(0x1f),
         visible(1),
@@ -152,7 +153,7 @@ public:
         dirtyClipPath(1),
         emptyClipPath(0),
         inSetPosHelper(0),
-        needSortChildren(1),
+        needSortChildren(1), // ### can be 0 by default?
         allChildrenDirty(0),
         fullUpdatePending(0),
         flags(0),
@@ -173,6 +174,8 @@ public:
         mouseSetsFocus(1),
         explicitActivate(0),
         wantsActive(0),
+        holesInSiblingIndex(0),
+        sequentialOrdering(1),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -318,7 +321,11 @@ public:
     void invalidateCachedClipPathRecursively(bool childrenOnly = false, const QRectF &emptyIfOutsideThisRect = QRectF());
     void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
     void ensureSceneTransformRecursive(QGraphicsItem **topMostDirtyItem);
-    void ensureSceneTransform();
+    inline void ensureSceneTransform()
+    {
+        QGraphicsItem *that = q_func();
+        ensureSceneTransformRecursive(&that);
+    }
 
     inline bool hasTranslateOnlySceneTransform()
     {
@@ -408,12 +415,16 @@ public:
                || (childrenCombineOpacity() && isFullyTransparent());
     }
 
-    void setSubFocus();
-    void clearSubFocus();
+    void setFocusHelper(Qt::FocusReason focusReason, bool climb);
+    void setSubFocus(QGraphicsItem *rootItem = 0);
+    void clearSubFocus(QGraphicsItem *rootItem = 0);
     void resetFocusProxy();
+    virtual void subFocusItemChange();
 
     inline QTransform transformToParent() const;
     inline void ensureSortedChildren();
+    static inline bool insertionOrder(QGraphicsItem *a, QGraphicsItem *b);
+    void ensureSequentialSiblingIndex();
 
     QPainterPath cachedClipPath;
     QRectF childrenBoundingRect;
@@ -435,6 +446,7 @@ public:
     QGraphicsItem *focusProxy;
     QList<QGraphicsItem **> focusProxyRefs;
     QGraphicsItem *subFocusItem;
+    QGraphicsItem *focusScopeItem;
     Qt::InputMethodHints imHints;
 
     // Packed 32 bits
@@ -485,6 +497,8 @@ public:
     // New 32 bits
     quint32 explicitActivate : 1;
     quint32 wantsActive : 1;
+    quint32 holesInSiblingIndex : 1;
+    quint32 sequentialOrdering : 1;
 
     // Optional stacking order
     int globalStackingOrder;
@@ -638,12 +652,30 @@ inline QTransform QGraphicsItemPrivate::transformToParent() const
     return matrix;
 }
 
+/*!
+    \internal
+*/
 inline void QGraphicsItemPrivate::ensureSortedChildren()
 {
     if (needSortChildren) {
         qSort(children.begin(), children.end(), qt_notclosestLeaf);
         needSortChildren = 0;
+        sequentialOrdering = 1;
+        for (int i = 0; i < children.size(); ++i) {
+            if (children[i]->d_ptr->siblingIndex != i) {
+                sequentialOrdering = 0;
+                break;
+            }
+        }
     }
+}
+
+/*!
+    \internal
+*/
+inline bool QGraphicsItemPrivate::insertionOrder(QGraphicsItem *a, QGraphicsItem *b)
+{
+    return a->d_ptr->siblingIndex < b->d_ptr->siblingIndex;
 }
 
 QT_END_NAMESPACE

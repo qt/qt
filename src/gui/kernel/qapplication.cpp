@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -68,6 +68,9 @@
 #include "private/qstylesheetstyle_p.h"
 #include "private/qstyle_p.h"
 #include "qmessagebox.h"
+#include "qlineedit.h"
+#include "qlistview.h"
+#include "qtextedit.h"
 #include <QtGui/qgraphicsproxywidget.h>
 
 #include "qinputcontext.h"
@@ -93,6 +96,10 @@
 #include "qwidget_p.h"
 
 #include "qapplication.h"
+
+#ifndef QT_NO_LIBRARY
+#include "qlibrary.h"
+#endif
 
 #ifdef Q_WS_WINCE
 #include "qdatetime.h"
@@ -454,14 +461,15 @@ bool QApplicationPrivate::animate_tooltip = false;
 bool QApplicationPrivate::fade_tooltip = false;
 bool QApplicationPrivate::animate_toolbox = false;
 bool QApplicationPrivate::widgetCount = false;
+bool QApplicationPrivate::load_testability = false;
 #if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
 bool QApplicationPrivate::inSizeMove = false;
 #endif
 #ifdef QT_KEYPAD_NAVIGATION
-#  if defined(Q_OS_SYMBIAN)
-bool QApplicationPrivate::keypadNavigation = true;
+#  ifdef Q_OS_SYMBIAN
+Qt::NavigationMode QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadDirectional;
 #  else
-bool QApplicationPrivate::keypadNavigation = false;
+Qt::NavigationMode QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadTabOrder;
 #  endif
 QWidget *QApplicationPrivate::oldEditFocus = 0;
 #endif
@@ -469,12 +477,18 @@ QWidget *QApplicationPrivate::oldEditFocus = 0;
 bool qt_tabletChokeMouse = false;
 static bool force_reverse = false;
 
-static inline bool isAlien(QWidget *widget)
+inline bool QApplicationPrivate::isAlien(QWidget *widget)
 {
     if (!widget)
         return false;
-#ifdef Q_WS_MAC // Fake alien behavior on the Mac :)
+#if defined(Q_WS_MAC) // Fake alien behavior on the Mac :)
     return !widget->isWindow() && widget->window()->testAttribute(Qt::WA_DontShowOnScreen);
+#elif defined(Q_WS_QWS)
+    return !widget->isWindow()
+# ifdef Q_BACKINGSTORE_SUBSURFACES
+        && !(widget->d_func()->maybeTopData() && widget->d_func()->maybeTopData()->windowSurface)
+# endif
+        ;
 #else
     return !widget->internalWinId();
 #endif
@@ -554,6 +568,8 @@ void QApplicationPrivate::process_cmdline()
             QApplication::setLayoutDirection(Qt::RightToLeft);
         } else if (qstrcmp(arg, "-widgetcount") == 0) {
             widgetCount = true;
+        } else if (qstrcmp(arg, "-testability") == 0) {
+            load_testability = true;
         } else if (arg == "-graphicssystem" && i < argc-1) {
             graphics_system_name = QString::fromLocal8Bit(argv[++i]);
         } else {
@@ -757,6 +773,23 @@ void QApplicationPrivate::construct(
 #ifdef QT_EVAL
     extern void qt_gui_eval_init(uint);
     qt_gui_eval_init(application_type);
+#endif
+
+#ifndef QT_NO_LIBRARY
+    if(load_testability) {
+        QLibrary testLib(QLatin1String("qttestability"));
+        if (testLib.load()) {
+            typedef void (*TasInitialize)(void);
+            TasInitialize initFunction = (TasInitialize)testLib.resolve("qt_testability_init");
+            if (initFunction) {
+                initFunction();
+            } else {
+                qCritical("Library qttestability resolve failed!");
+            }
+        } else {
+            qCritical("Library qttestability load failed!");
+        }
+    }
 #endif
 }
 
@@ -1156,6 +1189,7 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
           || event->type() == QEvent::Resize
           || event->type() == QEvent::Move
           || event->type() == QEvent::LanguageChange
+          || event->type() == QEvent::UpdateSoftKeys
           || event->type() == QEvent::InputMethod)) {
         for (int i = 0; i < postedEvents->size(); ++i) {
             const QPostEvent &cur = postedEvents->at(i);
@@ -1172,6 +1206,8 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
             } else if (cur.event->type() == QEvent::Move) {
                 ((QMoveEvent *)(cur.event))->p = ((QMoveEvent *)event)->p;
             } else if (cur.event->type() == QEvent::LanguageChange) {
+                ;
+            } else if (cur.event->type() == QEvent::UpdateSoftKeys) {
                 ;
             } else if ( cur.event->type() == QEvent::InputMethod ) {
                 *(QInputMethodEvent *)(cur.event) = *(QInputMethodEvent *)event;
@@ -2480,8 +2516,6 @@ void QApplication::setActiveWindow(QWidget* act)
 */
 QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool next)
 {
-    uint focus_flag = qt_tab_all_widgets ? Qt::TabFocus : Qt::StrongFocus;
-
     QWidget *f = toplevel->focusWidget();
     if (!f)
         f = toplevel;
@@ -2489,11 +2523,22 @@ QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool 
     QWidget *w = f;
     QWidget *test = f->d_func()->focus_next;
     while (test && test != f) {
-        if ((test->focusPolicy() & focus_flag) == focus_flag
+        if ((test->focusPolicy() & Qt::TabFocus)
             && !(test->d_func()->extra && test->d_func()->extra->focus_proxy)
             && test->isVisibleTo(toplevel) && test->isEnabled()
             && !(w->windowType() == Qt::SubWindow && !w->isAncestorOf(test))
-            && (toplevel->windowType() != Qt::SubWindow || toplevel->isAncestorOf(test))) {
+            && (toplevel->windowType() != Qt::SubWindow || toplevel->isAncestorOf(test))
+            && (qt_tab_all_widgets
+#ifndef QT_NO_LINEEDIT
+                || qobject_cast<QLineEdit*>(test)
+#endif
+#ifndef QT_NO_TEXTEDIT
+                || qobject_cast<QTextEdit*>(test)
+#endif
+#ifndef QT_NO_ITEMVIEWS
+                || qobject_cast<QListView*>(test)
+#endif
+                )) {
             w = test;
             if (next)
                 break;
@@ -2517,12 +2562,6 @@ QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool 
     Creates the proper Enter/Leave event when widget \a enter is entered and
     widget \a leave is left.
  */
-#if defined(Q_WS_WIN)
-  extern void qt_win_set_cursor(QWidget *, bool);
-#elif defined(Q_WS_X11)
-  extern void qt_x11_enforce_cursor(QWidget *, bool);
-#endif
-
 void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
 #if 0
     if (leave) {
@@ -2672,6 +2711,8 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
             qt_win_set_cursor(cursorWidget, true);
 #elif defined(Q_WS_X11)
             qt_x11_enforce_cursor(cursorWidget, true);
+#elif defined(Q_WS_S60)
+            qt_symbian_set_cursor(cursorWidget, true);
 #endif
         }
     }
@@ -2976,7 +3017,7 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
     return result;
 }
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS)
 /*
     This function should only be called when the widget changes visibility, i.e.
     when the \a widget is shown, hidden or deleted. This function does nothing
@@ -2988,9 +3029,13 @@ extern QWidget *qt_button_down;
 void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
 {
 #ifndef QT_NO_CURSOR
+#ifdef Q_WS_QWS
+    if (!widget || widget->isWindow())
+        return;
+#else
     if (!widget || widget->internalWinId() || widget->isWindow())
         return;
-
+#endif
     const bool widgetInShow = widget->isVisible() && !widget->data->in_destructor;
     if (!widgetInShow && widget != qt_last_mouse_receiver)
         return; // Widget was not under the cursor when it was hidden/deleted.
@@ -4769,31 +4814,104 @@ void QApplicationPrivate::emitLastWindowClosed()
 
 #ifdef QT_KEYPAD_NAVIGATION
 /*!
-    Sets whether Qt should use focus navigation suitable for use with a
-    minimal keypad.
+    Sets the kind of focus navigation Qt should use to \a mode.
 
-    If \a enable is true, Qt::Key_Up and Qt::Key_Down are used to change focus.
+    This feature is available in Qt for Embedded Linux, Symbian and Windows CE
+    only.
 
-    This feature is available in Qt for Embedded Linux and Symbian only.
+    \note On Windows CE this feature is disabled by default for touch device
+          mkspecs. To enable keypad navigation, build Qt with
+          QT_KEYPAD_NAVIGATION defined.
+
+    \note On Symbian, setting the mode to Qt::NavigationModeCursorAuto will enable a
+          virtual mouse cursor on non touchscreen devices, which is controlled
+          by the cursor keys if there is no analog pointer device.
+          On other platforms and on touchscreen devices, it has the same
+          meaning as Qt::NavigationModeNone.
+
+    \since 4.6
 
     \sa keypadNavigationEnabled()
 */
+void QApplication::setNavigationMode(Qt::NavigationMode mode)
+{
+#ifdef Q_OS_SYMBIAN
+    QApplicationPrivate::setNavigationMode(mode);
+#else
+    QApplicationPrivate::navigationMode = mode;
+#endif
+}
+
+/*!
+    Returns what kind of focus navigation Qt is using.
+
+    This feature is available in Qt for Embedded Linux, Symbian and Windows CE
+    only.
+
+    \note On Windows CE this feature is disabled by default for touch device
+          mkspecs. To enable keypad navigation, build Qt with
+          QT_KEYPAD_NAVIGATION defined.
+
+    \note On Symbian, the default mode is Qt::NavigationModeNone for touch
+          devices, and Qt::NavigationModeKeypadDirectional.
+
+    \since 4.6
+
+    \sa keypadNavigationEnabled()
+*/
+Qt::NavigationMode QApplication::navigationMode()
+{
+    return QApplicationPrivate::navigationMode;
+}
+
+/*!
+    Sets whether Qt should use focus navigation suitable for use with a
+    minimal keypad.
+
+    This feature is available in Qt for Embedded Linux, Symbian and Windows CE
+    only.
+
+    \note On Windows CE this feature is disabled by default for touch device
+          mkspecs. To enable keypad navigation, build Qt with
+          QT_KEYPAD_NAVIGATION defined.
+
+    \deprecated
+
+    \sa setNavigationMode()
+*/
 void QApplication::setKeypadNavigationEnabled(bool enable)
 {
-    QApplicationPrivate::keypadNavigation = enable;
+    if (enable) {
+#ifdef Q_OS_SYMBIAN
+        QApplication::setNavigationMode(Qt::NavigationModeKeypadDirectional);
+#else
+        QApplication::setNavigationMode(Qt::NavigationModeKeypadTabOrder);
+#endif
+    }
+    else {
+        QApplication::setNavigationMode(Qt::NavigationModeNone);
+    }
 }
 
 /*!
     Returns true if Qt is set to use keypad navigation; otherwise returns
     false.  The default value is true on Symbian, but false on other platforms.
 
-    This feature is available in Qt for Embedded Linux and Symbian only.
+    This feature is available in Qt for Embedded Linux, Symbian and Windows CE
+    only.
 
-    \sa setKeypadNavigationEnabled()
+    \note On Windows CE this feature is disabled by default for touch device
+          mkspecs. To enable keypad navigation, build Qt with
+          QT_KEYPAD_NAVIGATION defined.
+
+    \deprecated
+
+    \sa navigationMode()
 */
 bool QApplication::keypadNavigationEnabled()
 {
-    return QApplicationPrivate::keypadNavigation;
+    return QApplicationPrivate::navigationMode == Qt::NavigationModeKeypadTabOrder ||
+        QApplicationPrivate::navigationMode == Qt::NavigationModeKeypadDirectional;
 }
 #endif
 

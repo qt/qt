@@ -80,4 +80,25 @@ EXPORTS
 	_ZTV22QBenchmarkTimeMeasurer @ 79 NONAME ABSENT
 	_ZN5QTest29QBenchmarkIterationControllerC1ENS0_7RunModeE @ 80 NONAME
 	_ZN5QTest29QBenchmarkIterationControllerC2ENS0_7RunModeE @ 81 NONAME
+	_ZN14QTestEventLoop19getStaticMetaObjectEv @ 82 NONAME
+	_ZTI11QTestLogger @ 83 NONAME ABSENT ; #<TI>#
+	_ZTI12QTestElement @ 84 NONAME ABSENT; #<TI>#
+	_ZTI13QTestCoreListI12QTestElementE @ 85 NONAME ABSENT; #<TI>#
+	_ZTI13QTestCoreListI21QTestElementAttributeE @ 86 NONAME ABSENT; #<TI>#
+	_ZTI16QTestCoreElementI12QTestElementE @ 87 NONAME ABSENT; #<TI>#
+	_ZTI16QTestXmlStreamer @ 88 NONAME ABSENT; #<TI>#
+	_ZTI18QTestBasicStreamer @ 89 NONAME ABSENT; #<TI>#
+	_ZTI18QTestXunitStreamer @ 90 NONAME ABSENT; #<TI>#
+	_ZTI21QTestElementAttribute @ 91 NONAME ABSENT; #<TI>#
+	_ZTI21QTestLightXmlStreamer @ 92 NONAME ABSENT; #<TI>#
+	_ZTV11QTestLogger @ 93 NONAME ABSENT; #<VT>#
+	_ZTV12QTestElement @ 94 NONAME ABSENT; #<VT>#
+	_ZTV13QTestCoreListI12QTestElementE @ 95 NONAME ABSENT; #<VT>#
+	_ZTV13QTestCoreListI21QTestElementAttributeE @ 96 NONAME ABSENT; #<VT>#
+	_ZTV16QTestCoreElementI12QTestElementE @ 97 NONAME ABSENT; #<VT>#
+	_ZTV16QTestXmlStreamer @ 98 NONAME ABSENT; #<VT>#
+	_ZTV18QTestBasicStreamer @ 99 NONAME ABSENT; #<VT>#
+	_ZTV18QTestXunitStreamer @ 100 NONAME ABSENT; #<VT>#
+	_ZTV21QTestElementAttribute @ 101 NONAME ABSENT; #<VT>#
+	_ZTV21QTestLightXmlStreamer @ 102 NONAME ABSENT; #<VT>#
 

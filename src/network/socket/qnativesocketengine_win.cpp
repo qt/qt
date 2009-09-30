@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -917,9 +917,15 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxL
     int wsaRet = ::WSARecvFrom(socketDescriptor, &buf, 1, &bytesRead, &flags, &aa.a, &sz,0,0);
     if (wsaRet == SOCKET_ERROR) {
         int err = WSAGetLastError();
-        WS_ERROR_DEBUG(err);
-        setError(QAbstractSocket::NetworkError, ReceiveDatagramErrorString);
-        ret = -1;
+        if (err == WSAEMSGSIZE) {
+            // it is ok the buffer was to small if bytesRead is larger than
+            // maxLength then assume bytes read is really maxLenth
+            ret = qint64(bytesRead) > maxLength ? maxLength : qint64(bytesRead);
+        } else {
+            WS_ERROR_DEBUG(err);
+            setError(QAbstractSocket::NetworkError, ReceiveDatagramErrorString);
+            ret = -1;
+        }
     } else {
         ret = qint64(bytesRead);
     }

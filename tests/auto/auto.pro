@@ -1,22 +1,17 @@
 QT = core
 TEMPLATE = subdirs
 
-# Directories
-!wince*:SUBDIRS += \
-           headers
-
-SUBDIRS += \
+# These tests use host tools and therefore can't work for cross-compiled Qt.
+!cross_compile:SUBDIRS += \
+           headers \
            bic \
-           collections \
            compiler \
            compilerwarnings \
-           exceptionsafety \
            linguist \
-           mediaobject \
-#           mediaobject_wince_ds9 \   This is Windows CE only (we test the second phonon backend ds9 here)
            moc \
-           modeltest \
-           networkselftest \
+           uic \
+           uic3
+Q3SUBDIRS += \
            q3accel \
            q3action \
            q3actiongroup \
@@ -36,6 +31,7 @@ SUBDIRS += \
            q3hbox \
            q3header \
            q3iconview \
+           q3listbox \
            q3listview \
            q3listviewitemiterator \
            q3mainwindow \
@@ -62,7 +58,15 @@ SUBDIRS += \
            q3toolbar \
            q3urloperator \
            q3valuelist \
-           q3valuevector \
+           q3valuevector
+
+SUBDIRS += \
+           collections \
+           exceptionsafety \
+           mediaobject \
+#           mediaobject_wince_ds9 \   This is Windows CE only (we test the second phonon backend ds9 here)
+           modeltest \
+           networkselftest \
            qabstractbutton \
            qabstractitemmodel \
            qabstractitemview \
@@ -143,6 +147,7 @@ SUBDIRS += \
            qgraphicsitem \
            qgraphicsitemanimation \
            qgraphicsanchorlayout \
+           qgraphicsanchorlayout1 \
            qgraphicslayout \
            qgraphicslayoutitem \
            qgraphicslinearlayout \
@@ -192,7 +197,6 @@ SUBDIRS += \
            qline \
            qlineedit \
            qlist \
-           q3listbox \
            qlistview \
            qlistwidget \
            qlocale \
@@ -275,7 +279,7 @@ SUBDIRS += \
            qsocks5socketengine \
            qsortfilterproxymodel \
            qsound \
-           qaudiodeviceid \
+           qaudiodeviceinfo \
            qaudioformat \
            qaudiooutput \
            qaudioinput \
@@ -393,9 +397,9 @@ SUBDIRS += \
            selftests \
            symbols \
            qrand \
-           uic \
-           uic3 \
            utf8
+           
+!wince*:SUBDIRS += $$Q3SUBDIRS
 
 contains(QT_CONFIG, OdfWriter):SUBDIRS += qzip qtextodfwriter
 mac: {
@@ -403,7 +407,8 @@ mac: {
                macplist \
                qaccessibility_mac
 }
-embedded: {
+
+embedded:!wince* {
     SUBDIRS += qcopchannel \
                qdirectpainter \
                qmultiscreen

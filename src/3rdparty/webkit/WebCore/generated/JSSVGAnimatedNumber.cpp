@@ -80,7 +80,7 @@ JSSVGAnimatedNumber::JSSVGAnimatedNumber(PassRefPtr<Structure> structure, JSDOMG
 
 JSSVGAnimatedNumber::~JSSVGAnimatedNumber()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGAnimatedNumber::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -91,6 +91,11 @@ JSObject* JSSVGAnimatedNumber::createPrototype(ExecState* exec, JSGlobalObject* 
 bool JSSVGAnimatedNumber::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGAnimatedNumber, Base>(exec, &JSSVGAnimatedNumberTable, this, propertyName, slot);
+}
+
+bool JSSVGAnimatedNumber::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGAnimatedNumber, Base>(exec, &JSSVGAnimatedNumberTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGAnimatedNumberBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -128,7 +133,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAnim
 }
 SVGAnimatedNumber* toSVGAnimatedNumber(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGAnimatedNumber::s_info) ? static_cast<JSSVGAnimatedNumber*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGAnimatedNumber::s_info) ? static_cast<JSSVGAnimatedNumber*>(asObject(value))->impl() : 0;
 }
 
 }

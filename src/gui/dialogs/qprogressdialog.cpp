@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -57,6 +57,14 @@
 #include <private/qdialog_p.h>
 #include <limits.h>
 
+#if defined(QT_SOFTKEYS_ENABLED)
+#include <qaction.h>
+#endif
+#ifdef Q_WS_S60
+#include <QtGui/qdesktopwidget.h>
+#endif
+
+
 QT_BEGIN_NAMESPACE
 
 // If the operation is expected to take this long (as predicted by
@@ -76,6 +84,9 @@ public:
         showTime(defaultShowTime),
 #ifndef QT_NO_SHORTCUT
         escapeShortcut(0),
+#endif
+#ifdef QT_SOFTKEYS_ENABLED
+        cancelAction(0),
 #endif
         useDefaultCancelText(false)
     {
@@ -102,6 +113,9 @@ public:
     bool forceHide;
 #ifndef QT_NO_SHORTCUT
     QShortcut *escapeShortcut;
+#endif
+#ifdef QT_SOFTKEYS_ENABLED
+    QAction *cancelAction;
 #endif
     bool useDefaultCancelText;
     QPointer<QObject> receiverToDisconnectOnClose;
@@ -410,6 +424,10 @@ void QProgressDialog::setCancelButton(QPushButton *cancelButton)
 {
     Q_D(QProgressDialog);
     delete d->cancel;
+#ifdef QT_SOFTKEYS_ENABLED
+    delete d->cancelAction;
+    d->cancelAction = 0;
+#endif
     d->cancel = cancelButton;
     if (cancelButton) {
         if (cancelButton->parentWidget() == this) {
@@ -431,7 +449,16 @@ void QProgressDialog::setCancelButton(QPushButton *cancelButton)
     int h = qMax(isVisible() ? height() : 0, sizeHint().height());
     resize(w, h);
     if (cancelButton)
+#if !defined(QT_SOFTKEYS_ENABLED)
         cancelButton->show();
+#else
+    {
+        d->cancelAction = new QAction(cancelButton->text(), this);
+        d->cancelAction->setSoftKeyRole(QAction::NegativeSoftKey);
+        connect(d->cancelAction, SIGNAL(triggered()), this, SIGNAL(canceled()));
+        addAction(d->cancelAction);
+    }
+#endif
 }
 
 /*!
@@ -448,10 +475,14 @@ void QProgressDialog::setCancelButtonText(const QString &cancelButtonText)
     d->useDefaultCancelText = false;
 
     if (!cancelButtonText.isNull()) {
-        if (d->cancel)
+        if (d->cancel) {
             d->cancel->setText(cancelButtonText);
-        else
+#ifdef QT_SOFTKEYS_ENABLED
+            d->cancelAction->setText(cancelButtonText);
+#endif
+        } else {
             setCancelButton(new QPushButton(cancelButtonText, this));
+        }
     } else {
         setCancelButton(0);
     }
@@ -701,7 +732,14 @@ QSize QProgressDialog::sizeHint() const
     int h = margin * 2 + bh.height() + sh.height() + spacing;
     if (d->cancel)
         h += d->cancel->sizeHint().height() + spacing;
+#ifdef Q_WS_S60
+    if (QApplication::desktop()->size().height() > QApplication::desktop()->size().width())
+        return QSize(qMax(QApplication::desktop()->size().width(), sh.width() + 2 * margin), h);
+    else
+        return QSize(qMax(QApplication::desktop()->size().height(), sh.width() + 2 * margin), h);
+#else
     return QSize(qMax(200, sh.width() + 2 * margin), h);
+#endif
 }
 
 /*!\reimp
@@ -718,10 +756,11 @@ void QProgressDialog::resizeEvent(QResizeEvent *)
 void QProgressDialog::changeEvent(QEvent *ev)
 {
     Q_D(QProgressDialog);
-    if (ev->type() == QEvent::StyleChange)
+    if (ev->type() == QEvent::StyleChange) {
         d->layout();
-    else if (ev->type() == QEvent::LanguageChange)
+    } else if (ev->type() == QEvent::LanguageChange) {
         d->retranslateStrings();
+    }
     QDialog::changeEvent(ev);
 }
 

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -241,3 +241,20 @@ QImage image(":/images/myImage.png");
 QPainter painter(this);
 painter.drawImage(target, image, source);
 //! [20]
+
+
+//! [21]
+QPainter painter(this);
+painter.fillRect(0, 0, 128, 128, Qt::green);
+painter.beginNativePainting();
+
+glEnable(GL_SCISSOR_TEST);
+glScissor(0, 0, 64, 64);
+
+glClearColor(1, 0, 0, 1);
+glClear(GL_COLOR_BUFFER_BIT);
+
+glDisable(GL_SCISSOR_TEST);
+
+painter.endNativePainting();
+//! [21]

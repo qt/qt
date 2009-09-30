@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -172,6 +172,8 @@
 #include "private/qunicodetables_p.h"
 #include "qatomic.h"
 #include "qbytearray.h"
+#include "qdir.h"
+#include "qfile.h"
 #include "qlist.h"
 #ifndef QT_NO_REGEXP
 #include "qregexp.h"
@@ -5544,6 +5546,79 @@ QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode parsingMode)
     QUrl tmp;
     tmp.setEncodedUrl(input, parsingMode);
     return tmp;
+}
+
+/*!
+    Returns a valid URL from a user supplied \a userInput string if one can be
+    deducted. In the case that is not possible, an invalid QUrl() is returned.
+
+    \since 4.6
+
+    Most applications that can browse the web, allow the user to input a URL
+    in the form of a plain string. This string can be manually typed into
+    a location bar, obtained from the clipboard, or passed in via command
+    line arguments.
+
+    When the string is not already a valid URL, a best guess is performed,
+    making various web related assumptions.
+
+    In the case the string corresponds to a valid file path on the system,
+    a file:// URL is constructed, using QUrl::fromLocalFile().
+
+    If that is not the case, an attempt is made to turn the string into a
+    http:// or ftp:// URL. The latter in the case the string starts with
+    'ftp'. The result is then passed through QUrl's tolerant parser, and
+    in the case or success, a valid QUrl is returned, or else a QUrl().
+
+    \section1 Examples:
+
+    \list
+    \o qt.nokia.com becomes http://qt.nokia.com
+    \o ftp.qt.nokia.com becomes ftp://ftp.qt.nokia.com
+    \o localhost becomes http://localhost
+    \o /home/user/test.html becomes file:///home/user/test.html (if exists)
+    \endlist
+
+    \section2 Tips to avoid erroneous character conversion when dealing with
+    URLs and strings:
+
+    \list
+    \o When creating an URL QString from a QByteArray or a char*, always use
+       QString::fromUtf8().
+    \o Favor the use of QUrl::fromEncoded() and QUrl::toEncoded() instead of
+       QUrl(string) and QUrl::toString() when converting QUrl to/from string.
+    \endlist
+*/
+QUrl QUrl::fromUserInput(const QString &userInput)
+{
+    QString trimmedString = userInput.trimmed();
+
+    // Absolute files
+    if (QDir::isAbsolutePath(trimmedString))
+        return QUrl::fromLocalFile(trimmedString);
+
+    // Check the most common case of a valid url with scheme and host first
+    QUrl url = QUrl::fromEncoded(trimmedString.toUtf8(), QUrl::TolerantMode);
+    if (url.isValid() && !url.scheme().isEmpty() && !url.host().isEmpty())
+        return url;
+
+    // If the string is missing the scheme or the scheme is not valid, prepend a scheme
+    QString scheme = url.scheme();
+    if (scheme.isEmpty() || scheme.contains(QLatin1Char('.')) || scheme == QLatin1String("localhost")) {
+        // Do not do anything for strings such as "foo", only "foo.com"
+        int dotIndex = trimmedString.indexOf(QLatin1Char('.'));
+        if (dotIndex != -1 || trimmedString.startsWith(QLatin1String("localhost"))) {
+            const QString hostscheme = trimmedString.left(dotIndex).toLower();
+            QByteArray scheme = (hostscheme == QLatin1String("ftp")) ? "ftp" : "http";
+            trimmedString = QLatin1String(scheme) + QLatin1String("://") + trimmedString;
+        }
+        url = QUrl::fromEncoded(trimmedString.toUtf8(), QUrl::TolerantMode);
+    }
+
+    if (url.isValid())
+        return url;
+
+    return QUrl();
 }
 
 /*!

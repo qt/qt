@@ -81,7 +81,7 @@ JSSVGAnimatedNumberList::JSSVGAnimatedNumberList(PassRefPtr<Structure> structure
 
 JSSVGAnimatedNumberList::~JSSVGAnimatedNumberList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGAnimatedNumberList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -92,6 +92,11 @@ JSObject* JSSVGAnimatedNumberList::createPrototype(ExecState* exec, JSGlobalObje
 bool JSSVGAnimatedNumberList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGAnimatedNumberList, Base>(exec, &JSSVGAnimatedNumberListTable, this, propertyName, slot);
+}
+
+bool JSSVGAnimatedNumberList::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGAnimatedNumberList, Base>(exec, &JSSVGAnimatedNumberListTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGAnimatedNumberListBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -116,7 +121,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAnim
 }
 SVGAnimatedNumberList* toSVGAnimatedNumberList(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGAnimatedNumberList::s_info) ? static_cast<JSSVGAnimatedNumberList*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGAnimatedNumberList::s_info) ? static_cast<JSSVGAnimatedNumberList*>(asObject(value))->impl() : 0;
 }
 
 }

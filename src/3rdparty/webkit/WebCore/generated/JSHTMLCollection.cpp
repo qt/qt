@@ -77,6 +77,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLCollectionPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -91,6 +92,11 @@ const ClassInfo JSHTMLCollectionConstructor::s_info = { "HTMLCollectionConstruct
 bool JSHTMLCollectionConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLCollectionConstructor, DOMObject>(exec, &JSHTMLCollectionConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLCollectionConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLCollectionConstructor, DOMObject>(exec, &JSHTMLCollectionConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -122,6 +128,11 @@ bool JSHTMLCollectionPrototype::getOwnPropertySlot(ExecState* exec, const Identi
     return getStaticFunctionSlot<JSObject>(exec, &JSHTMLCollectionPrototypeTable, this, propertyName, slot);
 }
 
+bool JSHTMLCollectionPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSHTMLCollectionPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSHTMLCollection::s_info = { "HTMLCollection", 0, &JSHTMLCollectionTable, 0 };
 
 JSHTMLCollection::JSHTMLCollection(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLCollection> impl)
@@ -132,7 +143,7 @@ JSHTMLCollection::JSHTMLCollection(PassRefPtr<Structure> structure, JSDOMGlobalO
 
 JSHTMLCollection::~JSHTMLCollection()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSHTMLCollection::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -164,6 +175,36 @@ bool JSHTMLCollection::getOwnPropertySlot(ExecState* exec, const Identifier& pro
     return getStaticValueSlot<JSHTMLCollection, Base>(exec, &JSHTMLCollectionTable, this, propertyName, slot);
 }
 
+bool JSHTMLCollection::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    JSValue proto = prototype();
+    if (proto.isObject() && static_cast<JSObject*>(asObject(proto))->hasProperty(exec, propertyName))
+        return false;
+
+    const HashEntry* entry = JSHTMLCollectionTable.entry(exec, propertyName);
+    if (entry) {
+        PropertySlot slot;
+        slot.setCustom(this, entry->propertyGetter());
+        descriptor.setDescriptor(slot.getValue(exec, propertyName), entry->attributes());
+        return true;
+    }
+    bool ok;
+    unsigned index = propertyName.toUInt32(&ok, false);
+    if (ok && index < static_cast<HTMLCollection*>(impl())->length()) {
+        PropertySlot slot;
+        slot.setCustomIndex(this, index, indexGetter);
+        descriptor.setDescriptor(slot.getValue(exec, propertyName), DontDelete | ReadOnly);
+        return true;
+    }
+    if (canGetItemsForName(exec, static_cast<HTMLCollection*>(impl()), propertyName)) {
+        PropertySlot slot;
+        slot.setCustom(this, nameGetter);
+        descriptor.setDescriptor(slot.getValue(exec, propertyName), ReadOnly | DontDelete | DontEnum);
+        return true;
+    }
+    return getStaticValueDescriptor<JSHTMLCollection, Base>(exec, &JSHTMLCollectionTable, this, propertyName, descriptor);
+}
+
 bool JSHTMLCollection::getOwnPropertySlot(ExecState* exec, unsigned propertyName, PropertySlot& slot)
 {
     if (propertyName < static_cast<HTMLCollection*>(impl())->length()) {
@@ -186,11 +227,11 @@ JSValue jsHTMLCollectionConstructor(ExecState* exec, const Identifier&, const Pr
     JSHTMLCollection* domObject = static_cast<JSHTMLCollection*>(asObject(slot.slotBase()));
     return JSHTMLCollection::getConstructor(exec, domObject->globalObject());
 }
-void JSHTMLCollection::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
+void JSHTMLCollection::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
 {
     for (unsigned i = 0; i < static_cast<HTMLCollection*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getPropertyNames(exec, propertyNames, listedAttributes);
+     Base::getOwnPropertyNames(exec, propertyNames);
 }
 
 JSValue JSHTMLCollection::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -201,7 +242,7 @@ JSValue JSHTMLCollection::getConstructor(ExecState* exec, JSGlobalObject* global
 JSValue JSC_HOST_CALL jsHTMLCollectionPrototypeFunctionItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLCollection::s_info))
+    if (!thisValue.inherits(&JSHTMLCollection::s_info))
         return throwError(exec, TypeError);
     JSHTMLCollection* castedThisObj = static_cast<JSHTMLCollection*>(asObject(thisValue));
     return castedThisObj->item(exec, args);
@@ -210,7 +251,7 @@ JSValue JSC_HOST_CALL jsHTMLCollectionPrototypeFunctionItem(ExecState* exec, JSO
 JSValue JSC_HOST_CALL jsHTMLCollectionPrototypeFunctionNamedItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLCollection::s_info))
+    if (!thisValue.inherits(&JSHTMLCollection::s_info))
         return throwError(exec, TypeError);
     JSHTMLCollection* castedThisObj = static_cast<JSHTMLCollection*>(asObject(thisValue));
     return castedThisObj->namedItem(exec, args);
@@ -219,7 +260,7 @@ JSValue JSC_HOST_CALL jsHTMLCollectionPrototypeFunctionNamedItem(ExecState* exec
 JSValue JSC_HOST_CALL jsHTMLCollectionPrototypeFunctionTags(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSHTMLCollection::s_info))
+    if (!thisValue.inherits(&JSHTMLCollection::s_info))
         return throwError(exec, TypeError);
     JSHTMLCollection* castedThisObj = static_cast<JSHTMLCollection*>(asObject(thisValue));
     HTMLCollection* imp = static_cast<HTMLCollection*>(castedThisObj->impl());
@@ -238,7 +279,7 @@ JSValue JSHTMLCollection::indexGetter(ExecState* exec, const Identifier&, const 
 }
 HTMLCollection* toHTMLCollection(JSC::JSValue value)
 {
-    return value.isObject(&JSHTMLCollection::s_info) ? static_cast<JSHTMLCollection*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSHTMLCollection::s_info) ? static_cast<JSHTMLCollection*>(asObject(value))->impl() : 0;
 }
 
 }

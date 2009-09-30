@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -660,6 +660,8 @@ public:
         int dmy_pf = ChoosePixelFormat(dmy_pdc, &dmy_pfd);
         SetPixelFormat(dmy_pdc, dmy_pf, &dmy_pfd);
         dmy_rc = wglCreateContext(dmy_pdc);
+        old_dc = wglGetCurrentDC();
+        old_context = wglGetCurrentContext();
         wglMakeCurrent(dmy_pdc, dmy_rc);
     }
 
@@ -668,10 +670,14 @@ public:
         wglDeleteContext(dmy_rc);
         ReleaseDC(dmy_id, dmy_pdc);
         DestroyWindow(dmy_id);
+        if (old_dc && old_context)
+            wglMakeCurrent(old_dc, old_context);
     }
 
     HDC dmy_pdc;
     HGLRC dmy_rc;
+    HDC old_dc;
+    HGLRC old_context;
     WId dmy_id;
 };
 
@@ -1173,11 +1179,7 @@ void QGLContext::makeCurrent()
     }
 
     if (wglMakeCurrent(d->dc, d->rc)) {
-        if (!qgl_context_storage.hasLocalData() && QThread::currentThread())
-            qgl_context_storage.setLocalData(new QGLThreadContext);
-        if (qgl_context_storage.hasLocalData())
-            qgl_context_storage.localData()->context = this;
-        currentCtx = this;
+        QGLContextPrivate::setCurrentContext(this);
     } else {
         qwglError("QGLContext::makeCurrent()", "wglMakeCurrent");
     }
@@ -1187,10 +1189,8 @@ void QGLContext::makeCurrent()
 void QGLContext::doneCurrent()
 {
     Q_D(QGLContext);
-    currentCtx = 0;
     wglMakeCurrent(0, 0);
-    if (qgl_context_storage.hasLocalData())
-        qgl_context_storage.localData()->context = 0;
+    QGLContextPrivate::setCurrentContext(0);
     if (deviceIsPixmap() && d->hbitmap) {
         QPixmap *pm = static_cast<QPixmap *>(d->paintDevice);
         *pm = QPixmap::fromWinHBITMAP(d->hbitmap);

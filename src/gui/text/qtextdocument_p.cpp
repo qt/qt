@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -195,6 +195,7 @@ QTextDocumentPrivate::QTextDocumentPrivate()
     docChangeFrom = -1;
 
     undoState = 0;
+    revision = -1; // init() inserts a block, bringing it to 0
 
     lout = 0;
 
@@ -203,7 +204,6 @@ QTextDocumentPrivate::QTextDocumentPrivate()
 
     undoEnabled = true;
     inContentsChange = false;
-    inEdit = false;
 
     defaultTextOption.setTabStop(80); // same as in qtextengine.cpp
     defaultTextOption.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
@@ -429,11 +429,11 @@ int QTextDocumentPrivate::insertBlock(const QChar &blockSeparator,
     Q_ASSERT(undoState == undoStack.size());
 
     // update revision numbers of the modified blocks.
-    B->revision = (atBlockEnd && !atBlockStart)? oldRevision : undoState;
+    B->revision = (atBlockEnd && !atBlockStart)? oldRevision : revision;
     b = blocks.next(b);
     if (b) {
         B = blocks.fragment(b);
-        B->revision = atBlockStart ? oldRevision : undoState;
+        B->revision = atBlockStart ? oldRevision : revision;
     }
 
     if (formats.charFormat(charFormat).objectIndex() == -1)
@@ -456,7 +456,6 @@ void QTextDocumentPrivate::insert(int pos, int strPos, int strLength, int format
     Q_ASSERT(pos >= 0 && pos < fragments.length());
     Q_ASSERT(formats.format(format).isCharFormat());
 
-    beginEdit();
     insert_string(pos, strPos, strLength, format, QTextUndoCommand::MoveCursor);
     if (undoEnabled) {
         int b = blocks.findNode(pos);
@@ -466,7 +465,7 @@ void QTextDocumentPrivate::insert(int pos, int strPos, int strLength, int format
                                 QTextUndoCommand::MoveCursor, format, strPos, pos, strLength,
                                 B->revision);
         appendUndoItem(c);
-        B->revision = undoState;
+        B->revision = revision;
         Q_ASSERT(undoState == undoStack.size());
     }
     finishEdit();
@@ -582,7 +581,6 @@ void QTextDocumentPrivate::move(int pos, int to, int length, QTextUndoCommand::O
     if (pos == to)
         return;
 
-    beginEdit();
     const bool needsInsert = to != -1;
 
 #if !defined(QT_NO_DEBUG)
@@ -653,7 +651,7 @@ void QTextDocumentPrivate::move(int pos, int to, int length, QTextUndoCommand::O
         }
         appendUndoItem(c);
         if (B)
-            B->revision = undoState;
+            B->revision = revision;
         x = n;
 
         if (needsInsert)
@@ -1111,6 +1109,7 @@ void QTextDocumentPrivate::joinPreviousEditBlock()
 
 void QTextDocumentPrivate::endEditBlock()
 {
+    Q_ASSERT(editBlock > 0);
     if (--editBlock)
         return;
 
@@ -1130,8 +1129,6 @@ void QTextDocumentPrivate::finishEdit()
 
     if (editBlock)
         return;
-
-    inEdit = false;
 
     if (framesDirty)
         scan_frames(docChangeFrom, docChangeOldLength, docChangeLength);
@@ -1195,19 +1192,19 @@ void QTextDocumentPrivate::documentChange(int from, int length)
     adjustDocumentChangesAndCursors is called whenever there is an insert or remove of characters.
     param from is the cursor position in the document
     param addedOrRemoved is the amount of characters added or removed.  A negative number means characters are removed.
+
+    The function stores information to be emitted when finishEdit() is called.
 */
 void QTextDocumentPrivate::adjustDocumentChangesAndCursors(int from, int addedOrRemoved, QTextUndoCommand::Operation op)
 {
-    Q_Q(QTextDocument);
+    if (!editBlock)
+        ++revision;
+
     for (int i = 0; i < cursors.size(); ++i) {
         QTextCursorPrivate *curs = cursors.at(i);
         if (curs->adjustPosition(from, addedOrRemoved, op) == QTextCursorPrivate::CursorMoved) {
-            if (editBlock || inEdit) {
-                if (!changedCursors.contains(curs))
-                    changedCursors.append(curs);
-            } else {
-                emit q->cursorPositionChanged(QTextCursor(curs));
-            }
+            if (!changedCursors.contains(curs))
+                changedCursors.append(curs);
         }
     }
 
@@ -1223,7 +1220,6 @@ void QTextDocumentPrivate::adjustDocumentChangesAndCursors(int from, int addedOr
         }
 //         qDebug("adjustDocumentChanges:");
 //         qDebug("    -> %d %d %d", docChangeFrom, docChangeOldLength, docChangeLength);
-        contentsChanged();
         return;
     }
 
@@ -1248,7 +1244,6 @@ void QTextDocumentPrivate::adjustDocumentChangesAndCursors(int from, int addedOr
     docChangeLength += added - removedInside + diff;
 //     qDebug("    -> %d %d %d", docChangeFrom, docChangeOldLength, docChangeLength);
 
-    contentsChanged();
 }
 
 

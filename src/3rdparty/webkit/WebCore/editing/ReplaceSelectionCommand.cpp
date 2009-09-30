@@ -528,7 +528,7 @@ VisiblePosition ReplaceSelectionCommand::positionAtEndOfInsertedContent()
 VisiblePosition ReplaceSelectionCommand::positionAtStartOfInsertedContent()
 {
     // Return the inserted content's first VisiblePosition.
-    return VisiblePosition(nextCandidate(positionBeforeNode(m_firstNodeInserted.get())));
+    return VisiblePosition(nextCandidate(positionInParentBeforeNode(m_firstNodeInserted.get())));
 }
 
 // Remove style spans before insertion if they are unnecessary.  It's faster because we'll 
@@ -549,8 +549,9 @@ static bool handleStyleSpansBeforeInsertion(ReplacementFragment& fragment, const
     
     Node* sourceDocumentStyleSpan = topNode;
     RefPtr<Node> copiedRangeStyleSpan = sourceDocumentStyleSpan->firstChild();
-    
-    RefPtr<CSSMutableStyleDeclaration> styleAtInsertionPos = rangeCompliantEquivalent(insertionPos).computedStyle()->deprecatedCopyInheritableProperties();
+
+    RefPtr<CSSMutableStyleDeclaration> styleAtInsertionPos = editingStyleAtPosition(rangeCompliantEquivalent(insertionPos));
+
     String styleText = styleAtInsertionPos->cssText();
     
     if (styleText == static_cast<Element*>(sourceDocumentStyleSpan)->getAttribute(styleAttr)) {
@@ -606,8 +607,8 @@ void ReplaceSelectionCommand::handleStyleSpans()
     // styles from blockquoteNode are allowed to override those from the source document, see <rdar://problem/4930986> and <rdar://problem/5089327>.
     Node* blockquoteNode = isMailPasteAsQuotationNode(context) ? context : nearestMailBlockquote(context);
     if (blockquoteNode) {
-        RefPtr<CSSMutableStyleDeclaration> blockquoteStyle = computedStyle(blockquoteNode)->deprecatedCopyInheritableProperties();
-        RefPtr<CSSMutableStyleDeclaration> parentStyle = computedStyle(blockquoteNode->parentNode())->deprecatedCopyInheritableProperties();
+        RefPtr<CSSMutableStyleDeclaration> blockquoteStyle = editingStyleAtPosition(Position(blockquoteNode, 0));
+        RefPtr<CSSMutableStyleDeclaration> parentStyle = editingStyleAtPosition(Position(blockquoteNode->parentNode(), 0));
         parentStyle->diff(blockquoteStyle.get());
 
         CSSMutableStyleDeclaration::const_iterator end = blockquoteStyle->end();
@@ -618,10 +619,10 @@ void ReplaceSelectionCommand::handleStyleSpans()
 
         context = blockquoteNode->parentNode();
     }
-    
-    RefPtr<CSSMutableStyleDeclaration> contextStyle = computedStyle(context)->deprecatedCopyInheritableProperties();
-    contextStyle->diff(sourceDocumentStyle.get());
-    
+
+    // This operation requires that only editing styles to be removed from sourceDocumentStyle.
+    prepareEditingStyleToApplyAt(sourceDocumentStyle.get(), Position(context, 0));
+
     // Remove block properties in the span's style. This prevents properties that probably have no effect 
     // currently from affecting blocks later if the style is cloned for a new block element during a future 
     // editing operation.
@@ -655,9 +656,8 @@ void ReplaceSelectionCommand::handleStyleSpans()
     
     // Remove redundant styles.
     context = copiedRangeStyleSpan->parentNode();
-    contextStyle = computedStyle(context)->deprecatedCopyInheritableProperties();
-    contextStyle->diff(copiedRangeStyle.get());
-    
+    prepareEditingStyleToApplyAt(copiedRangeStyle.get(), Position(context, 0));
+
     // See the comments above about removing block properties.
     copiedRangeStyle->removeBlockProperties();
 
@@ -725,7 +725,7 @@ void ReplaceSelectionCommand::doApply()
         return;
     
     if (m_matchStyle)
-        m_insertionStyle = styleAtPosition(selection.start());
+        m_insertionStyle = editingStyleAtPosition(selection.start(), IncludeTypingStyle);
     
     VisiblePosition visibleStart = selection.visibleStart();
     VisiblePosition visibleEnd = selection.visibleEnd();
@@ -794,7 +794,7 @@ void ReplaceSelectionCommand::doApply()
         Node* br = endingSelection().start().node(); 
         ASSERT(br->hasTagName(brTag)); 
         // Insert content between the two blockquotes, but remove the br (since it was just a placeholder). 
-        insertionPos = positionBeforeNode(br); 
+        insertionPos = positionInParentBeforeNode(br);
         removeNode(br);
     }
     
@@ -817,9 +817,9 @@ void ReplaceSelectionCommand::doApply()
         ASSERT(startBlock != currentRoot);
         VisiblePosition visibleInsertionPos(insertionPos);
         if (isEndOfBlock(visibleInsertionPos) && !(isStartOfBlock(visibleInsertionPos) && fragment.hasInterchangeNewlineAtEnd()))
-            insertionPos = positionAfterNode(startBlock);
+            insertionPos = positionInParentAfterNode(startBlock);
         else if (isStartOfBlock(visibleInsertionPos))
-            insertionPos = positionBeforeNode(startBlock);
+            insertionPos = positionInParentBeforeNode(startBlock);
     }
 
     // Paste into run of tabs splits the tab span.

@@ -23,9 +23,11 @@ aria-labelledby
 aria-level
 aria-pressed
 aria-readonly
+aria-required
 aria-valuemax
 aria-valuemin
 aria-valuenow
+aria-valuetext
 autobuffer
 autocomplete
 autofocus
@@ -76,6 +78,7 @@ expanded
 face
 focused
 for
+formnovalidate
 frame
 frameborder
 headers
@@ -95,6 +98,7 @@ lang
 language
 leftmargin
 link
+list
 longdesc
 loop
 playcount
@@ -115,6 +119,7 @@ name
 nohref
 noresize
 noshade
+novalidate
 nowrap
 object
 onabort
@@ -143,13 +148,16 @@ onemptied
 onended
 onerror
 onfocus
+onhashchange
 oninput
+oninvalid
 onkeydown
 onkeypress
 onkeyup
 onload
 onloadeddata
 onloadedmetadata
+onloadend
 onloadstart
 onmousedown
 onmousemove
@@ -159,6 +167,9 @@ onmouseup
 onmousewheel
 ononline
 onoffline
+onorientationchange
+onpagehide
+onpageshow
 onpaste
 onpause
 onplay

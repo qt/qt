@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt3Support module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -870,15 +870,19 @@ void Q3ScrollView::updateScrollBars()
             mac_need_scroll = true;
         } else {
             QWidget *tlw = window();
+#ifndef QT_MAC_USE_COCOA
             QPoint tlw_br = QPoint(tlw->width(), tlw->height()),
                     my_br = qt_mac_posInWindow(this) + QPoint(w, h);
             if(my_br.x() >= tlw_br.x() - 3 && my_br.y() >= tlw_br.y() - 3)
+#endif
                 mac_need_scroll = true;
         }
         if(mac_need_scroll) {
+#ifndef QT_MAC_USE_COCOA
             WindowAttributes attr;
             GetWindowAttributes((WindowPtr)handle(), &attr);
             mac_need_scroll = (attr & kWindowResizableAttribute);
+#endif
         }
         if(mac_need_scroll) {
             showc = true;

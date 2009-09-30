@@ -37,7 +37,7 @@ struct props {
     const char* name;
     int id;
 };
-/* maximum key range = 1853, duplicates = 0 */
+/* maximum key range = 1808, duplicates = 0 */
 
 #ifdef __GNUC__
 __inline
@@ -51,32 +51,32 @@ hash_prop (register const char *str, register unsigned int len)
 {
   static const unsigned short asso_values[] =
     {
-      1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859,
-      1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859,
-      1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859,
-      1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859,
-      1859, 1859, 1859, 1859, 1859,    0, 1859, 1859, 1859, 1859,
-      1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859,
-      1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859,
-      1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859,
-      1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859,
-      1859, 1859, 1859, 1859, 1859, 1859, 1859,    5,    0,   75,
-         0,    0,  355,    5,  315,    0,    0,    0,  105,    0,
-         5,    0,   55,   20,    5,   25,    0,  140,   30,   15,
-       420,  395,   10, 1859, 1859, 1859, 1859, 1859, 1859, 1859,
-      1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859,
-      1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859,
-      1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859,
-      1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859,
-      1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859,
-      1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859,
-      1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859,
-      1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859,
-      1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859,
-      1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859,
-      1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859,
-      1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859, 1859,
-      1859, 1859, 1859, 1859, 1859, 1859
+      1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814,
+      1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814,
+      1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814,
+      1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814,
+      1814, 1814, 1814, 1814, 1814,    0, 1814, 1814, 1814, 1814,
+      1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814,
+      1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814,
+      1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814,
+      1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814,
+      1814, 1814, 1814, 1814, 1814, 1814, 1814,    5,    0,   75,
+         0,    0,  345,    5,  315,    0,   10,    0,  105,    0,
+         5,    0,   55,   30,    5,   25,    0,  140,   75,   15,
+       375,  395,   10, 1814, 1814, 1814, 1814, 1814, 1814, 1814,
+      1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814,
+      1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814,
+      1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814,
+      1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814,
+      1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814,
+      1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814,
+      1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814,
+      1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814,
+      1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814,
+      1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814,
+      1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814,
+      1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814, 1814,
+      1814, 1814, 1814, 1814, 1814, 1814
     };
   register int hval = len;
 
@@ -226,556 +226,570 @@ findProp (register const char *str, register unsigned int len)
 {
   enum
     {
-      TOTAL_KEYWORDS = 271,
+      TOTAL_KEYWORDS = 278,
       MIN_WORD_LENGTH = 3,
       MAX_WORD_LENGTH = 43,
       MIN_HASH_VALUE = 6,
-      MAX_HASH_VALUE = 1858
+      MAX_HASH_VALUE = 1813
     };
 
   static const struct props wordlist_prop[] =
     {
-#line 42 "CSSPropertyNames.gperf"
+#line 50 "CSSPropertyNames.gperf"
       {"bottom", CSSPropertyBottom},
-#line 140 "CSSPropertyNames.gperf"
+#line 148 "CSSPropertyNames.gperf"
       {"zoom", CSSPropertyZoom},
-#line 20 "CSSPropertyNames.gperf"
+#line 23 "CSSPropertyNames.gperf"
       {"border", CSSPropertyBorder},
-#line 259 "CSSPropertyNames.gperf"
+#line 266 "CSSPropertyNames.gperf"
       {"marker", CSSPropertyMarker},
-#line 21 "CSSPropertyNames.gperf"
+#line 24 "CSSPropertyNames.gperf"
       {"border-bottom", CSSPropertyBorderBottom},
-#line 261 "CSSPropertyNames.gperf"
-      {"marker-mid", CSSPropertyMarkerMid},
-#line 71 "CSSPropertyNames.gperf"
-      {"margin", CSSPropertyMargin},
-#line 278 "CSSPropertyNames.gperf"
-      {"kerning", CSSPropertyKerning},
-#line 260 "CSSPropertyNames.gperf"
-      {"marker-end", CSSPropertyMarkerEnd},
-#line 72 "CSSPropertyNames.gperf"
-      {"margin-bottom", CSSPropertyMarginBottom},
-#line 243 "CSSPropertyNames.gperf"
-      {"mask", CSSPropertyMask},
-#line 264 "CSSPropertyNames.gperf"
-      {"stroke", CSSPropertyStroke},
-#line 104 "CSSPropertyNames.gperf"
-      {"size", CSSPropertySize},
-#line 136 "CSSPropertyNames.gperf"
-      {"word-break", CSSPropertyWordBreak},
-#line 280 "CSSPropertyNames.gperf"
-      {"writing-mode", CSSPropertyWritingMode},
-#line 154 "CSSPropertyNames.gperf"
-      {"-webkit-binding", CSSPropertyWebkitBinding},
-#line 102 "CSSPropertyNames.gperf"
-      {"resize", CSSPropertyResize},
-#line 258 "CSSPropertyNames.gperf"
-      {"image-rendering", CSSPropertyImageRendering},
-#line 141 "CSSPropertyNames.gperf"
-      {"-webkit-animation", CSSPropertyWebkitAnimation},
-#line 159 "CSSPropertyNames.gperf"
-      {"-webkit-border-image", CSSPropertyWebkitBorderImage},
-#line 199 "CSSPropertyNames.gperf"
-      {"-webkit-mask", CSSPropertyWebkitMask},
-#line 128 "CSSPropertyNames.gperf"
-      {"top", CSSPropertyTop},
-#line 134 "CSSPropertyNames.gperf"
-      {"widows", CSSPropertyWidows},
-#line 262 "CSSPropertyNames.gperf"
-      {"marker-start", CSSPropertyMarkerStart},
-#line 146 "CSSPropertyNames.gperf"
-      {"-webkit-animation-name", CSSPropertyWebkitAnimationName},
-#line 95 "CSSPropertyNames.gperf"
-      {"page", CSSPropertyPage},
-#line 204 "CSSPropertyNames.gperf"
-      {"-webkit-mask-image", CSSPropertyWebkitMaskImage},
-#line 37 "CSSPropertyNames.gperf"
-      {"border-top", CSSPropertyBorderTop},
-#line 90 "CSSPropertyNames.gperf"
-      {"padding", CSSPropertyPadding},
-#line 232 "CSSPropertyNames.gperf"
-      {"-webkit-transition", CSSPropertyWebkitTransition},
-#line 205 "CSSPropertyNames.gperf"
-      {"-webkit-mask-origin", CSSPropertyWebkitMaskOrigin},
-#line 91 "CSSPropertyNames.gperf"
-      {"padding-bottom", CSSPropertyPaddingBottom},
-#line 75 "CSSPropertyNames.gperf"
-      {"margin-top", CSSPropertyMarginTop},
-#line 191 "CSSPropertyNames.gperf"
-      {"-webkit-margin-start", CSSPropertyWebkitMarginStart},
-#line 48 "CSSPropertyNames.gperf"
-      {"content", CSSPropertyContent},
-#line 100 "CSSPropertyNames.gperf"
-      {"position", CSSPropertyPosition},
-#line 52 "CSSPropertyNames.gperf"
-      {"direction", CSSPropertyDirection},
-#line 210 "CSSPropertyNames.gperf"
-      {"-webkit-mask-size", CSSPropertyWebkitMaskSize},
-#line 105 "CSSPropertyNames.gperf"
-      {"src", CSSPropertySrc},
-#line 138 "CSSPropertyNames.gperf"
-      {"word-wrap", CSSPropertyWordWrap},
-#line 212 "CSSPropertyNames.gperf"
-      {"-webkit-nbsp-mode", CSSPropertyWebkitNbspMode},
-#line 98 "CSSPropertyNames.gperf"
-      {"page-break-inside", CSSPropertyPageBreakInside},
-#line 209 "CSSPropertyNames.gperf"
-      {"-webkit-mask-repeat", CSSPropertyWebkitMaskRepeat},
-#line 94 "CSSPropertyNames.gperf"
-      {"padding-top", CSSPropertyPaddingTop},
-#line 99 "CSSPropertyNames.gperf"
-      {"pointer-events", CSSPropertyPointerEvents},
-#line 213 "CSSPropertyNames.gperf"
-      {"-webkit-padding-start", CSSPropertyWebkitPaddingStart},
-#line 143 "CSSPropertyNames.gperf"
-      {"-webkit-animation-direction", CSSPropertyWebkitAnimationDirection},
-#line 206 "CSSPropertyNames.gperf"
-      {"-webkit-mask-position", CSSPropertyWebkitMaskPosition},
-#line 187 "CSSPropertyNames.gperf"
-      {"-webkit-line-break", CSSPropertyWebkitLineBreak},
-#line 269 "CSSPropertyNames.gperf"
-      {"stroke-miterlimit", CSSPropertyStrokeMiterlimit},
 #line 268 "CSSPropertyNames.gperf"
-      {"stroke-linejoin", CSSPropertyStrokeLinejoin},
-#line 218 "CSSPropertyNames.gperf"
+      {"marker-mid", CSSPropertyMarkerMid},
+#line 79 "CSSPropertyNames.gperf"
+      {"margin", CSSPropertyMargin},
+#line 285 "CSSPropertyNames.gperf"
+      {"kerning", CSSPropertyKerning},
+#line 267 "CSSPropertyNames.gperf"
+      {"marker-end", CSSPropertyMarkerEnd},
+#line 80 "CSSPropertyNames.gperf"
+      {"margin-bottom", CSSPropertyMarginBottom},
+#line 250 "CSSPropertyNames.gperf"
+      {"mask", CSSPropertyMask},
+#line 271 "CSSPropertyNames.gperf"
+      {"stroke", CSSPropertyStroke},
+#line 112 "CSSPropertyNames.gperf"
+      {"size", CSSPropertySize},
+#line 144 "CSSPropertyNames.gperf"
+      {"word-break", CSSPropertyWordBreak},
+#line 287 "CSSPropertyNames.gperf"
+      {"writing-mode", CSSPropertyWritingMode},
+#line 162 "CSSPropertyNames.gperf"
+      {"-webkit-binding", CSSPropertyWebkitBinding},
+#line 110 "CSSPropertyNames.gperf"
+      {"resize", CSSPropertyResize},
+#line 265 "CSSPropertyNames.gperf"
+      {"image-rendering", CSSPropertyImageRendering},
+#line 149 "CSSPropertyNames.gperf"
+      {"-webkit-animation", CSSPropertyWebkitAnimation},
+#line 165 "CSSPropertyNames.gperf"
+      {"-webkit-border-image", CSSPropertyWebkitBorderImage},
+#line 204 "CSSPropertyNames.gperf"
+      {"-webkit-mask", CSSPropertyWebkitMask},
+#line 136 "CSSPropertyNames.gperf"
+      {"top", CSSPropertyTop},
+#line 142 "CSSPropertyNames.gperf"
+      {"widows", CSSPropertyWidows},
+#line 269 "CSSPropertyNames.gperf"
+      {"marker-start", CSSPropertyMarkerStart},
+#line 154 "CSSPropertyNames.gperf"
+      {"-webkit-animation-name", CSSPropertyWebkitAnimationName},
+#line 103 "CSSPropertyNames.gperf"
+      {"page", CSSPropertyPage},
+#line 209 "CSSPropertyNames.gperf"
+      {"-webkit-mask-image", CSSPropertyWebkitMaskImage},
+#line 43 "CSSPropertyNames.gperf"
+      {"border-top", CSSPropertyBorderTop},
+#line 98 "CSSPropertyNames.gperf"
+      {"padding", CSSPropertyPadding},
+#line 239 "CSSPropertyNames.gperf"
+      {"-webkit-transition", CSSPropertyWebkitTransition},
+#line 210 "CSSPropertyNames.gperf"
+      {"-webkit-mask-origin", CSSPropertyWebkitMaskOrigin},
+#line 99 "CSSPropertyNames.gperf"
+      {"padding-bottom", CSSPropertyPaddingBottom},
+#line 83 "CSSPropertyNames.gperf"
+      {"margin-top", CSSPropertyMarginTop},
+#line 196 "CSSPropertyNames.gperf"
+      {"-webkit-margin-start", CSSPropertyWebkitMarginStart},
+#line 56 "CSSPropertyNames.gperf"
+      {"content", CSSPropertyContent},
+#line 108 "CSSPropertyNames.gperf"
+      {"position", CSSPropertyPosition},
+#line 60 "CSSPropertyNames.gperf"
+      {"direction", CSSPropertyDirection},
+#line 217 "CSSPropertyNames.gperf"
+      {"-webkit-mask-size", CSSPropertyWebkitMaskSize},
+#line 113 "CSSPropertyNames.gperf"
+      {"src", CSSPropertySrc},
+#line 146 "CSSPropertyNames.gperf"
+      {"word-wrap", CSSPropertyWordWrap},
+#line 219 "CSSPropertyNames.gperf"
+      {"-webkit-nbsp-mode", CSSPropertyWebkitNbspMode},
+#line 106 "CSSPropertyNames.gperf"
+      {"page-break-inside", CSSPropertyPageBreakInside},
+#line 214 "CSSPropertyNames.gperf"
+      {"-webkit-mask-repeat", CSSPropertyWebkitMaskRepeat},
+#line 102 "CSSPropertyNames.gperf"
+      {"padding-top", CSSPropertyPaddingTop},
+#line 220 "CSSPropertyNames.gperf"
+      {"-webkit-padding-start", CSSPropertyWebkitPaddingStart},
+#line 151 "CSSPropertyNames.gperf"
+      {"-webkit-animation-direction", CSSPropertyWebkitAnimationDirection},
+#line 211 "CSSPropertyNames.gperf"
+      {"-webkit-mask-position", CSSPropertyWebkitMaskPosition},
+#line 192 "CSSPropertyNames.gperf"
+      {"-webkit-line-break", CSSPropertyWebkitLineBreak},
+#line 276 "CSSPropertyNames.gperf"
+      {"stroke-miterlimit", CSSPropertyStrokeMiterlimit},
+#line 225 "CSSPropertyNames.gperf"
       {"-webkit-rtl-ordering", CSSPropertyWebkitRtlOrdering},
 #line 275 "CSSPropertyNames.gperf"
+      {"stroke-linejoin", CSSPropertyStrokeLinejoin},
+#line 282 "CSSPropertyNames.gperf"
       {"dominant-baseline", CSSPropertyDominantBaseline},
-#line 44 "CSSPropertyNames.gperf"
+#line 52 "CSSPropertyNames.gperf"
       {"caption-side", CSSPropertyCaptionSide},
-#line 47 "CSSPropertyNames.gperf"
+#line 107 "CSSPropertyNames.gperf"
+      {"pointer-events", CSSPropertyPointerEvents},
+#line 55 "CSSPropertyNames.gperf"
       {"color", CSSPropertyColor},
-#line 101 "CSSPropertyNames.gperf"
-      {"quotes", CSSPropertyQuotes},
-#line 35 "CSSPropertyNames.gperf"
+#line 41 "CSSPropertyNames.gperf"
       {"border-spacing", CSSPropertyBorderSpacing},
-#line 45 "CSSPropertyNames.gperf"
+#line 53 "CSSPropertyNames.gperf"
       {"clear", CSSPropertyClear},
-#line 193 "CSSPropertyNames.gperf"
-      {"-webkit-marquee", CSSPropertyWebkitMarquee},
-#line 137 "CSSPropertyNames.gperf"
+#line 36 "CSSPropertyNames.gperf"
+      {"border-radius", CSSPropertyBorderRadius},
+#line 109 "CSSPropertyNames.gperf"
+      {"quotes", CSSPropertyQuotes},
+#line 145 "CSSPropertyNames.gperf"
       {"word-spacing", CSSPropertyWordSpacing},
-#line 26 "CSSPropertyNames.gperf"
+#line 31 "CSSPropertyNames.gperf"
       {"border-color", CSSPropertyBorderColor},
-#line 22 "CSSPropertyNames.gperf"
+#line 198 "CSSPropertyNames.gperf"
+      {"-webkit-marquee", CSSPropertyWebkitMarquee},
+#line 25 "CSSPropertyNames.gperf"
       {"border-bottom-color", CSSPropertyBorderBottomColor},
-#line 144 "CSSPropertyNames.gperf"
+#line 152 "CSSPropertyNames.gperf"
       {"-webkit-animation-duration", CSSPropertyWebkitAnimationDuration},
-#line 237 "CSSPropertyNames.gperf"
+#line 244 "CSSPropertyNames.gperf"
       {"-webkit-user-drag", CSSPropertyWebkitUserDrag},
-#line 160 "CSSPropertyNames.gperf"
+#line 166 "CSSPropertyNames.gperf"
       {"-webkit-border-radius", CSSPropertyWebkitBorderRadius},
-#line 203 "CSSPropertyNames.gperf"
+#line 208 "CSSPropertyNames.gperf"
       {"-webkit-mask-composite", CSSPropertyWebkitMaskComposite},
-#line 254 "CSSPropertyNames.gperf"
+#line 261 "CSSPropertyNames.gperf"
       {"color-rendering", CSSPropertyColorRendering},
-#line 129 "CSSPropertyNames.gperf"
+#line 137 "CSSPropertyNames.gperf"
       {"unicode-bidi", CSSPropertyUnicodeBidi},
-#line 46 "CSSPropertyNames.gperf"
+#line 54 "CSSPropertyNames.gperf"
       {"clip", CSSPropertyClip},
-#line 234 "CSSPropertyNames.gperf"
+#line 241 "CSSPropertyNames.gperf"
       {"-webkit-transition-duration", CSSPropertyWebkitTransitionDuration},
-#line 148 "CSSPropertyNames.gperf"
+#line 157 "CSSPropertyNames.gperf"
       {"-webkit-appearance", CSSPropertyWebkitAppearance},
 #line 10 "CSSPropertyNames.gperf"
       {"background", CSSPropertyBackground},
-#line 130 "CSSPropertyNames.gperf"
+#line 138 "CSSPropertyNames.gperf"
       {"unicode-range", CSSPropertyUnicodeRange},
-#line 51 "CSSPropertyNames.gperf"
+#line 59 "CSSPropertyNames.gperf"
       {"cursor", CSSPropertyCursor},
-#line 82 "CSSPropertyNames.gperf"
+#line 90 "CSSPropertyNames.gperf"
       {"outline", CSSPropertyOutline},
 #line 14 "CSSPropertyNames.gperf"
       {"background-image", CSSPropertyBackgroundImage},
-#line 38 "CSSPropertyNames.gperf"
+#line 44 "CSSPropertyNames.gperf"
       {"border-top-color", CSSPropertyBorderTopColor},
 #line 15 "CSSPropertyNames.gperf"
       {"background-origin", CSSPropertyBackgroundOrigin},
-#line 50 "CSSPropertyNames.gperf"
+#line 58 "CSSPropertyNames.gperf"
       {"counter-reset", CSSPropertyCounterReset},
-#line 249 "CSSPropertyNames.gperf"
+#line 256 "CSSPropertyNames.gperf"
       {"stop-color", CSSPropertyStopColor},
-#line 196 "CSSPropertyNames.gperf"
-      {"-webkit-marquee-repetition", CSSPropertyWebkitMarqueeRepetition},
-#line 214 "CSSPropertyNames.gperf"
-      {"-webkit-perspective", CSSPropertyWebkitPerspective},
-#line 273 "CSSPropertyNames.gperf"
+#line 280 "CSSPropertyNames.gperf"
       {"alignment-baseline", CSSPropertyAlignmentBaseline},
-#line 197 "CSSPropertyNames.gperf"
-      {"-webkit-marquee-speed", CSSPropertyWebkitMarqueeSpeed},
-#line 267 "CSSPropertyNames.gperf"
+#line 22 "CSSPropertyNames.gperf"
+      {"background-size", CSSPropertyBackgroundSize},
+#line 201 "CSSPropertyNames.gperf"
+      {"-webkit-marquee-repetition", CSSPropertyWebkitMarqueeRepetition},
+#line 274 "CSSPropertyNames.gperf"
       {"stroke-linecap", CSSPropertyStrokeLinecap},
-#line 152 "CSSPropertyNames.gperf"
+#line 161 "CSSPropertyNames.gperf"
       {"-webkit-background-origin", CSSPropertyWebkitBackgroundOrigin},
-#line 65 "CSSPropertyNames.gperf"
+#line 73 "CSSPropertyNames.gperf"
       {"letter-spacing", CSSPropertyLetterSpacing},
-#line 194 "CSSPropertyNames.gperf"
-      {"-webkit-marquee-direction", CSSPropertyWebkitMarqueeDirection},
 #line 202 "CSSPropertyNames.gperf"
+      {"-webkit-marquee-speed", CSSPropertyWebkitMarqueeSpeed},
+#line 207 "CSSPropertyNames.gperf"
       {"-webkit-mask-clip", CSSPropertyWebkitMaskClip},
-#line 195 "CSSPropertyNames.gperf"
-      {"-webkit-marquee-increment", CSSPropertyWebkitMarqueeIncrement},
-#line 215 "CSSPropertyNames.gperf"
-      {"-webkit-perspective-origin", CSSPropertyWebkitPerspectiveOrigin},
-#line 145 "CSSPropertyNames.gperf"
-      {"-webkit-animation-iteration-count", CSSPropertyWebkitAnimationIterationCount},
 #line 153 "CSSPropertyNames.gperf"
-      {"-webkit-background-size", CSSPropertyWebkitBackgroundSize},
+      {"-webkit-animation-iteration-count", CSSPropertyWebkitAnimationIterationCount},
+#line 199 "CSSPropertyNames.gperf"
+      {"-webkit-marquee-direction", CSSPropertyWebkitMarqueeDirection},
+#line 200 "CSSPropertyNames.gperf"
+      {"-webkit-marquee-increment", CSSPropertyWebkitMarqueeIncrement},
 #line 19 "CSSPropertyNames.gperf"
       {"background-repeat", CSSPropertyBackgroundRepeat},
-#line 103 "CSSPropertyNames.gperf"
+#line 221 "CSSPropertyNames.gperf"
+      {"-webkit-perspective", CSSPropertyWebkitPerspective},
+#line 111 "CSSPropertyNames.gperf"
       {"right", CSSPropertyRight},
-#line 49 "CSSPropertyNames.gperf"
+#line 57 "CSSPropertyNames.gperf"
       {"counter-increment", CSSPropertyCounterIncrement},
-#line 135 "CSSPropertyNames.gperf"
+#line 143 "CSSPropertyNames.gperf"
       {"width", CSSPropertyWidth},
 #line 16 "CSSPropertyNames.gperf"
       {"background-position", CSSPropertyBackgroundPosition},
-#line 79 "CSSPropertyNames.gperf"
+#line 87 "CSSPropertyNames.gperf"
       {"min-width", CSSPropertyMinWidth},
-#line 31 "CSSPropertyNames.gperf"
+#line 222 "CSSPropertyNames.gperf"
+      {"-webkit-perspective-origin", CSSPropertyWebkitPerspectiveOrigin},
+#line 37 "CSSPropertyNames.gperf"
       {"border-right", CSSPropertyBorderRight},
-#line 41 "CSSPropertyNames.gperf"
+#line 49 "CSSPropertyNames.gperf"
       {"border-width", CSSPropertyBorderWidth},
-#line 131 "CSSPropertyNames.gperf"
-      {"vertical-align", CSSPropertyVerticalAlign},
-#line 74 "CSSPropertyNames.gperf"
-      {"margin-right", CSSPropertyMarginRight},
-#line 24 "CSSPropertyNames.gperf"
-      {"border-bottom-width", CSSPropertyBorderBottomWidth},
-#line 56 "CSSPropertyNames.gperf"
+#line 64 "CSSPropertyNames.gperf"
       {"font", CSSPropertyFont},
-#line 244 "CSSPropertyNames.gperf"
-      {"enable-background", CSSPropertyEnableBackground},
-#line 271 "CSSPropertyNames.gperf"
-      {"stroke-width", CSSPropertyStrokeWidth},
-#line 184 "CSSPropertyNames.gperf"
-      {"-webkit-columns", CSSPropertyWebkitColumns},
-#line 188 "CSSPropertyNames.gperf"
-      {"-webkit-line-clamp", CSSPropertyWebkitLineClamp},
+#line 82 "CSSPropertyNames.gperf"
+      {"margin-right", CSSPropertyMarginRight},
+#line 29 "CSSPropertyNames.gperf"
+      {"border-bottom-width", CSSPropertyBorderBottomWidth},
 #line 251 "CSSPropertyNames.gperf"
+      {"enable-background", CSSPropertyEnableBackground},
+#line 278 "CSSPropertyNames.gperf"
+      {"stroke-width", CSSPropertyStrokeWidth},
+#line 188 "CSSPropertyNames.gperf"
+      {"-webkit-columns", CSSPropertyWebkitColumns},
+#line 193 "CSSPropertyNames.gperf"
+      {"-webkit-line-clamp", CSSPropertyWebkitLineClamp},
+#line 258 "CSSPropertyNames.gperf"
       {"color-interpolation", CSSPropertyColorInterpolation},
-#line 25 "CSSPropertyNames.gperf"
-      {"border-collapse", CSSPropertyBorderCollapse},
-#line 157 "CSSPropertyNames.gperf"
+#line 163 "CSSPropertyNames.gperf"
       {"-webkit-border-fit", CSSPropertyWebkitBorderFit},
-#line 58 "CSSPropertyNames.gperf"
+#line 66 "CSSPropertyNames.gperf"
       {"font-size", CSSPropertyFontSize},
-#line 176 "CSSPropertyNames.gperf"
+#line 30 "CSSPropertyNames.gperf"
+      {"border-collapse", CSSPropertyBorderCollapse},
+#line 117 "CSSPropertyNames.gperf"
+      {"text-indent", CSSPropertyTextIndent},
+#line 147 "CSSPropertyNames.gperf"
+      {"z-index", CSSPropertyZIndex},
+#line 139 "CSSPropertyNames.gperf"
+      {"vertical-align", CSSPropertyVerticalAlign},
+#line 180 "CSSPropertyNames.gperf"
       {"-webkit-column-break-inside", CSSPropertyWebkitColumnBreakInside},
-#line 93 "CSSPropertyNames.gperf"
+#line 101 "CSSPropertyNames.gperf"
       {"padding-right", CSSPropertyPaddingRight},
-#line 239 "CSSPropertyNames.gperf"
+#line 246 "CSSPropertyNames.gperf"
       {"-webkit-user-select", CSSPropertyWebkitUserSelect},
-#line 40 "CSSPropertyNames.gperf"
+#line 48 "CSSPropertyNames.gperf"
       {"border-top-width", CSSPropertyBorderTopWidth},
-#line 81 "CSSPropertyNames.gperf"
+#line 279 "CSSPropertyNames.gperf"
+      {"text-rendering", CSSPropertyTextRendering},
+#line 89 "CSSPropertyNames.gperf"
       {"orphans", CSSPropertyOrphans},
-#line 61 "CSSPropertyNames.gperf"
-      {"font-variant", CSSPropertyFontVariant},
-#line 178 "CSSPropertyNames.gperf"
-      {"-webkit-column-gap", CSSPropertyWebkitColumnGap},
-#line 190 "CSSPropertyNames.gperf"
-      {"-webkit-margin-collapse", CSSPropertyWebkitMarginCollapse},
-#line 226 "CSSPropertyNames.gperf"
+#line 174 "CSSPropertyNames.gperf"
+      {"-webkit-box-orient", CSSPropertyWebkitBoxOrient},
+#line 233 "CSSPropertyNames.gperf"
       {"-webkit-transform", CSSPropertyWebkitTransform},
-#line 151 "CSSPropertyNames.gperf"
+#line 182 "CSSPropertyNames.gperf"
+      {"-webkit-column-gap", CSSPropertyWebkitColumnGap},
+#line 195 "CSSPropertyNames.gperf"
+      {"-webkit-margin-collapse", CSSPropertyWebkitMarginCollapse},
+#line 160 "CSSPropertyNames.gperf"
       {"-webkit-background-composite", CSSPropertyWebkitBackgroundComposite},
-#line 189 "CSSPropertyNames.gperf"
+#line 194 "CSSPropertyNames.gperf"
       {"-webkit-margin-bottom-collapse", CSSPropertyWebkitMarginBottomCollapse},
 #line 13 "CSSPropertyNames.gperf"
       {"background-color", CSSPropertyBackgroundColor},
-#line 263 "CSSPropertyNames.gperf"
-      {"shape-rendering", CSSPropertyShapeRendering},
-#line 109 "CSSPropertyNames.gperf"
-      {"text-indent", CSSPropertyTextIndent},
-#line 139 "CSSPropertyNames.gperf"
-      {"z-index", CSSPropertyZIndex},
-#line 163 "CSSPropertyNames.gperf"
-      {"-webkit-border-vertical-spacing", CSSPropertyWebkitBorderVerticalSpacing},
-#line 83 "CSSPropertyNames.gperf"
-      {"outline-color", CSSPropertyOutlineColor},
-#line 97 "CSSPropertyNames.gperf"
-      {"page-break-before", CSSPropertyPageBreakBefore},
-#line 227 "CSSPropertyNames.gperf"
-      {"-webkit-transform-origin", CSSPropertyWebkitTransformOrigin},
-#line 96 "CSSPropertyNames.gperf"
-      {"page-break-after", CSSPropertyPageBreakAfter},
-#line 272 "CSSPropertyNames.gperf"
-      {"text-rendering", CSSPropertyTextRendering},
-#line 170 "CSSPropertyNames.gperf"
-      {"-webkit-box-orient", CSSPropertyWebkitBoxOrient},
-#line 64 "CSSPropertyNames.gperf"
-      {"left", CSSPropertyLeft},
 #line 230 "CSSPropertyNames.gperf"
-      {"-webkit-transform-origin-z", CSSPropertyWebkitTransformOriginZ},
-#line 55 "CSSPropertyNames.gperf"
-      {"float", CSSPropertyFloat},
-#line 245 "CSSPropertyNames.gperf"
-      {"filter", CSSPropertyFilter},
-#line 200 "CSSPropertyNames.gperf"
-      {"-webkit-mask-attachment", CSSPropertyWebkitMaskAttachment},
-#line 27 "CSSPropertyNames.gperf"
-      {"border-left", CSSPropertyBorderLeft},
-#line 223 "CSSPropertyNames.gperf"
       {"-webkit-text-stroke", CSSPropertyWebkitTextStroke},
+#line 270 "CSSPropertyNames.gperf"
+      {"shape-rendering", CSSPropertyShapeRendering},
+#line 105 "CSSPropertyNames.gperf"
+      {"page-break-before", CSSPropertyPageBreakBefore},
+#line 234 "CSSPropertyNames.gperf"
+      {"-webkit-transform-origin", CSSPropertyWebkitTransformOrigin},
+#line 104 "CSSPropertyNames.gperf"
+      {"page-break-after", CSSPropertyPageBreakAfter},
+#line 91 "CSSPropertyNames.gperf"
+      {"outline-color", CSSPropertyOutlineColor},
+#line 206 "CSSPropertyNames.gperf"
+      {"-webkit-mask-box-image", CSSPropertyWebkitMaskBoxImage},
+#line 177 "CSSPropertyNames.gperf"
+      {"-webkit-box-sizing", CSSPropertyWebkitBoxSizing},
+#line 72 "CSSPropertyNames.gperf"
+      {"left", CSSPropertyLeft},
+#line 237 "CSSPropertyNames.gperf"
+      {"-webkit-transform-origin-z", CSSPropertyWebkitTransformOriginZ},
+#line 69 "CSSPropertyNames.gperf"
+      {"font-variant", CSSPropertyFontVariant},
+#line 63 "CSSPropertyNames.gperf"
+      {"float", CSSPropertyFloat},
+#line 252 "CSSPropertyNames.gperf"
+      {"filter", CSSPropertyFilter},
+#line 32 "CSSPropertyNames.gperf"
+      {"border-left", CSSPropertyBorderLeft},
+#line 205 "CSSPropertyNames.gperf"
+      {"-webkit-mask-attachment", CSSPropertyWebkitMaskAttachment},
+#line 116 "CSSPropertyNames.gperf"
+      {"text-decoration", CSSPropertyTextDecoration},
+#line 81 "CSSPropertyNames.gperf"
+      {"margin-left", CSSPropertyMarginLeft},
 #line 12 "CSSPropertyNames.gperf"
       {"background-clip", CSSPropertyBackgroundClip},
-#line 192 "CSSPropertyNames.gperf"
+#line 197 "CSSPropertyNames.gperf"
       {"-webkit-margin-top-collapse", CSSPropertyWebkitMarginTopCollapse},
-#line 73 "CSSPropertyNames.gperf"
-      {"margin-left", CSSPropertyMarginLeft},
-#line 242 "CSSPropertyNames.gperf"
+#line 167 "CSSPropertyNames.gperf"
+      {"-webkit-border-vertical-spacing", CSSPropertyWebkitBorderVerticalSpacing},
+#line 249 "CSSPropertyNames.gperf"
       {"clip-rule", CSSPropertyClipRule},
-#line 201 "CSSPropertyNames.gperf"
-      {"-webkit-mask-box-image", CSSPropertyWebkitMaskBoxImage},
-#line 173 "CSSPropertyNames.gperf"
-      {"-webkit-box-sizing", CSSPropertyWebkitBoxSizing},
-#line 133 "CSSPropertyNames.gperf"
-      {"white-space", CSSPropertyWhiteSpace},
-#line 150 "CSSPropertyNames.gperf"
-      {"-webkit-background-clip", CSSPropertyWebkitBackgroundClip},
-#line 87 "CSSPropertyNames.gperf"
-      {"overflow", CSSPropertyOverflow},
-#line 108 "CSSPropertyNames.gperf"
-      {"text-decoration", CSSPropertyTextDecoration},
-#line 80 "CSSPropertyNames.gperf"
-      {"opacity", CSSPropertyOpacity},
-#line 32 "CSSPropertyNames.gperf"
-      {"border-right-color", CSSPropertyBorderRightColor},
-#line 165 "CSSPropertyNames.gperf"
+#line 169 "CSSPropertyNames.gperf"
       {"-webkit-box-direction", CSSPropertyWebkitBoxDirection},
-#line 92 "CSSPropertyNames.gperf"
-      {"padding-left", CSSPropertyPaddingLeft},
-#line 185 "CSSPropertyNames.gperf"
-      {"-webkit-font-size-delta", CSSPropertyWebkitFontSizeDelta},
-#line 36 "CSSPropertyNames.gperf"
-      {"border-style", CSSPropertyBorderStyle},
-#line 208 "CSSPropertyNames.gperf"
-      {"-webkit-mask-position-y", CSSPropertyWebkitMaskPositionY},
-#line 107 "CSSPropertyNames.gperf"
+#line 141 "CSSPropertyNames.gperf"
+      {"white-space", CSSPropertyWhiteSpace},
+#line 115 "CSSPropertyNames.gperf"
       {"text-align", CSSPropertyTextAlign},
-#line 23 "CSSPropertyNames.gperf"
-      {"border-bottom-style", CSSPropertyBorderBottomStyle},
-#line 156 "CSSPropertyNames.gperf"
-      {"-webkit-border-bottom-right-radius", CSSPropertyWebkitBorderBottomRightRadius},
-#line 142 "CSSPropertyNames.gperf"
-      {"-webkit-animation-delay", CSSPropertyWebkitAnimationDelay},
-#line 132 "CSSPropertyNames.gperf"
-      {"visibility", CSSPropertyVisibility},
-#line 255 "CSSPropertyNames.gperf"
-      {"fill", CSSPropertyFill},
-#line 164 "CSSPropertyNames.gperf"
-      {"-webkit-box-align", CSSPropertyWebkitBoxAlign},
-#line 207 "CSSPropertyNames.gperf"
-      {"-webkit-mask-position-x", CSSPropertyWebkitMaskPositionX},
-#line 270 "CSSPropertyNames.gperf"
-      {"stroke-opacity", CSSPropertyStrokeOpacity},
-#line 116 "CSSPropertyNames.gperf"
-      {"text-overline", CSSPropertyTextOverline},
-#line 240 "CSSPropertyNames.gperf"
-      {"-webkit-variable-declaration-block", CSSPropertyWebkitVariableDeclarationBlock},
-#line 177 "CSSPropertyNames.gperf"
-      {"-webkit-column-count", CSSPropertyWebkitColumnCount},
-#line 118 "CSSPropertyNames.gperf"
-      {"text-overline-mode", CSSPropertyTextOverlineMode},
-#line 171 "CSSPropertyNames.gperf"
-      {"-webkit-box-pack", CSSPropertyWebkitBoxPack},
+#line 215 "CSSPropertyNames.gperf"
+      {"-webkit-mask-repeat-x", CSSPropertyWebkitMaskRepeatX},
+#line 159 "CSSPropertyNames.gperf"
+      {"-webkit-background-clip", CSSPropertyWebkitBackgroundClip},
+#line 216 "CSSPropertyNames.gperf"
+      {"-webkit-mask-repeat-y", CSSPropertyWebkitMaskRepeatY},
 #line 168 "CSSPropertyNames.gperf"
+      {"-webkit-box-align", CSSPropertyWebkitBoxAlign},
+#line 212 "CSSPropertyNames.gperf"
+      {"-webkit-mask-position-x", CSSPropertyWebkitMaskPositionX},
+#line 100 "CSSPropertyNames.gperf"
+      {"padding-left", CSSPropertyPaddingLeft},
+#line 189 "CSSPropertyNames.gperf"
+      {"-webkit-font-size-delta", CSSPropertyWebkitFontSizeDelta},
+#line 27 "CSSPropertyNames.gperf"
+      {"border-bottom-right-radius", CSSPropertyBorderBottomRightRadius},
+#line 88 "CSSPropertyNames.gperf"
+      {"opacity", CSSPropertyOpacity},
+#line 38 "CSSPropertyNames.gperf"
+      {"border-right-color", CSSPropertyBorderRightColor},
+#line 175 "CSSPropertyNames.gperf"
+      {"-webkit-box-pack", CSSPropertyWebkitBoxPack},
+#line 172 "CSSPropertyNames.gperf"
       {"-webkit-box-lines", CSSPropertyWebkitBoxLines},
-#line 233 "CSSPropertyNames.gperf"
+#line 42 "CSSPropertyNames.gperf"
+      {"border-style", CSSPropertyBorderStyle},
+#line 213 "CSSPropertyNames.gperf"
+      {"-webkit-mask-position-y", CSSPropertyWebkitMaskPositionY},
+#line 95 "CSSPropertyNames.gperf"
+      {"overflow", CSSPropertyOverflow},
+#line 28 "CSSPropertyNames.gperf"
+      {"border-bottom-style", CSSPropertyBorderBottomStyle},
+#line 262 "CSSPropertyNames.gperf"
+      {"fill", CSSPropertyFill},
+#line 150 "CSSPropertyNames.gperf"
+      {"-webkit-animation-delay", CSSPropertyWebkitAnimationDelay},
+#line 277 "CSSPropertyNames.gperf"
+      {"stroke-opacity", CSSPropertyStrokeOpacity},
+#line 124 "CSSPropertyNames.gperf"
+      {"text-overline", CSSPropertyTextOverline},
+#line 181 "CSSPropertyNames.gperf"
+      {"-webkit-column-count", CSSPropertyWebkitColumnCount},
+#line 126 "CSSPropertyNames.gperf"
+      {"text-overline-mode", CSSPropertyTextOverlineMode},
+#line 46 "CSSPropertyNames.gperf"
+      {"border-top-right-radius", CSSPropertyBorderTopRightRadius},
+#line 240 "CSSPropertyNames.gperf"
       {"-webkit-transition-delay", CSSPropertyWebkitTransitionDelay},
-#line 53 "CSSPropertyNames.gperf"
+#line 61 "CSSPropertyNames.gperf"
       {"display", CSSPropertyDisplay},
-#line 86 "CSSPropertyNames.gperf"
+#line 94 "CSSPropertyNames.gperf"
       {"outline-width", CSSPropertyOutlineWidth},
-#line 235 "CSSPropertyNames.gperf"
+#line 242 "CSSPropertyNames.gperf"
       {"-webkit-transition-property", CSSPropertyWebkitTransitionProperty},
-#line 39 "CSSPropertyNames.gperf"
+#line 47 "CSSPropertyNames.gperf"
       {"border-top-style", CSSPropertyBorderTopStyle},
-#line 179 "CSSPropertyNames.gperf"
+#line 183 "CSSPropertyNames.gperf"
       {"-webkit-column-rule", CSSPropertyWebkitColumnRule},
-#line 162 "CSSPropertyNames.gperf"
-      {"-webkit-border-top-right-radius", CSSPropertyWebkitBorderTopRightRadius},
-#line 241 "CSSPropertyNames.gperf"
-      {"clip-path", CSSPropertyClipPath},
-#line 250 "CSSPropertyNames.gperf"
-      {"stop-opacity", CSSPropertyStopOpacity},
+#line 140 "CSSPropertyNames.gperf"
+      {"visibility", CSSPropertyVisibility},
 #line 248 "CSSPropertyNames.gperf"
+      {"clip-path", CSSPropertyClipPath},
+#line 257 "CSSPropertyNames.gperf"
+      {"stop-opacity", CSSPropertyStopOpacity},
+#line 247 "CSSPropertyNames.gperf"
+      {"-webkit-variable-declaration-block", CSSPropertyWebkitVariableDeclarationBlock},
+#line 229 "CSSPropertyNames.gperf"
+      {"-webkit-text-size-adjust", CSSPropertyWebkitTextSizeAdjust},
+#line 231 "CSSPropertyNames.gperf"
+      {"-webkit-text-stroke-color", CSSPropertyWebkitTextStrokeColor},
+#line 255 "CSSPropertyNames.gperf"
       {"lighting-color", CSSPropertyLightingColor},
-#line 63 "CSSPropertyNames.gperf"
+#line 71 "CSSPropertyNames.gperf"
       {"height", CSSPropertyHeight},
-#line 78 "CSSPropertyNames.gperf"
-      {"min-height", CSSPropertyMinHeight},
-#line 246 "CSSPropertyNames.gperf"
+#line 253 "CSSPropertyNames.gperf"
       {"flood-color", CSSPropertyFloodColor},
-#line 147 "CSSPropertyNames.gperf"
+#line 156 "CSSPropertyNames.gperf"
       {"-webkit-animation-timing-function", CSSPropertyWebkitAnimationTimingFunction},
+#line 131 "CSSPropertyNames.gperf"
+      {"text-underline", CSSPropertyTextUnderline},
+#line 86 "CSSPropertyNames.gperf"
+      {"min-height", CSSPropertyMinHeight},
+#line 155 "CSSPropertyNames.gperf"
+      {"-webkit-animation-play-state", CSSPropertyWebkitAnimationPlayState},
+#line 133 "CSSPropertyNames.gperf"
+      {"text-underline-mode", CSSPropertyTextUnderlineMode},
+#line 26 "CSSPropertyNames.gperf"
+      {"border-bottom-left-radius", CSSPropertyBorderBottomLeftRadius},
 #line 11 "CSSPropertyNames.gperf"
       {"background-attachment", CSSPropertyBackgroundAttachment},
-#line 222 "CSSPropertyNames.gperf"
-      {"-webkit-text-size-adjust", CSSPropertyWebkitTextSizeAdjust},
-#line 67 "CSSPropertyNames.gperf"
-      {"list-style", CSSPropertyListStyle},
-#line 28 "CSSPropertyNames.gperf"
+#line 33 "CSSPropertyNames.gperf"
       {"border-left-color", CSSPropertyBorderLeftColor},
-#line 158 "CSSPropertyNames.gperf"
+#line 75 "CSSPropertyNames.gperf"
+      {"list-style", CSSPropertyListStyle},
+#line 164 "CSSPropertyNames.gperf"
       {"-webkit-border-horizontal-spacing", CSSPropertyWebkitBorderHorizontalSpacing},
-#line 224 "CSSPropertyNames.gperf"
-      {"-webkit-text-stroke-color", CSSPropertyWebkitTextStrokeColor},
-#line 68 "CSSPropertyNames.gperf"
-      {"list-style-image", CSSPropertyListStyleImage},
-#line 34 "CSSPropertyNames.gperf"
-      {"border-right-width", CSSPropertyBorderRightWidth},
-#line 236 "CSSPropertyNames.gperf"
+#line 243 "CSSPropertyNames.gperf"
       {"-webkit-transition-timing-function", CSSPropertyWebkitTransitionTimingFunction},
-#line 183 "CSSPropertyNames.gperf"
+#line 76 "CSSPropertyNames.gperf"
+      {"list-style-image", CSSPropertyListStyleImage},
+#line 40 "CSSPropertyNames.gperf"
+      {"border-right-width", CSSPropertyBorderRightWidth},
+#line 187 "CSSPropertyNames.gperf"
       {"-webkit-column-width", CSSPropertyWebkitColumnWidth},
-#line 155 "CSSPropertyNames.gperf"
-      {"-webkit-border-bottom-left-radius", CSSPropertyWebkitBorderBottomLeftRadius},
-#line 123 "CSSPropertyNames.gperf"
-      {"text-underline", CSSPropertyTextUnderline},
-#line 217 "CSSPropertyNames.gperf"
-      {"-webkit-perspective-origin-y", CSSPropertyWebkitPerspectiveOriginY},
-#line 125 "CSSPropertyNames.gperf"
-      {"text-underline-mode", CSSPropertyTextUnderlineMode},
-#line 62 "CSSPropertyNames.gperf"
+#line 20 "CSSPropertyNames.gperf"
+      {"background-repeat-x", CSSPropertyBackgroundRepeatX},
+#line 70 "CSSPropertyNames.gperf"
       {"font-weight", CSSPropertyFontWeight},
-#line 253 "CSSPropertyNames.gperf"
+#line 260 "CSSPropertyNames.gperf"
       {"color-profile", CSSPropertyColorProfile},
-#line 216 "CSSPropertyNames.gperf"
-      {"-webkit-perspective-origin-x", CSSPropertyWebkitPerspectiveOriginX},
-#line 198 "CSSPropertyNames.gperf"
-      {"-webkit-marquee-style", CSSPropertyWebkitMarqueeStyle},
-#line 18 "CSSPropertyNames.gperf"
-      {"background-position-y", CSSPropertyBackgroundPositionY},
-#line 175 "CSSPropertyNames.gperf"
-      {"-webkit-column-break-before", CSSPropertyWebkitColumnBreakBefore},
-#line 174 "CSSPropertyNames.gperf"
-      {"-webkit-column-break-after", CSSPropertyWebkitColumnBreakAfter},
-#line 161 "CSSPropertyNames.gperf"
-      {"-webkit-border-top-left-radius", CSSPropertyWebkitBorderTopLeftRadius},
-#line 66 "CSSPropertyNames.gperf"
-      {"line-height", CSSPropertyLineHeight},
-#line 69 "CSSPropertyNames.gperf"
-      {"list-style-position", CSSPropertyListStylePosition},
+#line 45 "CSSPropertyNames.gperf"
+      {"border-top-left-radius", CSSPropertyBorderTopLeftRadius},
+#line 21 "CSSPropertyNames.gperf"
+      {"background-repeat-y", CSSPropertyBackgroundRepeatY},
 #line 17 "CSSPropertyNames.gperf"
       {"background-position-x", CSSPropertyBackgroundPositionX},
-#line 77 "CSSPropertyNames.gperf"
-      {"max-width", CSSPropertyMaxWidth},
-#line 106 "CSSPropertyNames.gperf"
-      {"table-layout", CSSPropertyTableLayout},
-#line 117 "CSSPropertyNames.gperf"
-      {"text-overline-color", CSSPropertyTextOverlineColor},
-#line 54 "CSSPropertyNames.gperf"
-      {"empty-cells", CSSPropertyEmptyCells},
-#line 169 "CSSPropertyNames.gperf"
-      {"-webkit-box-ordinal-group", CSSPropertyWebkitBoxOrdinalGroup},
 #line 85 "CSSPropertyNames.gperf"
-      {"outline-style", CSSPropertyOutlineStyle},
-#line 43 "CSSPropertyNames.gperf"
+      {"max-width", CSSPropertyMaxWidth},
+#line 223 "CSSPropertyNames.gperf"
+      {"-webkit-perspective-origin-x", CSSPropertyWebkitPerspectiveOriginX},
+#line 179 "CSSPropertyNames.gperf"
+      {"-webkit-column-break-before", CSSPropertyWebkitColumnBreakBefore},
+#line 178 "CSSPropertyNames.gperf"
+      {"-webkit-column-break-after", CSSPropertyWebkitColumnBreakAfter},
+#line 18 "CSSPropertyNames.gperf"
+      {"background-position-y", CSSPropertyBackgroundPositionY},
+#line 190 "CSSPropertyNames.gperf"
+      {"-webkit-font-smoothing", CSSPropertyWebkitFontSmoothing},
+#line 173 "CSSPropertyNames.gperf"
+      {"-webkit-box-ordinal-group", CSSPropertyWebkitBoxOrdinalGroup},
+#line 203 "CSSPropertyNames.gperf"
+      {"-webkit-marquee-style", CSSPropertyWebkitMarqueeStyle},
+#line 224 "CSSPropertyNames.gperf"
+      {"-webkit-perspective-origin-y", CSSPropertyWebkitPerspectiveOriginY},
+#line 51 "CSSPropertyNames.gperf"
       {"box-shadow", CSSPropertyBoxShadow},
-#line 121 "CSSPropertyNames.gperf"
+#line 129 "CSSPropertyNames.gperf"
       {"text-shadow", CSSPropertyTextShadow},
-#line 59 "CSSPropertyNames.gperf"
-      {"font-stretch", CSSPropertyFontStretch},
-#line 180 "CSSPropertyNames.gperf"
-      {"-webkit-column-rule-color", CSSPropertyWebkitColumnRuleColor},
-#line 265 "CSSPropertyNames.gperf"
-      {"stroke-dasharray", CSSPropertyStrokeDasharray},
-#line 30 "CSSPropertyNames.gperf"
-      {"border-left-width", CSSPropertyBorderLeftWidth},
-#line 225 "CSSPropertyNames.gperf"
-      {"-webkit-text-stroke-width", CSSPropertyWebkitTextStrokeWidth},
-#line 257 "CSSPropertyNames.gperf"
-      {"fill-rule", CSSPropertyFillRule},
-#line 122 "CSSPropertyNames.gperf"
-      {"text-transform", CSSPropertyTextTransform},
-#line 279 "CSSPropertyNames.gperf"
-      {"text-anchor", CSSPropertyTextAnchor},
-#line 274 "CSSPropertyNames.gperf"
-      {"baseline-shift", CSSPropertyBaselineShift},
-#line 229 "CSSPropertyNames.gperf"
-      {"-webkit-transform-origin-y", CSSPropertyWebkitTransformOriginY},
-#line 228 "CSSPropertyNames.gperf"
-      {"-webkit-transform-origin-x", CSSPropertyWebkitTransformOriginX},
-#line 33 "CSSPropertyNames.gperf"
-      {"border-right-style", CSSPropertyBorderRightStyle},
-#line 252 "CSSPropertyNames.gperf"
-      {"color-interpolation-filters", CSSPropertyColorInterpolationFilters},
-#line 124 "CSSPropertyNames.gperf"
-      {"text-underline-color", CSSPropertyTextUnderlineColor},
-#line 60 "CSSPropertyNames.gperf"
-      {"font-style", CSSPropertyFontStyle},
-#line 120 "CSSPropertyNames.gperf"
-      {"text-overline-width", CSSPropertyTextOverlineWidth},
-#line 89 "CSSPropertyNames.gperf"
-      {"overflow-y", CSSPropertyOverflowY},
-#line 88 "CSSPropertyNames.gperf"
-      {"overflow-x", CSSPropertyOverflowX},
-#line 115 "CSSPropertyNames.gperf"
-      {"text-overflow", CSSPropertyTextOverflow},
-#line 182 "CSSPropertyNames.gperf"
-      {"-webkit-column-rule-width", CSSPropertyWebkitColumnRuleWidth},
-#line 238 "CSSPropertyNames.gperf"
-      {"-webkit-user-modify", CSSPropertyWebkitUserModify},
-#line 231 "CSSPropertyNames.gperf"
-      {"-webkit-transform-style", CSSPropertyWebkitTransformStyle},
-#line 172 "CSSPropertyNames.gperf"
-      {"-webkit-box-reflect", CSSPropertyWebkitBoxReflect},
-#line 84 "CSSPropertyNames.gperf"
-      {"outline-offset", CSSPropertyOutlineOffset},
-#line 247 "CSSPropertyNames.gperf"
-      {"flood-opacity", CSSPropertyFloodOpacity},
-#line 29 "CSSPropertyNames.gperf"
-      {"border-left-style", CSSPropertyBorderLeftStyle},
-#line 127 "CSSPropertyNames.gperf"
-      {"text-underline-width", CSSPropertyTextUnderlineWidth},
-#line 76 "CSSPropertyNames.gperf"
-      {"max-height", CSSPropertyMaxHeight},
-#line 186 "CSSPropertyNames.gperf"
-      {"-webkit-highlight", CSSPropertyWebkitHighlight},
-#line 221 "CSSPropertyNames.gperf"
-      {"-webkit-text-security", CSSPropertyWebkitTextSecurity},
-#line 256 "CSSPropertyNames.gperf"
-      {"fill-opacity", CSSPropertyFillOpacity},
-#line 119 "CSSPropertyNames.gperf"
-      {"text-overline-style", CSSPropertyTextOverlineStyle},
-#line 149 "CSSPropertyNames.gperf"
-      {"-webkit-backface-visibility", CSSPropertyWebkitBackfaceVisibility},
-#line 70 "CSSPropertyNames.gperf"
-      {"list-style-type", CSSPropertyListStyleType},
-#line 266 "CSSPropertyNames.gperf"
-      {"stroke-dashoffset", CSSPropertyStrokeDashoffset},
-#line 211 "CSSPropertyNames.gperf"
-      {"-webkit-match-nearest-mail-blockquote-color", CSSPropertyWebkitMatchNearestMailBlockquoteColor},
-#line 181 "CSSPropertyNames.gperf"
-      {"-webkit-column-rule-style", CSSPropertyWebkitColumnRuleStyle},
-#line 277 "CSSPropertyNames.gperf"
-      {"glyph-orientation-vertical", CSSPropertyGlyphOrientationVertical},
-#line 220 "CSSPropertyNames.gperf"
-      {"-webkit-text-fill-color", CSSPropertyWebkitTextFillColor},
-#line 126 "CSSPropertyNames.gperf"
-      {"text-underline-style", CSSPropertyTextUnderlineStyle},
-#line 57 "CSSPropertyNames.gperf"
-      {"font-family", CSSPropertyFontFamily},
-#line 110 "CSSPropertyNames.gperf"
-      {"text-line-through", CSSPropertyTextLineThrough},
-#line 166 "CSSPropertyNames.gperf"
-      {"-webkit-box-flex", CSSPropertyWebkitBoxFlex},
-#line 112 "CSSPropertyNames.gperf"
-      {"text-line-through-mode", CSSPropertyTextLineThroughMode},
-#line 276 "CSSPropertyNames.gperf"
-      {"glyph-orientation-horizontal", CSSPropertyGlyphOrientationHorizontal},
-#line 219 "CSSPropertyNames.gperf"
-      {"-webkit-text-decorations-in-effect", CSSPropertyWebkitTextDecorationsInEffect},
-#line 111 "CSSPropertyNames.gperf"
-      {"text-line-through-color", CSSPropertyTextLineThroughColor},
-#line 167 "CSSPropertyNames.gperf"
-      {"-webkit-box-flex-group", CSSPropertyWebkitBoxFlexGroup},
+#line 74 "CSSPropertyNames.gperf"
+      {"line-height", CSSPropertyLineHeight},
+#line 77 "CSSPropertyNames.gperf"
+      {"list-style-position", CSSPropertyListStylePosition},
 #line 114 "CSSPropertyNames.gperf"
+      {"table-layout", CSSPropertyTableLayout},
+#line 125 "CSSPropertyNames.gperf"
+      {"text-overline-color", CSSPropertyTextOverlineColor},
+#line 62 "CSSPropertyNames.gperf"
+      {"empty-cells", CSSPropertyEmptyCells},
+#line 232 "CSSPropertyNames.gperf"
+      {"-webkit-text-stroke-width", CSSPropertyWebkitTextStrokeWidth},
+#line 130 "CSSPropertyNames.gperf"
+      {"text-transform", CSSPropertyTextTransform},
+#line 67 "CSSPropertyNames.gperf"
+      {"font-stretch", CSSPropertyFontStretch},
+#line 93 "CSSPropertyNames.gperf"
+      {"outline-style", CSSPropertyOutlineStyle},
+#line 286 "CSSPropertyNames.gperf"
+      {"text-anchor", CSSPropertyTextAnchor},
+#line 184 "CSSPropertyNames.gperf"
+      {"-webkit-column-rule-color", CSSPropertyWebkitColumnRuleColor},
+#line 272 "CSSPropertyNames.gperf"
+      {"stroke-dasharray", CSSPropertyStrokeDasharray},
+#line 35 "CSSPropertyNames.gperf"
+      {"border-left-width", CSSPropertyBorderLeftWidth},
+#line 264 "CSSPropertyNames.gperf"
+      {"fill-rule", CSSPropertyFillRule},
+#line 235 "CSSPropertyNames.gperf"
+      {"-webkit-transform-origin-x", CSSPropertyWebkitTransformOriginX},
+#line 281 "CSSPropertyNames.gperf"
+      {"baseline-shift", CSSPropertyBaselineShift},
+#line 132 "CSSPropertyNames.gperf"
+      {"text-underline-color", CSSPropertyTextUnderlineColor},
+#line 236 "CSSPropertyNames.gperf"
+      {"-webkit-transform-origin-y", CSSPropertyWebkitTransformOriginY},
+#line 259 "CSSPropertyNames.gperf"
+      {"color-interpolation-filters", CSSPropertyColorInterpolationFilters},
+#line 39 "CSSPropertyNames.gperf"
+      {"border-right-style", CSSPropertyBorderRightStyle},
+#line 68 "CSSPropertyNames.gperf"
+      {"font-style", CSSPropertyFontStyle},
+#line 128 "CSSPropertyNames.gperf"
+      {"text-overline-width", CSSPropertyTextOverlineWidth},
+#line 96 "CSSPropertyNames.gperf"
+      {"overflow-x", CSSPropertyOverflowX},
+#line 123 "CSSPropertyNames.gperf"
+      {"text-overflow", CSSPropertyTextOverflow},
+#line 176 "CSSPropertyNames.gperf"
+      {"-webkit-box-reflect", CSSPropertyWebkitBoxReflect},
+#line 245 "CSSPropertyNames.gperf"
+      {"-webkit-user-modify", CSSPropertyWebkitUserModify},
+#line 186 "CSSPropertyNames.gperf"
+      {"-webkit-column-rule-width", CSSPropertyWebkitColumnRuleWidth},
+#line 97 "CSSPropertyNames.gperf"
+      {"overflow-y", CSSPropertyOverflowY},
+#line 238 "CSSPropertyNames.gperf"
+      {"-webkit-transform-style", CSSPropertyWebkitTransformStyle},
+#line 92 "CSSPropertyNames.gperf"
+      {"outline-offset", CSSPropertyOutlineOffset},
+#line 135 "CSSPropertyNames.gperf"
+      {"text-underline-width", CSSPropertyTextUnderlineWidth},
+#line 254 "CSSPropertyNames.gperf"
+      {"flood-opacity", CSSPropertyFloodOpacity},
+#line 34 "CSSPropertyNames.gperf"
+      {"border-left-style", CSSPropertyBorderLeftStyle},
+#line 84 "CSSPropertyNames.gperf"
+      {"max-height", CSSPropertyMaxHeight},
+#line 228 "CSSPropertyNames.gperf"
+      {"-webkit-text-security", CSSPropertyWebkitTextSecurity},
+#line 191 "CSSPropertyNames.gperf"
+      {"-webkit-highlight", CSSPropertyWebkitHighlight},
+#line 263 "CSSPropertyNames.gperf"
+      {"fill-opacity", CSSPropertyFillOpacity},
+#line 273 "CSSPropertyNames.gperf"
+      {"stroke-dashoffset", CSSPropertyStrokeDashoffset},
+#line 127 "CSSPropertyNames.gperf"
+      {"text-overline-style", CSSPropertyTextOverlineStyle},
+#line 78 "CSSPropertyNames.gperf"
+      {"list-style-type", CSSPropertyListStyleType},
+#line 218 "CSSPropertyNames.gperf"
+      {"-webkit-match-nearest-mail-blockquote-color", CSSPropertyWebkitMatchNearestMailBlockquoteColor},
+#line 185 "CSSPropertyNames.gperf"
+      {"-webkit-column-rule-style", CSSPropertyWebkitColumnRuleStyle},
+#line 158 "CSSPropertyNames.gperf"
+      {"-webkit-backface-visibility", CSSPropertyWebkitBackfaceVisibility},
+#line 227 "CSSPropertyNames.gperf"
+      {"-webkit-text-fill-color", CSSPropertyWebkitTextFillColor},
+#line 134 "CSSPropertyNames.gperf"
+      {"text-underline-style", CSSPropertyTextUnderlineStyle},
+#line 284 "CSSPropertyNames.gperf"
+      {"glyph-orientation-vertical", CSSPropertyGlyphOrientationVertical},
+#line 65 "CSSPropertyNames.gperf"
+      {"font-family", CSSPropertyFontFamily},
+#line 170 "CSSPropertyNames.gperf"
+      {"-webkit-box-flex", CSSPropertyWebkitBoxFlex},
+#line 118 "CSSPropertyNames.gperf"
+      {"text-line-through", CSSPropertyTextLineThrough},
+#line 120 "CSSPropertyNames.gperf"
+      {"text-line-through-mode", CSSPropertyTextLineThroughMode},
+#line 226 "CSSPropertyNames.gperf"
+      {"-webkit-text-decorations-in-effect", CSSPropertyWebkitTextDecorationsInEffect},
+#line 283 "CSSPropertyNames.gperf"
+      {"glyph-orientation-horizontal", CSSPropertyGlyphOrientationHorizontal},
+#line 171 "CSSPropertyNames.gperf"
+      {"-webkit-box-flex-group", CSSPropertyWebkitBoxFlexGroup},
+#line 119 "CSSPropertyNames.gperf"
+      {"text-line-through-color", CSSPropertyTextLineThroughColor},
+#line 122 "CSSPropertyNames.gperf"
       {"text-line-through-width", CSSPropertyTextLineThroughWidth},
-#line 113 "CSSPropertyNames.gperf"
+#line 121 "CSSPropertyNames.gperf"
       {"text-line-through-style", CSSPropertyTextLineThroughStyle}
     };
 
@@ -794,132 +808,130 @@ findProp (register const char *str, register unsigned int len)
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  38,  39,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  40,  -1,  -1,
        -1,  -1,  41,  -1,  -1,  -1,  -1,  -1,  -1,  42,
-       -1,  -1,  -1,  -1,  -1,  -1,  43,  -1,  -1,  44,
-       -1,  45,  -1,  -1,  -1,  -1,  -1,  46,  -1,  -1,
-       -1,  47,  -1,  48,  -1,  -1,  -1,  49,  -1,  -1,
-       50,  -1,  -1,  -1,  -1,  51,  -1,  -1,  -1,  -1,
-       -1,  -1,  52,  -1,  -1,  -1,  -1,  53,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       54,  55,  -1,  -1,  56,  57,  -1,  -1,  -1,  -1,
-       58,  -1,  59,  -1,  -1,  -1,  -1,  60,  -1,  -1,
-       -1,  -1,  -1,  -1,  61,  -1,  62,  63,  -1,  -1,
-       -1,  64,  65,  -1,  -1,  66,  -1,  -1,  -1,  -1,
-       -1,  -1,  67,  -1,  -1,  -1,  -1,  -1,  -1,  68,
-       -1,  -1,  69,  70,  -1,  71,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  72,  -1,  -1,  73,  74,  -1,  -1,
-       -1,  75,  -1,  -1,  -1,  -1,  76,  77,  78,  -1,
-       -1,  -1,  -1,  -1,  -1,  79,  80,  -1,  -1,  81,
-       -1,  -1,  -1,  82,  -1,  -1,  83,  -1,  -1,  84,
-       85,  -1,  -1,  -1,  86,  87,  -1,  88,  -1,  -1,
-       89,  90,  -1,  91,  -1,  -1,  -1,  -1,  92,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  93,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  43,  -1,  -1,  -1,
+       -1,  44,  -1,  -1,  -1,  -1,  -1,  45,  -1,  -1,
+       -1,  46,  -1,  47,  -1,  -1,  -1,  48,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  49,  -1,  -1,  -1,  -1,
+       50,  -1,  51,  -1,  -1,  -1,  -1,  52,  -1,  -1,
+       -1,  -1,  -1,  -1,  53,  -1,  -1,  -1,  -1,  -1,
+       54,  -1,  -1,  -1,  55,  56,  -1,  -1,  57,  -1,
+       -1,  58,  59,  -1,  -1,  -1,  -1,  60,  -1,  -1,
+       61,  -1,  -1,  -1,  62,  -1,  63,  64,  -1,  -1,
+       -1,  65,  66,  -1,  -1,  67,  -1,  -1,  -1,  -1,
+       -1,  -1,  68,  -1,  -1,  -1,  -1,  -1,  -1,  69,
+       -1,  -1,  70,  71,  -1,  72,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  73,  -1,  -1,  74,  75,  -1,  -1,
+       -1,  76,  -1,  -1,  -1,  -1,  77,  78,  79,  -1,
+       -1,  -1,  -1,  -1,  -1,  80,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  81,  -1,  82,  83,  -1,  -1,  84,
+       85,  -1,  -1,  -1,  86,  -1,  87,  88,  -1,  -1,
+       -1,  -1,  -1,  89,  -1,  90,  -1,  -1,  -1,  -1,
+       91,  -1,  -1,  -1,  -1,  -1,  -1,  92,  -1,  -1,
+       -1,  -1,  -1,  -1,  93,  -1,  -1,  -1,  -1,  -1,
        94,  -1,  95,  -1,  -1,  96,  -1,  -1,  -1,  97,
-       -1,  -1,  -1,  -1,  98,  -1,  -1,  99,  -1,  -1,
-       -1,  -1, 100,  -1, 101,  -1,  -1, 102,  -1, 103,
-       -1,  -1,  -1,  -1, 104,  -1,  -1, 105,  -1,  -1,
+       -1,  -1,  -1,  -1,  98,  -1,  99, 100,  -1,  -1,
+       -1,  -1, 101,  -1, 102,  -1,  -1, 103,  -1, 104,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1, 105,  -1,  -1,
        -1,  -1, 106,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-      107,  -1,  -1, 108, 109,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1, 110,  -1,  -1, 111,  -1,
-       -1,  -1,  -1,  -1, 112,  -1,  -1, 113, 114, 115,
-       -1, 116,  -1,  -1,  -1,  -1,  -1, 117,  -1,  -1,
-       -1,  -1, 118, 119,  -1,  -1,  -1,  -1, 120,  -1,
-       -1,  -1, 121, 122,  -1, 123, 124,  -1,  -1,  -1,
-      125, 126, 127,  -1,  -1,  -1, 128,  -1, 129,  -1,
-       -1,  -1, 130,  -1, 131,  -1, 132,  -1,  -1, 133,
-       -1,  -1,  -1, 134, 135,  -1, 136,  -1,  -1,  -1,
-      137, 138,  -1, 139,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1, 140,  -1,  -1, 141, 142,  -1, 143,  -1,  -1,
-       -1, 144,  -1,  -1, 145,  -1,  -1, 146, 147,  -1,
-       -1, 148,  -1,  -1,  -1,  -1,  -1,  -1, 149,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 150,  -1,
-       -1,  -1,  -1,  -1,  -1, 151,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1, 152, 153,  -1,
-       -1, 154, 155, 156,  -1,  -1,  -1, 157, 158,  -1,
-      159,  -1,  -1,  -1, 160,  -1,  -1,  -1,  -1, 161,
-       -1,  -1,  -1, 162,  -1, 163,  -1,  -1,  -1, 164,
-       -1,  -1, 165, 166, 167,  -1,  -1,  -1, 168, 169,
-      170,  -1,  -1, 171,  -1,  -1, 172, 173,  -1, 174,
-       -1,  -1, 175, 176,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1, 177,  -1,  -1,  -1, 178,  -1,  -1, 179,
-       -1, 180,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 181,
-       -1,  -1, 182,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1, 183,  -1,  -1,  -1,  -1,  -1,
-       -1, 184,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-      185,  -1,  -1,  -1,  -1,  -1, 186,  -1, 187,  -1,
-       -1, 188,  -1,  -1, 189, 190,  -1,  -1,  -1,  -1,
-       -1,  -1, 191, 192,  -1, 193,  -1,  -1,  -1,  -1,
-       -1, 194,  -1, 195, 196,  -1,  -1,  -1,  -1,  -1,
-      197,  -1,  -1, 198, 199,  -1,  -1,  -1, 200, 201,
-       -1,  -1,  -1,  -1,  -1,  -1, 202,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 203,  -1,
-       -1,  -1,  -1, 204,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1, 205,  -1,  -1,  -1,  -1, 206, 207,  -1,  -1,
-       -1, 208,  -1,  -1,  -1, 209,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1, 210,  -1,  -1, 211,
-       -1, 212,  -1,  -1, 213,  -1,  -1, 214,  -1, 215,
-       -1, 216,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1, 217,  -1,  -1, 218,  -1,
-      219, 220, 221,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-      222,  -1,  -1,  -1,  -1,  -1, 223,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1, 224,  -1,  -1,
-      225,  -1,  -1,  -1, 226,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1, 227,  -1, 228,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 229,
-       -1, 230,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+      107,  -1,  -1, 108, 109,  -1,  -1,  -1, 110,  -1,
+       -1,  -1,  -1,  -1, 111, 112, 113, 114,  -1, 115,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1, 116, 117, 118,
+       -1, 119,  -1,  -1, 120,  -1,  -1, 121, 122,  -1,
+       -1,  -1, 123, 124,  -1,  -1,  -1,  -1, 125,  -1,
+       -1,  -1,  -1, 126,  -1, 127, 128,  -1,  -1, 129,
+      130,  -1, 131,  -1, 132,  -1, 133,  -1, 134,  -1,
+       -1,  -1, 135, 136, 137,  -1, 138, 139,  -1,  -1,
+      140, 141,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1, 142,  -1, 143,  -1,  -1,  -1,  -1,  -1,  -1,
+      144, 145,  -1,  -1,  -1, 146,  -1, 147,  -1,  -1,
+       -1, 148,  -1,  -1, 149,  -1, 150,  -1,  -1,  -1,
+       -1, 151,  -1,  -1,  -1, 152, 153,  -1, 154,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1, 231,  -1, 232,  -1,
-       -1,  -1, 233,  -1,  -1, 234,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1, 235,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1, 155, 156, 157,  -1,
+       -1,  -1, 158, 159,  -1,  -1, 160, 161, 162,  -1,
+       -1, 163, 164,  -1,  -1,  -1,  -1, 165, 166,  -1,
+       -1,  -1,  -1, 167, 168,  -1,  -1,  -1,  -1, 169,
+       -1,  -1,  -1, 170,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1, 171,  -1,  -1,  -1, 172,  -1,
+      173,  -1,  -1, 174,  -1,  -1,  -1,  -1, 175, 176,
+       -1,  -1, 177, 178,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1, 179,  -1,  -1,  -1, 180,  -1,  -1, 181,
+      182,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 183,
+       -1,  -1, 184,  -1, 185,  -1,  -1,  -1,  -1, 186,
+      187,  -1,  -1,  -1, 188,  -1,  -1,  -1,  -1,  -1,
+       -1, 189,  -1,  -1,  -1,  -1, 190,  -1, 191, 192,
+      193,  -1,  -1, 194, 195,  -1,  -1,  -1,  -1,  -1,
+      196, 197, 198,  -1,  -1, 199,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1, 200, 201,  -1,  -1,  -1,  -1,  -1,
+       -1, 202,  -1, 203,  -1,  -1,  -1,  -1,  -1,  -1,
+      204,  -1,  -1,  -1, 205,  -1, 206,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 207,  -1,
+       -1,  -1, 208,  -1, 209,  -1, 210,  -1,  -1, 211,
+       -1,  -1,  -1, 212,  -1,  -1,  -1, 213,  -1,  -1,
+       -1, 214,  -1,  -1,  -1,  -1, 215, 216,  -1,  -1,
+      217, 218,  -1, 219,  -1, 220, 221,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1, 222,  -1,  -1, 223,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1, 224,  -1, 225,
+       -1, 226,  -1,  -1,  -1, 227,  -1,  -1,  -1, 228,
+       -1,  -1, 229,  -1,  -1,  -1,  -1,  -1, 230,  -1,
+       -1, 231,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+      232,  -1,  -1,  -1,  -1,  -1, 233, 234,  -1,  -1,
+       -1,  -1,  -1,  -1, 235,  -1,  -1,  -1,  -1,  -1,
+       -1, 236,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 237,
+      238, 239,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1, 236, 237,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1, 240,  -1,  -1,  -1,  -1,  -1, 241,  -1,
+       -1,  -1,  -1,  -1,  -1, 242,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-      238,  -1,  -1, 239,  -1, 240,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1, 241,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1, 242,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1, 243,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1, 243,  -1,  -1,  -1,  -1, 244,
-       -1,  -1,  -1, 245,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1, 246,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+      244,  -1,  -1, 245,  -1,  -1,  -1,  -1,  -1, 246,
+       -1,  -1,  -1,  -1, 247, 248,  -1,  -1,  -1,  -1,
+      249,  -1,  -1, 250,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-      247,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 251,
+       -1,  -1,  -1,  -1,  -1, 252,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1, 253,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1, 254,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1, 255,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-      248,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1, 256,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1, 249,  -1,  -1,  -1, 250,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1, 251,  -1, 252,
-       -1,  -1, 253,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-      254,  -1,  -1,  -1,  -1,  -1,  -1, 255, 256,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-      257, 258,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1, 257,  -1,  -1,  -1,  -1, 258,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1, 259,  -1, 260,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+      261,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 262,  -1,
+      263,  -1,  -1,  -1,  -1,  -1,  -1, 264,  -1,  -1,
+       -1,  -1,  -1, 265,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+      266,  -1,  -1,  -1,  -1,  -1, 267,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 259,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1, 260,  -1,  -1,  -1,  -1,
-       -1, 261,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1, 268,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1, 269,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1, 270,  -1,  -1,  -1,  -1, 271,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 272,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1, 262,  -1,  -1,
-       -1, 263, 264,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 265,  -1,
-       -1,  -1,  -1,  -1, 266,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 273,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
@@ -927,15 +939,15 @@ findProp (register const char *str, register unsigned int len)
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1, 274,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1, 275,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 267,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1, 268,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
@@ -944,10 +956,10 @@ findProp (register const char *str, register unsigned int len)
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 276,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1, 269,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
@@ -964,9 +976,7 @@ findProp (register const char *str, register unsigned int len)
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
        -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 270
+       -1,  -1,  -1, 277
     };
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
@@ -988,9 +998,9 @@ findProp (register const char *str, register unsigned int len)
     }
   return 0;
 }
-#line 281 "CSSPropertyNames.gperf"
+#line 288 "CSSPropertyNames.gperf"
 
-static const char * const propertyNameStrings[271] = {
+static const char * const propertyNameStrings[278] = {
 "background",
 "background-attachment",
 "background-clip",
@@ -1001,9 +1011,14 @@ static const char * const propertyNameStrings[271] = {
 "background-position-x",
 "background-position-y",
 "background-repeat",
+"background-repeat-x",
+"background-repeat-y",
+"background-size",
 "border",
 "border-bottom",
 "border-bottom-color",
+"border-bottom-left-radius",
+"border-bottom-right-radius",
 "border-bottom-style",
 "border-bottom-width",
 "border-collapse",
@@ -1012,6 +1027,7 @@ static const char * const propertyNameStrings[271] = {
 "border-left-color",
 "border-left-style",
 "border-left-width",
+"border-radius",
 "border-right",
 "border-right-color",
 "border-right-style",
@@ -1020,6 +1036,8 @@ static const char * const propertyNameStrings[271] = {
 "border-style",
 "border-top",
 "border-top-color",
+"border-top-left-radius",
+"border-top-right-radius",
 "border-top-style",
 "border-top-width",
 "border-width",
@@ -1128,22 +1146,18 @@ static const char * const propertyNameStrings[271] = {
 "-webkit-animation-duration",
 "-webkit-animation-iteration-count",
 "-webkit-animation-name",
+"-webkit-animation-play-state",
 "-webkit-animation-timing-function",
 "-webkit-appearance",
 "-webkit-backface-visibility",
 "-webkit-background-clip",
 "-webkit-background-composite",
 "-webkit-background-origin",
-"-webkit-background-size",
 "-webkit-binding",
-"-webkit-border-bottom-left-radius",
-"-webkit-border-bottom-right-radius",
 "-webkit-border-fit",
 "-webkit-border-horizontal-spacing",
 "-webkit-border-image",
 "-webkit-border-radius",
-"-webkit-border-top-left-radius",
-"-webkit-border-top-right-radius",
 "-webkit-border-vertical-spacing",
 "-webkit-box-align",
 "-webkit-box-direction",
@@ -1167,6 +1181,7 @@ static const char * const propertyNameStrings[271] = {
 "-webkit-column-width",
 "-webkit-columns",
 "-webkit-font-size-delta",
+"-webkit-font-smoothing",
 "-webkit-highlight",
 "-webkit-line-break",
 "-webkit-line-clamp",
@@ -1191,6 +1206,8 @@ static const char * const propertyNameStrings[271] = {
 "-webkit-mask-position-x",
 "-webkit-mask-position-y",
 "-webkit-mask-repeat",
+"-webkit-mask-repeat-x",
+"-webkit-mask-repeat-y",
 "-webkit-mask-size",
 "-webkit-match-nearest-mail-blockquote-color",
 "-webkit-nbsp-mode",

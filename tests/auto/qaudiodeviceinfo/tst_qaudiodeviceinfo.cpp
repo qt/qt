@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -77,7 +77,7 @@ private:
 void tst_QAudioDeviceInfo::initTestCase()
 {
     // Only perform tests if audio output device exists!
-    QList<QAudioDeviceId> devices = QAudioDeviceInfo::deviceList(QAudio::AudioOutput);
+    QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::deviceList(QAudio::AudioOutput);
     if(devices.size() > 0)
         available = true;
     else {
@@ -90,7 +90,7 @@ void tst_QAudioDeviceInfo::checkAvailableDefaultInput()
 {
     // Only perform tests if audio input device exists!
     bool storeAvailable = available;
-    QList<QAudioDeviceId> devices = QAudioDeviceInfo::deviceList(QAudio::AudioInput);
+    QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::deviceList(QAudio::AudioInput);
     if(devices.size() > 0)
         available = true;
     else {
@@ -111,9 +111,9 @@ void tst_QAudioDeviceInfo::checkAvailableDefaultOutput()
 void tst_QAudioDeviceInfo::outputList()
 {
     if(available) {
-        QList<QAudioDeviceId> devices = QAudioDeviceInfo::deviceList(QAudio::AudioOutput);
+        QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::deviceList(QAudio::AudioOutput);
         QVERIFY(devices.size() > 0);
-        device = new QAudioDeviceInfo(devices.at(0), this);
+        device = new QAudioDeviceInfo(devices.at(0));
     }
 }
 

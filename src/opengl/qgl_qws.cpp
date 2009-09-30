@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -41,6 +41,7 @@
 
 #include "qgl.h"
 #include "qgl_egl_p.h"
+#include "qglpixelbuffer.h"
 
 #include <qglscreen_qws.h>
 #include <qscreenproxy_qws.h>
@@ -86,12 +87,6 @@ static QGLScreen *glScreenForDevice(QPaintDevice *device)
  *****************************************************************************/
 //#define DEBUG_OPENGL_REGION_UPDATE
 
-bool QGLFormat::hasOpenGL()
-{
-    return true;
-}
-
-
 bool QGLFormat::hasOpenGLOverlays()
 {
     QGLScreen *glScreen = glScreenForDevice(0);
@@ -116,17 +111,17 @@ void qt_egl_add_platform_config(QEglProperties& props, QPaintDevice *device)
         props.setPixelFormat(glScreen->pixelFormat());
 }
 
-static bool qt_egl_create_surface
+static EGLSurface qt_egl_create_surface
     (QEglContext *context, QPaintDevice *device,
      const QEglProperties *properties = 0)
 {
     // Get the screen surface functions, which are used to create native ids.
     QGLScreen *glScreen = glScreenForDevice(device);
     if (!glScreen)
-        return false;
+        return EGL_NO_SURFACE;
     QGLScreenSurfaceFunctions *funcs = glScreen->surfaceFunctions();
     if (!funcs)
-        return false;
+        return EGL_NO_SURFACE;
 
     // Create the native drawable for the paint device.
     int devType = device->devType();
@@ -142,7 +137,7 @@ static bool qt_egl_create_surface
     }
     if (!ok) {
         qWarning("QEglContext::createSurface(): Cannot create the native EGL drawable");
-        return false;
+        return EGL_NO_SURFACE;
     }
 
     // Create the EGL surface to draw into, based on the native drawable.
@@ -159,12 +154,9 @@ static bool qt_egl_create_surface
         surf = eglCreatePixmapSurface
             (context->display(), context->config(), pixmapDrawable, props);
     }
-    if (surf == EGL_NO_SURFACE) {
+    if (surf == EGL_NO_SURFACE)
         qWarning("QEglContext::createSurface(): Unable to create EGL surface, error = 0x%x", eglGetError());
-        return false;
-    }
-    context->setSurface(surf);
-    return true;
+    return surf;
 }
 
 bool QGLContext::chooseContext(const QGLContext* shareContext)
@@ -222,7 +214,8 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     // Create the EGL surface to draw into.  We cannot use
     // QEglContext::createSurface() because it does not have
     // access to the QGLScreen.
-    if (!qt_egl_create_surface(d->eglContext, device())) {
+    d->eglSurface = qt_egl_create_surface(d->eglContext, device());
+    if (d->eglSurface == EGL_NO_SURFACE) {
         delete d->eglContext;
         d->eglContext = 0;
         return false;
@@ -232,94 +225,9 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
 }
 
 
-void QGLContext::reset()
-{
-    Q_D(QGLContext);
-    if (!d->valid)
-        return;
-    d->cleanup();
-    doneCurrent();
-    if (d->eglContext) {
-        delete d->eglContext;
-        d->eglContext = 0;
-    }
-    d->crWin = false;
-    d->sharing = false;
-    d->valid = false;
-    d->transpColor = QColor();
-    d->initDone = false;
-    qgl_share_reg()->removeShare(this);
-}
-
-void QGLContext::makeCurrent()
-{
-    Q_D(QGLContext);
-    if(!d->valid || !d->eglContext) {
-        qWarning("QGLContext::makeCurrent(): Cannot make invalid context current");
-        return;
-    }
-
-    if (d->eglContext->makeCurrent()) {
-        if (!qgl_context_storage.hasLocalData() && QThread::currentThread())
-            qgl_context_storage.setLocalData(new QGLThreadContext);
-        if (qgl_context_storage.hasLocalData())
-            qgl_context_storage.localData()->context = this;
-        currentCtx = this;
-    }
-}
-
-void QGLContext::doneCurrent()
-{
-    Q_D(QGLContext);
-    if (d->eglContext)
-        d->eglContext->doneCurrent();
-
-    if (qgl_context_storage.hasLocalData())
-        qgl_context_storage.localData()->context = 0;
-    currentCtx = 0;
-}
-
-
-void QGLContext::swapBuffers() const
-{
-    Q_D(const QGLContext);
-    if(!d->valid || !d->eglContext)
-        return;
-
-    d->eglContext->swapBuffers();
-}
-
-QColor QGLContext::overlayTransparentColor() const
-{
-    return QColor(0, 0, 0);                // Invalid color
-}
-
-uint QGLContext::colorIndex(const QColor &c) const
-{
-    //### color index doesn't work on egl
-    Q_UNUSED(c);
-    return 0;
-}
-
-void QGLContext::generateFontDisplayLists(const QFont & fnt, int listBase)
-{
-    Q_UNUSED(fnt);
-    Q_UNUSED(listBase);
-}
-
-void *QGLContext::getProcAddress(const QString &proc) const
-{
-    return (void*)eglGetProcAddress(reinterpret_cast<const char *>(proc.toLatin1().data()));
-}
-
 bool QGLWidget::event(QEvent *e)
 {
     return QWidget::event(e);
-}
-
-void QGLWidget::setMouseTracking(bool enable)
-{
-    QWidget::setMouseTracking(enable);
 }
 
 
@@ -386,11 +294,6 @@ void QGLWidgetPrivate::init(QGLContext *context, const QGLWidget* shareWidget)
     }
 }
 
-bool QGLWidgetPrivate::renderCxPm(QPixmap*)
-{
-    return false;
-}
-
 void QGLWidgetPrivate::cleanupColormaps()
 {
 }
@@ -411,7 +314,29 @@ void QGLExtensions::init()
     if (init_done)
         return;
     init_done = true;
+
+    // We need a context current to initialize the extensions,
+    // but getting a valid EGLNativeWindowType this early can be
+    // problematic under QWS.  So use a pbuffer instead.
+    //
+    // Unfortunately OpenGL/ES 2.0 systems don't normally
+    // support pbuffers, so we have no choice but to try
+    // our luck with a window on those systems.
+#if defined(QT_OPENGL_ES_2)
+    QGLWidget tmpWidget;
+    tmpWidget.makeCurrent();
+
     init_extensions();
+
+    tmpWidget.doneCurrent();
+#else
+    QGLPixelBuffer pbuffer(16, 16);
+    pbuffer.makeCurrent();
+
+    init_extensions();
+
+    pbuffer.doneCurrent();
+#endif
 }
 
 QT_END_NAMESPACE

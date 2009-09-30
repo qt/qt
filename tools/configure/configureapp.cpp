@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -1154,9 +1154,6 @@ void Configure::parseCmdLine()
             } else {
                 dictionary[ "QMAKEMAKEFILE" ] = "Makefile.win32-g++";
             }
-        } else if ( dictionary[ "QMAKESPEC" ] == QString( "win32-mwc" ) ) {
-                dictionary[ "QMAKEMAKEFILE" ] = "Makefile.win32-mwc";
-                dictionary[ "MAKE" ] = "make";
         } else {
             if ( dictionary[ "MAKE" ].isEmpty() ) dictionary[ "MAKE" ] = "make";
             dictionary[ "QMAKEMAKEFILE" ] = "Makefile.win32";
@@ -1167,7 +1164,7 @@ void Configure::parseCmdLine()
     dictionary["QTBUILDINSTRUCTION"] = dictionary["MAKE"];
     if (dictionary.contains("XQMAKESPEC")) {
         if (dictionary["XQMAKESPEC"].startsWith("symbian")) {
-            dictionary["QTBUILDINSTRUCTION"] = dictionary["MAKE"] + QString(" debug-winscw|debug-armv5|release-armv5");
+            dictionary["QTBUILDINSTRUCTION"] = QString("make debug-winscw|debug-armv5|release-armv5");
         } else if (dictionary["XQMAKESPEC"].startsWith("wince")) {
             dictionary["QTBUILDINSTRUCTION"] =
                 QString("setcepaths.bat ") + dictionary["XQMAKESPEC"] + QString(" && ") + dictionary["MAKE"];
@@ -2028,9 +2025,9 @@ bool Configure::checkAvailability(const QString &part)
             if (!findFile("msdmo.lib")) cout << "msdmo.lib not found" << endl;
             if (!findFile("d3d9.h")) cout << "d3d9.h not found" << endl;
         }
-    } else if (part == "MULTIMEDIA") {
+    } else if (part == "MULTIMEDIA" || part == "SCRIPT" || part == "SCRIPTTOOLS") {
         available = true;
-    } else if (part == "WEBKIT" || part == "SCRIPT" || part == "SCRIPTTOOLS") {
+    } else if (part == "WEBKIT") {
         available = (dictionary.value("QMAKESPEC") == "win32-msvc2005") || (dictionary.value("QMAKESPEC") == "win32-msvc2008") || (dictionary.value("QMAKESPEC") == "win32-g++");
     }
 
@@ -2788,7 +2785,6 @@ static void applyTemporarySymbianFlags(QStringList &qconfigList)
     // This is removed because it uses UNIX signals which are not implemented yet
     qconfigList += "QT_NO_CRASHHANDLER";
     qconfigList += "QT_NO_PRINTER";
-    qconfigList += "QT_NO_CURSOR";
     qconfigList += "QT_NO_SYSTEMTRAYICON";
 }
 

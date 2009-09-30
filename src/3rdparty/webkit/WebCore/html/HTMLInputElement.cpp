@@ -26,6 +26,7 @@
 #include "config.h"
 #include "HTMLInputElement.h"
 
+#include "AXObjectCache.h"
 #include "CSSPropertyNames.h"
 #include "ChromeClient.h"
 #include "Document.h"
@@ -38,9 +39,11 @@
 #include "FocusController.h"
 #include "FormDataList.h"
 #include "Frame.h"
+#include "HTMLDataListElement.h"
 #include "HTMLFormElement.h"
 #include "HTMLImageLoader.h"
 #include "HTMLNames.h"
+#include "HTMLOptionElement.h"
 #include "ScriptEventListener.h"
 #include "KeyboardEvent.h"
 #include "LocalizedStrings.h"
@@ -56,6 +59,7 @@
 #include "RenderTextControlSingleLine.h"
 #include "RenderTheme.h"
 #include "TextEvent.h"
+#include <wtf/MathExtras.h>
 #include <wtf/StdLibExtras.h>
 
 using namespace std;
@@ -67,7 +71,7 @@ using namespace HTMLNames;
 const int maxSavedResults = 256;
 
 HTMLInputElement::HTMLInputElement(const QualifiedName& tagName, Document* doc, HTMLFormElement* f)
-    : HTMLFormControlElementWithState(tagName, doc, f)
+    : HTMLTextFormControlElement(tagName, doc, f)
     , m_xPos(0)
     , m_yPos(0)
     , m_maxResults(-1)
@@ -134,6 +138,8 @@ bool HTMLInputElement::valueMissing() const
             return !checked();
         case RADIO:
             return !document()->checkedRadioButtons().checkedButtonForGroup(name());
+        case COLOR:
+            return false;
         case HIDDEN:
         case RANGE:
         case SUBMIT:
@@ -162,6 +168,7 @@ bool HTMLInputElement::patternMismatch() const
         case BUTTON:
         case RANGE:
         case NUMBER:
+        case COLOR:
             return false;
         case TEXT:
         case SEARCH:
@@ -250,20 +257,17 @@ bool HTMLInputElement::shouldUseInputMethod() const
     return m_type == TEXT || m_type == SEARCH || m_type == ISINDEX;
 }
 
-void HTMLInputElement::dispatchFocusEvent()
+void HTMLInputElement::handleFocusEvent()
 {
-    InputElement::dispatchFocusEvent(m_data, this, this);
+    InputElement::dispatchFocusEvent(this, this);
 
     if (isTextField())
         m_autofilled = false;
-
-    HTMLFormControlElementWithState::dispatchFocusEvent();
 }
 
-void HTMLInputElement::dispatchBlurEvent()
+void HTMLInputElement::handleBlurEvent()
 {
-    InputElement::dispatchBlurEvent(m_data, this, this);
-    HTMLFormControlElementWithState::dispatchBlurEvent();
+    InputElement::dispatchBlurEvent(this, this);
 }
 
 void HTMLInputElement::setType(const String& t)
@@ -311,6 +315,8 @@ void HTMLInputElement::setInputType(const String& t)
         newType = TELEPHONE;
     else if (equalIgnoringCase(t, "url"))
         newType = URL;
+    else if (equalIgnoringCase(t, "color"))
+        newType = COLOR;
     else
         newType = TEXT;
 
@@ -345,7 +351,7 @@ void HTMLInputElement::setInputType(const String& t)
                 m_data.setValue(String());
             }
             if (!didStoreValue && willStoreValue)
-                m_data.setValue(constrainValue(getAttribute(valueAttr)));
+                m_data.setValue(sanitizeValue(getAttribute(valueAttr)));
             else
                 InputElement::updateValueIfNeeded(m_data, this);
 
@@ -393,6 +399,10 @@ const AtomicString& HTMLInputElement::formControlType() const
         case CHECKBOX: {
             DEFINE_STATIC_LOCAL(const AtomicString, checkbox, ("checkbox"));
             return checkbox;
+        }
+        case COLOR: {
+            DEFINE_STATIC_LOCAL(const AtomicString, color, ("color"));
+            return color;
         }
         case EMAIL: {
             DEFINE_STATIC_LOCAL(const AtomicString, email, ("email"));
@@ -463,6 +473,7 @@ bool HTMLInputElement::saveFormControlState(String& result) const
 
     switch (inputType()) {
         case BUTTON:
+        case COLOR:
         case EMAIL:
         case FILE:
         case HIDDEN:
@@ -494,6 +505,7 @@ void HTMLInputElement::restoreFormControlState(const String& state)
     ASSERT(inputType() != PASSWORD); // should never save/restore password fields
     switch (inputType()) {
         case BUTTON:
+        case COLOR:
         case EMAIL:
         case FILE:
         case HIDDEN:
@@ -605,6 +617,7 @@ void HTMLInputElement::accessKeyAction(bool sendToAnyElement)
         case HIDDEN:
             // a no-op for this type
             break;
+        case COLOR:
         case EMAIL:
         case ISINDEX:
         case NUMBER:
@@ -725,8 +738,7 @@ void HTMLInputElement::parseMappedAttribute(MappedAttribute *attr)
         }
         setNeedsStyleRecalc();
     } else if (attr->name() == placeholderAttr) {
-        if (isTextField())
-            updatePlaceholderVisibility();
+        updatePlaceholderVisibility(true);
     } else if (attr->name() == autosaveAttr ||
              attr->name() == incrementalAttr ||
              attr->name() == minAttr ||
@@ -734,6 +746,11 @@ void HTMLInputElement::parseMappedAttribute(MappedAttribute *attr)
              attr->name() == multipleAttr ||
              attr->name() == precisionAttr)
         setNeedsStyleRecalc();
+#if ENABLE(DATALIST)
+    else if (attr->name() == listAttr)
+        m_hasNonEmptyList = !attr->isEmpty();
+        // FIXME: we need to tell this change to a renderer if the attribute affects the appearance.
+#endif
     else
         HTMLFormControlElementWithState::parseMappedAttribute(attr);
 }
@@ -743,6 +760,7 @@ bool HTMLInputElement::rendererIsNeeded(RenderStyle *style)
     switch (inputType()) {
         case BUTTON:
         case CHECKBOX:
+        case COLOR:
         case EMAIL:
         case FILE:
         case IMAGE:
@@ -783,6 +801,7 @@ RenderObject *HTMLInputElement::createRenderer(RenderArena *arena, RenderStyle *
             return new (arena) RenderImage(this);
         case RANGE:
             return new (arena) RenderSlider(this);
+        case COLOR:
         case EMAIL:
         case ISINDEX:
         case NUMBER:
@@ -791,7 +810,7 @@ RenderObject *HTMLInputElement::createRenderer(RenderArena *arena, RenderStyle *
         case TELEPHONE:
         case TEXT:
         case URL:
-            return new (arena) RenderTextControlSingleLine(this);
+            return new (arena) RenderTextControlSingleLine(this, placeholderShouldBeVisible());
     }
     ASSERT(false);
     return 0;
@@ -869,6 +888,7 @@ bool HTMLInputElement::appendFormData(FormDataList& encoding, bool multipart)
         return false;
 
     switch (inputType()) {
+        case COLOR:
         case EMAIL:
         case HIDDEN:
         case ISINDEX:
@@ -972,6 +992,12 @@ void HTMLInputElement::setChecked(bool nowChecked, bool sendChangeEvent)
     if (renderer() && renderer()->style()->hasAppearance())
         renderer()->theme()->stateChanged(renderer(), CheckedState);
 
+    // Ideally we'd do this from the render tree (matching
+    // RenderTextView), but it's not possible to do it at the moment
+    // because of the way the code is structured.
+    if (renderer() && AXObjectCache::accessibilityEnabled())
+        renderer()->document()->axObjectCache()->postNotification(renderer(), AXObjectCache::AXCheckedStateChanged, true);
+
     // Only send a change event for items in the document (avoid firing during
     // parsing) and don't send a change event for a radio button that's getting
     // unchecked to match other browsers. DOM is not a useful standard for this
@@ -1023,7 +1049,7 @@ String HTMLInputElement::value() const
 
     String value = m_data.value();
     if (value.isNull()) {
-        value = constrainValue(getAttribute(valueAttr));
+        value = sanitizeValue(getAttribute(valueAttr));
 
         // If no attribute exists, then just use "on" or "" based off the checked() state of the control.
         if (value.isNull() && (inputType() == CHECKBOX || inputType() == RADIO))
@@ -1040,6 +1066,7 @@ String HTMLInputElement::valueWithDefault() const
         switch (inputType()) {
             case BUTTON:
             case CHECKBOX:
+            case COLOR:
             case EMAIL:
             case FILE:
             case HIDDEN:
@@ -1078,9 +1105,9 @@ void HTMLInputElement::setValue(const String& value)
         if (inputType() == FILE)
             m_fileList->clear();
         else {
-            m_data.setValue(constrainValue(value));
+            m_data.setValue(sanitizeValue(value));
             if (isTextField()) {
-                InputElement::updatePlaceholderVisibility(m_data, this, this);
+                updatePlaceholderVisibility(false);
                 if (inDocument())
                     document()->updateStyleIfNeeded();
             }
@@ -1089,7 +1116,7 @@ void HTMLInputElement::setValue(const String& value)
             renderer()->updateFromElement();
         setNeedsStyleRecalc();
     } else
-        setAttribute(valueAttr, constrainValue(value));
+        setAttribute(valueAttr, sanitizeValue(value));
     
     if (isTextField()) {
         unsigned max = m_data.value().length();
@@ -1120,6 +1147,7 @@ void HTMLInputElement::setValueFromRenderer(const String& value)
 {
     // File upload controls will always use setFileListFromRenderer.
     ASSERT(inputType() != FILE);
+    updatePlaceholderVisibility(false);
     InputElement::setValueFromRenderer(m_data, this, this, value);
 }
 
@@ -1145,6 +1173,7 @@ bool HTMLInputElement::storesValueSeparateFromAttribute() const
         case RESET:
         case SUBMIT:
             return false;
+        case COLOR:
         case EMAIL:
         case FILE:
         case ISINDEX:
@@ -1307,7 +1336,7 @@ void HTMLInputElement::defaultEventHandler(Event* evt)
                 m_activeSubmit = false;
             }
         } else if (inputType() == FILE && renderer())
-            static_cast<RenderFileUploadControl*>(renderer())->click();
+            toRenderFileUploadControl(renderer())->click();
     }
 
     // Use key press event here since sending simulated mouse events
@@ -1320,6 +1349,7 @@ void HTMLInputElement::defaultEventHandler(Event* evt)
         if (charCode == '\r') {
             switch (inputType()) {
                 case CHECKBOX:
+                case COLOR:
                 case EMAIL:
                 case HIDDEN:
                 case ISINDEX:
@@ -1447,6 +1477,7 @@ void HTMLInputElement::defaultEventHandler(Event* evt)
                     if (!checked())
                         clickElement = true;
                     break;
+                case COLOR:
                 case EMAIL:
                 case HIDDEN:
                 case ISINDEX:
@@ -1491,13 +1522,13 @@ void HTMLInputElement::defaultEventHandler(Event* evt)
     }
 
     if (evt->isBeforeTextInsertedEvent())
-        InputElement::handleBeforeTextInsertedEvent(m_data, this, document(), evt);
+        InputElement::handleBeforeTextInsertedEvent(m_data, this, this, evt);
 
     if (isTextField() && renderer() && (evt->isMouseEvent() || evt->isDragEvent() || evt->isWheelEvent() || evt->type() == eventNames().blurEvent || evt->type() == eventNames().focusEvent))
-        static_cast<RenderTextControlSingleLine*>(renderer())->forwardEvent(evt);
+        toRenderTextControlSingleLine(renderer())->forwardEvent(evt);
 
     if (inputType() == RANGE && renderer() && (evt->isMouseEvent() || evt->isDragEvent() || evt->isWheelEvent()))
-        static_cast<RenderSlider*>(renderer())->forwardEvent(evt);
+        toRenderSlider(renderer())->forwardEvent(evt);
 
     if (!callBaseClassEarly && !evt->defaultHandled())
         HTMLFormControlElementWithState::defaultEventHandler(evt);
@@ -1634,9 +1665,11 @@ FileList* HTMLInputElement::files()
     return m_fileList.get();
 }
 
-String HTMLInputElement::constrainValue(const String& proposedValue) const
+String HTMLInputElement::sanitizeValue(const String& proposedValue) const
 {
-    return InputElement::constrainValue(this, proposedValue, m_data.maxLength());
+    if (isTextField())
+        return InputElement::sanitizeValue(this, proposedValue);
+    return proposedValue;
 }
 
 bool HTMLInputElement::needsActivationCallback()
@@ -1679,6 +1712,7 @@ bool HTMLInputElement::isRequiredFormControl() const
         case IMAGE:
         case RESET:
         case BUTTON:
+        case COLOR:
         case ISINDEX:
             return false;
     }
@@ -1697,15 +1731,15 @@ void HTMLInputElement::addSearchResult()
 {
     ASSERT(isSearchField());
     if (renderer())
-        static_cast<RenderTextControlSingleLine*>(renderer())->addSearchResult();
+        toRenderTextControlSingleLine(renderer())->addSearchResult();
 }
 
 void HTMLInputElement::onSearch()
 {
     ASSERT(isSearchField());
     if (renderer())
-        static_cast<RenderTextControlSingleLine*>(renderer())->stopSearchEventTimer();
-    dispatchEvent(eventNames().searchEvent, true, false);
+        toRenderTextControlSingleLine(renderer())->stopSearchEventTimer();
+    dispatchEvent(Event::create(eventNames().searchEvent, true, false));
 }
 
 VisibleSelection HTMLInputElement::selection() const
@@ -1753,9 +1787,88 @@ bool HTMLInputElement::willValidate() const
            inputType() != BUTTON && inputType() != RESET;
 }
 
-bool HTMLInputElement::placeholderShouldBeVisible() const
+bool HTMLInputElement::formStringToDouble(const String& src, double* out)
 {
-    return m_data.placeholderShouldBeVisible();
+    // See HTML5 2.4.4.3 `Real numbers.'
+
+    if (src.isEmpty())
+        return false;
+    // String::toDouble() accepts leading + \t \n \v \f \r and SPACE, which are invalid in HTML5.
+    // So, check the first character.
+    if (src[0] != '-' && (src[0] < '0' || src[0] > '9'))
+        return false;
+
+    bool valid = false;
+    double value = src.toDouble(&valid);
+    if (!valid)
+        return false;
+    // NaN and Infinity are not valid numbers according to the standard.
+    if (isnan(value) || isinf(value))
+        return false;
+    if (out)
+        *out = value;
+    return true;
 }
+
+#if ENABLE(DATALIST)
+HTMLElement* HTMLInputElement::list() const
+{
+    return dataList();
+}
+
+HTMLDataListElement* HTMLInputElement::dataList() const
+{
+    if (!m_hasNonEmptyList)
+        return 0;
+
+    switch (inputType()) {
+    case TEXT:
+    case SEARCH:
+    case URL:
+    case TELEPHONE:
+    case EMAIL:
+    case NUMBER:
+    case RANGE:
+    case COLOR: {
+        Element* element = document()->getElementById(getAttribute(listAttr));
+        if (element && element->hasTagName(datalistTag))
+            return static_cast<HTMLDataListElement*>(element);
+        break;
+    }
+    case HIDDEN:
+    case PASSWORD:
+    case CHECKBOX:
+    case RADIO:
+    case FILE:
+    case SUBMIT:
+    case IMAGE:
+    case RESET:
+    case BUTTON:
+    case ISINDEX:
+        break;
+    }
+    return 0;
+}
+
+HTMLOptionElement* HTMLInputElement::selectedOption() const
+{
+    String currentValue = value();
+    // The empty value never matches to a datalist option because it
+    // doesn't represent a suggestion according to the standard.
+    if (currentValue.isEmpty())
+        return 0;
+
+    HTMLDataListElement* sourceElement = dataList();
+    if (!sourceElement)
+        return 0;
+    RefPtr<HTMLCollection> options = sourceElement->options();
+    for (unsigned i = 0; options && i < options->length(); ++i) {
+        HTMLOptionElement* option = static_cast<HTMLOptionElement*>(options->item(i));
+        if (!option->disabled() && currentValue == option->value())
+            return option;
+    }
+    return 0;
+}
+#endif  // ENABLE(DATALIST)
 
 } // namespace

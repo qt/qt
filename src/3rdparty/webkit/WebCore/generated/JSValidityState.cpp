@@ -84,7 +84,7 @@ JSValidityState::JSValidityState(PassRefPtr<Structure> structure, JSDOMGlobalObj
 
 JSValidityState::~JSValidityState()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSValidityState::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -95,6 +95,11 @@ JSObject* JSValidityState::createPrototype(ExecState* exec, JSGlobalObject* glob
 bool JSValidityState::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSValidityState, Base>(exec, &JSValidityStateTable, this, propertyName, slot);
+}
+
+bool JSValidityState::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSValidityState, Base>(exec, &JSValidityStateTable, this, propertyName, descriptor);
 }
 
 JSValue jsValidityStateValueMissing(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -175,7 +180,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Validit
 }
 ValidityState* toValidityState(JSC::JSValue value)
 {
-    return value.isObject(&JSValidityState::s_info) ? static_cast<JSValidityState*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSValidityState::s_info) ? static_cast<JSValidityState*>(asObject(value))->impl() : 0;
 }
 
 }

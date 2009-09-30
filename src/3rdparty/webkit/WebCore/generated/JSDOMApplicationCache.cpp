@@ -31,6 +31,7 @@
 #include "JSDOMGlobalObject.h"
 #include "JSEvent.h"
 #include "JSEventListener.h"
+#include "RegisteredEventListener.h"
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <wtf/GetPtr.h>
@@ -101,6 +102,11 @@ bool JSDOMApplicationCachePrototype::getOwnPropertySlot(ExecState* exec, const I
     return getStaticPropertySlot<JSDOMApplicationCachePrototype, JSObject>(exec, &JSDOMApplicationCachePrototypeTable, this, propertyName, slot);
 }
 
+bool JSDOMApplicationCachePrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticPropertyDescriptor<JSDOMApplicationCachePrototype, JSObject>(exec, &JSDOMApplicationCachePrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSDOMApplicationCache::s_info = { "DOMApplicationCache", 0, &JSDOMApplicationCacheTable, 0 };
 
 JSDOMApplicationCache::JSDOMApplicationCache(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DOMApplicationCache> impl)
@@ -111,7 +117,14 @@ JSDOMApplicationCache::JSDOMApplicationCache(PassRefPtr<Structure> structure, JS
 
 JSDOMApplicationCache::~JSDOMApplicationCache()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    impl()->invalidateEventListeners();
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+}
+
+void JSDOMApplicationCache::markChildren(MarkStack& markStack)
+{
+    Base::markChildren(markStack);
+    impl()->markEventListeners(markStack);
 }
 
 JSObject* JSDOMApplicationCache::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -122,6 +135,11 @@ JSObject* JSDOMApplicationCache::createPrototype(ExecState* exec, JSGlobalObject
 bool JSDOMApplicationCache::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSDOMApplicationCache, Base>(exec, &JSDOMApplicationCacheTable, this, propertyName, slot);
+}
+
+bool JSDOMApplicationCache::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSDOMApplicationCache, Base>(exec, &JSDOMApplicationCacheTable, this, propertyName, descriptor);
 }
 
 JSValue jsDOMApplicationCacheStatus(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -316,7 +334,7 @@ void setJSDOMApplicationCacheOnobsolete(ExecState* exec, JSObject* thisObject, J
 JSValue JSC_HOST_CALL jsDOMApplicationCachePrototypeFunctionUpdate(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDOMApplicationCache::s_info))
+    if (!thisValue.inherits(&JSDOMApplicationCache::s_info))
         return throwError(exec, TypeError);
     JSDOMApplicationCache* castedThisObj = static_cast<JSDOMApplicationCache*>(asObject(thisValue));
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(castedThisObj->impl());
@@ -330,7 +348,7 @@ JSValue JSC_HOST_CALL jsDOMApplicationCachePrototypeFunctionUpdate(ExecState* ex
 JSValue JSC_HOST_CALL jsDOMApplicationCachePrototypeFunctionSwapCache(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDOMApplicationCache::s_info))
+    if (!thisValue.inherits(&JSDOMApplicationCache::s_info))
         return throwError(exec, TypeError);
     JSDOMApplicationCache* castedThisObj = static_cast<JSDOMApplicationCache*>(asObject(thisValue));
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(castedThisObj->impl());
@@ -344,7 +362,7 @@ JSValue JSC_HOST_CALL jsDOMApplicationCachePrototypeFunctionSwapCache(ExecState*
 JSValue JSC_HOST_CALL jsDOMApplicationCachePrototypeFunctionAddEventListener(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDOMApplicationCache::s_info))
+    if (!thisValue.inherits(&JSDOMApplicationCache::s_info))
         return throwError(exec, TypeError);
     JSDOMApplicationCache* castedThisObj = static_cast<JSDOMApplicationCache*>(asObject(thisValue));
     return castedThisObj->addEventListener(exec, args);
@@ -353,7 +371,7 @@ JSValue JSC_HOST_CALL jsDOMApplicationCachePrototypeFunctionAddEventListener(Exe
 JSValue JSC_HOST_CALL jsDOMApplicationCachePrototypeFunctionRemoveEventListener(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDOMApplicationCache::s_info))
+    if (!thisValue.inherits(&JSDOMApplicationCache::s_info))
         return throwError(exec, TypeError);
     JSDOMApplicationCache* castedThisObj = static_cast<JSDOMApplicationCache*>(asObject(thisValue));
     return castedThisObj->removeEventListener(exec, args);
@@ -362,7 +380,7 @@ JSValue JSC_HOST_CALL jsDOMApplicationCachePrototypeFunctionRemoveEventListener(
 JSValue JSC_HOST_CALL jsDOMApplicationCachePrototypeFunctionDispatchEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSDOMApplicationCache::s_info))
+    if (!thisValue.inherits(&JSDOMApplicationCache::s_info))
         return throwError(exec, TypeError);
     JSDOMApplicationCache* castedThisObj = static_cast<JSDOMApplicationCache*>(asObject(thisValue));
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(castedThisObj->impl());
@@ -413,7 +431,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, DOMAppl
 }
 DOMApplicationCache* toDOMApplicationCache(JSC::JSValue value)
 {
-    return value.isObject(&JSDOMApplicationCache::s_info) ? static_cast<JSDOMApplicationCache*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSDOMApplicationCache::s_info) ? static_cast<JSDOMApplicationCache*>(asObject(value))->impl() : 0;
 }
 
 }

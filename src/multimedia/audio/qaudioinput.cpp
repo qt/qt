@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtMultimedia module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
     You can construct an audio input with the system's
     \l{QAudioDeviceInfo::defaultInputDevice()}{default audio input
     device}. It is also possible to create QAudioInput with a
-    specific QAudioDeviceId. When you create the audio input, you
+    specific QAudioDeviceInfo. When you create the audio input, you
     should also send in the QAudioFormat to be used for the recording
     (see the QAudioFormat class description for details).
 
@@ -69,7 +69,7 @@ QT_BEGIN_NAMESPACE
 
     QAudioInput lets you record audio with an audio input device. The
     default constructor of this class will use the systems default
-    audio device, but you can also specify a QAudioDeviceId for a
+    audio device, but you can also specify a QAudioDeviceInfo for a
     specific device. You also need to pass in the QAudioFormat in
     which you wish to record.
 
@@ -128,7 +128,12 @@ QT_BEGIN_NAMESPACE
     which states the QAudioInput has been in.
 
     If an error should occur, you can fetch its reason with error().
-    The possible error reasons are described by the QAudio::Error enum.
+    The possible error reasons are described by the QAudio::Error
+    enum. The QAudioInput will enter the \l{QAudio::}{StopState} when
+    an error is encountered.  Connect to the stateChanged() signal to
+    handle the error:
+
+    \snippet doc/src/snippets/audio/main.cpp 0
 
     \sa QAudioOutput, QAudioDeviceInfo
 */
@@ -149,14 +154,14 @@ QAudioInput::QAudioInput(const QAudioFormat &format, QObject *parent):
 
 /*!
     Construct a new audio input and attach it to \a parent.
-    The \a id of the audio input device is used with the input
+    The device referenced by \a audioDevice is used with the input
     \a format parameters.
 */
 
-QAudioInput::QAudioInput(const QAudioDeviceId &id, const QAudioFormat &format, QObject *parent):
+QAudioInput::QAudioInput(const QAudioDeviceInfo &audioDevice, const QAudioFormat &format, QObject *parent):
     QObject(parent)
 {
-    d = QAudioDeviceFactory::createInputDevice(id, format);
+    d = QAudioDeviceFactory::createInputDevice(audioDevice, format);
     connect(d, SIGNAL(notify()), SIGNAL(notify()));
     connect(d, SIGNAL(stateChanged(QAudio::State)), SIGNAL(stateChanged(QAudio::State)));
 }
@@ -179,7 +184,7 @@ QAudioInput::~QAudioInput()
     Passing a QIODevice allows the data to be transfered without any extra code.
     All that is required is to open the QIODevice.
 
-    /sa QIODevice
+    \sa QIODevice
 */
 
 QIODevice* QAudioInput::start(QIODevice* device)

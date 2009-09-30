@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
@@ -30,24 +30,35 @@
 
 namespace WebCore {
 
-SQLiteTransaction::SQLiteTransaction(SQLiteDatabase& db)
+SQLiteTransaction::SQLiteTransaction(SQLiteDatabase& db, bool readOnly)
     : m_db(db)
     , m_inProgress(false)
+    , m_readOnly(readOnly)
 {
 }
 
 SQLiteTransaction::~SQLiteTransaction()
 {
-    if (m_inProgress) 
+    if (m_inProgress)
         rollback();
 }
-    
+
 void SQLiteTransaction::begin()
 {
     if (!m_inProgress) {
         ASSERT(!m_db.m_transactionInProgress);
-        m_inProgress = m_db.executeCommand("BEGIN;");
-        m_db.m_transactionInProgress = true;
+        // Call BEGIN IMMEDIATE for a write transaction to acquire
+        // a RESERVED lock on the DB file. Otherwise, another write
+        // transaction (on another connection) could make changes
+        // to the same DB file before this transaction gets to execute
+        // any statements. If that happens, this transaction will fail.
+        // http://www.sqlite.org/lang_transaction.html
+        // http://www.sqlite.org/lockingv3.html#locking
+        if (m_readOnly)
+            m_inProgress = m_db.executeCommand("BEGIN;");
+        else
+            m_inProgress = m_db.executeCommand("BEGIN IMMEDIATE;");
+        m_db.m_transactionInProgress = m_inProgress;
     }
 }
 
@@ -76,5 +87,5 @@ void SQLiteTransaction::stop()
     m_inProgress = false;
     m_db.m_transactionInProgress = false;
 }
-    
+
 } // namespace WebCore

@@ -2,7 +2,7 @@
 # Qt documentation build
 #####################################################################
 
-DOCS_GENERATION_DEFINES = -Dopensourceedition
+DOCS_GENERATION_DEFINES =
 GENERATOR = $$QT_BUILD_TREE/bin/qhelpgenerator
 
 win32:!win32-g++ {

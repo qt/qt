@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtScript module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -100,6 +100,8 @@ namespace QScript
     //some conversion helper functions
     QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec);
     bool isFunction(JSC::JSValue value);
+
+    class UStringSourceProviderWithFeedback;
 }
 
 class QScriptEnginePrivate
@@ -154,12 +156,13 @@ public:
     JSC::ExecState *globalExec() const;
     JSC::JSValue toUsableValue(JSC::JSValue value);
     static JSC::JSValue thisForContext(JSC::ExecState *frame);
+    static JSC::Register *thisRegisterForFrame(JSC::ExecState *frame);
 
     JSC::CallFrame *pushContext(JSC::CallFrame *exec, JSC::JSValue thisObject, const JSC::ArgList& args,
                                 JSC::JSObject *callee, bool calledAsConstructor = false);
     void popContext();
 
-    void mark();
+    void mark(JSC::MarkStack& markStack);
     bool isCollecting() const;
     void collectGarbage();
 
@@ -167,7 +170,8 @@ public:
     enum ContextFlags {
         NativeContext = 1,
         CalledAsConstructorContext = 2,
-        HasScopeContext = 4
+        HasScopeContext = 4, // Specifies that the is a QScriptActivationObject
+        ShouldRestoreCallFrame = 8
     };
     static uint contextFlags(JSC::ExecState *);
     static void setContextFlags(JSC::ExecState *, uint);
@@ -254,6 +258,8 @@ public:
 
     QSet<QString> importedExtensions;
     QSet<QString> extensionsBeingImported;
+    
+    QSet<QScript::UStringSourceProviderWithFeedback*> loadedScripts;
 
 #ifndef QT_NO_QOBJECT
     QHash<QObject*, QScript::QObjectData*> m_qobjectData;
@@ -263,6 +269,29 @@ public:
     QScriptEngine *q_ptr;
 #endif
 };
+
+namespace QScript
+{
+
+class SaveFrameHelper
+{
+public:
+    SaveFrameHelper(QScriptEnginePrivate *eng,
+                    JSC::ExecState *newFrame)
+        : engine(eng), oldFrame(eng->currentFrame)
+    {
+        eng->currentFrame = newFrame;
+    }
+    ~SaveFrameHelper()
+    {
+        engine->currentFrame = oldFrame;
+    }
+private:
+    QScriptEnginePrivate *engine;
+    JSC::ExecState *oldFrame;
+};
+
+} // namespace QScript
 
 inline QScriptValuePrivate *QScriptEnginePrivate::allocateScriptValuePrivate(size_t size)
 {
@@ -316,7 +345,7 @@ inline JSC::JSValue QScriptEnginePrivate::scriptValueToJSCValue(const QScriptVal
     QScriptValuePrivate *vv = QScriptValuePrivate::get(value);
     if (!vv)
         return JSC::JSValue();
-    if (vv->type != QScriptValuePrivate::JSC) {
+    if (vv->type != QScriptValuePrivate::JavaScriptCore) {
         Q_ASSERT(!vv->engine || vv->engine == this);
         vv->engine = this;
         if (vv->type == QScriptValuePrivate::Number) {
@@ -340,7 +369,7 @@ inline void QScriptValuePrivate::initFrom(JSC::JSValue value)
         Q_ASSERT(engine != 0);
         value = engine->toUsableValue(value);
     }
-    type = JSC;
+    type = JavaScriptCore;
     jscValue = value;
     if (engine)
         engine->registerScriptValue(this);

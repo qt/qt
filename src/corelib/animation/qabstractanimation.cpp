@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -81,12 +81,12 @@
     QAbstractAnimation provides pure virtual functions used by
     subclasses to track the progress of the animation: duration() and
     updateCurrentTime(). The duration() function lets you report a
-    duration for the animation (as discussed above). The current time
-    is delivered by the animation framework through calls to
-    updateCurrentTime(). By reimplementing this function, you can
-    track the animation progress. Note that neither the interval
-    between calls nor the number of calls to this function are
-    defined; though, it will normally be 60 updates per second.
+    duration for the animation (as discussed above). The animation
+    framework calls updateCurrentTime() when current time has changed.
+    By reimplementing this function, you can track the animation 
+    progress. Note that neither the interval between calls nor the
+    number of calls to this function are defined; though, it will
+    normally be 60 updates per second.
 
     By reimplementing updateState(), you can track the animation's
     state changes, which is particularly useful for animations that
@@ -157,6 +157,19 @@
 
 #define DEFAULT_TIMER_INTERVAL 16
 
+#ifdef Q_WS_WIN
+    /// Fix for Qt 4.7
+    //on windows if you're currently dragging a widget an inner eventloop was started by the system
+    //to make sure that this timer is getting fired, we need to make sure to use the system timers
+    //that will send a WM_TIMER event. We do that by settings the timer interval to 11
+    //It is 11 because QEventDispatcherWin32Private::registerTimer specifically checks if the interval
+    //is greater than 10 to determine if it should use a system timer (or the multimedia timer).
+#define STARTSTOP_TIMER_DELAY 11
+#else
+#define STARTSTOP_TIMER_DELAY 0
+#endif
+
+
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer)
@@ -181,12 +194,6 @@ QUnifiedTimer *QUnifiedTimer::instance()
 
 void QUnifiedTimer::timerEvent(QTimerEvent *event)
 {
-    //this is simply the time we last received a tick
-    const int oldLastTick = lastTick;
-    if (time.isValid())
-        lastTick = consistentTiming ? oldLastTick + timingInterval : time.elapsed();
-
-
     if (event->timerId() == startStopAnimationTimer.timerId()) {
         startStopAnimationTimer.stop();
         //we transfer the waiting animations into the "really running" state
@@ -194,21 +201,28 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
         animationsToStart.clear();
         if (animations.isEmpty()) {
             animationTimer.stop();
-            time = QTime();
         } else if (!animationTimer.isActive()) {
             animationTimer.start(timingInterval, this);
             lastTick = 0;
             time.start();
         }
     } else if (event->timerId() == animationTimer.timerId()) {
-        const int delta = lastTick - oldLastTick;
-        for (currentAnimationIdx = 0; currentAnimationIdx < animations.count(); ++currentAnimationIdx) {
-            QAbstractAnimation *animation = animations.at(currentAnimationIdx);
-            int elapsed = QAbstractAnimationPrivate::get(animation)->totalCurrentTime
-                + (animation->direction() == QAbstractAnimation::Forward ? delta : -delta);
-            animation->setCurrentTime(elapsed);
+        //this is simply the time we last received a tick
+        const int oldLastTick = lastTick;
+        lastTick = consistentTiming ? oldLastTick + timingInterval : time.elapsed();
+
+        //we make sure we only call update time if the time has actually changed
+        //it might happen in some cases that the time doesn't change because events are delayed
+        //when the CPU load is high
+        if (const int delta = lastTick - oldLastTick) {
+            for (currentAnimationIdx = 0; currentAnimationIdx < animations.count(); ++currentAnimationIdx) {
+                QAbstractAnimation *animation = animations.at(currentAnimationIdx);
+                int elapsed = QAbstractAnimationPrivate::get(animation)->totalCurrentTime
+                    + (animation->direction() == QAbstractAnimation::Forward ? delta : -delta);
+                animation->setCurrentTime(elapsed);
+            }
+            currentAnimationIdx = 0;
         }
-        currentAnimationIdx = 0;
     }
 }
 
@@ -217,7 +231,7 @@ void QUnifiedTimer::registerAnimation(QAbstractAnimation *animation)
     if (animations.contains(animation) || animationsToStart.contains(animation))
         return;
     animationsToStart << animation;
-    startStopAnimationTimer.start(0, this); // we delay the check if we should start/stop the global timer
+    startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this); // we delay the check if we should start/stop the global timer
 }
 
 void QUnifiedTimer::unregisterAnimation(QAbstractAnimation *animation)
@@ -233,7 +247,7 @@ void QUnifiedTimer::unregisterAnimation(QAbstractAnimation *animation)
     } else {
         animationsToStart.removeOne(animation);
     }
-    startStopAnimationTimer.start(0, this); // we delay the check if we should start/stop the global timer
+    startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this); // we delay the check if we should start/stop the global timer
 }
 
 
@@ -587,7 +601,7 @@ void QAbstractAnimation::setCurrentTime(int msecs)
         }
     }
 
-    updateCurrentTime(msecs);
+    updateCurrentTime(d->currentTime);
     if (d->currentLoop != oldLoop)
         emit currentLoopChanged(d->currentLoop);
 
@@ -688,10 +702,10 @@ bool QAbstractAnimation::event(QEvent *event)
 }
 
 /*!
-    \fn virtual void QAbstractAnimation::updateCurrentTime(int msecs) = 0;
+    \fn virtual void QAbstractAnimation::updateCurrentTime(int currentTime) = 0;
 
-    This pure virtual function is called every time the animation's current
-    time changes. The \a msecs argument is the current time.
+    This pure virtual function is called every time the animation's
+    \a currentTime changes.
 
     \sa updateState()
 */

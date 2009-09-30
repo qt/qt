@@ -72,6 +72,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSRGBColorPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -86,6 +87,11 @@ const ClassInfo JSRGBColorConstructor::s_info = { "RGBColorConstructor", 0, &JSR
 bool JSRGBColorConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSRGBColorConstructor, DOMObject>(exec, &JSRGBColorConstructorTable, this, propertyName, slot);
+}
+
+bool JSRGBColorConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSRGBColorConstructor, DOMObject>(exec, &JSRGBColorConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -119,7 +125,7 @@ JSRGBColor::JSRGBColor(PassRefPtr<Structure> structure, JSDOMGlobalObject* globa
 
 JSRGBColor::~JSRGBColor()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSRGBColor::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -130,6 +136,11 @@ JSObject* JSRGBColor::createPrototype(ExecState* exec, JSGlobalObject* globalObj
 bool JSRGBColor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSRGBColor, Base>(exec, &JSRGBColorTable, this, propertyName, slot);
+}
+
+bool JSRGBColor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSRGBColor, Base>(exec, &JSRGBColorTable, this, propertyName, descriptor);
 }
 
 JSValue jsRGBColorRed(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -172,7 +183,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, RGBColo
 }
 RGBColor* toRGBColor(JSC::JSValue value)
 {
-    return value.isObject(&JSRGBColor::s_info) ? static_cast<JSRGBColor*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSRGBColor::s_info) ? static_cast<JSRGBColor*>(asObject(value))->impl() : 0;
 }
 
 }

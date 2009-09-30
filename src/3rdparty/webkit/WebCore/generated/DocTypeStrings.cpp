@@ -1,6 +1,5 @@
-#include <string.h>// bogus
 /* ANSI-C code produced by gperf version 3.0.3 */
-/* Command-line: gperf -CEot -L ANSI-C --key-positions='*' -N findDoctypeEntry -F ,PubIDInfo::eAlmostStandards,PubIDInfo::eAlmostStandards  */
+/* Command-line: gperf -CEot -L ANSI-C --includes --key-positions='*' -N findDoctypeEntry -F ,PubIDInfo::eAlmostStandards,PubIDInfo::eAlmostStandards  */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
       && ('%' == 37) && ('&' == 38) && ('\'' == 39) && ('(' == 40) \
@@ -40,6 +39,7 @@ struct PubIDInfo {
     eMode mode_if_no_sysid;
     eMode mode_if_sysid;
 };
+#include <string.h>
 /* maximum key range = 712, duplicates = 0 */
 
 #ifdef __GNUC__

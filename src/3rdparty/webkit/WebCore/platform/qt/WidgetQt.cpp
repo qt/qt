@@ -30,6 +30,7 @@
  */
 
 #include "config.h"
+#include "Widget.h"
 
 #include "Cursor.h"
 #include "Font.h"
@@ -37,8 +38,8 @@
 #include "HostWindow.h"
 #include "IntRect.h"
 #include "ScrollView.h"
-#include "Widget.h"
 #include "NotImplemented.h"
+#include "QWebPageClient.h"
 
 #include "qwebframe.h"
 #include "qwebframe_p.h"
@@ -81,8 +82,10 @@ void Widget::setFocus()
 void Widget::setCursor(const Cursor& cursor)
 {
 #ifndef QT_NO_CURSOR
-    if (QWidget* widget = root()->hostWindow()->platformWindow())
-        QCoreApplication::postEvent(widget, new SetCursorEvent(cursor.impl()));
+    QWebPageClient* pageClient = root()->hostWindow()->platformPageClient();
+
+    if (pageClient)
+        pageClient->setCursor(cursor.impl());
 #endif
 }
 

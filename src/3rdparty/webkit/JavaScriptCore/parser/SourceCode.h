@@ -37,7 +37,8 @@ namespace JSC {
     class SourceCode {
     public:
         SourceCode()
-            : m_startChar(0)
+            : m_provider(0)
+            , m_startChar(0)
             , m_endChar(0)
             , m_firstLine(0)
         {
@@ -47,11 +48,7 @@ namespace JSC {
             : m_provider(provider)
             , m_startChar(0)
             , m_endChar(m_provider->length())
-#ifdef QT_BUILD_SCRIPT_LIB
-            , m_firstLine(firstLine)
-#else
             , m_firstLine(std::max(firstLine, 1))
-#endif
         {
         }
 
@@ -59,11 +56,7 @@ namespace JSC {
             : m_provider(provider)
             , m_startChar(start)
             , m_endChar(end)
-#ifdef QT_BUILD_SCRIPT_LIB
-            , m_firstLine(firstLine)
-#else
             , m_firstLine(std::max(firstLine, 1))
-#endif
         {
         }
 

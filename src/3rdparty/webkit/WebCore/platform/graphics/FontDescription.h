@@ -27,6 +27,7 @@
 
 #include "FontFamily.h"
 #include "FontRenderingMode.h"
+#include "FontSmoothingMode.h"
 #include "FontTraitsMask.h"
 
 namespace WebCore {
@@ -61,6 +62,7 @@ public:
         , m_usePrinterFont(false)
         , m_renderingMode(NormalRenderingMode)
         , m_keywordSize(0)
+        , m_fontSmoothing(AutoSmoothing)
     {
     }
 
@@ -80,8 +82,11 @@ public:
     FontWeight bolderWeight() const;
     GenericFamilyType genericFamily() const { return static_cast<GenericFamilyType>(m_genericFamily); }
     bool usePrinterFont() const { return m_usePrinterFont; }
+    // only use fixed default size when there is only one font family, and that family is "monospace"
+    bool useFixedDefaultSize() const { return genericFamily() == MonospaceFamily && !family().next() && family().family() == "-webkit-monospace"; }
     FontRenderingMode renderingMode() const { return static_cast<FontRenderingMode>(m_renderingMode); }
     unsigned keywordSize() const { return m_keywordSize; }
+    FontSmoothingMode fontSmoothing() const { return static_cast<FontSmoothingMode>(m_fontSmoothing); }
 
     FontTraitsMask traitsMask() const;
 
@@ -96,6 +101,7 @@ public:
     void setUsePrinterFont(bool p) { m_usePrinterFont = p; }
     void setRenderingMode(FontRenderingMode mode) { m_renderingMode = mode; }
     void setKeywordSize(unsigned s) { m_keywordSize = s; }
+    void setFontSmoothing(FontSmoothingMode smoothing) { m_fontSmoothing = smoothing; }
 
 private:
     FontFamily m_familyList; // The list of font families to be used.
@@ -117,6 +123,8 @@ private:
     unsigned m_keywordSize : 4; // We cache whether or not a font is currently represented by a CSS keyword (e.g., medium).  If so,
                            // then we can accurately translate across different generic families to adjust for different preference settings
                            // (e.g., 13px monospace vs. 16px everything else).  Sizes are 1-8 (like the HTML size values for <font>).
+
+    unsigned m_fontSmoothing : 2; // FontSmoothingMode
 };
 
 inline bool FontDescription::operator==(const FontDescription& other) const
@@ -131,7 +139,8 @@ inline bool FontDescription::operator==(const FontDescription& other) const
         && m_genericFamily == other.m_genericFamily
         && m_usePrinterFont == other.m_usePrinterFont
         && m_renderingMode == other.m_renderingMode
-        && m_keywordSize == other.m_keywordSize;
+        && m_keywordSize == other.m_keywordSize
+        && m_fontSmoothing == other.m_fontSmoothing;
 }
 
 }

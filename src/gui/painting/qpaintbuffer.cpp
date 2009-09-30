@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -44,10 +44,13 @@
 //#include <private/qtextengine_p.h>
 #include <private/qfontengine_p.h>
 #include <private/qemulationpaintengine_p.h>
+#include <private/qimage_p.h>
 
 #include <QDebug>
 
 //#define QPAINTBUFFER_DEBUG_DRAW
+
+QT_BEGIN_NAMESPACE
 
 extern int qt_defaultDpiX();
 extern int qt_defaultDpiY();
@@ -890,6 +893,12 @@ void QPaintBufferEngine::drawPixmap(const QPointF &pos, const QPixmap &pm)
         buffer->updateBoundingRect(QRectF(pos, pm.size()));
 }
 
+static inline QImage qpaintbuffer_storable_image(const QImage &src)
+{
+    QImageData *d = const_cast<QImage &>(src).data_ptr();
+    return d->own_data ? src : src.copy();
+}
+
 void QPaintBufferEngine::drawImage(const QRectF &r, const QImage &image, const QRectF &sr,
                                    Qt::ImageConversionFlags /*flags */)
 {
@@ -897,7 +906,8 @@ void QPaintBufferEngine::drawImage(const QRectF &r, const QImage &image, const Q
     qDebug() << "QPaintBufferEngine: drawImage: src/dest rects " << r << sr;
 #endif
     QPaintBufferCommand *cmd =
-        buffer->addCommand(QPaintBufferPrivate::Cmd_DrawPixmapRect, QVariant(image));
+        buffer->addCommand(QPaintBufferPrivate::Cmd_DrawImageRect,
+                           QVariant(qpaintbuffer_storable_image(image)));
     cmd->extra = buffer->addData((qreal *) &r, 4);
     buffer->addData((qreal *) &sr, 4);
     // ### flags...
@@ -911,7 +921,8 @@ void QPaintBufferEngine::drawImage(const QPointF &pos, const QImage &image)
     qDebug() << "QPaintBufferEngine: drawImage: pos:" << pos;
 #endif
     QPaintBufferCommand *cmd =
-        buffer->addCommand(QPaintBufferPrivate::Cmd_DrawImagePos, QVariant(image));
+        buffer->addCommand(QPaintBufferPrivate::Cmd_DrawImagePos,
+                           QVariant(qpaintbuffer_storable_image(image)));
     cmd->extra = buffer->addData((qreal *) &pos, 2);
     if (buffer->calculateBoundingRect)
         buffer->updateBoundingRect(QRectF(pos, image.size()));
@@ -1740,7 +1751,9 @@ struct QPaintBufferCacheEntry
     QVariant::Type type;
     quint64 cacheKey;
 };
-Q_DECLARE_METATYPE(QPaintBufferCacheEntry);
+QT_END_NAMESPACE
+Q_DECLARE_METATYPE(QPaintBufferCacheEntry)
+QT_BEGIN_NAMESPACE
 
 QDataStream &operator<<(QDataStream &stream, const QPaintBufferCacheEntry &entry)
 {
@@ -1832,3 +1845,4 @@ QDataStream &operator>>(QDataStream &stream, QPaintBuffer &buffer)
     return stream;
 }
 
+QT_END_NAMESPACE

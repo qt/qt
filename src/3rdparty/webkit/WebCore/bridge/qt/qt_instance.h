@@ -40,7 +40,7 @@ public:
     ~QtInstance();
 
     virtual Class* getClass() const;
-    virtual RuntimeObjectImp* createRuntimeObject(ExecState*);
+    virtual RuntimeObjectImp* newRuntimeObject(ExecState*);
 
     virtual void begin();
     virtual void end();
@@ -48,11 +48,11 @@ public:
     virtual JSValue valueOf(ExecState*) const;
     virtual JSValue defaultValue(ExecState*, PreferredPrimitiveType) const;
 
-    virtual void mark(); // This isn't inherited
+    void markAggregate(MarkStack&);
 
     virtual JSValue invokeMethod(ExecState*, const MethodList&, const ArgList&);
 
-    virtual void getPropertyNames(ExecState*, PropertyNameArray&, unsigned listedAttributes = JSC::Structure::Prototype);
+    virtual void getPropertyNames(ExecState*, PropertyNameArray&);
 
     JSValue stringValue(ExecState* exec) const;
     JSValue numberValue(ExecState* exec) const;

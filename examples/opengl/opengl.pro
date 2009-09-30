@@ -6,6 +6,9 @@ contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles1cl)|contains(QT_CONF
     } else {
         SUBDIRS   = hellogl_es
     }
+    !contains(QT_CONFIG, opengles1cl) {
+        SUBDIRS += textures
+    }
 } else {
     SUBDIRS   = 2dpainting \
                 grabber \

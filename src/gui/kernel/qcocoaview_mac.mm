@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -63,6 +63,11 @@
 
 #include <qdebug.h>
 
+@interface NSEvent (DeviceDelta)
+  - (CGFloat)deviceDeltaX;
+  - (CGFloat)deviceDeltaY;
+  - (CGFloat)deviceDeltaZ;
+@end
 
 QT_BEGIN_NAMESPACE
 
@@ -776,17 +781,27 @@ extern "C" {
     Qt::MouseButton buttons = cocoaButton2QtButton([theEvent buttonNumber]);
     bool wheelOK = false;
     Qt::KeyboardModifiers keyMods = qt_cocoaModifiers2QtModifiers([theEvent modifierFlags]);
-
     QWidget *widgetToGetMouse = qwidget;
+    int deltaX = 0;
+    int deltaY = 0;
+    int deltaZ = 0;
 
-    // Mouse wheel deltas seem to tick in at increments of 0.1. Qt widgets
-    // expect the delta to be a multiple of 120.
-    const int ScrollFactor = 10 * 120;
-    //                                              The qMax(...) factor reduces the
-    //                                              acceleration for large wheel deltas.
-    int deltaX = [theEvent deltaX] * ScrollFactor * qMax(0.6, 1.1 - qAbs([theEvent deltaX]));
-    int deltaY = [theEvent deltaY] * ScrollFactor * qMax(0.6, 1.1 - qAbs([theEvent deltaY]));
-    int deltaZ = [theEvent deltaZ] * ScrollFactor * qMax(0.6, 1.1 - qAbs([theEvent deltaZ]));
+    const EventRef carbonEvent = (EventRef)[theEvent eventRef];
+    const UInt32 carbonEventKind = carbonEvent ? ::GetEventKind(carbonEvent) : 0;
+    if (carbonEventKind == kEventMouseScroll) {
+        // The mouse device containts pixel scroll
+        // wheel support (Mighty Mouse, Trackpad)
+        deltaX = (int)[theEvent deviceDeltaX] * 120;
+        deltaY = (int)[theEvent deviceDeltaY] * 120;
+        deltaZ = (int)[theEvent deviceDeltaZ] * 120;
+    } else { // carbonEventKind == kEventMouseWheelMoved
+        // Mouse wheel deltas seem to tick in at increments of 0.1.
+        // Qt widgets expect the delta to be a multiple of 120.
+        const int scrollFactor = 10 * 120;
+        deltaX = [theEvent deltaX] * scrollFactor * qMax(0.6, 1.1 - qAbs([theEvent deltaX]));
+        deltaY = [theEvent deltaY] * scrollFactor * qMax(0.6, 1.1 - qAbs([theEvent deltaY]));
+        deltaZ = [theEvent deltaZ] * scrollFactor * qMax(0.6, 1.1 - qAbs([theEvent deltaZ]));
+    }
 
     if (deltaX != 0) {
         QWheelEvent qwe(qlocal, qglobal, deltaX, buttons, keyMods, Qt::Horizontal);

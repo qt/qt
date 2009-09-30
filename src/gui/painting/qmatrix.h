@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -129,13 +129,13 @@ private:
             , _m22(1.)
             , _dx(0.)
             , _dy(0.) {}
-    inline QMatrix(qreal m11, qreal m12, qreal m21, qreal m22, qreal dx, qreal dy, bool)
-            : _m11(m11)
-            , _m12(m12)
-            , _m21(m21)
-            , _m22(m22)
-            , _dx(dx)
-            , _dy(dy) {}
+    inline QMatrix(qreal am11, qreal am12, qreal am21, qreal am22, qreal adx, qreal ady, bool)
+            : _m11(am11)
+            , _m12(am12)
+            , _m21(am21)
+            , _m22(am22)
+            , _dx(adx)
+            , _dy(ady) {}
     friend class QTransform;
     qreal _m11, _m12;
     qreal _m21, _m22;

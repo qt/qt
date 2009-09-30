@@ -138,6 +138,11 @@ bool JSSVGElementInstancePrototype::getOwnPropertySlot(ExecState* exec, const Id
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGElementInstancePrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGElementInstancePrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGElementInstancePrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGElementInstance::s_info = { "SVGElementInstance", 0, &JSSVGElementInstanceTable, 0 };
 
 JSSVGElementInstance::JSSVGElementInstance(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElementInstance> impl)
@@ -148,7 +153,7 @@ JSSVGElementInstance::JSSVGElementInstance(PassRefPtr<Structure> structure, JSDO
 
 JSSVGElementInstance::~JSSVGElementInstance()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGElementInstance::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -159,6 +164,11 @@ JSObject* JSSVGElementInstance::createPrototype(ExecState* exec, JSGlobalObject*
 bool JSSVGElementInstance::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGElementInstance, Base>(exec, &JSSVGElementInstanceTable, this, propertyName, slot);
+}
+
+bool JSSVGElementInstance::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGElementInstance, Base>(exec, &JSSVGElementInstanceTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGElementInstanceCorrespondingElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -1113,7 +1123,7 @@ void setJSSVGElementInstanceOnunload(ExecState* exec, JSObject* thisObject, JSVa
 JSValue JSC_HOST_CALL jsSVGElementInstancePrototypeFunctionAddEventListener(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGElementInstance::s_info))
+    if (!thisValue.inherits(&JSSVGElementInstance::s_info))
         return throwError(exec, TypeError);
     JSSVGElementInstance* castedThisObj = static_cast<JSSVGElementInstance*>(asObject(thisValue));
     return castedThisObj->addEventListener(exec, args);
@@ -1122,7 +1132,7 @@ JSValue JSC_HOST_CALL jsSVGElementInstancePrototypeFunctionAddEventListener(Exec
 JSValue JSC_HOST_CALL jsSVGElementInstancePrototypeFunctionRemoveEventListener(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGElementInstance::s_info))
+    if (!thisValue.inherits(&JSSVGElementInstance::s_info))
         return throwError(exec, TypeError);
     JSSVGElementInstance* castedThisObj = static_cast<JSSVGElementInstance*>(asObject(thisValue));
     return castedThisObj->removeEventListener(exec, args);
@@ -1131,7 +1141,7 @@ JSValue JSC_HOST_CALL jsSVGElementInstancePrototypeFunctionRemoveEventListener(E
 JSValue JSC_HOST_CALL jsSVGElementInstancePrototypeFunctionDispatchEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGElementInstance::s_info))
+    if (!thisValue.inherits(&JSSVGElementInstance::s_info))
         return throwError(exec, TypeError);
     JSSVGElementInstance* castedThisObj = static_cast<JSSVGElementInstance*>(asObject(thisValue));
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThisObj->impl());
@@ -1146,7 +1156,7 @@ JSValue JSC_HOST_CALL jsSVGElementInstancePrototypeFunctionDispatchEvent(ExecSta
 
 SVGElementInstance* toSVGElementInstance(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGElementInstance::s_info) ? static_cast<JSSVGElementInstance*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGElementInstance::s_info) ? static_cast<JSSVGElementInstance*>(asObject(value))->impl() : 0;
 }
 
 }
