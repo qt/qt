@@ -646,28 +646,11 @@ QVariant QmlMetaProperty::read() const
             if (sig && sig->index() == d->coreIdx) 
                 return sig->expression()->expression();
         }
+
     } else if (type() & Property) {
-        if (type() & Attached) {
-            return QVariant::fromValue(d->attachedObject());
-        } else if(type() & ValueTypeProperty) {
-            QmlEnginePrivate *ep = d->context?static_cast<QmlEnginePrivate *>(QObjectPrivate::get(d->context->engine())):0;
-            QmlValueType *valueType = 0;
-            if (ep)
-                valueType = ep->valueTypes[d->valueTypeId];
-            else
-                valueType = QmlValueTypeFactory::valueType(d->valueTypeId);
-            Q_ASSERT(valueType);
 
-            valueType->read(object(), d->coreIdx);
-            QVariant rv =
-                valueType->metaObject()->property(d->valueTypeIdx).read(valueType);
-            if (!ep)
-                delete valueType;
-            return rv;
+        return d->readValueProperty();
 
-        } else {
-            return d->object->metaObject()->property(d->coreIdx).read(object());
-        }
     }
     return QVariant();
 }
@@ -693,6 +676,36 @@ void QmlMetaPropertyPrivate::writeSignalProperty(const QVariant &value)
     if (!expr.isEmpty()) {
         // XXX scope
         (void *)new QmlBoundSignal(qmlContext(object), expr, object, signal, object);
+    }
+}
+
+QVariant QmlMetaPropertyPrivate::readValueProperty()
+{
+    if (type & QmlMetaProperty::Attached) {
+
+        return QVariant::fromValue(attachedObject());
+
+    } else if(type & QmlMetaProperty::ValueTypeProperty) {
+
+        QmlEnginePrivate *ep = context?QmlEnginePrivate::get(context->engine()):0;
+        QmlValueType *valueType = 0;
+        if (ep)
+            valueType = ep->valueTypes[valueTypeId];
+        else
+            valueType = QmlValueTypeFactory::valueType(valueTypeId);
+        Q_ASSERT(valueType);
+
+        valueType->read(object, coreIdx);
+        QVariant rv =
+            valueType->metaObject()->property(valueTypeIdx).read(valueType);
+        if (!ep)
+            delete valueType;
+        return rv;
+
+    } else {
+
+        return object->metaObject()->property(coreIdx).read(object.data());
+
     }
 }
 

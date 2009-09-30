@@ -98,6 +98,8 @@ public:
     QmlMetaProperty::PropertyCategory propertyCategory() const;
 
     void writeSignalProperty(const QVariant &);
+
+    QVariant readValueProperty();
     void writeValueProperty(const QVariant &, QmlMetaProperty::WriteSource);
 
     static quint32 saveValueType(int, int);
