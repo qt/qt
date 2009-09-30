@@ -57,6 +57,8 @@ QT_BEGIN_NAMESPACE
 
 //#define DEBUG_AUDIO 1
 
+static const int minimumIntervalTime = 50;
+
 QAudioInputPrivate::QAudioInputPrivate(const QByteArray &device, const QAudioFormat& audioFormat):
     settings(audioFormat)
 {
@@ -248,6 +250,7 @@ bool QAudioInputPrivate::open()
     qDebug()<<now.second()<<"s "<<now.msec()<<"ms :open()";
 #endif
     timeStamp.restart();
+    elapsedTimeOffset = 0;
 
     int dir;
     int err=-1;
@@ -531,7 +534,10 @@ int QAudioInputPrivate::periodSize() const
 
 void QAudioInputPrivate::setNotifyInterval(int ms)
 {
-    intervalTime = ms;
+    if(ms >= minimumIntervalTime)
+        intervalTime = ms;
+    else
+        intervalTime = minimumIntervalTime;
 }
 
 int QAudioInputPrivate::notifyInterval() const
@@ -579,8 +585,9 @@ bool QAudioInputPrivate::deviceReady()
     if(deviceState != QAudio::ActiveState)
         return true;
 
-    if(timeStamp.elapsed() > intervalTime && intervalTime > 50) {
+    if((timeStamp.elapsed() + elapsedTimeOffset) > intervalTime) {
         emit notify();
+        elapsedTimeOffset = timeStamp.elapsed() + elapsedTimeOffset - intervalTime;
         timeStamp.restart();
     }
     return true;
