@@ -284,7 +284,9 @@ bool QDirectFBPaintEngine::begin(QPaintDevice *device)
     }
 
     d->prepare(d->dfbDevice);
+    gccaps = AllFeatures;
     d->setCompositionMode(state()->composition_mode);
+
     return QRasterPaintEngine::begin(device);
 }
 
