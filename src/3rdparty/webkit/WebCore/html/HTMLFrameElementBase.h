@@ -2,7 +2,7 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2000 Simon Hausmann <hausmann@kde.org>
- * Copyright (C) 2004, 2006, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2006, 2008, 2009 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -31,60 +31,39 @@ namespace WebCore {
 
 class HTMLFrameElementBase : public HTMLFrameOwnerElement {
 public:
-    virtual void parseMappedAttribute(MappedAttribute*);
-
-    virtual void insertedIntoDocument();
-    virtual void removedFromDocument();
-
-    virtual void attach();
-    virtual bool canLazyAttach() { return false; }
-
     KURL location() const;
     void setLocation(const String&);
-
-    virtual bool isFocusable() const;
-    virtual void setFocus(bool);
-    
-    virtual bool isURLAttribute(Attribute*) const;
 
     virtual ScrollbarMode scrollingMode() const { return m_scrolling; }
     
     int getMarginWidth() const { return m_marginWidth; }
     int getMarginHeight() const { return m_marginHeight; }
 
-    String frameBorder() const;
-    void setFrameBorder(const String&);
-
-    String longDesc() const;
-    void setLongDesc(const String&);
-
-    String marginHeight() const;
-    void setMarginHeight(const String&);
-
-    String marginWidth() const;
-    void setMarginWidth(const String&);
-
-    String name() const;
-    void setName(const String&);
-
-    bool noResize() const { return m_noResize; }
-    void setNoResize(bool);
-
-    String scrolling() const;
-    void setScrolling(const String&);
-
-    KURL src() const;
-    void setSrc(const String&);
-
     int width() const;
     int height() const;
-
-    bool viewSourceMode() const { return m_viewSource; }
 
 protected:
     HTMLFrameElementBase(const QualifiedName&, Document*);
 
-    bool isURLAllowed(const AtomicString&) const;
+    bool isURLAllowed() const;
+
+    virtual void parseMappedAttribute(MappedAttribute*);
+
+    virtual void insertedIntoDocument();
+    virtual void removedFromDocument();
+
+    virtual void attach();
+
+private:
+    virtual bool canLazyAttach() { return false; }
+
+    virtual bool supportsFocus() const;
+    virtual void setFocus(bool);
+    
+    virtual bool isURLAttribute(Attribute*) const;
+
+    bool viewSourceMode() const { return m_viewSource; }
+
     void setNameAndOpenURL();
     void openURL();
 
@@ -98,7 +77,6 @@ protected:
     int m_marginWidth;
     int m_marginHeight;
 
-    bool m_noResize;
     bool m_viewSource;
 
     bool m_shouldOpenURLAfterAttach;

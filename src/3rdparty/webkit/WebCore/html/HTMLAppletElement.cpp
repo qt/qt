@@ -34,10 +34,15 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLAppletElement::HTMLAppletElement(const QualifiedName& tagName, Document* doc)
-    : HTMLPlugInElement(tagName, doc)
+inline HTMLAppletElement::HTMLAppletElement(const QualifiedName& tagName, Document* document)
+    : HTMLPlugInElement(tagName, document)
 {
     ASSERT(hasTagName(appletTag));
+}
+
+PassRefPtr<HTMLAppletElement> HTMLAppletElement::create(const QualifiedName& tagName, Document* document)
+{
+    return adoptRef(new HTMLAppletElement(tagName, document));
 }
 
 void HTMLAppletElement::parseMappedAttribute(MappedAttribute* attr)
@@ -141,7 +146,7 @@ RenderWidget* HTMLAppletElement::renderWidgetForJSBindings() const
     if (!settings || !settings->isJavaEnabled())
         return 0;
 
-    RenderApplet* applet = static_cast<RenderApplet*>(renderer());
+    RenderApplet* applet = toRenderApplet(renderer());
     if (applet)
         applet->createWidgetIfNecessary();
 

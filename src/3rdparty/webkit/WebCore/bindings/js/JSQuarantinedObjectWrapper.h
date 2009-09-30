@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -53,24 +53,27 @@ namespace WebCore {
     protected:
         JSQuarantinedObjectWrapper(JSC::ExecState* unwrappedExec, JSC::JSObject* unwrappedObject, PassRefPtr<JSC::Structure>);
 
-        virtual void mark();
+        virtual void markChildren(JSC::MarkStack&);
 
     private:
         virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
         virtual bool getOwnPropertySlot(JSC::ExecState*, unsigned, JSC::PropertySlot&);
+        virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
 
         virtual void put(JSC::ExecState*, const JSC::Identifier&, JSC::JSValue, JSC::PutPropertySlot&);
         virtual void put(JSC::ExecState*, unsigned, JSC::JSValue);
+        virtual bool defineOwnProperty(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&, bool shouldThrow);
 
-        virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier&, bool checkDontDelete = true);
+        virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier&);
         virtual bool deleteProperty(JSC::ExecState*, unsigned);
 
         virtual JSC::CallType getCallData(JSC::CallData&);
         virtual JSC::ConstructType getConstructData(JSC::ConstructData&);
 
         virtual bool hasInstance(JSC::ExecState*, JSC::JSValue, JSC::JSValue proto);
-
-        virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, unsigned listedAttributes = JSC::Structure::Prototype);
+        
+        virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
+        virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
 
         virtual JSC::UString className() const { return m_unwrappedObject->className(); }
 

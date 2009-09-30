@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -112,11 +112,6 @@ void qt_egl_add_platform_config(QEglProperties& props, QPaintDevice *device)
 }
 
 
-bool QGLFormat::hasOpenGL()
-{
-    return true;
-}
-
 static bool opengl32dll = false;
 
 bool QGLFormat::hasOpenGLOverlays()
@@ -178,7 +173,8 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
 #endif
 
     // Create the EGL surface to draw into.
-    if (!d->eglContext->createSurface(device())) {
+    d->eglSurface = d->eglContext->createSurface(device());
+    if (d->eglSurface == EGL_NO_SURFACE) {
         delete d->eglContext;
         d->eglContext = 0;
         return false;
@@ -415,90 +411,6 @@ const QRgb* QGLCmap::colors() const
 }
 
 
-void QGLContext::reset()
-{       
-    Q_D(QGLContext);
-    if (!d->valid)
-        return;
-    d->cleanup();
-    doneCurrent();
-    if (d->eglContext) {
-        delete d->eglContext;
-        d->eglContext = 0;
-    }
-    d->crWin = false;
-    d->sharing = false;
-    d->valid = false;
-    d->transpColor = QColor();
-    d->initDone = false;
-    qgl_share_reg()->removeShare(this);
-}
-
-
-//
-// NOTE: In a multi-threaded environment, each thread has a current
-// context. If we want to make this code thread-safe, we probably
-// have to use TLS (thread local storage) for keeping current contexts.
-//
-
-void QGLContext::makeCurrent()
-{
-
-    Q_D(QGLContext);
-    if(!d->valid || !d->eglContext) {
-        qWarning("QGLContext::makeCurrent(): Cannot make invalid context current");
-        return;
-    }
-
-    if (d->eglContext->makeCurrent()) {
-        if (!qgl_context_storage.hasLocalData() && QThread::currentThread())
-            qgl_context_storage.setLocalData(new QGLThreadContext);
-        if (qgl_context_storage.hasLocalData())
-            qgl_context_storage.localData()->context = this;
-        currentCtx = this;
-    }
-}
-
-
-void QGLContext::doneCurrent()
-{
-
-    Q_D(QGLContext);
-    if (d->eglContext)
-        d->eglContext->doneCurrent();
-
-    if (qgl_context_storage.hasLocalData())
-        qgl_context_storage.localData()->context = 0;
-    currentCtx = 0;
-}
-
-void QGLContext::swapBuffers() const
-{
-    Q_D(const QGLContext);
-    if(!d->valid || !d->eglContext)
-        return;
-
-    d->eglContext->swapBuffers();
-}
-
-
-QColor QGLContext::overlayTransparentColor() const
-{
-    return d_func()->transpColor;
-}
-
-
-void QGLContext::generateFontDisplayLists(const QFont & fnt, int listBase)
-{
-    Q_UNUSED(fnt);
-    Q_UNUSED(listBase);
-}
-
-void *QGLContext::getProcAddress(const QString &proc) const
-{
-    return (void*)eglGetProcAddress(reinterpret_cast<const char *>(proc.toLatin1().data()));
-}
-
 /*****************************************************************************
   QGLWidget Win32/WGL-specific code
  *****************************************************************************/
@@ -574,12 +486,6 @@ bool QGLWidget::event(QEvent *e)
     }
 
     return QWidget::event(e);
-}
-
-
-void QGLWidget::setMouseTracking(bool enable)
-{
-    QWidget::setMouseTracking(enable);
 }
 
 
@@ -682,11 +588,6 @@ void QGLWidget::setContext(QGLContext *context,
 }
 
 
-bool QGLWidgetPrivate::renderCxPm(QPixmap*)
-{
-    return false;
-}
-
 void QGLWidgetPrivate::cleanupColormaps()
 {
     Q_Q(QGLWidget);
@@ -730,7 +631,14 @@ void QGLExtensions::init()
     if (init_done)
         return;
     init_done = true;
+
+    // We need a context current to initialize the extensions.
+    QGLWidget tmpWidget;
+    tmpWidget.makeCurrent();
+
     init_extensions();
+
+    tmpWidget.doneCurrent();
 }
 
 QT_END_NAMESPACE

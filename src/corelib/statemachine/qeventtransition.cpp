@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -44,7 +44,6 @@
 #ifndef QT_NO_STATEMACHINE
 
 #include "qeventtransition_p.h"
-#include "qwrappedevent.h"
 #include "qstate.h"
 #include "qstate_p.h"
 #include "qstatemachine.h"
@@ -83,10 +82,11 @@ QT_BEGIN_NAMESPACE
   \section1 Subclassing
 
   When reimplementing the eventTest() function, you should first call the base
-  implementation to verify that the event is a QWrappedEvent for the proper
-  object and event type. You may then cast the event to a QWrappedEvent and
-  get the original event by calling QWrappedEvent::event(), and perform
-  additional checks on that object.
+  implementation to verify that the event is a QStateMachine::WrappedEvent for
+  the proper object and event type. You may then cast the event to a
+  QStateMachine::WrappedEvent and get the original event by calling
+  QStateMachine::WrappedEvent::event(), and perform additional checks on that
+  object.
 
   \sa QState::addTransition()
 */
@@ -232,7 +232,7 @@ bool QEventTransition::eventTest(QEvent *event)
 {
     Q_D(const QEventTransition);
     if (event->type() == QEvent::Wrapped) {
-        QWrappedEvent *we = static_cast<QWrappedEvent*>(event);
+        QStateMachine::WrappedEvent *we = static_cast<QStateMachine::WrappedEvent*>(event);
         return (we->object() == d->object)
             && (we->event()->type() == d->eventType);
     }

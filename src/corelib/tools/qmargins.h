@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -87,8 +87,8 @@ Q_DECLARE_TYPEINFO(QMargins, Q_MOVABLE_TYPE);
 inline QMargins::QMargins()
 { m_top = m_bottom = m_left = m_right = 0; }
 
-inline QMargins::QMargins(int left, int top, int right, int bottom)
-{ m_left = left; m_top = top; m_right = right; m_bottom = bottom; }
+inline QMargins::QMargins(int aleft, int atop, int aright, int abottom)
+    : m_left(aleft), m_top(atop), m_right(aright), m_bottom(abottom) {}
 
 inline bool QMargins::isNull() const
 { return m_left==0 && m_top==0 && m_right==0 && m_bottom==0; }
@@ -106,17 +106,17 @@ inline int QMargins::bottom() const
 { return m_bottom; }
 
 
-inline void QMargins::setLeft(int left)
-{ m_left = left; }
+inline void QMargins::setLeft(int aleft)
+{ m_left = aleft; }
 
-inline void QMargins::setTop(int top)
-{ m_top = top; }
+inline void QMargins::setTop(int atop)
+{ m_top = atop; }
 
-inline void QMargins::setRight(int right)
-{ m_right = right; }
+inline void QMargins::setRight(int aright)
+{ m_right = aright; }
 
-inline void QMargins::setBottom(int bottom)
-{ m_bottom = bottom; }
+inline void QMargins::setBottom(int abottom)
+{ m_bottom = abottom; }
 
 inline bool operator==(const QMargins &m1, const QMargins &m2)
 {

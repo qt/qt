@@ -35,9 +35,12 @@
 #include "FrameView.h"
 #include "Frame.h"
 #include "Document.h"
+#include "TimeRanges.h"
 
 #if PLATFORM(MAC)
 #include "MediaPlayerPrivateQTKit.h"
+#elif PLATFORM(WINCE) && !PLATFORM(QT)
+#include "MediaPlayerPrivateWince.h"
 #elif PLATFORM(WIN)
 #include "MediaPlayerPrivateQuickTimeWin.h"
 #elif PLATFORM(GTK)
@@ -67,6 +70,7 @@ public:
     virtual IntSize naturalSize() const { return IntSize(0, 0); }
 
     virtual bool hasVideo() const { return false; }
+    virtual bool hasAudio() const { return false; }
 
     virtual void setVisible(bool) { }
 
@@ -88,7 +92,7 @@ public:
     virtual MediaPlayer::ReadyState readyState() const { return MediaPlayer::HaveNothing; }
 
     virtual float maxTimeSeekable() const { return 0; }
-    virtual float maxTimeBuffered() const { return 0; }
+    virtual PassRefPtr<TimeRanges> buffered() const { return TimeRanges::create(); }
 
     virtual int dataRate() const { return 0; }
 
@@ -316,9 +320,14 @@ IntSize MediaPlayer::naturalSize()
     return m_private->naturalSize();
 }
 
-bool MediaPlayer::hasVideo()
+bool MediaPlayer::hasVideo() const
 {
     return m_private->hasVideo();
+}
+
+bool MediaPlayer::hasAudio() const
+{
+    return m_private->hasAudio();
 }
 
 bool MediaPlayer::inMediaDocument()
@@ -382,9 +391,9 @@ void MediaPlayer::setEndTime(float time)
     m_private->setEndTime(time);
 }
 
-float MediaPlayer::maxTimeBuffered()
+PassRefPtr<TimeRanges> MediaPlayer::buffered()
 {
-    return m_private->maxTimeBuffered();
+    return m_private->buffered();
 }
 
 float MediaPlayer::maxTimeSeekable()

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtMultimedia module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -54,7 +54,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QAudioDeviceInfoPrivate::QAudioDeviceInfoPrivate(QByteArray dev, QAudio::Mode mode)
+QAudioDeviceInfoInternal::QAudioDeviceInfoInternal(QByteArray dev, QAudio::Mode mode)
 {
     handle = 0;
 
@@ -62,17 +62,17 @@ QAudioDeviceInfoPrivate::QAudioDeviceInfoPrivate(QByteArray dev, QAudio::Mode mo
     this->mode = mode;
 }
 
-QAudioDeviceInfoPrivate::~QAudioDeviceInfoPrivate()
+QAudioDeviceInfoInternal::~QAudioDeviceInfoInternal()
 {
     close();
 }
 
-bool QAudioDeviceInfoPrivate::isFormatSupported(const QAudioFormat& format) const
+bool QAudioDeviceInfoInternal::isFormatSupported(const QAudioFormat& format) const
 {
     return testSettings(format);
 }
 
-QAudioFormat QAudioDeviceInfoPrivate::preferredFormat() const
+QAudioFormat QAudioDeviceInfoInternal::preferredFormat() const
 {
     QAudioFormat nearest;
     if(mode == QAudio::AudioOutput) {
@@ -81,18 +81,23 @@ QAudioFormat QAudioDeviceInfoPrivate::preferredFormat() const
         nearest.setByteOrder(QAudioFormat::LittleEndian);
         nearest.setSampleType(QAudioFormat::SignedInt);
         nearest.setSampleSize(16);
-        nearest.setCodec(tr("audio/pcm"));
+        nearest.setCodec(QLatin1String("audio/pcm"));
     } else {
         nearest.setFrequency(8000);
         nearest.setChannels(1);
-        nearest.setSampleType(QAudioFormat::SignedInt);
+        nearest.setSampleType(QAudioFormat::UnSignedInt);
         nearest.setSampleSize(8);
-        nearest.setCodec(tr("audio/pcm"));
+        nearest.setCodec(QLatin1String("audio/pcm"));
+        if(!testSettings(nearest)) {
+            nearest.setChannels(2);
+            nearest.setSampleSize(16);
+            nearest.setSampleType(QAudioFormat::SignedInt);
+        }
     }
     return nearest;
 }
 
-QAudioFormat QAudioDeviceInfoPrivate::nearestFormat(const QAudioFormat& format) const
+QAudioFormat QAudioDeviceInfoInternal::nearestFormat(const QAudioFormat& format) const
 {
     if(testSettings(format))
         return format;
@@ -100,54 +105,54 @@ QAudioFormat QAudioDeviceInfoPrivate::nearestFormat(const QAudioFormat& format) 
         return preferredFormat();
 }
 
-QString QAudioDeviceInfoPrivate::deviceName() const
+QString QAudioDeviceInfoInternal::deviceName() const
 {
     return device;
 }
 
-QStringList QAudioDeviceInfoPrivate::codecList()
+QStringList QAudioDeviceInfoInternal::codecList()
 {
     updateLists();
     return codecz;
 }
 
-QList<int> QAudioDeviceInfoPrivate::frequencyList()
+QList<int> QAudioDeviceInfoInternal::frequencyList()
 {
     updateLists();
     return freqz;
 }
 
-QList<int> QAudioDeviceInfoPrivate::channelsList()
+QList<int> QAudioDeviceInfoInternal::channelsList()
 {
     updateLists();
     return channelz;
 }
 
-QList<int> QAudioDeviceInfoPrivate::sampleSizeList()
+QList<int> QAudioDeviceInfoInternal::sampleSizeList()
 {
     updateLists();
     return sizez;
 }
 
-QList<QAudioFormat::Endian> QAudioDeviceInfoPrivate::byteOrderList()
+QList<QAudioFormat::Endian> QAudioDeviceInfoInternal::byteOrderList()
 {
     updateLists();
     return byteOrderz;
 }
 
-QList<QAudioFormat::SampleType> QAudioDeviceInfoPrivate::sampleTypeList()
+QList<QAudioFormat::SampleType> QAudioDeviceInfoInternal::sampleTypeList()
 {
     updateLists();
     return typez;
 }
 
-bool QAudioDeviceInfoPrivate::open()
+bool QAudioDeviceInfoInternal::open()
 {
     int err = 0;
     QString dev = device;
-    if(!dev.contains(tr("default"))) {
+    if(!dev.contains(QLatin1String("default"))) {
         int idx = snd_card_get_index(dev.toLocal8Bit().constData());
-        dev = QString(tr("hw:%1,0")).arg(idx);
+        dev = QString(QLatin1String("hw:%1,0")).arg(idx);
     }
     if(mode == QAudio::AudioOutput) {
         err=snd_pcm_open( &handle,dev.toLocal8Bit().constData(),SND_PCM_STREAM_PLAYBACK,0);
@@ -161,27 +166,26 @@ bool QAudioDeviceInfoPrivate::open()
     return true;
 }
 
-void QAudioDeviceInfoPrivate::close()
+void QAudioDeviceInfoInternal::close()
 {
     if(handle)
         snd_pcm_close(handle);
     handle = 0;
 }
 
-bool QAudioDeviceInfoPrivate::testSettings(const QAudioFormat& format) const
+bool QAudioDeviceInfoInternal::testSettings(const QAudioFormat& format) const
 {
     // Set nearest to closest settings that do work.
     // See if what is in settings will work (return value).
-
     int err = 0;
     snd_pcm_t* handle;
     snd_pcm_hw_params_t *params;
     QString dev = device;
 
     // open()
-    if(!dev.contains(tr("default"))) {
+    if(!dev.contains(QLatin1String("default"))) {
         int idx = snd_card_get_index(dev.toLocal8Bit().constData());
-        dev = QString(tr("hw:%1,0")).arg(idx);
+        dev = QString(QLatin1String("hw:%1,0")).arg(idx);
     }
     if(mode == QAudio::AudioOutput) {
         err=snd_pcm_open( &handle,dev.toLocal8Bit().constData(),SND_PCM_STREAM_PLAYBACK,0);
@@ -205,8 +209,45 @@ bool QAudioDeviceInfoPrivate::testSettings(const QAudioFormat& format) const
     snd_pcm_hw_params_alloca( &params );
     snd_pcm_hw_params_any( handle, params );
 
+    // set the values!
+    snd_pcm_hw_params_set_channels(handle,params,format.channels());
+    snd_pcm_hw_params_set_rate(handle,params,format.frequency(),dir);
+    switch(format.sampleSize()) {
+        case 8:
+            if(format.sampleType() == QAudioFormat::SignedInt)
+                snd_pcm_hw_params_set_format(handle,params,SND_PCM_FORMAT_S8);
+            else if(format.sampleType() == QAudioFormat::UnSignedInt)
+                snd_pcm_hw_params_set_format(handle,params,SND_PCM_FORMAT_U8);
+            break;
+        case 16:
+            if(format.sampleType() == QAudioFormat::SignedInt) {
+                if(format.byteOrder() == QAudioFormat::LittleEndian)
+                    snd_pcm_hw_params_set_format(handle,params,SND_PCM_FORMAT_S16_LE);
+                else if(format.byteOrder() == QAudioFormat::BigEndian)
+                    snd_pcm_hw_params_set_format(handle,params,SND_PCM_FORMAT_S16_BE);
+            } else if(format.sampleType() == QAudioFormat::UnSignedInt) {
+                if(format.byteOrder() == QAudioFormat::LittleEndian)
+                    snd_pcm_hw_params_set_format(handle,params,SND_PCM_FORMAT_U16_LE);
+                else if(format.byteOrder() == QAudioFormat::BigEndian)
+                    snd_pcm_hw_params_set_format(handle,params,SND_PCM_FORMAT_U16_BE);
+            }
+            break;
+        case 32:
+            if(format.sampleType() == QAudioFormat::SignedInt) {
+                if(format.byteOrder() == QAudioFormat::LittleEndian)
+                    snd_pcm_hw_params_set_format(handle,params,SND_PCM_FORMAT_S32_LE);
+                else if(format.byteOrder() == QAudioFormat::BigEndian)
+                    snd_pcm_hw_params_set_format(handle,params,SND_PCM_FORMAT_S32_BE);
+            } else if(format.sampleType() == QAudioFormat::UnSignedInt) {
+                if(format.byteOrder() == QAudioFormat::LittleEndian)
+                    snd_pcm_hw_params_set_format(handle,params,SND_PCM_FORMAT_U32_LE);
+                else if(format.byteOrder() == QAudioFormat::BigEndian)
+                    snd_pcm_hw_params_set_format(handle,params,SND_PCM_FORMAT_U32_BE);
+            }
+    }
+
     // For now, just accept only audio/pcm codec
-    if(!format.codec().startsWith(tr("audio/pcm"))) {
+    if(!format.codec().startsWith(QLatin1String("audio/pcm"))) {
         err=-1;
     } else
         testCodec = true;
@@ -283,7 +324,7 @@ bool QAudioDeviceInfoPrivate::testSettings(const QAudioFormat& format) const
     return false;
 }
 
-void QAudioDeviceInfoPrivate::updateLists()
+void QAudioDeviceInfoInternal::updateLists()
 {
     // redo all lists based on current settings
     freqz.clear();
@@ -313,11 +354,11 @@ void QAudioDeviceInfoPrivate::updateLists()
     typez.append(QAudioFormat::SignedInt);
     typez.append(QAudioFormat::UnSignedInt);
     typez.append(QAudioFormat::Float);
-    codecz.append(tr("audio/pcm"));
+    codecz.append(QLatin1String("audio/pcm"));
     close();
 }
 
-QList<QByteArray> QAudioDeviceInfoPrivate::deviceList(QAudio::Mode mode)
+QList<QByteArray> QAudioDeviceInfoInternal::deviceList(QAudio::Mode mode)
 {
     QAudio::Mode _m;
     QList<QByteArray> devices;
@@ -346,10 +387,10 @@ QList<QByteArray> QAudioDeviceInfoPrivate::deviceList(QAudio::Mode mode)
             if(io == NULL)
                 _m = mode;
 
-            QString str = tr(name);
+            QString str = QLatin1String(name);
 
-            if(str.contains(tr("default"))) {
-                int pos = str.indexOf(tr("="),0);
+            if(str.contains(QLatin1String("default"))) {
+                int pos = str.indexOf(QLatin1String("="),0);
                 devices.append(str.mid(pos+1).toLocal8Bit().constData());
             }
         }
@@ -375,7 +416,7 @@ QList<QByteArray> QAudioDeviceInfoPrivate::deviceList(QAudio::Mode mode)
     return devices;
 }
 
-QByteArray QAudioDeviceInfoPrivate::defaultInputDevice()
+QByteArray QAudioDeviceInfoInternal::defaultInputDevice()
 {
     QList<QByteArray> devices = deviceList(QAudio::AudioInput);
     if(devices.size() == 0)
@@ -384,7 +425,7 @@ QByteArray QAudioDeviceInfoPrivate::defaultInputDevice()
     return QByteArray("default");
 }
 
-QByteArray QAudioDeviceInfoPrivate::defaultOutputDevice()
+QByteArray QAudioDeviceInfoInternal::defaultOutputDevice()
 {
     QList<QByteArray> devices = deviceList(QAudio::AudioOutput);
     if(devices.size() == 0)

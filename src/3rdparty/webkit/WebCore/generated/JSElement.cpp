@@ -53,7 +53,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSElement);
 
 /* Hash table */
 
-static const HashTableValue JSElementTableValues[60] =
+static const HashTableValue JSElementTableValues[61] =
 {
     { "tagName", DontDelete|ReadOnly, (intptr_t)jsElementTagName, (intptr_t)0 },
     { "style", DontDelete|ReadOnly, (intptr_t)jsElementStyle, (intptr_t)0 },
@@ -91,6 +91,7 @@ static const HashTableValue JSElementTableValues[60] =
     { "onerror", DontDelete|DontEnum, (intptr_t)jsElementOnerror, (intptr_t)setJSElementOnerror },
     { "onfocus", DontDelete|DontEnum, (intptr_t)jsElementOnfocus, (intptr_t)setJSElementOnfocus },
     { "oninput", DontDelete|DontEnum, (intptr_t)jsElementOninput, (intptr_t)setJSElementOninput },
+    { "oninvalid", DontDelete|DontEnum, (intptr_t)jsElementOninvalid, (intptr_t)setJSElementOninvalid },
     { "onkeydown", DontDelete|DontEnum, (intptr_t)jsElementOnkeydown, (intptr_t)setJSElementOnkeydown },
     { "onkeypress", DontDelete|DontEnum, (intptr_t)jsElementOnkeypress, (intptr_t)setJSElementOnkeypress },
     { "onkeyup", DontDelete|DontEnum, (intptr_t)jsElementOnkeyup, (intptr_t)setJSElementOnkeyup },
@@ -146,6 +147,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -162,9 +164,14 @@ bool JSElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier&
     return getStaticValueSlot<JSElementConstructor, DOMObject>(exec, &JSElementConstructorTable, this, propertyName, slot);
 }
 
+bool JSElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSElementConstructor, DOMObject>(exec, &JSElementConstructorTable, this, propertyName, descriptor);
+}
+
 /* Hash table for prototype */
 
-static const HashTableValue JSElementPrototypeTableValues[28] =
+static const HashTableValue JSElementPrototypeTableValues[29] =
 {
     { "getAttribute", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionGetAttribute, (intptr_t)1 },
     { "setAttribute", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionSetAttribute, (intptr_t)2 },
@@ -191,6 +198,7 @@ static const HashTableValue JSElementPrototypeTableValues[28] =
     { "getElementsByClassName", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionGetElementsByClassName, (intptr_t)1 },
     { "querySelector", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionQuerySelector, (intptr_t)1 },
     { "querySelectorAll", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionQuerySelectorAll, (intptr_t)1 },
+    { "webkitMatchesSelector", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionWebkitMatchesSelector, (intptr_t)1 },
     { "getClientRects", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionGetClientRects, (intptr_t)0 },
     { "getBoundingClientRect", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionGetBoundingClientRect, (intptr_t)0 },
     { 0, 0, 0, 0 }
@@ -213,6 +221,11 @@ JSObject* JSElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject
 bool JSElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticFunctionSlot<JSObject>(exec, &JSElementPrototypeTable, this, propertyName, slot);
+}
+
+bool JSElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSElementPrototypeTable, this, propertyName, descriptor);
 }
 
 const ClassInfo JSElement::s_info = { "Element", &JSNode::s_info, &JSElementTable, 0 };
@@ -573,6 +586,18 @@ JSValue jsElementOninput(ExecState* exec, const Identifier&, const PropertySlot&
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->oninput()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsElementOninvalid(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSElement* castedThis = static_cast<JSElement*>(asObject(slot.slotBase()));
+    UNUSED_PARAM(exec);
+    Element* imp = static_cast<Element*>(castedThis->impl());
+    if (EventListener* listener = imp->oninvalid()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
     }
@@ -1025,6 +1050,16 @@ void setJSElementOninput(ExecState* exec, JSObject* thisObject, JSValue value)
     imp->setOninput(globalObject->createJSAttributeEventListener(value));
 }
 
+void setJSElementOninvalid(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    UNUSED_PARAM(exec);
+    Element* imp = static_cast<Element*>(static_cast<JSElement*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    if (!globalObject)
+        return;
+    imp->setOninvalid(globalObject->createJSAttributeEventListener(value));
+}
+
 void setJSElementOnkeydown(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
@@ -1253,7 +1288,7 @@ JSValue JSElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1267,7 +1302,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetAttribute(ExecState* exec, JS
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionSetAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     return castedThisObj->setAttribute(exec, args);
@@ -1276,7 +1311,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionSetAttribute(ExecState* exec, JS
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionRemoveAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1291,7 +1326,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionRemoveAttribute(ExecState* exec,
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetAttributeNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1305,7 +1340,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetAttributeNode(ExecState* exec
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionSetAttributeNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     return castedThisObj->setAttributeNode(exec, args);
@@ -1314,7 +1349,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionSetAttributeNode(ExecState* exec
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionRemoveAttributeNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1330,7 +1365,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionRemoveAttributeNode(ExecState* e
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetElementsByTagName(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1344,7 +1379,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetElementsByTagName(ExecState* 
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetAttributeNS(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1359,7 +1394,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetAttributeNS(ExecState* exec, 
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionSetAttributeNS(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     return castedThisObj->setAttributeNS(exec, args);
@@ -1368,7 +1403,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionSetAttributeNS(ExecState* exec, 
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionRemoveAttributeNS(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1384,7 +1419,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionRemoveAttributeNS(ExecState* exe
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetElementsByTagNameNS(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1399,7 +1434,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetElementsByTagNameNS(ExecState
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetAttributeNodeNS(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1414,7 +1449,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetAttributeNodeNS(ExecState* ex
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionSetAttributeNodeNS(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     return castedThisObj->setAttributeNodeNS(exec, args);
@@ -1423,7 +1458,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionSetAttributeNodeNS(ExecState* ex
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionHasAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1437,7 +1472,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionHasAttribute(ExecState* exec, JS
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionHasAttributeNS(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1452,7 +1487,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionHasAttributeNS(ExecState* exec, 
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionFocus(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1464,7 +1499,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionFocus(ExecState* exec, JSObject*
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionBlur(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1476,7 +1511,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionBlur(ExecState* exec, JSObject*,
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionScrollIntoView(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1496,7 +1531,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionScrollIntoView(ExecState* exec, 
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionContains(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1510,7 +1545,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionContains(ExecState* exec, JSObje
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionScrollIntoViewIfNeeded(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1530,7 +1565,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionScrollIntoViewIfNeeded(ExecState
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionScrollByLines(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1543,7 +1578,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionScrollByLines(ExecState* exec, J
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionScrollByPages(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1556,7 +1591,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionScrollByPages(ExecState* exec, J
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetElementsByClassName(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1570,7 +1605,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetElementsByClassName(ExecState
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionQuerySelector(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1586,7 +1621,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionQuerySelector(ExecState* exec, J
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionQuerySelectorAll(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1599,10 +1634,26 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionQuerySelectorAll(ExecState* exec
     return result;
 }
 
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionWebkitMatchesSelector(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSElement::s_info))
+        return throwError(exec, TypeError);
+    JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
+    Element* imp = static_cast<Element*>(castedThisObj->impl());
+    ExceptionCode ec = 0;
+    const UString& selectors = args.at(0).toString(exec);
+
+
+    JSC::JSValue result = jsBoolean(imp->webkitMatchesSelector(selectors, ec));
+    setDOMException(exec, ec);
+    return result;
+}
+
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetClientRects(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1615,7 +1666,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetClientRects(ExecState* exec, 
 JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetBoundingClientRect(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSElement::s_info))
+    if (!thisValue.inherits(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -1627,7 +1678,7 @@ JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetBoundingClientRect(ExecState*
 
 Element* toElement(JSC::JSValue value)
 {
-    return value.isObject(&JSElement::s_info) ? static_cast<JSElement*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSElement::s_info) ? static_cast<JSElement*>(asObject(value))->impl() : 0;
 }
 
 }

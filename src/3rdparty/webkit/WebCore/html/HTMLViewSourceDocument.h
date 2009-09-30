@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,17 +30,17 @@
 namespace WebCore {
 
 class DoctypeToken;
+class HTMLTableCellElement;
+class HTMLTableSectionElement;
+
 struct Token;
 
 class HTMLViewSourceDocument : public HTMLDocument {
 public:
     static PassRefPtr<HTMLViewSourceDocument> create(Frame* frame, const String& mimeType)
     {
-        return new HTMLViewSourceDocument(frame, mimeType);
+        return adoptRef(new HTMLViewSourceDocument(frame, mimeType));
     }
-
-    // Returns HTMLTokenizer or TextTokenizer based on m_type.
-    virtual Tokenizer* createTokenizer();
 
     void addViewSourceToken(Token*); // Used by the HTML tokenizer.
     void addViewSourceText(const String&); // Used by the plaintext tokenizer.
@@ -49,16 +49,19 @@ public:
 private:
     HTMLViewSourceDocument(Frame*, const String& mimeType);
 
+    // Returns HTMLTokenizer or TextTokenizer based on m_type.
+    virtual Tokenizer* createTokenizer();
+
     void createContainingTable();
-    Element* addSpanWithClassName(const String&);
+    PassRefPtr<Element> addSpanWithClassName(const String&);
     void addLine(const String& className);
     void addText(const String& text, const String& className);
-    Element* addLink(const String& url, bool isAnchor);
+    PassRefPtr<Element> addLink(const String& url, bool isAnchor);
 
     String m_type;
-    Element* m_current;
-    Element* m_tbody;
-    Element* m_td;
+    RefPtr<Element> m_current;
+    RefPtr<HTMLTableSectionElement> m_tbody;
+    RefPtr<HTMLTableCellElement> m_td;
 };
 
 }

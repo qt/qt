@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -120,7 +120,7 @@ static gboolean x11EventSourceDispatch(GSource *s, GSourceFunc callback, gpointe
                     // _qt_scrolldone protocols, queue all other
                     // client messages
                     if (event.xclient.format == 32) {
-                        if (event.xclient.message_type == ATOM(WM_PROTOCOLS) ||
+                        if (event.xclient.message_type == ATOM(WM_PROTOCOLS) &&
                             (Atom) event.xclient.data.l[0] == ATOM(WM_TAKE_FOCUS)) {
                             break;
                         } else if (event.xclient.message_type == ATOM(_QT_SCROLL_DONE)) {

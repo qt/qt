@@ -74,6 +74,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSXPathExpressionPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -88,6 +89,11 @@ const ClassInfo JSXPathExpressionConstructor::s_info = { "XPathExpressionConstru
 bool JSXPathExpressionConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSXPathExpressionConstructor, DOMObject>(exec, &JSXPathExpressionConstructorTable, this, propertyName, slot);
+}
+
+bool JSXPathExpressionConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSXPathExpressionConstructor, DOMObject>(exec, &JSXPathExpressionConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -117,6 +123,11 @@ bool JSXPathExpressionPrototype::getOwnPropertySlot(ExecState* exec, const Ident
     return getStaticFunctionSlot<JSObject>(exec, &JSXPathExpressionPrototypeTable, this, propertyName, slot);
 }
 
+bool JSXPathExpressionPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSXPathExpressionPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSXPathExpression::s_info = { "XPathExpression", 0, &JSXPathExpressionTable, 0 };
 
 JSXPathExpression::JSXPathExpression(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XPathExpression> impl)
@@ -127,7 +138,7 @@ JSXPathExpression::JSXPathExpression(PassRefPtr<Structure> structure, JSDOMGloba
 
 JSXPathExpression::~JSXPathExpression()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSXPathExpression::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -138,6 +149,11 @@ JSObject* JSXPathExpression::createPrototype(ExecState* exec, JSGlobalObject* gl
 bool JSXPathExpression::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSXPathExpression, Base>(exec, &JSXPathExpressionTable, this, propertyName, slot);
+}
+
+bool JSXPathExpression::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSXPathExpression, Base>(exec, &JSXPathExpressionTable, this, propertyName, descriptor);
 }
 
 JSValue jsXPathExpressionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -153,7 +169,7 @@ JSValue JSXPathExpression::getConstructor(ExecState* exec, JSGlobalObject* globa
 JSValue JSC_HOST_CALL jsXPathExpressionPrototypeFunctionEvaluate(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSXPathExpression::s_info))
+    if (!thisValue.inherits(&JSXPathExpression::s_info))
         return throwError(exec, TypeError);
     JSXPathExpression* castedThisObj = static_cast<JSXPathExpression*>(asObject(thisValue));
     XPathExpression* imp = static_cast<XPathExpression*>(castedThisObj->impl());
@@ -174,7 +190,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, XPathEx
 }
 XPathExpression* toXPathExpression(JSC::JSValue value)
 {
-    return value.isObject(&JSXPathExpression::s_info) ? static_cast<JSXPathExpression*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSXPathExpression::s_info) ? static_cast<JSXPathExpression*>(asObject(value))->impl() : 0;
 }
 
 }

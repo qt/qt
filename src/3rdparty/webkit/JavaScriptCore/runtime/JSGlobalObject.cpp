@@ -80,16 +80,16 @@ static const int initialTickCountThreshold = 255;
 // Preferred number of milliseconds between each timeout check
 static const int preferredScriptCheckTimeInterval = 1000;
 
-static inline void markIfNeeded(JSValue v)
+static inline void markIfNeeded(MarkStack& markStack, JSValue v)
 {
-    if (v && !v.marked())
-        v.mark();
+    if (v)
+        markStack.append(v);
 }
 
-static inline void markIfNeeded(const RefPtr<Structure>& s)
+static inline void markIfNeeded(MarkStack& markStack, const RefPtr<Structure>& s)
 {
     if (s)
-        s->mark();
+        s->markAggregate(markStack);
 }
 
 JSGlobalObject::~JSGlobalObject()
@@ -112,8 +112,8 @@ JSGlobalObject::~JSGlobalObject()
     if (headObject == this)
         headObject = 0;
 
-    HashSet<ProgramCodeBlock*>::const_iterator end = codeBlocks().end();
-    for (HashSet<ProgramCodeBlock*>::const_iterator it = codeBlocks().begin(); it != end; ++it)
+    HashSet<GlobalCodeBlock*>::const_iterator end = codeBlocks().end();
+    for (HashSet<GlobalCodeBlock*>::const_iterator it = codeBlocks().begin(); it != end; ++it)
         (*it)->clearGlobalObject();
         
     RegisterFile& registerFile = globalData()->interpreter->registerFile();
@@ -129,7 +129,7 @@ void JSGlobalObject::init(JSObject* thisValue)
     ASSERT(JSLock::currentThreadIsHoldingLock());
 
     d()->globalData = Heap::heap(this)->globalData();
-    d()->globalScopeChain = ScopeChain(this, d()->globalData.get(), thisValue);
+    d()->globalScopeChain = ScopeChain(this, d()->globalData.get(), this, thisValue);
 
     JSGlobalObject::globalExec()->init(0, 0, d()->globalScopeChain.node(), CallFrame::noCaller(), 0, 0, 0);
 
@@ -175,18 +175,18 @@ void JSGlobalObject::putWithAttributes(ExecState* exec, const Identifier& proper
     }
 }
 
-void JSGlobalObject::defineGetter(ExecState* exec, const Identifier& propertyName, JSObject* getterFunc)
+void JSGlobalObject::defineGetter(ExecState* exec, const Identifier& propertyName, JSObject* getterFunc, unsigned attributes)
 {
     PropertySlot slot;
     if (!symbolTableGet(propertyName, slot))
-        JSVariableObject::defineGetter(exec, propertyName, getterFunc);
+        JSVariableObject::defineGetter(exec, propertyName, getterFunc, attributes);
 }
 
-void JSGlobalObject::defineSetter(ExecState* exec, const Identifier& propertyName, JSObject* setterFunc)
+void JSGlobalObject::defineSetter(ExecState* exec, const Identifier& propertyName, JSObject* setterFunc, unsigned attributes)
 {
     PropertySlot slot;
     if (!symbolTableGet(propertyName, slot))
-        JSVariableObject::defineSetter(exec, propertyName, setterFunc);
+        JSVariableObject::defineSetter(exec, propertyName, setterFunc, attributes);
 }
 
 static inline JSObject* lastInPrototypeChain(JSObject* object)
@@ -256,9 +256,9 @@ void JSGlobalObject::reset(JSValue prototype)
 
     // Constructors
 
-    JSCell* objectConstructor = new (exec) ObjectConstructor(exec, ObjectConstructor::createStructure(d()->functionPrototype), d()->objectPrototype);
+    JSCell* objectConstructor = new (exec) ObjectConstructor(exec, ObjectConstructor::createStructure(d()->functionPrototype), d()->objectPrototype, d()->prototypeFunctionStructure.get());
     JSCell* functionConstructor = new (exec) FunctionConstructor(exec, FunctionConstructor::createStructure(d()->functionPrototype), d()->functionPrototype);
-    JSCell* arrayConstructor = new (exec) ArrayConstructor(exec, ArrayConstructor::createStructure(d()->functionPrototype), d()->arrayPrototype);
+    JSCell* arrayConstructor = new (exec) ArrayConstructor(exec, ArrayConstructor::createStructure(d()->functionPrototype), d()->arrayPrototype, d()->prototypeFunctionStructure.get());
     JSCell* stringConstructor = new (exec) StringConstructor(exec, StringConstructor::createStructure(d()->functionPrototype), d()->prototypeFunctionStructure.get(), d()->stringPrototype);
     JSCell* booleanConstructor = new (exec) BooleanConstructor(exec, BooleanConstructor::createStructure(d()->functionPrototype), d()->booleanPrototype);
     JSCell* numberConstructor = new (exec) NumberConstructor(exec, NumberConstructor::createStructure(d()->functionPrototype), d()->numberPrototype);
@@ -307,12 +307,12 @@ void JSGlobalObject::reset(JSValue prototype)
     putDirectFunctionWithoutTransition(Identifier(exec, "Date"), dateConstructor, DontEnum);
     putDirectFunctionWithoutTransition(Identifier(exec, "RegExp"), d()->regExpConstructor, DontEnum);
     putDirectFunctionWithoutTransition(Identifier(exec, "Error"), d()->errorConstructor, DontEnum);
-    putDirectFunctionWithoutTransition(Identifier(exec, "EvalError"), d()->evalErrorConstructor, DontEnum);
-    putDirectFunctionWithoutTransition(Identifier(exec, "RangeError"), d()->rangeErrorConstructor, DontEnum);
-    putDirectFunctionWithoutTransition(Identifier(exec, "ReferenceError"), d()->referenceErrorConstructor, DontEnum);
-    putDirectFunctionWithoutTransition(Identifier(exec, "SyntaxError"), d()->syntaxErrorConstructor, DontEnum);
-    putDirectFunctionWithoutTransition(Identifier(exec, "TypeError"), d()->typeErrorConstructor, DontEnum);
-    putDirectFunctionWithoutTransition(Identifier(exec, "URIError"), d()->URIErrorConstructor, DontEnum);
+    putDirectFunctionWithoutTransition(Identifier(exec, "EvalError"), d()->evalErrorConstructor);
+    putDirectFunctionWithoutTransition(Identifier(exec, "RangeError"), d()->rangeErrorConstructor);
+    putDirectFunctionWithoutTransition(Identifier(exec, "ReferenceError"), d()->referenceErrorConstructor);
+    putDirectFunctionWithoutTransition(Identifier(exec, "SyntaxError"), d()->syntaxErrorConstructor);
+    putDirectFunctionWithoutTransition(Identifier(exec, "TypeError"), d()->typeErrorConstructor);
+    putDirectFunctionWithoutTransition(Identifier(exec, "URIError"), d()->URIErrorConstructor);
 
     // Set global values.
     GlobalPropertyInfo staticGlobals[] = {
@@ -340,9 +340,7 @@ void JSGlobalObject::reset(JSValue prototype)
     putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, d()->prototypeFunctionStructure.get(), 1, Identifier(exec, "encodeURI"), globalFuncEncodeURI), DontEnum);
     putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, d()->prototypeFunctionStructure.get(), 1, Identifier(exec, "encodeURIComponent"), globalFuncEncodeURIComponent), DontEnum);
 #ifndef NDEBUG
-#ifndef QT_BUILD_SCRIPT_LIB
     putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, d()->prototypeFunctionStructure.get(), 1, Identifier(exec, "jscprint"), globalFuncJSCPrint), DontEnum);
-#endif
 #endif
 
     resetPrototype(prototype);
@@ -359,43 +357,43 @@ void JSGlobalObject::resetPrototype(JSValue prototype)
         oldLastInPrototypeChain->setPrototype(objectPrototype);
 }
 
-void JSGlobalObject::mark()
+void JSGlobalObject::markChildren(MarkStack& markStack)
 {
-    JSVariableObject::mark();
+    JSVariableObject::markChildren(markStack);
     
-    HashSet<ProgramCodeBlock*>::const_iterator end = codeBlocks().end();
-    for (HashSet<ProgramCodeBlock*>::const_iterator it = codeBlocks().begin(); it != end; ++it)
-        (*it)->mark();
+    HashSet<GlobalCodeBlock*>::const_iterator end = codeBlocks().end();
+    for (HashSet<GlobalCodeBlock*>::const_iterator it = codeBlocks().begin(); it != end; ++it)
+        (*it)->markAggregate(markStack);
 
     RegisterFile& registerFile = globalData()->interpreter->registerFile();
     if (registerFile.globalObject() == this)
-        registerFile.markGlobals(&globalData()->heap);
+        registerFile.markGlobals(markStack, &globalData()->heap);
 
-    markIfNeeded(d()->regExpConstructor);
-    markIfNeeded(d()->errorConstructor);
-    markIfNeeded(d()->evalErrorConstructor);
-    markIfNeeded(d()->rangeErrorConstructor);
-    markIfNeeded(d()->referenceErrorConstructor);
-    markIfNeeded(d()->syntaxErrorConstructor);
-    markIfNeeded(d()->typeErrorConstructor);
-    markIfNeeded(d()->URIErrorConstructor);
+    markIfNeeded(markStack, d()->regExpConstructor);
+    markIfNeeded(markStack, d()->errorConstructor);
+    markIfNeeded(markStack, d()->evalErrorConstructor);
+    markIfNeeded(markStack, d()->rangeErrorConstructor);
+    markIfNeeded(markStack, d()->referenceErrorConstructor);
+    markIfNeeded(markStack, d()->syntaxErrorConstructor);
+    markIfNeeded(markStack, d()->typeErrorConstructor);
+    markIfNeeded(markStack, d()->URIErrorConstructor);
 
-    markIfNeeded(d()->evalFunction);
-    markIfNeeded(d()->callFunction);
-    markIfNeeded(d()->applyFunction);
+    markIfNeeded(markStack, d()->evalFunction);
+    markIfNeeded(markStack, d()->callFunction);
+    markIfNeeded(markStack, d()->applyFunction);
 
-    markIfNeeded(d()->objectPrototype);
-    markIfNeeded(d()->functionPrototype);
-    markIfNeeded(d()->arrayPrototype);
-    markIfNeeded(d()->booleanPrototype);
-    markIfNeeded(d()->stringPrototype);
-    markIfNeeded(d()->numberPrototype);
-    markIfNeeded(d()->datePrototype);
-    markIfNeeded(d()->regExpPrototype);
+    markIfNeeded(markStack, d()->objectPrototype);
+    markIfNeeded(markStack, d()->functionPrototype);
+    markIfNeeded(markStack, d()->arrayPrototype);
+    markIfNeeded(markStack, d()->booleanPrototype);
+    markIfNeeded(markStack, d()->stringPrototype);
+    markIfNeeded(markStack, d()->numberPrototype);
+    markIfNeeded(markStack, d()->datePrototype);
+    markIfNeeded(markStack, d()->regExpPrototype);
 
-    markIfNeeded(d()->methodCallDummy);
+    markIfNeeded(markStack, d()->methodCallDummy);
 
-    markIfNeeded(d()->errorStructure);
+    markIfNeeded(markStack, d()->errorStructure);
 
     // No need to mark the other structures, because their prototypes are all
     // guaranteed to be referenced elsewhere.
@@ -405,11 +403,7 @@ void JSGlobalObject::mark()
         return;
 
     size_t size = d()->registerArraySize;
-    for (size_t i = 0; i < size; ++i) {
-        Register& r = registerArray[i];
-        if (!r.marked())
-            r.mark();
-    }
+    markStack.appendValues(reinterpret_cast<JSValue*>(registerArray), size);
 }
 
 ExecState* JSGlobalObject::globalExec()

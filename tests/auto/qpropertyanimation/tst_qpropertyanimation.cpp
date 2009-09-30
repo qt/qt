@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -55,10 +55,10 @@ public:
     int duration() const { return -1; /* not time driven */ }
 
 protected:
-    void updateCurrentTime(int msecs)
+    void updateCurrentTime(int currentTime)
     {
-        QPropertyAnimation::updateCurrentTime(msecs);
-        if (msecs >= QPropertyAnimation::duration())
+        QPropertyAnimation::updateCurrentTime(currentTime);
+        if (currentTime >= QPropertyAnimation::duration() || currentLoop() >= 1)
             stop();
     }
 };
@@ -74,6 +74,20 @@ public:
 private:
     qreal m_x;
 };
+
+class DummyPropertyAnimation : public QPropertyAnimation
+{
+public:
+    DummyPropertyAnimation(QObject *parent = 0) : QPropertyAnimation(parent)
+    {
+        setTargetObject(&o);
+        this->setPropertyName("x");
+        setEndValue(100);
+    }
+
+    MyObject o;
+};
+
 
 class tst_QPropertyAnimation : public QObject
 {
@@ -224,7 +238,11 @@ void tst_QPropertyAnimation::statesAndSignals_data()
 void tst_QPropertyAnimation::statesAndSignals()
 {
     QFETCH(bool, uncontrolled);
-    QPropertyAnimation *anim = uncontrolled ? new UncontrolledAnimation : new QPropertyAnimation;
+    QPropertyAnimation *anim;
+    if (uncontrolled)
+        anim = new UncontrolledAnimation;
+    else
+        anim = new DummyPropertyAnimation;
     anim->setDuration(100);
 
     QSignalSpy finishedSpy(anim, SIGNAL(finished()));
@@ -473,6 +491,7 @@ void tst_QPropertyAnimation::startWhenAnotherIsRunning()
     {
         //normal case: the animation finishes and is deleted
         QPointer<QVariantAnimation> anim = new QPropertyAnimation(&o, "ole");
+        anim->setEndValue(100);
         QSignalSpy runningSpy(anim, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
         anim->start(QVariantAnimation::DeleteWhenStopped);
         QTest::qWait(anim->duration() + 50);
@@ -482,10 +501,12 @@ void tst_QPropertyAnimation::startWhenAnotherIsRunning()
 
     {
         QPointer<QVariantAnimation> anim = new QPropertyAnimation(&o, "ole");
+        anim->setEndValue(100);
         QSignalSpy runningSpy(anim, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
         anim->start(QVariantAnimation::DeleteWhenStopped);
         QTest::qWait(anim->duration()/2);
         QPointer<QVariantAnimation> anim2 = new QPropertyAnimation(&o, "ole");
+        anim2->setEndValue(100);
         QCOMPARE(runningSpy.count(), 1);
         QCOMPARE(anim->state(), QVariantAnimation::Running);
 
@@ -634,6 +655,7 @@ void tst_QPropertyAnimation::playForwardBackward()
     QCOMPARE(o.property("ole").toInt(), 0);
 
     QPropertyAnimation anim(&o, "ole");
+    anim.setStartValue(0);
     anim.setEndValue(100);
     anim.start();
     QTest::qWait(anim.duration() + 50);
@@ -829,7 +851,7 @@ void tst_QPropertyAnimation::setStartEndValues()
 
 void tst_QPropertyAnimation::zeroDurationStart()
 {
-    QPropertyAnimation anim;
+    DummyPropertyAnimation anim;
     QSignalSpy spy(&anim, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
     anim.setDuration(0);
     QCOMPARE(anim.state(), QAbstractAnimation::Stopped);
@@ -906,6 +928,7 @@ void tst_QPropertyAnimation::operationsInStates()
     QObject o;
     o.setProperty("ole", 42);
     QPropertyAnimation anim(&o, "ole");
+    anim.setEndValue(100);
     QSignalSpy spy(&anim, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
 
     anim.stop();

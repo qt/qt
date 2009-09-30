@@ -73,6 +73,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSCSSPageRulePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -87,6 +88,11 @@ const ClassInfo JSCSSPageRuleConstructor::s_info = { "CSSPageRuleConstructor", 0
 bool JSCSSPageRuleConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCSSPageRuleConstructor, DOMObject>(exec, &JSCSSPageRuleConstructorTable, this, propertyName, slot);
+}
+
+bool JSCSSPageRuleConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCSSPageRuleConstructor, DOMObject>(exec, &JSCSSPageRuleConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -125,6 +131,11 @@ JSObject* JSCSSPageRule::createPrototype(ExecState* exec, JSGlobalObject* global
 bool JSCSSPageRule::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCSSPageRule, Base>(exec, &JSCSSPageRuleTable, this, propertyName, slot);
+}
+
+bool JSCSSPageRule::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCSSPageRule, Base>(exec, &JSCSSPageRuleTable, this, propertyName, descriptor);
 }
 
 JSValue jsCSSPageRuleSelectorText(ExecState* exec, const Identifier&, const PropertySlot& slot)

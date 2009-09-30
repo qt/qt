@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -157,6 +157,7 @@ private slots:
     void shortcutsDeletion();
     void painterStateProtectionOnWindowFrame();
     void ensureClipping();
+    void respectHFW();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
@@ -229,7 +230,7 @@ public:
 
     int eventCount;
     Qt::LayoutDirection m_painterLayoutDirection;
-    
+
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
     {
         m_painterLayoutDirection = painter->layoutDirection();
@@ -275,15 +276,15 @@ class SizeHinter : public QGraphicsWidget
 {
 public:
     SizeHinter(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0,
-                const QSizeF &min = QSizeF(5,5), 
-                const QSizeF &pref = QSizeF(50, 50), 
-                const QSizeF &max = QSizeF(500, 500)) 
-        : QGraphicsWidget(parent, wFlags) 
+                const QSizeF &min = QSizeF(5,5),
+                const QSizeF &pref = QSizeF(50, 50),
+                const QSizeF &max = QSizeF(500, 500))
+        : QGraphicsWidget(parent, wFlags)
     {
         m_sizes[Qt::MinimumSize] = min;
         m_sizes[Qt::PreferredSize] = pref;
         m_sizes[Qt::MaximumSize] = max;
-        
+
     }
     void setSizeHint(Qt::SizeHint which, const QSizeF &newSizeHint)
     {
@@ -323,11 +324,11 @@ void tst_QGraphicsWidget::qgraphicswidget()
     QCOMPARE(widget.type(), (int)QGraphicsWidget::Type);
     QCOMPARE(widget.call_propertyChange(QString(), QVariant()), QVariant());
     widget.call_sizeHint(Qt::PreferredSize, QSizeF());
-    
+
     QGraphicsScene scene;
     QGraphicsWidget *parent = new QGraphicsWidget;
     SizeHinter *child = new SizeHinter(parent);
-    
+
     QCOMPARE(child->minimumSize(), QSizeF(5, 5));
 }
 
@@ -437,6 +438,8 @@ void tst_QGraphicsWidget::focusWidget()
     SubQGraphicsWidget *parent = new SubQGraphicsWidget;
     QCOMPARE(parent->focusWidget(), (QGraphicsWidget *)0);
     QGraphicsScene scene;
+    QEvent windowActivate(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &windowActivate);
     scene.addItem(parent);
 
     QFETCH(int, childCount);
@@ -458,7 +461,9 @@ void tst_QGraphicsWidget::focusWidget()
 void tst_QGraphicsWidget::focusWidget2()
 {
     QGraphicsScene scene;
-    
+    QEvent windowActivate(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &windowActivate);
+
     QGraphicsWidget *widget = new QGraphicsWidget;
     EventSpy focusInSpy(widget, QEvent::FocusIn);
     EventSpy focusOutSpy(widget, QEvent::FocusOut);
@@ -477,7 +482,7 @@ void tst_QGraphicsWidget::focusWidget2()
     QVERIFY(!widget->hasFocus());
     QVERIFY(!subWidget->hasFocus());
 
-    widget->setFocus();    
+    widget->setFocus();
 
     QVERIFY(widget->hasFocus());
     QCOMPARE(focusInSpy.count(), 1);
@@ -560,6 +565,9 @@ void tst_QGraphicsWidget::focusPolicy_data()
 void tst_QGraphicsWidget::focusPolicy()
 {
     QGraphicsScene scene;
+    QEvent windowActivate(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &windowActivate);
+
     SubQGraphicsWidget *widget = new SubQGraphicsWidget;
     scene.addItem(widget);
     QCOMPARE(Qt::NoFocus, widget->focusPolicy());
@@ -694,7 +702,7 @@ void tst_QGraphicsWidget::fontPropagationSceneChange()
     QFont font;
     font.setPointSize(47);
     scene.setFont(font);
-    
+
     QFont font2;
     font2.setPointSize(74);
     scene2.setFont(font2);
@@ -787,6 +795,14 @@ void tst_QGraphicsWidget::initStyleOption()
 {
     QGraphicsScene scene;
     QGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QApplication::setActiveWindow(&view);
+    QTest::qWait(25);
+    QTRY_COMPARE(QApplication::activeWindow(), &view);
+
     view.setAlignment(Qt::AlignTop | Qt::AlignLeft);
     SubQGraphicsWidget *widget = new SubQGraphicsWidget;
     widget->setAcceptsHoverEvents(true);
@@ -808,7 +824,8 @@ void tst_QGraphicsWidget::initStyleOption()
     if (underMouse) {
         view.resize(300, 300);
         view.show();
-        QTest::qWait(125);
+        QTest::qWaitForWindowShown(&view);
+        QTest::qWait(20);
         sendMouseMove(view.viewport(), view.mapFromScene(widget->mapToScene(widget->boundingRect().center())));
     }
 
@@ -861,7 +878,7 @@ void tst_QGraphicsWidget::layout()
     }
     widget.setLayout(layout);
 
-    QTest::qWait(250);
+    QTest::qWait(25);
 
     QCOMPARE(widget.layout(), static_cast<QGraphicsLayout*>(layout));
     for (int i = 0; i < children.count(); ++i) {
@@ -901,13 +918,13 @@ void tst_QGraphicsWidget::layoutDirection()
     widget.setLayoutDirection(layoutDirection);
     QCOMPARE(widget.testAttribute(Qt::WA_SetLayoutDirection), true);
     view->show();
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(view);
     for (int i = 0; i < children.count(); ++i) {
         QCOMPARE(children[i]->layoutDirection(), layoutDirection);
         QCOMPARE(children[i]->testAttribute(Qt::WA_SetLayoutDirection), false);
         view->repaint();
-        QTest::qWait(200);
-        QCOMPARE(children[i]->m_painterLayoutDirection, layoutDirection);
+        QApplication::processEvents();
+        QTRY_COMPARE(children[i]->m_painterLayoutDirection, layoutDirection);
     }
     delete view;
 }
@@ -1118,6 +1135,9 @@ void tst_QGraphicsWidget::setTabOrder()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
+    QApplication::setActiveWindow(&view);
+    QTest::qWait(25);
+    QTRY_COMPARE(QApplication::activeWindow(), &view);
 
     QGraphicsWidget *lastItem = 0;
     QTest::ignoreMessage(QtWarningMsg, "QGraphicsWidget::setTabOrder(0, 0) is undefined");
@@ -1137,8 +1157,8 @@ void tst_QGraphicsWidget::setTabOrder()
     if (!children.isEmpty()) {
         QGraphicsWidget *first = children.first();
         view.viewport()->setFocus();
-        QTest::qWait(250);
-        QVERIFY(view.viewport()->hasFocus());
+        QApplication::processEvents();
+        QTRY_VERIFY(view.viewport()->hasFocus());
         first->setFocus();
         QVERIFY(first->hasFocus());
         QVERIFY(scene.hasFocus());
@@ -1179,9 +1199,10 @@ void tst_QGraphicsWidget::setTabOrderAndReparent()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), &view);
+
     int i;
     QGraphicsWidget *w1, *w2, *w3, *w4;
     for (i = 1; i < 4; ++i) {
@@ -1198,29 +1219,29 @@ void tst_QGraphicsWidget::setTabOrderAndReparent()
     }
 
     w1->setFocus();
-    QVERIFY(w1->hasFocus());
+    QTRY_VERIFY(w1->hasFocus());
     QVERIFY(compareFocusChain(&view, QList<QGraphicsItem*>() << w1 << w2 << w3));
 
     QGraphicsWidget *p = new QGraphicsWidget;
     p->setData(0, QLatin1String("parent"));
     p->setFocusPolicy(Qt::StrongFocus);
-    
+
     w1->setFocus();
     QVERIFY(compareFocusChain(&view, QList<QGraphicsItem*>() << w1 << w2 << w3));
-    
+
     w1->setParentItem(p);
     w2->setFocus();
     QVERIFY(compareFocusChain(&view, QList<QGraphicsItem*>() <<  w2 << w3));
-    
+
     w2->setParentItem(p);
     w3->setFocus();
     QVERIFY(compareFocusChain(&view, QList<QGraphicsItem*>() << w3));
     w3->setParentItem(p);
     QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem*>(0));
-    
+
     scene.addItem(p);
     p->setFocus();
-    
+
     QVERIFY(compareFocusChain(&view, QList<QGraphicsItem*>() << p << w1 << w2 << w3));
     delete p;
 
@@ -1242,7 +1263,7 @@ void tst_QGraphicsWidget::setTabOrderAndReparent()
     QGraphicsWidget::setTabOrder(w1, w4);
     w1->setFocus();
     QVERIFY(compareFocusChain(&view, QList<QGraphicsItem*>() << w1 << w4 << w2 << w3));
-    
+
     p = new QGraphicsWidget;
     p->setData(0, QLatin1String("parent"));
     p->setFocusPolicy(Qt::StrongFocus);
@@ -1250,7 +1271,7 @@ void tst_QGraphicsWidget::setTabOrderAndReparent()
     w1->setParentItem(p);
     w2->setFocus();
     QVERIFY(compareFocusChain(&view, QList<QGraphicsItem*>() << w2 << w3));
-    
+
     scene.addItem(p);
     w2->setFocus();
     QVERIFY(compareFocusChain(&view, QList<QGraphicsItem*>() << w2 << w3 << p << w1 << w4));
@@ -1318,10 +1339,10 @@ void tst_QGraphicsWidget::verifyFocusChain()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(250);
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), &view);
+
     {
         // parent/child focus
         SubQGraphicsWidget *w = new SubQGraphicsWidget(0, Qt::Window);
@@ -1393,39 +1414,38 @@ void tst_QGraphicsWidget::verifyFocusChain()
         w1_2->setFocusPolicy(Qt::StrongFocus);
         scene.addItem(w1_2);
         window->show();
-#ifdef Q_WS_X11
-        qt_x11_wait_for_window_manager(window);
-#endif
-        
+        QApplication::setActiveWindow(window);
+        QTest::qWaitForWindowShown(window);
+
         lineEdit->setFocus();
-        QTest::qWait(250);
-        QVERIFY(lineEdit->hasFocus());
+        QTest::qWait(25);
+        QTRY_VERIFY(lineEdit->hasFocus());
         QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-        QTest::qWait(250);
-        QVERIFY(w1_1->hasFocus());
+        QTest::qWait(25);
+        QTRY_VERIFY(w1_1->hasFocus());
         QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-        QTest::qWait(250);
-        QVERIFY(w1_2->hasFocus());
+        QTest::qWait(25);
+        QTRY_VERIFY(w1_2->hasFocus());
 
         // remove the tabFocusFirst and insert new item
         delete w1_1;            // calls _q_removeItemLater
-        QTest::qWait(250);
+        QTest::qWait(25);
         SubQGraphicsWidget *w1_3 = new SubQGraphicsWidget;
         w1_3->setFocusPolicy(Qt::StrongFocus);
         w1_3->setData(0, "w1_3");
         w1_3->setGeometry(50,0,25, 25);
         scene.addItem(w1_3);
-        QVERIFY(w1_2->hasFocus());
+        QTRY_VERIFY(w1_2->hasFocus());
         QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-        QTest::qWait(250);
-        QVERIFY(lineEdit->hasFocus());
+        QTest::qWait(25);
+        QTRY_VERIFY(lineEdit->hasFocus());
         // tabFocusFirst should now point to w1_2
         QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-        QTest::qWait(250);
-        QVERIFY(w1_2->hasFocus());
+        QTest::qWait(25);
+        QTRY_VERIFY(w1_2->hasFocus());
         QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-        QTest::qWait(250);
-        QVERIFY(w1_3->hasFocus());
+        QTest::qWait(25);
+        QTRY_VERIFY(w1_3->hasFocus());
         scene.removeItem(w1_2);   // does not call _q_removeItemLater
         delete w1_2;            // calls _q_removeItemLater
 
@@ -1433,19 +1453,19 @@ void tst_QGraphicsWidget::verifyFocusChain()
         w1_4->setFocusPolicy(Qt::StrongFocus);
         w1_4->setData(0, "w1_4");
         w1_4->setGeometry(75,0,25, 25);
-        scene.addItem(w1_4);        
-        QVERIFY(w1_3->hasFocus());
-        QTest::qWait(250);
+        scene.addItem(w1_4);
+        QTRY_VERIFY(w1_3->hasFocus());
+        QTest::qWait(25);
         QVERIFY(compareFocusChain(view, QList<QGraphicsItem*>() << w1_3 << w1_4));
         QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-        QTest::qWait(250);
-        QVERIFY(lineEdit->hasFocus());
+        QTest::qWait(25);
+        QTRY_VERIFY(lineEdit->hasFocus());
         // tabFocusFirst should now point to w1_3
         QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-        QTest::qWait(250);
-        QVERIFY(w1_3->hasFocus());        
-        QTest::qWait(250);
-        QVERIFY(compareFocusChain(view, QList<QGraphicsItem*>() << w1_3 << w1_4));
+        QTest::qWait(25);
+        QTRY_VERIFY(w1_3->hasFocus());
+        QTest::qWait(25);
+        QTRY_VERIFY(compareFocusChain(view, QList<QGraphicsItem*>() << w1_3 << w1_4));
         delete window;
     }
 }
@@ -1458,7 +1478,9 @@ void tst_QGraphicsWidget::updateFocusChainWhenChildDie()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTest::qWait(250);
+    QApplication::setActiveWindow(&view);
+    QTest::qWait(25);
+    QTRY_COMPARE(QApplication::activeWindow(), &view);
 
     // delete item in focus chain with no focus and verify chain
     SubQGraphicsWidget *parent = new SubQGraphicsWidget(0, Qt::Window);
@@ -1612,7 +1634,7 @@ void tst_QGraphicsWidget::setSizes_data()
                                  << (QVector<Inst>() << Inst(MinimumSize, QSizeF(5, 5)));
     QTest::newRow("unsetMaxSize")<< (QVector<Inst>() << Inst(Size, QSizeF(40, 40)) << Inst(MaximumSize, QSizeF(-1, -1)))
                                  << (QVector<Inst>() << Inst(MaximumSize, QSizeF(500, 500)));
-    QTest::newRow("unsetMinSize, expand size to minimumSizeHint") << (QVector<Inst>() 
+    QTest::newRow("unsetMinSize, expand size to minimumSizeHint") << (QVector<Inst>()
                                         << Inst(MinimumSize, QSize(0, 0))
                                         << Inst(Size, QSize(1,1))
                                         << Inst(MinimumSize, QSize(-1.0, -1.0))
@@ -1692,7 +1714,7 @@ void tst_QGraphicsWidget::setSizes()
     widget->setMaximumSize(max);
 
     QApplication::processEvents();
-    
+
     for (i = 0; i < compareInstructions.count(); ++i) {
         Inst input = compareInstructions.at(i);
         switch (input.first) {
@@ -2325,9 +2347,7 @@ void tst_QGraphicsWidget::painterStateProtectionOnWindowFrame()
     QGraphicsView view(&scene);
     scene.addItem(widget);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QTest::qWaitForWindowShown(&view);
     QTest::qWait(500);
 }
 
@@ -2416,7 +2436,9 @@ void tst_QGraphicsWidget::task250119_shortcutContext()
     QGraphicsView view;
     view.setScene(&scene);
     view.show();
-    QTest::qWait(100);
+    QApplication::setActiveWindow(&view);
+    QTest::qWait(25);
+    QTRY_COMPARE(QApplication::activeWindow(), &view);
 
 
     // *** Event: ***
@@ -2531,16 +2553,96 @@ void tst_QGraphicsWidget::ensureClipping()
     QGraphicsView view(&scene);
     view.setOptimizationFlag(QGraphicsView::IndirectPainting);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(250);
+    QTest::qWaitForWindowShown(&view);
 
     QList<QGraphicsItem *> expected;
     expected << clipWidget << childWidget << childitem;
-    QVERIFY(scene.drawnItems.contains(clipWidget));
+    QTRY_VERIFY(scene.drawnItems.contains(clipWidget));
     QVERIFY(scene.drawnItems.contains(childWidget));
     QVERIFY(scene.drawnItems.contains(childitem));
+}
+
+class HFWWidget : public QGraphicsWidget
+{
+public:
+    HFWWidget() : QGraphicsWidget(0, Qt::Window)
+    {
+        QSizePolicy sp;
+        sp.setHeightForWidth(true);
+        setSizePolicy(sp);
+    }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    {
+        Q_UNUSED(option);
+        Q_UNUSED(widget);
+        qreal w = rect().width();
+        QRectF box(0, 0, w, 2400/w);
+        painter->drawRoundRect(box);
+        painter->drawLine(box.topLeft(), box.bottomRight());
+        painter->drawLine(box.bottomLeft(), box.topRight());
+    }
+
+protected:
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const
+    {
+        qreal w = constraint.width();
+        switch (which) {
+        case Qt::MinimumSize:
+            if (w >= 0 && constraint.height() < 0) {
+                // keep the same area of 60x40 = 2400
+                return QSizeF(w, 2400.0/w);
+            } else {
+                return QSizeF(10, 10);
+            }
+            break;
+        case Qt::PreferredSize:
+            return QSizeF(48.989794, 48.989794);
+            default:
+            break;
+        }
+        return QGraphicsWidget::sizeHint(which, constraint);
+    }
+};
+
+void tst_QGraphicsWidget::respectHFW()
+{
+#if defined(Q_OS_WINCE) || defined(Q_OS_MAC) || defined(Q_WS_QWS)
+    qDebug("This test is platform dependent, it fails on wince, mac and qws. Please fix.");
+#else
+    QGraphicsScene scene;
+    HFWWidget *window = new HFWWidget;
+    scene.addItem(window);
+    QGraphicsView *view = new QGraphicsView(&scene);
+    view->resize(400, 400);
+    view->setSceneRect(-100, -100, 300,300);
+
+    view->show();
+    window->setGeometry(0, 0, 70, 70);
+    QTest::qWaitForWindowShown(view);
+
+    {   // here we go - simulate a interactive resize of the window
+        QTest::qWait(100);
+        QTest::mouseMove(view, view->mapFromScene(71, 71)); // bottom right corner
+        QTest::qWait(100);
+
+        QTest::mousePress(view->viewport(), Qt::LeftButton, 0, view->mapFromScene(71, 71), 200);
+        view->grabMouse();
+        // move both mouse cursor and set correct event in order to emulate resize
+        QTest::mouseMove(view->viewport(), view->mapFromScene(60, 30), 200);
+        QMouseEvent e = QMouseEvent(QEvent::MouseMove,
+                      view->mapFromScene(60, 20),
+                      Qt::NoButton,
+                      Qt::LeftButton,
+                      Qt::NoModifier);
+        QApplication::sendEvent(view->viewport(), &e);
+        view->releaseMouse();
+    }
+    QTest::qWait(100);
+    const QSizeF winSize = window->size();
+    qreal minHFW = window->effectiveSizeHint(Qt::MinimumSize, QSizeF(winSize.width(), -1)).height();
+    QVERIFY(qAbs(minHFW - winSize.height()) < 1);
+#endif
 }
 
 QTEST_MAIN(tst_QGraphicsWidget)

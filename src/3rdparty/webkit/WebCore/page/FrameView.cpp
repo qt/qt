@@ -43,11 +43,12 @@
 #include "HTMLFrameElement.h"
 #include "HTMLFrameSetElement.h"
 #include "HTMLNames.h"
+#include "InspectorTimelineAgent.h"
 #include "OverflowEvent.h"
-#include "Page.h"
 #include "RenderPart.h"
 #include "RenderPartObject.h"
 #include "RenderScrollbar.h"
+#include "RenderScrollbarPart.h"
 #include "RenderTheme.h"
 #include "RenderView.h"
 #include "Settings.h"
@@ -92,13 +93,10 @@ struct ScheduledEvent {
 
 FrameView::FrameView(Frame* frame)
     : m_frame(frame)
-    , m_vmode(ScrollbarAuto)
-    , m_hmode(ScrollbarAuto)
     , m_slowRepaintObjectCount(0)
     , m_layoutTimer(this, &FrameView::layoutTimerFired)
     , m_layoutRoot(0)
     , m_postLayoutTasksTimer(this, &FrameView::postLayoutTimerFired)
-    , m_needToInitScrollbars(true)
     , m_isTransparent(false)
     , m_baseBackgroundColor(Color::white)
     , m_mediaType("screen")
@@ -111,6 +109,7 @@ FrameView::FrameView(Frame* frame)
     , m_shouldUpdateWhileOffscreen(true)
     , m_deferSetNeedsLayouts(0)
     , m_setNeedsLayoutWasDeferred(false)
+    , m_scrollCorner(0)
 {
     init();
 }
@@ -139,9 +138,15 @@ FrameView::~FrameView()
     }
 
     resetScrollbars();
+
+    // Custom scrollbars should already be destroyed at this point
+    ASSERT(!horizontalScrollbar() || !horizontalScrollbar()->isCustomScrollbar());
+    ASSERT(!verticalScrollbar() || !verticalScrollbar()->isCustomScrollbar());
+
     setHasHorizontalScrollbar(false); // Remove native scrollbars now before we lose the connection to the HostWindow.
     setHasVerticalScrollbar(false);
     
+    ASSERT(!m_scrollCorner);
     ASSERT(m_scheduledEvents.isEmpty());
     ASSERT(!m_enqueueEvents);
 
@@ -202,7 +207,7 @@ void FrameView::resetScrollbars()
     // Reset the document's scrollbars back to our defaults before we yield the floor.
     m_firstLayout = true;
     setScrollbarsSuppressed(true);
-    setScrollbarModes(m_hmode, m_vmode);
+    setScrollbarModes(ScrollbarAuto, ScrollbarAuto);
     setScrollbarsSuppressed(false);
 }
 
@@ -233,23 +238,18 @@ void FrameView::detachCustomScrollbars()
     if (!m_frame)
         return;
 
-    Document* document = m_frame->document();
-    if (!document)
-        return;
-
-    Element* body = document->body();
-    if (!body)
-        return;
-
-    RenderBox* renderBox = body->renderBox();
-
     Scrollbar* horizontalBar = horizontalScrollbar();
-    if (horizontalBar && horizontalBar->isCustomScrollbar() && reinterpret_cast<RenderScrollbar*>(horizontalBar)->owningRenderer() == renderBox)
+    if (horizontalBar && horizontalBar->isCustomScrollbar() && !toRenderScrollbar(horizontalBar)->owningRenderer()->isRenderPart())
         setHasHorizontalScrollbar(false);
 
     Scrollbar* verticalBar = verticalScrollbar();
-    if (verticalBar && verticalBar->isCustomScrollbar() && reinterpret_cast<RenderScrollbar*>(verticalBar)->owningRenderer() == renderBox)
+    if (verticalBar && verticalBar->isCustomScrollbar() && !toRenderScrollbar(verticalBar)->owningRenderer()->isRenderPart())
         setHasVerticalScrollbar(false);
+
+    if (m_scrollCorner) {
+        m_scrollCorner->destroy();
+        m_scrollCorner = 0;
+    }
 }
 
 void FrameView::clear()
@@ -269,21 +269,6 @@ void FrameView::clear()
 bool FrameView::didFirstLayout() const
 {
     return !m_firstLayout;
-}
-
-void FrameView::initScrollbars()
-{
-    if (!m_needToInitScrollbars)
-        return;
-    m_needToInitScrollbars = false;
-    updateDefaultScrollbarState();
-}
-
-void FrameView::updateDefaultScrollbarState()
-{
-    m_hmode = horizontalScrollbarMode();
-    m_vmode = verticalScrollbarMode();
-    setScrollbarModes(m_hmode, m_vmode);
 }
 
 void FrameView::invalidateRect(const IntRect& rect)
@@ -317,12 +302,6 @@ void FrameView::setMarginHeight(int h)
 {
     // make it update the rendering area when set
     m_margins.setHeight(h);
-}
-
-void FrameView::setCanHaveScrollbars(bool canScroll)
-{
-    ScrollView::setCanHaveScrollbars(canScroll);
-    scrollbarModes(m_hmode, m_vmode);
 }
 
 PassRefPtr<Scrollbar> FrameView::createScrollbar(ScrollbarOrientation orientation)
@@ -373,7 +352,7 @@ void FrameView::adjustViewSize()
     RenderView* root = m_frame->contentRenderer();
     if (!root)
         return;
-    setContentsSize(IntSize(root->overflowWidth(), root->overflowHeight()));
+    setContentsSize(IntSize(root->rightLayoutOverflow(), root->bottomLayoutOverflow()));
 }
 
 void FrameView::applyOverflowToViewport(RenderObject* o, ScrollbarMode& hMode, ScrollbarMode& vMode)
@@ -439,6 +418,37 @@ void FrameView::setNeedsOneShotDrawingSynchronization()
 }
 #endif // USE(ACCELERATED_COMPOSITING)
 
+bool FrameView::syncCompositingStateRecursive()
+{
+#if USE(ACCELERATED_COMPOSITING)
+    ASSERT(m_frame->view() == this);
+    RenderView* contentRenderer = m_frame->contentRenderer();
+    if (!contentRenderer)
+        return true;    // We don't want to keep trying to update layers if we have no renderer.
+
+    if (m_layoutTimer.isActive()) {
+        // Don't sync layers if there's a layout pending.
+        return false;
+    }
+    
+    if (GraphicsLayer* rootLayer = contentRenderer->compositor()->rootPlatformLayer())
+        rootLayer->syncCompositingState();
+
+    bool allSubframesSynced = true;
+    const HashSet<RefPtr<Widget> >* viewChildren = children();
+    HashSet<RefPtr<Widget> >::const_iterator end = viewChildren->end();
+    for (HashSet<RefPtr<Widget> >::const_iterator current = viewChildren->begin(); current != end; ++current) {
+        Widget* widget = (*current).get();
+        if (widget->isFrameView()) {
+            bool synced = static_cast<FrameView*>(widget)->syncCompositingStateRecursive();
+            allSubframesSynced &= synced;
+        }
+    }
+    return allSubframesSynced;
+#endif // USE(ACCELERATED_COMPOSITING)
+    return true;
+}
+
 void FrameView::didMoveOnscreen()
 {
     RenderView* view = m_frame->contentRenderer();
@@ -481,6 +491,12 @@ void FrameView::layout(bool allowSubtree)
     ASSERT(!isPainting());
     if (isPainting())
         return;
+
+#if ENABLE(INSPECTOR)
+    InspectorTimelineAgent* timelineAgent = inspectorTimelineAgent();
+    if (timelineAgent)
+        timelineAgent->willLayout();
+#endif
 
     if (!allowSubtree && m_layoutRoot) {
         m_layoutRoot->markContainingBlocksForLayout(false);
@@ -533,8 +549,9 @@ void FrameView::layout(bool allowSubtree)
 
     m_nestedLayoutCount++;
 
-    ScrollbarMode hMode = m_hmode;
-    ScrollbarMode vMode = m_vmode;
+    ScrollbarMode hMode;
+    ScrollbarMode vMode;
+    scrollbarModes(hMode, vMode);
 
     if (!subtree) {
         RenderObject* rootRenderer = document->documentElement() ? document->documentElement()->renderer() : 0;
@@ -634,7 +651,7 @@ void FrameView::layout(bool allowSubtree)
 
 #if PLATFORM(MAC)
     if (AXObjectCache::accessibilityEnabled())
-        root->document()->axObjectCache()->postNotification(root, "AXLayoutComplete", true);
+        root->document()->axObjectCache()->postNotification(root, AXObjectCache::AXLayoutComplete, true);
 #endif
 #if ENABLE(DASHBOARD_SUPPORT)
     updateDashboardRegions();
@@ -664,6 +681,11 @@ void FrameView::layout(bool allowSubtree)
         resumeScheduledEvents();
         ASSERT(m_enqueueEvents);
     }
+
+#if ENABLE(INSPECTOR)
+    if (timelineAgent)
+        timelineAgent->didLayout();
+#endif
 
     m_nestedLayoutCount--;
 }
@@ -781,6 +803,22 @@ void FrameView::setScrollPosition(const IntPoint& scrollPoint)
     m_inProgrammaticScroll = wasInProgrammaticScroll;
 }
 
+void FrameView::scrollPositionChanged()
+{
+    frame()->eventHandler()->sendScrollEvent();
+
+#if USE(ACCELERATED_COMPOSITING)
+    // We need to update layer positions after scrolling to account for position:fixed layers.
+    Document* document = m_frame->document();
+    if (!document)
+        return;
+
+    RenderLayer* layer = document->renderer() ? document->renderer()->enclosingLayer() : 0;
+    if (layer)
+        layer->updateLayerPositions(RenderLayer::UpdateCompositingLayers);
+#endif
+}
+
 HostWindow* FrameView::hostWindow() const
 {
     Page* page = frame() ? frame()->page() : 0;
@@ -809,9 +847,9 @@ void FrameView::repaintContentRectangle(const IntRect& r, bool immediate)
             m_repaintRects.append(unionedRect);
         }
         if (m_repaintCount < cRepaintRectUnionThreshold)
-            m_repaintRects.append(r);
+            m_repaintRects.append(visibleContent);
         else
-            m_repaintRects[0].unite(r);
+            m_repaintRects[0].unite(visibleContent);
         m_repaintCount++;
     
         if (!m_deferringRepaints && !m_deferredRepaintTimer.isActive())
@@ -949,7 +987,8 @@ void FrameView::layoutTimerFired(Timer<FrameView>*)
 
 void FrameView::scheduleRelayout()
 {
-    ASSERT(!m_frame->document()->inPageCache());
+    // FIXME: We should assert the page is not in the page cache, but that is causing
+    // too many false assertions.  See <rdar://problem/7218118>.
     ASSERT(m_frame->view() == this);
 
     if (m_layoutRoot) {
@@ -1160,6 +1199,9 @@ void FrameView::scrollToAnchor()
     // Align to the top and to the closest side (this matches other browsers).
     anchorNode->renderer()->enclosingLayer()->scrollRectToVisible(rect, true, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignTopAlways);
 
+    if (AXObjectCache::accessibilityEnabled())
+        m_frame->document()->axObjectCache()->handleScrolledToAnchor(anchorNode.get());
+
     // scrollRectToVisible can call into scrollRectIntoViewRecursively(), which resets m_maintainScrollPositionAnchor.
     m_maintainScrollPositionAnchor = anchorNode;
 }
@@ -1366,6 +1408,86 @@ void FrameView::updateDashboardRegions()
 }
 #endif
 
+void FrameView::invalidateScrollCorner()
+{
+    invalidateRect(scrollCornerRect());
+}
+
+void FrameView::updateScrollCorner()
+{
+    RenderObject* renderer = 0;
+    RefPtr<RenderStyle> cornerStyle;
+    
+    if (!scrollCornerRect().isEmpty()) {
+        // Try the <body> element first as a scroll corner source.
+        Document* doc = m_frame->document();
+        Element* body = doc ? doc->body() : 0;
+        if (body && body->renderer()) {
+            renderer = body->renderer();
+            cornerStyle = renderer->getUncachedPseudoStyle(SCROLLBAR_CORNER, renderer->style());
+        }
+        
+        if (!cornerStyle) {
+            // If the <body> didn't have a custom style, then the root element might.
+            Element* docElement = doc ? doc->documentElement() : 0;
+            if (docElement && docElement->renderer()) {
+                renderer = docElement->renderer();
+                cornerStyle = renderer->getUncachedPseudoStyle(SCROLLBAR_CORNER, renderer->style());
+            }
+        }
+        
+        if (!cornerStyle) {
+            // If we have an owning iframe/frame element, then it can set the custom scrollbar also.
+            if (RenderPart* renderer = m_frame->ownerRenderer())
+                cornerStyle = renderer->getUncachedPseudoStyle(SCROLLBAR_CORNER, renderer->style());
+        }
+    }
+
+    if (cornerStyle) {
+        if (!m_scrollCorner)
+            m_scrollCorner = new (renderer->renderArena()) RenderScrollbarPart(renderer->document());
+        m_scrollCorner->setStyle(cornerStyle.release());
+        invalidateRect(scrollCornerRect());
+    } else if (m_scrollCorner) {
+        m_scrollCorner->destroy();
+        m_scrollCorner = 0;
+    }
+}
+
+void FrameView::paintScrollCorner(GraphicsContext* context, const IntRect& cornerRect)
+{
+    if (context->updatingControlTints()) {
+        updateScrollCorner();
+        return;
+    }
+
+    if (m_scrollCorner) {
+        m_scrollCorner->paintIntoRect(context, cornerRect.x(), cornerRect.y(), cornerRect);
+        return;
+    }
+
+    ScrollView::paintScrollCorner(context, cornerRect);
+}
+
+bool FrameView::hasCustomScrollbars() const
+{
+    const HashSet<RefPtr<Widget> >* viewChildren = children();
+    HashSet<RefPtr<Widget> >::const_iterator end = viewChildren->end();
+    for (HashSet<RefPtr<Widget> >::const_iterator current = viewChildren->begin(); current != end; ++current) {
+        Widget* widget = current->get();
+        if (widget->isFrameView()) {
+            if (static_cast<FrameView*>(widget)->hasCustomScrollbars())
+                return true;
+        } else if (widget->isScrollbar()) {
+            Scrollbar* scrollbar = static_cast<Scrollbar*>(widget);
+            if (scrollbar->isCustomScrollbar())
+                return true;
+        }
+    }
+
+    return false;
+}
+
 void FrameView::updateControlTints()
 {
     // This is called when control tints are changed from aqua/graphite to clear and vice versa.
@@ -1377,7 +1499,7 @@ void FrameView::updateControlTints()
     if (!m_frame || m_frame->loader()->url().isEmpty())
         return;
 
-    if (m_frame->contentRenderer() && m_frame->contentRenderer()->theme()->supportsControlTints()) {
+    if ((m_frame->contentRenderer() && m_frame->contentRenderer()->theme()->supportsControlTints()) || hasCustomScrollbars())  {
         if (needsLayout())
             layout();
         PlatformGraphicsContext* const noContext = 0;
@@ -1407,7 +1529,13 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
 {
     if (!frame())
         return;
-    
+
+#if ENABLE(INSPECTOR)
+    InspectorTimelineAgent* timelineAgent = inspectorTimelineAgent();
+    if (timelineAgent)
+        timelineAgent->willPaint();
+#endif
+
     Document* document = frame()->document();
 
 #ifndef NDEBUG
@@ -1443,6 +1571,13 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
     if (needsLayout())
         return;
 
+#if USE(ACCELERATED_COMPOSITING)
+    if (!p->paintingDisabled()) {
+        if (GraphicsLayer* rootLayer = contentRenderer->compositor()->rootPlatformLayer())
+            rootLayer->syncCompositingState();
+    }
+#endif
+
     ASSERT(!m_isPainting);
         
     m_isPainting = true;
@@ -1464,6 +1599,11 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
 
     if (isTopLevelPainter)
         sCurrentPaintTimeStamp = 0;
+
+#if ENABLE(INSPECTOR)
+    if (timelineAgent)
+        timelineAgent->didPaint();
+#endif
 }
 
 void FrameView::setPaintRestriction(PaintRestriction pr)
@@ -1505,10 +1645,15 @@ void FrameView::layoutIfNeededRecursive()
 
     // layoutIfNeededRecursive is called when we need to make sure layout is up-to-date before
     // painting, so we need to flush out any deferred repaints too.
-    if (m_deferredRepaintTimer.isActive()) {
-        m_deferredRepaintTimer.stop();
-        doDeferredRepaints();
-    }
+    flushDeferredRepaints();
+}
+    
+void FrameView::flushDeferredRepaints()
+{
+    if (!m_deferredRepaintTimer.isActive())
+        return;
+    m_deferredRepaintTimer.stop();
+    doDeferredRepaints();
 }
 
 void FrameView::forceLayout(bool allowSubtree)
@@ -1558,7 +1703,7 @@ void FrameView::adjustPageHeight(float *newBottom, float oldTop, float oldBottom
         // Use a context with painting disabled.
         GraphicsContext context((PlatformGraphicsContext*)0);
         root->setTruncatedAt((int)floorf(oldBottom));
-        IntRect dirtyRect(0, (int)floorf(oldTop), root->overflowWidth(), (int)ceilf(oldBottom - oldTop));
+        IntRect dirtyRect(0, (int)floorf(oldTop), root->rightLayoutOverflow(), (int)ceilf(oldBottom - oldTop));
         root->layer()->paint(&context, dirtyRect);
         *newBottom = root->bestTruncatedAt();
         if (*newBottom == 0)

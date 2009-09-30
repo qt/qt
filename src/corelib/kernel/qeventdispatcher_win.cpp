@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -331,7 +331,7 @@ public:
     WinTimerVec timerVec;
     WinTimerDict timerDict;
     void registerTimer(WinTimerInfo *t);
-    void unregisterTimer(WinTimerInfo *t);
+    void unregisterTimer(WinTimerInfo *t, bool closingDown = false);
     void sendTimerEvent(int timerId);
 
     // socket notifiers
@@ -557,10 +557,10 @@ void QEventDispatcherWin32Private::registerTimer(WinTimerInfo *t)
         qErrnoWarning("QEventDispatcherWin32::registerTimer: Failed to create a timer");
 }
 
-void QEventDispatcherWin32Private::unregisterTimer(WinTimerInfo *t)
+void QEventDispatcherWin32Private::unregisterTimer(WinTimerInfo *t, bool closingDown)
 {
     // mark timer as unused
-    if (!QObjectPrivate::get(t->obj)->inThreadChangeEvent)
+    if (!QObjectPrivate::get(t->obj)->inThreadChangeEvent && !closingDown)
         QAbstractEventDispatcherPrivate::releaseTimerId(t->timerId);
 
     if (t->interval == 0) {
@@ -678,7 +678,8 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
                         || (msg.message >= WM_MOUSEFIRST
                             && msg.message <= WM_MOUSELAST)
                         || msg.message == WM_MOUSEWHEEL
-                        || msg.message == WM_MOUSEHWHEEL)) {
+                        || msg.message == WM_MOUSEHWHEEL
+                        || msg.message == WM_CLOSE)) {
                     // queue user input events for later processing
                     haveMessage = false;
                     d->queuedUserInputEvents.append(msg);
@@ -1019,8 +1020,10 @@ void QEventDispatcherWin32::closingDown()
         unregisterSocketNotifier((*(d->sn_except.begin()))->obj);
 
     // clean up any timers
-    while (!d->timerDict.isEmpty())
-        unregisterTimer((*(d->timerDict.begin()))->timerId);
+    for (int i = 0; i < d->timerVec.count(); ++i)
+        d->unregisterTimer(d->timerVec.at(i), true);
+    d->timerVec.clear();
+    d->timerDict.clear();
 }
 
 bool QEventDispatcherWin32::event(QEvent *e)

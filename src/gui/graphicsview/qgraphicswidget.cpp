@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -687,11 +687,13 @@ QSizeF QGraphicsWidget::sizeHint(Qt::SizeHint which, const QSizeF &constraint) c
     Q_D(const QGraphicsWidget);
     QSizeF sh;
     if (d->layout) {
-        sh = d->layout->effectiveSizeHint(which, constraint);
+        QSizeF marginSize(0,0);
         if (d->margins) {
-            sh += QSizeF(d->margins[d->Left] + d->margins[d->Right],
+            marginSize = QSizeF(d->margins[d->Left] + d->margins[d->Right],
                          d->margins[d->Top] + d->margins[d->Bottom]);
         }
+        sh = d->layout->effectiveSizeHint(which, constraint - marginSize);
+        sh += marginSize;
     } else {
         switch (which) {
             case Qt::MinimumSize:

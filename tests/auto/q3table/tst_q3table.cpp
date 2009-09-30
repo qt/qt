@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -50,6 +50,8 @@
 #include <q3listbox.h>
 #include <q3table.h>
 #include <qlayout.h>
+
+#include "../../shared/util.h"
 
 #define WAITS 1
 #ifdef WAITS
@@ -499,6 +501,8 @@ void tst_Q3Table::pageUpDownNavigation()
 
 void tst_Q3Table::simpleKeyboardNavigation()
 {
+    QApplication::setActiveWindow(testWidget);
+    QTRY_COMPARE(QApplication::activeWindow(), testWidget);
     QWidget *w;
 
     // Test for task #24726
@@ -519,6 +523,7 @@ void tst_Q3Table::simpleKeyboardNavigation()
 
     // After the first keyevent, the table starts editing the item
     w = testWidget->cellWidget(0, 0);
+    QVERIFY(w);
 
 #ifdef WAITS
     QTest::qWait(50);
@@ -1201,11 +1206,17 @@ void tst_Q3Table::editCheck()
 
     EditCheckQ3Table table(10, 10, 0);
     table.show();
+    QApplication::setActiveWindow(&table);
+    QTest::qWaitForWindowShown(&table);
+    QTRY_COMPARE(QApplication::activeWindow(), &table);
     table.setCurrentCell(0, 0);
 #ifdef WAITS
     QTest::qWait(50);
 #endif
     QTest::keyClick(table.viewport(), Qt::Key_T);
+#ifdef WAITS
+    QTest::qWait(50);
+#endif
     // After the first keyevent, the table starts editing the item
     QLineEdit *le = qFindChild<QLineEdit *>(testWidget->viewport(), "qt_lineeditor");
 #ifdef WAITS
@@ -1332,6 +1343,9 @@ void tst_Q3Table::valueChanged()
     testWidget->setItem(0, 0, ti);
     connect(testWidget,SIGNAL(valueChanged(int,int)),this,SLOT(onValueChanged(int,int)));
     testWidget->show();
+    QApplication::setActiveWindow(testWidget);
+    QTest::qWaitForWindowShown(testWidget);
+    QTRY_COMPARE(QApplication::activeWindow(), testWidget);
 #ifdef WAITS
     QTest::qWait(50);
 #endif
@@ -1339,6 +1353,7 @@ void tst_Q3Table::valueChanged()
 #ifdef WAITS
     QTest::qWait(50);
 #endif
+    QTRY_VERIFY(qApp->focusWidget());
     QTest::keyClick(qApp->focusWidget(), Qt::Key_Enter);
 #ifdef WAITS
     QTest::qWait(50);
@@ -1378,6 +1393,9 @@ void tst_Q3Table::dateTimeEdit()
     TimeTableItem *ti = new TimeTableItem(testWidget);
     testWidget->setItem(0, 0, ti);
     testWidget->show();
+    QApplication::setActiveWindow(testWidget);
+    QTest::qWaitForWindowShown(testWidget);
+    QTRY_COMPARE(QApplication::activeWindow(), testWidget);
 #ifdef WAITS
     QTest::qWait(50);
 #endif
@@ -1385,6 +1403,7 @@ void tst_Q3Table::dateTimeEdit()
 #ifdef WAITS
     QTest::qWait(50);
 #endif
+    QTRY_VERIFY(qApp->focusWidget());
     QTest::keyClick(qApp->focusWidget(), Qt::Key_Enter);
 #ifdef WAITS
     QTest::qWait(50);

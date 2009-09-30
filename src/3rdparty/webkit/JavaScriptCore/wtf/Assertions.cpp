@@ -72,10 +72,7 @@ static void vprintf_stderr_common(const char* format, va_list args)
         CFRelease(cfFormat);
     } else
 #elif COMPILER(MSVC) && !defined(WINCEBASIC)
-# if !defined(_WIN32_WCE) || (_WIN32_WCE >= 0x600)
-    if (IsDebuggerPresent())
-# endif
-    {
+    if (IsDebuggerPresent()) {
         size_t size = 1024;
 
         do {

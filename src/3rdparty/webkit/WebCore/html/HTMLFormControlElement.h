@@ -43,6 +43,9 @@ public:
     HTMLFormElement* form() const { return m_form; }
     virtual ValidityState* validity();
 
+    bool formNoValidate() const;
+    void setFormNoValidate(bool);
+
     virtual bool isTextFormControl() const { return false; }
     virtual bool isEnabledFormControl() const { return !disabled(); }
 
@@ -77,8 +80,6 @@ public:
     bool required() const;
     void setRequired(bool);
 
-    virtual bool valueMissing() const { return false; }
-
     virtual void recalcStyle(StyleChange);
 
     virtual const AtomicString& formControlName() const;
@@ -104,7 +105,10 @@ public:
     virtual short tabIndex() const;
 
     virtual bool willValidate() const;
+    bool checkValidity();
+    void setCustomValidity(const String&);
 
+    virtual bool valueMissing() const { return false; }
     virtual bool patternMismatch() const { return false; }
 
     void formDestroyed() { m_form = 0; }
@@ -117,6 +121,8 @@ protected:
 
 private:
     virtual HTMLFormElement* virtualForm() const;
+    virtual bool isDefaultButtonForForm() const;
+    virtual bool isValidFormControlElement();
 
     HTMLFormElement* m_form;
     RefPtr<ValidityState> m_validityState;
@@ -135,6 +141,28 @@ public:
 protected:
     virtual void willMoveToNewOwnerDocument();
     virtual void didMoveToNewOwnerDocument();
+};
+
+class HTMLTextFormControlElement : public HTMLFormControlElementWithState {
+public:
+    HTMLTextFormControlElement(const QualifiedName&, Document*, HTMLFormElement*);
+    virtual ~HTMLTextFormControlElement();
+    virtual void dispatchFocusEvent();
+    virtual void dispatchBlurEvent();
+
+protected:
+    bool placeholderShouldBeVisible() const;
+    void updatePlaceholderVisibility(bool);
+
+private:
+    // A subclass should return true if placeholder processing is needed.
+    virtual bool supportsPlaceholder() const = 0;
+    // Returns true if user-editable value is empty.  This is used to check placeholder visibility.
+    virtual bool isEmptyValue() const = 0;
+    // Called in dispatchFocusEvent(), after placeholder process, before calling parent's dispatchFocusEvent().
+    virtual void handleFocusEvent() { }
+    // Called in dispatchBlurEvent(), after placeholder process, before calling parent's dispatchBlurEvent().
+    virtual void handleBlurEvent() { }
 };
 
 } //namespace

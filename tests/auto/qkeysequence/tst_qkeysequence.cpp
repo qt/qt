@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -166,9 +166,9 @@ tst_QKeySequence::~tst_QKeySequence()
 void tst_QKeySequence::initTestCase()
 {
     ourTranslator = new QTranslator(this);
-    ourTranslator->load(QLatin1String("keys_de"), ".");
+    ourTranslator->load(":/keys_de");
     qtTranslator = new QTranslator(this);
-    qtTranslator->load(QLatin1String("qt_de"), QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+    qtTranslator->load(":/qt_de");
 }
 
 void tst_QKeySequence::operatorQString_data()

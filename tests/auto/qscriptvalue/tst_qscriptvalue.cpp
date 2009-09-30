@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -50,6 +50,10 @@
 
 //TESTED_CLASS=
 //TESTED_FILES=
+
+QT_BEGIN_NAMESPACE
+extern bool qt_script_isJITEnabled();
+QT_END_NAMESPACE
 
 class tst_QScriptValue : public QObject
 {
@@ -2253,7 +2257,7 @@ void tst_QScriptValue::getSetScriptClass()
         QVERIFY(obj.isVariant());
         QCOMPARE(obj.scriptClass(), (QScriptClass*)0);
         obj.setScriptClass(&testClass);
-        QCOMPARE(obj.scriptClass(), &testClass);
+        QCOMPARE(obj.scriptClass(), (QScriptClass*)&testClass);
         QVERIFY(obj.isObject());
         QVERIFY(!obj.isVariant());
         QVERIFY(!obj.toVariant().isValid());
@@ -2263,7 +2267,7 @@ void tst_QScriptValue::getSetScriptClass()
         QVERIFY(obj.isQObject());
         QCOMPARE(obj.scriptClass(), (QScriptClass*)0);
         obj.setScriptClass(&testClass);
-        QCOMPARE(obj.scriptClass(), &testClass);
+        QCOMPARE(obj.scriptClass(), (QScriptClass*)&testClass);
         QVERIFY(obj.isObject());
         QVERIFY(!obj.isQObject());
         QVERIFY(obj.toQObject() == 0);
@@ -2875,15 +2879,29 @@ void tst_QScriptValue::equals()
 
     QScriptValue qobj1 = eng.newQObject(this);
     QScriptValue qobj2 = eng.newQObject(this);
+    QScriptValue qobj3 = eng.newQObject(0);
+    QScriptValue qobj4 = eng.newQObject(new QObject());
     QVERIFY(qobj1.equals(qobj2)); // compares the QObject pointers
+    QVERIFY(!qobj2.equals(qobj4)); // compares the QObject pointers
+    QVERIFY(!qobj2.equals(obj2)); // compares the QObject pointers
 
     QScriptValue compareFun = eng.evaluate("(function(a, b) { return a == b; })");
     QVERIFY(compareFun.isFunction());
     {
         QScriptValue ret = compareFun.call(QScriptValue(), QScriptValueList() << qobj1 << qobj2);
         QVERIFY(ret.isBool());
-        QEXPECT_FAIL("", "In JSC back-end, == on QObject wrappers doesn't work", Continue);
+        if (QT_PREPEND_NAMESPACE(qt_script_isJITEnabled()))
+            QEXPECT_FAIL("", "With JIT enabled, == on QObject wrappers doesn't work", Continue);
         QVERIFY(ret.toBool());
+        ret = compareFun.call(QScriptValue(), QScriptValueList() << qobj1 << qobj3);
+        QVERIFY(ret.isBool());
+        QVERIFY(!ret.toBool());
+        ret = compareFun.call(QScriptValue(), QScriptValueList() << qobj1 << qobj4);
+        QVERIFY(ret.isBool());
+        QVERIFY(!ret.toBool());
+        ret = compareFun.call(QScriptValue(), QScriptValueList() << qobj1 << obj1);
+        QVERIFY(ret.isBool());
+        QVERIFY(!ret.toBool());
     }
 
     {
@@ -2893,7 +2911,8 @@ void tst_QScriptValue::equals()
         {
             QScriptValue ret = compareFun.call(QScriptValue(), QScriptValueList() << var1 << var2);
             QVERIFY(ret.isBool());
-            QEXPECT_FAIL("", "In JSC back-end, == on QVariant wrappers doesn't work", Continue);
+            if (QT_PREPEND_NAMESPACE(qt_script_isJITEnabled()))
+                QEXPECT_FAIL("", "With JIT enabled, == on QVariant wrappers doesn't work", Continue);
             QVERIFY(ret.toBool());
         }
     }
@@ -2928,6 +2947,32 @@ void tst_QScriptValue::equals()
         QScriptValue var2 = eng.newVariant(QVariant(double(1)));
         // QVariant::operator==() performs type conversion
         QVERIFY(var1.equals(var2));
+    }
+    {
+        QScriptValue var1 = eng.newVariant(QVariant(QString::fromLatin1("123")));
+        QScriptValue var2 = eng.newVariant(QVariant(double(123)));
+        QScriptValue var3(QString::fromLatin1("123"));
+        QScriptValue var4(123);
+
+        QVERIFY(var1.equals(var1));
+        QVERIFY(var1.equals(var2));
+        QVERIFY(var1.equals(var3));
+        QVERIFY(var1.equals(var4));
+
+        QVERIFY(var2.equals(var1));
+        QVERIFY(var2.equals(var2));
+        QVERIFY(var2.equals(var3));
+        QVERIFY(var2.equals(var4));
+
+        QVERIFY(var3.equals(var1));
+        QVERIFY(var3.equals(var2));
+        QVERIFY(var3.equals(var3));
+        QVERIFY(var3.equals(var4));
+
+        QVERIFY(var4.equals(var1));
+        QVERIFY(var4.equals(var2));
+        QVERIFY(var4.equals(var3));
+        QVERIFY(var4.equals(var4));
     }
 
     QScriptEngine otherEngine;

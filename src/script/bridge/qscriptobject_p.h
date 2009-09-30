@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtScript module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -88,11 +88,13 @@ public:
                                 bool checkDontDelete = true);
     virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&,
                                        unsigned&) const;
-    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, unsigned listedAttributes = JSC::Structure::Prototype);
-    virtual void mark();
+    virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&,
+                                     bool includeNonEnumerable = false);
+    virtual void markChildren(JSC::MarkStack& markStack);
     virtual JSC::CallType getCallData(JSC::CallData&);
     virtual JSC::ConstructType getConstructData(JSC::ConstructData&);
     virtual bool hasInstance(JSC::ExecState*, JSC::JSValue value, JSC::JSValue proto);
+    virtual bool compareToObject(JSC::ExecState*, JSC::JSObject*);
 
     virtual const JSC::ClassInfo* classInfo() const { return &info; }
     static const JSC::ClassInfo info;
@@ -143,13 +145,14 @@ public:
                                 bool checkDontDelete = true);
     virtual bool getPropertyAttributes(const QScriptObject*, JSC::ExecState*,
                                        const JSC::Identifier&, unsigned&) const;
-    virtual void getPropertyNames(QScriptObject*, JSC::ExecState*, JSC::PropertyNameArray&,
-                                  unsigned listedAttributes = JSC::Structure::Prototype);
-    virtual void mark(QScriptObject*);
+    virtual void getOwnPropertyNames(QScriptObject*, JSC::ExecState*, JSC::PropertyNameArray&,
+                                     bool includeNonEnumerable = false);
+    virtual void markChildren(QScriptObject*, JSC::MarkStack& markStack);
     virtual JSC::CallType getCallData(QScriptObject*, JSC::CallData&);
     virtual JSC::ConstructType getConstructData(QScriptObject*, JSC::ConstructData&);
     virtual bool hasInstance(QScriptObject*, JSC::ExecState*,
                              JSC::JSValue value, JSC::JSValue proto);
+    virtual bool compareToObject(QScriptObject*, JSC::ExecState*, JSC::JSObject*);
 
 private:
     Q_DISABLE_COPY(QScriptObjectDelegate)

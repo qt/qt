@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -56,6 +56,7 @@ public:
 private slots:
     void initTestCase();
     void settings();
+    void buffers();
     void notifyInterval();
     void pullFile();
 
@@ -75,7 +76,7 @@ void tst_QAudioInput::initTestCase()
     format.setSampleType(QAudioFormat::UnSignedInt);
 
     // Only perform tests if audio input device exists!
-    QList<QAudioDeviceId> devices = QAudioDeviceInfo::deviceList(QAudio::AudioInput);
+    QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::deviceList(QAudio::AudioInput);
     if(devices.size() > 0)
         available = true;
     else {
@@ -90,6 +91,7 @@ void tst_QAudioInput::initTestCase()
 void tst_QAudioInput::settings()
 {
     if(available) {
+        // Confirm the setting we added in the init function.
         QAudioFormat f = audio->format();
 
         QVERIFY(format.channels() == f.channels());
@@ -98,6 +100,18 @@ void tst_QAudioInput::settings()
         QVERIFY(format.codec() == f.codec());
         QVERIFY(format.byteOrder() == f.byteOrder());
         QVERIFY(format.sampleType() == f.sampleType());
+    }
+}
+
+void tst_QAudioInput::buffers()
+{
+    if(available) {
+        // Should always have a buffer size greater than zero.
+        int store = audio->bufferSize();
+        audio->setBufferSize(4096);
+        QVERIFY(audio->bufferSize() > 0);
+        audio->setBufferSize(store);
+        QVERIFY(audio->bufferSize() == store);
     }
 }
 
@@ -120,14 +134,32 @@ void tst_QAudioInput::pullFile()
         filename.open( QIODevice::WriteOnly | QIODevice::Truncate );
 
         QSignalSpy readSignal(audio, SIGNAL(notify()));
-        audio->start(&filename);
+        QSignalSpy stateSignal(audio, SIGNAL(stateChanged(QAudio::State)));
 
+        // Always have default states, before start
+        QVERIFY(audio->state() == QAudio::StopState);
+        QVERIFY(audio->error() == QAudio::NoError);
+
+        audio->start(&filename);
+        QTest::qWait(20);
+        // Check state and periodSize() are valid non-zero values.
+        QVERIFY(audio->state() == QAudio::ActiveState);
+        QVERIFY(audio->error() == QAudio::NoError);
+        QVERIFY(audio->periodSize() > 0);
+        QVERIFY(stateSignal.count() == 1); // State changed to QAudio::ActiveState
+
+        // Wait until finished...
         QTest::qWait(5000);
 
         QVERIFY(readSignal.count() > 0);
         QVERIFY(audio->totalTime() > 0);
 
         audio->stop();
+        QTest::qWait(20);
+        QVERIFY(audio->state() == QAudio::StopState);
+        // Can only check to make sure we got at least 1 more signal, but can be more.
+        QVERIFY(stateSignal.count() > 1);
+
         filename.close();
     }
 }

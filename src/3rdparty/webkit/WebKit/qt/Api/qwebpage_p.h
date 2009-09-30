@@ -25,6 +25,7 @@
 #include <qnetworkproxy.h>
 #include <qpointer.h>
 #include <qevent.h>
+#include <qgraphicssceneevent.h>
 
 #include "qwebpage.h"
 #include "qwebhistory.h"
@@ -42,21 +43,10 @@ namespace WebCore {
     class ContextMenu;
     class EditorClientQt;
     class Element;
+    class InspectorController;
     class Node;
     class Page;
     class Frame;
-
-#ifndef QT_NO_CURSOR
-    class SetCursorEvent : public QEvent {
-    public:
-        static const int EventType = 724;
-        SetCursorEvent(const QCursor&);
-
-        QCursor cursor() const;
-    private:
-        QCursor m_cursor;
-    };
-#endif
 }
 
 QT_BEGIN_NAMESPACE
@@ -64,6 +54,9 @@ class QUndoStack;
 class QMenu;
 class QBitArray;
 QT_END_NAMESPACE
+
+class QWebInspector;
+class QWebPageClient;
 
 class QWebPagePrivate {
 public:
@@ -75,9 +68,7 @@ public:
 #endif
     void _q_onLoadProgressChanged(int);
     void _q_webActionTriggered(bool checked);
-#ifndef NDEBUG
     void _q_cleanupLeakMessages();
-#endif
     void updateAction(QWebPage::WebAction action);
     void updateNavigationActions();
     void updateEditorActions();
@@ -85,31 +76,46 @@ public:
     void timerEvent(QTimerEvent*);
 
     void mouseMoveEvent(QMouseEvent*);
+    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
     void mousePressEvent(QMouseEvent*);
+    void mousePressEvent(QGraphicsSceneMouseEvent*);
     void mouseDoubleClickEvent(QMouseEvent*);
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*);
     void mouseTripleClickEvent(QMouseEvent*);
+    void mouseTripleClickEvent(QGraphicsSceneMouseEvent*);
     void mouseReleaseEvent(QMouseEvent*);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
 #ifndef QT_NO_CONTEXTMENU
-    void contextMenuEvent(QContextMenuEvent*);
+    void contextMenuEvent(const QPoint& globalPos);
 #endif
 #ifndef QT_NO_WHEELEVENT
     void wheelEvent(QWheelEvent*);
+    void wheelEvent(QGraphicsSceneWheelEvent*);
 #endif
     void keyPressEvent(QKeyEvent*);
     void keyReleaseEvent(QKeyEvent*);
     void focusInEvent(QFocusEvent*);
     void focusOutEvent(QFocusEvent*);
 
-    void dragEnterEvent(QDragEnterEvent *);
-    void dragLeaveEvent(QDragLeaveEvent *);
-    void dragMoveEvent(QDragMoveEvent *);
-    void dropEvent(QDropEvent *);
+    void dragEnterEvent(QDragEnterEvent*);
+    void dragEnterEvent(QGraphicsSceneDragDropEvent*);
+    void dragLeaveEvent(QDragLeaveEvent*);
+    void dragLeaveEvent(QGraphicsSceneDragDropEvent*);
+    void dragMoveEvent(QDragMoveEvent*);
+    void dragMoveEvent(QGraphicsSceneDragDropEvent*);
+    void dropEvent(QDropEvent*);
+    void dropEvent(QGraphicsSceneDragDropEvent*);
 
     void inputMethodEvent(QInputMethodEvent*);
 
     void shortcutOverrideEvent(QKeyEvent*);
-    void leaveEvent(QEvent *);
+    void leaveEvent(QEvent*);
+    void handleClipboard(QEvent*, Qt::MouseButton);
     bool handleScrolling(QKeyEvent*, WebCore::Frame*);
+
+    void setInspector(QWebInspector*);
+    QWebInspector* getOrCreateInspector();
+    WebCore::InspectorController* inspectorController();
 
 #ifndef QT_NO_SHORTCUT
     static QWebPage::WebAction editorActionForKeyEvent(QKeyEvent* event);
@@ -124,10 +130,11 @@ public:
     QPointer<QWebFrame> mainFrame;
 
     QWebPage *q;
+    QWebPageClient* client;
 #ifndef QT_NO_UNDOSTACK
     QUndoStack *undoStack;
 #endif
-    QWidget *view;
+    QWidget* view;
 
     bool insideOpenCall;
     quint64 m_totalBytes;
@@ -167,6 +174,10 @@ public:
     QAction *actions[QWebPage::WebActionCount];
 
     QWebPluginFactory *pluginFactory;
+
+    QWidget* inspectorFrontend;
+    QWebInspector* inspector;
+    bool inspectorIsInternalOnly; // True if created through the Inspect context menu action
 
     static bool drtRun;
 };

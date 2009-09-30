@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -1396,8 +1396,12 @@ void QTextEngine::itemize() const
     int length = layoutData->string.length();
     if (!length)
         return;
-
+#if defined(Q_WS_MAC) && !defined(QT_MAC_USE_COCOA)
+    // ATSUI requires RTL flags to correctly identify the character stops.
+    bool ignore = false;
+#else
     bool ignore = ignoreBidi;
+#endif
     if (!ignore && option.textDirection() == Qt::LeftToRight) {
         ignore = true;
         const QChar *start = layoutData->string.unicode();
@@ -1594,11 +1598,13 @@ glyph_metrics_t QTextEngine::boundingBox(int from,  int len) const
 
     for (int i = 0; i < layoutData->items.size(); i++) {
         const QScriptItem *si = layoutData->items.constData() + i;
+        QFontEngine *fe = fontEngine(*si);
+
         int pos = si->position;
         int ilen = length(i);
         if (pos > from + len)
             break;
-        if (pos + len > from) {
+        if (pos + ilen > from) {
             if (!si->num_glyphs)
                 shape(i);
 
@@ -1631,7 +1637,6 @@ glyph_metrics_t QTextEngine::boundingBox(int from,  int len) const
                     charEnd++;
                 glyphEnd = (charEnd == ilen) ? si->num_glyphs : logClusters[charEnd];
                 if (glyphStart <= glyphEnd ) {
-                    QFontEngine *fe = fontEngine(*si);
                     glyph_metrics_t m = fe->boundingBox(glyphs.mid(glyphStart, glyphEnd - glyphStart));
                     gm.x = qMin(gm.x, m.x + gm.xoff);
                     gm.y = qMin(gm.y, m.y + gm.yoff);
@@ -1641,6 +1646,11 @@ glyph_metrics_t QTextEngine::boundingBox(int from,  int len) const
                     gm.yoff += m.yoff;
                 }
             }
+
+            glyph_t glyph = glyphs.glyphs[logClusters[pos + ilen - 1]];
+            glyph_metrics_t gi = fe->boundingBox(glyph);
+            if (gi.isValid())
+                gm.width -= qRound(gi.xoff - gi.x - gi.width);
         }
     }
     return gm;
@@ -2245,6 +2255,28 @@ void QTextEngine::indexAdditionalFormats()
     }
 }
 
+/* These two helper functions are used to determine whether we need to insert a ZWJ character
+   between the text that gets truncated and the ellipsis. This is important to get
+   correctly shaped results for arabic text.
+*/
+static bool nextCharJoins(const QString &string, int pos)
+{
+    while (pos < string.length() && string.at(pos).category() == QChar::Mark_NonSpacing)
+        ++pos;
+    if (pos == string.length())
+        return false;
+    return string.at(pos).joining() != QChar::OtherJoining;
+}
+
+static bool prevCharJoins(const QString &string, int pos)
+{
+    while (pos > 0 && string.at(pos - 1).category() == QChar::Mark_NonSpacing)
+        --pos;
+    if (pos == 0)
+        return false;
+    return (string.at(pos - 1).joining() == QChar::Dual || string.at(pos - 1).joining() == QChar::Center);
+}
+
 QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int flags) const
 {
 //    qDebug() << "elidedText; available width" << width.toReal() << "text width:" << this->width(0, layoutData->string.length()).toReal();
@@ -2345,6 +2377,9 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
         } while (nextBreak < layoutData->string.length()
                  && currentWidth < availableWidth);
 
+        if (nextCharJoins(layoutData->string, pos))
+            ellipsisText.prepend(QChar(0x200d) /* ZWJ */);
+
         return layoutData->string.left(pos) + ellipsisText;
     } else if (mode == Qt::ElideLeft) {
         QFixed currentWidth;
@@ -2361,6 +2396,9 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
             currentWidth += this->width(nextBreak, pos - nextBreak);
         } while (nextBreak > 0
                  && currentWidth < availableWidth);
+
+        if (prevCharJoins(layoutData->string, pos))
+            ellipsisText.append(QChar(0x200d) /* ZWJ */);
 
         return ellipsisText + layoutData->string.mid(pos);
     } else if (mode == Qt::ElideMiddle) {
@@ -2390,6 +2428,11 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
         } while (nextLeftBreak < layoutData->string.length()
                  && nextRightBreak > 0
                  && leftWidth + rightWidth < availableWidth);
+
+        if (nextCharJoins(layoutData->string, leftPos))
+            ellipsisText.prepend(QChar(0x200d) /* ZWJ */);
+        if (prevCharJoins(layoutData->string, rightPos))
+            ellipsisText.append(QChar(0x200d) /* ZWJ */);
 
         return layoutData->string.left(leftPos) + ellipsisText + layoutData->string.mid(rightPos);
     }

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -47,31 +47,36 @@
 
 QT_BEGIN_NAMESPACE
 
+// Current GL and VG contexts.  These are used to determine if
+// we can avoid an eglMakeCurrent() after a call to lazyDoneCurrent().
+// If a background thread modifies the value, the worst that will
+// happen is a redundant eglMakeCurrent() in the foreground thread.
+static QEglContext * volatile currentGLContext = 0;
+static QEglContext * volatile currentVGContext = 0;
+
 QEglContext::QEglContext()
     : apiType(QEgl::OpenGL)
     , dpy(EGL_NO_DISPLAY)
     , ctx(EGL_NO_CONTEXT)
-    , surf(EGL_NO_SURFACE)
     , cfg(0)
-    , share(false)
+    , currentSurface(EGL_NO_SURFACE)
     , current(false)
-    , reserved(0)
 {
 }
 
 QEglContext::~QEglContext()
 {
     destroy();
+
+    if (currentGLContext == this)
+        currentGLContext = 0;
+    if (currentVGContext == this)
+        currentVGContext = 0;
 }
 
 bool QEglContext::isValid() const
 {
     return (ctx != EGL_NO_CONTEXT);
-}
-
-bool QEglContext::isSharing() const
-{
-    return share;
 }
 
 bool QEglContext::isCurrent() const
@@ -148,7 +153,7 @@ bool QEglContext::chooseConfig
 }
 
 // Create the EGLContext.
-bool QEglContext::createContext(QEglContext *shareContext)
+bool QEglContext::createContext(QEglContext *shareContext, const QEglProperties *properties)
 {
     // We need to select the correct API before calling eglCreateContext().
 #ifdef EGL_OPENGL_ES_API
@@ -162,6 +167,8 @@ bool QEglContext::createContext(QEglContext *shareContext)
 
     // Create a new context for the configuration.
     QEglProperties contextProps;
+    if (properties)
+        contextProps = *properties;
 #if defined(QT_OPENGL_ES_2)
     if (apiType == QEgl::OpenGL)
         contextProps.setValue(EGL_CONTEXT_CLIENT_VERSION, 2);
@@ -182,31 +189,17 @@ bool QEglContext::createContext(QEglContext *shareContext)
             return false;
         }
     }
-    share = (shareContext != 0);
     return true;
 }
 
-// Recreate the surface for a paint device because the native id has changed.
-bool QEglContext::recreateSurface(QPaintDevice *device)
+// Destroy an EGL surface object.  If it was current on this context
+// then call doneCurrent() for it first.
+void QEglContext::destroySurface(EGLSurface surface)
 {
-    // Bail out if the surface has not been created for the first time yet.
-    if (surf == EGL_NO_SURFACE)
-        return true;
-
-    // Destroy the old surface.
-    eglDestroySurface(dpy, surf);
-    surf = EGL_NO_SURFACE;
-
-    // Create a new one.
-    return createSurface(device);
-}
-
-// Destroy the EGL surface object.
-void QEglContext::destroySurface()
-{
-    if (surf != EGL_NO_SURFACE) {
-        eglDestroySurface(dpy, surf);
-        surf = EGL_NO_SURFACE;
+    if (surface != EGL_NO_SURFACE) {
+        if (surface == currentSurface)
+            doneCurrent();
+        eglDestroySurface(dpy, surface);
     }
 }
 
@@ -217,21 +210,28 @@ void QEglContext::destroy()
         eglDestroyContext(dpy, ctx);
     dpy = EGL_NO_DISPLAY;
     ctx = EGL_NO_CONTEXT;
-    surf = EGL_NO_SURFACE;
     cfg = 0;
-    share = false;
 }
 
-bool QEglContext::makeCurrent()
+bool QEglContext::makeCurrent(EGLSurface surface)
 {
     if (ctx == EGL_NO_CONTEXT) {
         qWarning() << "QEglContext::makeCurrent(): Cannot make invalid context current";
         return false;
     }
 
-    current = true;
+    // If lazyDoneCurrent() was called on the surface, then we may be able
+    // to assume that it is still current within the thread.
+    if (surface == currentSurface && currentContext(apiType) == this) {
+        current = true;
+        return true;
+    }
 
-    bool ok = eglMakeCurrent(dpy, surf, surf, ctx);
+    current = true;
+    currentSurface = surface;
+    setCurrentContext(apiType, this);
+
+    bool ok = eglMakeCurrent(dpy, surface, surface, ctx);
     if (!ok)
         qWarning() << "QEglContext::makeCurrent():" << errorString(eglGetError());
     return ok;
@@ -245,6 +245,8 @@ bool QEglContext::doneCurrent()
         return false;
 
     current = false;
+    currentSurface = EGL_NO_SURFACE;
+    setCurrentContext(apiType, 0);
 
     // We need to select the correct API before calling eglMakeCurrent()
     // with EGL_NO_CONTEXT because threads can have both OpenGL and OpenVG
@@ -264,12 +266,23 @@ bool QEglContext::doneCurrent()
     return ok;
 }
 
-bool QEglContext::swapBuffers()
+// Act as though doneCurrent() was called, but keep the context
+// and the surface active for the moment.  This allows makeCurrent()
+// to skip a call to eglMakeCurrent() if we are using the same
+// surface as the last set of painting operations.  We leave the
+// currentContext() pointer as-is for now.
+bool QEglContext::lazyDoneCurrent()
+{
+    current = false;
+    return true;
+}
+
+bool QEglContext::swapBuffers(EGLSurface surface)
 {
     if(ctx == EGL_NO_CONTEXT)
         return false;
 
-    bool ok = eglSwapBuffers(dpy, surf);
+    bool ok = eglSwapBuffers(dpy, surface);
     if (!ok)
         qWarning() << "QEglContext::swapBuffers():" << errorString(eglGetError());
     return ok;
@@ -303,15 +316,6 @@ void QEglContext::waitClient()
         eglWaitClient();
     }
 #endif
-}
-
-// Query the actual size of the EGL surface.
-QSize QEglContext::surfaceSize() const
-{
-    int w, h;
-    eglQuerySurface(dpy, surf, EGL_WIDTH, &w);
-    eglQuerySurface(dpy, surf, EGL_HEIGHT, &h);
-    return QSize(w, h);
 }
 
 // Query the value of a configuration attribute.
@@ -409,6 +413,22 @@ QString QEglContext::extensions()
 bool QEglContext::hasExtension(const char* extensionName)
 {
     return extensions().contains(QLatin1String(extensionName));
+}
+
+QEglContext *QEglContext::currentContext(QEgl::API api)
+{
+    if (api == QEgl::OpenGL)
+        return currentGLContext;
+    else
+        return currentVGContext;
+}
+
+void QEglContext::setCurrentContext(QEgl::API api, QEglContext *context)
+{
+    if (api == QEgl::OpenGL)
+        currentGLContext = context;
+    else
+        currentVGContext = context;
 }
 
 QT_END_NAMESPACE

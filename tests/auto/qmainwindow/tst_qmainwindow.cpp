@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -1297,18 +1297,27 @@ void tst_QMainWindow::createPopupMenu()
         mainwindow.addDockWidget(Qt::LeftDockWidgetArea, &dockwidget3);
         mainwindow.addDockWidget(Qt::LeftDockWidgetArea, &dockwidget4);
 
+
+#ifdef QT_SOFTKEYS_ENABLED
+        // Softkeys add extra "Select" and "Back" actions to menu by default.
+        // Two first actions will be Select and Back when softkeys are enabled
+        int numSoftkeyActions = 2;
+#else
+        int numSoftkeyActions = 0;
+#endif
+
         QMenu *menu = mainwindow.createPopupMenu();
         QVERIFY(menu != 0);
         QList<QAction *> actions = menu->actions();
-        QCOMPARE(actions.size(), 7);
+        QCOMPARE(actions.size(), 7 + numSoftkeyActions);
 
-        QCOMPARE(actions.at(0), dockwidget1.toggleViewAction());
-        QCOMPARE(actions.at(1), dockwidget2.toggleViewAction());
-        QCOMPARE(actions.at(2), dockwidget3.toggleViewAction());
-        QCOMPARE(actions.at(3), dockwidget4.toggleViewAction());
-        QVERIFY(actions.at(4)->isSeparator());
-        QCOMPARE(actions.at(5), toolbar1.toggleViewAction());
-        QCOMPARE(actions.at(6), toolbar2.toggleViewAction());
+        QCOMPARE(actions.at(0 + numSoftkeyActions), dockwidget1.toggleViewAction());
+        QCOMPARE(actions.at(1 + numSoftkeyActions), dockwidget2.toggleViewAction());
+        QCOMPARE(actions.at(2 + numSoftkeyActions), dockwidget3.toggleViewAction());
+        QCOMPARE(actions.at(3 + numSoftkeyActions), dockwidget4.toggleViewAction());
+        QVERIFY(actions.at(4 + numSoftkeyActions)->isSeparator());
+        QCOMPARE(actions.at(5 + numSoftkeyActions), toolbar1.toggleViewAction());
+        QCOMPARE(actions.at(6 + numSoftkeyActions), toolbar2.toggleViewAction());
 
         delete menu;
 
@@ -1319,12 +1328,12 @@ void tst_QMainWindow::createPopupMenu()
         menu = mainwindow.createPopupMenu();
         QVERIFY(menu != 0);
         actions = menu->actions();
-        QCOMPARE(actions.size(), 4);
+        QCOMPARE(actions.size(), 4 + numSoftkeyActions);
 
-        QCOMPARE(actions.at(0), dockwidget2.toggleViewAction());
-        QCOMPARE(actions.at(1), dockwidget3.toggleViewAction());
-        QVERIFY(actions.at(2)->isSeparator());
-        QCOMPARE(actions.at(3), toolbar2.toggleViewAction());
+        QCOMPARE(actions.at(0 + numSoftkeyActions), dockwidget2.toggleViewAction());
+        QCOMPARE(actions.at(1 + numSoftkeyActions), dockwidget3.toggleViewAction());
+        QVERIFY(actions.at(2 + numSoftkeyActions)->isSeparator());
+        QCOMPARE(actions.at(3 + numSoftkeyActions), toolbar2.toggleViewAction());
 
         delete menu;
     }
@@ -1692,8 +1701,12 @@ void tst_QMainWindow::dockWidgetSize()
 
     mainWindow.show();
     QTest::qWait(100);
-    QCOMPARE(widget.size(), widget.sizeHint());
-    QCOMPARE(dock.widget()->size(), dock.widget()->sizeHint());
+    if (mainWindow.size() == mainWindow.sizeHint()) {
+        QCOMPARE(widget.size(), widget.sizeHint());
+        QCOMPARE(dock.widget()->size(), dock.widget()->sizeHint());
+    } else {
+        //otherwise the screen is too small and the size are irrelevant
+    }
 }
 
 

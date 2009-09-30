@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -167,7 +167,7 @@ QPixmapCache::Key &QPixmapCache::Key::operator =(const Key &other)
     return *this;
 }
 
-class QPMCache : public QObject, public QCache<QPixmapCache::Key, QDetachedPixmap>
+class QPMCache : public QObject, public QCache<QPixmapCache::Key, QPixmapCacheEntry>
 {
     Q_OBJECT
 public:
@@ -215,7 +215,7 @@ uint qHash(const QPixmapCache::Key &k)
 
 QPMCache::QPMCache()
     : QObject(0),
-      QCache<QPixmapCache::Key, QDetachedPixmap>(cache_limit * 1024),
+      QCache<QPixmapCache::Key, QPixmapCacheEntry>(cache_limit * 1024),
       keyArray(0), theid(0), ps(0), keyArraySize(0), freeKey(0), t(false)
 {
 }
@@ -238,7 +238,6 @@ void QPMCache::timerEvent(QTimerEvent *)
 {
     int mc = maxCost();
     bool nt = totalCost() == ps;
-    QList<QPixmapCache::Key> keys = QCache<QPixmapCache::Key, QDetachedPixmap>::keys();
     setMaxCost(nt ? totalCost() * 3 / 4 : totalCost() -1);
     setMaxCost(mc);
     ps = totalCost();
@@ -251,10 +250,6 @@ void QPMCache::timerEvent(QTimerEvent *)
         } else {
             ++it;
         }
-    }
-    for (int i = 0; i < keys.size(); ++i) {
-        if (!contains(keys.at(i)))
-            releaseKey(keys.at(i));
     }
 
     if (!size()) {
@@ -274,11 +269,10 @@ QPixmap *QPMCache::object(const QString &key) const
         const_cast<QPMCache *>(this)->cacheKeys.remove(key);
         return 0;
     }
-    QPixmap *ptr = QCache<QPixmapCache::Key, QDetachedPixmap>::object(cacheKey);
+    QPixmap *ptr = QCache<QPixmapCache::Key, QPixmapCacheEntry>::object(cacheKey);
      //We didn't find the pixmap in the cache, the key is not valid anymore
     if (!ptr) {
         const_cast<QPMCache *>(this)->cacheKeys.remove(key);
-        const_cast<QPMCache *>(this)->releaseKey(cacheKey);
     }
     return ptr;
 }
@@ -286,7 +280,7 @@ QPixmap *QPMCache::object(const QString &key) const
 QPixmap *QPMCache::object(const QPixmapCache::Key &key) const
 {
     Q_ASSERT(key.d->isValid);
-    QPixmap *ptr = QCache<QPixmapCache::Key, QDetachedPixmap>::object(key);
+    QPixmap *ptr = QCache<QPixmapCache::Key, QPixmapCacheEntry>::object(key);
     //We didn't find the pixmap in the cache, the key is not valid anymore
     if (!ptr)
         const_cast<QPMCache *>(this)->releaseKey(key);
@@ -299,13 +293,14 @@ bool QPMCache::insert(const QString& key, const QPixmap &pixmap, int cost)
     QPixmapCache::Key oldCacheKey = cacheKeys.value(key);
     //If for the same key we add already a pixmap we should delete it
     if (oldCacheKey.d) {
-        QCache<QPixmapCache::Key, QDetachedPixmap>::remove(oldCacheKey);
-        cacheKey = oldCacheKey;
-    } else {
-         cacheKey = createKey();
-     }
+        QCache<QPixmapCache::Key, QPixmapCacheEntry>::remove(oldCacheKey);
+        cacheKeys.remove(key);
+    }
 
-    bool success = QCache<QPixmapCache::Key, QDetachedPixmap>::insert(cacheKey, new QDetachedPixmap(pixmap), cost);
+    //we create a new key the old one has been removed
+    cacheKey = createKey();
+
+    bool success = QCache<QPixmapCache::Key, QPixmapCacheEntry>::insert(cacheKey, new QPixmapCacheEntry(cacheKey, pixmap), cost);
     if (success) {
         cacheKeys.insert(key, cacheKey);
         if (!theid) {
@@ -322,7 +317,7 @@ bool QPMCache::insert(const QString& key, const QPixmap &pixmap, int cost)
 QPixmapCache::Key QPMCache::insert(const QPixmap &pixmap, int cost)
 {
     QPixmapCache::Key cacheKey = createKey();
-    bool success = QCache<QPixmapCache::Key, QDetachedPixmap>::insert(cacheKey, new QDetachedPixmap(pixmap), cost);
+    bool success = QCache<QPixmapCache::Key, QPixmapCacheEntry>::insert(cacheKey, new QPixmapCacheEntry(cacheKey, pixmap), cost);
     if (success) {
         if (!theid) {
             theid = startTimer(30000);
@@ -338,13 +333,21 @@ QPixmapCache::Key QPMCache::insert(const QPixmap &pixmap, int cost)
 bool QPMCache::replace(const QPixmapCache::Key &key, const QPixmap &pixmap, int cost)
 {
     Q_ASSERT(key.d->isValid);
-    //If for the same key we add already a pixmap we should delete it
-    QCache<QPixmapCache::Key, QDetachedPixmap>::remove(key);
+    //If for the same key we had already an entry so we should delete the pixmap and use the new one
+    QCache<QPixmapCache::Key, QPixmapCacheEntry>::remove(key);
 
-    bool success = QCache<QPixmapCache::Key, QDetachedPixmap>::insert(key, new QDetachedPixmap(pixmap), cost);
-    if (success && !theid) {
-        theid = startTimer(30000);
-        t = false;
+    QPixmapCache::Key cacheKey = createKey();
+
+    bool success = QCache<QPixmapCache::Key, QPixmapCacheEntry>::insert(cacheKey, new QPixmapCacheEntry(cacheKey, pixmap), cost);
+    if (success) {
+        if(!theid) {
+            theid = startTimer(30000);
+            t = false;
+        }
+        const_cast<QPixmapCache::Key&>(key) = cacheKey;
+    } else {
+        //Insertion failed we released the key
+        releaseKey(cacheKey);
     }
     return success;
 }
@@ -356,16 +359,12 @@ bool QPMCache::remove(const QString &key)
     if (!cacheKey.d)
         return false;
     cacheKeys.remove(key);
-    releaseKey(cacheKey);
-    return QCache<QPixmapCache::Key, QDetachedPixmap>::remove(cacheKey);
+    return QCache<QPixmapCache::Key, QPixmapCacheEntry>::remove(cacheKey);
 }
 
 bool QPMCache::remove(const QPixmapCache::Key &key)
 {
-    bool result = QCache<QPixmapCache::Key, QDetachedPixmap>::remove(key);
-    //We release the key after we removed it from the cache
-    releaseKey(key);
-    return result;
+    return QCache<QPixmapCache::Key, QPixmapCacheEntry>::remove(key);
 }
 
 void QPMCache::resizeKeyArray(int size)
@@ -409,10 +408,10 @@ void QPMCache::clear()
     freeKey = 0;
     keyArraySize = 0;
     //Mark all keys as invalid
-    QList<QPixmapCache::Key> keys = QCache<QPixmapCache::Key, QDetachedPixmap>::keys();
+    QList<QPixmapCache::Key> keys = QCache<QPixmapCache::Key, QPixmapCacheEntry>::keys();
     for (int i = 0; i < keys.size(); ++i)
         keys.at(i).d->isValid = false;
-    QCache<QPixmapCache::Key, QDetachedPixmap>::clear();
+    QCache<QPixmapCache::Key, QPixmapCacheEntry>::clear();
 }
 
 QPixmapCache::KeyData* QPMCache::getKeyData(QPixmapCache::Key *key)
@@ -423,6 +422,11 @@ QPixmapCache::KeyData* QPMCache::getKeyData(QPixmapCache::Key *key)
 }
 
 Q_GLOBAL_STATIC(QPMCache, pm_cache)
+
+QPixmapCacheEntry::~QPixmapCacheEntry()
+{
+    pm_cache()->releaseKey(key);
+}
 
 /*!
     \obsolete

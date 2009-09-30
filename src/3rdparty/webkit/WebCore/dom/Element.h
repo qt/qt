@@ -3,7 +3,7 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Peter Kelly (pmk@post.com)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -41,8 +41,53 @@ class IntSize;
 
 class Element : public ContainerNode {
 public:
-    Element(const QualifiedName&, Document*);
-    ~Element();
+    static PassRefPtr<Element> create(const QualifiedName&, Document*);
+    virtual ~Element();
+
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(abort);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(click);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(contextmenu);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(dblclick);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(dragenter);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(dragover);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(dragleave);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(drop);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(dragstart);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(drag);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(dragend);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(input);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(invalid);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(keydown);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(keypress);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(keyup);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(mousedown);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(mousemove);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(mouseout);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(mouseover);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(mouseup);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(mousewheel);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(scroll);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(select);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(submit);
+
+    // These 4 attribute event handler attributes are overrided by HTMLBodyElement
+    // and HTMLFrameSetElement to forward to the DOMWindow.
+    DEFINE_VIRTUAL_ATTRIBUTE_EVENT_LISTENER(blur);
+    DEFINE_VIRTUAL_ATTRIBUTE_EVENT_LISTENER(error);
+    DEFINE_VIRTUAL_ATTRIBUTE_EVENT_LISTENER(focus);
+    DEFINE_VIRTUAL_ATTRIBUTE_EVENT_LISTENER(load);
+
+    // WebKit extensions
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecut);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(cut);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecopy);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(copy);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(beforepaste);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(paste);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(reset);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(search);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(selectstart);
 
     const AtomicString& getIDAttribute() const;
     bool hasAttribute(const QualifiedName&) const;
@@ -64,7 +109,6 @@ public:
     void scrollIntoView(bool alignToTop = true);
     void scrollIntoViewIfNeeded(bool centerIfNeeded = true);
 
-    void scrollByUnits(int units, ScrollGranularity);
     void scrollByLines(int lines);
     void scrollByPages(int pages);
 
@@ -108,17 +152,11 @@ public:
 
     const AtomicString& localName() const { return m_tagName.localName(); }
     const AtomicString& prefix() const { return m_tagName.prefix(); }
-    virtual void setPrefix(const AtomicString&, ExceptionCode&);
     const AtomicString& namespaceURI() const { return m_tagName.namespaceURI(); }
 
     virtual KURL baseURI() const;
 
-    // DOM methods overridden from parent classes
-    virtual NodeType nodeType() const;
     virtual String nodeName() const;
-    virtual void insertedIntoDocument();
-    virtual void removedFromDocument();
-    virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
 
     PassRefPtr<Element> cloneElementWithChildren();
     PassRefPtr<Element> cloneElementWithoutChildren();
@@ -136,13 +174,9 @@ public:
     // This method is called whenever an attribute is added, changed or removed.
     virtual void attributeChanged(Attribute*, bool preserveDecls = false);
 
-    // The implementation of Element::attributeChanged() calls the following two functions.
-    // They are separated to allow a different flow of control in StyledElement::attributeChanged().
-    void recalcStyleIfNeededAfterAttributeChanged(Attribute*);
-    void updateAfterAttributeChanged(Attribute*);
-
     // not part of the DOM
     void setAttributeMap(PassRefPtr<NamedNodeMap>);
+    NamedNodeMap* attributeMap() const { return namedAttrMap.get(); }
 
     virtual void copyNonAttributeProperties(const Element* /*source*/) { }
 
@@ -153,10 +187,6 @@ public:
 
     virtual RenderStyle* computedStyle();
 
-    virtual bool childTypeAllowed(NodeType);
-
-    virtual PassRefPtr<Attribute> createAttribute(const QualifiedName&, const AtomicString& value);
-    
     void dispatchAttrRemovalEvent(Attribute*);
     void dispatchAttrAdditionEvent(Attribute*);
 
@@ -170,12 +200,6 @@ public:
     virtual void focus(bool restorePreviousSelection = true);
     virtual void updateFocusAppearance(bool restorePreviousSelection);
     void blur();
-
-#ifndef NDEBUG
-    virtual void formatForDebugger(char* buffer, unsigned length) const;
-#endif
-
-    bool pseudoStyleCacheIsInvalid(const RenderStyle* currentStyle, RenderStyle* newStyle);
 
     String innerText() const;
     String outerText() const;
@@ -207,13 +231,17 @@ public:
     Element* nextElementSibling() const;
     unsigned childElementCount() const;
 
-    // FormControlElement API
+    bool webkitMatchesSelector(const String& selectors, ExceptionCode&);
+
     virtual bool isFormControlElement() const { return false; }
     virtual bool isEnabledFormControl() const { return true; }
     virtual bool isReadOnlyFormControl() const { return false; }
     virtual bool isTextFormControl() const { return false; }
     virtual bool isOptionalFormControl() const { return false; }
     virtual bool isRequiredFormControl() const { return false; }
+    virtual bool isDefaultButtonForForm() const { return false; }
+    virtual bool willValidate() const { return false; }
+    virtual bool isValidFormControlElement() { return false; }
 
     virtual bool formControlValueMatchesRenderer() const { return false; }
     virtual void setFormControlValueMatchesRenderer(bool) { }
@@ -226,13 +254,39 @@ public:
 
     virtual void dispatchFormControlChangeEvent() { }
 
+protected:
+    Element(const QualifiedName&, Document*, ConstructionType);
+
+    virtual void insertedIntoDocument();
+    virtual void removedFromDocument();
+    virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
+
+    // The implementation of Element::attributeChanged() calls the following two functions.
+    // They are separated to allow a different flow of control in StyledElement::attributeChanged().
+    void recalcStyleIfNeededAfterAttributeChanged(Attribute*);
+    void updateAfterAttributeChanged(Attribute*);
+
 private:
+    void scrollByUnits(int units, ScrollGranularity);
+
+    virtual void setPrefix(const AtomicString&, ExceptionCode&);
+    virtual NodeType nodeType() const;
+    virtual bool childTypeAllowed(NodeType);
+
+    virtual PassRefPtr<Attribute> createAttribute(const QualifiedName&, const AtomicString& value);
+    
+#ifndef NDEBUG
+    virtual void formatForDebugger(char* buffer, unsigned length) const;
+#endif
+
+    bool pseudoStyleCacheIsInvalid(const RenderStyle* currentStyle, RenderStyle* newStyle);
+
     virtual void createAttributeMap() const;
 
-    virtual void updateStyleAttribute() const {}
+    virtual void updateStyleAttribute() const { }
 
 #if ENABLE(SVG)
-    virtual void updateAnimatedSVGAttribute(const String&) const {}
+    virtual void updateAnimatedSVGAttribute(const String&) const { }
 #endif
 
     void updateFocusAppearanceSoonAfterAttach();
@@ -249,10 +303,10 @@ private:
     QualifiedName m_tagName;
     virtual NodeRareData* createRareData();
 
-protected:
     ElementRareData* rareData() const;
     ElementRareData* ensureRareData();
     
+protected:
     mutable RefPtr<NamedNodeMap> namedAttrMap;
 };
     

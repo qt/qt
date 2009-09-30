@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -79,6 +79,7 @@ public:
     IDirectFBScreen *dfbScreen;
 #ifdef QT_NO_DIRECTFB_WM
     IDirectFBSurface *primarySurface;
+    QColor backgroundColor;
 #endif
 #ifndef QT_NO_DIRECTFB_LAYER
     IDirectFBDisplayLayer *dfbLayer;
@@ -94,7 +95,6 @@ public:
 #if defined QT_DIRECTFB_IMAGEPROVIDER && defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
     IDirectFBImageProvider *imageProvider;
 #endif
-    QColor backgroundColor;
     IDirectFBSurface *cursorSurface;
     qint64 cursorImageKey;
 
@@ -591,12 +591,15 @@ bool QDirectFBScreenCursor::createWindow()
     Q_ASSERT(!cursor.isNull());
     DFBWindowDescription description;
     memset(&description, 0, sizeof(DFBWindowDescription));
-    description.flags = DWDESC_POSX|DWDESC_POSY|DWDESC_WIDTH|DWDESC_HEIGHT|DWDESC_CAPS|DWDESC_OPTIONS|DWDESC_PIXELFORMAT|DWDESC_SURFACE_CAPS;
+    description.flags = DWDESC_POSX|DWDESC_POSY|DWDESC_WIDTH|DWDESC_HEIGHT|DWDESC_CAPS|DWDESC_PIXELFORMAT|DWDESC_SURFACE_CAPS;
     description.width = cursor.width();
     description.height = cursor.height();
     description.posx = pos.x() - hotspot.x();
     description.posy = pos.y() - hotspot.y();
+#if (Q_DIRECTFB_VERSION >= 0x010100)
+    description.flags |= DWDESC_OPTIONS;
     description.options = DWOP_GHOST|DWOP_ALPHACHANNEL;
+#endif
     description.caps = DWCAPS_NODECORATION|DWCAPS_DOUBLEBUFFER;
     const QImage::Format format = QDirectFBScreen::instance()->alphaPixmapFormat();
     description.pixelformat = QDirectFBScreen::getSurfacePixelFormat(format);
@@ -1202,7 +1205,7 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
                       "Unable to get screen!", result);
         return false;
     }
-    const QString qws_size = qgetenv("QWS_SIZE");
+    const QString qws_size = QString::fromLatin1(qgetenv("QWS_SIZE"));
     if (!qws_size.isEmpty()) {
         QRegExp rx(QLatin1String("(\\d+)x(\\d+)"));
         if (!rx.exactMatch(qws_size)) {
@@ -1277,10 +1280,9 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     if (displayArgs.contains(QLatin1String("debug"), Qt::CaseInsensitive))
         printDirectFBInfo(d_ptr->dfb, surface);
 #endif
-#ifndef QT_NO_DIRECTFB_WM
+#ifdef QT_DIRECTFB_WM
     surface->Release(surface);
-#endif
-
+#else
     QRegExp backgroundColorRegExp(QLatin1String("bgcolor=?(.+)"));
     backgroundColorRegExp.setCaseSensitivity(Qt::CaseInsensitive);
     if (displayArgs.indexOf(backgroundColorRegExp) != -1) {
@@ -1288,6 +1290,11 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     }
     if (!d_ptr->backgroundColor.isValid())
         d_ptr->backgroundColor = Qt::green;
+    d_ptr->primarySurface->Clear(d_ptr->primarySurface, d_ptr->backgroundColor.red(),
+                                 d_ptr->backgroundColor.green(), d_ptr->backgroundColor.blue(),
+                                 d_ptr->backgroundColor.alpha());
+    d_ptr->primarySurface->Flip(d_ptr->primarySurface, 0, d_ptr->flipFlags);
+#endif
 
     return true;
 }
@@ -1568,11 +1575,6 @@ void QDirectFBScreen::solidFill(const QColor &color, const QRegion &region)
 #endif
 }
 
-void QDirectFBScreen::erase(const QRegion &region)
-{
-    solidFill(d_ptr->backgroundColor, region);
-}
-
 QImage::Format QDirectFBScreen::alphaPixmapFormat() const
 {
     return d_ptr->alphaPixmapFormat;
@@ -1650,6 +1652,19 @@ void QDirectFBScreen::waitIdle()
     d_ptr->dfb->WaitIdle(d_ptr->dfb);
 }
 
+#ifdef QT_DIRECTFB_WM
+IDirectFBWindow *QDirectFBScreen::windowForWidget(const QWidget *widget) const
+{
+    if (widget) {
+        const QWSWindowSurface *surface = static_cast<const QWSWindowSurface*>(widget->windowSurface());
+        if (surface && surface->key() == QLatin1String("directfb")) {
+            return static_cast<const QDirectFBWindowSurface*>(surface)->directFBWindow();
+        }
+    }
+    return 0;
+}
+#endif
+
 IDirectFBSurface * QDirectFBScreen::surfaceForWidget(const QWidget *widget, QRect *rect) const
 {
     Q_ASSERT(widget);
@@ -1683,6 +1698,26 @@ IDirectFBSurface *QDirectFBScreen::subSurfaceForWidget(const QWidget *widget, co
     }
     return subSurface;
 }
+#endif
+
+#ifndef QT_DIRECTFB_PLUGIN
+Q_GUI_EXPORT IDirectFBSurface *qt_directfb_surface_for_widget(const QWidget *widget, QRect *rect)
+{
+    return QDirectFBScreen::instance() ? QDirectFBScreen::instance()->surfaceForWidget(widget, rect) : 0;
+}
+#ifdef QT_DIRECTFB_SUBSURFACE
+Q_GUI_EXPORT IDirectFBSurface *qt_directfb_subsurface_for_widget(const QWidget *widget, const QRect &area)
+{
+    return QDirectFBScreen::instance() ? QDirectFBScreen::instance()->subSurfaceForWidget(widget, area) : 0;
+}
+#endif
+#ifdef QT_DIRECTFB_WM
+Q_GUI_EXPORT IDirectFBWindow *qt_directfb_window_for_widget(const QWidget *widget)
+{
+    return QDirectFBScreen::instance() ? QDirectFBScreen::instance()->windowForWidget(widget) : 0;
+}
+
+#endif
 #endif
 
 QT_END_NAMESPACE

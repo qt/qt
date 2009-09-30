@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSCriptTools module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -53,7 +53,9 @@ QT_MODULE(ScriptTools)
 class QAction;
 class QScriptEngine;
 class QWidget;
+#ifndef QT_NO_MAINWINDOW
 class QMainWindow;
+#endif
 class QMenu;
 class QToolBar;
 
@@ -106,7 +108,9 @@ public:
     bool autoShowStandardWindow() const;
     void setAutoShowStandardWindow(bool autoShow);
 
+#ifndef QT_NO_MAINWINDOW
     QMainWindow *standardWindow() const;
+#endif
     QToolBar *createStandardToolBar(QWidget *parent = 0);
     QMenu *createStandardMenu(QWidget *parent = 0);
 

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtMultimedia module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -52,7 +52,7 @@
 
 #include <QtMultimedia/qaudio.h>
 #include <QtMultimedia/qaudioformat.h>
-#include <QtMultimedia/qaudiodeviceid.h>
+
 
 QT_BEGIN_HEADER
 
@@ -60,16 +60,21 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Multimedia)
 
+class QAudioDeviceFactory;
 
-class QAbstractAudioDeviceInfo;
-
-class Q_MULTIMEDIA_EXPORT QAudioDeviceInfo : public QObject
+class QAudioDeviceInfoPrivate;
+class Q_MULTIMEDIA_EXPORT QAudioDeviceInfo
 {
-    Q_OBJECT
+    friend class QAudioDeviceFactory;
 
 public:
-    explicit QAudioDeviceInfo(const QAudioDeviceId &id, QObject *parent = 0);
+    QAudioDeviceInfo();
+    QAudioDeviceInfo(const QAudioDeviceInfo& other);
     ~QAudioDeviceInfo();
+
+    QAudioDeviceInfo& operator=(const QAudioDeviceInfo& other);
+
+    bool isNull() const;
 
     QString deviceName() const;
 
@@ -84,19 +89,24 @@ public:
     QList<QAudioFormat::Endian> supportedByteOrders() const;
     QList<QAudioFormat::SampleType> supportedSampleTypes() const;
 
-    static QAudioDeviceId defaultInputDevice();
-    static QAudioDeviceId defaultOutputDevice();
+    static QAudioDeviceInfo defaultInputDevice();
+    static QAudioDeviceInfo defaultOutputDevice();
 
-    static QList<QAudioDeviceId> deviceList(QAudio::Mode mode);
+    static QList<QAudioDeviceInfo> deviceList(QAudio::Mode mode);
 
 private:
-    Q_DISABLE_COPY(QAudioDeviceInfo)
+    QAudioDeviceInfo(const QString &realm, const QByteArray &handle, QAudio::Mode mode);
+    QString realm() const;
+    QByteArray handle() const;
+    QAudio::Mode mode() const;
 
-    QAbstractAudioDeviceInfo* d;
+    QSharedDataPointer<QAudioDeviceInfoPrivate> d;
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+Q_DECLARE_METATYPE(QAudioDeviceInfo)
 
 #endif // QAUDIODEVICEINFO_H

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSCriptTools module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -408,14 +408,14 @@ void QScriptEdit::extraAreaMouseEvent(QMouseEvent *e)
                 return;
             bool has = m_breakpoints.contains(lineNumber);
             QMenu *popup = new QMenu();
-            QAction *toggleAct = new QAction(QObject::tr("Toggle Breakpoint"), popup);
+            QAction *toggleAct = new QAction(tr("Toggle Breakpoint"), popup);
             popup->addAction(toggleAct);
-            QAction *disableAct = new QAction(QObject::tr("Disable Breakpoint"), popup);
-            QAction *enableAct = new QAction(QObject::tr("Enable Breakpoint"), popup);
+            QAction *disableAct = new QAction(tr("Disable Breakpoint"), popup);
+            QAction *enableAct = new QAction(tr("Enable Breakpoint"), popup);
             QWidget *conditionWidget = new QWidget();
             {
                 QHBoxLayout *hbox = new QHBoxLayout(conditionWidget);
-                hbox->addWidget(new QLabel(QObject::tr("Breakpoint Condition:")));
+                hbox->addWidget(new QLabel(tr("Breakpoint Condition:")));
                 hbox->addWidget(new QLineEdit());
             }
 //            QWidgetAction *conditionAct = new QWidgetAction(popup);

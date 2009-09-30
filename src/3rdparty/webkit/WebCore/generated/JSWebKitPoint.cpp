@@ -78,7 +78,7 @@ JSWebKitPoint::JSWebKitPoint(PassRefPtr<Structure> structure, JSDOMGlobalObject*
 
 JSWebKitPoint::~JSWebKitPoint()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSWebKitPoint::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -89,6 +89,11 @@ JSObject* JSWebKitPoint::createPrototype(ExecState* exec, JSGlobalObject* global
 bool JSWebKitPoint::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSWebKitPoint, Base>(exec, &JSWebKitPointTable, this, propertyName, slot);
+}
+
+bool JSWebKitPoint::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSWebKitPoint, Base>(exec, &JSWebKitPointTable, this, propertyName, descriptor);
 }
 
 JSValue jsWebKitPointX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -130,7 +135,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, WebKitP
 }
 WebKitPoint* toWebKitPoint(JSC::JSValue value)
 {
-    return value.isObject(&JSWebKitPoint::s_info) ? static_cast<JSWebKitPoint*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSWebKitPoint::s_info) ? static_cast<JSWebKitPoint*>(asObject(value))->impl() : 0;
 }
 
 }

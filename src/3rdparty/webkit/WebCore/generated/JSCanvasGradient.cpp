@@ -59,6 +59,11 @@ bool JSCanvasGradientPrototype::getOwnPropertySlot(ExecState* exec, const Identi
     return getStaticFunctionSlot<JSObject>(exec, &JSCanvasGradientPrototypeTable, this, propertyName, slot);
 }
 
+bool JSCanvasGradientPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSCanvasGradientPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSCanvasGradient::s_info = { "CanvasGradient", 0, 0, 0 };
 
 JSCanvasGradient::JSCanvasGradient(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasGradient> impl)
@@ -69,7 +74,7 @@ JSCanvasGradient::JSCanvasGradient(PassRefPtr<Structure> structure, JSDOMGlobalO
 
 JSCanvasGradient::~JSCanvasGradient()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSCanvasGradient::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -80,7 +85,7 @@ JSObject* JSCanvasGradient::createPrototype(ExecState* exec, JSGlobalObject* glo
 JSValue JSC_HOST_CALL jsCanvasGradientPrototypeFunctionAddColorStop(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCanvasGradient::s_info))
+    if (!thisValue.inherits(&JSCanvasGradient::s_info))
         return throwError(exec, TypeError);
     JSCanvasGradient* castedThisObj = static_cast<JSCanvasGradient*>(asObject(thisValue));
     CanvasGradient* imp = static_cast<CanvasGradient*>(castedThisObj->impl());
@@ -99,7 +104,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, CanvasG
 }
 CanvasGradient* toCanvasGradient(JSC::JSValue value)
 {
-    return value.isObject(&JSCanvasGradient::s_info) ? static_cast<JSCanvasGradient*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSCanvasGradient::s_info) ? static_cast<JSCanvasGradient*>(asObject(value))->impl() : 0;
 }
 
 }

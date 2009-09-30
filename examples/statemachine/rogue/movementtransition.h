@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -62,8 +62,8 @@ public:
 protected:
     bool eventTest(QEvent *event) {
         if (event->type() == QEvent::Wrapped &&
-            static_cast<QWrappedEvent *>(event)->event()->type() == QEvent::KeyPress) {
-            QEvent *wrappedEvent = static_cast<QWrappedEvent *>(event)->event();
+            static_cast<QStateMachine::WrappedEvent *>(event)->event()->type() == QEvent::KeyPress) {
+            QEvent *wrappedEvent = static_cast<QStateMachine::WrappedEvent *>(event)->event();
 
             QKeyEvent *keyEvent = static_cast<QKeyEvent *>(wrappedEvent);
             int key = keyEvent->key();
@@ -78,7 +78,7 @@ protected:
 //![2]
     void onTransition(QEvent *event) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(
-            static_cast<QWrappedEvent *>(event)->event());
+            static_cast<QStateMachine::WrappedEvent *>(event)->event());
 
         int key = keyEvent->key();
         switch (key) {

@@ -28,11 +28,6 @@
 
 #include <wtf/Platform.h>
 
-// OBJECT_OFFSETOF: Like the C++ offsetof macro, but you can use it with classes.
-// The magic number 0x4000 is insignificant. We use it to avoid using NULL, since
-// NULL can cause compiler problems, especially in cases of multiple inheritance.
-#define OBJECT_OFFSETOF(class, field) (reinterpret_cast<ptrdiff_t>(&(reinterpret_cast<class*>(0x4000)->field)) - 0x4000)
-
 #if ENABLE(JIT)
 
 // We've run into some problems where changing the size of the class JIT leads to
@@ -64,14 +59,14 @@ namespace JSC {
     class Register;
     class RegisterFile;
     class ScopeChainNode;
-    class SimpleJumpTable;
-    class StringJumpTable;
     class StructureChain;
 
     struct CallLinkInfo;
     struct Instruction;
     struct OperandTypes;
     struct PolymorphicAccessStructureList;
+    struct SimpleJumpTable;
+    struct StringJumpTable;
     struct StructureStubInfo;
 
     struct CallRecord {
@@ -177,7 +172,6 @@ namespace JSC {
 
     class JIT : private MacroAssembler {
         friend class JITStubCall;
-        friend class CallEvalJITStub;
 
         using MacroAssembler::Jump;
         using MacroAssembler::JumpList;
@@ -197,57 +191,82 @@ namespace JSC {
         // MacroAssembler will need to plant register swaps if it is not -
         // however the code will still function correctly.
 #if PLATFORM(X86_64)
-        static const RegisterID returnValueRegister = X86::eax;
-        static const RegisterID cachedResultRegister = X86::eax;
-        static const RegisterID firstArgumentRegister = X86::edi;
+        static const RegisterID returnValueRegister = X86Registers::eax;
+        static const RegisterID cachedResultRegister = X86Registers::eax;
+        static const RegisterID firstArgumentRegister = X86Registers::edi;
 
-        static const RegisterID timeoutCheckRegister = X86::r12;
-        static const RegisterID callFrameRegister = X86::r13;
-        static const RegisterID tagTypeNumberRegister = X86::r14;
-        static const RegisterID tagMaskRegister = X86::r15;
+        static const RegisterID timeoutCheckRegister = X86Registers::r12;
+        static const RegisterID callFrameRegister = X86Registers::r13;
+        static const RegisterID tagTypeNumberRegister = X86Registers::r14;
+        static const RegisterID tagMaskRegister = X86Registers::r15;
 
-        static const RegisterID regT0 = X86::eax;
-        static const RegisterID regT1 = X86::edx;
-        static const RegisterID regT2 = X86::ecx;
-        static const RegisterID regT3 = X86::ebx;
+        static const RegisterID regT0 = X86Registers::eax;
+        static const RegisterID regT1 = X86Registers::edx;
+        static const RegisterID regT2 = X86Registers::ecx;
+        static const RegisterID regT3 = X86Registers::ebx;
 
-        static const FPRegisterID fpRegT0 = X86::xmm0;
-        static const FPRegisterID fpRegT1 = X86::xmm1;
-        static const FPRegisterID fpRegT2 = X86::xmm2;
+        static const FPRegisterID fpRegT0 = X86Registers::xmm0;
+        static const FPRegisterID fpRegT1 = X86Registers::xmm1;
+        static const FPRegisterID fpRegT2 = X86Registers::xmm2;
 #elif PLATFORM(X86)
-        static const RegisterID returnValueRegister = X86::eax;
-        static const RegisterID cachedResultRegister = X86::eax;
+        static const RegisterID returnValueRegister = X86Registers::eax;
+        static const RegisterID cachedResultRegister = X86Registers::eax;
         // On x86 we always use fastcall conventions = but on
         // OS X if might make more sense to just use regparm.
-        static const RegisterID firstArgumentRegister = X86::ecx;
+        static const RegisterID firstArgumentRegister = X86Registers::ecx;
 
-        static const RegisterID timeoutCheckRegister = X86::esi;
-        static const RegisterID callFrameRegister = X86::edi;
+        static const RegisterID timeoutCheckRegister = X86Registers::esi;
+        static const RegisterID callFrameRegister = X86Registers::edi;
 
-        static const RegisterID regT0 = X86::eax;
-        static const RegisterID regT1 = X86::edx;
-        static const RegisterID regT2 = X86::ecx;
-        static const RegisterID regT3 = X86::ebx;
+        static const RegisterID regT0 = X86Registers::eax;
+        static const RegisterID regT1 = X86Registers::edx;
+        static const RegisterID regT2 = X86Registers::ecx;
+        static const RegisterID regT3 = X86Registers::ebx;
 
-        static const FPRegisterID fpRegT0 = X86::xmm0;
-        static const FPRegisterID fpRegT1 = X86::xmm1;
-        static const FPRegisterID fpRegT2 = X86::xmm2;
-#elif PLATFORM_ARM_ARCH(7)
-        static const RegisterID returnValueRegister = ARM::r0;
-        static const RegisterID cachedResultRegister = ARM::r0;
-        static const RegisterID firstArgumentRegister = ARM::r0;
+        static const FPRegisterID fpRegT0 = X86Registers::xmm0;
+        static const FPRegisterID fpRegT1 = X86Registers::xmm1;
+        static const FPRegisterID fpRegT2 = X86Registers::xmm2;
+#elif PLATFORM(ARM_THUMB2)
+        static const RegisterID returnValueRegister = ARMRegisters::r0;
+        static const RegisterID cachedResultRegister = ARMRegisters::r0;
+        static const RegisterID firstArgumentRegister = ARMRegisters::r0;
 
-        static const RegisterID regT0 = ARM::r0;
-        static const RegisterID regT1 = ARM::r1;
-        static const RegisterID regT2 = ARM::r2;
-        static const RegisterID regT3 = ARM::r4;
+        static const RegisterID regT0 = ARMRegisters::r0;
+        static const RegisterID regT1 = ARMRegisters::r1;
+        static const RegisterID regT2 = ARMRegisters::r2;
+        static const RegisterID regT3 = ARMRegisters::r4;
 
-        static const RegisterID callFrameRegister = ARM::r5;
-        static const RegisterID timeoutCheckRegister = ARM::r6;
+        static const RegisterID callFrameRegister = ARMRegisters::r5;
+        static const RegisterID timeoutCheckRegister = ARMRegisters::r6;
 
-        static const FPRegisterID fpRegT0 = ARM::d0;
-        static const FPRegisterID fpRegT1 = ARM::d1;
-        static const FPRegisterID fpRegT2 = ARM::d2;
+        static const FPRegisterID fpRegT0 = ARMRegisters::d0;
+        static const FPRegisterID fpRegT1 = ARMRegisters::d1;
+        static const FPRegisterID fpRegT2 = ARMRegisters::d2;
+#elif PLATFORM(ARM_TRADITIONAL)
+        static const RegisterID returnValueRegister = ARMRegisters::r0;
+        static const RegisterID cachedResultRegister = ARMRegisters::r0;
+        static const RegisterID firstArgumentRegister = ARMRegisters::r0;
+
+        static const RegisterID timeoutCheckRegister = ARMRegisters::r5;
+        static const RegisterID callFrameRegister = ARMRegisters::r4;
+        static const RegisterID ctiReturnRegister = ARMRegisters::r6;
+
+        static const RegisterID regT0 = ARMRegisters::r0;
+        static const RegisterID regT1 = ARMRegisters::r1;
+        static const RegisterID regT2 = ARMRegisters::r2;
+        // Callee preserved
+        static const RegisterID regT3 = ARMRegisters::r7;
+
+        static const RegisterID regS0 = ARMRegisters::S0;
+        // Callee preserved
+        static const RegisterID regS1 = ARMRegisters::S1;
+
+        static const RegisterID regStackPtr = ARMRegisters::sp;
+        static const RegisterID regLink = ARMRegisters::lr;
+
+        static const FPRegisterID fpRegT0 = ARMRegisters::d0;
+        static const FPRegisterID fpRegT1 = ARMRegisters::d1;
+        static const FPRegisterID fpRegT2 = ARMRegisters::d2;
 #else
     #error "JIT not supported on this platform."
 #endif
@@ -257,86 +276,10 @@ namespace JSC {
         // will compress the displacement, and we may not be able to fit a patched offset.
         static const int patchGetByIdDefaultOffset = 256;
 
-#if PLATFORM(X86_64)
-        // These architecture specific value are used to enable patching - see comment on op_put_by_id.
-        static const int patchOffsetPutByIdStructure = 10;
-        static const int patchOffsetPutByIdExternalLoad = 20;
-        static const int patchLengthPutByIdExternalLoad = 4;
-        static const int patchOffsetPutByIdPropertyMapOffset = 31;
-        // These architecture specific value are used to enable patching - see comment on op_get_by_id.
-        static const int patchOffsetGetByIdStructure = 10;
-        static const int patchOffsetGetByIdBranchToSlowCase = 20;
-        static const int patchOffsetGetByIdExternalLoad = 20;
-        static const int patchLengthGetByIdExternalLoad = 4;
-        static const int patchOffsetGetByIdPropertyMapOffset = 31;
-        static const int patchOffsetGetByIdPutResult = 31;
-#if ENABLE(OPCODE_SAMPLING)
-        static const int patchOffsetGetByIdSlowCaseCall = 66;
-#else
-        static const int patchOffsetGetByIdSlowCaseCall = 44;
-#endif
-        static const int patchOffsetOpCallCompareToJump = 9;
-
-        static const int patchOffsetMethodCheckProtoObj = 20;
-        static const int patchOffsetMethodCheckProtoStruct = 30;
-        static const int patchOffsetMethodCheckPutFunction = 50;
-#elif PLATFORM(X86)
-        // These architecture specific value are used to enable patching - see comment on op_put_by_id.
-        static const int patchOffsetPutByIdStructure = 7;
-        static const int patchOffsetPutByIdExternalLoad = 13;
-        static const int patchLengthPutByIdExternalLoad = 3;
-        static const int patchOffsetPutByIdPropertyMapOffset = 22;
-        // These architecture specific value are used to enable patching - see comment on op_get_by_id.
-        static const int patchOffsetGetByIdStructure = 7;
-        static const int patchOffsetGetByIdBranchToSlowCase = 13;
-        static const int patchOffsetGetByIdExternalLoad = 13;
-        static const int patchLengthGetByIdExternalLoad = 3;
-        static const int patchOffsetGetByIdPropertyMapOffset = 22;
-        static const int patchOffsetGetByIdPutResult = 22;
-#if ENABLE(OPCODE_SAMPLING) && USE(JIT_STUB_ARGUMENT_VA_LIST)
-        static const int patchOffsetGetByIdSlowCaseCall = 31;
-#elif ENABLE(OPCODE_SAMPLING)
-        static const int patchOffsetGetByIdSlowCaseCall = 33;
-#elif USE(JIT_STUB_ARGUMENT_VA_LIST)
-        static const int patchOffsetGetByIdSlowCaseCall = 21;
-#else
-        static const int patchOffsetGetByIdSlowCaseCall = 23;
-#endif
-        static const int patchOffsetOpCallCompareToJump = 6;
-
-        static const int patchOffsetMethodCheckProtoObj = 11;
-        static const int patchOffsetMethodCheckProtoStruct = 18;
-        static const int patchOffsetMethodCheckPutFunction = 29;
-#elif PLATFORM_ARM_ARCH(7)
-        // These architecture specific value are used to enable patching - see comment on op_put_by_id.
-        static const int patchOffsetPutByIdStructure = 10;
-        static const int patchOffsetPutByIdExternalLoad = 20;
-        static const int patchLengthPutByIdExternalLoad = 12;
-        static const int patchOffsetPutByIdPropertyMapOffset = 40;
-        // These architecture specific value are used to enable patching - see comment on op_get_by_id.
-        static const int patchOffsetGetByIdStructure = 10;
-        static const int patchOffsetGetByIdBranchToSlowCase = 20;
-        static const int patchOffsetGetByIdExternalLoad = 20;
-        static const int patchLengthGetByIdExternalLoad = 12;
-        static const int patchOffsetGetByIdPropertyMapOffset = 40;
-        static const int patchOffsetGetByIdPutResult = 44;
-#if ENABLE(OPCODE_SAMPLING)
-        static const int patchOffsetGetByIdSlowCaseCall = 0; // FIMXE
-#else
-        static const int patchOffsetGetByIdSlowCaseCall = 28;
-#endif
-        static const int patchOffsetOpCallCompareToJump = 10;
-
-        static const int patchOffsetMethodCheckProtoObj = 18;
-        static const int patchOffsetMethodCheckProtoStruct = 28;
-        static const int patchOffsetMethodCheckPutFunction = 46;
-#endif
-
     public:
-        static void compile(JSGlobalData* globalData, CodeBlock* codeBlock)
+        static JITCode compile(JSGlobalData* globalData, CodeBlock* codeBlock)
         {
-            JIT jit(globalData, codeBlock);
-            jit.privateCompile();
+            return JIT(globalData, codeBlock).privateCompile();
         }
 
         static void compileGetByIdProto(JSGlobalData* globalData, CallFrame* callFrame, CodeBlock* codeBlock, StructureStubInfo* stubInfo, Structure* structure, Structure* prototypeStructure, size_t cachedOffset, ReturnAddressPtr returnAddress)
@@ -373,15 +316,15 @@ namespace JSC {
             jit.privateCompilePutByIdTransition(stubInfo, oldStructure, newStructure, cachedOffset, chain, returnAddress);
         }
 
-        static void compileCTIMachineTrampolines(JSGlobalData* globalData, RefPtr<ExecutablePool>* executablePool, CodePtr* ctiArrayLengthTrampoline, CodePtr* ctiStringLengthTrampoline, CodePtr* ctiVirtualCallPreLink, CodePtr* ctiVirtualCallLink, CodePtr* ctiVirtualCall, CodePtr* ctiNativeCallThunk)
+        static void compileCTIMachineTrampolines(JSGlobalData* globalData, RefPtr<ExecutablePool>* executablePool, CodePtr* ctiStringLengthTrampoline, CodePtr* ctiVirtualCallLink, CodePtr* ctiVirtualCall, CodePtr* ctiNativeCallThunk)
         {
             JIT jit(globalData);
-            jit.privateCompileCTIMachineTrampolines(executablePool, globalData, ctiArrayLengthTrampoline, ctiStringLengthTrampoline, ctiVirtualCallPreLink, ctiVirtualCallLink, ctiVirtualCall, ctiNativeCallThunk);
+            jit.privateCompileCTIMachineTrampolines(executablePool, globalData, ctiStringLengthTrampoline, ctiVirtualCallLink, ctiVirtualCall, ctiNativeCallThunk);
         }
 
         static void patchGetByIdSelf(CodeBlock* codeblock, StructureStubInfo*, Structure*, size_t cachedOffset, ReturnAddressPtr returnAddress);
         static void patchPutByIdReplace(CodeBlock* codeblock, StructureStubInfo*, Structure*, size_t cachedOffset, ReturnAddressPtr returnAddress);
-        static void patchMethodCallProto(CodeBlock* codeblock, MethodCallLinkInfo&, JSFunction*, Structure*, JSObject*);
+        static void patchMethodCallProto(CodeBlock* codeblock, MethodCallLinkInfo&, JSFunction*, Structure*, JSObject*, ReturnAddressPtr);
 
         static void compilePatchGetArrayLength(JSGlobalData* globalData, CodeBlock* codeBlock, ReturnAddressPtr returnAddress)
         {
@@ -409,7 +352,7 @@ namespace JSC {
         void privateCompileMainPass();
         void privateCompileLinkPass();
         void privateCompileSlowCases();
-        void privateCompile();
+        JITCode privateCompile();
         void privateCompileGetByIdProto(StructureStubInfo*, Structure*, Structure* prototypeStructure, size_t cachedOffset, ReturnAddressPtr returnAddress, CallFrame* callFrame);
         void privateCompileGetByIdSelfList(StructureStubInfo*, PolymorphicAccessStructureList*, int, Structure*, size_t cachedOffset);
         void privateCompileGetByIdProtoList(StructureStubInfo*, PolymorphicAccessStructureList*, int, Structure*, Structure* prototypeStructure, size_t cachedOffset, CallFrame* callFrame);
@@ -417,17 +360,14 @@ namespace JSC {
         void privateCompileGetByIdChain(StructureStubInfo*, Structure*, StructureChain*, size_t count, size_t cachedOffset, ReturnAddressPtr returnAddress, CallFrame* callFrame);
         void privateCompilePutByIdTransition(StructureStubInfo*, Structure*, Structure*, size_t cachedOffset, StructureChain*, ReturnAddressPtr returnAddress);
 
-        void privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executablePool, JSGlobalData* data, CodePtr* ctiArrayLengthTrampoline, CodePtr* ctiStringLengthTrampoline, CodePtr* ctiVirtualCallPreLink, CodePtr* ctiVirtualCallLink, CodePtr* ctiVirtualCall, CodePtr* ctiNativeCallThunk);
+        void privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executablePool, JSGlobalData* data, CodePtr* ctiStringLengthTrampoline, CodePtr* ctiVirtualCallLink, CodePtr* ctiVirtualCall, CodePtr* ctiNativeCallThunk);
         void privateCompilePatchGetArrayLength(ReturnAddressPtr returnAddress);
 
         void addSlowCase(Jump);
+        void addSlowCase(JumpList);
         void addJump(Jump, int);
         void emitJumpSlowToHot(Jump, int);
 
-#if ENABLE(JIT_OPTIMIZE_PROPERTY_ACCESS)
-        void compileGetByIdHotPath(int resultVReg, int baseVReg, Identifier* ident, unsigned propertyAccessInstructionIndex);
-        void compileGetByIdSlowCase(int resultVReg, int baseVReg, Identifier* ident, Vector<SlowCaseEntry>::iterator& iter, unsigned propertyAccessInstructionIndex, bool isMethodCheck = false);
-#endif
         void compileOpCall(OpcodeID, Instruction* instruction, unsigned callLinkInfoIndex);
         void compileOpCallVarargs(Instruction* instruction);
         void compileOpCallInitializeCallFrame();
@@ -436,178 +376,106 @@ namespace JSC {
         void compileOpCallSlowCase(Instruction* instruction, Vector<SlowCaseEntry>::iterator& iter, unsigned callLinkInfoIndex, OpcodeID opcodeID);
         void compileOpCallVarargsSlowCase(Instruction* instruction, Vector<SlowCaseEntry>::iterator& iter);
         void compileOpConstructSetupArgs(Instruction*);
+
         enum CompileOpStrictEqType { OpStrictEq, OpNStrictEq };
         void compileOpStrictEq(Instruction* instruction, CompileOpStrictEqType type);
+        bool isOperandConstantImmediateDouble(unsigned src);
+        
+        void emitLoadDouble(unsigned index, FPRegisterID value);
+        void emitLoadInt32ToDouble(unsigned index, FPRegisterID value);
 
-        void compileGetDirectOffset(RegisterID base, RegisterID result, Structure* structure, size_t cachedOffset);
-        void compileGetDirectOffset(JSObject* base, RegisterID temp, RegisterID result, size_t cachedOffset);
-        void compilePutDirectOffset(RegisterID base, RegisterID value, Structure* structure, size_t cachedOffset);
+        Address addressFor(unsigned index, RegisterID base = callFrameRegister);
 
-        // Arithmetic Ops
+#if USE(JSVALUE32_64)
+        Address tagFor(unsigned index, RegisterID base = callFrameRegister);
+        Address payloadFor(unsigned index, RegisterID base = callFrameRegister);
 
-        void emit_op_add(Instruction*);
-        void emit_op_sub(Instruction*);
-        void emit_op_mul(Instruction*);
-        void emit_op_mod(Instruction*);
-        void emit_op_bitand(Instruction*);
-        void emit_op_lshift(Instruction*);
-        void emit_op_rshift(Instruction*);
-        void emit_op_jnless(Instruction*);
-        void emit_op_jnlesseq(Instruction*);
-        void emit_op_pre_inc(Instruction*);
-        void emit_op_pre_dec(Instruction*);
-        void emit_op_post_inc(Instruction*);
-        void emit_op_post_dec(Instruction*);
-        void emitSlow_op_add(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_sub(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_mul(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_mod(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_bitand(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_lshift(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_rshift(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_jnless(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_jnlesseq(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_pre_inc(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_pre_dec(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_post_inc(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_post_dec(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        bool getOperandConstantImmediateInt(unsigned op1, unsigned op2, unsigned& op, int32_t& constant);
 
-        void emit_op_get_by_val(Instruction*);
-        void emit_op_put_by_val(Instruction*);
-        void emit_op_put_by_index(Instruction*);
-        void emit_op_put_getter(Instruction*);
-        void emit_op_put_setter(Instruction*);
-        void emit_op_del_by_id(Instruction*);
+        void emitLoadTag(unsigned index, RegisterID tag);
+        void emitLoadPayload(unsigned index, RegisterID payload);
 
-        void emit_op_mov(Instruction*);
-        void emit_op_end(Instruction*);
-        void emit_op_jmp(Instruction*);
-        void emit_op_loop(Instruction*);
-        void emit_op_loop_if_less(Instruction*);
-        void emit_op_loop_if_lesseq(Instruction*);
-        void emit_op_new_object(Instruction*);
-        void emit_op_put_by_id(Instruction*);
-        void emit_op_get_by_id(Instruction*);
-        void emit_op_instanceof(Instruction*);
-        void emit_op_new_func(Instruction*);
-        void emit_op_call(Instruction*);
-        void emit_op_call_eval(Instruction*);
-        void emit_op_method_check(Instruction*);
-        void emit_op_load_varargs(Instruction*);
-        void emit_op_call_varargs(Instruction*);
-        void emit_op_construct(Instruction*);
-        void emit_op_get_global_var(Instruction*);
-        void emit_op_put_global_var(Instruction*);
-        void emit_op_get_scoped_var(Instruction*);
-        void emit_op_put_scoped_var(Instruction*);
-        void emit_op_tear_off_activation(Instruction*);
-        void emit_op_tear_off_arguments(Instruction*);
-        void emit_op_ret(Instruction*);
-        void emit_op_new_array(Instruction*);
-        void emit_op_resolve(Instruction*);
-        void emit_op_construct_verify(Instruction*);
-        void emit_op_to_primitive(Instruction*);
-        void emit_op_strcat(Instruction*);
-        void emit_op_resolve_func(Instruction*);
-        void emit_op_loop_if_true(Instruction*);
-        void emit_op_resolve_base(Instruction*);
-        void emit_op_resolve_skip(Instruction*);
-        void emit_op_resolve_global(Instruction*);
-        void emit_op_not(Instruction*);
-        void emit_op_jfalse(Instruction*);
-        void emit_op_jeq_null(Instruction*);
-        void emit_op_jneq_null(Instruction*);
-        void emit_op_jneq_ptr(Instruction*);
-        void emit_op_unexpected_load(Instruction*);
-        void emit_op_jsr(Instruction*);
-        void emit_op_sret(Instruction*);
-        void emit_op_eq(Instruction*);
-        void emit_op_bitnot(Instruction*);
-        void emit_op_resolve_with_base(Instruction*);
-        void emit_op_new_func_exp(Instruction*);
-        void emit_op_jtrue(Instruction*);
-        void emit_op_neq(Instruction*);
-        void emit_op_bitxor(Instruction*);
-        void emit_op_new_regexp(Instruction*);
-        void emit_op_bitor(Instruction*);
-        void emit_op_throw(Instruction*);
-        void emit_op_next_pname(Instruction*);
-        void emit_op_push_scope(Instruction*);
-        void emit_op_pop_scope(Instruction*);
-        void emit_op_stricteq(Instruction*);
-        void emit_op_nstricteq(Instruction*);
-        void emit_op_to_jsnumber(Instruction*);
-        void emit_op_push_new_scope(Instruction*);
-        void emit_op_catch(Instruction*);
-        void emit_op_jmp_scopes(Instruction*);
-        void emit_op_switch_imm(Instruction*);
-        void emit_op_switch_char(Instruction*);
-        void emit_op_switch_string(Instruction*);
-        void emit_op_new_error(Instruction*);
-        void emit_op_debug(Instruction*);
-        void emit_op_eq_null(Instruction*);
-        void emit_op_neq_null(Instruction*);
-        void emit_op_enter(Instruction*);
-        void emit_op_enter_with_activation(Instruction*);
-        void emit_op_init_arguments(Instruction*);
-        void emit_op_create_arguments(Instruction*);
-        void emit_op_convert_this(Instruction*);
-        void emit_op_profile_will_call(Instruction*);
-        void emit_op_profile_did_call(Instruction*);
+        void emitLoad(const JSValue& v, RegisterID tag, RegisterID payload);
+        void emitLoad(unsigned index, RegisterID tag, RegisterID payload, RegisterID base = callFrameRegister);
+        void emitLoad2(unsigned index1, RegisterID tag1, RegisterID payload1, unsigned index2, RegisterID tag2, RegisterID payload2);
 
-        void emitSlow_op_convert_this(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_construct_verify(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_to_primitive(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_get_by_val(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_loop_if_less(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_put_by_id(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_get_by_id(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_loop_if_lesseq(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_put_by_val(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_loop_if_true(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_not(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_jfalse(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_bitnot(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_jtrue(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_bitxor(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_bitor(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_eq(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_neq(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_stricteq(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_nstricteq(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_instanceof(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_call(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_call_eval(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_method_check(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_call_varargs(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_construct(Instruction*, Vector<SlowCaseEntry>::iterator&);
-        void emitSlow_op_to_jsnumber(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitStore(unsigned index, RegisterID tag, RegisterID payload, RegisterID base = callFrameRegister);
+        void emitStore(unsigned index, const JSValue constant, RegisterID base = callFrameRegister);
+        void emitStoreInt32(unsigned index, RegisterID payload, bool indexIsInt32 = false);
+        void emitStoreInt32(unsigned index, Imm32 payload, bool indexIsInt32 = false);
+        void emitStoreCell(unsigned index, RegisterID payload, bool indexIsCell = false);
+        void emitStoreBool(unsigned index, RegisterID tag, bool indexIsBool = false);
+        void emitStoreDouble(unsigned index, FPRegisterID value);
 
-#if ENABLE(JIT_OPTIMIZE_ARITHMETIC)
-        void compileBinaryArithOp(OpcodeID, unsigned dst, unsigned src1, unsigned src2, OperandTypes opi);
-        void compileBinaryArithOpSlowCase(OpcodeID, Vector<SlowCaseEntry>::iterator&, unsigned dst, unsigned src1, unsigned src2, OperandTypes opi);
+        bool isLabeled(unsigned bytecodeIndex);
+        void map(unsigned bytecodeIndex, unsigned virtualRegisterIndex, RegisterID tag, RegisterID payload);
+        void unmap(RegisterID);
+        void unmap();
+        bool isMapped(unsigned virtualRegisterIndex);
+        bool getMappedPayload(unsigned virtualRegisterIndex, RegisterID& payload);
+        bool getMappedTag(unsigned virtualRegisterIndex, RegisterID& tag);
+
+        void emitJumpSlowCaseIfNotJSCell(unsigned virtualRegisterIndex);
+        void emitJumpSlowCaseIfNotJSCell(unsigned virtualRegisterIndex, RegisterID tag);
+        void linkSlowCaseIfNotJSCell(Vector<SlowCaseEntry>::iterator&, unsigned virtualRegisterIndex);
+
+#if ENABLE(JIT_OPTIMIZE_PROPERTY_ACCESS)
+        void compileGetByIdHotPath();
+        void compileGetByIdSlowCase(int resultVReg, int baseVReg, Identifier* ident, Vector<SlowCaseEntry>::iterator& iter, bool isMethodCheck = false);
+#endif
+        void compileGetDirectOffset(RegisterID base, RegisterID resultTag, RegisterID resultPayload, Structure* structure, size_t cachedOffset);
+        void compileGetDirectOffset(JSObject* base, RegisterID temp, RegisterID resultTag, RegisterID resultPayload, size_t cachedOffset);
+        void compilePutDirectOffset(RegisterID base, RegisterID valueTag, RegisterID valuePayload, Structure* structure, size_t cachedOffset);
+
+        // Arithmetic opcode helpers
+        void emitAdd32Constant(unsigned dst, unsigned op, int32_t constant, ResultType opType);
+        void emitSub32Constant(unsigned dst, unsigned op, int32_t constant, ResultType opType);
+        void emitBinaryDoubleOp(OpcodeID, unsigned dst, unsigned op1, unsigned op2, OperandTypes, JumpList& notInt32Op1, JumpList& notInt32Op2, bool op1IsInRegisters = true, bool op2IsInRegisters = true);
+
+#if PLATFORM(X86)
+        // These architecture specific value are used to enable patching - see comment on op_put_by_id.
+        static const int patchOffsetPutByIdStructure = 7;
+        static const int patchOffsetPutByIdExternalLoad = 13;
+        static const int patchLengthPutByIdExternalLoad = 3;
+        static const int patchOffsetPutByIdPropertyMapOffset1 = 22;
+        static const int patchOffsetPutByIdPropertyMapOffset2 = 28;
+        // These architecture specific value are used to enable patching - see comment on op_get_by_id.
+        static const int patchOffsetGetByIdStructure = 7;
+        static const int patchOffsetGetByIdBranchToSlowCase = 13;
+        static const int patchOffsetGetByIdExternalLoad = 13;
+        static const int patchLengthGetByIdExternalLoad = 3;
+        static const int patchOffsetGetByIdPropertyMapOffset1 = 22;
+        static const int patchOffsetGetByIdPropertyMapOffset2 = 28;
+        static const int patchOffsetGetByIdPutResult = 28;
+#if ENABLE(OPCODE_SAMPLING) && USE(JIT_STUB_ARGUMENT_VA_LIST)
+        static const int patchOffsetGetByIdSlowCaseCall = 35;
+#elif ENABLE(OPCODE_SAMPLING)
+        static const int patchOffsetGetByIdSlowCaseCall = 37;
+#elif USE(JIT_STUB_ARGUMENT_VA_LIST)
+        static const int patchOffsetGetByIdSlowCaseCall = 25;
+#else
+        static const int patchOffsetGetByIdSlowCaseCall = 27;
+#endif
+        static const int patchOffsetOpCallCompareToJump = 6;
+
+        static const int patchOffsetMethodCheckProtoObj = 11;
+        static const int patchOffsetMethodCheckProtoStruct = 18;
+        static const int patchOffsetMethodCheckPutFunction = 29;
+#else
+#error "JSVALUE32_64 not supported on this platform."
 #endif
 
+#else // USE(JSVALUE32_64)
         void emitGetVirtualRegister(int src, RegisterID dst);
         void emitGetVirtualRegisters(int src1, RegisterID dst1, int src2, RegisterID dst2);
         void emitPutVirtualRegister(unsigned dst, RegisterID from = regT0);
 
-        void emitPutJITStubArg(RegisterID src, unsigned argumentNumber);
-        void emitPutJITStubArgFromVirtualRegister(unsigned src, unsigned argumentNumber, RegisterID scratch);
-        void emitPutJITStubArgConstant(unsigned value, unsigned argumentNumber);
-        void emitPutJITStubArgConstant(void* value, unsigned argumentNumber);
-        void emitGetJITStubArg(unsigned argumentNumber, RegisterID dst);
-
-        void emitInitRegister(unsigned dst);
-
-        void emitPutToCallFrameHeader(RegisterID from, RegisterFile::CallFrameHeaderEntry entry);
-        void emitPutImmediateToCallFrameHeader(void* value, RegisterFile::CallFrameHeaderEntry entry);
-        void emitGetFromCallFrameHeaderPtr(RegisterFile::CallFrameHeaderEntry entry, RegisterID to, RegisterID from = callFrameRegister);
-        void emitGetFromCallFrameHeader32(RegisterFile::CallFrameHeaderEntry entry, RegisterID to, RegisterID from = callFrameRegister);
-
-        JSValue getConstantOperand(unsigned src);
         int32_t getConstantOperandImmediateInt(unsigned src);
-        bool isOperandConstantImmediateInt(unsigned src);
+
+        void emitGetVariableObjectRegister(RegisterID variableObject, int index, RegisterID dst);
+        void emitPutVariableObjectRegister(RegisterID src, RegisterID variableObject, int index);
+        
+        void killLastResultRegister();
 
         Jump emitJumpIfJSCell(RegisterID);
         Jump emitJumpIfBothJSCells(RegisterID, RegisterID, RegisterID);
@@ -615,7 +483,7 @@ namespace JSC {
         Jump emitJumpIfNotJSCell(RegisterID);
         void emitJumpSlowCaseIfNotJSCell(RegisterID);
         void emitJumpSlowCaseIfNotJSCell(RegisterID, int VReg);
-#if USE(ALTERNATE_JSIMMEDIATE)
+#if USE(JSVALUE64)
         JIT::Jump emitJumpIfImmediateNumber(RegisterID);
         JIT::Jump emitJumpIfNotImmediateNumber(RegisterID);
 #else
@@ -629,6 +497,323 @@ namespace JSC {
             return emitJumpIfNotImmediateInteger(reg);
         }
 #endif
+        JIT::Jump emitJumpIfImmediateInteger(RegisterID);
+        JIT::Jump emitJumpIfNotImmediateInteger(RegisterID);
+        JIT::Jump emitJumpIfNotImmediateIntegers(RegisterID, RegisterID, RegisterID);
+        void emitJumpSlowCaseIfNotImmediateInteger(RegisterID);
+        void emitJumpSlowCaseIfNotImmediateNumber(RegisterID);
+        void emitJumpSlowCaseIfNotImmediateIntegers(RegisterID, RegisterID, RegisterID);
+
+#if !USE(JSVALUE64)
+        void emitFastArithDeTagImmediate(RegisterID);
+        Jump emitFastArithDeTagImmediateJumpIfZero(RegisterID);
+#endif
+        void emitFastArithReTagImmediate(RegisterID src, RegisterID dest);
+        void emitFastArithImmToInt(RegisterID);
+        void emitFastArithIntToImmNoCheck(RegisterID src, RegisterID dest);
+
+        void emitTagAsBoolImmediate(RegisterID reg);
+        void compileBinaryArithOp(OpcodeID, unsigned dst, unsigned src1, unsigned src2, OperandTypes opi);
+        void compileBinaryArithOpSlowCase(OpcodeID, Vector<SlowCaseEntry>::iterator&, unsigned dst, unsigned src1, unsigned src2, OperandTypes opi);
+
+#if ENABLE(JIT_OPTIMIZE_PROPERTY_ACCESS)
+        void compileGetByIdHotPath(int resultVReg, int baseVReg, Identifier* ident, unsigned propertyAccessInstructionIndex);
+        void compileGetByIdSlowCase(int resultVReg, int baseVReg, Identifier* ident, Vector<SlowCaseEntry>::iterator& iter, bool isMethodCheck = false);
+#endif
+        void compileGetDirectOffset(RegisterID base, RegisterID result, Structure* structure, size_t cachedOffset);
+        void compileGetDirectOffset(JSObject* base, RegisterID temp, RegisterID result, size_t cachedOffset);
+        void compilePutDirectOffset(RegisterID base, RegisterID value, Structure* structure, size_t cachedOffset);
+
+#if PLATFORM(X86_64)
+        // These architecture specific value are used to enable patching - see comment on op_put_by_id.
+        static const int patchOffsetPutByIdStructure = 10;
+        static const int patchOffsetPutByIdExternalLoad = 20;
+        static const int patchLengthPutByIdExternalLoad = 4;
+        static const int patchOffsetPutByIdPropertyMapOffset = 31;
+        // These architecture specific value are used to enable patching - see comment on op_get_by_id.
+        static const int patchOffsetGetByIdStructure = 10;
+        static const int patchOffsetGetByIdBranchToSlowCase = 20;
+        static const int patchOffsetGetByIdExternalLoad = 20;
+        static const int patchLengthGetByIdExternalLoad = 4;
+        static const int patchOffsetGetByIdPropertyMapOffset = 31;
+        static const int patchOffsetGetByIdPutResult = 31;
+#if ENABLE(OPCODE_SAMPLING)
+        static const int patchOffsetGetByIdSlowCaseCall = 63;
+#else
+        static const int patchOffsetGetByIdSlowCaseCall = 41;
+#endif
+        static const int patchOffsetOpCallCompareToJump = 9;
+
+        static const int patchOffsetMethodCheckProtoObj = 20;
+        static const int patchOffsetMethodCheckProtoStruct = 30;
+        static const int patchOffsetMethodCheckPutFunction = 50;
+#elif PLATFORM(X86)
+        // These architecture specific value are used to enable patching - see comment on op_put_by_id.
+        static const int patchOffsetPutByIdStructure = 7;
+        static const int patchOffsetPutByIdExternalLoad = 13;
+        static const int patchLengthPutByIdExternalLoad = 3;
+        static const int patchOffsetPutByIdPropertyMapOffset = 22;
+        // These architecture specific value are used to enable patching - see comment on op_get_by_id.
+        static const int patchOffsetGetByIdStructure = 7;
+        static const int patchOffsetGetByIdBranchToSlowCase = 13;
+        static const int patchOffsetGetByIdExternalLoad = 13;
+        static const int patchLengthGetByIdExternalLoad = 3;
+        static const int patchOffsetGetByIdPropertyMapOffset = 22;
+        static const int patchOffsetGetByIdPutResult = 22;
+#if ENABLE(OPCODE_SAMPLING) && USE(JIT_STUB_ARGUMENT_VA_LIST)
+        static const int patchOffsetGetByIdSlowCaseCall = 31;
+#elif ENABLE(OPCODE_SAMPLING)
+        static const int patchOffsetGetByIdSlowCaseCall = 33;
+#elif USE(JIT_STUB_ARGUMENT_VA_LIST)
+        static const int patchOffsetGetByIdSlowCaseCall = 21;
+#else
+        static const int patchOffsetGetByIdSlowCaseCall = 23;
+#endif
+        static const int patchOffsetOpCallCompareToJump = 6;
+
+        static const int patchOffsetMethodCheckProtoObj = 11;
+        static const int patchOffsetMethodCheckProtoStruct = 18;
+        static const int patchOffsetMethodCheckPutFunction = 29;
+#elif PLATFORM(ARM_THUMB2)
+        // These architecture specific value are used to enable patching - see comment on op_put_by_id.
+        static const int patchOffsetPutByIdStructure = 10;
+        static const int patchOffsetPutByIdExternalLoad = 20;
+        static const int patchLengthPutByIdExternalLoad = 12;
+        static const int patchOffsetPutByIdPropertyMapOffset = 40;
+        // These architecture specific value are used to enable patching - see comment on op_get_by_id.
+        static const int patchOffsetGetByIdStructure = 10;
+        static const int patchOffsetGetByIdBranchToSlowCase = 20;
+        static const int patchOffsetGetByIdExternalLoad = 20;
+        static const int patchLengthGetByIdExternalLoad = 12;
+        static const int patchOffsetGetByIdPropertyMapOffset = 40;
+        static const int patchOffsetGetByIdPutResult = 44;
+#if ENABLE(OPCODE_SAMPLING)
+        static const int patchOffsetGetByIdSlowCaseCall = 0; // FIMXE
+#else
+        static const int patchOffsetGetByIdSlowCaseCall = 28;
+#endif
+        static const int patchOffsetOpCallCompareToJump = 10;
+
+        static const int patchOffsetMethodCheckProtoObj = 18;
+        static const int patchOffsetMethodCheckProtoStruct = 28;
+        static const int patchOffsetMethodCheckPutFunction = 46;
+#elif PLATFORM(ARM_TRADITIONAL)
+        // These architecture specific value are used to enable patching - see comment on op_put_by_id.
+        static const int patchOffsetPutByIdStructure = 4;
+        static const int patchOffsetPutByIdExternalLoad = 16;
+        static const int patchLengthPutByIdExternalLoad = 4;
+        static const int patchOffsetPutByIdPropertyMapOffset = 20;
+        // These architecture specific value are used to enable patching - see comment on op_get_by_id.
+        static const int patchOffsetGetByIdStructure = 4;
+        static const int patchOffsetGetByIdBranchToSlowCase = 16;
+        static const int patchOffsetGetByIdExternalLoad = 16;
+        static const int patchLengthGetByIdExternalLoad = 4;
+        static const int patchOffsetGetByIdPropertyMapOffset = 20;
+        static const int patchOffsetGetByIdPutResult = 28;
+#if ENABLE(OPCODE_SAMPLING)
+        #error "OPCODE_SAMPLING is not yet supported"
+#else
+        static const int patchOffsetGetByIdSlowCaseCall = 36;
+#endif
+        static const int patchOffsetOpCallCompareToJump = 12;
+
+        static const int patchOffsetMethodCheckProtoObj = 12;
+        static const int patchOffsetMethodCheckProtoStruct = 20;
+        static const int patchOffsetMethodCheckPutFunction = 32;
+#endif
+#endif // USE(JSVALUE32_64)
+
+#if PLATFORM(ARM_TRADITIONAL)
+        // sequenceOpCall
+        static const int sequenceOpCallInstructionSpace = 12;
+        static const int sequenceOpCallConstantSpace = 2;
+        // sequenceMethodCheck
+        static const int sequenceMethodCheckInstructionSpace = 40;
+        static const int sequenceMethodCheckConstantSpace = 6;
+        // sequenceGetByIdHotPath
+        static const int sequenceGetByIdHotPathInstructionSpace = 28;
+        static const int sequenceGetByIdHotPathConstantSpace = 3;
+        // sequenceGetByIdSlowCase
+        static const int sequenceGetByIdSlowCaseInstructionSpace = 40;
+        static const int sequenceGetByIdSlowCaseConstantSpace = 2;
+        // sequencePutById
+        static const int sequencePutByIdInstructionSpace = 28;
+        static const int sequencePutByIdConstantSpace = 3;
+#endif
+
+#if defined(ASSEMBLER_HAS_CONSTANT_POOL) && ASSEMBLER_HAS_CONSTANT_POOL
+#define BEGIN_UNINTERRUPTED_SEQUENCE(name) beginUninterruptedSequence(name ## InstructionSpace, name ## ConstantSpace)
+#define END_UNINTERRUPTED_SEQUENCE(name) endUninterruptedSequence(name ## InstructionSpace, name ## ConstantSpace)
+
+        void beginUninterruptedSequence(int, int);
+        void endUninterruptedSequence(int, int);
+
+#else
+#define BEGIN_UNINTERRUPTED_SEQUENCE(name)
+#define END_UNINTERRUPTED_SEQUENCE(name)
+#endif
+
+        void emit_op_add(Instruction*);
+        void emit_op_bitand(Instruction*);
+        void emit_op_bitnot(Instruction*);
+        void emit_op_bitor(Instruction*);
+        void emit_op_bitxor(Instruction*);
+        void emit_op_call(Instruction*);
+        void emit_op_call_eval(Instruction*);
+        void emit_op_call_varargs(Instruction*);
+        void emit_op_catch(Instruction*);
+        void emit_op_construct(Instruction*);
+        void emit_op_construct_verify(Instruction*);
+        void emit_op_convert_this(Instruction*);
+        void emit_op_create_arguments(Instruction*);
+        void emit_op_debug(Instruction*);
+        void emit_op_del_by_id(Instruction*);
+        void emit_op_div(Instruction*);
+        void emit_op_end(Instruction*);
+        void emit_op_enter(Instruction*);
+        void emit_op_enter_with_activation(Instruction*);
+        void emit_op_eq(Instruction*);
+        void emit_op_eq_null(Instruction*);
+        void emit_op_get_by_id(Instruction*);
+        void emit_op_get_by_val(Instruction*);
+        void emit_op_get_global_var(Instruction*);
+        void emit_op_get_scoped_var(Instruction*);
+        void emit_op_init_arguments(Instruction*);
+        void emit_op_instanceof(Instruction*);
+        void emit_op_jeq_null(Instruction*);
+        void emit_op_jfalse(Instruction*);
+        void emit_op_jmp(Instruction*);
+        void emit_op_jmp_scopes(Instruction*);
+        void emit_op_jneq_null(Instruction*);
+        void emit_op_jneq_ptr(Instruction*);
+        void emit_op_jnless(Instruction*);
+        void emit_op_jnlesseq(Instruction*);
+        void emit_op_jsr(Instruction*);
+        void emit_op_jtrue(Instruction*);
+        void emit_op_load_varargs(Instruction*);
+        void emit_op_loop(Instruction*);
+        void emit_op_loop_if_less(Instruction*);
+        void emit_op_loop_if_lesseq(Instruction*);
+        void emit_op_loop_if_true(Instruction*);
+        void emit_op_lshift(Instruction*);
+        void emit_op_method_check(Instruction*);
+        void emit_op_mod(Instruction*);
+        void emit_op_mov(Instruction*);
+        void emit_op_mul(Instruction*);
+        void emit_op_negate(Instruction*);
+        void emit_op_neq(Instruction*);
+        void emit_op_neq_null(Instruction*);
+        void emit_op_new_array(Instruction*);
+        void emit_op_new_error(Instruction*);
+        void emit_op_new_func(Instruction*);
+        void emit_op_new_func_exp(Instruction*);
+        void emit_op_new_object(Instruction*);
+        void emit_op_new_regexp(Instruction*);
+        void emit_op_next_pname(Instruction*);
+        void emit_op_not(Instruction*);
+        void emit_op_nstricteq(Instruction*);
+        void emit_op_pop_scope(Instruction*);
+        void emit_op_post_dec(Instruction*);
+        void emit_op_post_inc(Instruction*);
+        void emit_op_pre_dec(Instruction*);
+        void emit_op_pre_inc(Instruction*);
+        void emit_op_profile_did_call(Instruction*);
+        void emit_op_profile_will_call(Instruction*);
+        void emit_op_push_new_scope(Instruction*);
+        void emit_op_push_scope(Instruction*);
+        void emit_op_put_by_id(Instruction*);
+        void emit_op_put_by_index(Instruction*);
+        void emit_op_put_by_val(Instruction*);
+        void emit_op_put_getter(Instruction*);
+        void emit_op_put_global_var(Instruction*);
+        void emit_op_put_scoped_var(Instruction*);
+        void emit_op_put_setter(Instruction*);
+        void emit_op_resolve(Instruction*);
+        void emit_op_resolve_base(Instruction*);
+        void emit_op_resolve_global(Instruction*);
+        void emit_op_resolve_skip(Instruction*);
+        void emit_op_resolve_with_base(Instruction*);
+        void emit_op_ret(Instruction*);
+        void emit_op_rshift(Instruction*);
+        void emit_op_sret(Instruction*);
+        void emit_op_strcat(Instruction*);
+        void emit_op_stricteq(Instruction*);
+        void emit_op_sub(Instruction*);
+        void emit_op_switch_char(Instruction*);
+        void emit_op_switch_imm(Instruction*);
+        void emit_op_switch_string(Instruction*);
+        void emit_op_tear_off_activation(Instruction*);
+        void emit_op_tear_off_arguments(Instruction*);
+        void emit_op_throw(Instruction*);
+        void emit_op_to_jsnumber(Instruction*);
+        void emit_op_to_primitive(Instruction*);
+        void emit_op_unexpected_load(Instruction*);
+
+        void emitSlow_op_add(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_bitand(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_bitnot(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_bitor(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_bitxor(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_call(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_call_eval(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_call_varargs(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_construct(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_construct_verify(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_convert_this(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_div(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_eq(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_get_by_id(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_get_by_val(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_instanceof(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_jfalse(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_jnless(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_jnlesseq(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_jtrue(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_loop_if_less(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_loop_if_lesseq(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_loop_if_true(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_lshift(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_method_check(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_mod(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_mul(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_negate(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_neq(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_not(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_nstricteq(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_post_dec(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_post_inc(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_pre_dec(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_pre_inc(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_put_by_id(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_put_by_val(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_resolve_global(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_rshift(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_stricteq(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_sub(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_to_jsnumber(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_to_primitive(Instruction*, Vector<SlowCaseEntry>::iterator&);
+
+        /* These functions are deprecated: Please use JITStubCall instead. */
+        void emitPutJITStubArg(RegisterID src, unsigned argumentNumber);
+#if USE(JSVALUE32_64)
+        void emitPutJITStubArg(RegisterID tag, RegisterID payload, unsigned argumentNumber);
+        void emitPutJITStubArgFromVirtualRegister(unsigned src, unsigned argumentNumber, RegisterID scratch1, RegisterID scratch2);
+#else
+        void emitPutJITStubArgFromVirtualRegister(unsigned src, unsigned argumentNumber, RegisterID scratch);
+#endif
+        void emitPutJITStubArgConstant(unsigned value, unsigned argumentNumber);
+        void emitPutJITStubArgConstant(void* value, unsigned argumentNumber);
+        void emitGetJITStubArg(unsigned argumentNumber, RegisterID dst);
+
+        void emitInitRegister(unsigned dst);
+
+        void emitPutToCallFrameHeader(RegisterID from, RegisterFile::CallFrameHeaderEntry entry);
+        void emitPutImmediateToCallFrameHeader(void* value, RegisterFile::CallFrameHeaderEntry entry);
+        void emitGetFromCallFrameHeaderPtr(RegisterFile::CallFrameHeaderEntry entry, RegisterID to, RegisterID from = callFrameRegister);
+        void emitGetFromCallFrameHeader32(RegisterFile::CallFrameHeaderEntry entry, RegisterID to, RegisterID from = callFrameRegister);
+
+        JSValue getConstantOperand(unsigned src);
+        bool isOperandConstantImmediateInt(unsigned src);
 
         Jump getSlowCase(Vector<SlowCaseEntry>::iterator& iter)
         {
@@ -641,42 +826,21 @@ namespace JSC {
         }
         void linkSlowCaseIfNotJSCell(Vector<SlowCaseEntry>::iterator&, int vReg);
 
-        JIT::Jump emitJumpIfImmediateInteger(RegisterID);
-        JIT::Jump emitJumpIfNotImmediateInteger(RegisterID);
-        JIT::Jump emitJumpIfNotImmediateIntegers(RegisterID, RegisterID, RegisterID);
-        void emitJumpSlowCaseIfNotImmediateInteger(RegisterID);
-        void emitJumpSlowCaseIfNotImmediateIntegers(RegisterID, RegisterID, RegisterID);
-
         Jump checkStructure(RegisterID reg, Structure* structure);
-
-#if !USE(ALTERNATE_JSIMMEDIATE)
-        void emitFastArithDeTagImmediate(RegisterID);
-        Jump emitFastArithDeTagImmediateJumpIfZero(RegisterID);
-#endif
-        void emitFastArithReTagImmediate(RegisterID src, RegisterID dest);
-        void emitFastArithImmToInt(RegisterID);
-        void emitFastArithIntToImmNoCheck(RegisterID src, RegisterID dest);
-
-        void emitTagAsBoolImmediate(RegisterID reg);
 
         void restoreArgumentReference();
         void restoreArgumentReferenceForTrampoline();
 
         Call emitNakedCall(CodePtr function = CodePtr());
+
         void preserveReturnAddressAfterCall(RegisterID);
         void restoreReturnAddressBeforeReturn(RegisterID);
         void restoreReturnAddressBeforeReturn(Address);
 
-        void emitGetVariableObjectRegister(RegisterID variableObject, int index, RegisterID dst);
-        void emitPutVariableObjectRegister(RegisterID src, RegisterID variableObject, int index);
-        
         void emitTimeoutCheck();
 #ifndef NDEBUG
         void printBytecodeOperandTypes(unsigned src1, unsigned src2);
 #endif
-
-        void killLastResultRegister();
-
 
 #if ENABLE(SAMPLING_FLAGS)
         void setSamplingFlag(int32_t);
@@ -713,15 +877,29 @@ namespace JSC {
         Vector<SlowCaseEntry> m_slowCases;
         Vector<SwitchRecord> m_switches;
 
-        int m_lastResultBytecodeRegister;
-        unsigned m_jumpTargetsPosition;
-
         unsigned m_propertyAccessInstructionIndex;
         unsigned m_globalResolveInfoIndex;
         unsigned m_callLinkInfoIndex;
-    } JIT_CLASS_ALIGNMENT;
 
-}
+#if USE(JSVALUE32_64)
+        unsigned m_jumpTargetIndex;
+        unsigned m_mappedBytecodeIndex;
+        unsigned m_mappedVirtualRegisterIndex;
+        RegisterID m_mappedTag;
+        RegisterID m_mappedPayload;
+#else
+        int m_lastResultBytecodeRegister;
+        unsigned m_jumpTargetsPosition;
+#endif
+
+#ifndef NDEBUG
+#if defined(ASSEMBLER_HAS_CONSTANT_POOL) && ASSEMBLER_HAS_CONSTANT_POOL
+        Label m_uninterruptedInstructionSequenceBegin;
+        int m_uninterruptedConstantSequenceBegin;
+#endif
+#endif
+    } JIT_CLASS_ALIGNMENT;
+} // namespace JSC
 
 #endif // ENABLE(JIT)
 

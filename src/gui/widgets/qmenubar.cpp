@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -1072,16 +1072,10 @@ void QMenuBar::paintEvent(QPaintEvent *e)
 */
 void QMenuBar::setVisible(bool visible)
 {
-#if defined(Q_WS_MAC) || defined(Q_OS_WINCE)
+#if defined(Q_WS_MAC) || defined(Q_OS_WINCE) || defined(Q_WS_S60)
     if (isNativeMenuBar())
         return;
 #endif
-#ifdef Q_WS_S60
-    Q_D(QMenuBar);
-    if(d->symbian_menubar)
-        return;
-#endif
-
     QWidget::setVisible(visible);
 }
 
@@ -1094,6 +1088,8 @@ void QMenuBar::mousePressEvent(QMouseEvent *e)
     if(e->button() != Qt::LeftButton)
         return;
 
+    d->mouseDown = true;
+
     QAction *action = d->actionAt(e->pos());
     if (!action || !d->isVisible(action)) {
         d->setCurrentAction(0);
@@ -1103,8 +1099,6 @@ void QMenuBar::mousePressEvent(QMouseEvent *e)
 #endif
         return;
     }
-
-    d->mouseDown = true;
 
     if(d->currentAction == action && d->popupState) {
         if(QMenu *menu = d->activeMenu) {
@@ -1252,9 +1246,10 @@ void QMenuBar::keyPressEvent(QKeyEvent *e)
 void QMenuBar::mouseMoveEvent(QMouseEvent *e)
 {
     Q_D(QMenuBar);
-    d->mouseDown = e->buttons() & Qt::LeftButton;
-    QAction *action = d->actionAt(e->pos());
+    if (!(e->buttons() & Qt::LeftButton))
+        d->mouseDown = false;
     bool popupState = d->popupState || d->mouseDown;
+    QAction *action = d->actionAt(e->pos());
     if ((action && d->isVisible(action)) || !popupState)
         d->setCurrentAction(action, popupState);
 }
@@ -1277,10 +1272,12 @@ void QMenuBar::actionEvent(QActionEvent *e)
 {
     Q_D(QMenuBar);
     d->itemsDirty = true;
-#if defined (Q_WS_MAC) || defined(Q_OS_WINCE)
+#if defined (Q_WS_MAC) || defined(Q_OS_WINCE) || defined(Q_WS_S60)
     if (isNativeMenuBar()) {
 #ifdef Q_WS_MAC
         QMenuBarPrivate::QMacMenuBarPrivate *nativeMenuBar = d->mac_menubar;
+#elif defined(Q_WS_S60)
+        QMenuBarPrivate::QSymbianMenuBarPrivate *nativeMenuBar = d->symbian_menubar;
 #else
         QMenuBarPrivate::QWceMenuBarPrivate *nativeMenuBar = d->wce_menubar;
 #endif
@@ -1292,16 +1289,6 @@ void QMenuBar::actionEvent(QActionEvent *e)
             nativeMenuBar->removeAction(e->action());
         else if(e->type() == QEvent::ActionChanged)
             nativeMenuBar->syncAction(e->action());
-    }
-#endif
-#ifdef Q_WS_S60
-    if(d->symbian_menubar) {
-        if(e->type() == QEvent::ActionAdded)
-            d->symbian_menubar->addAction(e->action(), d->symbian_menubar->findAction(e->before()));
-        else if(e->type() == QEvent::ActionRemoved)
-            d->symbian_menubar->removeAction(e->action());
-        else if(e->type() == QEvent::ActionChanged)
-            d->symbian_menubar->syncAction(e->action());
     }
 #endif
 

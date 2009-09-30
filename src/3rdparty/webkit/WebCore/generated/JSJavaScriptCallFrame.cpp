@@ -86,6 +86,11 @@ bool JSJavaScriptCallFramePrototype::getOwnPropertySlot(ExecState* exec, const I
     return getStaticFunctionSlot<JSObject>(exec, &JSJavaScriptCallFramePrototypeTable, this, propertyName, slot);
 }
 
+bool JSJavaScriptCallFramePrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSJavaScriptCallFramePrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSJavaScriptCallFrame::s_info = { "JavaScriptCallFrame", 0, &JSJavaScriptCallFrameTable, 0 };
 
 JSJavaScriptCallFrame::JSJavaScriptCallFrame(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JavaScriptCallFrame> impl)
@@ -96,7 +101,7 @@ JSJavaScriptCallFrame::JSJavaScriptCallFrame(PassRefPtr<Structure> structure, JS
 
 JSJavaScriptCallFrame::~JSJavaScriptCallFrame()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSJavaScriptCallFrame::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -107,6 +112,11 @@ JSObject* JSJavaScriptCallFrame::createPrototype(ExecState* exec, JSGlobalObject
 bool JSJavaScriptCallFrame::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSJavaScriptCallFrame, Base>(exec, &JSJavaScriptCallFrameTable, this, propertyName, slot);
+}
+
+bool JSJavaScriptCallFrame::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSJavaScriptCallFrame, Base>(exec, &JSJavaScriptCallFrameTable, this, propertyName, descriptor);
 }
 
 JSValue jsJavaScriptCallFrameCaller(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -162,7 +172,7 @@ JSValue jsJavaScriptCallFrameType(ExecState* exec, const Identifier&, const Prop
 JSValue JSC_HOST_CALL jsJavaScriptCallFramePrototypeFunctionEvaluate(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSJavaScriptCallFrame::s_info))
+    if (!thisValue.inherits(&JSJavaScriptCallFrame::s_info))
         return throwError(exec, TypeError);
     JSJavaScriptCallFrame* castedThisObj = static_cast<JSJavaScriptCallFrame*>(asObject(thisValue));
     return castedThisObj->evaluate(exec, args);
@@ -174,7 +184,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, JavaScr
 }
 JavaScriptCallFrame* toJavaScriptCallFrame(JSC::JSValue value)
 {
-    return value.isObject(&JSJavaScriptCallFrame::s_info) ? static_cast<JSJavaScriptCallFrame*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSJavaScriptCallFrame::s_info) ? static_cast<JSJavaScriptCallFrame*>(asObject(value))->impl() : 0;
 }
 
 }

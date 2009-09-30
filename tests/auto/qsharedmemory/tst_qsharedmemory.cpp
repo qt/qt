@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -737,11 +737,12 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
 #endif
     QProcess producer;
     producer.setProcessChannelMode(QProcess::ForwardedChannels);
-    producer.start("./lackey/lackey", arguments);
+    producer.start( QFileInfo("./lackey/lackey.exe").absoluteFilePath(), arguments);
     producer.waitForStarted();
     QVERIFY(producer.error() != QProcess::FailedToStart);
 
     QList<QProcess*> consumers;
+    unsigned int failedProcesses = 0;
     for (int i = 0; i < processes; ++i) {
 #ifndef Q_OS_WINCE
         QStringList arguments = QStringList() << SRCDIR  "lackey/scripts/consumer.js";
@@ -750,8 +751,12 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
 #endif
         QProcess *p = new QProcess;
         p->setProcessChannelMode(QProcess::ForwardedChannels);
-        consumers.append(p);
         p->start("./lackey/lackey", arguments);
+
+        if (p->waitForStarted(2000))
+            consumers.append(p);
+        else
+            ++failedProcesses;
     }
 
     producer.waitForFinished(5000);
@@ -768,6 +773,7 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
         delete consumers.takeFirst();
     }
     QCOMPARE(consumerFailed, false);
+    QCOMPARE(failedProcesses, unsigned int (0));
 }
 
 QTEST_MAIN(tst_QSharedMemory)

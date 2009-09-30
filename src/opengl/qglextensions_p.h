@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -152,6 +152,7 @@ typedef void (APIENTRY *_glActiveStencilFaceEXT) (GLenum );
 // Needed for GL2 engine:
 typedef void (APIENTRY *_glStencilOpSeparate) (GLenum face, GLenum sfail, GLenum dpfail, GLenum dppass);
 typedef void (APIENTRY *_glActiveTexture) (GLenum);
+typedef void (APIENTRY *_glBlendColor) (GLclampf, GLclampf, GLclampf, GLclampf);
 
 
 // EXT_GL_framebuffer_object
@@ -247,6 +248,7 @@ struct QGLExtensionFuncs
         // Extras for GL2 engine:
         qt_glActiveTexture = 0;
         qt_glStencilOpSeparate = 0;
+        qt_glBlendColor = 0;
 
         qt_glActiveStencilFaceEXT = 0;
         qt_glMultiTexCoord4f = 0;
@@ -360,6 +362,8 @@ struct QGLExtensionFuncs
     // Extras needed for GL2 engine:
     _glActiveTexture qt_glActiveTexture;
     _glStencilOpSeparate qt_glStencilOpSeparate;
+    _glBlendColor qt_glBlendColor;
+
 #endif
 
     // FBOs
@@ -574,6 +578,10 @@ struct QGLExtensionFuncs
 #endif
 
 #ifndef GL_VERSION_1_4
+#define GL_CONSTANT_COLOR 0x8001
+#define GL_ONE_MINUS_CONSTANT_COLOR 0x8002
+#define GL_CONSTANT_ALPHA 0x8003
+#define GL_ONE_MINUS_CONSTANT_ALPHA 0x8004
 #define GL_INCR_WRAP 0x8507
 #define GL_DECR_WRAP 0x8508
 #endif
@@ -717,6 +725,7 @@ struct QGLExtensionFuncs
 
 #if !defined(QT_OPENGL_ES_2)
 #define glStencilOpSeparate QGLContextPrivate::extensionFuncs(ctx).qt_glStencilOpSeparate
+#define glBlendColor QGLContextPrivate::extensionFuncs(ctx).qt_glBlendColor
 #endif
 
 #if defined(QT_OPENGL_ES_2)

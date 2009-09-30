@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -46,6 +46,8 @@
 #include <qapplication.h>
 #include <qwidget.h>
 #include <QPushButton>
+
+#include "../../shared/util.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=gui/kernel/qlayout.cpp gui/kernel/qlayout.h
@@ -149,7 +151,7 @@ void tst_QStackedLayout::testCase()
     QStackedLayout onStack(testWidget);
     QStackedLayout *testLayout = &onStack;
     testWidget->setLayout(testLayout);
-    
+
     QSignalSpy spy(testLayout,SIGNAL(currentChanged(int)));
 
     // Nothing in layout
@@ -350,12 +352,16 @@ void tst_QStackedLayout::keepFocusAfterSetCurrent()
 
     stackLayout->setCurrentIndex(0);
 
-    edit1->setFocus();
-    QTest::qWait(250);
-    edit1->activateWindow();
-    QTest::qWait(100);
+    testWidget->show();
+    QApplication::setActiveWindow(testWidget);
+    QTest::qWaitForWindowShown(testWidget);
+    QApplication::processEvents();
 
-    QVERIFY(edit1->hasFocus());
+    edit1->setFocus();
+    edit1->activateWindow();
+    QTest::qWait(25);
+
+    QTRY_VERIFY(edit1->hasFocus());
 
     stackLayout->setCurrentIndex(1);
     QVERIFY(!edit1->hasFocus());

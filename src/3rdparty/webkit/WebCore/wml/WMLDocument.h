@@ -28,11 +28,13 @@
 
 namespace WebCore {
 
+class WMLCardElement;
+
 class WMLDocument : public Document {
 public:
     static PassRefPtr<WMLDocument> create(Frame* frame)
     {
-        return new WMLDocument(frame);
+        return adoptRef(new WMLDocument(frame));
     }
 
     virtual ~WMLDocument();
@@ -40,10 +42,13 @@ public:
     virtual bool isWMLDocument() const { return true; }
     virtual void finishedParsing();
 
-    void initialize();
+    bool initialize(bool aboutToFinishParsing = false);
+
+    WMLCardElement* activeCard() const { return m_activeCard; }
 
 private:
     WMLDocument(Frame*);
+    WMLCardElement* m_activeCard;
 };
 
 WMLPageState* wmlPageStateForDocument(Document*);

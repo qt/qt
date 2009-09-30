@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -59,6 +59,8 @@
 #include <QScrollBar>
 #include <QVBoxLayout>
 #include <QGraphicsEffect>
+
+#include "../../shared/util.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -161,7 +163,6 @@ public slots:
     void init();
 
 private slots:
-    void explicitDeleteAutoFocusProxy();
     void construction();
     void constructionWithParent();
     void destruction();
@@ -244,6 +245,7 @@ private slots:
     void itemClipsToShape();
     void itemClipsChildrenToShape();
     void itemClipsChildrenToShape2();
+    void itemClipsChildrenToShape3();
     void itemClipsTextChildToShape();
     void itemClippingDiscovery();
     void ancestorFlags();
@@ -281,9 +283,7 @@ private slots:
     void hitTestUntransformableItem();
     void hitTestGraphicsEffectItem();
     void focusProxy();
-    void autoDetectFocusProxy();
     void subFocus();
-    void reverseCreateAutoFocusProxy();
     void focusProxyDeletion();
     void negativeZStacksBehindParent();
     void setGraphicsEffect();
@@ -292,6 +292,10 @@ private slots:
     void activate();
     void setActivePanelOnInactiveScene();
     void activationOnShowHide();
+    void moveWhileDeleting();
+    void ensureDirtySceneTransform();
+    void focusScope();
+    void stackBefore();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -302,6 +306,7 @@ private slots:
     void task240400_clickOnTextItem();
     void task243707_addChildBeforeParent();
     void task197802_childrenVisibility();
+    void QTBUG_4233_updateCachedWithSceneRect();
 
 private:
     QList<QGraphicsItem *> paintedItems;
@@ -703,6 +708,9 @@ void tst_QGraphicsItem::flags()
     QCOMPARE(item->flags(), 0);
 
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     scene.addItem(item);
 
     {
@@ -887,6 +895,9 @@ void tst_QGraphicsItem::visible()
     QVERIFY(item->isVisible());
 
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     scene.addItem(item);
     QVERIFY(item->isVisible());
     QCOMPARE(scene.itemAt(0, 0), item);
@@ -1034,6 +1045,9 @@ void tst_QGraphicsItem::enabled()
     item->setEnabled(false);
     item->setFlag(QGraphicsItem::ItemIsFocusable);
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     scene.addItem(item);
     item->setFocus();
     QVERIFY(!item->hasFocus());
@@ -1239,6 +1253,7 @@ void tst_QGraphicsItem::selected()
     QVERIFY(!item->isSelected());
 
     // Click inside and check that it's selected
+    QTest::mouseMove(view.viewport());
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(item->scenePos()));
     QCOMPARE(item->values.size(), 11);
     QCOMPARE(item->values.last(), true);
@@ -1246,7 +1261,6 @@ void tst_QGraphicsItem::selected()
 
     // Click outside and check that it's not selected
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(item->scenePos() + QPointF(item->boundingRect().width(), item->boundingRect().height())));
-
     QCOMPARE(item->values.size(), 12);
     QCOMPARE(item->values.last(), false);
     QVERIFY(!item->isSelected());
@@ -1713,6 +1727,9 @@ void tst_QGraphicsItem::hasFocus()
     QVERIFY(!line->hasFocus());
 
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     scene.addItem(line);
 
     line->setFocus();
@@ -1722,6 +1739,8 @@ void tst_QGraphicsItem::hasFocus()
     QVERIFY(line->hasFocus());
 
     QGraphicsScene scene2;
+    QApplication::sendEvent(&scene2, &activate);
+
     scene2.addItem(line);
     QVERIFY(!line->hasFocus());
 
@@ -1932,7 +1951,7 @@ void tst_QGraphicsItem::zValue()
     QApplication::sendPostedEvents(); //glib workaround
 #endif
 
-    QVERIFY(!_paintedItems.isEmpty());
+    QTRY_VERIFY(!_paintedItems.isEmpty());
     QVERIFY((_paintedItems.size() % 4) == 0);
     for (int i = 0; i < 3; ++i)
         QVERIFY(_paintedItems.at(i)->zValue() < _paintedItems.at(i + 1)->zValue());
@@ -2903,19 +2922,18 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     Q_CHECK_PAINTEVENTS
 
     QGraphicsScene scene;
-    EventTester *tester = new EventTester;
-    scene.addItem(tester);
-    tester->setAcceptsHoverEvents(true);
-
     QGraphicsView view(&scene);
     view.show();
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
+    QTest::qWait(250);
 
-    qApp->processEvents();
-    qApp->processEvents();
+    EventTester *tester = new EventTester;
+    scene.addItem(tester);
+    tester->setAcceptsHoverEvents(true);
 
+    QTRY_COMPARE(tester->repaints, 1);
 
     // Send a hover enter event
     QGraphicsSceneHoverEvent hoverEnterEvent(QEvent::GraphicsSceneHoverEnter);
@@ -2927,7 +2945,7 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     int npaints = tester->repaints;
     qApp->processEvents();
     qApp->processEvents();
-    QCOMPARE(tester->events.size(), 3); // activate + enter + move
+    QCOMPARE(tester->events.size(), 2); //  enter + move
     QCOMPARE(tester->repaints, npaints + 1);
     QCOMPARE(tester->events.last(), QEvent::GraphicsSceneHoverMove);
 
@@ -2941,7 +2959,7 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     qApp->processEvents();
     qApp->processEvents();
 
-    QCOMPARE(tester->events.size(), 4);
+    QCOMPARE(tester->events.size(), 3);
     QCOMPARE(tester->repaints, npaints + 1);
     QCOMPARE(tester->events.last(), QEvent::GraphicsSceneHoverMove);
 
@@ -2955,7 +2973,7 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     qApp->processEvents();
     qApp->processEvents();
 
-    QCOMPARE(tester->events.size(), 5);
+    QCOMPARE(tester->events.size(), 4);
     QCOMPARE(tester->repaints, npaints + 2);
     QCOMPARE(tester->events.last(), QEvent::GraphicsSceneHoverLeave);
 }
@@ -3491,6 +3509,9 @@ void tst_QGraphicsItem::handlesChildEvents2()
 void tst_QGraphicsItem::handlesChildEvents3()
 {
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     ChildEventTester *group2 = new ChildEventTester(QRectF(), 0);
     ChildEventTester *group1 = new ChildEventTester(QRectF(), group2);
     ChildEventTester *leaf = new ChildEventTester(QRectF(), group1);
@@ -4464,8 +4485,13 @@ protected:
 void tst_QGraphicsItem::sceneEventFilter()
 {
     QGraphicsScene scene;
+
     QGraphicsView view(&scene);
     view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+   QTest::qWait(250);
 
     QGraphicsTextItem *text1 = scene.addText(QLatin1String("Text1"));
     QGraphicsTextItem *text2 = scene.addText(QLatin1String("Text2"));
@@ -4582,8 +4608,10 @@ void tst_QGraphicsItem::paint()
     QGraphicsView view(&scene);
 
     view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
     QTest::qWait(250);
-
 #ifdef Q_OS_WIN32
     //we try to switch the desktop: if it fails, we skip the test
     if (::SwitchDesktop( ::GetThreadDesktop( ::GetCurrentThreadId() ) ) == 0) {
@@ -4591,8 +4619,7 @@ void tst_QGraphicsItem::paint()
     }
 #endif
 
-    QVERIFY(paintTester.widget == view.viewport());
-
+    QCOMPARE(paintTester.widget, view.viewport());
 
     view.hide();
 
@@ -5022,6 +5049,37 @@ void tst_QGraphicsItem::itemClipsChildrenToShape2()
     QTest::qWait(5000);
 #endif
 }
+
+void tst_QGraphicsItem::itemClipsChildrenToShape3()
+{
+    // Construct a scene with nested children, each 50 pixels offset from the elder.
+    // Set a top-level clipping flag
+    QGraphicsScene scene;
+    QGraphicsRectItem *parent = scene.addRect( 0, 0, 150, 150 );
+    QGraphicsRectItem *child = scene.addRect( 0, 0, 150, 150 );
+    QGraphicsRectItem *grandchild = scene.addRect( 0, 0, 150, 150 );
+    child->setParentItem(parent);
+    grandchild->setParentItem(child);
+    child->setPos( 50, 50 );
+    grandchild->setPos( 50, 50 );
+    parent->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
+
+    QCOMPARE(scene.itemAt(25,25), (QGraphicsItem *)parent);
+    QCOMPARE(scene.itemAt(75,75), (QGraphicsItem *)child);
+    QCOMPARE(scene.itemAt(125,125), (QGraphicsItem *)grandchild);
+    QCOMPARE(scene.itemAt(175,175), (QGraphicsItem *)0);
+
+    // Move child to fully overlap the parent.  The grandchild should
+    // now occupy two-thirds of the scene
+    child->prepareGeometryChange();
+    child->setPos( 0, 0 );
+
+    QCOMPARE(scene.itemAt(25,25), (QGraphicsItem *)child);
+    QCOMPARE(scene.itemAt(75,75), (QGraphicsItem *)grandchild);
+    QCOMPARE(scene.itemAt(125,125), (QGraphicsItem *)grandchild);
+    QCOMPARE(scene.itemAt(175,175), (QGraphicsItem *)0);
+}
+
 
 void tst_QGraphicsItem::itemClipsTextChildToShape()
 {
@@ -5597,6 +5655,9 @@ void tst_QGraphicsItem::task240400_clickOnTextItem()
     QFETCH(int, textFlags);
 
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     QGraphicsTextItem *item = scene.addText("Hello");
     item->setFlags(QGraphicsItem::GraphicsItemFlags(flags));
     item->setTextInteractionFlags(Qt::TextInteractionFlags(textFlags));
@@ -6432,6 +6493,7 @@ void tst_QGraphicsItem::tabChangesFocus()
 
     QDial *dial1 = new QDial;
     QGraphicsView *view = new QGraphicsView(&scene);
+
     QDial *dial2 = new QDial;
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(dial1);
@@ -6444,6 +6506,8 @@ void tst_QGraphicsItem::tabChangesFocus()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&widget);
 #endif
+    QTest::qWait(250);
+    QVERIFY(scene.isActive());
 
     dial1->setFocus();
     QTest::qWait(125);
@@ -6477,6 +6541,9 @@ void tst_QGraphicsItem::cacheMode()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
+    // Increase the probability of window activation
+    // not causing another repaint of test items.
+    QTest::qWait(250);
 
     EventTester *tester = new EventTester;
     EventTester *testerChild = new EventTester;
@@ -6670,10 +6737,10 @@ void tst_QGraphicsItem::updateCachedItemAfterMove()
     scene.addItem(tester);
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QTest::qWaitForWindowShown(&view);
+
     QTest::qWait(125);
+    QTRY_VERIFY(tester->repaints > 0);
     tester->repaints = 0;
 
     // Move the item, should not cause repaints
@@ -7470,6 +7537,9 @@ void tst_QGraphicsItem::hitTestGraphicsEffectItem()
 void tst_QGraphicsItem::focusProxy()
 {
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     QGraphicsItem *item = scene.addRect(0, 0, 10, 10);
     item->setFlag(QGraphicsItem::ItemIsFocusable);
     QVERIFY(!item->focusProxy());
@@ -7546,31 +7616,6 @@ void tst_QGraphicsItem::focusProxy()
     QCOMPARE(item3->focusProxy(), (QGraphicsItem *)0);
 }
 
-void tst_QGraphicsItem::autoDetectFocusProxy()
-{
-    QGraphicsScene scene;
-    QGraphicsItem *item = scene.addRect(0, 0, 10, 10);
-    item->setFlag(QGraphicsItem::ItemIsFocusable);
-
-    QGraphicsItem *item2 = scene.addRect(0, 0, 10, 10);
-    item2->setParentItem(item);
-    item2->setFlag(QGraphicsItem::ItemIsFocusable);
-
-    QGraphicsItem *item3 = scene.addRect(0, 0, 10, 10);
-    item3->setParentItem(item2);
-    item3->setFlag(QGraphicsItem::ItemIsFocusable);
-
-    item->setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
-    QCOMPARE(item->focusProxy(), (QGraphicsItem *)0);
-
-    item2->setFocus();
-    QCOMPARE(item->focusProxy(), item2);
-    item3->setFocus();
-    QCOMPARE(item->focusProxy(), item3);
-    item3->clearFocus();
-    QCOMPARE(item->focusProxy(), item3);
-}
-
 void tst_QGraphicsItem::subFocus()
 {
     // Construct a text item that's not part of a scene (yet)
@@ -7593,6 +7638,9 @@ void tst_QGraphicsItem::subFocus()
     // Add both items to a scene and check that it's text that
     // got input focus.
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     scene.addItem(text);
     scene.addItem(text2);
     QVERIFY(text->hasFocus());
@@ -7601,18 +7649,16 @@ void tst_QGraphicsItem::subFocus()
     text2->setData(0, "text2");
 
     // Remove text2 and set subfocus on it. Then readd. Reparent it onto the
-    // other item and see that although it becomes text's focus
-    // item, it does not immediately gain input focus.
+    // other item and see that it gains input focus.
     scene.removeItem(text2);
     text2->setFocus();
     scene.addItem(text2);
     QCOMPARE(text2->focusItem(), (QGraphicsItem *)text2);
     text2->setParentItem(text);
-    qDebug() << text->data(0).toString() << (void*)(QGraphicsItem *)text;
-    qDebug() << text2->data(0).toString() << (void*)(QGraphicsItem *)text2;
     QCOMPARE(text->focusItem(), (QGraphicsItem *)text2);
-    QVERIFY(text->hasFocus());
-    QVERIFY(!text2->hasFocus());
+    QCOMPARE(text2->focusItem(), (QGraphicsItem *)text2);
+    QVERIFY(!text->hasFocus());
+    QVERIFY(text2->hasFocus());
 
     // Remove both items from the scene, restore subfocus and
     // readd them. Now the subfocus should kick in and give
@@ -7628,49 +7674,38 @@ void tst_QGraphicsItem::subFocus()
     // Hiding and showing text should pass focus to text2.
     QCOMPARE(text->focusItem(), (QGraphicsItem *)text2);
     QVERIFY(text2->hasFocus());
-}
 
-void tst_QGraphicsItem::reverseCreateAutoFocusProxy()
-{
-    QGraphicsTextItem *text = new QGraphicsTextItem;
-    text->setTextInteractionFlags(Qt::TextEditorInteraction);
-    text->setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
+    // Subfocus should repropagate to root when reparenting.
+    QGraphicsRectItem *rect = new QGraphicsRectItem;
+    QGraphicsRectItem *rect2 = new QGraphicsRectItem(rect);
+    QGraphicsRectItem *rect3 = new QGraphicsRectItem(rect2);
+    rect3->setFlag(QGraphicsItem::ItemIsFocusable);
 
-    QGraphicsTextItem *text2 = new QGraphicsTextItem;
-    text2->setTextInteractionFlags(Qt::TextEditorInteraction);
-    text2->setFocus();
-    QVERIFY(!text2->hasFocus());
-    QCOMPARE(text->focusProxy(), (QGraphicsItem *)0);
-    text2->setParentItem(text);
-    QCOMPARE(text->focusProxy(), (QGraphicsItem *)text2);
-    QCOMPARE(text->focusItem(), (QGraphicsItem *)text2);
+    text->setData(0, "text");
+    text2->setData(0, "text2");
+    rect->setData(0, "rect");
+    rect2->setData(0, "rect2");
+    rect3->setData(0, "rect3");
 
-    QGraphicsScene scene;
-    scene.addItem(text);
-    QVERIFY(text2->hasFocus());
-}
+    rect3->setFocus();
+    QVERIFY(!rect3->hasFocus());
+    QCOMPARE(rect->focusItem(), (QGraphicsItem *)rect3);
+    QCOMPARE(rect2->focusItem(), (QGraphicsItem *)rect3);
+    QCOMPARE(rect3->focusItem(), (QGraphicsItem *)rect3);
+    rect->setParentItem(text2);
+    QCOMPARE(text->focusItem(), (QGraphicsItem *)rect3);
+    QCOMPARE(text2->focusItem(), (QGraphicsItem *)rect3);
+    QCOMPARE(rect->focusItem(), (QGraphicsItem *)rect3);
+    QCOMPARE(rect2->focusItem(), (QGraphicsItem *)rect3);
+    QCOMPARE(rect3->focusItem(), (QGraphicsItem *)rect3);
+    QVERIFY(!rect->hasFocus());
+    QVERIFY(!rect2->hasFocus());
+    QVERIFY(rect3->hasFocus());
 
-void tst_QGraphicsItem::explicitDeleteAutoFocusProxy()
-{
-    QGraphicsTextItem *text = new QGraphicsTextItem;
-    text->setTextInteractionFlags(Qt::TextEditorInteraction);
-    text->setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
-
-    QGraphicsTextItem *text2 = new QGraphicsTextItem;
-    text2->setTextInteractionFlags(Qt::TextEditorInteraction);
-    text2->setFocus();
-    QVERIFY(!text2->hasFocus());
-    QCOMPARE(text->focusProxy(), (QGraphicsItem *)0);
-    text2->setParentItem(text);
-    QCOMPARE(text->focusProxy(), (QGraphicsItem *)text2);
-    QCOMPARE(text->focusItem(), (QGraphicsItem *)text2);
-
-    QGraphicsScene scene;
-    scene.addItem(text);
-    QVERIFY(text2->hasFocus());
-
-    delete text2;
-    QCOMPARE(text->focusProxy(), (QGraphicsItem *)0);
+    delete rect2;
+    QCOMPARE(text->focusItem(), (QGraphicsItem *)0);
+    QCOMPARE(text2->focusItem(), (QGraphicsItem *)0);
+    QCOMPARE(rect->focusItem(), (QGraphicsItem *)0);
 }
 
 void tst_QGraphicsItem::focusProxyDeletion()
@@ -7822,7 +7857,7 @@ void tst_QGraphicsItem::panel()
 
     QEvent activate(QEvent::WindowActivate);
     QEvent deactivate(QEvent::WindowDeactivate);
-    
+
     QApplication::sendEvent(&scene, &activate);
 
     // No previous activation, so the scene is active.
@@ -8101,6 +8136,360 @@ void tst_QGraphicsItem::activationOnShowHide()
     rootPanel->hide();
     QVERIFY(!rootPanel->isActive());
     QVERIFY(otherItem->isActive());
+}
+
+class MoveWhileDying : public QGraphicsRectItem
+{
+public:
+    MoveWhileDying(QGraphicsItem *parent = 0)
+        : QGraphicsRectItem(parent)
+    { }
+    ~MoveWhileDying()
+    {
+        foreach (QGraphicsItem *c, childItems()) {
+            foreach (QGraphicsItem *cc, c->childItems()) {
+                cc->moveBy(10, 10);
+            }
+            c->moveBy(10, 10);
+        }
+        if (QGraphicsItem *p = parentItem()) { p->moveBy(10, 10); }
+    }
+};
+
+void tst_QGraphicsItem::moveWhileDeleting()
+{
+    QGraphicsScene scene;
+    QGraphicsRectItem *rect = new QGraphicsRectItem;
+    MoveWhileDying *silly = new MoveWhileDying(rect);
+    QGraphicsRectItem *child = new QGraphicsRectItem(silly);
+    scene.addItem(rect);
+    delete rect; // don't crash!
+
+    rect = new QGraphicsRectItem;
+    silly = new MoveWhileDying(rect);
+    child = new QGraphicsRectItem(silly);
+
+    QGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(125);
+
+    delete rect;
+
+    rect = new QGraphicsRectItem;
+    rect->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
+    silly = new MoveWhileDying(rect);
+    child = new QGraphicsRectItem(silly);
+
+    QTest::qWait(125);
+
+    delete rect;
+
+    rect = new MoveWhileDying;
+    rect->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
+    child = new QGraphicsRectItem(rect);
+    silly = new MoveWhileDying(child);
+
+    QTest::qWait(125);
+
+    delete rect;
+}
+
+class MyRectItem : public QGraphicsWidget
+{
+    Q_OBJECT
+public:
+    MyRectItem(QGraphicsItem *parent = 0) : QGraphicsWidget(parent)
+    {
+
+    }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+    {
+        painter->setBrush(brush);
+        painter->drawRect(boundingRect());
+    }
+    void move()
+    {
+        setPos(-100,-100);
+        topLevel->collidingItems(Qt::IntersectsItemBoundingRect);
+    }
+public:
+    QGraphicsItem *topLevel;
+    QBrush brush;
+};
+
+
+void tst_QGraphicsItem::ensureDirtySceneTransform()
+{
+    QGraphicsScene scene;
+
+    MyRectItem *topLevel = new MyRectItem;
+    topLevel->setGeometry(0, 0, 100, 100);
+    topLevel->setPos(-50, -50);
+    topLevel->brush = QBrush(QColor(Qt::black));
+    scene.addItem(topLevel);
+
+    MyRectItem *parent = new MyRectItem;
+    parent->topLevel = topLevel;
+    parent->setGeometry(0, 0, 100, 100);
+    parent->setPos(0, 0);
+    parent->brush = QBrush(QColor(Qt::magenta));
+    parent->setObjectName("parent");
+    scene.addItem(parent);
+
+    MyRectItem *child = new MyRectItem(parent);
+    child->setGeometry(0, 0, 80, 80);
+    child->setPos(10, 10);
+    child->setObjectName("child");
+    child->brush = QBrush(QColor(Qt::blue));
+
+    MyRectItem *child2 = new MyRectItem(parent);
+    child2->setGeometry(0, 0, 80, 80);
+    child2->setPos(15, 15);
+    child2->setObjectName("child2");
+    child2->brush = QBrush(QColor(Qt::green));
+
+    MyRectItem *child3 = new MyRectItem(parent);
+    child3->setGeometry(0, 0, 80, 80);
+    child3->setPos(20, 20);
+    child3->setObjectName("child3");
+    child3->brush = QBrush(QColor(Qt::gray));
+
+    QGraphicsView view(&scene);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), &view);
+
+    //We move the parent
+    parent->move();
+    QApplication::processEvents();
+
+    //We check if all items moved
+    QCOMPARE(child->pos(), QPointF(10, 10));
+    QCOMPARE(child2->pos(), QPointF(15, 15));
+    QCOMPARE(child3->pos(), QPointF(20, 20));
+
+    QCOMPARE(child->sceneBoundingRect(), QRectF(-90, -90, 80, 80));
+    QCOMPARE(child2->sceneBoundingRect(), QRectF(-85, -85, 80, 80));
+    QCOMPARE(child3->sceneBoundingRect(), QRectF(-80, -80, 80, 80));
+
+    QCOMPARE(child->sceneTransform(), QTransform::fromTranslate(-90, -90));
+    QCOMPARE(child2->sceneTransform(), QTransform::fromTranslate(-85, -85));
+    QCOMPARE(child3->sceneTransform(), QTransform::fromTranslate(-80, -80));
+}
+
+void tst_QGraphicsItem::focusScope()
+{
+    // ItemIsFocusScope is an internal feature (for now).
+    QGraphicsScene scene;
+
+    QGraphicsRectItem *scope3 = new QGraphicsRectItem;
+    scope3->setData(0, "scope3");
+    scope3->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemIsFocusScope);
+    scope3->setFocus();
+    QVERIFY(!scope3->focusScopeItem());
+    QCOMPARE(scope3->focusItem(), (QGraphicsItem *)scope3);
+
+    QGraphicsRectItem *scope2 = new QGraphicsRectItem;
+    scope2->setData(0, "scope2");
+    scope2->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemIsFocusScope);
+    scope2->setFocus();
+    QVERIFY(!scope2->focusScopeItem());
+    scope3->setParentItem(scope2);
+    QCOMPARE(scope2->focusScopeItem(), (QGraphicsItem *)scope3);
+    QCOMPARE(scope2->focusItem(), (QGraphicsItem *)scope2);
+
+    QGraphicsRectItem *scope1 = new QGraphicsRectItem;
+    scope1->setData(0, "scope1");
+    scope1->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemIsFocusScope);
+    scope1->setFocus();
+    QVERIFY(!scope1->focusScopeItem());
+    scope2->setParentItem(scope1);
+
+    QCOMPARE(scope1->focusItem(), (QGraphicsItem *)scope1);
+    QCOMPARE(scope2->focusItem(), (QGraphicsItem *)0);
+    QCOMPARE(scope3->focusItem(), (QGraphicsItem *)0);
+    QCOMPARE(scope1->focusScopeItem(), (QGraphicsItem *)scope2);
+    QCOMPARE(scope2->focusScopeItem(), (QGraphicsItem *)scope3);
+    QCOMPARE(scope3->focusScopeItem(), (QGraphicsItem *)0);
+
+    scene.addItem(scope1);
+
+    QEvent windowActivate(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &windowActivate);
+    scene.setFocus();
+
+    QCOMPARE(scope1->focusItem(), (QGraphicsItem *)scope3);
+    QCOMPARE(scope2->focusItem(), (QGraphicsItem *)scope3);
+    QCOMPARE(scope3->focusItem(), (QGraphicsItem *)scope3);
+    QCOMPARE(scope1->focusScopeItem(), (QGraphicsItem *)scope2);
+    QCOMPARE(scope2->focusScopeItem(), (QGraphicsItem *)scope3);
+    QCOMPARE(scope3->focusScopeItem(), (QGraphicsItem *)0);
+
+    QVERIFY(scope3->hasFocus());
+
+    scope3->hide();
+    QVERIFY(scope2->hasFocus());
+    scope2->hide();
+    QVERIFY(scope1->hasFocus());
+    scope2->show();
+    QVERIFY(scope2->hasFocus());
+    scope3->show();
+    QVERIFY(scope3->hasFocus());
+    scope1->hide();
+    QVERIFY(!scope3->hasFocus());
+    scope1->show();
+    QVERIFY(scope3->hasFocus());
+    scope3->clearFocus();
+    QVERIFY(scope2->hasFocus());
+    scope2->clearFocus();
+    QVERIFY(scope1->hasFocus());
+    scope2->hide();
+    scope2->show();
+    QVERIFY(!scope2->hasFocus());
+    QVERIFY(scope3->hasFocus());
+
+    QGraphicsRectItem *rect4 = new QGraphicsRectItem;
+    rect4->setData(0, "rect4");
+    rect4->setParentItem(scope3);
+
+    QGraphicsRectItem *rect5 = new QGraphicsRectItem;
+    rect5->setData(0, "rect5");
+    rect5->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemIsFocusScope);
+    rect5->setFocus();
+    rect5->setParentItem(rect4);
+    QCOMPARE(scope3->focusScopeItem(), (QGraphicsItem *)rect5);
+    QVERIFY(!rect5->hasFocus());
+
+    rect4->setParentItem(0);
+    QCOMPARE(scope3->focusScopeItem(), (QGraphicsItem *)0);
+    QVERIFY(scope3->hasFocus());
+
+    QGraphicsRectItem *rectA = new QGraphicsRectItem;
+    QGraphicsRectItem *scopeA = new QGraphicsRectItem(rectA);
+    scopeA->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemIsFocusScope);
+    scopeA->setFocus();
+    QGraphicsRectItem *scopeB = new QGraphicsRectItem(scopeA);
+    scopeB->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemIsFocusScope);
+    scopeB->setFocus();
+
+    scene.addItem(rectA);
+    QVERIFY(!rect5->hasFocus());
+    QVERIFY(!scopeB->hasFocus());
+
+    scopeA->setFocus();
+    QVERIFY(scopeB->hasFocus());
+    QCOMPARE(scopeB->focusItem(), (QGraphicsItem *)scopeB);
+}
+
+void tst_QGraphicsItem::stackBefore()
+{
+    QGraphicsRectItem parent;
+    QGraphicsRectItem *child1 = new QGraphicsRectItem(QRectF(0, 0, 5, 5), &parent);
+    QGraphicsRectItem *child2 = new QGraphicsRectItem(QRectF(0, 0, 5, 5), &parent);
+    QGraphicsRectItem *child3 = new QGraphicsRectItem(QRectF(0, 0, 5, 5), &parent);
+    QGraphicsRectItem *child4 = new QGraphicsRectItem(QRectF(0, 0, 5, 5), &parent);
+    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child1 << child2 << child3 << child4));
+    child1->setData(0, "child1");
+    child2->setData(0, "child2");
+    child3->setData(0, "child3");
+    child4->setData(0, "child4");
+
+    // Remove and append
+    child2->setParentItem(0);
+    child2->setParentItem(&parent);
+    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child1 << child3 << child4 << child2));
+
+    // Move child2 before child1
+    child2->stackBefore(child1);
+    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
+    child2->stackBefore(child2);
+    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
+    child1->setZValue(1);
+    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child3 << child4 << child1));
+    child1->stackBefore(child2); // no effect
+    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child3 << child4 << child1));
+    child1->setZValue(0);
+    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
+    child4->stackBefore(child1);
+    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child4 << child1 << child3));
+    child4->setZValue(1);
+    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
+    child3->stackBefore(child1);
+    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child3 << child1 << child4));
+    child4->setZValue(0);
+    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child4 << child3 << child1));
+
+    // Make them all toplevels
+    child1->setParentItem(0);
+    child2->setParentItem(0);
+    child3->setParentItem(0);
+    child4->setParentItem(0);
+
+    QGraphicsScene scene;
+    scene.addItem(child1);
+    scene.addItem(child2);
+    scene.addItem(child3);
+    scene.addItem(child4);
+    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder),
+             (QList<QGraphicsItem *>() << child1 << child2 << child3 << child4));
+
+    // Remove and append
+    scene.removeItem(child2);
+    scene.addItem(child2);
+    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child1 << child3 << child4 << child2));
+
+    // Move child2 before child1
+    child2->stackBefore(child1);
+    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
+    child2->stackBefore(child2);
+    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
+    child1->setZValue(1);
+    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child3 << child4 << child1));
+    child1->stackBefore(child2); // no effect
+    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child3 << child4 << child1));
+    child1->setZValue(0);
+    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
+    child4->stackBefore(child1);
+    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child4 << child1 << child3));
+    child4->setZValue(1);
+    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
+    child3->stackBefore(child1);
+    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child3 << child1 << child4));
+    child4->setZValue(0);
+    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child4 << child3 << child1));
+}
+
+void tst_QGraphicsItem::QTBUG_4233_updateCachedWithSceneRect()
+{
+    EventTester *tester = new EventTester;
+    tester->setCacheMode(QGraphicsItem::ItemCoordinateCache);
+
+    QGraphicsScene scene;
+    scene.addItem(tester);
+    scene.setSceneRect(-100, -100, 200, 200); // contains the tester item
+
+    QGraphicsView view(&scene);
+    view.show();
+    QTRY_COMPARE(QApplication::activeWindow(), (QWidget *)&view);
+
+    QCOMPARE(tester->repaints, 1);
+
+    scene.update(); // triggers "updateAll" optimization
+    qApp->processEvents();
+    qApp->processEvents(); // in 4.6 only one processEvents is necessary
+
+    QCOMPARE(tester->repaints, 1);
+
+    scene.update(); // triggers "updateAll" optimization
+    tester->update();
+    qApp->processEvents();
+    qApp->processEvents(); // in 4.6 only one processEvents is necessary
+
+    QCOMPARE(tester->repaints, 2);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

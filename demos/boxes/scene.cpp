@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the demonstration applications of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -718,8 +718,6 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
         glPushMatrix();
         QMatrix4x4 m;
         m.rotate(m_trackBalls[1].rotation());
-        m = m.transposed();
-
         multMatrix(m);
 
         glRotatef(360.0f * i / m_programs.size(), 0.0f, 0.0f, 1.0f);
@@ -753,7 +751,6 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
     if (-1 != excludeBox) {
         QMatrix4x4 m;
         m.rotate(m_trackBalls[0].rotation());
-        m = m.transposed();
         multMatrix(m);
 
         if (glActiveTexture) {
@@ -880,7 +877,7 @@ void Scene::renderCubemaps()
 
             GLRenderTargetCube::getViewMatrix(mat, face);
             QVector4D v = QVector4D(-center.x(), -center.y(), -center.z(), 1.0);
-            mat.setColumn(3, v * mat);
+            mat.setColumn(3, mat * v);
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             renderBoxes(mat, i);

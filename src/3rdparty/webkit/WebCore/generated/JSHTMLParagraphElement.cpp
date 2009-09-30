@@ -70,6 +70,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLParagraphElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -84,6 +85,11 @@ const ClassInfo JSHTMLParagraphElementConstructor::s_info = { "HTMLParagraphElem
 bool JSHTMLParagraphElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLParagraphElementConstructor, DOMObject>(exec, &JSHTMLParagraphElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLParagraphElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLParagraphElementConstructor, DOMObject>(exec, &JSHTMLParagraphElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -122,6 +128,11 @@ JSObject* JSHTMLParagraphElement::createPrototype(ExecState* exec, JSGlobalObjec
 bool JSHTMLParagraphElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLParagraphElement, Base>(exec, &JSHTMLParagraphElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLParagraphElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLParagraphElement, Base>(exec, &JSHTMLParagraphElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLParagraphElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)

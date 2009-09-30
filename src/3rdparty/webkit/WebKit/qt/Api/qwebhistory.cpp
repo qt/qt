@@ -20,6 +20,7 @@
 #include "config.h"
 #include "qwebhistory.h"
 #include "qwebhistory_p.h"
+#include "qwebframe_p.h"
 
 #include "PlatformString.h"
 #include "Image.h"
@@ -248,17 +249,27 @@ QWebHistory::~QWebHistory()
 */
 void QWebHistory::clear()
 {
-    RefPtr<WebCore::HistoryItem> current = d->lst->currentItem();
-    int capacity = d->lst->capacity();
-    d->lst->setCapacity(0);
+    //shortcut to private BackForwardList
+    WebCore::BackForwardList* lst = d->lst;
 
-    WebCore::Page* page = d->lst->page();
+    //clear visited links
+    WebCore::Page* page = lst->page();
     if (page && page->groupPtr())
         page->groupPtr()->removeVisitedLinks();
 
-    d->lst->setCapacity(capacity);
-    d->lst->addItem(current.get());
-    d->lst->goToItem(current.get());
+    //if count() == 0 then just return
+    if (!lst->entries().size())
+        return;
+
+    RefPtr<WebCore::HistoryItem> current = lst->currentItem();
+    int capacity = lst->capacity();
+    lst->setCapacity(0);
+
+    lst->setCapacity(capacity);   //revert capacity
+    lst->addItem(current.get());  //insert old current item
+    lst->goToItem(current.get()); //and set it as current again
+
+    d->page()->updateNavigationActions();
 }
 
 /*!
@@ -271,7 +282,7 @@ QList<QWebHistoryItem> QWebHistory::items() const
     const WebCore::HistoryItemVector &items = d->lst->entries();
 
     QList<QWebHistoryItem> ret;
-    for (int i = 0; i < items.size(); ++i) {
+    for (unsigned i = 0; i < items.size(); ++i) {
         QWebHistoryItemPrivate *priv = new QWebHistoryItemPrivate(items[i].get());
         ret.append(QWebHistoryItem(priv));
     }
@@ -290,7 +301,7 @@ QList<QWebHistoryItem> QWebHistory::backItems(int maxItems) const
     d->lst->backListWithLimit(maxItems, items);
 
     QList<QWebHistoryItem> ret;
-    for (int i = 0; i < items.size(); ++i) {
+    for (unsigned i = 0; i < items.size(); ++i) {
         QWebHistoryItemPrivate *priv = new QWebHistoryItemPrivate(items[i].get());
         ret.append(QWebHistoryItem(priv));
     }
@@ -309,7 +320,7 @@ QList<QWebHistoryItem> QWebHistory::forwardItems(int maxItems) const
     d->lst->forwardListWithLimit(maxItems, items);
 
     QList<QWebHistoryItem> ret;
-    for (int i = 0; i < items.size(); ++i) {
+    for (unsigned i = 0; i < items.size(); ++i) {
         QWebHistoryItemPrivate *priv = new QWebHistoryItemPrivate(items[i].get());
         ret.append(QWebHistoryItem(priv));
     }
@@ -345,9 +356,11 @@ bool QWebHistory::canGoForward() const
 */
 void QWebHistory::back()
 {
-    d->lst->goBack();
-    WebCore::Page* page = d->lst->page();
-    page->goToItem(currentItem().d->item, WebCore::FrameLoadTypeIndexedBackForward);
+    if (canGoBack()) {
+        d->lst->goBack();
+        WebCore::Page* page = d->lst->page();
+        page->goToItem(currentItem().d->item, WebCore::FrameLoadTypeIndexedBackForward);
+    }
 }
 
 /*!
@@ -358,9 +371,11 @@ void QWebHistory::back()
 */
 void QWebHistory::forward()
 {
-    d->lst->goForward();
-    WebCore::Page* page = d->lst->page();
-    page->goToItem(currentItem().d->item, WebCore::FrameLoadTypeIndexedBackForward);
+    if (canGoForward()) {
+        d->lst->goForward();
+        WebCore::Page* page = d->lst->page();
+        page->goToItem(currentItem().d->item, WebCore::FrameLoadTypeIndexedBackForward);
+    }
 }
 
 /*!
@@ -508,6 +523,8 @@ bool QWebHistory::restoreState(const QByteArray& buffer)
     default: {} // result is false;
     }
 
+    d->page()->updateNavigationActions();
+
     return result;
 };
 
@@ -533,7 +550,7 @@ QByteArray QWebHistory::saveState(HistoryStateVersion version) const
         stream << count() << currentItemIndex();
 
         const WebCore::HistoryItemVector &items = d->lst->entries();
-        for (int i = 0; i < items.size(); i++)
+        for (unsigned i = 0; i < items.size(); i++)
             items[i].get()->saveState(stream, version);
 
         if (stream.status() != QDataStream::Ok)
@@ -553,8 +570,11 @@ QByteArray QWebHistory::saveState(HistoryStateVersion version) const
   \fn QDataStream& operator<<(QDataStream& stream, const QWebHistory& history)
   \relates QWebHistory
 
-  Saves the given \a history into the specified \a stream. This is a convenience function
-  and is equivalent to calling the saveState() method.
+  \brief The operator<< function streams a history into a data stream.
+
+  It saves the \a history into the specified \a stream. This is a
+  convenience function and is equivalent to calling the saveState()
+  method.
 
   \sa QWebHistory::saveState()
 */
@@ -568,6 +588,8 @@ QDataStream& operator<<(QDataStream& stream, const QWebHistory& history)
   \fn QDataStream& operator>>(QDataStream& stream, QWebHistory& history)
   \relates QWebHistory
   \since 4.6
+
+  \brief The operator>> function loads a history from a data stream.
 
   Loads a QWebHistory from the specified \a stream into the given \a history.
   This is a convenience function and it is equivalent to calling the restoreState()
@@ -584,4 +606,7 @@ QDataStream& operator>>(QDataStream& stream, QWebHistory& history)
     return stream;
 }
 
-
+QWebPagePrivate* QWebHistoryPrivate::page()
+{
+    return QWebFramePrivate::kit(lst->page()->mainFrame())->page()->handle();
+}

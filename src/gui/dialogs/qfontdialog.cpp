@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -64,6 +64,10 @@
 #include <qvalidator.h>
 #include <private/qdialog_p.h>
 #include <private/qfont_p.h>
+
+#if defined(Q_WS_S60)
+#include <QtGui/qdesktopwidget.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -312,6 +316,8 @@ void QFontDialogPrivate::init()
 
 #if defined(Q_WS_WINCE)
     q->resize(180, 120);
+#elif defined(Q_WS_S60)
+    q->resize(QApplication::desktop()->availableGeometry(QCursor::pos()).size());
 #else
     q->resize(500, 360);
 #endif // Q_WS_WINCE
@@ -768,7 +774,11 @@ void QFontDialogPrivate::retranslateStrings()
     familyAccel->setText(QFontDialog::tr("&Font"));
     styleAccel->setText(QFontDialog::tr("Font st&yle"));
     sizeAccel->setText(QFontDialog::tr("&Size"));
+#ifndef Q_WS_S60
+    // Removed the title due to lack of screen estate in small S60 screen.
+    // The effects are descriptive without a title (strikeout, underline).
     effects->setTitle(QFontDialog::tr("Effects"));
+#endif
     strikeout->setText(QFontDialog::tr("Stri&keout"));
     underline->setText(QFontDialog::tr("&Underline"));
     sample->setTitle(QFontDialog::tr("Sample"));
@@ -792,7 +802,7 @@ void QFontDialog::changeEvent(QEvent *e)
 
     \property QFontDialog::currentFont
     \brief the current font of the dialog.
-*/    
+*/
 
 /*!
     \since 4.5
@@ -816,7 +826,7 @@ void QFontDialog::setCurrentFont(const QFont &font)
     d->updateFamilies();
 
 #ifdef Q_WS_MAC
-    if (d->delegate) 
+    if (d->delegate)
         QFontDialogPrivate::setFont(d->delegate, font);
 #endif
 }

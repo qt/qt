@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,20 +34,22 @@ namespace JSC {
 class RuntimeObjectImp : public JSObject {
 public:
     RuntimeObjectImp(ExecState*, PassRefPtr<Bindings::Instance>);
-
     virtual ~RuntimeObjectImp();
 
     virtual bool getOwnPropertySlot(ExecState*, const Identifier& propertyName, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier& propertyName, PropertyDescriptor&);
     virtual void put(ExecState*, const Identifier& propertyName, JSValue, PutPropertySlot&);
-    virtual bool deleteProperty(ExecState* , const Identifier& propertyName, bool checkDontDelete = true);
+    virtual bool deleteProperty(ExecState*, const Identifier& propertyName);
     virtual JSValue defaultValue(ExecState*, PreferredPrimitiveType) const;
     virtual CallType getCallData(CallData&);
     virtual ConstructType getConstructData(ConstructData&);
-    
-    virtual void getPropertyNames(ExecState*, PropertyNameArray&, unsigned listedAttributes = JSC::Structure::Prototype);
 
-    virtual void invalidate();
-    Bindings::Instance* getInternalInstance() const { return instance.get(); }
+    virtual void getPropertyNames(ExecState*, PropertyNameArray&);
+    virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&);
+
+    void invalidate();
+
+    Bindings::Instance* getInternalInstance() const { return m_instance.get(); }
 
     static JSObject* throwInvalidAccessError(ExecState*);
 
@@ -73,7 +75,7 @@ private:
     static JSValue fieldGetter(ExecState*, const Identifier&, const PropertySlot&);
     static JSValue methodGetter(ExecState*, const Identifier&, const PropertySlot&);
 
-    RefPtr<Bindings::Instance> instance;
+    RefPtr<Bindings::Instance> m_instance;
 };
     
 } // namespace

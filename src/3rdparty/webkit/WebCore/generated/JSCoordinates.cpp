@@ -22,10 +22,7 @@
 #include "JSCoordinates.h"
 
 #include "Coordinates.h"
-#include "KURL.h"
-#include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
-#include <runtime/JSString.h>
 #include <wtf/GetPtr.h>
 
 using namespace JSC;
@@ -57,9 +54,8 @@ static JSC_CONST_HASHTABLE HashTable JSCoordinatesTable =
 
 /* Hash table for prototype */
 
-static const HashTableValue JSCoordinatesPrototypeTableValues[2] =
+static const HashTableValue JSCoordinatesPrototypeTableValues[1] =
 {
-    { "toString", DontDelete|DontEnum|Function, (intptr_t)jsCoordinatesPrototypeFunctionToString, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -67,7 +63,7 @@ static JSC_CONST_HASHTABLE HashTable JSCoordinatesPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCoordinatesPrototypeTableValues, 0 };
 #else
-    { 2, 1, JSCoordinatesPrototypeTableValues, 0 };
+    { 1, 0, JSCoordinatesPrototypeTableValues, 0 };
 #endif
 
 const ClassInfo JSCoordinatesPrototype::s_info = { "CoordinatesPrototype", 0, &JSCoordinatesPrototypeTable, 0 };
@@ -75,11 +71,6 @@ const ClassInfo JSCoordinatesPrototype::s_info = { "CoordinatesPrototype", 0, &J
 JSObject* JSCoordinatesPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
     return getDOMPrototype<JSCoordinates>(exec, globalObject);
-}
-
-bool JSCoordinatesPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
-{
-    return getStaticFunctionSlot<JSObject>(exec, &JSCoordinatesPrototypeTable, this, propertyName, slot);
 }
 
 const ClassInfo JSCoordinates::s_info = { "Coordinates", 0, &JSCoordinatesTable, 0 };
@@ -92,7 +83,7 @@ JSCoordinates::JSCoordinates(PassRefPtr<Structure> structure, JSDOMGlobalObject*
 
 JSCoordinates::~JSCoordinates()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSCoordinates::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -103,6 +94,11 @@ JSObject* JSCoordinates::createPrototype(ExecState* exec, JSGlobalObject* global
 bool JSCoordinates::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCoordinates, Base>(exec, &JSCoordinatesTable, this, propertyName, slot);
+}
+
+bool JSCoordinates::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCoordinates, Base>(exec, &JSCoordinatesTable, this, propertyName, descriptor);
 }
 
 JSValue jsCoordinatesLatitude(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -153,26 +149,13 @@ JSValue jsCoordinatesSpeed(ExecState* exec, const Identifier&, const PropertySlo
     return castedThis->speed(exec);
 }
 
-JSValue JSC_HOST_CALL jsCoordinatesPrototypeFunctionToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
-{
-    UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSCoordinates::s_info))
-        return throwError(exec, TypeError);
-    JSCoordinates* castedThisObj = static_cast<JSCoordinates*>(asObject(thisValue));
-    Coordinates* imp = static_cast<Coordinates*>(castedThisObj->impl());
-
-
-    JSC::JSValue result = jsString(exec, imp->toString());
-    return result;
-}
-
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Coordinates* object)
 {
     return getDOMObjectWrapper<JSCoordinates>(exec, globalObject, object);
 }
 Coordinates* toCoordinates(JSC::JSValue value)
 {
-    return value.isObject(&JSCoordinates::s_info) ? static_cast<JSCoordinates*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSCoordinates::s_info) ? static_cast<JSCoordinates*>(asObject(value))->impl() : 0;
 }
 
 }

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -186,6 +186,8 @@ private slots:
     void resolvedWithAbsoluteSchemes_data() const;
     void binaryData_data();
     void binaryData();
+    void fromUserInput_data();
+    void fromUserInput();
     void task_199967();
     void task_240612();
 
@@ -3635,6 +3637,69 @@ void tst_QUrl::binaryData()
     QString url2 = QString::fromUtf8(u.toEncoded());
     //QCOMPARE(url2.length(), url.length());
     QCOMPARE(url2, url);
+}
+
+void tst_QUrl::fromUserInput_data()
+{
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<QUrl>("url");
+
+    // Null
+    QTest::newRow("null") << QString() << QUrl();
+
+    // File
+    QDirIterator it(QDir::homePath());
+    QString fileString;
+    int c = 0;
+    while (it.hasNext()) {
+        it.next();
+        QTest::newRow(QString("file-%1").arg(c++).toLatin1()) << it.filePath() << QUrl::fromLocalFile(it.filePath());
+    }
+
+    // basic latin1
+    QTest::newRow("unicode-0") << QString::fromUtf8("\xC3\xA5.com/") << QUrl::fromEncoded(QString::fromUtf8("http://\xC3\xA5.com/").toUtf8(), QUrl::TolerantMode);
+    // unicode
+    QTest::newRow("unicode-1") << QString::fromUtf8("\xCE\xBB.com/") << QUrl::fromEncoded(QString::fromUtf8("http://\xCE\xBB.com/").toUtf8(), QUrl::TolerantMode);
+
+    // no scheme
+    QTest::newRow("add scheme-0") << "webkit.org" << QUrl("http://webkit.org");
+    QTest::newRow("add scheme-1") << "www.webkit.org" << QUrl("http://www.webkit.org");
+    QTest::newRow("add scheme-2") << "ftp.webkit.org" << QUrl("ftp://ftp.webkit.org");
+    QTest::newRow("add scheme-3") << "webkit" << QUrl("webkit");
+
+    // QUrl's tolerant parser should already handle this
+    QTest::newRow("not-encoded-0") << "http://webkit.org/test page.html" << QUrl("http://webkit.org/test%20page.html");
+
+    // Make sure the :80, i.e. port doesn't screw anything up
+    QUrl portUrl("http://webkit.org");
+    portUrl.setPort(80);
+    QTest::newRow("port-0") << "webkit.org:80" << portUrl;
+    QTest::newRow("port-1") << "http://webkit.org:80" << portUrl;
+
+    // mailto doesn't have a ://, but is valid
+    QUrl mailto("somebody@somewhere.net");
+    mailto.setScheme("mailto");
+    QTest::newRow("mailto") << "mailto:somebody@somewhere.net" << mailto;
+
+    // misc
+    QTest::newRow("localhost-0") << "localhost" << QUrl("http://localhost");
+    QTest::newRow("localhost-1") << "localhost:80" << QUrl("http://localhost:80");
+    QTest::newRow("spaces-0") << "  http://webkit.org/test page.html " << QUrl("http://webkit.org/test%20page.html");
+    QTest::newRow("trash-0") << "webkit.org/test?someData=42%&someOtherData=abcde#anchor" << QUrl::fromEncoded("http://webkit.org/test?someData=42%25&someOtherData=abcde#anchor");
+
+    // FYI: The scheme in the resulting url user
+    QUrl authUrl("user:pass@domain.com");
+    QTest::newRow("misc-1") << "user:pass@domain.com" << authUrl;
+}
+
+// public static QUrl guessUrlFromString(QString const& string)
+void tst_QUrl::fromUserInput()
+{
+    QFETCH(QString, string);
+    QFETCH(QUrl, url);
+
+    QUrl guessedUrl = QUrl::fromUserInput(string);
+    QCOMPARE(guessedUrl, url);
 }
 
 void tst_QUrl::task_199967()

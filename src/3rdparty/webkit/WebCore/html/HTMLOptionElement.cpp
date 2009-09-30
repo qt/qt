@@ -66,9 +66,15 @@ void HTMLOptionElement::detach()
     HTMLFormControlElement::detach();
 }
 
+bool HTMLOptionElement::supportsFocus() const
+{
+    return HTMLElement::supportsFocus();
+}
+
 bool HTMLOptionElement::isFocusable() const
 {
-    return HTMLElement::isFocusable();
+    // Option elements do not have a renderer so we check the renderStyle instead.
+    return supportsFocus() && renderStyle() && renderStyle()->display() != NONE;
 }
 
 const AtomicString& HTMLOptionElement::formControlType() const
@@ -79,7 +85,7 @@ const AtomicString& HTMLOptionElement::formControlType() const
 
 String HTMLOptionElement::text() const
 {
-    return OptionElement::collectOptionText(m_data, this);
+    return OptionElement::collectOptionLabelOrText(m_data, this);
 }
 
 void HTMLOptionElement::setText(const String &text, ExceptionCode& ec)
@@ -92,7 +98,7 @@ void HTMLOptionElement::setText(const String &text, ExceptionCode& ec)
     }
 
     removeChildren();
-    appendChild(new Text(document(), text), ec);
+    appendChild(Text::create(document(), text), ec);
 }
 
 void HTMLOptionElement::accessKeyAction(bool)

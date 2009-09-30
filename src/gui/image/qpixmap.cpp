@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -1557,8 +1557,8 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     premultiplied alpha format. If the image has an alpha channel, and
     if the system allows, the preferred format is premultiplied alpha.
     Note also that QPixmap, unlike QImage, may be hardware dependent.
-    On X11 and Mac, a QPixmap is stored on the server side while a
-    QImage is stored on the client side (on Windows, these two classes
+    On X11, Mac and Symbian, a QPixmap is stored on the server side while
+    a QImage is stored on the client side (on Windows, these two classes
     have an equivalent internal representation, i.e. both QImage and
     QPixmap are stored on the client side and don't use any GDI
     resources).
@@ -1577,7 +1577,8 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     screen. Alternatively, if no manipulation is desired, the image
     file can be loaded directly into a QPixmap. On Windows, the
     QPixmap class also supports conversion between \c HBITMAP and
-    QPixmap.
+    QPixmap. On Symbian, the QPixmap class also supports conversion
+    between CFbsBitmap and QPixmap.
 
     QPixmap provides a collection of functions that can be used to
     obtain a variety of information about the pixmap. In addition,
@@ -1677,11 +1678,20 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     operation, you can use QBitmap::fromImage() instead.
 
     In addition, on Windows, the QPixmap class supports conversion to
-    and from HBitmap: the toWinHBITMAP() function creates a HBITMAP
+    and from HBITMAP: the toWinHBITMAP() function creates a HBITMAP
     equivalent to the QPixmap, based on the given HBitmapFormat, and
     returns the HBITMAP handle. The fromWinHBITMAP() function returns
     a QPixmap that is equivalent to the given bitmap which has the
-    specified format.
+    specified format. The QPixmap class also supports conversion to
+    and from HICON: the toWinHICON() function creates a HICON equivalent
+    to the QPixmap, and returns the HICON handle. The fromWinHICON()
+    function returns a QPixmap that is equivalent to the given icon.
+
+    In addition, on Symbian, the QPixmap class supports conversion to
+    and from CFbsBitmap: the toSymbianCFbsBitmap() function creates
+    CFbsBitmap equivalent to the QPixmap, based on given mode and returns 
+    a CFbsBitmap object. The fromSymbianCFbsBitmap() function returns a 
+    QPixmap that is equivalent to the given bitmap and given mode.
 
     \section1 Pixmap Transformations
 
@@ -2033,7 +2043,7 @@ QPixmapData* QPixmap::pixmapData() const
 
     \warning This function is only available on Windows.
 
-    \sa fromWinHBITMAP()
+    \sa fromWinHBITMAP(), {QPixmap#Pixmap Conversion}{Pixmap Conversion}
 */
 
 /*! \fn QPixmap QPixmap::fromWinHBITMAP(HBITMAP bitmap, HBitmapFormat format)
@@ -2044,6 +2054,31 @@ QPixmapData* QPixmap::pixmapData() const
     \warning This function is only available on Windows.
 
     \sa toWinHBITMAP(), {QPixmap#Pixmap Conversion}{Pixmap Conversion}
+
+*/
+
+/*! \fn HICON QPixmap::toWinHICON() const
+    \since 4.6
+
+    \bold{Win32 only:} Creates a \c HICON equivalent to the QPixmap.
+    Returns the \c HICON handle.
+
+    It is the caller's responsibility to free the \c HICON data after use.
+
+    \warning This function is only available on Windows.
+
+    \sa fromWinHICON(), {QPixmap#Pixmap Conversion}{Pixmap Conversion}
+*/
+
+/*! \fn QPixmap QPixmap::fromWinHICON(HICON icon)
+    \since 4.6
+
+    \bold{Win32 only:} Returns a QPixmap that is equivalent to the given
+    \a icon.
+
+    \warning This function is only available on Windows.
+
+    \sa toWinHICON(), {QPixmap#Pixmap Conversion}{Pixmap Conversion}
 
 */
 

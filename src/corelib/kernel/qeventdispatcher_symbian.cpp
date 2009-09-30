@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -231,15 +231,39 @@ void QTimerActiveObject::RunL()
     }
 }
 
+#define MAX_SYMBIAN_TIMEOUT_MS 2000000
+void QTimerActiveObject::StartTimer()
+{
+    if (m_timerInfo->msLeft > MAX_SYMBIAN_TIMEOUT_MS) {
+        //There is loss of accuracy anyway due to needing to restart the timer every 33 minutes,
+        //so the 1/64s res of After() is acceptable for these very long timers.
+        m_rTimer.After(iStatus, MAX_SYMBIAN_TIMEOUT_MS * 1000);
+        m_timerInfo->msLeft -= MAX_SYMBIAN_TIMEOUT_MS;
+    } else {
+        //HighRes gives the 1ms accuracy expected by Qt, the +1 is to ensure that
+        //"Timers will never time out earlier than the specified timeout value"
+        //condition is always met.
+        m_rTimer.HighRes(iStatus, (m_timerInfo->msLeft + 1) * 1000);
+        m_timerInfo->msLeft = 0;
+    }
+    SetActive();
+}
+
 void QTimerActiveObject::Run()
 {
+    //restart timer immediately, if the timeout has been split because it overflows max for platform.
+    if (m_timerInfo->msLeft > 0) {
+        StartTimer();
+        return;
+    }
+
     if (!okToRun())
         return;
 
     if (m_timerInfo->interval > 0) {
         // Start a new timer immediately so that we don't lose time.
-        SetActive();
-        m_rTimer.After(iStatus, m_timerInfo->interval*1000);
+        m_timerInfo->msLeft = m_timerInfo->interval;
+        StartTimer();
 
         m_timerInfo->dispatcher->timerFired(m_timerInfo->timerId);
     } else {
@@ -261,11 +285,10 @@ void QTimerActiveObject::Run()
 void QTimerActiveObject::Start()
 {
     CActiveScheduler::Add(this);
+    m_timerInfo->msLeft = m_timerInfo->interval;
     if (m_timerInfo->interval > 0) {
         m_rTimer.CreateLocal();
-        iStatus = KRequestPending;
-        SetActive();
-        m_rTimer.After(iStatus, m_timerInfo->interval*1000);
+        StartTimer();
     } else {
         iStatus = KRequestPending;
         SetActive();

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -303,13 +303,17 @@
     drop shadow effects and for decoration objects that follow the parent
     item's geometry without drawing on top of it.
 
-    \value ItemUsesExtendedStyleOption The item makes use of either the
-    exposedRect or matrix member of the QStyleOptionGraphicsItem. Implementers
-    of QGraphicsItem subclasses should set that flag if this data is required.
-    By default, the exposedRect is initialized to the item's boundingRect and
-    the matrix is untransformed. Enable this flag for more fine-grained values.
-    Use QStyleOptionGraphicsItem::levelOfDetailFromTransform() for a more
-    fine-grained value.
+    \value ItemUsesExtendedStyleOption The item makes use of either
+    \l{QStyleOptionGraphicsItem::}{exposedRect} or
+    \l{QStyleOptionGraphicsItem::}{matrix} in QStyleOptionGraphicsItem. By default,
+    the \l{QStyleOptionGraphicsItem::}{exposedRect} is initialized to the item's
+    boundingRect() and the \l{QStyleOptionGraphicsItem::}{matrix} is untransformed.
+    You can enable this flag for the style options to be set up with more
+    fine-grained values.
+    Note that QStyleOptionGraphicsItem::levelOfDetail is unaffected by this flag
+    and always initialized to 1. Use
+    QStyleOptionGraphicsItem::levelOfDetailFromTransform() if you need a higher
+    value.
 
     \value ItemHasNoContents The item does not paint anything (i.e., calling
     paint() on the item has no effect). You should set this flag on items that
@@ -331,16 +335,14 @@
     it's parent if it's z-value is negative. This flag enables setZValue() to
     toggle ItemStacksBehindParent.
 
-    \value ItemAutoDetectsFocusProxy The item will assign any child that
-    gains input focus as its focus proxy. See also focusProxy().
-    This flag was introduced in Qt 4.6.
-
     \value ItemIsPanel. The item is a panel. A panel provides activation and
     contained focus handling. Only one panel can be active at a time (see
     QGraphicsItem::isActive()). When no panel is active, QGraphicsScene
     activates all non-panel items. Window items (i.e.,
     QGraphicsItem::isWindow() returns true) are panels. This flag was
     introduced in Qt 4.6.
+
+    \omitvalue ItemIsFocusScope Internal only (for now).
 */
 
 /*!
@@ -929,12 +931,9 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
         scene->d_func()->index->itemChange(q, QGraphicsItem::ItemParentChange, newParentVariant);
     }
 
-    QGraphicsItem *lastSubFocusItem = subFocusItem;
-    if (subFocusItem) {
-        // Update the child focus chain; when reparenting an item that has a
-        // focus child, ensure that that focus child clears its focus child
-        // chain from our parents before it's reparented.
-        subFocusItem->clearFocus();
+    if (subFocusItem && parent) {
+        // Make sure none of the old parents point to this guy.
+        subFocusItem->d_ptr->clearSubFocus(parent);
     }
 
     // We anticipate geometry changes. If the item is deleted, it will be
@@ -950,17 +949,6 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
         parent->itemChange(QGraphicsItem::ItemChildRemovedChange, thisPointerVariant);
     }
 
-    // Auto-update focus proxy. Any ancestor that has this as focus proxy 
-    //needs to be nulled.
-    QGraphicsItem *p = parent;
-    while (p) {
-        if ((p->d_ptr->flags & QGraphicsItem::ItemAutoDetectsFocusProxy) &&
-            (p->focusProxy() == q)) {
-            p->setFocusProxy(0);
-        }
-        p = p->d_ptr->parent;
-    }
-
     // Update toplevelitem list. If this item is being deleted, its parent
     // will be 0 but we don't want to register/unregister it in the TLI list.
     if (scene && !inDestructor) {
@@ -968,6 +956,39 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
             scene->d_func()->registerTopLevelItem(q);
         } else if (!parent && newParent) {
             scene->d_func()->unregisterTopLevelItem(q);
+        }
+    }
+
+    // Ensure any last parent focus scope does not point to this item or any of
+    // its descendents.
+    QGraphicsItem *p = parent;
+    QGraphicsItem *parentFocusScopeItem = 0;
+    while (p) {
+        if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
+            // If this item's focus scope's focus scope item points
+            // to this item or a descendent, then clear it.
+            QGraphicsItem *fsi = p->d_ptr->focusScopeItem;
+            if (q_ptr == fsi || q_ptr->isAncestorOf(fsi)) {
+                parentFocusScopeItem = fsi;
+                p->d_ptr->focusScopeItem = 0;
+            }
+            break;
+        }
+        p = p->d_ptr->parent;
+    }
+
+    // Update focus scope item ptr in new scope.
+    if (newParent) {
+        QGraphicsItem *p = newParent;
+        while (p) {
+            if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
+                p->d_ptr->focusScopeItem = subFocusItem ? subFocusItem : parentFocusScopeItem;
+                // ### The below line might not make sense...
+                if (subFocusItem)
+                    subFocusItem->d_ptr->clearSubFocus();
+                break;
+            }
+            p = p->d_ptr->parent;
         }
     }
 
@@ -1037,18 +1058,10 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
     dirtySceneTransform = 1;
 
     // Restore the sub focus chain.
-    if (lastSubFocusItem)
-        lastSubFocusItem->d_ptr->setSubFocus();
-
-    // Auto-update focus proxy. The closest parent that detects
-    // focus proxies is updated as the proxy gains or loses focus.
-    p = newParent;
-    while (p) {
-        if (p->d_ptr->flags & QGraphicsItem::ItemAutoDetectsFocusProxy) {
-            p->setFocusProxy(q);
-            break;
-        }
-        p = p->d_ptr->parent;
+    if (subFocusItem) {
+        subFocusItem->d_ptr->setSubFocus(newParent);
+        if (parent && parent->isActive())
+            subFocusItem->setFocus();
     }
 
     // Deliver post-change notification
@@ -1216,6 +1229,18 @@ QGraphicsItem::~QGraphicsItem()
     d_ptr->removeExtraItemCache();
 
     clearFocus();
+
+    // Update focus scope item ptr.
+    QGraphicsItem *p = d_ptr->parent;
+    while (p) {
+        if (p->flags() & ItemIsFocusScope) {
+            if (p->d_ptr->focusScopeItem == this)
+                p->d_ptr->focusScopeItem = 0;
+            break;
+        }
+        p = p->d_ptr->parent;
+    }
+
     if (!d_ptr->children.isEmpty()) {
         QList<QGraphicsItem *> oldChildren = d_ptr->children;
         qDeleteAll(oldChildren);
@@ -1454,6 +1479,7 @@ QList<QGraphicsItem *> QGraphicsItem::children() const
 */
 QList<QGraphicsItem *> QGraphicsItem::childItems() const
 {
+    const_cast<QGraphicsItem *>(this)->d_ptr->ensureSortedChildren();
     return d_ptr->children;
 }
 
@@ -1955,11 +1981,28 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
     }
 
     // Enable subfocus
-    if (newVisible && isWidget) {
-        QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(q_ptr);
-        QGraphicsWidget *fw = widget->focusWidget();
-        if (fw && fw != scene->focusItem())
-            scene->setFocusItem(fw);
+    if (newVisible) {
+        QGraphicsItem *p = parent;
+        bool done = false;
+        while (p) {
+            if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
+                QGraphicsItem *fsi = p->d_ptr->focusScopeItem;
+                if (q_ptr == fsi || q_ptr->isAncestorOf(fsi)) {
+                    done = true;
+                    while (fsi->d_ptr->focusScopeItem && fsi->d_ptr->focusScopeItem->isVisible())
+                        fsi = fsi->d_ptr->focusScopeItem;
+                    scene->setFocusItem(fsi);
+                }
+                break;
+            }
+            p = p->d_ptr->parent;
+        }
+        if (!done) {
+            QGraphicsItem *fi = subFocusItem;
+            if (fi && fi != scene->focusItem()) {
+                scene->setFocusItem(fi);
+            }
+        }
     }
 
     // Deliver post-change notification.
@@ -2747,28 +2790,53 @@ bool QGraphicsItem::hasFocus() const
 */
 void QGraphicsItem::setFocus(Qt::FocusReason focusReason)
 {
+    d_ptr->setFocusHelper(focusReason, /* climb = */ true);
+}
+
+/*!
+    \internal
+*/
+void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool climb)
+{
     // Disabled / unfocusable items cannot accept focus.
-    if (!isEnabled() || !(d_ptr->flags & QGraphicsItem::ItemIsFocusable))
+    if (!q_ptr->isEnabled() || !(flags & QGraphicsItem::ItemIsFocusable))
         return;
 
     // Find focus proxy.
-    QGraphicsItem *f = this;
+    QGraphicsItem *f = q_ptr;
     while (f->d_ptr->focusProxy)
         f = f->d_ptr->focusProxy;
 
     // Return if it already has focus.
-    if (d_ptr->scene && d_ptr->scene->focusItem() == f)
+    if (scene && scene->focusItem() == f)
         return;
 
+    // Update focus scope item ptr.
+    QGraphicsItem *p = parent;
+    while (p) {
+        if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
+            p->d_ptr->focusScopeItem = q_ptr;
+            if (!q_ptr->isActive() || !p->focusItem())
+                return;
+            break;
+        }
+        p = p->d_ptr->parent;
+    }
+
+    if (climb) {
+        while (f->d_ptr->focusScopeItem && f->d_ptr->focusScopeItem->isVisible())
+            f = f->d_ptr->focusScopeItem;
+    }
+
     // Update the child focus chain.
-    d_ptr->setSubFocus();
+    f->d_ptr->setSubFocus();
 
     // Update the scene's focus item.
-    if (d_ptr->scene) {
-        QGraphicsItem *p = panel();
-        if (!p || p->isActive()) {
+    if (scene) {
+        QGraphicsItem *p = q_ptr->panel();
+        if ((!p && scene->isActive()) || (p && p->isActive())) {
             // Visible items immediately gain focus from scene.
-            d_ptr->scene->d_func()->setFocusItemHelper(f, focusReason);
+            scene->d_func()->setFocusItemHelper(f, focusReason);
         }
     }
 }
@@ -2786,10 +2854,21 @@ void QGraphicsItem::setFocus(Qt::FocusReason focusReason)
 */
 void QGraphicsItem::clearFocus()
 {
-    if (!d_ptr->scene)
-        return;
+    // Pass focus to the closest parent focus scope.
+    if (!d_ptr->inDestructor) {
+        QGraphicsItem *p = d_ptr->parent;
+        while (p) {
+            if (p->flags() & ItemIsFocusScope) {
+                p->d_ptr->setFocusHelper(Qt::OtherFocusReason, /* climb = */ false);
+                return;
+            }
+            p = p->d_ptr->parent;
+        }
+    }
+
     // Invisible items with focus must explicitly clear subfocus.
-    d_ptr->clearSubFocus();
+    d_ptr->clearSubFocus(this);
+
     if (hasFocus()) {
         // If this item has the scene's input focus, clear it.
         d_ptr->scene->setFocusItem(0);
@@ -2802,7 +2881,7 @@ void QGraphicsItem::clearFocus()
     Returns this item's focus proxy, or 0 if this item has no
     focus proxy.
 
-    \sa setFocusProxy(), ItemAutoDetectsFocusProxy, setFocus(), hasFocus()
+    \sa setFocusProxy(), setFocus(), hasFocus()
 */
 QGraphicsItem *QGraphicsItem::focusProxy() const
 {
@@ -2826,7 +2905,7 @@ QGraphicsItem *QGraphicsItem::focusProxy() const
     The focus proxy \a item must belong to the same scene as
     this item.
 
-    \sa focusProxy(), ItemAutoDetectsFocusProxy, setFocus(), hasFocus()
+    \sa focusProxy(), setFocus(), hasFocus()
 */
 void QGraphicsItem::setFocusProxy(QGraphicsItem *item)
 {
@@ -2869,6 +2948,16 @@ void QGraphicsItem::setFocusProxy(QGraphicsItem *item)
 QGraphicsItem *QGraphicsItem::focusItem() const
 {
     return d_ptr->subFocusItem;
+}
+
+/*!
+    \internal
+
+    Returns this item's focus scope item.
+*/
+QGraphicsItem *QGraphicsItem::focusScopeItem() const
+{
+    return d_ptr->focusScopeItem;
 }
 
 /*!
@@ -3960,6 +4049,82 @@ void QGraphicsItem::setZValue(qreal z)
 }
 
 /*!
+    \internal
+
+    Ensures that the list of children is sorted by insertion order, and that
+    the siblingIndexes are packed (no gaps), and start at 0.
+
+    ### This function is almost identical to
+    QGraphicsScenePrivate::ensureSequentialTopLevelSiblingIndexes().
+*/
+void QGraphicsItemPrivate::ensureSequentialSiblingIndex()
+{
+    if (!sequentialOrdering) {
+        qSort(children.begin(), children.end(), insertionOrder);
+        sequentialOrdering = 1;
+        needSortChildren = 1;
+    }
+    if (holesInSiblingIndex) {
+        holesInSiblingIndex = 0;
+        for (int i = 0; i < children.size(); ++i)
+            children[i]->d_ptr->siblingIndex = i;
+    }
+}
+
+/*!
+    \since 4.6
+
+    Stacks this item before \a sibling, which must be a sibling item (i.e., the
+    two items must share the same parent item, or must both be toplevel items).
+    The \a sibling must have the same Z value as this item, otherwise calling
+    this function will have no effect.
+
+    By default, all items are stacked by insertion order (i.e., the first item
+    you add is drawn before the next item you add). If two items' Z values are
+    different, then the item with the highest Z value is drawn on top. When the
+    Z values are the same, the insertion order will decide the stacking order.
+
+    \sa setZValue(), ItemStacksBehindParent
+*/
+void QGraphicsItem::stackBefore(const QGraphicsItem *sibling)
+{
+    if (sibling == this)
+        return;
+    if (!sibling || d_ptr->parent != sibling->parentItem()) {
+        qWarning("QGraphicsItem::stackUnder: cannot stack under %p, which must be a sibling", sibling);
+        return;
+    }
+    QList<QGraphicsItem *> *siblings = d_ptr->parent
+                                       ? &d_ptr->parent->d_ptr->children
+                                       : (d_ptr->scene ? &d_ptr->scene->d_func()->topLevelItems : 0);
+    if (!siblings) {
+        qWarning("QGraphicsItem::stackUnder: cannot stack under %p, which must be a sibling", sibling);
+        return;
+    }
+
+    // First, make sure that the sibling indexes have no holes. This also
+    // marks the children list for sorting.
+    if (d_ptr->parent)
+        d_ptr->parent->d_ptr->ensureSequentialSiblingIndex();
+    else
+        d_ptr->scene->d_func()->ensureSequentialTopLevelSiblingIndexes();
+
+    // Only move items with the same Z value, and that need moving.
+    int siblingIndex = sibling->d_ptr->siblingIndex;
+    int myIndex = d_ptr->siblingIndex;
+    if (myIndex >= siblingIndex && d_ptr->z == sibling->d_ptr->z) {
+        siblings->move(myIndex, siblingIndex);
+        // Fixup the insertion ordering.
+        for (int i = 0; i < siblings->size(); ++i) {
+            int &index = siblings->at(i)->d_ptr->siblingIndex;
+            if (i != siblingIndex && index >= siblingIndex && index <= myIndex)
+                ++index;
+        }
+        d_ptr->siblingIndex = siblingIndex;
+    }
+}
+
+/*!
     Returns the bounding rect of this item's descendants (i.e., its
     children, their children, etc.) in local coordinates. The
     rectangle will contain all descendants after they have been mapped
@@ -4665,20 +4830,36 @@ void QGraphicsItemPrivate::resolveDepth()
 
 /*!
     \internal
+
+    ### This function is almost identical to
+    QGraphicsScenePrivate::registerTopLevelItem().
 */
 void QGraphicsItemPrivate::addChild(QGraphicsItem *child)
 {
-    needSortChildren = 1;
+    // Remove all holes from the sibling index list. Now the max index
+    // number is equal to the size of the children list.
+    ensureSequentialSiblingIndex();
+    needSortChildren = 1; // ### maybe 0
     child->d_ptr->siblingIndex = children.size();
     children.append(child);
 }
 
 /*!
     \internal
+
+    ### This function is almost identical to
+    QGraphicsScenePrivate::unregisterTopLevelItem().
 */
 void QGraphicsItemPrivate::removeChild(QGraphicsItem *child)
 {
-    children.removeOne(child);
+    // When removing elements in the middle of the children list,
+    // there will be a "gap" in the list of sibling indexes (0,1,3,4).
+    if (!holesInSiblingIndex)
+        holesInSiblingIndex = child->d_ptr->siblingIndex != children.size() - 1;
+    if (sequentialOrdering && !holesInSiblingIndex)
+        children.removeAt(child->d_ptr->siblingIndex);
+    else
+        children.removeOne(child);
     // NB! Do not use children.removeAt(child->d_ptr->siblingIndex) because
     // the child is not guaranteed to be at the index after the list is sorted.
     // (see ensureSortedChildren()).
@@ -4766,7 +4947,7 @@ void QGraphicsItemPrivate::updateCachedClipPathFromSetPosHelper(const QPointF &n
 {
     Q_ASSERT(inSetPosHelper);
 
-    if (!(ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren))
+    if (inDestructor || !(ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren))
         return; // Not clipped by any ancestor.
 
     // Find closest clip ancestor and transform.
@@ -4776,15 +4957,19 @@ void QGraphicsItemPrivate::updateCachedClipPathFromSetPosHelper(const QPointF &n
     if (transformData)
         thisToParentTransform = transformData->computedFullTransform(&thisToParentTransform);
     QGraphicsItem *clipParent = parent;
-    while (clipParent && !(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape)) {
+    while (clipParent && !clipParent->d_ptr->inDestructor && !(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape)) {
         thisToParentTransform *= clipParent->d_ptr->transformToParent();
         clipParent = clipParent->d_ptr->parent;
     }
 
-    // thisToParentTransform is now the same as q->itemTransform(clipParent), except
-    // that the new position (which is not yet set on the item) is taken into account.
-    Q_ASSERT(clipParent);
-    Q_ASSERT(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
+    // Ensure no parents are currently being deleted. This can only
+    // happen if the item is moved by a dying ancestor.
+    QGraphicsItem *p = clipParent;
+    while (p) {
+        if (p->d_ptr->inDestructor)
+            return;
+        p = p->d_ptr->parent;
+    }
 
     // From here everything is calculated in clip parent's coordinates.
     const QRectF parentBoundingRect(clipParent->boundingRect());
@@ -4842,50 +5027,52 @@ void QGraphicsItemPrivate::ensureSceneTransformRecursive(QGraphicsItem **topMost
         return; // Continue backtrack.
     }
 
+    // This item and all its descendants have dirty scene transforms.
+    // We're about to validate this item's scene transform, so we have to
+    // invalidate all the children; otherwise there's no way for the descendants
+    // to detect that the ancestor has changed.
+    invalidateChildrenSceneTransform();
+
     // COMBINE my transform with the parent's scene transform.
     updateSceneTransformFromParent();
     Q_ASSERT(!dirtySceneTransform);
 }
 
-void QGraphicsItemPrivate::ensureSceneTransform()
-{
-    if (dirtySceneTransform) {
-        // This item and all its descendants have dirty scene transforms.
-        // We're about to validate this item's scene transform, so we have to
-        // invalidate all the children; otherwise there's no way for the descendants
-        // to detect that the ancestor has changed.
-        invalidateChildrenSceneTransform();
-    }
-
-    QGraphicsItem *that = q_func();
-    ensureSceneTransformRecursive(&that);
-}
-
 /*!
     \internal
 */
-void QGraphicsItemPrivate::setSubFocus()
+void QGraphicsItemPrivate::setSubFocus(QGraphicsItem *rootItem)
 {
-    // Update focus child chain.
-    QGraphicsItem *item = q_ptr;
-    QGraphicsItem *parent = item;
-    bool hidden = !visible;
+    // Update focus child chain. Stop at panels, or if this item
+    // is hidden, stop at the first item with a visible parent.
+    QGraphicsItem *parent = rootItem ? rootItem : q_ptr;
     do {
-        parent->d_func()->subFocusItem = item;
-    } while (!parent->isPanel() && (parent = parent->d_ptr->parent) && (!hidden || !parent->d_func()->visible));
+        // Clear any existing ancestor's subFocusItem.
+        if (parent != q_ptr && parent->d_ptr->subFocusItem) {
+            if (parent->d_ptr->subFocusItem == q_ptr)
+                break;
+            parent->d_ptr->subFocusItem->d_ptr->clearSubFocus();
+        }
+        parent->d_ptr->subFocusItem = q_ptr;
+        parent->d_ptr->subFocusItemChange();
+    } while (!parent->isPanel() && (parent = parent->d_ptr->parent) && (visible || !parent->d_ptr->visible));
+
+    if (scene && !scene->isActive())
+        scene->d_func()->lastFocusItem = subFocusItem;
 }
 
 /*!
     \internal
 */
-void QGraphicsItemPrivate::clearSubFocus()
+void QGraphicsItemPrivate::clearSubFocus(QGraphicsItem *rootItem)
 {
-    // Reset focus child chain.
-    QGraphicsItem *parent = q_ptr;
+    // Reset sub focus chain.
+    QGraphicsItem *parent = rootItem ? rootItem : q_ptr;
     do {
         if (parent->d_ptr->subFocusItem != q_ptr)
             break;
         parent->d_ptr->subFocusItem = 0;
+        parent->d_ptr->subFocusItemChange();
     } while (!parent->isPanel() && (parent = parent->d_ptr->parent));
 }
 
@@ -4900,6 +5087,16 @@ void QGraphicsItemPrivate::resetFocusProxy()
     for (int i = 0; i < focusProxyRefs.size(); ++i)
         *focusProxyRefs.at(i) = 0;
     focusProxyRefs.clear();
+}
+
+/*!
+    \internal
+
+    Subclasses can reimplement this function to be notified when subFocusItem
+    changes.
+*/
+void QGraphicsItemPrivate::subFocusItemChange()
+{
 }
 
 /*!
@@ -4943,14 +5140,8 @@ void QGraphicsItem::update(const QRectF &rect)
     } while ((item = item->d_ptr->parent));
 
     if (CacheMode(d_ptr->cacheMode) != NoCache) {
-        QGraphicsItemCache *cache = d_ptr->extraItemCache();
-        if (d_ptr->discardUpdateRequest(/* ignoreVisibleBit = */ false,
-                                        /* ignoreClipping = */ false,
-                                        /* ignoreDirtyBit = */ true)) {
-            return;
-        }
-
         // Invalidate cache.
+        QGraphicsItemCache *cache = d_ptr->extraItemCache();
         if (!cache->allExposed) {
             if (rect.isNull()) {
                 cache->allExposed = true;
@@ -4964,48 +5155,11 @@ void QGraphicsItem::update(const QRectF &rect)
             return;
     }
 
+    if (d_ptr->discardUpdateRequest())
+        return;
+
     if (d_ptr->scene)
         d_ptr->scene->d_func()->markDirty(this, rect);
-}
-
-/*!
-    \internal
-
-    Scrolls \a rect in \a pix by \a dx, \a dy.
-
-    ### This can be done much more efficiently by using XCopyArea on X11 with
-    the same dst and src, and through moving pixels in the raster engine. It
-    can probably also be done much better on the other paint engines.
-*/
-void _q_scrollPixmap(QPixmap *pix, const QRect &rect, int dx, int dy)
-{
-#if 0
-    QPainter painter(pix);
-    painter.setClipRect(rect);
-    painter.drawPixmap(rect.translated(dx, dy), *pix, rect);
-    painter.end();
-#elif defined Q_WS_X11
-    GC gc = XCreateGC(X11->display, pix->handle(), 0, 0);
-
-    XRectangle xrect;
-    xrect.x = rect.x();
-    xrect.y = rect.y();
-    xrect.width = rect.width();
-    xrect.height = rect.height();
-    XSetClipRectangles(X11->display, gc, 0, 0, &xrect, 1, YXBanded);
-
-    XCopyArea(X11->display, pix->handle(), pix->handle(), gc,
-              rect.x(), rect.y(), rect.width(), rect.height(),
-              rect.x()+dx, rect.y()+dy);
-    XFreeGC(X11->display, gc);
-#else
-    QPixmap newPix = *pix;
-    QPainter painter(&newPix);
-    painter.setClipRect(rect);
-    painter.drawPixmap(rect.translated(dx, dy), *pix, rect);
-    painter.end();
-    *pix = newPix;
-#endif
 }
 
 /*!
@@ -5048,7 +5202,7 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
                 QRectF br = boundingRect().adjusted(-adjust, -adjust, adjust, adjust);
                 QRect irect = rect.toRect().translated(-br.x(), -br.y());
 
-                _q_scrollPixmap(&pix, irect, dx, dy);
+                pix.scroll(dx, dy, irect);
 
                 QPixmapCache::replace(c->key, pix);
 
@@ -5812,6 +5966,8 @@ QPainterPath QGraphicsItem::mapFromScene(const QPainterPath &path) const
 bool QGraphicsItem::isAncestorOf(const QGraphicsItem *child) const
 {
     if (!child || child == this)
+        return false;
+    if (child->d_ptr->depth() < d_ptr->depth())
         return false;
     const QGraphicsItem *ancestor = child;
     while ((ancestor = ancestor->d_ptr->parent)) {
@@ -6846,6 +7002,8 @@ void QGraphicsItem::removeFromIndex()
 */
 void QGraphicsItem::prepareGeometryChange()
 {
+    if (d_ptr->inDestructor)
+        return;
     if (d_ptr->scene) {
         d_ptr->scene->d_func()->dirtyGrowingItemsBoundingRect = true;
         d_ptr->geometryChanged = 1;
@@ -6883,10 +7041,12 @@ void QGraphicsItem::prepareGeometryChange()
     if (d_ptr->inSetPosHelper)
         return;
 
-    if (d_ptr->flags & ItemClipsChildrenToShape)
+    if (d_ptr->flags & ItemClipsChildrenToShape
+        || d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren) {
         d_ptr->invalidateCachedClipPathRecursively();
-    else
+    } else {
         d_ptr->invalidateCachedClipPath();
+    }
 }
 
 /*!
@@ -10556,11 +10716,11 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
     case QGraphicsItem::ItemNegativeZStacksBehindParent:
         str = "ItemNegativeZStacksBehindParent";
         break;
-    case QGraphicsItem::ItemAutoDetectsFocusProxy:
-        str = "ItemAutoDetectsFocusProxy";
-        break;
     case QGraphicsItem::ItemIsPanel:
         str = "ItemIsPanel";
+        break;
+    case QGraphicsItem::ItemIsFocusScope:
+        str = "ItemIsFocusScope";
         break;
     }
     debug << str;

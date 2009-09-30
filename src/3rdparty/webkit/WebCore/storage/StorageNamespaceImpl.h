@@ -46,9 +46,10 @@ namespace WebCore {
         static PassRefPtr<StorageNamespace> sessionStorageNamespace();
 
         virtual ~StorageNamespaceImpl();
-        virtual PassRefPtr<StorageArea> storageArea(SecurityOrigin*);
+        virtual PassRefPtr<StorageArea> storageArea(PassRefPtr<SecurityOrigin>);
         virtual PassRefPtr<StorageNamespace> copy();
         virtual void close();
+        virtual void unlock();
 
     private:
         StorageNamespaceImpl(StorageType, const String& path);
@@ -62,9 +63,7 @@ namespace WebCore {
         String m_path;
         RefPtr<StorageSyncManager> m_syncManager;
 
-#ifndef NDEBUG
         bool m_isShutdown;
-#endif
     };
 
 } // namespace WebCore

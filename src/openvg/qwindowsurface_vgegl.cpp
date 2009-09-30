@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenVG module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -125,7 +125,6 @@ public:
     int refCount;
     QVGPaintEngine *engine;
     EGLSurface surface;
-    EGLSurface lastSurface;
 };
 
 QVGSharedContext::QVGSharedContext()
@@ -133,19 +132,22 @@ QVGSharedContext::QVGSharedContext()
     , refCount(0)
     , engine(0)
     , surface(EGL_NO_SURFACE)
-    , lastSurface(EGL_NO_SURFACE)
 {
 }
 
 QVGSharedContext::~QVGSharedContext()
 {
+    // Don't accidentally destroy the QEglContext if the reference
+    // count falls to zero while deleting the paint engine.
+    ++refCount;
+
     if (context)
-        qt_vg_make_current(context, qt_vg_shared_surface());
+        context->makeCurrent(qt_vg_shared_surface());
     delete engine;
     if (context)
-        qt_vg_done_current(context, true);
-    if (surface != EGL_NO_SURFACE)
-        qt_vg_destroy_surface(context, surface);
+        context->doneCurrent();
+    if (context && surface != EGL_NO_SURFACE)
+        context->destroySurface(surface);
     delete context;
 }
 
@@ -261,12 +263,12 @@ void qt_vg_destroy_context(QEglContext *context)
         // This is not the shared context.  Shouldn't happen!
         delete context;
     } else if (--(shared->refCount) <= 0) {
-        qt_vg_make_current(shared->context, qt_vg_shared_surface());
+        shared->context->makeCurrent(qt_vg_shared_surface());
         delete shared->engine;
         shared->engine = 0;
-        qt_vg_done_current(shared->context, true);
+        shared->context->doneCurrent();
         if (shared->surface != EGL_NO_SURFACE) {
-            qt_vg_destroy_surface(shared->context, shared->surface);
+            eglDestroySurface(shared->context->display(), shared->surface);
             shared->surface = EGL_NO_SURFACE;
         }
         delete shared->context;
@@ -299,50 +301,6 @@ EGLSurface qt_vg_shared_surface(void)
     return shared->surface;
 }
 
-void qt_vg_make_current(QEglContext *context, EGLSurface surface)
-{
-    // Bail out if the context and surface are already current.
-    if (context->isCurrent() && context->surface() == surface)
-        return;
-
-    // Are we setting the surface to the same as the last elided doneCurrent()?
-    QVGSharedContext *shared = sharedContext();
-    if (context->isCurrent() && shared->lastSurface == surface) {
-        shared->lastSurface = EGL_NO_SURFACE;
-        context->setSurface(surface);
-        return;
-    }
-
-    // Switch to the new context and surface.
-    shared->lastSurface = EGL_NO_SURFACE;
-    context->setSurface(surface);
-    context->makeCurrent();
-}
-
-void qt_vg_done_current(QEglContext *context, bool force)
-{
-    QVGSharedContext *shared = sharedContext();
-    if (force) {
-        context->doneCurrent();
-        shared->lastSurface = EGL_NO_SURFACE;
-    } else {
-        // Keep the context current for now just in case we immediately
-        // reuse the same surface for the next frame.
-        shared->lastSurface = context->surface();
-    }
-}
-
-void qt_vg_destroy_surface(QEglContext *context, EGLSurface surface)
-{
-    QVGSharedContext *shared = sharedContext();
-    if (shared->lastSurface == surface) {
-        shared->lastSurface = EGL_NO_SURFACE;
-        context->doneCurrent();
-    }
-    context->setSurface(surface);
-    context->destroySurface();
-}
-
 #else
 
 QEglContext *qt_vg_create_context(QPaintDevice *device)
@@ -358,24 +316,6 @@ void qt_vg_destroy_context(QEglContext *context)
 EGLSurface qt_vg_shared_surface(void)
 {
     return EGL_NO_SURFACE;
-}
-
-void qt_vg_make_current(QEglContext *context, EGLSurface surface)
-{
-    context->setSurface(surface);
-    context->makeCurrent();
-}
-
-void qt_vg_done_current(QEglContext *context, bool force)
-{
-    Q_UNUSED(force);
-    context->doneCurrent();
-}
-
-void qt_vg_destroy_surface(QEglContext *context, EGLSurface surface)
-{
-    context->setSurface(surface);
-    context->destroySurface();
 }
 
 #endif
@@ -466,13 +406,13 @@ QVGEGLWindowSurfaceVGImage::~QVGEGLWindowSurfaceVGImage()
             // We need a current context to be able to destroy the image.
             // We use the shared surface because the native window handle
             // associated with "windowSurface" may have been destroyed already.
-            qt_vg_make_current(context, qt_vg_shared_surface());
-            qt_vg_destroy_surface(context, backBufferSurface);
+            context->makeCurrent(qt_vg_shared_surface());
+            context->destroySurface(backBufferSurface);
             vgDestroyImage(backBuffer);
-            qt_vg_done_current(context, true);
+            context->doneCurrent();
         }
         if (windowSurface != EGL_NO_SURFACE)
-            qt_vg_destroy_surface(context, windowSurface);
+            context->destroySurface(windowSurface);
         qt_vg_destroy_context(context);
     }
 }
@@ -485,7 +425,7 @@ QEglContext *QVGEGLWindowSurfaceVGImage::ensureContext(QWidget *widget)
         // the back buffer.  Keep the same context and paint engine.
         size = newSize;
         if (isPaintingActive)
-            qt_vg_done_current(context, true);
+            context->doneCurrent();
         isPaintingActive = false;
         recreateBackBuffer = true;
     }
@@ -508,7 +448,7 @@ void QVGEGLWindowSurfaceVGImage::beginPaint(QWidget *widget)
             // Create a VGImage object to act as the back buffer
             // for this window.  We have to create the VGImage with a
             // current context, so activate the main surface for the window.
-            qt_vg_make_current(context, mainSurface());
+            context->makeCurrent(mainSurface());
             recreateBackBuffer = false;
             if (backBufferSurface != EGL_NO_SURFACE) {
                 eglDestroySurface(context->display(), backBufferSurface);
@@ -534,9 +474,9 @@ void QVGEGLWindowSurfaceVGImage::beginPaint(QWidget *widget)
             }
         }
         if (backBufferSurface != EGL_NO_SURFACE)
-            qt_vg_make_current(context, backBufferSurface);
+            context->makeCurrent(backBufferSurface);
         else
-            qt_vg_make_current(context, mainSurface());
+            context->makeCurrent(mainSurface());
         isPaintingActive = true;
     }
 }
@@ -551,9 +491,8 @@ void QVGEGLWindowSurfaceVGImage::endPaint
         if (backBufferSurface != EGL_NO_SURFACE) {
             if (isPaintingActive)
                 vgFlush();
-            qt_vg_done_current(context);
+            context->lazyDoneCurrent();
         }
-        context->setSurface(EGL_NO_SURFACE);
         isPaintingActive = false;
     }
 }
@@ -588,7 +527,7 @@ void QVGEGLWindowSurfaceQImage::endPaint
         if (backBufferSurface != EGL_NO_SURFACE) {
             if (isPaintingActive)
                 vgFlush();
-            qt_vg_make_current(context, mainSurface());
+            context->makeCurrent(mainSurface());
             QRegion rgn = region.intersected
                 (QRect(0, 0, image->width(), image->height()));
             if (rgn.numRects() == 1) {
@@ -598,9 +537,8 @@ void QVGEGLWindowSurfaceQImage::endPaint
                 for (int index = 0; index < rects.size(); ++index)
                     copySubImage(image, backBuffer, rects[index]);
             }
-            qt_vg_done_current(context);
+            context->lazyDoneCurrent();
         }
-        context->setSurface(EGL_NO_SURFACE);
         isPaintingActive = false;
     }
 }
@@ -621,7 +559,7 @@ QVGEGLWindowSurfaceDirect::~QVGEGLWindowSurfaceDirect()
     destroyPaintEngine();
     if (context) {
         if (windowSurface != EGL_NO_SURFACE)
-            qt_vg_destroy_surface(context, windowSurface);
+            context->destroySurface(windowSurface);
         qt_vg_destroy_context(context);
     }
 }
@@ -638,9 +576,8 @@ QEglContext *QVGEGLWindowSurfaceDirect::ensureContext(QWidget *widget)
         // We can keep the same context and paint engine.
         size = newSize;
         if (isPaintingActive)
-            qt_vg_done_current(context, true);
-        context->setSurface(windowSurface);
-        context->destroySurface();
+            context->doneCurrent();
+        context->destroySurface(windowSurface);
 #if defined(EGL_VG_ALPHA_FORMAT_PRE_BIT)
         if (isPremultipliedContext(context)) {
             surfaceProps.setValue
@@ -649,9 +586,7 @@ QEglContext *QVGEGLWindowSurfaceDirect::ensureContext(QWidget *widget)
             surfaceProps.removeValue(EGL_VG_ALPHA_FORMAT);
         }
 #endif
-        context->createSurface(widget, &surfaceProps);
-        windowSurface = context->surface();
-        context->setSurface(EGL_NO_SURFACE);
+        windowSurface = context->createSurface(widget, &surfaceProps);
         isPaintingActive = false;
     }
 #else
@@ -663,8 +598,7 @@ QEglContext *QVGEGLWindowSurfaceDirect::ensureContext(QWidget *widget)
         // in the new context.
         qt_vg_destroy_paint_engine(engine);
         engine = 0;
-        context->setSurface(windowSurface);
-        context->destroySurface();
+        context->destroySurface(windowSurface);
         qt_vg_destroy_context(context);
         context = 0;
         windowSurface = EGL_NO_SURFACE;
@@ -689,7 +623,8 @@ QEglContext *QVGEGLWindowSurfaceDirect::ensureContext(QWidget *widget)
             surfaceProps.removeValue(EGL_VG_ALPHA_FORMAT);
         }
 #endif
-        if (!context->createSurface(widget, &surfaceProps)) {
+        EGLSurface surface = context->createSurface(widget, &surfaceProps);
+        if (surface == EGL_NO_SURFACE) {
             qt_vg_destroy_context(context);
             context = 0;
             return 0;
@@ -708,15 +643,14 @@ QEglContext *QVGEGLWindowSurfaceDirect::ensureContext(QWidget *widget)
         // Try to force the surface back buffer to preserve its contents.
         if (needToSwap) {
             eglGetError();  // Clear error state first.
-            eglSurfaceAttrib(context->display(), context->surface(),
+            eglSurfaceAttrib(context->display(), surface,
                              EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
             if (eglGetError() != EGL_SUCCESS) {
                 qWarning("QVG: could not enable preserved swap");
             }
         }
 #endif
-        windowSurface = context->surface();
-        context->setSurface(EGL_NO_SURFACE);
+        windowSurface = surface;
         isPaintingActive = false;
     }
     return context;
@@ -726,7 +660,7 @@ void QVGEGLWindowSurfaceDirect::beginPaint(QWidget *widget)
 {
     QEglContext *context = ensureContext(widget);
     if (context) {
-        qt_vg_make_current(context, windowSurface);
+        context->makeCurrent(windowSurface);
         isPaintingActive = true;
     }
 }
@@ -740,14 +674,13 @@ void QVGEGLWindowSurfaceDirect::endPaint
     if (context) {
         if (needToSwap) {
             if (!isPaintingActive)
-                qt_vg_make_current(context, windowSurface);
-            context->swapBuffers();
-            qt_vg_done_current(context);
+                context->makeCurrent(windowSurface);
+            context->swapBuffers(windowSurface);
+            context->lazyDoneCurrent();
         } else if (isPaintingActive) {
             vgFlush();
-            qt_vg_done_current(context);
+            context->lazyDoneCurrent();
         }
-        context->setSurface(EGL_NO_SURFACE);
         isPaintingActive = false;
     }
 }

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtScript module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -374,12 +374,7 @@ QScriptContext *QScriptContext::parentContext() const
 {
     const JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
     JSC::CallFrame *callerFrame = frame->callerFrame()->removeHostCallFrameFlag();
-    if (callerFrame && callerFrame->callerFrame()->hasHostCallFrameFlag()
-        && callerFrame->callerFrame()->removeHostCallFrameFlag() == QScript::scriptEngineFromExec(frame)->globalExec()) {
-        //skip the "fake" context created in Interpreter::execute.
-        callerFrame = callerFrame->callerFrame()->removeHostCallFrameFlag();
-    }
-    return reinterpret_cast<QScriptContext *>(callerFrame);
+    return QScriptEnginePrivate::contextForFrame(callerFrame);
 }
 
 /*!
@@ -473,7 +468,7 @@ QScriptValue QScriptContext::activationObject() const
         }*/
     }
 
-    if (result && result->isObject(&QScript::QScriptActivationObject::info)
+    if (result && result->inherits(&QScript::QScriptActivationObject::info)
         && (static_cast<QScript::QScriptActivationObject*>(result)->delegate() != 0)) {
         // Return the object that property access is being delegated to
         result = static_cast<QScript::QScriptActivationObject*>(result)->delegate();
@@ -522,7 +517,7 @@ void QScriptContext::setActivationObject(const QScriptValue &activation)
     while (node != 0) {
         if (node->object && node->object->isVariableObject()) {
             if (!object->isVariableObject()) {
-                if (node->object->isObject(&QScript::QScriptActivationObject::info)) {
+                if (node->object->inherits(&QScript::QScriptActivationObject::info)) {
                     static_cast<QScript::QScriptActivationObject*>(node->object)->setDelegate(object);
                 } else {
                     // Create a QScriptActivationObject that acts as a proxy
@@ -576,7 +571,7 @@ void QScriptContext::setThisObject(const QScriptValue &thisObject)
     if (cb != 0) {
         frame[cb->thisRegister()] = jscThisObject;
     } else {
-        JSC::Register* thisRegister = frame->registers() - JSC::RegisterFile::CallFrameHeaderSize - frame->argumentCount();
+        JSC::Register* thisRegister = QScriptEnginePrivate::thisRegisterForFrame(frame);
         thisRegister[0] = jscThisObject;
     }
 }
@@ -692,7 +687,7 @@ QScriptValueList QScriptContext::scopeChain() const
         JSC::JSObject *object = *it;
         if (!object)
             continue;
-        if (object->isObject(&QScript::QScriptActivationObject::info)
+        if (object->inherits(&QScript::QScriptActivationObject::info)
             && (static_cast<QScript::QScriptActivationObject*>(object)->delegate() != 0)) {
             // Return the object that property access is being delegated to
             object = static_cast<QScript::QScriptActivationObject*>(object)->delegate();

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -169,6 +169,9 @@ private slots:
 
     void mapRect_data();
     void mapRect();
+
+    void mapVector_data();
+    void mapVector();
 
     void properties();
     void metaTypes();
@@ -3315,6 +3318,64 @@ void tst_QMatrixNxN::mapRect()
     QRect mri = m4.mapRect(recti);
     QRect tri = t4.mapRect(recti);
     QVERIFY(mri == tri);
+}
+
+void tst_QMatrixNxN::mapVector_data()
+{
+    QTest::addColumn<void *>("mValues");
+
+    QTest::newRow("null")
+        << (void *)nullValues4;
+
+    QTest::newRow("identity")
+        << (void *)identityValues4;
+
+    QTest::newRow("unique")
+        << (void *)uniqueValues4;
+
+    static const qreal scale[] =
+        {2.0f, 0.0f, 0.0f, 0.0f,
+         0.0f, 11.0f, 0.0f, 0.0f,
+         0.0f, 0.0f, -6.5f, 0.0f,
+         0.0f, 0.0f, 0.0f, 1.0f};
+    QTest::newRow("scale")
+        << (void *)scale;
+
+    static const qreal scaleTranslate[] =
+        {2.0f, 0.0f, 0.0f, 1.0f,
+         0.0f, 11.0f, 0.0f, 2.0f,
+         0.0f, 0.0f, -6.5f, 3.0f,
+         0.0f, 0.0f, 0.0f, 1.0f};
+    QTest::newRow("scaleTranslate")
+        << (void *)scaleTranslate;
+
+    static const qreal translate[] =
+        {1.0f, 0.0f, 0.0f, 1.0f,
+         0.0f, 1.0f, 0.0f, 2.0f,
+         0.0f, 0.0f, 1.0f, 3.0f,
+         0.0f, 0.0f, 0.0f, 1.0f};
+    QTest::newRow("translate")
+        << (void *)translate;
+}
+void tst_QMatrixNxN::mapVector()
+{
+    QFETCH(void *, mValues);
+
+    QMatrix4x4 m1((const qreal *)mValues);
+    m1.inferSpecialType();
+
+    QVector3D v(3.5f, -1.0f, 2.5f);
+
+    QVector3D expected
+        (v.x() * m1(0, 0) + v.y() * m1(0, 1) + v.z() * m1(0, 2),
+         v.x() * m1(1, 0) + v.y() * m1(1, 1) + v.z() * m1(1, 2),
+         v.x() * m1(2, 0) + v.y() * m1(2, 1) + v.z() * m1(2, 2));
+
+    QVector3D actual = m1.mapVector(v);
+
+    QVERIFY(fuzzyCompare(actual.x(), expected.x()));
+    QVERIFY(fuzzyCompare(actual.y(), expected.y()));
+    QVERIFY(fuzzyCompare(actual.z(), expected.z()));
 }
 
 class tst_QMatrixNxN4x4Properties : public QObject

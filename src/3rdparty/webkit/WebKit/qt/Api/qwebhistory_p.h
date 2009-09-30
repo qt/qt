@@ -25,13 +25,15 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qshareddata.h>
 
+class QWebPagePrivate;
+
 class Q_AUTOTEST_EXPORT QWebHistoryItemPrivate : public QSharedData {
 public:
-    static QExplicitlySharedDataPointer<QWebHistoryItemPrivate> get(QWebHistoryItem *q)
+    static QExplicitlySharedDataPointer<QWebHistoryItemPrivate> get(QWebHistoryItem* q)
     {
         return q->d;
     }
-    QWebHistoryItemPrivate(WebCore::HistoryItem *i)
+    QWebHistoryItemPrivate(WebCore::HistoryItem* i)
     {
         if (i)
             i->ref();
@@ -43,30 +45,12 @@ public:
             item->deref();
     }
 
- /*   QByteArray saveStateWithoutVersionControl(QWebHistory::HistoryStateVersion version)
-    {
-        QByteArray buffer;
-        switch(version){
-            case QWebHistory::HistoryVersion1:
-                buffer=item->saveState(version);
-                break;
-            default:{}
-        }
-        return buffer;
-    }
-
-    bool restoreStateWithoutVersionControl(QWebHistory::HistoryStateVersion version,QDataStream& stream)
-    {
-
-    }
-*/
-
-    WebCore::HistoryItem *item;
+    WebCore::HistoryItem* item;
 };
 
 class QWebHistoryPrivate : public QSharedData {
 public:
-    QWebHistoryPrivate(WebCore::BackForwardList *l)
+    QWebHistoryPrivate(WebCore::BackForwardList* l)
     {
         l->ref();
         lst = l;
@@ -75,7 +59,10 @@ public:
     {
         lst->deref();
     }
-    WebCore::BackForwardList *lst;
+
+    QWebPagePrivate* page();
+
+    WebCore::BackForwardList* lst;
 };
 
 

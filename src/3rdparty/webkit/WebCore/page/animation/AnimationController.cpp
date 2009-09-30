@@ -36,6 +36,8 @@
 #include "EventNames.h"
 #include "Frame.h"
 #include "RenderView.h"
+#include "WebKitAnimationEvent.h"
+#include "WebKitTransitionEvent.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/UnusedParam.h>
 
@@ -98,7 +100,7 @@ void AnimationControllerPrivate::updateAnimationTimer(bool callSetChanged/* = fa
                 if (callSetChanged) {
                     Node* node = it->first->node();
                     ASSERT(!node || (node->document() && !node->document()->inPageCache()));
-                    node->setNeedsStyleRecalc(AnimationStyleChange);
+                    node->setNeedsStyleRecalc(SyntheticStyleChange);
                     calledSetChanged = true;
                 }
                 else
@@ -136,9 +138,9 @@ void AnimationControllerPrivate::updateStyleIfNeededDispatcherFired(Timer<Animat
     Vector<EventToDispatch>::const_iterator eventsToDispatchEnd = m_eventsToDispatch.end();
     for (Vector<EventToDispatch>::const_iterator it = m_eventsToDispatch.begin(); it != eventsToDispatchEnd; ++it) {
         if (it->eventType == eventNames().webkitTransitionEndEvent)
-            it->element->dispatchWebKitTransitionEvent(it->eventType, it->name, it->elapsedTime);
+            it->element->dispatchEvent(WebKitTransitionEvent::create(it->eventType, it->name, it->elapsedTime));
         else
-            it->element->dispatchWebKitAnimationEvent(it->eventType, it->name, it->elapsedTime);
+            it->element->dispatchEvent(WebKitAnimationEvent::create(it->eventType, it->name, it->elapsedTime));
     }
     
     m_eventsToDispatch.clear();
@@ -146,7 +148,7 @@ void AnimationControllerPrivate::updateStyleIfNeededDispatcherFired(Timer<Animat
     // call setChanged on all the elements
     Vector<RefPtr<Node> >::const_iterator nodeChangesToDispatchEnd = m_nodeChangesToDispatch.end();
     for (Vector<RefPtr<Node> >::const_iterator it = m_nodeChangesToDispatch.begin(); it != nodeChangesToDispatchEnd; ++it)
-        (*it)->setNeedsStyleRecalc(AnimationStyleChange);
+        (*it)->setNeedsStyleRecalc(SyntheticStyleChange);
     
     m_nodeChangesToDispatch.clear();
     
@@ -244,7 +246,7 @@ bool AnimationControllerPrivate::pauseAnimationAtTime(RenderObject* renderer, co
         return false;
 
     if (compAnim->pauseAnimationAtTime(name, t)) {
-        renderer->node()->setNeedsStyleRecalc(AnimationStyleChange);
+        renderer->node()->setNeedsStyleRecalc(SyntheticStyleChange);
         startUpdateStyleIfNeededDispatcher();
         return true;
     }
@@ -262,7 +264,7 @@ bool AnimationControllerPrivate::pauseTransitionAtTime(RenderObject* renderer, c
         return false;
 
     if (compAnim->pauseTransitionAtTime(cssPropertyID(property), t)) {
-        renderer->node()->setNeedsStyleRecalc(AnimationStyleChange);
+        renderer->node()->setNeedsStyleRecalc(SyntheticStyleChange);
         startUpdateStyleIfNeededDispatcher();
         return true;
     }
@@ -438,7 +440,7 @@ void AnimationController::cancelAnimations(RenderObject* renderer)
     if (m_data->clear(renderer)) {
         Node* node = renderer->node();
         ASSERT(!node || (node->document() && !node->document()->inPageCache()));
-        node->setNeedsStyleRecalc(AnimationStyleChange);
+        node->setNeedsStyleRecalc(SyntheticStyleChange);
     }
 }
 

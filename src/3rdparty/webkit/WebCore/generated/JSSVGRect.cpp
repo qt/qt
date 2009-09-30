@@ -83,7 +83,7 @@ JSSVGRect::JSSVGRect(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalO
 JSSVGRect::~JSSVGRect()
 {
     JSSVGDynamicPODTypeWrapperCache<FloatRect, SVGAnimatedRect>::forgetWrapper(m_impl.get());
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGRect::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -94,6 +94,11 @@ JSObject* JSSVGRect::createPrototype(ExecState* exec, JSGlobalObject* globalObje
 bool JSSVGRect::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGRect, Base>(exec, &JSSVGRectTable, this, propertyName, slot);
+}
+
+bool JSSVGRect::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGRect, Base>(exec, &JSSVGRectTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGRectX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -167,7 +172,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, JSSVGPO
 }
 FloatRect toSVGRect(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGRect::s_info) ? (FloatRect) *static_cast<JSSVGRect*>(asObject(value))->impl() : FloatRect();
+    return value.inherits(&JSSVGRect::s_info) ? (FloatRect) *static_cast<JSSVGRect*>(asObject(value))->impl() : FloatRect();
 }
 
 }

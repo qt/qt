@@ -35,12 +35,13 @@
 #include "ResourceRequest.h"
 #include "ThreadableLoader.h"
 #include "Timer.h"
+#include <wtf/Forward.h>
 
 namespace WebCore {
 
     class Archive;
     class AuthenticationChallenge;
-    class CachedFrame;
+    class CachedFrameBase;
     class CachedPage;
     class CachedResource;
     class Document;
@@ -241,6 +242,7 @@ namespace WebCore {
 
         void checkLoadComplete();
         void detachFromParent();
+        void detachViewsAndDocumentLoader();
 
         void addExtraFieldsToSubresourceRequest(ResourceRequest&);
         void addExtraFieldsToMainResourceRequest(ResourceRequest&);
@@ -260,7 +262,7 @@ namespace WebCore {
             bool lockHistory, PassRefPtr<Event>, PassRefPtr<FormState>);
 
         void stop();
-        void stopLoading(bool sendUnload, DatabasePolicy = DatabasePolicyStop);
+        void stopLoading(UnloadEventPolicy, DatabasePolicy = DatabasePolicyStop);
         bool closeURL();
 
         void didExplicitOpen();
@@ -307,6 +309,11 @@ namespace WebCore {
         void dispatchDocumentElementAvailable();
         void restoreDocumentState();
 
+        // Mixed content related functions.
+        static bool isMixedContent(SecurityOrigin* context, const KURL&);
+        void checkIfDisplayInsecureContent(SecurityOrigin* context, const KURL&);
+        void checkIfRunInsecureContent(SecurityOrigin* context, const KURL&);
+
         Frame* opener();
         void setOpener(Frame*);
         bool openedByDOM() const;
@@ -345,6 +352,7 @@ namespace WebCore {
         void setTitle(const String&);
 
         void commitProvisionalLoad(PassRefPtr<CachedPage>);
+        bool isLoadingFromCachedPage() const { return m_loadingFromCachedPage; }
 
         void goToItem(HistoryItem*, FrameLoadType);
         void saveDocumentAndScrollState();
@@ -374,6 +382,8 @@ namespace WebCore {
 
         bool shouldInterruptLoadForXFrameOptions(const String&, const KURL&);
 
+        void open(CachedFrameBase&);
+
     private:
         PassRefPtr<HistoryItem> createHistoryItem(bool useOriginal);
         PassRefPtr<HistoryItem> createHistoryItemTree(Frame* targetFrame, bool clipAtTarget);
@@ -402,15 +412,13 @@ namespace WebCore {
         void updateHistoryForAnchorScroll();
     
         void redirectionTimerFired(Timer<FrameLoader>*);
-        void checkCompletedTimerFired(Timer<FrameLoader>*);
-        void checkLoadCompleteTimerFired(Timer<FrameLoader>*);
+        void checkTimerFired(Timer<FrameLoader>*);
         
         void cancelRedirection(bool newLoadInProgress = false);
 
         void started();
 
         void completed();
-        void parentCompleted();
 
         bool shouldUsePlugin(const KURL&, const String& mimeType, bool hasFallback, bool& useFallback);
         bool loadPlugin(RenderPart*, const KURL&, const String& mimeType,
@@ -418,6 +426,7 @@ namespace WebCore {
         
         bool loadProvisionalItemFromCachedPage();
         void cachePageForHistoryItem(HistoryItem*);
+        void pageHidden();
 
         void receivedFirstData();
 
@@ -467,16 +476,15 @@ namespace WebCore {
 
         void closeOldDataSources();
         void open(CachedPage&);
-        void open(CachedFrame&);
 
         void updateHistoryAfterClientRedirect();
 
-        void clear(bool clearWindowProperties = true, bool clearScriptObjects = true);
+        void clear(bool clearWindowProperties = true, bool clearScriptObjects = true, bool clearFrameView = true);
 
         bool shouldReloadToHandleUnreachableURL(DocumentLoader*);
         void handleUnimplementablePolicy(const ResourceError&);
 
-        void scheduleRedirection(ScheduledRedirection*);
+        void scheduleRedirection(PassOwnPtr<ScheduledRedirection>);
         void startRedirectionTimer();
         void stopRedirectionTimer();
 
@@ -529,12 +537,16 @@ namespace WebCore {
 
         void scheduleCheckCompleted();
         void scheduleCheckLoadComplete();
+        void startCheckCompleteTimer();
 
         KURL originalRequestURL() const;
 
         bool shouldTreatURLAsSameAsCurrent(const KURL&) const;
 
         void saveScrollPositionAndViewStateToItem(HistoryItem*);
+
+        bool allAncestorsAreComplete() const; // including this
+        bool allChildrenAreComplete() const; // immediate children, not all descendants
 
         Frame* m_frame;
         FrameLoaderClient* m_client;
@@ -600,8 +612,9 @@ namespace WebCore {
         KURL m_submittedFormURL;
     
         Timer<FrameLoader> m_redirectionTimer;
-        Timer<FrameLoader> m_checkCompletedTimer;
-        Timer<FrameLoader> m_checkLoadCompleteTimer;
+        Timer<FrameLoader> m_checkTimer;
+        bool m_shouldCallCheckCompleted;
+        bool m_shouldCallCheckLoadComplete;
 
         Frame* m_opener;
         HashSet<Frame*> m_openedFrames;
@@ -617,6 +630,7 @@ namespace WebCore {
         RefPtr<HistoryItem> m_provisionalHistoryItem;
         
         bool m_didPerformFirstNavigation;
+        bool m_loadingFromCachedPage;
         
 #ifndef NDEBUG
         bool m_didDispatchDidCommitLoad;

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtMultimedia module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -66,7 +66,7 @@
 QT_BEGIN_NAMESPACE
 
 
-QAudioDeviceInfoPrivate::QAudioDeviceInfoPrivate(QByteArray const& handle, QAudio::Mode)
+QAudioDeviceInfoInternal::QAudioDeviceInfoInternal(QByteArray const& handle, QAudio::Mode)
 {
     QDataStream ds(handle);
     quint32 did, tm;
@@ -76,12 +76,12 @@ QAudioDeviceInfoPrivate::QAudioDeviceInfoPrivate(QByteArray const& handle, QAudi
     mode = QAudio::Mode(tm);
 }
 
-bool QAudioDeviceInfoPrivate::isFormatSupported(const QAudioFormat& format) const
+bool QAudioDeviceInfoInternal::isFormatSupported(const QAudioFormat& format) const
 {
     return format.codec() == QString::fromLatin1("audio/pcm");
 }
 
-QAudioFormat QAudioDeviceInfoPrivate::preferredFormat() const
+QAudioFormat QAudioDeviceInfoInternal::preferredFormat() const
 {
     QAudioFormat    rc;
 
@@ -134,7 +134,7 @@ QAudioFormat QAudioDeviceInfoPrivate::preferredFormat() const
     return rc;
 }
 
-QAudioFormat QAudioDeviceInfoPrivate::nearestFormat(const QAudioFormat& format) const
+QAudioFormat QAudioDeviceInfoInternal::nearestFormat(const QAudioFormat& format) const
 {
     QAudioFormat    rc(format);
     QAudioFormat    target = preferredFormat();
@@ -158,17 +158,17 @@ QAudioFormat QAudioDeviceInfoPrivate::nearestFormat(const QAudioFormat& format) 
     return rc;
 }
 
-QString QAudioDeviceInfoPrivate::deviceName() const
+QString QAudioDeviceInfoInternal::deviceName() const
 {
     return name;
 }
 
-QStringList QAudioDeviceInfoPrivate::codecList()
+QStringList QAudioDeviceInfoInternal::codecList()
 {
     return QStringList() << QString::fromLatin1("audio/pcm");
 }
 
-QList<int> QAudioDeviceInfoPrivate::frequencyList()
+QList<int> QAudioDeviceInfoInternal::frequencyList()
 {
     QSet<int>  rc;
 
@@ -208,7 +208,7 @@ QList<int> QAudioDeviceInfoPrivate::frequencyList()
     return rc.toList();
 }
 
-QList<int> QAudioDeviceInfoPrivate::channelsList()
+QList<int> QAudioDeviceInfoInternal::channelsList()
 {
     QList<int>  rc;
 
@@ -248,17 +248,17 @@ QList<int> QAudioDeviceInfoPrivate::channelsList()
     return rc;
 }
 
-QList<int> QAudioDeviceInfoPrivate::sampleSizeList()
+QList<int> QAudioDeviceInfoInternal::sampleSizeList()
 {
     return QList<int>() << 8 << 16 << 24 << 32 << 64;
 }
 
-QList<QAudioFormat::Endian> QAudioDeviceInfoPrivate::byteOrderList()
+QList<QAudioFormat::Endian> QAudioDeviceInfoInternal::byteOrderList()
 {
     return QList<QAudioFormat::Endian>() << QAudioFormat::LittleEndian << QAudioFormat::BigEndian;
 }
 
-QList<QAudioFormat::SampleType> QAudioDeviceInfoPrivate::sampleTypeList()
+QList<QAudioFormat::SampleType> QAudioDeviceInfoInternal::sampleTypeList()
 {
     return QList<QAudioFormat::SampleType>() << QAudioFormat::SignedInt << QAudioFormat::UnSignedInt << QAudioFormat::Float;
 }
@@ -296,7 +296,7 @@ static QByteArray get_device_info(AudioDeviceID audioDevice, QAudio::Mode mode)
     return device;
 }
 
-QByteArray QAudioDeviceInfoPrivate::defaultInputDevice()
+QByteArray QAudioDeviceInfoInternal::defaultInputDevice()
 {
     AudioDeviceID   audioDevice;
     UInt32          size = sizeof(audioDevice);
@@ -310,7 +310,7 @@ QByteArray QAudioDeviceInfoPrivate::defaultInputDevice()
     return get_device_info(audioDevice, QAudio::AudioInput);
 }
 
-QByteArray QAudioDeviceInfoPrivate::defaultOutputDevice()
+QByteArray QAudioDeviceInfoInternal::defaultOutputDevice()
 {
     AudioDeviceID audioDevice;
     UInt32        size = sizeof(audioDevice);
@@ -324,7 +324,7 @@ QByteArray QAudioDeviceInfoPrivate::defaultOutputDevice()
     return get_device_info(audioDevice, QAudio::AudioOutput);
 }
 
-QList<QByteArray> QAudioDeviceInfoPrivate::deviceList(QAudio::Mode mode)
+QList<QByteArray> QAudioDeviceInfoInternal::deviceList(QAudio::Mode mode)
 {
     QList<QByteArray>   devices;
 

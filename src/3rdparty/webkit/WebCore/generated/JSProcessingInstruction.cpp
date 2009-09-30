@@ -73,6 +73,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSProcessingInstructionPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -87,6 +88,11 @@ const ClassInfo JSProcessingInstructionConstructor::s_info = { "ProcessingInstru
 bool JSProcessingInstructionConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSProcessingInstructionConstructor, DOMObject>(exec, &JSProcessingInstructionConstructorTable, this, propertyName, slot);
+}
+
+bool JSProcessingInstructionConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSProcessingInstructionConstructor, DOMObject>(exec, &JSProcessingInstructionConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -125,6 +131,11 @@ JSObject* JSProcessingInstruction::createPrototype(ExecState* exec, JSGlobalObje
 bool JSProcessingInstruction::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSProcessingInstruction, Base>(exec, &JSProcessingInstructionTable, this, propertyName, slot);
+}
+
+bool JSProcessingInstruction::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSProcessingInstruction, Base>(exec, &JSProcessingInstructionTable, this, propertyName, descriptor);
 }
 
 JSValue jsProcessingInstructionTarget(ExecState* exec, const Identifier&, const PropertySlot& slot)

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -1434,7 +1434,6 @@ void QLineEdit::mousePressEvent(QMouseEvent* e)
 #ifndef QT_NO_DRAGANDDROP
     if (!mark && d->dragEnabled && d->control->echoMode() == Normal &&
          e->button() == Qt::LeftButton && d->control->inSelection(e->pos().x())) {
-        d->control->moveCursor(cursor);
         d->dndPos = e->pos();
         if (!d->dndTimer.isActive())
             d->dndTimer.start(QApplication::startDragTime(), this);
@@ -1808,7 +1807,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
     // (cix).
     int minLB = qMax(0, -fm.minLeftBearing());
     int minRB = qMax(0, -fm.minRightBearing());
-    int widthUsed = d->control->width() + minRB;
+    int widthUsed = qRound(d->control->naturalTextWidth()) + 1 + minRB;
     if ((minLB + widthUsed) <=  lineRect.width()) {
         // text fits in lineRect; use hscroll for alignment
         switch (va & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
@@ -1851,8 +1850,12 @@ void QLineEdit::paintEvent(QPaintEvent *)
 #ifdef QT_KEYPAD_NAVIGATION
     if (!QApplication::keypadNavigationEnabled() || hasEditFocus())
 #endif
-    if (d->control->hasSelectedText() || (d->cursorVisible && !d->control->inputMask().isEmpty() && !d->control->isReadOnly()))
+    if (d->control->hasSelectedText() || (d->cursorVisible && !d->control->inputMask().isEmpty() && !d->control->isReadOnly())){
         flags |= QLineControl::DrawSelections;
+        // Palette only used for selections/mask and may not be in sync
+        if(d->control->palette() != pal)
+            d->control->setPalette(pal);
+    }
 
     // Asian users see an IM selection text as cursor on candidate
     // selection phase of input method, so the ordinary cursor should be
@@ -2047,7 +2050,11 @@ void QLineEdit::changeEvent(QEvent *ev)
         d->control->setFont(font());
         break;
     case QEvent::StyleChange:
-        d->control->setPasswordCharacter(style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter));
+        {
+            QStyleOptionFrameV2 opt;
+            initStyleOption(&opt);
+            d->control->setPasswordCharacter(style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, this));
+        }
         update();
         break;
     case QEvent::LayoutDirectionChange:

@@ -119,6 +119,18 @@ PassRefPtr<DocumentFragment> Pasteboard::documentFragment(Frame* frame, PassRefP
     return 0;
 }
 
+void Pasteboard::writePlainText(const String& text)
+{
+#ifndef QT_NO_CLIPBOARD
+    QMimeData* md = new QMimeData;
+    QString qtext = text;
+    qtext.replace(QChar(0xa0), QLatin1Char(' '));
+    md->setText(qtext);
+    QApplication::clipboard()->setMimeData(md, m_selectionMode ?
+            QClipboard::Selection : QClipboard::Clipboard);
+#endif
+}
+
 void Pasteboard::writeURL(const KURL& _url, const String&, Frame*)
 {
     ASSERT(!_url.isEmpty());
@@ -138,7 +150,7 @@ void Pasteboard::writeImage(Node* node, const KURL&, const String&)
     ASSERT(node && node->renderer() && node->renderer()->isImage());
 
 #ifndef QT_NO_CLIPBOARD
-    CachedImage* cachedImage = static_cast<RenderImage*>(node->renderer())->cachedImage();
+    CachedImage* cachedImage = toRenderImage(node->renderer())->cachedImage();
     ASSERT(cachedImage);
 
     Image* image = cachedImage->image();

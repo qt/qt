@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2007 Alexey Proskuryakov <ap@nypop.com>.
  * Copyright (C) 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,6 +30,7 @@
 
 #include "CSSPrimitiveValue.h"
 #include "CSSValueKeywords.h"
+#include "FontSmoothingMode.h"
 #include "GraphicsTypes.h"
 #include "Path.h"
 #include "RenderStyleConstants.h"
@@ -227,6 +229,15 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ControlPart e)
         case MediaSliderThumbPart:
             m_value.ident = CSSValueMediaSliderthumb;
             break;
+        case MediaVolumeSliderContainerPart:
+            m_value.ident = CSSValueMediaVolumeSliderContainer;
+            break;
+        case MediaVolumeSliderPart:
+            m_value.ident = CSSValueMediaVolumeSlider;
+            break;
+        case MediaVolumeSliderThumbPart:
+            m_value.ident = CSSValueMediaVolumeSliderthumb;
+            break;
         case MediaControlsBackgroundPart:
             m_value.ident = CSSValueMediaControlsBackground;
             break;
@@ -375,14 +386,14 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EFillRepeat e)
         case RepeatFill:
             m_value.ident = CSSValueRepeat;
             break;
-        case RepeatXFill:
-            m_value.ident = CSSValueRepeatX;
-            break;
-        case RepeatYFill:
-            m_value.ident = CSSValueRepeatY;
-            break;
         case NoRepeatFill:
             m_value.ident = CSSValueNoRepeat;
+            break;
+        case RoundFill:
+            m_value.ident = CSSValueRound;
+            break;
+        case SpaceFill:
+            m_value.ident = CSSValueSpace;
             break;
     }
 }
@@ -392,12 +403,12 @@ template<> inline CSSPrimitiveValue::operator EFillRepeat() const
     switch (m_value.ident) {
         case CSSValueRepeat:
             return RepeatFill;
-        case CSSValueRepeatX:
-            return RepeatXFill;
-        case CSSValueRepeatY:
-            return RepeatYFill;
         case CSSValueNoRepeat:
             return NoRepeatFill;
+        case CSSValueRound:
+            return RoundFill;
+        case CSSValueSpace:
+            return SpaceFill;
         default:
             ASSERT_NOT_REACHED();
             return RepeatFill;
@@ -522,6 +533,7 @@ template<> inline CSSPrimitiveValue::operator EBoxOrient() const
         case CSSValueInlineAxis:
             return HORIZONTAL;
         case CSSValueVertical:
+        case CSSValueBlockAxis:
             return VERTICAL;
         default:
             ASSERT_NOT_REACHED();
@@ -777,6 +789,11 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EDisplay e)
         case TABLE_CAPTION:
             m_value.ident = CSSValueTableCaption;
             break;
+#if ENABLE(WCSS)
+        case WAP_MARQUEE:
+            m_value.ident = CSSValueWapMarquee;
+            break;
+#endif
         case BOX:
             m_value.ident = CSSValueWebkitBox;
             break;
@@ -1780,6 +1797,45 @@ template<> inline CSSPrimitiveValue::operator EPointerEvents() const
             ASSERT_NOT_REACHED();
             return PE_ALL;
     }
+}
+
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(FontSmoothingMode smoothing)
+    : m_type(CSS_IDENT)
+{
+    switch (smoothing) {
+    case AutoSmoothing:
+        m_value.ident = CSSValueAuto;
+        return;
+    case NoSmoothing:
+        m_value.ident = CSSValueNone;
+        return;
+    case Antialiased:
+        m_value.ident = CSSValueAntialiased;
+        return;
+    case SubpixelAntialiased:
+        m_value.ident = CSSValueSubpixelAntialiased;
+        return;
+    }
+    
+    ASSERT_NOT_REACHED();
+    m_value.ident = CSSValueAuto;
+}
+
+template<> inline CSSPrimitiveValue::operator FontSmoothingMode() const
+{
+    switch (m_value.ident) {
+    case CSSValueAuto:
+        return AutoSmoothing;
+    case CSSValueNone:
+        return NoSmoothing;
+    case CSSValueAntialiased:
+        return Antialiased;
+    case CSSValueSubpixelAntialiased:
+        return SubpixelAntialiased;
+    }
+    
+    ASSERT_NOT_REACHED();
+    return AutoSmoothing;
 }
 
 #if ENABLE(SVG)

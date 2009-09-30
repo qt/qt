@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -1275,7 +1275,7 @@ QPrinter::ColorMode QPrinter::colorMode() const
   buffering up the copies and in those cases the application must make an
   explicit call to the print code for each copy.
 
-  \sa setNumCopies()
+  \sa setNumCopies(), actualNumCopies()
 */
 
 int QPrinter::numCopies() const
@@ -1283,6 +1283,25 @@ int QPrinter::numCopies() const
     Q_D(const QPrinter);
    return d->printEngine->property(QPrintEngine::PPK_NumberOfCopies).toInt();
 }
+
+
+/*!
+    \since 4.6
+
+    Returns the number of copies that will be printed. The default
+    value is 1.
+
+    This function always returns the actual value specified in the print
+    dialog or using setNumCopies().
+
+    \sa setNumCopies(), numCopies()
+*/
+int QPrinter::actualNumCopies() const
+{
+    Q_D(const QPrinter);
+    return qt_printerRealNumCopies(d->paintEngine);
+}
+
 
 
 /*!

@@ -54,7 +54,7 @@ public:
     virtual void insertedIntoDocument();
     virtual void removedFromDocument();
  
-    virtual void handleLocalEvents(Event*, bool useCapture);
+    virtual void handleLocalEvents(Event*);
      
     PassRefPtr<HTMLCollection> elements();
     void getNamedElements(const AtomicString&, Vector<RefPtr<Node> >&);
@@ -96,6 +96,9 @@ public:
     String name() const;
     void setName(const String&);
 
+    bool noValidate() const;
+    void setNoValidate(bool);
+
     String acceptCharset() const { return m_formDataBuilder.acceptCharset(); }
     void setAcceptCharset(const String&);
 
@@ -107,7 +110,11 @@ public:
 
     virtual String target() const;
     void setTarget(const String&);
-    
+
+    HTMLFormControlElement* defaultButton() const;
+
+    bool checkValidity();
+
     PassRefPtr<HTMLFormControlElement> elementForAlias(const AtomicString&);
     void addElementAlias(HTMLFormControlElement*, const AtomicString& alias);
 

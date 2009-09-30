@@ -35,14 +35,14 @@ module core {
         GenerateConstructor
     ] InspectorBackend {
         void hideDOMNodeHighlight();
-        [Custom] void highlightDOMNode(in Node node);
+        [Custom] void highlightDOMNode(in long nodeId);
         void loaded();
         void windowUnloading();
         void attach();
         void detach();
 
         void closeWindow();
-        void clearMessages();
+        void clearMessages(in boolean clearUI);
         void toggleNodeSearch();
 
         boolean isWindowVisible();
@@ -60,6 +60,9 @@ module core {
         DOMString localizedStringsURL();
         DOMString hiddenPanels();
         DOMString platform();
+        void enableTimeline(in boolean always);
+        void disableTimeline(in boolean always);
+        boolean timelineEnabled();
         [ImplementationFunction=moveWindowBy] void moveByUnrestricted(in float x, in float y);
         void setAttachedWindowHeight(in unsigned long height);
         [Custom] DOMObject wrapCallback(in DOMObject callback);
@@ -68,12 +71,16 @@ module core {
         void disableResourceTracking(in boolean always);
         void storeLastActivePanel(in DOMString panelName);
 
+        void getCookies(in long callId);
+        void deleteCookie(in DOMString cookieName);
+
 #if defined(ENABLE_JAVASCRIPT_DEBUGGER) && ENABLE_JAVASCRIPT_DEBUGGER
         boolean debuggerEnabled();
         void enableDebugger(in boolean always);
         void disableDebugger(in boolean always);
 
-        void addBreakpoint(in DOMString sourceID, in unsigned long lineNumber);
+        void addBreakpoint(in DOMString sourceID, in unsigned long lineNumber, in DOMString condition);
+        void updateBreakpoint(in DOMString sourceID, in unsigned long lineNumber, in DOMString condition);
         void removeBreakpoint(in DOMString sourceID, in unsigned long lineNumber);
 
         void pauseInDebugger();
@@ -97,5 +104,27 @@ module core {
 
         [Custom] Array profiles();
 #endif
-     };
- }
+        void dispatchOnInjectedScript(in long callId, in DOMString methodName, in DOMString arguments);
+        void getChildNodes(in long callId, in long nodeId);
+        void setAttribute(in long callId, in long elementId, in DOMString name, in DOMString value);
+        void removeAttribute(in long callId, in long elementId, in DOMString name);
+        void setTextNodeValue(in long callId, in long nodeId, in DOMString value);
+        void copyNode(in long nodeId);
+
+        // Called from InjectedScript.
+        [Custom] DOMObject nodeForId(in long nodeId);
+        [Custom] long wrapObject(in DOMObject object);
+        [Custom] DOMObject unwrapObject(in long objectId);
+        [Custom] int pushNodePathToFrontend(in DOMObject node, in boolean selectInUI);
+        void addNodesToSearchResult(in DOMString nodeIds);
+#if defined(ENABLE_DATABASE) && ENABLE_DATABASE
+        [Custom] void selectDatabase(in DOMObject database);
+#endif
+#if defined(ENABLE_DOM_STORAGE) && ENABLE_DOM_STORAGE
+        [Custom] void selectDOMStorage(in DOMObject storage);
+        void getDOMStorageEntries(in long callId, in long storageId);
+        void setDOMStorageItem(in long callId, in long storageId, in DOMString key, in DOMString value);
+        void removeDOMStorageItem(in long callId, in long storageId, in DOMString key);
+#endif
+    };
+}

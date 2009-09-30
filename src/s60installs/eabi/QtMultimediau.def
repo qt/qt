@@ -12,9 +12,9 @@ EXPORTS
 	_ZN11QAudioInput6resumeEv @ 11 NONAME
 	_ZN11QAudioInput7suspendEv @ 12 NONAME
 	_ZN11QAudioInputC1ERK12QAudioFormatP7QObject @ 13 NONAME
-	_ZN11QAudioInputC1ERK14QAudioDeviceIdRK12QAudioFormatP7QObject @ 14 NONAME
+	_ZN11QAudioInputC1ERK14QAudioDeviceIdRK12QAudioFormatP7QObject @ 14 NONAME ABSENT
 	_ZN11QAudioInputC2ERK12QAudioFormatP7QObject @ 15 NONAME
-	_ZN11QAudioInputC2ERK14QAudioDeviceIdRK12QAudioFormatP7QObject @ 16 NONAME
+	_ZN11QAudioInputC2ERK14QAudioDeviceIdRK12QAudioFormatP7QObject @ 16 NONAME ABSENT
 	_ZN11QAudioInputD0Ev @ 17 NONAME
 	_ZN11QAudioInputD1Ev @ 18 NONAME
 	_ZN11QAudioInputD2Ev @ 19 NONAME
@@ -23,7 +23,7 @@ EXPORTS
 	_ZN12QAudioFormat12setFrequencyEi @ 22 NONAME
 	_ZN12QAudioFormat13setSampleSizeEi @ 23 NONAME
 	_ZN12QAudioFormat13setSampleTypeENS_10SampleTypeE @ 24 NONAME
-	_ZN12QAudioFormat8setCodecE7QString @ 25 NONAME
+	_ZN12QAudioFormat8setCodecE7QString @ 25 NONAME ABSENT
 	_ZN12QAudioFormatC1ERKS_ @ 26 NONAME
 	_ZN12QAudioFormatC1Ev @ 27 NONAME
 	_ZN12QAudioFormatC2ERKS_ @ 28 NONAME
@@ -44,30 +44,30 @@ EXPORTS
 	_ZN12QAudioOutput6resumeEv @ 43 NONAME
 	_ZN12QAudioOutput7suspendEv @ 44 NONAME
 	_ZN12QAudioOutputC1ERK12QAudioFormatP7QObject @ 45 NONAME
-	_ZN12QAudioOutputC1ERK14QAudioDeviceIdRK12QAudioFormatP7QObject @ 46 NONAME
+	_ZN12QAudioOutputC1ERK14QAudioDeviceIdRK12QAudioFormatP7QObject @ 46 NONAME ABSENT
 	_ZN12QAudioOutputC2ERK12QAudioFormatP7QObject @ 47 NONAME
-	_ZN12QAudioOutputC2ERK14QAudioDeviceIdRK12QAudioFormatP7QObject @ 48 NONAME
+	_ZN12QAudioOutputC2ERK14QAudioDeviceIdRK12QAudioFormatP7QObject @ 48 NONAME ABSENT
 	_ZN12QAudioOutputD0Ev @ 49 NONAME
 	_ZN12QAudioOutputD1Ev @ 50 NONAME
 	_ZN12QAudioOutputD2Ev @ 51 NONAME
-	_ZN14QAudioDeviceIdC1EP21QAudioDeviceIdPrivate @ 52 NONAME
-	_ZN14QAudioDeviceIdC1ERKS_ @ 53 NONAME
-	_ZN14QAudioDeviceIdC1Ev @ 54 NONAME
-	_ZN14QAudioDeviceIdC2EP21QAudioDeviceIdPrivate @ 55 NONAME
-	_ZN14QAudioDeviceIdC2ERKS_ @ 56 NONAME
-	_ZN14QAudioDeviceIdC2Ev @ 57 NONAME
-	_ZN14QAudioDeviceIdD1Ev @ 58 NONAME
-	_ZN14QAudioDeviceIdD2Ev @ 59 NONAME
-	_ZN14QAudioDeviceIdaSERKS_ @ 60 NONAME
+	_ZN14QAudioDeviceIdC1EP21QAudioDeviceIdPrivate @ 52 NONAME ABSENT
+	_ZN14QAudioDeviceIdC1ERKS_ @ 53 NONAME ABSENT
+	_ZN14QAudioDeviceIdC1Ev @ 54 NONAME ABSENT
+	_ZN14QAudioDeviceIdC2EP21QAudioDeviceIdPrivate @ 55 NONAME ABSENT
+	_ZN14QAudioDeviceIdC2ERKS_ @ 56 NONAME ABSENT
+	_ZN14QAudioDeviceIdC2Ev @ 57 NONAME ABSENT
+	_ZN14QAudioDeviceIdD1Ev @ 58 NONAME ABSENT
+	_ZN14QAudioDeviceIdD2Ev @ 59 NONAME ABSENT
+	_ZN14QAudioDeviceIdaSERKS_ @ 60 NONAME ABSENT
 	_ZN16QAudioDeviceInfo10deviceListEN6QAudio4ModeE @ 61 NONAME
-	_ZN16QAudioDeviceInfo11qt_metacallEN11QMetaObject4CallEiPPv @ 62 NONAME
-	_ZN16QAudioDeviceInfo11qt_metacastEPKc @ 63 NONAME
-	_ZN16QAudioDeviceInfo16staticMetaObjectE @ 64 NONAME DATA 16
+	_ZN16QAudioDeviceInfo11qt_metacallEN11QMetaObject4CallEiPPv @ 62 NONAME ABSENT
+	_ZN16QAudioDeviceInfo11qt_metacastEPKc @ 63 NONAME ABSENT
+	_ZN16QAudioDeviceInfo16staticMetaObjectE @ 64 NONAME DATA 16 ABSENT
 	_ZN16QAudioDeviceInfo18defaultInputDeviceEv @ 65 NONAME
 	_ZN16QAudioDeviceInfo19defaultOutputDeviceEv @ 66 NONAME
-	_ZN16QAudioDeviceInfoC1ERK14QAudioDeviceIdP7QObject @ 67 NONAME
-	_ZN16QAudioDeviceInfoC2ERK14QAudioDeviceIdP7QObject @ 68 NONAME
-	_ZN16QAudioDeviceInfoD0Ev @ 69 NONAME
+	_ZN16QAudioDeviceInfoC1ERK14QAudioDeviceIdP7QObject @ 67 NONAME ABSENT
+	_ZN16QAudioDeviceInfoC2ERK14QAudioDeviceIdP7QObject @ 68 NONAME ABSENT
+	_ZN16QAudioDeviceInfoD0Ev @ 69 NONAME ABSENT
 	_ZN16QAudioDeviceInfoD1Ev @ 70 NONAME
 	_ZN16QAudioDeviceInfoD2Ev @ 71 NONAME
 	_ZN18QAudioEnginePlugin11qt_metacallEN11QMetaObject4CallEiPPv @ 72 NONAME
@@ -119,11 +119,11 @@ EXPORTS
 	_ZNK12QAudioOutput6formatEv @ 118 NONAME
 	_ZNK12QAudioOutput9bytesFreeEv @ 119 NONAME
 	_ZNK12QAudioOutput9totalTimeEv @ 120 NONAME
-	_ZNK14QAudioDeviceId6isNullEv @ 121 NONAME
-	_ZNK14QAudioDeviceIdeqERKS_ @ 122 NONAME
-	_ZNK14QAudioDeviceIdneERKS_ @ 123 NONAME
+	_ZNK14QAudioDeviceId6isNullEv @ 121 NONAME ABSENT
+	_ZNK14QAudioDeviceIdeqERKS_ @ 122 NONAME ABSENT
+	_ZNK14QAudioDeviceIdneERKS_ @ 123 NONAME ABSENT
 	_ZNK16QAudioDeviceInfo10deviceNameEv @ 124 NONAME
-	_ZNK16QAudioDeviceInfo10metaObjectEv @ 125 NONAME
+	_ZNK16QAudioDeviceInfo10metaObjectEv @ 125 NONAME ABSENT
 	_ZNK16QAudioDeviceInfo13nearestFormatERK12QAudioFormat @ 126 NONAME
 	_ZNK16QAudioDeviceInfo15preferredFormatEv @ 127 NONAME
 	_ZNK16QAudioDeviceInfo15supportedCodecsEv @ 128 NONAME
@@ -139,7 +139,7 @@ EXPORTS
 	_ZNK24QAbstractAudioDeviceInfo10metaObjectEv @ 138 NONAME
 	_ZTI11QAudioInput @ 139 NONAME
 	_ZTI12QAudioOutput @ 140 NONAME
-	_ZTI16QAudioDeviceInfo @ 141 NONAME
+	_ZTI16QAudioDeviceInfo @ 141 NONAME ABSENT
 	_ZTI18QAudioEnginePlugin @ 142 NONAME
 	_ZTI19QAbstractAudioInput @ 143 NONAME
 	_ZTI20QAbstractAudioOutput @ 144 NONAME
@@ -147,13 +147,161 @@ EXPORTS
 	_ZTI28QAudioEngineFactoryInterface @ 146 NONAME
 	_ZTV11QAudioInput @ 147 NONAME
 	_ZTV12QAudioOutput @ 148 NONAME
-	_ZTV16QAudioDeviceInfo @ 149 NONAME
+	_ZTV16QAudioDeviceInfo @ 149 NONAME ABSENT
 	_ZTV18QAudioEnginePlugin @ 150 NONAME
 	_ZTV19QAbstractAudioInput @ 151 NONAME
 	_ZTV20QAbstractAudioOutput @ 152 NONAME
 	_ZTV24QAbstractAudioDeviceInfo @ 153 NONAME
 	_ZThn8_N18QAudioEnginePluginD0Ev @ 154 NONAME
 	_ZThn8_N18QAudioEnginePluginD1Ev @ 155 NONAME
-	_ZlsR11QDataStreamRK14QAudioDeviceId @ 156 NONAME
-	_ZrsR11QDataStreamR14QAudioDeviceId @ 157 NONAME
+	_ZlsR11QDataStreamRK14QAudioDeviceId @ 156 NONAME ABSENT
+	_ZrsR11QDataStreamR14QAudioDeviceId @ 157 NONAME ABSENT
+	_ZN11QAudioInput19getStaticMetaObjectEv @ 158 NONAME
+	_ZN11QVideoFrame10setEndTimeEx @ 159 NONAME
+	_ZN11QVideoFrame12setFieldTypeENS_9FieldTypeE @ 160 NONAME
+	_ZN11QVideoFrame12setStartTimeEx @ 161 NONAME
+	_ZN11QVideoFrame21equivalentImageFormatENS_11PixelFormatE @ 162 NONAME
+	_ZN11QVideoFrame21equivalentPixelFormatEN6QImage6FormatE @ 163 NONAME
+	_ZN11QVideoFrame3mapEN20QAbstractVideoBuffer7MapModeE @ 164 NONAME
+	_ZN11QVideoFrame4bitsEv @ 165 NONAME
+	_ZN11QVideoFrame5unmapEv @ 166 NONAME
+	_ZN11QVideoFrameC1EP20QAbstractVideoBufferRK5QSizeNS_11PixelFormatE @ 167 NONAME
+	_ZN11QVideoFrameC1ERK6QImage @ 168 NONAME
+	_ZN11QVideoFrameC1ERKS_ @ 169 NONAME
+	_ZN11QVideoFrameC1EiRK5QSizeiNS_11PixelFormatE @ 170 NONAME
+	_ZN11QVideoFrameC1Ev @ 171 NONAME
+	_ZN11QVideoFrameC2EP20QAbstractVideoBufferRK5QSizeNS_11PixelFormatE @ 172 NONAME
+	_ZN11QVideoFrameC2ERK6QImage @ 173 NONAME
+	_ZN11QVideoFrameC2ERKS_ @ 174 NONAME
+	_ZN11QVideoFrameC2EiRK5QSizeiNS_11PixelFormatE @ 175 NONAME
+	_ZN11QVideoFrameC2Ev @ 176 NONAME
+	_ZN11QVideoFrameD1Ev @ 177 NONAME
+	_ZN11QVideoFrameD2Ev @ 178 NONAME
+	_ZN11QVideoFrameaSERKS_ @ 179 NONAME
+	_ZN12QAudioOutput19getStaticMetaObjectEv @ 180 NONAME
+	_ZN16QAudioDeviceInfo19getStaticMetaObjectEv @ 181 NONAME ABSENT
+	_ZN17QImageVideoBuffer3mapEN20QAbstractVideoBuffer7MapModeEPiS2_ @ 182 NONAME
+	_ZN17QImageVideoBuffer5unmapEv @ 183 NONAME
+	_ZN17QImageVideoBufferC1ERK6QImage @ 184 NONAME
+	_ZN17QImageVideoBufferC2ERK6QImage @ 185 NONAME
+	_ZN17QImageVideoBufferD0Ev @ 186 NONAME
+	_ZN17QImageVideoBufferD1Ev @ 187 NONAME
+	_ZN17QImageVideoBufferD2Ev @ 188 NONAME
+	_ZN18QAudioEnginePlugin19getStaticMetaObjectEv @ 189 NONAME
+	_ZN18QMemoryVideoBuffer3mapEN20QAbstractVideoBuffer7MapModeEPiS2_ @ 190 NONAME
+	_ZN18QMemoryVideoBuffer5unmapEv @ 191 NONAME
+	_ZN18QMemoryVideoBufferC1ERK10QByteArrayi @ 192 NONAME
+	_ZN18QMemoryVideoBufferC2ERK10QByteArrayi @ 193 NONAME
+	_ZN18QMemoryVideoBufferD0Ev @ 194 NONAME
+	_ZN18QMemoryVideoBufferD1Ev @ 195 NONAME
+	_ZN18QMemoryVideoBufferD2Ev @ 196 NONAME
+	_ZN19QAbstractAudioInput19getStaticMetaObjectEv @ 197 NONAME
+	_ZN19QVideoSurfaceFormat11setPropertyEPKcRK8QVariant @ 198 NONAME
+	_ZN19QVideoSurfaceFormat11setViewportERK5QRect @ 199 NONAME
+	_ZN19QVideoSurfaceFormat12setFrameRateERK5QPairIiiE @ 200 NONAME
+	_ZN19QVideoSurfaceFormat12setFrameRateEii @ 201 NONAME
+	_ZN19QVideoSurfaceFormat12setFrameSizeERK5QSizeNS_12ViewportModeE @ 202 NONAME
+	_ZN19QVideoSurfaceFormat12setFrameSizeEiiNS_12ViewportModeE @ 203 NONAME
+	_ZN19QVideoSurfaceFormat16setYuvColorSpaceENS_13YuvColorSpaceE @ 204 NONAME
+	_ZN19QVideoSurfaceFormat19setPixelAspectRatioERK5QSize @ 205 NONAME
+	_ZN19QVideoSurfaceFormat19setPixelAspectRatioEii @ 206 NONAME
+	_ZN19QVideoSurfaceFormat20setScanLineDirectionENS_9DirectionE @ 207 NONAME
+	_ZN19QVideoSurfaceFormatC1ERK5QSizeN11QVideoFrame11PixelFormatEN20QAbstractVideoBuffer10HandleTypeE @ 208 NONAME
+	_ZN19QVideoSurfaceFormatC1ERKS_ @ 209 NONAME
+	_ZN19QVideoSurfaceFormatC1Ev @ 210 NONAME
+	_ZN19QVideoSurfaceFormatC2ERK5QSizeN11QVideoFrame11PixelFormatEN20QAbstractVideoBuffer10HandleTypeE @ 211 NONAME
+	_ZN19QVideoSurfaceFormatC2ERKS_ @ 212 NONAME
+	_ZN19QVideoSurfaceFormatC2Ev @ 213 NONAME
+	_ZN19QVideoSurfaceFormatD1Ev @ 214 NONAME
+	_ZN19QVideoSurfaceFormatD2Ev @ 215 NONAME
+	_ZN19QVideoSurfaceFormataSERKS_ @ 216 NONAME
+	_ZN20QAbstractAudioOutput19getStaticMetaObjectEv @ 217 NONAME
+	_ZN20QAbstractVideoBufferC2ENS_10HandleTypeE @ 218 NONAME
+	_ZN20QAbstractVideoBufferC2ER27QAbstractVideoBufferPrivateNS_10HandleTypeE @ 219 NONAME
+	_ZN20QAbstractVideoBufferD0Ev @ 220 NONAME
+	_ZN20QAbstractVideoBufferD1Ev @ 221 NONAME
+	_ZN20QAbstractVideoBufferD2Ev @ 222 NONAME
+	_ZN21QAbstractVideoSurface11qt_metacallEN11QMetaObject4CallEiPPv @ 223 NONAME
+	_ZN21QAbstractVideoSurface11qt_metacastEPKc @ 224 NONAME
+	_ZN21QAbstractVideoSurface14startedChangedEb @ 225 NONAME
+	_ZN21QAbstractVideoSurface16staticMetaObjectE @ 226 NONAME DATA 16
+	_ZN21QAbstractVideoSurface19getStaticMetaObjectEv @ 227 NONAME
+	_ZN21QAbstractVideoSurface20surfaceFormatChangedERK19QVideoSurfaceFormat @ 228 NONAME
+	_ZN21QAbstractVideoSurface23supportedFormatsChangedEv @ 229 NONAME
+	_ZN21QAbstractVideoSurface4stopEv @ 230 NONAME
+	_ZN21QAbstractVideoSurface5startERK19QVideoSurfaceFormat @ 231 NONAME
+	_ZN21QAbstractVideoSurface8setErrorENS_5ErrorE @ 232 NONAME
+	_ZN21QAbstractVideoSurfaceC2EP7QObject @ 233 NONAME
+	_ZN21QAbstractVideoSurfaceC2ER28QAbstractVideoSurfacePrivateP7QObject @ 234 NONAME
+	_ZN21QAbstractVideoSurfaceD0Ev @ 235 NONAME
+	_ZN21QAbstractVideoSurfaceD1Ev @ 236 NONAME
+	_ZN21QAbstractVideoSurfaceD2Ev @ 237 NONAME
+	_ZN24QAbstractAudioDeviceInfo19getStaticMetaObjectEv @ 238 NONAME
+	_ZNK11QVideoFrame10handleTypeEv @ 239 NONAME
+	_ZNK11QVideoFrame10isReadableEv @ 240 NONAME
+	_ZNK11QVideoFrame10isWritableEv @ 241 NONAME
+	_ZNK11QVideoFrame11pixelFormatEv @ 242 NONAME
+	_ZNK11QVideoFrame12bytesPerLineEv @ 243 NONAME
+	_ZNK11QVideoFrame4bitsEv @ 244 NONAME
+	_ZNK11QVideoFrame4sizeEv @ 245 NONAME
+	_ZNK11QVideoFrame5widthEv @ 246 NONAME
+	_ZNK11QVideoFrame6handleEv @ 247 NONAME
+	_ZNK11QVideoFrame6heightEv @ 248 NONAME
+	_ZNK11QVideoFrame7endTimeEv @ 249 NONAME
+	_ZNK11QVideoFrame7isValidEv @ 250 NONAME
+	_ZNK11QVideoFrame7mapModeEv @ 251 NONAME
+	_ZNK11QVideoFrame8isMappedEv @ 252 NONAME
+	_ZNK11QVideoFrame8numBytesEv @ 253 NONAME
+	_ZNK11QVideoFrame9fieldTypeEv @ 254 NONAME
+	_ZNK11QVideoFrame9startTimeEv @ 255 NONAME
+	_ZNK17QImageVideoBuffer7mapModeEv @ 256 NONAME
+	_ZNK18QMemoryVideoBuffer7mapModeEv @ 257 NONAME
+	_ZNK19QVideoSurfaceFormat10frameWidthEv @ 258 NONAME
+	_ZNK19QVideoSurfaceFormat10handleTypeEv @ 259 NONAME
+	_ZNK19QVideoSurfaceFormat11frameHeightEv @ 260 NONAME
+	_ZNK19QVideoSurfaceFormat11pixelFormatEv @ 261 NONAME
+	_ZNK19QVideoSurfaceFormat13propertyNamesEv @ 262 NONAME
+	_ZNK19QVideoSurfaceFormat13yuvColorSpaceEv @ 263 NONAME
+	_ZNK19QVideoSurfaceFormat16pixelAspectRatioEv @ 264 NONAME
+	_ZNK19QVideoSurfaceFormat17scanLineDirectionEv @ 265 NONAME
+	_ZNK19QVideoSurfaceFormat7isValidEv @ 266 NONAME
+	_ZNK19QVideoSurfaceFormat8propertyEPKc @ 267 NONAME
+	_ZNK19QVideoSurfaceFormat8sizeHintEv @ 268 NONAME
+	_ZNK19QVideoSurfaceFormat8viewportEv @ 269 NONAME
+	_ZNK19QVideoSurfaceFormat9frameRateEv @ 270 NONAME
+	_ZNK19QVideoSurfaceFormat9frameSizeEv @ 271 NONAME
+	_ZNK19QVideoSurfaceFormateqERKS_ @ 272 NONAME
+	_ZNK19QVideoSurfaceFormatneERKS_ @ 273 NONAME
+	_ZNK20QAbstractVideoBuffer10handleTypeEv @ 274 NONAME
+	_ZNK20QAbstractVideoBuffer6handleEv @ 275 NONAME
+	_ZNK21QAbstractVideoSurface10metaObjectEv @ 276 NONAME
+	_ZNK21QAbstractVideoSurface13surfaceFormatEv @ 277 NONAME
+	_ZNK21QAbstractVideoSurface17isFormatSupportedERK19QVideoSurfaceFormatPS0_ @ 278 NONAME
+	_ZNK21QAbstractVideoSurface5errorEv @ 279 NONAME
+	_ZNK21QAbstractVideoSurface9isStartedEv @ 280 NONAME
+	_ZTI17QImageVideoBuffer @ 281 NONAME ; #<TI>#
+	_ZTI18QMemoryVideoBuffer @ 282 NONAME ; #<TI>#
+	_ZTI20QAbstractVideoBuffer @ 283 NONAME ; #<TI>#
+	_ZTI21QAbstractVideoSurface @ 284 NONAME ; #<TI>#
+	_ZTV17QImageVideoBuffer @ 285 NONAME ; #<VT>#
+	_ZTV18QMemoryVideoBuffer @ 286 NONAME ; #<VT>#
+	_ZTV20QAbstractVideoBuffer @ 287 NONAME ; #<VT>#
+	_ZTV21QAbstractVideoSurface @ 288 NONAME ; #<VT>#
+	_Zls6QDebugRK19QVideoSurfaceFormat @ 289 NONAME
+	_ZN11QAudioInputC1ERK16QAudioDeviceInfoRK12QAudioFormatP7QObject @ 290 NONAME
+	_ZN11QAudioInputC2ERK16QAudioDeviceInfoRK12QAudioFormatP7QObject @ 291 NONAME
+	_ZN12QAudioFormat8setCodecERK7QString @ 292 NONAME
+	_ZN12QAudioOutputC1ERK16QAudioDeviceInfoRK12QAudioFormatP7QObject @ 293 NONAME
+	_ZN12QAudioOutputC2ERK16QAudioDeviceInfoRK12QAudioFormatP7QObject @ 294 NONAME
+	_ZN16QAudioDeviceInfoC1ERK7QStringRK10QByteArrayN6QAudio4ModeE @ 295 NONAME
+	_ZN16QAudioDeviceInfoC1ERKS_ @ 296 NONAME
+	_ZN16QAudioDeviceInfoC1Ev @ 297 NONAME
+	_ZN16QAudioDeviceInfoC2ERK7QStringRK10QByteArrayN6QAudio4ModeE @ 298 NONAME
+	_ZN16QAudioDeviceInfoC2ERKS_ @ 299 NONAME
+	_ZN16QAudioDeviceInfoC2Ev @ 300 NONAME
+	_ZN16QAudioDeviceInfoaSERKS_ @ 301 NONAME
+	_ZNK16QAudioDeviceInfo4modeEv @ 302 NONAME
+	_ZNK16QAudioDeviceInfo5realmEv @ 303 NONAME
+	_ZNK16QAudioDeviceInfo6handleEv @ 304 NONAME
+	_ZNK16QAudioDeviceInfo6isNullEv @ 305 NONAME
 

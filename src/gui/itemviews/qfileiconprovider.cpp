@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -51,7 +51,6 @@
 #include <qt_windows.h>
 #include <commctrl.h>
 #include <objbase.h>
-#include <private/qpixmapdata_p.h>
 #elif defined(Q_WS_MAC)
 #include <private/qt_cocoa_helpers_mac_p.h>
 #endif
@@ -262,9 +261,9 @@ QIcon QFileIconProviderPrivate::getWinIcon(const QFileInfo &fileInfo) const
         }
         if (pixmap.isNull()) {
 #ifndef Q_OS_WINCE
-            pixmap = convertHIconToPixmap(info.hIcon);
+            pixmap = QPixmap::fromWinHICON(info.hIcon);
 #else
-            pixmap = convertHIconToPixmap(ImageList_GetIcon((HIMAGELIST) val, info.iIcon, ILD_NORMAL));
+            pixmap = QPixmap::fromWinHICON(ImageList_GetIcon((HIMAGELIST) val, info.iIcon, ILD_NORMAL));
 #endif
             if (!pixmap.isNull()) {
                 retIcon.addPixmap(pixmap);
@@ -292,9 +291,9 @@ QIcon QFileIconProviderPrivate::getWinIcon(const QFileInfo &fileInfo) const
             key = QString::fromLatin1("qt_dir_%1").arg(info.iIcon);
         }
 #ifndef Q_OS_WINCE
-        pixmap = convertHIconToPixmap(info.hIcon);
+        pixmap = QPixmap::fromWinHICON(info.hIcon);
 #else
-        pixmap = convertHIconToPixmap(ImageList_GetIcon((HIMAGELIST) val, info.iIcon, ILD_NORMAL), true);
+        pixmap = QPixmap::fromWinHICON(ImageList_GetIcon((HIMAGELIST) val, info.iIcon, ILD_NORMAL));
 #endif
         if (!pixmap.isNull()) {
             retIcon.addPixmap(pixmap);

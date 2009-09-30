@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -201,10 +201,9 @@ public:
     inline void undo() { undoRedo(true); }
     inline void redo() { undoRedo(false); }
     void appendUndoItem(QAbstractUndoItem *);
-    inline void beginEditBlock() { editBlock++; }
+    inline void beginEditBlock() { if (0 == editBlock++) ++revision; }
     void joinPreviousEditBlock();
     void endEditBlock();
-    inline void beginEdit() { inEdit = true; }
     void finishEdit();
     inline bool isInEditBlock() const { return editBlock; }
     void enableUndoRedo(bool enable);
@@ -306,6 +305,7 @@ private:
     QVector<QTextUndoCommand> undoStack;
     bool undoEnabled;
     int undoState;
+    int revision;
     // position in undo stack of the last setModified(false) call
     int modifiedState;
     bool modified;
@@ -340,7 +340,6 @@ public:
     int maximumBlockCount;
     uint needsEnsureMaximumBlockCount : 1;
     uint inContentsChange : 1;
-    uint inEdit : 1; // between beginEdit() and finishEdit()
     QSizeF pageSize;
     QString title;
     QString url;

@@ -3,7 +3,7 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2000 Simon Hausmann (hausmann@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2006, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2006, 2008, 2009 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -35,10 +35,15 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLIFrameElement::HTMLIFrameElement(const QualifiedName& tagName, Document* document)
+inline HTMLIFrameElement::HTMLIFrameElement(const QualifiedName& tagName, Document* document)
     : HTMLFrameElementBase(tagName, document)
 {
     ASSERT(hasTagName(iframeTag));
+}
+
+PassRefPtr<HTMLIFrameElement> HTMLIFrameElement::create(const QualifiedName& tagName, Document* document)
+{
+    return adoptRef(new HTMLIFrameElement(tagName, document));
 }
 
 bool HTMLIFrameElement::mapToEntry(const QualifiedName& attrName, MappedAttributeEntry& result) const
@@ -89,7 +94,7 @@ void HTMLIFrameElement::parseMappedAttribute(MappedAttribute* attr)
 
 bool HTMLIFrameElement::rendererIsNeeded(RenderStyle* style)
 {
-    return isURLAllowed(m_URL) && style->display() != NONE;
+    return isURLAllowed() && style->display() != NONE;
 }
 
 RenderObject* HTMLIFrameElement::createRenderer(RenderArena* arena, RenderStyle*)
@@ -117,43 +122,13 @@ void HTMLIFrameElement::attach()
 {
     HTMLFrameElementBase::attach();
 
-    if (RenderPartObject* renderPartObject = static_cast<RenderPartObject*>(renderer()))
+    if (RenderPartObject* renderPartObject = toRenderPartObject(renderer()))
         renderPartObject->updateWidget(false);
 }
 
 bool HTMLIFrameElement::isURLAttribute(Attribute* attr) const
 {
     return attr->name() == srcAttr;
-}
-
-String HTMLIFrameElement::align() const
-{
-    return getAttribute(alignAttr);
-}
-
-void HTMLIFrameElement::setAlign(const String &value)
-{
-    setAttribute(alignAttr, value);
-}
-
-String HTMLIFrameElement::height() const
-{
-    return getAttribute(heightAttr);
-}
-
-void HTMLIFrameElement::setHeight(const String &value)
-{
-    setAttribute(heightAttr, value);
-}
-
-String HTMLIFrameElement::width() const
-{
-    return getAttribute(widthAttr);
-}
-
-void HTMLIFrameElement::setWidth(const String &value)
-{
-    setAttribute(widthAttr, value);
 }
 
 }

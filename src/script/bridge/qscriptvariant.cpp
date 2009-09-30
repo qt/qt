@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtScript module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -89,7 +89,7 @@ static JSC::JSValue JSC_HOST_CALL variantProtoFuncValueOf(JSC::ExecState *exec, 
 {
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     thisValue = engine->toUsableValue(thisValue);
-    if (!thisValue.isObject(&QScriptObject::info))
+    if (!thisValue.inherits(&QScriptObject::info))
         return throwError(exec, JSC::TypeError);
     QScriptObjectDelegate *delegate = static_cast<QScriptObject*>(JSC::asObject(thisValue))->delegate();
     if (!delegate || (delegate->type() != QScriptObjectDelegate::Variant))
@@ -127,7 +127,7 @@ static JSC::JSValue JSC_HOST_CALL variantProtoFuncToString(JSC::ExecState *exec,
 {
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     thisValue = engine->toUsableValue(thisValue);
-    if (!thisValue.isObject(&QScriptObject::info))
+    if (!thisValue.inherits(&QScriptObject::info))
         return throwError(exec, JSC::TypeError, "This object is not a QVariant");
     QScriptObjectDelegate *delegate = static_cast<QScriptObject*>(JSC::asObject(thisValue))->delegate();
     if (!delegate || (delegate->type() != QScriptObjectDelegate::Variant))
@@ -148,6 +148,12 @@ static JSC::JSValue JSC_HOST_CALL variantProtoFuncToString(JSC::ExecState *exec,
     return JSC::jsString(exec, result);
 }
 
+bool QVariantDelegate::compareToObject(QScriptObject *, JSC::ExecState *exec, JSC::JSObject *o2)
+{
+    const QVariant &variant1 = value();
+    return variant1 == scriptEngineFromExec(exec)->scriptValueFromJSCValue(o2).toVariant();
+}
+
 QVariantPrototype::QVariantPrototype(JSC::ExecState* exec, WTF::PassRefPtr<JSC::Structure> structure,
                                      JSC::Structure* prototypeFunctionStructure)
     : QScriptObject(structure)
@@ -157,6 +163,7 @@ QVariantPrototype::QVariantPrototype(JSC::ExecState* exec, WTF::PassRefPtr<JSC::
     putDirectFunction(exec, new (exec) JSC::PrototypeFunction(exec, prototypeFunctionStructure, 0, exec->propertyNames().toString, variantProtoFuncToString), JSC::DontEnum);
     putDirectFunction(exec, new (exec) JSC::PrototypeFunction(exec, prototypeFunctionStructure, 0, exec->propertyNames().valueOf, variantProtoFuncValueOf), JSC::DontEnum);
 }
+
 
 } // namespace QScript
 

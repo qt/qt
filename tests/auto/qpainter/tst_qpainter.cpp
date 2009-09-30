@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -207,6 +207,7 @@ private slots:
     void drawImage_task217400_data();
     void drawImage_task217400();
     void drawImage_1x1();
+    void drawImage_task258776();
     void drawRect_task215378();
     void drawRect_task247505();
 
@@ -234,6 +235,8 @@ private slots:
     void zeroOpacity();
     void clippingBug();
     void emptyClip();
+
+    void taskQT4444_dontOverflowDashOffset();
 
 private:
     void fillData();
@@ -3512,6 +3515,31 @@ void tst_QPainter::drawImage_task217400()
     }
 }
 
+void tst_QPainter::drawImage_task258776()
+{
+    QImage src(16, 16, QImage::Format_RGB888);
+    QImage dest(33, 33, QImage::Format_RGB888);
+    src.fill(0x00ff00);
+    dest.fill(0x0000ff);
+
+    QPainter painter(&dest);
+    painter.drawImage(QRectF(0.499, 0.499, 32, 32), src, QRectF(0, 0, 16, 16));
+    painter.end();
+
+    QImage expected(33, 33, QImage::Format_RGB32);
+    expected.fill(0xff0000);
+
+    painter.begin(&expected);
+    painter.drawImage(QRectF(0, 0, 32, 32), src);
+    painter.end();
+
+    dest = dest.convertToFormat(QImage::Format_RGB32);
+
+    dest.save("dest.png");
+    expected.save("expected.png");
+    QCOMPARE(dest, expected);
+}
+
 void tst_QPainter::clipRectSaveRestore()
 {
     QImage img(64, 64, QImage::Format_ARGB32_Premultiplied);
@@ -4259,6 +4287,29 @@ void tst_QPainter::drawImage_1x1()
     p.end();
 
     QCOMPARE(img, expected);
+}
+
+void tst_QPainter::taskQT4444_dontOverflowDashOffset()
+{
+    QPainter p;
+
+    QPen pen;
+    pen.setWidth(2);
+    pen.setStyle(Qt::DashDotLine);
+
+    QPointF point[4];
+    point[0] = QPointF(182.50868749707968,347.78457234212630);
+    point[1] = QPointF(182.50868749707968,107.22501998401277);
+    point[2] = QPointF(182.50868749707968,107.22501998401277);
+    point[3] = QPointF(520.46600762283651,107.22501998401277);
+
+    QImage crashImage(QSize(1000, 120), QImage::Format_ARGB32_Premultiplied);
+    p.begin(&crashImage);
+    p.setPen(pen);
+    p.drawLines(point, 2);
+    p.end();
+
+    QVERIFY(true); // Don't crash
 }
 
 QTEST_MAIN(tst_QPainter)

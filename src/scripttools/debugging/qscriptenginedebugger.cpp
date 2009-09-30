@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSCriptTools module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -251,7 +251,9 @@ public:
 
     QScriptDebugger *debugger;
     QScriptEngineDebuggerFrontend *frontend;
+#ifndef QT_NO_MAINWINDOW
     QMainWindow *standardWindow;
+#endif
     bool autoShow;
 
     static QtScriptDebuggerResourceInitializer resourceInitializer;
@@ -294,7 +296,9 @@ QScriptEngineDebuggerPrivate::QScriptEngineDebuggerPrivate()
 {
     debugger = 0;
     frontend = 0;
+#ifndef QT_NO_MAINWINDOW
     standardWindow = 0;
+#endif
     autoShow = true;
 }
 
@@ -302,6 +306,7 @@ QScriptEngineDebuggerPrivate::~QScriptEngineDebuggerPrivate()
 {
     delete debugger;
     delete frontend;
+#ifndef QT_NO_MAINWINDOW
     if (standardWindow) {
         QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
         QByteArray geometry = standardWindow->saveGeometry();
@@ -311,14 +316,17 @@ QScriptEngineDebuggerPrivate::~QScriptEngineDebuggerPrivate()
         if (standardWindow->parent() == 0)
             delete standardWindow;
     }
+#endif
 }
 
+#ifndef QT_NO_MAINWINDOW
 void QScriptEngineDebuggerPrivate::_q_showStandardWindow()
 {
     Q_Q(QScriptEngineDebugger);
     (void)q->standardWindow(); // ensure it's created
     standardWindow->show();
 }
+#endif
 
 void QScriptEngineDebuggerPrivate::createDebugger()
 {
@@ -499,6 +507,7 @@ void QScriptEngineDebugger::setAutoShowStandardWindow(bool autoShow)
 
   \sa createStandardMenu(), createStandardToolBar()
 */
+#ifndef QT_NO_MAINWINDOW
 QMainWindow *QScriptEngineDebugger::standardWindow() const
 {
     Q_D(const QScriptEngineDebugger);
@@ -511,43 +520,43 @@ QMainWindow *QScriptEngineDebugger::standardWindow() const
     QMainWindow *win = new QMainWindow();
     QDockWidget *scriptsDock = new QDockWidget(win);
     scriptsDock->setObjectName(QLatin1String("qtscriptdebugger_scriptsDockWidget"));
-    scriptsDock->setWindowTitle(QObject::tr("Loaded Scripts"));
+    scriptsDock->setWindowTitle(tr("Loaded Scripts"));
     scriptsDock->setWidget(widget(ScriptsWidget));
     win->addDockWidget(Qt::LeftDockWidgetArea, scriptsDock);
 
     QDockWidget *breakpointsDock = new QDockWidget(win);
     breakpointsDock->setObjectName(QLatin1String("qtscriptdebugger_breakpointsDockWidget"));
-    breakpointsDock->setWindowTitle(QObject::tr("Breakpoints"));
+    breakpointsDock->setWindowTitle(tr("Breakpoints"));
     breakpointsDock->setWidget(widget(BreakpointsWidget));
     win->addDockWidget(Qt::LeftDockWidgetArea, breakpointsDock);
 
     QDockWidget *stackDock = new QDockWidget(win);
     stackDock->setObjectName(QLatin1String("qtscriptdebugger_stackDockWidget"));
-    stackDock->setWindowTitle(QObject::tr("Stack"));
+    stackDock->setWindowTitle(tr("Stack"));
     stackDock->setWidget(widget(StackWidget));
     win->addDockWidget(Qt::RightDockWidgetArea, stackDock);
 
     QDockWidget *localsDock = new QDockWidget(win);
     localsDock->setObjectName(QLatin1String("qtscriptdebugger_localsDockWidget"));
-    localsDock->setWindowTitle(QObject::tr("Locals"));
+    localsDock->setWindowTitle(tr("Locals"));
     localsDock->setWidget(widget(LocalsWidget));
     win->addDockWidget(Qt::RightDockWidgetArea, localsDock);
 
     QDockWidget *consoleDock = new QDockWidget(win);
     consoleDock->setObjectName(QLatin1String("qtscriptdebugger_consoleDockWidget"));
-    consoleDock->setWindowTitle(QObject::tr("Console"));
+    consoleDock->setWindowTitle(tr("Console"));
     consoleDock->setWidget(widget(ConsoleWidget));
     win->addDockWidget(Qt::BottomDockWidgetArea, consoleDock);
 
     QDockWidget *debugOutputDock = new QDockWidget(win);
     debugOutputDock->setObjectName(QLatin1String("qtscriptdebugger_debugOutputDockWidget"));
-    debugOutputDock->setWindowTitle(QObject::tr("Debug Output"));
+    debugOutputDock->setWindowTitle(tr("Debug Output"));
     debugOutputDock->setWidget(widget(DebugOutputWidget));
     win->addDockWidget(Qt::BottomDockWidgetArea, debugOutputDock);
 
     QDockWidget *errorLogDock = new QDockWidget(win);
     errorLogDock->setObjectName(QLatin1String("qtscriptdebugger_errorLogDockWidget"));
-    errorLogDock->setWindowTitle(QObject::tr("Error Log"));
+    errorLogDock->setWindowTitle(tr("Error Log"));
     errorLogDock->setWidget(widget(ErrorLogWidget));
     win->addDockWidget(Qt::BottomDockWidgetArea, errorLogDock);
 
@@ -559,14 +568,14 @@ QMainWindow *QScriptEngineDebugger::standardWindow() const
 #ifndef QT_NO_MENUBAR
     win->menuBar()->addMenu(that->createStandardMenu(win));
 
-    QMenu *editMenu = win->menuBar()->addMenu(QObject::tr("Search"));
+    QMenu *editMenu = win->menuBar()->addMenu(tr("Search"));
     editMenu->addAction(action(FindInScriptAction));
     editMenu->addAction(action(FindNextInScriptAction));
     editMenu->addAction(action(FindPreviousInScriptAction));
     editMenu->addSeparator();
     editMenu->addAction(action(GoToLineAction));
 
-    QMenu *viewMenu = win->menuBar()->addMenu(QObject::tr("View"));
+    QMenu *viewMenu = win->menuBar()->addMenu(tr("View"));
     viewMenu->addAction(scriptsDock->toggleViewAction());
     viewMenu->addAction(breakpointsDock->toggleViewAction());
     viewMenu->addAction(stackDock->toggleViewAction());
@@ -584,7 +593,7 @@ QMainWindow *QScriptEngineDebugger::standardWindow() const
     widget(CodeFinderWidget)->hide();
     win->setCentralWidget(central);
 
-    win->setWindowTitle(QObject::tr("Qt Script Debugger"));
+    win->setWindowTitle(tr("Qt Script Debugger"));
     win->setUnifiedTitleAndToolBarOnMac(true);
 
     QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
@@ -602,6 +611,7 @@ QMainWindow *QScriptEngineDebugger::standardWindow() const
     const_cast<QScriptEngineDebuggerPrivate*>(d)->standardWindow = win;
     return win;
 }
+#endif // QT_NO_MAINWINDOW
 
 /*!
   Creates a standard debugger menu with the given \a parent.
@@ -622,12 +632,14 @@ QMenu *QScriptEngineDebugger::createStandardMenu(QWidget *parent)
 
   \sa createStandardMenu()
 */
+#ifndef QT_NO_TOOLBAR
 QToolBar *QScriptEngineDebugger::createStandardToolBar(QWidget *parent)
 {
     Q_D(QScriptEngineDebugger);
     d->createDebugger();
     return d->debugger->createStandardToolBar(parent, this);
 }
+#endif
 
 /*!
     \fn QScriptEngineDebugger::evaluationSuspended()

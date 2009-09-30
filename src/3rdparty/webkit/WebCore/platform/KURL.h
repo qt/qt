@@ -55,20 +55,18 @@ namespace WebCore {
 class TextEncoding;
 struct KURLHash;
 
-// FIXME: Our terminology here is a bit inconsistent. We refer to the part
-// after the "#" as the "fragment" in some places and the "ref" in others.
-// We should fix the terminology to match the URL and URI RFCs as closely
-// as possible to resolve this.
+enum ParsedURLStringTag { ParsedURLString };
 
 class KURL {
 public:
     // Generates a URL which contains a null string.
     KURL() { invalidate(); }
 
-    // The argument is an absolute URL string. The string is assumed to be
-    // an already encoded (ASCII-only) valid absolute URL.
-    explicit KURL(const char*);
-    explicit KURL(const String&);
+    // The argument is an absolute URL string. The string is assumed to be output of KURL::string() called on a valid
+    // KURL object, or indiscernible from such.
+    // It is usually best to avoid repeatedly parsing a string, unless memory saving outweigh the possible slow-downs.
+    KURL(ParsedURLStringTag, const char*);
+    KURL(ParsedURLStringTag, const String&);
 
     // Resolves the relative URL with the given base URL. If provided, the
     // TextEncoding is used to encode non-ASCII characers. The base URL can be
@@ -120,8 +118,8 @@ public:
     String path() const;
     String lastPathComponent() const;
     String query() const;
-    String ref() const;
-    bool hasRef() const;
+    String fragmentIdentifier() const;
+    bool hasFragmentIdentifier() const;
 
     String baseAsString() const;
 
@@ -155,10 +153,10 @@ public:
     // URL (with nothing after it). To clear the query, pass a null string.
     void setQuery(const String&);
 
-    void setRef(const String&);
-    void removeRef();
+    void setFragmentIdentifier(const String&);
+    void removeFragmentIdentifier();
 
-    friend bool equalIgnoringRef(const KURL&, const KURL&);
+    friend bool equalIgnoringFragmentIdentifier(const KURL&, const KURL&);
 
     friend bool protocolHostAndPortAreEqual(const KURL&, const KURL&);
 
@@ -244,7 +242,7 @@ bool operator!=(const KURL&, const KURL&);
 bool operator!=(const KURL&, const String&);
 bool operator!=(const String&, const KURL&);
 
-bool equalIgnoringRef(const KURL&, const KURL&);
+bool equalIgnoringFragmentIdentifier(const KURL&, const KURL&);
 bool protocolHostAndPortAreEqual(const KURL&, const KURL&);
     
 const KURL& blankURL();

@@ -27,6 +27,7 @@
 
 #include "ChromeClient.h"
 #include "Document.h"
+#include "Event.h"
 #include "EventHandler.h"
 #include "EventNames.h"
 #include "Frame.h"
@@ -38,6 +39,7 @@
 #include "MappedAttribute.h"
 #include "Page.h"
 #include "RenderBox.h"
+#include "RenderTextControl.h"
 #include "RenderTheme.h"
 #include "ValidityState.h"
 
@@ -62,6 +64,16 @@ HTMLFormControlElement::~HTMLFormControlElement()
 {
     if (m_form)
         m_form->removeFormElement(this);
+}
+
+bool HTMLFormControlElement::formNoValidate() const
+{
+    return !getAttribute(formnovalidateAttr).isNull();
+}
+
+void HTMLFormControlElement::setFormNoValidate(bool formnovalidate)
+{
+    setAttribute(formnovalidateAttr, formnovalidate ? "" : 0);
 }
 
 ValidityState* HTMLFormControlElement::validity()
@@ -176,7 +188,7 @@ void HTMLFormControlElement::setName(const AtomicString &value)
 
 void HTMLFormControlElement::dispatchFormControlChangeEvent()
 {
-    dispatchEvent(eventNames().changeEvent, true, false);
+    dispatchEvent(Event::create(eventNames().changeEvent, true, false));
 }
 
 bool HTMLFormControlElement::disabled() const
@@ -222,13 +234,19 @@ void HTMLFormControlElement::recalcStyle(StyleChange change)
         renderer()->updateFromElement();
 }
 
+bool HTMLFormControlElement::supportsFocus() const
+{
+    return !disabled();
+}
+
 bool HTMLFormControlElement::isFocusable() const
 {
-    if (disabled() || !renderer() || 
-        (renderer()->style() && renderer()->style()->visibility() != VISIBLE) || 
+    if (!renderer() || 
         !renderer()->isBox() || toRenderBox(renderer())->size().isEmpty())
         return false;
-    return true;
+    // HTMLElement::isFocusable handles visibility and calls suportsFocus which
+    // will cover the disabled case.
+    return HTMLElement::isFocusable();
 }
 
 bool HTMLFormControlElement::isKeyboardFocusable(KeyboardEvent* event) const
@@ -260,7 +278,22 @@ bool HTMLFormControlElement::willValidate() const
     //      The control does not have a repetition template as an ancestor.
     //      The control does not have a datalist element as an ancestor.
     //      The control is not an output element.
-    return form() && name().length() && !disabled() && !isReadOnlyFormControl();
+    return form() && !name().isEmpty() && !disabled() && !isReadOnlyFormControl();
+}
+
+bool HTMLFormControlElement::checkValidity()
+{
+    if (willValidate() && !isValidFormControlElement()) {
+        dispatchEvent(Event::create(EventNames().invalidEvent, false, true));
+        return false;
+    }
+
+    return true;
+}
+
+void HTMLFormControlElement::setCustomValidity(const String& error)
+{
+    validity()->setCustomErrorMessage(error);
 }
     
 void HTMLFormControlElement::dispatchFocusEvent()
@@ -279,14 +312,19 @@ void HTMLFormControlElement::dispatchBlurEvent()
     HTMLElement::dispatchBlurEvent();
 }
 
-bool HTMLFormControlElement::supportsFocus() const
-{
-    return isFocusable() || (!disabled() && !document()->haveStylesheetsLoaded());
-}
-
 HTMLFormElement* HTMLFormControlElement::virtualForm() const
 {
     return m_form;
+}
+
+bool HTMLFormControlElement::isDefaultButtonForForm() const
+{
+    return isSuccessfulSubmitButton() && m_form && m_form->defaultButton() == this;
+}
+
+bool HTMLFormControlElement::isValidFormControlElement()
+{
+    return validity()->valid();
 }
 
 void HTMLFormControlElement::removeFromForm()
@@ -329,6 +367,45 @@ void HTMLFormControlElementWithState::finishParsingChildren()
         if (doc->takeStateForFormElement(name().impl(), type().impl(), state))
             restoreFormControlState(state);
     }
+}
+
+HTMLTextFormControlElement::HTMLTextFormControlElement(const QualifiedName& tagName, Document* doc, HTMLFormElement* form)
+    : HTMLFormControlElementWithState(tagName, doc, form)
+{
+}
+
+HTMLTextFormControlElement::~HTMLTextFormControlElement()
+{
+}
+
+void HTMLTextFormControlElement::dispatchFocusEvent()
+{
+    if (supportsPlaceholder())
+        updatePlaceholderVisibility(false);
+    handleFocusEvent();
+    HTMLFormControlElementWithState::dispatchFocusEvent();
+}
+
+void HTMLTextFormControlElement::dispatchBlurEvent()
+{
+    if (supportsPlaceholder())
+        updatePlaceholderVisibility(false);
+    handleBlurEvent();
+    HTMLFormControlElementWithState::dispatchBlurEvent();
+}
+
+bool HTMLTextFormControlElement::placeholderShouldBeVisible() const
+{
+    return supportsPlaceholder()
+        && isEmptyValue()
+        && document()->focusedNode() != this
+        && !getAttribute(placeholderAttr).isEmpty();
+}
+
+void HTMLTextFormControlElement::updatePlaceholderVisibility(bool placeholderValueChanged)
+{
+    if (supportsPlaceholder() && renderer())
+        toRenderTextControl(renderer())->updatePlaceholderVisibility(placeholderShouldBeVisible(), placeholderValueChanged);
 }
 
 } // namespace Webcore

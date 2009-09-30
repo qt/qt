@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -138,7 +138,7 @@ private:
 
 inline QQuaternion::QQuaternion() : wp(1.0f), xp(0.0f), yp(0.0f), zp(0.0f) {}
 
-inline QQuaternion::QQuaternion(qreal scalar, qreal xpos, qreal ypos, qreal zpos) : wp(scalar), xp(xpos), yp(ypos), zp(zpos) {}
+inline QQuaternion::QQuaternion(qreal aScalar, qreal xpos, qreal ypos, qreal zpos) : wp(aScalar), xp(xpos), yp(ypos), zp(zpos) {}
 
 
 inline bool QQuaternion::isNull() const
@@ -156,10 +156,10 @@ inline qreal QQuaternion::y() const { return qreal(yp); }
 inline qreal QQuaternion::z() const { return qreal(zp); }
 inline qreal QQuaternion::scalar() const { return qreal(wp); }
 
-inline void QQuaternion::setX(qreal x) { xp = x; }
-inline void QQuaternion::setY(qreal y) { yp = y; }
-inline void QQuaternion::setZ(qreal z) { zp = z; }
-inline void QQuaternion::setScalar(qreal scalar) { wp = scalar; }
+inline void QQuaternion::setX(qreal aX) { xp = aX; }
+inline void QQuaternion::setY(qreal aY) { yp = aY; }
+inline void QQuaternion::setZ(qreal aZ) { zp = aZ; }
+inline void QQuaternion::setScalar(qreal aScalar) { wp = aScalar; }
 
 inline QQuaternion QQuaternion::conjugate() const
 {
@@ -274,14 +274,14 @@ inline bool qFuzzyCompare(const QQuaternion& q1, const QQuaternion& q2)
 
 #ifndef QT_NO_VECTOR3D
 
-inline QQuaternion::QQuaternion(qreal scalar, const QVector3D& vector)
-    : wp(scalar), xp(vector.x()), yp(vector.y()), zp(vector.z()) {}
+inline QQuaternion::QQuaternion(qreal aScalar, const QVector3D& aVector)
+    : wp(aScalar), xp(aVector.x()), yp(aVector.y()), zp(aVector.z()) {}
 
-inline void QQuaternion::setVector(const QVector3D& vector)
+inline void QQuaternion::setVector(const QVector3D& aVector)
 {
-    xp = vector.x();
-    yp = vector.y();
-    zp = vector.z();
+    xp = aVector.x();
+    yp = aVector.y();
+    zp = aVector.z();
 }
 
 inline QVector3D QQuaternion::vector() const
@@ -291,17 +291,17 @@ inline QVector3D QQuaternion::vector() const
 
 #endif
 
-inline void QQuaternion::setVector(qreal x, qreal y, qreal z)
+inline void QQuaternion::setVector(qreal aX, qreal aY, qreal aZ)
 {
-    xp = x;
-    yp = y;
-    zp = z;
+    xp = aX;
+    yp = aY;
+    zp = aZ;
 }
 
 #ifndef QT_NO_VECTOR4D
 
-inline QQuaternion::QQuaternion(const QVector4D& vector)
-    : wp(vector.w()), xp(vector.x()), yp(vector.y()), zp(vector.z()) {}
+inline QQuaternion::QQuaternion(const QVector4D& aVector)
+    : wp(aVector.w()), xp(aVector.x()), yp(aVector.y()), zp(aVector.z()) {}
 
 inline QVector4D QQuaternion::toVector4D() const
 {

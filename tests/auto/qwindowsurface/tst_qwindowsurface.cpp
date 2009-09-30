@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -155,11 +155,10 @@ void tst_QWindowSurface::flushOutsidePaintEvent()
     // prevent custom styles from messing up the background
     w.setStyle(new QWindowsStyle);
     w.show();
+    QTest::qWaitForWindowShown(&w);
 
     QApplication::processEvents();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&w);
-#elif defined(Q_WS_QWS)
+#if defined(Q_WS_QWS)
     QApplication::sendPostedEvents(); //for the glib event loop
 #elif defined(Q_WS_S60)
     QTest::qWait(5000);
@@ -189,9 +188,6 @@ void tst_QWindowSurface::flushOutsidePaintEvent()
 
     // the paintEvent() should overwrite the painted rectangle
     QApplication::processEvents();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&w);
-#endif
 
 #if defined(Q_WS_QWS)
     QSKIP("task 176755", SkipAll);
@@ -232,8 +228,9 @@ void tst_QWindowSurface::grabWidget()
     babyWidget.show();
     childWidget.show();
     parentWidget.show();
+    QTest::qWaitForWindowShown(&parentWidget);
 
-    QTest::qWait(200);
+    QTest::qWait(120);
 
     QPixmap parentPixmap = parentWidget.windowSurface()->grabWidget(&parentWidget);
     QPixmap childPixmap = childWidget.windowSurface()->grabWidget(&childWidget);

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -43,6 +43,8 @@
 #define GLWIDGET_H
 
 #include <QGLWidget>
+
+class QtLogo;
 
 //! [0]
 class GLWidget : public QGLWidget
@@ -80,13 +82,7 @@ protected:
 
 //! [3]
 private:
-    GLuint makeObject();
-    void quad(GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y2,
-              GLdouble x3, GLdouble y3, GLdouble x4, GLdouble y4);
-    void extrude(GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y2);
-    void normalizeAngle(int *angle);
-
-    GLuint object;
+    QtLogo *logo;
     int xRot;
     int yRot;
     int zRot;

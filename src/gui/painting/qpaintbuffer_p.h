@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -59,6 +59,8 @@
 #include <private/qtextengine_p.h>
 #include <QDebug>
 
+QT_BEGIN_NAMESPACE
+
 class QPaintBufferPrivate;
 class QPaintBufferPlayback;
 
@@ -71,7 +73,10 @@ public:
 
     bool isEmpty() const;
 
-    void draw(QPainter *painter) const;
+    void beginNewFrame();
+    int numFrames() const;
+
+    void draw(QPainter *painter, int frame = 0) const;
     void setBoundingRect(const QRectF &rect);
     QRectF boundingRect() const;
 
@@ -270,6 +275,7 @@ public:
     QVector<QVariant> variants;
 
     QVector<QPaintBufferCommand> commands;
+    QList<int> frames;
 
     QPaintBufferEngine *engine;
     QRectF boundingRect;
@@ -306,7 +312,7 @@ public:
 
     void setupTransform(QPainter *painter);
     void process(const QPaintBufferCommand &cmd);
-    void draw(const QPaintBuffer &buffer, QPainter *painter);
+    void draw(const QPaintBuffer &buffer, QPainter *painter, int frame);
 
 protected:
     QPaintBufferPrivate *d;
@@ -435,5 +441,7 @@ private:
     Cache m_cache;
     FreeFunc free;
 };
+
+QT_END_NAMESPACE
 
 #endif // QPAINTBUFFER_P_H

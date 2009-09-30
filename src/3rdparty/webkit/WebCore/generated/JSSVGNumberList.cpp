@@ -84,6 +84,11 @@ bool JSSVGNumberListPrototype::getOwnPropertySlot(ExecState* exec, const Identif
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGNumberListPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGNumberListPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGNumberListPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGNumberList::s_info = { "SVGNumberList", 0, &JSSVGNumberListTable, 0 };
 
 JSSVGNumberList::JSSVGNumberList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGNumberList> impl, SVGElement* context)
@@ -94,7 +99,7 @@ JSSVGNumberList::JSSVGNumberList(PassRefPtr<Structure> structure, JSDOMGlobalObj
 
 JSSVGNumberList::~JSSVGNumberList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGNumberList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -105,6 +110,11 @@ JSObject* JSSVGNumberList::createPrototype(ExecState* exec, JSGlobalObject* glob
 bool JSSVGNumberList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGNumberList, Base>(exec, &JSSVGNumberListTable, this, propertyName, slot);
+}
+
+bool JSSVGNumberList::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGNumberList, Base>(exec, &JSSVGNumberListTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGNumberListNumberOfItems(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -118,7 +128,7 @@ JSValue jsSVGNumberListNumberOfItems(ExecState* exec, const Identifier&, const P
 JSValue JSC_HOST_CALL jsSVGNumberListPrototypeFunctionClear(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGNumberList::s_info))
+    if (!thisValue.inherits(&JSSVGNumberList::s_info))
         return throwError(exec, TypeError);
     JSSVGNumberList* castedThisObj = static_cast<JSSVGNumberList*>(asObject(thisValue));
     SVGNumberList* imp = static_cast<SVGNumberList*>(castedThisObj->impl());
@@ -132,7 +142,7 @@ JSValue JSC_HOST_CALL jsSVGNumberListPrototypeFunctionClear(ExecState* exec, JSO
 JSValue JSC_HOST_CALL jsSVGNumberListPrototypeFunctionInitialize(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGNumberList::s_info))
+    if (!thisValue.inherits(&JSSVGNumberList::s_info))
         return throwError(exec, TypeError);
     JSSVGNumberList* castedThisObj = static_cast<JSSVGNumberList*>(asObject(thisValue));
     SVGNumberList* imp = static_cast<SVGNumberList*>(castedThisObj->impl());
@@ -148,7 +158,7 @@ JSValue JSC_HOST_CALL jsSVGNumberListPrototypeFunctionInitialize(ExecState* exec
 JSValue JSC_HOST_CALL jsSVGNumberListPrototypeFunctionGetItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGNumberList::s_info))
+    if (!thisValue.inherits(&JSSVGNumberList::s_info))
         return throwError(exec, TypeError);
     JSSVGNumberList* castedThisObj = static_cast<JSSVGNumberList*>(asObject(thisValue));
     SVGNumberList* imp = static_cast<SVGNumberList*>(castedThisObj->impl());
@@ -164,7 +174,7 @@ JSValue JSC_HOST_CALL jsSVGNumberListPrototypeFunctionGetItem(ExecState* exec, J
 JSValue JSC_HOST_CALL jsSVGNumberListPrototypeFunctionInsertItemBefore(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGNumberList::s_info))
+    if (!thisValue.inherits(&JSSVGNumberList::s_info))
         return throwError(exec, TypeError);
     JSSVGNumberList* castedThisObj = static_cast<JSSVGNumberList*>(asObject(thisValue));
     SVGNumberList* imp = static_cast<SVGNumberList*>(castedThisObj->impl());
@@ -181,7 +191,7 @@ JSValue JSC_HOST_CALL jsSVGNumberListPrototypeFunctionInsertItemBefore(ExecState
 JSValue JSC_HOST_CALL jsSVGNumberListPrototypeFunctionReplaceItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGNumberList::s_info))
+    if (!thisValue.inherits(&JSSVGNumberList::s_info))
         return throwError(exec, TypeError);
     JSSVGNumberList* castedThisObj = static_cast<JSSVGNumberList*>(asObject(thisValue));
     SVGNumberList* imp = static_cast<SVGNumberList*>(castedThisObj->impl());
@@ -198,7 +208,7 @@ JSValue JSC_HOST_CALL jsSVGNumberListPrototypeFunctionReplaceItem(ExecState* exe
 JSValue JSC_HOST_CALL jsSVGNumberListPrototypeFunctionRemoveItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGNumberList::s_info))
+    if (!thisValue.inherits(&JSSVGNumberList::s_info))
         return throwError(exec, TypeError);
     JSSVGNumberList* castedThisObj = static_cast<JSSVGNumberList*>(asObject(thisValue));
     SVGNumberList* imp = static_cast<SVGNumberList*>(castedThisObj->impl());
@@ -214,7 +224,7 @@ JSValue JSC_HOST_CALL jsSVGNumberListPrototypeFunctionRemoveItem(ExecState* exec
 JSValue JSC_HOST_CALL jsSVGNumberListPrototypeFunctionAppendItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGNumberList::s_info))
+    if (!thisValue.inherits(&JSSVGNumberList::s_info))
         return throwError(exec, TypeError);
     JSSVGNumberList* castedThisObj = static_cast<JSSVGNumberList*>(asObject(thisValue));
     SVGNumberList* imp = static_cast<SVGNumberList*>(castedThisObj->impl());
@@ -233,7 +243,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGNumb
 }
 SVGNumberList* toSVGNumberList(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGNumberList::s_info) ? static_cast<JSSVGNumberList*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGNumberList::s_info) ? static_cast<JSSVGNumberList*>(asObject(value))->impl() : 0;
 }
 
 }

@@ -101,6 +101,7 @@ public:
     virtual bool isPressed() const;
     virtual bool isReadOnly() const;
     virtual bool isVisited() const;        
+    virtual bool isRequired() const;
 
     const AtomicString& getAttribute(const QualifiedName&) const;
     virtual bool canSetFocusAttribute() const;
@@ -111,11 +112,13 @@ public:
     
     virtual bool accessibilityIsIgnored() const;
     
-    static int headingLevel(Node*);
+    virtual int headingLevel() const;
     virtual int intValue() const;
+    virtual String valueDescription() const;
     virtual float valueForRange() const;
     virtual float maxValueForRange() const;
     virtual float minValueForRange() const;
+    virtual AccessibilityObject* selectedRadioButton();
     virtual int layoutCount() const;
     
     virtual AccessibilityObject* doAccessibilityHitTest(const IntPoint&) const;
@@ -130,11 +133,13 @@ public:
     virtual void linkedUIElements(AccessibilityChildrenVector&) const;
     virtual bool exposesTitleUIElement() const;
     virtual AccessibilityObject* titleUIElement() const;
+    virtual AccessibilityObject* correspondingControlForLabelElement() const;
+
     virtual AccessibilityRole ariaRoleAttribute() const;
     virtual bool isPresentationalChildOfAriaRole() const;
     virtual bool ariaRoleHasPresentationalChildren() const;
-    void setAriaRole();
-    virtual AccessibilityRole roleValue() const;
+    void updateAccessibilityRole();
+    
     virtual AXObjectCache* axObjectCache() const;
     
     virtual Element* actionElement() const;
@@ -161,7 +166,7 @@ public:
     virtual PlainTextRange selectedTextRange() const;
     virtual VisibleSelection selection() const;
     virtual String stringValue() const;
-    virtual String ariaAccessiblityName(const String&) const;
+    virtual String ariaAccessibilityName(const String&) const;
     virtual String ariaLabeledByAttribute() const;
     virtual String title() const;
     virtual String ariaDescribedByAttribute() const;
@@ -185,6 +190,9 @@ public:
     virtual void setFocused(bool);
     virtual void setSelectedTextRange(const PlainTextRange&);
     virtual void setValue(const String&);
+    virtual void changeValueByPercent(float percentChange);
+    virtual void increment();
+    virtual void decrement();
     
     virtual void detach();
     virtual void childrenChanged();
@@ -231,7 +239,8 @@ private:
     bool ariaIsHidden() const;
 
     Element* menuElementForMenuButton() const;
-    Element* menuItemElementForMenu() const; 
+    Element* menuItemElementForMenu() const;
+    AccessibilityRole determineAccessibilityRole();
     AccessibilityRole determineAriaRoleAttribute() const;
 
     IntRect checkboxOrRadioRect() const;

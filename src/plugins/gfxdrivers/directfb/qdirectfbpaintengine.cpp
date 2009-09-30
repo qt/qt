@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -170,7 +170,8 @@ enum PaintOperation {
     DRAW_PIXMAP = 0x0008, DRAW_TILED_PIXMAP = 0x0010, STROKE_PATH = 0x0020,
     DRAW_PATH = 0x0040, DRAW_POINTS = 0x0080, DRAW_ELLIPSE = 0x0100,
     DRAW_POLYGON = 0x0200, DRAW_TEXT = 0x0400, FILL_PATH = 0x0800,
-    FILL_RECT = 0x1000, DRAW_COLORSPANS = 0x2000, ALL = 0xffff
+    FILL_RECT = 0x1000, DRAW_COLORSPANS = 0x2000, DRAW_ROUNDED_RECT = 0x4000,
+    ALL = 0xffff
 };
 #endif
 
@@ -398,7 +399,7 @@ void QDirectFBPaintEngine::drawRects(const QRect *rects, int rectCount)
     Q_D(QDirectFBPaintEngine);
     const QPen &pen = state()->pen;
     const QBrush &brush = state()->brush;
-    if (brush == Qt::NoBrush && pen == Qt::NoPen)
+    if (brush.style() == Qt::NoBrush && pen.style() == Qt::NoPen)
         return;
 
     if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedPrimitives)
@@ -411,11 +412,13 @@ void QDirectFBPaintEngine::drawRects(const QRect *rects, int rectCount)
         QRasterPaintEngine::drawRects(rects, rectCount);
         return;
     }
-    if (brush != Qt::NoBrush) {
+
+    if (brush.style() != Qt::NoBrush) {
         d->setDFBColor(brush.color());
         CLIPPED_PAINT(QT_PREPEND_NAMESPACE(fillRects<QRect>)(rects, rectCount, state()->matrix, d->surface));
     }
-    if (pen != Qt::NoPen) {
+
+    if (pen.style() != Qt::NoPen) {
         d->setDFBColor(pen.color());
         CLIPPED_PAINT(QT_PREPEND_NAMESPACE(drawRects<QRect>)(rects, rectCount, state()->matrix, d->surface));
     }
@@ -426,7 +429,7 @@ void QDirectFBPaintEngine::drawRects(const QRectF *rects, int rectCount)
     Q_D(QDirectFBPaintEngine);
     const QPen &pen = state()->pen;
     const QBrush &brush = state()->brush;
-    if (brush == Qt::NoBrush && pen == Qt::NoPen)
+    if (brush.style() == Qt::NoBrush && pen.style() == Qt::NoPen)
         return;
 
     if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedPrimitives)
@@ -439,11 +442,13 @@ void QDirectFBPaintEngine::drawRects(const QRectF *rects, int rectCount)
         QRasterPaintEngine::drawRects(rects, rectCount);
         return;
     }
-    if (brush != Qt::NoBrush) {
+
+    if (brush.style() != Qt::NoBrush) {
         d->setDFBColor(brush.color());
         CLIPPED_PAINT(fillRects<QRectF>(rects, rectCount, state()->matrix, d->surface));
     }
-    if (pen != Qt::NoPen) {
+
+    if (pen.style() != Qt::NoPen) {
         d->setDFBColor(pen.color());
         CLIPPED_PAINT(QT_PREPEND_NAMESPACE(drawRects<QRectF>)(rects, rectCount, state()->matrix, d->surface));
     }
@@ -463,7 +468,7 @@ void QDirectFBPaintEngine::drawLines(const QLine *lines, int lineCount)
     }
 
     const QPen &pen = state()->pen;
-    if (pen != Qt::NoPen) {
+    if (pen.style() != Qt::NoPen) {
         d->setDFBColor(pen.color());
         CLIPPED_PAINT(QT_PREPEND_NAMESPACE(drawLines<QLine>)(lines, lineCount, state()->matrix, d->surface));
     }
@@ -483,7 +488,7 @@ void QDirectFBPaintEngine::drawLines(const QLineF *lines, int lineCount)
     }
 
     const QPen &pen = state()->pen;
-    if (pen != Qt::NoPen) {
+    if (pen.style() != Qt::NoPen) {
         d->setDFBColor(pen.color());
         CLIPPED_PAINT(QT_PREPEND_NAMESPACE(drawLines<QLineF>)(lines, lineCount, state()->matrix, d->surface));
     }
@@ -691,6 +696,13 @@ void QDirectFBPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
     QRasterPaintEngine::fill(path, brush);
 }
 
+void QDirectFBPaintEngine::drawRoundedRect(const QRectF &rect, qreal xrad, qreal yrad, Qt::SizeMode mode)
+{
+    RASTERFALLBACK(DRAW_ROUNDED_RECT, rect, xrad, yrad);
+    Q_D(QDirectFBPaintEngine);
+    d->lock();
+    QRasterPaintEngine::drawRoundedRect(rect, xrad, yrad, mode);
+}
 
 void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
 {
@@ -925,12 +937,12 @@ void QDirectFBPaintEnginePrivate::setRenderHints(QPainter::RenderHints hints)
 
 void QDirectFBPaintEnginePrivate::prepareForBlit(bool alpha)
 {
-    quint32 blittingFlags = alpha ? DSBLIT_BLEND_ALPHACHANNEL : DSBLIT_NOFX;
+    DFBSurfaceBlittingFlags blittingFlags = alpha ? DSBLIT_BLEND_ALPHACHANNEL : DSBLIT_NOFX;
     if (opacity != 255) {
         blittingFlags |= DSBLIT_BLEND_COLORALPHA;
     }
     surface->SetColor(surface, 0xff, 0xff, 0xff, opacity);
-    surface->SetBlittingFlags(surface, DFBSurfaceBlittingFlags(blittingFlags));
+    surface->SetBlittingFlags(surface, blittingFlags);
 }
 
 static inline uint ALPHA_MUL(uint x, uint a)
@@ -1237,7 +1249,7 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
         dbg << dev << "of type" << dev->devType();
     }
 
-    dbg << QString("transformationType 0x%1").arg(transformationType, 3, 16, QLatin1Char('0'))
+    dbg << QString::fromLatin1("transformationType 0x%1").arg(transformationType, 3, 16, QLatin1Char('0'))
         << "simplePen" << simplePen
         << "clipType" << clipType
         << "compositionModeStatus" << compositionModeStatus;

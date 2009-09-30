@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -57,30 +57,35 @@ public:
     ~QTraceWindowSurface();
 
     QPaintDevice *paintDevice();
+    void beginPaint(const QRegion &rgn);
     void endPaint(const QRegion &rgn);
+
+    bool scroll(const QRegion &area, int dx, int dy);
 
 private:
     QPaintBuffer *buffer;
+    QList<QRegion> updates;
 
-    QFile *outputFile;
-    QDataStream *out;
-
-    int frameId;
+    qulonglong winId;
 };
 
 QTraceWindowSurface::QTraceWindowSurface(QWidget *widget)
     : QRasterWindowSurface(widget)
     , buffer(0)
-    , outputFile(0)
-    , out(0)
-    , frameId(0)
+    , winId(0)
 {
 }
 
 QTraceWindowSurface::~QTraceWindowSurface()
 {
-    delete out;
-    delete outputFile;
+    if (buffer) {
+        QFile outputFile(QString(QLatin1String("qtgraphics-%0.trace")).arg(winId));
+        if (outputFile.open(QIODevice::WriteOnly)) {
+            QDataStream out(&outputFile);
+            out << *buffer << updates;
+        }
+        delete buffer;
+    }
 }
 
 QPaintDevice *QTraceWindowSurface::paintDevice()
@@ -92,28 +97,33 @@ QPaintDevice *QTraceWindowSurface::paintDevice()
     return buffer;
 }
 
+void QTraceWindowSurface::beginPaint(const QRegion &rgn)
+{
+    // ensure paint buffer is created
+    paintDevice();
+    buffer->beginNewFrame();
+
+    QRasterWindowSurface::beginPaint(rgn);
+}
+
 void QTraceWindowSurface::endPaint(const QRegion &rgn)
 {
-    if (!out) {
-        outputFile = new QFile(QString(QLatin1String("qtgraphics-%0.trace")).arg((qulonglong)window()->winId()));
-        if (outputFile->open(QIODevice::WriteOnly))
-            out = new QDataStream(outputFile);
-    }
-
     QPainter p(QRasterWindowSurface::paintDevice());
-    buffer->draw(&p);
+    buffer->draw(&p, buffer->numFrames()-1);
     p.end();
 
-    if (out) {
-        *out << frameId++;
-        *out << (qulonglong)window()->winId();
-        *out << geometry();
-        *out << rgn;
-        *out << *buffer;
-    }
+    winId = (qulonglong)window()->winId();
 
-    delete buffer;
-    buffer = 0;
+    updates << rgn;
+
+    QRasterWindowSurface::endPaint(rgn);
+}
+
+bool QTraceWindowSurface::scroll(const QRegion &, int, int)
+{
+    // TODO: scrolling should also be streamed and replayed
+    // to test scrolling performance
+    return false;
 }
 
 QTraceGraphicsSystem::QTraceGraphicsSystem()

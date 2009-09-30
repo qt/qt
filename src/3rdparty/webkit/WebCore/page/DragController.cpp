@@ -26,6 +26,7 @@
 #include "config.h"
 #include "DragController.h"
 
+#if ENABLE(DRAG_SUPPORT)
 #include "CSSStyleDeclaration.h"
 #include "Clipboard.h"
 #include "ClipboardAccessPolicy.h"
@@ -46,6 +47,7 @@
 #include "HTMLAnchorElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
+#include "HitTestRequest.h"
 #include "HitTestResult.h"
 #include "Image.h"
 #include "MoveSelectionCommand.h"
@@ -53,6 +55,7 @@
 #include "Page.h"
 #include "RenderFileUploadControl.h"
 #include "RenderImage.h"
+#include "RenderView.h"
 #include "ReplaceSelectionCommand.h"
 #include "ResourceRequest.h"
 #include "SelectionController.h"
@@ -107,7 +110,7 @@ static PassRefPtr<DocumentFragment> documentFragmentFromDragData(DragData* dragD
             String title;
             String url = dragData->asURL(&title);
             if (!url.isEmpty()) {
-                RefPtr<HTMLAnchorElement> anchor = new HTMLAnchorElement(document);
+                RefPtr<HTMLAnchorElement> anchor = HTMLAnchorElement::create(document);
                 anchor->setHref(url);
                 ExceptionCode ec;
                 RefPtr<Node> anchorText = document->createTextNode(title);
@@ -253,6 +256,25 @@ static HTMLInputElement* asFileInput(Node* node)
     return 0;
 }
 
+static Element* elementUnderMouse(Document* documentUnderMouse, const IntPoint& p)
+{
+    float zoomFactor = documentUnderMouse->frame()->pageZoomFactor();
+    IntPoint point = roundedIntPoint(FloatPoint(p.x() * zoomFactor, p.y() * zoomFactor));
+
+    HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
+    HitTestResult result(point);
+    documentUnderMouse->renderView()->layer()->hitTest(request, result);
+
+    Node* n = result.innerNode();
+    while (n && !n->isElementNode())
+        n = n->parentNode();
+    if (n)
+        n = n->shadowAncestorNode();
+
+    ASSERT(n);
+    return static_cast<Element*>(n);
+}
+
 bool DragController::tryDocumentDrag(DragData* dragData, DragDestinationAction actionMask, DragOperation& operation)
 {
     ASSERT(dragData);
@@ -281,18 +303,14 @@ bool DragController::tryDocumentDrag(DragData* dragData, DragDestinationAction a
     if (m_isHandlingDrag) {
         m_page->dragCaretController()->clear();
         return true;
-    }
-
-    if ((actionMask & DragDestinationActionEdit) && !m_isHandlingDrag && canProcessDrag(dragData)) {
+    } else if ((actionMask & DragDestinationActionEdit) && canProcessDrag(dragData)) {
         if (dragData->containsColor()) {
             operation = DragOperationGeneric;
             return true;
         }
 
-        IntPoint dragPos = dragData->clientPosition();
-        IntPoint point = frameView->windowToContents(dragPos);
-        Element* element = m_documentUnderMouse->elementFromPoint(point.x(), point.y());
-        ASSERT(element);
+        IntPoint point = frameView->windowToContents(dragData->clientPosition());
+        Element* element = elementUnderMouse(m_documentUnderMouse, point);
         if (!asFileInput(element)) {
             VisibleSelection dragCaret = m_documentUnderMouse->frame()->visiblePositionForPoint(point);
             m_page->dragCaretController()->setSelection(dragCaret);
@@ -302,6 +320,8 @@ bool DragController::tryDocumentDrag(DragData* dragData, DragDestinationAction a
         operation = dragIsMove(innerFrame->selection()) ? DragOperationMove : DragOperationCopy;
         return true;
     }
+    // If we're not over an editable region, make sure we're clearing any prior drag cursor.
+    m_page->dragCaretController()->clear();
     return false;
 }
 
@@ -340,8 +360,7 @@ bool DragController::concludeEditDrag(DragData* dragData)
         return false;
 
     IntPoint point = m_documentUnderMouse->view()->windowToContents(dragData->clientPosition());
-    Element* element =  m_documentUnderMouse->elementFromPoint(point.x(), point.y());
-    ASSERT(element);
+    Element* element = elementUnderMouse(m_documentUnderMouse, point);
     Frame* innerFrame = element->ownerDocument()->frame();
     ASSERT(innerFrame);
 
@@ -379,11 +398,10 @@ bool DragController::concludeEditDrag(DragData* dragData)
         if (filenames.isEmpty())
             return false;
 
-        // Ugly.  For security none of the API's available to us to set the input value
-        // on file inputs.  Even forcing a change in HTMLInputElement doesn't work as
-        // RenderFileUploadControl clears the file when doing updateFromElement()
-        RenderFileUploadControl* renderer = static_cast<RenderFileUploadControl*>(fileInput->renderer());
-
+        // Ugly. For security none of the APIs available to us can set the input value
+        // on file inputs. Even forcing a change in HTMLInputElement doesn't work as
+        // RenderFileUploadControl clears the file when doing updateFromElement().
+        RenderFileUploadControl* renderer = toRenderFileUploadControl(fileInput->renderer());
         if (!renderer)
             return false;
 
@@ -786,3 +804,5 @@ void DragController::placeDragCaret(const IntPoint& windowPoint)
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(DRAG_SUPPORT)

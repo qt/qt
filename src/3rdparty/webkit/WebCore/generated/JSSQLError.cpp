@@ -83,7 +83,7 @@ JSSQLError::JSSQLError(PassRefPtr<Structure> structure, JSDOMGlobalObject* globa
 
 JSSQLError::~JSSQLError()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSQLError::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -94,6 +94,11 @@ JSObject* JSSQLError::createPrototype(ExecState* exec, JSGlobalObject* globalObj
 bool JSSQLError::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSQLError, Base>(exec, &JSSQLErrorTable, this, propertyName, slot);
+}
+
+bool JSSQLError::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSQLError, Base>(exec, &JSSQLErrorTable, this, propertyName, descriptor);
 }
 
 JSValue jsSQLErrorCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -118,7 +123,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SQLErro
 }
 SQLError* toSQLError(JSC::JSValue value)
 {
-    return value.isObject(&JSSQLError::s_info) ? static_cast<JSSQLError*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSQLError::s_info) ? static_cast<JSSQLError*>(asObject(value))->impl() : 0;
 }
 
 }

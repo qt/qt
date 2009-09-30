@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -586,7 +586,7 @@ bool QWindowsXPStylePrivate::swapAlphaChannel(const QRect &rect, bool allPixels)
             }
             register unsigned int alphaValue = (*buffer) & 0xFF000000;
             if (alphaValue == 0xFF000000) {
-                *buffer &= 0x00FFFFFF;
+                *buffer = 0;
                 valueChange = true;
             } else if (alphaValue == 0) {
                 *buffer |= 0xFF000000;
@@ -621,12 +621,21 @@ void QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
     QMatrix m = painter->matrix();
     bool complexXForm = m.m11() != 1.0 || m.m22() != 1.0 || m.m12() != 0.0 || m.m21() != 0.0;
 
+    bool translucentToplevel = false;
+    QPaintDevice *pdev = painter->device();
+    if (pdev->devType() == QInternal::Widget) {
+        QWidget *win = ((QWidget *) pdev)->window();
+        translucentToplevel = win->testAttribute(Qt::WA_TranslucentBackground);
+    }
+
     bool useFallback = painter->paintEngine()->getDC() == 0
                        || painter->opacity() != 1.0
                        || themeData.rotate
                        || complexXForm
                        || themeData.mirrorVertically
-                       || (themeData.mirrorHorizontally && pDrawThemeBackgroundEx == 0);
+                       || (themeData.mirrorHorizontally && pDrawThemeBackgroundEx == 0)
+                       || translucentToplevel;
+
     if (!useFallback)
         drawBackgroundDirectly(themeData);
     else
@@ -3286,17 +3295,6 @@ int QWindowsXPStyle::pixelMetric(PixelMetric pm, const QStyleOption *option, con
                 SIZE size;
                 pGetThemePartSize(theme.handle(), 0, theme.partId, theme.stateId, 0, TS_TRUE, &size);
                 res = size.cy;
-            }
-        }
-        break;
-
-    case PM_MenuButtonIndicator:
-        {
-            XPThemeData theme(widget, 0, QLatin1String("TOOLBAR"), TP_SPLITBUTTONDROPDOWN);
-            if (theme.isValid()) {
-                SIZE size;
-                pGetThemePartSize(theme.handle(), 0, theme.partId, theme.stateId, 0, TS_TRUE, &size);
-                res = size.cx;
             }
         }
         break;

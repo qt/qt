@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -95,6 +95,7 @@ private slots:
     void evaluate();
     void nestedEvaluate();
     void uncaughtException();
+    void errorMessage_QT679();
     void valueConversion();
     void importExtension();
     void infiniteRecursion();
@@ -1625,6 +1626,16 @@ void tst_QScriptEngine::uncaughtException()
     }
 }
 
+void tst_QScriptEngine::errorMessage_QT679()
+{
+    QScriptEngine engine;
+    engine.globalObject().setProperty("foo", 15);
+    QScriptValue error = engine.evaluate("'hello world';\nfoo.bar.blah");
+    QVERIFY(error.isError());
+    QEXPECT_FAIL("", "Task QT-679: the error message always contains the first line of the script, even if the error was on a different line", Continue);
+    QCOMPARE(error.toString(), QString::fromLatin1("TypeError: Result of expression 'foo.bar' [undefined] is not an object."));
+}
+
 struct Foo {
 public:
     int x, y;
@@ -2435,7 +2446,6 @@ public:
 
 void tst_QScriptEngine::throwErrorFromProcessEvents()
 {
-    QSKIP("Not implemented", SkipAll);
     QScriptEngine eng;
 
     EventReceiver2 receiver(&eng);

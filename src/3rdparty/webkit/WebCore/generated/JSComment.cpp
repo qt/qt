@@ -67,6 +67,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSCommentPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -81,6 +82,11 @@ const ClassInfo JSCommentConstructor::s_info = { "CommentConstructor", 0, &JSCom
 bool JSCommentConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCommentConstructor, DOMObject>(exec, &JSCommentConstructorTable, this, propertyName, slot);
+}
+
+bool JSCommentConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCommentConstructor, DOMObject>(exec, &JSCommentConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -119,6 +125,11 @@ JSObject* JSComment::createPrototype(ExecState* exec, JSGlobalObject* globalObje
 bool JSComment::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSComment, Base>(exec, &JSCommentTable, this, propertyName, slot);
+}
+
+bool JSComment::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSComment, Base>(exec, &JSCommentTable, this, propertyName, descriptor);
 }
 
 JSValue jsCommentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

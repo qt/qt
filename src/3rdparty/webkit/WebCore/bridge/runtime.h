@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -86,8 +86,10 @@ public:
     void begin();
     void end();
     
-    virtual Class *getClass() const = 0;
-    virtual RuntimeObjectImp* createRuntimeObject(ExecState*);
+    virtual Class* getClass() const = 0;
+    RuntimeObjectImp* createRuntimeObject(ExecState*);
+    void willInvalidateRuntimeObject();
+    void willDestroyRuntimeObject();
     
     // Returns false if the value was not set successfully.
     virtual bool setValueOfUndefinedField(ExecState*, const Identifier&, JSValue) { return false; }
@@ -100,7 +102,7 @@ public:
     virtual bool supportsConstruct() const { return false; }
     virtual JSValue invokeConstruct(ExecState*, const ArgList&) { return JSValue(); }
     
-    virtual void getPropertyNames(ExecState*, PropertyNameArray&, unsigned listedAttributes = JSC::Structure::Prototype) { }
+    virtual void getPropertyNames(ExecState*, PropertyNameArray&) { }
 
     virtual JSValue defaultValue(ExecState*, PreferredPrimitiveType) const = 0;
     
@@ -111,13 +113,18 @@ public:
     virtual ~Instance();
 
     virtual bool getOwnPropertySlot(JSObject*, ExecState*, const Identifier&, PropertySlot&) { return false; }
+    virtual bool getOwnPropertyDescriptor(JSObject*, ExecState*, const Identifier&, PropertyDescriptor&) { return false; }
     virtual void put(JSObject*, ExecState*, const Identifier&, JSValue, PutPropertySlot&) { }
 
 protected:
     virtual void virtualBegin() { }
     virtual void virtualEnd() { }
+    virtual RuntimeObjectImp* newRuntimeObject(ExecState*);
 
     RefPtr<RootObject> _rootObject;
+
+private:
+    RuntimeObjectImp* m_runtimeObject;
 };
 
 class Array : public Noncopyable {

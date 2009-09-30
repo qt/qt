@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -69,6 +69,12 @@
 
 //TESTED_CLASS=
 //TESTED_FILES=
+
+#if defined(Q_OS_SYMBIAN)
+# define STRINGIFY(x) #x
+# define TOSTRING(x) STRINGIFY(x)
+# define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"
+#endif
 
 class QNonNativeFileDialog : public QFileDialog
 {
@@ -297,7 +303,8 @@ void tst_QFiledialog::filesSelectedSignal()
     QNonNativeFileDialog fd;
     fd.setViewMode(QFileDialog::List);
     fd.setOptions(QFileDialog::DontUseNativeDialog);
-    fd.setDirectory(QDir::homePath());
+    QDir testDir(SRCDIR"/../../..");
+    fd.setDirectory(testDir);
     QFETCH(QFileDialog::FileMode, fileMode);
     fd.setFileMode(fileMode);
     QSignalSpy spyFilesSelected(&fd, SIGNAL(filesSelected(const QStringList &)));
@@ -1038,7 +1045,10 @@ void tst_QFiledialog::focus()
     QNonNativeFileDialog fd;
     fd.setDirectory(QDir::currentPath());
     fd.show();
+    QApplication::setActiveWindow(&fd);
+    QTest::qWaitForWindowShown(&fd);
     QTRY_COMPARE(fd.isVisible(), true);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
     qApp->processEvents();
 
     // make sure the tests work with focus follows mouse
@@ -1813,6 +1823,8 @@ void tst_QFiledialog::task228844_ensurePreviousSorting()
     current.mkdir("e");
     current.mkdir("f");
     current.mkdir("g");
+    QTemporaryFile *tempFile = new QTemporaryFile(current.absolutePath() + "/rXXXXXX");
+    tempFile->open();
     current.cdUp();
 
     QNonNativeFileDialog fd;
@@ -1824,24 +1836,46 @@ void tst_QFiledialog::task228844_ensurePreviousSorting()
     tree->header()->setSortIndicator(3,Qt::DescendingOrder);
     QTest::qWait(200);
     QDialogButtonBox *buttonBox = qFindChild<QDialogButtonBox*>(&fd, "buttonBox");
-    QPushButton *button = buttonBox->button(QDialogButtonBox::Cancel);
+    QPushButton *button = buttonBox->button(QDialogButtonBox::Open);
     QTest::mouseClick(button, Qt::LeftButton);
     QTest::qWait(500);
 
     QNonNativeFileDialog fd2;
+    fd2.setFileMode(QFileDialog::Directory);
     fd2.restoreState(fd.saveState());
     current.cd("aaaaaaaaaaaaaaaaaa");
     fd2.setDirectory(current.absolutePath());
     fd2.show();
     QTest::qWait(500);
     QTreeView *tree2 = qFindChild<QTreeView*>(&fd2, "treeView");
+    tree2->setFocus();
 
     QCOMPARE(tree2->rootIndex().data(QFileSystemModel::FilePathRole).toString(),current.absolutePath());
 
     QDialogButtonBox *buttonBox2 = qFindChild<QDialogButtonBox*>(&fd2, "buttonBox");
-    QPushButton *button2 = buttonBox2->button(QDialogButtonBox::Cancel);
+    QPushButton *button2 = buttonBox2->button(QDialogButtonBox::Open);
+    fd2.selectFile("g");
     QTest::mouseClick(button2, Qt::LeftButton);
     QTest::qWait(500);
+
+    QCOMPARE(fd2.selectedFiles().first(), current.absolutePath() + QChar('/') + QLatin1String("g"));
+
+    QNonNativeFileDialog fd3(0, "This is a third file dialog", tempFile->fileName());
+    fd3.restoreState(fd.saveState());
+    fd3.setFileMode(QFileDialog::Directory);
+    fd3.show();
+    QTest::qWait(500);
+    QTreeView *tree3 = qFindChild<QTreeView*>(&fd3, "treeView");
+    tree3->setFocus();
+
+    QCOMPARE(tree3->rootIndex().data(QFileSystemModel::FilePathRole).toString(), current.absolutePath());
+
+    QDialogButtonBox *buttonBox3 = qFindChild<QDialogButtonBox*>(&fd3, "buttonBox");
+    QPushButton *button3 = buttonBox3->button(QDialogButtonBox::Open);
+    QTest::mouseClick(button3, Qt::LeftButton);
+    QTest::qWait(500);
+
+    QCOMPARE(fd3.selectedFiles().first(), tempFile->fileName());
 
     current.cd("aaaaaaaaaaaaaaaaaa");
     current.rmdir("a");
@@ -1851,6 +1885,8 @@ void tst_QFiledialog::task228844_ensurePreviousSorting()
     current.rmdir("e");
     current.rmdir("f");
     current.rmdir("g");
+    tempFile->close();
+    delete tempFile;
     current.cdUp();
     current.rmdir("aaaaaaaaaaaaaaaaaa");
 }

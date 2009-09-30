@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -946,48 +946,60 @@ const uchar *QFontEngine::getCMap(const uchar *table, uint tableSize, bool *isSy
     if (maps + 8 * numTables > endPtr)
         return 0;
 
+    enum {
+        Invalid,
+        Symbol,
+        AppleRoman,
+        Unicode11,
+        Unicode,
+        MicrosoftUnicode,
+        MicrosoftUnicodeExtended
+    };
+
+    int symbolTable = -1;
     int tableToUse = -1;
-    int score = 0;
+    int score = Invalid;
     for (int n = 0; n < numTables; ++n) {
         const quint16 platformId = qFromBigEndian<quint16>(maps + 8 * n);
         const quint16 platformSpecificId = qFromBigEndian<quint16>(maps + 8 * n + 2);
         switch (platformId) {
         case 0: // Unicode
-            if (score < 4 &&
+            if (score < Unicode &&
                 (platformSpecificId == 0 ||
                  platformSpecificId == 2 ||
                  platformSpecificId == 3)) {
                 tableToUse = n;
-                score = 4;
-            } else if (score < 3 && platformSpecificId == 1) {
+                score = Unicode;
+            } else if (score < Unicode11 && platformSpecificId == 1) {
                 tableToUse = n;
-                score = 3;
+                score = Unicode11;
             }
             break;
         case 1: // Apple
-            if (score < 2 && platformSpecificId == 0) { // Apple Roman
+            if (score < AppleRoman && platformSpecificId == 0) { // Apple Roman
                 tableToUse = n;
-                score = 2;
+                score = AppleRoman;
             }
             break;
         case 3: // Microsoft
             switch (platformSpecificId) {
             case 0:
-                if (score < 1) {
+                symbolTable = n;
+                if (score < Symbol) {
                     tableToUse = n;
-                    score = 1;
+                    score = Symbol;
                 }
                 break;
             case 1:
-                if (score < 5) {
+                if (score < MicrosoftUnicode) {
                     tableToUse = n;
-                    score = 5;
+                    score = MicrosoftUnicode;
                 }
                 break;
             case 0xa:
-                if (score < 6) {
+                if (score < MicrosoftUnicodeExtended) {
                     tableToUse = n;
-                    score = 6;
+                    score = MicrosoftUnicodeExtended;
                 }
                 break;
             default:
@@ -999,7 +1011,9 @@ const uchar *QFontEngine::getCMap(const uchar *table, uint tableSize, bool *isSy
     }
     if(tableToUse < 0)
         return 0;
-    *isSymbolFont = (score == 1);
+
+resolveTable:
+    *isSymbolFont = (score == Symbol);
 
     unsigned int unicode_table = qFromBigEndian<quint32>(maps + 8*tableToUse + 4);
 
@@ -1019,6 +1033,41 @@ const uchar *QFontEngine::getCMap(const uchar *table, uint tableSize, bool *isSy
     if (table + unicode_table + length > endPtr)
         return 0;
     *cmapSize = length;
+
+    // To support symbol fonts that contain a unicode table for the symbol area
+    // we check the cmap tables and fall back to symbol font unless that would
+    // involve losing information from the unicode table
+    if (symbolTable > -1 && ((score == Unicode) || (score == Unicode11))) {
+        const uchar *selectedTable = table + unicode_table;
+
+        // Check that none of the latin1 range are in the unicode table
+        bool unicodeTableHasLatin1 = false;
+        for (int uc=0x00; uc<0x100; ++uc) {
+            if (getTrueTypeGlyphIndex(selectedTable, uc) != 0) {
+                unicodeTableHasLatin1 = true;
+                break;
+            }
+        }
+
+        // Check that at least one symbol char is in the unicode table
+        bool unicodeTableHasSymbols = false;
+        if (!unicodeTableHasLatin1) {
+            for (int uc=0xf000; uc<0xf100; ++uc) {
+                if (getTrueTypeGlyphIndex(selectedTable, uc) != 0) {
+                    unicodeTableHasSymbols = true;
+                    break;
+                }
+            }
+        }
+
+        // Fall back to symbol table
+        if (!unicodeTableHasLatin1 && unicodeTableHasSymbols) {
+            tableToUse = symbolTable;
+            score = Symbol;
+            goto resolveTable;
+        }
+    }
+
     return table + unicode_table;
 }
 

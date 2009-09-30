@@ -81,7 +81,7 @@ JSSVGAnimatedAngle::JSSVGAnimatedAngle(PassRefPtr<Structure> structure, JSDOMGlo
 
 JSSVGAnimatedAngle::~JSSVGAnimatedAngle()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGAnimatedAngle::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -92,6 +92,11 @@ JSObject* JSSVGAnimatedAngle::createPrototype(ExecState* exec, JSGlobalObject* g
 bool JSSVGAnimatedAngle::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGAnimatedAngle, Base>(exec, &JSSVGAnimatedAngleTable, this, propertyName, slot);
+}
+
+bool JSSVGAnimatedAngle::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGAnimatedAngle, Base>(exec, &JSSVGAnimatedAngleTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGAnimatedAngleBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -116,7 +121,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAnim
 }
 SVGAnimatedAngle* toSVGAnimatedAngle(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGAnimatedAngle::s_info) ? static_cast<JSSVGAnimatedAngle*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGAnimatedAngle::s_info) ? static_cast<JSSVGAnimatedAngle*>(asObject(value))->impl() : 0;
 }
 
 }

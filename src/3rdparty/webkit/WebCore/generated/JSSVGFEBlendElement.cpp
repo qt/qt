@@ -95,6 +95,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSSVGFEBlendElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -109,6 +110,11 @@ const ClassInfo JSSVGFEBlendElementConstructor::s_info = { "SVGFEBlendElementCon
 bool JSSVGFEBlendElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGFEBlendElementConstructor, DOMObject>(exec, &JSSVGFEBlendElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGFEBlendElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFEBlendElementConstructor, DOMObject>(exec, &JSSVGFEBlendElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -144,6 +150,11 @@ bool JSSVGFEBlendElementPrototype::getOwnPropertySlot(ExecState* exec, const Ide
     return getStaticPropertySlot<JSSVGFEBlendElementPrototype, JSObject>(exec, &JSSVGFEBlendElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGFEBlendElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticPropertyDescriptor<JSSVGFEBlendElementPrototype, JSObject>(exec, &JSSVGFEBlendElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGFEBlendElement::s_info = { "SVGFEBlendElement", &JSSVGElement::s_info, &JSSVGFEBlendElementTable, 0 };
 
 JSSVGFEBlendElement::JSSVGFEBlendElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEBlendElement> impl)
@@ -159,6 +170,11 @@ JSObject* JSSVGFEBlendElement::createPrototype(ExecState* exec, JSGlobalObject* 
 bool JSSVGFEBlendElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGFEBlendElement, Base>(exec, &JSSVGFEBlendElementTable, this, propertyName, slot);
+}
+
+bool JSSVGFEBlendElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFEBlendElement, Base>(exec, &JSSVGFEBlendElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGFEBlendElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -263,7 +279,7 @@ JSValue JSSVGFEBlendElement::getConstructor(ExecState* exec, JSGlobalObject* glo
 JSValue JSC_HOST_CALL jsSVGFEBlendElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGFEBlendElement::s_info))
+    if (!thisValue.inherits(&JSSVGFEBlendElement::s_info))
         return throwError(exec, TypeError);
     JSSVGFEBlendElement* castedThisObj = static_cast<JSSVGFEBlendElement*>(asObject(thisValue));
     SVGFEBlendElement* imp = static_cast<SVGFEBlendElement*>(castedThisObj->impl());

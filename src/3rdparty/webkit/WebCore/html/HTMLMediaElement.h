@@ -65,6 +65,7 @@ public:
     
     virtual bool isVideo() const { return false; }
     virtual bool hasVideo() const { return false; }
+    virtual bool hasAudio() const;
 
     void rewind(float timeDelta);
     void returnToRealtime();
@@ -119,7 +120,7 @@ public:
     void setPlaybackRate(float);
     bool webkitPreservesPitch() const;
     void setWebkitPreservesPitch(bool);
-    PassRefPtr<TimeRanges> played() const;
+    PassRefPtr<TimeRanges> played();
     PassRefPtr<TimeRanges> seekable() const;
     bool ended() const;
     bool autoplay() const;    
@@ -190,7 +191,9 @@ private:
     void stopPeriodicTimers();
 
     void seek(float time, ExceptionCode&);
+    void finishSeek();
     void checkIfSeekNeeded();
+    void addPlayedRange(float start, float end);
     
     void scheduleTimeupdateEvent(bool periodicEvent);
     void scheduleProgressEvent(const AtomicString& eventName);
@@ -200,6 +203,7 @@ private:
     // loading
     void selectMediaResource();
     void loadResource(const KURL&, ContentType&);
+    void scheduleNextSourceChild();
     void loadNextSourceChild();
     void userCancelledLoad();
     bool havePotentialSourceChild();
@@ -215,6 +219,8 @@ private:
     void loadInternal();
     void playInternal();
     void pauseInternal();
+
+    void prepareForLoad();
     
     bool processingUserGesture() const;
     bool processingMediaPlayerCallback() const { return m_processingMediaPlayerCallback > 0; }

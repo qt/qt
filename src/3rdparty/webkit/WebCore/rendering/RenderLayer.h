@@ -415,11 +415,13 @@ public:
 
 #if USE(ACCELERATED_COMPOSITING)
     bool isComposited() const { return m_backing != 0; }
+    bool hasCompositedMask() const;
     RenderLayerBacking* backing() const { return m_backing.get(); }
     RenderLayerBacking* ensureBacking();
     void clearBacking();
 #else
     bool isComposited() const { return false; }
+    bool hasCompositedMask() const { return false; }
 #endif
 
     bool paintsWithTransparency() const
@@ -507,11 +509,14 @@ private:
     Node* enclosingElement() const;
 
     void createReflection();
+    void removeReflection();
+
     void updateReflectionStyle();
     bool paintingInsideReflection() const { return m_paintingInsideReflection; }
     void setPaintingInsideReflection(bool b) { m_paintingInsideReflection = b; }
     
     void parentClipRects(const RenderLayer* rootLayer, ClipRects&, bool temporaryClipRects = false) const;
+    IntRect backgroundClipRect(const RenderLayer* rootLayer, bool temporaryClipRects) const;
 
     RenderLayer* enclosingTransformedAncestor() const;
 

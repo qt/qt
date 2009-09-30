@@ -87,9 +87,9 @@ IntRect Chrome::windowToScreen(const IntRect& rect) const
     return m_client->windowToScreen(rect);
 }
 
-PlatformWidget Chrome::platformWindow() const
+PlatformPageClient Chrome::platformPageClient() const
 {
-    return m_client->platformWindow();
+    return m_client->platformPageClient();
 }
 
 void Chrome::contentsSizeChanged(Frame* frame, const IntSize& size) const
@@ -100,6 +100,11 @@ void Chrome::contentsSizeChanged(Frame* frame, const IntSize& size) const
 void Chrome::scrollRectIntoView(const IntRect& rect, const ScrollView* scrollView) const
 {
     m_client->scrollRectIntoView(rect, scrollView);
+}
+
+void Chrome::scrollbarsModeDidChange() const
+{
+    m_client->scrollbarsModeDidChange();
 }
 
 void Chrome::setWindowRect(const FloatRect& rect) const
@@ -311,8 +316,10 @@ void Chrome::mouseDidMoveOverElement(const HitTestResult& result, unsigned modif
     }
     m_client->mouseDidMoveOverElement(result, modifierFlags);
 
+#if ENABLE(INSPECTOR)
     if (InspectorController* inspector = m_page->inspectorController())
         inspector->mouseDidMoveOverElement(result, modifierFlags);
+#endif
 }
 
 void Chrome::setToolTip(const HitTestResult& result)
@@ -402,6 +409,13 @@ bool Chrome::setCursor(PlatformCursorHandle cursor)
 {
     return m_client->setCursor(cursor);
 }
+
+#if ENABLE(NOTIFICATIONS)
+NotificationPresenter* Chrome::notificationPresenter() const
+{
+    return m_client->notificationPresenter();
+}
+#endif
 
 // --------
 

@@ -88,6 +88,11 @@ bool JSSVGPathSegMovetoAbs::getOwnPropertySlot(ExecState* exec, const Identifier
     return getStaticValueSlot<JSSVGPathSegMovetoAbs, Base>(exec, &JSSVGPathSegMovetoAbsTable, this, propertyName, slot);
 }
 
+bool JSSVGPathSegMovetoAbs::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGPathSegMovetoAbs, Base>(exec, &JSSVGPathSegMovetoAbsTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGPathSegMovetoAbsX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGPathSegMovetoAbs* castedThis = static_cast<JSSVGPathSegMovetoAbs*>(asObject(slot.slotBase()));

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -87,6 +87,8 @@ private slots:
     void sendData_data();
     void sendData();
 
+    void readBufferOverflow();
+
     void fullPath();
 
     void hitMaximumConnections_data();
@@ -102,14 +104,17 @@ private slots:
 
     void longPath();
     void waitForDisconnect();
+    void waitForDisconnectByServer();
 
     void removeServer();
 
     void recycleServer();
 
+    void multiConnect();
+    void writeOnlySocket();
     void writeToClientAndDisconnect();
-
     void debug();
+    void bytesWrittenSignal();
 
 
 #ifdef Q_OS_SYMBIAN
@@ -150,7 +155,13 @@ public:
     LocalServer() : QLocalServer()
     {
         connect(this, SIGNAL(newConnection()), this, SLOT(slotNewConnection()));
-    };
+    }
+
+    bool listen(const QString &name)
+    {
+        removeServer(name);
+        return QLocalServer::listen(name);
+    }
 
     QList<int> hits;
 
@@ -423,7 +434,7 @@ void tst_QLocalSocket::listenAndConnect()
         for (int j = 0; j < spyStateChanged.count(); ++j) {
             QLocalSocket::LocalSocketState s;
             s = qVariantValue<QLocalSocket::LocalSocketState>(spyStateChanged.at(j).at(0));
-	    qDebug() << s;
+            qDebug() << s;
         }
 #endif
         if (canListen)
@@ -508,11 +519,11 @@ void tst_QLocalSocket::sendData()
     if (server.hasPendingConnections()) {
         QString testLine = "test";
 #ifdef Q_OS_SYMBIAN
-    for (int i = 0; i < 25 * 1024; ++i)
+        for (int i = 0; i < 25 * 1024; ++i)
 #else
-	for (int i = 0; i < 50000; ++i)
+        for (int i = 0; i < 50000; ++i)
 #endif
-		testLine += "a";
+            testLine += "a";
         QLocalSocket *serverSocket = server.nextPendingConnection();
         QVERIFY(serverSocket);
         QCOMPARE(serverSocket->state(), QLocalSocket::ConnectedState);
@@ -550,6 +561,40 @@ void tst_QLocalSocket::sendData()
 
     QCOMPARE(server.hits.count(), (canListen ? 1 : 0));
     QCOMPARE(spy.count(), (canListen ? 1 : 0));
+}
+
+void tst_QLocalSocket::readBufferOverflow()
+{
+    const int readBufferSize = 128;
+    const int dataBufferSize = readBufferSize * 2;
+    const QString serverName = QLatin1String("myPreciousTestServer");
+    LocalServer server;
+    server.listen(serverName);
+    QVERIFY(server.isListening());
+
+    LocalSocket client;
+    client.setReadBufferSize(readBufferSize);
+    client.connectToServer(serverName);
+
+    bool timedOut = true;
+    QVERIFY(server.waitForNewConnection(3000, &timedOut));
+    QVERIFY(!timedOut);
+
+    QCOMPARE(client.state(), QLocalSocket::ConnectedState);
+    QVERIFY(server.hasPendingConnections());
+
+    QLocalSocket* serverSocket = server.nextPendingConnection();
+    char buffer[dataBufferSize];
+    memset(buffer, 0, dataBufferSize);
+    serverSocket->write(buffer, dataBufferSize);
+    serverSocket->flush();
+
+    QVERIFY(client.waitForReadyRead());
+    QCOMPARE(client.read(buffer, readBufferSize), qint64(readBufferSize));
+#if defined(QT_LOCALSOCKET_TCP) || defined(Q_OS_SYMBIAN)
+    QTest::qWait(250);
+#endif
+    QCOMPARE(client.read(buffer, readBufferSize), qint64(readBufferSize));
 }
 
 // QLocalSocket/Server can take a name or path, check that it works as expected
@@ -646,7 +691,7 @@ public:
             ++tries;
         } while ((socket.error() == QLocalSocket::ServerNotFoundError
                   || socket.error() == QLocalSocket::ConnectionRefusedError)
-		 && tries < 1000);
+             && tries < 1000);
         if (tries == 0 && socket.state() != QLocalSocket::ConnectedState) {
             QVERIFY(socket.waitForConnected(3000));
             QVERIFY(socket.state() == QLocalSocket::ConnectedState);
@@ -738,8 +783,8 @@ void tst_QLocalSocket::threadedConnection()
     while (!clients.isEmpty()) {
         QVERIFY(clients.first()->wait(3000));
         Client *client =clients.takeFirst();
-	client->terminate();
-	delete client;
+        client->terminate();
+        delete client;
     }
 }
 
@@ -832,6 +877,25 @@ void tst_QLocalSocket::waitForDisconnect()
     QVERIFY(timer.elapsed() < 2000);
 }
 
+void tst_QLocalSocket::waitForDisconnectByServer()
+{
+    QString name = "tst_localsocket";
+    LocalServer server;
+    QVERIFY(server.listen(name));
+    LocalSocket socket;
+    QSignalSpy spy(&socket, SIGNAL(disconnected()));
+    QVERIFY(spy.isValid());
+    socket.connectToServer(name);
+    QVERIFY(socket.waitForConnected(3000));
+    QVERIFY(server.waitForNewConnection(3000));
+    QLocalSocket *serverSocket = server.nextPendingConnection();
+    QVERIFY(serverSocket);
+    serverSocket->close();
+    QVERIFY(serverSocket->state() == QLocalSocket::UnconnectedState);
+    QVERIFY(socket.waitForDisconnected(3000));
+    QCOMPARE(spy.count(), 1);
+}
+
 void tst_QLocalSocket::removeServer()
 {
     // this is a hostile takeover, but recovering from a crash results in the same
@@ -873,6 +937,53 @@ void tst_QLocalSocket::recycleServer()
     QVERIFY(server.nextPendingConnection() != 0);
 }
 
+void tst_QLocalSocket::multiConnect()
+{
+    QLocalServer server;
+    QLocalSocket client1;
+    QLocalSocket client2;
+    QLocalSocket client3;
+
+    QVERIFY(server.listen("multiconnect"));
+
+    client1.connectToServer("multiconnect");
+    client2.connectToServer("multiconnect");
+    client3.connectToServer("multiconnect");
+
+    QVERIFY(client1.waitForConnected(201));
+    QVERIFY(client2.waitForConnected(202));
+    QVERIFY(client3.waitForConnected(203));
+
+    QVERIFY(server.waitForNewConnection(201));
+    QVERIFY(server.nextPendingConnection() != 0);
+    QVERIFY(server.waitForNewConnection(202));
+    QVERIFY(server.nextPendingConnection() != 0);
+    QVERIFY(server.waitForNewConnection(203));
+    QVERIFY(server.nextPendingConnection() != 0);
+}
+
+void tst_QLocalSocket::writeOnlySocket()
+{
+    QLocalServer server;
+#ifdef Q_OS_SYMBIAN
+    unlink("writeOnlySocket");
+#endif
+    QVERIFY(server.listen("writeOnlySocket"));
+
+    QLocalSocket client;
+    client.connectToServer("writeOnlySocket", QIODevice::WriteOnly);
+    QVERIFY(client.waitForConnected());
+#if defined(Q_OS_SYMBIAN)
+        QTest::qWait(250);
+#endif
+    QVERIFY(server.waitForNewConnection());
+    QLocalSocket* serverSocket = server.nextPendingConnection();
+    QVERIFY(serverSocket);
+
+    QCOMPARE(client.bytesAvailable(), qint64(0));
+    QCOMPARE(client.state(), QLocalSocket::ConnectedState);
+}
+
 void tst_QLocalSocket::writeToClientAndDisconnect()
 {
 #ifdef Q_OS_SYMBIAN
@@ -892,11 +1003,11 @@ void tst_QLocalSocket::writeToClientAndDisconnect()
     char buffer[100];
     memset(buffer, 0, sizeof(buffer));
     QCOMPARE(clientSocket->write(buffer, sizeof(buffer)), (qint64)sizeof(buffer));
-    clientSocket->flush();
+    clientSocket->waitForBytesWritten();
     clientSocket->disconnectFromServer();
-    qApp->processEvents();  // give the socket the chance to receive data
+    QVERIFY(client.waitForReadyRead());
     QCOMPARE(client.read(buffer, sizeof(buffer)), (qint64)sizeof(buffer));
-    qApp->processEvents();  // give the socket the chance to close itself
+    QVERIFY(client.waitForDisconnected());
     QCOMPARE(client.state(), QLocalSocket::UnconnectedState);
 }
 
@@ -904,6 +1015,52 @@ void tst_QLocalSocket::debug()
 {
     // Make sure this compiles
     qDebug() << QLocalSocket::ConnectionRefusedError << QLocalSocket::UnconnectedState;
+}
+
+class WriteThread : public QThread
+{
+Q_OBJECT
+public:
+    void run() {
+        QLocalSocket socket;
+        socket.connectToServer("qlocalsocket_readyread");
+
+        if (!socket.waitForConnected(3000))
+            exec();
+        connect(&socket, SIGNAL(bytesWritten(qint64)), 
+        this, SLOT(bytesWritten(qint64)), Qt::QueuedConnection);
+        socket.write("testing\n");
+        exec();
+    }
+public slots:
+   void bytesWritten(qint64) {
+        exit();
+   }
+
+private:
+};
+
+/*
+    Tests the emission of the bytesWritten(qint64)
+    signal.
+
+    Create a thread that will write to a socket.
+    If the bytesWritten(qint64) signal is generated, 
+    the slot connected to it will exit the thread,
+    indicating test success.  
+
+*/
+void tst_QLocalSocket::bytesWrittenSignal()
+{
+    QLocalServer server;
+    QVERIFY(server.listen("qlocalsocket_readyread"));
+    WriteThread writeThread;
+    writeThread.start();
+    bool timedOut = false;
+    QVERIFY(server.waitForNewConnection(3000, &timedOut));
+    QVERIFY(!timedOut);
+    QTest::qWait(2000);
+    QVERIFY(writeThread.wait(2000));
 }
 
 #ifdef Q_OS_SYMBIAN

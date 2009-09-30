@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtMultimedia module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -46,12 +46,52 @@
 
 QT_BEGIN_NAMESPACE
 
+class QAudioDeviceInfoPrivate : public QSharedData
+{
+public:
+    QAudioDeviceInfoPrivate():info(0) {}
+    QAudioDeviceInfoPrivate(const QString &r, const QByteArray &h, QAudio::Mode m):
+        realm(r), handle(h), mode(m)
+    {
+        info = QAudioDeviceFactory::audioDeviceInfo(realm, handle, mode);
+    }
+
+    QAudioDeviceInfoPrivate(const QAudioDeviceInfoPrivate &other):
+        QSharedData(other),
+        realm(other.realm), handle(other.handle), mode(other.mode)
+    {
+        info = QAudioDeviceFactory::audioDeviceInfo(realm, handle, mode);
+    }
+
+    QAudioDeviceInfoPrivate& operator=(const QAudioDeviceInfoPrivate &other)
+    {
+        delete info;
+
+        realm = other.realm;
+        handle = other.handle;
+        mode = other.mode;
+        info = QAudioDeviceFactory::audioDeviceInfo(realm, handle, mode);
+        return *this;
+    }
+
+    ~QAudioDeviceInfoPrivate()
+    {
+        delete info;
+    }
+
+    QString     realm;
+    QByteArray  handle;
+    QAudio::Mode mode;
+    QAbstractAudioDeviceInfo*   info;
+};
+
+
 /*!
     \class QAudioDeviceInfo
     \brief The QAudioDeviceInfo class provides an interface to query audio devices and their functionality.
-
     \inmodule QtMultimedia
     \ingroup multimedia
+
     \since 4.6
 
     QAudioDeviceInfo lets you query for audio devices--such as sound
@@ -71,43 +111,51 @@ QT_BEGIN_NAMESPACE
     audio plugins installed and the audio device capabilities. If you need a specific format, you can check if
     the device supports it with isFormatSupported(), or fetch a
     supported format that is as close as possible to the format with
-    nearestFormat().
+    nearestFormat(). For instance:
 
-    A QAudioDeviceInfo is constructed with a QAudioDeviceId, which is
-    an identifier for a physical device. It is used by Qt to construct
+    \snippet doc/src/snippets/audio/main.cpp 1
+    \dots 8
+    \snippet doc/src/snippets/audio/main.cpp 2
+
+    A QAudioDeviceInfo is used by Qt to construct
     classes that communicate with the device--such as
-    QAudioDeviceInfo, QAudioInput, and QAudioOutput. The static
+    QAudioInput, and QAudioOutput. The static
     functions defaultInputDevice(), defaultOutputDevice(), and
-    deviceList() let you get a hold of the ids for all available
-    devices. You fetch ids based on whether you will use the device
-    for input or output; this is specified by the QAudio::Mode enum.
-    The QAudioDeviceId returned are only valid for the QAudio::Mode.
+    deviceList() let you get a list of all available
+    devices. Devices are fetch according to the value of mode
+    this is specified by the QAudio::Mode enum.
+    The QAudioDeviceInfo returned are only valid for the QAudio::Mode.
 
     For instance:
 
     \code
-    foreach(QAudioDeviceId audioId, QAudioDeviceInfo::deviceList(QAudio::AudioOutput)) {
-        QAudioDeviceInfo info(audioId);
-        qDebug() << "Device name: " << info.deviceName();
-    }
+    foreach(const QAudioDeviceInfo &deviceInfo, QAudioDeviceInfo::deviceList(QAudio::AudioOutput))
+        qDebug() << "Device name: " << deviceInfo.deviceName();
     \endcode
 
     In this code sample, we loop through all devices that are able to output
     sound, i.e., play an audio stream in a supported format. For each device we
     find, we simply print the deviceName().
 
-    \sa QAudioOutput, QAudioInput, QAudioDeviceId
+    \sa QAudioOutput, QAudioInput
 */
 
 /*!
-    Construct a new audio device info and attach it to \a parent.
-    Using the audio device with the specified \a id.
+    Constructs an empty QAudioDeviceInfo object.
 */
 
-QAudioDeviceInfo::QAudioDeviceInfo(const QAudioDeviceId &id, QObject *parent):
-    QObject(parent)
+QAudioDeviceInfo::QAudioDeviceInfo():
+    d(new QAudioDeviceInfoPrivate)
 {
-    d = QAudioDeviceFactory::audioDeviceInfo(id);
+}
+
+/*!
+    Constructs a copy of \a other.
+*/
+
+QAudioDeviceInfo::QAudioDeviceInfo(const QAudioDeviceInfo& other):
+    d(other.d)
+{
 }
 
 /*!
@@ -116,7 +164,25 @@ QAudioDeviceInfo::QAudioDeviceInfo(const QAudioDeviceId &id, QObject *parent):
 
 QAudioDeviceInfo::~QAudioDeviceInfo()
 {
-    delete d;
+}
+
+/*!
+    Sets the QAudioDeviceInfo object to be equal to \a other.
+*/
+
+QAudioDeviceInfo& QAudioDeviceInfo::operator=(const QAudioDeviceInfo &other)
+{
+    d = other.d;
+    return *this;
+}
+
+/*!
+    Returns whether this QAudioDeviceInfo object holds a device definition.
+*/
+
+bool QAudioDeviceInfo::isNull() const
+{
+    return d->info == 0;
 }
 
 /*!
@@ -131,7 +197,7 @@ QAudioDeviceInfo::~QAudioDeviceInfo()
 
 QString QAudioDeviceInfo::deviceName() const
 {
-    return d->deviceName();
+    return isNull() ? QString() : d->info->deviceName();
 }
 
 /*!
@@ -140,7 +206,7 @@ QString QAudioDeviceInfo::deviceName() const
 
 bool QAudioDeviceInfo::isFormatSupported(const QAudioFormat &settings) const
 {
-    return d->isFormatSupported(settings);
+    return isNull() ? false : d->info->isFormatSupported(settings);
 }
 
 /*!
@@ -159,7 +225,7 @@ bool QAudioDeviceInfo::isFormatSupported(const QAudioFormat &settings) const
 
 QAudioFormat QAudioDeviceInfo::preferredFormat() const
 {
-    return d->preferredFormat();
+    return isNull() ? QAudioFormat() : d->info->preferredFormat();
 }
 
 /*!
@@ -172,7 +238,7 @@ QAudioFormat QAudioDeviceInfo::preferredFormat() const
 
 QAudioFormat QAudioDeviceInfo::nearestFormat(const QAudioFormat &settings) const
 {
-    return d->nearestFormat(settings);
+    return isNull() ? QAudioFormat() : d->info->nearestFormat(settings);
 }
 
 /*!
@@ -189,7 +255,7 @@ QAudioFormat QAudioDeviceInfo::nearestFormat(const QAudioFormat &settings) const
 
 QStringList QAudioDeviceInfo::supportedCodecs() const
 {
-    return d->codecList();
+    return isNull() ? QStringList() : d->info->codecList();
 }
 
 /*!
@@ -198,7 +264,7 @@ QStringList QAudioDeviceInfo::supportedCodecs() const
 
 QList<int> QAudioDeviceInfo::supportedFrequencies() const
 {
-    return d->frequencyList();
+    return isNull() ? QList<int>() : d->info->frequencyList();
 }
 
 /*!
@@ -207,7 +273,7 @@ QList<int> QAudioDeviceInfo::supportedFrequencies() const
 
 QList<int> QAudioDeviceInfo::supportedChannels() const
 {
-    return d->channelsList();
+    return isNull() ? QList<int>() : d->info->channelsList();
 }
 
 /*!
@@ -216,7 +282,7 @@ QList<int> QAudioDeviceInfo::supportedChannels() const
 
 QList<int> QAudioDeviceInfo::supportedSampleSizes() const
 {
-    return d->sampleSizeList();
+    return isNull() ? QList<int>() : d->info->sampleSizeList();
 }
 
 /*!
@@ -225,7 +291,7 @@ QList<int> QAudioDeviceInfo::supportedSampleSizes() const
 
 QList<QAudioFormat::Endian> QAudioDeviceInfo::supportedByteOrders() const
 {
-    return d->byteOrderList();
+    return isNull() ? QList<QAudioFormat::Endian>() : d->info->byteOrderList();
 }
 
 /*!
@@ -234,7 +300,7 @@ QList<QAudioFormat::Endian> QAudioDeviceInfo::supportedByteOrders() const
 
 QList<QAudioFormat::SampleType> QAudioDeviceInfo::supportedSampleTypes() const
 {
-    return d->sampleTypeList();
+    return isNull() ? QList<QAudioFormat::SampleType>() : d->info->sampleTypeList();
 }
 
 /*!
@@ -242,7 +308,7 @@ QList<QAudioFormat::SampleType> QAudioDeviceInfo::supportedSampleTypes() const
     All platform and audio plugin implementations provide a default audio device to use.
 */
 
-QAudioDeviceId QAudioDeviceInfo::defaultInputDevice()
+QAudioDeviceInfo QAudioDeviceInfo::defaultInputDevice()
 {
     return QAudioDeviceFactory::defaultInputDevice();
 }
@@ -252,7 +318,7 @@ QAudioDeviceId QAudioDeviceInfo::defaultInputDevice()
     All platform and audio plugin implementations provide a default audio device to use.
 */
 
-QAudioDeviceId QAudioDeviceInfo::defaultOutputDevice()
+QAudioDeviceInfo QAudioDeviceInfo::defaultOutputDevice()
 {
     return QAudioDeviceFactory::defaultOutputDevice();
 }
@@ -261,9 +327,47 @@ QAudioDeviceId QAudioDeviceInfo::defaultOutputDevice()
     Returns a list of audio devices that support \a mode.
 */
 
-QList<QAudioDeviceId> QAudioDeviceInfo::deviceList(QAudio::Mode mode)
+QList<QAudioDeviceInfo> QAudioDeviceInfo::deviceList(QAudio::Mode mode)
 {
     return QAudioDeviceFactory::deviceList(mode);
+}
+
+
+/*!
+    \internal
+*/
+
+QAudioDeviceInfo::QAudioDeviceInfo(const QString &realm, const QByteArray &handle, QAudio::Mode mode):
+    d(new QAudioDeviceInfoPrivate(realm, handle, mode))
+{
+}
+
+/*!
+    \internal
+*/
+
+QString QAudioDeviceInfo::realm() const
+{
+    return d->realm;
+}
+
+/*!
+    \internal
+*/
+
+QByteArray QAudioDeviceInfo::handle() const
+{
+    return d->handle;
+}
+
+
+/*!
+    \internal
+*/
+
+QAudio::Mode QAudioDeviceInfo::mode() const
+{
+    return d->mode;
 }
 
 QT_END_NAMESPACE

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -76,6 +76,12 @@
     \row \o \link #QSQLITE QSQLITE\endlink \o SQLite version 3
     \row \o \link #QTDS QTDS\endlink \o Sybase Adaptive Server
     \endtable
+
+    SQLite is the in-process database system with the best test coverage
+    and support on all platforms. Oracle via OCI, and PostreSQL and MySQL
+    through either ODBC or a native driver are well-tested on Windows and
+    Linux. The completeness of the support for other systems depends on the
+    availability and quality of client libraries.
 
     \bold{Note:} To build a driver plugin you need to have the appropriate
     client library for your Database Management System (DBMS). This provides
@@ -445,7 +451,7 @@
     Sybase client library. Refer to the Sybase documentation for information on how to set up
     a Sybase client configuration file to enable connections to databases on non-default ports.
 
-    \section3 How to Build the QDTS Plugin on Unix and Mac OS X
+    \section3 How to Build the QTDS Plugin on Unix and Mac OS X
 
     Under Unix, two libraries are available which support the TDS protocol:
 
@@ -609,7 +615,8 @@
     The Qt InterBase plugin makes it possible to access the InterBase and
     Firebird databases. InterBase can either be used as a client/server or
     without a server in which case it operates on local files. The
-    database file must exist before a connection can be established.
+    database file must exist before a connection can be established. Firebird
+    must be used with a server configuration.
 
     Note that InterBase requires you to specify the full path to the
     database file, no matter whether it is stored locally or on another

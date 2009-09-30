@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtMultimedia module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
     You can construct an audio output with the system's
     \l{QAudioDeviceInfo::defaultOutputDevice()}{default audio output
     device}. It is also possible to create QAudioOutput with a
-    specific QAudioDeviceId. When you create the audio output, you
+    specific QAudioDeviceInfo. When you create the audio output, you
     should also send in the QAudioFormat to be used for the playback
     (see the QAudioFormat class description for details).
 
@@ -129,9 +129,12 @@ QT_BEGIN_NAMESPACE
 
     If an error occurs, you can fetch the \l{QAudio::Error}{error
     type} with the error() function. Please see the QAudio::Error enum
-    for a description of the possible errors that are reported.
+    for a description of the possible errors that are reported.  When
+    an error is encountered, the state changes to QAudio::StopState.
+    You can check for errors by connecting to the stateChanged()
+    signal:
 
-    If an error is encountered state changes to QAudio::StopState.
+    \snippet doc/src/snippets/audio/main.cpp 3
 
     \sa QAudioInput, QAudioDeviceInfo
 */
@@ -152,14 +155,14 @@ QAudioOutput::QAudioOutput(const QAudioFormat &format, QObject *parent):
 
 /*!
     Construct a new audio output and attach it to \a parent.
-    The \a id of the audio output device is used with the output
+    The device referenced by \a audioDevice is used with the output
     \a format parameters.
 */
 
-QAudioOutput::QAudioOutput(const QAudioDeviceId &id, const QAudioFormat &format, QObject *parent):
+QAudioOutput::QAudioOutput(const QAudioDeviceInfo &audioDevice, const QAudioFormat &format, QObject *parent):
     QObject(parent)
 {
-    d = QAudioDeviceFactory::createOutputDevice(id, format);
+    d = QAudioDeviceFactory::createOutputDevice(audioDevice, format);
     connect(d, SIGNAL(notify()), SIGNAL(notify()));
     connect(d, SIGNAL(stateChanged(QAudio::State)), SIGNAL(stateChanged(QAudio::State)));
 }
@@ -192,7 +195,7 @@ QAudioFormat QAudioOutput::format() const
     Passing a QIODevice allows the data to be transfered without any extra code.
     All that is required is to open the QIODevice.
 
-    /sa QIODevice
+    \sa QIODevice
 */
 
 QIODevice* QAudioOutput::start(QIODevice* device)

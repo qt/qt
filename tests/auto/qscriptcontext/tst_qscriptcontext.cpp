@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -568,6 +568,19 @@ static QScriptValue custom_call(QScriptContext *ctx, QScriptEngine *)
     return ctx->argumentsObject().property(0).call(QScriptValue(), QScriptValueList() << ctx->argumentsObject().property(1));
 }
 
+static QScriptValue native_recurse(QScriptContext *ctx, QScriptEngine *eng)
+{
+    QScriptValue func = ctx->argumentsObject().property(0);
+    QScriptValue n = ctx->argumentsObject().property(1);
+
+    if(n.toUInt32() <= 1) {
+        return func.call(QScriptValue(), QScriptValueList());
+    } else {
+        return eng->evaluate("native_recurse").call(QScriptValue(),
+                                                    QScriptValueList() << func << QScriptValue(n.toUInt32() - 1));
+    }
+}
+
 void tst_QScriptContext::backtrace_data()
 {
     QTest::addColumn<QString>("code");
@@ -724,6 +737,83 @@ void tst_QScriptContext::backtrace_data()
 
         QTest::newRow("call native") << source << expected;
     }
+
+    {
+        QLatin1String func( "function f1() {\n"
+            "    eval('var q = 4');\n"
+            "    return custom_call(bt, 22);\n"
+            "}");
+
+        QString source = QString::fromLatin1("\n"
+            "function f2() {\n"
+            "    func = %1\n"
+            "    return custom_call(func, 12);\n"
+            "}\n"
+            "f2();\n").arg(func);
+
+        QStringList expected;
+        expected << "<native>(22) at -1"
+            << "<native>(function () {\n    [native code]\n}, 22) at -1"
+            << "f1(12) at testfile:5"
+            << QString::fromLatin1("<native>(%1, 12) at -1").arg(func)
+            << "f2() at testfile:7"
+            << "<global>() at testfile:9";
+
+
+        QTest::newRow("calls with closures") << source << expected;
+    }
+
+    {
+        QLatin1String func( "function js_bt() {\n"
+            "    return bt();\n"
+            "}");
+
+        QString source = QString::fromLatin1("\n"
+            "%1\n"
+            "function f() {\n"
+            "    return native_recurse(js_bt, 12);\n"
+            "}\n"
+            "f();\n").arg(func);
+
+        QStringList expected;
+        expected << "<native>() at -1" << "js_bt() at testfile:3";
+        for(int n = 1; n <= 12; n++) {
+            expected << QString::fromLatin1("<native>(%1, %2) at -1")
+                .arg(func).arg(n);
+        }
+        expected << "f() at testfile:6";
+        expected << "<global>() at testfile:8";
+
+        QTest::newRow("native recursive") << source << expected;
+    }
+
+    {
+        QString source = QString::fromLatin1("\n"
+            "function finish() {\n"
+            "    return bt();\n"
+            "}\n"
+            "function rec(n) {\n"
+            "    if(n <= 1)\n"
+            "        return finish();\n"
+            "    else\n"
+            "        return rec (n - 1);\n"
+            "}\n"
+            "function f() {\n"
+            "    return rec(12);\n"
+            "}\n"
+            "f();\n");
+
+        QStringList expected;
+        expected << "<native>() at -1" << "finish() at testfile:3";
+        for(int n = 1; n <= 12; n++) {
+            expected << QString::fromLatin1("rec(n = %1) at testfile:%2")
+                .arg(n).arg((n==1) ? 7 : 9);
+        }
+        expected << "f() at testfile:12";
+        expected << "<global>() at testfile:14";
+
+        QTest::newRow("js recursive") << source << expected;
+    }
 }
 
 
@@ -736,6 +826,7 @@ void tst_QScriptContext::backtrace()
     eng.globalObject().setProperty("bt", eng.newFunction(getBacktrace));
     eng.globalObject().setProperty("custom_eval", eng.newFunction(custom_eval));
     eng.globalObject().setProperty("custom_call", eng.newFunction(custom_call));
+    eng.globalObject().setProperty("native_recurse", eng.newFunction(native_recurse));
 
     QString fileName = "testfile";
     QScriptValue ret = eng.evaluate(code, fileName);
@@ -943,6 +1034,16 @@ void tst_QScriptContext::inheritActivationAndThisObject()
         QScriptValue ret = eng.evaluate("(function(a) { return myEval('a'); })(123)");
         QVERIFY(ret.isNumber());
         QCOMPARE(ret.toInt32(), 123);
+    }
+
+    // QT-2219
+    {
+        eng.globalObject().setProperty("a", 123);
+        QScriptValue ret = eng.evaluate("(function() { myEval('var a = 456'); return a; })()");
+        QVERIFY(ret.isNumber());
+        QCOMPARE(ret.toInt32(), 456);
+        QEXPECT_FAIL("", "QT-2219: Wrong activation object is returned from native function's parent context", Continue);
+        QVERIFY(eng.globalObject().property("a").strictlyEquals(123));
     }
 }
 

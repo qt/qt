@@ -74,6 +74,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLLegendElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -88,6 +89,11 @@ const ClassInfo JSHTMLLegendElementConstructor::s_info = { "HTMLLegendElementCon
 bool JSHTMLLegendElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLLegendElementConstructor, DOMObject>(exec, &JSHTMLLegendElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLLegendElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLLegendElementConstructor, DOMObject>(exec, &JSHTMLLegendElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -126,6 +132,11 @@ JSObject* JSHTMLLegendElement::createPrototype(ExecState* exec, JSGlobalObject* 
 bool JSHTMLLegendElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLLegendElement, Base>(exec, &JSHTMLLegendElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLLegendElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLLegendElement, Base>(exec, &JSHTMLLegendElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLLegendElementForm(ExecState* exec, const Identifier&, const PropertySlot& slot)

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -722,8 +722,6 @@ QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 
 void QWidgetPrivate::updateSystemBackground() {}
 
-extern void qt_win_set_cursor(QWidget *, bool); // qapplication_win.cpp
-
 #ifndef QT_NO_CURSOR
 void QWidgetPrivate::setCursor_sys(const QCursor &cursor)
 {
@@ -749,25 +747,6 @@ void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
     SetWindowText(q->internalWinId(), (wchar_t*)caption.utf16());
 }
 
-/*
-  Create an icon mask the way Windows wants it using CreateBitmap.
-*/
-
-HBITMAP qt_createIconMask(const QBitmap &bitmap)
-{
-    QImage bm = bitmap.toImage().convertToFormat(QImage::Format_Mono);
-    int w = bm.width();
-    int h = bm.height();
-    int bpl = ((w+15)/16)*2;                        // bpl, 16 bit alignment
-    uchar *bits = new uchar[bpl*h];
-    bm.invertPixels();
-    for (int y=0; y<h; y++)
-        memcpy(bits+y*bpl, bm.scanLine(y), bpl);
-    HBITMAP hbm = CreateBitmap(w, h, 1, 1, bits);
-    delete [] bits;
-    return hbm;
-}
-
 HICON qt_createIcon(QIcon icon, int xSize, int ySize, QPixmap **cache)
 {
     HICON result = 0;
@@ -777,27 +756,12 @@ HICON qt_createIcon(QIcon icon, int xSize, int ySize, QPixmap **cache)
         if (pm.isNull())
             return 0;
 
-        QBitmap mask = pm.mask();
-        if (mask.isNull()) {
-            mask = QBitmap(pm.size());
-            mask.fill(Qt::color1);
-        }
-
-        HBITMAP im = qt_createIconMask(mask);
-        ICONINFO ii;
-        ii.fIcon    = true;
-        ii.hbmMask  = im;
-        ii.hbmColor = pm.toWinHBITMAP(QPixmap::Alpha);
-        ii.xHotspot = 0;
-        ii.yHotspot = 0;
-        result = CreateIconIndirect(&ii);
+        result = pm.toWinHICON();
 
         if (cache) {
             delete *cache;
             *cache = new QPixmap(pm);;
         }
-        DeleteObject(ii.hbmColor);
-        DeleteObject(im);
     }
     return result;
 }

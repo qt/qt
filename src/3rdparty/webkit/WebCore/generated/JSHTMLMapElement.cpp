@@ -73,6 +73,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSHTMLMapElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -87,6 +88,11 @@ const ClassInfo JSHTMLMapElementConstructor::s_info = { "HTMLMapElementConstruct
 bool JSHTMLMapElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLMapElementConstructor, DOMObject>(exec, &JSHTMLMapElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSHTMLMapElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLMapElementConstructor, DOMObject>(exec, &JSHTMLMapElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -125,6 +131,11 @@ JSObject* JSHTMLMapElement::createPrototype(ExecState* exec, JSGlobalObject* glo
 bool JSHTMLMapElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSHTMLMapElement, Base>(exec, &JSHTMLMapElementTable, this, propertyName, slot);
+}
+
+bool JSHTMLMapElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSHTMLMapElement, Base>(exec, &JSHTMLMapElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsHTMLMapElementAreas(ExecState* exec, const Identifier&, const PropertySlot& slot)

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -195,12 +195,33 @@ void tst_QDialog::showExtension()
     QCOMPARE( testWidget->size(), dlgSize );
     QPoint oldPosition = testWidget->pos();
 
+#ifdef Q_WS_S60
+    const int htDiff = ext->size().height() - testWidget->size().height();
+#endif
     // show
     ((DummyDialog*)testWidget)->showExtension( TRUE );
 //     while ( testWidget->size() == dlgSize )
 // 	qApp->processEvents();
+
+#ifdef Q_WS_S60
+    QPoint expectedPosition;
+    if (!horizontal) {
+        expectedPosition = QPoint(0, oldPosition.y() - extSize.height());
+    } else {
+        if (htDiff>0)
+            expectedPosition = QPoint(0, oldPosition.y() - htDiff);
+        else
+            expectedPosition = oldPosition;
+    }
+#endif
+
     QTEST( testWidget->size(), "result"  );
+
+#ifdef Q_WS_S60
+    QCOMPARE(testWidget->pos(), expectedPosition);
+#else
     QCOMPARE(testWidget->pos(), oldPosition);
+#endif
 
     // hide extension. back to old size ?
     ((DummyDialog*)testWidget)->showExtension( FALSE );
@@ -563,6 +584,7 @@ void tst_QDialog::reject()
 {
     TestRejectDialog dialog;
     dialog.show();
+    QTest::qWaitForWindowShown(&dialog);
     QTest::qWait(100);
     QVERIFY(dialog.isVisible());
     dialog.reject();
@@ -571,7 +593,9 @@ void tst_QDialog::reject()
     QCOMPARE(dialog.called, 1);
 
     dialog.show();
+    QTest::qWaitForWindowShown(&dialog);
     QTest::qWait(100);
+
     QVERIFY(dialog.isVisible());
     QVERIFY(dialog.close());
     QTest::qWait(100);
@@ -580,6 +604,7 @@ void tst_QDialog::reject()
 
     dialog.cancelReject = true;
     dialog.show();
+    QTest::qWaitForWindowShown(&dialog);
     QTest::qWait(100);
     QVERIFY(dialog.isVisible());
     dialog.reject();

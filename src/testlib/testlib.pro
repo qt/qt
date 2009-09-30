@@ -8,20 +8,31 @@ unix:!embedded:QMAKE_PKGCONFIG_DESCRIPTION = Qt \
     Library
 
 # Input
-HEADERS = qtest_global.h \
-    qtestcase.h \
-    qtestdata.h \
-    qtesteventloop.h \
-    qtestcorelist.h \
-    qtestcoreelement.h \
-    qtestelement.h \
-    qtestelementattribute.h \
+HEADERS = qbenchmark.h \
+    qsignalspy.h \
+    qtestaccessible.h \
+    qtestassert.h \
     qtestbasicstreamer.h \
-    qtestxunitstreamer.h \
-    qtestxmlstreamer.h \
-    qtestlightxmlstreamer.h \
+    qtestcase.h \
+    qtestcoreelement.h \
+    qtestcorelist.h \
+    qtestdata.h \
+    qtestelementattribute.h \
+    qtestelement.h \
+    qtestevent.h \
+    qtesteventloop.h \
     qtestfilelogger.h \
-    qtesttouch.h
+    qtest_global.h \
+    qtest_gui.h \
+    qtest.h \
+    qtestkeyboard.h \
+    qtestlightxmlstreamer.h \
+    qtestmouse.h \
+    qtestspontaneevent.h \
+    qtestsystem.h \
+    qtesttouch.h \
+    qtestxmlstreamer.h \
+    qtestxunitstreamer.h
 SOURCES = qtestcase.cpp \
     qtestlog.cpp \
     qtesttable.cpp \
@@ -66,5 +77,4 @@ QMAKE_TARGET_DESCRIPTION = Qt \
     Unit \
     Testing \
     Library
-
 symbian:TARGET.UID3=0x2001B2DF

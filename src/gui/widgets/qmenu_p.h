@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -139,7 +139,12 @@ class QMenuPrivate : public QWidgetPrivate
 public:
     QMenuPrivate() : itemsDirty(0), maxIconWidth(0), tabWidth(0), ncols(0),
                       collapsibleSeparators(true), activationRecursionGuard(false), hasHadMouse(0), aboutToHide(0), motions(0),
-                      currentAction(0), scroll(0), eventLoop(0), tearoff(0), tornoff(0), tearoffHighlighted(0),
+                      currentAction(0),
+#ifdef QT_KEYPAD_NAVIGATION
+                      selectAction(0),
+                      cancelAction(0),
+#endif
+                      scroll(0), eventLoop(0), tearoff(0), tornoff(0), tearoffHighlighted(0),
                       hasCheckableItems(0), sloppyAction(0), doChildEffects(false)
 #ifdef Q_WS_MAC
                       ,mac_menu(0)
@@ -193,6 +198,10 @@ public:
     uint aboutToHide : 1;
     int motions;
     QAction *currentAction;
+#ifdef QT_KEYPAD_NAVIGATION
+    QAction *selectAction;
+    QAction *cancelAction;
+#endif
     static QBasicTimer menuDelayTimer;
     enum SelectionReason {
         SelectedFromKeyboard,

@@ -14,7 +14,7 @@ HEADERS += \
         painting/qoutlinemapper_p.h \
         painting/qpaintdevice.h \
         painting/qpaintengine.h \
-	painting/qpaintengine_p.h \
+		painting/qpaintengine_p.h \
         painting/qpaintengine_alpha_p.h \
         painting/qpaintengine_preview_p.h \
         painting/qpaintengineex_p.h \
@@ -22,6 +22,7 @@ HEADERS += \
         painting/qpainter_p.h \
         painting/qpainterpath.h \
         painting/qpainterpath_p.h \
+        painting/qvectorpath_p.h \
         painting/qpathclipper_p.h \
         painting/qpdf_p.h \
         painting/qpen.h \
@@ -178,8 +179,12 @@ embedded {
 
 symbian {
         SOURCES += \
+				painting/qpaintengine_s60.cpp \
                 painting/qregion_s60.cpp \
                 painting/qcolormap_s60.cpp
+
+        HEADERS += \
+                painting/qpaintengine_s60_p.h
 }
 
 x11|embedded {

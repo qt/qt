@@ -76,6 +76,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSMediaErrorPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -90,6 +91,11 @@ const ClassInfo JSMediaErrorConstructor::s_info = { "MediaErrorConstructor", 0, 
 bool JSMediaErrorConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSMediaErrorConstructor, DOMObject>(exec, &JSMediaErrorConstructorTable, this, propertyName, slot);
+}
+
+bool JSMediaErrorConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSMediaErrorConstructor, DOMObject>(exec, &JSMediaErrorConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -122,6 +128,11 @@ bool JSMediaErrorPrototype::getOwnPropertySlot(ExecState* exec, const Identifier
     return getStaticValueSlot<JSMediaErrorPrototype, JSObject>(exec, &JSMediaErrorPrototypeTable, this, propertyName, slot);
 }
 
+bool JSMediaErrorPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSMediaErrorPrototype, JSObject>(exec, &JSMediaErrorPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSMediaError::s_info = { "MediaError", 0, &JSMediaErrorTable, 0 };
 
 JSMediaError::JSMediaError(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MediaError> impl)
@@ -132,7 +143,7 @@ JSMediaError::JSMediaError(PassRefPtr<Structure> structure, JSDOMGlobalObject* g
 
 JSMediaError::~JSMediaError()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSMediaError::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -143,6 +154,11 @@ JSObject* JSMediaError::createPrototype(ExecState* exec, JSGlobalObject* globalO
 bool JSMediaError::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSMediaError, Base>(exec, &JSMediaErrorTable, this, propertyName, slot);
+}
+
+bool JSMediaError::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSMediaError, Base>(exec, &JSMediaErrorTable, this, propertyName, descriptor);
 }
 
 JSValue jsMediaErrorCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -191,7 +207,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, MediaEr
 }
 MediaError* toMediaError(JSC::JSValue value)
 {
-    return value.isObject(&JSMediaError::s_info) ? static_cast<JSMediaError*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSMediaError::s_info) ? static_cast<JSMediaError*>(asObject(value))->impl() : 0;
 }
 
 }

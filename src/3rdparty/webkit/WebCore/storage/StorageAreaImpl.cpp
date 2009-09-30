@@ -20,9 +20,9 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
- 
+
 #include "config.h"
 #include "StorageAreaImpl.h"
 
@@ -47,7 +47,12 @@ StorageAreaImpl::~StorageAreaImpl()
 {
 }
 
-StorageAreaImpl::StorageAreaImpl(StorageType storageType, SecurityOrigin* origin, PassRefPtr<StorageSyncManager> syncManager)
+PassRefPtr<StorageAreaImpl> StorageAreaImpl::create(StorageType storageType, PassRefPtr<SecurityOrigin> origin, PassRefPtr<StorageSyncManager> syncManager)
+{
+    return adoptRef(new StorageAreaImpl(storageType, origin, syncManager));
+}
+
+StorageAreaImpl::StorageAreaImpl(StorageType storageType, PassRefPtr<SecurityOrigin> origin, PassRefPtr<StorageSyncManager> syncManager)
     : m_storageType(storageType)
     , m_securityOrigin(origin)
     , m_storageMap(StorageMap::create())
@@ -67,15 +72,15 @@ StorageAreaImpl::StorageAreaImpl(StorageType storageType, SecurityOrigin* origin
     }
 }
 
-PassRefPtr<StorageAreaImpl> StorageAreaImpl::copy(SecurityOrigin* origin)
+PassRefPtr<StorageAreaImpl> StorageAreaImpl::copy()
 {
     ASSERT(!m_isShutdown);
-    return adoptRef(new StorageAreaImpl(origin, this));
+    return adoptRef(new StorageAreaImpl(this));
 }
 
-StorageAreaImpl::StorageAreaImpl(SecurityOrigin* origin, StorageAreaImpl* area)
+StorageAreaImpl::StorageAreaImpl(StorageAreaImpl* area)
     : m_storageType(area->m_storageType)
-    , m_securityOrigin(origin)
+    , m_securityOrigin(area->m_securityOrigin)
     , m_storageMap(area->m_storageMap)
     , m_storageSyncManager(area->m_storageSyncManager)
 #ifndef NDEBUG
@@ -87,32 +92,37 @@ StorageAreaImpl::StorageAreaImpl(SecurityOrigin* origin, StorageAreaImpl* area)
     ASSERT(!m_isShutdown);
 }
 
+static bool privateBrowsingEnabled(Frame* frame)
+{
+#if PLATFORM(CHROMIUM)
+    // The frame pointer can be NULL in Chromium since this call is made in a different
+    // process from where the Frame object exists.  Luckily, private browseing is
+    // implemented differently in Chromium, so it'd never return true anyway.
+    ASSERT(!frame);
+    return false;
+#else
+    return frame->page()->settings()->privateBrowsingEnabled();
+#endif
+}
+
 unsigned StorageAreaImpl::length() const
 {
     ASSERT(!m_isShutdown);
     return m_storageMap->length();
 }
 
-String StorageAreaImpl::key(unsigned index, ExceptionCode& ec) const
+String StorageAreaImpl::key(unsigned index) const
 {
     ASSERT(!m_isShutdown);
     blockUntilImportComplete();
-    
-    String key;
-    
-    if (!m_storageMap->key(index, key)) {
-        ec = INDEX_SIZE_ERR;
-        return String();
-    }
-        
-    return key;
+    return m_storageMap->key(index);
 }
 
 String StorageAreaImpl::getItem(const String& key) const
 {
     ASSERT(!m_isShutdown);
     blockUntilImportComplete();
-    
+
     return m_storageMap->getItem(key);
 }
 
@@ -121,8 +131,8 @@ void StorageAreaImpl::setItem(const String& key, const String& value, ExceptionC
     ASSERT(!m_isShutdown);
     ASSERT(!value.isNull());
     blockUntilImportComplete();
-    
-    if (frame->page()->settings()->privateBrowsingEnabled()) {
+
+    if (privateBrowsingEnabled(frame)) {
         ec = QUOTA_EXCEEDED_ERR;
         return;
     }
@@ -133,10 +143,10 @@ void StorageAreaImpl::setItem(const String& key, const String& value, ExceptionC
     //     ec = QUOTA_EXCEEDED_ERR;
     //     return;
     // }
-    
-    String oldValue;   
+
+    String oldValue;
     RefPtr<StorageMap> newMap = m_storageMap->setItem(key, value, oldValue);
-    
+
     if (newMap)
         m_storageMap = newMap.release();
 
@@ -152,8 +162,8 @@ void StorageAreaImpl::removeItem(const String& key, Frame* frame)
 {
     ASSERT(!m_isShutdown);
     blockUntilImportComplete();
-    
-    if (frame->page()->settings()->privateBrowsingEnabled())
+
+    if (privateBrowsingEnabled(frame))
         return;
 
     String oldValue;
@@ -173,12 +183,12 @@ void StorageAreaImpl::clear(Frame* frame)
 {
     ASSERT(!m_isShutdown);
     blockUntilImportComplete();
-    
-    if (frame->page()->settings()->privateBrowsingEnabled())
+
+    if (privateBrowsingEnabled(frame))
         return;
-    
+
     m_storageMap = StorageMap::create();
-    
+
     if (m_storageAreaSync)
         m_storageAreaSync->scheduleClear();
     dispatchStorageEvent(String(), String(), String(), frame);
@@ -188,7 +198,7 @@ bool StorageAreaImpl::contains(const String& key) const
 {
     ASSERT(!m_isShutdown);
     blockUntilImportComplete();
-    
+
     return m_storageMap->contains(key);
 }
 
@@ -221,22 +231,25 @@ void StorageAreaImpl::blockUntilImportComplete() const
 
 void StorageAreaImpl::dispatchStorageEvent(const String& key, const String& oldValue, const String& newValue, Frame* sourceFrame)
 {
-    // We need to copy all relevant frames from every page to a vector since sending the event to one frame might mutate the frame tree
-    // of any given page in the group or mutate the page group itself.
-    Vector<RefPtr<Frame> > frames;
+#if PLATFORM(CHROMIUM)
+    // FIXME: Events are currently broken in Chromium.
+    return;
+#endif
 
-    // FIXME: When can this occur?
     Page* page = sourceFrame->page();
     if (!page)
         return;
 
+    // We need to copy all relevant frames from every page to a vector since sending the event to one frame might mutate the frame tree
+    // of any given page in the group or mutate the page group itself.
+    Vector<RefPtr<Frame> > frames;
     if (m_storageType == SessionStorage) {
         // Send events only to our page.
         for (Frame* frame = page->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
             if (frame->document()->securityOrigin()->equal(securityOrigin()))
                 frames.append(frame);
         }
-        
+
         for (unsigned i = 0; i < frames.size(); ++i)
             frames[i]->document()->dispatchWindowEvent(StorageEvent::create(eventNames().storageEvent, key, oldValue, newValue, sourceFrame->document()->documentURI(), sourceFrame->domWindow(), frames[i]->domWindow()->sessionStorage()));
     } else {
@@ -249,13 +262,12 @@ void StorageAreaImpl::dispatchStorageEvent(const String& key, const String& oldV
                     frames.append(frame);
             }
         }
-        
+
         for (unsigned i = 0; i < frames.size(); ++i)
             frames[i]->document()->dispatchWindowEvent(StorageEvent::create(eventNames().storageEvent, key, oldValue, newValue, sourceFrame->document()->documentURI(), sourceFrame->domWindow(), frames[i]->domWindow()->localStorage()));
-    }        
+    }
 }
 
 }
 
 #endif // ENABLE(DOM_STORAGE)
-

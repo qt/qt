@@ -102,6 +102,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSSVGTextContentElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -116,6 +117,11 @@ const ClassInfo JSSVGTextContentElementConstructor::s_info = { "SVGTextContentEl
 bool JSSVGTextContentElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGTextContentElementConstructor, DOMObject>(exec, &JSSVGTextContentElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGTextContentElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGTextContentElementConstructor, DOMObject>(exec, &JSSVGTextContentElementConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -158,6 +164,11 @@ bool JSSVGTextContentElementPrototype::getOwnPropertySlot(ExecState* exec, const
     return getStaticPropertySlot<JSSVGTextContentElementPrototype, JSObject>(exec, &JSSVGTextContentElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGTextContentElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticPropertyDescriptor<JSSVGTextContentElementPrototype, JSObject>(exec, &JSSVGTextContentElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGTextContentElement::s_info = { "SVGTextContentElement", &JSSVGElement::s_info, &JSSVGTextContentElementTable, 0 };
 
 JSSVGTextContentElement::JSSVGTextContentElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTextContentElement> impl)
@@ -173,6 +184,11 @@ JSObject* JSSVGTextContentElement::createPrototype(ExecState* exec, JSGlobalObje
 bool JSSVGTextContentElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGTextContentElement, Base>(exec, &JSSVGTextContentElementTable, this, propertyName, slot);
+}
+
+bool JSSVGTextContentElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGTextContentElement, Base>(exec, &JSSVGTextContentElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGTextContentElementTextLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -289,7 +305,7 @@ JSValue JSSVGTextContentElement::getConstructor(ExecState* exec, JSGlobalObject*
 JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionGetNumberOfChars(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGTextContentElement::s_info))
+    if (!thisValue.inherits(&JSSVGTextContentElement::s_info))
         return throwError(exec, TypeError);
     JSSVGTextContentElement* castedThisObj = static_cast<JSSVGTextContentElement*>(asObject(thisValue));
     SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThisObj->impl());
@@ -302,7 +318,7 @@ JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionGetNumberOfChars(E
 JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionGetComputedTextLength(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGTextContentElement::s_info))
+    if (!thisValue.inherits(&JSSVGTextContentElement::s_info))
         return throwError(exec, TypeError);
     JSSVGTextContentElement* castedThisObj = static_cast<JSSVGTextContentElement*>(asObject(thisValue));
     SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThisObj->impl());
@@ -315,7 +331,7 @@ JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionGetComputedTextLen
 JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionGetSubStringLength(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGTextContentElement::s_info))
+    if (!thisValue.inherits(&JSSVGTextContentElement::s_info))
         return throwError(exec, TypeError);
     JSSVGTextContentElement* castedThisObj = static_cast<JSSVGTextContentElement*>(asObject(thisValue));
     SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThisObj->impl());
@@ -340,7 +356,7 @@ JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionGetSubStringLength
 JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionGetStartPositionOfChar(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGTextContentElement::s_info))
+    if (!thisValue.inherits(&JSSVGTextContentElement::s_info))
         return throwError(exec, TypeError);
     JSSVGTextContentElement* castedThisObj = static_cast<JSSVGTextContentElement*>(asObject(thisValue));
     SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThisObj->impl());
@@ -360,7 +376,7 @@ JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionGetStartPositionOf
 JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionGetEndPositionOfChar(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGTextContentElement::s_info))
+    if (!thisValue.inherits(&JSSVGTextContentElement::s_info))
         return throwError(exec, TypeError);
     JSSVGTextContentElement* castedThisObj = static_cast<JSSVGTextContentElement*>(asObject(thisValue));
     SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThisObj->impl());
@@ -380,7 +396,7 @@ JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionGetEndPositionOfCh
 JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionGetExtentOfChar(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGTextContentElement::s_info))
+    if (!thisValue.inherits(&JSSVGTextContentElement::s_info))
         return throwError(exec, TypeError);
     JSSVGTextContentElement* castedThisObj = static_cast<JSSVGTextContentElement*>(asObject(thisValue));
     SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThisObj->impl());
@@ -400,7 +416,7 @@ JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionGetExtentOfChar(Ex
 JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionGetRotationOfChar(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGTextContentElement::s_info))
+    if (!thisValue.inherits(&JSSVGTextContentElement::s_info))
         return throwError(exec, TypeError);
     JSSVGTextContentElement* castedThisObj = static_cast<JSSVGTextContentElement*>(asObject(thisValue));
     SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThisObj->impl());
@@ -420,7 +436,7 @@ JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionGetRotationOfChar(
 JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionGetCharNumAtPosition(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGTextContentElement::s_info))
+    if (!thisValue.inherits(&JSSVGTextContentElement::s_info))
         return throwError(exec, TypeError);
     JSSVGTextContentElement* castedThisObj = static_cast<JSSVGTextContentElement*>(asObject(thisValue));
     SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThisObj->impl());
@@ -434,7 +450,7 @@ JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionGetCharNumAtPositi
 JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionSelectSubString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGTextContentElement::s_info))
+    if (!thisValue.inherits(&JSSVGTextContentElement::s_info))
         return throwError(exec, TypeError);
     JSSVGTextContentElement* castedThisObj = static_cast<JSSVGTextContentElement*>(asObject(thisValue));
     SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThisObj->impl());
@@ -458,7 +474,7 @@ JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionSelectSubString(Ex
 JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGTextContentElement::s_info))
+    if (!thisValue.inherits(&JSSVGTextContentElement::s_info))
         return throwError(exec, TypeError);
     JSSVGTextContentElement* castedThisObj = static_cast<JSSVGTextContentElement*>(asObject(thisValue));
     SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThisObj->impl());
@@ -472,7 +488,7 @@ JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionHasExtension(ExecS
 JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGTextContentElement::s_info))
+    if (!thisValue.inherits(&JSSVGTextContentElement::s_info))
         return throwError(exec, TypeError);
     JSSVGTextContentElement* castedThisObj = static_cast<JSSVGTextContentElement*>(asObject(thisValue));
     SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThisObj->impl());

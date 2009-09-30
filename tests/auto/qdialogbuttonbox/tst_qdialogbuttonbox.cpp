@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -43,6 +43,7 @@
 #include <QtGui/QStyle>
 #include <QtGui/QLayout>
 #include <QtGui/QDialog>
+#include <QtGui/QAction>
 #include <qdialogbuttonbox.h>
 #include <limits.h>
 
@@ -109,6 +110,7 @@ private slots:
     void testSignalOrder();
     void testDefaultButton_data();
     void testDefaultButton();
+    void testS60SoftKeys();
 
     void task191642_default();
 private:
@@ -711,6 +713,40 @@ void tst_QDialogButtonBox::testDefaultButton_data()
     QTest::newRow("second accept explicit after add") << 0 << 1 << 1;
     QTest::newRow("third accept explicit befare add") << 1 << 2 << 2;
     QTest::newRow("third accept explicit after add") << 0 << 2 << 2;
+}
+
+void tst_QDialogButtonBox::testS60SoftKeys()
+{
+#ifdef Q_WS_S60
+    QDialog dialog(0);
+    QDialogButtonBox buttonBox(&dialog);
+    buttonBox.setStandardButtons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    dialog.show();
+    
+    int softkeyCount = 0;
+    QList<QAction *> actions = dialog.actions();
+    foreach (QAction *action, actions) {
+        if (action->softKeyRole() != QAction::NoSoftKey)
+            softkeyCount++;
+    }
+    QCOMPARE( softkeyCount, 2);
+
+    QDialog dialog2(0);
+    QDialogButtonBox buttonBox2(&dialog2);
+    buttonBox2.setStandardButtons(QDialogButtonBox::Cancel);
+    dialog2.show();
+
+    int softkeyCount2 = 0;
+    QList<QAction *> actions2 = dialog2.actions();
+    foreach (QAction *action, actions2) {
+        if (action->softKeyRole() != QAction::NoSoftKey)
+            softkeyCount2++;
+    }
+    QCOMPARE( softkeyCount2, 1);
+    
+#else
+    QSKIP("S60-specific test", SkipAll );
+#endif
 }
 
 void tst_QDialogButtonBox::testDefaultButton()

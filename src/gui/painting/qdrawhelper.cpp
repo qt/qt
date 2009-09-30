@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -4953,15 +4953,18 @@ Q_STATIC_TEMPLATE_FUNCTION void blendTiled(int count, const QSpan *spans, void *
 
         if (modeSource && coverage == 255) {
             // Copy the first texture block
-            length = image_width;
+            length = qMin(image_width,length);
+            int tx = x;
             while (length) {
                 int l = qMin(image_width - sx, length);
                 if (buffer_size < l)
                     l = buffer_size;
-                DST *dest = ((DST*)data->rasterBuffer->scanLine(spans->y)) + x;
+                DST *dest = ((DST*)data->rasterBuffer->scanLine(spans->y)) + tx;
                 const SRC *src = (SRC*)data->texture.scanLine(sy) + sx;
+
                 qt_memconvert<DST, SRC>(dest, src, l);
                 length -= l;
+                tx += l;
                 sx = 0;
             }
 
@@ -4971,8 +4974,8 @@ Q_STATIC_TEMPLATE_FUNCTION void blendTiled(int count, const QSpan *spans, void *
             // We are dealing with one block of data
             // - More likely to fit in the cache
             // - can use memcpy
-            int copy_image_width = image_width;
-            length = spans->len - image_width;
+            int copy_image_width = qMin(image_width, int(spans->len));
+            length = spans->len - copy_image_width;
             DST *src = ((DST*)data->rasterBuffer->scanLine(spans->y)) + x;
             DST *dest = src + copy_image_width;
             while (copy_image_width < length) {

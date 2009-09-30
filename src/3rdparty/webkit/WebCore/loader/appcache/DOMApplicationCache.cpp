@@ -28,9 +28,7 @@
 
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
 
-#include "ApplicationCache.h"
-#include "ApplicationCacheGroup.h"
-#include "ApplicationCacheResource.h"
+#include "ApplicationCacheHost.h"
 #include "DocumentLoader.h"
 #include "Event.h"
 #include "EventException.h"
@@ -44,198 +42,87 @@ namespace WebCore {
 DOMApplicationCache::DOMApplicationCache(Frame* frame)
     : m_frame(frame)
 {
+    ASSERT(!m_frame || applicationCacheHost());
+    ApplicationCacheHost* cacheHost = applicationCacheHost();
+    if (cacheHost)
+        cacheHost->setDOMApplicationCache(this);
 }
 
 void DOMApplicationCache::disconnectFrame()
 {
+    ApplicationCacheHost* cacheHost = applicationCacheHost();
+    if (cacheHost)
+        cacheHost->setDOMApplicationCache(0);
     m_frame = 0;
 }
 
-ApplicationCache* DOMApplicationCache::associatedCache() const
+ApplicationCacheHost* DOMApplicationCache::applicationCacheHost() const
 {
-    if (!m_frame)
+    if (!m_frame || !m_frame->loader()->documentLoader())
         return 0;
- 
-    return m_frame->loader()->documentLoader()->applicationCache();
+    return m_frame->loader()->documentLoader()->applicationCacheHost();
 }
 
 unsigned short DOMApplicationCache::status() const
 {
-    ApplicationCache* cache = associatedCache();    
-    if (!cache)
-        return UNCACHED;
-
-    switch (cache->group()->updateStatus()) {
-        case ApplicationCacheGroup::Checking:
-            return CHECKING;
-        case ApplicationCacheGroup::Downloading:
-            return DOWNLOADING;
-        case ApplicationCacheGroup::Idle: {
-            if (cache->group()->isObsolete())
-                return OBSOLETE;
-            if (cache != cache->group()->newestCache())
-                return UPDATEREADY;
-            return IDLE;
-        }
-    }
-
-    ASSERT_NOT_REACHED();
-    return 0;
+    ApplicationCacheHost* cacheHost = applicationCacheHost();
+    if (!cacheHost)
+        return ApplicationCacheHost::UNCACHED;
+    return cacheHost->status();
 }
 
 void DOMApplicationCache::update(ExceptionCode& ec)
 {
-    ApplicationCache* cache = associatedCache();
-    if (!cache) {
+    ApplicationCacheHost* cacheHost = applicationCacheHost();
+    if (!cacheHost || !cacheHost->update())
         ec = INVALID_STATE_ERR;
-        return;
-    }
-    
-    cache->group()->update(m_frame, ApplicationCacheUpdateWithoutBrowsingContext);
 }
 
-bool DOMApplicationCache::swapCache()
-{
-    if (!m_frame)
-        return false;
-    
-    ApplicationCache* cache = m_frame->loader()->documentLoader()->applicationCache();
-    if (!cache)
-        return false;
-
-    // If the group of application caches to which cache belongs has the lifecycle status obsolete, unassociate document from cache.
-    if (cache->group()->isObsolete()) {
-        cache->group()->disassociateDocumentLoader(m_frame->loader()->documentLoader());
-        return true;
-    }
-
-    // If there is no newer cache, raise an INVALID_STATE_ERR exception.
-    ApplicationCache* newestCache = cache->group()->newestCache();
-    if (cache == newestCache)
-        return false;
-    
-    ASSERT(cache->group() == newestCache->group());
-    m_frame->loader()->documentLoader()->setApplicationCache(newestCache);
-    
-    return true;
-}
-    
 void DOMApplicationCache::swapCache(ExceptionCode& ec)
 {
-    if (!swapCache())
+    ApplicationCacheHost* cacheHost = applicationCacheHost();
+    if (!cacheHost || !cacheHost->swapCache())
         ec = INVALID_STATE_ERR;
 }
 
 ScriptExecutionContext* DOMApplicationCache::scriptExecutionContext() const
 {
+    ASSERT(m_frame);
     return m_frame->document();
 }
 
-void DOMApplicationCache::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> eventListener, bool)
+const AtomicString& DOMApplicationCache::toEventType(ApplicationCacheHost::EventID id)
 {
-    EventListenersMap::iterator iter = m_eventListeners.find(eventType);
-    if (iter == m_eventListeners.end()) {
-        ListenerVector listeners;
-        listeners.append(eventListener);
-        m_eventListeners.add(eventType, listeners);
-    } else {
-        ListenerVector& listeners = iter->second;
-        for (ListenerVector::iterator listenerIter = listeners.begin(); listenerIter != listeners.end(); ++listenerIter) {
-            if (*listenerIter == eventListener)
-                return;
-        }
-        
-        listeners.append(eventListener);
-        m_eventListeners.add(eventType, listeners);
-    }    
-}
-
-void DOMApplicationCache::removeEventListener(const AtomicString& eventType, EventListener* eventListener, bool)
-{
-    EventListenersMap::iterator iter = m_eventListeners.find(eventType);
-    if (iter == m_eventListeners.end())
-        return;
-    
-    ListenerVector& listeners = iter->second;
-    for (ListenerVector::const_iterator listenerIter = listeners.begin(); listenerIter != listeners.end(); ++listenerIter) {
-        if (*listenerIter == eventListener) {
-            listeners.remove(listenerIter - listeners.begin());
-            return;
-        }
+    switch (id) {
+    case ApplicationCacheHost::CHECKING_EVENT:
+        return eventNames().checkingEvent;
+    case ApplicationCacheHost::ERROR_EVENT:
+        return eventNames().errorEvent;
+    case ApplicationCacheHost::NOUPDATE_EVENT:
+        return eventNames().noupdateEvent;
+    case ApplicationCacheHost::DOWNLOADING_EVENT:
+        return eventNames().downloadingEvent;
+    case ApplicationCacheHost::PROGRESS_EVENT:
+        return eventNames().progressEvent;
+    case ApplicationCacheHost::UPDATEREADY_EVENT:
+        return eventNames().updatereadyEvent;
+    case ApplicationCacheHost::CACHED_EVENT:
+        return eventNames().cachedEvent;
+    case ApplicationCacheHost::OBSOLETE_EVENT:            
+        return eventNames().obsoleteEvent;
     }
+    ASSERT_NOT_REACHED();
+    return eventNames().errorEvent;
 }
 
-bool DOMApplicationCache::dispatchEvent(PassRefPtr<Event> event, ExceptionCode& ec)
+EventTargetData* DOMApplicationCache::eventTargetData()
 {
-    if (!event || event->type().isEmpty()) {
-        ec = EventException::UNSPECIFIED_EVENT_TYPE_ERR;
-        return true;
-    }
-    
-    ListenerVector listenersCopy = m_eventListeners.get(event->type());
-    for (ListenerVector::const_iterator listenerIter = listenersCopy.begin(); listenerIter != listenersCopy.end(); ++listenerIter) {
-        event->setTarget(this);
-        event->setCurrentTarget(this);
-        listenerIter->get()->handleEvent(event.get(), false);
-    }
-    
-    return !event->defaultPrevented();
+    return &m_eventTargetData;
 }
 
-void DOMApplicationCache::callListener(const AtomicString& eventType, EventListener* listener)
+EventTargetData* DOMApplicationCache::ensureEventTargetData()
 {
-    ASSERT(m_frame);
-    
-    RefPtr<Event> event = Event::create(eventType, false, false);
-    if (listener) {
-        event->setTarget(this);
-        event->setCurrentTarget(this);
-        listener->handleEvent(event.get(), false);
-    }
-    
-    ExceptionCode ec = 0;
-    dispatchEvent(event.release(), ec);
-    ASSERT(!ec);    
-}
-
-void DOMApplicationCache::callCheckingListener()
-{
-    callListener(eventNames().checkingEvent, m_onCheckingListener.get());
-}
-
-void DOMApplicationCache::callErrorListener()
-{
-    callListener(eventNames().errorEvent, m_onErrorListener.get());
-}
-
-void DOMApplicationCache::callNoUpdateListener()
-{
-    callListener(eventNames().noupdateEvent, m_onNoUpdateListener.get());
-}
-
-void DOMApplicationCache::callDownloadingListener()
-{
-    callListener(eventNames().downloadingEvent, m_onDownloadingListener.get());
-}
-
-void DOMApplicationCache::callProgressListener()
-{
-    callListener(eventNames().progressEvent, m_onProgressListener.get());
-}
-
-void DOMApplicationCache::callUpdateReadyListener()
-{
-    callListener(eventNames().updatereadyEvent, m_onUpdateReadyListener.get());
-}
-
-void DOMApplicationCache::callCachedListener()
-{
-    callListener(eventNames().cachedEvent, m_onCachedListener.get());
-}
-
-void DOMApplicationCache::callObsoleteListener()
-{
-    callListener(eventNames().obsoleteEvent, m_onObsoleteListener.get());
+    return &m_eventTargetData;
 }
 
 } // namespace WebCore

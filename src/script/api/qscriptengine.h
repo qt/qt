@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtScript module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -363,7 +363,7 @@ inline bool qscriptvalue_cast_helper(const QScriptValue &value, int type, void *
 
 template<typename T>
 T qscriptvalue_cast(const QScriptValue &value
-#ifndef Q_QDOC
+#if !defined qdoc && defined Q_CC_MSVC && _MSC_VER < 1300
 , T * = 0
 #endif
     )
@@ -379,11 +379,13 @@ T qscriptvalue_cast(const QScriptValue &value
     return T();
 }
 
+#if !defined Q_CC_MSVC || _MSC_VER >= 1300
 template <>
-inline QVariant qscriptvalue_cast<QVariant>(const QScriptValue &value, QVariant *)
+inline QVariant qscriptvalue_cast<QVariant>(const QScriptValue &value)
 {
     return value.toVariant();
 }
+#endif
 
 template <typename T>
 inline T qScriptValueToValue(const QScriptValue &value)

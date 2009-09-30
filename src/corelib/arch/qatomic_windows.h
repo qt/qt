@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -102,9 +102,14 @@
 #define QT_INTERLOCKED_CONCAT(prefix, suffix) \
     QT_INTERLOCKED_CONCAT_I(prefix, suffix)
 
-// MSVC intrinsics prefix function names with an underscore
+// MSVC intrinsics prefix function names with an underscore. Also, if platform
+// SDK headers have been included, the Interlocked names may be defined as
+// macros.
+// To avoid double underscores, we paste the prefix with Interlocked first and
+// then the remainder of the function name.
 #define QT_INTERLOCKED_FUNCTION(name) \
-    QT_INTERLOCKED_CONCAT(QT_INTERLOCKED_PREFIX, name)
+    QT_INTERLOCKED_CONCAT( \
+        QT_INTERLOCKED_CONCAT(QT_INTERLOCKED_PREFIX, Interlocked), name)
 
 #ifdef QT_INTERLOCKED_NO_VOLATILE
 # define QT_INTERLOCKED_VOLATILE
@@ -127,16 +132,16 @@
 
 extern "C" {
 
-    long QT_INTERLOCKED_PROTOTYPE QT_INTERLOCKED_FUNCTION( InterlockedIncrement )(long QT_INTERLOCKED_VOLATILE *);
-    long QT_INTERLOCKED_PROTOTYPE QT_INTERLOCKED_FUNCTION( InterlockedDecrement )(long QT_INTERLOCKED_VOLATILE *);
-    long QT_INTERLOCKED_PROTOTYPE QT_INTERLOCKED_FUNCTION( InterlockedCompareExchange )(long QT_INTERLOCKED_VOLATILE *, long, long);
-    long QT_INTERLOCKED_PROTOTYPE QT_INTERLOCKED_FUNCTION( InterlockedExchange )(long QT_INTERLOCKED_VOLATILE *, long);
-    long QT_INTERLOCKED_PROTOTYPE QT_INTERLOCKED_FUNCTION( InterlockedExchangeAdd )(long QT_INTERLOCKED_VOLATILE *, long);
+    long QT_INTERLOCKED_PROTOTYPE QT_INTERLOCKED_FUNCTION( Increment )(long QT_INTERLOCKED_VOLATILE *);
+    long QT_INTERLOCKED_PROTOTYPE QT_INTERLOCKED_FUNCTION( Decrement )(long QT_INTERLOCKED_VOLATILE *);
+    long QT_INTERLOCKED_PROTOTYPE QT_INTERLOCKED_FUNCTION( CompareExchange )(long QT_INTERLOCKED_VOLATILE *, long, long);
+    long QT_INTERLOCKED_PROTOTYPE QT_INTERLOCKED_FUNCTION( Exchange )(long QT_INTERLOCKED_VOLATILE *, long);
+    long QT_INTERLOCKED_PROTOTYPE QT_INTERLOCKED_FUNCTION( ExchangeAdd )(long QT_INTERLOCKED_VOLATILE *, long);
 
 # if !defined(Q_OS_WINCE) && !defined(__i386__) && !defined(_M_IX86)
-    void * QT_INTERLOCKED_FUNCTION( InterlockedCompareExchangePointer )(void * QT_INTERLOCKED_VOLATILE *, void *, void *);
-    void * QT_INTERLOCKED_FUNCTION( InterlockedExchangePointer )(void * QT_INTERLOCKED_VOLATILE *, void *);
-    __int64 QT_INTERLOCKED_FUNCTION( InterlockedExchangeAdd64 )(__int64 QT_INTERLOCKED_VOLATILE *, __int64);
+    void * QT_INTERLOCKED_FUNCTION( CompareExchangePointer )(void * QT_INTERLOCKED_VOLATILE *, void *, void *);
+    void * QT_INTERLOCKED_FUNCTION( ExchangePointer )(void * QT_INTERLOCKED_VOLATILE *, void *);
+    __int64 QT_INTERLOCKED_FUNCTION( ExchangeAdd64 )(__int64 QT_INTERLOCKED_VOLATILE *, __int64);
 # endif
 
 }
@@ -156,7 +161,7 @@ extern "C" {
 # pragma intrinsic (_InterlockedCompareExchange)
 # pragma intrinsic (_InterlockedExchangeAdd)
 
-# ifndef _M_IX86
+# if !defined(Q_OS_WINCE) && !defined(_M_IX86)
 #  pragma intrinsic (_InterlockedCompareExchangePointer)
 #  pragma intrinsic (_InterlockedExchangePointer)
 #  pragma intrinsic (_InterlockedExchangeAdd64)
@@ -168,26 +173,26 @@ extern "C" {
 // Interlocked* replacement macros
 
 #define QT_INTERLOCKED_INCREMENT(value) \
-    QT_INTERLOCKED_FUNCTION(InterlockedIncrement)( \
+    QT_INTERLOCKED_FUNCTION( Increment )( \
             QT_INTERLOCKED_REMOVE_VOLATILE( value ) )
 
 #define QT_INTERLOCKED_DECREMENT(value) \
-    QT_INTERLOCKED_FUNCTION(InterlockedDecrement)( \
+    QT_INTERLOCKED_FUNCTION( Decrement )( \
             QT_INTERLOCKED_REMOVE_VOLATILE( value ) )
 
 #define QT_INTERLOCKED_COMPARE_EXCHANGE(value, newValue, expectedValue) \
-    QT_INTERLOCKED_FUNCTION(InterlockedCompareExchange)( \
+    QT_INTERLOCKED_FUNCTION( CompareExchange )( \
             QT_INTERLOCKED_REMOVE_VOLATILE( value ), \
             newValue, \
             expectedValue )
 
 #define QT_INTERLOCKED_EXCHANGE(value, newValue) \
-    QT_INTERLOCKED_FUNCTION(InterlockedExchange)( \
+    QT_INTERLOCKED_FUNCTION( Exchange )( \
             QT_INTERLOCKED_REMOVE_VOLATILE( value ), \
             newValue )
 
 #define QT_INTERLOCKED_EXCHANGE_ADD(value, valueToAdd) \
-    QT_INTERLOCKED_FUNCTION(InterlockedExchangeAdd)( \
+    QT_INTERLOCKED_FUNCTION( ExchangeAdd )( \
             QT_INTERLOCKED_REMOVE_VOLATILE( value ), \
             valueToAdd )
 
@@ -195,36 +200,36 @@ extern "C" {
 
 # define QT_INTERLOCKED_COMPARE_EXCHANGE_POINTER(value, newValue, expectedValue) \
     reinterpret_cast<void *>( \
-        QT_INTERLOCKED_FUNCTION(InterlockedCompareExchange)( \
+        QT_INTERLOCKED_FUNCTION( CompareExchange )( \
                 QT_INTERLOCKED_REMOVE_VOLATILE( value ## _integral ), \
                 (long)( newValue ), \
                 (long)( expectedValue ) ))
 
 # define QT_INTERLOCKED_EXCHANGE_POINTER(value, newValue) \
-    QT_INTERLOCKED_FUNCTION(InterlockedExchange)( \
+    QT_INTERLOCKED_FUNCTION( Exchange )( \
             QT_INTERLOCKED_REMOVE_VOLATILE( value ## _integral ), \
             (quintptr)( newValue ) )
 
 # define QT_INTERLOCKED_EXCHANGE_ADD_POINTER(value, valueToAdd) \
-    QT_INTERLOCKED_FUNCTION(InterlockedExchangeAdd)( \
+    QT_INTERLOCKED_FUNCTION( ExchangeAdd )( \
             QT_INTERLOCKED_REMOVE_VOLATILE( value ## _integral ), \
             valueToAdd )
 
 #else // !defined(Q_OS_WINCE) && !defined(__i386__) && !defined(_M_IX86)
 
 # define QT_INTERLOCKED_COMPARE_EXCHANGE_POINTER(value, newValue, expectedValue) \
-    QT_INTERLOCKED_FUNCTION(InterlockedCompareExchangePointer)( \
+    QT_INTERLOCKED_FUNCTION( CompareExchangePointer )( \
             reinterpret_cast<void * QT_INTERLOCKED_VOLATILE *>( QT_INTERLOCKED_REMOVE_VOLATILE( value ) ), \
             newValue, \
             expectedValue )
 
 # define QT_INTERLOCKED_EXCHANGE_POINTER(value, newValue) \
-    QT_INTERLOCKED_FUNCTION(InterlockedExchangePointer)( \
+    QT_INTERLOCKED_FUNCTION( ExchangePointer )( \
             reinterpret_cast<void * QT_INTERLOCKED_VOLATILE *>( QT_INTERLOCKED_REMOVE_VOLATILE( value ) ), \
             newValue )
 
 # define QT_INTERLOCKED_EXCHANGE_ADD_POINTER(value, valueToAdd) \
-    QT_INTERLOCKED_FUNCTION(InterlockedExchangeAdd64)( \
+    QT_INTERLOCKED_FUNCTION( ExchangeAdd64 )( \
             QT_INTERLOCKED_REMOVE_VOLATILE( value ## _integral ), \
             valueToAdd )
 

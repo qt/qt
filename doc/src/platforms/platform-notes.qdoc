@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -411,6 +411,24 @@
 
     For information about mixing exceptions with symbian leaves,
     see \l{Exception Safety with Symbian}
+
+    \section1 Multimedia and Phonon Support
+
+    Qt provides a backend for Qt's multimedia module, Phonon, which supports
+    video and sound playback through Symbian's Multimedia Framework, MMF.
+
+    In this release the support is experimental. Video playback may have
+    flickering issues, and support for effects and playback queueing is
+    incomplete.
+
+    The audio and video formats that Phonon supports depends on what support
+    the platform provides for MMF. The emulator is known to have limited
+    codec support.
+
+    In addition, there exists a backend for the Helix framework. However, due
+    to it not shipping with Qt, its availability depends on the Symbian
+    platform in use. If available, it is loaded instead of the MMF plugin.
+
 */
 
 /*!

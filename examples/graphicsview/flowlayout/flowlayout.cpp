@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -98,12 +98,10 @@ void FlowLayout::setGeometry(const QRectF &geom)
 
 qreal FlowLayout::doLayout(const QRectF &geom, bool applyNewGeometry) const
 {
-    QPointF tl = geom.topLeft();
-    qreal maxw = geom.width();
-
     qreal left, top, right, bottom;
     getContentsMargins(&left, &top, &right, &bottom);
-    maxw = maxw - left - right;
+    const qreal maxw = geom.width() - left - right;
+
     qreal x = 0;
     qreal y = 0;
     qreal maxRowHeight = 0;
@@ -139,9 +137,11 @@ QSizeF FlowLayout::minSize(const QSizeF &constraint) const
     QSizeF size(0, 0);
     qreal left, top, right, bottom;
     getContentsMargins(&left, &top, &right, &bottom);
-    if (constraint.width() > 0) {   // height for width
-        qreal height = doLayout(QRectF(QPointF(0,0), constraint), false);
+    if (constraint.width() >= 0) {   // height for width
+        const qreal height = doLayout(QRectF(QPointF(0,0), constraint), false);
         size = QSizeF(constraint.width(), height);
+    } else if (constraint.height() >= 0) {  // width for height?
+        // not supported
     } else {
         QGraphicsLayoutItem *item;
         foreach (item, m_items)
@@ -153,8 +153,8 @@ QSizeF FlowLayout::minSize(const QSizeF &constraint) const
 
 QSizeF FlowLayout::prefSize() const
 {
-    qreal left, top, right, bottom;
-    getContentsMargins(&left, &top, &right, &bottom);
+    qreal left, right;
+    getContentsMargins(&left, 0, &right, 0);
 
     QGraphicsLayoutItem *item;
     qreal maxh = 0;
@@ -196,15 +196,19 @@ QSizeF FlowLayout::maxSize() const
 
 QSizeF FlowLayout::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
 {
+    QSizeF sh = constraint;
     switch (which) {
     case Qt::PreferredSize:
-        return prefSize();
+        sh = prefSize();
+        break;
     case Qt::MinimumSize:
-        return minSize(constraint);
+        sh = minSize(constraint);
+        break;
     case Qt::MaximumSize:
-        return maxSize();
+        sh = maxSize();
+        break;
     default:
         break;
     }
-    return constraint;
+    return sh;
 }

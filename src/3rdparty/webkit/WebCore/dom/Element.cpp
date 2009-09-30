@@ -28,6 +28,8 @@
 
 #include "AXObjectCache.h"
 #include "Attr.h"
+#include "CSSParser.h"
+#include "CSSSelectorList.h"
 #include "CSSStyleSelector.h"
 #include "CString.h"
 #include "ClientRect.h"
@@ -57,10 +59,15 @@ namespace WebCore {
 using namespace HTMLNames;
 using namespace XMLNames;
     
-Element::Element(const QualifiedName& tagName, Document* doc)
-    : ContainerNode(doc, true)
+Element::Element(const QualifiedName& tagName, Document* document, ConstructionType type)
+    : ContainerNode(document, type)
     , m_tagName(tagName)
 {
+}
+
+PassRefPtr<Element> Element::create(const QualifiedName& tagName, Document* document)
+{
+    return adoptRef(new Element(tagName, document, CreateElement));
 }
 
 Element::~Element()
@@ -273,42 +280,6 @@ static int adjustForLocalZoom(int value, RenderObject* renderer)
     if (zoomFactor > 1)
         value++;
     return static_cast<int>(value / zoomFactor);
-}
-
-static int adjustForAbsoluteZoom(int value, RenderObject* renderer)
-{
-    float zoomFactor = renderer->style()->effectiveZoom();
-    if (zoomFactor == 1)
-        return value;
-    // Needed because computeLengthInt truncates (rather than rounds) when scaling up.
-    if (zoomFactor > 1)
-        value++;
-    return static_cast<int>(value / zoomFactor);
-}
-
-static FloatPoint adjustFloatPointForAbsoluteZoom(const FloatPoint& point, RenderObject* renderer)
-{
-    // The result here is in floats, so we don't need the truncation hack from the integer version above.
-    float zoomFactor = renderer->style()->effectiveZoom();
-    if (zoomFactor == 1)
-        return point;
-    return FloatPoint(point.x() / zoomFactor, point.y() / zoomFactor);
-}
-
-static void adjustFloatQuadForAbsoluteZoom(FloatQuad& quad, RenderObject* renderer)
-{
-    quad.setP1(adjustFloatPointForAbsoluteZoom(quad.p1(), renderer));
-    quad.setP2(adjustFloatPointForAbsoluteZoom(quad.p2(), renderer));
-    quad.setP3(adjustFloatPointForAbsoluteZoom(quad.p3(), renderer));
-    quad.setP4(adjustFloatPointForAbsoluteZoom(quad.p4(), renderer));
-}
-
-static void adjustIntRectForAbsoluteZoom(IntRect& rect, RenderObject* renderer)
-{
-    rect.setX(adjustForAbsoluteZoom(rect.x(), renderer));
-    rect.setY(adjustForAbsoluteZoom(rect.y(), renderer));
-    rect.setWidth(adjustForAbsoluteZoom(rect.width(), renderer));
-    rect.setHeight(adjustForAbsoluteZoom(rect.height(), renderer));
 }
 
 int Element::offsetLeft()
@@ -597,16 +568,20 @@ void Element::attributeChanged(Attribute* attr, bool)
 
 void Element::updateAfterAttributeChanged(Attribute* attr)
 {
-    if (!document()->axObjectCache()->accessibilityEnabled())
+    AXObjectCache* axObjectCache = document()->axObjectCache();
+    if (!axObjectCache->accessibilityEnabled())
         return;
 
     const QualifiedName& attrName = attr->name();
     if (attrName == aria_activedescendantAttr) {
         // any change to aria-activedescendant attribute triggers accessibility focus change, but document focus remains intact
-        document()->axObjectCache()->handleActiveDescendantChanged(renderer());
+        axObjectCache->handleActiveDescendantChanged(renderer());
     } else if (attrName == roleAttr) {
         // the role attribute can change at any time, and the AccessibilityObject must pick up these changes
-        document()->axObjectCache()->handleAriaRoleChanged(renderer());
+        axObjectCache->handleAriaRoleChanged(renderer());
+    } else if (attrName == aria_valuenowAttr) {
+        // If the valuenow attribute changes, AX clients need to be notified.
+        axObjectCache->postNotification(renderer(), AXObjectCache::AXValueChanged, true);
     }
 }
     
@@ -677,7 +652,7 @@ void Element::setPrefix(const AtomicString &_prefix, ExceptionCode& ec)
 
 KURL Element::baseURI() const
 {
-    KURL base(getAttribute(baseAttr));
+    KURL base(KURL(), getAttribute(baseAttr));
     if (!base.protocol().isEmpty())
         return base;
 
@@ -804,7 +779,8 @@ bool Element::pseudoStyleCacheIsInvalid(const RenderStyle* currentStyle, RenderS
 
 void Element::recalcStyle(StyleChange change)
 {
-    RenderStyle* currentStyle = renderStyle();
+    // Ref currentStyle in case it would otherwise be deleted when setRenderStyle() is called.
+    RefPtr<RenderStyle> currentStyle(renderStyle());
     bool hasParentStyle = parentNode() ? parentNode()->renderStyle() : false;
     bool hasPositionalRules = needsStyleRecalc() && currentStyle && currentStyle->childrenAffectedByPositionalRules();
     bool hasDirectAdjacentRules = currentStyle && currentStyle->childrenAffectedByDirectAdjacentRules();
@@ -820,7 +796,7 @@ void Element::recalcStyle(StyleChange change)
     }
     if (hasParentStyle && (change >= Inherit || needsStyleRecalc())) {
         RefPtr<RenderStyle> newStyle = document()->styleSelector()->styleForElement(this);
-        StyleChange ch = diff(currentStyle, newStyle.get());
+        StyleChange ch = diff(currentStyle.get(), newStyle.get());
         if (ch == Detach || !currentStyle) {
             if (attached())
                 detach();
@@ -852,9 +828,9 @@ void Element::recalcStyle(StyleChange change)
                 newStyle->setChildrenAffectedByDirectAdjacentRules();
         }
 
-        if (ch != NoChange || pseudoStyleCacheIsInvalid(currentStyle, newStyle.get())) {
+        if (ch != NoChange || pseudoStyleCacheIsInvalid(currentStyle.get(), newStyle.get())) {
             setRenderStyle(newStyle);
-        } else if (needsStyleRecalc() && (styleChangeType() != AnimationStyleChange) && (document()->usesSiblingRules() || document()->usesDescendantRules())) {
+        } else if (needsStyleRecalc() && (styleChangeType() != SyntheticStyleChange) && (document()->usesSiblingRules() || document()->usesDescendantRules())) {
             // Although no change occurred, we use the new style so that the cousin style sharing code won't get
             // fooled into believing this style is the same.  This is only necessary if the document actually uses
             // sibling/descendant rules, since otherwise it isn't possible for ancestor styles to affect sharing of
@@ -863,7 +839,7 @@ void Element::recalcStyle(StyleChange change)
                 renderer()->setStyleInternal(newStyle.get());
             else
                 setRenderStyle(newStyle);
-        } else if (styleChangeType() == AnimationStyleChange)
+        } else if (styleChangeType() == SyntheticStyleChange)
              setRenderStyle(newStyle);
 
         if (change != Force) {
@@ -1215,13 +1191,23 @@ void Element::focus(bool restorePreviousSelection)
     if (doc->focusedNode() == this)
         return;
 
-    doc->updateLayoutIgnorePendingStylesheets();
-    
     if (!supportsFocus())
         return;
-    
+
+    // If the stylesheets have already been loaded we can reliably check isFocusable.
+    // If not, we continue and set the focused node on the focus controller below so
+    // that it can be updated soon after attach. 
+    if (doc->haveStylesheetsLoaded()) {
+        doc->updateLayoutIgnorePendingStylesheets();
+        if (!isFocusable())
+            return;
+    }
+
     if (Page* page = doc->page())
         page->focusController()->setFocusedNode(this, doc->frame());
+
+    // Setting the focused node above might have invalidated the layout due to scripts.
+    doc->updateLayoutIgnorePendingStylesheets();
 
     if (!isFocusable()) {
         ensureRareData()->setNeedsFocusAppearanceUpdateSoonAfterAttach(true);
@@ -1384,6 +1370,39 @@ unsigned Element::childElementCount() const
         n = n->nextSibling();
     }
     return count;
+}
+
+bool Element::webkitMatchesSelector(const String& selector, ExceptionCode& ec)
+{
+    if (selector.isEmpty()) {
+        ec = SYNTAX_ERR;
+        return false;
+    }
+
+    bool strictParsing = !document()->inCompatMode();
+    CSSParser p(strictParsing);
+
+    CSSSelectorList selectorList;
+    p.parseSelector(selector, document(), selectorList);
+
+    if (!selectorList.first()) {
+        ec = SYNTAX_ERR;
+        return false;
+    }
+
+    // Throw a NAMESPACE_ERR if the selector includes any namespace prefixes.
+    if (selectorList.selectorsNeedNamespaceResolution()) {
+        ec = NAMESPACE_ERR;
+        return false;
+    }
+
+    CSSStyleSelector::SelectorChecker selectorChecker(document(), strictParsing);
+    for (CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(selector)) {
+        if (selectorChecker.checkSelector(selector, this))
+            return true;
+    }
+
+    return false;
 }
 
 KURL Element::getURLAttribute(const QualifiedName& name) const

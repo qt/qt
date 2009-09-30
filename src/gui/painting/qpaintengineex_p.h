@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -170,6 +170,8 @@ public:
     virtual void fillRect(const QRectF &rect, const QBrush &brush);
     virtual void fillRect(const QRectF &rect, const QColor &color);
 
+    virtual void drawRoundedRect(const QRectF &rect, qreal xrad, qreal yrad, Qt::SizeMode mode);
+
     virtual void drawRects(const QRect *rects, int rectCount);
     virtual void drawRects(const QRectF *rects, int rectCount);
 
@@ -207,7 +209,12 @@ public:
     virtual void beginNativePainting() {}
     virtual void endNativePainting() {}
 
-    virtual QPixmapFilter *createPixmapFilter(int /*type*/) const { return 0; }
+    // Return a pixmap filter of "type" that can render the parameters
+    // in "prototype".  The returned filter is owned by the engine and
+    // will be destroyed when the engine is destroyed.  The "prototype"
+    // allows the engine to pick different filters based on the parameters
+    // that will be requested, and not just the "type".
+    virtual QPixmapFilter *pixmapFilter(int /*type*/, const QPixmapFilter * /*prototype*/) { return 0; }
 
     // These flags are needed in the implementation of paint buffers.
     enum Flags

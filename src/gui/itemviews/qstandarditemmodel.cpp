@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -2971,7 +2971,7 @@ QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
     Used by QStandardItemModel::dropMimeData
     stream out an item and his children 
  */
-static void decodeDataRecursive(QDataStream &stream, QStandardItem *item)
+void QStandardItemModelPrivate::decodeDataRecursive(QDataStream &stream, QStandardItem *item)
 {
     int colCount, childCount;
     stream >> *item;
@@ -2982,7 +2982,7 @@ static void decodeDataRecursive(QDataStream &stream, QStandardItem *item)
     
     while(childPos > 0) {
         childPos--;
-        QStandardItem *child = new QStandardItem;
+        QStandardItem *child = createItem();
         decodeDataRecursive(stream, child);
         item->setChild( childPos / colCount, childPos % colCount, child);
     }
@@ -2995,6 +2995,7 @@ static void decodeDataRecursive(QDataStream &stream, QStandardItem *item)
 bool QStandardItemModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
                                       int row, int column, const QModelIndex &parent)
 {
+    Q_D(QStandardItemModel);
     // check if the action is supported
     if (!data || !(action == Qt::CopyAction || action == Qt::MoveAction))
         return false;
@@ -3026,9 +3027,9 @@ bool QStandardItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
 
     while (!stream.atEnd()) {
         int r, c;
-        QStandardItem *item = new QStandardItem;
+        QStandardItem *item = d->createItem();
         stream >> r >> c;
-        decodeDataRecursive(stream, item);
+        d->decodeDataRecursive(stream, item);
 
         rows.append(r);
         columns.append(c);

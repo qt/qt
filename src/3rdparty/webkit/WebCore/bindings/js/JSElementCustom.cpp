@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2007, 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -51,15 +51,27 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
+void JSElement::markChildren(MarkStack& markStack)
+{
+    Base::markChildren(markStack);
+
+    Element* element = impl();
+    JSGlobalData& globalData = *Heap::heap(this)->globalData();
+
+    markDOMObjectWrapper(markStack, globalData, element->attributeMap());
+    if (element->isStyledElement())
+        markDOMObjectWrapper(markStack, globalData, static_cast<StyledElement*>(element)->inlineStyleDecl());
+}
+
 static inline bool allowSettingSrcToJavascriptURL(ExecState* exec, Element* element, const String& name, const String& value)
 {
     if ((element->hasTagName(iframeTag) || element->hasTagName(frameTag)) && equalIgnoringCase(name, "src") && protocolIsJavaScript(deprecatedParseURL(value))) {
-        HTMLFrameElementBase* frame = static_cast<HTMLFrameElementBase*>(element);
-        if (!checkNodeSecurity(exec, frame->contentDocument()))
+        Document* contentDocument = static_cast<HTMLFrameElementBase*>(element)->contentDocument();
+        if (contentDocument && !checkNodeSecurity(exec, contentDocument))
             return false;
     }
     return true;
-} 
+}
 
 JSValue JSElement::setAttribute(ExecState* exec, const ArgList& args)
 {

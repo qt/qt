@@ -79,6 +79,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSNodeIteratorPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -93,6 +94,11 @@ const ClassInfo JSNodeIteratorConstructor::s_info = { "NodeIteratorConstructor",
 bool JSNodeIteratorConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSNodeIteratorConstructor, DOMObject>(exec, &JSNodeIteratorConstructorTable, this, propertyName, slot);
+}
+
+bool JSNodeIteratorConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSNodeIteratorConstructor, DOMObject>(exec, &JSNodeIteratorConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -124,6 +130,11 @@ bool JSNodeIteratorPrototype::getOwnPropertySlot(ExecState* exec, const Identifi
     return getStaticFunctionSlot<JSObject>(exec, &JSNodeIteratorPrototypeTable, this, propertyName, slot);
 }
 
+bool JSNodeIteratorPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSNodeIteratorPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSNodeIterator::s_info = { "NodeIterator", 0, &JSNodeIteratorTable, 0 };
 
 JSNodeIterator::JSNodeIterator(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<NodeIterator> impl)
@@ -134,7 +145,7 @@ JSNodeIterator::JSNodeIterator(PassRefPtr<Structure> structure, JSDOMGlobalObjec
 
 JSNodeIterator::~JSNodeIterator()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSNodeIterator::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -145,6 +156,11 @@ JSObject* JSNodeIterator::createPrototype(ExecState* exec, JSGlobalObject* globa
 bool JSNodeIterator::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSNodeIterator, Base>(exec, &JSNodeIteratorTable, this, propertyName, slot);
+}
+
+bool JSNodeIterator::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSNodeIterator, Base>(exec, &JSNodeIteratorTable, this, propertyName, descriptor);
 }
 
 JSValue jsNodeIteratorRoot(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -208,7 +224,7 @@ JSValue JSNodeIterator::getConstructor(ExecState* exec, JSGlobalObject* globalOb
 JSValue JSC_HOST_CALL jsNodeIteratorPrototypeFunctionNextNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSNodeIterator::s_info))
+    if (!thisValue.inherits(&JSNodeIterator::s_info))
         return throwError(exec, TypeError);
     JSNodeIterator* castedThisObj = static_cast<JSNodeIterator*>(asObject(thisValue));
     return castedThisObj->nextNode(exec, args);
@@ -217,7 +233,7 @@ JSValue JSC_HOST_CALL jsNodeIteratorPrototypeFunctionNextNode(ExecState* exec, J
 JSValue JSC_HOST_CALL jsNodeIteratorPrototypeFunctionPreviousNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSNodeIterator::s_info))
+    if (!thisValue.inherits(&JSNodeIterator::s_info))
         return throwError(exec, TypeError);
     JSNodeIterator* castedThisObj = static_cast<JSNodeIterator*>(asObject(thisValue));
     return castedThisObj->previousNode(exec, args);
@@ -226,7 +242,7 @@ JSValue JSC_HOST_CALL jsNodeIteratorPrototypeFunctionPreviousNode(ExecState* exe
 JSValue JSC_HOST_CALL jsNodeIteratorPrototypeFunctionDetach(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSNodeIterator::s_info))
+    if (!thisValue.inherits(&JSNodeIterator::s_info))
         return throwError(exec, TypeError);
     JSNodeIterator* castedThisObj = static_cast<JSNodeIterator*>(asObject(thisValue));
     NodeIterator* imp = static_cast<NodeIterator*>(castedThisObj->impl());
@@ -241,7 +257,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, NodeIte
 }
 NodeIterator* toNodeIterator(JSC::JSValue value)
 {
-    return value.isObject(&JSNodeIterator::s_info) ? static_cast<JSNodeIterator*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSNodeIterator::s_info) ? static_cast<JSNodeIterator*>(asObject(value))->impl() : 0;
 }
 
 }

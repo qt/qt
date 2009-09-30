@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -110,6 +110,11 @@ private:
 
     QMutex *mtx;
 };
+
+#ifdef Q_OS_SYMBIAN
+typedef TDriveNumber (*SystemDriveFunc)(RFs&);
+static SystemDriveFunc PtrGetSystemDrive=0;
+#endif
 
 #if defined(Q_WS_WIN) || defined(Q_WS_MAC)
 extern QString qAppFileName();
@@ -345,7 +350,7 @@ void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
 }
 #elif defined(Q_OS_SYMBIAN) && defined (QT_NO_DEBUG)
 // no implementation in release builds, but keep the symbol present
-void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
+void QCoreApplicationPrivate::checkReceiverThread(QObject * /* receiver */)
 {
 }
 #endif
@@ -364,7 +369,7 @@ void QCoreApplicationPrivate::appendApplicationPathToLibraryPaths()
     QString app_location( QCoreApplication::applicationFilePath() );
     app_location.truncate(app_location.lastIndexOf(QLatin1Char('/')));
     app_location = QDir(app_location).canonicalPath();
-    if (app_location !=  QLibraryInfo::location(QLibraryInfo::PluginsPath) && QFile::exists(app_location) && !app_libpaths->contains(app_location))
+    if (QFile::exists(app_location) && !app_libpaths->contains(app_location))
 # endif
         app_libpaths->append(app_location);
 #endif
@@ -1788,6 +1793,8 @@ bool QCoreApplicationPrivate::isTranslatorInstalled(QTranslator *translator)
 
     In Symbian this function will return the application private directory,
     not the path to executable itself, as those are always in \c {/sys/bin}.
+    If the application is in a read only drive, i.e. ROM, then the private path
+    on the system drive will be returned.
 
     \sa applicationFilePath()
 */
@@ -1803,25 +1810,42 @@ QString QCoreApplication::applicationDirPath()
 #if defined(Q_OS_SYMBIAN)
     {
         QString appPath;
-        RProcess proc;
-        TInt err = proc.Open(proc.Id());
+        RFs& fs = qt_s60GetRFs();
+        TChar driveChar;
+        QChar qDriveChar;
+        driveChar = (RProcess().FileName())[0];
+
+        //Check if the process is installed in a read only drive (typically ROM),
+        //and use the system drive (typically C:) if so.
+        TInt drive;
+        TDriveInfo driveInfo;
+        TInt err = fs.CharToDrive(driveChar, drive);
         if (err == KErrNone) {
-#if defined(Q_CC_NOKIAX86)
-            // In emulator, always resolve the private dir on C-drive
-            appPath.append(QChar('C'));
-#else
-            appPath.append(QChar((proc.FileName())[0]));
-#endif
-            appPath.append(QLatin1String(":\\private\\"));
-            QString sid;
-            sid.setNum(proc.SecureId().iId, 16);
-            appPath.append(sid);
-            appPath.append(QLatin1Char('\\'));
-            proc.Close();
+            err = fs.Drive(driveInfo, drive);
+        }
+        if (err != KErrNone || (driveInfo.iDriveAtt & KDriveAttRom) || (driveInfo.iMediaAtt
+            & KMediaAttWriteProtected)) {
+            if(!PtrGetSystemDrive)
+                PtrGetSystemDrive = reinterpret_cast<SystemDriveFunc>(qt_resolveS60PluginFunc(S60Plugin_GetSystemDrive));
+            Q_ASSERT(PtrGetSystemDrive);
+            drive = PtrGetSystemDrive(fs);
+            fs.DriveToChar(drive, driveChar);
         }
 
-        QFileInfo fi(appPath);
-        d->cachedApplicationDirPath = fi.exists() ? fi.canonicalFilePath() : QString();
+        qDriveChar = QChar(QLatin1Char(driveChar)).toUpper();
+
+        TFileName privatePath;
+        fs.PrivatePath(privatePath);
+        appPath = qt_TDesC2QString(privatePath);
+        appPath.prepend(QLatin1Char(':')).prepend(qDriveChar);
+
+        // Create the appPath if it doesn't exist. Non-existing appPath will cause
+        // Platform Security violations later on if the app doesn't have AllFiles capability.
+        err = fs.CreatePrivatePath(drive);
+        if (err != KErrNone)
+            qWarning("QCoreApplication::applicationDirPath: Failed to create private path.");
+
+        d->cachedApplicationDirPath = QFileInfo(appPath).path();
     }
 #else
         d->cachedApplicationDirPath = QFileInfo(applicationFilePath()).path();
@@ -2043,7 +2067,8 @@ QStringList QCoreApplication::arguments()
                 ;
             else if (l1arg == "-style" ||
                      l1arg == "-session" ||
-                     l1arg == "-graphicssystem")
+                     l1arg == "-graphicssystem" ||
+                     l1arg == "-testability")
                 ++a;
             else
                 stripped += arg;
@@ -2184,10 +2209,10 @@ QStringList QCoreApplication::libraryPaths()
         QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
 #if defined(Q_OS_SYMBIAN)
         // Add existing path on all drives for relative PluginsPath in Symbian
-        if (installPathPlugins.at(1) != QChar(':')) {
+        if (installPathPlugins.at(1) != QChar(QLatin1Char(':'))) {
             QString tempPath = installPathPlugins;
-            if (tempPath.at(tempPath.length() - 1) != QChar('\\')) {
-                tempPath += QChar('\\');
+            if (tempPath.at(tempPath.length() - 1) != QDir::separator()) {
+                tempPath += QDir::separator();
             }
             RFs& fs = qt_s60GetRFs();
             TPtrC tempPathPtr(reinterpret_cast<const TText*> (tempPath.constData()));

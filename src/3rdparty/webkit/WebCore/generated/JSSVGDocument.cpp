@@ -80,6 +80,11 @@ bool JSSVGDocumentPrototype::getOwnPropertySlot(ExecState* exec, const Identifie
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGDocumentPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGDocumentPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGDocumentPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGDocument::s_info = { "SVGDocument", &JSDocument::s_info, &JSSVGDocumentTable, 0 };
 
 JSSVGDocument::JSSVGDocument(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGDocument> impl)
@@ -97,6 +102,11 @@ bool JSSVGDocument::getOwnPropertySlot(ExecState* exec, const Identifier& proper
     return getStaticValueSlot<JSSVGDocument, Base>(exec, &JSSVGDocumentTable, this, propertyName, slot);
 }
 
+bool JSSVGDocument::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGDocument, Base>(exec, &JSSVGDocumentTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGDocumentRootElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGDocument* castedThis = static_cast<JSSVGDocument*>(asObject(slot.slotBase()));
@@ -108,7 +118,7 @@ JSValue jsSVGDocumentRootElement(ExecState* exec, const Identifier&, const Prope
 JSValue JSC_HOST_CALL jsSVGDocumentPrototypeFunctionCreateEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGDocument::s_info))
+    if (!thisValue.inherits(&JSSVGDocument::s_info))
         return throwError(exec, TypeError);
     JSSVGDocument* castedThisObj = static_cast<JSSVGDocument*>(asObject(thisValue));
     SVGDocument* imp = static_cast<SVGDocument*>(castedThisObj->impl());

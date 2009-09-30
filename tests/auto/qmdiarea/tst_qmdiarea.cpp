@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -61,6 +61,8 @@
 #include <QtOpenGL>
 #endif
 #include <QMacStyle>
+
+#include "../../shared/util.h"
 
 static const Qt::WindowFlags DefaultWindowFlags
     = Qt::SubWindow | Qt::WindowSystemMenuHint
@@ -467,7 +469,7 @@ void tst_QMdiArea::subWindowActivated2()
     qt_x11_wait_for_window_manager(&mdiArea);
 #endif
 
-    QCOMPARE(spy.count(), 5);
+    QTRY_COMPARE(spy.count(), 5);
     QCOMPARE(mdiArea.activeSubWindow(), mdiArea.subWindowList().back());
     spy.clear();
 
@@ -493,7 +495,7 @@ void tst_QMdiArea::subWindowActivated2()
     qt_x11_wait_for_window_manager(&mdiArea);
 #endif
     QTest::qWait(100);
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
     QVERIFY(!mdiArea.activeSubWindow());
     QCOMPARE(mdiArea.currentSubWindow(), activeSubWindow);
     spy.clear();
@@ -503,7 +505,7 @@ void tst_QMdiArea::subWindowActivated2()
     qt_x11_wait_for_window_manager(&mdiArea);
 #endif
     QTest::qWait(100);
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
     QCOMPARE(mdiArea.activeSubWindow(), activeSubWindow);
     spy.clear();
 
@@ -516,14 +518,14 @@ void tst_QMdiArea::subWindowActivated2()
     if (!macHasAccessToWindowsServer())
         QEXPECT_FAIL("", "showMinimized doesn't really minimize if you don't have access to the server", Abort);
 #endif
-    QTest::qWait(100);
+    QTest::qWait(10);
 #if defined(Q_WS_QWS)
     QEXPECT_FAIL("", "task 168682", Abort);
 #endif
 #ifdef Q_OS_WINCE
     QSKIP("Not fixed yet. See Task 197453", SkipAll);
 #endif
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
     QVERIFY(!mdiArea.activeSubWindow());
     QCOMPARE(mdiArea.currentSubWindow(), activeSubWindow);
     spy.clear();
@@ -533,7 +535,7 @@ void tst_QMdiArea::subWindowActivated2()
     qt_x11_wait_for_window_manager(&mdiArea);
 #endif
     QTest::qWait(100);
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
     QCOMPARE(mdiArea.activeSubWindow(), activeSubWindow);
     spy.clear();
 }
@@ -637,9 +639,7 @@ void tst_QMdiArea::changeWindowTitle()
     mw->setCentralWidget( ws );
     mw->menuBar();
     mw->show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(mw);
-#endif
+    QTest::qWaitForWindowShown(mw);
 
     QWidget *widget = new QWidget( ws );
     widget->setWindowTitle( wc );
@@ -653,22 +653,17 @@ void tst_QMdiArea::changeWindowTitle()
     widget->setWindowState(Qt::WindowMaximized);
 #endif
 #if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
-    QCOMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc) );
+    QTRY_COMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc) );
 #endif
 
     mw->hide();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(mw);
-#endif
     qApp->processEvents();
     mw->show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(mw);
-#endif
     qApp->processEvents();
+    QTest::qWaitForWindowShown(mw);
 
 #if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
-    QCOMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc) );
+    QTRY_COMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc) );
 #endif
 
 #ifdef USE_SHOW
@@ -686,7 +681,7 @@ void tst_QMdiArea::changeWindowTitle()
 #endif
     qApp->processEvents();
 #if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
-    QCOMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc) );
+    QTRY_COMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc) );
     widget->setWindowTitle( wc2 );
     QCOMPARE( mw->windowTitle(), QString::fromLatin1("%1 - [%2]").arg(mwc).arg(wc2) );
     mw->setWindowTitle( mwc2 );
@@ -1695,11 +1690,8 @@ void tst_QMdiArea::tileSubWindows()
     workspace.setActiveSubWindow(windows.at(5));
     workspace.resize(workspace.size() - QSize(10, 10));
     workspace.setActiveSubWindow(0);
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&workspace);
-#endif
     QTest::qWait(250); // delayed re-arrange of minimized windows
-    QCOMPARE(workspace.viewport()->childrenRect(), workspace.viewport()->rect());
+    QTRY_COMPARE(workspace.viewport()->childrenRect(), workspace.viewport()->rect());
 
     // Add another window and verify that the views are not tiled anymore.
     workspace.addSubWindow(new QPushButton(QLatin1String("I'd like to mess up tiled views")))->show();
@@ -1730,10 +1722,8 @@ void tst_QMdiArea::tileSubWindows()
     // Verify that we try to resize the area such that all sub-windows are visible.
     // It's important that tiled windows are NOT overlapping.
     workspace.resize(350, 150);
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&workspace);
-#endif
     qApp->processEvents();
+    QTRY_COMPARE(workspace.size(), QSize(350, 150));
 
     const QSize minSize(300, 100);
     foreach (QMdiSubWindow *subWindow, workspace.subWindowList())
@@ -1758,15 +1748,12 @@ void tst_QMdiArea::tileSubWindows()
 #ifdef Q_OS_WINCE
     QSKIP("Not fixed yet! See task 197453", SkipAll);
 #endif
-    QCOMPARE(workspace.viewport()->rect().size(), expectedViewportSize);
+    QTRY_COMPARE(workspace.viewport()->rect().size(), expectedViewportSize);
 
     // Not enough space for all sub-windows to be visible -> provide scroll bars.
     workspace.resize(150, 150);
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&workspace);
-#endif
     qApp->processEvents();
-    QCOMPARE(workspace.size(), QSize(150, 150));
+    QTRY_COMPARE(workspace.size(), QSize(150, 150));
 
     // Horizontal scroll bar.
     QScrollBar *hBar = workspace.horizontalScrollBar();
@@ -1885,7 +1872,7 @@ void tst_QMdiArea::resizeMaximizedChildWindows()
         workspace.resize(workspaceSize + QSize(increment, increment));
         QTest::qWait(100);
         qApp->processEvents();
-        QCOMPARE(workspace.size(), workspaceSize + QSize(increment, increment));
+        QTRY_COMPARE(workspace.size(), workspaceSize + QSize(increment, increment));
         QCOMPARE(window->size(), windowSize + QSize(increment, increment));
         workspaceSize = workspace.size();
     }

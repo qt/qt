@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtMultimedia module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -68,13 +68,13 @@ QT_BEGIN_NAMESPACE
 const unsigned int MAX_SAMPLE_RATES = 5;
 const unsigned int SAMPLE_RATES[] = { 8000, 11025, 22050, 44100, 48000 };
 
-class QAudioDeviceInfoPrivate : public QAbstractAudioDeviceInfo
+class QAudioDeviceInfoInternal : public QAbstractAudioDeviceInfo
 {
     Q_OBJECT
 
 public:
-    QAudioDeviceInfoPrivate(QByteArray dev,QAudio::Mode mode);
-    ~QAudioDeviceInfoPrivate();
+    QAudioDeviceInfoInternal(QByteArray dev,QAudio::Mode mode);
+    ~QAudioDeviceInfoInternal();
 
     bool open();
     void close();

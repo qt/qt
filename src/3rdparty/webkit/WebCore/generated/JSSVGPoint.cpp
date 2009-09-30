@@ -79,6 +79,11 @@ bool JSSVGPointPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& 
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGPointPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGPointPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGPointPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGPoint::s_info = { "SVGPoint", 0, &JSSVGPointTable, 0 };
 
 JSSVGPoint::JSSVGPoint(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JSSVGPODTypeWrapper<FloatPoint> > impl, SVGElement* context)
@@ -89,7 +94,7 @@ JSSVGPoint::JSSVGPoint(PassRefPtr<Structure> structure, JSDOMGlobalObject* globa
 
 JSSVGPoint::~JSSVGPoint()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGPoint::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -100,6 +105,11 @@ JSObject* JSSVGPoint::createPrototype(ExecState* exec, JSGlobalObject* globalObj
 bool JSSVGPoint::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGPoint, Base>(exec, &JSSVGPointTable, this, propertyName, slot);
+}
+
+bool JSSVGPoint::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGPoint, Base>(exec, &JSSVGPointTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGPointX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -140,7 +150,7 @@ void setJSSVGPointY(ExecState* exec, JSObject* thisObject, JSValue value)
 JSValue JSC_HOST_CALL jsSVGPointPrototypeFunctionMatrixTransform(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGPoint::s_info))
+    if (!thisValue.inherits(&JSSVGPoint::s_info))
         return throwError(exec, TypeError);
     JSSVGPoint* castedThisObj = static_cast<JSSVGPoint*>(asObject(thisValue));
     JSSVGPODTypeWrapper<FloatPoint>* wrapper = castedThisObj->impl();
@@ -159,7 +169,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, JSSVGPO
 }
 FloatPoint toSVGPoint(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGPoint::s_info) ? (FloatPoint) *static_cast<JSSVGPoint*>(asObject(value))->impl() : FloatPoint();
+    return value.inherits(&JSSVGPoint::s_info) ? (FloatPoint) *static_cast<JSSVGPoint*>(asObject(value))->impl() : FloatPoint();
 }
 
 }

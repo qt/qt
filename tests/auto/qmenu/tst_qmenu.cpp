@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -55,6 +55,9 @@
 #include <qmenu.h>
 #include <qstyle.h>
 #include <qdebug.h>
+
+#include "../../shared/util.h"
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -257,9 +260,17 @@ void tst_QMenu::onStatusMessageChanged(const QString &s)
 void
 tst_QMenu::addActionsAndClear()
 {
-    QCOMPARE(menus[0]->actions().count(), 0);
+#ifdef QT_SOFTKEYS_ENABLED
+    // Softkeys add extra "Select" and "Back" actions to menu by default.
+    // Two first actions will be Select and Back when softkeys are enabled
+    int numSoftkeyActions = 2;
+#else
+    int numSoftkeyActions = 0;
+#endif
+
+    QCOMPARE(menus[0]->actions().count(), 0 + numSoftkeyActions);
     createActions();
-    QCOMPARE(menus[0]->actions().count(), 8);
+    QCOMPARE(menus[0]->actions().count(), 8 + numSoftkeyActions);
     menus[0]->clear();
     QCOMPARE(menus[0]->actions().count(), 0);
 }
@@ -437,15 +448,18 @@ void tst_QMenu::overrideMenuAction()
 	m->addAction(aQuit);
 
 	w.show();
-        QTest::qWait(200);
+    QApplication::setActiveWindow(&w);
+    w.setFocus();
+    QTest::qWaitForWindowShown(&w);
+    QTRY_VERIFY(w.hasFocus());
 
 	//test of the action inside the menu
 	QTest::keyClick(&w, Qt::Key_X, Qt::ControlModifier);
-    QCOMPARE(activated, aQuit);
+    QTRY_COMPARE(activated, aQuit);
 
 	//test if the menu still pops out
 	QTest::keyClick(&w, Qt::Key_F, Qt::AltModifier);
-    QVERIFY(m->isVisible());
+    QTRY_VERIFY(m->isVisible());
 
 	delete aFileMenu;
 
@@ -670,7 +684,7 @@ void tst_QMenu::task242454_sizeHint()
     QMenu menu;
     QString s = QLatin1String("foo\nfoo\nfoo\nfoo");
     menu.addAction(s);
-    QVERIFY(menu.sizeHint().width() > menu.fontMetrics().width(s));
+    QVERIFY(menu.sizeHint().width() > menu.fontMetrics().boundingRect(QRect(), Qt::TextSingleLine, s).width());
 }
 
 
@@ -703,12 +717,12 @@ void tst_QMenu::task250673_activeMultiColumnSubMenuPosition()
     };
 
     QMenu sub;
-	
+
     if (sub.style()->styleHint(QStyle::SH_Menu_Scrollable, 0, &sub)) {
         //the style prevents the menus from getting columns
         QSKIP("the style doesn't support multiple columns, it makes the menu scrollable", SkipSingle);
     }
-	
+
     sub.addAction("Sub-Item1");
     QAction *subAction = sub.addAction("Sub-Item2");
 
@@ -802,6 +816,7 @@ void tst_QMenu::task258920_mouseBorder()
     QAction *action = menu.addAction("test");
 
     menu.popup(QApplication::desktop()->availableGeometry().center());
+    QTest::qWaitForWindowShown(&menu);
     QTest::qWait(100);
     QRect actionRect = menu.actionGeometry(action);
     QTest::mouseMove(&menu, actionRect.center());

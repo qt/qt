@@ -36,6 +36,7 @@
 #include "ActiveDOMObject.h"
 #include "AtomicStringHash.h"
 #include "EventListener.h"
+#include "EventNames.h"
 #include "EventTarget.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -43,6 +44,7 @@
 
 namespace WebCore {
 
+    class KURL;
     class ScriptExecutionContext;
 
     class AbstractWorker : public RefCounted<AbstractWorker>, public ActiveDOMObject, public EventTarget {
@@ -50,19 +52,7 @@ namespace WebCore {
         // EventTarget APIs
         virtual ScriptExecutionContext* scriptExecutionContext() const { return ActiveDOMObject::scriptExecutionContext(); }
 
-        virtual void addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture);
-        virtual void removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture);
-        virtual bool dispatchEvent(PassRefPtr<Event>, ExceptionCode&);
-
-        // Utility routines to generate appropriate error events for loading and script exceptions.
-        void dispatchLoadErrorEvent();
-        bool dispatchScriptErrorEvent(const String& errorMessage, const String& sourceURL, int);
-
-        void setOnerror(PassRefPtr<EventListener> eventListener) { m_onErrorListener = eventListener; }
-        EventListener* onerror() const { return m_onErrorListener.get(); }
-        typedef Vector<RefPtr<EventListener> > ListenerVector;
-        typedef HashMap<AtomicString, ListenerVector> EventListenersMap;
-        EventListenersMap& eventListeners() { return m_eventListeners; }
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
         using RefCounted<AbstractWorker>::ref;
         using RefCounted<AbstractWorker>::deref;
@@ -70,13 +60,17 @@ namespace WebCore {
         AbstractWorker(ScriptExecutionContext*);
         virtual ~AbstractWorker();
 
-    private:
+    protected:
+        // Helper function that converts a URL to an absolute URL and checks the result for validity.
+        KURL resolveURL(const String& url, ExceptionCode& ec);
 
+    private:
         virtual void refEventTarget() { ref(); }
         virtual void derefEventTarget() { deref(); }
-
-        RefPtr<EventListener> m_onErrorListener;
-        EventListenersMap m_eventListeners;
+        virtual EventTargetData* eventTargetData();
+        virtual EventTargetData* ensureEventTargetData();
+        
+        EventTargetData m_eventTargetData;
     };
 
 } // namespace WebCore

@@ -79,6 +79,11 @@ bool JSSVGElementInstanceListPrototype::getOwnPropertySlot(ExecState* exec, cons
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGElementInstanceListPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGElementInstanceListPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGElementInstanceListPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGElementInstanceList::s_info = { "SVGElementInstanceList", 0, &JSSVGElementInstanceListTable, 0 };
 
 JSSVGElementInstanceList::JSSVGElementInstanceList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElementInstanceList> impl)
@@ -89,7 +94,7 @@ JSSVGElementInstanceList::JSSVGElementInstanceList(PassRefPtr<Structure> structu
 
 JSSVGElementInstanceList::~JSSVGElementInstanceList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGElementInstanceList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -100,6 +105,11 @@ JSObject* JSSVGElementInstanceList::createPrototype(ExecState* exec, JSGlobalObj
 bool JSSVGElementInstanceList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGElementInstanceList, Base>(exec, &JSSVGElementInstanceListTable, this, propertyName, slot);
+}
+
+bool JSSVGElementInstanceList::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGElementInstanceList, Base>(exec, &JSSVGElementInstanceListTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGElementInstanceListLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -113,7 +123,7 @@ JSValue jsSVGElementInstanceListLength(ExecState* exec, const Identifier&, const
 JSValue JSC_HOST_CALL jsSVGElementInstanceListPrototypeFunctionItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGElementInstanceList::s_info))
+    if (!thisValue.inherits(&JSSVGElementInstanceList::s_info))
         return throwError(exec, TypeError);
     JSSVGElementInstanceList* castedThisObj = static_cast<JSSVGElementInstanceList*>(asObject(thisValue));
     SVGElementInstanceList* imp = static_cast<SVGElementInstanceList*>(castedThisObj->impl());
@@ -130,7 +140,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGElem
 }
 SVGElementInstanceList* toSVGElementInstanceList(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGElementInstanceList::s_info) ? static_cast<JSSVGElementInstanceList*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGElementInstanceList::s_info) ? static_cast<JSSVGElementInstanceList*>(asObject(value))->impl() : 0;
 }
 
 }

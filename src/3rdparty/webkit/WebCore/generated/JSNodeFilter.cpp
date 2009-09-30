@@ -84,6 +84,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSNodeFilterPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -98,6 +99,11 @@ const ClassInfo JSNodeFilterConstructor::s_info = { "NodeFilterConstructor", 0, 
 bool JSNodeFilterConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSNodeFilterConstructor, DOMObject>(exec, &JSNodeFilterConstructorTable, this, propertyName, slot);
+}
+
+bool JSNodeFilterConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSNodeFilterConstructor, DOMObject>(exec, &JSNodeFilterConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -143,6 +149,11 @@ bool JSNodeFilterPrototype::getOwnPropertySlot(ExecState* exec, const Identifier
     return getStaticPropertySlot<JSNodeFilterPrototype, JSObject>(exec, &JSNodeFilterPrototypeTable, this, propertyName, slot);
 }
 
+bool JSNodeFilterPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticPropertyDescriptor<JSNodeFilterPrototype, JSObject>(exec, &JSNodeFilterPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSNodeFilter::s_info = { "NodeFilter", 0, &JSNodeFilterTable, 0 };
 
 JSNodeFilter::JSNodeFilter(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<NodeFilter> impl)
@@ -153,7 +164,7 @@ JSNodeFilter::JSNodeFilter(PassRefPtr<Structure> structure, JSDOMGlobalObject* g
 
 JSNodeFilter::~JSNodeFilter()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSNodeFilter::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -164,6 +175,11 @@ JSObject* JSNodeFilter::createPrototype(ExecState* exec, JSGlobalObject* globalO
 bool JSNodeFilter::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSNodeFilter, Base>(exec, &JSNodeFilterTable, this, propertyName, slot);
+}
+
+bool JSNodeFilter::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSNodeFilter, Base>(exec, &JSNodeFilterTable, this, propertyName, descriptor);
 }
 
 JSValue jsNodeFilterConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -179,7 +195,7 @@ JSValue JSNodeFilter::getConstructor(ExecState* exec, JSGlobalObject* globalObje
 JSValue JSC_HOST_CALL jsNodeFilterPrototypeFunctionAcceptNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSNodeFilter::s_info))
+    if (!thisValue.inherits(&JSNodeFilter::s_info))
         return throwError(exec, TypeError);
     JSNodeFilter* castedThisObj = static_cast<JSNodeFilter*>(asObject(thisValue));
     return castedThisObj->acceptNode(exec, args);

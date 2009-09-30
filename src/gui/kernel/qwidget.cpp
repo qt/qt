@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -82,6 +82,7 @@
 #include "private/qstyle_p.h"
 #include "private/qinputcontext_p.h"
 #include "qfileinfo.h"
+#include "private/qsoftkeymanager_p.h"
 
 #if defined (Q_WS_WIN)
 # include <private/qwininputcontext_p.h>
@@ -410,7 +411,6 @@ void QWidget::setEditFocus(bool on)
         QApplication::sendEvent(f, &event);
         QApplication::sendEvent(f->style(), &event);
     }
-    f->repaint(); // Widget might want to repaint a focus indicator
 }
 #endif
 
@@ -900,28 +900,30 @@ void QWidget::setAutoFillBackground(bool enabled)
 
     \sa QEvent, QPainter, QGridLayout, QBoxLayout
 
-    \section1 SoftKeys
+    \section1 Softkeys
     \since 4.6
-    \preliminary
 
-    Softkeys API is a platform independent way of mapping actions to (hardware)keys
-    and toolbars provided by the underlying platform.
+    Softkeys are usually physical keys on a device that have a corresponding label or
+    other visual representation on the screen that is generally located next to its
+    physical counterpart. They are most often found on mobile phone platforms. In
+    modern touch based user interfaces it is also possible to have softkeys that do
+    not correspond to any physical keys. Softkeys differ from other onscreen labels
+    in that they are contextual.
 
-    There are three major use cases supported. First one is a mobile device
-    with keypad navigation and no touch ui. Second use case is a mobile
-    device with touch ui. Third use case is desktop. For now the softkey API is
-    only implemented for Series60.
+    In Qt, contextual softkeys are added to a widget by calling addAction() and
+    passing a \c QAction with a softkey role set on it. When the widget
+    containing the softkey actions has focus, its softkeys should appear in
+    the user interface. Softkeys are discovered by traversing the widget
+    heirarchy so it is possible to define a single set of softkeys that are
+    present at all times by calling addAction() for a given top level widget.
 
-    QActions are set to widget(s) via softkey API. Actions in focused widget are
-    mapped to native toolbar or hardware keys. Even though the API allows to set
-    any amount of widgets there might be physical restrictions to amount of
-    softkeys that can be used by the device.
+    On some platforms, this concept overlaps with \c QMenuBar such that if no
+    other softkeys are found and the top level widget is a QMainWindow containing
+    a QMenuBar, the menubar actions may appear on one of the softkeys.
 
-    \e Series60: For series60 menu button is automatically mapped to left
-    soft key if there is QMainWindow with QMenuBar in widgets parent hierarchy.
+    Note: Currently softkeys are only supported on the Symbian Platform.
 
-    \sa softKeys()
-    \sa setSoftKey()
+    \sa addAction, QAction, QMenuBar
 
 */
 
@@ -1442,9 +1444,13 @@ QWidget::~QWidget()
         }
     }
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
     else if (!internalWinId() && isVisible()) {
         qApp->d_func()->sendSyntheticEnterLeave(this);
+#ifdef Q_WS_QWS
+    } else if (isVisible()) {
+        qApp->d_func()->sendSyntheticEnterLeave(this);
+#endif
     }
 #endif
 
@@ -2102,6 +2108,13 @@ static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QBrus
             painter->drawTiledPixmap(rect, brush.texture(), rect.topLeft());
         }
 #endif // Q_WS_MAC
+
+    } else if (brush.gradient()
+               && brush.gradient()->coordinateMode() == QGradient::ObjectBoundingMode) {
+        painter->save();
+        painter->setClipRegion(rgn);
+        painter->fillRect(0, 0, painter->device()->width(), painter->device()->height(), brush);
+        painter->restore();
     } else {
         const QVector<QRect> &rects = rgn.rects();
         for (int i = 0; i < rects.size(); ++i)
@@ -2141,7 +2154,6 @@ void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, int 
 
     if (q->autoFillBackground())
         fillRegion(painter, rgn, autoFillBrush);
-
 
     if (q->testAttribute(Qt::WA_StyledBackground)) {
         painter->setClipRegion(rgn);
@@ -3044,7 +3056,6 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
     if (q->testAttribute(Qt::WA_SetCursor) || q->isWindow()) {
         // enforce the windows behavior of clearing the cursor on
         // disabled widgets
-        extern void qt_x11_enforce_cursor(QWidget * w); // defined in qwidget_x11.cpp
         qt_x11_enforce_cursor(q);
     }
 #endif
@@ -3320,7 +3331,7 @@ QPoint QWidget::pos() const
 
     \note Do not use this function to find the width of a screen on
     a \l{QDesktopWidget}{multiple screen desktop}. Read
-    \l{multiple screens note}{this note} for details.
+    \l{QDesktopWidget#Screen Geometry}{this note} for details.
 
     By default, this property contains a value that depends on the user's
     platform and screen geometry.
@@ -3336,8 +3347,8 @@ QPoint QWidget::pos() const
     issues with windows.
 
     \note Do not use this function to find the height of a screen
-    on a \l {QDesktopWidget} {multiple screen desktop}. Read
-    \l {multiple screens note} {this note} for details.
+    on a \l{QDesktopWidget}{multiple screen desktop}. Read
+    \l{QDesktopWidget#Screen Geometry}{this note} for details.
 
     By default, this property contains a value that depends on the user's
     platform and screen geometry.
@@ -4969,15 +4980,11 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     d->extra->inRenderWithPainter = false;
 }
 
-#if !defined(Q_OS_SYMBIAN)
-void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
-{
-    Q_UNUSED(softkeys)
-}
-#endif // !defined(Q_OS_SYMBIAN)
-
 /*!
-    Returns a pointer to this widget's effect if it has one; otherwise 0.
+    \brief The graphicsEffect function returns a pointer to the
+    widget's graphics effect.
+
+    If the widget has no graphics effect, 0 is returned.
 
     \since 4.6
 
@@ -4990,6 +4997,9 @@ QGraphicsEffect *QWidget::graphicsEffect() const
 }
 
 /*!
+
+  \brief The setGraphicsEffect function is for setting the widget's graphics effect.
+
     Sets \a effect as the widget's effect. If there already is an effect installed
     on this widget, QWidget will delete the existing effect before installing
     the new \a effect.
@@ -5685,7 +5695,7 @@ void QWidget::setWindowIconText(const QString &iconText)
 
 void QWidget::setWindowTitle(const QString &title)
 {
-    if (QWidget::windowTitle() == title)
+    if (QWidget::windowTitle() == title && !title.isEmpty() && !title.isNull())
         return;
 
     Q_D(QWidget);
@@ -6209,7 +6219,8 @@ QWidget *QWidget::nextInFocusChain() const
 }
 
 /*!
-    Returns the previous widget in this widget's focus chain.
+    \brief The previousInFocusChain function returns the previous
+    widget in this widget's focus chain.
 
     \sa nextInFocusChain()
 
@@ -6446,6 +6457,8 @@ void QWidgetPrivate::reparentFocusWidgets(QWidget * oldtlw)
 
   This function is called from QDesktopwidget::screen(QPoint) to find the
   closest screen for a point.
+  In directional KeypadNavigation, it is called to find the closest
+  widget to the current focus widget center.
 */
 int QWidgetPrivate::pointToRect(const QPoint &p, const QRect &r)
 {
@@ -6710,14 +6723,14 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
 */
 
 /*!
-    Sets the margins around the contents of the widget to have the
-    sizes \a left, \a top, \a right, and \a bottom. The margins are
-    used by the layout system, and may be used by subclasses to
-    specify the area to draw in (e.g. excluding the frame).
+  Sets the margins around the contents of the widget to have the sizes
+  \a left, \a top, \a right, and \a bottom. The margins are used by
+  the layout system, and may be used by subclasses to specify the area
+  to draw in (e.g. excluding the frame).
 
-    Changing the margins will trigger a resizeEvent().
+  Changing the margins will trigger a resizeEvent().
 
-    \sa contentsRect(), getContentsMargins()
+  \sa contentsRect(), getContentsMargins()
 */
 void QWidget::setContentsMargins(int left, int top, int right, int bottom)
 {
@@ -6751,6 +6764,9 @@ void QWidget::setContentsMargins(int left, int top, int right, int bottom)
 /*!
   \overload
   \since 4.6
+
+  \brief The setContentsMargins function sets the margins around the
+  widget's contents.
 
   Sets the margins around the contents of the widget to have the
   sizes determined by \a margins. The margins are
@@ -6789,7 +6805,7 @@ void QWidget::getContentsMargins(int *left, int *top, int *right, int *bottom) c
 /*!
   \since 4.6
 
-  Returns the widget's contents margins.
+  \brief The contentsMargins function returns the widget's contents margins.
 
   \sa getContentsMargins(), setContentsMargins(), contentsRect()
  */
@@ -7181,7 +7197,7 @@ void QWidgetPrivate::hide_helper()
     // next bit tries to move the focus if the focus widget is now
     // hidden.
     if (wasVisible) {
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
         qApp->d_func()->sendSyntheticEnterLeave(q);
 #endif
 
@@ -7313,7 +7329,7 @@ void QWidget::setVisible(bool visible)
 
             d->show_helper();
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
             qApp->d_func()->sendSyntheticEnterLeave(this);
 #endif
         }
@@ -7428,7 +7444,7 @@ void QWidgetPrivate::hideChildren(bool spontaneous)
                 widget->d_func()->hide_sys();
             }
         }
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
         qApp->d_func()->sendSyntheticEnterLeave(widget);
 #endif
 #ifndef QT_NO_ACCESSIBILITY
@@ -7926,10 +7942,21 @@ bool QWidget::event(QEvent *event)
 #ifdef QT_KEYPAD_NAVIGATION
         if (!k->isAccepted() && QApplication::keypadNavigationEnabled()
             && !(k->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier))) {
-            if (k->key() == Qt::Key_Up)
-                res = focusNextPrevChild(false);
-            else if (k->key() == Qt::Key_Down)
-                res = focusNextPrevChild(true);
+            if (QApplication::navigationMode() == Qt::NavigationModeKeypadTabOrder) {
+                if (k->key() == Qt::Key_Up)
+                    res = focusNextPrevChild(false);
+                else if (k->key() == Qt::Key_Down)
+                    res = focusNextPrevChild(true);
+            } else if (QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional) {
+                if (k->key() == Qt::Key_Up)
+                    res = QWidgetPrivate::navigateToDirection(QWidgetPrivate::DirectionNorth);
+                else if (k->key() == Qt::Key_Right)
+                    res = QWidgetPrivate::navigateToDirection(QWidgetPrivate::DirectionEast);
+                else if (k->key() == Qt::Key_Down)
+                    res = QWidgetPrivate::navigateToDirection(QWidgetPrivate::DirectionSouth);
+                else if (k->key() == Qt::Key_Left)
+                    res = QWidgetPrivate::navigateToDirection(QWidgetPrivate::DirectionWest);
+            }
             if (res) {
                 k->accept();
                 break;
@@ -7982,7 +8009,9 @@ bool QWidget::event(QEvent *event)
         }
         break;
     case QEvent::FocusIn:
-        d->setSoftKeys_sys(softKeys());
+#ifdef QT_SOFTKEYS_ENABLED
+        QSoftKeyManager::updateSoftKeys();
+#endif
         focusInEvent((QFocusEvent*)event);
         break;
 
@@ -8133,8 +8162,10 @@ bool QWidget::event(QEvent *event)
                 QApplication::sendEvent(w, event);
         }
 
+#ifdef QT_SOFTKEYS_ENABLED
         if (isWindow() && isActiveWindow())
-            d->setSoftKeys_sys(softKeys());
+            QSoftKeyManager::updateSoftKeys();
+#endif
 
         break; }
 
@@ -8243,6 +8274,9 @@ bool QWidget::event(QEvent *event)
     case QEvent::ActionAdded:
     case QEvent::ActionRemoved:
     case QEvent::ActionChanged:
+#ifdef QT_SOFTKEYS_ENABLED
+        QSoftKeyManager::updateSoftKeys();
+#endif
         actionEvent((QActionEvent*)event);
         break;
 #endif
@@ -8474,8 +8508,10 @@ void QWidget::mouseReleaseEvent(QMouseEvent *event)
 
     The default implementation generates a normal mouse press event.
 
-    Note that the widgets gets a mousePressEvent() and a
-    mouseReleaseEvent() before the mouseDoubleClickEvent().
+    \note The widget will also receive mouse press and mouse release
+    events in addition to the double click event. It is up to the
+    developer to ensure that the application interprets these events
+    correctly.
 
     \sa mousePressEvent(), mouseReleaseEvent() mouseMoveEvent(),
     event(), QMouseEvent
@@ -10111,7 +10147,8 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
                "QWidgetPrivate::high_attributes[] too small to contain all attributes in WidgetAttribute");
 
 #ifdef Q_WS_WIN
-    if (attribute == Qt::WA_PaintOnScreen && on) {
+    // ### Don't use PaintOnScreen+paintEngine() to do native painting in 5.0
+    if (attribute == Qt::WA_PaintOnScreen && on && !inherits("QGLWidget")) {
         // see qwidget_win.cpp, ::paintEngine for details
         paintEngine();
         if (d->noPaintOnScreen)
@@ -10363,7 +10400,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
 
         break;
     case Qt::WA_AcceptTouchEvents:
-#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
+#if defined(Q_WS_WIN) || defined(Q_WS_MAC) || defined(Q_WS_S60)
         if (on)
             d->registerTouchWindow();
 #endif
@@ -11370,6 +11407,74 @@ QRect QWidgetPrivate::frameStrut() const
     return maybeTopData() ? maybeTopData()->frameStrut : QRect();
 }
 
+#ifdef QT_KEYPAD_NAVIGATION
+/*!
+    \internal
+
+    Changes the focus  from the current focusWidget to a widget in
+    the \a direction.
+
+    Returns true, if there was a widget in that direction
+*/
+bool QWidgetPrivate::navigateToDirection(Direction direction)
+{
+    QWidget *targetWidget = widgetInNavigationDirection(direction);
+    if (targetWidget)
+        targetWidget->setFocus();
+    return (targetWidget != 0);
+}
+
+/*!
+    \internal
+
+    Searches for a widget that is positioned in the \a direction, starting
+    from the current focusWidget.
+
+    Returns the pointer to a found widget or 0, if there was no widget in
+    that direction.
+*/
+QWidget *QWidgetPrivate::widgetInNavigationDirection(Direction direction)
+{
+    const QWidget *sourceWidget = QApplication::focusWidget();
+    if (!sourceWidget)
+        return 0;
+    const QRect sourceRect = sourceWidget->rect().translated(sourceWidget->mapToGlobal(QPoint()));
+    const int sourceX =
+            (direction == DirectionNorth || direction == DirectionSouth) ?
+                (sourceRect.left() + (sourceRect.right() - sourceRect.left()) / 2)
+                :(direction == DirectionEast ? sourceRect.right() : sourceRect.left());
+    const int sourceY =
+            (direction == DirectionEast || direction == DirectionWest) ?
+                (sourceRect.top() + (sourceRect.bottom() - sourceRect.top()) / 2)
+                :(direction == DirectionSouth ? sourceRect.bottom() : sourceRect.top());
+    const QPoint sourcePoint(sourceX, sourceY);
+    const QPoint sourceCenter = sourceRect.center();
+    const QWidget *sourceWindow = sourceWidget->window();
+
+    QWidget *targetWidget = 0;
+    int shortestDistance = INT_MAX;
+    foreach(QWidget *targetCandidate, QApplication::allWidgets()) {
+        const QRect targetCandidateRect = targetCandidate->rect().translated(targetCandidate->mapToGlobal(QPoint()));
+        if (       targetCandidate != sourceWidget
+                && targetCandidate->focusPolicy() & Qt::TabFocus
+                && !(direction == DirectionNorth && targetCandidateRect.bottom() > sourceRect.top())
+                && !(direction == DirectionEast  && targetCandidateRect.left()   < sourceRect.right())
+                && !(direction == DirectionSouth && targetCandidateRect.top()    < sourceRect.bottom())
+                && !(direction == DirectionWest  && targetCandidateRect.right()  > sourceRect.left())
+                && targetCandidate->isEnabled()
+                && targetCandidate->isVisible()
+                && targetCandidate->window() == sourceWindow) {
+            const int targetCandidateDistance = pointToRect(sourcePoint, targetCandidateRect);
+            if (targetCandidateDistance < shortestDistance) {
+                shortestDistance = targetCandidateDistance;
+                targetWidget = targetCandidate;
+            }
+        }
+    }
+    return targetWidget;
+}
+#endif
+
 /*!
     \preliminary
     \since 4.2
@@ -11853,67 +11958,6 @@ void QWidget::setMask(const QBitmap &bitmap)
 void QWidget::clearMask()
 {
     setMask(QRegion());
-}
-
-/*!
-    \preliminary
-    \since 4.6
-
-    Returns the (possibly empty) list of this widget's softkeys.
-    Returned list cannot be changed. Softkeys should be added
-    and removed via method called setSoftKeys
-
-    \sa setSoftKey(), setSoftKeys()
-*/
-const QList<QAction*>& QWidget::softKeys() const
-{
-    Q_D(const QWidget);
-    if( d->softKeys.count() > 0)
-        return d->softKeys;
-    if (isWindow() || !parentWidget())
-        return d->softKeys;
-
-    return parentWidget()->softKeys();
-}
-
-/*!
-    \preliminary
-    \since 4.6
-
-    Sets the softkey \a softKey to this widget's list of softkeys.
-    Setting 0 as softkey will clear all the existing softkeys set
-    to the widget. A QWidget can have 0 or more softkeys.
-
-    \sa softKeys(), setSoftKeys()
-*/
-void QWidget::setSoftKey(QAction *softKey)
-{
-    Q_D(QWidget);
-    qDeleteAll(d->softKeys);
-    d->softKeys.clear();
-    if (softKey)
-        d->softKeys.append(softKey);
-    if ((!QApplication::focusWidget() && this == QApplication::activeWindow())
-        || QApplication::focusWidget() == this)
-        d->setSoftKeys_sys(this->softKeys());
-}
-
-/*!
-    Sets the list of softkeys \a softKeys to this widget's list of softkeys.
-    A QWidget can have 0 or more softkeys.
-
-    \sa softKeys(), setSoftKey()
-*/
-void QWidget::setSoftKeys(const QList<QAction*> &softKeys)
-{
-    Q_D(QWidget);
-    qDeleteAll(d->softKeys);
-    d->softKeys.clear();
-        d->softKeys = softKeys;
-
-    if ((!QApplication::focusWidget() && this == QApplication::activeWindow())
-        || QApplication::focusWidget() == this)
-        d->setSoftKeys_sys(this->softKeys());
 }
 
 /*! \fn const QX11Info &QWidget::x11Info() const

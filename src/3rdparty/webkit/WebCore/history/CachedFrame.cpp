@@ -29,10 +29,13 @@
 #include "CachedFramePlatformData.h"
 #include "CString.h"
 #include "DocumentLoader.h"
+#include "ExceptionCode.h"
+#include "EventNames.h"
 #include "Frame.h"
 #include "FrameLoaderClient.h"
 #include "FrameView.h"
 #include "Logging.h"
+#include "PageTransitionEvent.h"
 #include <wtf/RefCountedLeakCounter.h>
 
 #if ENABLE(SVG)
@@ -49,46 +52,26 @@ static WTF::RefCountedLeakCounter& cachedFrameCounter()
 }
 #endif
 
-CachedFrame::CachedFrame(Frame* frame)
+CachedFrameBase::CachedFrameBase(Frame* frame)
     : m_document(frame->document())
     , m_documentLoader(frame->loader()->documentLoader())
     , m_view(frame->view())
     , m_mousePressNode(frame->eventHandler()->mousePressNode())
     , m_url(frame->loader()->url())
+    , m_isMainFrame(!frame->tree()->parent())
 {
-#ifndef NDEBUG
-    cachedFrameCounter().increment();
-#endif
-    ASSERT(m_document);
-    ASSERT(m_documentLoader);
-    ASSERT(m_view);
-
-    // Active DOM objects must be suspended before we cached the frame script data
-    m_document->suspendActiveDOMObjects();
-    m_cachedFrameScriptData.set(new ScriptCachedFrameData(frame));
-    
-    m_document->documentWillBecomeInactive(); 
-    frame->clearTimers();
-    m_document->setInPageCache(true);
-    
-    frame->loader()->client()->savePlatformDataToCachedFrame(this);
-
-    for (Frame* child = frame->tree()->firstChild(); child; child = child->tree()->nextSibling())
-        m_childFrames.append(CachedFrame::create(child));
-
-    LOG(PageCache, "Finished creating CachedFrame with url %s and documentloader %p\n", m_url.string().utf8().data(), m_documentLoader.get());
 }
 
-CachedFrame::~CachedFrame()
+CachedFrameBase::~CachedFrameBase()
 {
 #ifndef NDEBUG
     cachedFrameCounter().decrement();
 #endif
-
-    clear();
+    // CachedFrames should always have had destroy() called by their parent CachedPage
+    ASSERT(!m_document);
 }
 
-void CachedFrame::restore()
+void CachedFrameBase::restore()
 {
     ASSERT(m_document->view() == m_view);
     
@@ -101,12 +84,70 @@ void CachedFrame::restore()
 #endif
 
     frame->animation()->resumeAnimations(m_document.get());
-    frame->eventHandler()->setMousePressNode(mousePressNode());
+    frame->eventHandler()->setMousePressNode(m_mousePressNode.get());
     m_document->resumeActiveDOMObjects();
 
     // It is necessary to update any platform script objects after restoring the
     // cached page.
     frame->script()->updatePlatformScriptObjects();
+
+    // Reconstruct the FrameTree
+    for (unsigned i = 0; i < m_childFrames.size(); ++i)
+        frame->tree()->appendChild(m_childFrames[i]->view()->frame());
+
+    // Open the child CachedFrames in their respective FrameLoaders.
+    for (unsigned i = 0; i < m_childFrames.size(); ++i)
+        m_childFrames[i]->open();
+
+    m_document->dispatchWindowEvent(PageTransitionEvent::create(EventNames().pageshowEvent, true), m_document);
+}
+
+CachedFrame::CachedFrame(Frame* frame)
+    : CachedFrameBase(frame)
+{
+#ifndef NDEBUG
+    cachedFrameCounter().increment();
+#endif
+    ASSERT(m_document);
+    ASSERT(m_documentLoader);
+    ASSERT(m_view);
+
+    // Active DOM objects must be suspended before we cached the frame script data
+    m_document->suspendActiveDOMObjects();
+    m_cachedFrameScriptData.set(new ScriptCachedFrameData(frame));
+    
+    // Custom scrollbar renderers will get reattached when the document comes out of the page cache
+    m_view->detachCustomScrollbars();
+
+    m_document->documentWillBecomeInactive(); 
+    frame->clearTimers();
+    m_document->setInPageCache(true);
+    
+    frame->loader()->client()->savePlatformDataToCachedFrame(this);
+
+    // Create the CachedFrames for all Frames in the FrameTree.
+    for (Frame* child = frame->tree()->firstChild(); child; child = child->tree()->nextSibling())
+        m_childFrames.append(CachedFrame::create(child));
+
+    // Deconstruct the FrameTree, to restore it later.
+    // We do this for two reasons:
+    // 1 - We reuse the main frame, so when it navigates to a new page load it needs to start with a blank FrameTree.
+    // 2 - It's much easier to destroy a CachedFrame while it resides in the PageCache if it is disconnected from its parent.
+    for (unsigned i = 0; i < m_childFrames.size(); ++i)
+        frame->tree()->removeChild(m_childFrames[i]->view()->frame());
+
+#ifndef NDEBUG
+    if (m_isMainFrame)
+        LOG(PageCache, "Finished creating CachedFrame for main frame url '%s' and DocumentLoader %p\n", m_url.string().utf8().data(), m_documentLoader.get());
+    else
+        LOG(PageCache, "Finished creating CachedFrame for child frame with url '%s' and DocumentLoader %p\n", m_url.string().utf8().data(), m_documentLoader.get());
+#endif
+}
+
+void CachedFrame::open()
+{
+    ASSERT(m_view);
+    m_view->frame()->loader()->open(*this);
 }
 
 void CachedFrame::clear()
@@ -114,26 +155,16 @@ void CachedFrame::clear()
     if (!m_document)
         return;
 
-    if (m_cachedFramePlatformData)
-        m_cachedFramePlatformData->clear();
-        
+    // clear() should only be called for Frames representing documents that are no longer in the page cache.
+    // This means the CachedFrame has been:
+    // 1 - Successfully restore()'d by going back/forward.
+    // 2 - destroy()'ed because the PageCache is pruning or the WebView was closed.
+    ASSERT(!m_document->inPageCache());
     ASSERT(m_view);
     ASSERT(m_document->frame() == m_view->frame());
 
-    if (m_document->inPageCache()) {
-        Frame::clearTimers(m_view.get(), m_document.get());
-
-        // FIXME: Why do we need to call removeAllEventListeners here? When the document is in page cache, this method won't work
-        // fully anyway, because the document won't be able to access its DOMWindow object (due to being frameless).
-        m_document->removeAllEventListeners();
-
-        m_document->setInPageCache(false);
-        // FIXME: We don't call willRemove here. Why is that OK?
-        m_document->detach();
-        m_view->clearFrame();
-    }
-
-    ASSERT(!m_document->inPageCache());
+    for (int i = m_childFrames.size() - 1; i >= 0; --i)
+        m_childFrames[i]->clear();
 
     m_document = 0;
     m_view = 0;
@@ -141,8 +172,42 @@ void CachedFrame::clear()
     m_url = KURL();
 
     m_cachedFramePlatformData.clear();
-
     m_cachedFrameScriptData.clear();
+}
+
+void CachedFrame::destroy()
+{
+    if (!m_document)
+        return;
+    
+    // Only CachedFrames that are still in the PageCache should be destroyed in this manner
+    ASSERT(m_document->inPageCache());
+    ASSERT(m_view);
+    ASSERT(m_document->frame() == m_view->frame());
+
+    if (!m_isMainFrame) {
+        m_view->frame()->detachFromPage();
+        m_view->frame()->loader()->detachViewsAndDocumentLoader();
+    }
+    
+    for (int i = m_childFrames.size() - 1; i >= 0; --i)
+        m_childFrames[i]->destroy();
+
+    if (m_cachedFramePlatformData)
+        m_cachedFramePlatformData->clear();
+
+    Frame::clearTimers(m_view.get(), m_document.get());
+
+    // FIXME: Why do we need to call removeAllEventListeners here? When the document is in page cache, this method won't work
+    // fully anyway, because the document won't be able to access its DOMWindow object (due to being frameless).
+    m_document->removeAllEventListeners();
+
+    m_document->setInPageCache(false);
+    // FIXME: We don't call willRemove here. Why is that OK?
+    m_document->detach();
+    m_view->clearFrame();
+
+    clear();
 }
 
 void CachedFrame::setCachedFramePlatformData(CachedFramePlatformData* data)

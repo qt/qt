@@ -30,14 +30,16 @@
 #include "FrameView.h"
 #include "HostWindow.h"
 #include "PopupMenuClient.h"
+#include "QWebPageClient.h"
 #include "QWebPopup.h"
 
 #include <QAction>
 #include <QDebug>
-#include <QMenu>
-#include <QPoint>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QMenu>
+#include <QPoint>
+#include <QStandardItemModel>
 #include <QWidgetAction>
 
 namespace WebCore {
@@ -63,38 +65,34 @@ void PopupMenu::populate(const IntRect& r)
     clear();
     Q_ASSERT(client());
 
+    QStandardItemModel* model = qobject_cast<QStandardItemModel*>(m_popup->model());
+    Q_ASSERT(model);
+
     int size = client()->listSize();
     for (int i = 0; i < size; i++) {
-        if (client()->itemIsSeparator(i)) {
-            //FIXME: better seperator item
-            m_popup->insertItem(i, QString::fromLatin1("---"));
-        } else {
-            //PopupMenuStyle style = client()->itemStyle(i);
+        if (client()->itemIsSeparator(i))
+            m_popup->insertSeparator(i);
+        else {
             m_popup->insertItem(i, client()->itemText(i));
-#if 0
-            item = new QListWidgetItem(client()->itemText(i));
-            m_actions.insert(item, i);
-            if (style->font() != Font())
-                item->setFont(style->font());
 
-            Qt::ItemFlags flags = Qt::ItemIsSelectable;
-            if (client()->itemIsEnabled(i))
-                flags |= Qt::ItemIsEnabled;
-            item->setFlags(flags);
-#endif
+            if (model && !client()->itemIsEnabled(i))
+                model->item(i)->setEnabled(false);
+
+            if (client()->itemIsSelected(i))
+                m_popup->setCurrentIndex(i);
         }
     }
 }
 
 void PopupMenu::show(const IntRect& r, FrameView* v, int index)
 {
-    QWidget* window = v->hostWindow()->platformWindow();
+    QWebPageClient* client = v->hostWindow()->platformPageClient();
     populate(r);
     QRect rect = r;
     rect.moveTopLeft(v->contentsToWindow(r.topLeft()));
     rect.setHeight(m_popup->sizeHint().height());
 
-    m_popup->setParent(window);
+    m_popup->setParent(QWidget::find(client->winId()));
     m_popup->setGeometry(rect);
     m_popup->setCurrentIndex(index);
     m_popup->exec();

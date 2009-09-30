@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -112,16 +112,12 @@ int QSequentialAnimationGroupPrivate::animationActualTotalDuration(int index) co
     return ret;
 }
 
-QSequentialAnimationGroupPrivate::AnimationIndex QSequentialAnimationGroupPrivate::indexForTime(int msecs) const
+QSequentialAnimationGroupPrivate::AnimationIndex QSequentialAnimationGroupPrivate::indexForCurrentTime() const
 {
-    Q_Q(const QSequentialAnimationGroup);
     Q_ASSERT(!animations.isEmpty());
 
     AnimationIndex ret;
     int duration = 0;
-
-    // in case duration is -1, currentLoop will always be 0
-    ret.timeOffset = currentLoop * q->duration();
 
     for (int i = 0; i < animations.size(); ++i) {
         duration = animationActualTotalDuration(i);
@@ -131,8 +127,8 @@ QSequentialAnimationGroupPrivate::AnimationIndex QSequentialAnimationGroupPrivat
         // 2. it ends after msecs
         // 3. it is the last animation (this can happen in case there is at least 1 uncontrolled animation)
         // 4. it ends exactly in msecs and the direction is backwards
-        if (duration == -1 || msecs < (ret.timeOffset + duration)
-            || (msecs == (ret.timeOffset + duration) && direction == QAbstractAnimation::Backward)) {
+        if (duration == -1 || currentTime < (ret.timeOffset + duration)
+            || (currentTime == (ret.timeOffset + duration) && direction == QAbstractAnimation::Backward)) {
             ret.index = i;
             return ret;
         }
@@ -338,13 +334,13 @@ int QSequentialAnimationGroup::duration() const
 /*!
     \reimp
 */
-void QSequentialAnimationGroup::updateCurrentTime(int msecs)
+void QSequentialAnimationGroup::updateCurrentTime(int currentTime)
 {
     Q_D(QSequentialAnimationGroup);
     if (!d->currentAnimation)
         return;
 
-    const QSequentialAnimationGroupPrivate::AnimationIndex newAnimationIndex = d->indexForTime(msecs);
+    const QSequentialAnimationGroupPrivate::AnimationIndex newAnimationIndex = d->indexForCurrentTime();
 
     // remove unneeded animations from actualDuration list
     while (newAnimationIndex.index < d->actualDuration.size())
@@ -363,7 +359,7 @@ void QSequentialAnimationGroup::updateCurrentTime(int msecs)
 
     d->setCurrentAnimation(newAnimationIndex.index);
 
-    const int newCurrentTime = msecs - newAnimationIndex.timeOffset;
+    const int newCurrentTime = currentTime - newAnimationIndex.timeOffset;
 
     if (d->currentAnimation) {
         d->currentAnimation->setCurrentTime(newCurrentTime);

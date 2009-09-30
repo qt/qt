@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -56,6 +56,8 @@
 #if defined(Q_OS_SYMBIAN)
 # define SRCDIR ""
 #endif
+
+#include "../../shared/util.h"
 
 class Widget : public QWidget
 {
@@ -102,11 +104,11 @@ private slots:
     void eventPropagation_data();
     void eventPropagation();
     void focusPolicy();
-    
+
     void task190318_sizes();
 
     void sizeHint();
-    
+
     void task226479_movieResize();
     void emptyPixmap();
 
@@ -413,16 +415,17 @@ void tst_QLabel::task226479_movieResize()
                 paintedRegion += e->region();
                 QLabel::paintEvent(e);
             }
-            
+
         public:
             QRegion paintedRegion;
     };
-    
+
     Label label;
     label.resize(350,350);
     label.show();
     QMovie *movie = new QMovie( &label );
     label.setMovie(movie);
+    QTest::qWaitForWindowShown(&label);
     movie->setFileName(SRCDIR "red.png");
     movie->start();
     QTest::qWait(50);
@@ -431,8 +434,8 @@ void tst_QLabel::task226479_movieResize()
     movie->setFileName(SRCDIR "green.png");
     movie->start();
     QTest::qWait(50);
-    
-    QCOMPARE(label.paintedRegion , QRegion(label.rect()) );
+
+    QTRY_COMPARE(label.paintedRegion , QRegion(label.rect()) );
 }
 
 void tst_QLabel::emptyPixmap()

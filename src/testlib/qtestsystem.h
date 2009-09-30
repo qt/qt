@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -52,6 +52,11 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Test)
 
+class QWidget;
+#ifdef Q_WS_X11
+extern void qt_x11_wait_for_window_manager(QWidget *w);
+#endif
+
 namespace QTest
 {
     inline static void qWait(int ms)
@@ -65,6 +70,21 @@ namespace QTest
             QTest::qSleep(10);
         } while (timer.elapsed() < ms);
     }
+
+    inline static bool qWaitForWindowShown(QWidget *window)
+    {
+#if defined(Q_WS_X11)
+        qt_x11_wait_for_window_manager(window);
+#elif defined(Q_WS_QWS)
+        Q_UNUSED(window);
+        qWait(100);
+#else
+        Q_UNUSED(window);
+        qWait(50);
+#endif
+        return true;
+    }
+
 }
 
 QT_END_NAMESPACE

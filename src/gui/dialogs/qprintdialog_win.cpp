@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -131,8 +131,8 @@ static void qt_win_setup_PRINTDLGEX(PRINTDLGEX *pd, QWidget *parent,
 
     if (d->ep->printToFile)
         pd->Flags |= PD_PRINTTOFILE;
-    Q_ASSERT(!parent ||parent->testAttribute(Qt::WA_WState_Created));
-    pd->hwndOwner = parent ? parent->winId() : 0;
+    Q_ASSERT(parent != 0 && parent->testAttribute(Qt::WA_WState_Created));
+    pd->hwndOwner = parent->winId();
     pd->lpPageRanges[0].nFromPage = qMax(pdlg->fromPage(), pdlg->minPage());
     pd->lpPageRanges[0].nToPage   = (pdlg->toPage() > 0) ? qMin(pdlg->toPage(), pdlg->maxPage()) : 1;
     pd->nCopies = d->ep->num_copies;
@@ -211,6 +211,10 @@ int QPrintDialogPrivate::openWindowsPrintDialogModally()
         parent = parent->window();
     else
         parent = QApplication::activeWindow();
+
+    // If there is no window, fall back to the print dialog itself
+    if (parent == 0)
+        parent = q;
 
     QWidget modal_widget;
     modal_widget.setAttribute(Qt::WA_NoChildEventsForParent, true);

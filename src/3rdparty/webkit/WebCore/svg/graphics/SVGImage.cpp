@@ -211,7 +211,7 @@ NativeImagePtr SVGImage::nativeImageForCurrentFrame()
     if (!m_frameCache) {
         if (!m_page)
             return 0;
-        m_frameCache = ImageBuffer::create(size(), false);
+        m_frameCache = ImageBuffer::create(size());
         if (!m_frameCache) // failed to allocate image
             return 0;
         renderSubtreeToImage(m_frameCache.get(), m_page->mainFrame()->contentRenderer());
@@ -228,23 +228,32 @@ bool SVGImage::dataChanged(bool allDataReceived)
     if (allDataReceived) {
         static FrameLoaderClient* dummyFrameLoaderClient =  new EmptyFrameLoaderClient;
         static EditorClient* dummyEditorClient = new EmptyEditorClient;
+#if ENABLE(CONTEXT_MENUS)
         static ContextMenuClient* dummyContextMenuClient = new EmptyContextMenuClient;
+#else
+        static ContextMenuClient* dummyContextMenuClient = 0;
+#endif
+#if ENABLE(DRAG_SUPPORT)
         static DragClient* dummyDragClient = new EmptyDragClient;
+#else
+        static DragClient* dummyDragClient = 0;
+#endif
         static InspectorClient* dummyInspectorClient = new EmptyInspectorClient;
+        static PluginHalterClient* dummyPluginHalterClient = new EmptyPluginHalterClient;
 
         m_chromeClient.set(new SVGImageChromeClient(this));
         
         // FIXME: If this SVG ends up loading itself, we might leak the world.
         // THe comment said that the Cache code does not know about CachedImages
         // holding Frames and won't know to break the cycle. But 
-        m_page.set(new Page(m_chromeClient.get(), dummyContextMenuClient, dummyEditorClient, dummyDragClient, dummyInspectorClient));
+        m_page.set(new Page(m_chromeClient.get(), dummyContextMenuClient, dummyEditorClient, dummyDragClient, dummyInspectorClient, dummyPluginHalterClient));
         m_page->settings()->setJavaScriptEnabled(false);
         m_page->settings()->setPluginsEnabled(false);
 
         RefPtr<Frame> frame = Frame::create(m_page.get(), 0, dummyFrameLoaderClient);
         frame->setView(FrameView::create(frame.get()));
         frame->init();
-        ResourceRequest fakeRequest(KURL(""));
+        ResourceRequest fakeRequest(KURL(ParsedURLString, ""));
         FrameLoader* loader = frame->loader();
         loader->load(fakeRequest, false); // Make sure the DocumentLoader is created
         loader->cancelContentPolicyCheck(); // cancel any policy checks

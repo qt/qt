@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -67,7 +67,6 @@
     \o QGraphicsOpacityEffect - renders the item with an opacity
     \o QGraphicsPixelizeEffect - pixelizes the item with any pixel size
     \o QGraphicsGrayscaleEffect - renders the item in shades of gray
-    \o QGraphicsShaderEffect - renders the item with a pixel shader fragment
     \endlist
 
     \img graphicseffect-effects.png
@@ -468,12 +467,50 @@ QGraphicsGrayscaleEffect::~QGraphicsGrayscaleEffect()
 {
 }
 
+
+/*!
+    \property QGraphicsGrayscaleEffect::strength
+    \brief the strength of the effect.
+
+    By default, the strength is 1.0.
+    A strength 0.0 equals to no effect, while 1.0 means full grayscale.
+*/
+qreal QGraphicsGrayscaleEffect::strength() const
+{
+    Q_D(const QGraphicsGrayscaleEffect);
+    return d->filter->strength();
+}
+
+void QGraphicsGrayscaleEffect::setStrength(qreal strength)
+{
+    Q_D(QGraphicsGrayscaleEffect);
+    if (qFuzzyCompare(d->filter->strength(), strength))
+        return;
+
+    d->filter->setStrength(strength);
+    d->opaque = !qFuzzyIsNull(strength);
+    update();
+    emit strengthChanged(strength);
+}
+
+/*! \fn void QGraphicsGrayscaleEffect::strengthChanged(qreal strength)
+  This signal is emitted whenever setStrength() changes the grayscale
+  strength property. \a strength contains the new strength value of
+  the grayscale effect.
+ */
+
 /*!
     \reimp
 */
 void QGraphicsGrayscaleEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsGrayscaleEffect);
+
+    if (!d->opaque) {
+        source->draw(painter);
+        return;
+    }
+
     QPoint offset;
     if (source->isPixmap()) {
         // No point in drawing in device coordinates (pixmap will be scaled anyways).
@@ -547,6 +584,37 @@ void QGraphicsColorizeEffect::setColor(const QColor &color)
 }
 
 /*!
+    \property QGraphicsColorizeEffect::strength
+    \brief the strength of the effect.
+
+    By default, the strength is 1.0.
+    A strength 0.0 equals to no effect, while 1.0 means full colorization.
+*/
+qreal QGraphicsColorizeEffect::strength() const
+{
+    Q_D(const QGraphicsColorizeEffect);
+    return d->filter->strength();
+}
+
+void QGraphicsColorizeEffect::setStrength(qreal strength)
+{
+    Q_D(QGraphicsColorizeEffect);
+    if (qFuzzyCompare(d->filter->strength(), strength))
+        return;
+
+    d->filter->setStrength(strength);
+    d->opaque = !qFuzzyIsNull(strength);
+    update();
+    emit strengthChanged(strength);
+}
+
+/*! \fn void QGraphicsColorizeEffect::strengthChanged(qreal strength)
+  This signal is emitted whenever setStrength() changes the colorize
+  strength property. \a strength contains the new strength value of
+  the colorize effect.
+ */
+
+/*!
     \fn void QGraphicsColorizeEffect::colorChanged(const QColor &color)
 
     This signal is emitted whenever the effect's color changes.
@@ -559,6 +627,12 @@ void QGraphicsColorizeEffect::setColor(const QColor &color)
 void QGraphicsColorizeEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsColorizeEffect);
+
+    if (!d->opaque) {
+        source->draw(painter);
+        return;
+    }
+
     QPoint offset;
     if (source->isPixmap()) {
         // No point in drawing in device coordinates (pixmap will be scaled anyways).
@@ -703,7 +777,7 @@ void QGraphicsPixelizeEffect::draw(QPainter *painter, QGraphicsEffectSource *sou
     A blur effect blurs the source. This effect is useful for reducing details,
     such as when the source loses focus and you want to draw attention to other
     elements. The level of detail can be modified using the setBlurRadius()
-    function.
+    function. Use setBlurHint() to choose the quality or performance blur hints.
 
     By default, the blur radius is 5 pixels.
 
@@ -720,6 +794,8 @@ void QGraphicsPixelizeEffect::draw(QPainter *painter, QGraphicsEffectSource *sou
 QGraphicsBlurEffect::QGraphicsBlurEffect(QObject *parent)
     : QGraphicsEffect(*new QGraphicsBlurEffectPrivate, parent)
 {
+    Q_D(QGraphicsBlurEffect);
+    d->filter->setBlurHint(QPixmapBlurFilter::PerformanceHint);
 }
 
 /*!
@@ -760,6 +836,54 @@ void QGraphicsBlurEffect::setBlurRadius(int radius)
 
     This signal is emitted whenever the effect's blur radius changes.
     The \a radius parameter holds the effect's new blur radius.
+*/
+
+/*!
+    \enum QGraphicsBlurEffect::BlurHint
+
+    \since 4.6
+
+    This enum describes the hint of a blur graphics effect.
+
+    \value PerformanceHint Using this value hints that performance is the
+    most important factor, at the potential cost of lower quality.
+
+    \value QualityHint Using this value hints that a higher quality blur is
+    preferred over a fast blur.
+*/
+
+/*!
+    \property QGraphicsBlurEffect::blurHint
+    \brief the blur hint of the effect.
+
+    Use the PerformanceHint blur hint to say that you want a faster blur,
+    and the QualityHint blur hint to say that you prefer a higher quality blur.
+
+    When animating the blur radius it's recommended to use the PerformanceHint.
+
+    By default, the blur hint is PerformanceHint.
+*/
+QGraphicsBlurEffect::BlurHint QGraphicsBlurEffect::blurHint() const
+{
+    Q_D(const QGraphicsBlurEffect);
+    return BlurHint(d->filter->blurHint());
+}
+
+void QGraphicsBlurEffect::setBlurHint(QGraphicsBlurEffect::BlurHint hint)
+{
+    Q_D(QGraphicsBlurEffect);
+    if (BlurHint(d->filter->blurHint()) == hint)
+        return;
+
+    d->filter->setBlurHint(QPixmapBlurFilter::BlurHint(hint));
+    emit blurHintChanged(hint);
+}
+
+/*!
+    \fn void QGraphicsBlurEffect::blurHintChanged(QGraphicsBlurEffect::BlurHint hint)
+
+    This signal is emitted whenever the effect's blur hint changes.
+    The \a hint parameter holds the effect's new blur hint.
 */
 
 /*!

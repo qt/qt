@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -330,6 +330,7 @@ void HtmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
 #ifdef ZZZ_QDOC_QML
     findAllQmlClasses(tree->root());
 #endif
+    findAllSince(tree->root(),tree->version());
 
     PageGenerator::generateTree(tree, marker);
 
@@ -539,7 +540,6 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::AnnotatedList:
         {
-            //qDebug() << "ANNOTATED LIS:";
             QList<Node*> values = tre->groups().values(atom->string());
             QMap<QString, const Node*> nodeMap;
             for (int i = 0; i < values.size(); ++i) {
@@ -653,7 +653,26 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             }
         }
         break;
-    case Atom::Image:
+    case Atom::SinceList:
+        {
+            QList<Node*> values;
+            if (atom->string() == "classes") {
+                values = sinceClasses.values();
+            }
+            else if (atom->string() == "functions") {
+                values = sinceFunctions.values();
+            }
+            if (!values.isEmpty()) {
+                QMap<QString, const Node*> nodeMap;
+                for (int i=0; i<values.size(); ++i) {
+                    const Node* n = values.at(i);
+                    nodeMap.insert(n->nameForLists(),n);
+                }
+                generateAnnotatedList(relative, marker, nodeMap);
+            }
+        }
+        break;
+case Atom::Image:
     case Atom::InlineImage:
         {
             QString fileName = imageFileName(relative, atom->string());
@@ -1475,7 +1494,7 @@ void HtmlGenerator::generateHeader(const QString& title,
     if ((project != "Qtopia") && (project != "Qt Extended")) {
         shortVersion = project + " " + shortVersion + ": ";
         if (node && !node->doc().location().isEmpty())
-            out() << "<!-- " << node->doc().location().filePath() << " -->\n";
+            out() << "<!-- " << node->doc().location().fileName() << " -->\n";
 
         shortVersion = tre->version();
         if (shortVersion.count(QChar('.')) == 2)
@@ -3489,6 +3508,45 @@ void HtmlGenerator::findAllClasses(const InnerNode *node)
             }
             else if ((*c)->isInnerNode()) {
                 findAllClasses(static_cast<InnerNode *>(*c));
+            }
+        }
+        ++c;
+    }
+}
+
+/*!
+  For generating the "Since x.y" page.
+ */
+void HtmlGenerator::findAllSince(const InnerNode *node, QString version)
+{
+    const QRegExp versionSeparator("[\\-\\.]");
+    const int minorIndex = version.indexOf(versionSeparator);
+    const int patchIndex = version.indexOf(versionSeparator, minorIndex+1);
+    version = version.left(patchIndex);
+
+    NodeList::const_iterator c = node->childNodes().constBegin();
+    while (c != node->childNodes().constEnd()) {
+        if (((*c)->access() != Node::Private) && ((*c)->since() == version)) {
+            if ((*c)->type() == Node::Function) {
+                FunctionNode *func = static_cast<FunctionNode *>(*c);
+                if ((func->status() > Node::Obsolete) &&
+                    (func->metaness() != FunctionNode::Ctor) &&
+                    (func->metaness() != FunctionNode::Dtor)) {
+                    sinceFunctions.insert(func->name(), func);
+                }
+            }
+            else if ((*c)->url().isEmpty()) {
+                if ((*c)->type() == Node::Class && !(*c)->doc().isEmpty()) {
+                    QString className = (*c)->name();
+                    if ((*c)->parent() &&
+                        (*c)->parent()->type() == Node::Namespace &&
+                        !(*c)->parent()->name().isEmpty())
+                        className = (*c)->parent()->name()+"::"+className;
+                    sinceClasses.insert(className, *c);
+                }
+            }
+            if ((*c)->isInnerNode()) {
+                findAllSince(static_cast<InnerNode *>(*c),version);
             }
         }
         ++c;

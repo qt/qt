@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtMultimedia module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -57,7 +57,6 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qlist.h>
 
-#include <QtMultimedia/qaudiodeviceid.h>
 #include <QtMultimedia/qaudiodeviceinfo.h>
 
 QT_BEGIN_HEADER
@@ -68,28 +67,26 @@ QT_MODULE(Multimedia)
 
 class QAbstractAudioInput;
 class QAbstractAudioOutput;
-
+class QAbstractAudioDeviceInfo;
 
 class QAudioDeviceFactory
 {
 public:
-    static QList<QAudioDeviceId> deviceList(QAudio::Mode mode);
+    static QList<QAudioDeviceInfo> deviceList(QAudio::Mode mode);
 
-    static QAudioDeviceId defaultInputDevice();
-    static QAudioDeviceId defaultOutputDevice();
+    static QAudioDeviceInfo defaultInputDevice();
+    static QAudioDeviceInfo defaultOutputDevice();
 
-    static QAbstractAudioDeviceInfo* audioDeviceInfo(QAudioDeviceId const &device);
+    static QAbstractAudioDeviceInfo* audioDeviceInfo(const QString &realm, const QByteArray &handle, QAudio::Mode mode);
 
     static QAbstractAudioInput* createDefaultInputDevice(QAudioFormat const &format);
     static QAbstractAudioOutput* createDefaultOutputDevice(QAudioFormat const &format);
 
-    static QAbstractAudioInput* createInputDevice(QAudioDeviceId const &device, QAudioFormat const &format);
-    static QAbstractAudioOutput* createOutputDevice(QAudioDeviceId const &device, QAudioFormat const &format);
+    static QAbstractAudioInput* createInputDevice(QAudioDeviceInfo const &device, QAudioFormat const &format);
+    static QAbstractAudioOutput* createOutputDevice(QAudioDeviceInfo const &device, QAudioFormat const &format);
 
     static QAbstractAudioInput* createNullInput();
     static QAbstractAudioOutput* createNullOutput();
-
-    static QAudioDeviceId createDeviceId(QString const& key, int mode, QByteArray const& handle);
 };
 
 QT_END_NAMESPACE

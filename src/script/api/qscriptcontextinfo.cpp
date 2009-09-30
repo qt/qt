@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtScript module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -162,16 +162,19 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
     // Get the line number:
 
     //We need to know the context directly up in the backtrace, in order to get the line number, and adjust the global context
-    QScriptContext *rewindContext = context->engine()->currentContext();
-    if (rewindContext != context) {  //ignore top context (native function)
+    JSC::CallFrame *rewindContext = QScriptEnginePrivate::get(context->engine())->currentFrame;
+    if (QScriptEnginePrivate::contextForFrame(rewindContext) == context) {  //top context
+        frame = rewindContext; //for retreiving the global context's "fake" frame
+        // An agent might have provided the line number.
+        lineNumber = QScript::scriptEngineFromExec(frame)->agentLineNumber;
+    } else {
         // rewind the stack from the top in order to find the frame from the caller where the returnPC is stored
-        while (rewindContext && rewindContext->parentContext() != context)
-            rewindContext = rewindContext->parentContext();
+        while (rewindContext && QScriptEnginePrivate::contextForFrame(rewindContext->callerFrame()->removeHostCallFrameFlag()) != context)
+            rewindContext = rewindContext->callerFrame()->removeHostCallFrameFlag();
         if (rewindContext) {
-            JSC::ExecState *aboveFrame = QScriptEnginePrivate::frameForContext(rewindContext);
-            frame = aboveFrame->callerFrame()->removeHostCallFrameFlag(); //it will be different for the global context.
+            frame = rewindContext->callerFrame()->removeHostCallFrameFlag(); //for retreiving the global context's "fake" frame
 
-            JSC::Instruction *returnPC = aboveFrame->returnPC();
+            JSC::Instruction *returnPC = rewindContext->returnPC();
             JSC::CodeBlock *codeBlock = frame->codeBlock();
             if (returnPC && codeBlock) {
 #if ENABLE(JIT)
@@ -183,9 +186,6 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
                 lineNumber = codeBlock->lineNumberForBytecodeOffset(const_cast<JSC::ExecState *>(frame), bytecodeOffset);
             }
         }
-    } else {
-        // An agent might have provided the line number.
-        lineNumber = QScript::scriptEngineFromExec(frame)->agentLineNumber;
     }
 
     // Get the filename and the scriptId:
@@ -198,18 +198,17 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
 
     // Get the others informations:
     JSC::JSObject *callee = frame->callee();
-    if (callee && callee->isObject(&JSC::InternalFunction::info))
+    if (callee && callee->inherits(&JSC::InternalFunction::info))
         functionName = JSC::asInternalFunction(callee)->name(&frame->globalData());
-    if (callee && callee->isObject(&JSC::JSFunction::info)) {
+    if (callee && callee->inherits(&JSC::JSFunction::info)) {
         functionType = QScriptContextInfo::ScriptFunction;
-        JSC::FunctionBodyNode *body = JSC::asFunction(callee)->body();
-        functionStartLineNumber = body->firstLine();
+        JSC::FunctionExecutable *body = JSC::asFunction(callee)->jsExecutable();
+        functionStartLineNumber = body->lineNo();
         functionEndLineNumber = body->lastLine();
-        const JSC::Identifier* params = body->parameters();
         for (size_t i = 0; i < body->parameterCount(); ++i)
-            parameterNames.append(params[i].ustring());
+            parameterNames.append(body->parameterName(i));
         // ### get the function name from the AST
-    } else if (callee && callee->isObject(&QScript::QtFunction::info)) {
+    } else if (callee && callee->inherits(&QScript::QtFunction::info)) {
         functionType = QScriptContextInfo::QtFunction;
         // ### the slot can be overloaded -- need to get the particular overload from the context
         functionMetaIndex = static_cast<QScript::QtFunction*>(callee)->initialIndex();
@@ -221,7 +220,7 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
                 parameterNames.append(QLatin1String(formals.at(i)));
         }
     }
-    else if (callee && callee->isObject(&QScript::QtPropertyFunction::info)) {
+    else if (callee && callee->inherits(&QScript::QtPropertyFunction::info)) {
         functionType = QScriptContextInfo::QtPropertyFunction;
         functionMetaIndex = static_cast<QScript::QtPropertyFunction*>(callee)->propertyIndex();
     }

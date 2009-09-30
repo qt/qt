@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -51,7 +51,6 @@
 #endif
 
 #include <new>
-#undef QT_MAP_DEBUG
 
 QT_BEGIN_HEADER
 
@@ -603,16 +602,15 @@ template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE void QMap<Key, T>::freeData(QMapData *x)
 {
     if (QTypeInfo<Key>::isComplex || QTypeInfo<T>::isComplex) {
-        QMapData::Node *y = reinterpret_cast<QMapData::Node *>(x);
-        QMapData::Node *cur = y;
-        QMapData::Node *next = cur->forward[0];
-        while (next != y) {
+        QMapData *cur = x;
+        QMapData *next = cur->forward[0];
+        while (next != x) {
             cur = next;
             next = cur->forward[0];
 #if defined(_MSC_VER) && (_MSC_VER >= 1300)
 #pragma warning(disable:4189)
 #endif
-            Node *concreteNode = concrete(cur);
+            Node *concreteNode = concrete(reinterpret_cast<QMapData::Node *>(cur));
             concreteNode->key.~Key();
             concreteNode->value.~T();
 #if defined(_MSC_VER) && (_MSC_VER >= 1300)

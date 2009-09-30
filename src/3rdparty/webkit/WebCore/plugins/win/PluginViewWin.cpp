@@ -74,17 +74,17 @@
 #endif
 
 #if PLATFORM(QT)
-#include <QWidget.h>
+#include "QWebPageClient.h"
 #endif
 
-static inline HWND windowHandleForPlatformWidget(PlatformWidget widget)
+static inline HWND windowHandleForPageClient(PlatformPageClient client)
 {
 #if PLATFORM(QT)
-    if (!widget)
+    if (!client)
         return 0;
-    return widget->winId();
+    return client->winId();
 #else
-    return widget;
+    return client;
 #endif
 }
 
@@ -103,8 +103,6 @@ using namespace HTMLNames;
 
 const LPCWSTR kWebPluginViewdowClassName = L"WebPluginView";
 const LPCWSTR kWebPluginViewProperty = L"WebPluginViewProperty";
-
-static const char* MozillaUserAgent = "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1) Gecko/20061010 Firefox/2.0";
 
 #if !PLATFORM(WINCE)
 // The code used to hook BeginPaint/EndPaint originally came from
@@ -411,7 +409,7 @@ void PluginView::updatePluginWidget()
     m_clipRect = windowClipRect();
     m_clipRect.move(-m_windowRect.x(), -m_windowRect.y());
 
-    if (platformPluginWidget() && (m_windowRect != oldWindowRect || m_clipRect != oldClipRect)) {
+    if (platformPluginWidget() && (!m_haveUpdatedPluginWidget || m_windowRect != oldWindowRect || m_clipRect != oldClipRect)) {
         HRGN rgn;
 
         setCallingPlugin(true);
@@ -429,7 +427,7 @@ void PluginView::updatePluginWidget()
             ::SetWindowRgn(platformPluginWidget(), rgn, TRUE);
         }
 
-        if (m_windowRect != oldWindowRect)
+        if (!m_haveUpdatedPluginWidget || m_windowRect != oldWindowRect)
             ::MoveWindow(platformPluginWidget(), m_windowRect.x(), m_windowRect.y(), m_windowRect.width(), m_windowRect.height(), TRUE);
 
         if (clipToZeroRect) {
@@ -438,6 +436,8 @@ void PluginView::updatePluginWidget()
         }
 
         setCallingPlugin(false);
+
+        m_haveUpdatedPluginWidget = true;
     }
 }
 
@@ -795,80 +795,6 @@ void PluginView::setNPWindowRect(const IntRect& rect)
     }
 }
 
-void PluginView::stop()
-{
-    if (!m_isStarted)
-        return;
-
-    HashSet<RefPtr<PluginStream> > streams = m_streams;
-    HashSet<RefPtr<PluginStream> >::iterator end = streams.end();
-    for (HashSet<RefPtr<PluginStream> >::iterator it = streams.begin(); it != end; ++it) {
-        (*it)->stop();
-        disconnectStream((*it).get());
-    }
-
-    ASSERT(m_streams.isEmpty());
-
-    m_isStarted = false;
-
-    // Unsubclass the window
-    if (m_isWindowed) {
-#if PLATFORM(WINCE)
-        WNDPROC currentWndProc = (WNDPROC)GetWindowLong(platformPluginWidget(), GWL_WNDPROC);
-
-        if (currentWndProc == PluginViewWndProc)
-            SetWindowLong(platformPluginWidget(), GWL_WNDPROC, (LONG)m_pluginWndProc);
-#else
-        WNDPROC currentWndProc = (WNDPROC)GetWindowLongPtr(platformPluginWidget(), GWLP_WNDPROC);
-
-        if (currentWndProc == PluginViewWndProc)
-            SetWindowLongPtr(platformPluginWidget(), GWLP_WNDPROC, (LONG)m_pluginWndProc);
-#endif
-    }
-
-    JSC::JSLock::DropAllLocks dropAllLocks(JSC::SilenceAssertionsOnly);
-
-    // Clear the window
-    m_npWindow.window = 0;
-    if (m_plugin->pluginFuncs()->setwindow && !m_plugin->quirks().contains(PluginQuirkDontSetNullWindowHandleOnDestroy)) {
-        setCallingPlugin(true);
-        m_plugin->pluginFuncs()->setwindow(m_instance, &m_npWindow);
-        setCallingPlugin(false);
-    }
-
-    PluginMainThreadScheduler::scheduler().unregisterPlugin(m_instance);
-
-    // Destroy the plugin
-    NPSavedData* savedData = 0;
-    setCallingPlugin(true);
-    NPError npErr = m_plugin->pluginFuncs()->destroy(m_instance, &savedData);
-    setCallingPlugin(false);
-    LOG_NPERROR(npErr);
-
-    if (savedData) {
-        if (savedData->buf)
-            NPN_MemFree(savedData->buf);
-        NPN_MemFree(savedData);
-    }
-
-    m_instance->pdata = 0;
-}
-
-const char* PluginView::userAgentStatic()
-{
-    return 0;
-}
-
-const char* PluginView::userAgent()
-{
-    if (m_plugin->quirks().contains(PluginQuirkWantsMozillaUserAgent))
-        return MozillaUserAgent;
-
-    if (m_userAgent.isNull())
-        m_userAgent = m_parentFrame->loader()->userAgent(m_url).utf8();
-    return m_userAgent.data();
-}
-
 NPError PluginView::handlePostReadFile(Vector<char>& buffer, uint32 len, const char* buf)
 {
     String filename(buf, len);
@@ -954,7 +880,7 @@ NPError PluginView::getValue(NPNVariable variable, void* value)
         case NPNVnetscapeWindow: {
             HWND* w = reinterpret_cast<HWND*>(value);
 
-            *w = windowHandleForPlatformWidget(parent() ? parent()->hostWindow()->platformWindow() : 0);
+            *w = windowHandleForPageClient(parent() ? parent()->hostWindow()->platformPageClient() : 0);
 
             return NPERR_NO_ERROR;
         }
@@ -1026,50 +952,13 @@ void PluginView::forceRedraw()
     if (m_isWindowed)
         ::UpdateWindow(platformPluginWidget());
     else
-        ::UpdateWindow(windowHandleForPlatformWidget(parent() ? parent()->hostWindow()->platformWindow() : 0));
+        ::UpdateWindow(windowHandleForPageClient(parent() ? parent()->hostWindow()->platformPageClient() : 0));
 }
 
-PluginView::~PluginView()
+bool PluginView::platformStart()
 {
-    if (m_instance)
-        m_instance->ndata = 0;
-    stop();
-
-    deleteAllValues(m_requests);
-
-    freeStringArray(m_paramNames, m_paramCount);
-    freeStringArray(m_paramValues, m_paramCount);
-
-    if (platformPluginWidget())
-        DestroyWindow(platformPluginWidget());
-
-    m_parentFrame->script()->cleanupScriptObjectsForPlugin(this);
-
-    if (m_plugin && !m_plugin->quirks().contains(PluginQuirkDontUnloadPlugin))
-        m_plugin->unload();
-}
-
-void PluginView::init()
-{
-    if (m_haveInitialized)
-        return;
-    m_haveInitialized = true;
-
-    if (!m_plugin) {
-        ASSERT(m_status == PluginStatusCanNotFindPlugin);
-        return;
-    }
-
-    if (!m_plugin->load()) {
-        m_plugin = 0;
-        m_status = PluginStatusCanNotLoadPlugin;
-        return;
-    }
-
-    if (!start()) {
-        m_status = PluginStatusCanNotLoadPlugin;
-        return;
-    }
+    ASSERT(m_isStarted);
+    ASSERT(m_status == PluginStatusLoadedSuccessfully);
 
     if (m_isWindowed) {
         registerPluginView();
@@ -1081,7 +970,7 @@ void PluginView::init()
         if (isSelfVisible())
             flags |= WS_VISIBLE;
 
-        HWND parentWindowHandle = windowHandleForPlatformWidget(m_parentFrame->view()->hostWindow()->platformWindow());
+        HWND parentWindowHandle = windowHandleForPageClient(m_parentFrame->view()->hostWindow()->platformPageClient());
         HWND window = ::CreateWindowEx(0, kWebPluginViewdowClassName, 0, flags,
                                        0, 0, 0, 0, parentWindowHandle, 0, Page::instanceHandle(), 0);
 
@@ -1109,10 +998,18 @@ void PluginView::init()
         m_npWindow.window = 0;
     }
 
+    updatePluginWidget();
+
     if (!m_plugin->quirks().contains(PluginQuirkDeferFirstSetWindowCall))
         setNPWindowRect(frameRect());
 
-    m_status = PluginStatusLoadedSuccessfully;
+    return true;
+}
+
+void PluginView::platformDestroy()
+{
+    if (platformPluginWidget())
+        DestroyWindow(platformPluginWidget());
 }
 
 } // namespace WebCore

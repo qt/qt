@@ -85,6 +85,11 @@ bool JSSVGLengthListPrototype::getOwnPropertySlot(ExecState* exec, const Identif
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGLengthListPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGLengthListPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGLengthListPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGLengthList::s_info = { "SVGLengthList", 0, &JSSVGLengthListTable, 0 };
 
 JSSVGLengthList::JSSVGLengthList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGLengthList> impl, SVGElement* context)
@@ -95,7 +100,7 @@ JSSVGLengthList::JSSVGLengthList(PassRefPtr<Structure> structure, JSDOMGlobalObj
 
 JSSVGLengthList::~JSSVGLengthList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGLengthList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -106,6 +111,11 @@ JSObject* JSSVGLengthList::createPrototype(ExecState* exec, JSGlobalObject* glob
 bool JSSVGLengthList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGLengthList, Base>(exec, &JSSVGLengthListTable, this, propertyName, slot);
+}
+
+bool JSSVGLengthList::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGLengthList, Base>(exec, &JSSVGLengthListTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGLengthListNumberOfItems(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -119,7 +129,7 @@ JSValue jsSVGLengthListNumberOfItems(ExecState* exec, const Identifier&, const P
 JSValue JSC_HOST_CALL jsSVGLengthListPrototypeFunctionClear(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGLengthList::s_info))
+    if (!thisValue.inherits(&JSSVGLengthList::s_info))
         return throwError(exec, TypeError);
     JSSVGLengthList* castedThisObj = static_cast<JSSVGLengthList*>(asObject(thisValue));
     SVGLengthList* imp = static_cast<SVGLengthList*>(castedThisObj->impl());
@@ -133,7 +143,7 @@ JSValue JSC_HOST_CALL jsSVGLengthListPrototypeFunctionClear(ExecState* exec, JSO
 JSValue JSC_HOST_CALL jsSVGLengthListPrototypeFunctionInitialize(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGLengthList::s_info))
+    if (!thisValue.inherits(&JSSVGLengthList::s_info))
         return throwError(exec, TypeError);
     JSSVGLengthList* castedThisObj = static_cast<JSSVGLengthList*>(asObject(thisValue));
     SVGLengthList* imp = static_cast<SVGLengthList*>(castedThisObj->impl());
@@ -149,7 +159,7 @@ JSValue JSC_HOST_CALL jsSVGLengthListPrototypeFunctionInitialize(ExecState* exec
 JSValue JSC_HOST_CALL jsSVGLengthListPrototypeFunctionGetItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGLengthList::s_info))
+    if (!thisValue.inherits(&JSSVGLengthList::s_info))
         return throwError(exec, TypeError);
     JSSVGLengthList* castedThisObj = static_cast<JSSVGLengthList*>(asObject(thisValue));
     SVGLengthList* imp = static_cast<SVGLengthList*>(castedThisObj->impl());
@@ -165,7 +175,7 @@ JSValue JSC_HOST_CALL jsSVGLengthListPrototypeFunctionGetItem(ExecState* exec, J
 JSValue JSC_HOST_CALL jsSVGLengthListPrototypeFunctionInsertItemBefore(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGLengthList::s_info))
+    if (!thisValue.inherits(&JSSVGLengthList::s_info))
         return throwError(exec, TypeError);
     JSSVGLengthList* castedThisObj = static_cast<JSSVGLengthList*>(asObject(thisValue));
     SVGLengthList* imp = static_cast<SVGLengthList*>(castedThisObj->impl());
@@ -182,7 +192,7 @@ JSValue JSC_HOST_CALL jsSVGLengthListPrototypeFunctionInsertItemBefore(ExecState
 JSValue JSC_HOST_CALL jsSVGLengthListPrototypeFunctionReplaceItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGLengthList::s_info))
+    if (!thisValue.inherits(&JSSVGLengthList::s_info))
         return throwError(exec, TypeError);
     JSSVGLengthList* castedThisObj = static_cast<JSSVGLengthList*>(asObject(thisValue));
     SVGLengthList* imp = static_cast<SVGLengthList*>(castedThisObj->impl());
@@ -199,7 +209,7 @@ JSValue JSC_HOST_CALL jsSVGLengthListPrototypeFunctionReplaceItem(ExecState* exe
 JSValue JSC_HOST_CALL jsSVGLengthListPrototypeFunctionRemoveItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGLengthList::s_info))
+    if (!thisValue.inherits(&JSSVGLengthList::s_info))
         return throwError(exec, TypeError);
     JSSVGLengthList* castedThisObj = static_cast<JSSVGLengthList*>(asObject(thisValue));
     SVGLengthList* imp = static_cast<SVGLengthList*>(castedThisObj->impl());
@@ -215,7 +225,7 @@ JSValue JSC_HOST_CALL jsSVGLengthListPrototypeFunctionRemoveItem(ExecState* exec
 JSValue JSC_HOST_CALL jsSVGLengthListPrototypeFunctionAppendItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGLengthList::s_info))
+    if (!thisValue.inherits(&JSSVGLengthList::s_info))
         return throwError(exec, TypeError);
     JSSVGLengthList* castedThisObj = static_cast<JSSVGLengthList*>(asObject(thisValue));
     SVGLengthList* imp = static_cast<SVGLengthList*>(castedThisObj->impl());
@@ -234,7 +244,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGLeng
 }
 SVGLengthList* toSVGLengthList(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGLengthList::s_info) ? static_cast<JSSVGLengthList*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGLengthList::s_info) ? static_cast<JSSVGLengthList*>(asObject(value))->impl() : 0;
 }
 
 }

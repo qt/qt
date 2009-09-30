@@ -45,7 +45,7 @@ namespace WTF {
         #define WTF_ALIGN_OF(type) __alignof(type)
         #define WTF_ALIGNED(variable_type, variable, n) __declspec(align(n)) variable_type variable
     #else
-        #define WTF_ALIGN_OF(type)   0
+        #error WTF_ALIGN macros need alignment control.
     #endif
 
     #if COMPILER(GCC) && (((__GNUC__ * 100) + __GNUC_MINOR__) >= 303)
@@ -54,7 +54,6 @@ namespace WTF {
         typedef char AlignedBufferChar; 
     #endif
 
-    #ifdef WTF_ALIGNED
     template <size_t size, size_t alignment> struct AlignedBuffer;
     template <size_t size> struct AlignedBuffer<size, 1> { AlignedBufferChar buffer[size]; };
     template <size_t size> struct AlignedBuffer<size, 2> { WTF_ALIGNED(AlignedBufferChar, buffer[size], 2);  };
@@ -63,17 +62,13 @@ namespace WTF {
     template <size_t size> struct AlignedBuffer<size, 16> { WTF_ALIGNED(AlignedBufferChar, buffer[size], 16); };
     template <size_t size> struct AlignedBuffer<size, 32> { WTF_ALIGNED(AlignedBufferChar, buffer[size], 32); };
     template <size_t size> struct AlignedBuffer<size, 64> { WTF_ALIGNED(AlignedBufferChar, buffer[size], 64); };
-    #else
-    template <size_t size, size_t> struct AlignedBuffer
+
+    template <size_t size, size_t alignment>
+    void swap(AlignedBuffer<size, alignment>& a, AlignedBuffer<size, alignment>& b)
     {
-        AlignedBufferChar oversizebuffer[size + 64];
-        AlignedBufferChar *buffer;
-        inline AlignedBuffer() : buffer(oversizebuffer)
-        {
-            buffer += 64 - (reinterpret_cast<size_t>(buffer) & 0x3f);
-        }
-    };
-    #endif
+        for (size_t i = 0; i < size; ++i)
+            std::swap(a.buffer[i], b.buffer[i]);
+    }
 
     template <bool needsDestruction, typename T>
     class VectorDestructor;
@@ -416,6 +411,27 @@ namespace WTF {
             Base::deallocateBuffer(bufferToDeallocate);
         }
         
+        void swap(VectorBuffer<T, inlineCapacity>& other)
+        {
+            if (buffer() == inlineBuffer() && other.buffer() == other.inlineBuffer()) {
+                WTF::swap(m_inlineBuffer, other.m_inlineBuffer);
+                std::swap(m_capacity, other.m_capacity);
+            } else if (buffer() == inlineBuffer()) {
+                m_buffer = other.m_buffer;
+                other.m_buffer = other.inlineBuffer();
+                WTF::swap(m_inlineBuffer, other.m_inlineBuffer);
+                std::swap(m_capacity, other.m_capacity);
+            } else if (other.buffer() == other.inlineBuffer()) {
+                other.m_buffer = m_buffer;
+                m_buffer = inlineBuffer();
+                WTF::swap(m_inlineBuffer, other.m_inlineBuffer);
+                std::swap(m_capacity, other.m_capacity);
+            } else {
+                std::swap(m_buffer, other.m_buffer);
+                std::swap(m_capacity, other.m_capacity);
+            }
+        }
+
         void restoreInlineBufferIfNeeded()
         {
             if (m_buffer)
@@ -580,7 +596,6 @@ namespace WTF {
     };
 
 #if PLATFORM(QT)
-    QT_USE_NAMESPACE
     template<typename T>
     QDataStream& operator<<(QDataStream& stream, const Vector<T>& data)
     {

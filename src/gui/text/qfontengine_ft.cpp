@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -647,8 +647,14 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format)
 {
     defaultFormat = format;
     this->antialias = antialias;
+
     if (!antialias)
         glyphFormat = QFontEngineGlyphCache::Raster_Mono;
+    else if (format == Format_A8)
+        glyphFormat = QFontEngineGlyphCache::Raster_A8;
+    else if (format == Format_A32)
+        glyphFormat = QFontEngineGlyphCache::Raster_RGBMask;
+
     face_id = faceId;
     freetype = QFreetypeFace::getFace(face_id);
     if (!freetype) {
@@ -1843,6 +1849,28 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g)
         for (int y = 0; y < glyph->height; ++y)
             memcpy(img.scanLine(y), &glyph->data[y * pitch], pitch);
     }
+    unlockFace();
+
+    return img;
+}
+
+QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, int margin, const QTransform &t)
+{
+    if (t.type() > QTransform::TxTranslate)
+        return QFontEngine::alphaRGBMapForGlyph(g, margin, t);
+
+    lockFace();
+
+    GlyphFormat glyph_format = Format_A32;
+
+    Glyph *glyph = defaultGlyphSet.outline_drawing ? 0 : loadGlyph(g, glyph_format);
+    if (!glyph) {
+        unlockFace();
+        return QFontEngine::alphaRGBMapForGlyph(g, margin, t);
+    }
+
+    QImage img(glyph->width, glyph->height, QImage::Format_RGB32);
+    memcpy(img.bits(), glyph->data, 4 * glyph->width * glyph->height);
     unlockFace();
 
     return img;

@@ -126,6 +126,7 @@ WebInspector.ScriptsPanel = function()
     this.topStatusBar.appendChild(this.sidebarResizeWidgetElement);
 
     this.sidebarPanes = {};
+    this.sidebarPanes.watchExpressions = new WebInspector.WatchExpressionsSidebarPane();
     this.sidebarPanes.callstack = new WebInspector.CallStackSidebarPane();
     this.sidebarPanes.scopechain = new WebInspector.ScopeChainSidebarPane();
     this.sidebarPanes.breakpoints = new WebInspector.BreakpointsSidebarPane();
@@ -151,13 +152,10 @@ WebInspector.ScriptsPanel = function()
     this.element.appendChild(this.sidebarElement);
     this.element.appendChild(this.sidebarResizeElement);
 
-    this.enableToggleButton = document.createElement("button");
-    this.enableToggleButton.className = "enable-toggle-status-bar-item status-bar-item";
+    this.enableToggleButton = new WebInspector.StatusBarButton("", "enable-toggle-status-bar-item");
     this.enableToggleButton.addEventListener("click", this._toggleDebugging.bind(this), false);
 
-    this.pauseOnExceptionButton = document.createElement("button");
-    this.pauseOnExceptionButton.id = "scripts-pause-on-exceptions-status-bar-item";
-    this.pauseOnExceptionButton.className = "status-bar-item";
+    this.pauseOnExceptionButton = new WebInspector.StatusBarButton("", "scripts-pause-on-exceptions-status-bar-item");
     this.pauseOnExceptionButton.addEventListener("click", this._togglePauseOnExceptions.bind(this), false);
 
     this._breakpointsURLMap = {};
@@ -208,7 +206,7 @@ WebInspector.ScriptsPanel.prototype = {
 
     get statusBarItems()
     {
-        return [this.enableToggleButton, this.pauseOnExceptionButton];
+        return [this.enableToggleButton.element, this.pauseOnExceptionButton.element];
     },
 
     get paused()
@@ -286,7 +284,7 @@ WebInspector.ScriptsPanel.prototype = {
                 if (startingLine <= breakpoint.line) {
                     breakpoint.sourceID = sourceID;
                     if (breakpoint.enabled)
-                        InspectorController.addBreakpoint(breakpoint.sourceID, breakpoint.line);
+                        InspectorController.addBreakpoint(breakpoint.sourceID, breakpoint.line, breakpoint.condition);
                 }
             }
         }
@@ -353,6 +351,14 @@ WebInspector.ScriptsPanel.prototype = {
             sourceFrame.removeBreakpoint(breakpoint);
     },
 
+    selectedCallFrameId: function()
+    {
+        var selectedCallFrame = this.sidebarPanes.callstack.selectedCallFrame;
+        if (!selectedCallFrame)
+            return null;
+        return selectedCallFrame.id;
+    },
+
     evaluateInSelectedCallFrame: function(code, updateInterface, callback)
     {
         var selectedCallFrame = this.sidebarPanes.callstack.selectedCallFrame;
@@ -374,36 +380,31 @@ WebInspector.ScriptsPanel.prototype = {
 
     doEvalInCallFrame: function(callFrame, code, callback)
     {
-        var panel = this;
-        function delayedEvaluation()
+        function evalCallback(result)
         {
-            if (!code) {
-                // Evaluate into properties in scope of the selected call frame.
-                callback(panel._variablesInScope(callFrame));
-                return;
-            }
-            try {
-                callback(callFrame.evaluate(code));
-            } catch (e) {
-                callback(e, true);
-            }
+            if (result)
+                callback(result.value, result.isException);
         }
-        setTimeout(delayedEvaluation, 0);
+        InjectedScriptAccess.evaluateInCallFrame(callFrame.id, code, evalCallback);
     },
 
-    _variablesInScope: function(callFrame)
+    variablesInSelectedCallFrame: function()
     {
+        var selectedCallFrame = this.sidebarPanes.callstack.selectedCallFrame;
+        if (!this._paused || !selectedCallFrame)
+            return {};
+
         var result = {};
-        var scopeChain = callFrame.scopeChain;
+        var scopeChain = selectedCallFrame.scopeChain;
         for (var i = 0; i < scopeChain.length; ++i) {
-            var scopeObject = scopeChain[i];
-            for (var property in scopeObject)
-                result[property] = true;
+            var scopeObjectProperties = scopeChain[i].properties;
+            for (var j = 0; j < scopeObjectProperties.length; ++j)
+                result[scopeObjectProperties[j]] = true;
         }
         return result;
     },
 
-    debuggerPaused: function()
+    debuggerPaused: function(callFrames)
     {
         this._paused = true;
         this._waitingToPause = false;
@@ -411,10 +412,8 @@ WebInspector.ScriptsPanel.prototype = {
 
         this._updateDebuggerButtons();
 
-        var callStackPane = this.sidebarPanes.callstack;
-        var currentFrame = InspectorController.currentCallFrame();
-        callStackPane.update(currentFrame, this._sourceIDMap);
-        callStackPane.selectedCallFrame = currentFrame;
+        this.sidebarPanes.callstack.update(callFrames, this._sourceIDMap);
+        this.sidebarPanes.callstack.selectedCallFrame = callFrames[0];
 
         WebInspector.currentPanel = this;
         window.focus();
@@ -481,6 +480,8 @@ WebInspector.ScriptsPanel.prototype = {
         }
 
         this._sourceIDMap = {};
+        
+        this.sidebarPanes.watchExpressions.refreshExpressions();
     },
 
     get visibleView()
@@ -714,6 +715,7 @@ WebInspector.ScriptsPanel.prototype = {
             return;
 
         this.sidebarPanes.scopechain.update(currentFrame);
+        this.sidebarPanes.watchExpressions.refreshExpressions();
 
         var scriptOrResource = this._sourceIDMap[currentFrame.sourceID];
         this._showScriptOrResource(scriptOrResource, currentFrame.line);
@@ -764,10 +766,10 @@ WebInspector.ScriptsPanel.prototype = {
     {
         if (InspectorController.pauseOnExceptions()) {
             this.pauseOnExceptionButton.title = WebInspector.UIString("Don't pause on exceptions.");
-            this.pauseOnExceptionButton.addStyleClass("toggled-on");
+            this.pauseOnExceptionButton.toggled = true;
         } else {
             this.pauseOnExceptionButton.title = WebInspector.UIString("Pause on exceptions.");
-            this.pauseOnExceptionButton.removeStyleClass("toggled-on");
+            this.pauseOnExceptionButton.toggled = false;
         }
     },
 
@@ -775,13 +777,13 @@ WebInspector.ScriptsPanel.prototype = {
     {
         if (InspectorController.debuggerEnabled()) {
             this.enableToggleButton.title = WebInspector.UIString("Debugging enabled. Click to disable.");
-            this.enableToggleButton.addStyleClass("toggled-on");
-            this.pauseOnExceptionButton.removeStyleClass("hidden");
+            this.enableToggleButton.toggled = true;
+            this.pauseOnExceptionButton.visible = true;
             this.panelEnablerView.visible = false;
         } else {
             this.enableToggleButton.title = WebInspector.UIString("Debugging disabled. Click to enable.");
-            this.enableToggleButton.removeStyleClass("toggled-on");
-            this.pauseOnExceptionButton.addStyleClass("hidden");
+            this.enableToggleButton.toggled = false;
+            this.pauseOnExceptionButton.visible = false;
             this.panelEnablerView.visible = true;
         }
 

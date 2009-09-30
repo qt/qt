@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -906,7 +906,7 @@ void tst_QTreeView::iconSize()
 
     view.show();
     view.update();
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(&view);
     QTRY_VERIFY(view.repainted);
     QCOMPARE(view.iconSize(), QSize());
 
@@ -2042,7 +2042,7 @@ void tst_QTreeView::scrollTo()
 
     view.show();
     view.setVerticalScrollMode(QAbstractItemView::ScrollPerItem); //some styles change that in Polish
-   
+
     view.resize(300, 200);
     //view.verticalScrollBar()->setValue(0);
 
@@ -2055,7 +2055,7 @@ void tst_QTreeView::scrollTo()
     QCOMPARE(view.verticalScrollBar()->value(), 5);
 
     view.scrollTo(model.index(60, 60, QModelIndex()));
-    
+
     CHECK_VISIBLE(60,60);
     view.scrollTo(model.index(60, 30, QModelIndex()));
     CHECK_VISIBLE(60,30);
@@ -3055,16 +3055,16 @@ void tst_QTreeView::task216717_updateChildren()
             bool refreshed;
     } tree;
     tree.show();
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(&tree);
     tree.refreshed = false;
     QTreeWidgetItem *parent = new QTreeWidgetItem(QStringList() << "parent");
     tree.addTopLevelItem(parent);
-    QTest::qWait(100);
-    QVERIFY(tree.refreshed);
+    QTest::qWait(10);
+    QTRY_VERIFY(tree.refreshed);
     tree.refreshed = false;
     parent->addChild(new QTreeWidgetItem(QStringList() << "child"));
-    QTest::qWait(100);
-    QVERIFY(tree.refreshed);
+    QTest::qWait(10);
+    QTRY_VERIFY(tree.refreshed);
 
 }
 
@@ -3259,7 +3259,7 @@ void tst_QTreeView::task202039_closePersistentEditor()
     view.closePersistentEditor(current);
     QVERIFY(view.indexWidget(current) == 0);
 
-    //here was the bug: closing the persistent editor would not reset the state 
+    //here was the bug: closing the persistent editor would not reset the state
     //and it was impossible to go into editinon again
     QTest::mousePress(view.viewport(), Qt::LeftButton, 0, view.visualRect(current).center());
     QTest::mouseDClick(view.viewport(), Qt::LeftButton, 0, view.visualRect(current).center());
@@ -3313,7 +3313,7 @@ void tst_QTreeView::task244304_clickOnDecoration()
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, rect.topLeft()+QPoint(-rect.left()/2,rect.height()/2));
     QVERIFY(!view.currentIndex().isValid());
     QVERIFY(view.isExpanded(item0.index()));
-  
+
     rect = view.visualRect(item1.index());
     //the item has no decoration, it should get selected
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, rect.topLeft()+QPoint(-rect.left()/2,rect.height()/2));
@@ -3344,7 +3344,7 @@ void tst_QTreeView::task246536_scrollbarsNotWorking()
     QStandardItemModel model;
     tree.setModel(&model);
     tree.show();
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(&tree);
     QList<QStandardItem *> items;
     for(int i=0; i<100; ++i){
         items << new QStandardItem(QString::fromLatin1("item %1").arg(i));
@@ -3354,7 +3354,7 @@ void tst_QTreeView::task246536_scrollbarsNotWorking()
     o.count = 0;
     tree.verticalScrollBar()->setValue(50);
     QTest::qWait(100);
-    QVERIFY(o.count > 0);
+    QTRY_VERIFY(o.count > 0);
 }
 
 void tst_QTreeView::task250683_wrongSectionSize()
@@ -3399,13 +3399,14 @@ void tst_QTreeView::task239271_addRowsWithFirstColumnHidden()
 
     view.hideColumn(0);
     view.show();
-    QTest::qWait(200);
+    QTest::qWaitForWindowShown(&view);
     delegate.paintedIndexes.clear();
     QStandardItem sub1("sub1"), sub11("sub11");
     root0.appendRow(QList<QStandardItem*>() << &sub1 << &sub11);
 
-    QTest::qWait(200);
+    QTest::qWait(20);
     //items in the 2nd column should have been painted
+    QTRY_VERIFY(!delegate.paintedIndexes.isEmpty());
     QVERIFY(delegate.paintedIndexes.contains(sub00.index()));
     QVERIFY(delegate.paintedIndexes.contains(sub11.index()));
 }

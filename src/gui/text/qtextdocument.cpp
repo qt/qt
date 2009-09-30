@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -985,7 +985,7 @@ bool QTextDocument::isRedoAvailable() const
 int QTextDocument::revision() const
 {
     Q_D(const QTextDocument);
-    return d->undoState;
+    return d->revision;
 }
 
 
@@ -1096,8 +1096,10 @@ void QTextDocument::setPlainText(const QString &text)
     Q_D(QTextDocument);
     bool previousState = d->isUndoRedoEnabled();
     d->enableUndoRedo(false);
+    d->beginEditBlock();
     d->clear();
     QTextCursor(this).insertText(text);
+    d->endEditBlock();
     d->enableUndoRedo(previousState);
 }
 
@@ -1123,8 +1125,10 @@ void QTextDocument::setHtml(const QString &html)
     Q_D(QTextDocument);
     bool previousState = d->isUndoRedoEnabled();
     d->enableUndoRedo(false);
+    d->beginEditBlock();
     d->clear();
     QTextHtmlImporter(this, html, QTextHtmlImporter::ImportToDocument).import();
+    d->endEditBlock();
     d->enableUndoRedo(previousState);
 }
 
@@ -2521,13 +2525,15 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
                 default: html += QLatin1String("<ul"); // ### should not happen
             }
 
+            html += QLatin1String(" style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px;");
+
             if (format.hasProperty(QTextFormat::ListIndent)) {
-                html += QLatin1String(" style=\"-qt-list-indent: ");
+                html += QLatin1String(" -qt-list-indent: ");
                 html += QString::number(format.indent());
-                html += QLatin1String(";\"");
+                html += QLatin1Char(';');
             }
 
-            html += QLatin1Char('>');
+            html += QLatin1String("\">");
         }
 
         html += QLatin1String("<li");

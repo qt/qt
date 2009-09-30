@@ -79,7 +79,7 @@ JSSVGNumber::JSSVGNumber(PassRefPtr<Structure> structure, JSDOMGlobalObject* glo
 
 JSSVGNumber::~JSSVGNumber()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSSVGNumber::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -90,6 +90,11 @@ JSObject* JSSVGNumber::createPrototype(ExecState* exec, JSGlobalObject* globalOb
 bool JSSVGNumber::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGNumber, Base>(exec, &JSSVGNumberTable, this, propertyName, slot);
+}
+
+bool JSSVGNumber::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGNumber, Base>(exec, &JSSVGNumberTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGNumberValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -118,7 +123,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, JSSVGPO
 }
 float toSVGNumber(JSC::JSValue value)
 {
-    return value.isObject(&JSSVGNumber::s_info) ? (float) *static_cast<JSSVGNumber*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSSVGNumber::s_info) ? (float) *static_cast<JSSVGNumber*>(asObject(value))->impl() : 0;
 }
 
 }

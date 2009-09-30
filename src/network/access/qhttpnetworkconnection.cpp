@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -588,18 +588,52 @@ QString QHttpNetworkConnectionPrivate::errorDetail(QNetworkReply::NetworkError e
     return errorString;
 }
 
+// this is called from the destructor of QHttpNetworkReply. It is called when
+// the reply was finished correctly or when it was aborted.
 void QHttpNetworkConnectionPrivate::removeReply(QHttpNetworkReply *reply)
 {
     Q_Q(QHttpNetworkConnection);
 
-    // remove the from active list.
+    // check if the reply is currently being processed or it is pipelined in
     for (int i = 0; i < channelCount; ++i) {
+        // is the reply associated the currently processing of this channel?
         if (channels[i].reply == reply) {
             channels[i].reply = 0;
-            if (reply->d_func()->isConnectionCloseEnabled())
+
+            if (!reply->isFinished() && !channels[i].alreadyPipelinedRequests.isEmpty()) {
+                // the reply had to be prematurely removed, e.g. it was not finished
+                // therefore we have to requeue the already pipelined requests.
+                channels[i].requeueCurrentlyPipelinedRequests();
+            }
+
+            // if HTTP mandates we should close
+            // or the reply is not finished yet, e.g. it was aborted
+            // we have to close that connection
+            if (reply->d_func()->isConnectionCloseEnabled() || !reply->isFinished())
                 channels[i].close();
+
             QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
             return;
+        }
+
+        // is the reply inside the pipeline of this channel already?
+        for (int j = 0; j < channels[i].alreadyPipelinedRequests.length(); j++) {
+            if (channels[i].alreadyPipelinedRequests.at(j).second == reply) {
+               // Remove that HttpMessagePair
+               channels[i].alreadyPipelinedRequests.removeAt(j);
+
+               channels[i].requeueCurrentlyPipelinedRequests();
+
+               // Since some requests had already been pipelined, but we removed
+               // one and re-queued the others
+               // we must force a connection close after the request that is
+               // currently in processing has been finished.
+               if (channels[i].reply)
+                   channels[i].reply->d_func()->forceConnectionCloseEnabled = true;
+
+               QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
+               return;
+            }
         }
     }
     // remove from the high priority queue

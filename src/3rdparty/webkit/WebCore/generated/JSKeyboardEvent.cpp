@@ -79,6 +79,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSKeyboardEventPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -93,6 +94,11 @@ const ClassInfo JSKeyboardEventConstructor::s_info = { "KeyboardEventConstructor
 bool JSKeyboardEventConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSKeyboardEventConstructor, DOMObject>(exec, &JSKeyboardEventConstructorTable, this, propertyName, slot);
+}
+
+bool JSKeyboardEventConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSKeyboardEventConstructor, DOMObject>(exec, &JSKeyboardEventConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -122,6 +128,11 @@ bool JSKeyboardEventPrototype::getOwnPropertySlot(ExecState* exec, const Identif
     return getStaticFunctionSlot<JSObject>(exec, &JSKeyboardEventPrototypeTable, this, propertyName, slot);
 }
 
+bool JSKeyboardEventPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSKeyboardEventPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSKeyboardEvent::s_info = { "KeyboardEvent", &JSUIEvent::s_info, &JSKeyboardEventTable, 0 };
 
 JSKeyboardEvent::JSKeyboardEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<KeyboardEvent> impl)
@@ -137,6 +148,11 @@ JSObject* JSKeyboardEvent::createPrototype(ExecState* exec, JSGlobalObject* glob
 bool JSKeyboardEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSKeyboardEvent, Base>(exec, &JSKeyboardEventTable, this, propertyName, slot);
+}
+
+bool JSKeyboardEvent::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSKeyboardEvent, Base>(exec, &JSKeyboardEventTable, this, propertyName, descriptor);
 }
 
 JSValue jsKeyboardEventKeyIdentifier(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -208,7 +224,7 @@ JSValue JSKeyboardEvent::getConstructor(ExecState* exec, JSGlobalObject* globalO
 JSValue JSC_HOST_CALL jsKeyboardEventPrototypeFunctionInitKeyboardEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSKeyboardEvent::s_info))
+    if (!thisValue.inherits(&JSKeyboardEvent::s_info))
         return throwError(exec, TypeError);
     JSKeyboardEvent* castedThisObj = static_cast<JSKeyboardEvent*>(asObject(thisValue));
     KeyboardEvent* imp = static_cast<KeyboardEvent*>(castedThisObj->impl());

@@ -2,7 +2,7 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2000 Stefan Schimanski (1Stein@gmx.de)
- * Copyright (C) 2004, 2005, 2006, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2008, 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
  *
  * This library is free software; you can redistribute it and/or
@@ -42,15 +42,16 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLEmbedElement::HTMLEmbedElement(const QualifiedName& tagName, Document* doc)
-    : HTMLPlugInImageElement(tagName, doc)
+inline HTMLEmbedElement::HTMLEmbedElement(const QualifiedName& tagName, Document* document)
+    : HTMLPlugInImageElement(tagName, document)
     , m_needWidgetUpdate(false)
 {
     ASSERT(hasTagName(embedTag));
 }
 
-HTMLEmbedElement::~HTMLEmbedElement()
+PassRefPtr<HTMLEmbedElement> HTMLEmbedElement::create(const QualifiedName& tagName, Document* document)
 {
+    return adoptRef(new HTMLEmbedElement(tagName, document));
 }
 
 static inline RenderWidget* findWidgetRenderer(const Node* n) 
@@ -61,7 +62,7 @@ static inline RenderWidget* findWidgetRenderer(const Node* n)
         while (n && !n->hasTagName(objectTag));
 
     if (n && n->renderer() && n->renderer()->isWidget())
-        return static_cast<RenderWidget*>(n->renderer());
+        return toRenderWidget(n->renderer());
 
     return 0;
 }
@@ -182,7 +183,7 @@ void HTMLEmbedElement::updateWidget()
 {
     document()->updateStyleIfNeeded();
     if (m_needWidgetUpdate && renderer() && !isImageType())
-        static_cast<RenderPartObject*>(renderer())->updateWidget(true);
+        toRenderPartObject(renderer())->updateWidget(true);
 }
 
 void HTMLEmbedElement::insertedIntoDocument()
@@ -238,31 +239,11 @@ const QualifiedName& HTMLEmbedElement::imageSourceAttributeName() const
     return srcAttr;
 }
 
-String HTMLEmbedElement::src() const
-{
-    return getAttribute(srcAttr);
-}
-
-void HTMLEmbedElement::setSrc(const String& value)
-{
-    setAttribute(srcAttr, value);
-}
-
-String HTMLEmbedElement::type() const
-{
-    return getAttribute(typeAttr);
-}
-
-void HTMLEmbedElement::setType(const String& value)
-{
-    setAttribute(typeAttr, value);
-}
-
 void HTMLEmbedElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
 {
     HTMLPlugInImageElement::addSubresourceAttributeURLs(urls);
 
-    addSubresourceURL(urls, document()->completeURL(src()));
+    addSubresourceURL(urls, document()->completeURL(getAttribute(srcAttr)));
 }
 
 }

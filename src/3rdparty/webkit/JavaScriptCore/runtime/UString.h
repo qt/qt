@@ -77,7 +77,6 @@ namespace JSC {
         friend class JIT;
 
     public:
-
         typedef CrossThreadRefCounted<OwnFastMallocPtr<UChar> > SharedUChar;
         struct BaseString;
         struct Rep : Noncopyable {
@@ -92,7 +91,8 @@ namespace JSC {
             {
                 // Guard against integer overflow
                 if (size < (std::numeric_limits<size_t>::max() / sizeof(UChar))) {
-                    if (void * buf = tryFastMalloc(size * sizeof(UChar)))
+                    void* buf = 0;
+                    if (tryFastMalloc(size * sizeof(UChar)).getValue(buf))
                         return adoptRef(new BaseString(static_cast<UChar*>(buf), 0, size));
                 }
                 return adoptRef(new BaseString(0, 0, 0));
@@ -257,9 +257,7 @@ namespace JSC {
         }
 
         static UString from(int);
-#if PLATFORM(WIN_OS) && PLATFORM(X86_64) && COMPILER(MSVC)
-        static UString from(int64_t i);
-#endif
+        static UString from(long long);
         static UString from(unsigned int);
         static UString from(long);
         static UString from(double);
@@ -289,8 +287,6 @@ namespace JSC {
         UString& append(UChar);
         UString& append(char c) { return append(static_cast<UChar>(static_cast<unsigned char>(c))); }
         UString& append(const UChar*, int size);
-        UString& appendNumeric(int);
-        UString& appendNumeric(double);
 
         bool getCString(CStringBuffer&) const;
 
@@ -364,20 +360,6 @@ namespace JSC {
         {
             return m_rep->reserveCapacity(capacity);
         }
-
-#if PLATFORM(QT)
-        operator QT_PREPEND_NAMESPACE(QString)() const
-        {
-            QT_USE_NAMESPACE;
-            return QString(reinterpret_cast<const QChar*>(this->data()), this->size());
-        }
-
-        UString(const QT_PREPEND_NAMESPACE(QString)& str)
-        {
-            *this = JSC::UString(reinterpret_cast<const UChar*>(str.constData()), str.length());
-        }
-#endif
-
 
     private:
         void expandCapacity(int requiredLength);
@@ -545,20 +527,6 @@ namespace JSC {
 
         return capacityDelta;
     }
-
-#if PLATFORM(QT)
-
-        inline UString operator+(const char* s1, const UString& s2)
-        {
-            return operator+(UString(s1), s2);
-        }
-
-        inline UString operator+(const UString& s1, const char* s2)
-        {
-            return operator+(s1, UString(s2));
-        }
-
-#endif
 
     struct IdentifierRepHash : PtrHash<RefPtr<JSC::UString::Rep> > {
         static unsigned hash(const RefPtr<JSC::UString::Rep>& key) { return key->computedHash(); }

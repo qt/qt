@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -130,7 +130,7 @@ private slots:
     void testSymbols();
     void incorrectDefaultButton();
     void updateSize();
-    
+
     void setInformativeText();
     void iconPixmap();
 
@@ -683,7 +683,13 @@ void tst_QMessageBox::incorrectDefaultButton()
 void tst_QMessageBox::updateSize()
 {
     QMessageBox box;
+#ifdef Q_WS_S60
+    // In S60 messagebox is always occupies maximum width, i.e. screen width
+    // so we need to have long enough text to split over several line
+    box.setText("This is awesome long text");
+#else
     box.setText("This is awesome");
+#endif
     box.show();
     QSize oldSize = box.size();
     QString longText;
@@ -693,9 +699,12 @@ void tst_QMessageBox::updateSize()
     QVERIFY(box.size() != oldSize); // should have grown
     QVERIFY(box.width() > oldSize.width() || box.height() > oldSize.height());
     oldSize = box.size();
+#ifndef Q_WS_S60
+    // In S60 dialogs buttons are in softkey area -> message box size does not change
     box.setStandardButtons(QMessageBox::StandardButtons(0xFFFF));
     QVERIFY(box.size() != oldSize); // should have grown
     QVERIFY(box.width() > oldSize.width() || box.height() > oldSize.height());
+#endif
 }
 
 void tst_QMessageBox::setInformativeText()

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -109,6 +109,7 @@ private slots:
     void capitalization_capitalize();
     void longText();
     void widthOfTabs();
+    void columnWrapWithTabs();
 
     // QTextLine stuff
     void setNumColumnsWrapAtWordBoundaryOrAnywhere();
@@ -1274,6 +1275,41 @@ void tst_QTextLayout::widthOfTabs()
     engine.itemize();
     QCOMPARE(qRound(engine.width(0, 5)), qRound(engine.boundingBox(0, 5).width));
 }
+
+void tst_QTextLayout::columnWrapWithTabs()
+{
+    QTextLayout textLayout;
+    {
+        QTextOption textOption;
+        textOption.setWrapMode(QTextOption::WordWrap);
+        textLayout.setTextOption(textOption);
+    }
+
+    // Make sure string with spaces does not break
+    {
+        QString text = "Foo bar foo bar foo bar";
+        textLayout.setText(text);
+
+        textLayout.beginLayout();
+        QTextLine line = textLayout.createLine();
+        line.setNumColumns(30);
+        QCOMPARE(line.textLength(), text.length());
+        textLayout.endLayout();
+    }
+
+    // Make sure string with tabs breaks
+    {
+        QString text = "Foo\tbar\tfoo\tbar\tfoo\tbar";
+        textLayout.setText(text);
+        textLayout.beginLayout();
+        QTextLine line = textLayout.createLine();
+        line.setNumColumns(30);
+        QVERIFY(line.textLength() < text.length());
+        textLayout.endLayout();
+    }
+
+}
+
 
 QTEST_MAIN(tst_QTextLayout)
 #include "tst_qtextlayout.moc"

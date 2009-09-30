@@ -90,6 +90,11 @@ bool JSSVGLinearGradientElement::getOwnPropertySlot(ExecState* exec, const Ident
     return getStaticValueSlot<JSSVGLinearGradientElement, Base>(exec, &JSSVGLinearGradientElementTable, this, propertyName, slot);
 }
 
+bool JSSVGLinearGradientElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGLinearGradientElement, Base>(exec, &JSSVGLinearGradientElementTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGLinearGradientElementX1(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGLinearGradientElement* castedThis = static_cast<JSSVGLinearGradientElement*>(asObject(slot.slotBase()));

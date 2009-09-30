@@ -112,6 +112,11 @@ bool JSSVGEllipseElementPrototype::getOwnPropertySlot(ExecState* exec, const Ide
     return getStaticFunctionSlot<JSObject>(exec, &JSSVGEllipseElementPrototypeTable, this, propertyName, slot);
 }
 
+bool JSSVGEllipseElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticFunctionDescriptor<JSObject>(exec, &JSSVGEllipseElementPrototypeTable, this, propertyName, descriptor);
+}
+
 const ClassInfo JSSVGEllipseElement::s_info = { "SVGEllipseElement", &JSSVGElement::s_info, &JSSVGEllipseElementTable, 0 };
 
 JSSVGEllipseElement::JSSVGEllipseElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGEllipseElement> impl)
@@ -127,6 +132,11 @@ JSObject* JSSVGEllipseElement::createPrototype(ExecState* exec, JSGlobalObject* 
 bool JSSVGEllipseElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSSVGEllipseElement, Base>(exec, &JSSVGEllipseElementTable, this, propertyName, slot);
+}
+
+bool JSSVGEllipseElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGEllipseElement, Base>(exec, &JSSVGEllipseElementTable, this, propertyName, descriptor);
 }
 
 JSValue jsSVGEllipseElementCx(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -276,7 +286,7 @@ void setJSSVGEllipseElementXmlspace(ExecState* exec, JSObject* thisObject, JSVal
 JSValue JSC_HOST_CALL jsSVGEllipseElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGEllipseElement::s_info))
+    if (!thisValue.inherits(&JSSVGEllipseElement::s_info))
         return throwError(exec, TypeError);
     JSSVGEllipseElement* castedThisObj = static_cast<JSSVGEllipseElement*>(asObject(thisValue));
     SVGEllipseElement* imp = static_cast<SVGEllipseElement*>(castedThisObj->impl());
@@ -290,7 +300,7 @@ JSValue JSC_HOST_CALL jsSVGEllipseElementPrototypeFunctionHasExtension(ExecState
 JSValue JSC_HOST_CALL jsSVGEllipseElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGEllipseElement::s_info))
+    if (!thisValue.inherits(&JSSVGEllipseElement::s_info))
         return throwError(exec, TypeError);
     JSSVGEllipseElement* castedThisObj = static_cast<JSSVGEllipseElement*>(asObject(thisValue));
     SVGEllipseElement* imp = static_cast<SVGEllipseElement*>(castedThisObj->impl());
@@ -304,7 +314,7 @@ JSValue JSC_HOST_CALL jsSVGEllipseElementPrototypeFunctionGetPresentationAttribu
 JSValue JSC_HOST_CALL jsSVGEllipseElementPrototypeFunctionGetBBox(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGEllipseElement::s_info))
+    if (!thisValue.inherits(&JSSVGEllipseElement::s_info))
         return throwError(exec, TypeError);
     JSSVGEllipseElement* castedThisObj = static_cast<JSSVGEllipseElement*>(asObject(thisValue));
     SVGEllipseElement* imp = static_cast<SVGEllipseElement*>(castedThisObj->impl());
@@ -317,7 +327,7 @@ JSValue JSC_HOST_CALL jsSVGEllipseElementPrototypeFunctionGetBBox(ExecState* exe
 JSValue JSC_HOST_CALL jsSVGEllipseElementPrototypeFunctionGetCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGEllipseElement::s_info))
+    if (!thisValue.inherits(&JSSVGEllipseElement::s_info))
         return throwError(exec, TypeError);
     JSSVGEllipseElement* castedThisObj = static_cast<JSSVGEllipseElement*>(asObject(thisValue));
     SVGEllipseElement* imp = static_cast<SVGEllipseElement*>(castedThisObj->impl());
@@ -330,7 +340,7 @@ JSValue JSC_HOST_CALL jsSVGEllipseElementPrototypeFunctionGetCTM(ExecState* exec
 JSValue JSC_HOST_CALL jsSVGEllipseElementPrototypeFunctionGetScreenCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGEllipseElement::s_info))
+    if (!thisValue.inherits(&JSSVGEllipseElement::s_info))
         return throwError(exec, TypeError);
     JSSVGEllipseElement* castedThisObj = static_cast<JSSVGEllipseElement*>(asObject(thisValue));
     SVGEllipseElement* imp = static_cast<SVGEllipseElement*>(castedThisObj->impl());
@@ -343,7 +353,7 @@ JSValue JSC_HOST_CALL jsSVGEllipseElementPrototypeFunctionGetScreenCTM(ExecState
 JSValue JSC_HOST_CALL jsSVGEllipseElementPrototypeFunctionGetTransformToElement(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
-    if (!thisValue.isObject(&JSSVGEllipseElement::s_info))
+    if (!thisValue.inherits(&JSSVGEllipseElement::s_info))
         return throwError(exec, TypeError);
     JSSVGEllipseElement* castedThisObj = static_cast<JSSVGEllipseElement*>(asObject(thisValue));
     SVGEllipseElement* imp = static_cast<SVGEllipseElement*>(castedThisObj->impl());

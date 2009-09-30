@@ -89,7 +89,7 @@ public:
     void scrollbarModes(ScrollbarMode& horizontalMode, ScrollbarMode& verticalMode) const;
     ScrollbarMode horizontalScrollbarMode() const { ScrollbarMode horizontal, vertical; scrollbarModes(horizontal, vertical); return horizontal; }
     ScrollbarMode verticalScrollbarMode() const { ScrollbarMode horizontal, vertical; scrollbarModes(horizontal, vertical); return vertical; }
-    virtual void setCanHaveScrollbars(bool flag);
+    void setCanHaveScrollbars(bool flag);
     bool canHaveScrollbars() const { return horizontalScrollbarMode() != ScrollbarAlwaysOff || verticalScrollbarMode() != ScrollbarAlwaysOff; }
 
     // Overridden by FrameView to create custom CSS scrollbars if applicable.
@@ -239,6 +239,10 @@ protected:
     void setHasHorizontalScrollbar(bool);
     void setHasVerticalScrollbar(bool);
 
+    IntRect scrollCornerRect() const;
+    virtual void updateScrollCorner();
+    virtual void paintScrollCorner(GraphicsContext*, const IntRect& cornerRect);
+    
 private:
     RefPtr<Scrollbar> m_horizontalScrollbar;
     RefPtr<Scrollbar> m_verticalScrollbar;

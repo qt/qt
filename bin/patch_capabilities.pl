@@ -2,6 +2,7 @@
 #############################################################################
 ##
 ## Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+## All rights reserved.
 ## Contact: Nokia Corporation (qt-info@nokia.com)
 ##
 ## This file is part of the S60 port of the Qt Toolkit.
@@ -21,10 +22,9 @@
 ## ensure the GNU Lesser General Public License version 2.1 requirements
 ## will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 ##
-## In addition, as a special exception, Nokia gives you certain
-## additional rights.  These rights are described in the Nokia Qt LGPL
-## Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-## package.
+## In addition, as a special exception, Nokia gives you certain additional
+## rights.  These rights are described in the Nokia Qt LGPL Exception
+## version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 ##
 ## If you have questions regarding the use of this file, please contact
 ## Nokia at qt-info@nokia.com.
@@ -51,8 +51,8 @@ sub Usage() {
     print("specified for deployment in a .pkg file.\n");
     print("If no capabilities are given, the binaries will be given the\n");
     print("capabilities supported by self-signed certificates.\n");
-    print("\nUsage: patch_capabilities.pl pkg_filename [target-platform] [capability list]\n");
-    print("    If template .pkg file is given, next agrument must be 'target-platform'.\n");
+    print("\n *** NOTE: If *_template.pkg file is given, 'target-platform' is REQUIRED. ***\n");
+    print("\nUsage: patch_capabilities.pl pkg_filename <target-platform> [capability list]\n");
     print("\nE.g. patch_capabilities.pl myapp_template.pkg release-armv5 \"All -TCB\"\n");
     exit();
 }

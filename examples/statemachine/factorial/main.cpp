@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -98,13 +98,13 @@ public:
     {
         if (!QSignalTransition::eventTest(e))
             return false;
-        QSignalEvent *se = static_cast<QSignalEvent*>(e);
+        QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(e);
         return se->arguments().at(0).toInt() > 1;
     }
 
     virtual void onTransition(QEvent *e)
     {
-        QSignalEvent *se = static_cast<QSignalEvent*>(e);
+        QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(e);
         int x = se->arguments().at(0).toInt();
         int fac = m_fact->property("fac").toInt();
         m_fact->setProperty("fac",  x * fac);
@@ -128,7 +128,7 @@ public:
     {
         if (!QSignalTransition::eventTest(e))
             return false;
-        QSignalEvent *se = static_cast<QSignalEvent*>(e);
+        QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(e);
         return se->arguments().at(0).toInt() <= 1;
     }
 

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -45,12 +45,6 @@
 #include <private/qpaintengineex_p.h>
 #include <private/qpaintbuffer_p.h>
 
-struct Frame
-{
-    QRegion updateRegion;
-    QPaintBuffer *buffer;
-};
-
 class ReplayWidget : public QWidget
 {
     Q_OBJECT
@@ -63,7 +57,9 @@ public slots:
     void updateRect();
 
 private:
-    QList<Frame> frames;
+    QList<QRegion> updates;
+    QPaintBuffer buffer;
+
     int currentFrame;
     int currentIteration;
     QTime timer;
@@ -74,7 +70,7 @@ private:
 
 void ReplayWidget::updateRect()
 {
-    update(frames.at(currentFrame).updateRegion);
+    update(updates.at(currentFrame));
 }
 
 void ReplayWidget::paintEvent(QPaintEvent *)
@@ -83,10 +79,10 @@ void ReplayWidget::paintEvent(QPaintEvent *)
 
 //    p.setClipRegion(frames.at(currentFrame).updateRegion);
 
-    frames.at(currentFrame).buffer->draw(&p);
+    buffer.draw(&p, currentFrame);
 
     ++currentFrame;
-    if (currentFrame >= frames.size()) {
+    if (currentFrame >= buffer.numFrames()) {
         currentFrame = 0;
         ++currentIteration;
 
@@ -116,15 +112,13 @@ void ReplayWidget::paintEvent(QPaintEvent *)
                 stddev = qSqrt(stddev / iterationTimes.size());
 
                 qSort(iterationTimes.begin(), iterationTimes.end());
-                qreal median = iterationTimes.at(iterationTimes.size() / 2);
-                if ((iterationTimes.size() % 1) == 1)
-                    median = (median + iterationTimes.at(iterationTimes.size() / 2 - 1)) * 0.5;
+                uint median = iterationTimes.at(iterationTimes.size() / 2);
 
                 stddev = 100 * stddev / mean;
 
                 if (iterationTimes.size() >= 10 || stddev < 4) {
-                    printf("%s, iterations: %d, frames: %d, min(ms): %d, median(ms): %f, stddev: %f %%, max(fps): %f\n", qPrintable(filename),
-                            iterationTimes.size(), frames.size(), min, median, stddev, 1000. * frames.size() / min);
+                    printf("%s, iterations: %d, frames: %d, min(ms): %d, median(ms): %d, stddev: %f %%, max(fps): %f\n", qPrintable(filename),
+                            iterationTimes.size(), updates.size(), min, median, stddev, 1000. * updates.size() / min);
                     deleteLater();
                     return;
                 }
@@ -146,34 +140,12 @@ ReplayWidget::ReplayWidget(const QString &filename_)
     QRect bounds;
     if (file.open(QIODevice::ReadOnly)) {
         QDataStream in(&file);
-
-        while (true) {
-            int frameId;
-            in >> frameId;
-
-            if (in.status() != QDataStream::Ok)
-                break;
-
-            qulonglong windowId;
-            QRegion rgn;
-
-            in >> windowId;
-
-            Frame frame;
-            frame.buffer = new QPaintBuffer;
-
-            in >> bounds;
-
-            in >> frame.updateRegion;
-            in >> *frame.buffer;
-
-            frames << frame;
-        }
+        in >> buffer >> updates;
     }
 
-    qDebug() << "Read" << frames.size() << "frames";
+    qDebug() << "Read paint buffer with" << buffer.numFrames() << "frames";
 
-    resize(bounds.size());
+    resize(buffer.boundingRect().size().toSize());
 
     setAutoFillBackground(false);
     setAttribute(Qt::WA_NoSystemBackground);

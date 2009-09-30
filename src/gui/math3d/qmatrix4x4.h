@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -165,6 +165,7 @@ public:
     QPointF map(const QPointF& point) const;
 #ifndef QT_NO_VECTOR3D
     QVector3D map(const QVector3D& point) const;
+    QVector3D mapVector(const QVector3D& vector) const;
 #endif
 #ifndef QT_NO_VECTOR4D
     QVector4D map(const QVector4D& point) const;
@@ -227,14 +228,14 @@ Q_INLINE_TEMPLATE QMatrix4x4::QMatrix4x4
     (const QGenericMatrix<N, M, qreal>& matrix)
 {
     const qreal *values = matrix.constData();
-    for (int col = 0; col < 4; ++col) {
-        for (int row = 0; row < 4; ++row) {
-            if (col < N && row < M)
-                m[col][row] = values[col * M + row];
-            else if (col == row)
-                m[col][row] = 1.0f;
+    for (int matrixCol = 0; matrixCol < 4; ++matrixCol) {
+        for (int matrixRow = 0; matrixRow < 4; ++matrixRow) {
+            if (matrixCol < N && matrixRow < M)
+                m[matrixCol][matrixRow] = values[matrixCol * M + matrixRow];
+            else if (matrixCol == matrixRow)
+                m[matrixCol][matrixRow] = 1.0f;
             else
-                m[col][row] = 0.0f;
+                m[matrixCol][matrixRow] = 0.0f;
         }
     }
     flagBits = General;
@@ -245,14 +246,14 @@ QGenericMatrix<N, M, qreal> QMatrix4x4::toGenericMatrix() const
 {
     QGenericMatrix<N, M, qreal> result;
     qreal *values = result.data();
-    for (int col = 0; col < N; ++col) {
-        for (int row = 0; row < M; ++row) {
-            if (col < 4 && row < 4)
-                values[col * M + row] = m[col][row];
-            else if (col == row)
-                values[col * M + row] = 1.0f;
+    for (int matrixCol = 0; matrixCol < N; ++matrixCol) {
+        for (int matrixRow = 0; matrixRow < M; ++matrixRow) {
+            if (matrixCol < 4 && matrixRow < 4)
+                values[matrixCol * M + matrixRow] = m[matrixCol][matrixRow];
+            else if (matrixCol == matrixRow)
+                values[matrixCol * M + matrixRow] = 1.0f;
             else
-                values[col * M + row] = 0.0f;
+                values[matrixCol * M + matrixRow] = 0.0f;
         }
     }
     return result;
@@ -260,17 +261,17 @@ QGenericMatrix<N, M, qreal> QMatrix4x4::toGenericMatrix() const
 
 #endif
 
-inline const qreal& QMatrix4x4::operator()(int row, int column) const
+inline const qreal& QMatrix4x4::operator()(int aRow, int aColumn) const
 {
-    Q_ASSERT(row >= 0 && row < 4 && column >= 0 && column < 4);
-    return m[column][row];
+    Q_ASSERT(aRow >= 0 && aRow < 4 && aColumn >= 0 && aColumn < 4);
+    return m[aColumn][aRow];
 }
 
-inline qreal& QMatrix4x4::operator()(int row, int column)
+inline qreal& QMatrix4x4::operator()(int aRow, int aColumn)
 {
-    Q_ASSERT(row >= 0 && row < 4 && column >= 0 && column < 4);
+    Q_ASSERT(aRow >= 0 && aRow < 4 && aColumn >= 0 && aColumn < 4);
     flagBits = General;
-    return m[column][row];
+    return m[aColumn][aRow];
 }
 
 inline QVector4D QMatrix4x4::column(int index) const
@@ -938,6 +939,27 @@ inline QPointF QMatrix4x4::map(const QPointF& point) const
 inline QVector3D QMatrix4x4::map(const QVector3D& point) const
 {
     return *this * point;
+}
+
+inline QVector3D QMatrix4x4::mapVector(const QVector3D& vector) const
+{
+    if (flagBits == Identity || flagBits == Translation) {
+        return vector;
+    } else if (flagBits == Scale || flagBits == (Translation | Scale)) {
+        return QVector3D(vector.x() * m[0][0],
+                         vector.y() * m[1][1],
+                         vector.z() * m[2][2]);
+    } else {
+        return QVector3D(vector.x() * m[0][0] +
+                         vector.y() * m[1][0] +
+                         vector.z() * m[2][0],
+                         vector.x() * m[0][1] +
+                         vector.y() * m[1][1] +
+                         vector.z() * m[2][1],
+                         vector.x() * m[0][2] +
+                         vector.y() * m[1][2] +
+                         vector.z() * m[2][2]);
+    }
 }
 
 #endif

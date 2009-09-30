@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -1705,8 +1705,6 @@ void tst_QSqlDatabase::precisionPolicy()
     QEXPECT_FAIL("QOCI", "Oracle fails here, to retrieve next", Continue);
     QVERIFY_SQL(q, exec(query));
     QVERIFY_SQL(q, next());
-    if(db.driverName().startsWith("QSQLITE"))
-        QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
     QCOMPARE(q.value(0).type(), QVariant::LongLong);
 
     QSql::NumericalPrecisionPolicy oldPrecision= db.numericalPrecisionPolicy();
@@ -1715,8 +1713,6 @@ void tst_QSqlDatabase::precisionPolicy()
     q2.exec(QString("SELECT num FROM %1 WHERE id = 2").arg(tableName));
     QVERIFY_SQL(q2, exec(query));
     QVERIFY_SQL(q2, next());
-    if(db.driverName().startsWith("QSQLITE"))
-        QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
     QCOMPARE(q2.value(0).type(), QVariant::LongLong);
     db.setNumericalPrecisionPolicy(oldPrecision);
 }
@@ -2005,6 +2001,10 @@ void tst_QSqlDatabase::odbc_bindBoolean()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
+    if (tst_Databases::isMySQL(db)) {
+        QSKIP("MySql has inconsistent behaviour of bit field type across versions.", SkipSingle);
+        return;
+    }
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("CREATE TABLE " + qTableName("qtestBindBool") + "(id int, boolvalue bit)"));
 
@@ -2034,7 +2034,10 @@ void tst_QSqlDatabase::odbc_testqGetString()
     CHECK_DATABASE(db);
 
     QSqlQuery q(db);
-    QVERIFY_SQL(q, exec("CREATE TABLE " + qTableName("testqGetString") + "(id int, vcvalue varchar(65538))"));
+    if (tst_Databases::isSqlServer(db))
+        QVERIFY_SQL(q, exec("CREATE TABLE " + qTableName("testqGetString") + "(id int, vcvalue varchar(MAX))"));
+    else
+        QVERIFY_SQL(q, exec("CREATE TABLE " + qTableName("testqGetString") + "(id int, vcvalue varchar(65538))"));
 
     QString largeString;
     largeString.fill('A', 65536);
@@ -2179,18 +2182,18 @@ void tst_QSqlDatabase::oci_synonymstest()
     QSqlQuery q(db);
     QString creator(qTableName("CREATOR")), appuser(qTableName("APPUSER")), table1(qTableName("TABLE1"));
 //     QVERIFY_SQL(q, exec("drop public synonym "+table1));
-    QVERIFY_SQL(q, exec(QLatin1String("create user "+creator+" identified by "+creator+" default tablespace users temporary tablespace temp")));
-    QVERIFY_SQL(q, exec(QLatin1String("grant CONNECT to "+creator)));
-    QVERIFY_SQL(q, exec(QLatin1String("grant RESOURCE to "+creator)));
+    QVERIFY_SQL(q, exec(QString("create user %1 identified by %2 default tablespace users temporary tablespace temp").arg(creator).arg(creator)));
+    QVERIFY_SQL(q, exec(QString("grant CONNECT to %1").arg(creator)));
+    QVERIFY_SQL(q, exec(QString("grant RESOURCE to %1").arg(creator)));
     QSqlDatabase db2=db.cloneDatabase(db, QLatin1String("oci_synonymstest"));
     db2.close();
     QVERIFY_SQL(db2, open(creator,creator));
     QSqlQuery q2(db2);
-    QVERIFY_SQL(q2, exec("create table "+table1+"(id int primary key)"));
-    QVERIFY_SQL(q, exec(QLatin1String("create user "+appuser+" identified by "+appuser+" default tablespace users temporary tablespace temp")));
-    QVERIFY_SQL(q, exec(QLatin1String("grant CREATE ANY SYNONYM to "+appuser)));
-    QVERIFY_SQL(q, exec(QLatin1String("grant CONNECT to "+appuser)));
-    QVERIFY_SQL(q2, exec(QLatin1String("grant select, insert, update, delete on "+table1+" to "+appuser)));
+    QVERIFY_SQL(q2, exec(QString("create table %1(id int primary key)").arg(table1)));
+    QVERIFY_SQL(q, exec(QString("create user %1 identified by %2 default tablespace users temporary tablespace temp").arg(appuser).arg(appuser)));
+    QVERIFY_SQL(q, exec(QString("grant CREATE ANY SYNONYM to %1").arg(appuser)));
+    QVERIFY_SQL(q, exec(QString("grant CONNECT to %1").arg(appuser)));
+    QVERIFY_SQL(q2, exec(QString("grant select, insert, update, delete on %1 to %2").arg(table1).arg(appuser)));
     QSqlDatabase db3=db.cloneDatabase(db, QLatin1String("oci_synonymstest2"));
     db3.close();
     QVERIFY_SQL(db3, open(appuser,appuser));

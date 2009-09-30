@@ -94,6 +94,11 @@ bool JSSVGFESpotLightElement::getOwnPropertySlot(ExecState* exec, const Identifi
     return getStaticValueSlot<JSSVGFESpotLightElement, Base>(exec, &JSSVGFESpotLightElementTable, this, propertyName, slot);
 }
 
+bool JSSVGFESpotLightElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFESpotLightElement, Base>(exec, &JSSVGFESpotLightElementTable, this, propertyName, descriptor);
+}
+
 JSValue jsSVGFESpotLightElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGFESpotLightElement* castedThis = static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()));

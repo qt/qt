@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -50,15 +50,18 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Create text editor and set softkeys to it
     textEditor= new QTextEdit(tr("Navigate in UI to see context sensitive softkeys in action"), this);
-    QAction* menu = new QAction(tr("Menu"), this);
-    menu->setSoftKeyRole(QAction::MenuSoftKey);
     QAction* clear = new QAction(tr("Clear"), this);
-    clear->setSoftKeyRole(QAction::CancelSoftKey);
+    clear->setSoftKeyRole(QAction::NegativeSoftKey);
 
-    QList<QAction*> textEditorSoftKeys;
-    textEditorSoftKeys.append(menu);
-    textEditorSoftKeys.append(clear);
-    textEditor->setSoftKeys(textEditorSoftKeys);
+    textEditor->addAction(clear);
+
+    ok = new QAction(tr("Ok"), this);
+    ok->setSoftKeyRole(QAction::PositiveSoftKey);
+    connect(ok, SIGNAL(triggered()), this, SLOT(okPressed()));
+
+    cancel = new QAction(tr("Cancel"), this);
+    cancel->setSoftKeyRole(QAction::NegativeSoftKey);
+    connect(cancel, SIGNAL(triggered()), this, SLOT(cancelPressed()));
 
     infoLabel = new QLabel(tr(""), this);
     infoLabel->setContextMenuPolicy(Qt::NoContextMenu);
@@ -113,20 +116,8 @@ void MainWindow::openDialog()
 
 void MainWindow::addSoftKeys()
 {
-    ok = new QAction(tr("Ok"), this);
-    ok->setSoftKeyRole(QAction::OkSoftKey);
-    connect(ok, SIGNAL(triggered()), this, SLOT(okPressed()));
-
-    cancel = new QAction(tr("Cancel"), this);
-    cancel->setSoftKeyRole(QAction::CancelSoftKey);
-    connect(cancel, SIGNAL(triggered()), this, SLOT(cancelPressed()));
-
-    QList<QAction*> softkeys;
-    softkeys.append(ok);
-    softkeys.append(cancel);
-    QWidget* focusWidget = QApplication::focusWidget();
-    if (focusWidget)
-        focusWidget->setSoftKeys(softkeys);
+    addAction(ok);
+    addAction(cancel);
 }
 
 void MainWindow::setCustomSoftKeys()
@@ -137,9 +128,8 @@ void MainWindow::setCustomSoftKeys()
         }
     else {
         infoLabel->setText(tr("Custom softkeys removed"));
-        QWidget* focusWidget = QApplication::focusWidget();
-        if (focusWidget)
-            focusWidget->setSoftKey(0);
+        removeAction(ok);
+        removeAction(cancel);
     }
 }
 

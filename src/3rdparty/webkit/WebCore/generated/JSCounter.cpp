@@ -72,6 +72,7 @@ public:
         putDirect(exec->propertyNames().prototype, JSCounterPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
@@ -86,6 +87,11 @@ const ClassInfo JSCounterConstructor::s_info = { "CounterConstructor", 0, &JSCou
 bool JSCounterConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCounterConstructor, DOMObject>(exec, &JSCounterConstructorTable, this, propertyName, slot);
+}
+
+bool JSCounterConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCounterConstructor, DOMObject>(exec, &JSCounterConstructorTable, this, propertyName, descriptor);
 }
 
 /* Hash table for prototype */
@@ -119,7 +125,7 @@ JSCounter::JSCounter(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalO
 
 JSCounter::~JSCounter()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
+    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSObject* JSCounter::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -130,6 +136,11 @@ JSObject* JSCounter::createPrototype(ExecState* exec, JSGlobalObject* globalObje
 bool JSCounter::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticValueSlot<JSCounter, Base>(exec, &JSCounterTable, this, propertyName, slot);
+}
+
+bool JSCounter::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSCounter, Base>(exec, &JSCounterTable, this, propertyName, descriptor);
 }
 
 JSValue jsCounterIdentifier(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -172,7 +183,7 @@ JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Counter
 }
 Counter* toCounter(JSC::JSValue value)
 {
-    return value.isObject(&JSCounter::s_info) ? static_cast<JSCounter*>(asObject(value))->impl() : 0;
+    return value.inherits(&JSCounter::s_info) ? static_cast<JSCounter*>(asObject(value))->impl() : 0;
 }
 
 }

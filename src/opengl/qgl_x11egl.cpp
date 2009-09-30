@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -50,11 +50,6 @@
 
 
 QT_BEGIN_NAMESPACE
-
-bool QGLFormat::hasOpenGL()
-{
-    return true;
-}
 
 bool QGLFormat::hasOpenGLOverlays()
 {
@@ -117,93 +112,6 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
 
     return true;
 }
-
-
-void QGLContext::reset()
-{
-    Q_D(QGLContext);
-    if (!d->valid)
-        return;
-    d->cleanup();
-    doneCurrent();
-    if (d->eglContext) {
-        delete d->eglContext;
-        d->eglContext = 0;
-    }
-    d->crWin = false;
-    d->sharing = false;
-    d->valid = false;
-    d->transpColor = QColor();
-    d->initDone = false;
-    qgl_share_reg()->removeShare(this);
-}
-
-void QGLContext::makeCurrent()
-{
-    Q_D(QGLContext);
-    if(!d->valid || !d->eglContext) {
-        qWarning("QGLContext::makeCurrent(): Cannot make invalid context current");
-        return;
-    }
-
-    if (d->eglContext->makeCurrent()) {
-        if (!qgl_context_storage.hasLocalData() && QThread::currentThread())
-            qgl_context_storage.setLocalData(new QGLThreadContext);
-        if (qgl_context_storage.hasLocalData())
-            qgl_context_storage.localData()->context = this;
-        currentCtx = this;
-    }
-}
-
-void QGLContext::doneCurrent()
-{
-    Q_D(QGLContext);
-    if (d->eglContext)
-        d->eglContext->doneCurrent();
-
-    if (qgl_context_storage.hasLocalData())
-        qgl_context_storage.localData()->context = 0;
-    currentCtx = 0;
-}
-
-
-void QGLContext::swapBuffers() const
-{
-    Q_D(const QGLContext);
-    if(!d->valid || !d->eglContext)
-        return;
-
-    d->eglContext->swapBuffers();
-}
-
-QColor QGLContext::overlayTransparentColor() const
-{
-    return QColor(0, 0, 0);                // Invalid color
-}
-
-uint QGLContext::colorIndex(const QColor &c) const
-{
-    //### color index doesn't work on egl
-    Q_UNUSED(c);
-    return 0;
-}
-
-void QGLContext::generateFontDisplayLists(const QFont & fnt, int listBase)
-{
-    Q_UNUSED(fnt);
-    Q_UNUSED(listBase);
-}
-
-void *QGLContext::getProcAddress(const QString &proc) const
-{
-    return (void*)eglGetProcAddress(reinterpret_cast<const char *>(proc.toLatin1().data()));
-}
-
-void QGLWidget::setMouseTracking(bool enable)
-{
-    QWidget::setMouseTracking(enable);
-}
-
 
 void QGLWidget::resizeEvent(QResizeEvent *)
 {
@@ -305,7 +213,7 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
                 XRenderPictFormat *format;
                 format = XRenderFindVisualFormat(x11Info().display(), chosenVisualInfo->visual);
                 if (format->type == PictTypeDirect && format->direct.alphaMask) {
-                    qDebug("Using opaque X Visual ID (%d) provided by EGL", (int)vi.visualid);
+//                    qDebug("Using opaque X Visual ID (%d) provided by EGL", (int)vi.visualid);
                     vi = *chosenVisualInfo;
                 }
                 else {
@@ -316,7 +224,7 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
             } else
 #endif
             {
-                qDebug("Using opaque X Visual ID (%d) provided by EGL", (int)vi.visualid);
+//                qDebug("Using opaque X Visual ID (%d) provided by EGL", (int)vi.visualid);
                 vi = *chosenVisualInfo;
             }
             XFree(chosenVisualInfo);
@@ -349,7 +257,7 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
             format = XRenderFindVisualFormat(x11Info().display(), matchingVisuals[i].visual);
             if (format->type == PictTypeDirect && format->direct.alphaMask) {
                 vi = matchingVisuals[i];
-                qDebug("Using X Visual ID (%d) for ARGB visual as provided by XRender", (int)vi.visualid);
+//                qDebug("Using X Visual ID (%d) for ARGB visual as provided by XRender", (int)vi.visualid);
                 break;
             }
         }
@@ -372,8 +280,9 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
                 return;
             } else
                 qWarning("         - Falling back to X11 suggested depth (%d)", depth);
-        } else
-            qDebug("Using X Visual ID (%d) for EGL provided depth (%d)", (int)vi.visualid, depth);
+        }
+//        else
+//            qDebug("Using X Visual ID (%d) for EGL provided depth (%d)", (int)vi.visualid, depth);
 
         // Don't try to use ARGB now unless the visual is 32-bit - even then it might stil fail :-(
         if (useArgb)
@@ -418,9 +327,11 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
 
 
     // Create the EGL surface to draw into.
-    if (!d->glcx->d_func()->eglContext->createSurface(this)) {
-        delete d->glcx->d_func()->eglContext;
-        d->glcx->d_func()->eglContext = 0;
+    QGLContextPrivate *ctxpriv = d->glcx->d_func();
+    ctxpriv->eglSurface = ctxpriv->eglContext->createSurface(this);
+    if (ctxpriv->eglSurface == EGL_NO_SURFACE) {
+        delete ctxpriv->eglContext;
+        ctxpriv->eglContext = 0;
         return;
     }
 
@@ -445,11 +356,6 @@ void QGLWidgetPrivate::init(QGLContext *context, const QGLWidget* shareWidget)
     }
 }
 
-bool QGLWidgetPrivate::renderCxPm(QPixmap*)
-{
-    return false;
-}
-
 void QGLWidgetPrivate::cleanupColormaps()
 {
 }
@@ -470,7 +376,14 @@ void QGLExtensions::init()
     if (init_done)
         return;
     init_done = true;
+
+    // We need a context current to initialize the extensions.
+    QGLWidget tmpWidget;
+    tmpWidget.makeCurrent();
+
     init_extensions();
+
+    tmpWidget.doneCurrent();
 }
 
 // Re-creates the EGL surface if the window ID has changed or if force is true
@@ -482,8 +395,14 @@ void QGLWidgetPrivate::recreateEglSurface(bool force)
 
     if ( force || (currentId != eglSurfaceWindowId) ) {
         // The window id has changed so we need to re-create the EGL surface
-        if (!glcx->d_func()->eglContext->recreateSurface(q))
+        QEglContext *ctx = glcx->d_func()->eglContext;
+        EGLSurface surface = glcx->d_func()->eglSurface;
+        if (surface != EGL_NO_SURFACE)
+            ctx->destroySurface(surface); // Will force doneCurrent() if nec.
+        surface = ctx->createSurface(q);
+        if (surface == EGL_NO_SURFACE)
             qWarning("Error creating EGL window surface: 0x%x", eglGetError());
+        glcx->d_func()->eglSurface = surface;
 
         eglSurfaceWindowId = currentId;
     }
@@ -623,9 +542,6 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
         haveTFP = false;
         return 0;
     }
-
-    // Always inverted because the opposite is not supported...
-    options |= QGLContext::InvertedYBindOption;
 
     QGLTexture *texture = new QGLTexture(q, textureId, GL_TEXTURE_2D, options);
     pixmapData->flags |= QX11PixmapData::InvertedWhenBoundToTexture;

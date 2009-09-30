@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the demonstration applications of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -324,9 +324,10 @@ void MenuManager::launchExample(const QString &name)
 
 #ifdef Q_OS_WIN
     //make sure it finds the dlls on windows
-    QString curpath = QString::fromLocal8Bit(qgetenv("PATH").constData());
-    QString newpath = QString("PATH=%1;%2").arg(QLibraryInfo::location(QLibraryInfo::BinariesPath), curpath);
-    process->setEnvironment(QStringList(newpath));
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.insert(QLatin1String("PATH"), QLibraryInfo::location(QLibraryInfo::BinariesPath) 
+               + QLatin1Char(';') + env.value(QLatin1String("Path")));
+    process->setProcessEnvironment(env);
 #endif
 
     if (info[name]["changedirectory"] != "false"){

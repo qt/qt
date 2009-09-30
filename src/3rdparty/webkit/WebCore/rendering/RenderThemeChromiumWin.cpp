@@ -311,18 +311,65 @@ void RenderThemeChromiumWin::systemFont(int propId, FontDescription& fontDescrip
     fontDescription = *cachedDesc;
 }
 
+// Map a CSSValue* system color to an index understood by GetSysColor().
+static int cssValueIdToSysColorIndex(int cssValueId)
+{
+    switch (cssValueId) {
+    case CSSValueActiveborder: return COLOR_ACTIVEBORDER;
+    case CSSValueActivecaption: return COLOR_ACTIVECAPTION;
+    case CSSValueAppworkspace: return COLOR_APPWORKSPACE;
+    case CSSValueBackground: return COLOR_BACKGROUND;
+    case CSSValueButtonface: return COLOR_BTNFACE;
+    case CSSValueButtonhighlight: return COLOR_BTNHIGHLIGHT;
+    case CSSValueButtonshadow: return COLOR_BTNSHADOW;
+    case CSSValueButtontext: return COLOR_BTNTEXT;
+    case CSSValueCaptiontext: return COLOR_CAPTIONTEXT;
+    case CSSValueGraytext: return COLOR_GRAYTEXT;
+    case CSSValueHighlight: return COLOR_HIGHLIGHT;
+    case CSSValueHighlighttext: return COLOR_HIGHLIGHTTEXT;
+    case CSSValueInactiveborder: return COLOR_INACTIVEBORDER;
+    case CSSValueInactivecaption: return COLOR_INACTIVECAPTION;
+    case CSSValueInactivecaptiontext: return COLOR_INACTIVECAPTIONTEXT;
+    case CSSValueInfobackground: return COLOR_INFOBK;
+    case CSSValueInfotext: return COLOR_INFOTEXT;
+    case CSSValueMenu: return COLOR_MENU;
+    case CSSValueMenutext: return COLOR_MENUTEXT;
+    case CSSValueScrollbar: return COLOR_SCROLLBAR;
+    case CSSValueThreeddarkshadow: return COLOR_3DDKSHADOW;
+    case CSSValueThreedface: return COLOR_3DFACE;
+    case CSSValueThreedhighlight: return COLOR_3DHIGHLIGHT;
+    case CSSValueThreedlightshadow: return COLOR_3DLIGHT;
+    case CSSValueThreedshadow: return COLOR_3DSHADOW;
+    case CSSValueWindow: return COLOR_WINDOW;
+    case CSSValueWindowframe: return COLOR_WINDOWFRAME;
+    case CSSValueWindowtext: return COLOR_WINDOWTEXT;
+    default: return -1; // Unsupported CSSValue
+    }
+}
+
+Color RenderThemeChromiumWin::systemColor(int cssValueId) const
+{
+    int sysColorIndex = cssValueIdToSysColorIndex(cssValueId);
+    if (ChromiumBridge::layoutTestMode() || (sysColorIndex == -1))
+        return RenderTheme::systemColor(cssValueId);
+
+    COLORREF color = GetSysColor(sysColorIndex);
+    return Color(GetRValue(color), GetGValue(color), GetBValue(color));
+}
+
 void RenderThemeChromiumWin::adjustSliderThumbSize(RenderObject* o) const
 {
     // These sizes match what WinXP draws for various menus.
     const int sliderThumbAlongAxis = 11;
     const int sliderThumbAcrossAxis = 21;
-    if (o->style()->appearance() == SliderThumbHorizontalPart || o->style()->appearance() == MediaSliderThumbPart) {
+    if (o->style()->appearance() == SliderThumbHorizontalPart) {
         o->style()->setWidth(Length(sliderThumbAlongAxis, Fixed));
         o->style()->setHeight(Length(sliderThumbAcrossAxis, Fixed));
     } else if (o->style()->appearance() == SliderThumbVerticalPart) {
         o->style()->setWidth(Length(sliderThumbAcrossAxis, Fixed));
         o->style()->setHeight(Length(sliderThumbAlongAxis, Fixed));
-    }
+    } else
+        RenderThemeChromiumSkia::adjustSliderThumbSize(o);
 }
 
 bool RenderThemeChromiumWin::paintCheckbox(RenderObject* o, const RenderObject::PaintInfo& i, const IntRect& r)
@@ -464,7 +511,7 @@ unsigned RenderThemeChromiumWin::determineSliderThumbState(RenderObject* o)
         result = TUS_DISABLED;
     else if (supportsFocus(o->style()->appearance()) && isFocused(o->parent()))
         result = TUS_FOCUSED;
-    else if (static_cast<RenderSlider*>(o->parent())->inDragMode())
+    else if (toRenderSlider(o->parent())->inDragMode())
         result = TUS_PRESSED;
     else if (isHovered(o))
         result = TUS_HOT;
@@ -474,14 +521,36 @@ unsigned RenderThemeChromiumWin::determineSliderThumbState(RenderObject* o)
 unsigned RenderThemeChromiumWin::determineClassicState(RenderObject* o)
 {
     unsigned result = 0;
-    if (!isEnabled(o))
-        result = DFCS_INACTIVE;
-    else if (isPressed(o)) // Active supersedes hover
-        result = DFCS_PUSHED;
-    else if (isHovered(o))
-        result = DFCS_HOT;
-    if (isChecked(o))
-        result |= DFCS_CHECKED;
+
+    ControlPart part = o->style()->appearance();
+
+    // Sliders are always in the normal state.
+    if (part == SliderHorizontalPart || part == SliderVerticalPart)
+        return result;
+
+    // So are readonly text fields.
+    if (isReadOnlyControl(o) && (part == TextFieldPart || part == TextAreaPart || part == SearchFieldPart))
+        return result;   
+
+    if (part == SliderThumbHorizontalPart || part == SliderThumbVerticalPart) {
+        if (!isEnabled(o->parent()))
+            result = DFCS_INACTIVE;
+        else if (toRenderSlider(o->parent())->inDragMode()) // Active supersedes hover
+            result = DFCS_PUSHED;
+        else if (isHovered(o))
+            result = DFCS_HOT;
+    } else {
+        if (!isEnabled(o))
+            result = DFCS_INACTIVE;
+        else if (isPressed(o)) // Active supersedes hover
+            result = DFCS_PUSHED;
+        else if (supportsFocus(part) && isFocused(o)) // So does focused
+            result = 0;
+        else if (isHovered(o))
+            result = DFCS_HOT;
+        if (isChecked(o))
+            result |= DFCS_CHECKED;
+    }
     return result;
 }
 
@@ -523,6 +592,7 @@ ThemeData RenderThemeChromiumWin::getThemeData(RenderObject* o)
         break;
     case ListboxPart:
     case MenulistPart:
+    case MenulistButtonPart:
     case SearchFieldPart:
     case TextFieldPart:
     case TextAreaPart:

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -1213,6 +1213,9 @@ bool QMYSQLDriver::open(const QString& db,
     unsigned int optionFlags = Q_CLIENT_MULTI_STATEMENTS;
     const QStringList opts(connOpts.split(QLatin1Char(';'), QString::SkipEmptyParts));
     QString unixSocket;
+#if MYSQL_VERSION_ID >= 50000
+    my_bool reconnect=false;
+#endif
 
     // extract the real options from the string
     for (int i = 0; i < opts.count(); ++i) {
@@ -1223,6 +1226,12 @@ bool QMYSQLDriver::open(const QString& db,
             QString opt = tmp.left(idx).simplified();
             if (opt == QLatin1String("UNIX_SOCKET"))
                 unixSocket = val;
+#if MYSQL_VERSION_ID >= 50000
+            else if (opt == QLatin1String("MYSQL_OPT_RECONNECT")) {
+                if (val == QLatin1String("TRUE") || val == QLatin1String("1") || val.isEmpty())
+                    reconnect = true;
+            }
+#endif
             else if (val == QLatin1String("TRUE") || val == QLatin1String("1"))
                 setOptionFlag(optionFlags, tmp.left(idx).simplified());
             else
@@ -1255,6 +1264,10 @@ bool QMYSQLDriver::open(const QString& db,
             setOpenError(true);
             return false;
         }
+#if MYSQL_VERSION_ID >= 50000
+        if(reconnect)
+            mysql_options(d->mysql, MYSQL_OPT_RECONNECT, &reconnect);
+#endif
     } else {
         setLastError(qMakeError(tr("Unable to connect"),
                      QSqlError::ConnectionError, d));

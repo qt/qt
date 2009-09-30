@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -70,6 +70,10 @@ private slots:
     void matchedLength();
     void wildcard_data();
     void wildcard();
+    void testEscapingWildcard_data();
+    void testEscapingWildcard();
+    void testInvalidWildcard_data();
+    void testInvalidWildcard();
     void caretAnchoredOptimization();
     void isEmpty();
     void prepareEngineOptimization();
@@ -909,8 +913,77 @@ void tst_QRegExp::wildcard()
     QFETCH( int, foundIndex );
 
     QRegExp r( rxp );
-    r.setPatternSyntax(QRegExp::Wildcard);
+    r.setPatternSyntax(QRegExp::WildcardUnix);
     QCOMPARE( r.indexIn( string ), foundIndex );
+}
+
+void tst_QRegExp::testEscapingWildcard_data(){
+    QTest::addColumn<QString>("pattern");
+    QTest::addColumn<QString>("teststring");
+    QTest::addColumn<bool>("isMatching");
+
+    QTest::newRow("[ Not escaped") << "[Qt;" <<  "[Qt;" << false;
+    QTest::newRow("[ Escaped") << "\\[Qt;" <<  "[Qt;" << true;
+
+    QTest::newRow("] Not escaped") << "]Ik;" <<  "]Ik;" << false;
+    QTest::newRow("] Escaped") << "\\]Ip;" <<  "]Ip;" << true;
+
+    QTest::newRow("? Not escaped valid") << "?Ou:" <<  ".Ou:" << true;
+    QTest::newRow("? Not escaped invalid") << "?Tr;" <<  "Tr;" << false;
+    QTest::newRow("? Escaped") << "\\?O;" <<  "?O;" << true;
+
+    QTest::newRow("[] not escaped") << "[lL]" <<  "l" << true;
+    QTest::newRow("case [[]") << "[[abc]" <<  "[" << true;
+    QTest::newRow("case []abc] match ]") << "[]abc]" <<  "]" << true;
+    QTest::newRow("case []abc] match a") << "[]abc]" <<  "a" << true;
+    QTest::newRow("case [abc] match a") << "[abc]" <<  "a" << true;
+    QTest::newRow("case []] don't match [") << "[]abc]" <<  "[" << false;
+    QTest::newRow("case [^]abc] match d") << "[^]abc]" <<  "d" << true;
+    QTest::newRow("case [^]abc] don't match ]") << "[^]abc]" <<  "]" << false;
+
+    QTest::newRow("* Not escaped with char") << "*Te;" <<  "12345Te;" << true;
+    QTest::newRow("* Not escaped without char") << "*Ch;" <<  "Ch;" << true;
+    QTest::newRow("* Not escaped invalid") << "*Ro;" <<  "o;" << false;
+    QTest::newRow("* Escaped") << "\\[Cks;" <<  "[Cks;" << true;
+
+    QTest::newRow("a true '\\' in input") << "\\Qt;" <<  "\\Qt;" << true;
+    QTest::newRow("two true '\\' in input") << "\\\\Qt;" <<  "\\\\Qt;" << true;
+    QTest::newRow("a '\\' at the end") << "\\\\Qt;" <<  "\\\\Qt;" << true;
+
+}
+void tst_QRegExp::testEscapingWildcard(){
+    QFETCH(QString, pattern);
+
+    QRegExp re(pattern);
+    re.setPatternSyntax(QRegExp::WildcardUnix);
+
+    QFETCH(QString, teststring);
+    QFETCH(bool, isMatching);
+    QCOMPARE(re.exactMatch(teststring), isMatching);
+}
+
+void tst_QRegExp::testInvalidWildcard_data(){
+    QTest::addColumn<QString>("pattern");
+    QTest::addColumn<bool>("isValid");
+
+    QTest::newRow("valid []") << "[abc]" << true;
+    QTest::newRow("invalid [") << "[abc" << false;
+    QTest::newRow("ending [") << "abc[" << false;
+    QTest::newRow("ending ]") << "abc]" << false;
+    QTest::newRow("ending [^") << "abc[^" << false;
+    QTest::newRow("ending [\\") << "abc[\\" << false;
+    QTest::newRow("ending []") << "abc[]" << false;
+    QTest::newRow("ending [[") << "abc[[" << false;
+
+}
+void tst_QRegExp::testInvalidWildcard(){
+    QFETCH(QString, pattern);
+
+    QRegExp re(pattern);
+    re.setPatternSyntax(QRegExp::Wildcard);
+
+    QFETCH(bool, isValid);
+    QCOMPARE(re.isValid(), isValid);
 }
 
 void tst_QRegExp::caretAnchoredOptimization()

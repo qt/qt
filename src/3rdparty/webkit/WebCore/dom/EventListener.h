@@ -26,6 +26,7 @@
 
 namespace JSC {
     class JSObject;
+    class MarkStack;
 }
 
 namespace WebCore {
@@ -34,26 +35,39 @@ namespace WebCore {
 
     class EventListener : public RefCounted<EventListener> {
     public:
+        enum Type { JSEventListenerType, 
+                    ImageEventListenerType, 
+                    InspectorDOMAgentType,
+                    InspectorDOMStorageResourceType,
+                    ObjCEventListenerType, 
+                    ConditionEventListenerType };
+                    
         virtual ~EventListener() { }
-        virtual void handleEvent(Event*, bool isWindowEvent = false) = 0;
+        virtual bool operator==(const EventListener&) = 0;
+        virtual void handleEvent(Event*) = 0;
         // Return true to indicate that the error is handled.
         virtual bool reportError(const String& /*message*/, const String& /*url*/, int /*lineNumber*/) { return false; }
         virtual bool wasCreatedFromMarkup() const { return false; }
 
 #if USE(JSC)
         virtual JSC::JSObject* jsFunction() const { return 0; }
-        virtual void markJSFunction() { }
+        virtual void markJSFunction(JSC::MarkStack&) { }
 #endif
 
         bool isAttribute() const { return virtualisAttribute(); }
+        Type type() const { return m_type; }
+
+    protected:
+        EventListener(Type type)
+            : m_type(type)
+        {
+        }
 
     private:
         virtual bool virtualisAttribute() const { return false; }
+        
+        Type m_type;
     };
-
-#if USE(JSC)
-    inline void markIfNotNull(EventListener* listener) { if (listener) listener->markJSFunction(); }
-#endif
 
 }
 
