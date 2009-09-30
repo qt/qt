@@ -200,10 +200,6 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
     if (sizeChanged) {
         delete engine;
         engine = 0;
-        unlockSurface();
-#ifdef QT_DIRECTFB_SUBSURFACE
-        releaseSubSurface();
-#endif
         releaseSurface();
         Q_ASSERT(!dfbSurface);
     }
@@ -430,9 +426,10 @@ void QDirectFBWindowSurface::updateFormat()
 void QDirectFBWindowSurface::releaseSurface()
 {
     if (dfbSurface) {
-#ifdef QT_NO_DIRECTFB_SUBSURFACE
-        if (lockFlgs)
-            unlockSurface();
+#ifdef QT_DIRECTFB_SUBSURFACE
+        releaseSubSurface();
+#else
+        unlockSurface();
 #endif
 #ifdef QT_NO_DIRECTFB_WM
         Q_ASSERT(screen->primarySurface());
