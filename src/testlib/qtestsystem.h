@@ -75,7 +75,7 @@ namespace QTest
     {
 #if defined(Q_WS_X11)
         qt_x11_wait_for_window_manager(window);
-        QApplication::processEvents();
+        QCoreApplication::processEvents();
 #elif defined(Q_WS_QWS)
         Q_UNUSED(window);
         qWait(100);
