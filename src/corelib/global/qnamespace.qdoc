@@ -2814,3 +2814,18 @@
     \sa QApplication::setNavigationMode()
     \sa QApplication::navigationMode()
 */
+
+/*!
+    \enum Qt::RenderHint
+    \since 4.6
+
+    This enum describes the possible hints that can be used to control various
+    rendering operations.
+
+    \value QualityHint Indicates that rendering quality is the most important factor,
+    at the potential cost of lower performance.
+
+    \value PerformanceHint Indicates that rendering performance is the most important factor,
+    at the potential cost of lower quality.
+*/
+
