@@ -169,6 +169,8 @@ private slots:
     void task257579_sideBarWithNonCleanUrls();
     void task259105_filtersCornerCases();
 
+    void QTBUG4419_lineEditSelectAll();
+
 private:
     QByteArray userSettings;
 };
@@ -2153,5 +2155,32 @@ void tst_QFiledialog::task259105_filtersCornerCases()
     filters->setCurrentIndex(1);
     QCOMPARE(filters->currentText(), QLatin1String("Text Files"));
 }
+
+void tst_QFiledialog::QTBUG4419_lineEditSelectAll()
+{
+    QString tempPath = QDir::tempPath();
+    QTemporaryFile *t;
+    t = new QTemporaryFile;
+    t->open();
+    QNonNativeFileDialog fd(0, "TestFileDialog", t->fileName());
+
+    fd.setDirectory(tempPath);
+    fd.setViewMode(QFileDialog::List);
+    fd.setAcceptMode(QFileDialog::AcceptSave);
+    fd.setFileMode(QFileDialog::AnyFile);
+
+    fd.show();
+    QApplication::setActiveWindow(&fd);
+    QTest::qWaitForWindowShown(&fd);
+    QTRY_COMPARE(fd.isVisible(), true);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
+
+    QTest::qWait(500);
+    QLineEdit *lineEdit = qFindChild<QLineEdit*>(&fd, "fileNameEdit");
+
+    QCOMPARE(tempPath + QChar('/') + lineEdit->text(), t->fileName());
+    QCOMPARE(tempPath + QChar('/') + lineEdit->selectedText(), t->fileName());
+}
+
 QTEST_MAIN(tst_QFiledialog)
 #include "tst_qfiledialog.moc"
