@@ -140,6 +140,119 @@ void QGLWidget::updateOverlayGL()
     //handle overlay
 }
 
+bool qt_egl_setup_x11_visual(XVisualInfo &vi, EGLDisplay display, EGLConfig config, const QX11Info &x11Info, bool useArgbVisual)
+{
+    bool foundVisualIsArgb = useArgbVisual;
+
+    memset(&vi, 0, sizeof(XVisualInfo));
+
+    // Check to see if EGL is suggesting an appropriate visual id:
+    EGLint nativeVisualId;
+    eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &nativeVisualId);
+    vi.visualid = nativeVisualId;
+
+    if (vi.visualid) {
+        // EGL has suggested a visual id, so get the rest of the visual info for that id:
+        XVisualInfo *chosenVisualInfo;
+        int matchingCount = 0;
+        chosenVisualInfo = XGetVisualInfo(x11Info.display(), VisualIDMask, &vi, &matchingCount);
+        if (chosenVisualInfo) {
+#if !defined(QT_NO_XRENDER)
+            if (useArgbVisual) {
+                // Check to make sure the visual provided by EGL is ARGB
+                XRenderPictFormat *format;
+                format = XRenderFindVisualFormat(x11Info.display(), chosenVisualInfo->visual);
+                if (format->type == PictTypeDirect && format->direct.alphaMask) {
+//                    qDebug("Using ARGB X Visual ID (%d) provided by EGL", (int)vi.visualid);
+                    foundVisualIsArgb = true;
+                    vi = *chosenVisualInfo;
+                }
+                else {
+                    qWarning("Warning: EGL suggested using X visual ID %d for config %d, but this is not ARGB",
+                             nativeVisualId, (int)config);
+                    vi.visualid = 0;
+                }
+            } else
+#endif
+            {
+//                qDebug("Using opaque X Visual ID (%d) provided by EGL", (int)vi.visualid);
+                vi = *chosenVisualInfo;
+            }
+            XFree(chosenVisualInfo);
+        }
+        else {
+            qWarning("Warning: EGL suggested using X visual ID %d for config %d, but this seems to be invalid!",
+                     nativeVisualId, (int)config);
+            vi.visualid = 0;
+        }
+    }
+
+    // If EGL does not know the visual ID, so try to select an appropriate one ourselves, first
+    // using XRender if we're supposed to have an alpha, then falling back to XGetVisualInfo
+          
+#if !defined(QT_NO_XRENDER)
+    if (vi.visualid == 0 && useArgbVisual) {
+        // Try to use XRender to find an ARGB visual we can use
+        vi.screen  = x11Info.screen();
+        vi.depth   = 32; //### We might at some point (soon) get ARGB4444
+        vi.c_class = TrueColor;
+        XVisualInfo *matchingVisuals;
+        int matchingCount = 0;
+        matchingVisuals = XGetVisualInfo(x11Info.display(),
+                                         VisualScreenMask|VisualDepthMask|VisualClassMask,
+                                         &vi, &matchingCount);
+
+        for (int i = 0; i < matchingCount; ++i) {
+            XRenderPictFormat *format;
+            format = XRenderFindVisualFormat(x11Info.display(), matchingVisuals[i].visual);
+            if (format->type == PictTypeDirect && format->direct.alphaMask) {
+                vi = matchingVisuals[i];
+                foundVisualIsArgb = true;
+//                qDebug("Using X Visual ID (%d) for ARGB visual as provided by XRender", (int)vi.visualid);
+                break;
+            }
+        }
+        XFree(matchingVisuals);
+    }
+#endif
+
+    if (vi.visualid == 0) {
+        EGLint depth;
+        eglGetConfigAttrib(display, config, EGL_BUFFER_SIZE, &depth);
+        int err;
+        err = XMatchVisualInfo(x11Info.display(), x11Info.screen(), depth, TrueColor, &vi);
+        if (err == 0) {
+            qWarning("Warning: Can't find an X visual which matches the EGL config(%d)'s depth (%d)!",
+                     (int)config, depth);
+            depth = x11Info.depth();
+            err = XMatchVisualInfo(x11Info.display(), x11Info.screen(), depth, TrueColor, &vi);
+            if (err == 0) {
+                qWarning("Error: Couldn't get any matching X visual!");
+                return false;
+            } else
+                qWarning("         - Falling back to X11 suggested depth (%d)", depth);
+        }
+//        else
+//            qDebug("Using X Visual ID (%d) for EGL provided depth (%d)", (int)vi.visualid, depth);
+
+        // Don't try to use ARGB now unless the visual is 32-bit - even then it might stil fail :-(
+        if (useArgbVisual)
+            foundVisualIsArgb = vi.depth == 32; //### We might at some point (soon) get ARGB4444
+    }
+
+//    qDebug("Visual Info:");
+//    qDebug("   bits_per_rgb=%d", vi.bits_per_rgb);
+//    qDebug("   red_mask=0x%x", vi.red_mask);
+//    qDebug("   green_mask=0x%x", vi.green_mask);
+//    qDebug("   blue_mask=0x%x", vi.blue_mask);
+//    qDebug("   colormap_size=%d", vi.colormap_size);
+//    qDebug("   c_class=%d", vi.c_class);
+//    qDebug("   depth=%d", vi.depth);
+//    qDebug("   screen=%d", vi.screen);
+//    qDebug("   visualid=%d", vi.visualid);
+    return foundVisualIsArgb;
+}
+
 void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, bool deleteOldContext)
 {
     Q_D(QGLWidget);
@@ -167,8 +280,8 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
     // If the application has set WA_TranslucentBackground and not explicitly set
     // the alpha buffer size to zero, modify the format so it have an alpha channel
     QGLFormat& fmt = d->glcx->d_func()->glFormat;
-    const bool useArgbVisual = testAttribute(Qt::WA_TranslucentBackground);
-    if (useArgbVisual && fmt.alphaBufferSize() == -1)
+    const bool tryArgbVisual = testAttribute(Qt::WA_TranslucentBackground);
+    if (tryArgbVisual && fmt.alphaBufferSize() == -1)
         fmt.setAlphaBufferSize(1);
 
     bool createFailed = false;
@@ -193,112 +306,9 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
         hide();
 
     XVisualInfo vi;
-    memset(&vi, 0, sizeof(XVisualInfo));
-
-    // Check to see if EGL is suggesting an appropriate visual id:
-    EGLint nativeVisualId;
-    QEglContext* qeglCtx = d->glcx->d_func()->eglContext;
-    qeglCtx->configAttrib(EGL_NATIVE_VISUAL_ID, &nativeVisualId);
-    vi.visualid = nativeVisualId;
-
-    if (vi.visualid) {
-        // EGL has suggested a visual id, so get the rest of the visual info for that id:
-        XVisualInfo *chosenVisualInfo;
-        int matchingCount = 0;
-        chosenVisualInfo = XGetVisualInfo(x11Info().display(), VisualIDMask, &vi, &matchingCount);
-        if (chosenVisualInfo) {
-#if !defined(QT_NO_XRENDER)
-            if (useArgbVisual) {
-                // Check to make sure the visual provided by EGL is ARGB
-                XRenderPictFormat *format;
-                format = XRenderFindVisualFormat(x11Info().display(), chosenVisualInfo->visual);
-                if (format->type == PictTypeDirect && format->direct.alphaMask) {
-//                    qDebug("Using opaque X Visual ID (%d) provided by EGL", (int)vi.visualid);
-                    vi = *chosenVisualInfo;
-                }
-                else {
-                    qWarning("Warning: EGL suggested using X visual ID %d for config %d, but this is not ARGB",
-                             nativeVisualId, (int)qeglCtx->config());
-                    vi.visualid = 0;
-                }
-            } else
-#endif
-            {
-//                qDebug("Using opaque X Visual ID (%d) provided by EGL", (int)vi.visualid);
-                vi = *chosenVisualInfo;
-            }
-            XFree(chosenVisualInfo);
-        }
-        else {
-            qWarning("Warning: EGL suggested using X visual ID %d for config %d, but this seems to be invalid!",
-                     nativeVisualId, (int)qeglCtx->config());
-            vi.visualid = 0;
-        }
-    }
-
-    // If EGL does not know the visual ID, so try to select an appropriate one ourselves, first
-    // using XRender if we're supposed to have an alpha, then falling back to XGetVisualInfo
-
-    bool useArgb = context->format().alpha() && !context->deviceIsPixmap();
-#if !defined(QT_NO_XRENDER)
-    if (vi.visualid == 0 && useArgb) {
-        // Try to use XRender to find an ARGB visual we can use
-        vi.screen  = x11Info().screen();
-        vi.depth   = 32;
-        vi.c_class = TrueColor;
-        XVisualInfo *matchingVisuals;
-        int matchingCount = 0;
-        matchingVisuals = XGetVisualInfo(x11Info().display(),
-                                         VisualScreenMask|VisualDepthMask|VisualClassMask,
-                                         &vi, &matchingCount);
-
-        for (int i = 0; i < matchingCount; ++i) {
-            XRenderPictFormat *format;
-            format = XRenderFindVisualFormat(x11Info().display(), matchingVisuals[i].visual);
-            if (format->type == PictTypeDirect && format->direct.alphaMask) {
-                vi = matchingVisuals[i];
-//                qDebug("Using X Visual ID (%d) for ARGB visual as provided by XRender", (int)vi.visualid);
-                break;
-            }
-        }
-        XFree(matchingVisuals);
-    }
-#endif
-
-    if (vi.visualid == 0) {
-        EGLint depth;
-        qeglCtx->configAttrib(EGL_BUFFER_SIZE, &depth);
-        int err;
-        err = XMatchVisualInfo(x11Info().display(), x11Info().screen(), depth, TrueColor, &vi);
-        if (err == 0) {
-            qWarning("Warning: Can't find an X visual which matches the EGL config(%d)'s depth (%d)!",
-                     (int)qeglCtx->config(), depth);
-            depth = x11Info().depth();
-            err = XMatchVisualInfo(x11Info().display(), x11Info().screen(), depth, TrueColor, &vi);
-            if (err == 0) {
-                qWarning("Error: Couldn't get any matching X visual!");
-                return;
-            } else
-                qWarning("         - Falling back to X11 suggested depth (%d)", depth);
-        }
-//        else
-//            qDebug("Using X Visual ID (%d) for EGL provided depth (%d)", (int)vi.visualid, depth);
-
-        // Don't try to use ARGB now unless the visual is 32-bit - even then it might stil fail :-(
-        if (useArgb)
-            useArgb = vi.depth == 32;
-    }
-
-//    qDebug("Visual Info:");
-//    qDebug("   bits_per_rgb=%d", vi.bits_per_rgb);
-//    qDebug("   red_mask=0x%x", vi.red_mask);
-//    qDebug("   green_mask=0x%x", vi.green_mask);
-//    qDebug("   blue_mask=0x%x", vi.blue_mask);
-//    qDebug("   colormap_size=%d", vi.colormap_size);
-//    qDebug("   c_class=%d", vi.c_class);
-//    qDebug("   depth=%d", vi.depth);
-//    qDebug("   screen=%d", vi.screen);
-//    qDebug("   visualid=%d", vi.visualid);
+    QEglContext *eglContext = d->glcx->d_func()->eglContext;
+    bool usingArgbVisual = qt_egl_setup_x11_visual(vi, eglContext->display(), eglContext->config(),
+                                                   x11Info(), tryArgbVisual);
 
     XSetWindowAttributes a;
 
@@ -311,7 +321,7 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
     a.border_pixel = colmap.pixel(Qt::black);
 
     unsigned int valueMask = CWBackPixel|CWBorderPixel;
-    if(useArgb) {
+    if (usingArgbVisual) {
         a.colormap = XCreateColormap(x11Info().display(), p, vi.visual, AllocNone);
         valueMask |= CWColormap;
     }
