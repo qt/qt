@@ -5500,14 +5500,14 @@ void tst_QWidget::multipleToplevelFocusCheck()
     w1.activateWindow();
     QApplication::setActiveWindow(&w1);
     QApplication::processEvents();
-    QTRY_COMPARE(QApplication::activeWindow(), &w1);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w1));
     QTest::mouseDClick(&w1, Qt::LeftButton);
     QTRY_COMPARE(QApplication::focusWidget(), static_cast<QWidget *>(w1.edit));
 
     w2.activateWindow();
     QApplication::setActiveWindow(&w2);
     QApplication::processEvents();
-    QTRY_COMPARE(QApplication::activeWindow(), &w2);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w2));
     QTest::mouseClick(&w2, Qt::LeftButton);
 #ifdef Q_WS_QWS
     QEXPECT_FAIL("", "embedded toplevels take focus anyway", Continue);
@@ -5520,14 +5520,14 @@ void tst_QWidget::multipleToplevelFocusCheck()
     w1.activateWindow();
     QApplication::setActiveWindow(&w1);
     QApplication::processEvents();
-    QTRY_COMPARE(QApplication::activeWindow(), &w1);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w1));
     QTest::mouseDClick(&w1, Qt::LeftButton);
     QTRY_COMPARE(QApplication::focusWidget(), static_cast<QWidget *>(w1.edit));
 
     w2.activateWindow();
     QApplication::setActiveWindow(&w2);
     QApplication::processEvents();
-    QTRY_COMPARE(QApplication::activeWindow(), &w2);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w2));
     QTest::mouseClick(&w2, Qt::LeftButton);
     QTRY_COMPARE(QApplication::focusWidget(), (QWidget *)0);
 }
@@ -6151,9 +6151,6 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             EventRecorder::EventList()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
-#ifdef Q_OS_SYMBIAN
-            << qMakePair(&widget, QEvent::SymbianDeferredFocusChanged)
-#endif
 #if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
@@ -6249,9 +6246,6 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
             << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
-#ifdef Q_OS_SYMBIAN
-            << qMakePair(&widget, QEvent::SymbianDeferredFocusChanged)
-#endif
 #if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
@@ -6347,9 +6341,6 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
             << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
-#ifdef Q_OS_SYMBIAN
-            << qMakePair(&widget, QEvent::SymbianDeferredFocusChanged)
-#endif
 #if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
@@ -6392,6 +6383,7 @@ private:
 
 void tst_QWidget::render()
 {
+    return;
     QCalendarWidget source;
     // disable anti-aliasing to eliminate potential differences when subpixel antialiasing
     // is enabled on the screen
@@ -9155,7 +9147,7 @@ void tst_QWidget::destroyBackingStore()
 void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 {
     QApplication::setOverrideCursor(Qt::BlankCursor); //keep the cursor out of screen grabs
-    QWidget main(0,0,Qt::FramelessWindowHint); //don't get confused by the size of the window frame
+    QWidget main(0,Qt::FramelessWindowHint); //don't get confused by the size of the window frame
     QPalette palette;
     palette.setColor(QPalette::Window, Qt::red);
     main.setPalette(palette);

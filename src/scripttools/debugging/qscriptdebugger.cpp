@@ -882,8 +882,8 @@ void QScriptDebuggerPrivate::_q_goToLine()
     if (!view)
         return;
     bool ok = false;
-    int lineNumber = QInputDialog::getInteger(0, QObject::tr("Go to Line"),
-                                              QObject::tr("Line:"),
+    int lineNumber = QInputDialog::getInteger(0, QScriptDebugger::tr("Go to Line"),
+                                              QScriptDebugger::tr("Line:"),
                                               view->cursorLineNumber(),
                                               1, INT_MAX, 1, &ok);
     if (ok)
@@ -1674,9 +1674,9 @@ QAction *QScriptDebugger::interruptAction(QObject *parent) const
         interruptIcon.addPixmap(d->pixmap(QString::fromLatin1("interrupt.png")), QIcon::Normal);
         interruptIcon.addPixmap(d->pixmap(QString::fromLatin1("d_interrupt.png")), QIcon::Disabled);
         QScriptDebugger *that = const_cast<QScriptDebugger*>(this);
-        that->d_func()->interruptAction = new QAction(interruptIcon, QObject::tr("Interrupt"), parent);
+        that->d_func()->interruptAction = new QAction(interruptIcon, QScriptDebugger::tr("Interrupt"), parent);
         d->interruptAction->setEnabled(!d->interactive);
-        d->interruptAction->setShortcut(QObject::tr("Shift+F5"));
+        d->interruptAction->setShortcut(QScriptDebugger::tr("Shift+F5"));
         QObject::connect(d->interruptAction, SIGNAL(triggered()),
                          that, SLOT(_q_interrupt()));
     }
@@ -1691,9 +1691,9 @@ QAction *QScriptDebugger::continueAction(QObject *parent) const
         continueIcon.addPixmap(d->pixmap(QString::fromLatin1("play.png")), QIcon::Normal);
         continueIcon.addPixmap(d->pixmap(QString::fromLatin1("d_play.png")), QIcon::Disabled);
         QScriptDebugger *that = const_cast<QScriptDebugger*>(this);
-        that->d_func()->continueAction = new QAction(continueIcon, QObject::tr("Continue"), parent);
+        that->d_func()->continueAction = new QAction(continueIcon, QScriptDebugger::tr("Continue"), parent);
         d->continueAction->setEnabled(d->interactive);
-        d->continueAction->setShortcut(QObject::tr("F5"));
+        d->continueAction->setShortcut(QScriptDebugger::tr("F5"));
         QObject::connect(d->continueAction, SIGNAL(triggered()),
                          that, SLOT(_q_continue()));
     }
@@ -1708,9 +1708,9 @@ QAction *QScriptDebugger::stepIntoAction(QObject *parent) const
         stepIntoIcon.addPixmap(d->pixmap(QString::fromLatin1("stepinto.png")), QIcon::Normal);
         stepIntoIcon.addPixmap(d->pixmap(QString::fromLatin1("d_stepinto.png")), QIcon::Disabled);
         QScriptDebugger *that = const_cast<QScriptDebugger*>(this);
-        that->d_func()->stepIntoAction = new QAction(stepIntoIcon, QObject::tr("Step Into"), parent);
+        that->d_func()->stepIntoAction = new QAction(stepIntoIcon, QScriptDebugger::tr("Step Into"), parent);
         d->stepIntoAction->setEnabled(d->interactive);
-        d->stepIntoAction->setShortcut(QObject::tr("F11"));
+        d->stepIntoAction->setShortcut(QScriptDebugger::tr("F11"));
         QObject::connect(d->stepIntoAction, SIGNAL(triggered()),
                          that, SLOT(_q_stepInto()));
     }
@@ -1725,9 +1725,9 @@ QAction *QScriptDebugger::stepOverAction(QObject *parent) const
         stepOverIcon.addPixmap(d->pixmap(QString::fromLatin1("stepover.png")), QIcon::Normal);
         stepOverIcon.addPixmap(d->pixmap(QString::fromLatin1("d_stepover.png")), QIcon::Disabled);
         QScriptDebugger *that = const_cast<QScriptDebugger*>(this);
-        that->d_func()->stepOverAction = new QAction(stepOverIcon, QObject::tr("Step Over"), parent);
+        that->d_func()->stepOverAction = new QAction(stepOverIcon, QScriptDebugger::tr("Step Over"), parent);
         d->stepOverAction->setEnabled(d->interactive);
-        d->stepOverAction->setShortcut(QObject::tr("F10"));
+        d->stepOverAction->setShortcut(QScriptDebugger::tr("F10"));
         QObject::connect(d->stepOverAction, SIGNAL(triggered()),
                          that, SLOT(_q_stepOver()));
     }
@@ -1742,9 +1742,9 @@ QAction *QScriptDebugger::stepOutAction(QObject *parent) const
         stepOutIcon.addPixmap(d->pixmap(QString::fromLatin1("stepout.png")), QIcon::Normal);
         stepOutIcon.addPixmap(d->pixmap(QString::fromLatin1("d_stepout.png")), QIcon::Disabled);
         QScriptDebugger *that = const_cast<QScriptDebugger*>(this);
-        that->d_func()->stepOutAction = new QAction(stepOutIcon, QObject::tr("Step Out"), parent);
+        that->d_func()->stepOutAction = new QAction(stepOutIcon, QScriptDebugger::tr("Step Out"), parent);
         d->stepOutAction->setEnabled(d->interactive);
-        d->stepOutAction->setShortcut(QObject::tr("Shift+F11"));
+        d->stepOutAction->setShortcut(QScriptDebugger::tr("Shift+F11"));
         QObject::connect(d->stepOutAction, SIGNAL(triggered()),
                          that, SLOT(_q_stepOut()));
     }
@@ -1759,9 +1759,9 @@ QAction *QScriptDebugger::runToCursorAction(QObject *parent) const
         runToCursorIcon.addPixmap(d->pixmap(QString::fromLatin1("runtocursor.png")), QIcon::Normal);
         runToCursorIcon.addPixmap(d->pixmap(QString::fromLatin1("d_runtocursor.png")), QIcon::Disabled);
         QScriptDebugger *that = const_cast<QScriptDebugger*>(this);
-        that->d_func()->runToCursorAction = new QAction(runToCursorIcon, QObject::tr("Run to Cursor"), parent);
+        that->d_func()->runToCursorAction = new QAction(runToCursorIcon, QScriptDebugger::tr("Run to Cursor"), parent);
         d->runToCursorAction->setEnabled(d->interactive);
-        d->runToCursorAction->setShortcut(QObject::tr("Ctrl+F10"));
+        d->runToCursorAction->setShortcut(QScriptDebugger::tr("Ctrl+F10"));
         QObject::connect(d->runToCursorAction, SIGNAL(triggered()),
                          that, SLOT(_q_runToCursor()));
     }
@@ -1777,7 +1777,7 @@ QAction *QScriptDebugger::runToNewScriptAction(QObject *parent) const
         runToNewScriptIcon.addPixmap(d->pixmap(QString::fromLatin1("d_breakonscriptload.png")), QIcon::Disabled);
         QScriptDebugger *that = const_cast<QScriptDebugger*>(this);
         that->d_func()->runToNewScriptAction = new QAction(runToNewScriptIcon,
-                                                           QObject::tr("Run to New Script"), parent);
+                                                           QScriptDebugger::tr("Run to New Script"), parent);
         d->runToNewScriptAction->setEnabled(d->interactive);
         QObject::connect(d->runToNewScriptAction, SIGNAL(triggered()),
                          that, SLOT(_q_runToNewScript()));
@@ -1792,8 +1792,8 @@ QAction *QScriptDebugger::toggleBreakpointAction(QObject *parent) const
         QIcon toggleBreakpointIcon;
         QScriptDebugger *that = const_cast<QScriptDebugger*>(this);
         that->d_func()->toggleBreakpointAction = new QAction(toggleBreakpointIcon,
-                                                             QObject::tr("Toggle Breakpoint"), parent);
-        d->toggleBreakpointAction->setShortcut(QObject::tr("F9"));
+                                                             QScriptDebugger::tr("Toggle Breakpoint"), parent);
+        d->toggleBreakpointAction->setShortcut(QScriptDebugger::tr("F9"));
         d->toggleBreakpointAction->setEnabled((d->codeWidget != 0) && (d->codeWidget->currentView() != 0));
         QObject::connect(d->toggleBreakpointAction, SIGNAL(triggered()),
                          that, SLOT(_q_toggleBreakpoint()));
@@ -1807,7 +1807,7 @@ QAction *QScriptDebugger::clearDebugOutputAction(QObject *parent) const
     if (!d->clearDebugOutputAction) {
         QIcon clearDebugOutputIcon;
         QScriptDebugger *that = const_cast<QScriptDebugger*>(this);
-        that->d_func()->clearDebugOutputAction = new QAction(clearDebugOutputIcon, QObject::tr("Clear Debug Output"), parent);
+        that->d_func()->clearDebugOutputAction = new QAction(clearDebugOutputIcon, QScriptDebugger::tr("Clear Debug Output"), parent);
         QObject::connect(d->clearDebugOutputAction, SIGNAL(triggered()),
                          that, SLOT(_q_clearDebugOutput()));
     }
@@ -1820,7 +1820,7 @@ QAction *QScriptDebugger::clearErrorLogAction(QObject *parent) const
     if (!d->clearErrorLogAction) {
         QIcon clearErrorLogIcon;
         QScriptDebugger *that = const_cast<QScriptDebugger*>(this);
-        that->d_func()->clearErrorLogAction = new QAction(clearErrorLogIcon, QObject::tr("Clear Error Log"), parent);
+        that->d_func()->clearErrorLogAction = new QAction(clearErrorLogIcon, QScriptDebugger::tr("Clear Error Log"), parent);
         QObject::connect(d->clearErrorLogAction, SIGNAL(triggered()),
                          that, SLOT(_q_clearErrorLog()));
     }
@@ -1833,7 +1833,7 @@ QAction *QScriptDebugger::clearConsoleAction(QObject *parent) const
     if (!d->clearConsoleAction) {
         QIcon clearConsoleIcon;
         QScriptDebugger *that = const_cast<QScriptDebugger*>(this);
-        that->d_func()->clearConsoleAction = new QAction(clearConsoleIcon, QObject::tr("Clear Console"), parent);
+        that->d_func()->clearConsoleAction = new QAction(clearConsoleIcon, QScriptDebugger::tr("Clear Console"), parent);
         QObject::connect(d->clearConsoleAction, SIGNAL(triggered()),
                          that, SLOT(_q_clearConsole()));
     }
@@ -1847,8 +1847,8 @@ QAction *QScriptDebugger::findInScriptAction(QObject *parent) const
         QIcon findInScriptIcon;
         findInScriptIcon.addPixmap(d->pixmap(QString::fromLatin1("find.png")), QIcon::Normal);
         QScriptDebugger *that = const_cast<QScriptDebugger*>(this);
-        that->d_func()->findInScriptAction = new QAction(findInScriptIcon, QObject::tr("&Find in Script..."), parent);
-        d->findInScriptAction->setShortcut(QObject::tr("Ctrl+F"));
+        that->d_func()->findInScriptAction = new QAction(findInScriptIcon, QScriptDebugger::tr("&Find in Script..."), parent);
+        d->findInScriptAction->setShortcut(QScriptDebugger::tr("Ctrl+F"));
         d->findInScriptAction->setEnabled(
             (d->codeFinderWidget != 0)
             && (d->codeWidget != 0)
@@ -1865,9 +1865,9 @@ QAction *QScriptDebugger::findNextInScriptAction(QObject *parent) const
     if (!d->findNextInScriptAction) {
         QIcon findNextInScriptIcon;
         QScriptDebugger *that = const_cast<QScriptDebugger*>(this);
-        that->d_func()->findNextInScriptAction = new QAction(findNextInScriptIcon, QObject::tr("Find &Next"), parent);
+        that->d_func()->findNextInScriptAction = new QAction(findNextInScriptIcon, QScriptDebugger::tr("Find &Next"), parent);
         d->findNextInScriptAction->setEnabled(d->codeFinderWidget && !d->codeFinderWidget->text().isEmpty());
-        d->findNextInScriptAction->setShortcut(QObject::tr("F3"));
+        d->findNextInScriptAction->setShortcut(QScriptDebugger::tr("F3"));
         QObject::connect(d->findNextInScriptAction, SIGNAL(triggered()),
                          that, SLOT(_q_findNextInScript()));
     }
@@ -1880,9 +1880,9 @@ QAction *QScriptDebugger::findPreviousInScriptAction(QObject *parent) const
     if (!d->findPreviousInScriptAction) {
         QIcon findPreviousInScriptIcon;
         QScriptDebugger *that = const_cast<QScriptDebugger*>(this);
-        that->d_func()->findPreviousInScriptAction = new QAction(findPreviousInScriptIcon, QObject::tr("Find &Previous"), parent);
+        that->d_func()->findPreviousInScriptAction = new QAction(findPreviousInScriptIcon, QScriptDebugger::tr("Find &Previous"), parent);
         d->findPreviousInScriptAction->setEnabled(d->codeFinderWidget && !d->codeFinderWidget->text().isEmpty());
-        d->findPreviousInScriptAction->setShortcut(QObject::tr("Shift+F3"));
+        d->findPreviousInScriptAction->setShortcut(QScriptDebugger::tr("Shift+F3"));
         QObject::connect(d->findPreviousInScriptAction, SIGNAL(triggered()),
                          that, SLOT(_q_findPreviousInScript()));
     }
@@ -1895,8 +1895,8 @@ QAction *QScriptDebugger::goToLineAction(QObject *parent) const
     if (!d->goToLineAction) {
         QIcon goToLineIcon;
         QScriptDebugger *that = const_cast<QScriptDebugger*>(this);
-        that->d_func()->goToLineAction = new QAction(goToLineIcon, QObject::tr("Go to Line"), parent);
-        d->goToLineAction->setShortcut(QObject::tr("Ctrl+G"));
+        that->d_func()->goToLineAction = new QAction(goToLineIcon, QScriptDebugger::tr("Go to Line"), parent);
+        d->goToLineAction->setShortcut(QScriptDebugger::tr("Ctrl+G"));
         d->goToLineAction->setEnabled((d->codeWidget != 0) && (d->codeWidget->currentView() != 0));
         QObject::connect(d->goToLineAction, SIGNAL(triggered()),
                          that, SLOT(_q_goToLine()));
@@ -1907,7 +1907,7 @@ QAction *QScriptDebugger::goToLineAction(QObject *parent) const
 QMenu *QScriptDebugger::createStandardMenu(QWidget *widgetParent, QObject *actionParent)
 {
     QMenu *menu = new QMenu(widgetParent);
-    menu->setTitle(QObject::tr("Debug"));
+    menu->setTitle(QScriptDebugger::tr("Debug"));
     menu->addAction(action(ContinueAction, actionParent));
     menu->addAction(action(InterruptAction, actionParent));
     menu->addAction(action(StepIntoAction, actionParent));

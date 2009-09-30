@@ -142,10 +142,12 @@ void QGLContext::reset()
     d->cleanup();
     doneCurrent();
     if (d->eglContext) {
+        if (d->eglSurface != EGL_NO_SURFACE)
+            eglDestroySurface(d->eglContext->display(), d->eglSurface);
         delete d->eglContext;
-        d->eglContext = 0;
     }
-    d->eglSurface = EGL_NO_SURFACE; // XXX - probably need to destroy surface
+    d->eglContext = 0;
+    d->eglSurface = EGL_NO_SURFACE;
     d->crWin = false;
     d->sharing = false;
     d->valid = false;

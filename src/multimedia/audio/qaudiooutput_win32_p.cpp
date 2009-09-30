@@ -58,6 +58,8 @@ QT_BEGIN_NAMESPACE
 
 static CRITICAL_SECTION waveOutCriticalSection;
 
+static const int minimumIntervalTime = 50;
+
 QAudioOutputPrivate::QAudioOutputPrivate(const QByteArray &device, const QAudioFormat& audioFormat):
     settings(audioFormat)
 {
@@ -221,6 +223,7 @@ bool QAudioOutputPrivate::open()
         audioBuffer = new char[buffer_size];
 
     timeStamp.restart();
+    elapsedTimeOffset = 0;
 
     wfx.nSamplesPerSec = settings.frequency();
     wfx.wBitsPerSample = settings.sampleSize();
@@ -261,6 +264,7 @@ bool QAudioOutputPrivate::open()
 
     totalTimeValue = 0;
     timeStampOpened.restart();
+    elapsedTimeOffset = 0;
 
     errorState = QAudio::NoError;
     if(pullMode) {
@@ -316,7 +320,10 @@ int QAudioOutputPrivate::bufferSize() const
 
 void QAudioOutputPrivate::setNotifyInterval(int ms)
 {
-    intervalTime = ms;
+    if(ms >= minimumIntervalTime)
+        intervalTime = ms;
+    else
+        intervalTime = minimumIntervalTime;
 }
 
 int QAudioOutputPrivate::notifyInterval() const
@@ -420,7 +427,6 @@ void QAudioOutputPrivate::feedback()
 bool QAudioOutputPrivate::deviceReady()
 {
     if(pullMode) {
-        int i = 0;
         int chunks = bytesAvailable/period_size;
 #ifdef DEBUG_AUDIO
         qDebug()<<"deviceReady() avail="<<bytesAvailable<<" bytes, period size="<<period_size<<" bytes";
@@ -429,6 +435,22 @@ bool QAudioOutputPrivate::deviceReady()
         bool startup = false;
         if(totalTimeValue == 0)
 	    startup = true;
+
+	bool full=false;
+	EnterCriticalSection(&waveOutCriticalSection);
+	if(waveFreeBlockCount==0) full = true;
+	LeaveCriticalSection(&waveOutCriticalSection);
+	if (full){
+#ifdef DEBUG_AUDIO
+            qDebug() << "Skipping data as unable to write";
+#endif
+	    if((timeStamp.elapsed() + elapsedTimeOffset) > intervalTime ) {
+                emit notify();
+		elapsedTimeOffset = timeStamp.elapsed() + elapsedTimeOffset - intervalTime;
+		timeStamp.restart();
+	    }
+	    return true;
+	}
 
         if(startup)
 	    waveOutPause(hWaveOut);
@@ -451,7 +473,7 @@ bool QAudioOutputPrivate::deviceReady()
             }
             LeaveCriticalSection(&waveOutCriticalSection);
 
-        } else if(i < 0) {
+        } else if(l < 0) {
             bytesAvailable = bytesFree();
             errorState = QAudio::IOError;
         }
@@ -459,8 +481,9 @@ bool QAudioOutputPrivate::deviceReady()
     if(deviceState != QAudio::ActiveState)
         return true;
 
-    if(timeStamp.elapsed() > intervalTime && intervalTime > 50) {
+    if((timeStamp.elapsed() + elapsedTimeOffset) > intervalTime) {
         emit notify();
+	elapsedTimeOffset = timeStamp.elapsed() + elapsedTimeOffset - intervalTime;
         timeStamp.restart();
     }
 
@@ -468,7 +491,7 @@ bool QAudioOutputPrivate::deviceReady()
 }
 
 qint64 QAudioOutputPrivate::clock() const
-{ 
+{
     if(deviceState != QAudio::ActiveState)
         return 0;
 

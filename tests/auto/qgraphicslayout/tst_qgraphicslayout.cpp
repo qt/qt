@@ -153,7 +153,7 @@ void tst_QGraphicsLayout::automaticReparenting()
 
         QGraphicsWidget *ww = new QGraphicsWidget();
         QGraphicsLinearLayout *l1 = new QGraphicsLinearLayout(ww);
-#ifdef QT_DEBUG
+#if !defined(Q_OS_MAC) && defined(QT_DEBUG)
         QTest::ignoreMessage(QtWarningMsg, "QGraphicsLayout::addChildLayoutItem: QGraphicsWidget \"\""
                              " in wrong parent; moved to correct parent");
 #endif

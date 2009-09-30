@@ -44,7 +44,7 @@
 TextInformationItem::TextInformationItem (QGraphicsItem * parent)
     : QGraphicsTextItem(parent)
 {
-    setFont(QFont("Comic Sans MS", 25));
+    setFont(QFont("Comic Sans MS", 15));
 }
 #include <QDebug>
 void TextInformationItem::setMessage(const QString& text)

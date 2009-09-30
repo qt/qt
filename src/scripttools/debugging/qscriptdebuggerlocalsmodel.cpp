@@ -53,6 +53,7 @@
 #include "private/qabstractitemmodel_p.h"
 
 #include <QtCore/qdebug.h>
+#include <QtCore/qcoreapplication.h>
 #include <QtGui/qbrush.h>
 #include <QtGui/qfont.h>
 
@@ -868,9 +869,9 @@ QVariant QScriptDebuggerLocalsModel::headerData(int section, Qt::Orientation ori
     if (orient == Qt::Horizontal) {
         if (role == Qt::DisplayRole) {
             if (section == 0)
-                return QObject::tr("Name");
+                return QCoreApplication::translate("QScriptDebuggerLocalsModel", "Name");
             else if (section == 1)
-                return QObject::tr("Value");
+                return QCoreApplication::translate("QScriptDebuggerLocalsModel", "Value");
         }
     }
     return QVariant();

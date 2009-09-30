@@ -86,7 +86,7 @@ protected:
     }
     virtual void onTransition(QEvent *)
     {
-        machine()->postEvent(new PingEvent(), 500);
+        machine()->postDelayedEvent(new PingEvent(), 500);
         fprintf(stdout, "ping?\n");
     }
 };
@@ -104,7 +104,7 @@ protected:
     }
     virtual void onTransition(QEvent *)
     {
-        machine()->postEvent(new PongEvent(), 500);
+        machine()->postDelayedEvent(new PongEvent(), 500);
         fprintf(stdout, "pong!\n");
     }
 };

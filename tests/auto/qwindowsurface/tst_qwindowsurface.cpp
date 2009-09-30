@@ -230,7 +230,7 @@ void tst_QWindowSurface::grabWidget()
     parentWidget.show();
     QTest::qWaitForWindowShown(&parentWidget);
 
-    QTest::qWait(120);
+    QTest::qWait(220);
 
     QPixmap parentPixmap = parentWidget.windowSurface()->grabWidget(&parentWidget);
     QPixmap childPixmap = childWidget.windowSurface()->grabWidget(&childWidget);

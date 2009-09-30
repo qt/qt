@@ -48,6 +48,8 @@
 #include <QMainWindow>
 #include <QSizeGrip>
 
+#include "../../shared/util.h"
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -177,7 +179,7 @@ void tst_QStatusBar::setSizeGripEnabled()
     qt_x11_wait_for_window_manager(&mainWindow);
 #endif
 
-    QVERIFY(statusBar->isVisible());
+    QTRY_VERIFY(statusBar->isVisible());
     QPointer<QSizeGrip> sizeGrip = qFindChild<QSizeGrip *>(statusBar);
     QVERIFY(sizeGrip);
     QVERIFY(sizeGrip->isVisible());
@@ -223,11 +225,8 @@ void tst_QStatusBar::setSizeGripEnabled()
 
     qApp->processEvents();
     mainWindow.showNormal();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mainWindow);
-#endif
     qApp->processEvents();
-    QVERIFY(sizeGrip->isVisible());
+    QTRY_VERIFY(sizeGrip->isVisible());
 }
 
 void tst_QStatusBar::task194017_hiddenWidget()

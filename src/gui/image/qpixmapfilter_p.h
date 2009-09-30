@@ -126,19 +126,14 @@ class Q_GUI_EXPORT QPixmapBlurFilter : public QPixmapFilter
     Q_DECLARE_PRIVATE(QPixmapBlurFilter)
 
 public:
-    enum BlurHint {
-        PerformanceHint,
-        QualityHint
-    };
-
     QPixmapBlurFilter(QObject *parent = 0);
     ~QPixmapBlurFilter();
 
     void setRadius(int radius);
-    void setBlurHint(BlurHint hint);
+    void setBlurHint(Qt::RenderHint hint);
 
     int radius() const;
-    BlurHint blurHint() const;
+    Qt::RenderHint blurHint() const;
 
     QRectF boundingRectFor(const QRectF &rect) const;
     void draw(QPainter *painter, const QPointF &dest, const QPixmap &src, const QRectF &srcRect = QRectF()) const;

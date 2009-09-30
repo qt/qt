@@ -91,6 +91,8 @@ extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
 
 QWidget *qt_button_down = 0;                     // widget got last button-down
 
+QSymbianControl *QSymbianControl::lastFocusedControl = 0;
+
 QS60Data* qGlobalS60Data()
 {
     return qt_s60Data();
@@ -320,13 +322,26 @@ QSymbianControl::QSymbianControl(QWidget *w)
 {
 }
 
-void QSymbianControl::ConstructL(bool topLevel, bool desktop)
+void QSymbianControl::ConstructL(bool isWindowOwning, bool desktop)
 {
     if (!desktop)
     {
-        if (topLevel) {
+        if (isWindowOwning or !qwidget->parentWidget())
             CreateWindowL(S60->windowGroup());
-        }
+        else
+            /**
+             * TODO: in order to avoid creating windows for all ancestors of
+             * this widget up to the root window, the parameter passed to
+             * CreateWindowL should be
+             * qwidget->parentWidget()->effectiveWinId().  However, if we do
+             * this, then we need to take care of re-parenting when a window
+             * is created for a widget between this one and the root window.
+             */
+            CreateWindowL(qwidget->parentWidget()->winId());
+
+        // Necessary in order to be able to track the activation status of
+        // the control's window
+        qwidget->d_func()->createExtra();
 
         SetFocusing(true);
         m_longTapDetector = QLongTapTimer::NewL(this);
@@ -337,6 +352,7 @@ QSymbianControl::~QSymbianControl()
 {
     if (S60->curWin == this)
         S60->curWin = 0;
+    setFocusSafely(false);
     S60->appUi()->RemoveFromStack(this);
     delete m_longTapDetector;
 }
@@ -767,19 +783,21 @@ TCoeInputCapabilities QSymbianControl::InputCapabilities() const
 void QSymbianControl::Draw(const TRect& r) const
 {
     QWindowSurface *surface = qwidget->windowSurface();
-    if (!surface)
-        return;
+    QPaintEngine *engine = surface ? surface->paintDevice()->paintEngine() : NULL;
 
-    QPaintEngine *engine = surface->paintDevice()->paintEngine();
     if (!engine)
         return;
+
     if (engine->type() == QPaintEngine::Raster) {
         QS60WindowSurface *s60Surface = static_cast<QS60WindowSurface *>(qwidget->windowSurface());
         CFbsBitmap *bitmap = s60Surface->symbianBitmap();
         CWindowGc &gc = SystemGc();
-        if (qwidget->d_func()->isOpaque)
-            gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
-        gc.BitBlt(r.iTl, bitmap, r);
+
+        if(!qwidget->d_func()->extraData()->disableBlit) {
+            if (qwidget->d_func()->isOpaque)
+                gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
+            gc.BitBlt(r.iTl, bitmap, r);
+	}
     } else {
         surface->flush(qwidget, QRegion(qt_TRect2QRect(r)), QPoint());
     }
@@ -845,8 +863,23 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
             || (qwidget->windowType() & Qt::Popup) == Qt::Popup)
         return;
 
-    QEvent *deferredFocusEvent = new QEvent(QEvent::SymbianDeferredFocusChanged);
-    QApplication::postEvent(qwidget, deferredFocusEvent);
+    if (IsFocused() && IsVisible()) {
+        QApplication::setActiveWindow(qwidget->window());
+#ifdef Q_WS_S60
+        // If widget is fullscreen, hide status pane and button container
+        // otherwise show them.
+        CEikStatusPane* statusPane = S60->statusPane();
+        CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
+        bool isFullscreen = qwidget->windowState() & Qt::WindowFullScreen;
+        if (statusPane && (statusPane->IsVisible() == isFullscreen))
+            statusPane->MakeVisible(!isFullscreen);
+        if (buttonGroup && (buttonGroup->IsVisible() == isFullscreen))
+            buttonGroup->MakeVisible(!isFullscreen);
+#endif
+    } else if (QApplication::activeWindow() == qwidget->window()) {
+        QApplication::setActiveWindow(0);
+    }
+    // else { We don't touch the active window unless we were explicitly activated or deactivated }
 }
 
 void QSymbianControl::HandleResourceChange(int resourceType)
@@ -888,6 +921,31 @@ TTypeUid::Ptr QSymbianControl::MopSupplyObject(TTypeUid id)
         return id.MakePtr(this);
 
     return CCoeControl::MopSupplyObject(id);
+}
+
+void QSymbianControl::setFocusSafely(bool focus)
+{
+    // The stack hack in here is very unfortunate, but it is the only way to ensure proper
+    // focus in Symbian. If this is not executed, the control which happens to be on
+    // the top of the stack may randomly be assigned focus by Symbian, for example
+    // when creating new windows (specifically in CCoeAppUi::HandleStackChanged()).
+    if (focus) {
+        S60->appUi()->RemoveFromStack(this);
+        // Symbian doesn't automatically remove focus from the last focused control, so we need to
+        // remember it and clear focus ourselves.
+        if (lastFocusedControl && lastFocusedControl != this)
+            lastFocusedControl->SetFocus(false);
+        QT_TRAP_THROWING(S60->appUi()->AddToStackL(this,
+                ECoeStackPriorityDefault + 1, ECoeStackFlagStandard)); // Note the + 1
+        lastFocusedControl = this;
+        this->SetFocus(true);
+    } else {
+        S60->appUi()->RemoveFromStack(this);
+        QT_TRAP_THROWING(S60->appUi()->AddToStackL(this,
+                ECoeStackPriorityDefault, ECoeStackFlagStandard));
+        lastFocusedControl = 0;
+        this->SetFocus(false);
+    }
 }
 
 /*!
@@ -1236,14 +1294,14 @@ QWidget * QApplication::topLevelAt(QPoint const& point)
             if (widget->geometry().adjusted(0,0,1,1).contains(point)) {
                 // At this point we know there is a Qt widget under the point.
                 // Now we need to make sure it is the top most in the z-order.
-                RDrawableWindow* rw = widget->d_func()->topData()->rwindow;
-                int z = rw->OrdinalPosition();
+                RDrawableWindow *const window = widget->effectiveWinId()->DrawableWindow();
+                int z = window->OrdinalPosition();
                 if (z < lowestZ) {
                     lowestZ = z;
                     found = widget;
                 }
             }
-            }
+        }
     }
     return found;
 }
@@ -1457,6 +1515,7 @@ bool QApplication::s60EventFilter(TWsEvent * /* aEvent */)
 */
 void QApplication::symbianHandleCommand(int command)
 {
+    QScopedLoopLevelCounter counter(d_func()->threadData);
     switch (command) {
 #ifdef Q_WS_S60
     case EAknSoftkeyExit: {
