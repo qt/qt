@@ -17,6 +17,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <QObject>
+#include <QCoreApplication>
 
 #include <AudioEqualizerBase.h>
 #include <BassBoostBase.h>
@@ -57,21 +58,21 @@ QHash<QByteArray, QVariant> EffectFactory::audioEffectDescriptions(AbstractAudio
     switch (type)
     {
         case AbstractAudioEffect::EffectAudioEqualizer:
-            return constructEffectDescription(QObject::tr("audio equalizer"), "Audio equalizer.");
+            return constructEffectDescription(QCoreApplication::translate("Phonon::MMF::EffectFactory", "audio equalizer"), "Audio equalizer.");
         case AbstractAudioEffect::EffectBassBoost:
-            return constructEffectDescription(QObject::tr("Bass boost"), "Bass boost.");
+            return constructEffectDescription(QCoreApplication::translate("Phonon::MMF::EffectFactory", "Bass boost"), "Bass boost.");
         case AbstractAudioEffect::EffectDistanceAttenuation:
-            return constructEffectDescription(QObject::tr("Distance Attenuation"), "Distance Attenuation.");
+            return constructEffectDescription(QCoreApplication::translate("Phonon::MMF::EffectFactory", "Distance Attenuation"), "Distance Attenuation.");
         case AbstractAudioEffect::EffectEnvironmentalReverb:
-            return constructEffectDescription(QObject::tr("Environmental Reverb"), "Environmental Reverb.");
+            return constructEffectDescription(QCoreApplication::translate("Phonon::MMF::EffectFactory", "Environmental Reverb"), "Environmental Reverb.");
         case AbstractAudioEffect::EffectListenerOrientation:
-            return constructEffectDescription(QObject::tr("Environmental Reverb"), "Environmental Reverb.");
+            return constructEffectDescription(QCoreApplication::translate("Phonon::MMF::EffectFactory", "Environmental Reverb"), "Environmental Reverb.");
         case AbstractAudioEffect::EffectLoudness:
-            return constructEffectDescription(QObject::tr("Loudness"), "Loudness.");
+            return constructEffectDescription(QCoreApplication::translate("Phonon::MMF::EffectFactory", "Loudness"), "Loudness.");
         case AbstractAudioEffect::EffectSourceOrientation:
-            return constructEffectDescription(QObject::tr("Source Orientation"), "Source Orientation.");
+            return constructEffectDescription(QCoreApplication::translate("Phonon::MMF::EffectFactory", "Source Orientation"), "Source Orientation.");
         case AbstractAudioEffect::EffectStereoWidening:
-            return constructEffectDescription(QObject::tr("Stereo Widening"), "Stereo Widening.");
+            return constructEffectDescription(QCoreApplication::translate("Phonon::MMF::EffectFactory", "Stereo Widening"), "Stereo Widening.");
     }
 
     Q_ASSERT_X(false, Q_FUNC_INFO, "Unknown effect type.");

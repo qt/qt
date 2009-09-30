@@ -936,19 +936,29 @@ void tst_QDoubleSpinBox::undoRedo()
 
     //testing CTRL+Z (undo)
     int val = QKeySequence(QKeySequence::Undo)[0];
-    Qt::KeyboardModifiers mods = (Qt::KeyboardModifiers)(val & Qt::KeyboardModifierMask);
-    QTest::keyClick(&spin, val & ~mods, mods);
-    QCOMPARE(spin.value(), 0.0);
-    QVERIFY(!spin.lineEdit()->isUndoAvailable());
-    QVERIFY(spin.lineEdit()->isRedoAvailable());
+    if (val != 0) {
+        Qt::KeyboardModifiers mods = (Qt::KeyboardModifiers)(val & Qt::KeyboardModifierMask);
+        QTest::keyClick(&spin, val & ~mods, mods);
+        QCOMPARE(spin.value(), 0.0);
+        QVERIFY(!spin.lineEdit()->isUndoAvailable());
+        QVERIFY(spin.lineEdit()->isRedoAvailable());
+    } else {
+        QWARN("Undo not tested because no key sequence associated to QKeySequence::Redo");
+    }
+
 
     //testing CTRL+Y (redo)
     val = QKeySequence(QKeySequence::Redo)[0];
-    mods = (Qt::KeyboardModifiers)(val & Qt::KeyboardModifierMask);
-    QTest::keyClick(&spin, val & ~mods, mods);
-    QCOMPARE(spin.value(), 1.0);
-    QVERIFY(!spin.lineEdit()->isRedoAvailable());
-    QVERIFY(spin.lineEdit()->isUndoAvailable());
+    if (val != 0) {
+        Qt::KeyboardModifiers mods = (Qt::KeyboardModifiers)(val & Qt::KeyboardModifierMask);
+        QTest::keyClick(&spin, val & ~mods, mods);
+        QCOMPARE(spin.value(), 1.0);
+        QVERIFY(!spin.lineEdit()->isRedoAvailable());
+        QVERIFY(spin.lineEdit()->isUndoAvailable());
+    } else {
+        QWARN("Redo not tested because no key sequence associated to QKeySequence::Redo");
+    }
+
 
     spin.setValue(55.0);
     QVERIFY(!spin.lineEdit()->isUndoAvailable());

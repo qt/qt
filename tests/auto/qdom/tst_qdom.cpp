@@ -1908,7 +1908,8 @@ void tst_QDom::taskQTBUG4595_dontAssertWhenDocumentSpecifiesUnknownEncoding() co
     QDomDocument d;
     QVERIFY(d.setContent(xmlWithUnknownEncoding));
 
-    QString dontAssert = d.toString(); // this should not assert
+    //QString dontAssert = d.toString(); // this should not assert
+    QVERIFY2(false, "Line above crashes but we still want to run all tests.");
     QVERIFY(true);
 }
 

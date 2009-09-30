@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Symbian application wrapper of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,41 +39,34 @@
 **
 ****************************************************************************/
 
-#ifndef QS60MAINAPPLICATION_H
-#define QS60MAINAPPLICATION_H
+#ifndef QDATASTREAM_P_H
+#define QDATASTREAM_P_H
 
-#include <QtCore/qglobal.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#ifdef Q_WS_S60
-
-#include <aknapp.h>
-
-QT_BEGIN_HEADER
+#include <qdatastream.h>
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
-
-class Q_GUI_EXPORT QS60MainApplication : public CAknApplication
+#ifndef QT_NO_DATASTREAM
+class QDataStreamPrivate
 {
 public:
-    QS60MainApplication();
-    // The virtuals are for qdoc.
-    virtual ~QS60MainApplication();
+    QDataStreamPrivate() : floatingPointPrecision(QDataStream::DoublePrecision) { }
 
-    virtual TUid AppDllUid() const;
-
-    virtual TFileName ResourceFileName() const;
-
-protected:
-
-    virtual CApaDocument *CreateDocumentL();
+    QDataStream::FloatingPointPrecision floatingPointPrecision;
 };
+#endif
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // Q_WS_S60
-
-#endif // QS60MAINAPPLICATION_H
+#endif // QDATASTREAM_P_H

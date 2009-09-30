@@ -602,6 +602,8 @@ void QFontDialogPrivate::updateStyles()
             }
             if (!found)
                 styleList->setCurrentItem(0);
+        } else {
+            styleList->setCurrentItem(0);
         }
 
         styleEdit->setText(styleList->currentText());

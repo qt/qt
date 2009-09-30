@@ -806,6 +806,16 @@ void tst_QFileSystemModel::sort()
     QDir dir(QDir::tempPath());
     dir.mkdir("sortTemp");
     dir.cd("sortTemp");
+    QDirIterator it(dir);
+    while(it.hasNext())
+    {
+        it.next();
+        QFileInfo info = it.fileInfo();
+        if (info.isDir())
+            dir.rmdir(info.fileName());
+        else
+            QFile::remove(info.absoluteFilePath());
+    }
     const QString dirPath = dir.absolutePath();
     QVERIFY(dir.exists());
 
