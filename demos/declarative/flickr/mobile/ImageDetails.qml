@@ -32,11 +32,6 @@ Flipable {
             color: "black"; opacity: 0.4
         }
 
-        Connection {
-            sender: ToolBar; signal: "button1Clicked()"
-            script: if (Container.state=='') Container.state='Back'; else Container.state=''
-        }
-
         Column {
             spacing: 10
             anchors {

@@ -44,8 +44,8 @@
                      PropertyChanges { target: ScaleMe; scale: 1 }
                  },
                  State {
-                     name: "Details"; extend: "Show"
-                     //PropertyChanges { target: ImageDetails; z: 2 }
+                     name: "Details"
+                     PropertyChanges { target: ScaleMe; scale: 1 }
                      ParentChange { target: Wrapper; parent: ImageDetails.frontContainer }
                      PropertyChanges { target: Wrapper; x: 20; y: 60; z: 1000 }
                      PropertyChanges { target: Background; state: "DetailedView" }
