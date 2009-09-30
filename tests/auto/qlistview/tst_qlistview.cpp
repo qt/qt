@@ -59,6 +59,8 @@
 #include <windows.h>
 #endif
 
+#include "../../shared/util.h"
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
