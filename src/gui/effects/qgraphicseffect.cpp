@@ -1363,6 +1363,40 @@ void QGraphicsBloomEffect::setBlurRadius(int radius)
 }
 
 /*!
+    \property QGraphicsBloomEffect::blurHint
+    \brief the blur hint of the effect.
+
+    Use the Qt::PerformanceHint hint to say that you want a faster blur,
+    and the Qt::QualityHint hint to say that you prefer a higher quality blur.
+
+    When animating the blur radius it's recommended to use Qt::PerformanceHint.
+
+    By default, the blur hint is Qt::PerformanceHint.
+*/
+Qt::RenderHint QGraphicsBloomEffect::blurHint() const
+{
+    Q_D(const QGraphicsBloomEffect);
+    return d->blurFilter.blurHint();
+}
+
+void QGraphicsBloomEffect::setBlurHint(Qt::RenderHint hint)
+{
+    Q_D(QGraphicsBloomEffect);
+    if (d->blurFilter.blurHint() == hint)
+        return;
+
+    d->blurFilter.setBlurHint(hint);
+    emit blurHintChanged(hint);
+}
+
+/*!
+    \fn void QGraphicsBloomEffect::blurHintChanged(Qt::RenderHint hint)
+
+    This signal is emitted whenever the effect's blur hint changes.
+    The \a hint parameter holds the effect's new blur hint.
+*/
+
+/*!
     \property QGraphicsBloomEffect::brightness
     \brief the brightness of the glow.
 

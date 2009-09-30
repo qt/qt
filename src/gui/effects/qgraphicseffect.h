@@ -339,6 +339,7 @@ class Q_GUI_EXPORT QGraphicsBloomEffect: public QGraphicsEffect
 {
     Q_OBJECT
     Q_PROPERTY(int blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
+    Q_PROPERTY(Qt::RenderHint blurHint READ blurHint WRITE setBlurHint NOTIFY blurHintChanged)
     Q_PROPERTY(int brightness READ brightness WRITE setBrightness NOTIFY brightnessChanged)
     Q_PROPERTY(qreal strength READ strength WRITE setStrength NOTIFY strengthChanged)
 public:
@@ -347,16 +348,19 @@ public:
 
     QRectF boundingRectFor(const QRectF &rect) const;
     int blurRadius() const;
+    Qt::RenderHint blurHint() const;
     int brightness() const;
     qreal strength() const;
 
 public Q_SLOTS:
     void setBlurRadius(int blurRadius);
+    void setBlurHint(Qt::RenderHint hint);
     void setBrightness(int brightness);
     void setStrength(qreal strength);
 
 Q_SIGNALS:
     void blurRadiusChanged(int blurRadius);
+    void blurHintChanged(Qt::RenderHint hint);
     void brightnessChanged(int brightness);
     void strengthChanged(qreal strength);
 
