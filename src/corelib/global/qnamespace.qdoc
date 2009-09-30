@@ -2776,6 +2776,19 @@
 */
 
 /*!
+    \enum Qt::CoordinateSystem
+    \since 4.6
+
+    This enum specifies the coordinate system.
+
+    \value DeviceCoordinates Coordinates are relative to the upper-left corner
+    of the object's paint device.
+
+    \value LogicalCoordinates Coordinates are relative to the upper-left corner
+    of the object.
+*/
+
+/*!
     \enum Qt::GestureState
     \since 4.6
 

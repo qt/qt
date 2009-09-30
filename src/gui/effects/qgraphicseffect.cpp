@@ -1363,6 +1363,13 @@ void QGraphicsBloomEffect::setBlurRadius(int radius)
 }
 
 /*!
+    \fn void QGraphicsBloomEffect::blurRadiusChanged(int blurRadius)
+
+    This signal is emitted whenever the effect's blur radius changes.
+    The \a blurRadius parameter holds the effect's new blur radius.
+*/
+
+/*!
     \property QGraphicsBloomEffect::blurHint
     \brief the blur hint of the effect.
 
@@ -1429,6 +1436,13 @@ void QGraphicsBloomEffect::setBrightness(int brightness)
 }
 
 /*!
+    \fn void QGraphicsBloomEffect::brightnessChanged(int brightness)
+
+    This signal is emitted whenever the effect's brightness changes.
+    The \a brightness parameter holds the effect's new brightness.
+*/
+
+/*!
     \property QGraphicsBloomEffect::strength
     \brief the strength of the effect.
 
@@ -1453,6 +1467,13 @@ void QGraphicsBloomEffect::setStrength(qreal strength)
     update();
     emit strengthChanged(strength);
 }
+
+/*!
+    \fn void QGraphicsBloomEffect::strengthChanged(qreal strength)
+
+    This signal is emitted whenever the effect's strength changes.
+    The \a strength parameter holds the effect's new strength.
+*/
 
 /*!
     \reimp
