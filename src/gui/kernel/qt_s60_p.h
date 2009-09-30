@@ -157,6 +157,8 @@ public:
     void setIgnoreFocusChanged(bool enabled) { m_ignoreFocusChanged = enabled; }
     void CancelLongTapTimer();
 
+    void setFocusSafely(bool focus);
+
 protected:
     void Draw(const TRect& aRect) const;
     void SizeChanged();
@@ -172,6 +174,9 @@ private:
 #ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
     void translateAdvancedPointerEvent(const TAdvancedPointerEvent *event);
 #endif
+
+private:
+    static QSymbianControl *lastFocusedControl;
 
 private:
     QWidget *qwidget;
