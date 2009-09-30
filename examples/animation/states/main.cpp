@@ -41,13 +41,12 @@
 
 #include <QtGui>
 
-class Pixmap : public QGraphicsWidget
+class Pixmap : public QGraphicsObject
 {
     Q_OBJECT
 public:
-    Pixmap(const QPixmap &pix) : QGraphicsWidget(), p(pix)
+    Pixmap(const QPixmap &pix) : QGraphicsObject(), p(pix)
     {
-        setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     }
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
@@ -55,10 +54,9 @@ public:
         painter->drawPixmap(QPointF(), p);
     }
 
-protected:
-    QSizeF sizeHint(Qt::SizeHint, const QSizeF & = QSizeF())
+    QRectF boundingRect() const
     {
-        return QSizeF(p.width(), p.height());
+        return QRectF( QPointF(0, 0), p.size());
     }
 
 private:
@@ -133,12 +131,12 @@ int main(int argc, char *argv[])
     state1->assignProperty(button, "text", "Switch to state 2");
     state1->assignProperty(widget, "geometry", QRectF(0, 0, 400, 150));
     state1->assignProperty(box, "geometry", QRect(-200, 150, 200, 150));
-    state1->assignProperty(p1, "geometry", QRectF(68, 185, 64, 64));
-    state1->assignProperty(p2, "geometry", QRectF(168, 185, 64, 64));
-    state1->assignProperty(p3, "geometry", QRectF(268, 185, 64, 64));
-    state1->assignProperty(p4, "geometry", QRectF(68-150, 48-150, 64, 64));
-    state1->assignProperty(p5, "geometry", QRectF(168, 48-150, 64, 64));
-    state1->assignProperty(p6, "geometry", QRectF(268+150, 48-150, 64, 64));
+    state1->assignProperty(p1, "pos", QPointF(68, 185));
+    state1->assignProperty(p2, "pos", QPointF(168, 185));
+    state1->assignProperty(p3, "pos", QPointF(268, 185));
+    state1->assignProperty(p4, "pos", QPointF(68-150, 48-150));
+    state1->assignProperty(p5, "pos", QPointF(168, 48-150));
+    state1->assignProperty(p6, "pos", QPointF(268+150, 48-150));
     state1->assignProperty(p1, "rotation", qreal(0));
     state1->assignProperty(p2, "rotation", qreal(0));
     state1->assignProperty(p3, "rotation", qreal(0));
@@ -157,12 +155,12 @@ int main(int argc, char *argv[])
     state2->assignProperty(button, "text", "Switch to state 3");
     state2->assignProperty(widget, "geometry", QRectF(200, 150, 200, 150));
     state2->assignProperty(box, "geometry", QRect(9, 150, 190, 150));
-    state2->assignProperty(p1, "geometry", QRectF(68-150, 185+150, 64, 64));
-    state2->assignProperty(p2, "geometry", QRectF(168, 185+150, 64, 64));
-    state2->assignProperty(p3, "geometry", QRectF(268+150, 185+150, 64, 64));
-    state2->assignProperty(p4, "geometry", QRectF(64, 48, 64, 64));
-    state2->assignProperty(p5, "geometry", QRectF(168, 48, 64, 64));
-    state2->assignProperty(p6, "geometry", QRectF(268, 48, 64, 64));
+    state2->assignProperty(p1, "pos", QPointF(68-150, 185+150));
+    state2->assignProperty(p2, "pos", QPointF(168, 185+150));
+    state2->assignProperty(p3, "pos", QPointF(268+150, 185+150));
+    state2->assignProperty(p4, "pos", QPointF(64, 48));
+    state2->assignProperty(p5, "pos", QPointF(168, 48));
+    state2->assignProperty(p6, "pos", QPointF(268, 48));
     state2->assignProperty(p1, "rotation", qreal(-270));
     state2->assignProperty(p2, "rotation", qreal(90));
     state2->assignProperty(p3, "rotation", qreal(270));
@@ -179,12 +177,12 @@ int main(int argc, char *argv[])
 
     // State 3
     state3->assignProperty(button, "text", "Switch to state 1");
-    state3->assignProperty(p1, "geometry", QRectF(0, 5, 64, 64));
-    state3->assignProperty(p2, "geometry", QRectF(0, 5 + 64 + 5, 64, 64));
-    state3->assignProperty(p3, "geometry", QRectF(5, 5 + (64 + 5) + 64, 64, 64));
-    state3->assignProperty(p4, "geometry", QRectF(5 + 64 + 5, 5, 64, 64));
-    state3->assignProperty(p5, "geometry", QRectF(5 + 64 + 5, 5 + 64 + 5, 64, 64));
-    state3->assignProperty(p6, "geometry", QRectF(5 + 64 + 5, 5 + (64 + 5) + 64, 64, 64));
+    state3->assignProperty(p1, "pos", QPointF(0, 5));
+    state3->assignProperty(p2, "pos", QPointF(0, 5 + 64 + 5));
+    state3->assignProperty(p3, "pos", QPointF(5, 5 + (64 + 5) + 64));
+    state3->assignProperty(p4, "pos", QPointF(5 + 64 + 5, 5));
+    state3->assignProperty(p5, "pos", QPointF(5 + 64 + 5, 5 + 64 + 5));
+    state3->assignProperty(p6, "pos", QPointF(5 + 64 + 5, 5 + (64 + 5) + 64));
     state3->assignProperty(widget, "geometry", QRectF(138, 5, 400 - 138, 200));
     state3->assignProperty(box, "geometry", QRect(5, 205, 400, 90));
     state3->assignProperty(p1, "opacity", qreal(1));
@@ -200,12 +198,12 @@ int main(int argc, char *argv[])
     animation1SubGroup->addAnimation(new QPropertyAnimation(box, "geometry"));
     t1->addAnimation(animation1SubGroup);
     t1->addAnimation(new QPropertyAnimation(widget, "geometry"));
-    t1->addAnimation(new QPropertyAnimation(p1, "geometry"));
-    t1->addAnimation(new QPropertyAnimation(p2, "geometry"));
-    t1->addAnimation(new QPropertyAnimation(p3, "geometry"));
-    t1->addAnimation(new QPropertyAnimation(p4, "geometry"));
-    t1->addAnimation(new QPropertyAnimation(p5, "geometry"));
-    t1->addAnimation(new QPropertyAnimation(p6, "geometry"));
+    t1->addAnimation(new QPropertyAnimation(p1, "pos"));
+    t1->addAnimation(new QPropertyAnimation(p2, "pos"));
+    t1->addAnimation(new QPropertyAnimation(p3, "pos"));
+    t1->addAnimation(new QPropertyAnimation(p4, "pos"));
+    t1->addAnimation(new QPropertyAnimation(p5, "pos"));
+    t1->addAnimation(new QPropertyAnimation(p6, "pos"));
     t1->addAnimation(new QPropertyAnimation(p1, "rotation"));
     t1->addAnimation(new QPropertyAnimation(p2, "rotation"));
     t1->addAnimation(new QPropertyAnimation(p3, "rotation"));
@@ -222,12 +220,12 @@ int main(int argc, char *argv[])
     QAbstractTransition *t2 = state2->addTransition(button, SIGNAL(clicked()), state3);
     t2->addAnimation(new QPropertyAnimation(box, "geometry"));
     t2->addAnimation(new QPropertyAnimation(widget, "geometry"));
-    t2->addAnimation(new QPropertyAnimation(p1, "geometry"));
-    t2->addAnimation(new QPropertyAnimation(p2, "geometry"));
-    t2->addAnimation(new QPropertyAnimation(p3, "geometry"));
-    t2->addAnimation(new QPropertyAnimation(p4, "geometry"));
-    t2->addAnimation(new QPropertyAnimation(p5, "geometry"));
-    t2->addAnimation(new QPropertyAnimation(p6, "geometry"));
+    t2->addAnimation(new QPropertyAnimation(p1, "pos"));
+    t2->addAnimation(new QPropertyAnimation(p2, "pos"));
+    t2->addAnimation(new QPropertyAnimation(p3, "pos"));
+    t2->addAnimation(new QPropertyAnimation(p4, "pos"));
+    t2->addAnimation(new QPropertyAnimation(p5, "pos"));
+    t2->addAnimation(new QPropertyAnimation(p6, "pos"));
     t2->addAnimation(new QPropertyAnimation(p1, "rotation"));
     t2->addAnimation(new QPropertyAnimation(p2, "rotation"));
     t2->addAnimation(new QPropertyAnimation(p3, "rotation"));
@@ -244,12 +242,12 @@ int main(int argc, char *argv[])
     QAbstractTransition *t3 = state3->addTransition(button, SIGNAL(clicked()), state1);
     t3->addAnimation(new QPropertyAnimation(box, "geometry"));
     t3->addAnimation(new QPropertyAnimation(widget, "geometry"));
-    t3->addAnimation(new QPropertyAnimation(p1, "geometry"));
-    t3->addAnimation(new QPropertyAnimation(p2, "geometry"));
-    t3->addAnimation(new QPropertyAnimation(p3, "geometry"));
-    t3->addAnimation(new QPropertyAnimation(p4, "geometry"));
-    t3->addAnimation(new QPropertyAnimation(p5, "geometry"));
-    t3->addAnimation(new QPropertyAnimation(p6, "geometry"));
+    t3->addAnimation(new QPropertyAnimation(p1, "pos"));
+    t3->addAnimation(new QPropertyAnimation(p2, "pos"));
+    t3->addAnimation(new QPropertyAnimation(p3, "pos"));
+    t3->addAnimation(new QPropertyAnimation(p4, "pos"));
+    t3->addAnimation(new QPropertyAnimation(p5, "pos"));
+    t3->addAnimation(new QPropertyAnimation(p6, "pos"));
     t3->addAnimation(new QPropertyAnimation(p1, "rotation"));
     t3->addAnimation(new QPropertyAnimation(p2, "rotation"));
     t3->addAnimation(new QPropertyAnimation(p3, "rotation"));
