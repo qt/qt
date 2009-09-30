@@ -5500,14 +5500,14 @@ void tst_QWidget::multipleToplevelFocusCheck()
     w1.activateWindow();
     QApplication::setActiveWindow(&w1);
     QApplication::processEvents();
-    QTRY_COMPARE(QApplication::activeWindow(), &w1);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w1));
     QTest::mouseDClick(&w1, Qt::LeftButton);
     QTRY_COMPARE(QApplication::focusWidget(), static_cast<QWidget *>(w1.edit));
 
     w2.activateWindow();
     QApplication::setActiveWindow(&w2);
     QApplication::processEvents();
-    QTRY_COMPARE(QApplication::activeWindow(), &w2);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w2));
     QTest::mouseClick(&w2, Qt::LeftButton);
 #ifdef Q_WS_QWS
     QEXPECT_FAIL("", "embedded toplevels take focus anyway", Continue);
@@ -5520,14 +5520,14 @@ void tst_QWidget::multipleToplevelFocusCheck()
     w1.activateWindow();
     QApplication::setActiveWindow(&w1);
     QApplication::processEvents();
-    QTRY_COMPARE(QApplication::activeWindow(), &w1);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w1));
     QTest::mouseDClick(&w1, Qt::LeftButton);
     QTRY_COMPARE(QApplication::focusWidget(), static_cast<QWidget *>(w1.edit));
 
     w2.activateWindow();
     QApplication::setActiveWindow(&w2);
     QApplication::processEvents();
-    QTRY_COMPARE(QApplication::activeWindow(), &w2);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w2));
     QTest::mouseClick(&w2, Qt::LeftButton);
     QTRY_COMPARE(QApplication::focusWidget(), (QWidget *)0);
 }
