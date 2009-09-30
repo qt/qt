@@ -794,4 +794,15 @@ QSqlIndex QTDSDriver::primaryIndex(const QString& tablename) const
     return idx;
 }
 
+QString QTDSDriver::escapeIdentifier(const QString &identifier, IdentifierType type) const
+{
+    QString res = identifier;
+    if(!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('"')) && !identifier.endsWith(QLatin1Char('"')) ) {
+        res.replace(QLatin1Char('"'), QLatin1String("\"\""));
+        res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
+        res.replace(QLatin1Char('.'), QLatin1String("\".\""));
+    }
+    return res;
+}
+
 QT_END_NAMESPACE
