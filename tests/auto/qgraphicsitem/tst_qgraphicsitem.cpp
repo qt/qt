@@ -2925,10 +2925,8 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(20);
+    QTest::qWaitForWindowShown(&view);
+    QTest::qWait(100);
 
     EventTester *tester = new EventTester;
     scene.addItem(tester);
@@ -4637,7 +4635,7 @@ void tst_QGraphicsItem::paint()
     qApp->processEvents();
 
     //First show one paint
-    QVERIFY(tester2.painted == 1);
+    QTRY_COMPARE(tester2.painted, 1);
 
     //nominal case, update call paint
     tester2.update();
