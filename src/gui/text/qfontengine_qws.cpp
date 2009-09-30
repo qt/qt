@@ -528,10 +528,12 @@ QImage QFontEngineQPF1::alphaMapForGlyph(glyph_t g)
     QImage image;
     if (mono) {
         image = QImage((glyph->metrics->width+7)&~7, glyph->metrics->height, QImage::Format_Mono);
+        image.setColor(0, qRgba(0, 0, 0, 0));
+        image.setColor(1, qRgba(0, 0, 0, 255));
     } else {
         image = QImage(glyph->metrics->width, glyph->metrics->height, QImage::Format_Indexed8);
         for (int j=0; j<256; ++j)
-            image.setColor(j, 0xff000000 | j | (j<<8) | (j<<16));
+            image.setColor(j, qRgba(0, 0, 0, j));
     }
     for (int i=0; i<glyph->metrics->height; ++i) {
         memcpy(image.scanLine(i), bits, glyph->metrics->linestep);
