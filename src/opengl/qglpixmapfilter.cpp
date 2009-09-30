@@ -79,13 +79,13 @@ protected:
     bool processGL(QPainter *painter, const QPointF &pos, const QPixmap &pixmap, const QRectF &srcRect) const;
 };
 
-#ifndef QT_OPENGL_ES_2
-
-class QGLPixmapConvolutionFilter: public QGLPixmapFilter<QPixmapConvolutionFilter>
+class QGLPixmapConvolutionFilter: public QGLCustomShaderStage, public QGLPixmapFilter<QPixmapConvolutionFilter>
 {
 public:
     QGLPixmapConvolutionFilter();
     ~QGLPixmapConvolutionFilter();
+
+    void setUniforms(QGLShaderProgram *program);
 
 protected:
     bool processGL(QPainter *painter, const QPointF &pos, const QPixmap &src, const QRectF &srcRect) const;
@@ -93,15 +93,9 @@ protected:
 private:
     QByteArray generateConvolutionShader() const;
 
-    mutable QGLShaderProgram *m_program;
-    mutable int m_scaleUniform;
-    mutable int m_matrixUniform;
-
-    mutable int m_kernelWidth;
-    mutable int m_kernelHeight;
+    mutable QSize m_srcSize;
+    mutable int m_prevKernelSize;
 };
-
-#endif
 
 class QGLPixmapBlurFilter : public QGLCustomShaderStage, public QGLPixmapFilter<QPixmapBlurFilter>
 {
@@ -147,56 +141,15 @@ QPixmapFilter *QGL2PaintEngineEx::pixmapFilter(int type, const QPixmapFilter *pr
         return d->blurFilter.data();
         }
 
-#ifndef QT_OPENGL_ES_2
     case QPixmapFilter::ConvolutionFilter:
         if (!d->convolutionFilter)
             d->convolutionFilter.reset(new QGLPixmapConvolutionFilter);
         return d->convolutionFilter.data();
-#endif
 
     default: break;
     }
     return QPaintEngineEx::pixmapFilter(type, prototype);
 }
-
-#ifndef QT_OPENGL_ES_2  // XXX: needs to be ported
-
-extern void qt_add_rect_to_array(const QRectF &r, q_vertexType *array);
-extern void qt_add_texcoords_to_array(qreal x1, qreal y1, qreal x2, qreal y2, q_vertexType *array);
-
-static void qgl_drawTexture(const QRectF &rect, int tx_width, int tx_height, const QRectF & src)
-{
-#ifndef QT_OPENGL_ES
-    glPushAttrib(GL_CURRENT_BIT);
-#endif
-    qreal x1, x2, y1, y2;
-
-    x1 = src.x() / tx_width;
-    x2 = x1 + src.width() / tx_width;
-    y1 = 1.0 - ((src.y() / tx_height) + (src.height() / tx_height));
-    y2 = 1.0 - (src.y() / tx_height);
-
-    q_vertexType vertexArray[4*2];
-    q_vertexType texCoordArray[4*2];
-
-    qt_add_rect_to_array(rect, vertexArray);
-    qt_add_texcoords_to_array(x1, y2, x2, y1, texCoordArray);
-
-    glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray);
-    glTexCoordPointer(2, q_vertexTypeEnum, 0, texCoordArray);
-
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    glDisableClientState(GL_VERTEX_ARRAY);
-
-#ifndef QT_OPENGL_ES
-    glPopAttrib();
-#endif
-}
-
-#endif // !QT_OPENGL_ES_2
 
 static const char *qt_gl_colorize_filter =
         "uniform lowp vec4 colorizeColor;"
@@ -231,101 +184,87 @@ void QGLPixmapColorizeFilter::setUniforms(QGLShaderProgram *program)
     program->setUniformValue("colorizeStrength", float(strength()));
 }
 
-#ifndef QT_OPENGL_ES_2
+void QGLPixmapConvolutionFilter::setUniforms(QGLShaderProgram *program)
+{
+    const qreal *kernel = convolutionKernel();
+    int kernelWidth = columns();
+    int kernelHeight = rows();
+    int kernelSize = kernelWidth * kernelHeight;
+
+    QVarLengthArray<GLfloat> matrix(kernelSize);
+    QVarLengthArray<GLfloat> offset(kernelSize * 2);
+
+    for(int i = 0; i < kernelSize; ++i)
+        matrix[i] = kernel[i];
+
+    for(int y = 0; y < kernelHeight; ++y) {
+        for(int x = 0; x < kernelWidth; ++x) {
+            offset[(y * kernelWidth + x) * 2] = x - (kernelWidth / 2);
+            offset[(y * kernelWidth + x) * 2 + 1] = (kernelHeight / 2) - y;
+        }
+    }
+
+    const qreal iw = 1.0 / m_srcSize.width();
+    const qreal ih = 1.0 / m_srcSize.height();
+    program->setUniformValue("inv_texture_size", iw, ih);
+    program->setUniformValueArray("matrix", matrix.constData(), kernelSize, 1);
+    program->setUniformValueArray("offset", offset.constData(), kernelSize, 2);
+}
 
 // generates convolution filter code for arbitrary sized kernel
 QByteArray QGLPixmapConvolutionFilter::generateConvolutionShader() const {
     QByteArray code;
-    code.append("uniform sampler2D texture;\n"
-                "uniform vec2 inv_texture_size;\n"
-                "uniform float matrix[");
-    code.append(QByteArray::number(m_kernelWidth * m_kernelHeight));
+    int kernelWidth = columns();
+    int kernelHeight = rows();
+    int kernelSize = kernelWidth * kernelHeight;
+    code.append("uniform highp vec2 inv_texture_size;\n"
+                "uniform mediump float matrix[");
+    code.append(QByteArray::number(kernelSize));
     code.append("];\n"
-                "vec2 offset[");
-    code.append(QByteArray::number(m_kernelWidth*m_kernelHeight));
-    code.append("];\n"
-                "void main(void) {\n");
-
-    for(int y = 0; y < m_kernelHeight; y++) {
-        for(int x = 0; x < m_kernelWidth; x++) {
-            code.append("  offset[");
-            code.append(QByteArray::number(y * m_kernelWidth + x));
-            code.append("] = vec2(inv_texture_size.x * ");
-            code.append(QByteArray::number(x-(int)(m_kernelWidth/2)));
-            code.append(".0, inv_texture_size.y * ");
-            code.append(QByteArray::number((int)(m_kernelHeight/2)-y));
-            code.append(".0);\n");
-        }
-    }
+                "uniform highp vec2 offset[");
+    code.append(QByteArray::number(kernelSize));
+    code.append("];\n");
+    code.append("lowp vec4 customShader(lowp sampler2D src, highp vec2 srcCoords) {\n");
 
     code.append("  int i = 0;\n"
-                "  vec2 coords = gl_TexCoord[0].st;\n"
-                "  vec4 sum = vec4(0.0);\n"
+                "  lowp vec4 sum = vec4(0.0);\n"
                 "  for (i = 0; i < ");
-    code.append(QByteArray::number(m_kernelWidth * m_kernelHeight));
+    code.append(QByteArray::number(kernelSize));
     code.append("; i++) {\n"
-                "    vec4 tmp = texture2D(texture,coords+offset[i]);\n"
-                "    sum += matrix[i] * tmp;\n"
+                "    sum += matrix[i] * texture2D(src,srcCoords+inv_texture_size*offset[i]);\n"
                 "  }\n"
-                "  gl_FragColor = sum;\n"
+                "  return sum;\n"
                 "}");
     return code;
 }
 
 QGLPixmapConvolutionFilter::QGLPixmapConvolutionFilter()
-    : m_program(0)
-    , m_scaleUniform(0)
-    , m_matrixUniform(0)
-    , m_kernelWidth(0)
-    , m_kernelHeight(0)
+    : m_prevKernelSize(-1)
 {
 }
 
 QGLPixmapConvolutionFilter::~QGLPixmapConvolutionFilter()
 {
-    delete m_program;
 }
 
-bool QGLPixmapConvolutionFilter::processGL(QPainter *, const QPointF &pos, const QPixmap &src, const QRectF &srcRect) const
+bool QGLPixmapConvolutionFilter::processGL(QPainter *painter, const QPointF &pos, const QPixmap &src, const QRectF &srcRect) const
 {
-    QRectF target = (srcRect.isNull() ? QRectF(src.rect()) : srcRect).translated(pos);
+    QGLPixmapConvolutionFilter *filter = const_cast<QGLPixmapConvolutionFilter *>(this);
 
-    bindTexture(src);
-#ifdef GL_CLAMP
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-#endif
-    if (!m_program || m_kernelWidth != columns() || m_kernelHeight != rows()) {
-        delete m_program;
+    m_srcSize = src.size();
 
-        m_kernelWidth = columns();
-        m_kernelHeight = rows();
-
-        QByteArray code = generateConvolutionShader();
-        m_program = new QGLShaderProgram();
-        m_program->addShader(QGLShader::FragmentShader, code);
-        m_program->link();
-        m_scaleUniform = m_program->uniformLocation("inv_texture_size");
-        m_matrixUniform = m_program->uniformLocation("matrix");
+    int kernelSize = rows() * columns();
+    if (m_prevKernelSize == -1 || m_prevKernelSize != kernelSize) {
+        filter->setSource(generateConvolutionShader());
+        m_prevKernelSize = kernelSize;
     }
 
-    const qreal *kernel = convolutionKernel();
-    GLfloat *conv = new GLfloat[m_kernelWidth * m_kernelHeight];
-    for(int i = 0; i < m_kernelWidth * m_kernelHeight; ++i)
-        conv[i] = kernel[i];
+    filter->setOnPainter(painter);
+    painter->drawPixmap(pos, src, srcRect);
+    filter->removeFromPainter(painter);
 
-    const qreal iw = 1.0 / src.width();
-    const qreal ih = 1.0 / src.height();
-    m_program->enable();
-    m_program->setUniformValue(m_scaleUniform, iw, ih);
-    m_program->setUniformValueArray(m_matrixUniform, conv, m_kernelWidth * m_kernelHeight, 1);
-
-    qgl_drawTexture(target, src.width(), src.height(), boundingRectFor(srcRect));
-    m_program->disable();
     return true;
 }
-
-#endif // !QT_OPENGL_ES_2
 
 static const char *qt_gl_blur_filter_fast =
     "const int samples = 9;"
