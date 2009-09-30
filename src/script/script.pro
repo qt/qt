@@ -62,6 +62,9 @@ DEFINES += WTF_USE_JAVASCRIPTCORE_BINDINGS=1 WTF_CHANGES=1
 
 DEFINES += NDEBUG
 
+# Avoid JSC C API functions being exported.
+DEFINES += JS_EXPORT="" JS_EXPORTDATA=""
+
 INCLUDEPATH += $$PWD
 
 include(script.pri)
