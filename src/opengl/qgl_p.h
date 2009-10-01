@@ -490,8 +490,6 @@ private:
 
 #ifdef Q_WS_QWS
 extern QPaintEngine* qt_qgl_paint_engine();
-
-extern EGLDisplay qt_qgl_egl_display();
 #endif
 
 bool qt_gl_preferGL2Engine();
