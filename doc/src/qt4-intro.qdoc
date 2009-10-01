@@ -501,8 +501,9 @@
     The framework makes it easy to animate \l{QObject}s, including
     QWidgets, by allowing Qt properties to be animated. It also allows
     creating custom animations and interpolation functions. Graphics
-    views are not left out--one can animate \l{QGraphicsWidget}s,
-    which inherits from QObject (and thereby enables properties).
+    views are not left out; one can animate \l{QGraphicsWidget}s and
+    new \l{QGraphicsObject}s which inherit from QGraphicsItem
+    (and thereby enable properties).
 
     Animations are controlled using easing curves and can be grouped
     together. This enables animations of arbitrary complexity.
