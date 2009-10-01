@@ -39,32 +39,49 @@
 **
 ****************************************************************************/
 
-#include <QtOpenGL>
+#ifndef GLWIDGET_H
+#define GLWIDGET_H
+
+#include <QGLWidget>
+
+class Geometry;
+class Cube;
+class Tile;
 
 class GLWidget : public QGLWidget
 {
 public:
-    GLWidget(QWidget *parent);
+    GLWidget(QWidget *parent = 0);
     ~GLWidget();
-    void initializeGL();
-    void resizeGL(int w, int h);
-    void paintGL();
-    void timerEvent(QTimerEvent *) { update(); }
-    void mousePressEvent(QMouseEvent *) { killTimer(timerId); }
-    void mouseReleaseEvent(QMouseEvent *) { timerId = startTimer(20); }
 
-    void drawCube(int i, GLfloat z, GLfloat ri, GLfloat jmp, GLfloat amp);
-    void initCommon();
-    void initPbuffer();
+protected:
+    void initializeGL();
+    void paintGL();
+    void resizeGL(int width, int height);
+    void mousePressEvent(QMouseEvent *) { setAnimationPaused(true); }
+    void mouseReleaseEvent(QMouseEvent *) { setAnimationPaused(false); }
 
 private:
-    GLfloat rot[3], xOffs[3], yOffs[3], xInc[3];
-    GLuint pbufferList;
+    void initializeGeometry();
+    void initPbuffer();
+    void initCommon();
+    void perspectiveProjection();
+    void orthographicProjection();
+    void drawPbuffer();
+    void setAnimationPaused(bool enable);
+
+    qreal aspect;
     GLuint dynamicTexture;
     GLuint cubeTexture;
-    int timerId;
     bool hasDynamicTextureUpdate;
-
     QGLPixelBuffer *pbuffer;
-};
+    Geometry *geom;
+    Cube *cube;
+    Tile *backdrop;
+    QList<Cube *> cubes;
+    QList<Tile *> tiles;
 
+};
+//! [3]
+
+#endif

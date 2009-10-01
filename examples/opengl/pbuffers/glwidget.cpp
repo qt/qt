@@ -40,216 +40,187 @@
 ****************************************************************************/
 
 #include "glwidget.h"
-#include <QtGui/QImage>
-
 #include <math.h>
 
-static GLint cubeArray[][3] = {
-    {0, 0, 0}, {0, 1, 0}, {1, 1, 0}, {1, 0, 0},
-    {0, 0, 1}, {1, 0, 1}, {1, 1, 1}, {0, 1, 1},
-    {0, 0, 0}, {1, 0, 0}, {1, 0, 1}, {0, 0, 1},
-    {0, 1, 0}, {0, 1, 1}, {1, 1, 1}, {1, 1, 0},
-    {0, 1, 0}, {0, 0, 0}, {0, 0, 1}, {0, 1, 1},
-    {1, 0, 0}, {1, 1, 0}, {1, 1, 1}, {1, 0, 1}
-};
+#include "cube.h"
 
-static GLint cubeTextureArray[][2] = {
-    {0, 0}, {1, 0}, {1, 1}, {0, 1},
-    {0, 0}, {0, 1}, {1, 1}, {1, 0},
-    {0, 0}, {1, 0}, {1, 1}, {0, 1},
-    {1, 0}, {0, 0}, {0, 1}, {1, 1},
-    {0, 0}, {1, 0}, {1, 1}, {0, 1},
-    {1, 0}, {0, 0}, {0, 1}, {1, 1}
-};
+#include <QGLPixelBuffer>
 
-static GLint faceArray[][2] = {
-    {1, -1}, {1, 1}, {-1, 1}, {-1, -1}
-};
+#ifndef GL_MULTISAMPLE
+#define GL_MULTISAMPLE  0x809D
+#endif
 
-static GLubyte colorArray[][4] = {
-    {102, 176, 54, 255},
-    {81, 141, 41, 255},
-    {62, 108, 32, 255},
-    {45, 79, 23, 255}
+static GLfloat colorArray[][4] = {
+    {0.243f, 0.423f, 0.125f, 1.0f},
+    {0.176f, 0.31f, 0.09f, 1.0f},
+    {0.4f, 0.69f, 0.212f, 1.0f},
+    {0.317f, 0.553f, 0.161f, 1.0f}
 };
 
 GLWidget::GLWidget(QWidget *parent)
-  : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
+    : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
+    , geom(0)
+    , cube(0)
 {
     // create the pbuffer
     pbuffer = new QGLPixelBuffer(QSize(512, 512), format(), this);
-    timerId = startTimer(20);
     setWindowTitle(tr("OpenGL pbuffers"));
+    initializeGeometry();
 }
 
 GLWidget::~GLWidget()
 {
     pbuffer->releaseFromDynamicTexture();
     glDeleteTextures(1, &dynamicTexture);
-    glDeleteLists(pbufferList, 1);
     delete pbuffer;
+
+    qDeleteAll(cubes);
+    qDeleteAll(tiles);
+    delete cube;
 }
 
 void GLWidget::initializeGL()
 {
-    glMatrixMode(GL_MODELVIEW);
-
-    glEnable(GL_CULL_FACE);
     initCommon();
+    glShadeModel(GL_SMOOTH);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    static GLfloat lightPosition[4] = { 0.5, 5.0, 7.0, 1.0 };
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
     initPbuffer();
-
-    for (int i = 0; i < 3; ++i) {
-        yOffs[i] = 0.0f;
-        xInc[i] = 0.005f;
-        rot[i] = 0.0f;
+    cube->startAnimation();
+    connect(cube, SIGNAL(changed()), this, SLOT(update()));
+    for (int i = 0; i < 3; ++i)
+    {
+        cubes[i]->startAnimation();
+        connect(cubes[i], SIGNAL(changed()), this, SLOT(update()));
     }
-    xOffs[0]= 0.0f;
-    xOffs[1]= 0.5f;
-    xOffs[2]= 1.0f;
-
-    cubeTexture = bindTexture(QImage(":res/cubelogo.png"));
-}
-
-void GLWidget::resizeGL(int w, int h)
-{
-    glViewport(0, 0, w, h);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    float aspect = w/(float)(h ? h : 1);
-    glFrustum(-aspect, aspect, -1, 1, 10, 100);
-    glTranslatef(-0.5f, -0.5f, -0.5f);
-    glTranslatef(0.0f, 0.0f, -15.0f);
 }
 
 void GLWidget::paintGL()
 {
-    // draw a spinning cube into the pbuffer..
     pbuffer->makeCurrent();
-    glBindTexture(GL_TEXTURE_2D, cubeTexture);
-    glCallList(pbufferList);
-    glFlush();
-
-    // rendering directly to a texture is not supported on X11 and
-    // some Windows implementations, unfortunately
+    drawPbuffer();
+    // On direct render platforms, drawing onto the pbuffer context above
+    // automatically updates the dynamic texture.  For cases where rendering
+    // directly to a texture is not supported, explicitly copy.
     if (!hasDynamicTextureUpdate)
         pbuffer->updateDynamicTexture(dynamicTexture);
-
-    // ..and use the pbuffer contents as a texture when rendering the
-    // background and the bouncing cubes
     makeCurrent();
+
+    // Use the pbuffer as a texture to render the scene
     glBindTexture(GL_TEXTURE_2D, dynamicTexture);
+
+    // set up to render the scene
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+    glTranslatef(0.0f, 0.0f, -10.0f);
 
     // draw the background
-    glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
-    glLoadIdentity();
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-
-    glVertexPointer(2, GL_INT, 0, faceArray);
-    glTranslatef(-1.2f, -0.8f, 0.0f);
-    glScalef(0.2f, 0.2f, 0.2f);
-    for (int y = 0; y < 5; ++y) {
-        for (int x = 0; x < 5; ++x) {
-            glTranslatef(2.0f, 0, 0);
-            glColor4f(0.8f, 0.8f, 0.8f, 1.0f);
-            glDrawArrays(GL_QUADS, 0, 4);
-        }
-        glTranslatef(-10.0f, 2.0f, 0);
-    }
-    glVertexPointer(3, GL_INT, 0, cubeArray);
-
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
+    glScalef(aspect, 1.0f, 1.0f);
+    for (int i = 0; i < tiles.count(); ++i)
+        tiles[i]->draw();
     glPopMatrix();
 
     // draw the bouncing cubes
-    drawCube(0, 0.0f, 1.5f, 2.5f, 1.5f);
-    drawCube(1, 1.0f, 2.0f, 2.5f, 2.0f);
-    drawCube(2, 2.0f, 3.5f, 2.5f, 2.5f);
+    for (int i = 0; i < cubes.count(); ++i)
+        cubes[i]->draw();
 }
 
-void GLWidget::drawCube(int i, GLfloat z, GLfloat rotation, GLfloat jmp, GLfloat amp)
+void GLWidget::initializeGeometry()
 {
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glTranslatef(xOffs[i], yOffs[i], z);
-    glTranslatef(0.5f, 0.5f, 0.5f);
-    GLfloat scale = 0.75 + i*(0.25f/2);
-    glScalef(scale, scale, scale);
-    glRotatef(rot[i], 1.0f, 1.0f, 1.0f);
-    glTranslatef(-0.5f, -0.5f, -0.5f);
+    geom = new Geometry();
+    CubeBuilder cBuilder(geom, 0.5);
+    cBuilder.setColor(QColor(255, 255, 255, 212));
+    // build the 3 bouncing, spinning cubes
+    for (int i = 0; i < 3; ++i)
+        cubes.append(cBuilder.newCube(QVector3D((float)(i-1), -1.5f, 5 - i)));
 
-    glColor4f(1.0f, 1.0f, 1.0f, 0.8f);
-    glDrawArrays(GL_QUADS, 0, 24);
+    // build the spinning cube which goes in the dynamic texture
+    cube = cBuilder.newCube();
+    cube->removeBounce();
 
-    if (xOffs[i] > 1.0f || xOffs[i] < -1.0f) {
-        xInc[i] = -xInc[i];
-        xOffs[i] = xOffs[i] > 1.0f ? 1.0f : -1.0f;
-    }
-    xOffs[i] += xInc[i];
-    yOffs[i] = qAbs(cos((-3.141592f * jmp) * xOffs[i]) * amp) - 1;
-    rot[i] += rotation;
+    // build the background tiles
+    TileBuilder tBuilder(geom);
+    tBuilder.setColor(QColor(Qt::white));
+    for (int c = -2; c <= +2; ++c)
+        for (int r = -2; r <= +2; ++r)
+            tiles.append(tBuilder.newTile(QVector3D(c, r, 0)));
+
+    // graded backdrop for the pbuffer scene
+    TileBuilder bBuilder(geom, 0.0f, 2.0f);
+    bBuilder.setColor(QColor(102, 176, 54, 210));
+    backdrop = bBuilder.newTile(QVector3D(0.0f, 0.0f, -1.5f));
+    backdrop->setColors(colorArray);
 }
 
 void GLWidget::initCommon()
 {
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    glVertexPointer(3, GL_INT, 0, cubeArray);
-    glTexCoordPointer(2, GL_INT, 0, cubeTextureArray);
-    glColorPointer(4, GL_UNSIGNED_BYTE, 0, colorArray);
+    qglClearColor(QColor(Qt::darkGray));
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_MULTISAMPLE);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
-    glEnable(GL_TEXTURE_2D);
-    glEnable(GL_DEPTH_TEST);
 
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glEnable(GL_TEXTURE_2D);
+
+    geom->loadArrays();
+}
+
+void GLWidget::perspectiveProjection()
+{
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glFrustum(-aspect, +aspect, -1.0, +1.0, 4.0, 15.0);
+    glMatrixMode(GL_MODELVIEW);
+}
+
+void GLWidget::orthographicProjection()
+{
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(-1.0, +1.0, -1.0, +1.0, -90.0, +90.0);
+    glMatrixMode(GL_MODELVIEW);
+}
+
+void GLWidget::resizeGL(int width, int height)
+{
+    glViewport(0, 0, width, height);
+    aspect = (qreal)width / (qreal)(height ? height : 1);
+    perspectiveProjection();
+}
+
+void GLWidget::drawPbuffer()
+{
+    orthographicProjection();
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glDisable(GL_TEXTURE_2D);
+    backdrop->draw();
+    glEnable(GL_TEXTURE_2D);
+
+    glBindTexture(GL_TEXTURE_2D, cubeTexture);
+    glDisable(GL_CULL_FACE);
+    cube->draw();
+    glEnable(GL_CULL_FACE);
+
+    glFlush();
 }
 
 void GLWidget::initPbuffer()
 {
-    // set up the pbuffer context
     pbuffer->makeCurrent();
+
+    cubeTexture = bindTexture(QImage(":res/cubelogo.png"));
+
     initCommon();
 
-    glViewport(0, 0, pbuffer->size().width(), pbuffer->size().height());
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(-1, 1, -1, 1, -99, 99);
-    glTranslatef(-0.5f, -0.5f, 0.0f);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    pbufferList = glGenLists(1);
-    glNewList(pbufferList, GL_COMPILE);
-    {
-        glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-        // draw cube background
-        glPushMatrix();
-        glLoadIdentity();
-        glTranslatef(0.5f, 0.5f, -2.0f);
-        glDisable(GL_TEXTURE_2D);
-        glEnableClientState(GL_COLOR_ARRAY);
-        glVertexPointer(2, GL_INT, 0, faceArray);
-        glDrawArrays(GL_QUADS, 0, 4);
-        glVertexPointer(3, GL_INT, 0, cubeArray);
-        glDisableClientState(GL_COLOR_ARRAY);
-        glEnable(GL_TEXTURE_2D);
-        glPopMatrix();
-
-        // draw cube
-        glTranslatef(0.5f, 0.5f, 0.5f);
-        glRotatef(3.0f, 1.0f, 1.0f, 1.0f);
-        glTranslatef(-0.5f, -0.5f, -0.5f);
-        glColor4f(0.9f, 0.9f, 0.9f, 1.0f);
-        glDrawArrays(GL_QUADS, 0, 24);
-    }
-    glEndList();
     // generate a texture that has the same size/format as the pbuffer
     dynamicTexture = pbuffer->generateDynamicTexture();
 
@@ -258,3 +229,9 @@ void GLWidget::initPbuffer()
     makeCurrent();
 }
 
+void GLWidget::setAnimationPaused(bool enable)
+{
+    cube->setAnimationPaused(enable);
+    for (int i = 0; i < 3; ++i)
+        cubes[i]->setAnimationPaused(enable);
+}
