@@ -361,7 +361,7 @@ private slots:
     void shaderDestroyed(QObject *shader);
 
 private:
-    QGLContextGroup *ctx;
+    QGLSharedResourceGuard ctxGuard;
     QGLShaderProgram *blitShaderProg;
     QGLShaderProgram *simpleShaderProg;
     QList<QGLEngineShaderProg> cachedPrograms;
