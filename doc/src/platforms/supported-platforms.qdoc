@@ -136,7 +136,14 @@
 
     All platforms not specifically listed above are not supported by Nokia. Nokia does
     not run its unit test suite or perform any other internal tests on platforms not
-    listed above. Qt users should note, however, that there may be various open source
+    listed above.
+
+    Even though some Tier 3 platforms are available under the Qt Commercial License,
+    technical support is not included in that license.
+    However, \l{Hot to Order}{contact our sales team} to find out about the
+    availability of other services for those platforms.
+
+    Qt users should note, however, that there may be various open source
     projects, community users and/or Qt partners who are able to provide assistance with
     platforms not supported by Nokia.
 
