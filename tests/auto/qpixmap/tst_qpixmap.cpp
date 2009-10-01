@@ -1034,6 +1034,10 @@ void tst_QPixmap::toWinHICON_data()
 
 void tst_QPixmap::toWinHICON()
 {
+#ifdef Q_OS_WINCE
+    QSKIP("Test shall be enabled for Windows CE shortly.", SkipAll);
+#endif
+
     QFETCH(int, width);
     QFETCH(int, height);
     QFETCH(QString, image);
@@ -1074,6 +1078,10 @@ void tst_QPixmap::fromWinHICON_data()
 
 void tst_QPixmap::fromWinHICON()
 {
+#ifdef Q_OS_WINCE
+    QSKIP("Test shall be enabled for Windows CE shortly.", SkipAll);
+
+#else
     QFETCH(int, width);
     QFETCH(int, height);
     QFETCH(QString, image);
@@ -1090,6 +1098,7 @@ void tst_QPixmap::fromWinHICON()
 
     // QVERIFY(imageFromHICON == imageFromFile);
     compareImages(imageFromHICON, imageFromFile);
+#endif
 }
 
 #endif // Q_WS_WIN
