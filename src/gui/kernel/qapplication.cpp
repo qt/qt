@@ -1981,7 +1981,7 @@ QString desktopstyle;
             desktopstyle = QLatin1String("Windows");                    // default style for Symbian without S60
 #elif defined(Q_WS_X11) && defined(Q_OS_IRIX)
             desktopstyle = QLatin1String("SGI");                        // default style for X11 on IRIX
-#elif defined(Q_WS_QWS)
+#elif defined(Q_WS_QWS) || defined (Q_WS_LITE)
             desktopstyle = QLatin1String("Plastique");                  // default style for X11 and small devices
 #elif defined(Q_WS_X11)
             desktopstyle = QApplicationPrivate::x11_desktop_style();     // default runtime dependant style for X11
