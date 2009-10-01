@@ -84,6 +84,7 @@ private slots:
     void testDontCrashOnDanglingResources();
     void replaceClipping();
     void clipTest();
+    void destroyFBOAfterContext();
 };
 
 tst_QGL::tst_QGL()
@@ -1720,6 +1721,33 @@ void tst_QGL::clipTest()
     QCOMPARE(widgetFB, reference);
 }
 
+void tst_QGL::destroyFBOAfterContext()
+{
+    if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
+
+    QGLWidget *glw = new QGLWidget();
+    glw->makeCurrent();
+
+    // No multisample with combined depth/stencil attachment:
+    QGLFramebufferObjectFormat fboFormat;
+    fboFormat.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+
+    // Don't complicate things by using NPOT:
+    QGLFramebufferObject *fbo = new QGLFramebufferObject(256, 128, fboFormat);
+
+    // The handle should be valid until the context is destroyed.
+    QVERIFY(fbo->handle() != 0);
+    QVERIFY(fbo->isValid());
+
+    delete glw;
+
+    // The handle should now be zero.
+    QVERIFY(fbo->handle() == 0);
+    QVERIFY(!fbo->isValid());
+
+    delete fbo;
+}
 
 QTEST_MAIN(tst_QGL)
 #include "tst_qgl.moc"
