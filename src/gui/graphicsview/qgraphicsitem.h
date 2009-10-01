@@ -146,6 +146,13 @@ public:
         DeviceCoordinateCache
     };
 
+    enum PanelModality
+    {
+        NonModal,
+        PanelModal,
+        SceneModal
+    };
+
     QGraphicsItem(QGraphicsItem *parent = 0
 #ifndef Q_QDOC
                   // ### obsolete argument
@@ -182,6 +189,10 @@ public:
 
     CacheMode cacheMode() const;
     void setCacheMode(CacheMode mode, const QSize &cacheSize = QSize());
+
+    PanelModality panelModality() const;
+    void setPanelModality(PanelModality panelModality);
+    bool isBlockedByModalPanel(QGraphicsItem **blockingPanel = 0) const;
 
 #ifndef QT_NO_TOOLTIP
     QString toolTip() const;
