@@ -1799,13 +1799,13 @@ void tst_QGL::shareRegister()
     QVERIFY(list.contains(glw2->context()));
 
     // Check the sharing relationships.
-    QVERIFY(shareReg->checkSharing(glw1->context(), glw1->context()));
-    QVERIFY(shareReg->checkSharing(glw2->context(), glw2->context()));
-    QVERIFY(shareReg->checkSharing(glw1->context(), glw2->context()));
-    QVERIFY(shareReg->checkSharing(glw2->context(), glw1->context()));
-    QVERIFY(!shareReg->checkSharing(0, glw2->context()));
-    QVERIFY(!shareReg->checkSharing(glw1->context(), 0));
-    QVERIFY(!shareReg->checkSharing(0, 0));
+    QVERIFY(QGLContext::areSharing(glw1->context(), glw1->context()));
+    QVERIFY(QGLContext::areSharing(glw2->context(), glw2->context()));
+    QVERIFY(QGLContext::areSharing(glw1->context(), glw2->context()));
+    QVERIFY(QGLContext::areSharing(glw2->context(), glw1->context()));
+    QVERIFY(!QGLContext::areSharing(0, glw2->context()));
+    QVERIFY(!QGLContext::areSharing(glw1->context(), 0));
+    QVERIFY(!QGLContext::areSharing(0, 0));
 
     // Create a third context, not sharing with the others.
     QGLWidget *glw3 = new QGLWidget();
@@ -1827,20 +1827,20 @@ void tst_QGL::shareRegister()
     QCOMPARE(list.size(), 0);
 
     // Check the sharing relationships again.
-    QVERIFY(shareReg->checkSharing(glw1->context(), glw1->context()));
-    QVERIFY(shareReg->checkSharing(glw2->context(), glw2->context()));
-    QVERIFY(shareReg->checkSharing(glw1->context(), glw2->context()));
-    QVERIFY(shareReg->checkSharing(glw2->context(), glw1->context()));
-    QVERIFY(!shareReg->checkSharing(glw1->context(), glw3->context()));
-    QVERIFY(!shareReg->checkSharing(glw2->context(), glw3->context()));
-    QVERIFY(!shareReg->checkSharing(glw3->context(), glw1->context()));
-    QVERIFY(!shareReg->checkSharing(glw3->context(), glw2->context()));
-    QVERIFY(shareReg->checkSharing(glw3->context(), glw3->context()));
-    QVERIFY(!shareReg->checkSharing(0, glw2->context()));
-    QVERIFY(!shareReg->checkSharing(glw1->context(), 0));
-    QVERIFY(!shareReg->checkSharing(0, glw3->context()));
-    QVERIFY(!shareReg->checkSharing(glw3->context(), 0));
-    QVERIFY(!shareReg->checkSharing(0, 0));
+    QVERIFY(QGLContext::areSharing(glw1->context(), glw1->context()));
+    QVERIFY(QGLContext::areSharing(glw2->context(), glw2->context()));
+    QVERIFY(QGLContext::areSharing(glw1->context(), glw2->context()));
+    QVERIFY(QGLContext::areSharing(glw2->context(), glw1->context()));
+    QVERIFY(!QGLContext::areSharing(glw1->context(), glw3->context()));
+    QVERIFY(!QGLContext::areSharing(glw2->context(), glw3->context()));
+    QVERIFY(!QGLContext::areSharing(glw3->context(), glw1->context()));
+    QVERIFY(!QGLContext::areSharing(glw3->context(), glw2->context()));
+    QVERIFY(QGLContext::areSharing(glw3->context(), glw3->context()));
+    QVERIFY(!QGLContext::areSharing(0, glw2->context()));
+    QVERIFY(!QGLContext::areSharing(glw1->context(), 0));
+    QVERIFY(!QGLContext::areSharing(0, glw3->context()));
+    QVERIFY(!QGLContext::areSharing(glw3->context(), 0));
+    QVERIFY(!QGLContext::areSharing(0, 0));
 
     // Shared guard should still be the same.
     QVERIFY(guard.context() == glw1->context());
