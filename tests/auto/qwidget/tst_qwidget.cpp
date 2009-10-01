@@ -9146,6 +9146,9 @@ void tst_QWidget::destroyBackingStore()
 
 void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 {
+#ifdef Q_OS_WINCE_WM
+    QSKIP( "Tables of 5000 elements do not make sense on Windows Mobile.", SkipAll);
+#endif
     QApplication::setOverrideCursor(Qt::BlankCursor); //keep the cursor out of screen grabs
     QWidget main(0,Qt::FramelessWindowHint); //don't get confused by the size of the window frame
     QPalette palette;
