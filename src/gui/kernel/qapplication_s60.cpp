@@ -1085,6 +1085,10 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     }
 #endif
 
+    QFont systemFont;
+    systemFont.setFamily(systemFont.defaultFamily());
+    QApplicationPrivate::setSystemFont(systemFont);
+
 /*
  ### Commented out for now as parameter handling not needed in SOS(yet). Code below will break testlib with -o flag
     int argc = priv->argc;
