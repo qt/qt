@@ -369,6 +369,11 @@ bool MediaObject::createPipefromURL(const QUrl &url)
     if (!m_datasource)
         return false;
 
+    // Set the device for MediaSource::Disc
+    QByteArray mediaDevice = QFile::encodeName(m_source.deviceName());
+    if (!mediaDevice.isEmpty())
+        g_object_set (m_datasource, "device", mediaDevice.constData(), (const char*)NULL);
+
     // Link data source into pipeline
     gst_bin_add(GST_BIN(m_pipeline), m_datasource);
     if (!gst_element_link(m_datasource, m_decodebin)) {
@@ -904,8 +909,21 @@ void MediaObject::setSource(const MediaSource &source)
 
     case MediaSource::Disc: // CD tracks can be specified by setting the url in the following way uri=cdda:4
         {
-            QUrl cdurl(QLatin1String("cdda://"));
-            if (createPipefromURL(cdurl))
+            QUrl url;
+            switch (source.discType()) {
+                case Phonon::Cd:
+                    url = QUrl(QLatin1String("cdda://"));
+                    break;
+                case Phonon::Dvd:
+                    url = QUrl(QLatin1String("dvd://"));
+                    break;
+                case Phonon::Vcd:
+                    url = QUrl(QLatin1String("vcd://"));
+                    break;
+                default:
+                    break;
+            }
+            if (!url.isEmpty() && createPipefromURL(url))
                 m_loading = true;
             else
                 setError(tr("Could not open media source."));
