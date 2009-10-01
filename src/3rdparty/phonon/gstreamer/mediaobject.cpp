@@ -904,8 +904,21 @@ void MediaObject::setSource(const MediaSource &source)
 
     case MediaSource::Disc: // CD tracks can be specified by setting the url in the following way uri=cdda:4
         {
-            QUrl cdurl(QLatin1String("cdda://"));
-            if (createPipefromURL(cdurl))
+            QUrl url;
+            switch (source.discType()) {
+                case Phonon::Cd:
+                    url = QUrl(QLatin1String("cdda://"));
+                    break;
+                case Phonon::Dvd:
+                    url = QUrl(QLatin1String("dvd://"));
+                    break;
+                case Phonon::Vcd:
+                    url = QUrl(QLatin1String("vcd://"));
+                    break;
+                default:
+                    break;
+            }
+            if (!url.isEmpty() && createPipefromURL(url))
                 m_loading = true;
             else
                 setError(tr("Could not open media source."));
