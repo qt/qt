@@ -131,7 +131,7 @@ bool JSSVGUnitTypesPrototype::getOwnPropertyDescriptor(ExecState* exec, const Id
 
 const ClassInfo JSSVGUnitTypes::s_info = { "SVGUnitTypes", 0, &JSSVGUnitTypesTable, 0 };
 
-JSSVGUnitTypes::JSSVGUnitTypes(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGUnitTypes> impl, SVGElement* context)
+JSSVGUnitTypes::JSSVGUnitTypes(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGUnitTypes> impl, SVGElement* context)
     : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {

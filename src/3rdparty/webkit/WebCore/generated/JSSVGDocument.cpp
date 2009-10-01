@@ -87,7 +87,7 @@ bool JSSVGDocumentPrototype::getOwnPropertyDescriptor(ExecState* exec, const Ide
 
 const ClassInfo JSSVGDocument::s_info = { "SVGDocument", &JSDocument::s_info, &JSSVGDocumentTable, 0 };
 
-JSSVGDocument::JSSVGDocument(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGDocument> impl)
+JSSVGDocument::JSSVGDocument(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGDocument> impl)
     : JSDocument(structure, globalObject, impl)
 {
 }

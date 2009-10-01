@@ -129,7 +129,7 @@ bool JSCSSRuleListPrototype::getOwnPropertyDescriptor(ExecState* exec, const Ide
 
 const ClassInfo JSCSSRuleList::s_info = { "CSSRuleList", 0, &JSCSSRuleListTable, 0 };
 
-JSCSSRuleList::JSCSSRuleList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSRuleList> impl)
+JSCSSRuleList::JSCSSRuleList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSRuleList> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

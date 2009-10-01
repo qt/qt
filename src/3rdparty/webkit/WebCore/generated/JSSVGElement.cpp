@@ -79,7 +79,7 @@ JSObject* JSSVGElementPrototype::self(ExecState* exec, JSGlobalObject* globalObj
 
 const ClassInfo JSSVGElement::s_info = { "SVGElement", &JSElement::s_info, &JSSVGElementTable, 0 };
 
-JSSVGElement::JSSVGElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> impl)
+JSSVGElement::JSSVGElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElement> impl)
     : JSElement(structure, globalObject, impl)
 {
 }

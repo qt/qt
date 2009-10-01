@@ -112,7 +112,7 @@ bool JSWebKitCSSMatrixPrototype::getOwnPropertyDescriptor(ExecState* exec, const
 
 const ClassInfo JSWebKitCSSMatrix::s_info = { "WebKitCSSMatrix", 0, &JSWebKitCSSMatrixTable, 0 };
 
-JSWebKitCSSMatrix::JSWebKitCSSMatrix(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebKitCSSMatrix> impl)
+JSWebKitCSSMatrix::JSWebKitCSSMatrix(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebKitCSSMatrix> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

@@ -367,7 +367,10 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
             } else {
                 stackingFlags = ECoeStackFlagStandard;
             }
+            control->MakeVisible(false);
             QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control, ECoeStackPriorityDefault, stackingFlags));
+            // Avoid keyboard focus to a hidden window.
+            control->setFocusSafely(false);
 
             RDrawableWindow *const drawableWindow = control->DrawableWindow();
             // Request mouse move events.
@@ -399,7 +402,10 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         } else {
             stackingFlags = ECoeStackFlagStandard;
         }
+        control->MakeVisible(false);
         QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control, ECoeStackPriorityDefault, stackingFlags));
+        // Avoid keyboard focus to a hidden window.
+        control->setFocusSafely(false);
 
         q->setAttribute(Qt::WA_WState_Created);
         int x, y, w, h;
@@ -435,15 +441,15 @@ void QWidgetPrivate::show_sys()
 
     if (q->internalWinId()) {
         
-        WId id = q->internalWinId();
+        QSymbianControl *id = static_cast<QSymbianControl *>(q->internalWinId());
         if (!extra->activated) {
             QT_TRAP_THROWING(id->ActivateL());
             extra->activated = 1;
         }
         id->MakeVisible(true);
-        
+
         if(q->isWindow())
-            id->SetFocus(true);
+            id->setFocusSafely(true);
 
         // Force setting of the icon after window is made visible,
         // this is needed even WA_SetWindowIcon is not set, as in that case we need
@@ -461,11 +467,11 @@ void QWidgetPrivate::hide_sys()
 
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
     deactivateWidgetCleanup();
-    WId id = q->internalWinId();
+    QSymbianControl *id = static_cast<QSymbianControl *>(q->internalWinId());
 
     if (id) {
         if(id->IsFocused()) // Avoid unnecessary calls to FocusChanged()
-            id->SetFocus(false);
+            id->setFocusSafely(false);
         id->MakeVisible(false);
         if (QWidgetBackingStore *bs = maybeBackingStore())
             bs->releaseBuffer();
@@ -481,36 +487,7 @@ void QWidgetPrivate::setFocus_sys()
     Q_Q(QWidget);
     if (q->testAttribute(Qt::WA_WState_Created) && q->window()->windowType() != Qt::Popup)
         if (!q->effectiveWinId()->IsFocused()) // Avoid unnecessry calls to FocusChanged()
-            q->effectiveWinId()->SetFocus(true);
-}
-
-void QWidgetPrivate::handleSymbianDeferredFocusChanged()
-{
-    Q_Q(QWidget);
-    WId control = q->internalWinId();
-
-    if (!control) {
-        // This could happen if the widget was reparented, while the focuschange
-        // was in the event queue.
-        return;
-    }
-
-    if (control->IsFocused()) {
-        QApplication::setActiveWindow(q);
-#ifdef Q_WS_S60
-        // If widget is fullscreen, hide status pane and button container
-        // otherwise show them.
-        CEikStatusPane* statusPane = S60->statusPane();
-        CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
-        bool isFullscreen = q->windowState() & Qt::WindowFullScreen;
-        if (statusPane && (statusPane->IsVisible() == isFullscreen))
-            statusPane->MakeVisible(!isFullscreen);
-        if (buttonGroup && (buttonGroup->IsVisible() == isFullscreen))
-            buttonGroup->MakeVisible(!isFullscreen);
-#endif
-    } else {
-        QApplication::setActiveWindow(0);
-    }
+            static_cast<QSymbianControl *>(q->effectiveWinId())->setFocusSafely(true);
 }
 
 void QWidgetPrivate::raise_sys()
@@ -597,7 +574,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     if (q->testAttribute(Qt::WA_DropSiteRegistered))
         q->setAttribute(Qt::WA_DropSiteRegistered, false);
 
-    WId old_winid = wasCreated ? data.winid : 0;
+    QSymbianControl *old_winid = static_cast<QSymbianControl *>(wasCreated ? data.winid : 0);
     if ((q->windowType() == Qt::Desktop))
         old_winid = 0;
     setWinId(0);
@@ -607,7 +584,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     if (wasCreated && old_winid) {
         old_winid->MakeVisible(false);
         if (old_winid->IsFocused()) // Avoid unnecessary calls to FocusChanged()
-            old_winid->SetFocus(false);
+            old_winid->setFocusSafely(false);
         old_winid->SetParent(0);
     }
 
@@ -1124,17 +1101,17 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         if ((oldstate & Qt::WindowMinimized) != (newstate & Qt::WindowMinimized)) {
             if (newstate & Qt::WindowMinimized) {
                 if (isVisible()) {
-                    WId id = effectiveWinId();
+                    QSymbianControl *id = static_cast<QSymbianControl *>(effectiveWinId());
                     if (id->IsFocused()) // Avoid unnecessary calls to FocusChanged()
-                        id->SetFocus(false);
+                        id->setFocusSafely(false);
                     id->MakeVisible(false);
                 }
             } else {
                 if (isVisible()) {
-                    WId id = effectiveWinId();
+                    QSymbianControl *id = static_cast<QSymbianControl *>(effectiveWinId());
                     id->MakeVisible(true);
                     if (!id->IsFocused()) // Avoid unnecessary calls to FocusChanged()
-                        id->SetFocus(true);
+                        id->setFocusSafely(true);
                 }
                 const QRect normalGeometry = geometry();
                 const QRect r = top->normalGeometry;
@@ -1161,7 +1138,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
     if (!isWindow() && parentWidget())
         parentWidget()->d_func()->invalidateBuffer(geometry());
     d->deactivateWidgetCleanup();
-    WId id = internalWinId();
+    QSymbianControl *id = static_cast<QSymbianControl *>(internalWinId());
     if (testAttribute(Qt::WA_WState_Created)) {
 
 #ifndef QT_NO_IM
@@ -1189,7 +1166,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
         }
         if (destroyWindow && !(windowType() == Qt::Desktop) && id) {
             if (id->IsFocused()) // Avoid unnecessry calls to FocusChanged()
-                id->SetFocus(false);
+                id->setFocusSafely(false);
             id->ControlEnv()->AppUi()->RemoveFromStack(id);
 
             // Hack to activate window under destroyed one. With this activation
@@ -1299,8 +1276,8 @@ void QWidget::activateWindow()
     QWidget *tlw = window();
     if (tlw->isVisible()) {
         window()->createWinId();
-        WId id = tlw->internalWinId();
-        id->SetFocus(true);
+        QSymbianControl *id = static_cast<QSymbianControl *>(tlw->internalWinId());
+        id->setFocusSafely(true);
     }
 }
 

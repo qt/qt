@@ -78,7 +78,7 @@
     \row    \o Linux (32 and 64-bit)
                                      \o gcc 4.2
     \row    \o Microsoft Windows XP
-                                     \o gcc 3.4.2 (MinGW) (32-bit), MSVC 2003, 2005 (32 and 64-bit)
+                                     \o gcc 4.4 (MinGW) (32-bit), MSVC 2003, 2005 (32 and 64-bit)
     \row    \o Microsoft Windows Vista
                                      \o MSVC 2005, 2008
     \row    \o Microsoft Windows Vista 64bit
@@ -104,6 +104,8 @@
     \table
     \header \o Platform
                                      \o Compilers
+    \row    \o Windows XP, Vista
+                                     \o gcc 3.4.2 (MinGW)
     \omit
     \row    \o Windows 7
                                      \o MSVC 2008

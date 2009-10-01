@@ -33,7 +33,7 @@ class SVGLinearGradientElement;
 class JSSVGLinearGradientElement : public JSSVGGradientElement {
     typedef JSSVGGradientElement Base;
 public:
-    JSSVGLinearGradientElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGLinearGradientElement>);
+    JSSVGLinearGradientElement(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGLinearGradientElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
@@ -54,7 +54,7 @@ public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
-    JSSVGLinearGradientElementPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSSVGLinearGradientElementPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Attributes

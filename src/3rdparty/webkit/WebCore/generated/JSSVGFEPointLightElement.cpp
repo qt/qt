@@ -74,7 +74,7 @@ JSObject* JSSVGFEPointLightElementPrototype::self(ExecState* exec, JSGlobalObjec
 
 const ClassInfo JSSVGFEPointLightElement::s_info = { "SVGFEPointLightElement", &JSSVGElement::s_info, &JSSVGFEPointLightElementTable, 0 };
 
-JSSVGFEPointLightElement::JSSVGFEPointLightElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEPointLightElement> impl)
+JSSVGFEPointLightElement::JSSVGFEPointLightElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEPointLightElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

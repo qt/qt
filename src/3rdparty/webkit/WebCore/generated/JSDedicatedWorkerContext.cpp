@@ -93,7 +93,7 @@ static const HashTable* getJSDedicatedWorkerContextTable(ExecState* exec)
 }
 const ClassInfo JSDedicatedWorkerContext::s_info = { "DedicatedWorkerContext", &JSWorkerContext::s_info, 0, getJSDedicatedWorkerContextTable };
 
-JSDedicatedWorkerContext::JSDedicatedWorkerContext(PassRefPtr<Structure> structure, PassRefPtr<DedicatedWorkerContext> impl)
+JSDedicatedWorkerContext::JSDedicatedWorkerContext(NonNullPassRefPtr<Structure> structure, PassRefPtr<DedicatedWorkerContext> impl)
     : JSWorkerContext(structure, impl)
 {
 }
@@ -114,7 +114,7 @@ JSValue jsDedicatedWorkerContextOnmessage(ExecState* exec, const Identifier&, co
     UNUSED_PARAM(exec);
     DedicatedWorkerContext* imp = static_cast<DedicatedWorkerContext*>(castedThis->impl());
     if (EventListener* listener = imp->onmessage()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp))
             return jsFunction;
     }
     return jsNull();

@@ -71,7 +71,7 @@ bool JSXPathNSResolverPrototype::getOwnPropertyDescriptor(ExecState* exec, const
 
 const ClassInfo JSXPathNSResolver::s_info = { "XPathNSResolver", 0, 0, 0 };
 
-JSXPathNSResolver::JSXPathNSResolver(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XPathNSResolver> impl)
+JSXPathNSResolver::JSXPathNSResolver(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XPathNSResolver> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

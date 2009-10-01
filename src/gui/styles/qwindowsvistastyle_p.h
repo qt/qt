@@ -84,6 +84,7 @@
 #include <qinputdialog.h>
 #include <qtreeview.h>
 #include <qlistview.h>
+#include <qtableview.h>
 #include <qbasictimer.h>
 #include <qcommandlinkbutton.h>
 

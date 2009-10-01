@@ -31,6 +31,7 @@
 #include "Document.h"
 #include "Frame.h"
 #include "Node.h"
+#include "TransformSource.h"
 #include "XMLTokenizer.h"
 #include "XMLTokenizerScope.h"
 #include "XSLImportRule.h"
@@ -57,9 +58,9 @@ namespace WebCore {
 XSLStyleSheet::XSLStyleSheet(XSLImportRule* parentRule, const String& href)
     : StyleSheet(parentRule, href)
     , m_ownerDocument(0)
-    , m_stylesheetDoc(0)
     , m_embedded(false)
     , m_processed(false) // Child sheets get marked as processed when the libxslt engine has finally seen them.
+    , m_stylesheetDoc(0)
     , m_stylesheetDocTaken(false)
     , m_parentStyleSheet(0)
 {
@@ -68,9 +69,9 @@ XSLStyleSheet::XSLStyleSheet(XSLImportRule* parentRule, const String& href)
 XSLStyleSheet::XSLStyleSheet(Node* parentNode, const String& href,  bool embedded)
     : StyleSheet(parentNode, href)
     , m_ownerDocument(parentNode->document())
-    , m_stylesheetDoc(0)
     , m_embedded(embedded)
     , m_processed(true) // The root sheet starts off processed.
+    , m_stylesheetDoc(0)
     , m_stylesheetDocTaken(false)
     , m_parentStyleSheet(0)
 {
@@ -98,7 +99,7 @@ bool XSLStyleSheet::isLoading()
 
 void XSLStyleSheet::checkLoaded()
 {
-    if (isLoading()) 
+    if (isLoading())
         return;
     if (parent())
         parent()->checkLoaded();
@@ -108,8 +109,8 @@ void XSLStyleSheet::checkLoaded()
 
 xmlDocPtr XSLStyleSheet::document()
 {
-    if (m_embedded && ownerDocument())
-        return (xmlDocPtr)ownerDocument()->transformSource();
+    if (m_embedded && ownerDocument() && ownerDocument()->transformSource())
+        return (xmlDocPtr)ownerDocument()->transformSource()->platformSource();
     return m_stylesheetDoc;
 }
 
@@ -168,7 +169,7 @@ bool XSLStyleSheet::parseString(const String& string, bool)
 
     m_stylesheetDoc = xmlCtxtReadMemory(ctxt, buffer, size,
         href().utf8().data(),
-        BOMHighByte == 0xFF ? "UTF-16LE" : "UTF-16BE", 
+        BOMHighByte == 0xFF ? "UTF-16LE" : "UTF-16BE",
         XML_PARSE_NOENT | XML_PARSE_DTDATTR | XML_PARSE_NOWARNING | XML_PARSE_NOCDATA);
     xmlFreeParserCtxt(ctxt);
 
@@ -181,15 +182,15 @@ void XSLStyleSheet::loadChildSheets()
 {
     if (!document())
         return;
-    
+
     xmlNodePtr stylesheetRoot = document()->children;
-    
+
     // Top level children may include other things such as DTD nodes, we ignore those.
     while (stylesheetRoot && stylesheetRoot->type != XML_ELEMENT_NODE)
         stylesheetRoot = stylesheetRoot->next;
-    
+
     if (m_embedded) {
-        // We have to locate (by ID) the appropriate embedded stylesheet element, so that we can walk the 
+        // We have to locate (by ID) the appropriate embedded stylesheet element, so that we can walk the
         // import/include list.
         xmlAttrPtr idNode = xmlGetID(document(), (const xmlChar*)(href().utf8().data()));
         if (!idNode)
@@ -199,7 +200,7 @@ void XSLStyleSheet::loadChildSheets()
         // FIXME: Need to handle an external URI with a # in it.  This is a pretty minor edge case, so we'll deal
         // with it later.
     }
-    
+
     if (stylesheetRoot) {
         // Walk the children of the root element and look for import/include elements.
         // Imports must occur first.
@@ -210,7 +211,7 @@ void XSLStyleSheet::loadChildSheets()
                 continue;
             }
             if (IS_XSLT_ELEM(curr) && IS_XSLT_NAME(curr, "import")) {
-                xmlChar* uriRef = xsltGetNsProp(curr, (const xmlChar*)"href", XSLT_NAMESPACE);                
+                xmlChar* uriRef = xsltGetNsProp(curr, (const xmlChar*)"href", XSLT_NAMESPACE);
                 loadChildSheet(String::fromUTF8((const char*)uriRef));
                 xmlFree(uriRef);
             } else
@@ -242,7 +243,7 @@ xsltStylesheetPtr XSLStyleSheet::compileStyleSheet()
     // FIXME: Hook up error reporting for the stylesheet compilation process.
     if (m_embedded)
         return xsltLoadStylesheetPI(document());
-    
+
     // xsltParseStylesheetDoc makes the document part of the stylesheet
     // so we have to release our pointer to it.
     ASSERT(!m_stylesheetDocTaken);
@@ -273,7 +274,7 @@ xmlDocPtr XSLStyleSheet::locateStylesheetSubResource(xmlDocPtr parentDoc, const 
             if (matchedParent) {
                 if (child->processed())
                     continue; // libxslt has been given this sheet already.
-                
+
                 // Check the URI of the child stylesheet against the doc URI.
                 // In order to ensure that libxml canonicalized both URLs, we get the original href
                 // string from the import rule and canonicalize it using libxml before comparing it
@@ -295,7 +296,7 @@ xmlDocPtr XSLStyleSheet::locateStylesheetSubResource(xmlDocPtr parentDoc, const 
             }
         }
     }
-    
+
     return 0;
 }
 

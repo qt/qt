@@ -118,12 +118,12 @@ void GoogleChat::doLogin() {
 }
 
 void GoogleChat::initialPage(bool ok) {
-    if (ok) {
-        if (!QSslSocket::supportsSsl()) {
-            showError("This example requires SSL support.");
-            return;
-        }
+    if (!QSslSocket::supportsSsl()) {
+        showError("This example requires SSL support.");
+        return;
+    }
 
+    if (ok) {
         QString s1 = evalJS("document.getElementById('Email').name");
         QString s2 = evalJS("document.getElementById('Passwd').name");
         QString s3 = evalJS("document.getElementById('gaia_loginform').id");

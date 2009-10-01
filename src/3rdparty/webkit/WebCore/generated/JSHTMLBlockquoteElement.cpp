@@ -116,7 +116,7 @@ JSObject* JSHTMLBlockquoteElementPrototype::self(ExecState* exec, JSGlobalObject
 
 const ClassInfo JSHTMLBlockquoteElement::s_info = { "HTMLBlockquoteElement", &JSHTMLElement::s_info, &JSHTMLBlockquoteElementTable, 0 };
 
-JSHTMLBlockquoteElement::JSHTMLBlockquoteElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLBlockquoteElement> impl)
+JSHTMLBlockquoteElement::JSHTMLBlockquoteElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLBlockquoteElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

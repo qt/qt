@@ -16,6 +16,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+#include <QUrl>
+
 #include "abstractmediaplayer.h"
 #include "defs.h"
 #include "utils.h"
@@ -37,11 +39,8 @@ const int       NullMaxVolume = -1;
 //-----------------------------------------------------------------------------
 
 MMF::AbstractMediaPlayer::AbstractMediaPlayer() :
-        m_state(GroundState)
-        ,   m_error(NoError)
-        ,   m_playPending(false)
+            m_playPending(false)
         ,   m_tickTimer(new QTimer(this))
-        ,   m_volume(InitialVolume)
         ,   m_mmfMaxVolume(NullMaxVolume)
 {
     connect(m_tickTimer.data(), SIGNAL(timeout()), this, SLOT(tick()));
@@ -49,21 +48,12 @@ MMF::AbstractMediaPlayer::AbstractMediaPlayer() :
 
 MMF::AbstractMediaPlayer::AbstractMediaPlayer(const AbstractPlayer& player) :
         AbstractPlayer(player)
-        ,   m_state(GroundState)
-        ,   m_error(NoError)
         ,   m_playPending(false)
         ,   m_tickTimer(new QTimer(this))
-        ,   m_volume(InitialVolume)
         ,   m_mmfMaxVolume(NullMaxVolume)
 {
     connect(m_tickTimer.data(), SIGNAL(timeout()), this, SLOT(tick()));
 }
-
-MMF::AbstractMediaPlayer::~AbstractMediaPlayer()
-{
-
-}
-
 
 //-----------------------------------------------------------------------------
 // MediaObjectInterface
@@ -72,12 +62,11 @@ MMF::AbstractMediaPlayer::~AbstractMediaPlayer()
 void MMF::AbstractMediaPlayer::play()
 {
     TRACE_CONTEXT(AbstractMediaPlayer::play, EAudioApi);
-    TRACE_ENTRY("state %d", m_state);
+    TRACE_ENTRY("state %d", privateState());
 
-    switch (m_state) {
+    switch (privateState()) {
     case GroundState:
-        m_error = NormalError;
-        changeState(ErrorState);
+        setError(NormalError);
         break;
 
     case LoadingState:
@@ -102,25 +91,25 @@ void MMF::AbstractMediaPlayer::play()
         TRACE_PANIC(InvalidStatePanic);
     }
 
-    TRACE_EXIT("state %d", m_state);
+    TRACE_EXIT("state %d", privateState());
 }
 
 void MMF::AbstractMediaPlayer::pause()
 {
     TRACE_CONTEXT(AbstractMediaPlayer::pause, EAudioApi);
-    TRACE_ENTRY("state %d", m_state);
+    TRACE_ENTRY("state %d", privateState());
 
     m_playPending = false;
 
-    switch (m_state) {
+    switch (privateState()) {
     case GroundState:
     case LoadingState:
-    case StoppedState:
     case PausedState:
     case ErrorState:
         // Do nothing
         break;
 
+    case StoppedState:
     case PlayingState:
     case BufferingState:
         doPause();
@@ -133,17 +122,17 @@ void MMF::AbstractMediaPlayer::pause()
         TRACE_PANIC(InvalidStatePanic);
     }
 
-    TRACE_EXIT("state %d", m_state);
+    TRACE_EXIT("state %d", privateState());
 }
 
 void MMF::AbstractMediaPlayer::stop()
 {
     TRACE_CONTEXT(AbstractMediaPlayer::stop, EAudioApi);
-    TRACE_ENTRY("state %d", m_state);
+    TRACE_ENTRY("state %d", privateState());
 
     m_playPending = false;
 
-    switch (m_state) {
+    switch (privateState()) {
     case GroundState:
     case LoadingState:
     case StoppedState:
@@ -164,7 +153,7 @@ void MMF::AbstractMediaPlayer::stop()
         TRACE_PANIC(InvalidStatePanic);
     }
 
-    TRACE_EXIT("state %d", m_state);
+    TRACE_EXIT("state %d", privateState());
 }
 
 void MMF::AbstractMediaPlayer::seek(qint64 ms)
@@ -172,7 +161,7 @@ void MMF::AbstractMediaPlayer::seek(qint64 ms)
     TRACE_CONTEXT(AbstractMediaPlayer::seek, EAudioApi);
     TRACE_ENTRY("state %d pos %Ld", state(), ms);
 
-    switch (m_state) {
+    switch (privateState()) {
     // Fallthrough all these
     case GroundState:
     case StoppedState:
@@ -208,30 +197,11 @@ bool MMF::AbstractMediaPlayer::isSeekable() const
 void MMF::AbstractMediaPlayer::doSetTickInterval(qint32 interval)
 {
     TRACE_CONTEXT(AbstractMediaPlayer::doSetTickInterval, EAudioApi);
-    TRACE_ENTRY("state %d m_interval %d interval %d", m_state, tickInterval(), interval);
+    TRACE_ENTRY("state %d m_interval %d interval %d", privateState(), tickInterval(), interval);
 
     m_tickTimer->setInterval(interval);
 
     TRACE_EXIT_0();
-}
-
-Phonon::ErrorType MMF::AbstractMediaPlayer::errorType() const
-{
-    const Phonon::ErrorType result = (ErrorState == m_state)
-                                     ? m_error : NoError;
-    return result;
-}
-
-QString MMF::AbstractMediaPlayer::errorString() const
-{
-    // TODO: put in proper error strings
-    QString result;
-    return result;
-}
-
-Phonon::State MMF::AbstractMediaPlayer::state() const
-{
-    return phononState(m_state);
 }
 
 MediaSource MMF::AbstractMediaPlayer::source() const
@@ -242,7 +212,7 @@ MediaSource MMF::AbstractMediaPlayer::source() const
 void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& file)
 {
     TRACE_CONTEXT(AbstractMediaPlayer::setFileSource, EAudioApi);
-    TRACE_ENTRY("state %d source.type %d", m_state, source.type());
+    TRACE_ENTRY("state %d source.type %d", privateState(), source.type());
 
     close();
     changeState(GroundState);
@@ -255,25 +225,22 @@ void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& f
 
     switch (m_source.type()) {
     case MediaSource::LocalFile: {
-        // TODO: work out whose responsibility it is to ensure that paths
-        // are Symbian-style, i.e. have backslashes for path delimiters.
-        // Until then, use this utility function...
-        //const QHBufC filename = Utils::symbianFilename(m_source.fileName());
-        //TRAP(symbianErr, m_player->OpenFileL(*filename));
-
-        // Open using shared filehandle
-        // This is a temporary hack to work around KErrInUse from MMF
-        // client utility OpenFileL calls
-        //TRAP(symbianErr, m_player->OpenFileL(file));
-
         symbianErr = openFile(file);
         break;
     }
 
     case MediaSource::Url: {
-        TRACE_0("Source type not supported");
-        // TODO: support opening URLs
-        symbianErr = KErrNotSupported;
+        const QUrl url(source.url());
+
+        if (url.scheme() == QLatin1String("file")) {
+            symbianErr = openFile(file);
+        }
+        else {
+            TRACE_0("Source type not supported");
+            // TODO: support network URLs
+            symbianErr = KErrNotSupported;
+        }
+
         break;
     }
 
@@ -298,10 +265,7 @@ void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& f
         changeState(LoadingState);
     } else {
         TRACE("error %d", symbianErr)
-
-        // TODO: do something with the value of symbianErr?
-        m_error = NormalError;
-        changeState(ErrorState);
+        setError(NormalError);
     }
 
     TRACE_EXIT_0();
@@ -310,7 +274,7 @@ void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& f
 void MMF::AbstractMediaPlayer::setNextSource(const MediaSource &source)
 {
     TRACE_CONTEXT(AbstractMediaPlayer::setNextSource, EAudioApi);
-    TRACE_ENTRY("state %d", m_state);
+    TRACE_ENTRY("state %d", privateState());
 
     // TODO: handle 'next source'
 
@@ -328,9 +292,9 @@ void MMF::AbstractMediaPlayer::setNextSource(const MediaSource &source)
 void MMF::AbstractMediaPlayer::volumeChanged(qreal volume)
 {
     TRACE_CONTEXT(AbstractMediaPlayer::volumeChanged, EAudioInternal);
-    TRACE_ENTRY("state %d", m_state);
+    TRACE_ENTRY("state %d", privateState());
 
-    m_volume = volume;
+    AbstractPlayer::volumeChanged(volume);
     doVolumeChanged();
 
     TRACE_EXIT_0();
@@ -339,7 +303,7 @@ void MMF::AbstractMediaPlayer::volumeChanged(qreal volume)
 
 void MMF::AbstractMediaPlayer::doVolumeChanged()
 {
-    switch (m_state) {
+    switch (privateState()) {
     case GroundState:
     case LoadingState:
     case ErrorState:
@@ -353,8 +317,7 @@ void MMF::AbstractMediaPlayer::doVolumeChanged()
         const int err = setDeviceVolume(m_volume * m_mmfMaxVolume);
 
         if (KErrNone != err) {
-            m_error = NormalError;
-            changeState(ErrorState);
+            setError(NormalError);
         }
         break;
     }
@@ -387,68 +350,45 @@ void MMF::AbstractMediaPlayer::maxVolumeChanged(int mmfMaxVolume)
     doVolumeChanged();
 }
 
-Phonon::State MMF::AbstractMediaPlayer::phononState() const
+qint64 MMF::AbstractMediaPlayer::toMilliSeconds(const TTimeIntervalMicroSeconds &in)
 {
-    return phononState(m_state);
-}
-
-Phonon::State MMF::AbstractMediaPlayer::phononState(PrivateState state)
-{
-    const Phonon::State phononState =
-        GroundState == state
-        ?    Phonon::LoadingState
-        :    static_cast<Phonon::State>(state);
-
-    return phononState;
+    return in.Int64() / 1000;
 }
 
 void MMF::AbstractMediaPlayer::changeState(PrivateState newState)
 {
-    TRACE_CONTEXT(AbstractMediaPlayer::changeState, EAudioInternal);
-    TRACE_ENTRY("state %d newState %d", m_state, newState);
+    TRACE_CONTEXT(AbstractPlayer::changeState, EAudioInternal);
+    TRACE_ENTRY("state %d newState %d", privateState(), newState);
 
     // TODO: add some invariants to check that the transition is valid
 
-    const Phonon::State oldPhononState = phononState(m_state);
+    const Phonon::State oldPhononState = phononState(privateState());
     const Phonon::State newPhononState = phononState(newState);
     if (oldPhononState != newPhononState) {
         TRACE("emit stateChanged(%d, %d)", newPhononState, oldPhononState);
         emit stateChanged(newPhononState, oldPhononState);
     }
 
-    m_state = newState;
+    setState(newState);
 
-    // Check whether play() was called while clip was being loaded.  If so,
-    // playback should be started now
     if (
-        LoadingState == oldPhononState
-        and StoppedState == newPhononState
-        and m_playPending
-    ) {
-        TRACE_0("play was called while loading; starting playback now");
-        m_playPending = false;
-        play();
-    }
+		LoadingState == oldPhononState
+		and StoppedState == newPhononState
+	) {
+		// Ensure initial volume is set on MMF API before starting playback
+		doVolumeChanged();
+	
+		// Check whether play() was called while clip was being loaded.  If so,
+	    // playback should be started now
+	    if (m_playPending) {
+	        TRACE_0("play was called while loading; starting playback now");
+	        m_playPending = false;
+	        play();
+	    }
+	}
 
     TRACE_EXIT_0();
 }
-
-void MMF::AbstractMediaPlayer::setError(Phonon::ErrorType error)
-{
-    TRACE_CONTEXT(AbstractMediaPlayer::setError, EAudioInternal);
-    TRACE_ENTRY("state %d error %d", m_state, error);
-
-    m_error = error;
-    changeState(ErrorState);
-
-    TRACE_EXIT_0();
-}
-
-qint64 MMF::AbstractMediaPlayer::toMilliSeconds(const TTimeIntervalMicroSeconds &in)
-{
-    return in.Int64() / 1000;
-}
-
 
 //-----------------------------------------------------------------------------
 // Slots

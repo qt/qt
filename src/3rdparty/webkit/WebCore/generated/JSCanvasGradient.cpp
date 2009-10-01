@@ -66,7 +66,7 @@ bool JSCanvasGradientPrototype::getOwnPropertyDescriptor(ExecState* exec, const 
 
 const ClassInfo JSCanvasGradient::s_info = { "CanvasGradient", 0, 0, 0 };
 
-JSCanvasGradient::JSCanvasGradient(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasGradient> impl)
+JSCanvasGradient::JSCanvasGradient(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasGradient> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

@@ -67,6 +67,7 @@
     \o QGraphicsOpacityEffect - renders the item with an opacity
     \o QGraphicsPixelizeEffect - pixelizes the item with any pixel size
     \o QGraphicsGrayscaleEffect - renders the item in shades of gray
+    \o QGraphicsBloomEffect - applies a blooming / glowing effect
     \endlist
 
     \img graphicseffect-effects.png
@@ -795,7 +796,7 @@ QGraphicsBlurEffect::QGraphicsBlurEffect(QObject *parent)
     : QGraphicsEffect(*new QGraphicsBlurEffectPrivate, parent)
 {
     Q_D(QGraphicsBlurEffect);
-    d->filter->setBlurHint(QPixmapBlurFilter::PerformanceHint);
+    d->filter->setBlurHint(Qt::PerformanceHint);
 }
 
 /*!
@@ -839,48 +840,34 @@ void QGraphicsBlurEffect::setBlurRadius(int radius)
 */
 
 /*!
-    \enum QGraphicsBlurEffect::BlurHint
-
-    \since 4.6
-
-    This enum describes the hint of a blur graphics effect.
-
-    \value PerformanceHint Using this value hints that performance is the
-    most important factor, at the potential cost of lower quality.
-
-    \value QualityHint Using this value hints that a higher quality blur is
-    preferred over a fast blur.
-*/
-
-/*!
     \property QGraphicsBlurEffect::blurHint
     \brief the blur hint of the effect.
 
-    Use the PerformanceHint blur hint to say that you want a faster blur,
-    and the QualityHint blur hint to say that you prefer a higher quality blur.
+    Use the Qt::PerformanceHint hint to say that you want a faster blur,
+    and the Qt::QualityHint hint to say that you prefer a higher quality blur.
 
-    When animating the blur radius it's recommended to use the PerformanceHint.
+    When animating the blur radius it's recommended to use Qt::PerformanceHint.
 
-    By default, the blur hint is PerformanceHint.
+    By default, the blur hint is Qt::PerformanceHint.
 */
-QGraphicsBlurEffect::BlurHint QGraphicsBlurEffect::blurHint() const
+Qt::RenderHint QGraphicsBlurEffect::blurHint() const
 {
     Q_D(const QGraphicsBlurEffect);
-    return BlurHint(d->filter->blurHint());
+    return d->filter->blurHint();
 }
 
-void QGraphicsBlurEffect::setBlurHint(QGraphicsBlurEffect::BlurHint hint)
+void QGraphicsBlurEffect::setBlurHint(Qt::RenderHint hint)
 {
     Q_D(QGraphicsBlurEffect);
-    if (BlurHint(d->filter->blurHint()) == hint)
+    if (d->filter->blurHint() == hint)
         return;
 
-    d->filter->setBlurHint(QPixmapBlurFilter::BlurHint(hint));
+    d->filter->setBlurHint(hint);
     emit blurHintChanged(hint);
 }
 
 /*!
-    \fn void QGraphicsBlurEffect::blurHintChanged(QGraphicsBlurEffect::BlurHint hint)
+    \fn void QGraphicsBlurEffect::blurHintChanged(Qt::RenderHint hint)
 
     This signal is emitted whenever the effect's blur hint changes.
     The \a hint parameter holds the effect's new blur hint.
@@ -1303,6 +1290,238 @@ void QGraphicsOpacityEffect::draw(QPainter *painter, QGraphicsEffectSource *sour
     }
 
     painter->restore();
+}
+
+/*!
+    \class QGraphicsBloomEffect
+    \brief The QGraphicsBloomEffect class provides a bloom/glow effect.
+    \since 4.6
+
+    A bloom/glow effect adds fringes of light around bright areas in the source.
+
+    \img graphicseffect-bloom.png
+
+    \sa QGraphicsDropShadowEffect, QGraphicsBlurEffect, QGraphicsPixelizeEffect,
+        QGraphicsGrayscaleEffect, QGraphicsColorizeEffect
+*/
+
+/*!
+    Constructs a new QGraphicsBloomEffect instance.
+    The \a parent parameter is passed to QGraphicsEffect's constructor.
+*/
+QGraphicsBloomEffect::QGraphicsBloomEffect(QObject *parent)
+    : QGraphicsEffect(*new QGraphicsBloomEffectPrivate, parent)
+{
+    Q_D(QGraphicsBloomEffect);
+    for (int i = 0; i < 256; ++i)
+        d->colorTable[i] = qMin(i + d->brightness, 255);
+}
+
+/*!
+    Destroys the effect.
+*/
+QGraphicsBloomEffect::~QGraphicsBloomEffect()
+{
+}
+
+/*!
+    \reimp
+*/
+QRectF QGraphicsBloomEffect::boundingRectFor(const QRectF &rect) const
+{
+    Q_D(const QGraphicsBloomEffect);
+    const qreal delta = d->blurFilter.radius() * 2;
+    return rect.adjusted(-delta, -delta, delta, delta);
+}
+
+/*!
+    \property QGraphicsBloomEffect::blurRadius
+    \brief the blur radius in pixels of the effect.
+
+    Using a smaller radius results in a sharper appearance, whereas a bigger
+    radius results in a more blurred appearance.
+
+    By default, the blur radius is 5 pixels.
+
+    \sa strength(), brightness()
+*/
+int QGraphicsBloomEffect::blurRadius() const
+{
+    Q_D(const QGraphicsBloomEffect);
+    return d->blurFilter.radius();
+}
+
+void QGraphicsBloomEffect::setBlurRadius(int radius)
+{
+    Q_D(QGraphicsBloomEffect);
+    if (d->blurFilter.radius() == radius)
+        return;
+
+    d->blurFilter.setRadius(radius);
+    updateBoundingRect();
+    emit blurRadiusChanged(radius);
+}
+
+/*!
+    \fn void QGraphicsBloomEffect::blurRadiusChanged(int blurRadius)
+
+    This signal is emitted whenever the effect's blur radius changes.
+    The \a blurRadius parameter holds the effect's new blur radius.
+*/
+
+/*!
+    \property QGraphicsBloomEffect::blurHint
+    \brief the blur hint of the effect.
+
+    Use the Qt::PerformanceHint hint to say that you want a faster blur,
+    and the Qt::QualityHint hint to say that you prefer a higher quality blur.
+
+    When animating the blur radius it's recommended to use Qt::PerformanceHint.
+
+    By default, the blur hint is Qt::PerformanceHint.
+*/
+Qt::RenderHint QGraphicsBloomEffect::blurHint() const
+{
+    Q_D(const QGraphicsBloomEffect);
+    return d->blurFilter.blurHint();
+}
+
+void QGraphicsBloomEffect::setBlurHint(Qt::RenderHint hint)
+{
+    Q_D(QGraphicsBloomEffect);
+    if (d->blurFilter.blurHint() == hint)
+        return;
+
+    d->blurFilter.setBlurHint(hint);
+    emit blurHintChanged(hint);
+}
+
+/*!
+    \fn void QGraphicsBloomEffect::blurHintChanged(Qt::RenderHint hint)
+
+    This signal is emitted whenever the effect's blur hint changes.
+    The \a hint parameter holds the effect's new blur hint.
+*/
+
+/*!
+    \property QGraphicsBloomEffect::brightness
+    \brief the brightness of the glow.
+
+    The value should be in the range of 0 to 255, where 0 is dark
+    and 255 is bright.
+
+    By default, the brightness is 70.
+
+    \sa strength(), blurRadius()
+*/
+int QGraphicsBloomEffect::brightness() const
+{
+    Q_D(const QGraphicsBloomEffect);
+    return d->brightness;
+}
+
+void QGraphicsBloomEffect::setBrightness(int brightness)
+{
+    Q_D(QGraphicsBloomEffect);
+    brightness = qBound(0, brightness, 255);
+    if (d->brightness == brightness)
+        return;
+
+    d->brightness = brightness;
+    for (int i = 0; i < 256; ++i)
+        d->colorTable[i] = qMin(i + brightness, 255);
+
+    update();
+    emit brightnessChanged(brightness);
+}
+
+/*!
+    \fn void QGraphicsBloomEffect::brightnessChanged(int brightness)
+
+    This signal is emitted whenever the effect's brightness changes.
+    The \a brightness parameter holds the effect's new brightness.
+*/
+
+/*!
+    \property QGraphicsBloomEffect::strength
+    \brief the strength of the effect.
+
+    A strength 0.0 equals to no effect, while 1.0 means maximum glow.
+
+    By default, the strength is 0.7.
+*/
+qreal QGraphicsBloomEffect::strength() const
+{
+    Q_D(const QGraphicsBloomEffect);
+    return d->strength;
+}
+
+void QGraphicsBloomEffect::setStrength(qreal strength)
+{
+    Q_D(QGraphicsBloomEffect);
+    strength = qBound(qreal(0.0), strength, qreal(1.0));
+    if (qFuzzyCompare(d->strength, strength))
+        return;
+
+    d->strength = strength;
+    update();
+    emit strengthChanged(strength);
+}
+
+/*!
+    \fn void QGraphicsBloomEffect::strengthChanged(qreal strength)
+
+    This signal is emitted whenever the effect's strength changes.
+    The \a strength parameter holds the effect's new strength.
+*/
+
+/*!
+    \reimp
+*/
+void QGraphicsBloomEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
+{
+    Q_D(QGraphicsBloomEffect);
+    if (d->strength < 0.001) {
+        source->draw(painter);
+        return;
+    }
+
+    const Qt::CoordinateSystem system = source->isPixmap()
+                                        ? Qt::LogicalCoordinates : Qt::DeviceCoordinates;
+    QPoint offset;
+    QPixmap pixmap = source->pixmap(system, &offset);
+    QImage result = pixmap.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
+
+    // Blur.
+    QPainter blurPainter(&pixmap);
+    d->blurFilter.draw(&blurPainter, QPointF(), pixmap);
+    blurPainter.end();
+
+    // Brighten.
+    QImage overlay = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+    const int numBits = overlay.width() * overlay.height();
+    QRgb *bits = reinterpret_cast<QRgb *>(overlay.bits());
+    for (int i = 0; i < numBits; ++i) {
+        const QRgb bit = bits[i];
+        bits[i] = qRgba(d->colorTable[qRed(bit)], d->colorTable[qGreen(bit)],
+                        d->colorTable[qBlue(bit)], qAlpha(bit));
+    }
+
+    // Composite.
+    QPainter compPainter(&result);
+    compPainter.setCompositionMode(QPainter::CompositionMode_Overlay);
+    compPainter.setOpacity(d->strength);
+    compPainter.drawImage(0, 0, overlay);
+    compPainter.end();
+
+    if (system == Qt::DeviceCoordinates) {
+        QTransform restoreTransform = painter->worldTransform();
+        painter->setWorldTransform(QTransform());
+        painter->drawImage(offset, result);
+        painter->setWorldTransform(restoreTransform);
+    } else {
+        painter->drawImage(offset, result);
+    }
 }
 
 QT_END_NAMESPACE

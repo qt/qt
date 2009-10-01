@@ -99,7 +99,7 @@ bool JSSVGMatrixPrototype::getOwnPropertyDescriptor(ExecState* exec, const Ident
 
 const ClassInfo JSSVGMatrix::s_info = { "SVGMatrix", 0, &JSSVGMatrixTable, 0 };
 
-JSSVGMatrix::JSSVGMatrix(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JSSVGPODTypeWrapper<TransformationMatrix> > impl, SVGElement* context)
+JSSVGMatrix::JSSVGMatrix(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JSSVGPODTypeWrapper<TransformationMatrix> > impl, SVGElement* context)
     : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {

@@ -72,7 +72,7 @@ JSObject* JSCanvasArrayBufferPrototype::self(ExecState* exec, JSGlobalObject* gl
 
 const ClassInfo JSCanvasArrayBuffer::s_info = { "CanvasArrayBuffer", 0, &JSCanvasArrayBufferTable, 0 };
 
-JSCanvasArrayBuffer::JSCanvasArrayBuffer(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasArrayBuffer> impl)
+JSCanvasArrayBuffer::JSCanvasArrayBuffer(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasArrayBuffer> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

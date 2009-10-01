@@ -113,11 +113,9 @@ private slots:
     void localURLSchemes();
     void testOptionalJSObjects();
     void testEnablePersistentStorage();
-
     void consoleOutput();
 
-private:
-
+    void crashTests_LazyInitializationOfMainFrame();
 
 private:
     QWebView* m_view;
@@ -466,14 +464,19 @@ void tst_QWebPage::database()
     m_page->mainFrame()->evaluateJavaScript("var db3; db3=openDatabase('testdb', '1.0', 'test database API', 50000);db3.transaction(function(tx) { tx.executeSql('CREATE TABLE IF NOT EXISTS Test (text TEXT)', []); }, function(tx, result) { }, function(tx, error) { });");
     QTest::qWait(200);
 
+    // Remove all databases.
     QWebSecurityOrigin origin = m_page->mainFrame()->securityOrigin();
     QList<QWebDatabase> dbs = origin.databases();
-    if (dbs.count() > 0) {
-        QString fileName = dbs[0].fileName();
+    for (int i = 0; i < dbs.count(); i++) {
+        QString fileName = dbs[i].fileName();
         QVERIFY(QFile::exists(fileName));
-        QWebDatabase::removeDatabase(dbs[0]);
+        QWebDatabase::removeDatabase(dbs[i]);
         QVERIFY(!QFile::exists(fileName));
     }
+    QVERIFY(!origin.databases().size());
+    // Remove removed test :-)
+    QWebDatabase::removeAllDatabases();
+    QVERIFY(!origin.databases().size());
     QTest::qWait(1000);
 }
 
@@ -1300,6 +1303,27 @@ void tst_QWebPage::testEnablePersistentStorage()
     QVERIFY(!webPage.settings()->offlineWebApplicationCachePath().isEmpty());
     QVERIFY(!webPage.settings()->iconDatabasePath().isEmpty());
 }
+
+void tst_QWebPage::crashTests_LazyInitializationOfMainFrame()
+{
+    {
+        QWebPage webPage;
+    }
+    {
+        QWebPage webPage;
+        webPage.selectedText();
+    }
+    {
+        QWebPage webPage;
+        webPage.triggerAction(QWebPage::Back, true);
+    }
+    {
+        QWebPage webPage;
+        QPoint pos(10,10);
+        webPage.updatePositionDependentActions(pos);
+    }
+}
+
 
 QTEST_MAIN(tst_QWebPage)
 #include "tst_qwebpage.moc"

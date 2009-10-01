@@ -185,6 +185,18 @@ public:
     uint hasOpacityMask : 1;
 };
 
+class QGraphicsBloomEffectPrivate : public QGraphicsEffectPrivate
+{
+    Q_DECLARE_PUBLIC(QGraphicsBlurEffect)
+public:
+    QGraphicsBloomEffectPrivate() : brightness(70), strength(0.7) {}
+
+    QPixmapBlurFilter blurFilter;
+    int colorTable[256];
+    int brightness;
+    qreal strength;
+};
+
 QT_END_NAMESPACE
 
 #endif // QGRAPHICSEFFECT_P_H

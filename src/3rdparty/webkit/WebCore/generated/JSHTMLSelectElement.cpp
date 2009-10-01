@@ -156,7 +156,7 @@ bool JSHTMLSelectElementPrototype::getOwnPropertyDescriptor(ExecState* exec, con
 
 const ClassInfo JSHTMLSelectElement::s_info = { "HTMLSelectElement", &JSHTMLElement::s_info, &JSHTMLSelectElementTable, 0 };
 
-JSHTMLSelectElement::JSHTMLSelectElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLSelectElement> impl)
+JSHTMLSelectElement::JSHTMLSelectElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLSelectElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

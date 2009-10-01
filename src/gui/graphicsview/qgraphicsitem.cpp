@@ -564,6 +564,21 @@
     supportsExtension() and setExtension().
 */
 
+/*!
+    \enum QGraphicsItem::PanelModality
+
+    This enum specifies the behavior of a modal panel. A modal panel
+    is one that blocks input to other panels. Note that items that
+    are children of a modal panel are not blocked.
+
+    The values are:
+    \value NonModal   The panel is not modal and does not block input to other panels.
+    \value PanelModal The panel is modal to a single item hierarchy and blocks input to its parent pane, all grandparent panels, and all siblings of its parent and grandparent panels.
+    \value SceneModal The window is modal to the entire scene and blocks input to all panels.
+
+    \sa QGraphicsItem::setPanelModality(), QGraphicsItem::panelModality(), QGraphicsItem::ItemIsPanel
+*/
+
 #include "qgraphicsitem.h"
 
 #ifndef QT_NO_GRAPHICSVIEW
@@ -1649,6 +1664,16 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
         setFlag(ItemStacksBehindParent, d_ptr->z < qreal(0.0));
     }
 
+    if ((d_ptr->panelModality != NonModal)
+        && d_ptr->scene
+        && (flags & ItemIsPanel) != (oldFlags & ItemIsPanel)) {
+        // update the panel's modal state
+        if (flags & ItemIsPanel)
+            d_ptr->scene->d_func()->enterModal(this);
+        else
+            d_ptr->scene->d_func()->leaveModal(this);
+    }
+
     if (d_ptr->scene) {
         d_ptr->scene->d_func()->markDirty(this, QRectF(),
                                           /*invalidateChildren=*/true,
@@ -1723,6 +1748,87 @@ void QGraphicsItem::setCacheMode(CacheMode mode, const QSize &logicalCacheSize)
     }
     if (!noVisualChange)
         update();
+}
+
+/*!
+    \since 4.6
+
+    Returns the modality for this item.
+*/
+QGraphicsItem::PanelModality QGraphicsItem::panelModality() const
+{
+    return d_ptr->panelModality;
+}
+
+/*!
+    \since 4.6
+
+    Sets the modality for this item to \a panelModality.
+
+    Changing the modality of a visible item takes effect immediately.
+*/
+void QGraphicsItem::setPanelModality(PanelModality panelModality)
+{
+    if (d_ptr->panelModality == panelModality)
+        return;
+
+    PanelModality previousModality = d_ptr->panelModality;
+    bool enterLeaveModal = (isPanel() && d_ptr->scene && isVisible());
+    if (enterLeaveModal && panelModality == NonModal)
+        d_ptr->scene->d_func()->leaveModal(this);
+    d_ptr->panelModality = panelModality;
+    if (enterLeaveModal && d_ptr->panelModality != NonModal)
+        d_ptr->scene->d_func()->enterModal(this, previousModality);
+}
+
+/*!
+    \since 4.6
+
+    Returns true if this item is blocked by a modal panel, false otherwise. If \a blockingPanel is
+    non-zero, \a blockingPanel will be set to the modal panel that is blocking this item. If this
+    item is not blocked, \a blockingPanel will not be set by this function.
+
+    This function always returns false for items not in a scene.
+
+    \sa panelModality() setPanelModality() PanelModality
+*/
+bool QGraphicsItem::isBlockedByModalPanel(QGraphicsItem **blockingPanel) const
+{
+    if (!d_ptr->scene)
+        return false;
+
+
+    QGraphicsItem *dummy = 0;
+    if (!blockingPanel)
+        blockingPanel = &dummy;
+
+    QGraphicsScenePrivate *scene_d = d_ptr->scene->d_func();
+    if (scene_d->modalPanels.isEmpty())
+        return false;
+
+    // ###
+    if (!scene_d->popupWidgets.isEmpty() && scene_d->popupWidgets.first() == this)
+        return false;
+
+    for (int i = 0; i < scene_d->modalPanels.count(); ++i) {
+        QGraphicsItem *modalPanel = scene_d->modalPanels.at(i);
+        if (modalPanel->panelModality() == QGraphicsItem::SceneModal) {
+            // Scene modal panels block all non-descendents.
+            if (modalPanel != this && !modalPanel->isAncestorOf(this)) {
+                *blockingPanel = modalPanel;
+                return true;
+            }
+        } else {
+            // Window modal panels block ancestors and siblings/cousins.
+            if (modalPanel != this
+                && !modalPanel->isAncestorOf(this)
+                && commonAncestorItem(modalPanel)) {
+                *blockingPanel = modalPanel;
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 #ifndef QT_NO_TOOLTIP
@@ -1934,6 +2040,8 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
                 q->ungrabMouse();
             if (scene->d_func()->keyboardGrabberItems.contains(q))
                 q->ungrabKeyboard();
+            if (q->isPanel() && panelModality != QGraphicsItem::NonModal)
+                scene->d_func()->leaveModal(q_ptr);
         }
         if (q_ptr->hasFocus() && scene) {
             // Hiding the closest non-panel ancestor of the focus item
@@ -1955,10 +2063,15 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
     } else {
         geometryChanged = 1;
         paintedViewBoundingRectsNeedRepaint = 1;
-        if (isWidget && scene) {
-            QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(q_ptr);
-            if (widget->windowType() == Qt::Popup)
-                scene->d_func()->addPopup(widget);
+        if (scene) {
+            if (isWidget) {
+                QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(q_ptr);
+                if (widget->windowType() == Qt::Popup)
+                    scene->d_func()->addPopup(widget);
+            }
+            if (q->isPanel() && panelModality != QGraphicsItem::NonModal) {
+                scene->d_func()->enterModal(q_ptr);
+            }
         }
     }
 
@@ -2781,7 +2894,7 @@ bool QGraphicsItem::hasFocus() const
     the preferred focus item for its subtree of items, should it later become
     visible.
 
-    As a result of calling this function, this item will receive a 
+    As a result of calling this function, this item will receive a
     \l{focusInEvent()}{focus in event} with \a focusReason. If another item
     already has focus, that item will first receive a \l{focusOutEvent()}
     {focus out event} indicating that it has lost input focus.
@@ -3299,7 +3412,7 @@ QMatrix QGraphicsItem::matrix() const
 
     The transformation matrix is combined with the item's rotation(), scale()
     and transformations() into a combined transformations for the item.
-    
+
     The default transformation matrix is an identity matrix.
 
     \sa setTransform(), sceneTransform()
@@ -3780,7 +3893,7 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
 
     // Update and set the new transformation.
     d_ptr->setTransformHelper(newTransform);
-        
+
     // Send post-notification.
     itemChange(ItemTransformHasChanged, qVariantFromValue<QTransform>(newTransform));
 }
@@ -3914,7 +4027,7 @@ void QGraphicsItem::scale(qreal sx, qreal sy)
 /*!
     \obsolete
 
-    Use 
+    Use
 
     \code
     setTransform(QTransform().shear(sh, sv), true);
@@ -3936,7 +4049,7 @@ void QGraphicsItem::shear(qreal sh, qreal sv)
 
     Use setPos() or setTransformOriginPoint() instead. For identical
     behavior, use
-    
+
     \code
     setTransform(QTransform::fromTranslate(dx, dy), true);
     \endcode
@@ -4446,7 +4559,7 @@ bool QGraphicsItem::collidesWithItem(const QGraphicsItem *other, Qt::ItemSelecti
     Note that this function checks whether the item's shape or
     bounding rectangle (depending on \a mode) is contained within \a
     path, and not whether \a path is contained within the items shape
-    or bounding rectangle. 
+    or bounding rectangle.
 
     \sa collidesWithItem(), contains(), shape()
 */
@@ -6595,7 +6708,7 @@ void QGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     if (d_ptr->isWidget) {
         // Qt::Popup closes when you click outside.
         QGraphicsWidget *w = static_cast<QGraphicsWidget *>(this);
-        if (w->windowFlags() & Qt::Popup) {
+        if ((w->windowFlags() & Qt::Popup) == Qt::Popup) {
             event->accept();
             if (!w->rect().contains(event->pos()))
                 w->close();
@@ -7020,7 +7133,7 @@ void QGraphicsItem::prepareGeometryChange()
         // if someone is connected to the changed signal or the scene has no views.
         // Note that this has to be done *after* markDirty to ensure that
         // _q_processDirtyItems is called before _q_emitUpdated.
-	if (scenePrivate->isSignalConnected(scenePrivate->changedSignalIndex)
+        if (scenePrivate->isSignalConnected(scenePrivate->changedSignalIndex)
             || scenePrivate->views.isEmpty()) {
             if (d_ptr->hasTranslateOnlySceneTransform()) {
                 d_ptr->scene->update(boundingRect().translated(d_ptr->sceneTransform.dx(),
@@ -10524,7 +10637,7 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
             effectRect.setRight(deviceWidth - 1);
         if (bottom + 1 > deviceHeight)
             effectRect.setBottom(deviceHeight -1);
-        
+
     }
 
     if (effectRect.isEmpty())

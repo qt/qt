@@ -65,7 +65,7 @@ bool JSVoidCallbackPrototype::getOwnPropertyDescriptor(ExecState* exec, const Id
 
 const ClassInfo JSVoidCallback::s_info = { "VoidCallback", 0, 0, 0 };
 
-JSVoidCallback::JSVoidCallback(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<VoidCallback> impl)
+JSVoidCallback::JSVoidCallback(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<VoidCallback> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

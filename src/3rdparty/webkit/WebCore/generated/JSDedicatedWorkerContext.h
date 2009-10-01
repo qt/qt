@@ -33,7 +33,7 @@ class DedicatedWorkerContext;
 class JSDedicatedWorkerContext : public JSWorkerContext {
     typedef JSWorkerContext Base;
 public:
-    JSDedicatedWorkerContext(PassRefPtr<JSC::Structure>, PassRefPtr<DedicatedWorkerContext>);
+    JSDedicatedWorkerContext(NonNullPassRefPtr<JSC::Structure>, PassRefPtr<DedicatedWorkerContext>);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
@@ -68,7 +68,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSDedicatedWorkerContextPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSDedicatedWorkerContextPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

@@ -317,6 +317,7 @@ QFileDialog::QFileDialog(QWidget *parent, Qt::WindowFlags f)
 {
     Q_D(QFileDialog);
     d->init();
+    d->lineEdit()->selectAll();
 }
 
 /*!
@@ -334,6 +335,7 @@ QFileDialog::QFileDialog(QWidget *parent,
 {
     Q_D(QFileDialog);
     d->init(directory, filter, caption);
+    d->lineEdit()->selectAll();
 }
 
 /*!

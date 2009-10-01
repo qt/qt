@@ -84,7 +84,7 @@ bool JSSQLResultSetRowListPrototype::getOwnPropertyDescriptor(ExecState* exec, c
 
 const ClassInfo JSSQLResultSetRowList::s_info = { "SQLResultSetRowList", 0, &JSSQLResultSetRowListTable, 0 };
 
-JSSQLResultSetRowList::JSSQLResultSetRowList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SQLResultSetRowList> impl)
+JSSQLResultSetRowList::JSSQLResultSetRowList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SQLResultSetRowList> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

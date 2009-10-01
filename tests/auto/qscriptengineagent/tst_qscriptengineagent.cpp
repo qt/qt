@@ -1193,10 +1193,15 @@ void tst_QScriptEngineAgent::positionChange_1()
         QCOMPARE(spy->at(0).columnNumber, 1);
     }
 
-    {
+    QStringList lineTerminators;
+    lineTerminators << "\n" << "\r" << "\n\r" << "\r\n";
+    for (int i = 0; i < lineTerminators.size(); ++i) {
         spy->clear();
         int lineNumber = 456;
-        eng.evaluate("1 + 2; 3 + 4;\n5 + 6", "foo.qs", lineNumber);
+        QString code = "1 + 2; 3 + 4;";
+        code.append(lineTerminators.at(i));
+        code.append("5 + 6");
+        eng.evaluate(code, "foo.qs", lineNumber);
         QCOMPARE(spy->count(), 3);
 
         // 1 + 2

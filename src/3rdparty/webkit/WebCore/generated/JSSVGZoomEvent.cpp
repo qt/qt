@@ -78,7 +78,7 @@ JSObject* JSSVGZoomEventPrototype::self(ExecState* exec, JSGlobalObject* globalO
 
 const ClassInfo JSSVGZoomEvent::s_info = { "SVGZoomEvent", &JSUIEvent::s_info, &JSSVGZoomEventTable, 0 };
 
-JSSVGZoomEvent::JSSVGZoomEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGZoomEvent> impl)
+JSSVGZoomEvent::JSSVGZoomEvent(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGZoomEvent> impl)
     : JSUIEvent(structure, globalObject, impl)
 {
 }

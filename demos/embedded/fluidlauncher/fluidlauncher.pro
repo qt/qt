@@ -143,6 +143,7 @@ symbian {
     }
 
     contains(QT_CONFIG, phonon) {
+        executables.sources += qmediaplayer.exe
         resource.sources += $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/qmediaplayer.rsc
     }
 

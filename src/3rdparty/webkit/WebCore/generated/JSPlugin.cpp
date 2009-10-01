@@ -136,7 +136,7 @@ bool JSPluginPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifi
 
 const ClassInfo JSPlugin::s_info = { "Plugin", 0, &JSPluginTable, 0 };
 
-JSPlugin::JSPlugin(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Plugin> impl)
+JSPlugin::JSPlugin(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Plugin> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

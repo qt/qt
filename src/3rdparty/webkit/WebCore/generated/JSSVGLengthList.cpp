@@ -92,7 +92,7 @@ bool JSSVGLengthListPrototype::getOwnPropertyDescriptor(ExecState* exec, const I
 
 const ClassInfo JSSVGLengthList::s_info = { "SVGLengthList", 0, &JSSVGLengthListTable, 0 };
 
-JSSVGLengthList::JSSVGLengthList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGLengthList> impl, SVGElement* context)
+JSSVGLengthList::JSSVGLengthList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGLengthList> impl, SVGElement* context)
     : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {

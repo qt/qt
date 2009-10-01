@@ -504,10 +504,10 @@ void QPixmapConvolutionFilter::draw(QPainter *painter, const QPointF &p, const Q
 class QPixmapBlurFilterPrivate : public QPixmapFilterPrivate
 {
 public:
-    QPixmapBlurFilterPrivate() : radius(5), hint(QPixmapBlurFilter::PerformanceHint) {}
+    QPixmapBlurFilterPrivate() : radius(5), hint(Qt::PerformanceHint) {}
 
     int radius;
-    QPixmapBlurFilter::BlurHint hint;
+    Qt::RenderHint hint;
 };
 
 
@@ -561,7 +561,7 @@ int QPixmapBlurFilter::radius() const
 
     \internal
 */
-void QPixmapBlurFilter::setBlurHint(QPixmapBlurFilter::BlurHint hint)
+void QPixmapBlurFilter::setBlurHint(Qt::RenderHint hint)
 {
     Q_D(QPixmapBlurFilter);
     d->hint = hint;
@@ -572,7 +572,7 @@ void QPixmapBlurFilter::setBlurHint(QPixmapBlurFilter::BlurHint hint)
 
     \internal
 */
-QPixmapBlurFilter::BlurHint QPixmapBlurFilter::blurHint() const
+Qt::RenderHint QPixmapBlurFilter::blurHint() const
 {
     Q_D(const QPixmapBlurFilter);
     return d->hint;

@@ -209,6 +209,7 @@ void QDirectFBPaintDevice::releaseSubSurface()
 {
     Q_ASSERT(QDirectFBScreen::instance());
     if (subSurface) {
+        unlockSurface();
         screen->releaseDFBSurface(subSurface);
         subSurface = 0;
     }

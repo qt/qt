@@ -33,7 +33,7 @@ class Geolocation;
 class JSGeolocation : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSGeolocation(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Geolocation>);
+    JSGeolocation(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Geolocation>);
     virtual ~JSGeolocation();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -71,7 +71,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSGeolocationPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSGeolocationPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

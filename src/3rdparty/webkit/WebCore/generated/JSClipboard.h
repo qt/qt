@@ -33,7 +33,7 @@ class Clipboard;
 class JSClipboard : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSClipboard(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Clipboard>);
+    JSClipboard(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Clipboard>);
     virtual ~JSClipboard();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -78,7 +78,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSClipboardPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSClipboardPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

@@ -84,7 +84,7 @@ bool JSGeolocationPrototype::getOwnPropertyDescriptor(ExecState* exec, const Ide
 
 const ClassInfo JSGeolocation::s_info = { "Geolocation", 0, &JSGeolocationTable, 0 };
 
-JSGeolocation::JSGeolocation(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Geolocation> impl)
+JSGeolocation::JSGeolocation(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Geolocation> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

@@ -3160,11 +3160,12 @@ void tst_QGraphicsView::moveItemWhileScrolling()
     if (!adjustForAntialiasing)
         view.setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing);
     view.resize(200, 200);
+    view.painted = false;
     view.show();
     QTest::qWaitForWindowShown(&view);
+    QApplication::processEvents();
     QTRY_VERIFY(view.painted);
     view.painted = false;
-
     view.lastPaintedRegion = QRegion();
     view.horizontalScrollBar()->setValue(view.horizontalScrollBar()->value() + 10);
     view.rect->moveBy(0, 10);
@@ -3366,6 +3367,7 @@ void tst_QGraphicsView::render()
     view.painted = false;
     view.show();
     QTest::qWaitForWindowShown(&view);
+    QApplication::processEvents();
     QTRY_VERIFY(view.painted > 0);
 
     RenderTester *r1 = new RenderTester(QRectF(0, 0, 50, 50));

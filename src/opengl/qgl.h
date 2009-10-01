@@ -282,6 +282,8 @@ public:
     bool isSharing() const;
     void reset();
 
+    static bool areSharing(const QGLContext *context1, const QGLContext *context2);
+
     QGLFormat format() const;
     QGLFormat requestedFormat() const;
     void setFormat(const QGLFormat& format);

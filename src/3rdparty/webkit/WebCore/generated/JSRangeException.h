@@ -33,7 +33,7 @@ class RangeException;
 class JSRangeException : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSRangeException(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<RangeException>);
+    JSRangeException(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<RangeException>);
     virtual ~JSRangeException();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -68,7 +68,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSRangeExceptionPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSRangeExceptionPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

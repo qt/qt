@@ -399,13 +399,12 @@ public:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGLExtensions::Extensions)
 
 
-class QGLShareRegister
+class Q_AUTOTEST_EXPORT QGLShareRegister
 {
 public:
     QGLShareRegister() {}
     ~QGLShareRegister() { reg.clear(); }
 
-    bool checkSharing(const QGLContext *context1, const QGLContext *context2);
     void addShare(const QGLContext *context, const QGLContext *share);
     QList<const QGLContext *> shares(const QGLContext *context);
     void removeShare(const QGLContext *context);
@@ -436,7 +435,7 @@ public:
             QGLContext *current = const_cast<QGLContext *>(QGLContext::currentContext());
             QGLContext *ctx = const_cast<QGLContext *>(context);
             Q_ASSERT(ctx);
-            bool switch_context = current != ctx && !qgl_share_reg()->checkSharing(current, ctx);
+            bool switch_context = current != ctx && !QGLContext::areSharing(current, ctx);
             if (switch_context)
                 ctx->makeCurrent();
 #if defined(Q_WS_X11)
@@ -547,7 +546,7 @@ public:
         : m_oldContext(0)
     {
         QGLContext *currentContext = const_cast<QGLContext *>(QGLContext::currentContext());
-        if (currentContext != ctx && !qgl_share_reg()->checkSharing(ctx, currentContext)) {
+        if (currentContext != ctx && !QGLContext::areSharing(ctx, currentContext)) {
             m_oldContext = currentContext;
             m_ctx = const_cast<QGLContext *>(ctx);
             m_ctx->makeCurrent();

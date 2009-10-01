@@ -139,7 +139,7 @@ bool JSStorageEventPrototype::getOwnPropertyDescriptor(ExecState* exec, const Id
 
 const ClassInfo JSStorageEvent::s_info = { "StorageEvent", &JSEvent::s_info, &JSStorageEventTable, 0 };
 
-JSStorageEvent::JSStorageEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<StorageEvent> impl)
+JSStorageEvent::JSStorageEvent(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<StorageEvent> impl)
     : JSEvent(structure, globalObject, impl)
 {
 }

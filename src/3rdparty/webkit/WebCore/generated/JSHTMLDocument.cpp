@@ -154,7 +154,7 @@ bool JSHTMLDocumentPrototype::getOwnPropertyDescriptor(ExecState* exec, const Id
 
 const ClassInfo JSHTMLDocument::s_info = { "HTMLDocument", &JSDocument::s_info, &JSHTMLDocumentTable, 0 };
 
-JSHTMLDocument::JSHTMLDocument(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLDocument> impl)
+JSHTMLDocument::JSHTMLDocument(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLDocument> impl)
     : JSDocument(structure, globalObject, impl)
 {
 }

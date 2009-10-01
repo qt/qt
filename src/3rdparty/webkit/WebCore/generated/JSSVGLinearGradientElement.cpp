@@ -75,7 +75,7 @@ JSObject* JSSVGLinearGradientElementPrototype::self(ExecState* exec, JSGlobalObj
 
 const ClassInfo JSSVGLinearGradientElement::s_info = { "SVGLinearGradientElement", &JSSVGGradientElement::s_info, &JSSVGLinearGradientElementTable, 0 };
 
-JSSVGLinearGradientElement::JSSVGLinearGradientElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGLinearGradientElement> impl)
+JSSVGLinearGradientElement::JSSVGLinearGradientElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGLinearGradientElement> impl)
     : JSSVGGradientElement(structure, globalObject, impl)
 {
 }

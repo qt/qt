@@ -143,7 +143,7 @@ bool JSCSSStyleDeclarationPrototype::getOwnPropertyDescriptor(ExecState* exec, c
 
 const ClassInfo JSCSSStyleDeclaration::s_info = { "CSSStyleDeclaration", 0, &JSCSSStyleDeclarationTable, 0 };
 
-JSCSSStyleDeclaration::JSCSSStyleDeclaration(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSStyleDeclaration> impl)
+JSCSSStyleDeclaration::JSCSSStyleDeclaration(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSStyleDeclaration> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

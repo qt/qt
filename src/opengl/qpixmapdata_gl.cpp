@@ -248,7 +248,7 @@ bool QGLPixmapData::isValidContext(const QGLContext *ctx) const
         return true;
 
     const QGLContext *share_ctx = qt_gl_share_widget()->context();
-    return ctx == share_ctx || qgl_share_reg()->checkSharing(ctx, share_ctx);
+    return ctx == share_ctx || QGLContext::areSharing(ctx, share_ctx);
 }
 
 void QGLPixmapData::resize(int width, int height)

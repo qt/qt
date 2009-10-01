@@ -40,12 +40,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-JSDOMGlobalObject::JSDOMGlobalObjectData::JSDOMGlobalObjectData()
-    : evt(0)
-{
-}
-
-JSDOMGlobalObject::JSDOMGlobalObject(PassRefPtr<Structure> structure, JSDOMGlobalObject::JSDOMGlobalObjectData* data, JSObject* thisValue)
+JSDOMGlobalObject::JSDOMGlobalObject(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject::JSDOMGlobalObjectData* data, JSObject* thisValue)
     : JSGlobalObject(structure, data, thisValue)
 {
 }
@@ -68,7 +63,7 @@ PassRefPtr<JSEventListener> JSDOMGlobalObject::createJSAttributeEventListener(JS
     if (!val.isObject())
         return 0;
 
-    return JSEventListener::create(asObject(val), this, true).get();
+    return JSEventListener::create(asObject(val), true).get();
 }
 
 void JSDOMGlobalObject::setCurrentEvent(Event* evt)
@@ -79,6 +74,11 @@ void JSDOMGlobalObject::setCurrentEvent(Event* evt)
 Event* JSDOMGlobalObject::currentEvent() const
 {
     return d()->evt;
+}
+
+void JSDOMGlobalObject::destroyJSDOMGlobalObjectData(void* jsDOMGlobalObjectData)
+{
+    delete static_cast<JSDOMGlobalObjectData*>(jsDOMGlobalObjectData);
 }
 
 JSDOMGlobalObject* toJSDOMGlobalObject(Document* document)

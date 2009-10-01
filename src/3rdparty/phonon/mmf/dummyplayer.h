@@ -62,12 +62,11 @@ public:
     virtual void setFileSource(const Phonon::MediaSource&, RFile&);
     virtual void setNextSource(const MediaSource &source);
 
-    // VolumeObserver
-    virtual void volumeChanged(qreal volume);
-
     // AbstractPlayer
     virtual void doSetTickInterval(qint32 interval);
 
+protected:
+    virtual void changeState(PrivateState newState);
 };
 }
 }

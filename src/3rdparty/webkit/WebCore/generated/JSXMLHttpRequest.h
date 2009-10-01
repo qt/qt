@@ -33,7 +33,7 @@ class XMLHttpRequest;
 class JSXMLHttpRequest : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSXMLHttpRequest(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<XMLHttpRequest>);
+    JSXMLHttpRequest(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<XMLHttpRequest>);
     virtual ~JSXMLHttpRequest();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -82,7 +82,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
-    JSXMLHttpRequestPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSXMLHttpRequestPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

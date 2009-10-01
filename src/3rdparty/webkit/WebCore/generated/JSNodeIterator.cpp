@@ -137,7 +137,7 @@ bool JSNodeIteratorPrototype::getOwnPropertyDescriptor(ExecState* exec, const Id
 
 const ClassInfo JSNodeIterator::s_info = { "NodeIterator", 0, &JSNodeIteratorTable, 0 };
 
-JSNodeIterator::JSNodeIterator(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<NodeIterator> impl)
+JSNodeIterator::JSNodeIterator(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<NodeIterator> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

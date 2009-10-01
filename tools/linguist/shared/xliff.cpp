@@ -500,7 +500,9 @@ bool XLIFFHandler::startElement(const QString& namespaceURI,
     } else if (localName == QLatin1String("file")) {
         m_fileName = atts.value(QLatin1String("original"));
         m_language = atts.value(QLatin1String("target-language"));
+        m_language.replace(QLatin1Char('-'), QLatin1Char('_'));
         m_sourceLanguage = atts.value(QLatin1String("source-language"));
+        m_sourceLanguage.replace(QLatin1Char('-'), QLatin1Char('_'));
     } else if (localName == QLatin1String("group")) {
         if (atts.value(QLatin1String("restype")) == QLatin1String(restypeContext)) {
             m_context = atts.value(QLatin1String("resname"));
@@ -773,14 +775,19 @@ bool saveXLIFF(const Translator &translator, QIODevice &dev, ConversionData &cd)
        << "\" xmlns:trolltech=\"" << TrollTsNamespaceURI << "\">\n";
     ++indent;
     writeExtras(ts, indent, translator.extras(), drops);
+    QString sourceLanguageCode = translator.sourceLanguageCode();
+    if (sourceLanguageCode.isEmpty() || sourceLanguageCode == QLatin1String("C"))
+        sourceLanguageCode = QLatin1String("en");
+    else
+        sourceLanguageCode.replace(QLatin1Char('_'), QLatin1Char('-'));
+    QString languageCode = translator.languageCode();
+    languageCode.replace(QLatin1Char('_'), QLatin1Char('-'));
     foreach (const QString &fn, fileOrder) {
         writeIndent(ts, indent);
         ts << "<file original=\"" << fn << "\""
             << " datatype=\"" << dataType(messageOrder[fn].begin()->first()) << "\""
-            << " source-language=\""
-                << (translator.sourceLanguageCode().isEmpty() ?
-                    QByteArray("en") : translator.sourceLanguageCode().toLatin1()) << "\""
-            << " target-language=\"" << translator.languageCode() << "\""
+            << " source-language=\"" << sourceLanguageCode.toLatin1() << "\""
+            << " target-language=\"" << languageCode.toLatin1() << "\""
             << "><body>\n";
         ++indent;
 

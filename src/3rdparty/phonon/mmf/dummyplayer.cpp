@@ -115,16 +115,6 @@ void MMF::DummyPlayer::setNextSource(const MediaSource &)
 
 
 //-----------------------------------------------------------------------------
-// VolumeObserver
-//-----------------------------------------------------------------------------
-
-void MMF::DummyPlayer::volumeChanged(qreal)
-{
-
-}
-
-
-//-----------------------------------------------------------------------------
 // AbstractPlayer
 //-----------------------------------------------------------------------------
 
@@ -133,6 +123,9 @@ void MMF::DummyPlayer::doSetTickInterval(qint32)
 
 }
 
+void MMF::DummyPlayer::changeState(PrivateState)
+{
+}
 
 QT_END_NAMESPACE
 

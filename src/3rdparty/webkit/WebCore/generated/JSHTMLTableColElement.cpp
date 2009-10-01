@@ -121,7 +121,7 @@ JSObject* JSHTMLTableColElementPrototype::self(ExecState* exec, JSGlobalObject* 
 
 const ClassInfo JSHTMLTableColElement::s_info = { "HTMLTableColElement", &JSHTMLElement::s_info, &JSHTMLTableColElementTable, 0 };
 
-JSHTMLTableColElement::JSHTMLTableColElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLTableColElement> impl)
+JSHTMLTableColElement::JSHTMLTableColElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLTableColElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

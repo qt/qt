@@ -1456,7 +1456,7 @@ void tst_QGraphicsWidget::verifyFocusChain()
         scene.addItem(w1_4);
         QTRY_VERIFY(w1_3->hasFocus());
         QTest::qWait(25);
-        QVERIFY(compareFocusChain(view, QList<QGraphicsItem*>() << w1_3 << w1_4));
+        QTRY_VERIFY(compareFocusChain(view, QList<QGraphicsItem*>() << w1_3 << w1_4));
         QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
         QTest::qWait(25);
         QTRY_VERIFY(lineEdit->hasFocus());
