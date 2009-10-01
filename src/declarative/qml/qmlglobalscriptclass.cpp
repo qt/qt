@@ -39,70 +39,56 @@
 **
 ****************************************************************************/
 
-#ifndef QMLOBJECTSCRIPTCLASS_P_H
-#define QMLOBJECTSCRIPTCLASS_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtScript/qscriptclass.h>
-#include <private/qscriptdeclarativeclass_p.h>
-#include <private/qmlpropertycache_p.h>
+#include "qmlglobalscriptclass_p.h"
+#include <QtScript/qscriptstring.h>
+#include <QtScript/qscriptengine.h>
+#include <QtScript/qscriptvalueiterator.h>
 
 QT_BEGIN_NAMESPACE
 
-class QmlEngine;
-class QScriptContext;
-class QScriptEngine;
-class QmlObjectScriptClass : public QScriptDeclarativeClass
+/*
+    Used to prevent any writes to the global object.
+*/
+QmlGlobalScriptClass::QmlGlobalScriptClass(QScriptEngine *engine)
+: QScriptClass(engine)
 {
-public:
-    QmlObjectScriptClass(QmlEngine *);
-    ~QmlObjectScriptClass();
+    QScriptValue v = engine->newObject();
+    globalObject = engine->globalObject();
 
-    QScriptValue newQObject(QObject *);
-    QObject *toQObject(const QScriptValue &) const;
+    QScriptValueIterator iter(globalObject);
+    while (iter.hasNext()) {
+        iter.next();
+        v.setProperty(iter.scriptName(), iter.value());
+    }
 
-    QScriptClass::QueryFlags queryProperty(QObject *, const Identifier &, 
-                                           QScriptClass::QueryFlags flags);
-    QScriptValue property(QObject *, const Identifier &);
-    void setProperty(QObject *, const Identifier &name, const QScriptValue &);
+    v.setScriptClass(this);
+    engine->setGlobalObject(v);
+}
 
-protected:
-    virtual QScriptClass::QueryFlags queryProperty(const Object &, const Identifier &, 
-                                                   QScriptClass::QueryFlags flags);
+QScriptClass::QueryFlags 
+QmlGlobalScriptClass::queryProperty(const QScriptValue &object,
+                                    const QScriptString &name,
+                                    QueryFlags flags, uint *id)
+{
+    return HandlesReadAccess | HandlesWriteAccess;
+}
 
-    virtual QScriptValue property(const Object &, const Identifier &);
-    virtual void setProperty(const Object &, const Identifier &name, const QScriptValue &);
-    virtual QObject *toQObject(const Object &, bool *ok = 0);
-    virtual void destroyed(const Object &);
+QScriptValue 
+QmlGlobalScriptClass::property(const QScriptValue &object,
+                               const QScriptString &name, 
+                               uint id)
+{
+    return engine()->undefinedValue();
+}
 
-private:
-    uint m_id;
-    QmlPropertyCache::Data *lastData;
-    QmlPropertyCache::Data local;
-
-    struct Dummy {};
-    PersistentIdentifier<Dummy> *m_destroyId;
-    PersistentIdentifier<Dummy> *m_toStringId;
-    QScriptValue m_destroy;
-    QScriptValue m_toString;
-
-    static QScriptValue tostring(QScriptContext *context, QScriptEngine *engine);
-    static QScriptValue destroy(QScriptContext *context, QScriptEngine *engine);
-
-    QmlEngine *engine;
-};
+void QmlGlobalScriptClass::setProperty(QScriptValue &object, 
+                                       const QScriptString &name,
+                                       uint id, const QScriptValue &value)
+{
+    QString error = QLatin1String("Invalid write to global property \"") + 
+                    name.toString() + QLatin1String("\"");
+    engine()->currentContext()->throwError(error);
+}
 
 QT_END_NAMESPACE
-
-#endif // QMLOBJECTSCRIPTCLASS_P_H
 

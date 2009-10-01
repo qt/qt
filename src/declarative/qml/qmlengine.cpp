@@ -47,6 +47,7 @@
 #include <private/qobject_p.h>
 #include <private/qmlcompiler_p.h>
 #include <private/qscriptdeclarativeclass_p.h>
+#include <private/qmlglobalscriptclass_p.h>
 
 #ifdef QT_SCRIPTTOOLS_LIB
 #include <QScriptEngineDebugger>
@@ -156,7 +157,7 @@ static QString userLocalDataPath(const QString& app)
 
 QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 : rootContext(0), currentExpression(0),
-  isDebugging(false), contextClass(0), objectClass(0), valueTypeClass(0),
+  isDebugging(false), contextClass(0), objectClass(0), valueTypeClass(0), globalClass(0),
   nodeListClass(0), namedNodeMapClass(0), sqlQueryClass(0), scriptEngine(this), rootComponent(0),
   networkAccessManager(0), typeManager(e), uniqueId(1)
 {
@@ -183,6 +184,14 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
     qtObject.setProperty(QLatin1String("lighter"), scriptEngine.newFunction(QmlEnginePrivate::lighter, 1));
     qtObject.setProperty(QLatin1String("darker"), scriptEngine.newFunction(QmlEnginePrivate::darker, 1));
     qtObject.setProperty(QLatin1String("tint"), scriptEngine.newFunction(QmlEnginePrivate::tint, 2));
+
+    scriptEngine.globalObject().setProperty(QLatin1String("createQmlObject"),
+            scriptEngine.newFunction(QmlEnginePrivate::createQmlObject, 1));
+    scriptEngine.globalObject().setProperty(QLatin1String("createComponent"),
+            scriptEngine.newFunction(QmlEnginePrivate::createComponent, 1));
+
+    //scriptEngine.globalObject().setScriptClass(new QmlGlobalScriptClass(&scriptEngine));
+    globalClass = new QmlGlobalScriptClass(&scriptEngine);
 }
 
 QmlEnginePrivate::~QmlEnginePrivate()
@@ -249,11 +258,6 @@ void QmlEnginePrivate::init()
         debugger->attachTo(&scriptEngine);
     }
 #endif
-
-    scriptEngine.globalObject().setProperty(QLatin1String("createQmlObject"),
-            scriptEngine.newFunction(QmlEnginePrivate::createQmlObject, 1));
-    scriptEngine.globalObject().setProperty(QLatin1String("createComponent"),
-            scriptEngine.newFunction(QmlEnginePrivate::createComponent, 1));
 
     if (QCoreApplication::instance()->thread() == q->thread() &&
         QmlEngineDebugServer::isDebuggingEnabled()) {

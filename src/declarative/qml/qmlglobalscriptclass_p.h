@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLOBJECTSCRIPTCLASS_P_H
-#define QMLOBJECTSCRIPTCLASS_P_H
+#ifndef QMLGLOBALSCRIPTCLASS_P_H
+#define QMLGLOBALSCRIPTCLASS_P_H
 
 //
 //  W A R N I N G
@@ -54,55 +54,28 @@
 //
 
 #include <QtScript/qscriptclass.h>
-#include <private/qscriptdeclarativeclass_p.h>
-#include <private/qmlpropertycache_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QmlEngine;
-class QScriptContext;
-class QScriptEngine;
-class QmlObjectScriptClass : public QScriptDeclarativeClass
+class QmlGlobalScriptClass : public QScriptClass
 {
 public:
-    QmlObjectScriptClass(QmlEngine *);
-    ~QmlObjectScriptClass();
+    QmlGlobalScriptClass(QScriptEngine *);
 
-    QScriptValue newQObject(QObject *);
-    QObject *toQObject(const QScriptValue &) const;
+    virtual QueryFlags queryProperty(const QScriptValue &object,
+                                     const QScriptString &name,
+                                     QueryFlags flags, uint *id);
 
-    QScriptClass::QueryFlags queryProperty(QObject *, const Identifier &, 
-                                           QScriptClass::QueryFlags flags);
-    QScriptValue property(QObject *, const Identifier &);
-    void setProperty(QObject *, const Identifier &name, const QScriptValue &);
+    virtual QScriptValue property(const QScriptValue &object,
+                                  const QScriptString &name, uint id);
 
-protected:
-    virtual QScriptClass::QueryFlags queryProperty(const Object &, const Identifier &, 
-                                                   QScriptClass::QueryFlags flags);
-
-    virtual QScriptValue property(const Object &, const Identifier &);
-    virtual void setProperty(const Object &, const Identifier &name, const QScriptValue &);
-    virtual QObject *toQObject(const Object &, bool *ok = 0);
-    virtual void destroyed(const Object &);
+    virtual void setProperty(QScriptValue &object, const QScriptString &name,
+                             uint id, const QScriptValue &value);
 
 private:
-    uint m_id;
-    QmlPropertyCache::Data *lastData;
-    QmlPropertyCache::Data local;
-
-    struct Dummy {};
-    PersistentIdentifier<Dummy> *m_destroyId;
-    PersistentIdentifier<Dummy> *m_toStringId;
-    QScriptValue m_destroy;
-    QScriptValue m_toString;
-
-    static QScriptValue tostring(QScriptContext *context, QScriptEngine *engine);
-    static QScriptValue destroy(QScriptContext *context, QScriptEngine *engine);
-
-    QmlEngine *engine;
+    QScriptValue globalObject;
 };
 
 QT_END_NAMESPACE
 
-#endif // QMLOBJECTSCRIPTCLASS_P_H
-
+#endif // QMLGLOBALSCRIPTCLASS_P_H

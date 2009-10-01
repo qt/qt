@@ -51,40 +51,6 @@ struct ObjectData {
     QGuard<QObject> object;
 };
 
-static QScriptValue QmlObjectToString(QScriptContext *context, QScriptEngine *engine)
-{
-    QObject* obj = context->thisObject().data().toQObject();
-    QString ret = QLatin1String("Qml Object, ");
-    if(obj){
-        //###Should this be designer or developer details? Dev for now.
-        //TODO: Can we print the id too?
-        ret += QLatin1String("\"");
-        ret += obj->objectName();
-        ret += QLatin1String("\" ");
-        ret += QLatin1String(obj->metaObject()->className());
-        ret += QLatin1String("(0x");
-        ret += QString::number((quintptr)obj,16);
-        ret += QLatin1String(")");
-    }else{
-        ret += QLatin1String("null");
-    }
-    return engine->newVariant(ret);
-}
-
-static QScriptValue QmlObjectDestroy(QScriptContext *context, QScriptEngine *engine)
-{
-    QObject* obj = context->thisObject().toQObject();
-    if(obj){
-        int delay = 0;
-        if(context->argumentCount() > 0)
-            delay = context->argument(0).toInt32();
-        obj->deleteLater();
-        //### Should this be delayed as well?
-        context->thisObject().setData(QScriptValue(engine, 0));
-    }
-    return engine->nullValue();
-}
-
 /*
     The QmlObjectScriptClass handles property access for QObjects
     via QtScript. It is also used to provide a more useful API in
@@ -97,8 +63,10 @@ QmlObjectScriptClass::QmlObjectScriptClass(QmlEngine *bindEngine)
     engine = bindEngine;
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(bindEngine);
 
-    m_destroy = scriptEngine->newFunction(QmlObjectDestroy);
+    m_destroy = scriptEngine->newFunction(destroy);
     m_destroyId = createPersistentIdentifier<Dummy>(QLatin1String("destroy"));
+    m_toString = scriptEngine->newFunction(tostring);
+    m_toStringId = createPersistentIdentifier<Dummy>(QLatin1String("toString"));
 }
 
 QmlObjectScriptClass::~QmlObjectScriptClass()
@@ -132,7 +100,8 @@ QmlObjectScriptClass::queryProperty(QObject *obj, const Identifier &name,
     Q_UNUSED(flags);
     lastData = 0;
 
-    if (name == m_destroyId->identifier)
+    if (name == m_destroyId->identifier ||
+        name == m_toStringId->identifier)
         return QScriptClass::HandlesReadAccess;
 
     if (!obj)
@@ -173,6 +142,8 @@ QScriptValue QmlObjectScriptClass::property(QObject *obj, const Identifier &name
 {
     if (name == m_destroyId->identifier)
         return m_destroy;
+    else if (name == m_toStringId->identifier)
+        return m_toString;
 
     Q_ASSERT(lastData);
     Q_ASSERT(obj);
@@ -239,5 +210,45 @@ void QmlObjectScriptClass::destroyed(const Object &object)
     ObjectData *data = (ObjectData*)object;
     delete data;
 }
+
+QScriptValue QmlObjectScriptClass::tostring(QScriptContext *context, QScriptEngine *engine)
+{
+    QObject* obj = context->thisObject().toQObject();
+
+    QString ret;
+    if(obj){
+        QString objectName = obj->objectName();
+
+        ret += QLatin1String(obj->metaObject()->className());
+        ret += QLatin1String("(0x");
+        ret += QString::number((quintptr)obj,16);
+
+        if (!objectName.isEmpty()) {
+            ret += QLatin1String(", \"");
+            ret += objectName;
+            ret += QLatin1String("\"");
+        }
+
+        ret += QLatin1String(")");
+    }else{
+        ret += QLatin1String("null");
+    }
+    return QScriptValue(ret);
+}
+
+QScriptValue QmlObjectScriptClass::destroy(QScriptContext *context, QScriptEngine *engine)
+{
+    QObject* obj = context->thisObject().toQObject();
+    if(obj){
+        int delay = 0;
+        if(context->argumentCount() > 0)
+            delay = context->argument(0).toInt32();
+        obj->deleteLater();
+        //### Should this be delayed as well?
+        context->thisObject().setData(QScriptValue(engine, 0));
+    }
+    return engine->nullValue();
+}
+
 
 QT_END_NAMESPACE

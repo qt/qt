@@ -151,6 +151,8 @@ public:
     QmlObjectScriptClass *objectClass;
     QmlValueTypeScriptClass *valueTypeClass;
     QmlTypeNameScriptClass *typeNameClass;
+    // Global script class
+    QScriptClass *globalClass;
     // Used by DOM Core 3 API
     QScriptClass *nodeListClass;
     QScriptClass *namedNodeMapClass;
