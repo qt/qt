@@ -86,6 +86,8 @@ protected:
 private:
     uint m_id;
     QmlPropertyCache::Data *lastData;
+    QmlPropertyCache::Data local;
+
     struct Dummy {};
     PersistentIdentifier<Dummy> *m_destroyId;
     QScriptValue m_destroy;

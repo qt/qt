@@ -73,15 +73,16 @@ public:
 
         enum Flag { 
                     // Can apply to all properties, except IsFunction
-                    IsConstant = 0x00000004,
+                    IsConstant        = 0x00000001,
+                    IsWritable        = 0x00000002,
 
                     // These are mutually exclusive
-                    IsFunction = 0x00000001, 
-                    IsQObjectDerived = 0x00000002,
-                    IsEnumType = 0x00000008,
-                    IsQmlList = 0x00000010,
-                    IsQList = 0x00000020,
-                    IsQmlBinding = 0x00000040 
+                    IsFunction        = 0x00000004, 
+                    IsQObjectDerived  = 0x00000008,
+                    IsEnumType        = 0x00000010,
+                    IsQmlList         = 0x00000020,
+                    IsQList           = 0x00000040,
+                    IsQmlBinding      = 0x00000080 
         };
         Q_DECLARE_FLAGS(Flags, Flag)
                         
@@ -105,6 +106,7 @@ public:
 #endif
 
     static QmlPropertyCache *create(QmlEngine *, const QMetaObject *);
+    static Data create(const QMetaObject *, const QString &);
 
     inline Data *property(const QScriptDeclarativeClass::Identifier &id) const;
     Data *property(const QString &) const;

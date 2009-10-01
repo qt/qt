@@ -54,6 +54,8 @@ void QmlPropertyCache::Data::load(const QMetaProperty &p)
 
     if (p.isConstant())
         flags |= Data::IsConstant;
+    if (p.isWritable())
+        flags |= Data::IsWritable;
 
     if (propType == qMetaTypeId<QmlBinding *>()) {
         flags |= Data::IsQmlBinding;
@@ -98,6 +100,41 @@ QmlPropertyCache::~QmlPropertyCache()
     for (IdentifierCache::ConstIterator iter = identifierCache.begin(); 
             iter != identifierCache.end(); ++iter)
         (*iter)->release();
+}
+
+QmlPropertyCache::Data QmlPropertyCache::create(const QMetaObject *metaObject, 
+                                                const QString &property)
+{
+    Q_ASSERT(metaObject);
+
+    QmlPropertyCache::Data rv;
+
+    int propCount = metaObject->propertyCount();
+    for (int ii = propCount - 1; ii >= 0; --ii) {
+        QMetaProperty p = metaObject->property(ii);
+        QString propName = QLatin1String(p.name());
+        if (propName == property) {
+            rv.load(p);
+            return rv;
+        }
+    }
+
+    int methodCount = metaObject->methodCount();
+    for (int ii = methodCount - 1; ii >= 0; --ii) {
+        QMetaMethod m = metaObject->method(ii);
+        QString methodName = QLatin1String(m.signature());
+
+        int parenIdx = methodName.indexOf(QLatin1Char('('));
+        Q_ASSERT(parenIdx != -1);
+        methodName = methodName.left(parenIdx);
+
+        if (methodName == property) {
+            rv.load(m);
+            return rv;
+        }
+    }
+
+    return rv;
 }
 
 // ### Optimize - check engine for the parent meta object etc.

@@ -149,20 +149,19 @@ QmlObjectScriptClass::queryProperty(QObject *obj, const Identifier &name,
     }
 
     if (cache) {
-        QmlPropertyCache::Data *property = cache->property(name);
-        if (!property) return 0;
-
-        if (flags == QScriptClass::HandlesReadAccess) {
-            lastData = property;
-            return QScriptClass::HandlesReadAccess;
-        } else if (property->propType > 0 && property->propType < QVariant::UserType) {
-            lastData = property;
-            return flags;
-        }
+        lastData = cache->property(name);
+    } else {
+        local = QmlPropertyCache::create(obj->metaObject(), toString(name));
+        if (local.isValid())
+            lastData = &local;
     }
 
-    // Fallback
-    return QmlEnginePrivate::get(engine)->queryObject(toString(name), &m_id, obj);
+    if (!lastData) return 0;
+
+    QScriptClass::QueryFlags rv = QScriptClass::HandlesReadAccess;
+    if (lastData->flags & QmlPropertyCache::Data::IsWritable)
+        rv |= QScriptClass::HandlesWriteAccess;
+    return rv;
 }
 
 QScriptValue QmlObjectScriptClass::property(const Object &object, const Identifier &name)
@@ -175,35 +174,31 @@ QScriptValue QmlObjectScriptClass::property(QObject *obj, const Identifier &name
     if (name == m_destroyId->identifier)
         return m_destroy;
 
+    Q_ASSERT(lastData);
+    Q_ASSERT(obj);
+
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
     QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
 
-    if (!obj) {
-        return QScriptValue();
-    } else if (lastData) {
+    if (lastData->flags & QmlPropertyCache::Data::IsFunction) {
+        // ### Optimize
+        QScriptValue sobj = scriptEngine->newQObject(obj);
+        return sobj.property(toString(name));
+    } else {
 
-        if (lastData->flags & QmlPropertyCache::Data::IsFunction) {
-            // ### Optimize
-            QScriptValue sobj = scriptEngine->newQObject(obj);
-            return sobj.property(toString(name));
-        } else {
-            QVariant var = obj->metaObject()->property(lastData->coreIndex).read(obj);
-            if (!(lastData->flags & QmlPropertyCache::Data::IsConstant)) {
-                enginePriv->capturedProperties << 
-                    QmlEnginePrivate::CapturedProperty(obj, lastData->coreIndex, 
-                                                       lastData->notifyIndex);
-            }
-
-            if (lastData->flags & QmlPropertyCache::Data::IsQObjectDerived) {
-                QObject *rv = *(QObject **)var.constData();
-                return newQObject(rv);
-            } else {
-                return qScriptValueFromValue(scriptEngine, var);
-            }
+        QVariant var = obj->metaObject()->property(lastData->coreIndex).read(obj);
+        if (!(lastData->flags & QmlPropertyCache::Data::IsConstant)) {
+            enginePriv->capturedProperties << 
+                QmlEnginePrivate::CapturedProperty(obj, lastData->coreIndex, lastData->notifyIndex);
         }
 
-    } else {
-        return QmlEnginePrivate::get(engine)->propertyObject(toString(name), obj, m_id);
+        if (lastData->flags & QmlPropertyCache::Data::IsQObjectDerived) {
+            QObject *rv = *(QObject **)var.constData();
+            return newQObject(rv);
+        } else {
+            return qScriptValueFromValue(scriptEngine, var);
+        }
+
     }
 }
 
@@ -219,51 +214,16 @@ void QmlObjectScriptClass::setProperty(QObject *obj,
                                        const QScriptValue &value)
 {
     Q_UNUSED(name);
-    Q_UNUSED(object);
+
+    Q_ASSERT(obj);
+    Q_ASSERT(lastData);
 
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
     QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
 
-    if (!obj) {
-        return;
-    } else if (lastData) {
-        switch (lastData->propType) {
-        case 1:
-            {
-                bool b = value.toBoolean();
-                void *a[1];
-                a[0] = &b;
-                QMetaObject::metacall(obj, QMetaObject::WriteProperty, lastData->coreIndex, a);
-            }
-            break;
-
-        case 2:
-            {
-                int b = value.toInteger();
-                void *a[1];
-                a[0] = &b;
-                QMetaObject::metacall(obj, QMetaObject::WriteProperty, lastData->coreIndex, a);
-            }
-            break;
-
-        case 6:
-            {
-                double b = value.toNumber();
-                void *a[1];
-                a[0] = &b;
-                QMetaObject::metacall(obj, QMetaObject::WriteProperty, lastData->coreIndex, a);
-            }
-            break;
-
-        default:
-            {
-                QMetaProperty p = obj->metaObject()->property(lastData->coreIndex);
-                p.write(obj, value.toVariant());
-            }
-        }
-    } else {
-        QmlEnginePrivate::get(engine)->setPropertyObject(value, m_id);
-    }
+    // ### Can well known types be optimized?
+    QVariant v = QmlScriptClass::toVariant(engine, value);
+    QmlMetaPropertyPrivate::write(obj, *lastData, v, enginePriv->currentExpression->context());
 }
 
 QObject *QmlObjectScriptClass::toQObject(const Object &object, bool *ok)

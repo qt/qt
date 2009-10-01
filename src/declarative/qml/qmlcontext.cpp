@@ -386,7 +386,6 @@ void QmlContextPrivate::setIdProperty(const QString &name, int idx,
         notifyIndex = q->metaObject()->methodCount();
     }
 
-    propertyNames->add(name, idx);
     idValues[idx].priv = this;
     idValues[idx] = obj;
 }
