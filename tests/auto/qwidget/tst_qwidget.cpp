@@ -8046,13 +8046,8 @@ void tst_QWidget::doubleRepaint()
    QTRY_COMPARE(widget.numPaintEvents, expectedRepaints);
    widget.numPaintEvents = 0;
 
-#ifndef Q_OS_WINCE  //still no proper minimizing
    // Minmize: Should not trigger a repaint.
    widget.showMinimized();
-#else
-   // Hide: Should not trigger a repaint.
-   widget.hide();
-#endif
    QTest::qWait(10);
    QCOMPARE(widget.numPaintEvents, 0);
    widget.numPaintEvents = 0;
@@ -8061,12 +8056,7 @@ void tst_QWidget::doubleRepaint()
    widget.showNormal();
    QTest::qWaitForWindowShown(&widget);
    QTest::qWait(10);
-#ifndef Q_OS_WINCE
    QCOMPARE(widget.numPaintEvents, 0);
-#else
-   // We called hide(), and then it'll get repainted once it's shown again.
-   QCOMPARE(widget.numPaintEvents, 1);
-#endif
 }
 
 #ifndef Q_WS_MAC

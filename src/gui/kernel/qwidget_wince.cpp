@@ -416,6 +416,10 @@ void QWidgetPrivate::show_sys() {
                 SetWindowLong(q->internalWinId(), GWL_STYLE, style | WS_MAXIMIZEBOX);
             }
         } else
+#else
+        // Imitate minimizing on Windows mobile by hiding the widget.
+        if (q->isMinimized())
+            sm = SW_HIDE;
 #endif
         if (q->isHidden()) {
             sm = SW_HIDE;
@@ -428,8 +432,7 @@ void QWidgetPrivate::show_sys() {
         sm = SW_SHOWNOACTIVATE;
     }
 
-    if (!(data.window_state & Qt::WindowMinimized))
-        ShowWindow(q->internalWinId(), sm);
+    ShowWindow(q->internalWinId(), sm);
 
     if (q->isMaximized() && q->isWindow())
         qt_wince_maximize(q);
@@ -438,7 +441,7 @@ void QWidgetPrivate::show_sys() {
     if (!qt_wince_is_mobile() && q->isFullScreen()) {
         HWND handle = FindWindow(L"HHTaskBar", L"");
         if (handle) {
-            ShowWindow(handle, 0);
+            ShowWindow(handle, SW_HIDE);
             EnableWindow(handle, false);
         }
     }
@@ -468,17 +471,12 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         return;
 
     int max = SW_SHOWNORMAL;
-    int min = SW_SHOWNOACTIVATE;
-
     int normal = SW_SHOWNOACTIVATE;
 
     if ((oldstate & Qt::WindowMinimized) && !(newstate & Qt::WindowMinimized))
        newstate |= Qt::WindowActive;
-    if (newstate & Qt::WindowActive) {
-        max = SW_SHOWNORMAL;
-        min = SW_SHOWNORMAL;
+    if (newstate & Qt::WindowActive)
         normal = SW_SHOWNORMAL;
-    }
     if (isWindow()) {
         createWinId();
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));
@@ -556,13 +554,11 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             }
         }
         if ((oldstate & Qt::WindowMinimized) != (newstate & Qt::WindowMinimized)) {
-            if (isVisible()) {
-                ShowWindow(internalWinId(), (newstate & Qt::WindowMinimized) ? min :
-                    (newstate & Qt::WindowMaximized) ? max : normal);
-            if (newstate & Qt::WindowMaximized)
-                qt_wince_maximize(this);
             if (newstate & Qt::WindowMinimized)
                 qt_wince_minimize(internalWinId());
+            else if (newstate & Qt::WindowMaximized) {
+                ShowWindow(internalWinId(), max);
+                qt_wince_maximize(this);
             }
         }
         if ((newstate & Qt::WindowMaximized) && !(newstate & Qt::WindowFullScreen)) {
@@ -588,7 +584,7 @@ void QWidgetPrivate::deleteSysExtra()
     if (!qt_wince_is_mobile() && q->isFullScreen()) {
         HWND handle = FindWindow(L"HHTaskBar", L"");
         if (handle) {
-            ShowWindow(handle, 1);
+            ShowWindow(handle, SW_SHOWNORMAL);
             EnableWindow(handle, true);
         }
     }
