@@ -1415,9 +1415,6 @@ void tst_QGraphicsAnchorLayout1::testMixedSpacing_data()
         QTest::newRow("One widget, unsolvable") << QSizeF(10, 10) << theData << theResult;
     }
 
-    // ### BUG. We are not handling "floating" elements properly. Ie. elements that
-    //     have no anchors in a given orientation.
-    if (0)
     // Two widgets, one has fixed size
     {
         BasicLayoutTestDataList theData;
