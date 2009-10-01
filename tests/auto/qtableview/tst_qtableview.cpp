@@ -3221,7 +3221,7 @@ void tst_QTableView::mouseWheel()
     for (int c = 0; c < 100; ++c)
         view.setColumnWidth(c, 100);
     view.show();
-    QTest::qWaitForWindowShown(view);
+    QTest::qWaitForWindowShown(&view);
 
     view.setModel(&model);
 
