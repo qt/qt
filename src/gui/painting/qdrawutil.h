@@ -143,13 +143,43 @@ struct QTileRules
     Qt::TileRule vertical;
 };
 
+#ifndef Q_QDOC
+// For internal use only.
+namespace QDrawBorderPixmap
+{
+    enum DrawingHint
+    {
+        OpaqueTopLeft = 0x0001,
+        OpaqueTop = 0x0002,
+        OpaqueTopRight = 0x0004,
+        OpaqueLeft = 0x0008,
+        OpaqueCenter = 0x0010,
+        OpaqueRight = 0x0020,
+        OpaqueBottomLeft = 0x0040,
+        OpaqueBottom = 0x0080,
+        OpaqueBottomRight = 0x0100,
+        OpaqueCorners = OpaqueTopLeft | OpaqueTopRight | OpaqueBottomLeft | OpaqueBottomRight,
+        OpaqueEdges = OpaqueTop | OpaqueLeft | OpaqueRight | OpaqueBottom,
+        OpaqueFrame = OpaqueCorners | OpaqueEdges,
+        OpaqueAll = OpaqueCenter | OpaqueFrame
+    };
+
+    Q_DECLARE_FLAGS(DrawingHints, DrawingHint)
+}
+#endif
+
 Q_GUI_EXPORT void qDrawBorderPixmap(QPainter *painter,
                                     const QRect &targetRect,
                                     const QMargins &targetMargins,
                                     const QPixmap &pixmap,
                                     const QRect &sourceRect,
                                     const QMargins &sourceMargins,
-                                    const QTileRules &rules = QTileRules());
+                                    const QTileRules &rules = QTileRules()
+#ifndef Q_QDOC
+                                    , QDrawBorderPixmap::DrawingHints hints = 0
+#endif
+                                    );
+
 inline void qDrawBorderPixmap(QPainter *painter,
                                            const QRect &target,
                                            const QMargins &margins,
@@ -158,17 +188,30 @@ inline void qDrawBorderPixmap(QPainter *painter,
     qDrawBorderPixmap(painter, target, margins, pixmap, pixmap.rect(), margins);
 }
 
-struct QDrawPixmapsData
+// For internal use only.
+namespace QDrawPixmaps
 {
-    QPointF point;
-    QRectF source;
-    qreal scaleX;
-    qreal scaleY;
-    qreal rotation;
-    qreal opacity;
-};
+    struct Data
+    {
+        QPointF point;
+        QRectF source;
+        qreal scaleX;
+        qreal scaleY;
+        qreal rotation;
+        qreal opacity;
+    };
 
-Q_GUI_EXPORT void qDrawPixmaps(QPainter *painter, const QDrawPixmapsData *drawingData, int dataCount, const QPixmap &pixmap);
+    enum DrawingHint
+    {
+        OpaqueHint = 0x01
+    };
+
+    Q_DECLARE_FLAGS(DrawingHints, DrawingHint)
+}
+
+// This function is private and may change without notice. Do not use outside Qt!!!
+Q_GUI_EXPORT void qDrawPixmaps(QPainter *painter, const QDrawPixmaps::Data *drawingData,
+                               int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints = 0);
 
 QT_END_NAMESPACE
 

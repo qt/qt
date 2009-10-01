@@ -128,7 +128,7 @@ public:
 
     virtual void drawTextItem(const QPointF &p, const QTextItem &textItem);
 
-    virtual void drawPixmaps(const QDrawPixmapsData *drawingData, int dataCount, const QPixmap &pixmap);
+    virtual void drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints);
 
     Type type() const { return OpenGL2; }
 

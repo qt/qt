@@ -1428,11 +1428,11 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGly
     glDrawArrays(GL_TRIANGLES, 0, 6 * glyphs.size());
 }
 
-void QGL2PaintEngineEx::drawPixmaps(const QDrawPixmapsData *drawingData, int dataCount, const QPixmap &pixmap)
+void QGL2PaintEngineEx::drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints)
 {
     // Use fallback for extended composition modes.
     if (state()->composition_mode > QPainter::CompositionMode_Plus) {
-        QPaintEngineEx::drawPixmaps(drawingData, dataCount, pixmap);
+        QPaintEngineEx::drawPixmaps(drawingData, dataCount, pixmap, hints);
         return;
     }
 
@@ -1448,11 +1448,15 @@ void QGL2PaintEngineEx::drawPixmaps(const QDrawPixmapsData *drawingData, int dat
     bool allOpaque = true;
 
     for (int i = 0; i < dataCount; ++i) {
-        qreal s = 0.5 * qSin(drawingData[i].rotation * Q_PI / 180);
-        qreal c = 0.5 * qCos(drawingData[i].rotation * Q_PI / 180);
+        qreal s = 0;
+        qreal c = 1;
+        if (drawingData[i].rotation != 0) {
+            s = qFastSin(drawingData[i].rotation * Q_PI / 180);
+            c = qFastCos(drawingData[i].rotation * Q_PI / 180);
+        }
         
-        qreal right = drawingData[i].scaleX * drawingData[i].source.width();
-        qreal bottom = drawingData[i].scaleY * drawingData[i].source.height();
+        qreal right = 0.5 * drawingData[i].scaleX * drawingData[i].source.width();
+        qreal bottom = 0.5 * drawingData[i].scaleY * drawingData[i].source.height();
         QGLPoint bottomRight(right * c - bottom * s, right * s + bottom * c);
         QGLPoint bottomLeft(-right * c - bottom * s, -right * s + bottom * c);
 
@@ -1496,7 +1500,7 @@ void QGL2PaintEngineEx::drawPixmaps(const QDrawPixmapsData *drawingData, int dat
     d->transferMode(ImageArrayDrawingMode);
 
     bool isBitmap = pixmap.isQBitmap();
-    bool isOpaque = !isBitmap && !pixmap.hasAlphaChannel() && allOpaque;
+    bool isOpaque = !isBitmap && (!pixmap.hasAlphaChannel() || (hints & QDrawPixmaps::OpaqueHint)) && allOpaque;
 
     d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            state()->renderHints & QPainter::SmoothPixmapTransform, texture->id);

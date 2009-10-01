@@ -46,6 +46,8 @@
 #include "qpainter.h"
 #include "qpalette.h"
 #include <private/qpaintengineex_p.h>
+#include <qvarlengtharray.h>
+#include <qmath.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1079,91 +1081,7 @@ void qDrawItem(QPainter *p, Qt::GUIStyle gs,
     according to the \a margins structure.
 */
 
-static inline void qVerticalRepeat(QPainter *painter,
-                                   const QRect &target,
-                                   const QPixmap &pixmap,
-                                   const QRect &source,
-                                   void (*drawPixmap)(QPainter*,
-                                                      const QRect&,
-                                                      const QPixmap&,
-                                                      const QRect&))
-{
-    const int x = target.x();
-    const int width = target.width();
-    const int height = source.height();
-    const int bottom = target.bottom() - height;
-    int y = target.y();
-    for (; y < bottom; y += height)
-        (*drawPixmap)(painter, QRect(x, y, width, height), pixmap, source);
-    const QRect remaining(source.x(), source.y(), source.width(), target.bottom() - y + 1);
-    (*drawPixmap)(painter, QRect(x, y, width, remaining.height()), pixmap, remaining);
-}
-
-static inline void qHorizontalRepeat(QPainter *painter, const QRect &target, const QPixmap &pixmap, const QRect &source,
-                                     void (*drawPixmap)(QPainter*, const QRect&, const QPixmap&, const QRect&))
-{
-    const int y = target.y();
-    const int width = source.width();
-    const int height = target.height();
-    const int right = target.right() - width;
-    int x = target.x();
-    for (; x < right; x += width)
-        (*drawPixmap)(painter, QRect(x, y, width, height), pixmap, source);
-    const QRect remaining(source.x(), source.y(), target.right() - x + 1, source.height());
-    (*drawPixmap)(painter, QRect(x, y, remaining.width(), height), pixmap, remaining);
-}
-
-static inline void qVerticalRound(QPainter *painter, const QRect &target, const QPixmap &pixmap, const QRect &source,
-                                  void (*drawPixmap)(QPainter*, const QRect&, const QPixmap&, const QRect&))
-{
-    // qreal based - slow on non-fpu devices
-    const qreal x = target.x();
-    const qreal width = target.width();
-    const qreal verticalFactor = static_cast<qreal>(target.height()) / static_cast<qreal>(source.height());
-    const qreal verticalIncrement = static_cast<qreal>(target.height()) / static_cast<int>(verticalFactor + 0.5);
-    const qreal bottom = target.bottom();
-    for (qreal y = static_cast<qreal>(target.y()); y < bottom; y += verticalIncrement)
-         (*drawPixmap)(painter, QRectF(x, y, width, verticalIncrement).toRect(), pixmap, source);
-
-}
-
-static inline void qHorizontalRound(QPainter *painter, const QRect &target, const QPixmap &pixmap, const QRect &source,
-                                    void (*drawPixmap)(QPainter*, const QRect&, const QPixmap&, const QRect&))
-{
-    // qreal based - slow on non-fpu devices
-    const qreal y = target.y();
-    const qreal height = target.height();
-    const qreal horizontalFactor = static_cast<qreal>(target.width()) / static_cast<qreal>(source.width());
-    const qreal horizontalIncrement = static_cast<qreal>(target.width()) / static_cast<int>(horizontalFactor + 0.5);
-    const qreal right = target.right();
-    for (qreal x = target.x(); x < right; x += horizontalIncrement)
-        (*drawPixmap)(painter, QRectF(x, y, horizontalIncrement, height).toRect(), pixmap, source);
-}
-
-static inline void qDrawPixmap(QPainter *painter, const QRect &target, const QPixmap &pixmap, const QRect &source)
-{
-    painter->drawPixmap(target, pixmap, source);
-}
-
-static inline void qDrawVerticallyRepeatedPixmap(QPainter *painter, const QRect &target, const QPixmap &pixmap, const QRect &source)
-{
-    qVerticalRepeat(painter, target, pixmap, source, qDrawPixmap);
-}
-
-static inline void qDrawHorizontallyRepeatedPixmap(QPainter *painter, const QRect &target, const QPixmap &pixmap, const QRect &source)
-{
-    qHorizontalRepeat(painter, target, pixmap, source, qDrawPixmap);
-}
-
-static inline void qDrawVerticallyRoundedPixmap(QPainter *painter, const QRect &target, const QPixmap &pixmap, const QRect &source)
-{
-    qVerticalRound(painter, target, pixmap, source, qDrawPixmap);
-}
-
-static inline void qDrawHorizontallyRoundedPixmap(QPainter *painter, const QRect &target, const QPixmap &pixmap, const QRect &source)
-{
-    qHorizontalRound(painter, target, pixmap, source, qDrawPixmap);
-}
+typedef QVarLengthArray<QDrawPixmaps::Data, 16> QDrawPixmapsDataArray;
 
 /*!
     \since 4.6
@@ -1180,180 +1098,227 @@ static inline void qDrawHorizontallyRoundedPixmap(QPainter *painter, const QRect
     \sa Qt::TileRule, QTileRules, QMargins
 */
 
-void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargins &targetMargins, const QPixmap &pixmap,
-                       const QRect &sourceRect, const QMargins &sourceMargins, const QTileRules &rules)
+void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargins &targetMargins,
+                       const QPixmap &pixmap, const QRect &sourceRect,const QMargins &sourceMargins,
+                       const QTileRules &rules, QDrawBorderPixmap::DrawingHints hints)
 {
+    QDrawPixmaps::Data d;
+    d.opacity = 1.0;
+    d.rotation = 0.0;
+
+    QDrawPixmapsDataArray opaqueData;
+    QDrawPixmapsDataArray translucentData;
+
     // source center
-    const int sourceTop = sourceRect.top();
-    const int sourceLeft = sourceRect.left();
-    const int sourceCenterTop = sourceTop + sourceMargins.top();
-    const int sourceCenterLeft = sourceLeft + sourceMargins.left();
+    const int sourceCenterTop = sourceRect.top() + sourceMargins.top();
+    const int sourceCenterLeft = sourceRect.left() + sourceMargins.left();
     const int sourceCenterBottom = sourceRect.bottom() - sourceMargins.bottom() + 1;
     const int sourceCenterRight = sourceRect.right() - sourceMargins.right() + 1;
-    const int sourceCenterWidth = sourceCenterRight - sourceMargins.left();
-    const int sourceCenterHeight = sourceCenterBottom - sourceMargins.top();
+    const int sourceCenterWidth = sourceCenterRight - sourceCenterLeft;
+    const int sourceCenterHeight = sourceCenterBottom - sourceCenterTop;
     // target center
-    const int targetTop = targetRect.top();
-    const int targetLeft = targetRect.left();
-    const int targetCenterTop = targetTop + targetMargins.top();
-    const int targetCenterLeft = targetLeft + targetMargins.left();
+    const int targetCenterTop = targetRect.top() + targetMargins.top();
+    const int targetCenterLeft = targetRect.left() + targetMargins.left();
     const int targetCenterBottom = targetRect.bottom() - targetMargins.bottom() + 1;
     const int targetCenterRight = targetRect.right() - targetMargins.right() + 1;
     const int targetCenterWidth = targetCenterRight - targetCenterLeft;
     const int targetCenterHeight = targetCenterBottom - targetCenterTop;
 
+    QVarLengthArray<qreal, 16> xTarget; // x-coordinates of target rectangles
+    QVarLengthArray<qreal, 16> yTarget; // y-coordinates of target rectangles
+
+    int columns = 3;
+    int rows = 3;
+    if (rules.horizontal != Qt::StretchTile && sourceCenterWidth != 0)
+        columns = qMax(3, 2 + qCeil(targetCenterWidth / qreal(sourceCenterWidth)));
+    if (rules.vertical != Qt::StretchTile && sourceCenterHeight != 0)
+        rows = qMax(3, 2 + qCeil(targetCenterHeight / qreal(sourceCenterHeight)));
+
+    xTarget.resize(columns + 1);
+    yTarget.resize(rows + 1);
+
+    xTarget[0] = targetRect.left();
+    xTarget[1] = targetCenterLeft;
+    xTarget[columns - 1] = targetCenterRight;
+    xTarget[columns] = targetRect.left() + targetRect.width();
+
+    yTarget[0] = targetRect.top();
+    yTarget[1] = targetCenterTop;
+    yTarget[rows - 1] = targetCenterBottom;
+    yTarget[rows] = targetRect.top() + targetRect.height();
+
+    qreal dx;
+    qreal dy;
+
+    switch (rules.horizontal) {
+    case Qt::StretchTile:
+        dx = targetCenterWidth;
+        break;
+    case Qt::RepeatTile:
+        dx = sourceCenterWidth;
+        break;
+    case Qt::RoundTile:
+        dx = targetCenterWidth / qreal(columns - 2);
+        break;
+    }
+
+    for (int i = 2; i < columns - 1; ++i)
+        xTarget[i] = xTarget[i - 1] + dx;
+
+    switch (rules.vertical) {
+    case Qt::StretchTile:
+        dy = targetCenterHeight;
+        break;
+    case Qt::RepeatTile:
+        dy = sourceCenterHeight;
+        break;
+    case Qt::RoundTile:
+        dy = targetCenterHeight / qreal(rows - 2);
+        break;
+    }
+
+    for (int i = 2; i < rows - 1; ++i)
+        yTarget[i] = yTarget[i - 1] + dy;
+
     // corners
     if (targetMargins.top() > 0 && targetMargins.left() > 0 && sourceMargins.top() > 0 && sourceMargins.left() > 0) { // top left
-        const QRect targetTopLeftRect(targetLeft, targetTop, targetMargins.left(), targetMargins.top());
-        const QRect sourceTopLeftRect(sourceLeft, sourceTop, sourceMargins.left(), sourceMargins.top());
-        qDrawPixmap(painter, targetTopLeftRect, pixmap, sourceTopLeftRect);
+        d.point.setX(0.5 * (xTarget[1] + xTarget[0]));
+        d.point.setY(0.5 * (yTarget[1] + yTarget[0]));
+        d.source = QRectF(sourceRect.left(), sourceRect.top(), sourceMargins.left(), sourceMargins.top());
+        d.scaleX = qreal(xTarget[1] - xTarget[0]) / d.source.width();
+        d.scaleY = qreal(yTarget[1] - yTarget[0]) / d.source.height();
+        if (hints & QDrawBorderPixmap::OpaqueTopLeft)
+            opaqueData.append(d);
+        else
+            translucentData.append(d);
     }
     if (targetMargins.top() > 0 && targetMargins.right() > 0 && sourceMargins.top() > 0 && sourceMargins.right() > 0) { // top right
-        const QRect targetTopRightRect(targetCenterRight, targetTop, targetMargins.right(), targetMargins.top());
-        const QRect sourceTopRightRect(sourceCenterRight, sourceTop, sourceMargins.right(), sourceMargins.top());
-        qDrawPixmap(painter, targetTopRightRect, pixmap, sourceTopRightRect);
+        d.point.setX(0.5 * (xTarget[columns] + xTarget[columns - 1]));
+        d.point.setY(0.5 * (yTarget[1] + yTarget[0]));
+        d.source = QRectF(sourceCenterRight, sourceRect.top(), sourceMargins.right(), sourceMargins.top());
+        d.scaleX = qreal(xTarget[columns] - xTarget[columns - 1]) / d.source.width();
+        d.scaleY = qreal(yTarget[1] - yTarget[0]) / d.source.height();
+        if (hints & QDrawBorderPixmap::OpaqueTopRight)
+            opaqueData.append(d);
+        else
+            translucentData.append(d);
     }
     if (targetMargins.bottom() > 0 && targetMargins.left() > 0 && sourceMargins.bottom() > 0 && sourceMargins.left() > 0) { // bottom left
-        const QRect targetBottomLeftRect(targetLeft, targetCenterBottom, targetMargins.left(), targetMargins.bottom());
-        const QRect sourceBottomLeftRect(sourceLeft, sourceCenterBottom, sourceMargins.left(), sourceMargins.bottom());
-        qDrawPixmap(painter, targetBottomLeftRect, pixmap, sourceBottomLeftRect);
+        d.point.setX(0.5 * (xTarget[1] + xTarget[0]));
+        d.point.setY(0.5 * (yTarget[rows] + yTarget[rows - 1]));
+        d.source = QRectF(sourceRect.left(), sourceCenterBottom, sourceMargins.left(), sourceMargins.bottom());
+        d.scaleX = qreal(xTarget[1] - xTarget[0]) / d.source.width();
+        d.scaleY = qreal(yTarget[rows] - yTarget[rows - 1]) / d.source.height();
+        if (hints & QDrawBorderPixmap::OpaqueBottomLeft)
+            opaqueData.append(d);
+        else
+            translucentData.append(d);
     }
     if (targetMargins.bottom() > 0 && targetMargins.right() > 0 && sourceMargins.bottom() > 0 && sourceMargins.right() > 0) { // bottom right
-        const QRect targetBottomRightRect(targetCenterRight, targetCenterBottom, targetMargins.right(), targetMargins.bottom());
-        const QRect sourceBottomRightRect(sourceCenterRight, sourceCenterBottom, sourceMargins.right(), sourceMargins.bottom());
-        qDrawPixmap(painter, targetBottomRightRect, pixmap, sourceBottomRightRect);
+        d.point.setX(0.5 * (xTarget[columns] + xTarget[columns - 1]));
+        d.point.setY(0.5 * (yTarget[rows] + yTarget[rows - 1]));
+        d.source = QRectF(sourceCenterRight, sourceCenterBottom, sourceMargins.right(), sourceMargins.bottom());
+        d.scaleX = qreal(xTarget[columns] - xTarget[columns - 1]) / d.source.width();
+        d.scaleY = qreal(yTarget[rows] - yTarget[rows - 1]) / d.source.height();
+        if (hints & QDrawBorderPixmap::OpaqueBottomRight)
+            opaqueData.append(d);
+        else
+            translucentData.append(d);
     }
 
     // horizontal edges
-    switch (rules.horizontal) {
-        case Qt::StretchTile:
+    if (targetCenterWidth > 0 && sourceCenterWidth > 0) {
         if (targetMargins.top() > 0 && sourceMargins.top() > 0) { // top
-            const QRect targetTopRect(targetCenterLeft, targetTop, targetCenterWidth, targetMargins.top());
-            const QRect sourceTopRect(sourceCenterLeft, sourceTop, sourceCenterWidth, sourceMargins.top());
-            qDrawPixmap(painter, targetTopRect, pixmap, sourceTopRect);
+            QDrawPixmapsDataArray &data = hints & QDrawBorderPixmap::OpaqueTop ? opaqueData : translucentData;
+            d.source = QRectF(sourceCenterLeft, sourceRect.top(), sourceCenterWidth, sourceMargins.top());
+            d.point.setY(0.5 * (yTarget[1] + yTarget[0]));
+            d.scaleX = dx / d.source.width();
+            d.scaleY = qreal(yTarget[1] - yTarget[0]) / d.source.height();
+            for (int i = 1; i < columns - 1; ++i) {
+                d.point.setX(0.5 * (xTarget[i + 1] + xTarget[i]));
+                data.append(d);
+            }
+            if (rules.horizontal == Qt::RepeatTile)
+                data[data.size() - 1].source.setWidth((xTarget[columns - 1] - xTarget[columns - 2]) / d.scaleX);
         }
         if (targetMargins.bottom() > 0 && sourceMargins.bottom() > 0) { // bottom
-            const QRect targetBottomRect(targetCenterLeft, targetCenterBottom, targetCenterWidth, targetMargins.bottom());
-            const QRect sourceBottomRect(sourceCenterLeft, sourceCenterBottom, sourceCenterWidth, sourceMargins.bottom());
-            qDrawPixmap(painter, targetBottomRect, pixmap, sourceBottomRect);
+            QDrawPixmapsDataArray &data = hints & QDrawBorderPixmap::OpaqueBottom ? opaqueData : translucentData;
+            d.source = QRectF(sourceCenterLeft, sourceCenterBottom, sourceCenterWidth, sourceMargins.bottom());;
+            d.point.setY(0.5 * (yTarget[rows] + yTarget[rows - 1]));
+            d.scaleX = dx / d.source.width();
+            d.scaleY = qreal(yTarget[rows] - yTarget[rows - 1]) / d.source.height();
+            for (int i = 1; i < columns - 1; ++i) {
+                d.point.setX(0.5 * (xTarget[i + 1] + xTarget[i]));
+                data.append(d);
+            }
+            if (rules.horizontal == Qt::RepeatTile)
+                data[data.size() - 1].source.setWidth((xTarget[columns - 1] - xTarget[columns - 2]) / d.scaleX);
         }
-        break;
-        case Qt::RepeatTile:
-        if (targetMargins.top() > 0 && sourceMargins.top() > 0) { // top
-            const QRect targetTopRect(targetCenterLeft, targetTop, targetCenterWidth, targetMargins.top());
-            const QRect sourceTopRect(sourceCenterLeft, sourceTop, sourceCenterWidth, sourceMargins.top());
-            qDrawHorizontallyRepeatedPixmap(painter, targetTopRect, pixmap, sourceTopRect);
-        }
-        if (targetMargins.bottom() > 0 && sourceMargins.bottom() > 0) { // bottom
-            const QRect targetBottomRect(targetCenterLeft, targetCenterBottom, targetCenterWidth, targetMargins.bottom());
-            const QRect sourceBottomRect(sourceCenterLeft, sourceCenterBottom, sourceCenterWidth, sourceMargins.bottom());
-            qDrawHorizontallyRepeatedPixmap(painter, targetBottomRect, pixmap, sourceBottomRect);
-        }
-        break;
-        case Qt::RoundTile:
-        if (targetMargins.top() > 0 && sourceMargins.top() > 0) { // top
-            const QRect targetTopRect(targetCenterLeft, targetTop, targetCenterWidth, targetMargins.top());
-            const QRect sourceTopRect(sourceCenterLeft, sourceTop, sourceCenterWidth, sourceMargins.top());
-            qDrawHorizontallyRoundedPixmap(painter, targetTopRect, pixmap, sourceTopRect);
-        }
-        if (targetMargins.bottom() > 0 && sourceMargins.bottom() > 0) { // bottom
-            const QRect targetBottomRect(targetCenterLeft, targetCenterBottom, targetCenterWidth, targetMargins.bottom());
-            const QRect sourceBottomRect(sourceCenterLeft, sourceCenterBottom, sourceCenterWidth, sourceMargins.bottom());
-            qDrawHorizontallyRoundedPixmap(painter, targetBottomRect, pixmap, sourceBottomRect);
-        }
-        break;
     }
 
     // vertical edges
-    switch (rules.vertical) {
-        case Qt::StretchTile:
+    if (targetCenterHeight > 0 && sourceCenterHeight > 0) {
         if (targetMargins.left() > 0 && sourceMargins.left() > 0) { // left
-            const QRect targetLeftRect(targetLeft, targetCenterTop, targetMargins.left(), targetCenterHeight);
-            const QRect sourceLeftRect(sourceLeft, sourceCenterTop, sourceMargins.left(), sourceCenterHeight);
-            qDrawPixmap(painter, targetLeftRect, pixmap, sourceLeftRect);
+            QDrawPixmapsDataArray &data = hints & QDrawBorderPixmap::OpaqueLeft ? opaqueData : translucentData;
+            d.source = QRectF(sourceRect.left(), sourceCenterTop, sourceMargins.left(), sourceCenterHeight);
+            d.point.setX(0.5 * (xTarget[1] + xTarget[0]));
+            d.scaleX = qreal(xTarget[1] - xTarget[0]) / d.source.width();
+            d.scaleY = dy / d.source.height();
+            for (int i = 1; i < rows - 1; ++i) {
+                d.point.setY(0.5 * (yTarget[i + 1] + yTarget[i]));
+                data.append(d);
+            }
+            if (rules.vertical == Qt::RepeatTile)
+                data[data.size() - 1].source.setHeight((yTarget[rows - 1] - yTarget[rows - 2]) / d.scaleY);
         }
         if (targetMargins.right() > 0 && sourceMargins.right() > 0) { // right
-            const QRect targetRightRect(targetCenterRight, targetCenterTop, targetMargins.right(), targetCenterHeight);
-            const QRect sourceRightRect(sourceCenterRight, sourceCenterTop, sourceMargins.right(), sourceCenterHeight);
-            qDrawPixmap(painter, targetRightRect, pixmap, sourceRightRect);
+            QDrawPixmapsDataArray &data = hints & QDrawBorderPixmap::OpaqueRight ? opaqueData : translucentData;
+            d.source = QRectF(sourceCenterRight, sourceCenterTop, sourceMargins.right(), sourceCenterHeight);
+            d.point.setX(0.5 * (xTarget[columns] + xTarget[columns - 1]));
+            d.scaleX = qreal(xTarget[columns] - xTarget[columns - 1]) / d.source.width();
+            d.scaleY = dy / d.source.height();
+            for (int i = 1; i < rows - 1; ++i) {
+                d.point.setY(0.5 * (yTarget[i + 1] + yTarget[i]));
+                data.append(d);
+            }
+            if (rules.vertical == Qt::RepeatTile)
+                data[data.size() - 1].source.setHeight((yTarget[rows - 1] - yTarget[rows - 2]) / d.scaleY);
         }
-        break;
-        case Qt::RepeatTile:
-        if (targetMargins.left() > 0 && sourceMargins.left() > 0) { // left
-            const QRect targetLeftRect(targetLeft, targetCenterTop, targetMargins.left(), targetCenterHeight);
-            const QRect sourceLeftRect(sourceLeft, sourceCenterTop, sourceMargins.left(), sourceCenterHeight);
-            qDrawVerticallyRepeatedPixmap(painter, targetLeftRect, pixmap, sourceLeftRect);
-        }
-        if (targetMargins.right() > 0 && sourceMargins.right() > 0) { // right
-            const QRect targetRightRect(targetCenterRight, targetCenterTop, targetMargins.right(), targetCenterHeight);
-            const QRect sourceRightRect(sourceCenterRight, sourceCenterTop, sourceMargins.right(), sourceCenterHeight);
-            qDrawVerticallyRepeatedPixmap(painter, targetRightRect, pixmap, sourceRightRect);
-        }
-        break;
-        case Qt::RoundTile:
-        if (targetMargins.left() > 0 && sourceMargins.left() > 0) { // left
-            const QRect targetLeftRect(targetLeft, targetCenterTop, targetMargins.left(), targetCenterHeight);
-            const QRect sourceLeftRect(sourceLeft, sourceCenterTop, sourceMargins.left(), sourceCenterHeight);
-            qDrawVerticallyRoundedPixmap(painter, targetLeftRect, pixmap, sourceLeftRect);
-        }
-        if (targetMargins.right() > 0 && sourceMargins.right() > 0) { // right
-            const QRect targetRightRect(targetCenterRight, targetCenterTop, targetMargins.right(), targetCenterHeight);
-            const QRect sourceRightRect(sourceCenterRight, sourceCenterTop, sourceMargins.right(), sourceCenterHeight);
-            qDrawVerticallyRoundedPixmap(painter, targetRightRect, pixmap, sourceRightRect);
-        }
-        break;
     }
 
     // center
     if (targetCenterWidth > 0 && targetCenterHeight > 0 && sourceCenterWidth > 0 && sourceCenterHeight > 0) {
-        const QRect targetCenterRect(targetCenterLeft, targetCenterTop, targetCenterWidth, targetCenterHeight);
-        const QRect sourceCenterRect(sourceCenterLeft, sourceCenterTop, sourceCenterWidth, sourceCenterHeight);
-        switch (rules.horizontal) {
-        case Qt::StretchTile:
-            switch (rules.vertical) {
-                case Qt::StretchTile: // stretch stretch
-                    qDrawPixmap(painter, targetCenterRect, pixmap, sourceCenterRect);
-                break;
-                case Qt::RepeatTile: // stretch repeat
-                    qVerticalRepeat(painter, targetCenterRect, pixmap, sourceCenterRect, qDrawPixmap);
-                break;
-                case Qt::RoundTile: // stretch round
-                    qVerticalRound(painter, targetCenterRect, pixmap, sourceCenterRect, qDrawPixmap);
-                break;
+        QDrawPixmapsDataArray &data = hints & QDrawBorderPixmap::OpaqueCenter ? opaqueData : translucentData;
+        d.source = QRectF(sourceCenterLeft, sourceCenterTop, sourceCenterWidth, sourceCenterHeight);
+        d.scaleX = dx / d.source.width();
+        d.scaleY = dy / d.source.height();
+
+        qreal repeatWidth = (xTarget[columns - 1] - xTarget[columns - 2]) / d.scaleX;
+        qreal repeatHeight = (yTarget[rows - 1] - yTarget[rows - 2]) / d.scaleY;
+
+        for (int j = 1; j < rows - 1; ++j) {
+            d.point.setY(0.5 * (yTarget[j + 1] + yTarget[j]));
+            for (int i = 1; i < columns - 1; ++i) {
+                d.point.setX(0.5 * (xTarget[i + 1] + xTarget[i]));
+                data.append(d);
             }
-            break;
-        case Qt::RepeatTile:
-            switch (rules.vertical) {
-                case Qt::StretchTile: // repeat stretch
-                    qHorizontalRepeat(painter, targetCenterRect, pixmap, sourceCenterRect, qDrawPixmap);
-                break;
-                case Qt::RepeatTile: // repeat repeat
-                    qVerticalRepeat(painter, targetCenterRect, pixmap, sourceCenterRect, qDrawHorizontallyRepeatedPixmap);
-                break;
-                case Qt::RoundTile: // repeat round
-                    qVerticalRound(painter, targetCenterRect, pixmap, sourceCenterRect, qDrawHorizontallyRepeatedPixmap);
-                break;
-            }
-            break;
-        case Qt::RoundTile:
-            switch (rules.vertical) {
-                case Qt::StretchTile: // round stretch
-                    qHorizontalRound(painter, targetCenterRect, pixmap, sourceCenterRect, qDrawPixmap);
-                break;
-                case Qt::RepeatTile: // round repeat
-                    qHorizontalRound(painter, targetCenterRect, pixmap, sourceCenterRect, qDrawVerticallyRepeatedPixmap);
-                break;
-                case Qt::RoundTile: // round round
-                    qHorizontalRound(painter, targetCenterRect, pixmap, sourceCenterRect, qDrawVerticallyRoundedPixmap);
-                break;
-            }
-            break;
+            if (rules.horizontal == Qt::RepeatTile)
+                data[data.size() - 1].source.setWidth(repeatWidth);
+        }
+        if (rules.vertical == Qt::RepeatTile) {
+            for (int i = 1; i < columns - 1; ++i)
+                data[data.size() - i].source.setHeight(repeatHeight);
         }
     }
+
+    if (opaqueData.size())
+        qDrawPixmaps(painter, opaqueData.data(), opaqueData.size(), pixmap, QDrawPixmaps::OpaqueHint);
+    if (translucentData.size())
+        qDrawPixmaps(painter, translucentData.data(), translucentData.size(), pixmap);
 }
 
 /*!
-    \struct QDrawPixmapsData
+    \class QDrawPixmaps::Data
     \since 4.6
     \internal
 
@@ -1369,6 +1334,11 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
 */
 
 /*!
+    \enum QDrawPixmaps::DrawingHint
+    \internal
+*/
+
+/*!
     \internal
     \since 4.6
 
@@ -1377,14 +1347,14 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
     dataCount elements specifying the parameters used to draw each pixmap instance.
     This can be used for example to implement a particle system.
 */
-void qDrawPixmaps(QPainter *painter, const QDrawPixmapsData *drawingData, int dataCount, const QPixmap &pixmap)
+void qDrawPixmaps(QPainter *painter, const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints)
 {
     QPaintEngine *engine = painter->paintEngine();
     if (!engine)
         return;
 
     if (engine->isExtended()) {
-        static_cast<QPaintEngineEx *>(engine)->drawPixmaps(drawingData, dataCount, pixmap);
+        static_cast<QPaintEngineEx *>(engine)->drawPixmaps(drawingData, dataCount, pixmap, hints);
     } else {
         qreal oldOpacity = painter->opacity();
         QTransform oldTransform = painter->transform();

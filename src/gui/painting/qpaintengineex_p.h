@@ -70,7 +70,12 @@ QT_MODULE(Gui)
 class QPainterState;
 class QPaintEngineExPrivate;
 struct StrokeHandler;
-struct QDrawPixmapsData;
+
+namespace QDrawPixmaps
+{
+    struct Data;
+    enum DrawingHint;
+}
 
 struct QIntRect {
     int x1, y1, x2, y2;
@@ -196,7 +201,7 @@ public:
 
     virtual void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s);
 
-    virtual void drawPixmaps(const QDrawPixmapsData *drawingData, int dataCount, const QPixmap &pixmap);
+    virtual void drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QFlags<QDrawPixmaps::DrawingHint> hints);
 
     virtual void updateState(const QPaintEngineState &state);
 
