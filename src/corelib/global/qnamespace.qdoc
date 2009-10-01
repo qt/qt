@@ -2469,6 +2469,7 @@
     \value ImhLowercaseOnly          Only lower case letter input is allowed.
     \value ImhDialableCharactersOnly Only characters suitable for phone dialling are allowed.
     \value ImhEmailCharactersOnly    Only characters suitable for email addresses are allowed.
+    \value ImhUrlCharactersOnly      Only characters suitable for URLs are allowed.
 
     Masks:
 

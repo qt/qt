@@ -1431,6 +1431,7 @@ public:
         ImhLowercaseOnly = 0x80000,
         ImhDialableCharactersOnly = 0x100000,
         ImhEmailCharactersOnly = 0x200000,
+        ImhUrlCharactersOnly = 0x400000,
 
         ImhExclusiveInputMask = 0xffff0000
     };
