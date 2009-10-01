@@ -399,7 +399,7 @@ public:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGLExtensions::Extensions)
 
 
-class QGLShareRegister
+class Q_AUTOTEST_EXPORT QGLShareRegister
 {
 public:
     QGLShareRegister() {}

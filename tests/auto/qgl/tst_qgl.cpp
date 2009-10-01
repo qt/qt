@@ -54,6 +54,10 @@
 #include <QGraphicsProxyWidget>
 #include <QVBoxLayout>
 
+#ifdef QT_BUILD_INTERNAL
+#include <QtOpenGL/private/qgl_p.h>
+#endif
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -85,6 +89,7 @@ private slots:
     void replaceClipping();
     void clipTest();
     void destroyFBOAfterContext();
+    void shareRegister();
 };
 
 tst_QGL::tst_QGL()
@@ -1747,6 +1752,123 @@ void tst_QGL::destroyFBOAfterContext()
     QVERIFY(!fbo->isValid());
 
     delete fbo;
+}
+
+void tst_QGL::shareRegister()
+{
+#ifdef QT_BUILD_INTERNAL
+    QGLShareRegister *shareReg = qgl_share_reg();
+    QVERIFY(shareReg != 0);
+
+    // Create a context.
+    QGLWidget *glw1 = new QGLWidget();
+    glw1->makeCurrent();
+
+    // Nothing should be sharing with glw1's context yet.
+    QList<const QGLContext *> list;
+    list = shareReg->shares(glw1->context());
+    QCOMPARE(list.size(), 0);
+
+    // Create a guard for the first context.
+    QGLSharedResourceGuard guard(glw1->context());
+    QVERIFY(guard.id() == 0);
+    guard.setId(3);
+    QVERIFY(guard.id() == 3);
+
+    // Create another context that shares with the first.
+    QGLWidget *glw2 = new QGLWidget(0, glw1);
+    if (!glw2->isSharing()) {
+        delete glw2;
+        delete glw1;
+        QSKIP("Context sharing is not supported", SkipSingle);
+    }
+    QVERIFY(glw1->context() != glw2->context());
+
+    // Guard should still be the same.
+    QVERIFY(guard.context() == glw1->context());
+    QVERIFY(guard.id() == 3);
+
+    // Now there are two items in the share lists.
+    list = shareReg->shares(glw1->context());
+    QCOMPARE(list.size(), 2);
+    QVERIFY(list.contains(glw1->context()));
+    QVERIFY(list.contains(glw2->context()));
+    list = shareReg->shares(glw2->context());
+    QCOMPARE(list.size(), 2);
+    QVERIFY(list.contains(glw1->context()));
+    QVERIFY(list.contains(glw2->context()));
+
+    // Check the sharing relationships.
+    QVERIFY(shareReg->checkSharing(glw1->context(), glw1->context()));
+    QVERIFY(shareReg->checkSharing(glw2->context(), glw2->context()));
+    QVERIFY(shareReg->checkSharing(glw1->context(), glw2->context()));
+    QVERIFY(shareReg->checkSharing(glw2->context(), glw1->context()));
+    QVERIFY(!shareReg->checkSharing(0, glw2->context()));
+    QVERIFY(!shareReg->checkSharing(glw1->context(), 0));
+    QVERIFY(!shareReg->checkSharing(0, 0));
+
+    // Create a third context, not sharing with the others.
+    QGLWidget *glw3 = new QGLWidget();
+
+    // Create a guard on the standalone context.
+    QGLSharedResourceGuard guard3(glw3->context());
+    guard3.setId(5);
+
+    // First two should still be sharing, but third is in its own list.
+    list = shareReg->shares(glw1->context());
+    QCOMPARE(list.size(), 2);
+    QVERIFY(list.contains(glw1->context()));
+    QVERIFY(list.contains(glw2->context()));
+    list = shareReg->shares(glw2->context());
+    QCOMPARE(list.size(), 2);
+    QVERIFY(list.contains(glw1->context()));
+    QVERIFY(list.contains(glw2->context()));
+    list = shareReg->shares(glw3->context());
+    QCOMPARE(list.size(), 0);
+
+    // Check the sharing relationships again.
+    QVERIFY(shareReg->checkSharing(glw1->context(), glw1->context()));
+    QVERIFY(shareReg->checkSharing(glw2->context(), glw2->context()));
+    QVERIFY(shareReg->checkSharing(glw1->context(), glw2->context()));
+    QVERIFY(shareReg->checkSharing(glw2->context(), glw1->context()));
+    QVERIFY(!shareReg->checkSharing(glw1->context(), glw3->context()));
+    QVERIFY(!shareReg->checkSharing(glw2->context(), glw3->context()));
+    QVERIFY(!shareReg->checkSharing(glw3->context(), glw1->context()));
+    QVERIFY(!shareReg->checkSharing(glw3->context(), glw2->context()));
+    QVERIFY(shareReg->checkSharing(glw3->context(), glw3->context()));
+    QVERIFY(!shareReg->checkSharing(0, glw2->context()));
+    QVERIFY(!shareReg->checkSharing(glw1->context(), 0));
+    QVERIFY(!shareReg->checkSharing(0, glw3->context()));
+    QVERIFY(!shareReg->checkSharing(glw3->context(), 0));
+    QVERIFY(!shareReg->checkSharing(0, 0));
+
+    // Shared guard should still be the same.
+    QVERIFY(guard.context() == glw1->context());
+    QVERIFY(guard.id() == 3);
+
+    // Delete the first context.
+    delete glw1;
+
+    // Shared guard should now be the second context, with the id the same.
+    QVERIFY(guard.context() == glw2->context());
+    QVERIFY(guard.id() == 3);
+    QVERIFY(guard3.context() == glw3->context());
+    QVERIFY(guard3.id() == 5);
+
+    // Re-check the share list for the second context (should be empty now).
+    list = shareReg->shares(glw2->context());
+    QCOMPARE(list.size(), 0);
+
+    // Clean up.
+    delete glw2;
+    delete glw3;
+
+    // Guards should now be null and the id zero.
+    QVERIFY(guard.context() == 0);
+    QVERIFY(guard.id() == 0);
+    QVERIFY(guard3.context() == 0);
+    QVERIFY(guard3.id() == 0);
+#endif
 }
 
 QTEST_MAIN(tst_QGL)

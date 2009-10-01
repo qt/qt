@@ -42,7 +42,7 @@
 #ifndef CUBE_H
 #define CUBE_H
 
-#include <QtOpenGl/qgl.h>
+#include <QtOpenGL/qgl.h>
 #include <QtCore/qvector.h>
 #include <QtGui/qmatrix4x4.h>
 #include <QtGui/qvector3d.h>
