@@ -21,7 +21,7 @@ LRELEASE = $$fixPath($$QT_BUILD_TREE/bin/lrelease)
 
 ###### Qt Libraries
 
-QT_TS        = de fr zh_CN untranslated ar es iw ja_JP pl pt ru sk sl sv uk zh_TW da
+QT_TS        = ar da de es fr iw ja_JP pl pt ru sk sl sv uk zh_CN zh_TW
 
 ts-qt.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
                                 -I../include -I../include/Qt \

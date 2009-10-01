@@ -9,6 +9,5 @@ FORMS        = ../mainwindowbase.ui ../paletteeditoradvancedbase.ui ../previewwi
 
 TRANSLATIONS=$$[QT_INSTALL_TRANSLATIONS]/qtconfig_pl.ts \
              $$[QT_INSTALL_TRANSLATIONS]/qtconfig_ru.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/qtconfig_untranslated.ts \
              $$[QT_INSTALL_TRANSLATIONS]/qtconfig_zh_CN.ts \
              $$[QT_INSTALL_TRANSLATIONS]/qtconfig_zh_TW.ts
