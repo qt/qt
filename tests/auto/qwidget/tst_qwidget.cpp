@@ -355,6 +355,7 @@ private slots:
     void maskedUpdate();
 #if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS)
     void syntheticEnterLeave();
+    void taskQTBUG_4055_sendSyntheticEnterLeave();
 #endif
     void windowFlags();
     void initialPosForDontShowOnScreenWidgets();
@@ -8977,6 +8978,87 @@ void tst_QWidget::syntheticEnterLeave()
     QCOMPARE(window.numEnterEvents, 0);
     QCOMPARE(child1->numEnterEvents, 1);
 }
+
+void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
+{
+    class SELParent : public QWidget
+    {
+    public:
+        SELParent(QWidget *parent = 0): QWidget(parent) { }
+
+        void mousePressEvent(QMouseEvent *) { child->show(); }
+        QWidget *child;
+    };
+
+    class SELChild : public QWidget
+     {
+     public:
+         SELChild(QWidget *parent = 0) : QWidget(parent), numEnterEvents(0), numMouseMoveEvents(0) {}
+         void enterEvent(QEvent *) { ++numEnterEvents; }
+         void mouseMoveEvent(QMouseEvent *event)
+         {
+             QCOMPARE(event->button(), Qt::NoButton);
+             QCOMPARE(event->buttons(), Qt::MouseButtons(Qt::NoButton));
+             ++numMouseMoveEvents;
+         }
+         void reset() { numEnterEvents = numMouseMoveEvents = 0; }
+         int numEnterEvents, numMouseMoveEvents;
+     };
+
+     SELParent parent;
+     parent.resize(200, 200);
+     SELChild child(&parent);
+     child.resize(200, 200);
+     parent.show();
+ #ifdef Q_WS_X11
+     qt_x11_wait_for_window_manager(&parent);
+ #endif
+     QTest::qWait(100);
+
+     QCursor::setPos(child.mapToGlobal(QPoint(100, 100)));
+     QTest::qWait(100);
+     // Make sure the cursor has entered the child.
+     QVERIFY(child.numEnterEvents > 0);
+
+     child.hide();
+     child.reset();
+     child.show();
+
+     // Make sure the child gets enter event and no mouse move event.
+     QCOMPARE(child.numEnterEvents, 1);
+     QCOMPARE(child.numMouseMoveEvents, 0);
+
+     child.hide();
+     child.reset();
+     child.setMouseTracking(true);
+     child.show();
+
+     // Make sure the child gets enter event and mouse move event.
+     // Note that we verify event->button() and event->buttons()
+     // in SELChild::mouseMoveEvent().
+     QCOMPARE(child.numEnterEvents, 1);
+     QCOMPARE(child.numMouseMoveEvents, 1);
+
+     // Sending synthetic enter/leave trough the parent's mousePressEvent handler.
+     parent.child = &child;
+
+     child.hide();
+     child.reset();
+     QTest::mouseClick(&parent, Qt::LeftButton);
+
+     // Make sure the child gets enter event and one mouse move event.
+     QCOMPARE(child.numEnterEvents, 1);
+     QCOMPARE(child.numMouseMoveEvents, 1);
+
+     child.hide();
+     child.reset();
+     child.setMouseTracking(false);
+     QTest::mouseClick(&parent, Qt::LeftButton);
+
+     // Make sure the child gets enter event and no mouse move event.
+     QCOMPARE(child.numEnterEvents, 1);
+     QCOMPARE(child.numMouseMoveEvents, 0);
+ }
 #endif
 
 void tst_QWidget::windowFlags()

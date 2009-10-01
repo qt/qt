@@ -191,6 +191,15 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
         request.d->autoDecompress = false;
 #endif
     }
+
+    // some websites mandate an accept-language header and fail
+    // if it is not sent. This is a problem with the website and
+    // not with us, but we work around this by setting a
+    // universal one always.
+    value = request.headerField("accept-language");
+    if (value.isEmpty())
+        request.setHeaderField("accept-language", "en,*");
+
     // set the User Agent
     value = request.headerField("user-agent");
     if (value.isEmpty())

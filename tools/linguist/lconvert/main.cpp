@@ -234,10 +234,6 @@ int main(int argc, char *argv[])
         return usage(args);
 
     tr.setLanguageCode(Translator::guessLanguageCodeFromFileName(inFiles[0].name));
-    if (!targetLanguage.isEmpty())
-        tr.setLanguageCode(targetLanguage);
-    if (!sourceLanguage.isEmpty())
-        tr.setSourceLanguageCode(sourceLanguage);
 
     if (!tr.load(inFiles[0].name, cd, inFiles[0].format)) {
         qWarning() << qPrintable(cd.error());
@@ -256,6 +252,10 @@ int main(int argc, char *argv[])
             tr.replaceSorted(tr2.message(j));
     }
 
+    if (!targetLanguage.isEmpty())
+        tr.setLanguageCode(targetLanguage);
+    if (!sourceLanguage.isEmpty())
+        tr.setSourceLanguageCode(sourceLanguage);
     if (noObsolete)
         tr.stripObsoleteMessages();
     if (noFinished)

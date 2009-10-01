@@ -3071,7 +3071,7 @@ void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
         qt_button_down = 0;
 
     // Send enter/leave events followed by a mouse move on the entered widget.
-    QMouseEvent e(QEvent::MouseMove, pos, globalPos, Qt::NoButton, mouse_buttons, modifier_buttons);
+    QMouseEvent e(QEvent::MouseMove, pos, globalPos, Qt::NoButton, Qt::NoButton, Qt::NoModifier);
     sendMouseEvent(widgetUnderCursor, &e, widgetUnderCursor, tlw, &qt_button_down, qt_last_mouse_receiver);
 #endif // QT_NO_CURSOR
 }
