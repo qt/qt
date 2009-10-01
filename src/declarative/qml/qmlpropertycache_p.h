@@ -69,18 +69,40 @@ public:
 
     struct Data {
         inline Data(); 
+        inline bool operator==(const Data &);
 
-        enum Flag { IsFunction = 0x00000001, 
+        enum Flag { 
+                    // Can apply to all properties, except IsFunction
+                    IsConstant = 0x00000004,
+
+                    // These are mutually exclusive
+                    IsFunction = 0x00000001, 
                     IsQObjectDerived = 0x00000002,
-                    IsConstant = 0x00000004 };
+                    IsEnumType = 0x00000008,
+                    IsQmlList = 0x00000010,
+                    IsQList = 0x00000020,
+                    IsQmlBinding = 0x00000040 
+        };
         Q_DECLARE_FLAGS(Flags, Flag)
                         
+        bool isValid() const { return coreIndex != -1; } 
+
         Flags flags;
         int propType;
         int coreIndex;
         int notifyIndex;
         QString name;
+
+        void load(const QMetaProperty &);
+        void load(const QMetaMethod &);
     };
+
+#if 0
+    struct ValueTypeData {
+        int valueTypeCoreIdx;  // The prop index of the access property on the value type wrapper
+        int valueTypePropType; // The QVariant::Type of access property on the value type wrapper
+    };
+#endif
 
     static QmlPropertyCache *create(QmlEngine *, const QMetaObject *);
 
@@ -104,6 +126,15 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QmlPropertyCache::Data::Flags);
 QmlPropertyCache::Data::Data()
 : flags(0), propType(0), coreIndex(-1), notifyIndex(-1) 
 {
+}
+
+bool QmlPropertyCache::Data::operator==(const QmlPropertyCache::Data::Data &other)
+{
+    return flags == other.flags &&
+           propType == other.propType &&
+           coreIndex == other.coreIndex &&
+           notifyIndex == other.notifyIndex &&
+           name == other.name;
 }
 
 QmlPropertyCache::Data *

@@ -54,7 +54,8 @@
 //
 
 #include "qmlmetaproperty.h"
-#include "private/qobject_p.h"
+#include <private/qobject_p.h>
+#include <private/qmlpropertycache_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -63,36 +64,34 @@ class QmlMetaPropertyPrivate
 {
 public:
     QmlMetaPropertyPrivate()
-        : q(0), context(0), coreIdx(-1), valueTypeIdx(-1), valueTypeId(0),
-          type(QmlMetaProperty::Invalid), attachedFunc(-1), 
-          object(0), propType(-1), category(QmlMetaProperty::Unknown) {}
+        : q(0), context(0), object(0), isDefaultProperty(false), valueTypeCoreIdx(-1), 
+          valueTypePropType(0), attachedFunc(-1) {}
+
     QmlMetaPropertyPrivate(const QmlMetaPropertyPrivate &other)
-        : q(0), name(other.name), signal(other.signal), context(other.context), 
-          coreIdx(other.coreIdx), valueTypeIdx(other.valueTypeIdx), 
-          valueTypeId(other.valueTypeId), type(other.type), 
-          attachedFunc(other.attachedFunc), object(other.object), 
-          propType(other.propType), category(other.category) {}
+        : q(0), context(other.context), object(other.object), 
+          isDefaultProperty(other.isDefaultProperty), core(other.core), 
+          valueTypeCoreIdx(other.valueTypeCoreIdx), 
+          valueTypePropType(other.valueTypePropType), attachedFunc(other.attachedFunc) {}
 
     QmlMetaProperty *q;
-
-    QString name;
-    QMetaMethod signal;
     QmlContext *context;
-    int coreIdx;
-    int valueTypeIdx;
-    int valueTypeId;
-    uint type;
-    int attachedFunc;
     QGuard<QObject> object;
-    int propType;
 
-    mutable QmlMetaProperty::PropertyCategory category;
+    bool isDefaultProperty;
+    QmlPropertyCache::Data core;
+
+    // Describes the "virtual" value-type sub-property.  
+    int valueTypeCoreIdx;  // The prop index of the access property on the value type wrapper
+    int valueTypePropType; // The QVariant::Type of access property on the value type wrapper
+
+    // The attached property accessor
+    int attachedFunc;
 
     void initProperty(QObject *obj, const QString &name);
     void initDefault(QObject *obj);
 
     QObject *attachedObject() const;
-    void findSignalInt(QObject *, const QString &);
+    QMetaMethod findSignal(QObject *, const QString &);
 
     int propertyType() const;
     QmlMetaProperty::PropertyCategory propertyCategory() const;
@@ -101,6 +100,7 @@ public:
 
     QVariant readValueProperty();
     void writeValueProperty(const QVariant &, QmlMetaProperty::WriteSource);
+    static void write(QObject *, const QmlPropertyCache::Data &, const QVariant &, QmlContext *);
 
     static quint32 saveValueType(int, int);
     static quint32 saveProperty(int);
