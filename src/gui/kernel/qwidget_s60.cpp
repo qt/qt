@@ -490,6 +490,65 @@ void QWidgetPrivate::setFocus_sys()
             static_cast<QSymbianControl *>(q->effectiveWinId())->setFocusSafely(true);
 }
 
+void QWidgetPrivate::handleSymbianDeferredFocusChanged()
+{
+    Q_Q(QWidget);
+    WId control = q->internalWinId();
+
+    if (!control) {
+        // This could happen if the widget was reparented, while the focuschange
+        // was in the event queue.
+        return;
+    }
+
+    if (control->IsFocused()) {
+        QApplication::setActiveWindow(q);
+#ifdef Q_WS_S60
+        // If widget is fullscreen, hide status pane and button container
+        // otherwise show them.
+        CEikStatusPane* statusPane = S60->statusPane();
+        CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
+        bool isFullscreen = q->windowState() & Qt::WindowFullScreen;
+        if (statusPane && (statusPane->IsVisible() == isFullscreen))
+            statusPane->MakeVisible(!isFullscreen);
+        if (buttonGroup && (buttonGroup->IsVisible() == isFullscreen))
+            buttonGroup->MakeVisible(!isFullscreen);
+#endif
+    } else {
+
+        QWidget *nextActiveWindow = 0;
+
+        if (q->isWindow()) {
+
+            // Try to activate possible parent window first.
+            QWidget *parent = q->parentWidget();
+            if(parent
+                && parent->isWindow()
+                && parent->isVisible()
+                && !parent->isActiveWindow()) {
+
+                nextActiveWindow = parent;
+            } else {
+                // Activate next possible top level window.
+                QWidgetList topLevelWidgets = QApplication::topLevelWidgets();
+                for (int i = 0; i < topLevelWidgets.size(); ++i) {
+                    QWidget *w = topLevelWidgets.at(i);
+                    if (w != q && w->isVisible() && !w->isActiveWindow()) {
+                        nextActiveWindow = w;
+                        break;
+                    }
+                }
+            }
+
+            if (nextActiveWindow)
+                nextActiveWindow->activateWindow();
+        }
+
+        QApplication::setActiveWindow(nextActiveWindow);
+    }
+>>>>>>> Fix for Symbian window activation/focus problem.:src/gui/kernel/qwidget_s60.cpp
+}
+
 void QWidgetPrivate::raise_sys()
 {
     Q_Q(QWidget);
