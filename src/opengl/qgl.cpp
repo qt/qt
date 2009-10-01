@@ -1718,7 +1718,7 @@ Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg()
     the top left corner. Inverting the texture implies a deep copy
     prior to upload.
 
-    \value MipmapBindOption Specifies that bindTexture should try
+    \value MipmapBindOption Specifies that bindTexture() should try
     to generate mipmaps.  If the GL implementation supports the \c
     GL_SGIS_generate_mipmap extension, mipmaps will be automatically
     generated for the texture. Mipmap generation is only supported for
@@ -2361,6 +2361,8 @@ GLuint QGLContext::bindTexture(const QImage &image, GLenum target, GLint format)
 }
 
 /*!
+    \since 4.6
+
     Generates and binds a 2D GL texture to the current context, based
     on \a image. The generated texture id is returned and can be used
     in later \c glBindTexture() calls.
@@ -2422,6 +2424,7 @@ GLuint QGLContext::bindTexture(const QPixmap &pixmap, GLenum target, GLint forma
 
 /*!
   \overload
+  \since 4.6
 
   Generates and binds a 2D GL texture to the current context, based
   on \a pixmap.
@@ -4503,6 +4506,7 @@ GLuint QGLWidget::bindTexture(const QImage &image, GLenum target, GLint format)
 
 /*!
   \overload
+  \since 4.6
 
   The binding \a options are a set of options used to decide how to
   bind the texture to the context.
@@ -4544,6 +4548,7 @@ GLuint QGLWidget::bindTexture(const QPixmap &pixmap, GLenum target, GLint format
 
 /*!
   \overload
+  \since 4.6
 
   Generates and binds a 2D GL texture to the current context, based
   on \a pixmap. The generated texture id is returned and can be used in
