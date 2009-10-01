@@ -369,6 +369,11 @@ bool MediaObject::createPipefromURL(const QUrl &url)
     if (!m_datasource)
         return false;
 
+    // Set the device for MediaSource::Disc
+    QByteArray mediaDevice = QFile::encodeName(m_source.deviceName());
+    if (!mediaDevice.isEmpty())
+        g_object_set (m_datasource, "device", mediaDevice.constData(), (const char*)NULL);
+
     // Link data source into pipeline
     gst_bin_add(GST_BIN(m_pipeline), m_datasource);
     if (!gst_element_link(m_datasource, m_decodebin)) {
