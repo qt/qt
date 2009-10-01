@@ -44,8 +44,6 @@
 #include "qvfbshmem.h"
 #include "qvfbhdr.h"
 
-#define QTE_PIPE "QtEmbedded-%1"
-
 #include <QFile>
 #include <QTimer>
 
@@ -71,7 +69,7 @@ QT_BEGIN_NAMESPACE
 // live.
 static QString qws_dataDir(int qws_display_id)
 {
-    QByteArray dataDir = QString("/tmp/qtembedded-%1").arg(qws_display_id).toLocal8Bit();
+    QByteArray dataDir = QT_VFB_DATADIR(qws_display_id).toLocal8Bit();
     if (mkdir(dataDir, 0700)) {
         if (errno != EEXIST) {
             qFatal("Cannot create Qt for Embedded Linux data directory: %s", dataDir.constData());
@@ -151,6 +149,8 @@ QShMemViewProtocol::QShMemViewProtocol(int displayid, const QSize &s,
         }
     }
 
+    displayPipe = qws_dataDir(displayid).append(QTE_PIPE);
+
     kh = new QVFbKeyPipeProtocol(displayid);
     /* should really depend on receiving qt version, but how can
        one tell? */
@@ -208,8 +208,6 @@ QShMemViewProtocol::QShMemViewProtocol(int displayid, const QSize &s,
     hdr->viewerVersion = QT_VERSION;
     hdr->brightness = 255;
     hdr->windowId = 0;
-
-    displayPipe = qws_dataDir(displayid) + QString(QTE_PIPE).arg(displayid);
 
     displayPiped = displayPipe + 'd';
 
