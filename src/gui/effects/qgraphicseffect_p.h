@@ -189,7 +189,7 @@ class QGraphicsBloomEffectPrivate : public QGraphicsEffectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsBlurEffect)
 public:
-    QGraphicsBloomEffectPrivate() : brightness(70), strength(0.7) {}
+    QGraphicsBloomEffectPrivate() : brightness(70), strength(qreal(0.7)) {}
 
     QPixmapBlurFilter blurFilter;
     int colorTable[256];
