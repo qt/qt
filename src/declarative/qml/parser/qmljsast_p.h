@@ -228,6 +228,7 @@ public:
     virtual ExpressionNode *expressionCast();
     virtual BinaryExpression *binaryExpressionCast();
     virtual Statement *statementCast();
+    virtual UiObjectMember *uiObjectMemberCast();
 
     void accept(Visitor *visitor);
     static void accept(Node *node, Visitor *visitor);
@@ -2356,6 +2357,8 @@ class UiObjectMember: public Node
 public:
     virtual SourceLocation firstSourceLocation() const = 0;
     virtual SourceLocation lastSourceLocation() const = 0;
+
+    virtual UiObjectMember *uiObjectMemberCast();
 };
 
 class UiObjectMemberList: public Node

@@ -538,7 +538,7 @@ void QmlView::resizeEvent(QResizeEvent *e)
         d->root->setWidth(width());
         d->root->setHeight(height());
     }
-    setSceneRect(rect());
+    setSceneRect(QRectF(0, 0, d->root->width(), d->root->height()));
     QGraphicsView::resizeEvent(e);
 }
 

@@ -53,13 +53,26 @@ Item {
             onButton2Clicked: if (Screen.inListView == true) Screen.inListView = false; else Screen.inListView = true
         }
 
+        Connection {
+            sender: ImageDetails; signal: "closed()"
+            script: {
+                if (Background.state == "DetailedView") {
+                    Background.state = '';
+                    ImageDetails.photoUrl = "";
+                }
+            }
+        }
+
         states: State {
             name: "DetailedView"
             PropertyChanges { target: Views; x: -parent.width }
             PropertyChanges { target: ToolBar; button1Label: "More..." }
-            PropertyChanges { target: ToolBar; onButton1Clicked: { } }
+            PropertyChanges {
+                target: ToolBar
+                onButton1Clicked: if (ImageDetails.state=='') ImageDetails.state='Back'; else ImageDetails.state=''
+            }
             PropertyChanges { target: ToolBar; button2Label: "Back" }
-            PropertyChanges { target: ToolBar; onButton2Clicked: { } }
+            PropertyChanges { target: ToolBar; onButton2Clicked: ImageDetails.closed() }
         }
 
         transitions: Transition {
