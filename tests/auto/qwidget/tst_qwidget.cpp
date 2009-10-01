@@ -3118,7 +3118,7 @@ void tst_QWidget::saveRestoreGeometry()
         widget.resize(size);
         widget.show();
         QTest::qWaitForWindowShown(&widget);
-        QTest::qWait(200);
+        QTest::qWait(500);
         QTRY_COMPARE(widget.geometry().size(), size);
 
         QRect geom;
@@ -3138,7 +3138,7 @@ void tst_QWidget::saveRestoreGeometry()
         widget.setWindowState(widget.windowState() | Qt::WindowFullScreen);
         QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowFullScreen));
-        QTest::qWait(400);
+        QTest::qWait(500);
         savedGeometry = widget.saveGeometry();
         geom = widget.geometry();
         widget.setWindowState(widget.windowState() ^ Qt::WindowFullScreen);
@@ -3160,14 +3160,14 @@ void tst_QWidget::saveRestoreGeometry()
         widget.resize(size);
         QTest::qWait(10);
         QTRY_COMPARE(widget.size(), size);
-        QTest::qWait(400);
+        QTest::qWait(500);
         savedGeometry = widget.saveGeometry();
         geom = widget.geometry();
         widget.setWindowState(widget.windowState() | Qt::WindowMaximized);
         QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowMaximized));
         QTRY_VERIFY(widget.geometry() != geom);
-        QTest::qWait(400);
+        QTest::qWait(500);
         QVERIFY(widget.restoreGeometry(savedGeometry));
         QTest::qWait(120);
         QTRY_COMPARE(widget.geometry(), geom);
@@ -3178,13 +3178,13 @@ void tst_QWidget::saveRestoreGeometry()
         widget.setWindowState(widget.windowState() | Qt::WindowMaximized);
         QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowMaximized));
-        QTest::qWait(400);
+        QTest::qWait(500);
         geom = widget.geometry();
         savedGeometry = widget.saveGeometry();
         widget.setWindowState(widget.windowState() ^ Qt::WindowMaximized);
         QTest::qWait(120);
         QTRY_VERIFY(!(widget.windowState() & Qt::WindowMaximized));
-        QTest::qWait(400);
+        QTest::qWait(500);
         QVERIFY(widget.restoreGeometry(savedGeometry));
         QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowMaximized));
@@ -6507,7 +6507,7 @@ void tst_QWidget::renderInvisible()
     dummyFocusWidget.show();
     QTest::qWaitForWindowShown(&dummyFocusWidget);
     qApp->processEvents();
-    QTest::qWait(100);
+    QTest::qWait(120);
 
     // Create normal reference image.
     const QSize calendarSize = calendar->size();
@@ -6522,6 +6522,7 @@ void tst_QWidget::renderInvisible()
     const QSize calendarSizeResized = calendar->size() + QSize(50, 50);
     calendar->resize(calendarSizeResized);
     qApp->processEvents();
+    QTest::qWait(30);
     QImage referenceImageResized(calendarSizeResized, QImage::Format_ARGB32);
     calendar->render(&referenceImageResized);
 #ifdef RENDER_DEBUG
@@ -6532,6 +6533,7 @@ void tst_QWidget::renderInvisible()
     // Explicitly hide the calendar.
     calendar->hide();
     qApp->processEvents();
+    QTest::qWait(30);
     workaroundPaletteIssue(calendar);
 
     { // Make sure we get the same image when the calendar is explicitly hidden.
@@ -6562,6 +6564,7 @@ void tst_QWidget::renderInvisible()
 
     calendar->hide();
     qApp->processEvents();
+    QTest::qWait(30);
 
     { // Calendar explicitly hidden.
     QImage testImage(calendarSize, QImage::Format_ARGB32);
@@ -6629,6 +6632,7 @@ void tst_QWidget::renderInvisible()
     // Navigation bar isn't explicitly hidden anymore.
     navigationBar->show();
     qApp->processEvents();
+    QTest::qWait(30);
     QVERIFY(!calendar->isVisible());
 
     // Now, completely mess up the layout. This will trigger an update on the layout

@@ -714,8 +714,8 @@ void tst_QMessageBox::setInformativeText()
     msgbox.setInformativeText(itext);
     msgbox.show();
     QCOMPARE(msgbox.informativeText(), itext);
-    QVERIFY2(msgbox.width() > 200, //verify it's big enough (task181688)
-             qPrintable(QString("%1 > 200").arg(msgbox.width())));
+    QVERIFY2(msgbox.width() > 190, //verify it's big enough (task181688)
+             qPrintable(QString("%1 > 190").arg(msgbox.width())));
 }
 
 void tst_QMessageBox::iconPixmap()

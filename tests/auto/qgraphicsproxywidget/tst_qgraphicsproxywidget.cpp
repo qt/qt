@@ -1303,6 +1303,7 @@ void tst_QGraphicsProxyWidget::paintEvent()
     //make sure we flush all the paint events
     QTest::qWait(70);
     QTRY_VERIFY(proxy.paintCount > 1);
+    QTest::qWait(70);
     proxy.paintCount = 0;
 
     w->update();

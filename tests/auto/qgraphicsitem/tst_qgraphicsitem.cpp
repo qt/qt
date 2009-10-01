@@ -3017,7 +3017,7 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     QGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
-    QTest::qWait(100);
+    QTest::qWait(150);
 
     EventTester *tester = new EventTester;
     scene.addItem(tester);

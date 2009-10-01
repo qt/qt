@@ -1633,6 +1633,7 @@ void tst_QGraphicsScene::hoverEvents_siblings()
 #endif
     qApp->setActiveWindow(&view);
     view.activateWindow();
+    QTest::qWait(70);
 
     QCursor::setPos(view.mapToGlobal(QPoint(-5, -5)));
 

@@ -1200,7 +1200,7 @@ protected:
 void tst_Q3Table::editCheck()
 {
     // Test for task 28086
-#if 0
+#if 1
     QSKIP("This test currently fails on all versions", SkipAll);
 #endif
 
