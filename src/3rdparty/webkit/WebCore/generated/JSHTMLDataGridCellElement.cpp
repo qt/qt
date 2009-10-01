@@ -123,7 +123,7 @@ JSObject* JSHTMLDataGridCellElementPrototype::self(ExecState* exec, JSGlobalObje
 
 const ClassInfo JSHTMLDataGridCellElement::s_info = { "HTMLDataGridCellElement", &JSHTMLElement::s_info, &JSHTMLDataGridCellElementTable, 0 };
 
-JSHTMLDataGridCellElement::JSHTMLDataGridCellElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLDataGridCellElement> impl)
+JSHTMLDataGridCellElement::JSHTMLDataGridCellElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLDataGridCellElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

@@ -179,7 +179,6 @@ void tst_CompilerWarnings::warnings()
          << "-Wno-long-long" << "-Wshadow" << "-Wpacked" << "-Wunreachable-code"
          << "-Wundef" << "-Wchar-subscripts" << "-Wformat-nonliteral" << "-Wformat-security"
          << "-Wcast-align"
-         << "-Wfloat-equal"
          << "-o" << tmpFile
          << tmpSourceFile;
 #elif defined(Q_CC_XLC)

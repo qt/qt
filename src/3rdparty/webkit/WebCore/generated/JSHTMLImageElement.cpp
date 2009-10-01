@@ -134,7 +134,7 @@ JSObject* JSHTMLImageElementPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSHTMLImageElement::s_info = { "HTMLImageElement", &JSHTMLElement::s_info, &JSHTMLImageElementTable, 0 };
 
-JSHTMLImageElement::JSHTMLImageElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLImageElement> impl)
+JSHTMLImageElement::JSHTMLImageElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLImageElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

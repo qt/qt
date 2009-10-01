@@ -76,7 +76,7 @@ JSObject* JSValidityStatePrototype::self(ExecState* exec, JSGlobalObject* global
 
 const ClassInfo JSValidityState::s_info = { "ValidityState", 0, &JSValidityStateTable, 0 };
 
-JSValidityState::JSValidityState(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<ValidityState> impl)
+JSValidityState::JSValidityState(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<ValidityState> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

@@ -118,7 +118,7 @@ bool JSSVGCircleElementPrototype::getOwnPropertyDescriptor(ExecState* exec, cons
 
 const ClassInfo JSSVGCircleElement::s_info = { "SVGCircleElement", &JSSVGElement::s_info, &JSSVGCircleElementTable, 0 };
 
-JSSVGCircleElement::JSSVGCircleElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGCircleElement> impl)
+JSSVGCircleElement::JSSVGCircleElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGCircleElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

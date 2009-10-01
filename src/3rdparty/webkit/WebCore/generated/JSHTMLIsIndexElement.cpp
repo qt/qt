@@ -118,7 +118,7 @@ JSObject* JSHTMLIsIndexElementPrototype::self(ExecState* exec, JSGlobalObject* g
 
 const ClassInfo JSHTMLIsIndexElement::s_info = { "HTMLIsIndexElement", &JSHTMLInputElement::s_info, &JSHTMLIsIndexElementTable, 0 };
 
-JSHTMLIsIndexElement::JSHTMLIsIndexElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLIsIndexElement> impl)
+JSHTMLIsIndexElement::JSHTMLIsIndexElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLIsIndexElement> impl)
     : JSHTMLInputElement(structure, globalObject, impl)
 {
 }

@@ -41,6 +41,8 @@
 
 #include <QtGui/QApplication>
 #include <QtGui/QMessageBox>
+#include <QtOpenGL/QGLPixelBuffer>
+
 #include "glwidget.h"
 
 int main(int argc, char **argv)

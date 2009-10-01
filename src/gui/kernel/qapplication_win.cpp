@@ -1752,78 +1752,17 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                         case APPCOMMAND_BASS_UP:
                             key = Qt::Key_BassUp;
                             break;
-                        case APPCOMMAND_BROWSER_BACKWARD:
-                            key = Qt::Key_Back;
-                            break;
-                        case APPCOMMAND_BROWSER_FAVORITES:
-                            key = Qt::Key_Favorites;
-                            break;
-                        case APPCOMMAND_BROWSER_FORWARD:
-                            key = Qt::Key_Forward;
-                            break;
-                        case APPCOMMAND_BROWSER_HOME:
-                            key = Qt::Key_HomePage;
-                            break;
-                        case APPCOMMAND_BROWSER_REFRESH:
-                            key = Qt::Key_Refresh;
-                            break;
-                        case APPCOMMAND_BROWSER_SEARCH:
-                            key = Qt::Key_Search;
-                            break;
-                        case APPCOMMAND_BROWSER_STOP:
-                            key = Qt::Key_Stop;
-                            break;
-                        case APPCOMMAND_LAUNCH_APP1:
-                            key = Qt::Key_Launch0;
-                            break;
-                        case APPCOMMAND_LAUNCH_APP2:
-                            key = Qt::Key_Launch1;
-                            break;
-                        case APPCOMMAND_LAUNCH_MAIL:
-                            key = Qt::Key_LaunchMail;
-                            break;
-                        case APPCOMMAND_LAUNCH_MEDIA_SELECT:
-                            key = Qt::Key_LaunchMedia;
-                            break;
-                        case APPCOMMAND_MEDIA_NEXTTRACK:
-                            key = Qt::Key_MediaNext;
-                            break;
-                        case APPCOMMAND_MEDIA_PLAY_PAUSE:
-                            key = Qt::Key_MediaPlay;
-                            break;
-                        case APPCOMMAND_MEDIA_PREVIOUSTRACK:
-                            key = Qt::Key_MediaPrevious;
-                            break;
-                        case APPCOMMAND_MEDIA_STOP:
-                            key = Qt::Key_MediaStop;
-                            break;
                         case APPCOMMAND_TREBLE_DOWN:
                             key = Qt::Key_TrebleDown;
                             break;
                         case APPCOMMAND_TREBLE_UP:
                             key = Qt::Key_TrebleUp;
                             break;
-                        case APPCOMMAND_VOLUME_DOWN:
-                            key = Qt::Key_VolumeDown;
-                            break;
-                        case APPCOMMAND_VOLUME_MUTE:
-                            key = Qt::Key_VolumeMute;
-                            break;
-                        case APPCOMMAND_VOLUME_UP:
-                            key = Qt::Key_VolumeUp;
-                            break;
-                        // Commands new in Windows XP
                         case APPCOMMAND_HELP:
                             key = Qt::Key_Help;
                             break;
                         case APPCOMMAND_FIND:
                             key = Qt::Key_Search;
-                            break;
-                        case APPCOMMAND_PRINT:
-                            key = Qt::Key_Print;
-                            break;
-                        case APPCOMMAND_MEDIA_PLAY:
-                            key = Qt::Key_MediaPlay;
                             break;
                         default:
                             break;

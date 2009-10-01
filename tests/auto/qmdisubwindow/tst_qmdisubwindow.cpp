@@ -1065,6 +1065,7 @@ void tst_QMdiSubWindow::setSystemMenu()
     qApp->setLayoutDirection(Qt::RightToLeft);
     qApp->processEvents();
     mainWindow.updateGeometry();
+    QTest::qWait(150);
 
     subWindow->showSystemMenu();
     QTest::qWait(250);

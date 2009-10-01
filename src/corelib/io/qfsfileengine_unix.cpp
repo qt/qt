@@ -595,7 +595,7 @@ QString QFSFileEngine::rootPath()
     return QDir::cleanPath(QDir::fromNativeSeparators(qt_TDesC2QString(symbianPath)));
 # else
 # warning No fallback implementation of QFSFileEngine::rootPath()
-    return QLatin1String();
+    return QString();
 # endif
 #else
     return QLatin1String("/");
@@ -614,7 +614,7 @@ QString QFSFileEngine::tempPath()
     QT_MKDIR(QFile::encodeName(temp), 0777);
 # else
 # warning No fallback implementation of QFSFileEngine::tempPath()
-    return QString();
+    QString temp;
 # endif
 #else
     QString temp = QFile::decodeName(qgetenv("TMPDIR"));

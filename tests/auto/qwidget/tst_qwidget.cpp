@@ -3127,7 +3127,7 @@ void tst_QWidget::saveRestoreGeometry()
         geom = widget.geometry();
         widget.setWindowState(widget.windowState() | Qt::WindowFullScreen);
         QTRY_VERIFY((widget.windowState() & Qt::WindowFullScreen));
-        QTest::qWait(200);
+        QTest::qWait(500);
         QVERIFY(widget.restoreGeometry(savedGeometry));
         QTest::qWait(120);
         QTRY_VERIFY(!(widget.windowState() & Qt::WindowFullScreen));
@@ -3137,55 +3137,55 @@ void tst_QWidget::saveRestoreGeometry()
         widget.setWindowState(widget.windowState() | Qt::WindowFullScreen);
         QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowFullScreen));
-        QTest::qWait(200);
+        QTest::qWait(400);
         savedGeometry = widget.saveGeometry();
         geom = widget.geometry();
         widget.setWindowState(widget.windowState() ^ Qt::WindowFullScreen);
-        QTest::qWait(20);
+        QTest::qWait(120);
         QTRY_VERIFY(!(widget.windowState() & Qt::WindowFullScreen));
-        QTest::qWait(200);
+        QTest::qWait(400);
         QVERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(20);
+        QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowFullScreen));
         QTRY_COMPARE(widget.geometry(), geom);
         QVERIFY((widget.windowState() & Qt::WindowFullScreen));
         widget.setWindowState(widget.windowState() ^ Qt::WindowFullScreen);
-        QTest::qWait(20);
+        QTest::qWait(120);
         QTRY_VERIFY(!(widget.windowState() & Qt::WindowFullScreen));
-        QTest::qWait(20);
+        QTest::qWait(120);
 
         //Restore from Maximised
         widget.move(position);
         widget.resize(size);
-        QTest::qWait(20);
+        QTest::qWait(10);
         QTRY_COMPARE(widget.size(), size);
-        QTest::qWait(200);
+        QTest::qWait(400);
         savedGeometry = widget.saveGeometry();
         geom = widget.geometry();
         widget.setWindowState(widget.windowState() | Qt::WindowMaximized);
-        QTest::qWait(20);
+        QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowMaximized));
         QTRY_VERIFY(widget.geometry() != geom);
-        QTest::qWait(200);
+        QTest::qWait(400);
         QVERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(20);
+        QTest::qWait(120);
         QTRY_COMPARE(widget.geometry(), geom);
 
         QVERIFY(!(widget.windowState() & Qt::WindowMaximized));
 
         //Restore to maximised
         widget.setWindowState(widget.windowState() | Qt::WindowMaximized);
-        QTest::qWait(20);
+        QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowMaximized));
-        QTest::qWait(200);
+        QTest::qWait(400);
         geom = widget.geometry();
         savedGeometry = widget.saveGeometry();
         widget.setWindowState(widget.windowState() ^ Qt::WindowMaximized);
-        QTest::qWait(20);
+        QTest::qWait(120);
         QTRY_VERIFY(!(widget.windowState() & Qt::WindowMaximized));
-        QTest::qWait(200);
+        QTest::qWait(400);
         QVERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(20);
+        QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowMaximized));
         QTRY_COMPARE(widget.geometry(), geom);
     }
@@ -5500,14 +5500,14 @@ void tst_QWidget::multipleToplevelFocusCheck()
     w1.activateWindow();
     QApplication::setActiveWindow(&w1);
     QApplication::processEvents();
-    QTRY_COMPARE(QApplication::activeWindow(), &w1);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w1));
     QTest::mouseDClick(&w1, Qt::LeftButton);
     QTRY_COMPARE(QApplication::focusWidget(), static_cast<QWidget *>(w1.edit));
 
     w2.activateWindow();
     QApplication::setActiveWindow(&w2);
     QApplication::processEvents();
-    QTRY_COMPARE(QApplication::activeWindow(), &w2);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w2));
     QTest::mouseClick(&w2, Qt::LeftButton);
 #ifdef Q_WS_QWS
     QEXPECT_FAIL("", "embedded toplevels take focus anyway", Continue);
@@ -5520,14 +5520,14 @@ void tst_QWidget::multipleToplevelFocusCheck()
     w1.activateWindow();
     QApplication::setActiveWindow(&w1);
     QApplication::processEvents();
-    QTRY_COMPARE(QApplication::activeWindow(), &w1);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w1));
     QTest::mouseDClick(&w1, Qt::LeftButton);
     QTRY_COMPARE(QApplication::focusWidget(), static_cast<QWidget *>(w1.edit));
 
     w2.activateWindow();
     QApplication::setActiveWindow(&w2);
     QApplication::processEvents();
-    QTRY_COMPARE(QApplication::activeWindow(), &w2);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w2));
     QTest::mouseClick(&w2, Qt::LeftButton);
     QTRY_COMPARE(QApplication::focusWidget(), (QWidget *)0);
 }
@@ -6151,9 +6151,6 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             EventRecorder::EventList()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
-#ifdef Q_OS_SYMBIAN
-            << qMakePair(&widget, QEvent::SymbianDeferredFocusChanged)
-#endif
 #if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
@@ -6249,9 +6246,6 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
             << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
-#ifdef Q_OS_SYMBIAN
-            << qMakePair(&widget, QEvent::SymbianDeferredFocusChanged)
-#endif
 #if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
@@ -6347,9 +6341,6 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
             << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
-#ifdef Q_OS_SYMBIAN
-            << qMakePair(&widget, QEvent::SymbianDeferredFocusChanged)
-#endif
 #if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
@@ -8205,7 +8196,7 @@ void tst_QWidget::moveInResizeEvent()
     testWidget.setGeometry(50, 50, 200, 200);
     testWidget.show();
     QTest::qWaitForWindowShown(&testWidget);
-    QTest::qWait(10);
+    QTest::qWait(120);
 
     QRect expectedGeometry(100,100, 100, 100);
     QTRY_COMPARE(testWidget.geometry(), expectedGeometry);
@@ -8692,7 +8683,7 @@ void tst_QWidget::setClearAndResizeMask()
     QTRY_COMPARE(child.numPaintEvents, 1);
 #else
     // and ensure that we don't get any updates at all.
-    QCOMPARE(child.numPaintEvents, 0);
+    QTRY_COMPARE(child.numPaintEvents, 0);
 #endif
     QCOMPARE(topLevel.numPaintEvents, 0);
 
@@ -8729,9 +8720,9 @@ void tst_QWidget::setClearAndResizeMask()
     QTest::qWait(200);
 #ifdef Q_WS_MAC
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
-    QCOMPARE(resizeChild.paintedRegion, resizeChild.mask());
+    QTRY_COMPARE(resizeChild.paintedRegion, resizeChild.mask());
 #else
-    QCOMPARE(resizeChild.paintedRegion, QRegion());
+    QTRY_COMPARE(resizeChild.paintedRegion, QRegion());
 #endif
 
     resizeChild.paintedRegion = QRegion();
@@ -8740,9 +8731,9 @@ void tst_QWidget::setClearAndResizeMask()
     QTest::qWait(100);
 #ifdef Q_WS_MAC
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
-    QCOMPARE(resizeChild.paintedRegion, resizeChild.mask());
+    QTRY_COMPARE(resizeChild.paintedRegion, resizeChild.mask());
 #else
-    QCOMPARE(resizeChild.paintedRegion, resizeChild.mask() - oldMask);
+    QTRY_COMPARE(resizeChild.paintedRegion, resizeChild.mask() - oldMask);
 #endif
 }
 
@@ -9156,7 +9147,7 @@ void tst_QWidget::destroyBackingStore()
 void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 {
     QApplication::setOverrideCursor(Qt::BlankCursor); //keep the cursor out of screen grabs
-    QWidget main(0,0,Qt::FramelessWindowHint); //don't get confused by the size of the window frame
+    QWidget main(0,Qt::FramelessWindowHint); //don't get confused by the size of the window frame
     QPalette palette;
     palette.setColor(QPalette::Window, Qt::red);
     main.setPalette(palette);

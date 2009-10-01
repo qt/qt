@@ -75,9 +75,8 @@ public:
     virtual bool hasVideo() const = 0;
     virtual bool isSeekable() const = 0;
     virtual qint64 currentTime() const = 0;
-    virtual Phonon::State state() const = 0;
-    virtual QString errorString() const = 0;
-    virtual Phonon::ErrorType errorType() const = 0;
+    virtual Phonon::ErrorType errorType() const;
+    virtual QString errorString() const;
     virtual qint64 totalTime() const = 0;
     virtual Phonon::MediaSource source() const = 0;
     // This is a temporary hack to work around KErrInUse from MMF
@@ -86,8 +85,17 @@ public:
     virtual void setFileSource(const Phonon::MediaSource&, RFile&) = 0;
     virtual void setNextSource(const Phonon::MediaSource &) = 0;
 
+    // VolumeObserver
+    virtual void volumeChanged(qreal volume);
+    
     void setVideoOutput(VideoOutput* videoOutput);
 
+    /**
+     * Records error and changes state to ErrorState
+     */
+    void setError(Phonon::ErrorType error);
+
+    Phonon::State state() const;
 Q_SIGNALS:
     void totalTimeChanged(qint64 length);
     void finished();
@@ -97,7 +105,40 @@ Q_SIGNALS:
 
 
 protected:
+    /**
+     * Defined private state enumeration in order to add GroundState
+     */
+    enum PrivateState {
+        LoadingState    = Phonon::LoadingState,
+        StoppedState    = Phonon::StoppedState,
+        PlayingState    = Phonon::PlayingState,
+        BufferingState  = Phonon::BufferingState,
+        PausedState     = Phonon::PausedState,
+        ErrorState      = Phonon::ErrorState,
+        GroundState
+    };
+
+    /**
+     * Converts PrivateState into the corresponding Phonon::State
+     */
+    Phonon::State phononState() const;
+
+    /**
+     * Converts PrivateState into the corresponding Phonon::State
+     */
+    static Phonon::State phononState(PrivateState state);
+
     virtual void videoOutputChanged();
+
+    PrivateState privateState() const;
+
+    virtual void changeState(PrivateState newState) = 0;
+
+    /**
+     * Modifies m_state directly. Typically you want to call changeState(),
+     * which performs the business logic.
+     */
+    void setState(PrivateState newState);
 
 private:
     virtual void doSetTickInterval(qint32 interval) = 0;
@@ -105,8 +146,12 @@ private:
 protected:
     // Not owned
     VideoOutput*                m_videoOutput;
-
+    
+    qreal                       m_volume;
+    
 private:
+    PrivateState                m_state;
+    Phonon::ErrorType           m_error;
     qint32                      m_tickInterval;
     qint32                      m_transitionTime;
     qint32                      m_prefinishMark;

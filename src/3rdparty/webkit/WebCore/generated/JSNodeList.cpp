@@ -131,7 +131,7 @@ bool JSNodeListPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identi
 
 const ClassInfo JSNodeList::s_info = { "NodeList", 0, &JSNodeListTable, 0 };
 
-JSNodeList::JSNodeList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<NodeList> impl)
+JSNodeList::JSNodeList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<NodeList> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

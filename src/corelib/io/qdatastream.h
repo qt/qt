@@ -42,6 +42,7 @@
 #ifndef QDATASTREAM_H
 #define QDATASTREAM_H
 
+#include <QtCore/qscopedpointer.h>
 #include <QtCore/qiodevice.h>
 #include <QtCore/qglobal.h>
 
@@ -83,11 +84,7 @@ public:
         Qt_4_3 = 9,
         Qt_4_4 = 10,
         Qt_4_5 = 11,
-        Qt_4_6 = Qt_4_5
-#if QT_VERSION >= 0x040700
-#error Add the datastream version for this Qt version
-        Qt_4_7 = Qt_4_6
-#endif
+        Qt_4_6 = 12
     };
 
     enum ByteOrder {
@@ -99,6 +96,11 @@ public:
         Ok,
         ReadPastEnd,
 	ReadCorruptData
+    };
+
+    enum FloatingPointPrecision {
+        SinglePrecision,
+        DoublePrecision
     };
 
     QDataStream();
@@ -122,6 +124,9 @@ public:
     Status status() const;
     void setStatus(Status status);
     void resetStatus();
+
+    FloatingPointPrecision floatingPointPrecision() const;
+    void setFloatingPointPrecision(FloatingPointPrecision precision);
 
     ByteOrder byteOrder() const;
     void setByteOrder(ByteOrder);
@@ -176,7 +181,7 @@ public:
 private:
     Q_DISABLE_COPY(QDataStream)
 
-    QDataStreamPrivate *d;
+    QScopedPointer<QDataStreamPrivate> d;
 
     QIODevice *dev;
     bool owndev;

@@ -167,7 +167,7 @@ bool JSHTMLInputElementPrototype::getOwnPropertyDescriptor(ExecState* exec, cons
 
 const ClassInfo JSHTMLInputElement::s_info = { "HTMLInputElement", &JSHTMLElement::s_info, &JSHTMLInputElementTable, 0 };
 
-JSHTMLInputElement::JSHTMLInputElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLInputElement> impl)
+JSHTMLInputElement::JSHTMLInputElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLInputElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }
@@ -486,7 +486,9 @@ void setJSHTMLInputElementAutofocus(ExecState* exec, JSObject* thisObject, JSVal
 void setJSHTMLInputElementMaxLength(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLInputElement* imp = static_cast<HTMLInputElement*>(static_cast<JSHTMLInputElement*>(thisObject)->impl());
-    imp->setMaxLength(value.toInt32(exec));
+    ExceptionCode ec = 0;
+    imp->setMaxLength(value.toInt32(exec), ec);
+    setDOMException(exec, ec);
 }
 
 void setJSHTMLInputElementMultiple(ExecState* exec, JSObject* thisObject, JSValue value)

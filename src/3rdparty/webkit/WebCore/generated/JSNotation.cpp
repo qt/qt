@@ -115,7 +115,7 @@ JSObject* JSNotationPrototype::self(ExecState* exec, JSGlobalObject* globalObjec
 
 const ClassInfo JSNotation::s_info = { "Notation", &JSNode::s_info, &JSNotationTable, 0 };
 
-JSNotation::JSNotation(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Notation> impl)
+JSNotation::JSNotation(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Notation> impl)
     : JSNode(structure, globalObject, impl)
 {
 }

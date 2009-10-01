@@ -2254,7 +2254,7 @@ QGLTexture *QGLContextPrivate::textureCacheLookup(const qint64 key, GLenum targe
     Q_Q(QGLContext);
     QGLTexture *texture = QGLTextureCache::instance()->getTexture(key);
     if (texture && texture->target == target
-        && (texture->context == q || qgl_share_reg()->checkSharing(q, texture->context)))
+        && (texture->context == q || QGLContext::areSharing(q, texture->context)))
     {
         return texture;
     }
@@ -2753,6 +2753,20 @@ void QGLContext::setDevice(QPaintDevice *pDev)
     sharing might not be supported between contexts with different
     formats.
 */
+
+/*!
+    Returns true if \a context1 and \a context2 are sharing their
+    GL resources such as textures, shader programs, etc;
+    otherwise returns false.
+
+    \since 4.6
+*/
+bool QGLContext::areSharing(const QGLContext *context1, const QGLContext *context2)
+{
+    if (!context1 || !context2)
+        return false;
+    return context1->d_ptr->group == context2->d_ptr->group;
+}
 
 /*!
     \fn bool QGLContext::deviceIsPixmap() const
@@ -4834,11 +4848,6 @@ Q_OPENGL_EXPORT const QString qt_gl_library_name()
     return *qt_gl_lib_name();
 }
 #endif
-
-bool QGLShareRegister::checkSharing(const QGLContext *context1, const QGLContext *context2) {
-    bool sharing = (context1 && context2 && context1->d_ptr->group == context2->d_ptr->group);
-    return sharing;
-}
 
 void QGLShareRegister::addShare(const QGLContext *context, const QGLContext *share) {
     Q_ASSERT(context && share);

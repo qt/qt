@@ -130,7 +130,7 @@ bool JSXPathExpressionPrototype::getOwnPropertyDescriptor(ExecState* exec, const
 
 const ClassInfo JSXPathExpression::s_info = { "XPathExpression", 0, &JSXPathExpressionTable, 0 };
 
-JSXPathExpression::JSXPathExpression(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XPathExpression> impl)
+JSXPathExpression::JSXPathExpression(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XPathExpression> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

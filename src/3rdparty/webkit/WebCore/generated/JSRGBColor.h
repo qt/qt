@@ -33,7 +33,7 @@ class RGBColor;
 class JSRGBColor : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSRGBColor(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<RGBColor>);
+    JSRGBColor(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<RGBColor>);
     virtual ~JSRGBColor();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -62,7 +62,7 @@ public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
-    JSRGBColorPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSRGBColorPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Attributes

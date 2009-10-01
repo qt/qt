@@ -8336,12 +8336,6 @@ bool QWidget::event(QEvent *event)
         (void) QApplication::sendEvent(this, &mouseEvent);
         break;
     }
-    case QEvent::SymbianDeferredFocusChanged: {
-#ifdef Q_OS_SYMBIAN
-        d->handleSymbianDeferredFocusChanged();
-#endif
-        break;
-    }
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();
@@ -11454,6 +11448,10 @@ QWidget *QWidgetPrivate::widgetInNavigationDirection(Direction direction)
     QWidget *targetWidget = 0;
     int shortestDistance = INT_MAX;
     foreach(QWidget *targetCandidate, QApplication::allWidgets()) {
+    
+        if (targetCandidate->focusProxy()) //skip if focus proxy set
+            continue;
+
         const QRect targetCandidateRect = targetCandidate->rect().translated(targetCandidate->mapToGlobal(QPoint()));
         if (       targetCandidate != sourceWidget
                 && targetCandidate->focusPolicy() & Qt::TabFocus

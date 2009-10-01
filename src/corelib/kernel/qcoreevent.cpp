@@ -270,7 +270,6 @@ QT_BEGIN_NAMESPACE
     \omitvalue NetworkReplyUpdated
     \omitvalue FutureCallOut
     \omitvalue CocoaRequestModal
-    \omitvalue SymbianDeferredFocusChanged
     \omitvalue UpdateSoftKeys
     \omitvalue NativeGesture
 */

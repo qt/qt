@@ -33,7 +33,7 @@ class Coordinates;
 class JSCoordinates : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSCoordinates(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Coordinates>);
+    JSCoordinates(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Coordinates>);
     virtual ~JSCoordinates();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -67,7 +67,7 @@ public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
-    JSCoordinatesPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSCoordinatesPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Attributes

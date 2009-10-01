@@ -111,7 +111,7 @@ static const HashTable* getJSEventSourceTable(ExecState* exec)
 }
 const ClassInfo JSEventSource::s_info = { "EventSource", 0, 0, getJSEventSourceTable };
 
-JSEventSource::JSEventSource(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<EventSource> impl)
+JSEventSource::JSEventSource(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<EventSource> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
@@ -166,7 +166,7 @@ JSValue jsEventSourceOnopen(ExecState* exec, const Identifier&, const PropertySl
     UNUSED_PARAM(exec);
     EventSource* imp = static_cast<EventSource*>(castedThis->impl());
     if (EventListener* listener = imp->onopen()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -178,7 +178,7 @@ JSValue jsEventSourceOnmessage(ExecState* exec, const Identifier&, const Propert
     UNUSED_PARAM(exec);
     EventSource* imp = static_cast<EventSource*>(castedThis->impl());
     if (EventListener* listener = imp->onmessage()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -190,7 +190,7 @@ JSValue jsEventSourceOnerror(ExecState* exec, const Identifier&, const PropertyS
     UNUSED_PARAM(exec);
     EventSource* imp = static_cast<EventSource*>(castedThis->impl());
     if (EventListener* listener = imp->onerror()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();

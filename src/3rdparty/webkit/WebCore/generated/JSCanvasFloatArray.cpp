@@ -57,7 +57,7 @@ JSObject* JSCanvasFloatArrayPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSCanvasFloatArray::s_info = { "CanvasFloatArray", &JSCanvasArray::s_info, 0, 0 };
 
-JSCanvasFloatArray::JSCanvasFloatArray(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasFloatArray> impl)
+JSCanvasFloatArray::JSCanvasFloatArray(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasFloatArray> impl)
     : JSCanvasArray(structure, globalObject, impl)
 {
 }

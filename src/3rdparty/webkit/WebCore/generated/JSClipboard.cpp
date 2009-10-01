@@ -134,7 +134,7 @@ bool JSClipboardPrototype::getOwnPropertyDescriptor(ExecState* exec, const Ident
 
 const ClassInfo JSClipboard::s_info = { "Clipboard", 0, &JSClipboardTable, 0 };
 
-JSClipboard::JSClipboard(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Clipboard> impl)
+JSClipboard::JSClipboard(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Clipboard> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

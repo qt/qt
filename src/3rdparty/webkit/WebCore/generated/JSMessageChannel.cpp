@@ -79,7 +79,7 @@ static const HashTable* getJSMessageChannelTable(ExecState* exec)
 }
 const ClassInfo JSMessageChannel::s_info = { "MessageChannel", 0, 0, getJSMessageChannelTable };
 
-JSMessageChannel::JSMessageChannel(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MessageChannel> impl)
+JSMessageChannel::JSMessageChannel(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MessageChannel> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

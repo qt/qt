@@ -194,7 +194,7 @@ bool JSCanvasRenderingContext2DPrototype::getOwnPropertyDescriptor(ExecState* ex
 
 const ClassInfo JSCanvasRenderingContext2D::s_info = { "CanvasRenderingContext2D", &JSCanvasRenderingContext::s_info, &JSCanvasRenderingContext2DTable, 0 };
 
-JSCanvasRenderingContext2D::JSCanvasRenderingContext2D(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasRenderingContext2D> impl)
+JSCanvasRenderingContext2D::JSCanvasRenderingContext2D(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasRenderingContext2D> impl)
     : JSCanvasRenderingContext(structure, globalObject, impl)
 {
 }

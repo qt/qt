@@ -3626,12 +3626,13 @@ QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::extendedSelectionC
             case Qt::Key_PageUp:
             case Qt::Key_PageDown:
             case Qt::Key_Tab:
+                if (modifiers & Qt::ControlModifier
 #ifdef QT_KEYPAD_NAVIGATION
-                return QItemSelectionModel::NoUpdate;
-#else
-                if (modifiers & Qt::ControlModifier)
-                    return QItemSelectionModel::NoUpdate;
+                    // Preserve historical tab order navigation behavior
+                    || QApplication::navigationMode() == Qt::NavigationModeKeypadTabOrder
 #endif
+                    )
+                    return QItemSelectionModel::NoUpdate;
                 break;
             case Qt::Key_Select:
                 return QItemSelectionModel::Toggle|selectionBehaviorFlags();

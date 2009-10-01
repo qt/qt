@@ -137,7 +137,7 @@ bool JSXPathExceptionPrototype::getOwnPropertyDescriptor(ExecState* exec, const 
 
 const ClassInfo JSXPathException::s_info = { "XPathException", 0, &JSXPathExceptionTable, 0 };
 
-JSXPathException::JSXPathException(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XPathException> impl)
+JSXPathException::JSXPathException(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XPathException> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

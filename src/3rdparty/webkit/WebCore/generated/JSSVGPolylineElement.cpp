@@ -118,7 +118,7 @@ bool JSSVGPolylineElementPrototype::getOwnPropertyDescriptor(ExecState* exec, co
 
 const ClassInfo JSSVGPolylineElement::s_info = { "SVGPolylineElement", &JSSVGElement::s_info, &JSSVGPolylineElementTable, 0 };
 
-JSSVGPolylineElement::JSSVGPolylineElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPolylineElement> impl)
+JSSVGPolylineElement::JSSVGPolylineElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPolylineElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

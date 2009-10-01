@@ -108,7 +108,7 @@ static const HashTable* getJSWebSocketTable(ExecState* exec)
 }
 const ClassInfo JSWebSocket::s_info = { "WebSocket", 0, 0, getJSWebSocketTable };
 
-JSWebSocket::JSWebSocket(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebSocket> impl)
+JSWebSocket::JSWebSocket(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebSocket> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
@@ -171,7 +171,7 @@ JSValue jsWebSocketOnopen(ExecState* exec, const Identifier&, const PropertySlot
     UNUSED_PARAM(exec);
     WebSocket* imp = static_cast<WebSocket*>(castedThis->impl());
     if (EventListener* listener = imp->onopen()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -183,7 +183,7 @@ JSValue jsWebSocketOnmessage(ExecState* exec, const Identifier&, const PropertyS
     UNUSED_PARAM(exec);
     WebSocket* imp = static_cast<WebSocket*>(castedThis->impl());
     if (EventListener* listener = imp->onmessage()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -195,7 +195,7 @@ JSValue jsWebSocketOnclose(ExecState* exec, const Identifier&, const PropertySlo
     UNUSED_PARAM(exec);
     WebSocket* imp = static_cast<WebSocket*>(castedThis->impl());
     if (EventListener* listener = imp->onclose()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();

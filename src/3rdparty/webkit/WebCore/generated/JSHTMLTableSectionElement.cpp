@@ -136,7 +136,7 @@ bool JSHTMLTableSectionElementPrototype::getOwnPropertyDescriptor(ExecState* exe
 
 const ClassInfo JSHTMLTableSectionElement::s_info = { "HTMLTableSectionElement", &JSHTMLElement::s_info, &JSHTMLTableSectionElementTable, 0 };
 
-JSHTMLTableSectionElement::JSHTMLTableSectionElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLTableSectionElement> impl)
+JSHTMLTableSectionElement::JSHTMLTableSectionElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLTableSectionElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

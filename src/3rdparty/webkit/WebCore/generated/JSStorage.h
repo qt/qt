@@ -35,7 +35,7 @@ class Storage;
 class JSStorage : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSStorage(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Storage>);
+    JSStorage(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Storage>);
     virtual ~JSStorage();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -77,7 +77,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSStoragePrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSStoragePrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

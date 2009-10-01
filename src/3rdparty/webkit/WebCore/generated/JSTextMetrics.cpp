@@ -114,7 +114,7 @@ JSObject* JSTextMetricsPrototype::self(ExecState* exec, JSGlobalObject* globalOb
 
 const ClassInfo JSTextMetrics::s_info = { "TextMetrics", 0, &JSTextMetricsTable, 0 };
 
-JSTextMetrics::JSTextMetrics(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<TextMetrics> impl)
+JSTextMetrics::JSTextMetrics(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<TextMetrics> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

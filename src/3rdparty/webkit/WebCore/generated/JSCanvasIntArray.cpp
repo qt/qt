@@ -57,7 +57,7 @@ JSObject* JSCanvasIntArrayPrototype::self(ExecState* exec, JSGlobalObject* globa
 
 const ClassInfo JSCanvasIntArray::s_info = { "CanvasIntArray", &JSCanvasArray::s_info, 0, 0 };
 
-JSCanvasIntArray::JSCanvasIntArray(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasIntArray> impl)
+JSCanvasIntArray::JSCanvasIntArray(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasIntArray> impl)
     : JSCanvasArray(structure, globalObject, impl)
 {
 }

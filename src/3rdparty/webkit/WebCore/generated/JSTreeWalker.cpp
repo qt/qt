@@ -140,7 +140,7 @@ bool JSTreeWalkerPrototype::getOwnPropertyDescriptor(ExecState* exec, const Iden
 
 const ClassInfo JSTreeWalker::s_info = { "TreeWalker", 0, &JSTreeWalkerTable, 0 };
 
-JSTreeWalker::JSTreeWalker(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<TreeWalker> impl)
+JSTreeWalker::JSTreeWalker(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<TreeWalker> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

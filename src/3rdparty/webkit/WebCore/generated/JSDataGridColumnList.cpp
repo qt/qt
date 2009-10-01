@@ -140,7 +140,7 @@ bool JSDataGridColumnListPrototype::getOwnPropertyDescriptor(ExecState* exec, co
 
 const ClassInfo JSDataGridColumnList::s_info = { "DataGridColumnList", 0, &JSDataGridColumnListTable, 0 };
 
-JSDataGridColumnList::JSDataGridColumnList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DataGridColumnList> impl)
+JSDataGridColumnList::JSDataGridColumnList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DataGridColumnList> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

@@ -73,6 +73,11 @@ ScriptObject InspectorFrontend::newScriptObject()
     return ScriptObject::createNew(m_scriptState);
 }
 
+void InspectorFrontend::didCommitLoad()
+{
+    callSimpleFunction("didCommitLoad");
+}
+
 void InspectorFrontend::addMessageToConsole(const ScriptObject& messageObj, const Vector<ScriptString>& frames, const Vector<ScriptValue> wrappedArguments, const String& message)
 {
     OwnPtr<ScriptFunctionCall> function(newFunctionCall("addMessageToConsole"));
@@ -365,6 +370,15 @@ void InspectorFrontend::didApplyDomChange(int callId, bool success)
     OwnPtr<ScriptFunctionCall> function(newFunctionCall("didApplyDomChange"));
     function->appendArgument(callId);
     function->appendArgument(success);
+    function->call();
+}
+
+void InspectorFrontend::didGetEventListenersForNode(int callId, int nodeId, ScriptArray& listenersArray)
+{
+    OwnPtr<ScriptFunctionCall> function(newFunctionCall("didGetEventListenersForNode"));
+    function->appendArgument(callId);
+    function->appendArgument(nodeId);
+    function->appendArgument(listenersArray);
     function->call();
 }
 

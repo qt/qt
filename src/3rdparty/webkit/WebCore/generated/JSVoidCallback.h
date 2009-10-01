@@ -33,7 +33,7 @@ class VoidCallback;
 class JSVoidCallback : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSVoidCallback(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<VoidCallback>);
+    JSVoidCallback(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<VoidCallback>);
     virtual ~JSVoidCallback();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -60,7 +60,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSVoidCallbackPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSVoidCallbackPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

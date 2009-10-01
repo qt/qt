@@ -35,7 +35,7 @@ class Node;
 class JSNode : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSNode(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Node>);
+    JSNode(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Node>);
     virtual ~JSNode();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -94,7 +94,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
-    JSNodePrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSNodePrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

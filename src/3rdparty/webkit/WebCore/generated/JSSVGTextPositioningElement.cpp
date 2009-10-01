@@ -77,7 +77,7 @@ JSObject* JSSVGTextPositioningElementPrototype::self(ExecState* exec, JSGlobalOb
 
 const ClassInfo JSSVGTextPositioningElement::s_info = { "SVGTextPositioningElement", &JSSVGTextContentElement::s_info, &JSSVGTextPositioningElementTable, 0 };
 
-JSSVGTextPositioningElement::JSSVGTextPositioningElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTextPositioningElement> impl)
+JSSVGTextPositioningElement::JSSVGTextPositioningElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTextPositioningElement> impl)
     : JSSVGTextContentElement(structure, globalObject, impl)
 {
 }
