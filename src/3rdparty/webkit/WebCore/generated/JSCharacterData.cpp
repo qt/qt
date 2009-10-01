@@ -134,7 +134,7 @@ bool JSCharacterDataPrototype::getOwnPropertyDescriptor(ExecState* exec, const I
 
 const ClassInfo JSCharacterData::s_info = { "CharacterData", &JSNode::s_info, &JSCharacterDataTable, 0 };
 
-JSCharacterData::JSCharacterData(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CharacterData> impl)
+JSCharacterData::JSCharacterData(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CharacterData> impl)
     : JSNode(structure, globalObject, impl)
 {
 }

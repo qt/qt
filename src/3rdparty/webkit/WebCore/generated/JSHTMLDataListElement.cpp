@@ -118,7 +118,7 @@ JSObject* JSHTMLDataListElementPrototype::self(ExecState* exec, JSGlobalObject* 
 
 const ClassInfo JSHTMLDataListElement::s_info = { "HTMLDataListElement", &JSHTMLElement::s_info, &JSHTMLDataListElementTable, 0 };
 
-JSHTMLDataListElement::JSHTMLDataListElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLDataListElement> impl)
+JSHTMLDataListElement::JSHTMLDataListElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLDataListElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

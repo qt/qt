@@ -115,7 +115,7 @@ JSObject* JSHTMLTableCaptionElementPrototype::self(ExecState* exec, JSGlobalObje
 
 const ClassInfo JSHTMLTableCaptionElement::s_info = { "HTMLTableCaptionElement", &JSHTMLElement::s_info, &JSHTMLTableCaptionElementTable, 0 };
 
-JSHTMLTableCaptionElement::JSHTMLTableCaptionElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLTableCaptionElement> impl)
+JSHTMLTableCaptionElement::JSHTMLTableCaptionElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLTableCaptionElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

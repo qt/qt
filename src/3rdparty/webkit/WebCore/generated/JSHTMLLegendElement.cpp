@@ -119,7 +119,7 @@ JSObject* JSHTMLLegendElementPrototype::self(ExecState* exec, JSGlobalObject* gl
 
 const ClassInfo JSHTMLLegendElement::s_info = { "HTMLLegendElement", &JSHTMLElement::s_info, &JSHTMLLegendElementTable, 0 };
 
-JSHTMLLegendElement::JSHTMLLegendElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLLegendElement> impl)
+JSHTMLLegendElement::JSHTMLLegendElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLLegendElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

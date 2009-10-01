@@ -97,7 +97,7 @@ bool JSSVGFEComponentTransferElementPrototype::getOwnPropertyDescriptor(ExecStat
 
 const ClassInfo JSSVGFEComponentTransferElement::s_info = { "SVGFEComponentTransferElement", &JSSVGElement::s_info, &JSSVGFEComponentTransferElementTable, 0 };
 
-JSSVGFEComponentTransferElement::JSSVGFEComponentTransferElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEComponentTransferElement> impl)
+JSSVGFEComponentTransferElement::JSSVGFEComponentTransferElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEComponentTransferElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

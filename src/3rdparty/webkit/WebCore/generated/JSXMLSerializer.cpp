@@ -136,7 +136,7 @@ bool JSXMLSerializerPrototype::getOwnPropertyDescriptor(ExecState* exec, const I
 
 const ClassInfo JSXMLSerializer::s_info = { "XMLSerializer", 0, &JSXMLSerializerTable, 0 };
 
-JSXMLSerializer::JSXMLSerializer(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XMLSerializer> impl)
+JSXMLSerializer::JSXMLSerializer(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XMLSerializer> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

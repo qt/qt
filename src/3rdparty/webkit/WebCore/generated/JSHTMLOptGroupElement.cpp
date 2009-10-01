@@ -116,7 +116,7 @@ JSObject* JSHTMLOptGroupElementPrototype::self(ExecState* exec, JSGlobalObject* 
 
 const ClassInfo JSHTMLOptGroupElement::s_info = { "HTMLOptGroupElement", &JSHTMLElement::s_info, &JSHTMLOptGroupElementTable, 0 };
 
-JSHTMLOptGroupElement::JSHTMLOptGroupElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLOptGroupElement> impl)
+JSHTMLOptGroupElement::JSHTMLOptGroupElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLOptGroupElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

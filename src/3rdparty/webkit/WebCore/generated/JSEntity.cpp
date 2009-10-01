@@ -116,7 +116,7 @@ JSObject* JSEntityPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 
 const ClassInfo JSEntity::s_info = { "Entity", &JSNode::s_info, &JSEntityTable, 0 };
 
-JSEntity::JSEntity(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Entity> impl)
+JSEntity::JSEntity(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Entity> impl)
     : JSNode(structure, globalObject, impl)
 {
 }

@@ -115,7 +115,7 @@ JSObject* JSHTMLTitleElementPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSHTMLTitleElement::s_info = { "HTMLTitleElement", &JSHTMLElement::s_info, &JSHTMLTitleElementTable, 0 };
 
-JSHTMLTitleElement::JSHTMLTitleElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLTitleElement> impl)
+JSHTMLTitleElement::JSHTMLTitleElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLTitleElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

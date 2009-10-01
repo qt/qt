@@ -77,7 +77,7 @@ JSObject* JSSVGStyleElementPrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSSVGStyleElement::s_info = { "SVGStyleElement", &JSSVGElement::s_info, &JSSVGStyleElementTable, 0 };
 
-JSSVGStyleElement::JSSVGStyleElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGStyleElement> impl)
+JSSVGStyleElement::JSSVGStyleElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGStyleElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

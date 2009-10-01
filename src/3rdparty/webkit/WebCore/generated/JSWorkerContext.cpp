@@ -121,7 +121,7 @@ static const HashTable* getJSWorkerContextTable(ExecState* exec)
 }
 const ClassInfo JSWorkerContext::s_info = { "WorkerContext", &JSWorkerContextBase::s_info, 0, getJSWorkerContextTable };
 
-JSWorkerContext::JSWorkerContext(PassRefPtr<Structure> structure, PassRefPtr<WorkerContext> impl)
+JSWorkerContext::JSWorkerContext(NonNullPassRefPtr<Structure> structure, PassRefPtr<WorkerContext> impl)
     : JSWorkerContextBase(structure, impl)
 {
 }
@@ -168,7 +168,7 @@ JSValue jsWorkerContextOnerror(ExecState* exec, const Identifier&, const Propert
     UNUSED_PARAM(exec);
     WorkerContext* imp = static_cast<WorkerContext*>(castedThis->impl());
     if (EventListener* listener = imp->onerror()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp))
             return jsFunction;
     }
     return jsNull();

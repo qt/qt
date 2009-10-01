@@ -125,7 +125,7 @@ JSObject* JSStyleSheetPrototype::self(ExecState* exec, JSGlobalObject* globalObj
 
 const ClassInfo JSStyleSheet::s_info = { "StyleSheet", 0, &JSStyleSheetTable, 0 };
 
-JSStyleSheet::JSStyleSheet(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<StyleSheet> impl)
+JSStyleSheet::JSStyleSheet(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<StyleSheet> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

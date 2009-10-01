@@ -119,7 +119,7 @@ JSObject* JSHTMLLabelElementPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSHTMLLabelElement::s_info = { "HTMLLabelElement", &JSHTMLElement::s_info, &JSHTMLLabelElementTable, 0 };
 
-JSHTMLLabelElement::JSHTMLLabelElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLLabelElement> impl)
+JSHTMLLabelElement::JSHTMLLabelElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLLabelElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

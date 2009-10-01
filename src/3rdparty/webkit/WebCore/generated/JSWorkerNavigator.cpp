@@ -85,7 +85,7 @@ static const HashTable* getJSWorkerNavigatorTable(ExecState* exec)
 }
 const ClassInfo JSWorkerNavigator::s_info = { "WorkerNavigator", 0, 0, getJSWorkerNavigatorTable };
 
-JSWorkerNavigator::JSWorkerNavigator(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WorkerNavigator> impl)
+JSWorkerNavigator::JSWorkerNavigator(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WorkerNavigator> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

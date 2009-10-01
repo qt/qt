@@ -136,7 +136,7 @@ bool JSNamedNodeMapPrototype::getOwnPropertyDescriptor(ExecState* exec, const Id
 
 const ClassInfo JSNamedNodeMap::s_info = { "NamedNodeMap", 0, &JSNamedNodeMapTable, 0 };
 
-JSNamedNodeMap::JSNamedNodeMap(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<NamedNodeMap> impl)
+JSNamedNodeMap::JSNamedNodeMap(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<NamedNodeMap> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

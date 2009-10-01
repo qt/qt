@@ -35,7 +35,7 @@ class DOMApplicationCache;
 class JSDOMApplicationCache : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSDOMApplicationCache(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<DOMApplicationCache>);
+    JSDOMApplicationCache(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<DOMApplicationCache>);
     virtual ~JSDOMApplicationCache();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -76,7 +76,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
-    JSDOMApplicationCachePrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSDOMApplicationCachePrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

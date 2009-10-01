@@ -86,7 +86,7 @@ bool JSSVGElementInstanceListPrototype::getOwnPropertyDescriptor(ExecState* exec
 
 const ClassInfo JSSVGElementInstanceList::s_info = { "SVGElementInstanceList", 0, &JSSVGElementInstanceListTable, 0 };
 
-JSSVGElementInstanceList::JSSVGElementInstanceList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElementInstanceList> impl)
+JSSVGElementInstanceList::JSSVGElementInstanceList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElementInstanceList> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

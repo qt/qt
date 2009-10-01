@@ -131,7 +131,7 @@ bool JSMimeTypeArrayPrototype::getOwnPropertyDescriptor(ExecState* exec, const I
 
 const ClassInfo JSMimeTypeArray::s_info = { "MimeTypeArray", 0, &JSMimeTypeArrayTable, 0 };
 
-JSMimeTypeArray::JSMimeTypeArray(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MimeTypeArray> impl)
+JSMimeTypeArray::JSMimeTypeArray(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MimeTypeArray> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

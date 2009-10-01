@@ -141,7 +141,7 @@ static const HashTable* getJSMessageEventTable(ExecState* exec)
 }
 const ClassInfo JSMessageEvent::s_info = { "MessageEvent", &JSEvent::s_info, 0, getJSMessageEventTable };
 
-JSMessageEvent::JSMessageEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MessageEvent> impl)
+JSMessageEvent::JSMessageEvent(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MessageEvent> impl)
     : JSEvent(structure, globalObject, impl)
 {
 }

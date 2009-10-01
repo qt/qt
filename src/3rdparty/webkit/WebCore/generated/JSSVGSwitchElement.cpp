@@ -114,7 +114,7 @@ bool JSSVGSwitchElementPrototype::getOwnPropertyDescriptor(ExecState* exec, cons
 
 const ClassInfo JSSVGSwitchElement::s_info = { "SVGSwitchElement", &JSSVGElement::s_info, &JSSVGSwitchElementTable, 0 };
 
-JSSVGSwitchElement::JSSVGSwitchElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGSwitchElement> impl)
+JSSVGSwitchElement::JSSVGSwitchElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGSwitchElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

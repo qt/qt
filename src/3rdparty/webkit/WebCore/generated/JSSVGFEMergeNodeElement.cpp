@@ -72,7 +72,7 @@ JSObject* JSSVGFEMergeNodeElementPrototype::self(ExecState* exec, JSGlobalObject
 
 const ClassInfo JSSVGFEMergeNodeElement::s_info = { "SVGFEMergeNodeElement", &JSSVGElement::s_info, &JSSVGFEMergeNodeElementTable, 0 };
 
-JSSVGFEMergeNodeElement::JSSVGFEMergeNodeElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEMergeNodeElement> impl)
+JSSVGFEMergeNodeElement::JSSVGFEMergeNodeElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEMergeNodeElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

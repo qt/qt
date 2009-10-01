@@ -13,22 +13,22 @@ void wrapInFunction()
 
 
 //! [2]
-    view->triggerPageAction(QWebPage::Copy);
+    view->triggerAction(QWebPage::Copy);
 //! [2]
 
 
 //! [3]
-    view->page()->triggerAction(QWebPage::Stop);
+    view->page()->triggerPageAction(QWebPage::Stop);
 //! [3]
 
 
 //! [4]
-    view->page()->triggerAction(QWebPage::GoBack);
+    view->page()->triggerPageAction(QWebPage::GoBack);
 //! [4]
 
 
 //! [5]
-    view->page()->triggerAction(QWebPage::GoForward);
+    view->page()->triggerPageAction(QWebPage::GoForward);
 //! [5]
 
 }

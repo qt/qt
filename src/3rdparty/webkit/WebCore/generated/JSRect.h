@@ -33,7 +33,7 @@ class Rect;
 class JSRect : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSRect(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Rect>);
+    JSRect(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Rect>);
     virtual ~JSRect();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -62,7 +62,7 @@ public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
-    JSRectPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSRectPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Attributes

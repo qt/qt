@@ -140,7 +140,7 @@ bool JSMutationEventPrototype::getOwnPropertyDescriptor(ExecState* exec, const I
 
 const ClassInfo JSMutationEvent::s_info = { "MutationEvent", &JSEvent::s_info, &JSMutationEventTable, 0 };
 
-JSMutationEvent::JSMutationEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MutationEvent> impl)
+JSMutationEvent::JSMutationEvent(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MutationEvent> impl)
     : JSEvent(structure, globalObject, impl)
 {
 }

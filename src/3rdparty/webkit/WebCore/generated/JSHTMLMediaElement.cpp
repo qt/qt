@@ -180,7 +180,7 @@ bool JSHTMLMediaElementPrototype::getOwnPropertyDescriptor(ExecState* exec, cons
 
 const ClassInfo JSHTMLMediaElement::s_info = { "HTMLMediaElement", &JSHTMLElement::s_info, &JSHTMLMediaElementTable, 0 };
 
-JSHTMLMediaElement::JSHTMLMediaElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLMediaElement> impl)
+JSHTMLMediaElement::JSHTMLMediaElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLMediaElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

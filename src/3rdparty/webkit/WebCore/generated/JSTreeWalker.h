@@ -33,7 +33,7 @@ class TreeWalker;
 class JSTreeWalker : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSTreeWalker(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<TreeWalker>);
+    JSTreeWalker(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<TreeWalker>);
     virtual ~JSTreeWalker();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -80,7 +80,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
-    JSTreeWalkerPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSTreeWalkerPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

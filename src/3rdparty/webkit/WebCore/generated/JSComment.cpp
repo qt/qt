@@ -112,7 +112,7 @@ JSObject* JSCommentPrototype::self(ExecState* exec, JSGlobalObject* globalObject
 
 const ClassInfo JSComment::s_info = { "Comment", &JSCharacterData::s_info, &JSCommentTable, 0 };
 
-JSComment::JSComment(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Comment> impl)
+JSComment::JSComment(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Comment> impl)
     : JSCharacterData(structure, globalObject, impl)
 {
 }

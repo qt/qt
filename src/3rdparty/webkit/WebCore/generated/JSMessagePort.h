@@ -33,7 +33,7 @@ class MessagePort;
 class JSMessagePort : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSMessagePort(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<MessagePort>);
+    JSMessagePort(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<MessagePort>);
     virtual ~JSMessagePort();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -76,7 +76,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
-    JSMessagePortPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSMessagePortPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

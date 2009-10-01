@@ -129,7 +129,7 @@ bool JSCSSValueListPrototype::getOwnPropertyDescriptor(ExecState* exec, const Id
 
 const ClassInfo JSCSSValueList::s_info = { "CSSValueList", &JSCSSValue::s_info, &JSCSSValueListTable, 0 };
 
-JSCSSValueList::JSCSSValueList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSValueList> impl)
+JSCSSValueList::JSCSSValueList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSValueList> impl)
     : JSCSSValue(structure, globalObject, impl)
 {
 }

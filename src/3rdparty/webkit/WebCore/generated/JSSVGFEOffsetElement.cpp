@@ -100,7 +100,7 @@ bool JSSVGFEOffsetElementPrototype::getOwnPropertyDescriptor(ExecState* exec, co
 
 const ClassInfo JSSVGFEOffsetElement::s_info = { "SVGFEOffsetElement", &JSSVGElement::s_info, &JSSVGFEOffsetElementTable, 0 };
 
-JSSVGFEOffsetElement::JSSVGFEOffsetElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEOffsetElement> impl)
+JSSVGFEOffsetElement::JSSVGFEOffsetElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEOffsetElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

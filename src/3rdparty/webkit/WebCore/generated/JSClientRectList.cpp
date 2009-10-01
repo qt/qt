@@ -130,7 +130,7 @@ bool JSClientRectListPrototype::getOwnPropertyDescriptor(ExecState* exec, const 
 
 const ClassInfo JSClientRectList::s_info = { "ClientRectList", 0, &JSClientRectListTable, 0 };
 
-JSClientRectList::JSClientRectList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<ClientRectList> impl)
+JSClientRectList::JSClientRectList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<ClientRectList> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

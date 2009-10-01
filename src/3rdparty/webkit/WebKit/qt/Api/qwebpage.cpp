@@ -1491,11 +1491,10 @@ QWebPage::QWebPage(QObject *parent)
 */
 QWebPage::~QWebPage()
 {
-    if (d->mainFrame) {
-        FrameLoader *loader = d->mainFrame->d->frame->loader();
-        if (loader)
-            loader->detachFromParent();
-    }
+    d->createMainFrame();
+    FrameLoader *loader = d->mainFrame->d->frame->loader();
+    if (loader)
+        loader->detachFromParent();
     if (d->inspector)
         d->inspector->setPage(0);
     delete d;
@@ -1936,6 +1935,7 @@ bool QWebPage::acceptNavigationRequest(QWebFrame *frame, const QWebNetworkReques
 */
 QString QWebPage::selectedText() const
 {
+    d->createMainFrame();
     return d->page->focusController()->focusedOrMainFrame()->selectedText();
 }
 
@@ -2491,6 +2491,7 @@ void QWebPage::updatePositionDependentActions(const QPoint &pos)
         }
     }
 
+    d->createMainFrame();
     WebCore::Frame* focusedFrame = d->page->focusController()->focusedOrMainFrame();
     HitTestResult result = focusedFrame->eventHandler()->hitTestResultAtPoint(focusedFrame->view()->windowToContents(pos), /*allowShadowContent*/ false);
 

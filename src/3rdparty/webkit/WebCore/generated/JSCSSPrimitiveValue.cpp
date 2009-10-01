@@ -192,7 +192,7 @@ bool JSCSSPrimitiveValuePrototype::getOwnPropertyDescriptor(ExecState* exec, con
 
 const ClassInfo JSCSSPrimitiveValue::s_info = { "CSSPrimitiveValue", &JSCSSValue::s_info, &JSCSSPrimitiveValueTable, 0 };
 
-JSCSSPrimitiveValue::JSCSSPrimitiveValue(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSPrimitiveValue> impl)
+JSCSSPrimitiveValue::JSCSSPrimitiveValue(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSPrimitiveValue> impl)
     : JSCSSValue(structure, globalObject, impl)
 {
 }

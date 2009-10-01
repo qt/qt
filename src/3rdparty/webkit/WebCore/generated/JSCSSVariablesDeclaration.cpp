@@ -136,7 +136,7 @@ bool JSCSSVariablesDeclarationPrototype::getOwnPropertyDescriptor(ExecState* exe
 
 const ClassInfo JSCSSVariablesDeclaration::s_info = { "CSSVariablesDeclaration", 0, &JSCSSVariablesDeclarationTable, 0 };
 
-JSCSSVariablesDeclaration::JSCSSVariablesDeclaration(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSVariablesDeclaration> impl)
+JSCSSVariablesDeclaration::JSCSSVariablesDeclaration(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSVariablesDeclaration> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

@@ -101,7 +101,7 @@ bool JSSVGFEGaussianBlurElementPrototype::getOwnPropertyDescriptor(ExecState* ex
 
 const ClassInfo JSSVGFEGaussianBlurElement::s_info = { "SVGFEGaussianBlurElement", &JSSVGElement::s_info, &JSSVGFEGaussianBlurElementTable, 0 };
 
-JSSVGFEGaussianBlurElement::JSSVGFEGaussianBlurElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEGaussianBlurElement> impl)
+JSSVGFEGaussianBlurElement::JSSVGFEGaussianBlurElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEGaussianBlurElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

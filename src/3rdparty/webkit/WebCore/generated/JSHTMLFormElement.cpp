@@ -143,7 +143,7 @@ bool JSHTMLFormElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const
 
 const ClassInfo JSHTMLFormElement::s_info = { "HTMLFormElement", &JSHTMLElement::s_info, &JSHTMLFormElementTable, 0 };
 
-JSHTMLFormElement::JSHTMLFormElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLFormElement> impl)
+JSHTMLFormElement::JSHTMLFormElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLFormElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

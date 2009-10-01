@@ -131,7 +131,7 @@ bool JSHTMLCanvasElementPrototype::getOwnPropertyDescriptor(ExecState* exec, con
 
 const ClassInfo JSHTMLCanvasElement::s_info = { "HTMLCanvasElement", &JSHTMLElement::s_info, &JSHTMLCanvasElementTable, 0 };
 
-JSHTMLCanvasElement::JSHTMLCanvasElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLCanvasElement> impl)
+JSHTMLCanvasElement::JSHTMLCanvasElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLCanvasElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

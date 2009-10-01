@@ -88,7 +88,7 @@ bool JSWorkerPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifi
 
 const ClassInfo JSWorker::s_info = { "Worker", &JSAbstractWorker::s_info, &JSWorkerTable, 0 };
 
-JSWorker::JSWorker(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Worker> impl)
+JSWorker::JSWorker(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Worker> impl)
     : JSAbstractWorker(structure, globalObject, impl)
 {
 }
@@ -114,7 +114,7 @@ JSValue jsWorkerOnmessage(ExecState* exec, const Identifier&, const PropertySlot
     UNUSED_PARAM(exec);
     Worker* imp = static_cast<Worker*>(castedThis->impl());
     if (EventListener* listener = imp->onmessage()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();

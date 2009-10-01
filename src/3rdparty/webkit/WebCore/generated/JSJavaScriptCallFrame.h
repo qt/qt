@@ -35,7 +35,7 @@ class JavaScriptCallFrame;
 class JSJavaScriptCallFrame : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSJavaScriptCallFrame(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<JavaScriptCallFrame>);
+    JSJavaScriptCallFrame(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<JavaScriptCallFrame>);
     virtual ~JSJavaScriptCallFrame();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -77,7 +77,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSJavaScriptCallFramePrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSJavaScriptCallFramePrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

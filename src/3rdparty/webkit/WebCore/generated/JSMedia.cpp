@@ -127,7 +127,7 @@ bool JSMediaPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifie
 
 const ClassInfo JSMedia::s_info = { "Media", 0, &JSMediaTable, 0 };
 
-JSMedia::JSMedia(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Media> impl)
+JSMedia::JSMedia(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Media> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

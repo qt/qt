@@ -162,7 +162,7 @@ bool JSSVGFETurbulenceElementPrototype::getOwnPropertyDescriptor(ExecState* exec
 
 const ClassInfo JSSVGFETurbulenceElement::s_info = { "SVGFETurbulenceElement", &JSSVGElement::s_info, &JSSVGFETurbulenceElementTable, 0 };
 
-JSSVGFETurbulenceElement::JSSVGFETurbulenceElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFETurbulenceElement> impl)
+JSSVGFETurbulenceElement::JSSVGFETurbulenceElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFETurbulenceElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

@@ -100,7 +100,7 @@ bool JSNavigatorPrototype::getOwnPropertyDescriptor(ExecState* exec, const Ident
 
 const ClassInfo JSNavigator::s_info = { "Navigator", 0, &JSNavigatorTable, 0 };
 
-JSNavigator::JSNavigator(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Navigator> impl)
+JSNavigator::JSNavigator(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Navigator> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
