@@ -480,7 +480,6 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
     if (isWindow()) {
         createWinId();
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));
-        data->window_state_internal = newstate;
         // Ensure the initial size is valid, since we store it as normalGeometry below.
         if ((!testAttribute(Qt::WA_Resized) && !isVisible()))
             adjustSize();
@@ -573,7 +572,6 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         }
     }
     data->window_state = newstate;
-    data->window_state_internal = newstate;
     QWindowStateChangeEvent e(oldstate);
     QApplication::sendEvent(this, &e);
 }
