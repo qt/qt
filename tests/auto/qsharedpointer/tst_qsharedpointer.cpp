@@ -308,7 +308,7 @@ extern int forwardDeclaredDestructorRunCount;
 
 void tst_QSharedPointer::forwardDeclaration1()
 {
-#if defined(Q_CC_SUN)
+#if defined(Q_CC_SUN) || defined(Q_CC_WINSCW) || defined(Q_CC_RVCT)
     QSKIP("This type of forward declaration is not valid with this compiler", SkipAll);
 #else
     externalForwardDeclaration();
