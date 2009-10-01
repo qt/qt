@@ -102,6 +102,7 @@ private slots:
     void orientationChanged();
     void iconSizeChanged();
     void toolButtonStyleChanged();
+    void visibilityChanged();
     void actionOwnership();
     void widgetAction();
     void accel();
@@ -997,6 +998,36 @@ void tst_QToolBar::iconSizeChanged()
 
 void tst_QToolBar::toolButtonStyleChanged()
 { DEPENDS_ON("toolButtonStyle()"); }
+
+void tst_QToolBar::visibilityChanged()
+{
+    QMainWindow mw;
+    QToolBar tb;
+    QSignalSpy spy(&tb, SIGNAL(visibilityChanged(bool)));
+
+    mw.addToolBar(&tb);
+    mw.show();
+
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).at(0).toBool(), true);
+    spy.clear();
+
+    tb.hide();
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).at(0).toBool(), false);
+    spy.clear();
+
+    tb.hide();
+    QCOMPARE(spy.count(), 0);
+
+    tb.show();
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).at(0).toBool(), true);
+    spy.clear();
+
+    tb.show();
+    QCOMPARE(spy.count(), 0);
+}
 
 void tst_QToolBar::actionOwnership()
 {
