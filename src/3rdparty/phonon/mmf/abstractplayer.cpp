@@ -25,6 +25,9 @@ QT_BEGIN_NAMESPACE
 using namespace Phonon;
 using namespace Phonon::MMF;
 
+/*! \class MMF::AbstractPlayer
+  \internal
+*/
 
 //-----------------------------------------------------------------------------
 // Constructor / destructor

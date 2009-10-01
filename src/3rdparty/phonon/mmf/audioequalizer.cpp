@@ -23,6 +23,10 @@ QT_BEGIN_NAMESPACE
 using namespace Phonon;
 using namespace Phonon::MMF;
 
+/*! \class MMF::AudioEqualizer
+  \internal
+*/
+
 AudioEqualizer::AudioEqualizer(QObject *parent) : AbstractAudioEffect::AbstractAudioEffect(parent, createParams())
 {
 }
