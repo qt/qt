@@ -408,6 +408,103 @@ void QGLWidgetPrivate::recreateEglSurface(bool force)
     }
 }
 
+// Selects which configs should be used
+EGLConfig Q_OPENGL_EXPORT qt_chooseEGLConfigForPixmap(bool hasAlpha, bool readOnly)
+{
+    // Cache the configs we select as they wont change:
+    static EGLConfig roPixmapRGBConfig = 0;
+    static EGLConfig roPixmapRGBAConfig = 0;
+    static EGLConfig rwPixmapRGBConfig = 0;
+    static EGLConfig rwPixmapRGBAConfig = 0;
+
+    EGLConfig* targetConfig;
+
+    if (hasAlpha) {
+        if (readOnly)
+            targetConfig = &roPixmapRGBAConfig;
+        else
+            targetConfig = &rwPixmapRGBAConfig;
+    }
+    else {
+        if (readOnly)
+            targetConfig = &roPixmapRGBConfig;
+        else
+            targetConfig = &rwPixmapRGBConfig;
+    }
+
+    if (*targetConfig == 0) {
+        QEglProperties configAttribs;
+        configAttribs.setValue(EGL_SURFACE_TYPE, EGL_PIXMAP_BIT);
+        configAttribs.setRenderableType(QEgl::OpenGL);
+        if (hasAlpha)
+            configAttribs.setValue(EGL_BIND_TO_TEXTURE_RGBA, EGL_TRUE);
+        else
+            configAttribs.setValue(EGL_BIND_TO_TEXTURE_RGB, EGL_TRUE);
+
+        // If this is going to be a render target, it needs to have a depth, stencil & sample buffer
+        if (!readOnly) {
+            configAttribs.setValue(EGL_DEPTH_SIZE, 1);
+            configAttribs.setValue(EGL_STENCIL_SIZE, 1);
+            configAttribs.setValue(EGL_SAMPLE_BUFFERS, 1);
+        }
+
+        EGLint configCount = 0;
+        do {
+            eglChooseConfig(QEglContext::defaultDisplay(0), configAttribs.properties(), targetConfig, 1, &configCount);
+            if (configCount > 0) {
+                // Got one
+                qDebug() << "Found an" << (hasAlpha ? "ARGB" : "RGB") << (readOnly ? "readonly" : "target" )
+                         << "config (" << int(*targetConfig) << ") to create a pixmap surface:";
+
+//                QEglProperties configProps(*targetConfig);
+//                qDebug() << configProps.toString();
+                break;
+            }
+            qWarning("choosePixmapConfig() - No suitible config found, reducing requirements");
+        } while (configAttribs.reduceConfiguration());
+    }
+
+    if (*targetConfig == 0)
+        qWarning("choosePixmapConfig() - Couldn't find a suitable config");
+
+    return *targetConfig;
+}
+
+bool Q_OPENGL_EXPORT qt_createEGLSurfaceForPixmap(QPixmapData* pmd, bool readOnly)
+{
+    Q_ASSERT(pmd->classId() == QPixmapData::X11Class);
+    QX11PixmapData* pixmapData = static_cast<QX11PixmapData*>(pmd);
+
+    bool hasAlpha = pixmapData->hasAlphaChannel();
+
+    EGLConfig pixmapConfig = qt_chooseEGLConfigForPixmap(hasAlpha, readOnly);
+
+    QEglProperties pixmapAttribs;
+
+    // If the pixmap can't be bound to a texture, it's pretty useless
+    pixmapAttribs.setValue(EGL_TEXTURE_TARGET, EGL_TEXTURE_2D);
+    if (hasAlpha)
+        pixmapAttribs.setValue(EGL_TEXTURE_FORMAT, EGL_TEXTURE_RGBA);
+    else
+        pixmapAttribs.setValue(EGL_TEXTURE_FORMAT, EGL_TEXTURE_RGB);
+
+    EGLSurface pixmapSurface;
+    pixmapSurface = eglCreatePixmapSurface(QEglContext::defaultDisplay(0),
+                                           pixmapConfig,
+                                           (EGLNativePixmapType) pixmapData->handle(),
+                                           pixmapAttribs.properties());
+    if (pixmapSurface == EGL_NO_SURFACE) {
+        qWarning("Failed to create a pixmap surface using config %d", (int)pixmapConfig);
+        return false;
+    }
+
+    Q_ASSERT(sizeof(Qt::HANDLE) >= sizeof(EGLSurface)); // Just to make totally sure!
+    pixmapData->gl_surface = (Qt::HANDLE)pixmapSurface;
+    pixmapData->is_cached = true; // Make sure the cleanup hook gets called
+
+    return true;
+}
+
 
 QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, const qint64 key,
                                                            QGLContext::BindOptions options)
@@ -449,82 +546,14 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
         destroyGlSurfaceForPixmap(pixmapData);
     }
 
-    EGLint pixmapAttribs[] = {
-        EGL_TEXTURE_TARGET, EGL_TEXTURE_2D,
-        EGL_TEXTURE_FORMAT, hasAlpha ? EGL_TEXTURE_RGBA : EGL_TEXTURE_RGB,
-        EGL_NONE
-    };
-    Q_ASSERT(sizeof(Qt::HANDLE) >= sizeof(EGLSurface)); // Just to make totally sure!
-    if (pixmapData->gl_surface == 0)
-        pixmapData->gl_surface = (Qt::HANDLE)EGL_NO_SURFACE;
-    EGLSurface pixmapSurface = (EGLSurface)pixmapData->gl_surface;
-    static EGLConfig pixmapRGBConfig = 0;
-    static EGLConfig pixmapRGBAConfig = 0;
-
-    // Check to see if we need to find a config
-    if ((hasAlpha && !pixmapRGBAConfig) || (!hasAlpha && !pixmapRGBConfig) ) {
-        const EGLint configAttribs[] = {
-            EGL_SURFACE_TYPE,           EGL_PIXMAP_BIT,
-            EGL_RENDERABLE_TYPE,	EGL_OPENGL_ES2_BIT,
-            EGL_DEPTH_SIZE,		0,
-            hasAlpha ? EGL_BIND_TO_TEXTURE_RGBA : EGL_BIND_TO_TEXTURE_RGB, EGL_TRUE,
-            EGL_NONE
-        };
-
-        EGLint configCount = 0;
-        eglChooseConfig(eglContext->display(), configAttribs, 0, 256, &configCount);
-        if (configCount == 0) {
-            haveTFP = false;
-            qWarning("bindTextureFromNativePixmap() - Couldn't find a suitable config");
-            return 0;
-        }
-
-        EGLConfig *configList = new EGLConfig[configCount];
-        eglChooseConfig(eglContext->display(), configAttribs, configList, configCount, &configCount);
-        Q_ASSERT(configCount);
-
-        // Try to create a pixmap surface for each config until one works
-        for (int i = 0; i < configCount; ++i) {
-            pixmapSurface = eglCreatePixmapSurface(eglContext->display(), configList[i],
-                                                   (EGLNativePixmapType) pixmapData->handle(),
-                                                   pixmapAttribs);
-            if (pixmapSurface != EGL_NO_SURFACE) {
-                // Got one!
-                qDebug() << "Found an" << (hasAlpha ? "ARGB" : "RGB")
-                         << "config (" << int(configList[i]) << ") to create a pixmap surface";
-                if (hasAlpha)
-                    pixmapRGBAConfig = configList[i];
-                else
-                    pixmapRGBConfig = configList[i];
-                pixmapData->gl_surface = (Qt::HANDLE)pixmapSurface;
-                break;
-            }
-        }
-        delete configList;
-
-        if ((hasAlpha && !pixmapRGBAConfig) || (!hasAlpha && !pixmapRGBConfig) ) {
-            qDebug("Couldn't create a pixmap surface with any of the provided configs");
+    if (pixmapData->gl_surface == 0) {
+        bool success = qt_createEGLSurfaceForPixmap(pixmapData, true);
+        if (!success) {
             haveTFP = false;
             return 0;
         }
     }
 
-    if (pixmapSurface == EGL_NO_SURFACE) {
-        pixmapSurface = eglCreatePixmapSurface(eglContext->display(),
-                                               hasAlpha? pixmapRGBAConfig : pixmapRGBConfig,
-                                               (EGLNativePixmapType) pixmapData->handle(),
-                                               pixmapAttribs);
-        if (pixmapSurface == EGL_NO_SURFACE) {
-            qWarning("Failed to create a pixmap surface using config %d",
-                        (int)(hasAlpha? pixmapRGBAConfig : pixmapRGBConfig));
-            haveTFP = false;
-            return 0;
-        }
-        pixmapData->gl_surface = (Qt::HANDLE)pixmapSurface;
-    }
-
-    // Make sure the cleanup hook gets called so we can delete the glx pixmap
-    pixmapData->is_cached = true;
     Q_ASSERT(pixmapData->gl_surface);
 
     GLuint textureId;
@@ -534,10 +563,10 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
 
     // bind the egl pixmap surface to a texture
     EGLBoolean success;
-    success = eglBindTexImage(eglContext->display(), pixmapSurface, EGL_BACK_BUFFER);
+    success = eglBindTexImage(eglContext->display(), (EGLSurface)pixmapData->gl_surface, EGL_BACK_BUFFER);
     if (success == EGL_FALSE) {
         qWarning() << "eglBindTexImage() failed:" << eglContext->errorString(eglGetError());
-        eglDestroySurface(eglContext->display(), pixmapSurface);
+        eglDestroySurface(eglContext->display(), (EGLSurface)pixmapData->gl_surface);
         pixmapData->gl_surface = (Qt::HANDLE)EGL_NO_SURFACE;
         haveTFP = false;
         return 0;
