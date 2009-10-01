@@ -8196,7 +8196,7 @@ void tst_QWidget::moveInResizeEvent()
     testWidget.setGeometry(50, 50, 200, 200);
     testWidget.show();
     QTest::qWaitForWindowShown(&testWidget);
-    QTest::qWait(10);
+    QTest::qWait(120);
 
     QRect expectedGeometry(100,100, 100, 100);
     QTRY_COMPARE(testWidget.geometry(), expectedGeometry);

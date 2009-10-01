@@ -1301,12 +1301,12 @@ void tst_QGraphicsProxyWidget::paintEvent()
     scene.addItem(&proxy);
 
     //make sure we flush all the paint events
-    QApplication::processEvents();
+    QTest::qWait(70);
     QTRY_VERIFY(proxy.paintCount > 1);
     proxy.paintCount = 0;
 
     w->update();
-    QApplication::processEvents();
+    QTest::qWait(30);
     QTRY_COMPARE(proxy.paintCount, 1); //the widget should have been painted now
 }
 

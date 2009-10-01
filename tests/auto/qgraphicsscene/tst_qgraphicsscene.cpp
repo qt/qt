@@ -1357,8 +1357,9 @@ void tst_QGraphicsScene::removeItem()
     QVERIFY(!hoverItem->isHovered);
 
     {
-        QTest::mouseMove(view.viewport(), view.mapFromScene(hoverItem->scenePos()), Qt::NoButton);
         QTest::qWait(250);
+        QTest::mouseMove(view.viewport(), view.mapFromScene(hoverItem->scenePos()), Qt::NoButton);
+        QTest::qWait(10);
         QMouseEvent moveEvent(QEvent::MouseMove, view.mapFromScene(hoverItem->scenePos()), Qt::NoButton, 0, 0);
         QApplication::sendEvent(view.viewport(), &moveEvent);
     }
