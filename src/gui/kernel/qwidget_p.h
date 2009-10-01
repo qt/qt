@@ -295,6 +295,7 @@ public:
 #ifdef Q_OS_SYMBIAN
     void handleSymbianDeferredFocusChanged();
     void setSoftKeys_sys(const QList<QAction*> &softkeys);
+    void activateSymbianWindow();
 #endif
 
     void raise_sys();

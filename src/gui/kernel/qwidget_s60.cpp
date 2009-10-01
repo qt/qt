@@ -405,6 +405,9 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         int x, y, w, h;
         data.crect.getRect(&x, &y, &w, &h);
         control->SetRect(TRect(TPoint(x, y), TSize(w, h)));
+
+        if (q->isVisible() && q->testAttribute(Qt::WA_Mapped))
+            activateSymbianWindow();
     }
 
     if (destroyw) {
@@ -436,10 +439,9 @@ void QWidgetPrivate::show_sys()
     if (q->internalWinId()) {
         
         WId id = q->internalWinId();
-        if (!extra->activated) {
-            QT_TRAP_THROWING(id->ActivateL());
-            extra->activated = 1;
-        }
+        if (!extra->activated)
+            activateSymbianWindow();
+
         id->MakeVisible(true);
         
         if(q->isWindow())
@@ -453,6 +455,19 @@ void QWidgetPrivate::show_sys()
     }
 
     invalidateBuffer(q->rect());
+}
+
+void QWidgetPrivate::activateSymbianWindow()
+{
+	Q_Q(QWidget);
+
+	Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
+	Q_ASSERT(q->testAttribute(Qt::WA_Mapped));
+	Q_ASSERT(!extra->activated);
+
+	WId id = q->internalWinId();
+	QT_TRAP_THROWING(id->ActivateL());
+	extra->activated = 1;
 }
 
 void QWidgetPrivate::hide_sys()
