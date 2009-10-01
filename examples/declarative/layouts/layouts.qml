@@ -5,7 +5,8 @@ Item { id: resizable
     GraphicsObjectContainer{
         anchors.fill:parent
         QGraphicsWidget{
-            geometry:{ "0,0," + parent.width.toString() + "x" + parent.height.toString(); }
+            size.width:parent.width
+            size.height:parent.height
             layout: QGraphicsLinearLayout{   
                 LayoutItem{
                     minimumSize: "100x100"
