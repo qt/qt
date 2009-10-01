@@ -599,7 +599,16 @@
     as blurring, colorizing or blooming is provided, and it is possible to
     implement custom effects.
 
-    \img graphicseffect-widget.png
+    \table
+    \row
+    \o
+    \o \img graphicseffect-plain.png
+    \o
+    \row
+    \o \img graphicseffect-blur.png
+    \o \img graphicseffect-colorize.png
+    \o \img graphicseffect-bloom.png
+    \endtable
 
     See the QGraphicsEffect class documentation for more information.
 
