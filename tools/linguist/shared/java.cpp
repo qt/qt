@@ -634,7 +634,6 @@ bool loadJava(Translator &translator, QIODevice &dev, ConversionData &cd)
     yyFileName = cd.m_sourceFileName;
     yyCurLineNo = 1;
     yyParenLineNo = 1;
-    yyCh = getChar();
 
     parse(&translator);
 
