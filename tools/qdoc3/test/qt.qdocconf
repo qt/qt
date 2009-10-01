@@ -97,6 +97,7 @@ excludedirs             = $QTDIR/src/3rdparty/clucene \
                           $QTDIR/src/3rdparty/phonon/gstreamer \
                           $QTDIR/src/3rdparty/phonon/ds9 \
                           $QTDIR/src/3rdparty/phonon/qt7 \
+                          $QTDIR/src/3rdparty/phonon/mmf \
                           $QTDIR/src/3rdparty/phonon/waveout
 
 sources.fileextensions  = "*.cpp *.qdoc *.mm"
