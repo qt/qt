@@ -3059,6 +3059,8 @@ void tst_QGraphicsProxyWidget::deleteProxyForChildWidget()
 
     proxy->setWidget(0);
     //just don't crash
+    QApplication::processEvents();
+    delete combo;
 }
 
 void tst_QGraphicsProxyWidget::bypassGraphicsProxyWidget_data()
@@ -3090,11 +3092,17 @@ void tst_QGraphicsProxyWidget::bypassGraphicsProxyWidget()
     if (bypass)
         flags |= Qt::BypassGraphicsProxyWidget;
     QFileDialog *dialog = new QFileDialog(widget, flags);
+    dialog->setOption(QFileDialog::DontUseNativeDialog, true);
     dialog->show();
 
     QCOMPARE(proxy->childItems().size(), bypass ? 0 : 1);
     if (!bypass)
         QCOMPARE(((QGraphicsProxyWidget *)proxy->childItems().first())->widget(), (QWidget *)dialog);
+
+    dialog->hide();
+    QApplication::processEvents();
+    delete dialog;
+    delete widget;
 }
 
 static void makeDndEvent(QGraphicsSceneDragDropEvent *event, QGraphicsView *view, const QPointF &pos)
