@@ -48,6 +48,23 @@
 
 QT_BEGIN_NAMESPACE
 
+QString Node::typeNames[] =
+    {
+        "Namespaces", 
+        "Classes", 
+        "Fake", 
+        "Enums", 
+        "Typedefs", 
+        "Functions and Macros", 
+        "Properties",
+        "Variables", 
+        "Targets",
+        "Qml Properties",
+        "Qml Signals",
+        "Qml Methods",
+        ""
+    };
+
 /*!
   \class Node
   \brief A node in a Tree.

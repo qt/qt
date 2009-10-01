@@ -38,17 +38,35 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "textinformationitem.h"
-#include "pixmapitem.h"
 
-TextInformationItem::TextInformationItem (QGraphicsItem * parent)
-    : QGraphicsTextItem(parent)
+#ifndef QDATASTREAM_P_H
+#define QDATASTREAM_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <qdatastream.h>
+
+QT_BEGIN_NAMESPACE
+
+#ifndef QT_NO_DATASTREAM
+class QDataStreamPrivate
 {
-    setFont(QFont("Comic Sans MS", 15));
-}
-#include <QDebug>
-void TextInformationItem::setMessage(const QString& text)
-{
-    setHtml(text);
-    setPos(parentItem()->boundingRect().center().x() - boundingRect().size().width()/2 , parentItem()->boundingRect().center().y());
-}
+public:
+    QDataStreamPrivate() : floatingPointPrecision(QDataStream::DoublePrecision) { }
+
+    QDataStream::FloatingPointPrecision floatingPointPrecision;
+};
+#endif
+
+QT_END_NAMESPACE
+
+#endif // QDATASTREAM_P_H

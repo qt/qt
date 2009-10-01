@@ -19,6 +19,7 @@ symbian: {
         QtXml.dll \
         QtGui.dll \
         QtNetwork.dll \
+        QtScript.dll \
         QtTest.dll \
         QtSql.dll
 
@@ -91,6 +92,10 @@ symbian: {
 
     contains(QT_CONFIG, phonon): {
        qtlibraries.sources += Phonon.dll
+    }
+
+    contains(QT_CONFIG, webkit): {
+        qtlibraries.sources += QtWebKit.dll
     }
 
     graphicssystems_plugins.path = $$QT_PLUGINS_BASE_DIR/graphicssystems

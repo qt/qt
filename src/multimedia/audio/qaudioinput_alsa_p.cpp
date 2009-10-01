@@ -57,6 +57,8 @@ QT_BEGIN_NAMESPACE
 
 //#define DEBUG_AUDIO 1
 
+static const int minimumIntervalTime = 50;
+
 QAudioInputPrivate::QAudioInputPrivate(const QByteArray &device, const QAudioFormat& audioFormat):
     settings(audioFormat)
 {
@@ -248,6 +250,7 @@ bool QAudioInputPrivate::open()
     qDebug()<<now.second()<<"s "<<now.msec()<<"ms :open()";
 #endif
     timeStamp.restart();
+    elapsedTimeOffset = 0;
 
     int dir;
     int err=-1;
@@ -283,69 +286,69 @@ bool QAudioInputPrivate::open()
     err = snd_pcm_hw_params_any( handle, hwparams );
     if ( err < 0 ) {
         fatal = true;
-        errMessage = QString(tr("QAudioInput: snd_pcm_hw_params_any: err = %1")).arg(err);
+        errMessage = QString::fromLatin1("QAudioInput: snd_pcm_hw_params_any: err = %1").arg(err);
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params_set_rate_resample( handle, hwparams, 1 );
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioInput: snd_pcm_hw_params_set_rate_resample: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioInput: snd_pcm_hw_params_set_rate_resample: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params_set_access( handle, hwparams, access );
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioInput: snd_pcm_hw_params_set_access: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioInput: snd_pcm_hw_params_set_access: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = setFormat();
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioInput: snd_pcm_hw_params_set_format: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioInput: snd_pcm_hw_params_set_format: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params_set_channels( handle, hwparams, (unsigned int)settings.channels() );
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioInput: snd_pcm_hw_params_set_channels: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioInput: snd_pcm_hw_params_set_channels: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params_set_rate_near( handle, hwparams, &freakuency, 0 );
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioInput: snd_pcm_hw_params_set_rate_near: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioInput: snd_pcm_hw_params_set_rate_near: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params_set_buffer_time_near(handle, hwparams, &buffer_time, &dir);
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioInput: snd_pcm_hw_params_set_buffer_time_near: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioInput: snd_pcm_hw_params_set_buffer_time_near: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params_set_period_time_near(handle, hwparams, &period_time, &dir);
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioInput: snd_pcm_hw_params_set_period_time_near: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioInput: snd_pcm_hw_params_set_period_time_near: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params_set_periods_near(handle, hwparams, &chunks, &dir);
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioInput: snd_pcm_hw_params_set_periods_near: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioInput: snd_pcm_hw_params_set_periods_near: err = %1").arg(err);
         }
     }
     if ( !fatal ) {
         err = snd_pcm_hw_params(handle, hwparams);
         if ( err < 0 ) {
             fatal = true;
-            errMessage = QString(tr("QAudioInput: snd_pcm_hw_params: err = %1")).arg(err);
+            errMessage = QString::fromLatin1("QAudioInput: snd_pcm_hw_params: err = %1").arg(err);
         }
     }
     if( err < 0) {
@@ -443,7 +446,7 @@ qint64 QAudioInputPrivate::read(char* data, qint64 len)
         if (readFrames >= 0) {
             err = snd_pcm_frames_to_bytes(handle, readFrames);
 #ifdef DEBUG_AUDIO
-            qDebug()<<QString(tr("PULL: read in bytes = %1 (frames=%2)")).arg(err).arg(readFrames).toLatin1().constData();
+            qDebug()<<QString::fromLatin1("PULL: read in bytes = %1 (frames=%2)").arg(err).arg(readFrames).toLatin1().constData();
 #endif
             break;
         } else if((readFrames == -EAGAIN) || (readFrames == -EINTR)) {
@@ -531,7 +534,10 @@ int QAudioInputPrivate::periodSize() const
 
 void QAudioInputPrivate::setNotifyInterval(int ms)
 {
-    intervalTime = ms;
+    if(ms >= minimumIntervalTime)
+        intervalTime = ms;
+    else
+        intervalTime = minimumIntervalTime;
 }
 
 int QAudioInputPrivate::notifyInterval() const
@@ -579,8 +585,9 @@ bool QAudioInputPrivate::deviceReady()
     if(deviceState != QAudio::ActiveState)
         return true;
 
-    if(timeStamp.elapsed() > intervalTime && intervalTime > 50) {
+    if((timeStamp.elapsed() + elapsedTimeOffset) > intervalTime) {
         emit notify();
+        elapsedTimeOffset = timeStamp.elapsed() + elapsedTimeOffset - intervalTime;
         timeStamp.restart();
     }
     return true;
@@ -650,7 +657,7 @@ qint64 InputPrivate::readData( char* data, qint64 len)
         if (readFrames >= 0) {
             err = snd_pcm_frames_to_bytes(audioDevice->handle, readFrames);
 #ifdef DEBUG_AUDIO
-            qDebug()<<QString(tr("PUSH: read in bytes = %1 (frames=%2)")).arg(err).arg(readFrames).toLatin1().constData();
+            qDebug()<<QString::fromLatin1("PUSH: read in bytes = %1 (frames=%2)").arg(err).arg(readFrames).toLatin1().constData();
 #endif
             break;
         } else if((readFrames == -EAGAIN) || (readFrames == -EINTR)) {

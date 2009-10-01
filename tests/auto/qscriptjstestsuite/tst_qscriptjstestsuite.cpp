@@ -640,6 +640,7 @@ tst_Suite::tst_Suite()
     addExpectedFailure("ecma_3/Unicode/regress-352044-01.js", "issues with Unicode escape sequences in JavaScript source code", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/Unicode/uc-001.js", "Unicode format-control character test (Category Cf.)", willFixInNextReleaseMessage);
 
+    addFileExclusion(".+/15\\.9\\.2\\..+", "unstable on slow machines");
     addFileExclusion(".+/15\\.9\\.5\\..+", "too slooow");
     addFileExclusion("regress-130451.js", "asserts");
     addFileExclusion("regress-322135-01.js", "asserts");

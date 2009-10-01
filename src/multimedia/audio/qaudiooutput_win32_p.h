@@ -109,6 +109,7 @@ private:
     bool resuming;
     int bytesAvailable;
     QTime timeStamp;
+    qint64 elapsedTimeOffset;
     QTime timeStampOpened;
     qint32 buffer_size;
     qint32 period_size;

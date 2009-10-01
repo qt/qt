@@ -186,7 +186,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
         results.setHostName(hostName);
         if (aceHostname.isEmpty()) {
             results.setError(QHostInfo::HostNotFound);
-            results.setErrorString(hostName.isEmpty() ? QObject::tr("No host name given") : QObject::tr("Invalid hostname"));
+            results.setErrorString(hostName.isEmpty() ? tr("No host name given") : tr("Invalid hostname"));
             return results;
         }
     } else {

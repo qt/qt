@@ -228,14 +228,14 @@ Q_INLINE_TEMPLATE QMatrix4x4::QMatrix4x4
     (const QGenericMatrix<N, M, qreal>& matrix)
 {
     const qreal *values = matrix.constData();
-    for (int col = 0; col < 4; ++col) {
-        for (int row = 0; row < 4; ++row) {
-            if (col < N && row < M)
-                m[col][row] = values[col * M + row];
-            else if (col == row)
-                m[col][row] = 1.0f;
+    for (int matrixCol = 0; matrixCol < 4; ++matrixCol) {
+        for (int matrixRow = 0; matrixRow < 4; ++matrixRow) {
+            if (matrixCol < N && matrixRow < M)
+                m[matrixCol][matrixRow] = values[matrixCol * M + matrixRow];
+            else if (matrixCol == matrixRow)
+                m[matrixCol][matrixRow] = 1.0f;
             else
-                m[col][row] = 0.0f;
+                m[matrixCol][matrixRow] = 0.0f;
         }
     }
     flagBits = General;
@@ -246,14 +246,14 @@ QGenericMatrix<N, M, qreal> QMatrix4x4::toGenericMatrix() const
 {
     QGenericMatrix<N, M, qreal> result;
     qreal *values = result.data();
-    for (int col = 0; col < N; ++col) {
-        for (int row = 0; row < M; ++row) {
-            if (col < 4 && row < 4)
-                values[col * M + row] = m[col][row];
-            else if (col == row)
-                values[col * M + row] = 1.0f;
+    for (int matrixCol = 0; matrixCol < N; ++matrixCol) {
+        for (int matrixRow = 0; matrixRow < M; ++matrixRow) {
+            if (matrixCol < 4 && matrixRow < 4)
+                values[matrixCol * M + matrixRow] = m[matrixCol][matrixRow];
+            else if (matrixCol == matrixRow)
+                values[matrixCol * M + matrixRow] = 1.0f;
             else
-                values[col * M + row] = 0.0f;
+                values[matrixCol * M + matrixRow] = 0.0f;
         }
     }
     return result;
@@ -261,17 +261,17 @@ QGenericMatrix<N, M, qreal> QMatrix4x4::toGenericMatrix() const
 
 #endif
 
-inline const qreal& QMatrix4x4::operator()(int row, int column) const
+inline const qreal& QMatrix4x4::operator()(int aRow, int aColumn) const
 {
-    Q_ASSERT(row >= 0 && row < 4 && column >= 0 && column < 4);
-    return m[column][row];
+    Q_ASSERT(aRow >= 0 && aRow < 4 && aColumn >= 0 && aColumn < 4);
+    return m[aColumn][aRow];
 }
 
-inline qreal& QMatrix4x4::operator()(int row, int column)
+inline qreal& QMatrix4x4::operator()(int aRow, int aColumn)
 {
-    Q_ASSERT(row >= 0 && row < 4 && column >= 0 && column < 4);
+    Q_ASSERT(aRow >= 0 && aRow < 4 && aColumn >= 0 && aColumn < 4);
     flagBits = General;
-    return m[column][row];
+    return m[aColumn][aRow];
 }
 
 inline QVector4D QMatrix4x4::column(int index) const

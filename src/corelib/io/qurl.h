@@ -189,6 +189,8 @@ public:
     static QUrl fromEncoded(const QByteArray &url, ParsingMode mode);
     // ### Qt 5: merge the two fromEncoded() functions, with mode = TolerantMode
 
+    static QUrl fromUserInput(const QString &userInput);
+
     void detach();
     bool isDetached() const;
 

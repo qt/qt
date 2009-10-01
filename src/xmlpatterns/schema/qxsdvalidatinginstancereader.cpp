@@ -455,7 +455,7 @@ bool XsdValidatingInstanceReader::validateElement(const XsdElement::Ptr &declara
             const QString value = attribute(m_xsiNilName);
             const Boolean::Ptr nil = Boolean::fromLexical(value);
             if (nil->hasError()) {
-                error(QtXmlPatterns::tr("attribute %1 contains invalid data: %1").arg(formatKeyword(QLatin1String("nil"))).arg(formatData(value)));
+                error(QtXmlPatterns::tr("attribute %1 contains invalid data: %2").arg(formatKeyword(QLatin1String("nil"))).arg(formatData(value)));
                 return false;
             }
 

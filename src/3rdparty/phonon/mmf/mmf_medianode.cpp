@@ -45,7 +45,7 @@ bool MMF::MediaNode::disconnectMediaNode(MediaNode *target)
     Q_UNUSED(target);
     m_target = 0;
     m_isApplied = false;
-    return false;
+    return true;
 }
 
 void MMF::MediaNode::setSource(MediaNode *source)
