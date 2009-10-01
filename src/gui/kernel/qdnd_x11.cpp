@@ -506,6 +506,7 @@ bool QX11Data::xdndMimeDataForAtom(Atom a, QMimeData *mimeData, QByteArray *data
                     *atomFormat = textprop.encoding;
                     *dataFormat = textprop.format;
                     *data = QByteArray((const char *) textprop.value, textprop.nitems * textprop.format / 8);
+                    ret = true;
 
                     DEBUG("    textprop type %lx\n"
                     "    textprop name '%s'\n"
@@ -541,10 +542,11 @@ bool QX11Data::xdndMimeDataForAtom(Atom a, QMimeData *mimeData, QByteArray *data
                 dm->xdndMimeTransferedPixmap[dm->xdndMimeTransferedPixmapIndex] = pm;
                 dm->xdndMimeTransferedPixmapIndex =
                             (dm->xdndMimeTransferedPixmapIndex + 1) % 2;
+                ret = true;
             }
         }
     }
-    return data;
+    return ret && data != 0;
 }
 
 //$$$
