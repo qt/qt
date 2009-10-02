@@ -111,14 +111,10 @@ QmlPropertyCache::Data QmlPropertyCache::create(const QMetaObject *metaObject,
 
     QmlPropertyCache::Data rv;
 
-    int propCount = metaObject->propertyCount();
-    for (int ii = propCount - 1; ii >= 0; --ii) {
-        QMetaProperty p = metaObject->property(ii);
-        QString propName = QLatin1String(p.name());
-        if (propName == property) {
-            rv.load(p);
-            return rv;
-        }
+    int idx = metaObject->indexOfProperty(property.toUtf8());
+    if (idx != -1) {
+        rv.load(metaObject->property(idx));
+        return rv;
     }
 
     int methodCount = metaObject->methodCount();
