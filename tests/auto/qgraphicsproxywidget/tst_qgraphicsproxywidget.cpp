@@ -1296,7 +1296,7 @@ void tst_QGraphicsProxyWidget::paintEvent()
     w->show();
     QTest::qWaitForWindowShown(w);
     QApplication::processEvents();
-
+    QTest::qWait(50);
     proxy.setWidget(w);
     scene.addItem(&proxy);
 
