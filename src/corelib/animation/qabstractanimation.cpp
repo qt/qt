@@ -292,22 +292,23 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
 
     switch (state) {
     case QAbstractAnimation::Paused:
+        q->setCurrentTime(currentTime);
+        if (!guard)
+            return;
+        QUnifiedTimer::instance()->unregisterAnimation(q);
+        break;
     case QAbstractAnimation::Running:
-        //this ensures that the value is updated now that the animation is running
-        if(oldState == QAbstractAnimation::Stopped) {
+        // this ensures that the value is updated now that the animation is running
+        if (oldState == QAbstractAnimation::Stopped) {
             q->setCurrentTime(currentTime);
             if (!guard)
                 return;
         }
 
-        // Register timer if our parent is not running.
         if (state == QAbstractAnimation::Running) {
-            if (!group || group->state() == QAbstractAnimation::Stopped) {
+            // Register timer if our parent is not running
+            if (!group || group->state() == QAbstractAnimation::Stopped)
                 QUnifiedTimer::instance()->registerAnimation(q);
-            }
-        } else {
-            //new state is paused
-            QUnifiedTimer::instance()->unregisterAnimation(q);
         }
         break;
     case QAbstractAnimation::Stopped:
