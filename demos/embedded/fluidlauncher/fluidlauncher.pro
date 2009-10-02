@@ -166,6 +166,7 @@ symbian {
     viewerimages.sources = $$PWD/../embeddedsvgviewer/shapes.svg
     viewerimages.path = /data/images/qt/demos/embeddedsvgviewer
 
+    # demos/mediaplayer make also use of these files.
     desktopservices_music.sources = \
         $$PWD/../desktopservices/data/*.mp3 \
         $$PWD/../desktopservices/data/*.wav

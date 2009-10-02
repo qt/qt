@@ -30,6 +30,7 @@ symbian {
     TARGET.UID3 = 0xA000C613
 
      addFiles.sources = ../../tests/auto/mediaobject/media/sax.mp3
-     addFiles.path = /data/qt/qmediaplayer
+
+     addFiles.path = /data/sounds/
      DEPLOYMENT += addFiles
 }

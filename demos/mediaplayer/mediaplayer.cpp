@@ -653,7 +653,7 @@ void MediaPlayer::setFile(const QString &fileName)
 void MediaPlayer::openFile()
 {
     QStringList fileNames = QFileDialog::getOpenFileNames(this, QString(),
-                                                          QDesktopServices::storageLocation(QDesktopServices::MoviesLocation));
+                                                          QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
     m_MediaObject.clearQueue();
     if (fileNames.size() > 0) {
         QString fileName = fileNames[0];
