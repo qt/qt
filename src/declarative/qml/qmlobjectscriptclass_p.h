@@ -77,13 +77,12 @@ public:
     void setProperty(QObject *, const Identifier &name, const QScriptValue &);
 
 protected:
-    virtual QScriptClass::QueryFlags queryProperty(const Object &, const Identifier &, 
+    virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
                                                    QScriptClass::QueryFlags flags);
 
-    virtual QScriptValue property(const Object &, const Identifier &);
-    virtual void setProperty(const Object &, const Identifier &name, const QScriptValue &);
-    virtual QObject *toQObject(const Object &, bool *ok = 0);
-    virtual void destroyed(const Object &);
+    virtual QScriptValue property(Object *, const Identifier &);
+    virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
+    virtual QObject *toQObject(Object *, bool *ok = 0);
 
 private:
     QmlPropertyCache::Data *lastData;

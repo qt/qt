@@ -55,7 +55,6 @@
 
 #include <private/qmlrefcount_p.h>
 #include <private/qscriptdeclarativeclass_p.h>
-#include <private/qmlengine_p.h>
 
 QT_BEGIN_NAMESPACE
 

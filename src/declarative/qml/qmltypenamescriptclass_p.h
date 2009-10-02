@@ -71,11 +71,11 @@ public:
     QScriptValue newObject(QObject *, QmlTypeNameCache *);
 
 protected:
-    virtual QScriptClass::QueryFlags queryProperty(const Object &, const Identifier &, 
+    virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
                                                    QScriptClass::QueryFlags flags);
 
-    virtual QScriptValue property(const Object &, const Identifier &);
-    virtual void setProperty(const Object &, const Identifier &name, const QScriptValue &);
+    virtual QScriptValue property(Object *, const Identifier &);
+    virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
 
 private:
     QmlEngine *engine;

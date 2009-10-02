@@ -45,7 +45,7 @@
 
 QT_BEGIN_NAMESPACE
 
-struct TypeNameData {
+struct TypeNameData : public QScriptDeclarativeClass::Object {
     TypeNameData(QObject *o, QmlType *t) : object(o), type(t), typeNamespace(0) {}
     TypeNameData(QObject *o, QmlTypeNameCache *n) : object(o), type(0), typeNamespace(n) {
         if (typeNamespace) typeNamespace->addref();
@@ -73,19 +73,19 @@ QScriptValue QmlTypeNameScriptClass::newObject(QObject *object, QmlType *type)
 {
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
-    return QScriptDeclarativeClass::newObject(scriptEngine, this, (Object)new TypeNameData(object, type));
+    return QScriptDeclarativeClass::newObject(scriptEngine, this, new TypeNameData(object, type));
 }
 
 QScriptValue QmlTypeNameScriptClass::newObject(QObject *object, QmlTypeNameCache *ns)
 {
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
-    return QScriptDeclarativeClass::newObject(scriptEngine, this, (Object)new TypeNameData(object, ns));
+    return QScriptDeclarativeClass::newObject(scriptEngine, this, new TypeNameData(object, ns));
 }
 
 
 QScriptClass::QueryFlags 
-QmlTypeNameScriptClass::queryProperty(const Object &obj, const Identifier &name, 
+QmlTypeNameScriptClass::queryProperty(Object *obj, const Identifier &name, 
                                       QScriptClass::QueryFlags flags)
 {
     Q_UNUSED(flags);
@@ -134,7 +134,7 @@ QmlTypeNameScriptClass::queryProperty(const Object &obj, const Identifier &name,
     }
 }
 
-QScriptValue QmlTypeNameScriptClass::property(const Object &obj, const Identifier &name)
+QScriptValue QmlTypeNameScriptClass::property(Object *obj, const Identifier &name)
 {
     QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
     if (type) {
@@ -146,7 +146,7 @@ QScriptValue QmlTypeNameScriptClass::property(const Object &obj, const Identifie
     }
 }
 
-void QmlTypeNameScriptClass::setProperty(const Object &o, const Identifier &n, const QScriptValue &v)
+void QmlTypeNameScriptClass::setProperty(Object *o, const Identifier &n, const QScriptValue &v)
 {
     Q_ASSERT(object);
     Q_ASSERT(!type);

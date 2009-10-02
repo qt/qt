@@ -46,7 +46,7 @@
 
 QT_BEGIN_NAMESPACE
 
-struct ObjectData {
+struct ObjectData : public QScriptDeclarativeClass::Object {
     ObjectData(QObject *o) : object(o) {}
     QGuard<QObject> object;
 };
@@ -77,7 +77,7 @@ QScriptValue QmlObjectScriptClass::newQObject(QObject *object)
 {
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
-    return newObject(scriptEngine, this, (Object)new ObjectData(object));
+    return newObject(scriptEngine, this, new ObjectData(object));
 }
 
 QObject *QmlObjectScriptClass::toQObject(const QScriptValue &value) const
@@ -86,7 +86,7 @@ QObject *QmlObjectScriptClass::toQObject(const QScriptValue &value) const
 }
 
 QScriptClass::QueryFlags 
-QmlObjectScriptClass::queryProperty(const Object &object, const Identifier &name, 
+QmlObjectScriptClass::queryProperty(Object *object, const Identifier &name, 
                                     QScriptClass::QueryFlags flags)
 {
     return queryProperty(toQObject(object), name, flags);
@@ -132,7 +132,7 @@ QmlObjectScriptClass::queryProperty(QObject *obj, const Identifier &name,
     return rv;
 }
 
-QScriptValue QmlObjectScriptClass::property(const Object &object, const Identifier &name)
+QScriptValue QmlObjectScriptClass::property(Object *object, const Identifier &name)
 {
     return property(toQObject(object), name);
 }
@@ -155,7 +155,7 @@ QScriptValue QmlObjectScriptClass::property(QObject *obj, const Identifier &name
         QScriptValue sobj = scriptEngine->newQObject(obj);
         return sobj.property(toString(name));
     } else {
-        if (lastData->propType < QVariant::UserType) {
+        if ((uint)lastData->propType < QVariant::UserType) {
             QmlValueType *valueType = enginePriv->valueTypes[lastData->propType];
             if (valueType)
                 return enginePriv->valueTypeClass->newObject(obj, lastData->coreIndex, valueType);
@@ -177,7 +177,7 @@ QScriptValue QmlObjectScriptClass::property(QObject *obj, const Identifier &name
     }
 }
 
-void QmlObjectScriptClass::setProperty(const Object &object, 
+void QmlObjectScriptClass::setProperty(Object *object, 
                                        const Identifier &name, 
                                        const QScriptValue &value)
 {
@@ -193,7 +193,6 @@ void QmlObjectScriptClass::setProperty(QObject *obj,
     Q_ASSERT(obj);
     Q_ASSERT(lastData);
 
-    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
     QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
 
     // ### Can well known types be optimized?
@@ -201,7 +200,7 @@ void QmlObjectScriptClass::setProperty(QObject *obj,
     QmlMetaPropertyPrivate::write(obj, *lastData, v, enginePriv->currentExpression->context());
 }
 
-QObject *QmlObjectScriptClass::toQObject(const Object &object, bool *ok)
+QObject *QmlObjectScriptClass::toQObject(Object *object, bool *ok)
 {
     if (ok) *ok = true;
 
@@ -209,13 +208,7 @@ QObject *QmlObjectScriptClass::toQObject(const Object &object, bool *ok)
     return data->object.data();
 }
 
-void QmlObjectScriptClass::destroyed(const Object &object)
-{
-    ObjectData *data = (ObjectData*)object;
-    delete data;
-}
-
-QScriptValue QmlObjectScriptClass::tostring(QScriptContext *context, QScriptEngine *engine)
+QScriptValue QmlObjectScriptClass::tostring(QScriptContext *context, QScriptEngine *)
 {
     QObject* obj = context->thisObject().toQObject();
 

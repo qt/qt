@@ -46,7 +46,7 @@
 
 QT_BEGIN_NAMESPACE
 
-struct ContextData {
+struct ContextData : public QScriptDeclarativeClass::Object {
     ContextData(QmlContext *c) : context(c) {}
     QGuard<QmlContext> context;
 };
@@ -69,11 +69,11 @@ QScriptValue QmlContextScriptClass::newContext(QmlContext *context)
 {
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
-    return newObject(scriptEngine, this, (Object)new ContextData(context));
+    return newObject(scriptEngine, this, new ContextData(context));
 }
 
 QScriptClass::QueryFlags 
-QmlContextScriptClass::queryProperty(const Object &object, const Identifier &name, 
+QmlContextScriptClass::queryProperty(Object *object, const Identifier &name, 
                                      QScriptClass::QueryFlags flags)
 {
     Q_UNUSED(flags);
@@ -93,7 +93,6 @@ QmlContextScriptClass::queryProperty(const Object &object, const Identifier &nam
     if (lastPropertyIndex != -1)
         return QScriptClass::HandlesReadAccess;
 
-    // ### Check for attached properties
     if (ep->currentExpression && cp->imports && bindContext == ep->currentExpression->context()) {
         QmlTypeNameCache::Data *data = cp->imports->data(name);
 
@@ -102,22 +101,6 @@ QmlContextScriptClass::queryProperty(const Object &object, const Identifier &nam
             return QScriptClass::HandlesReadAccess;
         }
     }
-
-#if 0
-    QmlType *type = 0; ImportedNamespace *ns = 0;
-    if (currentExpression && bindContext == currentExpression->context() && 
-        propName.at(0).isUpper() && resolveType(bindContext->d_func()->imports, propName.toUtf8(), &type, 0, 0, 0, &ns)) {
-        
-        if (type || ns) {
-            // Must be either an attached property, or an enum
-            resolveData.object = bindContext->d_func()->defaultObjects.first();
-            resolveData.type = type;
-            resolveData.ns = ns;
-            return QScriptClass::HandlesReadAccess;
-        }
-
-    } 
-#endif
 
     for (int ii = 0; ii < cp->defaultObjects.count(); ++ii) {
         QScriptClass::QueryFlags rv = 
@@ -137,11 +120,9 @@ QmlContextScriptClass::queryProperty(const Object &object, const Identifier &nam
     return 0;
 }
 
-QScriptValue QmlContextScriptClass::property(const Object &object, const Identifier &name)
+QScriptValue QmlContextScriptClass::property(Object *object, const Identifier &name)
 {
     Q_UNUSED(object);
-
-    Q_ASSERT(lastPropertyIndex != -1 || lastDefaultObject != -1);
 
     QmlContext *bindContext = ((ContextData *)object)->context.data();
     Q_ASSERT(bindContext);
@@ -149,18 +130,6 @@ QScriptValue QmlContextScriptClass::property(const Object &object, const Identif
     QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
     QmlContextPrivate *cp = QmlContextPrivate::get(bindContext);
 
-
-    // ### Check for attached properties
-#if 0
-    if (resolveData.type || resolveData.ns) {
-        QmlTypeNameBridge tnb = { 
-            resolveData.object, 
-            resolveData.type, 
-            resolveData.ns 
-        };
-        return scriptEngine.newObject(typeNameClass, scriptEngine.newVariant(qVariantFromValue(tnb)));
-    } 
-#endif
 
     if (lastData) {
 
@@ -176,12 +145,7 @@ QScriptValue QmlContextScriptClass::property(const Object &object, const Identif
             rv =  ep->objectClass->newQObject(cp->idValues[lastPropertyIndex].data());
         } else {
             QVariant value = cp->propertyValues.at(lastPropertyIndex);
-            if (QmlMetaType::isObject(value.userType())) {
-                rv = ep->objectClass->newQObject(QmlMetaType::toQObject(value));
-            } else {
-                // ### Shouldn't this be qScriptValueFromValue()
-                rv = ep->scriptEngine.newVariant(value);
-            }
+            return ep->scriptValueFromVariant(value);
         }
 
         ep->capturedProperties << 
@@ -200,7 +164,7 @@ QScriptValue QmlContextScriptClass::property(const Object &object, const Identif
     }
 }
 
-void QmlContextScriptClass::setProperty(const Object &object, const Identifier &name, 
+void QmlContextScriptClass::setProperty(Object *object, const Identifier &name, 
                                         const QScriptValue &value)
 {
     Q_ASSERT(lastDefaultObject != -1);
