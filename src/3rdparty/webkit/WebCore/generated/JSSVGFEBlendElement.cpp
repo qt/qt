@@ -157,7 +157,7 @@ bool JSSVGFEBlendElementPrototype::getOwnPropertyDescriptor(ExecState* exec, con
 
 const ClassInfo JSSVGFEBlendElement::s_info = { "SVGFEBlendElement", &JSSVGElement::s_info, &JSSVGFEBlendElementTable, 0 };
 
-JSSVGFEBlendElement::JSSVGFEBlendElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEBlendElement> impl)
+JSSVGFEBlendElement::JSSVGFEBlendElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEBlendElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

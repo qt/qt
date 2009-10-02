@@ -142,7 +142,7 @@ bool JSHTMLButtonElementPrototype::getOwnPropertyDescriptor(ExecState* exec, con
 
 const ClassInfo JSHTMLButtonElement::s_info = { "HTMLButtonElement", &JSHTMLElement::s_info, &JSHTMLButtonElementTable, 0 };
 
-JSHTMLButtonElement::JSHTMLButtonElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLButtonElement> impl)
+JSHTMLButtonElement::JSHTMLButtonElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLButtonElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

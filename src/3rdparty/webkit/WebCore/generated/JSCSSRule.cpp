@@ -151,7 +151,7 @@ bool JSCSSRulePrototype::getOwnPropertyDescriptor(ExecState* exec, const Identif
 
 const ClassInfo JSCSSRule::s_info = { "CSSRule", 0, &JSCSSRuleTable, 0 };
 
-JSCSSRule::JSCSSRule(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSRule> impl)
+JSCSSRule::JSCSSRule(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSRule> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

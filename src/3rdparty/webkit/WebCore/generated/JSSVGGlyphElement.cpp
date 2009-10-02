@@ -56,7 +56,7 @@ JSObject* JSSVGGlyphElementPrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSSVGGlyphElement::s_info = { "SVGGlyphElement", &JSSVGElement::s_info, 0, 0 };
 
-JSSVGGlyphElement::JSSVGGlyphElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGGlyphElement> impl)
+JSSVGGlyphElement::JSSVGGlyphElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGGlyphElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

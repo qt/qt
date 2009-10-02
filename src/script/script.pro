@@ -62,6 +62,11 @@ DEFINES += WTF_USE_JAVASCRIPTCORE_BINDINGS=1 WTF_CHANGES=1
 
 DEFINES += NDEBUG
 
+solaris-g++:isEqual(QT_ARCH,sparc) {
+    CONFIG -= separate_debug_info
+    CONFIG += no_debug_info
+}
+
 # Avoid JSC C API functions being exported.
 DEFINES += JS_EXPORT="" JS_EXPORTDATA=""
 

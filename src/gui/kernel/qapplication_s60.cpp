@@ -91,6 +91,8 @@ extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
 
 QWidget *qt_button_down = 0;                     // widget got last button-down
 
+QSymbianControl *QSymbianControl::lastFocusedControl = 0;
+
 QS60Data* qGlobalS60Data()
 {
     return qt_s60Data();
@@ -350,6 +352,7 @@ QSymbianControl::~QSymbianControl()
 {
     if (S60->curWin == this)
         S60->curWin = 0;
+    setFocusSafely(false);
     S60->appUi()->RemoveFromStack(this);
     delete m_longTapDetector;
 }
@@ -865,8 +868,23 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
             || (qwidget->windowType() & Qt::Popup) == Qt::Popup)
         return;
 
-    QEvent *deferredFocusEvent = new QEvent(QEvent::SymbianDeferredFocusChanged);
-    QApplication::postEvent(qwidget, deferredFocusEvent);
+    if (IsFocused() && IsVisible()) {
+        QApplication::setActiveWindow(qwidget->window());
+#ifdef Q_WS_S60
+        // If widget is fullscreen, hide status pane and button container
+        // otherwise show them.
+        CEikStatusPane* statusPane = S60->statusPane();
+        CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
+        bool isFullscreen = qwidget->windowState() & Qt::WindowFullScreen;
+        if (statusPane && (statusPane->IsVisible() == isFullscreen))
+            statusPane->MakeVisible(!isFullscreen);
+        if (buttonGroup && (buttonGroup->IsVisible() == isFullscreen))
+            buttonGroup->MakeVisible(!isFullscreen);
+#endif
+    } else if (QApplication::activeWindow() == qwidget->window()) {
+        QApplication::setActiveWindow(0);
+    }
+    // else { We don't touch the active window unless we were explicitly activated or deactivated }
 }
 
 void QSymbianControl::HandleResourceChange(int resourceType)
@@ -908,6 +926,31 @@ TTypeUid::Ptr QSymbianControl::MopSupplyObject(TTypeUid id)
         return id.MakePtr(this);
 
     return CCoeControl::MopSupplyObject(id);
+}
+
+void QSymbianControl::setFocusSafely(bool focus)
+{
+    // The stack hack in here is very unfortunate, but it is the only way to ensure proper
+    // focus in Symbian. If this is not executed, the control which happens to be on
+    // the top of the stack may randomly be assigned focus by Symbian, for example
+    // when creating new windows (specifically in CCoeAppUi::HandleStackChanged()).
+    if (focus) {
+        S60->appUi()->RemoveFromStack(this);
+        // Symbian doesn't automatically remove focus from the last focused control, so we need to
+        // remember it and clear focus ourselves.
+        if (lastFocusedControl && lastFocusedControl != this)
+            lastFocusedControl->SetFocus(false);
+        QT_TRAP_THROWING(S60->appUi()->AddToStackL(this,
+                ECoeStackPriorityDefault + 1, ECoeStackFlagStandard)); // Note the + 1
+        lastFocusedControl = this;
+        this->SetFocus(true);
+    } else {
+        S60->appUi()->RemoveFromStack(this);
+        QT_TRAP_THROWING(S60->appUi()->AddToStackL(this,
+                ECoeStackPriorityDefault, ECoeStackFlagStandard));
+        lastFocusedControl = 0;
+        this->SetFocus(false);
+    }
 }
 
 /*!
@@ -1046,6 +1089,10 @@ void qt_init(QApplicationPrivate * /* priv */, int)
             S60->wsSession().SetPointerCursorMode(EPointerCursorNormal);
     }
 #endif
+
+    QFont systemFont;
+    systemFont.setFamily(systemFont.defaultFamily());
+    QApplicationPrivate::setSystemFont(systemFont);
 
 /*
  ### Commented out for now as parameter handling not needed in SOS(yet). Code below will break testlib with -o flag

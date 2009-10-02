@@ -117,7 +117,7 @@ JSObject* JSRGBColorPrototype::self(ExecState* exec, JSGlobalObject* globalObjec
 
 const ClassInfo JSRGBColor::s_info = { "RGBColor", 0, &JSRGBColorTable, 0 };
 
-JSRGBColor::JSRGBColor(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<RGBColor> impl)
+JSRGBColor::JSRGBColor(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<RGBColor> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

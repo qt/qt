@@ -562,27 +562,20 @@ void Generator::generateModuleWarning(const ClassNode *classe,
     QString module = classe->moduleName();
     if (!module.isEmpty()) {
         Text text;
-        if (!editionModuleMap["Console"].contains(module)) {
+        if (!editionModuleMap["DesktopLight"].contains(module)) {
             text << Atom::ParaLeft
                  << Atom(Atom::FormattingLeft, ATOM_FORMATTING_BOLD)
-                 << "This class is not part of the Qt Console Edition."
-                 << Atom(Atom::FormattingRight, ATOM_FORMATTING_BOLD)
-                 << Atom::ParaRight;
-        }
-        else if (!editionModuleMap["DesktopLight"].contains(module)) {
-            text << Atom::ParaLeft
-                 << Atom(Atom::FormattingLeft, ATOM_FORMATTING_BOLD)
-                 << "This class is not part of the Qt Desktop Light Edition."
+                 << "This class is not part of the Qt GUI Framework Edition."
                  << Atom(Atom::FormattingRight, ATOM_FORMATTING_BOLD)
                  << Atom::ParaRight;
         }
         else if (module == "Qt3Support") {
             text << Atom::ParaLeft
                  << Atom(Atom::FormattingLeft, ATOM_FORMATTING_BOLD)
-                 << "Note to Qt Desktop Light Edition users:"
+                 << "Note to Qt GUI Framework Edition users:"
                  << Atom(Atom::FormattingRight, ATOM_FORMATTING_BOLD)
                  << " This class is only available in the "
-                 << Atom(Atom::AutoLink, "Qt Desktop Edition")
+                 << Atom(Atom::AutoLink, "Qt Full Framework Edition")
                  << "." << Atom::ParaRight;
         }
 

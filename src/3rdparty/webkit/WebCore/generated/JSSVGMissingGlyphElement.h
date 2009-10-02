@@ -33,7 +33,7 @@ class SVGMissingGlyphElement;
 class JSSVGMissingGlyphElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGMissingGlyphElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGMissingGlyphElement>);
+    JSSVGMissingGlyphElement(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGMissingGlyphElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
@@ -47,7 +47,7 @@ public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
-    JSSVGMissingGlyphElementPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSSVGMissingGlyphElementPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 

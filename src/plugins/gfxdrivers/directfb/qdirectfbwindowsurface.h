@@ -97,6 +97,7 @@ public:
     IDirectFBWindow *directFBWindow() const;
 #endif
 private:
+    void setOpaque(bool opaque);
     void updateFormat();
     void releaseSurface();
     QDirectFBWindowSurface *sibling;
@@ -112,6 +113,7 @@ private:
 #endif
 
     DFBSurfaceFlipFlags flipFlags;
+    bool noSystemBackground;
     bool boundingRectFlip;
 #ifdef QT_DIRECTFB_TIMING
     int frames;

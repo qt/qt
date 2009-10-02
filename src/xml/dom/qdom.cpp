@@ -6438,22 +6438,23 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
 #ifndef QT_NO_TEXTCODEC
         const QDomNodePrivate* n = first;
 
+        QTextCodec *codec = 0;
+
         if (n && n->isProcessingInstruction() && n->nodeName() == QLatin1String("xml")) {
             // we have an XML declaration
             QString data = n->nodeValue();
             QRegExp encoding(QString::fromLatin1("encoding\\s*=\\s*((\"([^\"]*)\")|('([^']*)'))"));
             encoding.indexIn(data);
             QString enc = encoding.cap(3);
-            if (enc.isEmpty()) {
-                enc = encoding.cap(5);
-            }
             if (enc.isEmpty())
-                s.setCodec(QTextCodec::codecForName("UTF-8"));
-            else
-                s.setCodec(QTextCodec::codecForName(enc.toLatin1().data()));
-        } else {
-            s.setCodec(QTextCodec::codecForName("UTF-8"));
+                enc = encoding.cap(5);
+            if (!enc.isEmpty())
+                codec = QTextCodec::codecForName(enc.toLatin1().data());
         }
+        if (!codec)
+            codec = QTextCodec::codecForName("UTF-8");
+        if (codec)
+            s.setCodec(codec);
 #endif
         bool doc = false;
 

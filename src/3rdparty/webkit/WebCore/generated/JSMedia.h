@@ -33,7 +33,7 @@ class Media;
 class JSMedia : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSMedia(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Media>);
+    JSMedia(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Media>);
     virtual ~JSMedia();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -68,7 +68,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSMediaPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSMediaPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

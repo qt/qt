@@ -126,3 +126,11 @@ information about a particular change.
    means that code that assigned a float to a variant would create a
    variant with userType QMetaType::Float, instead of QVariant::Double.
 
+ - QDataStream will now read and write all floating point numbers with the 
+   same precision, regardless of whether it's streamed into or out from a 
+   float or double. This is to maintain compatibility across platforms with
+   a different default precision for qreal. The default is 64-bit precision
+   for all floating point numbers, and this can be changed using the new 
+   function setFloatingPointPrecision(). Set Qt_4_5 as the version of the 
+   QDataStream to get the behavior of previous versions.
+   

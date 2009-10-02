@@ -170,7 +170,7 @@ bool JSSVGMarkerElementPrototype::getOwnPropertyDescriptor(ExecState* exec, cons
 
 const ClassInfo JSSVGMarkerElement::s_info = { "SVGMarkerElement", &JSSVGElement::s_info, &JSSVGMarkerElementTable, 0 };
 
-JSSVGMarkerElement::JSSVGMarkerElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGMarkerElement> impl)
+JSSVGMarkerElement::JSSVGMarkerElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGMarkerElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

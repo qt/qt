@@ -37,6 +37,9 @@ win32-* {
     LIBS += -lwinmm
 }
 
+contains(JAVASCRIPTCORE_JIT,yes): DEFINES+=ENABLE_JIT=1
+contains(JAVASCRIPTCORE_JIT,no): DEFINES+=ENABLE_JIT=0
+
 # In debug mode JIT disabled until crash fixed
 win32-* {
     CONFIG(debug):!contains(DEFINES, ENABLE_JIT=1): DEFINES+=ENABLE_JIT=0

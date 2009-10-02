@@ -1402,7 +1402,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
                     SetWindowPlacement(q->internalWinId(), &wndpl);
                 } else {
 #else
-                if (data.window_state_internal & Qt::WindowMaximized) {
+                if (data.window_state & Qt::WindowMaximized) {
                     qt_wince_maximize(q);
                 } else {
 #endif

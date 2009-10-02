@@ -3551,6 +3551,8 @@ void QSvgHandler::parse()
         case QXmlStreamReader::ProcessingInstruction:
             processingInstruction(xml->processingInstructionTarget().toString(), xml->processingInstructionData().toString());
             break;
+        default:
+            break;
         }
     }
     resolveGradients(m_doc);

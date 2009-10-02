@@ -129,7 +129,7 @@ bool JSWebKitTransitionEventPrototype::getOwnPropertyDescriptor(ExecState* exec,
 
 const ClassInfo JSWebKitTransitionEvent::s_info = { "WebKitTransitionEvent", &JSEvent::s_info, &JSWebKitTransitionEventTable, 0 };
 
-JSWebKitTransitionEvent::JSWebKitTransitionEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebKitTransitionEvent> impl)
+JSWebKitTransitionEvent::JSWebKitTransitionEvent(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebKitTransitionEvent> impl)
     : JSEvent(structure, globalObject, impl)
 {
 }

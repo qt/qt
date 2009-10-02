@@ -119,7 +119,7 @@ JSObject* JSHTMLBaseFontElementPrototype::self(ExecState* exec, JSGlobalObject* 
 
 const ClassInfo JSHTMLBaseFontElement::s_info = { "HTMLBaseFontElement", &JSHTMLElement::s_info, &JSHTMLBaseFontElementTable, 0 };
 
-JSHTMLBaseFontElement::JSHTMLBaseFontElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLBaseFontElement> impl)
+JSHTMLBaseFontElement::JSHTMLBaseFontElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLBaseFontElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

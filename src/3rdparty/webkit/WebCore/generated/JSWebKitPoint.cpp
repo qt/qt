@@ -70,7 +70,7 @@ JSObject* JSWebKitPointPrototype::self(ExecState* exec, JSGlobalObject* globalOb
 
 const ClassInfo JSWebKitPoint::s_info = { "WebKitPoint", 0, &JSWebKitPointTable, 0 };
 
-JSWebKitPoint::JSWebKitPoint(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebKitPoint> impl)
+JSWebKitPoint::JSWebKitPoint(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebKitPoint> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

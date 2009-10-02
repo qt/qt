@@ -133,9 +133,6 @@ public:
     int alloc_region_index;
 //    int alloc_region_revision;
 #endif
-#if defined(Q_WS_WINCE)
-    uint window_state_internal : 4;
-#endif
     QRect wrect;
 };
 

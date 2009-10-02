@@ -1357,8 +1357,9 @@ void tst_QGraphicsScene::removeItem()
     QVERIFY(!hoverItem->isHovered);
 
     {
-        QTest::mouseMove(view.viewport(), view.mapFromScene(hoverItem->scenePos()), Qt::NoButton);
         QTest::qWait(250);
+        QTest::mouseMove(view.viewport(), view.mapFromScene(hoverItem->scenePos()), Qt::NoButton);
+        QTest::qWait(10);
         QMouseEvent moveEvent(QEvent::MouseMove, view.mapFromScene(hoverItem->scenePos()), Qt::NoButton, 0, 0);
         QApplication::sendEvent(view.viewport(), &moveEvent);
     }
@@ -1632,6 +1633,7 @@ void tst_QGraphicsScene::hoverEvents_siblings()
 #endif
     qApp->setActiveWindow(&view);
     view.activateWindow();
+    QTest::qWait(70);
 
     QCursor::setPos(view.mapToGlobal(QPoint(-5, -5)));
 
@@ -1655,7 +1657,7 @@ void tst_QGraphicsScene::hoverEvents_siblings()
             qApp->processEvents(); // this posts updates from the scene to the view
             qApp->processEvents(); // which trigger a repaint here
 
-            QVERIFY(items.at(i)->isHovered);
+            QTRY_VERIFY(items.at(i)->isHovered);
             if (j && i > 0)
                 QVERIFY(!items.at(i - 1)->isHovered);
             if (!j && i < 14)
@@ -1702,9 +1704,8 @@ void tst_QGraphicsScene::hoverEvents_parentChild()
     view.rotate(10);
     view.scale(1.7, 1.7);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QTest::qWaitForWindowShown(&view);
+    QTest::qWait(50);
 
     QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseMove);
     mouseEvent.setScenePos(QPointF(-1000, -1000));
@@ -3060,52 +3061,53 @@ void tst_QGraphicsScene::tabFocus_sceneWithFocusableItems()
     widget.show();
     qApp->setActiveWindow(&widget);
     widget.activateWindow();
-    QTest::qWait(125);
+    QTest::qWaitForWindowShown(&widget);
+    QApplication::processEvents();
 
     dial1->setFocus();
-    QVERIFY(dial1->hasFocus());
+    QTRY_VERIFY(dial1->hasFocus());
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
-    QVERIFY(view->hasFocus());
+    QApplication::processEvents();
+    QTRY_VERIFY(view->hasFocus());
     QVERIFY(view->viewport()->hasFocus());
     QVERIFY(scene.hasFocus());
     QVERIFY(item->hasFocus());
 
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
-    QVERIFY(dial2->hasFocus());
+    QApplication::processEvents();
+    QTRY_VERIFY(dial2->hasFocus());
 
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
-    QVERIFY(view->hasFocus());
-    QVERIFY(view->viewport()->hasFocus());
-    QVERIFY(scene.hasFocus());
-    QVERIFY(item->hasFocus());
+    QApplication::processEvents();
+    QTRY_VERIFY(view->hasFocus());
+    QTRY_VERIFY(view->viewport()->hasFocus());
+    QTRY_VERIFY(scene.hasFocus());
+    QTRY_VERIFY(item->hasFocus());
 
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
-    QVERIFY(dial1->hasFocus());
+    QApplication::processEvents();
+    QTRY_VERIFY(dial1->hasFocus());
 
     // If the item requests input focus, it can only ensure that the scene
     // sets focus on itself, but the scene cannot request focus from any view.
     item->setFocus();
-    QTest::qWait(125);
-    QVERIFY(!view->hasFocus());
+    QApplication::processEvents();
+    QTRY_VERIFY(!view->hasFocus());
     QVERIFY(!view->viewport()->hasFocus());
-    QVERIFY(scene.hasFocus());
+    QTRY_VERIFY(scene.hasFocus());
     QVERIFY(item->hasFocus());
 
     view->setFocus();
-    QTest::qWait(125);
-    QVERIFY(view->hasFocus());
-    QVERIFY(view->viewport()->hasFocus());
-    QVERIFY(scene.hasFocus());
-    QVERIFY(item->hasFocus());
+    QApplication::processEvents();
+    QTRY_VERIFY(view->hasFocus());
+    QTRY_VERIFY(view->viewport()->hasFocus());
+    QTRY_VERIFY(scene.hasFocus());
+    QTRY_VERIFY(item->hasFocus());
 
     // Check that everyone loses focus when the widget is hidden.
     widget.hide();
-    QTest::qWait(125);
-    QVERIFY(!view->hasFocus());
+    QTest::qWait(15);
+    QTRY_VERIFY(!view->hasFocus());
     QVERIFY(!view->viewport()->hasFocus());
     QVERIFY(!scene.hasFocus());
     QVERIFY(!item->hasFocus());
@@ -3114,8 +3116,8 @@ void tst_QGraphicsScene::tabFocus_sceneWithFocusableItems()
     widget.show();
     qApp->setActiveWindow(&widget);
     widget.activateWindow();
-    QTest::qWait(125);
-    QVERIFY(view->hasFocus());
+    QTest::qWaitForWindowShown(&widget);
+    QTRY_VERIFY(view->hasFocus());
     QVERIFY(view->viewport()->hasFocus());
     QVERIFY(scene.hasFocus());
     QVERIFY(item->hasFocus());
@@ -3193,47 +3195,48 @@ void tst_QGraphicsScene::tabFocus_sceneWithFocusWidgets()
     widget.show();
     qApp->setActiveWindow(&widget);
     widget.activateWindow();
-    QTest::qWait(125);
+    QTest::qWaitForWindowShown(&widget);
+    QApplication::processEvents();
 
     dial1->setFocus();
-    QVERIFY(dial1->hasFocus());
+    QTRY_VERIFY(dial1->hasFocus());
 
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
-    QVERIFY(view->hasFocus());
-    QVERIFY(view->viewport()->hasFocus());
-    QVERIFY(scene.hasFocus());
+    QApplication::processEvents();
+    QTRY_VERIFY(view->hasFocus());
+    QTRY_VERIFY(view->viewport()->hasFocus());
+    QTRY_VERIFY(scene.hasFocus());
     QCOMPARE(widget1->tabs, 0);
     QVERIFY(widget1->hasFocus());
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
-    QCOMPARE(widget1->tabs, 1);
-    QVERIFY(widget2->hasFocus());
+    QApplication::processEvents();
+    QTRY_COMPARE(widget1->tabs, 1);
+    QTRY_VERIFY(widget2->hasFocus());
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
-    QCOMPARE(widget2->tabs, 1);
-    QVERIFY(dial2->hasFocus());
+    QApplication::processEvents();
+    QTRY_COMPARE(widget2->tabs, 1);
+    QTRY_VERIFY(dial2->hasFocus());
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
-    QVERIFY(widget2->hasFocus());
+    QApplication::processEvents();
+    QTRY_VERIFY(widget2->hasFocus());
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
-    QCOMPARE(widget2->backTabs, 1);
-    QVERIFY(widget1->hasFocus());
+    QApplication::processEvents();
+    QTRY_COMPARE(widget2->backTabs, 1);
+    QTRY_VERIFY(widget1->hasFocus());
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
-    QCOMPARE(widget1->backTabs, 1);
-    QVERIFY(dial1->hasFocus());
+    QApplication::processEvents();
+    QTRY_COMPARE(widget1->backTabs, 1);
+    QTRY_VERIFY(dial1->hasFocus());
 
     widget1->setFocus();
     view->viewport()->setFocus();
     widget.hide();
-    QTest::qWait(125);
+    QTest::qWait(15);
     widget.show();
     qApp->setActiveWindow(&widget);
     widget.activateWindow();
-    QTest::qWait(125);
-    QVERIFY(widget1->hasFocus());
+    QTest::qWaitForWindowShown(&widget);
+    QTRY_VERIFY(widget1->hasFocus());
 }
 
 void tst_QGraphicsScene::tabFocus_sceneWithNestedFocusWidgets()
@@ -3276,10 +3279,10 @@ void tst_QGraphicsScene::tabFocus_sceneWithNestedFocusWidgets()
     widget.show();
     qApp->setActiveWindow(&widget);
     widget.activateWindow();
-    QTest::qWait(125);
+    QTest::qWaitForWindowShown(&widget);
 
     dial1->setFocus();
-    QVERIFY(dial1->hasFocus());
+    QTRY_VERIFY(dial1->hasFocus());
 
     EventSpy focusInSpy_1(widget1, QEvent::FocusIn);
     EventSpy focusOutSpy_1(widget1, QEvent::FocusOut);
@@ -3291,78 +3294,79 @@ void tst_QGraphicsScene::tabFocus_sceneWithNestedFocusWidgets()
     EventSpy focusOutSpy_2(widget2, QEvent::FocusOut);
 
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
-    QVERIFY(widget1->hasFocus());
+    QApplication::processEvents();
+    QTRY_VERIFY(widget1->hasFocus());
     QCOMPARE(focusInSpy_1.count(), 1);
 
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
-    QVERIFY(!widget1->hasFocus());
+    QApplication::processEvents();
+    QTRY_VERIFY(!widget1->hasFocus());
     QVERIFY(widget1_1->hasFocus());
     QCOMPARE(focusOutSpy_1.count(), 1);
     QCOMPARE(focusInSpy_1_1.count(), 1);
 
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
-    QVERIFY(!widget1_1->hasFocus());
+    QApplication::processEvents();
+    QTRY_VERIFY(!widget1_1->hasFocus());
     QVERIFY(widget1_2->hasFocus());
     QCOMPARE(focusOutSpy_1_1.count(), 1);
     QCOMPARE(focusInSpy_1_2.count(), 1);
 
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
-    QVERIFY(!widget1_2->hasFocus());
+    QApplication::processEvents();
+    QTRY_VERIFY(!widget1_2->hasFocus());
     QVERIFY(widget2->hasFocus());
     QCOMPARE(focusOutSpy_1_2.count(), 1);
     QCOMPARE(focusInSpy_2.count(), 1);
 
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
-    QTest::qWait(125);
-    QVERIFY(!widget2->hasFocus());
+    QApplication::processEvents();
+    QTRY_VERIFY(!widget2->hasFocus());
     QVERIFY(dial2->hasFocus());
     QCOMPARE(focusOutSpy_2.count(), 1);
 
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
-    QVERIFY(widget2->hasFocus());
+    QApplication::processEvents();
+    QTRY_VERIFY(widget2->hasFocus());
     QCOMPARE(focusInSpy_2.count(), 2);
 
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
-    QVERIFY(!widget2->hasFocus());
-    QVERIFY(widget1_2->hasFocus());
+    QApplication::processEvents();
+    QTRY_VERIFY(!widget2->hasFocus());
+    QTRY_VERIFY(widget1_2->hasFocus());
     QCOMPARE(focusOutSpy_2.count(), 2);
     QCOMPARE(focusInSpy_1_2.count(), 2);
 
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
-    QVERIFY(!widget1_2->hasFocus());
-    QVERIFY(widget1_1->hasFocus());
+    QApplication::processEvents();
+    QTRY_VERIFY(!widget1_2->hasFocus());
+    QTRY_VERIFY(widget1_1->hasFocus());
     QCOMPARE(focusOutSpy_1_2.count(), 2);
     QCOMPARE(focusInSpy_1_1.count(), 2);
 
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
-    QVERIFY(!widget1_1->hasFocus());
-    QVERIFY(widget1->hasFocus());
+    QApplication::processEvents();
+    QTRY_VERIFY(!widget1_1->hasFocus());
+    QTRY_VERIFY(widget1->hasFocus());
     QCOMPARE(focusOutSpy_1_1.count(), 2);
     QCOMPARE(focusInSpy_1.count(), 2);
 
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
-    QTest::qWait(125);
-    QVERIFY(!widget1->hasFocus());
-    QVERIFY(dial1->hasFocus());
+    QApplication::processEvents();
+    QTRY_VERIFY(!widget1->hasFocus());
+    QTRY_VERIFY(dial1->hasFocus());
     QCOMPARE(focusOutSpy_1.count(), 2);
 
     widget1->setFocus();
     view->viewport()->setFocus();
     widget.hide();
-    QTest::qWait(125);
+    QTest::qWait(12);
     widget.show();
     qApp->setActiveWindow(&widget);
     widget.activateWindow();
-    QTest::qWait(125);
-    QVERIFY(widget1->hasFocus());
+    QTest::qWaitForWindowShown(&widget);
+    QApplication::processEvents();
+    QTRY_VERIFY(widget1->hasFocus());
 }
 
 void tst_QGraphicsScene::style()
@@ -3454,10 +3458,10 @@ void tst_QGraphicsScene::task139782_containsItemBoundingRect()
 
 void tst_QGraphicsScene::task176178_itemIndexMethodBreaksSceneRect()
 {
-    QGraphicsScene scene; 
-    scene.setItemIndexMethod(QGraphicsScene::NoIndex); 
-    QGraphicsRectItem *rect = new QGraphicsRectItem; 
-    rect->setRect(0,0,100,100); 
+    QGraphicsScene scene;
+    scene.setItemIndexMethod(QGraphicsScene::NoIndex);
+    QGraphicsRectItem *rect = new QGraphicsRectItem;
+    rect->setRect(0,0,100,100);
     scene.addItem(rect);
     QCOMPARE(scene.sceneRect(), rect->rect());
 }
@@ -3518,7 +3522,7 @@ void tst_QGraphicsScene::sorting_data()
 void tst_QGraphicsScene::sorting()
 {
     QFETCH(bool, cache);
-    
+
     QGraphicsScene scene;
     scene.setSortCacheEnabled(cache);
 
@@ -3552,15 +3556,15 @@ void tst_QGraphicsScene::sorting()
     c_2_1_1->setPos(-16, 16);
     c_2_2->setPos(-16, 28);
     c_2_2->setZValue(1);
-    
-    c_1->setFlag(QGraphicsItem::ItemIsMovable);    
-    c_1_1->setFlag(QGraphicsItem::ItemIsMovable);    
-    c_1_1_1->setFlag(QGraphicsItem::ItemIsMovable);    
-    c_1_2->setFlag(QGraphicsItem::ItemIsMovable);    
-    c_2->setFlag(QGraphicsItem::ItemIsMovable);    
-    c_2_1->setFlag(QGraphicsItem::ItemIsMovable);    
-    c_2_1_1->setFlag(QGraphicsItem::ItemIsMovable);    
-    c_2_2->setFlag(QGraphicsItem::ItemIsMovable);    
+
+    c_1->setFlag(QGraphicsItem::ItemIsMovable);
+    c_1_1->setFlag(QGraphicsItem::ItemIsMovable);
+    c_1_1_1->setFlag(QGraphicsItem::ItemIsMovable);
+    c_1_2->setFlag(QGraphicsItem::ItemIsMovable);
+    c_2->setFlag(QGraphicsItem::ItemIsMovable);
+    c_2_1->setFlag(QGraphicsItem::ItemIsMovable);
+    c_2_1_1->setFlag(QGraphicsItem::ItemIsMovable);
+    c_2_2->setFlag(QGraphicsItem::ItemIsMovable);
 
     t_1->setData(0, "t_1");
     c_1->setData(0, "c_1");
@@ -3585,7 +3589,7 @@ void tst_QGraphicsScene::sorting()
     foreach (QGraphicsItem *item, scene.items(32, 31, 4, 55))
         qDebug() << "\t" << item->data(0).toString();
     qDebug() << "}";
-    
+
     QCOMPARE(scene.items(32, 31, 4, 55),
              QList<QGraphicsItem *>()
              << c_1_2 << c_1_1_1 << c_1 << t_1);

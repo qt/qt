@@ -102,7 +102,7 @@ bool JSSVGFEDiffuseLightingElementPrototype::getOwnPropertyDescriptor(ExecState*
 
 const ClassInfo JSSVGFEDiffuseLightingElement::s_info = { "SVGFEDiffuseLightingElement", &JSSVGElement::s_info, &JSSVGFEDiffuseLightingElementTable, 0 };
 
-JSSVGFEDiffuseLightingElement::JSSVGFEDiffuseLightingElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEDiffuseLightingElement> impl)
+JSSVGFEDiffuseLightingElement::JSSVGFEDiffuseLightingElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEDiffuseLightingElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

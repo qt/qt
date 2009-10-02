@@ -1452,6 +1452,7 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 #if !defined(QT_OPENGL_ES_2)
     bool success = qt_resolve_version_2_0_functions(d->ctx);
     Q_ASSERT(success);
+    Q_UNUSED(success);
 #endif
 
     d->shaderManager = new QGLEngineShaderManager(d->ctx);

@@ -230,7 +230,7 @@ bool JSElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identif
 
 const ClassInfo JSElement::s_info = { "Element", &JSNode::s_info, &JSElementTable, 0 };
 
-JSElement::JSElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Element> impl)
+JSElement::JSElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Element> impl)
     : JSNode(structure, globalObject, impl)
 {
 }
@@ -406,7 +406,7 @@ JSValue jsElementOnabort(ExecState* exec, const Identifier&, const PropertySlot&
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onabort()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -418,7 +418,7 @@ JSValue jsElementOnblur(ExecState* exec, const Identifier&, const PropertySlot& 
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onblur()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -430,7 +430,7 @@ JSValue jsElementOnchange(ExecState* exec, const Identifier&, const PropertySlot
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onchange()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -442,7 +442,7 @@ JSValue jsElementOnclick(ExecState* exec, const Identifier&, const PropertySlot&
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onclick()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -454,7 +454,7 @@ JSValue jsElementOncontextmenu(ExecState* exec, const Identifier&, const Propert
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->oncontextmenu()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -466,7 +466,7 @@ JSValue jsElementOndblclick(ExecState* exec, const Identifier&, const PropertySl
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->ondblclick()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -478,7 +478,7 @@ JSValue jsElementOndrag(ExecState* exec, const Identifier&, const PropertySlot& 
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->ondrag()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -490,7 +490,7 @@ JSValue jsElementOndragend(ExecState* exec, const Identifier&, const PropertySlo
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->ondragend()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -502,7 +502,7 @@ JSValue jsElementOndragenter(ExecState* exec, const Identifier&, const PropertyS
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->ondragenter()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -514,7 +514,7 @@ JSValue jsElementOndragleave(ExecState* exec, const Identifier&, const PropertyS
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->ondragleave()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -526,7 +526,7 @@ JSValue jsElementOndragover(ExecState* exec, const Identifier&, const PropertySl
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->ondragover()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -538,7 +538,7 @@ JSValue jsElementOndragstart(ExecState* exec, const Identifier&, const PropertyS
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->ondragstart()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -550,7 +550,7 @@ JSValue jsElementOndrop(ExecState* exec, const Identifier&, const PropertySlot& 
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->ondrop()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -562,7 +562,7 @@ JSValue jsElementOnerror(ExecState* exec, const Identifier&, const PropertySlot&
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onerror()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -574,7 +574,7 @@ JSValue jsElementOnfocus(ExecState* exec, const Identifier&, const PropertySlot&
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onfocus()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -586,7 +586,7 @@ JSValue jsElementOninput(ExecState* exec, const Identifier&, const PropertySlot&
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->oninput()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -598,7 +598,7 @@ JSValue jsElementOninvalid(ExecState* exec, const Identifier&, const PropertySlo
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->oninvalid()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -610,7 +610,7 @@ JSValue jsElementOnkeydown(ExecState* exec, const Identifier&, const PropertySlo
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onkeydown()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -622,7 +622,7 @@ JSValue jsElementOnkeypress(ExecState* exec, const Identifier&, const PropertySl
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onkeypress()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -634,7 +634,7 @@ JSValue jsElementOnkeyup(ExecState* exec, const Identifier&, const PropertySlot&
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onkeyup()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -646,7 +646,7 @@ JSValue jsElementOnload(ExecState* exec, const Identifier&, const PropertySlot& 
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onload()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -658,7 +658,7 @@ JSValue jsElementOnmousedown(ExecState* exec, const Identifier&, const PropertyS
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onmousedown()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -670,7 +670,7 @@ JSValue jsElementOnmousemove(ExecState* exec, const Identifier&, const PropertyS
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onmousemove()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -682,7 +682,7 @@ JSValue jsElementOnmouseout(ExecState* exec, const Identifier&, const PropertySl
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onmouseout()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -694,7 +694,7 @@ JSValue jsElementOnmouseover(ExecState* exec, const Identifier&, const PropertyS
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onmouseover()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -706,7 +706,7 @@ JSValue jsElementOnmouseup(ExecState* exec, const Identifier&, const PropertySlo
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onmouseup()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -718,7 +718,7 @@ JSValue jsElementOnmousewheel(ExecState* exec, const Identifier&, const Property
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onmousewheel()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -730,7 +730,7 @@ JSValue jsElementOnscroll(ExecState* exec, const Identifier&, const PropertySlot
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onscroll()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -742,7 +742,7 @@ JSValue jsElementOnselect(ExecState* exec, const Identifier&, const PropertySlot
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onselect()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -754,7 +754,7 @@ JSValue jsElementOnsubmit(ExecState* exec, const Identifier&, const PropertySlot
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onsubmit()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -766,7 +766,7 @@ JSValue jsElementOnbeforecut(ExecState* exec, const Identifier&, const PropertyS
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onbeforecut()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -778,7 +778,7 @@ JSValue jsElementOncut(ExecState* exec, const Identifier&, const PropertySlot& s
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->oncut()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -790,7 +790,7 @@ JSValue jsElementOnbeforecopy(ExecState* exec, const Identifier&, const Property
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onbeforecopy()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -802,7 +802,7 @@ JSValue jsElementOncopy(ExecState* exec, const Identifier&, const PropertySlot& 
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->oncopy()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -814,7 +814,7 @@ JSValue jsElementOnbeforepaste(ExecState* exec, const Identifier&, const Propert
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onbeforepaste()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -826,7 +826,7 @@ JSValue jsElementOnpaste(ExecState* exec, const Identifier&, const PropertySlot&
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onpaste()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -838,7 +838,7 @@ JSValue jsElementOnreset(ExecState* exec, const Identifier&, const PropertySlot&
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onreset()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -850,7 +850,7 @@ JSValue jsElementOnsearch(ExecState* exec, const Identifier&, const PropertySlot
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onsearch()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -862,7 +862,7 @@ JSValue jsElementOnselectstart(ExecState* exec, const Identifier&, const Propert
     UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(castedThis->impl());
     if (EventListener* listener = imp->onselectstart()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();

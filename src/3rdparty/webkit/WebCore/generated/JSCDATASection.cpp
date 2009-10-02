@@ -112,7 +112,7 @@ JSObject* JSCDATASectionPrototype::self(ExecState* exec, JSGlobalObject* globalO
 
 const ClassInfo JSCDATASection::s_info = { "CDATASection", &JSText::s_info, &JSCDATASectionTable, 0 };
 
-JSCDATASection::JSCDATASection(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CDATASection> impl)
+JSCDATASection::JSCDATASection(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CDATASection> impl)
     : JSText(structure, globalObject, impl)
 {
 }

@@ -1296,17 +1296,18 @@ void tst_QGraphicsProxyWidget::paintEvent()
     w->show();
     QTest::qWaitForWindowShown(w);
     QApplication::processEvents();
-
+    QTest::qWait(50);
     proxy.setWidget(w);
     scene.addItem(&proxy);
 
     //make sure we flush all the paint events
-    QApplication::processEvents();
+    QTest::qWait(70);
     QTRY_VERIFY(proxy.paintCount > 1);
+    QTest::qWait(70);
     proxy.paintCount = 0;
 
     w->update();
-    QApplication::processEvents();
+    QTest::qWait(30);
     QTRY_COMPARE(proxy.paintCount, 1); //the widget should have been painted now
 }
 
@@ -1491,9 +1492,7 @@ void tst_QGraphicsProxyWidget::scrollUpdate()
 
     View view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QTest::qWaitForWindowShown(&view);
     QTRY_VERIFY(view.npaints >= 1);
     QTest::qWait(20);
     widget->paintEventRegion = QRegion();
@@ -3061,6 +3060,8 @@ void tst_QGraphicsProxyWidget::deleteProxyForChildWidget()
 
     proxy->setWidget(0);
     //just don't crash
+    QApplication::processEvents();
+    delete combo;
 }
 
 void tst_QGraphicsProxyWidget::bypassGraphicsProxyWidget_data()
@@ -3092,11 +3093,17 @@ void tst_QGraphicsProxyWidget::bypassGraphicsProxyWidget()
     if (bypass)
         flags |= Qt::BypassGraphicsProxyWidget;
     QFileDialog *dialog = new QFileDialog(widget, flags);
+    dialog->setOption(QFileDialog::DontUseNativeDialog, true);
     dialog->show();
 
     QCOMPARE(proxy->childItems().size(), bypass ? 0 : 1);
     if (!bypass)
         QCOMPARE(((QGraphicsProxyWidget *)proxy->childItems().first())->widget(), (QWidget *)dialog);
+
+    dialog->hide();
+    QApplication::processEvents();
+    delete dialog;
+    delete widget;
 }
 
 static void makeDndEvent(QGraphicsSceneDragDropEvent *event, QGraphicsView *view, const QPointF &pos)

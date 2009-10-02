@@ -123,7 +123,7 @@ JSObject* JSHTMLVideoElementPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSHTMLVideoElement::s_info = { "HTMLVideoElement", &JSHTMLMediaElement::s_info, &JSHTMLVideoElementTable, 0 };
 
-JSHTMLVideoElement::JSHTMLVideoElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLVideoElement> impl)
+JSHTMLVideoElement::JSHTMLVideoElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLVideoElement> impl)
     : JSHTMLMediaElement(structure, globalObject, impl)
 {
 }

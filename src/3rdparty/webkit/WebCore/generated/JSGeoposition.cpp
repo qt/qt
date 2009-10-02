@@ -72,7 +72,7 @@ JSObject* JSGeopositionPrototype::self(ExecState* exec, JSGlobalObject* globalOb
 
 const ClassInfo JSGeoposition::s_info = { "Geoposition", 0, &JSGeopositionTable, 0 };
 
-JSGeoposition::JSGeoposition(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Geoposition> impl)
+JSGeoposition::JSGeoposition(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Geoposition> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

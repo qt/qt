@@ -1177,10 +1177,6 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     if (f & Qt::MSWindowsOwnDC)
         q->setAttribute(Qt::WA_NativeWindow);
 
-#ifdef Q_WS_WINCE
-    data.window_state_internal = 0;
-#endif
-
     q->setAttribute(Qt::WA_QuitOnClose); // might be cleared in adjustQuitOnCloseAttribute()
     adjustQuitOnCloseAttribute();
 
@@ -8334,12 +8330,6 @@ bool QWidget::event(QEvent *event)
                                Qt::LeftButton,
                                touchEvent->modifiers());
         (void) QApplication::sendEvent(this, &mouseEvent);
-        break;
-    }
-    case QEvent::SymbianDeferredFocusChanged: {
-#ifdef Q_OS_SYMBIAN
-        d->handleSymbianDeferredFocusChanged();
-#endif
         break;
     }
 #ifndef QT_NO_PROPERTIES

@@ -293,7 +293,6 @@ public:
 
     void setMask_sys(const QRegion &);
 #ifdef Q_OS_SYMBIAN
-    void handleSymbianDeferredFocusChanged();
     void setSoftKeys_sys(const QList<QAction*> &softkeys);
     void activateSymbianWindow();
 #endif

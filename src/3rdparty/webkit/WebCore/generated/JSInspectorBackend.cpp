@@ -96,7 +96,7 @@ bool JSInspectorBackendConstructor::getOwnPropertyDescriptor(ExecState* exec, co
 
 /* Hash table for prototype */
 
-static const HashTableValue JSInspectorBackendPrototypeTableValues[70] =
+static const HashTableValue JSInspectorBackendPrototypeTableValues[71] =
 {
     { "hideDOMNodeHighlight", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionHideDOMNodeHighlight, (intptr_t)0 },
     { "highlightDOMNode", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionHighlightDOMNode, (intptr_t)1 },
@@ -129,8 +129,6 @@ static const HashTableValue JSInspectorBackendPrototypeTableValues[70] =
     { "enableResourceTracking", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionEnableResourceTracking, (intptr_t)1 },
     { "disableResourceTracking", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionDisableResourceTracking, (intptr_t)1 },
     { "storeLastActivePanel", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionStoreLastActivePanel, (intptr_t)1 },
-    { "getCookies", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionGetCookies, (intptr_t)1 },
-    { "deleteCookie", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionDeleteCookie, (intptr_t)1 },
     { "debuggerEnabled", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionDebuggerEnabled, (intptr_t)0 },
     { "enableDebugger", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionEnableDebugger, (intptr_t)1 },
     { "disableDebugger", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionDisableDebugger, (intptr_t)1 },
@@ -156,7 +154,10 @@ static const HashTableValue JSInspectorBackendPrototypeTableValues[70] =
     { "setAttribute", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionSetAttribute, (intptr_t)4 },
     { "removeAttribute", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionRemoveAttribute, (intptr_t)3 },
     { "setTextNodeValue", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionSetTextNodeValue, (intptr_t)3 },
+    { "getEventListenersForNode", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionGetEventListenersForNode, (intptr_t)2 },
     { "copyNode", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionCopyNode, (intptr_t)1 },
+    { "getCookies", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionGetCookies, (intptr_t)1 },
+    { "deleteCookie", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionDeleteCookie, (intptr_t)1 },
     { "nodeForId", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionNodeForId, (intptr_t)1 },
     { "wrapObject", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionWrapObject, (intptr_t)1 },
     { "unwrapObject", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionUnwrapObject, (intptr_t)1 },
@@ -196,7 +197,7 @@ bool JSInspectorBackendPrototype::getOwnPropertyDescriptor(ExecState* exec, cons
 
 const ClassInfo JSInspectorBackend::s_info = { "InspectorBackend", 0, &JSInspectorBackendTable, 0 };
 
-JSInspectorBackend::JSInspectorBackend(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<InspectorBackend> impl)
+JSInspectorBackend::JSInspectorBackend(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<InspectorBackend> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
@@ -605,32 +606,6 @@ JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionStoreLastActivePanel(Ex
     return jsUndefined();
 }
 
-JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetCookies(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
-{
-    UNUSED_PARAM(args);
-    if (!thisValue.inherits(&JSInspectorBackend::s_info))
-        return throwError(exec, TypeError);
-    JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
-    InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
-    int callId = args.at(0).toInt32(exec);
-
-    imp->getCookies(callId);
-    return jsUndefined();
-}
-
-JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDeleteCookie(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
-{
-    UNUSED_PARAM(args);
-    if (!thisValue.inherits(&JSInspectorBackend::s_info))
-        return throwError(exec, TypeError);
-    JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
-    InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
-    const UString& cookieName = args.at(0).toString(exec);
-
-    imp->deleteCookie(cookieName);
-    return jsUndefined();
-}
-
 JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDebuggerEnabled(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
@@ -956,6 +931,20 @@ JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSetTextNodeValue(ExecSt
     return jsUndefined();
 }
 
+JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetEventListenersForNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSInspectorBackend::s_info))
+        return throwError(exec, TypeError);
+    JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
+    InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
+    int callId = args.at(0).toInt32(exec);
+    int nodeId = args.at(1).toInt32(exec);
+
+    imp->getEventListenersForNode(callId, nodeId);
+    return jsUndefined();
+}
+
 JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionCopyNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
@@ -966,6 +955,32 @@ JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionCopyNode(ExecState* exe
     int nodeId = args.at(0).toInt32(exec);
 
     imp->copyNode(nodeId);
+    return jsUndefined();
+}
+
+JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetCookies(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSInspectorBackend::s_info))
+        return throwError(exec, TypeError);
+    JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
+    InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
+    int callId = args.at(0).toInt32(exec);
+
+    imp->getCookies(callId);
+    return jsUndefined();
+}
+
+JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDeleteCookie(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSInspectorBackend::s_info))
+        return throwError(exec, TypeError);
+    JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
+    InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
+    const UString& cookieName = args.at(0).toString(exec);
+
+    imp->deleteCookie(cookieName);
     return jsUndefined();
 }
 

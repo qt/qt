@@ -40,6 +40,10 @@ QT_BEGIN_NAMESPACE
 using namespace Phonon;
 using namespace Phonon::MMF;
 
+/*! \class MMF::EffectFactory
+  \internal
+*/
+
 QHash<QByteArray, QVariant> EffectFactory::constructEffectDescription(const QString &name,
                                                                       const QString &description)
 {

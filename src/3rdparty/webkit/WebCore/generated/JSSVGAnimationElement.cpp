@@ -100,7 +100,7 @@ bool JSSVGAnimationElementPrototype::getOwnPropertyDescriptor(ExecState* exec, c
 
 const ClassInfo JSSVGAnimationElement::s_info = { "SVGAnimationElement", &JSSVGElement::s_info, &JSSVGAnimationElementTable, 0 };
 
-JSSVGAnimationElement::JSSVGAnimationElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimationElement> impl)
+JSSVGAnimationElement::JSSVGAnimationElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimationElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

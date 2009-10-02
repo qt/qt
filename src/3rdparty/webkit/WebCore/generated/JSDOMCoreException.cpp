@@ -174,7 +174,7 @@ bool JSDOMCoreExceptionPrototype::getOwnPropertyDescriptor(ExecState* exec, cons
 
 const ClassInfo JSDOMCoreException::s_info = { "DOMException", 0, &JSDOMCoreExceptionTable, 0 };
 
-JSDOMCoreException::JSDOMCoreException(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DOMCoreException> impl)
+JSDOMCoreException::JSDOMCoreException(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DOMCoreException> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

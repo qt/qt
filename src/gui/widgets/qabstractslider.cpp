@@ -215,7 +215,8 @@ QT_BEGIN_NAMESPACE
 
 QAbstractSliderPrivate::QAbstractSliderPrivate()
     : minimum(0), maximum(99), singleStep(1), pageStep(10),
-      value(0), position(0), pressValue(-1), tracking(true), blocktracking(false), pressed(false),
+      value(0), position(0), pressValue(-1), offset_accumulated(0), tracking(true),
+      blocktracking(false), pressed(false),
       invertedAppearance(false), invertedControls(false),
       orientation(Qt::Horizontal), repeatAction(QAbstractSlider::SliderNoAction)
 {
@@ -691,38 +692,30 @@ void QAbstractSlider::wheelEvent(QWheelEvent * e)
     e->ignore();
     if (e->orientation() != d->orientation && !rect().contains(e->pos()))
         return;
-    static qreal offset = 0;
-    static QAbstractSlider *offset_owner = 0;
-    if (offset_owner != this){
-        offset_owner = this;
-        offset = 0;
-    }
 
-    // On Mac/Cocoa, always scroll one step. The mouse wheel acceleration
-    // is higher than on other systems, so this works well in practice.
-#ifdef QT_MAC_USE_COCOA
-    int step = 1;
-#else
     int step = qMin(QApplication::wheelScrollLines() * d->singleStep, d->pageStep);
-#endif
     if ((e->modifiers() & Qt::ControlModifier) || (e->modifiers() & Qt::ShiftModifier))
         step = d->pageStep;
-    int currentOffset = qRound(qreal(e->delta()) * step / 120);
-    if (currentOffset == 0)
-        currentOffset = (e->delta() < 0 ? -1 : 1);
-    offset += currentOffset;
 
-    if (d->invertedControls)
-        offset = -offset;
+    qreal currentOffset = qreal(e->delta()) * step / 120;
+    d->offset_accumulated += d->invertedControls ? -currentOffset : currentOffset;
+
+    if (int(d->offset_accumulated) == 0) {
+        // QAbstractSlider works on integer values. So if the accumulated
+        // offset is less than +/- 1, we need to wait until we get more
+        // wheel events (this means that the wheel resolution is higher than 
+        // 15 degrees, e.g. when using mac mighty mouse/trackpad):
+        return;
+    }
 
     int prevValue = d->value;
-    d->position = d->overflowSafeAdd(int(offset)); // value will be updated by triggerAction()
-
+    d->position = d->overflowSafeAdd(int(d->offset_accumulated)); // value will be updated by triggerAction()
     triggerAction(SliderMove);
+
     if (prevValue == d->value) {
-        offset = 0;
+        d->offset_accumulated = 0;
     } else {
-        offset -= int(offset);
+        d->offset_accumulated -= int(d->offset_accumulated);
         e->accept();
     }
 }

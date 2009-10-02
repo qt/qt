@@ -242,7 +242,7 @@ void tst_QIcon::isNull() {
 
     const QString prefix = QLatin1String(SRCDIR) + QLatin1String("/");
     // test string constructor with existing file but unsupported format
-    QIcon iconUnsupportedFormat = QIcon(prefix + "image.tga");
+    QIcon iconUnsupportedFormat = QIcon(prefix + "tst_qicon.cpp");
     QVERIFY(!iconUnsupportedFormat.isNull());
     QVERIFY(!iconUnsupportedFormat.actualSize(QSize(32, 32)).isValid());
 

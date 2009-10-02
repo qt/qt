@@ -116,7 +116,7 @@ JSObject* JSHTMLModElementPrototype::self(ExecState* exec, JSGlobalObject* globa
 
 const ClassInfo JSHTMLModElement::s_info = { "HTMLModElement", &JSHTMLElement::s_info, &JSHTMLModElementTable, 0 };
 
-JSHTMLModElement::JSHTMLModElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLModElement> impl)
+JSHTMLModElement::JSHTMLModElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLModElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

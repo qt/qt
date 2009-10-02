@@ -83,7 +83,7 @@ bool JSHTMLOptionsCollectionPrototype::getOwnPropertyDescriptor(ExecState* exec,
 
 const ClassInfo JSHTMLOptionsCollection::s_info = { "HTMLOptionsCollection", &JSHTMLCollection::s_info, &JSHTMLOptionsCollectionTable, 0 };
 
-JSHTMLOptionsCollection::JSHTMLOptionsCollection(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLOptionsCollection> impl)
+JSHTMLOptionsCollection::JSHTMLOptionsCollection(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLOptionsCollection> impl)
     : JSHTMLCollection(structure, globalObject, impl)
 {
 }

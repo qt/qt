@@ -170,7 +170,7 @@ bool JSSVGPathSegPrototype::getOwnPropertyDescriptor(ExecState* exec, const Iden
 
 const ClassInfo JSSVGPathSeg::s_info = { "SVGPathSeg", 0, &JSSVGPathSegTable, 0 };
 
-JSSVGPathSeg::JSSVGPathSeg(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSeg> impl, SVGElement* context)
+JSSVGPathSeg::JSSVGPathSeg(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSeg> impl, SVGElement* context)
     : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {

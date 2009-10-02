@@ -25,6 +25,10 @@ QT_BEGIN_NAMESPACE
 using namespace Phonon;
 using namespace Phonon::MMF;
 
+/*! \class MMF::AbstractAudioEffect
+  \internal
+*/
+
 AbstractAudioEffect::AbstractAudioEffect(QObject *parent,
                                          const QList<EffectParameter> &params) : MediaNode::MediaNode(parent)
                                                                                , m_params(params)

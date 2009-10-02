@@ -136,7 +136,7 @@ bool JSDOMParserPrototype::getOwnPropertyDescriptor(ExecState* exec, const Ident
 
 const ClassInfo JSDOMParser::s_info = { "DOMParser", 0, &JSDOMParserTable, 0 };
 
-JSDOMParser::JSDOMParser(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DOMParser> impl)
+JSDOMParser::JSDOMParser(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DOMParser> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

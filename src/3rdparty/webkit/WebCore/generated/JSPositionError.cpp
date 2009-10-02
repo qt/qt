@@ -135,7 +135,7 @@ bool JSPositionErrorPrototype::getOwnPropertyDescriptor(ExecState* exec, const I
 
 const ClassInfo JSPositionError::s_info = { "PositionError", 0, &JSPositionErrorTable, 0 };
 
-JSPositionError::JSPositionError(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<PositionError> impl)
+JSPositionError::JSPositionError(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<PositionError> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

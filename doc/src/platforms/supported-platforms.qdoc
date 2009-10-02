@@ -78,7 +78,7 @@
     \row    \o Linux (32 and 64-bit)
                                      \o gcc 4.2
     \row    \o Microsoft Windows XP
-                                     \o gcc 3.4.2 (MinGW) (32-bit), MSVC 2003, 2005 (32 and 64-bit)
+                                     \o gcc 4.4 (MinGW) (32-bit), MSVC 2003, 2005 (32 and 64-bit)
     \row    \o Microsoft Windows Vista
                                      \o MSVC 2005, 2008
     \row    \o Microsoft Windows Vista 64bit
@@ -104,6 +104,8 @@
     \table
     \header \o Platform
                                      \o Compilers
+    \row    \o Windows XP, Vista
+                                     \o gcc 3.4.2 (MinGW)
     \omit
     \row    \o Windows 7
                                      \o MSVC 2008
@@ -134,7 +136,14 @@
 
     All platforms not specifically listed above are not supported by Nokia. Nokia does
     not run its unit test suite or perform any other internal tests on platforms not
-    listed above. Qt users should note, however, that there may be various open source
+    listed above.
+
+    Even though some Tier 3 platforms are available under the Qt Commercial License,
+    technical support is not included in that license.
+    However, \l{Hot to Order}{contact our sales team} to find out about the
+    availability of other services for those platforms.
+
+    Qt users should note, however, that there may be various open source
     projects, community users and/or Qt partners who are able to provide assistance with
     platforms not supported by Nokia.
 

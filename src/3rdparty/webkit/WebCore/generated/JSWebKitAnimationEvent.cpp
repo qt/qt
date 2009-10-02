@@ -129,7 +129,7 @@ bool JSWebKitAnimationEventPrototype::getOwnPropertyDescriptor(ExecState* exec, 
 
 const ClassInfo JSWebKitAnimationEvent::s_info = { "WebKitAnimationEvent", &JSEvent::s_info, &JSWebKitAnimationEventTable, 0 };
 
-JSWebKitAnimationEvent::JSWebKitAnimationEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebKitAnimationEvent> impl)
+JSWebKitAnimationEvent::JSWebKitAnimationEvent(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebKitAnimationEvent> impl)
     : JSEvent(structure, globalObject, impl)
 {
 }
