@@ -133,6 +133,8 @@ private:
     bool m_editable;
     bool m_enabled;
 
+    QHash<int, int> m_fingerPointMapping;
+
     QPen m_pointPen;
     QBrush m_pointBrush;
     QPen m_connectionPen;
