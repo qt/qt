@@ -269,8 +269,8 @@ public:
         CocoaRequestModal = 190,                // Internal for requesting an application modal Cocoa Window
         MacGLClearDrawable = 191,               // Internal Cocoa, the window has changed, so we must clear
 
-        Signal = 192,
-        Wrapped = 193,
+        StateMachineSignal = 192,
+        StateMachineWrapped = 193,
 
         TouchBegin = 194,
         TouchUpdate = 195,
