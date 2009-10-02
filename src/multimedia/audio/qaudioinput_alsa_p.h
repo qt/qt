@@ -117,6 +117,7 @@ private:
 
     QTimer* timer;
     QTime timeStamp;
+    qint64 elapsedTimeOffset;
     int intervalTime;
     char* audioBuffer;
     int bytesAvailable;

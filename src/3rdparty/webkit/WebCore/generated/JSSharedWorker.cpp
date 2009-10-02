@@ -73,7 +73,7 @@ JSObject* JSSharedWorkerPrototype::self(ExecState* exec, JSGlobalObject* globalO
 
 const ClassInfo JSSharedWorker::s_info = { "SharedWorker", &JSAbstractWorker::s_info, &JSSharedWorkerTable, 0 };
 
-JSSharedWorker::JSSharedWorker(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SharedWorker> impl)
+JSSharedWorker::JSSharedWorker(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SharedWorker> impl)
     : JSAbstractWorker(structure, globalObject, impl)
 {
 }

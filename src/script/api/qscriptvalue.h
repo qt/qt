@@ -216,9 +216,9 @@ public:
 
 private:
     // force compile error, prevent QScriptValue(bool) to be called
-    inline QScriptValue(void *);
+    QScriptValue(void *);
     // force compile error, prevent QScriptValue(QScriptEngine*, bool) to be called
-    inline QScriptValue(QScriptEngine *, void *);
+    QScriptValue(QScriptEngine *, void *);
 
     QScriptValue(QScriptValuePrivate*);
 

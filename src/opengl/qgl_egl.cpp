@@ -142,10 +142,23 @@ void QGLContext::reset()
     d->cleanup();
     doneCurrent();
     if (d->eglContext) {
+        if (d->eglSurface != EGL_NO_SURFACE) {
+#ifdef Q_WS_X11
+            // Make sure we don't call eglDestroySurface on a surface which
+            // was created for a different winId:
+            if (d->paintDevice->devType() == QInternal::Widget) {
+                QGLWidget* w = static_cast<QGLWidget*>(d->paintDevice);
+
+                if (w->d_func()->eglSurfaceWindowId == w->winId())
+                    eglDestroySurface(d->eglContext->display(), d->eglSurface);
+            } else
+#endif
+                eglDestroySurface(d->eglContext->display(), d->eglSurface);
+        }
         delete d->eglContext;
-        d->eglContext = 0;
     }
-    d->eglSurface = EGL_NO_SURFACE; // XXX - probably need to destroy surface
+    d->eglContext = 0;
+    d->eglSurface = EGL_NO_SURFACE;
     d->crWin = false;
     d->sharing = false;
     d->valid = false;

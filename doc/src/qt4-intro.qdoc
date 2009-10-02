@@ -464,6 +464,7 @@
     previous releases in the Qt 4 series. This document covers the
     most important features in this release, separated by category.
 
+\omit
     A comprehensive list of changes between Qt 4.5 and Qt 4.6 is
     included in the \c changes-4.6.0 file
     \l{http://qt.nokia.com/developer/changes/changes-4.6.0}{available
@@ -473,6 +474,7 @@
     Changes between this release and the previous release are provided
     in the \c{changes-%VERSION%} file (also
     \l{http://qt.nokia.com/developer/changes/changes-%VERSION%}{available online}).
+\endomit
 
     A list of other Qt 4 features can be found on the \bold{\l{What's
     New in Qt 4}} page.
@@ -480,6 +482,14 @@
     \bold{Highlights}
 
     \tableofcontents
+
+    \section1 Support for Symbian
+
+    Qt 4.6 is the first release to include support for the Symbian
+    platform, with integration into the S60 framework. The port to
+    Symbian and S60 provides all functionality required to develop
+    rich end-user applications for devices running Symbian 3.1 and
+    later.
 
     \section1 Animation Framework
 
@@ -491,8 +501,9 @@
     The framework makes it easy to animate \l{QObject}s, including
     QWidgets, by allowing Qt properties to be animated. It also allows
     creating custom animations and interpolation functions. Graphics
-    views are not left out--one can animate \l{QGraphicsWidget}s,
-    which inherits from QObject (and thereby enables properties).
+    views are not left out; one can animate \l{QGraphicsWidget}s and
+    new \l{QGraphicsObject}s which inherit from QGraphicsItem
+    (and thereby enable properties).
 
     Animations are controlled using easing curves and can be grouped
     together. This enables animations of arbitrary complexity.
@@ -507,6 +518,8 @@
     allowing an animation to be played when transitions are triggered.
     The state machine framework is introduced in 4.6 and is described
     below.
+
+    See \l{The Animation Framework} documentation for more information.
 
     \section1 State Machine Framework
 
@@ -533,6 +546,8 @@
     trigger on signals and \l{QEvent}s. By inserting animations into
     the state machine, it is also easier to use the framework for
     animating GUIs, for instance.
+    
+    See \l{The State Machine Framework} documentation for more infromation.
 
     \section1 Multi-touch & Gestures
 
@@ -552,6 +567,8 @@
         \o Enable extensibility.
     \endlist
 
+    See the QTouchEvent and QGesture class documentation for more information.
+
     \section1 DOM access API
 
     Web pages and XML both have very complex document object models.
@@ -565,6 +582,56 @@
         QList<QWebElement> allSpans = document.findAll("span");
         QList<QWebElement> introSpans = document.findAll("p.intro span");
     \endcode
+
+    See the QWebElement class documentation for more information.
+
+    \section1 Performance Optimizations
+
+    As always, Qt continuously strive to optimize its performance.
+    For this release, we have:
+
+    \list
+        \o Rewritten the QGraphicsView rendering algorithm.
+        \o Made QPixmapCache support efficient Key datastructure.
+        \o Reduced overhead in QNetworkAccessManager.
+        \o Added the QContiguousCache class, which provides efficient caching of
+           contiguous data.
+        \o Added support for hardware-accelerated rendering through
+        \l{OpenVG Rendering in Qt}{OpenVG}
+        \o Removed Win9x support.
+    \endlist
+
+    \section1 Graphics Effects
+
+    Effects can be used to alter the appearance of UI elements such as
+    \l{QGraphicsItem}s and \l{QWidget}s. A range of standard effects such
+    as blurring, colorizing or blooming is provided, and it is possible to
+    implement custom effects.
+
+    \table
+    \row
+    \o
+    \o \img graphicseffect-plain.png
+    \o
+    \row
+    \o \img graphicseffect-blur.png
+    \o \img graphicseffect-colorize.png
+    \o \img graphicseffect-bloom.png
+    \endtable
+
+    See the QGraphicsEffect class documentation for more information.
+
+    \section1 XML Schema Validation
+
+    The QtXmlPatterns module can now be used to validate schemas, either
+    through C++ APIs in the Qt application, or using the xmlpatternsvalidator
+    command line utility. The implementation of XML Schema Validation supports
+    the specification version 1.0 in large parts.
+    
+    \img xml-schema.png
+
+    See the \l{XML Processing} and QXmlSchema class documentation for more
+    information.
 
     \section1 Qt3D enablers
 
@@ -581,21 +648,7 @@
     scissors, vertex buffers and arrays, texture manipulation, and
     geometry shaders.
 
-    \section1 Performance Optimizations
-
-    As always, Qt continuously strive to optimize its performance.
-    For this release, we have:
-
-    \list
-        \o Rewritten the QGraphicsView rendering algorithm.
-        \o Made QPixmapCache support efficient Key datastructure.
-        \o Reduced overhead in QNetworkAccessManager.
-        \o Added the QContiguousCache class, which provides efficient caching of
-           contiguous data.
-        \o Removed Win9x support.
-    \endlist
-
-    \section1 Multimedia Audio Services
+    \section1 Multimedia Services
 
     Qt 4.6 comes with new classes for handling audio. These classes
     provide low-level access to the system's audio system. By
@@ -605,21 +658,14 @@
     functions to query audio devices for which audio formats they
     support.
 
-    \section1 Classes and Functions Introduced in 4.6
+    See the \l{QtMultimedia Module} documentation for more information.
 
-    Links to class, function, and macro documentation.
+    \section1 Classes, functions, and other items introduced in 4.6
 
-    \section2 Classes
+    Links to classes, function, and other items that were added in
+    4.6.
 
-    Classes introduced in Qt 4.6.
-
-    \sincelist classes
-
-    \section2 Functions & Macros
-
-    Fuctions and macros introduced in Qt 4.6.
-
-    \sincelist functions
+    \sincelist 4.6
 
 */
 

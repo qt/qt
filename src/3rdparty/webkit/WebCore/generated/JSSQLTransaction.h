@@ -35,7 +35,7 @@ class SQLTransaction;
 class JSSQLTransaction : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSSQLTransaction(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SQLTransaction>);
+    JSSQLTransaction(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SQLTransaction>);
     virtual ~JSSQLTransaction();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -65,7 +65,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSSQLTransactionPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSSQLTransactionPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

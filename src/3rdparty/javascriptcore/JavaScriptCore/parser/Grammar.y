@@ -179,7 +179,7 @@ static inline void appendToVarDeclarationList(JSGlobalData* globalData, ParserAr
 
 template <typename T> inline void setStatementLocation(StatementNode* statement, const T& start, const T& end)
 {
-    statement->setLoc(start.first_line, end.last_line, start.first_column + 1);
+    statement->setLoc(start.first_line, end.last_line, start.first_column);
 }
 
 static inline void setExceptionLocation(ThrowableExpressionData* node, unsigned start, unsigned divot, unsigned end)

@@ -45,6 +45,7 @@
 #include "InspectorDOMAgent.h"
 #include "InspectorFrontend.h"
 #include "InspectorResource.h"
+#include "Pasteboard.h"
 #include "ScriptFunctionCall.h"
 
 #if ENABLE(DOM_STORAGE)
@@ -56,6 +57,8 @@
 #include "JavaScriptDebugServer.h"
 using namespace JSC;
 #endif
+
+#include "markup.h"
 
 #include <wtf/RefPtr.h>
 #include <wtf/StdLibExtras.h>
@@ -273,19 +276,6 @@ bool InspectorBackend::timelineEnabled() const
     return false;
 }
 
-void InspectorBackend::getCookies(long callId)
-{
-    if (InspectorDOMAgent* domAgent = inspectorDOMAgent())
-        domAgent->getCookies(callId);
-}
-
-void InspectorBackend::deleteCookie(const String& cookieName)
-{
-    if (!m_inspectorController)
-        return;
-    m_inspectorController->deleteCookie(cookieName);
-}
-
 #if ENABLE(JAVASCRIPT_DEBUGGER)
 const ProfilesArray& InspectorBackend::profiles() const
 {
@@ -444,6 +434,34 @@ void InspectorBackend::setTextNodeValue(long callId, long nodeId, const String& 
 {
     if (InspectorDOMAgent* domAgent = inspectorDOMAgent())
         domAgent->setTextNodeValue(callId, nodeId, value);
+}
+
+void InspectorBackend::getEventListenersForNode(long callId, long nodeId)
+{
+    if (InspectorDOMAgent* domAgent = inspectorDOMAgent())
+        domAgent->getEventListenersForNode(callId, nodeId);
+}
+
+void InspectorBackend::copyNode(long nodeId)
+{
+    Node* node = nodeForId(nodeId);
+    if (!node)
+        return;
+    String markup = createMarkup(node);
+    Pasteboard::generalPasteboard()->writePlainText(markup);
+}
+
+void InspectorBackend::getCookies(long callId)
+{
+    if (InspectorDOMAgent* domAgent = inspectorDOMAgent())
+        domAgent->getCookies(callId);
+}
+
+void InspectorBackend::deleteCookie(const String& cookieName)
+{
+    if (!m_inspectorController)
+        return;
+    m_inspectorController->deleteCookie(cookieName);
 }
 
 void InspectorBackend::highlight(long nodeId)

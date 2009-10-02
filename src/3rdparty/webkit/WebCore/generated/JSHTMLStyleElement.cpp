@@ -120,7 +120,7 @@ JSObject* JSHTMLStyleElementPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSHTMLStyleElement::s_info = { "HTMLStyleElement", &JSHTMLElement::s_info, &JSHTMLStyleElementTable, 0 };
 
-JSHTMLStyleElement::JSHTMLStyleElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLStyleElement> impl)
+JSHTMLStyleElement::JSHTMLStyleElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLStyleElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

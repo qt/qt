@@ -35,7 +35,7 @@ class WebSocket;
 class JSWebSocket : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSWebSocket(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<WebSocket>);
+    JSWebSocket(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<WebSocket>);
     virtual ~JSWebSocket();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -75,7 +75,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
-    JSWebSocketPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSWebSocketPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

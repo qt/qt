@@ -155,7 +155,7 @@ bool JSHTMLTableElementPrototype::getOwnPropertyDescriptor(ExecState* exec, cons
 
 const ClassInfo JSHTMLTableElement::s_info = { "HTMLTableElement", &JSHTMLElement::s_info, &JSHTMLTableElementTable, 0 };
 
-JSHTMLTableElement::JSHTMLTableElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLTableElement> impl)
+JSHTMLTableElement::JSHTMLTableElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLTableElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

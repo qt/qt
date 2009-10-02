@@ -118,7 +118,7 @@ JSObject* JSCSSStyleRulePrototype::self(ExecState* exec, JSGlobalObject* globalO
 
 const ClassInfo JSCSSStyleRule::s_info = { "CSSStyleRule", &JSCSSRule::s_info, &JSCSSStyleRuleTable, 0 };
 
-JSCSSStyleRule::JSCSSStyleRule(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSStyleRule> impl)
+JSCSSStyleRule::JSCSSStyleRule(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSStyleRule> impl)
     : JSCSSRule(structure, globalObject, impl)
 {
 }

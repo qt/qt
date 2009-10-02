@@ -156,7 +156,7 @@ bool JSSVGPreserveAspectRatioPrototype::getOwnPropertyDescriptor(ExecState* exec
 
 const ClassInfo JSSVGPreserveAspectRatio::s_info = { "SVGPreserveAspectRatio", 0, &JSSVGPreserveAspectRatioTable, 0 };
 
-JSSVGPreserveAspectRatio::JSSVGPreserveAspectRatio(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPreserveAspectRatio> impl, SVGElement* context)
+JSSVGPreserveAspectRatio::JSSVGPreserveAspectRatio(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPreserveAspectRatio> impl, SVGElement* context)
     : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {

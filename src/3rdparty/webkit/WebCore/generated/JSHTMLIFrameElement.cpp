@@ -146,7 +146,7 @@ bool JSHTMLIFrameElementPrototype::getOwnPropertyDescriptor(ExecState* exec, con
 
 const ClassInfo JSHTMLIFrameElement::s_info = { "HTMLIFrameElement", &JSHTMLElement::s_info, &JSHTMLIFrameElementTable, 0 };
 
-JSHTMLIFrameElement::JSHTMLIFrameElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLIFrameElement> impl)
+JSHTMLIFrameElement::JSHTMLIFrameElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLIFrameElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

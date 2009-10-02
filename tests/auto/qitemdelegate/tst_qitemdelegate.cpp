@@ -865,7 +865,7 @@ void tst_QItemDelegate::decoration()
     qt_x11_wait_for_window_manager(&table);
 #endif
     QApplication::setActiveWindow(&table);
-    QTRY_COMPARE(QApplication::activeWindow(), &table);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&table));
 
     QVariant value;
     switch ((QVariant::Type)type) {

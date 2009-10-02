@@ -76,7 +76,7 @@ JSObject* JSScreenPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 
 const ClassInfo JSScreen::s_info = { "Screen", 0, &JSScreenTable, 0 };
 
-JSScreen::JSScreen(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Screen> impl)
+JSScreen::JSScreen(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Screen> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

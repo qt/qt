@@ -91,7 +91,7 @@ bool JSSVGNumberListPrototype::getOwnPropertyDescriptor(ExecState* exec, const I
 
 const ClassInfo JSSVGNumberList::s_info = { "SVGNumberList", 0, &JSSVGNumberListTable, 0 };
 
-JSSVGNumberList::JSSVGNumberList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGNumberList> impl, SVGElement* context)
+JSSVGNumberList::JSSVGNumberList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGNumberList> impl, SVGElement* context)
     : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {

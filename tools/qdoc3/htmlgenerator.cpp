@@ -330,7 +330,65 @@ void HtmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
 #ifdef ZZZ_QDOC_QML
     findAllQmlClasses(tree->root());
 #endif
-    findAllSince(tree->root(),tree->version());
+    findAllSince(tree->root());
+
+#if 0    
+    if (!sinceVersions.isEmpty()) {
+        SinceVersionMap::const_iterator v = sinceVersions.constEnd();
+        do {
+            --v;
+            qDebug() << "SINCE:" << v.key();
+            if (!v.value().isEmpty()) {
+                QString type;
+                SinceNodeMultiMap::const_iterator n = v.value().constBegin();
+                while (n != v.value().constEnd()) {
+                    switch (n.value()->type()) {
+                        case Node::Namespace:
+                            type = "namespace";
+                            break;
+                        case Node::Class:
+                            type = "class";
+                            break;
+                        case Node::Fake:
+                            type = "fake";
+                            break;
+                        case Node::Enum: 
+                            type = "enum";
+                            break;
+                        case Node::Typedef:
+                            type = "typedef";
+                            break;
+                        case Node::Function:
+                            type = "function";
+                            break;
+                        case Node::Property:
+                            type = "property";
+                            break;
+                        case Node::Variable:
+                            type = "variable";
+                            break;
+                        case Node::Target:
+                            type = "target";
+                            break;
+                        case Node::QmlProperty:
+                            type = "QML property";
+                            break;
+                        case Node::QmlSignal:
+                            type = "QML signal";
+                            break;
+                        case Node::QmlMethod:
+                            type = "QML method";
+                            break;
+                        default:
+                            type = "No type";
+                    }
+                    qDebug() << "    " << type << n.key();
+                    ++n;
+                }
+            }
+        } while (v != sinceVersions.constBegin());
+    }
+#endif
 
     PageGenerator::generateTree(tree, marker);
 
@@ -655,20 +713,30 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::SinceList:
         {
-            QList<Node*> values;
-            if (atom->string() == "classes") {
-                values = sinceClasses.values();
-            }
-            else if (atom->string() == "functions") {
-                values = sinceFunctions.values();
-            }
-            if (!values.isEmpty()) {
-                QMap<QString, const Node*> nodeMap;
-                for (int i=0; i<values.size(); ++i) {
-                    const Node* n = values.at(i);
-                    nodeMap.insert(n->nameForLists(),n);
+            QList<Node*> nodes;
+            SinceVersionMap::const_iterator v;
+            v = sinceVersions.find(atom->string());
+            if ((v != sinceVersions.constEnd()) && !v.value().isEmpty()) {
+                for (int i=0; !Node::typeName(i).isEmpty(); i++) {
+                    Node::Type t = (Node::Type) i;
+                    SinceNodeMultiMap::const_iterator n=v.value().constBegin();
+                    QMultiMap<QString, const Node*> nodeMap;
+                    while (n != v.value().constEnd()) {
+                        const Node* node = n.value();
+                        if (node->type() == t)
+                            nodeMap.insert(node->nameForLists(),node);
+                        ++n;
+                    }
+                    if (!nodeMap.isEmpty()) {
+                        out() << "<h2>"
+                              << Node::typeName(i)
+                              << " new in Qt "
+                              << atom->string()
+                              << "</h2>";
+                        generateAnnotatedList(relative, marker, nodeMap);
+                        nodeMap.clear();
+                    }
                 }
-                generateAnnotatedList(relative, marker, nodeMap);
             }
         }
         break;
@@ -3517,22 +3585,21 @@ void HtmlGenerator::findAllClasses(const InnerNode *node)
 /*!
   For generating the "Since x.y" page.
  */
-void HtmlGenerator::findAllSince(const InnerNode *node, QString version)
+void HtmlGenerator::findAllSince(const InnerNode *node)
 {
-    const QRegExp versionSeparator("[\\-\\.]");
-    const int minorIndex = version.indexOf(versionSeparator);
-    const int patchIndex = version.indexOf(versionSeparator, minorIndex+1);
-    version = version.left(patchIndex);
-
     NodeList::const_iterator c = node->childNodes().constBegin();
     while (c != node->childNodes().constEnd()) {
-        if (((*c)->access() != Node::Private) && ((*c)->since() == version)) {
+        QString sinceVersion = (*c)->since();
+        if (((*c)->access() != Node::Private) && !sinceVersion.isEmpty()) {
+            SinceVersionMap::iterator vmap = sinceVersions.find(sinceVersion);
+            if (vmap == sinceVersions.end())
+                vmap = sinceVersions.insert(sinceVersion,SinceNodeMultiMap());
             if ((*c)->type() == Node::Function) {
                 FunctionNode *func = static_cast<FunctionNode *>(*c);
                 if ((func->status() > Node::Obsolete) &&
                     (func->metaness() != FunctionNode::Ctor) &&
                     (func->metaness() != FunctionNode::Dtor)) {
-                    sinceFunctions.insert(func->name(), func);
+                    vmap.value().insert(func->name(),(*c));
                 }
             }
             else if ((*c)->url().isEmpty()) {
@@ -3542,16 +3609,32 @@ void HtmlGenerator::findAllSince(const InnerNode *node, QString version)
                         (*c)->parent()->type() == Node::Namespace &&
                         !(*c)->parent()->name().isEmpty())
                         className = (*c)->parent()->name()+"::"+className;
-                    sinceClasses.insert(className, *c);
+                    vmap.value().insert(className,(*c));
                 }
             }
+            else {
+                QString name = (*c)->name();
+                if ((*c)->parent() &&
+                    (*c)->parent()->type() == Node::Namespace &&
+                    !(*c)->parent()->name().isEmpty())
+                    name = (*c)->parent()->name()+"::"+name;
+                vmap.value().insert(name,(*c));
+                qDebug() << "GOT HEAH" << name;
+            }
             if ((*c)->isInnerNode()) {
-                findAllSince(static_cast<InnerNode *>(*c),version);
+                findAllSince(static_cast<InnerNode *>(*c));
             }
         }
         ++c;
     }
 }
+
+#if 0
+    const QRegExp versionSeparator("[\\-\\.]");
+    const int minorIndex = version.indexOf(versionSeparator);
+    const int patchIndex = version.indexOf(versionSeparator, minorIndex+1);
+    version = version.left(patchIndex);
+#endif
 
 void HtmlGenerator::findAllFunctions(const InnerNode *node)
 {

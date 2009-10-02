@@ -53,7 +53,7 @@ JSObject* JSCanvasPatternPrototype::self(ExecState* exec, JSGlobalObject* global
 
 const ClassInfo JSCanvasPattern::s_info = { "CanvasPattern", 0, 0, 0 };
 
-JSCanvasPattern::JSCanvasPattern(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasPattern> impl)
+JSCanvasPattern::JSCanvasPattern(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasPattern> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

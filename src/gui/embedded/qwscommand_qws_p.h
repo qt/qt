@@ -75,8 +75,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-#define QTE_PIPE "QtEmbedded-%1"
-
 class QRect;
 
 /*********************************************************************

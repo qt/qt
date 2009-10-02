@@ -137,7 +137,7 @@ bool JSSVGRenderingIntentPrototype::getOwnPropertyDescriptor(ExecState* exec, co
 
 const ClassInfo JSSVGRenderingIntent::s_info = { "SVGRenderingIntent", 0, &JSSVGRenderingIntentTable, 0 };
 
-JSSVGRenderingIntent::JSSVGRenderingIntent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGRenderingIntent> impl, SVGElement* context)
+JSSVGRenderingIntent::JSSVGRenderingIntent(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGRenderingIntent> impl, SVGElement* context)
     : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {

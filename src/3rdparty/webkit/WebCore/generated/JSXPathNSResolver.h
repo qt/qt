@@ -35,7 +35,7 @@ class XPathNSResolver;
 class JSXPathNSResolver : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSXPathNSResolver(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<XPathNSResolver>);
+    JSXPathNSResolver(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<XPathNSResolver>);
     virtual ~JSXPathNSResolver();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -62,7 +62,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSXPathNSResolverPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSXPathNSResolverPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

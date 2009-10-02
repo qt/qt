@@ -885,13 +885,21 @@ JSValue Interpreter::execute(EvalExecutable* eval, CallFrame* callFrame, JSObjec
     }
 
     Register* oldEnd = m_registerFile.end();
+#ifdef  QT_BUILD_SCRIPT_LIB //with QtScript, we do not necesserly start from scratch
+    Register* newEnd = oldEnd + globalRegisterOffset + codeBlock->m_numCalleeRegisters;
+#else
     Register* newEnd = m_registerFile.start() + globalRegisterOffset + codeBlock->m_numCalleeRegisters;
+#endif
     if (!m_registerFile.grow(newEnd)) {
         *exception = createStackOverflowError(callFrame);
         return jsNull();
     }
 
+#ifdef QT_BUILD_SCRIPT_LIB //with QtScript, we do not necesserly start from scratch
+    CallFrame* newCallFrame = CallFrame::create(oldEnd + globalRegisterOffset);
+#else
     CallFrame* newCallFrame = CallFrame::create(m_registerFile.start() + globalRegisterOffset);
+#endif
 
     // a 0 codeBlock indicates a built-in caller
     newCallFrame->r(codeBlock->thisRegister()) = JSValue(thisObj);
@@ -3076,6 +3084,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
 #else
             newCallFrame->init(0, vPC + 5, scopeChain, callFrame, dst, argCount, asObject(v));
 #endif
+
             Register* thisRegister = newCallFrame->registers() - RegisterFile::CallFrameHeaderSize - argCount;
             ArgList args(thisRegister + 1, argCount - 1);
 
@@ -3234,7 +3243,6 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
             newCallFrame->init(0, vPC + 5, scopeChain, callFrame, dst, argCount, asObject(v));
 #endif
 
-            
             Register* thisRegister = newCallFrame->registers() - RegisterFile::CallFrameHeaderSize - argCount;
             ArgList args(thisRegister + 1, argCount - 1);
             

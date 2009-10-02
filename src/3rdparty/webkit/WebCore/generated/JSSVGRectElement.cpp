@@ -121,7 +121,7 @@ bool JSSVGRectElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const 
 
 const ClassInfo JSSVGRectElement::s_info = { "SVGRectElement", &JSSVGElement::s_info, &JSSVGRectElementTable, 0 };
 
-JSSVGRectElement::JSSVGRectElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGRectElement> impl)
+JSSVGRectElement::JSSVGRectElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGRectElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

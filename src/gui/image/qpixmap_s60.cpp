@@ -476,9 +476,9 @@ void QS60PixmapData::fromImage(const QImage &img, Qt::ImageConversionFlags flags
         sourceImage = img.convertToFormat(QImage::Format_MonoLSB);
     } else {
         if (img.depth() == 1) {
-            image = img.hasAlphaChannel()
-                    ? img.convertToFormat(QImage::Format_ARGB32_Premultiplied)
-                    : img.convertToFormat(QImage::Format_RGB32);
+            sourceImage = img.hasAlphaChannel()
+                        ? img.convertToFormat(QImage::Format_ARGB32_Premultiplied)
+                        : img.convertToFormat(QImage::Format_RGB32);
         } else {
 
             QImage::Format opaqueFormat = QNativeImage::systemFormat();

@@ -30,7 +30,7 @@ class CSSPrimitiveValue;
 class JSCSSPrimitiveValue : public JSCSSValue {
     typedef JSCSSValue Base;
 public:
-    JSCSSPrimitiveValue(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CSSPrimitiveValue>);
+    JSCSSPrimitiveValue(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CSSPrimitiveValue>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
@@ -58,7 +58,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSCSSPrimitiveValuePrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSCSSPrimitiveValuePrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

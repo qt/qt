@@ -148,7 +148,7 @@ bool JSHTMLElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Ide
 
 const ClassInfo JSHTMLElement::s_info = { "HTMLElement", &JSElement::s_info, &JSHTMLElementTable, 0 };
 
-JSHTMLElement::JSHTMLElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> impl)
+JSHTMLElement::JSHTMLElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> impl)
     : JSElement(structure, globalObject, impl)
 {
 }

@@ -1626,52 +1626,6 @@ PassRefPtr<NodeList> Node::getElementsByClassName(const String& classNames)
     return ClassNodeList::create(this, classNames, result.first->second.get());
 }
 
-template <typename Functor>
-static bool forEachTagSelector(Functor& functor, CSSSelector* selector)
-{
-    ASSERT(selector);
-
-    do {
-        if (functor(selector))
-            return true;
-        if (CSSSelector* simpleSelector = selector->simpleSelector()) {
-            if (forEachTagSelector(functor, simpleSelector))
-                return true;
-        }
-    } while ((selector = selector->tagHistory()));
-
-    return false;
-}
-
-template <typename Functor>
-static bool forEachSelector(Functor& functor, const CSSSelectorList& selectorList)
-{
-    for (CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(selector)) {
-        if (forEachTagSelector(functor, selector))
-            return true;
-    }
-
-    return false;
-}
-
-class SelectorNeedsNamespaceResolutionFunctor {
-public:
-    bool operator()(CSSSelector* selector)
-    {
-        if (selector->hasTag() && selector->m_tag.prefix() != nullAtom && selector->m_tag.prefix() != starAtom)
-            return true;
-        if (selector->hasAttribute() && selector->attribute().prefix() != nullAtom && selector->attribute().prefix() != starAtom)
-            return true;
-        return false;
-    }
-};
-
-static bool selectorNeedsNamespaceResolution(const CSSSelectorList& selectorList)
-{
-    SelectorNeedsNamespaceResolutionFunctor functor;
-    return forEachSelector(functor, selectorList);
-}
-
 PassRefPtr<Element> Node::querySelector(const String& selectors, ExceptionCode& ec)
 {
     if (selectors.isEmpty()) {
@@ -1690,7 +1644,7 @@ PassRefPtr<Element> Node::querySelector(const String& selectors, ExceptionCode& 
     }
 
     // throw a NAMESPACE_ERR if the selector includes any namespace prefixes.
-    if (selectorNeedsNamespaceResolution(querySelectorList)) {
+    if (querySelectorList.selectorsNeedNamespaceResolution()) {
         ec = NAMESPACE_ERR;
         return 0;
     }
@@ -1738,7 +1692,7 @@ PassRefPtr<NodeList> Node::querySelectorAll(const String& selectors, ExceptionCo
     }
 
     // Throw a NAMESPACE_ERR if the selector includes any namespace prefixes.
-    if (selectorNeedsNamespaceResolution(querySelectorList)) {
+    if (querySelectorList.selectorsNeedNamespaceResolution()) {
         ec = NAMESPACE_ERR;
         return 0;
     }
@@ -2468,6 +2422,20 @@ static inline EventTarget* eventTargetRespectingSVGTargetRules(Node* referenceNo
     return referenceNode;
 }
 
+void Node::eventAncestors(Vector<RefPtr<ContainerNode> > &ancestors)
+{
+    if (inDocument()) {
+        for (ContainerNode* ancestor = eventParentNode(); ancestor; ancestor = ancestor->eventParentNode()) {
+#if ENABLE(SVG)
+            // Skip <use> shadow tree elements.
+            if (ancestor->isSVGElement() && ancestor->isShadowNode())
+                continue;
+#endif
+            ancestors.append(ancestor);
+        }
+    }
+}
+
 bool Node::dispatchEvent(PassRefPtr<Event> prpEvent)
 {
     RefPtr<EventTarget> protect = this;
@@ -2498,16 +2466,7 @@ bool Node::dispatchGenericEvent(PassRefPtr<Event> prpEvent)
     // Be sure to ref all of nodes since event handlers could result in the last reference going away.
     RefPtr<Node> thisNode(this);
     Vector<RefPtr<ContainerNode> > ancestors;
-    if (inDocument()) {
-        for (ContainerNode* ancestor = eventParentNode(); ancestor; ancestor = ancestor->eventParentNode()) {
-#if ENABLE(SVG)
-            // Skip <use> shadow tree elements.
-            if (ancestor->isSVGElement() && ancestor->isShadowNode())
-                continue;
-#endif
-            ancestors.append(ancestor);
-        }
-    }
+    eventAncestors(ancestors);
 
     // Set up a pointer to indicate whether / where to dispatch window events.
     // We don't dispatch load events to the window. That quirk was originally

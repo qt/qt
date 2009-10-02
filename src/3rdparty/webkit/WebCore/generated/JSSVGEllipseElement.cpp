@@ -119,7 +119,7 @@ bool JSSVGEllipseElementPrototype::getOwnPropertyDescriptor(ExecState* exec, con
 
 const ClassInfo JSSVGEllipseElement::s_info = { "SVGEllipseElement", &JSSVGElement::s_info, &JSSVGEllipseElementTable, 0 };
 
-JSSVGEllipseElement::JSSVGEllipseElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGEllipseElement> impl)
+JSSVGEllipseElement::JSSVGEllipseElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGEllipseElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

@@ -2016,9 +2016,11 @@ void QGraphicsView::render(QPainter *painter, const QRectF &target, const QRect 
 }
 
 /*!
-    Returns a list of all the items in the associated scene.
+    Returns a list of all the items in the associated scene, in descending
+    stacking order (i.e., the first item in the returned list is the uppermost
+    item).
 
-    \sa QGraphicsScene::items()
+    \sa QGraphicsScene::items(), {QGraphicsItem#Sorting}{Sorting}
 */
 QList<QGraphicsItem *> QGraphicsView::items() const
 {
@@ -2030,9 +2032,9 @@ QList<QGraphicsItem *> QGraphicsView::items() const
 
 /*!
     Returns a list of all the items at the position \a pos in the view. The
-    items are listed in descending Z order (i.e., the first item in the list
-    is the top-most item, and the last item is the bottom-most item). \a pos
-    is in viewport coordinates.
+    items are listed in descending stacking order (i.e., the first item in the
+    list is the uppermost item, and the last item is the lowermost item). \a
+    pos is in viewport coordinates.
 
     This function is most commonly called from within mouse event handlers in
     a subclass in QGraphicsView. \a pos is in untransformed viewport
@@ -2040,7 +2042,7 @@ QList<QGraphicsItem *> QGraphicsView::items() const
 
     \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsview.cpp 5
 
-    \sa QGraphicsScene::items(), QGraphicsItem::zValue()
+    \sa QGraphicsScene::items(), {QGraphicsItem#Sorting}{Sorting}
 */
 QList<QGraphicsItem *> QGraphicsView::items(const QPoint &pos) const
 {
@@ -2082,7 +2084,10 @@ QList<QGraphicsItem *> QGraphicsView::items(const QPoint &pos) const
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a rect are returned.
 
-    \sa itemAt(), items(), mapToScene()
+    The items are sorted in descending stacking order (i.e., the first item in
+    the returned list is the uppermost item).
+
+    \sa itemAt(), items(), mapToScene(), {QGraphicsItem#Sorting}{Sorting}
 */
 QList<QGraphicsItem *> QGraphicsView::items(const QRect &rect, Qt::ItemSelectionMode mode) const
 {
@@ -2110,7 +2115,10 @@ QList<QGraphicsItem *> QGraphicsView::items(const QRect &rect, Qt::ItemSelection
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a polygon are returned.
 
-    \sa itemAt(), items(), mapToScene()
+    The items are sorted by descending stacking order (i.e., the first item in
+    the returned list is the uppermost item).
+
+    \sa itemAt(), items(), mapToScene(), {QGraphicsItem#Sorting}{Sorting}
 */
 QList<QGraphicsItem *> QGraphicsView::items(const QPolygon &polygon, Qt::ItemSelectionMode mode) const
 {
@@ -2130,7 +2138,7 @@ QList<QGraphicsItem *> QGraphicsView::items(const QPolygon &polygon, Qt::ItemSel
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a path are returned.
 
-    \sa itemAt(), items(), mapToScene()
+    \sa itemAt(), items(), mapToScene(), {QGraphicsItem#Sorting}{Sorting}
 */
 QList<QGraphicsItem *> QGraphicsView::items(const QPainterPath &path, Qt::ItemSelectionMode mode) const
 {
@@ -2149,7 +2157,7 @@ QList<QGraphicsItem *> QGraphicsView::items(const QPainterPath &path, Qt::ItemSe
 
     \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsview.cpp 6
 
-    \sa items()
+    \sa items(), {QGraphicsItem#Sorting}{Sorting}
 */
 QGraphicsItem *QGraphicsView::itemAt(const QPoint &pos) const
 {

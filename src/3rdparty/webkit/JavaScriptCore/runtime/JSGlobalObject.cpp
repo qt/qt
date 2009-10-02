@@ -121,7 +121,7 @@ JSGlobalObject::~JSGlobalObject()
         registerFile.setGlobalObject(0);
         registerFile.setNumGlobals(0);
     }
-    delete d();
+    d()->destructor(d());
 }
 
 void JSGlobalObject::init(JSObject* thisValue)
@@ -129,7 +129,7 @@ void JSGlobalObject::init(JSObject* thisValue)
     ASSERT(JSLock::currentThreadIsHoldingLock());
 
     d()->globalData = Heap::heap(this)->globalData();
-    d()->globalScopeChain = ScopeChain(this, d()->globalData.get(), thisValue);
+    d()->globalScopeChain = ScopeChain(this, d()->globalData.get(), this, thisValue);
 
     JSGlobalObject::globalExec()->init(0, 0, d()->globalScopeChain.node(), CallFrame::noCaller(), 0, 0, 0);
 
@@ -453,6 +453,11 @@ void* JSGlobalObject::operator new(size_t size, JSGlobalData* globalData)
 #else
     return globalData->heap.allocate(size);
 #endif
+}
+
+void JSGlobalObject::destroyJSGlobalObjectData(void* jsGlobalObjectData)
+{
+    delete static_cast<JSGlobalObjectData*>(jsGlobalObjectData);
 }
 
 } // namespace JSC

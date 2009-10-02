@@ -140,7 +140,7 @@ static const HashTable* getJSEventExceptionTable(ExecState* exec)
 }
 const ClassInfo JSEventException::s_info = { "EventException", 0, 0, getJSEventExceptionTable };
 
-JSEventException::JSEventException(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<EventException> impl)
+JSEventException::JSEventException(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<EventException> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

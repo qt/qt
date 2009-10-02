@@ -73,7 +73,7 @@ JSObject* JSSVGPathSegLinetoAbsPrototype::self(ExecState* exec, JSGlobalObject* 
 
 const ClassInfo JSSVGPathSegLinetoAbs::s_info = { "SVGPathSegLinetoAbs", &JSSVGPathSeg::s_info, &JSSVGPathSegLinetoAbsTable, 0 };
 
-JSSVGPathSegLinetoAbs::JSSVGPathSegLinetoAbs(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegLinetoAbs> impl, SVGElement* context)
+JSSVGPathSegLinetoAbs::JSSVGPathSegLinetoAbs(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegLinetoAbs> impl, SVGElement* context)
     : JSSVGPathSeg(structure, globalObject, impl, context)
 {
 }

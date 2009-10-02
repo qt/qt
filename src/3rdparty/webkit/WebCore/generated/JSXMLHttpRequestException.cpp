@@ -142,7 +142,7 @@ static const HashTable* getJSXMLHttpRequestExceptionTable(ExecState* exec)
 }
 const ClassInfo JSXMLHttpRequestException::s_info = { "XMLHttpRequestException", 0, 0, getJSXMLHttpRequestExceptionTable };
 
-JSXMLHttpRequestException::JSXMLHttpRequestException(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XMLHttpRequestException> impl)
+JSXMLHttpRequestException::JSXMLHttpRequestException(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XMLHttpRequestException> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

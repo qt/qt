@@ -1058,6 +1058,79 @@ As a reward you can try out the QDial, below.</string>
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="m_pageDialogs">
+       <layout class="QVBoxLayout" name="verticalLayout_13">
+        <item>
+         <widget class="QPushButton" name="m_buttonGetOpenFileName">
+          <property name="text">
+           <string>getOpenFileName()</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="m_buttonGetSaveFileName">
+          <property name="text">
+           <string>getSaveFileName()</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="m_buttonGetExistingDirectory">
+          <property name="text">
+           <string>getExistingDirectory()</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="m_buttonGetColor">
+          <property name="text">
+           <string>getColor()</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="m_buttonGetFont">
+          <property name="text">
+           <string>getFont()</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="m_buttonQuestion">
+          <property name="text">
+           <string>question()</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="m_buttonAboutQt">
+          <property name="text">
+           <string>aboutQt()</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="m_buttonGetItem">
+          <property name="text">
+           <string>getItem()</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>104</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -1080,6 +1153,7 @@ As a reward you can try out the QDial, below.</string>
     <addaction name="m_actionLayoutTwoDimensional"/>
     <addaction name="m_actionLayoutSliderMagic"/>
     <addaction name="m_actionLayoutChaos"/>
+    <addaction name="m_actionLayoutDialogs"/>
    </widget>
    <widget class="QMenu" name="menuNavigation_mode">
     <property name="title">
@@ -1144,14 +1218,22 @@ As a reward you can try out the QDial, below.</string>
     <string>CursorForceVisible</string>
    </property>
   </action>
+  <action name="m_actionLayoutDialogs">
+   <property name="text">
+    <string>Dialogs</string>
+   </property>
+   <property name="toolTip">
+    <string>m_actionLayoutDialogs</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>
-  <tabstop>lineEdit</tabstop>
-  <tabstop>horizontalSlider</tabstop>
-  <tabstop>lineEdit_4</tabstop>
-  <tabstop>horizontalSlider_2</tabstop>
-  <tabstop>dateEdit</tabstop>
+  <tabstop>m_buttonGetOpenFileName</tabstop>
+  <tabstop>m_buttonGetSaveFileName</tabstop>
+  <tabstop>m_buttonGetExistingDirectory</tabstop>
+  <tabstop>m_buttonGetColor</tabstop>
+  <tabstop>m_buttonGetFont</tabstop>
   <tabstop>comboBox</tabstop>
   <tabstop>plainTextEdit</tabstop>
   <tabstop>pushButton</tabstop>
@@ -1169,7 +1251,6 @@ As a reward you can try out the QDial, below.</string>
   <tabstop>toolButton_3</tabstop>
   <tabstop>horizontalSlider_6</tabstop>
   <tabstop>horizontalSlider_5</tabstop>
-  <tabstop>scrollArea_3</tabstop>
   <tabstop>lineEdit_13</tabstop>
   <tabstop>toolButton_31</tabstop>
   <tabstop>lineEdit_14</tabstop>
@@ -1202,7 +1283,17 @@ As a reward you can try out the QDial, below.</string>
   <tabstop>toolButton_16</tabstop>
   <tabstop>tabWidget</tabstop>
   <tabstop>scrollArea_2</tabstop>
-  <tabstop>scrollArea</tabstop>
+  <tabstop>horizontalSlider_4</tabstop>
+  <tabstop>horizontalSlider_3</tabstop>
+  <tabstop>tabWidget_2</tabstop>
+  <tabstop>toolButton_2</tabstop>
+  <tabstop>toolButton_7</tabstop>
+  <tabstop>toolButton_13</tabstop>
+  <tabstop>lineEdit_4</tabstop>
+  <tabstop>lineEdit</tabstop>
+  <tabstop>horizontalSlider</tabstop>
+  <tabstop>horizontalSlider_2</tabstop>
+  <tabstop>dateEdit</tabstop>
  </tabstops>
  <resources/>
  <connections>

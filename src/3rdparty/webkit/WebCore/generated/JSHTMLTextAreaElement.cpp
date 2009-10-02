@@ -154,7 +154,7 @@ bool JSHTMLTextAreaElementPrototype::getOwnPropertyDescriptor(ExecState* exec, c
 
 const ClassInfo JSHTMLTextAreaElement::s_info = { "HTMLTextAreaElement", &JSHTMLElement::s_info, &JSHTMLTextAreaElementTable, 0 };
 
-JSHTMLTextAreaElement::JSHTMLTextAreaElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLTextAreaElement> impl)
+JSHTMLTextAreaElement::JSHTMLTextAreaElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLTextAreaElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }
@@ -369,7 +369,9 @@ void setJSHTMLTextAreaElementAutofocus(ExecState* exec, JSObject* thisObject, JS
 void setJSHTMLTextAreaElementMaxLength(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLTextAreaElement* imp = static_cast<HTMLTextAreaElement*>(static_cast<JSHTMLTextAreaElement*>(thisObject)->impl());
-    imp->setMaxLength(value.toInt32(exec));
+    ExceptionCode ec = 0;
+    imp->setMaxLength(value.toInt32(exec), ec);
+    setDOMException(exec, ec);
 }
 
 void setJSHTMLTextAreaElementName(ExecState* exec, JSObject* thisObject, JSValue value)

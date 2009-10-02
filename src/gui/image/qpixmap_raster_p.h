@@ -88,7 +88,7 @@ protected:
 private:
     friend class QPixmap;
     friend class QBitmap;
-    friend class QDetachedPixmap;
+    friend class QPixmapCacheEntry;
     friend class QRasterPaintEngine;
 };
 

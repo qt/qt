@@ -33,7 +33,7 @@ class Console;
 class JSConsole : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSConsole(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Console>);
+    JSConsole(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Console>);
     virtual ~JSConsole();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -70,7 +70,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSConsolePrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSConsolePrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

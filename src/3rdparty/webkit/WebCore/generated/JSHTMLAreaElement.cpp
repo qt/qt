@@ -129,7 +129,7 @@ JSObject* JSHTMLAreaElementPrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSHTMLAreaElement::s_info = { "HTMLAreaElement", &JSHTMLElement::s_info, &JSHTMLAreaElementTable, 0 };
 
-JSHTMLAreaElement::JSHTMLAreaElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLAreaElement> impl)
+JSHTMLAreaElement::JSHTMLAreaElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLAreaElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

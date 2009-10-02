@@ -73,7 +73,7 @@ JSObject* JSSVGAnimatedLengthListPrototype::self(ExecState* exec, JSGlobalObject
 
 const ClassInfo JSSVGAnimatedLengthList::s_info = { "SVGAnimatedLengthList", 0, &JSSVGAnimatedLengthListTable, 0 };
 
-JSSVGAnimatedLengthList::JSSVGAnimatedLengthList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedLengthList> impl, SVGElement* context)
+JSSVGAnimatedLengthList::JSSVGAnimatedLengthList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedLengthList> impl, SVGElement* context)
     : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {

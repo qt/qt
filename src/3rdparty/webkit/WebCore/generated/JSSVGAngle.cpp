@@ -145,7 +145,7 @@ bool JSSVGAnglePrototype::getOwnPropertyDescriptor(ExecState* exec, const Identi
 
 const ClassInfo JSSVGAngle::s_info = { "SVGAngle", 0, &JSSVGAngleTable, 0 };
 
-JSSVGAngle::JSSVGAngle(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAngle> impl, SVGElement* context)
+JSSVGAngle::JSSVGAngle(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAngle> impl, SVGElement* context)
     : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {

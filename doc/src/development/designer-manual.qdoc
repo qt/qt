@@ -61,9 +61,6 @@
     \l{Getting To Know Qt Designer} document. For a quick tutorial on how to
     use \QD, refer to \l{A Quick Start to Qt Designer}.
 
-    Qt Designer 4.6 boasts a long list of improvements. For a detailed list of
-    what is new, refer \l{What's New in Qt Designer 4.6}.
-
     \image designer-multiple-screenshot.png
 
     For more information on using \QD, you can take a look at the following

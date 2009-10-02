@@ -134,6 +134,7 @@ private:
     friend class QS60PixmapData;
     friend class QGLTextureCache; //Needs to check the reference count
     friend class QExplicitlySharedDataPointer<QPixmapData>;
+    friend bool qt_createEGLSurfaceForPixmap(QPixmapData*, bool); // Needs to set is_cached
 
     QAtomicInt ref;
     int detach_no;

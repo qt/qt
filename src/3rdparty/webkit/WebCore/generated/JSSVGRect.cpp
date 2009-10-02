@@ -74,7 +74,7 @@ JSObject* JSSVGRectPrototype::self(ExecState* exec, JSGlobalObject* globalObject
 
 const ClassInfo JSSVGRect::s_info = { "SVGRect", 0, &JSSVGRectTable, 0 };
 
-JSSVGRect::JSSVGRect(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JSSVGPODTypeWrapper<FloatRect> > impl, SVGElement* context)
+JSSVGRect::JSSVGRect(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JSSVGPODTypeWrapper<FloatRect> > impl, SVGElement* context)
     : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {

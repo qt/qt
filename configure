@@ -673,6 +673,7 @@ CFG_PHONON_BACKEND=yes
 CFG_MULTIMEDIA=yes
 CFG_SVG=yes
 CFG_WEBKIT=auto # (yes|no|auto)
+CFG_JAVASCRIPTCORE_JIT=auto
 
 CFG_GFX_AVAILABLE="linuxfb transformed qvfb vnc multiscreen directfb"
 CFG_GFX_ON="linuxfb multiscreen"
@@ -911,7 +912,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-svg|-webkit|-script|-scripttools|-rpath|-force-pkg-config)
+        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-svg|-webkit|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1854,6 +1855,13 @@ while [ "$#" -gt 0 ]; do
             fi
         fi
         ;;
+    javascript-jit)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ] || [ "$VAL" = "no" ]; then 
+            CFG_JAVASCRIPTCORE_JIT="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     confirm-license)
         if [ "$VAL" = "yes" ]; then
             OPT_CONFIRM_LICENSE="$VAL"
@@ -2230,16 +2238,6 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     mkdir -p "$outpath/tools/porting/src"
     rm -f "$outpath/tools/porting/src/q3porting.xml"
     ln -s "$relpath/tools/porting/src/q3porting.xml" "$outpath/tools/porting/src"
-fi
-
-# symlink files from src/gui/embedded neccessary to build qvfb
-if [ "$CFG_DEV" = "yes" ]; then
-    mkdir -p "$outpath/tools/qvfb"
-    for f in qvfbhdr.h qlock_p.h qlock.cpp qwssignalhandler_p.h qwssignalhandler.cpp; do
-	dest="${outpath}/tools/qvfb/${f}"
-	rm -f "$dest"
-	ln -s "${relpath}/src/gui/embedded/${f}" "${dest}"
-    done
 fi
 
 # symlink fonts to be able to run application from build directory
@@ -3235,7 +3233,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-no-optimized-qmake] [-optimized-qmake] [-no-xmlpatterns] [-xmlpatterns]
         [-no-multimedia] [-multimedia] [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
         [-no-openssl] [-openssl] [-openssl-linked]
-        [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg] [-no-webkit] [-webkit]
+        [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg] [-no-webkit] [-webkit] [-no-javascript-jit] [-javascript-jit]
         [-no-script] [-script] [-no-scripttools] [-scripttools]
 
         [additional platform specific options (see below)]
@@ -3384,6 +3382,9 @@ fi
     -no-webkit ......... Do not build the WebKit module.
  +  -webkit ............ Build the WebKit module.
                          WebKit is built if a decent C++ compiler is used.
+
+    -no-javascript-jit . Do not build the JavaScriptCore JIT compiler.
+ +  -javascript-jit .... Build the JavaScriptCore JIT compiler.
 
     -no-script ......... Do not build the QtScript module.
  +  -script ............ Build the QtScript module.
@@ -5767,6 +5768,21 @@ if [ "$CFG_ALSA" = "auto" ]; then
     fi
 fi
 
+if [ "$CFG_JAVASCRIPTCORE_JIT" = "yes" ] || [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then 
+    if [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ]; then
+       "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/javascriptcore-jit "javascriptcore-jit" $L_FLAGS $I_FLAGS $l_FLAGS
+        if [ $? != "0" ]; then
+           CFG_JAVASCRIPTCORE_JIT=no
+        fi
+    fi
+fi
+
+if [ "$CFG_JAVASCRIPTCORE_JIT" = "yes" ]; then
+    QMakeVar set JAVASCRIPTCORE_JIT yes
+elif [ "$CFG_JAVASCRIPTCORE_JIT" = "no" ]; then
+    QMakeVar set JAVASCRIPTCORE_JIT no
+fi
+
 #-------------------------------------------------------------------------------
 # ask for all that hasn't been auto-detected or specified in the arguments
 #-------------------------------------------------------------------------------
@@ -6383,7 +6399,7 @@ else
 fi
 
 if [ "$CFG_SCRIPT" = "auto" ]; then
-    CFG_SCRIPT="$canBuildWebKit"
+    CFG_SCRIPT="yes"
 fi
 
 if [ "$CFG_SCRIPT" = "yes" ]; then
@@ -7278,6 +7294,13 @@ echo "Phonon module ....... $CFG_PHONON"
 echo "Multimedia module ... $CFG_MULTIMEDIA"
 echo "SVG module .......... $CFG_SVG"
 echo "WebKit module ....... $CFG_WEBKIT"
+if [ "$CFG_WEBKIT" = "yes" ]; then 
+    if [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
+        echo "JavaScriptCore JIT .. To be decided by JavaScriptCore"
+    else
+        echo "JavaScriptCore JIT .. $CFG_JAVASCRIPTCORE_JIT"
+    fi
+fi
 echo "STL support ......... $CFG_STL"
 echo "PCH support ......... $CFG_PRECOMPILE"
 echo "MMX/3DNOW/SSE/SSE2..  ${CFG_MMX}/${CFG_3DNOW}/${CFG_SSE}/${CFG_SSE2}"

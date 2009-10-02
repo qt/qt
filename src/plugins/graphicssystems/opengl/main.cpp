@@ -56,6 +56,9 @@ QStringList QGLGraphicsSystemPlugin::keys() const
 {
     QStringList list;
     list << QLatin1String("OpenGL") << QLatin1String("OpenGL1");
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+    list << QLatin1String("OpenGL2");
+#endif
     return list;
 }
 
@@ -65,6 +68,13 @@ QGraphicsSystem* QGLGraphicsSystemPlugin::create(const QString& system)
         QGL::setPreferredPaintEngine(QPaintEngine::OpenGL);
         return new QGLGraphicsSystem;
     }
+
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+    if (system.toLower() == QLatin1String("opengl2")) {
+        QGL::setPreferredPaintEngine(QPaintEngine::OpenGL2);
+        return new QGLGraphicsSystem;
+    }
+#endif
 
     if (system.toLower() == QLatin1String("opengl"))
         return new QGLGraphicsSystem;

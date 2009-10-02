@@ -30,7 +30,7 @@ class WebKitTransitionEvent;
 class JSWebKitTransitionEvent : public JSEvent {
     typedef JSEvent Base;
 public:
-    JSWebKitTransitionEvent(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<WebKitTransitionEvent>);
+    JSWebKitTransitionEvent(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<WebKitTransitionEvent>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
@@ -58,7 +58,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSWebKitTransitionEventPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSWebKitTransitionEventPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

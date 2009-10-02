@@ -34,7 +34,7 @@ class NodeList;
 class JSNodeList : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSNodeList(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<NodeList>);
+    JSNodeList(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<NodeList>);
     virtual ~JSNodeList();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -77,7 +77,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSNodeListPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSNodeListPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

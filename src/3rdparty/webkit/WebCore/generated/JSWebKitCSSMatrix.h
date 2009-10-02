@@ -33,7 +33,7 @@ class WebKitCSSMatrix;
 class JSWebKitCSSMatrix : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSWebKitCSSMatrix(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<WebKitCSSMatrix>);
+    JSWebKitCSSMatrix(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<WebKitCSSMatrix>);
     virtual ~JSWebKitCSSMatrix();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -68,7 +68,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSWebKitCSSMatrixPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSWebKitCSSMatrixPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

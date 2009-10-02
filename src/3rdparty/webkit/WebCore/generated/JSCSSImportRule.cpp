@@ -120,7 +120,7 @@ JSObject* JSCSSImportRulePrototype::self(ExecState* exec, JSGlobalObject* global
 
 const ClassInfo JSCSSImportRule::s_info = { "CSSImportRule", &JSCSSRule::s_info, &JSCSSImportRuleTable, 0 };
 
-JSCSSImportRule::JSCSSImportRule(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSImportRule> impl)
+JSCSSImportRule::JSCSSImportRule(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSImportRule> impl)
     : JSCSSRule(structure, globalObject, impl)
 {
 }

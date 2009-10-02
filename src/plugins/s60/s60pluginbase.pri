@@ -1,6 +1,6 @@
 # Note: These version based 'plugins' are not an actual Qt plugins,
 # they are just regular runtime loaded libraries
-include(../../qpluginbase.pri)
+include(../qpluginbase.pri)
 
 CONFIG  -= plugin
 

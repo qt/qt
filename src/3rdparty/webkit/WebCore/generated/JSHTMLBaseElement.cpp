@@ -117,7 +117,7 @@ JSObject* JSHTMLBaseElementPrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSHTMLBaseElement::s_info = { "HTMLBaseElement", &JSHTMLElement::s_info, &JSHTMLBaseElementTable, 0 };
 
-JSHTMLBaseElement::JSHTMLBaseElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLBaseElement> impl)
+JSHTMLBaseElement::JSHTMLBaseElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLBaseElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

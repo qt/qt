@@ -241,6 +241,7 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
 #include "private/qlocale_p.h"
 
 #include <stdlib.h>
+#include <limits.h>
 #include <new>
 
 #if defined QTEXTSTREAM_DEBUG
@@ -375,10 +376,10 @@ public:
     enum TokenDelimiter {
         Space,
         NotSpace,
-        EndOfLine,
-        EndOfFile
+        EndOfLine
     };
 
+    QString read(int maxlen);
     bool scan(const QChar **ptr, int *tokenLength,
               int maxlen, TokenDelimiter delimiter);
     inline const QChar *readPtr() const;
@@ -704,6 +705,25 @@ bool QTextStreamPrivate::flushWriteBuffer()
     return flushed && bytesWritten == qint64(data.size());
 }
 
+QString QTextStreamPrivate::read(int maxlen)
+{
+    QString ret;
+    if (string) {
+        lastTokenSize = qMin(maxlen, string->size() - stringOffset);
+        ret = string->mid(stringOffset, lastTokenSize);
+    } else {
+        while (readBuffer.size() - readBufferOffset < maxlen && fillReadBuffer()) ;
+        lastTokenSize = qMin(maxlen, readBuffer.size() - readBufferOffset);
+        ret = readBuffer.mid(readBufferOffset, lastTokenSize);
+    }
+    consumeLastToken();
+
+#if defined (QTEXTSTREAM_DEBUG)
+    qDebug("QTextStreamPrivate::read() maxlen = %d, token length = %d", maxlen, ret.length());
+#endif
+    return ret;
+}
+
 /*! \internal
 
     Scans no more than \a maxlen QChars in the current buffer for the
@@ -736,19 +756,28 @@ bool QTextStreamPrivate::scan(const QChar **ptr, int *length, int maxlen, TokenD
             const QChar ch = *chPtr++;
             ++totalSize;
 
-            if (delimiter == Space && ch.isSpace()) {
-                foundToken = true;
-                delimSize = 1;
-            } else if (delimiter == NotSpace && !ch.isSpace()) {
-                foundToken = true;
-                delimSize = 1;
-            } else if (delimiter == EndOfLine && ch == QLatin1Char('\n')) {
-                foundToken = true;
-                delimSize = (lastChar == QLatin1Char('\r')) ? 2 : 1;
-                consumeDelimiter = true;
+            switch (delimiter) {
+            case Space:
+                if (ch.isSpace()) {
+                    foundToken = true;
+                    delimSize = 1;
+                }
+                break;
+            case NotSpace:
+                if (!ch.isSpace()) {
+                    foundToken = true;
+                    delimSize = 1;
+                }
+                break;
+            case EndOfLine:
+                if (ch == QLatin1Char('\n')) {
+                    foundToken = true;
+                    delimSize = (lastChar == QLatin1Char('\r')) ? 2 : 1;
+                    consumeDelimiter = true;
+                }
+                lastChar = ch;
+                break;
             }
-
-            lastChar = ch;
         }
     } while (!foundToken
              && (!maxlen || totalSize < maxlen)
@@ -769,7 +798,7 @@ bool QTextStreamPrivate::scan(const QChar **ptr, int *length, int maxlen, TokenD
 
     // if we find a '\r' at the end of the data when reading lines,
     // don't make it part of the line.
-    if (totalSize > 0 && !foundToken && delimiter == EndOfLine) {
+    if (delimiter == EndOfLine && totalSize > 0 && !foundToken) {
         if (((string && stringOffset + totalSize == string->size()) || (device && device->atEnd()))
             && lastChar == QLatin1Char('\r')) {
             consumeDelimiter = true;
@@ -1603,14 +1632,7 @@ QString QTextStream::readAll()
     Q_D(QTextStream);
     CHECK_VALID_STREAM(QString());
 
-    const QChar *readPtr;
-    int length;
-    if (!d->scan(&readPtr, &length, /* maxlen = */ 0, QTextStreamPrivate::EndOfFile))
-        return QString();
-
-    QString tmp = QString(readPtr, length);
-    d->consumeLastToken();
-    return tmp;
+    return d->read(INT_MAX);
 }
 
 /*!
@@ -1662,14 +1684,7 @@ QString QTextStream::read(qint64 maxlen)
     if (maxlen <= 0)
         return QString::fromLatin1("");     // empty, not null
 
-    const QChar *readPtr;
-    int length;
-    if (!d->scan(&readPtr, &length, int(maxlen), QTextStreamPrivate::EndOfFile))
-        return QString();
-
-    QString tmp = QString(readPtr, length);
-    d->consumeLastToken();
-    return tmp;
+    return d->read(int(maxlen));
 }
 
 /*! \internal

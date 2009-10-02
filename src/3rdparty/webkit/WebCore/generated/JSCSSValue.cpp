@@ -134,7 +134,7 @@ bool JSCSSValuePrototype::getOwnPropertyDescriptor(ExecState* exec, const Identi
 
 const ClassInfo JSCSSValue::s_info = { "CSSValue", 0, &JSCSSValueTable, 0 };
 
-JSCSSValue::JSCSSValue(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSValue> impl)
+JSCSSValue::JSCSSValue(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSValue> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

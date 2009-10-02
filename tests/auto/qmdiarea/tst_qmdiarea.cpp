@@ -468,6 +468,7 @@ void tst_QMdiArea::subWindowActivated2()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&mdiArea);
 #endif
+    QTest::qWait(100);
 
     QTRY_COMPARE(spy.count(), 5);
     QCOMPARE(mdiArea.activeSubWindow(), mdiArea.subWindowList().back());

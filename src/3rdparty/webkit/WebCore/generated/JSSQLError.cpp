@@ -75,7 +75,7 @@ JSObject* JSSQLErrorPrototype::self(ExecState* exec, JSGlobalObject* globalObjec
 
 const ClassInfo JSSQLError::s_info = { "SQLError", 0, &JSSQLErrorTable, 0 };
 
-JSSQLError::JSSQLError(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SQLError> impl)
+JSSQLError::JSSQLError(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SQLError> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

@@ -133,7 +133,7 @@ JSObject* JSHTMLBodyElementPrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSHTMLBodyElement::s_info = { "HTMLBodyElement", &JSHTMLElement::s_info, &JSHTMLBodyElementTable, 0 };
 
-JSHTMLBodyElement::JSHTMLBodyElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLBodyElement> impl)
+JSHTMLBodyElement::JSHTMLBodyElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLBodyElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }
@@ -207,7 +207,7 @@ JSValue jsHTMLBodyElementOnbeforeunload(ExecState* exec, const Identifier&, cons
     UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
     if (EventListener* listener = imp->onbeforeunload()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -219,7 +219,7 @@ JSValue jsHTMLBodyElementOnhashchange(ExecState* exec, const Identifier&, const 
     UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
     if (EventListener* listener = imp->onhashchange()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -231,7 +231,7 @@ JSValue jsHTMLBodyElementOnmessage(ExecState* exec, const Identifier&, const Pro
     UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
     if (EventListener* listener = imp->onmessage()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -243,7 +243,7 @@ JSValue jsHTMLBodyElementOnoffline(ExecState* exec, const Identifier&, const Pro
     UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
     if (EventListener* listener = imp->onoffline()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -255,7 +255,7 @@ JSValue jsHTMLBodyElementOnonline(ExecState* exec, const Identifier&, const Prop
     UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
     if (EventListener* listener = imp->ononline()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -267,7 +267,7 @@ JSValue jsHTMLBodyElementOnresize(ExecState* exec, const Identifier&, const Prop
     UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
     if (EventListener* listener = imp->onresize()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -279,7 +279,7 @@ JSValue jsHTMLBodyElementOnstorage(ExecState* exec, const Identifier&, const Pro
     UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
     if (EventListener* listener = imp->onstorage()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -291,7 +291,7 @@ JSValue jsHTMLBodyElementOnunload(ExecState* exec, const Identifier&, const Prop
     UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(castedThis->impl());
     if (EventListener* listener = imp->onunload()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();

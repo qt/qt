@@ -34,7 +34,7 @@ namespace JSC {
 
 ASSERT_CLASS_FITS_IN_CELL(FunctionConstructor);
 
-FunctionConstructor::FunctionConstructor(ExecState* exec, PassRefPtr<Structure> structure, FunctionPrototype* functionPrototype)
+FunctionConstructor::FunctionConstructor(ExecState* exec, NonNullPassRefPtr<Structure> structure, FunctionPrototype* functionPrototype)
     : InternalFunction(&exec->globalData(), structure, Identifier(exec, functionPrototype->classInfo()->className))
 {
     putDirectWithoutTransition(exec->propertyNames().prototype, functionPrototype, DontEnum | DontDelete | ReadOnly);
@@ -92,7 +92,7 @@ JSObject* constructFunction(ExecState* exec, const ArgList& args, const Identifi
         return throwError(exec, SyntaxError, errMsg, errLine, source.provider()->asID(), source.provider()->url());
 
     JSGlobalObject* globalObject = exec->lexicalGlobalObject();
-    ScopeChain scopeChain(globalObject, globalObject->globalData(), exec->globalThisValue());
+    ScopeChain scopeChain(globalObject, globalObject->globalData(), globalObject, exec->globalThisValue());
     return new (exec) JSFunction(exec, function, scopeChain.node());
 }
 

@@ -89,7 +89,7 @@ const qint64 SEEK_BACKWARDS = 2000;
 const qint64 ALLOWED_TIME_FOR_SEEKING = 1500; // 1.5s
 const qint64 SEEKING_TOLERANCE = 250;
 #else 
-#if defined(Q_OS_WIN) || defined(Q_OS_MAC) 
+#if defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(Q_OS_SYMBIAN)
 #define MEDIA_FILE "/sax.mp3"
 #define MEDIA_FILEPATH ":/media/sax.mp3"
 #else
@@ -207,6 +207,11 @@ void tst_MediaObject::stateChanged(Phonon::State newstate, Phonon::State oldstat
 
 void tst_MediaObject::testPlayFromResource()
 {
+#ifdef Q_OS_SYMBIAN
+    QSKIP("Not implemented yet.", SkipAll);
+    return;
+#endif
+
     QFile file(MEDIA_FILEPATH);
     MediaObject media;
     media.setCurrentSource(&file);

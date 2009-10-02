@@ -114,7 +114,7 @@ JSObject* JSCSSCharsetRulePrototype::self(ExecState* exec, JSGlobalObject* globa
 
 const ClassInfo JSCSSCharsetRule::s_info = { "CSSCharsetRule", &JSCSSRule::s_info, &JSCSSCharsetRuleTable, 0 };
 
-JSCSSCharsetRule::JSCSSCharsetRule(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSCharsetRule> impl)
+JSCSSCharsetRule::JSCSSCharsetRule(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSCharsetRule> impl)
     : JSCSSRule(structure, globalObject, impl)
 {
 }

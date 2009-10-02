@@ -146,7 +146,7 @@ bool JSHTMLAnchorElementPrototype::getOwnPropertyDescriptor(ExecState* exec, con
 
 const ClassInfo JSHTMLAnchorElement::s_info = { "HTMLAnchorElement", &JSHTMLElement::s_info, &JSHTMLAnchorElementTable, 0 };
 
-JSHTMLAnchorElement::JSHTMLAnchorElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLAnchorElement> impl)
+JSHTMLAnchorElement::JSHTMLAnchorElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLAnchorElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

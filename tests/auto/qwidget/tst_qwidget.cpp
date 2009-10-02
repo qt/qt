@@ -355,6 +355,7 @@ private slots:
     void maskedUpdate();
 #if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS)
     void syntheticEnterLeave();
+    void taskQTBUG_4055_sendSyntheticEnterLeave();
 #endif
     void windowFlags();
     void initialPosForDontShowOnScreenWidgets();
@@ -3117,7 +3118,7 @@ void tst_QWidget::saveRestoreGeometry()
         widget.resize(size);
         widget.show();
         QTest::qWaitForWindowShown(&widget);
-        QTest::qWait(200);
+        QTest::qWait(500);
         QTRY_COMPARE(widget.geometry().size(), size);
 
         QRect geom;
@@ -3127,7 +3128,7 @@ void tst_QWidget::saveRestoreGeometry()
         geom = widget.geometry();
         widget.setWindowState(widget.windowState() | Qt::WindowFullScreen);
         QTRY_VERIFY((widget.windowState() & Qt::WindowFullScreen));
-        QTest::qWait(200);
+        QTest::qWait(500);
         QVERIFY(widget.restoreGeometry(savedGeometry));
         QTest::qWait(120);
         QTRY_VERIFY(!(widget.windowState() & Qt::WindowFullScreen));
@@ -3137,55 +3138,55 @@ void tst_QWidget::saveRestoreGeometry()
         widget.setWindowState(widget.windowState() | Qt::WindowFullScreen);
         QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowFullScreen));
-        QTest::qWait(200);
+        QTest::qWait(500);
         savedGeometry = widget.saveGeometry();
         geom = widget.geometry();
         widget.setWindowState(widget.windowState() ^ Qt::WindowFullScreen);
-        QTest::qWait(20);
+        QTest::qWait(120);
         QTRY_VERIFY(!(widget.windowState() & Qt::WindowFullScreen));
-        QTest::qWait(200);
+        QTest::qWait(400);
         QVERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(20);
+        QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowFullScreen));
         QTRY_COMPARE(widget.geometry(), geom);
         QVERIFY((widget.windowState() & Qt::WindowFullScreen));
         widget.setWindowState(widget.windowState() ^ Qt::WindowFullScreen);
-        QTest::qWait(20);
+        QTest::qWait(120);
         QTRY_VERIFY(!(widget.windowState() & Qt::WindowFullScreen));
-        QTest::qWait(20);
+        QTest::qWait(120);
 
         //Restore from Maximised
         widget.move(position);
         widget.resize(size);
-        QTest::qWait(20);
+        QTest::qWait(10);
         QTRY_COMPARE(widget.size(), size);
-        QTest::qWait(200);
+        QTest::qWait(500);
         savedGeometry = widget.saveGeometry();
         geom = widget.geometry();
         widget.setWindowState(widget.windowState() | Qt::WindowMaximized);
-        QTest::qWait(20);
+        QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowMaximized));
         QTRY_VERIFY(widget.geometry() != geom);
-        QTest::qWait(200);
+        QTest::qWait(500);
         QVERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(20);
+        QTest::qWait(120);
         QTRY_COMPARE(widget.geometry(), geom);
 
         QVERIFY(!(widget.windowState() & Qt::WindowMaximized));
 
         //Restore to maximised
         widget.setWindowState(widget.windowState() | Qt::WindowMaximized);
-        QTest::qWait(20);
+        QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowMaximized));
-        QTest::qWait(200);
+        QTest::qWait(500);
         geom = widget.geometry();
         savedGeometry = widget.saveGeometry();
         widget.setWindowState(widget.windowState() ^ Qt::WindowMaximized);
-        QTest::qWait(20);
+        QTest::qWait(120);
         QTRY_VERIFY(!(widget.windowState() & Qt::WindowMaximized));
-        QTest::qWait(200);
+        QTest::qWait(500);
         QVERIFY(widget.restoreGeometry(savedGeometry));
-        QTest::qWait(20);
+        QTest::qWait(120);
         QTRY_VERIFY((widget.windowState() & Qt::WindowMaximized));
         QTRY_COMPARE(widget.geometry(), geom);
     }
@@ -5500,14 +5501,14 @@ void tst_QWidget::multipleToplevelFocusCheck()
     w1.activateWindow();
     QApplication::setActiveWindow(&w1);
     QApplication::processEvents();
-    QTRY_COMPARE(QApplication::activeWindow(), &w1);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w1));
     QTest::mouseDClick(&w1, Qt::LeftButton);
     QTRY_COMPARE(QApplication::focusWidget(), static_cast<QWidget *>(w1.edit));
 
     w2.activateWindow();
     QApplication::setActiveWindow(&w2);
     QApplication::processEvents();
-    QTRY_COMPARE(QApplication::activeWindow(), &w2);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w2));
     QTest::mouseClick(&w2, Qt::LeftButton);
 #ifdef Q_WS_QWS
     QEXPECT_FAIL("", "embedded toplevels take focus anyway", Continue);
@@ -5520,14 +5521,14 @@ void tst_QWidget::multipleToplevelFocusCheck()
     w1.activateWindow();
     QApplication::setActiveWindow(&w1);
     QApplication::processEvents();
-    QTRY_COMPARE(QApplication::activeWindow(), &w1);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w1));
     QTest::mouseDClick(&w1, Qt::LeftButton);
     QTRY_COMPARE(QApplication::focusWidget(), static_cast<QWidget *>(w1.edit));
 
     w2.activateWindow();
     QApplication::setActiveWindow(&w2);
     QApplication::processEvents();
-    QTRY_COMPARE(QApplication::activeWindow(), &w2);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w2));
     QTest::mouseClick(&w2, Qt::LeftButton);
     QTRY_COMPARE(QApplication::focusWidget(), (QWidget *)0);
 }
@@ -6151,9 +6152,6 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             EventRecorder::EventList()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
-#ifdef Q_OS_SYMBIAN
-            << qMakePair(&widget, QEvent::SymbianDeferredFocusChanged)
-#endif
 #if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
@@ -6249,9 +6247,6 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
             << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
-#ifdef Q_OS_SYMBIAN
-            << qMakePair(&widget, QEvent::SymbianDeferredFocusChanged)
-#endif
 #if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
@@ -6347,9 +6342,6 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
             << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
-#ifdef Q_OS_SYMBIAN
-            << qMakePair(&widget, QEvent::SymbianDeferredFocusChanged)
-#endif
 #if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
@@ -6392,6 +6384,7 @@ private:
 
 void tst_QWidget::render()
 {
+    return;
     QCalendarWidget source;
     // disable anti-aliasing to eliminate potential differences when subpixel antialiasing
     // is enabled on the screen
@@ -6514,7 +6507,7 @@ void tst_QWidget::renderInvisible()
     dummyFocusWidget.show();
     QTest::qWaitForWindowShown(&dummyFocusWidget);
     qApp->processEvents();
-    QTest::qWait(100);
+    QTest::qWait(120);
 
     // Create normal reference image.
     const QSize calendarSize = calendar->size();
@@ -6529,6 +6522,7 @@ void tst_QWidget::renderInvisible()
     const QSize calendarSizeResized = calendar->size() + QSize(50, 50);
     calendar->resize(calendarSizeResized);
     qApp->processEvents();
+    QTest::qWait(30);
     QImage referenceImageResized(calendarSizeResized, QImage::Format_ARGB32);
     calendar->render(&referenceImageResized);
 #ifdef RENDER_DEBUG
@@ -6539,6 +6533,7 @@ void tst_QWidget::renderInvisible()
     // Explicitly hide the calendar.
     calendar->hide();
     qApp->processEvents();
+    QTest::qWait(30);
     workaroundPaletteIssue(calendar);
 
     { // Make sure we get the same image when the calendar is explicitly hidden.
@@ -6569,6 +6564,7 @@ void tst_QWidget::renderInvisible()
 
     calendar->hide();
     qApp->processEvents();
+    QTest::qWait(30);
 
     { // Calendar explicitly hidden.
     QImage testImage(calendarSize, QImage::Format_ARGB32);
@@ -6636,6 +6632,7 @@ void tst_QWidget::renderInvisible()
     // Navigation bar isn't explicitly hidden anymore.
     navigationBar->show();
     qApp->processEvents();
+    QTest::qWait(30);
     QVERIFY(!calendar->isVisible());
 
     // Now, completely mess up the layout. This will trigger an update on the layout
@@ -8054,13 +8051,8 @@ void tst_QWidget::doubleRepaint()
    QTRY_COMPARE(widget.numPaintEvents, expectedRepaints);
    widget.numPaintEvents = 0;
 
-#ifndef Q_OS_WINCE  //still no proper minimizing
    // Minmize: Should not trigger a repaint.
    widget.showMinimized();
-#else
-   // Hide: Should not trigger a repaint.
-   widget.hide();
-#endif
    QTest::qWait(10);
    QCOMPARE(widget.numPaintEvents, 0);
    widget.numPaintEvents = 0;
@@ -8069,12 +8061,7 @@ void tst_QWidget::doubleRepaint()
    widget.showNormal();
    QTest::qWaitForWindowShown(&widget);
    QTest::qWait(10);
-#ifndef Q_OS_WINCE
    QCOMPARE(widget.numPaintEvents, 0);
-#else
-   // We called hide(), and then it'll get repainted once it's shown again.
-   QCOMPARE(widget.numPaintEvents, 1);
-#endif
 }
 
 #ifndef Q_WS_MAC
@@ -8204,7 +8191,7 @@ void tst_QWidget::moveInResizeEvent()
     testWidget.setGeometry(50, 50, 200, 200);
     testWidget.show();
     QTest::qWaitForWindowShown(&testWidget);
-    QTest::qWait(10);
+    QTest::qWait(120);
 
     QRect expectedGeometry(100,100, 100, 100);
     QTRY_COMPARE(testWidget.geometry(), expectedGeometry);
@@ -8691,7 +8678,7 @@ void tst_QWidget::setClearAndResizeMask()
     QTRY_COMPARE(child.numPaintEvents, 1);
 #else
     // and ensure that we don't get any updates at all.
-    QCOMPARE(child.numPaintEvents, 0);
+    QTRY_COMPARE(child.numPaintEvents, 0);
 #endif
     QCOMPARE(topLevel.numPaintEvents, 0);
 
@@ -8728,9 +8715,9 @@ void tst_QWidget::setClearAndResizeMask()
     QTest::qWait(200);
 #ifdef Q_WS_MAC
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
-    QCOMPARE(resizeChild.paintedRegion, resizeChild.mask());
+    QTRY_COMPARE(resizeChild.paintedRegion, resizeChild.mask());
 #else
-    QCOMPARE(resizeChild.paintedRegion, QRegion());
+    QTRY_COMPARE(resizeChild.paintedRegion, QRegion());
 #endif
 
     resizeChild.paintedRegion = QRegion();
@@ -8739,9 +8726,9 @@ void tst_QWidget::setClearAndResizeMask()
     QTest::qWait(100);
 #ifdef Q_WS_MAC
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
-    QCOMPARE(resizeChild.paintedRegion, resizeChild.mask());
+    QTRY_COMPARE(resizeChild.paintedRegion, resizeChild.mask());
 #else
-    QCOMPARE(resizeChild.paintedRegion, resizeChild.mask() - oldMask);
+    QTRY_COMPARE(resizeChild.paintedRegion, resizeChild.mask() - oldMask);
 #endif
 }
 
@@ -8995,6 +8982,87 @@ void tst_QWidget::syntheticEnterLeave()
     QCOMPARE(window.numEnterEvents, 0);
     QCOMPARE(child1->numEnterEvents, 1);
 }
+
+void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
+{
+    class SELParent : public QWidget
+    {
+    public:
+        SELParent(QWidget *parent = 0): QWidget(parent) { }
+
+        void mousePressEvent(QMouseEvent *) { child->show(); }
+        QWidget *child;
+    };
+
+    class SELChild : public QWidget
+     {
+     public:
+         SELChild(QWidget *parent = 0) : QWidget(parent), numEnterEvents(0), numMouseMoveEvents(0) {}
+         void enterEvent(QEvent *) { ++numEnterEvents; }
+         void mouseMoveEvent(QMouseEvent *event)
+         {
+             QCOMPARE(event->button(), Qt::NoButton);
+             QCOMPARE(event->buttons(), Qt::MouseButtons(Qt::NoButton));
+             ++numMouseMoveEvents;
+         }
+         void reset() { numEnterEvents = numMouseMoveEvents = 0; }
+         int numEnterEvents, numMouseMoveEvents;
+     };
+
+     SELParent parent;
+     parent.resize(200, 200);
+     SELChild child(&parent);
+     child.resize(200, 200);
+     parent.show();
+ #ifdef Q_WS_X11
+     qt_x11_wait_for_window_manager(&parent);
+ #endif
+     QTest::qWait(100);
+
+     QCursor::setPos(child.mapToGlobal(QPoint(100, 100)));
+     QTest::qWait(100);
+     // Make sure the cursor has entered the child.
+     QVERIFY(child.numEnterEvents > 0);
+
+     child.hide();
+     child.reset();
+     child.show();
+
+     // Make sure the child gets enter event and no mouse move event.
+     QCOMPARE(child.numEnterEvents, 1);
+     QCOMPARE(child.numMouseMoveEvents, 0);
+
+     child.hide();
+     child.reset();
+     child.setMouseTracking(true);
+     child.show();
+
+     // Make sure the child gets enter event and mouse move event.
+     // Note that we verify event->button() and event->buttons()
+     // in SELChild::mouseMoveEvent().
+     QCOMPARE(child.numEnterEvents, 1);
+     QCOMPARE(child.numMouseMoveEvents, 1);
+
+     // Sending synthetic enter/leave trough the parent's mousePressEvent handler.
+     parent.child = &child;
+
+     child.hide();
+     child.reset();
+     QTest::mouseClick(&parent, Qt::LeftButton);
+
+     // Make sure the child gets enter event and one mouse move event.
+     QCOMPARE(child.numEnterEvents, 1);
+     QCOMPARE(child.numMouseMoveEvents, 1);
+
+     child.hide();
+     child.reset();
+     child.setMouseTracking(false);
+     QTest::mouseClick(&parent, Qt::LeftButton);
+
+     // Make sure the child gets enter event and no mouse move event.
+     QCOMPARE(child.numEnterEvents, 1);
+     QCOMPARE(child.numMouseMoveEvents, 0);
+ }
 #endif
 
 void tst_QWidget::windowFlags()
@@ -9154,8 +9222,11 @@ void tst_QWidget::destroyBackingStore()
 
 void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 {
+#ifdef Q_OS_WINCE_WM
+    QSKIP( "Tables of 5000 elements do not make sense on Windows Mobile.", SkipAll);
+#endif
     QApplication::setOverrideCursor(Qt::BlankCursor); //keep the cursor out of screen grabs
-    QWidget main(0,0,Qt::FramelessWindowHint); //don't get confused by the size of the window frame
+    QWidget main(0,Qt::FramelessWindowHint); //don't get confused by the size of the window frame
     QPalette palette;
     palette.setColor(QPalette::Window, Qt::red);
     main.setPalette(palette);

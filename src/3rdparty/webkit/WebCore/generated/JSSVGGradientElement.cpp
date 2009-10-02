@@ -151,7 +151,7 @@ bool JSSVGGradientElementPrototype::getOwnPropertyDescriptor(ExecState* exec, co
 
 const ClassInfo JSSVGGradientElement::s_info = { "SVGGradientElement", &JSSVGElement::s_info, &JSSVGGradientElementTable, 0 };
 
-JSSVGGradientElement::JSSVGGradientElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGGradientElement> impl)
+JSSVGGradientElement::JSSVGGradientElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGGradientElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

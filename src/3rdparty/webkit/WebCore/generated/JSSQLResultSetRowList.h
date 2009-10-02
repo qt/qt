@@ -35,7 +35,7 @@ class SQLResultSetRowList;
 class JSSQLResultSetRowList : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSSQLResultSetRowList(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SQLResultSetRowList>);
+    JSSQLResultSetRowList(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SQLResultSetRowList>);
     virtual ~JSSQLResultSetRowList();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -72,7 +72,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSSQLResultSetRowListPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSSQLResultSetRowListPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

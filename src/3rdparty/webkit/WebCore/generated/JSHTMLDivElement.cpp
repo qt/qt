@@ -115,7 +115,7 @@ JSObject* JSHTMLDivElementPrototype::self(ExecState* exec, JSGlobalObject* globa
 
 const ClassInfo JSHTMLDivElement::s_info = { "HTMLDivElement", &JSHTMLElement::s_info, &JSHTMLDivElementTable, 0 };
 
-JSHTMLDivElement::JSHTMLDivElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLDivElement> impl)
+JSHTMLDivElement::JSHTMLDivElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLDivElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

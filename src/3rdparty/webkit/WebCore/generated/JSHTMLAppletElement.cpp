@@ -128,7 +128,7 @@ JSObject* JSHTMLAppletElementPrototype::self(ExecState* exec, JSGlobalObject* gl
 
 const ClassInfo JSHTMLAppletElement::s_info = { "HTMLAppletElement", &JSHTMLElement::s_info, &JSHTMLAppletElementTable, 0 };
 
-JSHTMLAppletElement::JSHTMLAppletElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLAppletElement> impl)
+JSHTMLAppletElement::JSHTMLAppletElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLAppletElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

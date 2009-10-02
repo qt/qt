@@ -379,14 +379,18 @@ namespace JSC {
 
         enum CompileOpStrictEqType { OpStrictEq, OpNStrictEq };
         void compileOpStrictEq(Instruction* instruction, CompileOpStrictEqType type);
+        bool isOperandConstantImmediateDouble(unsigned src);
+        
+        void emitLoadDouble(unsigned index, FPRegisterID value);
+        void emitLoadInt32ToDouble(unsigned index, FPRegisterID value);
+
+        Address addressFor(unsigned index, RegisterID base = callFrameRegister);
 
 #if USE(JSVALUE32_64)
         Address tagFor(unsigned index, RegisterID base = callFrameRegister);
         Address payloadFor(unsigned index, RegisterID base = callFrameRegister);
-        Address addressFor(unsigned index, RegisterID base = callFrameRegister);
 
         bool getOperandConstantImmediateInt(unsigned op1, unsigned op2, unsigned& op, int32_t& constant);
-        bool isOperandConstantImmediateDouble(unsigned src);
 
         void emitLoadTag(unsigned index, RegisterID tag);
         void emitLoadPayload(unsigned index, RegisterID payload);
@@ -394,8 +398,6 @@ namespace JSC {
         void emitLoad(const JSValue& v, RegisterID tag, RegisterID payload);
         void emitLoad(unsigned index, RegisterID tag, RegisterID payload, RegisterID base = callFrameRegister);
         void emitLoad2(unsigned index1, RegisterID tag1, RegisterID payload1, unsigned index2, RegisterID tag2, RegisterID payload2);
-        void emitLoadDouble(unsigned index, FPRegisterID value);
-        void emitLoadInt32ToDouble(unsigned index, FPRegisterID value);
 
         void emitStore(unsigned index, RegisterID tag, RegisterID payload, RegisterID base = callFrameRegister);
         void emitStore(unsigned index, const JSValue constant, RegisterID base = callFrameRegister);
@@ -499,6 +501,7 @@ namespace JSC {
         JIT::Jump emitJumpIfNotImmediateInteger(RegisterID);
         JIT::Jump emitJumpIfNotImmediateIntegers(RegisterID, RegisterID, RegisterID);
         void emitJumpSlowCaseIfNotImmediateInteger(RegisterID);
+        void emitJumpSlowCaseIfNotImmediateNumber(RegisterID);
         void emitJumpSlowCaseIfNotImmediateIntegers(RegisterID, RegisterID, RegisterID);
 
 #if !USE(JSVALUE64)
@@ -511,7 +514,11 @@ namespace JSC {
 
         void emitTagAsBoolImmediate(RegisterID reg);
         void compileBinaryArithOp(OpcodeID, unsigned dst, unsigned src1, unsigned src2, OperandTypes opi);
-        void compileBinaryArithOpSlowCase(OpcodeID, Vector<SlowCaseEntry>::iterator&, unsigned dst, unsigned src1, unsigned src2, OperandTypes opi);
+#if USE(JSVALUE64)
+        void compileBinaryArithOpSlowCase(OpcodeID, Vector<SlowCaseEntry>::iterator&, unsigned dst, unsigned src1, unsigned src2, OperandTypes, bool op1HasImmediateIntFastCase, bool op2HasImmediateIntFastCase);
+#else
+        void compileBinaryArithOpSlowCase(OpcodeID, Vector<SlowCaseEntry>::iterator&, unsigned dst, unsigned src1, unsigned src2, OperandTypes);
+#endif
 
 #if ENABLE(JIT_OPTIMIZE_PROPERTY_ACCESS)
         void compileGetByIdHotPath(int resultVReg, int baseVReg, Identifier* ident, unsigned propertyAccessInstructionIndex);
@@ -535,7 +542,7 @@ namespace JSC {
         static const int patchOffsetGetByIdPropertyMapOffset = 31;
         static const int patchOffsetGetByIdPutResult = 31;
 #if ENABLE(OPCODE_SAMPLING)
-        static const int patchOffsetGetByIdSlowCaseCall = 63;
+        static const int patchOffsetGetByIdSlowCaseCall = 64;
 #else
         static const int patchOffsetGetByIdSlowCaseCall = 41;
 #endif

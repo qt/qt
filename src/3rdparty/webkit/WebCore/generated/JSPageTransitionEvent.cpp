@@ -125,7 +125,7 @@ bool JSPageTransitionEventPrototype::getOwnPropertyDescriptor(ExecState* exec, c
 
 const ClassInfo JSPageTransitionEvent::s_info = { "PageTransitionEvent", &JSEvent::s_info, &JSPageTransitionEventTable, 0 };
 
-JSPageTransitionEvent::JSPageTransitionEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<PageTransitionEvent> impl)
+JSPageTransitionEvent::JSPageTransitionEvent(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<PageTransitionEvent> impl)
     : JSEvent(structure, globalObject, impl)
 {
 }

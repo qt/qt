@@ -640,6 +640,7 @@ tst_Suite::tst_Suite()
     addExpectedFailure("ecma_3/Unicode/regress-352044-01.js", "issues with Unicode escape sequences in JavaScript source code", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/Unicode/uc-001.js", "Unicode format-control character test (Category Cf.)", willFixInNextReleaseMessage);
 
+    addFileExclusion(".+/15\\.9\\.2\\..+", "unstable on slow machines");
     addFileExclusion(".+/15\\.9\\.5\\..+", "too slooow");
     addFileExclusion("regress-130451.js", "asserts");
     addFileExclusion("regress-322135-01.js", "asserts");
@@ -647,6 +648,8 @@ tst_Suite::tst_Suite()
     addFileExclusion("regress-322135-03.js", "takes forever");
     addFileExclusion("regress-322135-04.js", "takes forever");
     addFileExclusion("ecma_3/RegExp/regress-375715-04.js", "bug");
+
+    addFileExclusion("ecma_3/RegExp/regress-289669.js", "Can fail due to relying on wall-clock time");
 
     // Failures due to switch to JSC as back-end
     addExpectedFailure("ecma/Array/15.4.3.1-2.js", "var props = ''; for ( p in Array  ) { props += p } props", willFixInNextReleaseMessage);
