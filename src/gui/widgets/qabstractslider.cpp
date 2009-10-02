@@ -694,7 +694,7 @@ void QAbstractSlider::wheelEvent(QWheelEvent * e)
         return;
 
     qreal currentOffset = qreal(e->delta()) / 120;
-    d->offset_accumulated += d->invertedControls ? -currentOffset : currentOffset;
+    d->offset_accumulated += currentOffset;
     if (int(d->offset_accumulated) == 0) {
         // QAbstractSlider works on integer values. So if the accumulated
         // offset is less than +/- 1, we need to wait until we get more
@@ -703,17 +703,24 @@ void QAbstractSlider::wheelEvent(QWheelEvent * e)
         return;
     }
 
-    // Calculate the number of steps to scroll (per 15 degrees of rotate):
+    int stepsToScroll;
+    if ((e->modifiers() & Qt::ControlModifier) || (e->modifiers() & Qt::ShiftModifier)) {
+        stepsToScroll = currentOffset > 0 ? d->pageStep : -d->pageStep;
+    } else {
+        // Calculate the number of steps to scroll (per 15 degrees of rotate):
 #ifdef Q_OS_MAC
-    // On mac, since mouse wheel scrolling is accelerated and
-    // fine tuned by the OS, we skip applying acceleration:
-    int stepsToScroll = int(d->offset_accumulated);
+        // On mac, since mouse wheel scrolling is accelerated and
+        // fine tuned by the OS, we skip applying acceleration:
+        stepsToScroll = int(d->offset_accumulated);
 #else
-    int step = qMin(QApplication::wheelScrollLines() * d->singleStep, d->pageStep);
-    if ((e->modifiers() & Qt::ControlModifier) || (e->modifiers() & Qt::ShiftModifier))
-        step = d->pageStep;
-    int stepsToScroll = step * int(d->offset_accumulated);
+        stepsToScroll = int(d->offset_accumulated) * QApplication::wheelScrollLines() * d->singleStep;
 #endif
+        if (qAbs(stepsToScroll) > d->pageStep)
+            stepsToScroll = currentOffset > 0 ? d->pageStep : -d->pageStep;
+    }
+
+    if (d->invertedControls)
+        stepsToScroll = -stepsToScroll;
 
     int prevValue = d->value;
     d->position = d->overflowSafeAdd(stepsToScroll); // value will be updated by triggerAction()

@@ -73,6 +73,7 @@ protected:
     QMap<QString, QStringList> library;
     // (output file) (source , command)
     QMap<QString, QStringList> makmakeCommands;
+    QStringList overriddenMmpKeywords;
 
     QStringList generatedFiles;
     QStringList generatedDirs;
@@ -95,6 +96,7 @@ protected:
     QString generateUID3();
 
     void initMmpVariables();
+    void checkOverridability(QStringList &overridableKeywords, QString &checkString);
 
     void writeHeader(QTextStream &t);
     void writeBldInfContent(QTextStream& t, bool addDeploymentExtension);

@@ -16,7 +16,7 @@ image.path = /data/images/
 DEPLOYMENT += music image
 
 symbian {
-    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     TARGET.UID3 = 0xA000C611
+    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     ICON = ./resources/heart.svg
 }

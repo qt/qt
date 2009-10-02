@@ -11,3 +11,5 @@ vendorinfo = \
     " "
 
 default_deployment.pkg_prerules += vendorinfo
+
+!isEmpty(TARGET.UID3):ICON = $$QT_SOURCE_TREE/src/s60installs/qt.svg

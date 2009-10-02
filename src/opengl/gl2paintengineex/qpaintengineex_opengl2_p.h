@@ -61,11 +61,13 @@
 #include <private/qglpaintdevice_p.h>
 #include <private/qglpixmapfilter_p.h>
 #include <private/qfontengine_p.h>
+#include <private/qdatabuffer_p.h>
 
 enum EngineMode {
     ImageDrawingMode,
     TextDrawingMode,
-    BrushDrawingMode
+    BrushDrawingMode,
+    ImageArrayDrawingMode
 };
 
 QT_BEGIN_NAMESPACE
@@ -125,6 +127,8 @@ public:
     virtual void drawTexture(const QRectF &r, GLuint textureId, const QSize &size, const QRectF &sr);
 
     virtual void drawTextItem(const QPointF &p, const QTextItem &textItem);
+
+    virtual void drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints);
 
     Type type() const { return OpenGL2; }
 
@@ -195,7 +199,6 @@ public:
         // ^ returns whether the current program changed or not
 
     inline void useSimpleShader();
-    inline QColor premultiplyColor(QColor c, GLfloat opacity);
 
     float zValueForRenderText() const;
 
@@ -230,6 +233,7 @@ public:
 
     QGL2PEXVertexArray vertexCoordinateArray;
     QGL2PEXVertexArray textureCoordinateArray;
+    QDataBuffer<GLfloat> opacityArray;
 
     GLfloat staticVertexCoordinateArray[8];
     GLfloat staticTextureCoordinateArray[8];

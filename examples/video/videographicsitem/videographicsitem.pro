@@ -16,6 +16,6 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/video/videographicsitem
 INSTALLS += target sources
 
 symbian {
-    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
     TARGET.UID3 = 0xA000D7C2
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 }

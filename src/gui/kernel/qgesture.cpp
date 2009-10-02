@@ -67,6 +67,7 @@ private:
 /*!
     \class QGesture
     \since 4.6
+    \preliminary
 
     \brief The QGesture class is the base class for implementing custom
     gestures.
