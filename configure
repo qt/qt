@@ -2313,9 +2313,6 @@ if [ "$CFG_EMBEDDED" != "no" ]; then
             *86_64)
                 PLATFORM=qws/linux-x86_64-g++
                 ;;
-            *ppc)
-                PLATFORM=qws/linux-ppc-g++
-                ;;
             *)
                 PLATFORM=qws/linux-generic-g++
                 ;;
