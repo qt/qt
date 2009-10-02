@@ -312,7 +312,7 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
         return true;
     }
     case QNativeSocketEngine::AddressReusable:
-#ifdef SO_REUSEPORT
+#if defined(SO_REUSEPORT) && !defined(Q_OS_SYMBIAN)
         n = SO_REUSEPORT;
 #else
         n = SO_REUSEADDR;
