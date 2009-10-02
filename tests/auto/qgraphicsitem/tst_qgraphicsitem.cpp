@@ -6306,6 +6306,7 @@ void tst_QGraphicsItem::itemStacksBehindParent()
     QGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
+    QTRY_VERIFY(!paintedItems.isEmpty());
     QTest::qWait(100);
     paintedItems.clear();
     view.viewport()->update();
@@ -6315,7 +6316,7 @@ void tst_QGraphicsItem::itemStacksBehindParent()
                                            << grandChild121 << child12 << parent1
                                            << grandChild211 << child21
                                            << grandChild221 << child22 << parent2));
-    QCOMPARE(paintedItems, QList<QGraphicsItem *>()
+    QTRY_COMPARE(paintedItems, QList<QGraphicsItem *>()
              << parent2 << child22 << grandChild221
              << child21 << grandChild211
              << parent1 << child12 << grandChild121
