@@ -63,7 +63,8 @@ QmlValueTypeScriptClass::~QmlValueTypeScriptClass()
 QScriptValue QmlValueTypeScriptClass::newObject(QObject *object, int coreIndex, QmlValueType *type)
 {
     QmlValueTypeReference ref = { type, object, coreIndex };
-    return QScriptValue();
+    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
+    return scriptEngine->newObject(this, scriptEngine->newVariant(qVariantFromValue(ref)));
 }
 
 QmlValueTypeScriptClass::QueryFlags
