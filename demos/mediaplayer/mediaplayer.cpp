@@ -147,10 +147,12 @@ private:
 };
 
 
-MediaPlayer::MediaPlayer(const QString &filePath) :
+MediaPlayer::MediaPlayer(const QString &filePath,
+                         const bool hasSmallScreen) :
         playButton(0), nextEffect(0), settingsDialog(0), ui(0), 
             m_AudioOutput(Phonon::VideoCategory),
-            m_videoWidget(new MediaVideoWidget(this))
+            m_videoWidget(new MediaVideoWidget(this)),
+            m_hasSmallScreen(hasSmallScreen)
 {
     setWindowTitle(tr("Media Player"));
     setContextMenuPolicy(Qt::CustomContextMenu);
@@ -341,13 +343,15 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
         info->setVisible(!m_MediaObject.hasVideo());        
         QRect videoHintRect = QRect(QPoint(0, 0), m_videoWindow.sizeHint());
         QRect newVideoRect = QApplication::desktop()->screenGeometry().intersected(videoHintRect);
-        if (m_MediaObject.hasVideo()){        
-            // Flush event que so that sizeHint takes the
-            // recently shown/hidden m_videoWindow into account:
-            qApp->processEvents();
-            resize(sizeHint());
-        } else
-            resize(minimumSize());
+        if (!m_hasSmallScreen) {
+            if (m_MediaObject.hasVideo()) {
+                // Flush event que so that sizeHint takes the
+                // recently shown/hidden m_videoWindow into account:
+                qApp->processEvents();
+                resize(sizeHint());
+            } else
+                resize(minimumSize());
+        }
     }
 
     switch (newstate) {

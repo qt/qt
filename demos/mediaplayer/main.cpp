@@ -51,8 +51,30 @@ int main (int argc, char *argv[])
     app.setQuitOnLastWindowClosed(true);
 
     QString fileString = app.arguments().value(1);
-    MediaPlayer player(fileString);
-    player.show();
+
+    bool hasSmallScreen =
+#ifdef Q_OS_SYMBIAN
+        /* On Symbian, we always want fullscreen. One reason is that it's not
+         * possible to launch any demos from the fluidlauncher due to a
+         * limitation in the emulator. */
+        true
+#else
+        false
+#endif
+    ;
+
+    const QStringList args(app.arguments());
+    for (int i = 0; i < args.count(); ++i) {
+        if (args.at(i) == QLatin1String("-small-screen"))
+            hasSmallScreen = true;
+    }
+
+    MediaPlayer player(fileString, hasSmallScreen);
+
+    if (hasSmallScreen)
+        player.showMaximized();
+    else
+        player.show();
 
     return app.exec();
 }
