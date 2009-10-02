@@ -2765,7 +2765,7 @@ if [ "$PLATFORM" != "$XPLATFORM" -a "$CFG_EMBEDDED" != "no" ]; then
     ipaq|sharp)
         CFG_ARCH=arm
         ;;
-    dm7000)
+    dm7000|ppc)
         CFG_ARCH=powerpc
         ;;
     dm800)
