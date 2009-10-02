@@ -233,6 +233,7 @@ private:
 
     QGLExtensionFuncs m_extensionFuncs;
     const QGLContext *m_context; // context group's representative
+    QList<const QGLContext *> m_shares;
     QAtomicInt m_refs;
 
     friend class QGLShareRegister;
@@ -401,16 +402,11 @@ class Q_AUTOTEST_EXPORT QGLShareRegister
 {
 public:
     QGLShareRegister() {}
-    ~QGLShareRegister() { reg.clear(); }
+    ~QGLShareRegister() {}
 
     void addShare(const QGLContext *context, const QGLContext *share);
     QList<const QGLContext *> shares(const QGLContext *context);
     void removeShare(const QGLContext *context);
-private:
-    // Use a context's 'group' pointer to uniquely identify a group.
-    typedef QList<const QGLContext *> ContextList;
-    typedef QHash<const QGLContextGroup *, ContextList> SharingHash;
-    SharingHash reg;
 };
 
 extern Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg();

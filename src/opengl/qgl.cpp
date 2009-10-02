@@ -4860,44 +4860,40 @@ void QGLShareRegister::addShare(const QGLContext *context, const QGLContext *sha
         return;
 
     // Make sure 'context' is not already shared with another group of contexts.
-    Q_ASSERT(reg.find(context->d_ptr->group) == reg.end());
     Q_ASSERT(context->d_ptr->group->m_refs == 1);
 
     // Free 'context' group resources and make it use the same resources as 'share'.
+    QGLContextGroup *group = share->d_ptr->group;
     delete context->d_ptr->group;
-    context->d_ptr->group = share->d_ptr->group;
-    context->d_ptr->group->m_refs.ref();
+    context->d_ptr->group = group;
+    group->m_refs.ref();
 
     // Maintain a list of all the contexts in each group of sharing contexts.
-    SharingHash::iterator it = reg.find(share->d_ptr->group);
-    if (it == reg.end())
-        it = reg.insert(share->d_ptr->group, ContextList() << share);
-    it.value() << context;
+    // The list is empty if the "share" context wasn't sharing already.
+    if (group->m_shares.isEmpty())
+        group->m_shares.append(share);
+    group->m_shares.append(context);
 }
 
 QList<const QGLContext *> QGLShareRegister::shares(const QGLContext *context) {
-    SharingHash::const_iterator it = reg.find(context->d_ptr->group);
-    if (it == reg.end())
-        return ContextList();
-    return it.value();
+    return context->d_ptr->group->m_shares;
 }
 
 void QGLShareRegister::removeShare(const QGLContext *context) {
-    SharingHash::iterator it = reg.find(context->d_ptr->group);
-    if (it == reg.end())
+    // Remove the context from the group.
+    QGLContextGroup *group = context->d_ptr->group;
+    if (group->m_shares.isEmpty())
         return;
-
-    int count = it.value().removeAll(context);
-    Q_ASSERT(count == 1);
-    Q_UNUSED(count);
+    group->m_shares.removeAll(context);
 
     // Update context group representative.
-    if (context->d_ptr->group->m_context == context)
-        context->d_ptr->group->m_context = it.value().first();
+    Q_ASSERT(group->m_shares.size() != 0);
+    if (group->m_context == context)
+        group->m_context = group->m_shares[0];
 
-    Q_ASSERT(it.value().size() != 0);
-    if (it.value().size() == 1)
-        reg.erase(it);
+    // If there is only one context left, then make the list empty.
+    if (group->m_shares.size() == 1)
+        group->m_shares.clear();
 }
 
 QGLContextResource::QGLContextResource(FreeFunc f, QObject *parent)
