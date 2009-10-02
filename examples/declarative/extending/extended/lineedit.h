@@ -14,16 +14,16 @@ public:
     LineEditExtension(QObject *);
 
     int leftMargin() const;
-    int setLeftMargin(int);
+    void setLeftMargin(int);
 
     int rightMargin() const;
-    int setRightMargin(int);
+    void setRightMargin(int);
 
     int topMargin() const;
-    int setTopMargin(int);
+    void setTopMargin(int);
 
     int bottomMargin() const;
-    int setBottomMargin(int);
+    void setBottomMargin(int);
 signals:
     void marginsChanged();
 
