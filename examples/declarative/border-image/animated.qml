@@ -14,19 +14,19 @@ Rectangle {
         x: 270; y: 20; minWidth: 120; maxWidth: 240
         minHeight: 120; maxHeight: 240
         source: "colors.png"; margin: 30
-        horizontalMode: "Repeat"; verticalMode: "Repeat"
+        horizontalMode: BorderImage.Repeat; verticalMode: BorderImage.Repeat
     }
     MyBorderImage {
         x: 520; y: 20; minWidth: 120; maxWidth: 240
         minHeight: 120; maxHeight: 240
         source: "colors.png"; margin: 30
-        horizontalMode: "Stretch"; verticalMode: "Repeat"
+        horizontalMode: BorderImage.Stretch; verticalMode: BorderImage.Repeat
     }
     MyBorderImage {
         x: 770; y: 20; minWidth: 120; maxWidth: 240
         minHeight: 120; maxHeight: 240
         source: "colors.png"; margin: 30
-        horizontalMode: "Round"; verticalMode: "Round"
+        horizontalMode: BorderImage.Round; verticalMode: BorderImage.Round
     }
     MyBorderImage {
         x: 20; y: 280; minWidth: 60; maxWidth: 200
@@ -37,18 +37,18 @@ Rectangle {
         x: 270; y: 280; minWidth: 60; maxWidth: 200
         minHeight: 40; maxHeight: 200
         source: "bw.png"; margin: 10
-        horizontalMode: "Repeat"; verticalMode: "Repeat"
+        horizontalMode: BorderImage.Repeat; verticalMode: BorderImage.Repeat
     }
     MyBorderImage {
         x: 520; y: 280; minWidth: 60; maxWidth: 200
         minHeight: 40; maxHeight: 200
         source: "bw.png"; margin: 10
-        horizontalMode: "Stretch"; verticalMode: "Repeat"
+        horizontalMode: BorderImage.Stretch; verticalMode: BorderImage.Repeat
     }
     MyBorderImage {
         x: 770; y: 280; minWidth: 60; maxWidth: 200
         minHeight: 40; maxHeight: 200
         source: "bw.png"; margin: 10
-        horizontalMode: "Round"; verticalMode: "Round"
+        horizontalMode: BorderImage.Round; verticalMode: BorderImage.Round
     }
 }
