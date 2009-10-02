@@ -104,7 +104,8 @@ QmlContextScriptClass::queryProperty(Object *object, const Identifier &name,
 
     for (int ii = 0; ii < cp->defaultObjects.count(); ++ii) {
         QScriptClass::QueryFlags rv = 
-            ep->objectClass->queryProperty(cp->defaultObjects.at(ii), name, flags);
+            ep->objectClass->queryProperty(cp->defaultObjects.at(ii), name, flags, 
+                                           QmlObjectScriptClass::SkipAttachedProperties);
 
         if (rv) {
             lastDefaultObject = ii;

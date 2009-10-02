@@ -42,7 +42,9 @@
 #include "qmlobjectscriptclass_p.h"
 #include <private/qmlengine_p.h>
 #include <private/qguard_p.h>
+#include <private/qmlcontext_p.h>
 #include <private/qmldeclarativedata_p.h>
+#include <private/qmltypenamescriptclass_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -94,10 +96,11 @@ QmlObjectScriptClass::queryProperty(Object *object, const Identifier &name,
 
 QScriptClass::QueryFlags 
 QmlObjectScriptClass::queryProperty(QObject *obj, const Identifier &name, 
-                                    QScriptClass::QueryFlags flags)
+                                    QScriptClass::QueryFlags flags, QueryMode mode)
 {
     Q_UNUSED(flags);
     lastData = 0;
+    lastTNData = 0;
 
     if (name == m_destroyId.identifier ||
         name == m_toStringId.identifier)
@@ -107,6 +110,22 @@ QmlObjectScriptClass::queryProperty(QObject *obj, const Identifier &name,
         return 0;
 
     QmlEnginePrivate *enginePrivate = QmlEnginePrivate::get(engine);
+
+    if (mode == IncludeAttachedProperties) {
+        QmlContext *evalContext = enginePrivate->currentExpression->context();
+        QmlContextPrivate *cp = QmlContextPrivate::get(evalContext);
+        // ### Check for attached properties
+
+        if (cp->imports) {
+            QmlTypeNameCache::Data *data = cp->imports->data(name);
+            if (data) {
+                lastTNData = data;
+                return QScriptClass::HandlesReadAccess;
+            }
+        }
+
+    }
+
     QmlPropertyCache *cache = 0;
     QmlDeclarativeData *ddata = QmlDeclarativeData::get(obj);
     if (ddata)
@@ -150,7 +169,14 @@ QScriptValue QmlObjectScriptClass::property(QObject *obj, const Identifier &name
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
     QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
 
-    if (lastData->flags & QmlPropertyCache::Data::IsFunction) {
+    if (lastTNData) {
+
+        if (lastTNData->type)
+            return enginePriv->typeNameClass->newObject(obj, lastTNData->type);
+        else
+            return enginePriv->typeNameClass->newObject(obj, lastTNData->typeNamespace);
+
+    } else if (lastData->flags & QmlPropertyCache::Data::IsFunction) {
         // ### Optimize
         QScriptValue sobj = scriptEngine->newQObject(obj);
         return sobj.property(toString(name));

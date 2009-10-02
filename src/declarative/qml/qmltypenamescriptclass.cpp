@@ -46,8 +46,8 @@
 QT_BEGIN_NAMESPACE
 
 struct TypeNameData : public QScriptDeclarativeClass::Object {
-    TypeNameData(QObject *o, QmlType *t) : object(o), type(t), typeNamespace(0) {}
-    TypeNameData(QObject *o, QmlTypeNameCache *n) : object(o), type(0), typeNamespace(n) {
+    TypeNameData(QObject *o, QmlType *t, QmlTypeNameScriptClass::TypeNameMode m) : object(o), type(t), typeNamespace(0), mode(m) {}
+    TypeNameData(QObject *o, QmlTypeNameCache *n, QmlTypeNameScriptClass::TypeNameMode m) : object(o), type(0), typeNamespace(n), mode(m) {
         if (typeNamespace) typeNamespace->addref();
     }
     ~TypeNameData() {
@@ -57,6 +57,7 @@ struct TypeNameData : public QScriptDeclarativeClass::Object {
     QObject *object;
     QmlType *type;
     QmlTypeNameCache *typeNamespace;
+    QmlTypeNameScriptClass::TypeNameMode mode;
 };
 
 QmlTypeNameScriptClass::QmlTypeNameScriptClass(QmlEngine *bindEngine)
@@ -69,20 +70,19 @@ QmlTypeNameScriptClass::~QmlTypeNameScriptClass()
 {
 }
 
-QScriptValue QmlTypeNameScriptClass::newObject(QObject *object, QmlType *type)
+QScriptValue QmlTypeNameScriptClass::newObject(QObject *object, QmlType *type, TypeNameMode mode)
 {
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
-    return QScriptDeclarativeClass::newObject(scriptEngine, this, new TypeNameData(object, type));
+    return QScriptDeclarativeClass::newObject(scriptEngine, this, new TypeNameData(object, type, mode));
 }
 
-QScriptValue QmlTypeNameScriptClass::newObject(QObject *object, QmlTypeNameCache *ns)
+QScriptValue QmlTypeNameScriptClass::newObject(QObject *object, QmlTypeNameCache *ns, TypeNameMode mode)
 {
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
-    return QScriptDeclarativeClass::newObject(scriptEngine, this, new TypeNameData(object, ns));
+    return QScriptDeclarativeClass::newObject(scriptEngine, this, new TypeNameData(object, ns, mode));
 }
-
 
 QScriptClass::QueryFlags 
 QmlTypeNameScriptClass::queryProperty(Object *obj, const Identifier &name, 
@@ -113,15 +113,17 @@ QmlTypeNameScriptClass::queryProperty(Object *obj, const Identifier &name,
 
         if (strName.at(0).isUpper()) {
             // Must be an enum
-            // ### Optimize
-            const char *enumName = strName.toUtf8().constData();
-            const QMetaObject *metaObject = data->type->baseMetaObject();
-            for (int ii = metaObject->enumeratorCount() - 1; ii >= 0; --ii) {
-                QMetaEnum e = metaObject->enumerator(ii);
-                int value = e.keyToValue(enumName);
-                if (value != -1) {
-                    enumValue = value;
-                    return QScriptClass::HandlesReadAccess;
+            if (data->mode == IncludeEnums) {
+                // ### Optimize
+                const char *enumName = strName.toUtf8().constData();
+                const QMetaObject *metaObject = data->type->baseMetaObject();
+                for (int ii = metaObject->enumeratorCount() - 1; ii >= 0; --ii) {
+                    QMetaEnum e = metaObject->enumerator(ii);
+                    int value = e.keyToValue(enumName);
+                    if (value != -1) {
+                        enumValue = value;
+                        return QScriptClass::HandlesReadAccess;
+                    }
                 }
             }
             return 0;
@@ -129,7 +131,8 @@ QmlTypeNameScriptClass::queryProperty(Object *obj, const Identifier &name,
             // Must be an attached property
             object = qmlAttachedPropertiesObjectById(data->type->index(), data->object);
             if (!object) return 0;
-            return ep->objectClass->queryProperty(object, name, flags);
+            return ep->objectClass->queryProperty(object, name, flags, 
+                                                  QmlObjectScriptClass::SkipAttachedProperties);
         }
     }
 
@@ -140,9 +143,9 @@ QScriptValue QmlTypeNameScriptClass::property(Object *obj, const Identifier &nam
 {
     QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
     if (type) {
-        return newObject(object, type);
+        return newObject(((TypeNameData *)obj)->object, type, ((TypeNameData *)obj)->mode);
     } else if (object) {
-        return ep->objectClass->property(((TypeNameData *)obj)->object, name);
+        return ep->objectClass->property(object, name);
     } else {
         return QScriptValue(enumValue);
     }

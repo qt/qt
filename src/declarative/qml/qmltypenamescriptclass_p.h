@@ -67,8 +67,9 @@ public:
     QmlTypeNameScriptClass(QmlEngine *);
     ~QmlTypeNameScriptClass();
 
-    QScriptValue newObject(QObject *, QmlType *);
-    QScriptValue newObject(QObject *, QmlTypeNameCache *);
+    enum TypeNameMode { IncludeEnums, ExcludeEnums };
+    QScriptValue newObject(QObject *, QmlType *, TypeNameMode = IncludeEnums);
+    QScriptValue newObject(QObject *, QmlTypeNameCache *, TypeNameMode = IncludeEnums);
 
 protected:
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 

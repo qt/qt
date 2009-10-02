@@ -56,6 +56,7 @@
 #include <QtScript/qscriptclass.h>
 #include <private/qscriptdeclarativeclass_p.h>
 #include <private/qmlpropertycache_p.h>
+#include <private/qmltypenamecache_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -71,8 +72,11 @@ public:
     QScriptValue newQObject(QObject *);
     QObject *toQObject(const QScriptValue &) const;
 
+    enum QueryMode { IncludeAttachedProperties, SkipAttachedProperties };
+
     QScriptClass::QueryFlags queryProperty(QObject *, const Identifier &, 
-                                           QScriptClass::QueryFlags flags);
+                                           QScriptClass::QueryFlags flags, 
+                                           QueryMode = IncludeAttachedProperties);
     QScriptValue property(QObject *, const Identifier &);
     void setProperty(QObject *, const Identifier &name, const QScriptValue &);
 
@@ -85,6 +89,7 @@ protected:
     virtual QObject *toQObject(Object *, bool *ok = 0);
 
 private:
+    QmlTypeNameCache::Data *lastTNData;
     QmlPropertyCache::Data *lastData;
     QmlPropertyCache::Data local;
 
