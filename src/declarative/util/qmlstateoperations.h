@@ -72,6 +72,7 @@ public:
 
     virtual ActionList actions();
 
+    virtual void saveOriginals();
     virtual void execute();
     virtual bool isReversable();
     virtual void reverse();
