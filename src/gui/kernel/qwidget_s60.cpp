@@ -194,8 +194,8 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &)
     }
 
     if  (jump && data.winid) {
-	RWindow *const window = static_cast<RWindow *>(data.winid->DrawableWindow());
-	window->Invalidate(TRect(0, 0, wrect.width(), wrect.height()));
+        RWindow *const window = static_cast<RWindow *>(data.winid->DrawableWindow());
+        window->Invalidate(TRect(0, 0, wrect.width(), wrect.height()));
     }
 }
 
@@ -407,9 +407,9 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         control->SetRect(TRect(TPoint(x, y), TSize(w, h)));
 
         RDrawableWindow *const drawableWindow = control->DrawableWindow();
-		// Request mouse move events.
-		drawableWindow->PointerFilter(EPointerFilterEnterExit
-			| EPointerFilterMove | EPointerFilterDrag, 0);
+        // Request mouse move events.
+        drawableWindow->PointerFilter(EPointerFilterEnterExit
+            | EPointerFilterMove | EPointerFilterDrag, 0);
 
         if (q->isVisible() && q->testAttribute(Qt::WA_Mapped))
             activateSymbianWindow();
@@ -464,15 +464,15 @@ void QWidgetPrivate::show_sys()
 
 void QWidgetPrivate::activateSymbianWindow()
 {
-	Q_Q(QWidget);
+    Q_Q(QWidget);
 
-	Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
-	Q_ASSERT(q->testAttribute(Qt::WA_Mapped));
-	Q_ASSERT(!extra->activated);
+    Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
+    Q_ASSERT(q->testAttribute(Qt::WA_Mapped));
+    Q_ASSERT(!extra->activated);
 
-	WId id = q->internalWinId();
-	QT_TRAP_THROWING(id->ActivateL());
-	extra->activated = 1;
+    WId id = q->internalWinId();
+    QT_TRAP_THROWING(id->ActivateL());
+    extra->activated = 1;
 }
 
 void QWidgetPrivate::hide_sys()
@@ -1059,9 +1059,9 @@ QPoint QWidget::mapFromGlobal(const QPoint &pos) const
     }
 
     // Native window case
-	const TPoint widgetScreenOffset = internalWinId()->PositionRelativeToScreen();
-	const QPoint widgetPos = pos - QPoint(widgetScreenOffset.iX, widgetScreenOffset.iY);
-	return widgetPos;
+    const TPoint widgetScreenOffset = internalWinId()->PositionRelativeToScreen();
+    const QPoint widgetPos = pos - QPoint(widgetScreenOffset.iX, widgetScreenOffset.iY);
+    return widgetPos;
 }
 
 void QWidget::setWindowState(Qt::WindowStates newstate)
