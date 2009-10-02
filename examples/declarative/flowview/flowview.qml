@@ -35,12 +35,12 @@ Rectangle {
         VisualDataModel {
             id: Model
             model: ListModel {
-                ListElement { background: "red"; weblet: "rect.qml"  }
-                ListElement { background: "yellow"; weblet: "rect.qml"  }
-                ListElement { background: "blue"; weblet: "rect.qml"  }
-                ListElement { background: "green"; weblet: "flickr.qml"  }
-                ListElement { background: "orange"; weblet: "rect.qml"  }
-                ListElement { background: "lightblue"; weblet: "rect.qml"  }
+                ListElement { background: "red"; weblet: "RoundedRect.qml"  }
+                ListElement { background: "yellow"; weblet: "RoundedRect.qml"  }
+                ListElement { background: "blue"; weblet: "RoundedRect.qml"  }
+                ListElement { background: "green"; weblet: "FlickrView.qml"  }
+                ListElement { background: "orange"; weblet: "RoundedRect.qml"  }
+                ListElement { background: "lightblue"; weblet: "RoundedRect.qml"  }
             }
             delegate: Package {
                 Item { id: List; Package.name: "list"; width:120; height: 400; }
@@ -63,22 +63,22 @@ Rectangle {
                         }
                     ]
                     transitions: [
-                    Transition {
-                        from: "*"; to: "InGrid"
-                        SequentialAnimation { 
-                            ParentAction{} 
-                            PauseAnimation { duration: 50 * List.FlowView.column }
-                            NumberAnimation { properties: "x,y,rotation"; easing: "easeInOutQuad" } 
-                        } 
-                    },
-                    Transition {
-                        from: "*"; to: "InList"
-                        SequentialAnimation { 
-                            ParentAction{} 
-                            PauseAnimation { duration: 50 * (GridItem.FlowView.row * 2 + GridItem.FlowView.column) }
-                            NumberAnimation { properties: "x,y,rotation"; easing: "easeInOutQuad" } 
-                        } 
-                    }
+                        Transition {
+                            from: "*"; to: "InGrid"
+                            SequentialAnimation { 
+                                ParentAction{} 
+                                PauseAnimation { duration: 50 * List.FlowView.column }
+                                NumberAnimation { properties: "x,y,rotation"; easing: "easeInOutQuad" } 
+                            } 
+                        },
+                        Transition {
+                            from: "*"; to: "InList"
+                            SequentialAnimation { 
+                                ParentAction{} 
+                                PauseAnimation { duration: 50 * (GridItem.FlowView.row * 2 + GridItem.FlowView.column) }
+                                NumberAnimation { properties: "x,y,rotation"; easing: "easeInOutQuad" } 
+                            } 
+                        }
                     ]
                 }
 
