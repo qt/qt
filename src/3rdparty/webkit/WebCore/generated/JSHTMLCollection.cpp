@@ -135,7 +135,7 @@ bool JSHTMLCollectionPrototype::getOwnPropertyDescriptor(ExecState* exec, const 
 
 const ClassInfo JSHTMLCollection::s_info = { "HTMLCollection", 0, &JSHTMLCollectionTable, 0 };
 
-JSHTMLCollection::JSHTMLCollection(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLCollection> impl)
+JSHTMLCollection::JSHTMLCollection(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLCollection> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

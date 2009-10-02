@@ -123,7 +123,7 @@ JSObject* JSAttrPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 
 const ClassInfo JSAttr::s_info = { "Attr", &JSNode::s_info, &JSAttrTable, 0 };
 
-JSAttr::JSAttr(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Attr> impl)
+JSAttr::JSAttr(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Attr> impl)
     : JSNode(structure, globalObject, impl)
 {
 }

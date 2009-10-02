@@ -35,7 +35,7 @@ class XSLTProcessor;
 class JSXSLTProcessor : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSXSLTProcessor(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<XSLTProcessor>);
+    JSXSLTProcessor(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<XSLTProcessor>);
     virtual ~JSXSLTProcessor();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -70,7 +70,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSXSLTProcessorPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSXSLTProcessorPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

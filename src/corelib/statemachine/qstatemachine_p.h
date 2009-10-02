@@ -88,6 +88,10 @@ public:
         Starting,
         Running
     };
+    enum EventProcessingMode {
+        DirectProcessing,
+        QueuedProcessing
+    };
     enum StopProcessingReason {
         EventQueueEmpty,
         Finished,
@@ -149,12 +153,14 @@ public:
 #ifndef QT_NO_STATEMACHINE_EVENTFILTER
     void registerEventTransition(QEventTransition *transition);
     void unregisterEventTransition(QEventTransition *transition);
+    void handleFilteredEvent(QObject *watched, QEvent *event);
 #endif
     void unregisterTransition(QAbstractTransition *transition);
     void unregisterAllTransitions();
     void handleTransitionSignal(QObject *sender, int signalIndex,
                                 void **args);    
-    void scheduleProcess();
+    void processEvents(EventProcessingMode processingMode);
+    void cancelAllDelayedEvents();
     
 #ifndef QT_NO_PROPERTIES
     typedef QPair<QObject *, QByteArray> RestorableId;

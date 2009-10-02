@@ -135,7 +135,7 @@ bool JSMediaErrorPrototype::getOwnPropertyDescriptor(ExecState* exec, const Iden
 
 const ClassInfo JSMediaError::s_info = { "MediaError", 0, &JSMediaErrorTable, 0 };
 
-JSMediaError::JSMediaError(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MediaError> impl)
+JSMediaError::JSMediaError(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MediaError> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

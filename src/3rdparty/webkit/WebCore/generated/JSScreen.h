@@ -33,7 +33,7 @@ class Screen;
 class JSScreen : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSScreen(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Screen>);
+    JSScreen(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Screen>);
     virtual ~JSScreen();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -61,7 +61,7 @@ public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
-    JSScreenPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSScreenPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Attributes

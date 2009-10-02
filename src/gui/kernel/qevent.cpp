@@ -3566,7 +3566,7 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
     Qt::WA_AcceptTouchEvents attribute set and graphics items need to have the
     \l{QGraphicsItem::setAcceptTouchEvents()}{acceptTouchEvents} attribute set to true.
 
-    When using QAbstractScrollArea based widgets, you should enabled the Qt::WA_AcceptTouchEvents
+    When using QAbstractScrollArea based widgets, you should enable the Qt::WA_AcceptTouchEvents
     attribute on the scroll area's \l{QAbstractScrollArea::viewport()}{viewport}.
 
     Similarly to QMouseEvent, Qt automatically grabs each touch point on the first press inside a

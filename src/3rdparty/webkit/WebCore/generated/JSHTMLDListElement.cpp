@@ -113,7 +113,7 @@ JSObject* JSHTMLDListElementPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSHTMLDListElement::s_info = { "HTMLDListElement", &JSHTMLElement::s_info, &JSHTMLDListElementTable, 0 };
 
-JSHTMLDListElement::JSHTMLDListElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLDListElement> impl)
+JSHTMLDListElement::JSHTMLDListElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLDListElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

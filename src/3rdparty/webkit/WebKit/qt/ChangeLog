@@ -1,3 +1,220 @@
+2009-10-01  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Make Software Input Panel requests work with QGraphicsWebView
+        _and_ QWebView by sharing the event code in handleSoftwareInputPanel().
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::mouseReleaseEvent):
+        (QWebPagePrivate::handleSoftwareInputPanel):
+        * Api/qwebpage_p.h:
+
+2009-10-01  Kristian Amlie  <kristian.amlie@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Fixed software input panel support on web input elements.
+
+        Send the RequestSoftwareInputPanel event if the element supports focus
+        and the element is clicked.
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::QWebPagePrivate):
+        (QWebPagePrivate::mousePressEvent):
+        (QWebPagePrivate::mouseReleaseEvent):
+        * Api/qwebpage_p.h:
+
+2009-10-01  Joe Ligman  <joseph.ligman@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Implementation for QWebPage::inputMethodQuery and QWebPagePrivate::inputMethodEvent
+
+        https://bugs.webkit.org/show_bug.cgi?id=29681
+
+        Some additional changes from Kristian Amlie <kristian.amlie@nokia.com>:
+
+            * Fixed surrounding text to exclude preedit string
+            * Avoid emission of microFocusChanged during setComposition()
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::inputMethodEvent):
+        (QWebPage::inputMethodQuery):
+        * WebCoreSupport/EditorClientQt.cpp:
+        (WebCore::EditorClientQt::respondToChangedSelection):
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::inputMethods):
+
+2009-09-29  Andras Becsi  <becsi.andras@stud.u-szeged.hu>
+
+        Reviewed by Tor Arne Vestbø.
+
+        [Qt] Default font size reconciliation to 16px/13px to match other platform's de-facto standard.
+        This fixes https://bugs.webkit.org/show_bug.cgi?id=19674.
+
+        * Api/qwebsettings.cpp:
+        (QWebSettings::QWebSettings):
+
+2009-09-29  Jedrzej Nowacki  <jedrzej.nowacki@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29844
+
+        QWebPage dependency autotest fix.
+
+        Fix for database() autotest. All opened databases should be removed at
+        end of test.
+
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::database):
+
+2009-09-29  Jedrzej Nowacki  <jedrzej.nowacki@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Some QWebHistory and QWebPage autotest crash fixes.
+
+        Some checking for m_mainFrame were added. MainFrame should be created
+        at some point of QWebPage live cicle.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29803
+
+        * Api/qwebpage.cpp:
+        (QWebPage::~QWebPage):
+        (QWebPage::currentFrame):
+        (QWebPage::history):
+        (QWebPage::selectedText):
+        (QWebPage::updatePositionDependentActions):
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::crashTests_LazyInitializationOfMainFrame):
+
+2009-09-29  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Simon Hausmann and Tor Arne Vestbø.
+
+        Implement QWebPage Extension for error pages, incl.
+        an example on how to use it in QtLauncher.
+
+        Correct our use of ResourceError.
+
+        * Api/qwebpage.h:
+        (ExtensionOption::):
+        (ExtensionOption::ErrorPageExtensionReturn::ErrorPageExtensionReturn):
+        * QtLauncher/main.cpp:
+        (WebPage::supportsExtension):
+        (MainWindow::MainWindow):
+        (MainWindow::selectElements):
+        (WebPage::extension):
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::cancelledError):
+        (WebCore::FrameLoaderClientQt::blockedError):
+        (WebCore::FrameLoaderClientQt::cannotShowURLError):
+        (WebCore::FrameLoaderClientQt::interruptForPolicyChangeError):
+        (WebCore::FrameLoaderClientQt::cannotShowMIMETypeError):
+        (WebCore::FrameLoaderClientQt::fileDoesNotExistError):
+        (WebCore::FrameLoaderClientQt::callErrorPageExtension):
+        (WebCore::FrameLoaderClientQt::dispatchDidFailProvisionalLoad):
+        (WebCore::FrameLoaderClientQt::dispatchDidFailLoad):
+        * WebCoreSupport/FrameLoaderClientQt.h:
+
+2009-09-28  Andre Poenitz  <andre.poenitz@trolltech.com>
+
+        Reviewed by Simon Hausmann.
+
+        Compile fix with namespaced Qt.
+
+        * Api/qwebinspector_p.h:
+
+2009-09-27  Joe Ligman  <joseph.ligman@mindspring.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Adding API setFocus and hasFocus to QWebElement. This API is needed for
+        clients that want to check/set the focus node of the document.
+        https://bugs.webkit.org/show_bug.cgi?id=29682
+
+        * Api/qwebelement.cpp:
+        (QWebElement::hasFocus):
+        (QWebElement::setFocus):
+        * Api/qwebelement.h:
+        * tests/qwebelement/tst_qwebelement.cpp:
+        (tst_QWebElement::hasSetFocus):
+
+2009-09-25  Csaba Osztrogonac  <oszi@inf.u-szeged.hu>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Make tst_qwebframe work if Qt built without SSL support
+        https://bugs.webkit.org/show_bug.cgi?id=29735
+
+        * tests/qwebframe/tst_qwebframe.cpp: Missing #ifndef blocks added.
+
+2009-09-24  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Update QWebElement API to remove script related methods.
+        QWebElement::evaluateScript is the only one kept, these are
+        removed to postpone most of the QtWebKit<->JavaScript API design
+        after 4.6.
+        https://bugs.webkit.org/show_bug.cgi?id=29708
+
+        * Api/qwebelement.cpp:
+        * Api/qwebelement.h:
+        Methods removed:
+        - QWebElement::callFunction
+        - QWebElement::functions
+        - QWebElement::scriptableProperty
+        - QWebElement::setScriptableProperty
+        - QWebElement::scriptableProperties
+        * tests/qwebelement/tst_qwebelement.cpp:
+        (tst_QWebElement::evaluateScript):
+
+2009-09-25  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Rename QWebElement::evaluateScript
+        to QWebElement::evaluateJavaScript.
+        https://bugs.webkit.org/show_bug.cgi?id=29709
+
+        * Api/qwebelement.cpp:
+        (QWebElement::evaluateJavaScript):
+        * Api/qwebelement.h:
+        * tests/qwebelement/tst_qwebelement.cpp:
+        (tst_QWebElement::evaluateJavaScript):
+
+2009-09-25  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Update the stypeProperty API of QWebElement.
+        https://bugs.webkit.org/show_bug.cgi?id=29711
+
+        * Api/qwebelement.cpp:
+        (QWebElement::styleProperty):
+        - Merge the stypeProperty and the computedStyleProperty methods
+        - Remove the default value for the style resolving enum
+        - Rename ResolveRule to StyleResolveStrategy
+        (QWebElement::setStyleProperty):
+        - Remove the priority argument since it is possible to control the
+          behaviour by adding !important or removing in the value.
+        * Api/qwebelement.h:
+        * tests/qwebelement/tst_qwebelement.cpp:
+        (tst_QWebElement::style):
+        (tst_QWebElement::computedStyle):
+        * tests/qwebframe/tst_qwebframe.cpp:
+
+2009-09-24  Jon Honeycutt  <jhoneycutt@apple.com>
+
+        Reviewed by Alice Liu.
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::QWebPagePrivate):
+        Pass 0 for new Page constructor argument.
+
 2009-09-24  Martin Smith  <msmith@trolltech.com>
 
         Reviewed by Simon Hausmann.

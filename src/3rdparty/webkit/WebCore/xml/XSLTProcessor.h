@@ -28,9 +28,12 @@
 #include "Node.h"
 #include "StringHash.h"
 #include "XSLStyleSheet.h"
+#include <wtf/HashMap.h>
+
+#if !USE(QXMLQUERY)
 #include <libxml/parserInternals.h>
 #include <libxslt/documents.h>
-#include <wtf/HashMap.h>
+#endif
 
 namespace WebCore {
 
@@ -56,14 +59,15 @@ public:
     void removeParameter(const String& namespaceURI, const String& localName);
     void clearParameters() { m_parameters.clear(); }
 
-    void reset() { m_stylesheet.clear(); m_stylesheetRootNode.clear();  m_parameters.clear(); }
+    void reset();
 
+#if !USE(QXMLQUERY)
     static void parseErrorFunc(void* userData, xmlError*);
     static void genericErrorFunc(void* userData, const char* msg, ...);
     
-public:
     // Only for libXSLT callbacks
     XSLStyleSheet* xslStylesheet() const { return m_stylesheet.get(); }
+#endif
 
     typedef HashMap<String, String> ParameterMap;
 

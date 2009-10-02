@@ -116,8 +116,10 @@
 #include "TextIterator.h"
 #include "TextResourceDecoder.h"
 #include "Timer.h"
+#include "TransformSource.h"
 #include "TreeWalker.h"
 #include "UIEvent.h"
+#include "UserContentURLPattern.h"
 #include "WebKitAnimationEvent.h"
 #include "WebKitTransitionEvent.h"
 #include "WheelEvent.h"
@@ -321,9 +323,6 @@ Document::Document(Frame* frame, bool isXHTML)
     , m_titleSetExplicitly(false)
     , m_updateFocusAppearanceTimer(this, &Document::updateFocusAppearanceTimerFired)
     , m_executeScriptSoonTimer(this, &Document::executeScriptSoonTimerFired)
-#if ENABLE(XSLT)
-    , m_transformSource(0)
-#endif
     , m_xmlVersion("1.0")
     , m_xmlStandalone(false)
 #if ENABLE(XBL)
@@ -486,10 +485,6 @@ Document::~Document()
         delete m_renderArena;
         m_renderArena = 0;
     }
-
-#if ENABLE(XSLT)
-    xmlFreeDoc((xmlDocPtr)m_transformSource);
-#endif
 
 #if ENABLE(XBL)
     delete m_bindingManager;
@@ -1941,7 +1936,8 @@ CSSStyleSheet* Document::pageUserSheet()
         return 0;
     
     // Parse the sheet and cache it.
-    m_pageUserSheet = CSSStyleSheet::create(this);
+    m_pageUserSheet = CSSStyleSheet::create(this, settings()->userStyleSheetLocation());
+    m_pageUserSheet->setIsUserStyleSheet(true);
     m_pageUserSheet->parseString(userSheetText, !inCompatMode());
     return m_pageUserSheet.get();
 }
@@ -1973,7 +1969,10 @@ const Vector<RefPtr<CSSStyleSheet> >* Document::pageGroupUserSheets() const
         const UserStyleSheetVector* sheets = it->second;
         for (unsigned i = 0; i < sheets->size(); ++i) {
             const UserStyleSheet* sheet = sheets->at(i).get();
-            RefPtr<CSSStyleSheet> parsedSheet = CSSStyleSheet::create(const_cast<Document*>(this));
+            if (!UserContentURLPattern::matchesPatterns(url(), sheet->patterns()))
+                continue;
+            RefPtr<CSSStyleSheet> parsedSheet = CSSStyleSheet::create(const_cast<Document*>(this), sheet->url());
+            parsedSheet->setIsUserStyleSheet(true);
             parsedSheet->parseString(sheet->source(), !inCompatMode());
             if (!m_pageGroupUserSheets)
                 m_pageGroupUserSheets.set(new Vector<RefPtr<CSSStyleSheet> >);
@@ -3011,7 +3010,7 @@ String Document::domain() const
     return securityOrigin()->domain();
 }
 
-void Document::setDomain(const String& newDomain)
+void Document::setDomain(const String& newDomain, ExceptionCode& ec)
 {
     // Both NS and IE specify that changing the domain is only allowed when
     // the new domain is a suffix of the old domain.
@@ -3034,19 +3033,25 @@ void Document::setDomain(const String& newDomain)
     int oldLength = domain().length();
     int newLength = newDomain.length();
     // e.g. newDomain = webkit.org (10) and domain() = www.webkit.org (14)
-    if (newLength >= oldLength)
+    if (newLength >= oldLength) {
+        ec = SECURITY_ERR;
         return;
+    }
 
     String test = domain();
     // Check that it's a subdomain, not e.g. "ebkit.org"
-    if (test[oldLength - newLength - 1] != '.')
+    if (test[oldLength - newLength - 1] != '.') {
+        ec = SECURITY_ERR;
         return;
+    }
 
     // Now test is "webkit.org" from domain()
     // and we check that it's the same thing as newDomain
     test.remove(0, oldLength - newLength);
-    if (test != newDomain)
+    if (test != newDomain) {
+        ec = SECURITY_ERR;
         return;
+    }
 
     securityOrigin()->setDomainFromDOM(newDomain);
     if (m_frame)
@@ -3842,13 +3847,11 @@ void Document::applyXSLTransform(ProcessingInstruction* pi)
     processor->createDocumentFromSource(newSource, resultEncoding, resultMIMEType, this, frame());
 }
 
-void Document::setTransformSource(void* doc)
+void Document::setTransformSource(PassOwnPtr<TransformSource> source)
 {
-    if (doc == m_transformSource)
+    if (m_transformSource == source)
         return;
-
-    xmlFreeDoc((xmlDocPtr)m_transformSource);
-    m_transformSource = doc;
+    m_transformSource = source;
 }
 
 #endif

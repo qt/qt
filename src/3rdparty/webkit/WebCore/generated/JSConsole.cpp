@@ -96,7 +96,7 @@ bool JSConsolePrototype::getOwnPropertyDescriptor(ExecState* exec, const Identif
 
 const ClassInfo JSConsole::s_info = { "Console", 0, &JSConsoleTable, 0 };
 
-JSConsole::JSConsole(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Console> impl)
+JSConsole::JSConsole(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Console> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

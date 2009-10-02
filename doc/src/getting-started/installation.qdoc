@@ -599,14 +599,14 @@ If you are using pre-built binaries, follow the instructions
 
     \o  Build Qt
 
-        To build Qt for the device, type:
-
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 28
-        
         To build Qt for the emulator, type:
 
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 24
 
+        To build Qt for the device, type:
+
+        \snippet doc/src/snippets/code/doc_src_installation.qdoc 28
+        
         Congratulations, Qt is now ready to use.
 
     \o  Running Qt demos

@@ -66,7 +66,7 @@ void QSystemSemaphorePrivate::setErrorString(const QString &function, int err)
         error = QSystemSemaphore::AlreadyExists;
     break;
     case KErrNotFound:
-        errorString = QCoreApplication::tr("%1: doesn't exists", "QSystemSemaphore").arg(function);
+        errorString = QCoreApplication::tr("%1: does not exist", "QSystemSemaphore").arg(function);
         error = QSystemSemaphore::NotFound;
     break;
     case KErrNoMemory:

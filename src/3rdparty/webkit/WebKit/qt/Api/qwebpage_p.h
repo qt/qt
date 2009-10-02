@@ -111,6 +111,7 @@ public:
     void shortcutOverrideEvent(QKeyEvent*);
     void leaveEvent(QEvent*);
     void handleClipboard(QEvent*, Qt::MouseButton);
+    void handleSoftwareInputPanel(Qt::MouseButton);
     bool handleScrolling(QKeyEvent*, WebCore::Frame*);
 
     void setInspector(QWebInspector*);
@@ -142,6 +143,8 @@ public:
 
     QPoint tripleClick;
     QBasicTimer tripleClickTimer;
+
+    bool clickCausedFocus;
 
 #if QT_VERSION < 0x040400
     bool acceptNavigationRequest(QWebFrame *frame, const QWebNetworkRequest &request, QWebPage::NavigationType type);

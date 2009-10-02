@@ -33,7 +33,7 @@ class Counter;
 class JSCounter : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSCounter(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Counter>);
+    JSCounter(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Counter>);
     virtual ~JSCounter();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -62,7 +62,7 @@ public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
-    JSCounterPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSCounterPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Attributes

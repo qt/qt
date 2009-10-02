@@ -131,7 +131,7 @@ bool JSMediaListPrototype::getOwnPropertyDescriptor(ExecState* exec, const Ident
 
 const ClassInfo JSMediaList::s_info = { "MediaList", 0, &JSMediaListTable, 0 };
 
-JSMediaList::JSMediaList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MediaList> impl)
+JSMediaList::JSMediaList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MediaList> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

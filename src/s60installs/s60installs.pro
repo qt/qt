@@ -19,6 +19,7 @@ symbian: {
         QtXml.dll \
         QtGui.dll \
         QtNetwork.dll \
+        QtScript.dll \
         QtTest.dll \
         QtSql.dll
 
@@ -72,6 +73,13 @@ symbian: {
     codecs_plugins.sources = qcncodecs.dll qjpcodecs.dll qtwcodecs.dll qkrcodecs.dll
     codecs_plugins.path = $$QT_PLUGINS_BASE_DIR/codecs
 
+    contains(QT_CONFIG, phonon-backend) {
+        phonon_backend_plugins.sources += phonon_mmf.dll
+
+        phonon_backend_plugins.path = $$QT_PLUGINS_BASE_DIR/phonon_backend
+        DEPLOYMENT += phonon_backend_plugins
+    }
+
     DEPLOYMENT += qtresources qtlibraries imageformats_plugins codecs_plugins graphicssystems_plugins
 
     contains(QT_CONFIG, svg): {
@@ -84,6 +92,10 @@ symbian: {
 
     contains(QT_CONFIG, phonon): {
        qtlibraries.sources += Phonon.dll
+    }
+
+    contains(QT_CONFIG, webkit): {
+        qtlibraries.sources += QtWebKit.dll
     }
 
     graphicssystems_plugins.path = $$QT_PLUGINS_BASE_DIR/graphicssystems

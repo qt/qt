@@ -158,7 +158,7 @@ bool JSSVGFEDisplacementMapElementPrototype::getOwnPropertyDescriptor(ExecState*
 
 const ClassInfo JSSVGFEDisplacementMapElement::s_info = { "SVGFEDisplacementMapElement", &JSSVGElement::s_info, &JSSVGFEDisplacementMapElementTable, 0 };
 
-JSSVGFEDisplacementMapElement::JSSVGFEDisplacementMapElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEDisplacementMapElement> impl)
+JSSVGFEDisplacementMapElement::JSSVGFEDisplacementMapElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEDisplacementMapElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

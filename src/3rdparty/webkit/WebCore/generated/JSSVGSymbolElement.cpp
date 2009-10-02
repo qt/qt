@@ -100,7 +100,7 @@ bool JSSVGSymbolElementPrototype::getOwnPropertyDescriptor(ExecState* exec, cons
 
 const ClassInfo JSSVGSymbolElement::s_info = { "SVGSymbolElement", &JSSVGElement::s_info, &JSSVGSymbolElementTable, 0 };
 
-JSSVGSymbolElement::JSSVGSymbolElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGSymbolElement> impl)
+JSSVGSymbolElement::JSSVGSymbolElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGSymbolElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

@@ -138,7 +138,7 @@ QScriptDebuggerCodeFinderWidget::QScriptDebuggerCodeFinderWidget(QWidget *parent
     d->toolClose = new QToolButton(this);
     d->toolClose->setIcon(QIcon(QString::fromUtf8(":/qt/scripttools/debugging/images/%1/closetab.png").arg(system)));
     d->toolClose->setAutoRaise(true);
-    d->toolClose->setText(QObject::tr("Close"));
+    d->toolClose->setText(tr("Close"));
     hboxLayout->addWidget(d->toolClose);
 
     d->editFind = new QLineEdit(this);

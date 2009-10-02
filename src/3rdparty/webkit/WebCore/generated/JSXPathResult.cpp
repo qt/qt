@@ -160,7 +160,7 @@ bool JSXPathResultPrototype::getOwnPropertyDescriptor(ExecState* exec, const Ide
 
 const ClassInfo JSXPathResult::s_info = { "XPathResult", 0, &JSXPathResultTable, 0 };
 
-JSXPathResult::JSXPathResult(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XPathResult> impl)
+JSXPathResult::JSXPathResult(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XPathResult> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

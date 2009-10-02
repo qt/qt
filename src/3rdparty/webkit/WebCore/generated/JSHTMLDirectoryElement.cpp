@@ -113,7 +113,7 @@ JSObject* JSHTMLDirectoryElementPrototype::self(ExecState* exec, JSGlobalObject*
 
 const ClassInfo JSHTMLDirectoryElement::s_info = { "HTMLDirectoryElement", &JSHTMLElement::s_info, &JSHTMLDirectoryElementTable, 0 };
 
-JSHTMLDirectoryElement::JSHTMLDirectoryElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLDirectoryElement> impl)
+JSHTMLDirectoryElement::JSHTMLDirectoryElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLDirectoryElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

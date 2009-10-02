@@ -132,7 +132,7 @@ bool JSPluginArrayPrototype::getOwnPropertyDescriptor(ExecState* exec, const Ide
 
 const ClassInfo JSPluginArray::s_info = { "PluginArray", 0, &JSPluginArrayTable, 0 };
 
-JSPluginArray::JSPluginArray(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<PluginArray> impl)
+JSPluginArray::JSPluginArray(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<PluginArray> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

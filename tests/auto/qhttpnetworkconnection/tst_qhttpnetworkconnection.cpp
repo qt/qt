@@ -106,6 +106,7 @@ private Q_SLOTS:
     void getMultiple_data();
     void getMultiple();
     void getMultipleWithPipeliningAndMultiplePriorities();
+    void getMultipleWithPriorities();
 };
 
 tst_QHttpNetworkConnection::tst_QHttpNetworkConnection()
@@ -907,6 +908,64 @@ void tst_QHttpNetworkConnection::getMultipleWithPipeliningAndMultiplePriorities(
     qDeleteAll(requests);
     qDeleteAll(replies);
 }
+
+class GetMultipleWithPrioritiesReceiver : public QObject
+{
+    Q_OBJECT
+public:
+    int highPrioReceived;
+    int lowPrioReceived;
+    int requestCount;
+    GetMultipleWithPrioritiesReceiver(int rq) : highPrioReceived(0), lowPrioReceived(0), requestCount(rq) { }
+public Q_SLOTS:
+    void finishedSlot() {
+        QHttpNetworkReply *reply = (QHttpNetworkReply*) sender();
+        if (reply->request().priority() == QHttpNetworkRequest::HighPriority)
+            highPrioReceived++;
+        else if (reply->request().priority() == QHttpNetworkRequest::LowPriority)
+            lowPrioReceived++;
+        else
+            QFAIL("Wrong priority!?");
+
+        QVERIFY(highPrioReceived >= lowPrioReceived);
+
+        if (highPrioReceived + lowPrioReceived == requestCount)
+            QTestEventLoop::instance().exitLoop();
+    }
+};
+
+void tst_QHttpNetworkConnection::getMultipleWithPriorities()
+{
+    quint16 requestCount = 100;
+    // use 2 connections.
+    QHttpNetworkConnection connection(2, QtNetworkSettings::serverName());
+    GetMultipleWithPrioritiesReceiver receiver(requestCount);
+    QUrl url("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
+    QList<QHttpNetworkRequest*> requests;
+    QList<QHttpNetworkReply*> replies;
+
+    for (int i = 0; i < requestCount; i++) {
+        QHttpNetworkRequest *request = new QHttpNetworkRequest(url);;
+
+        if (i % 2)
+            request->setPriority(QHttpNetworkRequest::HighPriority);
+        else
+            request->setPriority(QHttpNetworkRequest::LowPriority);
+
+        requests.append(request);
+        QHttpNetworkReply *reply = connection.sendRequest(*request);
+        connect(reply, SIGNAL(finished()), &receiver, SLOT(finishedSlot()));
+        replies.append(reply);
+    }
+
+    QTestEventLoop::instance().enterLoop(40);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    qDeleteAll(requests);
+    qDeleteAll(replies);
+}
+
+
 
 QTEST_MAIN(tst_QHttpNetworkConnection)
 #include "tst_qhttpnetworkconnection.moc"

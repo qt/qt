@@ -120,7 +120,7 @@ JSObject* JSMimeTypePrototype::self(ExecState* exec, JSGlobalObject* globalObjec
 
 const ClassInfo JSMimeType::s_info = { "MimeType", 0, &JSMimeTypeTable, 0 };
 
-JSMimeType::JSMimeType(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MimeType> impl)
+JSMimeType::JSMimeType(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MimeType> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

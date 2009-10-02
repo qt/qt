@@ -28,6 +28,8 @@
 
 #include "AXObjectCache.h"
 #include "Attr.h"
+#include "CSSParser.h"
+#include "CSSSelectorList.h"
 #include "CSSStyleSelector.h"
 #include "CString.h"
 #include "ClientRect.h"
@@ -278,42 +280,6 @@ static int adjustForLocalZoom(int value, RenderObject* renderer)
     if (zoomFactor > 1)
         value++;
     return static_cast<int>(value / zoomFactor);
-}
-
-static int adjustForAbsoluteZoom(int value, RenderObject* renderer)
-{
-    float zoomFactor = renderer->style()->effectiveZoom();
-    if (zoomFactor == 1)
-        return value;
-    // Needed because computeLengthInt truncates (rather than rounds) when scaling up.
-    if (zoomFactor > 1)
-        value++;
-    return static_cast<int>(value / zoomFactor);
-}
-
-static FloatPoint adjustFloatPointForAbsoluteZoom(const FloatPoint& point, RenderObject* renderer)
-{
-    // The result here is in floats, so we don't need the truncation hack from the integer version above.
-    float zoomFactor = renderer->style()->effectiveZoom();
-    if (zoomFactor == 1)
-        return point;
-    return FloatPoint(point.x() / zoomFactor, point.y() / zoomFactor);
-}
-
-static void adjustFloatQuadForAbsoluteZoom(FloatQuad& quad, RenderObject* renderer)
-{
-    quad.setP1(adjustFloatPointForAbsoluteZoom(quad.p1(), renderer));
-    quad.setP2(adjustFloatPointForAbsoluteZoom(quad.p2(), renderer));
-    quad.setP3(adjustFloatPointForAbsoluteZoom(quad.p3(), renderer));
-    quad.setP4(adjustFloatPointForAbsoluteZoom(quad.p4(), renderer));
-}
-
-static void adjustIntRectForAbsoluteZoom(IntRect& rect, RenderObject* renderer)
-{
-    rect.setX(adjustForAbsoluteZoom(rect.x(), renderer));
-    rect.setY(adjustForAbsoluteZoom(rect.y(), renderer));
-    rect.setWidth(adjustForAbsoluteZoom(rect.width(), renderer));
-    rect.setHeight(adjustForAbsoluteZoom(rect.height(), renderer));
 }
 
 int Element::offsetLeft()
@@ -1404,6 +1370,39 @@ unsigned Element::childElementCount() const
         n = n->nextSibling();
     }
     return count;
+}
+
+bool Element::webkitMatchesSelector(const String& selector, ExceptionCode& ec)
+{
+    if (selector.isEmpty()) {
+        ec = SYNTAX_ERR;
+        return false;
+    }
+
+    bool strictParsing = !document()->inCompatMode();
+    CSSParser p(strictParsing);
+
+    CSSSelectorList selectorList;
+    p.parseSelector(selector, document(), selectorList);
+
+    if (!selectorList.first()) {
+        ec = SYNTAX_ERR;
+        return false;
+    }
+
+    // Throw a NAMESPACE_ERR if the selector includes any namespace prefixes.
+    if (selectorList.selectorsNeedNamespaceResolution()) {
+        ec = NAMESPACE_ERR;
+        return false;
+    }
+
+    CSSStyleSelector::SelectorChecker selectorChecker(document(), strictParsing);
+    for (CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(selector)) {
+        if (selectorChecker.checkSelector(selector, this))
+            return true;
+    }
+
+    return false;
 }
 
 KURL Element::getURLAttribute(const QualifiedName& name) const

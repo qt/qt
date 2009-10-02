@@ -119,6 +119,8 @@ private slots:
     void assignProperty();
     void assignPropertyWithAnimation();
     void postEvent();
+    void cancelDelayedEvent();
+    void postDelayedEventAndStop();
     void stateFinished();
     void parallelStates();
     void parallelRootState();
@@ -176,6 +178,7 @@ private slots:
     void twoAnimatedTransitions();
     void playAnimationTwice();
     void nestedTargetStateForAnimation();
+    void polishedSignalTransitionsReuseAnimationGroup();
     void animatedGlobalRestoreProperty();
     void specificTargetValueOfAnimation();
 
@@ -1542,8 +1545,8 @@ private:
 class StringEventPoster : public QState
 {
 public:
-    StringEventPoster(QStateMachine *machine, const QString &value, QState *parent = 0)
-        : QState(parent), m_machine(machine), m_value(value), m_delay(0) {}
+    StringEventPoster(const QString &value, QState *parent = 0)
+        : QState(parent), m_value(value), m_delay(-1) {}
 
     void setString(const QString &value)
         { m_value = value; }
@@ -1553,12 +1556,14 @@ public:
 protected:
     virtual void onEntry(QEvent *)
     {
-        m_machine->postEvent(new StringEvent(m_value), m_delay);
+        if (m_delay == -1)
+            machine()->postEvent(new StringEvent(m_value));
+        else
+            machine()->postDelayedEvent(new StringEvent(m_value), m_delay);
     }
     virtual void onExit(QEvent *) {}
 
 private:
-    QStateMachine *m_machine;
     QString m_value;
     int m_delay;
 };
@@ -1572,7 +1577,7 @@ void tst_QStateMachine::postEvent()
             QTest::ignoreMessage(QtWarningMsg, "QStateMachine::postEvent: cannot post event when the state machine is not running");
             machine.postEvent(&e);
         }
-        StringEventPoster *s1 = new StringEventPoster(&machine, "a");
+        StringEventPoster *s1 = new StringEventPoster("a");
         if (x == 1)
             s1->setDelay(100);
         QFinalState *s2 = new QFinalState;
@@ -1596,6 +1601,80 @@ void tst_QStateMachine::postEvent()
         QCOMPARE(machine.configuration().size(), 1);
         QVERIFY(machine.configuration().contains(s3));
     }
+}
+
+void tst_QStateMachine::cancelDelayedEvent()
+{
+    QStateMachine machine;
+    QTest::ignoreMessage(QtWarningMsg, "QStateMachine::cancelDelayedEvent: the machine is not running");
+    QVERIFY(!machine.cancelDelayedEvent(-1));
+
+    QState *s1 = new QState(&machine);
+    QFinalState *s2 = new QFinalState(&machine);
+    s1->addTransition(new StringTransition("a", s2));
+    machine.setInitialState(s1);
+
+    QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    machine.start();
+    QTRY_COMPARE(startedSpy.count(), 1);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s1));
+
+    int id1 = machine.postDelayedEvent(new StringEvent("c"), 50000);
+    QVERIFY(id1 != -1);
+    int id2 = machine.postDelayedEvent(new StringEvent("b"), 25000);
+    QVERIFY(id2 != -1);
+    QVERIFY(id2 != id1);
+    int id3 = machine.postDelayedEvent(new StringEvent("a"), 100);
+    QVERIFY(id3 != -1);
+    QVERIFY(id3 != id2);
+    QVERIFY(machine.cancelDelayedEvent(id1));
+    QVERIFY(!machine.cancelDelayedEvent(id1));
+    QVERIFY(machine.cancelDelayedEvent(id2));
+    QVERIFY(!machine.cancelDelayedEvent(id2));
+
+    QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    QTRY_COMPARE(finishedSpy.count(), 1);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s2));
+}
+
+void tst_QStateMachine::postDelayedEventAndStop()
+{
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    QFinalState *s2 = new QFinalState(&machine);
+    s1->addTransition(new StringTransition("a", s2));
+    machine.setInitialState(s1);
+
+    QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    machine.start();
+    QTRY_COMPARE(startedSpy.count(), 1);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s1));
+
+    int id1 = machine.postDelayedEvent(new StringEvent("a"), 0);
+    QVERIFY(id1 != -1);
+    QSignalSpy stoppedSpy(&machine, SIGNAL(stopped()));
+    machine.stop();
+    QTRY_COMPARE(stoppedSpy.count(), 1);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s1));
+
+    machine.start();
+    QTRY_COMPARE(startedSpy.count(), 2);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s1));
+
+    int id2 = machine.postDelayedEvent(new StringEvent("a"), 1000);
+    QVERIFY(id2 != -1);
+    machine.stop();
+    QTRY_COMPARE(stoppedSpy.count(), 2);
+    machine.start();
+    QTRY_COMPARE(startedSpy.count(), 3);
+    QTestEventLoop::instance().enterLoop(2);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s1));
 }
 
 void tst_QStateMachine::stateFinished()
@@ -3113,6 +3192,38 @@ void tst_QStateMachine::nestedTargetStateForAnimation()
     QCOMPARE(object->property("foo").toDouble(), 2.0);
     QCOMPARE(object->property("bar").toDouble(), 10.0);
     QCOMPARE(counter.counter, 2);
+}
+
+void tst_QStateMachine::polishedSignalTransitionsReuseAnimationGroup()
+{
+    QStateMachine machine;
+    QObject *object = new QObject(&machine);
+    object->setProperty("foo", 0);
+
+    QState *s1 = new QState(&machine);
+    s1->assignProperty(object, "foo", 123);
+    QState *s2 = new QState(&machine);
+    s2->assignProperty(object, "foo", 456);
+    QState *s3 = new QState(&machine);
+    s3->assignProperty(object, "foo", 789);
+    QFinalState *s4 = new QFinalState(&machine);
+
+    QParallelAnimationGroup animationGroup;
+    animationGroup.addAnimation(new QPropertyAnimation(object, "foo"));
+    QSignalSpy animationFinishedSpy(&animationGroup, SIGNAL(finished()));
+    s1->addTransition(s1, SIGNAL(polished()), s2)->addAnimation(&animationGroup);
+    s2->addTransition(s2, SIGNAL(polished()), s3)->addAnimation(&animationGroup);
+    s3->addTransition(s3, SIGNAL(polished()), s4);
+
+    machine.setInitialState(s1);
+    QSignalSpy machineFinishedSpy(&machine, SIGNAL(finished()));
+    machine.start();
+    QTRY_COMPARE(machineFinishedSpy.count(), 1);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s4));
+    QCOMPARE(object->property("foo").toInt(), 789);
+
+    QCOMPARE(animationFinishedSpy.count(), 2);
 }
 
 void tst_QStateMachine::animatedGlobalRestoreProperty()

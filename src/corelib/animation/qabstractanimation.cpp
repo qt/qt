@@ -704,8 +704,8 @@ bool QAbstractAnimation::event(QEvent *event)
 /*!
     \fn virtual void QAbstractAnimation::updateCurrentTime(int currentTime) = 0;
 
-    This pure virtual function is called every time the animation's current
-    time changes.
+    This pure virtual function is called every time the animation's
+    \a currentTime changes.
 
     \sa updateState()
 */

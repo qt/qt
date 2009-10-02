@@ -21,7 +21,7 @@ LRELEASE = $$fixPath($$QT_BUILD_TREE/bin/lrelease)
 
 ###### Qt Libraries
 
-QT_TS        = de fr zh_CN untranslated ar es iw ja_JP pl pt ru sk sv uk zh_TW da
+QT_TS        = ar da de es fr iw ja_JP pl pt ru sk sl sv uk zh_CN zh_TW
 
 ts-qt.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
                                 -I../include -I../include/Qt \
@@ -30,19 +30,21 @@ ts-qt.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
                                     activeqt \
                                     corelib \
                                     gui \
+                                    multimedia \
                                     network \
                                     opengl \
                                     plugins \
                                     qt3support \
                                     script \
+                                    scripttools \
                                     sql \
                                     svg \
                                     xml \
                                     xmlpatterns \
-                                -ts $$prependAll($$[QT_INSTALL_TRANSLATIONS]/qt_,$$QT_TS,.ts))
+                                -ts $$prependAll($$QT_SOURCE_TREE/translations/qt_,$$QT_TS,.ts))
 ts-qt.depends = sub-tools
 
-qm-qt.commands = $$LRELEASE $$prependAll($$[QT_INSTALL_TRANSLATIONS]/qt_,$$QT_TS,.ts)
+qm-qt.commands = $$LRELEASE $$prependAll($$QT_SOURCE_TREE/translations/qt_,$$QT_TS,.ts)
 qm-qt.depends = sub-tools
 
 ###### Designer

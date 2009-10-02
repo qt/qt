@@ -125,7 +125,7 @@ JSObject* JSHTMLOptionElementPrototype::self(ExecState* exec, JSGlobalObject* gl
 
 const ClassInfo JSHTMLOptionElement::s_info = { "HTMLOptionElement", &JSHTMLElement::s_info, &JSHTMLOptionElementTable, 0 };
 
-JSHTMLOptionElement::JSHTMLOptionElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLOptionElement> impl)
+JSHTMLOptionElement::JSHTMLOptionElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLOptionElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

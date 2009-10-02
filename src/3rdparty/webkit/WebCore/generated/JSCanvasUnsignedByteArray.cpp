@@ -57,7 +57,7 @@ JSObject* JSCanvasUnsignedByteArrayPrototype::self(ExecState* exec, JSGlobalObje
 
 const ClassInfo JSCanvasUnsignedByteArray::s_info = { "CanvasUnsignedByteArray", &JSCanvasArray::s_info, 0, 0 };
 
-JSCanvasUnsignedByteArray::JSCanvasUnsignedByteArray(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasUnsignedByteArray> impl)
+JSCanvasUnsignedByteArray::JSCanvasUnsignedByteArray(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasUnsignedByteArray> impl)
     : JSCanvasArray(structure, globalObject, impl)
 {
 }

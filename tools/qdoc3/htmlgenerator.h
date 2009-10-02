@@ -67,6 +67,9 @@ struct NavigationBar
 };
 #endif
 
+typedef QMultiMap<QString, Node*> SinceNodeMultiMap;
+typedef QMap<QString, SinceNodeMultiMap> SinceVersionMap;
+
 class HelpProjectWriter;
 
 class HtmlGenerator : public PageGenerator
@@ -216,7 +219,7 @@ class HtmlGenerator : public PageGenerator
 #ifdef ZZZ_QDOC_QML    
     void findAllQmlClasses(const InnerNode *node);
 #endif
-    void findAllSince(const InnerNode *node, QString version);
+    void findAllSince(const InnerNode *node);
     static int hOffset(const Node *node);
     static bool isThreeColumnEnumValueTable(const Atom *atom);
     virtual QString getLink(const Atom *atom, 
@@ -286,8 +289,7 @@ class HtmlGenerator : public PageGenerator
 #endif
     QMap<QString, QMap<QString, const Node *> > funcIndex;
     QMap<Text, const Node *> legaleseTexts;
-    QMap<QString, Node*> sinceClasses;
-    QMap<QString, Node*> sinceFunctions;
+    SinceVersionMap sinceVersions;
 };
 
 #define HTMLGENERATOR_ADDRESS           "address"

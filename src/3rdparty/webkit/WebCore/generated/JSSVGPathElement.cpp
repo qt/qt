@@ -175,7 +175,7 @@ bool JSSVGPathElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const 
 
 const ClassInfo JSSVGPathElement::s_info = { "SVGPathElement", &JSSVGElement::s_info, &JSSVGPathElementTable, 0 };
 
-JSSVGPathElement::JSSVGPathElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathElement> impl)
+JSSVGPathElement::JSSVGPathElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

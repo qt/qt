@@ -93,7 +93,7 @@ bool JSSVGTextElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const 
 
 const ClassInfo JSSVGTextElement::s_info = { "SVGTextElement", &JSSVGTextPositioningElement::s_info, &JSSVGTextElementTable, 0 };
 
-JSSVGTextElement::JSSVGTextElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTextElement> impl)
+JSSVGTextElement::JSSVGTextElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTextElement> impl)
     : JSSVGTextPositioningElement(structure, globalObject, impl)
 {
 }

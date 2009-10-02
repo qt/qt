@@ -164,7 +164,7 @@ bool JSSVGFECompositeElementPrototype::getOwnPropertyDescriptor(ExecState* exec,
 
 const ClassInfo JSSVGFECompositeElement::s_info = { "SVGFECompositeElement", &JSSVGElement::s_info, &JSSVGFECompositeElementTable, 0 };
 
-JSSVGFECompositeElement::JSSVGFECompositeElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFECompositeElement> impl)
+JSSVGFECompositeElement::JSSVGFECompositeElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFECompositeElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

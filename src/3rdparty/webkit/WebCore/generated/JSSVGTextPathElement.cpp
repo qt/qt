@@ -144,7 +144,7 @@ bool JSSVGTextPathElementPrototype::getOwnPropertyDescriptor(ExecState* exec, co
 
 const ClassInfo JSSVGTextPathElement::s_info = { "SVGTextPathElement", &JSSVGTextContentElement::s_info, &JSSVGTextPathElementTable, 0 };
 
-JSSVGTextPathElement::JSSVGTextPathElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTextPathElement> impl)
+JSSVGTextPathElement::JSSVGTextPathElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTextPathElement> impl)
     : JSSVGTextContentElement(structure, globalObject, impl)
 {
 }

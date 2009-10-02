@@ -97,7 +97,7 @@ bool JSSVGFETileElementPrototype::getOwnPropertyDescriptor(ExecState* exec, cons
 
 const ClassInfo JSSVGFETileElement::s_info = { "SVGFETileElement", &JSSVGElement::s_info, &JSSVGFETileElementTable, 0 };
 
-JSSVGFETileElement::JSSVGFETileElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFETileElement> impl)
+JSSVGFETileElement::JSSVGFETileElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFETileElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

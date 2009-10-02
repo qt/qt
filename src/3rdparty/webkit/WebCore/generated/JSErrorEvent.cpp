@@ -141,7 +141,7 @@ static const HashTable* getJSErrorEventTable(ExecState* exec)
 }
 const ClassInfo JSErrorEvent::s_info = { "ErrorEvent", &JSEvent::s_info, 0, getJSErrorEventTable };
 
-JSErrorEvent::JSErrorEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<ErrorEvent> impl)
+JSErrorEvent::JSErrorEvent(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<ErrorEvent> impl)
     : JSEvent(structure, globalObject, impl)
 {
 }

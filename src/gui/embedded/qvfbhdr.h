@@ -52,9 +52,22 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-#define QT_VFB_MOUSE_PIPE           "/tmp/.qtvfb_mouse-%1"
-#define QT_VFB_KEYBOARD_PIPE        "/tmp/.qtvfb_keyboard-%1"
-#define QT_VFB_MAP                  "/tmp/.qtvfb_map-%1"
+#ifndef QT_QWS_TEMP_DIR
+#define QT_QWS_TEMP_DIR "/tmp"
+#endif
+
+#define QT_VFB_DATADIR(DISPLAY) QString("%1/qtembedded-%2-%3") \
+                                .arg(QT_QWS_TEMP_DIR).arg(getuid()).arg(DISPLAY)
+
+#define QT_VFB_MOUSE_PIPE(DISPLAY)    QT_VFB_DATADIR(DISPLAY) \
+                                      .append("/qtvfb_mouse")
+#define QT_VFB_KEYBOARD_PIPE(DISPLAY) QT_VFB_DATADIR(DISPLAY) \
+                                      .append("/qtvfb_keyboard")
+#define QT_VFB_MAP(DISPLAY)           QT_VFB_DATADIR(DISPLAY) \
+                                      .append("/qtvfb_map")
+#define QT_VFB_SOUND_PIPE(DISPLAY)    QT_VFB_DATADIR(DISPLAY) \
+                                      .append("/qt_soundserver")
+#define QTE_PIPE                      "QtEmbedded"
 
 struct QVFbHeader
 {

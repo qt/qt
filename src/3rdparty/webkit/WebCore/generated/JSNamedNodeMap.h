@@ -33,7 +33,7 @@ class NamedNodeMap;
 class JSNamedNodeMap : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSNamedNodeMap(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<NamedNodeMap>);
+    JSNamedNodeMap(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<NamedNodeMap>);
     virtual ~JSNamedNodeMap();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -46,6 +46,8 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
+
+    virtual void markChildren(JSC::MarkStack&);
 
     virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -72,9 +74,9 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
-    JSNamedNodeMapPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSNamedNodeMapPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

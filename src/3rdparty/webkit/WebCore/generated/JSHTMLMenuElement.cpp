@@ -113,7 +113,7 @@ JSObject* JSHTMLMenuElementPrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSHTMLMenuElement::s_info = { "HTMLMenuElement", &JSHTMLElement::s_info, &JSHTMLMenuElementTable, 0 };
 
-JSHTMLMenuElement::JSHTMLMenuElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLMenuElement> impl)
+JSHTMLMenuElement::JSHTMLMenuElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLMenuElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

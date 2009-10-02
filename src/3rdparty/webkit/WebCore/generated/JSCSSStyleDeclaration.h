@@ -33,7 +33,7 @@ class CSSStyleDeclaration;
 class JSCSSStyleDeclaration : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSCSSStyleDeclaration(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CSSStyleDeclaration>);
+    JSCSSStyleDeclaration(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CSSStyleDeclaration>);
     virtual ~JSCSSStyleDeclaration();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -78,7 +78,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
-    JSCSSStyleDeclarationPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSCSSStyleDeclarationPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

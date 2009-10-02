@@ -32,7 +32,7 @@ class CanvasRenderingContext3D;
 class JSCanvasRenderingContext3D : public JSCanvasRenderingContext {
     typedef JSCanvasRenderingContext Base;
 public:
-    JSCanvasRenderingContext3D(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CanvasRenderingContext3D>);
+    JSCanvasRenderingContext3D(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CanvasRenderingContext3D>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
@@ -81,7 +81,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSCanvasRenderingContext3DPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSCanvasRenderingContext3DPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

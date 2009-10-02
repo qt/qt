@@ -27,7 +27,7 @@ qhp.qmake.subprojects.manual.selectors = fake:page
 
 language                = Cpp
 
-sources                 = $QT_SOURCE_TREE/doc/src/qmake-manual.qdoc
+sources                 = $QT_SOURCE_TREE/doc/src/development/qmake-manual.qdoc
 
 sources.fileextensions  = "*.cpp *.qdoc"
 

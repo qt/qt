@@ -188,7 +188,7 @@ static const HashTable* getJSEventTable(ExecState* exec)
 }
 const ClassInfo JSEvent::s_info = { "Event", 0, 0, getJSEventTable };
 
-JSEvent::JSEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Event> impl)
+JSEvent::JSEvent(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Event> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

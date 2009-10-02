@@ -731,14 +731,11 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
         {
             const QStyleOptionViewItemV4 *vopt;
             const QAbstractItemView *view = qobject_cast<const QAbstractItemView *>(widget);
-            bool newStyle = false;
+            bool newStyle = true;
 
-            if (const QListView *listview = qobject_cast<const QListView *>(widget)) {
-                if (listview->viewMode() == QListView::IconMode)
-                    newStyle = true;
-            } else if (qobject_cast<const QTreeView *>(widget)) {
-                newStyle = true;
-            }
+            if (qobject_cast<const QTableView*>(widget))
+                newStyle = false;
+
             if (newStyle && view && (vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option))) {
                 bool selected = vopt->state & QStyle::State_Selected;
                 bool hover = vopt->state & QStyle::State_MouseOver;
@@ -1496,14 +1493,11 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
         {
             const QStyleOptionViewItemV4 *vopt;
             const QAbstractItemView *view = qobject_cast<const QAbstractItemView *>(widget);
-            bool newStyle = false;
+            bool newStyle = true;
 
-            if (const QListView *listview = qobject_cast<const QListView *>(widget)) {
-                if (listview->viewMode() == QListView::IconMode)
-                    newStyle = true;
-            } else if (qobject_cast<const QTreeView *>(widget)) {
-                newStyle = true;
-            }
+            if (qobject_cast<const QTableView*>(widget))
+                newStyle = false;
+
             if (newStyle && view && (vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option))) {
                 /*
                 // We cannot currently get the correct selection color for "explorer style" views

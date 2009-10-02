@@ -118,7 +118,7 @@ bool JSSVGPolygonElementPrototype::getOwnPropertyDescriptor(ExecState* exec, con
 
 const ClassInfo JSSVGPolygonElement::s_info = { "SVGPolygonElement", &JSSVGElement::s_info, &JSSVGPolygonElementTable, 0 };
 
-JSSVGPolygonElement::JSSVGPolygonElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPolygonElement> impl)
+JSSVGPolygonElement::JSSVGPolygonElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPolygonElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

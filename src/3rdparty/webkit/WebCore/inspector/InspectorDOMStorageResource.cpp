@@ -79,7 +79,9 @@ void InspectorDOMStorageResource::bind(InspectorFrontend* frontend)
 
 void InspectorDOMStorageResource::unbind()
 {
-    ASSERT(m_frontend);
+    if (!m_frontend)
+        return;  // Already unbound.
+
     if (m_reportingChangesToFrontend) {
         m_frame->domWindow()->removeEventListener(eventNames().storageEvent, this, true);
         m_reportingChangesToFrontend = false;
@@ -96,7 +98,7 @@ void InspectorDOMStorageResource::startReportingChangesToFrontend()
     }
 }
 
-void InspectorDOMStorageResource::handleEvent(Event* event)
+void InspectorDOMStorageResource::handleEvent(ScriptExecutionContext*, Event* event)
 {
     ASSERT(m_frontend);
     ASSERT(eventNames().storageEvent == event->type());

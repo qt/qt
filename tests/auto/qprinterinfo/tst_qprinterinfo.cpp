@@ -101,6 +101,8 @@ void tst_QPrinterInfo::macFixNameFormat(QString *printerName)
 #ifdef Q_WS_MAC
     printerName->replace(QLatin1String("___"), QLatin1String(" @ "));
     printerName->replace(QLatin1String("_"), QLatin1String("."));
+#else
+    Q_UNUSED(printerName);
 #endif
 }
 
@@ -132,7 +134,7 @@ QStringList tst_QPrinterInfo::getPrintersFromSystem()
     QString output = getOutputFromCommand(command);
     QStringList list = output.split(QChar::fromLatin1('\n'));
 
-    QRegExp reg("^[Pp]rinter ([a-zA-Z0-9_]+)");
+    QRegExp reg("^[Pp]rinter ([.a-zA-Z0-9_-]+)");
     for (int c = 0; c < list.size(); ++c) {
         if (reg.indexIn(list[c]) >= 0) {
             QString printer = reg.cap(1);
@@ -282,16 +284,17 @@ void tst_QPrinterInfo::testForPrinters()
 
     QCOMPARE(printers.size(), sysPrinters.size());
 
+    QHash<QString, bool> qtPrinters;
+
+    for (int j = 0; j < printers.size(); ++j) {
+        qtPrinters.insert(printers.at(j).printerName(), !printers.at(j).isNull());
+    }
+
     for (int i = 0; i < sysPrinters.size(); ++i) {
-        bool found = false;
-        for (int j = 0; j < printers.size(); ++j) {
-            if (sysPrinters.at(i) == printers.at(j).printerName()) {
-                QVERIFY(!printers.at(j).isNull());
-                found = true;
-                break;
-            }
+        if (!qtPrinters.value(sysPrinters.at(i))) {
+            qDebug() << "Avaliable printers: " << qtPrinters;
+            QFAIL(qPrintable(QString("Printer '%1' reported by system, but not reported by Qt").arg(sysPrinters.at(i))));
         }
-        if (!found) QFAIL("Printer reported by system, but not reported by Qt");
     }
 #else
     QSKIP("Test doesn't work on non-Unix", SkipAll);

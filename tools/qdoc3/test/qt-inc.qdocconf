@@ -5,7 +5,6 @@ project                 = Qt
 description             = Qt Reference Documentation
 url                     = http://qt.nokia.com/doc/4.6
 
-edition.Console         = QtCore QtNetwork QtSql QtXml QtScript QtTest
 edition.Desktop         = QtCore QtGui QtNetwork QtOpenGL QtSql QtSvg QtXml QtScript \
                           QtDesigner QtAssistant Qt3Support QAxContainer \
                           QAxServer QtUiTools QtTest QtDBus

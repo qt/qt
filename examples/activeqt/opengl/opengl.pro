@@ -17,5 +17,3 @@ target.path = $$[QT_INSTALL_EXAMPLES]/activeqt/opengl
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS opengl.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/activeqt/opengl
 INSTALLS += target sources
-
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

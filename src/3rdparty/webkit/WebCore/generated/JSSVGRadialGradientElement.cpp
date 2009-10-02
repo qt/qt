@@ -76,7 +76,7 @@ JSObject* JSSVGRadialGradientElementPrototype::self(ExecState* exec, JSGlobalObj
 
 const ClassInfo JSSVGRadialGradientElement::s_info = { "SVGRadialGradientElement", &JSSVGGradientElement::s_info, &JSSVGRadialGradientElementTable, 0 };
 
-JSSVGRadialGradientElement::JSSVGRadialGradientElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGRadialGradientElement> impl)
+JSSVGRadialGradientElement::JSSVGRadialGradientElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGRadialGradientElement> impl)
     : JSSVGGradientElement(structure, globalObject, impl)
 {
 }

@@ -49,6 +49,7 @@
 QT_BEGIN_NAMESPACE
 
 /*!
+  \internal
   \class QSimplex
 
   The QSimplex class is a Linear Programming problem solver based on the two-phase
@@ -111,6 +112,7 @@ void QSimplex::clearDataStructures()
 }
 
 /*!
+  \internal
   Sets the new constraints in the simplex solver and returns whether the problem
   is feasible.
 
@@ -509,6 +511,7 @@ qreal QSimplex::solver(solverFactor factor)
 }
 
 /*!
+  \internal
   Minimize the original objective.
 */
 qreal QSimplex::solveMin()
@@ -517,6 +520,7 @@ qreal QSimplex::solveMin()
 }
 
 /*!
+  \internal
   Maximize the original objective.
 */
 qreal QSimplex::solveMax()

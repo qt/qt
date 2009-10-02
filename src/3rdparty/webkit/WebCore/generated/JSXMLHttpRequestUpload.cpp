@@ -146,7 +146,7 @@ static const HashTable* getJSXMLHttpRequestUploadTable(ExecState* exec)
 }
 const ClassInfo JSXMLHttpRequestUpload::s_info = { "XMLHttpRequestUpload", 0, 0, getJSXMLHttpRequestUploadTable };
 
-JSXMLHttpRequestUpload::JSXMLHttpRequestUpload(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XMLHttpRequestUpload> impl)
+JSXMLHttpRequestUpload::JSXMLHttpRequestUpload(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XMLHttpRequestUpload> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
@@ -179,7 +179,7 @@ JSValue jsXMLHttpRequestUploadOnabort(ExecState* exec, const Identifier&, const 
     UNUSED_PARAM(exec);
     XMLHttpRequestUpload* imp = static_cast<XMLHttpRequestUpload*>(castedThis->impl());
     if (EventListener* listener = imp->onabort()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -191,7 +191,7 @@ JSValue jsXMLHttpRequestUploadOnerror(ExecState* exec, const Identifier&, const 
     UNUSED_PARAM(exec);
     XMLHttpRequestUpload* imp = static_cast<XMLHttpRequestUpload*>(castedThis->impl());
     if (EventListener* listener = imp->onerror()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -203,7 +203,7 @@ JSValue jsXMLHttpRequestUploadOnload(ExecState* exec, const Identifier&, const P
     UNUSED_PARAM(exec);
     XMLHttpRequestUpload* imp = static_cast<XMLHttpRequestUpload*>(castedThis->impl());
     if (EventListener* listener = imp->onload()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -215,7 +215,7 @@ JSValue jsXMLHttpRequestUploadOnloadstart(ExecState* exec, const Identifier&, co
     UNUSED_PARAM(exec);
     XMLHttpRequestUpload* imp = static_cast<XMLHttpRequestUpload*>(castedThis->impl());
     if (EventListener* listener = imp->onloadstart()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -227,7 +227,7 @@ JSValue jsXMLHttpRequestUploadOnprogress(ExecState* exec, const Identifier&, con
     UNUSED_PARAM(exec);
     XMLHttpRequestUpload* imp = static_cast<XMLHttpRequestUpload*>(castedThis->impl());
     if (EventListener* listener = imp->onprogress()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
