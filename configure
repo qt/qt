@@ -2330,9 +2330,6 @@ if [ "$CFG_EMBEDDED" != "no" ]; then
                     *86_64)
                         CFG_EMBEDDED=x86_64
                         ;;
-                    *ppc)
-                        CFG_EMBEDDED=ppc
-                        ;;
                     *)
                         CFG_EMBEDDED=generic
                         ;;
@@ -2762,7 +2759,7 @@ if [ "$PLATFORM" != "$XPLATFORM" -a "$CFG_EMBEDDED" != "no" ]; then
     ipaq|sharp)
         CFG_ARCH=arm
         ;;
-    dm7000|ppc)
+    dm7000)
         CFG_ARCH=powerpc
         ;;
     dm800)

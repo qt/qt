@@ -11444,11 +11444,15 @@ QWidget *QWidgetPrivate::widgetInNavigationDirection(Direction direction)
     QWidget *targetWidget = 0;
     int shortestDistance = INT_MAX;
     foreach(QWidget *targetCandidate, QApplication::allWidgets()) {
-    
-        if (targetCandidate->focusProxy()) //skip if focus proxy set
-            continue;
 
         const QRect targetCandidateRect = targetCandidate->rect().translated(targetCandidate->mapToGlobal(QPoint()));
+
+        // For focus proxies, the child widget handling the focus can have keypad navigation focus, 
+        // but the owner of the proxy cannot.
+        // Additionally, empty widgets should be ignored.
+        if (targetCandidate->focusProxy() || targetCandidateRect.isEmpty())
+            continue;
+
         if (       targetCandidate != sourceWidget
                 && targetCandidate->focusPolicy() & Qt::TabFocus
                 && !(direction == DirectionNorth && targetCandidateRect.bottom() > sourceRect.top())

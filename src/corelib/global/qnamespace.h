@@ -194,9 +194,9 @@ public:
     };
 
     enum TileRule {
-        Stretch,
-        Repeat,
-        Round
+        StretchTile,
+        RepeatTile,
+        RoundTile
     };
 
     // Text formatting flags for QPainter::drawText and QLabel.

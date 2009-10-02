@@ -1225,7 +1225,7 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
 
     // horizontal edges
     switch (rules.horizontal) {
-        case Qt::Stretch:
+        case Qt::StretchTile:
         if (targetMargins.top() > 0 && sourceMargins.top() > 0) { // top
             const QRect targetTopRect(targetCenterLeft, targetTop, targetCenterWidth, targetMargins.top());
             const QRect sourceTopRect(sourceCenterLeft, sourceTop, sourceCenterWidth, sourceMargins.top());
@@ -1237,7 +1237,7 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
             qDrawPixmap(painter, targetBottomRect, pixmap, sourceBottomRect);
         }
         break;
-        case Qt::Repeat:
+        case Qt::RepeatTile:
         if (targetMargins.top() > 0 && sourceMargins.top() > 0) { // top
             const QRect targetTopRect(targetCenterLeft, targetTop, targetCenterWidth, targetMargins.top());
             const QRect sourceTopRect(sourceCenterLeft, sourceTop, sourceCenterWidth, sourceMargins.top());
@@ -1249,7 +1249,7 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
             qDrawHorizontallyRepeatedPixmap(painter, targetBottomRect, pixmap, sourceBottomRect);
         }
         break;
-        case Qt::Round:
+        case Qt::RoundTile:
         if (targetMargins.top() > 0 && sourceMargins.top() > 0) { // top
             const QRect targetTopRect(targetCenterLeft, targetTop, targetCenterWidth, targetMargins.top());
             const QRect sourceTopRect(sourceCenterLeft, sourceTop, sourceCenterWidth, sourceMargins.top());
@@ -1265,7 +1265,7 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
 
     // vertical edges
     switch (rules.vertical) {
-        case Qt::Stretch:
+        case Qt::StretchTile:
         if (targetMargins.left() > 0 && sourceMargins.left() > 0) { // left
             const QRect targetLeftRect(targetLeft, targetCenterTop, targetMargins.left(), targetCenterHeight);
             const QRect sourceLeftRect(sourceLeft, sourceCenterTop, sourceMargins.left(), sourceCenterHeight);
@@ -1277,7 +1277,7 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
             qDrawPixmap(painter, targetRightRect, pixmap, sourceRightRect);
         }
         break;
-        case Qt::Repeat:
+        case Qt::RepeatTile:
         if (targetMargins.left() > 0 && sourceMargins.left() > 0) { // left
             const QRect targetLeftRect(targetLeft, targetCenterTop, targetMargins.left(), targetCenterHeight);
             const QRect sourceLeftRect(sourceLeft, sourceCenterTop, sourceMargins.left(), sourceCenterHeight);
@@ -1289,7 +1289,7 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
             qDrawVerticallyRepeatedPixmap(painter, targetRightRect, pixmap, sourceRightRect);
         }
         break;
-        case Qt::Round:
+        case Qt::RoundTile:
         if (targetMargins.left() > 0 && sourceMargins.left() > 0) { // left
             const QRect targetLeftRect(targetLeft, targetCenterTop, targetMargins.left(), targetCenterHeight);
             const QRect sourceLeftRect(sourceLeft, sourceCenterTop, sourceMargins.left(), sourceCenterHeight);
@@ -1308,41 +1308,41 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
         const QRect targetCenterRect(targetCenterLeft, targetCenterTop, targetCenterWidth, targetCenterHeight);
         const QRect sourceCenterRect(sourceCenterLeft, sourceCenterTop, sourceCenterWidth, sourceCenterHeight);
         switch (rules.horizontal) {
-        case Qt::Stretch:
+        case Qt::StretchTile:
             switch (rules.vertical) {
-                case Qt::Stretch: // stretch stretch
+                case Qt::StretchTile: // stretch stretch
                     qDrawPixmap(painter, targetCenterRect, pixmap, sourceCenterRect);
                 break;
-                case Qt::Repeat: // stretch repeat
+                case Qt::RepeatTile: // stretch repeat
                     qVerticalRepeat(painter, targetCenterRect, pixmap, sourceCenterRect, qDrawPixmap);
                 break;
-                case Qt::Round: // stretch round
+                case Qt::RoundTile: // stretch round
                     qVerticalRound(painter, targetCenterRect, pixmap, sourceCenterRect, qDrawPixmap);
                 break;
             }
             break;
-        case Qt::Repeat:
+        case Qt::RepeatTile:
             switch (rules.vertical) {
-                case Qt::Stretch: // repeat stretch
+                case Qt::StretchTile: // repeat stretch
                     qHorizontalRepeat(painter, targetCenterRect, pixmap, sourceCenterRect, qDrawPixmap);
                 break;
-                case Qt::Repeat: // repeat repeat
+                case Qt::RepeatTile: // repeat repeat
                     qVerticalRepeat(painter, targetCenterRect, pixmap, sourceCenterRect, qDrawHorizontallyRepeatedPixmap);
                 break;
-                case Qt::Round: // repeat round
+                case Qt::RoundTile: // repeat round
                     qVerticalRound(painter, targetCenterRect, pixmap, sourceCenterRect, qDrawHorizontallyRepeatedPixmap);
                 break;
             }
             break;
-        case Qt::Round:
+        case Qt::RoundTile:
             switch (rules.vertical) {
-                case Qt::Stretch: // round stretch
+                case Qt::StretchTile: // round stretch
                     qHorizontalRound(painter, targetCenterRect, pixmap, sourceCenterRect, qDrawPixmap);
                 break;
-                case Qt::Repeat: // round repeat
+                case Qt::RepeatTile: // round repeat
                     qHorizontalRound(painter, targetCenterRect, pixmap, sourceCenterRect, qDrawVerticallyRepeatedPixmap);
                 break;
-                case Qt::Round: // round round
+                case Qt::RoundTile: // round round
                     qHorizontalRound(painter, targetCenterRect, pixmap, sourceCenterRect, qDrawVerticallyRoundedPixmap);
                 break;
             }
