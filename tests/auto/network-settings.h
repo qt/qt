@@ -334,31 +334,39 @@ QByteArray QtNetworkSettings::imapExpectedReplySsl;
 class QtNetworkSettingsInitializerCode {
 public:
     QtNetworkSettingsInitializerCode() {
-#ifdef Q_OS_SYMBIAN    
-        // We have a non-trivial constructor in global static. 
+#ifdef Q_OS_SYMBIAN
+#ifdef Q_CC_NOKIAX86
+        // We have a non-trivial constructor in global static.
         // The QtNetworkSettings::serverName() uses native API which assumes
         // Cleanup-stack to exist. That's why we create it here and install
         // top level TRAP harness.
         CTrapCleanup *cleanupStack = q_check_ptr(CTrapCleanup::New());
-        TRAPD(err, 
+        TRAPD(err,
             QHostInfo testServerResult = QHostInfo::fromName(QtNetworkSettings::serverName());
             if (testServerResult.error() != QHostInfo::NoError) {
                 qWarning() << "Could not lookup" << QtNetworkSettings::serverName();
                 qWarning() << "Please configure the test environment!";
                 qWarning() << "See /etc/hosts or network-settings.h";
                 qFatal("Exiting");
-            }                
-        )        
+            }
+        )
         delete cleanupStack;
-#else        
+//#else
+        // In Symbian HW there is no sense to run this check since global statics are
+        // initialized before QTestLib initializes the output channel for QWarnigns.
+        // So if there is problem network setup, also all QtCore etc tests whcih have
+        // QtNetwork dependency will crash with panic "0 - Exiciting"
+#endif
+
+#else
         QHostInfo testServerResult = QHostInfo::fromName(QtNetworkSettings::serverName());
         if (testServerResult.error() != QHostInfo::NoError) {
             qWarning() << "Could not lookup" << QtNetworkSettings::serverName();
             qWarning() << "Please configure the test environment!";
             qWarning() << "See /etc/hosts or network-settings.h";
             qFatal("Exiting");
-        }   
-#endif           
+        }
+#endif
     }
 };
 QtNetworkSettingsInitializerCode qtNetworkSettingsInitializer;
