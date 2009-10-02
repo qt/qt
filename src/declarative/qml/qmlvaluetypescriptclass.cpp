@@ -112,7 +112,7 @@ QScriptValue QmlValueTypeScriptClass::property(const QScriptValue &object,
     QMetaProperty p = ref.type->metaObject()->property(id);
     QVariant rv = p.read(ref.type);
 
-    return static_cast<QmlEnginePrivate *>(QObjectPrivate::get(engine))->scriptEngine.newVariant(rv);
+    return static_cast<QmlEnginePrivate *>(QObjectPrivate::get(engine))->scriptValueFromVariant(rv);
 }
 
 void QmlValueTypeScriptClass::setProperty(QScriptValue &object,

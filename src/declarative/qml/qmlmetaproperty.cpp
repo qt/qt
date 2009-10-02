@@ -564,14 +564,20 @@ QmlMetaProperty::setBinding(QmlAbstractBinding *newBinding) const
     if (!isProperty() || (type() & Attached) || !d->object)
         return 0;
 
-    QmlDeclarativeData *data = 
-        QmlDeclarativeData::get(d->object, 0 != newBinding);
+    d->setBinding(d->object, d->core, newBinding);
+}
 
-    if (data && data->hasBindingBit(d->core.coreIndex)) {
+QmlAbstractBinding *
+QmlMetaPropertyPrivate::setBinding(QObject *object, const QmlPropertyCache::Data &core, 
+                                   QmlAbstractBinding *newBinding)
+{
+    QmlDeclarativeData *data = QmlDeclarativeData::get(object, 0 != newBinding);
+
+    if (data && data->hasBindingBit(core.coreIndex)) {
         QmlAbstractBinding *binding = data->bindings;
         while (binding) {
             // ### This wont work for value types
-            if (binding->propertyIndex() == d->core.coreIndex) {
+            if (binding->propertyIndex() == core.coreIndex) {
                 binding->setEnabled(false);
 
                 if (newBinding) 
@@ -1124,7 +1130,7 @@ void QmlMetaProperty::restore(quint32 id, QObject *obj, QmlContext *ctxt)
 
         d->core.load(p);
         d->valueTypeCoreIdx = valueTypeIdx;
-        d->valueTypePropType = p.userType();
+        d->valueTypePropType = p2.userType();
     } else if (type & Property) {
 
         QmlPropertyCache *cache = enginePrivate?enginePrivate->cache(obj):0;

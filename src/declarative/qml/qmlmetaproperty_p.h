@@ -101,6 +101,7 @@ public:
     QVariant readValueProperty();
     void writeValueProperty(const QVariant &, QmlMetaProperty::WriteSource);
     static void write(QObject *, const QmlPropertyCache::Data &, const QVariant &, QmlContext *);
+    static QmlAbstractBinding *setBinding(QObject *, const QmlPropertyCache::Data &, QmlAbstractBinding *);
 
     static quint32 saveValueType(int, int);
     static quint32 saveProperty(int);

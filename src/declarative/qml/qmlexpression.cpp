@@ -296,13 +296,8 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope)
             QList<QObject *> list;
             for (int ii = 0; ii < length; ++ii) {
                 QScriptValue arrayItem = svalue.property(ii);
-                QObject *d =
-                    qvariant_cast<QObject *>(arrayItem.data().toVariant());
-                if (d) {
-                    list << d;
-                } else {
-                    list << 0;
-                }
+                QObject *d = arrayItem.toQObject();
+                list << d;
             }
             rv = QVariant::fromValue(list);
         }
@@ -316,13 +311,10 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope)
                !svalue.isQMetaObject() &&
                !svalue.isQObject() &&
                !svalue.isRegExp()) {
-        QScriptValue objValue = svalue.data();
-        if (objValue.isValid()) {
-            QVariant var = objValue.toVariant();
-            if (var.userType() >= (int)QVariant::UserType &&
-                QmlMetaType::isObject(var.userType()))
-                rv = var;
-        }
+
+        QObject *o = svalue.toQObject();
+        if (o)
+            return qVariantFromValue(o);
     }
     if (rv.isNull())
         rv = svalue.toVariant();

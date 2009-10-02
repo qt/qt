@@ -45,6 +45,7 @@
 #include <private/qmlcontext_p.h>
 #include <private/qmldeclarativedata_p.h>
 #include <private/qmltypenamescriptclass_p.h>
+#include <QtDeclarative/qmlbinding.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -181,6 +182,11 @@ QScriptValue QmlObjectScriptClass::property(QObject *obj, const Identifier &name
         QScriptValue sobj = scriptEngine->newQObject(obj);
         return sobj.property(toString(name));
     } else {
+        if (!(lastData->flags & QmlPropertyCache::Data::IsConstant)) {
+            enginePriv->capturedProperties << 
+                QmlEnginePrivate::CapturedProperty(obj, lastData->coreIndex, lastData->notifyIndex);
+        }
+
         if ((uint)lastData->propType < QVariant::UserType) {
             QmlValueType *valueType = enginePriv->valueTypes[lastData->propType];
             if (valueType)
@@ -188,10 +194,6 @@ QScriptValue QmlObjectScriptClass::property(QObject *obj, const Identifier &name
         }
 
         QVariant var = obj->metaObject()->property(lastData->coreIndex).read(obj);
-        if (!(lastData->flags & QmlPropertyCache::Data::IsConstant)) {
-            enginePriv->capturedProperties << 
-                QmlEnginePrivate::CapturedProperty(obj, lastData->coreIndex, lastData->notifyIndex);
-        }
 
         if (lastData->flags & QmlPropertyCache::Data::IsQObjectDerived) {
             QObject *rv = *(QObject **)var.constData();
@@ -223,6 +225,7 @@ void QmlObjectScriptClass::setProperty(QObject *obj,
 
     // ### Can well known types be optimized?
     QVariant v = QmlScriptClass::toVariant(engine, value);
+    delete QmlMetaPropertyPrivate::setBinding(obj, *lastData, 0);
     QmlMetaPropertyPrivate::write(obj, *lastData, v, enginePriv->currentExpression->context());
 }
 

@@ -146,7 +146,7 @@ QScriptValue QmlContextScriptClass::property(Object *object, const Identifier &n
             rv =  ep->objectClass->newQObject(cp->idValues[lastPropertyIndex].data());
         } else {
             QVariant value = cp->propertyValues.at(lastPropertyIndex);
-            return ep->scriptValueFromVariant(value);
+            rv = ep->scriptValueFromVariant(value);
         }
 
         ep->capturedProperties << 
