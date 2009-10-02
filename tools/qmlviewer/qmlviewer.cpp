@@ -586,7 +586,7 @@ void QmlViewer::reload()
 
 void QmlViewer::open()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open QML file"), "", tr("QML Files (*.qml)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open QML file"), currentFileName, tr("QML Files (*.qml)"));
     if (!fileName.isEmpty()) {
         openQml(fileName);
         QTimer::singleShot(0, this, SLOT(reload()));
@@ -649,6 +649,7 @@ void QmlViewer::openQml(const QString& fileName)
     qWarning() << "Wall startup time:" << t.elapsed();
 
     if (!skin) {
+        canvas->updateGeometry();
         canvas->resize(canvas->sizeHint());
         resize(sizeHint());
     } else {

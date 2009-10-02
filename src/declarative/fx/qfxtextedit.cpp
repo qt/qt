@@ -767,7 +767,7 @@ bool QFxTextEdit::event(QEvent *event)
     Q_D(QFxTextEdit);
     if (event->type() == QEvent::ShortcutOverride) {
         d->control->processEvent(event, QPointF(0, 0));
-        return true;
+        return event->isAccepted();
     }
     return QFxPaintedItem::event(event);
 }

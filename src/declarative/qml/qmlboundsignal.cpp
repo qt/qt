@@ -243,6 +243,9 @@ void QmlBoundSignalParameters::clearValues()
 
 int QmlBoundSignalParameters::metaCall(QMetaObject::Call c, int id, void **a)
 {
+    if (!values)
+        return -1;
+
     if (c == QMetaObject::ReadProperty && id >= 1) {
         QmlMetaType::copy(types[id - 1], a[0], values[id]);
         return -1;

@@ -12,7 +12,7 @@ Rectangle {
 
         Rectangle {
             id: Container
-            width: 316; height: 50; z: 2
+            width: 316; height: 50
             border.color: Palette.dark; color: Palette.base
 
             Text {
@@ -104,7 +104,6 @@ Rectangle {
                 CalcButton { operation: "M+" }
                 CalcButton { operation: "+/-" }
             }
-
         }
     }
 

@@ -13,8 +13,8 @@ Rectangle {
             width: 180; height: 180
             border.left: 30; border.top: 30
             border.right: 30; border.bottom: 30
-            horizontalTileMode: "Stretch"
-            verticalTileMode: "Stretch"
+            horizontalTileMode: BorderImage.Stretch
+            verticalTileMode: BorderImage.Stretch
             source: "colors.png"
         }
 
@@ -22,8 +22,8 @@ Rectangle {
             width: 180; height: 180
             border.left: 30; border.top: 30
             border.right: 30; border.bottom: 30
-            horizontalTileMode: "Round"
-            verticalTileMode: "Round"
+            horizontalTileMode: BorderImage.Round
+            verticalTileMode: BorderImage.Round
             source: "colors.png"
         }
 //! [0]
