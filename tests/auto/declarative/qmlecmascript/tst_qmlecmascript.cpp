@@ -44,6 +44,7 @@ private slots:
     void objectPropertiesTriggerReeval();
     void deferredProperties();
     void extensionObjects();
+    void attachedProperties();
     void enums();
     void valueTypeFunctions();
     void constantsOverrideBindings();
@@ -377,6 +378,19 @@ void tst_qmlecmascript::extensionObjects()
     object->setProperty("baseExtendedProperty", QVariant(92));
     QCOMPARE(object->coreProperty(), 11);
     QCOMPARE(object->baseProperty(), 92);
+}
+
+void tst_qmlecmascript::attachedProperties()
+{
+    QmlComponent component(&engine, TEST_FILE("attachedProperty.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("a").toInt(), 19);
+    QCOMPARE(object->property("b").toInt(), 19);
+    QCOMPARE(object->property("c").toInt(), 19);
+    QCOMPARE(object->property("d").toInt(), 19);
+
+    // ### Need to test attached property assignment
 }
 
 void tst_qmlecmascript::enums()
