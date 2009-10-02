@@ -1018,10 +1018,12 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool c
         if(selectForExec) {
             qWarning("nativeSelect (checkRead %d, checkWrite %d, ret %d, errno %d): Unexpected expectfds ready in fd %d",
                     checkRead, checkWrite, ret, errno, socketDescriptor);
-            if (checkRead)
-                FD_SET(socketDescriptor, &fdread);
-            if (checkWrite)
+            if (checkWrite){
+                FD_CLR(socketDescriptor, &fdread);
                 FD_SET(socketDescriptor, &fdwrite);
+            } else if (checkRead)
+                FD_SET(socketDescriptor, &fdread);
+
 
             if ((ret == -1) && ( errno == ECONNREFUSED || errno == EPIPE ))
                 ret = 1;
