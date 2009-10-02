@@ -2,9 +2,12 @@
 #define HAPPYBIRTHDAY_H
 
 #include <QmlPropertyValueSource>
+#include <qml.h>
+
+#include <QStringList>
 
 // ![0]
-class HappyBirthday : public QmlPropertyValueSource
+class HappyBirthday : public QObject, public QmlPropertyValueSource
 {
 Q_OBJECT
 // ![0]

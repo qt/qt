@@ -2,8 +2,12 @@
 #define HAPPYBIRTHDAY_H
 
 #include <QmlPropertyValueSource>
+#include <QmlMetaProperty>
+#include <qml.h>
 
-class HappyBirthday : public QmlPropertyValueSource
+#include <QStringList>
+
+class HappyBirthday : public QObject, public QmlPropertyValueSource
 {
 Q_OBJECT
 Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
