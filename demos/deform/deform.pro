@@ -19,6 +19,6 @@ sources.path = $$[QT_INSTALL_DEMOS]/deform
 INSTALLS += target sources
 
 symbian {
-    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     TARGET.UID3 = 0xA000A63D
+    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
 }
