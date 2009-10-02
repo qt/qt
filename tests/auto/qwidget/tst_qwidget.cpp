@@ -8892,6 +8892,8 @@ void tst_QWidget::syntheticEnterLeave()
         int numLeaveEvents;
     };
 
+    QCursor::setPos(QPoint(0,0));
+
     MyWidget window;
     window.setWindowFlags(Qt::WindowStaysOnTopHint);
     window.resize(200, 200);
@@ -9008,6 +9010,8 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
          void reset() { numEnterEvents = numMouseMoveEvents = 0; }
          int numEnterEvents, numMouseMoveEvents;
      };
+
+    QCursor::setPos(QPoint(0,0));
 
      SELParent parent;
      parent.resize(200, 200);
