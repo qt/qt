@@ -74,6 +74,7 @@ class Q_GUI_EXPORT QAbstractItemView : public QAbstractScrollArea
     Q_PROPERTY(bool dragEnabled READ dragEnabled WRITE setDragEnabled)
     Q_PROPERTY(bool dragDropOverwriteMode READ dragDropOverwriteMode WRITE setDragDropOverwriteMode)
     Q_PROPERTY(DragDropMode dragDropMode READ dragDropMode WRITE setDragDropMode)
+    Q_PROPERTY(Qt::DropAction defaultDropAction READ defaultDropAction WRITE setDefaultDropAction)
 #endif
     Q_PROPERTY(bool alternatingRowColors READ alternatingRowColors WRITE setAlternatingRowColors)
     Q_PROPERTY(SelectionMode selectionMode READ selectionMode WRITE setSelectionMode)
@@ -181,7 +182,11 @@ public:
 
     void setDragDropMode(DragDropMode behavior);
     DragDropMode dragDropMode() const;
+
+    void setDefaultDropAction(Qt::DropAction dropAction);
+    Qt::DropAction defaultDropAction() const;
 #endif
+
     void setAlternatingRowColors(bool enable);
     bool alternatingRowColors() const;
 

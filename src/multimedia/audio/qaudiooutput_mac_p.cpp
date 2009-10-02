@@ -551,6 +551,9 @@ qint64 QAudioOutputPrivate::totalTime() const
 
 qint64 QAudioOutputPrivate::clock() const
 {
+    if (stateCode == QAudio::StopState)
+        return 0;
+
     return (AudioGetCurrentHostTime() - startTime) / (clockFrequency / 1000);
 }
 

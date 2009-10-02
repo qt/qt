@@ -49,12 +49,14 @@
 #include <QAbstractTextDocumentLayout>
 #include <QBitmap>
 #include <QCursor>
+#include <QLabel>
 #include <QDial>
 #include <QGraphicsItem>
 #include <QGraphicsScene>
 #include <QGraphicsSceneEvent>
 #include <QGraphicsView>
 #include <QGraphicsWidget>
+#include <QGraphicsProxyWidget>
 #include <QPainter>
 #include <QScrollBar>
 #include <QVBoxLayout>
@@ -330,6 +332,7 @@ private slots:
     void itemClipsChildrenToShape();
     void itemClipsChildrenToShape2();
     void itemClipsChildrenToShape3();
+    void itemClipsChildrenToShape4();
     void itemClipsTextChildToShape();
     void itemClippingDiscovery();
     void ancestorFlags();
@@ -5170,6 +5173,44 @@ void tst_QGraphicsItem::itemClipsChildrenToShape3()
     QCOMPARE(scene.itemAt(175,175), (QGraphicsItem *)0);
 }
 
+class MyProxyWidget : public QGraphicsProxyWidget
+{
+public:
+    MyProxyWidget(QGraphicsItem *parent) : QGraphicsProxyWidget(parent)
+    {
+        painted = false;
+    }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    {
+        QGraphicsProxyWidget::paint(painter, option, widget);
+        painted = true;
+    }
+    bool painted;
+};
+
+void tst_QGraphicsItem::itemClipsChildrenToShape4()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+
+    QGraphicsWidget * outerWidget = new QGraphicsWidget();
+    outerWidget->setFlag(QGraphicsItem::ItemClipsChildrenToShape, true);
+    MyProxyWidget * innerWidget = new MyProxyWidget(outerWidget);
+    QLabel * label = new QLabel();
+    label->setText("Welcome back my friends to the show that never ends...");
+    innerWidget->setWidget(label);
+    view.resize(300, 300);
+    scene.addItem(outerWidget);
+    outerWidget->resize( 200, 100 );
+    scene.addEllipse( 100, 100, 100, 50 );   // <-- this is important to trigger the right codepath*
+    //now the label is shown
+    outerWidget->setFlag(QGraphicsItem::ItemClipsChildrenToShape, false );
+    QApplication::setActiveWindow(&view);
+    view.show();
+    QTRY_COMPARE(QApplication::activeWindow(), (QWidget *)&view);
+    QTRY_COMPARE(innerWidget->painted, true);
+}
 
 void tst_QGraphicsItem::itemClipsTextChildToShape()
 {
@@ -6306,6 +6347,7 @@ void tst_QGraphicsItem::itemStacksBehindParent()
     QGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
+    QTRY_VERIFY(!paintedItems.isEmpty());
     QTest::qWait(100);
     paintedItems.clear();
     view.viewport()->update();
@@ -6315,7 +6357,7 @@ void tst_QGraphicsItem::itemStacksBehindParent()
                                            << grandChild121 << child12 << parent1
                                            << grandChild211 << child21
                                            << grandChild221 << child22 << parent2));
-    QCOMPARE(paintedItems, QList<QGraphicsItem *>()
+    QTRY_COMPARE(paintedItems, QList<QGraphicsItem *>()
              << parent2 << child22 << grandChild221
              << child21 << grandChild211
              << parent1 << child12 << grandChild121

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,27 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <asm/hwcap.h>
 
-#include "window.h"
-#include <QApplication>
-
-int main(int argc, char **argv)
+int main (int argc, char **argv)
 {
-    Q_INIT_RESOURCE(context2d);
-
-    bool smallScreen = false;
-    for (int i = 0; i < argc; i++)
-        if (QString(argv[i]) == "-small-screen")
-            smallScreen = true;
-
-    QApplication app(argc, argv);
-    Window win;
-
-    if (!smallScreen) {
-        win.show();
-    } else {
-        win.showFullScreen();
-    }
-
-    return app.exec();
+    return 0;
 }

@@ -117,7 +117,7 @@ public:
     virtual void _q_columnsInserted(const QModelIndex &parent, int start, int end);
     virtual void _q_modelDestroyed();
     virtual void _q_layoutChanged();
-    
+
     void fetchMore();
 
     bool shouldEdit(QAbstractItemView::EditTrigger trigger, const QModelIndex &index) const;
@@ -315,7 +315,7 @@ public:
         }
         return ref;
     }
-    
+
     /**
      * return true if the index is registered as a QPersistentModelIndex
      */
@@ -356,8 +356,8 @@ public:
     Qt::KeyboardModifiers pressedModifiers;
     QPoint pressedPosition;
     bool pressedAlreadySelected;
-    
-    //forces the next mouseMoveEvent to send the viewportEntered signal 
+
+    //forces the next mouseMoveEvent to send the viewportEntered signal
     //if the mouse is over the viewport and not over an item
     bool viewportEnteredNeeded;
 
@@ -377,6 +377,7 @@ public:
     QAbstractItemView::DragDropMode dragDropMode;
     bool overwrite;
     QAbstractItemView::DropIndicatorPosition dropIndicatorPosition;
+    Qt::DropAction defaultDropAction;
 #endif
 
 #ifdef QT_SOFTKEYS_ENABLED

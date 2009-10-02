@@ -120,7 +120,7 @@
 <context>
     <name>QHelpEngineCore</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpenginecore.cpp" line="+516"/>
+        <location filename="../tools/assistant/lib/qhelpenginecore.cpp" line="+524"/>
         <source>The specified namespace does not exist!</source>
         <translation>Der angegebene Namensraum existiert nicht.</translation>
     </message>
@@ -128,7 +128,7 @@
 <context>
     <name>QHelpEngineCorePrivate</name>
     <message>
-        <location line="-394"/>
+        <location line="-402"/>
         <source>Cannot open documentation file %1: %2!</source>
         <translation>Die Dokumentationsdatei %1 kann nicht geöffnet werden: %2.</translation>
     </message>

@@ -465,12 +465,12 @@
     <message>
         <location line="-372"/>
         <location line="+215"/>
-        <location line="+502"/>
+        <location line="+512"/>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
     </message>
     <message>
-        <location line="-534"/>
+        <location line="-544"/>
         <location line="+5"/>
         <source>Unfiltered</source>
         <translation>Ohne Filter</translation>
@@ -616,7 +616,7 @@
         <translation>Über ...</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+16"/>
         <source>Navigation Toolbar</source>
         <translation>Navigationsleiste</translation>
     </message>
@@ -651,7 +651,7 @@
         <translation>Der zugehörige Inhaltseintrag konnte nicht gefunden werden.</translation>
     </message>
     <message>
-        <location line="+74"/>
+        <location line="+71"/>
         <source>About %1</source>
         <translation>Über %1</translation>
     </message>
@@ -661,12 +661,12 @@
         <translation>Suchindex wird aufgebaut</translation>
     </message>
     <message>
-        <location line="-628"/>
+        <location line="-638"/>
         <source>Looking for Qt Documentation...</source>
         <translation>Suche nach Qt-Dokumentation ...</translation>
     </message>
     <message>
-        <location line="+228"/>
+        <location line="+241"/>
         <source>&amp;Window</source>
         <translation>&amp;Fenster</translation>
     </message>
@@ -686,7 +686,7 @@
         <translation>Zoom</translation>
     </message>
     <message>
-        <location line="-146"/>
+        <location line="-159"/>
         <source>&amp;File</source>
         <translation>&amp;Datei</translation>
     </message>
@@ -708,7 +708,7 @@
     <message>
         <location line="+2"/>
         <source>ALT+Home</source>
-        <translation type="unfinished"></translation>
+        <translation>ALT+Home</translation>
     </message>
     <message>
         <location line="+29"/>
@@ -1010,7 +1010,7 @@ Grund:
 <context>
     <name>RemoteControl</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/remotecontrol.cpp" line="+157"/>
+        <location filename="../tools/assistant/tools/assistant/remotecontrol.cpp" line="+163"/>
         <source>Debugging Remote Control</source>
         <translation>Debugging Remote Control</translation>
     </message>
