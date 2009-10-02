@@ -51,6 +51,30 @@
 
 QT_BEGIN_NAMESPACE
 
+QScriptDeclarativeClass::PersistentIdentifier::PersistentIdentifier()
+{
+    new (&d) JSC::Identifier();
+}
+
+QScriptDeclarativeClass::PersistentIdentifier::~PersistentIdentifier()
+{
+    ((JSC::Identifier &)d).JSC::Identifier::~Identifier();
+}
+
+QScriptDeclarativeClass::PersistentIdentifier::PersistentIdentifier(const PersistentIdentifier &other)
+{
+    identifier = other.identifier;
+    new (&d) JSC::Identifier((JSC::Identifier &)(other.d));
+}
+
+QScriptDeclarativeClass::PersistentIdentifier &
+QScriptDeclarativeClass::PersistentIdentifier::operator=(const PersistentIdentifier &other)
+{
+    identifier = other.identifier;
+    ((JSC::Identifier &)d) = (JSC::Identifier &)(other.d);
+    return *this;
+}
+
 class QScriptDeclarativeClassPrivate
 {
 public:
@@ -59,31 +83,6 @@ public:
     QScriptEngine *engine;
     QScriptDeclarativeClass *q_ptr;
 };
-
-void QScriptDeclarativeClass::destroyPersistentIdentifier(void **d)
-{
-    ((JSC::Identifier *)d)->JSC::Identifier::~Identifier();
-}
-
-void QScriptDeclarativeClass::initPersistentIdentifier(void **d, Identifier *i, const QString &str)
-{
-    QScriptEnginePrivate *p = 
-        static_cast<QScriptEnginePrivate *>(QObjectPrivate::get(d_ptr->engine)); 
-    JSC::ExecState* exec = p->currentFrame;
-
-    new (d) JSC::Identifier(exec, (UChar *)str.constData(), str.size());
-    *i = (Identifier)((JSC::Identifier *)d)->ustring().rep();
-}
-
-void QScriptDeclarativeClass::initPersistentIdentifier(void **d, Identifier *i, const Identifier &id)
-{
-    QScriptEnginePrivate *p = 
-        static_cast<QScriptEnginePrivate *>(QObjectPrivate::get(d_ptr->engine)); 
-    JSC::ExecState* exec = p->currentFrame;
-
-    new (d) JSC::Identifier(exec, (JSC::UString::Rep *)id);
-    *i = id;
-}
 
 QScriptDeclarativeClass::QScriptDeclarativeClass(QScriptEngine *engine)
 : d_ptr(new QScriptDeclarativeClassPrivate)
@@ -132,6 +131,51 @@ QScriptDeclarativeClass::Object QScriptDeclarativeClass::object(const QScriptVal
     return static_cast<QScript::DeclarativeObjectDelegate*>(delegate)->object();
 }
 
+QScriptValue QScriptDeclarativeClass::function(const QScriptValue &v, const Identifier &name)
+{
+    QScriptValuePrivate *d = QScriptValuePrivate::get(v);
+
+    if (!d->isObject())
+        return QScriptValue();
+
+    JSC::ExecState *exec = d->engine->currentFrame;
+    JSC::JSObject *object = d->jscValue.getObject();
+    JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
+    JSC::JSValue result;
+
+    JSC::Identifier id(exec, (JSC::UString::Rep *)name);
+
+    if (const_cast<JSC::JSObject*>(object)->getOwnPropertySlot(exec, id, slot)) {
+        result = slot.getValue(exec, id);
+        if (QScript::isFunction(result))
+            return d->engine->scriptValueFromJSCValue(result);
+    }
+
+    return QScriptValue();
+}
+
+QScriptValue QScriptDeclarativeClass::property(const QScriptValue &v, const Identifier &name)
+{
+    QScriptValuePrivate *d = QScriptValuePrivate::get(v);
+
+    if (!d->isObject())
+        return QScriptValue();
+
+    JSC::ExecState *exec = d->engine->currentFrame;
+    JSC::JSObject *object = d->jscValue.getObject();
+    JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
+    JSC::JSValue result;
+
+    JSC::Identifier id(exec, (JSC::UString::Rep *)name);
+
+    if (const_cast<JSC::JSObject*>(object)->getOwnPropertySlot(exec, id, slot)) {
+        result = slot.getValue(exec, id);
+        return d->engine->scriptValueFromJSCValue(result);
+    }
+
+    return QScriptValue();
+}
+
 QScriptDeclarativeClass::~QScriptDeclarativeClass()
 {
 }
@@ -141,34 +185,31 @@ QScriptEngine *QScriptDeclarativeClass::engine() const
     return d_ptr->engine;
 }
 
-/*
-QScriptDeclarativeClass::PersistentIdentifier *
+QScriptDeclarativeClass::PersistentIdentifier 
 QScriptDeclarativeClass::createPersistentIdentifier(const QString &str)
 {
     QScriptEnginePrivate *p = 
         static_cast<QScriptEnginePrivate *>(QObjectPrivate::get(d_ptr->engine)); 
     JSC::ExecState* exec = p->currentFrame;
 
-    PersistentIdentifierPrivate *rv = new PersistentIdentifierPrivate;
-    rv->identifierValue = JSC::Identifier(exec, (UChar *)str.constData(), str.size());
-    rv->identifier = (void *)rv->identifierValue.ustring().rep();
+    PersistentIdentifier rv(true);
+    new (&rv.d) JSC::Identifier(exec, (UChar *)str.constData(), str.size());
+    rv.identifier = (void *)((JSC::Identifier &)rv.d).ustring().rep();
     return rv;
 }
 
-QScriptDeclarativeClass::PersistentIdentifier *
+QScriptDeclarativeClass::PersistentIdentifier 
 QScriptDeclarativeClass::createPersistentIdentifier(const Identifier &id)
 {
     QScriptEnginePrivate *p = 
         static_cast<QScriptEnginePrivate *>(QObjectPrivate::get(d_ptr->engine)); 
     JSC::ExecState* exec = p->currentFrame;
 
-    PersistentIdentifierPrivate *rv = new PersistentIdentifierPrivate;
-    rv->identifierValue = JSC::Identifier(exec, (JSC::UString::Rep *)id);
-    rv->identifier = (void *)rv->identifierValue.ustring().rep();
+    PersistentIdentifier rv(true);
+    new (&rv.d) JSC::Identifier(exec, (JSC::UString::Rep *)id);
+    rv.identifier = (void *)((JSC::Identifier &)rv.d).ustring().rep();
     return rv;
 }
-*/
-
 
 QString QScriptDeclarativeClass::toString(const Identifier &identifier)
 {

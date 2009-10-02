@@ -71,15 +71,22 @@ public:
     static QScriptDeclarativeClass *scriptClass(const QScriptValue &);
     static Object object(const QScriptValue &);
 
-    template<class T>
-    class PersistentIdentifier : public T {
+    static QScriptValue function(const QScriptValue &, const Identifier &);
+    static QScriptValue property(const QScriptValue &, const Identifier &);
+
+    class Q_SCRIPT_EXPORT PersistentIdentifier 
+    {
     public:
         Identifier identifier;
 
-        ~PersistentIdentifier() { QScriptDeclarativeClass::destroyPersistentIdentifier(&d); }
+        PersistentIdentifier();
+        ~PersistentIdentifier();
+        PersistentIdentifier(const PersistentIdentifier &other);
+        PersistentIdentifier &operator=(const PersistentIdentifier &other);
+
     private:
         friend class QScriptDeclarativeClass;
-        PersistentIdentifier() : identifier(0), d(0) {}
+        PersistentIdentifier(bool) : identifier(0), d(0) {}
         void *d;
     };
 
@@ -88,18 +95,8 @@ public:
 
     QScriptEngine *engine() const;
 
-    template<class T>
-    PersistentIdentifier<T> *createPersistentIdentifier(const QString &str) {
-        PersistentIdentifier<T> *rv = new PersistentIdentifier<T>;
-        initPersistentIdentifier(&rv->d, &rv->identifier, str);
-        return rv;
-    }
-    template<class T>
-    PersistentIdentifier<T> *createPersistentIdentifier(const Identifier &id) {
-        PersistentIdentifier<T> *rv = new PersistentIdentifier<T>;
-        initPersistentIdentifier(&rv->d, &rv->identifier, id);
-        return rv;
-    }
+    PersistentIdentifier createPersistentIdentifier(const QString &);
+    PersistentIdentifier createPersistentIdentifier(const Identifier &);
 
     QString toString(const Identifier &);
 
@@ -115,10 +112,6 @@ public:
     virtual QObject *toQObject(const Object &, bool *ok = 0);
     virtual QVariant toVariant(const Object &, bool *ok = 0);
     virtual void destroyed(const Object &);
-
-    static void destroyPersistentIdentifier(void **);
-    void initPersistentIdentifier(void **, Identifier *, const QString &);
-    void initPersistentIdentifier(void **, Identifier *, const Identifier &);
 
 protected:
     QScopedPointer<QScriptDeclarativeClassPrivate> d_ptr;
