@@ -3201,9 +3201,17 @@ void tst_QTableView::mouseWheel_data()
     QTest::newRow("scroll down per item")
             << int(QAbstractItemView::ScrollPerItem) << -120
             << 10 + qApp->wheelScrollLines() << 10 + qApp->wheelScrollLines();
+#ifdef Q_WS_MAC
+    // On Mac, we always scroll one pixel per 120 delta (rather than multiplying with
+    // singleStep) since wheel events are accelerated by the OS.
+    QTest::newRow("scroll down per pixel")
+            << int(QAbstractItemView::ScrollPerPixel) << -120
+            << 10 + qApp->wheelScrollLines() << 10 + qApp->wheelScrollLines();
+#else
     QTest::newRow("scroll down per pixel")
             << int(QAbstractItemView::ScrollPerPixel) << -120
             << 10 + qApp->wheelScrollLines() * 89 << 10 + qApp->wheelScrollLines() * 28;
+#endif
 }
 
 void tst_QTableView::mouseWheel()
@@ -3230,7 +3238,6 @@ void tst_QTableView::mouseWheel()
     view.horizontalScrollBar()->setValue(10);
     view.verticalScrollBar()->setValue(10);
 
-    qDebug() << "delta" << delta << view.viewport()->geometry();
     QPoint pos = view.viewport()->geometry().center();
     QWheelEvent verticalEvent(pos, delta, 0, 0, Qt::Vertical);
     QWheelEvent horizontalEvent(pos, delta, 0, 0, Qt::Horizontal);

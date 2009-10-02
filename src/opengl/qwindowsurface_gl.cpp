@@ -306,8 +306,13 @@ QGLWindowSurface::QGLWindowSurface(QWidget *window)
     d_ptr->pb = 0;
     d_ptr->fbo = 0;
     d_ptr->ctx = 0;
+#if defined (QT_OPENGL_ES_2)
+    d_ptr->tried_fbo = true;
+    d_ptr->tried_pb = true;
+#else
     d_ptr->tried_fbo = false;
     d_ptr->tried_pb = false;
+#endif
     d_ptr->destructive_swap_buffers = qgetenv("QT_GL_SWAPBUFFER_PRESERVE").isNull();
     d_ptr->glDevice.d = d_ptr;
     d_ptr->q_ptr = this;
@@ -438,6 +443,7 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
     QRect rect = br.translated(-offset - wOffset);
 
     const GLenum target = GL_TEXTURE_2D;
+    Q_UNUSED(target);
 
     if (context()) {
         context()->makeCurrent();

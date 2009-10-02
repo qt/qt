@@ -63,7 +63,7 @@
 
 QT_BEGIN_NAMESPACE
 
-struct QImageData {        // internal image data
+struct Q_GUI_EXPORT QImageData {        // internal image data
     QImageData();
     ~QImageData();
     static QImageData *create(const QSize &size, QImage::Format format, int numColors = 0);
