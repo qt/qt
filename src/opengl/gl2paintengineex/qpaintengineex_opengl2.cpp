@@ -762,6 +762,8 @@ void QGL2PaintEngineEx::beginNativePainting()
     d->dirtyStencilRegion = QRect(0, 0, d->width, d->height);
     d->resetGLState();
 
+    d->shaderManager->setDirty();
+
     d->needsSync = true;
 }
 
