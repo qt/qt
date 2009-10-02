@@ -16,7 +16,7 @@ RESOURCES += mediaplayer.qrc
 SOURCES += main.cpp mediaplayer.cpp
 HEADERS += mediaplayer.h
 
-target.path = $$[QT_INSTALL_DEMOS]/mediaplayer
+target.path = $$[QT_INSTALL_DEMOS]/qmediaplayer
 sources.files = $$SOURCES $$HEADERS $$FORMS $$RESOURCES *.pro *.html *.doc images
 sources.path = $$[QT_INSTALL_DEMOS]/mediaplayer
 INSTALLS += target sources
@@ -28,4 +28,8 @@ DEPLOYMENT_PLUGIN += phonon_ds9 phonon_waveout
 symbian {
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     TARGET.UID3 = 0xA000C613
+
+     addFiles.sources = ../../tests/auto/mediaobject/media/sax.mp3
+     addFiles.path = /data/qt/qmediaplayer
+     DEPLOYMENT += addFiles
 }
