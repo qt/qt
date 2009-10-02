@@ -66,8 +66,24 @@ Rectangle {
     }
 
 
+    Image {
+        source: "pic.jpg"
+
+        x: 400
+        y: 300
+        effect: Bloom {
+            blurRadius: 3
+            brightness: 128
+            strength: NumberAnimation { id: BLS; from: 0; to: 1; duration: 200; repeat: true; }
+        }
+
+        MouseRegion { anchors.fill: parent; onClicked: BLS.running = !BLS.running }
+
+        Text { color: "white"; text: "Bloom" }
+    }
+
     Text {
-        x: 400; y: 300
+        x: 100; y: 250
         text: "Clicking Blur, Pixelize or DropShadow will \ntoggle animation."
         color: "black"
     }
