@@ -150,6 +150,7 @@ int QmlCompiledData::indexForLocation(const QmlParser::LocationSpan &l)
 }
 
 QmlCompiledData::QmlCompiledData()
+: importCache(0)
 {
 }
 
@@ -162,6 +163,9 @@ QmlCompiledData::~QmlCompiledData()
 
     for (int ii = 0; ii < propertyCaches.count(); ++ii) 
         propertyCaches.at(ii)->release();
+
+    if (importCache)
+        importCache->release();
 
     qDeleteAll(programs);
 }

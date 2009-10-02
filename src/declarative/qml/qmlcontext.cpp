@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
 
 QmlContextPrivate::QmlContextPrivate()
 : parent(0), engine(0), isInternal(false), propertyNames(0), notifyIndex(-1), 
-  highPriorityCount(0), expressions(0), idValues(0), idValueCount(0)
+  highPriorityCount(0), imports(0), expressions(0), idValues(0), idValueCount(0)
 {
 }
 
@@ -307,6 +307,9 @@ QmlContext::~QmlContext()
 
     if (d->propertyNames)
         d->propertyNames->release();
+
+    if (d->imports)
+        d->imports->release();
 }
 
 void QmlContextPrivate::invalidateEngines()

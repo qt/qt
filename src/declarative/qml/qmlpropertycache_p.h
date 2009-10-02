@@ -113,11 +113,13 @@ public:
     Data *property(int) const;
 
 private:
-    struct RData : public Data, public QmlRefCount {};
+    struct RData : public Data, public QmlRefCount { 
+        QScriptDeclarativeClass::PersistentIdentifier identifier;
+    };
 
-    typedef QVector<QScriptDeclarativeClass::PersistentIdentifier<RData> *> IndexCache;
-    typedef QHash<QString, QScriptDeclarativeClass::PersistentIdentifier<RData> *> StringCache;
-    typedef QHash<QScriptDeclarativeClass::Identifier, QScriptDeclarativeClass::PersistentIdentifier<RData> *> IdentifierCache;
+    typedef QVector<RData *> IndexCache;
+    typedef QHash<QString, RData *> StringCache;
+    typedef QHash<QScriptDeclarativeClass::Identifier, RData *> IdentifierCache;
 
     IndexCache indexCache;
     StringCache stringCache;

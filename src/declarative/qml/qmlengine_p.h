@@ -75,6 +75,7 @@
 #include <private/qmlpropertycache_p.h>
 #include <private/qmlobjectscriptclass_p.h>
 #include <private/qmlcontextscriptclass_p.h>
+#include <private/qmlvaluetypescriptclass_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -92,6 +93,8 @@ class QNetworkReply;
 class QNetworkAccessManager;
 class QmlAbstractBinding;
 class QScriptDeclarativeClass;
+class QmlTypeNameScriptClass;
+class QmlTypeNameCache;
 
 class QmlEnginePrivate : public QObjectPrivate
 {
@@ -101,13 +104,6 @@ public:
     ~QmlEnginePrivate();
 
     void init();
-
-    QScriptClass::QueryFlags queryObject(const QString &name, uint *id, 
-                                         QObject *);
-    QScriptValue propertyObject(const QString &propName, QObject *, 
-                                uint id = 0);
-    void setPropertyObject(const QScriptValue &, uint id);
-
 
     struct CapturedProperty {
         CapturedProperty(QObject *o, int c, int n)
@@ -128,25 +124,6 @@ public:
 #endif
 
     struct ImportedNamespace;
-    struct ResolveData {
-        ResolveData() : safetyCheckId(0) {}
-        int safetyCheckId;
-
-        void clear() { 
-            object = 0; context = 0; 
-            type = 0; ns = 0;
-            contextIndex = -1; isFunction = false;
-        }
-        QObject *object;
-        QmlContext *context;
-
-        QmlType *type;
-        QmlEnginePrivate::ImportedNamespace *ns;
-
-        int contextIndex;
-        bool isFunction;
-        QmlMetaProperty property;
-    } resolveData;
     QmlContextScriptClass *contextClass;
     QmlObjectScriptClass *objectClass;
     QmlValueTypeScriptClass *valueTypeClass;
@@ -211,9 +188,6 @@ public:
     }
 
     QmlValueTypeFactory valueTypes;
-    // ### Fixme
-    typedef QHash<QPair<const QMetaObject *, QString>, bool> FunctionCache;
-    FunctionCache functionCache;
 
     QHash<const QMetaObject *, QmlPropertyCache *> propertyCache;
     QmlPropertyCache *cache(QObject *obj) { 
@@ -228,6 +202,7 @@ public:
         return rv;
     }
 
+    // ### This whole class is embarrassing
     struct Imports {
         Imports();
         ~Imports();
@@ -236,6 +211,8 @@ public:
 
         void setBaseUrl(const QUrl& url);
         QUrl baseUrl() const;
+
+        QmlTypeNameCache *cache(QmlEngine *) const;
 
     private:
         friend class QmlEnginePrivate;
@@ -260,6 +237,9 @@ public:
     const QMetaObject *metaObjectForType(int) const;
     QHash<int, int> m_qmlLists;
     QHash<int, QmlCompiledData *> m_compositeTypes;
+
+    QScriptValue scriptValueFromVariant(const QVariant &);
+    QVariant scriptValueToVariant(const QScriptValue &);
 
     static QScriptValue qmlScriptObject(QObject*, QmlEngine*);
     static QScriptValue createComponent(QScriptContext*, QScriptEngine*);
@@ -290,43 +270,6 @@ public:
     static QVariant toVariant(QmlEngine *, const QScriptValue &);
 protected:
     QmlEngine *engine;
-};
-
-class QmlTypeNameScriptClass : public QmlScriptClass
-{
-public:
-    QmlTypeNameScriptClass(QmlEngine *);
-    ~QmlTypeNameScriptClass();
-
-    virtual QueryFlags queryProperty(const QScriptValue &object,
-                                     const QScriptString &name,
-                                     QueryFlags flags, uint *id);
-    virtual QScriptValue property(const QScriptValue &object,
-                                  const QScriptString &name, 
-                                  uint id);
-
-private:
-    QObject *object;
-    QmlType *type;
-    quint32 enumValue;
-};
-
-class QmlValueTypeScriptClass : public QmlScriptClass
-{
-public:
-    QmlValueTypeScriptClass(QmlEngine *);
-    ~QmlValueTypeScriptClass();
-
-    virtual QueryFlags queryProperty(const QScriptValue &object,
-                                     const QScriptString &name,
-                                     QueryFlags flags, uint *id);
-    virtual QScriptValue property(const QScriptValue &object,
-                                  const QScriptString &name, 
-                                  uint id);
-    virtual void setProperty(QScriptValue &object,
-                             const QScriptString &name,
-                             uint id,
-                             const QScriptValue &value);
 };
 
 QT_END_NAMESPACE

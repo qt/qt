@@ -39,68 +39,51 @@
 **
 ****************************************************************************/
 
-#include "qmlintegercache_p.h"
-#include <private/qmlengine_p.h>
-#include <QtDeclarative/qmlmetatype.h>
+#ifndef QMLVALUETYPESCRIPTCLASS_P_H
+#define QMLVALUETYPESCRIPTCLASS_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+#include <QtScript/qscriptclass.h>
+#include <private/qscriptdeclarativeclass_p.h>
 
 QT_BEGIN_NAMESPACE
 
-QmlIntegerCache::QmlIntegerCache(QmlEngine *e)
-: engine(e)
+class QmlEngine;
+class QmlValueType;
+class QmlValueTypeScriptClass : public QScriptClass
 {
-}
+public:
+    QmlValueTypeScriptClass(QmlEngine *);
+    ~QmlValueTypeScriptClass();
 
-QmlIntegerCache::~QmlIntegerCache()
-{
-    qDeleteAll(stringCache);
-}
+    QScriptValue newObject(QObject *object, int coreIndex, QmlValueType *);
 
-void QmlIntegerCache::add(const QString &id, int value)
-{
-    Q_ASSERT(!stringCache.contains(id));
+    virtual QueryFlags queryProperty(const QScriptValue &object,
+                                     const QScriptString &name,
+                                     QueryFlags flags, uint *id);
+    virtual QScriptValue property(const QScriptValue &object,
+                                  const QScriptString &name, 
+                                  uint id);
+    virtual void setProperty(QScriptValue &object,
+                             const QScriptString &name,
+                             uint id,
+                             const QScriptValue &value);
 
-    QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
-
-    // ### use contextClass
-    Data *d = new Data(enginePriv->objectClass->createPersistentIdentifier(id), value);
-
-    stringCache.insert(id, d);
-    identifierCache.insert(d->identifier, d);
-}
-
-int QmlIntegerCache::value(const QString &id)
-{
-    Data *d = stringCache.value(id);
-    return d?d->value:-1;
-}
-
-QmlIntegerCache *QmlIntegerCache::createForEnums(QmlType *type, QmlEngine *engine)
-{
-    Q_ASSERT(type);
-    Q_ASSERT(engine);
-
-    QmlIntegerCache *cache = new QmlIntegerCache(engine);
-
-    const QMetaObject *mo = type->metaObject();
-
-    for (int ii = mo->enumeratorCount() - 1; ii >= 0; --ii) {
-        QMetaEnum enumerator = mo->enumerator(ii);
-
-        for (int jj = 0; jj < enumerator.keyCount(); ++jj) {
-            QString name = QLatin1String(enumerator.key(jj));
-            int value = enumerator.value(jj);
-
-            if (!name.at(0).isUpper())
-                continue;
-
-            if (cache->stringCache.contains(name))
-                continue;
-
-            cache->add(name, value);
-        }
-    }
-
-    return cache;
-}
+    QVariant toVariant(const QScriptValue &);
+private:
+    QmlEngine *engine;
+};
 
 QT_END_NAMESPACE
+
+#endif // QMLVALUETYPESCRIPTCLASS_P_H
+

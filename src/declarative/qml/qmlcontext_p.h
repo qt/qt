@@ -62,6 +62,7 @@
 #include <private/qguard_p.h>
 #include <private/qmlengine_p.h>
 #include <private/qmlintegercache_p.h>
+#include <private/qmltypenamecache_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -93,8 +94,11 @@ public:
 
     QScriptValueList scopeChain;
 
+    QList<QScriptValue> scripts;
+
     QUrl url;
-    QmlEnginePrivate::Imports imports;
+
+    QmlTypeNameCache *imports;
 
     void init();
 

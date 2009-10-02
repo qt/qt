@@ -39,68 +39,75 @@
 **
 ****************************************************************************/
 
-#include "qmlintegercache_p.h"
+#ifndef QMLTYPENAMECACHE_P_H
+#define QMLTYPENAMECACHE_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <private/qmlrefcount_p.h>
+#include <private/qscriptdeclarativeclass_p.h>
 #include <private/qmlengine_p.h>
-#include <QtDeclarative/qmlmetatype.h>
 
 QT_BEGIN_NAMESPACE
 
-QmlIntegerCache::QmlIntegerCache(QmlEngine *e)
-: engine(e)
+class QmlType;
+class QmlEngine;
+class QmlTypeNameCache : public QmlRefCount
+{
+public:
+    QmlTypeNameCache(QmlEngine *);
+    virtual ~QmlTypeNameCache();
+
+    struct Data {
+        inline Data();
+        inline ~Data();
+        QmlType *type;
+        QmlTypeNameCache *typeNamespace;
+    };
+
+    void add(const QString &, QmlType *);
+    void add(const QString &, QmlTypeNameCache *);
+
+    Data *data(const QString &) const;
+    inline Data *data(const QScriptDeclarativeClass::Identifier &id) const;
+
+private:
+    struct RData : public Data { 
+        QScriptDeclarativeClass::PersistentIdentifier identifier;
+    };
+    typedef QHash<QString, RData *> StringCache;
+    typedef QHash<QScriptDeclarativeClass::Identifier, RData *> IdentifierCache;
+
+    StringCache stringCache;
+    IdentifierCache identifierCache;
+    QmlEngine *engine;
+};
+
+QmlTypeNameCache::Data::Data()
+: type(0), typeNamespace(0)
 {
 }
 
-QmlIntegerCache::~QmlIntegerCache()
+QmlTypeNameCache::Data::~Data()
 {
-    qDeleteAll(stringCache);
+    if (typeNamespace) typeNamespace->release();
 }
 
-void QmlIntegerCache::add(const QString &id, int value)
+QmlTypeNameCache::Data *QmlTypeNameCache::data(const QScriptDeclarativeClass::Identifier &id) const
 {
-    Q_ASSERT(!stringCache.contains(id));
-
-    QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
-
-    // ### use contextClass
-    Data *d = new Data(enginePriv->objectClass->createPersistentIdentifier(id), value);
-
-    stringCache.insert(id, d);
-    identifierCache.insert(d->identifier, d);
-}
-
-int QmlIntegerCache::value(const QString &id)
-{
-    Data *d = stringCache.value(id);
-    return d?d->value:-1;
-}
-
-QmlIntegerCache *QmlIntegerCache::createForEnums(QmlType *type, QmlEngine *engine)
-{
-    Q_ASSERT(type);
-    Q_ASSERT(engine);
-
-    QmlIntegerCache *cache = new QmlIntegerCache(engine);
-
-    const QMetaObject *mo = type->metaObject();
-
-    for (int ii = mo->enumeratorCount() - 1; ii >= 0; --ii) {
-        QMetaEnum enumerator = mo->enumerator(ii);
-
-        for (int jj = 0; jj < enumerator.keyCount(); ++jj) {
-            QString name = QLatin1String(enumerator.key(jj));
-            int value = enumerator.value(jj);
-
-            if (!name.at(0).isUpper())
-                continue;
-
-            if (cache->stringCache.contains(name))
-                continue;
-
-            cache->add(name, value);
-        }
-    }
-
-    return cache;
+    return identifierCache.value(id);
 }
 
 QT_END_NAMESPACE
+
+#endif // QMLTYPENAMECACHE_P_H
+

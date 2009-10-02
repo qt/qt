@@ -64,14 +64,13 @@ QmlObjectScriptClass::QmlObjectScriptClass(QmlEngine *bindEngine)
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(bindEngine);
 
     m_destroy = scriptEngine->newFunction(destroy);
-    m_destroyId = createPersistentIdentifier<Dummy>(QLatin1String("destroy"));
+    m_destroyId = createPersistentIdentifier(QLatin1String("destroy"));
     m_toString = scriptEngine->newFunction(tostring);
-    m_toStringId = createPersistentIdentifier<Dummy>(QLatin1String("toString"));
+    m_toStringId = createPersistentIdentifier(QLatin1String("toString"));
 }
 
 QmlObjectScriptClass::~QmlObjectScriptClass()
 {
-    delete m_destroyId;
 }
 
 QScriptValue QmlObjectScriptClass::newQObject(QObject *object) 
@@ -100,8 +99,8 @@ QmlObjectScriptClass::queryProperty(QObject *obj, const Identifier &name,
     Q_UNUSED(flags);
     lastData = 0;
 
-    if (name == m_destroyId->identifier ||
-        name == m_toStringId->identifier)
+    if (name == m_destroyId.identifier ||
+        name == m_toStringId.identifier)
         return QScriptClass::HandlesReadAccess;
 
     if (!obj)
@@ -140,9 +139,9 @@ QScriptValue QmlObjectScriptClass::property(const Object &object, const Identifi
 
 QScriptValue QmlObjectScriptClass::property(QObject *obj, const Identifier &name)
 {
-    if (name == m_destroyId->identifier)
+    if (name == m_destroyId.identifier)
         return m_destroy;
-    else if (name == m_toStringId->identifier)
+    else if (name == m_toStringId.identifier)
         return m_toString;
 
     Q_ASSERT(lastData);
@@ -156,6 +155,11 @@ QScriptValue QmlObjectScriptClass::property(QObject *obj, const Identifier &name
         QScriptValue sobj = scriptEngine->newQObject(obj);
         return sobj.property(toString(name));
     } else {
+        if (lastData->propType < QVariant::UserType) {
+            QmlValueType *valueType = enginePriv->valueTypes[lastData->propType];
+            if (valueType)
+                return enginePriv->valueTypeClass->newObject(obj, lastData->coreIndex, valueType);
+        }
 
         QVariant var = obj->metaObject()->property(lastData->coreIndex).read(obj);
         if (!(lastData->flags & QmlPropertyCache::Data::IsConstant)) {
@@ -167,7 +171,7 @@ QScriptValue QmlObjectScriptClass::property(QObject *obj, const Identifier &name
             QObject *rv = *(QObject **)var.constData();
             return newQObject(rv);
         } else {
-            return qScriptValueFromValue(scriptEngine, var);
+            return enginePriv->scriptValueFromVariant(var);
         }
 
     }
@@ -250,5 +254,5 @@ QScriptValue QmlObjectScriptClass::destroy(QScriptContext *context, QScriptEngin
     return engine->nullValue();
 }
 
-
 QT_END_NAMESPACE
+

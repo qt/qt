@@ -64,6 +64,7 @@
 #include <private/qbitfield_p.h>
 #include <private/qmlpropertycache_p.h>
 #include <private/qmlintegercache_p.h>
+#include <private/qmltypenamecache_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -81,6 +82,7 @@ public:
     QByteArray name;
     QUrl url;
     QmlEnginePrivate::Imports imports;
+    QmlTypeNameCache *importCache;
 
     struct TypeReference 
     {

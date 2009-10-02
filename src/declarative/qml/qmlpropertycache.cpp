@@ -155,8 +155,8 @@ QmlPropertyCache *QmlPropertyCache::create(QmlEngine *engine, const QMetaObject 
         QMetaProperty p = metaObject->property(ii);
         QString propName = QLatin1String(p.name());
 
-        QScriptDeclarativeClass::PersistentIdentifier<RData> *data = 
-            enginePriv->objectClass->createPersistentIdentifier<RData>(propName);
+        RData *data = new RData;
+        data->identifier = enginePriv->objectClass->createPersistentIdentifier(propName);
 
         data->load(p);
 
@@ -166,7 +166,7 @@ QmlPropertyCache *QmlPropertyCache::create(QmlEngine *engine, const QMetaObject 
             continue;
 
         cache->stringCache.insert(propName, data);
-        cache->identifierCache.insert(data->identifier, data);
+        cache->identifierCache.insert(data->identifier.identifier, data);
         data->addref();
         data->addref();
     }
@@ -183,13 +183,13 @@ QmlPropertyCache *QmlPropertyCache::create(QmlEngine *engine, const QMetaObject 
         if (cache->stringCache.contains(methodName))
             continue;
 
-        QScriptDeclarativeClass::PersistentIdentifier<RData> *data = 
-            enginePriv->objectClass->createPersistentIdentifier<RData>(methodName);
+        RData *data = new RData;
+        data->identifier = enginePriv->objectClass->createPersistentIdentifier(methodName);
 
         data->load(m);
 
         cache->stringCache.insert(methodName, data);
-        cache->identifierCache.insert(data->identifier, data);
+        cache->identifierCache.insert(data->identifier.identifier, data);
         data->addref();
         data->addref();
     }

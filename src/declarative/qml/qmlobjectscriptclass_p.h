@@ -86,13 +86,11 @@ protected:
     virtual void destroyed(const Object &);
 
 private:
-    uint m_id;
     QmlPropertyCache::Data *lastData;
     QmlPropertyCache::Data local;
 
-    struct Dummy {};
-    PersistentIdentifier<Dummy> *m_destroyId;
-    PersistentIdentifier<Dummy> *m_toStringId;
+    PersistentIdentifier m_destroyId;
+    PersistentIdentifier m_toStringId;
     QScriptValue m_destroy;
     QScriptValue m_toString;
 

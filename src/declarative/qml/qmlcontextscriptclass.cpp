@@ -42,6 +42,7 @@
 #include "qmlcontextscriptclass_p.h"
 #include <private/qmlengine_p.h>
 #include <private/qmlcontext_p.h>
+#include <private/qmltypenamescriptclass_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -56,7 +57,7 @@ struct ContextData {
  */
 QmlContextScriptClass::QmlContextScriptClass(QmlEngine *bindEngine)
 : QScriptDeclarativeClass(QmlEnginePrivate::getScriptEngine(bindEngine)), engine(bindEngine),
-  lastPropertyIndex(-1), lastDefaultObject(-1)
+  lastData(0), lastPropertyIndex(-1), lastDefaultObject(-1)
 {
 }
 
@@ -76,21 +77,32 @@ QmlContextScriptClass::queryProperty(const Object &object, const Identifier &nam
                                      QScriptClass::QueryFlags flags)
 {
     Q_UNUSED(flags);
+    
+    lastPropertyIndex = -1;
+    lastDefaultObject = -1;
+    lastData = 0;
+
     QmlContext *bindContext = ((ContextData *)object)->context.data();
     if (!bindContext)
         return 0;
 
     QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
     QmlContextPrivate *cp = QmlContextPrivate::get(bindContext);
-    
-    lastPropertyIndex = -1;
-    lastDefaultObject = -1;
 
     lastPropertyIndex = cp->propertyNames?cp->propertyNames->value(name):-1;
     if (lastPropertyIndex != -1)
         return QScriptClass::HandlesReadAccess;
 
     // ### Check for attached properties
+    if (ep->currentExpression && cp->imports && bindContext == ep->currentExpression->context()) {
+        QmlTypeNameCache::Data *data = cp->imports->data(name);
+
+        if (data)  {
+            lastData = data;
+            return QScriptClass::HandlesReadAccess;
+        }
+    }
+
 #if 0
     QmlType *type = 0; ImportedNamespace *ns = 0;
     if (currentExpression && bindContext == currentExpression->context() && 
@@ -117,6 +129,11 @@ QmlContextScriptClass::queryProperty(const Object &object, const Identifier &nam
         }
     }
 
+    for (int ii = 0; ii < cp->scripts.count(); ++ii) {
+        lastFunction = QScriptDeclarativeClass::function(cp->scripts.at(ii), name);
+        if (lastFunction.isValid())
+            return QScriptClass::HandlesReadAccess;
+    }
     return 0;
 }
 
@@ -145,7 +162,14 @@ QScriptValue QmlContextScriptClass::property(const Object &object, const Identif
     } 
 #endif
 
-    if (lastPropertyIndex != -1) {
+    if (lastData) {
+
+        if (lastData->type)
+            return ep->typeNameClass->newObject(cp->defaultObjects.at(0), lastData->type);
+        else
+            return ep->typeNameClass->newObject(cp->defaultObjects.at(0), lastData->typeNamespace);
+
+    } else if (lastPropertyIndex != -1) {
 
         QScriptValue rv;
         if (lastPropertyIndex < cp->idValueCount) {
@@ -161,14 +185,17 @@ QScriptValue QmlContextScriptClass::property(const Object &object, const Identif
         }
 
         ep->capturedProperties << 
-            QmlEnginePrivate::CapturedProperty(bindContext, -1, 
-                                               lastPropertyIndex + cp->notifyIndex);
+            QmlEnginePrivate::CapturedProperty(bindContext, -1, lastPropertyIndex + cp->notifyIndex);
 
         return rv;
-    } else {
+    } else if(lastDefaultObject != -1) {
 
         // Default object property
         return ep->objectClass->property(cp->defaultObjects.at(lastDefaultObject), name);
+
+    } else {
+
+        return lastFunction;
 
     }
 }

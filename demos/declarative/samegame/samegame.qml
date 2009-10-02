@@ -23,8 +23,8 @@ Rectangle {
             property int score: 0
 
             z: 20; anchors.centerIn: parent
-            width: parent.width - (parent.width % tileSize);
-            height: parent.height - (parent.height % tileSize);
+            width: parent.width - (parent.width % getTileSize());
+            height: parent.height - (parent.height % getTileSize());
 
             MouseRegion {
                 id: gameMR

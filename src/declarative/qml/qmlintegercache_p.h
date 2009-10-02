@@ -74,12 +74,15 @@ public:
 
     static QmlIntegerCache *createForEnums(QmlType *, QmlEngine *);
 private:
-    struct Data {
+    struct Data : public QScriptDeclarativeClass::PersistentIdentifier {
+        Data(const QScriptDeclarativeClass::PersistentIdentifier &i, int v) 
+        : QScriptDeclarativeClass::PersistentIdentifier(i), value(v) {}
+
         int value;
     };
 
-    typedef QHash<QString, QScriptDeclarativeClass::PersistentIdentifier<Data> *> StringCache;
-    typedef QHash<QScriptDeclarativeClass::Identifier, QScriptDeclarativeClass::PersistentIdentifier<Data> *> IdentifierCache;
+    typedef QHash<QString, Data *> StringCache;
+    typedef QHash<QScriptDeclarativeClass::Identifier, Data *> IdentifierCache;
 
     StringCache stringCache;
     IdentifierCache identifierCache;

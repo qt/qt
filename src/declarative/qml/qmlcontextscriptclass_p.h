@@ -55,6 +55,7 @@
 
 #include <QtScript/qscriptclass.h>
 #include <private/qscriptdeclarativeclass_p.h>
+#include <private/qmltypenamecache_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -77,8 +78,10 @@ protected:
 private:
     QmlEngine *engine;
 
+    QmlTypeNameCache::Data *lastData;
     int lastPropertyIndex;
     int lastDefaultObject;
+    QScriptValue lastFunction;
 
     uint m_id;
 };

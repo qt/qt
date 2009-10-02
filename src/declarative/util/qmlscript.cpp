@@ -179,10 +179,14 @@ void QmlScriptPrivate::addScriptToEngine(const QString &script, const QString &s
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
     QScriptContext *scriptContext = scriptEngine->pushContext();
-    for (int i = context->d_func()->scopeChain.size() - 1; i > -1; --i) {
+    for (int i = context->d_func()->scopeChain.size() - 1; i >= 0; --i) {
         scriptContext->pushScope(context->d_func()->scopeChain.at(i));
     }
-    scriptContext->setActivationObject(context->d_func()->scopeChain.at(0));
+
+    QScriptValue scope = scriptEngine->newObject();
+    scriptContext->pushScope(scope);
+
+    scriptContext->setActivationObject(scope);
 
     QScriptValue val = scriptEngine->evaluate(script, source);
     if (scriptEngine->hasUncaughtException()) {
@@ -200,6 +204,8 @@ void QmlScriptPrivate::addScriptToEngine(const QString &script, const QString &s
     }
 
     scriptEngine->popContext();
+
+    context->d_func()->scripts.append(scope);
 }
 
 QT_END_NAMESPACE

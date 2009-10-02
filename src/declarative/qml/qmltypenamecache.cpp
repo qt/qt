@@ -39,68 +39,55 @@
 **
 ****************************************************************************/
 
-#include "qmlintegercache_p.h"
-#include <private/qmlengine_p.h>
-#include <QtDeclarative/qmlmetatype.h>
+#include "qmltypenamecache_p.h"
 
 QT_BEGIN_NAMESPACE
 
-QmlIntegerCache::QmlIntegerCache(QmlEngine *e)
+QmlTypeNameCache::QmlTypeNameCache(QmlEngine *e)
 : engine(e)
 {
 }
 
-QmlIntegerCache::~QmlIntegerCache()
+QmlTypeNameCache::~QmlTypeNameCache()
 {
     qDeleteAll(stringCache);
 }
 
-void QmlIntegerCache::add(const QString &id, int value)
+void QmlTypeNameCache::add(const QString &name, QmlType *type)
 {
-    Q_ASSERT(!stringCache.contains(id));
+    if (stringCache.contains(name))
+        return;
 
-    QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
+    QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
 
-    // ### use contextClass
-    Data *d = new Data(enginePriv->objectClass->createPersistentIdentifier(id), value);
-
-    stringCache.insert(id, d);
-    identifierCache.insert(d->identifier, d);
+    RData *data = new RData;
+    // ### Use typename class
+    data->identifier = ep->objectClass->createPersistentIdentifier(name);
+    data->type = type;
+    stringCache.insert(name, data);
+    identifierCache.insert(data->identifier.identifier, data);
 }
 
-int QmlIntegerCache::value(const QString &id)
+void QmlTypeNameCache::add(const QString &name, QmlTypeNameCache *typeNamespace)
 {
-    Data *d = stringCache.value(id);
-    return d?d->value:-1;
+    if (stringCache.contains(name))
+        return;
+
+    QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
+
+    RData *data = new RData;
+    // ### Use typename class
+    data->identifier = ep->objectClass->createPersistentIdentifier(name);
+    data->typeNamespace = typeNamespace;
+    stringCache.insert(name, data);
+    identifierCache.insert(data->identifier.identifier, data);
+    typeNamespace->addref();
 }
 
-QmlIntegerCache *QmlIntegerCache::createForEnums(QmlType *type, QmlEngine *engine)
+QmlTypeNameCache::Data *QmlTypeNameCache::data(const QString &id) const
 {
-    Q_ASSERT(type);
-    Q_ASSERT(engine);
-
-    QmlIntegerCache *cache = new QmlIntegerCache(engine);
-
-    const QMetaObject *mo = type->metaObject();
-
-    for (int ii = mo->enumeratorCount() - 1; ii >= 0; --ii) {
-        QMetaEnum enumerator = mo->enumerator(ii);
-
-        for (int jj = 0; jj < enumerator.keyCount(); ++jj) {
-            QString name = QLatin1String(enumerator.key(jj));
-            int value = enumerator.value(jj);
-
-            if (!name.at(0).isUpper())
-                continue;
-
-            if (cache->stringCache.contains(name))
-                continue;
-
-            cache->add(name, value);
-        }
-    }
-
-    return cache;
+    return stringCache.value(id);
 }
 
 QT_END_NAMESPACE
+
