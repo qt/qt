@@ -59,6 +59,8 @@
 # include <private/qt_mac_p.h>
 #endif
 
+#include <qdatetime.h>
+
 #include <stdlib.h> // malloc
 
 #include "qpixmap.h"
@@ -2078,6 +2080,8 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 #ifdef QGL_BIND_TEXTURE_DEBUG
     printf("QGLContextPrivate::bindTexture(), imageSize=(%d,%d), internalFormat =0x%x, options=%x\n",
            image.width(), image.height(), internalFormat, int(options));
+    QTime time;
+    time.start();
 #endif
 
     // Scale the pixmap if needed. GL textures needs to have the
@@ -2093,7 +2097,8 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     {
         img = img.scaled(tx_w, tx_h);
 #ifdef QGL_BIND_TEXTURE_DEBUG
-        printf(" - upscaled to %dx%d\n", tx_w, tx_h);
+        printf(" - upscaled to %dx%d (%d ms)\n", tx_w, tx_h, time.elapsed());
+
 #endif
     }
 
@@ -2113,7 +2118,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
         && options & QGLContext::MipmapBindOption)
     {
 #ifdef QGL_BIND_TEXTURE_DEBUG
-        printf(" - generating mipmaps\n");
+        printf(" - generating mipmaps (%d ms)\n", time.elapsed());
 #endif
 #if !defined(QT_OPENGL_ES_2)
         glHint(GL_GENERATE_MIPMAP_HINT_SGIS, GL_NICEST);
@@ -2149,7 +2154,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
         if (premul) {
             img = img.convertToFormat(target_format = QImage::Format_ARGB32_Premultiplied);
 #ifdef QGL_BIND_TEXTURE_DEBUG
-            printf(" - converting ARGB32 -> ARGB32_Premultiplied \n");
+            printf(" - converting ARGB32 -> ARGB32_Premultiplied (%d ms) \n", time.elapsed());
 #endif
         }
         break;
@@ -2157,7 +2162,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
         if (!premul) {
             img = img.convertToFormat(target_format = QImage::Format_ARGB32);
 #ifdef QGL_BIND_TEXTURE_DEBUG
-            printf(" - converting ARGB32_Premultiplied -> ARGB32\n");
+            printf(" - converting ARGB32_Premultiplied -> ARGB32 (%d ms)\n", time.elapsed());
 #endif
         }
         break;
@@ -2174,19 +2179,19 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
                                       ? QImage::Format_ARGB32_Premultiplied
                                       : QImage::Format_ARGB32);
 #ifdef QGL_BIND_TEXTURE_DEBUG
-            printf(" - converting to 32-bit alpha format\n");
+            printf(" - converting to 32-bit alpha format (%d ms)\n", time.elapsed());
 #endif
         } else {
             img = img.convertToFormat(QImage::Format_RGB32);
 #ifdef QGL_BIND_TEXTURE_DEBUG
-            printf(" - converting to 32-bit\n");
+            printf(" - converting to 32-bit (%d ms)\n", time.elapsed());
 #endif
         }
     }
 
     if (options & QGLContext::InvertedYBindOption) {
 #ifdef QGL_BIND_TEXTURE_DEBUG
-            printf(" - flipping bits over y\n");
+            printf(" - flipping bits over y (%d ms)\n", time.elapsed());
 #endif
         int ipl = img.bytesPerLine() / 4;
         int h = img.height();
@@ -2200,7 +2205,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 
     if (externalFormat == GL_RGBA) {
 #ifdef QGL_BIND_TEXTURE_DEBUG
-            printf(" - doing byte swapping\n");
+            printf(" - doing byte swapping (%d ms)\n", time.elapsed());
 #endif
         // The only case where we end up with a depth different from
         // 32 in the switch above is for the RGB16 case, where we set
@@ -2242,6 +2247,13 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
         qWarning(" - texture upload failed, error code 0x%x\n", error);
     }
 #endif
+
+#ifdef QGL_BIND_TEXTURE_DEBUG
+    static int totalUploadTime = 0;
+    totalUploadTime += time.elapsed();
+    printf(" - upload done in (%d ms) time=%d\n", time.elapsed(), totalUploadTime);
+#endif
+
 
     // this assumes the size of a texture is always smaller than the max cache size
     int cost = img.width()*img.height()*4/1024;
