@@ -231,7 +231,8 @@ void QUnifiedTimer::registerAnimation(QAbstractAnimation *animation)
     Q_ASSERT(!QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer);
     QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer = true;
     animationsToStart << animation;
-    startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this);
+    if (!startStopAnimationTimer.isActive())
+        startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this); 
 }
 
 void QUnifiedTimer::unregisterAnimation(QAbstractAnimation *animation)
@@ -250,7 +251,8 @@ void QUnifiedTimer::unregisterAnimation(QAbstractAnimation *animation)
     } else {
         animationsToStart.removeOne(animation);
     }
-    QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer = false;
+    if (!startStopAnimationTimer.isActive())
+        startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this); 
 }
 
 void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
