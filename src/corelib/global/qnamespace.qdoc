@@ -612,12 +612,6 @@
 */
 
 /*!
-  \enum Qt::CoordinateSystem
-  \value DeviceCoordinates
-  \value LogicalCoordinates
- */
-
-/*!
     \enum Qt::CaseSensitivity
 
     \value CaseInsensitive
