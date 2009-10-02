@@ -1126,7 +1126,7 @@ void QRenderRule::fixupBorder(int nativeWidth)
 void QRenderRule::drawBorderImage(QPainter *p, const QRect& rect)
 {
     static const Qt::TileRule tileMode2TileRule[] = {
-        Qt::Stretch, Qt::Round, Qt::Stretch, Qt::Repeat, Qt::Stretch };
+        Qt::StretchTile, Qt::RoundTile, Qt::StretchTile, Qt::RepeatTile, Qt::StretchTile };
 
     const QStyleSheetBorderImageData *borderImageData = border()->borderImage();
     const int *targetBorders = border()->borders;

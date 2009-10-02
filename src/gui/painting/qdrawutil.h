@@ -137,22 +137,22 @@ struct QTileRules
 {
     inline QTileRules(Qt::TileRule horizontalRule, Qt::TileRule verticalRule)
             : horizontal(horizontalRule), vertical(verticalRule) {}
-    inline QTileRules(Qt::TileRule rule = Qt::Stretch)
+    inline QTileRules(Qt::TileRule rule = Qt::StretchTile)
             : horizontal(rule), vertical(rule) {}
     Qt::TileRule horizontal;
     Qt::TileRule vertical;
 };
 
-Q_GUI_EXPORT void qDrawBorderPixmap(QPainter *painter, 
-                                    const QRect &targetRect, 
-                                    const QMargins &targetMargins, 
+Q_GUI_EXPORT void qDrawBorderPixmap(QPainter *painter,
+                                    const QRect &targetRect,
+                                    const QMargins &targetMargins,
                                     const QPixmap &pixmap,
-                                    const QRect &sourceRect, 
-                                    const QMargins &sourceMargins, 
+                                    const QRect &sourceRect,
+                                    const QMargins &sourceMargins,
                                     const QTileRules &rules = QTileRules());
-inline void qDrawBorderPixmap(QPainter *painter, 
-                                           const QRect &target, 
-                                           const QMargins &margins, 
+inline void qDrawBorderPixmap(QPainter *painter,
+                                           const QRect &target,
+                                           const QMargins &margins,
                                            const QPixmap &pixmap)
 {
     qDrawBorderPixmap(painter, target, margins, pixmap, pixmap.rect(), margins);
