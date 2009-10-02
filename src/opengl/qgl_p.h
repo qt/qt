@@ -233,6 +233,7 @@ private:
 
     QGLExtensionFuncs m_extensionFuncs;
     const QGLContext *m_context; // context group's representative
+    QList<const QGLContext *> m_shares;
     QAtomicInt m_refs;
 
     friend class QGLShareRegister;
@@ -343,13 +344,11 @@ public:
 
 #ifdef Q_WS_WIN
     static inline QGLExtensionFuncs& extensionFuncs(const QGLContext *ctx) { return ctx->d_ptr->group->extensionFuncs(); }
-    static inline QGLExtensionFuncs& extensionFuncs(QGLContextGroup *ctx) { return ctx->extensionFuncs(); }
 #endif
 
 #if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
     static QGLExtensionFuncs qt_extensionFuncs;
     static inline QGLExtensionFuncs& extensionFuncs(const QGLContext *) { return qt_extensionFuncs; }
-    static inline QGLExtensionFuncs& extensionFuncs(QGLContextGroup *) { return qt_extensionFuncs; }
 #endif
 
     static void setCurrentContext(QGLContext *context);
@@ -403,16 +402,11 @@ class Q_AUTOTEST_EXPORT QGLShareRegister
 {
 public:
     QGLShareRegister() {}
-    ~QGLShareRegister() { reg.clear(); }
+    ~QGLShareRegister() {}
 
     void addShare(const QGLContext *context, const QGLContext *share);
     QList<const QGLContext *> shares(const QGLContext *context);
     void removeShare(const QGLContext *context);
-private:
-    // Use a context's 'group' pointer to uniquely identify a group.
-    typedef QList<const QGLContext *> ContextList;
-    typedef QHash<const QGLContextGroup *, ContextList> SharingHash;
-    SharingHash reg;
 };
 
 extern Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg();
@@ -490,8 +484,6 @@ private:
 
 #ifdef Q_WS_QWS
 extern QPaintEngine* qt_qgl_paint_engine();
-
-extern EGLDisplay qt_qgl_egl_display();
 #endif
 
 bool qt_gl_preferGL2Engine();
