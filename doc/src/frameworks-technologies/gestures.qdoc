@@ -102,8 +102,6 @@
 
     \snippet examples/gestures/imageviewer/imagewidget.cpp swipe slot start
 
-    \snippet examples/gestures/imageviewer/imagewidget.cpp swipe slot finish
-
     Here, we examine the direction in which the user swiped the widget and modify
     its contents accordingly.
 

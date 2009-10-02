@@ -174,13 +174,8 @@ void QTextEditPrivate::init(const QString &html)
     if (!html.isEmpty())
         control->setHtml(html);
 
-#ifdef Q_OS_MAC
-    hbar->setSingleStep(1);
-    vbar->setSingleStep(1);
-#else
     hbar->setSingleStep(20);
     vbar->setSingleStep(20);
-#endif
 
     viewport->setBackgroundRole(QPalette::Base);
     q->setAcceptDrops(true);

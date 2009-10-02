@@ -86,9 +86,19 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     qt_egl_add_platform_config(configProps, device());
     configProps.setRenderableType(QEgl::OpenGL);
 
+    QEgl::PixelFormatMatch matchType = QEgl::BestPixelFormat;
+    if (device()->depth() == 16) {
+        configProps.setValue(EGL_RED_SIZE, 5);
+        configProps.setValue(EGL_GREEN_SIZE, 6);
+        configProps.setValue(EGL_BLUE_SIZE, 5);
+        configProps.setValue(EGL_ALPHA_SIZE, 0);
+        matchType = QEgl::ExactPixelFormat;
+    }
+    configProps.setRenderableType(QEgl::OpenGL);
+
     // Search for a matching configuration, reducing the complexity
     // each time until we get something that matches.
-    if (!d->eglContext->chooseConfig(configProps, QEgl::BestPixelFormat)) {
+    if (!d->eglContext->chooseConfig(configProps, matchType)) {
         delete d->eglContext;
         d->eglContext = 0;
         return false;

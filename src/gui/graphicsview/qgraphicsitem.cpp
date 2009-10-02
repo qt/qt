@@ -186,6 +186,49 @@
     high z-values. Stacking order applies to sibling items; parents are always
     drawn before their children.
 
+    \section1 Sorting
+
+    All items are drawn in a defined, stable order, and this same order decides
+    which items will receive mouse input first when you click on the scene.
+    Normally you don't have to worry about sorting, as the items follow a
+    "natural order", following the logical structure of the scene.
+
+    An item's children are stacked on top of the parent, and sibling items are
+    stacked by insertion order (i.e., in the same order that they were either
+    added to the scene, or added to the same parent). If you add item A, and
+    then B, then B will be on top of A. If you then add C, the items' stacking
+    order will be A, then B, then C.
+
+    \image graphicsview-zorder.png
+
+    This example shows the stacking order of all limbs of the robot from the
+    \l{graphicsview/dragdroprobot}{Drag and Drop Robot} example. The torso is
+    the root item (all other items are children or descendants of the torso),
+    so it is drawn first. Next, the head is drawn, as it is the first item in
+    the torso's list of children. Then the upper left arm is drawn. As the
+    lower arm is a child of the upper arm, the lower arm is then drawn,
+    followed by the upper arm's next sibling, which is the upper right arm, and
+    so on.
+
+    For advanced users, there are ways to alter how your items are sorted:
+
+    \list
+    \o You can call setZValue() on an item to explicitly stack it on top of, or
+    under, other sibling items. The default Z value for an item is 0. Items
+    with the same Z value are stacked by insertion order.
+
+    \o You can call stackBefore() to reorder the list of children. This will
+    directly modify the insertion order.
+
+    \o You can set the ItemStacksBehindParent flag to stack a child item behind
+    its parent.
+    \endlist
+
+    The stacking order of two sibling items also counts for each item's
+    children and descendant items. So if one item is on top of another, then
+    all its children will also be on top of all the other item's children as
+    well.
+
     \section1 Events
 
     QGraphicsItem receives events from QGraphicsScene through the virtual
@@ -1487,10 +1530,12 @@ QList<QGraphicsItem *> QGraphicsItem::children() const
 /*!
     \since 4.4
 
-    Returns a list of this item's children. The items are returned in no
-    particular order.
+    Returns a list of this item's children.
 
-    \sa setParentItem()
+    The items are sorted by stacking order. This takes into account both the
+    items' insertion order and their Z-values.
+
+    \sa setParentItem(), zValue(), {QGraphicsItem#Sorting}{Sorting}
 */
 QList<QGraphicsItem *> QGraphicsItem::childItems() const
 {
@@ -4090,12 +4135,12 @@ void QGraphicsItem::advance(int phase)
 }
 
 /*!
-    Returns the Z-value, or the elevation, of the item. The Z-value decides
-    the stacking order of sibling (neighboring) items.
+    Returns the Z-value of the item. The Z-value affects the stacking order of
+    sibling (neighboring) items.
 
     The default Z-value is 0.
 
-    \sa setZValue()
+    \sa setZValue(), {QGraphicsItem#Sorting}{Sorting}, stackBefore(), ItemStacksBehindParent
 */
 qreal QGraphicsItem::zValue() const
 {
@@ -4103,33 +4148,18 @@ qreal QGraphicsItem::zValue() const
 }
 
 /*!
-    Sets the Z-value, or the elevation, of the item, to \a z. The elevation
-    decides the stacking order of sibling (neighboring) items. An item of high
-    Z-value will be drawn on top of an item with a lower Z-value if they share
-    the same parent item. In addition, children of an item will always be
-    drawn on top of the parent, regardless of the child's Z-value. Sibling
-    items that share the same Z-value will be drawn in order of insertion; the
-    last inserted child is stacked above previous children.
+    Sets the Z-value of the item to \a z. The Z value decides the stacking
+    order of sibling (neighboring) items. A sibling item of high Z value will
+    always be drawn on top of another sibling item with a lower Z value.
 
-    \img graphicsview-zorder.png
-
-    Children of different parents are stacked according to the Z-value of
-    each item's ancestor item which is an immediate child of the two
-    items' closest common ancestor. For example, a robot item might
-    define a torso item as the parent of a head item, two arm items,
-    and two upper-leg items. The upper-leg items would each be parents
-    of one lower-leg item, and each lower-leg item would be parents of
-    one foot item.  The stacking order of the feet is the same as the
-    stacking order of each foot's ancestor that is an immediate child
-    of the two feet's common ancestor (i.e., the torso item); so the
-    feet are stacked in the same order as the upper-leg items,
-    regardless of each foot's Z-value.
+    If you restore the Z value, the item's insertion order will decide its
+    stacking order.
 
     The Z-value does not affect the item's size in any way.
 
     The default Z-value is 0.
 
-    \sa zValue()
+    \sa zValue(), {QGraphicsItem#Sorting}{Sorting}, stackBefore(), ItemStacksBehindParent
 */
 void QGraphicsItem::setZValue(qreal z)
 {
@@ -4192,12 +4222,13 @@ void QGraphicsItemPrivate::ensureSequentialSiblingIndex()
     The \a sibling must have the same Z value as this item, otherwise calling
     this function will have no effect.
 
-    By default, all items are stacked by insertion order (i.e., the first item
-    you add is drawn before the next item you add). If two items' Z values are
-    different, then the item with the highest Z value is drawn on top. When the
-    Z values are the same, the insertion order will decide the stacking order.
+    By default, all sibling items are stacked by insertion order (i.e., the
+    first item you add is drawn before the next item you add). If two items' Z
+    values are different, then the item with the highest Z value is drawn on
+    top. When the Z values are the same, the insertion order will decide the
+    stacking order.
 
-    \sa setZValue(), ItemStacksBehindParent
+    \sa setZValue(), ItemStacksBehindParent, {QGraphicsItem#Sorting}{Sorting}
 */
 void QGraphicsItem::stackBefore(const QGraphicsItem *sibling)
 {

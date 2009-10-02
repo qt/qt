@@ -780,13 +780,18 @@ TCoeInputCapabilities QSymbianControl::InputCapabilities() const
 }
 #endif
 
-void QSymbianControl::Draw(const TRect& r) const
+void QSymbianControl::Draw(const TRect& controlRect) const
 {
     QWindowSurface *surface = qwidget->windowSurface();
     QPaintEngine *engine = surface ? surface->paintDevice()->paintEngine() : NULL;
 
     if (!engine)
         return;
+
+    // Map source rectangle into coordinates of the backing store.
+    const QPoint controlBase(controlRect.iTl.iX, controlRect.iTl.iY);
+    const QPoint backingStoreBase = qwidget->mapTo(qwidget->window(), controlBase);
+    const TRect backingStoreRect(TPoint(backingStoreBase.x(), backingStoreBase.y()), controlRect.Size());
 
     if (engine->type() == QPaintEngine::Raster) {
         QS60WindowSurface *s60Surface = static_cast<QS60WindowSurface *>(qwidget->windowSurface());
@@ -796,10 +801,10 @@ void QSymbianControl::Draw(const TRect& r) const
         if(!qwidget->d_func()->extraData()->disableBlit) {
             if (qwidget->d_func()->isOpaque)
                 gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
-            gc.BitBlt(r.iTl, bitmap, r);
-	}
+            gc.BitBlt(controlRect.iTl, bitmap, backingStoreRect);
+	    }
     } else {
-        surface->flush(qwidget, QRegion(qt_TRect2QRect(r)), QPoint());
+        surface->flush(qwidget, QRegion(qt_TRect2QRect(backingStoreRect)), QPoint());
     }
 }
 

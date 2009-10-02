@@ -886,7 +886,18 @@ void QLabel::focusInEvent(QFocusEvent *ev)
 void QLabel::focusOutEvent(QFocusEvent *ev)
 {
     Q_D(QLabel);
-    d->sendControlEvent(ev);
+    if (d->control) {
+        d->sendControlEvent(ev);
+        QTextCursor cursor = d->control->textCursor();
+        Qt::FocusReason reason = ev->reason();
+        if (reason != Qt::ActiveWindowFocusReason
+            && reason != Qt::PopupFocusReason
+            && cursor.hasSelection()) {
+            cursor.clearSelection();
+            d->control->setTextCursor(cursor);
+        }
+    }
+
     QFrame::focusOutEvent(ev);
 }
 

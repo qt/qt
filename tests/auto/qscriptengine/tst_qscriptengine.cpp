@@ -48,6 +48,7 @@
 #include <qgraphicsitem.h>
 #include <qstandarditemmodel.h>
 #include <QtCore/qnumeric.h>
+#include <stdlib.h>
 
 Q_DECLARE_METATYPE(QList<int>)
 Q_DECLARE_METATYPE(QObjectList)
@@ -60,6 +61,22 @@ Q_DECLARE_METATYPE(QObjectList)
 # define TOSTRING(x) STRINGIFY(x)
 # define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID)
 #endif
+
+// The JavaScriptCore GC marks the C stack. To try to ensure that there is
+// no JSObject* left in stack memory by the compiler, we call this function
+// to zap some bytes of memory before calling collectGarbage().
+static void zapSomeStack()
+{
+    char buf[4096];
+    memset(buf, 0, sizeof(buf));
+}
+
+static void collectGarbage_helper(QScriptEngine &eng)
+{
+    zapSomeStack();
+    eng.collectGarbage();
+}
+
 class tst_QScriptEngine : public QObject
 {
     Q_OBJECT
@@ -825,7 +842,7 @@ void tst_QScriptEngine::newQMetaObject()
 
     // verify that AutoOwnership is in effect
     instance = QScriptValue();
-    eng.collectGarbage();
+    collectGarbage_helper(eng);
 
     QVERIFY(!qpointer1);
     QVERIFY(qpointer2);
@@ -835,7 +852,7 @@ void tst_QScriptEngine::newQMetaObject()
     QVERIFY(instance3.toQObject() == 0); // was child of instance
     QVERIFY(instance2.toQObject() != 0);
     instance2 = QScriptValue();
-    eng.collectGarbage();
+    collectGarbage_helper(eng);
     QVERIFY(instance2.toQObject() == 0);
 
     // with custom constructor
@@ -922,14 +939,14 @@ void tst_QScriptEngine::getSetGlobalObject()
     QCOMPARE(eng.globalObject().toString(), QString::fromLatin1("[object Object]"));
 
     glob = QScriptValue(); // kill reference to old global object
-    eng.collectGarbage();
+    collectGarbage_helper(eng);
     obj = eng.newObject();
     eng.setGlobalObject(obj);
     QVERIFY(eng.globalObject().strictlyEquals(obj));
     QVERIFY(eng.currentContext()->thisObject().strictlyEquals(obj));
     QVERIFY(eng.currentContext()->activationObject().strictlyEquals(obj));
 
-    eng.collectGarbage();
+    collectGarbage_helper(eng);
     QVERIFY(eng.globalObject().strictlyEquals(obj));
     QVERIFY(eng.currentContext()->thisObject().strictlyEquals(obj));
     QVERIFY(eng.currentContext()->activationObject().strictlyEquals(obj));
@@ -2341,11 +2358,8 @@ void tst_QScriptEngine::collectGarbage()
     a = eng.newObject();
     QPointer<QObject> ptr = new QObject();
     QVERIFY(ptr != 0);
-    {
-        QScriptValue v = eng.newQObject(ptr, QScriptEngine::ScriptOwnership);
-    }
-    eng.collectGarbage();
-    QEXPECT_FAIL("","collectGarbage not working", Continue);
+    (void)eng.newQObject(ptr, QScriptEngine::ScriptOwnership);
+    collectGarbage_helper(eng);
     QVERIFY(ptr == 0);
 }
 

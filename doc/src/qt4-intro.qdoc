@@ -627,6 +627,8 @@
     through C++ APIs in the Qt application, or using the xmlpatternsvalidator
     command line utility. The implementation of XML Schema Validation supports
     the specification version 1.0 in large parts.
+    
+    \img xml-schema.png
 
     See the \l{XML Processing} and QXmlSchema class documentation for more
     information.

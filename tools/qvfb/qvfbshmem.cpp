@@ -128,7 +128,9 @@ QShMemViewProtocol::QShMemViewProtocol(int displayid, const QSize &s,
     if ( logname )
         username = logname;
 
-    QString oldPipe = "/tmp/qtembedded-" + username + "/" + QString(QTE_PIPE).arg(displayid);
+    qws_dataDir(displayid);
+
+    QString oldPipe = "/tmp/qtembedded-" + username + "/" + QString("QtEmbedded-%1").arg(displayid);
     int oldPipeSemkey = ftok(oldPipe.toLatin1().constData(), 'd');
     if (oldPipeSemkey != -1) {
         int oldPipeLockId = semget(oldPipeSemkey, 0, 0);
@@ -149,7 +151,7 @@ QShMemViewProtocol::QShMemViewProtocol(int displayid, const QSize &s,
         }
     }
 
-    displayPipe = qws_dataDir(displayid).append(QTE_PIPE);
+    displayPipe = QTE_PIPE_QVFB(displayid);
 
     kh = new QVFbKeyPipeProtocol(displayid);
     /* should really depend on receiving qt version, but how can
