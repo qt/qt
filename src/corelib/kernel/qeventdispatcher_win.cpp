@@ -539,7 +539,7 @@ void QEventDispatcherWin32Private::registerTimer(WinTimerInfo *t)
 
     int ok = 0;
 
-    if (t->interval > 10 || !t->interval || !qtimeSetEvent) {
+    if (t->interval > 15 || !t->interval || !qtimeSetEvent) {
         ok = 1;
         if (!t->interval)  // optimization for single-shot-zero-timer
             QCoreApplication::postEvent(q, new QZeroTimerEvent(t->timerId));
