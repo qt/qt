@@ -343,13 +343,11 @@ public:
 
 #ifdef Q_WS_WIN
     static inline QGLExtensionFuncs& extensionFuncs(const QGLContext *ctx) { return ctx->d_ptr->group->extensionFuncs(); }
-    static inline QGLExtensionFuncs& extensionFuncs(QGLContextGroup *ctx) { return ctx->extensionFuncs(); }
 #endif
 
 #if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
     static QGLExtensionFuncs qt_extensionFuncs;
     static inline QGLExtensionFuncs& extensionFuncs(const QGLContext *) { return qt_extensionFuncs; }
-    static inline QGLExtensionFuncs& extensionFuncs(QGLContextGroup *) { return qt_extensionFuncs; }
 #endif
 
     static void setCurrentContext(QGLContext *context);
