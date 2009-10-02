@@ -94,7 +94,7 @@ QScriptDeclarativeClass::QScriptDeclarativeClass(QScriptEngine *engine)
 
 QScriptValue QScriptDeclarativeClass::newObject(QScriptEngine *engine, 
                                                 QScriptDeclarativeClass *scriptClass, 
-                                                Object object)
+                                                Object *object)
 {
     Q_ASSERT(engine);
     Q_ASSERT(scriptClass);
@@ -119,7 +119,7 @@ QScriptDeclarativeClass *QScriptDeclarativeClass::scriptClass(const QScriptValue
     return static_cast<QScript::DeclarativeObjectDelegate*>(delegate)->scriptClass();
 }
 
-QScriptDeclarativeClass::Object QScriptDeclarativeClass::object(const QScriptValue &v)
+QScriptDeclarativeClass::Object *QScriptDeclarativeClass::object(const QScriptValue &v)
 {
     QScriptValuePrivate *d = QScriptValuePrivate::get(v);
     if (!d || !d->isJSC() || !d->jscValue.isObject(&QScriptObject::info))
@@ -218,7 +218,7 @@ QString QScriptDeclarativeClass::toString(const Identifier &identifier)
 }
 
 QScriptClass::QueryFlags 
-QScriptDeclarativeClass::queryProperty(const Object &object, const Identifier &name, 
+QScriptDeclarativeClass::queryProperty(Object *object, const Identifier &name, 
                                        QScriptClass::QueryFlags flags)
 {
     Q_UNUSED(object);
@@ -227,14 +227,14 @@ QScriptDeclarativeClass::queryProperty(const Object &object, const Identifier &n
     return 0;
 }
 
-QScriptValue QScriptDeclarativeClass::property(const Object &object, const Identifier &name)
+QScriptValue QScriptDeclarativeClass::property(Object *object, const Identifier &name)
 {
     Q_UNUSED(object);
     Q_UNUSED(name);
     return QScriptValue();
 }
 
-void QScriptDeclarativeClass::setProperty(const Object &object, const Identifier &name, 
+void QScriptDeclarativeClass::setProperty(Object *object, const Identifier &name, 
                                           const QScriptValue &value)
 {
     Q_UNUSED(object);
@@ -243,31 +243,26 @@ void QScriptDeclarativeClass::setProperty(const Object &object, const Identifier
 }
 
 QScriptValue::PropertyFlags 
-QScriptDeclarativeClass::propertyFlags(const Object &object, const Identifier &name)
+QScriptDeclarativeClass::propertyFlags(Object *object, const Identifier &name)
 {
     Q_UNUSED(object);
     Q_UNUSED(name);
     return 0;
 }
 
-QStringList QScriptDeclarativeClass::propertyNames(const Object &object)
+QStringList QScriptDeclarativeClass::propertyNames(Object *object)
 {
     Q_UNUSED(object);
     return QStringList();
 }
 
-void QScriptDeclarativeClass::destroyed(const Object &object)
-{
-    Q_UNUSED(object);
-}
-
-QObject *QScriptDeclarativeClass::toQObject(const Object &, bool *ok)
+QObject *QScriptDeclarativeClass::toQObject(Object *, bool *ok)
 {
     if (ok) *ok = false;
     return 0;
 }
 
-QVariant QScriptDeclarativeClass::toVariant(const Object &, bool *ok)
+QVariant QScriptDeclarativeClass::toVariant(Object *, bool *ok)
 {
     if (ok) *ok = false;
     return QVariant();

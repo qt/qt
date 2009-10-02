@@ -64,14 +64,14 @@ namespace QScript
 {
 
 DeclarativeObjectDelegate::DeclarativeObjectDelegate(QScriptDeclarativeClass *c, 
-                                                     QScriptDeclarativeClass::Object &o)
+                                                     QScriptDeclarativeClass::Object *o)
 : m_class(c), m_object(o)
 {
 }
 
 DeclarativeObjectDelegate::~DeclarativeObjectDelegate()
 {
-    m_class->destroyed(m_object);
+    delete m_object;
 }
 
 QScriptObjectDelegate::Type DeclarativeObjectDelegate::type() const
@@ -126,7 +126,6 @@ bool DeclarativeObjectDelegate::getPropertyAttributes(const QScriptObject* objec
                                                       const JSC::Identifier &propertyName,
                                                       unsigned &attribs) const
 {
-    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScriptDeclarativeClass::Identifier identifier = (void *)propertyName.ustring().rep();
 
     QScriptClass::QueryFlags flags = 
@@ -154,8 +153,6 @@ void DeclarativeObjectDelegate::getPropertyNames(QScriptObject* object, JSC::Exe
                                                  JSC::PropertyNameArray &propertyNames,
                                                  unsigned listedAttributes)
 {
-    QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
-
     QStringList properties = m_class->propertyNames(m_object);
     for (int ii = 0; ii < properties.count(); ++ii) {
         const QString &name = properties.at(ii);

@@ -65,11 +65,12 @@ class Q_SCRIPT_EXPORT QScriptDeclarativeClass
 {
 public:
     typedef void* Identifier;
-    typedef void* Object;
 
-    static QScriptValue newObject(QScriptEngine *, QScriptDeclarativeClass *, Object);
+    struct Object { virtual ~Object() {} };
+
+    static QScriptValue newObject(QScriptEngine *, QScriptDeclarativeClass *, Object *);
     static QScriptDeclarativeClass *scriptClass(const QScriptValue &);
-    static Object object(const QScriptValue &);
+    static Object *object(const QScriptValue &);
 
     static QScriptValue function(const QScriptValue &, const Identifier &);
     static QScriptValue property(const QScriptValue &, const Identifier &);
@@ -100,18 +101,17 @@ public:
 
     QString toString(const Identifier &);
 
-    virtual QScriptClass::QueryFlags queryProperty(const Object &, const Identifier &, 
+    virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
                                                    QScriptClass::QueryFlags flags);
 
-    virtual QScriptValue property(const Object &, const Identifier &);
-    virtual void setProperty(const Object &, const Identifier &name, const QScriptValue &);
-    virtual QScriptValue::PropertyFlags propertyFlags(const Object &, const Identifier &);
+    virtual QScriptValue property(Object *, const Identifier &);
+    virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
+    virtual QScriptValue::PropertyFlags propertyFlags(Object *, const Identifier &);
 
-    virtual QStringList propertyNames(const Object &);
+    virtual QStringList propertyNames(Object *);
 
-    virtual QObject *toQObject(const Object &, bool *ok = 0);
-    virtual QVariant toVariant(const Object &, bool *ok = 0);
-    virtual void destroyed(const Object &);
+    virtual QObject *toQObject(Object *, bool *ok = 0);
+    virtual QVariant toVariant(Object *, bool *ok = 0);
 
 protected:
     QScopedPointer<QScriptDeclarativeClassPrivate> d_ptr;

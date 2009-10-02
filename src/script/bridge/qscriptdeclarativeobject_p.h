@@ -68,13 +68,13 @@ namespace QScript
 class DeclarativeObjectDelegate : public QScriptObjectDelegate
 {
 public:
-    DeclarativeObjectDelegate(QScriptDeclarativeClass *c, QScriptDeclarativeClass::Object &o);
+    DeclarativeObjectDelegate(QScriptDeclarativeClass *c, QScriptDeclarativeClass::Object *o);
     ~DeclarativeObjectDelegate();
 
     virtual Type type() const;
 
     QScriptDeclarativeClass *scriptClass() const { return m_class; }
-    QScriptDeclarativeClass::Object object() const { return m_object; }
+    QScriptDeclarativeClass::Object *object() const { return m_object; }
 
     virtual bool getOwnPropertySlot(QScriptObject*, JSC::ExecState*,
                                     const JSC::Identifier& propertyName,
@@ -100,7 +100,7 @@ public:
 
 private:
     QScriptDeclarativeClass *m_class;
-    QScriptDeclarativeClass::Object m_object;
+    QScriptDeclarativeClass::Object *m_object;
 };
 
 } // namespace QScript
