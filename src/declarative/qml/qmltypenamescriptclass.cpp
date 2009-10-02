@@ -125,13 +125,15 @@ QmlTypeNameScriptClass::queryProperty(Object *obj, const Identifier &name,
                 }
             }
             return 0;
-        } else {
+        } else if (data->object) {
             // Must be an attached property
             object = qmlAttachedPropertiesObjectById(data->type->index(), data->object);
             if (!object) return 0;
             return ep->objectClass->queryProperty(object, name, flags);
         }
     }
+
+    return 0;
 }
 
 QScriptValue QmlTypeNameScriptClass::property(Object *obj, const Identifier &name)
