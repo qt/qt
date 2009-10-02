@@ -83,7 +83,7 @@
     updateCurrentTime(). The duration() function lets you report a
     duration for the animation (as discussed above). The animation
     framework calls updateCurrentTime() when current time has changed.
-    By reimplementing this function, you can track the animation 
+    By reimplementing this function, you can track the animation
     progress. Note that neither the interval between calls nor the
     number of calls to this function are defined; though, it will
     normally be 60 updates per second.
@@ -228,15 +228,16 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
 
 void QUnifiedTimer::registerAnimation(QAbstractAnimation *animation)
 {
-    if (animations.contains(animation) || animationsToStart.contains(animation))
-        return;
+    Q_ASSERT(!QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer);
+    QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer = true;
     animationsToStart << animation;
-    startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this); // we delay the check if we should start/stop the global timer
+    startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this);
 }
 
 void QUnifiedTimer::unregisterAnimation(QAbstractAnimation *animation)
 {
-    Q_ASSERT(animations.count(animation) + animationsToStart.count(animation) <= 1);
+    if (!QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer)
+        return;
 
     int idx = animations.indexOf(animation);
     if (idx != -1) {
@@ -244,12 +245,13 @@ void QUnifiedTimer::unregisterAnimation(QAbstractAnimation *animation)
         // this is needed if we unregister an animation while its running
         if (idx <= currentAnimationIdx)
             --currentAnimationIdx;
+        if (animations.isEmpty())
+            startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this);
     } else {
         animationsToStart.removeOne(animation);
     }
-    startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this); // we delay the check if we should start/stop the global timer
+    QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer = false;
 }
-
 
 void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
 {
@@ -326,7 +328,6 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
         }
         break;
     }
-
 }
 
 /*!
