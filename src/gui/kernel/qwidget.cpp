@@ -923,7 +923,7 @@ void QWidget::setAutoFillBackground(bool enabled)
 
     Note: Currently softkeys are only supported on the Symbian Platform.
 
-    \sa addAction, QAction, QMenuBar
+    \sa addAction(), QAction, QMenuBar
 
 */
 
