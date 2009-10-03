@@ -50,6 +50,7 @@ class VideoItem
       public QGraphicsItem
 {
     Q_OBJECT
+    Q_INTERFACES(QGraphicsItem)
 public:
     explicit VideoItem(QGraphicsItem *parentItem = 0);
     ~VideoItem();
