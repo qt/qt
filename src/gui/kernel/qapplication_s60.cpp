@@ -955,13 +955,14 @@ void QSymbianControl::setFocusSafely(bool focus)
 
 /*!
     \typedef QApplication::QS60MainApplicationFactory
+    \since 4.6
 
     This is a typedef for a pointer to a function with the following
     signature:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 47
 
-    \sa QApplication::QApplication(QApplication::QS60MainApplicationFactory, int &, char **)
+    \sa QApplication::QApplication()
 */
 
 /*!
