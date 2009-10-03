@@ -11453,14 +11453,23 @@ QWidget *QWidgetPrivate::widgetInNavigationDirection(Direction direction)
         if (targetCandidate->focusProxy() || targetCandidateRect.isEmpty())
             continue;
 
+        // Only navigate to a target widget that...
         if (       targetCandidate != sourceWidget
+                   // ...takes the focus,
                 && targetCandidate->focusPolicy() & Qt::TabFocus
+                   // ...is above if DirectionNorth,
                 && !(direction == DirectionNorth && targetCandidateRect.bottom() > sourceRect.top())
+                   // ...is on the right if DirectionEast,
                 && !(direction == DirectionEast  && targetCandidateRect.left()   < sourceRect.right())
+                   // ...is below if DirectionSouth,
                 && !(direction == DirectionSouth && targetCandidateRect.top()    < sourceRect.bottom())
+                   // ...is on the left if DirectionWest,
                 && !(direction == DirectionWest  && targetCandidateRect.right()  > sourceRect.left())
+                   // ...is enabled,
                 && targetCandidate->isEnabled()
+                   // ...is visible,
                 && targetCandidate->isVisible()
+                   // ...is in the same window,
                 && targetCandidate->window() == sourceWindow) {
             const int targetCandidateDistance = pointToRect(sourcePoint, targetCandidateRect);
             if (targetCandidateDistance < shortestDistance) {
