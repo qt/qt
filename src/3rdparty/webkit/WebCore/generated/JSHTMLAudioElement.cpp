@@ -115,7 +115,7 @@ JSObject* JSHTMLAudioElementPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSHTMLAudioElement::s_info = { "HTMLAudioElement", &JSHTMLMediaElement::s_info, &JSHTMLAudioElementTable, 0 };
 
-JSHTMLAudioElement::JSHTMLAudioElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLAudioElement> impl)
+JSHTMLAudioElement::JSHTMLAudioElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLAudioElement> impl)
     : JSHTMLMediaElement(structure, globalObject, impl)
 {
 }

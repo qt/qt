@@ -408,14 +408,14 @@ void QScriptEdit::extraAreaMouseEvent(QMouseEvent *e)
                 return;
             bool has = m_breakpoints.contains(lineNumber);
             QMenu *popup = new QMenu();
-            QAction *toggleAct = new QAction(QObject::tr("Toggle Breakpoint"), popup);
+            QAction *toggleAct = new QAction(tr("Toggle Breakpoint"), popup);
             popup->addAction(toggleAct);
-            QAction *disableAct = new QAction(QObject::tr("Disable Breakpoint"), popup);
-            QAction *enableAct = new QAction(QObject::tr("Enable Breakpoint"), popup);
+            QAction *disableAct = new QAction(tr("Disable Breakpoint"), popup);
+            QAction *enableAct = new QAction(tr("Enable Breakpoint"), popup);
             QWidget *conditionWidget = new QWidget();
             {
                 QHBoxLayout *hbox = new QHBoxLayout(conditionWidget);
-                hbox->addWidget(new QLabel(QObject::tr("Breakpoint Condition:")));
+                hbox->addWidget(new QLabel(tr("Breakpoint Condition:")));
                 hbox->addWidget(new QLineEdit());
             }
 //            QWidgetAction *conditionAct = new QWidgetAction(popup);

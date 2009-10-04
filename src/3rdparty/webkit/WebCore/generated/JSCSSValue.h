@@ -33,7 +33,7 @@ class CSSValue;
 class JSCSSValue : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSCSSValue(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CSSValue>);
+    JSCSSValue(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CSSValue>);
     virtual ~JSCSSValue();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -69,7 +69,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSCSSValuePrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSCSSValuePrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Attributes

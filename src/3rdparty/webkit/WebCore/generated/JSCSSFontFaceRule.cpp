@@ -116,7 +116,7 @@ JSObject* JSCSSFontFaceRulePrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSCSSFontFaceRule::s_info = { "CSSFontFaceRule", &JSCSSRule::s_info, &JSCSSFontFaceRuleTable, 0 };
 
-JSCSSFontFaceRule::JSCSSFontFaceRule(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSFontFaceRule> impl)
+JSCSSFontFaceRule::JSCSSFontFaceRule(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSFontFaceRule> impl)
     : JSCSSRule(structure, globalObject, impl)
 {
 }

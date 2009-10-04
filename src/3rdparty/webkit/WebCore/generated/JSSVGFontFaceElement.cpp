@@ -56,7 +56,7 @@ JSObject* JSSVGFontFaceElementPrototype::self(ExecState* exec, JSGlobalObject* g
 
 const ClassInfo JSSVGFontFaceElement::s_info = { "SVGFontFaceElement", &JSSVGElement::s_info, 0, 0 };
 
-JSSVGFontFaceElement::JSSVGFontFaceElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFontFaceElement> impl)
+JSSVGFontFaceElement::JSSVGFontFaceElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFontFaceElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

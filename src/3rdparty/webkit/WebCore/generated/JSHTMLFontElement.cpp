@@ -117,7 +117,7 @@ JSObject* JSHTMLFontElementPrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSHTMLFontElement::s_info = { "HTMLFontElement", &JSHTMLElement::s_info, &JSHTMLFontElementTable, 0 };
 
-JSHTMLFontElement::JSHTMLFontElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLFontElement> impl)
+JSHTMLFontElement::JSHTMLFontElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLFontElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

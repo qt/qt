@@ -71,7 +71,7 @@ JSObject* JSSVGNumberPrototype::self(ExecState* exec, JSGlobalObject* globalObje
 
 const ClassInfo JSSVGNumber::s_info = { "SVGNumber", 0, &JSSVGNumberTable, 0 };
 
-JSSVGNumber::JSSVGNumber(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JSSVGPODTypeWrapper<float> > impl, SVGElement* context)
+JSSVGNumber::JSSVGNumber(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JSSVGPODTypeWrapper<float> > impl, SVGElement* context)
     : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {

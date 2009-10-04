@@ -565,6 +565,9 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
             q->removeItem(item->d_ptr->children.at(i));
     }
 
+    if (item->isPanel() && item->isVisible() && item->panelModality() != QGraphicsItem::NonModal)
+        leaveModal(item);
+
     // Reset the mouse grabber and focus item data.
     if (mouseGrabberItems.contains(item))
         ungrabMouse(item, /* item is dying */ item->d_ptr->inDestructor);
@@ -1111,6 +1114,9 @@ void QGraphicsScenePrivate::sendMouseEvent(QGraphicsSceneMouseEvent *mouseEvent)
     }
 
     QGraphicsItem *item = mouseGrabberItems.last();
+    if (item->isBlockedByModalPanel())
+        return;
+
     for (int i = 0x1; i <= 0x10; i <<= 1) {
         Qt::MouseButton button = Qt::MouseButton(i);
         mouseEvent->setButtonDownPos(button, mouseGrabberButtonDownPos.value(button, item->d_ptr->genericMapFromScene(mouseEvent->scenePos(), mouseEvent->widget())));
@@ -1134,6 +1140,8 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
 
     // Deliver to any existing mouse grabber.
     if (!mouseGrabberItems.isEmpty()) {
+        if (mouseGrabberItems.last()->isBlockedByModalPanel())
+            return;
         // The event is ignored by default, but we disregard the event's
         // accepted state after delivery; the mouse is grabbed, after all.
         sendMouseEvent(mouseEvent);
@@ -1151,12 +1159,22 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
     // Update window activation.
     QGraphicsItem *topItem = cachedItemsUnderMouse.value(0);
     QGraphicsWidget *newActiveWindow = topItem ? topItem->window() : 0;
+    if (newActiveWindow && newActiveWindow->isBlockedByModalPanel(&topItem)) {
+        // pass activation to the blocking modal window
+        newActiveWindow = topItem ? topItem->window() : 0;
+    }
+
     if (newActiveWindow != q->activeWindow())
         q->setActiveWindow(newActiveWindow);
 
     // Set focus on the topmost enabled item that can take focus.
     bool setFocus = false;
     foreach (QGraphicsItem *item, cachedItemsUnderMouse) {
+        if (item->isBlockedByModalPanel()) {
+            // Make sure we don't clear focus.
+            setFocus = true;
+            break;
+        }
         if (item->isEnabled() && ((item->flags() & QGraphicsItem::ItemIsFocusable) && item->d_ptr->mouseSetsFocus)) {
             if (!item->isWidget() || ((QGraphicsWidget *)item)->focusPolicy() & Qt::ClickFocus) {
                 setFocus = true;
@@ -1165,11 +1183,26 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
                 break;
             }
         }
+        if (item->isPanel())
+            break;
+    }
+
+    // Check for scene modality.
+    bool sceneModality = false;
+    for (int i = 0; i < modalPanels.size(); ++i) {
+        if (modalPanels.at(i)->panelModality() == QGraphicsItem::SceneModal) {
+            sceneModality = true;
+            break;
+        }
     }
 
     // If nobody could take focus, clear it.
-    if (!stickyFocus && !setFocus)
+    if (!stickyFocus && !setFocus && !sceneModality)
         q->setFocusItem(0, Qt::MouseFocusReason);
+
+    // Any item will do.
+    if (sceneModality && cachedItemsUnderMouse.isEmpty())
+        cachedItemsUnderMouse << modalPanels.first();
 
     // Find a mouse grabber by sending mouse press events to all mouse grabber
     // candidates one at a time, until the event is accepted. It's accepted by
@@ -1180,6 +1213,10 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
             // Skip items that don't accept the event's mouse button.
             continue;
         }
+
+        // Check if this item is blocked by a modal panel and deliver the mouse event to the
+        // blocking panel instead of this item if blocked.
+        (void) item->isBlockedByModalPanel(&item);
 
         grabMouse(item, /* implicit = */ true);
         mouseEvent->accept();
@@ -1723,9 +1760,9 @@ QRectF QGraphicsScene::itemsBoundingRect() const
 }
 
 /*!
-    Returns a list of all items on the scene, in no particular order.
+    Returns a list of all items in the scene in descending stacking order.
 
-    \sa addItem(), removeItem()
+    \sa addItem(), removeItem(), {QGraphicsItem#Sorting}{Sorting}
 */
 QList<QGraphicsItem *> QGraphicsScene::items() const
 {
@@ -1735,9 +1772,9 @@ QList<QGraphicsItem *> QGraphicsScene::items() const
 
 /*!
     Returns an ordered list of all items on the scene. \a order decides the
-    sorting.
+    stacking order.
 
-    \sa addItem(), removeItem()
+    \sa addItem(), removeItem(), {QGraphicsItem#Sorting}{Sorting}
 */
 QList<QGraphicsItem *> QGraphicsScene::items(Qt::SortOrder order) const
 {
@@ -1756,7 +1793,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(Qt::SortOrder order) const
     contains items that ignore transformations. Use the overload that takes
     a QTransform instead.
 
-    \sa itemAt()
+    \sa itemAt(), {QGraphicsItem#Sorting}{Sorting}
 */
 QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos) const
 {
@@ -1778,7 +1815,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos) const
     contains items that ignore transformations. Use the overload that takes
     a QTransform instead.
 
-    \sa itemAt()
+    \sa itemAt(), {QGraphicsItem#Sorting}{Sorting}
 */
 QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rectangle, Qt::ItemSelectionMode mode) const
 {
@@ -1799,20 +1836,20 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rectangle, Qt::ItemSe
 */
 
 /*!
-    \fn QList<QGraphicsItem *> QGraphicsScene::items(qreal x, qreal y, qreal w, qreal h,
-        Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
+    \fn QList<QGraphicsItem *> QGraphicsScene::items(qreal x, qreal y, qreal w, qreal h, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
     \overload
     \since 4.6
 
-    Returns all visible items that, depending on \a mode, are either inside or
-    intersect with the rectangle defined by \a x, \a y, \a w and \a h, in a list
-    sorted using \a order.
+    \brief Returns all visible items that, depending on \a mode, are
+    either inside or intersect with the rectangle defined by \a x, \a y,
+    \a w and \a h, in a list sorted using \a order.
 
     \a deviceTransform is the transformation that applies to the view, and needs to
     be provided if the scene contains items that ignore transformations.
 */
 
 /*!
+    \fn QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemSelectionMode mode) const
     \overload
     \obsolete
 
@@ -1826,7 +1863,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rectangle, Qt::ItemSe
     contains items that ignore transformations. Use the overload that takes
     a QTransform instead.
 
-    \sa itemAt()
+    \sa itemAt(), {QGraphicsItem#Sorting}{Sorting}
 */
 QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemSelectionMode mode) const
 {
@@ -1835,6 +1872,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemS
 }
 
 /*!
+    \fn QList<QGraphicsItem *> QGraphicsScene::items(const QPainterPath &path, Qt::ItemSelectionMode mode) const
     \overload
     \obsolete
 
@@ -1848,7 +1886,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemS
     contains items that ignore transformations. Use the overload that takes
     a QTransform instead.
 
-    \sa itemAt()
+    \sa itemAt(), {QGraphicsItem#Sorting}{Sorting}
 */
 QList<QGraphicsItem *> QGraphicsScene::items(const QPainterPath &path, Qt::ItemSelectionMode mode) const
 {
@@ -1857,10 +1895,11 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPainterPath &path, Qt::ItemS
 }
 
 /*!
+    \fn QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
     \since 4.6
 
-    Returns all visible items that, depending on \a mode, are at the specified \a pos
-    in a list sorted using \a order.
+    \brief Returns all visible items that, depending on \a mode, are at
+    the specified \a pos in a list sorted using \a order.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with \a pos are returned.
@@ -1868,7 +1907,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPainterPath &path, Qt::ItemS
     \a deviceTransform is the transformation that applies to the view, and needs to
     be provided if the scene contains items that ignore transformations.
 
-    \sa itemAt()
+    \sa itemAt(), {QGraphicsItem#Sorting}{Sorting}
 */
 QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos, Qt::ItemSelectionMode mode,
                                              Qt::SortOrder order, const QTransform &deviceTransform) const
@@ -1878,11 +1917,13 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos, Qt::ItemSelecti
 }
 
 /*!
+    \fn QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rect, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
     \overload
     \since 4.6
 
-    Returns all visible items that, depending on \a mode, are either inside or
-    intersect with the specified \a rect and return a list sorted using \a order.
+    \brief Returns all visible items that, depending on \a mode, are
+    either inside or intersect with the specified \a rect and return a
+    list sorted using \a order.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a rect are returned.
@@ -1890,7 +1931,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos, Qt::ItemSelecti
     \a deviceTransform is the transformation that applies to the view, and needs to
     be provided if the scene contains items that ignore transformations.
 
-    \sa itemAt()
+    \sa itemAt(), {QGraphicsItem#Sorting}{Sorting}
 */
 QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rect, Qt::ItemSelectionMode mode,
                                              Qt::SortOrder order, const QTransform &deviceTransform) const
@@ -1900,11 +1941,13 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rect, Qt::ItemSelecti
 }
 
 /*!
+    \fn QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
     \overload
     \since 4.6
 
-    Returns all visible items that, depending on \a mode, are either inside or
-    intersect with the specified \a polygon and return a list sorted using \a order.
+    \brief Returns all visible items that, depending on \a mode, are
+    either inside or intersect with the specified \a polygon and return
+    a list sorted using \a order.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a polygon are returned.
@@ -1912,7 +1955,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rect, Qt::ItemSelecti
     \a deviceTransform is the transformation that applies to the view, and needs to
     be provided if the scene contains items that ignore transformations.
 
-    \sa itemAt()
+    \sa itemAt(), {QGraphicsItem#Sorting}{Sorting}
 */
 QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemSelectionMode mode,
                                              Qt::SortOrder order, const QTransform &deviceTransform) const
@@ -1922,11 +1965,13 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemS
 }
 
 /*!
+    \fn QList<QGraphicsItem *> QGraphicsScene::items(const QPainterPath &path, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
     \overload
     \since 4.6
 
-    Returns all visible items that, depending on \a mode, are either inside or
-    intersect with the specified \a path and return a list sorted using \a order.
+    \brief Returns all visible items that, depending on \a mode, are
+    either inside or intersect with the specified \a path and return a
+    list sorted using \a order.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a path are returned.
@@ -1934,7 +1979,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemS
     \a deviceTransform is the transformation that applies to the view, and needs to
     be provided if the scene contains items that ignore transformations.
 
-    \sa itemAt()
+    \sa itemAt(), {QGraphicsItem#Sorting}{Sorting}
 */
 QList<QGraphicsItem *> QGraphicsScene::items(const QPainterPath &path, Qt::ItemSelectionMode mode,
                                              Qt::SortOrder order, const QTransform &deviceTransform) const
@@ -1949,10 +1994,11 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPainterPath &path, Qt::ItemS
     detection is determined by \a mode. By default, all items whose shape
     intersects \a item or is contained inside \a item's shape are returned.
 
-    The items are returned in descending Z order (i.e., the first item in the
-    list is the top-most item, and the last item is the bottom-most item).
+    The items are returned in descending stacking order (i.e., the first item
+    in the list is the uppermost item, and the last item is the lowermost
+    item).
 
-    \sa items(), itemAt(), QGraphicsItem::collidesWithItem()
+    \sa items(), itemAt(), QGraphicsItem::collidesWithItem(), {QGraphicsItem#Sorting}{Sorting}
 */
 QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
                                                       Qt::ItemSelectionMode mode) const
@@ -1979,13 +2025,11 @@ QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
     Returns the topmost visible item at the specified \a position, or 0 if
     there are no items at this position.
 
-    \note The topmost item is the one with the highest Z-value.
-
     This function is deprecated and returns incorrect results if the scene
     contains items that ignore transformations. Use the overload that takes
     a QTransform instead.
 
-    \sa items(), collidingItems(), QGraphicsItem::setZValue()
+    \sa items(), collidingItems(), {QGraphicsItem#Sorting}{Sorting}
 */
 QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position) const
 {
@@ -2002,10 +2046,8 @@ QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position) const
     \a deviceTransform is the transformation that applies to the view, and needs to
     be provided if the scene contains items that ignore transformations.
 
-    \note The topmost item is the one with the highest Z-value.
-
-    \sa items(), collidingItems(), QGraphicsItem::setZValue()
-    */
+    \sa items(), collidingItems(), {QGraphicsItem#Sorting}{Sorting}
+*/
 QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position, const QTransform &deviceTransform) const
 {
     QList<QGraphicsItem *> itemsAtPoint = items(position, Qt::IntersectsItemShape,
@@ -2026,8 +2068,6 @@ QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position, const QTransform 
 
     This convenience function is equivalent to calling \c
     {itemAt(QPointF(x, y), deviceTransform)}.
-
-    \note The topmost item is the one with the highest Z-value.
 */
 
 /*!
@@ -2044,8 +2084,6 @@ QGraphicsItem *QGraphicsScene::itemAt(const QPointF &position, const QTransform 
     This function is deprecated and returns incorrect results if the scene
     contains items that ignore transformations. Use the overload that takes
     a QTransform instead.
-
-    \note The topmost item is the one with the highest Z-value.
 */
 
 /*!
@@ -2324,7 +2362,7 @@ void QGraphicsScene::destroyItemGroup(QGraphicsItemGroup *group)
     in the scene, then the item will be activated.
 
     \sa removeItem(), addEllipse(), addLine(), addPath(), addPixmap(),
-    addRect(), addText(), addWidget()
+    addRect(), addText(), addWidget(), {QGraphicsItem#Sorting}{Sorting}
 */
 void QGraphicsScene::addItem(QGraphicsItem *item)
 {
@@ -2403,6 +2441,8 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
         d->selectedItems << item;
     if (item->isWidget() && item->isVisible() && static_cast<QGraphicsWidget *>(item)->windowType() == Qt::Popup)
         d->addPopup(static_cast<QGraphicsWidget *>(item));
+    if (item->isPanel() && item->isVisible() && item->panelModality() != QGraphicsItem::NonModal)
+        d->enterModal(item);
 
     // Update creation order focus chain. Make sure to leave the widget's
     // internal tab order intact.
@@ -3205,8 +3245,12 @@ bool QGraphicsScene::event(QEvent *event)
         }
         return false;
     case QEvent::GraphicsSceneMouseMove:
-        mouseMoveEvent(static_cast<QGraphicsSceneMouseEvent *>(event));
+    {
+        QGraphicsSceneMouseEvent *mouseEvent = static_cast<QGraphicsSceneMouseEvent *>(event);
+        d->lastSceneMousePos = mouseEvent->scenePos();
+        mouseMoveEvent(mouseEvent);
         break;
+    }
     case QEvent::GraphicsSceneMousePress:
         mousePressEvent(static_cast<QGraphicsSceneMouseEvent *>(event));
         break;
@@ -3228,8 +3272,12 @@ bool QGraphicsScene::event(QEvent *event)
     case QEvent::GraphicsSceneHoverEnter:
     case QEvent::GraphicsSceneHoverLeave:
     case QEvent::GraphicsSceneHoverMove:
-        d->dispatchHoverEvent(static_cast<QGraphicsSceneHoverEvent *>(event));
+    {
+        QGraphicsSceneHoverEvent *hoverEvent = static_cast<QGraphicsSceneHoverEvent *>(event);
+        d->lastSceneMousePos = hoverEvent->scenePos();
+        d->dispatchHoverEvent(hoverEvent);
         break;
+    }
     case QEvent::Leave:
         d->leaveScene();
         break;
@@ -3599,8 +3647,10 @@ void QGraphicsScene::helpEvent(QGraphicsSceneHelpEvent *helpEvent)
 
 bool QGraphicsScenePrivate::itemAcceptsHoverEvents_helper(const QGraphicsItem *item) const
 {
-    return item->acceptHoverEvents()
-        || (item->isWidget() && static_cast<const QGraphicsWidget *>(item)->d_func()->hasDecoration());
+    return (!item->isBlockedByModalPanel() &&
+            (item->acceptHoverEvents()
+             || (item->isWidget()
+                 && static_cast<const QGraphicsWidget *>(item)->d_func()->hasDecoration())));
 }
 
 /*!
@@ -3674,7 +3724,9 @@ bool QGraphicsScenePrivate::dispatchHoverEvent(QGraphicsSceneHoverEvent *hoverEv
     }
 
     // Generate a move event for the item itself
-    if (item && !hoverItems.isEmpty() && item == hoverItems.last()) {
+    if (item
+        && !hoverItems.isEmpty()
+        && item == hoverItems.last()) {
         sendHoverEvent(QEvent::GraphicsSceneHoverMove, item, hoverEvent);
         return true;
     }
@@ -3708,8 +3760,7 @@ void QGraphicsScenePrivate::leaveScene()
 
     while (!hoverItems.isEmpty()) {
         QGraphicsItem *lastItem = hoverItems.takeLast();
-        if (lastItem->acceptHoverEvents()
-            || (lastItem->isWidget() && static_cast<QGraphicsWidget*>(lastItem)->d_func()->hasDecoration()))
+        if (itemAcceptsHoverEvents_helper(lastItem))
             sendHoverEvent(QEvent::GraphicsSceneHoverLeave, lastItem, &hoverEvent);
     }
 }
@@ -3736,6 +3787,8 @@ void QGraphicsScene::keyPressEvent(QKeyEvent *keyEvent)
             keyEvent->accept();
             // Send it; QGraphicsItem::keyPressEvent ignores it.  If the event
             // is filtered out, stop propagating it.
+            if (p->isBlockedByModalPanel())
+                break;
             if (!d->sendEvent(p, keyEvent))
                 break;
         } while (!keyEvent->isAccepted() && !p->isPanel() && (p = p->parentItem()));
@@ -3766,6 +3819,8 @@ void QGraphicsScene::keyReleaseEvent(QKeyEvent *keyEvent)
             keyEvent->accept();
             // Send it; QGraphicsItem::keyPressEvent ignores it.  If the event
             // is filtered out, stop propagating it.
+            if (p->isBlockedByModalPanel())
+                break;
             if (!d->sendEvent(p, keyEvent))
                 break;
         } while (!keyEvent->isAccepted() && !p->isPanel() && (p = p->parentItem()));
@@ -5420,6 +5475,8 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
     for (; it != end; ++it) {
         QGraphicsItem *item = it.key();
 
+        (void) item->isBlockedByModalPanel(&item);
+
         // determine event type from the state mask
         QEvent::Type eventType;
         switch (it.value().first) {
@@ -5493,6 +5550,8 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
                 break;
             }
         }
+        if (item->isPanel())
+            break;
     }
 
     // If nobody could take focus, clear it.
@@ -5518,6 +5577,8 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
             }
             break;
         }
+        if (item->isPanel())
+            break;
     }
 
     touchEvent->setAccepted(eventAccepted);
@@ -5534,6 +5595,94 @@ void QGraphicsScenePrivate::updateInputMethodSensitivityInViews()
 {
     for (int i = 0; i < views.size(); ++i)
         views.at(i)->d_func()->updateInputMethodSensitivity();
+}
+
+void QGraphicsScenePrivate::enterModal(QGraphicsItem *panel, QGraphicsItem::PanelModality previousModality)
+{
+    Q_Q(QGraphicsScene);
+    Q_ASSERT(panel && panel->isPanel());
+
+    QGraphicsItem::PanelModality panelModality = panel->d_ptr->panelModality;
+    if (previousModality != QGraphicsItem::NonModal) {
+        // the panel is changing from one modality type to another... temporarily set it back so
+        // that blockedPanels is populated correctly
+        panel->d_ptr->panelModality = previousModality;
+    }
+
+    QSet<QGraphicsItem *> blockedPanels;
+    QList<QGraphicsItem *> items = q->items(); // ### store panels separately
+    for (int i = 0; i < items.count(); ++i) {
+        QGraphicsItem *item = items.at(i);
+        if (item->isPanel() && item->isBlockedByModalPanel())
+            blockedPanels.insert(item);
+    }
+    // blockedPanels contains all currently blocked panels
+
+    if (previousModality != QGraphicsItem::NonModal) {
+        // reset the modality to the proper value, since we changed it above
+        panel->d_ptr->panelModality = panelModality;
+        // remove this panel so that it will be reinserted at the front of the stack
+        modalPanels.removeAll(panel);
+    }
+
+    modalPanels.prepend(panel);
+
+    if (!hoverItems.isEmpty()) {
+        // send GraphicsSceneHoverLeave events to newly blocked hoverItems
+        QGraphicsSceneHoverEvent hoverEvent;
+        hoverEvent.setScenePos(lastSceneMousePos);
+        dispatchHoverEvent(&hoverEvent);
+    }
+
+    if (!mouseGrabberItems.isEmpty() && lastMouseGrabberItemHasImplicitMouseGrab) {
+        QGraphicsItem *item = mouseGrabberItems.last();
+        if (item->isBlockedByModalPanel())
+            ungrabMouse(item, /*itemIsDying =*/ false);
+    }
+
+    QEvent windowBlockedEvent(QEvent::WindowBlocked);
+    QEvent windowUnblockedEvent(QEvent::WindowUnblocked);
+    for (int i = 0; i < items.count(); ++i) {
+        QGraphicsItem *item = items.at(i);
+        if (item->isPanel()) {
+            if (!blockedPanels.contains(item) && item->isBlockedByModalPanel()) {
+                // send QEvent::WindowBlocked to newly blocked panels
+                sendEvent(item, &windowBlockedEvent);
+            } else if (blockedPanels.contains(item) && !item->isBlockedByModalPanel()) {
+                // send QEvent::WindowUnblocked to unblocked panels when downgrading
+                // a panel from SceneModal to PanelModal
+                sendEvent(item, &windowUnblockedEvent);
+            }
+        }
+    }
+}
+
+void QGraphicsScenePrivate::leaveModal(QGraphicsItem *panel)
+{
+    Q_Q(QGraphicsScene);
+    Q_ASSERT(panel && panel->isPanel());
+
+    QSet<QGraphicsItem *> blockedPanels;
+    QList<QGraphicsItem *> items = q->items(); // ### same as above
+    for (int i = 0; i < items.count(); ++i) {
+        QGraphicsItem *item = items.at(i);
+        if (item->isPanel() && item->isBlockedByModalPanel())
+            blockedPanels.insert(item);
+    }
+
+    modalPanels.removeAll(panel);
+
+    QEvent e(QEvent::WindowUnblocked);
+    for (int i = 0; i < items.count(); ++i) {
+        QGraphicsItem *item = items.at(i);
+        if (item->isPanel() && blockedPanels.contains(item) && !item->isBlockedByModalPanel())
+            sendEvent(item, &e);
+    }
+
+    // send GraphicsSceneHoverEnter events to newly unblocked items
+    QGraphicsSceneHoverEvent hoverEvent;
+    hoverEvent.setScenePos(lastSceneMousePos);
+    dispatchHoverEvent(&hoverEvent);
 }
 
 QT_END_NAMESPACE

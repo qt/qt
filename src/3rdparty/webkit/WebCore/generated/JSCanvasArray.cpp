@@ -85,7 +85,7 @@ bool JSCanvasArrayPrototype::getOwnPropertyDescriptor(ExecState* exec, const Ide
 
 const ClassInfo JSCanvasArray::s_info = { "CanvasArray", 0, &JSCanvasArrayTable, 0 };
 
-JSCanvasArray::JSCanvasArray(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasArray> impl)
+JSCanvasArray::JSCanvasArray(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasArray> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

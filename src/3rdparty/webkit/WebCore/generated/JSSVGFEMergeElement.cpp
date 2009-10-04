@@ -96,7 +96,7 @@ bool JSSVGFEMergeElementPrototype::getOwnPropertyDescriptor(ExecState* exec, con
 
 const ClassInfo JSSVGFEMergeElement::s_info = { "SVGFEMergeElement", &JSSVGElement::s_info, &JSSVGFEMergeElementTable, 0 };
 
-JSSVGFEMergeElement::JSSVGFEMergeElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEMergeElement> impl)
+JSSVGFEMergeElement::JSSVGFEMergeElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEMergeElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

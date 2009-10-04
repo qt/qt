@@ -119,7 +119,7 @@ JSObject* JSClientRectPrototype::self(ExecState* exec, JSGlobalObject* globalObj
 
 const ClassInfo JSClientRect::s_info = { "ClientRect", 0, &JSClientRectTable, 0 };
 
-JSClientRect::JSClientRect(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<ClientRect> impl)
+JSClientRect::JSClientRect(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<ClientRect> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

@@ -35,7 +35,7 @@ class WorkerNavigator;
 class JSWorkerNavigator : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSWorkerNavigator(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<WorkerNavigator>);
+    JSWorkerNavigator(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<WorkerNavigator>);
     virtual ~JSWorkerNavigator();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -63,7 +63,7 @@ public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
-    JSWorkerNavigatorPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSWorkerNavigatorPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Attributes

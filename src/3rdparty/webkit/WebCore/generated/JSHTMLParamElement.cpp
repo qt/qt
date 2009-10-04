@@ -118,7 +118,7 @@ JSObject* JSHTMLParamElementPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSHTMLParamElement::s_info = { "HTMLParamElement", &JSHTMLElement::s_info, &JSHTMLParamElementTable, 0 };
 
-JSHTMLParamElement::JSHTMLParamElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLParamElement> impl)
+JSHTMLParamElement::JSHTMLParamElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLParamElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

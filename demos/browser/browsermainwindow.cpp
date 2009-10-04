@@ -740,7 +740,7 @@ void BrowserMainWindow::closeEvent(QCloseEvent *event)
     if (m_tabWidget->count() > 1) {
         int ret = QMessageBox::warning(this, QString(),
                            tr("Are you sure you want to close the window?"
-                              "  There are %1 tab open").arg(m_tabWidget->count()),
+                              "  There are %1 tabs open").arg(m_tabWidget->count()),
                            QMessageBox::Yes | QMessageBox::No,
                            QMessageBox::No);
         if (ret == QMessageBox::No) {

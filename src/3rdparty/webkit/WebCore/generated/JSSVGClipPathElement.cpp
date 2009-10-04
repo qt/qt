@@ -116,7 +116,7 @@ bool JSSVGClipPathElementPrototype::getOwnPropertyDescriptor(ExecState* exec, co
 
 const ClassInfo JSSVGClipPathElement::s_info = { "SVGClipPathElement", &JSSVGElement::s_info, &JSSVGClipPathElementTable, 0 };
 
-JSSVGClipPathElement::JSSVGClipPathElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGClipPathElement> impl)
+JSSVGClipPathElement::JSSVGClipPathElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGClipPathElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

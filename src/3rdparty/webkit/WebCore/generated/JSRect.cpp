@@ -118,7 +118,7 @@ JSObject* JSRectPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 
 const ClassInfo JSRect::s_info = { "Rect", 0, &JSRectTable, 0 };
 
-JSRect::JSRect(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Rect> impl)
+JSRect::JSRect(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Rect> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

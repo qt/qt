@@ -93,9 +93,9 @@ void QTestCoreElement<ElementType>::addAttribute(const QTest::AttributeIndex att
     if (attribute(attributeIndex))
         return;
 
-    QTestElementAttribute *attribute = new QTestElementAttribute;
-    attribute->setPair(attributeIndex, value);
-    attribute->addToList(&listOfAttributes);
+    QTestElementAttribute *testAttribute = new QTestElementAttribute;
+    testAttribute->setPair(attributeIndex, value);
+    testAttribute->addToList(&listOfAttributes);
 }
 
 template <class ElementType>

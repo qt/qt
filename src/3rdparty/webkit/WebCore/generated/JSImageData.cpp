@@ -115,7 +115,7 @@ JSObject* JSImageDataPrototype::self(ExecState* exec, JSGlobalObject* globalObje
 
 const ClassInfo JSImageData::s_info = { "ImageData", 0, &JSImageDataTable, 0 };
 
-JSImageData::JSImageData(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<ImageData> impl)
+JSImageData::JSImageData(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<ImageData> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

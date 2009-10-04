@@ -137,7 +137,7 @@ bool JSDOMImplementationPrototype::getOwnPropertyDescriptor(ExecState* exec, con
 
 const ClassInfo JSDOMImplementation::s_info = { "DOMImplementation", 0, &JSDOMImplementationTable, 0 };
 
-JSDOMImplementation::JSDOMImplementation(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DOMImplementation> impl)
+JSDOMImplementation::JSDOMImplementation(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DOMImplementation> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

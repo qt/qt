@@ -31,7 +31,7 @@ qhp.Linguist.subprojects.examples.sortPages = true
 
 language                = Cpp
 
-sources                 = $QT_SOURCE_TREE/doc/src/linguist-manual.qdoc \
+sources                 = $QT_SOURCE_TREE/doc/src/internationalization/linguist-manual.qdoc \
                           $QT_SOURCE_TREE/doc/src/examples/hellotr.qdoc \
                           $QT_SOURCE_TREE/doc/src/examples/arrowpad.qdoc \
                           $QT_SOURCE_TREE/doc/src/examples/trollprint.qdoc

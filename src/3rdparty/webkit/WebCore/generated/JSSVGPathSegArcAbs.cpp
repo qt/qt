@@ -78,7 +78,7 @@ JSObject* JSSVGPathSegArcAbsPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSSVGPathSegArcAbs::s_info = { "SVGPathSegArcAbs", &JSSVGPathSeg::s_info, &JSSVGPathSegArcAbsTable, 0 };
 
-JSSVGPathSegArcAbs::JSSVGPathSegArcAbs(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegArcAbs> impl, SVGElement* context)
+JSSVGPathSegArcAbs::JSSVGPathSegArcAbs(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegArcAbs> impl, SVGElement* context)
     : JSSVGPathSeg(structure, globalObject, impl, context)
 {
 }

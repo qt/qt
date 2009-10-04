@@ -132,7 +132,7 @@ bool JSHTMLFieldSetElementPrototype::getOwnPropertyDescriptor(ExecState* exec, c
 
 const ClassInfo JSHTMLFieldSetElement::s_info = { "HTMLFieldSetElement", &JSHTMLElement::s_info, &JSHTMLFieldSetElementTable, 0 };
 
-JSHTMLFieldSetElement::JSHTMLFieldSetElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLFieldSetElement> impl)
+JSHTMLFieldSetElement::JSHTMLFieldSetElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLFieldSetElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

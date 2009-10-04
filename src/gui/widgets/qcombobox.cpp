@@ -403,8 +403,8 @@ QComboBoxPrivateContainer::QComboBoxPrivateContainer(QAbstractItemView *itemView
     layout->setMargin(0);
 
 #ifdef QT_SOFTKEYS_ENABLED
-    selectAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::SelectSoftKey, Qt::Key_Select, itemView);
-    cancelAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::CancelSoftKey, Qt::Key_Escape, itemView);
+    selectAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::SelectSoftKey, Qt::Key_Select, this);
+    cancelAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::CancelSoftKey, Qt::Key_Escape, this);
     addAction(selectAction);
     addAction(cancelAction);
 #endif
@@ -534,6 +534,7 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
                    this, SLOT(setCurrentIndex(QModelIndex)));
         disconnect(view, SIGNAL(destroyed()),
                    this, SLOT(viewDestroyed()));
+
         delete view;
         view = 0;
     }
@@ -571,11 +572,6 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
             this, SLOT(setCurrentIndex(QModelIndex)));
     connect(view, SIGNAL(destroyed()),
             this, SLOT(viewDestroyed()));
-
-#ifdef QT_SOFTKEYS_ENABLED
-    selectAction->setParent(itemView);
-    cancelAction->setParent(itemView);
-#endif
 }
 
 /*!

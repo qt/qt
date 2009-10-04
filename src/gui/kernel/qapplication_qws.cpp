@@ -110,6 +110,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <qvfbhdr.h>
+
 #ifndef QT_NO_QWS_MULTIPROCESS
 #ifdef QT_NO_QSHM
 #include <sys/ipc.h>
@@ -199,14 +201,9 @@ QString qws_dataDir()
     static QString result;
     if (!result.isEmpty())
         return result;
-    QByteArray dataDir;
-#ifdef QT_QWS_TEMP_DIR
-    dataDir = QT_QWS_TEMP_DIR;
-#else
-    dataDir = "/tmp";
-#endif
-    dataDir += "/qtembedded-";
-    dataDir += QByteArray::number(qws_display_id);
+    result = QT_VFB_DATADIR(qws_display_id);
+    QByteArray dataDir = result.toLocal8Bit();
+
     if (QT_MKDIR(dataDir, 0700)) {
         if (errno != EEXIST) {
             qFatal("Cannot create Qt for Embedded Linux data directory: %s", dataDir.constData());
@@ -227,16 +224,15 @@ QString qws_dataDir()
     if ((buf.st_mode & 0677) != 0600)
         qFatal("Qt for Embedded Linux data directory has incorrect permissions: %s", dataDir.constData());
 #endif
-    dataDir += '/';
 
-    result = QString::fromLocal8Bit(dataDir);
+    result.append("/");
     return result;
 }
 
 // Get the filename of the pipe Qt for Embedded Linux uses for server/client comms
 Q_GUI_EXPORT QString qws_qtePipeFilename()
 {
-    return (qws_dataDir() + QString::fromLatin1(QTE_PIPE).arg(qws_display_id));
+    return (qws_dataDir().append(QTE_PIPE));
 }
 
 static void setMaxWindowRect(const QRect &rect)

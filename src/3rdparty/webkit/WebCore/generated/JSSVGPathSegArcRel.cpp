@@ -78,7 +78,7 @@ JSObject* JSSVGPathSegArcRelPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSSVGPathSegArcRel::s_info = { "SVGPathSegArcRel", &JSSVGPathSeg::s_info, &JSSVGPathSegArcRelTable, 0 };
 
-JSSVGPathSegArcRel::JSSVGPathSegArcRel(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegArcRel> impl, SVGElement* context)
+JSSVGPathSegArcRel::JSSVGPathSegArcRel(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegArcRel> impl, SVGElement* context)
     : JSSVGPathSeg(structure, globalObject, impl, context)
 {
 }

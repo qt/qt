@@ -117,7 +117,7 @@ bool JSSVGPatternElementPrototype::getOwnPropertyDescriptor(ExecState* exec, con
 
 const ClassInfo JSSVGPatternElement::s_info = { "SVGPatternElement", &JSSVGElement::s_info, &JSSVGPatternElementTable, 0 };
 
-JSSVGPatternElement::JSSVGPatternElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPatternElement> impl)
+JSSVGPatternElement::JSSVGPatternElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPatternElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

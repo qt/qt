@@ -147,7 +147,7 @@ bool JSSVGComponentTransferFunctionElementPrototype::getOwnPropertyDescriptor(Ex
 
 const ClassInfo JSSVGComponentTransferFunctionElement::s_info = { "SVGComponentTransferFunctionElement", &JSSVGElement::s_info, &JSSVGComponentTransferFunctionElementTable, 0 };
 
-JSSVGComponentTransferFunctionElement::JSSVGComponentTransferFunctionElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGComponentTransferFunctionElement> impl)
+JSSVGComponentTransferFunctionElement::JSSVGComponentTransferFunctionElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGComponentTransferFunctionElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

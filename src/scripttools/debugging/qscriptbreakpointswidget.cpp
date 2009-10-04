@@ -78,7 +78,7 @@ public:
         toolClose = new QToolButton(this);
         toolClose->setIcon(QIcon(QString::fromUtf8(":/qt/scripttools/debugging/images/%1/closetab.png").arg(system)));
         toolClose->setAutoRaise(true);
-        toolClose->setText(QObject::tr("Close"));
+        toolClose->setText(tr("Close"));
         hboxLayout->addWidget(toolClose);
 
         fileNameEdit = new QLineEdit();
@@ -295,13 +295,13 @@ QScriptBreakpointsWidget::QScriptBreakpointsWidget(QWidget *parent)
 
     QIcon newBreakpointIcon;
     newBreakpointIcon.addPixmap(d->pixmap(QString::fromLatin1("new.png")), QIcon::Normal);
-    QAction *newBreakpointAction = new QAction(newBreakpointIcon, QObject::tr("New"), this);
+    QAction *newBreakpointAction = new QAction(newBreakpointIcon, tr("New"), this);
     QObject::connect(newBreakpointAction, SIGNAL(triggered()),
                      this, SLOT(_q_newBreakpoint()));
 
     QIcon deleteBreakpointIcon;
     deleteBreakpointIcon.addPixmap(d->pixmap(QString::fromLatin1("delete.png")), QIcon::Normal);
-    d->deleteBreakpointAction = new QAction(deleteBreakpointIcon, QObject::tr("Delete"), this);
+    d->deleteBreakpointAction = new QAction(deleteBreakpointIcon, tr("Delete"), this);
     d->deleteBreakpointAction->setEnabled(false);
     QObject::connect(d->deleteBreakpointAction, SIGNAL(triggered()),
                      this, SLOT(_q_deleteBreakpoint()));

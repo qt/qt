@@ -33,7 +33,7 @@ class CanvasGradient;
 class JSCanvasGradient : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSCanvasGradient(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CanvasGradient>);
+    JSCanvasGradient(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CanvasGradient>);
     virtual ~JSCanvasGradient();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -60,7 +60,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSCanvasGradientPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSCanvasGradientPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

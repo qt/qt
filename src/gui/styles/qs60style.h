@@ -76,6 +76,9 @@ public:
     void unpolish(QWidget *widget);
     void polish(QApplication *application);
     void unpolish(QApplication *application);
+#ifndef Q_NO_USING_KEYWORD
+    using QCommonStyle::polish;
+#endif
 
     void setStyleProperty(const char *name, const QVariant &value);
     QVariant styleProperty(const char *name) const;

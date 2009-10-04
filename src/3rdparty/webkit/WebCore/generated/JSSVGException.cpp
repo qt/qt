@@ -139,7 +139,7 @@ bool JSSVGExceptionPrototype::getOwnPropertyDescriptor(ExecState* exec, const Id
 
 const ClassInfo JSSVGException::s_info = { "SVGException", 0, &JSSVGExceptionTable, 0 };
 
-JSSVGException::JSSVGException(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGException> impl, SVGElement* context)
+JSSVGException::JSSVGException(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGException> impl, SVGElement* context)
     : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {

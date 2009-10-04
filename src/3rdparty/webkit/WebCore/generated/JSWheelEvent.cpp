@@ -128,7 +128,7 @@ JSObject* JSWheelEventPrototype::self(ExecState* exec, JSGlobalObject* globalObj
 
 const ClassInfo JSWheelEvent::s_info = { "WheelEvent", &JSUIEvent::s_info, &JSWheelEventTable, 0 };
 
-JSWheelEvent::JSWheelEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WheelEvent> impl)
+JSWheelEvent::JSWheelEvent(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WheelEvent> impl)
     : JSUIEvent(structure, globalObject, impl)
 {
 }

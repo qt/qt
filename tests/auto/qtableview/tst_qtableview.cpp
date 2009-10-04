@@ -378,7 +378,6 @@ public:
     }
 
     bool checkSignalOrder;
-    using QTableView::wheelEvent;
 public slots:
     void currentChanged(QModelIndex , QModelIndex ) {
         hasCurrentChanged++;
@@ -3222,6 +3221,7 @@ void tst_QTableView::mouseWheel()
     for (int c = 0; c < 100; ++c)
         view.setColumnWidth(c, 100);
     view.show();
+    QTest::qWaitForWindowShown(&view);
 
     view.setModel(&model);
 
@@ -3230,12 +3230,13 @@ void tst_QTableView::mouseWheel()
     view.horizontalScrollBar()->setValue(10);
     view.verticalScrollBar()->setValue(10);
 
-    QPoint pos(100,100);
+    qDebug() << "delta" << delta << view.viewport()->geometry();
+    QPoint pos = view.viewport()->geometry().center();
     QWheelEvent verticalEvent(pos, delta, 0, 0, Qt::Vertical);
     QWheelEvent horizontalEvent(pos, delta, 0, 0, Qt::Horizontal);
-    view.wheelEvent(&horizontalEvent);
+    QApplication::sendEvent(view.viewport(), &horizontalEvent);
     QVERIFY(qAbs(view.horizontalScrollBar()->value() - horizontalPositon) < 10);
-    view.wheelEvent(&verticalEvent);
+    QApplication::sendEvent(view.viewport(), &verticalEvent);
     QVERIFY(qAbs(view.verticalScrollBar()->value() - verticalPosition) < 10);
 }
 

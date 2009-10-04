@@ -363,7 +363,7 @@ void tst_QGraphicsView::alignment()
 
             for (int k = 0; k < 3; ++k) {
                 view.resize(100 + k * 25, 100 + k * 25);
-                QTest::qWait(25);
+                QApplication::processEvents();
             }
         }
     }
@@ -455,7 +455,7 @@ void tst_QGraphicsView::setScene()
 
     view.setScene(0);
 
-    QTest::qWait(250);
+    QTest::qWait(25);
 
     QVERIFY(!view.horizontalScrollBar()->isVisible());
     QVERIFY(!view.verticalScrollBar()->isVisible());
@@ -530,7 +530,7 @@ void tst_QGraphicsView::sceneRect_growing()
         size *= 2;
         scene.setSceneRect(-size, -size, size * 2, size * 2);
 
-        QTest::qWait(25);
+        QApplication::processEvents();
 
         QCOMPARE(view.sceneRect(), scene.sceneRect());
         QCOMPARE(view.mapToScene(0, 0), topLeft);
@@ -614,7 +614,8 @@ void tst_QGraphicsView::dragMode_scrollHand()
         view.setFixedSize(100, 100);
         view.show();
 
-        QTest::qWait(25);
+        QTest::qWaitForWindowShown(&view);
+        QApplication::processEvents();
 
         view.setInteractive(j ? false : true);
 
@@ -646,9 +647,9 @@ void tst_QGraphicsView::dragMode_scrollHand()
                 QApplication::sendEvent(view.viewport(), &event);
                 QVERIFY(event.isAccepted());
             }
-            QTest::qWait(250);
+            QApplication::processEvents();
 
-            QVERIFY(item->isSelected());
+            QTRY_VERIFY(item->isSelected());
 
             for (int k = 0; k < 4; ++k) {
 #ifndef QT_NO_CURSOR
@@ -689,9 +690,9 @@ void tst_QGraphicsView::dragMode_scrollHand()
                 QApplication::sendEvent(view.viewport(), &event);
                 QVERIFY(event.isAccepted());
             }
-            QTest::qWait(250);
+            QApplication::processEvents();
 
-            QVERIFY(item->isSelected());
+            QTRY_VERIFY(item->isSelected());
             QCOMPARE(view.horizontalScrollBar()->value(), horizontalScrollBarValue - 10);
             QCOMPARE(view.verticalScrollBar()->value(), verticalScrollBarValue - 10);
 #ifndef QT_NO_CURSOR
@@ -749,6 +750,9 @@ void tst_QGraphicsView::dragMode_rubberBand()
 
     view.setDragMode(QGraphicsView::RubberBandDrag);
 
+    QTest::qWaitForWindowShown(&view);
+    QApplication::processEvents();
+
     for (int i = 0; i < 2; ++i) {
         // RubberBandDrag
 #ifndef QT_NO_CURSOR
@@ -769,7 +773,7 @@ void tst_QGraphicsView::dragMode_rubberBand()
         QCOMPARE(view.viewport()->cursor().shape(), cursorShape);
 #endif
 
-        QTest::qWait(25);
+        QApplication::processEvents();
 
         {
             // Move
@@ -1073,7 +1077,7 @@ void tst_QGraphicsView::centerOnPoint()
                     QFAIL(qPrintable(error));
                 }
 
-                QTest::qWait(1);
+                QApplication::processEvents();
             }
         }
 
@@ -2095,7 +2099,7 @@ void tst_QGraphicsView::transformationAnchor()
         }
         view.centerOn(0, 0);
         view.horizontalScrollBar()->setValue(100);
-        QTest::qWait(100);
+        QApplication::processEvents();
 
         QPointF center = view.mapToScene(view.viewport()->rect().center());
 
@@ -2125,6 +2129,8 @@ void tst_QGraphicsView::resizeAnchor()
     for (int i = 0; i < 2; ++i) {
         view.resize(100, 100);
         view.show();
+        QTest::qWaitForWindowShown(&view);
+        QApplication::processEvents();
 
         if (i == 0) {
             QCOMPARE(view.resizeAnchor(), QGraphicsView::NoAnchor);
@@ -2132,12 +2138,12 @@ void tst_QGraphicsView::resizeAnchor()
             view.setResizeAnchor(QGraphicsView::AnchorViewCenter);
         }
         view.centerOn(0, 0);
-        QTest::qWait(250);
+        QTest::qWait(25);
 
         QPointF f = view.mapToScene(50, 50);
         QPointF center = view.mapToScene(view.viewport()->rect().center());
 
-        QTest::qWait(250);
+        QApplication::processEvents();
 
         for (int size = 200; size <= 400; size += 25) {
             view.resize(size, size);
@@ -2152,7 +2158,7 @@ void tst_QGraphicsView::resizeAnchor()
                 QVERIFY(qAbs(newCenter.x() - center.x()) < slack);
                 QVERIFY(qAbs(newCenter.y() - center.y()) < slack);
             }
-            QTest::qWait(20);
+            QApplication::processEvents();
         }
     }
 }
@@ -2760,11 +2766,11 @@ void tst_QGraphicsView::task187791_setSceneCausesUpdate()
     QCOMPARE(updateSpy.count(), 0);
 
     view.setScene(0);
-    QTest::qWait(125);
-    QCOMPARE(updateSpy.count(), 1);
+    QApplication::processEvents();
+    QTRY_COMPARE(updateSpy.count(), 1);
     view.setScene(&scene);
-    QTest::qWait(125);
-    QCOMPARE(updateSpy.count(), 2);
+    QApplication::processEvents();
+    QTRY_COMPARE(updateSpy.count(), 2);
 }
 
 class MouseMoveCounter : public QGraphicsView
@@ -2808,15 +2814,15 @@ void tst_QGraphicsView::task186827_deleteReplayedItem()
         QApplication::sendEvent(view.viewport(), &event);
     }
     QCOMPARE(view.mouseMoves, 1);
-    QTest::qWait(125);
-    QCOMPARE(view.mouseMoves, 1);
-    QTest::qWait(125);
+    QTest::qWait(25);
+    QTRY_COMPARE(view.mouseMoves, 1);
+    QTest::qWait(25);
     {
         QMouseEvent event(QEvent::MouseMove, view.mapFromScene(25, 25), Qt::NoButton, 0, 0);
         QApplication::sendEvent(view.viewport(), &event);
     }
     QCOMPARE(view.mouseMoves, 2);
-    QTest::qWait(125);
+    QTest::qWait(15);
 }
 
 void tst_QGraphicsView::task207546_focusCrash()
@@ -3154,11 +3160,12 @@ void tst_QGraphicsView::moveItemWhileScrolling()
     if (!adjustForAntialiasing)
         view.setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing);
     view.resize(200, 200);
+    view.painted = false;
     view.show();
     QTest::qWaitForWindowShown(&view);
+    QApplication::processEvents();
     QTRY_VERIFY(view.painted);
     view.painted = false;
-
     view.lastPaintedRegion = QRegion();
     view.horizontalScrollBar()->setValue(view.horizontalScrollBar()->value() + 10);
     view.rect->moveBy(0, 10);
@@ -3360,6 +3367,7 @@ void tst_QGraphicsView::render()
     view.painted = false;
     view.show();
     QTest::qWaitForWindowShown(&view);
+    QApplication::processEvents();
     QTRY_VERIFY(view.painted > 0);
 
     RenderTester *r1 = new RenderTester(QRectF(0, 0, 50, 50));
@@ -3412,11 +3420,11 @@ void tst_QGraphicsView::exposeRegion()
     QRegion expectedExposeRegion = QRect(0, 0, 5, 5);
     expectedExposeRegion += QRect(viewport->rect().bottomRight() - QPoint(5, 5), QSize(5, 5));
     viewport->update(expectedExposeRegion);
-    QTest::qWait(125);
+    QApplication::processEvents();
 
     // Make sure it triggers correct repaint on the view.
-    QCOMPARE(view.lastUpdateRegions.size(), 1);
-    QCOMPARE(view.lastUpdateRegions.at(0), expectedExposeRegion);
+    QTRY_COMPARE(view.lastUpdateRegions.size(), 1);
+    QTRY_COMPARE(view.lastUpdateRegions.at(0), expectedExposeRegion);
 
     // Make sure the item didn't get any repaints.
     QCOMPARE(item->paints, 0);
@@ -3473,7 +3481,7 @@ void tst_QGraphicsView::update()
 #if defined QT_BUILD_INTERNAL
     const bool intersects = updateRect.intersects(viewportRect);
     QGraphicsViewPrivate *viewPrivate = static_cast<QGraphicsViewPrivate *>(qt_widget_private(&view));
-    QCOMPARE(viewPrivate->updateRect(updateRect), intersects);
+    QTRY_COMPARE(viewPrivate->updateRect(updateRect), intersects);
     QCOMPARE(viewPrivate->updateRegion(updateRect), intersects);
 
     view.lastUpdateRegions.clear();
@@ -3631,13 +3639,13 @@ void tst_QGraphicsView::task253415_reconnectUpdateSceneOnSceneChanged()
     QObject::connect(&scene1, SIGNAL(changed(QList<QRectF>)), &dummyView, SLOT(updateScene(QList<QRectF>)));
     view.setScene(&scene1);
 
-    QTest::qWait(125);
+    QTest::qWait(12);
 
     QGraphicsScene scene2;
     QObject::connect(&scene2, SIGNAL(changed(QList<QRectF>)), &dummyView, SLOT(updateScene(QList<QRectF>)));
     view.setScene(&scene2);
 
-    QTest::qWait(125);
+    QTest::qWait(12);
 
     bool wasConnected2 = QObject::disconnect(&scene2, SIGNAL(changed(QList<QRectF>)), &view, 0);
     QVERIFY(wasConnected2);
@@ -3661,8 +3669,10 @@ void tst_QGraphicsView::task255529_transformationAnchorMouseAndViewportMargins()
     };
 
     VpGraphicsView view(&scene);
+    view.setWindowFlags(Qt::X11BypassWindowManagerHint);
     view.show();
     QTest::qWaitForWindowShown(&view);
+    QTest::qWait(50);
     QPoint mouseViewPos(20, 20);
     sendMouseMove(view.viewport(), mouseViewPos);
 

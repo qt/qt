@@ -120,7 +120,7 @@ JSObject* JSHTMLSourceElementPrototype::self(ExecState* exec, JSGlobalObject* gl
 
 const ClassInfo JSHTMLSourceElement::s_info = { "HTMLSourceElement", &JSHTMLElement::s_info, &JSHTMLSourceElementTable, 0 };
 
-JSHTMLSourceElement::JSHTMLSourceElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLSourceElement> impl)
+JSHTMLSourceElement::JSHTMLSourceElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLSourceElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

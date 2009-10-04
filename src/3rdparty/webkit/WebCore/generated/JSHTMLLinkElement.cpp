@@ -126,7 +126,7 @@ JSObject* JSHTMLLinkElementPrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSHTMLLinkElement::s_info = { "HTMLLinkElement", &JSHTMLElement::s_info, &JSHTMLLinkElementTable, 0 };
 
-JSHTMLLinkElement::JSHTMLLinkElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLLinkElement> impl)
+JSHTMLLinkElement::JSHTMLLinkElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLLinkElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

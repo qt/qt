@@ -76,10 +76,10 @@ public:
 };
 
 // XXX: hw: is this a general concept we need to abstract?
-class QDetachedPixmap : public QPixmap
+class QPixmapCacheEntry : public QPixmap
 {
 public:
-    QDetachedPixmap(const QPixmap &pix) : QPixmap(pix)
+    QPixmapCacheEntry(const QPixmapCache::Key &key, const QPixmap &pix) : QPixmap(pix), key(key)
     {
         if (data && data->classId() == QPixmapData::RasterClass) {
             QRasterPixmapData *d = static_cast<QRasterPixmapData*>(data.data());
@@ -91,6 +91,8 @@ public:
             }
         }
     }
+    ~QPixmapCacheEntry();
+    QPixmapCache::Key key;
 };
 
 QT_END_NAMESPACE

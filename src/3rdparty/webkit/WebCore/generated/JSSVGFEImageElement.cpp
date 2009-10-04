@@ -103,7 +103,7 @@ bool JSSVGFEImageElementPrototype::getOwnPropertyDescriptor(ExecState* exec, con
 
 const ClassInfo JSSVGFEImageElement::s_info = { "SVGFEImageElement", &JSSVGElement::s_info, &JSSVGFEImageElementTable, 0 };
 
-JSSVGFEImageElement::JSSVGFEImageElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEImageElement> impl)
+JSSVGFEImageElement::JSSVGFEImageElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEImageElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

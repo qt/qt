@@ -173,10 +173,11 @@ void tst_QButtonGroup::arrowKeyNavigation()
 
     dlg.show();
     qApp->setActiveWindow(&dlg);
+    QTest::qWaitForWindowShown(&dlg);
 
     bt1.setFocus();
 
-    QVERIFY(bt1.hasFocus());
+    QTRY_VERIFY(bt1.hasFocus());
 
     QTest::keyClick(&bt1, Qt::Key_Right);
     QVERIFY(pb.hasFocus());

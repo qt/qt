@@ -128,7 +128,7 @@ bool JSTextEventPrototype::getOwnPropertyDescriptor(ExecState* exec, const Ident
 
 const ClassInfo JSTextEvent::s_info = { "TextEvent", &JSUIEvent::s_info, &JSTextEventTable, 0 };
 
-JSTextEvent::JSTextEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<TextEvent> impl)
+JSTextEvent::JSTextEvent(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<TextEvent> impl)
     : JSUIEvent(structure, globalObject, impl)
 {
 }

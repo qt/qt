@@ -146,7 +146,7 @@ bool JSDataGridColumnPrototype::getOwnPropertyDescriptor(ExecState* exec, const 
 
 const ClassInfo JSDataGridColumn::s_info = { "DataGridColumn", 0, &JSDataGridColumnTable, 0 };
 
-JSDataGridColumn::JSDataGridColumn(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DataGridColumn> impl)
+JSDataGridColumn::JSDataGridColumn(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DataGridColumn> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

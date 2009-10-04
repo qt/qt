@@ -2641,56 +2641,63 @@ Text Doc::trimmedBriefText(const QString &className) const
         bool standardWording = true;
 
         /*
-            This code is really ugly. The entire \brief business
-            should be rethought.
+          This code is really ugly. The entire \brief business
+          should be rethought.
         */
-        while (atom && (atom->type() == Atom::AutoLink || atom->type() == Atom::String)) {
-            briefStr += atom->string();
+        while (atom) {
+            if (atom->type() == Atom::AutoLink || atom->type() == Atom::String) {
+                briefStr += atom->string();
+            }
             atom = atom->next();
         }
 
         QStringList w = briefStr.split(" ");
-        if (!w.isEmpty() && w.first() == "The")
-	    w.removeFirst();
-        else {
-	    location().warning(
-                tr("Nonstandard wording in '\\%1' text for '%2' (expected 'The')")
-                .arg(COMMAND_BRIEF).arg(className));
-	    standardWording = false;
+        if (!w.isEmpty() && w.first() == "Returns") {
         }
-
-        if (!w.isEmpty() && (w.first() == className || w.first() == classNameOnly))
-	    w.removeFirst();
         else {
-	    location().warning(
-                tr("Nonstandard wording in '\\%1' text for '%2' (expected '%3')")
-                .arg(COMMAND_BRIEF).arg(className).arg(className));
-	    standardWording = false;
+            if (!w.isEmpty() && w.first() == "The")
+                w.removeFirst();
+            else {
+                location().warning(
+                  tr("Nonstandard wording in '\\%1' text for '%2' (expected 'The')")
+                  .arg(COMMAND_BRIEF).arg(className));
+                standardWording = false;
+            }
+
+            if (!w.isEmpty() && (w.first() == className || w.first() == classNameOnly))
+                w.removeFirst();
+            else {
+                location().warning(
+                  tr("Nonstandard wording in '\\%1' text for '%2' (expected '%3')")
+                  .arg(COMMAND_BRIEF).arg(className).arg(className));
+                standardWording = false;
+            }
+
+            if (!w.isEmpty() && ((w.first() == "class") ||
+                                 (w.first() == "function") ||
+                                 (w.first() == "macro") ||
+                                 (w.first() == "widget") ||
+                                 (w.first() == "namespace") ||
+                                 (w.first() == "header")))
+                w.removeFirst();
+            else {
+                location().warning(
+                  tr("Nonstandard wording in '\\%1' text for '%2' ("
+                     "expected 'class', 'function', 'macro', 'widget', "
+                     "'namespace' or 'header')")
+                  .arg(COMMAND_BRIEF).arg(className));
+                standardWording = false;
+            }
+
+            if (!w.isEmpty() && (w.first() == "is" || w.first() == "provides"))
+                w.removeFirst();
+
+            if (!w.isEmpty() && (w.first() == "a" || w.first() == "an"))
+                w.removeFirst();
         }
-
-        if (!w.isEmpty() && ((w.first() == "class") ||
-                             (w.first() == "function") ||
-                             (w.first() == "macro") ||
-                             (w.first() == "widget") ||
-                             (w.first() == "namespace") ||
-                             (w.first() == "header")))
-	    w.removeFirst();
-        else {
-	    location().warning(
-                tr("Nonstandard wording in '\\%1' text for '%2' ("
-                   "expected 'class', 'function', 'macro', 'widget', "
-                   "'namespace' or 'header')")
-                .arg(COMMAND_BRIEF).arg(className));
-	    standardWording = false;
-        }
-
-        if (!w.isEmpty() && (w.first() == "is" || w.first() == "provides"))
-	    w.removeFirst();
-
-        if (!w.isEmpty() && (w.first() == "a" || w.first() == "an"))
-	    w.removeFirst();
 
         whats = w.join(" ");
+        
         if (whats.endsWith("."))
 	    whats.truncate(whats.length() - 1);
 

@@ -77,7 +77,7 @@ JSObject* JSSVGScriptElementPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSSVGScriptElement::s_info = { "SVGScriptElement", &JSSVGElement::s_info, &JSSVGScriptElementTable, 0 };
 
-JSSVGScriptElement::JSSVGScriptElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGScriptElement> impl)
+JSSVGScriptElement::JSSVGScriptElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGScriptElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

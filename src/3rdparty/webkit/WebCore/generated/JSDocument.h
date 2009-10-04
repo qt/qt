@@ -33,7 +33,7 @@ class Document;
 class JSDocument : public JSNode {
     typedef JSNode Base;
 public:
-    JSDocument(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Document>);
+    JSDocument(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Document>);
     virtual ~JSDocument();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -85,7 +85,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
-    JSDocumentPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSDocumentPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

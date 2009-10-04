@@ -33,7 +33,7 @@ class JSDOMWindowShell;
 class JSDOMWindow : public JSDOMWindowBase {
     typedef JSDOMWindowBase Base;
 public:
-    JSDOMWindow(PassRefPtr<JSC::Structure>, PassRefPtr<DOMWindow>, JSDOMWindowShell*);
+    JSDOMWindow(NonNullPassRefPtr<JSC::Structure>, PassRefPtr<DOMWindow>, JSDOMWindowShell*);
     virtual ~JSDOMWindow();
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
@@ -78,6 +78,7 @@ public:
     JSC::JSValue webKitPoint(JSC::ExecState*) const;
     JSC::JSValue eventSource(JSC::ExecState*) const;
     JSC::JSValue xmlHttpRequest(JSC::ExecState*) const;
+    JSC::JSValue xsltProcessor(JSC::ExecState*) const;
     JSC::JSValue messageChannel(JSC::ExecState*) const;
     JSC::JSValue worker(JSC::ExecState*) const;
     JSC::JSValue sharedWorker(JSC::ExecState*) const;
@@ -114,7 +115,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
-    JSDOMWindowPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSDOMWindowPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions
@@ -660,6 +661,8 @@ JSC::JSValue jsDOMWindowXMLHttpRequestUploadConstructor(JSC::ExecState*, const J
 void setJSDOMWindowXMLHttpRequestUploadConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowXMLHttpRequestExceptionConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowXMLHttpRequestExceptionConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowXSLTProcessorConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowXSLTProcessorConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowMessagePortConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowMessagePortConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowMessageChannelConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

@@ -43,10 +43,11 @@ table.valuelist {
 
 table.indextable {
 	border-width: 1px 1px 1px 1px;
+	border-style: solid;
 	border-collapse: collapse;
 	background-color: #f0f0f0;
     border-color:#555;
-    font-size: 110%;
+    font-size: 100%;
 }
 
 table td.largeindex {
@@ -68,13 +69,16 @@ table.valuelist th {
 
 th.titleheader  {
 	border-width: 1px 0px 1px 0px;
-	padding: 4px;
+	padding: 2px;
 	border-style: solid;
-	border-color: #444;
+	border-color: #666;
     color:white;
-    background-color:#555555;
-    font-size: 110%;
+    background-color:#555;
+    background-image:url('images/gradient.png')};
+    background-repeat: repeat-x;
+    font-size: 100%;
 }
+
 
 th.largeheader {
 	border-width: 1px 0px 1px 0px;

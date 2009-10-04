@@ -33,7 +33,7 @@ class StyleSheetList;
 class JSStyleSheetList : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSStyleSheetList(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<StyleSheetList>);
+    JSStyleSheetList(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<StyleSheetList>);
     virtual ~JSStyleSheetList();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -76,7 +76,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
-    JSStyleSheetListPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSStyleSheetListPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

@@ -30,7 +30,7 @@ class MouseEvent;
 class JSMouseEvent : public JSUIEvent {
     typedef JSUIEvent Base;
 public:
-    JSMouseEvent(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<MouseEvent>);
+    JSMouseEvent(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<MouseEvent>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
@@ -58,7 +58,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSMouseEventPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSMouseEventPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

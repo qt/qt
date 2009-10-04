@@ -79,7 +79,7 @@ JSObject* JSSVGFESpotLightElementPrototype::self(ExecState* exec, JSGlobalObject
 
 const ClassInfo JSSVGFESpotLightElement::s_info = { "SVGFESpotLightElement", &JSSVGElement::s_info, &JSSVGFESpotLightElementTable, 0 };
 
-JSSVGFESpotLightElement::JSSVGFESpotLightElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFESpotLightElement> impl)
+JSSVGFESpotLightElement::JSSVGFESpotLightElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFESpotLightElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

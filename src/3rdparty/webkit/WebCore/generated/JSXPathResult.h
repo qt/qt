@@ -35,7 +35,7 @@ class XPathResult;
 class JSXPathResult : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSXPathResult(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<XPathResult>);
+    JSXPathResult(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<XPathResult>);
     virtual ~JSXPathResult();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -70,7 +70,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSXPathResultPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSXPathResultPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

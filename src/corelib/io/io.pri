@@ -5,6 +5,7 @@ HEADERS +=  \
         io/qabstractfileengine_p.h \
         io/qbuffer.h \
         io/qdatastream.h \
+        io/qdatastream_p.h \
         io/qdebug.h \
         io/qdir.h \
         io/qdiriterator.h \
@@ -89,6 +90,7 @@ win32 {
         symbian {
             SOURCES += io/qfilesystemwatcher_symbian.cpp
             HEADERS += io/qfilesystemwatcher_symbian_p.h
+            INCLUDEPATH += $$MW_LAYER_SYSTEMINCLUDE
             contains(QT_CONFIG, s60): LIBS += -lplatformenv
         }
 }

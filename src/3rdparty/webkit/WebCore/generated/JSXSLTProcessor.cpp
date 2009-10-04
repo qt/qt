@@ -78,7 +78,7 @@ bool JSXSLTProcessorPrototype::getOwnPropertyDescriptor(ExecState* exec, const I
 
 const ClassInfo JSXSLTProcessor::s_info = { "XSLTProcessor", 0, 0, 0 };
 
-JSXSLTProcessor::JSXSLTProcessor(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XSLTProcessor> impl)
+JSXSLTProcessor::JSXSLTProcessor(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XSLTProcessor> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

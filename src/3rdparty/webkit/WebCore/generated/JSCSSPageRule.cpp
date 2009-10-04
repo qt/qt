@@ -118,7 +118,7 @@ JSObject* JSCSSPageRulePrototype::self(ExecState* exec, JSGlobalObject* globalOb
 
 const ClassInfo JSCSSPageRule::s_info = { "CSSPageRule", &JSCSSRule::s_info, &JSCSSPageRuleTable, 0 };
 
-JSCSSPageRule::JSCSSPageRule(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSPageRule> impl)
+JSCSSPageRule::JSCSSPageRule(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSPageRule> impl)
     : JSCSSRule(structure, globalObject, impl)
 {
 }

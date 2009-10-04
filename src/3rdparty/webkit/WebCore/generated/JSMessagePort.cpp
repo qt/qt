@@ -146,7 +146,7 @@ static const HashTable* getJSMessagePortTable(ExecState* exec)
 }
 const ClassInfo JSMessagePort::s_info = { "MessagePort", 0, 0, getJSMessagePortTable };
 
-JSMessagePort::JSMessagePort(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MessagePort> impl)
+JSMessagePort::JSMessagePort(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MessagePort> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
@@ -179,7 +179,7 @@ JSValue jsMessagePortOnmessage(ExecState* exec, const Identifier&, const Propert
     UNUSED_PARAM(exec);
     MessagePort* imp = static_cast<MessagePort*>(castedThis->impl());
     if (EventListener* listener = imp->onmessage()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();

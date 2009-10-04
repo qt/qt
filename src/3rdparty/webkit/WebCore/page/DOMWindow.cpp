@@ -34,6 +34,8 @@
 #include "CString.h"
 #include "Chrome.h"
 #include "Console.h"
+#include "Database.h"
+#include "DOMApplicationCache.h"
 #include "DOMSelection.h"
 #include "DOMTimer.h"
 #include "PageTransitionEvent.h"
@@ -55,6 +57,7 @@
 #include "Media.h"
 #include "MessageEvent.h"
 #include "Navigator.h"
+#include "NotificationCenter.h"
 #include "Page.h"
 #include "PageGroup.h"
 #include "PlatformScreen.h"
@@ -62,28 +65,13 @@
 #include "Screen.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
+#include "Storage.h"
+#include "StorageArea.h"
+#include "StorageNamespace.h"
 #include "SuddenTermination.h"
 #include "WebKitPoint.h"
 #include <algorithm>
 #include <wtf/MathExtras.h>
-
-#if ENABLE(DATABASE)
-#include "Database.h"
-#endif
-
-#if ENABLE(DOM_STORAGE)
-#include "Storage.h"
-#include "StorageArea.h"
-#include "StorageNamespace.h"
-#endif
-
-#if ENABLE(OFFLINE_WEB_APPLICATIONS)
-#include "DOMApplicationCache.h"
-#endif
-
-#if ENABLE(NOTIFICATIONS)
-#include "NotificationCenter.h"
-#endif
 
 using std::min;
 using std::max;
@@ -135,6 +123,66 @@ static DOMWindowSet& windowsWithBeforeUnloadEventListeners()
 {
     DEFINE_STATIC_LOCAL(DOMWindowSet, windowsWithBeforeUnloadEventListeners, ());
     return windowsWithBeforeUnloadEventListeners;
+}
+
+static void addUnloadEventListener(DOMWindow* domWindow)
+{
+    DOMWindowSet& set = windowsWithUnloadEventListeners();
+    if (set.isEmpty())
+        disableSuddenTermination();
+    set.add(domWindow);
+}
+
+static void removeUnloadEventListener(DOMWindow* domWindow)
+{
+    DOMWindowSet& set = windowsWithUnloadEventListeners();
+    DOMWindowSet::iterator it = set.find(domWindow);
+    if (it == set.end())
+        return;
+    set.remove(it);
+    if (set.isEmpty())
+        enableSuddenTermination();
+}
+
+static void removeAllUnloadEventListeners(DOMWindow* domWindow)
+{
+    DOMWindowSet& set = windowsWithUnloadEventListeners();
+    DOMWindowSet::iterator it = set.find(domWindow);
+    if (it == set.end())
+        return;
+    set.removeAll(it);
+    if (set.isEmpty())
+        enableSuddenTermination();
+}
+
+static void addBeforeUnloadEventListener(DOMWindow* domWindow)
+{
+    DOMWindowSet& set = windowsWithBeforeUnloadEventListeners();
+    if (set.isEmpty())
+        disableSuddenTermination();
+    set.add(domWindow);
+}
+
+static void removeBeforeUnloadEventListener(DOMWindow* domWindow)
+{
+    DOMWindowSet& set = windowsWithBeforeUnloadEventListeners();
+    DOMWindowSet::iterator it = set.find(domWindow);
+    if (it == set.end())
+        return;
+    set.remove(it);
+    if (set.isEmpty())
+        enableSuddenTermination();
+}
+
+static void removeAllBeforeUnloadEventListeners(DOMWindow* domWindow)
+{
+    DOMWindowSet& set = windowsWithBeforeUnloadEventListeners();
+    DOMWindowSet::iterator it = set.find(domWindow);
+    if (it == set.end())
+        return;
+    set.removeAll(it);
+    if (set.isEmpty())
+        enableSuddenTermination();
 }
 
 static bool allowsBeforeUnloadListeners(DOMWindow* window)
@@ -193,7 +241,7 @@ unsigned DOMWindow::pendingUnloadEventListeners() const
 
 void DOMWindow::dispatchAllPendingUnloadEvents()
 {
-    DOMWindowSet& set = windowsWithBeforeUnloadEventListeners();
+    DOMWindowSet& set = windowsWithUnloadEventListeners();
     if (set.isEmpty())
         return;
 
@@ -328,8 +376,8 @@ DOMWindow::~DOMWindow()
     if (m_frame)
         m_frame->clearFormerDOMWindow(this);
 
-    windowsWithUnloadEventListeners().clear(this);
-    windowsWithBeforeUnloadEventListeners().clear(this);
+    removeAllUnloadEventListeners(this);
+    removeAllBeforeUnloadEventListeners(this);
 }
 
 ScriptExecutionContext* DOMWindow::scriptExecutionContext() const
@@ -552,15 +600,12 @@ Storage* DOMWindow::localStorage() const
     if (!page->settings()->localStorageEnabled())
         return 0;
 
-    StorageNamespace* localStorage = page->group().localStorage();
-    RefPtr<StorageArea> storageArea = localStorage ? localStorage->storageArea(document->securityOrigin()) : 0; 
-    if (storageArea) {
+    RefPtr<StorageArea> storageArea = page->group().localStorage()->storageArea(document->securityOrigin());
 #if ENABLE(INSPECTOR)
-        page->inspectorController()->didUseDOMStorage(storageArea.get(), true, m_frame);
+    page->inspectorController()->didUseDOMStorage(storageArea.get(), true, m_frame);
 #endif
-        m_localStorage = Storage::create(m_frame, storageArea.release());
-    }
 
+    m_localStorage = Storage::create(m_frame, storageArea.release());
     return m_localStorage.get();
 }
 #endif
@@ -577,6 +622,9 @@ NotificationCenter* DOMWindow::webkitNotifications() const
     
     Page* page = document->page();
     if (!page)
+        return 0;
+
+    if (!page->settings()->experimentalNotificationsEnabled())
         return 0;
 
     NotificationPresenter* provider = page->chrome()->notificationPresenter();
@@ -1215,9 +1263,9 @@ bool DOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<Event
         document->addListenerTypeIfNeeded(eventType);
 
     if (eventType == eventNames().unloadEvent)
-        windowsWithUnloadEventListeners().add(this);
+        addUnloadEventListener(this);
     else if (eventType == eventNames().beforeunloadEvent && allowsBeforeUnloadListeners(this))
-        windowsWithBeforeUnloadEventListeners().add(this);
+        addBeforeUnloadEventListener(this);
 
     return true;
 }
@@ -1228,9 +1276,9 @@ bool DOMWindow::removeEventListener(const AtomicString& eventType, EventListener
         return false;
 
     if (eventType == eventNames().unloadEvent)
-        windowsWithUnloadEventListeners().remove(this);
+        removeUnloadEventListener(this);
     else if (eventType == eventNames().beforeunloadEvent && allowsBeforeUnloadListeners(this))
-        windowsWithBeforeUnloadEventListeners().remove(this);
+        removeBeforeUnloadEventListener(this);
 
     return true;
 }
@@ -1266,8 +1314,8 @@ void DOMWindow::removeAllEventListeners()
 {
     EventTarget::removeAllEventListeners();
 
-    windowsWithUnloadEventListeners().clear(this);
-    windowsWithBeforeUnloadEventListeners().clear(this);
+    removeAllUnloadEventListeners(this);
+    removeAllBeforeUnloadEventListeners(this);
 }
 
 void DOMWindow::captureEvents()

@@ -71,15 +71,11 @@ private slots:
     void classes();
     void namespaceURI();
     void foreachManipulation();
-    void evaluateScript();
-    void callFunction();
-    void callFunctionSubmitForm();
-    void functionNames();
+    void evaluateJavaScript();
     void documentElement();
     void frame();
     void style();
     void computedStyle();
-    void properties();
     void appendAndPrepend();
     void insertBeforeAndAfter();
     void remove();
@@ -90,6 +86,7 @@ private slots:
     void nullSelect();
     void firstChildNextSibling();
     void lastChildPreviousSibling();
+    void hasSetFocus();
 
 private:
     QWebView* m_view;
@@ -282,67 +279,29 @@ void tst_QWebElement::foreachManipulation()
     QCOMPARE(body.findAll("div").count(), 4);
 }
 
-void tst_QWebElement::evaluateScript()
+void tst_QWebElement::evaluateJavaScript()
 {
     QVariant result;
     m_mainFrame->setHtml("<body><p>test");
     QWebElement para = m_mainFrame->findFirstElement("p");
 
-    result = para.evaluateScript("this.tagName");
+    result = para.evaluateJavaScript("this.tagName");
     QVERIFY(result.isValid());
     QVERIFY(result.type() == QVariant::String);
     QCOMPARE(result.toString(), QLatin1String("P"));
 
-    QVERIFY(para.functions().contains("hasAttributes"));
-    result = para.evaluateScript("this.hasAttributes()");
+    result = para.evaluateJavaScript("this.hasAttributes()");
     QVERIFY(result.isValid());
     QVERIFY(result.type() == QVariant::Bool);
     QVERIFY(!result.toBool());
 
-    para.evaluateScript("this.setAttribute('align', 'left');");
+    para.evaluateJavaScript("this.setAttribute('align', 'left');");
     QCOMPARE(para.attribute("align"), QLatin1String("left"));
 
-    result = para.evaluateScript("this.hasAttributes()");
+    result = para.evaluateJavaScript("this.hasAttributes()");
     QVERIFY(result.isValid());
     QVERIFY(result.type() == QVariant::Bool);
     QVERIFY(result.toBool());
-}
-
-void tst_QWebElement::callFunction()
-{
-    m_mainFrame->setHtml("<body><p>test");
-    QWebElement body = m_mainFrame->documentElement();
-    QVERIFY(body.functions().contains("hasChildNodes"));
-    QVariant result = body.callFunction("hasChildNodes");
-    QVERIFY(result.isValid());
-    QVERIFY(result.type() == QVariant::Bool);
-    QVERIFY(result.toBool());
-
-    body.callFunction("setAttribute", QVariantList() << "foo" << "bar");
-    QCOMPARE(body.attribute("foo"), QString("bar"));
-}
-
-void tst_QWebElement::callFunctionSubmitForm()
-{
-    m_mainFrame->setHtml(QString("<html><body><form name='tstform' action='data:text/html,foo'method='get'>"
-                                 "<input type='text'><input type='submit'></form></body></html>"), QUrl());
-
-    QWebElement form = m_mainFrame->documentElement().findAll("form").at(0);
-    QVERIFY(form.functions().contains("submit"));
-    QVERIFY(!form.isNull());
-    form.callFunction("submit");
-
-    waitForSignal(m_page, SIGNAL(loadFinished(bool)));
-    QCOMPARE(m_mainFrame->url().toString(), QString("data:text/html,foo?"));
-}
-
-void tst_QWebElement::functionNames()
-{
-    m_mainFrame->setHtml("<body><p>Test");
-
-    QWebElement body = m_mainFrame->documentElement();
-
-    QVERIFY(body.functions().contains("setAttribute"));
 }
 
 void tst_QWebElement::documentElement()
@@ -398,27 +357,27 @@ void tst_QWebElement::style()
     m_mainFrame->setHtml(html);
 
     QWebElement p = m_mainFrame->documentElement().findAll("p").at(0);
-    QCOMPARE(p.styleProperty("color"), QLatin1String("blue"));
-    QVERIFY(p.styleProperty("cursor").isEmpty());
+    QCOMPARE(p.styleProperty("color", QWebElement::InlineStyle), QLatin1String("blue"));
+    QVERIFY(p.styleProperty("cursor", QWebElement::InlineStyle).isEmpty());
 
     p.setStyleProperty("color", "red");
     p.setStyleProperty("cursor", "auto");
 
-    QCOMPARE(p.styleProperty("color"), QLatin1String("red"));
-    QCOMPARE(p.styleProperty("color", QWebElement::RespectCascadingStyles), QLatin1String("yellow"));
-    QCOMPARE(p.styleProperty("cursor"), QLatin1String("auto"));
+    QCOMPARE(p.styleProperty("color", QWebElement::InlineStyle), QLatin1String("red"));
+    QCOMPARE(p.styleProperty("color", QWebElement::CascadedStyle), QLatin1String("yellow"));
+    QCOMPARE(p.styleProperty("cursor", QWebElement::InlineStyle), QLatin1String("auto"));
 
     p.setStyleProperty("color", "green !important");
-    QCOMPARE(p.styleProperty("color"), QLatin1String("green"));
-    QCOMPARE(p.styleProperty("color", QWebElement::RespectCascadingStyles), QLatin1String("green"));
+    QCOMPARE(p.styleProperty("color", QWebElement::InlineStyle), QLatin1String("green"));
+    QCOMPARE(p.styleProperty("color", QWebElement::CascadedStyle), QLatin1String("green"));
 
     p.setStyleProperty("color", "blue");
-    QCOMPARE(p.styleProperty("color"), QLatin1String("green"));
-    QCOMPARE(p.styleProperty("color", QWebElement::RespectCascadingStyles), QLatin1String("green"));
+    QCOMPARE(p.styleProperty("color", QWebElement::InlineStyle), QLatin1String("green"));
+    QCOMPARE(p.styleProperty("color", QWebElement::CascadedStyle), QLatin1String("green"));
 
-    p.setStyleProperty("color", "blue", QWebElement::ImportantStylePriority);
-    QCOMPARE(p.styleProperty("color"), QLatin1String("blue"));
-    QCOMPARE(p.styleProperty("color", QWebElement::RespectCascadingStyles), QLatin1String("blue"));
+    p.setStyleProperty("color", "blue !important");
+    QCOMPARE(p.styleProperty("color", QWebElement::InlineStyle), QLatin1String("blue"));
+    QCOMPARE(p.styleProperty("color", QWebElement::CascadedStyle), QLatin1String("blue"));
 
     QString html2 = "<head>"
         "<style type='text/css'>"
@@ -434,8 +393,8 @@ void tst_QWebElement::style()
     m_mainFrame->setHtml(html2);
     p = m_mainFrame->documentElement().findAll("p").at(0);
 
-    QCOMPARE(p.styleProperty("color"), QLatin1String("blue"));
-    QCOMPARE(p.styleProperty("color", QWebElement::RespectCascadingStyles), QLatin1String("blue"));
+    QCOMPARE(p.styleProperty("color", QWebElement::InlineStyle), QLatin1String("blue"));
+    QCOMPARE(p.styleProperty("color", QWebElement::CascadedStyle), QLatin1String("blue"));
 
     QString html3 = "<head>"
         "<style type='text/css'>"
@@ -451,8 +410,8 @@ void tst_QWebElement::style()
     m_mainFrame->setHtml(html3);
     p = m_mainFrame->documentElement().findAll("p").at(0);
 
-    QCOMPARE(p.styleProperty("color"), QLatin1String("blue"));
-    QCOMPARE(p.styleProperty("color", QWebElement::RespectCascadingStyles), QLatin1String("blue"));
+    QCOMPARE(p.styleProperty("color", QWebElement::InlineStyle), QLatin1String("blue"));
+    QCOMPARE(p.styleProperty("color", QWebElement::CascadedStyle), QLatin1String("blue"));
 
     QString html5 = "<head>"
         "<style type='text/css'>"
@@ -468,8 +427,8 @@ void tst_QWebElement::style()
     m_mainFrame->setHtml(html5);
     p = m_mainFrame->documentElement().findAll("p").at(0);
 
-    QCOMPARE(p.styleProperty("color"), QLatin1String(""));
-    QCOMPARE(p.styleProperty("color", QWebElement::RespectCascadingStyles), QLatin1String("red"));
+    QCOMPARE(p.styleProperty("color", QWebElement::InlineStyle), QLatin1String(""));
+    QCOMPARE(p.styleProperty("color", QWebElement::CascadedStyle), QLatin1String("red"));
 
     QString html6 = "<head>"
         "<link rel='stylesheet' href='qrc:/style.css' type='text/css' />"
@@ -489,8 +448,8 @@ void tst_QWebElement::style()
     QTest::qWait(200);
 
     p = m_mainFrame->documentElement().findAll("p").at(0);
-    QCOMPARE(p.styleProperty("color"), QLatin1String("blue"));
-    QCOMPARE(p.styleProperty("color", QWebElement::RespectCascadingStyles), QLatin1String("black"));
+    QCOMPARE(p.styleProperty("color", QWebElement::InlineStyle), QLatin1String("blue"));
+    QCOMPARE(p.styleProperty("color", QWebElement::CascadedStyle), QLatin1String("black"));
 
     QString html7 = "<head>"
         "<style type='text/css'>"
@@ -507,15 +466,15 @@ void tst_QWebElement::style()
     QTest::qWait(200);
 
     p = m_mainFrame->documentElement().findAll("p").at(0);
-    QCOMPARE(p.styleProperty("color", QWebElement::RespectCascadingStyles), QLatin1String("black"));
+    QCOMPARE(p.styleProperty("color", QWebElement::CascadedStyle), QLatin1String("black"));
 
     QString html8 = "<body><p>some text</p></body>";
 
     m_mainFrame->setHtml(html8);
     p = m_mainFrame->documentElement().findAll("p").at(0);
 
-    QCOMPARE(p.styleProperty("color"), QLatin1String(""));
-    QCOMPARE(p.styleProperty("color", QWebElement::RespectCascadingStyles), QLatin1String(""));
+    QCOMPARE(p.styleProperty("color", QWebElement::InlineStyle), QLatin1String(""));
+    QCOMPARE(p.styleProperty("color", QWebElement::CascadedStyle), QLatin1String(""));
 }
 
 void tst_QWebElement::computedStyle()
@@ -524,47 +483,16 @@ void tst_QWebElement::computedStyle()
     m_mainFrame->setHtml(html);
 
     QWebElement p = m_mainFrame->documentElement().findAll("p").at(0);
-    QCOMPARE(p.computedStyleProperty("cursor"), QLatin1String("auto"));
-    QVERIFY(!p.computedStyleProperty("cursor").isEmpty());
-    QVERIFY(p.styleProperty("cursor").isEmpty());
+    QCOMPARE(p.styleProperty("cursor", QWebElement::ComputedStyle), QLatin1String("auto"));
+    QVERIFY(!p.styleProperty("cursor", QWebElement::ComputedStyle).isEmpty());
+    QVERIFY(p.styleProperty("cursor", QWebElement::InlineStyle).isEmpty());
 
     p.setStyleProperty("cursor", "text");
     p.setStyleProperty("color", "red");
 
-    QCOMPARE(p.computedStyleProperty("cursor"), QLatin1String("text"));
-    QCOMPARE(p.computedStyleProperty("color"), QLatin1String("rgb(255, 0, 0)"));
-    QCOMPARE(p.styleProperty("color"), QLatin1String("red"));
-}
-
-void tst_QWebElement::properties()
-{
-    m_mainFrame->setHtml("<body><form><input type=checkbox id=ourcheckbox checked=true>");
-
-    QWebElement checkBox = m_mainFrame->findFirstElement("#ourcheckbox");
-    QVERIFY(!checkBox.isNull());
-
-    QVERIFY(checkBox.scriptableProperties().contains("checked"));
-
-    QCOMPARE(checkBox.scriptableProperty("checked"), QVariant(true));
-    checkBox.setScriptableProperty("checked", false);
-    QCOMPARE(checkBox.scriptableProperty("checked"), QVariant(false));
-
-    QVERIFY(!checkBox.scriptableProperties().contains("non_existant"));
-    QCOMPARE(checkBox.scriptableProperty("non_existant"), QVariant());
-
-    checkBox.setScriptableProperty("non_existant", "test");
-
-    QCOMPARE(checkBox.scriptableProperty("non_existant"), QVariant("test"));
-    QVERIFY(checkBox.scriptableProperties().contains("non_existant"));
-
-    // removing scriptableProperties is currently not supported. We should look into this
-    // and consider the option of just allowing through the QtScript API only.
-#if 0
-    checkBox.setScriptableProperty("non_existant", QVariant());
-
-    QCOMPARE(checkBox.scriptableProperty("non_existant"), QVariant());
-    QVERIFY(!checkBox.scriptableProperties().contains("non_existant"));
-#endif
+    QCOMPARE(p.styleProperty("cursor", QWebElement::ComputedStyle), QLatin1String("text"));
+    QCOMPARE(p.styleProperty("color", QWebElement::ComputedStyle), QLatin1String("rgb(255, 0, 0)"));
+    QCOMPARE(p.styleProperty("color", QWebElement::InlineStyle), QLatin1String("red"));
 }
 
 void tst_QWebElement::appendAndPrepend()
@@ -876,6 +804,25 @@ void tst_QWebElement::lastChildPreviousSibling()
     QVERIFY(!p.isNull());
     QCOMPARE(p.tagName(), QString("P"));
     QVERIFY(p.previousSibling().isNull());
+}
+
+void tst_QWebElement::hasSetFocus()
+{
+    m_mainFrame->setHtml("<html><body>" \
+                            "<input type='text' id='input1'/>" \
+                            "<br>"\
+                            "<input type='text' id='input2'/>" \
+                            "</body></html>");
+
+    QList<QWebElement> inputs = m_mainFrame->documentElement().findAll("input");
+    QWebElement input1 = inputs.at(0);
+    input1.setFocus();
+    QVERIFY(input1.hasFocus());
+
+    QWebElement input2 = inputs.at(1);
+    input2.setFocus();
+    QVERIFY(!input1.hasFocus());
+    QVERIFY(input2.hasFocus());
 }
 
 QTEST_MAIN(tst_QWebElement)

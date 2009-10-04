@@ -78,7 +78,7 @@ const char* QGLEngineSharedShaders::qglEngineShaderSourceCode[] = {
 };
 
 QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
-    : ctx(QGLContextPrivate::contextGroup(context))
+    : ctxGuard(context)
     , blitShaderProg(0)
     , simpleShaderProg(0)
 {
@@ -223,7 +223,7 @@ QGLShader *QGLEngineSharedShaders::compileNamedShader(ShaderName name, QGLShader
         return compiledShaders[name];
 
     QByteArray source = qglEngineShaderSourceCode[name];
-    QGLShader *newShader = new QGLShader(type, ctx->context(), this);
+    QGLShader *newShader = new QGLShader(type, ctxGuard.context(), this);
     newShader->compile(source);
 
 #if defined(QT_DEBUG)
@@ -245,7 +245,7 @@ QGLShader *QGLEngineSharedShaders::compileCustomShader(QGLCustomShaderStage *sta
     if (newShader)
         return newShader;
 
-    newShader = new QGLShader(type, ctx->context(), this);
+    newShader = new QGLShader(type, ctxGuard.context(), this);
     newShader->compile(source);
     customShaderCache.insert(source, newShader);
 
@@ -273,7 +273,7 @@ QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineS
     QGLEngineShaderProg &cached = cachedPrograms.last();
 
     // If the shader program's not found in the cache, create it now.
-    cached.program = new QGLShaderProgram(ctx->context(), this);
+    cached.program = new QGLShaderProgram(ctxGuard.context(), this);
     cached.program->addShader(cached.mainVertexShader);
     cached.program->addShader(cached.positionVertexShader);
     cached.program->addShader(cached.mainFragShader);

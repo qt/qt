@@ -116,7 +116,7 @@ JSObject* JSHTMLBRElementPrototype::self(ExecState* exec, JSGlobalObject* global
 
 const ClassInfo JSHTMLBRElement::s_info = { "HTMLBRElement", &JSHTMLElement::s_info, &JSHTMLBRElementTable, 0 };
 
-JSHTMLBRElement::JSHTMLBRElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLBRElement> impl)
+JSHTMLBRElement::JSHTMLBRElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLBRElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

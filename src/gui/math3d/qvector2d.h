@@ -144,8 +144,8 @@ inline bool QVector2D::isNull() const
 inline qreal QVector2D::x() const { return qreal(xp); }
 inline qreal QVector2D::y() const { return qreal(yp); }
 
-inline void QVector2D::setX(qreal x) { xp = x; }
-inline void QVector2D::setY(qreal y) { yp = y; }
+inline void QVector2D::setX(qreal aX) { xp = aX; }
+inline void QVector2D::setY(qreal aY) { yp = aY; }
 
 inline QVector2D &QVector2D::operator+=(const QVector2D &vector)
 {

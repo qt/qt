@@ -59,7 +59,6 @@ static const UChar byteOrderMark = 0xFEFF;
 Lexer::Lexer(JSGlobalData* globalData)
     : m_isReparsing(false)
     , m_globalData(globalData)
-    , m_startColumnNumberCorrection(0)
     , m_keywordTable(JSC::mainTable)
 {
     m_buffer8.reserveInitialCapacity(initialReadBufferCapacity);
@@ -204,7 +203,6 @@ void Lexer::shiftLineTerminator()
     else
         shift1();
 
-    m_startColumnNumberCorrection = currentOffset();
     ++m_lineNumber;
 }
 
@@ -900,11 +898,11 @@ doneString:
     // Fall through into returnToken.
 
 returnToken: {
-    llocp->first_line = m_lineNumber;
-    llocp->last_line = m_lineNumber;
-
-    llocp->first_column = startOffset - m_startColumnNumberCorrection;
-    llocp->last_column = currentOffset() - m_startColumnNumberCorrection;
+    int lineNumber = m_lineNumber;
+    llocp->first_line = lineNumber;
+    llocp->last_line = lineNumber;
+    llocp->first_column = startOffset;
+    llocp->last_column = currentOffset();
 
     m_lastToken = token;
     return token;

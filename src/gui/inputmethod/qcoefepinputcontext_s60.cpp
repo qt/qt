@@ -222,7 +222,7 @@ void QCoeFepInputContext::mouseHandler( int x, QMouseEvent *event)
 
 TCoeInputCapabilities QCoeFepInputContext::inputCapabilities()
 {
-    if (m_inDestruction) {
+    if (m_inDestruction || !focusWidget()) {
         return TCoeInputCapabilities(TCoeInputCapabilities::ENone, 0, 0);
     }
 
@@ -554,8 +554,10 @@ void QCoeFepInputContext::SetCursorSelectionForFepL(const TCursorSelection& aCur
 void QCoeFepInputContext::GetCursorSelectionForFep(TCursorSelection& aCursorSelection) const
 {
     QWidget *w = focusWidget();
-    if (!w)
+    if (!w) {
+        aCursorSelection.SetSelection(0,0);
         return;
+    }
 
     int cursor = w->inputMethodQuery(Qt::ImCursorPosition).toInt() + m_preeditString.size();
     int anchor = w->inputMethodQuery(Qt::ImAnchorPosition).toInt() + m_preeditString.size();
@@ -567,8 +569,10 @@ void QCoeFepInputContext::GetEditorContentForFep(TDes& aEditorContent, TInt aDoc
         TInt aLengthToRetrieve) const
 {
     QWidget *w = focusWidget();
-    if (!w)
+    if (!w) {
+        aEditorContent.FillZ(aLengthToRetrieve);
         return;
+    }
 
     QString text = w->inputMethodQuery(Qt::ImSurroundingText).value<QString>();
     // FEP expects the preedit string to be part of the editor content, so let's mix it in.
@@ -580,8 +584,10 @@ void QCoeFepInputContext::GetEditorContentForFep(TDes& aEditorContent, TInt aDoc
 void QCoeFepInputContext::GetFormatForFep(TCharFormat& aFormat, TInt /* aDocumentPosition */) const
 {
     QWidget *w = focusWidget();
-    if (!w)
+    if (!w) {
+        aFormat = TCharFormat();
         return;
+    }
 
     QFont font = w->inputMethodQuery(Qt::ImFont).value<QFont>();
     QFontMetrics metrics(font);
@@ -595,8 +601,12 @@ void QCoeFepInputContext::GetScreenCoordinatesForFepL(TPoint& aLeftSideOfBaseLin
         TInt& aAscent, TInt /* aDocumentPosition */) const
 {
     QWidget *w = focusWidget();
-    if (!w)
+    if (!w) {
+        aLeftSideOfBaseLine = TPoint(0,0);
+        aHeight = 0;
+        aAscent = 0;
         return;
+    }
 
     QRect rect = w->inputMethodQuery(Qt::ImMicroFocus).value<QRect>();
     aLeftSideOfBaseLine.iX = rect.left();

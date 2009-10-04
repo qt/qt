@@ -100,6 +100,7 @@ public:
     bool exec();
 
     QVariant handle() const;
+    virtual void setForwardOnly(bool forward);
 
 protected:
     bool fetchNext();

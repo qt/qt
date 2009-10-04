@@ -204,6 +204,8 @@ private slots:
 
     void streamRealDataTypes();
 
+    void floatingPointPrecision();
+
 #ifdef QT3_SUPPORT
     void task_224283();
 #endif
@@ -288,7 +290,8 @@ static int NColorRoles[] = {
     QPalette::AlternateBase + 1,   // Qt_4_3
     QPalette::ToolTipText + 1,     // Qt_4_4
     QPalette::ToolTipText + 1,     // Qt_4_5
-    0                              // add the correct value for Qt_4_6 here later
+    QPalette::ToolTipText + 1,     // Qt_4_6
+    0                              // add the correct value for Qt_4_7 here later
 };
 
 // Testing get/set functions
@@ -2538,9 +2541,12 @@ void tst_QDataStream::skipRawData()
         QFETCH(QByteArray, littleEndianData); \
         QFETCH(int, expectedStatus); \
         QFETCH(double, expectedValue); \
+        \
+        QDataStream::FloatingPointPrecision prec = sizeof(T) == sizeof(double) ? QDataStream::DoublePrecision : QDataStream::SinglePrecision; \
     \
         { \
             QDataStream stream(&bigEndianData, QIODevice::ReadOnly); \
+            stream.setFloatingPointPrecision(prec); \
             T i; \
             stream >> i; \
             QCOMPARE((int) stream.status(), expectedStatus); \
@@ -2549,6 +2555,7 @@ void tst_QDataStream::skipRawData()
         { \
             QDataStream stream(&littleEndianData, QIODevice::ReadOnly); \
             stream.setByteOrder(QDataStream::LittleEndian); \
+            stream.setFloatingPointPrecision(prec); \
             T i; \
             stream >> i; \
             QCOMPARE((int) stream.status(), expectedStatus); \
@@ -3357,6 +3364,55 @@ void tst_QDataStream::compatibility_Qt2()
     QVERIFY(in_brush.style() == Qt::NoBrush);
     QVERIFY(in_palette.brush(QPalette::Button).style() == Qt::NoBrush);
     QVERIFY(in_palette.color(QPalette::Light) == Qt::green);
+}
+
+void tst_QDataStream::floatingPointPrecision()
+{
+    QByteArray ba;
+    {
+        QDataStream stream(&ba, QIODevice::WriteOnly);
+        QCOMPARE(QDataStream::DoublePrecision, stream.floatingPointPrecision());
+
+        float f = 123.0f;
+        stream << f;
+        QCOMPARE(ba.size(), int(sizeof(double)));
+
+        double d = 234.0;
+        stream << d;
+        QCOMPARE(ba.size(), int(sizeof(double)*2));
+
+        stream.setFloatingPointPrecision(QDataStream::SinglePrecision);
+
+        f = 123.0f;
+        stream << f;
+        QCOMPARE(ba.size(), int(sizeof(double)*2 + sizeof(float)));
+
+        d = 234.0;
+        stream << d;
+        QCOMPARE(ba.size(), int(sizeof(double)*2 + sizeof(float)*2));
+    }
+
+    {
+        QDataStream stream(ba);
+
+        float f = 0.0f;
+        stream >> f;
+        QCOMPARE(123.0f, f);
+
+        double d = 0.0;
+        stream >> d;
+        QCOMPARE(234.0, d);
+
+        f = 0.0f;
+        stream.setFloatingPointPrecision(QDataStream::SinglePrecision);
+        stream >> f;
+        QCOMPARE(123.0f, f);
+
+        d = 0.0;
+        stream >> d;
+        QCOMPARE(234.0, d);
+    }
+
 }
 
 QTEST_MAIN(tst_QDataStream)

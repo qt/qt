@@ -136,7 +136,7 @@ bool JSStoragePrototype::getOwnPropertyDescriptor(ExecState* exec, const Identif
 
 const ClassInfo JSStorage::s_info = { "Storage", 0, &JSStorageTable, 0 };
 
-JSStorage::JSStorage(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Storage> impl)
+JSStorage::JSStorage(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Storage> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

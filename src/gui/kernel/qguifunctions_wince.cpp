@@ -329,17 +329,14 @@ void qt_wince_maximize(QWidget *widget)
 
 void qt_wince_minimize(HWND hwnd)
 {
-    uint exstyle = GetWindowLongW(hwnd, GWL_EXSTYLE);
-    uint style = GetWindowLongW(hwnd, GWL_STYLE);
-    RECT rect;
-    RECT crect = {0,0,0,0};
-    GetWindowRect(hwnd, &rect);
-    AdjustWindowRectEx(&crect, style & ~WS_OVERLAPPED, FALSE, exstyle);
-    MoveWindow(hwnd, rect.left - crect.left, rect.top - crect.top, 0, 0, true);
-    SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong (hwnd, GWL_EXSTYLE) | WS_EX_NODRAG);
 #ifdef Q_OS_WINCE_WM
     ShowWindow(hwnd, SW_HIDE);
 #else
+    if (!IsWindowVisible(hwnd)) {
+        // Hack for an initial showMinimized.
+        // Without it, our widget doesn't appear in the task bar.
+        ShowWindow(hwnd, SW_SHOW);
+    }
     ShowWindow(hwnd, SW_MINIMIZE);
 #endif
 }

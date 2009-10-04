@@ -125,6 +125,8 @@ public:
     bool shouldDragAutoNode(Node*, const IntPoint&) const; // -webkit-user-drag == auto
 #endif
 
+    bool shouldTurnVerticalTicksIntoHorizontal(const HitTestResult&) const;
+
     bool tabsToLinks(KeyboardEvent*) const;
     bool tabsToAllControls(KeyboardEvent*) const;
 
@@ -304,6 +306,8 @@ private:
 #endif
 
     void updateLastScrollbarUnderMouse(Scrollbar*, bool);
+    
+    void setFrameWasScrolledByUser();
 
     bool capturesDragging() const { return m_capturesDragging; }
 

@@ -33,7 +33,7 @@ class Range;
 class JSRange : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSRange(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Range>);
+    JSRange(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Range>);
     virtual ~JSRange();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -68,7 +68,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSRangePrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSRangePrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions
@@ -91,6 +91,8 @@ JSC::JSValue JSC_HOST_CALL jsRangePrototypeFunctionSurroundContents(JSC::ExecSta
 JSC::JSValue JSC_HOST_CALL jsRangePrototypeFunctionCloneRange(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsRangePrototypeFunctionToString(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsRangePrototypeFunctionDetach(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsRangePrototypeFunctionGetClientRects(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsRangePrototypeFunctionGetBoundingClientRect(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsRangePrototypeFunctionCreateContextualFragment(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsRangePrototypeFunctionIntersectsNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsRangePrototypeFunctionCompareNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);

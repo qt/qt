@@ -33,7 +33,7 @@ class CanvasUnsignedShortArray;
 class JSCanvasUnsignedShortArray : public JSCanvasArray {
     typedef JSCanvasArray Base;
 public:
-    JSCanvasUnsignedShortArray(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CanvasUnsignedShortArray>);
+    JSCanvasUnsignedShortArray(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CanvasUnsignedShortArray>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
@@ -66,7 +66,7 @@ public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
-    JSCanvasUnsignedShortArrayPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSCanvasUnsignedShortArrayPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 
