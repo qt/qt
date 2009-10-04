@@ -69,9 +69,6 @@
 #include "private/qnetworkaccessmanager_p.h"
 
 #ifdef Q_OS_SYMBIAN
-// In Symbian OS test data is located in applications private dir
-// Current path (C:\private\<UID>) contains only ascii chars
-//#define SRCDIR QDir::currentPath()
 #define SRCDIR "."
 #endif
 
@@ -3902,7 +3899,13 @@ void tst_QNetworkReply::httpConnectionCount()
             break;
     }
 
+#ifdef Q_OS_SYMBIAN
+    // see in qhttpnetworkconnection.cpp
+    // hardcoded defaultChannelCount = 3
+    QCOMPARE(pendingConnectionCount, 3);
+#else
     QCOMPARE(pendingConnectionCount, 6);
+#endif
 }
 
 #ifndef QT_NO_OPENSSL
@@ -3914,7 +3917,7 @@ void tst_QNetworkReply::ignoreSslErrorsList_data()
 
     QList<QSslError> expectedSslErrors;
     // apparently, because of some weird behaviour of SRCDIR, the file name below needs to start with a slash
-    QList<QSslCertificate> certs = QSslCertificate::fromPath(QLatin1String(SRCDIR "/../qsslsocket/certs/qt-test-server-cacert.pem"));
+    QList<QSslCertificate> certs = QSslCertificate::fromPath(QLatin1String(SRCDIR "/certs/qt-test-server-cacert.pem"));
     QSslError rightError(QSslError::SelfSignedCertificate, certs.at(0));
     QSslError wrongError(QSslError::SelfSignedCertificate);
 

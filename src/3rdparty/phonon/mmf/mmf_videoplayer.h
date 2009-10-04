@@ -75,7 +75,6 @@ public:
 
 private:
     void construct();
-    VideoOutput& videoOutput();
 
     void doPrepareCompleteL(TInt aError);
 
@@ -87,7 +86,6 @@ private:
     
 private:
     QScopedPointer<CVideoPlayerUtility> m_player;
-    QScopedPointer<VideoOutput>         m_dummyVideoOutput;
 
     // Not owned
     RWsSession*                         m_wsSession;

@@ -60,6 +60,7 @@ public:
     void mouseMoveEvent(QMouseEvent *e);
     void mouseReleaseEvent(QMouseEvent *e);
     void timerEvent(QTimerEvent *e);
+    bool event(QEvent *e);
 
     QSize sizeHint() const { return QSize(500, 500); }
 
@@ -118,6 +119,8 @@ private:
     bool m_smallScreen;
     QPoint m_mousePress;
     bool m_mouseDrag;
+
+    QHash<int, int> m_fingerPointMapping;
 };
 
 class PathStrokeControls : public QWidget

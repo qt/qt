@@ -26,6 +26,6 @@ INSTALLS += target sources
 CONFIG += console
 
 symbian {
-    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
     TARGET.UID3 = 0xA000A644
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 }

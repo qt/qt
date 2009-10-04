@@ -63,7 +63,7 @@ _LIT(KQtWrapperResourceFile, "\\resource\\apps\\s60main.rsc");
  * \class QS60MainApplication
  * \obsolete
  * \since 4.6
- * \brief Helper class for S60 migration
+ * \brief The QS60MainApplication class provides support for migration from S60.
  *
  * The QS60MainApplication provides a helper class for use in migrating from existing S60 based
  * applications to Qt based applications. It is used in the exact same way as the
@@ -80,7 +80,7 @@ _LIT(KQtWrapperResourceFile, "\\resource\\apps\\s60main.rsc");
  * Unlike other Qt classes, QS60MainApplication behaves like an S60 class, and can throw Symbian
  * leaves.
  *
- * \sa QS60MainDocument, QS60MainAppUi, QApplication::QApplication(QApplication::QS60MainApplicationFactory, int &, char **)
+ * \sa QS60MainDocument, QS60MainAppUi, QApplication::QS60MainApplicationFactory
  */
 
 /*!

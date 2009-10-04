@@ -135,7 +135,7 @@ static const char *red_off_led_xpm[] = {
 
 static bool copyButtonConfiguration(const QString &prefix, int displayId)
 {
-    const QString destDir = QT_VFB_DATADIR(displayId);
+    const QString destDir = QT_VFB_DATADIR(displayId).append("/");
     const QFileInfo src(prefix + QLatin1String("defaultbuttons.conf"));
     const QFileInfo dst(destDir + QLatin1String("defaultbuttons.conf"));
     unlink(dst.absoluteFilePath().toLatin1().constData());

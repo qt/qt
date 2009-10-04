@@ -116,6 +116,7 @@ Cpp.ignoredirectives    = Q_DECLARE_HANDLE \
                           Q_ENUMS \
                           Q_FLAGS \
                           Q_INTERFACES \
+			  Q_OS_SYMBIAN \
                           __attribute__
 
 HTML.stylesheets        = $QTDIR/util/qdoc3/test/classic.css

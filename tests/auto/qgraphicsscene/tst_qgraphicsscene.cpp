@@ -1657,7 +1657,7 @@ void tst_QGraphicsScene::hoverEvents_siblings()
             qApp->processEvents(); // this posts updates from the scene to the view
             qApp->processEvents(); // which trigger a repaint here
 
-            QVERIFY(items.at(i)->isHovered);
+            QTRY_VERIFY(items.at(i)->isHovered);
             if (j && i > 0)
                 QVERIFY(!items.at(i - 1)->isHovered);
             if (!j && i < 14)

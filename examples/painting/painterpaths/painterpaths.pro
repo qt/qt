@@ -12,6 +12,6 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/painting/painterpaths
 INSTALLS += target sources
 
 symbian {
-    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
     TARGET.UID3 = 0xA000A64C
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 }

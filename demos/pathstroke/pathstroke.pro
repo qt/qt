@@ -19,6 +19,6 @@ sources.path = $$[QT_INSTALL_DEMOS]/pathstroke
 INSTALLS += target sources
 
 symbian {
-    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     TARGET.UID3 = 0xA000A63E
+    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
 }

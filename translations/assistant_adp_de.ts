@@ -2,17 +2,6 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="de">
 <context>
-    <name>Assistant</name>
-    <message>
-        <source>Welcome to the &lt;b&gt;Qt Assistant&lt;/b&gt;. Qt Assistant will give you quicker access to help and tips while using applications like Qt Designer.</source>
-        <translation type="obsolete">Wilkommen bei &lt;b&gt;Qt Assistant&lt;/b&gt;. Qt Assistant ermöglicht einen schnellen Zugriff der Onlinehilfe während dem Arbeiten mit Programmen wie dem Qt Designer.</translation>
-    </message>
-    <message>
-        <source>Qt Assistant</source>
-        <translation type="obsolete">Qt Assistant</translation>
-    </message>
-</context>
-<context>
     <name>AssistantServer</name>
     <message>
         <location filename="../tools/assistant/compat/main.cpp" line="+225"/>
@@ -23,81 +12,6 @@
         <location line="+1"/>
         <source>Failed to bind to port %1</source>
         <translation>Kann Port %1 nicht binden</translation>
-    </message>
-</context>
-<context>
-    <name>FindDialog</name>
-    <message>
-        <source>Find Text</source>
-        <translation type="obsolete">Textsuche</translation>
-    </message>
-    <message>
-        <source>&amp;Find:</source>
-        <translation type="obsolete">&amp;Suchen:</translation>
-    </message>
-    <message>
-        <source>&amp;Find</source>
-        <translation type="obsolete">&amp;Suchen</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation type="obsolete">Schließen</translation>
-    </message>
-    <message>
-        <source>&amp;Direction</source>
-        <translation type="obsolete">Rich&amp;tung</translation>
-    </message>
-    <message>
-        <source>Forwar&amp;d</source>
-        <translation type="obsolete">&amp;Vorwärts</translation>
-    </message>
-    <message>
-        <source>&amp;Backward</source>
-        <translation type="obsolete">&amp;Rückwärts</translation>
-    </message>
-    <message>
-        <source>&amp;Options</source>
-        <translation type="obsolete">&amp;Optionen</translation>
-    </message>
-    <message>
-        <source>&amp;Whole words only</source>
-        <translation type="obsolete">&amp;Ganze Wörter</translation>
-    </message>
-    <message>
-        <source>&amp;Case sensitive</source>
-        <translation type="obsolete">Groß- und &amp;Kleinschreibung beachten</translation>
-    </message>
-    <message>
-        <source>Qt Assistant - Find Text</source>
-        <translation type="obsolete">Qt Assistant - Textsuche</translation>
-    </message>
-    <message>
-        <source>Enter the text you are looking for.</source>
-        <translation type="obsolete">Geben Sie den Suchtext ein.</translation>
-    </message>
-    <message>
-        <source>Search reached end of the document</source>
-        <translation type="obsolete">Die Suche hat das Ende des Dokuments erreicht</translation>
-    </message>
-    <message>
-        <source>Search reached start of the document</source>
-        <translation type="obsolete">Die Suche hat den Anfang des Dokuments erreicht</translation>
-    </message>
-    <message>
-        <source>Text not found</source>
-        <translation type="obsolete">Text nicht gefunden</translation>
-    </message>
-    <message>
-        <source>Fo&amp;rward</source>
-        <translation type="obsolete">Vo&amp;rwärts</translation>
-    </message>
-    <message>
-        <source>F&amp;ind:</source>
-        <translation type="obsolete">Su&amp;chen:</translation>
-    </message>
-    <message>
-        <source>C&amp;lose</source>
-        <translation type="obsolete">Sch&amp;ließen</translation>
     </message>
 </context>
 <context>
@@ -159,33 +73,9 @@
 <context>
     <name>HelpDialog</name>
     <message>
-        <source>Index</source>
-        <translation type="obsolete">Index</translation>
-    </message>
-    <message>
-        <source>Bookmarks</source>
-        <translation type="obsolete">Lesezeichen</translation>
-    </message>
-    <message>
         <location filename="../tools/assistant/compat/helpdialog.ui"/>
         <source>Con&amp;tents</source>
         <translation>Inhal&amp;t</translation>
-    </message>
-    <message>
-        <source>Qt Reference Documentation</source>
-        <translation type="obsolete">Qt Referenzdokumentation</translation>
-    </message>
-    <message>
-        <source>Qt Designer Manual</source>
-        <translation type="obsolete">Qt Designer Handbuch</translation>
-    </message>
-    <message>
-        <source>Qt Linguist Manual</source>
-        <translation type="obsolete">Qt Linguist Handbuch</translation>
-    </message>
-    <message>
-        <source>Qt Assistant Manual</source>
-        <translation type="obsolete">Qt Assistant Handbuch</translation>
     </message>
     <message>
         <location filename="../tools/assistant/compat/helpdialog.cpp" line="+376"/>
@@ -195,21 +85,9 @@
         <translation>Qt Assistant</translation>
     </message>
     <message>
-        <source>Open Link in Current Window</source>
-        <translation type="obsolete">Öffne Link im aktuellen Fenster</translation>
-    </message>
-    <message>
         <location line="-771"/>
         <source>Open Link in New Window</source>
         <translation>Öffne Link in neuem Fenster</translation>
-    </message>
-    <message>
-        <source>Contents</source>
-        <translation type="obsolete">Inhalt</translation>
-    </message>
-    <message>
-        <source>Search</source>
-        <translation type="obsolete">Suche</translation>
     </message>
     <message>
         <location line="+76"/>
@@ -415,11 +293,6 @@ Assistent ist nicht einsatzbereit!</translation>
     </message>
     <message>
         <location/>
-        <source>Enter searchword(s).</source>
-        <translation>Suchebegriff(e).</translation>
-    </message>
-    <message>
-        <location/>
         <source>&lt;b&gt;Enter search word(s).&lt;/b&gt;&lt;p&gt;Enter here the word(s) you are looking for. The words may contain wildcards (*). For a sequence of words quote them.&lt;/p&gt;</source>
         <translation>&lt;b&gt;Geben Sie Suchbegriffe ein.&lt;/b&gt;&lt;p&gt;Geben Sie hier die gesuchten Begriffe ein. Die Begriffe können Wildcards (*) enthalten. Eine Phrase muß in Anführungszeichen stehen.&lt;/p&gt;</translation>
     </message>
@@ -435,11 +308,6 @@ Assistent ist nicht einsatzbereit!</translation>
     </message>
     <message>
         <location/>
-        <source>Display the help page.</source>
-        <translation>Zeigt die Hilfe an.</translation>
-    </message>
-    <message>
-        <location/>
         <source>Display the help page for the full text search.</source>
         <translation>Zeigt die Hilfeseite für die Volltextsuche an.</translation>
     </message>
@@ -447,11 +315,6 @@ Assistent ist nicht einsatzbereit!</translation>
         <location/>
         <source>He&amp;lp</source>
         <translation>Hi&amp;lfe</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Start searching.</source>
-        <translation>Starte Suche.</translation>
     </message>
     <message>
         <location/>
@@ -463,218 +326,33 @@ Assistent ist nicht einsatzbereit!</translation>
         <source>Preparing...</source>
         <translation>Initialisiere...</translation>
     </message>
-</context>
-<context>
-    <name>HelpDialogBase</name>
     <message>
-        <source>Help</source>
-        <translation type="obsolete">Hilfe</translation>
+        <location/>
+        <source>Enter searchword(s)</source>
+        <translation>Geben Sie Suchbegriffe ein</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Help&lt;/b&gt;&lt;p&gt;Choose the topic you need help for from the contents list, or search the index for keywords.&lt;/p&gt;</source>
-        <translation type="obsolete">&lt;b&gt;Hilfe&lt;/b&gt;&lt;p&gt;Wählen Sie ein Thema vom Inhaltsverzeichnis oder suchen Sie im Index nach Schlüsselwörtern.&lt;/p&gt;</translation>
+        <location/>
+        <source>Display the help page</source>
+        <translation>Hilfeseite anzeigen</translation>
     </message>
     <message>
-        <source>Displays help topics organized by category, index or bookmarks</source>
-        <translation type="obsolete">Zeigt die Hilfethemen unterteilt in Kategorien, Indizes oder Lesezeichen an</translation>
-    </message>
-    <message>
-        <source>Con&amp;tents</source>
-        <translation type="obsolete">Inhal&amp;t</translation>
-    </message>
-    <message>
-        <source>Column 1</source>
-        <translation type="obsolete">Spalte 1</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;Help topics organized by category.&lt;/b&gt;&lt;p&gt;Double-click an item to see which topics are in that category. To view a topic, select it, and then click &lt;b&gt;Display&lt;/b&gt;.&lt;/p&gt;</source>
-        <translation type="obsolete">&lt;b&gt;Die Hilfethemen sind nach Kategorien organisiert.&lt;/b&gt;&lt;p&gt;Ein Doppelklick auf einen Eintrag zeigt die Themen dieser Kategorie an. Um ein Thema anzuzeigen, wählen Sie es aus und drücken Sie &lt;b&gt;Anzeigen&lt;/b&gt;.&lt;/p&gt;</translation>
-    </message>
-    <message>
-        <source>&amp;Index</source>
-        <translation type="obsolete">&amp;Index</translation>
-    </message>
-    <message>
-        <source>&amp;Look For:</source>
-        <translation type="obsolete">Suchen &amp;nach:</translation>
-    </message>
-    <message>
-        <source>Enter keyword</source>
-        <translation type="obsolete">Geben Sie ein Schlüsselwort ein</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;Enter a keyword.&lt;/b&gt;&lt;p&gt;The list will select an item that matches the entered string best.&lt;/p&gt;</source>
-        <translation type="obsolete">&lt;b&gt;Geben Sie ein Schlüsselwort ein.&lt;/b&gt;&lt;p&gt;Es wird dann der Eintrag aus der Liste ausgewählt, der am besten mit dem eingegebenen Begriff übereinstimmt.&lt;/p&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;List of available help topics.&lt;/b&gt;&lt;p&gt;Double-click on an item to open up the help page for this topic. You will have to choose the right page if more than one are found.&lt;/p&gt;</source>
-        <translation type="obsolete">&lt;b&gt;Liste aller verfügbaren Hilfethemen.&lt;/b&gt;&lt;p&gt;Ein Doppelklick auf einen Eintrag öffnet die dazugehörige Hilfeseite. Wenn es mehrere Seiten zu einem Eintrag gibt, wählen Sie die gewünschte aus.&lt;/p&gt;</translation>
-    </message>
-    <message>
-        <source>&amp;Bookmarks</source>
-        <translation type="obsolete">L&amp;esezeichen</translation>
-    </message>
-    <message>
-        <source>Displays the list of bookmarks.</source>
-        <translation type="obsolete">Zeigt alle Lesezeichen an.</translation>
-    </message>
-    <message>
-        <source>&amp;New Bookmark</source>
-        <translation type="obsolete">&amp;Neues Lesezeichen</translation>
-    </message>
-    <message>
-        <source>Add new bookmark</source>
-        <translation type="obsolete">Füge neues Lesezeichen hinzu</translation>
-    </message>
-    <message>
-        <source>Add the current displayed page as new bookmark to the list.</source>
-        <translation type="obsolete">Füge die aktuelle Seite als Lesezeichen hinzu.</translation>
-    </message>
-    <message>
-        <source>D&amp;elete Bookmark</source>
-        <translation type="obsolete">&amp;Lösche Lesezeichen</translation>
-    </message>
-    <message>
-        <source>Delete bookmark</source>
-        <translation type="obsolete">Lösche Lesezeichen</translation>
-    </message>
-    <message>
-        <source>Delete the selected bookmark from the list.</source>
-        <translation type="obsolete">Lösche markiertes Lesezeichen.</translation>
-    </message>
-    <message>
-        <source>Preparing...</source>
-        <translation type="obsolete">Initialisiere...</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;Help&lt;/b&gt;&lt;p&gt;Choose the topic you want help on from the contents list, or search the index for keywords.&lt;/p&gt;</source>
-        <translation type="obsolete">&lt;b&gt;Hilfe&lt;/b&gt;&lt;p&gt;Wählen Sie ein Hilfethema aus dem Inhalt oder suchen Sie im Index nach Schlüsselwörtern.&lt;/p&gt;</translation>
-    </message>
-    <message>
-        <source>Displays help topics organized by category, index or bookmarks. Another tab inherits the full text search.</source>
-        <translation type="obsolete">Zeigt Hilfethemen geordnet nach Kategorie, Index oder Lesezeichen an. Ein weiterer Abschnitt enthält die Volltextsuche.</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;Help topics organized by category.&lt;/b&gt;&lt;p&gt;Double-click an item to see the topics in that category. To view a topic, just double-click it.&lt;/p&gt;</source>
-        <translation type="obsolete">&lt;b&gt;Hilfethemen geordnet nach Kategorie.&lt;/b&gt;&lt;p&gt;Doppelklicken Sie einen Eintrag, um die Themen dieser Kategorie zu sehen. Doppelklicken Sie ein Thema, um es angezeigt zu bekommen.&lt;/p&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;List of available help topics.&lt;/b&gt;&lt;p&gt;Double-click on an item to open its help page. If more than one is found, you must specify which page you want.&lt;/p&gt;</source>
-        <translation type="obsolete">&lt;b&gt;Liste aller verfügbaren Hilfethemen.&lt;/b&gt;&lt;p&gt;Doppelklicken Sie auf einen Eintrag, um die Hilfe zu öffnen. Wenn mehr als eine Seite gefunden wurde, wählen Sie die gewünschte Seite aus.&lt;/p&gt;</translation>
-    </message>
-    <message>
-        <source>&amp;New</source>
-        <translation type="obsolete">&amp;Neu</translation>
-    </message>
-    <message>
-        <source>Add the currently displayed page as a new bookmark.</source>
-        <translation type="obsolete">Füge aktuelle Seite zu den Lesezeichen hinzu.</translation>
-    </message>
-    <message>
-        <source>&amp;Delete</source>
-        <translation type="obsolete">&amp;Löschen</translation>
-    </message>
-    <message>
-        <source>Delete the selected bookmark.</source>
-        <translation type="obsolete">Lösche markiertes Lesezeichen.</translation>
-    </message>
-    <message>
-        <source>&amp;Search</source>
-        <translation type="obsolete">&amp;Suche</translation>
-    </message>
-    <message>
-        <source>Searching f&amp;or:</source>
-        <translation type="obsolete">Suche &amp;nach:</translation>
-    </message>
-    <message>
-        <source>Enter searchword(s).</source>
-        <translation type="obsolete">Suchebegriff(e).</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;Enter search word(s).&lt;/b&gt;&lt;p&gt;Enter here the word(s) you are looking for. The words may contain wildcards (*). For a sequence of words quote them.&lt;/p&gt;</source>
-        <translation type="obsolete">&lt;b&gt;Geben Sie Suchbegriffe ein.&lt;/b&gt;&lt;p&gt;Geben Sie hier die gesuchten Begriffe ein. Die Begriffe können Wildcards (*) enthalten. Eine Phrase muß in Anführungszeichen stehen.&lt;/p&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;Found documents&lt;/b&gt;&lt;p&gt;This list contains all found documents from the last search. The documents are ordered, i.e. the first document has the most matches.&lt;/p&gt;</source>
-        <translation type="obsolete">&lt;b&gt;Gefundene Dokumente&lt;/b&gt;&lt;p&gt;Diese Liste beinhaltet alle gefundenen Dokumente der letzten Suche. Die Dokumente sind nach der Häufigkeit der Treffer geordnet.&lt;/p&gt;</translation>
-    </message>
-    <message>
-        <source>Found &amp;Documents:</source>
-        <translation type="obsolete">Gefundene &amp;Dokumente:</translation>
-    </message>
-    <message>
-        <source>He&amp;lp</source>
-        <translation type="obsolete">Hi&amp;lfe</translation>
-    </message>
-    <message>
-        <source>Display the help page.</source>
-        <translation type="obsolete">Zeigt die Hilfe an.</translation>
-    </message>
-    <message>
-        <source>Display the help page for the full text search.</source>
-        <translation type="obsolete">Zeigt die Hilfeseite für die Volltextsuche an.</translation>
-    </message>
-    <message>
-        <source>Start searching.</source>
-        <translation type="obsolete">Starte Suche.</translation>
-    </message>
-    <message>
-        <source>Pressing this button starts the search.</source>
-        <translation type="obsolete">Startet die Suche.</translation>
+        <location/>
+        <source>Start searching</source>
+        <translation>Suche beginnen</translation>
     </message>
 </context>
 <context>
     <name>HelpWindow</name>
-    <message>
-        <source>Qt Assistant by Trolltech - %1</source>
-        <translation type="obsolete">Qt Assistant von Trolltech - %1</translation>
-    </message>
     <message>
         <location filename="../tools/assistant/compat/helpwindow.cpp" line="+97"/>
         <source>Help</source>
         <translation>Hilfe</translation>
     </message>
     <message>
-        <source>Can&apos;t load and display non-local file
-%1</source>
-        <translation type="obsolete">Kann gewünschte Datei nicht laden:
-%1</translation>
-    </message>
-    <message>
         <location line="+93"/>
         <source>Open Link in New Window	Shift+LMB</source>
         <translation>Öffne Link in neuem Fenster</translation>
-    </message>
-    <message>
-        <source>Currently no Web browser is selected.
-Please use the settings dialog to specify one!
-</source>
-        <translation type="obsolete">Es ist kein Webbrowser ausgewählt.
-Öffnen Sie bitten den &quot;Einstellungen&quot; Dialog um einen Webbrowser auszuwählen.
-</translation>
-    </message>
-    <message>
-        <source>Qt Assistant by Trolltech - %1%2</source>
-        <translation type="obsolete">Qt Assistant von Trolltech - %1%2</translation>
-    </message>
-    <message>
-        <source>No PDF Viewer has been specified
-Please use the settings dialog to specify one!
-</source>
-        <translation type="obsolete">Es wurde kein PDF Betrachter angegeben.
-Bitte diesen im Menue Einstellungen festlegen!
-</translation>
-    </message>
-    <message>
-        <source>Qt Assistant is unable to start the PDF Viewer
-
-%1
-
-Please make sure that the executable exists and is located at
-the specified location.</source>
-        <translation type="obsolete">Der Qt Assistent konnte den PDF betrachter
-%1 nicht laden.
-Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translation>
     </message>
     <message>
         <location line="-2"/>
@@ -725,17 +403,9 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
 <context>
     <name>MainWindow</name>
     <message>
-        <source>Qt Assistant by Trolltech</source>
-        <translation type="obsolete">Qt Assistant von Trolltech</translation>
-    </message>
-    <message>
         <location filename="../tools/assistant/compat/mainwindow.ui"/>
         <source>Toolbar</source>
         <translation>Werkzeugleiste</translation>
-    </message>
-    <message>
-        <source>Print</source>
-        <translation type="obsolete">Drucken</translation>
     </message>
     <message>
         <location/>
@@ -743,17 +413,9 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
         <translation>&amp;Drucken...</translation>
     </message>
     <message>
-        <source>Exit</source>
-        <translation type="obsolete">Beenden</translation>
-    </message>
-    <message>
         <location/>
         <source>E&amp;xit</source>
         <translation>&amp;Beenden</translation>
-    </message>
-    <message>
-        <source>Copy</source>
-        <translation type="obsolete">Kopieren</translation>
     </message>
     <message>
         <location/>
@@ -761,17 +423,9 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
         <translation>&amp;Kopieren</translation>
     </message>
     <message>
-        <source>Find in Text</source>
-        <translation type="obsolete">Textsuche</translation>
-    </message>
-    <message>
         <location/>
         <source>&amp;Find in Text...</source>
         <translation>Text&amp;suche...</translation>
-    </message>
-    <message>
-        <source>Home</source>
-        <translation type="obsolete">Startseite</translation>
     </message>
     <message>
         <location/>
@@ -779,17 +433,9 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
         <translation>St&amp;artseite</translation>
     </message>
     <message>
-        <source>Previous</source>
-        <translation type="obsolete">Vorherige</translation>
-    </message>
-    <message>
         <location/>
         <source>&amp;Previous</source>
         <translation>&amp;Vorherige</translation>
-    </message>
-    <message>
-        <source>Next</source>
-        <translation type="obsolete">Nächste</translation>
     </message>
     <message>
         <location/>
@@ -797,25 +443,9 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
         <translation>&amp;Nächste</translation>
     </message>
     <message>
-        <source>About</source>
-        <translation type="obsolete">Über</translation>
-    </message>
-    <message>
         <location/>
         <source>About Qt</source>
         <translation>Über Qt</translation>
-    </message>
-    <message>
-        <source>Qt Class Reference</source>
-        <translation type="obsolete">Qt Klassenreferenz</translation>
-    </message>
-    <message>
-        <source>Qt Designer Manual</source>
-        <translation type="obsolete">Qt Designer Handbuch</translation>
-    </message>
-    <message>
-        <source>Zoom in</source>
-        <translation type="obsolete">Vergrößern</translation>
     </message>
     <message>
         <location/>
@@ -828,32 +458,12 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
         <translation>Ver&amp;kleinern</translation>
     </message>
     <message>
-        <source>Qt Linguist Manual</source>
-        <translation type="obsolete">Qt Linguist Handbuch</translation>
-    </message>
-    <message>
-        <source>&amp;Settings</source>
-        <translation type="obsolete">&amp;Einstellungen</translation>
-    </message>
-    <message>
-        <source>&amp;Settings...</source>
-        <translation type="obsolete">&amp;Einstellungen...</translation>
-    </message>
-    <message>
         <location/>
         <source>New Window</source>
         <translation>Neues Fenster...</translation>
     </message>
     <message>
-        <source>Close</source>
-        <translation type="obsolete">Schließen</translation>
-    </message>
-    <message>
-        <source>Vie&amp;ws</source>
-        <translation type="obsolete">A&amp;nsicht</translation>
-    </message>
-    <message>
-        <location filename="../tools/assistant/compat/mainwindow.cpp" line="+188"/>
+        <location filename="../tools/assistant/compat/mainwindow.cpp" line="+198"/>
         <source>Ctrl+T</source>
         <translation>Strg+T
 </translation>
@@ -869,15 +479,7 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
         <translation>Strg+E</translation>
     </message>
     <message>
-        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qt.nokia.com/company/model&quot;&gt;qt.nokia.com/company/model&lt;/a&gt; for an overview of Qt licensing.</source>
-        <translation type="obsolete">Sie benötigen eine kommerzielle Qt Lizenz für die Entwicklung von proprietären (geschlossenen) Anwendungen. Besuchen Sie &lt;a href=&quot;http://qt.nokia.com/company/about/businessmodel&quot;&gt;http://qt.nokia.com/company/about/businessmodel&lt;/a&gt; um sich einen Überblick über die Qt Lizenzvergabe zu verschaffen.</translation>
-    </message>
-    <message>
-        <source>This program is licensed to you under the terms of the Qt %1 License Agreement. For details, see the license file that came with this software distribution.</source>
-        <translation type="obsolete">Dieses Programm ist für Sie lizenziert gemäß den Bedingungen des Qt %1 Lizenzvertrages. Einzelheiten können sie der mitgelieferten Lizenz-Datei entnehmen.</translation>
-    </message>
-    <message>
-        <location line="+139"/>
+        <location line="+129"/>
         <location line="+1"/>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
@@ -886,10 +488,6 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
         <location filename="../tools/assistant/compat/mainwindow.ui"/>
         <source>&amp;Add Bookmark</source>
         <translation>&amp;Füge Lesezeichen hinzu</translation>
-    </message>
-    <message>
-        <source>Qt Reference Documentation</source>
-        <translation type="obsolete">Qt Referenzdokumention</translation>
     </message>
     <message>
         <location/>
@@ -919,7 +517,7 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
     <message>
         <location/>
         <source>Qt Assistant by Nokia</source>
-        <translation type="unfinished"></translation>
+        <translation>Qt Assistant von Nokia</translation>
     </message>
     <message>
         <location/>
@@ -1022,14 +620,6 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
         <translation>Strg+-</translation>
     </message>
     <message>
-        <source>Display the Guide to the Qt Translation Tools.</source>
-        <translation type="obsolete">Zeigt die Anleitung zu den Qt Übersetzungswerkzeugen an.</translation>
-    </message>
-    <message>
-        <source>Open the settings dialog.</source>
-        <translation type="obsolete">Öffnet den &quot;Einstellungen&quot; Dialog.</translation>
-    </message>
-    <message>
         <location/>
         <source>Open a new window.</source>
         <translation>Öffnet ein neues Fenster.</translation>
@@ -1080,7 +670,7 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
         <translation>Umschalt+F1</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/mainwindow.cpp" line="-139"/>
+        <location filename="../tools/assistant/compat/mainwindow.cpp" line="-129"/>
         <source>Ctrl+S</source>
         <translation>Strg+S</translation>
     </message>
@@ -1118,14 +708,6 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
         <location/>
         <source>About Qt Assistant</source>
         <translation>Über Qt Assistent</translation>
-    </message>
-    <message>
-        <source>Settings</source>
-        <translation type="obsolete">Einstellungen</translation>
-    </message>
-    <message>
-        <source>Add Bookmark</source>
-        <translation type="obsolete">Lesezeichen einfügen</translation>
     </message>
     <message>
         <location/>
@@ -1168,13 +750,9 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
         <translation></translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/mainwindow.cpp" line="+191"/>
+        <location filename="../tools/assistant/compat/mainwindow.cpp" line="+181"/>
         <source>Failed to open about application contents in file: &apos;%1&apos;</source>
         <translation>Fehler beim Öffnen des Inhalts in Datei: &apos;%1&apos;</translation>
-    </message>
-    <message>
-        <source>Error...</source>
-        <translation type="obsolete">Fehler ...</translation>
     </message>
     <message>
         <location line="-246"/>
@@ -1197,7 +775,7 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
         <translation>Strg+M</translation>
     </message>
     <message>
-        <location line="+60"/>
+        <location line="+70"/>
         <source>SHIFT+CTRL+=</source>
         <translation>Umschalt+Strg+=</translation>
     </message>
@@ -1227,19 +805,7 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
         <translation>Zeigt die Hauptseite eines Dokumentensets an.</translation>
     </message>
     <message>
-        <source>Open Source Edition</source>
-        <translation type="obsolete">Open Source Edition</translation>
-    </message>
-    <message>
-        <source>This version of Qt Assistant is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.</source>
-        <translation type="obsolete">Diese Version von Qt Assistant ist Teil der Qt Open Source Edition und darf für die Entwicklung von Open Source Anwendungen genutzt werden.  Qt ist ein umfangreiches C++ Framework für die Entwicklung von Cross-Platform-Anwendungen.</translation>
-    </message>
-    <message>
-        <source>This program is licensed to you under the terms of the Qt Commercial License Agreement. For details, see the file LICENSE that came with this software distribution.</source>
-        <translation type="obsolete">Dieses Programm ist für Sie lizenziert gemäß den Bedingungen des kommerziellen Qt Lizenzvertrages. Einzelheiten können Sie der mitgelieferten LICENSE-Datei entnehmen.</translation>
-    </message>
-    <message>
-        <location line="+270"/>
+        <location line="+262"/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -1283,173 +849,9 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
 <context>
     <name>QObject</name>
     <message>
-        <source>Qt Assistant by Trolltech</source>
-        <translation type="obsolete">Qt Assistant von Trolltech</translation>
-    </message>
-    <message>
         <location filename="../tools/assistant/compat/config.cpp" line="+350"/>
         <source>Qt Assistant by Nokia</source>
         <translation>Qt Assistant von Nokia</translation>
-    </message>
-</context>
-<context>
-    <name>SettingsDialog</name>
-    <message>
-        <source>all</source>
-        <translation type="obsolete">Alle</translation>
-    </message>
-    <message>
-        <source>Qt Assistant - Add Documentation</source>
-        <translation type="obsolete">Qt Assistant - Hinzufügen von Dokumentation</translation>
-    </message>
-    <message>
-        <source>Qt Assistant</source>
-        <translation type="obsolete">Qt Assistant</translation>
-    </message>
-    <message>
-        <source>Parse Error</source>
-        <translation type="obsolete">Syntaxfehler</translation>
-    </message>
-    <message>
-        <source>This item can not be deleted!</source>
-        <translation type="obsolete">Dieser Eintrag kann nicht gelöscht werden!</translation>
-    </message>
-    <message>
-        <source>This branch is not empty!
-Firstly, all contents have to be removed.</source>
-        <translation type="obsolete">Dieser Zweig ist nicht leer!
-Es müssen zuerst alle Inhalte gelöscht werden.</translation>
-    </message>
-    <message>
-        <source>Qt Assistant - Set Web Browser</source>
-        <translation type="obsolete">Qt Assistant - Setze Webbrowser</translation>
-    </message>
-    <message>
-        <source>Qt Assistant - Set PDF Browser</source>
-        <translation type="obsolete">Qt Assistent - Setze PDF Betrachter</translation>
-    </message>
-    <message>
-        <source>Qt Assistant - Set Homepage</source>
-        <translation type="obsolete">Qt Assistent - Setzte Startseite</translation>
-    </message>
-</context>
-<context>
-    <name>SettingsDialogBase</name>
-    <message>
-        <source>Settings</source>
-        <translation type="obsolete">Einstellungen</translation>
-    </message>
-    <message>
-        <source>Font:</source>
-        <translation type="obsolete">Schriften:</translation>
-    </message>
-    <message>
-        <source>Link color:</source>
-        <translation type="obsolete">Linkfarbe:</translation>
-    </message>
-    <message>
-        <source>Underline links</source>
-        <translation type="obsolete">Unterstreiche Links</translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation type="obsolete">OK</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="obsolete">Abbrechen</translation>
-    </message>
-    <message>
-        <source>Fixed font:</source>
-        <translation type="obsolete">Nicht-proportionale Schrift:</translation>
-    </message>
-    <message>
-        <source>Qt Assistant - Settings</source>
-        <translation type="obsolete">Qt Assistant - Einstellungen</translation>
-    </message>
-    <message>
-        <source>General</source>
-        <translation type="obsolete">Allgemein</translation>
-    </message>
-    <message>
-        <source>Fix&amp;ed font:</source>
-        <translation type="obsolete">&amp;Nicht-proportionale Schrift:</translation>
-    </message>
-    <message>
-        <source>&amp;Font:</source>
-        <translation type="obsolete">&amp;Schrift:</translation>
-    </message>
-    <message>
-        <source>&amp;Underline links</source>
-        <translation type="obsolete">&amp;Unterstreiche Links</translation>
-    </message>
-    <message>
-        <source>Web</source>
-        <translation type="obsolete">Web</translation>
-    </message>
-    <message>
-        <source>&amp;Web Browser Application:</source>
-        <translation type="obsolete">&amp;Webbrowser Anwendung:</translation>
-    </message>
-    <message>
-        <source>...</source>
-        <translation type="obsolete">...</translation>
-    </message>
-    <message>
-        <source>Documentation</source>
-        <translation type="obsolete">Dokumentation</translation>
-    </message>
-    <message>
-        <source>&amp;Delete</source>
-        <translation type="obsolete">&amp;Lösche</translation>
-    </message>
-    <message>
-        <source>&amp;Add...</source>
-        <translation type="obsolete">&amp;Hinzufügen...</translation>
-    </message>
-    <message>
-        <source>Categories</source>
-        <translation type="obsolete">Kategorien</translation>
-    </message>
-    <message>
-        <source>Category &amp;Name:</source>
-        <translation type="obsolete">Kategorie&amp;name:</translation>
-    </message>
-    <message>
-        <source>&amp;Add</source>
-        <translation type="obsolete">&amp;Hinzufügen</translation>
-    </message>
-    <message>
-        <source>&amp;OK</source>
-        <translation type="obsolete">&amp;OK</translation>
-    </message>
-    <message>
-        <source>&amp;Cancel</source>
-        <translation type="obsolete">&amp;Abbrechen</translation>
-    </message>
-    <message>
-        <source>&amp;General</source>
-        <translation type="obsolete">&amp;Haupt</translation>
-    </message>
-    <message>
-        <source>&amp;Web</source>
-        <translation type="obsolete">&amp;Web</translation>
-    </message>
-    <message>
-        <source>Web &amp;Browser Application:</source>
-        <translation type="obsolete">Web&amp;browser:</translation>
-    </message>
-    <message>
-        <source>&amp;Home page</source>
-        <translation type="obsolete">&amp;Startseite</translation>
-    </message>
-    <message>
-        <source>&amp;PDF</source>
-        <translation type="obsolete">&amp;PDF</translation>
-    </message>
-    <message>
-        <source>PDF &amp;Application</source>
-        <translation type="obsolete">PDF &amp;Betrachter</translation>
     </message>
 </context>
 <context>
@@ -1566,41 +968,6 @@ Es müssen zuerst alle Inhalte gelöscht werden.</translation>
         <location/>
         <source>Close the Dialog.</source>
         <translation>Schließt den Dialog.</translation>
-    </message>
-</context>
-<context>
-    <name>TopicChooserBase</name>
-    <message>
-        <source>Choose Topic</source>
-        <translation type="obsolete">Thema wählen</translation>
-    </message>
-    <message>
-        <source>Select a topic from the list and click the &lt;b&gt;Display&lt;/b&gt;-button to open the online help.</source>
-        <translation type="obsolete">Wählen Sie ein Thema aus der Liste aus und klicken Sie &lt;b&gt;Anzeigen&lt;/b&gt; um die Hilfe zu öffnen.</translation>
-    </message>
-    <message>
-        <source>&amp;Topics</source>
-        <translation type="obsolete">&amp;Themen</translation>
-    </message>
-    <message>
-        <source>Displays a list of available help topics for the keyword.</source>
-        <translation type="obsolete">Zeigt eine Liste der verfügbaren Hilfethemen für diesen Begriff an.</translation>
-    </message>
-    <message>
-        <source>&amp;Display</source>
-        <translation type="obsolete">&amp;Anzeigen</translation>
-    </message>
-    <message>
-        <source>Open the topic selected in the list.</source>
-        <translation type="obsolete">Öffne das gewählte Thema aus der Liste.</translation>
-    </message>
-    <message>
-        <source>&amp;Close</source>
-        <translation type="obsolete">&amp;Schließen</translation>
-    </message>
-    <message>
-        <source>Close the Dialog.</source>
-        <translation type="obsolete">Schließt den Dialog.</translation>
     </message>
 </context>
 </TS>

@@ -67,6 +67,7 @@
 #include <private/qt_x11_p.h>
 #include "qx11info_x11.h"
 #include <private/qdrawhelper_p.h>
+#include <private/qimage_p.h>
 
 #include <stdlib.h>
 
@@ -369,6 +370,30 @@ void QX11PixmapData::resize(int width, int height)
 #endif // QT_NO_XRENDER
 }
 
+struct QX11AlphaDetector
+{
+    bool hasAlpha() const {
+        if (checked)
+            return has;
+        // Will implicitly also check format and return quickly for opaque types...
+        checked = true;
+        has = const_cast<QImage *>(image)->data_ptr()->checkForAlphaPixels();
+        return has;
+    }
+
+    bool hasXRenderAndAlpha() const {
+        if (!X11->use_xrender)
+            return false;
+        return hasAlpha();
+    }
+
+    QX11AlphaDetector(const QImage *i) : image(i), checked(false), has(false) { }
+
+    const QImage *image;
+    mutable bool checked;
+    mutable bool has;
+};
+
 void QX11PixmapData::fromImage(const QImage &img,
                                Qt::ImageConversionFlags flags)
 {
@@ -402,7 +427,9 @@ void QX11PixmapData::fromImage(const QImage &img,
         return;
     }
 
-    int dd = X11->use_xrender && img.hasAlphaChannel() ? 32 : xinfo.depth();
+    QX11AlphaDetector alphaCheck(&img);
+    int dd = alphaCheck.hasXRenderAndAlpha() ? 32 : xinfo.depth();
+
     if (qt_x11_preferred_pixmap_depth)
         dd = qt_x11_preferred_pixmap_depth;
 
@@ -454,7 +481,7 @@ void QX11PixmapData::fromImage(const QImage &img,
     uchar  *newbits= 0;
 
 #ifndef QT_NO_XRENDER
-    if (X11->use_xrender && image.hasAlphaChannel()) {
+    if (alphaCheck.hasXRenderAndAlpha()) {
         const QImage &cimage = image;
 
         d = 32;
@@ -1091,7 +1118,7 @@ void QX11PixmapData::fromImage(const QImage &img,
     }
 #endif
 
-    if (image.hasAlphaChannel()) {
+    if (alphaCheck.hasAlpha()) {
         QBitmap m = QBitmap::fromImage(image.createAlphaMask(flags));
         setMask(m);
     }

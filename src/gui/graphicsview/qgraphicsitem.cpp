@@ -609,6 +609,7 @@
 
 /*!
     \enum QGraphicsItem::PanelModality
+    \since 4.6
 
     This enum specifies the behavior of a modal panel. A modal panel
     is one that blocks input to other panels. Note that items that

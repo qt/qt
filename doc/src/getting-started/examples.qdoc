@@ -1077,9 +1077,13 @@
     \contentspage Qt Examples
     \nextpage D-Bus Examples
 
+    The API of the gesture framework is not yet finalized and
+    still subject to change.
+\omit
     \list
     \o \l{widgets/imageviewer}{Image Viewer}
     \endlist
+\endomit
 */
 
 /*!
