@@ -219,6 +219,8 @@ public:
 #endif
 };
 
+class QGLContextResource;
+
 // QGLContextPrivate has the responsibility of creating context groups.
 // QGLContextPrivate and QGLShareRegister will both maintain the reference counter and destroy
 // context groups when needed.
@@ -234,10 +236,15 @@ private:
     QGLExtensionFuncs m_extensionFuncs;
     const QGLContext *m_context; // context group's representative
     QList<const QGLContext *> m_shares;
+    QHash<QGLContextResource *, void *> m_resources;
     QAtomicInt m_refs;
 
+    void cleanupResources(const QGLContext *ctx);
+
     friend class QGLShareRegister;
+    friend class QGLContext;
     friend class QGLContextPrivate;
+    friend class QGLContextResource;
 };
 
 // Reference to a QGLContext which automatically switches to another
@@ -506,26 +513,21 @@ inline GLenum qt_gl_preferredTextureTarget()
 }
 
 // One resource per group of shared contexts.
-class Q_AUTOTEST_EXPORT QGLContextResource : public QObject
+class Q_AUTOTEST_EXPORT QGLContextResource
 {
-    Q_OBJECT
 public:
     typedef void (*FreeFunc)(void *);
-    QGLContextResource(FreeFunc f, QObject *parent = 0);
+    QGLContextResource(FreeFunc f);
     ~QGLContextResource();
     // Set resource 'value' for 'key' and all its shared contexts.
     void insert(const QGLContext *key, void *value);
     // Return resource for 'key' or a shared context.
     void *value(const QGLContext *key);
-    // Free resource for 'key' and all its shared contexts.
-    void removeGroup(const QGLContext *key);
-private slots:
-    // Remove entry 'key' from cache and delete resource if there are no shared contexts.
-    void removeOne(const QGLContext *key);
+    // Cleanup 'value' in response to a context group being destroyed.
+    void cleanup(const QGLContext *ctx, void *value);
 private:
-    typedef QHash<const QGLContext *, void *> ResourceHash;
-    ResourceHash m_resources;
     FreeFunc free;
+    QAtomicInt active;
 };
 
 // Temporarily make a context current if not already current or

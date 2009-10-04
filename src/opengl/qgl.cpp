@@ -1806,6 +1806,8 @@ QGLContext::~QGLContext()
     QGLTextureCache::instance()->removeContextTextures(this);
     QGLTextureCache::deleteIfEmpty(); // ### thread safety
 
+    d_ptr->group->cleanupResources(this);
+
     QGLSignalProxy::instance()->emitAboutToDestroyContext(this);
     reset();
 }
@@ -4908,16 +4910,15 @@ void QGLShareRegister::removeShare(const QGLContext *context) {
         group->m_shares.clear();
 }
 
-QGLContextResource::QGLContextResource(FreeFunc f, QObject *parent)
-    : QObject(parent), free(f)
+QGLContextResource::QGLContextResource(FreeFunc f)
+    : free(f), active(0)
 {
-    connect(QGLSignalProxy::instance(), SIGNAL(aboutToDestroyContext(const QGLContext *)), this, SLOT(removeOne(const QGLContext *)));
 }
 
 QGLContextResource::~QGLContextResource()
 {
 #ifndef QT_NO_DEBUG
-    if (m_resources.size()) {
+    if (active != 0) {
         qWarning("QtOpenGL: Resources are still available at program shutdown.\n"
                  "          This is possibly caused by a leaked QGLWidget, \n"
                  "          QGLFramebufferObject or QGLPixelBuffer.");
@@ -4927,95 +4928,35 @@ QGLContextResource::~QGLContextResource()
 
 void QGLContextResource::insert(const QGLContext *key, void *value)
 {
-    QList<const QGLContext *> shares = qgl_share_reg()->shares(key);
-    if (shares.size() == 0)
-        shares.append(key);
-    void *oldValue = 0;
-    for (int i = 0; i < shares.size(); ++i) {
-        ResourceHash::iterator it = m_resources.find(shares.at(i));
-        if (it != m_resources.end()) {
-            Q_ASSERT(oldValue == 0 || oldValue == it.value());
-            oldValue = it.value();
-            it.value() = value;
-        } else {
-            m_resources.insert(shares.at(i), value);
-        }
-    }
-    if (oldValue != 0 && oldValue != value) {
-        QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
-        if (oldContext != key)
-            const_cast<QGLContext *>(key)->makeCurrent();
-        free(oldValue);
-        if (oldContext && oldContext != key)
-            oldContext->makeCurrent();
-    }
+    QGLContextGroup *group = QGLContextPrivate::contextGroup(key);
+    Q_ASSERT(!group->m_resources.contains(this));
+    group->m_resources.insert(this, value);
+    active.ref();
 }
 
 void *QGLContextResource::value(const QGLContext *key)
 {
-    ResourceHash::const_iterator it = m_resources.find(key);
-    // Check if there is a value associated with 'key'.
-    if (it != m_resources.end())
-        return it.value();
-    // Check if there is a value associated with sharing contexts.
-    QList<const QGLContext *> shares = qgl_share_reg()->shares(key);
-    for (int i = 0; i < shares.size() && it == m_resources.end(); ++i)
-        it = m_resources.find(shares.at(i));
-    if (it == m_resources.end())
-        return 0; // Didn't find anything.
-
-    // Found something! Share this info with all the buddies.
-    for (int i = 0; i < shares.size(); ++i)
-        m_resources.insert(shares.at(i), it.value());
-    return it.value();
+    QGLContextGroup *group = QGLContextPrivate::contextGroup(key);
+    return group->m_resources.value(this, 0);
 }
 
-void QGLContextResource::removeGroup(const QGLContext *key)
+void QGLContextResource::cleanup(const QGLContext *ctx, void *value)
 {
-    QList<const QGLContext *> shares = qgl_share_reg()->shares(key);
-    if (shares.size() == 0)
-        shares.append(key);
-    void *oldValue = 0;
-    for (int i = 0; i < shares.size(); ++i) {
-        ResourceHash::iterator it = m_resources.find(shares.at(i));
-        if (it != m_resources.end()) {
-            Q_ASSERT(oldValue == 0 || oldValue == it.value());
-            oldValue = it.value();
-            m_resources.erase(it);
-        }
-    }
-    if (oldValue != 0) {
-        QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
-        if (oldContext != key)
-            const_cast<QGLContext *>(key)->makeCurrent();
-        free(oldValue);
-        if (oldContext && oldContext != key)
-            oldContext->makeCurrent();
-    }
+    QGLShareContextScope scope(ctx);
+    free(value);
+    active.deref();
 }
 
-void QGLContextResource::removeOne(const QGLContext *key)
+void QGLContextGroup::cleanupResources(const QGLContext *ctx)
 {
-    ResourceHash::iterator it = m_resources.find(key);
-    if (it == m_resources.end())
+    // If there are still shares, then no cleanup to be done yet.
+    if (m_shares.size() > 1)
         return;
 
-    QList<const QGLContext *> shares = qgl_share_reg()->shares(key);
-    if (shares.size() > 1) {
-        Q_ASSERT(key->isSharing());
-        // At least one of the shared contexts must stay in the cache.
-        // Otherwise, the value pointer is lost.
-        for (int i = 0; i < 2/*shares.size()*/; ++i)
-            m_resources.insert(shares.at(i), it.value());
-    } else {
-        QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
-        if (oldContext != key)
-            const_cast<QGLContext *>(key)->makeCurrent();
-        free(it.value());
-        if (oldContext && oldContext != key)
-            oldContext->makeCurrent();
-    }
-    m_resources.erase(it);
+    // Iterate over all resources and free each in turn.
+    QHash<QGLContextResource *, void *>::ConstIterator it;
+    for (it = m_resources.begin(); it != m_resources.end(); ++it)
+        it.key()->cleanup(ctx, it.value());
 }
 
 QGLContextReference::QGLContextReference(const QGLContext *ctx)
