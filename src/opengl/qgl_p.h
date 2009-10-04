@@ -506,7 +506,7 @@ inline GLenum qt_gl_preferredTextureTarget()
 }
 
 // One resource per group of shared contexts.
-class QGLContextResource : public QObject
+class Q_AUTOTEST_EXPORT QGLContextResource : public QObject
 {
     Q_OBJECT
 public:
