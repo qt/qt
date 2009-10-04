@@ -1393,11 +1393,39 @@ bool operator!=(const QGLFormat& a, const QGLFormat& b)
 /*****************************************************************************
   QGLContext implementation
  *****************************************************************************/
+
+QGLContextGroup::~QGLContextGroup()
+{
+    // Clear any remaining QGLSharedResourceGuard objects on the group.
+    QGLSharedResourceGuard *guard = m_guards;
+    while (guard != 0) {
+        guard->m_group = 0;
+        guard->m_id = 0;
+        guard = guard->m_next;
+    }
+}
+
+void QGLContextGroup::addGuard(QGLSharedResourceGuard *guard)
+{
+    if (m_guards)
+        m_guards->m_prev = guard;
+    guard->m_next = m_guards;
+    guard->m_prev = 0;
+    m_guards = guard;
+}
+
+void QGLContextGroup::removeGuard(QGLSharedResourceGuard *guard)
+{
+    if (guard->m_next)
+        guard->m_next->m_prev = guard->m_prev;
+    if (guard->m_prev)
+        guard->m_prev->m_next = guard->m_next;
+    else
+        m_guards = guard->m_next;
+}
+
 QGLContextPrivate::~QGLContextPrivate()
 {
-    if (!reference->deref())
-        delete reference;
-
     if (!group->m_refs.deref()) {
         Q_ASSERT(group->context() == q_ptr);
         delete group;
@@ -4959,30 +4987,22 @@ void QGLContextGroup::cleanupResources(const QGLContext *ctx)
         it.key()->cleanup(ctx, it.value());
 }
 
-QGLContextReference::QGLContextReference(const QGLContext *ctx)
-    : m_ref(1), m_ctx(ctx)
+QGLSharedResourceGuard::~QGLSharedResourceGuard()
 {
-    connect(QGLSignalProxy::instance(),
-            SIGNAL(aboutToDestroyContext(const QGLContext *)),
-            this, SLOT(aboutToDestroyContext(const QGLContext *)));
+    if (m_group)
+        m_group->removeGuard(this);
 }
 
-void QGLContextReference::aboutToDestroyContext(const QGLContext *ctx)
+void QGLSharedResourceGuard::setContext(const QGLContext *context)
 {
-    // Bail out if our context is not being destroyed.
-    if (ctx != m_ctx || !m_ctx)
-        return;
-
-    // Find some other context that this one is shared with to take over.
-    QList<const QGLContext *> shares = qgl_share_reg()->shares(m_ctx);
-    shares.removeAll(m_ctx);
-    if (!shares.isEmpty()) {
-        m_ctx = shares[0];
-        return;
+    if (m_group)
+        m_group->removeGuard(this);
+    if (context) {
+        m_group = QGLContextPrivate::contextGroup(context);
+        m_group->addGuard(this);
+    } else {
+        m_group = 0;
     }
-
-    // No more contexts sharing with this one, so the reference is now invalid.
-    m_ctx = 0;
 }
 
 QT_END_NAMESPACE
