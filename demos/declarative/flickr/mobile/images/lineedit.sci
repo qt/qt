@@ -1,5 +1,5 @@
-gridLeft: 10
-gridTop: 10
-gridBottom: 10
-gridRight: 10
-imageFile: lineedit.png
+border.left: 10
+border.top: 10
+border.bottom: 10
+border.right: 10
+source: lineedit.png

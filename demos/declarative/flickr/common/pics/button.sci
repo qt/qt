@@ -1,5 +1,5 @@
-gridLeft: 8
-gridTop: 4
-gridBottom: 4
-gridRight: 8
-imageFile: button.png
+border.left: 8
+border.top: 4
+border.bottom: 4
+border.right: 8
+source: button.png
