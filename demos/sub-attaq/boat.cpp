@@ -46,7 +46,6 @@
 #include "pixmapitem.h"
 #include "graphicsscene.h"
 #include "animationmanager.h"
-#include "custompropertyanimation.h"
 #include "qanimationstate.h"
 
 //Qt
@@ -60,79 +59,35 @@
 static QAbstractAnimation *setupDestroyAnimation(Boat *boat)
 {
     QSequentialAnimationGroup *group = new QSequentialAnimationGroup(boat);
-#if QT_VERSION >=0x040500
-    PixmapItem *step1 = new PixmapItem(QString("explosion/boat/step1"),GraphicsScene::Big, boat);
-    step1->setZValue(6);
-    PixmapItem *step2 = new PixmapItem(QString("explosion/boat/step2"),GraphicsScene::Big, boat);
-    step2->setZValue(6);
-    PixmapItem *step3 = new PixmapItem(QString("explosion/boat/step3"),GraphicsScene::Big, boat);
-    step3->setZValue(6);
-    PixmapItem *step4 = new PixmapItem(QString("explosion/boat/step4"),GraphicsScene::Big, boat);
-    step4->setZValue(6);
-    step1->setOpacity(0);
-    step2->setOpacity(0);
-    step3->setOpacity(0);
-    step4->setOpacity(0);
-    CustomPropertyAnimation *anim1 = new CustomPropertyAnimation(boat);
-    anim1->setMemberFunctions((QGraphicsItem*)step1, &QGraphicsItem::opacity, &QGraphicsItem::setOpacity);
-    anim1->setDuration(100);
-    anim1->setEndValue(1);
-    CustomPropertyAnimation *anim2 = new CustomPropertyAnimation(boat);
-    anim2->setMemberFunctions((QGraphicsItem*)step2, &QGraphicsItem::opacity, &QGraphicsItem::setOpacity);
-    anim2->setDuration(100);
-    anim2->setEndValue(1);
-    CustomPropertyAnimation *anim3 = new CustomPropertyAnimation(boat);
-    anim3->setMemberFunctions((QGraphicsItem*)step3, &QGraphicsItem::opacity, &QGraphicsItem::setOpacity);
-    anim3->setDuration(100);
-    anim3->setEndValue(1);
-    CustomPropertyAnimation *anim4 = new CustomPropertyAnimation(boat);
-    anim4->setMemberFunctions((QGraphicsItem*)step4, &QGraphicsItem::opacity, &QGraphicsItem::setOpacity);
-    anim4->setDuration(100);
-    anim4->setEndValue(1);
-    CustomPropertyAnimation *anim5 = new CustomPropertyAnimation(boat);
-    anim5->setMemberFunctions((QGraphicsItem*)step1, &QGraphicsItem::opacity, &QGraphicsItem::setOpacity);
-    anim5->setDuration(100);
-    anim5->setEndValue(0);
-    CustomPropertyAnimation *anim6 = new CustomPropertyAnimation(boat);
-    anim6->setMemberFunctions((QGraphicsItem*)step2, &QGraphicsItem::opacity, &QGraphicsItem::setOpacity);
-    anim6->setDuration(100);
-    anim6->setEndValue(0);
-    CustomPropertyAnimation *anim7 = new CustomPropertyAnimation(boat);
-    anim7->setMemberFunctions((QGraphicsItem*)step3, &QGraphicsItem::opacity, &QGraphicsItem::setOpacity);
-    anim7->setDuration(100);
-    anim7->setEndValue(0);
-    CustomPropertyAnimation *anim8 = new CustomPropertyAnimation(boat);
-    anim8->setMemberFunctions((QGraphicsItem*)step4, &QGraphicsItem::opacity, &QGraphicsItem::setOpacity);
-    anim8->setDuration(100);
-    anim8->setEndValue(0);
-    group->addAnimation(anim1);
-    group->addAnimation(anim2);
-    group->addAnimation(anim3);
-    group->addAnimation(anim4);
-    group->addAnimation(anim5);
-    group->addAnimation(anim6);
-    group->addAnimation(anim7);
-    group->addAnimation(anim8);
-#else
-    // work around for a bug where we don't transition if the duration is zero.
-    QtPauseAnimation *anim = new QtPauseAnimation(group);
-    anim->setDuration(1);
-    group->addAnimation(anim);
-#endif
+    for (int i = 1; i <= 4; i++) {
+        PixmapItem *step = new PixmapItem(QString("explosion/boat/step%1").arg(i),GraphicsScene::Big, boat);
+        step->setZValue(6);
+        step->setOpacity(0); 
+
+        //fade-in
+        QPropertyAnimation *anim = new QPropertyAnimation(step, "opacity");
+        anim->setEndValue(1);
+        anim->setDuration(100);
+        group->insertAnimationAt(i-1, anim);
+
+        //and then fade-out
+        QPropertyAnimation *anim2 = new QPropertyAnimation(step, "opacity");
+        anim2->setEndValue(0);
+        anim2->setDuration(100);
+        group->addAnimation(anim2);
+    }
+
     AnimationManager::self()->registerAnimation(group);
     return group;
 }
 
 
 
-Boat::Boat(QGraphicsItem * parent, Qt::WindowFlags wFlags)
-    : QGraphicsWidget(parent,wFlags), speed(0), bombsAlreadyLaunched(0), direction(Boat::None), movementAnimation(0)
+Boat::Boat() : PixmapItem(QString("boat"), GraphicsScene::Big),
+    speed(0), bombsAlreadyLaunched(0), direction(Boat::None), movementAnimation(0)
 {
-    pixmapItem = new PixmapItem(QString("boat"),GraphicsScene::Big, this);
     setZValue(4);
-    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    setFlags(QGraphicsItem::ItemIsMovable |  QGraphicsItem::ItemIsFocusable);
-    resize(pixmapItem->boundingRect().size());
+    setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsFocusable);
 
     //The movement animation used to animate the boat
     movementAnimation = new QPropertyAnimation(this, "pos");
@@ -223,13 +178,13 @@ Boat::Boat(QGraphicsItem * parent, Qt::WindowFlags wFlags)
     destroyedState->setAnimation(destroyAnimation);
 
     //Play a nice animation when the boat is destroyed
-    moving->addTransition(this, SIGNAL(boatDestroyed()),destroyedState);
+    moving->addTransition(this, SIGNAL(boatDestroyed()), destroyedState);
 
     //Transition to final state when the destroyed animation is finished
     destroyedState->addTransition(destroyedState, SIGNAL(animationFinished()), final);
 
     //The machine has finished to be executed, then the boat is dead
-    connect(machine,SIGNAL(finished()),this, SIGNAL(boatExecutionFinished()));
+    connect(machine,SIGNAL(finished()), this, SIGNAL(boatExecutionFinished()));
 
 }
 
@@ -255,7 +210,6 @@ void Boat::updateBoatMovement()
     }
 
     movementAnimation->stop();
-    movementAnimation->setStartValue(pos());
 
     if (direction == Boat::Left) {
         movementAnimation->setEndValue(QPointF(0,y()));

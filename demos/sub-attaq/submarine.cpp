@@ -46,7 +46,6 @@
 #include "pixmapitem.h"
 #include "graphicsscene.h"
 #include "animationmanager.h"
-#include "custompropertyanimation.h"
 #include "qanimationstate.h"
 
 #include <QtCore/QPropertyAnimation>
@@ -57,62 +56,27 @@
 static QAbstractAnimation *setupDestroyAnimation(SubMarine *sub)
 {
     QSequentialAnimationGroup *group = new QSequentialAnimationGroup(sub);
-#if QT_VERSION >=0x040500
-    PixmapItem *step1 = new PixmapItem(QString("explosion/submarine/step1"),GraphicsScene::Big, sub);
-    step1->setZValue(6);
-    PixmapItem *step2 = new PixmapItem(QString("explosion/submarine/step2"),GraphicsScene::Big, sub);
-    step2->setZValue(6);
-    PixmapItem *step3 = new PixmapItem(QString("explosion/submarine/step3"),GraphicsScene::Big, sub);
-    step3->setZValue(6);
-    PixmapItem *step4 = new PixmapItem(QString("explosion/submarine/step4"),GraphicsScene::Big, sub);
-    step4->setZValue(6);
-    step1->setOpacity(0);
-    step2->setOpacity(0);
-    step3->setOpacity(0);
-    step4->setOpacity(0);
-    CustomPropertyAnimation *anim1 = new CustomPropertyAnimation(sub);
-    anim1->setMemberFunctions((QGraphicsItem*)step1, &QGraphicsItem::opacity, &QGraphicsItem::setOpacity);
-    anim1->setDuration(100);
-    anim1->setEndValue(1);
-    CustomPropertyAnimation *anim2 = new CustomPropertyAnimation(sub);
-    anim2->setMemberFunctions((QGraphicsItem*)step2, &QGraphicsItem::opacity, &QGraphicsItem::setOpacity);
-    anim2->setDuration(100);
-    anim2->setEndValue(1);
-    CustomPropertyAnimation *anim3 = new CustomPropertyAnimation(sub);
-    anim3->setMemberFunctions((QGraphicsItem*)step3, &QGraphicsItem::opacity, &QGraphicsItem::setOpacity);
-    anim3->setDuration(100);
-    anim3->setEndValue(1);
-    CustomPropertyAnimation *anim4 = new CustomPropertyAnimation(sub);
-    anim4->setMemberFunctions((QGraphicsItem*)step4, &QGraphicsItem::opacity, &QGraphicsItem::setOpacity);
-    anim4->setDuration(100);
-    anim4->setEndValue(1);
-    group->addAnimation(anim1);
-    group->addAnimation(anim2);
-    group->addAnimation(anim3);
-    group->addAnimation(anim4);
-#else
-    // work around for a bug where we don't transition if the duration is zero.
-    QtPauseAnimation *anim = new QtPauseAnimation(group);
-    anim->setDuration(1);
-    group->addAnimation(anim);
-#endif
+    for (int i = 1; i <= 4; ++i) {
+        PixmapItem *step = new PixmapItem(QString::fromLatin1("explosion/submarine/step%1").arg(i), GraphicsScene::Big, sub);
+        step->setZValue(6);
+        step->setOpacity(0);
+        QPropertyAnimation *anim = new QPropertyAnimation(step, "opacity", group);
+        anim->setDuration(100);
+        anim->setEndValue(1);
+    }
     AnimationManager::self()->registerAnimation(group);
     return group;
 }
 
 
-SubMarine::SubMarine(int type, const QString &name, int points, QGraphicsItem * parent, Qt::WindowFlags wFlags)
-    : QGraphicsWidget(parent,wFlags), subType(type), subName(name), subPoints(points), speed(0), direction(SubMarine::None)
+SubMarine::SubMarine(int type, const QString &name, int points) : PixmapItem(QString("submarine"), GraphicsScene::Big),
+    subType(type), subName(name), subPoints(points), speed(0), direction(SubMarine::None)
 {
-    pixmapItem = new PixmapItem(QString("submarine"),GraphicsScene::Big, this);
-    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     setZValue(5);
-    setFlags(QGraphicsItem::ItemIsMovable);
-    resize(pixmapItem->boundingRect().width(),pixmapItem->boundingRect().height());
     setTransformOriginPoint(boundingRect().center());
 
     graphicsRotation = new QGraphicsRotation(this);
-    graphicsRotation->setAxis(QVector3D(0, 1, 0));
+    graphicsRotation->setAxis(Qt::YAxis);
     graphicsRotation->setOrigin(QVector3D(size().width()/2, size().height()/2, 0));
     QList<QGraphicsTransform *> r;
     r.append(graphicsRotation);
@@ -163,7 +127,7 @@ SubMarine::SubMarine(int type, const QString &name, int points, QGraphicsItem * 
     machine->start();
 }
 
-int SubMarine::points()
+int SubMarine::points() const
 {
     return subPoints;
 }
@@ -202,7 +166,7 @@ void SubMarine::launchTorpedo(int speed)
     Torpedo * torp = new Torpedo();
     GraphicsScene *scene = static_cast<GraphicsScene *>(this->scene());
     scene->addItem(torp);
-    torp->setPos(x(), y());
+    torp->setPos(pos());
     torp->setCurrentSpeed(speed);
     torp->launch();
 }

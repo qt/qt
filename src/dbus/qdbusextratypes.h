@@ -174,6 +174,9 @@ inline  QDBusVariant::QDBusVariant(const QVariant &dBusVariant)
 inline void QDBusVariant::setVariant(const QVariant &dBusVariant)
 { QVariant::operator=(dBusVariant); }
 
+inline bool operator==(const QDBusVariant &v1, const QDBusVariant &v2)
+{ return v1.variant() == v2.variant(); }
+
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QDBusVariant)
