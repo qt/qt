@@ -7631,7 +7631,7 @@ void tst_QGraphicsItem::hitTestGraphicsEffectItem()
     QVERIFY(items.isEmpty());
     items = scene.items(QPointF(80, 80));
     QCOMPARE(items.size(), 1);
-    QCOMPARE(items.at(0), static_cast<EventTester *>(item3));
+    QCOMPARE(items.at(0), static_cast<QGraphicsItem *>(item3));
 
     item1->repaints = 0;
     item2->repaints = 0;
@@ -7654,7 +7654,7 @@ void tst_QGraphicsItem::hitTestGraphicsEffectItem()
     QVERIFY(items.isEmpty());
     items = scene.items(QPointF(80, 80));
     QCOMPARE(items.size(), 1);
-    QCOMPARE(items.at(0), static_cast<EventTester *>(item3));
+    QCOMPARE(items.at(0), static_cast<QGraphicsItem *>(item3));
 }
 
 void tst_QGraphicsItem::focusProxy()
@@ -8384,7 +8384,7 @@ void tst_QGraphicsItem::ensureDirtySceneTransform()
     QGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), &view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
     //We move the parent
     parent->move();
