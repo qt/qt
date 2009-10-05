@@ -66,8 +66,6 @@ QT_BEGIN_NAMESPACE
 typedef QMultiHash<QWidget *, QMenuBarPrivate *> MenuBarHash;
 Q_GLOBAL_STATIC(MenuBarHash, menubars)
 
-#define QT_FIRST_MENU_ITEM 32000
-
 struct SymbianMenuItem
 {
     int id;
@@ -78,7 +76,7 @@ struct SymbianMenuItem
 
 static QList<SymbianMenuItem*> symbianMenus;
 static QList<QMenuBar*> nativeMenuBars;
-static uint qt_symbian_menu_static_cmd_id = QT_FIRST_MENU_ITEM;
+static uint qt_symbian_menu_static_cmd_id = QT_SYMBIAN_FIRST_MENU_ITEM;
 static QPointer<QWidget> widgetWithContextMenu;
 static QList<QAction*> contextMenuActionList;
 static QAction contextAction(0);
@@ -144,6 +142,9 @@ static void qt_symbian_insert_action(QSymbianMenuAction* action, QList<SymbianMe
     if (action->action->isVisible()) {
         if (action->action->isSeparator())
             return;
+
+        Q_ASSERT_X(action->command <= QT_SYMBIAN_LAST_MENU_ITEM, "qt_symbian_insert_action",
+                "Too many menu actions");
 
         const int underlineShortCut = QApplication::style()->styleHint(QStyle::SH_UnderlineShortcut);
         QString iconText = action->action->iconText();
@@ -213,7 +214,7 @@ static void rebuildMenu()
 
     if (w) {
         mb = menubars()->value(w);
-        qt_symbian_menu_static_cmd_id = QT_FIRST_MENU_ITEM;
+        qt_symbian_menu_static_cmd_id = QT_SYMBIAN_FIRST_MENU_ITEM;
         deleteAll( &symbianMenus );
         if (!mb)
             return;
@@ -289,6 +290,7 @@ QMenuBarPrivate::QSymbianMenuBarPrivate::QSymbianMenuBarPrivate(QMenuBarPrivate 
 
 QMenuBarPrivate::QSymbianMenuBarPrivate::~QSymbianMenuBarPrivate()
 {
+    qt_symbian_menu_static_cmd_id = QT_SYMBIAN_FIRST_MENU_ITEM;
     deleteAll( &symbianMenus );
     symbianMenus.clear();
     d = 0;
@@ -390,7 +392,7 @@ void QMenuBarPrivate::QSymbianMenuBarPrivate::insertNativeMenuItems(const QList<
 void QMenuBarPrivate::QSymbianMenuBarPrivate::rebuild()
 {
     contexMenuCommand = 0;
-    qt_symbian_menu_static_cmd_id = QT_FIRST_MENU_ITEM;
+    qt_symbian_menu_static_cmd_id = QT_SYMBIAN_FIRST_MENU_ITEM;
     deleteAll( &symbianMenus );
     if (d)
         insertNativeMenuItems(d->actions);

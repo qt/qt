@@ -63,6 +63,8 @@
 
 #ifdef Q_WS_S60
 class CEikMenuPane;
+#define QT_SYMBIAN_FIRST_MENU_ITEM 32000
+#define QT_SYMBIAN_LAST_MENU_ITEM 41999 // 10000 items ought to be enough for anybody...
 #endif
 QT_BEGIN_NAMESPACE
 
