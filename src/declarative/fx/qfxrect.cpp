@@ -459,7 +459,7 @@ void QFxRect::drawRect(QPainter &p)
 
         QMargins margins(xOffset, yOffset, xOffset, yOffset);
         QTileRules rules(Qt::StretchTile, Qt::StretchTile);
-        qDrawBorderPixmap(&p, QRect(-pw/2, -pw/2, d->rectImage.width()/2 + xOffset*2, d->rectImage.height()/2 + yOffset*2), margins, d->rectImage, d->rectImage.rect(), margins, rules);
+        qDrawBorderPixmap(&p, QRect(-pw/2, -pw/2, width()+pw, height()+pw), margins, d->rectImage, d->rectImage.rect(), margins, rules);
 
         if (d->smooth) {
             p.setRenderHint(QPainter::Antialiasing, oldAA);
