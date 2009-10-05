@@ -250,12 +250,12 @@ void QMenuBarPrivate::symbianCommands(int command)
 
     int size = nativeMenuBars.size();
     for (int i = 0; i < nativeMenuBars.size(); ++i) {
-    SymbianMenuItem* menu = qt_symbian_find_menu_item(command, symbianMenus);
-    if (!menu)
+        SymbianMenuItem* menu = qt_symbian_find_menu_item(command, symbianMenus);
+        if (!menu)
             continue;
 
         emit nativeMenuBars.at(i)->triggered(menu->action);
-    menu->action->activate(QAction::Trigger);
+        menu->action->activate(QAction::Trigger);
         break;
     }
 }
