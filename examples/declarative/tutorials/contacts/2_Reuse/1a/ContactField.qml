@@ -24,7 +24,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         font.bold: true
         color: "black"
-        text: 123123
+        text: "123123"
     }
     Image {
         source: "../../shared/pics/phone.png"
