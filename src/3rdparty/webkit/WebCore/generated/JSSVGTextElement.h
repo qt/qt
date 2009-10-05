@@ -33,7 +33,7 @@ class SVGTextElement;
 class JSSVGTextElement : public JSSVGTextPositioningElement {
     typedef JSSVGTextPositioningElement Base;
 public:
-    JSSVGTextElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGTextElement>);
+    JSSVGTextElement(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGTextElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
@@ -60,7 +60,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSSVGTextElementPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSSVGTextElementPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

@@ -295,6 +295,8 @@
 
     \o \image animation-examples.png
     \o
+    These examples show to to use the \l{The Animation Framework}{animation framework}
+    to build highly animated, high-performance GUIs.
 
     \row
     \o{2,1} \l{Gestures Examples}{\bold{Gestures}}
@@ -322,6 +324,8 @@
 
     \o \image activeqt-examples.png ActiveQt
     \o
+    These examples demonstrate how to write ActiveX controls and control servers
+    with Qt, and how to use ActiveX controls and COM objects in a Qt application.
 
     \row
     \o{2,1} \l{Qt Quarterly}{\bold{Qt Quarterly}}
@@ -1073,9 +1077,13 @@
     \contentspage Qt Examples
     \nextpage D-Bus Examples
 
+    The API of the gesture framework is not yet finalized and
+    still subject to change.
+\omit
     \list
     \o \l{widgets/imageviewer}{Image Viewer}
     \endlist
+\endomit
 */
 
 /*!

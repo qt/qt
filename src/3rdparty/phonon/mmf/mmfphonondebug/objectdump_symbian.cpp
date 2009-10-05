@@ -82,9 +82,10 @@ QList<QByteArray> QAnnotatorWindow::annotation(const QObject& object)
             
             // ClientHandle() is available first in 5.0.
 #if !defined(__SERIES60_31__) && !defined(__S60_32__)
-            // Client-side window handle
-            // Cast to a void pointer so that log output is in hexadecimal format.
-            stream << "cli " << reinterpret_cast<const void*>(window.ClientHandle()) << ' ';
+            if (QSysInfo::s60Version() > QSysInfo::SV_S60_3_2)
+				// Client-side window handle
+				// Cast to a void pointer so that log output is in hexadecimal format.
+				stream << "cli " << reinterpret_cast<const void*>(window.ClientHandle()) << ' ';
 #endif
 
             // Server-side address of CWsWindow object
@@ -104,7 +105,9 @@ QList<QByteArray> QAnnotatorWindow::annotation(const QObject& object)
             stream << window.Size().iWidth << 'x' << window.Size().iHeight << ' ';
             
             const TDisplayMode displayMode = window.DisplayMode();
-            stream << "mode " << displayMode;
+            stream << "mode " << displayMode << ' ';
+            
+            stream << "ord " << window.OrdinalPosition();
             
             stream.flush();
             result.append(array);

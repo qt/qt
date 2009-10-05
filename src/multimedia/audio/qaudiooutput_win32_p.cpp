@@ -492,7 +492,7 @@ bool QAudioOutputPrivate::deviceReady()
 
 qint64 QAudioOutputPrivate::clock() const
 {
-    if(deviceState != QAudio::ActiveState)
+    if (deviceState == QAudio::StopState)
         return 0;
 
     return timeStampOpened.elapsed();

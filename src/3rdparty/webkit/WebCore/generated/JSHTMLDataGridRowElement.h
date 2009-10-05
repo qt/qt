@@ -32,7 +32,7 @@ class HTMLDataGridRowElement;
 class JSHTMLDataGridRowElement : public JSHTMLElement {
     typedef JSHTMLElement Base;
 public:
-    JSHTMLDataGridRowElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<HTMLDataGridRowElement>);
+    JSHTMLDataGridRowElement(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<HTMLDataGridRowElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
@@ -55,7 +55,7 @@ public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
-    JSHTMLDataGridRowElementPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSHTMLDataGridRowElementPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Attributes

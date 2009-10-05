@@ -5,7 +5,6 @@ project                 = Qt
 description             = Qt Reference Documentation
 url                     = http://qt.nokia.com/doc/4.7
 
-edition.Console         = QtCore QtNetwork QtSql QtXml QtScript QtTest
 edition.Desktop         = QtCore QtGui QtNetwork QtOpenGL QtSql QtSvg QtXml \
                           QtScript QtDesigner Qt3Support QAxContainer QAxServer \
                           QtUiTools QtTest QtDBus
@@ -116,6 +115,7 @@ Cpp.ignoredirectives    = Q_DECLARE_HANDLE \
                           Q_ENUMS \
                           Q_FLAGS \
                           Q_INTERFACES \
+			  Q_OS_SYMBIAN \
                           __attribute__
 
 HTML.stylesheets        = $QTDIR/util/qdoc3/test/classic.css

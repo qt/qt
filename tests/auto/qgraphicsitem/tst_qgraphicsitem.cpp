@@ -49,12 +49,14 @@
 #include <QAbstractTextDocumentLayout>
 #include <QBitmap>
 #include <QCursor>
+#include <QLabel>
 #include <QDial>
 #include <QGraphicsItem>
 #include <QGraphicsScene>
 #include <QGraphicsSceneEvent>
 #include <QGraphicsView>
 #include <QGraphicsWidget>
+#include <QGraphicsProxyWidget>
 #include <QPainter>
 #include <QScrollBar>
 #include <QVBoxLayout>
@@ -79,6 +81,57 @@ Q_DECLARE_METATYPE(QRectF)
 #else
 #define Q_CHECK_PAINTEVENTS
 #endif
+
+static void sendMousePress(QGraphicsScene *scene, const QPointF &point, Qt::MouseButton button = Qt::LeftButton)
+{
+    QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
+    event.setScenePos(point);
+    event.setButton(button);
+    event.setButtons(button);
+    QApplication::sendEvent(scene, &event);
+}
+
+static void sendMouseMove(QGraphicsScene *scene, const QPointF &point,
+                          Qt::MouseButton button = Qt::NoButton, Qt::MouseButtons buttons = 0)
+{
+    QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMouseMove);
+    event.setScenePos(point);
+    event.setButton(button);
+    event.setButtons(button);
+    QApplication::sendEvent(scene, &event);
+}
+
+static void sendMouseRelease(QGraphicsScene *scene, const QPointF &point, Qt::MouseButton button = Qt::LeftButton)
+{
+    QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMouseRelease);
+    event.setScenePos(point);
+    event.setButton(button);
+    QApplication::sendEvent(scene, &event);
+}
+
+static void sendMouseClick(QGraphicsScene *scene, const QPointF &point, Qt::MouseButton button = Qt::LeftButton)
+{
+    sendMousePress(scene, point, button);
+    sendMouseRelease(scene, point, button);
+}
+
+static void sendKeyPress(QGraphicsScene *scene, Qt::Key key)
+{
+    QKeyEvent keyEvent(QEvent::KeyPress, key, Qt::NoModifier);
+    QApplication::sendEvent(scene, &keyEvent);
+}
+
+static void sendKeyRelease(QGraphicsScene *scene, Qt::Key key)
+{
+    QKeyEvent keyEvent(QEvent::KeyRelease, key, Qt::NoModifier);
+    QApplication::sendEvent(scene, &keyEvent);
+}
+
+static void sendKeyClick(QGraphicsScene *scene, Qt::Key key)
+{
+    sendKeyPress(scene, key);
+    sendKeyRelease(scene, key);
+}
 
 class EventSpy : public QGraphicsWidget
 {
@@ -118,6 +171,39 @@ protected:
 
     int _count;
     QEvent::Type spied;
+};
+
+class EventSpy2 : public QGraphicsWidget
+{
+    Q_OBJECT
+public:
+    EventSpy2(QObject *watched)
+    {
+        watched->installEventFilter(this);
+    }
+
+    EventSpy2(QGraphicsScene *scene, QGraphicsItem *watched)
+    {
+        scene->addItem(this);
+        watched->installSceneEventFilter(this);
+    }
+
+    QMap<QEvent::Type, int> counts;
+
+protected:
+    bool eventFilter(QObject *watched, QEvent *event)
+    {
+        Q_UNUSED(watched);
+        ++counts[event->type()];
+        return false;
+    }
+
+    bool sceneEventFilter(QGraphicsItem *watched, QEvent *event)
+    {
+        Q_UNUSED(watched);
+        ++counts[event->type()];
+        return false;
+    }
 };
 
 class EventTester : public QGraphicsItem
@@ -246,6 +332,7 @@ private slots:
     void itemClipsChildrenToShape();
     void itemClipsChildrenToShape2();
     void itemClipsChildrenToShape3();
+    void itemClipsChildrenToShape4();
     void itemClipsTextChildToShape();
     void itemClippingDiscovery();
     void ancestorFlags();
@@ -296,6 +383,13 @@ private slots:
     void ensureDirtySceneTransform();
     void focusScope();
     void stackBefore();
+    void sceneModality();
+    void panelModality();
+    void mixedModality();
+    void modality_hover();
+    void modality_mouseGrabber();
+    void modality_clickFocus();
+    void modality_keyEvents();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -2926,7 +3020,7 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     QGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
-    QTest::qWait(100);
+    QTest::qWait(150);
 
     EventTester *tester = new EventTester;
     scene.addItem(tester);
@@ -4668,11 +4762,11 @@ public:
     {
         QGraphicsRectItem::paint(painter, option, widget);
         if (harakiri == 0) {
-	    // delete unsupported since 4.5
-	    /*
+            // delete unsupported since 4.5
+            /*
             dead = 1;
-	    delete this;
-	    */
+            delete this;
+            */
         }
     }
 
@@ -5079,6 +5173,44 @@ void tst_QGraphicsItem::itemClipsChildrenToShape3()
     QCOMPARE(scene.itemAt(175,175), (QGraphicsItem *)0);
 }
 
+class MyProxyWidget : public QGraphicsProxyWidget
+{
+public:
+    MyProxyWidget(QGraphicsItem *parent) : QGraphicsProxyWidget(parent)
+    {
+        painted = false;
+    }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    {
+        QGraphicsProxyWidget::paint(painter, option, widget);
+        painted = true;
+    }
+    bool painted;
+};
+
+void tst_QGraphicsItem::itemClipsChildrenToShape4()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+
+    QGraphicsWidget * outerWidget = new QGraphicsWidget();
+    outerWidget->setFlag(QGraphicsItem::ItemClipsChildrenToShape, true);
+    MyProxyWidget * innerWidget = new MyProxyWidget(outerWidget);
+    QLabel * label = new QLabel();
+    label->setText("Welcome back my friends to the show that never ends...");
+    innerWidget->setWidget(label);
+    view.resize(300, 300);
+    scene.addItem(outerWidget);
+    outerWidget->resize( 200, 100 );
+    scene.addEllipse( 100, 100, 100, 50 );   // <-- this is important to trigger the right codepath*
+    //now the label is shown
+    outerWidget->setFlag(QGraphicsItem::ItemClipsChildrenToShape, false );
+    QApplication::setActiveWindow(&view);
+    view.show();
+    QTRY_COMPARE(QApplication::activeWindow(), (QWidget *)&view);
+    QTRY_COMPARE(innerWidget->painted, true);
+}
 
 void tst_QGraphicsItem::itemClipsTextChildToShape()
 {
@@ -6215,6 +6347,7 @@ void tst_QGraphicsItem::itemStacksBehindParent()
     QGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
+    QTRY_VERIFY(!paintedItems.isEmpty());
     QTest::qWait(100);
     paintedItems.clear();
     view.viewport()->update();
@@ -6224,7 +6357,7 @@ void tst_QGraphicsItem::itemStacksBehindParent()
                                            << grandChild121 << child12 << parent1
                                            << grandChild211 << child21
                                            << grandChild221 << child22 << parent2));
-    QCOMPARE(paintedItems, QList<QGraphicsItem *>()
+    QTRY_COMPARE(paintedItems, QList<QGraphicsItem *>()
              << parent2 << child22 << grandChild221
              << child21 << grandChild211
              << parent1 << child12 << grandChild121
@@ -7498,7 +7631,7 @@ void tst_QGraphicsItem::hitTestGraphicsEffectItem()
     QVERIFY(items.isEmpty());
     items = scene.items(QPointF(80, 80));
     QCOMPARE(items.size(), 1);
-    QCOMPARE(items.at(0), static_cast<EventTester *>(item3));
+    QCOMPARE(items.at(0), static_cast<QGraphicsItem *>(item3));
 
     item1->repaints = 0;
     item2->repaints = 0;
@@ -7521,7 +7654,7 @@ void tst_QGraphicsItem::hitTestGraphicsEffectItem()
     QVERIFY(items.isEmpty());
     items = scene.items(QPointF(80, 80));
     QCOMPARE(items.size(), 1);
-    QCOMPARE(items.at(0), static_cast<EventTester *>(item3));
+    QCOMPARE(items.at(0), static_cast<QGraphicsItem *>(item3));
 }
 
 void tst_QGraphicsItem::focusProxy()
@@ -8251,7 +8384,7 @@ void tst_QGraphicsItem::ensureDirtySceneTransform()
     QGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), &view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
     //We move the parent
     parent->move();
@@ -8481,6 +8614,924 @@ void tst_QGraphicsItem::QTBUG_4233_updateCachedWithSceneRect()
     qApp->processEvents(); // in 4.6 only one processEvents is necessary
 
     QCOMPARE(tester->repaints, 2);
+}
+
+void tst_QGraphicsItem::sceneModality()
+{
+    // 1) Test mouse events (delivery/propagation/redirection)
+    // 2) Test hover events (incl. leave on block, enter on unblock)
+    // 3) Test cursor stuff (incl. unset on block, set on unblock)
+    // 4) Test clickfocus
+    // 5) Test grab/ungrab events (possibly ungrab on block, regrab on unblock)
+    // 6) ### modality for non-panels is unsupported for now
+    QGraphicsScene scene;
+
+    QGraphicsRectItem *bottomItem = scene.addRect(-150, -100, 300, 200);
+    bottomItem->setFlag(QGraphicsItem::ItemIsFocusable);
+    bottomItem->setBrush(Qt::yellow);
+
+    QGraphicsRectItem *leftParent = scene.addRect(-50, -50, 100, 100);
+    leftParent->setFlag(QGraphicsItem::ItemIsPanel);
+    leftParent->setBrush(Qt::blue);
+
+    QGraphicsRectItem *leftChild = scene.addRect(-25, -25, 50, 50);
+    leftChild->setFlag(QGraphicsItem::ItemIsPanel);
+    leftChild->setBrush(Qt::green);
+    leftChild->setParentItem(leftParent);
+
+    QGraphicsRectItem *rightParent = scene.addRect(-50, -50, 100, 100);
+    rightParent->setFlag(QGraphicsItem::ItemIsPanel);
+    rightParent->setBrush(Qt::red);
+    QGraphicsRectItem *rightChild = scene.addRect(-25, -25, 50, 50);
+    rightChild->setFlag(QGraphicsItem::ItemIsPanel);
+    rightChild->setBrush(Qt::gray);
+    rightChild->setParentItem(rightParent);
+
+    leftParent->setPos(-75, 0);
+    rightParent->setPos(75, 0);
+
+    bottomItem->setData(0, "bottomItem");
+    leftParent->setData(0, "leftParent");
+    leftChild->setData(0, "leftChild");
+    rightParent->setData(0, "rightParent");
+    rightChild->setData(0, "rightChild");
+
+    scene.setSceneRect(scene.itemsBoundingRect().adjusted(-50, -50, 50, 50));
+
+    EventSpy2 leftParentSpy(&scene, leftParent);
+    EventSpy2 leftChildSpy(&scene, leftChild);
+    EventSpy2 rightParentSpy(&scene, rightParent);
+    EventSpy2 rightChildSpy(&scene, rightChild);
+    EventSpy2 bottomItemSpy(&scene, bottomItem);
+
+    // Scene modality, also test multiple scene modal items
+    leftChild->setPanelModality(QGraphicsItem::SceneModal);
+    QCOMPARE(leftChildSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(rightParentSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(rightChildSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(bottomItemSpy.counts[QEvent::WindowBlocked], 0); // not a panel
+
+    // Click inside left child
+    sendMouseClick(&scene, leftChild->scenePos(), Qt::LeftButton);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMousePress], 1);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMouseRelease], 0); // no grab
+    QCOMPARE(leftParentSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+    QCOMPARE(rightParentSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+    QCOMPARE(rightChildSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+    QCOMPARE(bottomItemSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+
+    // Click on left parent, event goes to modal child
+    sendMouseClick(&scene, leftParent->sceneBoundingRect().topLeft() + QPointF(5, 5), Qt::LeftButton);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMousePress], 2);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMouseRelease], 0); // no grab
+    QCOMPARE(leftParentSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+    QCOMPARE(rightParentSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+    QCOMPARE(rightChildSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+    QCOMPARE(bottomItemSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+
+    // Click on all other items and outside the items
+    sendMouseClick(&scene, rightParent->sceneBoundingRect().topLeft() + QPointF(5, 5), Qt::LeftButton);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMousePress], 3);
+    sendMouseClick(&scene, rightChild->scenePos(), Qt::LeftButton);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMousePress], 4);
+    sendMouseClick(&scene, bottomItem->scenePos(), Qt::LeftButton);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMousePress], 5);
+    sendMouseClick(&scene, QPointF(10000, 10000), Qt::LeftButton);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMousePress], 6);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMouseRelease], 0); // no grab
+    QCOMPARE(leftParentSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+    QCOMPARE(rightParentSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+    QCOMPARE(rightChildSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+    QCOMPARE(bottomItemSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+
+    leftChildSpy.counts.clear();
+    rightChildSpy.counts.clear();
+    leftParentSpy.counts.clear();
+    rightParentSpy.counts.clear();
+    bottomItemSpy.counts.clear();
+
+    leftChild->setPanelModality(QGraphicsItem::NonModal);
+    QCOMPARE(leftChildSpy.counts[QEvent::WindowUnblocked], 0);
+    QCOMPARE(rightChildSpy.counts[QEvent::WindowUnblocked], 1);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowUnblocked], 1);
+    QCOMPARE(rightParentSpy.counts[QEvent::WindowUnblocked], 1);
+    QCOMPARE(bottomItemSpy.counts[QEvent::WindowUnblocked], 0);
+
+    // Left parent enters scene modality.
+    leftParent->setPanelModality(QGraphicsItem::SceneModal);
+    QCOMPARE(leftChildSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(rightChildSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(rightParentSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(bottomItemSpy.counts[QEvent::WindowBlocked], 0);
+
+    // Click inside left child.
+    sendMouseClick(&scene, leftChild->scenePos(), Qt::LeftButton);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMousePress], 1);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMouseRelease], 0);
+    QCOMPARE(leftParentSpy.counts[QEvent::GraphicsSceneMousePress], 0); // panel stops propagation
+    QCOMPARE(rightParentSpy.counts[QEvent::GraphicsSceneMousePress], 0);
+    QCOMPARE(rightChildSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+    QCOMPARE(bottomItemSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+
+   // Click on left parent.
+    sendMouseClick(&scene, leftParent->sceneBoundingRect().topLeft() + QPointF(5, 5), Qt::LeftButton);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMousePress], 1);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMouseRelease], 0);
+    QCOMPARE(leftParentSpy.counts[QEvent::GraphicsSceneMousePress], 1);
+    QCOMPARE(rightParentSpy.counts[QEvent::GraphicsSceneMousePress], 0);
+    QCOMPARE(rightChildSpy.counts[QEvent::GraphicsSceneMousePress], 0);
+    QCOMPARE(bottomItemSpy.counts[QEvent::GraphicsSceneMousePress], 0);
+
+    // Click on all other items and outside the items
+    sendMouseClick(&scene, rightParent->sceneBoundingRect().topLeft() + QPointF(5, 5), Qt::LeftButton);
+    QCOMPARE(leftParentSpy.counts[QEvent::GraphicsSceneMousePress], 2);
+    sendMouseClick(&scene, rightChild->scenePos(), Qt::LeftButton);
+    QCOMPARE(leftParentSpy.counts[QEvent::GraphicsSceneMousePress], 3);
+    sendMouseClick(&scene, bottomItem->scenePos(), Qt::LeftButton);
+    QCOMPARE(leftParentSpy.counts[QEvent::GraphicsSceneMousePress], 4);
+    sendMouseClick(&scene, QPointF(10000, 10000), Qt::LeftButton);
+    QCOMPARE(leftParentSpy.counts[QEvent::GraphicsSceneMousePress], 5);
+    QCOMPARE(leftParentSpy.counts[QEvent::GraphicsSceneMouseRelease], 0);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMousePress], 1);
+    QCOMPARE(rightParentSpy.counts[QEvent::GraphicsSceneMousePress], 0);
+    QCOMPARE(rightChildSpy.counts[QEvent::GraphicsSceneMousePress], 0);
+    QCOMPARE(bottomItemSpy.counts[QEvent::GraphicsSceneMousePress], 0);
+
+    leftChildSpy.counts.clear();
+    rightChildSpy.counts.clear();
+    leftParentSpy.counts.clear();
+    rightParentSpy.counts.clear();
+    bottomItemSpy.counts.clear();
+
+    // Now both left parent and child are scene modal. Left parent is blocked.
+    leftChild->setPanelModality(QGraphicsItem::SceneModal);
+    QCOMPARE(leftChildSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(rightChildSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(rightParentSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(bottomItemSpy.counts[QEvent::WindowBlocked], 0);
+
+    // Click inside left child
+    sendMouseClick(&scene, leftChild->scenePos(), Qt::LeftButton);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMousePress], 1);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMouseRelease], 0); // no grab
+    QCOMPARE(leftParentSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+    QCOMPARE(rightParentSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+    QCOMPARE(rightChildSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+    QCOMPARE(bottomItemSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+
+    // Click on left parent, event goes to modal child
+    sendMouseClick(&scene, leftParent->sceneBoundingRect().topLeft() + QPointF(5, 5), Qt::LeftButton);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMousePress], 2);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMouseRelease], 0); // no grab
+    QCOMPARE(leftParentSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+    QCOMPARE(rightParentSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+    QCOMPARE(rightChildSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+    QCOMPARE(bottomItemSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+
+    // Click on all other items and outside the items
+    sendMouseClick(&scene, rightParent->sceneBoundingRect().topLeft() + QPointF(5, 5), Qt::LeftButton);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMousePress], 3);
+    sendMouseClick(&scene, rightChild->scenePos(), Qt::LeftButton);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMousePress], 4);
+    sendMouseClick(&scene, bottomItem->scenePos(), Qt::LeftButton);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMousePress], 5);
+    sendMouseClick(&scene, QPointF(10000, 10000), Qt::LeftButton);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMousePress], 6);
+    QCOMPARE(leftChildSpy.counts[QEvent::GraphicsSceneMouseRelease], 0); // no grab
+    QCOMPARE(leftParentSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+    QCOMPARE(rightParentSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+    QCOMPARE(rightChildSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+    QCOMPARE(bottomItemSpy.counts[QEvent::GraphicsSceneMousePress], 0); // blocked
+
+    leftChildSpy.counts.clear();
+    rightChildSpy.counts.clear();
+    leftParentSpy.counts.clear();
+    rightParentSpy.counts.clear();
+    bottomItemSpy.counts.clear();
+
+    // Right child enters scene modality, only left child is blocked.
+    rightChild->setPanelModality(QGraphicsItem::SceneModal);
+    QCOMPARE(leftChildSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(rightChildSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(rightParentSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(bottomItemSpy.counts[QEvent::WindowBlocked], 0);
+}
+
+void tst_QGraphicsItem::panelModality()
+{
+    // 1) Test mouse events (delivery/propagation/redirection)
+    // 2) Test hover events (incl. leave on block, enter on unblock)
+    // 3) Test cursor stuff (incl. unset on block, set on unblock)
+    // 4) Test clickfocus
+    // 5) Test grab/ungrab events (possibly ungrab on block, regrab on unblock)
+    // 6) ### modality for non-panels is unsupported for now
+    QGraphicsScene scene;
+
+    QGraphicsRectItem *bottomItem = scene.addRect(-150, -100, 300, 200);
+    bottomItem->setFlag(QGraphicsItem::ItemIsFocusable);
+    bottomItem->setBrush(Qt::yellow);
+
+    QGraphicsRectItem *leftParent = scene.addRect(-50, -50, 100, 100);
+    leftParent->setFlag(QGraphicsItem::ItemIsPanel);
+    leftParent->setBrush(Qt::blue);
+
+    QGraphicsRectItem *leftChild = scene.addRect(-25, -25, 50, 50);
+    leftChild->setFlag(QGraphicsItem::ItemIsPanel);
+    leftChild->setBrush(Qt::green);
+    leftChild->setParentItem(leftParent);
+
+    QGraphicsRectItem *rightParent = scene.addRect(-50, -50, 100, 100);
+    rightParent->setFlag(QGraphicsItem::ItemIsPanel);
+    rightParent->setBrush(Qt::red);
+    QGraphicsRectItem *rightChild = scene.addRect(-25, -25, 50, 50);
+    rightChild->setFlag(QGraphicsItem::ItemIsPanel);
+    rightChild->setBrush(Qt::gray);
+    rightChild->setParentItem(rightParent);
+
+    leftParent->setPos(-75, 0);
+    rightParent->setPos(75, 0);
+
+    bottomItem->setData(0, "bottomItem");
+    leftParent->setData(0, "leftParent");
+    leftChild->setData(0, "leftChild");
+    rightParent->setData(0, "rightParent");
+    rightChild->setData(0, "rightChild");
+
+    scene.setSceneRect(scene.itemsBoundingRect().adjusted(-50, -50, 50, 50));
+
+    EventSpy2 leftParentSpy(&scene, leftParent);
+    EventSpy2 leftChildSpy(&scene, leftChild);
+    EventSpy2 rightParentSpy(&scene, rightParent);
+    EventSpy2 rightChildSpy(&scene, rightChild);
+    EventSpy2 bottomItemSpy(&scene, bottomItem);
+
+    // Left Child enters panel modality, only left parent is blocked.
+    leftChild->setPanelModality(QGraphicsItem::PanelModal);
+    QCOMPARE(leftChildSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(rightChildSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(rightParentSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(bottomItemSpy.counts[QEvent::WindowBlocked], 0);
+
+    leftChild->setPanelModality(QGraphicsItem::NonModal);
+    leftChildSpy.counts.clear();
+    rightChildSpy.counts.clear();
+    leftParentSpy.counts.clear();
+    rightParentSpy.counts.clear();
+    bottomItemSpy.counts.clear();
+
+    // Left parent enter panel modality, nothing is blocked.
+    leftParent->setPanelModality(QGraphicsItem::PanelModal);
+    QCOMPARE(leftChildSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(rightChildSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(rightParentSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(bottomItemSpy.counts[QEvent::WindowBlocked], 0);
+
+    // Left child enters panel modality, left parent is blocked again.
+    leftChild->setPanelModality(QGraphicsItem::PanelModal);
+    QCOMPARE(leftChildSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(rightChildSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(rightParentSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(bottomItemSpy.counts[QEvent::WindowBlocked], 0);
+
+    leftChildSpy.counts.clear();
+    rightChildSpy.counts.clear();
+    leftParentSpy.counts.clear();
+    rightParentSpy.counts.clear();
+    bottomItemSpy.counts.clear();
+
+    leftChild->setPanelModality(QGraphicsItem::NonModal);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowUnblocked], 1);
+    leftParent->setPanelModality(QGraphicsItem::NonModal);
+    QCOMPARE(leftChildSpy.counts[QEvent::WindowUnblocked], 0);
+    QCOMPARE(rightChildSpy.counts[QEvent::WindowUnblocked], 0);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowUnblocked], 1);
+    QCOMPARE(rightParentSpy.counts[QEvent::WindowUnblocked], 0);
+    QCOMPARE(bottomItemSpy.counts[QEvent::WindowUnblocked], 0);
+
+    leftChildSpy.counts.clear();
+    rightChildSpy.counts.clear();
+    leftParentSpy.counts.clear();
+    rightParentSpy.counts.clear();
+    bottomItemSpy.counts.clear();
+
+    // Left and right child enter panel modality, both parents are blocked.
+    rightChild->setPanelModality(QGraphicsItem::PanelModal);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(rightParentSpy.counts[QEvent::WindowBlocked], 1);
+    leftChild->setPanelModality(QGraphicsItem::PanelModal);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(rightParentSpy.counts[QEvent::WindowBlocked], 1);
+}
+
+void tst_QGraphicsItem::mixedModality()
+{
+    // 1) Test mouse events (delivery/propagation/redirection)
+    // 2) Test hover events (incl. leave on block, enter on unblock)
+    // 3) Test cursor stuff (incl. unset on block, set on unblock)
+    // 4) Test clickfocus
+    // 5) Test grab/ungrab events (possibly ungrab on block, regrab on unblock)
+    // 6) ### modality for non-panels is unsupported for now
+    QGraphicsScene scene;
+
+    QGraphicsRectItem *bottomItem = scene.addRect(-150, -100, 300, 200);
+    bottomItem->setFlag(QGraphicsItem::ItemIsFocusable);
+    bottomItem->setBrush(Qt::yellow);
+
+    QGraphicsRectItem *leftParent = scene.addRect(-50, -50, 100, 100);
+    leftParent->setFlag(QGraphicsItem::ItemIsPanel);
+    leftParent->setBrush(Qt::blue);
+
+    QGraphicsRectItem *leftChild = scene.addRect(-25, -25, 50, 50);
+    leftChild->setFlag(QGraphicsItem::ItemIsPanel);
+    leftChild->setBrush(Qt::green);
+    leftChild->setParentItem(leftParent);
+
+    QGraphicsRectItem *rightParent = scene.addRect(-50, -50, 100, 100);
+    rightParent->setFlag(QGraphicsItem::ItemIsPanel);
+    rightParent->setBrush(Qt::red);
+    QGraphicsRectItem *rightChild = scene.addRect(-25, -25, 50, 50);
+    rightChild->setFlag(QGraphicsItem::ItemIsPanel);
+    rightChild->setBrush(Qt::gray);
+    rightChild->setParentItem(rightParent);
+
+    leftParent->setPos(-75, 0);
+    rightParent->setPos(75, 0);
+
+    bottomItem->setData(0, "bottomItem");
+    leftParent->setData(0, "leftParent");
+    leftChild->setData(0, "leftChild");
+    rightParent->setData(0, "rightParent");
+    rightChild->setData(0, "rightChild");
+
+    scene.setSceneRect(scene.itemsBoundingRect().adjusted(-50, -50, 50, 50));
+
+    EventSpy2 leftParentSpy(&scene, leftParent);
+    EventSpy2 leftChildSpy(&scene, leftChild);
+    EventSpy2 rightParentSpy(&scene, rightParent);
+    EventSpy2 rightChildSpy(&scene, rightChild);
+    EventSpy2 bottomItemSpy(&scene, bottomItem);
+
+    // Left Child enters panel modality, only left parent is blocked.
+    leftChild->setPanelModality(QGraphicsItem::PanelModal);
+    QCOMPARE(leftChildSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(rightChildSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(rightParentSpy.counts[QEvent::WindowBlocked], 0);
+
+    // Left parent enters scene modality, which blocks everything except the child.
+    leftParent->setPanelModality(QGraphicsItem::SceneModal);
+    QCOMPARE(leftChildSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(leftChildSpy.counts[QEvent::WindowUnblocked], 0);
+    QCOMPARE(rightChildSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(rightChildSpy.counts[QEvent::WindowUnblocked], 0);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowUnblocked], 0);
+    QCOMPARE(rightParentSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(rightParentSpy.counts[QEvent::WindowUnblocked], 0);
+
+    // Right child enters panel modality (changes nothing).
+    rightChild->setPanelModality(QGraphicsItem::PanelModal);
+    QCOMPARE(leftChildSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(leftChildSpy.counts[QEvent::WindowUnblocked], 0);
+    QCOMPARE(rightChildSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(rightChildSpy.counts[QEvent::WindowUnblocked], 0);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowUnblocked], 0);
+    QCOMPARE(rightParentSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(rightParentSpy.counts[QEvent::WindowUnblocked], 0);
+
+    // Left parent leaves modality. Right child is unblocked.
+    leftParent->setPanelModality(QGraphicsItem::NonModal);
+    QCOMPARE(leftChildSpy.counts[QEvent::WindowBlocked], 0);
+    QCOMPARE(leftChildSpy.counts[QEvent::WindowUnblocked], 0);
+    QCOMPARE(rightChildSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(rightChildSpy.counts[QEvent::WindowUnblocked], 1);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowUnblocked], 0);
+    QCOMPARE(rightParentSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(rightParentSpy.counts[QEvent::WindowUnblocked], 0);
+
+    // Right child "upgrades" its modality to scene modal. Left child is blocked.
+    // Right parent is unaffected.
+    rightChild->setPanelModality(QGraphicsItem::SceneModal);
+    QCOMPARE(leftChildSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(leftChildSpy.counts[QEvent::WindowUnblocked], 0);
+    QCOMPARE(rightChildSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(rightChildSpy.counts[QEvent::WindowUnblocked], 1);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowUnblocked], 0);
+    QCOMPARE(rightParentSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(rightParentSpy.counts[QEvent::WindowUnblocked], 0);
+
+    // "downgrade" right child back to panel modal, left child is unblocked
+    rightChild->setPanelModality(QGraphicsItem::PanelModal);
+    QCOMPARE(leftChildSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(leftChildSpy.counts[QEvent::WindowUnblocked], 1);
+    QCOMPARE(rightChildSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(rightChildSpy.counts[QEvent::WindowUnblocked], 1);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(leftParentSpy.counts[QEvent::WindowUnblocked], 0);
+    QCOMPARE(rightParentSpy.counts[QEvent::WindowBlocked], 1);
+    QCOMPARE(rightParentSpy.counts[QEvent::WindowUnblocked], 0);
+}
+
+void tst_QGraphicsItem::modality_hover()
+{
+    QGraphicsScene scene;
+    QGraphicsRectItem *rect1 = scene.addRect(-50, -50, 100, 100);
+    rect1->setFlag(QGraphicsItem::ItemIsPanel);
+    rect1->setAcceptHoverEvents(true);
+    rect1->setData(0, "rect1");
+
+    QGraphicsRectItem *rect2 = scene.addRect(-50, -50, 100, 100);
+    rect2->setParentItem(rect1);
+    rect2->setFlag(QGraphicsItem::ItemIsPanel);
+    rect2->setAcceptHoverEvents(true);
+    rect2->setPos(50, 50);
+    rect2->setPanelModality(QGraphicsItem::SceneModal);
+    rect2->setData(0, "rect2");
+
+    EventSpy2 rect1Spy(&scene, rect1);
+    EventSpy2 rect2Spy(&scene, rect2);
+
+    sendMouseMove(&scene, QPointF(-25, -25));
+
+    QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneHoverEnter], 0);
+    QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneHoverMove], 0);
+    QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneHoverLeave], 0);
+
+    sendMouseMove(&scene, QPointF(75, 75));
+
+    QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneHoverEnter], 0);
+    QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneHoverMove], 0);
+    QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneHoverLeave], 0);
+    QCOMPARE(rect2Spy.counts[QEvent::GraphicsSceneHoverEnter], 1);
+    QCOMPARE(rect2Spy.counts[QEvent::GraphicsSceneHoverMove], 1);
+    QCOMPARE(rect2Spy.counts[QEvent::GraphicsSceneHoverLeave], 0);
+
+    sendMouseMove(&scene, QPointF(-25, -25));
+
+    QCOMPARE(rect2Spy.counts[QEvent::GraphicsSceneHoverLeave], 1);
+    QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneHoverEnter], 0);
+    QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneHoverMove], 0);
+    QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneHoverLeave], 0);
+
+    rect2->setPanelModality(QGraphicsItem::NonModal);
+
+    QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneHoverEnter], 1);
+    QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneHoverMove], 1);
+
+    sendMouseMove(&scene, QPointF(75, 75));
+
+    QCOMPARE(rect2Spy.counts[QEvent::GraphicsSceneHoverEnter], 2);
+    QCOMPARE(rect2Spy.counts[QEvent::GraphicsSceneHoverMove], 2);
+
+    rect2->setPanelModality(QGraphicsItem::SceneModal);
+
+    QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneHoverLeave], 1);
+    QCOMPARE(rect2Spy.counts[QEvent::GraphicsSceneHoverEnter], 2);
+    // changing modality causes a spurious GraphicsSceneHoveMove, even though the mouse didn't
+    // actually move
+    QCOMPARE(rect2Spy.counts[QEvent::GraphicsSceneHoverMove], 3);
+
+    sendMouseMove(&scene, QPointF(-25, -25));
+
+    QCOMPARE(rect2Spy.counts[QEvent::GraphicsSceneHoverLeave], 2);
+    QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneHoverEnter], 1);
+    QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneHoverMove], 1);
+    QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneHoverLeave], 1);
+
+    rect2->setPanelModality(QGraphicsItem::PanelModal);
+
+    QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneHoverEnter], 1);
+    QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneHoverMove], 1);
+    QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneHoverLeave], 1);
+    QCOMPARE(rect2Spy.counts[QEvent::GraphicsSceneHoverEnter], 2);
+    QCOMPARE(rect2Spy.counts[QEvent::GraphicsSceneHoverMove], 3);
+    QCOMPARE(rect2Spy.counts[QEvent::GraphicsSceneHoverLeave], 2);
+
+    rect2->setPanelModality(QGraphicsItem::NonModal);
+
+    QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneHoverEnter], 2);
+    QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneHoverMove], 2);
+    QCOMPARE(rect2Spy.counts[QEvent::GraphicsSceneHoverEnter], 2);
+    QCOMPARE(rect2Spy.counts[QEvent::GraphicsSceneHoverMove], 3);
+    QCOMPARE(rect2Spy.counts[QEvent::GraphicsSceneHoverLeave], 2);
+}
+
+void tst_QGraphicsItem::modality_mouseGrabber()
+{
+    QGraphicsScene scene;
+    QGraphicsRectItem *rect1 = scene.addRect(-50, -50, 100, 100);
+    rect1->setFlag(QGraphicsItem::ItemIsPanel);
+    rect1->setFlag(QGraphicsItem::ItemIsMovable);
+    rect1->setData(0, "rect1");
+
+    QGraphicsRectItem *rect2 = scene.addRect(-50, -50, 100, 100);
+    rect2->setParentItem(rect1);
+    rect2->setFlag(QGraphicsItem::ItemIsPanel);
+    rect2->setFlag(QGraphicsItem::ItemIsMovable);
+    rect2->setPos(50, 50);
+    rect2->setData(0, "rect2");
+
+    EventSpy2 rect1Spy(&scene, rect1);
+    EventSpy2 rect2Spy(&scene, rect2);
+
+    {
+        // pressing mouse on rect1 starts implicit grab
+        sendMousePress(&scene, QPoint(-25, -25));
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 1);
+        QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneMousePress], 1);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *) rect1);
+
+        // grab lost when rect1 is modally shadowed
+        rect2->setPanelModality(QGraphicsItem::SceneModal);
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 1);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 1);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *) 0);
+
+        // releasing goes nowhere
+        sendMouseRelease(&scene, QPoint(-25, -25));
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 1);
+        QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneMouseRelease], 0);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 1);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::GraphicsSceneMouseRelease], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *) 0);
+
+        // pressing mouse on rect1 starts implicit grab on rect2 (since it is modal)
+        sendMouseClick(&scene, QPoint(-25, -25));
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 1);
+        QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneMousePress], 1);
+        QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneMouseRelease], 0);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 1);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 1);
+        QCOMPARE(rect2Spy.counts[QEvent::GraphicsSceneMousePress], 1);
+        QCOMPARE(rect2Spy.counts[QEvent::GraphicsSceneMouseRelease], 1);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 1);
+
+        rect2->setPanelModality(QGraphicsItem::NonModal);
+
+        // pressing mouse on rect1 starts implicit grab
+        sendMousePress(&scene, QPoint(-25, -25));
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 2);
+        QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneMousePress], 2);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 1);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 1);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 1);
+        QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *) rect1);
+
+        // grab lost to rect2 when rect1 is modally shadowed
+        rect2->setPanelModality(QGraphicsItem::SceneModal);
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 2);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 2);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 1);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 1);
+        QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *) 0);
+
+        // rect1 does *not* re-grab when rect2 is no longer modal
+        rect2->setPanelModality(QGraphicsItem::NonModal);
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 2);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 2);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 1);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 1);
+        QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *) 0);
+
+        // release goes nowhere
+        sendMouseRelease(&scene, QPoint(-25, -25));
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 2);
+        QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneMouseRelease], 0);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 2);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 1);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 1);
+        QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *) 0);
+    }
+    {
+        // repeat the test using PanelModal
+        rect2->setPanelModality(QGraphicsItem::NonModal);
+        rect1Spy.counts.clear();
+        rect2Spy.counts.clear();
+
+        // pressing mouse on rect1 starts implicit grab
+        sendMousePress(&scene, QPoint(-25, -25));
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 1);
+        QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneMousePress], 1);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *) rect1);
+
+        // grab lost when rect1 is modally shadowed
+        rect2->setPanelModality(QGraphicsItem::PanelModal);
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 1);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 1);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *) 0);
+
+        // releasing goes nowhere
+        sendMouseRelease(&scene, QPoint(-25, -25));
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 1);
+        QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneMouseRelease], 0);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 1);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::GraphicsSceneMouseRelease], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *) 0);
+
+        // pressing mouse on rect1 starts implicit grab on rect2 (since it is modal)
+        sendMouseClick(&scene, QPoint(-25, -25));
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 1);
+        QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneMousePress], 1);
+        QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneMouseRelease], 0);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 1);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 1);
+        QCOMPARE(rect2Spy.counts[QEvent::GraphicsSceneMousePress], 1);
+        QCOMPARE(rect2Spy.counts[QEvent::GraphicsSceneMouseRelease], 1);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 1);
+
+        rect2->setPanelModality(QGraphicsItem::NonModal);
+
+        // pressing mouse on rect1 starts implicit grab
+        sendMousePress(&scene, QPoint(-25, -25));
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 2);
+        QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneMousePress], 2);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 1);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 1);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 1);
+        QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *) rect1);
+
+        // grab lost to rect2 when rect1 is modally shadowed
+        rect2->setPanelModality(QGraphicsItem::PanelModal);
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 2);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 2);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 1);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 1);
+        QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *) 0);
+
+        // rect1 does *not* re-grab when rect2 is no longer modal
+        rect2->setPanelModality(QGraphicsItem::NonModal);
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 2);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 2);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 1);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 1);
+        QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *) 0);
+
+        // release goes nowhere
+        sendMouseRelease(&scene, QPoint(-25, -25));
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 2);
+        QCOMPARE(rect1Spy.counts[QEvent::GraphicsSceneMouseRelease], 0);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 2);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 1);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 1);
+        QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *) 0);
+    }
+
+    {
+        // repeat the PanelModal tests, but this time the mouse events will be on a non-modal item,
+        // meaning normal grabbing should work
+        rect2->setPanelModality(QGraphicsItem::NonModal);
+        rect1Spy.counts.clear();
+        rect2Spy.counts.clear();
+
+        QGraphicsRectItem *rect3 = scene.addRect(-50, -50, 100, 100);
+        rect3->setFlag(QGraphicsItem::ItemIsPanel);
+        rect3->setFlag(QGraphicsItem::ItemIsMovable);
+        rect3->setPos(150, 50);
+        rect3->setData(0, "rect3");
+
+        EventSpy2 rect3Spy(&scene, rect3);
+
+        // pressing mouse on rect3 starts implicit grab
+        sendMousePress(&scene, QPoint(150, 50));
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 0);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(rect3Spy.counts[QEvent::GrabMouse], 1);
+        QCOMPARE(rect3Spy.counts[QEvent::GraphicsSceneMousePress], 1);
+        QCOMPARE(rect3Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *) rect3);
+
+        // grab is *not* lost when rect1 is modally shadowed by rect2
+        rect2->setPanelModality(QGraphicsItem::PanelModal);
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 0);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(rect3Spy.counts[QEvent::GrabMouse], 1);
+        QCOMPARE(rect3Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *) rect3);
+
+        // releasing goes to rect3
+        sendMouseRelease(&scene, QPoint(150, 50));
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 0);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(rect3Spy.counts[QEvent::GrabMouse], 1);
+        QCOMPARE(rect3Spy.counts[QEvent::GraphicsSceneMouseRelease], 1);
+        QCOMPARE(rect3Spy.counts[QEvent::UngrabMouse], 1);
+        QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *) 0);
+
+        rect2->setPanelModality(QGraphicsItem::NonModal);
+
+        // pressing mouse on rect3 starts implicit grab
+        sendMousePress(&scene, QPoint(150, 50));
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 0);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(rect3Spy.counts[QEvent::GrabMouse], 2);
+        QCOMPARE(rect3Spy.counts[QEvent::UngrabMouse], 1);
+        QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *) rect3);
+
+        // grab is not lost
+        rect2->setPanelModality(QGraphicsItem::PanelModal);
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 0);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(rect3Spy.counts[QEvent::GrabMouse], 2);
+        QCOMPARE(rect3Spy.counts[QEvent::UngrabMouse], 1);
+        QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *) rect3);
+
+        // grab stays on rect3
+        rect2->setPanelModality(QGraphicsItem::NonModal);
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 0);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(rect3Spy.counts[QEvent::GrabMouse], 2);
+        QCOMPARE(rect3Spy.counts[QEvent::UngrabMouse], 1);
+        QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *) rect3);
+
+        // release goes to rect3
+        sendMouseRelease(&scene, QPoint(150, 50));
+        QCOMPARE(rect1Spy.counts[QEvent::GrabMouse], 0);
+        QCOMPARE(rect1Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::GrabMouse], 0);
+        QCOMPARE(rect2Spy.counts[QEvent::UngrabMouse], 0);
+        QCOMPARE(rect3Spy.counts[QEvent::GrabMouse], 2);
+        QCOMPARE(rect3Spy.counts[QEvent::UngrabMouse], 2);
+        QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *) 0);
+    }
+}
+
+void tst_QGraphicsItem::modality_clickFocus()
+{
+    QGraphicsScene scene;
+    QGraphicsRectItem *rect1 = scene.addRect(-50, -50, 100, 100);
+    rect1->setFlag(QGraphicsItem::ItemIsPanel);
+    rect1->setFlag(QGraphicsItem::ItemIsFocusable);
+    rect1->setData(0, "rect1");
+
+    QGraphicsRectItem *rect2 = scene.addRect(-50, -50, 100, 100);
+    rect2->setParentItem(rect1);
+    rect2->setFlag(QGraphicsItem::ItemIsPanel);
+    rect2->setFlag(QGraphicsItem::ItemIsFocusable);
+    rect2->setPos(50, 50);
+    rect2->setData(0, "rect2");
+
+    QEvent windowActivateEvent(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &windowActivateEvent);
+
+    EventSpy2 rect1Spy(&scene, rect1);
+    EventSpy2 rect2Spy(&scene, rect2);
+
+    // activate rect1, it should not get focus
+    rect1->setActive(true);
+    QCOMPARE(scene.focusItem(), (QGraphicsItem *) 0);
+
+    // focus stays unset when rect2 becomes modal
+    rect2->setPanelModality(QGraphicsItem::SceneModal);
+    QCOMPARE(scene.focusItem(), (QGraphicsItem *) 0);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusIn], 0);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusOut], 0);
+    QCOMPARE(rect2Spy.counts[QEvent::FocusIn], 0);
+    QCOMPARE(rect2Spy.counts[QEvent::FocusOut], 0);
+
+    // clicking on rect1 should not set it's focus item
+    sendMouseClick(&scene, QPointF(-25, -25));
+    QCOMPARE(rect1->focusItem(), (QGraphicsItem *) 0);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusIn], 0);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusOut], 0);
+    QCOMPARE(rect2Spy.counts[QEvent::FocusIn], 0);
+    QCOMPARE(rect2Spy.counts[QEvent::FocusOut], 0);
+
+    // clicking on rect2 gives it focus
+    rect2->setActive(true);
+    sendMouseClick(&scene, QPointF(75, 75));
+    QCOMPARE(scene.focusItem(), (QGraphicsItem *) rect2);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusIn], 0);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusOut], 0);
+    QCOMPARE(rect2Spy.counts[QEvent::FocusIn], 1);
+    QCOMPARE(rect2Spy.counts[QEvent::FocusOut], 0);
+
+    // clicking on rect1 does *not* give it focus
+    rect1->setActive(true);
+    sendMouseClick(&scene, QPointF(-25, -25));
+    QCOMPARE(scene.focusItem(), (QGraphicsItem *) 0);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusIn], 0);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusOut], 0);
+    QCOMPARE(rect2Spy.counts[QEvent::FocusIn], 1);
+    QCOMPARE(rect2Spy.counts[QEvent::FocusOut], 1);
+
+    // focus doesn't change when leaving modality either
+    rect2->setPanelModality(QGraphicsItem::NonModal);
+    QCOMPARE(scene.focusItem(), (QGraphicsItem *) 0);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusIn], 0);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusOut], 0);
+    QCOMPARE(rect2Spy.counts[QEvent::FocusIn], 1);
+    QCOMPARE(rect2Spy.counts[QEvent::FocusOut], 1);
+
+    // click on rect1, it should get focus now
+    sendMouseClick(&scene, QPointF(-25, -25));
+    QCOMPARE(scene.focusItem(), (QGraphicsItem *) rect1);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusIn], 1);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusOut], 0);
+    QCOMPARE(rect2Spy.counts[QEvent::FocusIn], 1);
+    QCOMPARE(rect2Spy.counts[QEvent::FocusOut], 1);
+}
+
+void tst_QGraphicsItem::modality_keyEvents()
+{
+    QGraphicsScene scene;
+    QGraphicsRectItem *rect1 = scene.addRect(-50, -50, 100, 100);
+    rect1->setFlag(QGraphicsItem::ItemIsPanel);
+    rect1->setFlag(QGraphicsItem::ItemIsFocusable);
+    rect1->setData(0, "rect1");
+
+    QGraphicsRectItem *rect1child = scene.addRect(-10, -10, 20, 20);
+    rect1child->setParentItem(rect1);
+    rect1child->setFlag(QGraphicsItem::ItemIsFocusable);
+    rect1child->setData(0, "rect1child1");
+
+    QGraphicsRectItem *rect2 = scene.addRect(-50, -50, 100, 100);
+    rect2->setParentItem(rect1);
+    rect2->setFlag(QGraphicsItem::ItemIsPanel);
+    rect2->setFlag(QGraphicsItem::ItemIsFocusable);
+    rect2->setPos(50, 50);
+    rect2->setData(0, "rect2");
+
+    QGraphicsRectItem *rect2child = scene.addRect(-10, -10, 20, 20);
+    rect2child->setParentItem(rect2);
+    rect2child->setFlag(QGraphicsItem::ItemIsFocusable);
+    rect2child->setData(0, "rect2child1");
+
+    QEvent windowActivateEvent(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &windowActivateEvent);
+
+    EventSpy2 rect1Spy(&scene, rect1);
+    EventSpy2 rect1childSpy(&scene, rect1child);
+    EventSpy2 rect2Spy(&scene, rect2);
+    EventSpy2 rect2childSpy(&scene, rect2child);
+
+    // activate rect1 and give it rect1child focus
+    rect1->setActive(true);
+    rect1child->setFocus();
+    QCOMPARE(scene.focusItem(), (QGraphicsItem *) rect1child);
+
+    // focus stays on rect1child when rect2 becomes modal
+    rect2->setPanelModality(QGraphicsItem::SceneModal);
+    QCOMPARE(scene.focusItem(), (QGraphicsItem *) rect1child);
+
+    // but key events to rect1child should be neither delivered nor propagated
+    sendKeyClick(&scene, Qt::Key_A);
+    sendKeyClick(&scene, Qt::Key_S);
+    sendKeyClick(&scene, Qt::Key_D);
+    sendKeyClick(&scene, Qt::Key_F);
+    QCOMPARE(rect1childSpy.counts[QEvent::KeyPress], 0);
+    QCOMPARE(rect1childSpy.counts[QEvent::KeyRelease], 0);
+    QCOMPARE(rect1Spy.counts[QEvent::KeyPress], 0);
+    QCOMPARE(rect1Spy.counts[QEvent::KeyRelease], 0);
+
+    // change to panel modality, rect1child1 keeps focus
+    rect2->setPanelModality(QGraphicsItem::PanelModal);
+    QCOMPARE(scene.focusItem(), (QGraphicsItem *) rect1child);
+
+    // still no key events
+    sendKeyClick(&scene, Qt::Key_J);
+    sendKeyClick(&scene, Qt::Key_K);
+    sendKeyClick(&scene, Qt::Key_L);
+    sendKeyClick(&scene, Qt::Key_Semicolon);
+    QCOMPARE(rect1childSpy.counts[QEvent::KeyPress], 0);
+    QCOMPARE(rect1childSpy.counts[QEvent::KeyRelease], 0);
+    QCOMPARE(rect1Spy.counts[QEvent::KeyPress], 0);
+    QCOMPARE(rect1Spy.counts[QEvent::KeyRelease], 0);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

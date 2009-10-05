@@ -68,7 +68,7 @@ JSObject* JSBarInfoPrototype::self(ExecState* exec, JSGlobalObject* globalObject
 
 const ClassInfo JSBarInfo::s_info = { "BarInfo", 0, &JSBarInfoTable, 0 };
 
-JSBarInfo::JSBarInfo(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<BarInfo> impl)
+JSBarInfo::JSBarInfo(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<BarInfo> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

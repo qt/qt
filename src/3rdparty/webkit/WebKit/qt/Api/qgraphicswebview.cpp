@@ -18,7 +18,7 @@
 */
 
 #include "config.h"
-#include "qwebgraphicsitem.h"
+#include "qgraphicswebview.h"
 
 #include "qwebframe.h"
 #include "qwebpage.h"
@@ -33,9 +33,9 @@
 #include <QX11Info>
 #endif
 
-class QWebGraphicsItemPrivate : public QWebPageClient {
+class QGraphicsWebViewPrivate : public QWebPageClient {
 public:
-    QWebGraphicsItemPrivate(QWebGraphicsItem* parent)
+    QGraphicsWebViewPrivate(QGraphicsWebView* parent)
         : q(parent)
         , page(0)
         , interactive(true)
@@ -55,7 +55,7 @@ public:
     void _q_doLoadFinished(bool success);
     void _q_setStatusBarMessage(const QString& message);
 
-    QWebGraphicsItem* q;
+    QGraphicsWebView* q;
     QWebPage* page;
 
     QString statusBarMessage;
@@ -63,7 +63,7 @@ public:
     qreal progress;
 };
 
-void QWebGraphicsItemPrivate::_q_doLoadProgress(int progress)
+void QGraphicsWebViewPrivate::_q_doLoadProgress(int progress)
 {
     if (qFuzzyCompare(this->progress, qreal(progress / 100.)))
         return;
@@ -73,7 +73,7 @@ void QWebGraphicsItemPrivate::_q_doLoadProgress(int progress)
     emit q->progressChanged(this->progress);
 }
 
-void QWebGraphicsItemPrivate::_q_doLoadFinished(bool success)
+void QGraphicsWebViewPrivate::_q_doLoadFinished(bool success)
 {
     // If the page had no title, still make sure it gets the signal
     if (q->title().isEmpty())
@@ -85,27 +85,27 @@ void QWebGraphicsItemPrivate::_q_doLoadFinished(bool success)
         emit q->loadFailed();
 }
 
-void QWebGraphicsItemPrivate::scroll(int dx, int dy, const QRect& rectToScroll)
+void QGraphicsWebViewPrivate::scroll(int dx, int dy, const QRect& rectToScroll)
 {
     q->scroll(qreal(dx), qreal(dy), QRectF(rectToScroll));
 }
 
-void QWebGraphicsItemPrivate::update(const QRect & dirtyRect)
+void QGraphicsWebViewPrivate::update(const QRect & dirtyRect)
 {
     q->update(QRectF(dirtyRect));
 }
 
-QCursor QWebGraphicsItemPrivate::cursor() const
+QCursor QGraphicsWebViewPrivate::cursor() const
 {
     return q->cursor();
 }
 
-void QWebGraphicsItemPrivate::updateCursor(const QCursor& cursor)
+void QGraphicsWebViewPrivate::updateCursor(const QCursor& cursor)
 {
     q->setCursor(cursor);
 }
 
-int QWebGraphicsItemPrivate::screenNumber() const
+int QGraphicsWebViewPrivate::screenNumber() const
 {
 #if defined(Q_WS_X11)
     const QList<QGraphicsView*> views = q->scene()->views();
@@ -117,7 +117,7 @@ int QWebGraphicsItemPrivate::screenNumber() const
     return 0;
 }
 
-WId QWebGraphicsItemPrivate::winId() const
+WId QGraphicsWebViewPrivate::winId() const
 {
     const QList<QGraphicsView*> views = q->scene()->views();
 
@@ -127,15 +127,15 @@ WId QWebGraphicsItemPrivate::winId() const
     return 0;
 }
 
-void QWebGraphicsItemPrivate::_q_setStatusBarMessage(const QString& s)
+void QGraphicsWebViewPrivate::_q_setStatusBarMessage(const QString& s)
 {
     statusBarMessage = s;
     emit q->statusChanged();
 }
 
 /*!
-    \class QWebGraphicsItem
-    \brief The QWebGraphicsItem class allows web content to be added to a GraphicsView.
+    \class QGraphicsWebView
+    \brief The QGraphicsWebView class allows web content to be added to a GraphicsView.
     \since 4.6
 
     A WebGraphicsItem renders web content based on a URL or set data.
@@ -146,13 +146,13 @@ void QWebGraphicsItemPrivate::_q_setStatusBarMessage(const QString& s)
 */
 
 /*!
-    Constructs an empty QWebGraphicsItem with parent \a parent.
+    Constructs an empty QGraphicsWebView with parent \a parent.
 
     \sa load()
 */
-QWebGraphicsItem::QWebGraphicsItem(QGraphicsItem* parent)
+QGraphicsWebView::QGraphicsWebView(QGraphicsItem* parent)
     : QGraphicsWidget(parent)
-    , d(new QWebGraphicsItemPrivate(this))
+    , d(new QGraphicsWebViewPrivate(this))
 {
 #if QT_VERSION >= 0x040600
     setFlag(QGraphicsItem::ItemUsesExtendedStyleOption, true);
@@ -164,7 +164,7 @@ QWebGraphicsItem::QWebGraphicsItem(QGraphicsItem* parent)
 /*!
     Destroys the web graphicsitem.
 */
-QWebGraphicsItem::~QWebGraphicsItem()
+QGraphicsWebView::~QGraphicsWebView()
 {
     if (d->page)
         d->page->d->view = 0;
@@ -180,10 +180,10 @@ QWebGraphicsItem::~QWebGraphicsItem()
 
     \sa setPage()
 */
-QWebPage* QWebGraphicsItem::page() const
+QWebPage* QGraphicsWebView::page() const
 {
     if (!d->page) {
-        QWebGraphicsItem* that = const_cast<QWebGraphicsItem*>(this);
+        QGraphicsWebView* that = const_cast<QGraphicsWebView*>(this);
         QWebPage* page = new QWebPage(that);
 
         // Default to not having a background, in the case
@@ -200,14 +200,14 @@ QWebPage* QWebGraphicsItem::page() const
 
 /*! \reimp
 */
-void QWebGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget*)
+void QGraphicsWebView::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget*)
 {
     page()->mainFrame()->render(painter, option->exposedRect.toRect());
 }
 
 /*! \reimp
 */
-bool QWebGraphicsItem::sceneEvent(QEvent* event)
+bool QGraphicsWebView::sceneEvent(QEvent* event)
 {
     // Re-implemented in order to allows fixing event-related bugs in patch releases.
     return QGraphicsWidget::sceneEvent(event);
@@ -215,7 +215,7 @@ bool QWebGraphicsItem::sceneEvent(QEvent* event)
 
 /*! \reimp
 */
-bool QWebGraphicsItem::event(QEvent* event)
+bool QGraphicsWebView::event(QEvent* event)
 {
     // Re-implemented in order to allows fixing event-related bugs in patch releases.
 
@@ -248,7 +248,7 @@ bool QWebGraphicsItem::event(QEvent* event)
 
     \sa page()
 */
-void QWebGraphicsItem::setPage(QWebPage* page)
+void QGraphicsWebView::setPage(QWebPage* page)
 {
     if (d->page == page)
         return;
@@ -288,7 +288,7 @@ void QWebGraphicsItem::setPage(QWebPage* page)
 }
 
 /*!
-    \property QWebGraphicsItem::url
+    \property QGraphicsWebView::url
     \brief the url of the web page currently viewed
 
     Setting this property clears the view and loads the URL.
@@ -298,12 +298,12 @@ void QWebGraphicsItem::setPage(QWebPage* page)
     \sa load(), urlChanged()
 */
 
-void QWebGraphicsItem::setUrl(const QUrl &url)
+void QGraphicsWebView::setUrl(const QUrl &url)
 {
     page()->mainFrame()->setUrl(url);
 }
 
-QUrl QWebGraphicsItem::url() const
+QUrl QGraphicsWebView::url() const
 {
     if (d->page)
         return d->page->mainFrame()->url();
@@ -312,14 +312,14 @@ QUrl QWebGraphicsItem::url() const
 }
 
 /*!
-    \property QWebGraphicsItem::title
+    \property QGraphicsWebView::title
     \brief the title of the web page currently viewed
 
     By default, this property contains an empty string.
 
     \sa titleChanged()
 */
-QString QWebGraphicsItem::title() const
+QString QGraphicsWebView::title() const
 {
     if (d->page)
         return d->page->mainFrame()->title();
@@ -328,14 +328,14 @@ QString QWebGraphicsItem::title() const
 }
 
 /*!
-    \property QWebGraphicsItem::icon
+    \property QGraphicsWebView::icon
     \brief the icon associated with the web page currently viewed
 
     By default, this property contains a null icon.
 
     \sa iconChanged(), QWebSettings::iconForUrl()
 */
-QIcon QWebGraphicsItem::icon() const
+QIcon QGraphicsWebView::icon() const
 {
     if (d->page)
         return d->page->mainFrame()->icon();
@@ -344,12 +344,12 @@ QIcon QWebGraphicsItem::icon() const
 }
 
 /*!
-    \property QWebGraphicsItem::zoomFactor
+    \property QGraphicsWebView::zoomFactor
     \since 4.5
     \brief the zoom factor for the view
 */
 
-void QWebGraphicsItem::setZoomFactor(qreal factor)
+void QGraphicsWebView::setZoomFactor(qreal factor)
 {
     if (factor == page()->mainFrame()->zoomFactor())
         return;
@@ -358,14 +358,14 @@ void QWebGraphicsItem::setZoomFactor(qreal factor)
     emit zoomFactorChanged();
 }
 
-qreal QWebGraphicsItem::zoomFactor() const
+qreal QGraphicsWebView::zoomFactor() const
 {
     return page()->mainFrame()->zoomFactor();
 }
 
 /*! \reimp
 */
-void QWebGraphicsItem::updateGeometry()
+void QGraphicsWebView::updateGeometry()
 {
     QGraphicsWidget::updateGeometry();
 
@@ -378,7 +378,7 @@ void QWebGraphicsItem::updateGeometry()
 
 /*! \reimp
 */
-void QWebGraphicsItem::setGeometry(const QRectF& rect)
+void QGraphicsWebView::setGeometry(const QRectF& rect)
 {
     QGraphicsWidget::setGeometry(rect);
 
@@ -392,7 +392,8 @@ void QWebGraphicsItem::setGeometry(const QRectF& rect)
 }
 
 /*!
-    \brief The load status message associated to the web graphicsitem
+    \property QGraphicsWebView::status
+    \brief the load status message.
 
     Provides the latest status message set during the load of a URL.
     Commonly shown by Status Bar widgets.
@@ -400,7 +401,7 @@ void QWebGraphicsItem::setGeometry(const QRectF& rect)
     \sa statusChanged()
 */
 
-QString QWebGraphicsItem::status() const
+QString QGraphicsWebView::status() const
 {
     return d->statusBarMessage;
 }
@@ -410,7 +411,7 @@ QString QWebGraphicsItem::status() const
 
     \sa reload(), loadFinished()
 */
-void QWebGraphicsItem::stop()
+void QGraphicsWebView::stop()
 {
     if (d->page)
         d->page->triggerAction(QWebPage::Stop);
@@ -422,7 +423,7 @@ void QWebGraphicsItem::stop()
 
     \sa forward()
 */
-void QWebGraphicsItem::back()
+void QGraphicsWebView::back()
 {
     if (d->page)
         d->page->triggerAction(QWebPage::Back);
@@ -434,7 +435,7 @@ void QWebGraphicsItem::back()
 
     \sa back()
 */
-void QWebGraphicsItem::forward()
+void QGraphicsWebView::forward()
 {
     if (d->page)
         d->page->triggerAction(QWebPage::Forward);
@@ -445,17 +446,17 @@ void QWebGraphicsItem::forward()
 
     \sa stop(), loadStarted()
 */
-void QWebGraphicsItem::reload()
+void QGraphicsWebView::reload()
 {
     if (d->page)
         d->page->triggerAction(QWebPage::Reload);
 }
 
 /*!
-    \property QWebGraphicsItem::progress
+    \property QGraphicsWebView::progress
     \brief the progress of loading the current URL, from 0 to 1.
 */
-qreal QWebGraphicsItem::progress() const
+qreal QGraphicsWebView::progress() const
 {
     return d->progress;
 }
@@ -467,13 +468,13 @@ qreal QWebGraphicsItem::progress() const
 
     \sa setUrl(), url(), urlChanged()
 */
-void QWebGraphicsItem::load(const QUrl& url)
+void QGraphicsWebView::load(const QUrl& url)
 {
     page()->mainFrame()->load(url);
 }
 
 /*!
-    \fn void QWebGraphicsItem::load(const QNetworkRequest &request, QNetworkAccessManager::Operation operation, const QByteArray &body)
+    \fn void QGraphicsWebView::load(const QNetworkRequest &request, QNetworkAccessManager::Operation operation, const QByteArray &body)
 
     Loads a network request, \a request, using the method specified in \a operation.
 
@@ -484,7 +485,7 @@ void QWebGraphicsItem::load(const QUrl& url)
     \sa url(), urlChanged()
 */
 
-void QWebGraphicsItem::load(const QNetworkRequest& request,
+void QGraphicsWebView::load(const QNetworkRequest& request,
                     QNetworkAccessManager::Operation operation,
                     const QByteArray& body)
 {
@@ -492,14 +493,15 @@ void QWebGraphicsItem::load(const QNetworkRequest& request,
 }
 
 /*!
-    Sets the content of the web graphicsitem to the specified \a html.
+    \property QGraphicsWebView::html
+    This property provides an HTML interface to the text in the webview.
 
-    External objects such as stylesheets or images referenced in the HTML
-    document are located relative to \a baseUrl.
+    When setting this property, external objects such as stylesheets or images
+    referenced in the HTML document are located relative to \a baseUrl.
 
     The \a html is loaded immediately; external objects are loaded asynchronously.
 
-    When using this method, WebKit assumes that external resources such as
+    When using these methods, WebKit assumes that external resources such as
     JavaScript programs or style sheets are encoded in UTF-8 unless otherwise
     specified. For example, the encoding of an external script can be specified
     through the charset attribute of the HTML script tag. Alternatively, the
@@ -507,12 +509,12 @@ void QWebGraphicsItem::load(const QNetworkRequest& request,
 
     \sa load(), setContent(), QWebFrame::toHtml()
 */
-void QWebGraphicsItem::setHtml(const QString& html, const QUrl& baseUrl)
+void QGraphicsWebView::setHtml(const QString& html, const QUrl& baseUrl)
 {
     page()->mainFrame()->setHtml(html, baseUrl);
 }
 
-QString QWebGraphicsItem::toHtml() const
+QString QGraphicsWebView::toHtml() const
 {
     return page()->mainFrame()->toHtml();
 }
@@ -528,7 +530,7 @@ QString QWebGraphicsItem::toHtml() const
 
     \sa load(), setHtml(), QWebFrame::toHtml()
 */
-void QWebGraphicsItem::setContent(const QByteArray& data, const QString& mimeType, const QUrl& baseUrl)
+void QGraphicsWebView::setContent(const QByteArray& data, const QString& mimeType, const QUrl& baseUrl)
 {
     page()->mainFrame()->setContent(data, mimeType, baseUrl);
 }
@@ -540,22 +542,22 @@ void QWebGraphicsItem::setContent(const QByteArray& data, const QString& mimeTyp
 
     \snippet webkitsnippets/qtwebkit_qwebview_snippet.cpp 0
 */
-QWebHistory* QWebGraphicsItem::history() const
+QWebHistory* QGraphicsWebView::history() const
 {
     return page()->history();
 }
 
 /*!
-  \property QWebGraphicsItem::interactive
+  \property QGraphicsWebView::interactive
   \brief controls whether the item responds to mouse and key events.
 */
 
-bool QWebGraphicsItem::isInteractive() const
+bool QGraphicsWebView::isInteractive() const
 {
     return d->interactive;
 }
 
-void QWebGraphicsItem::setInteractive(bool allowed)
+void QGraphicsWebView::setInteractive(bool allowed)
 {
     if (d->interactive == allowed)
         return;
@@ -573,14 +575,14 @@ void QWebGraphicsItem::setInteractive(bool allowed)
 
     \sa QWebSettings::globalSettings()
 */
-QWebSettings* QWebGraphicsItem::settings() const
+QWebSettings* QGraphicsWebView::settings() const
 {
     return page()->settings();
 }
 
 /*! \reimp
 */
-void QWebGraphicsItem::hoverMoveEvent(QGraphicsSceneHoverEvent* ev)
+void QGraphicsWebView::hoverMoveEvent(QGraphicsSceneHoverEvent* ev)
 {
     if (d->interactive && d->page) {
         const bool accepted = ev->isAccepted();
@@ -598,14 +600,14 @@ void QWebGraphicsItem::hoverMoveEvent(QGraphicsSceneHoverEvent* ev)
 
 /*! \reimp
 */
-void QWebGraphicsItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* ev)
+void QGraphicsWebView::hoverLeaveEvent(QGraphicsSceneHoverEvent* ev)
 {
     Q_UNUSED(ev);
 }
 
 /*! \reimp
 */
-void QWebGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent* ev)
+void QGraphicsWebView::mouseMoveEvent(QGraphicsSceneMouseEvent* ev)
 {
     if (d->interactive && d->page) {
         const bool accepted = ev->isAccepted();
@@ -619,7 +621,7 @@ void QWebGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent* ev)
 
 /*! \reimp
 */
-void QWebGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* ev)
+void QGraphicsWebView::mousePressEvent(QGraphicsSceneMouseEvent* ev)
 {
     if (d->interactive && d->page) {
         const bool accepted = ev->isAccepted();
@@ -633,7 +635,7 @@ void QWebGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* ev)
 
 /*! \reimp
 */
-void QWebGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* ev)
+void QGraphicsWebView::mouseReleaseEvent(QGraphicsSceneMouseEvent* ev)
 {
     if (d->interactive && d->page) {
         const bool accepted = ev->isAccepted();
@@ -647,7 +649,7 @@ void QWebGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* ev)
 
 /*! \reimp
 */
-void QWebGraphicsItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* ev)
+void QGraphicsWebView::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* ev)
 {
     if (d->interactive && d->page) {
         const bool accepted = ev->isAccepted();
@@ -661,7 +663,7 @@ void QWebGraphicsItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* ev)
 
 /*! \reimp
 */
-void QWebGraphicsItem::keyPressEvent(QKeyEvent* ev)
+void QGraphicsWebView::keyPressEvent(QKeyEvent* ev)
 {
     if (d->interactive && d->page)
         d->page->event(ev);
@@ -672,7 +674,7 @@ void QWebGraphicsItem::keyPressEvent(QKeyEvent* ev)
 
 /*! \reimp
 */
-void QWebGraphicsItem::keyReleaseEvent(QKeyEvent* ev)
+void QGraphicsWebView::keyReleaseEvent(QKeyEvent* ev)
 {
     if (d->interactive && d->page)
         d->page->event(ev);
@@ -683,7 +685,7 @@ void QWebGraphicsItem::keyReleaseEvent(QKeyEvent* ev)
 
 /*! \reimp
 */
-void QWebGraphicsItem::focusInEvent(QFocusEvent* ev)
+void QGraphicsWebView::focusInEvent(QFocusEvent* ev)
 {
     if (d->page)
         d->page->event(ev);
@@ -693,7 +695,7 @@ void QWebGraphicsItem::focusInEvent(QFocusEvent* ev)
 
 /*! \reimp
 */
-void QWebGraphicsItem::focusOutEvent(QFocusEvent* ev)
+void QGraphicsWebView::focusOutEvent(QFocusEvent* ev)
 {
     if (d->page)
         d->page->event(ev);
@@ -703,7 +705,7 @@ void QWebGraphicsItem::focusOutEvent(QFocusEvent* ev)
 
 /*! \reimp
 */
-bool QWebGraphicsItem::focusNextPrevChild(bool next)
+bool QGraphicsWebView::focusNextPrevChild(bool next)
 {
     if (d->page)
         return d->page->focusNextPrevChild(next);
@@ -713,7 +715,7 @@ bool QWebGraphicsItem::focusNextPrevChild(bool next)
 
 /*! \reimp
 */
-void QWebGraphicsItem::dragEnterEvent(QGraphicsSceneDragDropEvent* ev)
+void QGraphicsWebView::dragEnterEvent(QGraphicsSceneDragDropEvent* ev)
 {
 #ifndef QT_NO_DRAGANDDROP
     //if (d->page)
@@ -727,7 +729,7 @@ void QWebGraphicsItem::dragEnterEvent(QGraphicsSceneDragDropEvent* ev)
 
 /*! \reimp
 */
-void QWebGraphicsItem::dragLeaveEvent(QGraphicsSceneDragDropEvent* ev)
+void QGraphicsWebView::dragLeaveEvent(QGraphicsSceneDragDropEvent* ev)
 {
 #ifndef QT_NO_DRAGANDDROP
     if (d->interactive && d->page) {
@@ -745,7 +747,7 @@ void QWebGraphicsItem::dragLeaveEvent(QGraphicsSceneDragDropEvent* ev)
 
 /*! \reimp
 */
-void QWebGraphicsItem::dragMoveEvent(QGraphicsSceneDragDropEvent* ev)
+void QGraphicsWebView::dragMoveEvent(QGraphicsSceneDragDropEvent* ev)
 {
 #ifndef QT_NO_DRAGANDDROP
     if (d->interactive && d->page) {
@@ -763,7 +765,7 @@ void QWebGraphicsItem::dragMoveEvent(QGraphicsSceneDragDropEvent* ev)
 
 /*! \reimp
 */
-void QWebGraphicsItem::dropEvent(QGraphicsSceneDragDropEvent* ev)
+void QGraphicsWebView::dropEvent(QGraphicsSceneDragDropEvent* ev)
 {
 #ifndef QT_NO_DRAGANDDROP
     if (d->interactive && d->page) {
@@ -782,7 +784,7 @@ void QWebGraphicsItem::dropEvent(QGraphicsSceneDragDropEvent* ev)
 #ifndef QT_NO_CONTEXTMENU
 /*! \reimp
 */
-void QWebGraphicsItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* ev)
+void QGraphicsWebView::contextMenuEvent(QGraphicsSceneContextMenuEvent* ev)
 {
     if (d->page) {
         const bool accepted = ev->isAccepted();
@@ -795,7 +797,7 @@ void QWebGraphicsItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* ev)
 #ifndef QT_NO_WHEELEVENT
 /*! \reimp
 */
-void QWebGraphicsItem::wheelEvent(QGraphicsSceneWheelEvent* ev)
+void QGraphicsWebView::wheelEvent(QGraphicsSceneWheelEvent* ev)
 {
     if (d->interactive && d->page) {
         const bool accepted = ev->isAccepted();
@@ -810,7 +812,7 @@ void QWebGraphicsItem::wheelEvent(QGraphicsSceneWheelEvent* ev)
 
 /*! \reimp
 */
-void QWebGraphicsItem::inputMethodEvent(QInputMethodEvent* ev)
+void QGraphicsWebView::inputMethodEvent(QInputMethodEvent* ev)
 {
     if (d->interactive && d->page)
         d->page->event(ev);
@@ -819,4 +821,4 @@ void QWebGraphicsItem::inputMethodEvent(QInputMethodEvent* ev)
         QGraphicsItem::inputMethodEvent(ev);
 }
 
-#include "moc_qwebgraphicsitem.cpp"
+#include "moc_qgraphicswebview.cpp"

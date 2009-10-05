@@ -23,6 +23,10 @@ QT_BEGIN_NAMESPACE
 using namespace Phonon;
 using namespace Phonon::MMF;
 
+/*! \class MMF::BassBoost
+  \internal
+*/
+
 BassBoost::BassBoost(QObject *parent) : AbstractAudioEffect::AbstractAudioEffect(parent,
                                                                                 QList<EffectParameter>())
 {

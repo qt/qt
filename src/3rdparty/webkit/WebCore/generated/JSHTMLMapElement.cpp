@@ -118,7 +118,7 @@ JSObject* JSHTMLMapElementPrototype::self(ExecState* exec, JSGlobalObject* globa
 
 const ClassInfo JSHTMLMapElement::s_info = { "HTMLMapElement", &JSHTMLElement::s_info, &JSHTMLMapElementTable, 0 };
 
-JSHTMLMapElement::JSHTMLMapElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLMapElement> impl)
+JSHTMLMapElement::JSHTMLMapElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLMapElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

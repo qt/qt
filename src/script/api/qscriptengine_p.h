@@ -60,7 +60,10 @@
 #include "qscriptvalue_p.h"
 #include "qscriptstring_p.h"
 
+#include "Debugger.h"
+#include "Lexer.h"
 #include "RefPtr.h"
+#include "SourceProvider.h"
 #include "Structure.h"
 #include "JSGlobalObject.h"
 #include "JSValue.h"
@@ -259,7 +262,7 @@ public:
     QSet<QString> importedExtensions;
     QSet<QString> extensionsBeingImported;
     
-    QSet<QScript::UStringSourceProviderWithFeedback*> loadedScripts;
+    QHash<intptr_t, QScript::UStringSourceProviderWithFeedback*> loadedScripts;
 
 #ifndef QT_NO_QOBJECT
     QHash<QObject*, QScript::QObjectData*> m_qobjectData;
@@ -272,6 +275,74 @@ public:
 
 namespace QScript
 {
+
+/*Helper class. Main purpose is to give debugger feedback about unloading and loading scripts.
+  It keeps pointer to JSGlobalObject assuming that it is always the same - there is no way to update
+  this data. Class is internal and used as an implementation detail in and only in QScriptEngine::evaluate.*/
+class UStringSourceProviderWithFeedback: public JSC::UStringSourceProvider
+{
+public:
+    static PassRefPtr<UStringSourceProviderWithFeedback> create(
+        const JSC::UString& source, const JSC::UString& url,
+        int lineNumber, QScriptEnginePrivate* engine)
+    {
+        return adoptRef(new UStringSourceProviderWithFeedback(source, url, lineNumber, engine));
+    }
+
+    /* Destruction means that there is no more copies of script so create scriptUnload event
+       and unregister script in QScriptEnginePrivate::loadedScripts */
+    virtual ~UStringSourceProviderWithFeedback()
+    {
+        if (m_ptr) {
+            if (JSC::Debugger* debugger = this->debugger())
+                debugger->scriptUnload(asID());
+            m_ptr->loadedScripts.remove(asID());
+        }
+    }
+
+    /* set internal QScriptEnginePrivate pointer to null and create unloadScript event, should be called
+       only if QScriptEnginePrivate is about to be  destroyed.*/
+    void disconnectFromEngine()
+    {
+        if (JSC::Debugger* debugger = this->debugger())
+            debugger->scriptUnload(asID());
+        m_ptr = 0;
+    }
+
+    int columnNumberFromOffset(int offset) const
+    {
+        for (const UChar *c = m_source.data() + offset; c >= m_source.data(); --c) {
+            if (JSC::Lexer::isLineTerminator(*c))
+                return offset - static_cast<int>(c - data());
+        }
+        return offset + 1;
+    }
+
+protected:
+    UStringSourceProviderWithFeedback(const JSC::UString& source, const JSC::UString& url,
+                                      int lineNumber, QScriptEnginePrivate* engine)
+        : UStringSourceProvider(source, url),
+          m_ptr(engine)
+    {
+        if (JSC::Debugger* debugger = this->debugger())
+            debugger->scriptLoad(asID(), source, url, lineNumber);
+        if (m_ptr)
+            m_ptr->loadedScripts.insert(asID(), this);
+    }
+
+    JSC::Debugger* debugger()
+    {
+        //if m_ptr is null it mean that QScriptEnginePrivate was destroyed and scriptUnload was called
+        //else m_ptr is stable and we can use it as normal pointer without hesitation
+        if(!m_ptr)
+            return 0; //we are in ~QScriptEnginePrivate
+        else
+            return m_ptr->originalGlobalObject()->debugger(); //QScriptEnginePrivate is still alive
+    }
+
+    //trace global object and debugger instance
+    QScriptEnginePrivate* m_ptr;
+};
 
 class SaveFrameHelper
 {

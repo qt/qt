@@ -806,7 +806,10 @@ void tst_QFileSystemModel::sort()
     QDir dir(QDir::tempPath());
     dir.mkdir("sortTemp");
     dir.cd("sortTemp");
-    QDirIterator it(dir);
+    QTRY_VERIFY(dir.exists());
+
+    //To be sure we clean the dir if it was there before
+    QDirIterator it(dir.absolutePath(), QDir::NoDotAndDotDot);
     while(it.hasNext())
     {
         it.next();

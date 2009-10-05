@@ -72,7 +72,7 @@ JSObject* JSSVGAnimatedIntegerPrototype::self(ExecState* exec, JSGlobalObject* g
 
 const ClassInfo JSSVGAnimatedInteger::s_info = { "SVGAnimatedInteger", 0, &JSSVGAnimatedIntegerTable, 0 };
 
-JSSVGAnimatedInteger::JSSVGAnimatedInteger(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedInteger> impl, SVGElement* context)
+JSSVGAnimatedInteger::JSSVGAnimatedInteger(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedInteger> impl, SVGElement* context)
     : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {

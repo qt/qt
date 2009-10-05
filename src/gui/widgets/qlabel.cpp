@@ -886,7 +886,18 @@ void QLabel::focusInEvent(QFocusEvent *ev)
 void QLabel::focusOutEvent(QFocusEvent *ev)
 {
     Q_D(QLabel);
-    d->sendControlEvent(ev);
+    if (d->control) {
+        d->sendControlEvent(ev);
+        QTextCursor cursor = d->control->textCursor();
+        Qt::FocusReason reason = ev->reason();
+        if (reason != Qt::ActiveWindowFocusReason
+            && reason != Qt::PopupFocusReason
+            && cursor.hasSelection()) {
+            cursor.clearSelection();
+            d->control->setTextCursor(cursor);
+        }
+    }
+
     QFrame::focusOutEvent(ev);
 }
 
@@ -989,8 +1000,10 @@ void QLabel::paintEvent(QPaintEvent *)
             d->ensureTextLayouted();
 
             QAbstractTextDocumentLayout::PaintContext context;
-
-            if (!isEnabled() && style->styleHint(QStyle::SH_EtchDisabledText, &opt, this)) {
+            if (!isEnabled() && !d->control &&
+                // We cannot support etched for rich text controls because custom
+                // colors and links will override the light palette
+                style->styleHint(QStyle::SH_EtchDisabledText, &opt, this)) {
                 context.palette = opt.palette;
                 context.palette.setColor(QPalette::Text, context.palette.light().color());
                 painter.save();

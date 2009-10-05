@@ -111,7 +111,7 @@ bool JSDOMSelectionPrototype::getOwnPropertyDescriptor(ExecState* exec, const Id
 
 const ClassInfo JSDOMSelection::s_info = { "DOMSelection", 0, &JSDOMSelectionTable, 0 };
 
-JSDOMSelection::JSDOMSelection(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DOMSelection> impl)
+JSDOMSelection::JSDOMSelection(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DOMSelection> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

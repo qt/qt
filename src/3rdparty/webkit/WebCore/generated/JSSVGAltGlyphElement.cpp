@@ -76,7 +76,7 @@ JSObject* JSSVGAltGlyphElementPrototype::self(ExecState* exec, JSGlobalObject* g
 
 const ClassInfo JSSVGAltGlyphElement::s_info = { "SVGAltGlyphElement", &JSSVGTextPositioningElement::s_info, &JSSVGAltGlyphElementTable, 0 };
 
-JSSVGAltGlyphElement::JSSVGAltGlyphElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAltGlyphElement> impl)
+JSSVGAltGlyphElement::JSSVGAltGlyphElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAltGlyphElement> impl)
     : JSSVGTextPositioningElement(structure, globalObject, impl)
 {
 }

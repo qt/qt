@@ -115,7 +115,7 @@ JSObject* JSHTMLParagraphElementPrototype::self(ExecState* exec, JSGlobalObject*
 
 const ClassInfo JSHTMLParagraphElement::s_info = { "HTMLParagraphElement", &JSHTMLElement::s_info, &JSHTMLParagraphElementTable, 0 };
 
-JSHTMLParagraphElement::JSHTMLParagraphElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLParagraphElement> impl)
+JSHTMLParagraphElement::JSHTMLParagraphElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLParagraphElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

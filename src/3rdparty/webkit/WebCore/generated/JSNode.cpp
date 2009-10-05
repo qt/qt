@@ -209,7 +209,7 @@ bool JSNodePrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier
 
 const ClassInfo JSNode::s_info = { "Node", 0, &JSNodeTable, 0 };
 
-JSNode::JSNode(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Node> impl)
+JSNode::JSNode(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Node> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

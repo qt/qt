@@ -69,6 +69,7 @@ public:
     void setSteps(int single, int page);
 
     int minimum, maximum, singleStep, pageStep, value, position, pressValue;
+    float offset_accumulated;
     uint tracking : 1;
     uint blocktracking :1;
     uint pressed : 1;

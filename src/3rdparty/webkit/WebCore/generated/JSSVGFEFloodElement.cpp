@@ -142,7 +142,7 @@ bool JSSVGFEFloodElementPrototype::getOwnPropertyDescriptor(ExecState* exec, con
 
 const ClassInfo JSSVGFEFloodElement::s_info = { "SVGFEFloodElement", &JSSVGElement::s_info, &JSSVGFEFloodElementTable, 0 };
 
-JSSVGFEFloodElement::JSSVGFEFloodElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEFloodElement> impl)
+JSSVGFEFloodElement::JSSVGFEFloodElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEFloodElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

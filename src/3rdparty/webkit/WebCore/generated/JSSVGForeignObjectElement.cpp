@@ -119,7 +119,7 @@ bool JSSVGForeignObjectElementPrototype::getOwnPropertyDescriptor(ExecState* exe
 
 const ClassInfo JSSVGForeignObjectElement::s_info = { "SVGForeignObjectElement", &JSSVGElement::s_info, &JSSVGForeignObjectElementTable, 0 };
 
-JSSVGForeignObjectElement::JSSVGForeignObjectElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGForeignObjectElement> impl)
+JSSVGForeignObjectElement::JSSVGForeignObjectElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGForeignObjectElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

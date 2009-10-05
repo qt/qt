@@ -26,8 +26,9 @@ SOURCES =  ../qvfb.cpp \
            ../../../src/gui/embedded/qwssignalhandler.cpp \
            ../../shared/deviceskin/deviceskin.cpp
 
-TRANSLATIONS=$$[QT_INSTALL_TRANSLATIONS]/qvfb_pl.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/qvfb_ru.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/qvfb_untranslated.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/qvfb_zh_CN.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/qvfb_zh_TW.ts
+TR_DIR = $$PWD/../../../translations
+TRANSLATIONS = \
+    $$TR_DIR/qvfb_pl.ts \
+    $$TR_DIR/qvfb_ru.ts \
+    $$TR_DIR/qvfb_zh_CN.ts \
+    $$TR_DIR/qvfb_zh_TW.ts

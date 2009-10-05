@@ -30,7 +30,7 @@ class HTMLButtonElement;
 class JSHTMLButtonElement : public JSHTMLElement {
     typedef JSHTMLElement Base;
 public:
-    JSHTMLButtonElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<HTMLButtonElement>);
+    JSHTMLButtonElement(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<HTMLButtonElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
@@ -59,7 +59,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSHTMLButtonElementPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSHTMLButtonElementPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

@@ -30,7 +30,7 @@ class CSSCharsetRule;
 class JSCSSCharsetRule : public JSCSSRule {
     typedef JSCSSRule Base;
 public:
-    JSCSSCharsetRule(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CSSCharsetRule>);
+    JSCSSCharsetRule(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CSSCharsetRule>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
@@ -53,7 +53,7 @@ public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
-    JSCSSCharsetRulePrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSCSSCharsetRulePrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Attributes

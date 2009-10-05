@@ -92,7 +92,7 @@ bool JSSVGStopElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const 
 
 const ClassInfo JSSVGStopElement::s_info = { "SVGStopElement", &JSSVGElement::s_info, &JSSVGStopElementTable, 0 };
 
-JSSVGStopElement::JSSVGStopElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGStopElement> impl)
+JSSVGStopElement::JSSVGStopElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGStopElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

@@ -101,7 +101,7 @@ bool JSSVGFESpecularLightingElementPrototype::getOwnPropertyDescriptor(ExecState
 
 const ClassInfo JSSVGFESpecularLightingElement::s_info = { "SVGFESpecularLightingElement", &JSSVGElement::s_info, &JSSVGFESpecularLightingElementTable, 0 };
 
-JSSVGFESpecularLightingElement::JSSVGFESpecularLightingElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFESpecularLightingElement> impl)
+JSSVGFESpecularLightingElement::JSSVGFESpecularLightingElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFESpecularLightingElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

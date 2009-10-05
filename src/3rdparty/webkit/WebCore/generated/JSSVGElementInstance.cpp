@@ -145,7 +145,7 @@ bool JSSVGElementInstancePrototype::getOwnPropertyDescriptor(ExecState* exec, co
 
 const ClassInfo JSSVGElementInstance::s_info = { "SVGElementInstance", 0, &JSSVGElementInstanceTable, 0 };
 
-JSSVGElementInstance::JSSVGElementInstance(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElementInstance> impl)
+JSSVGElementInstance::JSSVGElementInstance(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGElementInstance> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
@@ -241,7 +241,7 @@ JSValue jsSVGElementInstanceOnabort(ExecState* exec, const Identifier&, const Pr
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onabort()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -253,7 +253,7 @@ JSValue jsSVGElementInstanceOnblur(ExecState* exec, const Identifier&, const Pro
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onblur()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -265,7 +265,7 @@ JSValue jsSVGElementInstanceOnchange(ExecState* exec, const Identifier&, const P
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onchange()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -277,7 +277,7 @@ JSValue jsSVGElementInstanceOnclick(ExecState* exec, const Identifier&, const Pr
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onclick()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -289,7 +289,7 @@ JSValue jsSVGElementInstanceOncontextmenu(ExecState* exec, const Identifier&, co
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->oncontextmenu()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -301,7 +301,7 @@ JSValue jsSVGElementInstanceOndblclick(ExecState* exec, const Identifier&, const
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->ondblclick()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -313,7 +313,7 @@ JSValue jsSVGElementInstanceOnerror(ExecState* exec, const Identifier&, const Pr
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onerror()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -325,7 +325,7 @@ JSValue jsSVGElementInstanceOnfocus(ExecState* exec, const Identifier&, const Pr
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onfocus()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -337,7 +337,7 @@ JSValue jsSVGElementInstanceOninput(ExecState* exec, const Identifier&, const Pr
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->oninput()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -349,7 +349,7 @@ JSValue jsSVGElementInstanceOnkeydown(ExecState* exec, const Identifier&, const 
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onkeydown()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -361,7 +361,7 @@ JSValue jsSVGElementInstanceOnkeypress(ExecState* exec, const Identifier&, const
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onkeypress()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -373,7 +373,7 @@ JSValue jsSVGElementInstanceOnkeyup(ExecState* exec, const Identifier&, const Pr
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onkeyup()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -385,7 +385,7 @@ JSValue jsSVGElementInstanceOnload(ExecState* exec, const Identifier&, const Pro
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onload()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -397,7 +397,7 @@ JSValue jsSVGElementInstanceOnmousedown(ExecState* exec, const Identifier&, cons
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onmousedown()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -409,7 +409,7 @@ JSValue jsSVGElementInstanceOnmousemove(ExecState* exec, const Identifier&, cons
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onmousemove()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -421,7 +421,7 @@ JSValue jsSVGElementInstanceOnmouseout(ExecState* exec, const Identifier&, const
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onmouseout()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -433,7 +433,7 @@ JSValue jsSVGElementInstanceOnmouseover(ExecState* exec, const Identifier&, cons
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onmouseover()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -445,7 +445,7 @@ JSValue jsSVGElementInstanceOnmouseup(ExecState* exec, const Identifier&, const 
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onmouseup()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -457,7 +457,7 @@ JSValue jsSVGElementInstanceOnmousewheel(ExecState* exec, const Identifier&, con
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onmousewheel()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -469,7 +469,7 @@ JSValue jsSVGElementInstanceOnbeforecut(ExecState* exec, const Identifier&, cons
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onbeforecut()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -481,7 +481,7 @@ JSValue jsSVGElementInstanceOncut(ExecState* exec, const Identifier&, const Prop
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->oncut()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -493,7 +493,7 @@ JSValue jsSVGElementInstanceOnbeforecopy(ExecState* exec, const Identifier&, con
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onbeforecopy()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -505,7 +505,7 @@ JSValue jsSVGElementInstanceOncopy(ExecState* exec, const Identifier&, const Pro
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->oncopy()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -517,7 +517,7 @@ JSValue jsSVGElementInstanceOnbeforepaste(ExecState* exec, const Identifier&, co
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onbeforepaste()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -529,7 +529,7 @@ JSValue jsSVGElementInstanceOnpaste(ExecState* exec, const Identifier&, const Pr
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onpaste()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -541,7 +541,7 @@ JSValue jsSVGElementInstanceOndragenter(ExecState* exec, const Identifier&, cons
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->ondragenter()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -553,7 +553,7 @@ JSValue jsSVGElementInstanceOndragover(ExecState* exec, const Identifier&, const
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->ondragover()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -565,7 +565,7 @@ JSValue jsSVGElementInstanceOndragleave(ExecState* exec, const Identifier&, cons
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->ondragleave()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -577,7 +577,7 @@ JSValue jsSVGElementInstanceOndrop(ExecState* exec, const Identifier&, const Pro
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->ondrop()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -589,7 +589,7 @@ JSValue jsSVGElementInstanceOndragstart(ExecState* exec, const Identifier&, cons
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->ondragstart()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -601,7 +601,7 @@ JSValue jsSVGElementInstanceOndrag(ExecState* exec, const Identifier&, const Pro
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->ondrag()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -613,7 +613,7 @@ JSValue jsSVGElementInstanceOndragend(ExecState* exec, const Identifier&, const 
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->ondragend()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -625,7 +625,7 @@ JSValue jsSVGElementInstanceOnreset(ExecState* exec, const Identifier&, const Pr
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onreset()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -637,7 +637,7 @@ JSValue jsSVGElementInstanceOnresize(ExecState* exec, const Identifier&, const P
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onresize()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -649,7 +649,7 @@ JSValue jsSVGElementInstanceOnscroll(ExecState* exec, const Identifier&, const P
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onscroll()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -661,7 +661,7 @@ JSValue jsSVGElementInstanceOnsearch(ExecState* exec, const Identifier&, const P
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onsearch()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -673,7 +673,7 @@ JSValue jsSVGElementInstanceOnselect(ExecState* exec, const Identifier&, const P
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onselect()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -685,7 +685,7 @@ JSValue jsSVGElementInstanceOnselectstart(ExecState* exec, const Identifier&, co
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onselectstart()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -697,7 +697,7 @@ JSValue jsSVGElementInstanceOnsubmit(ExecState* exec, const Identifier&, const P
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onsubmit()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();
@@ -709,7 +709,7 @@ JSValue jsSVGElementInstanceOnunload(ExecState* exec, const Identifier&, const P
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(castedThis->impl());
     if (EventListener* listener = imp->onunload()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();

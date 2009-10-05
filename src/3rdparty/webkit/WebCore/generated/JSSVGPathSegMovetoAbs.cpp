@@ -73,7 +73,7 @@ JSObject* JSSVGPathSegMovetoAbsPrototype::self(ExecState* exec, JSGlobalObject* 
 
 const ClassInfo JSSVGPathSegMovetoAbs::s_info = { "SVGPathSegMovetoAbs", &JSSVGPathSeg::s_info, &JSSVGPathSegMovetoAbsTable, 0 };
 
-JSSVGPathSegMovetoAbs::JSSVGPathSegMovetoAbs(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegMovetoAbs> impl, SVGElement* context)
+JSSVGPathSegMovetoAbs::JSSVGPathSegMovetoAbs(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegMovetoAbs> impl, SVGElement* context)
     : JSSVGPathSeg(structure, globalObject, impl, context)
 {
 }

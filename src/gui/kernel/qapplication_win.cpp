@@ -1967,12 +1967,21 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                 // where it got it from; it would simply get a 0 value as the old focus widget.
 #ifdef Q_WS_WINCE
                 {
-                    if (widget->windowState() & Qt::WindowMinimized) {
-                        if (widget->windowState() & Qt::WindowMaximized)
-                            widget->showMaximized();
-                        else
-                            widget->show();
+#ifdef Q_WS_WINCE_WM
+                    // On Windows mobile we do not receive WM_SYSCOMMAND / SC_MINIMIZE messages.
+                    // Thus we have to unset the minimized state explicitly. We must do this for all
+                    // top-level widgets, because we get the HWND of a random widget here.
+                    foreach (QWidget* tlw, QApplication::topLevelWidgets()) {
+                        if (tlw->isMinimized())
+                            tlw->setWindowState(tlw->windowState() & ~Qt::WindowMinimized);
                     }
+#else
+                    // On Windows CE we do not receive WM_SYSCOMMAND / SC_MINIMIZE messages.
+                    // Thus we have to unset the minimized state explicitly.
+                    if (widget->windowState() & Qt::WindowMinimized)
+                        widget->setWindowState(widget->windowState() & ~Qt::WindowMinimized);
+#endif  // Q_WS_WINCE_WM
+
 #else
                 if (!(widget->windowState() & Qt::WindowMinimized)) {
 #endif

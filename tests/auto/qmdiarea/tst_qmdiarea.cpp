@@ -468,6 +468,7 @@ void tst_QMdiArea::subWindowActivated2()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&mdiArea);
 #endif
+    QTest::qWait(100);
 
     QTRY_COMPARE(spy.count(), 5);
     QCOMPARE(mdiArea.activeSubWindow(), mdiArea.subWindowList().back());
@@ -1775,9 +1776,9 @@ void tst_QMdiArea::tileSubWindows()
 #endif
     qApp->processEvents();
 
-    QVERIFY(workspace.size() != QSize(150, 150));
-    QVERIFY(!vBar->isVisible());
-    QVERIFY(!hBar->isVisible());
+    QTRY_VERIFY(workspace.size() != QSize(150, 150));
+    QTRY_VERIFY(!vBar->isVisible());
+    QTRY_VERIFY(!hBar->isVisible());
 }
 
 void tst_QMdiArea::cascadeAndTileSubWindows()
@@ -1852,6 +1853,7 @@ void tst_QMdiArea::resizeMaximizedChildWindows()
 #if defined(Q_WS_X11)
     qt_x11_wait_for_window_manager(&workspace);
 #endif
+    QTest::qWait(100);
     workspace.resize(startSize, startSize);
     workspace.setOption(QMdiArea::DontMaximizeSubWindowOnActivation);
     QSize workspaceSize = workspace.size();
@@ -1864,6 +1866,7 @@ void tst_QMdiArea::resizeMaximizedChildWindows()
         windows.append(window);
         qApp->processEvents();
         window->showMaximized();
+        QTest::qWait(100);
         QVERIFY(window->isMaximized());
         QSize windowSize = window->size();
         QVERIFY(windowSize.isValid());
@@ -1873,7 +1876,7 @@ void tst_QMdiArea::resizeMaximizedChildWindows()
         QTest::qWait(100);
         qApp->processEvents();
         QTRY_COMPARE(workspace.size(), workspaceSize + QSize(increment, increment));
-        QCOMPARE(window->size(), windowSize + QSize(increment, increment));
+        QTRY_COMPARE(window->size(), windowSize + QSize(increment, increment));
         workspaceSize = workspace.size();
     }
 

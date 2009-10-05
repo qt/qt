@@ -33,7 +33,7 @@ class FileList;
 class JSFileList : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSFileList(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<FileList>);
+    JSFileList(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<FileList>);
     virtual ~JSFileList();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -71,7 +71,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSFileListPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSFileListPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

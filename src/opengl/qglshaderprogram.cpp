@@ -349,7 +349,7 @@ QGLShader::QGLShader(QGLShader::ShaderType type, const QGLContext *context, QObj
         context = QGLContext::currentContext();
     d = new QGLShaderPrivate(context, type);
 #ifndef QT_NO_DEBUG
-    if (context && !qgl_share_reg()->checkSharing(context, QGLContext::currentContext())) {
+    if (context && !QGLContext::areSharing(context, QGLContext::currentContext())) {
         qWarning("QGLShader::QGLShader: \'context\' must be the currect context or sharing with it.");
         return;
     }
@@ -374,7 +374,7 @@ QGLShader::QGLShader
         context = QGLContext::currentContext();
     d = new QGLShaderPrivate(context, type);
 #ifndef QT_NO_DEBUG
-    if (context && !qgl_share_reg()->checkSharing(context, QGLContext::currentContext())) {
+    if (context && !QGLContext::areSharing(context, QGLContext::currentContext())) {
         qWarning("QGLShader::QGLShader: \'context\' must be currect context or sharing with it.");
         return;
     }
@@ -806,8 +806,8 @@ bool QGLShaderProgram::addShader(QGLShader *shader)
     if (d->shaders.contains(shader))
         return true;    // Already added to this shader program.
     if (d->programGuard.id() && shader) {
-        if (!qgl_share_reg()->checkSharing(shader->d->shaderGuard.context(),
-                                           d->programGuard.context())) {
+        if (!QGLContext::areSharing(shader->d->shaderGuard.context(),
+                                    d->programGuard.context())) {
             qWarning("QGLShaderProgram::addShader: Program and shader are not associated with same context.");
             return false;
         }

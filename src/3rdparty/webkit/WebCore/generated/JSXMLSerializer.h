@@ -33,7 +33,7 @@ class XMLSerializer;
 class JSXMLSerializer : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSXMLSerializer(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<XMLSerializer>);
+    JSXMLSerializer(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<XMLSerializer>);
     virtual ~JSXMLSerializer();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -68,7 +68,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSXMLSerializerPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSXMLSerializerPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

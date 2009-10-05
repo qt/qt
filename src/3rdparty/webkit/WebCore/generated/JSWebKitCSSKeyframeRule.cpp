@@ -119,7 +119,7 @@ JSObject* JSWebKitCSSKeyframeRulePrototype::self(ExecState* exec, JSGlobalObject
 
 const ClassInfo JSWebKitCSSKeyframeRule::s_info = { "WebKitCSSKeyframeRule", &JSCSSRule::s_info, &JSWebKitCSSKeyframeRuleTable, 0 };
 
-JSWebKitCSSKeyframeRule::JSWebKitCSSKeyframeRule(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebKitCSSKeyframeRule> impl)
+JSWebKitCSSKeyframeRule::JSWebKitCSSKeyframeRule(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebKitCSSKeyframeRule> impl)
     : JSCSSRule(structure, globalObject, impl)
 {
 }

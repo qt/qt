@@ -56,7 +56,7 @@ JSObject* JSSVGAnimateElementPrototype::self(ExecState* exec, JSGlobalObject* gl
 
 const ClassInfo JSSVGAnimateElement::s_info = { "SVGAnimateElement", &JSSVGAnimationElement::s_info, 0, 0 };
 
-JSSVGAnimateElement::JSSVGAnimateElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimateElement> impl)
+JSSVGAnimateElement::JSSVGAnimateElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimateElement> impl)
     : JSSVGAnimationElement(structure, globalObject, impl)
 {
 }

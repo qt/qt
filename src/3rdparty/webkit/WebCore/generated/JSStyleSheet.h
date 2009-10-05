@@ -33,7 +33,7 @@ class StyleSheet;
 class JSStyleSheet : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSStyleSheet(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<StyleSheet>);
+    JSStyleSheet(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<StyleSheet>);
     virtual ~JSStyleSheet();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -69,7 +69,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
-    JSStyleSheetPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSStyleSheetPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Attributes

@@ -42,7 +42,7 @@
 #ifndef QS60MAINAPPUI_H
 #define QS60MAINAPPUI_H
 
-#include <qglobal.h>
+#include <QtCore/qglobal.h>
 
 #ifdef Q_WS_S60
 

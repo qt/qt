@@ -635,8 +635,18 @@ bool QS60StylePrivate::isToolBarBackground()
 QPoint qt_s60_fill_background_offset(const QWidget *targetWidget)
 {
     CCoeControl *control = targetWidget->effectiveWinId();
-    TPoint globalPos = control ? control->PositionRelativeToScreen() : TPoint(0,0);
-    return QPoint(globalPos.iX, globalPos.iY);
+    TPoint pos(0,0);
+    if (control) {
+        // FIXME properly: S60 3.1 has a bug that CCoeControl::PositionRelativeToScreen sometimes
+        // freezes the device, possibly in cases where we run out of memory.
+        // We use CCoeControl::Position instead in S60 3.1, which returns same values
+        // in most cases.
+        if (QSysInfo::s60Version() == QSysInfo::SV_S60_3_1)
+            pos = control->Position();
+        else
+            pos = control->PositionRelativeToScreen();
+    }
+    return QPoint(pos.iX, pos.iY);
 }
 
 QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
@@ -1137,11 +1147,11 @@ QPixmap QS60StylePrivate::part(QS60StyleEnums::SkinParts part,
     const QSize &size, SkinElementFlags flags)
 {
     QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
-    
+
     QPixmap result = (flags & SF_ColorSkinned)?
           QS60StyleModeSpecifics::colorSkinnedGraphics(part, size, flags)
         : QS60StyleModeSpecifics::skinnedGraphics(part, size, flags);
-    
+
     lock.relock();
 
     if (flags & SF_StateDisabled && !QS60StyleModeSpecifics::disabledPartGraphic(part)) {

@@ -68,7 +68,7 @@ bool JSSQLTransactionPrototype::getOwnPropertyDescriptor(ExecState* exec, const 
 
 const ClassInfo JSSQLTransaction::s_info = { "SQLTransaction", 0, 0, 0 };
 
-JSSQLTransaction::JSSQLTransaction(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SQLTransaction> impl)
+JSSQLTransaction::JSSQLTransaction(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SQLTransaction> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

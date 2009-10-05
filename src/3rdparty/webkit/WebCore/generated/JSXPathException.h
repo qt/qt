@@ -35,7 +35,7 @@ class XPathException;
 class JSXPathException : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSXPathException(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<XPathException>);
+    JSXPathException(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<XPathException>);
     virtual ~JSXPathException();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -70,7 +70,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSXPathExceptionPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSXPathExceptionPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

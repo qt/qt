@@ -42,13 +42,8 @@
 #ifndef __BOAT__H__
 #define __BOAT__H__
 
-//Qt
-#include <QtCore/QObject>
-#include <QtGui/QKeyEvent>
+#include "pixmapitem.h"
 
-#include <QtGui/QGraphicsWidget>
-
-class PixmapItem;
 class Bomb;
 QT_BEGIN_NAMESPACE
 class QVariantAnimation;
@@ -56,7 +51,7 @@ class QAbstractAnimation;
 class QStateMachine;
 QT_END_NAMESPACE
 
-class Boat : public QGraphicsWidget
+class Boat : public PixmapItem
 {
 Q_OBJECT
 public:
@@ -66,7 +61,7 @@ public:
        Right
     };
     enum { Type = UserType + 2 };
-    Boat(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
+    Boat();
     void destroy();
     void run();
     void stop();
@@ -95,7 +90,6 @@ private:
     QVariantAnimation *movementAnimation;
     QAbstractAnimation *destroyAnimation;
     QStateMachine *machine;
-    PixmapItem *pixmapItem;
 };
 
 #endif //__BOAT__H__

@@ -72,7 +72,7 @@ JSObject* JSSVGPathSegLinetoHorizontalAbsPrototype::self(ExecState* exec, JSGlob
 
 const ClassInfo JSSVGPathSegLinetoHorizontalAbs::s_info = { "SVGPathSegLinetoHorizontalAbs", &JSSVGPathSeg::s_info, &JSSVGPathSegLinetoHorizontalAbsTable, 0 };
 
-JSSVGPathSegLinetoHorizontalAbs::JSSVGPathSegLinetoHorizontalAbs(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegLinetoHorizontalAbs> impl, SVGElement* context)
+JSSVGPathSegLinetoHorizontalAbs::JSSVGPathSegLinetoHorizontalAbs(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegLinetoHorizontalAbs> impl, SVGElement* context)
     : JSSVGPathSeg(structure, globalObject, impl, context)
 {
 }

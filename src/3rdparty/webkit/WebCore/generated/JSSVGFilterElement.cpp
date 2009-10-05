@@ -109,7 +109,7 @@ bool JSSVGFilterElementPrototype::getOwnPropertyDescriptor(ExecState* exec, cons
 
 const ClassInfo JSSVGFilterElement::s_info = { "SVGFilterElement", &JSSVGElement::s_info, &JSSVGFilterElementTable, 0 };
 
-JSSVGFilterElement::JSSVGFilterElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFilterElement> impl)
+JSSVGFilterElement::JSSVGFilterElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFilterElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

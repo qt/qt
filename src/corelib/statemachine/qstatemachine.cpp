@@ -2206,7 +2206,7 @@ QSignalEventGenerator::QSignalEventGenerator(QStateMachine *parent)
 */
 QStateMachine::SignalEvent::SignalEvent(QObject *sender, int signalIndex,
                                         const QList<QVariant> &arguments)
-    : QEvent(QEvent::Signal), m_sender(sender),
+    : QEvent(QEvent::StateMachineSignal), m_sender(sender),
       m_signalIndex(signalIndex), m_arguments(arguments)
 {
 }
@@ -2269,7 +2269,7 @@ QStateMachine::SignalEvent::~SignalEvent()
   The WrappedEvent object takes ownership of \a event.
 */
 QStateMachine::WrappedEvent::WrappedEvent(QObject *object, QEvent *event)
-    : QEvent(QEvent::Wrapped), m_object(object), m_event(event)
+    : QEvent(QEvent::StateMachineWrapped), m_object(object), m_event(event)
 {
 }
 

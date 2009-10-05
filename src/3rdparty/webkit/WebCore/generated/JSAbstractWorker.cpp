@@ -137,7 +137,7 @@ bool JSAbstractWorkerPrototype::getOwnPropertyDescriptor(ExecState* exec, const 
 
 const ClassInfo JSAbstractWorker::s_info = { "AbstractWorker", 0, &JSAbstractWorkerTable, 0 };
 
-JSAbstractWorker::JSAbstractWorker(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<AbstractWorker> impl)
+JSAbstractWorker::JSAbstractWorker(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<AbstractWorker> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
@@ -176,7 +176,7 @@ JSValue jsAbstractWorkerOnerror(ExecState* exec, const Identifier&, const Proper
     UNUSED_PARAM(exec);
     AbstractWorker* imp = static_cast<AbstractWorker*>(castedThis->impl());
     if (EventListener* listener = imp->onerror()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
             return jsFunction;
     }
     return jsNull();

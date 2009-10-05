@@ -118,7 +118,7 @@ JSObject* JSProcessingInstructionPrototype::self(ExecState* exec, JSGlobalObject
 
 const ClassInfo JSProcessingInstruction::s_info = { "ProcessingInstruction", &JSNode::s_info, &JSProcessingInstructionTable, 0 };
 
-JSProcessingInstruction::JSProcessingInstruction(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<ProcessingInstruction> impl)
+JSProcessingInstruction::JSProcessingInstruction(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<ProcessingInstruction> impl)
     : JSNode(structure, globalObject, impl)
 {
 }

@@ -73,7 +73,7 @@ JSObject* JSSVGAnimatedTransformListPrototype::self(ExecState* exec, JSGlobalObj
 
 const ClassInfo JSSVGAnimatedTransformList::s_info = { "SVGAnimatedTransformList", 0, &JSSVGAnimatedTransformListTable, 0 };
 
-JSSVGAnimatedTransformList::JSSVGAnimatedTransformList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedTransformList> impl, SVGElement* context)
+JSSVGAnimatedTransformList::JSSVGAnimatedTransformList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedTransformList> impl, SVGElement* context)
     : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {

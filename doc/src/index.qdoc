@@ -79,15 +79,15 @@
         </td>
         </tr>
         <tr>
-        <th class="largeheader">
+        <th class="titleheader">
             Fundamentals</th>
-        <th class="largeheader">
+        <th class="titleheader">
             User Interface Design</th>
-        <th class="largeheader">
+        <th class="titleheader">
             Technologies</th>
         </tr>
         <tr>
-        <td valign="top" class="largeindex">
+        <td valign="top">
         <ul>
             <li><a href="object.html">The Qt Object Model</a></li>
             <li><a href="eventsandfilters.html">Event System</a></li>
@@ -96,7 +96,7 @@
             <li><a href="platform-specific.html">Platform Specifics</a></li>
         </ul>
         </td>
-        <td valign="top" class="largeindex">
+        <td valign="top">
         <ul>
             <li><a href="widgets-and-layouts.html">Widgets and Layouts</a></li>
             <li><a href="application-windows.html">Application Windows</a></li>
@@ -105,7 +105,7 @@
             <li><a href="webintegration.html">Integrating Web Content</a></li>
         </ul>
         </td>
-        <td valign="top" class="largeindex">
+        <td valign="top">
         <ul>
             <li><a href="io.html">Input/Output</a> and <a href="resources.html">Resources</a></li>
             <li><a href="network-programming.html">Network Programming</a></li>

@@ -31,7 +31,7 @@ class HTMLObjectElement;
 class JSHTMLObjectElement : public JSHTMLElement {
     typedef JSHTMLElement Base;
 public:
-    JSHTMLObjectElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<HTMLObjectElement>);
+    JSHTMLObjectElement(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<HTMLObjectElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
@@ -68,7 +68,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSHTMLObjectElementPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSHTMLObjectElementPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

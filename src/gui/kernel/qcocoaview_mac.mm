@@ -789,18 +789,22 @@ extern "C" {
     const EventRef carbonEvent = (EventRef)[theEvent eventRef];
     const UInt32 carbonEventKind = carbonEvent ? ::GetEventKind(carbonEvent) : 0;
     if (carbonEventKind == kEventMouseScroll) {
-        // The mouse device containts pixel scroll
-        // wheel support (Mighty Mouse, Trackpad)
-        deltaX = (int)[theEvent deviceDeltaX] * 120;
-        deltaY = (int)[theEvent deviceDeltaY] * 120;
-        deltaZ = (int)[theEvent deviceDeltaZ] * 120;
+        // The mouse device containts pixel scroll wheel support (Mighty Mouse, Trackpad).
+        // Since deviceDelta is delivered as pixels rather than degrees, we need to
+        // convert from pixels to degrees in a sensible manner.
+        // It looks like four degrees per pixel behaves most native.
+        // Qt expects the unit for delta to be 1/8 of a degree:
+        const int scrollFactor = 4 * 8;
+        deltaX = (int)[theEvent deviceDeltaX] * scrollFactor;
+        deltaY = (int)[theEvent deviceDeltaY] * scrollFactor;
+        deltaZ = (int)[theEvent deviceDeltaZ] * scrollFactor;
     } else { // carbonEventKind == kEventMouseWheelMoved
         // Mouse wheel deltas seem to tick in at increments of 0.1.
         // Qt widgets expect the delta to be a multiple of 120.
         const int scrollFactor = 10 * 120;
-        deltaX = [theEvent deltaX] * scrollFactor * qMax(0.6, 1.1 - qAbs([theEvent deltaX]));
-        deltaY = [theEvent deltaY] * scrollFactor * qMax(0.6, 1.1 - qAbs([theEvent deltaY]));
-        deltaZ = [theEvent deltaZ] * scrollFactor * qMax(0.6, 1.1 - qAbs([theEvent deltaZ]));
+        deltaX = [theEvent deltaX] * scrollFactor;
+        deltaY = [theEvent deltaY] * scrollFactor;
+        deltaZ = [theEvent deltaZ] * scrollFactor;
     }
 
     if (deltaX != 0) {

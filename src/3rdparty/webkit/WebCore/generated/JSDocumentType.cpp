@@ -122,7 +122,7 @@ JSObject* JSDocumentTypePrototype::self(ExecState* exec, JSGlobalObject* globalO
 
 const ClassInfo JSDocumentType::s_info = { "DocumentType", &JSNode::s_info, &JSDocumentTypeTable, 0 };
 
-JSDocumentType::JSDocumentType(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DocumentType> impl)
+JSDocumentType::JSDocumentType(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DocumentType> impl)
     : JSNode(structure, globalObject, impl)
 {
 }

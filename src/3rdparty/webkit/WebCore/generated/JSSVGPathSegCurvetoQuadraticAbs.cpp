@@ -75,7 +75,7 @@ JSObject* JSSVGPathSegCurvetoQuadraticAbsPrototype::self(ExecState* exec, JSGlob
 
 const ClassInfo JSSVGPathSegCurvetoQuadraticAbs::s_info = { "SVGPathSegCurvetoQuadraticAbs", &JSSVGPathSeg::s_info, &JSSVGPathSegCurvetoQuadraticAbsTable, 0 };
 
-JSSVGPathSegCurvetoQuadraticAbs::JSSVGPathSegCurvetoQuadraticAbs(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegCurvetoQuadraticAbs> impl, SVGElement* context)
+JSSVGPathSegCurvetoQuadraticAbs::JSSVGPathSegCurvetoQuadraticAbs(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegCurvetoQuadraticAbs> impl, SVGElement* context)
     : JSSVGPathSeg(structure, globalObject, impl, context)
 {
 }

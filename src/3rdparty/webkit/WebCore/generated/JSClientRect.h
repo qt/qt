@@ -33,7 +33,7 @@ class ClientRect;
 class JSClientRect : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSClientRect(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<ClientRect>);
+    JSClientRect(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<ClientRect>);
     virtual ~JSClientRect();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -62,7 +62,7 @@ public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
-    JSClientRectPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSClientRectPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Attributes

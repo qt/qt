@@ -1357,8 +1357,9 @@ void tst_QGraphicsScene::removeItem()
     QVERIFY(!hoverItem->isHovered);
 
     {
-        QTest::mouseMove(view.viewport(), view.mapFromScene(hoverItem->scenePos()), Qt::NoButton);
         QTest::qWait(250);
+        QTest::mouseMove(view.viewport(), view.mapFromScene(hoverItem->scenePos()), Qt::NoButton);
+        QTest::qWait(10);
         QMouseEvent moveEvent(QEvent::MouseMove, view.mapFromScene(hoverItem->scenePos()), Qt::NoButton, 0, 0);
         QApplication::sendEvent(view.viewport(), &moveEvent);
     }
@@ -1632,6 +1633,7 @@ void tst_QGraphicsScene::hoverEvents_siblings()
 #endif
     qApp->setActiveWindow(&view);
     view.activateWindow();
+    QTest::qWait(70);
 
     QCursor::setPos(view.mapToGlobal(QPoint(-5, -5)));
 
@@ -1655,7 +1657,7 @@ void tst_QGraphicsScene::hoverEvents_siblings()
             qApp->processEvents(); // this posts updates from the scene to the view
             qApp->processEvents(); // which trigger a repaint here
 
-            QVERIFY(items.at(i)->isHovered);
+            QTRY_VERIFY(items.at(i)->isHovered);
             if (j && i > 0)
                 QVERIFY(!items.at(i - 1)->isHovered);
             if (!j && i < 14)

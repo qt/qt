@@ -142,7 +142,7 @@ bool JSSVGColorPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identi
 
 const ClassInfo JSSVGColor::s_info = { "SVGColor", &JSCSSValue::s_info, &JSSVGColorTable, 0 };
 
-JSSVGColor::JSSVGColor(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGColor> impl)
+JSSVGColor::JSSVGColor(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGColor> impl)
     : JSCSSValue(structure, globalObject, impl)
 {
 }

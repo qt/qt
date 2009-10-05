@@ -269,8 +269,8 @@ public:
         CocoaRequestModal = 190,                // Internal for requesting an application modal Cocoa Window
         MacGLClearDrawable = 191,               // Internal Cocoa, the window has changed, so we must clear
 
-        Signal = 192,
-        Wrapped = 193,
+        StateMachineSignal = 192,
+        StateMachineWrapped = 193,
 
         TouchBegin = 194,
         TouchUpdate = 195,
@@ -324,7 +324,6 @@ private:
     friend class QGraphicsView;
     friend class QGraphicsViewPrivate;
     friend class QGraphicsScenePrivate;
-    friend class QGraphicsWidget;
 };
 
 class Q_CORE_EXPORT QTimerEvent : public QEvent

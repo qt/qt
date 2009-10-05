@@ -33,7 +33,7 @@ class CanvasByteArray;
 class JSCanvasByteArray : public JSCanvasArray {
     typedef JSCanvasArray Base;
 public:
-    JSCanvasByteArray(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CanvasByteArray>);
+    JSCanvasByteArray(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CanvasByteArray>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
@@ -66,7 +66,7 @@ public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
-    JSCanvasByteArrayPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSCanvasByteArrayPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 

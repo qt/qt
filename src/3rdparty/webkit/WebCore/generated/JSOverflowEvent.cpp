@@ -134,7 +134,7 @@ bool JSOverflowEventPrototype::getOwnPropertyDescriptor(ExecState* exec, const I
 
 const ClassInfo JSOverflowEvent::s_info = { "OverflowEvent", &JSEvent::s_info, &JSOverflowEventTable, 0 };
 
-JSOverflowEvent::JSOverflowEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<OverflowEvent> impl)
+JSOverflowEvent::JSOverflowEvent(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<OverflowEvent> impl)
     : JSEvent(structure, globalObject, impl)
 {
 }

@@ -59,6 +59,8 @@
 # include <private/qt_mac_p.h>
 #endif
 
+#include <qdatetime.h>
+
 #include <stdlib.h> // malloc
 
 #include "qpixmap.h"
@@ -1391,11 +1393,39 @@ bool operator!=(const QGLFormat& a, const QGLFormat& b)
 /*****************************************************************************
   QGLContext implementation
  *****************************************************************************/
+
+QGLContextGroup::~QGLContextGroup()
+{
+    // Clear any remaining QGLSharedResourceGuard objects on the group.
+    QGLSharedResourceGuard *guard = m_guards;
+    while (guard != 0) {
+        guard->m_group = 0;
+        guard->m_id = 0;
+        guard = guard->m_next;
+    }
+}
+
+void QGLContextGroup::addGuard(QGLSharedResourceGuard *guard)
+{
+    if (m_guards)
+        m_guards->m_prev = guard;
+    guard->m_next = m_guards;
+    guard->m_prev = 0;
+    m_guards = guard;
+}
+
+void QGLContextGroup::removeGuard(QGLSharedResourceGuard *guard)
+{
+    if (guard->m_next)
+        guard->m_next->m_prev = guard->m_prev;
+    if (guard->m_prev)
+        guard->m_prev->m_next = guard->m_next;
+    else
+        m_guards = guard->m_next;
+}
+
 QGLContextPrivate::~QGLContextPrivate()
 {
-    if (!reference->deref())
-        delete reference;
-
     if (!group->m_refs.deref()) {
         Q_ASSERT(group->context() == q_ptr);
         delete group;
@@ -1718,7 +1748,7 @@ Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg()
     the top left corner. Inverting the texture implies a deep copy
     prior to upload.
 
-    \value MipmapBindOption Specifies that bindTexture should try
+    \value MipmapBindOption Specifies that bindTexture() should try
     to generate mipmaps.  If the GL implementation supports the \c
     GL_SGIS_generate_mipmap extension, mipmaps will be automatically
     generated for the texture. Mipmap generation is only supported for
@@ -1803,6 +1833,8 @@ QGLContext::~QGLContext()
     // remove any textures cached in this context
     QGLTextureCache::instance()->removeContextTextures(this);
     QGLTextureCache::deleteIfEmpty(); // ### thread safety
+
+    d_ptr->group->cleanupResources(this);
 
     QGLSignalProxy::instance()->emitAboutToDestroyContext(this);
     reset();
@@ -2077,6 +2109,8 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 #ifdef QGL_BIND_TEXTURE_DEBUG
     printf("QGLContextPrivate::bindTexture(), imageSize=(%d,%d), internalFormat =0x%x, options=%x\n",
            image.width(), image.height(), internalFormat, int(options));
+    QTime time;
+    time.start();
 #endif
 
     // Scale the pixmap if needed. GL textures needs to have the
@@ -2092,7 +2126,8 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     {
         img = img.scaled(tx_w, tx_h);
 #ifdef QGL_BIND_TEXTURE_DEBUG
-        printf(" - upscaled to %dx%d\n", tx_w, tx_h);
+        printf(" - upscaled to %dx%d (%d ms)\n", tx_w, tx_h, time.elapsed());
+
 #endif
     }
 
@@ -2112,7 +2147,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
         && options & QGLContext::MipmapBindOption)
     {
 #ifdef QGL_BIND_TEXTURE_DEBUG
-        printf(" - generating mipmaps\n");
+        printf(" - generating mipmaps (%d ms)\n", time.elapsed());
 #endif
 #if !defined(QT_OPENGL_ES_2)
         glHint(GL_GENERATE_MIPMAP_HINT_SGIS, GL_NICEST);
@@ -2148,7 +2183,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
         if (premul) {
             img = img.convertToFormat(target_format = QImage::Format_ARGB32_Premultiplied);
 #ifdef QGL_BIND_TEXTURE_DEBUG
-            printf(" - converting ARGB32 -> ARGB32_Premultiplied \n");
+            printf(" - converting ARGB32 -> ARGB32_Premultiplied (%d ms) \n", time.elapsed());
 #endif
         }
         break;
@@ -2156,7 +2191,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
         if (!premul) {
             img = img.convertToFormat(target_format = QImage::Format_ARGB32);
 #ifdef QGL_BIND_TEXTURE_DEBUG
-            printf(" - converting ARGB32_Premultiplied -> ARGB32\n");
+            printf(" - converting ARGB32_Premultiplied -> ARGB32 (%d ms)\n", time.elapsed());
 #endif
         }
         break;
@@ -2173,19 +2208,19 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
                                       ? QImage::Format_ARGB32_Premultiplied
                                       : QImage::Format_ARGB32);
 #ifdef QGL_BIND_TEXTURE_DEBUG
-            printf(" - converting to 32-bit alpha format\n");
+            printf(" - converting to 32-bit alpha format (%d ms)\n", time.elapsed());
 #endif
         } else {
             img = img.convertToFormat(QImage::Format_RGB32);
 #ifdef QGL_BIND_TEXTURE_DEBUG
-            printf(" - converting to 32-bit\n");
+            printf(" - converting to 32-bit (%d ms)\n", time.elapsed());
 #endif
         }
     }
 
     if (options & QGLContext::InvertedYBindOption) {
 #ifdef QGL_BIND_TEXTURE_DEBUG
-            printf(" - flipping bits over y\n");
+            printf(" - flipping bits over y (%d ms)\n", time.elapsed());
 #endif
         int ipl = img.bytesPerLine() / 4;
         int h = img.height();
@@ -2199,7 +2234,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 
     if (externalFormat == GL_RGBA) {
 #ifdef QGL_BIND_TEXTURE_DEBUG
-            printf(" - doing byte swapping\n");
+            printf(" - doing byte swapping (%d ms)\n", time.elapsed());
 #endif
         // The only case where we end up with a depth different from
         // 32 in the switch above is for the RGB16 case, where we set
@@ -2242,6 +2277,13 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     }
 #endif
 
+#ifdef QGL_BIND_TEXTURE_DEBUG
+    static int totalUploadTime = 0;
+    totalUploadTime += time.elapsed();
+    printf(" - upload done in (%d ms) time=%d\n", time.elapsed(), totalUploadTime);
+#endif
+
+
     // this assumes the size of a texture is always smaller than the max cache size
     int cost = img.width()*img.height()*4/1024;
     QGLTexture *texture = new QGLTexture(q, tx_id, target, options);
@@ -2254,7 +2296,7 @@ QGLTexture *QGLContextPrivate::textureCacheLookup(const qint64 key, GLenum targe
     Q_Q(QGLContext);
     QGLTexture *texture = QGLTextureCache::instance()->getTexture(key);
     if (texture && texture->target == target
-        && (texture->context == q || qgl_share_reg()->checkSharing(q, texture->context)))
+        && (texture->context == q || QGLContext::areSharing(q, texture->context)))
     {
         return texture;
     }
@@ -2361,6 +2403,8 @@ GLuint QGLContext::bindTexture(const QImage &image, GLenum target, GLint format)
 }
 
 /*!
+    \since 4.6
+
     Generates and binds a 2D GL texture to the current context, based
     on \a image. The generated texture id is returned and can be used
     in later \c glBindTexture() calls.
@@ -2422,6 +2466,7 @@ GLuint QGLContext::bindTexture(const QPixmap &pixmap, GLenum target, GLint forma
 
 /*!
   \overload
+  \since 4.6
 
   Generates and binds a 2D GL texture to the current context, based
   on \a pixmap.
@@ -2753,6 +2798,20 @@ void QGLContext::setDevice(QPaintDevice *pDev)
     sharing might not be supported between contexts with different
     formats.
 */
+
+/*!
+    Returns true if \a context1 and \a context2 are sharing their
+    GL resources such as textures, shader programs, etc;
+    otherwise returns false.
+
+    \since 4.6
+*/
+bool QGLContext::areSharing(const QGLContext *context1, const QGLContext *context2)
+{
+    if (!context1 || !context2)
+        return false;
+    return context1->d_ptr->group == context2->d_ptr->group;
+}
 
 /*!
     \fn bool QGLContext::deviceIsPixmap() const
@@ -4489,6 +4548,7 @@ GLuint QGLWidget::bindTexture(const QImage &image, GLenum target, GLint format)
 
 /*!
   \overload
+  \since 4.6
 
   The binding \a options are a set of options used to decide how to
   bind the texture to the context.
@@ -4530,6 +4590,7 @@ GLuint QGLWidget::bindTexture(const QPixmap &pixmap, GLenum target, GLint format
 
 /*!
   \overload
+  \since 4.6
 
   Generates and binds a 2D GL texture to the current context, based
   on \a pixmap. The generated texture id is returned and can be used in
@@ -4835,67 +4896,57 @@ Q_OPENGL_EXPORT const QString qt_gl_library_name()
 }
 #endif
 
-bool QGLShareRegister::checkSharing(const QGLContext *context1, const QGLContext *context2) {
-    bool sharing = (context1 && context2 && context1->d_ptr->group == context2->d_ptr->group);
-    return sharing;
-}
-
 void QGLShareRegister::addShare(const QGLContext *context, const QGLContext *share) {
     Q_ASSERT(context && share);
     if (context->d_ptr->group == share->d_ptr->group)
         return;
 
     // Make sure 'context' is not already shared with another group of contexts.
-    Q_ASSERT(reg.find(context->d_ptr->group) == reg.end());
     Q_ASSERT(context->d_ptr->group->m_refs == 1);
 
     // Free 'context' group resources and make it use the same resources as 'share'.
+    QGLContextGroup *group = share->d_ptr->group;
     delete context->d_ptr->group;
-    context->d_ptr->group = share->d_ptr->group;
-    context->d_ptr->group->m_refs.ref();
+    context->d_ptr->group = group;
+    group->m_refs.ref();
 
     // Maintain a list of all the contexts in each group of sharing contexts.
-    SharingHash::iterator it = reg.find(share->d_ptr->group);
-    if (it == reg.end())
-        it = reg.insert(share->d_ptr->group, ContextList() << share);
-    it.value() << context;
+    // The list is empty if the "share" context wasn't sharing already.
+    if (group->m_shares.isEmpty())
+        group->m_shares.append(share);
+    group->m_shares.append(context);
 }
 
 QList<const QGLContext *> QGLShareRegister::shares(const QGLContext *context) {
-    SharingHash::const_iterator it = reg.find(context->d_ptr->group);
-    if (it == reg.end())
-        return ContextList();
-    return it.value();
+    return context->d_ptr->group->m_shares;
 }
 
 void QGLShareRegister::removeShare(const QGLContext *context) {
-    SharingHash::iterator it = reg.find(context->d_ptr->group);
-    if (it == reg.end())
+    // Remove the context from the group.
+    QGLContextGroup *group = context->d_ptr->group;
+    if (group->m_shares.isEmpty())
         return;
-
-    int count = it.value().removeAll(context);
-    Q_ASSERT(count == 1);
-    Q_UNUSED(count);
+    group->m_shares.removeAll(context);
 
     // Update context group representative.
-    if (context->d_ptr->group->m_context == context)
-        context->d_ptr->group->m_context = it.value().first();
+    Q_ASSERT(group->m_shares.size() != 0);
+    if (group->m_context == context)
+        group->m_context = group->m_shares[0];
 
-    Q_ASSERT(it.value().size() != 0);
-    if (it.value().size() == 1)
-        reg.erase(it);
+    // If there is only one context left, then make the list empty.
+    if (group->m_shares.size() == 1)
+        group->m_shares.clear();
 }
 
-QGLContextResource::QGLContextResource(FreeFunc f, QObject *parent)
-    : QObject(parent), free(f)
+QGLContextResource::QGLContextResource(FreeFunc f)
+    : free(f), active(0)
 {
-    connect(QGLSignalProxy::instance(), SIGNAL(aboutToDestroyContext(const QGLContext *)), this, SLOT(removeOne(const QGLContext *)));
 }
 
 QGLContextResource::~QGLContextResource()
 {
 #ifndef QT_NO_DEBUG
-    if (m_resources.size()) {
+    if (active != 0) {
         qWarning("QtOpenGL: Resources are still available at program shutdown.\n"
                  "          This is possibly caused by a leaked QGLWidget, \n"
                  "          QGLFramebufferObject or QGLPixelBuffer.");
@@ -4905,121 +4956,53 @@ QGLContextResource::~QGLContextResource()
 
 void QGLContextResource::insert(const QGLContext *key, void *value)
 {
-    QList<const QGLContext *> shares = qgl_share_reg()->shares(key);
-    if (shares.size() == 0)
-        shares.append(key);
-    void *oldValue = 0;
-    for (int i = 0; i < shares.size(); ++i) {
-        ResourceHash::iterator it = m_resources.find(shares.at(i));
-        if (it != m_resources.end()) {
-            Q_ASSERT(oldValue == 0 || oldValue == it.value());
-            oldValue = it.value();
-            it.value() = value;
-        } else {
-            m_resources.insert(shares.at(i), value);
-        }
-    }
-    if (oldValue != 0 && oldValue != value) {
-        QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
-        if (oldContext != key)
-            const_cast<QGLContext *>(key)->makeCurrent();
-        free(oldValue);
-        if (oldContext && oldContext != key)
-            oldContext->makeCurrent();
-    }
+    QGLContextGroup *group = QGLContextPrivate::contextGroup(key);
+    Q_ASSERT(!group->m_resources.contains(this));
+    group->m_resources.insert(this, value);
+    active.ref();
 }
 
 void *QGLContextResource::value(const QGLContext *key)
 {
-    ResourceHash::const_iterator it = m_resources.find(key);
-    // Check if there is a value associated with 'key'.
-    if (it != m_resources.end())
-        return it.value();
-    // Check if there is a value associated with sharing contexts.
-    QList<const QGLContext *> shares = qgl_share_reg()->shares(key);
-    for (int i = 0; i < shares.size() && it == m_resources.end(); ++i)
-        it = m_resources.find(shares.at(i));
-    if (it == m_resources.end())
-        return 0; // Didn't find anything.
-
-    // Found something! Share this info with all the buddies.
-    for (int i = 0; i < shares.size(); ++i)
-        m_resources.insert(shares.at(i), it.value());
-    return it.value();
+    QGLContextGroup *group = QGLContextPrivate::contextGroup(key);
+    return group->m_resources.value(this, 0);
 }
 
-void QGLContextResource::removeGroup(const QGLContext *key)
+void QGLContextResource::cleanup(const QGLContext *ctx, void *value)
 {
-    QList<const QGLContext *> shares = qgl_share_reg()->shares(key);
-    if (shares.size() == 0)
-        shares.append(key);
-    void *oldValue = 0;
-    for (int i = 0; i < shares.size(); ++i) {
-        ResourceHash::iterator it = m_resources.find(shares.at(i));
-        if (it != m_resources.end()) {
-            Q_ASSERT(oldValue == 0 || oldValue == it.value());
-            oldValue = it.value();
-            m_resources.erase(it);
-        }
-    }
-    if (oldValue != 0) {
-        QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
-        if (oldContext != key)
-            const_cast<QGLContext *>(key)->makeCurrent();
-        free(oldValue);
-        if (oldContext && oldContext != key)
-            oldContext->makeCurrent();
-    }
+    QGLShareContextScope scope(ctx);
+    free(value);
+    active.deref();
 }
 
-void QGLContextResource::removeOne(const QGLContext *key)
+void QGLContextGroup::cleanupResources(const QGLContext *ctx)
 {
-    ResourceHash::iterator it = m_resources.find(key);
-    if (it == m_resources.end())
+    // If there are still shares, then no cleanup to be done yet.
+    if (m_shares.size() > 1)
         return;
 
-    QList<const QGLContext *> shares = qgl_share_reg()->shares(key);
-    if (shares.size() > 1) {
-        Q_ASSERT(key->isSharing());
-        // At least one of the shared contexts must stay in the cache.
-        // Otherwise, the value pointer is lost.
-        for (int i = 0; i < 2/*shares.size()*/; ++i)
-            m_resources.insert(shares.at(i), it.value());
+    // Iterate over all resources and free each in turn.
+    QHash<QGLContextResource *, void *>::ConstIterator it;
+    for (it = m_resources.begin(); it != m_resources.end(); ++it)
+        it.key()->cleanup(ctx, it.value());
+}
+
+QGLSharedResourceGuard::~QGLSharedResourceGuard()
+{
+    if (m_group)
+        m_group->removeGuard(this);
+}
+
+void QGLSharedResourceGuard::setContext(const QGLContext *context)
+{
+    if (m_group)
+        m_group->removeGuard(this);
+    if (context) {
+        m_group = QGLContextPrivate::contextGroup(context);
+        m_group->addGuard(this);
     } else {
-        QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
-        if (oldContext != key)
-            const_cast<QGLContext *>(key)->makeCurrent();
-        free(it.value());
-        if (oldContext && oldContext != key)
-            oldContext->makeCurrent();
+        m_group = 0;
     }
-    m_resources.erase(it);
-}
-
-QGLContextReference::QGLContextReference(const QGLContext *ctx)
-    : m_ref(1), m_ctx(ctx)
-{
-    connect(QGLSignalProxy::instance(),
-            SIGNAL(aboutToDestroyContext(const QGLContext *)),
-            this, SLOT(aboutToDestroyContext(const QGLContext *)));
-}
-
-void QGLContextReference::aboutToDestroyContext(const QGLContext *ctx)
-{
-    // Bail out if our context is not being destroyed.
-    if (ctx != m_ctx || !m_ctx)
-        return;
-
-    // Find some other context that this one is shared with to take over.
-    QList<const QGLContext *> shares = qgl_share_reg()->shares(m_ctx);
-    shares.removeAll(m_ctx);
-    if (!shares.isEmpty()) {
-        m_ctx = shares[0];
-        return;
-    }
-
-    // No more contexts sharing with this one, so the reference is now invalid.
-    m_ctx = 0;
 }
 
 QT_END_NAMESPACE

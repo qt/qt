@@ -42,25 +42,19 @@
 #ifndef __TORPEDO__H__
 #define __TORPEDO__H__
 
-//Qt
-#include <QtCore/QObject>
+#include "pixmapitem.h"
 
-#include <QtCore/QVariantAnimation>
-#include <QtGui/QGraphicsWidget>
-
-class PixmapItem;
-
-class Torpedo : public QGraphicsWidget
+class Torpedo : public PixmapItem
 {
 Q_OBJECT
 public:
-    Torpedo(QGraphicsItem * parent = 0, Qt::WindowFlags wFlags = 0);
+    Torpedo();
     void launch();
     void setCurrentSpeed(int speed);
     void destroy();
 
 signals:
-    void torpedoExplosed();
+    void torpedoExploded();
     void torpedoExecutionFinished();
 
 private slots:
@@ -68,8 +62,6 @@ private slots:
 
 private:
     int currentSpeed;
-    PixmapItem *pixmapItem;
-    QVariantAnimation *launchAnimation;
 };
 
 #endif //__TORPEDO__H__

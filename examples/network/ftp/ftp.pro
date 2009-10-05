@@ -11,10 +11,10 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/network/ftp
 INSTALLS += target sources
 
 symbian {
+    TARGET.UID3 = 0xA000A648
     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
     HEADERS +=  sym_iap_util.h
     INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
     TARGET.CAPABILITY="NetworkServices ReadUserData WriteUserData"
-    TARGET.UID3 = 0xA000A648
     LIBS+=-lesock -lcommdb -linsock # For IAP selection
 }

@@ -75,7 +75,7 @@ JSObject* JSSVGPathSegCurvetoCubicSmoothAbsPrototype::self(ExecState* exec, JSGl
 
 const ClassInfo JSSVGPathSegCurvetoCubicSmoothAbs::s_info = { "SVGPathSegCurvetoCubicSmoothAbs", &JSSVGPathSeg::s_info, &JSSVGPathSegCurvetoCubicSmoothAbsTable, 0 };
 
-JSSVGPathSegCurvetoCubicSmoothAbs::JSSVGPathSegCurvetoCubicSmoothAbs(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegCurvetoCubicSmoothAbs> impl, SVGElement* context)
+JSSVGPathSegCurvetoCubicSmoothAbs::JSSVGPathSegCurvetoCubicSmoothAbs(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegCurvetoCubicSmoothAbs> impl, SVGElement* context)
     : JSSVGPathSeg(structure, globalObject, impl, context)
 {
 }

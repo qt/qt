@@ -514,7 +514,11 @@ namespace JSC {
 
         void emitTagAsBoolImmediate(RegisterID reg);
         void compileBinaryArithOp(OpcodeID, unsigned dst, unsigned src1, unsigned src2, OperandTypes opi);
-        void compileBinaryArithOpSlowCase(OpcodeID, Vector<SlowCaseEntry>::iterator&, unsigned dst, unsigned src1, unsigned src2, OperandTypes opi);
+#if USE(JSVALUE64)
+        void compileBinaryArithOpSlowCase(OpcodeID, Vector<SlowCaseEntry>::iterator&, unsigned dst, unsigned src1, unsigned src2, OperandTypes, bool op1HasImmediateIntFastCase, bool op2HasImmediateIntFastCase);
+#else
+        void compileBinaryArithOpSlowCase(OpcodeID, Vector<SlowCaseEntry>::iterator&, unsigned dst, unsigned src1, unsigned src2, OperandTypes);
+#endif
 
 #if ENABLE(JIT_OPTIMIZE_PROPERTY_ACCESS)
         void compileGetByIdHotPath(int resultVReg, int baseVReg, Identifier* ident, unsigned propertyAccessInstructionIndex);
@@ -538,7 +542,7 @@ namespace JSC {
         static const int patchOffsetGetByIdPropertyMapOffset = 31;
         static const int patchOffsetGetByIdPutResult = 31;
 #if ENABLE(OPCODE_SAMPLING)
-        static const int patchOffsetGetByIdSlowCaseCall = 63;
+        static const int patchOffsetGetByIdSlowCaseCall = 64;
 #else
         static const int patchOffsetGetByIdSlowCaseCall = 41;
 #endif

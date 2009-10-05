@@ -36,7 +36,7 @@ namespace WebCore {
 class JSSVGTransform : public DOMObjectWithSVGContext {
     typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGTransform(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<JSSVGPODTypeWrapper<SVGTransform> >, SVGElement* context);
+    JSSVGTransform(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<JSSVGPODTypeWrapper<SVGTransform> >, SVGElement* context);
     virtual ~JSSVGTransform();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -71,7 +71,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSSVGTransformPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSSVGTransformPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

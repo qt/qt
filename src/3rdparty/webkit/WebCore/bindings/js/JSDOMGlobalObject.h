@@ -45,7 +45,7 @@ namespace WebCore {
     protected:
         struct JSDOMGlobalObjectData;
 
-        JSDOMGlobalObject(PassRefPtr<JSC::Structure>, JSDOMGlobalObjectData*, JSC::JSObject* thisValue);
+        JSDOMGlobalObject(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObjectData*, JSC::JSObject* thisValue);
 
     public:
         JSDOMStructureMap& structures() { return d()->structures; }
@@ -67,7 +67,11 @@ namespace WebCore {
 
     protected:
         struct JSDOMGlobalObjectData : public JSC::JSGlobalObject::JSGlobalObjectData {
-            JSDOMGlobalObjectData();
+            JSDOMGlobalObjectData()
+                : JSGlobalObjectData(destroyJSDOMGlobalObjectData)
+                , evt(0)
+            {
+            }
 
             JSDOMStructureMap structures;
             JSDOMConstructorMap constructors;
@@ -76,6 +80,8 @@ namespace WebCore {
         };
 
     private:
+        static void destroyJSDOMGlobalObjectData(void*);
+
         JSDOMGlobalObjectData* d() const { return static_cast<JSDOMGlobalObjectData*>(JSC::JSVariableObject::d); }
     };
 

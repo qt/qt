@@ -57,6 +57,7 @@ QWidgetPrivate *qt_widget_private(QWidget *widget);
 
 /*!
     \class QPanGesture
+    \preliminary
     \since 4.6
 
     \brief The QPanGesture class represents a Pan gesture,
@@ -339,6 +340,7 @@ QSizeF QPanGesture::offset() const
 
 /*!
     \class QPinchGesture
+    \preliminary
     \since 4.6
 
     \brief The QPinchGesture class represents a Pinch gesture,
@@ -667,6 +669,7 @@ QPointF QPinchGesture::startCenterPoint() const
 
 /*!
     \class QSwipeGesture
+    \preliminary
     \since 4.6
 
     \brief The QSwipeGesture class represents a swipe gesture,

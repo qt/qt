@@ -231,7 +231,7 @@ void QEventTransition::setEventSource(QObject *object)
 bool QEventTransition::eventTest(QEvent *event)
 {
     Q_D(const QEventTransition);
-    if (event->type() == QEvent::Wrapped) {
+    if (event->type() == QEvent::StateMachineWrapped) {
         QStateMachine::WrappedEvent *we = static_cast<QStateMachine::WrappedEvent*>(event);
         return (we->object() == d->object)
             && (we->event()->type() == d->eventType);

@@ -26,6 +26,10 @@ QT_BEGIN_NAMESPACE
 using namespace Phonon;
 using namespace Phonon::MMF;
 
+/*! \class MMF::AudioPlayer
+  \internal
+*/
+
 //-----------------------------------------------------------------------------
 // Constructor / destructor
 //-----------------------------------------------------------------------------
@@ -97,7 +101,7 @@ int MMF::AudioPlayer::setDeviceVolume(int mmfVolume)
      * stack by doing a runtime check of the SDK version. */
 #if !defined(__SERIES60_31__)
     const int err = m_player->SetVolume(mmfVolume);
-    if (QSysInfo::s60Version() > QSysInfo::SV_S60_3_1)
+    if (QSysInfo::s60Version() >= QSysInfo::SV_S60_5_0)
         return err;
     else
         return KErrNone;

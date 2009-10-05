@@ -119,7 +119,7 @@ bool JSSVGLineElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const 
 
 const ClassInfo JSSVGLineElement::s_info = { "SVGLineElement", &JSSVGElement::s_info, &JSSVGLineElementTable, 0 };
 
-JSSVGLineElement::JSSVGLineElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGLineElement> impl)
+JSSVGLineElement::JSSVGLineElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGLineElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

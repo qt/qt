@@ -1,3 +1,124 @@
+2009-10-01  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Make Software Input Panel requests work with QGraphicsWebView
+        _and_ QWebView by sharing the event code in handleSoftwareInputPanel().
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::mouseReleaseEvent):
+        (QWebPagePrivate::handleSoftwareInputPanel):
+        * Api/qwebpage_p.h:
+
+2009-10-01  Kristian Amlie  <kristian.amlie@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Fixed software input panel support on web input elements.
+
+        Send the RequestSoftwareInputPanel event if the element supports focus
+        and the element is clicked.
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::QWebPagePrivate):
+        (QWebPagePrivate::mousePressEvent):
+        (QWebPagePrivate::mouseReleaseEvent):
+        * Api/qwebpage_p.h:
+
+2009-10-01  Joe Ligman  <joseph.ligman@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Implementation for QWebPage::inputMethodQuery and QWebPagePrivate::inputMethodEvent
+
+        https://bugs.webkit.org/show_bug.cgi?id=29681
+
+        Some additional changes from Kristian Amlie <kristian.amlie@nokia.com>:
+
+            * Fixed surrounding text to exclude preedit string
+            * Avoid emission of microFocusChanged during setComposition()
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::inputMethodEvent):
+        (QWebPage::inputMethodQuery):
+        * WebCoreSupport/EditorClientQt.cpp:
+        (WebCore::EditorClientQt::respondToChangedSelection):
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::inputMethods):
+
+2009-09-29  Andras Becsi  <becsi.andras@stud.u-szeged.hu>
+
+        Reviewed by Tor Arne Vestbø.
+
+        [Qt] Default font size reconciliation to 16px/13px to match other platform's de-facto standard.
+        This fixes https://bugs.webkit.org/show_bug.cgi?id=19674.
+
+        * Api/qwebsettings.cpp:
+        (QWebSettings::QWebSettings):
+
+2009-09-29  Jedrzej Nowacki  <jedrzej.nowacki@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29844
+
+        QWebPage dependency autotest fix.
+
+        Fix for database() autotest. All opened databases should be removed at
+        end of test.
+
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::database):
+
+2009-09-29  Jedrzej Nowacki  <jedrzej.nowacki@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Some QWebHistory and QWebPage autotest crash fixes.
+
+        Some checking for m_mainFrame were added. MainFrame should be created
+        at some point of QWebPage live cicle.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29803
+
+        * Api/qwebpage.cpp:
+        (QWebPage::~QWebPage):
+        (QWebPage::currentFrame):
+        (QWebPage::history):
+        (QWebPage::selectedText):
+        (QWebPage::updatePositionDependentActions):
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::crashTests_LazyInitializationOfMainFrame):
+
+2009-09-29  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Simon Hausmann and Tor Arne Vestbø.
+
+        Implement QWebPage Extension for error pages, incl.
+        an example on how to use it in QtLauncher.
+
+        Correct our use of ResourceError.
+
+        * Api/qwebpage.h:
+        (ExtensionOption::):
+        (ExtensionOption::ErrorPageExtensionReturn::ErrorPageExtensionReturn):
+        * QtLauncher/main.cpp:
+        (WebPage::supportsExtension):
+        (MainWindow::MainWindow):
+        (MainWindow::selectElements):
+        (WebPage::extension):
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::cancelledError):
+        (WebCore::FrameLoaderClientQt::blockedError):
+        (WebCore::FrameLoaderClientQt::cannotShowURLError):
+        (WebCore::FrameLoaderClientQt::interruptForPolicyChangeError):
+        (WebCore::FrameLoaderClientQt::cannotShowMIMETypeError):
+        (WebCore::FrameLoaderClientQt::fileDoesNotExistError):
+        (WebCore::FrameLoaderClientQt::callErrorPageExtension):
+        (WebCore::FrameLoaderClientQt::dispatchDidFailProvisionalLoad):
+        (WebCore::FrameLoaderClientQt::dispatchDidFailLoad):
+        * WebCoreSupport/FrameLoaderClientQt.h:
+
 2009-09-28  Andre Poenitz  <andre.poenitz@trolltech.com>
 
         Reviewed by Simon Hausmann.

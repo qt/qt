@@ -33,7 +33,7 @@ class SharedWorkerContext;
 class JSSharedWorkerContext : public JSWorkerContext {
     typedef JSWorkerContext Base;
 public:
-    JSSharedWorkerContext(PassRefPtr<JSC::Structure>, PassRefPtr<SharedWorkerContext>);
+    JSSharedWorkerContext(NonNullPassRefPtr<JSC::Structure>, PassRefPtr<SharedWorkerContext>);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
@@ -59,7 +59,7 @@ public:
     void* operator new(size_t, JSC::JSGlobalData*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
-    JSSharedWorkerContextPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSSharedWorkerContextPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Attributes

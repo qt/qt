@@ -36,7 +36,7 @@ namespace WebCore {
 class JSSVGMatrix : public DOMObjectWithSVGContext {
     typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGMatrix(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<JSSVGPODTypeWrapper<TransformationMatrix> >, SVGElement* context);
+    JSSVGMatrix(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<JSSVGPODTypeWrapper<TransformationMatrix> >, SVGElement* context);
     virtual ~JSSVGMatrix();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -75,7 +75,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSSVGMatrixPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSSVGMatrixPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

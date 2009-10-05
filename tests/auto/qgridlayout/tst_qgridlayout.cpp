@@ -884,6 +884,7 @@ void tst_QGridLayout::minMaxSize()
     for (int pass = 0; pass < 2; ++pass) {
         m_toplevel->hide();
         QApplication::processEvents();
+        QTest::qWait(20);
         // Test if removeItem uninitializes data properly
         while (m_grid->count()) {
             QLayoutItem *item = m_grid->itemAt(0);
@@ -921,7 +922,7 @@ void tst_QGridLayout::minMaxSize()
 #endif
         QTest::qWait(20);
         m_toplevel->adjustSize();
-        QTest::qWait(20);                              // wait for the implicit adjustSize
+        QTest::qWait(120);                              // wait for the implicit adjustSize
         // If the following fails we might have to wait longer.
         // If that does not help there is likely a problem with the implicit adjustSize in show()
         if (!fixedSize.isValid()) {

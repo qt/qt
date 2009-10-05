@@ -121,7 +121,7 @@ JSObject* JSHTMLScriptElementPrototype::self(ExecState* exec, JSGlobalObject* gl
 
 const ClassInfo JSHTMLScriptElement::s_info = { "HTMLScriptElement", &JSHTMLElement::s_info, &JSHTMLScriptElementTable, 0 };
 
-JSHTMLScriptElement::JSHTMLScriptElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLScriptElement> impl)
+JSHTMLScriptElement::JSHTMLScriptElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLScriptElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

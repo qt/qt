@@ -732,13 +732,12 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                               << Node::typeName(i)
                               << " new in Qt "
                               << atom->string()
-                              << "<h2>";
+                              << "</h2>";
                         generateAnnotatedList(relative, marker, nodeMap);
                         nodeMap.clear();
                     }
                 }
             }
-            
         }
         break;
 case Atom::Image:

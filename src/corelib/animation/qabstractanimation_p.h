@@ -75,6 +75,7 @@ public:
           currentTime(0),
           loopCount(1),
           currentLoop(0),
+          hasRegisteredTimer(false),
           group(0)
     {
     }
@@ -95,6 +96,8 @@ public:
     int currentTime;
     int loopCount;
     int currentLoop;
+
+    bool hasRegisteredTimer;
 
     QAnimationGroup *group;
 
@@ -137,7 +140,10 @@ protected:
     void timerEvent(QTimerEvent *);
 
 private:
-    QBasicTimer animationTimer, startStopAnimationTimer;
+    // timer used for all active animations
+    QBasicTimer animationTimer;
+    // timer used to delay the check if we should start/stop the global timer
+    QBasicTimer startStopAnimationTimer;
     QTime time;
     int lastTick;
     int timingInterval;

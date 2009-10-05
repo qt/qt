@@ -30,7 +30,7 @@ class TextEvent;
 class JSTextEvent : public JSUIEvent {
     typedef JSUIEvent Base;
 public:
-    JSTextEvent(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<TextEvent>);
+    JSTextEvent(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<TextEvent>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
@@ -58,7 +58,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSTextEventPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSTextEventPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

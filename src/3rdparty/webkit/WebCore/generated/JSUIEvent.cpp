@@ -136,7 +136,7 @@ bool JSUIEventPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identif
 
 const ClassInfo JSUIEvent::s_info = { "UIEvent", &JSEvent::s_info, &JSUIEventTable, 0 };
 
-JSUIEvent::JSUIEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<UIEvent> impl)
+JSUIEvent::JSUIEvent(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<UIEvent> impl)
     : JSEvent(structure, globalObject, impl)
 {
 }

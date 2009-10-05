@@ -35,6 +35,7 @@ WebInspector.DOMNode = function(doc, payload) {
     this.id = payload.id;
     this.nodeType = payload.nodeType;
     this.nodeName = payload.nodeName;
+    this.localName = payload.localName;
     this._nodeValue = payload.nodeValue;
     this.textContent = this.nodeValue;
 
@@ -377,13 +378,16 @@ WebInspector.DOMAgent.prototype = {
 
     _setDocument: function(payload)
     {
-        this.document = new WebInspector.DOMDocument(this, this._window, payload);
         this._idToDOMNode = {};
-        this._idToDOMNode[payload.id] = this.document;
-        this._bindNodes(this.document.children);
+        if (payload) {
+            this.document = new WebInspector.DOMDocument(this, this._window, payload);
+            this._idToDOMNode[payload.id] = this.document;
+            this._bindNodes(this.document.children);
+        } else
+            this.document = null;
         WebInspector.panels.elements.reset();
     },
-    
+
     _setDetachedRoot: function(payload)
     {
         var root = new WebInspector.DOMNode(this.document, payload);
@@ -471,6 +475,17 @@ WebInspector.Cookies.buildCookiesFromString = function(rawCookieString)
     }
 
     return cookies;
+}
+
+WebInspector.EventListeners = {}
+
+WebInspector.EventListeners.getEventListenersForNodeAsync = function(node, callback)
+{
+    if (!node)
+        return;
+
+    var callId = WebInspector.Callback.wrap(callback);
+    InspectorController.getEventListenersForNode(callId, node.id);
 }
 
 WebInspector.CSSStyleDeclaration = function(payload)
@@ -648,3 +663,4 @@ WebInspector.didPerformSearch = WebInspector.Callback.processCallback;
 WebInspector.didApplyDomChange = WebInspector.Callback.processCallback;
 WebInspector.didRemoveAttribute = WebInspector.Callback.processCallback;
 WebInspector.didSetTextNodeValue = WebInspector.Callback.processCallback;
+WebInspector.didGetEventListenersForNode = WebInspector.Callback.processCallback;

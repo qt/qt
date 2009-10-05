@@ -20,6 +20,7 @@
 
 #include <QtTest/QtTest>
 
+#include <qwebelement.h>
 #include <qwebpage.h>
 #include <qwidget.h>
 #include <qwebview.h>
@@ -113,11 +114,10 @@ private slots:
     void localURLSchemes();
     void testOptionalJSObjects();
     void testEnablePersistentStorage();
-
     void consoleOutput();
+    void inputMethods();
 
-private:
-
+    void crashTests_LazyInitializationOfMainFrame();
 
 private:
     QWebView* m_view;
@@ -466,14 +466,19 @@ void tst_QWebPage::database()
     m_page->mainFrame()->evaluateJavaScript("var db3; db3=openDatabase('testdb', '1.0', 'test database API', 50000);db3.transaction(function(tx) { tx.executeSql('CREATE TABLE IF NOT EXISTS Test (text TEXT)', []); }, function(tx, result) { }, function(tx, error) { });");
     QTest::qWait(200);
 
+    // Remove all databases.
     QWebSecurityOrigin origin = m_page->mainFrame()->securityOrigin();
     QList<QWebDatabase> dbs = origin.databases();
-    if (dbs.count() > 0) {
-        QString fileName = dbs[0].fileName();
+    for (int i = 0; i < dbs.count(); i++) {
+        QString fileName = dbs[i].fileName();
         QVERIFY(QFile::exists(fileName));
-        QWebDatabase::removeDatabase(dbs[0]);
+        QWebDatabase::removeDatabase(dbs[i]);
         QVERIFY(!QFile::exists(fileName));
     }
+    QVERIFY(!origin.databases().size());
+    // Remove removed test :-)
+    QWebDatabase::removeAllDatabases();
+    QVERIFY(!origin.databases().size());
     QTest::qWait(1000);
 }
 
@@ -1200,6 +1205,94 @@ void tst_QWebPage::frameAt()
     frameAtHelper(webPage, webPage->mainFrame(), webPage->mainFrame()->pos());
 }
 
+void tst_QWebPage::inputMethods()
+{
+    m_view->page()->mainFrame()->setHtml("<html><body>" \
+                                            "<input type='text' id='input1' style='font-family: serif' value='' maxlength='20'/>" \
+                                            "</body></html>");
+    m_view->page()->mainFrame()->setFocus();
+
+    QList<QWebElement> inputs = m_view->page()->mainFrame()->documentElement().findAll("input");
+
+    QMouseEvent evpres(QEvent::MouseButtonPress, inputs.at(0).geometry().center(), Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
+    m_view->page()->event(&evpres);
+    QMouseEvent evrel(QEvent::MouseButtonRelease, inputs.at(0).geometry().center(), Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
+    m_view->page()->event(&evrel);
+
+    //ImMicroFocus
+    QVariant variant = m_view->page()->inputMethodQuery(Qt::ImMicroFocus);
+    QRect focusRect = variant.toRect();
+    QVERIFY(inputs.at(0).geometry().contains(variant.toRect().topLeft()));
+
+    //ImFont
+    variant = m_view->page()->inputMethodQuery(Qt::ImFont);
+    QFont font = variant.value<QFont>();
+    QCOMPARE(QString("-webkit-serif"), font.family());
+
+    QList<QInputMethodEvent::Attribute> inputAttributes;
+
+    //Insert text.
+    {
+        QInputMethodEvent eventText("QtWebKit", inputAttributes);
+        QSignalSpy signalSpy(m_view->page(), SIGNAL(microFocusChanged()));
+        m_view->page()->event(&eventText);
+        QCOMPARE(signalSpy.count(), 0);
+    }
+
+    {
+        QInputMethodEvent eventText("", inputAttributes);
+        eventText.setCommitString(QString("QtWebKit"), 0, 0);
+        m_view->page()->event(&eventText);
+    }
+
+#if QT_VERSION >= 0x040600
+    //ImMaximumTextLength
+    variant = m_view->page()->inputMethodQuery(Qt::ImMaximumTextLength);
+    QCOMPARE(20, variant.toInt());
+
+    //Set selection
+    inputAttributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, 3, 2, QVariant());
+    QInputMethodEvent eventSelection("",inputAttributes);
+    m_view->page()->event(&eventSelection);
+
+    //ImAnchorPosition
+    variant = m_view->page()->inputMethodQuery(Qt::ImAnchorPosition);
+    int anchorPosition =  variant.toInt();
+    QCOMPARE(anchorPosition, 3);
+
+    //ImCursorPosition
+    variant = m_view->page()->inputMethodQuery(Qt::ImCursorPosition);
+    int cursorPosition =  variant.toInt();
+    QCOMPARE(cursorPosition, 5);
+
+    //ImCurrentSelection
+    variant = m_view->page()->inputMethodQuery(Qt::ImCurrentSelection);
+    QString selectionValue = variant.value<QString>();
+    QCOMPARE(selectionValue, QString("eb"));
+#endif
+
+    //ImSurroundingText
+    variant = m_view->page()->inputMethodQuery(Qt::ImSurroundingText);
+    QString value = variant.value<QString>();
+    QCOMPARE(value, QString("QtWebKit"));
+
+#if QT_VERSION >= 0x040600
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        // Clear the selection, so the next test does not clear any contents.
+        QInputMethodEvent::Attribute newSelection(QInputMethodEvent::Selection, 0, 0, QVariant());
+        attributes.append(newSelection);
+        QInputMethodEvent event("composition", attributes);
+        m_view->page()->event(&event);
+    }
+
+    // A ongoing composition should not change the surrounding text before it is committed.
+    variant = m_view->page()->inputMethodQuery(Qt::ImSurroundingText);
+    value = variant.value<QString>();
+    QCOMPARE(value, QString("QtWebKit"));
+#endif
+}
+
 // import a little DRT helper function to trigger the garbage collector
 void QWEBKIT_EXPORT qt_drt_garbageCollector_collect();
 
@@ -1300,6 +1393,27 @@ void tst_QWebPage::testEnablePersistentStorage()
     QVERIFY(!webPage.settings()->offlineWebApplicationCachePath().isEmpty());
     QVERIFY(!webPage.settings()->iconDatabasePath().isEmpty());
 }
+
+void tst_QWebPage::crashTests_LazyInitializationOfMainFrame()
+{
+    {
+        QWebPage webPage;
+    }
+    {
+        QWebPage webPage;
+        webPage.selectedText();
+    }
+    {
+        QWebPage webPage;
+        webPage.triggerAction(QWebPage::Back, true);
+    }
+    {
+        QWebPage webPage;
+        QPoint pos(10,10);
+        webPage.updatePositionDependentActions(pos);
+    }
+}
+
 
 QTEST_MAIN(tst_QWebPage)
 #include "tst_qwebpage.moc"

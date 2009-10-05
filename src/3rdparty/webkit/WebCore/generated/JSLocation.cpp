@@ -100,7 +100,7 @@ void JSLocationPrototype::put(ExecState* exec, const Identifier& propertyName, J
 
 const ClassInfo JSLocation::s_info = { "Location", 0, &JSLocationTable, 0 };
 
-JSLocation::JSLocation(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Location> impl)
+JSLocation::JSLocation(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Location> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
