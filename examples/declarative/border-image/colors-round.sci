@@ -1,7 +1,7 @@
-gridLeft:30
-gridTop:30
-gridRight:30
-gridBottom:30
+border.left:30
+border.top:30
+border.right:30
+border.bottom:30
 horizontalTileRule:Round
 verticalTileRule:Round
-imageFile:colors.png
+source:colors.png
