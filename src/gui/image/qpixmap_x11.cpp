@@ -1252,8 +1252,11 @@ void QX11PixmapData::release()
 
 QPixmap QX11PixmapData::alphaChannel() const
 {
-    if (!hasAlphaChannel())
-        return QPixmap();
+    if (!hasAlphaChannel()) {
+        QPixmap pm(w, h);
+        pm.fill(Qt::white);
+        return pm;
+    }
     QImage im(toImage());
     return QPixmap::fromImage(im.alphaChannel(), Qt::OrderedDither);
 }
