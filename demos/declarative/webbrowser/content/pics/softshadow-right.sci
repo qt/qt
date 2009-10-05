@@ -1,5 +1,5 @@
-gridLeft: 0
-gridTop: 16
-gridBottom: 16
-gridRight: 0
-imageFile: softshadow-right.png
+border.left: 0
+border.top: 16
+border.bottom: 16
+border.right: 0
+source: softshadow-right.png
