@@ -57,6 +57,8 @@
 
 #include "qfxparticles.h"
 #include <QPainter>
+#include <QtGui/qdrawutil.h>
+#include <QVarLengthArray>
 
 QT_BEGIN_NAMESPACE
 #define PI_SQR 9.8696044
@@ -356,6 +358,7 @@ public:
     qreal minX;
     qreal maxY;
     qreal minY;
+    QVarLengthArray<QDrawPixmaps::Data, 50> pixmapData;
     QFxParticlesPrivate* d;
 };
 
@@ -380,6 +383,7 @@ public:
     {
         Q_Q(QFxParticles);
         paintItem = new QFxParticlesPainter(this, q);
+        paintItem->pixmapData.resize(count);
     }
 
     void tick(int time);
@@ -697,6 +701,8 @@ void QFxParticles::setCount(int cnt)
 
     int oldCount = d->count;
     d->count = cnt;
+    if (cnt > oldCount)
+        d->paintItem->pixmapData.resize(d->count);
     d->addParticleTime = 0;
     d->addParticleCount = d->particles.count();
     if (!oldCount && d->clock.state() != QAbstractAnimation::Running && d->count) {
@@ -1097,11 +1103,19 @@ void QFxParticlesPainter::paint(QPainter *p, const QStyleOptionGraphicsItem *, Q
     const int myX = x() + parentItem()->x();
     const int myY = y() + parentItem()->y();
 
+    const QRectF sourceRect = d->image.rect();
     for (int i = 0; i < d->particles.count(); ++i) {
         const QFxParticle &particle = d->particles.at(i);
-        p->setOpacity(particle.opacity);
-        p->drawPixmap(particle.x - myX, particle.y - myY, d->image);
+        pixmapData[i].point = QPointF(particle.x - myX, particle.y - myY);
+        pixmapData[i].opacity = particle.opacity;
+
+        //these never change
+        pixmapData[i].rotation = 0;
+        pixmapData[i].scaleX = 1;
+        pixmapData[i].scaleY = 1;
+        pixmapData[i].source = sourceRect;
     }
+    qDrawPixmaps(p, pixmapData.data(), d->particles.count(), d->image);
 }
 
 void QFxParticles::componentComplete()
