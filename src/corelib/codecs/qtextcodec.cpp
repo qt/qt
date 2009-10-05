@@ -741,6 +741,26 @@ static void setup()
         setupLocaleMapper();
 }
 
+/*!
+    \enum QTextCodec::ConversionFlag
+
+    \value DefaultConversion  No flag is set.
+    \value ConvertInvalidToNull  If this flag is set, each invalid input
+                                 character is output as a null character.
+    \value IgnoreHeader  Ignore any Unicode byte-order mark and don't generate any.
+
+    \omitvalue FreeFunction
+*/
+
+/*!
+    \fn QTextCodec::ConverterState::ConverterState(ConversionFlags flags)
+
+    Constructs a ConverterState object initialized with the given \a flags.
+*/
+
+/*!
+    Destroys the ConverterState object.
+*/
 QTextCodec::ConverterState::~ConverterState()
 {
     if (flags & FreeFunction)
@@ -880,29 +900,6 @@ QTextCodec::ConverterState::~ConverterState()
     details.
 
     \sa QTextStream, QTextDecoder, QTextEncoder, {Codecs Example}
-*/
-
-/*!
-    \enum QTextCodec::ConversionFlag
-
-    \value DefaultConversion  No flag is set.
-    \value ConvertInvalidToNull  If this flag is set, each invalid input
-                                 character is output as a null character.
-    \value IgnoreHeader  Ignore any Unicode byte-order mark and don't generate any.
-
-    \omitvalue FreeFunction
-*/
-
-/*!
-    \fn QTextCodec::ConverterState::ConverterState(ConversionFlags flags)
-
-    Constructs a ConverterState object initialized with the given \a flags.
-*/
-
-/*!
-    \fn QTextCodec::ConverterState::~ConverterState()
-
-    Destroys the ConverterState object.
 */
 
 /*!
