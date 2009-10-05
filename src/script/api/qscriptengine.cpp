@@ -2168,7 +2168,7 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     exec->clearException();
     JSC::DynamicGlobalObjectScope dynamicGlobalObjectScope(exec, exec->scopeChain()->globalObject());
 
-    JSC::EvalExecutable executable(source);
+    JSC::EvalExecutable executable(exec, source);
     JSC::JSObject* error = executable.compile(exec, exec->scopeChain());
     if (error) {
         exec->setException(error);

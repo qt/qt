@@ -379,6 +379,9 @@ extern "C" const int jscore_fastmalloc_introspection = 0;
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
+#if PLATFORM(UNIX)
+#include <unistd.h>
+#endif
 #if COMPILER(MSVC)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -391,6 +394,7 @@ extern "C" const int jscore_fastmalloc_introspection = 0;
 #if PLATFORM(DARWIN)
 #include "MallocZoneSupport.h"
 #include <wtf/HashSet.h>
+#include <wtf/Vector.h>
 #endif
 
 #ifndef PRIuS
@@ -2274,7 +2278,7 @@ static inline TCMalloc_PageHeap* getPageHeap()
 #define pageheap getPageHeap()
 
 #if USE_BACKGROUND_THREAD_TO_SCAVENGE_MEMORY
-#if PLATFORM(WIN)
+#if PLATFORM(WIN_OS)
 static void sleep(unsigned seconds)
 {
     ::Sleep(seconds * 1000);
@@ -2283,6 +2287,10 @@ static void sleep(unsigned seconds)
 
 void TCMalloc_PageHeap::scavengerThread()
 {
+#if HAVE(PTHREAD_SETNAME_NP)
+  pthread_setname_np("JavaScriptCore: FastMalloc scavenger");
+#endif
+
   while (1) {
       if (!shouldContinueScavenging()) {
           pthread_mutex_lock(&m_scavengeMutex);
@@ -2388,7 +2396,7 @@ ALWAYS_INLINE void TCMalloc_Central_FreeList::ReleaseToSpans(void* object) {
   // The following check is expensive, so it is disabled by default
   if (false) {
     // Check that object does not occur in list
-    int got = 0;
+    unsigned got = 0;
     for (void* p = span->objects; p != NULL; p = *((void**) p)) {
       ASSERT(p != object);
       got++;

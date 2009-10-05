@@ -278,6 +278,10 @@
 #undef ARM_ARCH_VERSION
 #define ARM_ARCH_VERSION 7
 #endif
+/* On ARMv5 and below the natural alignment is required. */
+#if !defined(ARM_REQUIRE_NATURAL_ALIGNMENT) && ARM_ARCH_VERSION <= 5
+#define ARM_REQUIRE_NATURAL_ALIGNMENT 1
+#endif
 /* Defines two pseudo-platforms for ARM and Thumb-2 instruction set. */
 #if !defined(WTF_PLATFORM_ARM_TRADITIONAL) && !defined(WTF_PLATFORM_ARM_THUMB2)
 #  if defined(thumb2) || defined(__thumb2__)
@@ -560,6 +564,7 @@
 #if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD) && !PLATFORM(IPHONE)
 #define HAVE_MADV_FREE_REUSE 1
 #define HAVE_MADV_FREE 1
+#define HAVE_PTHREAD_SETNAME_NP 1
 #endif
 
 #if PLATFORM(IPHONE)
