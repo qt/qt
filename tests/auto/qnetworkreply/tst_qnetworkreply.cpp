@@ -258,6 +258,7 @@ private Q_SLOTS:
     void httpConnectionCount();
 
 #ifndef QT_NO_OPENSSL
+    void ioPostToHttpsUploadProgress();
     void ignoreSslErrorsList_data();
     void ignoreSslErrorsList();
     void ignoreSslErrorsListWithSlot_data();
@@ -3099,6 +3100,109 @@ void tst_QNetworkReply::ioPostToHttpNoBufferFlag()
     QCOMPARE(reply->error(), QNetworkReply::ContentReSendError);
 }
 
+#ifndef QT_NO_OPENSSL
+class SslServer : public QTcpServer {
+    Q_OBJECT
+public:
+    SslServer() : socket(0) {};
+    void incomingConnection(int socketDescriptor) {
+        QSslSocket *serverSocket = new QSslSocket;
+        serverSocket->setParent(this);
+
+        if (serverSocket->setSocketDescriptor(socketDescriptor)) {
+            connect(serverSocket, SIGNAL(encrypted()), this, SLOT(encryptedSlot()));
+            serverSocket->setProtocol(QSsl::AnyProtocol);
+            connect(serverSocket, SIGNAL(sslErrors(const QList<QSslError>&)), serverSocket, SLOT(ignoreSslErrors()));
+            serverSocket->setLocalCertificate (SRCDIR "/certs/server.pem");
+            serverSocket->setPrivateKey (SRCDIR  "/certs/server.key");
+            serverSocket->startServerEncryption();
+        } else {
+            delete serverSocket;
+        }
+    }
+signals:
+    void newEncryptedConnection();
+public slots:
+    void encryptedSlot() {
+        socket = (QSslSocket*) sender();
+        emit newEncryptedConnection();
+    }
+public:
+    QSslSocket *socket;
+};
+
+// very similar to ioPostToHttpUploadProgress but for SSL
+void tst_QNetworkReply::ioPostToHttpsUploadProgress()
+{
+    QFile sourceFile(SRCDIR "/bigfile");
+    QVERIFY(sourceFile.open(QIODevice::ReadOnly));
+
+    // emulate a minimal https server
+    SslServer server;
+    server.listen(QHostAddress(QHostAddress::LocalHost), 0);
+
+    // create the request
+    QUrl url = QUrl(QString("https://127.0.0.1:%1/").arg(server.serverPort()));
+    QNetworkRequest request(url);
+    QNetworkReplyPtr reply = manager.post(request, &sourceFile);
+    QSignalSpy spy(reply, SIGNAL(uploadProgress(qint64,qint64)));
+    connect(&server, SIGNAL(newEncryptedConnection()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    connect(reply, SIGNAL(sslErrors(const QList<QSslError>&)), reply, SLOT(ignoreSslErrors()));
+
+    // get the request started and the incoming socket connected
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QTcpSocket *incomingSocket = server.socket;
+    QVERIFY(incomingSocket);
+    disconnect(&server, SIGNAL(newEncryptedConnection()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+
+    incomingSocket->setReadBufferSize(1*1024);
+    QTestEventLoop::instance().enterLoop(2);
+    // some progress should have been made
+    QList<QVariant> args = spy.last();
+    qDebug() << "tst_QNetworkReply::ioPostToHttpsUploadProgress"
+            << args.at(0).toLongLong()
+            << sourceFile.size()
+            << spy.size();
+    QVERIFY(!args.isEmpty());
+    QVERIFY(args.at(0).toLongLong() > 0);
+    // FIXME this is where it messes up
+
+    QEXPECT_FAIL("", "Either the readBufferSize of QSslSocket is broken or we do upload too much. Hm.", Abort);
+    QVERIFY(args.at(0).toLongLong() != sourceFile.size());
+
+    incomingSocket->setReadBufferSize(32*1024);
+    incomingSocket->read(16*1024);
+    QTestEventLoop::instance().enterLoop(2);
+    // some more progress than before
+    QList<QVariant> args2 = spy.last();
+    QVERIFY(!args2.isEmpty());
+    QVERIFY(args2.at(0).toLongLong() > args.at(0).toLongLong());
+
+    // set the read buffer to unlimited
+    incomingSocket->setReadBufferSize(0);
+    QTestEventLoop::instance().enterLoop(10);
+    // progress should be finished
+    QList<QVariant> args3 = spy.last();
+    QVERIFY(!args3.isEmpty());
+    QVERIFY(args3.at(0).toLongLong() > args2.at(0).toLongLong());
+    QCOMPARE(args3.at(0).toLongLong(), args3.at(1).toLongLong());
+    QCOMPARE(args3.at(0).toLongLong(), sourceFile.size());
+
+    // after sending this, the QNAM should emit finished()
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    incomingSocket->write("HTTP/1.0 200 OK\r\n");
+    incomingSocket->write("Content-Length: 0\r\n");
+    incomingSocket->write("\r\n");
+    QTestEventLoop::instance().enterLoop(10);
+    // not timeouted -> finished() was emitted
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    incomingSocket->close();
+    server.close();
+}
+#endif
 
 void tst_QNetworkReply::ioPostToHttpUploadProgress()
 {
