@@ -232,6 +232,7 @@ QString qws_dataDir()
 // Get the filename of the pipe Qt for Embedded Linux uses for server/client comms
 Q_GUI_EXPORT QString qws_qtePipeFilename()
 {
+    qws_dataDir();
     return QTE_PIPE(qws_display_id);
 }
 
