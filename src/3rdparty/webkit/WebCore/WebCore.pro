@@ -20,6 +20,7 @@ TEMPLATE = lib
 TARGET = QtWebKit
 
 contains(QT_CONFIG, embedded):CONFIG += embedded
+contains(QT_CONFIG, embedded_lite):CONFIG += embedded
 
 CONFIG(QTDIR_build) {
     GENERATED_SOURCES_DIR = $$PWD/generated
