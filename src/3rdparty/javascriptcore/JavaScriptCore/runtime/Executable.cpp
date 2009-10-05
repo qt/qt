@@ -59,13 +59,8 @@ FunctionExecutable::~FunctionExecutable()
     delete m_codeBlock;
 }
 
-JSObject* EvalExecutable::compile(ExecState* exec, ScopeChainNode* scopeChainNode)
+void EvalExecutable::compile(ExecState*exec, RefPtr<EvalNode> &evalNode, ScopeChainNode* scopeChainNode)
 {
-    int errLine;
-    UString errMsg;
-    RefPtr<EvalNode> evalNode = exec->globalData().parser->parse<EvalNode>(&exec->globalData(), exec->lexicalGlobalObject()->debugger(), exec, m_source, &errLine, &errMsg);
-    if (!evalNode)
-        return Error::create(exec, SyntaxError, errMsg, errLine, m_source.provider()->asID(), m_source.provider()->url());
     recordParse(evalNode->features(), evalNode->lineNo(), evalNode->lastLine());
 
     ScopeChain scopeChain(scopeChainNode);
@@ -75,7 +70,18 @@ JSObject* EvalExecutable::compile(ExecState* exec, ScopeChainNode* scopeChainNod
     m_evalCodeBlock = new EvalCodeBlock(this, globalObject, source().provider(), scopeChain.localDepth());
     OwnPtr<BytecodeGenerator> generator(new BytecodeGenerator(evalNode.get(), globalObject->debugger(), scopeChain, m_evalCodeBlock->symbolTable(), m_evalCodeBlock));
     generator->generate();
-    
+}
+
+JSObject* EvalExecutable::compile(ExecState* exec, ScopeChainNode* scopeChainNode)
+{
+    int errLine;
+    UString errMsg;
+    RefPtr<EvalNode> evalNode = exec->globalData().parser->parse<EvalNode>(&exec->globalData(), exec->lexicalGlobalObject()->debugger(), exec, m_source, &errLine, &errMsg);
+    if (!evalNode)
+        return Error::create(exec, SyntaxError, errMsg, errLine, m_source.provider()->asID(), m_source.provider()->url());
+
+    compile(exec, evalNode, scopeChainNode);
+
     evalNode->destroyData();
     return 0;
 }

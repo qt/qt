@@ -149,9 +149,9 @@ bool DeclarativeObjectDelegate::getPropertyAttributes(const QScriptObject* objec
     return QScriptObjectDelegate::getPropertyAttributes(object, exec, propertyName, attribs);
 }
 
-void DeclarativeObjectDelegate::getPropertyNames(QScriptObject* object, JSC::ExecState *exec,
-                                                 JSC::PropertyNameArray &propertyNames,
-                                                 unsigned listedAttributes)
+void DeclarativeObjectDelegate::getOwnPropertyNames(QScriptObject* object, JSC::ExecState *exec,
+                                                    JSC::PropertyNameArray &propertyNames,
+                                                    bool includeNonEnumerable)
 {
     QStringList properties = m_class->propertyNames(m_object);
     for (int ii = 0; ii < properties.count(); ++ii) {
@@ -159,7 +159,7 @@ void DeclarativeObjectDelegate::getPropertyNames(QScriptObject* object, JSC::Exe
         propertyNames.add(JSC::Identifier(exec, name));
     }
 
-    QScriptObjectDelegate::getPropertyNames(object, exec, propertyNames, listedAttributes);
+    QScriptObjectDelegate::getOwnPropertyNames(object, exec, propertyNames, includeNonEnumerable);
 }
 
 JSC::CallType DeclarativeObjectDelegate::getCallData(QScriptObject *object, JSC::CallData &callData)

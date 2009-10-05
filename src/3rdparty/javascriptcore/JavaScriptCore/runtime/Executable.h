@@ -155,6 +155,7 @@ namespace JSC {
         }
 
         JSObject* compile(ExecState*, ScopeChainNode*);
+        void compile(ExecState*, RefPtr<EvalNode> &, ScopeChainNode*);
 
         ExceptionInfo* reparseExceptionInfo(JSGlobalData*, ScopeChainNode*, CodeBlock*);
         static PassRefPtr<EvalExecutable> create(const SourceCode& source) { return adoptRef(new EvalExecutable(source)); }

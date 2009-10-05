@@ -110,7 +110,7 @@ QScriptValue QScriptDeclarativeClass::newObject(QScriptEngine *engine,
 QScriptDeclarativeClass *QScriptDeclarativeClass::scriptClass(const QScriptValue &v)
 {
     QScriptValuePrivate *d = QScriptValuePrivate::get(v);
-    if (!d || !d->isJSC() || !d->jscValue.isObject(&QScriptObject::info))
+    if (!d || !d->isJSC() || !d->jscValue.inherits(&QScriptObject::info))
         return 0;
     QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
     QScriptObjectDelegate *delegate = scriptObject->delegate();
@@ -122,7 +122,7 @@ QScriptDeclarativeClass *QScriptDeclarativeClass::scriptClass(const QScriptValue
 QScriptDeclarativeClass::Object *QScriptDeclarativeClass::object(const QScriptValue &v)
 {
     QScriptValuePrivate *d = QScriptValuePrivate::get(v);
-    if (!d || !d->isJSC() || !d->jscValue.isObject(&QScriptObject::info))
+    if (!d || !d->isJSC() || !d->jscValue.inherits(&QScriptObject::info))
         return 0;
     QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
     QScriptObjectDelegate *delegate = scriptObject->delegate();

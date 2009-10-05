@@ -344,6 +344,7 @@ class QScriptProgramPrivate
 {
 public:
     QScriptProgramPrivate() : refcount(1), hasException(false) { }
+    ~QScriptProgramPrivate() { if (evalNode) evalNode->destroyData(); }
 
     void addref() { ++refcount; }
     void release() { if (--refcount) delete this; }
@@ -2143,15 +2144,17 @@ QScriptProgram QScriptEngine::compile(const QString &program, const QString &fil
     QBoolBlocker inEval(d->inEval, true);
     currentContext()->activationObject(); //force the creation of a context for native function;
 
+    JSC::Debugger* debugger = d->originalGlobalObject()->debugger();
+
     JSC::UString jscProgram = program;
     JSC::UString jscFileName = fileName;
     JSC::ExecState* exec = d->currentFrame;
-
+    WTF::PassRefPtr<QScript::UStringSourceProviderWithFeedback> provider
+            = QScript::UStringSourceProviderWithFeedback::create(jscProgram, jscFileName, lineNumber, d);
+    intptr_t sourceId = provider->asID();
     JSC::SourceCode &source = rv.d->source;
-    source = JSC::makeSource(jscProgram, jscFileName, lineNumber);
+    source = JSC::SourceCode(provider, lineNumber); //after construction of SourceCode provider variable will be null.
 
-    intptr_t sourceId = source.provider()->asID();
-    JSC::Debugger* debugger = d->originalGlobalObject()->debugger();
     if (debugger)
         debugger->evaluateStart(sourceId);
 
@@ -2161,9 +2164,9 @@ QScriptProgram QScriptEngine::compile(const QString &program, const QString &fil
     int errorLine;
     JSC::UString errorMessage;
     WTF::RefPtr<JSC::EvalNode> &evalNode = rv.d->evalNode;
-    evalNode = exec->globalData().parser->parse<JSC::EvalNode>(exec, exec->dynamicGlobalObject()->debugger(), source, &errorLine, &errorMessage);
+    evalNode = exec->globalData().parser->parse<JSC::EvalNode>(&exec->globalData(), exec->lexicalGlobalObject()->debugger(), exec, source, &errorLine, &errorMessage);
     if (!evalNode) {
-        JSC::JSValue exceptionValue = JSC::Error::create(exec, JSC::SyntaxError, errorMessage, errorLine, source.provider()->asID(), 0);
+        JSC::JSValue exceptionValue = JSC::Error::create(exec, JSC::SyntaxError, errorMessage, errorLine, source.provider()->asID(), source.provider()->url());
         exec->setException(exceptionValue);
 
         if (debugger)  {
@@ -2195,10 +2198,12 @@ QScriptValue QScriptEngine::evaluate(const QScriptProgram &program)
     QBoolBlocker inEval(d->inEval, true);
     currentContext()->activationObject(); //force the creation of a context for native function;
 
+    JSC::Debugger* debugger = d->originalGlobalObject()->debugger();
+
     JSC::ExecState* exec = d->currentFrame;
 
     intptr_t sourceId = program.d->source.provider()->asID();
-    JSC::Debugger* debugger = d->originalGlobalObject()->debugger();
+
     if (debugger)
         debugger->evaluateStart(sourceId);
 
@@ -2207,11 +2212,16 @@ QScriptValue QScriptEngine::evaluate(const QScriptProgram &program)
 
     WTF::RefPtr<JSC::EvalNode> &evalNode = program.d->evalNode;
 
+    JSC::EvalExecutable executable(program.d->source);
+    executable.compile(exec, evalNode, exec->scopeChain());
+
     JSC::JSValue thisValue = d->thisForContext(exec);
     JSC::JSObject* thisObject = (!thisValue || thisValue.isUndefinedOrNull()) ? exec->dynamicGlobalObject() : thisValue.toObject(exec);
     JSC::JSValue exceptionValue;
     d->timeoutChecker()->setShouldAbort(false);
-    JSC::JSValue result = exec->interpreter()->execute(evalNode.get(), exec, thisObject, exec->scopeChain(), &exceptionValue);
+    if (d->processEventsInterval > 0)
+        d->timeoutChecker()->reset();
+    JSC::JSValue result = exec->interpreter()->execute(&executable, exec, thisObject, exec->scopeChain(), &exceptionValue);
 
     if (d->timeoutChecker()->shouldAbort()) {
         if (d->abortResult.isError())

@@ -55,6 +55,7 @@
 
 #include <QtCore/qobjectdefs.h>
 
+#include "config.h"
 #include "qscriptobject_p.h"
 #include "qscriptdeclarativeclass_p.h"
 
@@ -88,9 +89,9 @@ public:
     virtual bool getPropertyAttributes(const QScriptObject*, JSC::ExecState*,
                                        const JSC::Identifier&,
                                        unsigned&) const;
-    virtual void getPropertyNames(QScriptObject*, JSC::ExecState*,
-                                  JSC::PropertyNameArray&, 
-                                  unsigned listedAttributes = JSC::Structure::Prototype);
+    virtual void getOwnPropertyNames(QScriptObject*, JSC::ExecState*,
+                                     JSC::PropertyNameArray&, 
+                                     bool includeNonEnumerable = false);
 
     virtual JSC::CallType getCallData(QScriptObject*, JSC::CallData&);
     virtual JSC::ConstructType getConstructData(QScriptObject*, JSC::ConstructData&);
