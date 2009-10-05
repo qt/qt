@@ -42,7 +42,7 @@
 /*!
     \page exceptionsafety.html
     \title Exception Safety
-    \ingroup architecture
+    \ingroup best-practices
     \brief A guide to exception safety in Qt.
 
     \bold {Preliminary warning}: Exception safety is not feature complete!
