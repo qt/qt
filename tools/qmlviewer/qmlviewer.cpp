@@ -302,7 +302,7 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     setLayout(layout);
     if (mb)
         layout->addWidget(mb);
-    layout->addWidget(canvas);
+    layout->addWidget(canvas, 0, Qt::AlignLeft);
 
     setupProxy();
     canvas->engine()->networkAccessManager()->setCookieJar(new PersistentCookieJar(this));
@@ -651,6 +651,7 @@ void QmlViewer::openQml(const QString& fileName)
     if (!skin) {
         canvas->updateGeometry();
         canvas->resize(canvas->sizeHint());
+        canvas->updateGeometry();
         resize(sizeHint());
     } else {
         if (scaleSkin)
