@@ -89,6 +89,7 @@ public:
     QList<QGraphicsItem *> estimateItemsInRect(const QRectF &rect) const;
     void addToIndex(QGraphicsItem *item);
     void removeFromIndex(QGraphicsItem *item);
+    void addToUnindexedItems(QGraphicsItem *item);
     void resetIndex();
 
     QGraphicsSceneBspTree bspTree;

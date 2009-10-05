@@ -448,6 +448,20 @@ void QGraphicsScenePrivate::addToIndex(QGraphicsItem *item)
 /*!
     \internal
 */
+void QGraphicsScenePrivate::addToUnindexedItems(QGraphicsItem *item)
+{
+    if (indexMethod == QGraphicsScene::BspTreeIndex) {
+        item->d_func()->index = -1;
+        unindexedItems << item;
+
+        for (int i = 0 ; i < item->d_ptr->children.size() ; ++i)
+            addToUnindexedItems(item->d_ptr->children.at(i));
+    }
+}
+
+/*!
+    \internal
+*/
 void QGraphicsScenePrivate::removeFromIndex(QGraphicsItem *item)
 {
     if (indexMethod == QGraphicsScene::BspTreeIndex) {

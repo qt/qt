@@ -1262,6 +1262,9 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
         d_ptr->updateAncestorFlag(ItemClipsChildrenToShape);
     }
 
+    if (d_ptr->scene && oldFlags & ItemClipsChildrenToShape)
+        d_ptr->scene->d_func()->addToUnindexedItems(this);
+
     if ((flags & ItemClipsToShape) != (oldFlags & ItemClipsToShape))
         d_ptr->invalidateCachedClipPath();
 
