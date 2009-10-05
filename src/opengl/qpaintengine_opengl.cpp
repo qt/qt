@@ -2311,7 +2311,7 @@ void QOpenGLPaintEnginePrivate::updateDepthClip()
 void QOpenGLPaintEnginePrivate::systemStateChanged()
 {
     Q_Q(QOpenGLPaintEngine);
-    if (q->state()->hasClipping)
+    if (q->painter()->hasClipping())
         q->updateClipRegion(q->painter()->clipRegion(), Qt::ReplaceClip);
     else
         q->updateClipRegion(QRegion(), Qt::NoClip);
