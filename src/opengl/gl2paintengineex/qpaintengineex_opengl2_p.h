@@ -278,6 +278,8 @@ public:
     QScopedPointer<QPixmapFilter> colorizeFilter;
     QScopedPointer<QPixmapFilter> blurFilter;
     QScopedPointer<QPixmapFilter> fastBlurFilter;
+    QScopedPointer<QPixmapFilter> dropShadowFilter;
+    QScopedPointer<QPixmapFilter> fastDropShadowFilter;
 };
 
 QT_END_NAMESPACE
