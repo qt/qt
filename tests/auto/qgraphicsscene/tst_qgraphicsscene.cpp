@@ -1705,7 +1705,7 @@ void tst_QGraphicsScene::hoverEvents_parentChild()
     view.scale(1.7, 1.7);
     view.show();
     QTest::qWaitForWindowShown(&view);
-    QTest::qWait(50);
+    QTest::qWait(70);
 
     QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseMove);
     mouseEvent.setScenePos(QPointF(-1000, -1000));
@@ -1726,7 +1726,7 @@ void tst_QGraphicsScene::hoverEvents_parentChild()
             qApp->processEvents(); // this posts updates from the scene to the view
             qApp->processEvents(); // which trigger a repaint here
 
-            QVERIFY(items.at(i)->isHovered);
+            QTRY_VERIFY(items.at(i)->isHovered);
             if (i < 14)
                 QVERIFY(!items.at(i + 1)->isHovered);
             i += j ? 1 : -1;

@@ -9024,12 +9024,11 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
  #ifdef Q_WS_X11
      qt_x11_wait_for_window_manager(&parent);
  #endif
-     QTest::qWait(100);
+     QTest::qWait(150);
 
      QCursor::setPos(child.mapToGlobal(QPoint(100, 100)));
-     QTest::qWait(100);
      // Make sure the cursor has entered the child.
-     QVERIFY(child.numEnterEvents > 0);
+     QTRY_VERIFY(child.numEnterEvents > 0);
 
      child.hide();
      child.reset();
