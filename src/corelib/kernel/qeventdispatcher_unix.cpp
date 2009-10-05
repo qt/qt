@@ -423,10 +423,10 @@ bool QTimerInfoList::timerWait(timeval &tm)
     // Find first waiting timer not already active
     QTimerInfo *t = 0;
     for (QTimerInfoList::const_iterator it = constBegin(); it != constEnd(); ++it) {
-	if (!(*it)->inTimerEvent) {
-	    t = *it;
-	    break;
-	}
+        if (!(*it)->inTimerEvent) {
+            t = *it;
+            break;
+        }
     }
 
     if (!t)
