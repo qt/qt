@@ -884,6 +884,7 @@ void tst_QGridLayout::minMaxSize()
     for (int pass = 0; pass < 2; ++pass) {
         m_toplevel->hide();
         QApplication::processEvents();
+        QTest::qWait(20);
         // Test if removeItem uninitializes data properly
         while (m_grid->count()) {
             QLayoutItem *item = m_grid->itemAt(0);

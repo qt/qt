@@ -13,8 +13,6 @@ include(../qbase.pri)
 
 CONFIG += building-libs
 
-# disable JIT for now
-DEFINES += ENABLE_JIT=0
 # FIXME: shared the statically built JavaScriptCore
 
 # Fetch the base WebKit directory from the WEBKITDIR environment variable;

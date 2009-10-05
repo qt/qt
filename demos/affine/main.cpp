@@ -54,8 +54,10 @@ int main(int argc, char **argv)
     xformWidget.setStyle(arthurStyle);
 
     QList<QWidget *> widgets = qFindChildren<QWidget *>(&xformWidget);
-    foreach (QWidget *w, widgets)
+    foreach (QWidget *w, widgets) {
         w->setStyle(arthurStyle);
+        w->setAttribute(Qt::WA_AcceptTouchEvents);
+    }
 
     xformWidget.show();
 

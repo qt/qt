@@ -71,6 +71,9 @@
 #define MMP_TARGET "TARGET"
 #define MMP_TARGETTYPE "TARGETTYPE"
 #define MMP_SECUREID "SECUREID"
+#define MMP_OPTION_CW "OPTION CW"
+#define MMP_OPTION_ARMCC "OPTION ARMCC"
+#define MMP_OPTION_GCCE "OPTION GCCE"
 
 #define SIS_TARGET "sis"
 #define OK_SIS_TARGET "ok_sis"
@@ -649,9 +652,35 @@ void SymbianMakefileGenerator::initMmpVariables()
     sysincspaths << temporary;
 
     systeminclude.insert("SYSTEMINCLUDE", sysincspaths);
+
+    // Check MMP_RULES for singleton keywords that are overridden
+    QStringList overridableMmpKeywords;
+    overridableMmpKeywords << QLatin1String(MMP_TARGETTYPE) << QLatin1String(MMP_OPTION_CW)
+        << QLatin1String(MMP_OPTION_ARMCC) << QLatin1String(MMP_OPTION_GCCE);
+
+    foreach (QString item, project->values("MMP_RULES")) {
+        if (project->values(item).isEmpty()) {
+            checkOverridability(overridableMmpKeywords, item);
+        } else {
+            foreach (QString itemRow, project->values(item)) {
+                checkOverridability(overridableMmpKeywords, itemRow);
+            }
+        }
+    }
 }
 
-bool SymbianMakefileGenerator::removeDuplicatedStrings(QStringList& stringList)
+void SymbianMakefileGenerator::checkOverridability(QStringList &overridableKeywords, QString &checkString)
+{
+    // Check if checkString contains overridable keyword and
+    // add the keyword to overridden keywords list if so.
+    QString simplifiedString = checkString.simplified();
+    foreach (QString item, overridableKeywords) {
+        if (simplifiedString.startsWith(item))
+            appendIfnotExist(overriddenMmpKeywords, item);
+    }
+}
+
+bool SymbianMakefileGenerator::removeDuplicatedStrings(QStringList &stringList)
 {
     QStringList tmpStringList;
 
@@ -762,24 +791,32 @@ void SymbianMakefileGenerator::addMacro(QTextStream& t, const QString& value)
 
 void SymbianMakefileGenerator::writeMmpFileTargetPart(QTextStream& t)
 {
+    bool skipTargetType = overriddenMmpKeywords.contains(MMP_TARGETTYPE);
+
     if (targetType == TypeExe) {
         t << MMP_TARGET << "\t\t" << fixedTarget << ".exe" << endl;
-        if (project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive))
-            t << MMP_TARGETTYPE << "\t\t" << "STDEXE" << endl;
-        else
-            t << MMP_TARGETTYPE << "\t\t" << "EXE" << endl;
+        if (!skipTargetType) {
+            if (project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive))
+                t << MMP_TARGETTYPE << "\t\t" << "STDEXE" << endl;
+            else
+                t << MMP_TARGETTYPE << "\t\t" << "EXE" << endl;
+        }
     } else if (targetType == TypeDll || targetType == TypePlugin) {
         t << MMP_TARGET << "\t\t" << fixedTarget << ".dll" << endl;
-        if (project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive))
-            t << MMP_TARGETTYPE << "\t\t" << "STDDLL" << endl;
-        else
-            t << MMP_TARGETTYPE << "\t\t" << "DLL" << endl;
+        if (!skipTargetType) {
+            if (project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive))
+                t << MMP_TARGETTYPE << "\t\t" << "STDDLL" << endl;
+            else
+                t << MMP_TARGETTYPE << "\t\t" << "DLL" << endl;
+        }
     } else if (targetType == TypeLib) {
         t << MMP_TARGET << "\t\t" << fixedTarget << ".lib" << endl;
-        if (project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive))
-            t << MMP_TARGETTYPE << "\t\t" << "STDLIB" << endl;
-        else
-            t << MMP_TARGETTYPE << "\t\t" << "LIB" << endl;
+        if (!skipTargetType) {
+            if (project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive))
+                t << MMP_TARGETTYPE << "\t\t" << "STDLIB" << endl;
+            else
+                t << MMP_TARGETTYPE << "\t\t" << "LIB" << endl;
+        }
     } else {
         fprintf(stderr, "Error: Unexpected targettype (%d) in SymbianMakefileGenerator::writeMmpFileTargetPart\n", targetType);
     }
@@ -990,12 +1027,12 @@ void SymbianMakefileGenerator::writeMmpFileCompilerOptionPart(QTextStream& t)
     if (!gcce.isEmpty() && gcce[gcce.size()-1] == ' ')
         gcce.chop(1);
 
-    if (!cw.isEmpty())
-        t << "OPTION CW " << cw <<  endl;
-    if (!armcc.isEmpty())
-        t << "OPTION ARMCC " << armcc <<  endl;
-    if (!gcce.isEmpty())
-        t << "OPTION GCCE " << gcce <<  endl;
+    if (!cw.isEmpty() && !overriddenMmpKeywords.contains(MMP_OPTION_CW))
+        t << MMP_OPTION_CW " " << cw <<  endl;
+    if (!armcc.isEmpty() && !overriddenMmpKeywords.contains(MMP_OPTION_ARMCC))
+        t << MMP_OPTION_ARMCC " " << armcc <<  endl;
+    if (!gcce.isEmpty() && !overriddenMmpKeywords.contains(MMP_OPTION_GCCE))
+        t << MMP_OPTION_GCCE " " << gcce <<  endl;
 
     t <<  endl;
 }

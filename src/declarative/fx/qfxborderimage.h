@@ -68,7 +68,7 @@ public:
 
     QFxScaleGrid *border();
 
-    enum TileMode { Stretch = Qt::Stretch, Repeat = Qt::Repeat, Round = Qt::Round };
+    enum TileMode { Stretch = Qt::StretchTile, Repeat = Qt::RepeatTile, Round = Qt::RoundTile };
 
     TileMode horizontalTileMode() const;
     void setHorizontalTileMode(TileMode);

@@ -72,7 +72,8 @@ class MediaPlayer :
 {
     Q_OBJECT
 public:
-    MediaPlayer(const QString &);
+    MediaPlayer(const QString &,
+                const bool hasSmallScreen);
     
     void dragEnterEvent(QDragEnterEvent *e);
     void dragMoveEvent(QDragMoveEvent *e);
@@ -132,6 +133,7 @@ private:
     Phonon::AudioOutput m_AudioOutput;
     Phonon::VideoWidget *m_videoWidget;
     Phonon::Path m_audioOutputPath;
+    const bool m_hasSmallScreen;
 };
 
 #endif //MEDIAPLAYER_H

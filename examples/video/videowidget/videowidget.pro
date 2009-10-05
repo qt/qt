@@ -14,6 +14,6 @@ SOURCES = \
     videowidgetsurface.cpp
 
 symbian {
-    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
     TARGET.UID3 = 0xA000D7C3
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 }

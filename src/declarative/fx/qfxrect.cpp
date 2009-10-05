@@ -457,41 +457,9 @@ void QFxRect::drawRect(QPainter &p)
             ySide = yOffset * 2;
         }
 
-        // Upper left
-        p.drawPixmap(QRect(-pw/2, -pw/2, xOffset, yOffset), d->rectImage, QRect(0, 0, xOffset, yOffset));
-
-        // Upper middle
-        if (xMiddles)
-            p.drawPixmap(QRect(xOffset-pw/2, -pw/2, width() - xSide + pw, yOffset), d->rectImage,
-                                  QRect(d->rectImage.width()/2, 0, 1, yOffset));
-        // Upper right
-        p.drawPixmap(QPoint(width()-xOffset+pw/2, -pw/2), d->rectImage,
-                              QRect(d->rectImage.width()-xOffset, 0, xOffset, yOffset));
-        // Middle left
-        if (yMiddles)
-            p.drawPixmap(QRect(-pw/2, yOffset-pw/2, xOffset, height() - ySide + pw), d->rectImage,
-                                  QRect(0, d->rectImage.height()/2, xOffset, 1));
-
-        // Middle
-        if (xMiddles && yMiddles)
-            // XXX paint errors in animation example
-            //p.fillRect(xOffset-pw/2, yOffset-pw/2, width() - xSide + pw, height() - ySide + pw, d->color);
-            p.drawPixmap(QRect(xOffset-pw/2, yOffset-pw/2, width() - xSide + pw, height() - ySide + pw), d->rectImage,
-                                QRect(d->rectImage.width()/2, d->rectImage.height()/2, 1, 1));
-        // Middle right
-        if (yMiddles)
-            p.drawPixmap(QRect(width()-xOffset+pw/2, yOffset-pw/2, xOffset, height() - ySide + pw), d->rectImage,
-                                QRect(d->rectImage.width()-xOffset, d->rectImage.height()/2, xOffset, 1));
-        // Lower left
-        p.drawPixmap(QPoint(-pw/2, height() - yOffset + pw/2), d->rectImage, QRect(0, d->rectImage.height() - yOffset, xOffset, yOffset));
-
-        // Lower Middle
-        if (xMiddles)
-            p.drawPixmap(QRect(xOffset-pw/2, height() - yOffset +pw/2, width() - xSide + pw, yOffset), d->rectImage,
-                                QRect(d->rectImage.width()/2, d->rectImage.height() - yOffset, 1, yOffset));
-        // Lower Right
-        p.drawPixmap(QPoint(width()-xOffset+pw/2, height() - yOffset+pw/2), d->rectImage,
-                        QRect(d->rectImage.width()-xOffset, d->rectImage.height() - yOffset, xOffset, yOffset));
+        QMargins margins(xOffset, yOffset, xOffset, yOffset);
+        QTileRules rules(Qt::StretchTile, Qt::StretchTile);
+        qDrawBorderPixmap(&p, QRect(-pw/2, -pw/2, width()+pw, height()+pw), margins, d->rectImage, d->rectImage.rect(), margins, rules);
 
         if (d->smooth) {
             p.setRenderHint(QPainter::Antialiasing, oldAA);

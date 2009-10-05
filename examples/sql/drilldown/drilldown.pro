@@ -16,6 +16,6 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/sql/drilldown
 INSTALLS += target sources
 
 symbian {
-    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
     TARGET.UID3 = 0xA000C612
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 }

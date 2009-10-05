@@ -5498,10 +5498,11 @@ void tst_QWidget::multipleToplevelFocusCheck()
 
     QTest::qWait(100);
 
-    w1.activateWindow();
     QApplication::setActiveWindow(&w1);
+    w1.activateWindow();
     QApplication::processEvents();
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w1));
+    QTest::qWait(50);
     QTest::mouseDClick(&w1, Qt::LeftButton);
     QTRY_COMPARE(QApplication::focusWidget(), static_cast<QWidget *>(w1.edit));
 
@@ -7470,10 +7471,11 @@ void tst_QWidget::updateWhileMinimized()
     QTest::qWaitForWindowShown(&widget);
     QApplication::processEvents();
     QTRY_VERIFY(widget.numPaintEvents > 0);
+    QTest::qWait(50);
 
     // Minimize window.
     widget.showMinimized();
-    QTest::qWait(30);
+    QTest::qWait(70);
 
     widget.reset();
 
@@ -8174,7 +8176,7 @@ public:
 
         static bool firstTime = true;
         if (firstTime)
-            QTimer::singleShot(100, this, SLOT(resizeMe()));
+            QTimer::singleShot(70, this, SLOT(resizeMe()));
 
         firstTime = false;
     }
@@ -8709,6 +8711,7 @@ void tst_QWidget::setClearAndResizeMask()
     // Disable the size grip on the Mac; otherwise it'll be included when grabbing the window.
     resizeParent.setFixedSize(resizeParent.size());
     resizeChild.show();
+    QTest::qWait(30);
     resizeChild.paintedRegion = QRegion();
 
     QTimer::singleShot(100, &resizeChild, SLOT(shrinkMask()));
@@ -8892,6 +8895,8 @@ void tst_QWidget::syntheticEnterLeave()
         int numLeaveEvents;
     };
 
+    QCursor::setPos(QPoint(0,0));
+
     MyWidget window;
     window.setWindowFlags(Qt::WindowStaysOnTopHint);
     window.resize(200, 200);
@@ -9008,6 +9013,8 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
          void reset() { numEnterEvents = numMouseMoveEvents = 0; }
          int numEnterEvents, numMouseMoveEvents;
      };
+
+    QCursor::setPos(QPoint(0,0));
 
      SELParent parent;
      parent.resize(200, 200);
@@ -9194,6 +9201,7 @@ void tst_QWidget::focusWidget_task254563()
 
 void tst_QWidget::destroyBackingStore()
 {
+#ifdef QT_BUILD_INTERNAL
     UpdateWidget w;
     w.reset();
     w.show();
@@ -9218,6 +9226,7 @@ void tst_QWidget::destroyBackingStore()
     w.update();
     QApplication::processEvents();
     QCOMPARE(w.numPaintEvents, 2);
+#endif
 }
 
 void tst_QWidget::rectOutsideCoordinatesLimit_task144779()

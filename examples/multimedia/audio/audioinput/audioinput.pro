@@ -11,6 +11,6 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/multimedia/audio/audioinput
 INSTALLS += target sources
 
 symbian {
-    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
     TARGET.UID3 = 0xA000D7BF
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 }

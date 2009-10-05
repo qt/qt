@@ -218,7 +218,7 @@ void QSignalTransition::setSignal(const QByteArray &signal)
 bool QSignalTransition::eventTest(QEvent *event)
 {
     Q_D(const QSignalTransition);
-    if (event->type() == QEvent::Signal) {
+    if (event->type() == QEvent::StateMachineSignal) {
         if (d->signalIndex == -1)
             return false;
         QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(event);
@@ -248,7 +248,7 @@ void QSignalTransitionPrivate::callOnTransition(QEvent *e)
 {
     Q_Q(QSignalTransition);
 
-    if (e->type() == QEvent::Signal) {
+    if (e->type() == QEvent::StateMachineSignal) {
         QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent *>(e);
         int savedSignalIndex = se->m_signalIndex;
         se->m_signalIndex = originalSignalIndex;

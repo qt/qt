@@ -145,7 +145,7 @@ void ImageWidget::swipeTriggered()
         goNextImage();
     update();
 }
-//! [swipe slot finish]
+//! [swipe slot start]
 
 void ImageWidget::resizeEvent(QResizeEvent*)
 {

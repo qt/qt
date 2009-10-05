@@ -23,8 +23,8 @@ wince*: {
 }
 
 symbian: {
-     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
      TARGET.UID3 = 0xA000A64E
+     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
      addFiles.sources = files\*.svg
      addFiles.path = .
      DEPLOYMENT += addFiles

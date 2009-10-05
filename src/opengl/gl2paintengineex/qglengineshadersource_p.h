@@ -84,6 +84,20 @@ static const char* const qglslMainWithTexCoordsVertexShader = "\
             textureCoords = textureCoordArray; \
     }";
 
+static const char* const qglslMainWithTexCoordsAndOpacityVertexShader = "\
+    attribute highp vec2  textureCoordArray; \
+    attribute lowp  float opacityArray; \
+    varying   highp vec2  textureCoords; \
+    varying   lowp  float opacity; \
+    uniform   highp float depth; \
+    void setPosition(); \
+    void main(void) \
+    { \
+            setPosition(); \
+            gl_Position.z = depth * gl_Position.w; \
+            textureCoords = textureCoordArray; \
+            opacity = opacityArray; \
+    }";
 
 static const char* const qglslPositionOnlyVertexShader = "\
     attribute highp vec4    vertexCoordsArray;\
@@ -331,6 +345,12 @@ static const char* const qglslShockingPinkSrcFragmentShader = "\
         return vec4(0.98, 0.06, 0.75, 1.0); \
     }";
 
+static const char* const qglslMainFragmentShader_ImageArrays = "\
+    varying lowp float opacity; \
+    lowp vec4 srcPixel(); \
+    void main() { \
+        gl_FragColor = srcPixel() * opacity; \
+    }";
 
 static const char* const qglslMainFragmentShader_CMO = "\
     uniform lowp float globalOpacity; \

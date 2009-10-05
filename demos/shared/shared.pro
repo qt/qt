@@ -33,6 +33,6 @@ INSTALLS += sources
 !cross_compile:INSTALLS += target
 
 symbian {
-    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     TARGET.UID3 = 0xA000A63C
+    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
 }

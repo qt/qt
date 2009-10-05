@@ -402,6 +402,7 @@ PathStrokeRenderer::PathStrokeRenderer(QWidget *parent, bool smallScreen)
     m_penStyle = Qt::SolidLine;
     m_wasAnimated = true;
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    setAttribute(Qt::WA_AcceptTouchEvents);
 }
 
 void PathStrokeRenderer::paint(QPainter *painter)
@@ -510,10 +511,6 @@ void PathStrokeRenderer::updatePoints()
 
     Q_ASSERT(m_points.size() == m_vectors.size());
     for (int i=0; i<m_points.size(); ++i) {
-
-        if (i == m_activePoint)
-            continue;
-
         QPointF pos = m_points.at(i);
         QPointF vec = m_vectors.at(i);
         pos += vec;
@@ -532,6 +529,8 @@ void PathStrokeRenderer::updatePoints()
 
 void PathStrokeRenderer::mousePressEvent(QMouseEvent *e)
 {
+    if (!m_fingerPointMapping.isEmpty())
+        return;
     setDescriptionEnabled(false);
     m_activePoint = -1;
     qreal distance = -1;
@@ -556,6 +555,8 @@ void PathStrokeRenderer::mousePressEvent(QMouseEvent *e)
 
 void PathStrokeRenderer::mouseMoveEvent(QMouseEvent *e)
 {
+    if (!m_fingerPointMapping.isEmpty())
+        return;
     // If we've moved more then 25 pixels, assume user is dragging
     if (!m_mouseDrag && QPoint(m_mousePress - e->pos()).manhattanLength() > 25)
         m_mouseDrag = true;
@@ -568,6 +569,8 @@ void PathStrokeRenderer::mouseMoveEvent(QMouseEvent *e)
 
 void PathStrokeRenderer::mouseReleaseEvent(QMouseEvent *)
 {
+    if (!m_fingerPointMapping.isEmpty())
+        return;
     m_activePoint = -1;
     setAnimation(m_wasAnimated);
 
@@ -584,6 +587,90 @@ void PathStrokeRenderer::timerEvent(QTimerEvent *e)
 //         emit frameRate(m_frameCount);
 //         m_frameCount = 0;
 //     }
+}
+
+bool PathStrokeRenderer::event(QEvent *e)
+{
+    bool touchBegin = false;
+    switch (e->type()) {
+    case QEvent::TouchBegin:
+        touchBegin = true;
+    case QEvent::TouchUpdate:
+        {
+            const QTouchEvent *const event = static_cast<const QTouchEvent*>(e);
+            const QList<QTouchEvent::TouchPoint> points = event->touchPoints();
+            foreach (const QTouchEvent::TouchPoint &touchPoint, points) {
+                const int id = touchPoint.id();
+                switch (touchPoint.state()) {
+                case Qt::TouchPointPressed:
+                    {
+                        // find the point, move it
+                        QSet<int> activePoints = QSet<int>::fromList(m_fingerPointMapping.values());
+                        int activePoint = -1;
+                        qreal distance = -1;
+                        const int pointsCount = m_points.size();
+                        for (int i=0; i<pointsCount; ++i) {
+                            if (activePoints.contains(i))
+                                continue;
+
+                            qreal d = QLineF(touchPoint.pos(), m_points.at(i)).length();
+                            if ((distance < 0 && d < 12 * m_pointSize) || d < distance) {
+                                distance = d;
+                                activePoint = i;
+                            }
+                        }
+                        if (activePoint != -1) {
+                            m_fingerPointMapping.insert(touchPoint.id(), activePoint);
+                            m_points[activePoint] = touchPoint.pos();
+                        }
+                    }
+                    break;
+                case Qt::TouchPointReleased:
+                    {
+                        // move the point and release
+                        QHash<int,int>::iterator it = m_fingerPointMapping.find(id);
+                        m_points[it.value()] = touchPoint.pos();
+                        m_fingerPointMapping.erase(it);
+                    }
+                    break;
+                case Qt::TouchPointMoved:
+                    {
+                        // move the point
+                        const int pointIdx = m_fingerPointMapping.value(id, -1);
+                        if (pointIdx >= 0)
+                            m_points[pointIdx] = touchPoint.pos();
+                    }
+                    break;
+                default:
+                    break;
+                }
+            }
+            if (m_fingerPointMapping.isEmpty()) {
+                e->ignore();
+                return false;
+            } else {
+                if (touchBegin) {
+                    m_wasAnimated = m_timer.isActive();
+                    setAnimation(false);
+                }
+                update();
+                return true;
+            }
+        }
+        break;
+    case QEvent::TouchEnd:
+        if (m_fingerPointMapping.isEmpty()) {
+            e->ignore();
+            return false;
+        }
+        m_fingerPointMapping.clear();
+        setAnimation(m_wasAnimated);
+        return true;
+        break;
+    default:
+        break;
+    }
+    return QWidget::event(e);
 }
 
 void PathStrokeRenderer::setAnimation(bool animation)

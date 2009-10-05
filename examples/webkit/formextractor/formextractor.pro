@@ -16,6 +16,6 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/webkit/formextractor
 INSTALLS += target sources
 
 symbian {
-    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
     TARGET.UID3 = 0xA000CF6D
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 }

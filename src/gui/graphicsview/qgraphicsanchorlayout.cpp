@@ -118,9 +118,13 @@ QGraphicsAnchor::~QGraphicsAnchor()
 }
 
 /*!
-    Set the spacing for the anchor to \a spacing.
+    \property QGraphicsAnchor::spacing
+    \brief the space between items in the QGraphicsAnchorLayout.
 
-    \sa spacing(), unsetSpacing()
+    Depending on the anchor type, the default spacing is either
+    0 or a value returned from the style.
+
+    \sa QGraphicsAnchorLayout::anchor()
 */
 void QGraphicsAnchor::setSpacing(qreal spacing)
 {
@@ -128,23 +132,12 @@ void QGraphicsAnchor::setSpacing(qreal spacing)
     d->setSpacing(spacing);
 }
 
-/*!
-    Returns the spacing for the anchor
-
-    \sa setSpacing()
-*/
 qreal QGraphicsAnchor::spacing() const
 {
     Q_D(const QGraphicsAnchor);
     return d->spacing();
 }
 
-/*!
-    Resets the spacing of the anchor point to be the default spacing. Depending on the anchor type,
-    the default spacing is either 0 or a value returned from the style.
-
-    \sa setSpacing(), spacing(), QGraphicsAnchorLayout::anchor()
-*/
 void QGraphicsAnchor::unsetSpacing()
 {
     Q_D(QGraphicsAnchor);

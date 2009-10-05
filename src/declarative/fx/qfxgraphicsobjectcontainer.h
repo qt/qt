@@ -58,6 +58,7 @@ class Q_DECLARATIVE_EXPORT QFxGraphicsObjectContainer : public QFxItem
 
     Q_CLASSINFO("DefaultProperty", "graphicsObject")
     Q_PROPERTY(QGraphicsObject *graphicsObject READ graphicsObject WRITE setGraphicsObject)
+    Q_PROPERTY(bool synchronizedResizing READ synchronizedResizing WRITE setSynchronizedResizing)
 
 public:
     QFxGraphicsObjectContainer(QFxItem *parent = 0);
@@ -66,11 +67,19 @@ public:
     QGraphicsObject *graphicsObject() const;
     void setGraphicsObject(QGraphicsObject *);
 
+    bool synchronizedResizing() const;
+    void setSynchronizedResizing(bool on);
+
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+    bool eventFilter(QObject *watched, QEvent *e);
+
+private Q_SLOTS:
+    void _q_updateSize();
 
 private:
     QGraphicsObject *_graphicsObject;
+    bool _syncedResize;
 };
 
 QT_END_NAMESPACE

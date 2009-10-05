@@ -7,8 +7,8 @@ Item { id:block
     property int targetX: 0
     property int targetY: 0
 
-    x: Follow { enabled: spawned; source: targetX; spring: 2; damping: 0.2 }
-    y: Follow { source: targetY; spring: 2; damping: 0.2 }
+    x: SpringFollow { enabled: spawned; source: targetX; spring: 2; damping: 0.2 }
+    y: SpringFollow { source: targetY; spring: 2; damping: 0.2 }
 
     Image { id: img
         source: {

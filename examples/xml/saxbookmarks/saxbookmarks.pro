@@ -20,8 +20,8 @@ wince*: {
 }
 
 symbian: {
-     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
      TARGET.UID3 = 0xA000C60A
+     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
      addFiles.sources = frank.xbel jennifer.xbel
      addFiles.path = /data/qt/saxbookmarks
      DEPLOYMENT += addFiles
