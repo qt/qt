@@ -51,6 +51,7 @@ private slots:
     void outerBindingOverridesInnerBinding();
     void aliasPropertyAndBinding();
     void nonExistantAttachedObject();
+    void scope();
 
 private:
     QmlEngine engine;
@@ -523,6 +524,23 @@ void tst_qmlecmascript::nonExistantAttachedObject()
     QmlComponent component(&engine, TEST_FILE("nonExistantAttachedObject.qml"));
     QObject *object = component.create();
     QVERIFY(object != 0);
+}
+
+void tst_qmlecmascript::scope()
+{
+    QmlComponent component(&engine, TEST_FILE("scope.qml"));
+    qWarning() << component.errors();
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").toInt(), 1);
+    QCOMPARE(object->property("test2").toInt(), 2);
+    QCOMPARE(object->property("test3").toString(), QString("1Test"));
+    QCOMPARE(object->property("test4").toString(), QString("2Test"));
+    QCOMPARE(object->property("test5").toInt(), 1);
+    QCOMPARE(object->property("test6").toInt(), 1);
+    QCOMPARE(object->property("test7").toInt(), 2);
+    QCOMPARE(object->property("test8").toInt(), 2);
 }
 
 /*
