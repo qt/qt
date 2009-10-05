@@ -397,7 +397,7 @@ void QMenuBarPrivate::QSymbianMenuBarPrivate::rebuild()
 
     contextMenuActionList.clear();
     if (widgetWithContextMenu) {
-        contexMenuCommand = qt_symbian_menu_static_cmd_id;
+        contexMenuCommand = qt_symbian_menu_static_cmd_id; // Increased inside insertNativeMenuItems
         contextAction.setText(QMenuBar::tr("Actions"));
         contextMenuActionList.append(&contextAction);
         insertNativeMenuItems(contextMenuActionList);
