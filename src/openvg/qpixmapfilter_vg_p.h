@@ -98,10 +98,7 @@ public:
 private:
     mutable VGfloat matrix[5][4];
     mutable QColor prevColor;
-    mutable qreal prevRadius;
-    mutable int kernelSize;
     mutable bool firstTime;
-    mutable QVarLengthArray<VGshort, 16> kernel;
 };
 
 class Q_OPENVG_EXPORT QVGPixmapBlurFilter : public QPixmapBlurFilter
