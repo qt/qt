@@ -52,6 +52,7 @@ private slots:
     void aliasPropertyAndBinding();
     void nonExistantAttachedObject();
     void scope();
+    void signalParameterTypes();
 
 private:
     QmlEngine engine;
@@ -529,7 +530,6 @@ void tst_qmlecmascript::nonExistantAttachedObject()
 void tst_qmlecmascript::scope()
 {
     QmlComponent component(&engine, TEST_FILE("scope.qml"));
-    qWarning() << component.errors();
     QObject *object = component.create();
     QVERIFY(object != 0);
 
@@ -541,6 +541,20 @@ void tst_qmlecmascript::scope()
     QCOMPARE(object->property("test6").toInt(), 1);
     QCOMPARE(object->property("test7").toInt(), 2);
     QCOMPARE(object->property("test8").toInt(), 2);
+}
+
+void tst_qmlecmascript::signalParameterTypes()
+{
+    QmlComponent component(&engine, TEST_FILE("signalParameterTypes.qml"));
+    MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+    QVERIFY(object != 0);
+
+    emit object->basicSignal();
+
+    QCOMPARE(object->property("intProperty").toInt(), 10);
+    QCOMPARE(object->property("realProperty").toReal(), 19.2);
+    QVERIFY(object->property("colorProperty").value<QColor>() == QColor(255, 255, 0, 255));
+    QVERIFY(object->property("variantProperty") == QVariant::fromValue(QColor(255, 0, 255, 255)));
 }
 
 /*
