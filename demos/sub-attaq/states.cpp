@@ -67,8 +67,7 @@ PlayState::PlayState(GraphicsScene *scene, QState *parent)
 
 PlayState::~PlayState()
 {
-    if (machine)
-        delete machine;
+    delete machine;
 }
 
 void PlayState::onEntry(QEvent *)
@@ -169,7 +168,7 @@ void LevelState::initializeLevel()
     scene->boat->setCurrentDirection(Boat::None);
     scene->boat->setBombsLaunched(0);
     scene->boat->show();
-    scene->setFocusItem(scene->boat,Qt::OtherFocusReason);
+    scene->setFocusItem(scene->boat, Qt::OtherFocusReason);
     scene->boat->run();
 
     scene->progressItem->setScore(game->score);
@@ -276,13 +275,8 @@ void WinState::onExit(QEvent *)
 }
 
 /** UpdateScore State */
-UpdateScoreState::UpdateScoreState(PlayState *game, QState *parent) : QState(parent)
+UpdateScoreState::UpdateScoreState(PlayState *g, QState *parent) : QState(parent), game(g)
 {
-    this->game = game;
-}
-void UpdateScoreState::onEntry(QEvent *e)
-{
-    QState::onEntry(e);
 }
 
 /** Win transition */
@@ -297,12 +291,10 @@ bool UpdateScoreTransition::eventTest(QEvent *event)
 {
     if (!QSignalTransition::eventTest(event))
         return false;
-    else {
-        QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(event);
-        game->score += se->arguments().at(0).toInt();
-        scene->progressItem->setScore(game->score);
-        return true;
-    }
+    QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(event);
+    game->score += se->arguments().at(0).toInt();
+    scene->progressItem->setScore(game->score);
+    return true;
 }
 
 /** Win transition */
@@ -317,12 +309,10 @@ bool WinTransition::eventTest(QEvent *event)
 {
     if (!QSignalTransition::eventTest(event))
         return false;
-    else {
-        QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(event);
-        game->score += se->arguments().at(0).toInt();
-        scene->progressItem->setScore(game->score);
-        return true;
-    }
+    QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(event);
+    game->score += se->arguments().at(0).toInt();
+    scene->progressItem->setScore(game->score);
+    return true;
 }
 
 /** Space transition */
@@ -334,12 +324,7 @@ CustomSpaceTransition::CustomSpaceTransition(QWidget *widget, PlayState *game, Q
 
 bool CustomSpaceTransition::eventTest(QEvent *event)
 {
-    Q_UNUSED(event);
     if (!QKeyEventTransition::eventTest(event))
         return false;
-    if (game->currentLevel != 0)
-        return true;
-    else
-        return false;
-
+    return (game->currentLevel != 0);
 }

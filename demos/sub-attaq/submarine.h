@@ -43,15 +43,13 @@
 #define __SUBMARINE__H__
 
 //Qt
-#include <QtCore/QVariantAnimation>
-#include <QtGui/QGraphicsWidget>
 #include <QtGui/QGraphicsTransform>
 
-class PixmapItem;
+#include "pixmapitem.h"
 
 class Torpedo;
 
-class SubMarine : public QGraphicsWidget
+class SubMarine : public PixmapItem
 {
 Q_OBJECT
 public:
@@ -61,9 +59,9 @@ public:
        Right
     };
     enum { Type = UserType + 1 };
-    SubMarine(int type, const QString &name, int points, QGraphicsItem * parent = 0, Qt::WindowFlags wFlags = 0);
+    SubMarine(int type, const QString &name, int points);
 
-    int points();
+    int points() const;
 
     void setCurrentDirection(Movement direction);
     enum Movement currentDirection() const;
@@ -89,7 +87,6 @@ private:
     int subPoints;
     int speed;
     Movement direction;
-    PixmapItem *pixmapItem;
     QGraphicsRotation *graphicsRotation;
 };
 
