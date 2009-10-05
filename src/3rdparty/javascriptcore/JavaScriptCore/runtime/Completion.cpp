@@ -41,7 +41,7 @@ Completion checkSyntax(ExecState* exec, const SourceCode& source)
 {
     JSLock lock(exec);
 
-    ProgramExecutable program(source);
+    ProgramExecutable program(exec, source);
     JSObject* error = program.checkSyntax(exec);
     if (error)
         return Completion(Throw, error);
@@ -53,7 +53,7 @@ Completion evaluate(ExecState* exec, ScopeChain& scopeChain, const SourceCode& s
 {
     JSLock lock(exec);
 
-    ProgramExecutable program(source);
+    ProgramExecutable program(exec, source);
     JSObject* error = program.compile(exec, scopeChain.node());
     if (error)
         return Completion(Throw, error);
