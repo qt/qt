@@ -7,7 +7,7 @@ symbian: {
     SUBDIRS=
     # WARNING: Changing TARGET name will break Symbian SISX upgrade functionality
     # DO NOT TOUCH TARGET VARIABLE IF YOU ARE NOT SURE WHAT YOU ARE DOING
-    TARGET = "Qt for S60"
+    TARGET = "Qt"
     TARGET.UID3 = 0x2001E61C
     VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 
@@ -29,12 +29,12 @@ symbian: {
         "ELSEIF package(0x102752AE)" \
         "   \"$${EPOCROOT}epoc32/release/$(PLATFORM)/$(TARGET)/qts60plugin_3_2.dll\" - \"!:\\sys\\bin\\qts60plugin_3_2.dll\"" \
         "ELSEIF package(0x102032BE)" \
-        "   \"$${EPOCROOT}epoc32/release/$(PLATFORM)/$(TARGET)/qts60plugin_3_1.dll\" - \"!:\\sys\\bin\\qts60plugin_3_1.dll\"" \        
-        "ELSE" \    
+        "   \"$${EPOCROOT}epoc32/release/$(PLATFORM)/$(TARGET)/qts60plugin_3_1.dll\" - \"!:\\sys\\bin\\qts60plugin_3_1.dll\"" \
+        "ELSE" \
         "   \"$${EPOCROOT}epoc32/release/$(PLATFORM)/$(TARGET)/qts60plugin_5_0.dll\" - \"!:\\sys\\bin\\qts60plugin_5_0.dll\"" \
-        "ENDIF"     
-    qtlibraries.pkg_postrules += qts60plugindeployment        
-        
+        "ENDIF"
+    qtlibraries.pkg_postrules += qts60plugindeployment
+
     sqlitedeployment = \
         "; EXISTS statement does not resolve !. Lets check the most common drives" \
         "IF NOT EXISTS(\"c:\\sys\\bin\\sqlite3.dll\") AND NOT EXISTS(\"e:\\sys\\bin\\sqlite3.dll\") AND NOT EXISTS(\"z:\\sys\\bin\\sqlite3.dll\")" \
