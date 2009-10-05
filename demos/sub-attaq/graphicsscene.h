@@ -82,41 +82,30 @@ public:
 
     GraphicsScene(int x, int y, int width, int height, Mode mode = Big);
     qreal sealLevel() const;
-    void setupScene(const QList<QAction *> &actions);
+    void setupScene(QAction *newAction, QAction *quitAction);
     void addItem(Bomb *bomb);
     void addItem(Torpedo *torpedo);
     void addItem(SubMarine *submarine);
     void addItem(QGraphicsItem *item);
-    int remainingSubMarines() const;
     void clearScene();
-    QGraphicsPixmapItem *addWelcomeItem(const QPixmap &pm);
 
 signals:
     void subMarineDestroyed(int);
     void allSubMarineDestroyed(int);
 
-protected:
-    void mousePressEvent (QGraphicsSceneMouseEvent * event);
-
 private slots:
-    void onQuitGameTriggered();
     void onBombExecutionFinished();
     void onTorpedoExecutionFinished();
     void onSubMarineExecutionFinished();
-    void onIntroAnimationFinished();
 
 private:
     Mode mode;
-    PixmapItem *backgroundItem;
     ProgressItem *progressItem;
     TextInformationItem *textInformationItem;
-    QAction * newAction;
-    QAction * quitAction;
     Boat *boat;
     QSet<SubMarine *> submarines;
     QSet<Bomb *> bombs;
     QSet<Torpedo *> torpedos;
-    QVector<QGraphicsPixmapItem *> welcomeItems;
     QVector<SubmarineDescription> submarinesData;
     QHash<int, LevelDescription> levelsData;
 

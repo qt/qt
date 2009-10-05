@@ -46,18 +46,18 @@
 #include "graphicsscene.h"
 
 //Qt
-#include <QtGui/QGraphicsPixmapItem>
+#include <QtGui/QGraphicsObject>
 
-class PixmapItem : public QGraphicsPixmapItem
+class PixmapItem : public QGraphicsObject
 {
 public:
     PixmapItem(const QString &fileName, GraphicsScene::Mode mode, QGraphicsItem * parent = 0);
-
+    PixmapItem(const QString &fileName, QGraphicsScene *scene);
+    QSizeF size() const;
+    QRectF boundingRect() const;
+    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 private:
-    void loadPixmap(GraphicsScene::Mode mode);
-
-    QString name;
-    QPixmap pixmap;
+    QPixmap pix;
 };
 
 #endif //__PIXMAPITEM__H__

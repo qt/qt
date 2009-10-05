@@ -10,7 +10,6 @@ HEADERS += boat.h \
     states.h \
     boat_p.h \
     submarine_p.h \
-    custompropertyanimation.h \
     qanimationstate.h \
     progressitem.h \
     textinformationitem.h
@@ -24,7 +23,6 @@ SOURCES += boat.cpp \
     graphicsscene.cpp \
     animationmanager.cpp \
     states.cpp \
-    custompropertyanimation.cpp \
     qanimationstate.cpp \
     progressitem.cpp \
     textinformationitem.cpp
