@@ -41,6 +41,7 @@ files_to_remove=""
 files_to_remove="$files_to_remove JavaScriptCore/AllInOneFile.cpp"
 files_to_remove="$files_to_remove JavaScriptCore/JavaScriptCoreSources.bkl"
 files_to_remove="$files_to_remove JavaScriptCore/jscore.bkl"
+files_to_remove="$files_to_remove JavaScriptCore/jsc.pro"
 
 require_clean_work_tree() {
     # test if working tree is dirty
