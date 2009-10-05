@@ -162,15 +162,11 @@ QGLTextureGlyphCache::QGLTextureGlyphCache(QGLContext *context, QFontEngineGlyph
 QGLTextureGlyphCache::~QGLTextureGlyphCache()
 {
     if (ctx) {
-        QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
-        if (oldContext != ctx)
-            ctx->makeCurrent();
+        QGLShareContextScope scope(ctx);
         glDeleteFramebuffers(1, &m_fbo);
 
         if (m_width || m_height)
             glDeleteTextures(1, &m_texture);
-        if (oldContext && oldContext != ctx)
-            oldContext->makeCurrent();
     }
 }
 

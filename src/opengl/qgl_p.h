@@ -400,6 +400,46 @@ public:
 
 extern Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg();
 
+// Temporarily make a context current if not already current or
+// shared with the current contex.  The previous context is made
+// current when the object goes out of scope.
+class Q_OPENGL_EXPORT QGLShareContextScope
+{
+public:
+    QGLShareContextScope(const QGLContext *ctx)
+        : m_oldContext(0)
+    {
+        QGLContext *currentContext = const_cast<QGLContext *>(QGLContext::currentContext());
+        if (currentContext != ctx && !QGLContext::areSharing(ctx, currentContext)) {
+            m_oldContext = currentContext;
+            m_ctx = const_cast<QGLContext *>(ctx);
+            m_ctx->makeCurrent();
+        } else {
+            m_ctx = currentContext;
+        }
+    }
+
+    operator QGLContext *()
+    {
+        return m_ctx;
+    }
+
+    QGLContext *operator->()
+    {
+        return m_ctx;
+    }
+
+    ~QGLShareContextScope()
+    {
+        if (m_oldContext)
+            m_oldContext->makeCurrent();
+    }
+
+private:
+    QGLContext *m_oldContext;
+    QGLContext *m_ctx;
+};
+
 class QGLTexture {
 public:
     QGLTexture(QGLContext *ctx = 0, GLuint tx_id = 0, GLenum tx_target = GL_TEXTURE_2D,
@@ -415,12 +455,8 @@ public:
 
     ~QGLTexture() {
         if (options & QGLContext::MemoryManagedBindOption) {
-            QGLContext *current = const_cast<QGLContext *>(QGLContext::currentContext());
-            QGLContext *ctx = const_cast<QGLContext *>(context);
-            Q_ASSERT(ctx);
-            bool switch_context = current != ctx && !QGLContext::areSharing(current, ctx);
-            if (switch_context)
-                ctx->makeCurrent();
+            Q_ASSERT(context);
+            QGLShareContextScope scope(context);
 #if defined(Q_WS_X11)
             // Although glXReleaseTexImage is a glX call, it must be called while there
             // is a current context - the context the pixmap was bound to a texture in.
@@ -430,8 +466,6 @@ public:
                 QGLContextPrivate::unbindPixmapFromTexture(boundPixmap);
 #endif
             glDeleteTextures(1, &id);
-            if (switch_context && current)
-                current->makeCurrent();
         }
      }
 
@@ -510,46 +544,6 @@ public:
 private:
     FreeFunc free;
     QAtomicInt active;
-};
-
-// Temporarily make a context current if not already current or
-// shared with the current contex.  The previous context is made
-// current when the object goes out of scope.
-class Q_OPENGL_EXPORT QGLShareContextScope
-{
-public:
-    QGLShareContextScope(const QGLContext *ctx)
-        : m_oldContext(0)
-    {
-        QGLContext *currentContext = const_cast<QGLContext *>(QGLContext::currentContext());
-        if (currentContext != ctx && !QGLContext::areSharing(ctx, currentContext)) {
-            m_oldContext = currentContext;
-            m_ctx = const_cast<QGLContext *>(ctx);
-            m_ctx->makeCurrent();
-        } else {
-            m_ctx = currentContext;
-        }
-    }
-
-    operator QGLContext *()
-    {
-        return m_ctx;
-    }
-
-    QGLContext *operator->()
-    {
-        return m_ctx;
-    }
-
-    ~QGLShareContextScope()
-    {
-        if (m_oldContext)
-            m_oldContext->makeCurrent();
-    }
-
-private:
-    QGLContext *m_oldContext;
-    QGLContext *m_ctx;
 };
 
 // Put a guard around a GL object identifier and its context.
