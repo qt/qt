@@ -30,6 +30,7 @@ function initBoard()
             board[i].destroy();
     }
 
+    //Calculate board size
     maxX = Math.floor(gameCanvas.width/tileSize);
     maxY = Math.floor(gameCanvas.height/tileSize);
     maxIndex = maxY*maxX;
