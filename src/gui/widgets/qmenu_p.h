@@ -68,6 +68,11 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_MENU
 
+#ifdef Q_WS_S60
+void qt_symbian_show_toplevel(CEikMenuPane* menuPane);
+void qt_symbian_show_submenu(CEikMenuPane* menuPane, int id);
+#endif // Q_WS_S60
+
 class QTornOffMenu;
 class QEventLoop;
 
