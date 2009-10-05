@@ -51,6 +51,9 @@
 #include <QDesktopWidget>
 #include <QX11Info>
 
+
+#include "../../shared/util.h"
+
 class tst_QWindowSurface : public QObject
 {
     Q_OBJECT
@@ -238,9 +241,9 @@ void tst_QWindowSurface::grabWidget()
     parentWidget.show();
     QTest::qWaitForWindowShown(&parentWidget);
 
-    QTest::qWait(220);
-
-    QPixmap parentPixmap = parentWidget.windowSurface()->grabWidget(&parentWidget);
+    QPixmap parentPixmap;
+    QTRY_COMPARE((parentPixmap = parentWidget.windowSurface()->grabWidget(&parentWidget)).size(),
+                  QSize(300,300));
     QPixmap childPixmap = childWidget.windowSurface()->grabWidget(&childWidget);
     QPixmap babyPixmap = babyWidget.windowSurface()->grabWidget(&babyWidget);
     QPixmap parentSubPixmap = parentWidget.windowSurface()->grabWidget(&parentWidget, QRect(25, 25, 100, 100));

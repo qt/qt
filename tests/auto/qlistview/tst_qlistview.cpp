@@ -1632,8 +1632,8 @@ void tst_QListView::task254449_draggingItemToNegativeCoordinates()
 
         mutable int numPaints;
     } delegate;
-    list.setItemDelegate(&delegate);
     delegate.numPaints = 0;
+    list.setItemDelegate(&delegate);
     QApplication::processEvents();
     QTRY_VERIFY(delegate.numPaints > 0);  //makes sure the layout is done
 
