@@ -773,7 +773,7 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
         delete consumers.takeFirst();
     }
     QCOMPARE(consumerFailed, false);
-    QCOMPARE(failedProcesses, unsigned int (0));
+    QCOMPARE(failedProcesses, (unsigned int)(0));
 }
 
 QTEST_MAIN(tst_QSharedMemory)
