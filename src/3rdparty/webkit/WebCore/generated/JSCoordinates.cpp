@@ -75,7 +75,7 @@ JSObject* JSCoordinatesPrototype::self(ExecState* exec, JSGlobalObject* globalOb
 
 const ClassInfo JSCoordinates::s_info = { "Coordinates", 0, &JSCoordinatesTable, 0 };
 
-JSCoordinates::JSCoordinates(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Coordinates> impl)
+JSCoordinates::JSCoordinates(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Coordinates> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

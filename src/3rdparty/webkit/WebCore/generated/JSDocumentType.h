@@ -31,7 +31,7 @@ class DocumentType;
 class JSDocumentType : public JSNode {
     typedef JSNode Base;
 public:
-    JSDocumentType(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<DocumentType>);
+    JSDocumentType(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<DocumentType>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
@@ -58,7 +58,7 @@ public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
-    JSDocumentTypePrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSDocumentTypePrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Attributes

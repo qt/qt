@@ -41,9 +41,9 @@ namespace JSC {
         friend class Walker;
 
     public:
-        explicit JSArray(PassRefPtr<Structure>);
-        JSArray(PassRefPtr<Structure>, unsigned initialLength);
-        JSArray(PassRefPtr<Structure>, const ArgList& initialValues);
+        explicit JSArray(NonNullPassRefPtr<Structure>);
+        JSArray(NonNullPassRefPtr<Structure>, unsigned initialLength);
+        JSArray(NonNullPassRefPtr<Structure>, const ArgList& initialValues);
         virtual ~JSArray();
 
         virtual bool getOwnPropertySlot(ExecState*, const Identifier& propertyName, PropertySlot&);
@@ -115,11 +115,6 @@ namespace JSC {
     };
 
     JSArray* asArray(JSValue);
-
-    JSArray* constructEmptyArray(ExecState*);
-    JSArray* constructEmptyArray(ExecState*, unsigned initialLength);
-    JSArray* constructArray(ExecState*, JSValue singleItemValue);
-    JSArray* constructArray(ExecState*, const ArgList& values);
 
     inline JSArray* asArray(JSCell* cell)
     {

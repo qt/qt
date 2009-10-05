@@ -94,7 +94,7 @@ bool JSSVGCursorElementPrototype::getOwnPropertyDescriptor(ExecState* exec, cons
 
 const ClassInfo JSSVGCursorElement::s_info = { "SVGCursorElement", &JSSVGElement::s_info, &JSSVGCursorElementTable, 0 };
 
-JSSVGCursorElement::JSSVGCursorElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGCursorElement> impl)
+JSSVGCursorElement::JSSVGCursorElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGCursorElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

@@ -15,6 +15,6 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/itemviews/chart
 INSTALLS += target sources
 
 symbian {
-    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
     TARGET.UID3 = 0xA000A647
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 }

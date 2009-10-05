@@ -141,7 +141,7 @@ public:
 
 public:
     QSymbianControl(QWidget *w);
-    void ConstructL(bool topLevel = false, bool desktop = false);
+    void ConstructL(bool isWindowOwning = false, bool desktop = false);
     ~QSymbianControl();
     void HandleResourceChange(int resourceType);
     void HandlePointerEventL(const TPointerEvent& aPointerEvent);
@@ -156,6 +156,8 @@ public:
     void sendInputEvent(QWidget *widget, QInputEvent *inputEvent);
     void setIgnoreFocusChanged(bool enabled) { m_ignoreFocusChanged = enabled; }
     void CancelLongTapTimer();
+
+    void setFocusSafely(bool focus);
 
 protected:
     void Draw(const TRect& aRect) const;
@@ -172,6 +174,9 @@ private:
 #ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
     void translateAdvancedPointerEvent(const TAdvancedPointerEvent *event);
 #endif
+
+private:
+    static QSymbianControl *lastFocusedControl;
 
 private:
     QWidget *qwidget;

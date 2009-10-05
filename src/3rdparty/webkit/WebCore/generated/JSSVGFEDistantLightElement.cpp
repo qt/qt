@@ -73,7 +73,7 @@ JSObject* JSSVGFEDistantLightElementPrototype::self(ExecState* exec, JSGlobalObj
 
 const ClassInfo JSSVGFEDistantLightElement::s_info = { "SVGFEDistantLightElement", &JSSVGElement::s_info, &JSSVGFEDistantLightElementTable, 0 };
 
-JSSVGFEDistantLightElement::JSSVGFEDistantLightElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEDistantLightElement> impl)
+JSSVGFEDistantLightElement::JSSVGFEDistantLightElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEDistantLightElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

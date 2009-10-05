@@ -118,7 +118,7 @@ JSObject* JSHTMLMetaElementPrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSHTMLMetaElement::s_info = { "HTMLMetaElement", &JSHTMLElement::s_info, &JSHTMLMetaElementTable, 0 };
 
-JSHTMLMetaElement::JSHTMLMetaElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLMetaElement> impl)
+JSHTMLMetaElement::JSHTMLMetaElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLMetaElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

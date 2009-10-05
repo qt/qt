@@ -69,7 +69,7 @@ QXmlName AnyType::name(const NamePool::Ptr &np) const
     return np->allocateQName(StandardNamespaces::xs, QLatin1String("anyType"));
 }
 
-QString AnyType::displayName(const NamePool::Ptr &np) const
+QString AnyType::displayName(const NamePool::Ptr &) const
 {
     /* A bit faster than calling name()->displayName() */
     return QLatin1String("xs:anyType");

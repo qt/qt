@@ -71,7 +71,7 @@ JSObject* JSSVGAnimatedBooleanPrototype::self(ExecState* exec, JSGlobalObject* g
 
 const ClassInfo JSSVGAnimatedBoolean::s_info = { "SVGAnimatedBoolean", 0, &JSSVGAnimatedBooleanTable, 0 };
 
-JSSVGAnimatedBoolean::JSSVGAnimatedBoolean(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedBoolean> impl, SVGElement* context)
+JSSVGAnimatedBoolean::JSSVGAnimatedBoolean(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedBoolean> impl, SVGElement* context)
     : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {

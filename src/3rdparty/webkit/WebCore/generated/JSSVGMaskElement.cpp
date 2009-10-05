@@ -110,7 +110,7 @@ bool JSSVGMaskElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const 
 
 const ClassInfo JSSVGMaskElement::s_info = { "SVGMaskElement", &JSSVGElement::s_info, &JSSVGMaskElementTable, 0 };
 
-JSSVGMaskElement::JSSVGMaskElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGMaskElement> impl)
+JSSVGMaskElement::JSSVGMaskElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGMaskElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

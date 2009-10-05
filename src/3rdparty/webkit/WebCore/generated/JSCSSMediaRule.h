@@ -30,7 +30,7 @@ class CSSMediaRule;
 class JSCSSMediaRule : public JSCSSRule {
     typedef JSCSSRule Base;
 public:
-    JSCSSMediaRule(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CSSMediaRule>);
+    JSCSSMediaRule(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CSSMediaRule>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
@@ -58,7 +58,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSCSSMediaRulePrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSCSSMediaRulePrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

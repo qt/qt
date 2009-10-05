@@ -166,7 +166,7 @@ bool JSWebKitCSSTransformValuePrototype::getOwnPropertyDescriptor(ExecState* exe
 
 const ClassInfo JSWebKitCSSTransformValue::s_info = { "WebKitCSSTransformValue", &JSCSSValueList::s_info, &JSWebKitCSSTransformValueTable, 0 };
 
-JSWebKitCSSTransformValue::JSWebKitCSSTransformValue(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebKitCSSTransformValue> impl)
+JSWebKitCSSTransformValue::JSWebKitCSSTransformValue(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebKitCSSTransformValue> impl)
     : JSCSSValueList(structure, globalObject, impl)
 {
 }

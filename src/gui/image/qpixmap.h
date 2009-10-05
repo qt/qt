@@ -270,7 +270,7 @@ private:
     friend class QWidgetPrivate;
     friend class QRasterPaintEngine;
     friend class QRasterBuffer;
-    friend class QDetachedPixmap;
+    friend class QPixmapCacheEntry;
 #if !defined(QT_NO_DATASTREAM)
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QPixmap &);
 #endif

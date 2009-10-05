@@ -147,7 +147,7 @@ bool JSXPathEvaluatorPrototype::getOwnPropertyDescriptor(ExecState* exec, const 
 
 const ClassInfo JSXPathEvaluator::s_info = { "XPathEvaluator", 0, &JSXPathEvaluatorTable, 0 };
 
-JSXPathEvaluator::JSXPathEvaluator(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XPathEvaluator> impl)
+JSXPathEvaluator::JSXPathEvaluator(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XPathEvaluator> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

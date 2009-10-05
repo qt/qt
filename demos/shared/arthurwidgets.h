@@ -49,13 +49,32 @@
 
 #if defined(QT_OPENGL_SUPPORT)
 #include <QGLWidget>
+#include <QEvent>
 class GLWidget : public QGLWidget
 {
 public:
     GLWidget(QWidget *parent)
-        : QGLWidget(QGLFormat(QGL::SampleBuffers), parent) {}
+        : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
+    {
+        setAttribute(Qt::WA_AcceptTouchEvents);
+    }
     void disableAutoBufferSwap() { setAutoBufferSwap(false); }
     void paintEvent(QPaintEvent *) { parentWidget()->update(); }
+protected:
+    bool event(QEvent *event)
+    {
+        switch (event->type()) {
+        case QEvent::TouchBegin:
+        case QEvent::TouchUpdate:
+        case QEvent::TouchEnd:
+            event->ignore();
+            return false;
+            break;
+        default:
+            break;
+        }
+        return QGLWidget::event(event);
+    }
 };
 #endif
 

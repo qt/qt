@@ -26,6 +26,10 @@ symbian:{
     addFiles.path = .
     DEPLOYMENT += addFiles
 
+    certFiles.sources = ../certs
+    certFiles.path    = .
+    DEPLOYMENT += certFiles
+
     # Symbian toolchain does not support correct include semantics
     INCPATH+=..\..\..\..\include\QtNetwork\private
     # bigfile test case requires more heap

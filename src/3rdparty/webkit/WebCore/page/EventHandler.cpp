@@ -894,8 +894,10 @@ bool EventHandler::scrollOverflow(ScrollDirection direction, ScrollGranularity g
     
     if (node) {
         RenderObject* r = node->renderer();
-        if (r && !r->isListBox())
-            return r->enclosingBox()->scroll(direction, granularity);
+        if (r && !r->isListBox() && r->enclosingBox()->scroll(direction, granularity)) {
+            setFrameWasScrolledByUser();
+            return true;
+        }
     }
 
     return false;
@@ -1758,6 +1760,13 @@ bool EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targe
     return swallowEvent;
 }
 
+#if !PLATFORM(GTK)
+bool EventHandler::shouldTurnVerticalTicksIntoHorizontal(const HitTestResult&) const
+{
+    return false;
+}
+#endif
+
 bool EventHandler::handleWheelEvent(PlatformWheelEvent& e)
 {
     Document* doc = m_frame->document();
@@ -1771,17 +1780,19 @@ bool EventHandler::handleWheelEvent(PlatformWheelEvent& e)
     FrameView* view = m_frame->view();
     if (!view)
         return false;
+    setFrameWasScrolledByUser();
     IntPoint vPoint = view->windowToContents(e.pos());
 
     Node* node;
     bool isOverWidget;
     bool didSetLatchedNode = false;
 
+    HitTestRequest request(HitTestRequest::ReadOnly);
+    HitTestResult result(vPoint);
+    doc->renderView()->layer()->hitTest(request, result);
+
     if (m_useLatchedWheelEventNode) {
         if (!m_latchedWheelEventNode) {
-            HitTestRequest request(HitTestRequest::ReadOnly);
-            HitTestResult result(vPoint);
-            doc->renderView()->layer()->hitTest(request, result);
             m_latchedWheelEventNode = result.innerNode();
             m_widgetIsLatched = result.isOverWidget();
             didSetLatchedNode = true;
@@ -1795,12 +1806,12 @@ bool EventHandler::handleWheelEvent(PlatformWheelEvent& e)
         if (m_previousWheelScrolledNode)
             m_previousWheelScrolledNode = 0;
 
-        HitTestRequest request(HitTestRequest::ReadOnly);
-        HitTestResult result(vPoint);
-        doc->renderView()->layer()->hitTest(request, result);
         node = result.innerNode();
         isOverWidget = result.isOverWidget();
     }
+
+    if (shouldTurnVerticalTicksIntoHorizontal(result))
+        e.turnVerticalTicksIntoHorizontal();
 
     if (node) {
         // Figure out which view to send the event to.
@@ -2471,17 +2482,23 @@ void EventHandler::sendResizeEvent()
 
 void EventHandler::sendScrollEvent()
 {
+    setFrameWasScrolledByUser();
+    if (m_frame->view())
+        m_frame->document()->dispatchEvent(Event::create(eventNames().scrollEvent, true, false));
+}
+
+void EventHandler::setFrameWasScrolledByUser()
+{
     FrameView* v = m_frame->view();
-    if (!v)
-        return;
-    v->setWasScrolledByUser(true);
-    m_frame->document()->dispatchEvent(Event::create(eventNames().scrollEvent, true, false));
+    if (v)
+        v->setWasScrolledByUser(true);
 }
 
 bool EventHandler::passMousePressEventToScrollbar(MouseEventWithHitTestResults& mev, Scrollbar* scrollbar)
 {
     if (!scrollbar || !scrollbar->enabled())
         return false;
+    setFrameWasScrolledByUser();
     return scrollbar->mouseDown(mev.event());
 }
 

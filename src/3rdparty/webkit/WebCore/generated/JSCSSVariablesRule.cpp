@@ -118,7 +118,7 @@ JSObject* JSCSSVariablesRulePrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSCSSVariablesRule::s_info = { "CSSVariablesRule", &JSCSSRule::s_info, &JSCSSVariablesRuleTable, 0 };
 
-JSCSSVariablesRule::JSCSSVariablesRule(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSVariablesRule> impl)
+JSCSSVariablesRule::JSCSSVariablesRule(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSVariablesRule> impl)
     : JSCSSRule(structure, globalObject, impl)
 {
 }

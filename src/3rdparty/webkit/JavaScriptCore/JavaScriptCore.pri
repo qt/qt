@@ -36,6 +36,8 @@ GENERATED_SOURCES_DIR_SLASH = $${GENERATED_SOURCES_DIR}$${QMAKE_DIR_SEP}
 win32-* {
     LIBS += -lwinmm
 }
+contains(JAVASCRIPTCORE_JIT,yes): DEFINES+=ENABLE_JIT=1
+contains(JAVASCRIPTCORE_JIT,no): DEFINES+=ENABLE_JIT=0
 
 # In debug mode JIT disabled until crash fixed
 win32-* {
@@ -128,12 +130,16 @@ SOURCES += \
     yarr/RegexJIT.cpp \
     interpreter/RegisterFile.cpp
 
-win32-*|wince* {
-    SOURCES += jit/ExecutableAllocatorWin.cpp \
-               runtime/MarkStackWin.cpp
+symbian {
+    SOURCES += runtime/MarkStackSymbian.cpp
 } else {
-    SOURCES += jit/ExecutableAllocatorPosix.cpp \
-               runtime/MarkStackPosix.cpp
+    win32-*|wince* {
+        SOURCES += jit/ExecutableAllocatorWin.cpp \
+                  runtime/MarkStackWin.cpp
+    } else {
+        SOURCES += jit/ExecutableAllocatorPosix.cpp \
+                  runtime/MarkStackPosix.cpp
+    }
 }
 
 # AllInOneFile.cpp helps gcc analize and optimize code

@@ -72,7 +72,7 @@ JSObject* JSSVGAnimatedEnumerationPrototype::self(ExecState* exec, JSGlobalObjec
 
 const ClassInfo JSSVGAnimatedEnumeration::s_info = { "SVGAnimatedEnumeration", 0, &JSSVGAnimatedEnumerationTable, 0 };
 
-JSSVGAnimatedEnumeration::JSSVGAnimatedEnumeration(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedEnumeration> impl, SVGElement* context)
+JSSVGAnimatedEnumeration::JSSVGAnimatedEnumeration(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedEnumeration> impl, SVGElement* context)
     : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {

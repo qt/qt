@@ -135,7 +135,7 @@ bool JSCSSStyleSheetPrototype::getOwnPropertyDescriptor(ExecState* exec, const I
 
 const ClassInfo JSCSSStyleSheet::s_info = { "CSSStyleSheet", &JSStyleSheet::s_info, &JSCSSStyleSheetTable, 0 };
 
-JSCSSStyleSheet::JSCSSStyleSheet(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSStyleSheet> impl)
+JSCSSStyleSheet::JSCSSStyleSheet(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSStyleSheet> impl)
     : JSStyleSheet(structure, globalObject, impl)
 {
 }

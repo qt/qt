@@ -130,7 +130,7 @@ bool JSStyleSheetListPrototype::getOwnPropertyDescriptor(ExecState* exec, const 
 
 const ClassInfo JSStyleSheetList::s_info = { "StyleSheetList", 0, &JSStyleSheetListTable, 0 };
 
-JSStyleSheetList::JSStyleSheetList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<StyleSheetList> impl)
+JSStyleSheetList::JSStyleSheetList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<StyleSheetList> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

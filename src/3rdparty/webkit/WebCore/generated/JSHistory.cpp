@@ -84,7 +84,7 @@ bool JSHistoryPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identif
 
 const ClassInfo JSHistory::s_info = { "History", 0, &JSHistoryTable, 0 };
 
-JSHistory::JSHistory(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<History> impl)
+JSHistory::JSHistory(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<History> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

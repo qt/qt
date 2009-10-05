@@ -33,7 +33,7 @@ class InspectorBackend;
 class JSInspectorBackend : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSInspectorBackend(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<InspectorBackend>);
+    JSInspectorBackend(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<InspectorBackend>);
     virtual ~JSInspectorBackend();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -85,7 +85,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSInspectorBackendPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSInspectorBackendPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions
@@ -121,8 +121,6 @@ JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionResourceTrackingEn
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionEnableResourceTracking(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDisableResourceTracking(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionStoreLastActivePanel(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
-JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetCookies(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
-JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDeleteCookie(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDebuggerEnabled(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionEnableDebugger(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDisableDebugger(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
@@ -148,6 +146,10 @@ JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetChildNodes(JSC:
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSetAttribute(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionRemoveAttribute(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSetTextNodeValue(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetEventListenersForNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionCopyNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetCookies(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDeleteCookie(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionNodeForId(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionWrapObject(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionUnwrapObject(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);

@@ -806,6 +806,19 @@ void tst_QFileSystemModel::sort()
     QDir dir(QDir::tempPath());
     dir.mkdir("sortTemp");
     dir.cd("sortTemp");
+    QTRY_VERIFY(dir.exists());
+
+    //To be sure we clean the dir if it was there before
+    QDirIterator it(dir.absolutePath(), QDir::NoDotAndDotDot);
+    while(it.hasNext())
+    {
+        it.next();
+        QFileInfo info = it.fileInfo();
+        if (info.isDir())
+            dir.rmdir(info.fileName());
+        else
+            QFile::remove(info.absoluteFilePath());
+    }
     const QString dirPath = dir.absolutePath();
     QVERIFY(dir.exists());
 
@@ -823,7 +836,7 @@ void tst_QFileSystemModel::sort()
     out2 << "The magic number is : " << 49 << " but i write some stuff in the file \n";
     tempFile2.close();
 
-    myModel->setRootPath(QDir::rootPath());
+    myModel->setRootPath("");
     myModel->setFilter(QDir::AllEntries | QDir::System | QDir::Hidden);
     tree->setSortingEnabled(true);
     tree->setModel(myModel);
@@ -846,11 +859,22 @@ void tst_QFileSystemModel::sort()
     tree->expand(myModel->index(dirPath, 0));
     QTest::qWait(500);
     QModelIndex parent = myModel->index(dirPath, 0);
+    QList<QString> expectedOrder;
+    expectedOrder << tempFile2.fileName() << tempFile.fileName() << dirPath + QChar('/') + "." << dirPath + QChar('/') + "..";
     //File dialog Mode means sub trees are not sorted, only the current root
-    if (fileDialogMode)
-        QVERIFY(dirPath + QChar('/') + myModel->index(0, 1, parent).data(QFileSystemModel::FileNameRole).toString() != tempFile2.fileName());
-    else
-        QCOMPARE(dirPath + QChar('/') + myModel->index(0, 1, parent).data(QFileSystemModel::FileNameRole).toString(), tempFile2.fileName());
+    if (fileDialogMode) {
+       QList<QString> actualRows;
+        for(int i = 0; i < myModel->rowCount(parent); ++i)
+        {
+            actualRows << dirPath + QChar('/') + myModel->index(i, 1, parent).data(QFileSystemModel::FileNameRole).toString();
+        }
+        QVERIFY(actualRows != expectedOrder);
+    } else {
+        for(int i = 0; i < myModel->rowCount(parent); ++i)
+        {
+            QVERIFY(dirPath + QChar('/') + myModel->index(i, 1, parent).data(QFileSystemModel::FileNameRole).toString() == expectedOrder.at(i));
+        }
+    }
 
     delete tree;
     delete myModel;

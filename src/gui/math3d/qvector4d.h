@@ -158,10 +158,10 @@ inline qreal QVector4D::y() const { return qreal(yp); }
 inline qreal QVector4D::z() const { return qreal(zp); }
 inline qreal QVector4D::w() const { return qreal(wp); }
 
-inline void QVector4D::setX(qreal x) { xp = x; }
-inline void QVector4D::setY(qreal y) { yp = y; }
-inline void QVector4D::setZ(qreal z) { zp = z; }
-inline void QVector4D::setW(qreal w) { wp = w; }
+inline void QVector4D::setX(qreal aX) { xp = aX; }
+inline void QVector4D::setY(qreal aY) { yp = aY; }
+inline void QVector4D::setZ(qreal aZ) { zp = aZ; }
+inline void QVector4D::setW(qreal aW) { wp = aW; }
 
 inline QVector4D &QVector4D::operator+=(const QVector4D &vector)
 {

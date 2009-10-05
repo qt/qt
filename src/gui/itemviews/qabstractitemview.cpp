@@ -87,6 +87,7 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         dragDropMode(QAbstractItemView::NoDragDrop),
         overwrite(false),
         dropIndicatorPosition(QAbstractItemView::OnItem),
+        defaultDropAction(Qt::IgnoreAction),
 #endif
 #ifdef QT_SOFTKEYS_ENABLED
         doneSoftKey(0),
@@ -1369,6 +1370,28 @@ QAbstractItemView::DragDropMode QAbstractItemView::dragDropMode() const
     }
 
     return NoDragDrop;
+}
+
+/*!
+    \property QAbstractItemView::defaultDropAction
+    \brief the drop action that will be used by default in QAbstractItemView::drag()
+
+    If the property is not set, the drop action is CopyAction when the supported
+    actions support CopyAction.
+
+    \since 4.6
+    \sa showDropIndicator dragDropOverwriteMode
+*/
+void QAbstractItemView::setDefaultDropAction(Qt::DropAction dropAction)
+{
+    Q_D(QAbstractItemView);
+    d->defaultDropAction = dropAction;
+}
+
+Qt::DropAction QAbstractItemView::defaultDropAction() const
+{
+    Q_D(const QAbstractItemView);
+    return d->defaultDropAction;
 }
 
 #endif // QT_NO_DRAGANDDROP
@@ -3297,7 +3320,9 @@ void QAbstractItemView::startDrag(Qt::DropActions supportedActions)
         drag->setMimeData(data);
         drag->setHotSpot(d->pressedPosition - rect.topLeft());
         Qt::DropAction defaultDropAction = Qt::IgnoreAction;
-        if (supportedActions & Qt::CopyAction && dragDropMode() != QAbstractItemView::InternalMove)
+        if (d->defaultDropAction != Qt::IgnoreAction && (supportedActions & d->defaultDropAction))
+            defaultDropAction = d->defaultDropAction;
+        else if (supportedActions & Qt::CopyAction && dragDropMode() != QAbstractItemView::InternalMove)
             defaultDropAction = Qt::CopyAction;
         if (drag->exec(supportedActions, defaultDropAction) == Qt::MoveAction)
             d->clearOrRemove();
@@ -3626,12 +3651,13 @@ QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::extendedSelectionC
             case Qt::Key_PageUp:
             case Qt::Key_PageDown:
             case Qt::Key_Tab:
+                if (modifiers & Qt::ControlModifier
 #ifdef QT_KEYPAD_NAVIGATION
-                return QItemSelectionModel::NoUpdate;
-#else
-                if (modifiers & Qt::ControlModifier)
-                    return QItemSelectionModel::NoUpdate;
+                    // Preserve historical tab order navigation behavior
+                    || QApplication::navigationMode() == Qt::NavigationModeKeypadTabOrder
 #endif
+                    )
+                    return QItemSelectionModel::NoUpdate;
                 break;
             case Qt::Key_Select:
                 return QItemSelectionModel::Toggle|selectionBehaviorFlags();

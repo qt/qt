@@ -18,6 +18,6 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/elasticnodes
 INSTALLS += target sources
 
 symbian {
-    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
     TARGET.UID3 = 0xA000A642
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 }

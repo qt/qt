@@ -169,9 +169,6 @@ struct QTLWExtra {
 #ifndef QT_NO_QWS_MANAGER
     QWSManager *qwsManager;
 #endif
-#elif defined(Q_OS_SYMBIAN) // <--------------------------------------------------------- SYMBIAN
-    uint activated : 1; // RWindowBase::Activated has been called
-    RDrawableWindow *rwindow;
 #endif
 };
 
@@ -224,6 +221,15 @@ struct QWExtra {
     QImage maskBits;
     CGImageRef imageMask;
 #endif
+#elif defined(Q_OS_SYMBIAN) // <----------------------------------------------------- Symbian
+    uint activated : 1; // RWindowBase::Activated has been called
+
+    // If set, QSymbianControl::Draw does not blit this widget
+    // This is to allow, for use cases such as video, widgets which, from the Qt point
+    // of view, are just placeholders in the scene.  For these widgets, any necessary
+    // drawing to the UI framebuffer is done by the relevant Symbian subsystem.  For
+    // video rendering, this would be an MMF controller, or MDF post-processor.
+    uint disableBlit : 1;
 #endif
 };
 
@@ -287,7 +293,8 @@ public:
 
     void setMask_sys(const QRegion &);
 #ifdef Q_OS_SYMBIAN
-    void handleSymbianDeferredFocusChanged();
+    void setSoftKeys_sys(const QList<QAction*> &softkeys);
+    void activateSymbianWindow();
 #endif
 
     void raise_sys();

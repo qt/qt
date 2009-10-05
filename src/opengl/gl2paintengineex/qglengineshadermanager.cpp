@@ -78,7 +78,7 @@ const char* QGLEngineSharedShaders::qglEngineShaderSourceCode[] = {
 };
 
 QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
-    : ctx(QGLContextPrivate::contextGroup(context))
+    : ctxGuard(context)
     , blitShaderProg(0)
     , simpleShaderProg(0)
 {
@@ -97,6 +97,7 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
 
         code[MainVertexShader] = qglslMainVertexShader;
         code[MainWithTexCoordsVertexShader] = qglslMainWithTexCoordsVertexShader;
+        code[MainWithTexCoordsAndOpacityVertexShader] = qglslMainWithTexCoordsAndOpacityVertexShader;
 
         code[UntransformedPositionVertexShader] = qglslUntransformedPositionVertexShader;
         code[PositionOnlyVertexShader] = qglslPositionOnlyVertexShader;
@@ -119,6 +120,7 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
         code[MainFragmentShader_C] = qglslMainFragmentShader_C;
         code[MainFragmentShader_O] = qglslMainFragmentShader_O;
         code[MainFragmentShader] = qglslMainFragmentShader;
+        code[MainFragmentShader_ImageArrays] = qglslMainFragmentShader_ImageArrays;
 
         code[ImageSrcFragmentShader] = qglslImageSrcFragmentShader;
         code[ImageSrcWithPatternFragmentShader] = qglslImageSrcWithPatternFragmentShader;
@@ -223,7 +225,7 @@ QGLShader *QGLEngineSharedShaders::compileNamedShader(ShaderName name, QGLShader
         return compiledShaders[name];
 
     QByteArray source = qglEngineShaderSourceCode[name];
-    QGLShader *newShader = new QGLShader(type, ctx->context(), this);
+    QGLShader *newShader = new QGLShader(type, ctxGuard.context(), this);
     newShader->compile(source);
 
 #if defined(QT_DEBUG)
@@ -245,7 +247,7 @@ QGLShader *QGLEngineSharedShaders::compileCustomShader(QGLCustomShaderStage *sta
     if (newShader)
         return newShader;
 
-    newShader = new QGLShader(type, ctx->context(), this);
+    newShader = new QGLShader(type, ctxGuard.context(), this);
     newShader->compile(source);
     customShaderCache.insert(source, newShader);
 
@@ -273,7 +275,7 @@ QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineS
     QGLEngineShaderProg &cached = cachedPrograms.last();
 
     // If the shader program's not found in the cache, create it now.
-    cached.program = new QGLShaderProgram(ctx->context(), this);
+    cached.program = new QGLShaderProgram(ctxGuard.context(), this);
     cached.program->addShader(cached.mainVertexShader);
     cached.program->addShader(cached.positionVertexShader);
     cached.program->addShader(cached.mainFragShader);
@@ -285,6 +287,8 @@ QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineS
     cached.program->bindAttributeLocation("vertexCoordsArray", QT_VERTEX_COORDS_ATTR);
     if (cached.useTextureCoords)
         cached.program->bindAttributeLocation("textureCoordArray", QT_TEXTURE_COORDS_ATTR);
+    if (cached.useOpacityAttribute)
+        cached.program->bindAttributeLocation("opacityArray", QT_OPACITY_ATTR);
 
     cached.program->link();
     if (!cached.program->isLinked()) {
@@ -331,7 +335,7 @@ QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
     : ctx(context),
       shaderProgNeedsChanging(true),
       srcPixelType(Qt::NoBrush),
-      useGlobalOpacity(false),
+      opacityMode(NoOpacity),
       maskType(NoMask),
       compositionMode(QPainter::CompositionMode_SourceOver),
       customSrcStage(0),
@@ -407,12 +411,12 @@ void QGLEngineShaderManager::setSrcPixelType(PixelSrcType type)
     shaderProgNeedsChanging = true; //###
 }
 
-void QGLEngineShaderManager::setUseGlobalOpacity(bool useOpacity)
+void QGLEngineShaderManager::setOpacityMode(OpacityMode mode)
 {
-    if (useGlobalOpacity == useOpacity)
+    if (opacityMode == mode)
         return;
 
-    useGlobalOpacity = useOpacity;
+    opacityMode = mode;
     shaderProgNeedsChanging = true; //###
 }
 
@@ -564,22 +568,28 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
     // Choose fragment shader main function:
     QGLEngineSharedShaders::ShaderName mainFragShaderName;
 
-    if (hasCompose && hasMask && useGlobalOpacity)
-        mainFragShaderName = QGLEngineSharedShaders::MainFragmentShader_CMO;
-    if (hasCompose && hasMask && !useGlobalOpacity)
-        mainFragShaderName = QGLEngineSharedShaders::MainFragmentShader_CM;
-    if (!hasCompose && hasMask && useGlobalOpacity)
-        mainFragShaderName = QGLEngineSharedShaders::MainFragmentShader_MO;
-    if (!hasCompose && hasMask && !useGlobalOpacity)
-        mainFragShaderName = QGLEngineSharedShaders::MainFragmentShader_M;
-    if (hasCompose && !hasMask && useGlobalOpacity)
-        mainFragShaderName = QGLEngineSharedShaders::MainFragmentShader_CO;
-    if (hasCompose && !hasMask && !useGlobalOpacity)
-        mainFragShaderName = QGLEngineSharedShaders::MainFragmentShader_C;
-    if (!hasCompose && !hasMask && useGlobalOpacity)
-        mainFragShaderName = QGLEngineSharedShaders::MainFragmentShader_O;
-    if (!hasCompose && !hasMask && !useGlobalOpacity)
-        mainFragShaderName = QGLEngineSharedShaders::MainFragmentShader;
+    if (opacityMode == AttributeOpacity) {
+        Q_ASSERT(!hasCompose && !hasMask);
+        mainFragShaderName = QGLEngineSharedShaders::MainFragmentShader_ImageArrays;
+    } else {
+        bool useGlobalOpacity = (opacityMode == UniformOpacity);
+        if (hasCompose && hasMask && useGlobalOpacity)
+            mainFragShaderName = QGLEngineSharedShaders::MainFragmentShader_CMO;
+        if (hasCompose && hasMask && !useGlobalOpacity)
+            mainFragShaderName = QGLEngineSharedShaders::MainFragmentShader_CM;
+        if (!hasCompose && hasMask && useGlobalOpacity)
+            mainFragShaderName = QGLEngineSharedShaders::MainFragmentShader_MO;
+        if (!hasCompose && hasMask && !useGlobalOpacity)
+            mainFragShaderName = QGLEngineSharedShaders::MainFragmentShader_M;
+        if (hasCompose && !hasMask && useGlobalOpacity)
+            mainFragShaderName = QGLEngineSharedShaders::MainFragmentShader_CO;
+        if (hasCompose && !hasMask && !useGlobalOpacity)
+            mainFragShaderName = QGLEngineSharedShaders::MainFragmentShader_C;
+        if (!hasCompose && !hasMask && useGlobalOpacity)
+            mainFragShaderName = QGLEngineSharedShaders::MainFragmentShader_O;
+        if (!hasCompose && !hasMask && !useGlobalOpacity)
+            mainFragShaderName = QGLEngineSharedShaders::MainFragmentShader;
+    }
 
     requiredProgram.mainFragShader = sharedShaders->compileNamedShader(mainFragShaderName, QGLShader::PartialFragmentShader);
 
@@ -652,12 +662,17 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
 
         // Choose vertex shader main function
     QGLEngineSharedShaders::ShaderName mainVertexShaderName = QGLEngineSharedShaders::InvalidShaderName;
-    if (texCoords)
+    if (opacityMode == AttributeOpacity) {
+        Q_ASSERT(texCoords);
+        mainVertexShaderName = QGLEngineSharedShaders::MainWithTexCoordsAndOpacityVertexShader;
+    } else if (texCoords) {
         mainVertexShaderName = QGLEngineSharedShaders::MainWithTexCoordsVertexShader;
-    else
+    } else {
         mainVertexShaderName = QGLEngineSharedShaders::MainVertexShader;
+    }
     requiredProgram.mainVertexShader = sharedShaders->compileNamedShader(mainVertexShaderName, QGLShader::PartialVertexShader);
     requiredProgram.useTextureCoords = texCoords;
+    requiredProgram.useOpacityAttribute = (opacityMode == AttributeOpacity);
 
 
     // At this point, requiredProgram is fully populated so try to find the program in the cache

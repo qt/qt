@@ -90,7 +90,7 @@
     \row \o \c debug-armv5   \o Build debug binaries for hardware using RVCT.
     \row \o \c release-armv5 \o Build release binaries for hardware using RVCT.
     \row \o \c run           \o Run the emulator binaries from the build directory.
-    \row \o \c sis          \o Create signed \c .sis file for project.
+    \row \o \c sis           \o Create signed \c .sis file for project.
     \endtable
 
     The following lines perform a debug build for the emulator
@@ -106,7 +106,7 @@
     To install your own applications on hardware, you need signed \c .sis file.
     The signed \c .sis file can be created with \c make \c sis target. \c sis target
     is only supported for executables or projects with \c DEPLOYMENT statements.
-    By default the \c sis target will create signed \.sis file for last build
+    By default the \c sis target will create signed \c .sis file for last build
     target. For example, the following sequence will generate the needed makefiles, 
     build the project for \c debug-winscw and \c release-armv5, and create 
     self-signed \c .sis file for \c release-armv5 target:
@@ -119,8 +119,10 @@
     
     \table
     \row \o \c QT_SIS_OPTIONS      \o Options accepted by \c .sis creation. 
-                                       Currently only -i, install the package right away 
-                                       using PC suite, is supported.
+                                       -i, install the package right away using PC suite.
+                                       -c=<file>, read certificate information from a file.
+                                       Execute \c{perl createpackage.pl} for more information
+                                       about options.
                                        By default no otions are given.
     \row \o \c QT_SIS_TARGET       \o Target for which \c .sis file is created.
                                        Accepted values are build targets listed in 
@@ -133,13 +135,13 @@
                                        By default empty. 
     \endtable    
     
-    The environment variables for \c make can be given as an parameters. For example:
-    
-    \snippet doc/src/snippets/code/doc_src_s60-introduction.qdoc 3    
-    
-    The above example is identical to:
+    For example:
     
     \snippet doc/src/snippets/code/doc_src_s60-introduction.qdoc 4        
+
+    The environment variables for \c make can also be given as parameters:
+    
+    \snippet doc/src/snippets/code/doc_src_s60-introduction.qdoc 3        
     
     If you want to install the program immediately, make sure that the device
     is connected to the computer in "PC Suite" mode, and run \c sis target

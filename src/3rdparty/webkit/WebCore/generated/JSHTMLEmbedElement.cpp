@@ -138,7 +138,7 @@ bool JSHTMLEmbedElementPrototype::getOwnPropertyDescriptor(ExecState* exec, cons
 
 const ClassInfo JSHTMLEmbedElement::s_info = { "HTMLEmbedElement", &JSHTMLElement::s_info, &JSHTMLEmbedElementTable, 0 };
 
-JSHTMLEmbedElement::JSHTMLEmbedElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLEmbedElement> impl)
+JSHTMLEmbedElement::JSHTMLEmbedElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLEmbedElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

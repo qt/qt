@@ -93,6 +93,10 @@ QT_BEGIN_NAMESPACE
     \property QAbstractTransition::targetState
 
     \brief the target state of this transition
+
+    If a transition has no target state, the transition may still be
+    triggered, but this will not cause the state machine's configuration to
+    change (i.e. the current state will not be exited and re-entered).
 */
 
 /*!

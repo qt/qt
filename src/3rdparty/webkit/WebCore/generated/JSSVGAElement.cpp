@@ -116,7 +116,7 @@ bool JSSVGAElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const Ide
 
 const ClassInfo JSSVGAElement::s_info = { "SVGAElement", &JSSVGElement::s_info, &JSSVGAElementTable, 0 };
 
-JSSVGAElement::JSSVGAElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAElement> impl)
+JSSVGAElement::JSSVGAElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

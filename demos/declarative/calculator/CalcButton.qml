@@ -1,9 +1,9 @@
 import Qt 4.6
 
 Rectangle {
-    property string operation
-    property bool toggable : false
-    property bool toggled : false
+    property alias operation: Label.text
+    property bool toggable: false
+    property bool toggled: false
     signal clicked
 
     id: Button; width: 50; height: 30
@@ -13,7 +13,7 @@ Rectangle {
         GradientStop { id: G2; position: 1.0; color: Palette.button }
     }
 
-    Text { anchors.centerIn: parent; text: operation; color: Palette.buttonText }
+    Text { id: Label; anchors.centerIn: parent; color: Palette.buttonText }
 
     MouseRegion {
         id: ClickRegion

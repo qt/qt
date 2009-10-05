@@ -122,7 +122,7 @@ bool JSSVGImageElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const
 
 const ClassInfo JSSVGImageElement::s_info = { "SVGImageElement", &JSSVGElement::s_info, &JSSVGImageElementTable, 0 };
 
-JSSVGImageElement::JSSVGImageElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGImageElement> impl)
+JSSVGImageElement::JSSVGImageElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGImageElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

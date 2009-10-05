@@ -819,6 +819,9 @@ qint64 QAudioInputPrivate::totalTime() const
 
 qint64 QAudioInputPrivate::clock() const
 {
+    if (stateCode == QAudio::StopState)
+        return 0;
+
     return (AudioGetCurrentHostTime() - startTime) / (clockFrequency / 1000);
 }
 

@@ -139,12 +139,14 @@ void tst_QAudioInput::pullFile()
         // Always have default states, before start
         QVERIFY(audio->state() == QAudio::StopState);
         QVERIFY(audio->error() == QAudio::NoError);
+        QVERIFY(audio->clock() == 0);
 
         audio->start(&filename);
         QTest::qWait(20);
         // Check state and periodSize() are valid non-zero values.
         QVERIFY(audio->state() == QAudio::ActiveState);
         QVERIFY(audio->error() == QAudio::NoError);
+        QVERIFY(audio->clock() > 0);
         QVERIFY(audio->periodSize() > 0);
         QVERIFY(stateSignal.count() == 1); // State changed to QAudio::ActiveState
 
@@ -157,6 +159,7 @@ void tst_QAudioInput::pullFile()
         audio->stop();
         QTest::qWait(20);
         QVERIFY(audio->state() == QAudio::StopState);
+        QVERIFY(audio->clock() == 0);
         // Can only check to make sure we got at least 1 more signal, but can be more.
         QVERIFY(stateSignal.count() > 1);
 

@@ -198,6 +198,17 @@ template <int N> struct QConcatenable<char[N]>
     }
 };
 
+template <int N> struct QConcatenable<const char[N]>
+{
+    typedef const char type[N];
+    static int size(const char[N]) { return N - 1; }
+    static inline void appendTo(const char a[N], QChar *&out)
+    {
+        for (int i = 0; i < N - 1; ++i)
+            *out++ = QLatin1Char(a[i]);
+    }
+};
+
 template <> struct QConcatenable<const char *>
 {
     typedef char const *type;
@@ -241,7 +252,7 @@ template <typename A, typename B>
 QStringBuilder<typename QConcatenable<A>::type, typename QConcatenable<B>::type>
 operator%(const A &a, const B &b)
 {
-   return QStringBuilder<A, B>(a, b);
+   return QStringBuilder<typename QConcatenable<A>::type, typename QConcatenable<B>::type>(a, b);
 }
 
 #ifdef QT_USE_FAST_OPERATOR_PLUS
@@ -249,7 +260,7 @@ template <typename A, typename B>
 QStringBuilder<typename QConcatenable<A>::type, typename QConcatenable<B>::type>
 operator+(const A &a, const B &b)
 {
-   return QStringBuilder<A, B>(a, b);
+   return QStringBuilder<typename QConcatenable<A>::type, typename QConcatenable<B>::type>(a, b);
 }
 #endif
 

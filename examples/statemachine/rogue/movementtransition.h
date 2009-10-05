@@ -61,7 +61,7 @@ public:
 //![1]
 protected:
     bool eventTest(QEvent *event) {
-        if (event->type() == QEvent::Wrapped &&
+        if (event->type() == QEvent::StateMachineWrapped &&
             static_cast<QStateMachine::WrappedEvent *>(event)->event()->type() == QEvent::KeyPress) {
             QEvent *wrappedEvent = static_cast<QStateMachine::WrappedEvent *>(event)->event();
 

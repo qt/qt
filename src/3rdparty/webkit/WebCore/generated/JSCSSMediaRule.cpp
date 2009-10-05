@@ -132,7 +132,7 @@ bool JSCSSMediaRulePrototype::getOwnPropertyDescriptor(ExecState* exec, const Id
 
 const ClassInfo JSCSSMediaRule::s_info = { "CSSMediaRule", &JSCSSRule::s_info, &JSCSSMediaRuleTable, 0 };
 
-JSCSSMediaRule::JSCSSMediaRule(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSMediaRule> impl)
+JSCSSMediaRule::JSCSSMediaRule(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSMediaRule> impl)
     : JSCSSRule(structure, globalObject, impl)
 {
 }

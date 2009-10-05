@@ -36,7 +36,7 @@ class SVGPreserveAspectRatio;
 class JSSVGPreserveAspectRatio : public DOMObjectWithSVGContext {
     typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGPreserveAspectRatio(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGPreserveAspectRatio>, SVGElement* context);
+    JSSVGPreserveAspectRatio(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGPreserveAspectRatio>, SVGElement* context);
     virtual ~JSSVGPreserveAspectRatio();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -72,7 +72,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSSVGPreserveAspectRatioPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSSVGPreserveAspectRatioPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Attributes

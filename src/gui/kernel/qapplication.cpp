@@ -97,6 +97,10 @@
 
 #include "qapplication.h"
 
+#ifndef QT_NO_LIBRARY
+#include "qlibrary.h"
+#endif
+
 #ifdef Q_WS_WINCE
 #include "qdatetime.h"
 #include "qguifunctions_wince.h"
@@ -457,6 +461,7 @@ bool QApplicationPrivate::animate_tooltip = false;
 bool QApplicationPrivate::fade_tooltip = false;
 bool QApplicationPrivate::animate_toolbox = false;
 bool QApplicationPrivate::widgetCount = false;
+bool QApplicationPrivate::load_testability = false;
 #if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
 bool QApplicationPrivate::inSizeMove = false;
 #endif
@@ -563,6 +568,8 @@ void QApplicationPrivate::process_cmdline()
             QApplication::setLayoutDirection(Qt::RightToLeft);
         } else if (qstrcmp(arg, "-widgetcount") == 0) {
             widgetCount = true;
+        } else if (qstrcmp(arg, "-testability") == 0) {
+            load_testability = true;
         } else if (arg == "-graphicssystem" && i < argc-1) {
             graphics_system_name = QString::fromLocal8Bit(argv[++i]);
         } else {
@@ -765,6 +772,23 @@ void QApplicationPrivate::construct(
     extern void qt_gui_eval_init(uint);
     qt_gui_eval_init(application_type);
 #endif
+
+#ifndef QT_NO_LIBRARY
+    if(load_testability) {
+        QLibrary testLib(QLatin1String("qttestability"));
+        if (testLib.load()) {
+            typedef void (*TasInitialize)(void);
+            TasInitialize initFunction = (TasInitialize)testLib.resolve("qt_testability_init");
+            if (initFunction) {
+                initFunction();
+            } else {
+                qCritical("Library qttestability resolve failed!");
+            }
+        } else {
+            qCritical("Library qttestability load failed!");
+        }
+    }
+#endif
 }
 
 #if defined(Q_WS_X11)
@@ -901,7 +925,7 @@ void QApplicationPrivate::initialize()
     graphics_system = QGraphicsSystemFactory::create(graphics_system_name);
 #endif
 #ifndef QT_NO_WHEELEVENT
-#ifdef QT_MAC_USE_COCOA
+#ifdef Q_OS_MAC 
     QApplicationPrivate::wheel_scroll_lines = 1;
 #else
     QApplicationPrivate::wheel_scroll_lines = 3;
@@ -3047,7 +3071,7 @@ void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
         qt_button_down = 0;
 
     // Send enter/leave events followed by a mouse move on the entered widget.
-    QMouseEvent e(QEvent::MouseMove, pos, globalPos, Qt::NoButton, mouse_buttons, modifier_buttons);
+    QMouseEvent e(QEvent::MouseMove, pos, globalPos, Qt::NoButton, Qt::NoButton, Qt::NoModifier);
     sendMouseEvent(widgetUnderCursor, &e, widgetUnderCursor, tlw, &qt_button_down, qt_last_mouse_receiver);
 #endif // QT_NO_CURSOR
 }

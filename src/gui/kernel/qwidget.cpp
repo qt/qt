@@ -900,28 +900,30 @@ void QWidget::setAutoFillBackground(bool enabled)
 
     \sa QEvent, QPainter, QGridLayout, QBoxLayout
 
-    \section1 SoftKeys
+    \section1 Softkeys
     \since 4.6
-    \preliminary
 
-    Softkeys API is a platform independent way of mapping actions to (hardware)keys
-    and toolbars provided by the underlying platform.
+    Softkeys are usually physical keys on a device that have a corresponding label or
+    other visual representation on the screen that is generally located next to its
+    physical counterpart. They are most often found on mobile phone platforms. In
+    modern touch based user interfaces it is also possible to have softkeys that do
+    not correspond to any physical keys. Softkeys differ from other onscreen labels
+    in that they are contextual.
 
-    There are three major use cases supported. First one is a mobile device
-    with keypad navigation and no touch ui. Second use case is a mobile
-    device with touch ui. Third use case is desktop. For now the softkey API is
-    only implemented for Series60.
+    In Qt, contextual softkeys are added to a widget by calling addAction() and
+    passing a \c QAction with a softkey role set on it. When the widget
+    containing the softkey actions has focus, its softkeys should appear in
+    the user interface. Softkeys are discovered by traversing the widget
+    heirarchy so it is possible to define a single set of softkeys that are
+    present at all times by calling addAction() for a given top level widget.
 
-    QActions are set to widget(s) via softkey API. Actions in focused widget are
-    mapped to native toolbar or hardware keys. Even though the API allows to set
-    any amount of widgets there might be physical restrictions to amount of
-    softkeys that can be used by the device.
+    On some platforms, this concept overlaps with \c QMenuBar such that if no
+    other softkeys are found and the top level widget is a QMainWindow containing
+    a QMenuBar, the menubar actions may appear on one of the softkeys.
 
-    \e Series60: For series60 menu button is automatically mapped to left
-    soft key if there is QMainWindow with QMenuBar in widgets parent hierarchy.
+    Note: Currently softkeys are only supported on the Symbian Platform.
 
-    \sa softKeys()
-    \sa setSoftKey()
+    \sa addAction(), QAction, QMenuBar
 
 */
 
@@ -1174,10 +1176,6 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     // Widgets with Qt::MSWindowsOwnDC (typically QGLWidget) must have a window handle.
     if (f & Qt::MSWindowsOwnDC)
         q->setAttribute(Qt::WA_NativeWindow);
-
-#ifdef Q_WS_WINCE
-    data.window_state_internal = 0;
-#endif
 
     q->setAttribute(Qt::WA_QuitOnClose); // might be cleared in adjustQuitOnCloseAttribute()
     adjustQuitOnCloseAttribute();
@@ -8334,12 +8332,6 @@ bool QWidget::event(QEvent *event)
         (void) QApplication::sendEvent(this, &mouseEvent);
         break;
     }
-    case QEvent::SymbianDeferredFocusChanged: {
-#ifdef Q_OS_SYMBIAN
-        d->handleSymbianDeferredFocusChanged();
-#endif
-        break;
-    }
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();
@@ -11452,15 +11444,32 @@ QWidget *QWidgetPrivate::widgetInNavigationDirection(Direction direction)
     QWidget *targetWidget = 0;
     int shortestDistance = INT_MAX;
     foreach(QWidget *targetCandidate, QApplication::allWidgets()) {
+
         const QRect targetCandidateRect = targetCandidate->rect().translated(targetCandidate->mapToGlobal(QPoint()));
+
+        // For focus proxies, the child widget handling the focus can have keypad navigation focus, 
+        // but the owner of the proxy cannot.
+        // Additionally, empty widgets should be ignored.
+        if (targetCandidate->focusProxy() || targetCandidateRect.isEmpty())
+            continue;
+
+        // Only navigate to a target widget that...
         if (       targetCandidate != sourceWidget
+                   // ...takes the focus,
                 && targetCandidate->focusPolicy() & Qt::TabFocus
+                   // ...is above if DirectionNorth,
                 && !(direction == DirectionNorth && targetCandidateRect.bottom() > sourceRect.top())
+                   // ...is on the right if DirectionEast,
                 && !(direction == DirectionEast  && targetCandidateRect.left()   < sourceRect.right())
+                   // ...is below if DirectionSouth,
                 && !(direction == DirectionSouth && targetCandidateRect.top()    < sourceRect.bottom())
+                   // ...is on the left if DirectionWest,
                 && !(direction == DirectionWest  && targetCandidateRect.right()  > sourceRect.left())
+                   // ...is enabled,
                 && targetCandidate->isEnabled()
+                   // ...is visible,
                 && targetCandidate->isVisible()
+                   // ...is in the same window,
                 && targetCandidate->window() == sourceWindow) {
             const int targetCandidateDistance = pointToRect(sourcePoint, targetCandidateRect);
             if (targetCandidateDistance < shortestDistance) {

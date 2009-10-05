@@ -192,8 +192,9 @@ QT_BEGIN_NAMESPACE
     \value ShortcutOverride                 Key press in child, for overriding shortcut key handling (QKeyEvent).
     \value Show                             Widget was shown on screen (QShowEvent).
     \value ShowToParent                     A child widget has been shown.
-    \value Signal                           A signal delivered to a state machine (QStateMachine::SignalEvent).
     \value SockAct                          Socket activated, used to implement QSocketNotifier.
+    \value StateMachineSignal               A signal delivered to a state machine (QStateMachine::SignalEvent).
+    \value StateMachineWrapped              The event is a wrapper for, i.e., contains, another event (QStateMachine::WrappedEvent).
     \value StatusTip                        A status tip is requested (QStatusTipEvent).
     \value StyleChange                      Widget's style has been changed.
     \value TabletMove                       Wacom tablet move (QTabletEvent).
@@ -221,7 +222,6 @@ QT_BEGIN_NAMESPACE
     \value WindowStateChange                The \l{QWidget::windowState()}{window's state} (minimized, maximized or full-screen) has changed (QWindowStateChangeEvent).
     \value WindowTitleChange                The window title has changed.
     \value WindowUnblocked                  The window is unblocked after a modal dialog exited.
-    \value Wrapped                          The event is a wrapper for, i.e., contains, another event (QStateMachine::WrappedEvent).
     \value ZOrderChange                     The widget's z-order has changed. This event is never sent to top level windows.
     \value KeyboardLayoutChange             The keyboard layout has changed.
     \value DynamicPropertyChange            A dynamic property was added, changed or removed from the object.
@@ -270,7 +270,6 @@ QT_BEGIN_NAMESPACE
     \omitvalue NetworkReplyUpdated
     \omitvalue FutureCallOut
     \omitvalue CocoaRequestModal
-    \omitvalue SymbianDeferredFocusChanged
     \omitvalue UpdateSoftKeys
     \omitvalue NativeGesture
 */

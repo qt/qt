@@ -85,7 +85,7 @@ bool JSTimeRangesPrototype::getOwnPropertyDescriptor(ExecState* exec, const Iden
 
 const ClassInfo JSTimeRanges::s_info = { "TimeRanges", 0, &JSTimeRangesTable, 0 };
 
-JSTimeRanges::JSTimeRanges(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<TimeRanges> impl)
+JSTimeRanges::JSTimeRanges(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<TimeRanges> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

@@ -41,6 +41,7 @@
 
 #include <QtGui>
 #include <QtWebKit>
+#include <QSslSocket>
 
 #include "googlechat.h"
 
@@ -117,6 +118,11 @@ void GoogleChat::doLogin() {
 }
 
 void GoogleChat::initialPage(bool ok) {
+    if (!QSslSocket::supportsSsl()) {
+        showError("This example requires SSL support.");
+        return;
+    }
+
     if (ok) {
         QString s1 = evalJS("document.getElementById('Email').name");
         QString s2 = evalJS("document.getElementById('Passwd').name");

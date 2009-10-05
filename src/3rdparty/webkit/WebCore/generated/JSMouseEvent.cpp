@@ -149,7 +149,7 @@ bool JSMouseEventPrototype::getOwnPropertyDescriptor(ExecState* exec, const Iden
 
 const ClassInfo JSMouseEvent::s_info = { "MouseEvent", &JSUIEvent::s_info, &JSMouseEventTable, 0 };
 
-JSMouseEvent::JSMouseEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MouseEvent> impl)
+JSMouseEvent::JSMouseEvent(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MouseEvent> impl)
     : JSUIEvent(structure, globalObject, impl)
 {
 }

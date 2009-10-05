@@ -260,9 +260,17 @@ void tst_QMenu::onStatusMessageChanged(const QString &s)
 void
 tst_QMenu::addActionsAndClear()
 {
-    QCOMPARE(menus[0]->actions().count(), 0);
+#ifdef QT_SOFTKEYS_ENABLED
+    // Softkeys add extra "Select" and "Back" actions to menu by default.
+    // Two first actions will be Select and Back when softkeys are enabled
+    int numSoftkeyActions = 2;
+#else
+    int numSoftkeyActions = 0;
+#endif
+
+    QCOMPARE(menus[0]->actions().count(), 0 + numSoftkeyActions);
     createActions();
-    QCOMPARE(menus[0]->actions().count(), 8);
+    QCOMPARE(menus[0]->actions().count(), 8 + numSoftkeyActions);
     menus[0]->clear();
     QCOMPARE(menus[0]->actions().count(), 0);
 }

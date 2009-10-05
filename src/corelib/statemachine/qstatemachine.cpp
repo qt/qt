@@ -804,6 +804,14 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
         }
 
         if (hasValidEndValue) {
+            if (anim->state() == QAbstractAnimation::Running) {
+                // The animation is still running. This can happen if the
+                // animation is a group, and one of its children just finished,
+                // and that caused a state to emit its polished() signal, and
+                // that triggered a transition in the machine.
+                // Just stop the animation so it is correctly restarted again.
+                anim->stop();
+            }
             anim->start();
         }
     }
@@ -1257,23 +1265,45 @@ void QStateMachinePrivate::_q_process()
         break;
     case Finished:
         state = NotRunning;
+        cancelAllDelayedEvents();
         unregisterAllTransitions();
         emit q->finished();
         break;
     case Stopped:
         state = NotRunning;
+        cancelAllDelayedEvents();
         unregisterAllTransitions();
         emit q->stopped();
         break;
     }
 }
 
-void QStateMachinePrivate::scheduleProcess()
+void QStateMachinePrivate::processEvents(EventProcessingMode processingMode)
 {
     if ((state != Running) || processing || processingScheduled)
         return;
-    processingScheduled = true;
-    QMetaObject::invokeMethod(q_func(), "_q_process", Qt::QueuedConnection);
+    switch (processingMode) {
+    case DirectProcessing:
+        _q_process();
+        break;
+    case QueuedProcessing:
+        processingScheduled = true;
+        QMetaObject::invokeMethod(q_func(), "_q_process", Qt::QueuedConnection);
+        break;
+    }
+}
+
+void QStateMachinePrivate::cancelAllDelayedEvents()
+{
+    Q_Q(QStateMachine);
+    QHash<int, QEvent*>::const_iterator it;
+    for (it = delayedEvents.constBegin(); it != delayedEvents.constEnd(); ++it) {
+        int id = it.key();
+        QEvent *e = it.value();
+        q->killTimer(id);
+        delete e;
+    }
+    delayedEvents.clear();
 }
 
 namespace {
@@ -1335,7 +1365,7 @@ void QStateMachinePrivate::goToState(QAbstractState *targetState)
         trans->setTargetState(targetState);
     }
 
-    scheduleProcess();
+    processEvents(QueuedProcessing);
 }
 
 void QStateMachinePrivate::registerTransitions(QAbstractState *state)
@@ -1512,6 +1542,15 @@ void QStateMachinePrivate::unregisterEventTransition(QEventTransition *transitio
     }
     QEventTransitionPrivate::get(transition)->registered = false;
 }
+
+void QStateMachinePrivate::handleFilteredEvent(QObject *watched, QEvent *event)
+{
+    Q_ASSERT(qobjectEvents.contains(watched));
+    if (qobjectEvents[watched].contains(event->type())) {
+        internalEventQueue.append(new QStateMachine::WrappedEvent(watched, handler->cloneEvent(event)));
+        processEvents(DirectProcessing);
+    }
+}
 #endif
 
 void QStateMachinePrivate::handleTransitionSignal(QObject *sender, int signalIndex,
@@ -1533,7 +1572,7 @@ void QStateMachinePrivate::handleTransitionSignal(QObject *sender, int signalInd
              << ", signal =" << sender->metaObject()->method(signalIndex).signature() << ')';
 #endif
     internalEventQueue.append(new QStateMachine::SignalEvent(sender, signalIndex, vargs));
-    scheduleProcess();
+    processEvents(DirectProcessing);
 }
 
 /*!
@@ -1562,6 +1601,18 @@ QStateMachine::QStateMachine(QStateMachinePrivate &dd, QObject *parent)
 QStateMachine::~QStateMachine()
 {
 }
+
+/*!
+  \enum QStateMachine::EventPriority
+
+  This enum type specifies the priority of an event posted to the state
+  machine using postEvent().
+
+  Events of high priority are processed before events of normal priority.
+
+  \value NormalPriority The event has normal priority.
+  \value HighPriority The event has high priority.
+*/
 
 /*! \enum QStateMachine::Error 
 
@@ -1768,53 +1819,105 @@ void QStateMachine::stop()
         break;
     case QStateMachinePrivate::Running:
         d->stop = true;
-        d->scheduleProcess();
+        d->processEvents(QStateMachinePrivate::QueuedProcessing);
         break;
     }
 }
 
 /*!
-  Posts the given \a event for processing by this state machine, with a delay
-  of \a delay milliseconds.
+  Posts the given \a event of the given \a priority for processing by this
+  state machine.
 
   This function returns immediately. The event is added to the state machine's
   event queue. Events are processed in the order posted. The state machine
   takes ownership of the event and deletes it once it has been processed.
 
   You can only post events when the state machine is running.
+
+  \sa postDelayedEvent()
 */
-void QStateMachine::postEvent(QEvent *event, int delay)
+void QStateMachine::postEvent(QEvent *event, EventPriority priority)
 {
     Q_D(QStateMachine);
     if (d->state != QStateMachinePrivate::Running) {
         qWarning("QStateMachine::postEvent: cannot post event when the state machine is not running");
         return;
     }
-#ifdef QSTATEMACHINE_DEBUG
-    qDebug() << this << ": posting external event" << event << "with delay" << delay;
-#endif
-    if (delay) {
-        int tid = startTimer(delay);
-        d->delayedEvents[tid] = event;
-    } else {
-        d->externalEventQueue.append(event);
-        d->scheduleProcess();
+    if (!event) {
+        qWarning("QStateMachine::postEvent: cannot post null event");
+        return;
     }
+#ifdef QSTATEMACHINE_DEBUG
+    qDebug() << this << ": posting event" << event;
+#endif
+    switch (priority) {
+    case NormalPriority:
+        d->externalEventQueue.append(event);
+        break;
+    case HighPriority:
+        d->internalEventQueue.append(event);
+        break;
+    }
+    d->processEvents(QStateMachinePrivate::QueuedProcessing);
 }
 
 /*!
-  \internal
+  Posts the given \a event for processing by this state machine, with the
+  given \a delay in milliseconds. Returns an identifier associated with the
+  delayed event, or -1 if the event could not be posted.
 
-  Posts the given internal \a event for processing by this state machine.
+  This function returns immediately. When the delay has expired, the event
+  will be added to the state machine's event queue for processing. The state
+  machine takes ownership of the event and deletes it once it has been
+  processed.
+
+  You can only post events when the state machine is running.
+
+  \sa cancelDelayedEvent(), postEvent()
 */
-void QStateMachine::postInternalEvent(QEvent *event)
+int QStateMachine::postDelayedEvent(QEvent *event, int delay)
 {
     Q_D(QStateMachine);
+    if (d->state != QStateMachinePrivate::Running) {
+        qWarning("QStateMachine::postDelayedEvent: cannot post event when the state machine is not running");
+        return -1;
+    }
+    if (!event) {
+        qWarning("QStateMachine::postDelayedEvent: cannot post null event");
+        return -1;
+    }
+    if (delay < 0) {
+        qWarning("QStateMachine::postDelayedEvent: delay cannot be negative");
+        return -1;
+    }
 #ifdef QSTATEMACHINE_DEBUG
-    qDebug() << this << ": posting internal event" << event;
+    qDebug() << this << ": posting event" << event << "with delay" << delay;
 #endif
-    d->internalEventQueue.append(event);
-    d->scheduleProcess();
+    int tid = startTimer(delay);
+    d->delayedEvents[tid] = event;
+    return tid;
+}
+
+/*!
+  Cancels the delayed event identified by the given \a id. The id should be a
+  value returned by a call to postDelayedEvent(). Returns true if the event
+  was successfully cancelled, otherwise returns false.
+
+  \sa postDelayedEvent()
+*/
+bool QStateMachine::cancelDelayedEvent(int id)
+{
+    Q_D(QStateMachine);
+    if (d->state != QStateMachinePrivate::Running) {
+        qWarning("QStateMachine::cancelDelayedEvent: the machine is not running");
+        return false;
+    }
+    QEvent *e = d->delayedEvents.take(id);
+    if (!e)
+        return false;
+    killTimer(id);
+    delete e;
+    return true;
 }
 
 /*!
@@ -1858,11 +1961,16 @@ bool QStateMachine::event(QEvent *e)
     if (e->type() == QEvent::Timer) {
         QTimerEvent *te = static_cast<QTimerEvent*>(e);
         int tid = te->timerId();
-        if (d->delayedEvents.contains(tid)) {
+        if (d->state != QStateMachinePrivate::Running) {
+            // This event has been cancelled already
+            Q_ASSERT(!d->delayedEvents.contains(tid));
+            return true;
+        }
+        QEvent *ee = d->delayedEvents.take(tid);
+        if (ee != 0) {
             killTimer(tid);
-            QEvent *ee = d->delayedEvents.take(tid);
             d->externalEventQueue.append(ee);
-            d->scheduleProcess();
+            d->processEvents(QStateMachinePrivate::DirectProcessing);
             return true;
         }
     }
@@ -1876,9 +1984,7 @@ bool QStateMachine::event(QEvent *e)
 bool QStateMachine::eventFilter(QObject *watched, QEvent *event)
 {
     Q_D(QStateMachine);
-    Q_ASSERT(d->qobjectEvents.contains(watched));
-    if (d->qobjectEvents[watched].contains(event->type()))
-        postEvent(new QStateMachine::WrappedEvent(watched, d->handler->cloneEvent(event)));
+    d->handleFilteredEvent(watched, event);
     return false;
 }
 #endif
@@ -2100,7 +2206,7 @@ QSignalEventGenerator::QSignalEventGenerator(QStateMachine *parent)
 */
 QStateMachine::SignalEvent::SignalEvent(QObject *sender, int signalIndex,
                                         const QList<QVariant> &arguments)
-    : QEvent(QEvent::Signal), m_sender(sender),
+    : QEvent(QEvent::StateMachineSignal), m_sender(sender),
       m_signalIndex(signalIndex), m_arguments(arguments)
 {
 }
@@ -2163,7 +2269,7 @@ QStateMachine::SignalEvent::~SignalEvent()
   The WrappedEvent object takes ownership of \a event.
 */
 QStateMachine::WrappedEvent::WrappedEvent(QObject *object, QEvent *event)
-    : QEvent(QEvent::Wrapped), m_object(object), m_event(event)
+    : QEvent(QEvent::StateMachineWrapped), m_object(object), m_event(event)
 {
 }
 

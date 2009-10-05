@@ -115,7 +115,7 @@ JSObject* JSHTMLHeadElementPrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSHTMLHeadElement::s_info = { "HTMLHeadElement", &JSHTMLElement::s_info, &JSHTMLHeadElementTable, 0 };
 
-JSHTMLHeadElement::JSHTMLHeadElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLHeadElement> impl)
+JSHTMLHeadElement::JSHTMLHeadElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLHeadElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

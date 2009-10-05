@@ -47,22 +47,24 @@
 #include <QtCore/qdebug.h>
 #include <QtDeclarative/qmlinfo.h>
 #include <private/qfxanchors_p.h>
+#include <private/qfxitem_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QmlParentChangePrivate : public QObjectPrivate
 {
 public:
-    QmlParentChangePrivate() : target(0), parent(0), origParent(0) {}
+    QmlParentChangePrivate() : target(0), parent(0), origParent(0), origStackBefore(0) {}
 
     QFxItem *target;
     QFxItem *parent;
-    QFxItem *origParent;
+    QGuard<QFxItem> origParent;
+    QGuard<QFxItem> origStackBefore;
 
-    void doChange(QFxItem *targetParent);
+    void doChange(QFxItem *targetParent, QFxItem *stackBefore = 0);
 };
 
-void QmlParentChangePrivate::doChange(QFxItem *targetParent)
+void QmlParentChangePrivate::doChange(QFxItem *targetParent, QFxItem *stackBefore)
 {
     if (targetParent && target && target->parentItem()) {
         QPointF me = target->parentItem()->mapToScene(QPointF(0,0));
@@ -115,6 +117,11 @@ void QmlParentChangePrivate::doChange(QFxItem *targetParent)
     } else if (target) {
         target->setParentItem(targetParent);
     }
+
+    //restore the original stack position.
+    //### if stackBefore has also been reparented this won't work
+    if (stackBefore)
+        target->stackBefore(stackBefore);
 }
 
 /*!
@@ -179,11 +186,47 @@ QmlStateOperation::ActionList QmlParentChange::actions()
     return ActionList() << a;
 }
 
+class AccessibleFxItem : public QFxItem
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxItem);
+public:
+    int siblingIndex() {
+        Q_D(QFxItem);
+        return d->siblingIndex;
+    }
+};
+
+void QmlParentChange::saveOriginals()
+{
+    Q_D(QmlParentChange);
+    if (!d->target) {
+        d->origParent = 0;
+        d->origStackBefore = 0;
+        return;
+    }
+
+    d->origParent = d->target->parentItem();
+
+    //try to determine the items original stack position so we can restore it
+    if (!d->origParent)
+        d->origStackBefore = 0;
+    int siblingIndex = ((AccessibleFxItem*)d->target)->siblingIndex() + 1;
+    QList<QGraphicsItem*> children = d->origParent->childItems();
+    for (int i = 0; i < children.count(); ++i) {
+        QFxItem *child = qobject_cast<QFxItem*>(children.at(i));
+        if (!child)
+            continue;
+        if (((AccessibleFxItem*)child)->siblingIndex() == siblingIndex) {
+            d->origStackBefore = child;
+            break;
+        }
+    }
+}
+
 void QmlParentChange::execute()
 {
     Q_D(QmlParentChange);
-    if (d->target)
-        d->origParent = d->target->parentItem();
     d->doChange(d->parent);
 }
 
@@ -195,7 +238,7 @@ bool QmlParentChange::isReversable()
 void QmlParentChange::reverse()
 {
     Q_D(QmlParentChange);
-    d->doChange(d->origParent);
+    d->doChange(d->origParent, d->origStackBefore);
 }
 
 QString QmlParentChange::typeName() const
@@ -664,5 +707,6 @@ bool QmlAnchorChanges::override(ActionEvent*other)
 
 QT_END_NAMESPACE
 
+#include "qmlstateoperations.moc"
 #include "moc_qmlstateoperations.cpp"
 

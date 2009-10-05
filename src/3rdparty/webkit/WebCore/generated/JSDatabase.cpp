@@ -87,7 +87,7 @@ bool JSDatabasePrototype::getOwnPropertyDescriptor(ExecState* exec, const Identi
 
 const ClassInfo JSDatabase::s_info = { "Database", 0, &JSDatabaseTable, 0 };
 
-JSDatabase::JSDatabase(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Database> impl)
+JSDatabase::JSDatabase(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Database> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

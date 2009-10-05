@@ -9,6 +9,6 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/lineedits
 INSTALLS += target sources
 
 symbian {
-    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
     TARGET.UID3 = 0xA000C604
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 }

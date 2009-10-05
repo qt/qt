@@ -61,7 +61,7 @@ class QGraphicsAnchorLayoutPrivate;
 class Q_GUI_EXPORT QGraphicsAnchor : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(qreal spacing READ spacing WRITE setSpacing)
+    Q_PROPERTY(qreal spacing READ spacing WRITE setSpacing RESET unsetSpacing)
 public:
     void setSpacing(qreal spacing);
     void unsetSpacing();
@@ -93,7 +93,6 @@ public:
                     QGraphicsLayoutItem *secondItem,
                     Qt::Orientations orientations = Qt::Horizontal | Qt::Vertical);
 
-    bool hasConflicts() const;
     void setHorizontalSpacing(qreal spacing);
     void setVerticalSpacing(qreal spacing);
     void setSpacing(qreal spacing);

@@ -3113,7 +3113,7 @@ void tst_QTreeView::task224091_appendColumns()
     treeView->show();
     treeView->resize(50,50);
 
-    QTest::qWait(50);
+    QTest::qWaitForWindowShown(treeView);
     qApp->processEvents();
 
     QList<QStandardItem *> projlist;
@@ -3125,7 +3125,7 @@ void tst_QTreeView::task224091_appendColumns()
     QTest::qWait(50);
     qApp->processEvents();
 
-    QVERIFY(treeView->verticalScrollBar()->isVisible());
+    QTRY_VERIFY(treeView->verticalScrollBar()->isVisible());
 
     delete treeView;
     delete model;

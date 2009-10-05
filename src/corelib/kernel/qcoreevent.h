@@ -269,8 +269,8 @@ public:
         CocoaRequestModal = 190,                // Internal for requesting an application modal Cocoa Window
         MacGLClearDrawable = 191,               // Internal Cocoa, the window has changed, so we must clear
 
-        Signal = 192,
-        Wrapped = 193,
+        StateMachineSignal = 192,
+        StateMachineWrapped = 193,
 
         TouchBegin = 194,
         TouchUpdate = 195,
@@ -281,9 +281,7 @@ public:
         RequestSoftwareInputPanel = 199,
         CloseSoftwareInputPanel = 200,
 
-        SymbianDeferredFocusChanged = 201,       // Internal for generating asynchronous focus events on Symbian
-
-        UpdateSoftKeys = 202,                   // Internal for compressing soft key updates
+        UpdateSoftKeys = 201,                   // Internal for compressing soft key updates
 
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event

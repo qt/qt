@@ -11,6 +11,6 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/uitools/multipleinheritance
 INSTALLS += target sources
 
 symbian {
-    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
     TARGET.UID3 = 0xA000D7C1
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 }

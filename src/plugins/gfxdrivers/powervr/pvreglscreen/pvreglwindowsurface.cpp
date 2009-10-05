@@ -157,18 +157,21 @@ QImage PvrEglWindowSurface::image() const
         void *data = pvrQwsGetRenderBuffer(drawable);
         if (data) {
             return QImage((uchar *)data, pvrRect.width, pvrRect.height,
-                          pvrQwsGetStride(drawable), QImage::Format_RGB16);
+                          pvrQwsGetStride(drawable), screen->pixelFormat());
         }
     }
-    return QImage();
+    return QImage(16, 16, screen->pixelFormat());
 }
 
 QPaintDevice *PvrEglWindowSurface::paintDevice()
 {
-    // Return a dummy paint device because the widget itself
-    // cannot be painted to this way.
+    QGLWidget *glWidget = qobject_cast<QGLWidget *>(window());
+    if (glWidget)
+        return glWidget;
+
+    // Should be a QGLWidget, but if not return a dummy paint device.
     if (!pdevice)
-        pdevice = new QImage(50, 50, QImage::Format_RGB16);
+        pdevice = new QImage(50, 50, screen->pixelFormat());
     return pdevice;
 }
 

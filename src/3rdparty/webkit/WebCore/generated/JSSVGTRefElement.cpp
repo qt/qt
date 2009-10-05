@@ -72,7 +72,7 @@ JSObject* JSSVGTRefElementPrototype::self(ExecState* exec, JSGlobalObject* globa
 
 const ClassInfo JSSVGTRefElement::s_info = { "SVGTRefElement", &JSSVGTextPositioningElement::s_info, &JSSVGTRefElementTable, 0 };
 
-JSSVGTRefElement::JSSVGTRefElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTRefElement> impl)
+JSSVGTRefElement::JSSVGTRefElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTRefElement> impl)
     : JSSVGTextPositioningElement(structure, globalObject, impl)
 {
 }

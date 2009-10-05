@@ -125,7 +125,7 @@ bool JSHTMLMarqueeElementPrototype::getOwnPropertyDescriptor(ExecState* exec, co
 
 const ClassInfo JSHTMLMarqueeElement::s_info = { "HTMLMarqueeElement", &JSHTMLElement::s_info, &JSHTMLMarqueeElementTable, 0 };
 
-JSHTMLMarqueeElement::JSHTMLMarqueeElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLMarqueeElement> impl)
+JSHTMLMarqueeElement::JSHTMLMarqueeElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLMarqueeElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

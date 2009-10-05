@@ -76,7 +76,7 @@ JSObject* JSSQLResultSetPrototype::self(ExecState* exec, JSGlobalObject* globalO
 
 const ClassInfo JSSQLResultSet::s_info = { "SQLResultSet", 0, &JSSQLResultSetTable, 0 };
 
-JSSQLResultSet::JSSQLResultSet(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SQLResultSet> impl)
+JSSQLResultSet::JSSQLResultSet(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SQLResultSet> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

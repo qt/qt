@@ -113,6 +113,7 @@ contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
 !contains(DEFINES, ENABLE_DOM_STORAGE=.): DEFINES += ENABLE_DOM_STORAGE=1
 !contains(DEFINES, ENABLE_ICONDATABASE=.): DEFINES += ENABLE_ICONDATABASE=1
 !contains(DEFINES, ENABLE_CHANNEL_MESSAGING=.): DEFINES += ENABLE_CHANNEL_MESSAGING=1
+!contains(DEFINES, ENABLE_ORIENTATION_EVENTS=.): DEFINES += ENABLE_ORIENTATION_EVENTS=0
 
 # turn on SQLITE support if any of the dependent features are turned on
 !contains(DEFINES, ENABLE_SQLITE=.) {
@@ -126,7 +127,6 @@ contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
 !contains(DEFINES, ENABLE_DASHBOARD_SUPPORT=.): DEFINES += ENABLE_DASHBOARD_SUPPORT=0
 !contains(DEFINES, ENABLE_FILTERS=.): DEFINES += ENABLE_FILTERS=0
 !contains(DEFINES, ENABLE_XPATH=.): DEFINES += ENABLE_XPATH=1
-!contains(DEFINES, ENABLE_XSLT=.): DEFINES += ENABLE_XSLT=0
 #!contains(DEFINES, ENABLE_XBL=.): DEFINES += ENABLE_XBL=1
 !contains(DEFINES, ENABLE_WCSS=.): DEFINES += ENABLE_WCSS=0
 !contains(DEFINES, ENABLE_WML=.): DEFINES += ENABLE_WML=0
@@ -170,6 +170,12 @@ contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
 
 # Web Socket support.
 !contains(DEFINES, ENABLE_WEB_SOCKETS=.): DEFINES += ENABLE_WEB_SOCKETS=1
+
+# XSLT support with QtXmlPatterns
+!contains(DEFINES, ENABLE_XSLT=.) {
+    contains(QT_CONFIG, xmlpatterns):!lessThan(QT_MINOR_VERSION, 5):DEFINES += ENABLE_XSLT=1
+    else:DEFINES += ENABLE_XSLT=0
+}
 
 DEFINES += WTF_USE_JAVASCRIPTCORE_BINDINGS=1 WTF_CHANGES=1
 
@@ -907,7 +913,6 @@ SOURCES += \
     dom/WheelEvent.cpp \
     dom/XMLTokenizer.cpp \
     dom/XMLTokenizerQt.cpp \
-    dom/XMLTokenizerScope.cpp \
     dom/default/PlatformMessagePortChannel.cpp \
     editing/AppendNodeCommand.cpp \
     editing/ApplyStyleCommand.cpp \
@@ -1137,10 +1142,12 @@ SOURCES += \
     page/Page.cpp \
     page/PageGroup.cpp \
     page/PageGroupLoadDeferrer.cpp \
+    page/PluginHalter.cpp \
     page/PrintContext.cpp \
     page/SecurityOrigin.cpp \
     page/Screen.cpp \
     page/Settings.cpp \
+    page/UserContentURLPattern.cpp \
     page/WindowFeatures.cpp \
     page/XSSAuditor.cpp \
     plugins/PluginData.cpp \
@@ -1566,6 +1573,7 @@ HEADERS += \
     dom/TagNodeList.h \
     dom/TextEvent.h \
     dom/Text.h \
+    dom/TransformSource.h \
     dom/Traversal.h \
     dom/TreeWalker.h \
     dom/UIEvent.h \
@@ -1574,7 +1582,6 @@ HEADERS += \
     dom/WebKitTransitionEvent.h \
     dom/WheelEvent.h \
     dom/XMLTokenizer.h \
-    dom/XMLTokenizerScope.h \
     editing/AppendNodeCommand.h \
     editing/ApplyStyleCommand.h \
     editing/BreakBlockquoteCommand.h \
@@ -1811,6 +1818,7 @@ HEADERS += \
     page/FrameView.h \
     page/Geolocation.h \
     page/Geoposition.h \
+    page/HaltablePlugin.h \
     page/History.h \
     page/Location.h \
     page/MouseEventWithHitTestResults.h \
@@ -1819,6 +1827,8 @@ HEADERS += \
     page/PageGroup.h \
     page/PageGroupLoadDeferrer.h \
     page/Page.h \
+    page/PluginHalter.h \
+    page/PluginHalterClient.h \
     page/PrintContext.h \
     page/Screen.h \
     page/SecurityOrigin.h \
@@ -2381,7 +2391,7 @@ SOURCES += \
     ../WebKit/qt/WebCoreSupport/FrameLoaderClientQt.cpp \
     ../WebKit/qt/WebCoreSupport/InspectorClientQt.cpp \
     ../WebKit/qt/Api/qwebframe.cpp \
-    ../WebKit/qt/Api/qwebgraphicsitem.cpp \
+    ../WebKit/qt/Api/qgraphicswebview.cpp \
     ../WebKit/qt/Api/qwebpage.cpp \
     ../WebKit/qt/Api/qwebview.cpp \
     ../WebKit/qt/Api/qwebelement.cpp \
@@ -2480,6 +2490,10 @@ contains(DEFINES, ENABLE_NETSCAPE_PLUGIN_API=1) {
 
 contains(DEFINES, ENABLE_CHANNEL_MESSAGING=1) {
     FEATURE_DEFINES_JAVASCRIPT += ENABLE_CHANNEL_MESSAGING=1
+}
+
+contains(DEFINES, ENABLE_ORIENTATION_EVENTS=1) {
+    FEATURE_DEFINES_JAVASCRIPT += ENABLE_ORIENTATION_EVENTS=1
 }
 
 contains(DEFINES, ENABLE_DASHBOARD_SUPPORT=0) {
@@ -2704,25 +2718,16 @@ unix:!mac:CONFIG += link_pkgconfig
 
 contains(DEFINES, ENABLE_XSLT=1) {
     FEATURE_DEFINES_JAVASCRIPT += ENABLE_XSLT=1
-    PKGCONFIG += libxml-2.0 libxslt
 
-    macx {
-        INCLUDEPATH += /usr/include/libxml2
-        LIBS += -lxml2 -lxslt
-    }
-
-    win32-msvc* {
-        LIBS += -llibxml2 -llibxslt
-    }
+    QT += xmlpatterns
 
     SOURCES += \
         bindings/js/JSXSLTProcessorConstructor.cpp \
         bindings/js/JSXSLTProcessorCustom.cpp \
-        xml/XSLImportRule.cpp \
-        xml/XSLStyleSheet.cpp \
-        xml/XSLTExtensions.cpp \
+        dom/TransformSourceQt.cpp \
+        xml/XSLStyleSheetQt.cpp \
         xml/XSLTProcessor.cpp \
-        xml/XSLTUnicodeSort.cpp
+        xml/XSLTProcessorQt.cpp
 }
 
 contains(DEFINES, ENABLE_XBL=1) {

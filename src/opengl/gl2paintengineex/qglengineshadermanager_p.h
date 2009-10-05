@@ -247,6 +247,7 @@ struct QGLEngineShaderProg
     QVector<uint> uniformLocations;
 
     bool                useTextureCoords;
+    bool                useOpacityAttribute;
 
     bool operator==(const QGLEngineShaderProg& other) {
         // We don't care about the program
@@ -277,6 +278,7 @@ struct QGLEngineCachedShaderProg
 
 static const GLuint QT_VERTEX_COORDS_ATTR  = 0;
 static const GLuint QT_TEXTURE_COORDS_ATTR = 1;
+static const GLuint QT_OPACITY_ATTR = 2;
 
 class QGLEngineSharedShaders : public QObject
 {
@@ -285,6 +287,7 @@ public:
     enum ShaderName {
         MainVertexShader,
         MainWithTexCoordsVertexShader,
+        MainWithTexCoordsAndOpacityVertexShader,
 
         UntransformedPositionVertexShader,
         PositionOnlyVertexShader,
@@ -307,6 +310,7 @@ public:
         MainFragmentShader_C,
         MainFragmentShader_O,
         MainFragmentShader,
+        MainFragmentShader_ImageArrays,
 
         ImageSrcFragmentShader,
         ImageSrcWithPatternFragmentShader,
@@ -361,7 +365,7 @@ private slots:
     void shaderDestroyed(QObject *shader);
 
 private:
-    QGLContextGroup *ctx;
+    QGLSharedResourceGuard ctxGuard;
     QGLShaderProgram *blitShaderProg;
     QGLShaderProgram *simpleShaderProg;
     QList<QGLEngineShaderProg> cachedPrograms;
@@ -406,13 +410,19 @@ public:
         NumUniforms
     };
 
+    enum OpacityMode {
+        NoOpacity,
+        UniformOpacity,
+        AttributeOpacity
+    };
+
     // There are optimisations we can do, depending on the brush transform:
     //    1) May not have to apply perspective-correction
     //    2) Can use lower precision for matrix
     void optimiseForBrushTransform(const QTransform &transform);
     void setSrcPixelType(Qt::BrushStyle);
     void setSrcPixelType(PixelSrcType); // For non-brush sources, like pixmaps & images
-    void setUseGlobalOpacity(bool);
+    void setOpacityMode(OpacityMode);
     void setMaskType(MaskType);
     void setCompositionMode(QPainter::CompositionMode);
     void setCustomStage(QGLCustomShaderStage* stage);
@@ -451,7 +461,7 @@ private:
     // Current state variables which influence the choice of shader:
     QTransform                  brushTransform;
     int                         srcPixelType;
-    bool                        useGlobalOpacity;
+    OpacityMode                 opacityMode;
     MaskType                    maskType;
     QPainter::CompositionMode   compositionMode;
     QGLCustomShaderStage*       customSrcStage;

@@ -194,9 +194,9 @@ public:
     };
 
     enum TileRule {
-        Stretch,
-        Repeat,
-        Round
+        StretchTile,
+        RepeatTile,
+        RoundTile
     };
 
     // Text formatting flags for QPainter::drawText and QLabel.
@@ -1431,6 +1431,7 @@ public:
         ImhLowercaseOnly = 0x80000,
         ImhDialableCharactersOnly = 0x100000,
         ImhEmailCharactersOnly = 0x200000,
+        ImhUrlCharactersOnly = 0x400000,
 
         ImhExclusiveInputMask = 0xffff0000
     };
@@ -1626,6 +1627,11 @@ public:
         NavigationModeKeypadDirectional,
         NavigationModeCursorAuto,
         NavigationModeCursorForceVisible
+    };
+
+    enum RenderHint {
+        QualityHint,
+        PerformanceHint
     };
 }
 #ifdef Q_MOC_RUN

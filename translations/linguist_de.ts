@@ -4,7 +4,7 @@
 <context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1359"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1357"/>
         <source>Qt Linguist</source>
         <translation>Qt Linguist</translation>
     </message>
@@ -283,19 +283,19 @@ Es wird mit einer einfachen Universalform gearbeitet.</translation>
         <location filename="../tools/linguist/linguist/messageeditorwidgets.cpp" line="+296"/>
         <source>Alt+Delete</source>
         <extracomment>translate, but don&apos;t change</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Alt+Delete</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Shift+Alt+Insert</source>
         <extracomment>translate, but don&apos;t change</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Shift+Alt+Insert</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Alt+Insert</source>
         <extracomment>translate, but don&apos;t change</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Alt+Insert</translation>
     </message>
     <message>
         <location line="+131"/>
@@ -908,7 +908,7 @@ Es wird mit einer einfachen Universalform gearbeitet.</translation>
         <translation>Freigeben unter ...</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-2006"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-2004"/>
         <source></source>
         <comment>This is the application&apos;s main window.</comment>
         <translation></translation>
@@ -1020,19 +1020,14 @@ Soll die erstgenannte Datei übersprungen werden?</translation>
         <translation>Datei gespeichert.</translation>
     </message>
     <message>
-        <location line="+526"/>
-        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;/p&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-511"/>
-        <location line="+1167"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+15"/>
+        <location line="+1165"/>
         <source>Release</source>
         <translation>Freigeben</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1166"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1164"/>
         <source>Qt message files for released applications (*.qm)
 All files (*)</source>
         <translation>Qt-Nachrichtendateien (*.qm)
@@ -1096,7 +1091,7 @@ Alle Dateien (*)</translation>
     <message>
         <location line="+17"/>
         <location line="+278"/>
-        <location line="+36"/>
+        <location line="+34"/>
         <location line="+24"/>
         <location line="+22"/>
         <location line="+516"/>
@@ -1108,7 +1103,7 @@ Alle Dateien (*)</translation>
         <translation>Qt Linguist</translation>
     </message>
     <message>
-        <location line="-1200"/>
+        <location line="-1198"/>
         <location line="+102"/>
         <source>Cannot find the string &apos;%1&apos;.</source>
         <translation>Kann Zeichenkette &apos;%1&apos; nicht finden.</translation>
@@ -1206,7 +1201,12 @@ Alle Dateien (*)</translation>
         <translation>Version %1</translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+3"/>
+        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+38"/>
         <source>Do you want to save the modified files?</source>
         <translation>Möchten Sie die geänderten Dateien speichern?</translation>
     </message>
@@ -1791,7 +1791,7 @@ Zeile: %2</translation>
         <translation>Kompilierte Qt-Übersetzungen</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1282"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1280"/>
         <source>Translation files (%1);;</source>
         <translation>Übersetzungsdateien (%1);;</translation>
     </message>
@@ -1832,7 +1832,7 @@ Zeile: %2</translation>
         <translation>Qt-Übersetzungsdateien (aktuelles Format)</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/xliff.cpp" line="+820"/>
+        <location filename="../tools/linguist/shared/xliff.cpp" line="+827"/>
         <source>XLIFF localization files</source>
         <translation>XLIFF-Übersetzungsdateien</translation>
     </message>

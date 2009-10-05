@@ -128,7 +128,7 @@ bool JSProgressEventPrototype::getOwnPropertyDescriptor(ExecState* exec, const I
 
 const ClassInfo JSProgressEvent::s_info = { "ProgressEvent", &JSEvent::s_info, &JSProgressEventTable, 0 };
 
-JSProgressEvent::JSProgressEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<ProgressEvent> impl)
+JSProgressEvent::JSProgressEvent(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<ProgressEvent> impl)
     : JSEvent(structure, globalObject, impl)
 {
 }

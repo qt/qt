@@ -56,6 +56,7 @@ WebInspector.ElementsPanel = function()
         this.panel.updateStyles(true);
         this.panel.updateMetrics();
         this.panel.updateProperties();
+        this.panel.updateEventListeners();
 
         if (InspectorController.searchingForNode()) {
             InspectorController.toggleNodeSearch();
@@ -76,10 +77,12 @@ WebInspector.ElementsPanel = function()
     this.sidebarPanes.styles = new WebInspector.StylesSidebarPane();
     this.sidebarPanes.metrics = new WebInspector.MetricsSidebarPane();
     this.sidebarPanes.properties = new WebInspector.PropertiesSidebarPane();
+    this.sidebarPanes.eventListeners = new WebInspector.EventListenersSidebarPane();
 
     this.sidebarPanes.styles.onexpand = this.updateStyles.bind(this);
     this.sidebarPanes.metrics.onexpand = this.updateMetrics.bind(this);
     this.sidebarPanes.properties.onexpand = this.updateProperties.bind(this);
+    this.sidebarPanes.eventListeners.onexpand = this.updateEventListeners.bind(this);
 
     this.sidebarPanes.styles.expanded = true;
 
@@ -93,6 +96,7 @@ WebInspector.ElementsPanel = function()
     this.sidebarElement.appendChild(this.sidebarPanes.styles.element);
     this.sidebarElement.appendChild(this.sidebarPanes.metrics.element);
     this.sidebarElement.appendChild(this.sidebarPanes.properties.element);
+    this.sidebarElement.appendChild(this.sidebarPanes.eventListeners.element);
 
     this.sidebarResizeElement = document.createElement("div");
     this.sidebarResizeElement.className = "sidebar-resizer-vertical";
@@ -977,6 +981,16 @@ WebInspector.ElementsPanel.prototype = {
         propertiesSidebarPane.needsUpdate = false;
     },
 
+    updateEventListeners: function()
+    {
+        var eventListenersSidebarPane = this.sidebarPanes.eventListeners;
+        if (!eventListenersSidebarPane.expanded || !eventListenersSidebarPane.needsUpdate)
+            return;
+
+        eventListenersSidebarPane.update(this.focusedDOMNode);
+        eventListenersSidebarPane.needsUpdate = false;
+    },
+
     handleKeyEvent: function(event)
     {
         this.treeOutline.handleKeyEvent(event);
@@ -987,27 +1001,9 @@ WebInspector.ElementsPanel.prototype = {
         // Don't prevent the normal copy if the user has a selection.
         if (!window.getSelection().isCollapsed)
             return;
-
-        switch (this.focusedDOMNode.nodeType) {
-            case Node.ELEMENT_NODE:
-                // TODO: Introduce InspectorController.copyEvent that pushes appropriate markup into the clipboard.
-                var data = null;
-                break;
-
-            case Node.COMMENT_NODE:
-                var data = "<!--" + this.focusedDOMNode.nodeValue + "-->";
-                break;
-
-            default:
-            case Node.TEXT_NODE:
-                var data = this.focusedDOMNode.nodeValue;
-        }
-
         event.clipboardData.clearData();
         event.preventDefault();
-
-        if (data)
-            event.clipboardData.setData("text/plain", data);
+        InspectorController.copyNode(this.focusedDOMNode.id);
     },
 
     rightSidebarResizerDragStart: function(event)

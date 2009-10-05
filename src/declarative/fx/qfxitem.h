@@ -210,6 +210,13 @@ private:
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxItem)
 };
 
+template<typename T>
+        T qobject_cast(QGraphicsObject *o)
+{
+    QObject *obj = o;
+    return qobject_cast<T>(obj);
+}
+
 // ### move to QGO
 template<typename T>
 T qobject_cast(QGraphicsItem *item)

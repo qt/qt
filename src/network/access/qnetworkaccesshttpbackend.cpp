@@ -951,11 +951,14 @@ QNetworkCacheMetaData QNetworkAccessHttpBackend::fetchCacheMetaData(const QNetwo
         if (hop_by_hop)
             continue;
 
-        // Do not copy over the Date header because it will be
-        // different for every request and therefore cause a re-write to
-        // the disk when a 304 is received inside replyHeaderChanged()
-        if (header == "date")
-            continue;
+        // for 4.6.0, we were planning to not store the date header in the
+        // cached resource; through that we planned to reduce the number
+        // of writes to disk when using a QNetworkDiskCache (i.e. don't
+        // write to disk when only the date changes).
+        // However, without the date we cannot calculate the age of the page
+        // anymore. Consider a proper fix of that problem for 4.6.1.
+        //if (header == "date")
+            //continue;
 
         // Don't store Warning 1xx headers
         if (header == "warning") {

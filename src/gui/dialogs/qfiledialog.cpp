@@ -317,6 +317,7 @@ QFileDialog::QFileDialog(QWidget *parent, Qt::WindowFlags f)
 {
     Q_D(QFileDialog);
     d->init();
+    d->lineEdit()->selectAll();
 }
 
 /*!
@@ -334,6 +335,7 @@ QFileDialog::QFileDialog(QWidget *parent,
 {
     Q_D(QFileDialog);
     d->init(directory, filter, caption);
+    d->lineEdit()->selectAll();
 }
 
 /*!
@@ -3020,6 +3022,12 @@ bool QFileDialogPrivate::itemViewKeyboardEvent(QKeyEvent *event) {
     case Qt::Key_Escape:
         q->hide();
         return true;
+#ifdef QT_KEYPAD_NAVIGATION
+    case Qt::Key_Down:
+    case Qt::Key_Up:
+        return (QApplication::navigationMode() != Qt::NavigationModeKeypadTabOrder
+                && QApplication::navigationMode() != Qt::NavigationModeKeypadDirectional);
+#endif
     default:
         break;
     }
@@ -3140,7 +3148,17 @@ void QFileDialogListView::keyPressEvent(QKeyEvent *e)
     if (!d_ptr->itemViewKeyboardEvent(e)) {
         QListView::keyPressEvent(e);
     }
+#ifdef QT_KEYPAD_NAVIGATION
+    if ((QApplication::navigationMode() == Qt::NavigationModeKeypadTabOrder
+         || QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional)
+         && !hasEditFocus()) {
+         e->ignore();
+    } else {
+        e->accept();
+    }
+#else
     e->accept();
+#endif
 }
 
 QFileDialogTreeView::QFileDialogTreeView(QWidget *parent) : QTreeView(parent)
@@ -3187,7 +3205,11 @@ void QFileDialogLineEdit::keyPressEvent(QKeyEvent *e)
 {
     int key = e->key();
     QLineEdit::keyPressEvent(e);
-    if (key != Qt::Key_Escape)
+    if (key != Qt::Key_Escape
+#ifdef QT_KEYPAD_NAVIGATION
+        && QApplication::navigationMode() == Qt::NavigationModeNone
+#endif
+        )
         e->accept();
     if (hideOnEsc && (key == Qt::Key_Escape || key == Qt::Key_Return || key == Qt::Key_Enter)) {
         e->accept();

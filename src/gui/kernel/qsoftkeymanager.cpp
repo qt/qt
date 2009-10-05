@@ -121,6 +121,7 @@ QAction *QSoftKeyManager::createAction(StandardSoftKey standardKey, QWidget *act
         softKeyRole = QAction::PositiveSoftKey;
         break;
     case CancelSoftKey:
+    default:
         softKeyRole = QAction::NegativeSoftKey;
         break;
     }
@@ -238,7 +239,7 @@ void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
     }
 
     if (needsExitButton)
-        QT_TRAP_THROWING(nativeContainer->SetCommandL(2, EAknSoftkeyExit, qt_QString2TPtrC(QObject::tr("Exit"))));
+        QT_TRAP_THROWING(nativeContainer->SetCommandL(2, EAknSoftkeyExit, qt_QString2TPtrC(QSoftKeyManager::tr("Exit"))));
 
     nativeContainer->DrawDeferred(); // 3.1 needs an extra invitation
 }

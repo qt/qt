@@ -33,7 +33,7 @@ class MimeType;
 class JSMimeType : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSMimeType(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<MimeType>);
+    JSMimeType(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<MimeType>);
     virtual ~JSMimeType();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -62,7 +62,7 @@ public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
-    JSMimeTypePrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSMimeTypePrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Attributes

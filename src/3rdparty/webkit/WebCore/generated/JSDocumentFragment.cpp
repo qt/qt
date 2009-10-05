@@ -130,7 +130,7 @@ bool JSDocumentFragmentPrototype::getOwnPropertyDescriptor(ExecState* exec, cons
 
 const ClassInfo JSDocumentFragment::s_info = { "DocumentFragment", &JSNode::s_info, &JSDocumentFragmentTable, 0 };
 
-JSDocumentFragment::JSDocumentFragment(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DocumentFragment> impl)
+JSDocumentFragment::JSDocumentFragment(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DocumentFragment> impl)
     : JSNode(structure, globalObject, impl)
 {
 }

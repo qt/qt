@@ -366,7 +366,7 @@ void QGL2PaintEngineExPrivate::updateTextureFilter(GLenum target, GLenum wrapMod
 }
 
 
-QColor QGL2PaintEngineExPrivate::premultiplyColor(QColor c, GLfloat opacity)
+inline QColor qt_premultiplyColor(QColor c, GLfloat opacity)
 {
     qreal alpha = c.alphaF() * opacity;
     c.setAlphaF(alpha);
@@ -469,7 +469,7 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
     QTransform brushQTransform = currentBrush->transform();
 
     if (style == Qt::SolidPattern) {
-        QColor col = premultiplyColor(currentBrush->color(), (GLfloat)q->state()->opacity);
+        QColor col = qt_premultiplyColor(currentBrush->color(), (GLfloat)q->state()->opacity);
         shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::FragmentColor), col);
     }
     else {
@@ -479,7 +479,7 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
         if (style <= Qt::DiagCrossPattern) {
             translationPoint = q->state()->brushOrigin;
 
-            QColor col = premultiplyColor(currentBrush->color(), (GLfloat)q->state()->opacity);
+            QColor col = qt_premultiplyColor(currentBrush->color(), (GLfloat)q->state()->opacity);
 
             shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::PatternColor), col);
 
@@ -541,7 +541,7 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
             const QPixmap& texPixmap = currentBrush->texture();
 
             if (qHasPixmapTexture(*currentBrush) && currentBrush->texture().isQBitmap()) {
-                QColor col = premultiplyColor(currentBrush->color(), (GLfloat)q->state()->opacity);
+                QColor col = qt_premultiplyColor(currentBrush->color(), (GLfloat)q->state()->opacity);
                 shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::PatternColor), col);
             }
 
@@ -712,7 +712,7 @@ void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& s
         shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::ImageTexture), QT_IMAGE_TEXTURE_UNIT);
 
     if (pattern) {
-        QColor col = premultiplyColor(q->state()->pen.color(), (GLfloat)q->state()->opacity);
+        QColor col = qt_premultiplyColor(q->state()->pen.color(), (GLfloat)q->state()->opacity);
         shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::PatternColor), col);
     }
 
@@ -796,9 +796,10 @@ void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
     if (newMode == mode)
         return;
 
-    if (mode == TextDrawingMode || mode == ImageDrawingMode) {
+    if (mode == TextDrawingMode || mode == ImageDrawingMode || mode == ImageArrayDrawingMode) {
         glDisableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
         glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
+        glDisableVertexAttribArray(QT_OPACITY_ATTR);
 
         lastTexture = GLuint(-1);
     }
@@ -822,6 +823,16 @@ void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
 
         glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, staticVertexCoordinateArray);
         glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, staticTextureCoordinateArray);
+    }
+
+    if (newMode == ImageArrayDrawingMode) {
+        glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
+        glEnableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
+        glEnableVertexAttribArray(QT_OPACITY_ATTR);
+
+        glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray.data());
+        glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray.data());
+        glVertexAttribPointer(QT_OPACITY_ATTR, 1, GL_FLOAT, GL_FALSE, 0, opacityArray.data());
     }
 
     // This needs to change when we implement high-quality anti-aliasing...
@@ -953,7 +964,7 @@ void QGL2PaintEngineExPrivate::fillStencilWithVertexArray(QGL2PEXVertexArray& ve
 
 bool QGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
 {
-    if (brushTextureDirty && mode != ImageDrawingMode)
+    if (brushTextureDirty && mode != ImageDrawingMode && mode != ImageArrayDrawingMode)
         updateBrushTexture();
 
     if (compositionModeDirty)
@@ -972,16 +983,22 @@ bool QGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
         glEnable(GL_BLEND);
     }
 
-    bool useGlobalOpacityUniform = stateHasOpacity;
-    if (stateHasOpacity && (mode != ImageDrawingMode)) {
-        // Using a brush
-        bool brushIsPattern = (currentBrush->style() >= Qt::Dense1Pattern) &&
-                              (currentBrush->style() <= Qt::DiagCrossPattern);
+    QGLEngineShaderManager::OpacityMode opacityMode;
+    if (mode == ImageArrayDrawingMode) {
+        opacityMode = QGLEngineShaderManager::AttributeOpacity;
+    } else {
+        opacityMode = stateHasOpacity ? QGLEngineShaderManager::UniformOpacity
+                                      : QGLEngineShaderManager::NoOpacity;
+        if (stateHasOpacity && (mode != ImageDrawingMode)) {
+            // Using a brush
+            bool brushIsPattern = (currentBrush->style() >= Qt::Dense1Pattern) &&
+                                  (currentBrush->style() <= Qt::DiagCrossPattern);
 
-        if ((currentBrush->style() == Qt::SolidPattern) || brushIsPattern)
-            useGlobalOpacityUniform = false; // Global opacity handled by srcPixel shader
+            if ((currentBrush->style() == Qt::SolidPattern) || brushIsPattern)
+                opacityMode = QGLEngineShaderManager::NoOpacity; // Global opacity handled by srcPixel shader
+        }
     }
-    shaderManager->setUseGlobalOpacity(useGlobalOpacityUniform);
+    shaderManager->setOpacityMode(opacityMode);
 
     bool changed = shaderManager->useCorrectShaderProg();
     // If the shader program needs changing, we change it and mark all uniforms as dirty
@@ -993,7 +1010,7 @@ bool QGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
         opacityUniformDirty = true;
     }
 
-    if (brushUniformsDirty && mode != ImageDrawingMode)
+    if (brushUniformsDirty && mode != ImageDrawingMode && mode != ImageArrayDrawingMode)
         updateBrushUniforms();
 
     if (shaderMatrixUniformDirty) {
@@ -1006,7 +1023,7 @@ bool QGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
         depthUniformDirty = false;
     }
 
-    if (useGlobalOpacityUniform && opacityUniformDirty) {
+    if (opacityMode == QGLEngineShaderManager::UniformOpacity && opacityUniformDirty) {
         shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::GlobalOpacity), (GLfloat)q->state()->opacity);
         opacityUniformDirty = false;
     }
@@ -1332,7 +1349,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGly
             QColor c = pensBrush.color();
             qreal oldOpacity = q->state()->opacity;
             if (compMode == QPainter::CompositionMode_Source) {
-                c = premultiplyColor(c, q->state()->opacity);
+                c = qt_premultiplyColor(c, q->state()->opacity);
                 q->state()->opacity = 1;
                 opacityUniformDirty = true;
             }
@@ -1411,6 +1428,96 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGly
     glDrawArrays(GL_TRIANGLES, 0, 6 * glyphs.size());
 }
 
+void QGL2PaintEngineEx::drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints)
+{
+    // Use fallback for extended composition modes.
+    if (state()->composition_mode > QPainter::CompositionMode_Plus) {
+        QPaintEngineEx::drawPixmaps(drawingData, dataCount, pixmap, hints);
+        return;
+    }
+
+    Q_D(QGL2PaintEngineEx);
+
+    GLfloat dx = 1.0f / pixmap.size().width();
+    GLfloat dy = 1.0f / pixmap.size().height();
+
+    d->vertexCoordinateArray.clear();
+    d->textureCoordinateArray.clear();
+    d->opacityArray.reset();
+
+    bool allOpaque = true;
+
+    for (int i = 0; i < dataCount; ++i) {
+        qreal s = 0;
+        qreal c = 1;
+        if (drawingData[i].rotation != 0) {
+            s = qFastSin(drawingData[i].rotation * Q_PI / 180);
+            c = qFastCos(drawingData[i].rotation * Q_PI / 180);
+        }
+        
+        qreal right = 0.5 * drawingData[i].scaleX * drawingData[i].source.width();
+        qreal bottom = 0.5 * drawingData[i].scaleY * drawingData[i].source.height();
+        QGLPoint bottomRight(right * c - bottom * s, right * s + bottom * c);
+        QGLPoint bottomLeft(-right * c - bottom * s, -right * s + bottom * c);
+
+        d->vertexCoordinateArray.lineToArray(bottomRight.x + drawingData[i].point.x(), bottomRight.y + drawingData[i].point.y());
+        d->vertexCoordinateArray.lineToArray(-bottomLeft.x + drawingData[i].point.x(), -bottomLeft.y + drawingData[i].point.y());
+        d->vertexCoordinateArray.lineToArray(-bottomRight.x + drawingData[i].point.x(), -bottomRight.y + drawingData[i].point.y());
+        d->vertexCoordinateArray.lineToArray(-bottomRight.x + drawingData[i].point.x(), -bottomRight.y + drawingData[i].point.y());
+        d->vertexCoordinateArray.lineToArray(bottomLeft.x + drawingData[i].point.x(), bottomLeft.y + drawingData[i].point.y());
+        d->vertexCoordinateArray.lineToArray(bottomRight.x + drawingData[i].point.x(), bottomRight.y + drawingData[i].point.y());
+
+        QGLRect src(drawingData[i].source.left() * dx, drawingData[i].source.top() * dy,
+                    drawingData[i].source.right() * dx, drawingData[i].source.bottom() * dy);
+
+        d->textureCoordinateArray.lineToArray(src.right, src.bottom);
+        d->textureCoordinateArray.lineToArray(src.right, src.top);
+        d->textureCoordinateArray.lineToArray(src.left, src.top);
+        d->textureCoordinateArray.lineToArray(src.left, src.top);
+        d->textureCoordinateArray.lineToArray(src.left, src.bottom);
+        d->textureCoordinateArray.lineToArray(src.right, src.bottom);
+
+        qreal opacity = drawingData[i].opacity * state()->opacity;
+        d->opacityArray << opacity << opacity << opacity << opacity << opacity << opacity;
+        allOpaque &= (opacity >= 0.99f);
+    }
+
+    ensureActive();
+
+    QGLContext *ctx = d->ctx;
+    glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
+    QGLTexture *texture = ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA,
+                                                     QGLContext::InternalBindOption
+                                                     | QGLContext::CanFlipNativePixmapBindOption);
+
+    if (texture->options & QGLContext::InvertedYBindOption) {
+        // Flip texture y-coordinate.
+        QGLPoint *data = d->textureCoordinateArray.data();
+        for (int i = 0; i < 6 * dataCount; ++i)
+            data[i].y = 1 - data[i].y;
+    }
+
+    d->transferMode(ImageArrayDrawingMode);
+
+    bool isBitmap = pixmap.isQBitmap();
+    bool isOpaque = !isBitmap && (!pixmap.hasAlphaChannel() || (hints & QDrawPixmaps::OpaqueHint)) && allOpaque;
+
+    d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
+                           state()->renderHints & QPainter::SmoothPixmapTransform, texture->id);
+
+    // Setup for texture drawing
+    d->shaderManager->setSrcPixelType(isBitmap ? QGLEngineShaderManager::PatternSrc : QGLEngineShaderManager::ImageSrc);
+    if (d->prepareForDraw(isOpaque))
+        d->shaderManager->currentProgram()->setUniformValue(d->location(QGLEngineShaderManager::ImageTexture), QT_IMAGE_TEXTURE_UNIT);
+
+    if (isBitmap) {
+        QColor col = qt_premultiplyColor(state()->pen.color(), (GLfloat)state()->opacity);
+        d->shaderManager->currentProgram()->setUniformValue(d->location(QGLEngineShaderManager::PatternColor), col);
+    }
+
+    glDrawArrays(GL_TRIANGLES, 0, 6 * dataCount);
+}
+
 bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 {
     Q_D(QGL2PaintEngineEx);
@@ -1452,6 +1559,7 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 #if !defined(QT_OPENGL_ES_2)
     bool success = qt_resolve_version_2_0_functions(d->ctx);
     Q_ASSERT(success);
+    Q_UNUSED(success);
 #endif
 
     d->shaderManager = new QGLEngineShaderManager(d->ctx);

@@ -67,6 +67,8 @@
 
 #include <qdebug.h>
 
+#include <qvfbhdr.h>
+
 extern int errno;
 
 QT_BEGIN_NAMESPACE
@@ -79,7 +81,6 @@ QT_BEGIN_NAMESPACE
 static int sound_speed = 44100;
 #ifndef QT_NO_QWS_SOUNDSERVER
 extern int qws_display_id;
-#define SOUND_PIPE	"/tmp/.qt_soundserver-%1"
 #endif
 
 static char *zeroMem = 0;
@@ -708,7 +709,7 @@ protected:
 
 #ifndef QT_NO_QWS_SOUNDSERVER
 QWSSoundServerSocket::QWSSoundServerSocket(QObject *parent) :
-    QWSServerSocket(QString::fromLatin1(SOUND_PIPE).arg(qws_display_id), parent)
+    QWSServerSocket(QT_VFB_SOUND_PIPE(qws_display_id), parent)
 {
     connect(this, SIGNAL(newConnection()), this, SLOT(newConnection()));
 }
@@ -716,7 +717,7 @@ QWSSoundServerSocket::QWSSoundServerSocket(QObject *parent) :
 
 #ifdef QT3_SUPPORT
 QWSSoundServerSocket::QWSSoundServerSocket(QObject *parent, const char *name) :
-    QWSServerSocket(QString::fromLatin1(SOUND_PIPE).arg(qws_display_id), parent)
+    QWSServerSocket(QT_VFB_SOUND_PIPE(qws_display_id), parent)
 {
     if (name)
         setObjectName(QString::fromAscii(name));
@@ -1395,7 +1396,7 @@ void QWSSoundServer::translateSoundCompleted( int, int sid )
 QWSSoundClient::QWSSoundClient(QObject* parent) :
     QWSSocket(parent)
 {
-    connectToLocalFile(QString::fromLatin1(SOUND_PIPE).arg(qws_display_id));
+    connectToLocalFile(QT_VFB_SOUND_PIPE(qws_display_id));
     QObject::connect(this,SIGNAL(readyRead()),
 	this,SLOT(tryReadCommand()));
     if( state() == QWS_SOCK_BASE::ConnectedState ) QTimer::singleShot(1, this, SIGNAL(connected()));
@@ -1409,7 +1410,7 @@ QWSSoundClient::~QWSSoundClient( )
 
 void QWSSoundClient::reconnect()
 {
-    connectToLocalFile(QString::fromLatin1(SOUND_PIPE).arg(qws_display_id));
+    connectToLocalFile(QT_VFB_SOUND_PIPE(qws_display_id));
     if( state() == QWS_SOCK_BASE::ConnectedState ) emit connected();
     else emit error( QTcpSocket::ConnectionRefusedError );
 }

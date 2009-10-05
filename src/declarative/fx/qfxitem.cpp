@@ -96,6 +96,10 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,DropShadow,QGraphicsDropShadowEf
 
 QML_DECLARE_TYPE(QGraphicsOpacityEffect)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Opacity,QGraphicsOpacityEffect)
+
+QML_DECLARE_TYPE(QGraphicsBloomEffect)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Bloom,QGraphicsBloomEffect)
+
 /*!
     \qmlclass Transform
     \brief A transformation.

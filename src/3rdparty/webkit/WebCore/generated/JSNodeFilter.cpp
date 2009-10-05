@@ -156,7 +156,7 @@ bool JSNodeFilterPrototype::getOwnPropertyDescriptor(ExecState* exec, const Iden
 
 const ClassInfo JSNodeFilter::s_info = { "NodeFilter", 0, &JSNodeFilterTable, 0 };
 
-JSNodeFilter::JSNodeFilter(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<NodeFilter> impl)
+JSNodeFilter::JSNodeFilter(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<NodeFilter> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

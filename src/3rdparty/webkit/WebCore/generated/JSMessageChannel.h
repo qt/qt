@@ -33,7 +33,7 @@ class MessageChannel;
 class JSMessageChannel : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSMessageChannel(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<MessageChannel>);
+    JSMessageChannel(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<MessageChannel>);
     virtual ~JSMessageChannel();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -67,7 +67,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
-    JSMessageChannelPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSMessageChannelPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Attributes
