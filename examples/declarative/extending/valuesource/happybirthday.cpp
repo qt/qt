@@ -2,7 +2,7 @@
 #include <QTimer>
 
 HappyBirthday::HappyBirthday(QObject *parent)
-: QmlPropertyValueSource(parent), m_line(-1)
+: QObject(parent), m_line(-1)
 {
     setName(QString());
     QTimer *timer = new QTimer(this);
