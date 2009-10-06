@@ -764,7 +764,7 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
     bool consumerFailed = false;
 
     while (!consumers.isEmpty()) {
-        consumers.first()->waitForFinished(1000);
+        consumers.first()->waitForFinished(2000);
         if (consumers.first()->state() == QProcess::Running ||
             consumers.first()->exitStatus() != QProcess::NormalExit ||
             consumers.first()->exitCode() != 0) {

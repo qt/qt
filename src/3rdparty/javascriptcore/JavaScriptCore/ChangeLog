@@ -195,8 +195,6 @@
         (JSC::Heap::markCurrentThreadConservatively): Force jmp_buf to use the appropriate alignment for a pointer
         to ensure that we correctly interpret the contents of registers during marking.
 
-<<<<<<< HEAD:JavaScriptCore/ChangeLog
-=======
 2009-09-29  Geoffrey Garen  <ggaren@apple.com>
 
         Reviewed by Gavin Barraclough.
@@ -323,7 +321,6 @@
         (JSC::MarkStack::allocateStack):
         (JSC::MarkStack::releaseStack):
 
->>>>>>> 8e5ea20... Hard dependency on SSE2 instruction set with JIT:JavaScriptCore/ChangeLog
 2009-09-25  Gabor Loki  <loki@inf.u-szeged.hu>
 
         Reviewed by Gavin Barraclough.
