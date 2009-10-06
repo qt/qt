@@ -72,8 +72,8 @@ void tst_qfxwebview::testBasicProperties()
     QVERIFY(wv != 0);
     QTRY_COMPARE(wv->progress(), 1.0);
     QCOMPARE(wv->title(),QString("Basic"));
-    wv->icon().save("test.png");
-    //QCOMPARE(wv->icon(),QPixmap(SRCDIR "/data/basic.ico"));
+    QTRY_COMPARE(wv->icon().width(), 48);
+    QCOMPARE(wv->icon(),QPixmap(SRCDIR "/data/basic.png"));
     QCOMPARE(wv->statusText(),QString(""));
     QFile htmlfile(SRCDIR "/data/basic.html");
     QVERIFY(htmlfile.open(QIODevice::ReadOnly));
@@ -83,6 +83,9 @@ void tst_qfxwebview::testBasicProperties()
     expectedhtml.replace(QRegExp("\\s+"),"");
     QCOMPARE(actualhtml____,expectedhtml); // same, ignoring whitespace
     QCOMPARE(wv->width(), 123.0);
+    QCOMPARE(wv->webPageWidth(), 0);
+    QCOMPARE(wv->preferredWidth(), 0);
+    QCOMPARE(wv->zoomFactor(), 1.0);
     QCOMPARE(wv->url(), QUrl::fromLocalFile(SRCDIR "/data/basic.html"));
     QCOMPARE(wv->status(), QFxWebView::Ready);
     QVERIFY(wv->reloadAction());
