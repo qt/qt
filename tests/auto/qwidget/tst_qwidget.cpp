@@ -8990,6 +8990,9 @@ void tst_QWidget::syntheticEnterLeave()
 
 void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
 {
+#ifdef Q_OS_WINCE_WM
+    QSKIP("Windows Mobile has no proper cursor support", SkipAll);
+#endif
     class SELParent : public QWidget
     {
     public:
