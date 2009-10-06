@@ -134,7 +134,6 @@ public:
     */
     void setConsistentTiming(bool consistent) { consistentTiming = consistent; }
 
-    int elapsedTime() const { return lastTick; }
 
 protected:
     void timerEvent(QTimerEvent *);
