@@ -3,9 +3,11 @@ SOURCES += tst_qcssparser.cpp
 DEFINES += SRCDIR=\\\"$$PWD\\\"
 QT += xml
 
-
-wince*: {
+wince* {
    addFiles.sources = testdata
    addFiles.path = .
-   DEPLOYMENT += addFiles
+   timesFont.sources = C:/Windows/Fonts/times.ttf
+   timesFont.path = .
+   DEPLOYMENT += addFiles timesFont
 }
+
