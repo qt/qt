@@ -357,10 +357,15 @@ void tst_NetworkSelfTest::dnsResolution()
 
 void tst_NetworkSelfTest::serverReachability()
 {
-    // check that we get a proper error connecting to port 1
+    // check that we get a proper error connecting to port 12346
     QTcpSocket socket;
-    socket.connectToHost(QtNetworkSettings::serverName(), 1);
+    socket.connectToHost(QtNetworkSettings::serverName(), 12346);
+
+    QTime timer;
+    timer.start();
     socket.waitForConnected(10000);
+    QVERIFY2(timer.elapsed() < 9900, "Connection to closed port timed out instead of refusing, something is wrong");
+
     QVERIFY2(socket.state() == QAbstractSocket::UnconnectedState, "Socket connected unexpectedly!");
     QVERIFY2(socket.error() == QAbstractSocket::ConnectionRefusedError,
              QString("Could not reach server: %1").arg(socket.errorString()).toLocal8Bit());
