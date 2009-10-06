@@ -4,43 +4,44 @@ import "../flickr/common" as Common
 import "../flickr/mobile" as Mobile
 
 Item {
-    id: Screen; width: 320; height: 480
-    property bool userView : false 
+    id: screen; width: 320; height: 480
+    property bool userView : false
+    property var tmpStr
     function setMode(m){
-        Screen.userView = m;
-        if(m == false){ 
-            RssModel.tags='my timeline';
-            RssModel.reload();
-            ToolBar.button2Label = "View others";
+        screen.userView = m;
+        if(m == false){
+            rssModel.tags='my timeline';
+            rssModel.reload();
+            toolBar.button2Label = "View others";
         } else {
-            ToolBar.button2Label = "Return home";
+            toolBar.button2Label = "Return home";
         }
     }
     //Workaround for bug 260266
     Timer{ interval: 1; running: false; repeat: false; onTriggered: reallySetUser(); id:hack }
-    Script{
-        var tmpStr;
+    Script {
+//        var tmpStr;
         function setUser(str){hack.running = true; tmpStr = str}
-        function reallySetUser(){RssModel.tags = tmpStr;}
+        function reallySetUser(){rssModel.tags = tmpStr;}
     }
 
     Rectangle {
-        id: Background
+        id: background
         anchors.fill: parent; color: "#343434";
 
         Image { source: "mobile/images/stripes.png"; fillMode: "Tile"; anchors.fill: parent; opacity: 0.3 }
 
-        Twitter.RssModel { id: RssModel }
-        Common.Loading { anchors.centerIn: parent; visible: RssModel.status==XmlListModel.Loading && state!='unauthed'}
-        Text { 
+        Twitter.RssModel { id: rssModel }
+        Common.Loading { anchors.centerIn: parent; visible: rssModel.status==XmlListModel.Loading && state!='unauthed'}
+        Text {
             width: 180
-            text: "Could not access twitter using this screen name and password pair."; 
+            text: "Could not access twitter using this screen name and password pair.";
             color: "white"; color: "#cccccc"; style: "Raised"; styleColor: "black"; wrap: true
-            visible: RssModel.status==XmlListModel.Error; anchors.centerIn: parent
+            visible: rssModel.status==XmlListModel.Error; anchors.centerIn: parent
         }
 
         Item {
-            id: Views
+            id: views
             x: 2; width: parent.width - 4
             y:60 //Below the title bars
             height: 380
@@ -48,44 +49,44 @@ Item {
             Twitter.AuthView{
                 id: authView
                 anchors.verticalCenter: parent.verticalCenter
-                width: parent.width; height: parent.height-60; 
-                x: -(Screen.width * 1.5)
+                width: parent.width; height: parent.height-60;
+                x: -(screen.width * 1.5)
             }
 
-            Twitter.FatDelegate { id: FatDelegate }
+            Twitter.FatDelegate { id: fatDelegate }
             ListView {
-                id: MainView; model: RssModel.model; delegate: FatDelegate;
+                id: mainView; model: rssModel.model; delegate: fatDelegate;
                 width: parent.width; height: parent.height; x: 0; cacheBuffer: 100;
             }
         }
 
-        Twitter.MultiTitleBar { id: TitleBar; width: parent.width }
-        Mobile.ToolBar { id: ToolBar; height: 40; 
-            //anchors.bottom: parent.bottom; 
+        Twitter.MultiTitleBar { id: titleBar; width: parent.width }
+        Mobile.ToolBar { id: toolBar; height: 40;
+            //anchors.bottom: parent.bottom;
             //TODO: Use anchor changes instead of hard coding
             y: 440
-            width: parent.width; opacity: 0.9 
+            width: parent.width; opacity: 0.9
             button1Label: "Update"
             button2Label: "View others"
-            onButton1Clicked: RssModel.reload();
-            onButton2Clicked: 
+            onButton1Clicked: rssModel.reload();
+            onButton2Clicked:
             {
-                if(Screen.userView == true){
-                    Screen.setMode(false);
+                if(screen.userView == true){
+                    screen.setMode(false);
                 }else{
-                    RssModel.tags='';
-                    Screen.setMode(true);
+                    rssModel.tags='';
+                    screen.setMode(true);
                 }
             }
         }
 
         states: [
             State {
-                name: "unauthed"; when: RssModel.authName==""
+                name: "unauthed"; when: rssModel.authName==""
                 PropertyChanges { target: authView; x: 0 }
-                PropertyChanges { target: MainView; x: -(parent.width * 1.5) }
-                PropertyChanges { target: TitleBar; y: -80 }
-                PropertyChanges { target: ToolBar; y: Screen.height + 80 }
+                PropertyChanges { target: mainView; x: -(parent.width * 1.5) }
+                PropertyChanges { target: titleBar; y: -80 }
+                PropertyChanges { target: toolBar; y: screen.height + 80 }
             }
         ]
         transitions: [
