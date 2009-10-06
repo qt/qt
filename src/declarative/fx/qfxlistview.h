@@ -77,6 +77,9 @@ class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable
     Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer)
     Q_PROPERTY(QString sectionExpression READ sectionExpression WRITE setSectionExpression NOTIFY sectionExpressionChanged)
     Q_PROPERTY(QString currentSection READ currentSection NOTIFY currentSectionChanged)
+
+    Q_PROPERTY(qreal highlightMoveSpeed READ highlightMoveSpeed WRITE setHighlightMoveSpeed NOTIFY highlightMoveSpeedChanged)
+    Q_PROPERTY(qreal highlightResizeSpeed READ highlightResizeSpeed WRITE setHighlightResizeSpeed NOTIFY highlightResizeSpeedChanged)
     Q_CLASSINFO("DefaultProperty", "data")
 
 public:
@@ -126,6 +129,12 @@ public:
     void setSectionExpression(const QString &);
     QString currentSection() const;
 
+    qreal highlightMoveSpeed() const;
+    void setHighlightMoveSpeed(qreal);
+
+    qreal highlightResizeSpeed() const;
+    void setHighlightResizeSpeed(qreal);
+
     static QFxListViewAttached *qmlAttachedProperties(QObject *);
 
 public Q_SLOTS:
@@ -138,6 +147,8 @@ Q_SIGNALS:
     void currentIndexChanged();
     void currentSectionChanged();
     void sectionExpressionChanged();
+    void highlightMoveSpeedChanged();
+    void highlightResizeSpeedChanged();
 
 protected:
     virtual void viewportMoved();
