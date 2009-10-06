@@ -62,14 +62,14 @@ QTestLiteWindowSurface::QTestLiteWindowSurface
     xw = new MyWindow(graphicsSystem->xd, 0,0,300,300);
     xw->windowSurface = this;
 
-    qDebug() << "QTestLiteWindowSurface::QTestLiteWindowSurface:" << xw->window;
+//    qDebug() << "QTestLiteWindowSurface::QTestLiteWindowSurface:" << xw->window;
 
     setWindowFlags(window->windowFlags()); //##### This should not be the plugin's responsibility
 }
 
 QTestLiteWindowSurface::~QTestLiteWindowSurface()
 {
-    qDebug() << "~QTestLiteWindowSurface" << xw->window;
+//    qDebug() << "~QTestLiteWindowSurface" << xw->window;
     delete xw;
 }
 

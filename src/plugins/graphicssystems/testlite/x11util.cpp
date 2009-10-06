@@ -256,7 +256,9 @@ bool MyDisplay::handleEvent(XEvent *xe)
 #endif
 
     default:
+#ifdef MYX11_DEBUG
         qDebug() << "Other X event" << hex << xe->type;
+#endif
         break;
     }
     return quit;
@@ -286,8 +288,9 @@ MyDisplay::MyDisplay()
     physicalHeight = DisplayHeightMM(display, screen);
 
     int xSocketNumber = XConnectionNumber(display);
+#ifdef MYX11_DEBUG
     qDebug() << "X socket:"<< xSocketNumber;
-
+#endif
     QSocketNotifier *sock = new QSocketNotifier(xSocketNumber, QSocketNotifier::Read, this);
     connect(sock, SIGNAL(activated(int)), this, SLOT(eventDispatcher()));
 }
@@ -313,7 +316,9 @@ void MyDisplay::eventDispatcher()
         handleEvent(&event);
 
         if (event.xany.serial >= marker) {
+#ifdef MYX11_DEBUG
             qDebug() << "potential livelock averted";
+#endif
 #if 0
             if (XEventsQueued(display, QueuedAfterFlush)) {
                 qDebug() << "	with events queued";
@@ -332,8 +337,9 @@ MyWindow::MyWindow(MyDisplay *display, int x, int y, int w, int h)
 
     xd->windowList.append(this);
 
+#ifdef MYX11_DEBUG
     qDebug() << "MyWindow::MyWindow";
-
+#endif
     window = XCreateSimpleWindow(xd->display, xd->rootWindow(),
                                  x, y, w, h, 0 /*border_width*/,
                                  xd->blackPixel(), xd->whitePixel());
@@ -556,8 +562,9 @@ Qt::WindowFlags MyWindow::setWindowFlags(Qt::WindowFlags flags)
         mwm_hint_atom = XInternAtom(xd->display, "_MOTIF_WM_HINTS\0", False);
     }
 
+#ifdef MYX11_DEBUG
     qDebug() << "MyWindow::setWindowFlags" << hex << mwm_hint_atom << "flags" << flags;
-
+#endif
     Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
 
     if (type == Qt::ToolTip)
@@ -657,7 +664,9 @@ Qt::WindowFlags MyWindow::setWindowFlags(Qt::WindowFlags flags)
 //##### only if initializeWindow???
 
     if (popup) {                        // popup widget
+#ifdef MYX11_DEBUG
         qDebug() << "Doing XChangeWindowAttributes for popup" << wsa.override_redirect;
+#endif
         // set EWMH window types
         // setNetWmWindowTypes();
 
@@ -666,9 +675,9 @@ Qt::WindowFlags MyWindow::setWindowFlags(Qt::WindowFlags flags)
         XChangeWindowAttributes(xd->display, window, CWOverrideRedirect | CWSaveUnder,
                                 &wsa);
     } else {
-
+#ifdef MYX11_DEBUG
         qDebug() << "Doing XChangeWindowAttributes for non-popup";
-
+#endif
     }
 
     return flags;
