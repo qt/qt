@@ -1235,7 +1235,6 @@ void tst_QScriptContext::parentContextCallee_QT2270()
     QScriptValue fun = engine.evaluate("(function() { return getParentContextCallee(); })");
     QVERIFY(fun.isFunction());
     QScriptValue callee = fun.call();
-    QEXPECT_FAIL("", "QT-2270: Incorrect parentContext() returned for native call", Abort);
     QVERIFY(callee.equals(fun));
 }
 
