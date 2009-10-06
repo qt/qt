@@ -100,6 +100,8 @@ QmlTimer::QmlTimer(QObject *parent)
     \qmlproperty int Timer::interval
 
     Sets the \a interval in milliseconds between triggering.
+
+    The default interval is 1000 milliseconds.
 */
 void QmlTimer::setInterval(int interval)
 {
@@ -122,6 +124,8 @@ int QmlTimer::interval() const
     If set to true, starts the timer; otherwise stops the timer.
     For a non-repeating timer, \a running  will be set to false after the
     timer has been triggered.
+
+    \a running defaults to false.
 
     \sa repeat
 */
@@ -148,6 +152,8 @@ void QmlTimer::setRunning(bool running)
     specified interval; otherwise, the timer will trigger once at the
     specified interval and then stop (i.e. running will be set to false).
 
+    \a repeat defaults to false.
+
     \sa running
 */
 bool QmlTimer::isRepeating() const
@@ -169,7 +175,11 @@ void QmlTimer::setRepeating(bool repeating)
     \qmlproperty bool Timer::triggeredOnStart
 
     If \a triggeredOnStart is true, the timer will be triggered immediately
-    when started, and subsequently at the specified interval.
+    when started, and subsequently at the specified interval.  Note that for
+    a Timer with \e repeat set to false, this will result in the timer being
+    triggered twice; once on start, and again at the interval.
+
+    \a triggeredOnStart defaults to false.
 
     \sa running
 */
@@ -198,7 +208,7 @@ void QmlTimer::setTriggeredOnStart(bool triggeredOnStart)
 void QmlTimer::start()
 {
     Q_D(QmlTimer);
-    d->pause.start();
+    setRunning(true);
 }
 
 /*!
@@ -211,7 +221,7 @@ void QmlTimer::start()
 void QmlTimer::stop()
 {
     Q_D(QmlTimer);
-    d->pause.stop();
+    setRunning(false);
 }
 
 void QmlTimer::update()
