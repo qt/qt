@@ -193,10 +193,10 @@ static void* TryMmap(size_t size, size_t *actual_size, size_t alignment) {
 
   // Return the unused memory to the system
   if (adjust > 0) {
-    munmap(reinterpret_cast<void*>(ptr), adjust);
+    munmap(reinterpret_cast<char*>(ptr), adjust);
   }
   if (adjust < extra) {
-    munmap(reinterpret_cast<void*>(ptr + adjust + size), extra - adjust);
+    munmap(reinterpret_cast<char*>(ptr + adjust + size), extra - adjust);
   }
 
   ptr += adjust;
@@ -324,10 +324,10 @@ static void* TryDevMem(size_t size, size_t *actual_size, size_t alignment) {
   
   // Return the unused virtual memory to the system
   if (adjust > 0) {
-    munmap(reinterpret_cast<void*>(ptr), adjust);
+    munmap(reinterpret_cast<char*>(ptr), adjust);
   }
   if (adjust < extra) {
-    munmap(reinterpret_cast<void*>(ptr + adjust + size), extra - adjust);
+    munmap(reinterpret_cast<char*>(ptr + adjust + size), extra - adjust);
   }
   
   ptr += adjust;
@@ -442,7 +442,7 @@ void TCMalloc_SystemRelease(void* start, size_t length)
 
 void TCMalloc_SystemRelease(void* start, size_t length)
 {
-  void* newAddress = mmap(start, length, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
+  void* newAddress = mmap(reinterpret_cast<char*>(start), length, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
   // If the mmap failed then that's ok, we just won't return the memory to the system.
   ASSERT_UNUSED(newAddress, newAddress == start || newAddress == reinterpret_cast<void*>(MAP_FAILED));
 }
