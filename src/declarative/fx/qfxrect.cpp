@@ -482,6 +482,8 @@ void QFxRect::drawRect(QPainter &p)
     \note Generally scaling artifacts are only visible if the item is stationary on
     the screen.  A common pattern when animating an item is to disable smooth
     filtering at the beginning of the animation and reenable it at the conclusion.
+
+    \image rect-smooth.png
 */
 
 QRectF QFxRect::boundingRect() const
