@@ -5941,7 +5941,7 @@ QString QUrl::toLocalFile() const
 
     QString tmp;
     QString ourPath = path();
-    if (d->scheme.isEmpty() || d->scheme.toLower() == QLatin1String("file")) {
+    if (d->scheme.isEmpty() || QString::compare(d->scheme, QLatin1String("file"), Qt::CaseInsensitive) == 0) {
 
         // magic for shared drive on windows
         if (!d->host.isEmpty()) {
