@@ -80,6 +80,9 @@ QScriptValue QmlObjectScriptClass::newQObject(QObject *object)
 {
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
+    if (!object)
+        return newObject(scriptEngine, this, new ObjectData(object));
+
     QmlDeclarativeData *ddata = QmlDeclarativeData::get(object, true);
 
     if (!ddata->scriptValue.isValid()) {
@@ -101,12 +104,12 @@ QScriptClass::QueryFlags
 QmlObjectScriptClass::queryProperty(Object *object, const Identifier &name, 
                                     QScriptClass::QueryFlags flags)
 {
-    return queryProperty(toQObject(object), name, flags);
+    return queryProperty(toQObject(object), name, flags, 0);
 }
 
 QScriptClass::QueryFlags 
 QmlObjectScriptClass::queryProperty(QObject *obj, const Identifier &name, 
-                                    QScriptClass::QueryFlags flags, QueryMode mode)
+                                    QScriptClass::QueryFlags flags, QmlContext *evalContext)
 {
     Q_UNUSED(flags);
     lastData = 0;
@@ -120,21 +123,7 @@ QmlObjectScriptClass::queryProperty(QObject *obj, const Identifier &name,
         return 0;
 
     QmlEnginePrivate *enginePrivate = QmlEnginePrivate::get(engine);
-
-    if (mode == IncludeAttachedProperties) {
-        QmlContext *evalContext = enginePrivate->currentExpression->context();
-        QmlContextPrivate *cp = QmlContextPrivate::get(evalContext);
-        // ### Check for attached properties
-
-        if (cp->imports) {
-            QmlTypeNameCache::Data *data = cp->imports->data(name);
-            if (data) {
-                lastTNData = data;
-                return QScriptClass::HandlesReadAccess;
-            }
-        }
-
-    }
+    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
     QmlPropertyCache *cache = 0;
     QmlDeclarativeData *ddata = QmlDeclarativeData::get(obj);
@@ -153,12 +142,35 @@ QmlObjectScriptClass::queryProperty(QObject *obj, const Identifier &name,
             lastData = &local;
     }
 
-    if (!lastData) return 0;
+    if (lastData) {
+        QScriptClass::QueryFlags rv = QScriptClass::HandlesReadAccess;
+        if (lastData->flags & QmlPropertyCache::Data::IsWritable)
+            rv |= QScriptClass::HandlesWriteAccess;
+        return rv;
+    } 
 
-    QScriptClass::QueryFlags rv = QScriptClass::HandlesReadAccess;
-    if (lastData->flags & QmlPropertyCache::Data::IsWritable)
-        rv |= QScriptClass::HandlesWriteAccess;
-    return rv;
+    if (!evalContext && context) {
+        // Global object, QScriptContext activation object, QmlContext object
+        QScriptValue scopeNode = scopeChainValue(context, 3);         
+        Q_ASSERT(scopeNode.isValid());
+        Q_ASSERT(scriptClass(scopeNode) == enginePrivate->contextClass);
+
+        evalContext = enginePrivate->contextClass->contextFromValue(scopeNode);
+    }
+
+    if (evalContext) {
+        QmlContextPrivate *cp = QmlContextPrivate::get(evalContext);
+
+        if (cp->imports) {
+            QmlTypeNameCache::Data *data = cp->imports->data(name);
+            if (data) {
+                lastTNData = data;
+                return QScriptClass::HandlesReadAccess;
+            }
+        }
+    }
+
+    return 0;
 }
 
 QScriptValue QmlObjectScriptClass::property(Object *object, const Identifier &name)

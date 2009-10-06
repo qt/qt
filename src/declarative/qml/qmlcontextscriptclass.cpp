@@ -72,51 +72,80 @@ QScriptValue QmlContextScriptClass::newContext(QmlContext *context)
     return newObject(scriptEngine, this, new ContextData(context));
 }
 
+QmlContext *QmlContextScriptClass::contextFromValue(const QScriptValue &v)
+{
+    if (scriptClass(v) != this)
+        return 0;
+
+    ContextData *data = (ContextData *)object(v);
+    return data->context;
+}
+
+#include <QDebug>
 QScriptClass::QueryFlags 
 QmlContextScriptClass::queryProperty(Object *object, const Identifier &name, 
                                      QScriptClass::QueryFlags flags)
 {
     Q_UNUSED(flags);
     
+    lastContext = 0;
+    lastData = 0;
     lastPropertyIndex = -1;
     lastDefaultObject = -1;
-    lastData = 0;
 
     QmlContext *bindContext = ((ContextData *)object)->context.data();
     if (!bindContext)
         return 0;
 
+    while (bindContext) {
+        QScriptClass::QueryFlags rv = queryProperty(bindContext, name, flags);
+        if (rv) return rv;
+        bindContext = bindContext->parentContext();
+    }
+
+    return 0;
+}
+
+QScriptClass::QueryFlags 
+QmlContextScriptClass::queryProperty(QmlContext *bindContext, const Identifier &name,
+                                     QScriptClass::QueryFlags flags)
+{
     QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
     QmlContextPrivate *cp = QmlContextPrivate::get(bindContext);
 
     lastPropertyIndex = cp->propertyNames?cp->propertyNames->value(name):-1;
-    if (lastPropertyIndex != -1)
+    if (lastPropertyIndex != -1) {
+        lastContext = bindContext;
         return QScriptClass::HandlesReadAccess;
+    }
 
-    if (ep->currentExpression && cp->imports && bindContext == ep->currentExpression->context()) {
+    if (cp->imports) { 
         QmlTypeNameCache::Data *data = cp->imports->data(name);
 
         if (data)  {
             lastData = data;
+            lastContext = bindContext;
             return QScriptClass::HandlesReadAccess;
         }
     }
 
     for (int ii = 0; ii < cp->defaultObjects.count(); ++ii) {
         QScriptClass::QueryFlags rv = 
-            ep->objectClass->queryProperty(cp->defaultObjects.at(ii), name, flags, 
-                                           QmlObjectScriptClass::SkipAttachedProperties);
+            ep->objectClass->queryProperty(cp->defaultObjects.at(ii), name, flags, 0);
 
         if (rv) {
             lastDefaultObject = ii;
+            lastContext = bindContext;
             return rv;
         }
     }
 
     for (int ii = 0; ii < cp->scripts.count(); ++ii) {
         lastFunction = QScriptDeclarativeClass::function(cp->scripts.at(ii), name);
-        if (lastFunction.isValid())
+        if (lastFunction.isValid()) {
+            lastContext = bindContext;
             return QScriptClass::HandlesReadAccess;
+        }
     }
     return 0;
 }
@@ -125,7 +154,7 @@ QScriptValue QmlContextScriptClass::property(Object *object, const Identifier &n
 {
     Q_UNUSED(object);
 
-    QmlContext *bindContext = ((ContextData *)object)->context.data();
+    QmlContext *bindContext = lastContext;
     Q_ASSERT(bindContext);
 
     QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
@@ -170,7 +199,7 @@ void QmlContextScriptClass::setProperty(Object *object, const Identifier &name,
 {
     Q_ASSERT(lastDefaultObject != -1);
 
-    QmlContext *bindContext = ((ContextData *)object)->context.data();
+    QmlContext *bindContext = lastContext;
     Q_ASSERT(bindContext);
 
     QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);

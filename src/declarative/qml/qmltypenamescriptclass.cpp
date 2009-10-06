@@ -131,8 +131,7 @@ QmlTypeNameScriptClass::queryProperty(Object *obj, const Identifier &name,
             // Must be an attached property
             object = qmlAttachedPropertiesObjectById(data->type->index(), data->object);
             if (!object) return 0;
-            return ep->objectClass->queryProperty(object, name, flags, 
-                                                  QmlObjectScriptClass::SkipAttachedProperties);
+            return ep->objectClass->queryProperty(object, name, flags, 0);
         }
     }
 

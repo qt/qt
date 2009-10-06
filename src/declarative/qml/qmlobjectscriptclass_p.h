@@ -63,6 +63,7 @@ QT_BEGIN_NAMESPACE
 class QmlEngine;
 class QScriptContext;
 class QScriptEngine;
+class QmlContext;
 class QmlObjectScriptClass : public QScriptDeclarativeClass
 {
 public:
@@ -76,7 +77,7 @@ public:
 
     QScriptClass::QueryFlags queryProperty(QObject *, const Identifier &, 
                                            QScriptClass::QueryFlags flags, 
-                                           QueryMode = IncludeAttachedProperties);
+                                           QmlContext *evalContext);
     QScriptValue property(QObject *, const Identifier &);
     void setProperty(QObject *, const Identifier &name, const QScriptValue &);
 

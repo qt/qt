@@ -85,14 +85,13 @@ public:
     bool isInternal;
 
     QmlIntegerCache *propertyNames;
-//    QHash<QString, int> propertyNames;
     QList<QVariant> propertyValues;
     int notifyIndex;
 
     QObjectList defaultObjects;
     int highPriorityCount;
 
-    QScriptValueList scopeChain;
+    QScriptValue scriptValue;
 
     QList<QScriptValue> scripts;
 

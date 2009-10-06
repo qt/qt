@@ -178,10 +178,8 @@ void QmlScriptPrivate::addScriptToEngine(const QString &script, const QString &s
     QmlContext *context = qmlContext(q);
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
-    QScriptContext *scriptContext = scriptEngine->pushContext();
-    for (int i = context->d_func()->scopeChain.size() - 1; i >= 0; --i) {
-        scriptContext->pushScope(context->d_func()->scopeChain.at(i));
-    }
+    QScriptContext *scriptContext = scriptEngine->pushCleanContext();
+    scriptContext->pushScope(QmlContextPrivate::get(context)->scriptValue);
 
     QScriptValue scope = scriptEngine->newObject();
     scriptContext->pushScope(scope);

@@ -82,17 +82,20 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc,
 
         int progIdx = *(data + 1);
         QmlEngine *engine = ctxt->engine();
+        QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
         QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
         if (!dd->programs.at(progIdx)) {
             dd->programs[progIdx] = new QScriptProgram(scriptEngine->compile(expression));
         }
 
         QmlContextPrivate *ctxtPriv = ctxt->d_func();
-        QScriptContext *scriptContext = scriptEngine->pushContext();
-        for (int i = ctxtPriv->scopeChain.size() - 1; i > -1; --i)
-            scriptContext->pushScope(ctxtPriv->scopeChain.at(i));
+        QScriptContext *scriptContext = scriptEngine->pushCleanContext();
+        scriptContext->pushScope(ctxtPriv->scriptValue);
+        if (me)
+            scriptContext->pushScope(ep->objectClass->newQObject(me));
 
         expressionFunction = scriptEngine->evaluate(*dd->programs[progIdx]);
+
         expressionFunctionValid = true;
         scriptEngine->popContext();
     }
@@ -239,9 +242,8 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope)
 
     QmlContextPrivate *ctxtPriv = context()->d_func();
     QmlEngine *engine = context()->engine();
+    QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
 
-    if (me)
-       ctxtPriv->defaultObjects.insert(ctxtPriv->highPriorityCount, me);
     if (secondaryScope)
        ctxtPriv->defaultObjects.insert(ctxtPriv->highPriorityCount, 
                                        secondaryScope);
@@ -250,9 +252,11 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope)
 
     if (!expressionFunctionValid) {
 
-        QScriptContext *scriptContext = scriptEngine->pushContext();
-        for (int i = ctxtPriv->scopeChain.size() - 1; i > -1; --i)
-            scriptContext->pushScope(ctxtPriv->scopeChain.at(i));
+        QScriptContext *scriptContext = scriptEngine->pushCleanContext();
+        scriptContext->pushScope(ctxtPriv->scriptValue);
+
+        if (me)
+            scriptContext->pushScope(ep->objectClass->newQObject(me));
 
         if (expressionRewritten) {
             expressionFunction = scriptEngine->evaluate(expression, fileName, line);
@@ -283,8 +287,6 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope)
         }
     }
 
-    if (me)
-        ctxtPriv->defaultObjects.removeAt(ctxtPriv->highPriorityCount);
     if (secondaryScope)
         ctxtPriv->defaultObjects.removeAt(ctxtPriv->highPriorityCount);
 

@@ -103,16 +103,7 @@ void QmlContextPrivate::init()
 
     //set scope chain
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
-    QScriptValue scopeObj = QmlEnginePrivate::get(engine)->contextClass->newContext(q);
-
-    //### no longer need to push global object once we switch to JSC (test with objects added to globalObject)
-    //if (parent)
-    //    scopeChain = parent->d_func()->scopeChain;
-    if (!parent)
-        scopeChain.append(scriptEngine->globalObject());
-    else
-        scopeChain = parent->d_func()->scopeChain;
-    scopeChain.prepend(scopeObj);
+    scriptValue = QmlEnginePrivate::get(engine)->contextClass->newContext(q);
 }
 
 void QmlContextPrivate::addDefaultObject(QObject *object, Priority priority)
