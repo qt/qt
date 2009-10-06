@@ -83,6 +83,7 @@ private slots:
     void argumentsObjectInNative();
     void jsActivationObject();
     void qobjectAsActivationObject();
+    void parentContextCallee_QT2270();
 };
 
 tst_QScriptContext::tst_QScriptContext()
@@ -1220,6 +1221,22 @@ void tst_QScriptContext::qobjectAsActivationObject()
         QVERIFY(val.toBool());
         QVERIFY(!scriptObject.property("foo").isValid());
     }
+}
+
+static QScriptValue getParentContextCallee(QScriptContext *ctx, QScriptEngine *)
+{
+    return ctx->parentContext()->callee();
+}
+
+void tst_QScriptContext::parentContextCallee_QT2270()
+{
+    QScriptEngine engine;
+    engine.globalObject().setProperty("getParentContextCallee", engine.newFunction(getParentContextCallee));
+    QScriptValue fun = engine.evaluate("(function() { return getParentContextCallee(); })");
+    QVERIFY(fun.isFunction());
+    QScriptValue callee = fun.call();
+    QEXPECT_FAIL("", "QT-2270: Incorrect parentContext() returned for native call", Abort);
+    QVERIFY(callee.equals(fun));
 }
 
 QTEST_MAIN(tst_QScriptContext)
