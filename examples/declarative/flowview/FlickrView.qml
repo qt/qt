@@ -1,14 +1,14 @@
 import Qt 4.6
 
-Rectangle { 
-    radius: 5; 
-    border.width: 1; 
-    width:400; 
-    height: 120; 
-    color: background; 
+Rectangle {
+    radius: 5;
+    border.width: 1;
+    width:400;
+    height: 120;
+    color: background;
 
     XmlListModel {
-        id: FeedModel
+        id: feedModel
         source: "http://api.flickr.com/services/feeds/photos_public.gne?format=rss2"
         query: "/rss/channel/item"
         namespaceDeclarations: "declare namespace media=\"http://search.yahoo.com/mrss/\";"
@@ -31,12 +31,12 @@ Rectangle {
         width: parent.width
         height: 86
         y: 17
-        model: FeedModel
-        delegate: 
-            Item { width: 90; height: 86 
+        model: feedModel
+        delegate:
+            Item { width: 90; height: 86
                 Rectangle {
                     anchors.centerIn: parent
-                    width: 86; height: 86; 
+                    width: 86; height: 86;
                     color: "white"; radius: 5
                     Image { source: imagePath; x: 5; y: 5 }
                 }

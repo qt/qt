@@ -6,7 +6,7 @@ Item {
     height: 500
 
     ListModel {
-        id: FruitModel
+        id: fruitModel
         ListElement {
             name: "Apple"
             cost: 2.45
@@ -56,13 +56,13 @@ Item {
     }
 
     Component {
-        id: FruitDelegate
+        id: fruitDelegate
         Item {
             width: parent.width; height: 55
-            Text { id: Label; font.pixelSize: 24; text: name; elide: "ElideRight"; anchors.right: Cost.left; anchors.left:parent.left }
-            Text { id: Cost; font.pixelSize: 24; text: '$'+Number(cost).toFixed(2); anchors.right: ItemButtons.left }
-            Row { 
-                anchors.top: Label.bottom
+            Text { id: label; font.pixelSize: 24; text: name; elide: "ElideRight"; anchors.right: cost.left; anchors.left:parent.left }
+            Text { id: cost; font.pixelSize: 24; text: '$'+Number(cost).toFixed(2); anchors.right: itemButtons.left }
+            Row {
+                anchors.top: label.bottom
                 spacing: 5
                 Repeater {
                     model: attributes
@@ -72,27 +72,27 @@ Item {
                 }
             }
             Row {
-                id: ItemButtons
+                id: itemButtons
                 anchors.right: parent.right
                 width: childrenRect.width
                 Image { source: "content/pics/add.png"
-                    ClickAutoRepeating { id: ClickUp; anchors.fill: parent; onClicked: FruitModel.set(index,"cost",Number(cost)+0.25) }
-                    scale: ClickUp.pressed ? 0.9 : 1
+                    ClickAutoRepeating { id: clickUp; anchors.fill: parent; onClicked: fruitModel.set(index,"cost",Number(cost)+0.25) }
+                    scale: clickUp.pressed ? 0.9 : 1
                 }
                 Image { source: "content/pics/del.png"
-                    ClickAutoRepeating { id: ClickDown; anchors.fill: parent; onClicked: FruitModel.set(index,"cost",Math.max(0,Number(cost)-0.25)) }
-                    scale: ClickDown.pressed ? 0.9 : 1
+                    ClickAutoRepeating { id: clickDown; anchors.fill: parent; onClicked: fruitModel.set(index,"cost",Math.max(0,Number(cost)-0.25)) }
+                    scale: clickDown.pressed ? 0.9 : 1
                 }
                 Image { source: "content/pics/trash.png"
-                    MouseRegion { anchors.fill: parent; onClicked: FruitModel.remove(index) }
+                    MouseRegion { anchors.fill: parent; onClicked: fruitModel.remove(index) }
                 }
                 Column {
                     width: childrenRect.width
                     Image { source: "content/pics/moreUp.png"
-                        MouseRegion { anchors.fill: parent; onClicked: FruitModel.move(index,index-1,1) }
+                        MouseRegion { anchors.fill: parent; onClicked: fruitModel.move(index,index-1,1) }
                     }
                     Image { source: "content/pics/moreDown.png"
-                        MouseRegion { anchors.fill: parent; onClicked: FruitModel.move(index,index+1,1) }
+                        MouseRegion { anchors.fill: parent; onClicked: fruitModel.move(index,index+1,1) }
                     }
                 }
             }
@@ -100,23 +100,23 @@ Item {
     }
 
     ListView {
-        model: FruitModel
-        delegate: FruitDelegate
+        model: fruitModel
+        delegate: fruitDelegate
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.bottom: Buttons.top
+        anchors.bottom: buttons.top
     }
 
     Row {
         width: childrenRect.width
         height: childrenRect.height
         anchors.bottom: parent.bottom
-        id: Buttons
+        id: buttons
         Image { source: "content/pics/add.png"
             MouseRegion { anchors.fill: parent;
                 onClicked: {
-                    FruitModel.append({
+                    fruitModel.append({
                         "name":"Pizza Margarita",
                         "cost":5.95,
                         "attributes":[{"description": "Cheese"},{"description": "Tomato"}]
@@ -127,7 +127,7 @@ Item {
         Image { source: "content/pics/add.png"
             MouseRegion { anchors.fill: parent;
                 onClicked: {
-                    FruitModel.insert(0,{
+                    fruitModel.insert(0,{
                         "name":"Pizza Supreme",
                         "cost":9.95,
                         "attributes":[{"description": "Cheese"},{"description": "Tomato"},{"description": "The Works"}]
@@ -136,7 +136,7 @@ Item {
             }
         }
         Image { source: "content/pics/trash.png"
-            MouseRegion { anchors.fill: parent; onClicked: FruitModel.clear() }
+            MouseRegion { anchors.fill: parent; onClicked: fruitModel.clear() }
         }
     }
 }

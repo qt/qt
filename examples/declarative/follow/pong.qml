@@ -1,37 +1,37 @@
 import Qt 4.6
 
 Rectangle {
-    id: Page
+    id: page
     width: 640; height: 480
     color: "#000000"
 
     // Make a ball to bounce
     Rectangle {
         // Add a property for the target y coordinate
-        property var targetY : Page.height-10
+        property var targetY : page.height-10
         property var direction : "right"
 
-        id: Ball
+        id: ball
         color: "#00ee00"
         x: 20; width: 20; height: 20; z: 1
 
         // Move the ball to the right and back to the left repeatedly
         x: SequentialAnimation {
             running: true; repeat: true
-            NumberAnimation { to: Page.width-40; duration: 2000 }
-            PropertyAction { target: Ball; property: "direction"; value: "left" }
+            NumberAnimation { to: page.width-40; duration: 2000 }
+            PropertyAction { target: ball; property: "direction"; value: "left" }
             NumberAnimation { to: 20; duration: 2000 }
-            PropertyAction { target: Ball; property: "direction"; value: "right" }
+            PropertyAction { target: ball; property: "direction"; value: "right" }
         }
 
         // Make y follow the target y coordinate, with a velocity of 200
-        y: SpringFollow { source: Ball.targetY; velocity: 200 }
+        y: SpringFollow { source: ball.targetY; velocity: 200 }
 
         // Detect the ball hitting the top or bottom of the view and bounce it
         onYChanged: {
             if (y <= 0)
-                targetY = Page.height-20;
-            else if (y >= Page.height-20)
+                targetY = page.height-20;
+            else if (y >= page.height-20)
                 targetY = 0;
         }
     }
@@ -39,31 +39,31 @@ Rectangle {
     // Place bats to the left and right of the view, following the y
     // coordinates of the ball.
     Rectangle {
-        id: LeftBat
+        id: leftBat
         color: "#00ee00"
         x: 2; width: 20; height: 90
         y: SpringFollow {
-            source: Ball.y-45; velocity: 300
-            enabled: Ball.direction == 'left'
+            source: ball.y-45; velocity: 300
+            enabled: ball.direction == 'left'
         }
     }
     Rectangle {
-        id: RightBat
+        id: rightBat
         color: "#00ee00"
-        x: Page.width-22; width: 20; height: 90
+        x: page.width-22; width: 20; height: 90
         y: SpringFollow {
-            source: Ball.y-45; velocity: 300
-            enabled: Ball.direction == 'right'
+            source: ball.y-45; velocity: 300
+            enabled: ball.direction == 'right'
         }
     }
 
     // The rest, to make it look realistic, if neither ever scores...
-    Rectangle { color: "#00ee00"; x: Page.width/2-80; y: 0; width: 40; height: 60 }
-    Rectangle { color: "#000000"; x: Page.width/2-70; y: 10; width: 20; height: 40 }
-    Rectangle { color: "#00ee00"; x: Page.width/2+40; y: 0; width: 40; height: 60 }
-    Rectangle { color: "#000000"; x: Page.width/2+50; y: 10; width: 20; height: 40 }
+    Rectangle { color: "#00ee00"; x: page.width/2-80; y: 0; width: 40; height: 60 }
+    Rectangle { color: "#000000"; x: page.width/2-70; y: 10; width: 20; height: 40 }
+    Rectangle { color: "#00ee00"; x: page.width/2+40; y: 0; width: 40; height: 60 }
+    Rectangle { color: "#000000"; x: page.width/2+50; y: 10; width: 20; height: 40 }
     Repeater {
-        model: Page.height/20
-        Rectangle { color: "#00ee00"; x: Page.width/2-5; y: index*20; width: 10; height: 10 }
+        model: page.height/20
+        Rectangle { color: "#00ee00"; x: page.width/2-5; y: index*20; width: 10; height: 10 }
     }
 }

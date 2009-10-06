@@ -6,19 +6,19 @@ import Qt 4.6
 //
 Rectangle {
     // default size: whole image, unscaled
-    width: Face.width
-    height: Face.height
+    width: face.width
+    height: face.height
     color: "gray"
     clip: true
 
     Image {
-        id: Face
+        id: face
         source: "pics/face.png"
         x: (parent.width-width*scale)/2
         y: (parent.height-height*scale)/2
         scale: SpringFollow {
-            source: Math.max(Math.min(Face.parent.width/Face.width*1.333,Face.parent.height/Face.height),
-                        Math.min(Face.parent.width/Face.width,Face.parent.height/Face.height*1.333))
+            source: Math.max(Math.min(face.parent.width/face.width*1.333,face.parent.height/face.height),
+                        Math.min(face.parent.width/face.width,face.parent.height/face.height*1.333))
             spring: 1
             damping: 0.05
         }

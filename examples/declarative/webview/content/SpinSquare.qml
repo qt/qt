@@ -3,16 +3,16 @@ import Qt 4.6
 Item {
     property var period : 250
     property var color : "black"
-    id: Root
+    id: root
 
     Item {
-        x: Root.width/2
-        y: Root.height/2
+        x: root.width/2
+        y: root.height/2
         Rectangle {
-            color: Root.color
+            color: root.color
             x: -width/2
             y: -height/2
-            width: Root.width
+            width: root.width
             height: width
         }
         rotation: NumberAnimation {
@@ -20,7 +20,7 @@ Item {
             to: 360
             repeat: true
             running: true
-            duration: Root.period
+            duration: root.period
         }
     }
 }

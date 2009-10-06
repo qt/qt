@@ -1,22 +1,22 @@
 import Qt 4.6
 
 Rectangle {
-    id: Page
+    id: page
     width: 480
     height: 200
     color: "LightGrey"
     Text {
-        id: HelloText
+        id: helloText
         text: "Hello world!"
         font.pointSize: 24
         font.bold: true
         y: 30
-        anchors.horizontalCenter: Page.horizontalCenter
+        anchors.horizontalCenter: page.horizontalCenter
     }
     Grid {
-        id: ColorPicker
+        id: colorPicker
         x: 0
-        anchors.bottom: Page.bottom
+        anchors.bottom: page.bottom
         width: 120; height: 50
         rows: 2; columns: 3
         Cell { color: "#ff0000" }

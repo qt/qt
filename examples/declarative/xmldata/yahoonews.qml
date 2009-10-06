@@ -28,24 +28,24 @@ Rectangle {
         Component {
             id: feedDelegate
             Item {
-                id: Delegate
-                height: Wrapper.height + 10
+                id: delegate
+                height: wrapper.height + 10
                 MouseRegion {
-                    anchors.fill: Wrapper
-                    onPressed: { Delegate.ListView.list.currentIndex = index; }
-                    onClicked: { if (Wrapper.state == 'Details') { Wrapper.state = '';} else {Wrapper.state = 'Details';} }
+                    anchors.fill: wrapper
+                    onPressed: { delegate.ListView.list.currentIndex = index; }
+                    onClicked: { if (wrapper.state == 'Details') { wrapper.state = '';} else {wrapper.state = 'Details';} }
                 }
                 Rectangle {
-                    id: Wrapper
+                    id: wrapper
                     y: 5
-                    height: TitleText.height + 10
+                    height: titleText.height + 10
                     width: 580
                     color: "#F0F0F0"
                     radius: 5
                     Text {
                         x: 10
                         y: 5
-                        id: TitleText
+                        id: titleText
                         text: '<a href=\'' + link + '\'>' + title + '</a>'
                         font.bold: true
                         font.family: "Helvetica"
@@ -54,20 +54,20 @@ Rectangle {
                     }
                     Text {
                         x: 10
-                        id: Description
+                        id: description
                         text: description
                         width: 560
                         wrap: true
                         font.family: "Helvetica"
-                        anchors.top: TitleText.bottom
+                        anchors.top: titleText.bottom
                         anchors.topMargin: 5
                         opacity: 0
                     }
                     states: [
                         State {
                             name: "Details"
-                            PropertyChanges { target: Wrapper; height: childrenRect.height + 10 }
-                            PropertyChanges { target: Description; opacity: 1 } 
+                            PropertyChanges { target: wrapper; height: childrenRect.height + 10 }
+                            PropertyChanges { target: description; opacity: 1 }
                         }
                     ]
                     transitions: [

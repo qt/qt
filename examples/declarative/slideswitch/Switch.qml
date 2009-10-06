@@ -1,53 +1,53 @@
 import Qt 4.6
 
 Item {
-    id: Switch
-    width: Groove.width; height: Groove.height
+    id: mySwitch
+    width: groove.width; height: groove.height
 
     property var on
 
     Script {
 
         function toggle() {
-            if(Switch.state == "On")
-                Switch.state = "Off";
+            if(mySwitch.state == "On")
+                mySwitch.state = "Off";
             else
-                Switch.state = "On";
+                mySwitch.state = "On";
         }
         function dorelease() {
-            if(Knob.x == 1) {
-                if(Switch.state == "Off") 
+            if(knob.x == 1) {
+                if(mySwitch.state == "Off")
                     return;
             }
 
-            if(Knob.x == 78) {
-                if(Switch.state == "On") 
+            if(knob.x == 78) {
+                if(mySwitch.state == "On")
                     return;
             }
 
             toggle();
         }
-    
+
     }
-    Image { id: Groove; source: "background.svg" }
-    MouseRegion { anchors.fill: Groove; onClicked: { toggle() } }
-    Image { id: Knob; source: "knob.svg"; x: 1; y: 2 }
+    Image { id: groove; source: "background.svg" }
+    MouseRegion { anchors.fill: groove; onClicked: { toggle() } }
+    Image { id: knob; source: "knob.svg"; x: 1; y: 2 }
     MouseRegion {
-        anchors.fill: Knob
+        anchors.fill: knob
         onClicked: { toggle() }
         onReleased: { dorelease() }
-        drag.target: Knob; drag.axis: "XAxis"; drag.minimumX: 1; drag.maximumX: 78
+        drag.target: knob; drag.axis: "XAxis"; drag.minimumX: 1; drag.maximumX: 78
     }
     states: [
         State {
             name: "On"
-            PropertyChanges { target: Knob; x: 78 }
-            PropertyChanges { target: Switch; on: true }
+            PropertyChanges { target: knob; x: 78 }
+            PropertyChanges { target: mySwitch; on: true }
         },
         State {
             name: "Off"
-            PropertyChanges { target: Knob; x: 1 }
-            PropertyChanges { target: Switch; on: false }
+            PropertyChanges { target: knob; x: 1 }
+            PropertyChanges { target: mySwitch; on: false }
         }
     ]
     transitions: [
