@@ -3206,11 +3206,11 @@ EXPORTS
 	_ZN12QEasingCurveD1Ev @ 3205 NONAME
 	_ZN12QEasingCurveD2Ev @ 3206 NONAME
 	_ZN12QEasingCurveaSERKS_ @ 3207 NONAME
-	_ZN12QSignalEventC1EP7QObjectiRK5QListI8QVariantE @ 3208 NONAME
-	_ZN12QSignalEventC2EP7QObjectiRK5QListI8QVariantE @ 3209 NONAME
-	_ZN12QSignalEventD0Ev @ 3210 NONAME
-	_ZN12QSignalEventD1Ev @ 3211 NONAME
-	_ZN12QSignalEventD2Ev @ 3212 NONAME
+	_ZN12QSignalEventC1EP7QObjectiRK5QListI8QVariantE @ 3208 NONAME ABSENT
+	_ZN12QSignalEventC2EP7QObjectiRK5QListI8QVariantE @ 3209 NONAME ABSENT
+	_ZN12QSignalEventD0Ev @ 3210 NONAME ABSENT
+	_ZN12QSignalEventD1Ev @ 3211 NONAME ABSENT
+	_ZN12QSignalEventD2Ev @ 3212 NONAME ABSENT
 	_ZN13QHistoryState11qt_metacallEN11QMetaObject4CallEiPPv @ 3213 NONAME
 	_ZN13QHistoryState11qt_metacastEPKc @ 3214 NONAME
 	_ZN13QHistoryState14setHistoryTypeENS_11HistoryTypeE @ 3215 NONAME
@@ -3234,7 +3234,7 @@ EXPORTS
 	_ZN13QStateMachine12endMicrostepEP6QEvent @ 3233 NONAME
 	_ZN13QStateMachine14beginMicrostepEP6QEvent @ 3234 NONAME
 	_ZN13QStateMachine16staticMetaObjectE @ 3235 NONAME DATA 16
-	_ZN13QStateMachine17postInternalEventEP6QEvent @ 3236 NONAME
+	_ZN13QStateMachine17postInternalEventEP6QEvent @ 3236 NONAME ABSENT
 	_ZN13QStateMachine19addDefaultAnimationEP18QAbstractAnimation @ 3237 NONAME
 	_ZN13QStateMachine20endSelectTransitionsEP6QEvent @ 3238 NONAME
 	_ZN13QStateMachine20setAnimationsEnabledEb @ 3239 NONAME
@@ -3249,7 +3249,7 @@ EXPORTS
 	_ZN13QStateMachine7startedEv @ 3248 NONAME
 	_ZN13QStateMachine7stoppedEv @ 3249 NONAME
 	_ZN13QStateMachine8addStateEP14QAbstractState @ 3250 NONAME
-	_ZN13QStateMachine9postEventEP6QEventi @ 3251 NONAME
+	_ZN13QStateMachine9postEventEP6QEventi @ 3251 NONAME ABSENT
 	_ZN13QStateMachineC1EP7QObject @ 3252 NONAME
 	_ZN13QStateMachineC1ER20QStateMachinePrivateP7QObject @ 3253 NONAME
 	_ZN13QStateMachineC2EP7QObject @ 3254 NONAME
@@ -3265,11 +3265,11 @@ EXPORTS
 	_ZN13QStatePrivateD1Ev @ 3264 NONAME
 	_ZN13QStatePrivateD2Ev @ 3265 NONAME
 	_ZN13QUnifiedTimer8instanceEv @ 3266 NONAME
-	_ZN13QWrappedEventC1EP7QObjectP6QEvent @ 3267 NONAME
-	_ZN13QWrappedEventC2EP7QObjectP6QEvent @ 3268 NONAME
-	_ZN13QWrappedEventD0Ev @ 3269 NONAME
-	_ZN13QWrappedEventD1Ev @ 3270 NONAME
-	_ZN13QWrappedEventD2Ev @ 3271 NONAME
+	_ZN13QWrappedEventC1EP7QObjectP6QEvent @ 3267 NONAME ABSENT
+	_ZN13QWrappedEventC2EP7QObjectP6QEvent @ 3268 NONAME ABSENT
+	_ZN13QWrappedEventD0Ev @ 3269 NONAME ABSENT
+	_ZN13QWrappedEventD1Ev @ 3270 NONAME ABSENT
+	_ZN13QWrappedEventD2Ev @ 3271 NONAME ABSENT
 	_ZN14QAbstractState11qt_metacallEN11QMetaObject4CallEiPPv @ 3272 NONAME
 	_ZN14QAbstractState11qt_metacastEPKc @ 3273 NONAME
 	_ZN14QAbstractState16staticMetaObjectE @ 3274 NONAME DATA 16
@@ -3299,7 +3299,7 @@ EXPORTS
 	_ZN15QPauseAnimation11qt_metacastEPKc @ 3298 NONAME
 	_ZN15QPauseAnimation11setDurationEi @ 3299 NONAME
 	_ZN15QPauseAnimation16staticMetaObjectE @ 3300 NONAME DATA 16
-	_ZN15QPauseAnimation17updateCurrentTimeEi @ 3301 NONAME ABSENT
+	_ZN15QPauseAnimation17updateCurrentTimeEi @ 3301 NONAME
 	_ZN15QPauseAnimation5eventEP6QEvent @ 3302 NONAME
 	_ZN15QPauseAnimationC1EP7QObject @ 3303 NONAME
 	_ZN15QPauseAnimationC1EiP7QObject @ 3304 NONAME
@@ -3361,7 +3361,7 @@ EXPORTS
 	_ZN17QVariantAnimation13setStartValueERK8QVariant @ 3360 NONAME
 	_ZN17QVariantAnimation14setEasingCurveERK12QEasingCurve @ 3361 NONAME
 	_ZN17QVariantAnimation16staticMetaObjectE @ 3362 NONAME DATA 16
-	_ZN17QVariantAnimation17updateCurrentTimeEi @ 3363 NONAME ABSENT
+	_ZN17QVariantAnimation17updateCurrentTimeEi @ 3363 NONAME
 	_ZN17QVariantAnimation20registerInterpolatorEPF8QVariantPKvS2_fEi @ 3364 NONAME
 	_ZN17QVariantAnimation5eventEP6QEvent @ 3365 NONAME
 	_ZN17QVariantAnimationC2EP7QObject @ 3366 NONAME
@@ -3430,7 +3430,7 @@ EXPORTS
 	_ZN20QStateMachinePrivate14isDescendantOfEPK14QAbstractStateS2_ @ 3429 NONAME
 	_ZN20QStateMachinePrivate15applyPropertiesERK5QListIP19QAbstractTransitionERKS0_IP14QAbstractStateESA_ @ 3430 NONAME
 	_ZN20QStateMachinePrivate15properAncestorsEPK14QAbstractStatePK6QState @ 3431 NONAME
-	_ZN20QStateMachinePrivate15scheduleProcessEv @ 3432 NONAME
+	_ZN20QStateMachinePrivate15scheduleProcessEv @ 3432 NONAME ABSENT
 	_ZN20QStateMachinePrivate16addStatesToEnterEP14QAbstractStateP6QStateR4QSetIS1_ES6_ @ 3433 NONAME
 	_ZN20QStateMachinePrivate16removeStartStateEv @ 3434 NONAME
 	_ZN20QStateMachinePrivate17stateExitLessThanEP14QAbstractStateS1_ @ 3435 NONAME
@@ -3470,7 +3470,7 @@ EXPORTS
 	_ZN23QParallelAnimationGroup11updateStateEN18QAbstractAnimation5StateES1_ @ 3469 NONAME
 	_ZN23QParallelAnimationGroup15updateDirectionEN18QAbstractAnimation9DirectionE @ 3470 NONAME
 	_ZN23QParallelAnimationGroup16staticMetaObjectE @ 3471 NONAME DATA 16
-	_ZN23QParallelAnimationGroup17updateCurrentTimeEi @ 3472 NONAME ABSENT
+	_ZN23QParallelAnimationGroup17updateCurrentTimeEi @ 3472 NONAME
 	_ZN23QParallelAnimationGroup5eventEP6QEvent @ 3473 NONAME
 	_ZN23QParallelAnimationGroupC1EP7QObject @ 3474 NONAME
 	_ZN23QParallelAnimationGroupC1ER30QParallelAnimationGroupPrivateP7QObject @ 3475 NONAME
@@ -3498,7 +3498,7 @@ EXPORTS
 	_ZN25QSequentialAnimationGroup13insertPauseAtEii @ 3497 NONAME
 	_ZN25QSequentialAnimationGroup15updateDirectionEN18QAbstractAnimation9DirectionE @ 3498 NONAME
 	_ZN25QSequentialAnimationGroup16staticMetaObjectE @ 3499 NONAME DATA 16
-	_ZN25QSequentialAnimationGroup17updateCurrentTimeEi @ 3500 NONAME ABSENT
+	_ZN25QSequentialAnimationGroup17updateCurrentTimeEi @ 3500 NONAME
 	_ZN25QSequentialAnimationGroup23currentAnimationChangedEP18QAbstractAnimation @ 3501 NONAME
 	_ZN25QSequentialAnimationGroup5eventEP6QEvent @ 3502 NONAME
 	_ZN25QSequentialAnimationGroup8addPauseEi @ 3503 NONAME
@@ -3648,11 +3648,11 @@ EXPORTS
 	_ZNK8QVariant7toFloatEPb @ 3647 NONAME
 	_ZNK9QTimeLine11easingCurveEv @ 3648 NONAME
 	_ZTI11QFinalState @ 3649 NONAME
-	_ZTI12QSignalEvent @ 3650 NONAME
+	_ZTI12QSignalEvent @ 3650 NONAME ABSENT
 	_ZTI13QHistoryState @ 3651 NONAME
 	_ZTI13QStateMachine @ 3652 NONAME
 	_ZTI13QStatePrivate @ 3653 NONAME
-	_ZTI13QWrappedEvent @ 3654 NONAME
+	_ZTI13QWrappedEvent @ 3654 NONAME ABSENT
 	_ZTI14QAbstractState @ 3655 NONAME
 	_ZTI15QAnimationGroup @ 3656 NONAME
 	_ZTI15QPauseAnimation @ 3657 NONAME
@@ -3671,11 +3671,11 @@ EXPORTS
 	_ZTI26QAbstractTransitionPrivate @ 3670 NONAME
 	_ZTI6QState @ 3671 NONAME
 	_ZTV11QFinalState @ 3672 NONAME
-	_ZTV12QSignalEvent @ 3673 NONAME
+	_ZTV12QSignalEvent @ 3673 NONAME ABSENT
 	_ZTV13QHistoryState @ 3674 NONAME
 	_ZTV13QStateMachine @ 3675 NONAME
 	_ZTV13QStatePrivate @ 3676 NONAME
-	_ZTV13QWrappedEvent @ 3677 NONAME
+	_ZTV13QWrappedEvent @ 3677 NONAME ABSENT
 	_ZTV14QAbstractState @ 3678 NONAME
 	_ZTV15QAnimationGroup @ 3679 NONAME
 	_ZTV15QPauseAnimation @ 3680 NONAME
@@ -3820,8 +3820,18 @@ EXPORTS
 	_ZTV37QNonContiguousByteDeviceByteArrayImpl @ 3819 NONAME ABSENT ; #<VT>#
 	_ZTV38QNonContiguousByteDeviceRingBufferImpl @ 3820 NONAME ABSENT ; #<VT>#
 	_Zls6QDebugRK8QMargins @ 3821 NONAME
-	_ZN15QPauseAnimation17updateCurrentTimeEv @ 3822 NONAME
-	_ZN17QVariantAnimation17updateCurrentTimeEv @ 3823 NONAME
-	_ZN23QParallelAnimationGroup17updateCurrentTimeEv @ 3824 NONAME
-	_ZN25QSequentialAnimationGroup17updateCurrentTimeEv @ 3825 NONAME
+	_ZN15QPauseAnimation17updateCurrentTimeEv @ 3822 NONAME ABSENT
+	_ZN17QVariantAnimation17updateCurrentTimeEv @ 3823 NONAME ABSENT
+	_ZN23QParallelAnimationGroup17updateCurrentTimeEv @ 3824 NONAME ABSENT
+	_ZN25QSequentialAnimationGroup17updateCurrentTimeEv @ 3825 NONAME ABSENT
+	_ZN11QDataStream25setFloatingPointPrecisionENS_22FloatingPointPrecisionE @ 3826 NONAME
+	_ZN13QStateMachine16postDelayedEventEP6QEventi @ 3827 NONAME
+	_ZN13QStateMachine18cancelDelayedEventEi @ 3828 NONAME
+	_ZN13QStateMachine9postEventEP6QEventNS_13EventPriorityE @ 3829 NONAME
+	_ZN20QStateMachinePrivate13processEventsENS_19EventProcessingModeE @ 3830 NONAME
+	_ZN20QStateMachinePrivate19handleFilteredEventEP7QObjectP6QEvent @ 3831 NONAME
+	_ZN20QStateMachinePrivate22cancelAllDelayedEventsEv @ 3832 NONAME
+	_ZN4QUrl13fromUserInputERK7QString @ 3833 NONAME
+	_ZNK11QDataStream22floatingPointPrecisionEv @ 3834 NONAME
+	qt_sine_table @ 3835 NONAME DATA 1024
 
