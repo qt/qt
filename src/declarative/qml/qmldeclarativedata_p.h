@@ -54,6 +54,7 @@
 //
 
 #include <private/qobject_p.h>
+#include <QtScript/qscriptvalue.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -86,6 +87,7 @@ public:
 
     QHash<int, QObject *> *attachedProperties;
 
+    QScriptValue scriptValue;
     QmlPropertyCache *propertyCache;
 
     static QmlDeclarativeData *get(const QObject *object, bool create = false) {

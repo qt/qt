@@ -80,7 +80,16 @@ QScriptValue QmlObjectScriptClass::newQObject(QObject *object)
 {
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
-    return newObject(scriptEngine, this, new ObjectData(object));
+    QmlDeclarativeData *ddata = QmlDeclarativeData::get(object, true);
+
+    if (!ddata->scriptValue.isValid()) {
+        ddata->scriptValue = newObject(scriptEngine, this, new ObjectData(object));
+        return ddata->scriptValue;
+    } else if (ddata->scriptValue.engine() == QmlEnginePrivate::getScriptEngine(engine)) {
+        return ddata->scriptValue;
+    } else {
+        return newObject(scriptEngine, this, new ObjectData(object));
+    }
 }
 
 QObject *QmlObjectScriptClass::toQObject(const QScriptValue &value) const

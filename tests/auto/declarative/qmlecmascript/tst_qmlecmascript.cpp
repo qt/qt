@@ -53,6 +53,7 @@ private slots:
     void nonExistantAttachedObject();
     void scope();
     void signalParameterTypes();
+    void objectsCompareAsEqual();
 
 private:
     QmlEngine engine;
@@ -543,6 +544,10 @@ void tst_qmlecmascript::scope()
     QCOMPARE(object->property("test8").toInt(), 2);
 }
 
+/*
+Tests that "any" type passes through a synthesized signal parameter.  This
+is essentially a test of QmlMetaType::copy()
+*/
 void tst_qmlecmascript::signalParameterTypes()
 {
     QmlComponent component(&engine, TEST_FILE("signalParameterTypes.qml"));
@@ -555,6 +560,22 @@ void tst_qmlecmascript::signalParameterTypes()
     QCOMPARE(object->property("realProperty").toReal(), 19.2);
     QVERIFY(object->property("colorProperty").value<QColor>() == QColor(255, 255, 0, 255));
     QVERIFY(object->property("variantProperty") == QVariant::fromValue(QColor(255, 0, 255, 255)));
+}
+
+/*
+Test that two JS objects for the same QObject compare as equal.
+*/
+void tst_qmlecmascript::objectsCompareAsEqual()
+{
+    QmlComponent component(&engine, TEST_FILE("objectsCompareAsEqual.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").toBool(), true);
+    QCOMPARE(object->property("test2").toBool(), true);
+    QCOMPARE(object->property("test3").toBool(), true);
+    QCOMPARE(object->property("test4").toBool(), true);
+    QCOMPARE(object->property("test5").toBool(), true);
 }
 
 /*
