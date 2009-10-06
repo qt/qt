@@ -217,8 +217,6 @@ public:
     bool brushUniformsDirty;
     bool simpleShaderMatrixUniformDirty;
     bool shaderMatrixUniformDirty;
-    bool depthUniformDirty;
-    bool simpleShaderDepthUniformDirty;
     bool opacityUniformDirty;
 
     QRegion dirtyStencilRegion;
@@ -242,24 +240,13 @@ public:
 
     void clearClip(uint value);
     void writeClip(const QVectorPath &path, uint value);
+    void resetClipIfNeeded();
+
     void updateClipScissorTest();
     void setScissor(const QRect &rect);
     void regenerateClip();
     void systemStateChanged();
     uint use_system_clip : 1;
-
-    static inline GLfloat rawDepth(uint depth)
-    {
-        // assume at least 16 bits in the depth buffer, and
-        // use 2^15 depth levels to be safe with regard to
-        // rounding issues etc
-        return depth * (1.0f / GLfloat((1 << 15) - 1));
-    }
-
-    static inline GLfloat normalizedDeviceDepth(uint depth)
-    {
-        return 2.0f * rawDepth(depth) - 1.0f;
-    }
 
     uint location(QGLEngineShaderManager::Uniform uniform)
     {
