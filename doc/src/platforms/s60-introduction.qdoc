@@ -40,10 +40,10 @@
 ****************************************************************************/
 
 /*!
-    \page s60-with-qt-introduction.html
+    \page symbian-with-qt-introduction.html
 
-    \title S60 - Introduction to using Qt
-    \brief An introduction to Qt for S60 developers.
+    \title Symbian platform - Introduction to using Qt
+    \brief An introduction to Qt for Symbian platform developers.
     \ingroup howto
     \ingroup qts60
 
@@ -51,21 +51,22 @@
 
     \section1 Required tools
     
-    See \l{Qt for S60 Requirements} to see what tools are required to use Qt for S60.
+    See \l{Qt for Symbian platform Requirements} to see what tools are
+required to use Qt for Symbian platform.
 
     \section1 Installing Qt and running demos
     
-    Follow the instructions found in \l{Installing Qt on S60 using binary package} to learn how
+    Follow the instructions found in \l{Installing Qt on the Symbian platform using binary package} to learn how
     to install Qt using binary package and how to build and run Qt demos.
 
-    Follow the instructions found in \l{Installing Qt on S60} to learn how to install Qt using
+    Follow the instructions found in \l{Installing Qt on the Symbian platform} to learn how to install Qt using
     using source package and how to build and run the Qt demos.
 
     \section1 Building your own applications
 
     If you are new to Qt development, have a look at \l{How to Learn Qt}. 
     In general, the difference between developing a
-    Qt application on S60 compared to any of the other platforms supported
+    Qt application on the Symbian platform compared to any of the other platforms supported
     by Qt is not that big.
 
     Once you have crated a \c .pro file for your project, generate the
@@ -76,10 +77,10 @@
     For more information on how to use qmake have a look at the \l
     {qmake Tutorial}.
 
-    Now you can build the Qt on S60 application with standard build
-    tools. By default, running \c make will produce binaries for the
-    emulator. However, S60 comes with several alternative build targets,
-    as shown in the table below:
+    Now you can build the Qt for the Symbian platform application with
+standard build tools. By default, running \c make will produce binaries for
+the emulator. However, the Symbian platform comes with several alternative
+build targets, as shown in the table below:
 
     \table
     \row \o \c debug-winscw  \o Build debug binaries for the emulator (default).
