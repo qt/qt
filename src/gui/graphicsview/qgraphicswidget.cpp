@@ -347,7 +347,7 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
 
         // setPos triggers ItemPositionChange, which can adjust position
         wd->inSetGeometry = 1;
-        wd->setPosHelper(newGeom.topLeft());
+        setPos(newGeom.topLeft());
         wd->inSetGeometry = 0;
         newGeom.moveTopLeft(pos());
 

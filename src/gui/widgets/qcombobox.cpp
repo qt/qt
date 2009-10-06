@@ -2443,7 +2443,10 @@ void QComboBox::showPopup()
     }
     container->setGeometry(listRect);
 
-    bool updatesEnabled = container->updatesEnabled();
+#ifndef Q_WS_MAC
+    const bool updatesEnabled = container->updatesEnabled();
+#endif
+
 #if defined(Q_WS_WIN) && !defined(QT_NO_EFFECTS)
     bool scrollDown = (listRect.topLeft() == below);
     if (QApplication::isEffectEnabled(Qt::UI_AnimateCombo) 

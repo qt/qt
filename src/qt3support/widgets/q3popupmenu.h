@@ -54,8 +54,8 @@ class Q_COMPAT_EXPORT Q3PopupMenu : public QMenu
 {
     Q_OBJECT
 public:
-    inline Q3PopupMenu(QWidget *parent = 0, const char * =0) : QMenu(parent)
-    { }
+    inline Q3PopupMenu(QWidget *parent = 0, const char *name = 0) : QMenu(parent)
+    { setObjectName(QLatin1String(name)); }
 
     inline int exec() { return findIdForAction(QMenu::exec()); }
     inline int exec(const QPoint & pos, int indexAtPoint = 0) {
@@ -64,8 +64,8 @@ public:
 
     void setFrameRect(QRect) {}
     QRect frameRect() const { return QRect(); }
-    enum DummyFrame { Box, Sunken, Plain, Raised, MShadow, NoFrame, Panel, StyledPanel, 
-                      HLine, VLine, GroupBoxPanel, WinPanel, ToolBarPanel, MenuBarPanel, 
+    enum DummyFrame { Box, Sunken, Plain, Raised, MShadow, NoFrame, Panel, StyledPanel,
+                      HLine, VLine, GroupBoxPanel, WinPanel, ToolBarPanel, MenuBarPanel,
                       PopupPanel, LineEditPanel, TabWidgetPanel, MShape };
     void setFrameShadow(DummyFrame) {}
     DummyFrame frameShadow() const { return Plain; }
@@ -75,10 +75,10 @@ public:
     int frameStyle() const  { return 0; }
     int frameWidth() const { return 0; }
     void setLineWidth(int) {}
-    int lineWidth() const { return 0; }    
+    int lineWidth() const { return 0; }
     void setMargin(int margin) { setContentsMargins(margin, margin, margin, margin); }
-    int margin() const 
-    { int margin; int dummy; getContentsMargins(&margin, &dummy, &dummy, &dummy);  return margin; }    
+    int margin() const
+    { int margin; int dummy; getContentsMargins(&margin, &dummy, &dummy, &dummy);  return margin; }
     void setMidLineWidth(int) {}
     int midLineWidth() const { return 0; }
 

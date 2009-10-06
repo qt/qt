@@ -57,7 +57,7 @@ int main(int argv, char **args)
 //![0]
 
 //![2]
-    s12>addTransition(quitButton, SIGNAL(clicked()), s12);
+    s12->addTransition(quitButton, SIGNAL(clicked()), s12);
 //![2]
 
 //![1]
@@ -71,7 +71,7 @@ int main(int argv, char **args)
   QButton *interruptButton = new QPushButton("Interrupt Button");
 
 //![3]
-    QHistoryState *s1h = s1->addHistoryState();
+    QHistoryState *s1h = new QHistoryState(s1);
 
     QState *s3 = new QState();
     s3->assignProperty(label, "text", "In s3");

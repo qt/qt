@@ -5130,7 +5130,8 @@ void QWidgetPrivate::render_helper(QPainter *painter, const QPoint &targetOffset
             return;
 
         QPixmap pixmap(size);
-        if (!(renderFlags & QWidget::DrawWindowBackground))
+        if (!(renderFlags & QWidget::DrawWindowBackground)
+            || !q->palette().brush(q->backgroundRole()).isOpaque())
             pixmap.fill(Qt::transparent);
         q->render(&pixmap, QPoint(), toBePainted, renderFlags);
 
@@ -11447,7 +11448,7 @@ QWidget *QWidgetPrivate::widgetInNavigationDirection(Direction direction)
 
         const QRect targetCandidateRect = targetCandidate->rect().translated(targetCandidate->mapToGlobal(QPoint()));
 
-        // For focus proxies, the child widget handling the focus can have keypad navigation focus, 
+        // For focus proxies, the child widget handling the focus can have keypad navigation focus,
         // but the owner of the proxy cannot.
         // Additionally, empty widgets should be ignored.
         if (targetCandidate->focusProxy() || targetCandidateRect.isEmpty())

@@ -805,7 +805,6 @@ QScriptEnginePrivate::QScriptEnginePrivate()
     JSC::JSGlobalObject *globalObject = new (globalData)QScript::GlobalObject();
 
     JSC::ExecState* exec = globalObject->globalExec();
-    *thisRegisterForFrame(exec) = JSC::JSValue();
 
     scriptObjectStructure = QScriptObject::createStructure(globalObject->objectPrototype());
 
@@ -1079,12 +1078,13 @@ JSC::JSValue QScriptEnginePrivate::toUsableValue(JSC::JSValue value)
 /*!
     \internal
     Return the 'this' value for a given context
-    The result may be null for the global context
 */
 JSC::JSValue QScriptEnginePrivate::thisForContext(JSC::ExecState *frame)
 {
     if (frame->codeBlock() != 0) {
         return frame->thisValue();
+    } else if(frame == frame->lexicalGlobalObject()->globalExec()) {
+        return frame->globalThisValue();
     } else {
         JSC::Register *thisRegister = thisRegisterForFrame(frame);
         return thisRegister->jsValue();
@@ -2168,7 +2168,7 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     exec->clearException();
     JSC::DynamicGlobalObjectScope dynamicGlobalObjectScope(exec, exec->scopeChain()->globalObject());
 
-    JSC::EvalExecutable executable(source);
+    JSC::EvalExecutable executable(exec, source);
     JSC::JSObject* error = executable.compile(exec, exec->scopeChain());
     if (error) {
         exec->setException(error);

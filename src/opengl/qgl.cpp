@@ -3781,6 +3781,11 @@ bool QGLWidget::event(QEvent *e)
         glFinish();
         doneCurrent();
     } else if (e->type() == QEvent::ParentChange) {
+        // if we've reparented a window that has the current context
+        // bound, we need to rebind that context to the new window id
+        if (d->glcx == QGLContext::currentContext())
+            makeCurrent();
+
         if (d->glcx->d_func()->screen != d->xinfo.screen() || testAttribute(Qt::WA_TranslucentBackground)) {
             setContext(new QGLContext(d->glcx->requestedFormat(), this));
             // ### recreating the overlay isn't supported atm

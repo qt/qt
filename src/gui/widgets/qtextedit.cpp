@@ -1220,8 +1220,35 @@ void QTextEdit::keyPressEvent(QKeyEvent *e)
             break;
     }
 #endif
+#ifndef QT_NO_SHORTCUT
 
-    if (!(d->control->textInteractionFlags() & Qt::TextEditable)) {
+    Qt::TextInteractionFlags tif = d->control->textInteractionFlags();
+
+    if (tif & Qt::TextSelectableByKeyboard){
+        if (e == QKeySequence::SelectPreviousPage) {
+            e->accept();
+            d->pageUpDown(QTextCursor::Up, QTextCursor::KeepAnchor);
+            return;
+        } else if (e ==QKeySequence::SelectNextPage) {
+            e->accept();
+            d->pageUpDown(QTextCursor::Down, QTextCursor::KeepAnchor);
+            return;
+        }
+    }
+    if (tif & (Qt::TextSelectableByKeyboard | Qt::TextEditable)) {
+        if (e == QKeySequence::MoveToPreviousPage) {
+            e->accept();
+            d->pageUpDown(QTextCursor::Up, QTextCursor::MoveAnchor);
+            return;
+        } else if (e == QKeySequence::MoveToNextPage) {
+            e->accept();
+            d->pageUpDown(QTextCursor::Down, QTextCursor::MoveAnchor);
+            return;
+        }
+    }
+#endif // QT_NO_SHORTCUT
+
+    if (!(tif & Qt::TextEditable)) {
         switch (e->key()) {
             case Qt::Key_Space:
                 e->accept();
@@ -1247,26 +1274,6 @@ void QTextEdit::keyPressEvent(QKeyEvent *e)
         }
         return;
     }
-
-#ifndef QT_NO_SHORTCUT
-    if (e == QKeySequence::MoveToPreviousPage) {
-            e->accept();
-            d->pageUpDown(QTextCursor::Up, QTextCursor::MoveAnchor);
-            return;
-    } else if (e == QKeySequence::MoveToNextPage) {
-            e->accept();
-            d->pageUpDown(QTextCursor::Down, QTextCursor::MoveAnchor);
-            return;
-    } else if (e == QKeySequence::SelectPreviousPage) {
-            e->accept();
-            d->pageUpDown(QTextCursor::Up, QTextCursor::KeepAnchor);
-            return;
-    } else if (e ==QKeySequence::SelectNextPage) {
-            e->accept();
-            d->pageUpDown(QTextCursor::Down, QTextCursor::KeepAnchor);
-            return;
-    }
-#endif // QT_NO_SHORTCUT
 
     {
         QTextCursor cursor = d->control->textCursor();

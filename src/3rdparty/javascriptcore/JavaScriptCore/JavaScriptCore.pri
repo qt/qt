@@ -36,7 +36,6 @@ GENERATED_SOURCES_DIR_SLASH = $${GENERATED_SOURCES_DIR}$${QMAKE_DIR_SEP}
 win32-* {
     LIBS += -lwinmm
 }
-
 contains(JAVASCRIPTCORE_JIT,yes): DEFINES+=ENABLE_JIT=1
 contains(JAVASCRIPTCORE_JIT,no): DEFINES+=ENABLE_JIT=0
 
@@ -53,7 +52,10 @@ win32-* {
     }
 }
 
-wince*: SOURCES += $$QT_SOURCE_TREE/src/3rdparty/ce-compat/ce_time.cpp
+wince* {
+    SOURCES += $$QT_SOURCE_TREE/src/3rdparty/ce-compat/ce_time.cpp
+    DEFINES += WINCEBASIC
+}
 
 include(pcre/pcre.pri)
 
@@ -134,6 +136,10 @@ win32-*|wince* {
 } else {
     SOURCES += jit/ExecutableAllocatorPosix.cpp \
                runtime/MarkStackPosix.cpp
+}
+
+!contains(DEFINES, USE_SYSTEM_MALLOC) {
+    SOURCES += wtf/TCSystemAlloc.cpp
 }
 
 # AllInOneFile.cpp helps gcc analize and optimize code

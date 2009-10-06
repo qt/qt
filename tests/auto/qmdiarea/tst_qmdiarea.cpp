@@ -1759,7 +1759,7 @@ void tst_QMdiArea::tileSubWindows()
     // Horizontal scroll bar.
     QScrollBar *hBar = workspace.horizontalScrollBar();
     QCOMPARE(workspace.horizontalScrollBarPolicy(), Qt::ScrollBarAsNeeded);
-    QVERIFY(hBar->isVisible());
+    QTRY_VERIFY(hBar->isVisible());
     QCOMPARE(hBar->value(), 0);
     QCOMPARE(hBar->minimum(), 0);
 
