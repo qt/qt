@@ -54,6 +54,7 @@ private slots:
     void scope();
     void signalParameterTypes();
     void objectsCompareAsEqual();
+    void scriptAccess();
 
 private:
     QmlEngine engine;
@@ -598,6 +599,20 @@ void tst_qmlecmascript::aliasPropertyAndBinding()
 
     QCOMPARE(object->property("c2").toInt(), 19);
     QCOMPARE(object->property("c3").toInt(), 19);
+}
+
+/*
+Tests that only methods of Script {} blocks are exposed.
+*/
+void tst_qmlecmascript::scriptAccess()
+{
+    QmlComponent component(&engine, TEST_FILE("scriptAccess.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").toInt(), 10);
+    QCOMPARE(object->property("test2").toInt(), 19);
+    QCOMPARE(object->property("test3").toInt(), 0);
 }
 
 QTEST_MAIN(tst_qmlecmascript)
