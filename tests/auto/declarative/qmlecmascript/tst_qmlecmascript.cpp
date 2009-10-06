@@ -542,6 +542,8 @@ void tst_qmlecmascript::scope()
     QCOMPARE(object->property("test6").toInt(), 1);
     QCOMPARE(object->property("test7").toInt(), 2);
     QCOMPARE(object->property("test8").toInt(), 2);
+    QCOMPARE(object->property("test9").toInt(), 1);
+    QCOMPARE(object->property("test10").toInt(), 3);
 }
 
 /*

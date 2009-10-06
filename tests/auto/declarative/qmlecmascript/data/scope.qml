@@ -31,6 +31,10 @@ Item {
         property int binding4: myNestedFunction()
     }
 
+    ScopeObject {
+        id: CompObject
+    }
+
     property alias test1: Root.binding
     property alias test2: NestedObject.binding
     property alias test3: Root.binding2
@@ -39,4 +43,6 @@ Item {
     property alias test6: NestedObject.binding3
     property alias test7: Root.binding4
     property alias test8: NestedObject.binding4
+    property alias test9: CompObject.binding
+    property alias test10: CompObject.binding2
 }
