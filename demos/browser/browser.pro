@@ -80,6 +80,10 @@ mac {
     ICON = browser.icns
     QMAKE_INFO_PLIST = Info_mac.plist
     TARGET = Browser
+
+    # No 64-bit Flash on Mac, so build the browser 32-bit
+    CONFIG -= x86_64
+    CONFIG += x86
 }
 
 wince*: {
