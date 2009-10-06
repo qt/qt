@@ -143,6 +143,8 @@ QFxRepeater::~QFxRepeater()
     based on the order they are created.
 
     Models can also be created directly in QML, using a \l{ListModel} or \l{XmlListModel}.
+
+    \sa {qmlmodels}{Data Models}
 */
 QVariant QFxRepeater::model() const
 {
@@ -154,15 +156,15 @@ void QFxRepeater::setModel(const QVariant &model)
 {
     Q_D(QFxRepeater);
     clear();
-    /*
     if (d->model) {
         disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
         disconnect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
+        /*
         disconnect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
         disconnect(d->model, SIGNAL(destroyingItem(QFxItem*)), this, SLOT(destroyingItem(QFxItem*)));
-    }
     */
+    }
     d->dataSource = model;
     QObject *object = qvariant_cast<QObject*>(model);
     QFxVisualModel *vim = 0;
@@ -181,10 +183,10 @@ void QFxRepeater::setModel(const QVariant &model)
             dataModel->setModel(model);
     }
     if (d->model) {
-        /*
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
         connect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
+        /*
         connect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
         connect(d->model, SIGNAL(destroyingItem(QFxItem*)), this, SLOT(destroyingItem(QFxItem*)));
         */
@@ -291,4 +293,20 @@ void QFxRepeater::regenerate()
         }
     }
 }
+
+void QFxRepeater::itemsInserted(int, int)
+{
+    regenerate();
+}
+
+void QFxRepeater::itemsRemoved(int, int)
+{
+    regenerate();
+}
+
+void QFxRepeater::itemsMoved(int,int,int)
+{
+    regenerate();
+}
+
 QT_END_NAMESPACE
