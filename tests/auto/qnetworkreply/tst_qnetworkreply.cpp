@@ -3993,10 +3993,14 @@ void tst_QNetworkReply::httpConnectionCount()
     QTime time;
     time.start();
 
-    while(pendingConnectionCount != 6) {
-        QCoreApplication::instance()->processEvents();
-        while (server.nextPendingConnection())
+    while(pendingConnectionCount <= 20) {
+        QTestEventLoop::instance().enterLoop(1);
+        QTcpSocket *socket = server.nextPendingConnection();
+        while (socket != 0) {
             pendingConnectionCount++;
+            socket->setParent(&server);
+            socket = server.nextPendingConnection();
+        }
 
         // at max. wait 10 sec
         if (time.elapsed() > 10000)
