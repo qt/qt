@@ -6,23 +6,23 @@
 import Qt 4.6
 
 Row {
-    id: Pages
+    id: pages
     height: 200
     resources: [
         Component {
-            id: WebViewPage
+            id: webViewPage
                 Rectangle {
-                    width: WV.width
-                    height: WV.height
+                    width: webView.width
+                    height: webView.height
                     WebView {
-                        id: WV
-                        newWindowComponent: WebViewPage
-                        newWindowParent: Pages
+                        id: webView
+                        newWindowComponent: webViewPage
+                        newWindowParent: pages
                         url: "newwindows.html"
                     }
                 }
         }
     ]
     width: 500
-    Loader { sourceComponent: WebViewPage }
+    Loader { sourceComponent: webViewPage }
 }

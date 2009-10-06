@@ -1,6 +1,6 @@
 import Qt 4.6
 import "../../flickr/common"
-import "../../flickr/mobile" 
+import "../../flickr/mobile"
 
 Item {
     id: wrapper
@@ -9,7 +9,7 @@ Item {
         spacing: 20
         Row{
             spacing: 4
-            Text { 
+            Text {
                 width: 100
                 text: "Screen name:"
                 font.pointSize: 10; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
@@ -29,7 +29,7 @@ Item {
                     font.bold: true
                     color: "#151515"; selectionColor: "green"
                     Keys.forwardTo: [(tabber), (nameIn)]
-                    Item { 
+                    Item {
                         id: tabber
                         //Note: it's not working yet
                         Keys.onPressed: {if(event.key == Qt.Key_Tab){print('Tab works!'); passIn.focus = true; accept(); }}
@@ -39,7 +39,7 @@ Item {
         }
         Row{
             spacing: 4
-            Text { 
+            Text {
                 width: 100
                 text: "Password:"
                 font.pointSize: 10; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
@@ -71,7 +71,7 @@ Item {
                 height: 32
                 id: login
                 text: "Log in"
-                onClicked: {RssModel.authName=nameIn.text; RssModel.authPass=passIn.text; RssModel.tags='my timeline';}
+                onClicked: {rssModel.authName=nameIn.text; rssModel.authPass=passIn.text; rssModel.tags='my timeline';}
             }
             Button {
                 x: 120
@@ -79,7 +79,7 @@ Item {
                 height: 32
                 id: guest
                 text: "Guest"
-                onClicked: {RssModel.authName='-'; Screen.setMode(true);}
+                onClicked: {rssModel.authName='-'; screen.setMode(true);}
             }
         }
     }

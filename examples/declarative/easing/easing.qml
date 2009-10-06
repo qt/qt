@@ -1,13 +1,13 @@
 import Qt 4.6
 
 Rectangle {
-    id: Window
+    id: window
     width: 640
-    height: Layout.height
+    height: layout.height
     color: "white"
 
     ListModel {
-        id: EasingTypes
+        id: easingTypes
         ListElement { type: "easeLinear" }
         ListElement { type: "easeInQuad" }
         ListElement { type: "easeOutQuad" }
@@ -50,23 +50,23 @@ Rectangle {
         ListElement { type: "easeInOutBounce" }
         ListElement { type: "easeOutInBounce" }
     }
-    
+
     Column {
-        id: Layout
-        anchors.left: Window.left
-        anchors.right: Window.right
+        id: layout
+        anchors.left: window.left
+        anchors.right: window.right
         Repeater {
-            model: EasingTypes
+            model: easingTypes
             Component {
                 Text {
                     text: type
                     height: 18
                     font.italic: true
                     x: SequentialAnimation {
-                        id: Anim
+                        id: anim
                         NumberAnimation {
                             from: 0
-                            to: Window.width / 2
+                            to: window.width / 2
                             easing: type
                             duration: 1000
                         }
@@ -75,14 +75,14 @@ Rectangle {
                         }
                         NumberAnimation {
                             to: 0
-                            from: Window.width / 2
+                            from: window.width / 2
                             easing: type
                             duration: 1000
                         }
                     }
                     children: [
                         MouseRegion {
-                            onClicked: { Anim.running=true }
+                            onClicked: { anim.running=true }
                             anchors.fill: parent
                         }
                     ]

@@ -14,7 +14,18 @@ class tst_sql : public QObject
 {
     Q_OBJECT
 public:
-    tst_sql() {}
+    tst_sql()
+    {
+        qApp->setApplicationName("tst_sql");
+        qApp->setOrganizationName("Nokia");
+        qApp->setOrganizationDomain("nokia.com");
+        engine = new QmlEngine;
+    }
+
+    ~tst_sql()
+    {
+        delete engine;
+    }
 
 private slots:
     void initTestCase();
@@ -31,7 +42,7 @@ private slots:
 
 private:
     QString dbDir() const;
-    QmlEngine engine;
+    QmlEngine *engine;
 };
 
 class QWebPageWithJavaScriptConsoleMessages : public QWebPage {
@@ -67,14 +78,16 @@ void tst_sql::cleanupTestCase()
 
 QString tst_sql::dbDir() const
 {
-    return QString(SRCDIR)+"/output";
+    static QString tmpd = QDir::tempPath()+"/tst_sql_output-"
+        + QDateTime::currentDateTime().toString(QLatin1String("yyyyMMddhhmmss"));
+    return tmpd;
 }
 
 void tst_sql::checkDatabasePath()
 {
     // Check default storage path (we can't use it since we don't want to mess with user's data)
-    QVERIFY(engine.offlineStoragePath().contains("Nokia"));
-    QVERIFY(engine.offlineStoragePath().contains("OfflineStorage"));
+    QVERIFY(engine->offlineStoragePath().contains("Nokia"));
+    QVERIFY(engine->offlineStoragePath().contains("OfflineStorage"));
 }
 
 void tst_sql::testQml_data()
@@ -142,8 +155,8 @@ void tst_sql::testQml()
         "import Qt 4.6\n"
         "Text { Script { source: \""+jsfile+"\" } text: test() }";
 
-    engine.setOfflineStoragePath(dbDir());
-    QmlComponent component(&engine, qml.toUtf8(), QUrl::fromLocalFile(SRCDIR "/empty.qml")); // just a file for relative local imports
+    engine->setOfflineStoragePath(dbDir());
+    QmlComponent component(engine, qml.toUtf8(), QUrl::fromLocalFile(SRCDIR "/empty.qml")); // just a file for relative local imports
     QFxText *text = qobject_cast<QFxText*>(component.create());
     QVERIFY(text != 0);
     QCOMPARE(text->text(),result);

@@ -132,7 +132,11 @@ public:
     \brief The VisualItemModel allows items to be provided to a view.
 
     The children of the VisualItemModel are provided in a model which
-    can be used in a view.  An item can determine its index within the
+    can be used in a view.  Note that no delegate should be
+    provided to a view since the VisualItemModel contains the
+    visual delegate (items).
+
+    An item can determine its index within the
     model via the VisualItemModel.index attached property.
 
     The example below places three colored rectangles in a ListView.

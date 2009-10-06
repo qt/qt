@@ -1,16 +1,16 @@
 import Qt 4.6
 
 Rectangle {
-    id: Page
+    id: page
     width: 480
     height: 200
     color: "LightGrey"
     Text {
-        id: HelloText
+        id: helloText
         text: "Hello world!"
         font.pointSize: 24
         font.bold: true
         y: 30
-        anchors.horizontalCenter: Page.horizontalCenter
+        anchors.horizontalCenter: page.horizontalCenter
     }
 }

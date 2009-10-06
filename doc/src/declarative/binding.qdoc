@@ -38,7 +38,8 @@ The QML mechanisms of data binding can also be used to bind Qt C++ objects.
 
 The data binding framework is based on Qt's property system (see the Qt documentation for more details on this system). If a binding is meant to be dynamic (where changes in one object are reflected in another object), \c NOTIFY must be specified for the property being tracked. If \c NOTIFY is not specified, any binding to that property will be an 'intialization' binding (the tracking object will be updated only once with the initial value of the tracked object).
 
-Relevant items can also be bound to the contents of a Qt model. For example, ListView can make use of data from a QListModelInterface-derived model. (QListModelInterface is part of the next generation Model/View architecture being developed for Qt.)
+Relevant items can also be bound to the contents of a Qt model.
+For example, ListView can make use of data from a QAbstractItemModel-derived model.
 
 
 \section1 Passing Data Between C++ and QML
@@ -106,5 +107,7 @@ Binding { target: screen; property: "brightness"; value: slider.value }
 \endcode
 
 The \l QBindableMap class provides a convenient way to make data visible to the bind engine.
+
+C++ \l {qmlmodels}{Data Models} may also be provided to QML.
 
 */

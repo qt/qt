@@ -10,9 +10,9 @@ Rectangle {
     // Define a delegate component.  A component will be
     // instantiated for each visible item in the list.
     Component {
-        id: PetDelegate
+        id: petDelegate
         Item {
-            id: Wrapper
+            id: wrapper
             width: 200; height: 50
             Column {
                 Text { text: 'Name: ' + name }
@@ -24,8 +24,8 @@ Rectangle {
             states: [
                 State {
                     name: "Current"
-                    when: Wrapper.ListView.isCurrentItem
-                    PropertyChanges { target: Wrapper; x: 10 }
+                    when: wrapper.ListView.isCurrentItem
+                    PropertyChanges { target: wrapper; x: 10 }
                 }
             ]
             transitions: [
@@ -41,17 +41,17 @@ Rectangle {
     // is set to false in the ListView so that we can control how the
     // highlight moves to the current item.
     Component {
-        id: PetHighlight
+        id: petHighlight
         Rectangle {
             width: 200; height: 50; color: "#FFFF88"
-            y: SpringFollow { source: List1.currentItem.y; spring: 3; damping: 0.1 }
+            y: SpringFollow { source: list1.currentItem.y; spring: 3; damping: 0.1 }
         }
     }
     ListView {
-        id: List1
+        id: list1
         width: 200; height: parent.height
-        model: MyPetsModel; delegate: PetDelegate
-        highlight: PetHighlight; highlightFollowsCurrentItem: false
+        model: MyPetsModel; delegate: petDelegate
+        highlight: petHighlight; highlightFollowsCurrentItem: false
         focus: true
     }
 }

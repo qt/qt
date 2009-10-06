@@ -1,23 +1,23 @@
 import Qt 4.6
 
 Rectangle {
-    id: Page
+    id: page
     width: 480
     height: 200
     color: "LightGrey"
     Text {
-        id: HelloText
+        id: helloText
         text: "Hello world!"
         font.pointSize: 24
         font.bold: true
         y: 30
-        anchors.horizontalCenter: Page.horizontalCenter
+        anchors.horizontalCenter: page.horizontalCenter
         states: [
             State {
                 name: "down"
-                when: MouseRegionId.pressed == true
+                when: mouseRegion.pressed == true
                 PropertyChanges {
-                    target: HelloText
+                    target: helloText
                     y: 160
                     color: "red"
                 }
@@ -39,11 +39,11 @@ Rectangle {
             }
         ]
     }
-    MouseRegion { id: MouseRegionId; anchors.fill: HelloText }
+    MouseRegion { id: mouseRegion; anchors.fill: helloText }
     Grid {
-        id: ColorPicker
+        id: colorPicker
         x: 0
-        anchors.bottom: Page.bottom
+        anchors.bottom: page.bottom
         width: 120; height: 50
         rows: 2; columns: 3
         Cell { color: "#ff0000" }

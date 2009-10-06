@@ -1,39 +1,39 @@
 import Qt 4.6
 
 Item {
-    id: Container
+    id: container
 
     signal clicked
 
     property string text
 
     Image {
-        id: ButtonImage
+        id: buttonImage
         source: "pics/button.png"
     }
     Image {
-        id: Pressed
+        id: pressed
         source: "pics/button-pressed.png"
         opacity: 0
     }
     MouseRegion {
-        id: MyMouseRegion
-        anchors.fill: ButtonImage
-        onClicked: { Container.clicked(); }
+        id: mouseRegion
+        anchors.fill: buttonImage
+        onClicked: { container.clicked(); }
     }
     Text {
         font.bold: true
         color: "white"
-        anchors.centerIn: ButtonImage
-        text: Container.text
+        anchors.centerIn: buttonImage
+        text: container.text
     }
-    width: ButtonImage.width
+    width: buttonImage.width
     states: [
         State {
             name: "Pressed"
-            when: MyMouseRegion.pressed == true
+            when: mouseRegion.pressed == true
             PropertyChanges {
-                target: Pressed
+                target: pressed
                 opacity: 1
             }
         }
