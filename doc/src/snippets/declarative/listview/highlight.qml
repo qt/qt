@@ -11,9 +11,9 @@ Rectangle {
     // instantiated for each visible item in the list.
 //! [0]
     Component {
-        id: Delegate
+        id: delegate
         Item {
-            id: Wrapper
+            id: wrapper
             width: 180; height: 40
             Column {
                 x: 5; y: 5
@@ -28,22 +28,22 @@ Rectangle {
     // highlight moves to the current item.
 //! [1]
     Component {
-        id: Highlight
+        id: highlight
         Rectangle {
             width: 180; height: 40
             color: "lightsteelblue"; radius: 5
             y: SpringFollow {
-                source: List.currentItem.y
+                source: list.currentItem.y
                 spring: 3
                 damping: 0.2
             }
         }
     }
     ListView {
-        id: List
+        id: list
         width: parent.height; height: parent.height
-        model: ContactModel; delegate: Delegate
-        highlight: Highlight
+        model: ContactModel; delegate: delegate
+        highlight: highlight
         highlightFollowsCurrentItem: false
         focus: true
     }
