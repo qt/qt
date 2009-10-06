@@ -6510,7 +6510,7 @@ void tst_QGraphicsItem::QTBUG_4233_updateCachedWithSceneRect()
     view.show();
     QTRY_COMPARE(QApplication::activeWindow(), (QWidget *)&view);
 
-    QCOMPARE(tester->repaints, 1);
+    QTRY_COMPARE(tester->repaints, 1);
 
     scene.update(); // triggers "updateAll" optimization
     qApp->processEvents();
