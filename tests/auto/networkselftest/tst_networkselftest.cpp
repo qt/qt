@@ -46,6 +46,10 @@
 class tst_NetworkSelfTest: public QObject
 {
     Q_OBJECT
+    QHostAddress cachedIpAddress;
+public:
+    QHostAddress serverIpAddress();
+
 private slots:
     void hostTest();
     void dnsResolution_data();
@@ -303,6 +307,16 @@ static void netChat(int port, const QList<Chat> &chat)
     }
 }
 
+QHostAddress tst_NetworkSelfTest::serverIpAddress()
+{
+    if (cachedIpAddress.protocol() == QAbstractSocket::UnknownNetworkLayerProtocol) {
+        // need resolving
+        QHostInfo resolved = QHostInfo::fromName(QtNetworkSettings::serverName());
+        cachedIpAddress = resolved.addresses().first();
+    }
+    return cachedIpAddress;
+}
+
 void tst_NetworkSelfTest::hostTest()
 {
     // this is a localhost self-test
@@ -331,6 +345,9 @@ void tst_NetworkSelfTest::dnsResolution()
     QHostInfo resolved = QHostInfo::fromName(hostName);
     QVERIFY2(resolved.error() == QHostInfo::NoError,
              QString("Failed to resolve hostname %1: %2").arg(hostName, resolved.errorString()).toLocal8Bit());
+    QVERIFY2(resolved.addresses().size() > 0, "Got 0 addresses for server IP");
+
+    cachedIpAddress = resolved.addresses().first();
 }
 
 void tst_NetworkSelfTest::serverReachability()
@@ -469,7 +486,18 @@ void tst_NetworkSelfTest::httpsServer()
 void tst_NetworkSelfTest::httpProxy()
 {
     netChat(3128, QList<Chat>()
-            // proxy GET
+            // proxy GET by IP
+            << Chat::send("GET http://" + serverIpAddress().toString().toLatin1() + "/ HTTP/1.0\r\n"
+                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Proxy-connection: close\r\n"
+                          "\r\n")
+            << Chat::expect("HTTP/1.")
+            << Chat::discardUntil(" ")
+            << Chat::expect("200 ")
+            << Chat::DiscardUntilDisconnect
+
+            // proxy GET by hostname
+            << Chat::Reconnect
             << Chat::send("GET http://" + QtNetworkSettings::serverName().toLatin1() + "/ HTTP/1.0\r\n"
                           "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
                           "Proxy-connection: close\r\n"
@@ -479,7 +507,17 @@ void tst_NetworkSelfTest::httpProxy()
             << Chat::expect("200 ")
             << Chat::DiscardUntilDisconnect
 
-            // proxy CONNECT
+            // proxy CONNECT by IP
+            << Chat::Reconnect
+            << Chat::send("CONNECT " + serverIpAddress().toString().toLatin1() + ":21 HTTP/1.0\r\n"
+                          "\r\n")
+            << Chat::expect("HTTP/1.")
+            << Chat::discardUntil(" ")
+            << Chat::expect("200 ")
+            << Chat::discardUntil("\r\n\r\n")
+            << ftpChat()
+
+            // proxy CONNECT by hostname
             << Chat::Reconnect
             << Chat::send("CONNECT " + QtNetworkSettings::serverName().toLatin1() + ":21 HTTP/1.0\r\n"
                           "\r\n")
@@ -487,7 +525,8 @@ void tst_NetworkSelfTest::httpProxy()
             << Chat::discardUntil(" ")
             << Chat::expect("200 ")
             << Chat::discardUntil("\r\n\r\n")
-            << ftpChat());
+            << ftpChat()
+            );
 }
 
 void tst_NetworkSelfTest::httpProxyBasicAuth()
@@ -540,11 +579,22 @@ static const char handshakeAuthPassword[] = "\5\1\2\1\12qsockstest\10password";
 static const char handshakeOkPasswdAuth[] = "\5\2\1\0";
 static const char handshakeAuthNotOk[] = "\5\377";
 static const char connect1[] = "\5\1\0\1\177\0\0\1\0\25"; // Connect IPv4 127.0.0.1 port 21
+static const char connect1a[] = "\5\1\0\1"; // just "Connect to IPv4"
+static const char connect1b[] = "\0\25"; // just "port 21"
 static const char connect2[] = "\5\1\0\3\11localhost\0\25"; // Connect hostname localhost 21
+static const char connect2a[] = "\5\1\0\3"; // just "Connect to hostname"
 static const char connected[] = "\5\0\0";
+
+#define QBA(x) (QByteArray::fromRawData(x, -1 + sizeof(x)))
 
 void tst_NetworkSelfTest::socks5Proxy()
 {
+    union {
+        char buf[4];
+        quint32 data;
+    } ip4Address;
+    ip4Address.data = qToBigEndian(serverIpAddress().toIPv4Address());
+
     netChat(1080, QList<Chat>()
             // IP address connection
             << Chat::send(QByteArray(handshakeNoAuth, -1 + sizeof handshakeNoAuth))
@@ -555,11 +605,31 @@ void tst_NetworkSelfTest::socks5Proxy()
             << Chat::skipBytes(6) // the server's local address and port
             << ftpChat()
 
-            // hostname connection
+            // connect by IP
+            << Chat::Reconnect
+            << Chat::send(QByteArray(handshakeNoAuth, -1 + sizeof handshakeNoAuth))
+            << Chat::expect(QByteArray(handshakeOkNoAuth, -1 + sizeof handshakeOkNoAuth))
+            << Chat::send(QBA(connect1a) + QByteArray::fromRawData(ip4Address.buf, 4) + QBA(connect1b))
+            << Chat::expect(QByteArray(connected, -1 + sizeof connected))
+            << Chat::expect("\1") // IPv4 address following
+            << Chat::skipBytes(6) // the server's local address and port
+            << ftpChat()
+
+            // connect to "localhost" by hostname
             << Chat::Reconnect
             << Chat::send(QByteArray(handshakeNoAuth, -1 + sizeof handshakeNoAuth))
             << Chat::expect(QByteArray(handshakeOkNoAuth, -1 + sizeof handshakeOkNoAuth))
             << Chat::send(QByteArray(connect2, -1 + sizeof connect2))
+            << Chat::expect(QByteArray(connected, -1 + sizeof connected))
+            << Chat::expect("\1") // IPv4 address following
+            << Chat::skipBytes(6) // the server's local address and port
+            << ftpChat()
+
+            // connect to server by its official name
+            << Chat::Reconnect
+            << Chat::send(QByteArray(handshakeNoAuth, -1 + sizeof handshakeNoAuth))
+            << Chat::expect(QByteArray(handshakeOkNoAuth, -1 + sizeof handshakeOkNoAuth))
+            << Chat::send(QBA(connect2a) + char(QtNetworkSettings::serverName().size()) + QtNetworkSettings::serverName().toLatin1() + QBA(connect1b))
             << Chat::expect(QByteArray(connected, -1 + sizeof connected))
             << Chat::expect("\1") // IPv4 address following
             << Chat::skipBytes(6) // the server's local address and port
