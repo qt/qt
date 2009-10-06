@@ -157,6 +157,7 @@ private slots:
     void shortcutsDeletion();
     void painterStateProtectionOnWindowFrame();
     void ensureClipping();
+    void widgetSendsGeometryChanges();
     void respectHFW();
 
     // Task fixes
@@ -2560,6 +2561,76 @@ void tst_QGraphicsWidget::ensureClipping()
     QTRY_VERIFY(scene.drawnItems.contains(clipWidget));
     QVERIFY(scene.drawnItems.contains(childWidget));
     QVERIFY(scene.drawnItems.contains(childitem));
+}
+
+class ItemChangeTester : public QGraphicsWidget
+{
+public:
+    ItemChangeTester()
+    { setFlag(ItemSendsGeometryChanges); clear(); }
+    ItemChangeTester(QGraphicsItem *parent) : QGraphicsWidget(parent)
+    { setFlag(ItemSendsGeometryChanges); clear(); }
+
+    void clear()
+    {
+        changes.clear();
+        values.clear();
+        oldValues.clear();
+    }
+    QList<GraphicsItemChange> changes;
+    QList<QVariant> values;
+    QList<QVariant> oldValues;
+protected:
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value)
+    {
+        changes << change;
+        values << value;
+        switch (change) {
+        case QGraphicsItem::ItemPositionChange:
+            oldValues << pos();
+            break;
+        case QGraphicsItem::ItemPositionHasChanged:
+            break;
+        default:
+            break;
+        }
+        return value;
+    }
+};
+
+void tst_QGraphicsWidget::widgetSendsGeometryChanges()
+{
+    ItemChangeTester widget;
+    widget.setFlags(0);
+    widget.clear();
+
+    QPointF pos(10, 10);
+    widget.setPos(pos);
+
+    QCOMPARE(widget.pos(), pos);
+    QCOMPARE(widget.changes.size(), 0);
+
+    widget.setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
+    QCOMPARE(widget.changes.size(), 2);
+
+    widget.setPos(QPointF());
+    QCOMPARE(widget.changes.size(), 4);
+
+    QCOMPARE(widget.pos(), QPointF());
+
+    QRectF geometry(20, 20, 50, 50);
+    widget.setGeometry(geometry);
+    QCOMPARE(widget.changes.size(), 6);
+
+    QCOMPARE(widget.geometry(), geometry);
+
+    QCOMPARE(widget.changes, QList<QGraphicsItem::GraphicsItemChange>()
+         << QGraphicsItem::ItemFlagsChange
+         << QGraphicsItem::ItemFlagsHaveChanged
+         << QGraphicsItem::ItemPositionChange
+         << QGraphicsItem::ItemPositionHasChanged
+         << QGraphicsItem::ItemPositionChange
+         << QGraphicsItem::ItemPositionHasChanged);
 }
 
 class HFWWidget : public QGraphicsWidget
