@@ -5,6 +5,8 @@
 #include <QtDeclarative/qfxwebview.h>
 #include <QtWebKit/qwebpage.h>
 #include <QtWebKit/qwebframe.h>
+#include <QtCore/qdir.h>
+#include <QtCore/qfile.h>
 
 class tst_qfxwebview : public QObject
 {
@@ -13,14 +15,37 @@ public:
     tst_qfxwebview() {}
 
 private slots:
-    void testQmlFiles_data();
-    void testQmlFiles();
+    void testBasicProperties();
+    void cleanupTestCase();
+
 
 private:
     void checkNoErrors(const QmlComponent& component);
     QmlEngine engine;
+    QString tmpDir() const
+    {
+        static QString tmpd = QDir::tempPath()+"/tst_sql_output-"
+            + QDateTime::currentDateTime().toString(QLatin1String("yyyyMMddhhmmss"));
+        return tmpd;
+    }
 };
 
+void removeRecursive(const QString& dirname)
+{
+    QDir dir(dirname);
+    QFileInfoList entries(dir.entryInfoList(QDir::Dirs|QDir::Files|QDir::NoDotAndDotDot));
+    for (int i = 0; i < entries.count(); ++i)
+        if (entries[i].isDir())
+            removeRecursive(entries[i].filePath());
+        else
+            dir.remove(entries[i].fileName());
+    QDir().rmdir(dirname);
+}
+
+void tst_qfxwebview::cleanupTestCase()
+{
+    removeRecursive(tmpDir());
+}
 
 void tst_qfxwebview::checkNoErrors(const QmlComponent& component)
 {
@@ -37,21 +62,37 @@ void tst_qfxwebview::checkNoErrors(const QmlComponent& component)
     QVERIFY(!component.isError());
 }
 
-void tst_qfxwebview::testQmlFiles_data()
+void tst_qfxwebview::testBasicProperties()
 {
-    QTest::addColumn<QUrl>("qmlfile"); // The input file
-
-    QTest::newRow("creation") << QUrl::fromLocalFile(SRCDIR "/data/creation.qml");
-}
-
-void tst_qfxwebview::testQmlFiles()
-{
-    QFETCH(QUrl, qmlfile);
-
-    QmlComponent component(&engine, qmlfile);
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/basic.qml"));
     checkNoErrors(component);
+    QWebSettings::enablePersistentStorage(tmpDir());
+
     QFxWebView *wv = qobject_cast<QFxWebView*>(component.create());
     QVERIFY(wv != 0);
+    QTRY_COMPARE(wv->progress(), 1.0);
+    QCOMPARE(wv->title(),QString("Basic"));
+    wv->icon().save("test.png");
+    //QCOMPARE(wv->icon(),QPixmap(SRCDIR "/data/basic.ico"));
+    QCOMPARE(wv->statusText(),QString(""));
+    QFile htmlfile(SRCDIR "/data/basic.html");
+    QVERIFY(htmlfile.open(QIODevice::ReadOnly));
+    QString actualhtml____ = wv->html(); // "____" is to make errors line up for easier reading
+    QString expectedhtml = htmlfile.readAll();
+    actualhtml____.replace(QRegExp("\\s+"),"");
+    expectedhtml.replace(QRegExp("\\s+"),"");
+    QCOMPARE(actualhtml____,expectedhtml); // same, ignoring whitespace
+    QCOMPARE(wv->width(), 123.0);
+    QCOMPARE(wv->url(), QUrl::fromLocalFile(SRCDIR "/data/basic.html"));
+    QCOMPARE(wv->status(), QFxWebView::Ready);
+    QVERIFY(wv->reloadAction());
+    QVERIFY(wv->reloadAction()->isEnabled());
+    QVERIFY(wv->backAction());
+    QVERIFY(!wv->backAction()->isEnabled());
+    QVERIFY(wv->forwardAction());
+    QVERIFY(!wv->forwardAction()->isEnabled());
+    QVERIFY(wv->stopAction());
+    QVERIFY(!wv->stopAction()->isEnabled());
 }
 
 QTEST_MAIN(tst_qfxwebview)
