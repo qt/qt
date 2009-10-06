@@ -3384,6 +3384,8 @@ QString QUrlPrivate::canonicalHost() const
         const char *ptr = ba.constData();
         if (!_IPLiteral(&ptr))
             that->host.clear();
+        else
+            that->host = host.toLower();
     } else {
         that->host = qt_ACE_do(host, NormalizeAce);
     }
