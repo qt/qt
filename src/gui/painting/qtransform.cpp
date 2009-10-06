@@ -52,7 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#define Q_NEAR_CLIP 0.000001
+#define Q_NEAR_CLIP (sizeof(qreal) == sizeof(double) ? 0.000001 : 0.0001)
 
 #ifdef MAP
 #  undef MAP
