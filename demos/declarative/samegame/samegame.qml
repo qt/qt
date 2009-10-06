@@ -2,7 +2,7 @@ import Qt 4.6
 import "content"
 
 Rectangle {
-    id: Screen
+    id: screen
     width: 490; height: 720
 
     Script { source: "content/samegame.js" }
@@ -10,7 +10,7 @@ Rectangle {
     SystemPalette { id: activePalette; colorGroup: Qt.Active }
 
     Item {
-        width: parent.width; anchors.top: parent.top; anchors.bottom: ToolBar.top
+        width: parent.width; anchors.top: parent.top; anchors.bottom: toolBar.top
 
         Image {
             id: background
@@ -34,14 +34,14 @@ Rectangle {
     }
 
     Dialog { id: dialog; anchors.centerIn: parent; z: 21 }
-    Dialog { 
-        id: scoreName; anchors.centerIn: parent; z: 22; 
+    Dialog {
+        id: scoreName; anchors.centerIn: parent; z: 22;
         TextInput {
-            id: Editor
-            onAccepted: { 
-                if(scoreName.opacity==1&&Editor.text!="")
-                    sendHighScore(Editor.text);
-                scoreName.forceClose(); 
+            id: editor
+            onAccepted: {
+                if(scoreName.opacity==1&&editor.text!="")
+                    sendHighScore(editor.text);
+                scoreName.forceClose();
             }
             anchors.verticalCenter: parent.verticalCenter
             width: 72; focus: true
@@ -50,10 +50,10 @@ Rectangle {
     }
 
     Rectangle {
-        id: ToolBar
+        id: toolBar
         color: activePalette.window
         height: 32; width: parent.width
-        anchors.bottom: Screen.bottom
+        anchors.bottom: screen.bottom
 
         Button {
             id: btnA; text: "New Game"; onClicked: {initBoard();}
@@ -62,7 +62,7 @@ Rectangle {
         }
 
         Text {
-            id: Score
+            id: score
             text: "Score: " + gameCanvas.score; font.bold: true
             anchors.right: parent.right; anchors.rightMargin: 3
             anchors.verticalCenter: parent.verticalCenter

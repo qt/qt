@@ -1,12 +1,12 @@
 import Qt 4.6
 
 Item {
-    id: Page
-    height: MyText.height + 20
+    id: page
+    height: myText.height + 20
     property var text
     MouseRegion {
         anchors.fill: parent
-        drag.target: Page
+        drag.target: page
         drag.axis: "XandYAxis"
         drag.minimumX: 0
         drag.maximumX: 1000
@@ -24,8 +24,8 @@ Item {
         width: parent.width - 20
         height: parent.height - 20
         Text {
-            id: MyText
-            text: Page.text
+            id: myText
+            text: page.text
             width: parent.width
             clip: true
             wrap: true
