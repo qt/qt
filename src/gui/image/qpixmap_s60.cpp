@@ -664,7 +664,12 @@ void QS60PixmapData::setAlphaChannel(const QPixmap &alphaChannel)
 
 QImage QS60PixmapData::toImage() const
 {
-    return image;
+    QS60PixmapData *that = const_cast<QS60PixmapData*>(this);
+    that->beginDataAccess();
+    QImage copy = that->image.copy();
+    that->endDataAccess();
+
+    return copy;
 }
 
 QPaintEngine* QS60PixmapData::paintEngine() const

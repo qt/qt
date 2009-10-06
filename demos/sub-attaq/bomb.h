@@ -42,13 +42,9 @@
 #ifndef __BOMB__H__
 #define __BOMB__H__
 
-//Qt
-#include <QtGui/QGraphicsWidget>
-#include <QtCore/QAnimationGroup>
+#include "pixmapitem.h"
 
-class PixmapItem;
-
-class Bomb : public QGraphicsWidget
+class Bomb : public PixmapItem
 {
 Q_OBJECT
 public:
@@ -56,20 +52,16 @@ public:
         Left =  0,
         Right
     };
-    Bomb(QGraphicsItem * parent = 0, Qt::WindowFlags wFlags = 0);
+    Bomb();
     void launch(Direction direction);
     void destroy();
 
 signals:
-    void bombExplosed();
+    void bombExploded();
     void bombExecutionFinished();
 
 private slots:
     void onAnimationLaunchValueChanged(const QVariant &);
-
-private:
-    QAnimationGroup *launchAnimation;
-    PixmapItem *pixmapItem;
 };
 
 #endif //__BOMB__H__

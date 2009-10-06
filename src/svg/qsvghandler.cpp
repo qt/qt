@@ -3569,20 +3569,16 @@ bool QSvgHandler::startElement(const QString &localName,
      * a lookup by the qualified name here, but this is namespace aware, since
      * the XML namespace can only be bound to prefix "xml." */
     const QStringRef xmlSpace(attributes.value(QLatin1String("xml:space")));
-    if(xmlSpace.isNull())
-    {
+    if (xmlSpace.isNull()) {
         // This element has no xml:space attribute.
-        m_whitespaceMode.push(QSvgText::Default);
-    }
-    else if(xmlSpace == QLatin1String("preserve"))
+        m_whitespaceMode.push(m_whitespaceMode.isEmpty() ? QSvgText::Default : m_whitespaceMode.top());
+    } else if (xmlSpace == QLatin1String("preserve")) {
         m_whitespaceMode.push(QSvgText::Preserve);
-    else if(xmlSpace == QLatin1String("default"))
+    } else if (xmlSpace == QLatin1String("default")) {
         m_whitespaceMode.push(QSvgText::Default);
-    else
-    {
+    } else {
         qWarning() << QString::fromLatin1("\"%1\" is an invalid value for attribute xml:space. "
                                           "Valid values are \"preserve\" and \"default\".").arg(xmlSpace.toString());
-
         m_whitespaceMode.push(QSvgText::Default);
     }
 

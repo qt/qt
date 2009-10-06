@@ -1000,8 +1000,10 @@ void QLabel::paintEvent(QPaintEvent *)
             d->ensureTextLayouted();
 
             QAbstractTextDocumentLayout::PaintContext context;
-
-            if (!isEnabled() && style->styleHint(QStyle::SH_EtchDisabledText, &opt, this)) {
+            if (!isEnabled() && !d->control &&
+                // We cannot support etched for rich text controls because custom
+                // colors and links will override the light palette
+                style->styleHint(QStyle::SH_EtchDisabledText, &opt, this)) {
                 context.palette = opt.palette;
                 context.palette.setColor(QPalette::Text, context.palette.light().color());
                 painter.save();

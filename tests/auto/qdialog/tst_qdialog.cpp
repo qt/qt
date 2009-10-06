@@ -50,6 +50,8 @@
 #include <QVBoxLayout>
 #include <QSizeGrip>
 
+#include "../../shared/util.h"
+
 Q_DECLARE_METATYPE(QSize)
 
 
@@ -160,8 +162,8 @@ void tst_QDialog::initTestCase()
 void tst_QDialog::cleanupTestCase()
 {
     if (testWidget) {
-	delete testWidget;
-	testWidget = 0;
+        delete testWidget;
+        testWidget = 0;
     }
 }
 
@@ -585,35 +587,27 @@ void tst_QDialog::reject()
     TestRejectDialog dialog;
     dialog.show();
     QTest::qWaitForWindowShown(&dialog);
-    QTest::qWait(100);
-    QVERIFY(dialog.isVisible());
+    QTRY_VERIFY(dialog.isVisible());
     dialog.reject();
-    QTest::qWait(100);
-    QVERIFY(!dialog.isVisible());
+    QTRY_VERIFY(!dialog.isVisible());
     QCOMPARE(dialog.called, 1);
 
     dialog.show();
     QTest::qWaitForWindowShown(&dialog);
-    QTest::qWait(100);
-
-    QVERIFY(dialog.isVisible());
+    QTRY_VERIFY(dialog.isVisible());
     QVERIFY(dialog.close());
-    QTest::qWait(100);
-    QVERIFY(!dialog.isVisible());
+    QTRY_VERIFY(!dialog.isVisible());
     QCOMPARE(dialog.called, 2);
 
     dialog.cancelReject = true;
     dialog.show();
     QTest::qWaitForWindowShown(&dialog);
-    QTest::qWait(100);
-    QVERIFY(dialog.isVisible());
+    QTRY_VERIFY(dialog.isVisible());
     dialog.reject();
-    QTest::qWait(100);
-    QVERIFY(dialog.isVisible());
+    QTRY_VERIFY(dialog.isVisible());
     QCOMPARE(dialog.called, 3);
     QVERIFY(!dialog.close());
-    QTest::qWait(100);
-    QVERIFY(dialog.isVisible());
+    QTRY_VERIFY(dialog.isVisible());
     QCOMPARE(dialog.called, 4);
 }
 

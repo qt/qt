@@ -56,42 +56,27 @@
 
 MainWindow::MainWindow() : QMainWindow(0)
 {
-    QMenuBar *menuBar = new QMenuBar;
-    QMenu *file = new QMenu(tr("&File"),menuBar);
+    QMenu *file = menuBar()->addMenu(tr("&File"));
 
-    QAction *newAction = new QAction(tr("New Game"),file);
+    QAction *newAction = file->addAction(tr("New Game"));
     newAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_N));
-    file->addAction(newAction);
-    QAction *quitAction = new QAction(tr("Quit"),file);
+    QAction *quitAction = file->addAction(tr("Quit"));
     quitAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
-    file->addAction(quitAction);
 
-    menuBar->addMenu(file);
-    setMenuBar(menuBar);
-
-    QStringList list = QApplication::arguments();
-    if (list.contains("-fullscreen")) {
-        scene = new GraphicsScene(0, 0, 750, 400,GraphicsScene::Small);
+    if (QApplication::arguments().contains("-fullscreen")) {
+        scene = new GraphicsScene(0, 0, 750, 400, GraphicsScene::Small);
         setWindowState(Qt::WindowFullScreen);
     } else {
         scene = new GraphicsScene(0, 0, 880, 630);
         layout()->setSizeConstraint(QLayout::SetFixedSize);
     }
 
-    view = new QGraphicsView(scene,this);
+    view = new QGraphicsView(scene, this);
     view->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-    QList<QAction *> actions;
-    actions << newAction << quitAction;
-    scene->setupScene(actions);
+    scene->setupScene(newAction, quitAction);
 #ifndef QT_NO_OPENGL
-        view->setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers)));
+    view->setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers)));
 #endif
 
     setCentralWidget(view);
-
 }
-
-MainWindow::~MainWindow()
-{
-}
-

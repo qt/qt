@@ -244,25 +244,29 @@ void tst_QPixmapCache::insert()
     QPixmap p2(10, 10);
     p2.fill(Qt::yellow);
 
+    // Calcuate estimated num of items what fits to cache
+    int estimatedNum = (1024 * QPixmapCache::cacheLimit())
+                       / ((p1.width() * p1.height() * p1.depth()) / 8);
+
+    // Mare sure we will put enough items to reach the cache limit
+    const int numberOfKeys = estimatedNum + 1000;
+
     // make sure it doesn't explode
-    for (int i = 0; i < 20000; ++i)
+    for (int i = 0; i < numberOfKeys; ++i)
         QPixmapCache::insert("0", p1);
 
     // ditto
-    for (int j = 0; j < 40000; ++j)
+    for (int j = 0; j < numberOfKeys; ++j)
         QPixmapCache::insert(QString::number(j), p1);
 
     int num = 0;
-    for (int k = 0; k < 40000; ++k) {
+    for (int k = 0; k < numberOfKeys; ++k) {
         if (QPixmapCache::find(QString::number(k)))
             ++num;
     }
 
     if (QPixmapCache::find("0"))
         ++num;
-
-    int estimatedNum = (1024 * QPixmapCache::cacheLimit())
-                       / ((p1.width() * p1.height() * p1.depth()) / 8);
 
     QVERIFY(num <= estimatedNum);
     QPixmap p3;
@@ -281,11 +285,11 @@ void tst_QPixmapCache::insert()
     //The int part of the API
     // make sure it doesn't explode
     QList<QPixmapCache::Key> keys;
-    for (int i = 0; i < 40000; ++i)
+    for (int i = 0; i < numberOfKeys; ++i)
         keys.append(QPixmapCache::insert(p1));
 
     num = 0;
-    for (int k = 0; k < 40000; ++k) {
+    for (int k = 0; k < numberOfKeys; ++k) {
         if (QPixmapCache::find(keys.at(k), &p2))
             ++num;
     }
@@ -393,7 +397,12 @@ void tst_QPixmapCache::clear()
     QPixmap p1(10, 10);
     p1.fill(Qt::red);
 
-    const int numberOfKeys = 40000;
+    // Calcuate estimated num of items what fits to cache
+    int estimatedNum = (1024 * QPixmapCache::cacheLimit())
+                       / ((p1.width() * p1.height() * p1.depth()) / 8);
+
+    // Mare sure we will put enough items to reach the cache limit
+    const int numberOfKeys = estimatedNum + 1000;
 
     for (int i = 0; i < numberOfKeys; ++i)
         QVERIFY(QPixmapCache::find("x" + QString::number(i)) == 0);
