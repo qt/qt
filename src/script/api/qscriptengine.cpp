@@ -1116,8 +1116,7 @@ uint QScriptEnginePrivate::contextFlags(JSC::ExecState *exec)
 void QScriptEnginePrivate::setContextFlags(JSC::ExecState *exec, uint flags)
 {
     Q_ASSERT(!exec->codeBlock());
-    quintptr flag_ptr = flags;
-    exec->registers()[JSC::RegisterFile::ReturnValueRegister] = JSC::JSValue(reinterpret_cast<JSC::JSObject*>(flag_ptr));
+    exec->registers()[JSC::RegisterFile::ReturnValueRegister] = JSC::Register::withInt(flags);
 }
 
 
