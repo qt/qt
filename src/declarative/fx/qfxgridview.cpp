@@ -710,6 +710,8 @@ QFxGridView::~QFxGridView()
   for the view.  For large or dynamic datasets the model is usually
   provided by a C++ model object.  The C++ model object must be a \l
   {QAbstractItemModel} subclass, a VisualModel, or a simple list.
+
+  \sa {qmlmodels}{Data Models}
 */
 QVariant QFxGridView::model() const
 {

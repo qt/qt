@@ -143,6 +143,8 @@ QFxRepeater::~QFxRepeater()
     based on the order they are created.
 
     Models can also be created directly in QML, using a \l{ListModel} or \l{XmlListModel}.
+
+    \sa {qmlmodels}{Data Models}
 */
 QVariant QFxRepeater::model() const
 {

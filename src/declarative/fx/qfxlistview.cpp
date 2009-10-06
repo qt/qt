@@ -876,6 +876,8 @@ QFxListView::~QFxListView()
 
     Models can also be created directly in QML, using a \l{ListModel},
     \l{XmlListModel} or \l{VisualItemModel}.
+
+    \sa {qmlmodels}{Data Models}
 */
 QVariant QFxListView::model() const
 {
