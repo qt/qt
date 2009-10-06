@@ -88,6 +88,7 @@ public:
 #if QT_VERSION >= 0x040800
 #error Add the datastream version for this Qt version
         Qt_4_8 = Qt_4_7
+#endif
     };
 
     enum ByteOrder {
