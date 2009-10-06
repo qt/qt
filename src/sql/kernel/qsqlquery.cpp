@@ -811,13 +811,18 @@ bool QSqlQuery::isForwardOnly() const
   Forward only mode can be (depending on the driver) more memory
   efficient since results do not need to be cached. It will also
   improve performance on some databases. For this to be true, you must
-  call \c setForwardMode() before the query is prepared or executed.
+  call \c setForwardOnly() before the query is prepared or executed.
   Note that the constructor that takes a query and a database may
   execute the query.
 
   Forward only mode is off by default.
 
-  \sa isForwardOnly(), next(), seek()
+  Setting forward only to false is a suggestion to the database engine,
+  which has the final say on whether a result set is forward only or
+  scrollable. isForwardOnly() will always return the correct status of
+  the result set.
+
+  \sa isForwardOnly(), next(), seek(), QSqlResult::setForwardOnly()
 */
 void QSqlQuery::setForwardOnly(bool forward)
 {
