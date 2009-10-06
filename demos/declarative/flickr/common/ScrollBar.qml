@@ -1,7 +1,7 @@
 import Qt 4.6
 
 Item {
-    id: Container
+    id: container
 
     property var flickableArea
 
@@ -12,16 +12,16 @@ Item {
         border.color: "white"
         border.width: 2
         x: 0
-        y: flickableArea.visibleArea.yPosition * Container.height
+        y: flickableArea.visibleArea.yPosition * container.height
         width: parent.width
-        height: flickableArea.visibleArea.heightRatio * Container.height
+        height: flickableArea.visibleArea.heightRatio * container.height
     }
     states: [
         State {
             name: "show"
             when: flickableArea.moving
             PropertyChanges {
-                target: Container
+                target: container
                 opacity: 1
             }
         }
@@ -31,7 +31,7 @@ Item {
             from: "*"
             to: "*"
             NumberAnimation {
-                target: Container
+                target: container
                 properties: "opacity"
                 duration: 400
             }

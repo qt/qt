@@ -1,0 +1,61 @@
+/*! 
+\page qmlmodels.html
+\target qmlmodels
+\title Data Models
+
+Some QML Items use Data Models to provide the data to be displayed.
+These items typically require a \e delegate component that
+creates an instance for each item in the model.  Models may be static, or
+have items modified, inserted, removed or moved dynamically.
+
+Data is provided to the delegate via named data roles which the
+delegate may bind to.  A special \e index role containing the
+index of the item in the model is also available.  Models that do
+not have named roles will have the data provided via the \e modelData
+role.  The \e modelData role is also provided for Models that have
+only one role.  In this case the \e modelData role contains the same
+data as the named role.
+
+There are a number of QML elements that operate using data models:
+
+\list
+\o ListView
+\o GridView
+\o PathView
+\o \l {qml-repeater}{Repeater}
+\endlist
+
+QML supports several types of data model, which may be provided by QML
+or C++ (via QmlContext::setContextProperty(), for example).
+
+\section1 QML Data Models
+
+\list
+\o ListModel is a simple hierarchy of elements specified in QML.  The
+available roles are specified by the \l ListElement properties.
+\o XmlListModel allows construction of a model from an XML data source. The roles
+are specified via the \l XmlRole element.
+\o VisualItemModel allows QML items to be provided as a model.  This model contains
+both the data and delegate (its child items).  This model does not provide any roles.
+\endlist
+
+
+\section1 C++ Data Models
+
+\list
+\o QAbstractItemModel provides the roles set via the QAbstractItemModel::setRoleNames() method.
+\o QStringList provides the contents of the list via the \e modelData role.
+\o QList<QObject*> provides the properties of the objects in the list as roles.
+\endlist
+
+
+\section1 Other Data Models
+
+\list
+\o An Integer specifies a model containing the integer number of elements.
+There are no data roles.
+\o An Object Instance specifies a model with a single Object element.  The
+properties of the object are provided as roles.
+\endlist
+
+*/

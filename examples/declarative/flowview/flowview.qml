@@ -6,34 +6,34 @@ Rectangle {
     color: "black"
 
     Rectangle {
-        id: MyPhone
+        id: myPhone
         transformOrigin: "Center"
         anchors.centerIn: parent
         width: 800
         height: 480
         clip: true
 
-        states: State { 
+        states: State {
             name: "rotated"
-            PropertyChanges { target: MyListView; z: 2 }
-            PropertyChanges { target: TopBar; y: -30 }
-            PropertyChanges { target: BottomBar; y: 480 }
-            PropertyChanges { target: LeftBar; x: 0 }
-            PropertyChanges { target: RightBar; x: 770 }
+            PropertyChanges { target: myListView; z: 2 }
+            PropertyChanges { target: topBar; y: -30 }
+            PropertyChanges { target: bottomBar; y: 480 }
+            PropertyChanges { target: leftBar; x: 0 }
+            PropertyChanges { target: rightBar; x: 770 }
         }
         transitions: Transition {
             from: "" ; to: "rotated"
             reversible: true
             SequentialAnimation {
-                NumberAnimation { targets: [TopBar, BottomBar]; properties: "x,y"; easing: "easeInOutQuad" }
-                NumberAnimation { targets: [LeftBar, RightBar]; properties: "x,y"; easing: "easeInOutQuad"}
+                NumberAnimation { targets: [topBar, bottomBar]; properties: "x,y"; easing: "easeInOutQuad" }
+                NumberAnimation { targets: [leftBar, rightBar]; properties: "x,y"; easing: "easeInOutQuad"}
             }
         }
 
         color: "lightsteelblue"
 
         VisualDataModel {
-            id: Model
+            id: model
             model: ListModel {
                 ListElement { background: "red"; weblet: "RoundedRect.qml"  }
                 ListElement { background: "yellow"; weblet: "RoundedRect.qml"  }
@@ -43,41 +43,41 @@ Rectangle {
                 ListElement { background: "lightblue"; weblet: "RoundedRect.qml"  }
             }
             delegate: Package {
-                Item { id: List; Package.name: "list"; width:120; height: 400; }
-                Item { id: GridItem; Package.name: "grid"; width:400; height: 120; }
-                Loader { id: MyContent; width:400; height: 120; source: weblet }
+                Item { id: list; Package.name: "list"; width:120; height: 400; }
+                Item { id: gridItem; Package.name: "grid"; width:400; height: 120; }
+                Loader { id: myContent; width:400; height: 120; source: weblet }
 
                 StateGroup {
                     states: [
-                        State { 
+                        State {
                             name: "InList"
-                            when: MyPhone.state == "rotated"
-                            ParentChange { target: MyContent; parent: List }
-                            PropertyChanges { target: MyContent; x: 120; y: 0; rotation: 90}
+                            when: myPhone.state == "rotated"
+                            ParentChange { target: myContent; parent: list }
+                            PropertyChanges { target: myContent; x: 120; y: 0; rotation: 90}
                         },
-                        State { 
+                        State {
                             name: "InGrid"
-                            when: MyPhone.state != "rotated"
-                            ParentChange { target: MyContent; parent: GridItem }
-                            PropertyChanges { target: MyContent; x: 0; y: 0; }
+                            when: myPhone.state != "rotated"
+                            ParentChange { target: myContent; parent: gridItem }
+                            PropertyChanges { target: myContent; x: 0; y: 0; }
                         }
                     ]
                     transitions: [
                         Transition {
                             from: "*"; to: "InGrid"
-                            SequentialAnimation { 
-                                ParentAction{} 
-                                PauseAnimation { duration: 50 * List.FlowView.column }
-                                NumberAnimation { properties: "x,y,rotation"; easing: "easeInOutQuad" } 
-                            } 
+                            SequentialAnimation {
+                                ParentAction{}
+                                PauseAnimation { duration: 50 * list.FlowView.column }
+                                NumberAnimation { properties: "x,y,rotation"; easing: "easeInOutQuad" }
+                            }
                         },
                         Transition {
                             from: "*"; to: "InList"
-                            SequentialAnimation { 
-                                ParentAction{} 
-                                PauseAnimation { duration: 50 * (GridItem.FlowView.row * 2 + GridItem.FlowView.column) }
-                                NumberAnimation { properties: "x,y,rotation"; easing: "easeInOutQuad" } 
-                            } 
+                            SequentialAnimation {
+                                ParentAction{}
+                                PauseAnimation { duration: 50 * (gridItem.FlowView.row * 2 + gridItem.FlowView.column) }
+                                NumberAnimation { properties: "x,y,rotation"; easing: "easeInOutQuad" }
+                            }
                         }
                     ]
                 }
@@ -87,14 +87,14 @@ Rectangle {
 
         Item {
             FlowView {
-                id: MyListView
+                id: myListView
                 vertical: true
                 y: 40
                 x: 40
                 width: 800
                 height: 400
                 column: 1
-                model: Model.parts.list
+                model: model.parts.list
             }
 
             FlowView {
@@ -103,29 +103,29 @@ Rectangle {
                 width: 800
                 height: 400
                 column: 2
-                model: Model.parts.grid
+                model: model.parts.grid
             }
         }
 
         Rectangle {
-            id: TopBar
+            id: topBar
             width: 800
             height: 30
         }
         Rectangle {
-            id: BottomBar
+            id: bottomBar
             width: 800
             height: 30
             y: 450
         }
         Rectangle {
-            id: LeftBar
+            id: leftBar
             x: -30
             width: 30
             height: 480
         }
         Rectangle {
-            id: RightBar
+            id: rightBar
             x: 800
             width: 30
             height: 480
@@ -140,7 +140,7 @@ Rectangle {
         Text { text: "Switch" }
         MouseRegion {
             anchors.fill: parent
-            onClicked: if(MyPhone.state == "rotated") MyPhone.state=""; else MyPhone.state = "rotated";
+            onClicked: if(myPhone.state == "rotated") myPhone.state=""; else myPhone.state = "rotated";
         }
     }
 

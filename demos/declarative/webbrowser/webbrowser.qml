@@ -4,7 +4,7 @@ import "content"
 import "fieldtext"
 
 Item {
-    id: WebBrowser
+    id: webBrowser
 
     property string urlString : "http://qt.nokia.com/"
 
@@ -14,7 +14,7 @@ Item {
     height: 480
 
     Item {
-        id: WebPanel
+        id: webPanel
         anchors.fill: parent
         clip: true
         Rectangle {
@@ -23,48 +23,48 @@ Item {
         }
         Image {
             source: "content/pics/softshadow-bottom.png"
-            width: WebPanel.width
+            width: webPanel.width
             height: 16
         }
         Image {
             source: "content/pics/softshadow-top.png"
-            width: WebPanel.width
+            width: webPanel.width
             height: 16
-            anchors.bottom: Footer.top
+            anchors.bottom: footer.top
         }
         RectSoftShadow {
-            x: -Flick.viewportX
-            y: -Flick.viewportY
-            width: MyWebView.width*MyWebView.scale
-            height: Flick.y+MyWebView.height*MyWebView.scale
+            x: -flickable.viewportX
+            y: -flickable.viewportY
+            width: webView.width*webView.scale
+            height: flickable.y+webView.height*webView.scale
         }
         Item {
-            id: HeaderSpace
+            id: headerSpace
             width: parent.width
             height: 60
             z: 1
 
             Rectangle {
-                id: HeaderSpaceTint
+                id: headerSpaceTint
                 color: "black"
                 opacity: 0
                 anchors.fill: parent
              }
 
             Image {
-                id: Header
+                id: header
                 source: "content/pics/header.png"
                 width: parent.width
                 height: 60
                 state: "Normal"
-                x: Flick.viewportX < 0 ? -Flick.viewportX : Flick.viewportX > Flick.viewportWidth-Flick.width
-                                         ? -Flick.viewportX+Flick.viewportWidth-Flick.width : 0
-                y: Flick.viewportY < 0 ? -Flick.viewportY : progressOff*
-                                        (Flick.viewportY>height?-height:-Flick.viewportY)
+                x: flickable.viewportX < 0 ? -flickable.viewportX : flickable.viewportX > flickable.viewportWidth-flickable.width
+                                         ? -flickable.viewportX+flickable.viewportWidth-flickable.width : 0
+                y: flickable.viewportY < 0 ? -flickable.viewportY : progressOff*
+                                        (flickable.viewportY>height?-height:-flickable.viewportY)
                 Text {
-                    id: HeaderText
+                    id: headerText
 
-                    text: MyWebView.title!='' || MyWebView.progress == 1.0 ? MyWebView.title : 'Loading...'
+                    text: webView.title!='' || webView.progress == 1.0 ? webView.title : 'Loading...'
                     elide: "ElideRight"
 
                     color: "white"
@@ -75,22 +75,22 @@ Item {
                     font.pointSize: 10
                     font.bold: true
 
-                    anchors.left: Header.left
-                    anchors.right: Header.right
+                    anchors.left: header.left
+                    anchors.right: header.right
                     anchors.leftMargin: 4
                     anchors.rightMargin: 4
-                    anchors.top: Header.top
+                    anchors.top: header.top
                     anchors.topMargin: 4
                     horizontalAlignment: "AlignHCenter"
                 }
                 Item {
                     width: parent.width
-                    anchors.top: HeaderText.bottom
+                    anchors.top: headerText.bottom
                     anchors.topMargin: 2
                     anchors.bottom: parent.bottom
 
                     Item {
-                        id: UrlBox
+                        id: urlBox
                         height: 31
                         anchors.left: parent.left
                         anchors.leftMargin: 12
@@ -102,32 +102,32 @@ Item {
 
                         BorderImage {
                             source: "content/pics/addressbar.sci"
-                            anchors.fill: UrlBox
+                            anchors.fill: urlBox
                         }
-                                                
+
                         BorderImage {
-                            id: UrlBoxhl
+                            id: urlBoxhl
                             source: "content/pics/addressbar-filled.sci"
-                            width: parent.width*MyWebView.progress
+                            width: parent.width*webView.progress
                             height: parent.height
-                            opacity: 1-Header.progressOff
+                            opacity: 1-header.progressOff
                             clip: true
                         }
 
                         FieldText {
-                            id: EditUrl
+                            id: editUrl
                             mouseGrabbed: parent.mouseGrabbed
 
-                            text: WebBrowser.urlString
+                            text: webBrowser.urlString
                             label: "url:"
-                            onConfirmed: { WebBrowser.urlString = EditUrl.text; MyWebView.focus=true }
-                            onCancelled: { MyWebView.focus=true }
-                            onStartEdit: { MyWebView.focus=false }
+                            onConfirmed: { webBrowser.urlString = editUrl.text; webView.focus=true }
+                            onCancelled: { webView.focus=true }
+                            onStartEdit: { webView.focus=false }
 
-                            anchors.left: UrlBox.left
-                            anchors.right: UrlBox.right
+                            anchors.left: urlBox.left
+                            anchors.right: urlBox.right
                             anchors.leftMargin: 6
-                            anchors.verticalCenter: UrlBox.verticalCenter
+                            anchors.verticalCenter: urlBox.verticalCenter
                             anchors.verticalCenterOffset: 1
                         }
                     }
@@ -137,19 +137,19 @@ Item {
                 states: [
                     State {
                         name: "Normal"
-                        when: MyWebView.progress == 1.0
-                        PropertyChanges { target: Header; progressOff: 1 }
+                        when: webView.progress == 1.0
+                        PropertyChanges { target: header; progressOff: 1 }
                     },
                     State {
                         name: "ProgressShown"
-                        when: MyWebView.progress < 1.0
-                        PropertyChanges { target: Header; progressOff: 0; }
+                        when: webView.progress < 1.0
+                        PropertyChanges { target: header; progressOff: 0; }
                     }
                 ]
                 transitions: [
                     Transition {
                         NumberAnimation {
-                            target: Header
+                            target: header
                             properties: "progressOff"
                             easing: "easeInOutQuad"
                             duration: 300
@@ -159,18 +159,18 @@ Item {
             }
         }
         Flickable {
-            id: Flick
+            id: flickable
             width: parent.width
-            viewportWidth: Math.max(parent.width,MyWebView.width*MyWebView.scale)
-            viewportHeight: Math.max(parent.height,MyWebView.height*MyWebView.scale)
-            anchors.top: HeaderSpace.bottom
-            anchors.bottom: Footer.top
+            viewportWidth: Math.max(parent.width,webView.width*webView.scale)
+            viewportHeight: Math.max(parent.height,webView.height*webView.scale)
+            anchors.top: headerSpace.bottom
+            anchors.bottom: footer.top
             anchors.left: parent.left
             anchors.right: parent.right
             pressDelay: 200
 
             WebView {
-                id: MyWebView
+                id: webView
                 pixelCacheSize: 4000000
 
                 Script {
@@ -190,29 +190,29 @@ Item {
                     }
                 }
 
-                url: fixUrl(WebBrowser.urlString)
+                url: fixUrl(webBrowser.urlString)
                 smooth: true
                 fillColor: "white"
                 focus: true
 
-                preferredWidth: Flick.width
+                preferredWidth: flickable.width
                 webPageWidth: 980
 
-                onUrlChanged: { if (url != null) { WebBrowser.urlString = url.toString(); } }
+                onUrlChanged: { if (url != null) { webBrowser.urlString = url.toString(); } }
                 onDoubleClick: { heuristicZoom(clickX,clickY) }
 
                 SequentialAnimation {
-                    id: QuickZoom
+                    id: quickZoom
 
                     PropertyAction {
-                        target: MyWebView
+                        target: webView
                         property: "renderingEnabled"
                         value: false
                     }
                     ParallelAnimation {
                         NumberAnimation {
-                            id: ScaleAnim
-                            target: MyWebView
+                            id: scaleAnim
+                            target: webView
                             property: "scale"
                             from: 1
                             to: 0 // set before calling
@@ -220,8 +220,8 @@ Item {
                             duration: 200
                         }
                         NumberAnimation {
-                            id: FlickVX
-                            target: Flick
+                            id: flickVX
+                            target: flickable
                             property: "viewportX"
                             easing: "easeLinear"
                             duration: 200
@@ -229,8 +229,8 @@ Item {
                             to: 0 // set before calling
                         }
                         NumberAnimation {
-                            id: FlickVY
-                            target: Flick
+                            id: flickVY
+                            target: flickable
                             property: "viewportY"
                             easing: "easeLinear"
                             duration: 200
@@ -239,12 +239,12 @@ Item {
                         }
                     }
                     PropertyAction {
-                        id: FinalZoom
-                        target: MyWebView
+                        id: finalZoom
+                        target: webView
                         property: "zoomFactor"
                     }
                     PropertyAction {
-                        target: MyWebView
+                        target: webView
                         property: "scale"
                         value: 1.0
                     }
@@ -252,19 +252,19 @@ Item {
                     // size changes may have started a correction if
                     // zoomFactor < 1.0.
                     PropertyAction {
-                        id: FinalX
-                        target: Flick
+                        id: finalX
+                        target: flickable
                         property: "viewportX"
                         value: 0 // set before calling
                     }
                     PropertyAction {
-                        id: FinalY
-                        target: Flick
+                        id: finalY
+                        target: flickable
                         property: "viewportY"
                         value: 0 // set before calling
                     }
                     PropertyAction {
-                        target: MyWebView
+                        target: webView
                         property: "renderingEnabled"
                         value: true
                     }
@@ -272,23 +272,23 @@ Item {
                 onZooming: {
                     if (centerX) {
                         sc = zoom/zoomFactor;
-                        ScaleAnim.to = sc;
-                        FlickVX.from = Flick.viewportX
-                        FlickVX.to = Math.min(Math.max(0,centerX-Flick.width/2),MyWebView.width*sc-Flick.width)
-                        FinalX.value = Math.min(Math.max(0,centerX-Flick.width/2),MyWebView.width*sc-Flick.width)
-                        FlickVY.from = Flick.viewportY
-                        FlickVY.to = Math.min(Math.max(0,centerY-Flick.height/2),MyWebView.height*sc-Flick.height)
-                        FinalY.value = Math.min(Math.max(0,centerY-Flick.height/2),MyWebView.height*sc-Flick.height)
-                        FinalZoom.value = zoom
-                        QuickZoom.start()
+                        scaleAnim.to = sc;
+                        flickVX.from = flickable.viewportX
+                        flickVX.to = Math.min(Math.max(0,centerX-flickable.width/2),webView.width*sc-flickable.width)
+                        finalX.value = Math.min(Math.max(0,centerX-flickable.width/2),webView.width*sc-flickable.width)
+                        flickVY.from = flickable.viewportY
+                        flickVY.to = Math.min(Math.max(0,centerY-flickable.height/2),webView.height*sc-flickable.height)
+                        finalY.value = Math.min(Math.max(0,centerY-flickable.height/2),webView.height*sc-flickable.height)
+                        finalZoom.value = zoom
+                        quickZoom.start()
                     }
                 }
             }
             Rectangle {
-                id: WebViewTint
+                id: webViewTint
                 color: "black"
                 opacity: 0
-                anchors.fill: MyWebView
+                anchors.fill: webView
                 /*MouseRegion {
                     anchors.fill: WebViewTint
                     onClicked: { proxy.focus=false }
@@ -296,7 +296,7 @@ Item {
             }
         }
         BorderImage {
-            id: Footer
+            id: footer
             source: "content/pics/footer.sci"
             width: parent.width
             height: 43
@@ -327,13 +327,13 @@ Item {
                 states: [
                     State {
                         name: "Enabled"
-                        when: MyWebView.back.enabled==true
+                        when: webView.back.enabled==true
                         PropertyChanges { target: back_e; opacity: 1 }
                         PropertyChanges { target: back_d; opacity: 0 }
                     },
                     State {
                         name: "Disabled"
-                        when: MyWebView.back.enabled==false
+                        when: webView.back.enabled==false
                         PropertyChanges { target: back_e; opacity: 0 }
                         PropertyChanges { target: back_d; opacity: 1 }
                     }
@@ -349,7 +349,7 @@ Item {
                 ]
                 MouseRegion {
                     anchors.fill: back_e
-                    onClicked: { if (MyWebView.back.enabled) MyWebView.back.trigger() }
+                    onClicked: { if (webView.back.enabled) webView.back.trigger() }
                 }
             }
             Image {
@@ -360,7 +360,7 @@ Item {
             }
             MouseRegion {
                 anchors.fill: reload
-                onClicked: { MyWebView.reload.trigger() }
+                onClicked: { webView.reload.trigger() }
             }
             Item {
                 id: forwardbutton
@@ -383,13 +383,13 @@ Item {
                 states: [
                     State {
                         name: "Enabled"
-                        when: MyWebView.forward.enabled==true
+                        when: webView.forward.enabled==true
                         PropertyChanges { target: forward_e; opacity: 1 }
                         PropertyChanges { target: forward_d; opacity: 0 }
                     },
                     State {
                         name: "Disabled"
-                        when: MyWebView.forward.enabled==false
+                        when: webView.forward.enabled==false
                         PropertyChanges { target: forward_e; opacity: 0 }
                         PropertyChanges { target: forward_d; opacity: 1 }
                     }
@@ -405,7 +405,7 @@ Item {
                 ]
                 MouseRegion {
                     anchors.fill: parent
-                    onClicked: { if (MyWebView.forward.enabled) MyWebView.forward.trigger() }
+                    onClicked: { if (webView.forward.enabled) webView.forward.trigger() }
                 }
             }
         }

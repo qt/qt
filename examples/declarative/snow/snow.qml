@@ -1,7 +1,7 @@
 import Qt 4.6
 
 Rectangle {
-    id: ImagePanel
+    id: imagePanel
     width: 1024
     height: 768
     color: "black"
@@ -23,7 +23,7 @@ Rectangle {
     Item {
         anchors.centerIn: parent
         Row {
-            id: MyLayout
+            id: layout
             property real targetX: -(selectedX + imageWidth / 2)
 
             property real targetDeform: 0
@@ -31,19 +31,19 @@ Rectangle {
 
             property real deform: 0
             deform: SpringFollow {
-                id: "DeformFollow"; source: MyLayout.targetDeform; velocity: MyLayout.slowDeform?0.1:2
-                onSyncChanged: if(inSync) { MyLayout.slowDeform = true; MyLayout.targetDeform = 0; }
+                id: deformFollow; source: layout.targetDeform; velocity: layout.slowDeform?0.1:2
+                onSyncChanged: if(inSync) { layout.slowDeform = true; layout.targetDeform = 0; }
             }
-                
-            ImageBatch { offset: 0; ref: ImagePanel }
 
-            x: SpringFollow { source: MyLayout.targetX; velocity: 1000 }
+            ImageBatch { offset: 0; ref: imagePanel }
+
+            x: SpringFollow { source: layout.targetX; velocity: 1000 }
             y: SpringFollow { source: -(selectedY + imageHeight / 2); velocity: 500 }
         }
 
         transform: Rotation {
             axis.y: 1; axis.z: 0
-            angle: MyLayout.deform * -100
+            angle: layout.deform * -100
         }
     }
 
@@ -51,13 +51,13 @@ Rectangle {
         function left() {
             if (selectedItemColumn <= 0) return;
             selectedItemColumn -= 1;
-            MyLayout.slowDeform = false;
-            MyLayout.targetDeform = Math.max(Math.min(MyLayout.deform - 0.1, -0.1), -0.4);
+            layout.slowDeform = false;
+            layout.targetDeform = Math.max(Math.min(layout.deform - 0.1, -0.1), -0.4);
         }
         function right() {
             selectedItemColumn += 1;
-            MyLayout.slowDeform = false;
-            MyLayout.targetDeform = Math.min(Math.max(MyLayout.deform + 0.1, 0.1), 0.4);
+            layout.slowDeform = false;
+            layout.targetDeform = Math.min(Math.max(layout.deform + 0.1, 0.1), 0.4);
         }
     }
 

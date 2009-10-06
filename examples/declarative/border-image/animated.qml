@@ -1,7 +1,7 @@
 import Qt 4.6
 
 Rectangle {
-    id: Page
+    id: page
     color: "white"
     width: 1030; height: 540
 

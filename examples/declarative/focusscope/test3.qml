@@ -6,7 +6,7 @@ Rectangle {
     height: 600
 
     ListModel {
-        id: Model
+        id: model
         ListElement { name: "1" }
         ListElement { name: "2" }
         ListElement { name: "3" }
@@ -19,16 +19,16 @@ Rectangle {
     }
 
     Component {
-        id: VerticalDelegate
+        id: verticalDelegate
         FocusScope {
-            id: Root
-            width: 50; height: 50; 
+            id: root
+            width: 50; height: 50;
             Keys.onDigit9Pressed: print("Error - " + name)
-            Rectangle { 
+            Rectangle {
                 focus: true
                 Keys.onDigit9Pressed: print(name)
-                width: 50; height: 50; 
-                color: Root.ListView.isCurrentItem?"red":"green"
+                width: 50; height: 50;
+                color: root.ListView.isCurrentItem?"red":"green"
                 Text { text: name; anchors.centerIn: parent }
             }
         }
@@ -37,8 +37,8 @@ Rectangle {
     ListView {
         width: 800; height: 50; orientation: "Horizontal"
         focus: true
-        model: Model
-        delegate: VerticalDelegate
+        model: model
+        delegate: verticalDelegate
         preferredHighlightBegin: 100
         preferredHighlightEnd: 101
         strictlyEnforceHighlightRange: true

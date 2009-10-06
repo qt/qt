@@ -3,79 +3,79 @@ import Qt 4.6
 import "common"
 
 Item {
-    id: MainWindow; width: 800; height: 450
+    id: mainWindow; width: 800; height: 450
 
     property bool showPathView : false
 
     resources: [
         Component {
-        id: PhotoDelegate
+        id: photoDelegate
         Item {
-            id: Wrapper; width: 85; height: 85
-            scale: Wrapper.PathView.scale; z: Wrapper.PathView.z
+            id: wrapper; width: 85; height: 85
+            scale: wrapper.PathView.scale; z: wrapper.PathView.z
 
             transform: Rotation {
-                id: ItemRotation; origin.x: Wrapper.width/2; origin.y: Wrapper.height/2
-                axis.y: 1; axis.z: 0; angle: Wrapper.PathView.angle
+                id: itemRotation; origin.x: wrapper.width/2; origin.y: wrapper.height/2
+                axis.y: 1; axis.z: 0; angle: wrapper.PathView.angle
             }
 
             Connection {
-                sender: ImageDetails; signal: "closed()"
+                sender: imageDetails; signal: "closed()"
                 script: {
-                    if (Wrapper.state == 'Details') {
-                        Wrapper.state = '';
-                        ImageDetails.photoUrl = "";
+                    if (wrapper.state == 'Details') {
+                        wrapper.state = '';
+                        imageDetails.photoUrl = "";
                     }
                 }
             }
 
             Script {
                function photoClicked() {
-                   ImageDetails.photoTitle = title;
-                   ImageDetails.photoDescription = description;
-                   ImageDetails.photoTags = tags;
-                   ImageDetails.photoWidth = photoWidth;
-                   ImageDetails.photoHeight = photoHeight;
-                   ImageDetails.photoType = photoType;
-                   ImageDetails.photoAuthor = photoAuthor;
-                   ImageDetails.photoDate = photoDate;
-                   ImageDetails.photoUrl = url;
-                   ImageDetails.rating = 0;
-                   Wrapper.state = "Details";
+                   imageDetails.photoTitle = title;
+                   imageDetails.photoDescription = description;
+                   imageDetails.photoTags = tags;
+                   imageDetails.photoWidth = photoWidth;
+                   imageDetails.photoHeight = photoHeight;
+                   imageDetails.photoType = photoType;
+                   imageDetails.photoAuthor = photoAuthor;
+                   imageDetails.photoDate = photoDate;
+                   imageDetails.photoUrl = url;
+                   imageDetails.rating = 0;
+                   wrapper.state = "Details";
                }
             }
 
             Rectangle {
-                id: WhiteRect; anchors.fill: parent; color: "white"; radius: 5
+                id: whiteRect; anchors.fill: parent; color: "white"; radius: 5
 
-                Loading { x: 26; y: 26; visible: Thumb.status!=1 }
-                Image { id: Thumb; source: imagePath; x: 5; y: 5 }
+                Loading { x: 26; y: 26; visible: thumb.status!=1 }
+                Image { id: thumb; source: imagePath; x: 5; y: 5 }
 
                 Item {
-                    id: Shadows
-                    Image { source: "common/pics/shadow-right.png"; x: WhiteRect.width; height: WhiteRect.height }
-                    Image { source: "common/pics/shadow-bottom.png"; y: WhiteRect.height; width: WhiteRect.width }
-                    Image { id: Corner; source: "common/pics/shadow-corner.png"; x: WhiteRect.width; y: WhiteRect.height }
+                    id: shadows
+                    Image { source: "common/pics/shadow-right.png"; x: whiteRect.width; height: whiteRect.height }
+                    Image { source: "common/pics/shadow-bottom.png"; y: whiteRect.height; width: whiteRect.width }
+                    Image { id: Corner; source: "common/pics/shadow-corner.png"; x: whiteRect.width; y: whiteRect.height }
                 }
             }
 
-            MouseRegion { anchors.fill: Wrapper; onClicked: { photoClicked() } }
+            MouseRegion { anchors.fill: wrapper; onClicked: { photoClicked() } }
 
             states: [
                 State {
                     name: "Details"
-                    PropertyChanges { target: ImageDetails; z: 2 }
-                    ParentChange { target: Wrapper; parent: ImageDetails.frontContainer }
-                    PropertyChanges { target: Wrapper; x: 45; y: 35; scale: 1; z: 1000 }
-                    PropertyChanges { target: ItemRotation; angle: 0 }
-                    PropertyChanges { target: Shadows; opacity: 0 }
-                    PropertyChanges { target: ImageDetails; y: 20 }
-                    PropertyChanges { target: PhotoGridView; y: -480 }
-                    PropertyChanges { target: PhotoPathView; y: -480 }
-                    PropertyChanges { target: ViewModeButton; opacity: 0 }
-                    PropertyChanges { target: TagsEdit; opacity: 0 }
-                    PropertyChanges { target: FetchButton; opacity: 0 }
-                    PropertyChanges { target: CategoryText; y: "-50" }
+                    PropertyChanges { target: imageDetails; z: 2 }
+                    ParentChange { target: wrapper; parent: imageDetails.frontContainer }
+                    PropertyChanges { target: wrapper; x: 45; y: 35; scale: 1; z: 1000 }
+                    PropertyChanges { target: itemRotation; angle: 0 }
+                    PropertyChanges { target: shadows; opacity: 0 }
+                    PropertyChanges { target: imageDetails; y: 20 }
+                    PropertyChanges { target: photoGridView; y: -480 }
+                    PropertyChanges { target: photoPathView; y: -480 }
+                    PropertyChanges { target: viewModeButton; opacity: 0 }
+                    PropertyChanges { target: tagsEdit; opacity: 0 }
+                    PropertyChanges { target: fetchButton; opacity: 0 }
+                    PropertyChanges { target: categoryText; y: "-50" }
                 }
             ]
 
@@ -92,7 +92,7 @@ Item {
                     SequentialAnimation {
                         ParentAction { }
                         NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
-                        PropertyAction { target: Wrapper; properties: "z" }
+                        PropertyAction { target: wrapper; properties: "z" }
                     }
                 }
             ]
@@ -102,21 +102,21 @@ Item {
     ]
 
     Item {
-        id: Background
+        id: background
 
         anchors.fill: parent
 
         Image { source: "common/pics/background.png"; anchors.fill: parent }
-        RssModel { id: RssModel; tags : TagsEdit.text }
-        Loading { anchors.centerIn: parent; visible: RssModel.status == 2 }
+        RssModel { id: rssModel; tags : tagsEdit.text }
+        Loading { anchors.centerIn: parent; visible: rssModel.status == 2 }
 
         GridView {
-            id: PhotoGridView; model: RssModel; delegate: PhotoDelegate; cacheBuffer: 100
+            id: photoGridView; model: rssModel; delegate: photoDelegate; cacheBuffer: 100
             cellWidth: 105; cellHeight: 105; x:32; y: 80; width: 800; height: 330; z: 1
         }
 
         PathView {
-            id: PhotoPathView; model: RssModel; delegate: PhotoDelegate
+            id: photoPathView; model: rssModel; delegate: photoDelegate
             y: -380; width: 800; height: 330; pathItemCount: 10; z: 1
             path: Path {
                 startX: -50; startY: 40;
@@ -146,36 +146,34 @@ Item {
 
         }
 
-        ImageDetails { id: ImageDetails; width: 750; x: 25; y: 500; height: 410 }
+        ImageDetails { id: imageDetails; width: 750; x: 25; y: 500; height: 410 }
 
         MediaButton {
-            id: ViewModeButton; x: 680; y: 410; text: "View Mode"
-            onClicked: { if (MainWindow.showPathView == true) MainWindow.showPathView = false; else MainWindow.showPathView = true }
+            id: viewModeButton; x: 680; y: 410; text: "View Mode"
+            onClicked: { if (mainWindow.showPathView == true) mainWindow.showPathView = false; else mainWindow.showPathView = true }
         }
 
         MediaButton {
-            id: FetchButton
+            id: fetchButton
             text: "Update"
-            anchors.right: ViewModeButton.left; anchors.rightMargin: 5
-            anchors.top: ViewModeButton.top
-            onClicked: { RssModel.reload(); }
+            anchors.right: viewModeButton.left; anchors.rightMargin: 5
+            anchors.top: viewModeButton.top
+            onClicked: { rssModel.reload(); }
         }
 
         MediaLineEdit {
-            id: TagsEdit;
+            id: tagsEdit;
             label: "Tags"
-            anchors.right: FetchButton.left; anchors.rightMargin: 5
-            anchors.top: ViewModeButton.top
+            anchors.right: fetchButton.left; anchors.rightMargin: 5
+            anchors.top: viewModeButton.top
         }
 
-        states: [
-            State {
-                name: "PathView"
-                when: MainWindow.showPathView == true
-                PropertyChanges { target: PhotoPathView; y: 80 }
-                PropertyChanges { target: PhotoGridView; y: -380 }
-            }
-        ]
+        states: State {
+            name: "PathView"
+            when: mainWindow.showPathView == true
+            PropertyChanges { target: photoPathView; y: 80 }
+            PropertyChanges { target: photoGridView; y: -380 }
+        }
 
         transitions: [
             Transition {
@@ -186,9 +184,9 @@ Item {
     }
 
     Text {
-        id: CategoryText;  anchors.horizontalCenter: parent.horizontalCenter; y: 15;
+        id: categoryText;  anchors.horizontalCenter: parent.horizontalCenter; y: 15;
         text: "Flickr - " +
-            (RssModel.tags=="" ? "Uploads from everyone" : "Recent Uploads tagged " + RssModel.tags)
+            (rssModel.tags=="" ? "Uploads from everyone" : "Recent Uploads tagged " + rssModel.tags)
         font.pointSize: 20; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
     }
 }

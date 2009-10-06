@@ -140,6 +140,8 @@ QFxPathView::~QFxPathView()
     The model provides a set of data that is used to create the items for the view.
     For large or dynamic datasets the model is usually provided by a C++ model object.
     Models can also be created directly in XML, using the ListModel element.
+
+    \sa {qmlmodels}{Data Models}
 */
 QVariant QFxPathView::model() const
 {

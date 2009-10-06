@@ -5,9 +5,9 @@ Rectangle {
     border.color: "black"
     width: 100
     height: 100
-    id: Page
+    id: page
     MouseRegion {
         anchors.fill: parent
-        onClicked: { bluerect.parent = Page; bluerect.x=0 }
+        onClicked: { bluerect.parent = page; bluerect.x=0 }
     }
 }

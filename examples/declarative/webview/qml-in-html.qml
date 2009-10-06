@@ -6,10 +6,10 @@ Rectangle {
     Flickable {
         width: parent.width
         height: parent.height/2
-        viewportWidth: Web.width*Web.scale
-        viewportHeight: Web.height*Web.scale
+        viewportWidth: web.width*web.scale
+        viewportHeight: web.height*web.scale
         WebView {
-            id: Web
+            id: web
             width: 250
             height: 420
             scale: 0.75

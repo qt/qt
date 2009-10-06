@@ -10,9 +10,8 @@ Rectangle {
     // Define a delegate component.  A component will be
     // instantiated for each visible item in the list.
     Component {
-        id: PetDelegate
+        id: petDelegate
         Item {
-            id: Wrapper
             width: 200; height: 50
             Column {
                 Text { text: 'Name: ' + name }
@@ -25,7 +24,7 @@ Rectangle {
     // Define a highlight component.  Just one of these will be instantiated
     // by each ListView and placed behind the current item.
     Component {
-        id: PetHighlight
+        id: petHighlight
         Rectangle { color: "#FFFF88" }
     }
 
@@ -50,25 +49,25 @@ Rectangle {
     // the third ListView's currentIndex.  By flicking List3 with
     // the mouse, the current index of List1 will be changed.
     ListView {
-        id: List1
+        id: list1
         width: 200; height: parent.height
-        model: MyPetsModel; delegate: PetDelegate
-        highlight: PetHighlight; currentIndex: List3.currentIndex
+        model: MyPetsModel; delegate: petDelegate
+        highlight: petHighlight; currentIndex: list3.currentIndex
         focus: true
     }
     ListView {
-        id: List2
+        id: list2
         x: 200; width: 200; height: parent.height
-        model: MyPetsModel; delegate: PetDelegate; highlight: PetHighlight
+        model: MyPetsModel; delegate: petDelegate; highlight: petHighlight
         preferredHighlightBegin: 80
         preferredHighlightEnd: 220
-        currentIndex: List1.currentIndex
+        currentIndex: list1.currentIndex
     }
     ListView {
-        id: List3
+        id: list3
         x: 400; width: 200; height: parent.height
-        model: MyPetsModel; delegate: PetDelegate; highlight: PetHighlight
-        currentIndex: List1.currentIndex
+        model: MyPetsModel; delegate: petDelegate; highlight: petHighlight
+        currentIndex: list1.currentIndex
         preferredHighlightBegin: 125
         preferredHighlightEnd: 126
         strictlyEnforceHighlightRange: true

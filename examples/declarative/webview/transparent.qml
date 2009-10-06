@@ -4,10 +4,10 @@ import Qt 4.6
 // if the HTML does not specify a background
 Rectangle {
     color: "green"
-    width: Web.width
-    height: Web.height
+    width: web.width
+    height: web.height
     WebView {
-        id: Web
+        id: web
         html: "Hello <b>World!</b>"
     }
 }

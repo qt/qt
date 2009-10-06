@@ -9,26 +9,26 @@ Rectangle {
     height: 320
 
     VisualItemModel {
-        id: ItemModel
+        id: itemModel
         Rectangle {
-            height: View.height; width: View.width; color: "#FFFEF0"
+            height: view.height; width: view.width; color: "#FFFEF0"
             Text { text: "Page 1"; font.bold: true; anchors.centerIn: parent }
         }
         Rectangle {
-            height: View.height; width: View.width; color: "#F0FFF7"
+            height: view.height; width: view.width; color: "#F0FFF7"
             Text { text: "Page 2"; font.bold: true; anchors.centerIn: parent }
         }
         Rectangle {
-            height: View.height; width: View.width; color: "#F4F0FF"
+            height: view.height; width: view.width; color: "#F4F0FF"
             Text { text: "Page 3"; font.bold: true; anchors.centerIn: parent }
         }
     }
 
     ListView {
-        id: View
+        id: view
         anchors.fill: parent
         anchors.bottomMargin: 30
-        model: ItemModel
+        model: itemModel
         preferredHighlightBegin: 0
         preferredHighlightEnd: 1
         strictlyEnforceHighlightRange: true
@@ -37,7 +37,7 @@ Rectangle {
 
     Rectangle {
         color: "gray"
-        anchors.top: View.bottom
+        anchors.top: view.bottom
         anchors.bottom: parent.bottom
         height: 30
         width: 240
@@ -46,12 +46,12 @@ Rectangle {
             anchors.centerIn: parent
             spacing: 20
             Repeater {
-                model: ItemModel.count
+                model: itemModel.count
                 Rectangle {
                     width: 5; height: 5
                     radius: 3
-                    MouseRegion { width: 20; height: 20; anchors.centerIn: parent; onClicked: View.currentIndex = index }
-                    color: View.currentIndex == index ? "blue" : "white"
+                    MouseRegion { width: 20; height: 20; anchors.centerIn: parent; onClicked: view.currentIndex = index }
+                    color: view.currentIndex == index ? "blue" : "white"
                 }
             }
         }
