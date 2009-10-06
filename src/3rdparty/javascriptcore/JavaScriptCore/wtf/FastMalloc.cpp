@@ -1431,7 +1431,7 @@ void TCMalloc_PageHeap::init()
 void* TCMalloc_PageHeap::runScavengerThread(void* context)
 {
   static_cast<TCMalloc_PageHeap*>(context)->scavengerThread();
-#if COMPILER(MSVC)
+#if COMPILER(MSVC) || PLATFORM(SOLARIS)
   // Without this, Visual Studio will complain that this method does not return a value.
   return 0;
 #endif
