@@ -2400,6 +2400,35 @@ QScriptContext *QScriptEngine::pushContext()
     return d->contextForFrame(newFrame);
 }
 
+/*!
+  Enters a new execution context and returns the associated
+  QScriptContext object.
+
+  Once you are done with the context, you should call popContext() to
+  restore the old context.
+
+  By default, the `this' object of the new context is the Global Object.
+  The context's \l{QScriptContext::callee()}{callee}() will be invalid.
+
+  Unlike pushContext(), the default scope chain is reset to include
+  only the global object and the QScriptContext's activation object.
+
+  \sa popContext()
+*/
+QScriptContext *QScriptEngine::pushCleanContext()
+{
+    Q_D(QScriptEngine);
+
+    JSC::CallFrame* newFrame = d->pushContext(d->currentFrame, d->currentFrame->globalData().dynamicGlobalObject,
+                                              JSC::ArgList(), /*callee = */0, false, true);
+
+    if (agent())
+        agent()->contextPush();
+
+    return d->contextForFrame(newFrame);
+}
+
+
 /*! \internal
    push a context for a native function.
    JSC native function doesn't have different stackframe or context. so we need to create one.
@@ -2411,7 +2440,8 @@ QScriptContext *QScriptEngine::pushContext()
    return the new top frame. (might be the same as exec if a new stackframe was not needed) or 0 if stack overflow
 */
 JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, JSC::JSValue _thisObject,
-                                                  const JSC::ArgList& args, JSC::JSObject *callee, bool calledAsConstructor)
+                                                  const JSC::ArgList& args, JSC::JSObject *callee, bool calledAsConstructor,
+                                                  bool clearScopeChain)
 {
     JSC::JSValue thisObject = _thisObject;
     if (calledAsConstructor) {
@@ -2445,7 +2475,14 @@ JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, JSC::JSV
         for (it = args.begin(); it != args.end(); ++it)
             newCallFrame[++dst] = *it;
         newCallFrame += argc + JSC::RegisterFile::CallFrameHeaderSize;
-        newCallFrame->init(0, /*vPC=*/0, exec->scopeChain(), exec, flags | ShouldRestoreCallFrame, argc, callee);
+
+        if (!clearScopeChain) {
+            newCallFrame->init(0, /*vPC=*/0, exec->scopeChain(), exec, flags | ShouldRestoreCallFrame, argc, callee);
+        } else {
+            JSC::JSObject *jscObject = originalGlobalObject();
+            JSC::ScopeChainNode *scn = new JSC::ScopeChainNode(0, jscObject, &exec->globalData(), jscObject);
+            newCallFrame->init(0, /*vPC=*/0, scn, exec, flags | ShouldRestoreCallFrame, argc, callee);
+        }
     } else {
         setContextFlags(newCallFrame, flags);
 #if ENABLE(JIT)
