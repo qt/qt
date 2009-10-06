@@ -4,6 +4,7 @@ HEADERS += \
 	codecs/qisciicodec_p.h \
 	codecs/qlatincodec_p.h \
 	codecs/qsimplecodec_p.h \
+	codecs/qtextcodec_p.h \
 	codecs/qtextcodec.h \
 	codecs/qtsciicodec_p.h \
 	codecs/qutfcodec_p.h \

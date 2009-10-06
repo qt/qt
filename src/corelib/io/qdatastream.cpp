@@ -442,7 +442,7 @@ QDataStream::FloatingPointPrecision QDataStream::floatingPointPrecision() const
 }
 
 /*!
-    Sets the floating point precision of the data stream. If the floating point precision is
+    Sets the floating point precision of the data stream to \a precision. If the floating point precision is
     DoublePrecision and the version of the data stream is Qt_4_6 or higher, all floating point
     numbers will be written and read with 64-bit precision. If the floating point precision is
     SinglePrecision and the version is Qt_4_6 or higher, all floating point numbers will be written

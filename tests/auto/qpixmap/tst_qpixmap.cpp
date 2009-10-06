@@ -166,6 +166,8 @@ private slots:
     void fromImage_crash();
 
     void fromData();
+
+    void preserveDepth();
 };
 
 static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
@@ -1448,6 +1450,23 @@ void tst_QPixmap::task_246446()
     QVERIFY(pm.mask().isNull());
 }
 
+void tst_QPixmap::preserveDepth()
+{
+    QPixmap target(64, 64);
+    target.fill(Qt::transparent);
+
+    QPixmap source(64, 64);
+    source.fill(Qt::white);
+
+    int depth = source.depth();
+
+    QPainter painter(&target);
+    painter.setBrush(source);
+    painter.drawRect(target.rect());
+    painter.end();
+
+    QCOMPARE(depth, source.depth());
+}
 
 QTEST_MAIN(tst_QPixmap)
 #include "tst_qpixmap.moc"

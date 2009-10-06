@@ -923,7 +923,7 @@ void QWidget::setAutoFillBackground(bool enabled)
 
     Note: Currently softkeys are only supported on the Symbian Platform.
 
-    \sa addAction, QAction, QMenuBar
+    \sa addAction(), QAction, QMenuBar
 
 */
 
@@ -5130,7 +5130,8 @@ void QWidgetPrivate::render_helper(QPainter *painter, const QPoint &targetOffset
             return;
 
         QPixmap pixmap(size);
-        if (!(renderFlags & QWidget::DrawWindowBackground))
+        if (!(renderFlags & QWidget::DrawWindowBackground)
+            || !q->palette().brush(q->backgroundRole()).isOpaque())
             pixmap.fill(Qt::transparent);
         q->render(&pixmap, QPoint(), toBePainted, renderFlags);
 
@@ -11447,20 +11448,29 @@ QWidget *QWidgetPrivate::widgetInNavigationDirection(Direction direction)
 
         const QRect targetCandidateRect = targetCandidate->rect().translated(targetCandidate->mapToGlobal(QPoint()));
 
-        // For focus proxies, the child widget handling the focus can have keypad navigation focus, 
+        // For focus proxies, the child widget handling the focus can have keypad navigation focus,
         // but the owner of the proxy cannot.
         // Additionally, empty widgets should be ignored.
         if (targetCandidate->focusProxy() || targetCandidateRect.isEmpty())
             continue;
 
+        // Only navigate to a target widget that...
         if (       targetCandidate != sourceWidget
+                   // ...takes the focus,
                 && targetCandidate->focusPolicy() & Qt::TabFocus
+                   // ...is above if DirectionNorth,
                 && !(direction == DirectionNorth && targetCandidateRect.bottom() > sourceRect.top())
+                   // ...is on the right if DirectionEast,
                 && !(direction == DirectionEast  && targetCandidateRect.left()   < sourceRect.right())
+                   // ...is below if DirectionSouth,
                 && !(direction == DirectionSouth && targetCandidateRect.top()    < sourceRect.bottom())
+                   // ...is on the left if DirectionWest,
                 && !(direction == DirectionWest  && targetCandidateRect.right()  > sourceRect.left())
+                   // ...is enabled,
                 && targetCandidate->isEnabled()
+                   // ...is visible,
                 && targetCandidate->isVisible()
+                   // ...is in the same window,
                 && targetCandidate->window() == sourceWindow) {
             const int targetCandidateDistance = pointToRect(sourcePoint, targetCandidateRect);
             if (targetCandidateDistance < shortestDistance) {

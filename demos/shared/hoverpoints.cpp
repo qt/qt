@@ -53,6 +53,7 @@ HoverPoints::HoverPoints(QWidget *widget, PointShape shape)
 {
     m_widget = widget;
     widget->installEventFilter(this);
+    widget->setAttribute(Qt::WA_AcceptTouchEvents);
 
     m_connectionType = CurveConnection;
     m_sortType = NoSort;
@@ -86,6 +87,8 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
 
         case QEvent::MouseButtonPress:
         {
+            if (!m_fingerPointMapping.isEmpty())
+                return true;
             QMouseEvent *me = (QMouseEvent *) event;
 
             QPointF clickPos = me->pos();
@@ -147,12 +150,89 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
         break;
 
         case QEvent::MouseButtonRelease:
+            if (!m_fingerPointMapping.isEmpty())
+                return true;
             m_currentIndex = -1;
             break;
 
         case QEvent::MouseMove:
+            if (!m_fingerPointMapping.isEmpty())
+                return true;
             if (m_currentIndex >= 0)
                 movePoint(m_currentIndex, ((QMouseEvent *)event)->pos());
+            break;
+        case QEvent::TouchBegin:
+        case QEvent::TouchUpdate:
+            {
+                const QTouchEvent *const touchEvent = static_cast<const QTouchEvent*>(event);
+                const QList<QTouchEvent::TouchPoint> points = touchEvent->touchPoints();
+                const qreal pointSize = qMax(m_pointSize.width(), m_pointSize.height());
+                foreach (const QTouchEvent::TouchPoint &touchPoint, points) {
+                    const int id = touchPoint.id();
+                    switch (touchPoint.state()) {
+                    case Qt::TouchPointPressed:
+                        {
+                            // find the point, move it
+                            QSet<int> activePoints = QSet<int>::fromList(m_fingerPointMapping.values());
+                            int activePoint = -1;
+                            qreal distance = -1;
+                            const int pointsCount = m_points.size();
+                            const int activePointCount = activePoints.size();
+                            if (pointsCount == 2 && activePointCount == 1) { // only two points
+                                activePoint = activePoints.contains(0) ? 1 : 0;
+                            } else {
+                                for (int i=0; i<pointsCount; ++i) {
+                                    if (activePoints.contains(i))
+                                        continue;
+
+                                    qreal d = QLineF(touchPoint.pos(), m_points.at(i)).length();
+                                    if ((distance < 0 && d < 12 * pointSize) || d < distance) {
+                                        distance = d;
+                                        activePoint = i;
+                                    }
+
+                                }
+                            }
+                            if (activePoint != -1) {
+                                m_fingerPointMapping.insert(touchPoint.id(), activePoint);
+                                movePoint(activePoint, touchPoint.pos());
+                            }
+                        }
+                        break;
+                    case Qt::TouchPointReleased:
+                        {
+                            // move the point and release
+                            QHash<int,int>::iterator it = m_fingerPointMapping.find(id);
+                            movePoint(it.value(), touchPoint.pos());
+                            m_fingerPointMapping.erase(it);
+                        }
+                        break;
+                    case Qt::TouchPointMoved:
+                        {
+                            // move the point
+                            const int pointIdx = m_fingerPointMapping.value(id, -1);
+                            if (pointIdx >= 0) // do we track this point?
+                                movePoint(pointIdx, touchPoint.pos());
+                        }
+                        break;
+                    default:
+                        break;
+                    }
+                }
+                if (m_fingerPointMapping.isEmpty()) {
+                    event->ignore();
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+            break;
+        case QEvent::TouchEnd:
+            if (m_fingerPointMapping.isEmpty()) {
+                event->ignore();
+                return false;
+            }
+            return true;
             break;
 
         case QEvent::Resize:
@@ -262,6 +342,8 @@ static QPointF bound_point(const QPointF &point, const QRectF &bounds, int lock)
 
 void HoverPoints::setPoints(const QPolygonF &points)
 {
+    if (points.size() != m_points.size())
+        m_fingerPointMapping.clear();
     m_points.clear();
     for (int i=0; i<points.size(); ++i)
         m_points << bound_point(points.at(i), boundingRect(), 0);

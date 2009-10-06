@@ -52,19 +52,14 @@
 #include <QtCore/QStateMachine>
 #include <QtCore/QFinalState>
 
-Bomb::Bomb(QGraphicsItem * parent, Qt::WindowFlags wFlags)
-    : QGraphicsWidget(parent,wFlags), launchAnimation(0)
+Bomb::Bomb() : PixmapItem(QString("bomb"), GraphicsScene::Big)
 {
-    pixmapItem = new PixmapItem(QString("bomb"),GraphicsScene::Big, this);
-    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    setFlags(QGraphicsItem::ItemIsMovable);
     setZValue(2);
-    resize(pixmapItem->boundingRect().size());
 }
 
 void Bomb::launch(Bomb::Direction direction)
 {
-    launchAnimation = new QSequentialAnimationGroup();
+    QSequentialAnimationGroup *launchAnimation = new QSequentialAnimationGroup;
     AnimationManager::self()->registerAnimation(launchAnimation);
     qreal delta = direction == Right ? 20 : - 20;
     QPropertyAnimation *anim = new QPropertyAnimation(this, "pos");
@@ -80,7 +75,7 @@ void Bomb::launch(Bomb::Direction direction)
     anim->setDuration(y()/2*60);
     launchAnimation->addAnimation(anim);
     connect(anim,SIGNAL(valueChanged(const QVariant &)),this,SLOT(onAnimationLaunchValueChanged(const QVariant &)));
-
+    connect(this, SIGNAL(bombExploded()), launchAnimation, SLOT(stop()));
     //We setup the state machine of the bomb
     QStateMachine *machine = new QStateMachine(this);
 
@@ -94,7 +89,7 @@ void Bomb::launch(Bomb::Direction direction)
     machine->setInitialState(launched);
 
     //### Add a nice animation when the bomb is destroyed
-    launched->addTransition(this, SIGNAL(bombExplosed()),final);
+    launched->addTransition(this, SIGNAL(bombExploded()),final);
 
     //If the animation is finished, then we move to the final state
     launched->addTransition(launched, SIGNAL(animationFinished()), final);
@@ -119,6 +114,5 @@ void Bomb::onAnimationLaunchValueChanged(const QVariant &)
 
 void Bomb::destroy()
 {
-    launchAnimation->stop();
-    emit bombExplosed();
+    emit bombExploded();
 }

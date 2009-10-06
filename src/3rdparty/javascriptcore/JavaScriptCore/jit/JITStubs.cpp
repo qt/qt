@@ -730,7 +730,7 @@ NEVER_INLINE void JITThunks::tryCachePutByID(CallFrame* callFrame, CodeBlock* co
     // Structure transition, cache transition info
     if (slot.type() == PutPropertySlot::NewProperty) {
         StructureChain* prototypeChain = structure->prototypeChain(callFrame);
-        if (!prototypeChain->isCacheable()) {
+        if (!prototypeChain->isCacheable() || structure->isDictionary()) {
             ctiPatchCallByReturnAddress(codeBlock, returnAddress, FunctionPtr(cti_op_put_by_id_generic));
             return;
         }
@@ -1978,28 +1978,6 @@ DEFINE_STUB_FUNCTION(void, op_put_by_val)
             PutPropertySlot slot;
             baseValue.put(callFrame, property, value, slot);
         }
-    }
-
-    CHECK_FOR_EXCEPTION_AT_END();
-}
-
-DEFINE_STUB_FUNCTION(void, op_put_by_val_array)
-{
-    STUB_INIT_STACK_FRAME(stackFrame);
-
-    CallFrame* callFrame = stackFrame.callFrame;
-    JSValue baseValue = stackFrame.args[0].jsValue();
-    int i = stackFrame.args[1].int32();
-    JSValue value = stackFrame.args[2].jsValue();
-
-    ASSERT(isJSArray(stackFrame.globalData, baseValue));
-
-    if (LIKELY(i >= 0))
-        asArray(baseValue)->JSArray::put(callFrame, i, value);
-    else {
-        Identifier property(callFrame, UString::from(i));
-        PutPropertySlot slot;
-        baseValue.put(callFrame, property, value, slot);
     }
 
     CHECK_FOR_EXCEPTION_AT_END();

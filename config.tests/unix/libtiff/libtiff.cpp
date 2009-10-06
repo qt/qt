@@ -41,6 +41,11 @@
 
 #include <tiffio.h>
 
+#if !defined(TIFF_VERSION) && defined(TIFF_VERSION_CLASSIC)
+// libtiff 4.0 splits it into TIFF_VERSION_CLASSIC and TIFF_VERSION_BIG
+#    define TIFF_VERSION TIFF_VERSION_CLASSIC
+#endif
+
 #if !defined(TIFF_VERSION)
 #    error "Required libtiff not found"
 #elif TIFF_VERSION < 42

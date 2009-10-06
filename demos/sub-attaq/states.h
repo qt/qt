@@ -136,8 +136,6 @@ class UpdateScoreState : public QState
 {
 public:
     UpdateScoreState(PlayState *game, QState *parent);
-protected:
-    void onEntry(QEvent *);
 private:
     QPropertyAnimation *scoreAnimation;
     PlayState *game;
