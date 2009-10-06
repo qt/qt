@@ -1654,8 +1654,10 @@ void QGLTextureCache::pixmapCleanupHook(QPixmap* pixmap)
     }
 #if defined(Q_WS_X11)
     QPixmapData *pd = pixmap->data_ptr().data();
-    Q_ASSERT(pd->ref == 1); // Make sure reference counting isn't broken
-    QGLContextPrivate::destroyGlSurfaceForPixmap(pd);
+    if (pd->classId() == QPixmapData::X11Class) {
+        Q_ASSERT(pd->ref == 1); // Make sure reference counting isn't broken
+        QGLContextPrivate::destroyGlSurfaceForPixmap(pd);
+    }
 #endif
 }
 
