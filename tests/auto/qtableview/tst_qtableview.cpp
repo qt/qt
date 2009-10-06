@@ -2339,7 +2339,7 @@ void tst_QTableView::scrollTo()
     QSize forcedSize(columnWidth * 2, rowHeight * 2);
     view.resize(forcedSize);
     QTest::qWaitForWindowShown(&view);
-    QTest::qWait(0);
+    QTest::qWait(50);
     QTRY_COMPARE(view.size(), forcedSize);
 
     view.setModel(&model);
@@ -2354,7 +2354,7 @@ void tst_QTableView::scrollTo()
     for (int c = 0; c < columnCount; ++c)
         view.setColumnWidth(c, columnWidth);
 
-    QTest::qWait(100); // ### needed to pass the test
+    QTest::qWait(150); // ### needed to pass the test
     view.horizontalScrollBar()->setValue(horizontalScroll);
     view.verticalScrollBar()->setValue(verticalScroll);
 

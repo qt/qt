@@ -9121,7 +9121,7 @@ void tst_QWidget::paintOutsidePaintEvent()
 
     widget.show();
     QTest::qWaitForWindowShown(&widget);
-    QTest::qWait(20);
+    QTest::qWait(60);
 
     const QPixmap before = QPixmap::grabWindow(widget.winId());
 
@@ -9131,6 +9131,7 @@ void tst_QWidget::paintOutsidePaintEvent()
     painter.fillRect(child1.rect(), Qt::red);
     painter.end();
     XSync(QX11Info::display(), false); // Flush output buffer.
+    QTest::qWait(60);
 
     const QPixmap after = QPixmap::grabWindow(widget.winId());
 

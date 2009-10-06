@@ -1003,9 +1003,9 @@ void tst_QMdiSubWindow::setSystemMenu()
     mainWindow.setCentralWidget(mdiArea);
     mainWindow.menuBar();
     mainWindow.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mainWindow);
-#endif
+    QTest::qWaitForWindowShown(&mainWindow);
+    QTest::qWait(60);
+
 
     QTRY_VERIFY(subWindow->isVisible());
     QPoint globalPopupPos;
