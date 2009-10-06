@@ -22,7 +22,7 @@ Rectangle {
         font.bold: true
         width: 370
         text: day
-        style: Outline
+        style: "Outline"
         styleColor: "#dedede"
     }
     Repeater {
