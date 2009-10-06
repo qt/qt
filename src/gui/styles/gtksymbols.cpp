@@ -984,7 +984,7 @@ QIcon QGtk::getFilesystemIcon(const QFileInfo &info)
     if (QGtk::gnome_vfs_init && QGtk::gnome_icon_lookup_sync) {
         QGtk::gnome_vfs_init();
         GtkIconTheme *theme = QGtk::gtk_icon_theme_get_default();
-        QString fileurl = QUrl::fromLocalFile(info.absoluteFilePath()).toString();
+        QString fileurl = QUrl::fromLocalFile(info.absoluteFilePath()).toEncoded();
         char * icon_name = QGtk::gnome_icon_lookup_sync(theme,
                                                         NULL,
                                                         qPrintable(fileurl),
