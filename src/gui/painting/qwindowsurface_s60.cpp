@@ -85,7 +85,9 @@ QS60WindowSurface::~QS60WindowSurface()
 void QS60WindowSurface::beginPaint(const QRegion &rgn)
 {
     if (!qt_widget_private(window())->isOpaque) {
-        QImage image = static_cast<QS60PixmapData *>(d_ptr->device.data_ptr().data())->image;
+        QS60PixmapData *pixmapData = static_cast<QS60PixmapData *>(d_ptr->device.data_ptr().data());
+        pixmapData->beginDataAccess();
+        QImage &image = pixmapData->image;
         QRgb *data = reinterpret_cast<QRgb *>(image.bits());
         const int row_stride = image.bytesPerLine() / 4;
 
@@ -103,6 +105,7 @@ void QS60WindowSurface::beginPaint(const QRegion &rgn)
                 row += row_stride;
             }
         }
+        pixmapData->endDataAccess();
     }
 }
 
