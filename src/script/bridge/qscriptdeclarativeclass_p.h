@@ -61,6 +61,7 @@ QT_BEGIN_NAMESPACE
 
 class QScriptDeclarativeClassPrivate;
 class PersistentIdentifierPrivate;
+class QScriptContext;
 class Q_SCRIPT_EXPORT QScriptDeclarativeClass
 {
 public:
@@ -74,6 +75,8 @@ public:
 
     static QScriptValue function(const QScriptValue &, const Identifier &);
     static QScriptValue property(const QScriptValue &, const Identifier &);
+
+    static QScriptValue scopeChainValue(QScriptContext *, int index);
 
     class Q_SCRIPT_EXPORT PersistentIdentifier 
     {
@@ -113,6 +116,7 @@ public:
     virtual QObject *toQObject(Object *, bool *ok = 0);
     virtual QVariant toVariant(Object *, bool *ok = 0);
 
+    QScriptContext *context;
 protected:
     QScopedPointer<QScriptDeclarativeClassPrivate> d_ptr;
 };

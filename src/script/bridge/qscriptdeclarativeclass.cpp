@@ -47,6 +47,7 @@
 #include <private/qscriptengine_p.h>
 #include <private/qscriptvalue_p.h>
 #include <private/qscriptqobject_p.h>
+#include <private/qscriptactivationobject_p.h>
 #include <QtCore/qstringlist.h>
 
 QT_BEGIN_NAMESPACE
@@ -78,14 +79,14 @@ QScriptDeclarativeClass::PersistentIdentifier::operator=(const PersistentIdentif
 class QScriptDeclarativeClassPrivate
 {
 public:
-    QScriptDeclarativeClassPrivate() {}
+    QScriptDeclarativeClassPrivate() : engine(0), q_ptr(0) {}
 
     QScriptEngine *engine;
     QScriptDeclarativeClass *q_ptr;
 };
 
 QScriptDeclarativeClass::QScriptDeclarativeClass(QScriptEngine *engine)
-: d_ptr(new QScriptDeclarativeClassPrivate)
+: context(0), d_ptr(new QScriptDeclarativeClassPrivate)
 {
     Q_ASSERT(sizeof(void*) == sizeof(JSC::Identifier));
     d_ptr->q_ptr = this;
@@ -171,6 +172,51 @@ QScriptValue QScriptDeclarativeClass::property(const QScriptValue &v, const Iden
     if (const_cast<JSC::JSObject*>(object)->getOwnPropertySlot(exec, id, slot)) {
         result = slot.getValue(exec, id);
         return d->engine->scriptValueFromJSCValue(result);
+    }
+
+    return QScriptValue();
+}
+
+/*
+Returns the scope chain entry \a index from the end.  This is equivalent to:
+    context->scopeChain().at(context->scopeChain.length() - 1 - index)
+*/
+QScriptValue QScriptDeclarativeClass::scopeChainValue(QScriptContext *context, int index)
+{
+    context->activationObject(); //ensure the creation of the normal scope for native context
+    const JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(context);
+    QScriptEnginePrivate *engine = QScript::scriptEngineFromExec(frame);
+
+    JSC::ScopeChainNode *node = frame->scopeChain();
+    JSC::ScopeChainIterator it(node);
+
+    int count = 0;
+    for (it = node->begin(); it != node->end(); ++it) 
+        ++count;
+
+    if (count < index)
+        return QScriptValue();
+
+    count -= index;
+
+    for (it = node->begin(); it != node->end(); ++it) {
+
+        if (count == 0) {
+
+            JSC::JSObject *object = *it;
+            if (!object) return QScriptValue();
+
+            if (object->inherits(&QScript::QScriptActivationObject::info)
+                    && (static_cast<QScript::QScriptActivationObject*>(object)->delegate() != 0)) {
+                // Return the object that property access is being delegated to
+                object = static_cast<QScript::QScriptActivationObject*>(object)->delegate();
+            }
+            return engine->scriptValueFromJSCValue(object);
+
+        } else {
+            --count;
+        }
+
     }
 
     return QScriptValue();

@@ -87,13 +87,16 @@ bool DeclarativeObjectDelegate::getOwnPropertySlot(QScriptObject* object,
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScriptDeclarativeClass::Identifier identifier = (void *)propertyName.ustring().rep();
 
+    m_class->context = reinterpret_cast<QScriptContext *>(exec);
     QScriptClass::QueryFlags flags = 
         m_class->queryProperty(m_object, identifier, QScriptClass::HandlesReadAccess);
     if (flags & QScriptClass::HandlesReadAccess) {
         QScriptValue value = m_class->property(m_object, identifier);
+        m_class->context = 0;
         slot.setValue(engine->scriptValueToJSCValue(value));
         return true;
     }
+    m_class->context = 0;
 
     return QScriptObjectDelegate::getOwnPropertySlot(object, exec, propertyName, slot);
 }
@@ -105,12 +108,16 @@ void DeclarativeObjectDelegate::put(QScriptObject* object, JSC::ExecState *exec,
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScriptDeclarativeClass::Identifier identifier = (void *)propertyName.ustring().rep();
 
+    m_class->context = reinterpret_cast<QScriptContext *>(exec);
     QScriptClass::QueryFlags flags = 
         m_class->queryProperty(m_object, identifier, QScriptClass::HandlesWriteAccess);
     if (flags & QScriptClass::HandlesWriteAccess) {
         m_class->setProperty(m_object, identifier, engine->scriptValueFromJSCValue(value));
+        m_class->context = 0;
         return;
     }
+    m_class->context = 0;
+
     QScriptObjectDelegate::put(object, exec, propertyName, value, slot);
 }
 
