@@ -24,7 +24,7 @@ private:
     QmlEngine engine;
     QString tmpDir() const
     {
-        static QString tmpd = QDir::tempPath()+"/tst_sql_output-"
+        static QString tmpd = QDir::tempPath()+"/tst_qfxwebview-"
             + QDateTime::currentDateTime().toString(QLatin1String("yyyyMMddhhmmss"));
         return tmpd;
     }
