@@ -2262,6 +2262,9 @@ void tst_QUrl::ipv6_2_data()
     QTest::newRow("[::ffff:129.144.52.38]")
         << QString("http://[::ffff:129.144.52.38]/cgi/test.cgi")
         << QString("http://[::ffff:129.144.52.38]/cgi/test.cgi");
+    QTest::newRow("[::FFFF:129.144.52.38]")
+        << QString("http://[::FFFF:129.144.52.38]/cgi/test.cgi")
+        << QString("http://[::ffff:129.144.52.38]/cgi/test.cgi");
 }
 
 void tst_QUrl::ipv6_2()
