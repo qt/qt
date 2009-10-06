@@ -519,6 +519,9 @@ QTextBlock QPlainTextEditControl::firstVisibleBlock() const
 int QPlainTextEditControl::hitTest(const QPointF &point, Qt::HitTestAccuracy ) const {
     int currentBlockNumber = topBlock;
     QTextBlock currentBlock = document()->findBlockByNumber(currentBlockNumber);
+    if (!currentBlock.isValid())
+        return -1;
+
     QPlainTextDocumentLayout *documentLayout = qobject_cast<QPlainTextDocumentLayout*>(document()->documentLayout());
     Q_ASSERT(documentLayout);
 
