@@ -1294,10 +1294,17 @@ void tst_QSvgRenderer::testUseElement()
         p.begin(&images[i]);
         renderer.render(&p);
         p.end();
+
         if (i < 4 && i != 0) {
             QCOMPARE(images[0], images[i]);
         } else if (i > 4 && i < 7) {
-            QCOMPARE(images[4], images[i]);
+            if (sizeof(qreal) != sizeof(float))
+            {
+                // These images use blending functions which due to numerical
+                // issues on Windows CE and likes differ in very few pixels.
+                // For this reason an exact comparison will fail.
+                QCOMPARE(images[4], images[i]);
+            }
         } else if (i > 7) {
             QCOMPARE(images[8], images[i]);
         }

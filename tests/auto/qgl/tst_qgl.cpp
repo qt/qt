@@ -1754,6 +1754,29 @@ void tst_QGL::destroyFBOAfterContext()
     delete fbo;
 }
 
+#ifdef QT_BUILD_INTERNAL
+
+class tst_QGLResource : public QObject
+{
+    Q_OBJECT
+public:
+    tst_QGLResource(QObject *parent = 0) : QObject(parent) {}
+    ~tst_QGLResource() { ++deletions; }
+
+    static int deletions;
+};
+
+int tst_QGLResource::deletions = 0;
+
+static void qt_shared_test_free(void *data)
+{
+    delete reinterpret_cast<tst_QGLResource *>(data);
+}
+
+Q_GLOBAL_STATIC_WITH_ARGS(QGLContextResource, qt_shared_test, (qt_shared_test_free))
+
+#endif
+
 void tst_QGL::shareRegister()
 {
 #ifdef QT_BUILD_INTERNAL
@@ -1775,6 +1798,12 @@ void tst_QGL::shareRegister()
     guard.setId(3);
     QVERIFY(guard.id() == 3);
 
+    // Add a resource to the first context.
+    tst_QGLResource *res1 = new tst_QGLResource();
+    QVERIFY(!qt_shared_test()->value(glw1->context()));
+    qt_shared_test()->insert(glw1->context(), res1);
+    QVERIFY(qt_shared_test()->value(glw1->context()) == res1);
+
     // Create another context that shares with the first.
     QGLWidget *glw2 = new QGLWidget(0, glw1);
     if (!glw2->isSharing()) {
@@ -1783,6 +1812,10 @@ void tst_QGL::shareRegister()
         QSKIP("Context sharing is not supported", SkipSingle);
     }
     QVERIFY(glw1->context() != glw2->context());
+
+    // Check that the first context's resource is also on the second.
+    QVERIFY(qt_shared_test()->value(glw1->context()) == res1);
+    QVERIFY(qt_shared_test()->value(glw2->context()) == res1);
 
     // Guard should still be the same.
     QVERIFY(guard.context() == glw1->context());
@@ -1813,6 +1846,14 @@ void tst_QGL::shareRegister()
     // Create a guard on the standalone context.
     QGLSharedResourceGuard guard3(glw3->context());
     guard3.setId(5);
+
+    // Add a resource to the third context.
+    tst_QGLResource *res3 = new tst_QGLResource();
+    QVERIFY(!qt_shared_test()->value(glw3->context()));
+    qt_shared_test()->insert(glw3->context(), res3);
+    QVERIFY(qt_shared_test()->value(glw1->context()) == res1);
+    QVERIFY(qt_shared_test()->value(glw2->context()) == res1);
+    QVERIFY(qt_shared_test()->value(glw3->context()) == res3);
 
     // First two should still be sharing, but third is in its own list.
     list = shareReg->shares(glw1->context());
@@ -1849,6 +1890,11 @@ void tst_QGL::shareRegister()
     // Delete the first context.
     delete glw1;
 
+    // The first context's resource should transfer to the second context.
+    QCOMPARE(tst_QGLResource::deletions, 0);
+    QVERIFY(qt_shared_test()->value(glw2->context()) == res1);
+    QVERIFY(qt_shared_test()->value(glw3->context()) == res3);
+
     // Shared guard should now be the second context, with the id the same.
     QVERIFY(guard.context() == glw2->context());
     QVERIFY(guard.id() == 3);
@@ -1859,9 +1905,11 @@ void tst_QGL::shareRegister()
     list = shareReg->shares(glw2->context());
     QCOMPARE(list.size(), 0);
 
-    // Clean up.
+    // Clean up and check that the resources are properly deleted.
     delete glw2;
+    QCOMPARE(tst_QGLResource::deletions, 1);
     delete glw3;
+    QCOMPARE(tst_QGLResource::deletions, 2);
 
     // Guards should now be null and the id zero.
     QVERIFY(guard.context() == 0);

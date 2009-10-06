@@ -219,6 +219,9 @@ public:
 #endif
 };
 
+class QGLContextResource;
+class QGLSharedResourceGuard;
+
 // QGLContextPrivate has the responsibility of creating context groups.
 // QGLContextPrivate and QGLShareRegister will both maintain the reference counter and destroy
 // context groups when needed.
@@ -226,42 +229,29 @@ public:
 class QGLContextGroup
 {
 public:
+    ~QGLContextGroup();
+
     QGLExtensionFuncs &extensionFuncs() {return m_extensionFuncs;}
     const QGLContext *context() const {return m_context;}
+
+    void addGuard(QGLSharedResourceGuard *guard);
+    void removeGuard(QGLSharedResourceGuard *guard);
 private:
-    QGLContextGroup(const QGLContext *context) : m_context(context), m_refs(1) { }
+    QGLContextGroup(const QGLContext *context) : m_context(context), m_guards(0), m_refs(1) { }
 
     QGLExtensionFuncs m_extensionFuncs;
     const QGLContext *m_context; // context group's representative
     QList<const QGLContext *> m_shares;
+    QHash<QGLContextResource *, void *> m_resources;
+    QGLSharedResourceGuard *m_guards; // double-linked list of active guards.
     QAtomicInt m_refs;
 
+    void cleanupResources(const QGLContext *ctx);
+
     friend class QGLShareRegister;
+    friend class QGLContext;
     friend class QGLContextPrivate;
-};
-
-// Reference to a QGLContext which automatically switches to another
-// shared context when the main one is destroyed.  If there is no
-// shared context to switch to, the context pointer is set to null.
-// Note: should be merged into QGLContextGroup at some point.
-class QGLContextReference : public QObject
-{
-    Q_OBJECT
-public:
-    QGLContextReference(const QGLContext *ctx);
-    ~QGLContextReference() {}
-
-    const QGLContext *context() const { return m_ctx; }
-
-    void ref() { m_ref.ref(); }
-    bool deref() { return m_ref.deref(); }
-
-private slots:
-    void aboutToDestroyContext(const QGLContext *ctx);
-
-private:
-    QAtomicInt m_ref;
-    const QGLContext *m_ctx;
+    friend class QGLContextResource;
 };
 
 class QGLTexture;
@@ -270,7 +260,7 @@ class QGLContextPrivate
 {
     Q_DECLARE_PUBLIC(QGLContext)
 public:
-    explicit QGLContextPrivate(QGLContext *context) : internal_context(false), q_ptr(context) {reference = new QGLContextReference(context); group = new QGLContextGroup(context);}
+    explicit QGLContextPrivate(QGLContext *context) : internal_context(false), q_ptr(context) {group = new QGLContextGroup(context);}
     ~QGLContextPrivate();
     QGLTexture *bindTexture(const QImage &image, GLenum target, GLint format,
                             QGLContext::BindOptions options);
@@ -333,7 +323,6 @@ public:
     QGLContext *q_ptr;
     QGLFormat::OpenGLVersionFlags version_flags;
 
-    QGLContextReference *reference;
     QGLContextGroup *group;
     GLint max_texture_size;
 
@@ -411,6 +400,46 @@ public:
 
 extern Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg();
 
+// Temporarily make a context current if not already current or
+// shared with the current contex.  The previous context is made
+// current when the object goes out of scope.
+class Q_OPENGL_EXPORT QGLShareContextScope
+{
+public:
+    QGLShareContextScope(const QGLContext *ctx)
+        : m_oldContext(0)
+    {
+        QGLContext *currentContext = const_cast<QGLContext *>(QGLContext::currentContext());
+        if (currentContext != ctx && !QGLContext::areSharing(ctx, currentContext)) {
+            m_oldContext = currentContext;
+            m_ctx = const_cast<QGLContext *>(ctx);
+            m_ctx->makeCurrent();
+        } else {
+            m_ctx = currentContext;
+        }
+    }
+
+    operator QGLContext *()
+    {
+        return m_ctx;
+    }
+
+    QGLContext *operator->()
+    {
+        return m_ctx;
+    }
+
+    ~QGLShareContextScope()
+    {
+        if (m_oldContext)
+            m_oldContext->makeCurrent();
+    }
+
+private:
+    QGLContext *m_oldContext;
+    QGLContext *m_ctx;
+};
+
 class QGLTexture {
 public:
     QGLTexture(QGLContext *ctx = 0, GLuint tx_id = 0, GLenum tx_target = GL_TEXTURE_2D,
@@ -426,12 +455,8 @@ public:
 
     ~QGLTexture() {
         if (options & QGLContext::MemoryManagedBindOption) {
-            QGLContext *current = const_cast<QGLContext *>(QGLContext::currentContext());
-            QGLContext *ctx = const_cast<QGLContext *>(context);
-            Q_ASSERT(ctx);
-            bool switch_context = current != ctx && !QGLContext::areSharing(current, ctx);
-            if (switch_context)
-                ctx->makeCurrent();
+            Q_ASSERT(context);
+            QGLShareContextScope scope(context);
 #if defined(Q_WS_X11)
             // Although glXReleaseTexImage is a glX call, it must be called while there
             // is a current context - the context the pixmap was bound to a texture in.
@@ -441,8 +466,6 @@ public:
                 QGLContextPrivate::unbindPixmapFromTexture(boundPixmap);
 #endif
             glDeleteTextures(1, &id);
-            if (switch_context && current)
-                current->makeCurrent();
         }
      }
 
@@ -506,66 +529,21 @@ inline GLenum qt_gl_preferredTextureTarget()
 }
 
 // One resource per group of shared contexts.
-class QGLContextResource : public QObject
+class Q_AUTOTEST_EXPORT QGLContextResource
 {
-    Q_OBJECT
 public:
     typedef void (*FreeFunc)(void *);
-    QGLContextResource(FreeFunc f, QObject *parent = 0);
+    QGLContextResource(FreeFunc f);
     ~QGLContextResource();
     // Set resource 'value' for 'key' and all its shared contexts.
     void insert(const QGLContext *key, void *value);
     // Return resource for 'key' or a shared context.
     void *value(const QGLContext *key);
-    // Free resource for 'key' and all its shared contexts.
-    void removeGroup(const QGLContext *key);
-private slots:
-    // Remove entry 'key' from cache and delete resource if there are no shared contexts.
-    void removeOne(const QGLContext *key);
+    // Cleanup 'value' in response to a context group being destroyed.
+    void cleanup(const QGLContext *ctx, void *value);
 private:
-    typedef QHash<const QGLContext *, void *> ResourceHash;
-    ResourceHash m_resources;
     FreeFunc free;
-};
-
-// Temporarily make a context current if not already current or
-// shared with the current contex.  The previous context is made
-// current when the object goes out of scope.
-class Q_OPENGL_EXPORT QGLShareContextScope
-{
-public:
-    QGLShareContextScope(const QGLContext *ctx)
-        : m_oldContext(0)
-    {
-        QGLContext *currentContext = const_cast<QGLContext *>(QGLContext::currentContext());
-        if (currentContext != ctx && !QGLContext::areSharing(ctx, currentContext)) {
-            m_oldContext = currentContext;
-            m_ctx = const_cast<QGLContext *>(ctx);
-            m_ctx->makeCurrent();
-        } else {
-            m_ctx = currentContext;
-        }
-    }
-
-    operator QGLContext *()
-    {
-        return m_ctx;
-    }
-
-    QGLContext *operator->()
-    {
-        return m_ctx;
-    }
-
-    ~QGLShareContextScope()
-    {
-        if (m_oldContext)
-            m_oldContext->makeCurrent();
-    }
-
-private:
-    QGLContext *m_oldContext;
-    QGLContext *m_ctx;
+    QAtomicInt active;
 };
 
 // Put a guard around a GL object identifier and its context.
@@ -577,44 +555,27 @@ class Q_OPENGL_EXPORT QGLSharedResourceGuard
 {
 public:
     QGLSharedResourceGuard(const QGLContext *context)
-        : m_ctxref(0), m_id(0)
+        : m_group(0), m_id(0), m_next(0), m_prev(0)
     {
         setContext(context);
     }
     QGLSharedResourceGuard(const QGLContext *context, GLuint id)
-        : m_ctxref(0), m_id(id)
+        : m_group(0), m_id(id), m_next(0), m_prev(0)
     {
         setContext(context);
     }
-    ~QGLSharedResourceGuard()
-    {
-        if (m_ctxref && !m_ctxref->deref())
-            delete m_ctxref;
-    }
+    ~QGLSharedResourceGuard();
 
     const QGLContext *context() const
     {
-        return m_ctxref ? m_ctxref->context() : 0;
+        return m_group ? m_group->context() : 0;
     }
 
-    void setContext(const QGLContext *context)
-    {
-        if (m_ctxref && !m_ctxref->deref())
-            delete m_ctxref;
-        if (context) {
-            m_ctxref = context->d_ptr->reference;
-            m_ctxref->ref();
-        } else {
-            m_ctxref = 0;
-        }
-    }
+    void setContext(const QGLContext *context);
 
     GLuint id() const
     {
-        if (m_ctxref && m_ctxref->context())
-            return m_id;
-        else
-            return 0;
+        return m_id;
     }
 
     void setId(GLuint id)
@@ -623,8 +584,12 @@ public:
     }
 
 private:
-    QGLContextReference *m_ctxref;
+    QGLContextGroup *m_group;
     GLuint m_id;
+    QGLSharedResourceGuard *m_next;
+    QGLSharedResourceGuard *m_prev;
+
+    friend class QGLContextGroup;
 };
 
 QT_END_NAMESPACE

@@ -94,7 +94,6 @@ protected:
             movementAnimation->setEndValue(QPointF(submarine->scene()->width()-submarine->size().width(),submarine->y()));
             movementAnimation->setDuration((submarine->scene()->width()-submarine->size().width()-submarine->x())/submarine->currentSpeed()*12);
         }
-        movementAnimation->setStartValue(submarine->pos());
         QAnimationState::onEntry(e);
     }
 

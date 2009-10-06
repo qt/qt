@@ -2846,11 +2846,11 @@ void tst_QAccessibility::mdiSubWindowTest()
     {
     QMdiArea mdiArea;
     mdiArea.show();
+    qApp->setActiveWindow(&mdiArea);
 #if defined(Q_WS_X11)
     qt_x11_wait_for_window_manager(&mdiArea);
-    QTest::qWait(100);
+    QTest::qWait(150);
 #endif
-    qApp->setActiveWindow(&mdiArea);
 
     bool isSubWindowsPlacedNextToEachOther = false;
     const int subWindowCount =  5;

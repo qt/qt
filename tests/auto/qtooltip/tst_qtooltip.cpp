@@ -66,6 +66,7 @@ private slots:
     // task-specific tests below me
     void task183679_data();
     void task183679();
+    void whatsThis();
     void setPalette();
 };
 
@@ -130,6 +131,27 @@ void tst_QToolTip::task183679()
 
     QCOMPARE(QToolTip::isVisible(), visible);
 }
+
+#include <QWhatsThis>
+
+void tst_QToolTip::whatsThis()
+{
+    qApp->setStyleSheet( "QWidget { font-size: 72px; }" );
+    QWhatsThis::showText(QPoint(0,0), "THis is text");
+    QTest::qWait(400);	
+    QWidget *whatsthis = 0;
+    foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+        if (widget->inherits("QWhatsThat")) {
+            whatsthis = widget;
+            break;
+        }
+    }
+    QVERIFY(whatsthis);
+    QVERIFY(whatsthis->isVisible());
+    QVERIFY(whatsthis->height() > 100); // Test QTBUG-2416
+    qApp->setStyleSheet("");
+}
+
 
 void tst_QToolTip::setPalette()
 {

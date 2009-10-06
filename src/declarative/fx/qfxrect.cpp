@@ -74,7 +74,7 @@ void QFxPen::setColor(const QColor &c)
 
 void QFxPen::setWidth(int w)
 {
-    if (_width == w)
+    if (_width == w && _valid)
         return;
 
     _width = w;
@@ -425,41 +425,18 @@ void QFxRect::drawRect(QPainter &p)
         if (d->smooth)
             p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
 
-        int offset = 0;
         const int pw = d->pen && d->pen->isValid() ? (d->pen->width()+1)/2*2 : 0;
-        const int realpw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
 
-        if (d->radius > 0) {
+        if (d->radius > 0)
             generateRoundedRect();
-            //### implicit conversion to int
-            offset = int(d->radius+realpw+1);
-        } else {
+        else
             generateBorderedRect();
-            offset = realpw+1;
-        }
 
-        //basically same code as QFxImage uses to paint sci images
-        int w = width()+pw;
-        int h = height()+pw;
-        int xOffset = offset;
-        int xSide = xOffset * 2;
-        bool xMiddles=true;
-        if (xSide > w) {
-            xMiddles=false;
-            xOffset = w/2 + 1;
-            xSide = xOffset * 2;
-        }
-        int yOffset = offset;
-        int ySide = yOffset * 2;
-        bool yMiddles=true;
-        if (ySide > h) {
-            yMiddles = false;
-            yOffset = h/2 + 1;
-            ySide = yOffset * 2;
-        }
+        int xOffset = (d->rectImage.width()-1)/2;
+        int yOffset = (d->rectImage.height()-1)/2;
+        Q_ASSERT(d->rectImage.width() == 2*xOffset + 1);
+        Q_ASSERT(d->rectImage.height() == 2*yOffset + 1);
 
-        Q_ASSERT(d->rectImage.width() >= 2*xOffset + 1);
-        Q_ASSERT(d->rectImage.height() >= 2*yOffset + 1);
         QMargins margins(xOffset, yOffset, xOffset, yOffset);
         QTileRules rules(Qt::StretchTile, Qt::StretchTile);
         qDrawBorderPixmap(&p, QRect(-pw/2, -pw/2, width()+pw, height()+pw), margins, d->rectImage, d->rectImage.rect(), margins, rules);

@@ -795,6 +795,8 @@ void tst_QFileSystemModel::sort()
     model->sort(0, Qt::DescendingOrder);
     QVERIFY(idx.column() != 0);
 
+    model->setRootPath(QDir::homePath());
+
     QFETCH(bool, fileDialogMode);
 
     MyFriendFileSystemModel *myModel = new MyFriendFileSystemModel();

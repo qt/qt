@@ -751,6 +751,7 @@ bool QPSPrintEngine::begin(QPaintDevice *pdev)
     d->boundingBox = QRect();
     d->fontsUsed = "";
     d->hugeDocument = false;
+    d->simplePen = false;
 
     setActive(true);
     d->printerState = QPrinter::Active;

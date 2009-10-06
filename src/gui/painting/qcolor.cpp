@@ -514,7 +514,7 @@ QString QColor::name() const
     \i #RRRRGGGGBBBB
     \i A name from the list of colors defined in the list of \l{SVG color keyword names}
        provided by the World Wide Web Consortium; for example, "steelblue" or "gainsboro".
-       These color names work on all platforms. Note that these color names are \i not the
+       These color names work on all platforms. Note that these color names are \e not the
        same as defined by the Qt::GlobalColor enums, e.g. "green" and Qt::green does not
        refer to the same color.
     \i \c transparent - representing the absence of a color.
