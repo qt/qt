@@ -2256,8 +2256,13 @@ void qt_init(QApplicationPrivate *priv, int,
             unsigned long length, after;
             uchar *data = 0;
 
-            if (XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(DTWM_IS_RUNNING),
-                                   0, 1, False, AnyPropertyType, &type, &format, &length,
+            QString session = QString::fromLocal8Bit(qgetenv("DESKTOP_SESSION"));
+            if (session == QLatin1String("kde")) {
+                X11->desktopEnvironment = DE_KDE;
+            } else if (session == QLatin1String("gnome") || session == QLatin1String("xfce")) {
+                X11->desktopEnvironment = DE_GNOME;
+            } else if (XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(DTWM_IS_RUNNING),
+                                          0, 1, False, AnyPropertyType, &type, &format, &length,
                                    &after, &data) == Success && length) {
                 // DTWM is running, meaning most likely CDE is running...
                 X11->desktopEnvironment = DE_CDE;
