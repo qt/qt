@@ -70,8 +70,8 @@ Item {
                     PropertyChanges { target: ItemRotation; angle: 0 }
                     PropertyChanges { target: Shadows; opacity: 0 }
                     PropertyChanges { target: ImageDetails; y: 20 }
-                    PropertyChanges { target: PhotoGridView; y: "-480" }
-                    PropertyChanges { target: PhotoPathView; y: "-480" }
+                    PropertyChanges { target: PhotoGridView; y: -480 }
+                    PropertyChanges { target: PhotoPathView; y: -480 }
                     PropertyChanges { target: ViewModeButton; opacity: 0 }
                     PropertyChanges { target: TagsEdit; opacity: 0 }
                     PropertyChanges { target: FetchButton; opacity: 0 }
@@ -82,8 +82,10 @@ Item {
             transitions: [
                 Transition {
                     from: "*"; to: "Details"
-                    ParentAction { }
-                    NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
+                    SequentialAnimation {
+                        ParentAction { }
+                        NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
+                    }
                 },
                 Transition {
                     from: "Details"; to: "*"

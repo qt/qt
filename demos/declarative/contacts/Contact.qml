@@ -82,8 +82,8 @@ Item {
     }
     Column {
         id: layout
-        width: contents.width
-        height:contents.height
+        width: childrenRect.width
+        height: childrenRect.height
         anchors.centerIn: parent
         spacing: 5
         ContactField {

@@ -40,8 +40,8 @@ two objects, a \l Rectangle, and an \l Image. Between the braces, we can specify
 information about the object, such as its properties.
 
 Properties are specified as \c {property: value} (much like CSS). In the above
-example, we can see the Image has a property named \e source, which has been
-assigned the value \e "pics/logo.png". The property and its value are
+example, we can see the Image has a property named \c source, which has been
+assigned the value \c "pics/logo.png". The property and its value are
 separated by a colon.
 
 Properties can be specified one-per-line:
@@ -68,7 +68,9 @@ In addition to assigning values to properties, you can also assign
 expressions written in JavaScript.
 
 \code
-Rotation { angle: 360*3 }
+Rotation {
+    angle: 360 * 3
+}
 \endcode
 
 These expressions can include references to other objects and properties, in which case

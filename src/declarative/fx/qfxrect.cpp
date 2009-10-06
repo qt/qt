@@ -427,14 +427,15 @@ void QFxRect::drawRect(QPainter &p)
 
         int offset = 0;
         const int pw = d->pen && d->pen->isValid() ? (d->pen->width()+1)/2*2 : 0;
+        const int realpw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
 
         if (d->radius > 0) {
             generateRoundedRect();
             //### implicit conversion to int
-            offset = int(d->radius+1.5+pw);
+            offset = int(d->radius+realpw+1);
         } else {
             generateBorderedRect();
-            offset = pw+1;
+            offset = realpw+1;
         }
 
         //basically same code as QFxImage uses to paint sci images
@@ -457,6 +458,8 @@ void QFxRect::drawRect(QPainter &p)
             ySide = yOffset * 2;
         }
 
+        Q_ASSERT(d->rectImage.width() >= 2*xOffset + 1);
+        Q_ASSERT(d->rectImage.height() >= 2*yOffset + 1);
         QMargins margins(xOffset, yOffset, xOffset, yOffset);
         QTileRules rules(Qt::StretchTile, Qt::StretchTile);
         qDrawBorderPixmap(&p, QRect(-pw/2, -pw/2, width()+pw, height()+pw), margins, d->rectImage, d->rectImage.rect(), margins, rules);
@@ -479,6 +482,8 @@ void QFxRect::drawRect(QPainter &p)
     \note Generally scaling artifacts are only visible if the item is stationary on
     the screen.  A common pattern when animating an item is to disable smooth
     filtering at the beginning of the animation and reenable it at the conclusion.
+
+    \image rect-smooth.png
 */
 
 QRectF QFxRect::boundingRect() const
