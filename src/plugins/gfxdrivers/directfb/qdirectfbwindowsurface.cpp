@@ -276,6 +276,8 @@ void QDirectFBWindowSurface::setPermanentState(const QByteArray &state)
 {
     if (state.size() == sizeof(this)) {
         sibling = *reinterpret_cast<QDirectFBWindowSurface *const*>(state.constData());
+        Q_ASSERT(sibling);
+        sibling->setSurfaceFlags(surfaceFlags());
     }
 }
 
