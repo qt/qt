@@ -82,17 +82,14 @@ public:
     QOpenGL2PaintEngineState();
     ~QOpenGL2PaintEngineState();
 
-    bool needsDepthBufferClear;
-    qreal depthBufferClearValue;
+    bool needsClipBufferClear;
 
-    bool depthTestEnabled;
+    bool clipTestEnabled;
     bool scissorTestEnabled;
-    uint maxDepth;
-    uint currentDepth;
+    uint currentClip;
 
     bool canRestoreClip;
     QRect rectangleClip;
-    bool hasRectangleClip;
 };
 
 class Q_OPENGL_EXPORT QGL2PaintEngineEx : public QPaintEngineEx
@@ -200,7 +197,8 @@ public:
 
     inline void useSimpleShader();
 
-    float zValueForRenderText() const;
+    void prepareDepthRangeForRenderText();
+    void restoreDepthRangeForRenderText();
 
     static QGLEngineShaderManager* shaderManagerForEngine(QGL2PaintEngineEx *engine) { return engine->d_func()->shaderManager; }
 
@@ -220,12 +218,11 @@ public:
     bool brushUniformsDirty;
     bool simpleShaderMatrixUniformDirty;
     bool shaderMatrixUniformDirty;
-    bool depthUniformDirty;
-    bool simpleShaderDepthUniformDirty;
     bool opacityUniformDirty;
 
     QRegion dirtyStencilRegion;
     QRect currentScissorBounds;
+    uint maxClip;
 
     const QBrush*    currentBrush; // May not be the state's brush!
 
@@ -242,25 +239,15 @@ public:
 
     QGLEngineShaderManager* shaderManager;
 
-    void writeClip(const QVectorPath &path, uint depth);
-    void updateDepthScissorTest();
+    void clearClip(uint value);
+    void writeClip(const QVectorPath &path, uint value);
+    void resetClipIfNeeded();
+
+    void updateClipScissorTest();
     void setScissor(const QRect &rect);
-    void regenerateDepthClip();
+    void regenerateClip();
     void systemStateChanged();
     uint use_system_clip : 1;
-
-    static inline GLfloat rawDepth(uint depth)
-    {
-        // assume at least 16 bits in the depth buffer, and
-        // use 2^15 depth levels to be safe with regard to
-        // rounding issues etc
-        return depth * (1.0f / GLfloat((1 << 15) - 1));
-    }
-
-    static inline GLfloat normalizedDeviceDepth(uint depth)
-    {
-        return 2.0f * rawDepth(depth) - 1.0f;
-    }
 
     uint location(QGLEngineShaderManager::Uniform uniform)
     {
@@ -271,6 +258,8 @@ public:
 
     bool needsSync;
     bool inRenderText;
+
+    GLfloat depthRange[2];
 
     float textureInvertedY;
 
