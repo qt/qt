@@ -82,8 +82,14 @@ mac {
     TARGET = Browser
 
     # No 64-bit Flash on Mac, so build the browser 32-bit
-    CONFIG -= x86_64
-    CONFIG += x86
+    contains(QT_CONFIG, x86) {
+        CONFIG -= x86_64
+        CONFIG += x86
+    }
+    contains(QT_CONFIG, ppc) {
+        CONFIG -= ppc64
+        CONFIG += ppc
+    }
 }
 
 wince*: {
