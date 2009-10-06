@@ -305,8 +305,10 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::AcceptDropsChange:
         return new QEvent(*e);
 
+#ifdef QT3_SUPPORT
     case QEvent::MenubarUpdated:
         return new QMenubarUpdatedEvent(*static_cast<QMenubarUpdatedEvent*>(e));
+#endif
 
     case QEvent::ZeroTimerEvent:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
