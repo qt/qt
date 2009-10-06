@@ -90,52 +90,38 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::Close:
         return new QCloseEvent(*static_cast<QCloseEvent*>(e));
     case QEvent::Quit:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::ParentChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::ParentAboutToChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::ThreadChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
 
     case QEvent::WindowActivate:
     case QEvent::WindowDeactivate:
         return new QEvent(*e);
 
     case QEvent::ShowToParent:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::HideToParent:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::Wheel:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QWheelEvent(*static_cast<QWheelEvent*>(e));
     case QEvent::WindowTitleChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::WindowIconChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::ApplicationWindowIconChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::ApplicationFontChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::ApplicationLayoutDirectionChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::ApplicationPaletteChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::PaletteChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::Clipboard:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
@@ -146,14 +132,11 @@ static QEvent *cloneEvent(QEvent *e)
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
     case QEvent::SockAct:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::WinEventAct:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::DeferredDelete:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
 #ifndef QT_NO_DRAGANDDROP 
    case QEvent::DragEnter:
         return new QDragEnterEvent(*static_cast<QDragEnterEvent*>(e));
@@ -164,139 +147,99 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::Drop:
         return new QDropEvent(*static_cast<QDragMoveEvent*>(e));
     case QEvent::DragResponse:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QDragResponseEvent(*static_cast<QDragResponseEvent*>(e));
 #endif
     case QEvent::ChildAdded:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QChildEvent(*static_cast<QChildEvent*>(e));
     case QEvent::ChildPolished:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QChildEvent(*static_cast<QChildEvent*>(e));
 #ifdef QT3_SUPPORT
     case QEvent::ChildInsertedRequest:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::ChildInserted:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QChildEvent(*static_cast<QChildEvent*>(e));
     case QEvent::LayoutHint:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
 #endif
     case QEvent::ChildRemoved:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QChildEvent(*static_cast<QChildEvent*>(e));
     case QEvent::ShowWindowRequest:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::PolishRequest:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::Polish:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::LayoutRequest:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::UpdateRequest:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::UpdateLater:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
 
     case QEvent::EmbeddingControl:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::ActivateControl:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::DeactivateControl:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
+
     case QEvent::ContextMenu:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QContextMenuEvent(*static_cast<QContextMenuEvent*>(e));
     case QEvent::InputMethod:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QInputMethodEvent(*static_cast<QInputMethodEvent*>(e));
     case QEvent::AccessibilityPrepare:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::TabletMove:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QTabletEvent(*static_cast<QTabletEvent*>(e));
     case QEvent::LocaleChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::LanguageChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::LayoutDirectionChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::Style:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::TabletPress:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QTabletEvent(*static_cast<QTabletEvent*>(e));
     case QEvent::TabletRelease:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QTabletEvent(*static_cast<QTabletEvent*>(e));
     case QEvent::OkRequest:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::HelpRequest:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
 
     case QEvent::IconDrag:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QIconDragEvent(*static_cast<QIconDragEvent*>(e));
 
     case QEvent::FontChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::EnabledChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::ActivationChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::StyleChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::IconTextChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::ModifiedChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::MouseTrackingChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
 
     case QEvent::WindowBlocked:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::WindowUnblocked:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::WindowStateChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QWindowStateChangeEvent(*static_cast<QWindowStateChangeEvent*>(e));
 
     case QEvent::ToolTip:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QHelpEvent(*static_cast<QHelpEvent*>(e));
     case QEvent::WhatsThis:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QHelpEvent(*static_cast<QHelpEvent*>(e));
     case QEvent::StatusTip:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QStatusTipEvent(*static_cast<QStatusTipEvent*>(e));
 #ifndef QT_NO_ACTION
     case QEvent::ActionChanged:
     case QEvent::ActionAdded:
@@ -304,15 +247,12 @@ static QEvent *cloneEvent(QEvent *e)
         return new QActionEvent(*static_cast<QActionEvent*>(e));
 #endif
     case QEvent::FileOpen:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QFileOpenEvent(*static_cast<QFileOpenEvent*>(e));
 
     case QEvent::Shortcut:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QShortcutEvent(*static_cast<QShortcutEvent*>(e));
     case QEvent::ShortcutOverride:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QKeyEvent(*static_cast<QKeyEvent*>(e));
 
 #ifdef QT3_SUPPORT
     case QEvent::Accel:
@@ -324,43 +264,30 @@ static QEvent *cloneEvent(QEvent *e)
 #endif
 
     case QEvent::WhatsThisClicked:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QWhatsThisClickedEvent(*static_cast<QWhatsThisClickedEvent*>(e));
 
     case QEvent::ToolBarChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QToolBarChangeEvent(*static_cast<QToolBarChangeEvent*>(e));
 
     case QEvent::ApplicationActivate:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::ApplicationDeactivate:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
 
     case QEvent::QueryWhatsThis:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QHelpEvent(*static_cast<QHelpEvent*>(e));
     case QEvent::EnterWhatsThisMode:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::LeaveWhatsThisMode:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
 
     case QEvent::ZOrderChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
 
     case QEvent::HoverEnter:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
     case QEvent::HoverLeave:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
     case QEvent::HoverMove:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QHoverEvent(*static_cast<QHoverEvent*>(e));
 
     case QEvent::AccessibilityHelp:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
@@ -371,19 +298,15 @@ static QEvent *cloneEvent(QEvent *e)
 
 #ifdef QT_KEYPAD_NAVIGATION
     case QEvent::EnterEditFocus:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::LeaveEditFocus:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
 #endif
     case QEvent::AcceptDropsChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
 
     case QEvent::MenubarUpdated:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QMenubarUpdatedEvent(*static_cast<QMenubarUpdatedEvent*>(e));
 
     case QEvent::ZeroTimerEvent:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
@@ -426,80 +349,82 @@ static QEvent *cloneEvent(QEvent *e)
     }
 
     case QEvent::GraphicsSceneHoverEnter:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
     case QEvent::GraphicsSceneHoverMove:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
-    case QEvent::GraphicsSceneHoverLeave:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+    case QEvent::GraphicsSceneHoverLeave: {
+        QGraphicsSceneHoverEvent *he = static_cast<QGraphicsSceneHoverEvent*>(e);
+        QGraphicsSceneHoverEvent *he2 = new QGraphicsSceneHoverEvent(he->type());
+        he2->setPos(he->pos());
+        he2->setScenePos(he->scenePos());
+        he2->setScreenPos(he->screenPos());
+        he2->setLastPos(he->lastPos());
+        he2->setLastScenePos(he->lastScenePos());
+        he2->setLastScreenPos(he->lastScreenPos());
+        he2->setModifiers(he->modifiers());
+        return he2;
+    }
     case QEvent::GraphicsSceneHelp:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QHelpEvent(*static_cast<QHelpEvent*>(e));
     case QEvent::GraphicsSceneDragEnter:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
     case QEvent::GraphicsSceneDragMove:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
     case QEvent::GraphicsSceneDragLeave:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
-    case QEvent::GraphicsSceneDrop:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
-    case QEvent::GraphicsSceneWheel:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+    case QEvent::GraphicsSceneDrop: {
+        QGraphicsSceneDragDropEvent *dde = static_cast<QGraphicsSceneDragDropEvent*>(e);
+        QGraphicsSceneDragDropEvent *dde2 = new QGraphicsSceneDragDropEvent(dde->type());
+        dde2->setPos(dde->pos());
+        dde2->setScenePos(dde->scenePos());
+        dde2->setScreenPos(dde->screenPos());
+        dde2->setButtons(dde->buttons());
+        dde2->setModifiers(dde->modifiers());
+        return dde2;
+    }
+    case QEvent::GraphicsSceneWheel: {
+        QGraphicsSceneWheelEvent *we = static_cast<QGraphicsSceneWheelEvent*>(e);
+        QGraphicsSceneWheelEvent *we2 = new QGraphicsSceneWheelEvent(we->type());
+        we2->setPos(we->pos());
+        we2->setScenePos(we->scenePos());
+        we2->setScreenPos(we->screenPos());
+        we2->setButtons(we->buttons());
+        we2->setModifiers(we->modifiers());
+        we2->setOrientation(we->orientation());
+        return we2;
+    }
 #endif
     case QEvent::KeyboardLayoutChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
 
     case QEvent::DynamicPropertyChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QDynamicPropertyChangeEvent(*static_cast<QDynamicPropertyChangeEvent*>(e));
 
     case QEvent::TabletEnterProximity:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
     case QEvent::TabletLeaveProximity:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QTabletEvent(*static_cast<QTabletEvent*>(e));
 
     case QEvent::NonClientAreaMouseMove:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
     case QEvent::NonClientAreaMouseButtonPress:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
     case QEvent::NonClientAreaMouseButtonRelease:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
     case QEvent::NonClientAreaMouseButtonDblClick:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QMouseEvent(*static_cast<QMouseEvent*>(e));
 
     case QEvent::MacSizeChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
 
     case QEvent::ContentsRectChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
 
     case QEvent::MacGLWindowChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
 
     case QEvent::FutureCallOut:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
 #ifndef QT_NO_GRAPHICSVIEW
-    case QEvent::GraphicsSceneResize:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+    case QEvent::GraphicsSceneResize: {
+        QGraphicsSceneResizeEvent *re = static_cast<QGraphicsSceneResizeEvent*>(e);
+        QGraphicsSceneResizeEvent *re2 = new QGraphicsSceneResizeEvent();
+        re2->setOldSize(re->oldSize());
+        re2->setNewSize(re->newSize());
+        return re2;
+    }
     case QEvent::GraphicsSceneMove: {
         QGraphicsSceneMoveEvent *me = static_cast<QGraphicsSceneMoveEvent*>(e);
         QGraphicsSceneMoveEvent *me2 = new QGraphicsSceneMoveEvent();
@@ -510,11 +435,9 @@ static QEvent *cloneEvent(QEvent *e)
     }
 #endif
     case QEvent::CursorChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
     case QEvent::ToolTipChange:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
+        return new QEvent(*e);
 
     case QEvent::NetworkReplyUpdated:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
@@ -531,6 +454,23 @@ static QEvent *cloneEvent(QEvent *e)
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
 #endif
+
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+        return new QTouchEvent(*static_cast<QTouchEvent*>(e));
+
+    case QEvent::NativeGesture:
+        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
+        break;
+
+    case QEvent::RequestSoftwareInputPanel:
+    case QEvent::CloseSoftwareInputPanel:
+        return new QEvent(*e);
+
+    case QEvent::UpdateSoftKeys:
+        return new QEvent(*e);
+
     case QEvent::User:
     case QEvent::MaxUser:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
