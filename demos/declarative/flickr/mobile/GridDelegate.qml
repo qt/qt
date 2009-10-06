@@ -1,22 +1,22 @@
  import Qt 4.6
 
  Component {
-     id: PhotoDelegate
+     id: photoDelegate
      Item {
-         id: Wrapper; width: 79; height: 79
+         id: wrapper; width: 79; height: 79
 
          Script {
              function photoClicked() {
-                 ImageDetails.photoTitle = title;
-                 ImageDetails.photoTags = tags;
-                 ImageDetails.photoWidth = photoWidth;
-                 ImageDetails.photoHeight = photoHeight;
-                 ImageDetails.photoType = photoType;
-                 ImageDetails.photoAuthor = photoAuthor;
-                 ImageDetails.photoDate = photoDate;
-                 ImageDetails.photoUrl = url;
-                 ImageDetails.rating = 0;
-                 ScaleMe.state = "Details";
+                 imageDetails.photoTitle = title;
+                 imageDetails.photoTags = tags;
+                 imageDetails.photoWidth = photoWidth;
+                 imageDetails.photoHeight = photoHeight;
+                 imageDetails.photoType = photoType;
+                 imageDetails.photoAuthor = photoAuthor;
+                 imageDetails.photoDate = photoDate;
+                 imageDetails.photoUrl = url;
+                 imageDetails.rating = 0;
+                 scaleMe.state = "Details";
              }
          }
 
@@ -24,31 +24,31 @@
              anchors.centerIn: parent
              scale: 0.0
              scale: Behavior { NumberAnimation { easing: "easeInOutQuad"} }
-             id: ScaleMe
+             id: scaleMe
 
-             Rectangle { height: 79; width: 79; id: BlackRect;  anchors.centerIn: parent; color: "black"; smooth: true }
+             Rectangle { height: 79; width: 79; id: blackRect;  anchors.centerIn: parent; color: "black"; smooth: true }
              Rectangle {
-                 id: WhiteRect; width: 77; height: 77; anchors.centerIn: parent; color: "#dddddd"; smooth: true
-                 Image { id: Thumb; source: imagePath; x: 1; y: 1; smooth: true}
+                 id: whiteRect; width: 77; height: 77; anchors.centerIn: parent; color: "#dddddd"; smooth: true
+                 Image { id: thumb; source: imagePath; x: 1; y: 1; smooth: true}
                  Image { source: "images/gloss.png" }
              }
 
              Connection {
-                 sender: ToolBar; signal: "button2Clicked()"
-                 script: if (ScaleMe.state == 'Details' ) ScaleMe.state = 'Show';
+                 sender: toolBar; signal: "button2Clicked()"
+                 script: if (scaleMe.state == 'Details' ) scaleMe.state = 'Show';
              }
 
              states: [
                  State {
-                     name: "Show"; when: Thumb.status == 1
-                     PropertyChanges { target: ScaleMe; scale: 1 }
+                     name: "Show"; when: thumb.status == 1
+                     PropertyChanges { target: scaleMe; scale: 1 }
                  },
                  State {
                      name: "Details"
-                     PropertyChanges { target: ScaleMe; scale: 1 }
-                     ParentChange { target: Wrapper; parent: ImageDetails.frontContainer }
-                     PropertyChanges { target: Wrapper; x: 20; y: 60; z: 1000 }
-                     PropertyChanges { target: Background; state: "DetailedView" }
+                     PropertyChanges { target: scaleMe; scale: 1 }
+                     ParentChange { target: wrapper; parent: imageDetails.frontContainer }
+                     PropertyChanges { target: wrapper; x: 20; y: 60; z: 1000 }
+                     PropertyChanges { target: background; state: "DetailedView" }
                  }
              ]
              transitions: [
@@ -62,11 +62,11 @@
                      SequentialAnimation {
                          ParentAction { }
                          NumberAnimation { properties: "x,y"; duration: 500; easing: "easeInOutQuad" }
-                         PropertyAction { target: Wrapper; properties: "z" }
+                         PropertyAction { target: wrapper; properties: "z" }
                      }
                  }
              ]
          }
-         MouseRegion { anchors.fill: Wrapper; onClicked: { photoClicked() } }
+         MouseRegion { anchors.fill: wrapper; onClicked: { photoClicked() } }
      }
  }
