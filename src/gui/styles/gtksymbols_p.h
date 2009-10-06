@@ -121,6 +121,7 @@ typedef void (*Ptr_gtk_progress_set_adjustment)(GtkProgress *, GtkAdjustment *);
 typedef void (*Ptr_gtk_range_set_inverted)(GtkRange*, bool);
 typedef void (*Ptr_gtk_container_add)(GtkContainer *container, GtkWidget *widget);
 typedef GtkIconSet* (*Ptr_gtk_icon_factory_lookup_default) (const gchar*);
+typedef GtkIconTheme* (*Ptr_gtk_icon_theme_get_default) (void);
 typedef void (*Ptr_gtk_widget_style_get)(GtkWidget *, const gchar *first_property_name, ...);
 typedef GtkTreeViewColumn* (*Ptr_gtk_tree_view_column_new)(void);
 typedef GtkWidget* (*Ptr_gtk_fixed_new)(void);
@@ -195,6 +196,29 @@ typedef void (*Ptr_gdk_x11_window_set_user_time) (GdkWindow *window, guint32);
 typedef XID  (*Ptr_gdk_x11_drawable_get_xid) (GdkDrawable *);
 typedef Display* (*Ptr_gdk_x11_drawable_get_xdisplay) ( GdkDrawable *);
 
+
+typedef enum {
+  GNOME_ICON_LOOKUP_FLAGS_NONE = 0,
+  GNOME_ICON_LOOKUP_FLAGS_EMBEDDING_TEXT = 1<<0,
+  GNOME_ICON_LOOKUP_FLAGS_SHOW_SMALL_IMAGES_AS_THEMSELVES = 1<<1,
+  GNOME_ICON_LOOKUP_FLAGS_ALLOW_SVG_AS_THEMSELVES = 1<<2
+} GnomeIconLookupFlags;
+
+typedef enum {
+  GNOME_ICON_LOOKUP_RESULT_FLAGS_NONE = 0,
+  GNOME_ICON_LOOKUP_RESULT_FLAGS_THUMBNAIL = 1<<0
+} GnomeIconLookupResultFlags;
+
+struct GnomeThumbnailFactory;
+typedef gboolean (*Ptr_gnome_vfs_init) (void);
+typedef char* (*Ptr_gnome_icon_lookup_sync)  (
+        GtkIconTheme *icon_theme,
+        GnomeThumbnailFactory *,
+        const char *file_uri,
+        const char *custom_icon,
+        GnomeIconLookupFlags flags,
+        GnomeIconLookupResultFlags *result);
+
 QT_BEGIN_NAMESPACE
 
 class QGtk
@@ -219,6 +243,7 @@ public:
                                     QString *selectedFilter, QFileDialog::Options options);
     static QString getGConfString(const QString &key, const QString &fallback = QString());
     static bool getGConfBool(const QString &key, bool fallback = 0);
+    static QIcon getFilesystemIcon(const QFileInfo &);
 
     static Ptr_gtk_container_forall gtk_container_forall;
     static Ptr_gtk_init gtk_init;
@@ -263,6 +288,7 @@ public:
     static Ptr_gtk_range_set_adjustment gtk_range_set_adjustment;
     static Ptr_gtk_range_set_inverted gtk_range_set_inverted;
     static Ptr_gtk_icon_factory_lookup_default gtk_icon_factory_lookup_default;
+    static Ptr_gtk_icon_theme_get_default gtk_icon_theme_get_default;
     static Ptr_gtk_widget_style_get gtk_widget_style_get;
     static Ptr_gtk_icon_set_render_icon gtk_icon_set_render_icon;
     static Ptr_gtk_fixed_new gtk_fixed_new;
@@ -333,6 +359,9 @@ public:
     static Ptr_gconf_client_get_default gconf_client_get_default;
     static Ptr_gconf_client_get_string gconf_client_get_string;
     static Ptr_gconf_client_get_bool gconf_client_get_bool;
+
+    static Ptr_gnome_icon_lookup_sync gnome_icon_lookup_sync;
+    static Ptr_gnome_vfs_init gnome_vfs_init;
 };
 
 // Helper to ensure that we have polished all our gtk widgets

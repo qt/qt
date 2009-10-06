@@ -121,8 +121,8 @@
     \row \o \c QT_SIS_OPTIONS      \o Options accepted by \c .sis creation. 
                                        -i, install the package right away using PC suite.
                                        -c=<file>, read certificate information from a file.
-                                       Execute \c{perl createpackage.pl} for more information
-                                       about options.
+                                       Execute \c{createpackage.pl} script without any 
+                                       parameters for more information about options.
                                        By default no otions are given.
     \row \o \c QT_SIS_TARGET       \o Target for which \c .sis file is created.
                                        Accepted values are build targets listed in 

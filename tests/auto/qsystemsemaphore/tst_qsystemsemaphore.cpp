@@ -42,13 +42,12 @@
 
 #include <QtTest/QtTest>
 #include <qsystemsemaphore.h>
-
 //TESTED_CLASS=
 //TESTED_FILES=
 
 #define EXISTING_SHARE "existing"
-
 #define LACKYLOC "../qsharedmemory/lackey"
+#define LACKYWAITTIME 10000
 
 class tst_QSystemSemaphore : public QObject
 {
@@ -199,12 +198,12 @@ void tst_QSystemSemaphore::basicProcesses()
     release.setProcessChannelMode(QProcess::ForwardedChannels);
 
     acquire.start(LACKYLOC "/lackey", acquireArguments);
-    acquire.waitForFinished(5000);
+    acquire.waitForFinished(LACKYWAITTIME);
     QVERIFY(acquire.state() == QProcess::Running);
     acquire.kill();
     release.start(LACKYLOC "/lackey", releaseArguments);
-    acquire.waitForFinished(5000);
-    release.waitForFinished(5000);
+    acquire.waitForFinished(LACKYWAITTIME);
+    release.waitForFinished(LACKYWAITTIME);
     QVERIFY(acquire.state() == QProcess::NotRunning);
 }
 
@@ -259,13 +258,13 @@ void tst_QSystemSemaphore::undo()
     QProcess acquire;
     acquire.setProcessChannelMode(QProcess::ForwardedChannels);
     acquire.start(LACKYLOC "/lackey", acquireArguments);
-    acquire.waitForFinished(1000);
+    acquire.waitForFinished(LACKYWAITTIME);
     QVERIFY(acquire.state()== QProcess::NotRunning);
 
     // At process exit the kernel should auto undo
 
     acquire.start(LACKYLOC "/lackey", acquireArguments);
-    acquire.waitForFinished(1000);
+    acquire.waitForFinished(LACKYWAITTIME);
     QVERIFY(acquire.state()== QProcess::NotRunning);
 }
 
@@ -285,17 +284,17 @@ void tst_QSystemSemaphore::initialValue()
     release.setProcessChannelMode(QProcess::ForwardedChannels);
 
     acquire.start(LACKYLOC "/lackey", acquireArguments);
-    acquire.waitForFinished(10000);
+    acquire.waitForFinished(LACKYWAITTIME);
     QVERIFY(acquire.state()== QProcess::NotRunning);
 
     acquire.start(LACKYLOC "/lackey", acquireArguments << "2");
-    acquire.waitForFinished(1000);
+    acquire.waitForFinished(LACKYWAITTIME);
     QVERIFY(acquire.state()== QProcess::Running);
     acquire.kill();
 
     release.start(LACKYLOC "/lackey", releaseArguments);
-    acquire.waitForFinished(10000);
-    release.waitForFinished(10000);
+    acquire.waitForFinished(LACKYWAITTIME);
+    release.waitForFinished(LACKYWAITTIME);
     QVERIFY(acquire.state()== QProcess::NotRunning);
 }
 QTEST_MAIN(tst_QSystemSemaphore)

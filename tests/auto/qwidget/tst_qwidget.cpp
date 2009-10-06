@@ -8990,6 +8990,9 @@ void tst_QWidget::syntheticEnterLeave()
 
 void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
 {
+#ifdef Q_OS_WINCE_WM
+    QSKIP("Windows Mobile has no proper cursor support", SkipAll);
+#endif
     class SELParent : public QWidget
     {
     public:
@@ -9118,7 +9121,7 @@ void tst_QWidget::paintOutsidePaintEvent()
 
     widget.show();
     QTest::qWaitForWindowShown(&widget);
-    QTest::qWait(20);
+    QTest::qWait(60);
 
     const QPixmap before = QPixmap::grabWindow(widget.winId());
 
@@ -9128,6 +9131,7 @@ void tst_QWidget::paintOutsidePaintEvent()
     painter.fillRect(child1.rect(), Qt::red);
     painter.end();
     XSync(QX11Info::display(), false); // Flush output buffer.
+    QTest::qWait(60);
 
     const QPixmap after = QPixmap::grabWindow(widget.winId());
 

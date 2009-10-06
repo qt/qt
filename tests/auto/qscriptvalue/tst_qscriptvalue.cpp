@@ -87,6 +87,7 @@ private slots:
     void getSetPrototype();
     void getSetScope();
     void getSetProperty();
+    void arrayElementGetterSetter();
     void getSetData();
     void getSetScriptClass();
     void call();
@@ -2113,6 +2114,32 @@ void tst_QScriptValue::getSetProperty()
     QVERIFY(object.property(foo).strictlyEquals(num));
     QVERIFY(object.property("foo").strictlyEquals(num));
     QVERIFY(object.propertyFlags(foo) == 0);
+}
+
+void tst_QScriptValue::arrayElementGetterSetter()
+{
+    QScriptEngine eng;
+    QScriptValue obj = eng.newObject();
+    obj.setProperty(1, eng.newFunction(getterSetter), QScriptValue::PropertyGetter|QScriptValue::PropertySetter);
+    {
+        QScriptValue num(123);
+        obj.setProperty("x", num);
+        QScriptValue ret = obj.property(1);
+        QVERIFY(ret.isValid());
+        QVERIFY(ret.equals(num));
+    }
+    {
+        QScriptValue num(456);
+        obj.setProperty(1, num);
+        QScriptValue ret = obj.property(1);
+        QVERIFY(ret.isValid());
+        QVERIFY(ret.equals(num));
+        QVERIFY(ret.equals(obj.property("1")));
+    }
+    QCOMPARE(obj.propertyFlags("1"), QScriptValue::PropertyGetter|QScriptValue::PropertySetter);
+
+    obj.setProperty(1, QScriptValue(), QScriptValue::PropertyGetter|QScriptValue::PropertySetter);
+    QVERIFY(obj.propertyFlags("1") == 0);
 }
 
 void tst_QScriptValue::getSetPrototype()

@@ -54,6 +54,7 @@
 //
 
 #include <QtCore/QList>
+#include <QtCore/QLinkedList>
 #include <QtCore/QMap>
 #include <QtCore/QSet>
 #include <QtCore/QDebug>
@@ -82,10 +83,11 @@ public:
         int m_left;
         int m_bottom;
         int m_right;
+        bool will_be_deleted;
         Span()
-        : m_top(-1), m_left(-1), m_bottom(-1), m_right(-1) { }
+        : m_top(-1), m_left(-1), m_bottom(-1), m_right(-1), will_be_deleted(false) { }
         Span(int row, int column, int rowCount, int columnCount)
-        : m_top(row), m_left(column), m_bottom(row+rowCount-1), m_right(column+columnCount-1) { }
+        : m_top(row), m_left(column), m_bottom(row+rowCount-1), m_right(column+columnCount-1), will_be_deleted(false) { }
         inline int top() const { return m_top; }
         inline int left() const { return m_left; }
         inline int bottom() const { return m_bottom; }
@@ -105,12 +107,20 @@ public:
     void clear();
     QList<Span *> spansInRect(int x, int y, int w, int h) const;
 
-    QList<Span *> spans; //lists of all spans
+    void updateInsertedRows(int start, int end);
+    void updateInsertedColumns(int start, int end);
+    void updateRemovedRows(int start, int end);
+    void updateRemovedColumns(int start, int end);
+
+    typedef QLinkedList<Span *> SpanList;
+    SpanList spans; //lists of all spans
 private:
     //the indexes are negative so the QMap::lowerBound do what i need.
     typedef QMap<int, Span *> SubIndex;
     typedef QMap<int, SubIndex> Index;
     Index index;
+
+    bool cleanSpanSubIndex(SubIndex &subindex, int end, bool update = false);
 };
 
 Q_DECLARE_TYPEINFO ( QSpanCollection::Span, Q_MOVABLE_TYPE);
@@ -227,6 +237,11 @@ public:
 
     void selectRow(int row, bool anchor);
     void selectColumn(int column, bool anchor);
+
+    void _q_updateSpanInsertedRows(const QModelIndex &parent, int start, int end);
+    void _q_updateSpanInsertedColumns(const QModelIndex &parent, int start, int end);
+    void _q_updateSpanRemovedRows(const QModelIndex &parent, int start, int end);
+    void _q_updateSpanRemovedColumns(const QModelIndex &parent, int start, int end);
 };
 
 QT_END_NAMESPACE

@@ -1654,8 +1654,10 @@ void QGLTextureCache::pixmapCleanupHook(QPixmap* pixmap)
     }
 #if defined(Q_WS_X11)
     QPixmapData *pd = pixmap->data_ptr().data();
-    Q_ASSERT(pd->ref == 1); // Make sure reference counting isn't broken
-    QGLContextPrivate::destroyGlSurfaceForPixmap(pd);
+    if (pd->classId() == QPixmapData::X11Class) {
+        Q_ASSERT(pd->ref == 1); // Make sure reference counting isn't broken
+        QGLContextPrivate::destroyGlSurfaceForPixmap(pd);
+    }
 #endif
 }
 
@@ -3781,6 +3783,11 @@ bool QGLWidget::event(QEvent *e)
         glFinish();
         doneCurrent();
     } else if (e->type() == QEvent::ParentChange) {
+        // if we've reparented a window that has the current context
+        // bound, we need to rebind that context to the new window id
+        if (d->glcx == QGLContext::currentContext())
+            makeCurrent();
+
         if (d->glcx->d_func()->screen != d->xinfo.screen() || testAttribute(Qt::WA_TranslucentBackground)) {
             setContext(new QGLContext(d->glcx->requestedFormat(), this));
             // ### recreating the overlay isn't supported atm
