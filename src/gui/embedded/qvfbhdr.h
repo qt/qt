@@ -70,7 +70,7 @@ QT_MODULE(Gui)
                                       .append("/qt_soundserver")
 #define QTE_PIPE(DISPLAY)             QT_VFB_DATADIR(DISPLAY) \
                                       .append("/QtEmbedded")
-#define QTE_PIPE_QVFB                 QTE_PIPE
+#define QTE_PIPE_QVFB(DISPLAY)        QTE_PIPE(DISPLAY)
 #else
 #define QT_VFB_DATADIR(DISPLAY) QString("%1/qtembedded-%2") \
                                 .arg(QT_QWS_TEMP_DIR).arg(DISPLAY)

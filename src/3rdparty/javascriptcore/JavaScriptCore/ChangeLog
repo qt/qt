@@ -1,3 +1,515 @@
+2009-10-02  Geoffrey Garen  <ggaren@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        Removed the concept of a "fast access cutoff" in arrays, because it
+        punished some patterns of array access too much, and made things too
+        complex for inlining in some cases.
+        
+        1.3% speedup on SunSpider.
+
+        * jit/JITOpcodes.cpp:
+        (JSC::JIT::emitSlow_op_get_by_val):
+        (JSC::JIT::emitSlow_op_put_by_val):
+        * jit/JITPropertyAccess.cpp:
+        (JSC::JIT::emit_op_get_by_val):
+        (JSC::JIT::emitSlow_op_get_by_val):
+        (JSC::JIT::emit_op_put_by_val):
+        (JSC::JIT::emitSlow_op_put_by_val):
+        * jit/JITStubs.cpp:
+        * jit/JITStubs.h:
+        (JSC::): Check m_vectorLength instead of m_fastAccessCutoff when
+        getting / putting from / to an array. Inline putting past the end of
+        the array.
+
+        * runtime/JSArray.cpp:
+        (JSC::JSArray::JSArray):
+        (JSC::JSArray::getOwnPropertySlot):
+        (JSC::JSArray::getOwnPropertyDescriptor):
+        (JSC::JSArray::put):
+        (JSC::JSArray::putSlowCase):
+        (JSC::JSArray::deleteProperty):
+        (JSC::JSArray::getOwnPropertyNames):
+        (JSC::JSArray::increaseVectorLength):
+        (JSC::JSArray::setLength):
+        (JSC::JSArray::pop):
+        (JSC::JSArray::push):
+        (JSC::JSArray::sort):
+        (JSC::JSArray::fillArgList):
+        (JSC::JSArray::copyToRegisters):
+        (JSC::JSArray::compactForSorting):
+        (JSC::JSArray::checkConsistency):
+        * runtime/JSArray.h:
+        (JSC::JSArray::canGetIndex):
+        (JSC::JSArray::canSetIndex):
+        (JSC::JSArray::setIndex):
+        (JSC::JSArray::markChildrenDirect): Removed m_fastAccessCutoff, and
+        replaced with checks for JSValue() to detect reads and writes from / to
+        uninitialized parts of the array.
+
+2009-10-02  Jonni Rainisto  <jonni.rainisto@nokia.com>
+
+        Reviewed by Darin Adler.
+
+        Math.random() gives too low values on Win32 when _CRT_RAND_S is not defined
+        https://bugs.webkit.org/show_bug.cgi?id=29956
+
+        * wtf/RandomNumber.cpp:
+        (WTF::randomNumber): Added PLATFORM(WIN_OS) to handle 15bit rand()
+
+2009-10-02  Geoffrey Garen  <ggaren@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        Take one branch instead of two to test for JSValue().
+        
+        1.1% SunSpider speedup.
+
+        * jit/JITCall.cpp:
+        (JSC::JIT::compileOpCall):
+        * jit/JITOpcodes.cpp:
+        (JSC::JIT::emit_op_to_jsnumber):
+        (JSC::JIT::emit_op_create_arguments):
+        * jit/JITPropertyAccess.cpp:
+        (JSC::JIT::emitSlow_op_get_by_val):
+        (JSC::JIT::emit_op_put_by_val): Test for the empty value tag, instead
+        of testing for the cell tag with a 0 payload.
+
+        * runtime/JSValue.cpp:
+        (JSC::JSValue::description): Added support for dumping the new empty value,
+        and deleted values, in debug builds.
+
+        * runtime/JSValue.h:
+        (JSC::JSValue::JSValue()): Construct JSValue() with the empty value tag.
+
+        (JSC::JSValue::JSValue(JSCell*)): Convert null pointer to the empty value
+        tag, to avoid having two different c++ versions of null / empty.
+
+        (JSC::JSValue::operator bool): Test for the empty value tag, instead
+        of testing for the cell tag with a 0 payload.
+
+2009-10-01  Zoltan Horvath  <zoltan@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Allow custom memory allocation control for the whole JavaScriptCore
+        https://bugs.webkit.org/show_bug.cgi?id=27029
+
+        Since in JavaScriptCore almost every class which has been instantiated by operator new is
+        inherited from FastAllocBase (bug #20422), we disable customizing global operator new for the Qt-port
+        when USE_SYSTEM_MALLOC=0.
+
+        Add #include <unistd.h> to FastMalloc.cpp because it's used by TCMalloc_PageHeap::scavengerThread().
+        (It's needed for the functionality of TCmalloc.)
+
+        Add TCSystemAlloc.cpp to JavaScriptCore.pri if USE_SYSTEM_MALLOC is disabled.
+
+        * JavaScriptCore.pri:
+        * wtf/FastMalloc.cpp:
+        (WTF::sleep):
+        * wtf/FastMalloc.h:
+
+2009-09-30  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Geoff Garen.
+
+        Devirtualise array toString conversion
+
+        Tweak the implementation of Array.prototype.toString to have a fast path
+        when acting on a true JSArray.
+
+        * runtime/ArrayPrototype.cpp:
+        (JSC::arrayProtoFuncToString):
+
+2009-09-30  Csaba Osztrogonac  <oszi@inf.u-szeged.hu>
+
+        Reviewed by Geoffrey Garen.
+
+        Buildfix for platforms using JSVALUE32.
+        https://bugs.webkit.org/show_bug.cgi?id=29915
+
+        After http://trac.webkit.org/changeset/48905 the build broke in JSVALUE32 case.
+        Also removed unreachable code.
+
+        * jit/JITArithmetic.cpp:
+        (JSC::JIT::emit_op_add):
+         - Declaration of "OperandTypes types" moved before first use.
+         - Typos fixed: dst modified to result, regT2 added.
+         - Unreachable code removed.
+        (JSC::JIT::emitSlow_op_add):
+         - Missing declaration of "OperandTypes types" added.
+
+2009-09-30  Janne Koskinen  <janne.p.koskinen@digia.com> 
+
+        Reviewed by Simon Hausmann.
+
+        Fix CRASH() macro for Symbian build.
+
+        * wtf/Assertions.h: Added missing }
+
+2009-09-29  Geoffrey Garen  <ggaren@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        Standardized an optimization for adding non-numbers.
+        
+        SunSpider says maybe a tiny speedup.
+
+        * jit/JITArithmetic.cpp:
+        (JSC::JIT::emit_op_add):
+        (JSC::JIT::emitSlow_op_add):
+
+2009-09-29  Janne Koskinen  <janne.p.koskinen@digia.com>
+
+        Reviewed by David Kilzer.
+
+        [Qt] Assert messages prints visible in Symbian
+        https://bugs.webkit.org/show_bug.cgi?id=29808
+
+        Asserts use vprintf to print the messages to stderr.
+        In Symbian Open C it is not possible to see stderr so
+        I routed the messages to stdout instead.
+
+        * wtf/Assertions.cpp:
+
+2009-09-29  Janne Koskinen  <janne.p.koskinen@digia.com>
+
+        Reviewed by Darin Adler.
+
+        [Qt] Symbian CRASH macro implementation
+
+        Added Symbian specific crash macro that
+        stops to crash line if JIT debugging is used.
+        Additional differentiation of access violation
+        (KERN-EXEC 3) and CRASH panic.
+
+        * wtf/Assertions.h:
+
+2009-09-28  Mark Rowe  <mrowe@apple.com>
+
+        Reviewed by Gavin Barraclough.
+
+        <rdar://problem/7195704> JavaScriptCore fails to mark registers when built for x86_64 using LLVM GCC.
+
+        * runtime/Collector.cpp:
+        (JSC::Heap::markCurrentThreadConservatively): Force jmp_buf to use the appropriate alignment for a pointer
+        to ensure that we correctly interpret the contents of registers during marking.
+
+2009-09-29  Geoffrey Garen  <ggaren@apple.com>
+
+        Reviewed by Gavin Barraclough.
+
+        Inlined a few math operations.
+        
+        ~1% SunSpider speedup.
+
+        * jit/JIT.h:
+        * jit/JITArithmetic.cpp:
+        (JSC::JIT::compileBinaryArithOpSlowCase):
+        (JSC::JIT::emitSlow_op_add):
+        (JSC::JIT::emitSlow_op_mul):
+        (JSC::JIT::emit_op_sub):
+        (JSC::JIT::emitSlow_op_sub): Don't take a stub call when operating on
+        a constant int and a double.
+
+2009-09-28  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Geoff Garen.
+
+        Hard dependency on SSE2 instruction set with JIT
+        https://bugs.webkit.org/show_bug.cgi?id=29779
+
+        Add floating point support checks to op_jfalse and op_jtrue, and
+        fix the logic for the slow case of op_add
+
+        * jit/JITArithmetic.cpp:
+        (JSC::JIT::emitSlow_op_add):
+        * jit/JITOpcodes.cpp:
+        (JSC::JIT::emit_op_jfalse):
+        (JSC::JIT::emit_op_jtrue):
+
+2009-09-28  Yaar Schnitman  <yaar@chromium.org>
+
+        Reviewed by Dimitri Glazkov.
+
+        Chromium port - recognize we are being built independently
+        of chromium and look for dependencies under webkit/chromium rather
+        than chromium/src.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29722
+
+        * JavaScriptCore.gyp/JavaScriptCore.gyp:
+
+2009-09-28  Jakub Wieczorek  <faw217@gmail.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Implement XSLT support with QtXmlPatterns.
+        https://bugs.webkit.org/show_bug.cgi?id=28303
+
+        * wtf/Platform.h: Add a WTF_USE_QXMLQUERY #define.
+
+2009-09-28  Yongjun Zhang  <yongjun.zhang@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        https://bugs.webkit.org/show_bug.cgi?id=28054
+       
+        Use derefInNotNull() to work around winscw compiler forward declaration bug
+        regarding templated classes. 
+
+        The compiler bug is reported at 
+        https://xdabug001.ext.nokia.com/bugzilla/show_bug.cgi?id=9812.
+        
+        The change should be reverted when the above bug is fixed in winscw compiler. 
+
+        Add parenthesis around (RefPtr::*UnspecifiedBoolType) to make winscw compiler
+        work with the default UnSpecifiedBoolType() operator, which removes the winscw hack.
+
+        * wtf/RefPtr.h:
+        (WTF::RefPtr::~RefPtr):
+        (WTF::RefPtr::clear):
+        (WTF::RefPtr::operator UnspecifiedBoolType):
+
+2009-09-28  Gabor Loki  <loki@inf.u-szeged.hu>
+
+        Reviewed by Simon Hausmann.
+
+        Remove __clear_cache which is an internal function of GCC
+        https://bugs.webkit.org/show_bug.cgi?id=28886
+
+        Although __clear_cache is exported from GCC, this is an internal
+        function. GCC makes no promises about it.
+
+        * jit/ExecutableAllocator.h:
+        (JSC::ExecutableAllocator::cacheFlush):
+
+2009-09-28  Sam Weinig  <sam@webkit.org>
+
+        Reviewed by Oliver Hunt.
+
+        Fix an absolute path to somewhere in Oliver's machine to a relative path
+        for derived JSONObject.lut.h.
+
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+
+2009-09-28  Joerg Bornemann  <joerg.bornemann@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Add ARM version detection for Windows CE.
+
+        * wtf/Platform.h:
+
+2009-09-26  Yongjun Zhang  <yongjun.zhang@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Add MarkStackSymbian.cpp to build JavascriptCore for Symbian.
+
+        Re-use Windows shrinkAllocation implementation because Symbian doesn't
+        support releasing part of memory region.
+        
+        Use fastMalloc and fastFree to implement allocateStack and releaseStack
+        for Symbian port.
+
+        * JavaScriptCore.pri:
+        * runtime/MarkStack.h:
+        (JSC::MarkStack::MarkStackArray::shrinkAllocation):
+        * runtime/MarkStackSymbian.cpp: Added.
+        (JSC::MarkStack::initializePagesize):
+        (JSC::MarkStack::allocateStack):
+        (JSC::MarkStack::releaseStack):
+
+2009-09-25  Gabor Loki  <loki@inf.u-szeged.hu>
+
+        Reviewed by Gavin Barraclough.
+
+        Fix unaligned data access in YARR_JIT on ARMv5 and below.
+        https://bugs.webkit.org/show_bug.cgi?id=29695
+
+        On ARMv5 and below all data access should be naturally aligned.
+        In the YARR_JIT there is a case when character pairs are
+        loaded from the input string, but this data access is not
+        naturally aligned. This fix introduces load32WithUnalignedHalfWords
+        and branch32WithUnalignedHalfWords functions which contain
+        naturally aligned memory loads - half word loads - on ARMv5 and below.
+
+        * assembler/MacroAssemblerARM.cpp:
+        (JSC::MacroAssemblerARM::load32WithUnalignedHalfWords):
+        * assembler/MacroAssemblerARM.h:
+        (JSC::MacroAssemblerARM::load32WithUnalignedHalfWords):
+        (JSC::MacroAssemblerARM::branch32WithUnalignedHalfWords):
+        * assembler/MacroAssemblerARMv7.h:
+        (JSC::MacroAssemblerARMv7::load32WithUnalignedHalfWords):
+        (JSC::MacroAssemblerARMv7::branch32):
+        (JSC::MacroAssemblerARMv7::branch32WithUnalignedHalfWords):
+        * assembler/MacroAssemblerX86Common.h:
+        (JSC::MacroAssemblerX86Common::load32WithUnalignedHalfWords):
+        (JSC::MacroAssemblerX86Common::branch32WithUnalignedHalfWords):
+        * wtf/Platform.h:
+        * yarr/RegexJIT.cpp:
+        (JSC::Yarr::RegexGenerator::generatePatternCharacterPair):
+
+2009-09-24  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Gavin Barraclough.
+
+        Division is needlessly slow in 64-bit
+        https://bugs.webkit.org/show_bug.cgi?id=29723
+
+        Add codegen for op_div on x86-64
+
+        * jit/JIT.cpp:
+        (JSC::JIT::privateCompileMainPass):
+        (JSC::JIT::privateCompileSlowCases):
+        * jit/JIT.h:
+        * jit/JITArithmetic.cpp:
+        (JSC::JIT::compileBinaryArithOpSlowCase):
+        (JSC::JIT::emit_op_div):
+        (JSC::JIT::emitSlow_op_div):
+        * jit/JITInlineMethods.h:
+        (JSC::JIT::isOperandConstantImmediateDouble):
+        (JSC::JIT::addressFor):
+        (JSC::JIT::emitLoadDouble):
+        (JSC::JIT::emitLoadInt32ToDouble):
+        (JSC::JIT::emitJumpSlowCaseIfNotImmediateNumber):
+
+2009-09-24  Yong Li  <yong.li@torchmobile.com>
+
+        Reviewed by Adam Barth.
+
+        Replace platform-dependent code with WTF::currentTime()
+        https://bugs.webkit.org/show_bug.cgi?id=29148
+
+        * jsc.cpp:
+        (StopWatch::start):
+        (StopWatch::stop):
+        (StopWatch::getElapsedMS):
+        * runtime/TimeoutChecker.cpp:
+        (JSC::getCPUTime):
+
+2009-09-24  Mark Rowe  <mrowe@apple.com>
+
+        Reviewed by Gavin Barraclough.
+
+        Fix FastMalloc to build with assertions enabled.
+
+        * wtf/FastMalloc.cpp:
+        (WTF::TCMalloc_Central_FreeList::ReleaseToSpans):
+        * wtf/TCSpinLock.h:
+        (TCMalloc_SpinLock::IsHeld):
+
+2009-09-24  Mark Rowe  <mrowe@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        <rdar://problem/7215058> FastMalloc scavenging thread should be named
+
+        * wtf/FastMalloc.cpp:
+        (WTF::TCMalloc_PageHeap::scavengerThread): Set the thread name.
+        * wtf/Platform.h: Move the knowledge of whether pthread_setname_np exists to here as HAVE(PTHREAD_SETNAME_NP).
+        * wtf/ThreadingPthreads.cpp:
+        (WTF::setThreadNameInternal): Use HAVE(PTHREAD_SETNAME_NP).
+
+2009-09-24  Geoffrey Garen  <ggaren@apple.com>
+
+        Suggested by Darin Adler.
+
+        Removed some unnecessary parameter names.
+
+        * wtf/HashCountedSet.h:
+
+2009-09-22  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Geoff Garen.
+
+        Code sampling builds are broken.
+        https://bugs.webkit.org/show_bug.cgi?id=29662
+
+        Fix build.
+
+        * bytecode/EvalCodeCache.h:
+        (JSC::EvalCodeCache::get):
+        * bytecode/SamplingTool.cpp:
+        (JSC::ScriptSampleRecord::sample):
+        (JSC::SamplingTool::doRun):
+        (JSC::SamplingTool::notifyOfScope):
+        (JSC::compareScriptSampleRecords):
+        (JSC::SamplingTool::dump):
+        * bytecode/SamplingTool.h:
+        (JSC::ScriptSampleRecord::ScriptSampleRecord):
+        (JSC::ScriptSampleRecord::~ScriptSampleRecord):
+        (JSC::SamplingTool::SamplingTool):
+        * bytecompiler/BytecodeGenerator.cpp:
+        (JSC::BytecodeGenerator::BytecodeGenerator):
+        (JSC::BytecodeGenerator::emitNewFunction):
+        (JSC::BytecodeGenerator::emitNewFunctionExpression):
+        * bytecompiler/BytecodeGenerator.h:
+        (JSC::BytecodeGenerator::makeFunction):
+        * debugger/Debugger.cpp:
+        (JSC::evaluateInGlobalCallFrame):
+        * debugger/DebuggerCallFrame.cpp:
+        (JSC::DebuggerCallFrame::evaluate):
+        * parser/Nodes.cpp:
+        (JSC::ScopeNode::ScopeNode):
+        * runtime/Completion.cpp:
+        (JSC::checkSyntax):
+        (JSC::evaluate):
+        * runtime/Executable.cpp:
+        (JSC::FunctionExecutable::fromGlobalCode):
+        * runtime/Executable.h:
+        (JSC::ScriptExecutable::ScriptExecutable):
+        (JSC::EvalExecutable::EvalExecutable):
+        (JSC::EvalExecutable::create):
+        (JSC::ProgramExecutable::ProgramExecutable):
+        (JSC::FunctionExecutable::create):
+        (JSC::FunctionExecutable::FunctionExecutable):
+        * runtime/JSGlobalObjectFunctions.cpp:
+        (JSC::globalFuncEval):
+
+2009-09-22  Darin Adler  <darin@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        * wtf/Forward.h: Added PassOwnPtr.
+
+2009-09-22  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Unreviewed build fix for Windows CE < 5
+
+        Define WINCEBASIC to disable the IsDebuggerPresent() code in
+        wtf/Assertions.cpp.
+
+        * JavaScriptCore.pri:
+
+2009-10-02  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Rubber-stamped by Simon Hausmann.
+
+        Fix the Qt on Mac OS X build.
+
+        * wtf/FastMalloc.cpp:
+
+2009-10-02  Jørgen Lind  <jorgen.lind@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Allow enabling and disabling of the JIT through a qmake variable.
+
+        Qt's configure may set this variable through .qmake.cache if a
+        commandline option is given and/or the compile test for hwcap.h
+        failed/succeeded.
+
+        * JavaScriptCore.pri:
+
+2009-09-23  Geoffrey Garen  <ggaren@apple.com>
+
+        A piece of my last patch that I forgot.
+
+        * wtf/HashCountedSet.h:
+        (WTF::::clear): Added HashCountedSet::clear.
+
 2009-09-24  Gabor Loki  <loki@inf.u-szeged.hu>
 
         Reviewed by Gavin Barraclough.
@@ -27,6 +539,70 @@
 
         * jit/ExecutableAllocator.h:
         (JSC::ExecutableAllocator::cacheFlush):
+
+2009-09-21  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Geoff Garen.
+
+        REGRESSION (r48582): Crash in StructureStubInfo::initPutByIdTransition when reloading trac.webkit.org
+        https://bugs.webkit.org/show_bug.cgi?id=29599
+
+        It is unsafe to attempt to cache new property transitions on
+        dictionaries of any type.
+
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::tryCachePutByID):
+        * jit/JITStubs.cpp:
+        (JSC::JITThunks::tryCachePutByID):
+
+2009-09-21  Oliver Hunt  <oliver@apple.com>
+
+        RS=Maciej Stachowiak.
+
+        Re-land SNES fix with corrected assertion.
+
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::resolveGlobal):
+        (JSC::Interpreter::tryCachePutByID):
+        (JSC::Interpreter::tryCacheGetByID):
+        * jit/JITStubs.cpp:
+        (JSC::JITThunks::tryCachePutByID):
+        (JSC::JITThunks::tryCacheGetByID):
+        (JSC::DEFINE_STUB_FUNCTION):
+        * runtime/BatchedTransitionOptimizer.h:
+        (JSC::BatchedTransitionOptimizer::BatchedTransitionOptimizer):
+        * runtime/JSObject.cpp:
+        (JSC::JSObject::removeDirect):
+        * runtime/Structure.cpp:
+        (JSC::Structure::Structure):
+        (JSC::Structure::getEnumerablePropertyNames):
+        (JSC::Structure::despecifyDictionaryFunction):
+        (JSC::Structure::addPropertyTransitionToExistingStructure):
+        (JSC::Structure::addPropertyTransition):
+        (JSC::Structure::removePropertyTransition):
+        (JSC::Structure::toDictionaryTransition):
+        (JSC::Structure::toCacheableDictionaryTransition):
+        (JSC::Structure::toUncacheableDictionaryTransition):
+        (JSC::Structure::fromDictionaryTransition):
+        (JSC::Structure::removePropertyWithoutTransition):
+        * runtime/Structure.h:
+        (JSC::Structure::isDictionary):
+        (JSC::Structure::isUncacheableDictionary):
+        (JSC::Structure::):
+        * runtime/StructureChain.cpp:
+        (JSC::StructureChain::isCacheable):
+
+2009-09-21  Adam Roben  <aroben@apple.com>
+
+        Revert r48573, as it caused many assertion failures
+
+        * interpreter/Interpreter.cpp:
+        * jit/JITStubs.cpp:
+        * runtime/BatchedTransitionOptimizer.h:
+        * runtime/JSObject.cpp:
+        * runtime/Structure.cpp:
+        * runtime/Structure.h:
+        * runtime/StructureChain.cpp:
 
 2009-09-21  Gustavo Noronha Silva  <gustavo.noronha@collabora.co.uk>
 

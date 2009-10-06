@@ -1032,6 +1032,11 @@ void qt_init(QApplicationPrivate * /* priv */, int)
 
 	//Check if mouse interaction is supported (either EMouse=1 in the HAL, or EMachineUID is one of the phones known to support this)
     const TInt KMachineUidSamsungI8510 = 0x2000C51E;
+    // HAL::Get(HALData::EPen, TInt& result) may set 'result' to 1 on some 3.1 systems (e.g. N95).
+    // But we know that S60 systems below 5.0 did not support touch.
+    static const bool touchIsUnsupportedOnSystem =
+        QSysInfo::s60Version() == QSysInfo::SV_S60_3_1
+        || QSysInfo::s60Version() == QSysInfo::SV_S60_3_2;
     TInt machineUID;
     TInt mouse;
     TInt touch;
@@ -1043,7 +1048,7 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     if (err != KErrNone)
         machineUID = 0;
     err = HAL::Get(HALData::EPen, touch);
-    if (err != KErrNone)
+    if (err != KErrNone || touchIsUnsupportedOnSystem)
         touch = 0;
     if (mouse || machineUID == KMachineUidSamsungI8510) {
         S60->hasTouchscreen = false;

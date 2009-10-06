@@ -74,6 +74,8 @@ public:
     int lastLoop;
     int lastCurrentTime;
 
+    bool shouldAnimationStart(QAbstractAnimation *animation, bool startIfAtEnd) const;
+    void applyGroupState(QAbstractAnimation *animation);
     bool isUncontrolledAnimationFinished(QAbstractAnimation *anim) const;
     void connectUncontrolledAnimations();
     void disconnectUncontrolledAnimations();

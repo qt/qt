@@ -183,7 +183,6 @@ QTipLabel::QTipLabel(const QString &text, QWidget *w)
     setFrameStyle(QFrame::NoFrame);
     setAlignment(Qt::AlignLeft);
     setIndent(1);
-    setWordWrap(Qt::mightBeRichText(text));
     qApp->installEventFilter(this);
     setWindowOpacity(style()->styleHint(QStyle::SH_ToolTipLabel_Opacity, 0, this) / 255.0);
     setMouseTracking(true);
@@ -208,6 +207,7 @@ void QTipLabel::reuseTip(const QString &text)
     }
 #endif
 
+    setWordWrap(Qt::mightBeRichText(text));
     setText(text);
     QFontMetrics fm(font());
     QSize extra(1, 0);

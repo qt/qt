@@ -56,7 +56,7 @@ private slots:
 
 void tst_QSound::checkFinished()
 {
-            QSound sound("4.wav");
+            QSound sound(SRCDIR"4.wav");
             sound.setLoops(3);
             sound.play();
             QTest::qWait(5000);

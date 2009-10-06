@@ -324,7 +324,6 @@ private:
     friend class QGraphicsView;
     friend class QGraphicsViewPrivate;
     friend class QGraphicsScenePrivate;
-    friend class QGraphicsWidget;
 };
 
 class Q_CORE_EXPORT QTimerEvent : public QEvent

@@ -8176,7 +8176,7 @@ public:
 
         static bool firstTime = true;
         if (firstTime)
-            QTimer::singleShot(70, this, SLOT(resizeMe()));
+            QTimer::singleShot(150, this, SLOT(resizeMe()));
 
         firstTime = false;
     }
@@ -8193,7 +8193,7 @@ void tst_QWidget::moveInResizeEvent()
     testWidget.setGeometry(50, 50, 200, 200);
     testWidget.show();
     QTest::qWaitForWindowShown(&testWidget);
-    QTest::qWait(120);
+    QTest::qWait(160);
 
     QRect expectedGeometry(100,100, 100, 100);
     QTRY_COMPARE(testWidget.geometry(), expectedGeometry);
@@ -8674,7 +8674,7 @@ void tst_QWidget::setClearAndResizeMask()
 
     // Mask child widget with a mask that is bigger than the rect
     child.setMask(QRegion(0, 0, 1000, 1000));
-    QTest::qWait(10);
+    QTest::qWait(100);
 #ifdef Q_WS_MAC
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
     QTRY_COMPARE(child.numPaintEvents, 1);
@@ -8686,7 +8686,7 @@ void tst_QWidget::setClearAndResizeMask()
 
     // ...and the same applies when clearing the mask.
     child.clearMask();
-    QTest::qWait(10);
+    QTest::qWait(100);
 #ifdef Q_WS_MAC
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
     QTRY_VERIFY(child.numPaintEvents > 0);
@@ -8711,7 +8711,7 @@ void tst_QWidget::setClearAndResizeMask()
     // Disable the size grip on the Mac; otherwise it'll be included when grabbing the window.
     resizeParent.setFixedSize(resizeParent.size());
     resizeChild.show();
-    QTest::qWait(30);
+    QTest::qWait(100);
     resizeChild.paintedRegion = QRegion();
 
     QTimer::singleShot(100, &resizeChild, SLOT(shrinkMask()));
@@ -8990,6 +8990,9 @@ void tst_QWidget::syntheticEnterLeave()
 
 void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
 {
+#ifdef Q_OS_WINCE_WM
+    QSKIP("Windows Mobile has no proper cursor support", SkipAll);
+#endif
     class SELParent : public QWidget
     {
     public:
@@ -9024,12 +9027,11 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
  #ifdef Q_WS_X11
      qt_x11_wait_for_window_manager(&parent);
  #endif
-     QTest::qWait(100);
+     QTest::qWait(150);
 
      QCursor::setPos(child.mapToGlobal(QPoint(100, 100)));
-     QTest::qWait(100);
      // Make sure the cursor has entered the child.
-     QVERIFY(child.numEnterEvents > 0);
+     QTRY_VERIFY(child.numEnterEvents > 0);
 
      child.hide();
      child.reset();
@@ -9119,7 +9121,7 @@ void tst_QWidget::paintOutsidePaintEvent()
 
     widget.show();
     QTest::qWaitForWindowShown(&widget);
-    QTest::qWait(20);
+    QTest::qWait(60);
 
     const QPixmap before = QPixmap::grabWindow(widget.winId());
 
@@ -9129,6 +9131,7 @@ void tst_QWidget::paintOutsidePaintEvent()
     painter.fillRect(child1.rect(), Qt::red);
     painter.end();
     XSync(QX11Info::display(), false); // Flush output buffer.
+    QTest::qWait(60);
 
     const QPixmap after = QPixmap::grabWindow(widget.winId());
 

@@ -108,6 +108,8 @@ private slots:
 
     void testActualNumCopies();
 
+    void taskQTBUG4497_reusePrinterOnDifferentFiles();
+
 private:
 };
 
@@ -969,6 +971,38 @@ void tst_QPrinter::testActualNumCopies()
     QPrinter p;
     p.setNumCopies(15);
     QCOMPARE(p.actualNumCopies(), 15);
+}
+
+static void printPage(QPainter *painter)
+{
+    painter->setPen(QPen(Qt::black, 4));
+    painter->drawRect(50, 60, 70, 80);
+}
+
+void tst_QPrinter::taskQTBUG4497_reusePrinterOnDifferentFiles()
+{
+    QPrinter printer;
+    {
+
+        printer.setOutputFileName("out1.ps");
+        QPainter painter(&printer);
+        printPage(&painter);
+
+    }
+    {
+
+        printer.setOutputFileName("out2.ps");
+        QPainter painter(&printer);
+        printPage(&painter);
+
+    }
+    QFile file1("out1.ps");
+    QVERIFY(file1.open(QIODevice::ReadOnly));
+
+    QFile file2("out2.ps");
+    QVERIFY(file2.open(QIODevice::ReadOnly));
+
+    QCOMPARE(file1.readAll(), file2.readAll());
 }
 
 QTEST_MAIN(tst_QPrinter)
