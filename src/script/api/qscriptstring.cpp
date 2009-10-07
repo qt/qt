@@ -195,4 +195,12 @@ QScriptString::operator QString() const
     return toString();
 }
 
+uint qHash(const QScriptString &key)
+{
+    QScriptStringPrivate *d = QScriptStringPrivate::get(key);
+    if (!d)
+        return 0;
+    return qHash(d->identifier.ustring().rep());
+}
+
 QT_END_NAMESPACE
