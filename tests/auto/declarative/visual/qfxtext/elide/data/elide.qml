@@ -242,7 +242,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/qfxtext/elide/data/elide.0.png"
+        image: "elide.0.png"
     }
     Frame {
         msec: 976
