@@ -1,15 +1,18 @@
 import Qt 4.6
 
 Item { id:block
-    property bool dying: false
-    property bool spawned: false
     property int type: 0
+    property bool dying: false
+    //![1]
+    property bool spawned: false
     property int targetX: 0
     property int targetY: 0
 
     x: SpringFollow { enabled: spawned; source: targetX; spring: 2; damping: 0.2 }
     y: SpringFollow { source: targetY; spring: 2; damping: 0.2 }
+    //![1]
 
+    //![2]
     Image { id: img
         source: {
             if(type == 0){
@@ -24,7 +27,9 @@ Item { id:block
         opacity: Behavior { NumberAnimation { properties:"opacity"; duration: 200 } }
         anchors.fill: parent
     }
+    //![2]
 
+    //![3]
     Particles { id: particles
         width:1; height:1; anchors.centerIn: parent; opacity: 0
         lifeSpan: 700; lifeSpanDeviation: 600; count:0; streamIn: false
@@ -39,7 +44,9 @@ Item { id:block
             }
         }
     }
+    //![3]
 
+    //![4]
     states: [
         State{ name: "AliveState"; when: spawned == true && dying == false
             PropertyChanges { target: img; opacity: 1 }
@@ -51,4 +58,5 @@ Item { id:block
             PropertyChanges { target: img; opacity: 0 }
         }
     ]
+    //![4]
 }

@@ -1,3 +1,4 @@
+//![0]
 import Qt 4.6
 
 Rectangle {
@@ -19,3 +20,4 @@ Rectangle {
     Text { id: MyText; anchors.centerIn: parent; text: "Hello World!" }
     MouseRegion { id: mr; anchors.fill: parent; onClicked: forceClose(); }
 }
+//![0]

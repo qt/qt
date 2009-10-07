@@ -72,6 +72,7 @@ function createBlock(xIdx,yIdx){
 var fillFound;//Set after a floodFill call to the number of tiles found
 var floodBoard;//Set to 1 if the floodFill reaches off that node
 //NOTE: Be careful with vars named x,y, as the calling object's x,y are still in scope
+//![1]
 function handleClick(x,y)
 {
     xIdx = Math.floor(x/gameCanvas.tileSize);
@@ -88,6 +89,7 @@ function handleClick(x,y)
     shuffleDown();
     victoryCheck();
 }
+//![1]
 
 function floodFill(xIdx,yIdx,type)
 {
@@ -156,6 +158,7 @@ function shuffleDown()
     }
 }
 
+//![2]
 function victoryCheck()
 {
     //awards bonuses for no tiles left
@@ -169,6 +172,7 @@ function victoryCheck()
     if(deservesBonus || !(floodMoveCheck(0,maxY-1, -1)))
         dialog.show("Game Over. Your score is " + gameCanvas.score);
 }
+//![2]
 
 //only floods up and right, to see if it can find adjacent same-typed tiles 
 function floodMoveCheck(xIdx, yIdx, type)

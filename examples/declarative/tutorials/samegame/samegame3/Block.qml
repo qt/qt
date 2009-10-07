@@ -1,3 +1,4 @@
+//![0]
 import Qt 4.6
 
 Item { 
@@ -17,3 +18,4 @@ Item {
         anchors.fill: parent
     }
 }
+//![0]

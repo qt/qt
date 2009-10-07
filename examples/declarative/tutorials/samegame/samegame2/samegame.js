@@ -1,3 +1,4 @@
+//![0]
 //Note that X/Y referred to here are in game coordinates
 var maxX = 10;//Nums are for tileSize 40
 var maxY = 15;
@@ -57,3 +58,4 @@ function createBlock(xIdx,yIdx){
     }
     return true;
 }
+//![0]

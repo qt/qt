@@ -13,68 +13,7 @@ in the ECMA script, as opposed to using a Repeater.
 This adds enough script to justify a new file, samegame.js, the intial version
 of which is shown below
 
-\code
-//Note that X/Y referred to here are in game coordinates
-var maxX = 10;//Nums are for tileSize 40
-var maxY = 15;
-var tileSize = 40;
-var maxIndex = maxX*maxY;
-var board = new Array(maxIndex);
-var tileSrc = "Block.qml";
-var component;
-
-//Index function used instead of a 2D array
-function index(xIdx,yIdx) {
-    return xIdx + (yIdx * maxX);
-}
-
-function initBoard()
-{
-    //Calculate board size
-    maxX = Math.floor(background.width/tileSize);
-    maxY = Math.floor(background.height/tileSize);
-    maxIndex = maxY*maxX;
-
-    //Initialize Board
-    board = new Array(maxIndex);
-    for(xIdx=0; xIdx<maxX; xIdx++){
-        for(yIdx=0; yIdx<maxY; yIdx++){
-            board[index(xIdx,yIdx)] = null;
-            createBlock(xIdx,yIdx);
-        }
-    }
-}
-
-function createBlock(xIdx,yIdx){
-    if(component==null)
-        component = createComponent(tileSrc);
-
-    // Note that we don't wait for the component to become ready. This will
-    // only work if the block QML is a local file. Otherwise the component will
-    // not be ready immediately. There is a statusChanged signal on the
-    // component you could use if you want to wait to load remote files.
-    if(component.isReady){
-        dynamicObject = component.createObject();
-        if(dynamicObject == null){
-            print("error creating block");
-            print(component.errorsString());
-            return false;
-        }
-        dynamicObject.parent = background;
-        dynamicObject.x = xIdx*tileSize;
-        dynamicObject.y = yIdx*tileSize;
-        dynamicObject.width = tileSize;
-        dynamicObject.height = tileSize;
-        board[index(xIdx,yIdx)] = dynamicObject;
-    }else{//isError or isLoading
-        print("error loading block component");
-        print(component.errorsString());
-        return false;
-    }
-    return true;
-}
-
-\endcode
+\snippet declarative/tutorials/samegame/samegame2/samegame.js 0
 
 The gist of this code is that we create the blocks dynamically, as many as will fit, and then store them in an array for future reference. The 'initBoard' function will be hooked up to the new game button soon, and should be fairly straight forward.
 
@@ -93,18 +32,11 @@ You now have the code to create a field of blocks dynamically, like below:
 
 To hook this code up to the 'New Game' button, you alter it as below:
 
-\code
-Button {
-    id: btnA; text: "New Game"; onClicked: initBoard() ;
-    anchors.left: parent.left; anchors.leftMargin: 3
-    anchors.verticalCenter: parent.verticalCenter
-}
-\endcode
+\snippet declarative/tutorials/samegame/samegame2/samegame.qml 1
 
 We have just replaced the 'onClicked: print("Implement me!")' with 'onClicked: initBoard()'. Note that in order to have the function available, you'll need to include the script in the main file, by adding a script element to it.
-\code
-    Script { source: "samegame.js" }
-\endcode
+
+\snippet declarative/tutorials/samegame/samegame2/samegame.qml 2
 
 With those two changes, and the script file, you are now dynamically creating a field of blocks you can play with. They don't do anything now though; the next chapter will add the game mechanics.
 

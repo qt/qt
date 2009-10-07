@@ -10,46 +10,7 @@ The first step is to create the items in your application. In Same Game we have 
 
 Here is the QML code for the basic elements. The game window:
 
-\code
-import Qt 4.6
-
-Rectangle {
-    id: Screen
-    width: 490; height: 720
-
-    SystemPalette { id: activePalette; colorGroup: Qt.Active }
-
-    Item {
-        width: parent.width; anchors.top: parent.top; anchors.bottom: ToolBar.top
-
-        Image {
-            id: background
-            anchors.fill: parent; source: "pics/background.png"
-            fillMode: "PreserveAspectCrop"
-        }
-    }
-
-    Rectangle {
-        id: ToolBar
-        color: activePalette.window
-        height: 32; width: parent.width
-        anchors.bottom: Screen.bottom
-
-        Button {
-            id: btnA; text: "New Game"; onClicked: print("Implement me!");
-            anchors.left: parent.left; anchors.leftMargin: 3
-            anchors.verticalCenter: parent.verticalCenter
-        }
-
-        Text {
-            id: Score
-            text: "Score: Who knows?"; font.bold: true
-            anchors.right: parent.right; anchors.rightMargin: 3
-            anchors.verticalCenter: parent.verticalCenter
-        }
-    }
-}
-\endcode
+\snippet declarative/tutorials/samegame/samegame1/samegame.qml 0
 
 This gives you a basic game window, with room for the game canvas. A new game
 button and room to display the score. The one thing you may not recognize here
@@ -59,49 +20,14 @@ feel you would use a QPushButton). Since we want a fully QML button, and the Fx
 primitives don't include a button, we had to write our own. Below is the code
 which we wrote to do this:
 
-\code
-import Qt 4.6
+\snippet declarative/tutorials/samegame/samegame1/Button.qml 0
 
-Rectangle {
-    id: Container
-
-    signal clicked
-    property string text: "Button"
-
-    color: activePalette.button; smooth: true
-    width: txtItem.width + 20; height: txtItem.height + 6
-    border.width: 1; border.color: activePalette.darker(activePalette.button); radius: 8;
-
-    gradient: Gradient {
-        GradientStop {
-            id: topGrad; position: 0.0
-            color: if (mr.pressed) { activePalette.dark } else { activePalette.light } }
-        GradientStop { position: 1.0; color: activePalette.button }
-    }
-
-    MouseRegion { id: mr; anchors.fill: parent; onClicked: Container.clicked() }
-
-    Text {
-        id: txtItem; text: Container.text; anchors.centerIn: Container; color: activePalette.buttonText
-    }
-}
-\endcode
 Note that this Button component was written to be fairly generic, in case we
 want to use a similarly styled button later.
 
 And here is a simple block:
-\code
-import Qt 4.6
 
-Item { 
-    id:block
-    
-    Image { id: img
-        source: "pics/redStone.png";
-        anchors.fill: parent
-    }
-}
-\endcode
+\snippet declarative/tutorials/samegame/samegame1/Block.qml 0
 
 Since it doesn't do anything yet it's very simple, just an image. As the
 tutorial progresses and the block starts doing things the file will become
