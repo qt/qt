@@ -45,6 +45,7 @@
 #include "qstylefactory.h"
 #include "qapplication.h"
 #include "qplatformdefs.h"
+#include "qicon.h"
 
 #ifdef Q_WS_WINCE
 #include "qguifunctions_wince.h"
