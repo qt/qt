@@ -34,14 +34,13 @@ using namespace Phonon::MMF;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::AudioPlayer::AudioPlayer() : m_player(0)
+MMF::AudioPlayer::AudioPlayer()
 {
     construct();
 }
 
 MMF::AudioPlayer::AudioPlayer(const AbstractPlayer& player)
         : AbstractMediaPlayer(player)
-        , m_player(0)
 {
     construct();
 }
@@ -51,7 +50,7 @@ void MMF::AudioPlayer::construct()
     TRACE_CONTEXT(AudioPlayer::AudioPlayer, EAudioApi);
     TRACE_ENTRY_0();
 
-    TRAPD(err, m_player = CPlayerType::NewL(*this, 0, EMdaPriorityPreferenceNone));
+    TRAPD(err, m_player.reset(CPlayerType::NewL(*this, 0, EMdaPriorityPreferenceNone)));
     if (KErrNone != err) {
         changeState(ErrorState);
     }
@@ -63,8 +62,6 @@ MMF::AudioPlayer::~AudioPlayer()
 {
     TRACE_CONTEXT(AudioPlayer::~AudioPlayer, EAudioApi);
     TRACE_ENTRY_0();
-
-    delete m_player;
 
     TRACE_EXIT_0();
 }
@@ -237,7 +234,7 @@ void MMF::AudioPlayer::MapcPlayComplete(TInt aError)
 
 CPlayerType *MMF::AudioPlayer::player() const
 {
-    return m_player;
+    return m_player.data();
 }
 
 
