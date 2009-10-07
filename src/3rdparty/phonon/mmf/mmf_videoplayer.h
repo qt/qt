@@ -99,7 +99,7 @@ private:
     qint64                              m_totalTime;
 
     bool                                m_mmfOutputChangePending;
-    
+
 };
 
 }

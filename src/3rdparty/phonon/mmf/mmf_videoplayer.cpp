@@ -81,9 +81,9 @@ void MMF::VideoPlayer::construct()
 
     // TODO: is this the correct way to handle errors which occur when
     // creating a Symbian object in the constructor of a Qt object?
-    
-    // TODO: check whether videoOutput is visible?  If not, then the 
-    // corresponding window will not be active, meaning that the 
+
+    // TODO: check whether videoOutput is visible?  If not, then the
+    // corresponding window will not be active, meaning that the
     // clipping region will be set to empty and the video will not be
     // visible.  If this is the case, we should set m_mmfOutputChangePending
     // and respond to future showEvents from the videoOutput widget.
@@ -120,13 +120,13 @@ MMF::VideoPlayer::~VideoPlayer()
 void MMF::VideoPlayer::doPlay()
 {
     TRACE_CONTEXT(VideoPlayer::doPlay, EVideoApi);
-    
+
     // See comment in updateMmfOutput
     if(m_mmfOutputChangePending) {
         TRACE_0("MMF output change pending - pushing now");
         updateMmfOutput();
     }
-    
+
     m_player->Play();
 }
 
@@ -149,7 +149,7 @@ void MMF::VideoPlayer::doStop()
 void MMF::VideoPlayer::doSeek(qint64 ms)
 {
     TRACE_CONTEXT(VideoPlayer::doSeek, EVideoApi);
-    
+
     bool wasPlaying = false;
     if(state() == PlayingState) {
 		// The call to SetPositionL does not have any effect if playback is
@@ -258,8 +258,8 @@ void MMF::VideoPlayer::MvpuoPrepareComplete(TInt aError)
         if(m_mmfOutputChangePending) {
             TRACE_0("MMF output change pending - pushing now");
             updateMmfOutput();
-        }       
-        
+        }
+
         emit totalTimeChanged(totalTime());
         changeState(StoppedState);
     } else {
