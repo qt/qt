@@ -114,6 +114,7 @@ public:
     QColorDialog::ColorDialogOptions opts;
     QPointer<QObject> receiverToDisconnectOnClose;
     QByteArray memberToDisconnectOnClose;
+    bool nativeDialogInUse;
 
 #ifdef Q_WS_MAC
     void openCocoaColorPanel(const QColor &initial,

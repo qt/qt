@@ -63,7 +63,6 @@
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
 #include <qrubberband.h>
-#include <../kernel/qkde_p.h>
 #include <private/qcommonstylepixmaps_p.h>
 #include <private/qmath_p.h>
 #include <private/qstylehelper_p.h>
@@ -75,6 +74,7 @@
 #include <qdir.h>
 #include <qsettings.h>
 #include <qpixmapcache.h>
+#include <private/qguiplatformplugin_p.h>
 
 #include <limits.h>
 
@@ -836,35 +836,6 @@ static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbut
     style->drawPrimitive(pe, &arrowOpt, painter, widget);
 }
 #endif // QT_NO_TOOLBUTTON
-
-
-#ifdef Q_WS_X11 // These functions are used to parse the X11 freedesktop icon spec
-
-/*!internal
-
-Checks if you are running KDE and looks up the toolbar
-from the KDE configuration file
-
-*/
-int QCommonStylePrivate::lookupToolButtonStyle() const
-{
-    int result = Qt::ToolButtonIconOnly;
-    if (X11->desktopEnvironment == DE_KDE && X11->desktopVersion >= 4) {
-        QSettings settings(QKde::kdeHome() +
-                           QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
-        settings.beginGroup(QLatin1String("Toolbar style"));
-        QString toolbarStyle = settings.value(QLatin1String("ToolButtonStyle"), QLatin1String("TextBesideIcon")).toString();
-        if (toolbarStyle == QLatin1String("TextBesideIcon"))
-            result = Qt::ToolButtonTextBesideIcon;
-        else if (toolbarStyle == QLatin1String("TextOnly"))
-            result = Qt::ToolButtonTextOnly;
-        else if (toolbarStyle == QLatin1String("TextUnderIcon"))
-            result = Qt::ToolButtonTextUnderIcon;
-    }
-    return result;
-}
-
-#endif //Q_WS_X11
 
 #ifndef QT_NO_ITEMVIEWS
 
@@ -4688,19 +4659,8 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         break;
 
     case PM_ToolBarIconSize:
-#ifdef Q_WS_X11
-        if (X11->desktopVersion >= 4) {
-            static int iconSize = 0;
-            if (!iconSize) {
-                QSettings settings(QKde::kdeHome() +
-                                   QLatin1String("/share/config/kdeglobals"), 
-                                   QSettings::IniFormat);
-                settings.beginGroup(QLatin1String("ToolbarIcons"));
-                iconSize = settings.value(QLatin1String("Size"), QLatin1String("22")).toInt();
-            }
-            ret = iconSize;
-        } else
-#endif
+        ret = qt_guiPlatformPlugin()->platformHint(QGuiPlatformPlugin::PH_ToolBarIconSize);
+        if (!ret)
             ret = proxy()->pixelMetric(PM_SmallIconSize, opt, widget);
         break;
 
@@ -5192,13 +5152,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         ret = true;
         break;
     case SH_ToolButtonStyle:
-        ret = Qt::ToolButtonIconOnly;
-#ifdef Q_WS_X11
-        {
-            static int buttonStyle = d_func()->lookupToolButtonStyle();
-            return buttonStyle;
-        }
-#endif
+        ret = qt_guiPlatformPlugin()->platformHint(QGuiPlatformPlugin::PH_ToolButtonStyle);
         break;
     case SH_RequestSoftwareInputPanel:
         ret = RSIP_OnMouseClickAndAlreadyFocused;
