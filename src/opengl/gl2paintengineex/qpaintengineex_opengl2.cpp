@@ -880,13 +880,13 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
              || path.shape() == QVectorPath::ConvexPolygonHint)
     {
         vertexCoordinateArray.clear();
-        vertexCoordinateArray.addPath(path, inverseScale);
+        vertexCoordinateArray.addPath(path, inverseScale, false);
         prepareForDraw(currentBrush->isOpaque());
         drawVertexArrays(vertexCoordinateArray, GL_TRIANGLE_FAN);
     } else {
         // The path is too complicated & needs the stencil technique
         vertexCoordinateArray.clear();
-        vertexCoordinateArray.addPath(path, inverseScale);
+        vertexCoordinateArray.addPath(path, inverseScale, false);
 
         fillStencilWithVertexArray(vertexCoordinateArray, path.hasWindingFill());
 
@@ -1825,7 +1825,7 @@ void QGL2PaintEngineExPrivate::writeClip(const QVectorPath &path, uint value)
         glStencilFunc(GL_ALWAYS, 0, 0xff);
 
     vertexCoordinateArray.clear();
-    vertexCoordinateArray.addPath(path, inverseScale);
+    vertexCoordinateArray.addPath(path, inverseScale, false);
 
     if (!singlePass)
         fillStencilWithVertexArray(vertexCoordinateArray, path.hasWindingFill());
