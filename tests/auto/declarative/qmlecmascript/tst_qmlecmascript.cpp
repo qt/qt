@@ -59,6 +59,7 @@ private slots:
     void dynamicCreation();
     void dynamicDestruction();
     void objectToString();
+    void selfDeletingBinding();
 
 private:
     QmlEngine engine;
@@ -684,6 +685,28 @@ void tst_qmlecmascript::objectToString()
     QMetaObject::invokeMethod(object, "testToString");
     QVERIFY(object->stringProperty().startsWith("MyQmlObject_QML_"));
     QVERIFY(object->stringProperty().endsWith(", \"objName\")"));
+}
+
+/*
+Tests bindings that indirectly cause their own deletion work.
+
+This test is best run under valgrind to ensure no invalid memory access occur.
+*/
+void tst_qmlecmascript::selfDeletingBinding()
+{
+    {
+        QmlComponent component(&engine, TEST_FILE("selfDeletingBinding.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+        object->setProperty("triggerDelete", true);
+    }
+
+    {
+        QmlComponent component(&engine, TEST_FILE("selfDeletingBinding.2.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+        object->setProperty("triggerDelete", true);
+    }
 }
 
 QTEST_MAIN(tst_qmlecmascript)

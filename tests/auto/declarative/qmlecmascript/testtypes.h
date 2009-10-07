@@ -23,6 +23,7 @@ class MyQmlObject : public QObject
     Q_OBJECT
     Q_ENUMS(MyEnum)
     Q_ENUMS(MyEnum2)
+    Q_PROPERTY(int deleteOnSet READ deleteOnSet WRITE setDeleteOnSet);
     Q_PROPERTY(bool trueProperty READ trueProperty CONSTANT)
     Q_PROPERTY(bool falseProperty READ falseProperty CONSTANT)
     Q_PROPERTY(QString stringProperty READ stringProperty WRITE setStringProperty NOTIFY stringChanged)
@@ -61,6 +62,9 @@ public:
     static MyQmlAttachedObject *qmlAttachedProperties(QObject *o) {
         return new MyQmlAttachedObject(o);
     }
+
+    int deleteOnSet() const { return 1; }
+    void setDeleteOnSet(int v) { if(v) delete this; }
 signals:
     void basicSignal();
     void argumentSignal(int a, QString b, qreal c);
@@ -68,6 +72,7 @@ signals:
     void objectChanged();
 
 public slots:
+    void deleteMe() { delete this; }
     void method() { m_methodCalled = true; }
     void method(int a) { if(a == 163) m_methodIntCalled = true; }
     void setString(const QString &s) { m_string = s; }
