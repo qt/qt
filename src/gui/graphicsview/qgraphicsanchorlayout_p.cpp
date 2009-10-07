@@ -1689,6 +1689,10 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
                orientation == Horizontal ? "Horizontal" : "Vertical");
 #endif
 
+#ifdef QT_DEBUG
+        lastCalculationUsedSimplex[orientation] = true;
+#endif
+
         // Solve min and max size hints for trunk
         qreal min, max;
         feasible = solveMinMax(trunkConstraints, trunkPath, &min, &max);
@@ -1736,6 +1740,10 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
 #if 0
         qDebug("Simplex NOT used for trunk of %s",
                orientation == Horizontal ? "Horizontal" : "Vertical");
+#endif
+
+#ifdef QT_DEBUG
+        lastCalculationUsedSimplex[orientation] = false;
 #endif
 
         // No Simplex is necessary because the path was simplified all the way to a single
