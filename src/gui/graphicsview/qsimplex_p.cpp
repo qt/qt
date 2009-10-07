@@ -519,11 +519,11 @@ qreal QSimplex::solver(solverFactor factor)
     solveMaxHelper();
     collectResults();
 
-    #ifdef QT_DEBUG
+#ifdef QT_DEBUG
     for (int i = 0; i < constraints.size(); ++i) {
         Q_ASSERT(constraints[i]->isSatisfied());
     }
-    #endif
+#endif
 
     return factor * valueAt(0, columns - 1);
 }

@@ -95,7 +95,7 @@ struct QSimplexConstraint
     QPair<QSimplexVariable *, qreal> helper;
     QSimplexVariable * artificial;
 
-    #ifdef QT_DEBUG
+#ifdef QT_DEBUG
     bool isSatisfied() {
         qreal leftHandSide(0);
 
@@ -118,7 +118,7 @@ struct QSimplexConstraint
             return false;
         }
     }
-    #endif
+#endif
 };
 
 class QSimplex

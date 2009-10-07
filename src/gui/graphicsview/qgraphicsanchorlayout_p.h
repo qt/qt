@@ -227,7 +227,6 @@ struct SequentialAnchorData : public AnchorData
     SequentialAnchorData() : AnchorData()
     {
         type = AnchorData::Sequential;
-        hasSize = true;
 #ifdef QT_DEBUG
         name = QLatin1String("SequentialAnchorData");
 #endif
@@ -256,7 +255,6 @@ struct ParallelAnchorData : public AnchorData
         : AnchorData(), firstEdge(first), secondEdge(second)
     {
         type = AnchorData::Parallel;
-        hasSize = true;
 
         // ### Those asserts force that both child anchors have the same direction,
         // but can't we simplify a pair of anchors in opposite directions?

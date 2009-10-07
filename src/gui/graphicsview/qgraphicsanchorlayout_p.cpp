@@ -2409,47 +2409,51 @@ bool QGraphicsAnchorLayoutPrivate::solvePreferred(QList<QSimplexConstraint *> co
     return feasible;
 }
 
-/*! Calculate the "expanding" keyframe
+/*!
+    \internal
+    Calculate the "expanding" keyframe
 
-  This new keyframe sits between the already existing sizeAtPreferred and
-  sizeAtMaximum keyframes. Its goal is to modify the interpolation between
-  the latter as to respect the "expanding" size policy of some anchors.
+    This new keyframe sits between the already existing sizeAtPreferred and
+    sizeAtMaximum keyframes. Its goal is to modify the interpolation between
+    the latter as to respect the "expanding" size policy of some anchors.
 
-  Previously all items would be subject to a linear interpolation between
-  sizeAtPreferred and sizeAtMaximum values. This will change now, the
-  expanding anchors will change their size before the others. To calculate
-  this keyframe we use the following logic:
+    Previously all items would be subject to a linear interpolation between
+    sizeAtPreferred and sizeAtMaximum values. This will change now, the
+    expanding anchors will change their size before the others. To calculate
+    this keyframe we use the following logic:
 
-  1) Ask each anchor for their desired expanding size (ad->expSize), this
-  value depends on the anchor expanding property in the following way:
+    1) Ask each anchor for their desired expanding size (ad->expSize), this
+    value depends on the anchor expanding property in the following way:
 
-  - Expanding anchors want to grow towards their maximum size
-  - Non-expanding anchors want to remain at their preferred size.
-  - Composite anchors want to grow towards somewhere between their
-  preferred sizes. (*)
+    - Expanding normal anchors want to grow towards their maximum size
+    - Non-expanding normal anchors want to remain at their preferred size.
+    - Sequential anchors wants to grow towards a size that is calculated by:
+        summarizing it's child anchors, where it will use preferred size for non-expanding anchors
+        and maximum size for expanding anchors.
+    - Parallel anchors want to grow towards the smallest maximum size of all the expanding anchors.
 
-  2) Clamp their desired values to the value they assume in the neighbour
-  keyframes (sizeAtPreferred and sizeAtExpanding)
+    2) Clamp their desired values to the value they assume in the neighbour
+    keyframes (sizeAtPreferred and sizeAtExpanding)
 
-  3) Run simplex with a setup that ensures the following:
+    3) Run simplex with a setup that ensures the following:
 
-    a. Anchors will change their value from their sizeAtPreferred towards
-       their sizeAtMaximum as much as required to ensure that ALL anchors
-       reach their respective "desired" expanding sizes.
+      a. Anchors will change their value from their sizeAtPreferred towards
+         their sizeAtMaximum as much as required to ensure that ALL anchors
+         reach their respective "desired" expanding sizes.
 
-    b. No anchors will change their value beyond what is NEEDED to satisfy
-       the requirement above.
+      b. No anchors will change their value beyond what is NEEDED to satisfy
+         the requirement above.
 
-  The final result is that, at the "expanding" keyframe expanding anchors
-  will grow and take with them all anchors that are parallel to them.
-  However, non-expanding anchors will remain at their preferred size unless
-  they are forced to grow by a parallel expanding anchor.
+    The final result is that, at the "expanding" keyframe expanding anchors
+    will grow and take with them all anchors that are parallel to them.
+    However, non-expanding anchors will remain at their preferred size unless
+    they are forced to grow by a parallel expanding anchor.
 
-  Note: For anchors where the sizeAtPreferred is bigger than sizeAtPreferred,
-        the visual effect when the layout grows from its preferred size is
-        the following: Expanding anchors will keep their size while non
-        expanding ones will shrink. Only after non-expanding anchors have
-        shrinked all the way, the expanding anchors will start to shrink too.
+    Note: For anchors where the sizeAtPreferred is bigger than sizeAtMaximum,
+          the visual effect when the layout grows from its preferred size is
+          the following: Expanding anchors will keep their size while non
+          expanding ones will shrink. Only after non-expanding anchors have
+          shrinked all the way, the expanding anchors will start to shrink too.
 */
 void QGraphicsAnchorLayoutPrivate::solveExpanding(QList<QSimplexConstraint *> constraints)
 {
@@ -2495,7 +2499,7 @@ void QGraphicsAnchorLayoutPrivate::solveExpanding(QList<QSimplexConstraint *> co
             itemC->constant = qMax(boundedExpSize, ad->sizeAtMaximum);
             itemConstraints << itemC;
 
-            // Create objective to avoid the anchos from moving away from
+            // Create objective to avoid the anchors from moving away from
             // the preferred size more than the needed amount. (ensure 3.b)
             // The objective function is the distance between sizeAtPreferred
             // and sizeAtExpanding, it will be minimized.
