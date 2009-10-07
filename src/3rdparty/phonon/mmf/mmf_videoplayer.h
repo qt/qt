@@ -80,10 +80,12 @@ private:
 
     // AbstractPlayer
     virtual void videoOutputChanged();
-    
-    void getNativeWindowSystemHandles();
+
+    // Returns true if handles have changed
+    bool getNativeWindowSystemHandles();
+
     void updateMmfOutput();
-    
+
 private:
     QScopedPointer<CVideoPlayerUtility> m_player;
 

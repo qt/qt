@@ -76,6 +76,7 @@ void MMF::VideoPlayer::construct()
     const TInt priority = 0;
     const TMdaPriorityPreference preference = EMdaPriorityPreferenceNone;
 
+    // Ignore return value - first call must always return true
     getNativeWindowSystemHandles();
 
     // TODO: is this the correct way to handle errors which occur when
@@ -326,14 +327,16 @@ void MMF::VideoPlayer::videoOutputRegionChanged()
     TRACE_CONTEXT(VideoPlayer::videoOutputRegionChanged, EVideoInternal);
     TRACE_ENTRY("state %d", state());
 
-    getNativeWindowSystemHandles();
+    const bool changed = getNativeWindowSystemHandles();
 
     // See comment in updateMmfOutput
-    if(state() == LoadingState)
-        m_mmfOutputChangePending = true;
-    else
-        updateMmfOutput();
-        
+    if(changed) {
+        if(state() == LoadingState)
+            m_mmfOutputChangePending = true;
+        else
+            updateMmfOutput();
+    }
+
     TRACE_EXIT_0();
 }
 
@@ -358,29 +361,31 @@ void getDsaRegion(RWsSession &session, const RWindowBase &window)
 	err = dsa.Request(region, ao.Status(), window);
 	ao.SetActive();
 	dsa.Close();
-	ao.Cancel(); 
+	ao.Cancel();
 	if(region) {
 		qDebug() << "Phonon::MMF::getDsaRegion count" << region->Count();
 		for(int i=0; i<region->Count(); ++i) {
 			const TRect& rect = region->RectangleList()[i];
-			qDebug() << "Phonon::MMF::getDsaRegion rect" << rect.iTl.iX << rect.iTl.iY << rect.iBr.iX << rect.iBr.iY;
+			qDebug() << "Phonon::MMF::getDsaRegion rect"
+                << rect.iTl.iX << rect.iTl.iY << rect.iBr.iX << rect.iBr.iY;
 		}
 		region->Close();
 	}
 }
 
+#endif // _DEBUG
+
 void MMF::VideoPlayer::updateMmfOutput()
 {
     TRACE_CONTEXT(VideoPlayer::updateMmfOutput, EVideoInternal);
     TRACE_ENTRY_0();
-    
-    // Calling SetDisplayWindowL is a no-op unless the MMF controller has 
+
+    // Calling SetDisplayWindowL is a no-op unless the MMF controller has
     // been loaded, so we shouldn't do it.  Instead, the
     // m_mmfOutputChangePending flag is used to record the fact that we
-    // need to call SetDisplayWindowL, and this is checked in 
+    // need to call SetDisplayWindowL, and this is checked in
     // MvpuoPrepareComplete, at which point the MMF controller has been
     // loaded.
-    getNativeWindowSystemHandles();
 
 #ifdef _DEBUG
     getDsaRegion(m_wsSession, *m_window);
@@ -425,13 +430,13 @@ void MMF::VideoPlayer::videoOutputChanged()
     TRACE_EXIT_0();
 }
 
-void MMF::VideoPlayer::getNativeWindowSystemHandles()
+bool MMF::VideoPlayer::getNativeWindowSystemHandles()
 {
     TRACE_CONTEXT(VideoPlayer::getNativeWindowSystemHandles, EVideoInternal);
     TRACE_ENTRY_0();
-    
+
     CCoeControl *control = 0;
-    
+
     if(m_videoOutput)
     	// Create native window
     	control = m_videoOutput->winId();
@@ -466,10 +471,15 @@ void MMF::VideoPlayer::getNativeWindowSystemHandles()
         rect.iTl.iX, rect.iTl.iY,
         rect.iBr.iX, rect.iBr.iY);
 
+    bool changed = false;
+
     if(window != m_window || rect != m_rect) {
         m_window = window;
         m_rect = rect;
+        changed = true;
     }
+
+    TRACE_RETURN("changed %d", changed);
 }
 
 
