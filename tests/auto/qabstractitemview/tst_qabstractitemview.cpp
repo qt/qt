@@ -1225,6 +1225,9 @@ void tst_QAbstractItemView::task250754_fontChange()
 
 void tst_QAbstractItemView::task200665_itemEntered()
 {
+#ifdef Q_OS_WINCE_WM
+    QSKIP("On Windows Mobile the mouse tracking is unavailable at the moment", SkipAll);
+#endif
     //we test that view will emit entered
     //when the scrollbar move but not the mouse itself
     QStandardItemModel model(1000,1);
