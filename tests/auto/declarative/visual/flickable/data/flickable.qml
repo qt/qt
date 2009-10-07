@@ -298,7 +298,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/flickable/data/flickable.0.png"
+        image: "flickable.0.png"
     }
     Frame {
         msec: 976
@@ -538,7 +538,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/flickable/data/flickable.1.png"
+        image: "flickable.1.png"
     }
     Frame {
         msec: 1936
@@ -786,6 +786,6 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/flickable/data/flickable.2.png"
+        image: "flickable.2.png"
     }
 }

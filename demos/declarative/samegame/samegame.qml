@@ -21,6 +21,7 @@ Rectangle {
         Item {
             id: gameCanvas
             property int score: 0
+            property int tileSize: 40
 
             z: 20; anchors.centerIn: parent
             width: parent.width - (parent.width % tileSize);
