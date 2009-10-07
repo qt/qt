@@ -285,9 +285,9 @@ void QFxTester::updateCurrentTime(int msec)
             }
 
             if (options & QmlViewer::TestImages && !frame->image().isEmpty()) {
-                QImage goodImage(frame->image());
+                QImage goodImage(frame->image().toLocalFile());
                 if (goodImage != img) {
-                    QString reject(frame->image() + ".reject.png");
+                    QString reject(frame->image().toLocalFile() + ".reject.png");
                     qWarning() << "QFxTester: Image mismatch.  Reject saved to:" 
                                << reject;
                     img.save(reject);

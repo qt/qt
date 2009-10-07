@@ -1,0 +1,57 @@
+/*!
+\page advtutorial3.html
+\title Advanced Tutorial 3 - Implementing the Game Logic
+\target advtutorial3
+
+To the initBoard function we added clearing the board before hand, so that clicking new game won't leave the previous game lying around in the background. To the createComponent function we have added setting the type of the block to a number between one and three - it's fundamental to the game logic that the blocks be different types if you want a fun game.
+
+The main change was adding the following game logic functions:
+\list
+\o function handleClick(x,y)
+\o function floodFill(xIdx,yIdx,type)
+\o function shuffleDown()
+\o function victoryCheck()
+\o function floodMoveCheck(xIdx, yIdx, type)
+\endlist
+
+As this is a tutorial about QML, not game design, these functions will not be discussed in detail. The game logic here was written in script, but it could have been written in C++ and had these functions exposed just as well (in fact, probably faster). The interfacing between these funcions and QML is of interest though. Of these functions, only handleClick and victoryCheck interface closely with the QML. Those functions are shown below (the rest are still in the code for this tutorial located at $QTDIR/examples/declarative/tutorials/samegame).
+
+\snippet declarative/tutorials/samegame/samegame3/samegame.js 1
+\snippet declarative/tutorials/samegame/samegame3/samegame.js 2
+
+You'll notice them referring to the 'gameCanvas' item. This is an item that has been added to the QML for easy interfacing. It is placed next to the background image and replaces the background as the item to create the blocks in. Its code is shown below:
+
+\snippet declarative/tutorials/samegame/samegame3/samegame.qml 1
+
+This item is the exact size of the board, contains a score property, and a mouse region for input. The blocks are now created as its children, and its size is used as the noe determining board size. Since it needs to bind its size to a multiple of tileSize, tileSize needs to be moved into a QML property and out of the script file. It can still be accessed from the script.
+
+The mouse region simply calls handleClick(), which deals with the input events.Should those events cause the player to score, gameCanvas.score is updated. The score display text item has also been changed to bind its text property to gamecanvas.score. Note that if score was a global variable in the samegame.js file yo ucould not bind to it. You can only bind to QML properties.
+
+victoryCheck() mostly just updates score. But it also pops up a dialog saying 'Game Over' when the game is over. In this example we wanted a pure-QML, animated dialog, and since the Fx primitives set doesn't contain one, we wrote our own. Below is the code for the Dialog element, note how it's designed so as to be quite usable imperatively from within the script file:
+
+\snippet declarative/tutorials/samegame/samegame3/Dialog.qml 0
+
+And this is how it's used in the main QML file:
+
+\snippet declarative/tutorials/samegame/samegame3/samegame.qml 2
+
+Combined with the line of code in victoryCheck, this causes a dialog to appear when the game is over, informing the user of that fact.
+
+We now have a working game! The blocks can be clicked, the player can score, and the game can end (and then you start a new one). Below is a screenshot of what has been accomplished so far:
+
+\image declarative-adv-tutorial3.png
+
+Here is the QML code as it is now for the main file:
+
+\snippet declarative/tutorials/samegame/samegame3/samegame.qml 0
+
+And the code for the block:
+
+\snippet declarative/tutorials/samegame/samegame3/Block.qml 0
+
+The game works, but it's a little boring right now. Where's the smooth animated transitions? Where's the high scores? If you were a QML expert you could have written these in for the first iteration, but in this tutorial they've been saved until the next chapter - where your application becomes alive!
+
+[Previous: \l {advtutorial2}{Advanced Tutorial 2}] [\l {advtutorial.html}{Advanced Tutorial}] [Next: \l {advtutorial4}{Advanced Tutorial 4}]
+
+*/
+

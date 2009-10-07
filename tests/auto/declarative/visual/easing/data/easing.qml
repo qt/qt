@@ -258,7 +258,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/easing/data/easing.0.png"
+        image: "easing.0.png"
     }
     Frame {
         msec: 976
@@ -514,7 +514,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/easing/data/easing.1.png"
+        image: "easing.1.png"
     }
     Frame {
         msec: 1936
@@ -770,7 +770,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/easing/data/easing.2.png"
+        image: "easing.2.png"
     }
     Frame {
         msec: 2896

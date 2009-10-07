@@ -44,7 +44,7 @@ class QFxVisualTestFrame : public QObject
     Q_OBJECT
     Q_PROPERTY(int msec READ msec WRITE setMsec)
     Q_PROPERTY(QString hash READ hash WRITE setHash)
-    Q_PROPERTY(QString image READ image WRITE setImage)
+    Q_PROPERTY(QUrl image READ image WRITE setImage)
 public:
     QFxVisualTestFrame() : m_msec(-1) {}
 
@@ -54,13 +54,13 @@ public:
     QString hash() const { return m_hash; }
     void setHash(const QString &hash) { m_hash = hash; }
 
-    QString image() const { return m_image; }
-    void setImage(const QString &image) { m_image = image; }
+    QUrl image() const { return m_image; }
+    void setImage(const QUrl &image) { m_image = image; }
 
 private:
     int m_msec;
     QString m_hash;
-    QString m_image;
+    QUrl m_image;
 };
 QML_DECLARE_TYPE(QFxVisualTestFrame)
 
