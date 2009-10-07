@@ -186,7 +186,6 @@ QScriptValue QmlObjectScriptClass::property(QObject *obj, const Identifier &name
     else if (name == m_toStringId.identifier)
         return m_toString;
 
-    Q_ASSERT(lastData);
     Q_ASSERT(obj);
 
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
