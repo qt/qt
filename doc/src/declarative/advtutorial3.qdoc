@@ -1,0 +1,197 @@
+/*!
+\page advtutorial3.html
+\title Advanced Tutorial 3 - Implementing the Game Logic
+\target advtutorial3
+
+To the initBoard function we added clearing the board before hand, so that clicking new game won't leave the previous game lying around in the background. To the createComponent function we have added setting the type of the block to a number between one and three - it's fundamental to the game logic that the blocks be different types if you want a fun game.
+
+The main change was adding the following game logic functions:
+\list
+\o function handleClick(x,y)
+\o function floodFill(xIdx,yIdx,type)
+\o function shuffleDown()
+\o function victoryCheck()
+\o function floodMoveCheck(xIdx, yIdx, type)
+\endlist
+
+As this is a tutorial about QML, not game design, these functions will not be discussed in detail. The game logic here was written in script, but it could have been written in C++ and had these functions exposed just as well (in fact, probably faster). The interfacing between these funcions and QML is of interest though. Of these functions, only handleClick and victoryCheck interface closely with the QML. Those functions are shown below (the rest are still in the code for this tutorial located at $QTDIR/examples/declarative/tutorials/samegame).
+
+\code
+function handleClick(x,y)
+{
+    xIdx = Math.floor(x/gameCanvas.tileSize);
+    yIdx = Math.floor(y/gameCanvas.tileSize);
+    if(xIdx >= maxX || xIdx < 0 || yIdx >= maxY || yIdx < 0)
+        return;
+    if(board[index(xIdx, yIdx)] == null)
+        return;
+    //If it's a valid tile, remove it and all connected (does nothing if it's not connected)
+    floodFill(xIdx,yIdx, -1);
+    if(fillFound <= 0)
+        return;
+    gameCanvas.score += (fillFound - 1) * (fillFound - 1);
+    shuffleDown();
+    victoryCheck();
+}
+
+function victoryCheck()
+{
+    //awards bonuses for no tiles left
+    deservesBonus = true;
+    for(xIdx=maxX-1; xIdx>=0; xIdx--)
+        if(board[index(xIdx, maxY - 1)] != null)
+            deservesBonus = false;
+    if(deservesBonus)
+        gameCanvas.score += 500;
+    //Checks for game over
+    if(deservesBonus || !(floodMoveCheck(0,maxY-1, -1)))
+        dialog.show("Game Over. Your score is " + gameCanvas.score);
+}
+\endcode
+
+You'll notice them referring to the 'gameCanvas' item. This is an item that has been added to the QML for easy interfacing. It is placed next to the background image and replaces the background as the item to create the blocks in. Its code is shown below:
+\code
+        Item {
+            id: gameCanvas
+            property int score: 0
+            property int tileSize: 40
+
+            z: 20; anchors.centerIn: parent
+            width: parent.width - (parent.width % tileSize);
+            height: parent.height - (parent.height % tileSize);
+
+            MouseRegion {
+                id: gameMR
+                anchors.fill: parent; onClicked: handleClick(mouse.x,mouse.y);
+            }
+        }
+\endcode
+
+This item is the exact size of the board, contains a score property, and a mouse region for input. The blocks are now created as its children, and its size is used as the noe determining board size. Since it needs to bind its size to a multiple of tileSize, tileSize needs to be moved into a QML property and out of the script file. It can still be accessed from the script.
+
+The mouse region simply calls handleClick(), which deals with the input events.Should those events cause the player to score, gameCanvas.score is updated. The score display text item has also been changed to bind its text property to gamecanvas.score. Note that if score was a global variable in the samegame.js file yo ucould not bind to it. You can only bind to QML properties.
+
+victoryCheck() mostly just updates score. But it also pops up a dialog saying 'Game Over' when the game is over. In this example we wanted a pure-QML, animated dialog, and since the Fx primitives set doesn't contain one, we wrote our own. Below is the code for the Dialog element, note how it's designed so as to be quite usable imperatively from within the script file:
+\code
+import Qt 4.6
+
+Rectangle {
+    id: page
+    function forceClose() {
+        page.closed();
+        page.opacity = 0;
+    }
+    function show(txt) {
+        MyText.text = txt;
+        page.opacity = 1;
+    }
+    signal closed();
+    color: "white"; border.width: 1; width: MyText.width + 20; height: 60;
+    opacity: 0
+    opacity: Behavior { 
+        NumberAnimation { duration: 1000 }
+    }
+    Text { id: MyText; anchors.centerIn: parent; text: "Hello World!" }
+    MouseRegion { id: mr; anchors.fill: parent; onClicked: forceClose(); }
+}
+\endcode
+And this is how it's used in the main QML file:
+\code
+    Dialog { id: dialog; anchors.centerIn: parent; z: 21 }
+\endcode
+Combined with the line of code in victoryCheck, this causes a dialog to appear when the game is over, informing the user of that fact.
+
+We now have a working game! The blocks can be clicked, the player can score, and the game can end (and then you start a new one). Below is a screenshot of what has been accomplished so far:
+
+\image declarative-adv-tutorial3.png
+
+Here is the QML code as it is now for the main file:
+
+\code
+import Qt 4.6
+
+Rectangle {
+    id: Screen
+    width: 490; height: 720
+
+    SystemPalette { id: activePalette; colorGroup: Qt.Active }
+    Script { source: "samegame.js" }
+
+    Item {
+        width: parent.width; anchors.top: parent.top; anchors.bottom: ToolBar.top
+
+        Image {
+            id: background
+            anchors.fill: parent; source: "pics/background.png"
+            fillMode: "PreserveAspectCrop"
+        }
+
+        Item {
+            id: gameCanvas
+            property int score: 0
+            property int tileSize: 40
+
+            z: 20; anchors.centerIn: parent
+            width: parent.width - (parent.width % tileSize);
+            height: parent.height - (parent.height % tileSize);
+
+            MouseRegion {
+                id: gameMR
+                anchors.fill: parent; onClicked: handleClick(mouse.x,mouse.y);
+            }
+        }
+    }
+
+    Dialog { id: dialog; anchors.centerIn: parent; z: 21 }
+
+    Rectangle {
+        id: ToolBar
+        color: activePalette.window
+        height: 32; width: parent.width
+        anchors.bottom: Screen.bottom
+
+        Button {
+            id: btnA; text: "New Game"; onClicked: initBoard();
+            anchors.left: parent.left; anchors.leftMargin: 3
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        Text {
+            id: Score
+            text: "Score: " + gameCanvas.score; font.bold: true
+            anchors.right: parent.right; anchors.rightMargin: 3
+            anchors.verticalCenter: parent.verticalCenter
+        }
+    }
+}
+\endcode
+
+And the code for the block:
+\code
+import Qt 4.6
+
+Item { 
+    id:block
+    property int type: 0
+    
+    Image { id: img
+        source: {
+            if(type == 0){
+                "pics/redStone.png";
+            } else if(type == 1) {
+                "pics/blueStone.png";
+            } else {
+                "pics/greenStone.png";
+            }
+        }
+        anchors.fill: parent
+    }
+}
+\endcode
+
+The game works, but it's a little boring right now. Where's the smooth animated transitions? Where's the high scores? If you were a QML expert you could have written these in for the first iteration, but in this tutorial they've been saved until the next chapter - where your application becomes alive!
+
+[Previous: \l {advtutorial2}{Advanced Tutorial 2}] [\l {advtutorial.html}{Advanced Tutorial}] [Next: \l {advtutorial4}{Advanced Tutorial 4}]
+
+*/
+
