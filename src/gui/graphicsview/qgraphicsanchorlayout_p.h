@@ -478,7 +478,7 @@ public:
     bool hasConflicts() const;
 
 #ifdef QT_DEBUG
-    void dumpGraph();
+    void dumpGraph(const QString &name = QString());
 #endif
 
 
