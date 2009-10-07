@@ -539,6 +539,10 @@ void QEventDispatcherWin32Private::registerTimer(WinTimerInfo *t)
 
     int ok = 0;
 
+    //in the animation api, we delay the start of the animation
+    //for the dock widgets, we need to use a system timer because dragging a native window
+    //makes Windows start its own event loop.
+    //So if this threshold changes, please change STARTSTOP_TIMER_DELAY in qabstractanimation.cpp accordingly.
     if (t->interval > 15 || !t->interval || !qtimeSetEvent) {
         ok = 1;
         if (!t->interval)  // optimization for single-shot-zero-timer

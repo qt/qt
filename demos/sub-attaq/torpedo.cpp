@@ -51,24 +51,21 @@
 #include <QtCore/QStateMachine>
 #include <QtCore/QFinalState>
 
-Torpedo::Torpedo(QGraphicsItem * parent, Qt::WindowFlags wFlags)
-    : QGraphicsWidget(parent,wFlags), currentSpeed(0), launchAnimation(0)
+Torpedo::Torpedo() : PixmapItem(QString::fromLatin1("torpedo"),GraphicsScene::Big),
+    currentSpeed(0)
 {
-    pixmapItem = new PixmapItem(QString::fromLatin1("torpedo"),GraphicsScene::Big, this);
     setZValue(2);
-    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    setFlags(QGraphicsItem::ItemIsMovable);
-    resize(pixmapItem->boundingRect().size());
 }
 
 void Torpedo::launch()
 {
-    launchAnimation = new QPropertyAnimation(this, "pos");
+    QPropertyAnimation *launchAnimation = new QPropertyAnimation(this, "pos");
     AnimationManager::self()->registerAnimation(launchAnimation);
     launchAnimation->setEndValue(QPointF(x(),qobject_cast<GraphicsScene *>(scene())->sealLevel() - 15));
     launchAnimation->setEasingCurve(QEasingCurve::InQuad);
     launchAnimation->setDuration(y()/currentSpeed*10);
     connect(launchAnimation,SIGNAL(valueChanged(const QVariant &)),this,SLOT(onAnimationLaunchValueChanged(const QVariant &)));
+    connect(this,SIGNAL(torpedoExploded()), launchAnimation, SLOT(stop()));
 
     //We setup the state machine of the torpedo
     QStateMachine *machine = new QStateMachine(this);
@@ -83,7 +80,7 @@ void Torpedo::launch()
     machine->setInitialState(launched);
 
     //### Add a nice animation when the torpedo is destroyed
-    launched->addTransition(this, SIGNAL(torpedoExplosed()),final);
+    launched->addTransition(this, SIGNAL(torpedoExploded()),final);
 
     //If the animation is finished, then we move to the final state
     launched->addTransition(launched, SIGNAL(animationFinished()), final);
@@ -106,15 +103,12 @@ void Torpedo::setCurrentSpeed(int speed)
 void Torpedo::onAnimationLaunchValueChanged(const QVariant &)
 {
     foreach (QGraphicsItem *item , collidingItems(Qt::IntersectsItemBoundingRect)) {
-        if (item->type() == Boat::Type) {
-            Boat *b = static_cast<Boat *>(item);
+        if (Boat *b = qgraphicsitem_cast<Boat*>(item))
             b->destroy();
-        }
     }
 }
 
 void Torpedo::destroy()
 {
-    launchAnimation->stop();
-    emit torpedoExplosed();
+    emit torpedoExploded();
 }

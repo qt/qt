@@ -254,6 +254,8 @@
 
 QT_BEGIN_NAMESPACE
 
+bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
+
 static void _q_hoverFromMouseEvent(QGraphicsSceneHoverEvent *hover, const QGraphicsSceneMouseEvent *mouseEvent)
 {
     hover->setWidget(mouseEvent->widget());
@@ -1051,7 +1053,15 @@ bool QGraphicsScenePrivate::sendEvent(QGraphicsItem *item, QEvent *event)
         return false;
     if (filterDescendantEvent(item, event))
         return false;
-    return (item && item->isEnabled() ? item->sceneEvent(event) : false);
+    if (!item || !item->isEnabled())
+        return false;
+    if (QGraphicsObject *o = item->toGraphicsObject()) {
+        bool spont = event->spontaneous();
+        if (spont ? qt_sendSpontaneousEvent(o, event) : QApplication::sendEvent(o, event))
+            return true;
+        event->spont = spont;
+    }
+    return item->sceneEvent(event);
 }
 
 /*!

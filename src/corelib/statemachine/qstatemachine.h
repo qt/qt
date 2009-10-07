@@ -48,6 +48,7 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qset.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_HEADER
 

@@ -136,11 +136,9 @@ void RenderArea::paintEvent(QPaintEvent * /* event */)
     QPainter painter(this);
     painter.setPen(pen);
     painter.setBrush(brush);
-    if (antialiased) {
+    if (antialiased)
         painter.setRenderHint(QPainter::Antialiasing, true);
 //! [9]
-        painter.translate(+0.5, +0.5);
-    }
 
 //! [10]
     for (int x = 0; x < width(); x += 100) {
@@ -202,6 +200,7 @@ void RenderArea::paintEvent(QPaintEvent * /* event */)
         }
     }
 
+    painter.setRenderHint(QPainter::Antialiasing, false);
     painter.setPen(palette().dark().color());
     painter.setBrush(Qt::NoBrush);
     painter.drawRect(QRect(0, 0, width() - 1, height() - 1));

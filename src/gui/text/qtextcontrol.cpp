@@ -1223,11 +1223,13 @@ void QTextControlPrivate::keyPressEvent(QKeyEvent *e)
         cursor.deleteChar();
     }
     else if (e == QKeySequence::DeleteEndOfWord) {
-        cursor.movePosition(QTextCursor::NextWord, QTextCursor::KeepAnchor);
+        if (!cursor.hasSelection())
+            cursor.movePosition(QTextCursor::NextWord, QTextCursor::KeepAnchor);
         cursor.removeSelectedText();
     }
     else if (e == QKeySequence::DeleteStartOfWord) {
-        cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
+        if (!cursor.hasSelection())
+            cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
         cursor.removeSelectedText();
     }
     else if (e == QKeySequence::DeleteEndOfLine) {

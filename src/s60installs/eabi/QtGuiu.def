@@ -11631,7 +11631,7 @@ EXPORTS
 	qt_pixmap_cleanup_hook @ 11630 NONAME DATA 4
 	qt_pixmap_cleanup_hook_64 @ 11631 NONAME DATA 4
 	qt_tab_all_widgets @ 11632 NONAME DATA 1
-	_Z17qDrawBorderPixmapP8QPainterRK5QRectRK8QMarginsRK7QPixmapS3_S6_RK10QTileRules @ 11633 NONAME
+	_Z17qDrawBorderPixmapP8QPainterRK5QRectRK8QMarginsRK7QPixmapS3_S6_RK10QTileRules @ 11633 NONAME ABSENT
 	_Z17qHasPixmapTextureRK6QBrush @ 11634 NONAME
 	_Z22qt_setQtEnableTestFontb @ 11635 NONAME
 	_Z25qt_translateRawTouchEventP7QWidgetN11QTouchEvent10DeviceTypeERK5QListINS1_10TouchPointEE @ 11636 NONAME
@@ -11824,7 +11824,7 @@ EXPORTS
 	_ZN14QPaintEngineExC2Ev @ 11823 NONAME
 	_ZN14QWidgetPrivate10allWidgetsE @ 11824 NONAME DATA 4
 	_ZN14QWidgetPrivate13setWSGeometryEbRK5QRect @ 11825 NONAME
-	_ZN14QWidgetPrivate33handleSymbianDeferredFocusChangedEv @ 11826 NONAME
+	_ZN14QWidgetPrivate33handleSymbianDeferredFocusChangedEv @ 11826 NONAME ABSENT
 	_ZN15QDockAreaLayout13separatorMoveERK5QListIiERK6QPointS6_ @ 11827 NONAME
 	_ZN15QDockAreaLayout4infoERK5QListIiE @ 11828 NONAME
 	_ZN15QDockAreaLayout4itemERK5QListIiE @ 11829 NONAME
@@ -12984,9 +12984,9 @@ EXPORTS
 	_ZN16QS60MainDocumentD0Ev @ 12983 NONAME
 	_ZN16QS60MainDocumentD1Ev @ 12984 NONAME
 	_ZN16QS60MainDocumentD2Ev @ 12985 NONAME
-	_ZN17QPixmapBlurFilter11setBlurHintENS_8BlurHintE @ 12986 NONAME
-	_ZN19QGraphicsBlurEffect11setBlurHintENS_8BlurHintE @ 12987 NONAME
-	_ZN19QGraphicsBlurEffect15blurHintChangedENS_8BlurHintE @ 12988 NONAME
+	_ZN17QPixmapBlurFilter11setBlurHintENS_8BlurHintE @ 12986 NONAME ABSENT
+	_ZN19QGraphicsBlurEffect11setBlurHintENS_8BlurHintE @ 12987 NONAME ABSENT
+	_ZN19QGraphicsBlurEffect15blurHintChangedENS_8BlurHintE @ 12988 NONAME ABSENT
 	_ZN19QS60MainApplication15CreateDocumentLEv @ 12989 NONAME
 	_ZN19QS60MainApplicationC1Ev @ 12990 NONAME
 	_ZN19QS60MainApplicationC2Ev @ 12991 NONAME
@@ -13001,7 +13001,7 @@ EXPORTS
 	_ZNK19QGraphicsBlurEffect8blurHintEv @ 13000 NONAME
 	_ZNK19QS60MainApplication16ResourceFileNameEv @ 13001 NONAME
 	_ZNK19QS60MainApplication9AppDllUidEv @ 13002 NONAME
-	_ZNK21QGraphicsAnchorLayout12hasConflictsEv @ 13003 NONAME
+	_ZNK21QGraphicsAnchorLayout12hasConflictsEv @ 13003 NONAME ABSENT
 	_ZNK7QPixmap17toSymbianRSgImageEv @ 13004 NONAME
 	_ZTI15QSoftKeyManager @ 13005 NONAME
 	_ZTV15QSoftKeyManager @ 13006 NONAME
@@ -13009,4 +13009,97 @@ EXPORTS
 	_ZThn24_N13QS60MainAppUi15DynInitMenuBarLEiP11CEikMenuBar @ 13008 NONAME
 	_ZThn24_N13QS60MainAppUi16DynInitMenuPaneLEiP12CEikMenuPane @ 13009 NONAME
 	_ZThn88_N13QS60MainAppUi26HandleStatusPaneSizeChangeEv @ 13010 NONAME
+	_Z12qDrawPixmapsP8QPainterPKN12QDrawPixmaps4DataEiRK7QPixmap6QFlagsINS1_11DrawingHintEE @ 13011 NONAME
+	_Z17qDrawBorderPixmapP8QPainterRK5QRectRK8QMarginsRK7QPixmapS3_S6_RK10QTileRules6QFlagsIN17QDrawBorderPixmap11DrawingHintEE @ 13012 NONAME
+	_ZN10QImageData6createEPhiiiN6QImage6FormatEb @ 13013 NONAME
+	_ZN10QImageData6createERK5QSizeN6QImage6FormatEi @ 13014 NONAME
+	_ZN10QImageDataC1Ev @ 13015 NONAME
+	_ZN10QImageDataC2Ev @ 13016 NONAME
+	_ZN10QImageDataD1Ev @ 13017 NONAME
+	_ZN10QImageDataD2Ev @ 13018 NONAME
+	_ZN13QGraphicsItem11stackBeforeEPKS_ @ 13019 NONAME
+	_ZN13QGraphicsItem16setPanelModalityENS_13PanelModalityE @ 13020 NONAME
+	_ZN14QPaintEngineEx11drawPixmapsEPKN12QDrawPixmaps4DataEiRK7QPixmap6QFlagsINS0_11DrawingHintEE @ 13021 NONAME
+	_ZN14QWidgetPrivate21activateSymbianWindowEv @ 13022 NONAME
+	_ZN17QAbstractItemView20setDefaultDropActionEN2Qt10DropActionE @ 13023 NONAME
+	_ZN17QPixmapBlurFilter11setBlurHintEN2Qt10RenderHintE @ 13024 NONAME
+	_ZN19QApplicationPrivate16load_testabilityE @ 13025 NONAME DATA 1
+	_ZN19QGraphicsBlurEffect11setBlurHintEN2Qt10RenderHintE @ 13026 NONAME
+	_ZN19QGraphicsBlurEffect15blurHintChangedEN2Qt10RenderHintE @ 13027 NONAME
+	_ZN20QGraphicsBloomEffect11qt_metacallEN11QMetaObject4CallEiPPv @ 13028 NONAME
+	_ZN20QGraphicsBloomEffect11qt_metacastEPKc @ 13029 NONAME
+	_ZN20QGraphicsBloomEffect11setBlurHintEN2Qt10RenderHintE @ 13030 NONAME
+	_ZN20QGraphicsBloomEffect11setStrengthEf @ 13031 NONAME
+	_ZN20QGraphicsBloomEffect13setBlurRadiusEi @ 13032 NONAME
+	_ZN20QGraphicsBloomEffect13setBrightnessEi @ 13033 NONAME
+	_ZN20QGraphicsBloomEffect15blurHintChangedEN2Qt10RenderHintE @ 13034 NONAME
+	_ZN20QGraphicsBloomEffect15strengthChangedEf @ 13035 NONAME
+	_ZN20QGraphicsBloomEffect16staticMetaObjectE @ 13036 NONAME DATA 16
+	_ZN20QGraphicsBloomEffect17blurRadiusChangedEi @ 13037 NONAME
+	_ZN20QGraphicsBloomEffect17brightnessChangedEi @ 13038 NONAME
+	_ZN20QGraphicsBloomEffect19getStaticMetaObjectEv @ 13039 NONAME
+	_ZN20QGraphicsBloomEffect4drawEP8QPainterP21QGraphicsEffectSource @ 13040 NONAME
+	_ZN20QGraphicsBloomEffectC1EP7QObject @ 13041 NONAME
+	_ZN20QGraphicsBloomEffectC2EP7QObject @ 13042 NONAME
+	_ZN20QGraphicsBloomEffectD0Ev @ 13043 NONAME
+	_ZN20QGraphicsBloomEffectD1Ev @ 13044 NONAME
+	_ZN20QGraphicsBloomEffectD2Ev @ 13045 NONAME
+	_ZN20QGraphicsItemPrivate28ensureSequentialSiblingIndexEv @ 13046 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate11solveMinMaxE5QListIP18QSimplexConstraintE9GraphPathPfS5_ @ 13047 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate12oppositeEdgeEN2Qt11AnchorPointE @ 13048 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate12removeAnchorEP12AnchorVertexS1_ @ 13049 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate12removeVertexEP19QGraphicsLayoutItemN2Qt11AnchorPointE @ 13050 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate13getGraphPartsENS_11OrientationE @ 13051 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate13removeAnchorsEP19QGraphicsLayoutItem @ 13052 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate13setAnchorSizeEP10AnchorDataPKf @ 13053 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate13simplifyGraphENS_11OrientationE @ 13054 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate14solvePreferredE5QListIP18QSimplexConstraintE @ 13055 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate15calculateGraphsENS_11OrientationE @ 13056 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate15calculateGraphsEv @ 13057 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate15createItemEdgesEP19QGraphicsLayoutItem @ 13058 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate15edgeOrientationEN2Qt11AnchorPointE @ 13059 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate15interpolateEdgeEP12AnchorVertexP10AnchorDataNS_11OrientationE @ 13060 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate16addAnchor_helperEP19QGraphicsLayoutItemN2Qt11AnchorPointES1_S3_P10AnchorData @ 13061 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate17addInternalVertexEP19QGraphicsLayoutItemN2Qt11AnchorPointE @ 13062 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate17createLayoutEdgesEv @ 13063 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate17deleteLayoutEdgesEv @ 13064 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate18setItemsGeometriesERK6QRectF @ 13065 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate19createCenterAnchorsEP19QGraphicsLayoutItemN2Qt11AnchorPointE @ 13066 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate19removeAnchor_helperEP12AnchorVertexS1_ @ 13067 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate19removeCenterAnchorsEP19QGraphicsLayoutItemN2Qt11AnchorPointEb @ 13068 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate20constraintsFromPathsENS_11OrientationE @ 13069 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate20correctEdgeDirectionERP19QGraphicsLayoutItemRN2Qt11AnchorPointES2_S5_ @ 13070 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate20removeInternalVertexEP19QGraphicsLayoutItemN2Qt11AnchorPointE @ 13071 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate22restoreSimplifiedGraphENS_11OrientationE @ 13072 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate22simplifyGraphIterationENS_11OrientationE @ 13073 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate23removeCenterConstraintsEP19QGraphicsLayoutItemNS_11OrientationE @ 13074 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate23setupEdgesInterpolationENS_11OrientationE @ 13075 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate24calculateVertexPositionsENS_11OrientationE @ 13076 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate24constraintsFromSizeHintsERK5QListIP10AnchorDataE @ 13077 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate24interpolateParallelEdgesEP12AnchorVertexP18ParallelAnchorDataNS_11OrientationE @ 13078 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate26interpolateSequentialEdgesEP12AnchorVertexP20SequentialAnchorDataNS_11OrientationE @ 13079 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate27setAnchorSizeHintsFromItemsENS_11OrientationE @ 13080 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate9addAnchorEP19QGraphicsLayoutItemN2Qt11AnchorPointES1_S3_Pf @ 13081 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate9findPathsENS_11OrientationE @ 13082 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate9getAnchorEP19QGraphicsLayoutItemN2Qt11AnchorPointES1_S3_ @ 13083 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivateC1Ev @ 13084 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivateC2Ev @ 13085 NONAME
+	_ZNK10QImageData19checkForAlphaPixelsEv @ 13086 NONAME
+	_ZNK10QImageData9doImageIOEPK6QImageP12QImageWriteri @ 13087 NONAME
+	_ZNK13QGraphicsItem13panelModalityEv @ 13088 NONAME
+	_ZNK13QGraphicsItem21isBlockedByModalPanelEPPS_ @ 13089 NONAME
+	_ZNK17QAbstractItemView17defaultDropActionEv @ 13090 NONAME
+	_ZNK20QGraphicsBloomEffect10blurRadiusEv @ 13091 NONAME
+	_ZNK20QGraphicsBloomEffect10brightnessEv @ 13092 NONAME
+	_ZNK20QGraphicsBloomEffect10metaObjectEv @ 13093 NONAME
+	_ZNK20QGraphicsBloomEffect15boundingRectForERK6QRectF @ 13094 NONAME
+	_ZNK20QGraphicsBloomEffect8blurHintEv @ 13095 NONAME
+	_ZNK20QGraphicsBloomEffect8strengthEv @ 13096 NONAME
+	_ZNK28QGraphicsAnchorLayoutPrivate10anchorSizeEPK10AnchorDataPfS3_S3_ @ 13097 NONAME
+	_ZNK28QGraphicsAnchorLayoutPrivate12hasConflictsEv @ 13098 NONAME
+	_ZNK28QGraphicsAnchorLayoutPrivate16effectiveSpacingENS_11OrientationE @ 13099 NONAME
+	_ZTI20QGraphicsBloomEffect @ 13100 NONAME
+	_ZTI28QGraphicsAnchorLayoutPrivate @ 13101 NONAME
+	_ZTV20QGraphicsBloomEffect @ 13102 NONAME
+	_ZTV28QGraphicsAnchorLayoutPrivate @ 13103 NONAME
 

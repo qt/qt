@@ -387,7 +387,14 @@ struct QX11AlphaDetector
         return hasAlpha();
     }
 
-    QX11AlphaDetector(const QImage *i) : image(i), checked(false), has(false) { }
+    QX11AlphaDetector(const QImage *i, Qt::ImageConversionFlags flags)
+        : image(i), checked(false), has(false)
+    {
+        if (flags & Qt::NoOpaqueDetection) {
+            checked = true;
+            has = image->hasAlphaChannel();
+        }
+    }
 
     const QImage *image;
     mutable bool checked;
@@ -427,7 +434,7 @@ void QX11PixmapData::fromImage(const QImage &img,
         return;
     }
 
-    QX11AlphaDetector alphaCheck(&img);
+    QX11AlphaDetector alphaCheck(&img, flags);
     int dd = alphaCheck.hasXRenderAndAlpha() ? 32 : xinfo.depth();
 
     if (qt_x11_preferred_pixmap_depth)
@@ -1252,8 +1259,11 @@ void QX11PixmapData::release()
 
 QPixmap QX11PixmapData::alphaChannel() const
 {
-    if (!hasAlphaChannel())
-        return QPixmap();
+    if (!hasAlphaChannel()) {
+        QPixmap pm(w, h);
+        pm.fill(Qt::white);
+        return pm;
+    }
     QImage im(toImage());
     return QPixmap::fromImage(im.alphaChannel(), Qt::OrderedDither);
 }
