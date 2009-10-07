@@ -50,7 +50,7 @@ defineTest(qtAddLibrary) {
         INCLUDEPATH *= $$MW_LAYER_SYSTEMINCLUDE
     }
     isEmpty(LINKAGE) {
-       CONFIG(debug, debug|release) {
+       if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
            win32:LINKAGE = -l$${LIB_NAME}$${QT_LIBINFIX}d
            mac:LINKAGE = -l$${LIB_NAME}$${QT_LIBINFIX}_debug
        }
