@@ -80,11 +80,11 @@ expression has been assigned to is automatically updated to that value.
 \code
 Item {
     Text {
-        id: Text1
+        id: text1
         text: "Hello World"
     }
     Text {
-        id: Text2
+        id: text2
         text: Text1.text
     }
 }
@@ -138,7 +138,7 @@ real, bool, string, color, and lists.
 Item {
     x: 10.5             // a 'real' property
     ...
-    state: "Details"    // a 'string' property
+    state: "details"    // a 'string' property
     focus: true         // a 'bool' property
 }
 \endcode
@@ -153,7 +153,7 @@ Item {
 }
 \endcode
 
-\section3 The 'id' property
+\section3 The \c id property
 
 The \c id property is a special property of type \e id. Assigning an id to an object allows you
 to refer to it elsewhere.
@@ -161,16 +161,16 @@ to refer to it elsewhere.
 \code
 Item {
     Text {
-        id: MyName
+        id: myName
         text: "..."
     }
     Text {
-        text: MyName.text
+        text: myName.text
     }
 }
 \endcode
 
-\c ids must begin with a letter. We recommend that you start your ids with a capital letter.
+\c Ids must begin with a lowercase letter.
 
 \section2 List properties
 

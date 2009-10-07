@@ -1,115 +1,46 @@
-/*! 
+/*!
 \page tutorial3.html
 \target tutorial3
-\title Tutorial 3 - States
+\title Tutorial 3 - States and Transitions
 
-In this chapter, we make this example a little bit more dynamic by introducing states.
+In this chapter, we make this example a little bit more dynamic by introducing states and transitions.
 
-We want our text to jump at the bottom of the screen and become red when clicked.
+We want our text to move to the bottom of the screen, rotate and become red when clicked.
 
 \image declarative-tutorial3_animation.gif
 
 Here is the QML code:
 
-\code
-Rectangle {
-    id: Page
-    width: 480
-    height: 200
-    color: "LightGrey"
-    Text {
-        id: HelloText
-        text: "Hello world!"
-        font.pointSize: 24
-        font.bold: true
-        y: 30
-        anchors.horizontalCenter: Page.horizontalCenter
-        states: [
-            State {
-                name: "down"
-                when: MouseRegion.pressed == true
-                PropertyChanges { target: HelloText; y: 160; color: "red" }
-            }
-        ]
-        transitions: [
-            Transition {
-                from: "*"
-                to: "down"
-                reversible: true
-                ParallelAnimation {
-                    NumberAnimation {
-                        properties: "y"
-                        duration: 500
-                        easing: "easeOutBounce"
-                    }
-                    ColorAnimation { property: "color"; duration: 500 }
-                }
-            }
-        ]
-    }
-    MouseRegion { id: MouseRegion; anchors.fill: HelloText }
-    Grid {
-        id: ColorPicker
-        x: 0
-        anchors.bottom: Page.bottom
-        width: 120; height: 50
-        rows: 2; columns: 3
-        Cell { color: "#ff0000" }
-        Cell { color: "#00ff00" }
-        Cell { color: "#0000ff" }
-        Cell { color: "#ffff00" }
-        Cell { color: "#00ffff" }
-        Cell { color: "#ff00ff" }
-    }
-}
-\endcode
+\snippet examples/declarative/tutorials/helloworld/tutorial3.qml 0
 
 \section1 Walkthrough
 
-\code
-states: [
-    State {
-        name: "down"
-        when: MouseRegion.pressed == true
-        PropertyChanges { target: HelloText; y: 160; color: "red" }
-    }
-]
-\endcode
+\snippet examples/declarative/tutorials/helloworld/tutorial3.qml 2
 
-First, we create a new state \e down for our text element. This state will be activated when MouseRegion is pressed, and deactivated when it is released.
+First, we create a new \e down state for our text element.
+This state will be activated when the \l MouseRegion is pressed, and deactivated when it is released.
 
-The \e down state includes a set of property changes from our implicit \e {default state} (the items as they were initially defined in the QML). Specifically, we set the \c y property of the text to 160 and the \c color to red.
+The \e down state includes a set of property changes from our implicit \e {default state}
+(the items as they were initially defined in the QML).
+Specifically, we set the \c y property of the text to \c 160, the rotation to \c 180 and the \c color to red.
 
-\code
-Transition {
-    from: "*"
-    to: "down"
-    reversible: true
-}
-\endcode
+\snippet examples/declarative/tutorials/helloworld/tutorial3.qml 3
 
-Because we don't want the text to appear at the bottom instantly but rather move smoothly, we add a transition between our two states.
+Because we don't want the text to appear at the bottom instantly but rather move smoothly,
+we add a transition between our two states.
 
-\c from and \c to define the states between which the transition will run. In this case, we want a transition from any state to our \e down state.
+\c from and \c to define the states between which the transition will run.
+In this case, we want a transition from the default state to our \e down state.
 
-Because we want the same transition to be run in reverse when changing back from the \e down state to the default state, we set \c reversible to \c true. This is equivalent to writing the two transitions separately.
+Because we want the same transition to be run in reverse when changing back from the \e down state to the default state,
+we set \c reversible to \c true.
+This is equivalent to writing the two transitions separately.
 
-\code
-ParallelAnimation {
-    NumberAnimation {
-        properties: "y"
-        duration: 500
-        easing: "easeOutBounce"
-    }
-    ColorAnimation { property: "color"; duration: 500 }
-}
-\endcode
-
-The \c ParallelAnimation element makes sure that the two animations (color and position) will start at the same time. We could also run them one after the other by using \c SequentialAnimation instead.
+The \l ParallelAnimation element makes sure that the two types of animations (number and color) start at the same time.
+We could also run them one after the other by using \l SequentialAnimation instead.
 
 For more details on states and transitions, see \l {states-transitions}{States and Transitions}.
 
 [Previous: \l tutorial2] [\l tutorial]
 
 */
-

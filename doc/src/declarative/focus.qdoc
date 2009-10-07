@@ -58,12 +58,12 @@ the \c {KeyActions} element has \e {active focus} and pressing the
 \o \code
     Rectangle {
         color: "lightsteelblue"; width: 240; height: 25
-        Text { id: MyText }
+        Text { id: myText }
         KeyActions {
             focus: true
-            keyA: "MyText.text = 'Key A was pressed'"
-            keyB: "MyText.text = 'Key B was pressed'"
-            keyC: "MyText.text = 'Key C was pressed'"
+            keyA: "myText.text = 'Key A was pressed'"
+            keyB: "myText.text = 'Key B was pressed'"
+            keyC: "myText.text = 'Key C was pressed'"
         }
     }
 \endcode
@@ -92,23 +92,23 @@ Rectangle {
     color: "red"; width: 240; height: 55
     Rectangle {
         color: "lightsteelblue"; width: 240; height: 25
-        Text { id: MyText }
+        Text { id: myText }
         KeyActions {
             focus: true
-            keyA: "MyText.text = 'Key A was pressed'"
-            keyB: "MyText.text = 'Key B was pressed'"
-            keyC: "MyText.text = 'Key C was pressed'"
+            keyA: "myText.text = 'Key A was pressed'"
+            keyB: "myText.text = 'Key B was pressed'"
+            keyC: "myText.text = 'Key C was pressed'"
         }
     }
     Rectangle {
         y: 30; focus: true
         color: "lightsteelblue"; width: 240; height: 25
-        Text { id: MyText }
+        Text { id: myText }
         KeyActions {
             focus: true
-            keyA: "MyText.text = 'Key A was pressed'"
-            keyB: "MyText.text = 'Key B was pressed'"
-            keyC: "MyText.text = 'Key C was pressed'"
+            keyA: "myText.text = 'Key A was pressed'"
+            keyB: "myText.text = 'Key B was pressed'"
+            keyC: "myText.text = 'Key C was pressed'"
         }
     }
 }
@@ -149,12 +149,12 @@ FocusScope {
     width: 240; height: 25
     Rectangle {
         color: "lightsteelblue"; width: 240; height: 25
-        Text { id: MyText }
+        Text { id: myText }
         KeyActions {
             focus: true
-            keyA: "MyText.text = 'Key A was pressed'"
-            keyB: "MyText.text = 'Key B was pressed'"
-            keyC: "MyText.text = 'Key C was pressed'"
+            keyA: "myText.text = 'Key A was pressed'"
+            keyB: "myText.text = 'Key B was pressed'"
+            keyC: "myText.text = 'Key C was pressed'"
         }
     }
 }
@@ -186,9 +186,9 @@ Rectangle {
 \endcode
 \o \code
 FocusScope {
-    id: Page; width: 240; height: 25
+    id: page; width: 240; height: 25
     MyWidget { focus: true }
-    MouseRegion { anchors.fill: parent; onClicked: { Page.focus = true } }
+    MouseRegion { anchors.fill: parent; onClicked: { page.focus = true } }
 }
 \endcode
 \endtable
@@ -221,7 +221,7 @@ Rectangle {
     color: "lightsteelblue"; width: 240; height: 320
 
     ListView {
-        id: MyView; anchors.fill: parent; focus: true
+        id: myView; anchors.fill: parent; focus: true
         model: ListModel {
             ListElement { name: "Bob" }
             ListElement { name: "John" }
