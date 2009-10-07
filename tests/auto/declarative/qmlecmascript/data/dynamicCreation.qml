@@ -5,7 +5,7 @@ MyQmlObject{
     objectName: "obj"
     function createOne()
     {
-        obj.objectProperty = createQmlObject('import Qt.test 1.0; MyQmlObject{objectName:"emptyObject"}', obj);
+        obj.objectProperty = createQmlObject('import Qt.test 1.0; MyQmlObject{objectName:"objectOne"}', obj);
     }
 
     function createTwo()

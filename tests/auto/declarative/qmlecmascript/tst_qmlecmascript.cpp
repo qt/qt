@@ -550,12 +550,12 @@ void tst_qmlecmascript::dynamicCreation()
     QMetaObject::invokeMethod(object, "createOne");
     createdQmlObject = object->objectProperty();
     QVERIFY(createdQmlObject);
-    QCOMPARE(createdQmlObject->objectName(), QString("emptyObject"));
+    QCOMPARE(createdQmlObject->objectName(), QString("objectOne"));
 
     QMetaObject::invokeMethod(object, "createTwo");
     createdComponent = object->objectProperty();
     QVERIFY(createdComponent);
-    QCOMPARE(createdQmlObject->objectName(), QString("desolateObject"));
+    QCOMPARE(createdComponent->objectName(), QString("objectTwo"));
 }
 
 /*
@@ -564,7 +564,7 @@ void tst_qmlecmascript::dynamicCreation()
 void tst_qmlecmascript::dynamicDestruction()
 {
     QmlComponent component(&engine, TEST_FILE("dynamicDeletion.qml"));
-    MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
+    QGuard<MyQmlObject> object = qobject_cast<MyQmlObject*>(component.create());
     QVERIFY(object != 0);
     QGuard<QObject> createdQmlObject = 0;
 
@@ -573,19 +573,17 @@ void tst_qmlecmascript::dynamicDestruction()
     QVERIFY(createdQmlObject);
     QCOMPARE(createdQmlObject->objectName(), QString("emptyObject"));
 
-    QMetaObject::invokeMethod(object, "killIt", Q_ARG(int, 0));
-    QVERIFY(createdQmlObject);
-    QTest::qWait(0);
-    QVERIFY(!createdQmlObject);
-
-    QMetaObject::invokeMethod(object, "create");
-    QVERIFY(createdQmlObject);
-    QMetaObject::invokeMethod(object, "killIt", Q_ARG(int, 100));
+    QMetaObject::invokeMethod(object, "killOther");
     QVERIFY(createdQmlObject);
     QTest::qWait(0);
     QVERIFY(createdQmlObject);
     QTest::qWait(100);
     QVERIFY(!createdQmlObject);
+
+    QMetaObject::invokeMethod(object, "killMe");
+    QVERIFY(object);
+    QTest::qWait(0);
+    QVERIFY(!object);
 }
 
 /*

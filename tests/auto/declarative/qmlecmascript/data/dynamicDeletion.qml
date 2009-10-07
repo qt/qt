@@ -8,13 +8,13 @@ MyQmlObject{
         obj.objectProperty = createQmlObject('import Qt.test 1.0; MyQmlObject{objectName:"emptyObject"}', obj);
     }
 
-    function killIt(wait)
+    function killOther()
     {
-        if(obj.objectProperty == undefined || obj.objectProperty == null)
-            return;
-        if(wait > 0)
-            obj.objectProperty.destroy(wait);
-        else
-            obj.objectProperty.destroy();
+        obj.objectProperty.destroy(100);
+    }
+
+    function killMe()
+    {
+        obj.destroy();//Must not segfault
     }
 }
