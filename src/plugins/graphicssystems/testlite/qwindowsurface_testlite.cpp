@@ -199,9 +199,10 @@ void QTestLiteWindowSurface::handleGeometryChange(int x, int y, int w, int h)
 }
 
 
-
-
-
+void QTestLiteWindowSurface::handleCloseEvent()
+{
+    QApplicationPrivate::handleCloseEvent(window());
+}
 
 
 

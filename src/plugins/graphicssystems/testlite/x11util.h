@@ -96,7 +96,7 @@ public:
     void keyPressEvent(XKeyEvent*);
     void keyReleaseEvent(XKeyEvent*);
 
-
+    void closeEvent();
     void paintEvent();
     void resizeEvent(XConfigureEvent *configure_event);
     void setSize(int w, int h);

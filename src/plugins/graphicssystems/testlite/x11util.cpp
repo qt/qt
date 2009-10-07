@@ -60,13 +60,14 @@
 #undef ATOM
 #undef X11
 
-
-
-
+//#define MYX11_DEBUG
 
 static int (*original_x_errhandler)(Display *dpy, XErrorEvent *);
 static bool seen_badwindow;
 
+
+static Atom wmProtocolsAtom;
+static Atom wmDeleteWindowAtom;
 
 //### copied from qapplication_x11.cpp
 
@@ -223,6 +224,22 @@ bool MyDisplay::handleEvent(XEvent *xe)
     }
 
     switch (xe->type) {
+
+    case ClientMessage:
+        if (xe->xclient.format == 32 && xe->xclient.message_type == wmProtocolsAtom) {
+            Atom a = xe->xclient.data.l[0];
+            if (a == wmDeleteWindowAtom)
+                xw->closeEvent();
+#ifdef MYX11_DEBUG
+            qDebug() << "ClientMessage WM_PROTOCOLS" << a;
+#endif
+        }
+#ifdef MYX11_DEBUG
+        else
+            qDebug() << "ClientMessage" << xe->xclient.format << xe->xclient.message_type;
+#endif
+        break;
+
     case Expose:
         if (xw)
             if (xe->xexpose.count == 0)
@@ -293,6 +310,10 @@ MyDisplay::MyDisplay()
 #endif
     QSocketNotifier *sock = new QSocketNotifier(xSocketNumber, QSocketNotifier::Read, this);
     connect(sock, SIGNAL(activated(int)), this, SLOT(eventDispatcher()));
+
+    wmProtocolsAtom = XInternAtom (display, "WM_PROTOCOLS", False);
+    wmDeleteWindowAtom = XInternAtom (display, "WM_DELETE_WINDOW", False);
+
 }
 
 
@@ -355,6 +376,13 @@ MyWindow::MyWindow(MyDisplay *display, int x, int y, int w, int h)
                  ButtonPressMask |  ButtonReleaseMask | ButtonMotionMask | StructureNotifyMask);
 
     gc = createGC();
+
+    XChangeProperty (xd->display, window,
+			   wmProtocolsAtom,
+			   XA_ATOM, 32, PropModeAppend,
+			   (unsigned char *) &wmDeleteWindowAtom, 1);
+
+
 }
 
 MyWindow::~MyWindow()
@@ -376,7 +404,10 @@ GC MyWindow::createGC()
     return gc;
 }
 
-
+void MyWindow::closeEvent()
+{
+    windowSurface->handleCloseEvent();
+}
 
 void MyWindow::paintEvent()
 {

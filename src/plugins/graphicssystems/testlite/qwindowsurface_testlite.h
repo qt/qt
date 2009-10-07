@@ -70,7 +70,7 @@ public:
     void handleMouseEvent(QEvent::Type, void *); //forwarding X types is apparently impossible :(
     void handleKeyEvent(QEvent::Type, void *);
     void handleGeometryChange(int x, int y, int w, int h);
-
+    void handleCloseEvent();
 
     Qt::WindowFlags setWindowFlags(Qt::WindowFlags type);
     Qt::WindowFlags windowFlags() const;

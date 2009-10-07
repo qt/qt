@@ -50,6 +50,8 @@
 #include "private/qcursor_p.h"
 #endif
 
+#include "private/qwidget_p.h"
+
 #include "qgenericpluginfactory_lite.h"
 #include <qdesktopwidget.h>
 
@@ -621,4 +623,11 @@ void QApplicationPrivate::handleGeometryChange(QWidget *tlw, const QRect &newRec
         QApplication::sendSpontaneousEvent(tlw, &e);
     }
 }
+
+
+void QApplicationPrivate::handleCloseEvent(QWidget *tlw)
+{
+    tlw->d_func()->close_helper(QWidgetPrivate::CloseWithSpontaneousEvent);
+}
+
 QT_END_NAMESPACE
