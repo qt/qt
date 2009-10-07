@@ -275,8 +275,8 @@ static qreal getFactor(qreal value, qreal min, qreal pref, qreal max)
     }
 }
 
-static qreal getExpandingFactor(const qreal &expSize, const qreal &sizeAtPreferred,
-                                const qreal &sizeAtExpanding, const qreal &sizeAtMaximum)
+static qreal getExpandingFactor(qreal expSize, qreal sizeAtPreferred,
+                                qreal sizeAtExpanding, qreal sizeAtMaximum)
 {
     const qreal lower = qMin(sizeAtPreferred, sizeAtMaximum);
     const qreal upper = qMax(sizeAtPreferred, sizeAtMaximum);
