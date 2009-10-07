@@ -2886,6 +2886,7 @@ void tst_QGraphicsView::task245469_itemsAtPointWithClip()
     parent->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
 
     QGraphicsView view(&scene);
+    view.resize(150,150);
     view.rotate(90);
     view.show();
 #ifdef Q_WS_X11

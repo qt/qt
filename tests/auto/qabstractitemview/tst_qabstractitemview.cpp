@@ -181,6 +181,10 @@ public:
     virtual ~tst_QAbstractItemView();
     void basic_tests(TestView *view);
 
+public slots:
+    void initTestCase();
+    void cleanupTestCase();
+
 private slots:
     void getSetCheck();
     void emptyModels_data();
@@ -309,6 +313,17 @@ tst_QAbstractItemView::tst_QAbstractItemView()
 }
 
 tst_QAbstractItemView::~tst_QAbstractItemView()
+{
+}
+
+void tst_QAbstractItemView::initTestCase()
+{
+#ifdef Q_OS_WINCE_WM
+    qApp->setAutoMaximizeThreshold(-1);
+#endif
+}
+
+void tst_QAbstractItemView::cleanupTestCase()
 {
 }
 
@@ -1186,15 +1201,12 @@ void tst_QAbstractItemView::task250754_fontChange()
     QFont font = tree.font();
     font.setPointSize(5);
     tree.setFont(font);
-    QTest::qWait(30);
-
-    QVERIFY(!tree.verticalScrollBar()->isVisible());
+    QTRY_VERIFY(!tree.verticalScrollBar()->isVisible());
 
     font.setPointSize(45);
     tree.setFont(font);
-    QTest::qWait(30);
     //now with the huge items, the scrollbar must be visible
-    QVERIFY(tree.verticalScrollBar()->isVisible());
+    QTRY_VERIFY(tree.verticalScrollBar()->isVisible());
     
     qApp->setStyleSheet(app_css);
 }
