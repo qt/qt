@@ -55,12 +55,7 @@
 #include <qdebug.h>
 
 
-// Same font point size values as in QFont::QFont(..)
-#ifdef Q_OS_SYMBIAN
-#define TESTFONT_SIZE 7
-#else
 #define TESTFONT_SIZE 12
-#endif
 
 //TESTED_CLASS=
 //TESTED_FILES=
