@@ -68,8 +68,8 @@ class QScriptValuePrivate
 {
     Q_DISABLE_COPY(QScriptValuePrivate);
 public:
-    void* operator new(size_t, QScriptEnginePrivate*);
-    void operator delete(void*);
+    inline void* operator new(size_t, QScriptEnginePrivate*);
+    inline void operator delete(void*);
 
     enum Type {
         JavaScriptCore,
