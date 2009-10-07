@@ -357,6 +357,9 @@ DEFINEFUNC(dbus_bool_t     , dbus_type_is_basic, (int            typecode),
 DEFINEFUNC(dbus_bool_t     , dbus_type_is_fixed, (int            typecode),
            (typecode), return)
 
+/* dbus-thread.h */
+DEFINEFUNC(dbus_bool_t     , dbus_threads_init_default, (), (), return)
+
 QT_END_NAMESPACE
 
 #endif
