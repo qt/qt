@@ -78,6 +78,8 @@ void tst_visual::visual()
     QProcess p;
     p.start(qmlviewer, arguments);
     QVERIFY(p.waitForFinished());
+    if (p.exitCode() != 0)
+        qDebug() << p.readAllStandardError();
     QCOMPARE(p.exitStatus(), QProcess::NormalExit);
     QCOMPARE(p.exitCode(), 0);
 }
