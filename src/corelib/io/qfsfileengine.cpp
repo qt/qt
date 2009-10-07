@@ -122,10 +122,8 @@ void QFSFileEnginePrivate::init()
 #ifdef Q_OS_WIN
     fileAttrib = INVALID_FILE_ATTRIBUTES;
     fileHandle = INVALID_HANDLE_VALUE;
+    mapHandle = INVALID_HANDLE_VALUE;
     cachedFd = -1;
-#endif
-#ifdef Q_USE_DEPRECATED_MAP_API
-    fileMapHandle = INVALID_HANDLE_VALUE;
 #endif
 }
 

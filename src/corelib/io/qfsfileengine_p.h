@@ -110,7 +110,8 @@ public:
     FILE *fh;
 #ifdef Q_WS_WIN
     HANDLE fileHandle;
-    QHash<uchar *, QPair<int /*offset*/, HANDLE /*handle*/> > maps;
+    HANDLE mapHandle;
+    QHash<uchar *, DWORD /* offset % AllocationGranularity */> maps;
     mutable int cachedFd;
     mutable DWORD fileAttrib;
 #else
@@ -118,11 +119,6 @@ public:
     mutable QT_STATBUF st;
 #endif
     int fd;
-
-#ifdef Q_USE_DEPRECATED_MAP_API
-    void mapHandleClose();
-    HANDLE fileMapHandle;
-#endif
 
     enum LastIOCommand
     {
