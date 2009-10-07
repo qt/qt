@@ -47,33 +47,24 @@
 
 QT_USE_NAMESPACE
 
-static DBusMutex* mutex_new()
-{
-    return reinterpret_cast<DBusMutex *>(new QMutex(QMutex::NonRecursive));
-}
-
-#if 0
 static DBusMutex* recursive_mutex_new()
 {
     return reinterpret_cast<DBusMutex *>(new QMutex(QMutex::Recursive));
 }
-#endif
 
 static void mutex_free(DBusMutex *mutex)
 {
     delete reinterpret_cast<QMutex *>(mutex);
 }
 
-static dbus_bool_t mutex_lock(DBusMutex *mutex)
+static void mutex_lock(DBusMutex *mutex)
 {
     reinterpret_cast<QMutex *>(mutex)->lock();
-    return true;
 }
 
-static dbus_bool_t mutex_unlock(DBusMutex *mutex)
+static void mutex_unlock(DBusMutex *mutex)
 {
     reinterpret_cast<QMutex *>(mutex)->unlock();
-    return true;
 }
 
 static DBusCondVar* condvar_new()
@@ -110,42 +101,29 @@ QT_BEGIN_NAMESPACE
 
 bool qDBusInitThreads()
 {
-    // ### Disable the recursive mutex functions.
+    // Use only the non-recursive mutex functions
     static DBusThreadFunctions fcn = {
-        DBUS_THREAD_FUNCTIONS_MUTEX_NEW_MASK |
-        DBUS_THREAD_FUNCTIONS_MUTEX_FREE_MASK |
-        DBUS_THREAD_FUNCTIONS_MUTEX_LOCK_MASK |
-        DBUS_THREAD_FUNCTIONS_MUTEX_UNLOCK_MASK |
         DBUS_THREAD_FUNCTIONS_CONDVAR_NEW_MASK |
         DBUS_THREAD_FUNCTIONS_CONDVAR_FREE_MASK |
         DBUS_THREAD_FUNCTIONS_CONDVAR_WAIT_MASK |
         DBUS_THREAD_FUNCTIONS_CONDVAR_WAIT_TIMEOUT_MASK |
         DBUS_THREAD_FUNCTIONS_CONDVAR_WAKE_ONE_MASK |
-        DBUS_THREAD_FUNCTIONS_CONDVAR_WAKE_ALL_MASK,
-#if 0
+        DBUS_THREAD_FUNCTIONS_CONDVAR_WAKE_ALL_MASK |
         DBUS_THREAD_FUNCTIONS_RECURSIVE_MUTEX_NEW_MASK |
         DBUS_THREAD_FUNCTIONS_RECURSIVE_MUTEX_FREE_MASK |
         DBUS_THREAD_FUNCTIONS_RECURSIVE_MUTEX_LOCK_MASK |
         DBUS_THREAD_FUNCTIONS_RECURSIVE_MUTEX_UNLOCK_MASK,
-#endif
-        mutex_new,
-        mutex_free,
-        mutex_lock,
-        mutex_unlock,
+        0, 0, 0, 0, // non-recursive mutex functions
         condvar_new,
         condvar_free,
         condvar_wait,
         condvar_wait_timeout,
         condvar_wake_one,
         condvar_wake_all,
-#if 0
         recursive_mutex_new,
         mutex_free,
         mutex_lock,
         mutex_unlock,
-#else
-        0, 0, 0, 0,
-#endif
         0, 0, 0, 0
     };
 

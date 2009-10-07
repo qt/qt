@@ -19,6 +19,9 @@ information about a particular change.
 *                           General                                        *
 ****************************************************************************
 
+ - QtDBus
+   * The minimum required version of the D-Bus reference library is
+     now 0.93.
 
 
 ****************************************************************************
