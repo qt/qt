@@ -1,7 +1,7 @@
 /*!
 \page advtutorial4.html
-\title Advanced Tutorial 4 - Finishing Touches
 \target advtutorial4
+\title Advanced Tutorial 4 - Finishing Touches
 
 Now we're going to do two things to liven the game up. Animate the blocks and add a web-based high score system.
 
@@ -9,7 +9,7 @@ If you compare the samegame3 directory with samegame4, you'll noticed that we've
 
 \section2 Animated Blocks
 
-The most vital animations are that the blocks move fluidly around the board. QML has many tools for fluid behavior, and in this case we're going to use the Follow element. By having the script set targetX and targetY, instead of x and y directly, we can set the x and y of the block to a follow. SpringFollow is a property value source, which means that you can set a property to be one of these elements and it will automatically bind the property to the element's value. The SpringFollow's value follows another value over time, when the value it is tracking changes the SpringFollow's value will also change, but it will move smoothly there over time with a spring-like movement (based on the spring parameters specified). This is shown in the below snippet of code from Block.qml:
+The most vital animations are that the blocks move fluidly around the board. QML has many tools for fluid behavior, and in this case we're going to use the SpringFollow element. By having the script set targetX and targetY, instead of x and y directly, we can set the x and y of the block to a follow. SpringFollow is a property value source, which means that you can set a property to be one of these elements and it will automatically bind the property to the element's value. The SpringFollow's value follows another value over time, when the value it is tracking changes the SpringFollow's value will also change, but it will move smoothly there over time with a spring-like movement (based on the spring parameters specified). This is shown in the below snippet of code from Block.qml:
 
 \code
     property int targetX: 0
@@ -19,7 +19,7 @@ The most vital animations are that the blocks move fluidly around the board. QML
     y: SpringFollow { source: targetY; spring: 2; damping: 0.2 }
 \endcode
 
-We also have to change the samegame.js code, so that wherever it was setting the x or y it now sets targetX and targetY (including when creating the block). This simple change is all you need to get spring moving blocks that no longer teleport around the board. If you try doing just this though, you'll notice that they now never jump from one point to another, even in the initialization! This gives an odd effect of having them all jump out of the corner (0,0) on start up. We'd rather that they fall down from the top in rows. To do this, we disable the x Follow (but not the y follow) and only enable it after we've set the x in the createBlock function. The above snippet now becomes:
+We also have to change the samegame.js code, so that wherever it was setting the x or y it now sets targetX and targetY (including when creating the block). This simple change is all you need to get spring moving blocks that no longer teleport around the board. If you try doing just this though, you'll notice that they now never jump from one point to another, even in the initialization! This gives an odd effect of having them all jump out of the corner (0,0) on start up. We'd rather that they fall down from the top in rows. To do this, we disable the x follow (but not the y follow) and only enable it after we've set the x in the createBlock function. The above snippet now becomes:
 
 \snippet declarative/tutorials/samegame/samegame4/content/BoomBlock.qml 1
 

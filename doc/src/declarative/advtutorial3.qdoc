@@ -1,9 +1,9 @@
 /*!
 \page advtutorial3.html
-\title Advanced Tutorial 3 - Implementing the Game Logic
 \target advtutorial3
+\title Advanced Tutorial 3 - Implementing the Game Logic
 
-To the initBoard function we added clearing the board before hand, so that clicking new game won't leave the previous game lying around in the background. To the createComponent function we have added setting the type of the block to a number between one and three - it's fundamental to the game logic that the blocks be different types if you want a fun game.
+To the initBoard function we added clearing the board beforehand, so that clicking new game won't leave the previous game lying around in the background. To the createComponent function we have added setting the type of the block to a number between one and three - it's fundamental to the game logic that the blocks be different types if you want a fun game.
 
 The main change was adding the following game logic functions:
 \list
@@ -23,9 +23,9 @@ You'll notice them referring to the 'gameCanvas' item. This is an item that has 
 
 \snippet declarative/tutorials/samegame/samegame3/samegame.qml 1
 
-This item is the exact size of the board, contains a score property, and a mouse region for input. The blocks are now created as its children, and its size is used as the noe determining board size. Since it needs to bind its size to a multiple of tileSize, tileSize needs to be moved into a QML property and out of the script file. It can still be accessed from the script.
+This item is the exact size of the board, contains a score property, and a mouse region for input. The blocks are now created as its children, and its size is used to determining the board size. Since it needs to bind its size to a multiple of tileSize, tileSize needs to be moved into a QML property and out of the script file. It can still be accessed from the script.
 
-The mouse region simply calls handleClick(), which deals with the input events.Should those events cause the player to score, gameCanvas.score is updated. The score display text item has also been changed to bind its text property to gamecanvas.score. Note that if score was a global variable in the samegame.js file yo ucould not bind to it. You can only bind to QML properties.
+The mouse region simply calls handleClick(), which deals with the input events. Should those events cause the player to score, gameCanvas.score is updated. The score display text item has also been changed to bind its text property to gamecanvas.score. Note that if score was a global variable in the samegame.js file you could not bind to it. You can only bind to QML properties.
 
 victoryCheck() mostly just updates score. But it also pops up a dialog saying 'Game Over' when the game is over. In this example we wanted a pure-QML, animated dialog, and since the Fx primitives set doesn't contain one, we wrote our own. Below is the code for the Dialog element, note how it's designed so as to be quite usable imperatively from within the script file:
 

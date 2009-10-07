@@ -1,7 +1,7 @@
 /*!
 \page tutorial2.html
-\title Tutorial 2 - Some colors
 \target tutorial2
+\title Tutorial 2 - Some colors
 
 This chapter adds a color picker to change the color of the text.
 
