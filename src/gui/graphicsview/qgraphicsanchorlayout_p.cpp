@@ -1584,8 +1584,18 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs()
     if (!calculateGraphCacheDirty)
         return;
 
+#if defined(QT_DEBUG) && 0
+    static int count = 0;
+    count++;
+    dumpGraph(QString::fromAscii("%1-before").arg(count));
+#endif
+
     calculateGraphs(Horizontal);
     calculateGraphs(Vertical);
+
+#if defined(QT_DEBUG) && 0
+    dumpGraph(QString::fromAscii("%1-after").arg(count));
+#endif
 
     calculateGraphCacheDirty = 0;
 }
@@ -2558,9 +2568,9 @@ bool QGraphicsAnchorLayoutPrivate::hasConflicts() const
 }
 
 #ifdef QT_DEBUG
-void QGraphicsAnchorLayoutPrivate::dumpGraph()
+void QGraphicsAnchorLayoutPrivate::dumpGraph(const QString &name)
 {
-    QFile file(QString::fromAscii("anchorlayout.dot"));
+    QFile file(QString::fromAscii("anchorlayout.%1.dot").arg(name));
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
         qWarning("Could not write to %s", file.fileName().toLocal8Bit().constData());
 
