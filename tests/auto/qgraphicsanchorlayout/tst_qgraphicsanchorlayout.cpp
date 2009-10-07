@@ -161,15 +161,13 @@ void tst_QGraphicsAnchorLayout::simple()
     l->setContentsMargins(0, 0, 0, 0);
 
     // Horizontal
-    l->addAnchor(w1, Qt::AnchorLeft, l, Qt::AnchorLeft);
+    l->addAnchor(l, Qt::AnchorLeft, w1, Qt::AnchorLeft);
     l->addAnchor(w1, Qt::AnchorRight, w2, Qt::AnchorLeft);
     l->addAnchor(w2, Qt::AnchorRight, l, Qt::AnchorRight);
 
     // Vertical
-    l->addAnchor(w1, Qt::AnchorTop, l, Qt::AnchorTop);
-    l->addAnchor(w2, Qt::AnchorTop, l, Qt::AnchorTop);
-    l->addAnchor(w1, Qt::AnchorBottom, l, Qt::AnchorBottom);
-    l->addAnchor(w2, Qt::AnchorBottom, l, Qt::AnchorBottom);
+    l->addAnchors(l, w1, Qt::Vertical);
+    l->addAnchors(l, w2, Qt::Vertical);
 
     QGraphicsWidget p;
     p.setLayout(l);
@@ -1172,12 +1170,9 @@ void tst_QGraphicsAnchorLayout::delete_anchor()
     l->addAnchor(w3, Qt::AnchorRight, l, Qt::AnchorRight);
 
     // Vertical
-    l->addAnchor(w1, Qt::AnchorTop, l, Qt::AnchorTop);
-    l->addAnchor(w1, Qt::AnchorBottom, l, Qt::AnchorBottom);
-    l->addAnchor(w2, Qt::AnchorTop, l, Qt::AnchorTop);
-    l->addAnchor(w2, Qt::AnchorBottom, l, Qt::AnchorBottom);
-    l->addAnchor(w3, Qt::AnchorTop, l, Qt::AnchorTop);
-    l->addAnchor(w3, Qt::AnchorBottom, l, Qt::AnchorBottom);
+    l->addAnchors(l, w1, Qt::Vertical);
+    l->addAnchors(l, w2, Qt::Vertical);
+    l->addAnchors(l, w3, Qt::Vertical);
 
     QGraphicsAnchor *anchor = l->anchor(w3, Qt::AnchorRight, l, Qt::AnchorRight);
     anchor->setSpacing(10);
