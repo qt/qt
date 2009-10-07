@@ -239,41 +239,8 @@ struct ModelNode
         return objectCache;
     }
 
-    void setListValue(const QScriptValue& valuelist) {
-        QScriptValueIterator it(valuelist);
-        values.clear();
-        while (it.hasNext()) {
-            it.next();
-            ModelNode *value = new ModelNode;
-            QScriptValue v = it.value();
-            if (v.isArray()) {
-                value->setListValue(v);
-            } else if (v.isObject()) {
-                value->setObjectValue(v);
-            } else {
-                value->values << v.toVariant();
-            }
-            values.append(qVariantFromValue(value));
-
-        }
-    }
-
-    void setObjectValue(const QScriptValue& valuemap) {
-        QScriptValueIterator it(valuemap);
-        while (it.hasNext()) {
-            it.next();
-            ModelNode *value = new ModelNode;
-            QScriptValue v = it.value();
-            if (v.isArray()) {
-                value->setListValue(v);
-            } else if (v.isObject()) {
-                value->setObjectValue(v);
-            } else {
-                value->values << v.toVariant();
-            }
-            properties.insert(it.name(),value);
-        }
-    }
+    void setObjectValue(const QScriptValue& valuemap);
+    void setListValue(const QScriptValue& valuelist);
 
     void setProperty(const QString& prop, const QVariant& val) {
         QHash<QString, ModelNode *>::const_iterator it = properties.find(prop);
@@ -291,6 +258,48 @@ struct ModelNode
     QmlListModel *modelCache;
     ModelObject *objectCache;
 };
+
+QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(ModelNode *)
+
+QT_BEGIN_NAMESPACE
+void ModelNode::setObjectValue(const QScriptValue& valuemap) {
+    QScriptValueIterator it(valuemap);
+    while (it.hasNext()) {
+        it.next();
+        ModelNode *value = new ModelNode;
+        QScriptValue v = it.value();
+        if (v.isArray()) {
+            value->setListValue(v);
+        } else if (v.isObject()) {
+            value->setObjectValue(v);
+        } else {
+            value->values << v.toVariant();
+        }
+        properties.insert(it.name(),value);
+    }
+}
+
+void ModelNode::setListValue(const QScriptValue& valuelist) {
+    QScriptValueIterator it(valuelist);
+    values.clear();
+    while (it.hasNext()) {
+        it.next();
+        ModelNode *value = new ModelNode;
+        QScriptValue v = it.value();
+        if (v.isArray()) {
+            value->setListValue(v);
+        } else if (v.isObject()) {
+            value->setObjectValue(v);
+        } else {
+            value->values << v.toVariant();
+        }
+        values.append(qVariantFromValue(value));
+
+    }
+}
+
 
 ModelObject::ModelObject()
 : _mo(new QmlOpenMetaObject(this))
@@ -846,7 +855,6 @@ ModelNode::~ModelNode()
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(ModelNode *)
 QML_DECLARE_TYPE(QmlListElement)
 
 #include "qmllistmodel.moc"
