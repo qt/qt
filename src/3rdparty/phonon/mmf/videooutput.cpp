@@ -64,7 +64,7 @@ MMF::VideoOutput::VideoOutput(QWidget* parent)
 	qt_widget_private(this)->extraData()->disableBlit = true;
 
     dump();
-    
+
     TRACE_EXIT_0();
 }
 
@@ -123,9 +123,7 @@ void MMF::VideoOutput::paintEvent(QPaintEvent* event)
     TRACE("regions %d", event->region().numRects());
     TRACE("type %d", event->type());
 
-    dump();
-    
-    // Do not paint anything
+    // Do nothing
 }
 
 void MMF::VideoOutput::resizeEvent(QResizeEvent* event)
@@ -135,10 +133,7 @@ void MMF::VideoOutput::resizeEvent(QResizeEvent* event)
           event->oldSize().width(), event->oldSize().height(),
           event->size().width(), event->size().height());
 
-    QWidget::resizeEvent(event);
-
-    if (m_observer)
-        m_observer->videoOutputRegionChanged();
+    videoOutputRegionChanged();
 }
 
 void MMF::VideoOutput::moveEvent(QMoveEvent* event)
@@ -148,10 +143,9 @@ void MMF::VideoOutput::moveEvent(QMoveEvent* event)
           event->oldPos().x(), event->oldPos().y(),
           event->pos().x(), event->pos().y());
 
-    QWidget::moveEvent(event);
+    videoOutputRegionChanged();
+}
 
-    if (m_observer)
-        m_observer->videoOutputRegionChanged();
 }
 
 
@@ -159,7 +153,14 @@ void MMF::VideoOutput::moveEvent(QMoveEvent* event)
 // Private functions
 //-----------------------------------------------------------------------------
 
-void VideoOutput::dump() const
+void MMF::VideoOutput::videoOutputRegionChanged()
+{
+    dump();
+    if (m_observer)
+        m_observer->videoOutputRegionChanged();
+}
+
+void MMF::VideoOutput::dump() const
 {
 #ifdef _DEBUG
     TRACE_CONTEXT(VideoOutput::dump, EVideoInternal);

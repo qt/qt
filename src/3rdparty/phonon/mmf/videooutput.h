@@ -52,7 +52,8 @@ protected:
 
 private:
     void dump() const;
-    
+    void videoOutputRegionChanged();
+
 private:
     QSize m_frameSize;
 
