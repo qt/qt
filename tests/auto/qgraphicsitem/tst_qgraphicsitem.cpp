@@ -6444,14 +6444,12 @@ void tst_QGraphicsItem::nestedClipping()
     QGraphicsView view(&scene);
     view.setOptimizationFlag(QGraphicsView::IndirectPainting);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(250);
+    QTest::qWaitForWindowShown(&view);
+    QTest::qWait(25);
 
     QList<QGraphicsItem *> expected;
     expected << root << l1 << l2 << l3;
-    QCOMPARE(scene.drawnItems, expected);
+    QTRY_COMPARE(scene.drawnItems, expected);
 
     QImage image(200, 200, QImage::Format_ARGB32_Premultiplied);
     image.fill(0);
@@ -7303,16 +7301,17 @@ void tst_QGraphicsItem::itemUsesExtendedStyleOption()
     rect->startTrack = false;
     view.show();
     QTest::qWaitForWindowShown(&view);
+    QTest::qWait(60);
     rect->startTrack = true;
     rect->update(10, 10, 10, 10);
-    QTest::qWait(12);
+    QTest::qWait(60);
     rect->startTrack = false;
     rect->setFlag(QGraphicsItem::ItemUsesExtendedStyleOption, true);
     QVERIFY((rect->flags() & QGraphicsItem::ItemUsesExtendedStyleOption));
-    QTest::qWait(12);
+    QTest::qWait(60);
     rect->startTrack = true;
     rect->update(10, 10, 10, 10);
-    QTest::qWait(12);
+    QTest::qWait(60);
 }
 
 void tst_QGraphicsItem::itemSendsGeometryChanges()
@@ -7631,7 +7630,7 @@ void tst_QGraphicsItem::hitTestGraphicsEffectItem()
     QVERIFY(items.isEmpty());
     items = scene.items(QPointF(80, 80));
     QCOMPARE(items.size(), 1);
-    QCOMPARE(items.at(0), static_cast<EventTester *>(item3));
+    QCOMPARE(items.at(0), static_cast<QGraphicsItem *>(item3));
 
     item1->repaints = 0;
     item2->repaints = 0;
@@ -7654,7 +7653,7 @@ void tst_QGraphicsItem::hitTestGraphicsEffectItem()
     QVERIFY(items.isEmpty());
     items = scene.items(QPointF(80, 80));
     QCOMPARE(items.size(), 1);
-    QCOMPARE(items.at(0), static_cast<EventTester *>(item3));
+    QCOMPARE(items.at(0), static_cast<QGraphicsItem *>(item3));
 }
 
 void tst_QGraphicsItem::focusProxy()
@@ -8384,7 +8383,7 @@ void tst_QGraphicsItem::ensureDirtySceneTransform()
     QGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), &view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
     //We move the parent
     parent->move();

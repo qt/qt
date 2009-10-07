@@ -468,6 +468,7 @@ void tst_QTreeWidget::editItem()
                 QTest::ignoreMessage(QtWarningMsg, "edit: editing failed");
             tree.editItem(item, col);
             QApplication::instance()->processEvents();
+            QApplication::instance()->processEvents();
             QLineEdit *editor = qFindChild<QLineEdit*>(&tree);
             if (editor) {
                 QVERIFY(item->flags() & Qt::ItemIsEditable);

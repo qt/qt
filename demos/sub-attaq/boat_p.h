@@ -67,22 +67,16 @@ static const int MAX_BOMB = 5;
 class KeyStopTransition : public QKeyEventTransition
 {
 public:
-    KeyStopTransition(Boat *boat, QEvent::Type type, int key)
-    : QKeyEventTransition(boat, type, key)
+    KeyStopTransition(Boat *b, QEvent::Type t, int k)
+    : QKeyEventTransition(b, t, k), boat(b), key(k)
     {
-        this->boat = boat;
-        this->key = key;
     }
 protected:
     virtual bool eventTest(QEvent *event)
     {
-        Q_UNUSED(event);
         if (!QKeyEventTransition::eventTest(event))
             return false;
-        if (boat->currentSpeed() == 1)
-            return true;
-        else
-            return false;
+        return (boat->currentSpeed() == 1);
     }
 private:
     Boat * boat;
@@ -93,23 +87,16 @@ private:
  class KeyMoveTransition : public QKeyEventTransition
 {
 public:
-    KeyMoveTransition(Boat *boat, QEvent::Type type, int key)
-    : QKeyEventTransition(boat, type, key)
+    KeyMoveTransition(Boat *b, QEvent::Type t, int k)
+    : QKeyEventTransition(b, t, k), boat(b), key(k)
     {
-        this->boat = boat;
-        this->key = key;
     }
 protected:
     virtual bool eventTest(QEvent *event)
     {
-        Q_UNUSED(event);
         if (!QKeyEventTransition::eventTest(event))
             return false;
-        if (boat->currentSpeed() >= 0)
-            return true;
-        else
-            return false;
-
+        return (boat->currentSpeed() >= 0);
     }
     void onTransition(QEvent *)
     {
@@ -132,22 +119,16 @@ private:
 {
 public:
     KeyLaunchTransition(Boat *boat, QEvent::Type type, int key)
-    : QKeyEventTransition(boat, type, key)
+    : QKeyEventTransition(boat, type, key), boat(boat), key(key)
     {
-        this->boat = boat;
-        this->key = key;
     }
 protected:
     virtual bool eventTest(QEvent *event)
     {
-        Q_UNUSED(event);
         if (!QKeyEventTransition::eventTest(event))
             return false;
         //We have enough bomb?
-        if (boat->bombsLaunched() < MAX_BOMB)
-            return true;
-        else
-            return false;
+        return (boat->bombsLaunched() < MAX_BOMB);
     }
 private:
     Boat * boat;
@@ -158,9 +139,8 @@ private:
 class MoveStateRight : public QState
 {
 public:
-    MoveStateRight(Boat *boat,QState *parent = 0) : QState(parent)
+    MoveStateRight(Boat *boat,QState *parent = 0) : QState(parent), boat(boat)
     {
-        this->boat = boat;
     }
 protected:
     void onEntry(QEvent *)
@@ -176,9 +156,8 @@ private:
 class MoveStateLeft : public QState
 {
 public:
-    MoveStateLeft(Boat *boat,QState *parent = 0) : QState(parent)
+    MoveStateLeft(Boat *boat,QState *parent = 0) : QState(parent), boat(boat)
     {
-        this->boat = boat;
     }
 protected:
     void onEntry(QEvent *)
@@ -194,9 +173,8 @@ private:
 class StopState : public QState
 {
 public:
-    StopState(Boat *boat,QState *parent = 0) : QState(parent)
+    StopState(Boat *boat,QState *parent = 0) : QState(parent), boat(boat)
     {
-        this->boat = boat;
     }
 protected:
     void onEntry(QEvent *)
@@ -213,9 +191,8 @@ private:
 class LaunchStateRight : public QState
 {
 public:
-    LaunchStateRight(Boat *boat,QState *parent = 0) : QState(parent)
+    LaunchStateRight(Boat *boat,QState *parent = 0) : QState(parent), boat(boat)
     {
-        this->boat = boat;
     }
 protected:
     void onEntry(QEvent *)
@@ -235,9 +212,8 @@ private:
 class LaunchStateLeft : public QState
 {
 public:
-    LaunchStateLeft(Boat *boat,QState *parent = 0) : QState(parent)
+    LaunchStateLeft(Boat *boat,QState *parent = 0) : QState(parent), boat(boat)
     {
-        this->boat = boat;
     }
 protected:
     void onEntry(QEvent *)

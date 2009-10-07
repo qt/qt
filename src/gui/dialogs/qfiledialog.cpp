@@ -3149,7 +3149,7 @@ void QFileDialogListView::keyPressEvent(QKeyEvent *e)
         QListView::keyPressEvent(e);
     }
 #ifdef QT_KEYPAD_NAVIGATION
-    if ((QApplication::navigationMode() == Qt::NavigationModeKeypadTabOrder
+    else if ((QApplication::navigationMode() == Qt::NavigationModeKeypadTabOrder
          || QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional)
          && !hasEditFocus()) {
          e->ignore();

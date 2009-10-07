@@ -109,9 +109,9 @@ protected:
 class Cube : public QObject, public Tile
 {
     Q_OBJECT
-    Q_PROPERTY(qreal range READ range WRITE setRange);
-    Q_PROPERTY(qreal altitude READ altitude WRITE setAltitude);
-    Q_PROPERTY(qreal rotation READ rotation WRITE setRotation);
+    Q_PROPERTY(qreal range READ range WRITE setRange)
+    Q_PROPERTY(qreal altitude READ altitude WRITE setAltitude)
+    Q_PROPERTY(qreal rotation READ rotation WRITE setRotation)
 public:
     Cube(const QVector3D &loc = QVector3D());
     ~Cube();

@@ -559,7 +559,12 @@ bool QSqlResult::isForwardOnly() const
     mode needs much less memory since results do not have to be
     cached. By default, this feature is disabled.
 
-    \sa isForwardOnly(), fetchNext()
+    Setting forward only to false is a suggestion to the database engine,
+    which has the final say on whether a result set is forward only or
+    scrollable. isForwardOnly() will always return the correct status of
+    the result set.
+
+    \sa isForwardOnly(), fetchNext(), QSqlQuery::setForwardOnly()
 */
 void QSqlResult::setForwardOnly(bool forward)
 {

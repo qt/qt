@@ -849,6 +849,9 @@
     getter functions QWidget::isEnabled().  This is set/cleared by the
     Qt kernel.
 
+    \value WA_DontShowOnScreen Indicates that the widget is hidden or is
+    not a part of the viewable Desktop.
+
     \omitvalue WA_DropSiteRegistered
     \omitvalue WA_ForceAcceptDrops
 
