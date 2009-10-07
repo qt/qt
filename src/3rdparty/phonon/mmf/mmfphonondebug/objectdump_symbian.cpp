@@ -21,12 +21,40 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <coecntrl.h>
 #include "objectdump_symbian.h"
 
+#include <QtGui/private/qwidget_p.h> // to access QWExtra
+
 QT_BEGIN_NAMESPACE
 
 namespace ObjectDump
 {
 namespace Symbian
 {
+
+QList<QByteArray> QAnnotatorWidget::annotation(const QObject& object)
+{
+    QList<QByteArray> result;
+
+    const QWidget* widget = qobject_cast<const QWidget*>(&object);
+    if(widget) {
+
+        const QWExtra* extra = qt_widget_private(const_cast<QWidget *>(widget))->extraData();
+
+        if(extra) {
+
+            QByteArray array;
+            QTextStream stream(&array);
+
+            stream << "widget (Symbian): ";
+            stream << "activated " << extra->activated << ' ';
+            stream << "disableBlit " << extra->disableBlit << ' ';
+
+            stream.flush();
+            result.append(array);
+        }
+    }
+
+    return result;
+}
 
 QList<QByteArray> QAnnotatorControl::annotation(const QObject& object)
 {
@@ -121,12 +149,14 @@ QList<QByteArray> QAnnotatorWindow::annotation(const QObject& object)
 
 void addDefaultAnnotators_sys(QDumper& dumper)
 {
+    dumper.addAnnotator(new Symbian::QAnnotatorWidget);
     dumper.addAnnotator(new Symbian::QAnnotatorControl);
     dumper.addAnnotator(new Symbian::QAnnotatorWindow);
 }
 
 void addDefaultAnnotators_sys(QVisitor& visitor)
 {
+    visitor.addAnnotator(new Symbian::QAnnotatorWidget);
     visitor.addAnnotator(new Symbian::QAnnotatorControl);
     visitor.addAnnotator(new Symbian::QAnnotatorWindow);
 }
