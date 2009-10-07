@@ -679,7 +679,8 @@ void tst_qmlecmascript::objectToString()
     MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
     QVERIFY(object != 0);
     QMetaObject::invokeMethod(object, "testToString");
-    QVERIFY(object->stringProperty().startsWith("Qml Object, \"objName\" MyQmlObject_QML_15"));
+    QVERIFY(object->stringProperty().startsWith("MyQmlObject_QML_"));
+    QVERIFY(object->stringProperty().endsWith(", \"objName\")"));
 }
 
 QTEST_MAIN(tst_qmlecmascript)
