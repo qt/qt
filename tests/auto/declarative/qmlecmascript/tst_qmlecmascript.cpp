@@ -5,6 +5,7 @@
 #include <QtDeclarative/qmlcontext.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/private/qguard_p.h>
 #include <QtCore/qdir.h>
 #include "testtypes.h"
 
@@ -50,6 +51,9 @@ private slots:
     void outerBindingOverridesInnerBinding();
     void aliasPropertyAndBinding();
     void nonExistantAttachedObject();
+    void dynamicCreation();
+    void dynamicDestruction();
+    void objectToString();
 
 private:
     QmlEngine engine;
@@ -529,6 +533,71 @@ void tst_qmlecmascript::aliasPropertyAndBinding()
 
     QCOMPARE(object->property("c2").toInt(), 19);
     QCOMPARE(object->property("c3").toInt(), 19);
+}
+
+/*
+    Test using createQmlObject to dynamically generate an item
+    Also using createComponent is tested.
+*/
+void tst_qmlecmascript::dynamicCreation()
+{
+    QmlComponent component(&engine, TEST_FILE("dynamicCreation.qml"));
+    MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
+    QVERIFY(object != 0);
+    QObject *createdQmlObject = 0;
+    QObject *createdComponent = 0;
+
+    QMetaObject::invokeMethod(object, "createOne");
+    createdQmlObject = object->objectProperty();
+    QVERIFY(createdQmlObject);
+    QCOMPARE(createdQmlObject->objectName(), QString("emptyObject"));
+
+    QMetaObject::invokeMethod(object, "createTwo");
+    createdComponent = object->objectProperty();
+    QVERIFY(createdComponent);
+    QCOMPARE(createdQmlObject->objectName(), QString("desolateObject"));
+}
+
+/*
+   Tests the destroy function
+*/
+void tst_qmlecmascript::dynamicDestruction()
+{
+    QmlComponent component(&engine, TEST_FILE("dynamicDeletion.qml"));
+    MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
+    QVERIFY(object != 0);
+    QGuard<QObject> createdQmlObject = 0;
+
+    QMetaObject::invokeMethod(object, "create");
+    createdQmlObject = object->objectProperty();
+    QVERIFY(createdQmlObject);
+    QCOMPARE(createdQmlObject->objectName(), QString("emptyObject"));
+
+    QMetaObject::invokeMethod(object, "killIt", Q_ARG(int, 0));
+    QVERIFY(createdQmlObject);
+    QTest::qWait(0);
+    QVERIFY(!createdQmlObject);
+
+    QMetaObject::invokeMethod(object, "create");
+    QVERIFY(createdQmlObject);
+    QMetaObject::invokeMethod(object, "killIt", Q_ARG(int, 100));
+    QVERIFY(createdQmlObject);
+    QTest::qWait(0);
+    QVERIFY(createdQmlObject);
+    QTest::qWait(100);
+    QVERIFY(!createdQmlObject);
+}
+
+/*
+   tests that id.toString() works
+*/
+void tst_qmlecmascript::objectToString()
+{
+    QmlComponent component(&engine, TEST_FILE("qmlToString.qml"));
+    MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
+    QVERIFY(object != 0);
+    QMetaObject::invokeMethod(object, "testToString");
+    QVERIFY(object->stringProperty().startsWith("Qml Object, \"objName\" MyQmlObject_QML_15"));
 }
 
 QTEST_MAIN(tst_qmlecmascript)
