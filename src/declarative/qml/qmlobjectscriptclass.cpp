@@ -46,6 +46,7 @@
 #include <private/qmldeclarativedata_p.h>
 #include <private/qmltypenamescriptclass_p.h>
 #include <QtDeclarative/qmlbinding.h>
+#include <QtCore/qtimer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -290,9 +291,10 @@ QScriptValue QmlObjectScriptClass::destroy(QScriptContext *context, QScriptEngin
         int delay = 0;
         if(context->argumentCount() > 0)
             delay = context->argument(0).toInt32();
-        obj->deleteLater();
-        //### Should this be delayed as well?
-        context->thisObject().setData(QScriptValue(engine, 0));
+        if (delay > 0)
+            QTimer::singleShot(delay, obj, SLOT(deleteLater()));
+        else
+            obj->deleteLater();
     }
     return engine->nullValue();
 }
