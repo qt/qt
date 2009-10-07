@@ -45,8 +45,8 @@ using namespace Phonon::MMF;
 //-----------------------------------------------------------------------------
 
 MMF::VideoPlayer::VideoPlayer()
-        :   m_wsSession(0)
-        ,   m_screenDevice(0)
+        :   m_wsSession(CCoeEnv::Static()->WsSession())
+        ,   m_screenDevice(*CCoeEnv::Static()->ScreenDevice())
         ,   m_window(0)
         ,   m_totalTime(0)
         ,   m_mmfOutputChangePending(false)
@@ -56,8 +56,8 @@ MMF::VideoPlayer::VideoPlayer()
 
 MMF::VideoPlayer::VideoPlayer(const AbstractPlayer& player)
         :   AbstractMediaPlayer(player)
-        ,   m_wsSession(0)
-        ,   m_screenDevice(0)
+        ,   m_wsSession(CCoeEnv::Static()->WsSession())
+        ,   m_screenDevice(*CCoeEnv::Static()->ScreenDevice())
         ,   m_window(0)
         ,   m_totalTime(0)
         ,   m_mmfOutputChangePending(false)
@@ -86,21 +86,20 @@ void MMF::VideoPlayer::construct()
     // clipping region will be set to empty and the video will not be
     // visible.  If this is the case, we should set m_mmfOutputChangePending
     // and respond to future showEvents from the videoOutput widget.
-    
-    TRAPD(err,
-          m_player.reset(CVideoPlayerUtility::NewL
-                     (
-                         *this,
-                         priority, preference,
-                         *m_wsSession, *m_screenDevice,
-                         *m_window,
-                         m_windowRect, m_clipRect
-                     ))
-         );
 
-    if (KErrNone != err) {
+    TRAPD(err,
+        m_player.reset(CVideoPlayerUtility::NewL
+            (
+                 *this,
+                 priority, preference,
+                 m_wsSession, m_screenDevice,
+                 *m_window,
+                 m_rect, m_rect
+            ))
+        );
+
+    if (KErrNone != err)
         changeState(ErrorState);
-    }
 
     TRACE_EXIT_0();
 }
@@ -381,20 +380,20 @@ void MMF::VideoPlayer::updateMmfOutput()
     // need to call SetDisplayWindowL, and this is checked in 
     // MvpuoPrepareComplete, at which point the MMF controller has been
     // loaded.
-    
     getNativeWindowSystemHandles();
-    
-// DEBUGGING *** DO NOT INTEGRATE ***
-getDsaRegion(*m_wsSession, *m_window);
+
+#ifdef _DEBUG
+    getDsaRegion(m_wsSession, *m_window);
+#endif
 
     TRAPD(err,
-          m_player->SetDisplayWindowL
-          (
-              *m_wsSession, *m_screenDevice,
-              *m_window,
-              m_windowRect, m_clipRect
-          )
-         );
+        m_player->SetDisplayWindowL
+        (
+            m_wsSession, m_screenDevice,
+            *m_window,
+            m_rect, m_rect
+        )
+    );
 
     if (KErrNone != err) {
         TRACE("SetDisplayWindowL error %d", err);
@@ -440,44 +439,37 @@ void MMF::VideoPlayer::getNativeWindowSystemHandles()
     	// Get top-level window
     	control = QApplication::activeWindow()->effectiveWinId();
 
-    CCoeEnv* const coeEnv = control->ControlEnv();
-    m_wsSession = &(coeEnv->WsSession());
-    m_screenDevice = coeEnv->ScreenDevice();
-    m_window = control->DrawableWindow();
-
 #ifdef _DEBUG
     if(m_videoOutput) {
-		QScopedPointer<ObjectDump::QDumper> dumper(new ObjectDump::QDumper);
-		dumper->setPrefix("Phonon::MMF"); // to aid searchability of logs
-		ObjectDump::addDefaultAnnotators(*dumper);
-		TRACE_0("Dumping VideoOutput:");
-		dumper->dumpObject(*m_videoOutput);
+        QScopedPointer<ObjectDump::QDumper> dumper(new ObjectDump::QDumper);
+        dumper->setPrefix("Phonon::MMF"); // to aid searchability of logs
+        ObjectDump::addDefaultAnnotators(*dumper);
+        TRACE_0("Dumping VideoOutput:");
+        dumper->dumpObject(*m_videoOutput);
     }
     else {
-    	TRACE_0("m_videoOutput is null - dumping top-level control info:");
-		TRACE("control %08x", control);
-		TRACE("control.parent %08x", control->Parent());
-		TRACE("control.isVisible %d", control->IsVisible());
-		TRACE("control.rect %d,%d %dx%d",
-			control->Position().iX, control->Position().iY,
-			control->Size().iWidth, control->Size().iHeight);
-		TRACE("control.ownsWindow %d", control->OwnsWindow());
+        TRACE_0("m_videoOutput is null - dumping top-level control info:");
+        TRACE("control %08x", control);
+        TRACE("control.parent %08x", control->Parent());
+        TRACE("control.isVisible %d", control->IsVisible());
+        TRACE("control.rect %d,%d %dx%d",
+            control->Position().iX, control->Position().iY,
+            control->Size().iWidth, control->Size().iHeight);
+        TRACE("control.ownsWindow %d", control->OwnsWindow());
     }
 #endif
 
-    m_windowRect = TRect(
-        control->DrawableWindow()->AbsPosition(),
-        control->DrawableWindow()->Size());
-        m_clipRect = m_windowRect;
+    RWindowBase *const window = control->DrawableWindow();
+    const TRect rect(window->AbsPosition(), window->Size());
 
-    TRACE("windowRect            %d %d - %d %d",
-        m_windowRect.iTl.iX, m_windowRect.iTl.iY,
-        m_windowRect.iBr.iX, m_windowRect.iBr.iY);
-    TRACE("clipRect              %d %d - %d %d",
-        m_clipRect.iTl.iX, m_clipRect.iTl.iY,
-        m_clipRect.iBr.iX, m_clipRect.iBr.iY);
-    
-    TRACE_EXIT_0();
+    TRACE("rect                  %d %d - %d %d",
+        rect.iTl.iX, rect.iTl.iY,
+        rect.iBr.iX, rect.iBr.iY);
+
+    if(window != m_window || rect != m_rect) {
+        m_window = window;
+        m_rect = rect;
+    }
 }
 
 

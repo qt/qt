@@ -88,12 +88,11 @@ private:
     QScopedPointer<CVideoPlayerUtility> m_player;
 
     // Not owned
-    RWsSession*                         m_wsSession;
-    CWsScreenDevice*                    m_screenDevice;
+    RWsSession&                         m_wsSession;
+    CWsScreenDevice&                    m_screenDevice;
     RWindowBase*                        m_window;
-    TRect                               m_windowRect;
-    TRect                               m_clipRect;
-    
+    TRect                               m_rect;
+
     QSize                               m_frameSize;
     qint64                              m_totalTime;
 
