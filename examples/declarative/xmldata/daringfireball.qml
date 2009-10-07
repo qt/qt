@@ -29,20 +29,20 @@ Rectangle {
                 height: childrenRect.height + 20
                 Text {
                     x: 10
-                    id: TitleText
+                    id: titleText
                     text: title
                     font.bold: true
                 }
                 Text {
                     text: 'by ' + tagline
-                    anchors.left: TitleText.right
+                    anchors.left: titleText.right
                     anchors.leftMargin: 10
                     font.italic: true
                 }
                 Text {
                     x: 10
                     text: content
-                    anchors.top: TitleText.bottom
+                    anchors.top: titleText.bottom
                     width: 580
                     wrap: true
                     onLinkActivated: { print('link clicked: ' + link) }

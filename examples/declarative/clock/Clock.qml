@@ -1,7 +1,7 @@
 import Qt 4.6
 
 Item {
-    id: Clock
+    id: clock
     width: 200; height: 200
     property var time
     property var hours
@@ -15,7 +15,7 @@ Item {
     }
     Timer {
         interval: 100; running: true; repeat: true; triggeredOnStart: true
-        onTriggered: Clock.time = new Date()
+        onTriggered: clock.time = new Date()
     }
 
     Image { source: "background.png" }
@@ -25,13 +25,13 @@ Item {
         source: "hour.png"
         smooth: true
         transform: Rotation {
-            id: HourRotation
+            id: hourRotation
             origin.x: 4; origin.y: 45
             angle: 0
             angle: SpringFollow {
                 spring: 2
                 damping: .2
-                source: Clock.hours * 50 * 3 + Clock.minutes / 2
+                source: clock.hours * 50 * 3 + clock.minutes / 2
             }
         }
     }
@@ -41,13 +41,13 @@ Item {
         source: "minute.png"
         smooth: true
         transform: Rotation {
-            id: MinuteRotation
+            id: minuteRotation
             origin.x: 4; origin.y: 70
             angle: 0
             angle: SpringFollow {
                 spring: 2
                 damping: .2
-                source: Clock.minutes * 6
+                source: clock.minutes * 6
             }
         }
     }
@@ -57,14 +57,14 @@ Item {
         source: "second.png"
         smooth: true
         transform: Rotation {
-            id: SecondRotation
+            id: secondRotation
             origin.x: 2; origin.y: 60
             angle: 0
             angle: SpringFollow {
                 spring: 5
                 damping: .25
                 modulus: 360
-                source: Clock.seconds * 6
+                source: clock.seconds * 6
             }
         }
     }

@@ -1,7 +1,7 @@
 import Qt 4.6
 
 Item {
-    id: Page
+    id: page
     property int repeatdelay: 300
     property int repeatperiod: 75
     property bool pressed: false
@@ -9,21 +9,20 @@ Item {
     signal released
     signal clicked
     pressed: SequentialAnimation {
-        id: AutoRepeat
-        PropertyAction { target: Page; property: "pressed"; value: true }
-        ScriptAction { script: Page.onPressed }
-        ScriptAction { script: Page.onClicked }
+        id: autoRepeat
+        PropertyAction { target: page; property: "pressed"; value: true }
+        ScriptAction { script: page.onPressed }
+        ScriptAction { script: page.onClicked }
         PauseAnimation { duration: repeatdelay }
         SequentialAnimation {
             repeat: true
-            ScriptAction { script: Page.onClicked }
+            ScriptAction { script: page.onClicked }
             PauseAnimation { duration: repeatperiod }
         }
     }
     MouseRegion {
-        id: MR
         anchors.fill: parent
-        onPressed: AutoRepeat.start()
-        onReleased: { AutoRepeat.stop(); parent.pressed = false; Page.released }
+        onPressed: autoRepeat.start()
+        onReleased: { autoRepeat.stop(); parent.pressed = false; page.released }
     }
 }

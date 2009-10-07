@@ -1,42 +1,42 @@
 import Qt 4.6
 
 Item {
-    id: Container
+    id: container
 
     property string label
     property string text
 
-    width: Math.max(94,Label.width + Editor.width + 20)
-    height: ButtonImage.height
+    width: Math.max(94,label.width + editor.width + 20)
+    height: buttonImage.height
 
     states: [
         State {
             name: "Edit"
             PropertyChanges {
-                target: Label
-                text: Container.label + ": "
+                target: label
+                text: container.label + ": "
             }
             PropertyChanges {
-                target: Label
+                target: label
                 x: 10
             }
             PropertyChanges {
-                target: Editor
+                target: editor
                 cursorVisible: true
                 width: 100
             }
             PropertyChanges {
-                target: Container
+                target: container
                 focus: true
             }
             StateChangeScript {
-                script:"Editor.selectAll()"
+                script:"editor.selectAll()"
             }
         },
         State {
             // When returning to default state, typed text is propagated
             StateChangeScript {
-                script: "Container.text = Editor.text"
+                script: "container.text = editor.text"
             }
         }
     ]
@@ -48,29 +48,29 @@ Item {
 
 
     BorderImage {
-        id: ButtonImage
+        id: buttonImage
         source: "pics/button.sci"
-        anchors.left: Container.left
-        anchors.right: Container.right
+        anchors.left: container.left
+        anchors.right: container.right
     }
 
     BorderImage {
-        id: Pressed
+        id: pressed
         source: "pics/button-pressed.sci"
         opacity: 0
-        anchors.left: Container.left
-        anchors.right: Container.right
+        anchors.left: container.left
+        anchors.right: container.right
     }
 
     MouseRegion {
-        id: MyMouseRegion
-        anchors.fill: ButtonImage
-        onClicked: { Container.state = Container.state=="Edit" ? "" : "Edit" }
+        id: mouseRegion
+        anchors.fill: buttonImage
+        onClicked: { container.state = container.state=="Edit" ? "" : "Edit" }
         states: [
             State {
-                when: MyMouseRegion.pressed == true
+                when: mouseRegion.pressed == true
                 PropertyChanges {
-                    target: Pressed
+                    target: pressed
                     opacity: 1
                 }
             }
@@ -78,27 +78,27 @@ Item {
     }
 
     Text {
-        id: Label
+        id: label
         font.bold: true
         color: "white"
-        anchors.verticalCenter: Container.verticalCenter
-        x: (Container.width - width)/2
-        text: Container.label + "..."
+        anchors.verticalCenter: container.verticalCenter
+        x: (container.width - width)/2
+        text: container.label + "..."
     }
 
     TextInput {
-        id: Editor
+        id: editor
         font.bold: true
         color: "white"
         selectionColor: "green"
         width: 0
         clip: true
-        anchors.left: Label.right
-        anchors.verticalCenter: Container.verticalCenter
+        anchors.left: label.right
+        anchors.verticalCenter: container.verticalCenter
     }
-    Keys.forwardTo: [(ReturnKey), (Editor)]
+    Keys.forwardTo: [(returnKey), (editor)]
     Item {
-        id: ReturnKey
-        Keys.onReturnPressed: "Container.state = ''"
+        id: returnKey
+        Keys.onReturnPressed: "container.state = ''"
     }
 }

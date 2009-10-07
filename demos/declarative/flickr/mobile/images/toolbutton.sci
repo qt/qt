@@ -1,5 +1,5 @@
-gridLeft: 15
-gridTop: 4
-gridBottom: 4
-gridRight: 15
-imageFile: toolbutton.png
+border.left: 15
+border.top: 4
+border.bottom: 4
+border.right: 15
+source: toolbutton.png

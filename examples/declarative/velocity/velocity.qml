@@ -5,7 +5,7 @@ Rectangle {
     width: 800
     height: 600
     ListModel {
-        id: List
+        id: list
         ListElement {
             name: "Sunday"
             dayColor: "#808080"
@@ -95,13 +95,13 @@ Rectangle {
         }
     }
     Flickable {
-        id: Flick
+        id: flickable
         anchors.fill: parent
-        viewportWidth: Lay.width
+        viewportWidth: lay.width
         Row {
-            id: Lay
+            id: lay
             Repeater {
-                model: List
+                model: list
                 Component {
                     Day {
                         day: name

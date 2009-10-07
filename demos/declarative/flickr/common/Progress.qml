@@ -1,12 +1,10 @@
 import Qt 4.6
 
 Item {
-    id: Progress;
-
     property var progress: 0
 
     Rectangle {
-        id: Container; anchors.fill: parent; smooth: true
+        anchors.fill: parent; smooth: true
         border.color: "white"; border.width: 0; radius: height/2 - 2
         gradient: Gradient {
             GradientStop { position: 0; color: "#66343434" }
@@ -15,7 +13,6 @@ Item {
     }
 
     Rectangle {
-        id: Fill
         y: 2; height: parent.height-4;
         x: 2; width: Math.max(parent.width * progress - 4, 0);
         opacity: width < 1 ? 0 : 1; smooth: true

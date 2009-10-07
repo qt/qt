@@ -1370,6 +1370,8 @@ void tst_QGraphicsLinearLayout::layoutDirection()
     QGraphicsWidget *window = new QGraphicsWidget(0, Qt::Window);
     QGraphicsLinearLayout *layout = new QGraphicsLinearLayout;
     layout->setContentsMargins(1, 2, 3, 4);
+    layout->setSpacing(6);
+
     RectWidget *w1 = new RectWidget;
     w1->setPreferredSize(20, 20);
     w1->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);

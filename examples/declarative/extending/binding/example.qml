@@ -2,9 +2,9 @@ import People 1.0
 
 // ![0]
 BirthdayParty {
-    id: TheParty
+    id: theParty
 
-    speaker: HappyBirthday { name: TheParty.celebrant.name }
+    speaker: HappyBirthday { name: theParty.celebrant.name }
 
     celebrant: Boy {
         name: "Bob Jones"
@@ -14,22 +14,22 @@ BirthdayParty {
     onPartyStarted: print("This party started rockin' at " + time);
 
 
-    Boy { 
-        name: "Joan Hodges" 
+    Boy {
+        name: "Joan Hodges"
         BirthdayParty.rsvp: "2009-07-06"
         shoe { size: 10; color: "black"; brand: "Reebok"; price: 59.95 }
     }
-    Boy { 
-        name: "Jack Smith" 
+    Boy {
+        name: "Jack Smith"
         shoe { size: 8; color: "blue"; brand: "Puma"; price: 19.95 }
     }
-    Girl { 
-        name: "Anne Brown" 
+    Girl {
+        name: "Anne Brown"
         BirthdayParty.rsvp: "2009-07-01"
         shoe.size: 7
         shoe.color: "red"
         shoe.brand: "Marc Jacobs"
-        shoe.price: 699.99 
+        shoe.price: 699.99
     }
 
 // ![1]

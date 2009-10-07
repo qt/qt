@@ -5,20 +5,20 @@ Rectangle {
 //! [0]
 //! [1]
     Component {
-        id: Delegate
+        id: delegate
         Item {
-            id: Wrapper
+            id: wrapper
             width: 80; height: 80
-            VerticalLayout {
-                Image { anchors.horizontalCenter: Name.horizontalCenter; width: 64; height: 64; source: icon }
-                Text { id: Name; text: name; font.pointSize: 16}
+            Column {
+                Image { anchors.horizontalCenter: name.horizontalCenter; width: 64; height: 64; source: icon }
+                Text { id: name; text: name; font.pointSize: 16}
             }
         }
     }
 //! [1]
 //! [2]
     PathView {
-        anchors.fill: parent; model: MenuModel; delegate: Delegate
+        anchors.fill: parent; model: MenuModel; delegate: delegate
         path: Path {
             startX: 120; startY: 100
             PathQuad { x: 120; y: 25; controlX: 260; controlY: 75 }

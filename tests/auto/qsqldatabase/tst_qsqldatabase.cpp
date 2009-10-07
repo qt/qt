@@ -157,6 +157,8 @@ private slots:
     void mysqlOdbc_unsignedIntegers();
     void mysql_multiselect_data() { generic_data("QMYSQL"); }
     void mysql_multiselect();  // For task 144331
+    void mysql_savepointtest_data() { generic_data("QMYSQL"); }
+    void mysql_savepointtest();
 
     void accessOdbc_strings_data() { generic_data(); }
     void accessOdbc_strings();
@@ -2433,6 +2435,19 @@ void tst_QSqlDatabase::sqlStatementUseIsNull_189093()
     QCOMPARE(statment.count("IS NULL", Qt::CaseInsensitive), 2);
 }
 
+void tst_QSqlDatabase::mysql_savepointtest()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    if ( db.driverName().startsWith( "QMYSQL" ) && tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt()<5 )
+        QSKIP( "Test requires MySQL >= 5.0", SkipSingle );
+
+    QSqlQuery q(db);
+    QVERIFY_SQL(q, exec("begin"));
+    QVERIFY_SQL(q, exec("insert into "+qTableName("qtest")+" VALUES (54, 'foo', 'foo', 54.54)"));
+    QVERIFY_SQL(q, exec("savepoint foo"));
+}
 
 QTEST_MAIN(tst_QSqlDatabase)
 #include "tst_qsqldatabase.moc"

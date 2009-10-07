@@ -84,6 +84,11 @@ protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
     QFxRepeater(QFxRepeaterPrivate &dd, QFxItem *parent);
 
+private Q_SLOTS:
+    void itemsInserted(int,int);
+    void itemsRemoved(int,int);
+    void itemsMoved(int,int,int);
+
 private:
     Q_DISABLE_COPY(QFxRepeater)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxRepeater)

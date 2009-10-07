@@ -5,21 +5,21 @@ Rectangle {
     height: 480
     // Create a flickable to view a large image.
     Flickable {
-        id: View
+        id: view
         anchors.fill: parent
         Image {
-            id: Picture
+            id: picture
             source: "pics/niagara_falls.jpg"
         }
-        viewportWidth: Picture.width
-        viewportHeight: Picture.height
+        viewportWidth: picture.width
+        viewportHeight: picture.height
         // Only show the scrollbars when the view is moving.
         states: [
             State {
                 name: "ShowBars"
-                when: View.moving
-                PropertyChanges { target: SBV; opacity: 1 }
-                PropertyChanges { target: SBH; opacity: 1 }
+                when: view.moving
+                PropertyChanges { target: verticalScrollBar; opacity: 1 }
+                PropertyChanges { target: horizontalScrollBar; opacity: 1 }
             }
         ]
         transitions: [
@@ -35,23 +35,23 @@ Rectangle {
     }
     // Attach scrollbars to the right and bottom edges of the view.
     ScrollBar {
-        id: SBV
+        id: verticalScrollBar
         opacity: 0
         orientation: "Vertical"
-        position: View.visibleArea.yPosition
-        pageSize: View.visibleArea.heightRatio
+        position: view.visibleArea.yPosition
+        pageSize: view.visibleArea.heightRatio
         width: 12
-        height: View.height-12
-        anchors.right: View.right
+        height: view.height-12
+        anchors.right: view.right
     }
     ScrollBar {
-        id: SBH
+        id: horizontalScrollBar
         opacity: 0
         orientation: "Horizontal"
-        position: View.visibleArea.xPosition
-        pageSize: View.visibleArea.widthRatio
+        position: view.visibleArea.xPosition
+        pageSize: view.visibleArea.widthRatio
         height: 12
-        width: View.width-12
-        anchors.bottom: View.bottom
+        width: view.width-12
+        anchors.bottom: view.bottom
     }
 }

@@ -7,8 +7,7 @@
     QML is a language for building highly dynamic and fluid applications. It is targetted at the sorts of user
     interface (and the sorts of hardware) in embedded devices such as phones, media
     players, and set-top boxes. It is also appropriate for highly custom desktop
-    user-interfaces, or special elements in more traditional desktop
-    user-interfaces.
+    user interfaces, or special elements in more traditional desktop user interfaces.
 
     Building fluid applications is done declaratively, rather than procedurally.
     That is, you specify \e what the UI should look like and how it should behave
@@ -18,10 +17,10 @@
 
     Getting Started:
     \list
-    \o \l {qmlexamples}{Examples}
-    \o \l {tutorial}{Tutorial: 'Hello World'}
-    \o \l {tutorials-declarative-contacts.html}{Tutorial: 'Introduction to QML'}
     \o \l {Introduction to the QML language} (in progress)
+    \o \l {tutorial}{Tutorial: 'Hello world!'}
+    \o \l {tutorials-declarative-contacts.html}{Tutorial: 'Introduction to QML'}
+    \o \l {qmlexamples}{Examples}
     \endlist
 
     Core Features:

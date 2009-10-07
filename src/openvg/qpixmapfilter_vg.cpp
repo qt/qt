@@ -220,8 +220,6 @@ void QVGPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const
 
 QVGPixmapDropShadowFilter::QVGPixmapDropShadowFilter()
     : QPixmapDropShadowFilter(),
-      prevRadius(0.0f),
-      kernelSize(0),
       firstTime(true)
 {
 }
@@ -290,41 +288,30 @@ void QVGPixmapDropShadowFilter::draw(QPainter *painter, const QPointF &dest, con
     // Blacken the source image.
     vgColorMatrix(tmpImage, srcImage, matrix[0]);
 
-    // Recompute the convolution kernel if the blur radius has changed.
-    qreal radius = blurRadius();
-    if (radius != prevRadius || firstTime) {
-        prevRadius = radius;
-        int dim = 2 * qRound(radius) + 1;
-        int size = dim * dim;
-        VGshort f = VGshort(1024.0f / size);
-        kernel.resize(size);
-        for (int i = 0; i < size; ++i)
-            kernel[i] = f;
-        kernelSize = dim;
-    }
+    // Clamp the radius range.  We divide by 2 because the OpenVG blur
+    // is "too blurry" compared to the default raster implementation.
+    VGfloat maxRadius = VGfloat(vgGeti(VG_MAX_GAUSSIAN_STD_DEVIATION));
+    VGfloat radiusF = VGfloat(blurRadius()) / 2.0f;
+    if (radiusF < 0.001f)
+        radiusF = 0.001f;
+    else if (radiusF > maxRadius)
+        radiusF = maxRadius;
 
-    // Apply the convolution filter using the kernel.
-    VGfloat values[4];
-    values[0] = 0.0f;
-    values[1] = 0.0f;
-    values[2] = 0.0f;
-    values[3] = 0.0f;
-    vgSetfv(VG_TILE_FILL_COLOR, 4, values);
-    vgConvolve(dstImage, tmpImage,
-               kernelSize, kernelSize, 0, 0,
-               kernel.constData(), 1.0f / 1024.0f, 0.0f,
-               VG_TILE_FILL);
+    // Blur the blackened source image.
+    vgGaussianBlur(dstImage, tmpImage, radiusF, radiusF, VG_TILE_PAD);
 
     firstTime = false;
 
     VGImage child = VG_INVALID_HANDLE;
 
+    QRect srect;
     if (srcRect.isNull() ||
         (srcRect.topLeft().isNull() && srcRect.size() == size)) {
         child = dstImage;
+        srect = QRect(0, 0, size.width(), size.height());
     } else {
-        QRect src = srcRect.toRect();
-        child = vgChildImage(dstImage, src.x(), src.y(), src.width(), src.height());
+        srect = srcRect.toRect();
+        child = vgChildImage(dstImage, srect.x(), srect.y(), srect.width(), srect.height());
     }
 
     qt_vg_drawVGImage(painter, dest + offset(), child);
@@ -333,6 +320,9 @@ void QVGPixmapDropShadowFilter::draw(QPainter *painter, const QPointF &dest, con
         vgDestroyImage(child);
     vgDestroyImage(tmpImage);
     vgDestroyImage(dstImage);
+
+    // Now draw the actual pixmap over the top.
+    painter->drawPixmap(dest, src, srect);
 }
 
 QVGPixmapBlurFilter::QVGPixmapBlurFilter(QObject *parent)

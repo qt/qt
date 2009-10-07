@@ -76,6 +76,7 @@ public:
 #endif
           cookieJarCreated(false)
     { }
+    ~QNetworkAccessManagerPrivate();
 
     void _q_replyFinished();
     void _q_replySslErrors(const QList<QSslError> &errors);

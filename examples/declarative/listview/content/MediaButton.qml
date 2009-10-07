@@ -4,36 +4,32 @@ Item {
     property var text
     signal clicked
 
-    id: Container
+    id: container
     Image {
-        id: Normal
+        id: normal
         source: "pics/button.png"
     }
     Image {
-        id: Pressed
+        id: pressed
         source: "pics/button-pressed.png"
         opacity: 0
     }
     MouseRegion {
-        id: ClickRegion
-        anchors.fill: Normal
-        onClicked: { Container.clicked(); }
+        id: clickRegion
+        anchors.fill: normal
+        onClicked: { container.clicked(); }
     }
     Text {
         font.bold: true
         color: "white"
-        anchors.centerIn: Normal
-        text: Container.text
+        anchors.centerIn: normal
+        text: container.text
     }
-    width: Normal.width
-    states: [
-        State {
-            name: "Pressed"
-            when: ClickRegion.pressed == true
-            PropertyChanges {
-                target: Pressed
-                opacity: 1
-            }
-        }
-    ]
+    width: normal.width
+
+    states: State {
+        name: "Pressed"
+        when: clickRegion.pressed == true
+        PropertyChanges { target: pressed; opacity: 1 }
+    }
 }

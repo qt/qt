@@ -899,9 +899,21 @@ void tst_QHttpNetworkConnection::getMultipleWithPipeliningAndMultiplePriorities(
 
     } while (finishedCount != replies.length());
 
-    // redundant
-    for (int i = 0; i < replies.length(); i++)
+    int pipelinedCount = 0;
+    for (int i = 0; i < replies.length(); i++) {
         QVERIFY(replies.at(i)->isFinished());
+        QVERIFY (!(replies.at(i)->request().isPipeliningAllowed() == false
+            && replies.at(i)->isPipeliningUsed()));
+
+        if (replies.at(i)->isPipeliningUsed())
+            pipelinedCount++;
+    }
+
+    // We allow pipelining for every 2nd,3rd,4th,6th,8th,9th,10th etc request.
+    // Assume that half of the requests had been pipelined.
+    // (this is a very relaxed condition, when last measured 79 of 100
+    // requests had been pipelined)
+    QVERIFY(pipelinedCount >= requestCount / 2);
 
     qDebug() << "===" << stopWatch.elapsed() << "msec ===";
 

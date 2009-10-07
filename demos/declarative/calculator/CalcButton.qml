@@ -1,41 +1,41 @@
 import Qt 4.6
 
 Rectangle {
-    property alias operation: Label.text
+    property alias operation: label.text
     property bool toggable: false
     property bool toggled: false
     signal clicked
 
-    id: Button; width: 50; height: 30
-    border.color: Palette.mid; radius: 6
+    id: button; width: 50; height: 30
+    border.color: palette.mid; radius: 6
     gradient: Gradient {
-        GradientStop { id: G1; position: 0.0; color: Palette.lighter(Palette.button) }
-        GradientStop { id: G2; position: 1.0; color: Palette.button }
+        GradientStop { id: G1; position: 0.0; color: palette.lighter(palette.button) }
+        GradientStop { id: G2; position: 1.0; color: palette.button }
     }
 
-    Text { id: Label; anchors.centerIn: parent; color: Palette.buttonText }
+    Text { id: label; anchors.centerIn: parent; color: palette.buttonText }
 
     MouseRegion {
-        id: ClickRegion
+        id: clickRegion
         anchors.fill: parent
         onClicked: {
             doOp(operation);
-            Button.clicked();
-            if (!Button.toggable) return;
-            Button.toggled ? Button.toggled = false : Button.toggled = true
+            button.clicked();
+            if (!button.toggable) return;
+            button.toggled ? button.toggled = false : button.toggled = true
         }
     }
 
     states: [
         State {
-            name: "Pressed"; when: ClickRegion.pressed == true
-            PropertyChanges { target: G1; color: Palette.dark }
-            PropertyChanges { target: G2; color: Palette.button }
+            name: "Pressed"; when: clickRegion.pressed == true
+            PropertyChanges { target: G1; color: palette.dark }
+            PropertyChanges { target: G2; color: palette.button }
         },
         State {
-            name: "Toggled"; when: Button.toggled == true
-            PropertyChanges { target: G1; color: Palette.dark }
-            PropertyChanges { target: G2; color: Palette.button }
+            name: "Toggled"; when: button.toggled == true
+            PropertyChanges { target: G1; color: palette.dark }
+            PropertyChanges { target: G2; color: palette.button }
         }
     ]
 }

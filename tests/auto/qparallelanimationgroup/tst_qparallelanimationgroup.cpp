@@ -62,6 +62,7 @@ public Q_SLOTS:
 private slots:
     void construction();
     void setCurrentTime();
+    void stateChanged();
     void clearGroup();
     void propagateGroupUpdateToChildren();
     void updateChildrenWithRunningGroup();
@@ -252,6 +253,112 @@ void tst_QParallelAnimationGroup::setCurrentTime()
     QCOMPARE(loopsForever->currentTime(), 1);
 }
 
+void tst_QParallelAnimationGroup::stateChanged()
+{
+    //this ensures that the correct animations are started when starting the group
+    TestAnimation *anim1 = new TestAnimation;
+    TestAnimation *anim2 = new TestAnimation;
+    TestAnimation *anim3 = new TestAnimation;
+    TestAnimation *anim4 = new TestAnimation;
+    anim1->setDuration(1000);
+    anim2->setDuration(2000);
+    anim3->setDuration(3000);
+    anim4->setDuration(3000);
+    QParallelAnimationGroup group;
+    group.addAnimation(anim1);
+    group.addAnimation(anim2);
+    group.addAnimation(anim3);
+    group.addAnimation(anim4);
+
+    QSignalSpy spy1(anim1, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
+    QSignalSpy spy2(anim2, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
+    QSignalSpy spy3(anim3, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
+    QSignalSpy spy4(anim4, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
+
+    //first; let's start forward
+    group.start();
+    //all the animations should be started
+    QCOMPARE(spy1.count(), 1);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(spy1.last().at(1)), TestAnimation::Running);
+    QCOMPARE(spy2.count(), 1);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(spy2.last().at(1)), TestAnimation::Running);
+    QCOMPARE(spy3.count(), 1);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(spy3.last().at(1)), TestAnimation::Running);
+    QCOMPARE(spy4.count(), 1);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(spy4.last().at(1)), TestAnimation::Running);
+
+    group.setCurrentTime(1500); //anim1 should be finished
+    QCOMPARE(group.state(), QAnimationGroup::Running);
+    QCOMPARE(spy1.count(), 2);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(spy1.last().at(1)), TestAnimation::Stopped);
+    QCOMPARE(spy2.count(), 1); //no change
+    QCOMPARE(spy3.count(), 1); //no change
+    QCOMPARE(spy4.count(), 1); //no change
+
+    group.setCurrentTime(2500); //anim2 should be finished
+    QCOMPARE(group.state(), QAnimationGroup::Running);
+    QCOMPARE(spy1.count(), 2); //no change
+    QCOMPARE(spy2.count(), 2);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(spy2.last().at(1)), TestAnimation::Stopped);
+    QCOMPARE(spy3.count(), 1); //no change
+    QCOMPARE(spy4.count(), 1); //no change
+
+    group.setCurrentTime(3500); //everything should be finished
+    QCOMPARE(group.state(), QAnimationGroup::Stopped);
+    QCOMPARE(spy1.count(), 2); //no change
+    QCOMPARE(spy2.count(), 2); //no change
+    QCOMPARE(spy3.count(), 2);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(spy3.last().at(1)), TestAnimation::Stopped);
+    QCOMPARE(spy4.count(), 2);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(spy4.last().at(1)), TestAnimation::Stopped);
+
+    //cleanup
+    spy1.clear();
+    spy2.clear();
+    spy3.clear();
+    spy4.clear();
+
+    //now let's try to reverse that
+    group.setDirection(QAbstractAnimation::Backward);
+    group.start();
+
+    //only anim3 and anim4 should be started
+    QCOMPARE(group.state(), QAnimationGroup::Running);
+    QCOMPARE(spy1.count(), 0);
+    QCOMPARE(spy2.count(), 0);
+    QCOMPARE(spy3.count(), 1);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(spy3.last().at(1)), TestAnimation::Running);
+    QCOMPARE(spy4.count(), 1);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(spy4.last().at(1)), TestAnimation::Running);
+
+    group.setCurrentTime(1500); //anim2 should be started
+    QCOMPARE(group.state(), QAnimationGroup::Running);
+    QCOMPARE(spy1.count(), 0); //no change
+    QCOMPARE(spy2.count(), 1);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(spy2.last().at(1)), TestAnimation::Running);
+    QCOMPARE(spy3.count(), 1); //no change
+    QCOMPARE(spy4.count(), 1); //no change
+
+    group.setCurrentTime(500); //anim1 is finally also started
+    QCOMPARE(group.state(), QAnimationGroup::Running);
+    QCOMPARE(spy1.count(), 1);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(spy1.last().at(1)), TestAnimation::Running);
+    QCOMPARE(spy2.count(), 1); //no change
+    QCOMPARE(spy3.count(), 1); //no change
+    QCOMPARE(spy4.count(), 1); //no change
+
+    group.setCurrentTime(0); //everything should be stopped
+    QCOMPARE(group.state(), QAnimationGroup::Stopped);
+    QCOMPARE(spy1.count(), 2);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(spy1.last().at(1)), TestAnimation::Stopped);
+    QCOMPARE(spy2.count(), 2);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(spy2.last().at(1)), TestAnimation::Stopped);
+    QCOMPARE(spy3.count(), 2);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(spy3.last().at(1)), TestAnimation::Stopped);
+    QCOMPARE(spy4.count(), 2);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(spy4.last().at(1)), TestAnimation::Stopped);
+}
+
 void tst_QParallelAnimationGroup::clearGroup()
 {
     QParallelAnimationGroup group;
@@ -398,7 +505,7 @@ void tst_QParallelAnimationGroup::deleteChildrenWithRunningGroup()
     QCOMPARE(group.state(), QAnimationGroup::Running);
     QCOMPARE(anim1->state(), QAnimationGroup::Running);
 
-    QTest::qWait(50);
+    QTest::qWait(80);
     QVERIFY(group.currentTime() > 0);
 
     delete anim1;
@@ -564,14 +671,23 @@ void tst_QParallelAnimationGroup::zeroDurationAnimation()
     anim2.setEndValue(100);
     anim2.setDuration(100);
 
+    TestAnimation anim3;
+    anim3.setStartValue(0);
+    anim3.setEndValue(100);
+    anim3.setDuration(10);
+
     QSignalSpy stateChangedSpy1(&anim1, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
     QSignalSpy finishedSpy1(&anim1, SIGNAL(finished()));
 
     QSignalSpy stateChangedSpy2(&anim2, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
     QSignalSpy finishedSpy2(&anim2, SIGNAL(finished()));
 
+    QSignalSpy stateChangedSpy3(&anim3, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
+    QSignalSpy finishedSpy3(&anim3, SIGNAL(finished()));
+
     group.addAnimation(&anim1);
     group.addAnimation(&anim2);
+    group.addAnimation(&anim3);
     QCOMPARE(stateChangedSpy1.count(), 0);
     group.start();
     QCOMPARE(stateChangedSpy1.count(), 2);
@@ -586,9 +702,15 @@ void tst_QParallelAnimationGroup::zeroDurationAnimation()
     QCOMPARE(qVariantValue<QAbstractAnimation::State>(stateChangedSpy1.at(0).at(1)),
              QAnimationGroup::Running);
 
+    QCOMPARE(stateChangedSpy3.count(), 1);
+    QCOMPARE(finishedSpy3.count(), 0);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(stateChangedSpy3.at(0).at(1)),
+             QAnimationGroup::Running);
+
 
     QCOMPARE(anim1.state(), QAnimationGroup::Stopped);
     QCOMPARE(anim2.state(), QAnimationGroup::Running);
+    QCOMPARE(anim3.state(), QAnimationGroup::Running);
     QCOMPARE(group.state(), QAnimationGroup::Running);
 
 
@@ -596,19 +718,24 @@ void tst_QParallelAnimationGroup::zeroDurationAnimation()
     group.setLoopCount(4);
     stateChangedSpy1.clear();
     stateChangedSpy2.clear();
+    stateChangedSpy3.clear();
 
     group.start();
     QCOMPARE(stateChangedSpy1.count(), 2);
     QCOMPARE(stateChangedSpy2.count(), 1);
+    QCOMPARE(stateChangedSpy3.count(), 1);
     group.setCurrentTime(50);
     QCOMPARE(stateChangedSpy1.count(), 2);
     QCOMPARE(stateChangedSpy2.count(), 1);
+    QCOMPARE(stateChangedSpy3.count(), 2);
     group.setCurrentTime(150);
     QCOMPARE(stateChangedSpy1.count(), 4);
     QCOMPARE(stateChangedSpy2.count(), 3);
+    QCOMPARE(stateChangedSpy3.count(), 4);
     group.setCurrentTime(50);
     QCOMPARE(stateChangedSpy1.count(), 6);
     QCOMPARE(stateChangedSpy2.count(), 5);
+    QCOMPARE(stateChangedSpy3.count(), 6);
 
 }
 
@@ -863,6 +990,23 @@ void tst_QParallelAnimationGroup::pauseResume()
     QCOMPARE(anim->state(), QAnimationGroup::Running);
     QCOMPARE(anim->currentTime(), currentTime);
     QCOMPARE(spy.count(), 1);
+
+    group.stop();
+    spy.clear();
+    new TestAnimation2(500, &group);
+    group.start();
+    QCOMPARE(spy.count(), 1); //the animation should have been started
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(spy.last().at(1)), TestAnimation::Running);
+    group.setCurrentTime(250); //end of first animation
+    QCOMPARE(spy.count(), 2); //the animation should have been stopped
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(spy.last().at(1)), TestAnimation::Stopped);
+    group.pause();
+    QCOMPARE(spy.count(), 2); //this shouldn't have changed
+    group.resume();
+    QCOMPARE(spy.count(), 2); //this shouldn't have changed
+
+
+
 }
 
 

@@ -751,7 +751,6 @@ void QAbstractItemView::setItemDelegate(QAbstractItemDelegate *delegate)
         }
     }
 
-
     if (delegate) {
         if (d->delegateRefCount(delegate) == 0) {
             connect(delegate, SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),
@@ -762,6 +761,7 @@ void QAbstractItemView::setItemDelegate(QAbstractItemDelegate *delegate)
         }
     }
     d->itemDelegate = delegate;
+    update();
 }
 
 /*!
@@ -826,6 +826,7 @@ void QAbstractItemView::setItemDelegateForRow(int row, QAbstractItemDelegate *de
         }
         d->rowDelegates.insert(row, delegate);
     }
+    update();
 }
 
 /*!
@@ -882,6 +883,7 @@ void QAbstractItemView::setItemDelegateForColumn(int column, QAbstractItemDelega
         }
         d->columnDelegates.insert(column, delegate);
     }
+    update();
 }
 
 /*!

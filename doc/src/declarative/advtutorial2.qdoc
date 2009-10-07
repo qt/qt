@@ -1,0 +1,45 @@
+/*!
+\page advtutorial2.html
+\title Advanced Tutorial 2 - Populating the Game Canvas
+\target advtutorial2
+
+Now that we've written some basic elements, let's start writing the game. The
+first thing to do is to generate all of the blocks. Now we need to dynamically
+generate all of these blocks, because you have a new, random set of blocks
+every time. As they are dynamically generated every time the new game button is
+clicked, as opposed to on startup, we will be dynamically generating the blocks
+in the ECMA script, as opposed to using a Repeater.
+
+This adds enough script to justify a new file, samegame.js, the intial version
+of which is shown below
+
+\snippet declarative/tutorials/samegame/samegame2/samegame.js 0
+
+The gist of this code is that we create the blocks dynamically, as many as will fit, and then store them in an array for future reference. The 'initBoard' function will be hooked up to the new game button soon, and should be fairly straight forward.
+
+The 'createBlock' function is a lot bigger, and I'll explain it block by block.
+First we ensure that the component has been constructed. QML elements, including composite ones like the Block.qml that we've written, are never created directly in script. While there is a function to parse and create an arbitrary QML string, in the case where you are repeatedly creating the sme item you will want to use the createComponent function. createComponent is a built-in function in the declarative ECMAscript, and returns a component object. A component object prepares and stores a QML element (usually a composite element) for easy and efficient use. When the component is ready, you can create a new instance of the loaded QML with the createObject method. If the component is loaded remotely (over HTTP fro example) then you will have to wait for the component to finish loading before calling createObject. Since we don't wait here (the waiting is a syncronous, the component object has a signal to tell you when it's done) this code will only work if the block QML is a local file.
+
+As we aren't waiting for he component, the next block of code creates a game block with component.createObject. Since there could be an error in the QML file you are trying to load, success is not guaranteed. The first bit of error checkign code comes right after createObject(), to ensure that the object loaded correctly. If it did not load correctly the function returns false, but we don't have that hooked up to the main UI to indicate that something has gone wrong. Instead we print out error messages to the console, because an error here means an invalid QML file and should only happen while you are developing and testing the UI.
+
+Next we start to set up our dynamically created block. Because the Block.qml file is generic it needs to be placed in the main scene, and in the right place. This is why parent, x, y, width and height are set. We then store it in the board array for later use.
+
+Finally, we have some more error handling. You can only call createObject if the component has loaded. If it has not loaded, either it is still loading or there was an error loading (such as a missing file). Since we don't request remote files the problem is likely to be a missing or misplaced file. Again we print this to the console to aid debugging.
+
+You now have the code to create a field of blocks dynamically, like below:
+
+\image declarative-adv-tutorial2.png
+
+To hook this code up to the 'New Game' button, you alter it as below:
+
+\snippet declarative/tutorials/samegame/samegame2/samegame.qml 1
+
+We have just replaced the 'onClicked: print("Implement me!")' with 'onClicked: initBoard()'. Note that in order to have the function available, you'll need to include the script in the main file, by adding a script element to it.
+
+\snippet declarative/tutorials/samegame/samegame2/samegame.qml 2
+
+With those two changes, and the script file, you are now dynamically creating a field of blocks you can play with. They don't do anything now though; the next chapter will add the game mechanics.
+
+[Previous: \l {advtutorial1}{Advanced Tutorial 1}] [\l {advtutorial.html}{Advanced Tutorial}] [Next: \l {advtutorial3}{Advanced Tutorial 3}]
+
+*/

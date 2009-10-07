@@ -13,7 +13,7 @@ Rectangle {
             id: recipeDelegate
             Item {
                 id: wrapper
-                width: List.width
+                width: list.width
                 // Create a property to contain the visibility of the details.
                 // We can bind multiple element's opacity to this one property,
                 // rather than having a "PropertyChanges" line for each element we
@@ -102,7 +102,7 @@ Rectangle {
                         // Make details visible
                         PropertyChanges { target: wrapper; detailsOpacity: 1; x: 0 }
                         // Make the detailed view fill the entire list area
-                        PropertyChanges { target: wrapper; height: List.height }
+                        PropertyChanges { target: wrapper; height: list.height }
                         // Move the list so that this item is at the top.
                         PropertyChanges { target: wrapper.ListView.view; explicit: true; viewportY: wrapper.y }
                         // Disallow flicking while we're in detailed view
@@ -125,7 +125,7 @@ Rectangle {
     ]
     // The actual list
     ListView {
-        id: List
+        id: list
         model: Recipes; delegate: recipeDelegate
         anchors.fill: parent; clip: true
     }

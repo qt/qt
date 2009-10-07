@@ -208,9 +208,12 @@ void QmlParentChange::saveOriginals()
 
     d->origParent = d->target->parentItem();
 
-    //try to determine the items original stack position so we can restore it
-    if (!d->origParent)
+    if (!d->origParent) {
         d->origStackBefore = 0;
+        return;
+    }
+
+    //try to determine the item's original stack position so we can restore it
     int siblingIndex = ((AccessibleFxItem*)d->target)->siblingIndex() + 1;
     QList<QGraphicsItem*> children = d->origParent->childItems();
     for (int i = 0; i < children.count(); ++i) {

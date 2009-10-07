@@ -1,18 +1,32 @@
+//![0]
 import Qt 4.6
 
+//![1]
 Item {
-    property var color
+    id: container
+//![4]
+    property alias color: rectangle.color
+//![4]
+//![5]
+    signal clicked(string color)
+//![5]
 
-    id: CellContainer
-    width: 40
-    height: 25
+    width: 40; height: 25
+//![1]
 
+//![2]
     Rectangle {
+        id: rectangle
+        border.color: "white"
         anchors.fill: parent
-        color: CellContainer.color
     }
+//![2]
+
+//![3]
     MouseRegion {
         anchors.fill: parent
-        onClicked: { HelloText.color = CellContainer.color }
+        onClicked: container.clicked(container.color)
     }
+//![3]
 }
+//![0]

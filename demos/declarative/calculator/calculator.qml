@@ -1,36 +1,35 @@
 import Qt 4.6
 
 Rectangle {
-    id: MainWindow;
-    width: 320; height: 270; color: Palette.window
+    width: 320; height: 270; color: palette.window
 
-    SystemPalette { id: Palette; colorGroup: Qt.Active }
+    SystemPalette { id: palette; colorGroup: Qt.Active }
     Script { source: "calculator.js" }
 
     Column {
         x: 2; spacing: 10;
 
         Rectangle {
-            id: Container
+            id: container
             width: 316; height: 50
-            border.color: Palette.dark; color: Palette.base
+            border.color: palette.dark; color: palette.base
 
             Text {
-                id: CurNum
+                id: curNum
                 font.bold: true; font.pointSize: 16
-                color: Palette.text
-                anchors.right: Container.right
+                color: palette.text
+                anchors.right: container.right
                 anchors.rightMargin: 5
-                anchors.verticalCenter: Container.verticalCenter
+                anchors.verticalCenter: container.verticalCenter
             }
 
             Text {
-                id: CurrentOperation
-                color: Palette.text
+                id: currentOperation
+                color: palette.text
                 font.bold: true; font.pointSize: 16
-                anchors.left: Container.left
+                anchors.left: container.left
                 anchors.leftMargin: 5
-                anchors.verticalCenter: Container.verticalCenter
+                anchors.verticalCenter: container.verticalCenter
             }
         }
 
@@ -38,7 +37,7 @@ Rectangle {
             width: 320; height: 30
 
             CalcButton {
-                id: AdvancedCheckBox
+                id: advancedCheckBox
                 x: 55; width: 206
                 operation: "Advanced Mode"
                 toggable: true
@@ -49,15 +48,15 @@ Rectangle {
             width: 320
 
             Item {
-                id: BasicButtons
+                id: basicButtons
                 x: 55; width: 160; height: 160
 
-                CalcButton { operation: "Bksp"; id: Bksp; width: 67; opacity: 0 }
-                CalcButton { operation: "C"; id: C; width: 76 }
-                CalcButton { operation: "AC"; id: AC; x: 78; width: 76 }
+                CalcButton { operation: "Bksp"; id: bksp; width: 67; opacity: 0 }
+                CalcButton { operation: "C"; id: c; width: 76 }
+                CalcButton { operation: "AC"; id: ac; x: 78; width: 76 }
 
                 Grid {
-                    id: NumKeypad; y: 32; spacing: 2; columns: 3
+                    id: numKeypad; y: 32; spacing: 2; columns: 3
 
                     CalcButton { operation: "7" }
                     CalcButton { operation: "8" }
@@ -75,11 +74,11 @@ Rectangle {
 
                     CalcButton { operation: "0"; width: 50 }
                     CalcButton { operation: "."; x: 77; width: 50 }
-                    CalcButton { operation: "="; id: Equals; x: 77;  width: 102 }
+                    CalcButton { operation: "="; id: equals; x: 77;  width: 102 }
                 }
 
                 Column {
-                    id: SimpleOperations
+                    id: simpleOperations
                     x: 156; y: 0; spacing: 2
 
                     CalcButton { operation: "x" }
@@ -90,7 +89,7 @@ Rectangle {
             }
 
             Grid {
-                id: AdvancedButtons
+                id: advancedButtons
                 x: 350; spacing: 2; columns: 2; opacity: 0
 
                 CalcButton { operation: "Abs" }
@@ -109,14 +108,14 @@ Rectangle {
 
     states: [
         State {
-            name: "Advanced"; when: AdvancedCheckBox.toggled == true
-            PropertyChanges { target: BasicButtons; x: 0 }
-            PropertyChanges { target: SimpleOperations; y: 32 }
-            PropertyChanges { target: Bksp; opacity: 1 }
-            PropertyChanges { target: C; x: 69; width: 67 }
-            PropertyChanges { target: AC; x: 138; width: 67 }
-            PropertyChanges { target: Equals; width: 50 }
-            PropertyChanges { target: AdvancedButtons; x: 210; opacity: 1 }
+            name: "Advanced"; when: advancedCheckBox.toggled == true
+            PropertyChanges { target: basicButtons; x: 0 }
+            PropertyChanges { target: simpleOperations; y: 32 }
+            PropertyChanges { target: bksp; opacity: 1 }
+            PropertyChanges { target: c; x: 69; width: 67 }
+            PropertyChanges { target: ac; x: 138; width: 67 }
+            PropertyChanges { target: equals; width: 50 }
+            PropertyChanges { target: advancedButtons; x: 210; opacity: 1 }
         }
     ]
 

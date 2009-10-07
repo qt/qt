@@ -132,9 +132,9 @@ void QPropertyAnimationPrivate::updateProperty(const QVariant &newValue)
     }
 
     if (newValue.userType() == propertyType) {
-        //no conversion is needed, we directly call the QObject::qt_metacall
+        //no conversion is needed, we directly call the QMetaObject::metacall
         void *data = const_cast<void*>(newValue.constData());
-        targetValue->qt_metacall(QMetaObject::WriteProperty, propertyIndex, &data);
+        QMetaObject::metacall(targetValue, QMetaObject::WriteProperty, propertyIndex, &data);
     } else {
         targetValue->setProperty(propertyName.constData(), newValue);
     }

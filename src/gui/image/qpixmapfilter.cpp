@@ -1074,6 +1074,16 @@ void QPixmapDropShadowFilter::draw(QPainter *p,
                                    const QRectF &src) const
 {
     Q_D(const QPixmapDropShadowFilter);
+    QPixmapFilter *filter = p->paintEngine() && p->paintEngine()->isExtended() ?
+        static_cast<QPaintEngineEx *>(p->paintEngine())->pixmapFilter(type(), this) : 0;
+    QPixmapDropShadowFilter *dropShadowFilter = static_cast<QPixmapDropShadowFilter*>(filter);
+    if (dropShadowFilter) {
+        dropShadowFilter->setColor(d->color);
+        dropShadowFilter->setBlurRadius(d->blurFilter->radius());
+        dropShadowFilter->setOffset(d->offset);
+        dropShadowFilter->draw(p, pos, px, src);
+        return;
+    }
 
     QImage tmp = src.isNull() ? px.toImage() : px.copy(src.toRect()).toImage();
     QPainter tmpPainter(&tmp);

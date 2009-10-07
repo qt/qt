@@ -55,6 +55,26 @@
 
 QT_BEGIN_NAMESPACE
 
+
+class SizedMenuBar : public QMenuBar
+{
+    Q_OBJECT
+public:
+    SizedMenuBar(QWidget *parent, QWidget *referenceWidget)
+        : QMenuBar(parent), refWidget(referenceWidget)
+    {
+    }
+
+    virtual QSize sizeHint() const
+    {
+        return QSize(refWidget->sizeHint().width(), QMenuBar::sizeHint().height());
+    }
+
+private:
+    QWidget *refWidget;
+};
+
+
 class PreviewDeviceSkin : public DeviceSkin
 {
     Q_OBJECT
@@ -281,10 +301,6 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     } else {
         recdlg->warning->hide();
     }
-        
-
-    if (!(flags & Qt::FramelessWindowHint))
-        createMenu(menuBar(),0);
 
     canvas = new QmlView(this);
     canvas->setAttribute(Qt::WA_OpaquePaintEvent);
@@ -295,6 +311,9 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
 
     QObject::connect(canvas, SIGNAL(sceneResized(QSize)), this, SLOT(sceneResized(QSize)));
     QObject::connect(canvas, SIGNAL(errors(QList<QmlError>)), this, SLOT(executeErrors()));
+
+    if (!(flags & Qt::FramelessWindowHint))
+        createMenu(menuBar(),0);
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->setMargin(0);
@@ -319,7 +338,7 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
 QMenuBar *QmlViewer::menuBar() const
 {
     if (!mb)
-        mb = new QMenuBar((QWidget*)this);
+        mb = new SizedMenuBar((QWidget*)this, canvas);
 
     return mb;
 }
@@ -650,7 +669,8 @@ void QmlViewer::openQml(const QString& fileName)
 
     if (!skin) {
         canvas->updateGeometry();
-        canvas->resize(canvas->sizeHint());
+        if (mb)
+            mb->updateGeometry();
         resize(sizeHint());
     } else {
         if (scaleSkin)

@@ -178,6 +178,7 @@ public:
         , moveReason(Other), buffer(0), highlightPosAnimator(0), highlightSizeAnimator(0), spacing(0.0)
         , ownModel(false), wrap(false), autoHighlight(true)
         , haveHighlightRange(false), strictHighlightRange(false)
+        , highlightMoveSpeed(400), highlightResizeSpeed(400)
     {}
 
     void init();
@@ -390,6 +391,8 @@ public:
     QString sectionExpression;
     QString currentSection;
     qreal spacing;
+    qreal highlightMoveSpeed;
+    qreal highlightResizeSpeed;
 
     bool ownModel : 1;
     bool wrap : 1;
@@ -667,11 +670,11 @@ void QFxListViewPrivate::createHighlight()
             const QLatin1String posProp(orient == Qt::Vertical ? "y" : "x");
             highlightPosAnimator = new QmlEaseFollow(q);
             highlightPosAnimator->setTarget(QmlMetaProperty(highlight->item, posProp));
-            highlightPosAnimator->setVelocity(400);
+            highlightPosAnimator->setVelocity(highlightMoveSpeed);
             highlightPosAnimator->setEnabled(autoHighlight);
             const QLatin1String sizeProp(orient == Qt::Vertical ? "height" : "width");
             highlightSizeAnimator = new QmlEaseFollow(q);
-            highlightSizeAnimator->setVelocity(400);
+            highlightSizeAnimator->setVelocity(highlightResizeSpeed);
             highlightSizeAnimator->setTarget(QmlMetaProperty(highlight->item, sizeProp));
             highlightSizeAnimator->setEnabled(autoHighlight);
         }
@@ -876,6 +879,8 @@ QFxListView::~QFxListView()
 
     Models can also be created directly in QML, using a \l{ListModel},
     \l{XmlListModel} or \l{VisualItemModel}.
+
+    \sa {qmlmodels}{Data Models}
 */
 QVariant QFxListView::model() const
 {
@@ -1257,6 +1262,48 @@ QString QFxListView::currentSection() const
     return d->currentSection;
 }
 
+/*!
+    \qmlproperty real ListView::highlightMoveSpeed
+
+    This property holds the moving animation speed of the highlight delegate.
+*/
+qreal QFxListView::highlightMoveSpeed() const
+{
+    Q_D(const QFxListView);\
+    return d->highlightMoveSpeed;
+}
+
+void QFxListView::setHighlightMoveSpeed(qreal speed)
+{
+    Q_D(QFxListView);\
+    if (d->highlightMoveSpeed != speed)
+    {
+        d->highlightMoveSpeed = speed;
+        emit highlightMoveSpeedChanged();
+    }
+}
+
+/*!
+    \qmlproperty real ListView::highlightResizeSpeed
+
+    This property holds the resizing animation speed of the highlight delegate.
+*/
+qreal QFxListView::highlightResizeSpeed() const
+{
+    Q_D(const QFxListView);\
+    return d->highlightResizeSpeed;
+}
+
+void QFxListView::setHighlightResizeSpeed(qreal speed)
+{
+    Q_D(QFxListView);\
+    if (d->highlightResizeSpeed != speed)
+    {
+        d->highlightResizeSpeed = speed;
+        emit highlightResizeSpeedChanged();
+    }
+}
+
 void QFxListView::viewportMoved()
 {
     Q_D(QFxListView);
@@ -1372,6 +1419,12 @@ void QFxListView::keyPressEvent(QKeyEvent *event)
     event->ignore();
 }
 
+/*!
+    \qmlmethod ListView::incrementCurrentIndex
+
+    Increments the current index.  The current index will wrap
+    if keyNavigationWraps is true and it is currently at the end.
+*/
 void QFxListView::incrementCurrentIndex()
 {
     Q_D(QFxListView);
@@ -1381,6 +1434,12 @@ void QFxListView::incrementCurrentIndex()
     }
 }
 
+/*!
+    \qmlmethod ListView::decrementCurrentIndex
+
+    Decrements the current index.  The current index will wrap
+    if keyNavigationWraps is true and it is currently at the beginning.
+*/
 void QFxListView::decrementCurrentIndex()
 {
     Q_D(QFxListView);

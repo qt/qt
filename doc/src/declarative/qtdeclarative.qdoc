@@ -64,6 +64,7 @@
     \list
     \o \l {qmlexamples}{Examples}
     \o \l {tutorial}{Tutorial: 'Hello World'}
+    \o \l {advtutorial.html}{Advanced Tutorial: 'Same Game'}
     \o \l {tutorials-declarative-contacts.html}{Tutorial: 'Introduction to QML'}
     \o \l {qmlforcpp}{QML For C++ Programmers}
     \endlist
@@ -71,6 +72,7 @@
     Core QML Features:
     \list
     \o \l {binding}{Data Binding}
+    \o \l {qmlmodels}{Data Models}
     \o \l {anchor-layout}{Layout Anchors}
     \o \l {qmlanimation}{Animation}
     \o \l {qmlmodules}{Modules}

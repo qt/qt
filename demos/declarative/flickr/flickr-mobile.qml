@@ -3,38 +3,38 @@ import "common" as Common
 import "mobile" as Mobile
 
 Item {
-    id: Screen; width: 320; height: 480
+    id: screen; width: 320; height: 480
     property bool inListView : false
 
     Rectangle {
-        id: Background
+        id: background
         anchors.fill: parent; color: "#343434";
 
         Image { source: "mobile/images/stripes.png"; fillMode: "Tile"; anchors.fill: parent; opacity: 0.3 }
 
-        Common.RssModel { id: RssModel }
-        Common.Loading { anchors.centerIn: parent; visible: RssModel.status == 2 }
+        Common.RssModel { id: rssModel }
+        Common.Loading { anchors.centerIn: parent; visible: rssModel.status == 2 }
 
         Item {
-            id: Views
+            id: views
             x: 2; width: parent.width - 4
-            anchors.top: TitleBar.bottom; anchors.bottom: ToolBar.top
+            anchors.top: titleBar.bottom; anchors.bottom: toolBar.top
 
-            Mobile.GridDelegate { id: GridDelegate }
+            Mobile.GridDelegate { id: gridDelegate }
             GridView {
-                id: PhotoGridView; model: RssModel; delegate: GridDelegate; cacheBuffer: 100
+                id: photoGridView; model: rssModel; delegate: gridDelegate; cacheBuffer: 100
                 cellWidth: 79; cellHeight: 79; width: parent.width; height: parent.height - 1; z: 6
             }
 
-            Mobile.ListDelegate { id: ListDelegate }
+            Mobile.ListDelegate { id: listDelegate }
             ListView {
-                id: PhotoListView; model: RssModel; delegate: ListDelegate; z: 6
+                id: photoListView; model: rssModel; delegate: listDelegate; z: 6
                 width: parent.width; height: parent.height; x: -(parent.width * 1.5); cacheBuffer: 100;
             }
             states: State {
-                name: "ListView"; when: Screen.inListView == true
-                PropertyChanges { target: PhotoListView; x: 0 }
-                PropertyChanges { target: PhotoGridView; x: -(parent.width * 1.5) }
+                name: "ListView"; when: screen.inListView == true
+                PropertyChanges { target: photoListView; x: 0 }
+                PropertyChanges { target: photoGridView; x: -(parent.width * 1.5) }
             }
 
             transitions: Transition {
@@ -42,37 +42,37 @@ Item {
             }
         }
 
-        Mobile.ImageDetails { id: ImageDetails; width: parent.width; anchors.left: Views.right; height: parent.height; z:1 }
-        Mobile.TitleBar { id: TitleBar; z: 5; width: parent.width; height: 40; opacity: 0.9 }
+        Mobile.ImageDetails { id: imageDetails; width: parent.width; anchors.left: views.right; height: parent.height; z:1 }
+        Mobile.TitleBar { id: titleBar; z: 5; width: parent.width; height: 40; opacity: 0.9 }
 
         Mobile.ToolBar {
-            id: ToolBar; z: 5
+            id: toolBar; z: 5
             height: 40; anchors.bottom: parent.bottom; width: parent.width; opacity: 0.9
             button1Label: "Update"; button2Label: "View mode"
-            onButton1Clicked: RssModel.reload()
-            onButton2Clicked: if (Screen.inListView == true) Screen.inListView = false; else Screen.inListView = true
+            onButton1Clicked: rssModel.reload()
+            onButton2Clicked: if (screen.inListView == true) screen.inListView = false; else screen.inListView = true
         }
 
         Connection {
-            sender: ImageDetails; signal: "closed()"
+            sender: imageDetails; signal: "closed()"
             script: {
-                if (Background.state == "DetailedView") {
-                    Background.state = '';
-                    ImageDetails.photoUrl = "";
+                if (background.state == "DetailedView") {
+                    background.state = '';
+                    imageDetails.photoUrl = "";
                 }
             }
         }
 
         states: State {
             name: "DetailedView"
-            PropertyChanges { target: Views; x: -parent.width }
-            PropertyChanges { target: ToolBar; button1Label: "More..." }
+            PropertyChanges { target: views; x: -parent.width }
+            PropertyChanges { target: toolBar; button1Label: "More..." }
             PropertyChanges {
-                target: ToolBar
-                onButton1Clicked: if (ImageDetails.state=='') ImageDetails.state='Back'; else ImageDetails.state=''
+                target: toolBar
+                onButton1Clicked: if (imageDetails.state=='') imageDetails.state='Back'; else imageDetails.state=''
             }
-            PropertyChanges { target: ToolBar; button2Label: "Back" }
-            PropertyChanges { target: ToolBar; onButton2Clicked: ImageDetails.closed() }
+            PropertyChanges { target: toolBar; button2Label: "Back" }
+            PropertyChanges { target: toolBar; onButton2Clicked: imageDetails.closed() }
         }
 
         transitions: Transition {

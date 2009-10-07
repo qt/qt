@@ -16,9 +16,10 @@ Item {
 
     Column {
         id: layout
-        anchors.fill: parent
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
         spacing: 5
-        margin: 5
         ContactField {
             id: labelField
             anchors.left: layout.left

@@ -75,15 +75,24 @@ QT_BEGIN_NAMESPACE
   3.c) Run simplex to optimize the original problem towards its optimal solution.
 */
 
+/*!
+  \internal
+*/
 QSimplex::QSimplex() : objective(0), rows(0), columns(0), firstArtificial(0), matrix(0)
 {
 }
 
+/*!
+  \internal
+*/
 QSimplex::~QSimplex()
 {
     clearDataStructures();
 }
 
+/*!
+  \internal
+*/
 void QSimplex::clearDataStructures()
 {
     if (matrix == 0)
@@ -312,11 +321,17 @@ void QSimplex::solveMaxHelper()
     while (iterate()) ;
 }
 
+/*!
+  \internal
+*/
 void QSimplex::setObjective(QSimplexConstraint *newObjective)
 {
     objective = newObjective;
 }
 
+/*!
+  \internal
+*/
 void QSimplex::clearRow(int rowIndex)
 {
     qreal *item = matrix + rowIndex * columns;
@@ -324,6 +339,9 @@ void QSimplex::clearRow(int rowIndex)
         item[i] = 0.0;
 }
 
+/*!
+  \internal
+*/
 void QSimplex::clearColumns(int first, int last)
 {
     for (int i = 0; i < rows; ++i) {
@@ -333,6 +351,9 @@ void QSimplex::clearColumns(int first, int last)
     }
 }
 
+/*!
+  \internal
+*/
 void QSimplex::dumpMatrix()
 {
     qDebug("---- Simplex Matrix ----\n");
@@ -352,6 +373,9 @@ void QSimplex::dumpMatrix()
     qDebug("------------------------\n");
 }
 
+/*!
+  \internal
+*/
 void QSimplex::combineRows(int toIndex, int fromIndex, qreal factor)
 {
     if (!factor)
@@ -375,6 +399,9 @@ void QSimplex::combineRows(int toIndex, int fromIndex, qreal factor)
     }
 }
 
+/*!
+  \internal
+*/
 int QSimplex::findPivotColumn()
 {
     qreal min = 0;
@@ -429,6 +456,9 @@ int QSimplex::pivotRowForColumn(int column)
     return minIndex;
 }
 
+/*!
+  \internal
+*/
 void QSimplex::reducedRowEchelon()
 {
     for (int i = 1; i < rows; ++i) {

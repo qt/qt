@@ -1,22 +1,22 @@
 import Qt 4.6
 
 Rectangle {
-    id: Root
+    id: root
     width: parent.width
     height: parent.height
-    color: Palette.base
+    color: palette.base
     FolderListModel {
         id: folders
         nameFilters: [ "*.qml" ]
 //        folder: "E:"
     }
 
-    SystemPalette { id: Palette; colorGroup: Qt.Active }
+    SystemPalette { id: palette; colorGroup: Qt.Active }
 
     Component {
-        id: FolderDelegate
+        id: folderDelegate
         Rectangle {
-            id: Wrapper
+            id: wrapper
             function launch() {
                 if (folders.isFolder(index)) {
                     folders.folder = filePath;
@@ -24,15 +24,15 @@ Rectangle {
                     qmlLauncher.launch(filePath);
                 }
             }
-            width: Root.width
+            width: root.width
             height: 32
             color: "transparent"
             Rectangle {
-                id: Highlight; visible: false
+                id: highlight; visible: false
                 anchors.fill: parent
                 gradient: Gradient {
-                    GradientStop { id: t1; position: 0.0; color: Palette.highlight }
-                    GradientStop { id: t2; position: 1.0; color: Palette.lighter(Palette.highlight) }
+                    GradientStop { id: t1; position: 0.0; color: palette.highlight }
+                    GradientStop { id: t2; position: 1.0; color: palette.lighter(palette.highlight) }
                 }
             }
             Item {
@@ -40,23 +40,23 @@ Rectangle {
                 Image { source: "images/fileopen.png"; anchors.centerIn: parent; visible: folders.isFolder(index)}
             }
             Text {
-                id: NameText
+                id: nameText
                 anchors.fill: parent; verticalAlignment: "AlignVCenter"
                 text: fileName; anchors.leftMargin: 32
                 font.pointSize: 10
-                color: Palette.windowText
+                color: palette.windowText
             }
             MouseRegion {
-                id: Mouse
+                id: mouseRegion
                 anchors.fill: parent
                 onClicked: { launch() }
             }
             states: [
                 State {
                     name: "pressed"
-                    when: Mouse.pressed
-                    PropertyChanges { target: Highlight; visible: true }
-                    PropertyChanges { target: NameText; color: Palette.highlightedText }
+                    when: mouseRegion.pressed
+                    PropertyChanges { target: highlight; visible: true }
+                    PropertyChanges { target: nameText; color: palette.highlightedText }
                 }
             ]
         }
@@ -70,43 +70,43 @@ Rectangle {
     }
 
     ListView {
-        id: View
-        anchors.top: TitleBar.bottom
+        id: view
+        anchors.top: titleBar.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         model: folders
-        delegate: FolderDelegate
+        delegate: folderDelegate
         highlight: Rectangle { color: "#FFFBAF" }
         clip: true
         focus: true
         Keys.onPressed: {
             if (event.key == Qt.Key_Return || event.key == Qt.Key_Select) {
-                View.currentItem.launch();
+                view.currentItem.launch();
                 event.accepted = true;
             }
         }
     }
 
     Rectangle {
-        id: TitleBar
+        id: titleBar
         width: parent.width
         height: 32
-        color: Palette.button; border.color: Palette.mid
+        color: palette.button; border.color: palette.mid
 
         Rectangle {
-            id: UpButton
+            id: upButton
             width: 30
-            height: TitleBar.height
-            border.color: Palette.mid; color: "transparent"
+            height: titleBar.height
+            border.color: palette.mid; color: "transparent"
             MouseRegion { anchors.fill: parent; onClicked: folders.folder = up(folders.folder) }
             Image { anchors.centerIn: parent; source: "images/up.png" }
         }
 
         Text {
-            anchors.left: UpButton.right; anchors.right: parent.right; height: parent.height
+            anchors.left: upButton.right; anchors.right: parent.right; height: parent.height
             anchors.leftMargin: 4; anchors.rightMargin: 4
-            text: folders.folder; color: Palette.buttonText
+            text: folders.folder; color: palette.buttonText
             elide: "ElideLeft"; horizontalAlignment: "AlignRight"; verticalAlignment: "AlignVCenter"
         }
     }
