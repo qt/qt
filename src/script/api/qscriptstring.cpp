@@ -150,14 +150,8 @@ bool QScriptString::isValid() const
 bool QScriptString::operator==(const QScriptString &other) const
 {
     Q_D(const QScriptString);
-    if (d == other.d_func())
-        return true;
     if (!d || !other.d_func())
         return d == other.d_func();
-    if (d->engine != other.d_func()->engine)
-        return false;
-    if (!d->engine)
-        return true;
     return d->identifier == other.d_func()->identifier;
 }
 
