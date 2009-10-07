@@ -10,7 +10,7 @@ The picture below is a screenshot of this program.
 
 Here is the QML code for the application:
 
-\snippet examples/declarative/tutorials/helloworld/t1/tutorial1.qml 0
+\snippet examples/declarative/tutorials/helloworld/tutorial1.qml 0
 
 \section1 Walkthrough
 
@@ -19,19 +19,20 @@ Here is the QML code for the application:
 First, we need to import the types that we need for this example. Most QML files will import the built-in QML
 types (like \l{Rectangle}, \l{Image}, ...) that come with Qt with:
 
-\snippet examples/declarative/tutorials/helloworld/t1/tutorial1.qml 3
+\snippet examples/declarative/tutorials/helloworld/tutorial1.qml 3
 
 \section2 Rectangle element
 
-\snippet examples/declarative/tutorials/helloworld/t1/tutorial1.qml 1
+\snippet examples/declarative/tutorials/helloworld/tutorial1.qml 1
 
 We declare a root element of type \l{Rectangle}. It is one of the basic building blocks you can use to create an application in QML.
-We give it an \c{id} to be able to refer to it later. In this case, we call it \e page. We also set the \c width, \c height and \c color properties.
+We give it an \c{id} to be able to refer to it later. In this case, we call it \e page.
+We also set the \c width, \c height and \c color properties.
 The \l{Rectangle} element contains many other properties (such as \c x and \c y), but these are left at their default values.
 
 \section2 Text element
 
-\snippet examples/declarative/tutorials/helloworld/t1/tutorial1.qml 2
+\snippet examples/declarative/tutorials/helloworld/tutorial1.qml 2
 
 We add a \l Text element as a child of our root element that will display the text 'Hello world!'.
 
@@ -44,13 +45,13 @@ In this case, we specify that our text element should be horizontally centered i
 
 \section2 Viewing the example
 
-To view what you have created, run the qmlviewer (located in the \c bin directory) with your filename as the first argument. For example, to run the provided completed Tutorial 1 example from the install location, you would type:
+To view what you have created, run the qmlviewer (located in the \c bin directory) with your filename as the first argument.
+For example, to run the provided completed Tutorial 1 example from the install location, you would type:
 
 \code
-bin/qmlviewer $QTDIR/examples/declarative/tutorials/helloworld/t1/tutorial1.qml
+bin/qmlviewer $QTDIR/examples/declarative/tutorials/helloworld/tutorial1.qml
 \endcode
 
 [\l tutorial] [Next: \l tutorial2]
 
 */
-
