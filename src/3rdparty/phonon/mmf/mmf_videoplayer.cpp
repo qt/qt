@@ -340,7 +340,13 @@ void MMF::VideoPlayer::videoOutputRegionChanged()
     TRACE_EXIT_0();
 }
 
-// DEBUGGING *** DO NOT INTEGRATE ***
+
+#ifdef _DEBUG
+
+// The following code is for debugging problems related to video visibility.  It allows
+// the VideoPlayer instance to query the window server in order to determine the
+// DSA drawing region for the video window.
+
 class CDummyAO : public CActive
 {
 public:
@@ -351,7 +357,6 @@ public:
 	void SetActive() { CActive::SetActive(); }
 };
 
-// DEBUGGING *** DO NOT INTEGRATE ***
 void getDsaRegion(RWsSession &session, const RWindowBase &window)
 {
 	RDirectScreenAccess dsa(session);
@@ -404,9 +409,9 @@ void MMF::VideoPlayer::updateMmfOutput()
         TRACE("SetDisplayWindowL error %d", err);
         setError(NormalError);
     }
-    
+
     m_mmfOutputChangePending = false;
-    
+
     TRACE_EXIT_0();
 }
 
