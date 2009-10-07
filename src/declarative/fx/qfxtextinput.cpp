@@ -594,6 +594,7 @@ bool QFxTextInput::event(QEvent* ev)
     bool handled = false;
     switch(ev->type()){
         case QEvent::KeyPress:
+        case QEvent::KeyRelease://###Should the control be doing anything with release?
         case QEvent::GraphicsSceneMousePress:
             break;
         default:
