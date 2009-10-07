@@ -283,6 +283,8 @@ public:
 
         UpdateSoftKeys = 201,                   // Internal for compressing soft key updates
 
+        WinIdChange = 203,
+
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
 
