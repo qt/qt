@@ -285,24 +285,6 @@ bool QSimplex::setConstraints(const QList<QSimplexConstraint *> newConstraints)
     // anymore.
     clearColumns(firstArtificial, columns - 2);
 
-    #ifdef QT_DEBUG
-    // Ensure that at the end of the simplex each row should either:
-    //  - Have a positive value on the column associated to its variable, or
-    //  - Have zero values in all columns.
-    //
-    // This avoids a regression where restrictions would be lost
-    // due to randomness in the pivotRowForColumn method.
-    for (int i = 1; i < rows; ++i) {
-        int variableIndex = valueAt(i, 0);
-        if (valueAt(i, variableIndex) > 0)
-            continue;
-
-        for (int j = 1; j < columns; ++j) {
-            Q_ASSERT(valueAt(i, j) == 0);
-        }
-    }
-    #endif
-
     return true;
 }
 
@@ -536,6 +518,12 @@ qreal QSimplex::solver(solverFactor factor)
 
     solveMaxHelper();
     collectResults();
+
+#ifdef QT_DEBUG
+    for (int i = 0; i < constraints.size(); ++i) {
+        Q_ASSERT(constraints[i]->isSatisfied());
+    }
+#endif
 
     return factor * valueAt(0, columns - 1);
 }

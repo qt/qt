@@ -149,30 +149,14 @@ struct AnchorData : public QSimplexVariable {
         Sequential,
         Parallel
     };
-    AnchorData(qreal minimumSize, qreal preferredSize, qreal maximumSize)
-        : QSimplexVariable(), from(0), to(0),
-          minSize(minimumSize), prefSize(preferredSize),
-          maxSize(maximumSize), sizeAtMinimum(preferredSize),
-          sizeAtPreferred(preferredSize), sizeAtMaximum(preferredSize),
-          graphicsAnchor(0),
-          skipInPreferred(0), type(Normal), hasSize(true),
-          isLayoutAnchor(false) {}
-
-    AnchorData(qreal size)
-        : QSimplexVariable(), from(0), to(0),
-          minSize(size), prefSize(size), maxSize(size),
-          sizeAtMinimum(size), sizeAtPreferred(size), sizeAtMaximum(size),
-          graphicsAnchor(0),
-          skipInPreferred(0), type(Normal), hasSize(true),
-          isLayoutAnchor(false) {}
 
     AnchorData()
         : QSimplexVariable(), from(0), to(0),
-          minSize(0), prefSize(0), maxSize(0),
-          sizeAtMinimum(0), sizeAtPreferred(0), sizeAtMaximum(0),
-          graphicsAnchor(0),
-          skipInPreferred(0), type(Normal), hasSize(false),
-          isLayoutAnchor(false) {}
+          minSize(0), prefSize(0), expSize(0), maxSize(0),
+          sizeAtMinimum(0), sizeAtPreferred(0),
+          sizeAtExpanding(0), sizeAtMaximum(0),
+          graphicsAnchor(0), skipInPreferred(0),
+          type(Normal), hasSize(true), isLayoutAnchor(false) {}
 
     virtual void updateChildrenSizes() {}
     virtual void refreshSizeHints(qreal effectiveSpacing);
@@ -189,9 +173,11 @@ struct AnchorData : public QSimplexVariable {
     {
         minSize = size;
         prefSize = size;
+        expSize = size;
         maxSize = size;
         sizeAtMinimum = size;
         sizeAtPreferred = size;
+        sizeAtExpanding = size;
         sizeAtMaximum = size;
         hasSize = true;
     }
@@ -211,6 +197,7 @@ struct AnchorData : public QSimplexVariable {
     // size.
     qreal minSize;
     qreal prefSize;
+    qreal expSize;
     qreal maxSize;
 
     // These attributes define which sizes should that anchor be in when the
@@ -218,6 +205,7 @@ struct AnchorData : public QSimplexVariable {
     // calculated by the Simplex solver based on the current layout setup.
     qreal sizeAtMinimum;
     qreal sizeAtPreferred;
+    qreal sizeAtExpanding;
     qreal sizeAtMaximum;
     QGraphicsAnchor *graphicsAnchor;
 
@@ -225,15 +213,6 @@ struct AnchorData : public QSimplexVariable {
     uint type : 2;            // either Normal, Sequential or Parallel
     uint hasSize : 1;         // if false, get size from style.
     uint isLayoutAnchor : 1;  // if this anchor is connected to a layout 'edge'
-protected:
-    AnchorData(Type type, qreal size = 0)
-        : QSimplexVariable(), from(0), to(0),
-          minSize(size), prefSize(size),
-          maxSize(size), sizeAtMinimum(size),
-          sizeAtPreferred(size), sizeAtMaximum(size),
-          graphicsAnchor(0),
-          skipInPreferred(0), type(type), hasSize(true),
-          isLayoutAnchor(false) {}
 };
 
 #ifdef QT_DEBUG
@@ -245,8 +224,9 @@ inline QString AnchorData::toString() const
 
 struct SequentialAnchorData : public AnchorData
 {
-    SequentialAnchorData() : AnchorData(AnchorData::Sequential)
+    SequentialAnchorData() : AnchorData()
     {
+        type = AnchorData::Sequential;
 #ifdef QT_DEBUG
         name = QLatin1String("SequentialAnchorData");
 #endif
@@ -254,6 +234,8 @@ struct SequentialAnchorData : public AnchorData
 
     virtual void updateChildrenSizes();
     virtual void refreshSizeHints(qreal effectiveSpacing);
+
+    void refreshSizeHints_helper(qreal effectiveSpacing, bool refreshChildren = true);
 
     void setVertices(const QVector<AnchorVertex*> &vertices)
     {
@@ -270,9 +252,10 @@ struct SequentialAnchorData : public AnchorData
 struct ParallelAnchorData : public AnchorData
 {
     ParallelAnchorData(AnchorData *first, AnchorData *second)
-        : AnchorData(AnchorData::Parallel),
-        firstEdge(first), secondEdge(second)
+        : AnchorData(), firstEdge(first), secondEdge(second)
     {
+        type = AnchorData::Parallel;
+
         // ### Those asserts force that both child anchors have the same direction,
         // but can't we simplify a pair of anchors in opposite directions?
         Q_ASSERT(first->from == second->from);
@@ -286,6 +269,8 @@ struct ParallelAnchorData : public AnchorData
 
     virtual void updateChildrenSizes();
     virtual void refreshSizeHints(qreal effectiveSpacing);
+
+    void refreshSizeHints_helper(qreal effectiveSpacing, bool refreshChildren = true);
 
     AnchorData* firstEdge;
     AnchorData* secondEdge;
@@ -355,7 +340,8 @@ public:
     // Interval represents which interpolation interval are we operating in.
     enum Interval {
         MinToPreferred = 0,
-        PreferredToMax
+        PreferredToExpanding,
+        ExpandingToMax
     };
 
     // Several structures internal to the layout are duplicated to handle
@@ -457,6 +443,8 @@ public:
     void constraintsFromPaths(Orientation orientation);
     QList<QSimplexConstraint *> constraintsFromSizeHints(const QList<AnchorData *> &anchors);
     QList<QList<QSimplexConstraint *> > getGraphParts(Orientation orientation);
+    void identifyNonFloatItems(QSet<AnchorData *> visited, Orientation orientation);
+    void identifyNonFloatItems_helper(const AnchorData *ad, Orientation orientation);
 
     inline AnchorVertex *internalVertex(const QPair<QGraphicsLayoutItem*, Qt::AnchorPoint> &itemEdge) const
     {
@@ -486,6 +474,7 @@ public:
     bool solveMinMax(QList<QSimplexConstraint *> constraints,
                      GraphPath path, qreal *min, qreal *max);
     bool solvePreferred(QList<QSimplexConstraint *> constraints);
+    void solveExpanding(QList<QSimplexConstraint *> constraints);
     bool hasConflicts() const;
 
 #ifdef QT_DEBUG
@@ -496,6 +485,7 @@ public:
     qreal spacings[NOrientations];
     // Size hints from simplex engine
     qreal sizeHints[2][3];
+    qreal sizeAtExpanding[2];
 
     // Items
     QVector<QGraphicsLayoutItem *> items;
@@ -521,6 +511,7 @@ public:
     // ###
     bool graphSimplified[2];
     bool graphHasConflicts[2];
+    QSet<QGraphicsLayoutItem *> m_nonFloatItems[2];
 
     uint calculateGraphCacheDirty : 1;
 };
