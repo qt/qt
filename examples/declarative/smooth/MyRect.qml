@@ -1,7 +1,7 @@
 import Qt 4.6
 
 Item {
-    id: MyRect
+    id: rect
     property string color
     property string border : ""
     property int rotation
@@ -11,11 +11,11 @@ Item {
 
     width: 80; height: 80
     Item {
-        anchors.centerIn: parent; rotation: MyRect.rotation;
+        anchors.centerIn: parent; rotation: rect.rotation;
         Rectangle {
             anchors.centerIn: parent; width: 80; height: 80
-            color: MyRect.color; border.color: MyRect.border; border.width: MyRect.border != "" ? 2 : 0
-            radius: MyRect.radius; smooth: MyRect.smooth
+            color: rect.color; border.color: rect.border; border.width: rect.border != "" ? 2 : 0
+            radius: rect.radius; smooth: rect.smooth
         }
     }
 }

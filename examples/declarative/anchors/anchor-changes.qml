@@ -1,24 +1,24 @@
 import Qt 4.6
 
 Item {
-    id: Window
+    id: window
     width: 200; height: 450
 
     Rectangle {
-        id: TitleBar; color: "Gray"
+        id: titleBar; color: "Gray"
         anchors.top: parent.top; height: 50
         width: parent.width
     }
 
     Rectangle {
-        id: StatusBar; color: "Gray"
+        id: statusBar; color: "Gray"
         height: 50; anchors.bottom: parent.bottom
         width: parent.width
     }
 
     Rectangle {
-        id: Content
-        anchors.top: TitleBar.bottom; anchors.bottom: StatusBar.top
+        id: content
+        anchors.top: titleBar.bottom; anchors.bottom: statusBar.top
         width: parent.width
 
         Text { text: "Top"; anchors.top: parent.top }
@@ -26,16 +26,16 @@ Item {
     }
 
     MouseRegion {
-        anchors.fill: Content
-        onPressed: Window.state = "FullScreen"
-        onReleased: Window.state = ""
+        anchors.fill: content
+        onPressed: window.state = "FullScreen"
+        onReleased: window.state = ""
     }
 
     states : State {
         name: "FullScreen"
     //! [0]
         AnchorChanges {
-            target: Content; top: Window.top; bottom: Window.bottom
+            target: content; top: window.top; bottom: window.bottom
         }
     //! [0]
     }

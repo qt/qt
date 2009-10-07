@@ -12,32 +12,32 @@ Rectangle {
 
     // Define a delegate component that includes a separator for sections.
     Component {
-        id: PetDelegate
+        id: petDelegate
         Item {
-            id: Wrapper
+            id: wrapper
             width: 200
             // My height is the combined height of the description and the section separator
-            height: Separator.height + Desc.height
+            height: separator.height + desc.height
             Rectangle {
-                id: Separator
+                id: separator
                 color: "lightsteelblue"
                 width: parent.width
                 // Only show the section separator when we are the beginning of a new section
                 // Note that for this to work nicely, the list must be ordered by section.
-                height: Wrapper.ListView.prevSection != Wrapper.ListView.section ? 20 : 0
-                opacity: Wrapper.ListView.prevSection != Wrapper.ListView.section ? 1 : 0
+                height: wrapper.ListView.prevSection != wrapper.ListView.section ? 20 : 0
+                opacity: wrapper.ListView.prevSection != wrapper.ListView.section ? 1 : 0
                 Text {
-                    text: Wrapper.ListView.section; font.bold: true
+                    text: wrapper.ListView.section; font.bold: true
                     x: 2; height: parent.height; verticalAlignment: 'AlignVCenter'
                 }
             }
             Item {
-                id: Desc
+                id: desc
                 x: 5
-                height: Layout.height + 4
-                anchors.top: Separator.bottom
+                height: layout.height + 4
+                anchors.top: separator.bottom
                 Column {
-                    id: Layout
+                    id: layout
                     y: 2
                     Text { text: 'Name: ' + name }
                     Text { text: 'Type: ' + type }
@@ -49,7 +49,7 @@ Rectangle {
     // Define a highlight component.  Just one of these will be instantiated
     // by each ListView and placed behind the current item.
     Component {
-        id: PetHighlight
+        id: petHighlight
         Rectangle {
             color: "#FFFF88"
         }
@@ -60,8 +60,8 @@ Rectangle {
         width: 200
         height: parent.height
         model: MyPetsModel
-        delegate: PetDelegate
-        highlight: PetHighlight
+        delegate: petDelegate
+        highlight: petHighlight
         // The sectionExpression is simply the size of the pet.
         // We use this to determine which section we are in above.
         sectionExpression: "size"

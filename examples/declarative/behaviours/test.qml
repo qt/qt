@@ -4,10 +4,10 @@ Rectangle {
     color: "lightsteelblue"
     width: 800
     height: 600
-    id: Page
+    id: page
     MouseRegion {
         anchors.fill: parent
-        onClicked: { bluerect.parent = Page; bluerect.x = mouseX; }
+        onClicked: { bluerect.parent = page; bluerect.x = mouseX; }
     }
     MyRect {
         color: "green"

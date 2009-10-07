@@ -2932,18 +2932,16 @@ void tst_QGraphicsView::task239729_noViewUpdate()
         view = new QGraphicsView(&scene);
     }
 
-    view->show();
-    QTest::qWaitForWindowShown(view);
-    QTest::qWait(150);
-
     EventSpy spy(view->viewport(), QEvent::Paint);
     QCOMPARE(spy.count(), 0);
 
-    QTest::qWait(100);
-    QCOMPARE(spy.count(), 0);
+    view->show();
+    QTest::qWaitForWindowShown(view);
+
+    QTRY_COMPARE(spy.count(), 1);
     scene.update();
     QApplication::processEvents();
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 2);
 
     delete view;
 }
@@ -2979,6 +2977,7 @@ void tst_QGraphicsView::task245469_itemsAtPointWithClip()
     parent->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
 
     QGraphicsView view(&scene);
+    view.resize(150,150);
     view.rotate(90);
     view.show();
     QTest::qWaitForWindowShown(&view);

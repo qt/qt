@@ -104,12 +104,32 @@ public:
 
     void setUniforms(QGLShaderProgram *program);
 
+    static QByteArray generateGaussianShader(int radius, bool dropShadow = false);
+
 protected:
     bool processGL(QPainter *painter, const QPointF &pos, const QPixmap &src, const QRectF &srcRect) const;
 
 private:
-    static QByteArray generateGaussianShader(int radius);
 
+    mutable QSize m_textureSize;
+    mutable bool m_horizontalBlur;
+
+    mutable bool m_haveCached;
+    mutable int m_cachedRadius;
+    mutable Qt::RenderHint m_hint;
+};
+
+class QGLPixmapDropShadowFilter : public QGLCustomShaderStage, public QGLPixmapFilter<QPixmapDropShadowFilter>
+{
+public:
+    QGLPixmapDropShadowFilter(Qt::RenderHint hint);
+
+    void setUniforms(QGLShaderProgram *program);
+
+protected:
+    bool processGL(QPainter *painter, const QPointF &pos, const QPixmap &src, const QRectF &srcRect) const;
+
+private:
     mutable QSize m_textureSize;
     mutable bool m_horizontalBlur;
 
@@ -139,6 +159,18 @@ QPixmapFilter *QGL2PaintEngineEx::pixmapFilter(int type, const QPixmapFilter *pr
         if (!d->blurFilter)
             d->blurFilter.reset(new QGLPixmapBlurFilter(Qt::QualityHint));
         return d->blurFilter.data();
+        }
+
+    case QPixmapFilter::DropShadowFilter: {
+        const QPixmapDropShadowFilter *proto = static_cast<const QPixmapDropShadowFilter *>(prototype);
+        if (proto->blurRadius() <= 5) {
+            if (!d->fastDropShadowFilter)
+                d->fastDropShadowFilter.reset(new QGLPixmapDropShadowFilter(Qt::PerformanceHint));
+            return d->fastDropShadowFilter.data();
+        }
+        if (!d->dropShadowFilter)
+            d->dropShadowFilter.reset(new QGLPixmapDropShadowFilter(Qt::QualityHint));
+        return d->dropShadowFilter.data();
         }
 
     case QPixmapFilter::ConvolutionFilter:
@@ -279,6 +311,20 @@ static const char *qt_gl_blur_filter_fast =
     "    return color * (1.0 / float(samples));"
     "}";
 
+static const char *qt_gl_drop_shadow_filter_fast =
+    "const int samples = 9;"
+    "uniform mediump vec2 delta;"
+    "uniform mediump vec4 shadowColor;"
+    "lowp vec4 customShader(lowp sampler2D src, highp vec2 srcCoords) {"
+    "    mediump vec4 color = vec4(0.0, 0.0, 0.0, 0.0);"
+    "    mediump float offset = (float(samples) - 1.0) / 2.0;"
+    "    for (int i = 0; i < samples; i++) {"
+    "        mediump vec2 coord = srcCoords + delta * (offset - float(i)) / offset;"
+    "        color += texture2D(src, coord).a * shadowColor;"
+    "    }"
+    "    return color * (1.0 / float(samples));"
+    "}";
+
 QGLPixmapBlurFilter::QGLPixmapBlurFilter(Qt::RenderHint hint)
     : m_haveCached(false)
     , m_cachedRadius(5)
@@ -380,7 +426,7 @@ static inline qreal gaussian(qreal dx, qreal sigma)
     return exp(-dx * dx / (2 * sigma * sigma)) / (Q_2PI * sigma * sigma);
 }
 
-QByteArray QGLPixmapBlurFilter::generateGaussianShader(int radius)
+QByteArray QGLPixmapBlurFilter::generateGaussianShader(int radius, bool dropShadow)
 {
     Q_ASSERT(radius >= 1);
 
@@ -388,6 +434,8 @@ QByteArray QGLPixmapBlurFilter::generateGaussianShader(int radius)
     source.reserve(1000);
 
     source.append("uniform highp vec2      delta;\n");
+    if (dropShadow)
+        source.append("uniform mediump vec4    shadowColor;\n");
     source.append("lowp vec4 customShader(lowp sampler2D src, highp vec2 srcCoords) {\n");
 
     QVector<qreal> sampleOffsets;
@@ -444,7 +492,10 @@ QByteArray QGLPixmapBlurFilter::generateGaussianShader(int radius)
         source.append(coordinate);
         source.append(";\n");
 
-        source.append("    sample += texture2D(src, coord)");
+        if (dropShadow)
+            source.append("    sample += texture2D(src, coord).a * shadowColor");
+        else
+            source.append("    sample += texture2D(src, coord)");
 
         weightSum += weights.at(i);
         if (weights.at(i) != qreal(1)) {
@@ -461,6 +512,116 @@ QByteArray QGLPixmapBlurFilter::generateGaussianShader(int radius)
     source.append("}\n");
 
     return source;
+}
+
+QGLPixmapDropShadowFilter::QGLPixmapDropShadowFilter(Qt::RenderHint hint)
+    : m_haveCached(false)
+    , m_cachedRadius(5)
+    , m_hint(hint)
+{
+    if (hint == Qt::PerformanceHint) {
+        QGLPixmapDropShadowFilter *filter = const_cast<QGLPixmapDropShadowFilter *>(this);
+        filter->setSource(qt_gl_drop_shadow_filter_fast);
+        m_haveCached = true;
+    }
+}
+
+bool QGLPixmapDropShadowFilter::processGL(QPainter *painter, const QPointF &pos, const QPixmap &src, const QRectF &srcRect) const
+{
+    QGLPixmapDropShadowFilter *filter = const_cast<QGLPixmapDropShadowFilter *>(this);
+
+    int radius = this->blurRadius();
+    if (!m_haveCached || (m_hint == Qt::QualityHint && radius != m_cachedRadius)) {
+        // Only regenerate the shader from source if parameters have changed.
+        m_haveCached = true;
+        m_cachedRadius = radius;
+        filter->setSource(QGLPixmapBlurFilter::generateGaussianShader(radius, true));
+    }
+
+    QGLFramebufferObjectFormat format;
+    format.setInternalTextureFormat(GLenum(src.hasAlphaChannel() ? GL_RGBA : GL_RGB));
+    QGLFramebufferObject *fbo = qgl_fbo_pool()->acquire(src.size(), format);
+
+    if (!fbo)
+        return false;
+
+    glBindTexture(GL_TEXTURE_2D, fbo->texture());
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // prepare for updateUniforms
+    m_textureSize = src.size();
+
+    // horizontal pass, to pixmap
+    m_horizontalBlur = true;
+
+    QPainter fboPainter(fbo);
+
+    if (src.hasAlphaChannel()) {
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+
+    // ensure GL_LINEAR filtering is used
+    fboPainter.setRenderHint(QPainter::SmoothPixmapTransform);
+    filter->setOnPainter(&fboPainter);
+    fboPainter.drawPixmap(0, 0, src);
+    filter->removeFromPainter(&fboPainter);
+    fboPainter.end();
+
+    QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(painter->paintEngine());
+
+    // vertical pass, to painter
+    m_horizontalBlur = false;
+
+    painter->save();
+    // ensure GL_LINEAR filtering is used
+    painter->setRenderHint(QPainter::SmoothPixmapTransform);
+    filter->setOnPainter(painter);
+    QPointF ofs = offset();
+    engine->drawTexture(src.rect().translated(pos.x() + ofs.x(), pos.y() + ofs.y()), fbo->texture(), fbo->size(), src.rect().translated(0, fbo->height() - src.height()));
+    filter->removeFromPainter(painter);
+    painter->restore();
+
+    qgl_fbo_pool()->release(fbo);
+
+    // Now draw the actual pixmap over the top.
+    painter->drawPixmap(pos, src, srcRect);
+
+    return true;
+}
+
+void QGLPixmapDropShadowFilter::setUniforms(QGLShaderProgram *program)
+{
+    QColor col = color();
+    if (m_horizontalBlur) {
+        program->setUniformValue("shadowColor", 1.0f, 1.0f, 1.0f, 1.0f);
+    } else {
+        qreal alpha = col.alphaF();
+        program->setUniformValue("shadowColor", col.redF() * alpha,
+                                                col.greenF() * alpha,
+                                                col.blueF() * alpha,
+                                                alpha);
+    }
+    if (m_hint == Qt::QualityHint) {
+        if (m_horizontalBlur)
+            program->setUniformValue("delta", 1.0 / m_textureSize.width(), 0.0);
+        else
+            program->setUniformValue("delta", 0.0, 1.0 / m_textureSize.height());
+    } else {
+        // 1.4 is chosen to most closely match the blurriness of the gaussian blur
+        // at low radii
+        qreal blur = blurRadius() / 1.4f;
+
+        if (m_horizontalBlur)
+            program->setUniformValue("delta", blur / m_textureSize.width(), 0.0);
+        else
+            program->setUniformValue("delta", 0.0, blur / m_textureSize.height());
+    }
 }
 
 QT_END_NAMESPACE

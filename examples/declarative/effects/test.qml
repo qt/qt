@@ -9,10 +9,10 @@ Rectangle {
         source: "pic.jpg"
 
         effect: Blur {
-            blurRadius: NumberAnimation { id: BS; from: 0; to: 10; duration: 200; repeat: true }
+            blurRadius: NumberAnimation { id: blur; from: 0; to: 10; duration: 200; repeat: true }
         }
 
-        MouseRegion { anchors.fill: parent; onClicked: BS.running = !BS.running }
+        MouseRegion { anchors.fill: parent; onClicked: blur.running = !blur.running }
 
         Text { color: "white"; text: "Blur" }
     }
@@ -39,11 +39,11 @@ Rectangle {
         source: "pic.jpg"
 
         y: 300
-        effect: Pixelize { 
-            pixelSize: NumberAnimation { id: PS; from: 0; to: 10; duration: 200; repeat: true }
+        effect: Pixelize {
+            pixelSize: NumberAnimation { id: pixelize; from: 0; to: 10; duration: 200; repeat: true }
         }
 
-        MouseRegion { anchors.fill: parent; onClicked: PS.running = !PS.running }
+        MouseRegion { anchors.fill: parent; onClicked: pixelize.running = !pixelize.running }
 
         Text { color: "white"; text: "Pixelize" }
     }
@@ -54,13 +54,13 @@ Rectangle {
 
         x: 200
         y: 300
-        effect: DropShadow { 
+        effect: DropShadow {
             blurRadius: 3
             offset.x: 3
-            offset.y: NumberAnimation { id: DS; from: 0; to: 10; duration: 200; repeat: true; }
+            offset.y: NumberAnimation { id: dropShadow; from: 0; to: 10; duration: 200; repeat: true; }
         }
 
-        MouseRegion { anchors.fill: parent; onClicked: DS.running = !DS.running }
+        MouseRegion { anchors.fill: parent; onClicked: dropShadow.running = !dropShadow.running }
 
         Text { color: "white"; text: "DropShadow" }
     }
@@ -74,10 +74,10 @@ Rectangle {
         effect: Bloom {
             blurRadius: 3
             brightness: 128
-            strength: NumberAnimation { id: BLS; from: 0; to: 1; duration: 200; repeat: true; }
+            strength: NumberAnimation { id: bloom; from: 0; to: 1; duration: 200; repeat: true; }
         }
 
-        MouseRegion { anchors.fill: parent; onClicked: BLS.running = !BLS.running }
+        MouseRegion { anchors.fill: parent; onClicked: bloom.running = !bloom.running }
 
         Text { color: "white"; text: "Bloom" }
     }

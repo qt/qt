@@ -1,7 +1,7 @@
 import Qt 4.6
 
 GridView {
-    id: MyGrid
+    id: grid
     property int offset: 0
     property var ref
     property bool isSelected: ref.selectedItemColumn >= offset && ref.selectedItemColumn < offset + 5
@@ -17,10 +17,10 @@ GridView {
     cellHeight: imageHeight
 
     states: State {
-        name: "selected"; when: MyGrid.isSelected
-        PropertyChanges { target: MyGrid; z: 150 }
+        name: "selected"; when: grid.isSelected
+        PropertyChanges { target: grid; z: 150 }
     }
-    transitions: Transition { 
+    transitions: Transition {
         SequentialAnimation {
             PauseAnimation { duration: 150 }
             PropertyAction { properties: "z" }
@@ -35,20 +35,20 @@ GridView {
         XmlRole { name: "url"; query: "media:content/@url/string()" }
     }
 
-    Item { 
-        id: Root
-        property bool isSelected: GridView.isCurrentItem && MyGrid.isSelected
+    Item {
+        id: root
+        property bool isSelected: GridView.isCurrentItem && grid.isSelected
         transformOrigin: "Center"
-        width: MyGrid.imageWidth; height: MyGrid.imageHeight;
+        width: grid.imageWidth; height: grid.imageHeight;
 
-        Image { id: FlickrImage; source: url; fillMode: "PreserveAspectFit"; smooth: true; anchors.fill: parent;
-                opacity: (status == 1)?1:0; opacity: Behavior { NumberAnimation { properties: "opacity" } } } 
-        Loading { anchors.centerIn: parent; visible: FlickrImage.status!=1 }
+        Image { id: flickrImage; source: url; fillMode: "PreserveAspectFit"; smooth: true; anchors.fill: parent;
+                opacity: (status == 1)?1:0; opacity: Behavior { NumberAnimation { properties: "opacity" } } }
+        Loading { anchors.centerIn: parent; visible: flickrImage.status!=1 }
 
         states: State {
             name: "selected"
-            when: Root.isSelected
-            PropertyChanges { target: Root; scale: 3; z: 100 }
+            when: root.isSelected
+            PropertyChanges { target: root; scale: 3; z: 100 }
         }
         transitions: [
             Transition {

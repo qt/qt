@@ -1,12 +1,12 @@
 var myComponent = null;
 
 function createNewBlock() {
-    if (myComponent == null) 
+    if (myComponent == null)
         myComponent = createComponent("ImageBatch.qml");
 
     var obj = myComponent.createObject();
-    obj.parent = MyLayout;
+    obj.parent = layout;
     obj.offset = maximumColumn + 1;
-    obj.ref = ImagePanel;
+    obj.ref = imagePanel;
     maximumColumn += 5;
 }

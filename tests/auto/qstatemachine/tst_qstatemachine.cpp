@@ -42,6 +42,9 @@
 #include <QtTest/QtTest>
 #include <QtCore/QCoreApplication>
 #include <QtGui/QPushButton>
+#include <QtGui/QGraphicsScene>
+#include <QtGui/QGraphicsSceneEvent>
+#include <QtGui/QGraphicsTextItem>
 
 #include "qstatemachine.h"
 #include "qstate.h"
@@ -127,6 +130,7 @@ private slots:
     void allSourceToTargetConfigurations();
     void signalTransitions();
     void eventTransitions();
+    void graphicsSceneEventTransitions();
     void historyStates();
     void startAndStop();
     void targetStateWithNoParent();
@@ -2424,6 +2428,29 @@ void tst_QStateMachine::eventTransitions()
         QCOMPARE(trans->eventSourceReceived(), (QObject*)&button);
         QCOMPARE(trans->eventTypeReceived(), QEvent::MouseButtonPress);
     }
+}
+
+void tst_QStateMachine::graphicsSceneEventTransitions()
+{
+    QGraphicsScene scene;
+    QGraphicsTextItem *textItem = scene.addText("foo");
+
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    QFinalState *s2 = new QFinalState(&machine);
+    QEventTransition *t = new QEventTransition(textItem, QEvent::GraphicsSceneMouseMove);
+    t->setTargetState(s2);
+    s1->addTransition(t);
+    machine.setInitialState(s1);
+
+    QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    machine.start();
+    QTRY_COMPARE(startedSpy.count(), 1);
+    QVERIFY(finishedSpy.count() == 0);
+    QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseMove);
+    scene.sendEvent(textItem, &mouseEvent);
+    QTRY_COMPARE(finishedSpy.count(), 1);
 }
 
 void tst_QStateMachine::historyStates()

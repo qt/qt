@@ -1,12 +1,12 @@
 import Qt 4.6
 
 Item {
-    id: Root
+    id: root
     property real value : 0
 
     width: 210; height: 210
 
-    Image { id: Background; source: "background.png" }
+    Image { source: "background.png" }
 
     Image {
         x: 93
@@ -14,23 +14,22 @@ Item {
         source: "needle_shadow.png"
         transform: Rotation {
             origin.x: 11; origin.y: 67
-            angle: NeedleRotation.angle
+            angle: needleRotation.angle
         }
     }
     Image {
-        id: Needle
+        id: needle
         x: 95; y: 33
         smooth: true
         source: "needle.png"
         transform: Rotation {
-            id: NeedleRotation
+            id: needleRotation
             origin.x: 7; origin.y: 65
             angle: -130
             angle: SpringFollow {
-                id: MyFollow
                 spring: 1.4
                 damping: .15
-                source: Math.min(Math.max(-130, Root.value*2.2 - 130), 133)
+                source: Math.min(Math.max(-130, root.value*2.2 - 130), 133)
             }
         }
     }

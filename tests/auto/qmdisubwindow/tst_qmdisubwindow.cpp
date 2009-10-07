@@ -1003,9 +1003,9 @@ void tst_QMdiSubWindow::setSystemMenu()
     mainWindow.setCentralWidget(mdiArea);
     mainWindow.menuBar();
     mainWindow.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&mainWindow);
-#endif
+    QTest::qWaitForWindowShown(&mainWindow);
+    QTest::qWait(60);
+
 
     QTRY_VERIFY(subWindow->isVisible());
     QPoint globalPopupPos;
@@ -1650,7 +1650,7 @@ void tst_QMdiSubWindow::resizeTimer()
     QMdiSubWindow *subWindow = mdiArea.addSubWindow(new QWidget);
     mdiArea.show();
     QTest::qWaitForWindowShown(&mdiArea);
-    QTest::qWait(250);
+    QTest::qWait(300);
 
 
     EventSpy timerEventSpy(subWindow, QEvent::Timer);
@@ -1663,7 +1663,7 @@ void tst_QMdiSubWindow::resizeTimer()
 
     QTest::qWait(500); // Wait for timer events to occur.
 
-    QVERIFY(timerEventSpy.count() > 0);
+    QTRY_VERIFY(timerEventSpy.count() > 0);
 }
 
 void tst_QMdiSubWindow::fixedMinMaxSize()

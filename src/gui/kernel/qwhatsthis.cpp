@@ -194,9 +194,9 @@ QWhatsThat::QWhatsThat(const QString& txt, QWidget* parent, QWidget *showTextFor
 #ifndef QT_NO_CURSOR
     setCursor(Qt::ArrowCursor);
 #endif
-
     QRect r;
     doc = 0;
+    ensurePolished(); // Ensures style sheet font before size calc
     if (Qt::mightBeRichText(text)) {
         doc = new QTextDocument();
         doc->setUndoRedoEnabled(false);

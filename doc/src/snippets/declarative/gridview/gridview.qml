@@ -11,11 +11,11 @@ Rectangle {
     // instantiated for each visible item in the list.
 //! [0]
     Component {
-        id: Delegate
+        id: delegate
         Item {
-            id: Wrapper
+            id: wrapper
             width: 80; height: 78
-            VerticalLayout {
+            Column {
                 Image { source: portrait; anchors.horizontalCenter: parent.horizontalCenter }
                 Text { text: name; anchors.horizontalCenter: parent.horizontalCenter }
             }
@@ -26,7 +26,7 @@ Rectangle {
     // by each ListView and placed behind the current item.
 //! [1]
     Component {
-        id: Highlight
+        id: highlight
         Rectangle {
             color: "lightsteelblue"
             radius: 5
@@ -37,9 +37,9 @@ Rectangle {
 //! [2]
     GridView {
         width: parent.width; height: parent.height
-        model: ContactModel; delegate: Delegate
+        model: ContactModel; delegate: delegate
         cellWidth: 80; cellHeight: 80
-        highlight: Highlight
+        highlight: highlight
         focus: true
     }
 //! [2]

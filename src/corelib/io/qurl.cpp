@@ -3384,6 +3384,8 @@ QString QUrlPrivate::canonicalHost() const
         const char *ptr = ba.constData();
         if (!_IPLiteral(&ptr))
             that->host.clear();
+        else
+            that->host = host.toLower();
     } else {
         that->host = qt_ACE_do(host, NormalizeAce);
     }
@@ -5941,7 +5943,7 @@ QString QUrl::toLocalFile() const
 
     QString tmp;
     QString ourPath = path();
-    if (d->scheme.isEmpty() || d->scheme.toLower() == QLatin1String("file")) {
+    if (d->scheme.isEmpty() || QString::compare(d->scheme, QLatin1String("file"), Qt::CaseInsensitive) == 0) {
 
         // magic for shared drive on windows
         if (!d->host.isEmpty()) {

@@ -360,33 +360,30 @@ void QAudioDeviceInfoInternal::updateLists()
 
 QList<QByteArray> QAudioDeviceInfoInternal::deviceList(QAudio::Mode mode)
 {
-    QAudio::Mode _m;
     QList<QByteArray> devices;
     QByteArray filter;
-    QString dir;
 
     // Create a list of all current audio devices that support mode
     void **hints, **n;
     char *name, *descr, *io;
 
     if(snd_device_name_hint(-1, "pcm", &hints) < 0) {
-        qWarning()<<"no alsa devices available";
+        qWarning() << "no alsa devices available";
         return devices;
     }
     n = hints;
 
+    if(mode == QAudio::AudioInput) {
+        filter = "Input";
+    } else {
+        filter = "Output";
+    }
+
     while (*n != NULL) {
-        _m = QAudio::AudioOutput;
         name = snd_device_name_get_hint(*n, "NAME");
         descr = snd_device_name_get_hint(*n, "DESC");
         io = snd_device_name_get_hint(*n, "IOID");
-        dir = QString::fromUtf8(io);
-        if((name != NULL) && (descr != NULL) && ((io == NULL) || (dir.length() ==filter.length()))) {
-            if(dir.length() == 5)
-                _m = QAudio::AudioInput;
-            if(io == NULL)
-                _m = mode;
-
+        if((name != NULL) && (descr != NULL) && ((io == NULL) || (io == filter))) {
             QString str = QLatin1String(name);
 
             if(str.contains(QLatin1String("default"))) {
@@ -400,17 +397,12 @@ QList<QByteArray> QAudioDeviceInfoInternal::deviceList(QAudio::Mode mode)
             free(descr);
         if(io != NULL)
             free(io);
-        n++;
+        ++n;
     }
     snd_device_name_free_hint(hints);
 
     if(devices.size() > 0) {
         devices.append("default");
-        if(mode == QAudio::AudioInput) {
-            filter.append("Input");
-        } else {
-            filter.append("Output");
-        }
     }
 
     return devices;

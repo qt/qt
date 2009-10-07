@@ -49,8 +49,7 @@ protected:
     virtual bool activateOn(CPlayerType *player);
 
 private:
-    inline CAudioEqualizer *eq() const;
-    QList<EffectParameter> createParams();
+    static QList<EffectParameter> createParams();
     QScopedPointer<CAudioEqualizer> m_bassBoost;
 };
 }

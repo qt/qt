@@ -51,7 +51,9 @@
 #include "qs60mainappui.h"
 #include <QtGui/qapplication.h>
 #include <QtGui/qmenu.h>
-#include <QtGui/private/qt_s60_p.h>
+#include <private/qmenu_p.h>
+#include <private/qt_s60_p.h>
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -226,17 +228,14 @@ void QS60MainAppUi::DynInitMenuPaneL(TInt resourceId, CEikMenuPane *menuPane)
  */
 void QS60MainAppUi::RestoreMenuL(CCoeControl* menuWindow, TInt resourceId, TMenuType menuType)
 {
-    if ((resourceId == R_QT_WRAPPERAPP_MENUBAR) || (resourceId == R_AVKON_MENUPANE_FEP_DEFAULT)) {
-        TResourceReader reader;
-        iCoeEnv->CreateResourceReaderLC(reader, resourceId);
-        menuWindow->ConstructFromResourceL(reader);
-        CleanupStack::PopAndDestroy();
+    if (resourceId >= QT_SYMBIAN_FIRST_MENU_ITEM && resourceId <= QT_SYMBIAN_LAST_MENU_ITEM) {
+        if (menuType == EMenuPane)
+            DynInitMenuPaneL(resourceId, (CEikMenuPane*)menuWindow);
+        else
+            DynInitMenuBarL(resourceId, (CEikMenuBar*)menuWindow);
+    } else {
+        CAknAppUi::RestoreMenuL(menuWindow, resourceId, menuType);
     }
-
-    if (menuType == EMenuPane)
-        DynInitMenuPaneL(resourceId, (CEikMenuPane*)menuWindow);
-    else
-        DynInitMenuBarL(resourceId, (CEikMenuBar*)menuWindow);
 }
 
 QT_END_NAMESPACE

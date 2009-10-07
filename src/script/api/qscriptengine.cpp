@@ -805,7 +805,6 @@ QScriptEnginePrivate::QScriptEnginePrivate()
     JSC::JSGlobalObject *globalObject = new (globalData)QScript::GlobalObject();
 
     JSC::ExecState* exec = globalObject->globalExec();
-    *thisRegisterForFrame(exec) = JSC::JSValue();
 
     scriptObjectStructure = QScriptObject::createStructure(globalObject->objectPrototype());
 
@@ -994,7 +993,7 @@ void QScriptEnginePrivate::setDefaultPrototype(int metaTypeId, JSC::JSValue prot
 
 QScriptContext *QScriptEnginePrivate::contextForFrame(JSC::ExecState *frame)
 {
-    if (frame && frame->callerFrame()->hasHostCallFrameFlag()
+    if (frame && frame->callerFrame()->hasHostCallFrameFlag() && !frame->callee()
         && frame->callerFrame()->removeHostCallFrameFlag() == QScript::scriptEngineFromExec(frame)->globalExec()) {
         //skip the "fake" context created in Interpreter::execute.
         frame = frame->callerFrame()->removeHostCallFrameFlag();
@@ -1079,12 +1078,13 @@ JSC::JSValue QScriptEnginePrivate::toUsableValue(JSC::JSValue value)
 /*!
     \internal
     Return the 'this' value for a given context
-    The result may be null for the global context
 */
 JSC::JSValue QScriptEnginePrivate::thisForContext(JSC::ExecState *frame)
 {
     if (frame->codeBlock() != 0) {
         return frame->thisValue();
+    } else if(frame == frame->lexicalGlobalObject()->globalExec()) {
+        return frame->globalThisValue();
     } else {
         JSC::Register *thisRegister = thisRegisterForFrame(frame);
         return thisRegister->jsValue();
@@ -1116,8 +1116,7 @@ uint QScriptEnginePrivate::contextFlags(JSC::ExecState *exec)
 void QScriptEnginePrivate::setContextFlags(JSC::ExecState *exec, uint flags)
 {
     Q_ASSERT(!exec->codeBlock());
-    quintptr flag_ptr = flags;
-    exec->registers()[JSC::RegisterFile::ReturnValueRegister] = JSC::JSValue(reinterpret_cast<JSC::JSObject*>(flag_ptr));
+    exec->registers()[JSC::RegisterFile::ReturnValueRegister] = JSC::Register::withInt(flags);
 }
 
 
@@ -2168,7 +2167,7 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     exec->clearException();
     JSC::DynamicGlobalObjectScope dynamicGlobalObjectScope(exec, exec->scopeChain()->globalObject());
 
-    JSC::EvalExecutable executable(source);
+    JSC::EvalExecutable executable(exec, source);
     JSC::JSObject* error = executable.compile(exec, exec->scopeChain());
     if (error) {
         exec->setException(error);

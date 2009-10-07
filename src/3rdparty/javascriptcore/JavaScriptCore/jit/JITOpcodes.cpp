@@ -248,10 +248,8 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     addPtr(Imm32(NativeCallFrameSize - sizeof(NativeFunctionCalleeSignature)), stackPointerRegister);
 
     // Check for an exception
-    // FIXME: Maybe we can optimize this comparison to JSValue().
     move(ImmPtr(&globalData->exception), regT2);
-    Jump sawException1 = branch32(NotEqual, tagFor(0, regT2), Imm32(JSValue::CellTag));
-    Jump sawException2 = branch32(NonZero, payloadFor(0, regT2), Imm32(0));
+    Jump sawException = branch32(NotEqual, tagFor(0, regT2), Imm32(JSValue::EmptyValueTag));
 
     // Grab the return address.
     emitGetFromCallFrameHeaderPtr(RegisterFile::ReturnPC, regT3);
@@ -264,8 +262,7 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     ret();
 
     // Handle an exception
-    sawException1.link(this);
-    sawException2.link(this);
+    sawException.link(this);
     // Grab the return address.
     emitGetFromCallFrameHeaderPtr(RegisterFile::ReturnPC, regT1);
     move(ImmPtr(&globalData->exceptionLocation), regT2);
@@ -794,14 +791,17 @@ void JIT::emit_op_jfalse(Instruction* currentInstruction)
     Jump isTrue2 = branch32(NotEqual, regT0, Imm32(0));
     addJump(jump(), target + 2);
 
-    isNotInteger.link(this);
+    if (supportsFloatingPoint()) {
+        isNotInteger.link(this);
 
-    addSlowCase(branch32(Above, regT1, Imm32(JSValue::LowestTag)));
+        addSlowCase(branch32(Above, regT1, Imm32(JSValue::LowestTag)));
 
-    zeroDouble(fpRegT0);
-    emitLoadDouble(cond, fpRegT1);
-    addJump(branchDouble(DoubleEqual, fpRegT0, fpRegT1), target + 2);
-    
+        zeroDouble(fpRegT0);
+        emitLoadDouble(cond, fpRegT1);
+        addJump(branchDouble(DoubleEqual, fpRegT0, fpRegT1), target + 2);
+    } else
+        addSlowCase(isNotInteger);
+
     isTrue.link(this);
     isTrue2.link(this);
 }
@@ -832,14 +832,17 @@ void JIT::emit_op_jtrue(Instruction* currentInstruction)
     Jump isFalse2 = branch32(Equal, regT0, Imm32(0));
     addJump(jump(), target + 2);
 
-    isNotInteger.link(this);
+    if (supportsFloatingPoint()) {
+        isNotInteger.link(this);
 
-    addSlowCase(branch32(Above, regT1, Imm32(JSValue::LowestTag)));
+        addSlowCase(branch32(Above, regT1, Imm32(JSValue::LowestTag)));
 
-    zeroDouble(fpRegT0);
-    emitLoadDouble(cond, fpRegT1);
-    addJump(branchDouble(DoubleNotEqual, fpRegT0, fpRegT1), target + 2);
-    
+        zeroDouble(fpRegT0);
+        emitLoadDouble(cond, fpRegT1);
+        addJump(branchDouble(DoubleNotEqual, fpRegT0, fpRegT1), target + 2);
+    } else
+        addSlowCase(isNotInteger);
+
     isFalse.link(this);
     isFalse2.link(this);
 }
@@ -1231,7 +1234,7 @@ void JIT::emit_op_to_jsnumber(Instruction* currentInstruction)
     emitLoad(src, regT1, regT0);
 
     Jump isInt32 = branch32(Equal, regT1, Imm32(JSValue::Int32Tag));
-    addSlowCase(branch32(AboveOrEqual, regT1, Imm32(JSValue::DeletedValueTag)));
+    addSlowCase(branch32(AboveOrEqual, regT1, Imm32(JSValue::EmptyValueTag)));
     isInt32.link(this);
 
     if (src != dst)
@@ -1381,8 +1384,7 @@ void JIT::emit_op_enter_with_activation(Instruction* currentInstruction)
 
 void JIT::emit_op_create_arguments(Instruction*)
 {
-    Jump argsNotCell = branch32(NotEqual, tagFor(RegisterFile::ArgumentsRegister, callFrameRegister), Imm32(JSValue::CellTag));
-    Jump argsNotNull = branchTestPtr(NonZero, payloadFor(RegisterFile::ArgumentsRegister, callFrameRegister));
+    Jump argsCreated = branch32(NotEqual, tagFor(RegisterFile::ArgumentsRegister, callFrameRegister), Imm32(JSValue::EmptyValueTag));
 
     // If we get here the arguments pointer is a null cell - i.e. arguments need lazy creation.
     if (m_codeBlock->m_numParameters == 1)
@@ -1390,8 +1392,7 @@ void JIT::emit_op_create_arguments(Instruction*)
     else
         JITStubCall(this, cti_op_create_arguments).call();
 
-    argsNotCell.link(this);
-    argsNotNull.link(this);
+    argsCreated.link(this);
 }
     
 void JIT::emit_op_init_arguments(Instruction*)
@@ -2707,32 +2708,20 @@ void JIT::emitSlow_op_to_primitive(Instruction* currentInstruction, Vector<SlowC
 
 void JIT::emitSlow_op_get_by_val(Instruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
 {
-    // The slow void JIT::emitSlow_that handles accesses to arrays (below) may jump back up to here. 
-    Label beginGetByValSlow(this);
+    unsigned dst = currentInstruction[1].u.operand;
+    unsigned base = currentInstruction[2].u.operand;
+    unsigned property = currentInstruction[3].u.operand;
 
-    Jump notImm = getSlowCase(iter);
-    linkSlowCase(iter);
-    linkSlowCase(iter);
-    emitFastArithIntToImmNoCheck(regT1, regT1);
+    linkSlowCase(iter); // property int32 check
+    linkSlowCaseIfNotJSCell(iter, base); // base cell check
+    linkSlowCase(iter); // base array check
+    linkSlowCase(iter); // vector length check
+    linkSlowCase(iter); // empty value
 
-    notImm.link(this);
     JITStubCall stubCall(this, cti_op_get_by_val);
-    stubCall.addArgument(regT0);
-    stubCall.addArgument(regT1);
-    stubCall.call(currentInstruction[1].u.operand);
-    emitJumpSlowToHot(jump(), OPCODE_LENGTH(op_get_by_val));
-
-    // This is slow void JIT::emitSlow_that handles accesses to arrays above the fast cut-off.
-    // First, check if this is an access to the vector
-    linkSlowCase(iter);
-    branch32(AboveOrEqual, regT1, Address(regT2, OBJECT_OFFSETOF(ArrayStorage, m_vectorLength)), beginGetByValSlow);
-
-    // okay, missed the fast region, but it is still in the vector.  Get the value.
-    loadPtr(BaseIndex(regT2, regT1, ScalePtr, OBJECT_OFFSETOF(ArrayStorage, m_vector[0])), regT2);
-    // Check whether the value loaded is zero; if so we need to return undefined.
-    branchTestPtr(Zero, regT2, beginGetByValSlow);
-    move(regT2, regT0);
-    emitPutVirtualRegister(currentInstruction[1].u.operand, regT0);
+    stubCall.addArgument(base, regT2);
+    stubCall.addArgument(property, regT2);
+    stubCall.call(dst);
 }
 
 void JIT::emitSlow_op_loop_if_less(Instruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
@@ -2789,30 +2778,20 @@ void JIT::emitSlow_op_loop_if_lesseq(Instruction* currentInstruction, Vector<Slo
 
 void JIT::emitSlow_op_put_by_val(Instruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
 {
-    // Normal slow cases - either is not an immediate imm, or is an array.
-    Jump notImm = getSlowCase(iter);
-    linkSlowCase(iter);
-    linkSlowCase(iter);
-    emitFastArithIntToImmNoCheck(regT1, regT1);
+    unsigned base = currentInstruction[1].u.operand;
+    unsigned property = currentInstruction[2].u.operand;
+    unsigned value = currentInstruction[3].u.operand;
 
-    notImm.link(this); {
-        JITStubCall stubCall(this, cti_op_put_by_val);
-        stubCall.addArgument(regT0);
-        stubCall.addArgument(regT1);
-        stubCall.addArgument(currentInstruction[3].u.operand, regT2);
-        stubCall.call();
-        emitJumpSlowToHot(jump(), OPCODE_LENGTH(op_put_by_val));
-    }
+    linkSlowCase(iter); // property int32 check
+    linkSlowCaseIfNotJSCell(iter, base); // base cell check
+    linkSlowCase(iter); // base not array check
+    linkSlowCase(iter); // in vector check
 
-    // slow cases for immediate int accesses to arrays
-    linkSlowCase(iter);
-    linkSlowCase(iter); {
-        JITStubCall stubCall(this, cti_op_put_by_val_array);
-        stubCall.addArgument(regT0);
-        stubCall.addArgument(regT1);
-        stubCall.addArgument(currentInstruction[3].u.operand, regT2);
-        stubCall.call();
-    }
+    JITStubCall stubPutByValCall(this, cti_op_put_by_val);
+    stubPutByValCall.addArgument(regT0);
+    stubPutByValCall.addArgument(property, regT2);
+    stubPutByValCall.addArgument(value, regT2);
+    stubPutByValCall.call();
 }
 
 void JIT::emitSlow_op_loop_if_true(Instruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)

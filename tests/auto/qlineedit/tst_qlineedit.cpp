@@ -3493,6 +3493,7 @@ void tst_QLineEdit::task241436_passwordEchoOnEditRestoreEchoMode()
 
     testWidget->setEchoMode(QLineEdit::PasswordEchoOnEdit);
     testWidget->setFocus();
+    QApplication::setActiveWindow(testWidget);
     QTRY_VERIFY(testWidget->hasFocus());
 
     QTest::keyPress(testWidget, '0');

@@ -168,8 +168,6 @@ QT_BEGIN_NAMESPACE
     \sa QGraphicsProxyWidget, QGraphicsItem, {Widgets and Layouts}
 */
 
-bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
-
 /*!
     Constructs a QGraphicsWidget instance. The optional \a parent argument is
     passed to QGraphicsItem's constructor. The optional \a wFlags argument
@@ -349,7 +347,7 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
 
         // setPos triggers ItemPositionChange, which can adjust position
         wd->inSetGeometry = 1;
-        wd->setPosHelper(newGeom.topLeft());
+        setPos(newGeom.topLeft());
         wd->inSetGeometry = 0;
         newGeom.moveTopLeft(pos());
 
@@ -1103,10 +1101,6 @@ QVariant QGraphicsWidget::propertyChange(const QString &propertyName, const QVar
 */
 bool QGraphicsWidget::sceneEvent(QEvent *event)
 {
-    bool spont = event->spontaneous();
-    if (spont ? qt_sendSpontaneousEvent(this, event) : QApplication::sendEvent(this, event))
-        return true;
-    event->spont = spont;
     return QGraphicsItem::sceneEvent(event);
 }
 

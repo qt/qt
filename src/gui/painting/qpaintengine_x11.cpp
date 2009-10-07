@@ -1402,6 +1402,7 @@ void QX11PaintEngine::updateBrush(const QBrush &brush, const QPointF &origin)
             mask |= GCTile;
 #ifndef QT_NO_XRENDER
             if (d->pdev_depth == 32 && d->brush_pm.depth() != 32) {
+                d->brush_pm.detach();
                 QX11PixmapData *brushData = static_cast<QX11PixmapData*>(d->brush_pm.data.data());
                 brushData->convertToARGB32();
             }
