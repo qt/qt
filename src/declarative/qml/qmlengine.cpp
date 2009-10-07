@@ -117,43 +117,9 @@ QScriptValue desktopOpenUrl(QScriptContext *ctxt, QScriptEngine *e)
     return e->newVariant(QVariant(ret));
 }
 
-// XXX Something like this should be exported by Qt.
 static QString userLocalDataPath(const QString& app)
 {
-    QString result;
-
-#ifdef Q_OS_WIN
-#ifndef Q_OS_WINCE
-    QLibrary library(QLatin1String("shell32"));
-#else
-    QLibrary library(QLatin1String("coredll"));
-#endif // Q_OS_WINCE
-    typedef BOOL (WINAPI*GetSpecialFolderPath)(HWND, LPWSTR, int, BOOL);
-    GetSpecialFolderPath SHGetSpecialFolderPath = (GetSpecialFolderPath)library.resolve("SHGetSpecialFolderPathW");
-    if (SHGetSpecialFolderPath) {
-        wchar_t path[MAX_PATH];
-        SHGetSpecialFolderPath(0, path, CSIDL_APPDATA, FALSE);
-        result = QString::fromWCharArray(path);
-    }
-#endif // Q_OS_WIN
-
-#ifdef Q_OS_MAC
-    result = QLatin1String(qgetenv("HOME"));
-    result += "/Library/Application Support";
-#else
-    if (result.isEmpty()) {
-        // Fallback: UNIX style
-        result = QLatin1String(qgetenv("XDG_DATA_HOME"));
-        if (result.isEmpty()) {
-            result = QLatin1String(qgetenv("HOME"));
-            result += QLatin1String("/.local/share");
-        }
-    }
-#endif
-
-    result += QLatin1Char('/');
-    result += app;
-    return result;
+    return QDesktopServices::storageLocation(QDesktopServices::DataLocation) + QLatin1String("/") + app;
 }
 
 QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
@@ -169,7 +135,7 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
     qtObject.setProperty(QLatin1String("DesktopServices"), desktopObject);
     scriptEngine.globalObject().setProperty(QLatin1String("Qt"), qtObject);
 
-    offlineStoragePath = userLocalDataPath(QLatin1String("Nokia/Qt/QML/OfflineStorage"));
+    offlineStoragePath = userLocalDataPath(QLatin1String("QML/OfflineStorage"));
     qt_add_qmlxmlhttprequest(&scriptEngine);
     qt_add_qmlsqldatabase(&scriptEngine);
 
@@ -1134,7 +1100,7 @@ public:
             if (s->find(unqualifiedtype,vmajor,vminor,type_return,url_return))
                 return true;
             if (s->urls.count() == 1 && !s->isBuiltin[0] && !s->isLibrary[0] && url_return) {
-                *url_return = QUrl(s->urls[0]+"/").resolved(QUrl(QLatin1String(unqualifiedtype + ".qml")));
+                *url_return = QUrl(s->urls[0]+QLatin1String("/")).resolved(QUrl(QLatin1String(unqualifiedtype + ".qml")));
                 return true;
             }
         }
@@ -1304,7 +1270,7 @@ void QmlEngine::addImportPath(const QString& path)
   QFxWebView and the SQL databases created with openDatabase()
   are stored here.
 
-  The default is Nokia/Qt/QML/Databases/ in the platform-standard
+  The default is QML/OfflineStorage/ in the platform-standard
   user application data directory.
 */
 void QmlEngine::setOfflineStoragePath(const QString& dir)

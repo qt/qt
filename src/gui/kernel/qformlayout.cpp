@@ -252,7 +252,7 @@ QFormLayoutPrivate::QFormLayoutPrivate()
     : fieldGrowthPolicy(DefaultFieldGrowthPolicy),
       rowWrapPolicy(DefaultRowWrapPolicy), has_hfw(false), dirty(true), sizesDirty(true),
       expandVertical(0), expandHorizontal(0), labelAlignment(0), formAlignment(0),
-      hfw_width(-1), hfw_sh_height(-1), min_width(-1),
+      layoutWidth(-1), hfw_width(-1), hfw_sh_height(-1), min_width(-1),
       sh_width(-1), thresh_width(QLAYOUTSIZE_MAX), hSpacing(-1), vSpacing(-1)
 {
 }

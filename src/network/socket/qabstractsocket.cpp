@@ -1576,7 +1576,7 @@ bool QAbstractSocket::setSocketDescriptor(int socketDescriptor, SocketState sock
     \sa socketOption()
     \since 4.6
 */
-void QAbstractSocket::setSocketOption(QAbstractSocket::SocketOption option, QVariant value)
+void QAbstractSocket::setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value)
 {
     if (!d_func()->socketEngine)
         return;

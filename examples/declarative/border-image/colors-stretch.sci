@@ -1,5 +1,5 @@
-gridLeft:30
-gridTop:30
-gridRight:30
-gridBottom:30
-imageFile:colors.png
+border.left:30
+border.top:30
+border.right:30
+border.bottom:30
+source:colors.png

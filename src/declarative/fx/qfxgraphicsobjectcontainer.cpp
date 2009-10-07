@@ -41,6 +41,8 @@
 
 #include "qfxgraphicsobjectcontainer.h"
 #include <QGraphicsObject>
+#include <QGraphicsWidget>
+#include <QGraphicsSceneResizeEvent>
 
 QT_BEGIN_NAMESPACE
 
@@ -59,7 +61,7 @@ QML_DEFINE_NOCREATE_TYPE(QGraphicsObject)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,GraphicsObjectContainer,QFxGraphicsObjectContainer)
 
 QFxGraphicsObjectContainer::QFxGraphicsObjectContainer(QFxItem *parent)
-: QFxItem(parent), _graphicsObject(0)
+: QFxItem(parent), _graphicsObject(0), _syncedResize(false)
 {
 }
 
@@ -81,9 +83,20 @@ void QFxGraphicsObjectContainer::setGraphicsObject(QGraphicsObject *object)
     if (object == _graphicsObject)
         return;
 
+    //### what should we do with previously set object?
+
     _graphicsObject = object;
 
-    _graphicsObject->setParentItem(this);
+    if (_graphicsObject) {
+        _graphicsObject->setParentItem(this);
+
+        if (_syncedResize && _graphicsObject->isWidget()) {
+            _graphicsObject->installEventFilter(this);
+            QSizeF newSize = static_cast<QGraphicsWidget*>(_graphicsObject)->size();    //### use sizeHint?
+            setImplicitWidth(newSize.width());
+            setImplicitHeight(newSize.height());
+        }
+    }
 }
 
 QVariant QFxGraphicsObjectContainer::itemChange(GraphicsItemChange change, const QVariant &value)
@@ -94,6 +107,85 @@ QVariant QFxGraphicsObjectContainer::itemChange(GraphicsItemChange change, const
         setGraphicsObject(o);
     }
     return QFxItem::itemChange(change, value);
+}
+
+bool QFxGraphicsObjectContainer::eventFilter(QObject *watched, QEvent *e)
+{
+    if (watched == _graphicsObject && e->type() == QEvent::GraphicsSceneResize) {
+        if (_graphicsObject && _graphicsObject->isWidget() && _syncedResize) {
+           QSizeF newSize = static_cast<QGraphicsWidget*>(_graphicsObject)->size();
+           setImplicitWidth(newSize.width());
+           setImplicitHeight(newSize.height());
+       }
+    }
+    return QFxItem::eventFilter(watched, e);
+}
+
+/*!
+    \qmlproperty bool GraphicsObjectContainer::synchronizedResizing
+
+    This property determines whether or not the container and graphics object will synchronize their
+    sizes.
+
+    \note This property only applies when wrapping a QGraphicsWidget.
+
+    If synchronizedResizing is enabled, the container and widget will
+    synchronize their sizes as follows.
+    \list
+    \o If a size has been set on the container, the widget will be resized to the container.
+    Any changes in the container's size will be reflected in the widget.
+
+    \o \e Otherwise, the container will initially be sized to the preferred size of the widget.
+    Any changes to the container's size will be reflected in the widget, and any changes to the
+    widget's size will be reflected in the container.
+    \endlist
+*/
+bool QFxGraphicsObjectContainer::synchronizedResizing() const
+{
+    return _syncedResize;
+}
+
+void QFxGraphicsObjectContainer::setSynchronizedResizing(bool on)
+{
+    if (on == _syncedResize)
+        return;
+
+    if (_graphicsObject && _graphicsObject->isWidget()) {
+        if (!on) {
+            _graphicsObject->removeEventFilter(this);
+            disconnect(this, SIGNAL(widthChanged()), this, SLOT(_q_updateSize()));
+            disconnect(this, SIGNAL(heightChanged()), this, SLOT(_q_updateSize()));
+        }
+    }
+
+    _syncedResize = on;
+
+    if (_graphicsObject && _graphicsObject->isWidget()) {
+        if (on) {
+            _graphicsObject->installEventFilter(this);
+            connect(this, SIGNAL(widthChanged()), this, SLOT(_q_updateSize()));
+            connect(this, SIGNAL(heightChanged()), this, SLOT(_q_updateSize()));
+        }
+    }
+}
+
+void QFxGraphicsObjectContainer::_q_updateSize()
+{
+    if (!_graphicsObject || !_graphicsObject->isWidget() || !_syncedResize)
+        return;
+
+    QGraphicsWidget *gw = static_cast<QGraphicsWidget*>(_graphicsObject);
+    const QSizeF newSize(width(), height());
+    gw->resize(newSize);
+
+    //### will respecting the widgets min/max ever get us in trouble? (all other items always
+    //    size to exactly what you tell them)
+    /*QSizeF constrainedSize = newSize.expandedTo(gw->minimumSize()).boundedTo(gw->maximumSize());
+    gw->resize(constrainedSize);
+    if (constrainedSize != newSize) {
+        setImplicitWidth(constrainedSize.width());
+        setImplicitHeight(constrainedSize.height());
+    }*/
 }
 
 QT_END_NAMESPACE

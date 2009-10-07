@@ -1,6 +1,6 @@
 EXPORTS
 	_Z14qScriptConnectP7QObjectPKcRK12QScriptValueS5_ @ 1 NONAME
-	_Z14qt_scriptToXmlRK7QStringi @ 2 NONAME
+	_Z14qt_scriptToXmlRK7QStringi @ 2 NONAME ABSENT
 	_Z17qScriptDisconnectP7QObjectPKcRK12QScriptValueS5_ @ 3 NONAME
 	_ZN11QScriptableC1Ev @ 4 NONAME
 	_ZN11QScriptableC2Ev @ 5 NONAME
@@ -189,11 +189,11 @@ EXPORTS
 	_ZN24QScriptSyntaxCheckResultD1Ev @ 188 NONAME
 	_ZN24QScriptSyntaxCheckResultD2Ev @ 189 NONAME
 	_ZN24QScriptSyntaxCheckResultaSERKS_ @ 190 NONAME
-	_ZN25QScriptEngineAgentPrivateC1Ev @ 191 NONAME
-	_ZN25QScriptEngineAgentPrivateC2Ev @ 192 NONAME
-	_ZN25QScriptEngineAgentPrivateD0Ev @ 193 NONAME
-	_ZN25QScriptEngineAgentPrivateD1Ev @ 194 NONAME
-	_ZN25QScriptEngineAgentPrivateD2Ev @ 195 NONAME
+	_ZN25QScriptEngineAgentPrivateC1Ev @ 191 NONAME ABSENT
+	_ZN25QScriptEngineAgentPrivateC2Ev @ 192 NONAME ABSENT
+	_ZN25QScriptEngineAgentPrivateD0Ev @ 193 NONAME ABSENT
+	_ZN25QScriptEngineAgentPrivateD1Ev @ 194 NONAME ABSENT
+	_ZN25QScriptEngineAgentPrivateD2Ev @ 195 NONAME ABSENT
 	_ZN28QScriptClassPropertyIteratorC2ERK12QScriptValue @ 196 NONAME
 	_ZN28QScriptClassPropertyIteratorC2ERK12QScriptValueR35QScriptClassPropertyIteratorPrivate @ 197 NONAME
 	_ZN28QScriptClassPropertyIteratorD0Ev @ 198 NONAME
@@ -586,4 +586,18 @@ EXPORTS
 	_ZThn8_N22QScriptExtensionPluginD1Ev @ 585 NONAME
 	_ZlsR11QDataStreamRK18QScriptContextInfo @ 586 NONAME
 	_ZrsR11QDataStreamR18QScriptContextInfo @ 587 NONAME
+	_Z22qt_script_isJITEnabledv @ 588 NONAME
+	_ZN12QScriptValueC1EP19QScriptValuePrivate @ 589 NONAME
+	_ZN12QScriptValueC2EP19QScriptValuePrivate @ 590 NONAME
+	_ZN13QScriptEngine19getStaticMetaObjectEv @ 591 NONAME
+	_ZN22QScriptExtensionPlugin19getStaticMetaObjectEv @ 592 NONAME
+	_ZN25QScriptEngineAgentPrivate11atStatementERKN5QTJSC17DebuggerCallFrameEiii @ 593 NONAME
+	_ZN25QScriptEngineAgentPrivate11returnEventERKN5QTJSC17DebuggerCallFrameEii @ 594 NONAME
+	_ZN25QScriptEngineAgentPrivate12evaluateStopERKN5QTJSC7JSValueEi @ 595 NONAME
+	_ZN25QScriptEngineAgentPrivate12functionExitERKN5QTJSC7JSValueEi @ 596 NONAME
+	_ZN25QScriptEngineAgentPrivate14exceptionCatchERKN5QTJSC17DebuggerCallFrameEi @ 597 NONAME
+	_ZN25QScriptEngineAgentPrivate14exceptionThrowERKN5QTJSC17DebuggerCallFrameEib @ 598 NONAME
+	_ZN25QScriptEngineAgentPrivate18didReachBreakpointERKN5QTJSC17DebuggerCallFrameEiii @ 599 NONAME
+	_ZN25QScriptEngineAgentPrivate6attachEv @ 600 NONAME
+	_ZN25QScriptEngineAgentPrivate6detachEv @ 601 NONAME
 

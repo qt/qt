@@ -258,7 +258,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/focusscope/data/test3.0.png"
+        image: "test3.0.png"
     }
     Frame {
         msec: 976
@@ -530,7 +530,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/focusscope/data/test3.1.png"
+        image: "test3.1.png"
     }
     Frame {
         msec: 1936
@@ -802,7 +802,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/focusscope/data/test3.2.png"
+        image: "test3.2.png"
     }
     Frame {
         msec: 2896
@@ -1074,7 +1074,7 @@ VisualTest {
     }
     Frame {
         msec: 3840
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/focusscope/data/test3.3.png"
+        image: "test3.3.png"
     }
     Frame {
         msec: 3856
@@ -1330,7 +1330,7 @@ VisualTest {
     }
     Frame {
         msec: 4800
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/focusscope/data/test3.4.png"
+        image: "test3.4.png"
     }
     Frame {
         msec: 4816
@@ -1594,7 +1594,7 @@ VisualTest {
     }
     Frame {
         msec: 5760
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/focusscope/data/test3.5.png"
+        image: "test3.5.png"
     }
     Frame {
         msec: 5776
@@ -1858,7 +1858,7 @@ VisualTest {
     }
     Frame {
         msec: 6720
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/focusscope/data/test3.6.png"
+        image: "test3.6.png"
     }
     Frame {
         msec: 6736
@@ -2130,7 +2130,7 @@ VisualTest {
     }
     Frame {
         msec: 7680
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/focusscope/data/test3.7.png"
+        image: "test3.7.png"
     }
     Frame {
         msec: 7696
@@ -2402,7 +2402,7 @@ VisualTest {
     }
     Frame {
         msec: 8640
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/focusscope/data/test3.8.png"
+        image: "test3.8.png"
     }
     Frame {
         msec: 8656
@@ -2658,7 +2658,7 @@ VisualTest {
     }
     Frame {
         msec: 9600
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/focusscope/data/test3.9.png"
+        image: "test3.9.png"
     }
     Frame {
         msec: 9616

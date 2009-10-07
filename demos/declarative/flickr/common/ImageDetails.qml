@@ -1,9 +1,9 @@
 import Qt 4.6
 
 Flipable {
-    id: Container
+    id: container
 
-    property var frontContainer: ContainerFront
+    property var frontContainer: containerFront
     property string photoTitle: ""
     property string photoDescription: ""
     property string photoTags: ""
@@ -19,13 +19,13 @@ Flipable {
     signal closed
 
     transform: Rotation {
-        id: DetailsRotation
-        origin.x: Container.width / 2;
+        id: detailsRotation
+        origin.x: container.width / 2;
         axis.y: 1; axis.z: 0
     }
 
     front: Item {
-        id: ContainerFront; anchors.fill: Container
+        id: containerFront; anchors.fill: container
 
         Rectangle {
             anchors.fill: parent
@@ -34,74 +34,74 @@ Flipable {
         }
 
         MediaButton {
-            id: BackButton; x: 630; y: 370; text: "Back"
-            onClicked: { Container.closed() }
+            id: backButton; x: 630; y: 370; text: "Back"
+            onClicked: { container.closed() }
         }
 
         MediaButton {
-            id: MoreButton; x: 530; y: 370; text: "View..."
-            onClicked: { Container.state='Back' }
+            id: moreButton; x: 530; y: 370; text: "View..."
+            onClicked: { container.state='Back' }
         }
 
-        Text { id: TitleText; style: "Raised"; styleColor: "black"; color: "white"; elide: "ElideRight"
-               x: 220; y: 30; width: parent.width - 240; text: Container.photoTitle; font.pointSize: 22 }
+        Text { id: titleText; style: "Raised"; styleColor: "black"; color: "white"; elide: "ElideRight"
+               x: 220; y: 30; width: parent.width - 240; text: container.photoTitle; font.pointSize: 22 }
 
-        LikeOMeter { x: 40; y: 250; rating: Container.rating }
+        LikeOMeter { x: 40; y: 250; rating: container.rating }
 
-        Flickable { id: FlickSurface; x: 220; width: 480; height: 210; y: 130; clip: true
-                    viewportWidth: 480; viewportHeight: DescriptionText.height
+        Flickable { id: flickable; x: 220; width: 480; height: 210; y: 130; clip: true
+                    viewportWidth: 480; viewportHeight: descriptionText.height
 
-            WebView { id: DescriptionText; width: parent.width
-                      html: "<style TYPE=\"text/css\">body {color: white;} a:link {color: cyan; text-decoration: underline; }</style>" + Container.photoDescription }
+            WebView { id: descriptionText; width: parent.width
+                      html: "<style TYPE=\"text/css\">body {color: white;} a:link {color: cyan; text-decoration: underline; }</style>" + container.photoDescription }
         }
 
-        Text { id: Size; color: "white"; width: 300; x: 40; y: 300
-               text: "<b>Size:</b> " + Container.photoWidth + 'x' + Container.photoHeight }
-        Text { id: Type; color: "white"; width: 300; x: 40; anchors.top: Size.bottom
-               text: "<b>Type:</b> " + Container.photoType }
+        Text { id: size; color: "white"; width: 300; x: 40; y: 300
+               text: "<b>Size:</b> " + container.photoWidth + 'x' + container.photoHeight }
+        Text { id: type; color: "white"; width: 300; x: 40; anchors.top: size.bottom
+               text: "<b>Type:</b> " + container.photoType }
 
-        Text { id: Author; color: "white"; width: 300; x: 220; y: 80
-               text: "<b>Author:</b> " + Container.photoAuthor }
-        Text { id: Date; color: "white"; width: 300; x: 220; anchors.top: Author.bottom
-               text: "<b>Published:</b> " + Container.photoDate }
-        Text { id: TagsLabel; color: "white"; x: 220; anchors.top: Date.bottom;
-               text: Container.photoTags == "" ? "" : "<b>Tags:</b> " }
-        Text { id: Tags; color: "white"; width: parent.width-x-20;
-                anchors.left: TagsLabel.right; anchors.top: Date.bottom;
-                elide: "ElideRight"; text: Container.photoTags }
+        Text { id: author; color: "white"; width: 300; x: 220; y: 80
+               text: "<b>Author:</b> " + container.photoAuthor }
+        Text { id: date; color: "white"; width: 300; x: 220; anchors.top: author.bottom
+               text: "<b>Published:</b> " + container.photoDate }
+        Text { id: tagsLabel; color: "white"; x: 220; anchors.top: date.bottom;
+               text: container.photoTags == "" ? "" : "<b>Tags:</b> " }
+        Text { id: tags; color: "white"; width: parent.width-x-20;
+                anchors.left: tagsLabel.right; anchors.top: date.bottom;
+                elide: "ElideRight"; text: container.photoTags }
 
-        ScrollBar { id: ScrollBar; x: 720; y: FlickSurface.y; width: 7; height: FlickSurface.height; opacity: 0;
-                    flickableArea: FlickSurface; clip: true }
+        ScrollBar { id: scrollBar; x: 720; y: flickable.y; width: 7; height: flickable.height; opacity: 0;
+                    flickableArea: flickable; clip: true }
     }
 
     back: Item {
-        anchors.fill: Container
+        anchors.fill: container
 
         Rectangle { anchors.fill: parent; color: "black"; opacity: 0.4; border.color: "white"; border.width: 2 }
 
-        Progress { anchors.centerIn: parent; width: 200; height: 18; progress: BigImage.progress; visible: BigImage.status!=1 }
+        Progress { anchors.centerIn: parent; width: 200; height: 18; progress: bigImage.progress; visible: bigImage.status!=1 }
         Flickable {
-            id: Flick; width: Container.width - 10; height: Container.height - 10
+            id: flick; width: container.width - 10; height: container.height - 10
             x: 5; y: 5; clip: true;
-            viewportWidth: ImageContainer.width; viewportHeight: ImageContainer.height
+            viewportWidth: imageContainer.width; viewportHeight: imageContainer.height
 
             Item {
-                id: ImageContainer
-                width: Math.max(BigImage.width * BigImage.scale, Flick.width);
-                height: Math.max(BigImage.height * BigImage.scale, Flick.height);
+                id: imageContainer
+                width: Math.max(bigImage.width * bigImage.scale, flick.width);
+                height: Math.max(bigImage.height * bigImage.scale, flick.height);
 
                 Image {
-                    id: BigImage; source: Container.photoUrl; scale: Slider.value
+                    id: bigImage; source: container.photoUrl; scale: slider.value
                     // Center image if it is smaller than the flickable area.
-                    x: ImageContainer.width > width*scale ? (ImageContainer.width - width*scale) / 2 : 0
-                    y: ImageContainer.height > height*scale ? (ImageContainer.height - height*scale) / 2 : 0
-                    smooth: !Flick.moving
+                    x: imageContainer.width > width*scale ? (imageContainer.width - width*scale) / 2 : 0
+                    y: imageContainer.height > height*scale ? (imageContainer.height - height*scale) / 2 : 0
+                    smooth: !flick.moving
                     onStatusChanged : {
                         // Default scale shows the entire image.
                         if (status == 1 && width != 0) {
-                            Slider.minimum = Math.min(Flick.width / width, Flick.height / height);
-                            prevScale = Math.min(Slider.minimum, 1);
-                            Slider.value = prevScale;
+                            slider.minimum = Math.min(flick.width / width, flick.height / height);
+                            prevScale = Math.min(slider.minimum, 1);
+                            slider.value = prevScale;
                         }
                     }
                 }
@@ -109,24 +109,24 @@ Flipable {
         }
 
         MediaButton {
-            id: BackButton2; x: 630; y: 370; text: "Back"; onClicked: { Container.state = '' }
+            id: backButton2; x: 630; y: 370; text: "Back"; onClicked: { container.state = '' }
         }
         Text {
             text: "Image Unavailable"
-            visible: BigImage.status == 'Error'
+            visible: bigImage.status == 'Error'
             anchors.centerIn: parent; color: "white"; font.bold: true
         }
 
         Slider {
-            id: Slider; x: 25; y: 374; visible: { BigImage.status == 1 && maximum > minimum }
+            id: slider; x: 25; y: 374; visible: { bigImage.status == 1 && maximum > minimum }
             onValueChanged: {
-                if (BigImage.width * value > Flick.width) {
-                    var xoff = (Flick.width/2 + Flick.viewportX) * value / prevScale;
-                    Flick.viewportX = xoff - Flick.width/2;
+                if (bigImage.width * value > flick.width) {
+                    var xoff = (flick.width/2 + flick.viewportX) * value / prevScale;
+                    flick.viewportX = xoff - flick.width/2;
                 }
-                if (BigImage.height * value > Flick.height) {
-                    var yoff = (Flick.height/2 + Flick.viewportY) * value / prevScale;
-                    Flick.viewportY = yoff - Flick.height/2;
+                if (bigImage.height * value > flick.height) {
+                    var yoff = (flick.height/2 + flick.viewportY) * value / prevScale;
+                    flick.viewportY = yoff - flick.height/2;
                 }
                 prevScale = value;
             }
@@ -136,7 +136,7 @@ Flipable {
     states: [
         State {
             name: "Back"
-            PropertyChanges { target: DetailsRotation; angle: 180 }
+            PropertyChanges { target: detailsRotation; angle: 180 }
         }
     ]
 
@@ -144,15 +144,15 @@ Flipable {
         Transition {
             SequentialAnimation {
                 PropertyAction {
-                    target: BigImage
+                    target: bigImage
                     property: "smooth"
                     value: false
                 }
                 NumberAnimation { easing: "easeInOutQuad"; properties: "angle"; duration: 500 }
                 PropertyAction {
-                    target: BigImage
+                    target: bigImage
                     property: "smooth"
-                    value: !Flick.moving
+                    value: !flick.moving
                 }
             }
         }

@@ -1486,17 +1486,17 @@ public:
 #ifdef Q_OS_SYMBIAN
     enum SymbianVersion {
         SV_Unknown = 0x0000,
-        SV_9_2 = 0x0001,
-        SV_9_3 = 0x0002,
-        SV_9_4 = 0x0004
+        SV_9_2 = 10,
+        SV_9_3 = 20,
+        SV_9_4 = 30
     };
     static SymbianVersion symbianVersion();
     enum S60Version {
-        SV_S60_None = 0x0000,
-        SV_S60_Unknown = 0x0001,
-        SV_S60_3_1 = 0x0002,
-        SV_S60_3_2 = 0x0004,
-        SV_S60_5_0 = 0x0008
+        SV_S60_None = 0,
+        SV_S60_Unknown = 1,
+        SV_S60_3_1 = 10,
+        SV_S60_3_2 = 20,
+        SV_S60_5_0 = 30
     };
     static S60Version s60Version();
 #endif

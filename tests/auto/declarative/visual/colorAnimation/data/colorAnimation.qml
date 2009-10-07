@@ -258,7 +258,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/colorAnimation/data/colorAnimation.0.png"
+        image: "colorAnimation.0.png"
     }
     Frame {
         msec: 976
@@ -498,7 +498,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/colorAnimation/data/colorAnimation.1.png"
+        image: "colorAnimation.1.png"
     }
     Frame {
         msec: 1936
@@ -738,7 +738,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/colorAnimation/data/colorAnimation.2.png"
+        image: "colorAnimation.2.png"
     }
     Frame {
         msec: 2896

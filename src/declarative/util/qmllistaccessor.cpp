@@ -76,7 +76,6 @@ void QmlListAccessor::setList(const QVariant &v, QmlEngine *engine)
     } else if (d.type() == QMetaType::QVariantList) {
         m_type = VariantList;
     } else if (d.canConvert(QVariant::Int)) {
-        qDebug() << "integer";
         m_type = Integer;
     } else if (d.type() != QVariant::UserType) {
         m_type = Instance;
@@ -90,7 +89,6 @@ void QmlListAccessor::setList(const QVariant &v, QmlEngine *engine)
                (enginePrivate && enginePrivate->isQmlList(d.userType()))) {
         m_type = QmlList;
     } else if (QmlMetaType::isList(d.userType())) {
-        qDebug() << "list";
         m_type = QList;
     } else {
         m_type = Invalid;

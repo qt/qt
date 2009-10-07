@@ -6,10 +6,10 @@ Rectangle {
     width: 210; height: 240
 
     // Dial with a slider to adjust it
-    Dial { id: Dial; value: Slider.x-2 }
+    Dial { id: dial; value: slider.x-2 }
 
     Rectangle {
-        anchors.top: Dial.bottom
+        anchors.top: dial.bottom
         x: 20; width: 160; height: 16
         gradient: Gradient {
             GradientStop { position: 0.0; color: "steelblue" }
@@ -17,7 +17,7 @@ Rectangle {
         }
         radius: 8; opacity: 0.7; smooth: true
         Rectangle {
-            id: Slider
+            id: slider
             x: 2; y: 2; width: 30; height: 12
             radius: 6; smooth: true
             gradient: Gradient {

@@ -4,62 +4,62 @@ Rectangle {
     property string myText: "Lorem ipsum dolor sit amet, consectetur adipisicing elit"
 
     width: 800; height: 600
-    color: Palette.base
+    color: palette.base
 
-    SystemPalette { id: Palette; colorGroup: Qt.Active }
+    SystemPalette { id: palette; colorGroup: Qt.Active }
 
-    FontLoader { id: FixedFont; name: "Courier" }
+    FontLoader { id: fixedFont; name: "Courier" }
 
-    FontLoader { id: LocalFont; source: "fonts/Fontin-Bold.ttf" }
+    FontLoader { id: localFont; source: "fonts/Fontin-Bold.ttf" }
     /* A font by Jos Buivenga (exljbris) -> www.exljbris.nl */
 
-    FontLoader { id: WebFont; source: "http://www.princexml.com/fonts/steffmann/Starburst.ttf" }
-    FontLoader { id: WebFont2; source: "http://wrong.address.org" }
+    FontLoader { id: webFont; source: "http://www.princexml.com/fonts/steffmann/Starburst.ttf" }
+    FontLoader { id: webFont2; source: "http://wrong.address.org" }
 
     Column {
         anchors.fill: parent
         anchors.leftMargin: 10; anchors.rightMargin: 10
         Text {
             text: myText
-            color: Palette.windowText
+            color: palette.windowText
             width: parent.width; elide: "ElideRight"
             font.family: "Times"
             font.pointSize: 32
         }
         Text {
             text: myText
-            color: Palette.windowText
+            color: palette.windowText
             width: parent.width; elide: "ElideRight"
-            font.family: FixedFont.name
+            font.family: fixedFont.name
             font.pointSize: 32
         }
         Text {
             text: myText
-            color: Palette.windowText
+            color: palette.windowText
             width: parent.width; elide: "ElideRight"
-            font.family: LocalFont.name
+            font.family: localFont.name
             font.pointSize: 32
         }
         Text {
             text: {
-                if (WebFont.status == 1) myText
-                else if (WebFont.status == 2) "Loading..."
-                else if (WebFont.status == 3) "Error loading font"
+                if (webFont.status == 1) myText
+                else if (webFont.status == 2) "Loading..."
+                else if (webFont.status == 3) "Error loading font"
             }
-            color: Palette.windowText
+            color: palette.windowText
             width: parent.width; elide: "ElideRight"
-            font.family: WebFont.name
+            font.family: webFont.name
             font.pointSize: 32
         }
         Text {
             text: {
-                if (WebFont2.status == 1) myText
-                else if (WebFont2.status == 2) "Loading..."
-                else if (WebFont2.status == 3) "Error loading font"
+                if (webFont2.status == 1) myText
+                else if (webFont2.status == 2) "Loading..."
+                else if (webFont2.status == 3) "Error loading font"
             }
-            color: Palette.windowText
+            color: palette.windowText
             width: parent.width; elide: "ElideRight"
-            font.family: WebFont2.name
+            font.family: webFont2.name
             font.pointSize: 32
         }
     }

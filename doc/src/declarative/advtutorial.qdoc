@@ -1,0 +1,18 @@
+/*!
+\page advtutorial.html
+\title Advanced Tutorial
+
+This tutorial goes step-by-step through creating a full application using just QML. It is assumed that you already know basic QML (such as from doing the simple tutorial) and the focus is on showing how to turn that knowledge into a complete and functioning application.
+
+In this tutorial we recreate, step by step, the Same Game demo in $QTDIR/demos/declarative/samegame.qml. The results of the individual steps are in the $QTDIR/examples/declarative/tutorials/samegame directory.
+
+Tutorial chapters:
+
+\list
+\o \l {advtutorial1}{Advanced Tutorial 1 - Basic Game Screen and Block}
+\o \l {advtutorial2}{Advanced Tutorial 2 - Dynamically create the Blocks}
+\o \l {advtutorial3}{Advanced Tutorial 3 - Implement the Game Logic}
+\o \l {advtutorial4}{Advanced Tutorial 4 - Finishing Touches}
+\endlist
+
+*/

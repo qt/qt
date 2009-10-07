@@ -142,15 +142,15 @@ QFxGridScaledImage::QFxGridScaledImage(QIODevice *data)
         list[0] = list[0].trimmed();
         list[1] = list[1].trimmed();
 
-        if (list[0] == QLatin1String("gridLeft"))
+        if (list[0] == QLatin1String("border.left"))
             l = list[1].toInt();
-        else if (list[0] == QLatin1String("gridRight"))
+        else if (list[0] == QLatin1String("border.right"))
             r = list[1].toInt();
-        else if (list[0] == QLatin1String("gridTop"))
+        else if (list[0] == QLatin1String("border.top"))
             t = list[1].toInt();
-        else if (list[0] == QLatin1String("gridBottom"))
+        else if (list[0] == QLatin1String("border.bottom"))
             b = list[1].toInt();
-        else if (list[0] == QLatin1String("imageFile"))
+        else if (list[0] == QLatin1String("source"))
             imgFile = list[1];
         else if (list[0] == QLatin1String("horizontalTileRule"))
             _h = stringToRule(list[1]);

@@ -60,12 +60,8 @@ QGLEngineSharedShaders *QGLEngineSharedShaders::shadersForContext(const QGLConte
 {
     QGLEngineSharedShaders *p = reinterpret_cast<QGLEngineSharedShaders *>(qt_shared_shaders()->value(context));
     if (!p) {
-        QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
-        if (oldContext != context)
-            const_cast<QGLContext *>(context)->makeCurrent();
+        QGLShareContextScope scope(context);
         qt_shared_shaders()->insert(context, p = new QGLEngineSharedShaders(context));
-        if (oldContext && oldContext != context)
-            oldContext->makeCurrent();
     }
     return p;
 }

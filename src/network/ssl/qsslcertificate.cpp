@@ -395,11 +395,7 @@ QMultiMap<QSsl::AlternateNameEntryType, QString> QSslCertificate::alternateSubje
             else if (genName->type == GEN_EMAIL)
                 result.insert(QSsl::EmailEntry, altName);
         }
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
         q_sk_pop_free((STACK*)altNames, reinterpret_cast<void(*)(void*)>(q_sk_free));
-#else
-        q_sk_pop_free((STACK*)altNames, q_sk_free);
-#endif
     }
 
     return result;

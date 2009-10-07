@@ -17,7 +17,6 @@ Item {
         id: layout
         anchors.fill: parent
         spacing: 5
-        margin: 5
         ContactField {
             id: labelField
             anchors.left: layout.left

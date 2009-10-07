@@ -242,7 +242,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/bindinganimation/data/bindinganimation.0.png"
+        image: "bindinganimation.0.png"
     }
     Frame {
         msec: 976
@@ -498,7 +498,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/bindinganimation/data/bindinganimation.1.png"
+        image: "bindinganimation.1.png"
     }
     Frame {
         msec: 1936

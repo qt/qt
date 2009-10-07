@@ -8,7 +8,7 @@ Rectangle {
     height: 500
     radius: 7
     border.color: "black"
-    id: Page
+    id: page
     Image {
         x: 10
         y: 10
@@ -22,25 +22,25 @@ Rectangle {
         font.bold: true
         width: 370
         text: day
-        style: Outline
+        style: "Outline"
         styleColor: "#dedede"
     }
     Repeater {
-        model: Page.stickies
+        model: page.stickies
         Item {
             x: Math.random() * 200 + 100
             y: Math.random() * 300 + 50
-            id: StickyPage
+            id: stickyPage
             rotation: SpringFollow {
-                source: -Flick.horizontalVelocity / 100
+                source: -flickable.horizontalVelocity / 100
                 spring: 2.0
                 damping: 0.1
             }
             Item {
-                id: Sticky
+                id: sticky
                 scale: 0.5
                 Image {
-                    id: StickyImage
+                    id: stickyImage
                     source: "sticky.png"
                     smooth: true
                     y: -20
@@ -48,7 +48,7 @@ Rectangle {
                     scale: 0.6
                 }
                 TextEdit {
-                    id: MyText
+                    id: myText
                     smooth: true
                     font.pointSize: 28
                     readOnly: false
@@ -62,14 +62,14 @@ Rectangle {
                 }
                 Item {
                     y: -20
-                    x: StickyImage.x
-                    width: StickyImage.width * StickyImage.scale
-                    height: StickyImage.height * StickyImage.scale
+                    x: stickyImage.x
+                    width: stickyImage.width * stickyImage.scale
+                    height: stickyImage.height * stickyImage.scale
                     MouseRegion {
-                        id: Mouse
-                        onClicked: { MyText.focus = true }
+                        id: mouse
+                        onClicked: { myText.focus = true }
                         anchors.fill: parent
-                        drag.target: StickyPage
+                        drag.target: stickyPage
                         drag.axis: "XandYAxis"
                         drag.minimumY: 0
                         drag.maximumY: 500
@@ -87,14 +87,14 @@ Rectangle {
             states: [
                 State {
                     name: "pressed"
-                    when: Mouse.pressed
+                    when: mouse.pressed
                     PropertyChanges {
-                        target: Sticky
+                        target: sticky
                         rotation: 8
                         scale: 1
                     }
                     PropertyChanges {
-                        target: Page
+                        target: page
                         z: 8
                     }
                 }

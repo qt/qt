@@ -1,17 +1,16 @@
 import Qt 4.6
 
 Item {
-    id: Container
+    id: container
     width: 24
     height: 24
 
     property int rating
     property bool on
-
     signal clicked
 
     Image {
-        id: StarImage
+        id: starImage
         source: "pics/ghns_star.png"
         x: 6
         y: 7
@@ -19,15 +18,15 @@ Item {
         scale: 0.5
     }
     MouseRegion {
-        anchors.fill: Container
-        onClicked: { Container.clicked() }
+        anchors.fill: container
+        onClicked: { container.clicked() }
     }
     states: [
         State {
             name: "on"
-            when: Container.on == true
+            when: container.on == true
             PropertyChanges {
-                target: StarImage
+                target: starImage
                 opacity: 1
                 scale: 1
                 x: 1

@@ -43,7 +43,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_CORE_EXPORT const qreal qt_sine_table[QT_SINE_TABLE_SIZE] = {
+const qreal qt_sine_table[QT_SINE_TABLE_SIZE] = {
     0.0,
 	0.024541228522912288,
 	0.049067674327418015,

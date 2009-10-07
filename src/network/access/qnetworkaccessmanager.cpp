@@ -981,6 +981,10 @@ void QNetworkAccessManagerPrivate::clearCache(QNetworkAccessManager *manager)
     manager->d_func()->objectCache.clear();
 }
 
+QNetworkAccessManagerPrivate::~QNetworkAccessManagerPrivate()
+{
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qnetworkaccessmanager.cpp"

@@ -203,6 +203,7 @@ SUBDIRS += \
            qmainwindow \
            qmake \
            qmap \
+           qmath \
            qmatrixnxn \
            qmdiarea \
            qmdisubwindow \

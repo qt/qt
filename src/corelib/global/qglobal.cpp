@@ -955,6 +955,17 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \macro QT_VERSION_CHECK
+    \relates <QtGlobal>
+
+    Turns the major, minor and patch numbers of a version into an
+    integer, 0xMMNNPP (MM = major, NN = minor, PP = patch). This can 
+    be compared with another similarly processed version id.
+
+    \sa QT_VERSION
+*/
+
+/*!
     \macro QT_VERSION
     \relates <QtGlobal>
 

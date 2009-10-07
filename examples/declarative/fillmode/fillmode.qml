@@ -8,26 +8,26 @@ Image {
         running: true
         repeat: true
         PropertyAction { value: "Stretch" }
-        PropertyAction { target: Label; property: "text"; value: "Stretch" }
+        PropertyAction { target: label; property: "text"; value: "Stretch" }
         PauseAnimation { duration: 1000 }
         PropertyAction { value: "PreserveAspectFit" }
-        PropertyAction { target: Label; property: "text"; value: "PreserveAspectFit" }
+        PropertyAction { target: label; property: "text"; value: "PreserveAspectFit" }
         PauseAnimation { duration: 1000 }
         PropertyAction { value: "PreserveAspectCrop" }
-        PropertyAction { target: Label; property: "text"; value: "PreserveAspectCrop" }
+        PropertyAction { target: label; property: "text"; value: "PreserveAspectCrop" }
         PauseAnimation { duration: 1000 }
         PropertyAction { value: "Tile" }
-        PropertyAction { target: Label; property: "text"; value: "Tile" }
+        PropertyAction { target: label; property: "text"; value: "Tile" }
         PauseAnimation { duration: 1000 }
         PropertyAction { value: "TileHorizontally" }
-        PropertyAction { target: Label; property: "text"; value: "TileHorizontally" }
+        PropertyAction { target: label; property: "text"; value: "TileHorizontally" }
         PauseAnimation { duration: 1000 }
         PropertyAction { value: "TileVertically" }
-        PropertyAction { target: Label; property: "text"; value: "TileVertically" }
+        PropertyAction { target: label; property: "text"; value: "TileVertically" }
         PauseAnimation { duration: 1000 }
     }
     Text {
-        id: Label
+        id: label
         font.pointSize: 24
         color: "blue"
         style: "Outline"

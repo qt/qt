@@ -162,9 +162,9 @@
     //on windows if you're currently dragging a widget an inner eventloop was started by the system
     //to make sure that this timer is getting fired, we need to make sure to use the system timers
     //that will send a WM_TIMER event. We do that by settings the timer interval to 11
-    //It is 11 because QEventDispatcherWin32Private::registerTimer specifically checks if the interval
-    //is greater than 10 to determine if it should use a system timer (or the multimedia timer).
-#define STARTSTOP_TIMER_DELAY 11
+    //It is 16 because QEventDispatcherWin32Private::registerTimer specifically checks if the interval
+    //is greater than 11 to determine if it should use a system timer (or the multimedia timer).
+#define STARTSTOP_TIMER_DELAY 16
 #else
 #define STARTSTOP_TIMER_DELAY 0
 #endif

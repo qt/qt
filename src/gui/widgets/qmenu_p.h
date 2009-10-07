@@ -63,10 +63,17 @@
 
 #ifdef Q_WS_S60
 class CEikMenuPane;
+#define QT_SYMBIAN_FIRST_MENU_ITEM 32000
+#define QT_SYMBIAN_LAST_MENU_ITEM 41999 // 10000 items ought to be enough for anybody...
 #endif
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_MENU
+
+#ifdef Q_WS_S60
+void qt_symbian_show_toplevel(CEikMenuPane* menuPane);
+void qt_symbian_show_submenu(CEikMenuPane* menuPane, int id);
+#endif // Q_WS_S60
 
 class QTornOffMenu;
 class QEventLoop;

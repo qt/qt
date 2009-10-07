@@ -5,7 +5,7 @@ Rectangle {
     width: layout.width
     height: layout.height
     color: "white"
-    Bind {
+    Binding {
         id: currentItem
         value: true
     }

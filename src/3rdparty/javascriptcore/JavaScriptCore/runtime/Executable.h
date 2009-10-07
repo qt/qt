@@ -27,7 +27,9 @@
 #define Executable_h
 
 #include "JSFunction.h"
+#include "Interpreter.h"
 #include "Nodes.h"
+#include "SamplingTool.h"
 
 namespace JSC {
 
@@ -102,11 +104,30 @@ namespace JSC {
 
     class ScriptExecutable : public ExecutableBase {
     public:
-        ScriptExecutable(const SourceCode& source)
+        ScriptExecutable(JSGlobalData* globalData, const SourceCode& source)
             : ExecutableBase(NUM_PARAMETERS_NOT_COMPILED)
             , m_source(source)
             , m_features(0)
         {
+#if ENABLE(CODEBLOCK_SAMPLING)
+            if (SamplingTool* sampler = globalData->interpreter->sampler())
+                sampler->notifyOfScope(this);
+#else
+            UNUSED_PARAM(globalData);
+#endif
+        }
+
+        ScriptExecutable(ExecState* exec, const SourceCode& source)
+            : ExecutableBase(NUM_PARAMETERS_NOT_COMPILED)
+            , m_source(source)
+            , m_features(0)
+        {
+#if ENABLE(CODEBLOCK_SAMPLING)
+            if (SamplingTool* sampler = exec->globalData().interpreter->sampler())
+                sampler->notifyOfScope(this);
+#else
+            UNUSED_PARAM(exec);
+#endif
         }
 
         const SourceCode& source() { return m_source; }
@@ -137,8 +158,8 @@ namespace JSC {
 
     class EvalExecutable : public ScriptExecutable {
     public:
-        EvalExecutable(const SourceCode& source)
-            : ScriptExecutable(source)
+        EvalExecutable(ExecState* exec, const SourceCode& source)
+            : ScriptExecutable(exec, source)
             , m_evalCodeBlock(0)
         {
         }
@@ -158,7 +179,7 @@ namespace JSC {
         void compile(ExecState*, RefPtr<EvalNode> &, ScopeChainNode*);
 
         ExceptionInfo* reparseExceptionInfo(JSGlobalData*, ScopeChainNode*, CodeBlock*);
-        static PassRefPtr<EvalExecutable> create(const SourceCode& source) { return adoptRef(new EvalExecutable(source)); }
+        static PassRefPtr<EvalExecutable> create(ExecState* exec, const SourceCode& source) { return adoptRef(new EvalExecutable(exec, source)); }
 
     private:
         EvalCodeBlock* m_evalCodeBlock;
@@ -179,8 +200,8 @@ namespace JSC {
 
     class ProgramExecutable : public ScriptExecutable {
     public:
-        ProgramExecutable(const SourceCode& source)
-            : ScriptExecutable(source)
+        ProgramExecutable(ExecState* exec, const SourceCode& source)
+            : ScriptExecutable(exec, source)
             , m_programCodeBlock(0)
         {
         }
@@ -222,9 +243,14 @@ namespace JSC {
     class FunctionExecutable : public ScriptExecutable {
         friend class JIT;
     public:
-        static PassRefPtr<FunctionExecutable> create(const Identifier& name, const SourceCode& source, bool forceUsesArguments, FunctionParameters* parameters, int firstLine, int lastLine)
+        static PassRefPtr<FunctionExecutable> create(ExecState* exec, const Identifier& name, const SourceCode& source, bool forceUsesArguments, FunctionParameters* parameters, int firstLine, int lastLine)
         {
-            return adoptRef(new FunctionExecutable(name, source, forceUsesArguments, parameters, firstLine, lastLine));
+            return adoptRef(new FunctionExecutable(exec, name, source, forceUsesArguments, parameters, firstLine, lastLine));
+        }
+
+        static PassRefPtr<FunctionExecutable> create(JSGlobalData* globalData, const Identifier& name, const SourceCode& source, bool forceUsesArguments, FunctionParameters* parameters, int firstLine, int lastLine)
+        {
+            return adoptRef(new FunctionExecutable(globalData, name, source, forceUsesArguments, parameters, firstLine, lastLine));
         }
 
         ~FunctionExecutable();
@@ -265,8 +291,20 @@ namespace JSC {
         static PassRefPtr<FunctionExecutable> fromGlobalCode(const Identifier&, ExecState*, Debugger*, const SourceCode&, int* errLine = 0, UString* errMsg = 0);
 
     private:
-        FunctionExecutable(const Identifier& name, const SourceCode& source, bool forceUsesArguments, FunctionParameters* parameters, int firstLine, int lastLine)
-            : ScriptExecutable(source)
+        FunctionExecutable(JSGlobalData* globalData, const Identifier& name, const SourceCode& source, bool forceUsesArguments, FunctionParameters* parameters, int firstLine, int lastLine)
+            : ScriptExecutable(globalData, source)
+            , m_forceUsesArguments(forceUsesArguments)
+            , m_parameters(parameters)
+            , m_codeBlock(0)
+            , m_name(name)
+            , m_numVariables(0)
+        {
+            m_firstLine = firstLine;
+            m_lastLine = lastLine;
+        }
+
+        FunctionExecutable(ExecState* exec, const Identifier& name, const SourceCode& source, bool forceUsesArguments, FunctionParameters* parameters, int firstLine, int lastLine)
+            : ScriptExecutable(exec, source)
             , m_forceUsesArguments(forceUsesArguments)
             , m_parameters(parameters)
             , m_codeBlock(0)
