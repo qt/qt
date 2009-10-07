@@ -43,6 +43,7 @@
 #include <QLocale>
 #include <QTime>
 #include <QVariant>
+#include <QThread>
 
 #include <e32std.h>
 #include "private/qcore_symbian_p.h"
@@ -773,8 +774,8 @@ static QLocale::MeasurementSystem symbianMeasurementSystem()
 QLocale QSystemLocale::fallbackLocale() const
 {
     // load system data before query calls
-    static bool initDone = false;
-    if (!initDone) {
+    static QBasicAtomicInt initDone = Q_BASIC_ATOMIC_INITIALIZER(0);
+    if (initDone.testAndSetRelaxed(0, 1)) {
         _s60Locale.LoadSystemSettings();
 
         // Initialize platform version dependent function pointers
@@ -794,7 +795,12 @@ QLocale QSystemLocale::fallbackLocale() const
             ptrGetLongDateFormatSpec = &defaultFormatSpec;
         if (!ptrGetShortDateFormatSpec)
             ptrGetShortDateFormatSpec = &defaultFormatSpec;
+        bool ret = initDone.testAndSetRelease(1, 2);
+        Q_ASSERT(ret);
+        Q_UNUSED(ret);
     }
+    while(initDone != 2)
+        QThread::yieldCurrentThread();
 
     TLanguage lang = User::Language();
     QString locale = QLatin1String(qt_symbianLocaleName(lang));
