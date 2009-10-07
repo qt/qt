@@ -146,6 +146,17 @@ void MMF::VideoOutput::moveEvent(QMoveEvent* event)
     videoOutputRegionChanged();
 }
 
+bool MMF::VideoOutput::event(QEvent* event)
+{
+    TRACE_CONTEXT(VideoOutput::event, EVideoInternal);
+
+    if(event->type() == QEvent::WinIdChange) {
+        TRACE_0("WinIdChange");
+        videoOutputRegionChanged();
+        return true;
+    }
+    else
+        return QWidget::event(event);
 }
 
 

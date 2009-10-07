@@ -49,6 +49,7 @@ protected:
     void paintEvent(QPaintEvent* event);
     void resizeEvent(QResizeEvent* event);
     void moveEvent(QMoveEvent* event);
+    bool event(QEvent* event);
 
 private:
     void dump() const;
