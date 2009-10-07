@@ -1,8 +1,7 @@
 /* This script file handles the game logic */
 //Note that X/Y referred to here are in game coordinates
-var maxX = 10;//Nums are for tileSize 40
+var maxX = 10;//Nums are for gameCanvas.tileSize 40
 var maxY = 15;
-var tileSize = 40;
 var maxIndex = maxX*maxY;
 var board = new Array(maxIndex);
 var tileSrc = "content/BoomBlock.qml";
@@ -30,8 +29,9 @@ function initBoard()
             board[i].destroy();
     }
 
-    maxX = Math.floor(gameCanvas.width/tileSize);
-    maxY = Math.floor(gameCanvas.height/tileSize);
+    //Calculate board size
+    maxX = Math.floor(gameCanvas.width/gameCanvas.tileSize);
+    maxY = Math.floor(gameCanvas.height/gameCanvas.tileSize);
     maxIndex = maxY*maxX;
 
     //Close dialogs
@@ -55,8 +55,8 @@ var floodBoard;//Set to 1 if the floodFill reaches off that node
 //NOTE: Be careful with vars named x,y, as the calling object's x,y are still in scope
 function handleClick(x,y)
 {
-    xIdx = Math.floor(x/tileSize);
-    yIdx = Math.floor(y/tileSize);
+    xIdx = Math.floor(x/gameCanvas.tileSize);
+    yIdx = Math.floor(y/gameCanvas.tileSize);
     if(xIdx >= maxX || xIdx < 0 || yIdx >= maxY || yIdx < 0)
         return;
     if(board[index(xIdx, yIdx)] == null)
@@ -110,7 +110,7 @@ function shuffleDown()
             }else{
                 if(fallDist > 0){
                     obj = board[index(xIdx,yIdx)];
-                    obj.targetY += fallDist * tileSize;
+                    obj.targetY += fallDist * gameCanvas.tileSize;
                     board[index(xIdx,yIdx+fallDist)] = obj;
                     board[index(xIdx,yIdx)] = null;
                 }
@@ -128,7 +128,7 @@ function shuffleDown()
                     obj = board[index(xIdx,yIdx)];
                     if(obj == null)
                         continue;
-                    obj.targetX -= fallDist * tileSize;
+                    obj.targetX -= fallDist * gameCanvas.tileSize;
                     board[index(xIdx-fallDist,yIdx)] = obj;
                     board[index(xIdx,yIdx)] = null;
                 }
@@ -187,11 +187,11 @@ function createBlock(xIdx,yIdx){
         }
         dynamicObject.type = Math.floor(Math.random() * 3);
         dynamicObject.parent = gameCanvas;
-        dynamicObject.x = xIdx*tileSize;
-        dynamicObject.targetX = xIdx*tileSize;
-        dynamicObject.targetY = yIdx*tileSize;
-        dynamicObject.width = tileSize;
-        dynamicObject.height = tileSize;
+        dynamicObject.x = xIdx*gameCanvas.tileSize;
+        dynamicObject.targetX = xIdx*gameCanvas.tileSize;
+        dynamicObject.targetY = yIdx*gameCanvas.tileSize;
+        dynamicObject.width = gameCanvas.tileSize;
+        dynamicObject.height = gameCanvas.tileSize;
         dynamicObject.spawned = true;
         board[index(xIdx,yIdx)] = dynamicObject;
     }else{//isError or isLoading

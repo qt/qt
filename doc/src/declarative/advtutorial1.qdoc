@@ -1,0 +1,42 @@
+/*!
+\page advtutorial1.html
+\example declarative/tutorials/samegame/samegame1
+\title Advanced Tutorial 1 - Creating the Game canvas and block
+\target advtutorial1
+
+The first step is to create the items in your application. In Same Game we have a main game screen and the blocks that populate it.
+
+\image declarative-adv-tutorial1.png
+
+Here is the QML code for the basic elements. The game window:
+
+\snippet declarative/tutorials/samegame/samegame1/samegame.qml 0
+
+This gives you a basic game window, with room for the game canvas. A new game
+button and room to display the score. The one thing you may not recognize here
+is the SystemPalette item. This item provides access to the Qt system palette
+and is used to make the button look more like a system button (for exact native
+feel you would use a QPushButton). Since we want a fully QML button, and the Fx
+primitives don't include a button, we had to write our own. Below is the code
+which we wrote to do this:
+
+\snippet declarative/tutorials/samegame/samegame1/Button.qml 0
+
+Note that this Button component was written to be fairly generic, in case we
+want to use a similarly styled button later.
+
+And here is a simple block:
+
+\snippet declarative/tutorials/samegame/samegame1/Block.qml 0
+
+Since it doesn't do anything yet it's very simple, just an image. As the
+tutorial progresses and the block starts doing things the file will become
+more than just an image. Note that we've set the image to be the size of the itm. This will be used later, when we dynamically create and size the block items the image will be scaled automatically to the correct size.
+ 
+You should be familiar with all that goes on in these files so far. This is a
+very basic start and doesn't move at all - next we will populate the game canvas
+with some blocks.
+
+[\l {advtutorial.html}{Advanced Tutorial}] [Next: \l {advtutorial2}{Advanced Tutorial 2}]
+*/
+

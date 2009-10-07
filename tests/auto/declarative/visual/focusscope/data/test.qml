@@ -242,7 +242,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/focusscope/data/test.0.png"
+        image: "test.0.png"
     }
     Frame {
         msec: 976
@@ -506,7 +506,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/focusscope/data/test.1.png"
+        image: "test.1.png"
     }
     Frame {
         msec: 1936
@@ -770,7 +770,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/focusscope/data/test.2.png"
+        image: "test.2.png"
     }
     Frame {
         msec: 2896
@@ -1042,7 +1042,7 @@ VisualTest {
     }
     Frame {
         msec: 3840
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/focusscope/data/test.3.png"
+        image: "test.3.png"
     }
     Frame {
         msec: 3856
@@ -1306,7 +1306,7 @@ VisualTest {
     }
     Frame {
         msec: 4800
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/focusscope/data/test.4.png"
+        image: "test.4.png"
     }
     Frame {
         msec: 4816
@@ -1554,7 +1554,7 @@ VisualTest {
     }
     Frame {
         msec: 5760
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/focusscope/data/test.5.png"
+        image: "test.5.png"
     }
     Frame {
         msec: 5776

@@ -242,7 +242,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "/Users/akennedy/Qt/kinetic/tests/auto/declarative/visual/repeater/data/basic4.0.png"
+        image: "basic4.0.png"
     }
     Frame {
         msec: 976
