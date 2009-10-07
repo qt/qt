@@ -35,12 +35,12 @@ Item {
 \section1 Querying the Active Focus Item
 
 Whether or not an \l Item has \e {active focus} can be queried through the
-read-only property \c {Item::activeFocus}.  For example, here we have a \l Text
+read-only property \c {Item::focus}.  For example, here we have a \l Text
 element whose text is determined by whether or not it has \e {active focus}.
 
 \code
 Text {
-    text: activeFocus ? "I have active focus!" : "I do not have active focus"
+    text: focus ? "I have active focus!" : "I do not have active focus"
 }
 \endcode
 
@@ -167,7 +167,7 @@ Conceptually \e {focus scopes} are quite simple.
 \o Within each \e {focus scope} one element may have \c {Item::focus} set to true.  If more than one \l Item has the \c {Item::focus} property set, the first is selected and the others are unset, just like when there are no \e {focus scopes}.
 \o When a \e {focus scope} receives \e {active focus}, the contained element with \c {Item::focus} set (if any) also gets \e {active focus}.  If this element is
 also a \l FocusScope, the proxying behaviour continues.  Both the
-\e {focus scope} and the sub-focused item will have \c {Item::activeFocus} set.
+\e {focus scope} and the sub-focused item will have \c {Item::focus} set.
 \endlist
 
 So far the example has the second component statically selected.  It is trivial
