@@ -280,7 +280,7 @@ QScriptValue QScriptValuePrivate::property(const JSC::Identifier &id, int resolv
 {
     Q_ASSERT(isObject());
     JSC::ExecState *exec = engine->currentFrame;
-    JSC::JSObject *object = jscValue.getObject();
+    JSC::JSObject *object = JSC::asObject(jscValue);
     JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
     JSC::JSValue result;
     if (const_cast<JSC::JSObject*>(object)->getOwnPropertySlot(exec, id, slot)) {
@@ -303,7 +303,7 @@ QScriptValue QScriptValuePrivate::property(quint32 index, int resolveMode) const
 {
     Q_ASSERT(isObject());
     JSC::ExecState *exec = engine->currentFrame;
-    JSC::JSObject *object = jscValue.getObject();
+    JSC::JSObject *object = JSC::asObject(jscValue);
     JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
     JSC::JSValue result;
     if (const_cast<JSC::JSObject*>(object)->getOwnPropertySlot(exec, index, slot)) {
