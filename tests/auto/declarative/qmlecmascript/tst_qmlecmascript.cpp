@@ -667,6 +667,7 @@ void tst_qmlecmascript::dynamicDestruction()
     QMetaObject::invokeMethod(object, "killMe");
     QVERIFY(object);
     QTest::qWait(0);
+    QCoreApplication::instance()->processEvents(QEventLoop::DeferredDeletion);
     QVERIFY(!object);
 }
 
