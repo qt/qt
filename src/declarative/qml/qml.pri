@@ -35,6 +35,7 @@ SOURCES += qml/qmlparser.cpp \
     qml/qmlsqldatabase.cpp \
     qml/qmetaobjectbuilder.cpp \
     qml/qmlwatcher.cpp \
+    qml/qmlscript.cpp \
     qml/qmlpropertycache.cpp \
     qml/qmlintegercache.cpp \
     qml/qmltypenamecache.cpp \

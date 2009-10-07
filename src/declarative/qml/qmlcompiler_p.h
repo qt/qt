@@ -171,6 +171,7 @@ private:
 
 
     bool buildObject(QmlParser::Object *obj, const BindingContext &);
+    bool buildScript(QmlParser::Object *obj, QmlParser::Object *script);
     bool buildComponent(QmlParser::Object *obj, const BindingContext &);
     bool buildSubObject(QmlParser::Object *obj, const BindingContext &);
     bool buildSignal(QmlParser::Property *prop, QmlParser::Object *obj, 

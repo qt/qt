@@ -94,6 +94,7 @@ public:
     QScriptValue scriptValue;
 
     QList<QScriptValue> scripts;
+    void addScript(const QString &script, QObject *scope);
 
     QUrl url;
 

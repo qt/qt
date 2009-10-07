@@ -118,6 +118,7 @@ public:
         StoreInterface,           /* storeObject */
 
         StoreSignal,              /* storeSignal */
+        StoreScript,              /* storeScript */
 
         //
         // Unresolved single assignment
@@ -237,6 +238,9 @@ public:
             int propertyIndex;
             int value;
         } storeString;
+        struct {
+            int value;
+        } storeScript;
         struct {
             int propertyIndex;
             int value;

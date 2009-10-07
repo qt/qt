@@ -48,6 +48,7 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qdebug.h>
 #include <private/qmlbindingoptimizations_p.h>
+#include <QtDeclarative/qmlinfo.h>
 
 // 6-bits
 #define MAXIMUM_DEFAULT_OBJECTS 63
@@ -58,6 +59,44 @@ QmlContextPrivate::QmlContextPrivate()
 : parent(0), engine(0), isInternal(false), propertyNames(0), notifyIndex(-1), 
   highPriorityCount(0), imports(0), expressions(0), idValues(0), idValueCount(0)
 {
+}
+
+void QmlContextPrivate::addScript(const QString &script, QObject *scopeObject)
+{
+    if (!engine) 
+        return;
+
+    QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
+    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
+
+    QScriptContext *scriptContext = scriptEngine->pushCleanContext();
+    scriptContext->pushScope(scriptValue);
+    
+    if (scopeObject)
+        scriptContext->pushScope(enginePriv->objectClass->newQObject(scopeObject));
+
+    QScriptValue scope = scriptEngine->newObject();
+    scriptContext->setActivationObject(scope);
+
+    QScriptValue val = scriptEngine->evaluate(script);
+
+    if (scriptEngine->hasUncaughtException()) {
+        if (scriptEngine->uncaughtException().isError()){
+            QScriptValue exception = scriptEngine->uncaughtException();
+            if (!exception.property(QLatin1String("fileName")).toString().isEmpty()){
+                qWarning() << exception.property(QLatin1String("fileName")).toString()
+                           << scriptEngine->uncaughtExceptionLineNumber()
+                           << exception.toString();
+
+            } else {
+                qmlInfo(scopeObject) << exception.toString();
+            }
+        }
+    }
+
+    scriptEngine->popContext();
+
+    scripts.append(scope);
 }
 
 void QmlContextPrivate::dump()

@@ -39,46 +39,44 @@
 **
 ****************************************************************************/
 
-#ifndef QMLSCRIPT_H
-#define QMLSCRIPT_H
+// This is just a dummy file to include the documentation
 
-#include <QtDeclarative/qfxglobal.h>
-#include <QtCore/qobject.h>
-#include <QtDeclarative/qml.h>
+/*!
+    \qmlclass Script QmlScript
+    \brief The Script element adds JavaScript snippets.
+    \ingroup group_utility
 
-QT_BEGIN_HEADER
+    QmlScript is used to add convenient JavaScript "glue" methods to
+    your Qt Declarative application or component. While you can have any JavaScript code
+    within a QmlScript, it is best to limit yourself to defining functions.
 
-QT_BEGIN_NAMESPACE
+    \qml
+    Script {
+        function debugMyComponent() {
+            print(text.text);
+            print(otherinterestingitem.property);
+        }
+    }
+    MouseRegion { onClicked: debugMyComponent() }
+    \endqml
 
-QT_MODULE(Declarative)
+    \note QmlScript executes JavaScript as soon as it is specified.
+    When defining a component, this may be before the execution context is
+    fully specified.  As a result some properties or items may not be
+    accessible. By limiting your JavaScript to defining functions that are
+    only executed later once the context is fully defined, this problem is
+    avoided.
+*/
 
-class QmlScriptPrivate;
-class Q_DECLARATIVE_EXPORT QmlScript : public QObject
-{
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlScript)
+/*!
+    \qmlproperty string Script::script
+    \default
+    JavaScript code to execute.
+*/
 
-    Q_PROPERTY(QString script READ script WRITE setScript)
-    Q_PROPERTY(QUrl source READ source WRITE setSource)
-    Q_CLASSINFO("DefaultProperty", "script")
+/*!
+    \qmlproperty url Script::source
 
-public:
-    QmlScript(QObject *parent=0);
-
-    QString script() const;
-    void setScript(const QString &);
-
-    QUrl source() const;
-    void setSource(const QUrl &);
-
-private Q_SLOTS:
-    void replyFinished();
-};
-
-QT_END_NAMESPACE
-
-QML_DECLARE_TYPE(QmlScript)
-
-QT_END_HEADER
-
-#endif
+    Setting this property causes the Script element to read JavaScript code from
+    the file specified.
+*/

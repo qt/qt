@@ -564,7 +564,7 @@ QmlMetaProperty::setBinding(QmlAbstractBinding *newBinding) const
     if (!isProperty() || (type() & Attached) || !d->object)
         return 0;
 
-    d->setBinding(d->object, d->core, newBinding);
+    return d->setBinding(d->object, d->core, newBinding);
 }
 
 QmlAbstractBinding *

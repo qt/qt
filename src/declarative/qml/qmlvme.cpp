@@ -564,6 +564,13 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
             }
             break;
 
+        case QmlInstruction::StoreScript:
+            {
+                QObject *target = stack.top();
+                cp->addScript(primitives.at(instr.storeScript.value), target);
+            }
+            break;
+
         case QmlInstruction::BeginObject:
             {
                 QObject *target = stack.top();

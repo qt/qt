@@ -289,12 +289,26 @@ ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
         if (lastTypeDot >= 0)
             resolvableObjectType.replace(QLatin1Char('.'),QLatin1Char('/'));
 
-        QmlScriptParser::TypeReference *typeRef = _parser->findOrCreateType(resolvableObjectType);
+        bool isScript = resolvableObjectType == QLatin1String("Script");
+
+        if (isScript) {
+            if (_stateStack.isEmpty() || _stateStack.top().property) {
+                QmlError error;
+                error.setDescription(QLatin1String("Invalid use of Script block"));
+                error.setLine(typeLocation.startLine);
+                error.setColumn(typeLocation.startColumn);
+                _parser->_errors << error;
+            }
+        }
 
         Object *obj = new Object;
-        obj->type = typeRef->id;
 
-        typeRef->refObjects.append(obj);
+        if (!isScript) {
+            QmlScriptParser::TypeReference *typeRef = _parser->findOrCreateType(resolvableObjectType);
+            obj->type = typeRef->id;
+
+            typeRef->refObjects.append(obj);
+        }
 
         // XXX this doesn't do anything (_scope never builds up)
         _scope.append(resolvableObjectType);
@@ -303,7 +317,11 @@ ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
 
         obj->location = location;
 
-        if (propertyCount) {
+        if (isScript) {
+
+            _stateStack.top().object->scriptBlockObjects.append(obj);
+
+        } else if (propertyCount) {
 
             Property *prop = currentProperty();
             Value *v = new Value;
@@ -385,6 +403,26 @@ Object *ProcessAST::defineObjectBinding(AST::UiQualifiedId *qualifiedId,
         _stateStack.pop(); // object
 
         return obj;
+    } else if (objectType == QLatin1String("Script")) {
+
+        AST::UiObjectMemberList *it = initializer->members;
+        for (; it; it = it->next) {
+            AST::UiScriptBinding *scriptBinding = AST::cast<AST::UiScriptBinding *>(it->member);
+            if (! scriptBinding)
+                continue;
+
+            QString propertyName = asString(scriptBinding->qualifiedId);
+            if (propertyName == QLatin1String("source")) {
+                if (AST::ExpressionStatement *stmt = AST::cast<AST::ExpressionStatement *>(scriptBinding->statement)) {
+                    AST::StringLiteral *string = AST::cast<AST::StringLiteral *>(stmt->expression);
+                    if (string) { 
+                        // We need to add this as a resource
+                        _parser->_refUrls << QUrl(string->value->asString());
+                    }
+                }
+            }
+        }
+
     }
 
     return defineObjectBinding_helper(qualifiedId, objectType, typeLocation, location, initializer);
@@ -865,6 +903,11 @@ bool QmlScriptParser::parse(const QByteArray &qmldata, const QUrl &url)
 QList<QmlScriptParser::TypeReference*> QmlScriptParser::referencedTypes() const
 {
     return _refTypes;
+}
+
+QList<QUrl> QmlScriptParser::referencedResources() const
+{
+    return _refUrls;
 }
 
 Object *QmlScriptParser::tree() const
