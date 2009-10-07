@@ -54,6 +54,8 @@
 #include <qtoolbutton.h>
 #include <qlineedit.h>
 #include <qkeysequence.h>
+#include <qmenu.h>
+#include <private/qtoolbarextension_p.h>
 
 #include "../../shared/util.h"
 
@@ -569,6 +571,29 @@ void tst_QToolBar::actionGeometry()
     qt_x11_wait_for_window_manager(&tb);
 #endif
 
+    QList<QToolBarExtension *> extensions = tb.findChildren<QToolBarExtension *>();
+
+    QRect rect01;
+    QRect rect02;
+    QRect rect03;
+    QRect rect04;
+    QMenu *popupMenu;
+
+    if (extensions.size() != 0)
+    {
+        QToolBarExtension *extension = extensions.at(0);
+        if (extension->isVisible()) {
+            QRect rect0 = extension->geometry();
+            QTest::mouseClick( extension, Qt::LeftButton, 0, rect0.center(), -1 );
+            QApplication::processEvents();
+            popupMenu = qobject_cast<QMenu *>(extension->menu());
+            rect01 = popupMenu->actionGeometry(&action1);
+            rect02 = popupMenu->actionGeometry(&action2);
+            rect03 = popupMenu->actionGeometry(&action3);
+            rect04 = popupMenu->actionGeometry(&action4);
+        }
+    }
+
     QRect rect1 = tb.actionGeometry(&action1);
     QRect rect2 = tb.actionGeometry(&action2);
     QRect rect3 = tb.actionGeometry(&action3);
@@ -590,10 +615,25 @@ void tst_QToolBar::actionGeometry()
     QVERIFY(!rect4.isNull());
     QVERIFY(!rect4.isEmpty());
 
-    QCOMPARE(tb.actionAt(rect1.center()), &action1);
-    QCOMPARE(tb.actionAt(rect2.center()), &action2);
-    QCOMPARE(tb.actionAt(rect3.center()), &action3);
-    QCOMPARE(tb.actionAt(rect4.center()), &action4);
+    if (rect01.isValid())
+        QCOMPARE(popupMenu->actionAt(rect01.center()), &action1);
+    else
+        QCOMPARE(tb.actionAt(rect1.center()), &action1);
+
+    if (rect02.isValid())
+        QCOMPARE(popupMenu->actionAt(rect02.center()), &action2);
+    else
+        QCOMPARE(tb.actionAt(rect2.center()), &action2);
+
+    if (rect03.isValid())
+        QCOMPARE(popupMenu->actionAt(rect03.center()), &action3);
+    else
+        QCOMPARE(tb.actionAt(rect3.center()), &action3);
+
+    if (rect04.isValid())
+        QCOMPARE(popupMenu->actionAt(rect04.center()), &action4);
+    else
+        QCOMPARE(tb.actionAt(rect4.center()), &action4);
 }
 
 void tst_QToolBar::actionAt()
@@ -864,33 +904,82 @@ void tst_QToolBar::actionTriggered()
     qt_x11_wait_for_window_manager(&tb);
 #endif
 
+    QList<QToolBarExtension *> extensions = tb.findChildren<QToolBarExtension *>();
+
+    QRect rect01;
+    QRect rect02;
+    QRect rect03;
+    QRect rect04;
+    QMenu *popupMenu;
+
+    if (extensions.size() != 0)
+    {
+        QToolBarExtension *extension = extensions.at(0);
+        if (extension->isVisible()) {
+            QRect rect0 = extension->geometry();
+            QTest::mouseClick( extension, Qt::LeftButton, 0, rect0.center(), -1 );
+            QApplication::processEvents();
+            popupMenu = qobject_cast<QMenu *>(extension->menu());
+            rect01 = popupMenu->actionGeometry(&action1);
+            rect02 = popupMenu->actionGeometry(&action2);
+            rect03 = popupMenu->actionGeometry(&action3);
+            rect04 = popupMenu->actionGeometry(&action4);
+        }
+    }
+
     QRect rect1 = tb.actionGeometry(&action1);
     QRect rect2 = tb.actionGeometry(&action2);
     QRect rect3 = tb.actionGeometry(&action3);
     QRect rect4 = tb.actionGeometry(&action4);
-    QAbstractButton *button1 = qobject_cast<QAbstractButton *>(tb.childAt(rect1.center()));
-    QAbstractButton *button2 = qobject_cast<QAbstractButton *>(tb.childAt(rect2.center()));
-    QAbstractButton *button3 = qobject_cast<QAbstractButton *>(tb.childAt(rect3.center()));
-    QAbstractButton *button4 = qobject_cast<QAbstractButton *>(tb.childAt(rect4.center()));
-    QVERIFY(button1 != 0);
-    QVERIFY(button2 != 0);
-    QVERIFY(button3 != 0);
-    QVERIFY(button4 != 0);
+
+    QAbstractButton *button1;
+    QAbstractButton *button2;
+    QAbstractButton *button3;
+    QAbstractButton *button4;
+
+    if (!rect01.isValid()) {
+        button1 = qobject_cast<QAbstractButton *>(tb.childAt(rect1.center()));
+        QVERIFY(button1 != 0);
+    }
+    if (!rect02.isValid()) {
+        button2 = qobject_cast<QAbstractButton *>(tb.childAt(rect2.center()));
+        QVERIFY(button2 != 0);
+    }
+    if (!rect03.isValid()) {
+        button3 = qobject_cast<QAbstractButton *>(tb.childAt(rect3.center()));
+        QVERIFY(button3 != 0);
+    }
+    if (!rect04.isValid()) {
+        button4 = qobject_cast<QAbstractButton *>(tb.childAt(rect4.center()));
+        QVERIFY(button4 != 0);
+    }
 
     ::triggered = 0;
-    QTest::mouseClick(button1, Qt::LeftButton);
+    if (!rect01.isValid())
+        QTest::mouseClick(button1, Qt::LeftButton);
+    else
+        QTest::mouseClick(popupMenu, Qt::LeftButton, 0, rect01.center(), -1 );
     QCOMPARE(::triggered, &action1);
 
     ::triggered = 0;
-    QTest::mouseClick(button2, Qt::LeftButton);
+    if (!rect02.isValid())
+        QTest::mouseClick(button2, Qt::LeftButton);
+    else
+        QTest::mouseClick(popupMenu, Qt::LeftButton, 0, rect02.center(), -1 );
     QCOMPARE(::triggered, &action2);
 
     ::triggered = 0;
-    QTest::mouseClick(button3, Qt::LeftButton);
+    if (!rect03.isValid())
+        QTest::mouseClick(button3, Qt::LeftButton);
+    else
+        QTest::mouseClick(popupMenu, Qt::LeftButton, 0, rect03.center(), -1 );
     QCOMPARE(::triggered, &action3);
 
     ::triggered = 0;
-    QTest::mouseClick(button4, Qt::LeftButton);
+    if (!rect04.isValid())
+        QTest::mouseClick(button4, Qt::LeftButton);
+    else
+        QTest::mouseClick(popupMenu, Qt::LeftButton, 0, rect04.center(), -1 );
     QCOMPARE(::triggered, &action4);
 }
 
@@ -977,7 +1066,7 @@ void tst_QToolBar::accel()
     mw.show();
     QApplication::setActiveWindow(&mw);
     QTest::qWait(100);
-    QTRY_COMPARE(QApplication::activeWindow(), &mw);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&mw));
 
     QTest::keyClick(&mw, Qt::Key_T, Qt::AltModifier);
     QTest::qWait(300);
