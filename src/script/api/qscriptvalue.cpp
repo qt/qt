@@ -466,22 +466,6 @@ void QScriptValuePrivate::detachFromEngine()
     engine = 0;
 }
 
-void* QScriptValuePrivate::operator new(size_t size, QScriptEnginePrivate *engine)
-{
-    if (engine)
-        return engine->allocateScriptValuePrivate(size);
-    return qMalloc(size);
-}
-
-void QScriptValuePrivate::operator delete(void *ptr)
-{
-    QScriptValuePrivate *d = reinterpret_cast<QScriptValuePrivate*>(ptr);
-    if (d->engine)
-        d->engine->freeScriptValuePrivate(d);
-    else
-        qFree(d);
-}
-
 /*!
   \internal
 */
