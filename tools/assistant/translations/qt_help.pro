@@ -42,11 +42,9 @@ HEADERS += ../lib/qhelpcollectionhandler_p.h \
 TR_DIR = $$PWD/../../../translations
 TRANSLATIONS = \
     $$TR_DIR/qt_help_da.ts \
-    $$TR_DIR/qt_help_de.ts
+    $$TR_DIR/qt_help_de.ts \
     $$TR_DIR/qt_help_ja.ts \
     $$TR_DIR/qt_help_pl.ts \
     $$TR_DIR/qt_help_ru.ts \
     $$TR_DIR/qt_help_zh_CN.ts \
     $$TR_DIR/qt_help_zh_TW.ts
-
-error("This is a dummy profile to be used for translations ONLY.")

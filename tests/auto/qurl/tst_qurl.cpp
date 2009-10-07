@@ -2624,6 +2624,13 @@ void tst_QUrl::tolerantParser()
         //QCOMPARE(tsdgeosQUrl.toEncoded(), tsdgeosExpected); // unusable output from qtestlib...
         QCOMPARE(QString(tsdgeosQUrl.toEncoded()), QString(tsdgeosExpected));
     }
+
+    {
+        QUrl url;
+        url.setUrl("http://strange<username>@hostname/", QUrl::TolerantMode);
+        QVERIFY(url.isValid());
+        QCOMPARE(QString(url.toEncoded()), QString("http://strange%3Cusername%3E@hostname/"));
+    }
 }
 
 void tst_QUrl::correctEncodedMistakes_data()
@@ -3594,9 +3601,9 @@ void tst_QUrl::setAuthority()
 
 void tst_QUrl::errorString()
 {
-    QUrl u = QUrl::fromEncoded("http://strange<username>@ok_hostname/", QUrl::StrictMode);
+    QUrl u = QUrl::fromEncoded("http://strange<username>@bad_hostname/", QUrl::StrictMode);
     QVERIFY(!u.isValid());
-    QString errorString = "Invalid URL \"http://strange<username>@ok_hostname/\": "
+    QString errorString = "Invalid URL \"http://strange<username>@bad_hostname/\": "
                           "error at position 14: expected end of URL, but found '<'";
     QCOMPARE(u.errorString(), errorString);
 

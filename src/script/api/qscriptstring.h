@@ -76,6 +76,8 @@ private:
     Q_DECLARE_PRIVATE(QScriptString)
 };
 
+Q_SCRIPT_EXPORT uint qHash(const QScriptString &key);
+
 QT_END_NAMESPACE
 
 QT_END_HEADER

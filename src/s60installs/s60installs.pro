@@ -19,7 +19,6 @@ symbian: {
         QtXml.dll \
         QtGui.dll \
         QtNetwork.dll \
-        QtScript.dll \
         QtTest.dll \
         QtSql.dll
 
@@ -92,6 +91,10 @@ symbian: {
 
     contains(QT_CONFIG, phonon): {
        qtlibraries.sources += Phonon.dll
+    }
+
+    contains(QT_CONFIG, script): {
+        qtlibraries.sources += QtScript.dll
     }
 
     contains(QT_CONFIG, webkit): {

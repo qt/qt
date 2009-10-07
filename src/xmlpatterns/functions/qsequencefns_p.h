@@ -149,7 +149,6 @@ namespace QPatternist
             // RVCT doesn't like using template parameter in trinary operator when the trinary operator result is
             // passed directly into another constructor. 
             Q_ASSERT(Id == IDExistsFN || Id == IDEmptyFN);
-            
 
             const Expression::Ptr me(FunctionCall::compress(context));
 

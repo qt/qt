@@ -112,7 +112,7 @@ QAction *QSoftKeyManager::createAction(StandardSoftKey standardKey, QWidget *act
 {
     const char* text = standardSoftKeyText(standardKey);
     QAction *action = new QAction(QSoftKeyManager::tr(text), actionWidget);
-    QAction::SoftKeyRole softKeyRole;
+    QAction::SoftKeyRole softKeyRole = QAction::NoSoftKey;
     switch (standardKey) {
     case OkSoftKey:
     case SelectSoftKey:
@@ -121,7 +121,6 @@ QAction *QSoftKeyManager::createAction(StandardSoftKey standardKey, QWidget *act
         softKeyRole = QAction::PositiveSoftKey;
         break;
     case CancelSoftKey:
-    default:
         softKeyRole = QAction::NegativeSoftKey;
         break;
     }

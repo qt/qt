@@ -41,7 +41,6 @@
 
 #include <qstringlist.h>
 #include <qset.h>
-#include <qstringmatcher.h>
 
 QT_BEGIN_NAMESPACE
 

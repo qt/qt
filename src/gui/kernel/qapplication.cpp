@@ -84,6 +84,8 @@
 #include "qinputcontextfactory.h"
 #endif
 
+#include "qguiplatformplugin_p.h"
+
 #include <qthread.h>
 #include <private/qthread_p.h>
 
@@ -788,6 +790,9 @@ void QApplicationPrivate::construct(
             qCritical("Library qttestability load failed!");
         }
     }
+
+    //make sure the plugin is loaded
+    qt_guiPlatformPlugin();
 #endif
 }
 
@@ -1955,38 +1960,7 @@ void QApplicationPrivate::setSystemFont(const QFont &font)
 */
 QString QApplicationPrivate::desktopStyleKey()
 {
-QString desktopstyle;
-#if defined(Q_WS_WIN) && defined(Q_WS_WINCE)
-    if (qt_wince_is_smartphone() || qt_wince_is_pocket_pc())
-        desktopstyle = QLatin1String("WindowsMobile");
-     else
-        desktopstyle = QLatin1String("WindowsCE");
-
-#elif defined(Q_WS_WIN)
-            if ((QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
-                && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based))
-                desktopstyle = QLatin1String("WindowsVista");
-                else if ((QSysInfo::WindowsVersion >= QSysInfo::WV_XP
-                && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based))
-                desktopstyle = QLatin1String("WindowsXP");
-            else
-                desktopstyle = QLatin1String("Windows");                // default styles for Windows
-#elif defined(Q_WS_X11) && defined(Q_OS_SOLARIS)
-            desktopstyle = QLatin1String("CDE");                        // default style for X11 on Solaris
-#elif defined(Q_WS_S60)
-            desktopstyle = QLatin1String("S60");                        // default style for Symbian with S60
-#elif defined(Q_OS_SYMBIAN)
-            desktopstyle = QLatin1String("Windows");                    // default style for Symbian without S60
-#elif defined(Q_WS_X11) && defined(Q_OS_IRIX)
-            desktopstyle = QLatin1String("SGI");                        // default style for X11 on IRIX
-#elif defined(Q_WS_QWS)
-            desktopstyle = QLatin1String("Plastique");                  // default style for X11 and small devices
-#elif defined(Q_WS_X11)
-            desktopstyle = QApplicationPrivate::x11_desktop_style();     // default runtime dependant style for X11
-#elif defined(Q_WS_MAC)
-                desktopstyle = QLatin1String("Macintosh");              // default style for all Mac's
-#endif
-    return desktopstyle;
+    return qt_guiPlatformPlugin()->styleName();
 }
 
 /*!

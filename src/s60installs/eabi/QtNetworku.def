@@ -1353,7 +1353,7 @@ EXPORTS
 	_ZN10QSslSocket22connectToHostEncryptedERK7QStringtS2_6QFlagsIN9QIODevice12OpenModeFlagEE @ 1352 NONAME
 	_ZN13QNetworkReply15ignoreSslErrorsERK5QListI9QSslErrorE @ 1353 NONAME
 	_ZN15QAbstractSocket12socketOptionENS_12SocketOptionE @ 1354 NONAME
-	_ZN15QAbstractSocket15setSocketOptionENS_12SocketOptionE8QVariant @ 1355 NONAME
+	_ZN15QAbstractSocket15setSocketOptionENS_12SocketOptionERK8QVariant @ 1355 NONAME
 	_ZN17QHttpNetworkReply15ignoreSslErrorsERK5QListI9QSslErrorE @ 1356 NONAME
 	_ZN17QHttpNetworkReply16dataSendProgressExx @ 1357 NONAME
 	_ZN17QHttpNetworkReply7readAnyEv @ 1358 NONAME
@@ -1379,7 +1379,7 @@ EXPORTS
 	_ZN19QHttpNetworkRequest20setPipeliningAllowedEb @ 1378 NONAME
 	_ZN19QNativeSocketEngine19getStaticMetaObjectEv @ 1379 NONAME
 	_ZN19QSocks5SocketEngine19getStaticMetaObjectEv @ 1380 NONAME
-	_ZN20QNetworkProxyFactory32setUseSystemConfigurationEnabledEb @ 1381 NONAME
+	_ZN20QNetworkProxyFactory25setUseSystemConfigurationEb @ 1381 NONAME
 	_ZN21QAbstractNetworkCache19getStaticMetaObjectEv @ 1382 NONAME
 	_ZN21QAbstractSocketEngine19getStaticMetaObjectEv @ 1383 NONAME
 	_ZN21QNetworkAccessManager19getStaticMetaObjectEv @ 1384 NONAME

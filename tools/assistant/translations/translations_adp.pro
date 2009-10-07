@@ -39,5 +39,3 @@ TRANSLATIONS = \
     $$TR_DIR/assistant_adp_ru.ts \
     $$TR_DIR/assistant_adp_zh_CN.ts \
     $$TR_DIR/assistant_adp_zh_TW.ts
-
-error("This is a dummy profile to be used for translations ONLY.")
