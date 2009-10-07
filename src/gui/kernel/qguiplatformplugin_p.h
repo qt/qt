@@ -68,6 +68,7 @@ class QPalette;
 class QIcon;
 class QFileDialog;
 class QColorDialog;
+class QFileInfo;
 
 struct Q_GUI_EXPORT QGuiPlatformPluginInterface  : public QFactoryInterface
 {
@@ -89,7 +90,10 @@ class Q_GUI_EXPORT QGuiPlatformPlugin : public QObject, public QGuiPlatformPlugi
 
         virtual QString styleName();
         virtual QPalette palette();
-        virtual QIcon loadIcon(const QString &name);
+        virtual QString systemIconThemeName();
+        virtual QStringList iconThemeSearchPaths();
+        virtual QIcon fileSystemIcon(const QFileInfo &);
+
         enum PlatformHint { PH_ToolButtonStyle, PH_ToolBarIconSize };
         virtual int platformHint(PlatformHint hint);
 
