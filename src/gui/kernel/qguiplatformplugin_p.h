@@ -94,7 +94,7 @@ class Q_GUI_EXPORT QGuiPlatformPlugin : public QObject, public QGuiPlatformPlugi
         virtual QStringList iconThemeSearchPaths();
         virtual QIcon fileSystemIcon(const QFileInfo &);
 
-        enum PlatformHint { PH_ToolButtonStyle, PH_ToolBarIconSize };
+        enum PlatformHint { PH_ToolButtonStyle, PH_ToolBarIconSize, PH_ItemView_ActivateItemOnSingleClick };
         virtual int platformHint(PlatformHint hint);
 
 
