@@ -318,7 +318,7 @@ void QGLPixmapData::ensureCreated() const
 }
 
 void QGLPixmapData::fromImage(const QImage &image,
-                              Qt::ImageConversionFlags flags)
+                              Qt::ImageConversionFlags /*flags*/)
 {
     if (image.size() == QSize(w, h))
         setSerialNumber(++qt_gl_pixmap_serial);

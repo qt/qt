@@ -66,6 +66,7 @@ struct TestIterator
 };
 
 #include <qiterator.h>
+#ifndef QT_NO_STL
 namespace std {
 template <>
 struct iterator_traits<TestIterator>
@@ -79,6 +80,7 @@ int distance(TestIterator &a, TestIterator &b)
 }
 
 }
+#endif
 
 
 #include <qtconcurrentiteratekernel.h>
@@ -112,7 +114,7 @@ class PrintFor : public IterateKernel<TestIterator, void>
 {
 public:
     PrintFor(TestIterator begin, TestIterator end) : IterateKernel<TestIterator, void>(begin, end) {iterations = 0; }
-    inline bool runIterations(TestIterator/*beginIterator*/, int begin, int end, void *)
+    bool runIterations(TestIterator/*beginIterator*/, int begin, int end, void *)
     {
         iterations.fetchAndAddRelaxed(end - begin);
 #ifdef PRINT
@@ -120,6 +122,11 @@ public:
 #endif
         return false;
     }
+    bool runIteration(TestIterator it, int index , void *result)
+    { 
+        return runIterations(it, index, index + 1, result);
+    }
+
 };
 
 class SleepPrintFor : public IterateKernel<TestIterator, void>
@@ -134,6 +141,10 @@ public:
         qDebug() << QThread::currentThread() << "iteration" << begin <<  "to" << end << "(exclusive)";
 #endif
         return false;
+    }
+    bool runIteration(TestIterator it, int index , void *result)
+    { 
+        return runIterations(it, index, index + 1, result);
     }
 };
 
@@ -164,6 +175,10 @@ public:
     {
         counter.fetchAndAddRelaxed(end - begin);
         return false;
+    }
+    bool runIteration(TestIterator it, int index , void *result)
+    { 
+        return runIterations(it, index, index + 1, result);
     }
 };
 
@@ -215,6 +230,10 @@ public:
 
         return false;
     }
+    bool runIteration(TestIterator it, int index , void *result)
+    { 
+        return runIterations(it, index, index + 1, result);
+    }
 
     bool shouldThrottleThread()
     {
@@ -254,6 +273,9 @@ public:
 
 void tst_iteratekernel::blockSize()
 {
+#ifdef QT_NO_STL
+    QSKIP("Missing stl iterators prevent correct block size calculation", SkipAll);
+#endif
     const int expectedMinimumBlockSize = 1024 / QThread::idealThreadCount();
     BlockSizeRecorder(0, 10000).startBlocking();
     if (peakBlockSize < expectedMinimumBlockSize)
@@ -276,6 +298,9 @@ public:
 
 void tst_iteratekernel::multipleResults()
 {
+#ifdef QT_NO_STL
+    QSKIP("Missing stl iterators prevent correct summation", SkipAll);
+#endif
     QFuture<int> f = startThreadEngine(new MultipleResultsFor(0, 10)).startAsynchronously();
     QCOMPARE(f.results().count() , 10);
     QCOMPARE(f.resultAt(0), 0);

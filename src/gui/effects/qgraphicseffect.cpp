@@ -566,7 +566,7 @@ QGraphicsColorizeEffect::~QGraphicsColorizeEffect()
     \brief the color of the effect.
 
     By default, the color is light blue (QColor(0, 0, 192)).
-*/;
+*/
 QColor QGraphicsColorizeEffect::color() const
 {
     Q_D(const QGraphicsColorizeEffect);

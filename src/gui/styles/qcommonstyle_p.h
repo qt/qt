@@ -122,7 +122,6 @@ public:
     }
 #endif
     mutable QIcon tabBarcloseButtonIcon;
-    int lookupToolButtonStyle() const;
 #ifndef QT_NO_TABBAR
     void tabLayout(const QStyleOptionTabV3 *opt, const QWidget *widget, QRect *textRect, QRect *pixmapRect) const;
 #endif

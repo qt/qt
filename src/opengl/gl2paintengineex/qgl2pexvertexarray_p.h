@@ -104,7 +104,7 @@ public:
         boundingRectDirty(true) {}
 
     void addRect(const QRectF &rect);
-    void addPath(const QVectorPath &path, GLfloat curveInverseScale);
+    void addPath(const QVectorPath &path, GLfloat curveInverseScale, bool outline = true);
     void clear();
 
     QGLPoint*        data() {return vertexArray.data();}
@@ -124,6 +124,9 @@ private:
     bool        boundingRectDirty;
 
     inline void curveToArray(const QGLPoint &cp1, const QGLPoint &cp2, const QGLPoint &ep, GLfloat inverseScale);
+
+    void addClosingLine(int index);
+    void addCentroid(const QVectorPath &path, int subPathIndex);
 };
 
 QT_END_NAMESPACE

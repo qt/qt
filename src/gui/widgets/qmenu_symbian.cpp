@@ -74,12 +74,13 @@ struct SymbianMenuItem
     QAction* action;
 };
 
+Q_GLOBAL_STATIC_WITH_ARGS(QAction, contextAction, (0))
+
 static QList<SymbianMenuItem*> symbianMenus;
 static QList<QMenuBar*> nativeMenuBars;
 static uint qt_symbian_menu_static_cmd_id = QT_SYMBIAN_FIRST_MENU_ITEM;
 static QPointer<QWidget> widgetWithContextMenu;
 static QList<QAction*> contextMenuActionList;
-static QAction contextAction(0);
 static int contexMenuCommand=0;
 
 bool menuExists()
@@ -400,8 +401,8 @@ void QMenuBarPrivate::QSymbianMenuBarPrivate::rebuild()
     contextMenuActionList.clear();
     if (widgetWithContextMenu) {
         contexMenuCommand = qt_symbian_menu_static_cmd_id; // Increased inside insertNativeMenuItems
-        contextAction.setText(QMenuBar::tr("Actions"));
-        contextMenuActionList.append(&contextAction);
+        contextAction()->setText(QMenuBar::tr("Actions"));
+        contextMenuActionList.append(contextAction());
         insertNativeMenuItems(contextMenuActionList);
     }
 }

@@ -18,7 +18,9 @@ symbian*: {
    addFiles.path = animations
    DEPLOYMENT += addFiles
 
-   imagePlugins.sources = qjpeg.dll qgif.dll qmng.dll
-   imagePlugins.path = imageformats
-   DEPLOYMENT += imagePlugins
+   qt_not_deployed {
+      imagePlugins.sources = qjpeg.dll qgif.dll qmng.dll
+      imagePlugins.path = imageformats
+      DEPLOYMENT += imagePlugins
+   }
 }

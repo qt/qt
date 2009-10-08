@@ -129,7 +129,7 @@ void GraphicsScene::setupScene(QAction *newAction, QAction *quitAction)
 {
     static const int nLetters = 10;
     static struct {
-        char *pix;
+        char const *pix;
         qreal initX, initY;
         qreal destX, destY;
     } logoData[nLetters] = {

@@ -74,7 +74,7 @@ public:
         SelectSoftKey,
         DoneSoftKey,
         MenuSoftKey,
-        CancelSoftKey,
+        CancelSoftKey
     };
 
     static void updateSoftKeys();

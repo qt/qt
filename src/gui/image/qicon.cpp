@@ -54,6 +54,7 @@
 #include "qvariant.h"
 #include "qcache.h"
 #include "qdebug.h"
+#include "private/qguiplatformplugin_p.h"
 
 #ifdef Q_WS_MAC
 #include <private/qt_mac_p.h>
@@ -961,18 +962,9 @@ QString QIcon::themeName()
 */
 QIcon QIcon::fromTheme(const QString &name, const QIcon &fallback)
 {
-
     static QCache <QString, QIcon> iconCache;
 
     QIcon icon;
-
-#ifdef Q_WS_X11
-    if (X11->desktopEnvironment == DE_KDE) {
-        icon = QKde::kdeIcon(name);
-        if (!icon.isNull())
-            return icon;
-    }
-#endif
 
     if (iconCache.contains(name)) {
         icon = *iconCache.object(name);

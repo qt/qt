@@ -171,10 +171,13 @@ typedef struct tagTOUCHINPUT
 #include <mywinsock.h>
 #endif
 
+#ifndef IMR_RECONVERTSTRING
+#define IMR_RECONVERTSTRING 4
+#endif
+
 #ifndef IMR_CONFIRMRECONVERTSTRING
 #define IMR_CONFIRMRECONVERTSTRING 0x0005
 #endif
-
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_WS_WINCE

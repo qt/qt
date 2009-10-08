@@ -82,7 +82,6 @@ SOURCES += $$APP_DIR/appfontdialog.cpp \
            $$APP_DIR/main.cpp \
            $$APP_DIR/mainwindow.cpp \
            $$APP_DIR/newform.cpp \
-           $$APP_DIR/plugindialog.cpp \
            $$APP_DIR/preferencesdialog.cpp \
            $$APP_DIR/qdesigner_actions.cpp \
            $$APP_DIR/qdesigner_appearanceoptions.cpp \
@@ -100,7 +99,6 @@ HEADERS+=  $$APP_DIR/appfontdialog.h \
            $$APP_DIR/designer_enums.h \
            $$APP_DIR/mainwindow.h \
            $$APP_DIR/newform.h \
-           $$APP_DIR/plugindialog.h \
            $$APP_DIR/preferencesdialog.h \
            $$APP_DIR/qdesigner_actions.h \
            $$APP_DIR/qdesigner_appearanceoptions.h \
@@ -114,8 +112,7 @@ HEADERS+=  $$APP_DIR/appfontdialog.h \
            $$APP_DIR/saveformastemplate.h \
            $$APP_DIR/versiondialog.h
 
-FORMS +=   $$APP_DIR/plugindialog.ui \
-           $$APP_DIR/preferencesdialog.ui \
+FORMS +=   $$APP_DIR/preferencesdialog.ui \
            $$APP_DIR/qdesigner_appearanceoptions.ui \
            $$APP_DIR/saveformastemplate.ui
 

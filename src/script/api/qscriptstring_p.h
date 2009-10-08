@@ -73,6 +73,8 @@ public:
     inline ~QScriptStringPrivate();
     static inline void init(QScriptString &q, QScriptStringPrivate *d);
 
+    static inline QScriptStringPrivate *get(const QScriptString &q);
+
     inline void detachFromEngine();
 
     QBasicAtomicInt ref;
@@ -99,6 +101,11 @@ inline QScriptStringPrivate::~QScriptStringPrivate()
 inline void QScriptStringPrivate::init(QScriptString &q, QScriptStringPrivate *d)
 {
     q.d_ptr = d;
+}
+
+inline QScriptStringPrivate *QScriptStringPrivate::get(const QScriptString &q)
+{
+    return const_cast<QScriptStringPrivate*>(q.d_func());
 }
 
 inline void QScriptStringPrivate::detachFromEngine()

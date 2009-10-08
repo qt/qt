@@ -141,14 +141,33 @@ QString QKde::kdeStyle()
         return QLatin1String("windows");
 }
 
-/*!\internal
-  placeholder to load icon from kde.
-  to be implemented
- */
-QIcon QKde::kdeIcon(const QString &name)
+
+int QKde::kdeToolButtonStyle()
 {
-    //###todo
-    return QIcon();
+    QSettings settings(QKde::kdeHome() + QLatin1String("/share/config/kdeglobals"),
+                        QSettings::IniFormat);
+    settings.beginGroup(QLatin1String("Toolbar style"));
+    QString toolbarStyle = settings.value(QLatin1String("ToolButtonStyle"), QLatin1String("TextBesideIcon")).toString();
+    if (toolbarStyle == QLatin1String("TextBesideIcon"))
+        return Qt::ToolButtonTextBesideIcon;
+    else if (toolbarStyle == QLatin1String("TextOnly"))
+        return Qt::ToolButtonTextOnly;
+    else if (toolbarStyle == QLatin1String("TextUnderIcon"))
+        return Qt::ToolButtonTextUnderIcon;
+
+    return Qt::ToolButtonTextBesideIcon;
+}
+
+int QKde::kdeToolBarIconSize()
+{
+    static int iconSize = -1;
+    if (iconSize == -1) {
+        QSettings settings(QKde::kdeHome() + QLatin1String("/share/config/kdeglobals"),
+                            QSettings::IniFormat);
+                            settings.beginGroup(QLatin1String("ToolbarIcons"));
+        iconSize = settings.value(QLatin1String("Size")).toInt();
+    }
+    return iconSize;
 }
 
 QT_END_NAMESPACE

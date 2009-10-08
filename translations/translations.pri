@@ -9,11 +9,8 @@ defineReplace(prependAll) {
 }
 
 defineReplace(fixPath) {
-WIN {
-    return ($$replace($$1, /, \))
-} ELSE {
+    win32:1 ~= s|/|\\|
     return ($$1)
-}
 }
 
 LUPDATE = $$fixPath($$QT_BUILD_TREE/bin/lupdate) -locations relative -no-ui-lines

@@ -617,7 +617,7 @@ fi
 unset QTDIR
 
 # the minimum version of libdbus-1 that we require:
-MIN_DBUS_1_VERSION=0.62
+MIN_DBUS_1_VERSION=0.93
 
 # initalize internal variables
 CFG_CONFIGURE_EXIT_ON_ERROR=yes
@@ -7612,6 +7612,7 @@ for file in .projects .projects.3; do
         case $a in
         *winmain/winmain.pro) continue ;;
         *s60main/s60main.pro) continue ;;
+        *examples/activeqt/*) continue ;;
         */qmake/qmake.pro) continue ;;
         *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*) SPEC=$QMAKESPEC ;;
         *) SPEC=$XQMAKESPEC ;;

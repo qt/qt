@@ -18,9 +18,12 @@ wince* {
    QT += xml svg
    addFiles.sources =  *.png tst_qicon.cpp *.svg *.svgz
    addFiles.path = .
-   plugins.sources = qsvgicon.dll
-   plugins.path = iconengines
-   DEPLOYMENT += addFiles plugins
+   DEPLOYMENT += addFiles
+   qt_not_deployed {
+      plugins.sources = qsvgicon.dll
+      plugins.path = iconengines
+      DEPLOYMENT += plugins
+   }
 } else {
    DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

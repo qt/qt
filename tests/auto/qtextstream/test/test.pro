@@ -30,9 +30,11 @@ wince*: {
 }else:symbian {
     load(data_caging_paths)
     # Symbian can't define SRCDIR meaningfully here
-    codecs_plugins.sources = qcncodecs.dll qjpcodecs.dll qtwcodecs.dll qkrcodecs.dll
-    codecs_plugins.path = $$QT_PLUGINS_BASE_DIR/codecs
-    DEPLOYMENT += codecs_plugins
+    qt_not_deployed {
+        codecs_plugins.sources = qcncodecs.dll qjpcodecs.dll qtwcodecs.dll qkrcodecs.dll
+        codecs_plugins.path = $$QT_PLUGINS_BASE_DIR/codecs
+        DEPLOYMENT += codecs_plugins
+    }
 }else {
     DEFINES += SRCDIR=\\\"$$PWD/../\\\"
 }

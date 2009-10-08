@@ -66,7 +66,7 @@ public:
     }
 
     AtomicValue::Ptr operator()(const AtomicValue::Ptr &lexicalValue,
-                                const SchemaType::Ptr &type,
+                                const SchemaType::Ptr & /*type*/,
                                 const ReportContext::Ptr &context)
     {
         prepareCasting(context, BuiltinTypes::xsString);
