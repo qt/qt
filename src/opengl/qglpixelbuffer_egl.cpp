@@ -208,7 +208,7 @@ bool QGLPixelBuffer::hasOpenGLPbuffers()
     QEglProperties configProps;
     qt_egl_set_format(configProps, QInternal::Pbuffer, QGLFormat::defaultFormat());
     configProps.setRenderableType(QEgl::OpenGL);
-    return ctx.chooseConfig(configProps);
+    return ctx.chooseConfig(configProps, QEgl::BestPixelFormat);
 }
 
 QT_END_NAMESPACE
