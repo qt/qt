@@ -441,6 +441,7 @@ public:
     void setAnchorSizeHintsFromItems(Orientation orientation);
     void findPaths(Orientation orientation);
     void constraintsFromPaths(Orientation orientation);
+    void updateAnchorSizes(Orientation orientation);
     QList<QSimplexConstraint *> constraintsFromSizeHints(const QList<AnchorData *> &anchors);
     QList<QList<QSimplexConstraint *> > getGraphParts(Orientation orientation);
     void identifyNonFloatItems(QSet<AnchorData *> visited, Orientation orientation);
