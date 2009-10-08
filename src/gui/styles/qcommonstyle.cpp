@@ -5058,7 +5058,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         break;
 
     case SH_ItemView_ActivateItemOnSingleClick:
-        ret = false;
+        ret = qt_guiPlatformPlugin()->platformHint(QGuiPlatformPlugin::PH_ItemView_ActivateItemOnSingleClick);
         break;
 
     case SH_TitleBar_ModifyNotification:
