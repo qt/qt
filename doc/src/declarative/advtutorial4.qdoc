@@ -56,9 +56,9 @@ And now the game should be beautifully animated and smooth, with a subtle (or no
 
 \section2 Web-based High Scores
 
-Another extension we might want for the game is some way of storing and retriveing high scores. In this tutorial we'll show you how to integrate a web enabled high score storage into your QML application. The implementation we've done is very simple - the high score data is posted to a php script running on a server somewhere, and that server then stores it and displays it to visitors. You could request an XML or QML file from that same server, which contained and displayed the scores, but that's beyond the scope of this tutorial.
+Another extension we might want for the game is some way of storing and retrieving high scores. In this tutorial we'll show you how to integrate a web enabled high score storage into your QML application. The implementation we've done is very simple - the high score data is posted to a php script running on a server somewhere, and that server then stores it and displays it to visitors. You could request an XML or QML file from that same server, which contained and displayed the scores, but that's beyond the scope of this tutorial.
 
-For better high score data, we want the name and time of the player. The time is obtained in the script fairly simply, but we have to ask the player for their name. We thus re-use the dialog QML file to pop up a dialog asking for the player's name (and if they exit this dialog without entering it they have a way to opt out of posting their high score). When the dialog is closed, if the player entered their name we can send the data to the web service in the followign snippet out of the script file:
+For better high score data, we want the name and time of the player. The time is obtained in the script fairly simply, but we have to ask the player for their name. We thus re-use the dialog QML file to pop up a dialog asking for the player's name (and if they exit this dialog without entering it they have a way to opt out of posting their high score). When the dialog is closed, if the player entered their name we can send the data to the web service in the following snippet out of the script file:
 
 \snippet declarative/tutorials/samegame/samegame4/content/samegame.js 1
 
