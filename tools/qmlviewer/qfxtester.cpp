@@ -140,7 +140,8 @@ void QFxTester::run()
 void QFxTester::save()
 {
     QString filename = m_script + QLatin1String(".qml");
-    QDir saveDir = QFileInfo(filename).absoluteDir();
+    QFileInfo filenameInfo(filename);
+    QDir saveDir = filenameInfo.absoluteDir();
     saveDir.mkpath(".");
 
     QFile file(filename);
@@ -160,7 +161,7 @@ void QFxTester::save()
         if (!fe.hash.isEmpty()) {
             ts << "        hash: \"" << fe.hash.toHex() << "\"\n";
         } else if (!fe.image.isNull()) {
-            QString filename = m_script + "." + QString::number(imgCount++) + ".png";
+            QString filename = filenameInfo.baseName() + "." + QString::number(imgCount++) + ".png";
             fe.image.save(filename);
             ts << "        image: \"" << filename << "\"\n";
         }
