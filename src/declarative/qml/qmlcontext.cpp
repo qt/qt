@@ -168,7 +168,7 @@ void QmlContextPrivate::addDefaultObject(QObject *object, Priority priority)
     \code
     class MyDataSet : ... {
         ...
-        Q_PROPERTY(QAbstractItemModel *myModel READ model NOTIFY modelChanged);
+        Q_PROPERTY(QAbstractItemModel *myModel READ model NOTIFY modelChanged)
         ...
     };
 

@@ -85,8 +85,8 @@ public:
 
 class QmlPointFValueType : public QmlValueType
 {
-    Q_PROPERTY(qreal x READ x WRITE setX);
-    Q_PROPERTY(qreal y READ y WRITE setY);
+    Q_PROPERTY(qreal x READ x WRITE setX)
+    Q_PROPERTY(qreal y READ y WRITE setY)
     Q_OBJECT
 public:
     QmlPointFValueType(QObject *parent = 0);
@@ -107,8 +107,8 @@ private:
 
 class QmlPointValueType : public QmlValueType
 {
-    Q_PROPERTY(int x READ x WRITE setX);
-    Q_PROPERTY(int y READ y WRITE setY);
+    Q_PROPERTY(int x READ x WRITE setX)
+    Q_PROPERTY(int y READ y WRITE setY)
     Q_OBJECT
 public:
     QmlPointValueType(QObject *parent = 0);
@@ -129,8 +129,8 @@ private:
 
 class QmlSizeFValueType : public QmlValueType
 {
-    Q_PROPERTY(qreal width READ width WRITE setWidth);
-    Q_PROPERTY(qreal height READ height WRITE setHeight);
+    Q_PROPERTY(qreal width READ width WRITE setWidth)
+    Q_PROPERTY(qreal height READ height WRITE setHeight)
     Q_OBJECT
 public:
     QmlSizeFValueType(QObject *parent = 0);
@@ -151,8 +151,8 @@ private:
 
 class QmlSizeValueType : public QmlValueType
 {
-    Q_PROPERTY(int width READ width WRITE setWidth);
-    Q_PROPERTY(int height READ height WRITE setHeight);
+    Q_PROPERTY(int width READ width WRITE setWidth)
+    Q_PROPERTY(int height READ height WRITE setHeight)
     Q_OBJECT
 public:
     QmlSizeValueType(QObject *parent = 0);
@@ -173,10 +173,10 @@ private:
 
 class QmlRectFValueType : public QmlValueType
 {
-    Q_PROPERTY(qreal x READ x WRITE setX);
-    Q_PROPERTY(qreal y READ y WRITE setY);
-    Q_PROPERTY(qreal width READ width WRITE setWidth);
-    Q_PROPERTY(qreal height READ height WRITE setHeight);
+    Q_PROPERTY(qreal x READ x WRITE setX)
+    Q_PROPERTY(qreal y READ y WRITE setY)
+    Q_PROPERTY(qreal width READ width WRITE setWidth)
+    Q_PROPERTY(qreal height READ height WRITE setHeight)
     Q_OBJECT
 public:
     QmlRectFValueType(QObject *parent = 0);
@@ -202,10 +202,10 @@ private:
 
 class QmlRectValueType : public QmlValueType
 {
-    Q_PROPERTY(int x READ x WRITE setX);
-    Q_PROPERTY(int y READ y WRITE setY);
-    Q_PROPERTY(int width READ width WRITE setWidth);
-    Q_PROPERTY(int height READ height WRITE setHeight);
+    Q_PROPERTY(int x READ x WRITE setX)
+    Q_PROPERTY(int y READ y WRITE setY)
+    Q_PROPERTY(int width READ width WRITE setWidth)
+    Q_PROPERTY(int height READ height WRITE setHeight)
     Q_OBJECT
 public:
     QmlRectValueType(QObject *parent = 0);
@@ -231,9 +231,9 @@ private:
 
 class QmlVector3DValueType : public QmlValueType
 {
-    Q_PROPERTY(qreal x READ x WRITE setX);
-    Q_PROPERTY(qreal y READ y WRITE setY);
-    Q_PROPERTY(qreal z READ z WRITE setZ);
+    Q_PROPERTY(qreal x READ x WRITE setX)
+    Q_PROPERTY(qreal y READ y WRITE setY)
+    Q_PROPERTY(qreal z READ z WRITE setZ)
     Q_OBJECT
 public:
     QmlVector3DValueType(QObject *parent = 0);
