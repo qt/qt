@@ -189,7 +189,7 @@ QmlStateOperation::ActionList QmlParentChange::actions()
 class AccessibleFxItem : public QFxItem
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxItem);
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxItem)
 public:
     int siblingIndex() {
         Q_D(QFxItem);

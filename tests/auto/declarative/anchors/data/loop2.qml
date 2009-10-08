@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
   id: container;
   width: 600;
   height: 600;

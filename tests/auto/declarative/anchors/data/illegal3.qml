@@ -1,12 +1,12 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     id: rect
     width: 120; height: 200; color: "white"
     Item {
-        Rect { id: TheRect; width: 100; height: 100 }
+        Rectangle { id: TheRect; width: 100; height: 100 }
     }
-    Rect {
+    Rectangle {
         anchors.left: TheRect.left
     }
 }

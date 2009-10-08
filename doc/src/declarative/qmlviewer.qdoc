@@ -49,6 +49,9 @@
     toolkit. The \c qmlviewer reads a declarative user interface definition
     (\c .qml) file and displays the user interface it describes.
 
+    qmlviewer is a development tool.  It is not intended to be
+    installed in a production environment.
+
     \section1 Options
 
     When run with the \c -help option, qmlviewer shows available options.
