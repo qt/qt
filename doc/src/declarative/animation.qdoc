@@ -1,10 +1,10 @@
-/*! 
+/*!
 \page qmlanimation.html
 \target qmlanimation
 \title QML Animation
 
-QML supports three different forms of animation - basic property animation, 
-states and transitions and property behaviors.  
+QML supports three different forms of animation - basic property animation,
+states and transitions and property behaviors.
 
 \section1 Property Animation
 
@@ -122,7 +122,7 @@ QML transitions can use selectors to determine which state changes a transition 
 \code
 Transition {
     from: "*"
-    to: "Details"
+    to: "details"
     ...
 }
 \endcode

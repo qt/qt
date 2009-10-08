@@ -184,9 +184,9 @@
     \qml
     Item {
         children: [
-            Item { id: Child1 },
-            Rectangle { id: Child2 },
-            Text { id: Child3 }
+            Item { id: child1 },
+            Rectangle { id: child2 },
+            Text { id: child3 }
         ]
     }
     \endqml

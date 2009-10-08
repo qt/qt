@@ -2,7 +2,11 @@
 \page tutorial.html
 \title Tutorial
 
-This tutorial gives an introduction to QML. It doesn't cover everything; the emphasis is on teaching the key principles, and features are introduced as needed.
+This tutorial gives an introduction to QML. It doesn't cover everything; the emphasis is on teaching the key principles,
+and features are introduced as needed.
+
+Through the different steps of this tutorial we will learn about QML basic types, we will create our own QML component
+with properties and signals, and we will create a simple animation with the help of states and transitions.
 
 Chapter one starts with a minimal "Hello world" program and the following chapters introduce new concepts.
 
@@ -11,9 +15,9 @@ The tutorial's source code is located in the $QTDIR/examples/declarative/tutoria
 Tutorial chapters:
 
 \list
-\o \l {tutorial1}{Tutorial 1}
-\o \l {tutorial2}{Tutorial 2}
-\o \l {tutorial3}{Tutorial 3}
+\o \l {tutorial1}{Tutorial 1 - Basic Types}
+\o \l {tutorial2}{Tutorial 2 - QML Component}
+\o \l {tutorial3}{Tutorial 3 - States and Transitions}
 \endlist
 
 */
