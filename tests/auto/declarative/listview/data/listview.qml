@@ -7,7 +7,7 @@ Rectangle {
     resources: [
         Component {
             id: Delegate
-            Item {
+            Rectangle {
                 id: wrapper
                 objectName: "wrapper"
                 height: 20

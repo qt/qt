@@ -21,7 +21,7 @@ private slots:
 private:
     QmlView *createView(const QString &filename);
     template<typename T>
-    T *findItem(QFxItem *parent, const QString &id, int index=0);
+    T *findItem(QFxItem *parent, const QString &id, int index=-1);
 };
 
 class TestModel : public QListModelInterface

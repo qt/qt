@@ -65,12 +65,13 @@ void tst_qfxpixmapcache::single_data()
     QTest::addColumn<QUrl>("target");
     QTest::addColumn<bool>("incache");
     QTest::addColumn<bool>("exists");
+    QTest::addColumn<bool>("neterror");
 
     // File URLs are optimized
-    QTest::newRow("local") << thisfile.resolved(QUrl("data/exists.png")) << localfile_optimized << true;
-    QTest::newRow("local") << thisfile.resolved(QUrl("data/notexists.png")) << localfile_optimized << false;
-    QTest::newRow("remote") << QUrl("http://qt.nokia.com/logo.png") << false << true;
-    QTest::newRow("remote") << QUrl("http://qt.nokia.com/thereisnologo.png") << false << false;
+    QTest::newRow("local") << thisfile.resolved(QUrl("data/exists.png")) << localfile_optimized << true << false;
+    QTest::newRow("local") << thisfile.resolved(QUrl("data/notexists.png")) << localfile_optimized << false << false;
+    QTest::newRow("remote") << QUrl("http://qt.nokia.com/logo.png") << false << true << false;
+    QTest::newRow("remote") << QUrl("http://qt.nokia.com/thereisnologo.png") << false << false << true;
 }
 
 void tst_qfxpixmapcache::single()
@@ -78,6 +79,14 @@ void tst_qfxpixmapcache::single()
     QFETCH(QUrl, target);
     QFETCH(bool, incache);
     QFETCH(bool, exists);
+    QFETCH(bool, neterror);
+
+    if (neterror) {
+        QString expected = "Network error loading  QUrl( \""
+                +target.toString()+"\" )  \"Error downloading "
+                +target.toString()+" - server replied: Not Found\" ";
+        QTest::ignoreMessage(QtWarningMsg, expected.toLatin1());
+    }
 
     QPixmap pixmap;
     QVERIFY(pixmap.width() <= 0); // Check Qt assumption

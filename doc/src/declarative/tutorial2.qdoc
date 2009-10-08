@@ -1,7 +1,7 @@
 /*!
 \page tutorial2.html
-\title Tutorial 2 - QML Component
 \target tutorial2
+\title Tutorial 2 - QML Component
 
 This chapter adds a color picker to change the color of the text.
 

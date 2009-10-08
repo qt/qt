@@ -70,6 +70,7 @@ public:
     virtual ~QmlView();
 
     void setUrl(const QUrl&);
+    QUrl url() const;
     void setQml(const QString &qml, const QString &filename=QString());
     QString qml() const;
     QmlEngine* engine();

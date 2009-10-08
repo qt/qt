@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     id: rect
     width: 120; height: 200; color: "white"
     Text { id: Text1; text: "Hello" }

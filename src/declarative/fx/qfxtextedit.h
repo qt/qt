@@ -83,7 +83,7 @@ class Q_DECLARATIVE_EXPORT QFxTextEdit : public QFxPaintedItem
     Q_PROPERTY(int selectionEnd READ selectionEnd WRITE setSelectionEnd NOTIFY selectionEndChanged)
     Q_PROPERTY(QString selectedText READ selectedText NOTIFY selectionChanged)
     Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress)
-    Q_PROPERTY(bool preserveSelection READ preserveSelection WRITE setPreserveSelection)
+    Q_PROPERTY(bool persistentSelection READ persistentSelection WRITE setPersistentSelection)
     Q_PROPERTY(qreal textMargin READ textMargin WRITE setTextMargin)
 
 public:
@@ -154,8 +154,8 @@ public:
     bool focusOnPress() const;
     void setFocusOnPress(bool on);
 
-    bool preserveSelection() const;
-    void setPreserveSelection(bool on);
+    bool persistentSelection() const;
+    void setPersistentSelection(bool on);
 
     qreal textMargin() const;
     void setTextMargin(qreal margin);
