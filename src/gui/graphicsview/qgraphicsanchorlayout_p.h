@@ -471,10 +471,12 @@ public:
                                   Orientation orientation);
 
     // Linear Programming solver methods
-    bool solveMinMax(QList<QSimplexConstraint *> constraints,
+    bool solveMinMax(const QList<QSimplexConstraint *> &constraints,
                      GraphPath path, qreal *min, qreal *max);
-    bool solvePreferred(QList<QSimplexConstraint *> constraints);
-    void solveExpanding(QList<QSimplexConstraint *> constraints);
+    bool solvePreferred(const QList<QSimplexConstraint *> &constraints,
+                        const QList<AnchorData *> &variables);
+    void solveExpanding(const QList<QSimplexConstraint *> &constraints,
+                        const QList<AnchorData *> &variables);
     bool hasConflicts() const;
 
 #ifdef QT_DEBUG

@@ -1671,9 +1671,7 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     // of the "trunk" set of constraints and variables.
     // ### does trunk always exist? empty = trunk is the layout left->center->right
     QList<QSimplexConstraint *> trunkConstraints = parts[0];
-    QList<QSimplexConstraint *> sizeHintConstraints;
-    sizeHintConstraints = constraintsFromSizeHints(getVariables(trunkConstraints));
-    trunkConstraints += sizeHintConstraints;
+    QList<AnchorData *> trunkVariables = getVariables(trunkConstraints);
 
     // For minimum and maximum, use the path between the two layout sides as the
     // objective function.
@@ -1695,26 +1693,24 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
 
         // Solve min and max size hints for trunk
         qreal min, max;
-        feasible = solveMinMax(trunkConstraints, trunkPath, &min, &max);
+
+        QList<QSimplexConstraint *> sizeHintConstraints = constraintsFromSizeHints(trunkVariables);
+        QList<QSimplexConstraint *> allTrunkConstraints = trunkConstraints + sizeHintConstraints;
+
+        feasible = solveMinMax(allTrunkConstraints, trunkPath, &min, &max);
 
         if (feasible) {
             // Solve for preferred. The objective function is calculated from the constraints
             // and variables internally.
-            solvePreferred(trunkConstraints);
-
-            // remove sizeHintConstraints from trunkConstraints
-            trunkConstraints = parts[0];
+            solvePreferred(allTrunkConstraints, trunkVariables);
 
             // Solve for expanding. The objective function and the constraints from items
-            // are calculated internally.
-            solveExpanding(trunkConstraints);
+            // are calculated internally. Note that we don't include the sizeHintConstraints, since
+            // they have a different logic for solveExpanding().
+            solveExpanding(trunkConstraints, trunkVariables);
 
             // Propagate the new sizes down the simplified graph, ie. tell the
             // group anchors to set their children anchors sizes.
-
-            // ### we calculated variables already a few times, can't we reuse that?
-            QList<AnchorData *> trunkVariables = getVariables(trunkConstraints);
-
             for (int i = 0; i < trunkVariables.count(); ++i)
                 trunkVariables.at(i)->updateChildrenSizes();
 
@@ -1736,6 +1732,9 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
             sizeHints[orientation][Qt::MaximumSize] = max;
             sizeAtExpanding[orientation] = expanding;
         }
+
+        qDeleteAll(sizeHintConstraints);
+
     } else {
 #if 0
         qDebug("Simplex NOT used for trunk of %s",
@@ -1766,10 +1765,6 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
         sizeAtExpanding[orientation] = ad->sizeAtExpanding;
     }
 
-    // Delete the constraints, we won't use them anymore.
-    qDeleteAll(sizeHintConstraints);
-    sizeHintConstraints.clear();
-
     // For the other parts that not the trunk, solve only for the preferred size
     // that is the size they will remain at, since they are not stretched by the
     // layout.
@@ -1781,9 +1776,9 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
             QList<AnchorData *> partVariables = getVariables(partConstraints);
             Q_ASSERT(!partVariables.isEmpty());
 
-            sizeHintConstraints = constraintsFromSizeHints(partVariables);
+            QList<QSimplexConstraint *> sizeHintConstraints = constraintsFromSizeHints(partVariables);
             partConstraints += sizeHintConstraints;
-            feasible &= solvePreferred(partConstraints);
+            feasible &= solvePreferred(partConstraints, partVariables);
             if (!feasible)
                 break;
 
@@ -1800,7 +1795,6 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
 
             // Delete the constraints, we won't use them anymore.
             qDeleteAll(sizeHintConstraints);
-            sizeHintConstraints.clear();
         }
     }
     graphHasConflicts[orientation] = !feasible;
@@ -2318,7 +2312,7 @@ void QGraphicsAnchorLayoutPrivate::interpolateSequentialEdges(
         interpolateEdge(prev, data->m_edges.last(), orientation);
 }
 
-bool QGraphicsAnchorLayoutPrivate::solveMinMax(QList<QSimplexConstraint *> constraints,
+bool QGraphicsAnchorLayoutPrivate::solveMinMax(const QList<QSimplexConstraint *> &constraints,
                                                GraphPath path, qreal *min, qreal *max)
 {
     QSimplex simplex;
@@ -2359,9 +2353,9 @@ bool QGraphicsAnchorLayoutPrivate::solveMinMax(QList<QSimplexConstraint *> const
     return feasible;
 }
 
-bool QGraphicsAnchorLayoutPrivate::solvePreferred(QList<QSimplexConstraint *> constraints)
+bool QGraphicsAnchorLayoutPrivate::solvePreferred(const QList<QSimplexConstraint *> &constraints,
+                                                  const QList<AnchorData *> &variables)
 {
-    QList<AnchorData *> variables = getVariables(constraints);
     QList<QSimplexConstraint *> preferredConstraints;
     QList<QSimplexVariable *> preferredVariables;
     QSimplexConstraint objective;
@@ -2384,7 +2378,7 @@ bool QGraphicsAnchorLayoutPrivate::solvePreferred(QList<QSimplexConstraint *> co
     //      A + A_shrinker - A_grower = A_pref
     //
     for (int i = 0; i < variables.size(); ++i) {
-        AnchorData *ad = static_cast<AnchorData *>(variables[i]);
+        AnchorData *ad = variables[i];
         if (ad->skipInPreferred)
             continue;
 
@@ -2415,7 +2409,7 @@ bool QGraphicsAnchorLayoutPrivate::solvePreferred(QList<QSimplexConstraint *> co
 
         // Save sizeAtPreferred results
         for (int i = 0; i < variables.size(); ++i) {
-            AnchorData *ad = static_cast<AnchorData *>(variables[i]);
+            AnchorData *ad = variables[i];
             ad->sizeAtPreferred = ad->result;
         }
 
@@ -2476,9 +2470,9 @@ bool QGraphicsAnchorLayoutPrivate::solvePreferred(QList<QSimplexConstraint *> co
           expanding ones will shrink. Only after non-expanding anchors have
           shrinked all the way, the expanding anchors will start to shrink too.
 */
-void QGraphicsAnchorLayoutPrivate::solveExpanding(QList<QSimplexConstraint *> constraints)
+void QGraphicsAnchorLayoutPrivate::solveExpanding(const QList<QSimplexConstraint *> &constraints,
+                                                  const QList<AnchorData *> &variables)
 {
-    QList<AnchorData *> variables = getVariables(constraints);
     QList<QSimplexConstraint *> itemConstraints;
     QSimplexConstraint *objective = new QSimplexConstraint;
     bool hasExpanding = false;
