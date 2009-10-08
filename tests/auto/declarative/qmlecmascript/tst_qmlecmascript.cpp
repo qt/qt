@@ -60,6 +60,7 @@ private slots:
     void dynamicDestruction();
     void objectToString();
     void selfDeletingBinding();
+    void extendedObjectPropertyLookup();
 
 private:
     QmlEngine engine;
@@ -707,6 +708,20 @@ void tst_qmlecmascript::selfDeletingBinding()
         QVERIFY(object != 0);
         object->setProperty("triggerDelete", true);
     }
+}
+
+/*
+Test that extended object properties can be accessed.
+
+This test a regression where this used to crash.  The issue was specificially
+for extended objects that did not include a synthesized meta object (so non-root
+and no synthesiszed properties).
+*/
+void tst_qmlecmascript::extendedObjectPropertyLookup()
+{
+    QmlComponent component(&engine, TEST_FILE("extendedObjectPropertyLookup.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
 }
 
 QTEST_MAIN(tst_qmlecmascript)

@@ -132,7 +132,7 @@ QmlObjectScriptClass::queryProperty(QObject *obj, const Identifier &name,
         cache = ddata->propertyCache;
     if (!cache) {
         cache = enginePrivate->cache(obj);
-        if (ddata) { cache->addref(); ddata->propertyCache = cache; }
+        if (cache && ddata) { cache->addref(); ddata->propertyCache = cache; }
     }
 
     if (cache) {
