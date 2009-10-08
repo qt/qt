@@ -56,6 +56,19 @@
 #include "QtGui/qinputcontext.h"
 #include "QtCore/qt_windows.h"
 
+#if defined(Q_CC_MINGW) && !defined(IMR_RECONVERTSTRING)
+typedef struct tagRECONVERTSTRING {
+    DWORD dwSize;
+    DWORD dwVersion;
+    DWORD dwStrLen;
+    DWORD dwStrOffset;
+    DWORD dwCompStrLen;
+    DWORD dwCompStrOffset;
+    DWORD dwTargetStrLen;
+    DWORD dwTargetStrOffset;
+} RECONVERTSTRING, *PRECONVERTSTRING;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QWinInputContext : public QInputContext

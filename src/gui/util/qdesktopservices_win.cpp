@@ -59,6 +59,11 @@
 #  endif
 #endif
 
+#if defined(Q_CC_MINGW) && !defined(CSIDL_MYMUSIC)
+#define CSIDL_MYMUSIC	13
+#define CSIDL_MYVIDEO	14
+#endif
+
 #ifndef QT_NO_DESKTOPSERVICES
 
 QT_BEGIN_NAMESPACE
