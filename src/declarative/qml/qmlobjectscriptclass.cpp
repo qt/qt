@@ -150,9 +150,9 @@ QmlObjectScriptClass::queryProperty(QObject *obj, const Identifier &name,
         return rv;
     } 
 
-    if (!evalContext && context) {
+    if (!evalContext && context()) {
         // Global object, QScriptContext activation object, QmlContext object
-        QScriptValue scopeNode = scopeChainValue(context, 3);         
+        QScriptValue scopeNode = scopeChainValue(context(), -3);         
         Q_ASSERT(scopeNode.isValid());
         Q_ASSERT(scriptClass(scopeNode) == enginePrivate->contextClass);
 
