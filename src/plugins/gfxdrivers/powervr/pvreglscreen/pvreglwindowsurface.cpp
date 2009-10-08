@@ -149,6 +149,18 @@ void PvrEglWindowSurface::setPermanentState(const QByteArray &state)
     Q_UNUSED(state);
 }
 
+void PvrEglWindowSurface::flush
+        (QWidget *widget, const QRegion &region, const QPoint &offset)
+{
+    // The GL paint engine is responsible for the swapBuffers() call.
+    // If we were to call the base class's implementation of flush()
+    // then it would fetch the image() and manually blit it to the
+    // screeen instead of using the fast PVR2D blit.
+    Q_UNUSED(widget);
+    Q_UNUSED(region);
+    Q_UNUSED(offset);
+}
+
 QImage PvrEglWindowSurface::image() const
 {
     if (drawable) {
@@ -165,14 +177,7 @@ QImage PvrEglWindowSurface::image() const
 
 QPaintDevice *PvrEglWindowSurface::paintDevice()
 {
-    QGLWidget *glWidget = qobject_cast<QGLWidget *>(window());
-    if (glWidget)
-        return glWidget;
-
-    // Should be a QGLWidget, but if not return a dummy paint device.
-    if (!pdevice)
-        pdevice = new QImage(50, 50, screen->pixelFormat());
-    return pdevice;
+    return widget;
 }
 
 void PvrEglWindowSurface::setDirectRegion(const QRegion &r, int id)

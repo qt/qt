@@ -600,4 +600,5 @@ EXPORTS
 	_ZN25QScriptEngineAgentPrivate18didReachBreakpointERKN5QTJSC17DebuggerCallFrameEiii @ 599 NONAME
 	_ZN25QScriptEngineAgentPrivate6attachEv @ 600 NONAME
 	_ZN25QScriptEngineAgentPrivate6detachEv @ 601 NONAME
+	_Z5qHashRK13QScriptString @ 602 NONAME
 

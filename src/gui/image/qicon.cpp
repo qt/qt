@@ -962,14 +962,9 @@ QString QIcon::themeName()
 */
 QIcon QIcon::fromTheme(const QString &name, const QIcon &fallback)
 {
-
     static QCache <QString, QIcon> iconCache;
 
     QIcon icon;
-
-    icon = qt_guiPlatformPlugin()->loadIcon(name);
-    if (!icon.isNull())
-        return icon;
 
     if (iconCache.contains(name)) {
         icon = *iconCache.object(name);

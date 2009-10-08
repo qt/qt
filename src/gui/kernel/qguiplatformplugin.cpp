@@ -41,6 +41,9 @@
 
 #include "qguiplatformplugin_p.h"
 #include <qdebug.h>
+#include <qfile.h>
+#include <qdir.h>
+#include <qsettings.h>
 #include "private/qfactoryloader_p.h"
 #include "qstylefactory.h"
 #include "qapplication.h"
@@ -58,6 +61,7 @@ extern bool qt_wince_is_pocket_pc();  //qguifunctions_wince.cpp
 #if defined(Q_WS_X11)
 #include "qkde_p.h"
 #include "qt_x11_p.h"
+#include <private/gtksymbols_p.h>
 #endif
 
 
@@ -194,8 +198,68 @@ QPalette QGuiPlatformPlugin::palette()
     return QPalette();
 }
 
-/* backend for QIcon::fromTheme. A null icon means it uses the default backend */
-QIcon QGuiPlatformPlugin::loadIcon(const QString &name)
+/* the default icon theme name for QIcon::fromTheme. */
+QString QGuiPlatformPlugin::systemIconThemeName()
+{
+    QString result;
+#ifdef Q_WS_X11
+    if (X11->desktopEnvironment == DE_GNOME) {
+        result = QString::fromLatin1("gnome");
+#ifndef QT_NO_STYLE_GTK
+        result = QGtk::getGConfString(QLatin1String("/desktop/gnome/interface/icon_theme"), result);
+#endif
+    } else if (X11->desktopEnvironment == DE_KDE) {
+        result =  X11->desktopVersion >= 4 ? QString::fromLatin1("oxygen") : QString::fromLatin1("crystalsvg");
+        QSettings settings(QKde::kdeHome() + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
+        settings.beginGroup(QLatin1String("Icons"));
+        result = settings.value(QLatin1String("Theme"), result).toString();
+    }
+#endif
+    return result;
+}
+
+
+QStringList QGuiPlatformPlugin::iconThemeSearchPaths()
+{
+    QStringList paths;
+#if defined(Q_WS_X11)
+    QString xdgDirString = QFile::decodeName(getenv("XDG_DATA_DIRS"));
+    if (xdgDirString.isEmpty())
+        xdgDirString = QLatin1String("/usr/local/share/:/usr/share/");
+
+    QStringList xdgDirs = xdgDirString.split(QLatin1Char(':'));
+
+    for (int i = 0 ; i < xdgDirs.size() ; ++i) {
+        QDir dir(xdgDirs[i]);
+        if (dir.exists())
+            paths.append(dir.path() + QLatin1String("/icons"));
+    }
+    if (X11->desktopEnvironment == DE_KDE) {
+        paths << QLatin1Char(':') + QKde::kdeHome() + QLatin1String("/share/icons");
+        QStringList kdeDirs = QFile::decodeName(getenv("KDEDIRS")).split(QLatin1Char(':'));
+        for (int i = 0 ; i< kdeDirs.count() ; ++i) {
+            QDir dir(QLatin1Char(':') + kdeDirs.at(i) + QLatin1String("/share/icons"));
+            if (dir.exists())
+                paths.append(dir.path());
+        }
+    }
+
+    // Add home directory first in search path
+    QDir homeDir(QDir::homePath() + QLatin1String("/.icons"));
+    if (homeDir.exists())
+        paths.prepend(homeDir.path());
+#endif
+
+#if defined(Q_WS_WIN)
+    paths.append(qApp->applicationDirPath() + QLatin1String("/icons"));
+#elif defined(Q_WS_MAC)
+    paths.append(qApp->applicationDirPath() + QLatin1String("/../Resources/icons"));
+#endif
+    return paths;
+}
+
+/* backend for QFileIconProvider,  null icon means default */
+QIcon QGuiPlatformPlugin::fileSystemIcon(const QFileInfo &)
 {
     return QIcon();
 }

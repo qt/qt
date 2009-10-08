@@ -43,7 +43,7 @@
 
 #include <private/qapplication_p.h>
 #include <private/qicon_p.h>
-#include <private/qkde_p.h>
+#include <private/qguiplatformplugin_p.h>
 
 #include <QtGui/QIconEnginePlugin>
 #include <QtGui/QPixmapCache>
@@ -68,47 +68,25 @@ QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QIconLoader, iconLoaderInstance)
 
+/* Theme to use in last resort, if the theme does not have the icon, neither the parents  */
 static QString fallbackTheme()
 {
-    QString defaultTheme;
-#ifdef Q_WS_X11
-    if (X11->desktopEnvironment == DE_GNOME)
-        defaultTheme = QLatin1String("gnome");
-    else if (X11->desktopEnvironment == DE_KDE)
-        defaultTheme = X11->desktopVersion >= 4 ?
-                QString::fromLatin1("oxygen") :
-                QString::fromLatin1("crystalsvg");
-#endif
-    return defaultTheme;
-}
-
-static QString systemThemeName()
-{
-    QString result = fallbackTheme();
 #ifdef Q_WS_X11
     if (X11->desktopEnvironment == DE_GNOME) {
-#ifndef QT_NO_STYLE_GTK
-        result = QGtk::getGConfString(QLatin1String("/desktop/gnome/interface/icon_theme"),
-                                      result);
-#endif
+        return QLatin1String("gnome");
     } else if (X11->desktopEnvironment == DE_KDE) {
-        QSettings settings(QKde::kdeHome() +
-                           QLatin1String("/share/config/kdeglobals"),
-                           QSettings::IniFormat);
-
-        settings.beginGroup(QLatin1String("Icons"));
-
-        result = settings.value(QLatin1String("Theme"), result).toString();
+        return X11->desktopVersion >= 4
+            ? QString::fromLatin1("oxygen")
+            : QString::fromLatin1("crystalsvg");
     }
 #endif
-    return result;
+    return QString();
 }
-
 
 QIconLoader::QIconLoader() :
         m_themeKey(1), m_supportsSvg(false)
 {
-    m_systemTheme = systemThemeName();
+    m_systemTheme = qt_guiPlatformPlugin()->systemIconThemeName();
 
     QFactoryLoader iconFactoryLoader(QIconEngineFactoryInterfaceV2_iid,
                                      QLatin1String("/iconengines"),
@@ -128,7 +106,7 @@ void QIconLoader::updateSystemTheme()
 {
     // Only change if this is not explicitly set by the user
     if (m_userTheme.isEmpty()) {
-        QString theme = systemThemeName();
+        QString theme = qt_guiPlatformPlugin()->systemIconThemeName();
         if (theme != m_systemTheme) {
             m_systemTheme = theme;
             invalidateKey();
@@ -152,51 +130,7 @@ void QIconLoader::setThemeSearchPath(const QStringList &searchPaths)
 QStringList QIconLoader::themeSearchPaths() const
 {
     if (m_iconDirs.isEmpty()) {
-
-#if defined(Q_WS_X11)
-
-        QString xdgDirString = QFile::decodeName(getenv("XDG_DATA_DIRS"));
-        if (xdgDirString.isEmpty())
-            xdgDirString = QLatin1String("/usr/local/share/:/usr/share/");
-
-        QStringList xdgDirs = xdgDirString.split(QLatin1Char(':'));
-
-        for (int i = 0 ; i < xdgDirs.size() ; ++i) {
-            QDir dir(xdgDirs[i]);
-            if (dir.exists())
-                m_iconDirs.append(dir.path() +
-                                  QLatin1String("/icons"));
-        }
-
-        if (X11->desktopEnvironment == DE_KDE) {
-
-            m_iconDirs << QLatin1Char(':') +
-                    QKde::kdeHome() +
-                    QLatin1String("/share/icons");
-            QStringList kdeDirs =
-                    QFile::decodeName(getenv("KDEDIRS")).split(QLatin1Char(':'));
-
-            for (int i = 0 ; i< kdeDirs.count() ; ++i) {
-                QDir dir(QLatin1Char(':') + kdeDirs.at(i) +
-                         QLatin1String("/share/icons"));
-                if (dir.exists())
-                    m_iconDirs.append(dir.path());
-            }
-        }
-
-        // Add home directory first in search path
-        QDir homeDir(QDir::homePath() + QLatin1String("/.icons"));
-        if (homeDir.exists())
-            m_iconDirs.prepend(homeDir.path());
-#endif
-        
-#if defined(Q_WS_WIN)
-        m_iconDirs.append(qApp->applicationDirPath() +
-                          QLatin1String("/icons"));
-#elif defined(Q_WS_MAC)
-        m_iconDirs.append(qApp->applicationDirPath() +
-                          QLatin1String("/../Resources/icons"));
-#endif
+        m_iconDirs = qt_guiPlatformPlugin()->iconThemeSearchPaths();
         // Allways add resource directory as search path
         m_iconDirs.append(QLatin1String(":/icons"));
     }
@@ -291,7 +225,7 @@ QThemeIconEntries QIconLoader::findIconHelper(const QString &themeName,
     if (!theme.isValid()) {
         theme = QIconTheme(themeName);
         if (!theme.isValid())
-            theme = fallbackTheme();
+            theme = QIconTheme(fallbackTheme());
 
         themeList.insert(themeName, theme);
     }
