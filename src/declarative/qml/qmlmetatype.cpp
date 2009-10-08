@@ -948,9 +948,9 @@ QList<QmlType*> QmlMetaType::qmlTypes()
 #include <QtGui/qmatrix.h>
 #include <QtGui/qtransform.h>
 #include <QtGui/qmatrix4x4.h>
-#include <QtGui/qvector2D.h>
-#include <QtGui/qvector3D.h>
-#include <QtGui/qvector4D.h>
+#include <QtGui/qvector2d.h>
+#include <QtGui/qvector3d.h>
+#include <QtGui/qvector4d.h>
 #include <QtGui/qquaternion.h>
 
 /*!
