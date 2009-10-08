@@ -66,7 +66,7 @@ class QScriptEnginePrivate;
 class QScriptValue;
 class QScriptValuePrivate
 {
-    Q_DISABLE_COPY(QScriptValuePrivate);
+    Q_DISABLE_COPY(QScriptValuePrivate)
 public:
     inline void* operator new(size_t, QScriptEnginePrivate*);
     inline void operator delete(void*);
