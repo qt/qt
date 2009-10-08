@@ -30,7 +30,7 @@ An \l Item is the most basic visual element in QML and is often used as a contai
 
 We declare a \c color property. This property is accessible from  \e outside our component, this allows us
 to instantiate the cells with different colors.
-This property is just an alias to an existing property - the color of the rectangle that compose the cell (see \l{Properties}).
+This property is just an alias to an existing property - the color of the rectangle that compose the cell (see \l{intro-properties}{Properties}).
 
 \snippet examples/declarative/tutorials/helloworld/Cell.qml 5
 

@@ -17,7 +17,7 @@ When the user presses or releases a key, the following occurs:
 \o The key event is delivered by the scene to the QML \l Item with \e {active focus}.  If no \l Item has \e {active focus}, the key event is \l {QEvent::ignore()}{ignored} and regular Qt key handling continues.
 \o If the QML \l Item with \e {active focus} accepts the key event, propagation stops.  Otherwise the event is "bubbled up", by recursively passing it to each \l Item's parent until either the event is accepted, or the root \l Item is reached.
 
-If the \c {Rect} element in the following example has active focus and the \e A key is pressed, it will bubble up to the \c {KeyActions}.  However, pressing the \e B key will bubble up to the root item and thus subsequently be \l {QEvent::ignore()}{ignored}.
+If the \c {Rectangle} element in the following example has active focus and the \e A key is pressed, it will bubble up to the \c {KeyActions}.  However, pressing the \e B key will bubble up to the root item and thus subsequently be \l {QEvent::ignore()}{ignored}.
 
 \code
 Item {
