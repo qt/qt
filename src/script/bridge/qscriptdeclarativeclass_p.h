@@ -116,8 +116,9 @@ public:
     virtual QObject *toQObject(Object *, bool *ok = 0);
     virtual QVariant toVariant(Object *, bool *ok = 0);
 
-    QScriptContext *context;
+    QScriptContext *context() const;
 protected:
+    friend class QScriptDeclarativeClassPrivate;
     QScopedPointer<QScriptDeclarativeClassPrivate> d_ptr;
 };
 

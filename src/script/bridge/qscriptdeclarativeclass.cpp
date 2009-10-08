@@ -76,17 +76,8 @@ QScriptDeclarativeClass::PersistentIdentifier::operator=(const PersistentIdentif
     return *this;
 }
 
-class QScriptDeclarativeClassPrivate
-{
-public:
-    QScriptDeclarativeClassPrivate() : engine(0), q_ptr(0) {}
-
-    QScriptEngine *engine;
-    QScriptDeclarativeClass *q_ptr;
-};
-
 QScriptDeclarativeClass::QScriptDeclarativeClass(QScriptEngine *engine)
-: context(0), d_ptr(new QScriptDeclarativeClassPrivate)
+: d_ptr(new QScriptDeclarativeClassPrivate)
 {
     Q_ASSERT(sizeof(void*) == sizeof(JSC::Identifier));
     d_ptr->q_ptr = this;
@@ -178,8 +169,9 @@ QScriptValue QScriptDeclarativeClass::property(const QScriptValue &v, const Iden
 }
 
 /*
-Returns the scope chain entry \a index from the end.  This is equivalent to:
-    context->scopeChain().at(context->scopeChain.length() - 1 - index)
+Returns the scope chain entry at \a index.  If index is less than 0, returns
+entries starting at the end.  For example, scopeChainValue(context, -1) will return
+the value last in the scope chain.
 */
 QScriptValue QScriptDeclarativeClass::scopeChainValue(QScriptContext *context, int index)
 {
@@ -190,18 +182,21 @@ QScriptValue QScriptDeclarativeClass::scopeChainValue(QScriptContext *context, i
     JSC::ScopeChainNode *node = frame->scopeChain();
     JSC::ScopeChainIterator it(node);
 
-    int count = 0;
-    for (it = node->begin(); it != node->end(); ++it) 
-        ++count;
+    if (index < 0) {
+        int count = 0;
+        for (it = node->begin(); it != node->end(); ++it) 
+            ++count;
 
-    if (count < index)
-        return QScriptValue();
-
-    count -= index;
+        index = qAbs(index);
+        if (index > count)
+            return QScriptValue();
+        else
+            index = count - index;
+    }
 
     for (it = node->begin(); it != node->end(); ++it) {
 
-        if (count == 0) {
+        if (index == 0) {
 
             JSC::JSObject *object = *it;
             if (!object) return QScriptValue();
@@ -214,7 +209,7 @@ QScriptValue QScriptDeclarativeClass::scopeChainValue(QScriptContext *context, i
             return engine->scriptValueFromJSCValue(object);
 
         } else {
-            --count;
+            --index;
         }
 
     }
@@ -312,5 +307,10 @@ QVariant QScriptDeclarativeClass::toVariant(Object *, bool *ok)
 {
     if (ok) *ok = false;
     return QVariant();
+}
+
+QScriptContext *QScriptDeclarativeClass::context() const
+{
+    return d_ptr->context;
 }
 
