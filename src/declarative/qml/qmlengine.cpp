@@ -534,9 +534,10 @@ void QmlDeclarativeData::setBindingBit(QObject *obj, int bit)
 
         bindingBits = (quint32 *)realloc(bindingBits, 
                                          arraySize * sizeof(quint32));
+
         memset(bindingBits + oldArraySize, 
-               sizeof(quint32) * (arraySize - oldArraySize),
-               0x00);
+               0x00,
+               sizeof(quint32) * (arraySize - oldArraySize));
 
         bindingBitsSize = arraySize * 32;
     }
