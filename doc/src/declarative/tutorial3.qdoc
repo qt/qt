@@ -1,7 +1,7 @@
 /*!
 \page tutorial3.html
-\title Tutorial 3 - States and Transitions
 \target tutorial3
+\title Tutorial 3 - States and Transitions
 
 In this chapter, we make this example a little bit more dynamic by introducing states and transitions.
 

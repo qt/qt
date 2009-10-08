@@ -1,7 +1,7 @@
 /*!
 \page tutorial1.html
-\title Tutorial 1 - Basic Types
 \target tutorial1
+\title Tutorial 1 - Basic Types
 
 This first program is a very simple "Hello world" example that introduces some basic QML concepts.
 The picture below is a screenshot of this program.

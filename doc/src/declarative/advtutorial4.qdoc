@@ -41,8 +41,8 @@
 
 /*!
 \page advtutorial4.html
-\title Advanced Tutorial 4 - Finishing Touches
 \target advtutorial4
+\title Advanced Tutorial 4 - Finishing Touches
 
 Now we're going to do two things to liven the game up. Animate the blocks and add a web-based high score system.
 
@@ -52,6 +52,7 @@ which we've placed all the QML but the main file.
 
 \section2 Animated Blocks
 
+<<<<<<< HEAD:doc/src/declarative/advtutorial4.qdoc
 The most vital animations are that the blocks move fluidly around the board. QML has many tools for fluid behavior,
 and in this case we're going to use the \l Follow element. By having the script set \c targetX and \c targetY, instead of \c x
 and \c y directly, we can set the \c x and \c y of the block to a follow. \l SpringFollow is a property value source, which means
@@ -59,6 +60,9 @@ that you can set a property to be one of these elements and it will automaticall
 The SpringFollow's value follows another value over time, when the value it is tracking changes the SpringFollow's
 value will also change, but it will move smoothly there over time with a spring-like movement (based on the spring
 parameters specified). This is shown in the below snippet of code from \c Block.qml:
+=======
+The most vital animations are that the blocks move fluidly around the board. QML has many tools for fluid behavior, and in this case we're going to use the SpringFollow element. By having the script set targetX and targetY, instead of x and y directly, we can set the x and y of the block to a follow. SpringFollow is a property value source, which means that you can set a property to be one of these elements and it will automatically bind the property to the element's value. The SpringFollow's value follows another value over time, when the value it is tracking changes the SpringFollow's value will also change, but it will move smoothly there over time with a spring-like movement (based on the spring parameters specified). This is shown in the below snippet of code from Block.qml:
+>>>>>>> f36619d24bc1a2b1e9bef6b4fac7d5d9a1916b7c:doc/src/declarative/advtutorial4.qdoc
 
 \code
     property int targetX: 0
@@ -70,10 +74,10 @@ parameters specified). This is shown in the below snippet of code from \c Block.
 
 We also have to change the \c{samegame.js} code, so that wherever it was setting the \c x or \c y it now sets \c targetX and \c targetY
 (including when creating the block). This simple change is all you need to get spring moving blocks that no longer teleport
-around the board. If you try doing just this though, you'll notice that they now never jump from one point to another, even
-in the initialization! This gives an odd effect of having them all jump out of the corner (0,0) on start up. We'd rather
-that they fall down from the top in rows. To do this, we disable the x Follow (but not the y follow) and only enable it after
-we've set the \c x in the \c createBlock function. The above snippet now becomes:
+around the board. If you try doing just this though, you'll notice that they now never jump from one point to another, even in
+the initialization! This gives an odd effect of having them all jump out of the corner (0,0) on start up. We'd rather that they
+fall down from the top in rows. To do this, we disable the \c x follow (but not the \c y follow) and only enable it after we've set
+the \c x in the \c createBlock function. The above snippet now becomes:
 
 \snippet declarative/tutorials/samegame/samegame4/content/BoomBlock.qml 1
 

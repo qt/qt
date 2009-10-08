@@ -41,8 +41,8 @@
 
 /*!
 \page advtutorial2.html
-\title Advanced Tutorial 2 - Populating the Game Canvas
 \target advtutorial2
+\title Advanced Tutorial 2 - Populating the Game Canvas
 
 Now that we've written some basic elements, let's start writing the game. The
 first thing to do is to generate all of the blocks. Now we need to dynamically
