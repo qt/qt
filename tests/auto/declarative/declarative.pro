@@ -7,13 +7,16 @@ SUBDIRS += datetimeformatter \
            pathview \
            qfxtext \
            qfxtextedit \
-           simplecanvasitem \
            repeater \
            qmllanguage \
            qmlecmascript \
            qmlmetaproperty \
            qmllist \
            qmllistaccessor \
+           qmltimer \
+           qfxloader \
+           qfxwebview \
+           states \
            visual
 
 # Tests which should run in Pulse

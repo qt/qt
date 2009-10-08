@@ -140,18 +140,24 @@ Rectangle {
         Repeater {
             model: easingtypes
             Component {
-                Text {
-                    id: text
-                    text: type
+                Rectangle {
+                    id: block
+                    Text {
+                        text: type
+                        anchors.centerIn: parent
+                        font.italic: true
+                        color: index & 1 ? "black" : "white"
+                        opacity: 0 // 1 for debugging
+                    }
+                    width: 120
                     height: 18
-                    font.italic: true
-                    color: "black"
+                    color: index & 1 ? "red" : "blue"
                     states: [
                         State {
                             name: "from"
                             when: !mouse.pressed
                             PropertyChanges {
-                                target: text
+                                target: block
                                 x: 0
                             }
                         },
@@ -159,8 +165,8 @@ Rectangle {
                             name: "to"
                             when: mouse.pressed
                             PropertyChanges {
-                                target: text
-                                x: item.width-100
+                                target: block
+                                x: item.width-block.width
                             }
                         }
                     ]
@@ -172,6 +178,7 @@ Rectangle {
                             NumberAnimation {
                                 properties: "x"
                                 easing: type
+                                duration: 1000
                             }
                         }
                     ]

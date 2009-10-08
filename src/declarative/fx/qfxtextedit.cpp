@@ -407,7 +407,7 @@ void QFxTextEdit::setCursorVisible(bool on)
         return;
     d->cursorVisible = on;
     QFocusEvent focusEvent(on ? QEvent::FocusIn : QEvent::FocusOut);
-    if (!on && !d->preserveSelection)
+    if (!on && !d->persistentSelection)
         d->control->setCursorIsFocusIndicator(true);
     d->control->processEvent(&focusEvent, QPointF(0, 0));
 }
@@ -590,23 +590,23 @@ void QFxTextEdit::setFocusOnPress(bool on)
 }
 
 /*!
-    \qmlproperty bool TextEdit::preserveSelection
+    \qmlproperty bool TextEdit::persistentSelection
 
     Whether the TextEdit should keep the selection visible when it loses focus to another
     item in the scene. By default this is set to true;
 */
-bool QFxTextEdit::preserveSelection() const
+bool QFxTextEdit::persistentSelection() const
 {
     Q_D(const QFxTextEdit);
-    return d->preserveSelection;
+    return d->persistentSelection;
 }
 
-void QFxTextEdit::setPreserveSelection(bool on)
+void QFxTextEdit::setPersistentSelection(bool on)
 {
     Q_D(QFxTextEdit);
-    if (d->preserveSelection == on)
+    if (d->persistentSelection == on)
         return;
-    d->preserveSelection = on;
+    d->persistentSelection = on;
 }
 
 qreal QFxTextEdit::textMargin() const
