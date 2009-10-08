@@ -443,7 +443,7 @@ public:
     void constraintsFromPaths(Orientation orientation);
     QList<QSimplexConstraint *> constraintsFromSizeHints(const QList<AnchorData *> &anchors);
     QList<QList<QSimplexConstraint *> > getGraphParts(Orientation orientation);
-    void identifyNonFloatItems(const QSet<AnchorData *> &visited, Orientation orientation);
+    void identifyFloatItems(const QSet<AnchorData *> &visited, Orientation orientation);
     void identifyNonFloatItems_helper(const AnchorData *ad, QSet<QGraphicsLayoutItem *> *nonFloatingItemsIdentifiedSoFar);
 
     inline AnchorVertex *internalVertex(const QPair<QGraphicsLayoutItem*, Qt::AnchorPoint> &itemEdge) const

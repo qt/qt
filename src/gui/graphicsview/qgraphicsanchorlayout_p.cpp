@@ -275,8 +275,8 @@ static qreal getFactor(qreal value, qreal min, qreal pref, qreal max)
     }
 }
 
-static qreal getExpandingFactor(qreal expSize, qreal sizeAtPreferred,
-                                qreal sizeAtExpanding, qreal sizeAtMaximum)
+static qreal getExpandingFactor(const qreal &expSize, const qreal &sizeAtPreferred,
+                                const qreal &sizeAtExpanding, const qreal &sizeAtMaximum)
 {
     const qreal lower = qMin(sizeAtPreferred, sizeAtMaximum);
     const qreal upper = qMax(sizeAtPreferred, sizeAtMaximum);
@@ -1842,10 +1842,10 @@ void QGraphicsAnchorLayoutPrivate::findPaths(Orientation orientation)
         }
     }
 
-    // We will walk through every reachable items (non-float) and mark them
-    // by keeping their references on m_nonFloatItems. With this we can easily
-    // identify non-float and float items.
-    identifyNonFloatItems(visited, orientation);
+    // We will walk through every reachable items (non-float) store them in a temporary set.
+    // We them create a set of all items and subtract the non-floating items from the set in
+    // order to get the floating items. The floating items is then stored in m_floatItems
+    identifyFloatItems(visited, orientation);
 }
 
 /*!
@@ -2008,7 +2008,7 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
 
   Use all visited Anchors on findPaths() so we can identify non-float Items.
 */
-void QGraphicsAnchorLayoutPrivate::identifyNonFloatItems(const QSet<AnchorData *> &visited, Orientation orientation)
+void QGraphicsAnchorLayoutPrivate::identifyFloatItems(const QSet<AnchorData *> &visited, Orientation orientation)
 {
     QSet<QGraphicsLayoutItem *> nonFloating;
 
