@@ -698,7 +698,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                       case Node::Typedef: 
                           sections[Typedef].appendMember((Node*)node);
                           break;
-                      case Node::Function:
+                      case Node::Function: {
                           const FunctionNode* fn = static_cast<const FunctionNode*>(node);
                           if (fn->isMacro())
                               sections[Macro].appendMember((Node*)node);
@@ -720,6 +720,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                                   sections[GlobalFunction].appendMember((Node*)node);
                           }
                           break;
+                      }
                       case Node::Property:
                           sections[Property].appendMember((Node*)node);
                           break;
