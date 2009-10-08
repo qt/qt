@@ -246,13 +246,13 @@ void QUnifiedTimer::unregisterAnimation(QAbstractAnimation *animation)
         // this is needed if we unregister an animation while its running
         if (idx <= currentAnimationIdx)
             --currentAnimationIdx;
-        if (animations.isEmpty())
+        if (animations.isEmpty() && !startStopAnimationTimer.isActive())
             startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this);
     } else {
         animationsToStart.removeOne(animation);
     }
-    if (!startStopAnimationTimer.isActive())
-        startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this); 
+
+    QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer = false;
 }
 
 void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
