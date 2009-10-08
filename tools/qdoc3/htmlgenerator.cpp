@@ -350,64 +350,6 @@ void HtmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
 #endif
     findAllSince(tree->root());
 
-#if 0    
-    if (!sinceVersions.isEmpty()) {
-        SinceVersionMap::const_iterator v = sinceVersions.constEnd();
-        do {
-            --v;
-            qDebug() << "SINCE:" << v.key();
-            if (!v.value().isEmpty()) {
-                QString type;
-                SinceNodeMultiMap::const_iterator n = v.value().constBegin();
-                while (n != v.value().constEnd()) {
-                    switch (n.value()->type()) {
-                        case Node::Namespace:
-                            type = "namespace";
-                            break;
-                        case Node::Class:
-                            type = "class";
-                            break;
-                        case Node::Fake:
-                            type = "fake";
-                            break;
-                        case Node::Enum: 
-                            type = "enum";
-                            break;
-                        case Node::Typedef:
-                            type = "typedef";
-                            break;
-                        case Node::Function:
-                            type = "function";
-                            break;
-                        case Node::Property:
-                            type = "property";
-                            break;
-                        case Node::Variable:
-                            type = "variable";
-                            break;
-                        case Node::Target:
-                            type = "target";
-                            break;
-                        case Node::QmlProperty:
-                            type = "QML property";
-                            break;
-                        case Node::QmlSignal:
-                            type = "QML signal";
-                            break;
-                        case Node::QmlMethod:
-                            type = "QML method";
-                            break;
-                        default:
-                            type = "No type";
-                    }
-                    qDebug() << "    " << type << n.key();
-                    ++n;
-                }
-            }
-        } while (v != sinceVersions.constBegin());
-    }
-#endif
-
     PageGenerator::generateTree(tree, marker);
 
     dcfClassesRoot.ref = "classes.html";
@@ -835,33 +777,6 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                     ++idx;
                     ++s;
                 }
-#if 0                
-                for (int i=0; !Node::typeName(i).isEmpty(); i++) {
-                    Node::Type t = (Node::Type) i;
-                    SinceNodeMultiMap::const_iterator n=v.value().constBegin();
-                    QMultiMap<QString, const Node*> nodeMap;
-                    while (n != v.value().constEnd()) {
-                        const Node* node = n.value();
-                        if (node->type() == t) {
-                            nodeMap.insert(node->nameForLists(),node);
-                            if (node->type() == Node::Function) {
-                                const FunctionNode* fn = static_cast<const FunctionNode*>(node);
-                                qDebug() << "SIGNATURE:" << fn->signature();
-                            }
-                        }
-                        ++n;
-                    }
-                    if (!nodeMap.isEmpty()) {
-                        out() << "<h2>"
-                              << Node::typeName(i)
-                              << " new in Qt "
-                              << atom->string()
-                              << "</h2>";
-                        generateAnnotatedList(relative, marker, nodeMap);
-                        nodeMap.clear();
-                    }
-                }
-#endif                
             }
         }
         break;
@@ -2254,7 +2169,6 @@ void HtmlGenerator::generateCompactList(const Node *relative,
     NodeMap paragraph[NumParagraphs+1];
     QString paragraphName[NumParagraphs+1];
 
-    qDebug() << "START COMPACT LIST";
     NodeMap::ConstIterator c = classMap.begin();
     while (c != classMap.end()) {
         QStringList pieces = c.key().split("::");
@@ -2266,7 +2180,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
             key = pieces.last().mid(idx).toLower();
         else
             key = pieces.last().toLower();
-        qDebug() << "  KEY:" << key;
+
         int paragraphNo = NumParagraphs - 1;
 
         if (key[0].digitValue() != -1) {
@@ -2280,7 +2194,6 @@ void HtmlGenerator::generateCompactList(const Node *relative,
         paragraph[paragraphNo].insert(key, c.value());
         ++c;
     }
-    qDebug() << "END COMPACT LIST";
 
     /*
       Each paragraph j has a size: paragraph[j].count(). In the
@@ -3751,31 +3664,6 @@ void HtmlGenerator::findAllSince(const InnerNode *node)
                     (func->metaness() != FunctionNode::Ctor) &&
                     (func->metaness() != FunctionNode::Dtor)) {
                     vmap.value().insert(func->name(),(*c));
-#if 0                    
-                    qDebug() << "FUNCTION:" << func->name();
-                    Node* p = func->parent();
-                    if (p) {
-                        if (p->type() == Node::Namespace) {
-                            if (p->name().isEmpty())
-                                qDebug() << "  Global namespace";
-                            else
-                                qDebug() << "  Namespace:" << p->name();
-                        }
-                        else if (p->type() == Node::Class)
-                            qDebug() << "  Class:" << p->name();
-                        Node* q = p->parent();
-                        if (q) {
-                            if (q->type() == Node::Namespace) {
-                                if (q->name().isEmpty())
-                                    qDebug() << "    Grandparent Global namespace";
-                                else
-                                    qDebug() << "    Grandparent Namespace:" << q->name();
-                            }
-                            else if (q->type() == Node::Class)
-                                qDebug() << "    Grandparent Class:" << q->name();
-                        }
-                    }
-#endif                    
                 }
             }
             else if ((*c)->url().isEmpty()) {
