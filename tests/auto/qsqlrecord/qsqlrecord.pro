@@ -9,9 +9,9 @@ symbian {
             DEPLOYMENT += sqlite
         }
     }
-    
+
     TARGET.EPOCSTACKSIZE=50000
-    TARGET.EPOCHEAPSIZE=50000 5000000    
+    TARGET.EPOCHEAPSIZE=50000 5000000
 }
 
 QT += sql
