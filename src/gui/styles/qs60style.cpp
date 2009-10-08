@@ -1864,7 +1864,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             painter->save();
             painter->setRenderHint(QPainter::Antialiasing);
             painter->setOpacity(opacity);
-            painter->setPen(QPen(option->palette.color(QPalette::Highlight), penWidth));
+            painter->setPen(QPen(option->palette.color(QPalette::Text), penWidth));
             painter->drawRoundedRect(adjustedRect, roundRectRadius, roundRectRadius);
             painter->restore();
         }
