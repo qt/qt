@@ -151,7 +151,7 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
 
 bool QGLPixelBufferPrivate::cleanup()
 {
-    eglDestroySurface(QEglContext::defaultDisplay(0), pbuf);
+    // No need to destroy "pbuf" here - it is done in QGLContext::reset().
     return true;
 }
 
