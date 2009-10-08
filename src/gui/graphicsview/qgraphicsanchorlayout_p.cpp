@@ -1709,11 +1709,6 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
             // they have a different logic for solveExpanding().
             solveExpanding(trunkConstraints, trunkVariables);
 
-            // Propagate the new sizes down the simplified graph, ie. tell the
-            // group anchors to set their children anchors sizes.
-            for (int i = 0; i < trunkVariables.count(); ++i)
-                trunkVariables.at(i)->updateChildrenSizes();
-
             // Calculate and set the preferred and expanding sizes for the layout,
             // from the edge sizes that were calculated above.
             qreal pref(0.0);
@@ -1756,9 +1751,6 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
         ad->sizeAtExpanding = ad->expSize;
         ad->sizeAtMaximum = ad->maxSize;
 
-        // Propagate
-        ad->updateChildrenSizes();
-
         sizeHints[orientation][Qt::MinimumSize] = ad->sizeAtMinimum;
         sizeHints[orientation][Qt::PreferredSize] = ad->sizeAtPreferred;
         sizeHints[orientation][Qt::MaximumSize] = ad->sizeAtMaximum;
@@ -1790,13 +1782,17 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
                 ad->sizeAtMinimum = ad->sizeAtPreferred;
                 ad->sizeAtExpanding = ad->sizeAtPreferred;
                 ad->sizeAtMaximum = ad->sizeAtPreferred;
-                ad->updateChildrenSizes();
             }
 
             // Delete the constraints, we won't use them anymore.
             qDeleteAll(sizeHintConstraints);
         }
     }
+
+    // Propagate the new sizes down the simplified graph, ie. tell the
+    // group anchors to set their children anchors sizes.
+    updateAnchorSizes(orientation);
+
     graphHasConflicts[orientation] = !feasible;
 
     // Clean up our data structures. They are not needed anymore since
@@ -1902,6 +1898,20 @@ void QGraphicsAnchorLayoutPrivate::constraintsFromPaths(Orientation orientation)
             constraints[orientation] += \
                 pathsToVertex[0].constraint(pathsToVertex[i]);
         }
+    }
+}
+
+/*!
+  \internal
+*/
+void QGraphicsAnchorLayoutPrivate::updateAnchorSizes(Orientation orientation)
+{
+    Graph<AnchorVertex, AnchorData> &g = graph[orientation];
+    const QList<QPair<AnchorVertex *, AnchorVertex *> > &vertices = g.connections();
+
+    for (int i = 0; i < vertices.count(); ++i) {
+        AnchorData *ad = g.edgeData(vertices.at(i).first, vertices.at(i).second);
+        ad->updateChildrenSizes();
     }
 }
 
