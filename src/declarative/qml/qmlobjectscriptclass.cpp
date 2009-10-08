@@ -214,12 +214,13 @@ QScriptValue QmlObjectScriptClass::property(QObject *obj, const Identifier &name
                 return enginePriv->valueTypeClass->newObject(obj, lastData->coreIndex, valueType);
         }
 
-        QVariant var = obj->metaObject()->property(lastData->coreIndex).read(obj);
-
         if (lastData->flags & QmlPropertyCache::Data::IsQObjectDerived) {
-            QObject *rv = *(QObject **)var.constData();
+            QObject *rv = 0;
+            void *args[] = { &rv, 0 };
+            QMetaObject::metacall(obj, QMetaObject::ReadProperty, lastData->coreIndex, args);
             return newQObject(rv);
         } else {
+            QVariant var = obj->metaObject()->property(lastData->coreIndex).read(obj);
             return enginePriv->scriptValueFromVariant(var);
         }
 
