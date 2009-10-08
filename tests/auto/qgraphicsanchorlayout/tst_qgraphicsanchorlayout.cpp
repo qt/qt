@@ -73,6 +73,7 @@ private slots:
     void expandingSequenceFairDistribution();
     void expandingParallel();
     void floatConflict();
+    void infiniteMaxSizes();
 };
 
 class RectWidget : public QGraphicsWidget
@@ -1583,6 +1584,54 @@ void tst_QGraphicsAnchorLayout::floatConflict()
     QCOMPARE(layoutHasConflict(l), false);
 
     delete p;
+}
+
+void tst_QGraphicsAnchorLayout::infiniteMaxSizes()
+{
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+    l->setContentsMargins(0, 0, 0, 0);
+    l->setSpacing(0);
+
+    QSizeF min(10, 10);
+    QSizeF pref(50, 10);
+    QSizeF max(QWIDGETSIZE_MAX, 10);
+
+    QGraphicsWidget *a = createItem(min, pref, max, "a");
+    QGraphicsWidget *b = createItem(min, pref, max, "b");
+    QGraphicsWidget *c = createItem(min, pref, max, "c");
+    QGraphicsWidget *d = createItem(min, pref, max, "d");
+
+    //<!-- Trunk -->
+    setAnchor(l, l, Qt::AnchorLeft, a, Qt::AnchorLeft, 0);
+    setAnchor(l, a, Qt::AnchorRight, b, Qt::AnchorLeft, 0);
+    setAnchor(l, b, Qt::AnchorRight, c, Qt::AnchorLeft, 0);
+    setAnchor(l, c, Qt::AnchorRight, d, Qt::AnchorLeft, 0);
+    setAnchor(l, d, Qt::AnchorRight, l, Qt::AnchorRight, 0);
+
+    a->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    c->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+
+    QGraphicsWidget p;
+    p.setLayout(l);
+
+    p.resize(200, 10);
+    QCOMPARE(a->geometry(), QRectF(0, 0, 50, 10));
+    QCOMPARE(b->geometry(), QRectF(50, 0, 50, 10));
+    QCOMPARE(c->geometry(), QRectF(100, 0, 50, 10));
+    QCOMPARE(d->geometry(), QRectF(150, 0, 50, 10));
+
+    p.resize(1000, 10);
+    QCOMPARE(a->geometry(), QRectF(0, 0, 450, 10));
+    QCOMPARE(b->geometry(), QRectF(450, 0, 50, 10));
+    QCOMPARE(c->geometry(), QRectF(500, 0, 450, 10));
+    QCOMPARE(d->geometry(), QRectF(950, 0, 50, 10));
+
+    qreal expMaxSize = (QWIDGETSIZE_MAX - 100.0) / 2;
+    p.resize(QWIDGETSIZE_MAX, 10);
+    QCOMPARE(a->geometry(), QRectF(0, 0, expMaxSize, 10));
+    QCOMPARE(b->geometry(), QRectF(expMaxSize, 0, 50, 10));
+    QCOMPARE(c->geometry(), QRectF(expMaxSize + 50, 0, expMaxSize, 10));
+    QCOMPARE(d->geometry(), QRectF(QWIDGETSIZE_MAX - 50, 0, 50, 10));
 }
 
 QTEST_MAIN(tst_QGraphicsAnchorLayout)
