@@ -170,6 +170,7 @@ private slots:
     void dontCrashWhenDie();
     void createProxyForChildWidget();
     void actionsContextMenu();
+    void actionsContextMenu_data();
     void deleteProxyForChildWidget();
     void bypassGraphicsProxyWidget_data();
     void bypassGraphicsProxyWidget();
@@ -3014,30 +3015,64 @@ private slots:
     }
 };
 
+void tst_QGraphicsProxyWidget::actionsContextMenu_data()
+{
+    QTest::addColumn<bool>("actionsContextMenu");
+    QTest::addColumn<bool>("hasFocus");
+
+    QTest::newRow("without actionsContextMenu and with focus") << false << true;
+    QTest::newRow("without actionsContextMenu and without focus") << false << false;
+    QTest::newRow("with actionsContextMenu and focus") << true << true;
+    QTest::newRow("with actionsContextMenu without focus") << true << false;
+}
+
 void tst_QGraphicsProxyWidget::actionsContextMenu()
 {
-    ContextMenuWidget *widget = new ContextMenuWidget;
-    widget->addAction(new QAction("item 1", widget));
-    widget->addAction(new QAction("item 2", widget));
-    widget->addAction(new QAction("item 3", widget));
-    widget->setContextMenuPolicy(Qt::ActionsContextMenu);
+    QFETCH(bool, hasFocus);
+    QFETCH(bool, actionsContextMenu);
 
+    ContextMenuWidget *widget = new ContextMenuWidget;
+    if (actionsContextMenu) {
+        widget->addAction(new QAction("item 1", widget));
+        widget->addAction(new QAction("item 2", widget));
+        widget->addAction(new QAction("item 3", widget));
+        widget->setContextMenuPolicy(Qt::ActionsContextMenu);
+    }
     QGraphicsScene scene;
-    scene.addWidget(widget);
+
+    if (hasFocus)
+        scene.addWidget(widget)->setFocus();
+    else
+        scene.addWidget(widget)->clearFocus();
 
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QTest::qWaitForWindowShown(&view);
+    view.setFocus();
     QContextMenuEvent contextMenuEvent(QContextMenuEvent::Mouse,
                                        view.viewport()->rect().center(),
                                        view.viewport()->mapToGlobal(view.viewport()->rect().center()));
     contextMenuEvent.accept();
     qApp->sendEvent(view.viewport(), &contextMenuEvent);
 
-    QVERIFY(widget->embeddedPopup);
-    QVERIFY(!widget->gotContextMenuEvent);
+    QApplication::processEvents();
+
+    if (hasFocus) {
+        if (actionsContextMenu) {
+            //actionsContextMenu embedded popup but no contextMenuEvent (widget has focus)
+            QVERIFY(widget->embeddedPopup);
+            QVERIFY(!widget->gotContextMenuEvent);
+        } else {
+            //no embedded popup but contextMenuEvent (widget has focus)
+            QVERIFY(!widget->embeddedPopup);
+            QVERIFY(widget->gotContextMenuEvent);
+        }
+    } else {
+        //qgraphicsproxywidget doesn't have the focus, the widget must not receive any contextMenuEvent and must not create any QMenu
+        QVERIFY(!widget->embeddedPopup);
+        QVERIFY(!widget->gotContextMenuEvent);
+    }
+
 }
 
 
