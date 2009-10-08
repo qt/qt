@@ -189,11 +189,12 @@ bool FactoryPrivate::createBackend()
 }
 
 FactoryPrivate::FactoryPrivate()
+    :
 #ifndef QT_NO_PHONON_PLATFORMPLUGIN
-    : m_platformPlugin(0),
-    m_noPlatformPlugin(false)
+    m_platformPlugin(0),
+    m_noPlatformPlugin(false),
 #endif //QT_NO_PHONON_PLATFORMPLUGIN
-    , m_backendObject(0)
+    m_backendObject(0)
 {
     // Add the post routine to make sure that all other global statics (especially the ones from Qt)
     // are still available. If the FactoryPrivate dtor is called too late many bad things can happen
