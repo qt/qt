@@ -438,6 +438,13 @@ public:
 
     void calculateGraphs();
     void calculateGraphs(Orientation orientation);
+
+    bool calculateTrunk(Orientation orientation, const GraphPath &trunkPath,
+                        const QList<QSimplexConstraint *> &constraints,
+                        const QList<AnchorData *> &variables);
+    bool calculateNonTrunk(const QList<QSimplexConstraint *> &constraints,
+                           const QList<AnchorData *> &variables);
+
     void setAnchorSizeHintsFromItems(Orientation orientation);
     void findPaths(Orientation orientation);
     void constraintsFromPaths(Orientation orientation);

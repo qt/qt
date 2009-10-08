@@ -1600,7 +1600,8 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs()
     calculateGraphCacheDirty = 0;
 }
 
-// ### remove me:
+// ### Maybe getGraphParts could return the variables when traversing, at least
+// for trunk...
 QList<AnchorData *> getVariables(QList<QSimplexConstraint *> constraints)
 {
     QSet<AnchorData *> variableSet;
@@ -1664,8 +1665,7 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     //  2) The floating or semi-floating anchors (items) that are those which
     //     are connected to only one (or none) of the layout sides, thus are not
     //     influenced by the layout size.
-    QList<QList<QSimplexConstraint *> > parts;
-    parts = getGraphParts(orientation);
+    QList<QList<QSimplexConstraint *> > parts = getGraphParts(orientation);
 
     // Now run the simplex solver to calculate Minimum, Preferred and Maximum sizes
     // of the "trunk" set of constraints and variables.
@@ -1675,118 +1675,24 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
 
     // For minimum and maximum, use the path between the two layout sides as the
     // objective function.
-
-    // Retrieve that path
     AnchorVertex *v = internalVertex(q, pickEdge(Qt::AnchorRight, orientation));
     GraphPath trunkPath = graphPaths[orientation].value(v);
 
-    bool feasible = true;
-    if (!trunkConstraints.isEmpty()) {
-#if 0
-        qDebug("Simplex used for trunk of %s",
-               orientation == Horizontal ? "Horizontal" : "Vertical");
-#endif
-
-#ifdef QT_DEBUG
-        lastCalculationUsedSimplex[orientation] = true;
-#endif
-
-        // Solve min and max size hints for trunk
-        qreal min, max;
-
-        QList<QSimplexConstraint *> sizeHintConstraints = constraintsFromSizeHints(trunkVariables);
-        QList<QSimplexConstraint *> allTrunkConstraints = trunkConstraints + sizeHintConstraints;
-
-        feasible = solveMinMax(allTrunkConstraints, trunkPath, &min, &max);
-
-        if (feasible) {
-            // Solve for preferred. The objective function is calculated from the constraints
-            // and variables internally.
-            solvePreferred(allTrunkConstraints, trunkVariables);
-
-            // Solve for expanding. The objective function and the constraints from items
-            // are calculated internally. Note that we don't include the sizeHintConstraints, since
-            // they have a different logic for solveExpanding().
-            solveExpanding(trunkConstraints, trunkVariables);
-
-            // Calculate and set the preferred and expanding sizes for the layout,
-            // from the edge sizes that were calculated above.
-            qreal pref(0.0);
-            qreal expanding(0.0);
-            foreach (const AnchorData *ad, trunkPath.positives) {
-                pref += ad->sizeAtPreferred;
-                expanding += ad->sizeAtExpanding;
-            }
-            foreach (const AnchorData *ad, trunkPath.negatives) {
-                pref -= ad->sizeAtPreferred;
-                expanding -= ad->sizeAtExpanding;
-            }
-
-            sizeHints[orientation][Qt::MinimumSize] = min;
-            sizeHints[orientation][Qt::PreferredSize] = pref;
-            sizeHints[orientation][Qt::MaximumSize] = max;
-            sizeAtExpanding[orientation] = expanding;
-        }
-
-        qDeleteAll(sizeHintConstraints);
-
-    } else {
-#if 0
-        qDebug("Simplex NOT used for trunk of %s",
-               orientation == Horizontal ? "Horizontal" : "Vertical");
-#endif
-
-#ifdef QT_DEBUG
-        lastCalculationUsedSimplex[orientation] = false;
-#endif
-
-        // No Simplex is necessary because the path was simplified all the way to a single
-        // anchor.
-        Q_ASSERT(trunkPath.positives.count() == 1);
-        Q_ASSERT(trunkPath.negatives.count() == 0);
-
-        AnchorData *ad = trunkPath.positives.toList()[0];
-        ad->sizeAtMinimum = ad->minSize;
-        ad->sizeAtPreferred = ad->prefSize;
-        ad->sizeAtExpanding = ad->expSize;
-        ad->sizeAtMaximum = ad->maxSize;
-
-        sizeHints[orientation][Qt::MinimumSize] = ad->sizeAtMinimum;
-        sizeHints[orientation][Qt::PreferredSize] = ad->sizeAtPreferred;
-        sizeHints[orientation][Qt::MaximumSize] = ad->sizeAtMaximum;
-        sizeAtExpanding[orientation] = ad->sizeAtExpanding;
-    }
+    bool feasible = calculateTrunk(orientation, trunkPath, trunkConstraints, trunkVariables);
 
     // For the other parts that not the trunk, solve only for the preferred size
     // that is the size they will remain at, since they are not stretched by the
     // layout.
 
-    // Solve the other only for preferred, skip trunk
-    if (feasible) {
-        for (int i = 1; i < parts.count(); ++i) {
-            QList<QSimplexConstraint *> partConstraints = parts[i];
-            QList<AnchorData *> partVariables = getVariables(partConstraints);
-            Q_ASSERT(!partVariables.isEmpty());
+    // Skipping the first (trunk)
+    for (int i = 1; i < parts.count(); ++i) {
+        if (!feasible)
+            break;
 
-            QList<QSimplexConstraint *> sizeHintConstraints = constraintsFromSizeHints(partVariables);
-            partConstraints += sizeHintConstraints;
-            feasible &= solvePreferred(partConstraints, partVariables);
-            if (!feasible)
-                break;
-
-            // Propagate size at preferred to other sizes. Semi-floats
-            // always will be in their sizeAtPreferred.
-            for (int j = 0; j < partVariables.count(); ++j) {
-                AnchorData *ad = partVariables[j];
-                Q_ASSERT(ad);
-                ad->sizeAtMinimum = ad->sizeAtPreferred;
-                ad->sizeAtExpanding = ad->sizeAtPreferred;
-                ad->sizeAtMaximum = ad->sizeAtPreferred;
-            }
-
-            // Delete the constraints, we won't use them anymore.
-            qDeleteAll(sizeHintConstraints);
-        }
+        QList<QSimplexConstraint *> partConstraints = parts[i];
+        QList<AnchorData *> partVariables = getVariables(partConstraints);
+        Q_ASSERT(!partVariables.isEmpty());
+        feasible &= calculateNonTrunk(partConstraints, partVariables);
     }
 
     // Propagate the new sizes down the simplified graph, ie. tell the
@@ -1800,6 +1706,111 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     qDeleteAll(constraints[orientation]);
     constraints[orientation].clear();
     graphPaths[orientation].clear(); // ###
+}
+
+/*!
+    \internal
+
+    Calculate the sizes for all anchors which are part of the trunk. This works
+    on top of a (possibly) simplified graph.
+*/
+bool QGraphicsAnchorLayoutPrivate::calculateTrunk(Orientation orientation, const GraphPath &path,
+                                                  const QList<QSimplexConstraint *> &constraints,
+                                                  const QList<AnchorData *> &variables)
+{
+    bool feasible = true;
+    bool needsSimplex = !constraints.isEmpty();
+
+#if 0
+    qDebug("Simplex %s for trunk of %s", needsSimplex ? "used" : "NOT used",
+           orientation == Horizontal ? "Horizontal" : "Vertical");
+#endif
+
+    if (needsSimplex) {
+
+        QList<QSimplexConstraint *> sizeHintConstraints = constraintsFromSizeHints(variables);
+        QList<QSimplexConstraint *> allConstraints = constraints + sizeHintConstraints;
+
+        // Solve min and max size hints
+        qreal min, max;
+        feasible = solveMinMax(allConstraints, path, &min, &max);
+
+        if (feasible) {
+            solvePreferred(allConstraints, variables);
+
+            // Note that we don't include the sizeHintConstraints, since they
+            // have a different logic for solveExpanding().
+            solveExpanding(constraints, variables);
+
+            // Calculate and set the preferred and expanding sizes for the layout,
+            // from the edge sizes that were calculated above.
+            qreal pref(0.0);
+            qreal expanding(0.0);
+            foreach (const AnchorData *ad, path.positives) {
+                pref += ad->sizeAtPreferred;
+                expanding += ad->sizeAtExpanding;
+            }
+            foreach (const AnchorData *ad, path.negatives) {
+                pref -= ad->sizeAtPreferred;
+                expanding -= ad->sizeAtExpanding;
+            }
+
+            sizeHints[orientation][Qt::MinimumSize] = min;
+            sizeHints[orientation][Qt::PreferredSize] = pref;
+            sizeHints[orientation][Qt::MaximumSize] = max;
+            sizeAtExpanding[orientation] = expanding;
+        }
+
+        qDeleteAll(sizeHintConstraints);
+
+    } else {
+        // No Simplex is necessary because the path was simplified all the way to a single
+        // anchor.
+        Q_ASSERT(path.positives.count() == 1);
+        Q_ASSERT(path.negatives.count() == 0);
+
+        AnchorData *ad = path.positives.toList()[0];
+        ad->sizeAtMinimum = ad->minSize;
+        ad->sizeAtPreferred = ad->prefSize;
+        ad->sizeAtExpanding = ad->expSize;
+        ad->sizeAtMaximum = ad->maxSize;
+
+        sizeHints[orientation][Qt::MinimumSize] = ad->sizeAtMinimum;
+        sizeHints[orientation][Qt::PreferredSize] = ad->sizeAtPreferred;
+        sizeHints[orientation][Qt::MaximumSize] = ad->sizeAtMaximum;
+        sizeAtExpanding[orientation] = ad->sizeAtExpanding;
+    }
+
+#ifdef QT_DEBUG
+    lastCalculationUsedSimplex[orientation] = needsSimplex;
+#endif
+
+    return feasible;
+}
+
+/*!
+    \internal
+*/
+bool QGraphicsAnchorLayoutPrivate::calculateNonTrunk(const QList<QSimplexConstraint *> &constraints,
+                                                     const QList<AnchorData *> &variables)
+{
+    QList<QSimplexConstraint *> sizeHintConstraints = constraintsFromSizeHints(variables);
+    bool feasible = solvePreferred(constraints + sizeHintConstraints, variables);
+
+    if (feasible) {
+        // Propagate size at preferred to other sizes. Semi-floats always will be
+        // in their sizeAtPreferred.
+        for (int j = 0; j < variables.count(); ++j) {
+            AnchorData *ad = variables[j];
+            Q_ASSERT(ad);
+            ad->sizeAtMinimum = ad->sizeAtPreferred;
+            ad->sizeAtExpanding = ad->sizeAtPreferred;
+            ad->sizeAtMaximum = ad->sizeAtPreferred;
+        }
+    }
+
+    qDeleteAll(sizeHintConstraints);
+    return feasible;
 }
 
 /*!
