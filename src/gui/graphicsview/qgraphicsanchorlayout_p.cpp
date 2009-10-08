@@ -1550,6 +1550,13 @@ qreal QGraphicsAnchorLayoutPrivate::effectiveSpacing(Orientation orientation) co
             }
         }
     }
+
+    // ### Currently we do not support negative anchors inside the graph.
+    // To avoid those being created by a negative style spacing, we must
+    // make this test.
+    if (s < 0)
+        s = 0;
+
     return s;
 }
 
