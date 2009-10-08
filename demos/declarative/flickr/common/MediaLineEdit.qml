@@ -6,18 +6,18 @@ Item {
     property string label
     property string text
 
-    width: Math.max(94,label.width + editor.width + 20)
+    width: Math.max(94,labeltext.width + editor.width + 20)
     height: buttonImage.height
 
     states: [
         State {
             name: "Edit"
             PropertyChanges {
-                target: label
+                target: labeltext
                 text: container.label + ": "
             }
             PropertyChanges {
-                target: label
+                target: labeltext
                 x: 10
             }
             PropertyChanges {
@@ -78,7 +78,7 @@ Item {
     }
 
     Text {
-        id: label
+        id: labeltext
         font.bold: true
         color: "white"
         anchors.verticalCenter: container.verticalCenter
@@ -93,7 +93,7 @@ Item {
         selectionColor: "green"
         width: 0
         clip: true
-        anchors.left: label.right
+        anchors.left: labeltext.right
         anchors.verticalCenter: container.verticalCenter
     }
     Keys.forwardTo: [(returnKey), (editor)]
