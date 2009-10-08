@@ -124,6 +124,7 @@ In the above example, the Text object will have normal opacity, since the
 line opacity: 0.5 has been turned into a comment.
 
 \section1 Properties
+\target intro-properties
 
 \section2 Property naming
 
