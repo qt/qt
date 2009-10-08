@@ -18,15 +18,11 @@ public:
     void cleanupTestCase() {}
 
 private slots:
-    void number_data();
-    void number();
-
     void text_data();
     void text();
 
 private:
     QStringList strings;
-    QList<float> numbers;
     QStringList formats;
     QStringList texts;
 };
@@ -42,16 +38,6 @@ tst_numberformat::tst_numberformat()
             << "1"
             << "1.0"
             << "1.01";
-
-    numbers << 100
-            << 12345
-            << 1234567
-            << 0.123
-            << 0.9999
-            << 0.989
-            << 1
-            << 1.0
-            << 1.01;
 
     formats << ""
             << "0000"
@@ -151,37 +137,6 @@ tst_numberformat::tst_numberformat()
              << "texts.size()" << texts.size();
 }
 
-void tst_numberformat::number_data()
-{
-    QTest::addColumn<QString>("string");    
-    QTest::addColumn<float>("number");
-
-    for (int i = 0; i < strings.size(); i++)
-        QTest::newRow(QString::number(i).toAscii()) << strings.at(i) << numbers.at(i);
-}
-
-void tst_numberformat::number()
-{
-    // ### tests the conversion from string to float
-    QFETCH(QString, string);
-    QFETCH(float, number);
-
-    QString componentStr = QString("import Qt 4.6\nNumberFormatter { number: \"") + string + QString("\" }");
-
-    QmlEngine engine;
-    QmlComponent formatterComponent(&engine, componentStr.toAscii(), QUrl("file://"));
-    if(formatterComponent.isError())
-        qDebug() << formatterComponent.errors();
-    QVERIFY(formatterComponent.isReady());
-    QmlNumberFormatter *formatter = qobject_cast<QmlNumberFormatter*>(formatterComponent.create());
-    QVERIFY(formatterComponent.isReady());
-    QVERIFY(formatter != 0);
-    QCOMPARE((float)formatter->number(), number);
-    //qDebug() << formatter->format() << formatter->text();
-    QVERIFY(formatter->format().isEmpty());
-    QVERIFY(formatter->text() == QString("%1").arg(number, -1, 'f', -1));
-}
-
 void tst_numberformat::text_data()
 {
     QTest::addColumn<QString>("string");
@@ -205,10 +160,10 @@ void tst_numberformat::text()
     QFETCH(QString, format);
     QFETCH(QString, text);
 
-    QString componentStr = QString("import Qt 4.6\nNumberFormatter { number: \"") + string + QString("\"; format: \"") + format + QString("\" }");
+    QString componentStr = QString("import Qt 4.6\nNumberFormatter { number: ") + string + QString("; format: \"") + format + QString("\" }");
 
     QmlEngine engine;
-    QmlComponent formatterComponent(&engine, componentStr.toAscii(), QUrl("file://"));
+    QmlComponent formatterComponent(&engine, componentStr.toAscii(), QUrl("file:///"));
     if(formatterComponent.isError())
         qDebug() << formatterComponent.errors();
     QVERIFY(formatterComponent.isReady());
