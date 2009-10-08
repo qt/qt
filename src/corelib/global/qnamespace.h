@@ -71,8 +71,8 @@ Qt {
     Q_ENUMS(ArrowType ToolButtonStyle PenStyle PenCapStyle PenJoinStyle BrushStyle)
     Q_ENUMS(FillRule MaskMode BGMode ClipOperation SizeMode)
     Q_ENUMS(BackgroundMode) // Qt3
-    Q_ENUMS(Axis Corner LayoutDirection SizeHint Orientation)
-    Q_FLAGS(Alignment Orientations)
+    Q_ENUMS(Axis Corner LayoutDirection SizeHint Orientation DropAction)
+    Q_FLAGS(Alignment Orientations DropActions)
     Q_FLAGS(DockWidgetAreas ToolBarAreas)
     Q_ENUMS(DockWidgetArea ToolBarArea)
     Q_ENUMS(TextFormat)

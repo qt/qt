@@ -1708,12 +1708,30 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
                         sizeof(axis), 0, &axis);
 
                 // The 'new' event has acceleration applied by the OS, while the old (on
-                // Carbon only), has not. So we introduce acceleration here to be consistent:
-                int scrollFactor = 120 * qMin(5, qAbs(mdelt));
+                // Carbon only), has not. So we introduce acceleration here to be consistent.
+                // The acceleration is trying to respect both pixel based and line scrolling,
+                // which turns out to be rather difficult.
+                int linesToScroll = mdelt > 0 ? 1 : -1;
+                static QTime t;
+                int elapsed = t.elapsed();
+                t.restart();
+                if (elapsed < 20)
+                    linesToScroll *= 120;
+                else if (elapsed < 30)
+                    linesToScroll *= 60;
+                else if (elapsed < 50)
+                    linesToScroll *= 30;
+                else if (elapsed < 100)
+                    linesToScroll *= 6;
+                else if (elapsed < 200)
+                    linesToScroll *= 3;
+                else if (elapsed < 300)
+                    linesToScroll *= 2;
+
                 if (axis == kEventMouseWheelAxisX)
-                    wheel_deltaX = mdelt * scrollFactor;
+                    wheel_deltaX = linesToScroll * 120;
                 else
-                    wheel_deltaY = mdelt * scrollFactor;
+                    wheel_deltaY = linesToScroll * 120;
             }
         }
 
