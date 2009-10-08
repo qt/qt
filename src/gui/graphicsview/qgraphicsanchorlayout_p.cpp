@@ -250,44 +250,61 @@ void ParallelAnchorData::refreshSizeHints_helper(qreal effectiveSpacing,
      0 is at Preferred
      1 is at Maximum
 */
-static qreal getFactor(qreal value, qreal min, qreal pref, qreal max)
+static QPair<QGraphicsAnchorLayoutPrivate::Interval, qreal> getFactor(qreal value, qreal min,
+                                                                      qreal pref, qreal exp,
+                                                                      qreal max)
 {
-    // ### Maybe remove some of the assertions? (since outside is asserting us)
-    Q_ASSERT(value > min || qFuzzyCompare(value, min));
-    Q_ASSERT(value < max || qFuzzyCompare(value, max));
+    QGraphicsAnchorLayoutPrivate::Interval interval;
+    qreal lower;
+    qreal upper;
 
-    if (qFuzzyCompare(value, min)) {
-        return -1.0;
-    } else if (qFuzzyCompare(value, pref)) {
-        return 0.0;
-    } else if (qFuzzyCompare(value, max)) {
-        return 1.0;
-    } else if (value < pref) {
-        // Since value < pref and value != pref and min <= value,
-        // we can assert that min < pref.
-        Q_ASSERT(min < pref);
-        return (value - min) / (pref - min) - 1;
+    if (value < pref) {
+        interval = QGraphicsAnchorLayoutPrivate::MinToPreferred;
+        lower = min;
+        upper = pref;
+    } else if (value < exp) {
+        interval = QGraphicsAnchorLayoutPrivate::PreferredToExpanding;
+        lower = pref;
+        upper = exp;
     } else {
-        // Since value > pref and value != pref and max >= value,
-        // we can assert that max > pref.
-        Q_ASSERT(max > pref);
-        return (value - pref) / (max - pref);
+        interval = QGraphicsAnchorLayoutPrivate::ExpandingToMax;
+        lower = exp;
+        upper = max;
     }
+
+    qreal progress;
+    if (upper == lower) {
+        progress = 0;
+    } else {
+        progress = (value - lower) / (upper - lower);
+    }
+
+    return qMakePair(interval, progress);
 }
 
-static qreal getExpandingFactor(const qreal &expSize, const qreal &sizeAtPreferred,
-                                const qreal &sizeAtExpanding, const qreal &sizeAtMaximum)
+static qreal interpolate(const QPair<QGraphicsAnchorLayoutPrivate::Interval, qreal> &factor,
+                         qreal min, qreal pref,
+                         qreal exp, qreal max)
 {
-    const qreal lower = qMin(sizeAtPreferred, sizeAtMaximum);
-    const qreal upper = qMax(sizeAtPreferred, sizeAtMaximum);
-    const qreal boundedExpSize = qBound(lower, expSize, upper);
+    qreal lower;
+    qreal upper;
 
-    const qreal bandSize = sizeAtMaximum - boundedExpSize;
-    if (bandSize == 0) {
-        return 0;
-    } else {
-        return (sizeAtExpanding - boundedExpSize) / bandSize;
+    switch (factor.first) {
+    case QGraphicsAnchorLayoutPrivate::MinToPreferred:
+        lower = min;
+        upper = pref;
+        break;
+    case QGraphicsAnchorLayoutPrivate::PreferredToExpanding:
+        lower = pref;
+        upper = exp;
+        break;
+    case QGraphicsAnchorLayoutPrivate::ExpandingToMax:
+        lower = exp;
+        upper = max;
+        break;
     }
+
+    return lower + factor.second * (upper - lower);
 }
 
 void SequentialAnchorData::updateChildrenSizes()
@@ -307,27 +324,22 @@ void SequentialAnchorData::updateChildrenSizes()
     // Band here refers if the value is in the Minimum To Preferred
     // band (the lower band) or the Preferred To Maximum (the upper band).
 
-    const qreal minFactor = getFactor(sizeAtMinimum, minSize, prefSize, maxSize);
-    const qreal prefFactor = getFactor(sizeAtPreferred, minSize, prefSize, maxSize);
-    const qreal maxFactor = getFactor(sizeAtMaximum, minSize, prefSize, maxSize);
-    const qreal expFactor = getExpandingFactor(expSize, sizeAtPreferred, sizeAtExpanding, sizeAtMaximum);
+    const QPair<QGraphicsAnchorLayoutPrivate::Interval, qreal> minFactor =
+        getFactor(sizeAtMinimum, minSize, prefSize, expSize, maxSize);
+    const QPair<QGraphicsAnchorLayoutPrivate::Interval, qreal> prefFactor =
+        getFactor(sizeAtPreferred, minSize, prefSize, expSize, maxSize);
+    const QPair<QGraphicsAnchorLayoutPrivate::Interval, qreal> expFactor =
+        getFactor(sizeAtExpanding, minSize, prefSize, expSize, maxSize);
+    const QPair<QGraphicsAnchorLayoutPrivate::Interval, qreal> maxFactor =
+        getFactor(sizeAtMaximum, minSize, prefSize, expSize, maxSize);
 
     for (int i = 0; i < m_edges.count(); ++i) {
         AnchorData *e = m_edges.at(i);
 
-        qreal bandSize = minFactor > 0 ? e->maxSize - e->prefSize : e->prefSize - e->minSize;
-        e->sizeAtMinimum = e->prefSize + bandSize * minFactor;
-
-        bandSize = prefFactor > 0 ? e->maxSize - e->prefSize : e->prefSize - e->minSize;
-        e->sizeAtPreferred = e->prefSize + bandSize * prefFactor;
-
-        bandSize = maxFactor > 0 ? e->maxSize - e->prefSize : e->prefSize - e->minSize;
-        e->sizeAtMaximum = e->prefSize + bandSize * maxFactor;
-
-        const qreal lower = qMin(e->sizeAtPreferred, e->sizeAtMaximum);
-        const qreal upper = qMax(e->sizeAtPreferred, e->sizeAtMaximum);
-        const qreal edgeBoundedExpSize = qBound(lower, e->expSize, upper);
-        e->sizeAtExpanding = edgeBoundedExpSize + expFactor * (e->sizeAtMaximum - edgeBoundedExpSize);
+        e->sizeAtMinimum = interpolate(minFactor, e->minSize, e->prefSize, e->expSize, e->maxSize);
+        e->sizeAtPreferred = interpolate(prefFactor, e->minSize, e->prefSize, e->expSize, e->maxSize);
+        e->sizeAtExpanding = interpolate(expFactor, e->minSize, e->prefSize, e->expSize, e->maxSize);
+        e->sizeAtMaximum = interpolate(maxFactor, e->minSize, e->prefSize, e->expSize, e->maxSize);
 
         e->updateChildrenSizes();
     }
@@ -2167,39 +2179,26 @@ void QGraphicsAnchorLayoutPrivate::calculateVertexPositions(
   \internal
 
   Calculate interpolation parameters based on current Layout Size.
-  Must once before calling "interpolateEdgeSize()" for each edge.
+  Must be called once before calling "interpolateEdgeSize()" for
+  the edges.
 */
 void QGraphicsAnchorLayoutPrivate::setupEdgesInterpolation(
     Orientation orientation)
 {
     Q_Q(QGraphicsAnchorLayout);
-    qreal lower, upper, current;
 
-    if (orientation == Horizontal) {
-        current = q->contentsRect().width();
-    } else {
-        current = q->contentsRect().height();
-    }
+    qreal current;
+    current = (orientation == Horizontal) ? q->contentsRect().width() : q->contentsRect().height();
 
-    if (current < sizeHints[orientation][Qt::PreferredSize]) {
-        interpolationInterval[orientation] = MinToPreferred;
-        lower = sizeHints[orientation][Qt::MinimumSize];
-        upper = sizeHints[orientation][Qt::PreferredSize];
-    } else if (current < sizeAtExpanding[orientation]) {
-        interpolationInterval[orientation] = PreferredToExpanding;
-        lower = sizeHints[orientation][Qt::PreferredSize];
-        upper = sizeAtExpanding[orientation];
-    } else {
-        interpolationInterval[orientation] = ExpandingToMax;
-        lower = sizeAtExpanding[orientation];
-        upper = sizeHints[orientation][Qt::MaximumSize];
-    }
+    QPair<Interval, qreal> result;
+    result = getFactor(current,
+                       sizeHints[orientation][Qt::MinimumSize],
+                       sizeHints[orientation][Qt::PreferredSize],
+                       sizeAtExpanding[orientation],
+                       sizeHints[orientation][Qt::MaximumSize]);
 
-    if (upper == lower) {
-        interpolationProgress[orientation] = 0;
-    } else {
-        interpolationProgress[orientation] = (current - lower) / (upper - lower);
-    }
+    interpolationInterval[orientation] = result.first;
+    interpolationProgress[orientation] = result.second;
 }
 
 /*!
@@ -2226,20 +2225,11 @@ void QGraphicsAnchorLayoutPrivate::interpolateEdge(AnchorVertex *base,
                                                    AnchorData *edge,
                                                    Orientation orientation)
 {
-    qreal lower, upper;
+    const QPair<Interval, qreal> factor(interpolationInterval[orientation],
+                                        interpolationProgress[orientation]);
 
-    if (interpolationInterval[orientation] == MinToPreferred) {
-        lower = edge->sizeAtMinimum;
-        upper = edge->sizeAtPreferred;
-    } else if (interpolationInterval[orientation] == PreferredToExpanding) {
-        lower = edge->sizeAtPreferred;
-        upper = edge->sizeAtExpanding;
-    } else {
-        lower = edge->sizeAtExpanding;
-        upper = edge->sizeAtMaximum;
-    }
-
-    qreal edgeDistance = (interpolationProgress[orientation] * (upper - lower)) + lower;
+    qreal edgeDistance = interpolate(factor, edge->sizeAtMinimum, edge->sizeAtPreferred,
+                                     edge->sizeAtExpanding, edge->sizeAtMaximum);
 
     Q_ASSERT(edge->from == base || edge->to == base);
 
