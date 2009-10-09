@@ -1701,7 +1701,7 @@ void tst_QSharedPointer::invalidConstructs()
         "struct DerivedData: public Data { int j; };\n"
         "\n"
         "extern int forwardDeclaredDestructorRunCount;\n"
-        "struct ForwardDeclared;\n"
+        "class ForwardDeclared;\n"
         "ForwardDeclared *forwardPointer();\n"
         );
 
@@ -1730,6 +1730,10 @@ void tst_QSharedPointer::invalidConstructs()
     bool result = (test.*testFunction)(body);
     if (qgetenv("QTEST_EXTERNAL_DEBUG").toInt() > 0) {
         qDebug("External test output:");
+#ifdef Q_CC_MSVC
+        // MSVC prints errors to stdout
+        printf("%s\n", test.standardOutput().constData());
+#endif
         printf("%s\n", test.standardError().constData());
     }
     if (!result) {
