@@ -120,6 +120,9 @@ public:
     void setSslConfiguration(const QSslConfiguration &configuration);
 #endif
 
+    void setOriginatingObject(QObject *object);
+    QObject *originatingObject() const;
+
 private:
     QSharedDataPointer<QNetworkRequestPrivate> d;
     friend class QNetworkRequestPrivate;

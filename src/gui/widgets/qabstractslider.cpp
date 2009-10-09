@@ -715,8 +715,7 @@ void QAbstractSlider::wheelEvent(QWheelEvent * e)
 #else
         stepsToScroll = int(d->offset_accumulated) * QApplication::wheelScrollLines() * d->singleStep;
 #endif
-        if (qAbs(stepsToScroll) > d->pageStep)
-            stepsToScroll = currentOffset > 0 ? d->pageStep : -d->pageStep;
+        stepsToScroll = qBound(-d->pageStep, stepsToScroll, d->pageStep);
     }
 
     if (d->invertedControls)

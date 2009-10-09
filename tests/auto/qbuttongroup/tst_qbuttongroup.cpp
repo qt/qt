@@ -406,7 +406,7 @@ void tst_QButtonGroup::task106609()
 
     QTestEventLoop::instance().enterLoop(1);
     QApplication::setActiveWindow(&dlg);
-    QTRY_COMPARE(QApplication::activeWindow(), &dlg);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&dlg));
 
     //qDebug() << "int:" << spy2.count() << "QAbstractButton*:" << spy1.count();
     QCOMPARE(spy2.count(), 2);

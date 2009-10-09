@@ -812,8 +812,14 @@ void tst_QSharedPointer::differentPointers()
 
         QVERIFY(baseptr.data() == aData);
         QVERIFY(aData == baseptr.data());
-        QVERIFY(bool(operator==<Data,DiffPtrDerivedData>(baseptr, aData)));
+
+#if defined(Q_CC_MSVC) && _MSC_VER < 1400
+        QEXPECT_FAIL("", "Compiler bug", Continue);
+#endif
         QVERIFY(baseptr == aData);
+#if defined(Q_CC_MSVC) && _MSC_VER < 1400
+        QEXPECT_FAIL("", "Compiler bug", Continue);
+#endif
         QVERIFY(aData == baseptr);
     }
     check();
@@ -829,6 +835,9 @@ void tst_QSharedPointer::differentPointers()
         QVERIFY(ptr == baseptr);
         QVERIFY(ptr.data() == baseptr.data());
         QVERIFY(ptr == aBase);
+#if defined(Q_CC_MSVC) && _MSC_VER < 1400
+        QEXPECT_FAIL("", "Compiler bug", Continue);
+#endif
         QVERIFY(baseptr == aData);
     }
     check();
@@ -845,6 +854,9 @@ void tst_QSharedPointer::differentPointers()
         QVERIFY(ptr.data() == baseptr.data());
         QVERIFY(ptr == aBase);
         QVERIFY(ptr == aData);
+#if defined(Q_CC_MSVC) && _MSC_VER < 1400
+        QEXPECT_FAIL("", "Compiler bug", Continue);
+#endif
         QVERIFY(baseptr == aData);
         QVERIFY(baseptr == aBase);
     }
@@ -865,6 +877,9 @@ void tst_QSharedPointer::virtualBaseDifferentPointers()
         QVERIFY(ptr.data() == baseptr.data());
         QVERIFY(ptr == aBase);
         QVERIFY(ptr == aData);
+#if defined(Q_CC_MSVC) && _MSC_VER < 1400
+        QEXPECT_FAIL("", "Compiler bug", Continue);
+#endif
         QVERIFY(baseptr == aData);
         QVERIFY(baseptr == aBase);
     }
@@ -882,6 +897,9 @@ void tst_QSharedPointer::virtualBaseDifferentPointers()
         QVERIFY(ptr.data() == baseptr.data());
         QVERIFY(ptr == aBase);
         QVERIFY(ptr == aData);
+#if defined(Q_CC_MSVC) && _MSC_VER < 1400
+        QEXPECT_FAIL("", "Compiler bug", Continue);
+#endif
         QVERIFY(baseptr == aData);
         QVERIFY(baseptr == aBase);
     }
@@ -1701,7 +1719,7 @@ void tst_QSharedPointer::invalidConstructs()
         "struct DerivedData: public Data { int j; };\n"
         "\n"
         "extern int forwardDeclaredDestructorRunCount;\n"
-        "struct ForwardDeclared;\n"
+        "class ForwardDeclared;\n"
         "ForwardDeclared *forwardPointer();\n"
         );
 
@@ -1730,6 +1748,10 @@ void tst_QSharedPointer::invalidConstructs()
     bool result = (test.*testFunction)(body);
     if (qgetenv("QTEST_EXTERNAL_DEBUG").toInt() > 0) {
         qDebug("External test output:");
+#ifdef Q_CC_MSVC
+        // MSVC prints errors to stdout
+        printf("%s\n", test.standardOutput().constData());
+#endif
         printf("%s\n", test.standardError().constData());
     }
     if (!result) {

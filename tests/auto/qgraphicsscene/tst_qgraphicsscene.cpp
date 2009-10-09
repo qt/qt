@@ -2820,17 +2820,15 @@ void tst_QGraphicsScene::update2()
     CustomView view;
     view.setScene(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(250);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_VERIFY(view.repaints >= 1);
     view.repaints = 0;
 
     // Make sure QGraphicsScene::update only requires one event-loop iteration
     // before the view is updated.
     scene.update();
     qApp->processEvents();
-    QCOMPARE(view.repaints, 1);
+    QTRY_COMPARE(view.repaints, 1);
     view.repaints = 0;
 
     // The same for partial scene updates.

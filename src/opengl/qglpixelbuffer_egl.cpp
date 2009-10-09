@@ -151,7 +151,7 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
 
 bool QGLPixelBufferPrivate::cleanup()
 {
-    eglDestroySurface(QEglContext::defaultDisplay(0), pbuf);
+    // No need to destroy "pbuf" here - it is done in QGLContext::reset().
     return true;
 }
 
@@ -202,13 +202,20 @@ GLuint QGLPixelBuffer::generateDynamicTexture() const
 bool QGLPixelBuffer::hasOpenGLPbuffers()
 {
     // See if we have at least 1 configuration that matches the default format.
-    QEglContext ctx;
-    if (!ctx.openDisplay(0))
+    EGLDisplay dpy = QEglContext::defaultDisplay(0);
+    if (dpy == EGL_NO_DISPLAY)
         return false;
     QEglProperties configProps;
     qt_egl_set_format(configProps, QInternal::Pbuffer, QGLFormat::defaultFormat());
     configProps.setRenderableType(QEgl::OpenGL);
-    return ctx.chooseConfig(configProps);
+    do {
+        EGLConfig cfg = 0;
+        EGLint matching = 0;
+        if (eglChooseConfig(dpy, configProps.properties(),
+                            &cfg, 1, &matching) && matching > 0)
+            return true;
+    } while (configProps.reduceConfiguration());
+    return false;
 }
 
 QT_END_NAMESPACE

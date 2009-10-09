@@ -313,7 +313,7 @@ QString QEglProperties::toString() const
     int alpha = value(EGL_ALPHA_SIZE);
     int bufferSize = value(EGL_BUFFER_SIZE);
     if (bufferSize == (red + green + blue + alpha))
-        bufferSize = EGL_DONT_CARE;
+        bufferSize = 0;
     str += QLatin1String(" rgba=");
     str += QString::number(red);
     str += QLatin1Char(',');
@@ -322,7 +322,7 @@ QString QEglProperties::toString() const
     str += QString::number(blue);
     str += QLatin1Char(',');
     str += QString::number(alpha);
-    if (bufferSize != EGL_DONT_CARE) {
+    if (bufferSize != 0) {
         // Only report buffer size if different than r+g+b+a.
         str += QLatin1String(" buffer-size=");
         str += QString::number(bufferSize);

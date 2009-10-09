@@ -66,6 +66,7 @@ private slots:
     void setHeader();
     void rawHeaderParsing_data();
     void rawHeaderParsing();
+    void originatingObject();
 
     void removeHeader();
 };
@@ -474,6 +475,21 @@ void tst_QNetworkRequest::removeHeader()
     request.setRawHeader("foo", QByteArray());
     QVERIFY(!request.hasRawHeader("Foo"));
     QVERIFY(request.hasRawHeader("bar"));
+}
+
+void tst_QNetworkRequest::originatingObject()
+{
+    QNetworkRequest request;
+
+    QVERIFY(!request.originatingObject());
+
+    {
+        QObject dummy;
+        request.setOriginatingObject(&dummy);
+        QCOMPARE(request.originatingObject(), &dummy);
+    }
+
+    QVERIFY(!request.originatingObject());
 }
 
 QTEST_MAIN(tst_QNetworkRequest)
