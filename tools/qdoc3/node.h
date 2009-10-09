@@ -364,6 +364,8 @@ class QmlClassNode : public FakeNode
     const ClassNode* classNode() const { return cnode; }
     virtual QString fileBase() const;
 
+    static bool qmlOnly;
+
  private:
     const ClassNode* cnode;
 };
