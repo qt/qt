@@ -2902,7 +2902,7 @@ TCMalloc_ThreadCache* TCMalloc_ThreadCache::CreateCacheIfNecessary() {
   // Initialize per-thread data if necessary
   TCMalloc_ThreadCache* heap = NULL;
   {
-    SpinLockHolder h(&pageheap_lock);
+    SpinLockHolder lockholder(&pageheap_lock);
 
 #if COMPILER(MSVC)
     DWORD me;
