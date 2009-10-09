@@ -8,21 +8,20 @@ Rectangle {
     radius: 5
     property var expandedWidth: 230
     signal confirmed
-    resources: [
-        Script {
-            function toggle() {
-                if (removeButton.state == 'opened') {
-                    removeButton.state = '';
-                    contacts.mouseGrabbed=false;
-                } else {
-                    if (!contacts.mouseGrabbed) {
-                        removeButton.state = 'opened';
-                        contacts.mouseGrabbed=true;
-                    }
+    Script {
+        function toggle() {
+            if (removeButton.state == 'opened') {
+                removeButton.state = '';
+                contacts.mouseGrabbed=false;
+            } else {
+                if (!contacts.mouseGrabbed) {
+                    removeButton.state = 'opened';
+                    contacts.mouseGrabbed=true;
                 }
             }
         }
-    ]
+    }
+    
     Image {
         id: trashIcon
         width: 22

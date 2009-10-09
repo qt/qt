@@ -45,46 +45,85 @@
 #include "qmlcontext_p.h"
 #include "qmlrewrite_p.h"
 #include "QtCore/qdebug.h"
+#include "qmlcompiler_p.h"
 
 Q_DECLARE_METATYPE(QList<QObject *>);
 
 QT_BEGIN_NAMESPACE
 
-QmlExpressionPrivate::QmlExpressionPrivate()
+QmlExpressionData::QmlExpressionData()
 : expressionFunctionValid(false), expressionRewritten(false), me(0), 
   trackChange(true), line(-1), guardList(0), guardListLength(0)
 {
 }
 
+QmlExpressionData::~QmlExpressionData()
+{
+    if (guardList) { delete [] guardList; guardList = 0; }
+}
+
+QmlExpressionPrivate::QmlExpressionPrivate()
+: data(new QmlExpressionData)
+{
+    data->q = this;
+}
+
+QmlExpressionPrivate::QmlExpressionPrivate(QmlExpressionData *d)
+: data(d)
+{
+    data->q = this;
+}
+
+QmlExpressionPrivate::~QmlExpressionPrivate()
+{
+    if (data) { data->q = 0; data->release(); data = 0; }
+}
+
 void QmlExpressionPrivate::init(QmlContext *ctxt, const QString &expr, 
                                 QObject *me)
 {
-    expression = expr;
+    data->expression = expr;
 
-    QmlAbstractExpression::setContext(ctxt);
-    this->me = me;
+    data->QmlAbstractExpression::setContext(ctxt);
+    data->me = me;
 }
 
 void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc, 
                                 QObject *me)
 {
-    quint32 *data = (quint32 *)expr;
-    Q_ASSERT(*data == BasicScriptEngineData || 
-             *data == PreTransformedQtScriptData);
-    if (*data == BasicScriptEngineData) {
-        sse.load((const char *)(data + 1), rc);
+    quint32 *exprData = (quint32 *)expr;
+    Q_ASSERT(*exprData == BasicScriptEngineData || 
+             *exprData == PreTransformedQtScriptData);
+    if (*exprData == BasicScriptEngineData) {
+        data->sse.load((const char *)(exprData + 1), rc);
     } else {
-        expression = QString::fromRawData((QChar *)(data + 2), data[1]);
-        expressionRewritten = true;
+        QmlCompiledData *dd = (QmlCompiledData *)rc;
+
+        data->expressionRewritten = true;
+        data->expression = QString::fromRawData((QChar *)(exprData + 3), exprData[2]);
+
+        int progIdx = *(exprData + 1);
+        QmlEngine *engine = ctxt->engine();
+        QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
+        QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
+        if (!dd->programs.at(progIdx)) {
+            dd->programs[progIdx] = new QScriptProgram(scriptEngine->compile(data->expression));
+        }
+
+        QmlContextPrivate *ctxtPriv = ctxt->d_func();
+        QScriptContext *scriptContext = scriptEngine->pushCleanContext();
+        scriptContext->pushScope(ctxtPriv->scriptValue);
+        if (me)
+            scriptContext->pushScope(ep->objectClass->newQObject(me));
+
+        data->expressionFunction = scriptEngine->evaluate(*dd->programs[progIdx]);
+
+        data->expressionFunctionValid = true;
+        scriptEngine->popContext();
     }
 
-    QmlAbstractExpression::setContext(ctxt);
-    this->me = me;
-}
-
-QmlExpressionPrivate::~QmlExpressionPrivate()
-{
-    if (guardList) { delete [] guardList; guardList = 0; }
+    data->QmlAbstractExpression::setContext(ctxt);
+    data->me = me;
 }
 
 /*!
@@ -151,7 +190,7 @@ QmlExpression::~QmlExpression()
 QmlEngine *QmlExpression::engine() const
 {
     Q_D(const QmlExpression);
-    return d->context()?d->context()->engine():0;
+    return d->data->context()?d->data->context()->engine():0;
 }
 
 /*!
@@ -161,7 +200,7 @@ QmlEngine *QmlExpression::engine() const
 QmlContext *QmlExpression::context() const
 {
     Q_D(const QmlExpression);
-    return d->context();
+    return d->data->context();
 }
 
 /*!
@@ -170,10 +209,10 @@ QmlContext *QmlExpression::context() const
 QString QmlExpression::expression() const
 {
     Q_D(const QmlExpression);
-    if (d->sse.isValid())
-        return QLatin1String(d->sse.expression());
+    if (d->data->sse.isValid())
+        return QLatin1String(d->data->sse.expression());
     else
-        return d->expression;
+        return d->data->expression;
 }
 
 /*!
@@ -193,12 +232,12 @@ void QmlExpression::setExpression(const QString &expression)
 
     d->clearGuards();
 
-    d->expression = expression;
-    d->expressionFunctionValid = false;
-    d->expressionRewritten = false;
-    d->expressionFunction = QScriptValue();
+    d->data->expression = expression;
+    d->data->expressionFunctionValid = false;
+    d->data->expressionRewritten = false;
+    d->data->expressionFunction = QScriptValue();
 
-    d->sse.clear();
+    d->data->sse.clear();
 }
 
 QVariant QmlExpressionPrivate::evalSSE()
@@ -207,7 +246,7 @@ QVariant QmlExpressionPrivate::evalSSE()
     QFxPerfTimer<QFxPerf::BindValueSSE> perfsse;
 #endif
 
-    QVariant rv = sse.run(context(), me);
+    QVariant rv = data->sse.run(data->context(), data->me);
 
     return rv;
 }
@@ -218,37 +257,39 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope)
     QFxPerfTimer<QFxPerf::BindValueQt> perfqt;
 #endif
 
-    QmlContextPrivate *ctxtPriv = context()->d_func();
-    QmlEngine *engine = context()->engine();
+    QmlContextPrivate *ctxtPriv = data->context()->d_func();
+    QmlEngine *engine = data->context()->engine();
+    QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
 
-    if (me)
-       ctxtPriv->defaultObjects.insert(ctxtPriv->highPriorityCount, me);
     if (secondaryScope)
        ctxtPriv->defaultObjects.insert(ctxtPriv->highPriorityCount, 
                                        secondaryScope);
 
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
-    if (!expressionFunctionValid) {
+    if (!data->expressionFunctionValid) {
 
-        QScriptContext *scriptContext = scriptEngine->pushContext();
-        for (int i = ctxtPriv->scopeChain.size() - 1; i > -1; --i)
-            scriptContext->pushScope(ctxtPriv->scopeChain.at(i));
+        QScriptContext *scriptContext = scriptEngine->pushCleanContext();
+        scriptContext->pushScope(ctxtPriv->scriptValue);
 
-        if (expressionRewritten) {
-            expressionFunction = scriptEngine->evaluate(expression, fileName, line);
+        if (data->me)
+            scriptContext->pushScope(ep->objectClass->newQObject(data->me));
+
+        if (data->expressionRewritten) {
+            data->expressionFunction = scriptEngine->evaluate(data->expression, 
+                                                              data->fileName, data->line);
         } else {
             QmlRewrite::RewriteBinding rewriteBinding;
 
-            const QString code = rewriteBinding(expression);
-            expressionFunction = scriptEngine->evaluate(code, fileName, line);
+            const QString code = rewriteBinding(data->expression);
+            data->expressionFunction = scriptEngine->evaluate(code, data->fileName, data->line);
         }
 
         scriptEngine->popContext();
-        expressionFunctionValid = true;
+        data->expressionFunctionValid = true;
     }
 
-    QScriptValue svalue = expressionFunction.call();
+    QScriptValue svalue = data->expressionFunction.call();
 
     if (scriptEngine->hasUncaughtException()) {
         if (scriptEngine->uncaughtException().isError()){
@@ -264,8 +305,6 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope)
         }
     }
 
-    if (me)
-        ctxtPriv->defaultObjects.removeAt(ctxtPriv->highPriorityCount);
     if (secondaryScope)
         ctxtPriv->defaultObjects.removeAt(ctxtPriv->highPriorityCount);
 
@@ -277,13 +316,8 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope)
             QList<QObject *> list;
             for (int ii = 0; ii < length; ++ii) {
                 QScriptValue arrayItem = svalue.property(ii);
-                QObject *d =
-                    qvariant_cast<QObject *>(arrayItem.data().toVariant());
-                if (d) {
-                    list << d;
-                } else {
-                    list << 0;
-                }
+                QObject *d = arrayItem.toQObject();
+                list << d;
             }
             rv = QVariant::fromValue(list);
         }
@@ -297,13 +331,10 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope)
                !svalue.isQMetaObject() &&
                !svalue.isQObject() &&
                !svalue.isRegExp()) {
-        QScriptValue objValue = svalue.data();
-        if (objValue.isValid()) {
-            QVariant var = objValue.toVariant();
-            if (var.userType() >= (int)QVariant::UserType &&
-                QmlMetaType::isObject(var.userType()))
-                rv = var;
-        }
+
+        QObject *o = svalue.toQObject();
+        if (o)
+            return qVariantFromValue(o);
     }
     if (rv.isNull())
         rv = svalue.toVariant();
@@ -316,7 +347,7 @@ QVariant QmlExpressionPrivate::value(QObject *secondaryScope)
     Q_Q(QmlExpression);
 
     QVariant rv;
-    if (!q->engine() || (!sse.isValid() && expression.isEmpty()))
+    if (!q->engine() || (!data->sse.isValid() && data->expression.isEmpty()))
         return rv;
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
@@ -331,7 +362,11 @@ QVariant QmlExpressionPrivate::value(QObject *secondaryScope)
 
     ep->currentExpression = q;
 
-    if (sse.isValid()) {
+    // This object might be deleted during the eval
+    QmlExpressionData *localData = data;
+    localData->addref();
+
+    if (data->sse.isValid()) {
         rv = evalSSE();
     } else {
         rv = evalQtScript(secondaryScope);
@@ -339,11 +374,16 @@ QVariant QmlExpressionPrivate::value(QObject *secondaryScope)
 
     ep->currentExpression = lastCurrentExpression;
 
-    if ((!q->trackChange() || !ep->capturedProperties.count()) && guardList) {
-        clearGuards();
-    } else if(q->trackChange()) {
-        updateGuards(ep->capturedProperties);
+    // Check if we were deleted
+    if (localData->q) {
+        if ((!data->trackChange || !ep->capturedProperties.count()) && data->guardList) {
+            clearGuards();
+        } else if(data->trackChange) {
+            updateGuards(ep->capturedProperties);
+        }
     }
+
+    localData->release();
 
     lastCapturedProperties.copyAndClear(ep->capturedProperties);
 
@@ -368,7 +408,7 @@ QVariant QmlExpression::value()
 bool QmlExpression::isConstant() const
 {
     Q_D(const QmlExpression);
-    return !d->guardList;
+    return !d->data->guardList;
 }
 
 /*!
@@ -377,7 +417,7 @@ bool QmlExpression::isConstant() const
 bool QmlExpression::trackChange() const
 {
     Q_D(const QmlExpression);
-    return d->trackChange;
+    return d->data->trackChange;
 }
 
 /*!
@@ -398,7 +438,7 @@ bool QmlExpression::trackChange() const
 void QmlExpression::setTrackChange(bool trackChange)
 {
     Q_D(QmlExpression);
-    d->trackChange = trackChange;
+    d->data->trackChange = trackChange;
 }
 
 /*!
@@ -408,8 +448,8 @@ void QmlExpression::setTrackChange(bool trackChange)
 void QmlExpression::setSourceLocation(const QUrl &fileName, int line)
 {
     Q_D(QmlExpression);
-    d->fileName = fileName.toString();
-    d->line = line;
+    d->data->fileName = fileName.toString();
+    d->data->line = line;
 }
 
 /*!
@@ -421,7 +461,7 @@ void QmlExpression::setSourceLocation(const QUrl &fileName, int line)
 QObject *QmlExpression::scopeObject() const
 {
     Q_D(const QmlExpression);
-    return d->me;
+    return d->data->me;
 }
 
 /*! \internal */
@@ -439,16 +479,16 @@ void QmlExpressionPrivate::clearGuards()
         notifyIdx = 
             QmlExpression::staticMetaObject.indexOfMethod("__q_notify()");
 
-    for (int ii = 0; ii < guardListLength; ++ii) {
-        if (guardList[ii].data()) {
-            QMetaObject::disconnect(guardList[ii].data(), 
-                                    guardList[ii].notifyIndex, 
+    for (int ii = 0; ii < data->guardListLength; ++ii) {
+        if (data->guardList[ii].data()) {
+            QMetaObject::disconnect(data->guardList[ii].data(), 
+                                    data->guardList[ii].notifyIndex, 
                                     q, notifyIdx);
         }
     }
 
-    delete [] guardList; guardList = 0; 
-    guardListLength = 0;
+    delete [] data->guardList; data->guardList = 0; 
+    data->guardListLength = 0;
 }
 
 void QmlExpressionPrivate::updateGuards(const QPODVector<QmlEnginePrivate::CapturedProperty> &properties)
@@ -461,10 +501,10 @@ void QmlExpressionPrivate::updateGuards(const QPODVector<QmlEnginePrivate::Captu
         notifyIdx = 
             QmlExpression::staticMetaObject.indexOfMethod("__q_notify()");
 
-    SignalGuard *newGuardList = 0;
+    QmlExpressionData::SignalGuard *newGuardList = 0;
     
-    if (properties.count() != guardListLength)
-        newGuardList = new SignalGuard[properties.count()];
+    if (properties.count() != data->guardListLength)
+        newGuardList = new QmlExpressionData::SignalGuard[properties.count()];
 
     bool outputWarningHeader = false;
     int hit = 0;
@@ -472,20 +512,20 @@ void QmlExpressionPrivate::updateGuards(const QPODVector<QmlEnginePrivate::Captu
         const QmlEnginePrivate::CapturedProperty &property = properties.at(ii);
 
         bool needGuard = true;
-        if (ii >= guardListLength) {
+        if (ii >= data->guardListLength) {
             // New guard
-        } else if(guardList[ii].data() == property.object && 
-                  guardList[ii].notifyIndex == property.notifyIndex) {
+        } else if(data->guardList[ii].data() == property.object && 
+                  data->guardList[ii].notifyIndex == property.notifyIndex) {
             // Cache hit
-            if (!guardList[ii].isDuplicate || 
-                (guardList[ii].isDuplicate && hit == ii)) {
+            if (!data->guardList[ii].isDuplicate || 
+                (data->guardList[ii].isDuplicate && hit == ii)) {
                 needGuard = false;
                 ++hit;
             }
-        } else if(guardList[ii].data() && !guardList[ii].isDuplicate) {
+        } else if(data->guardList[ii].data() && !data->guardList[ii].isDuplicate) {
             // Cache miss
-            QMetaObject::disconnect(guardList[ii].data(), 
-                                    guardList[ii].notifyIndex, 
+            QMetaObject::disconnect(data->guardList[ii].data(), 
+                                    data->guardList[ii].notifyIndex, 
                                     q, notifyIdx);
         } 
         /* else {
@@ -494,9 +534,9 @@ void QmlExpressionPrivate::updateGuards(const QPODVector<QmlEnginePrivate::Captu
 
         if (needGuard) {
             if (!newGuardList) {
-                newGuardList = new SignalGuard[properties.count()];
+                newGuardList = new QmlExpressionData::SignalGuard[properties.count()];
                 for (int jj = 0; jj < ii; ++jj)
-                    newGuardList[jj] = guardList[jj];
+                    newGuardList[jj] = data->guardList[jj];
             }
 
             if (property.notifyIndex != -1) {
@@ -526,22 +566,22 @@ void QmlExpressionPrivate::updateGuards(const QPODVector<QmlEnginePrivate::Captu
                                      << "::" << metaProp.name();
             }
         } else if (newGuardList) {
-            newGuardList[ii] = guardList[ii];
+            newGuardList[ii] = data->guardList[ii];
         }
     }
 
-    for (int ii = properties.count(); ii < guardListLength; ++ii) {
-        if (guardList[ii].data() && !guardList[ii].isDuplicate) {
-            QMetaObject::disconnect(guardList[ii].data(), 
-                                    guardList[ii].notifyIndex, 
+    for (int ii = properties.count(); ii < data->guardListLength; ++ii) {
+        if (data->guardList[ii].data() && !data->guardList[ii].isDuplicate) {
+            QMetaObject::disconnect(data->guardList[ii].data(), 
+                                    data->guardList[ii].notifyIndex, 
                                     q, notifyIdx);
         }
     }
 
     if (newGuardList) {
-        if (guardList) delete [] guardList;
-        guardList = newGuardList;
-        guardListLength = properties.count();
+        if (data->guardList) delete [] data->guardList;
+        data->guardList = newGuardList;
+        data->guardListLength = properties.count();
     }
 }
 

@@ -69,7 +69,7 @@ void QmlCompiledData::dump(QmlInstruction *instr, int idx)
         qWarning() << idx << "\t" << line << "\t" << "CREATE_COMPONENT\t" << instr->createComponent.count;
         break;
     case QmlInstruction::StoreMetaObject:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_META\t\t" << instr->storeMeta.data << "\t" << instr->storeMeta.slotData;
+        qWarning() << idx << "\t" << line << "\t" << "STORE_META\t\t" << instr->storeMeta.data << "\t";
         break;
     case QmlInstruction::StoreFloat:
         qWarning() << idx << "\t" << line << "\t" << "STORE_FLOAT\t\t" << instr->storeFloat.propertyIndex << "\t" << instr->storeFloat.value;

@@ -1257,12 +1257,6 @@ QFxKeysAttached *QFxKeysAttached::qmlAttachedProperties(QObject *obj)
 */
 
 /*!
-    \fn void QFxItem::activeFocusChanged()
-
-    This signal is emitted when this item gains active focus.
-*/
-
-/*!
     \fn void QFxItem::baselineOffsetChanged()
 
     This signal is emitted when the baseline offset of the item
@@ -2257,16 +2251,6 @@ void QFxItem::setKeepMouseGrab(bool keep)
 {
     Q_D(QFxItem);
     d->_keepMouse = keep;
-}
-
-/*!
-  This function emits the \e activeFocusChanged signal.
-  \a flag is not used.
- */
-void QFxItem::activeFocusChanged(bool flag)
-{
-    Q_UNUSED(flag);
-    emit activeFocusChanged();
 }
 
 /*!

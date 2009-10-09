@@ -633,7 +633,7 @@ void QmlCompiler::compileTree(Object *tree)
     init.line = 0;
     init.init.bindingsSize = compileState.bindings.count();
     init.init.parserStatusSize = compileState.parserStatusCount;
-    init.init.idSize = compileState.ids.count();
+    init.init.contextCache = genContextCache();
     output->bytecode << init;
 
     genObject(tree);
@@ -644,10 +644,11 @@ void QmlCompiler::compileTree(Object *tree)
     output->bytecode << def;
 
     output->imports = unit->imports;
+    output->importCache = output->imports.cache(engine);
 
     Q_ASSERT(tree->metatype);
     static_cast<QMetaObject &>(output->root) = *tree->metaObject();
-    if (!tree->metadata.isEmpty())
+    if (!tree->metadata.isEmpty()) 
         QmlEnginePrivate::get(engine)->registerCompositeType(output);
 }
 
@@ -668,7 +669,11 @@ bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
     if (obj->metatype == &QmlComponent::staticMetaObject) {
         COMPILE_CHECK(buildComponent(obj, ctxt));
         return true;
-    }
+    } 
+
+    // Build any script blocks for this type
+    for (int ii = 0; ii < obj->scriptBlockObjects.count(); ++ii)
+        COMPILE_CHECK(buildScript(obj, obj->scriptBlockObjects.at(ii)));
 
     // Object instantiations reset the binding context
     BindingContext objCtxt(obj);
@@ -807,7 +812,9 @@ void QmlCompiler::genObject(QmlParser::Object *obj)
         meta.line = -1;
         meta.storeMeta.data = output->indexForByteArray(obj->metadata);
         meta.storeMeta.aliasData = output->indexForByteArray(obj->synthdata);
-        meta.storeMeta.slotData = -1;
+        meta.storeMeta.propertyCache = output->propertyCaches.count();
+        // ### Surely the creation of this property cache could be more efficient
+        output->propertyCaches << QmlPropertyCache::create(engine, obj->metaObject());
         output->bytecode << meta;
     }
 
@@ -819,6 +826,15 @@ void QmlCompiler::genObject(QmlParser::Object *obj)
         id.setId.value = output->indexForString(obj->id);
         id.setId.index = obj->idIndex;
         output->bytecode << id;
+    }
+
+    // Set any script blocks
+    for (int ii = 0; ii < obj->scriptBlocks.count(); ++ii) {
+        QmlInstruction script;
+        script.type = QmlInstruction::StoreScript;
+        script.line = -1; // ###
+        script.storeScript.value = output->indexForString(obj->scriptBlocks.at(ii));
+        output->bytecode << script;
     }
 
     // Begin the class
@@ -962,7 +978,7 @@ void QmlCompiler::genComponent(QmlParser::Object *obj)
     init.type = QmlInstruction::Init;
     init.init.bindingsSize = compileState.bindings.count();
     init.init.parserStatusSize = compileState.parserStatusCount;
-    init.init.idSize = compileState.ids.count();
+    init.init.contextCache = genContextCache();
     init.line = obj->location.start.line;
     output->bytecode << init;
 
@@ -997,7 +1013,8 @@ bool QmlCompiler::buildComponent(QmlParser::Object *obj,
     // Find, check and set the "id" property (if any)
     Property *idProp = 0;
     if (obj->properties.count() > 1 ||
-       (obj->properties.count() == 1 && obj->properties.begin().key() != "id"))
+       (obj->properties.count() == 1 && obj->properties.begin().key() != "id") ||
+        !obj->scriptBlockObjects.isEmpty())
         COMPILE_EXCEPTION(obj, "Invalid component specification");
 
     if (obj->properties.count())
@@ -1030,6 +1047,66 @@ bool QmlCompiler::buildComponent(QmlParser::Object *obj,
 
     // Build the component tree
     COMPILE_CHECK(buildComponentFromRoot(root, ctxt));
+
+    return true;
+}
+
+bool QmlCompiler::buildScript(QmlParser::Object *obj, QmlParser::Object *script)
+{
+    QString scriptCode;
+
+    if (script->properties.count() == 1 && 
+        script->properties.begin().key() == QByteArray("source")) {
+
+        Property *source = *script->properties.begin();
+        if (script->defaultProperty)
+            COMPILE_EXCEPTION(source, "Invalid Script block.  Specify either the source property or inline script.");
+
+        if (source->value || source->values.count() != 1 ||
+            source->values.at(0)->object || !source->values.at(0)->value.isString())
+            COMPILE_EXCEPTION(source, "Invalid Script source value");
+
+        QString sourceUrl = 
+            output->url.resolved(QUrl(source->values.at(0)->value.asString())).toString();
+
+        for (int ii = 0; ii < unit->resources.count(); ++ii) {
+            if (unit->resources.at(ii)->url == sourceUrl) {
+                scriptCode = QString::fromUtf8(unit->resources.at(ii)->data);
+                break;
+            }
+        }
+
+    } else if (!script->properties.isEmpty()) {
+        COMPILE_EXCEPTION(*script->properties.begin(), "Properties cannot be set on Script block");
+    } else if (script->defaultProperty) {
+        QmlParser::Location currentLocation;
+
+        for (int ii = 0; ii < script->defaultProperty->values.count(); ++ii) {
+            Value *v = script->defaultProperty->values.at(ii);
+            if (v->object || !v->value.isString())
+                COMPILE_EXCEPTION(v, "Invalid Script block");
+
+            if (ii == 0) {
+                currentLocation = v->location.start;
+                scriptCode.append(QString(currentLocation.column, QLatin1Char(' ')));
+            }
+
+            while (currentLocation.line < v->location.start.line) {
+                scriptCode.append(QLatin1String("\n"));
+                currentLocation.line++;
+                currentLocation.column = 0;
+            }
+
+            scriptCode.append(QString(v->location.start.column - currentLocation.column, QLatin1Char(' ')));
+
+            scriptCode += v->value.asString();
+            currentLocation = v->location.end;
+            currentLocation.column++;
+        }
+    }
+
+    if (!scriptCode.isEmpty()) 
+        obj->scriptBlocks.append(scriptCode);
 
     return true;
 }
@@ -2261,6 +2338,22 @@ void QmlCompiler::genBindingAssignment(QmlParser::Value *binding,
     output->bytecode << store;
 }
 
+int QmlCompiler::genContextCache()
+{
+    if (compileState.ids.count() == 0)
+        return -1;
+
+    QmlIntegerCache *cache = new QmlIntegerCache(engine);
+
+    for (QHash<QString, QmlParser::Object *>::ConstIterator iter = compileState.ids.begin();
+         iter != compileState.ids.end();
+         ++iter) 
+        cache->add(iter.key(), (*iter)->idIndex);
+
+    output->contextCaches.append(cache);
+    return output->contextCaches.count() - 1;
+}
+
 bool QmlCompiler::completeComponentBuild()
 {
     for (int ii = 0; ii < compileState.aliasingObjects.count(); ++ii) {
@@ -2296,7 +2389,10 @@ bool QmlCompiler::completeComponentBuild()
             expression = rewriteBinding(expression);
 
             quint32 length = expression.length();
+            quint32 pc = output->programs.length();
+            output->programs.append(0);
             binding.compiledData =
+                QByteArray((const char *)&pc, sizeof(quint32)) +
                 QByteArray((const char *)&length, sizeof(quint32)) +
                 QByteArray((const char *)expression.constData(), 
                            expression.length() * sizeof(QChar));

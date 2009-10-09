@@ -149,7 +149,7 @@ class QFxGridViewPrivate : public QFxFlickablePrivate
 
 public:
     QFxGridViewPrivate()
-    : model(0), currentItem(0), tmpCurrent(0), flow(QFxGridView::LeftToRight)
+    : model(0), currentItem(0), flow(QFxGridView::LeftToRight)
     , visiblePos(0), visibleIndex(0) , currentIndex(-1)
     , cellWidth(100), cellHeight(100), columns(1), requestedIndex(-1)
     , highlightComponent(0), highlight(0), trackedItem(0)
@@ -298,7 +298,6 @@ public:
     QList<FxGridItem*> visibleItems;
     QHash<QFxItem*,int> unrequestedItems;
     FxGridItem *currentItem;
-    QFxItem *tmpCurrent;
     QFxGridView::Flow flow;
     int visiblePos;
     int visibleIndex;
@@ -640,10 +639,6 @@ void QFxGridViewPrivate::updateCurrent(int modelIndex)
         return;
     }
 
-    if (tmpCurrent) {
-        delete tmpCurrent;
-        tmpCurrent = 0;
-    }
     FxGridItem *oldCurrentItem = currentItem;
     currentIndex = modelIndex;
     currentItem = createItem(modelIndex);
@@ -821,12 +816,8 @@ void QFxGridView::setCurrentIndex(int index)
 QFxItem *QFxGridView::currentItem()
 {
     Q_D(QFxGridView);
-    if (!d->currentItem) {
-        // Always return something valid
-        if (!d->tmpCurrent)
-            d->tmpCurrent = new QFxItem(viewport());
-        return d->tmpCurrent;
-    }
+    if (!d->currentItem)
+        return 0;
     return d->currentItem->item;
 }
 
@@ -1000,7 +991,7 @@ void QFxGridView::setCellWidth(int cellWidth)
     if (cellWidth != d->cellWidth && cellWidth > 0) {
         d->cellWidth = qMax(1, cellWidth);
         d->updateGrid();
-        emit cellSizeChanged();
+        emit cellWidthChanged();
         d->layout();
     }
 }
@@ -1017,7 +1008,7 @@ void QFxGridView::setCellHeight(int cellHeight)
     if (cellHeight != d->cellHeight && cellHeight > 0) {
         d->cellHeight = qMax(1, cellHeight);
         d->updateGrid();
-        emit cellSizeChanged();
+        emit cellHeightChanged();
         d->layout();
     }
 }

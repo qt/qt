@@ -2,89 +2,108 @@ import Qt 4.6
 
 Rectangle {
     color: "white"
-    width: 800
+    width: 600
     height: 600
 
     Image {
+        id: blur
         source: "pic.jpg"
 
         effect: Blur {
-            blurRadius: NumberAnimation { id: blur; from: 0; to: 10; duration: 200; repeat: true }
+            blurRadius: NumberAnimation {
+                id: blurEffect
+                from: 0; to: 10
+                duration: 200
+                repeat: true
+            }
         }
 
-        MouseRegion { anchors.fill: parent; onClicked: blur.running = !blur.running }
-
-        Text { color: "white"; text: "Blur" }
+        MouseRegion { anchors.fill: parent; onClicked: blurEffect.running = !blurEffect.running }
     }
 
-    Image {
-        source: "pic.jpg"
+    Text { text: "Blur"; anchors.top: blur.bottom; anchors.horizontalCenter: blur.horizontalCenter }
 
+    Image {
+        id: grayscale
+        source: "pic.jpg"
         x: 200
+
         effect: Grayscale {}
-
-        Text { color: "white"; text: "Grayscale" }
     }
 
-    Image {
-        source: "pic.jpg"
+    Text { text: "Grayscale"; anchors.top: grayscale.bottom; anchors.horizontalCenter: grayscale.horizontalCenter }
 
+    Image {
+        id: colorize
+        source: "pic.jpg"
         x: 400
-        effect: Colorize { color: "blue" }
 
-        Text { color: "white"; text: "Colorize" }
+        effect: Colorize { color: "blue" }
     }
 
-    Image {
-        source: "pic.jpg"
+    Text { text: "Colorize"; anchors.top: colorize.bottom; anchors.horizontalCenter: colorize.horizontalCenter }
 
+    Image {
+        id: pixelize
+        source: "pic.jpg"
         y: 300
+
         effect: Pixelize {
-            pixelSize: NumberAnimation { id: pixelize; from: 0; to: 10; duration: 200; repeat: true }
+            pixelSize: NumberAnimation {
+                id: pixelizeEffect
+                from: 0; to: 10
+                duration: 200
+                repeat: true
+            }
         }
 
-        MouseRegion { anchors.fill: parent; onClicked: pixelize.running = !pixelize.running }
-
-        Text { color: "white"; text: "Pixelize" }
+        MouseRegion { anchors.fill: parent; onClicked: pixelizeEffect.running = !pixelizeEffect.running }
     }
 
+    Text { text: "Pixelize"; anchors.top: pixelize.bottom; anchors.horizontalCenter: pixelize.horizontalCenter }
 
     Image {
+        id: dropShadow
         source: "pic.jpg"
-
         x: 200
         y: 300
+
         effect: DropShadow {
             blurRadius: 3
             offset.x: 3
-            offset.y: NumberAnimation { id: dropShadow; from: 0; to: 10; duration: 200; repeat: true; }
+            offset.y: NumberAnimation { id: dropShadowEffect; from: 0; to: 10; duration: 200; repeat: true; }
         }
 
-        MouseRegion { anchors.fill: parent; onClicked: dropShadow.running = !dropShadow.running }
-
-        Text { color: "white"; text: "DropShadow" }
+        MouseRegion { anchors.fill: parent; onClicked: dropShadowEffect.running = !dropShadowEffect.running }
     }
 
+    Text { text: "Drop Shadow"; anchors.top: dropShadow.bottom; anchors.horizontalCenter: dropShadow.horizontalCenter }
 
     Image {
+        id: bloom
         source: "pic.jpg"
-
         x: 400
         y: 300
+
         effect: Bloom {
             blurRadius: 3
             brightness: 128
-            strength: NumberAnimation { id: bloom; from: 0; to: 1; duration: 200; repeat: true; }
+            strength: NumberAnimation {
+                id: bloomEffect
+                from: 0; to: 1
+                duration: 200
+                repeat: true
+            }
         }
 
-        MouseRegion { anchors.fill: parent; onClicked: bloom.running = !bloom.running }
-
-        Text { color: "white"; text: "Bloom" }
+        MouseRegion { anchors.fill: parent; onClicked: bloomEffect.running = !bloomEffect.running }
     }
+
+    Text { text: "Bloom"; anchors.top: bloom.bottom; anchors.horizontalCenter: bloom.horizontalCenter }
 
     Text {
         x: 100; y: 250
-        text: "Clicking Blur, Pixelize or DropShadow will \ntoggle animation."
+        text: "Clicking Blur, Pixelize, Drop Shadow or Bloom will \ntoggle animation."
         color: "black"
     }
 

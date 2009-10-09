@@ -5,6 +5,7 @@ Rectangle {
     color: "blue"
     width: 40
     height: 30
+
     Rectangle {
         id: dot
         color: "red"
@@ -13,19 +14,19 @@ Rectangle {
         x: rect.width/2
         y: rect.height/2
     }
+
     MouseRegion {
         id: mr
         anchors.fill: rect
     }
+
     Connection {
         sender: mr
         signal: "clicked(mouse)"
         script: { 
-        
-                color="green";
-                dot.x = mouse.x-1;
-                dot.y = mouse.y-1;
-            
+            color = "green";
+            dot.x = mouse.x-1;
+            dot.y = mouse.y-1;
         }
     }
 }

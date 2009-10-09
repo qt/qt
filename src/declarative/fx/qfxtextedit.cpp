@@ -822,7 +822,7 @@ void QFxTextEdit::keyReleaseEvent(QKeyEvent *event)
     \overload
     Handles changing of the focus property.  Focus is applied to the control
     even if the edit does not have active focus.  This is because things
-    like KeyProxy can give the behavior of focus even when activeFocus isn't
+    like KeyProxy can give the behavior of focus even when hasFocus() isn't
     true.
 */
 void QFxTextEdit::focusChanged(bool hasFocus)
