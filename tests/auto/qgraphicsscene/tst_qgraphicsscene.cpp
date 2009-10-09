@@ -266,6 +266,7 @@ private slots:
     void dispatchHoverOnPress();
     void initialFocus_data();
     void initialFocus();
+    void polishItems();
 
     // task specific tests below me
     void task139710_bspTreeCrash();
@@ -3882,6 +3883,33 @@ void tst_QGraphicsScene::initialFocus()
     }
 
     QCOMPARE(rect->hasFocus(), shouldHaveFocus);
+}
+
+class PolishItem : public QGraphicsTextItem
+{
+public:
+    PolishItem(QGraphicsItem *parent = 0) : QGraphicsTextItem(parent) { }
+
+protected:
+    QVariant itemChange(GraphicsItemChange change, const QVariant& value)
+    {
+        if (change == ItemVisibleChange) {
+            if (value.toBool())
+                qDeleteAll(childItems());
+        }
+        return QGraphicsItem::itemChange(change, value);
+    }
+};
+
+void tst_QGraphicsScene::polishItems()
+{
+    QGraphicsScene scene;
+    PolishItem *parent = new PolishItem;
+    scene.addItem(parent);
+    PolishItem *child = new PolishItem(parent);
+    Q_UNUSED(child)
+    // test that QGraphicsScenePrivate::_q_polishItems() doesn't crash
+    QMetaObject::invokeMethod(&scene,"_q_polishItems");
 }
 
 QTEST_MAIN(tst_QGraphicsScene)

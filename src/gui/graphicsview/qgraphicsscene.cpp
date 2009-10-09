@@ -420,8 +420,12 @@ void QGraphicsScenePrivate::unregisterTopLevelItem(QGraphicsItem *item)
 */
 void QGraphicsScenePrivate::_q_polishItems()
 {
+    QSet<QGraphicsItem *>::Iterator it;
     const QVariant booleanTrueVariant(true);
-    foreach (QGraphicsItem *item, unpolishedItems) {
+    while (!unpolishedItems.isEmpty()) {
+        it = unpolishedItems.begin();
+        QGraphicsItem *item = *it;
+        unpolishedItems.erase(it);
         if (!item->d_ptr->explicitlyHidden) {
             item->itemChange(QGraphicsItem::ItemVisibleChange, booleanTrueVariant);
             item->itemChange(QGraphicsItem::ItemVisibleHasChanged, booleanTrueVariant);
@@ -431,7 +435,6 @@ void QGraphicsScenePrivate::_q_polishItems()
             QApplication::sendEvent((QGraphicsWidget *)item, &event);
         }
     }
-    unpolishedItems.clear();
 }
 
 void QGraphicsScenePrivate::_q_processDirtyItems()
@@ -549,7 +552,7 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     selectedItems.remove(item);
     hoverItems.removeAll(item);
     cachedItemsUnderMouse.removeAll(item);
-    unpolishedItems.removeAll(item);
+    unpolishedItems.remove(item);
     resetDirtyItem(item);
 
     //We remove all references of item from the sceneEventFilter arrays
@@ -2484,7 +2487,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     if (!item->d_ptr->explicitlyHidden) {
        if (d->unpolishedItems.isEmpty())
            QMetaObject::invokeMethod(this, "_q_polishItems", Qt::QueuedConnection);
-       d->unpolishedItems << item;
+       d->unpolishedItems.insert(item);
     }
 
     // Reenable selectionChanged() for individual items
