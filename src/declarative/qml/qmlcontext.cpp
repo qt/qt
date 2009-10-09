@@ -61,7 +61,8 @@ QmlContextPrivate::QmlContextPrivate()
 {
 }
 
-void QmlContextPrivate::addScript(const QString &script, QObject *scopeObject)
+void QmlContextPrivate::addScript(const QString &script, QObject *scopeObject,
+                                  const QString &fileName, int lineNumber)
 {
     if (!engine) 
         return;
@@ -78,21 +79,10 @@ void QmlContextPrivate::addScript(const QString &script, QObject *scopeObject)
     QScriptValue scope = scriptEngine->newObject();
     scriptContext->setActivationObject(scope);
 
-    QScriptValue val = scriptEngine->evaluate(script);
+    QScriptValue val = scriptEngine->evaluate(script, fileName, lineNumber);
 
-    if (scriptEngine->hasUncaughtException()) {
-        if (scriptEngine->uncaughtException().isError()){
-            QScriptValue exception = scriptEngine->uncaughtException();
-            if (!exception.property(QLatin1String("fileName")).toString().isEmpty()){
-                qWarning() << exception.property(QLatin1String("fileName")).toString()
-                           << scriptEngine->uncaughtExceptionLineNumber()
-                           << exception.toString();
-
-            } else {
-                qmlInfo(scopeObject) << exception.toString();
-            }
-        }
-    }
+    if (scriptEngine->hasUncaughtException()) 
+        QmlExpressionPrivate::printException(scriptEngine);
 
     scriptEngine->popContext();
 

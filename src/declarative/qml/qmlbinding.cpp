@@ -67,8 +67,8 @@ QmlBindingPrivate::QmlBindingPrivate()
 {
 }
 
-QmlBinding::QmlBinding(void *data, QmlRefCount *rc, QObject *obj, QmlContext *ctxt, QObject *parent)
-: QmlExpression(ctxt, data, rc, obj, *new QmlBindingPrivate)
+QmlBinding::QmlBinding(void *data, QmlRefCount *rc, QObject *obj, QmlContext *ctxt, const QUrl &url, int lineNumber, QObject *parent)
+: QmlExpression(ctxt, data, rc, obj, url, lineNumber, *new QmlBindingPrivate)
 {
     setParent(parent);
 }

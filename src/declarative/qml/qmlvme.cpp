@@ -567,7 +567,9 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::StoreScript:
             {
                 QObject *target = stack.top();
-                cp->addScript(primitives.at(instr.storeScript.value), target);
+                cp->addScript(primitives.at(instr.storeScript.value), target, 
+                              primitives.at(instr.storeScript.fileName), 
+                              instr.storeScript.lineNumber);
             }
             break;
 
@@ -597,12 +599,11 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 if (stack.count() == 1 && bindingSkipList.testBit(coreIndex))  
                     break;
 
-                QmlBinding *bind = new QmlBinding((void *)datas.at(instr.assignBinding.value).constData(), comp, context, ctxt, 0);
+                QmlBinding *bind = new QmlBinding((void *)datas.at(instr.assignBinding.value).constData(), comp, context, ctxt, comp->url, instr.line, 0);
                 bindValues.append(bind);
                 bind->m_mePtr = &bindValues.values[bindValues.count - 1];
                 bind->setTarget(mp);
                 bind->addToObject(target);
-                bind->setSourceLocation(comp->url, instr.line);
             }
             break;
 

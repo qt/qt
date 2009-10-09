@@ -833,6 +833,8 @@ void QmlCompiler::genObject(QmlParser::Object *obj)
         QmlInstruction script;
         script.type = QmlInstruction::StoreScript;
         script.line = -1; // ###
+        script.storeScript.fileName = output->indexForString(obj->scriptBlocksFile.at(ii));
+        script.storeScript.lineNumber = obj->scriptBlocksLineNumber.at(ii);
         script.storeScript.value = output->indexForString(obj->scriptBlocks.at(ii));
         output->bytecode << script;
     }
@@ -1054,6 +1056,8 @@ bool QmlCompiler::buildComponent(QmlParser::Object *obj,
 bool QmlCompiler::buildScript(QmlParser::Object *obj, QmlParser::Object *script)
 {
     QString scriptCode;
+    QString sourceUrl;
+    int lineNumber = 1;
 
     if (script->properties.count() == 1 && 
         script->properties.begin().key() == QByteArray("source")) {
@@ -1066,8 +1070,7 @@ bool QmlCompiler::buildScript(QmlParser::Object *obj, QmlParser::Object *script)
             source->values.at(0)->object || !source->values.at(0)->value.isString())
             COMPILE_EXCEPTION(source, "Invalid Script source value");
 
-        QString sourceUrl = 
-            output->url.resolved(QUrl(source->values.at(0)->value.asString())).toString();
+        sourceUrl = output->url.resolved(QUrl(source->values.at(0)->value.asString())).toString();
 
         for (int ii = 0; ii < unit->resources.count(); ++ii) {
             if (unit->resources.at(ii)->url == sourceUrl) {
@@ -1079,10 +1082,14 @@ bool QmlCompiler::buildScript(QmlParser::Object *obj, QmlParser::Object *script)
     } else if (!script->properties.isEmpty()) {
         COMPILE_EXCEPTION(*script->properties.begin(), "Properties cannot be set on Script block");
     } else if (script->defaultProperty) {
+        sourceUrl = output->url.toString();
+
         QmlParser::Location currentLocation;
 
         for (int ii = 0; ii < script->defaultProperty->values.count(); ++ii) {
             Value *v = script->defaultProperty->values.at(ii);
+            if (lineNumber == 1)
+                lineNumber = v->location.start.line;
             if (v->object || !v->value.isString())
                 COMPILE_EXCEPTION(v, "Invalid Script block");
 
@@ -1105,8 +1112,11 @@ bool QmlCompiler::buildScript(QmlParser::Object *obj, QmlParser::Object *script)
         }
     }
 
-    if (!scriptCode.isEmpty()) 
+    if (!scriptCode.isEmpty()) {
         obj->scriptBlocks.append(scriptCode);
+        obj->scriptBlocksFile.append(sourceUrl);
+        obj->scriptBlocksLineNumber.append(lineNumber);
+    }
 
     return true;
 }
@@ -2322,7 +2332,7 @@ void QmlCompiler::genBindingAssignment(QmlParser::Value *binding,
     store.assignBinding.value = output->indexForByteArray(ref.compiledData);
     store.assignBinding.context = ref.bindingContext.stack;
     store.assignBinding.owner = ref.bindingContext.owner;
-    store.line = prop->location.end.line;
+    store.line = binding->location.start.line;
 
     Q_ASSERT(ref.bindingContext.owner == 0 ||
              (ref.bindingContext.owner != 0 && valueTypeProperty));
