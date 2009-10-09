@@ -273,7 +273,7 @@ void QFxBorderImage::setHorizontalTileMode(TileMode t)
     Q_D(QFxBorderImage);
     if (t != d->horizontalTileMode) {
         d->horizontalTileMode = t;
-        emit tileModeChanged();
+        emit horizontalTileModeChanged();
         update();
     }
 }
@@ -289,7 +289,7 @@ void QFxBorderImage::setVerticalTileMode(TileMode t)
     Q_D(QFxBorderImage);
     if (t != d->verticalTileMode) {
         d->verticalTileMode = t;
-        emit tileModeChanged();
+        emit verticalTileModeChanged();
         update();
     }
 }

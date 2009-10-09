@@ -63,7 +63,7 @@ There are a number of QML elements that operate using data models:
 \o ListView
 \o GridView
 \o PathView
-\o \l {qml-repeater}{Repeater}
+\o \l Repeater
 \endlist
 
 QML supports several types of data model, which may be provided by QML

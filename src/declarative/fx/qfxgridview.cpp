@@ -1000,7 +1000,7 @@ void QFxGridView::setCellWidth(int cellWidth)
     if (cellWidth != d->cellWidth && cellWidth > 0) {
         d->cellWidth = qMax(1, cellWidth);
         d->updateGrid();
-        emit cellSizeChanged();
+        emit cellWidthChanged();
         d->layout();
     }
 }
@@ -1017,7 +1017,7 @@ void QFxGridView::setCellHeight(int cellHeight)
     if (cellHeight != d->cellHeight && cellHeight > 0) {
         d->cellHeight = qMax(1, cellHeight);
         d->updateGrid();
-        emit cellSizeChanged();
+        emit cellHeightChanged();
         d->layout();
     }
 }

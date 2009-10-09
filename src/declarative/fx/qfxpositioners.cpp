@@ -97,6 +97,7 @@ void QFxBasePositioner::setSpacing(int s)
         return;
     d->_spacing = s;
     prePositioning();
+    emit spacingChanged();
 }
 
 QmlTransition *QFxBasePositioner::move() const
