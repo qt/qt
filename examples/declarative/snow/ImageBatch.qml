@@ -35,14 +35,14 @@ GridView {
         XmlRole { name: "url"; query: "media:content/@url/string()" }
     }
 
-    Item {
+    delegate: Item {
         id: root
         property bool isSelected: GridView.isCurrentItem && grid.isSelected
         transformOrigin: "Center"
         width: grid.imageWidth; height: grid.imageHeight;
 
         Image { id: flickrImage; source: url; fillMode: "PreserveAspectFit"; smooth: true; anchors.fill: parent;
-                opacity: (status == 1)?1:0; opacity: Behavior { NumberAnimation { properties: "opacity" } } }
+                opacity: (status == Image.Ready)?1:0; /*opacity: Behavior { NumberAnimation { properties: "opacity" } }*/ }
         Loading { anchors.centerIn: parent; visible: flickrImage.status!=1 }
 
         states: State {
