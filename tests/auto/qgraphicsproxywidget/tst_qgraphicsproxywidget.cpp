@@ -1757,6 +1757,8 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleWidget()
     QTRY_VERIFY(leftDial->hasFocus());
     QCOMPARE(eventSpy.counts[QEvent::FocusIn], 2);
     QCOMPARE(eventSpy.counts[QEvent::FocusOut], 2);
+
+    delete view;
 }
 
 void tst_QGraphicsProxyWidget::tabFocus_simpleTwoWidgets()
@@ -1879,6 +1881,8 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleTwoWidgets()
     QVERIFY(leftDial->hasFocus());
     QCOMPARE(eventSpy.counts[QEvent::FocusIn], 2);
     QCOMPARE(eventSpy.counts[QEvent::FocusOut], 2);
+
+    delete view;
 }
 
 void tst_QGraphicsProxyWidget::tabFocus_complexWidget()
@@ -1989,6 +1993,8 @@ void tst_QGraphicsProxyWidget::tabFocus_complexWidget()
     QApplication::processEvents();
     QVERIFY(!box->hasFocus());
     leftDial->hasFocus();
+
+    delete view;
 }
 
 void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
@@ -2157,6 +2163,8 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
     QApplication::processEvents();
     QVERIFY(!box->hasFocus());
     leftDial->hasFocus();
+
+    delete view;
 }
 
 void tst_QGraphicsProxyWidget::setFocus_simpleWidget()
@@ -2223,6 +2231,8 @@ void tst_QGraphicsProxyWidget::setFocus_simpleWidget()
     // Symmetry
     editProxy->clearFocus();
     QVERIFY(!edit->hasFocus());
+
+    delete view;
 }
 
 void tst_QGraphicsProxyWidget::setFocus_simpleTwoWidgets()
@@ -2273,6 +2283,8 @@ void tst_QGraphicsProxyWidget::setFocus_simpleTwoWidgets()
     QVERIFY(!editProxy->hasFocus());
     QVERIFY(edit2->hasFocus());
     QVERIFY(edit2Proxy->hasFocus());
+
+    delete view;
 }
 
 void tst_QGraphicsProxyWidget::setFocus_complexTwoWidgets()
@@ -2392,6 +2404,8 @@ void tst_QGraphicsProxyWidget::setFocus_complexTwoWidgets()
     QCOMPARE(eventSpyBox.counts[QEvent::FocusOut], 1);
     QCOMPARE(eventSpyBox_2.counts[QEvent::FocusIn], 0);
     QCOMPARE(eventSpyBox_2.counts[QEvent::FocusOut], 0);
+
+    delete view;
 }
 
 void tst_QGraphicsProxyWidget::popup_basic()
@@ -2897,6 +2911,9 @@ void tst_QGraphicsProxyWidget::dontCrashWhenDie()
     QTest::qWait(100);
     QTest::mouseMove(w->view->viewport(), w->view->mapFromScene(w->widget->mapToScene(w->widget->boundingRect().center())));
     delete w->item;
+
+    QApplication::processEvents();
+    delete w;
 }
 
 void tst_QGraphicsProxyWidget::createProxyForChildWidget()
@@ -3040,22 +3057,23 @@ void tst_QGraphicsProxyWidget::actionsContextMenu()
     }
     QGraphicsScene scene;
 
+    QGraphicsView view(&scene);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    view.setFocus();
+
     if (hasFocus)
         scene.addWidget(widget)->setFocus();
     else
         scene.addWidget(widget)->clearFocus();
 
-    QGraphicsView view(&scene);
-    view.show();
-    QTest::qWaitForWindowShown(&view);
-    view.setFocus();
+    QApplication::processEvents();
+
     QContextMenuEvent contextMenuEvent(QContextMenuEvent::Mouse,
                                        view.viewport()->rect().center(),
                                        view.viewport()->mapToGlobal(view.viewport()->rect().center()));
     contextMenuEvent.accept();
     qApp->sendEvent(view.viewport(), &contextMenuEvent);
-
-    QApplication::processEvents();
 
     if (hasFocus) {
         if (actionsContextMenu) {
