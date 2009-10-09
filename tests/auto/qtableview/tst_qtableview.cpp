@@ -3407,17 +3407,14 @@ void tst_QTableView::mouseWheel_data()
 
 void tst_QTableView::mouseWheel()
 {
+#ifdef Q_OS_WINCE
+    QSKIP("Since different Windows CE versions sport different taskbars, we skip this test", SkipAll);
+#endif
     QFETCH(int, scrollMode);
     QFETCH(int, delta);
     QFETCH(int, horizontalPositon);
     QFETCH(int, verticalPosition);
 
-    if (scrollMode == int(QAbstractItemView::ScrollPerPixel))
-    {
-#ifdef Q_OS_WINCE
-        QSKIP("Since different Windows CE versions sport different taskbars, we skip this test", SkipSingle);
-#endif
-    }
     QtTestTableModel model(100, 100);
     QtTestTableView view;
     view.resize(500, 500);
